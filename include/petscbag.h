@@ -9,7 +9,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_BAG_FILE_COOKIE 1211219
 
 typedef struct _p_PetscBagItem *PetscBagItem;
-struct _p_PetscBagItem {PetscDataType dtype;PetscInt offset;size_t msize;char name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH];PetscBagItem next;};
+struct _p_PetscBagItem {PetscDataType dtype;PetscInt offset;size_t msize;char name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH]; const char **list;PetscBagItem next;};
 /*S
      PetscBag - PETSc object that manages a collection of user data including parameters.
            A bag is essentially a C struct with serialization (you can save it and load it from files).
@@ -37,7 +37,7 @@ $
 
 .seealso:  PetscBagSetName(), PetscBagGetName(), PetscBagView(), PetscBagLoad()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy()
+           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
 S*/
 typedef struct {
   MPI_Comm     bagcomm;
@@ -68,7 +68,7 @@ typedef struct {
 
 .seealso: PetscBag, PetscBagGetName(), PetscBagView(), PetscBagLoad()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy()
+           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
 M*/ 
 #define PetscBagCreate(C,A,B)  PetscNew(A,B) || ((*(B))->bagsize = sizeof(A),(*(B))->bagcomm = C,0)
 
@@ -91,7 +91,7 @@ extern PetscErrorCode PetscBagDestroy(PetscBag*);
 
 .seealso: PetscBag, PetscBagGetName(), PetscBagView(), PetscBagLoad()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy()
+           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
 M*/ 
 #define PetscBagSetName(A,B,C) (PetscStrncpy((A)->bagname,B,PETSC_BAG_NAME_LENGTH-1) || PetscStrncpy((A)->baghelp,C,PETSC_BAG_HELP_LENGTH-1))
 
@@ -113,7 +113,7 @@ M*/
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy()
+           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
 M*/ 
 #define PetscBagGetName(A,B) (*(B) = A->bagname,0)
 
@@ -121,7 +121,7 @@ extern PetscErrorCode PetscBagRegisterReal(PetscBag*,void*,PetscReal, const char
 extern PetscErrorCode PetscBagRegisterString(PetscBag*,void*,size_t,const char*, const char*, const char*);
 extern PetscErrorCode PetscBagRegisterScalar(PetscBag*,void*,PetscScalar,const  char*,const  char*);
 extern PetscErrorCode PetscBagRegisterInt(PetscBag*,void*,PetscInt,const  char*,const  char*);
-extern PetscErrorCode PetscBagRegisterEnum(PetscBag*,void*,PetscEnum,const  char*,const  char*);
+extern PetscErrorCode PetscBagRegisterEnum(PetscBag*,void*,const  char*[],PetscEnum,const char*,const  char*);
 extern PetscErrorCode PetscBagRegisterTruth(PetscBag*,void*,PetscTruth,const  char*,const  char*);
 extern PetscErrorCode PetscBagRegisterVec(PetscBag*,void*,const char*,const  char*);
 

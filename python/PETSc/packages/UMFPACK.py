@@ -30,7 +30,7 @@ class Configure(PETSc.package.Package):
     import config.setCompilers
     self.framework.pushLanguage('C')
     self.framework.popLanguage()    
-    return alllibs
+    return [alllibs]
           
   def Install(self):
     # Get the UMFPACK directories

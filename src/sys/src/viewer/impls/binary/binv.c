@@ -15,7 +15,8 @@ typedef struct  {
   FILE                *fdes_info;      /* optional file containing info on binary file*/
   PetscTruth          storecompressed; /* gzip the write binary file when closing it*/
   char                *filename;
-  PetscTruth          skipinfo;        /* Don't create info file for writing */
+  PetscTruth          skipinfo;        /* Don't create info file for writing; don't use for reading */
+  PetscTruth          skipoptions;     /* don't use PETSc options database when loading */
 } PetscViewer_Binary;
 
 #undef __FUNCT__  
@@ -109,7 +110,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetDescriptor(PetscViewer viewer
 
    Concepts: PetscViewerBinary^accessing info file
 
-.seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetDescriptor()
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySetSkipOptions(),
+          PetscViewerBinaryGetSkipOptions()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySkipInfo(PetscViewer viewer)
 {
@@ -117,6 +119,69 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySkipInfo(PetscViewer viewer)
 
   PetscFunctionBegin;
   vbinary->skipinfo = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinarySetSkipOptions" 
+/*@
+    PetscViewerBinarySetSkipOptions - do not use the PETSc options database when loading objects
+
+    Not Collective
+
+    Input Paramter:
++   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
+-   skip - PETSC_TRUE means do not use
+
+    Options Database Key:
+.   -viewer_binary_skip_options
+
+    Level: advanced
+
+    Notes: This must be called after PetscViewerSetType()
+
+   Concepts: PetscViewerBinary^accessing info file
+
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
+          PetscViewerBinaryGetSkipOptions()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetSkipOptions(PetscViewer viewer,PetscTruth skip)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  vbinary->skipoptions = skip;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryGetSkipOptions" 
+/*@
+    PetscViewerBinaryGetSkipOptions - checks if viewer uses the PETSc options database when loading objects
+
+    Not Collective
+
+    Input Paramter:
+.   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
+
+    Output Parameter:
+.   skip - PETSC_TRUE means do not use
+
+    Level: advanced
+
+    Notes: This must be called after PetscViewerSetType()
+
+   Concepts: PetscViewerBinary^accessing info file
+
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
+          PetscViewerBinarySetSkipOptions()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscTruth *skip)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  *skip = vbinary->skipoptions;
   PetscFunctionReturn(0);
 }
 
@@ -366,16 +431,15 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryLoadInfo(PetscViewer viewer)
 {
-  FILE           *file;
-  char           string[256],*first,*second,*final;
-  size_t         len;
-  PetscErrorCode ierr;
-  PetscTruth     flg;
-  PetscToken     *token;  
+  FILE               *file;
+  char               string[256],*first,*second,*final;
+  size_t             len;
+  PetscErrorCode     ierr;
+  PetscToken         *token;  
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-load_ignore_info",&flg);CHKERRQ(ierr);
-  if (flg) PetscFunctionReturn(0);
+  if (vbinary->skipinfo) PetscFunctionReturn(0);
 
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (!file) PetscFunctionReturn(0);
@@ -572,7 +636,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Binary(PetscViewer v)
   v->iformat         = 0;
   vbinary->fdes_info = 0;
   vbinary->fdes      = 0;
-  vbinary->skipinfo  = PETSC_FALSE;
+  vbinary->skipinfo        = PETSC_FALSE;
+  vbinary->skipoptions     = PETSC_TRUE;
   v->ops->getsingleton     = PetscViewerGetSingleton_Binary;
   v->ops->restoresingleton = PetscViewerRestoreSingleton_Binary;
   vbinary->btype           = (PetscViewerFileType) -1; 

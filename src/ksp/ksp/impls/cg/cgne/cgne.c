@@ -13,8 +13,7 @@ EXTERN PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal *,PetscRea
 /*
      KSPSetUp_CGNE - Sets up the workspace needed by the CGNE method. 
 
-      This is called once, usually automatically by KSPSolve() or KSPSetUp()
-     but can be called directly by KSPSetUp()
+     IDENTICAL TO THE CG ONE EXCEPT for one extra work vector!
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_CGNE"
@@ -64,8 +63,7 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 .     ksp - the Krylov space object that was set to use conjugate gradient, by, for 
             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 
-   Output Parameter:
-.     its - number of iterations used
+    Probably virtually identical to the KSPSolve_CG, would be nice if we could reuse the code
 
 */
 #undef __FUNCT__  
@@ -203,108 +201,6 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   }
   PetscFunctionReturn(0);
 }
-/*
-       KSPDestroy_CGNE - Frees all memory space used by the Krylov method
-
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_CGNE" 
-PetscErrorCode KSPDestroy_CGNE(KSP ksp)
-{
-  KSP_CG         *cg = (KSP_CG*)ksp->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* free space used for singular value calculations */
-  if (ksp->calc_sings) {
-    ierr = PetscFree(cg->e);CHKERRQ(ierr);
-    ierr = PetscFree(cg->ee);CHKERRQ(ierr);
-  }
-  ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
-  /* free the context variable */
-  ierr = PetscFree(cg);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-     KSPView_CGNE - Prints information about the current Krylov method being used
-
-      Currently this only prints information to a file (or stdout) about the 
-      symmetry of the problem. If your Krylov method has special options or 
-      flags that information should be printed here.
-
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "KSPView_CGNE" 
-PetscErrorCode KSPView_CGNE(KSP ksp,PetscViewer viewer)
-{
-#if defined(PETSC_USE_COMPLEX)
-  KSP_CG         *cg = (KSP_CG *)ksp->data; 
-  PetscErrorCode ierr;
-  PetscTruth     iascii;
-
-  PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {
-    if (cg->type == KSP_CG_HERMITIAN) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  CG: variant for complex, Hermitian system\n");CHKERRQ(ierr);
-    } else if (cg->type == KSP_CG_SYMMETRIC) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  CG: variant for complex, symmetric system\n");CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  CG: unknown variant\n");CHKERRQ(ierr);
-    }
-  } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
-/*
-    KSPSetFromOptions_CGNE - Checks the options database for options related to the 
-                           conjugate gradient method.
-*/ 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPSetFromOptions_CGNE"
-PetscErrorCode KSPSetFromOptions_CGNE(KSP ksp)
-{
-#if defined(PETSC_USE_COMPLEX)
-  PetscErrorCode ierr;
-  PetscTruth     flg;
-#endif
-
-  PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  ierr = PetscOptionsHead("KSP CGNE options");CHKERRQ(ierr);
-    ierr = PetscOptionsLogicalGroupBegin("-ksp_cgne_Hermitian","Matrix is Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_HERMITIAN);CHKERRQ(ierr); }
-    ierr = PetscOptionsLogicalGroupEnd("-ksp_cgne_symmetric","Matrix is complex symmetric, not Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_SYMMETRIC);CHKERRQ(ierr); }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
-#endif
-  PetscFunctionReturn(0);
-}
-
-/*
-    KSPCGSetType_CGNE - This is an option that is SPECIFIC to this particular Krylov method.
-                      This routine is registered below in KSPCreate_CGNE() and called from the 
-                      routine KSPCGSetType() (see the file cgtype.c).
-
-        This must be wrapped in an EXTERN_C_BEGIN to be dynamically linkable in C++
-*/
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "KSPCGSetType_CGNE" 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType_CGNE(KSP ksp,KSPCGType type)
-{
-  KSP_CG *cg;
-
-  PetscFunctionBegin;
-  cg = (KSP_CG *)ksp->data;
-  cg->type = type;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
 
 /*
     KSPCreate_CGNE - Creates the data structure for the Krylov method CGNE and sets the 
@@ -318,18 +214,27 @@ EXTERN_C_END
           without explicitly forming A^t*A
 
    Options Database Keys:
-+   -ksp_cgne_Hermitian - (for complex matrices only) indicates the matrix is Hermitian
--   -ksp_cgne_symmetric - (for complex matrices only) indicates the matrix is symmetric
+.   -ksp_cg_type <Hermitian or symmetric - (for complex matrices only) indicates the matrix is Hermitian or symmetric
+
 
    Level: beginner
 
    Notes: eigenvalue computation routines will return information about the
    spectrum of A^tA, rather than A.
 
+          This object is subclassed off of KSPCG
+
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPCGSetType()
 
 M*/
+
+extern PetscErrorCode KSPDestroy_CG(KSP);
+extern PetscErrorCode KSPView_CG(KSP,PetscViewer);
+extern PetscErrorCode KSPSetFromOptions_CG(KSP);
+EXTERN_C_BEGIN
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType_CG(KSP,KSPCGType);
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -356,9 +261,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGNE(KSP ksp)
   */
   ksp->ops->setup                = KSPSetUp_CGNE;
   ksp->ops->solve                = KSPSolve_CGNE;
-  ksp->ops->destroy              = KSPDestroy_CGNE;
-  ksp->ops->view                 = KSPView_CGNE;
-  ksp->ops->setfromoptions       = KSPSetFromOptions_CGNE;
+  ksp->ops->destroy              = KSPDestroy_CG;
+  ksp->ops->view                 = KSPView_CG;
+  ksp->ops->setfromoptions       = KSPSetFromOptions_CG;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
 
@@ -367,8 +272,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGNE(KSP ksp)
       KSPCGSetType() checks for this attached function and calls it if it finds
       it. (Sort of like a dynamic member function that can be added at run time
   */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CGNE",
-                                     KSPCGSetType_CGNE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CG",KSPCGSetType_CG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

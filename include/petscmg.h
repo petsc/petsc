@@ -7,30 +7,31 @@
 PETSC_EXTERN_CXX_BEGIN
 
 /*E
-    MGType - Determines the type of multigrid method that is run.
+    PCMGType - Determines the type of multigrid method that is run.
 
    Level: beginner
 
    Values:
-+  MGMULTIPLICATIVE (default) - traditional V or W cycle as determined by PCMGSetCycles()
-.  MGADDITIVE - the additive multigrid preconditioner where all levels are
++  PC_MG_MULTIPLICATIVE (default) - traditional V or W cycle as determined by PCMGSetCycles()
+.  PC_MG_ADDITIVE - the additive multigrid preconditioner where all levels are
                 smoothed before updating the residual
-.  MGFULL - same as multiplicative except one also performs grid sequencing, 
+.  PC_MG_FULL - same as multiplicative except one also performs grid sequencing, 
             that is starts on the coarsest grid, performs a cycle, interpolates
             to the next, performs a cycle etc
--  MGKASKADE - like full multigrid except one never goes back to a coarser level
+-  PC_MG_KASKADE - like full multigrid except one never goes back to a coarser level
                from a finer
 
 .seealso: PCMGSetType()
 
 E*/
-typedef enum { MGMULTIPLICATIVE,MGADDITIVE,MGFULL,MGKASKADE } MGType;
-#define MGCASCADE MGKASKADE;
+typedef enum { PC_MG_MULTIPLICATIVE,PC_MG_ADDITIVE,PC_MG_FULL,PC_MG_KASKADE } PCMGType;
+extern const char *PCMGTypes[];
+#define PC_MG_CASCADE PC_MG_KASKADE;
 
-#define MG_V_CYCLE     1
-#define MG_W_CYCLE     2
+#define PC_MG_V_CYCLE     1
+#define PC_MG_W_CYCLE     2
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetType(PC,MGType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetType(PC,PCMGType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC,PetscInt,MPI_Comm*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetLevels(PC,PetscInt*);
 

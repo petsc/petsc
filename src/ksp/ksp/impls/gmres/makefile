@@ -11,6 +11,7 @@ OBJSC    = gmres.o borthog.o borthog2.o gmres2.o gmreig.o \
            gmpre.o
 OBJSF    = 
 LIBBASE  = libpetscksp
+DIRS     = lgmres fgmres
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/gmres/
 

@@ -16,9 +16,12 @@
 #define dmmggetx_                DMMGGETX
 #define dmmggetj_                DMMGGETJ
 #define dmmggetb_                DMMGGETB
+#define dmmggetrhs_              DMMGGETRHS
 #define dmmggetksp_              DMMGGETKSP
 #define dmmggetlevels_           DMMGGETLEVELS
+#define dmmgsetinitialguess_     DMMGSETINITIALGUESS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define dmmggetrhs_              dmmggetrhs
 #define dmmggetx_                dmmggetx
 #define dmmggetj_                dmmggetj
 #define dmmggetb_                dmmggetb
@@ -32,6 +35,7 @@
 #define dmmgsetdm_               dmmgsetdm
 #define dmmgview_                dmmgview
 #define dmmgsolve_               dmmgsolve
+#define dmmgsetinitialguess_     dmmgsetinitialguess
 #endif
 
 EXTERN_C_BEGIN
@@ -42,6 +46,13 @@ static PetscErrorCode ourrhs(DMMG dmmg,Vec vec)
 {
   PetscErrorCode ierr = 0;
   (*(void (PETSC_STDCALL *)(DMMG*,Vec*,PetscErrorCode*))(((PetscObject)dmmg->dm)->fortran_func_pointers[0]))(&dmmg,&vec,&ierr);
+  return ierr;
+}
+
+static PetscErrorCode ourinitialguess(DMMG dmmg,Vec vec)
+{
+  PetscErrorCode ierr = 0;
+  (*(void (PETSC_STDCALL *)(DMMG*,Vec*,PetscErrorCode*))(((PetscObject)dmmg->dm)->fortran_func_pointers[1]))(&dmmg,&vec,&ierr);
   return ierr;
 }
 
@@ -70,10 +81,16 @@ void PETSC_STDCALL dmmggetj_(DMMG **dmmg,Mat *x,PetscErrorCode *ierr)
   *x    = DMMGGetJ(*dmmg);
 }
 
-void PETSC_STDCALL dmmggetB_(DMMG **dmmg,Mat *x,PetscErrorCode *ierr)
+void PETSC_STDCALL dmmggetb_(DMMG **dmmg,Mat *x,PetscErrorCode *ierr)
 {
   *ierr = 0;
   *x    = DMMGGetB(*dmmg);
+}
+
+void PETSC_STDCALL dmmggetrhs_(DMMG **dmmg,Vec *x,PetscErrorCode *ierr)
+{
+  *ierr = 0;
+  *x    = DMMGGetRHS(*dmmg);
 }
 
 void PETSC_STDCALL dmmggetksp_(DMMG **dmmg,KSP *x,PetscErrorCode *ierr)
@@ -89,6 +106,18 @@ void PETSC_STDCALL dmmggetlevels_(DMMG **dmmg,PetscInt *x,PetscErrorCode *ierr)
 }
 
 /* ----------------------------------------------------------------------------------------------------------*/
+void PETSC_STDCALL dmmgsetinitialguess_(DMMG **dmmg,void (PETSC_STDCALL *initialguess)(DMMG*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
+{
+  PetscInt i;
+
+  *ierr = DMMGSetInitialGuess(*dmmg,ourinitialguess);
+  /*
+    Save the fortran initial guess function in the DM on each level; ourinitialguess() pulls it out when needed
+  */
+  for (i=0; i<(**dmmg)->nlevels; i++) {
+    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[1] = (FCNVOID)initialguess;
+  }
+}
 
 void PETSC_STDCALL dmmgsetksp_(DMMG **dmmg,void (PETSC_STDCALL *rhs)(DMMG*,Vec*,PetscErrorCode*),void (PETSC_STDCALL *mat)(DMMG*,Mat*,PetscErrorCode*),PetscErrorCode *ierr)
 {
@@ -117,7 +146,7 @@ void PETSC_STDCALL dmmgsetdm_(DMMG **dmmg,DM *dm,PetscErrorCode *ierr)
   *ierr = DMMGSetDM(*dmmg,*dm);if (*ierr) return;
   /* loop over the levels added a place to hang the function pointers in the DM for each level*/
   for (i=0; i<(**dmmg)->nlevels; i++) {
-    *ierr = PetscMalloc(3*sizeof(FCNVOID),&((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (*ierr) return;
+    *ierr = PetscMalloc(4*sizeof(FCNVOID),&((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (*ierr) return;
   }
 }
 

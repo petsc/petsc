@@ -5,24 +5,11 @@
 */
 #include "src/ksp/pc/impls/mg/mgimpl.h"
 
-EXTERN PetscErrorCode MGMCycle_Private(MG *,PetscTruth*);
+EXTERN PetscErrorCode PCMGMCycle_Private(PC_MG **,PetscTruth*);
 
-/*
-       MGFCycle_Private - Given an MG structure created with MGCreate() runs 
-               full multigrid. 
-
-    Iput Parameters:
-.   mg - structure created with MGCreate().
-
-    Note: This may not be what others call full multigrid. What we
-          do is restrict the rhs to all levels, then starting 
-          on the coarsest level work our way up generating 
-          initial guess for the next level. This provides an
-          improved preconditioner but not a great improvement.
-*/
 #undef __FUNCT__  
-#define __FUNCT__ "MGFCycle_Private"
-PetscErrorCode MGFCycle_Private(MG *mg)
+#define __FUNCT__ "PCMGFCycle_Private"
+PetscErrorCode PCMGFCycle_Private(PC_MG **mg)
 {
   PetscErrorCode ierr;
   PetscInt       i,l = mg[0]->levels;
@@ -37,25 +24,16 @@ PetscErrorCode MGFCycle_Private(MG *mg)
   /* work our way up through the levels */
   ierr = VecSet(&zero,mg[0]->x);CHKERRQ(ierr);
   for (i=0; i<l-1; i++) {
-    ierr = MGMCycle_Private(&mg[i],PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCMGMCycle_Private(&mg[i],PETSC_NULL);CHKERRQ(ierr);
     ierr = MatInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr); 
   }
-  ierr = MGMCycle_Private(&mg[l-1],PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCMGMCycle_Private(&mg[l-1],PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-/*
-       MGKCycle_Private - Given an MG structure created with MGCreate() runs 
-               full Kascade MG solve.
-
-    Iput Parameters:
-.   mg - structure created with MGCreate().
-
-    Note: This may not be what others call Kascadic MG.
-*/
 #undef __FUNCT__  
-#define __FUNCT__ "MGKCycle_Private"
-PetscErrorCode MGKCycle_Private(MG *mg)
+#define __FUNCT__ "PCMGKCycle_Private"
+PetscErrorCode PCMGKCycle_Private(PC_MG **mg)
 {
   PetscErrorCode ierr;
   PetscInt       i,l = mg[0]->levels;

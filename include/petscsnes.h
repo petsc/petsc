@@ -254,6 +254,7 @@ typedef enum {/* converged */
               SNES_DIVERGED_LS_FAILURE         = -6,
               SNES_DIVERGED_LOCAL_MIN          = -8,  /* || J^T b || is small, implies converged to local minimum of F() */
               SNES_CONVERGED_ITERATING         =  0} SNESConvergedReason;
+extern const char **SNESConvergedReasons;
 
 /*MC
      SNES_CONVERGED_FNORM_ABS - 2-norm(F) <= abstol

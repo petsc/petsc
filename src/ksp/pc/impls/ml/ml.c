@@ -302,14 +302,14 @@ PetscErrorCode PCDestroy_ML(PC pc)
 #define __FUNCT__ "PCSetFromOptions_ML"
 PetscErrorCode PCSetFromOptions_ML(PC pc)
 {
-  PetscErrorCode ierr;
-  PetscInt       indx,m,PrintLevel,MaxNlevels,MaxCoarseSize; 
-  PetscReal      Threshold,DampingFactor; 
-  PetscTruth     flg;
-  const char     *type[] = {"additive","multiplicative","full","cascade","kascade"};
-  const char     *scheme[] = {"Uncoupled","Coupled","MIS","METIS"};
-  PC_ML          *pc_ml=PETSC_NULL;
+  PetscErrorCode       ierr;
+  PetscInt             indx,m,PrintLevel,MaxNlevels,MaxCoarseSize; 
+  PetscReal            Threshold,DampingFactor; 
+  PetscTruth           flg;
+  const char           *scheme[] = {"Uncoupled","Coupled","MIS","METIS"};
+  PC_ML                *pc_ml=PETSC_NULL;
   PetscObjectContainer container;
+  PCMGType             mgtype;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)pc,"PC_ML",(PetscObject *)&container);CHKERRQ(ierr);
@@ -321,10 +321,10 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
 
   /* inherited MG options */
   ierr = PetscOptionsHead("Multigrid options(inherited)");CHKERRQ(ierr); 
-  ierr = PetscOptionsInt("-pc_mg_cycles","1 for V cycle, 2 for W-cycle","MGSetCycles",1,&m,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_mg_smoothup","Number of post-smoothing steps","MGSetNumberSmoothUp",1,&m,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_mg_smoothdown","Number of pre-smoothing steps","MGSetNumberSmoothDown",1,&m,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-pc_mg_type","Multigrid type","MGSetType",type,5,type[1],&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_mg_cycles","1 for V cycle, 2 for W-cycle","MGSetCycles",1,&m,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_mg_smoothup","Number of post-smoothing steps","MGSetNumberSmoothUp",1,&m,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_mg_smoothdown","Number of pre-smoothing steps","MGSetNumberSmoothDown",1,&m,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-pc_mg_type","Multigrid type","PCMGSetType",PCMGTypes,(PetscEnum)PC_MG_MULTIPLICATIVE,(PetscEnum*)&mgtype,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   /* ML options */
@@ -649,10 +649,10 @@ PetscErrorCode MatDestroy_ML(Mat A)
 PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,Mat *newmat) 
 { 
   struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata *)mlmat->data;
-  PetscErrorCode  ierr;
-  PetscInt        m=mlmat->outvec_leng,n=mlmat->invec_leng,*nnz,nz_max;
-  PetscInt        *ml_cols=matdata->columns,*aj,i,j,k; 
-  PetscScalar     *ml_vals=matdata->values,*aa;
+  PetscErrorCode        ierr;
+  PetscInt              m=mlmat->outvec_leng,n=mlmat->invec_leng,*nnz,nz_max;
+  PetscInt              *ml_cols=matdata->columns,*aj,i,j,k; 
+  PetscScalar           *ml_vals=matdata->values,*aa;
   
   PetscFunctionBegin;
   if ( mlmat->getrow == NULL) SETERRQ(PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
@@ -732,12 +732,12 @@ PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,Mat *newmat)
 PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat) 
 {
   struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata *)mlmat->data;
-  PetscInt        *ml_cols=matdata->columns,*aj; 
-  PetscScalar     *ml_vals=matdata->values,*aa;
-  PetscErrorCode  ierr;
-  PetscInt        i,j,k,*gordering;
-  PetscInt        m=mlmat->outvec_leng,n,*nnzA,*nnzB,*nnz,nz_max,row; 
-  Mat             A;
+  PetscInt              *ml_cols=matdata->columns,*aj; 
+  PetscScalar           *ml_vals=matdata->values,*aa;
+  PetscErrorCode        ierr;
+  PetscInt              i,j,k,*gordering;
+  PetscInt              m=mlmat->outvec_leng,n,*nnzA,*nnzB,*nnz,nz_max,row; 
+  Mat                   A;
 
   PetscFunctionBegin;
   if (mlmat->getrow == NULL) SETERRQ(PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");

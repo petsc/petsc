@@ -46,7 +46,7 @@ EXTERN_C_END
 
 PetscErrorCode PetscInitializeFortran(void)
 {
-  int              c1=0,c2=0;
+  PetscMPIInt c1=0,c2=0;
 
   if (PETSC_COMM_WORLD) {
     c1 = PetscFromPointerComm(PETSC_COMM_WORLD);

@@ -144,7 +144,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(PetscInt,Vec,const Vec[],Petsc
 
 .seealso: VecNorm(), VecNormBegin(), VecNormEnd(), MatNorm()
 E*/
-typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4,NORM_1_AND_2=5} NormType;
+typedef enum {NORM_1=0,NORM_2=1,NORM_FROBENIUS=2,NORM_INFINITY=3,NORM_1_AND_2=4} NormType;
+extern const char *NormTypes[];
 #define NORM_MAX NORM_INFINITY
 
 /*MC

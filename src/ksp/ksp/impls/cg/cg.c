@@ -270,13 +270,7 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (cg->type == KSP_CG_HERMITIAN) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  CG: variant for complex, Hermitian system\n");CHKERRQ(ierr);
-    } else if (cg->type == KSP_CG_SYMMETRIC) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  CG: variant for complex, symmetric system\n");CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  CG: unknown variant\n");CHKERRQ(ierr);
-    }
+    ierr = PetscViewerASCIIPrintf(viewer,"  CG or CGNE: variant %s\n",KSPCGTypes[cg->type]);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
   }
@@ -294,16 +288,13 @@ PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
-  PetscTruth     flg;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  ierr = PetscOptionsHead("KSP CG options");CHKERRQ(ierr);
-    ierr = PetscOptionsLogicalGroupBegin("-ksp_cg_Hermitian","Matrix is Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_HERMITIAN);CHKERRQ(ierr); }
-    ierr = PetscOptionsLogicalGroupEnd("-ksp_cg_symmetric","Matrix is complex symmetric, not Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_SYMMETRIC);CHKERRQ(ierr); }
+  ierr = PetscOptionsHead("KSP CG and CGNE options");CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-ksp_cg_type","Matrix is Hermitian or complex symmetric","KSPCGSetType",KSPCGTypes,(PetscEnum)cg->type,
+                          (PetscEnum*)&cg->type,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);

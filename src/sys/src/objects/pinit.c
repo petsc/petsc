@@ -26,6 +26,14 @@ PetscErrorCode __gierr = 0;
 MPI_Comm PETSC_COMM_WORLD = 0;
 
 /*
+     Declare and set all the string names of the PETSc enums
+*/
+const char *PetscTruths[]    = {"FALSE","TRUE","PetscTruth","PETSC_",0};
+const char *PetscDataTypes[] = {"INT", "DOUBLE", "COMPLEX",
+                                "LONG","SHORT",  "FLOAT",
+                                "CHAR","LOGICAL","ENUM","PetscDataType","PETSC_",0};
+
+/*
        Checks the options database for initializations related to the 
     PETSc components
 */
@@ -366,8 +374,7 @@ $       call PetscInitialize(file,ierr)
 PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 {
   PetscErrorCode ierr;
-  int            flag;
-  PetscMPIInt    size;
+  PetscMPIInt    flag, size;
   PetscTruth     flg;
   char           hostname[256];
 

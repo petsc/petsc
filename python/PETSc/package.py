@@ -43,7 +43,7 @@ class Package(config.base.Configure):
     # include files we wish to check for
     self.includes     = []
     # list of libraries we wish to check for (can be overwritten by providing your own generateLibraryList()
-    self.liblist      = []
+    self.liblist      = [[]]
     # location of libraries and includes in packages directory tree
     self.libdir       = 'lib'
     self.includedir   = 'include'
@@ -90,9 +90,18 @@ class Package(config.base.Configure):
     '''Generates full path list of libraries from self.liblist'''
     alllibs = []
     for l in self.liblist:
-      alllibs.append(os.path.join(dir,l))
+      libs = []
+      for ll in l:
+        libs.append(os.path.join(dir,ll))
+      alllibs.append(libs)
     return alllibs
 
+  def generateGuess(self,name,dir,include = None, libdir = None):
+    if not include: include = os.path.join(dir,self.includedir)
+    if not libdir:  libdir  = self.libdir
+    for l in self.generateLibList(os.path.join(dir,libdir)):
+      yield(name+self.PACKAGE,l,include)
+    
   def generateGuesses(self):
     if self.download and self.framework.argDB['download-'+self.package] == 1:
       if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
@@ -104,24 +113,28 @@ class Package(config.base.Configure):
         fd = open(os.path.expanduser(os.path.join('~','.'+self.package+'_license')),'w')
         fd.close()
 
-      dir = os.path.join(self.Install(),self.arch.arch)
-      yield('Download '+self.PACKAGE,self.generateLibList(os.path.join(dir,self.libdir)) ,os.path.join(dir,self.includedir))
+      dir = os.path.abspath(os.path.join(self.Install(),self.arch.arch))
+      for l in self.generateLibList(os.path.join(dir,self.libdir)):
+        yield('Download '+self.PACKAGE,l,os.path.join(dir,self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
+
     if 'with-'+self.package+'-dir' in self.framework.argDB:     
-      dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
-      yield('User specified '+self.PACKAGE+' root directory',self.generateLibList(os.path.join(dir,self.libdir)),os.path.join(dir,self.includedir))
+      dir = self.framework.argDB['with-'+self.package+'-dir']
+      for l in self.generateLibList(os.path.join(dir,self.libdir)):
+        yield('User specified root directory '+self.PACKAGE,l,os.path.join(dir,self.includedir))
+
     if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-'+self.package+'-lib']
       if not isinstance(libs, list):
         libs = [libs]
       libs = [os.path.abspath(l) for l in libs]
-      if len(libs) == 1 and os.path.isdir(libs[0]):
-        libs = self.generateLibList(libs[0])
-      yield('User specified '+self.PACKAGE+' root directory', libs, os.path.abspath(self.framework.argDB['with-'+self.package+'-include']))
+      yield('User specified '+self.PACKAGE+' libraries', libs, os.path.abspath(self.framework.argDB['with-'+self.package+'-include']))
+
     if self.download and self.framework.argDB['download-'+self.package] == 2:
-      dir = os.path.join(self.Install(),self.arch.arch)
-      yield('Download '+self.PACKAGE,self.generateLibList(os.path.join(dir,self.libdir)) ,os.path.join(dir,self.includedir))
-      raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
+      dir = os.path.abspath(os.path.join(self.Install(),self.arch.arch))
+      for l in self.generateLibList(os.path.join(dir,self.libdir)):
+        yield('Download '+self.PACKAGE,l,os.path.join(dir,self.includedir))
+      raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+os.path.join(self.Install(),self.arch.arch)+'\n')
     raise RuntimeError('You must specifiy a path for '+self.name+' with --with-'+self.package+'-dir=<directory>')
 
   def downLoad(self):

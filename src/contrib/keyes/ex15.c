@@ -153,7 +153,7 @@ int main( int argc, char **argv )
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCMG); CHKERRA(ierr);
   ierr = PCMGSetLevels(pc,user.nlevels); CHKERRA(ierr);
-  ierr = PCMGSetType(pc,MGADDITIVE); CHKERRA(ierr);
+  ierr = PCMGSetType(pc,PC_MG_ADDITIVE); CHKERRA(ierr);
 
   /* set the work vectors and SLES options for all the levels */
   for (i=0; i<user.nlevels; i++) {

@@ -333,7 +333,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
   }
   ierr  = PCMGSetLevels(pc,nlevels,comms);CHKERRQ(ierr);
   ierr  = PetscFree(comms);CHKERRQ(ierr); 
-  ierr =  PCMGSetType(pc,MGFULL);CHKERRQ(ierr);
+  ierr =  PCMGSetType(pc,PC_MG_FULL);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {

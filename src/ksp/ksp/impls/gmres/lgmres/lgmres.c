@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "lgmresp.h"   /*I petscksp.h I*/
+#include "src/ksp/ksp/impls/gmres/lgmres/lgmresp.h"   /*I petscksp.h I*/
 
 #define LGMRES_DELTA_DIRECTIONS 10
 #define LGMRES_DEFAULT_MAXK     30
@@ -788,105 +788,50 @@ PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
-/*
+extern PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
 
-   KSPView_LGMRES -Prints information about the current Krylov method 
-                  being used.
-
- */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPView_LGMRES" 
 PetscErrorCode KSPView_LGMRES(KSP ksp,PetscViewer viewer)
 {
   KSP_LGMRES     *lgmres = (KSP_LGMRES *)ksp->data; 
-  const char     *cstr;
   PetscErrorCode ierr;
-  PetscTruth     iascii,isstring;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
+  ierr = KSPView_GMRES(ksp,viewer);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  if (lgmres->orthog == KSPGMRESClassicalGramSchmidtOrthogonalization) {
-    if (lgmres->cgstype == KSP_GMRES_CGS_REFINE_NEVER) {
-      cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement";
-    } else if (lgmres->cgstype == KSP_GMRES_CGS_REFINE_ALWAYS) {
-      cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement";
-    } else {
-      cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement when needed";
-    }
-  } else if (lgmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
-    cstr = "Modified Gram-Schmidt Orthogonalization";
-  } else {
-    cstr = "unknown orthogonalization";
-  }
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  LGMRES: restart=%D, using %s\n",lgmres->max_k,cstr);CHKERRQ(ierr);
     /*LGMRES_MOD */
     ierr = PetscViewerASCIIPrintf(viewer,"  LGMRES: aug. dimension=%D\n",lgmres->aug_dim);CHKERRQ(ierr);
     if (lgmres->approx_constant) {
        ierr = PetscViewerASCIIPrintf(viewer,"  LGMRES: approx. space size was kept constant.\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  LGMRES: number of matvecs=%D\n",lgmres->matvecs);CHKERRQ(ierr);
-
-    ierr = PetscViewerASCIIPrintf(viewer,"  LGMRES: happy breakdown tolerance %g\n",lgmres->haptol);CHKERRQ(ierr);
-  } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,lgmres->max_k);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP LGMRES",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
-
-
 }
+
+extern PetscErrorCode KSPSetFromOptions_GMRES(KSP);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetFromOptions_LGMRES"
 PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscInt       restart, aug,indx;
-  PetscReal      haptol;
+  PetscInt       aug;
   KSP_LGMRES     *lgmres = (KSP_LGMRES*) ksp->data;
   PetscTruth     flg;
-  const char     *types[] = {"never","ifneeded","always"};
 
   PetscFunctionBegin;
+  ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
   ierr = PetscOptionsHead("KSP LGMRES Options");CHKERRQ(ierr);
-
-    
-
-    ierr = PetscOptionsInt("-ksp_gmres_restart","For LGMRES, this is the maximum size of the approximation space","KSPGMRESSetRestart",lgmres->max_k,&restart,&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
-    ierr = PetscOptionsReal("-ksp_gmres_haptol","Tolerance for declaring exact convergence (happy ending)","KSPGMRESSetHapTol",lgmres->haptol,&haptol,&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPGMRESSetHapTol(ksp,haptol);CHKERRQ(ierr); }
-    ierr = PetscOptionsName("-ksp_gmres_preallocate","Preallocate all Krylov vectors","KSPGMRESSetPreAllocateVectors",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}
-    ierr = PetscOptionsLogicalGroupBegin("-ksp_gmres_classicalgramschmidt","Use classical (unmodified) Gram-Schmidt (fast)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESClassicalGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-    ierr = PetscOptionsLogicalGroup("-ksp_gmres_modifiedgramschmidt","Use modified Gram-Schmidt (slow but more stable)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-    ierr = PetscOptionsEList("-ksp_gmres_cgs_refinement_type","Type of iterative refinement for classical (unmodified) Gram-Schmidt","KSPGMRESSetCGSRefinementType()",types,3,types[lgmres->cgstype],&indx,&flg);CHKERRQ(ierr);    
-    if (flg) {
-      ierr = KSPGMRESSetCGSRefinementType(ksp,(KSPGMRESCGSRefinementType)indx);CHKERRQ(ierr);
-    }
-
-    ierr = PetscOptionsName("-ksp_gmres_krylov_monitor","Graphically plot the Krylov directions","KSPSetMonitor",&flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscViewers viewers;
-      ierr = PetscViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
-      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(PetscErrorCode (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
-    }
-
-/* LGMRES_MOD - specify number of augmented vectors and whether the space should be a constant size*/
      ierr = PetscOptionsName("-ksp_lgmres_constant","Use constant approx. space size","KSPGMRESSetConstant",&flg);CHKERRQ(ierr);
-    /*if (flg) {ierr = KSPGMRESSetConstant(ksp);CHKERRQ(ierr);}*/ /*<--doesn't like this */ 
-    if (flg) { lgmres->approx_constant = 1; }                     /* in favor of this line....*/  
-
+    if (flg) { lgmres->approx_constant = 1; }  
     ierr = PetscOptionsInt("-ksp_lgmres_augment","Number of error approximations to augment the Krylov space with","KSPLGMRESSetAugDim",lgmres->aug_dim,&aug,&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPLGMRESSetAugDim(ksp,aug);CHKERRQ(ierr); }
-
-
-
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -904,7 +849,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant_LGMRES(KSP ksp)
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
   PetscFunctionBegin;
   lgmres->approx_constant = 1;
-   
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -962,6 +906,8 @@ EXTERN_C_END
      Computer Science, January, 2003. 
 
    Level: beginner
+
+   Notes:  This object is subclassed off of KSPGMRES
 
    Contributed by: Allison Baker
 

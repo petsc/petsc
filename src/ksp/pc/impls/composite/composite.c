@@ -145,18 +145,14 @@ static PetscErrorCode PCSetFromOptions_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PetscErrorCode   ierr;
-  PetscInt         nmax = 8,i,indx;
+  PetscInt         nmax = 8,i;
   PC_CompositeLink next;
   char             *pcs[8];
-  const char       *types[] = {"additive","multiplicative","special"};
   PetscTruth       flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Composite preconditioner options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-pc_composite_type","Type of composition","PCCompositeSetType",types,3,types[0],&indx,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCCompositeSetType(pc,(PCCompositeType)indx);CHKERRQ(ierr);
-    }
+  ierr = PetscOptionsEnum("-pc_composite_type","Type of composition","PCCompositeSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_composite_true","Use true matrix for inner solves","PCCompositeSetUseTrue",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCCompositeSetUseTrue(pc);CHKERRQ(ierr);
@@ -189,6 +185,7 @@ static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"Composite PC type - %s\n",PCCompositeTypes[jac->type]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {

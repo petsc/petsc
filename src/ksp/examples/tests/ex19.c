@@ -108,7 +108,7 @@ int main(int argc,char **argv)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr = PCMGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PCMGSetType(pc,MGADDITIVE);CHKERRQ(ierr);
+  ierr = PCMGSetType(pc,PC_MG_ADDITIVE);CHKERRQ(ierr);
 
   ierr = FormJacobian_Grid(&user,&user.coarse,&user.coarse.J);CHKERRQ(ierr);
   ierr = FormJacobian_Grid(&user,&user.fine,&user.fine.J);CHKERRQ(ierr);

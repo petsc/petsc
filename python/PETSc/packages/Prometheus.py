@@ -15,7 +15,7 @@ class Configure(PETSc.package.Package):
     self.deps              = [self.parmetis,self.mpi,self.blasLapack]
     self.functions         = None
     self.includes          = None
-    self.liblist           = ['libpromfei.a','libprometheus.a'] 
+    self.liblist           = [['libpromfei.a','libprometheus.a']]
     self.cxx               = 1   # requires C++
     self.compilePrometheus = 0
     return

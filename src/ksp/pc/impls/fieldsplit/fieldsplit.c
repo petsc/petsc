@@ -35,12 +35,11 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
   PetscTruth        iascii;
   PetscInt          i,j;
   PC_FieldSplitLink ilink = jac->head;
-  const char        *types[] = {"additive","multiplicative"};
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with %s composition: total splits = %D",types[jac->type],jac->nsplits);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with %s composition: total splits = %D",PCCompositeTypes[jac->type],jac->nsplits);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Solver info for each split is in the following KSP objects:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (i=0; i<jac->nsplits; i++) {
@@ -278,17 +277,14 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 /*   This does not call KSPSetFromOptions() on the subksp's, see PCSetFromOptionsBJacobi/ASM() */
 {
   PetscErrorCode ierr;
-  PetscInt       i = 0,nfields,fields[12],indx;
+  PetscInt       i = 0,nfields,fields[12];
   PetscTruth     flg;
   char           optionname[128];
-  const char     *types[] = {"additive","multiplicative"};
+  PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("FieldSplit options");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-pc_fieldsplit_type","Type of composition","PCFieldSplitSetType",types,2,types[0],&indx,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCFieldSplitSetType(pc,(PCCompositeType)indx);CHKERRQ(ierr);
-  }
+  ierr = PetscOptionsEnum("-pc_fieldsplit_type","Type of composition","PCFieldSplitSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg);CHKERRQ(ierr);
   while (PETSC_TRUE) {
     sprintf(optionname,"-pc_fieldsplit_%d_fields",(int)i++);
     nfields = 12;

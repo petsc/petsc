@@ -38,7 +38,6 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i;
-  const char     *cstring = 0;
   PetscTruth     iascii,isstring;
   PetscViewer    sviewer;
 
@@ -52,12 +51,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks not yet set, amount of overlap = %D\n",jac->overlap);CHKERRQ(ierr);
     }
-    if (jac->type == PC_ASM_NONE)             cstring = "limited restriction and interpolation (PC_ASM_NONE)";
-    else if (jac->type == PC_ASM_RESTRICT)    cstring = "full restriction (PC_ASM_RESTRICT)";
-    else if (jac->type == PC_ASM_INTERPOLATE) cstring = "full interpolation (PC_ASM_INTERPOLATE)";
-    else if (jac->type == PC_ASM_BASIC)       cstring = "full restriction and interpolation (PC_ASM_BASIC)";
-    else                                      cstring = "Unknown ASM type";
-    ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: type - %s\n",cstring);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: restriction/interpolation type - %s\n",PCASMTypes[jac->type]);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
     if (jac->same_local_solves) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
@@ -375,9 +369,8 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
-  PetscInt       blocks,ovl,indx;
+  PetscInt       blocks,ovl;
   PetscTruth     flg,set,sym;
-  const char     *type[] = {"none","restrict","interpolate","basic"};
 
   PetscFunctionBegin;
   /* set the type to symmetric if matrix is symmetric */
@@ -394,10 +387,7 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc)
     if (flg) {ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr); }
     ierr = PetscOptionsName("-pc_asm_in_place","Perform matrix factorization inplace","PCASMSetUseInPlace",&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetUseInPlace(pc);CHKERRQ(ierr); }
-    ierr = PetscOptionsEList("-pc_asm_type","Type of restriction/extension","PCASMSetType",type,4,type[1],&indx,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCASMSetType(pc,(PCASMType)indx);CHKERRQ(ierr);
-    }
+    ierr = PetscOptionsEnum("-pc_asm_type","Type of restriction/extension","PCASMSetType",PCASMTypes,(PetscEnum)osm->type,(PetscEnum*)&osm->type,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

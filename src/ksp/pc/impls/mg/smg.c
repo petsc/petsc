@@ -5,18 +5,9 @@
 */
 #include "src/ksp/pc/impls/mg/mgimpl.h"
 
-/*
-       MGACycle_Private - Given an MG structure created with MGCreate() runs 
-                  one cycle down through the levels and back up. Applys
-                  the smoothers in an additive manner.
-
-    Iput Parameters:
-.   mg - structure created with  MGCreate().
-
-*/
 #undef __FUNCT__  
-#define __FUNCT__ "MGACycle_Private"
-PetscErrorCode MGACycle_Private(MG *mg)
+#define __FUNCT__ "PCMGACycle_Private"
+PetscErrorCode PCMGACycle_Private(PC_MG **mg)
 {
   PetscErrorCode ierr;
   PetscInt       i,l = mg[0]->levels;

@@ -52,6 +52,54 @@ PetscErrorCode PetscOptionsEnd_Private(void)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsEnum"
+/*@C
+   PetscOptionsEnum - Gets the enum value for a particular option in the database.
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+.  man - manual page with additional information on option
+.  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
+-  defaultv - the default (current) value
+
+   Output Parameter:
++  value - the  value to return
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Concepts: options database
+
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+          list is usually something like PCASMTypes or some other predefined list of enum names
+
+.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsEnum(const char opt[],const char text[],const char man[],const char **list,PetscEnum defaultv,PetscEnum *value,PetscTruth *set)
+{
+  PetscErrorCode ierr;
+  PetscInt       ntext = 0;
+
+  PetscFunctionBegin;
+  while (list[ntext++]) {
+    if (ntext > 50) SETERRQ(PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
+  }
+  if (ntext < 3) SETERRQ(PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
+  ntext -= 3;
+  ierr = PetscOptionsEList(opt,text,man,list,ntext,list[defaultv],(PetscInt*)value,set);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
@@ -358,46 +406,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsList(const char opt[],const char ltex
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *list[],PetscInt ntext,const char defaultv[],PetscInt *value,PetscTruth *set)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char **list,PetscInt ntext,const char defaultv[],PetscInt *value,PetscTruth *set)
 {
   PetscErrorCode ierr;
-  size_t         alen,len = 0;
-  char           *svalue;
-  PetscTruth     aset,flg;
   PetscInt       i;
 
   PetscFunctionBegin;
-  for ( i=0; i<ntext; i++) {
-    ierr = PetscStrlen(list[i],&alen);CHKERRQ(ierr);
-    if (alen > len) len = alen;
-  }
-  len += 5; /* a little extra space for user mistypes */
-  ierr = PetscMalloc(len*sizeof(char),&svalue);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(amspub.prefix,opt,svalue,len,&aset);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEList(amspub.prefix,opt,list,ntext,value,set);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
-    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <%s> (one of)",amspub.prefix?amspub.prefix:"",opt+1,defaultv);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <%s> (choose one of)",amspub.prefix?amspub.prefix:"",opt+1,defaultv);CHKERRQ(ierr);
     for (i=0; i<ntext; i++){
       ierr = (*PetscHelpPrintf)(amspub.comm," %s",list[i]);CHKERRQ(ierr);
     }
     ierr = (*PetscHelpPrintf)(amspub.comm,"\n");CHKERRQ(ierr);
-  }
-  if (aset) {
-    if (set) *set = PETSC_TRUE;
-    for (i=0; i<ntext; i++) {
-      ierr = PetscStrcmp(svalue,list[i],&flg);CHKERRQ(ierr);
-      if (flg) {
-        *value = i;
-        ierr = PetscFree(svalue);CHKERRQ(ierr);
-        PetscFunctionReturn(0);
-      }
-    }
-    ierr = PetscFree(svalue);CHKERRQ(ierr);
-    SETERRQ3(PETSC_ERR_USER,"Unknown option %s for -%s%s",svalue,amspub.prefix?amspub.prefix:"",opt+1);
-  } else if (set) {
-    ierr = PetscFree(svalue);CHKERRQ(ierr);
-    *set = PETSC_FALSE;
-  } else {
-    ierr = PetscFree(svalue);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

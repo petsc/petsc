@@ -77,6 +77,7 @@ extern PetscEvent  PC_ApplySymmetricRight, PC_ModifySubMatrices;
 .seealso: 
 E*/
 typedef enum { PC_LEFT,PC_RIGHT,PC_SYMMETRIC } PCSide;
+extern const char *PCSides[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate(MPI_Comm,PC*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC,const PCType);
@@ -259,6 +260,8 @@ $                not very good.
 .seealso: PCASMSetType()
 E*/
 typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0} PCASMType;
+extern const char *PCASMTypes[];
+
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetType(PC,PCASMType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains2D(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt *,IS **);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetUseInPlace(PC);
@@ -280,6 +283,8 @@ $                         alpha I + R
 .seealso: PCCompositeSetType()
 E*/
 typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SPECIAL} PCCompositeType;
+extern const char *PCCompositeTypes[];
+
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetUseTrue(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetType(PC,PCCompositeType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC(PC,PCType);

@@ -186,7 +186,7 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
    /*..Set MG preconditioner..*/
    ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
    ierr = PCMGSetLevels(pc,levels, PETSC_NULL);CHKERRQ(ierr);
-   ierr = PCMGSetType(pc, MGMULTIPLICATIVE);CHKERRQ(ierr);
+   ierr = PCMGSetType(pc, PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
    ierr = PCMGSetCycles(pc, 1);CHKERRQ(ierr);
    ierr = PCMGSetNumberSmoothUp(pc,1);CHKERRQ(ierr);
    ierr = PCMGSetNumberSmoothDown(pc,1);CHKERRQ(ierr);

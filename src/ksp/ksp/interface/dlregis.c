@@ -2,6 +2,11 @@
 
 #include "petscksp.h"
 
+
+const char *PCSides[]          = {"LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};
+const char *PCASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
+const char *PCCompositeTypes[] = {"ADDITIVE","MULTIPLICATIVE","SPECIAL","PCCompositeType","PC_COMPOSITE",0};
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCInitializePackage"
 /*@C
@@ -59,6 +64,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
   PetscFunctionReturn(0);
 }
 
+const char *KSPCGTypes[]                  = {"SYMMETRIC","HERMITIAN","KSPCGType","KSP_CG_",0};
+const char *KSPGMRESCGSRefinementTypes[]  = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS","KSPGMRESRefinementType","KSP_GMRES_CGS_",0};
+const char *KSPNormTypes[]                = {"NO_NORM","PRECONDITIONED_NORM","UNPRECONDITIONED_NORM","NATURAL_NORM","KSPNormType","KSP_",0};
+const char *KSPConvergedReasons_Shifted[] = {"DIVERGED_INDEFINITE_MAT","DIVERGED_NAN","DIVERGED_INDEFINITE_PC",
+					     "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG","DIVERGED_BREAKDOWN",
+                                             "DIVERGED_DTOL","DIVERGED_ITS","DIVERGED_NULL","CONVERGED_ITERATING",
+                                             "","CONVERGED_RTOL","CONVERGED_ATOL","CONVERGED_ITS",
+                                             "CONVERGED_QCG_NEG_CURVE","CONVERGED_QCG_CONSTRAINED","CONVERGED_STEP_LENGTH",
+                                             "KSPConvergedReason","KSP_",0};
+const char **KSPConvergedReasons = KSPConvergedReasons_Shifted + 10;
+
 #undef __FUNCT__  
 #define __FUNCT__ "KSPInitializePackage"
 /*@C
@@ -77,9 +93,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
 PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
-  char             *className;
+  char              *className;
   PetscTruth        opt;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (initialized) PetscFunctionReturn(0);

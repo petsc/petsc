@@ -71,7 +71,7 @@ static PetscErrorCode MatLoadPrintHelp_Private(Mat A)
    MatLoad() automatically loads into the options database any options
    given in the file filename.info where filename is the name of the file
    that was passed to the PetscViewerBinaryOpen(). The options in the info
-   file will be ignored if you use the -matload_ignore_info option.
+   file will be ignored if you use the -viewer_binary_skip_info option.
 
    In parallel, each processor can load a subset of rows (or the
    entire matrix).  This routine is especially useful when a large

@@ -15,7 +15,7 @@ class Configure(PETSc.package.Package):
     self.functions    = ['set_default_options_dist']
     self.includes     = ['superlu_ddefs.h']
     self.libdir       = ''
-    self.liblist      = ['superlu.a']
+    self.liblist      = [['superlu.a']]
     self.includedir   = 'SRC'
     return
 

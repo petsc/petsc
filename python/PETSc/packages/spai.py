@@ -16,7 +16,7 @@ class Configure(PETSc.package.Package):
     self.deps         = [self.mpi,self.blasLapack]
     self.functions    = ['bspai']
     self.includes     = ['spai.h']
-    self.liblist      = ['libspai.a']
+    self.liblist      = [['libspai.a']]
     # SPAI include files are in the lib directory
     self.includedir   = 'lib'
     return

@@ -48,7 +48,7 @@ class Configure(PETSc.package.Package):
     if config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
       alllibs.append('-lstdc++')
     self.framework.popLanguage()    
-    return alllibs
+    return [alllibs]
           
         
   def Install(self):

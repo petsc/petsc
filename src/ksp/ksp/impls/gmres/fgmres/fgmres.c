@@ -13,7 +13,7 @@
 
 */
 
-#include "src/ksp/ksp/impls/fgmres/fgmresp.h"       /*I  "petscksp.h"  I*/
+#include "src/ksp/ksp/impls/gmres/fgmres/fgmresp.h"       /*I  "petscksp.h"  I*/
 #define FGMRES_DELTA_DIRECTIONS 10
 #define FGMRES_DEFAULT_MAXK     30
 static PetscErrorCode FGMRESGetNewVectors(KSP,PetscInt);
@@ -669,40 +669,18 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode KSPSetFromOptions_GMRES(KSP);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetFromOptions_FGMRES"
 PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscInt       restart,indx;
-  PetscReal      haptol;
-  KSP_FGMRES     *gmres = (KSP_FGMRES*)ksp->data;
   PetscTruth     flg;
-  const char     *types[] = {"never","ifneeded","always"};
 
   PetscFunctionBegin;
+  ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
   ierr = PetscOptionsHead("KSP flexible GMRES Options");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ksp_gmres_restart","Number of Krylov search directions","KSPGMRESSetRestart",gmres->max_k,&restart,&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
-    ierr = PetscOptionsReal("-ksp_gmres_haptol","Tolerance for declaring exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPGMRESSetHapTol(ksp,haptol);CHKERRQ(ierr); }
-    ierr = PetscOptionsName("-ksp_gmres_preallocate","Preallocate all Krylov vectors","KSPGMRESSetPreAllocateVectors",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}
-    ierr = PetscOptionsLogicalGroupBegin("-ksp_gmres_classicalgramschmidt","Use classical (unmodified) Gram-Schmidt (fast)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESClassicalGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-    ierr = PetscOptionsLogicalGroup("-ksp_gmres_modifiedgramschmidt","Use modified Gram-Schmidt (slow but more stable)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-    ierr = PetscOptionsEList("-ksp_gmres_cgs_refinement_type","Type of iterative refinement for classical (unmodified) Gram-Schmidt","KSPGMRESSetCGSRefinementType()",types,3,types[gmres->cgstype],&indx,&flg);CHKERRQ(ierr);    
-    if (flg) {
-      ierr = KSPGMRESSetCGSRefinementType(ksp,(KSPGMRESCGSRefinementType)indx);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsName("-ksp_gmres_krylov_monitor","Graphically plot the Krylov directions","KSPSetMonitor",&flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscViewers viewers;
-      ierr = PetscViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
-      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(PetscErrorCode (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
-    }
     ierr = PetscOptionsLogicalGroupBegin("-ksp_fgmres_modifypcnochange","do not vary the preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);} 
     ierr = PetscOptionsLogicalGroupEnd("-ksp_fgmres_modifypcksp","vary the KSP based preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
@@ -852,6 +830,7 @@ EXTERN_C_END
    Level: beginner
 
     Notes: See KSPFGMRESSetModifyPC() for how to vary the preconditioner between iterations
+           This object is subclassed off of KSPGMRES
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()

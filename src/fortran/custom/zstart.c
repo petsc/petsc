@@ -254,6 +254,9 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   MPI_Initialized(&flag);
   if (!flag) {
     PetscMPIInt mierr;
+
+    if (PETSC_COMM_WORLD) {(*PetscErrorPrintf)("You cannot set PETSC_COMM_WORLD if you have not initialized MPI first");return;}
+    /* MPI requires calling Fortran mpi_init() if main program is Fortran */
     mpi_init_(&mierr);
     if (mierr) {
       *ierr = mierr;
@@ -261,6 +264,9 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
       return;
     }
     PetscBeganMPI    = PETSC_TRUE;
+  }
+  if (!PETSC_COMM_WORLD) {
+    PETSC_COMM_WORLD = MPI_COMM_WORLD;
   }
   PetscInitializeCalled = PETSC_TRUE;
 

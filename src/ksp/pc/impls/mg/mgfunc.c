@@ -56,7 +56,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 @*/ 
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetCoarseSolve(PC pc,KSP *ksp)  
 { 
-  MG *mg = (MG*)pc->data;
+  PC_MG **mg = (PC_MG**)pc->data;
 
   PetscFunctionBegin;
   *ksp =  mg[0]->smoothd;
@@ -85,7 +85,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetCoarseSolve(PC pc,KSP *ksp)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
 {
-  MG *mg = (MG*)pc->data;
+  PC_MG **mg = (PC_MG**)pc->data;
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
@@ -126,7 +126,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC pc,PetscInt l,PetscErrorCod
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolate(PC pc,PetscInt l,Mat mat)
 { 
-  MG             *mg = (MG*)pc->data;
+  PC_MG          **mg = (PC_MG**)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -170,7 +170,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolate(PC pc,PetscInt l,Mat mat)
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRestriction(PC pc,PetscInt l,Mat mat)  
 {
   PetscErrorCode ierr;
-  MG             *mg = (MG*)pc->data;
+  PC_MG          **mg = (PC_MG**)pc->data;
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
@@ -206,7 +206,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
 {
-  MG *mg = (MG*)pc->data;
+  PC_MG **mg = (PC_MG**)pc->data;
 
   PetscFunctionBegin;
   *ksp = mg[l]->smoothd;  
@@ -236,7 +236,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
 {
-  MG             *mg = (MG*)pc->data;
+  PC_MG          **mg = (PC_MG**)pc->data;
   PetscErrorCode ierr;
   char           *prefix;
   MPI_Comm       comm;
@@ -261,7 +261,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MGGetSmootherDown"
+#define __FUNCT__ "PCMGGetSmootherDown"
 /*@C
    PCMGGetSmootherDown - Gets the KSP context to be used as smoother before 
    coarse grid correction (pre-smoother). 
@@ -284,7 +284,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 {
   PetscErrorCode ierr;
-  MG             *mg = (MG*)pc->data;
+  PC_MG          **mg = (PC_MG**)pc->data;
 
   PetscFunctionBegin;
   /* make sure smoother up and down are different */
@@ -294,7 +294,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MGSetCyclesOnLevel"
+#define __FUNCT__ "PCMGSetCyclesOnLevel"
 /*@
    PCMGSetCyclesOnLevel - Sets the number of cycles to run on this level. 
 
@@ -313,7 +313,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCyclesOnLevel(PC pc,PetscInt l,PetscInt c) 
 {
-  MG *mg = (MG*)pc->data;
+  PC_MG **mg = (PC_MG**)pc->data;
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
@@ -348,7 +348,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCyclesOnLevel(PC pc,PetscInt l,PetscInt
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRhs(PC pc,PetscInt l,Vec c)  
 { 
   PetscErrorCode ierr;
-  MG             *mg = (MG*)pc->data;
+  PC_MG          **mg = (PC_MG**)pc->data;
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
@@ -386,7 +386,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRhs(PC pc,PetscInt l,Vec c)
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetX(PC pc,PetscInt l,Vec c)  
 { 
   PetscErrorCode ierr;
-  MG             *mg = (MG*)pc->data;
+  PC_MG          **mg = (PC_MG**)pc->data;
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
@@ -422,7 +422,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetX(PC pc,PetscInt l,Vec c)
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetR(PC pc,PetscInt l,Vec c)
 { 
   PetscErrorCode ierr;
-  MG             *mg = (MG*)pc->data;
+  PC_MG          **mg = (PC_MG**)pc->data;
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");

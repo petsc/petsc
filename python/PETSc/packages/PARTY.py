@@ -13,7 +13,7 @@ class Configure(PETSc.package.Package):
     self.includes     = ['party_lib.h']
     self.libdir       = ''
     self.includedir   = ''
-    self.liblist      = ['libparty.a']    
+    self.liblist      = [['libparty.a']]
     self.license      = 'http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html'
     return
 

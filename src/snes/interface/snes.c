@@ -1584,23 +1584,6 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
   PetscFunctionReturn(0);
 }
 
-static const char *convergedreasons[] = {"appears to located a local minimum instead of a zero",
-                                         "not currently used",                                   
-                                         "line search failed",                                   
-                                         "reach maximum number of iterations",                   
-                                         "function norm became NaN (not a number)",              
-                                         "not currently used",                                   
-                                         "number of function computations exceeded",             
-                                         "arguments to user function are not in domain",
-                                         "still iterating",
-                                         "not currently used",                                   
-                                         "absolute size of function norm",
-                                         "relative decrease in function norm",
-                                         "step size is small",
-                                         "not currently used",
-                                         "not currently used",
-                                         "small trust region"};
-
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve"
 /*@
@@ -1660,9 +1643,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec x)
   if (flg && !PetscPreLoadingOn) { ierr = SNESTestLocalMin(snes);CHKERRQ(ierr); }
   if (snes->printreason) {
     if (snes->reason > 0) {
-      ierr = PetscPrintf(snes->comm,"Nonlinear solve converged due to %s\n",convergedreasons[snes->reason+8]);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"Nonlinear solve converged due to %s\n",SNESConvergedReasons[snes->reason]);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(snes->comm,"Nonlinear solve did not converge due to %s\n",convergedreasons[snes->reason+8]);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"Nonlinear solve did not converge due to %s\n",SNESConvergedReasons[snes->reason]);CHKERRQ(ierr);
     }
   }
 

@@ -789,7 +789,7 @@ runex67f:
 	   else echo "Possible problem with ex67f_1, diffs above"; fi; \
 	   ${RM} -f ex67f_1.tmp
 runex73:
-	-@${MPIRUN} -np 3  ./ex73  -nox -f ${DATAFILESPATH}/matrices/arco1 -mat_partitioning_type parmetis -load_ignore_info
+	-@${MPIRUN} -np 3  ./ex73  -nox -f ${DATAFILESPATH}/matrices/arco1 -mat_partitioning_type parmetis -viewer_binary_skip_info
 
 MATBLOCKSIZE   = 1 2 3 4 5 6 7 8
 runex74:
@@ -898,7 +898,7 @@ runex93:
 	   ${RM} -f ex93_1.tmp
 
 runex94:
-	-@${MPIRUN} -np 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -load_ignore_info > ex94_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else echo "Possible problem with ex94_1, diffs above"; fi; \
 	   ${RM} -f ex94_1.tmp
@@ -933,7 +933,7 @@ runex100:
 	-@touch ex100.tmp;\
 	for np in ${NPROCS}; do \
 	  for dof in ${DOF}; do \
-	    ${MPIRUN} -np $$np ex100 -f ${DATAFILESPATH}/matrices/arco1 -dof $$dof -load_ignore_info > ex100.tmp 2>&1; \
+	    ${MPIRUN} -np $$np ex100 -f ${DATAFILESPATH}/matrices/arco1 -dof $$dof -viewer_binary_skip_info > ex100.tmp 2>&1; \
 	  done; \
 	done; \
 	if (${DIFF} output/ex100.out ex100.tmp) then true; \

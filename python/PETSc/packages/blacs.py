@@ -13,7 +13,7 @@ class Configure(PETSc.package.Package):
     self.download      = ['bk://petsc.bkbits.net/blacs-dev']
     self.deps          = [self.mpi,self.blasLapack]
     self.functions     = ['blacs_pinfo']
-    self.liblist       = ['libblacs.a']
+    self.liblist       = [['libblacs.a']]
     self.includes      = []
     self.libdir        = ''
     self.fc            = 1

@@ -7,16 +7,15 @@
 #include "petscmg.h"
 #include "petscksp.h"
 
-typedef struct _MG* MG;
 
 /*
      Structure for abstract multigrid solver. 
 
      Level (0) is always the coarsest level and Level (levels-1) is the finest.
 */
-struct _MG
+typedef struct
 {
-  MGType     am;                           /* Multiplicative, additive or full */
+  PCMGType   am;                           /* Multiplicative, additive or full */
   int        cycles;                       /* Number cycles to run */
   int        level;                        /* level = 0 coarsest level */
   int        levels;                       /* number of active levels used */
@@ -37,7 +36,7 @@ struct _MG
   PetscReal  rtol,abstol,dtol,ttol;        /* tolerances for when running with PCApplyRichardson_MG */
   PetscEvent eventsetup;                   /* if logging times for each level */
   PetscEvent eventsolve;      
-};
+}  PC_MG;
 
 
 #endif

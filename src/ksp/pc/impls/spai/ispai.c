@@ -550,11 +550,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetSp(PC pc,int sp)
 #define __FUNCT__ "PCSetFromOptions_SPAI"
 static PetscErrorCode PCSetFromOptions_SPAI(PC pc)
 {
-  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
+  PC_SPAI        *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;
-  int nbsteps1,max1,maxnew1,block_size1,cache_size,verbose,sp;
-  double     epsilon1;
-  PetscTruth flg;
+  int            nbsteps1,max1,maxnew1,block_size1,cache_size,verbose,sp;
+  double         epsilon1;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SPAI options");CHKERRQ(ierr);

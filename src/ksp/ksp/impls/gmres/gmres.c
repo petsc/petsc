@@ -520,12 +520,18 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (gmres->orthog == KSPGMRESClassicalGramSchmidtOrthogonalization) {
-    if (gmres->cgstype == KSP_GMRES_CGS_REFINE_NEVER) {
-      cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement";
-    } else if (gmres->cgstype == KSP_GMRES_CGS_REFINE_ALWAYS) {
-      cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement";
-    } else {
-      cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement when needed";
+    switch (gmres->cgstype) {
+      case (KSP_GMRES_CGS_REFINE_NEVER):
+        cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement";
+        break;
+      case (KSP_GMRES_CGS_REFINE_ALWAYS):
+        cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement";
+        break;
+      case (KSP_GMRES_CGS_REFINE_IFNEEDED):
+        cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement when needed";
+        break;
+      default:
+	SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown orthogonalization");
     }
   } else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
     cstr = "Modified Gram-Schmidt Orthogonalization";
@@ -586,11 +592,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESKrylovMonitor(KSP ksp,PetscInt its,Pet
 PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscInt       restart,indx;
+  PetscInt       restart;
   PetscReal      haptol;
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscTruth     flg;
-  const char     *types[] = {"never","ifneeded","always"};
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP GMRES Options");CHKERRQ(ierr);
@@ -604,11 +609,8 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
     if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESClassicalGramSchmidtOrthogonalization);CHKERRQ(ierr);}
     ierr = PetscOptionsLogicalGroupEnd("-ksp_gmres_modifiedgramschmidt","Modified Gram-Schmidt (slow,more stable)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-    ierr = PetscOptionsEList("-ksp_gmres_cgs_refinement_type","Type of iterative refinement for classical (unmodified) Gram-Schmidt","KSPGMRESSetCGSRefinementType()",types,3,types[(PetscInt)gmres->cgstype],&indx,&flg);CHKERRQ(ierr);    
-    if (flg) {
-      ierr = KSPGMRESSetCGSRefinementType(ksp,(KSPGMRESCGSRefinementType)indx);CHKERRQ(ierr);
-    }
-
+    ierr = PetscOptionsEnum("-ksp_gmres_cgs_refinement_type","Type of iterative refinement for classical (unmodified) Gram-Schmidt","KSPGMRESSetCGSRefinementType()",
+                            KSPGMRESCGSRefinementTypes,(PetscEnum)gmres->cgstype,(PetscEnum*)&gmres->cgstype,&flg);CHKERRQ(ierr);    
     ierr = PetscOptionsName("-ksp_gmres_krylov_monitor","Plot the Krylov directions","KSPSetMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewers viewers;

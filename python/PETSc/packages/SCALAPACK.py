@@ -16,7 +16,7 @@ class Configure(PETSc.package.Package):
     self.functions     = ['ssytrd']
     self.includes      = []
     self.libdir        = ''
-    self.liblist       = ['libscalapack.a']
+    self.liblist       = [['libscalapack.a']]
     return
 
   def Install(self):

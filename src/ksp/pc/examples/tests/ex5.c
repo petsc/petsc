@@ -32,7 +32,7 @@ int main(int Argc,char **Args)
   PetscInt        x_mesh = 15,levels = 3,cycles = 1,use_jacobi = 0;
   PetscInt        i,smooths = 1,*N,its;
   PetscErrorCode  ierr;
-  MGType          am = MGMULTIPLICATIVE;
+  PCMGType        am = PC_MG_MULTIPLICATIVE;
   Mat             cmat,mat[20],fmat;
   KSP             cksp,ksp[20],kspmg;
   PetscReal       e[3]; /* l_2 error,max error, residual */
@@ -49,9 +49,9 @@ int main(int Argc,char **Args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-c",&cycles,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-smooths",&smooths,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-a",&flg);CHKERRQ(ierr);
-  if (flg) {am = MGADDITIVE;}
+  if (flg) {am = PC_MG_ADDITIVE;}
   ierr = PetscOptionsHasName(PETSC_NULL,"-f",&flg);CHKERRQ(ierr);
-  if (flg) {am = MGFULL;}
+  if (flg) {am = PC_MG_FULL;}
   ierr = PetscOptionsHasName(PETSC_NULL,"-j",&flg);CHKERRQ(ierr);
   if (flg) {use_jacobi = 1;}
          

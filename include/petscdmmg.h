@@ -88,10 +88,10 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocali_Private(DMMG*,PetscE
 #endif
 
 /*MC
-   DMMGGetb - Returns the right hand side vector from a DMMG solve on the finest grid
+   DMMGGetRHS - Returns the right hand side vector from a DMMG solve on the finest grid
 
    Synopsis:
-   Vec DMMGGetb(DMMG *dmmg)
+   Vec DMMGGetRHS(DMMG *dmmg)
 
    Not Collective, but resulting vector is parallel
 
@@ -101,12 +101,12 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocali_Private(DMMG*,PetscE
    Level: intermediate
 
    Fortran Usage:
-.     DMMGGetb(DMMG dmmg,Vec b,PetscErrorCode ierr)
+.     DMMGGetRHS(DMMG dmmg,Vec b,PetscErrorCode ierr)
 
-.seealso: DMMGCreate(), DMMGSetSNES(), DMMGSetKSP(), DMMGSetSNESLocal(), DMMGGetb()
+.seealso: DMMGCreate(), DMMGSetSNES(), DMMGSetKSP(), DMMGSetSNESLocal(), DMMGGetRHS()
 
 M*/
-#define DMMGGetb(ctx)              (ctx)[(ctx)[0]->nlevels-1]->b
+#define DMMGGetRHS(ctx)              (ctx)[(ctx)[0]->nlevels-1]->b
 
 #define DMMGGetr(ctx)              (ctx)[(ctx)[0]->nlevels-1]->r
 
@@ -144,7 +144,7 @@ M*/
 
    Level: intermediate
 
-.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetB()
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetB(), DMMGGetRHS()
 
 M*/
 #define DMMGGetJ(ctx)              (ctx)[(ctx)[0]->nlevels-1]->J

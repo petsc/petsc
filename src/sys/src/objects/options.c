@@ -202,7 +202,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertString(const char in_str[])
   } else if (first) {
     PetscTruth match;
     
-    ierr = PetscStrcmp(first,"alias",&match);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(first,"alias",&match);CHKERRQ(ierr);
     if (match) {
       ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
       if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,"Error in options string:alias missing (%s)",second);
@@ -281,7 +281,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
       } else if (first) {
         PetscTruth match;
 
-        ierr = PetscStrcmp(first,"alias",&match);CHKERRQ(ierr);
+        ierr = PetscStrcasecmp(first,"alias",&match);CHKERRQ(ierr);
         if (match) {
           ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
           if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,"Error in options file:alias missing (%s)",second);
@@ -392,15 +392,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
     PetscTruth isoptions_file,isp4,tisp4,isp4yourname,isp4rmrank;
 
     while (left) {
-      ierr = PetscStrcmp(eargs[0],"-options_file",&isoptions_file);CHKERRQ(ierr);
-      ierr = PetscStrcmp(eargs[0],"-p4pg",&isp4);CHKERRQ(ierr);
-      ierr = PetscStrcmp(eargs[0],"-p4yourname",&isp4yourname);CHKERRQ(ierr);
-      ierr = PetscStrcmp(eargs[0],"-p4rmrank",&isp4rmrank);CHKERRQ(ierr);
-      ierr = PetscStrcmp(eargs[0],"-p4wd",&tisp4);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(eargs[0],"-options_file",&isoptions_file);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(eargs[0],"-p4pg",&isp4);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(eargs[0],"-p4yourname",&isp4yourname);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(eargs[0],"-p4rmrank",&isp4rmrank);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(eargs[0],"-p4wd",&tisp4);CHKERRQ(ierr);
       isp4 = (PetscTruth) (isp4 || tisp4);
-      ierr = PetscStrcmp(eargs[0],"-np",&tisp4);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(eargs[0],"-np",&tisp4);CHKERRQ(ierr);
       isp4 = (PetscTruth) (isp4 || tisp4);
-      ierr = PetscStrcmp(eargs[0],"-p4amslave",&tisp4);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(eargs[0],"-p4amslave",&tisp4);CHKERRQ(ierr);
 
       if (eargs[0][0] != '-') {
         eargs++; left--;
@@ -587,14 +587,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const cha
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
 
   /* this is so that -h and -help are equivalent (p4 does not like -help)*/
-  ierr = PetscStrcmp(name,"-h",&match);CHKERRQ(ierr);
+  ierr = PetscStrcasecmp(name,"-h",&match);CHKERRQ(ierr);
   if (match) name = "-help";
 
   name++;
   /* first check against aliases */
   N = options->Naliases; 
   for (i=0; i<N; i++) {
-    ierr = PetscStrcmp(options->aliases1[i],name,&match);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(options->aliases1[i],name,&match);CHKERRQ(ierr);
     if (match) {
       name = options->aliases2[i];
       break;
@@ -606,7 +606,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const cha
   names = options->names; 
  
   for (i=0; i<N; i++) {
-    ierr = PetscStrcmp(names[i],name,&match);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(names[i],name,&match);CHKERRQ(ierr);
     ierr  = PetscStrgrt(names[i],name,&gt);CHKERRQ(ierr);
     if (match) {
       if (options->values[i]) free(options->values[i]);
@@ -678,7 +678,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearValue(const char iname[])
   names = options->names; 
  
   for (i=0; i<N; i++) {
-    ierr  = PetscStrcmp(names[i],name,&match);CHKERRQ(ierr);
+    ierr  = PetscStrcasecmp(names[i],name,&match);CHKERRQ(ierr);
     ierr  = PetscStrgrt(names[i],name,&gt);CHKERRQ(ierr);
     if (match) {
       if (options->values[i]) free(options->values[i]);
@@ -777,7 +777,7 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
   /* slow search */
   *flg = PETSC_FALSE;
   for (i=0; i<N; i++) {
-    ierr = PetscStrcmp(names[i],tmp,&match);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(names[i],tmp,&match);CHKERRQ(ierr);
     if (match) {
        *value           = options->values[i];
        options->used[i] = PETSC_TRUE;
@@ -892,18 +892,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsHasName(const char pre[],const char n
 
   /* remove if turned off */
   if (flag) {    
-    ierr = PetscStrcmp(value,"FALSE",&isfalse);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(value,"FALSE",&isfalse);CHKERRQ(ierr);
     if (isfalse) flag = PETSC_FALSE;
-    ierr = PetscStrcmp(value,"NO",&isfalse);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(value,"NO",&isfalse);CHKERRQ(ierr);
     if (isfalse) flag = PETSC_FALSE;
-    ierr = PetscStrcmp(value,"0",&isfalse);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(value,"0",&isfalse);CHKERRQ(ierr);
     if (isfalse) flag = PETSC_FALSE;
-    ierr = PetscStrcmp(value,"false",&isfalse);CHKERRQ(ierr);
-    if (isfalse) flag = PETSC_FALSE;
-    ierr = PetscStrcmp(value,"no",&isfalse);CHKERRQ(ierr);
   }
   if (flg) *flg = flag;
-
   PetscFunctionReturn(0);
 }
 
@@ -957,6 +953,117 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetInt(const char pre[],const char na
 } 
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsGetEList"
+/*@C
+     PetscOptionsGetEList - Puts a list of option values that a single one may be selected from
+
+   Not Collective
+
+   Input Parameters:
++  pre - the string to prepend to the name or PETSC_NULL
+.  opt - option name
+.  list - the possible choices
+.  ntext - number of choices
+
+   Output Parameter:
++  value - the index of the value to return
+-  set - PETSC_TRUE if found, else PETSC_FALSE
+   
+   Level: intermediate
+
+   See PetscOptionsList() for when the choices are given in a PetscFList()
+
+   Concepts: options database^list
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEList(const char pre[],const char opt[],const char **list,PetscInt ntext,PetscInt *value,PetscTruth *set)
+{
+  PetscErrorCode ierr;
+  size_t         alen,len = 0;
+  char           *svalue;
+  PetscTruth     aset,flg = PETSC_FALSE;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  for ( i=0; i<ntext; i++) {
+    ierr = PetscStrlen(list[i],&alen);CHKERRQ(ierr);
+    if (alen > len) len = alen;
+  }
+  len += 5; /* a little extra space for user mistypes */
+  ierr = PetscMalloc(len*sizeof(char),&svalue);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(pre,opt,svalue,len,&aset);CHKERRQ(ierr);
+  if (aset) {
+    if (set) *set = PETSC_TRUE;
+    for (i=0; i<ntext; i++) {
+      ierr = PetscStrcasecmp(svalue,list[i],&flg);CHKERRQ(ierr);
+      if (flg) {
+        *value = i;
+        break;
+      }
+    }
+    if (!flg) SETERRQ3(PETSC_ERR_USER,"Unknown option %s for -%s%s",svalue,pre?pre:"",opt+1);
+  } else if (set) {
+    *set = PETSC_FALSE;
+  }
+  ierr = PetscFree(svalue);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsEnum"
+/*@C
+   PetscOptionsGetEnum - Gets the enum value for a particular option in the database.
+
+   Not Collective
+
+   Input Parameters:
++  pre - option prefix or PETSC_NULL
+.  opt - option name
+.  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
+-  defaultv - the default (current) value
+
+   Output Parameter:
++  value - the  value to return
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Concepts: options database
+
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+          list is usually something like PCASMTypes or some other predefined list of enum names
+
+.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList(), PetscOptionsGetEList(), PetscOptionsEnum()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char opt[],const char **list,PetscEnum *value,PetscTruth *set)
+{
+  PetscErrorCode ierr;
+  PetscInt       ntext = 0;
+
+  PetscFunctionBegin;
+  while (list[ntext++]) {
+    if (ntext > 50) SETERRQ(PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
+  }
+  if (ntext < 3) SETERRQ(PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
+  ntext -= 3;
+  ierr = PetscOptionsGetEList(pre,opt,list,ntext,(PetscInt*)value,set);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsGetLogical"
 /*@C
    PetscOptionsGetLogical - Gets the Logical (true or false) value for a particular 
@@ -1003,33 +1110,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetLogical(const char pre[],const cha
       *ivalue = PETSC_TRUE;
     } else {
       *ivalue = PETSC_TRUE;
-      ierr = PetscStrcmp(value,"TRUE",&istrue);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(value,"TRUE",&istrue);CHKERRQ(ierr);
       if (istrue) PetscFunctionReturn(0);
-      ierr = PetscStrcmp(value,"YES",&istrue);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(value,"YES",&istrue);CHKERRQ(ierr);
       if (istrue) PetscFunctionReturn(0);
-      ierr = PetscStrcmp(value,"YES",&istrue);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(value,"1",&istrue);CHKERRQ(ierr);
       if (istrue) PetscFunctionReturn(0);
-      ierr = PetscStrcmp(value,"1",&istrue);CHKERRQ(ierr);
-      if (istrue) PetscFunctionReturn(0);
-      ierr = PetscStrcmp(value,"true",&istrue);CHKERRQ(ierr);
-      if (istrue) PetscFunctionReturn(0);
-      ierr = PetscStrcmp(value,"yes",&istrue);CHKERRQ(ierr);
-      if (istrue) PetscFunctionReturn(0);
-      ierr = PetscStrcmp(value,"on",&istrue);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(value,"on",&istrue);CHKERRQ(ierr);
       if (istrue) PetscFunctionReturn(0);
 
       *ivalue = PETSC_FALSE;
-      ierr = PetscStrcmp(value,"FALSE",&isfalse);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(value,"FALSE",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
-      ierr = PetscStrcmp(value,"NO",&isfalse);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(value,"NO",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
-      ierr = PetscStrcmp(value,"0",&isfalse);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(value,"0",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
-      ierr = PetscStrcmp(value,"false",&isfalse);CHKERRQ(ierr);
-      if (isfalse) PetscFunctionReturn(0);
-      ierr = PetscStrcmp(value,"no",&isfalse);CHKERRQ(ierr);
-      if (isfalse) PetscFunctionReturn(0);
-      ierr = PetscStrcmp(value,"off",&isfalse);CHKERRQ(ierr);
+      ierr = PetscStrcasecmp(value,"off",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
 
       SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown logical value: %s",value);

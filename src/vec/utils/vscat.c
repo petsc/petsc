@@ -121,7 +121,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode
   } else {
     PetscScalar          *yvt;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
-    PetscInt                  i;
+    PetscInt             i;
 
     ierr = VecGetPetscMap(x,&map);CHKERRQ(ierr);
     ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
@@ -186,7 +186,7 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode
   if (mode & SCATTER_REVERSE) {
     PetscScalar          *yvt;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
-    PetscInt                  i;
+    PetscInt             i;
 
     ierr = VecGetPetscMap(y,&map);CHKERRQ(ierr);
     ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
@@ -772,11 +772,13 @@ EXTERN PetscErrorCode VecScatterCreate_StoP(PetscInt,PetscInt *,PetscInt,PetscIn
 .  newctx - location to store the new scatter context
 
    Options Database Keys:
-+  -vecscatter_merge     - Merges scatter send and receive (may offer better performance with some MPIs)
-.  -vecscatter_ssend     - Uses MPI_Ssend_init() instead of MPI_Send_init() (may offer better performance with some MPIs)
-.  -vecscatter_sendfirst - Posts sends before receives (may offer better performance with some MPIs)
-.  -vecscatter_rr        - use ready receiver mode for MPI sends in scatters (rarely used)
++  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop 
+                              eliminates the chance for overlap of computation and communication 
+.  -vecscatter_ssend        - Uses MPI_Ssend_init() instead of MPI_Send_init() 
+.  -vecscatter_sendfirst    - Posts sends before receives 
+.  -vecscatter_rr           - use ready receiver mode for MPI sends 
 -  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
+                              ONLY implemented for BLOCK SIZE of 4 and 12! (others easily added)
 
     Level: intermediate
 

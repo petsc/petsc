@@ -18,13 +18,14 @@ typedef struct {
 */
 
 typedef struct {
-  PetscBag    bag;
-  char        filename[PETSC_MAX_PATH_LEN];
-  PetscReal   rho;
-  PetscScalar W;
-  PetscInt    I;
-  PetscTruth  T;
-  TwoVec      pos;
+  PetscBag      bag;
+  char          filename[PETSC_MAX_PATH_LEN];
+  PetscReal     rho;
+  PetscScalar   W;
+  PetscInt      I;
+  PetscTruth    T;
+  TwoVec        pos; 
+  PetscDataType dt;
 } Parameter;
  
 
@@ -49,7 +50,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
   /* Create an empty bag */
-  ierr  = PetscBagCreate(PETSC_COMM_WORLD,Parameter,&bag);CHKERRQ(ierr);
+  ierr   = PetscBagCreate(PETSC_COMM_WORLD,Parameter,&bag);CHKERRQ(ierr);
   params = (Parameter*)bag;
 
   /* register variables, defaults, names, help strings */
@@ -59,11 +60,9 @@ int main(int argc,char **argv)
   ierr  = PetscBagRegisterScalar(bag,&params->W,  5.0,"W","Vertical velocity, m/sec");CHKERRQ(ierr);
   ierr  = PetscBagRegisterInt   (bag,&params->I,  2,"modes_x","Number of modes in x-direction");CHKERRQ(ierr);
   ierr  = PetscBagRegisterTruth (bag,&params->T,  PETSC_FALSE,"do_output","Write output file (yes/no)");CHKERRQ(ierr);
+  ierr  = PetscBagRegisterEnum  (bag,&params->dt, PetscDataTypes,PETSC_INT,"dt","meaningless datatype");CHKERRQ(ierr);
   ierr  = PetscBagRegisterReal  (bag,&params->pos.x1,1.0,"x1","x position");CHKERRQ(ierr);
   ierr  = PetscBagRegisterReal  (bag,&params->pos.x2,1.9,"x2","y position");CHKERRQ(ierr);
-
-  /* get options from command line THIS IS NO LONGER NECESSARY */
-  /* ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr); */
 
   /* write bag to stdio & file */
   ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

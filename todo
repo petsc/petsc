@@ -67,10 +67,11 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   Better user interface 
   ---------------------
 
+  (Priority 1) Change setfromoptions for sor to use Enum for setting symmetric, local etc
+
   (Priority 1) Allow setting precision of printed numbers in ASCII viewers.
 
   (Priority 1) add DAVecGatherAll and DAVecGather
-
 
      (Piority 1) Add option to KSP to generate error when convergence fails, rather than continuing with ConvergedReason
      Take out calls to SETERRQ directly in KSP solvers and replace with correct ConvergedReason
@@ -101,6 +102,9 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   -------
   Testing
   -------
+
+   Test everywhere with Lam
+
    (Priority 0) PetscInt long long
 
    (Priority 0) configure for all packages, with install option for as many as possible

@@ -173,10 +173,11 @@ class Configure(config.base.Configure):
       yield [os.path.join(root, 'lib', 'libfmpich.a'), os.path.join(root,'lib','libmpich.a')]
       yield [os.path.join(root, 'lib', 'libmpich.a')]
       # LAM
-      libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'liblamf77mpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
-      libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'liblamf90mpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]      
-      libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
-      yield libs
+      yield  [os.path.join(root, 'lib', 'liblammpi++.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
+      yield  [os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
+      yield  [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'liblamf77mpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
+      yield  [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'liblamf90mpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]      
+      yield  [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
       #  SGI 
       yield [os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'libmpi++.a')]
       yield [os.path.join(root, 'lib', 'libmpi.a')]      
@@ -194,6 +195,8 @@ class Configure(config.base.Configure):
       yield ['lammpio','pmpi','lamf77mpi','mpi','lam']
       yield ['lammpio','pmpi','lamf90mpi','mpi','lam']
       yield ['lammpio','pmpi','mpi','lam']
+      yield ['lammpi++','mpi','lam']
+      yield ['mpi','lam']
     return
 
   def generateGuesses(self):
@@ -218,6 +221,7 @@ class Configure(config.base.Configure):
       dir = self.framework.argDB['with-mpi-dir']
       if not (len(dir) > 2 and dir[1] == ':'):
         dir = os.path.abspath(dir)
+      yield ('No libraries or includes', [], [[]])
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
       yield ('User specified installation root for cygwin', self.libraryGuesses(os.path.join(dir,'SDK.gcc')),[[os.path.join(dir,'SDK.gcc','include')]])
       yield ('User specified installation root for MS Windows', self.libraryGuesses(os.path.join(dir,'SDK')),[[os.path.join(dir,'SDK','include')]])

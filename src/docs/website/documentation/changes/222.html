@@ -80,6 +80,8 @@ in PETSc 2.2.2 </font></p>
         <li>-trdebug -> -malloc_debug   </li>
         <li>PetscGetResidentSetSize() -> PetscMemoryGetCurrentUsage(), added PetscMemoryGetMaximumUsage() and PetscMemorySetGetMaximumUsage() </li>
         <li>PetscTrSpace() -> PetscMallocGetCurrentUsage() and PetscMallocGetMaximumUsage()   </li>
+        <li>added PetscOptionsEnum() and PetscOptionsGetEnum()
+        <li>added PetscBag object for managing user created structs including initializing them and serializing them.
       </ul>  
       </p>
 
@@ -117,6 +119,9 @@ in PETSc 2.2.2 </font></p>
 
       <p><u><b>KSP:</b></u></p>
         <ul>
+        <li>-ksp_cg_Hermitian and -ksp_cg_symmetric have been changed to -ksp_cg_type Hermitian or symmetric</li>
+        <li>Changed options for -ksp_gmres_cgs_refinement_type from never or ifneeded or always to REFINE_NEVER or REFINE_IFNEEDED or REFINE_ALWAYS </li>
+        <li></li>
       </ul>
       </p>
 

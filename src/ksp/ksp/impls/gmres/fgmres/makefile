@@ -3,15 +3,16 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = lgmres.c
+SOURCEC  = fgmres.c modpcf.c
+SOURCEH  = fgmresp.h
 SOURCEF  = 
-SOURCEH  = lgmresp.h
-OBJSC    = lgmres.o
-OBJSF    =
+OBJSC    = fgmres.o modpcf.o
+OBJSF    = 
 LIBBASE  = libpetscksp
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/impls/lgmres/
-DIRS     =
+LOCDIR   = src/ksp/ksp/impls/gmres/fgmres/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
+
+

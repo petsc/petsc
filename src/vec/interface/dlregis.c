@@ -13,6 +13,8 @@ extern void PETSCVEC_DLLEXPORT VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatyp
 extern void PETSCVEC_DLLEXPORT PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 EXTERN_C_END
 
+const char *NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecInitializePackage"
 /*@C
@@ -32,9 +34,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
 {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
-  char             *className;
+  char              *className;
   PetscTruth        opt;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (initialized) PetscFunctionReturn(0);

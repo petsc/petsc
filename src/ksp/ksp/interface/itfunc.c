@@ -245,20 +245,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/*
-    The numerical values for these is set in include/petscksp.h changes
-   there must be made here.
-*/
-static const char *convergedreasons[] = {"matrix is indefinite or negative definite",            "residual norm became not-a-number (0/0)",
-                                         "preconditioner is indefinite",                         "matrix or preconditioner is nonsymmetric",
-					 "breakdown in BICG",                                    "breakdown",
-					 "residual norm increased by dtol",                      "reached maximum number of iterations",
-					 "null operator or preconditioner",                      "not used",
-					 "never reached",                                        "not used",
-					 "residual 2-norm < relative tolerance * 2-norm of RHS", "residual 2-norm below absolute tolerance",
-					 "only one iteration requested",                         "negative curvature obtained in QCG",
-					 "constrained in QCG",                                   "small step length reached"};
-
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve"
 /*@
@@ -383,9 +369,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   }
   if (ksp->printreason) {
     if (ksp->reason > 0) {
-      ierr = PetscPrintf(ksp->comm,"Linear solve converged due to %s\n",convergedreasons[ksp->reason+10]);CHKERRQ(ierr);
+      ierr = PetscPrintf(ksp->comm,"Linear solve converged due to %s\n",KSPConvergedReasons[ksp->reason]);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(ksp->comm,"Linear solve did not converge due to %s\n",convergedreasons[ksp->reason+10]);CHKERRQ(ierr);
+      ierr = PetscPrintf(ksp->comm,"Linear solve did not converge due to %s\n",KSPConvergedReasons[ksp->reason]);CHKERRQ(ierr);
     }
   }
 

@@ -15,7 +15,7 @@ T*/
      petscviewer.h - viewers    
 
   Example of usage:  
-    mpirun -np 3 ex73 -f <matfile> -mat_partitioning_type parmetis/scotch -load_ignore_info -nox
+    mpirun -np 3 ex73 -f <matfile> -mat_partitioning_type parmetis/scotch -viewer_binary_skip_info -nox
 */
 #include "petscksp.h"
 

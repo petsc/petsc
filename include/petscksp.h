@@ -31,8 +31,10 @@ E*/
 #define KSPRICHARDSON "richardson"
 #define KSPCHEBYCHEV  "chebychev"
 #define KSPCG         "cg"
-#define KSPCGNE       "cgne"
+#define   KSPCGNE       "cgne"
 #define KSPGMRES      "gmres"
+#define   KSPFGMRES     "fgmres" 
+#define   KSPLGMRES     "lgmres"
 #define KSPTCQMR      "tcqmr"
 #define KSPBCGS       "bcgs"
 #define KSPBCGSL      "bcgsl"
@@ -43,10 +45,8 @@ E*/
 #define KSPPREONLY    "preonly"
 #define KSPQCG        "qcg"
 #define KSPBICG       "bicg"
-#define KSPFGMRES     "fgmres" 
 #define KSPMINRES     "minres"
 #define KSPSYMMLQ     "symmlq"
-#define KSPLGMRES     "lgmres"
 #define KSPType char*
 
 /* Logging support */
@@ -178,7 +178,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP);
 
 E*/
 typedef enum {KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS} KSPGMRESCGSRefinementType;
-
+extern const char *KSPGMRESCGSRefinementTypes[];
 /*M
     KSP_GMRES_CGS_REFINE_NEVER - Just do the classical (unmodified) Gram-Schmidt process
 
@@ -274,7 +274,7 @@ typedef enum {KSP_NO_NORM               = 0,
               KSP_PRECONDITIONED_NORM   = 1,
               KSP_UNPRECONDITIONED_NORM = 2,
               KSP_NATURAL_NORM          = 3} KSPNormType;
-
+extern const char *KSPNormTypes[];
 /*M
     KSP_NO_NORM - Do not compute a norm during the Krylov process. This will 
           possibly save some computation but means the convergence test cannot
@@ -349,6 +349,7 @@ typedef enum {/* converged */
               KSP_DIVERGED_INDEFINITE_MAT      = -10,
  
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
+extern const char **KSPConvergedReasons;
 
 /*MC
      KSP_CONVERGED_RTOL - norm(r) <= rtol*norm(b)
@@ -486,7 +487,8 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP,Mat *);
 
 .seealso: KSPCGSetType()
 E*/
-typedef enum {KSP_CG_SYMMETRIC=1,KSP_CG_HERMITIAN=2} KSPCGType;
+typedef enum {KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1} KSPCGType;
+extern const char *KSPCGTypes[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP,KSPCGType);
 

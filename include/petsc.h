@@ -115,7 +115,7 @@ typedef int PetscInt;
    an out argument instead of returning the error code. Eventually we should
    check the error code and generate an exception.
 */
-#if defined(__cplusplus)
+#if !defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 #define PetscPolymorphicSubroutine(A,B,C) PETSC_STATIC_INLINE PetscErrorCode A B {return A C;}
 #define PetscPolymorphicFunction(A,B,C,D,E) PETSC_STATIC_INLINE D A B {D E; A C;return E;}
 #else
@@ -130,7 +130,7 @@ typedef int PetscInt;
 PETSC_EXTERN_CXX_BEGIN
 
 /*
-    EXTERN indicates a PETSc function defined elsewhere
+    Extern indicates a PETSc function defined elsewhere
 */
 #if !defined(EXTERN)
 #define EXTERN extern
@@ -152,7 +152,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscTruth;
-const char *PetscTruths[] = {"PETSC_FALSE","PETSC_TRUE","PetscTruth",0};
+extern const char *PetscTruths[];
 
 /*M
     PETSC_FALSE - False value of PetscTruth
@@ -807,9 +807,7 @@ E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
               PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
               PETSC_CHAR = 6,PETSC_LOGICAL = 7,PETSC_ENUM = 8} PetscDataType;
-const char *PetscDataTypes[] = {"PETSC_INT", "PETSC_DOUBLE", "PETSC_COMPLEX",
-                                "PETSC_LONG","PETSC_SHORT",  "PETSC_FLOAT",
-                                "PETSC_CHAR","PETSC_LOGICAL","PETSC_ENUM","PetscDataType",0};
+extern const char *PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX

@@ -161,7 +161,7 @@ int main( int argc, char **argv )
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr = PCMGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PCMGSetType(pc,MGADDITIVE);CHKERRQ(ierr);
+  ierr = PCMGSetType(pc,PC_MG_ADDITIVE);CHKERRQ(ierr);
 
   /* always solve the coarse problem redundantly with direct LU solver */
   ierr = PetscOptionsSetValue("-coarse_pc_type","redundant");CHKERRQ(ierr);

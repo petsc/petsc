@@ -15,7 +15,7 @@ class Configure(PETSc.package.Package):
     self.includes     = ['dsp_defs.h']
     self.libdir       = ''
     self.includedir   = 'SRC'
-    self.liblist      = ['superlu.a']
+    self.liblist      = [['superlu.a']]
     return
 
   def Install(self):

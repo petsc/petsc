@@ -240,7 +240,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawSetInfo(PetscViewer,const c
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer,const char[],PetscInt);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySkipInfo(PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryLoadInfo(PetscViewer);
-
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetSkipOptions(PetscViewer,PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetSkipOptions(PetscViewer,PetscTruth*);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename(PetscViewer,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFilename(PetscViewer,char**);

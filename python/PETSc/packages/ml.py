@@ -14,7 +14,7 @@ class Configure(PETSc.package.Package):
     self.deps         = [self.mpi,self.blasLapack]
     self.functions    = ['ML_Set_PrintLevel']
     self.includes     = ['ml_include.h']
-    self.liblist      = ['libml.a']    
+    self.liblist      = [['libml.a']]
     self.license      = 'http://software.sandia.gov/trilinos/downloads.html'
     self.fc           = 1 # looks like trilinos requires Fortran
     return
