@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.186 1997/09/17 04:31:45 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.187 1997/09/18 01:45:15 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -367,6 +367,12 @@ etags_makefiles:
 	etags -f TAGS_MAKEFILES $(TAGS_MAKEFILE_FILES) 
 	etags -a -f TAGS_MAKEFILES $(TAGS_BMAKE_FILES) 
 	chmod g+w TAGS_MAKEFILES
+
+# Builds the etags file for examples
+etags_examples: 
+	$(RM) TAGS_EXAMPLES
+	etags -f TAGS_EXAMPLES $(TAGS_EXAMPLE_FILES) 
+	chmod g+w TAGS_EXAMPLES
 
 #
 # ctags builds the tags file required for VI.
