@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.10 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base.site,v 1.11 1998/04/07 18:46:57 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,8 +10,7 @@
 # FC_LIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).  
 #
-FC_LIB		= -lf /usr/lib/libU77.a
-#FC_LIB         = -L/opt/fortran/lib -lf -lU77
+FC_LIB		=  -lf -L/opt/fortran/lib  -lU77
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see ${PETSC_DIR}/docs/installation.html for information on retrieving them.
@@ -21,8 +20,8 @@ LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_hpux.a ${FC_LIB}
 #
 # Location of X-windows software
 #
-X11_INCLUDE    = -I/usr/local/X11R5/include
-X11_LIB        = /usr/lib/X11R5/libX11.sl
+X11_INCLUDE    = 
+X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software
 #
