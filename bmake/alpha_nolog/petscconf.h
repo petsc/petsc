@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.18 1999/11/24 21:52:17 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.19 2000/05/05 18:28:31 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -10,6 +10,7 @@
 #define PETSC_ARCH_NAME "alpha"
 #define PETSC_USE_GETCLOCK
 
+#define PETSC_USE_KBYTES_FOR_SIZE
 #define PETSC_HAVE_POPEN
 #define PETSC_HAVE_LIMITS_H
 #define PETSC_HAVE_PWD_H 
