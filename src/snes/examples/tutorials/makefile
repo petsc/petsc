@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.46 1999/02/01 21:21:15 balay Exp bsmith $ 
+# $Id: makefile,v 1.47 1999/03/01 04:57:49 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -13,7 +13,7 @@ TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
 		   ex6.rm ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc  \
                    ex5.rm ex8.PETSc runex8 runex8 ex8.rm clean 
 TESTEXAMPLES_2	 = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm clean
-TESTEXAMPLES_3	 = ex1f.PETSc runex1f ex1f.rm clean
+TESTEXAMPLES_3	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f_2 runex4f_3 ex4f.rm clean
 TESTEXAMPLES_8	 = ex5f.PETSc runex5f runex5f_2 runex5f_3 ex5f.rm clean
 TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm clean
 TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
@@ -180,6 +180,16 @@ runex4f:
 	   if (diff output/ex4f_1.out ex4f_1.tmp) then true; \
 	   else echo "Possible problem with ex4f_1, diffs above"; fi; \
 	   ${RM} -f ex4f_1.tmp
+runex4f_2:
+	-@${MPIRUN} -np 1 ex4f -snes_smonitor -nox -snes_fd > ex4f_2.tmp 2>&1;\
+	   if (diff output/ex4f_2.out ex4f_2.tmp) then true; \
+	   else echo "Possible problem with ex4f_2, diffs above"; fi; \
+	   ${RM} -f ex4f_2.tmp
+runex4f_3:
+	-@${MPIRUN} -np 1 ex4f -snes_smonitor -nox -snes_fd_coloring > ex4f_3.tmp 2>&1;\
+	   if (diff output/ex4f_2.out ex4f_3.tmp) then true; \
+	   else echo "Possible problem with ex4f_3, diffs above"; fi; \
+	   ${RM} -f ex4f_3.tmp
 runex5:
 	-@${MPIRUN} -np 4 ex5 -snes_mf -Nx 4 -Ny 1 -snes_smonitor > ex5_1.tmp 2>&1; \
 	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
