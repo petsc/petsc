@@ -798,7 +798,7 @@ int PCSetUp(PC pc)
 
     ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
-      ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQSBAIJ,&flg);CHKERRQ(ierr);
+      ierr = MatHasOperation(pc->pmat,MATOP_ICCFACTOR_SYMBOLIC,&flg);CHKERRQ(ierr);
       if (flg) { /* for sbaij mat */
         ierr = PCSetType(pc,PCICC);CHKERRQ(ierr);
       } else {
