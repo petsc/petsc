@@ -1,4 +1,4 @@
-!  $Id: user.F,v 1.3 2000/01/16 15:40:08 bsmith Exp bsmith $
+c  $Id: user.F,v 1.9 2000/01/20 16:52:45 bsmith Exp bsmith $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)

@@ -49,7 +49,9 @@ it removes the locations from the nonzero structure
    
   General
 
- 
+   When doing string substitutions in library directory paths etc one must use ${PETSC_DIR} ${BOPT} etc now
+instead of $PETSC_DIR etc. Also you can put anything in {anything} as long as it is an environmental variable or
+passed in the options database with  -anything
 
  
   Viewers
