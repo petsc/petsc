@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.11 1995/05/12 18:16:21 curfman Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.12 1995/05/12 18:17:04 curfman Exp curfman $";
 #endif
 
 #include "draw.h"
@@ -35,8 +35,8 @@ $  -snes_fd
 
 .seealso: SNESSetJacobian(), SNESTestJacobian()
 @*/
-int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,int *flag,
-                               void *ctx)
+int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
+                               MatStructure *flag,void *ctx)
 {
   Vec    j1,j2,x2;
   int    i,ierr,N,start,end,j;

@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.7 1995/05/05 03:51:28 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.8 1995/05/12 04:18:42 bsmith Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -25,7 +25,7 @@ struct _SNES {
   void  *funP;
   int   rsign;                      /* sign (+/-)  of residual */
 
-  int   (*ComputeJacobian)(SNES,Vec,Mat*,Mat*,int*,void*);
+  int   (*ComputeJacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
   Mat   jacobian;                   /* Jacobian (or Hessian) matrix context */
   Mat   jacobian_pre;
   void  *jacP;
