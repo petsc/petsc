@@ -4345,6 +4345,32 @@ or \findex{TSPseudoSetTimeStepIncrement()} the option
       has not yet been created.
 \end{itemize}
 
+\subsection{Using the Explicit Runge-Kutta timestepper with variable timesteps}
+The Explicit Runge-Kutta timestepper with variable timesteps is an
+implementation of standard Runge-Kutta using Dormand-Prince
+5(4). It is easy to change this table if needed. Since the time-stepper is using variable timesteps, the
+``TSSetInitialTimeStep'' function was not in use, so I used it to set
+the tolerance.
+
+Setting the tolerance defines the global tolerance, for the whole time
+periode. The tolerance for each timestep is calculated relatively to
+the size of the timestep.
+
+The error in each timestep is calculated using the two solutions given
+from Dormand-Prince 5(4). The local error is calculated finding the
+2-norm from the difference of the two solutions.
+
+Other timestep features:
+\begin{itemize}
+  \item The next timestep can be maximum 5 times the present timestep
+  \item The smallest timestep can be 1e-14 (to avoid machine precision
+  errors)
+\end{itemize}
+
+More details about the solver and code examples can be found at
+http://www.parallab.uib.no/projects/molecul/matrix/
+
+
 \chapter{High Level Support for Multigrid with DMMG}
 \label{chapter_dmmg}
 
