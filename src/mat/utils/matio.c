@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.50 1998/04/13 17:43:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.51 1998/04/24 02:16:14 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -68,7 +68,7 @@ static int MatLoadPrintHelp_Private(Mat A)
    Input Parameters:
 +  viewer - binary file viewer, created with ViewerFileOpenBinary()
 -  outtype - type of matrix desired, for example MATSEQAIJ,
-   MATMPIROWBS, etc.  See types in petsc/include/mat.h.
+             MATMPIROWBS, etc.  See types in petsc/include/mat.h.
 
    Output Parameters:
 .  newmat - new matrix
@@ -79,7 +79,9 @@ static int MatLoadPrintHelp_Private(Mat A)
 +    -mat_aij      - AIJ type
 .    -mat_baij     - block AIJ type
 .    -mat_dense    - dense type
--    -mat_bdiag    - block diagonal type
+.    -mat_bdiag    - block diagonal type
+.    -mat_complex  - indicates the matrix has complex entries
+-    -mat_double   - indicates the matrix has double entries
 
    More Options Database Keys:
 +    -mat_seqaij   - AIJ type
@@ -101,6 +103,11 @@ static int MatLoadPrintHelp_Private(Mat A)
 .    -matload_bdiag_diags <s1,s2,s3,...>
 
    Notes:
+   MatLoad() automatically loads into the options database any options
+   given in the file filename.info where filename is the name of the file
+   that was passed to the ViewerFileOpenBinary(). The options in the info
+   file will be ignored if you use the -mat_ignore_info option.
+
    In parallel, each processor can load a subset of rows (or the
    entire matrix).  This routine is especially useful when a large
    matrix is stored on disk and only part of it is desired on each
@@ -190,7 +197,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 /*
     MatLoadGetInfo_Private - Loads the matrix options from the name.info file
     if it exists.
- */
+*/
 int MatLoadGetInfo_Private(Viewer viewer)
 {
   FILE *file;
@@ -210,9 +217,23 @@ int MatLoadGetInfo_Private(Viewer viewer)
     if (string[0] == '#') continue;
     if (string[0] == '!') continue;
     if (string[0] == '%') continue;
-    first = PetscStrtok(string," ");
+    first  = PetscStrtok(string," ");
     second = PetscStrtok(0," ");
     if (first && first[0] == '-') {
+
+      /*
+         Check for -mat_complex or -mat_double
+      */
+#if defined(USE_PETSC_COMPLEX)
+      if (!PetscStrncmp(first,"-mat_double",11)) {
+        SETERRQ(1,1,"Loading double number matrix with complex number code");
+      }
+#else
+      if (!PetscStrncmp(first,"-mat_complex",12)) {
+        SETERRQ(1,1,"Loading complex number matrix with double number code");
+      }
+#endif
+
       if (second) {final = second;} else {final = first;}
       len = PetscStrlen(final);
       while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
