@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.56 1999/03/11 04:21:30 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.57 1999/03/16 21:05:25 bsmith Exp balay $ */
 
 /* 
    This private file should not be included in users' code.
@@ -173,5 +173,44 @@ struct _p_VecScatter {
   int     (*view)(VecScatter,Viewer);
   void    *fromdata,*todata;
 };
+
+/* 
+    The stash is used to temporarily store inserted vec values that 
+  belong to another processor. During the assembly phase the stashed 
+  values are moved to the correct processor and 
+*/
+
+typedef struct {
+  int           nmax;                   /* maximum stash size */
+  int           oldnmax;                /* the nmax value used previously */
+  int           n;                      /* stash size */
+  int           bs;                     /* block size of the stash */
+  int           reallocs;               /* preserve the no of mallocs invoked */           
+  int           *idx;                   /* global row numbers in stash */
+  Scalar        *array;                 /* array to hold stashed values */
+  /* The following variables are used for communication */
+  MPI_Comm      comm;
+  int           size,rank;
+  int           tag1,tag2;
+  MPI_Request   *send_waits;            /* array of send requests */
+  MPI_Request   *recv_waits;            /* array of receive requests */
+  MPI_Status    *send_status;           /* array of send status */
+  int           nsends,nrecvs;          /* numbers of sends and receives */
+  Scalar        *svalues,*rvalues;      /* sending and receiving data */
+  int           rmax;                   /* maximum message length */
+  int           *nprocs;                /* tmp data used both duiring scatterbegin and end */
+  int           nprocessed;             /* number of messages already processed */
+} VecStash;
+
+extern int VecStashCreate_Private(MPI_Comm,int,VecStash*);
+extern int VecStashDestroy_Private(VecStash*);
+extern int VecStashScatterEnd_Private(VecStash*);
+extern int VecStashSetInitialSize_Private(VecStash*,int);
+extern int VecStashGetInfo_Private(VecStash*,int*,int*);
+extern int VecStashValue_Private(VecStash*,int,Scalar);
+extern int VecStashValuesBlocked_Private(VecStash*,int,Scalar*);
+extern int VecStashScatterBegin_Private(VecStash*,int*);
+extern int VecStashScatterGetMesg_Private(VecStash*,int*,int**,Scalar**,int*);
+
 
 #endif

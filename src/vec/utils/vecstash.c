@@ -1,13 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stash.c,v 1.24 1999/03/11 23:21:51 balay Exp balay $";
+static char vcid[] = "$Id: vecstash.c,v 1.1 1999/03/16 21:00:08 balay Exp balay $";
 #endif
 
-#include "src/mat/matimpl.h"
+#include "src/vec/vecimpl.h"
 
-#define DEFAULT_STASH_SIZE   10000
+#define DEFAULT_STASH_SIZE   100
 
 /*
-  StashCreate_Private - Creates a stash ,currently used for all the parallel 
+  VecStashCreate_Private - Creates a stash ,currently used for all the parallel 
   matrix implementations. The stash is where elements of a matrix destined 
   to be stored on other processors are kept until matrix assembly is done.
 
@@ -21,17 +21,17 @@ static char vcid[] = "$Id: stash.c,v 1.24 1999/03/11 23:21:51 balay Exp balay $"
   stash    - the newly created stash
 */
 #undef __FUNC__  
-#define __FUNC__ "StashCreate_Private"
-int StashCreate_Private(MPI_Comm comm,int bs, Stash *stash)
+#define __FUNC__ "VecStashCreate_Private"
+int VecStashCreate_Private(MPI_Comm comm,int bs, VecStash *stash)
 {
-  int ierr,flg,max=DEFAULT_STASH_SIZE/(bs*bs);
+  int ierr,flg,max=DEFAULT_STASH_SIZE;
 
   PetscFunctionBegin;
   /* Require 2 tags, get the second using PetscCommGetNewTag() */
   ierr = PetscCommDuplicate_Private(comm,&stash->comm,&stash->tag1);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(stash->comm,&stash->tag2); CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-stash_initial_size",&max,&flg);CHKERRQ(ierr);
-  ierr = StashSetInitialSize_Private(stash,max); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-vecstash_initial_size",&max,&flg);CHKERRQ(ierr);
+  ierr = VecStashSetInitialSize_Private(stash,max); CHKERRQ(ierr);
   ierr = MPI_Comm_size(stash->comm,&stash->size); CHKERRQ(ierr);
   ierr = MPI_Comm_rank(stash->comm,&stash->rank); CHKERRQ(ierr);
 
@@ -42,7 +42,6 @@ int StashCreate_Private(MPI_Comm comm,int bs, Stash *stash)
   stash->n        = 0;
   stash->reallocs = -1;
   stash->idx      = 0;
-  stash->idy      = 0;
   stash->array    = 0;
 
   stash->send_waits  = 0;
@@ -59,11 +58,11 @@ int StashCreate_Private(MPI_Comm comm,int bs, Stash *stash)
 }
 
 /* 
-   StashDestroy_Private - Destroy the stash
+   VecStashDestroy_Private - Destroy the stash
 */
 #undef __FUNC__  
-#define __FUNC__ "StashDestroy_Private"
-int StashDestroy_Private(Stash *stash)
+#define __FUNC__ "VecStashDestroy_Private"
+int VecStashDestroy_Private(VecStash *stash)
 {
   int ierr;
 
@@ -74,7 +73,7 @@ int StashDestroy_Private(Stash *stash)
 }
 
 /* 
-   StashScatterEnd_Private - This is called as the fial stage of
+   VecStashScatterEnd_Private - This is called as the fial stage of
    scatter. The final stages of messagepassing is done here, and
    all the memory used for messagepassing is cleanedu up. This
    routine also resets the stash, and deallocates the memory used
@@ -82,8 +81,8 @@ int StashDestroy_Private(Stash *stash)
    so that the same value can be used the next time through.
 */
 #undef __FUNC__  
-#define __FUNC__ "StashScatterEnd_Private"
-int StashScatterEnd_Private(Stash *stash)
+#define __FUNC__ "VecStashScatterEnd_Private"
+int VecStashScatterEnd_Private(VecStash *stash)
 { 
   int         nsends=stash->nsends,ierr;
   MPI_Status  *send_status;
@@ -109,7 +108,6 @@ int StashScatterEnd_Private(Stash *stash)
     PetscFree(stash->array); 
     stash->array = 0;
     stash->idx   = 0;
-    stash->idy   = 0;
   }
   if (stash->send_waits)  {PetscFree(stash->send_waits);stash->send_waits = 0;}
   if (stash->recv_waits)  {PetscFree(stash->recv_waits);stash->recv_waits = 0;} 
@@ -121,7 +119,7 @@ int StashScatterEnd_Private(Stash *stash)
 }
 
 /* 
-   StashGetInfo_Private - Gets the relavant statistics of the stash
+   VecStashGetInfo_Private - Gets the relavant statistics of the stash
 
    Input Parameters:
    stash    - the stash
@@ -130,8 +128,8 @@ int StashScatterEnd_Private(Stash *stash)
    
 */
 #undef __FUNC__  
-#define __FUNC__ "StashGetInfo_Private"
-int StashGetInfo_Private(Stash *stash,int *nstash, int *reallocs)
+#define __FUNC__ "VecStashGetInfo_Private"
+int VecStashGetInfo_Private(VecStash *stash,int *nstash, int *reallocs)
 {
   PetscFunctionBegin;
   *nstash   = stash->n;
@@ -141,7 +139,7 @@ int StashGetInfo_Private(Stash *stash,int *nstash, int *reallocs)
 
 
 /* 
-   StashSetInitialSize_Private - Sets the initial size of the stash
+   VecStashSetInitialSize_Private - Sets the initial size of the stash
 
    Input Parameters:
    stash  - the stash
@@ -149,8 +147,8 @@ int StashGetInfo_Private(Stash *stash,int *nstash, int *reallocs)
             this value is used while allocating memory.
 */
 #undef __FUNC__  
-#define __FUNC__ "StashSetInitialSize_Private"
-int StashSetInitialSize_Private(Stash *stash,int max)
+#define __FUNC__ "VecStashSetInitialSize_Private"
+int VecStashSetInitialSize_Private(VecStash *stash,int max)
 {
   PetscFunctionBegin;
   stash->oldnmax = max;
@@ -158,7 +156,7 @@ int StashSetInitialSize_Private(Stash *stash,int max)
   PetscFunctionReturn(0);
 }
 
-/* StashExpand_Private - Expand the stash. This function is called
+/* VecStashExpand_Private - Expand the stash. This function is called
    when the space in the stash is not sufficient to add the new values
    being inserted into the stash.
    
@@ -168,12 +166,12 @@ int StashSetInitialSize_Private(Stash *stash,int max)
    
    Notes: 
    This routine doubles the currently used memory. 
- */
+*/
 #undef __FUNC__  
-#define __FUNC__ "StashExpand_Private"
-static int StashExpand_Private(Stash *stash,int incr)
+#define __FUNC__ "VecStashExpand_Private"
+static int VecStashExpand_Private(VecStash *stash,int incr)
 { 
-  int    *n_idx,*n_idy,newnmax,bs2;
+  int    *n_idx,newnmax,bs=stash->bs;
   Scalar *n_array;
 
   PetscFunctionBegin;
@@ -182,187 +180,69 @@ static int StashExpand_Private(Stash *stash,int incr)
   else                  newnmax = stash->nmax*2;
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
 
-  bs2     = stash->bs*stash->bs; 
-  n_array = (Scalar *)PetscMalloc((newnmax)*(2*sizeof(int)+bs2*sizeof(Scalar)));CHKPTRQ(n_array);
-  n_idx   = (int *) (n_array + bs2*newnmax);
-  n_idy   = (int *) (n_idx + newnmax);
-  PetscMemcpy(n_array,stash->array,bs2*stash->nmax*sizeof(Scalar));
+  n_array = (Scalar *)PetscMalloc((newnmax)*(sizeof(int)+bs*sizeof(Scalar)));CHKPTRQ(n_array);
+  n_idx   = (int *) (n_array + bs*newnmax);
+  PetscMemcpy(n_array,stash->array,bs*stash->nmax*sizeof(Scalar));
   PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(int));
-  PetscMemcpy(n_idy,stash->idy,stash->nmax*sizeof(int));
   if (stash->array) PetscFree(stash->array);
   stash->array   = n_array; 
   stash->idx     = n_idx; 
-  stash->idy     = n_idy;
   stash->nmax    = newnmax;
   stash->oldnmax = newnmax;
   stash->reallocs++;
   PetscFunctionReturn(0);
 }
 /*
-  StashValuesRoworiented_Private - inserts values into the stash. This function
-  expects the values to be roworiented. Multiple columns belong to the same row
-  can be inserted with a single call to this function.
+  VecStashValue_Private - inserts a single values into the stash.
 
   Input Parameters:
   stash  - the stash
-  row    - the global row correspoiding to the values
-  n      - the number of elements inserted. All elements belong to the above row.
-  idxn   - the global column indices corresponding to each of the values.
-  values - the values inserted
+  idx    - the global of the inserted value
+  values - the value inserted
 */
 #undef __FUNC__  
-#define __FUNC__ "StashValuesRoworiented_Private"
-int StashValuesRoworiented_Private(Stash *stash,int row,int n, int *idxn,Scalar *values)
+#define __FUNC__ "VecStashValue_Private"
+int VecStashValue_Private(VecStash *stash,int idx,Scalar value)
 {
-  int    ierr,i; 
+  int    ierr; 
 
   PetscFunctionBegin;
   /* Check and see if we have sufficient memory */
-  if ((stash->n + n) > stash->nmax) {
-    ierr = StashExpand_Private(stash,n); CHKERRQ(ierr);
+  if ((stash->n + 1) > stash->nmax) {
+    ierr = VecStashExpand_Private(stash,1); CHKERRQ(ierr);
   }
-  for ( i=0; i<n; i++ ) {
-    stash->idx[stash->n]   = row;
-    stash->idy[stash->n]   = idxn[i];
-    stash->array[stash->n] = values[i];
-    stash->n++;
-  }
+  stash->idx[stash->n]   = idx;
+  stash->array[stash->n] = value;
+  stash->n++;
   PetscFunctionReturn(0);
 }
 /*
-  StashValuesColumnoriented_Private - inserts values into the stash. This function
-  expects the values to be columnoriented. Multiple columns belong to the same row
-  can be inserted with a single call to this function.
-
-  Input Parameters:
-  stash   - the stash
-  row     - the global row correspoiding to the values
-  n       - the number of elements inserted. All elements belong to the above row.
-  idxn    - the global column indices corresponding to each of the values.
-  values  - the values inserted
-  stepval - the consecutive values are sepated by a distance of stepval.
-            this happens because the input is columnoriented.
-*/
-#undef __FUNC__  
-#define __FUNC__ "StashValuesColumnoriented_Private"
-int StashValuesColumnoriented_Private(Stash *stash,int row,int n, int *idxn,
-                                      Scalar *values,int stepval)
-{
-  int    ierr,i; 
-
-  PetscFunctionBegin;
-  /* Check and see if we have sufficient memory */
-  if ((stash->n + n) > stash->nmax) {
-    ierr = StashExpand_Private(stash,n); CHKERRQ(ierr);
-  }
-  for ( i=0; i<n; i++ ) {
-    stash->idx[stash->n]   = row;
-    stash->idy[stash->n]   = idxn[i];
-    stash->array[stash->n] = values[i*stepval];
-    stash->n++;
-  }
-  PetscFunctionReturn(0);
-}
-
-/*
-  StashValuesRoworientedBlocked_Private - inserts blocks of values into the stash. 
-  This function expects the values to be roworiented. Multiple columns belong 
-  to the same block-row can be inserted with a single call to this function.
-  This function extracts the sub-block of values based on the dimensions of
-  the original input block, and the row,col values corresponding to the blocks.
+  VecStashValuesBlocked_Private - inserts 1 block of values into the stash. 
 
   Input Parameters:
   stash  - the stash
-  row    - the global block-row correspoiding to the values
-  n      - the number of elements inserted. All elements belong to the above row.
-  idxn   - the global block-column indices corresponding to each of the blocks of 
-           values. Each block is of size bs*bs.
+  idx    - the global block index
   values - the values inserted
-  rmax   - the number of block-rows in the original block.
-  cmax   - the number of block-columsn on the original block.
-  idx    - the index of the current block-row in the original block.
 */
 #undef __FUNC__  
-#define __FUNC__ "StashValuesRoworientedBlocked_Private"
-int StashValuesRoworientedBlocked_Private(Stash *stash,int row,int n,int *idxn,Scalar *values,
-                               int rmax,int cmax,int idx)
+#define __FUNC__ "VecStashValuesBlocked_Private"
+int VecStashValuesBlocked_Private(VecStash *stash,int idx,Scalar *values)
 {
-  int    ierr,i,j,k,bs2,bs=stash->bs; 
-  Scalar *vals,*array;
-
+  int    ierr,j,bs=stash->bs; 
+  Scalar *array;
+  
   PetscFunctionBegin;
-  bs2 = bs*bs;
-  if ((stash->n+n) > stash->nmax) {
-    ierr = StashExpand_Private(stash,n); CHKERRQ(ierr);
+  if ((stash->n+1) > stash->nmax) {
+    ierr = VecStashExpand_Private(stash,1); CHKERRQ(ierr);
   }
-  for ( i=0; i<n; i++ ) {
-    stash->idx[stash->n]   = row;
-    stash->idy[stash->n] = idxn[i];
-    /* Now copy over the block of values. Store the values column oriented.
-       This enables inserting multiple blocks belonging to a row with a single
-       funtion call */
-    array = stash->array + bs2*stash->n;
-    vals  = values + idx*bs2*n + bs*i;
-    for ( j=0; j<bs; j++ ) {
-      for ( k=0; k<bs; k++ ) {array[k*bs] = vals[k];}
-      array += 1;
-      vals  += cmax*bs;
-    }
-    stash->n++;
-  }
-  PetscFunctionReturn(0);
-}
-
-/*
-  StashValuesColumnorientedBlocked_Private - inserts blocks of values into the stash. 
-  This function expects the values to be roworiented. Multiple columns belong 
-  to the same block-row can be inserted with a single call to this function.
-  This function extracts the sub-block of values based on the dimensions of
-  the original input block, and the row,col values corresponding to the blocks.
-
-  Input Parameters:
-  stash  - the stash
-  row    - the global block-row correspoiding to the values
-  n      - the number of elements inserted. All elements belong to the above row.
-  idxn   - the global block-column indices corresponding to each of the blocks of 
-           values. Each block is of size bs*bs.
-  values - the values inserted
-  rmax   - the number of block-rows in the original block.
-  cmax   - the number of block-columsn on the original block.
-  idx    - the index of the current block-row in the original block.
-*/
-#undef __FUNC__  
-#define __FUNC__ "StashValuesColumnorientedBlocked_Private"
-int StashValuesColumnorientedBlocked_Private(Stash *stash,int row,int n,int *idxn,
-                                             Scalar *values,int rmax,int cmax,int idx)
-{
-  int    ierr,i,j,k,bs2,bs=stash->bs; 
-  Scalar *vals,*array;
-
-  PetscFunctionBegin;
-  bs2 = bs*bs;
-  if ((stash->n+n) > stash->nmax) {
-    ierr = StashExpand_Private(stash,n); CHKERRQ(ierr);
-  }
-  for ( i=0; i<n; i++ ) {
-    stash->idx[stash->n]   = row;
-    stash->idy[stash->n] = idxn[i];
-    /* Now copy over the block of values. Store the values column oriented.
-     This enables inserting multiple blocks belonging to a row with a single
-     funtion call */
-    array = stash->array + bs2*stash->n;
-    vals  = values + idx*bs + bs2*rmax*i;
-    for ( j=0; j<bs; j++ ) {
-      for ( k=0; k<bs; k++ ) {array[k] = vals[k];}
-      array += bs;
-      vals  += rmax*bs;
-    }
-    stash->n++;
-  }
+  array = stash->array + bs*stash->n;
+  stash->idx[stash->n]   = idx;
+  for ( j=0; j<bs; j++ ) { array[j] = values[j];}
+  stash->n++;
   PetscFunctionReturn(0);
 }
 /*
-  StashScatterBegin_Private - Initiates the transfer of values to the
+  VecStashScatterBegin_Private - Initiates the transfer of values to the
   correct owners. This function goes through the stash, and check the
   owners of each stashed value, and sends the values off to the owner
   processors.
@@ -377,19 +257,18 @@ int StashValuesColumnorientedBlocked_Private(Stash *stash,int row,int n,int *idx
   the proper global indices.
 */
 #undef __FUNC__  
-#define __FUNC__ "StashScatterBegin_Private"
-int StashScatterBegin_Private(Stash *stash,int *owners)
+#define __FUNC__ "VecStashScatterBegin_Private"
+int VecStashScatterBegin_Private(VecStash *stash,int *owners)
 { 
-  int         *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
+  int         *owner,*start,tag1=stash->tag1,tag2=stash->tag2;
   int         rank=stash->rank,size=stash->size,*nprocs,*procs,nsends,nreceives;
-  int         nmax,*work,count,ierr,*sindices,*rindices,i,j,idx;
+  int         nmax,*work,count,ierr,*sindices,*rindices,i,j,idx,bs=stash->bs;
   Scalar      *rvalues,*svalues;
   MPI_Comm    comm = stash->comm;
   MPI_Request *send_waits,*recv_waits;
 
   PetscFunctionBegin;
 
-  bs2 = stash->bs*stash->bs;
   /*  first count number of contributors to each processor */
   nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
   PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
@@ -417,13 +296,13 @@ int StashScatterBegin_Private(Stash *stash,int *owners)
      allocate the largest needed buffer for each receive. Potentially 
      this is a lot of wasted space.
   */
-  rvalues    = (Scalar *)PetscMalloc((nreceives+1)*(nmax+1)*(bs2*sizeof(Scalar)+2*sizeof(int)));CHKPTRQ(rvalues);
-  rindices   = (int *) (rvalues + bs2*nreceives*nmax);
+  rvalues    = (Scalar *)PetscMalloc((nreceives+1)*(nmax+1)*(bs*sizeof(Scalar)+sizeof(int)));CHKPTRQ(rvalues);
+  rindices   = (int *) (rvalues + bs*nreceives*nmax);
   recv_waits = (MPI_Request *)PetscMalloc((nreceives+1)*2*sizeof(MPI_Request));CHKPTRQ(recv_waits);
   for ( i=0,count=0; i<nreceives; i++ ) {
-    ierr = MPI_Irecv(rvalues+bs2*nmax*i,bs2*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag1,comm,
+    ierr = MPI_Irecv(rvalues+bs*nmax*i,bs*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag1,comm,
                      recv_waits+count++); CHKERRQ(ierr);
-    ierr = MPI_Irecv(rindices+2*nmax*i,2*nmax,MPI_INT,MPI_ANY_SOURCE,tag2,comm,
+    ierr = MPI_Irecv(rindices+nmax*i,nmax,MPI_INT,MPI_ANY_SOURCE,tag2,comm,
                      recv_waits+count++); CHKERRQ(ierr);
   }
 
@@ -431,42 +310,37 @@ int StashScatterBegin_Private(Stash *stash,int *owners)
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues    = (Scalar *)PetscMalloc((stash->n+1)*(bs2*sizeof(Scalar)+2*sizeof(int)));CHKPTRQ(svalues);
-  sindices   = (int *) (svalues + bs2*stash->n);
-  send_waits = (MPI_Request *) PetscMalloc(2*(nsends+1)*sizeof(MPI_Request));
-  CHKPTRQ(send_waits);
-  startv     = (int *) PetscMalloc(2*size*sizeof(int) ); CHKPTRQ(startv);
-  starti     = startv + size;
-  /* use 2 sends the first with all_a, the next with all_i and all_j */
-  startv[0]  = 0; starti[0] = 0;
+  svalues    = (Scalar *)PetscMalloc((stash->n+1)*(bs*sizeof(Scalar)+sizeof(int)));CHKPTRQ(svalues);
+  sindices   = (int *) (svalues + bs*stash->n);
+  send_waits = (MPI_Request *) PetscMalloc(2*(nsends+1)*sizeof(MPI_Request));  CHKPTRQ(send_waits);
+  start      = (int *) PetscMalloc(size*sizeof(int) ); CHKPTRQ(start);
+  /* use 2 sends the first with all_v, the next with all_i */
+  start[0] = 0;
   for ( i=1; i<size; i++ ) { 
-    startv[i] = startv[i-1] + nprocs[i-1];
-    starti[i] = starti[i-1] + nprocs[i-1]*2;
+    start[i] = start[i-1] + nprocs[i-1];
   } 
   for ( i=0; i<stash->n; i++ ) {
     j = owner[i];
-    if (bs2 == 1) {
-      svalues[startv[j]]              = stash->array[i];
+    if (bs == 1) {
+      svalues[start[j]]              = stash->array[i];
     } else {
-      PetscMemcpy(svalues+bs2*startv[j],stash->array+bs2*i,bs2*sizeof(Scalar));
+      PetscMemcpy(svalues+bs*start[j],stash->array+bs*i,bs*sizeof(Scalar));
     }
-    sindices[starti[j]]             = stash->idx[i];
-    sindices[starti[j]+nprocs[j]]   = stash->idy[i];
-    startv[j]++;
-    starti[j]++;
+    sindices[start[j]]             = stash->idx[i];
+    start[j]++;
   }
-  startv[0] = 0;
-  for ( i=1; i<size; i++ ) { startv[i] = startv[i-1] + nprocs[i-1];} 
+  start[0] = 0;
+  for ( i=1; i<size; i++ ) { start[i] = start[i-1] + nprocs[i-1];} 
   for ( i=0,count=0; i<size; i++ ) {
     if (procs[i]) {
-      ierr = MPI_Isend(svalues+bs2*startv[i],bs2*nprocs[i],MPIU_SCALAR,i,tag1,comm,
+      ierr = MPI_Isend(svalues+bs*start[i],bs*nprocs[i],MPIU_SCALAR,i,tag1,comm,
                        send_waits+count++);CHKERRQ(ierr);
-      ierr = MPI_Isend(sindices+2*startv[i],2*nprocs[i],MPI_INT,i,tag2,comm,
+      ierr = MPI_Isend(sindices+start[i],nprocs[i],MPI_INT,i,tag2,comm,
                        send_waits+count++);CHKERRQ(ierr);
     }
   }
   PetscFree(owner);
-  PetscFree(startv); 
+  PetscFree(start); 
   /* This memory is reused in scatter end  for a different purpose*/
   for (i=0; i<2*size; i++ ) nprocs[i] = -1;
   stash->nprocs      = nprocs;
@@ -479,8 +353,8 @@ int StashScatterBegin_Private(Stash *stash,int *owners)
 }
 
 /* 
-   StashScatterGetMesg_Private - This function waits on the receives posted 
-   in the function StashScatterBegin_Private() and returns one message at 
+   VecStashScatterGetMesg_Private - This function waits on the receives posted 
+   in the function VecStashScatterBegin_Private() and returns one message at 
    a time to the calling function. If no messages are left, it indicates this
    by setting flg = 0, else it sets flg = 1.
 
@@ -497,11 +371,11 @@ int StashScatterBegin_Private(Stash *stash,int *owners)
              other output parameters nvals,rows,cols,vals are set appropriately.
 */
 #undef __FUNC__  
-#define __FUNC__ "StashScatterGetMesg_Private"
-int StashScatterGetMesg_Private(Stash *stash,int *nvals,int **rows,int** cols,Scalar **vals,int *flg)
+#define __FUNC__ "VecStashScatterGetMesg_Private"
+int VecStashScatterGetMesg_Private(VecStash *stash,int *nvals,int **rows,Scalar **vals,int *flg)
 {
   int         i,ierr,size=stash->size,*flg_v,*flg_i;
-  int         i1,i2,*rindices,match_found=0,bs2;
+  int         i1,i2,*rindices,match_found=0,bs=stash->bs;
   MPI_Status  recv_status;
 
   PetscFunctionBegin;
@@ -512,7 +386,6 @@ int StashScatterGetMesg_Private(Stash *stash,int *nvals,int **rows,int** cols,Sc
 
   flg_v = stash->nprocs;
   flg_i = flg_v + size;
-  bs2   = stash->bs*stash->bs;
   /* If a matching pair of receieves are found, process them, and return the data to
      the calling function. Until then keep receiving messages */
   while (!match_found) {
@@ -521,21 +394,19 @@ int StashScatterGetMesg_Private(Stash *stash,int *nvals,int **rows,int** cols,Sc
     if (i % 2) { 
       ierr = MPI_Get_count(&recv_status,MPI_INT,nvals);CHKERRQ(ierr);
       flg_i[recv_status.MPI_SOURCE] = i/2; 
-      *nvals = *nvals/2; /* This message has both row indices and col indices */
     } else { 
       ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,nvals);CHKERRQ(ierr);
       flg_v[recv_status.MPI_SOURCE] = i/2; 
-      *nvals = *nvals/bs2; 
+      *nvals = *nvals/bs; 
     }
     
     /* Check if we have both the messages from this proc */
     i1 = flg_v[recv_status.MPI_SOURCE];
     i2 = flg_i[recv_status.MPI_SOURCE];
     if (i1 != -1 && i2 != -1) {
-      rindices    = (int *) (stash->rvalues + bs2*stash->rmax*stash->nrecvs);
-      *rows       = rindices + 2*i2*stash->rmax;
-      *cols       = *rows + *nvals;
-      *vals       = stash->rvalues + i1*bs2*stash->rmax;
+      rindices    = (int *) (stash->rvalues + bs*stash->rmax*stash->nrecvs);
+      *rows       = rindices + i2*stash->rmax;
+      *vals       = stash->rvalues + i1*bs*stash->rmax;
       *flg        = 1;
       stash->nprocessed ++;
       match_found = 1;

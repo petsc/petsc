@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.121 1999/03/10 04:05:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.122 1999/03/16 22:32:04 bsmith Exp balay $";
 #endif
 
 /*
@@ -101,7 +101,7 @@ int VecSetOption_MPI(Vec v,VecOption op)
 
   PetscFunctionBegin;
   if (op == VEC_IGNORE_OFF_PROC_ENTRIES) {
-    w->stash.donotstash = 1;
+    w->donotstash = 1;
   }
   PetscFunctionReturn(0);
 }
@@ -198,14 +198,12 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
 
   s->insertmode  = NOT_SET_VALUES;
 
-  /* initialize the stash */
-  s->stash.donotstash = 0;
-  s->stash.nmax       = 0;
-  s->stash.n          = 0;
-  s->stash.oldnmax    = 100;
-  s->stash.array      = 0;
-  s->stash.idx        = 0;
-
+  /* create the stashes. The block-size for bstash is set later when 
+     VecSetValuesBlocked is called.
+  */
+  ierr = VecStashCreate_Private(v->comm,1,&s->stash); CHKERRQ(ierr);
+  ierr = VecStashCreate_Private(v->comm,1,&s->bstash); CHKERRQ(ierr); 
+                                                        
   if (!v->map) {
     if (!map) {
       ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map); CHKERRQ(ierr);
@@ -617,7 +615,7 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   }    
 
   /* New vector should inherit stashing property of parent */
-  vw->stash.donotstash = w->stash.donotstash;
+  vw->donotstash = w->donotstash;
   
   ierr = OListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
   ierr = FListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);

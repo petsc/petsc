@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.24 1999/02/25 19:40:57 balay Exp balay $ */
+/* $Id: pvecimpl.h,v 1.25 1999/03/16 21:09:52 balay Exp balay $ */
 /* 
  */
 
@@ -10,10 +10,11 @@
 
 typedef struct {
   VECHEADER
-  int         N;                         /* length of total vector */
+  int         N;                        /* length of total vector */
   int         size,rank;
   InsertMode  insertmode;
-  VecStash    stash;
+  int         donotstash;               /* Flag indicates stash values should be ignored */
+  VecStash    stash,bstash;
   MPI_Request *send_waits,*recv_waits;  /* for communication during VecAssembly() */
   int         nsends,nrecvs;
   Scalar      *svalues,*rvalues;
