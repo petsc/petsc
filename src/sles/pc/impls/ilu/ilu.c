@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.7 1995/04/13 04:54:01 curfman Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.8 1995/04/16 03:43:29 curfman Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -73,7 +73,7 @@ static int PCSetFromOptions_ILU(PC pc)
 {
   char      name[10];
   int       ordering = ORDER_ND, levels;
-  if (OptionsGetString(0,pc->prefix,"-ilu_ordering",name,10)) {
+  if (OptionsGetString(0,pc->prefix,"-pc_ilu_ordering",name,10)) {
     if (!strcmp(name,"nd")) ordering = ORDER_ND;
     else if (!strcmp(name,"natural")) ordering = ORDER_NATURAL;
     else if (!strcmp(name,"1wd")) ordering = ORDER_1WD;
@@ -82,7 +82,7 @@ static int PCSetFromOptions_ILU(PC pc)
     else fprintf(stderr,"Unknown order: %s\n",name);
     PCILUSetOrdering(pc,ordering);
   }
-  if (OptionsGetInt(0,pc->prefix,"-ilu_levels",&levels)) {
+  if (OptionsGetInt(0,pc->prefix,"-pc_ilu_levels",&levels)) {
     PCILUSetLevels(pc,levels);
   }
   return 0;
@@ -92,9 +92,9 @@ static int PCPrintHelp_ILU(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr," %silu_ordering name: ordering to reduce fill",p);
+  fprintf(stderr," %spc_ilu_ordering name: ordering to reduce fill",p);
   fprintf(stderr," (nd,natural,1wd,rcm,qmd)\n");
-  fprintf(stderr," %silu_levels levels: levels of fill",p);
+  fprintf(stderr," %spc_ilu_levels levels: levels of fill",p);
   return 0;
 }
 

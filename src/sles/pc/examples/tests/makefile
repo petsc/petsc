@@ -21,20 +21,20 @@ runexamples:
            if (diff ex1_1.out ex1_1.tmp) then true; \
            else echo "Possible problem with ex1_1, diffs above"; fi; \
            $(RM) -f ex1_1.tmp 
-	-@$(MPIRUN) ex2 -kspmethod cg -kspmonitor > ex2_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex2 -ksp_method cg -ksp_monitor > ex2_1.tmp 2>&1;   \
            if (diff ex2_1.out ex2_1.tmp) then true; \
            else echo "Possible problem with ex2_1, diffs above"; fi; \
            $(RM) -f ex2_1.tmp 
-	-@$(MPIRUN) ex3 -kspmethod gmres -kspmonitor -pcmethod sor\
+	-@$(MPIRUN) ex3 -ksp_method gmres -ksp_monitor -pc_method sor\
                              -sor_symmetric > ex3_1.tmp 2>&1;   \
            if (diff ex3_1.out ex3_1.tmp) then true; \
            else echo "Possible problem with ex3_1, diffs above"; fi; \
            $(RM) -f ex3_1.tmp 
-	-@$(MPIRUN) ex4 -kspmethod cg -kspmonitor  > ex4_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex4 -ksp_method cg -ksp_monitor  > ex4_1.tmp 2>&1;   \
            if (diff ex4_1.out ex4_1.tmp) then true; \
            else echo "Possible problem with ex4_1, diffs above"; fi; \
            $(RM) -f ex4_1.tmp 
-	-@$(MPIRUN) ex4 -kspmethod bcgs -kspmonitor  > ex4_2.tmp 2>&1;   \
+	-@$(MPIRUN) ex4 -ksp_method bcgs -ksp_monitor  > ex4_2.tmp 2>&1;   \
            if (diff ex4_2.out ex4_2.tmp) then true; \
            else echo "Possible problem with ex4_2, diffs above"; fi; \
            $(RM) -f ex4_2.tmp 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.11 1995/04/15 03:27:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.12 1995/04/16 03:43:06 curfman Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -298,16 +298,16 @@ static int PCSetFromOptions_MG(PC pc)
   if (!pc->data) {
     SETERR(1,"For multigrid PCSetFromOptions() must be after MGSetLevels");
   }
-  if (OptionsGetInt(0,pc->prefix,"-mgcycles",&m)) {
+  if (OptionsGetInt(0,pc->prefix,"-pc_mg_cycles",&m)) {
     MGSetCycles(pc,m);
   } 
-  if (OptionsGetInt(0,pc->prefix,"-mgsmoothup",&m)) {
+  if (OptionsGetInt(0,pc->prefix,"-pc_mg_smoothup",&m)) {
     MGSetNumberSmoothUp(pc,m);
   }
-  if (OptionsGetInt(0,pc->prefix,"-mgsmoothdown",&m)) {
+  if (OptionsGetInt(0,pc->prefix,"-pc_mg_smoothdown",&m)) {
     MGSetNumberSmoothDown(pc,m);
   }
-  if (OptionsGetString(0,pc->prefix,"-mgmethod",buff,15)) {
+  if (OptionsGetString(0,pc->prefix,"-pc_mg_method",buff,15)) {
     if (!strcmp(buff,"additive")) m = Additive;
     else if (!strcmp(buff,"multiplicative")) m = Multiplicative;
     else if (!strcmp(buff,"fullmultigrid")) m = FullMultigrid;
@@ -322,11 +322,11 @@ static int PCPrintHelp_MG(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr," %smgmethod [additive,multiplicative,fullmultigrid,kaskade\
+  fprintf(stderr," %spc_mg_method [additive,multiplicative,fullmultigrid,kaskade\
                   : type of multigrid method\n",p);
-  fprintf(stderr," %smgsmoothdown m: number of pre-smooths\n",p);
-  fprintf(stderr," %smgsmoothup m: number of post-smooths\n",p);
-  fprintf(stderr," %smgcycles m: 1 for V-cycle, 2 for W-cycle\n",p);
+  fprintf(stderr," %spc_mg_smoothdown m: number of pre-smooths\n",p);
+  fprintf(stderr," %spc_mg_smoothup m: number of post-smooths\n",p);
+  fprintf(stderr," %spc_mg_cycles m: 1 for V-cycle, 2 for W-cycle\n",p);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.12 1995/04/16 03:43:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.13 1995/04/17 02:16:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -30,31 +30,31 @@ static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
   return 0;
 }
 
-/* parses arguments of the form -sor [symmetric,forward,back][omega=...] */
+/* parses arguments of the form -pc_sor [symmetric,forward,back][omega=...] */
 static int PCSetFromOptions_SOR(PC pc)
 {
   int    its;
   double omega;
 
-  if (OptionsGetDouble(0,pc->prefix,"-sor_omega",&omega)) {
+  if (OptionsGetDouble(0,pc->prefix,"-pc_sor_omega",&omega)) {
     PCSORSetOmega(pc,omega);
   } 
-  if (OptionsGetInt(0,pc->prefix,"-sor_its",&its)) {
+  if (OptionsGetInt(0,pc->prefix,"-pc_sor_its",&its)) {
     PCSORSetIterations(pc,its);
   }
-  if (OptionsHasName(0,pc->prefix,"-sor_symmetric")) {
+  if (OptionsHasName(0,pc->prefix,"-pc_sor_symmetric")) {
     PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);
   }
-  if (OptionsHasName(0,pc->prefix,"-sor_backward")) {
+  if (OptionsHasName(0,pc->prefix,"-pc_sor_backward")) {
     PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);
   }
-  if (OptionsHasName(0,pc->prefix,"-sor_local_symmetric")) {
+  if (OptionsHasName(0,pc->prefix,"-pc_sor_local_symmetric")) {
     PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);
   }
-  if (OptionsHasName(0,pc->prefix,"-sor_local_backward")) {
+  if (OptionsHasName(0,pc->prefix,"-pc_sor_local_backward")) {
     PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);
   }
-  if (OptionsHasName(0,pc->prefix,"-sor_local_forward")) {
+  if (OptionsHasName(0,pc->prefix,"-pc_sor_local_forward")) {
     PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);
   }
   return 0;
@@ -105,11 +105,11 @@ $      SOR_LOCAL_SYMMETRIC_SWEEP
 $      SOR_LOCAL_BACKWARD_SWEEP
 
    Options Database Keys:
-$  -sor_symmetric
-$  -sor_backward
-$  -sor_local_forward
-$  -sor_local_symmetric
-$  -sor_local_backward
+$  -pc_sor_symmetric
+$  -pc_sor_backward
+$  -pc_sor_local_forward
+$  -pc_sor_local_symmetric
+$  -pc_sor_local_backward
 
    Notes: 
    To use the Eisenstat trick with SSOR, employ the PCESOR preconditioner,
@@ -136,7 +136,7 @@ int PCSORSetSymmetric(PC pc, int flag)
 .  omega - relaxation coefficient (0 < omega < 2). 
 
    Options Database Key:
-$  -sor_omega  omega
+$  -pc_sor_omega  omega
 
 .keywords: PC, SOR, SSOR, set, relaxation, omega
 
@@ -159,7 +159,7 @@ int PCSORSetOmega(PC pc, double omega)
 .  its - number of iterations to use
 
    Options Database Key:
-$  -sor_its  its
+$  -pc_sor_its  its
 
 .keywords: PC, SOR, SSOR, set, iterations
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: direct.c,v 1.14 1995/04/13 04:55:21 curfman Exp curfman $";
+static char vcid[] = "$Id: direct.c,v 1.15 1995/04/16 03:43:25 curfman Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -55,7 +55,7 @@ int PCDirectSetOrdering(PC pc,int ordering)
 .  pc - the preconditioner context
 
    Options Database Key:
-$  -direct_in_place
+$  -pc_direct_in_place
 
    Note:
    PCDirectSetUseInplace() can only be used with the KSP method KSPPREONLY.
@@ -80,10 +80,10 @@ static int PCSetFromOptions_Direct(PC pc)
 {
   char      name[10];
   int       ordering = ORDER_ND;
-  if (OptionsHasName(0,pc->prefix,"-direct_in_place")) {
+  if (OptionsHasName(0,pc->prefix,"-pc_direct_in_place")) {
     PCDirectSetUseInplace(pc);
   }
-  if (OptionsGetString(0,pc->prefix,"-direct_ordering",name,10)) {
+  if (OptionsGetString(0,pc->prefix,"-pc_direct_ordering",name,10)) {
     if (!strcmp(name,"nd")) ordering = ORDER_ND;
     else if (!strcmp(name,"natural")) ordering = ORDER_NATURAL;
     else if (!strcmp(name,"1wd")) ordering = ORDER_1WD;
@@ -99,8 +99,8 @@ static int PCPrintHelp_Direct(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr," %sdirect_in_place: do factorization in place\n",p);
-  fprintf(stderr," %sdirect_ordering name: ordering to reduce fill",p);
+  fprintf(stderr," %spc_direct_in_place: do factorization in place\n",p);
+  fprintf(stderr," %spc_direct_ordering name: ordering to reduce fill",p);
   fprintf(stderr," (nd,natural,1wd,rcm,qmd)\n");
   return 0;
 }
