@@ -285,14 +285,12 @@ extern double atof(const char *);
 extern int    free(void *);
 extern void   *malloc(long unsigned int );
 extern void   *memalign (size_t, size_t);
-extern unsigned int getpagesize();
 }
 
 #else
 extern char   *getenv( char *);
 extern double atof(char *);
 extern int    atoi(char*);
-extern unsigned int getpagesize();
 #endif
 #endif
 
