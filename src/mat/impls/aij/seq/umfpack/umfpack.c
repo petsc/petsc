@@ -181,7 +181,7 @@ int MatLUFactorSymbolic_SeqAIJ_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
 
   /* Control parameters used by numeric factorization */
   ierr = PetscOptionsReal("-mat_umfpack_pivot_tolerance","Control[UMFPACK_PIVOT_TOLERANCE]","None",lu->Control[UMFPACK_PIVOT_TOLERANCE],&lu->Control[UMFPACK_PIVOT_TOLERANCE],PETSC_NULL);CHKERRQ(ierr);
-#if !defined(PETSC_HAVE_UMFPACK_42_OR_NEWER)
+#if !defined(PETSC_HAVE_UMFPACK_41_OR_NEWER)
   ierr = PetscOptionsReal("-mat_umfpack_relaxed_amalgamation","Control[UMFPACK_RELAXED_AMALGAMATION]","None",lu->Control[UMFPACK_RELAXED_AMALGAMATION],&lu->Control[UMFPACK_RELAXED_AMALGAMATION],PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_umfpack_relaxed2_amalgamation","Control[UMFPACK_RELAXED2_AMALGAMATION]","None",lu->Control[UMFPACK_RELAXED2_AMALGAMATION],&lu->Control[UMFPACK_RELAXED2_AMALGAMATION],PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_umfpack_relaxed3_amalgamation","Control[UMFPACK_RELAXED3_AMALGAMATION]","None",lu->Control[UMFPACK_RELAXED3_AMALGAMATION],&lu->Control[UMFPACK_RELAXED3_AMALGAMATION],PETSC_NULL);CHKERRQ(ierr);
@@ -206,7 +206,11 @@ int MatLUFactorSymbolic_SeqAIJ_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
 
   /* symbolic factorization of A' */
   /* ---------------------------------------------------------------------- */
+#if defined(PETSC_HAVE_UMFPACK_41_OR_NEWER)
+  status = umfpack_di_qsymbolic(n,m,ai,aj,PETSC_NULL,lu->perm_c,&lu->Symbolic,lu->Control,lu->Info) ;
+#else
   status = umfpack_di_qsymbolic(n,m,ai,aj,lu->perm_c,&lu->Symbolic,lu->Control,lu->Info) ;
+#endif
   if (status < 0){
     umfpack_di_report_info(lu->Control, lu->Info) ;
     umfpack_di_report_status(lu->Control, status) ;
