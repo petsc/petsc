@@ -7,10 +7,10 @@ CFLAGS   =  $(PETSC_INCLUDE) -I../..\
            -I../../../mat/impls/row/seq \
            -I../../../mat/impls/bdiag/seq -I../../../mat\
            -D__DIR__='"pc/impls/bjacobi/"'
-SOURCEC  = bjacobi.c bjmpiaij.c bjmpirow.c bjmpibd.c
+SOURCEC  = bjacobi.c
 SOURCEF  =
 SOURCEH  = bjacobi.h
-OBJSC    = bjacobi.o bjmpiaij.o bjmpirow.o bjmpibd.o
+OBJSC    = bjacobi.o
 OBJSF    =
 LIBBASE  = libpetscsles
 DIRS     = 
