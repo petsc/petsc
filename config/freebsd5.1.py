@@ -1,7 +1,7 @@
 #!/usr/bin/env python
   
 configure_options = [
-  '--with-mpi-dir=/software/mpich-1.2.5.2'
+  '--with-mpi-dir=/software/mpich2-1.0-rc2'
   ]
 
 if __name__ == '__main__':
