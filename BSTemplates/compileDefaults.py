@@ -313,43 +313,41 @@ class UsingMathematica(UsingCompiler):
 
   def getCompileSuffixes(self):
     '''The suffix for Mathematica files'''
-    return ['.m']
+    return ['.m', '.cc', '.hh']
 
   def getTagger(self, rootDir):
-    return compile.TagC(root = rootDir)
+    return compile.TagCxx(root = rootDir)
 
   def getCompiler(self, library):
-    return compile.CompileC(library)
-
-  def getClientLibrary(self, project, lang, isArchive = 1, root = None):
-    '''Need to return empty fileset for Python client library'''
-    if lang == self.getLanguage():
-      return fileset.FileSet()
-    else:
-      return UsingCompiler.getClientLibrary(self, project, lang, isArchive, root)
+    return compile.CompileCxx(library)
 
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
     stubDir = self.usingSIDL.getStubDir(self.getLanguage(), package)
     library = self.getServerLibrary(project, self.getLanguage(), package)
+    # IOR Filter
+    iorFilter = transform.FileFilter(self.usingSIDL.compilerDefaults.isIOR, tags = ['c', 'old c'])
+    # IOR compiler
+    compileC = compile.CompileC(library)
+    compileC.defines.extend(self.getDefines())
+    compileC.includeDirs.append(rootDir)
+    compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     # Server Filter
-    serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['c', 'old c'])
-    # IOR and server compile are both C
-    compiler = compile.CompileC(library)
-    compiler.defines.extend(self.getDefines())
-    compiler.includeDirs.append(rootDir)
-    compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
-    # Server specific flags
-    compiler.includeDirs.append(stubDir)
-    compiler.includeDirs.extend(self.includeDirs[package])
-    compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
-    return [compile.TagC(root = rootDir), serverFilter, compiler]
-
-  def getExecutableCompileTarget(self, project, sources, executable):
-    return []
-
-  def getExecutableLinkTarget(self, project):
-    return []
+    serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['cxx', 'old cxx'])
+    # Server compiler
+    compileCxx = compile.CompileCxx(library)
+    compileCxx.defines.extend(self.getDefines())
+    compileCxx.includeDirs.append(rootDir)
+    compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileCxx.includeDirs.append(stubDir)
+    compileCxx.includeDirs.extend(self.includeDirs[package])
+    compileCxx.includeDirs.extend(self.includeDirs[self.getLanguage()])
+    for dir in self.usingSIDL.repositoryDirs:
+      includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
+      if os.path.isdir(includeDir):
+        compileCxx.includeDirs.append(includeDir)
+    targets = [compile.TagC(root = rootDir), iorFilter, compileC, compile.TagCxx(root = rootDir), serverFilter, compileCxx]
+    return targets
 
 class UsingF77 (UsingCompiler):
   '''This class handles all interaction specific to the Fortran 77 language'''
