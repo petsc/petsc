@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.9 1999/09/07 17:01:26 bsmith Exp bsmith $ 
+# $Id: base_variables,v 1.10 1999/12/19 04:16:33 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -6,6 +6,7 @@
 #
 LD		   = ld  -n32
 AR		   = ar
+AR_FLAGS	   = cr
 RM		   = rm -f
 RANLIB		   = true
 OMAKE		   = make
