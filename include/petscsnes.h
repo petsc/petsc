@@ -1,6 +1,6 @@
 /* $Id: petscsnes.h,v 1.111 2001/08/06 21:17:05 bsmith Exp $ */
 /*
-    User interface for the nonlinear solvers and unconstrained minimization package.
+    User interface for the nonlinear solvers package.
 */
 #if !defined(__PETSCSNES_H)
 #define __PETSCSNES_H
@@ -13,7 +13,7 @@
 
   Concepts: nonlinear solvers
 
-.seealso:  SNESCreate(), SNESSetType(), SNESType, TS, SLES, KSP, PC, SNESProblemType
+.seealso:  SNESCreate(), SNESSetType(), SNESType, TS, SLES, KSP, PC
 S*/
 typedef struct _p_SNES* SNES;
 
@@ -26,32 +26,20 @@ typedef struct _p_SNES* SNES;
 
 .seealso: SNESSetType(), SNES
 E*/
-#define SNESEQLS          "ls"
-#define SNESEQTR          "tr"
-#define SNESEQTEST        "test"
-#define SNESUMLS          "umls"
-#define SNESUMTR          "umtr"
+#define SNESLS          "ls"
+#define SNESTR          "tr"
+#define SNESTEST        "test"
 typedef char *SNESType;
 
 /* Logging support */
 extern int SNES_COOKIE;
 extern int MATSNESMFCTX_COOKIE;
-extern int SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_MinimizationFunctionEval, SNES_GradientEval;
-extern int SNES_HessianEval;
+extern int SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
+
 
 EXTERN int SNESInitializePackage(char *);
 
-/*E
-    SNESProblemType - Determines the type of problem this SNES object is to be used to solve
-
-   Level: beginner
-
-.seealso: SNESCreate(), SNESGetProblemType()
-E*/
-typedef enum {SNES_NONLINEAR_EQUATIONS,SNES_UNCONSTRAINED_MINIMIZATION,SNES_LEAST_SQUARES} SNESProblemType;
-
-EXTERN int SNESCreate(MPI_Comm,SNESProblemType,SNES*);
-EXTERN int SNESGetProblemType(SNES,SNESProblemType*);
+EXTERN int SNESCreate(MPI_Comm,SNES*);
 EXTERN int SNESDestroy(SNES);
 EXTERN int SNESSetType(SNES,SNESType);
 EXTERN int SNESSetMonitor(SNES,int(*)(SNES,int,PetscReal,void*),void *,int (*)(void *));
@@ -184,10 +172,8 @@ typedef enum {/* converged */
               SNES_CONVERGED_ITERATING         =  0} SNESConvergedReason;
 
 EXTERN int SNESSetConvergenceTest(SNES,int (*)(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void*);
-EXTERN int SNESConverged_UM_LS(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
-EXTERN int SNESConverged_UM_TR(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
-EXTERN int SNESConverged_EQ_LS(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
-EXTERN int SNESConverged_EQ_TR(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
+EXTERN int SNESConverged_LS(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
+EXTERN int SNESConverged_TR(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 EXTERN int SNESGetConvergedReason(SNES,SNESConvergedReason*);
 
 EXTERN int SNESDAFormFunction(SNES,Vec,Vec,void*);
@@ -211,24 +197,7 @@ EXTERN int SNESSetLineSearchCheck(SNES,int(*)(SNES,void*,Vec,PetscTruth*),void*)
 EXTERN int SNESSetLineSearchParams(SNES,PetscReal,PetscReal,PetscReal);
 EXTERN int SNESGetLineSearchParams(SNES,PetscReal*,PetscReal*,PetscReal*);
 
-/* --------- Unconstrained minimization routines --------------------------------*/
-EXTERN int SNESSetHessian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
-EXTERN int SNESGetHessian(SNES,Mat*,Mat*,void **);
-EXTERN int SNESDefaultComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-EXTERN int SNESDefaultComputeHessianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-EXTERN int SNESSetGradient(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void*);
-EXTERN int SNESGetGradient(SNES,Vec*,void**);
-EXTERN int SNESGetGradientNorm(SNES,PetscScalar*);
-EXTERN int SNESComputeGradient(SNES,Vec,Vec);
-EXTERN int SNESSetMinimizationFunction(SNES,int(*)(SNES,Vec,PetscReal*,void*),void*);
-EXTERN int SNESComputeMinimizationFunction(SNES,Vec,PetscReal*);
-EXTERN int SNESGetMinimizationFunction(SNES,PetscReal*,void**);
-EXTERN int SNESSetMinimizationFunctionTolerance(SNES,PetscReal);
-EXTERN int SNESLineSearchSetDampingParameter(SNES,PetscScalar*);
-
-
-/* Should these 2 routines be private? */
-EXTERN int SNESComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*);
+/* Should this routine be private? */
 EXTERN int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 
 #endif
