@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.60 1999/02/01 15:27:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.61 1999/02/02 16:21:34 bsmith Exp bsmith $";
 #endif
 
 #include "vec.h"        /*I "vec.h" I*/
@@ -14,6 +14,7 @@ int DrawScalePopup(Draw popup,double min,double max)
   MPI_Comm comm;
 
   PetscFunctionBegin;
+  ierr = DrawCheckResizedWindow(popup); CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) popup,&comm);CHKERRQ(ierr);
   MPI_Comm_rank(comm,&rank);
   if (rank) PetscFunctionReturn(0);
