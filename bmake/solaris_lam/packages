@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.19 2000/11/28 17:26:31 bsmith Exp balay $ 
+# $Id: base.site,v 1.20 2001/03/27 22:17:30 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -20,9 +20,9 @@ BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/solaris -lflapack -lfblas
 #
 # Note: if ch_shmem version of mpich is used, replace -lsocket by -lthread
 #
-MPI_HOME       = /home/petsc/software/lam-6.3.1/solaris
-MPI_LIB        = -L${MPI_HOME}/lib -lmpi -ltstdio -ltrillium -largs -lt -lsocket -lnsl -lgen
-MPI_INCLUDE    = -I${MPI_HOME}/h -DPETSC_HAVE_MPI_COMM_F2C
+MPI_HOME       = /home/petsc/software/lam-6.5.1/solaris
+MPI_LIB        = -L${MPI_HOME}/lib -lmpi -llam
+MPI_INCLUDE    = -I${MPI_HOME}/include -DPETSC_HAVE_MPI_COMM_F2C
 MPIRUN         = ${PETSC_DIR}/bin/mpirun.lam
 #
 # For the Berkeley am2 device for MPICH use
