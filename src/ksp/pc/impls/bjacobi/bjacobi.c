@@ -321,7 +321,7 @@ PetscErrorCode PCBJacobiSetTotalBlocks_BJacobi(PC pc,int blocks,int *lens)
 
   PetscFunctionBegin;
 
-  if (pc->setupcalled > 0) SETERRQ(1,"Cannot set number of blocks after PCSetUp()/KSPSetUp() has been called");
+  if (pc->setupcalled > 0) SETERRQ(PETSC_ERR_ORDER,"Cannot set number of blocks after PCSetUp()/KSPSetUp() has been called");
   jac->n = blocks;
   if (!lens) {
     jac->g_lens = 0;
@@ -469,7 +469,7 @@ PetscErrorCode PCBJacobiGetSubKSP(PC pc,int *n_local,int *first_local,KSP *ksp[]
   if (f) {
     ierr = (*f)(pc,n_local,first_local,ksp);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Cannot get subsolvers for this preconditioner");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot get subsolvers for this preconditioner");
   }
   PetscFunctionReturn(0);
 }

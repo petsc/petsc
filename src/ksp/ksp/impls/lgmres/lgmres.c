@@ -420,7 +420,7 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !lgmres->Rsvd) {
-     SETERRQ(1,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+     SETERRQ(PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   }
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its        = 0;
@@ -922,8 +922,8 @@ PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp,int aug_dim)
 
   PetscFunctionBegin;
 
-  if (aug_dim < 0) SETERRQ(1,"Augmentation dimension must be positive");
-  if (aug_dim > (lgmres->max_k -1))  SETERRQ(1,"Augmentation dimension must be <= (restart size-1)");
+  if (aug_dim < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be positive");
+  if (aug_dim > (lgmres->max_k -1))  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be <= (restart size-1)");
 
   lgmres->aug_dim = aug_dim;
 

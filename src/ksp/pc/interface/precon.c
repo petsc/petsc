@@ -395,7 +395,7 @@ PetscErrorCode PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
-  if (!pc->ops->applysymmetricleft) SETERRQ(1,"PC does not have left symmetric apply");
+  if (!pc->ops->applysymmetricleft) SETERRQ(PETSC_ERR_SUP,"PC does not have left symmetric apply");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -438,7 +438,7 @@ PetscErrorCode PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
-  if (!pc->ops->applysymmetricright) SETERRQ(1,"PC does not have left symmetric apply");
+  if (!pc->ops->applysymmetricright) SETERRQ(PETSC_ERR_SUP,"PC does not have left symmetric apply");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -555,7 +555,7 @@ PetscErrorCode PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Side must be right, left, or symmetric");
   }
   if (pc->diagonalscale && side == PC_SYMMETRIC) {
-    SETERRQ(1,"Cannot include diagonal scaling with symmetric preconditioner application");
+    SETERRQ(PETSC_ERR_SUP,"Cannot include diagonal scaling with symmetric preconditioner application");
   }
 
   if (pc->setupcalled < 2) {
@@ -581,7 +581,7 @@ PetscErrorCode PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
       ierr = PCApply(pc,work,y);CHKERRQ(ierr);
       ierr = PCDiagonalScaleLeft(pc,y,y);CHKERRQ(ierr);
     } else if (side == PC_SYMMETRIC) {
-      SETERRQ(1,"Cannot provide diagonal scaling with symmetric application of preconditioner");
+      SETERRQ(PETSC_ERR_SUP,"Cannot provide diagonal scaling with symmetric application of preconditioner");
     }
   } else {
     if (pc->ops->applyBA) {

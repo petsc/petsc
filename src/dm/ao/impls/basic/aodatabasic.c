@@ -772,7 +772,7 @@ PetscErrorCode AODataKeyGetActive_Basic(AOData aodata,const char name[],const ch
 
   PetscFunctionBegin;
   ierr = AODataSegmentFind_Private(aodata,name,segname,&flag,&key,&segment);CHKERRQ(ierr);
-  if (!flag) SETERRQ(1,"Cannot locate segment");
+  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot locate segment");
 
   bt = (PetscBT) segment->data;
   bs = segment->bs;
@@ -813,7 +813,7 @@ PetscErrorCode AODataKeyGetActiveLocal_Basic(AOData aodata,const char name[],con
 
   PetscFunctionBegin;
   ierr = AODataSegmentFind_Private(aodata,name,segname,&flag,&key,&segment);CHKERRQ(ierr);
-  if (!flag) SETERRQ(1,"Cannot locate segment");
+  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot locate segment");
 
   bt = (PetscBT) segment->data;
   bs = segment->bs;

@@ -97,7 +97,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(1,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -266,7 +266,7 @@ PetscErrorCode VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
   PetscFunctionBegin;
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(1,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,,"Vector not generated from a DA");
 
   dims[0] = da->M;
   dims[1] = da->N;
@@ -280,7 +280,7 @@ PetscErrorCode VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 #else /* !defined(PETSC_HAVE_HDF4) */
   PetscFunctionBegin;
-  SETERRQ(1,"Build PETSc with HDF4 to use this viewer");
+  SETERRQ(PETSC_ERR_SUP_SYS,"Build PETSc with HDF4 to use this viewer");
 #endif    
 }
 
@@ -304,7 +304,7 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(1,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,,"Vector not generated from a DA");
   ierr = DAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
 
   /* create the appropriate DA to map the coordinates to natural ordering */
@@ -328,7 +328,7 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
   /* Write the netCDF dataset */
   ierr = PetscViewerNetcdfGetID(viewer,&ncid);CHKERRQ(ierr);
-  if (ncid < 0) SETERRQ(1,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
+  if (ncid < 0) SETERRQ(PETSC_ERR_ORDER,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
   /* define dimensions */
   ierr = VecGetSize(xin,&xin_N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(xin,&xin_n);CHKERRQ(ierr);
@@ -359,7 +359,7 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 #else /* !defined(PETSC_HAVE_PNETCDF) */
   PetscFunctionBegin;
-  SETERRQ(1,"Build PETSc with NETCDF to use this viewer");
+  SETERRQ(PETSC_ERR_SUP_SYS,"Build PETSc with NETCDF to use this viewer");
 #endif    
 }
 
@@ -379,7 +379,7 @@ PetscErrorCode VecView_MPI_DA(Vec xin,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(1,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF4,&ishdf4);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
@@ -431,7 +431,7 @@ PetscErrorCode VecLoadIntoVector_Binary_DA(PetscViewer viewer,Vec xin)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(1,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
   ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
   ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);

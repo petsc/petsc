@@ -134,7 +134,7 @@ static PetscErrorCode PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
   
   PetscFunctionBegin;
-  if (!dir->fact) SETERRQ(1,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
+  if (!dir->fact) SETERRQ(PETSC_ERR_ORDER,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
   *mat = dir->fact;
   PetscFunctionReturn(0);
 }

@@ -31,7 +31,7 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!next) {
-    SETERRQ(1,"No composite preconditioners supplied via PCCompositeAddPC()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC()");
   }
   if (next->next && !jac->work2) { /* allocate second work vector */
     ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
@@ -64,10 +64,10 @@ static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!next) {
-    SETERRQ(1,"No composite preconditioners supplied via PCCompositeAddPC()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC()");
   }
   if (!next->next || next->next->next) {
-    SETERRQ(1,"Special composite preconditioners requires exactly two PCs");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Special composite preconditioners requires exactly two PCs");
   }
 
   ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!next) {
-    SETERRQ(1,"No composite preconditioners supplied via PCCompositeAddPC()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC()");
   }
   ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
@@ -233,7 +233,7 @@ PetscErrorCode PCCompositeSetType_Composite(PC pc,PCCompositeType type)
   } else if (type ==  PC_COMPOSITE_SPECIAL) {
     pc->ops->apply = PCApply_Composite_Special;
   } else {
-    SETERRQ(1,"Unkown composite preconditioner type");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Unkown composite preconditioner type");
   }
   PetscFunctionReturn(0);
 }
@@ -292,7 +292,7 @@ PetscErrorCode PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
   next = jac->head;
   for (i=0; i<n; i++) {
     if (!next->next) {
-      SETERRQ(1,"Not enough PCs in composite preconditioner");
+      SETERRQ(PETSC_ERR_ARG_INCOMP,"Not enough PCs in composite preconditioner");
     }
     next = next->next;
   }
@@ -435,7 +435,7 @@ PetscErrorCode PCCompositeGetPC(PC pc,int n,PC *subpc)
   if (f) {
     ierr = (*f)(pc,n,subpc);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Cannot get pc, not composite type");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot get pc, not composite type");
   }
   PetscFunctionReturn(0);
 }

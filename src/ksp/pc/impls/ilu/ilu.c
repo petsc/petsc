@@ -164,7 +164,7 @@ PetscErrorCode PCILUDTSetReuseFill_ILUDT(PC pc,PetscTruth flag)
   PetscFunctionBegin;
   ilu = (PC_ILU*)pc->data;
   ilu->reusefill = flag;
-  if (flag) SETERRQ(1,"Not yet supported");
+  if (flag) SETERRQ(PETSC_ERR_SUP,"Not yet supported");
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -903,7 +903,7 @@ static PetscErrorCode PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
   PC_ILU *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
-  if (!ilu->fact) SETERRQ(1,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
+  if (!ilu->fact) SETERRQ(PETSC_ERR_ORDER,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
   *mat = ilu->fact;
   PetscFunctionReturn(0);
 }

@@ -191,7 +191,7 @@ PetscErrorCode MatSNESMFDefaultSetUmin_Private(Mat mat,PetscReal umin)
 
   PetscFunctionBegin;
   if (!ctx) {
-    SETERRQ(1,"MatSNESMFDefaultSetUmin() attached to non-shell matrix");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"MatSNESMFDefaultSetUmin() attached to non-shell matrix");
   }
   hctx = (MatSNESMFDefault*)ctx->hctx;
   hctx->umin = umin;

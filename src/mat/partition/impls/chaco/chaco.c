@@ -173,7 +173,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
         close(fd_pipe[1]);
 #endif
 
-        if (ierr) { SETERRQ(1, chaco->mesg_log); }
+        if (ierr) { SETERRQ(PETSC_ERR_LIB, chaco->mesg_log); }
 
         ierr = PetscFree(adjacency);CHKERRQ(ierr);
 

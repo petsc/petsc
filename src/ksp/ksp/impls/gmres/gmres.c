@@ -230,7 +230,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !gmres->Rsvd) {
-    SETERRQ(1,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+    SETERRQ(PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   }
 
   ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -629,7 +629,7 @@ PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP ksp,PetscReal tol)
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  if (tol < 0.0) SETERRQ(1,"Tolerance must be non-negative");
+  if (tol < 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
   gmres->haptol = tol;
   PetscFunctionReturn(0);
 }
@@ -644,7 +644,7 @@ PetscErrorCode KSPGMRESSetRestart_GMRES(KSP ksp,int max_k)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (max_k < 1) SETERRQ(1,"Restart must be positive");
+  if (max_k < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
   if (!ksp->setupcalled) {
     gmres->max_k = max_k;
   } else if (gmres->max_k != max_k) {

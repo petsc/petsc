@@ -142,7 +142,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         /* if in the call we got an error, we say it */
 
         if (ierr) {
-            SETERRQ(1, party->mesg_log);
+            SETERRQ(PETSC_ERR_LIB, party->mesg_log);
         }
 
         parttab = part_party;

@@ -813,7 +813,7 @@ PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp,int max_k)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (max_k < 1) SETERRQ(1,"Restart must be positive");
+  if (max_k < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
   if (!ksp->setupcalled) {
     gmres->max_k = max_k;
   } else if (gmres->max_k != max_k) {
