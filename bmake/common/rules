@@ -249,9 +249,9 @@ latexpages:
 
 # Builds man pages (HTML version) in two stages
 # See rule for allwwwpages in $(PETSC_DIR)/makefile 
-#   1.) wwwpages_nocite: builds the file www.cit for hyperlinks
+#   1.) wwwpages_buildcite: builds the file www.cit for hyperlinks
 #   2.) wwwpages: builds the html pages, complete with hyperlinks
-wwwpages_nocite:
+wwwpages_buildcite:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	doctext -html -index $(PETSC_DIR)/docs/www/www.cit -heading PETSc \
 		-mpath $(PETSC_DIR)/docs/www/man$(MANSEC) \
