@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.153 1999/01/12 23:15:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.154 1999/01/18 21:55:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -24,7 +24,7 @@ int MatMissingDiag_SeqBAIJ(Mat A)
   int         *diag = a->diag, *jj = a->j,i;
 
   PetscFunctionBegin;
-  for ( i=0; i<a->m; i++ ) {
+  for ( i=0; i<a->mbs; i++ ) {
     if (jj[diag[i]] != i) {
       SETERRQ1(1,1,"Matrix is missing diagonal number %d",i);
     }
