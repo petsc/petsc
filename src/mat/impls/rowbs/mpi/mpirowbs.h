@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.12 1995/06/08 20:42:06 curfman Exp curfman $ */
+/* $Id: mpirowbs.h,v 1.13 1995/06/08 21:20:01 curfman Exp curfman $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -15,13 +15,13 @@
 
 typedef struct {
   int           *rowners;           /* range of rows owned by each processor */
-  int           m,n,M,N;            /* local rows, cols, global rows, cols */
-  int           rstart,rend;
-  int           numtids,mytid;
+  int           m,n,M,N;            /* local rows, cols; global rows, cols */
+  int           rstart,rend;        /* starting and ending owned rows */
+  int           numtids,mytid;      /* number of procs, my proc ID */
   int           singlemalloc, sorted, roworiented, nonew;
   int           nz, maxnz;          /* total nonzeros stored, allocated */
   int           mem;                /* total memory */
-  int           *imax;              /* Allocated matrix space per row */
+  int           *imax;              /* allocated matrix space per row */
 
   /*  Used in Matrix assembly */
   int           assembled;          /* MatAssemble has been called */
@@ -37,8 +37,8 @@ typedef struct {
   int           fact_clone;
 
   /* BlockSolve data */
-  BSprocinfo *procinfo;
-  BSmapping  *bsmap;
+  BSprocinfo *procinfo;         /* BlockSolve processor context */
+  BSmapping  *bsmap;            /* BlockSolve mapping context */
   BSspmat    *A;                /* initial matrix */
   BSpar_mat  *pA;               /* permuted matrix */
   BScomm     *comm_pA;          /* communication info for triangular solves */
@@ -56,11 +56,11 @@ typedef struct {
 
 /* Add routine declarations that for some strange reason are absent
   in the BS include files */
-  void BSforward1();
+/*  void BSforward1();
   void BSbackward1();
   void BSiperm_dvec();
   void BSfor_solve1();
-  void BSback_solve1();
+  void BSback_solve1(); */
 
 #define CHKERRBS(a) {if (__BSERROR_STATUS) {fprintf(stderr, \
         "BlockSolve Error Code %d\n",__BSERROR_STATUS); CHKERRQ(a);}}

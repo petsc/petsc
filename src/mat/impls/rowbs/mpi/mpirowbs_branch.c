@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.38 1995/06/20 01:48:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.39 1995/06/28 15:23:36 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -73,11 +73,11 @@ static int MatCreateMPIRowbs_local(Mat mat,int nz,int *nnz)
     vs++;
   }
   bsif->mem = sizeof(BSspmat) + len + nz*(sizeof(int) + sizeof(Scalar));
-  bsif->nz	    = 0;
-  bsif->maxnz	    = nz;
-  bsif->sorted      = 0;
-  bsif->roworiented = 1;
-  bsif->nonew       = 0;
+  bsif->nz	     = 0;
+  bsif->maxnz	     = nz;
+  bsif->sorted       = 0;
+  bsif->roworiented  = 1;
+  bsif->nonew        = 0;
   bsif->singlemalloc = 0;
 
   if (nzalloc) PETSCFREE(nnz);
@@ -996,7 +996,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   Mat_MPIRowbs *mrow;
   BSmapping    *bsmap;
   BSoff_map    *bsoff;
-  int          i, ierr, *offset, low, high;
+  int          i, ierr, Mtemp, *offset, low, high;
   BSprocinfo   *bspinfo = (BSprocinfo *) procinfo;
   
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIROW_BS,comm);
@@ -1013,9 +1013,18 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   MPI_Comm_rank(comm,&mrow->mytid);
   MPI_Comm_size(comm,&mrow->numtids);
 
-  if (M == PETSC_DECIDE) {MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm );}
-  if (m == PETSC_DECIDE) 
+  if (M != PETSC_DECIDE && m != PETSC_DECIDE) {
+    /* Perhaps this should be removed for better efficiency -- but could be
+       risky. */
+    MPI_Allreduce(&m,&Mtemp,1,MPI_INT,MPI_SUM,comm);
+    if (Mtemp != M) SETERRQ(1,"Sum of local dimensions != global dimension.");
+  } else if (M == PETSC_DECIDE) {
+    MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);
+  } else if (m == PETSC_DECIDE) {
     {m = M/mrow->numtids + ((M % mrow->numtids) > mrow->mytid);}
+  } else {
+    SETERRQ(1,"MatCreateMPIRowbs: Must set local and/or global matrix size.");
+  }
   mrow->N    = M;
   mrow->M    = M;
   mrow->m    = m;
@@ -1074,8 +1083,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   ierr = MatGetOwnershipRange(mat,&low,&high); CHKERRQ(ierr);
   offset = &low;
 
-  mrow->bsmap = (void *) PETSCNEW(BSmapping);CHKPTRQ(mrow->bsmap);
-
+  mrow->bsmap = (void *) PETSCNEW(BSmapping); CHKPTRQ(mrow->bsmap);
   bsmap = mrow->bsmap;
   bsmap->vlocal2global	= (int *) PETSCMALLOC(sizeof(int)); 
 	CHKPTRQ(bsmap->vlocal2global);
