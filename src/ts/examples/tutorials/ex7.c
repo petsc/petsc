@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.1 2001/03/27 18:30:15 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.2 2001/04/10 19:37:12 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -23,6 +23,7 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
    User-defined routines
 */
 extern int FormFunction(TS,double,Vec,Vec,void*),FormInitialSolution(DA,Vec);
+extern int Monitor(TS,int,double,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -83,7 +84,11 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetInitialTimeStep(ts,0.0,.0001);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TS_BEULER);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,100,1.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  ierr = TSSetMonitor(ts,Monitor,0,0);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -93,10 +98,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetInitialTimeStep(ts,0.0,.0001);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TS_BEULER);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,100,1.0);CHKERRQ(ierr);
   ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
 
 
@@ -180,7 +182,7 @@ int FormFunction(TS ts,double time,Vec X,Vec F,void *ptr)
       uxx     = (two*u - x[j][i-1] - x[j][i+1])*sx;
       uyy     = (two*u - x[j-1][i] - x[j+1][i])*sy;
       /*      f[j][i] = -(uxx + uyy); */
-      f[j][i] = u*(uxx + uyy) - (2.0 - 1.0)*((x[j][i+1] - x[j][i-1])*(x[j][i+1] - x[j][i-1])*.25*sx +
+      f[j][i] = -u*(uxx + uyy) - (4.0 - 1.0)*((x[j][i+1] - x[j][i-1])*(x[j][i+1] - x[j][i-1])*.25*sx +
                                             (x[j+1][i] - x[j-1][i])*(x[j+1][i] - x[j-1][i])*.25*sy); 
     }
   }
@@ -243,3 +245,18 @@ int FormInitialSolution(DA da,Vec U)
   ierr = DAVecRestoreArray(da,U,(void**)&u);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
+
+#undef __FUNCT__  
+#define __FUNCT__ "Monitor"
+int Monitor(TS ts,int step,double ptime,Vec v,void *ctx)
+{
+  int      ierr;
+  double   norm;
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  ierr = VecNorm(v,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"timestep %d time %g norm %g\n",step,ptime,norm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

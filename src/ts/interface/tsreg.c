@@ -1,4 +1,4 @@
-/*$Id: tsreg.c,v 1.67 2001/03/23 23:24:34 balay Exp bsmith $*/
+/*$Id: tsreg.c,v 1.68 2001/04/10 19:37:09 bsmith Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
@@ -141,6 +141,7 @@ int TSGetType(TS ts,TSType *type)
 +  -ts_type <type> - TS_EULER, TS_BEULER, TS_PVODE, TS_PSEUDO, TS_CRANK_NICHOLSON
 .  -ts_max_steps maxsteps - maximum number of time-steps to take
 .  -ts_max_time time - maximum time to compute to
+.  -ts_dt dt - initial time step
 .  -ts_monitor - print information at each timestep
 -  -ts_xmonitor - plot information at each timestep
 
@@ -155,6 +156,7 @@ int TSSetFromOptions(TS ts)
   int        ierr;
   PetscTruth flg;
   char       *deft,type[256];
+  double     dt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -175,6 +177,10 @@ int TSSetFromOptions(TS ts)
 
     ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsDouble("-ts_max_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-ts_dt","Initial time step","TSSetInitialTimeStep",ts->initial_time_step,&dt,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ts->initial_time_step = ts->time_step = dt;
+    }
     ierr = PetscOptionsName("-ts_monitor","Monitor timestep size","TSDefaultMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = TSSetMonitor(ts,TSDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
