@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.45 1996/08/08 14:42:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.46 1996/08/15 12:47:17 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,8 +9,7 @@ static char vcid[] = "$Id: mpidense.c,v 1.45 1996/08/08 14:42:42 bsmith Exp bsmi
 #include "src/mat/impls/dense/mpi/mpidense.h"
 #include "src/vec/vecimpl.h"
 
-static int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,
-                               int *idxn,Scalar *v,InsertMode addv)
+static int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
 {
   Mat_MPIDense *A = (Mat_MPIDense *) mat->data;
   int          ierr, i, j, rstart = A->rstart, rend = A->rend, row;
@@ -43,8 +42,7 @@ static int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,
       else { /* must stash each seperately */
         row = idxm[i];
         for ( j=0; j<n; j++ ) {
-          ierr = StashValues_Private(&A->stash,row,1,&idxn[j],v+i+j*m,addv);
-                 CHKERRQ(ierr);
+          ierr = StashValues_Private(&A->stash,row,1,&idxn[j],v+i+j*m,addv);CHKERRQ(ierr);
         }
       }
     }
@@ -103,9 +101,9 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce(&mdn->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
-  if (addv == (ADD_VALUES|INSERT_VALUES)) { SETERRQ(1,
-    "MatAssemblyBegin_MPIDense:Cannot mix adds/inserts on different procs");
-    }
+  if (addv == (ADD_VALUES|INSERT_VALUES)) { 
+    SETERRQ(1,"MatAssemblyBegin_MPIDense:Cannot mix adds/inserts on different procs");
+  }
   mdn->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
@@ -145,8 +143,7 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));
   CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
-    MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
-              comm,recv_waits+i);
+    MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,comm,recv_waits+i);
   }
 
   /* do sends:
@@ -171,8 +168,7 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   count = 0;
   for ( i=0; i<size; i++ ) {
     if (procs[i]) {
-      MPI_Isend(svalues+3*starts[i],3*nprocs[i],MPIU_SCALAR,i,tag,
-                comm,send_waits+count++);
+      MPI_Isend(svalues+3*starts[i],3*nprocs[i],MPIU_SCALAR,i,tag,comm,send_waits+count++);
     }
   }
   PetscFree(starts); PetscFree(nprocs);
@@ -219,8 +215,7 @@ static int MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
  
   /* wait on sends */
   if (mdn->nsends) {
-    send_status = (MPI_Status *) PetscMalloc( mdn->nsends*sizeof(MPI_Status) );
-    CHKPTRQ(send_status);
+    send_status = (MPI_Status *) PetscMalloc(mdn->nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     MPI_Waitall(mdn->nsends,mdn->send_waits,send_status);
     PetscFree(send_status);
   }
@@ -301,11 +296,10 @@ static int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues = (int *) PetscMalloc( (N+1)*sizeof(int) ); CHKPTRQ(svalues);
-  send_waits = (MPI_Request *) PetscMalloc( (nsends+1)*sizeof(MPI_Request));
-  CHKPTRQ(send_waits);
-  starts = (int *) PetscMalloc( (size+1)*sizeof(int) ); CHKPTRQ(starts);
-  starts[0] = 0; 
+  svalues    = (int *) PetscMalloc( (N+1)*sizeof(int) ); CHKPTRQ(svalues);
+  send_waits = (MPI_Request *) PetscMalloc((nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
+  starts     = (int *) PetscMalloc( (size+1)*sizeof(int) ); CHKPTRQ(starts);
+  starts[0]  = 0; 
   for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<N; i++ ) {
     svalues[starts[owner[i]]++] = rows[i];
@@ -360,8 +354,7 @@ static int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
 
   /* wait on sends */
   if (nsends) {
-    send_status = (MPI_Status *) PetscMalloc(nsends*sizeof(MPI_Status));
-    CHKPTRQ(send_status);
+    send_status = (MPI_Status *) PetscMalloc(nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     MPI_Waitall(nsends,send_waits,send_status);
     PetscFree(send_status);
   }
@@ -375,10 +368,8 @@ static int MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   int          ierr;
 
-  ierr = VecScatterBegin(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);
-  CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);
-  CHKERRQ(ierr);
+  ierr = VecScatterBegin(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);CHKERRQ(ierr);
   ierr = MatMult_SeqDense(mdn->A,mdn->lvec,yy); CHKERRQ(ierr);
   return 0;
 }
@@ -469,6 +460,7 @@ static int MatView_MPIDense_Binary(Mat mat,Viewer viewer)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   int          ierr;
+
   if (mdn->size == 1) {
     ierr = MatView(mdn->A,viewer); CHKERRQ(ierr);
   }
@@ -569,8 +561,7 @@ static int MatView_MPIDense(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-static int MatGetInfo_MPIDense(Mat A,MatInfoType flag,int *nz,
-                             int *nzalloc,int *mem)
+static int MatGetInfo_MPIDense(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *mem)
 {
   Mat_MPIDense *mat = (Mat_MPIDense *) A->data;
   Mat          mdn = mat->A;
@@ -728,17 +719,17 @@ static int MatTranspose_MPIDense(Mat A,Mat *matout)
   int          j, i, ierr;
   Scalar       *v;
 
-  if (matout == PETSC_NULL && M != N)
+  if (matout == PETSC_NULL && M != N) {
     SETERRQ(1,"MatTranspose_MPIDense:Supports square matrix only in-place");
-  ierr = MatCreateMPIDense(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,PETSC_NULL,&B);
-         CHKERRQ(ierr);
+  }
+  ierr = MatCreateMPIDense(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,PETSC_NULL,&B);CHKERRQ(ierr);
 
   m = Aloc->m; n = Aloc->n; v = Aloc->v;
   rwork = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(rwork);
   for ( j=0; j<n; j++ ) {
     for (i=0; i<m; i++) rwork[i] = rstart + i;
     ierr = MatSetValues(B,1,&j,m,rwork,v,INSERT_VALUES); CHKERRQ(ierr);
-    v += m;
+    v   += m;
   } 
   PetscFree(rwork);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -852,7 +843,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   mat->view       = MatView_MPIDense;
   mat->factor     = 0;
 
-  a->factor = 0;
+  a->factor     = 0;
   a->insertmode = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&a->rank);
   MPI_Comm_size(comm,&a->size);
@@ -872,8 +863,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   /* build local table of row and column ownerships */
   a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
   a->cowners = a->rowners + a->size + 1;
-  PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _Mat)+ 
-                       sizeof(Mat_MPIDense));
+  PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_MPIDense));
   MPI_Allgather(&m,1,MPI_INT,a->rowners+1,1,MPI_INT,comm);
   a->rowners[0] = 0;
   for ( i=2; i<=a->size; i++ ) {
@@ -916,12 +906,12 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
   *newmat       = 0;
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIDENSE,A->comm);
   PLogObjectCreate(mat);
-  mat->data     = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
+  mat->data      = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
   PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
-  mat->destroy  = MatDestroy_MPIDense;
-  mat->view     = MatView_MPIDense;
-  mat->factor   = A->factor;
-  mat->assembled  = PETSC_TRUE;
+  mat->destroy   = MatDestroy_MPIDense;
+  mat->view      = MatView_MPIDense;
+  mat->factor    = A->factor;
+  mat->assembled = PETSC_TRUE;
 
   a->m = mat->m = oldmat->m;
   a->n = mat->n = oldmat->n;
