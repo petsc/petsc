@@ -44,7 +44,7 @@ class Configure(config.base.Configure):
 
     for package in os.listdir(os.path.dirname(PETSc.packages.__file__)):
       (packageName, ext) = os.path.splitext(package)
-      if ext == '.py' and not packageName == '__init__':
+      if not packageName.startswith('.') and not packageName.startswith('#') and ext == '.py' and not packageName == '__init__':
         packageObj              = self.framework.require('PETSc.packages.'+packageName, self)
         packageObj.headerPrefix = self.headerPrefix
         setattr(self, packageName.lower(), packageObj)

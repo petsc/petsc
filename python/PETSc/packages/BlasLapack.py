@@ -14,7 +14,7 @@ class Configure(config.base.Configure):
     # Assume that these libraries are Fortran if we have a Fortran compiler
     self.compilers    = self.framework.require('config.compilers',            self)
     self.libraries    = self.framework.require('config.libraries',            self)
-    self.libraries    = self.framework.require('PETSc.packages.fortranstubs', self)
+    self.framework.require('PETSc.packages.fortranstubs', self)
     return
 
   def __str__(self):
