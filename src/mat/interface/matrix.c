@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.356 1999/12/22 03:17:53 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.357 2000/01/11 21:00:31 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -140,7 +140,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 /*@C
    MatView - Visualizes a matrix object.
 
-   Collective on Mat unless Viewer is VIEWER_STDOUT_SELF
+   Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -1195,12 +1195,15 @@ int MatILUDTFactor(Mat mat,MatILUInfo *info,IS row,IS col,Mat *fact)
    instead of working directly with matrix algebra routines such as this.
    See, e.g., SLESCreate().
 
+   This changes the state of the matrix to a factored matrix; it cannot be used
+   for example with MatSetValues() unless one first calls MatSetUnfactored().
+
    Level: developer
 
 .keywords: matrix, factor, LU, in-place
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(),
-          MatGetOrdering()
+          MatGetOrdering(), MatSetUnfactored()
 
 @*/
 int MatLUFactor(Mat mat,IS row,IS col,PetscReal f)
@@ -2247,8 +2250,9 @@ int MatTranspose(Mat mat,Mat *B)
 
    Input Parameters:
 +  mat - the matrix to permute
-.  row - row permutation
--  col - column permutation
+.  row - row permutation, each processor supplies only the permutation for its rows
+-  col - column permutation, each processor needs the entire column permutation, that is
+         this is the same size as the total number of columns in the matrix
 
    Output Parameters:
 .  B - the permuted matrix
@@ -2987,8 +2991,8 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  PetscValidIntPointer(m);
-  PetscValidIntPointer(n);
+  if (m) PetscValidIntPointer(m);
+  if (n) PetscValidIntPointer(n);
   if (!mat->ops->getownershiprange) SETERRQ(PETSC_ERR_SUP,0,"");
   ierr = (*mat->ops->getownershiprange)(mat,m,n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
