@@ -22,7 +22,7 @@ static struct _VeOps DvOps = { VeiDVBCreateVector,
               VeiDVmdot, VeiDVBnorm, VeiDVmax, VeiDVBasum, VeiDVBdot,
               VeiDVmdot, VeiDVBscal, VeiDVBcopy, VeiDVset, VeiDVswap,
               VeiDVBaxpy, VeiDVmaxpy, VeiDVaypx, VeiDVwaxpy, VeiDVpmult,
-              VeiDVpdiv, 0,0,0,0, 
+              VeiDVpdiv,  
               VeiDVaddvalues,VeiDVinsertvalues,0,0,
               VeiDVgetarray, VeiDVsize, VeiDVsize };
 

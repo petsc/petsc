@@ -34,6 +34,7 @@ int main(int argc,char **argv)
 
   if (mytid == 1) {
     idx = 2; ierr = VecInsertValues(y,1,&idx,&three); CHKERR(ierr);  
+    idx = 0; ierr = VecInsertValues(y,1,&idx,&two); CHKERR(ierr); 
     idx = 0; ierr = VecInsertValues(y,1,&idx,&one); CHKERR(ierr); 
   }
   else {
