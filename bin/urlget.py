@@ -1,5 +1,6 @@
 #!/usr/bin/env python1.5
-# $Id: urlget.py,v 1.1 1998/01/14 16:23:22 balay Exp balay $ 
+
+# $Id: urlget.py,v 1.2 1998/01/14 16:52:32 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and copy it to the specified filename
 # 
@@ -10,6 +11,9 @@
 import urllib
 import sys
 import os
+import re
+import string
+import tempfile
 
 arg_len = len(sys.argv)
 if arg_len < 2 : 
@@ -18,13 +22,22 @@ if arg_len < 2 :
   sys.exit()
 
 urlfilename   = sys.argv[1]
-tmpfile = ()
+tmpfilename = ()
 try:
-  tmpfile = urllib.urlretrieve(urlfilename)
+  tmpfilename = urllib.urlretrieve(urlfilename)
 except:
-  print 'Error!', sys.exc_type, sys.exc_value
-  print 'Incorrect url specified.'
+  print 'Error! Accessing url on the server'
   sys.exit()
-urllib.urlcleanup()
-print tmpfile[0]
+
+tmpfile = open(tmpfilename[0],'r')
+filesize = os.lseek(tmpfile.fileno(),0,2)
+os.lseek(tmpfile.fileno(),0,0)
+
+if filesize < 2000 :
+  print 'Error! Accessing url on the server. bytes-received :',filesize
+  sys.exit()
+
+outfilename = tempfile.mktemp()
+os.link(tmpfilename[0],outfilename)
+print outfilename 
 sys.exit()
