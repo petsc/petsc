@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: beuler.c,v 1.32 1998/04/03 23:16:55 bsmith Exp $";
+static char vcid[] = "$Id: cn.c,v 1.1 1998/07/27 03:25:16 curfman Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
@@ -8,7 +8,6 @@ static char vcid[] = "$Id: beuler.c,v 1.32 1998/04/03 23:16:55 bsmith Exp $";
 #include <math.h>
 #include "src/ts/tsimpl.h"                /*I   "ts.h"   I*/
 #include "pinclude/pviewer.h"
-
 
 typedef struct {
   Vec  update;      /* work vector where new solution is formed */
@@ -259,7 +258,7 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 {
   TS_CN *cn = (TS_CN*) ts->data;
   int       ierr, M, m;
-  Scalar    mdt = 1.0/ts->time_step, mone = -1.0;
+  Scalar    mdt = 1.0/ts->time_step, mp5 = -0.5;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update); CHKERRQ(ierr);  
@@ -267,7 +266,7 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
     
   /* build linear system to be solved */
   if (!ts->Ashell) {
-    ierr = MatScale(&mone,ts->A); CHKERRQ(ierr);
+    ierr = MatScale(&mp5,ts->A); CHKERRQ(ierr);
     ierr = MatShift(&mdt,ts->A); CHKERRQ(ierr);
   } else {
     /* construct new shell matrix */
@@ -277,7 +276,7 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
     ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSCnMatMult); CHKERRQ(ierr);
   }
   if (ts->A != ts->B && ts->Ashell != ts->B) {
-    ierr = MatScale(&mone,ts->B); CHKERRQ(ierr);
+    ierr = MatScale(&mp5,ts->B); CHKERRQ(ierr);
     ierr = MatShift(&mdt,ts->B); CHKERRQ(ierr);
   }
   ierr = SLESSetOperators(ts->sles,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);

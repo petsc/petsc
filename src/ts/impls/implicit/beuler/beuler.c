@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: beuler.c,v 1.32 1998/04/03 23:16:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: beuler.c,v 1.33 1998/07/27 02:46:26 curfman Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -43,7 +43,7 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
     ierr = VecCopy(sol,rhs); CHKERRQ(ierr);
     ierr = VecScale(&mdt,rhs); CHKERRQ(ierr);
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
-    ierr = TSComputeBCFunction(ts,ts->ptime,rhs); CHKERRQ(ierr);
+    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
 
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
@@ -82,7 +82,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
     ierr = VecCopy(sol,rhs); CHKERRQ(ierr);
     ierr = VecScale(&mdt,rhs); CHKERRQ(ierr);
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
-    ierr = TSComputeBCFunction(ts,ts->ptime,rhs); CHKERRQ(ierr);
+    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
 
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;

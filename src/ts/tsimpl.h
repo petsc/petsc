@@ -1,4 +1,4 @@
-/* $Id: tsimpl.h,v 1.15 1998/03/12 23:21:25 bsmith Exp bsmith $ */
+/* $Id: tsimpl.h,v 1.16 1998/04/03 23:16:41 bsmith Exp curfman $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -36,6 +36,8 @@ struct _p_TS {
   void          *funP;
   int           (*rhsjacobian)(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
   void          *jacP;
+  int           (*rhsbc)(TS,double,Vec,void*); 
+  void          *bcP;
 
   /* ---------Inner nonlinear or linear solvers ---------------------------*/
 

@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.30 1998/06/20 22:11:46 curfman Exp bsmith $ */
+/* $Id: ts.h,v 1.31 1998/07/23 22:50:59 bsmith Exp curfman $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -10,10 +10,11 @@
 typedef struct _p_TS* TS;
 #define TS_COOKIE PETSC_COOKIE+18
 
-#define TS_EULER  "euler"
-#define TS_BEULER "beuler"
-#define TS_PSEUDO "pseudo"
-#define TS_PVODE  "pvode"
+#define TS_EULER           "euler"
+#define TS_BEULER          "beuler"
+#define TS_PSEUDO          "pseudo"
+#define TS_CRANK_NICHOLSON "crank-nicholson"
+#define TS_PVODE           "pvode"
 
 typedef char *TSType;
 
@@ -52,6 +53,7 @@ extern int TSSetTimeStep(TS,double);
 extern int TSSetRHSFunction(TS,int (*)(TS,double,Vec,Vec,void*),void*);
 extern int TSSetRHSMatrix(TS,Mat,Mat,int (*)(TS,double,Mat*,Mat*,MatStructure*,void*),void*);
 extern int TSSetRHSJacobian(TS,Mat,Mat,int(*)(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),void*);
+extern int TSSetRHSBoundaryConditions(TS,int (*)(TS,double,Vec,void*),void*);
 
 extern int TSDefaultComputeJacobianWithColoring(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int TSSetRHSJacobianDefault(TS,MatFDColoring,Mat,Mat);
