@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.53 1998/10/09 19:25:42 bsmith Exp balay $";
+static char vcid[] = "$Id: snesj.c,v 1.54 1998/12/09 16:06:57 balay Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -32,6 +32,8 @@ static char vcid[] = "$Id: snesj.c,v 1.53 1998/10/09 19:25:42 bsmith Exp balay $
 
    An alternative routine that uses coloring to explot matrix sparsity is
    SNESDefaultComputeJacobianWithColoring().
+
+   Level: intermediate
 
 .keywords: SNES, finite differences, Jacobian
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.42 1999/01/04 21:54:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.43 1999/01/13 21:46:21 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
@@ -7,8 +7,8 @@ static char vcid[] = "$Id: snesut.c,v 1.42 1999/01/04 21:54:02 bsmith Exp bsmith
 #undef __FUNC__  
 #define __FUNC__ "SNESVecViewMonitor"
 /*@C
-   SNESVecViewMonitor - Monitoring progress of the SNES solvers, by calling 
-       VecView() on the solution each iteration.
+   SNESVecViewMonitor - Monitors progress of the SNES solvers by calling 
+   VecView() for the approximate solution at each iteration.
 
    Collective on SNES
 
@@ -18,11 +18,11 @@ static char vcid[] = "$Id: snesut.c,v 1.42 1999/01/04 21:54:02 bsmith Exp bsmith
 .  fgnorm - 2-norm of residual (or gradient)
 -  dummy - either a viewer or PETSC_NULL
 
-   Notes:
+   Level: intermediate
 
-.keywords: SNES, nonlinear, default, monitor, norm
+.keywords: SNES, nonlinear, vector, monitor, view
 
-.seealso: SNESSetMonitor(), SNESDefaultMonitor()
+.seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
 @*/
 int SNESVecViewMonitor(SNES snes,int its,double fgnorm,void *dummy)
 {
@@ -62,9 +62,11 @@ int SNESVecViewMonitor(SNES snes,int its,double fgnorm,void *dummy)
    For SNES_UNCONSTRAINED_MINIMIZATION methods the routine prints the
    function value and gradient norm at each iteration.
 
+   Level: intermediate
+
 .keywords: SNES, nonlinear, default, monitor, norm
 
-.seealso: SNESSetMonitor()
+.seealso: SNESSetMonitor(), SNESVecViewMonitor()
 @*/
 int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 {
@@ -143,6 +145,8 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
             set with SNESSetTolerances()
 -    rtol - relative function norm tolerance, set with SNESSetTolerances()
 
+   Level: intermediate
+
 .keywords: SNES, nonlinear, default, converged, convergence
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
@@ -201,6 +205,8 @@ int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *d
    is reset at each Newton iteration according progress of the nonlinear 
    solver. 
 
+   Level: advanced
+
    Reference:
    S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an 
    inexact Newton method", SISC 17 (1), pp.16-32, 1996.
@@ -236,6 +242,8 @@ int SNES_KSP_SetConvergenceTestEW(SNES snes)
 
    Note:
    Use PETSC_DEFAULT to retain the default for any of the parameters.
+
+   Level: advanced
 
    Reference:
    S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an 

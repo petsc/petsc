@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.119 1998/12/21 01:04:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.120 1998/12/23 22:53:13 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -222,6 +222,8 @@ int SNESDestroy_EQ_LS(SNES snes)
    Options Database Key:
 .  -snes_eq_ls basic - Activates SNESNoLineSearch()
 
+   Level: advanced
+
 .keywords: SNES, nonlinear, line search, cubic
 
 .seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
@@ -274,6 +276,8 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
    Options Database Key:
 .  -snes_eq_ls basicnonorms - Activates SNESNoLineSearchNoNorms()
 
+   Level: advanced
+
 .keywords: SNES, nonlinear, line search, cubic
 
 .seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
@@ -322,6 +326,8 @@ $  -snes_eq_ls cubic - Activates SNESCubicLineSearch()
    Notes:
    This line search is taken from "Numerical Methods for Unconstrained 
    Optimization and Nonlinear Equations" by Dennis and Schnabel, page 325.
+
+   Level: advanced
 
 .keywords: SNES, nonlinear, line search, cubic
 
@@ -496,6 +502,8 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
    Notes:
    Use SNESSetLineSearch() to set this routine within the SNES_EQ_LS method.  
 
+   Level: advanced
+
 .keywords: SNES, nonlinear, quadratic, line search
 
 .seealso: SNESCubicLineSearch(), SNESNoLineSearch(), SNESSetLineSearch()
@@ -639,6 +647,8 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 .   ynorm - 2-norm of search length
 -   flag - set to 0 if the line search succeeds; a nonzero integer 
            on failure.
+
+    Level: advanced
 
 .keywords: SNES, nonlinear, set, line search, routine
 

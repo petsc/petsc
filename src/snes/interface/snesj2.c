@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj2.c,v 1.15 1998/04/24 04:52:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesj2.c,v 1.16 1998/09/25 03:16:01 bsmith Exp curfman $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -26,6 +26,8 @@ static char vcid[] = "$Id: snesj2.c,v 1.15 1998/04/24 04:52:33 curfman Exp bsmit
 
     Options Database Keys:
 .  -mat_fd_coloring_freq <freq> - Activates SNESDefaultComputeJacobianWithColoring()
+
+    Level: intermediate
 
 .keywords: SNES, finite differences, Jacobian, coloring, sparse
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.165 1998/12/21 01:04:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.166 1999/01/04 21:54:02 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -32,6 +32,8 @@ FList SNESList = 0;
 
    The user can open an alternative visualization context with
    ViewerASCIIOpen() - output to a specified file.
+
+   Level: beginner
 
 .keywords: SNES, view
 
@@ -105,6 +107,8 @@ static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
     Input Parameter:
 .   snescheck - function that checks for options
 
+    Level: developer
+
 .seealso: SNESSetFromOptions()
 @*/
 int SNESAddOptionsChecker(int (*snescheck)(SNES) )
@@ -128,7 +132,7 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
    Input Parameter:
 .  snes - the SNES context
 
-   Options Database:
+   Options Database Keys:
 +  -snes_type type - SNES_EQ_LS, SNES_EQ_TR, SNES_UM_TR, SNES_UM_LS etc
 .  -snes_stol - convergence tolerance in terms of the norm
                 of the change in the solution between steps
@@ -144,21 +148,23 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 .  -snes_monitor - prints residual norm at each iteration 
 .  -snes_xmonitor - plots residual norm at each iteration 
 .  -snes_fd - use finite differences to compute Jacobian; very slow, only for testing
--  -snes_mf_ksp_monitor - if using matrix-free multiply then prints h at each KSP iteration
+-  -snes_mf_ksp_monitor - if using matrix-free multiply then print h at each KSP iteration
 
     Options Database for Eisenstat-Walker method:
 +  -snes_ksp_eq_conv - use Eisenstat-Walker method for determining linear system convergence
 .  -snes_ksp_eq_version ver - version of  Eisenstat-Walker method
-.  -snes_ksp_ew_rtol0 rtol0 -
-.  -snes_ksp_ew_rtolmax rtolmax -
-.  -snes_ksp_ew_gamma gamma -
-.  -snes_ksp_ew_alpha alpha -
-.  -snes_ksp_ew_alpha2 alpha2 -
--  -snes_ksp_ew_threshold threshold -
+.  -snes_ksp_ew_rtol0 <rtol0> - Sets rtol0
+.  -snes_ksp_ew_rtolmax <rtolmax> - Sets rtolmax
+.  -snes_ksp_ew_gamma <gamma> - Sets gamma
+.  -snes_ksp_ew_alpha <alpha> - Sets alpha
+.  -snes_ksp_ew_alpha2 <alpha2> - Sets alpha2 
+-  -snes_ksp_ew_threshold <threshold> - Sets threshold
 
    Notes:
    To see all options, run your program with the -help option or consult
    the users manual.
+
+   Level: beginner
 
 .keywords: SNES, nonlinear, set, options, database
 
@@ -305,6 +311,8 @@ int SNESSetFromOptions(SNES snes)
 +  snes - the SNES context
 -  usrP - optional user context
 
+   Level: intermediate
+
 .keywords: SNES, nonlinear, set, application, context
 
 .seealso: SNESGetApplicationContext()
@@ -331,6 +339,8 @@ int SNESSetApplicationContext(SNES snes,void *usrP)
    Output Parameter:
 .  usrP - user context
 
+   Level: intermediate
+
 .keywords: SNES, nonlinear, get, application, context
 
 .seealso: SNESSetApplicationContext()
@@ -356,6 +366,8 @@ int SNESGetApplicationContext( SNES snes,  void **usrP )
 
    Output Parameter:
 .  iter - iteration number
+
+   Level: intermediate
 
 .keywords: SNES, nonlinear, get, iteration, number
 @*/
@@ -386,6 +398,8 @@ int SNESGetIterationNumber(SNES snes,int* iter)
    SNESGetFunctionNorm() is valid for SNES_NONLINEAR_EQUATIONS methods only.
    A related routine for SNES_UNCONSTRAINED_MINIMIZATION methods is
    SNESGetGradientNorm().
+
+   Level: intermediate
 
 .keywords: SNES, nonlinear, get, function, norm
 
@@ -422,6 +436,8 @@ int SNESGetFunctionNorm(SNES snes,Scalar *fnorm)
    methods only.  A related routine for SNES_NONLINEAR_EQUATIONS methods
    is SNESGetFunctionNorm().
 
+   Level: intermediate
+
 .keywords: SNES, nonlinear, get, gradient, norm
 
 .seelso: SNESSetGradient()
@@ -455,6 +471,8 @@ int SNESGetGradientNorm(SNES snes,Scalar *gnorm)
    Notes:
    This counter is reset to zero for each successive call to SNESSolve().
 
+   Level: intermediate
+
 .keywords: SNES, nonlinear, get, number, unsuccessful, steps
 @*/
 int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
@@ -482,6 +500,8 @@ int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
 
    Notes:
    This counter is reset to zero for each successive call to SNESSolve().
+
+   Level: intermediate
 
 .keywords: SNES, nonlinear, get, number, linear, iterations
 @*/
@@ -511,6 +531,8 @@ int SNESGetNumberLinearIterations(SNES snes,int* lits)
    The user can then directly manipulate the SLES context to set various
    options, etc.  Likewise, the user can then extract and manipulate the 
    KSP and PC contexts as well.
+
+   Level: beginner
 
 .keywords: SNES, nonlinear, get, SLES, context
 
@@ -573,6 +595,8 @@ static int SNESPublish_Petsc(PetscObject object)
                products, and a user-provided preconditioning matrix
                as set by SNESSetJacobian()
 -   -snes_fd - Uses (slow!) finite differences to compute Jacobian
+
+   Level: beginner
 
 .keywords: SNES, nonlinear, create, context
 
@@ -684,6 +708,8 @@ $      f'(x) x = -f(x),
    Analogous routines for SNES_UNCONSTRAINED_MINIMIZATION methods are
    SNESSetMinimizationFunction() and SNESSetGradient();
 
+   Level: beginner
+
 .keywords: SNES, nonlinear, set, function
 
 .seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian()
@@ -704,7 +730,7 @@ int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx
 #undef __FUNC__  
 #define __FUNC__ "SNESComputeFunction"
 /*@
-   SNESComputeFunction - Computes the function that has been set with
+   SNESComputeFunction - Calls the function that has been set with
    SNESSetFunction().  
 
    Collective on SNES
@@ -720,6 +746,12 @@ int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx
    SNESComputeFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only.
    Analogous routines for SNES_UNCONSTRAINED_MINIMIZATION methods are
    SNESComputeMinimizationFunction() and SNESComputeGradient();
+
+   SNESComputeFunction() is typically used within nonlinear solvers
+   implementations, so most users would not generally call this routine
+   themselves.
+
+   Level: developer
 
 .keywords: SNES, nonlinear, compute, function
 
@@ -763,6 +795,8 @@ $     func (SNES snes,Vec x,double *f,void *ctx);
 .  f - function
 -  ctx - [optional] user-defined function context 
 
+   Level: beginner
+
    Notes:
    SNESSetMinimizationFunction() is valid for SNES_UNCONSTRAINED_MINIMIZATION
    methods only. An analogous routine for SNES_NONLINEAR_EQUATIONS methods is
@@ -805,6 +839,12 @@ int SNESSetMinimizationFunction(SNES snes,int (*func)(SNES,Vec,double*,void*),
    SNESComputeMinimizationFunction() is valid only for 
    SNES_UNCONSTRAINED_MINIMIZATION methods. An analogous routine for 
    SNES_NONLINEAR_EQUATIONS methods is SNESComputeFunction().
+
+   SNESComputeMinimizationFunction() is typically used within minimization
+   implementations, so most users would not generally call this routine
+   themselves.
+
+   Level: developer
 
 .keywords: SNES, nonlinear, compute, minimization, function
 
@@ -855,6 +895,8 @@ $     func (SNES, Vec x, Vec g, void *ctx);
    methods only. An analogous routine for SNES_NONLINEAR_EQUATIONS methods is
    SNESSetFunction().
 
+   Level: beginner
+
 .keywords: SNES, nonlinear, set, function
 
 .seealso: SNESGetGradient(), SNESComputeGradient(), SNESSetHessian(),
@@ -892,6 +934,12 @@ int SNESSetGradient(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),void *ctx)
    SNESComputeGradient() is valid only for 
    SNES_UNCONSTRAINED_MINIMIZATION methods. An analogous routine for 
    SNES_NONLINEAR_EQUATIONS methods is SNESComputeFunction().
+
+   SNESComputeGradient() is typically used within minimization
+   implementations, so most users would not generally call this routine
+   themselves.
+
+   Level: developer
 
 .keywords: SNES, nonlinear, compute, gradient
 
@@ -941,6 +989,12 @@ int SNESComputeGradient(SNES snes,Vec x, Vec y)
    SNESComputeJacobian() is valid only for SNES_NONLINEAR_EQUATIONS
    methods. An analogous routine for SNES_UNCONSTRAINED_MINIMIZATION 
    methods is SNESComputeHessian().
+
+   SNESComputeJacobian() is typically used within nonlinear solver
+   implementations, so most users would not generally call this routine
+   themselves.
+
+   Level: developer
 
 .keywords: SNES, compute, Jacobian, matrix
 
@@ -994,6 +1048,12 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
    SNESComputeHessian() is valid only for 
    SNES_UNCONSTRAINED_MINIMIZATION methods. An analogous routine for 
    SNES_NONLINEAR_EQUATIONS methods is SNESComputeJacobian().
+
+   SNESComputeHessian() is typically used within minimization
+   implementations, so most users would not generally call this routine
+   themselves.
+
+   Level: developer
 
 .keywords: SNES, compute, Hessian, matrix
 
@@ -1057,6 +1117,8 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 
+   Level: beginner
+
 .keywords: SNES, nonlinear, set, Jacobian, matrix
 
 .seealso: SLESSetOperators(), SNESSetFunction()
@@ -1091,6 +1153,8 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 +  A - location to stash Jacobian matrix (or PETSC_NULL)
 .  B - location to stash preconditioner matrix (or PETSC_NULL)
 -  ctx - location to stash Jacobian ctx (or PETSC_NULL)
+
+   Level: advanced
 
 .seealso: SNESSetJacobian(), SNESComputeJacobian()
 @*/
@@ -1142,6 +1206,8 @@ $    func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 
+   Level: beginner
+
 .keywords: SNES, nonlinear, set, Hessian, matrix
 
 .seealso: SNESSetMinimizationFunction(), SNESSetGradient(), SLESSetOperators()
@@ -1176,6 +1242,8 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 +  A - location to stash Hessian matrix (or PETSC_NULL)
 .  B - location to stash preconditioner matrix (or PETSC_NULL)
 -  ctx - location to stash Hessian ctx (or PETSC_NULL)
+
+   Level: advanced
 
 .seealso: SNESSetHessian(), SNESComputeHessian()
 
@@ -1213,6 +1281,8 @@ int SNESGetHessian(SNES snes,Mat *A,Mat *B, void **ctx)
    the call to SNESSolve().  However, if one wishes to control this
    phase separately, SNESSetUp() should be called after SNESCreate()
    and optional routines of the form SNESSetXXX(), but before SNESSolve().  
+
+   Level: advanced
 
 .keywords: SNES, nonlinear, setup
 
@@ -1311,6 +1381,8 @@ int SNESSetUp(SNES snes,Vec x)
    Input Parameter:
 .  snes - the SNES context
 
+   Level: beginner
+
 .keywords: SNES, nonlinear, destroy
 
 .seealso: SNESCreate(), SNESSolve()
@@ -1363,6 +1435,8 @@ int SNESDestroy(SNES snes)
    The default maximum number of iterations is 50.
    The default maximum number of function evaluations is 1000.
 
+   Level: intermediate
+
 .keywords: SNES, nonlinear, set, convergence, tolerances
 
 .seealso: SNESSetTrustRegionTolerance(), SNESSetMinimizationFunctionTolerance()
@@ -1398,6 +1472,8 @@ int SNESSetTolerances(SNES snes,double atol,double rtol,double stol,int maxit,in
    Notes:
    The user can specify PETSC_NULL for any parameter that is not needed.
 
+   Level: intermediate
+
 .keywords: SNES, nonlinear, get, convergence, tolerances
 
 .seealso: SNESSetTolerances()
@@ -1427,6 +1503,8 @@ int SNESGetTolerances(SNES snes,double *atol,double *rtol,double *stol,int *maxi
    
    Options Database Key: 
 .  -snes_trtol <tol> - Sets tol
+
+   Level: intermediate
 
 .keywords: SNES, nonlinear, set, trust region, tolerance
 
@@ -1458,6 +1536,8 @@ int SNESSetTrustRegionTolerance(SNES snes,double tol)
    Note:
    SNESSetMinimizationFunctionTolerance() is valid for SNES_UNCONSTRAINED_MINIMIZATION
    methods only.
+
+   Level: intermediate
 
 .keywords: SNES, nonlinear, set, minimum, convergence, function, tolerance
 
@@ -1514,6 +1594,8 @@ _    -snes_cancelmonitors - cancels all monitors that have
    SNESSetMonitor() multiple times; all will be called in the 
    order in which they were set.
 
+   Level: intermediate
+
 .keywords: SNES, nonlinear, set, monitor
 
 .seealso: SNESDefaultMonitor(), SNESClearMonitor()
@@ -1547,6 +1629,8 @@ int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx )
 
    Notes: 
    There is no way to clear one specific monitor from a SNES object.
+
+   Level: intermediate
 
 .keywords: SNES, nonlinear, set, monitor
 
@@ -1584,6 +1668,8 @@ $     int func (SNES snes,double xnorm,double gnorm,double f,void *cctx)
 .    gnorm - 2-norm of current gradient (SNES_UNCONSTRAINED_MINIMIZATION methods)
 -    f - function value (SNES_UNCONSTRAINED_MINIMIZATION methods)
 
+   Level: advanced
+
 .keywords: SNES, nonlinear, set, convergence, test
 
 .seealso: SNESConverged_EQ_LS(), SNESConverged_EQ_TR(), 
@@ -1618,6 +1704,8 @@ int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,double,double,double,void*
    This routine is useful, e.g., when running a code for purposes
    of accurate performance monitoring, when no I/O should be done
    during the section of code that is being timed.
+
+   Level: intermediate
 
 .keywords: SNES, set, convergence, history
 @*/
@@ -1698,6 +1786,8 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
    to employ an initial guess of zero, the user should explicitly set
    this vector to zero by calling VecSet().
 
+   Level: beginner
+
 .keywords: SNES, nonlinear, solve
 
 .seealso: SNESCreate(), SNESDestroy()
@@ -1739,13 +1829,13 @@ int SNESSolve(SNES snes,Vec x,int *its)
 
    Notes:
    See "petsc/include/snes.h" for available methods (for instance)
-.    SNES_EQ_LS - Newton's method with line search
++    SNES_EQ_LS - Newton's method with line search
      (systems of nonlinear equations)
 .    SNES_EQ_TR - Newton's method with trust region
      (systems of nonlinear equations)
 .    SNES_UM_TR - Newton's method with trust region 
      (unconstrained minimization)
-.    SNES_UM_LS - Newton's method with line search
+-    SNES_UM_LS - Newton's method with line search
      (unconstrained minimization)
 
   Normally, it is best to use the SNESSetFromOptions() command and then
@@ -1757,7 +1847,9 @@ int SNESSolve(SNES snes,Vec x,int *its)
   line or options database.  This might be the case, for example, when
   the choice of solver changes during the execution of the program,
   and the user's application is taking responsibility for choosing the
-  appropriate method.  In other words, this routine is for the advanced user.
+  appropriate method.  In other words, this routine is not for beginners.
+
+  Level: intermediate
 
 .keywords: SNES, set, method
 @*/
@@ -1805,6 +1897,8 @@ int SNESSetType(SNES snes,SNESType method)
 
    Not Collective
 
+   Level: advanced
+
 .keywords: SNES, nonlinear, register, destroy
 
 .seealso: SNESRegisterAll(), SNESRegisterAll()
@@ -1835,6 +1929,8 @@ int SNESRegisterDestroy(void)
    Output Parameter:
 .  method - SNES method (a charactor string)
 
+   Level: intermediate
+
 .keywords: SNES, nonlinear, get, method, name
 @*/
 int SNESGetType(SNES snes, SNESType *method)
@@ -1857,6 +1953,8 @@ int SNESGetType(SNES snes, SNESType *method)
 
    Output Parameter:
 .  x - the solution
+
+   Level: advanced
 
 .keywords: SNES, nonlinear, get, solution
 
@@ -1883,6 +1981,8 @@ int SNESGetSolution(SNES snes,Vec *x)
 
    Output Parameter:
 .  x - the solution update
+
+   Level: advanced
 
 .keywords: SNES, nonlinear, get, solution, update
 
@@ -1913,6 +2013,8 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
    SNESGetFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only
    Analogous routines for SNES_UNCONSTRAINED_MINIMIZATION methods are
    SNESGetMinimizationFunction() and SNESGetGradient();
+
+   Level: advanced
 
 .keywords: SNES, nonlinear, get, function
 
@@ -1948,6 +2050,8 @@ int SNESGetFunction(SNES snes,Vec *r)
    only.  An analogous routine for SNES_NONLINEAR_EQUATIONS methods is
    SNESGetFunction().
 
+   Level: advanced
+
 .keywords: SNES, nonlinear, get, gradient
 
 .seealso: SNESGetMinimizationFunction(), SNESGetSolution(), SNESGetFunction()
@@ -1982,6 +2086,8 @@ int SNESGetGradient(SNES snes,Vec *r)
    methods only.  An analogous routine for SNES_NONLINEAR_EQUATIONS methods is
    SNESGetFunction().
 
+   Level: advanced
+
 .keywords: SNES, nonlinear, get, function
 
 .seealso: SNESGetGradient(), SNESGetSolution(), SNESGetFunction()
@@ -2014,6 +2120,8 @@ int SNESGetMinimizationFunction(SNES snes,double *r)
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the hyphen.
 
+   Level: advanced
+
 .keywords: SNES, set, options, prefix, database
 
 .seealso: SNESSetFromOptions()
@@ -2045,6 +2153,8 @@ int SNESSetOptionsPrefix(SNES snes,char *prefix)
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the hyphen.
 
+   Level: advanced
+
 .keywords: SNES, append, options, prefix, database
 
 .seealso: SNESGetOptionsPrefix()
@@ -2074,6 +2184,8 @@ int SNESAppendOptionsPrefix(SNES snes,char *prefix)
    Output Parameter:
 .  prefix - pointer to the prefix string used
 
+   Level: advanced
+
 .keywords: SNES, get, options, prefix, database
 
 .seealso: SNESAppendOptionsPrefix()
@@ -2101,6 +2213,8 @@ int SNESGetOptionsPrefix(SNES snes,char **prefix)
    Options Database Keys:
 +  -help - Prints SNES options
 -  -h - Prints SNES options
+
+   Level: beginner
 
 .keywords: SNES, nonlinear, help
 
@@ -2205,6 +2319,8 @@ int SNESPrintHelp(SNES snes)
 $     SNESSetType(snes,"my_solver")
    or at runtime via the option
 $     -snes_type my_solver
+
+   Level: advanced
 
 .keywords: SNES, nonlinear, register
 
