@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.23 1999/06/30 22:48:03 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.24 1999/11/05 14:42:55 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -19,17 +19,11 @@ X11_INCLUDE    = -I/usr/local/X11R5/include
 X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software  
+MPI_HOME       = /home/petsc/software/mpich-1.2.0/linux
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include
+MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 #
-#MPI_LIB        = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpi
-#MPI_INCLUDE    = -I/usr/local/mpi/include
-#MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
-MPI_HOME       = /home/petsc/software/mpich-1.1.2
-MPI_BUILD_HOME = ${MPI_HOME}/build/sun4/ch_shmem
-MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich \
-		 -L/usr/local/gcc-2.7.2/lib/gcc-lib/sparc-sun-sunos4.1.4/2.7.2 -lgcc
-MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
-MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun 
-
 #
 # ----------------------------------------------------------------------------------------  
 #
@@ -38,8 +32,8 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
 #
 #MPE_INCLUDE   = -I/usr/local/mpi/include
 #MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
-MPE_INCLUDE   = -I${MPI_HOME}/mpe
-MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+MPE_INCLUDE   =-I${MPI_HOME}/include
+MPE_LIB       = -L${MPI_HOME}/lib -lmpe
 #
 # Optional location of BlockSolve (MPI version)
 #
