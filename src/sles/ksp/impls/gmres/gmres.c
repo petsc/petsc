@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.156 2000/09/28 21:13:20 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.157 2000/11/28 13:49:38 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -154,23 +154,21 @@ static int GMRESResidual(KSP ksp)
 int GMREScycle(int *itcount,KSP ksp)
 {
   KSP_GMRES  *gmres = (KSP_GMRES *)(ksp->data);
-  PetscReal  res_norm,res;
-  PetscReal  hapbnd,tt;
+  PetscReal  res_norm,res,hapbnd,tt;
   Scalar     tmp;
-  int        ierr,it = 0;
-  int        max_k = gmres->max_k,max_it = ksp->max_it;
+  int        ierr,it = 0, max_k = gmres->max_k,max_it = ksp->max_it;
   PetscTruth hapend = PETSC_FALSE;
 
   PetscFunctionBegin;
-
-  ierr   = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
-  res    = res_norm;
+  ierr    = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
+  res     = res_norm;
   *GRS(0) = res_norm;
 
   /* check for the convergence */
   if (!res) {
     if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
+    PLogInfo(ksp,"GMRESCycle: Converged due to zero residual norm on entry\n");
     PetscFunctionReturn(0);
   }
 
@@ -357,7 +355,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
     }
     PetscFunctionReturn(0);
   }
-  if (*HH(it,it) == 0.0) SETERRQ1(1,"HH(it,it) is identically zero; GRS(it) = %g",*GRS(it));
+  if (*HH(it,it) == 0.0) SETERRQ2(1,"HH(it,it) is identically zero; it = %d GRS(it) = %g",it,*GRS(it));
   if (*HH(it,it) != 0.0) {
     nrs[it] = *GRS(it) / *HH(it,it);
   } else {
