@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewa.c,v 1.3 1999/01/31 16:04:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewa.c,v 1.4 1999/03/17 23:21:09 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -92,7 +92,8 @@ int ViewerSetFormat(Viewer v,int format,char *name)
        matrices are stored as dense)
 .    VIEWER_FORMAT_DRAW_BASIC - views the vector with a simple 1d plot
 .    VIEWER_FORMAT_DRAW_LG - views the vector with a line graph
--    VIEWER_FORMAT_DRAW_CONTOUR - views the vector with a contour plot
+.    VIEWER_FORMAT_DRAW_CONTOUR - views the vector with a contour plot
+-    VIEWER_FORMAT_NATIVE - for DA vectors displays vectors in DA ordering, not natural
 
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
