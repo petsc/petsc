@@ -427,7 +427,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       *ajtmp,*bjtmp,nz,row,*ics;
   PetscInt       *diag_offset = b->diag,diag,*pj;
   PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps;
-  PetscReal      rs,d;
+  PetscScalar    d;
+  PetscReal      rs;
   LUShift_Ctx    sctx;
   PetscInt       newshift;
 
