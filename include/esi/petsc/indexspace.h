@@ -62,7 +62,29 @@ class IndexSpace : public virtual esi::IndexSpace<Ordinal>, public virtual esi::
   private:
     PetscMap map;
 };
-}}
+}
+
+  /* -------------------------------------------------------------------------*/
+
+template<class Ordinal> class IndexSpaceFactory 
+#if defined(PETSC_HAVE_CCA)
+           :  public virtual gov::cca::Port, public virtual gov::cca::Component
+#endif
+{
+  public:
+
+    // Destructor.
+  virtual ~IndexSpaceFactory(void){};
+
+    // Interface for gov::cca::Component
+#if defined(PETSC_HAVE_CCA)
+    virtual void setServices(gov::cca::Services *) = 0;
+#endif
+
+    // Construct a IndexSpace
+    virtual esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,esi::IndexSpace<Ordinal>*&v) = 0; 
+};
+}
 
 #endif
 

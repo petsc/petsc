@@ -1,4 +1,6 @@
 
+
+
 /*
    Makes a PETSc vector look like a ESI
 */
@@ -243,23 +245,33 @@ esi::ErrorCode esi::petsc::Vector<double,int>::setArrayPointer(double *pointer,i
 }
 
 // --------------------------------------------------------------------------------------------------------
-esi::petsc::VectorFactory<double,int>::VectorFactory(){;}
-
-esi::petsc::VectorFactory<double,int>::~VectorFactory(){;}
-
-esi::ErrorCode esi::petsc::VectorFactory<double,int>::getVector(esi::IndexSpace<int>&map,esi::Vector<double,int>*&v)
+namespace esi{namespace petsc{
+  template<class Scalar,class Ordinal> class VectorFactory : public virtual esi::VectorFactory<Scalar,Ordinal>
 {
-  v = new esi::petsc::Vector<double,int>(&map);
-  return 0;
-};
+  public:
 
+    // constructor
+    VectorFactory(void){};
+  
+    // Destructor.
+    virtual ~VectorFactory(void){};
+
+    // Interface for gov::cca::Component
 #if defined(PETSC_HAVE_CCA)
-void esi::petsc::VectorFactory<double,int>::setServices(gov::cca::Services *svc)
-{
-  svc->addProvidesPort(this,svc->createPortInfo("getVector", "esi::VectorFactory", 0));
-}
+    virtual void setServices(gov::cca::Services *svc)
+    {
+      svc->addProvidesPort(this,svc->createPortInfo("getVector", "esi::VectorFactory", 0));
+    };
 #endif
 
+    // Construct a Vector
+    virtual esi::ErrorCode getVector(esi::IndexSpace<Ordinal>&map,esi::Vector<Scalar,Ordinal>*&v)
+    {
+      v = new esi::petsc::Vector<Scalar,Ordinal>(&map);
+      return 0;
+    };
+};
+}}
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_CCA)
 gov::cca::Component *create_esi_petsc_vectorfactory(void)
@@ -272,17 +284,116 @@ void *create_esi_petsc_vectorfactory(void)
   return (void *)(new esi::petsc::VectorFactory<double,int>);
 }
 #endif
+EXTERN_C_END
+
+// --------------------------------------------------------------------------------------------------------
+#if defined(PETSC_HAVE_TRILINOS)
+#define PETRA_MPI /* used by Ptera to indicate MPI code */
+#include "Petra_ESI_Vector.h"
+
+template<class Scalar,class Ordinal> class Petra_ESI_VectorFactory : public virtual esi::VectorFactory<Scalar,Ordinal>
+{
+  public:
+
+    // constructor
+    Petra_ESI_VectorFactory(void) {};
+  
+    // Destructor.
+    virtual ~Petra_ESI_VectorFactory(void) {};
+
+    // Interface for gov::cca::Component
+#if defined(PETSC_HAVE_CCA)
+    virtual void setServices(gov::cca::Services *svc)
+    {
+      svc->addProvidesPort(this,svc->createPortInfo("getVector", "esi::VectorFactory", 0));
+    };
+#endif
+
+    // Construct a Vector
+    virtual esi::ErrorCode getVector(esi::IndexSpace<Ordinal>&lmap,esi::Vector<Scalar,Ordinal>*&v)
+    {
+      Petra_ESI_IndexSpace<Ordinal> *map;
+      int ierr = lmap.getInterface("Petra_ESI_IndexSpace",static_cast<void *>(map));CHKERRQ(ierr);
+      if (!map) SETERRQ(1,"Requires Petra_ESI_IndexSpace");
+      v = new Petra_ESI_Vector<Scalar,Ordinal>(*map);
+      return 0;
+    }; 
+};
+#endif
+
+EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_CCA)
+gov::cca::Component *create_petra_esi_vectorfactory(void)
+{
+  return dynamic_cast<gov::cca::Component *>(new Petra_ESI_VectorFactory<double,int>);
+}
+#else
+void *create_petra_esi_vectorfactory(void)
+{
+  return (void *)(new Petra_ESI_VectorFactory<double,int>);
+}
+#endif
+EXTERN_C_END
+
+// --------------------------------------------------------------------------------------------------------
 
 // CCAFFEINE expects each .so file to have a getComponentList function.
 // See dccafe/cxx/dc/framework/ComponentFactory.h for details.
+EXTERN_C_BEGIN
 char **getComponentList() {
-  static char *list[2];
+  static char *list[4];
   list[0] = "create_esi_petsc_vectorfactory esi::petsc::VectorFactory";
-  list[1] = 0;
+  list[1] = "create_petra_esi_vectorfactory Petra_ESI_VectorFactory";
+  list[2] = "create_esi_petsc_indexspacefactory esi::petsc::IndexSpaceFactory";
+  list[3] = 0;
   return list;
 }
 EXTERN_C_END
 
+  /* -----should be in eindexspace.c but Trilinos sucks----------------------------------------------------------*/
+#if defined(PETSC_HAVE_TRILINOS)
+
+template<class Ordinal> class Petra_ESI_IndexSpaceFactory : public virtual esi::IndexSpaceFactory<Ordinal>
+{
+  public:
+
+    // Destructor.
+  virtual ~Petra_ESI_IndexSpaceFactory(void){};
+
+    // Interface for gov::cca::Component
+#if defined(PETSC_HAVE_CCA)
+    virtual void setServices(gov::cca::Services *svc)
+    {
+      svc->addProvidesPort(this,svc->createPortInfo("getIndexSpace", "esi::IndexSpaceFactory", 0));
+    };
+#endif
+
+    // Construct a IndexSpace
+    virtual esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,esi::IndexSpace<Ordinal>*&v)
+    {
+      PetscTruth ismpi;
+      int ierr = PetscStrcmp(name,"MPI",&ismpi);CHKERRQ(ierr);
+      if (!ismpi) SETERRQ1(1,"%s not supported, only MPI supported as RunTimeModel",name);
+      Petra_Comm *pcomm = new Petra_Comm(*(MPI_Comm*)comm);
+      v = new Petra_ESI_IndexSpace<Ordinal>(0,m,0,*pcomm);
+      return 0;
+    };
+
+};
+EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_CCA)
+gov::cca::Component *create_petra_esi_indexspacefactory(void)
+{
+  return dynamic_cast<gov::cca::Component *>(new Petra_ESI_IndexSpaceFactory<int>);
+}
+#else
+void *create_petra_esi_indexspacefactory(void)
+{
+  return (void *)(new Petra_ESI_IndexSpaceFactory<int>);
+}
+#endif
+EXTERN_C_END
+#endif
 
 
 

@@ -1,3 +1,4 @@
+
 /*$Id: ebvec1.c,v 1.9 2001/09/26 17:10:29 balay Exp $*/
 
 
@@ -518,6 +519,39 @@ EXTERN_C_END
 extern PetscFList CCAList;
 
 #undef __FUNCT__  
+#define __FUNCT__ "ESICreateIndexSpace"
+/*@
+    ESICreateIndexSpace - Creates an esi::IndexSpace using the -is_esi_type type 
+    
+@*/
+int ESICreateIndexSpace(const char * commname,void *comm,int m,esi::IndexSpace<int>*&v)
+{
+  int                         ierr;
+  esi::IndexSpaceFactory<int> *f;
+  void                        *(*r)(void);
+  char                        name[1024];
+  PetscTruth                  found;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetString(PETSC_NULL,"-is_esi_type",name,1024,&found);CHKERRQ(ierr);
+  if (!found) {
+    ierr = PetscStrcpy(name,"esi::petsc::IndexSpaceFactory");CHKERRQ(ierr);
+  }
+  ierr = PetscFListFind(*(MPI_Comm*)comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(1,"Unable to load esi::IndexSpaceFactory constructor %s",name);
+#if defined(PETSC_HAVE_CCA)
+  gov::cca::Component *component = (gov::cca::Component *)(*r)();
+  gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
+  f    = dynamic_cast<esi::IndexSpaceFactory<int>*>(port);
+#else
+  f    = (esi::IndexSpaceFactory<int> *)(*r)();
+#endif
+  ierr = f->getIndexSpace(commname,comm,m,v);CHKERRQ(ierr);
+  delete f;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecESISetType"
 /*@
     VecESISetType - Given a PETSc vector of type ESI loads the ESI constructor
@@ -525,11 +559,11 @@ extern PetscFList CCAList;
 @*/
 int VecESISetType(Vec V,char *name)
 {
-  int                                   ierr;
-  esi::Vector<double,int>               *ve;
-  esi::petsc::VectorFactory<double,int> *f;
-  void                                  *(*r)(void);
-  esi::IndexSpace<int>                  *map;
+  int                            ierr;
+  esi::Vector<double,int>        *ve;
+  esi::VectorFactory<double,int> *f;
+  void                           *(*r)(void);
+  esi::IndexSpace<int>           *map;
 
   PetscFunctionBegin;
   ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
@@ -537,11 +571,11 @@ int VecESISetType(Vec V,char *name)
 #if defined(PETSC_HAVE_CCA)
   gov::cca::Component *component = (gov::cca::Component *)(*r)();
   gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
-  f    = dynamic_cast<esi::petsc::VectorFactory<double,int>*>(port);
+  f    = dynamic_cast<esi::VectorFactory<double,int>*>(port);
 #else
-  f    = (esi::petsc::VectorFactory<double,int> *)(*r)();
+  f    = (esi::VectorFactory<double,int> *)(*r)();
 #endif
-  map  = new esi::petsc::IndexSpace<int>(V->comm,V->n,V->N);
+  ierr = ESICreateIndexSpace("MPI",&V->comm,V->n,map);CHKERRQ(ierr);
   ierr = f->getVector(*map,ve);CHKERRQ(ierr);
   ierr = map->deleteReference();CHKERRQ(ierr);
   delete f;
