@@ -1,6 +1,65 @@
-/*$Id: errtrace.c,v 1.15 2000/05/10 16:39:12 bsmith Exp bsmith $*/
+/*$Id: errtrace.c,v 1.16 2000/09/22 20:42:15 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
+
+static char *PetscErrorStrings[] = {
+  /*55 */ "Out of memory",
+          "No support for this operation for this object type",
+          "",
+  /*58 */ "",
+  /*59 */ "Signal received",
+  /*60 */  "Nonconforming object sizes",
+    "Argument aliasing not permitted",
+    "Invalid argument",
+  /*63 */    "Argument out of range",
+    "Null or corrupt argument",
+    "Unable to open file",
+    "Read from file failed",
+    "Write to file failed",
+    "Invalid pointer",
+  /*69 */      "Arguments must have same type",
+    "Detected breakdown in Krylov method",
+  /*71 */    "Detected zero pivot in LU factorization",
+  /*72 */    "Floating point exception",
+  /*73 */    "Object is in wrong state",
+    "Corrupted Petsc object",
+    "Arguments are incompatible",
+    "Error in external library",
+  /*77 */    "Petsc has generated inconsistent data",
+    "Memory corruption",
+    "Unexpected data in file",
+  /*80 */ "Arguments must have same communicators",
+  /*81 */ "Detected zero pivot in Cholesky factorization"};
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PetscErrorMessage" 
+/*@C
+   PetscErrorMessage - returns the text string associated with a PETSc error code.
+
+   Not Collective
+
+   Input Parameter:
+.   errno - the error code
+
+   Output Parameter: 
+.  text - the error message
+
+   Level: developer
+
+   Concepts: error handler^messages
+
+.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
+          PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
+ @*/
+int PetscErrorMessage(int errno,char **text)
+{
+  PetscFunctionBegin;
+  if (errno < PETSC_ERR_MEM || errno > PETSC_ERR_MAT_CH_ZRPVT) {
+    SETERRQ(1,1,"Unknown error code");
+  }
+  *text = PetscErrorStrings[errno-PETSC_ERR_MEM];
+  PetscFunctionReturn(0);
+}
 
 
 #undef __FUNC__  
@@ -50,9 +109,7 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
   (*PetscErrorPrintf)("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
-  switch(n)
-  {
-  case PETSC_ERR_MEM:
+  if (n == PETSC_ERR_MEM) {
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   destroying unneeded objects.\n",rank);
@@ -69,98 +126,11 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
       (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
       (*PetscErrorPrintf)("[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);
     }
+  } else {
+    char *text;
+    PetscErrorMessage(n,&text);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s!\n",rank);
     n = 1;
-    break;
-  case PETSC_ERR_SUP:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   No support for this operation for this object type!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_SIG:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Signal received!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_FP:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Floating point exception!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_COR:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Corrupted Petsc object!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_LIB:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Error in external library!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_PLIB:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Petsc has generated inconsistent data!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_MEMC:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory corruption!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_ARG_SIZ:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Nonconforming object sizes!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_ARG_IDN:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Argument aliasing not permitted!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_ARG_WRONG:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Invalid argument!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_ARG_CORRUPT:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Null or corrupt argument!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_ARG_OUTOFRANGE:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Argument out of range!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_ARG_BADPTR:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Invalid pointer!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_ARG_NOTSAMETYPE:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Arguments must have same type!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_ARG_WRONGSTATE:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Object is in wrong state!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_ARG_INCOMP:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Arguments are incompatible!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_FILE_OPEN:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Unable to open file!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_FILE_READ:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Read from file failed!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_FILE_WRITE:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Write to file failed!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_FILE_UNEXPECTED:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Unexpected data in file!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_KSP_BRKDWN:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Detected breakdown in Krylov method!\n",rank);
-    n = 1;
-    break;
-  case PETSC_ERR_MAT_LU_ZRPVT:
-    /* Also PETSC_ERR_MAT_CH_ZRPVT */
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Detected zero pivot in factor!\n",rank);
-    n = 1;
-    break;
-  default:;
   }
   if (mess) {
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s\n",rank,mess);

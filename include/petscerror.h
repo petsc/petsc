@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.47 2000/04/05 21:54:53 balay Exp bsmith $ */
+/* $Id: petscerror.h,v 1.48 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -70,7 +70,7 @@
 #define PETSC_ERR_KSP_BRKDWN      70   /* break down in a Krylov method */
 
 #define PETSC_ERR_MAT_LU_ZRPVT    71   /* detected a zero pivot during LU factorization */
-#define PETSC_ERR_MAT_CH_ZRPVT    71   /* detected a zero pivot during Cholesky factorization */
+#define PETSC_ERR_MAT_CH_ZRPVT    81   /* detected a zero pivot during Cholesky factorization */
 
 #if defined(PETSC_USE_DEBUG)
 #define SETERRA(n,p,s)     {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);\
@@ -123,6 +123,7 @@ extern  int __gierr;
 
 #endif
 
+EXTERN int PetscErrorMessage(int,char**);
 EXTERN int PetscTraceBackErrorHandler(int,char*,char*,char*,int,int,char*,void*);
 EXTERN int PetscEmacsClientErrorHandler(int,char*,char*,char*,int,int,char*,void*);
 EXTERN int PetscStopErrorHandler(int,char*,char*,char*,int,int,char*,void*);
