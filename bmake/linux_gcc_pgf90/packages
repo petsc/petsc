@@ -94,7 +94,7 @@ PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 #
 # BlockSolve
 #
-BLOCKSOLVE_INCLUDE    = -I/home/petsc/soft/solaris-9/BlockSolve95/include
-BLOCKSOLVE_LIB        = -L/home/petsc/soft/solaris-9/BlockSolve95/lib/libO/linux -lBS95
+BLOCKSOLVE_INCLUDE    = -I/home/petsc/software/BlockSolve95/include
+BLOCKSOLVE_LIB        = -L/home/petsc/software/BlockSolve95/lib/libO/linux -lBS95
 PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 
