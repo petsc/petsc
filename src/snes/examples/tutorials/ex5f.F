@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.68 2001/05/03 20:14:54 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.69 2001/05/03 21:42:02 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -141,8 +141,8 @@
 
 !  Set function evaluation routine and vector
 
-      call DASetLocalFunction(da,FormFunctionLocal,g_FormFunctionLocal,      &
-     &                        ierr)
+      call DASetLocalFunction(da,FormFunctionLocal,                        &
+     &         PETSC_NULL_FUNCTION,g_FormFunctionLocal,ierr)
       call SNESSetFunction(snes,r,SNESDAFormFunction,da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
