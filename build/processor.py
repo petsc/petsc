@@ -493,6 +493,22 @@ class ImportSharedLinker(SharedLinker):
        - This is the only way to get correct C++ mangling'''
     return
 
+  def processFileSet(self, set):
+    '''Link all the files in "set"'''
+    if self.argDB['HAVE_CYGWIN']:
+      super(SharedLinker, self).processFileSet(self, set)
+    else:
+      # Leave this set unchanged
+      for f in set:
+        build.transform.Transform.handleFile(self, f, set)
+    return self.output
+
+  def processOldFile(self, f, set):
+    '''Output old library'''
+    if self.argDB['HAVE_CYGWIN']:
+      super(SharedLinker, self).processOldFile(self, f, set)
+    return self.output
+
 class LibraryAdder (build.transform.Transform):
   '''A LibraryAdder adds every library matching inputTag to the extraLibraries member of linker'''
   def __init__(self, inputTag, linker, prepend = 0):

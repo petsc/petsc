@@ -144,18 +144,15 @@ class UsingCxx (base.Base):
       return build.buildGraph.BuildGraph()
     (target, compiler) = self.getGenericCompileTarget(['client'])
     sharedTag    = self.language.lower()+' client shared library'
+    importTag    = self.language.lower()+' client import library'
     linker       = build.buildGraph.BuildGraph()
     sharedLinker = build.processor.SharedLinker(self.sourceDB, self.linker, compiler.output.tag, sharedTag)
     sharedLinker.extraLibraries.extend(self.extraLibraries)
-    if self.argDB['HAVE_CYGWIN']:
-      importTag    = self.language.lower()+' client import library'
-      importLinker = build.processor.ImportSharedLinker(self.sourceDB, self.linker, compiler.output.tag, importTag)
-      sharedAdder  = build.processor.LibraryAdder([importTag, 'old '+importTag], sharedLinker, prepend = 1)
-      linker.addVertex(importLinker)
-      linker.addEdges(sharedAdder,  [importLinker])
-      linker.addEdges(sharedLinker, [sharedAdder])
-    else:
-      linker.addVertex(sharedLinker)
+    importLinker = build.processor.ImportSharedLinker(self.sourceDB, self.linker, compiler.output.tag, importTag)
+    sharedAdder  = build.processor.LibraryAdder([importTag, 'old '+importTag], sharedLinker, prepend = 1)
+    linker.addVertex(importLinker)
+    linker.addEdges(sharedAdder,  [importLinker])
+    linker.addEdges(sharedLinker, [sharedAdder])
     linker.addEdges(build.transform.Remover([compiler.output.tag, compiler.output.tag+' import']), [sharedLinker])
     target.appendGraph(linker)
     return target
