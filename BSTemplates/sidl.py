@@ -64,11 +64,11 @@ class Defaults:
   def getPackages(self):
     return map(lambda file: os.path.splitext(os.path.split(file)[1])[0], self.sources)
 
-  def getRepositoryTarget(self):
+  def getRepositoryTargets(self):
     action = babel.CompileSIDLRepository()
     action.outputDir = self.repositoryDir
     action.repositoryDirs.extend(self.repositoryDirs)
-    return target.Target(None, [babel.TagAllSIDL(), action])
+    return [target.Target(None, [babel.TagAllSIDL(), action])]
 
   def getServerSIDLTargets(self):
     if len(self.serverLanguages) > 1:
@@ -106,7 +106,9 @@ class Defaults:
     return targets
 
   def getSIDLTarget(self):
-    return target.Target(self.sources, [tuple([self.getRepositoryTarget()]+self.getServerSIDLTargets()+self.getClientSIDLTargets()), transform.Update()])
+    return target.Target(self.sources, [tuple(self.getRepositoryTargets()+self.getServerSIDLTargets()+self.getClientSIDLTargets()),
+                                        transform.Update(),
+                                        transform.SetFilter('old sidl')])
 
 class CompileDefaults (Defaults):
   def __init__(self, sidlSources):
@@ -156,7 +158,8 @@ class CompileDefaults (Defaults):
                                       cxxAction,
                                       link.TagLibrary(),
                                       link.LinkSharedLibrary(extraLibraries = libraries)]))
-    return [tuple(targets), transform.Update()]
+    targets.append(transform.Update())
+    return targets
 
   def getClientCompileTargets(self):
     targets = []
@@ -179,7 +182,8 @@ class CompileDefaults (Defaults):
                                     action,
                                     link.TagLibrary(),
                                     link.LinkSharedLibrary(extraLibraries = self.babelLib)]))
-    return [tuple(targets), transform.Update()]
+    targets.append(transform.Update())
+    return targets
 
   def getCompileTarget(self):
-    return target.Target(None, [self.getSIDLTarget(), tuple(self.getServerCompileTargets()+self.getClientCompileTargets())])
+    return target.Target(None, [self.getSIDLTarget(), self.getServerCompileTargets()+self.getClientCompileTargets()])

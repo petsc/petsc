@@ -61,6 +61,18 @@ class FileFilter (Transform):
     else:
       if self.filter(source): Transform.fileExecute(self, source)
 
+class SetFilter (Transform):
+  def __init__(self, tags, sources = None):
+    Transform.__init__(self, sources)
+    self.tags   = tags
+    if self.tags and not type(self.tags) == types.ListType:
+      self.tags = [self.tags]
+
+  def setExecute(self, set):
+    if not self.tags or not set.tag in self.tags:
+      Transform.setExecute(self, set)
+    return self.products
+
 class FileChanged (Transform):
   def __init__(self, sources = None):
     Transform.__init__(self, sources)
