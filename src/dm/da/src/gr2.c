@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.6 1999/02/25 04:25:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.7 1999/02/25 18:26:04 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -41,7 +41,6 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsGhosted",(PetscObject*) &xlocal);CHKERRQ(ierr);
   if (!xlocal) {
-    /* create local vector for holding ghosted values used in graphics */
     ierr = DAGetInfo(da,0,&M,&N,0,&m,&n,0,0,&s,&periodic,&st);CHKERRQ(ierr);
     if (periodic != DA_NONPERIODIC || s != 1 || st != DA_STENCIL_BOX) {
       /* 
@@ -52,11 +51,13 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
       ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,m,n,1,s,lx,ly,&dac);CHKERRQ(ierr); 
       PLogInfo(da,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics ghost points\n");
     } else {
+      /* otherwise we can use the da we already have */
       dac = da;
     }
+    /* create local vector for holding ghosted values used in graphics */
     ierr = DACreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
     if (dac != da) {ierr = PetscObjectDereference((PetscObject)dac);CHKERRQ(ierr);}
-    ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject) xlocal);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectQuery((PetscObject)xlocal,"DA",(PetscObject*) &dac);CHKERRQ(ierr);
@@ -67,11 +68,11 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   */
   ierr = DAGlobalToLocalBegin(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = VecGetArray(xlocal,&v); CHKERRQ(ierr);
 
   ierr = DAGetInfo(dac,0,&M,&N,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(dac,&igstart,&jgstart,0,&m,&n,0);CHKERRQ(ierr);
   ierr = DAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
-  ierr = VecGetArray(xlocal,&v); CHKERRQ(ierr);
 
   /* get coordinates of nodes */
   ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);

@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.3 1998/12/23 22:53:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr1.c,v 1.4 1999/01/04 21:54:52 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -10,39 +11,40 @@ static char vcid[] = "$Id: gr1.c,v 1.3 1998/12/23 22:53:37 bsmith Exp bsmith $";
 
 int DACreateUniformCoordinates(DA da,double xmin,double xmax,double ymin,double ymax,double zmin,double zmax)
 {
-  int            i,j,ierr,M,N,P,igstart,igsize,jgstart,jgsize,dim,cnt;
+  int            i,j,ierr,M,N,P,istart,isize,jstart,jsize,dim,cnt;
   double         hx,hy;
   Vec            xcoor;
   DAPeriodicType periodic;
   Scalar         *coors;
+  DA             coorda;
 
   PetscFunctionBegin;
   if (xmax <= xmin) SETERRQ2(1,1,"Xmax must be larger than xmin %d %d",xmin,xmax);
 
-  ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&igstart,&jgstart,0,&igsize,&jgsize,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic,0);CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&istart,&jstart,0,&isize,&jsize,0);CHKERRQ(ierr);
 
   if (dim == 1) {
-    ierr = VecCreateSeq(PETSC_COMM_SELF,igsize,&xcoor);CHKERRQ(ierr);
+    ierr = VecCreateMPI(PETSC_COMM_WORLD,isize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
     if (periodic == DA_NONPERIODIC) hx = (xmax-xmin)/(M-1);
     else                            hx = (xmax-xmin)/M;
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
-    for ( i=0; i<igsize; i++ ) {
-      coors[i] = xmin + hx*(i+igstart);
+    for ( i=0; i<isize; i++ ) {
+      coors[i] = xmin + hx*(i+istart);
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 2) {
-    ierr = VecCreateSeq(PETSC_COMM_SELF,2*igsize*jgsize,&xcoor);CHKERRQ(ierr);
+    ierr = VecCreateMPI(PETSC_COMM_WORLD,2*isize*jsize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
     if (periodic == DA_XPERIODIC || periodic == DA_XYPERIODIC) hx = (xmax-xmin)/(M);
     else                                                       hx = (xmax-xmin)/(M-1);
     if (periodic == DA_YPERIODIC || periodic == DA_XYPERIODIC) hy = (ymax-ymin)/(N);
     else                                                       hy = (ymax-ymin)/(N-1);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     cnt  = 0;
-    for ( j=0; j<jgsize; j++ ) {
-      for ( i=0; i<igsize; i++ ) {
-        coors[cnt++] = xmin + hx*(i+igstart);
-        coors[cnt++] = ymin + hy*(j+jgstart);
+    for ( j=0; j<jsize; j++ ) {
+      for ( i=0; i<isize; i++ ) {
+        coors[cnt++] = xmin + hx*(i+istart);
+        coors[cnt++] = ymin + hy*(j+jstart);
       }
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
@@ -60,10 +62,10 @@ EXTERN_C_BEGIN
 int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
 {
   DA             da;
-  int            i,rank,size,ierr,start,n,tag1,tag2,igstart,igsize,N,step;
+  int            i,rank,size,ierr,n,tag1,tag2,N,step;
   int            istart,isize,j;
   MPI_Status     status;
-  double         coors[4],ymin,ymax,min,max,xmin,xmax,tmp;
+  double         coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
   Scalar         *array,*xg;
   Draw           draw;
   PetscTruth     isnull;
@@ -79,8 +81,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*) &da);CHKERRQ(ierr);
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
 
-  ierr = DAGetInfo(da,0,&N,0,0,0,0,0,&step,0,&periodic);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&igstart,0,0,&igsize,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,0,&N,0,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
   ierr = VecGetArray(xin,&array); CHKERRQ(ierr);
   ierr = VecGetLocalSize(xin,&n); CHKERRQ(ierr);
@@ -102,10 +103,10 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
       Determine the min and max x coordinate in plot 
   */
   if (rank == 0) {
-    xmin = PetscReal(xg[istart-igstart]);
+    xmin = PetscReal(xg[0]);
   } 
   if (rank == size-1) {
-    xmax = PetscReal(xg[igsize-1]);
+    xmax = PetscReal(xg[n-1]);
   }
   MPI_Bcast(&xmin,1,MPI_DOUBLE,0,comm);
   MPI_Bcast(&xmax,1,MPI_DOUBLE,size-1,comm);
@@ -156,37 +157,38 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
     PetscObjectGetNewTag((PetscObject)xin,&tag2);CHKERRQ(ierr);
     if (rank < size-1) { /*send value to right */
       ierr = MPI_Send(&array[j+(n-1)*step],1,MPI_DOUBLE,rank+1,tag1,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(&xg[n-1],1,MPI_DOUBLE,rank+1,tag1,comm);CHKERRQ(ierr);
     }
     if (rank == 0 && periodic) { /* first processor sends first value to last */
       ierr = MPI_Send(&array[j],1,MPI_DOUBLE,size-1,tag2,comm);CHKERRQ(ierr);
     }
 
-    start = istart - igstart;
     for ( i=1; i<n; i++ ) {
 #if !defined(USE_PETSC_COMPLEX)
-      ierr = DrawLine(draw,xg[i-1+start],array[j+step*(i-1)],xg[i+start],array[j+step*i],
+      ierr = DrawLine(draw,xg[i-1],array[j+step*(i-1)],xg[i],array[j+step*i],
                       DRAW_RED);CHKERRQ(ierr);
 #else
-      ierr = DrawLine(draw,PetscReal(xg[i-1+start]),PetscReal(array[j+step*(i-1)]),
-                      PetscReal(xg[i+start]),PetscReal(array[j+step*i]),DRAW_RED);CHKERRQ(ierr);
+      ierr = DrawLine(draw,PetscReal(xg[i-1]),PetscReal(array[j+step*(i-1)]),
+                      PetscReal(xg[i]),PetscReal(array[j+step*i]),DRAW_RED);CHKERRQ(ierr);
 #endif
     }
     if (rank) { /* receive value from left */
       ierr = MPI_Recv(&tmp,1,MPI_DOUBLE,rank-1,tag1,comm,&status);CHKERRQ(ierr);
+      ierr = MPI_Recv(&xgtmp,1,MPI_DOUBLE,rank-1,tag1,comm,&status);CHKERRQ(ierr);
 #if !defined(USE_PETSC_COMPLEX)
-      ierr = DrawLine(draw,xg[start-1],tmp,xg[start],array[j],DRAW_RED);CHKERRQ(ierr);
+      ierr = DrawLine(draw,xgtmp,tmp,xg[0],array[j],DRAW_RED);CHKERRQ(ierr);
 #else
-      ierr = DrawLine(draw,PetscReal(xg[start-1]),tmp,PetscReal(xg[start]),PetscReal(array[j]),
+      ierr = DrawLine(draw,PetscReal(xgtmp,tmp,PetscReal(xg[0]),PetscReal(array[j]),
                       DRAW_RED);CHKERRQ(ierr);
 #endif
     }
     if (rank == size-1 && periodic) {
       ierr = MPI_Recv(&tmp,1,MPI_DOUBLE,0,tag2,comm,&status);CHKERRQ(ierr);
 #if !defined(USE_PETSC_COMPLEX)
-      ierr = DrawLine(draw,xg[n+start-1],array[j+step*(n-1)],xg[n+start],tmp,DRAW_RED);CHKERRQ(ierr);
+      ierr = DrawLine(draw,xg[n-2],array[j+step*(n-1)],xg[n-1],tmp,DRAW_RED);CHKERRQ(ierr);
 #else
-      ierr = DrawLine(draw,PetscReal(xg[n+start-1]),PetscReal(array[j+step*(n-1)]),
-                      PetscReal(xg[n+start]),tmp,DRAW_RED);CHKERRQ(ierr);
+      ierr = DrawLine(draw,PetscReal(xg[n-2]),PetscReal(array[j+step*(n-1)]),
+                      PetscReal(xg[n-1]),tmp,DRAW_RED);CHKERRQ(ierr);
 #endif
     }
     PetscObjectRestoreNewTag((PetscObject)xin,&tag2);CHKERRQ(ierr);
