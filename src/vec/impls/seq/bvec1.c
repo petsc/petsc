@@ -1,4 +1,4 @@
-/*$Id: bvec1.c,v 1.35 2000/04/09 04:35:28 bsmith Exp bsmith $*/
+/*$Id: bvec1.c,v 1.36 2000/04/12 04:22:20 bsmith Exp balay $*/
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -7,7 +7,7 @@
 
 #include "src/vec/vecimpl.h" 
 #include "src/vec/impls/dvecimpl.h" 
-#include "pinclude/blaslapack.h"
+#include "petscblaslapack.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"VecDot_Seq"

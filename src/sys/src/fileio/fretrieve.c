@@ -1,11 +1,10 @@
-/*$Id: fretrieve.c,v 1.32 2000/06/30 14:53:58 bsmith Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.33 2000/07/07 14:50:20 bsmith Exp balay $*/
 /*
       Code for opening and closing files.
 */
 #include "petsc.h"
 #include "petscsys.h"
 #include "petscfix.h"
-#include "pinclude/ptime.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif

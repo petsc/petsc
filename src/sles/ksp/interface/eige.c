@@ -1,4 +1,4 @@
-/*$Id: eige.c,v 1.25 2000/04/12 04:24:52 bsmith Exp balay $*/
+/*$Id: eige.c,v 1.26 2000/05/05 22:17:27 balay Exp balay $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
@@ -84,7 +84,7 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#include "pinclude/blaslapack.h"
+#include "petscblaslapack.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvaluesExplicitly"

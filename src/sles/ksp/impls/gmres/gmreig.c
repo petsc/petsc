@@ -1,7 +1,7 @@
-/*$Id: gmreig.c,v 1.18 2000/04/09 04:37:55 bsmith Exp bsmith $*/
+/*$Id: gmreig.c,v 1.19 2000/04/12 04:25:01 bsmith Exp balay $*/
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"
-#include "pinclude/blaslapack.h"
+#include "petscblaslapack.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPComputeExtremeSingularValues_GMRES"

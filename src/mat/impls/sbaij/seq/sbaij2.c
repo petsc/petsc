@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.4 2000/06/27 16:54:30 balay Exp bsmith $*/
+/*$Id: sbaij2.c,v 1.5 2000/08/13 15:03:03 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -210,7 +210,7 @@ int MatGetSubMatrices_SeqSBAIJ(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat 
 /* -------------------------------------------------------*/
 /* Should check that shapes of vectors and matrices match */
 /* -------------------------------------------------------*/
-#include "pinclude/blaslapack.h"
+#include "petscblaslapack.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatMult_SeqSBAIJ_1"

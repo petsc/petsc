@@ -1,4 +1,4 @@
-/* $Id: axpy.h,v 1.16 2000/01/11 20:58:48 bsmith Exp bsmith $ */
+/* $Id: axpy.h,v 1.17 2000/05/10 16:38:34 bsmith Exp balay $ */
 
 /* 
    These are macros for daxpy like operations.  The format is
@@ -13,7 +13,7 @@
 
 #ifndef APXY
 
-#include "include/pinclude/blaslapack.h"
+#include "petscblaslapack.h"
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
 

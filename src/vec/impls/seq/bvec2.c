@@ -1,11 +1,11 @@
-/*$Id: bvec2.c,v 1.183 2000/06/23 20:14:15 buschelm Exp buschelm $*/
+/*$Id: bvec2.c,v 1.184 2000/06/23 20:14:59 buschelm Exp balay $*/
 /*
    Implements the sequential vectors.
 */
 
 #include "src/vec/vecimpl.h"          /*I "petscvec.h" I*/
 #include "src/vec/impls/dvecimpl.h" 
-#include "pinclude/blaslapack.h"
+#include "petscblaslapack.h"
 #if defined(PETSC_HAVE_AMS)
 EXTERN int ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
 #endif

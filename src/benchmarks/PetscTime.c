@@ -1,8 +1,8 @@
-/*$Id: PetscTime.c,v 1.13 1999/10/24 14:04:16 bsmith Exp bsmith $*/
+/*$Id: PetscTime.c,v 1.14 2000/01/11 21:03:44 bsmith Exp balay $*/
 
 #include "petsc.h"
 #include "petscfix.h"
-#include "pinclude/ptime.h"
+#include "src/sys/src/plog/ptime.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

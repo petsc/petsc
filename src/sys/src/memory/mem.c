@@ -1,9 +1,8 @@
-/*$Id: mem.c,v 1.48 2000/04/12 04:21:28 bsmith Exp balay $*/
+/*$Id: mem.c,v 1.49 2000/05/05 22:13:59 balay Exp balay $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 #include "petscsys.h"
 #include "petscfix.h"
-#include "pinclude/ptime.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif

@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.141 2000/07/10 03:39:30 bsmith Exp bsmith $*/
+/*$Id: mpidense.c,v 1.142 2000/08/14 19:59:11 bsmith Exp balay $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -916,7 +916,7 @@ int MatTranspose_MPIDense(Mat A,Mat *matout)
   PetscFunctionReturn(0);
 }
 
-#include "pinclude/blaslapack.h"
+#include "petscblaslapack.h"
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatScale_MPIDense"
 int MatScale_MPIDense(Scalar *alpha,Mat inA)

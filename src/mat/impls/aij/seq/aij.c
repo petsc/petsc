@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.351 2000/05/13 14:19:29 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.352 2000/07/10 03:39:32 bsmith Exp balay $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1681,7 +1681,7 @@ int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   PetscFunctionReturn(0);
 }
 
-#include "pinclude/blaslapack.h"
+#include "petscblaslapack.h"
 #undef __FUNC__  
 #define __FUNC__ /*<a name="MatScale_SeqAIJ"></a>*/"MatScale_SeqAIJ"
 int MatScale_SeqAIJ(Scalar *alpha,Mat inA)

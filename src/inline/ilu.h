@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.17 2000/04/09 03:08:50 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.18 2000/05/10 16:38:34 bsmith Exp balay $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -14,7 +14,7 @@
 #if !defined(__ILU_H)
 #define __ILU_H
 
-#include "pinclude/blaslapack.h"
+#include "petscblaslapack.h"
 
 /*
       These are C kernels,they are contained in 
