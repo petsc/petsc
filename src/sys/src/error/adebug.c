@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.79 1998/07/01 23:58:04 bsmith Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.80 1998/08/26 22:01:35 balay Exp balay $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -85,7 +85,7 @@ int PetscAttachDebugger(void)
 #if defined(CANNOT_START_DEBUGGER) 
   (*PetscErrorPrintf)("PETSC ERROR: System cannot start debugger\n");
   (*PetscErrorPrintf)("PETSC ERROR: On Cray run program in Totalview debugger\n");
-  (*PetscErrorPrintf)("PETSC ERROR: On Windows run program in Developers Studio debugger\n");
+  (*PetscErrorPrintf)("PETSC ERROR: On Windows use Developer Studio(MSDEV)\n");
   MPI_Finalize();
   exit(0);
 #else
