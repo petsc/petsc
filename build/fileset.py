@@ -128,14 +128,16 @@ class RootedFileSet(FileSet, base.Base):
     return FileSetIterator(self)
 
   def checkFile(self, filename, root = None):
-    filename = FileSet.checkFile(self, filename)
+    if root is None:
+      root = self.projectRoot
     if filename[0] == '/':
-      if root is None:
-        root = self.projectRoot
+      filename = FileSet.checkFile(self, filename)
       if not filename.startswith(root+os.sep):
         raise ValueError('Absolute path '+filename+' conflicts with project root '+root)
       else:
         filename = filename[len(root)+1:]
+    else:
+      filename = FileSet.checkFile(self, os.path.join(root, filename))
     return filename
 
 class FileSetIterator (object):

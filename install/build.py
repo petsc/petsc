@@ -28,5 +28,5 @@ class Builder(install.base.Base):
       maker.executeTarget(t)
     ret = maker.main(target)
     # Save source database (since atexit() functions might not be called before another build)
-    maker.cleanup()
+    maker.saveSourceDB()
     return ret

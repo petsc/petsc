@@ -45,6 +45,19 @@ class BuildGraph(object):
     self.outEdges[vertex] = []
     return
 
+  def removeVertex(self, vertex):
+    '''Remove a vertex if already exists in the vertex list
+       - Also removes all associated edges'''
+    if vertex is None: return
+    if vertex in self.vertices:
+      self.vertices.remove(vertex)
+      del self.inEdges[vertex]
+      del self.outEdges[vertex]
+      for v in self.vertices:
+        if vertex in self.inEdges[v]:  self.inEdges[v].remove(vertex)
+        if vertex in self.outEdges[v]: self.outEdges[v].remove(vertex)
+    return
+
   def addSubgraph(self, graph):
     '''Add the vertices and edges of another graph into this one'''
     map(self.addVertex, graph.vertices)

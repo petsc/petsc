@@ -62,8 +62,12 @@ class Installer(install.base.Base):
 
     self.debugPrint('Backing up '+url, 3, 'install')
     root = self.retriever.retrieve(url, self.getInstallRoot(url, isBackup = 1), force = self.force);
-    self.builder.build(root, 'sidl', ignoreDependencies = 1)
+    # Must save checkpoint in the project root
+    self.argDB.saveFilename = os.path.join(root, 'RDict.db')
+    self.builder.build(root, ['activate', 'sidlCheckpoint', 'deactivate'], ignoreDependencies = 1)
     output = self.executeShellCommand('tar -czf '+self.getRepositoryName(self.getMappedUrl(url))+'.tgz -C '+os.path.dirname(root)+' '+os.path.basename(root))
+    # Reset this since we are removing the directory
+    self.argDB.saveFilename = 'RDict.db'
     shutil.rmtree(os.path.dirname(root))
     return
 

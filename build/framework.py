@@ -97,7 +97,7 @@ class Framework(base.Base):
     '''Check that the temporary direcotry exists and has sufficient space available'''
     if not os.path.exists(tmpDir):
       del self.argDB['TMPDIR']
-      argDB.setType('TMPDIR', nargs.ArgDir(None, None, 'Temporary directory '+tmpDir+' does not exist. Select another directory'))
+      self.argDB.setType('TMPDIR', nargs.ArgDir(None, None, 'Temporary directory '+tmpDir+' does not exist. Select another directory'))
       newTmp = self.argDB['TMPDIR']
       return 0
 
@@ -175,6 +175,10 @@ class Framework(base.Base):
     return self._compileTemplate
   compileTemplate = property(getCompileTemplate, doc = 'This is the default template for source operations')
 
+  def t_getDependencies(self):
+    '''Return a list of the URLs for projects upon which this one depends'''
+    return []
+
   def t_activate(self):
     '''Load all necessary data for this project into the current RDict, without destroying previous data'''
     # Update language specific information
@@ -182,6 +186,16 @@ class Framework(base.Base):
     # Update project in 'installedprojects'
     self.argDB['installedprojects'] = [self.project]+self.argDB['installedprojects']
     self.debugPrint('Activated project '+str(self.project), 2, 'install')
+    return self.project
+
+  def t_deactivate(self):
+    '''Unload the first matching project in the current RDict'''
+    # Remove project from 'installedprojects'
+    p = self.getInstalledProject(self.project.getUrl())
+    if not p is None:
+      projects = self.argDB['installedprojects']
+      projects.remove(p)
+      self.argDB['installedprojects'] = projects
     return self.project
 
   def t_configure(self):
@@ -258,14 +272,15 @@ class Framework(base.Base):
     return self.project
 
   def t_uninstall(self):
-    '''Remove this project from the current RDict'''
+    '''Remove all instances of this project from the current RDict'''
     # Remove project from 'installedprojects'
-    p = self.getInstalledProject(self.project.getUrl())
-    if not p is None:
-      projects = argDB['installedprojects']
-      projects.remove(p)
-      argDB['installedprojects'] = projects
+    projects = self.argDB['installedprojects']
+    map(lambda p: projects.remove(p), self.getInstalledProject(self.project.getUrl(), returnAll = 1))
+    self.argDB['installedprojects'] = projects
     # TODO: Remove project from 'projectDependenceGraph'
+    dependenceGraph = self.argDB['projectDependenceGraph']
+    dependenceGraph.removeVertex(self.project)
+    self.argDB['projectDependenceGraph'] = dependenceGraph
     return p
 
   def t_default(self):
@@ -351,8 +366,12 @@ class Framework(base.Base):
         self.sourceDB.updateSource(source)
     return
 
+  def setupProject(self):
+    '''Hook for user operations before project activation'''
+    return
+
   def setupBuild(self):
-    '''Hook for user operations before build'''
+    '''Hook for user operations after project activation, but before build'''
     return
 
   def executeGraph(self, graph, input = None, checkpoint = None):
@@ -382,11 +401,17 @@ class Framework(base.Base):
 
   def main(self, target = None):
     '''Execute the build operation'''
-    self.setupBuild()
-
     try:
-      if target is None:               target = self.argDB.target
+      if target is None:
+        target = self.argDB.target
       if not isinstance(target, list): target = [target]
+
+      self.setupProject()
+      # The activation target should happen before setup
+      if 'activate' in target:
+        self.executeTarget('activate')
+        target.remove('activate')
+      self.setupBuild()
       map(self.executeTarget, target)
     except Exception, e:
       print str(e)
