@@ -2,7 +2,7 @@
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
 dimensions using 20 node serendipity elements and the equations of linear\n\
-elasticity. This demonstrates use of MatGetSubMatrix() and the block\n\
+elasticity. This also demonstrates use of MatGetSubMatrix() and the block\n\
 diagonal data structure.\n\n";
 
 #include "sles.h"
@@ -17,11 +17,16 @@ diagonal data structure.\n\n";
 #define MAX(a,b)  ((a) > (b) ? (a) : (b))
 #define ABS(a)    ((a) < 0.0 ? -(a) : (a))
 
+int GetElasticityMatrix(int,Mat*);
+int Elastic20Stiff(double**);
+int AddElement(Mat,int,int,Scalar**,int,int);
+int paulsetup20();
+
 int main(int argc,char **args)
 {
   Mat     mat;
   int     ierr, i, its, m = 3, rdim, cdim, rstart, rend, mytid, numtids;
-  Scalar  norm, v, one = 1.0, neg1 = -1.0;
+  Scalar  norm, v, neg1 = -1.0;
   Vec     u, x, b;
   SLES    sles;
   KSP     ksp;
@@ -56,17 +61,6 @@ int main(int argc,char **args)
   ierr = SLESSetOperators(sles,mat,mat,MAT_SAME_NONZERO_PATTERN);
           CHKERRA(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
-
-  { Scalar val;
-    KSPSetInitialGuessNonzero(ksp);
-    for (i=0; i<rdim; i++) {
-      val = (Scalar)i;
-      ierr = VecSetValues(x,1,&i,&val,INSERTVALUES); CHKERRA(ierr);
-    }
-    ierr = VecAssemblyBegin(x); CHKERRA(ierr);
-    ierr = VecAssemblyEnd(x); CHKERRA(ierr);
-  }
-
   ierr = KSPGMRESSetRestart(ksp,2*m); CHKERRA(ierr);
   ierr = KSPSetRelativeTolerance(ksp,1.e-12); CHKERRA(ierr);
   ierr = KSPSetMethod(ksp,KSPCG); CHKERRA(ierr);
@@ -94,11 +88,11 @@ int main(int argc,char **args)
  */
 int GetElasticityMatrix(int m,Mat *newmat)
 {
-  int     i,j,k,i1,i2,j1,j2,k1,k2,h1,h2,l1,l2,shiftx,shifty,shiftz,nzalloc;
-  int     ict, nz, base, r1, r2, N, *rows, *rowkeep, nstart, ierr, mem;
+  int     i,j,k,i1,i2,j1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz,nzalloc;
+  int     ict, nz, base, r1, r2, N, *rowkeep, nstart, ierr, mem;
   IS      iskeep;
   double  **K;
-  Mat     mat, submat, *newmat1;
+  Mat     mat, submat;
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
@@ -164,7 +158,8 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = MatDestroy(mat); CHKERRA(ierr);
 
   /* Convert storage formats -- just to demonstrate conversion to various
-     formats (in particular, block diagonal storage) */
+     formats (in particular, block diagonal storage).  This is NOT the
+     recommended means to solve such a problem.  */
   { MatType type = MATBDIAG;
   if (OptionsHasName(0,"-mat_row")) type = MATROW; 
   if (OptionsHasName(0,"-mat_aij")) type = MATSAME;
@@ -224,8 +219,7 @@ int     rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
 /* 
   Elastic20Stiff - Forms 20 node elastic stiffness for element.
  */
-int Elastic20Stiff(Ke)
-double **Ke;
+int Elastic20Stiff(double **Ke)
 {
   double                 K[60][60],x,y,z,dx,dy,dz,m,v;
   int                    i,j,k,l,I,J;
@@ -416,7 +410,7 @@ int paulsetup20()
 int paulintegrate20(K)
 double K[60][60];
 {
-  double  det_jac, jac[3][3], inv_jac[3][3], v[3];
+  double  det_jac, jac[3][3], inv_jac[3][3];
   double  B[6][60], B_temp[6][60], C[6][6];
   double  temp;
   int     i, j, k, step;
