@@ -33,12 +33,10 @@ Meta priorities:
 
   - MatZeroColumns()
 
-
   - make DrawOpenPostscript()
 
   - add indenting to PLogInfo?
 
-  - Make VecCreateMPIWithArray
 
   - Make MatLUFactorNumeric_SeqAIJ_NaturalOrdering() for efficiency. Might
     buy a couple of MFlops.
@@ -46,7 +44,6 @@ Meta priorities:
   - Fix GMRESCycle() so that test for "happy breakdown" is actually
     used.  See petsc-maint message #282 from David. NOT SO EASY BUT IMPORTANT!
 
-  - TS functions to retrieve RHS matrix/Jacobian
 
   - Change All Fortran interface routines that take function pointer 
     arguments to work like MatCreateShell() now works keeping the Fortran
@@ -213,7 +210,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
  - Fix VRML vector viewer interface; add documentation about VRML.
 
-
   - Write preprocessor that zips through all of PETSc finding SETERRQ()
     setting unique error code number and save to big file: error code,
     function name, file, line number and error message.
@@ -236,13 +232,10 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
   - Use MPI topology routines for DA codes.
 
-  - Add VecCreateWithData() and VecCreateXXXWithData().
 
   - Make a variant of SNES-TR method that doesn't use KSPBuildSolution() in
     the convergence test.  Talk to Jorge about the importance of this test.
 
-  - Add support for stashing ghostvalues at end of local values in array???
-    How to do this reasonably? Or is it even possible reasonably or desirable?
 
  - TS stuff
    - Add verify timestep for all TS styles.
@@ -301,7 +294,7 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
   - Right and left preconditioning for all KSP types.
 
-  - Augment some KSP methods to support symmetric preconditioning; fix relevant
+  * Augment some KSP methods to support symmetric preconditioning; fix relevant
      KSP support routines.
 
   - Add routine for forming big matrix from a bunch of smaller ones, something 
@@ -912,3 +905,12 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
  X Changes OptionsGetProgramName to PetscGetProgramName() and change calling 
    sequence to match PetscGetHostName().
+
+ X Make VecCreateMPIWithArray
+
+ X TS functions to retrieve RHS matrix/Jacobian
+
+ X Add VecCreateWithData() and VecCreateXXXWithData().
+
+ X Add support for stashing ghostvalues at end of local values in array???
+    How to do this reasonably? Or is it even possible reasonably or desirable?
