@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.1 1999/04/01 22:31:17 balay Exp balay $ 
+# $Id: base_variables,v 1.2 1999/04/02 00:58:39 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -23,33 +23,35 @@ O_COPTFLAGS      = -O2 -Knoieee -Mnoframe
 O_FOPTFLAGS      = -O
 # ########################## C++ compiler ##################################
 #
-CXX_CC           =
-CXX_FC           =
-CXX_CLINKER      =
-CXX_FLINKER      =
-CXX_CCV          =
-CXX_SYS_LIB      =
+CXX_CC           = ciCC
+CXX_FC           = cif77
+CXX_CLINKER      = ciCC ${COPTFLAGS}
+CXX_FLINKER      = cif77 ${FOPTFLAGS}
+CXX_CCV          = ciCC -V
+CXX_SYS_LIB      = -lmp  -lvect -lm -lf -lnoop_stubs
 # ------------------------- BOPT=g_c++ options ------------------------------
-GCXX_COPTFLAGS   =
-GCXX_FOPTFLAGS   =
+GCXX_COPTFLAGS   = -g
+GCXX_FOPTFLAGS   = -g
 # ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   =
-OCXX_FOPTFLAGS   =
+OCXX_COPTFLAGS   = -O2 -Knoieee -Mnoframe
+OCXX_FOPTFLAGS   = -O
 # -------------------------- BOPT=g_complex options ------------------------
-GCOMP_COPTFLAGS  =
-GCOMP_FOPTFLAGS  =
+GCOMP_COPTFLAGS  = -g
+GCOMP_FOPTFLAGS  = -g
 # --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  =
-OCOMP_FOPTFLAGS  =
+OCOMP_COPTFLAGS  = -O2 -Knoieee -Mnoframe
+OCOMP_FOPTFLAGS  = -O
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
                    -DUSE_PETSC_STACK
 O_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
-GCXX_PETSCFLAGS  =
-OCXX_PETSCFLAGS  = 
-GCOMP_PETSCFLAGS = 
-OCOMP_PETSCFLAGS = 
-
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  =  -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
 ##################################################################################
 #
 #   PETSc installers should very rarely ever need to edit anything below this 
