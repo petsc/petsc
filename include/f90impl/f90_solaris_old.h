@@ -1,4 +1,4 @@
-/* $Id: f90_rs6000.h,v 1.4 1998/04/26 15:16:13 bsmith Exp $ */
+/* $Id: f90_solaris.h,v 1.1 1998/06/25 21:40:39 balay Exp balay $ */
 
 typedef struct {
   long lower;   /* starting index of the fortran array */
@@ -24,12 +24,13 @@ typedef struct {
 #define F90_SCALAR_ID F90_COMPLEX_ID
 #endif
 
+
 #define f90_header() \
-void*          addr;    /* Pointer to the data/array */ \       
-int            sd;      /* sizeof(DataType) in bits */  \          
+void*          addr;    /* Pointer to the data */ \
+int            sd;      /* sizeof(DataType) in bits */  \
 unsigned short cookie;  /* a wiered f90 cookie */ \
 unsigned short ndim;    /* No of dimentions */          \
-integer        id;      /* integer id representing the datatype */ \
+int            id;      /* integer id representing the datatype */ \
 int            a,b;     /* unknown stuff - always zero. */
 
 typedef struct {
