@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.119 2001/01/15 21:43:07 bsmith Exp bsmith $ */
+/* $Id: send.c,v 1.120 2001/02/09 00:41:29 bsmith Exp balay $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -357,7 +357,7 @@ int PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewe
 }
 #undef __FUNC__  
 #define __FUNC__ "PETSC_VIEWER_SOCKET_" 
-Viewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
+PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
