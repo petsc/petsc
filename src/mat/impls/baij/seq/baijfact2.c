@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.57 2001/07/11 04:50:20 buschelm Exp buschelm $*/
+/*$Id: baijfact2.c,v 1.58 2001/07/12 01:49:06 buschelm Exp $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -1741,6 +1741,227 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   PetscLogFlops(2*16*(a->nz) - 4*A->n);
   PetscFunctionReturn(0);
 }
+#if defined (PETSC_HAVE_SSE)
+
+#include PETSC_HAVE_SSE
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolve_SeqBAIJ_4_SSE_Demotion"
+int MatSolve_SeqBAIJ_4_SSE_Demotion(Mat A,Vec bb,Vec xx)
+{
+  /* 
+     Note: This code uses demotion of double
+     to float when performing the mixed-mode computation.
+     This may not be numerically reasonable for all applications.
+  */
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
+  IS              iscol=a->col,isrow=a->row;
+  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
+  int             *diag = a->diag,ai16;
+  MatScalar       *aa=a->a,*v;
+  Scalar          *x,*b,*t;
+
+  /* Make space in temp stack for 16 Byte Aligned arrays */
+  float           ssealignedspace[11],*tmps,*tmpx;
+  unsigned long   offset;
+      
+  PetscFunctionBegin;
+  SSE_SCOPE_BEGIN;
+
+    offset = (unsigned long)ssealignedspace % 16;
+    if (offset) offset = (16 - offset)/4;
+    tmps = &ssealignedspace[offset];
+    tmpx = &ssealignedspace[offset+4];
+    PREFETCH_NTA(aa+16*ai[1]);
+
+    ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+    ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+    t  = a->solve_work;
+
+    ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+    ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout + (n-1);
+
+    /* forward solve the lower triangular */
+    idx  = 4*(*r++);
+    t[0] = b[idx];   t[1] = b[1+idx];
+    t[2] = b[2+idx]; t[3] = b[3+idx];
+    v    =  aa + 16*ai[1];
+
+    for (i=1; i<n;) {
+      PREFETCH_NTA(&v[8]);
+      vi   =  aj      + ai[i];
+      nz   =  diag[i] - ai[i];
+      idx  =  4*(*r++);
+
+      /* Demote sum from double to float */
+      CONVERT_DOUBLE4_FLOAT4(tmps,&b[idx]);
+      LOAD_PS(tmps,XMM7);
+
+      while (nz--) {
+        PREFETCH_NTA(&v[16]);
+        idx = 4*(*vi++);
+        
+        /* Demote solution (so far) from double to float */
+        CONVERT_DOUBLE4_FLOAT4(tmpx,&x[idx]);
+
+        /* 4x4 Matrix-Vector product with negative accumulation: */
+        SSE_INLINE_BEGIN_2(tmpx,v)
+          SSE_LOAD_PS(SSE_ARG_1,FLOAT_0,XMM6)
+
+          /* First Column */
+          SSE_COPY_PS(XMM0,XMM6)
+          SSE_SHUFFLE(XMM0,XMM0,0x00)
+          SSE_MULT_PS_M(XMM0,SSE_ARG_2,FLOAT_0)
+          SSE_SUB_PS(XMM7,XMM0)
+          
+          /* Second Column */
+          SSE_COPY_PS(XMM1,XMM6)
+          SSE_SHUFFLE(XMM1,XMM1,0x55)
+          SSE_MULT_PS_M(XMM1,SSE_ARG_2,FLOAT_4)
+          SSE_SUB_PS(XMM7,XMM1)
+          
+          SSE_PREFETCH_NTA(SSE_ARG_2,FLOAT_24)
+          
+          /* Third Column */
+          SSE_COPY_PS(XMM2,XMM6)
+          SSE_SHUFFLE(XMM2,XMM2,0xAA)
+          SSE_MULT_PS_M(XMM2,SSE_ARG_2,FLOAT_8)
+          SSE_SUB_PS(XMM7,XMM2)
+
+          /* Fourth Column */
+          SSE_COPY_PS(XMM3,XMM6)
+          SSE_SHUFFLE(XMM3,XMM3,0xFF)
+          SSE_MULT_PS_M(XMM3,SSE_ARG_2,FLOAT_12)
+          SSE_SUB_PS(XMM7,XMM3)
+        SSE_INLINE_END_2
+        
+        v  += 16;
+      }
+      idx = 4*i;
+      v   = aa + 16*ai[++i];
+      PREFETCH_NTA(v);
+      STORE_PS(tmps,XMM7);
+
+      /* Promote result from float to double */
+      CONVERT_FLOAT4_DOUBLE4(&t[idx],tmps);
+    }
+    /* backward solve the upper triangular */
+    idt  = 4*(n-1);
+    ai16 = 16*diag[n-1];
+    v    = aa + ai16 + 16;
+    for (i=n-1; i>=0;){
+      PREFETCH_NTA(&v[8]);
+      vi = aj + diag[i] + 1;
+      nz = ai[i+1] - diag[i] - 1;
+      
+      /* Demote accumulator from double to float */
+      CONVERT_DOUBLE4_FLOAT4(tmps,&t[idt]);
+      LOAD_PS(tmps,XMM7);
+
+      while (nz--) {
+        PREFETCH_NTA(&v[16]);
+        idx = 4*(*vi++);
+
+        /* Demote solution (so far) from double to float */
+        CONVERT_DOUBLE4_FLOAT4(tmpx,&t[idx]);
+
+        /* 4x4 Matrix-Vector Product with negative accumulation: */
+        SSE_INLINE_BEGIN_2(tmpx,v)
+          SSE_LOAD_PS(SSE_ARG_1,FLOAT_0,XMM6)
+
+          /* First Column */
+          SSE_COPY_PS(XMM0,XMM6)
+          SSE_SHUFFLE(XMM0,XMM0,0x00)
+          SSE_MULT_PS_M(XMM0,SSE_ARG_2,FLOAT_0)
+          SSE_SUB_PS(XMM7,XMM0)
+
+          /* Second Column */
+          SSE_COPY_PS(XMM1,XMM6)
+          SSE_SHUFFLE(XMM1,XMM1,0x55)
+          SSE_MULT_PS_M(XMM1,SSE_ARG_2,FLOAT_4)
+          SSE_SUB_PS(XMM7,XMM1)
+
+          SSE_PREFETCH_NTA(SSE_ARG_2,FLOAT_24)
+          
+          /* Third Column */
+          SSE_COPY_PS(XMM2,XMM6)
+          SSE_SHUFFLE(XMM2,XMM2,0xAA)
+          SSE_MULT_PS_M(XMM2,SSE_ARG_2,FLOAT_8)
+          SSE_SUB_PS(XMM7,XMM2)
+
+          /* Fourth Column */
+          SSE_COPY_PS(XMM3,XMM6)
+          SSE_SHUFFLE(XMM3,XMM3,0xFF)
+          SSE_MULT_PS_M(XMM3,SSE_ARG_2,FLOAT_12)
+          SSE_SUB_PS(XMM7,XMM3)
+        SSE_INLINE_END_2
+        v  += 16;
+      }
+      v    = aa + ai16;
+      ai16 = 16*diag[--i];
+      PREFETCH_NTA(aa+ai16+16);
+      /* 
+         Scale the result by the diagonal 4x4 block, 
+         which was inverted as part of the factorization
+      */
+      SSE_INLINE_BEGIN_3(v,tmps,aa+ai16)
+        /* First Column */
+        SSE_COPY_PS(XMM0,XMM7)
+        SSE_SHUFFLE(XMM0,XMM0,0x00)
+        SSE_MULT_PS_M(XMM0,SSE_ARG_1,FLOAT_0)
+
+        /* Second Column */
+        SSE_COPY_PS(XMM1,XMM7)
+        SSE_SHUFFLE(XMM1,XMM1,0x55)
+        SSE_MULT_PS_M(XMM1,SSE_ARG_1,FLOAT_4)
+        SSE_ADD_PS(XMM0,XMM1)
+
+        SSE_PREFETCH_NTA(SSE_ARG_3,FLOAT_24)
+        
+        /* Third Column */
+        SSE_COPY_PS(XMM2,XMM7)
+        SSE_SHUFFLE(XMM2,XMM2,0xAA)
+        SSE_MULT_PS_M(XMM2,SSE_ARG_1,FLOAT_8)
+        SSE_ADD_PS(XMM0,XMM2)
+
+        /* Fourth Column */ 
+        SSE_COPY_PS(XMM3,XMM7)
+        SSE_SHUFFLE(XMM3,XMM3,0xFF)
+        SSE_MULT_PS_M(XMM3,SSE_ARG_1,FLOAT_12)
+        SSE_ADD_PS(XMM0,XMM3)
+          
+        SSE_STORE_PS(SSE_ARG_2,FLOAT_0,XMM0)
+      SSE_INLINE_END_3
+
+      /* Promote solution from float to double */
+      CONVERT_FLOAT4_DOUBLE4(&t[idt],tmps);
+
+      /* Apply reordering to t and stream into x.    */
+      /* This way, x doesn't pollute the cache.      */
+      /* Be careful with size: 2 doubles = 4 floats! */
+      idc  = 4*(*c--);
+      SSE_INLINE_BEGIN_2((float *)&t[idt],(float *)&x[idc])
+        /*  x[idc]   = t[idt];   x[1+idc] = t[1+idc]; */
+        SSE_LOAD_PS(SSE_ARG_1,FLOAT_0,XMM0)
+        SSE_STREAM_PS(SSE_ARG_2,FLOAT_0,XMM0)
+        /*  x[idc+2] = t[idt+2]; x[3+idc] = t[3+idc]; */
+        SSE_LOAD_PS(SSE_ARG_1,FLOAT_4,XMM1)
+        SSE_STREAM_PS(SSE_ARG_2,FLOAT_4,XMM1)
+      SSE_INLINE_END_2
+      v    = aa + ai16 + 16;
+      idt -= 4;
+    }
+
+    ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+    ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+    PetscLogFlops(2*16*(a->nz) - 4*A->n);
+  SSE_SCOPE_END;
+  PetscFunctionReturn(0);
+}
+
+#endif
 
 
 /*
