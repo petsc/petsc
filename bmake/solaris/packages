@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.80 2000/03/25 03:48:47 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.81 2000/04/09 03:08:30 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -67,7 +67,15 @@ CMEX              = /software/solaris-2/com/packages/matlab-r11.1/bin/mex
 #CMEX             = mex
 MCC               = cc
 MATLABCOMMAND     = matlab
-MATLAB_INCLUDE    = /software/solaris-2/com/packages/matlab-r11.1/extern/include/
+#
+#  The Matlab include file have some bugs in them with C++,  they have a 
+# #include <stdlib.h> INSIDE an extern "C" {} :-(. You can fix this by moving the 
+# the #include <stdio.h> and #include "matrix.h" outside the extern "C" {} in engine.h
+# and moving the #include <stddef.h> and #include <stdlib.h> outside the extern "C" {}
+# in matrix.h (sigh)
+#
+#MATLAB_INCLUDE    = -I/software/solaris-2/com/packages/matlab-r11.1/extern/include
+MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
 PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 # Location where adiC is installed
