@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: olist.c,v 1.1 1998/03/30 20:06:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: olist.c,v 1.2 1998/04/03 23:13:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,26 +19,65 @@ struct _OList {
 #undef __FUNC__  
 #define __FUNC__ "OListCreate"
 /*
-    
+
+       Notes: Replaces item if it is already in list. Removes item if you pass in a 
+              PETSC_NULL object.    
 
 .seealso: OListDestroy()
 */
 int OListAdd(OList *fl,char *name,PetscObject obj )
 {
-  OList olist,nlist;
+  OList olist,nlist,prev;
+  int   ierr;
 
   PetscFunctionBegin;
+
+  if (!obj) { /* this means remove from list if it is there */
+    nlist = *fl; prev = 0;
+    while (nlist) {
+      if (!PetscStrcmp(name,nlist->name)) {  /* found it already in the list */
+        ierr = PetscObjectDereference(nlist->obj); CHKERRQ(ierr);
+        if (prev) prev->next = nlist->next;
+        else if (nlist->next) {
+          *fl = nlist->next;
+        } else {
+          *fl = 0;
+        }
+        PetscFree(nlist);
+        PetscFunctionReturn(0);
+      }
+      prev  = nlist;
+      nlist = nlist->next;
+    }
+    PetscFunctionReturn(0); /* didn't find it to remove */
+  }
+  /* look for it already in list */
+  nlist = *fl;
+  while (nlist) {
+    if (!PetscStrcmp(name,nlist->name)) {  /* found it in the list */
+      ierr = PetscObjectDereference(nlist->obj); CHKERRQ(ierr);
+      ierr = PetscObjectReference(obj);CHKERRQ(ierr);
+      nlist->obj = obj;
+      PetscFunctionReturn(0);
+    }
+    nlist = nlist->next;
+  }
+
+  /* add it to list, because it was not already there */
+
   olist       = PetscNew(struct _OList);CHKPTRQ(olist);
   olist->next = 0;
   olist->obj  = obj;
-  PetscObjectReference(obj);
+  ierr = PetscObjectReference(obj);CHKERRQ(ierr);
   PetscStrcpy(olist->name,name);
 
   if (!*fl) {
     *fl = olist;
   } else { /* go to end of list */
     nlist = *fl;
-    while (nlist->next) {nlist = nlist->next;}
+    while (nlist->next) {
+      nlist = nlist->next;
+    }
     nlist->next = olist;
   }
   PetscFunctionReturn(0);
