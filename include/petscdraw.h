@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.13 1995/06/07 16:33:40 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.14 1995/07/07 17:17:31 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -71,6 +71,7 @@ extern int DrawLG(DrawLGCtx);
 extern int DrawLGReset(DrawLGCtx);
 extern int DrawLGGetAxisCtx(DrawLGCtx,DrawAxisCtx *);
 extern int DrawLGGetDrawCtx(DrawLGCtx,DrawCtx *);
+extern int DrawLGIndicateDataPoints(DrawLGCtx);
 
 #if defined(__VEC_PACKAGE)
 int DrawTensorContour(DrawCtx,int,int,double*,double*,Vec);
