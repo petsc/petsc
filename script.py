@@ -163,7 +163,8 @@ class Script(logging.Logger):
   defaultCheckCommand = staticmethod(defaultCheckCommand)
 
   def executeShellCommand(command, checkCommand = None, timeout = 120.0, log = None):
-    '''Execute a shell command returning the output, and optionally provide a custom error checker'''
+    '''Execute a shell command returning the output, and optionally provide a custom error checker
+       - This returns a tuple of the (output, error, statuscode)'''
     import threading
     global output, error, status
 

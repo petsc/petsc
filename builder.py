@@ -102,6 +102,8 @@ class TimeDependencyChecker(DependencyChecker):
 
 class Builder(logging.Logger):
   def __init__(self, framework):
+    import sourceControl
+
     logging.Logger.__init__(self, argDB = framework.argDB)
     self.framework         = framework
     self.setCompilers      = framework.require('config.setCompilers', None)
@@ -110,6 +112,7 @@ class Builder(logging.Logger):
     self.configurationName = []
     self.shouldCompile     = MD5DependencyChecker(argDB = self.argDB)
     self.shouldLink        = TimeDependencyChecker(argDB = self.argDB)
+    self.versionControl    = sourceControl.BitKeeper(argDB = self.argDB)
     self.pushConfiguration('default')
     return
 
@@ -118,6 +121,7 @@ class Builder(logging.Logger):
     self.getLanguageProcessor().setup()
     self.shouldCompile.setup()
     self.shouldLink.setup()
+    self.versionControl.setup()
     return
 
   def pushLanguage(self, language):

@@ -113,6 +113,13 @@ class Make(script.Script):
     return 1
 
 class SIDLMake(Make):
+  def __init__(self, builder = None):
+    import re
+
+    Make.__init__(self, builder)
+    self.implRE = re.compile(r'^(.*)_impl\.')
+    return
+
   def getSidl(self):
     if not hasattr(self, '_sidl'):
       self._sidl = [os.path.join(self.getRoot(), 'sidl', f) for f in filter(lambda s: os.path.splitext(s)[1] == '.sidl', os.listdir(os.path.join(self.getRoot(), 'sidl')))]
@@ -238,6 +245,38 @@ class SIDLMake(Make):
     builder.saveConfiguration('SIDL '+baseName)
     return config.outputFiles
 
+  def editServer(self, builder, sidlFile):
+    baseName = os.path.splitext(os.path.basename(sidlFile))[0]
+    builder.pushConfiguration('SIDL '+baseName)
+    builder.pushLanguage('SIDL')
+    compiler            = builder.getCompilerObject()
+    builder.popLanguage()
+    builder.popConfiguration()
+    for serverDir in compiler.serverDirs.values():
+      for root, dirs, files in os.walk(serverDir):
+        builder.versionControl.edit(builder.versionControl.getClosedFiles([os.path.join(root, f) for f in filter(lambda a: self.implRE.match(a), files)]))
+    return
+
+  def checkinServer(self, builder, sidlFile):
+    baseName = os.path.splitext(os.path.basename(sidlFile))[0]
+    builder.pushConfiguration('SIDL '+baseName)
+    builder.pushLanguage('SIDL')
+    compiler = builder.getCompilerObject()
+    builder.popLanguage()
+    builder.popConfiguration()
+    vc        = builder.versionControl
+    added     = 0
+    reverted  = 0
+    committed = 0
+    for serverDir in compiler.serverDirs.values():
+      for root, dirs, files in os.walk(serverDir):
+        added     = added or vc.add(builder.versionControl.getNewFiles([os.path.join(root, f) for f in filter(lambda a: self.implRE.match(a), files)]))
+        reverted  = reverted or vc.revert(builder.versionControl.getUnchangedFiles([os.path.join(root, f) for f in filter(lambda a: self.implRE.match(a), files)]))
+        committed = committed or vc.commit(builder.versionControl.getChangedFiles([os.path.join(root, f) for f in filter(lambda a: self.implRE.match(a), files)]))
+    if added or committed:
+      vc.changeSet()
+    return
+
   def buildPythonClient(self, builder, sidlFile, language, generatedSource):
     baseName = os.path.splitext(os.path.basename(sidlFile))[0]
     config   = builder.pushConfiguration(language+' Stub '+baseName)
@@ -291,7 +330,9 @@ class SIDLMake(Make):
         getattr(self, 'setup'+language+'Client')(builder, f, language)
       for language in self.serverLanguages:
         getattr(self, 'setup'+language+'Server')(builder, f, language)
+      self.editServer(builder, f)
       generatedSource = self.buildSIDL(builder, f)
+      self.checkinServer(builder, f)
       for language in self.clientLanguages:
         getattr(self, 'build'+language+'Client')(builder, f, language, generatedSource)
       for language in self.serverLanguages:
