@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: MPI_Wtime.c,v 1.6 1997/07/09 21:01:29 balay Exp bsmith $";
+static char vcid[] = "$Id: MPI_Wtime.c,v 1.7 1997/10/19 03:30:47 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -28,6 +28,10 @@ int main( int argc, char **argv)
   y = MPI_Wtick();
   fprintf(stderr,"%-15s : %e sec\n","MPI_Wtick",y);
 
+  x = MPI_Wtime();
+  PetscSleep(10);
+  y = MPI_Wtime();
+  fprintf(stderr,"%-15s : %e sec - Slept for 10 sec \n","MPI_Wtime",(y-x));
 
   PetscFinalize();
   PetscFunctionReturn(0);
