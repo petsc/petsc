@@ -1,17 +1,21 @@
-# $Id: makefile,v 1.14 1998/06/15 16:09:03 balay Exp $ 
+# $Id: makefile,v 1.1 1998/06/15 20:25:16 bsmith Exp bsmith $ 
 
 ALL: lib 
 
-CFLAGS   =
+CFLAGS   = ${AMS_INCLUDE}
 FFLAGS   =
-SOURCEC  = stringv.c
+SOURCEC  = ams.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = stringv.o
+OBJSC    = ams.o
 OBJSF    =
 MANSEC   = v
 LIBBASE  = libpetscsys
 DIRS     = 
-LOCDIR   = src/viewer/impls/string/
+LOCDIR   = src/viewer/impls/ams/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+
+
+
+
