@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.14 1996/02/25 02:42:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.15 1996/02/28 22:09:16 bsmith Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -98,7 +98,7 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
     ierr = SLESGetKSP(sles,&subksp); CHKERRQ(ierr);
     ierr = KSPSetType(subksp,KSPPREONLY); CHKERRQ(ierr);
     ierr = SLESGetPC(sles,&subpc); CHKERRQ(ierr);
-    ierr = PCSetType(subpc,PCLU); CHKERRQ(ierr);
+    ierr = PCSetType(subpc,PCILU); CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(sles,"sub_"); CHKERRQ(ierr);
     ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
 /*
