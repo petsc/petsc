@@ -5,13 +5,13 @@
 # Run "crontab crontab" to install the nightly build;
 # use "crontab -r" to remove it.
 #
-#  The timing between these runs IS important
+#  The timing between these runs IS important.
 #
 40 23 * * * /home/bsmith/petsc/maint/buildtest /home/bsmith/petsc
 55 23 * * * /home/curfman/petsc/maint/buildtest /home/curfman/petsc
 55 23 * * * rsh clyde -n /sphome/curfman/petsc/maint/buildtest /sphome/curfman/petsc
 #
-# makes the two shadow directories
+# Makes the two shadow directories.  Must be done before the library builds.
 #
 15 23 * * * /home/bsmith/petsc/maint/buildlinks /home/curfman/petsc > /dev/null
 15 23 * * * rsh clyde -n /home/bsmith/petsc/maint/buildlinks /sphome/curfman/petsc > /dev/null
