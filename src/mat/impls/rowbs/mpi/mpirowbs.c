@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.c,v 2.4 2001/06/28 18:25:32 balay Exp bsmith $*/
+/* $Id: mpirowbs.c,v 2.5 2001/07/05 15:27:35 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 #include "src/vec/vecimpl.h"
@@ -1545,7 +1545,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
        0,
        MatDestroy_MPIRowbs,
        MatView_MPIRowbs,
-       MatGetMaps_Petsc,
+       MatGetPetscMaps_Petsc,
        MatUseScaledForm_MPIRowbs,
        MatScaleSystem_MPIRowbs,
        MatUnScaleSystem_MPIRowbs};
@@ -1593,8 +1593,8 @@ int MatCreate_MPIRowbs(Mat A)
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreateMPI(comm,m,M,&A->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(comm,m,M,&A->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(comm,m,M,&A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(comm,m,M,&A->cmap);CHKERRQ(ierr);
 
   /* build local table of row ownerships */
   ierr          = PetscMalloc((a->size+2)*sizeof(int),&a->rowners);CHKERRQ(ierr);

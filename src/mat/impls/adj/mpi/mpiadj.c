@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.62 2001/06/21 22:03:59 buschelm Exp buschelm $*/
+/*$Id: mpiadj.c,v 1.63 2001/06/22 00:24:28 buschelm Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -310,7 +310,7 @@ static struct _MatOps MatOps_Values = {0,
        0,
        MatDestroy_MPIAdj,
        MatView_MPIAdj,
-       MatGetMaps_Petsc};
+       MatGetPetscMaps_Petsc};
 
 
 EXTERN_C_BEGIN
@@ -339,9 +339,9 @@ int MatCreate_MPIAdj(Mat B)
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
   /* we don't know the "local columns" so just use the row information :-(*/
-  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
 
   ierr = PetscMalloc((size+1)*sizeof(int),&b->rowners);CHKERRQ(ierr);
   PetscLogObjectMemory(B,(size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));

@@ -1,4 +1,4 @@
-/*$Id: vecio.c,v 1.70 2001/01/19 23:20:08 balay Exp balay $*/
+/*$Id: vecio.c,v 1.71 2001/03/23 23:21:18 balay Exp bsmith $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
@@ -66,7 +66,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
   MPI_Comm    comm;
   MPI_Request request;
   MPI_Status  status;
-  Map         map;
+  PetscMap    map;
   PetscTruth  isbinary,flag;
 
   PetscFunctionBegin;
@@ -99,8 +99,8 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
     if (size > 1) {
       /* read in other chuncks and send to other processors */
       /* determine maximum chunck owned by other */
-      ierr = VecGetMap(vec,&map);CHKERRQ(ierr);
-      ierr = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
+      ierr = VecGetPetscMap(vec,&map);CHKERRQ(ierr);
+      ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
       n = 1;
       for (i=1; i<size; i++) {
         n = PetscMax(n,range[i] - range[i-1]);
@@ -141,7 +141,7 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
   MPI_Comm    comm;
   MPI_Request request;
   MPI_Status  status;
-  Map         map;
+  PetscMap    map;
   PetscTruth  isbinary,flag;
 
   PetscFunctionBegin;
@@ -177,8 +177,8 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
     if (size > 1) {
       /* read in other chuncks and send to other processors */
       /* determine maximum chunck owned by other */
-      ierr = VecGetMap(vec,&map);CHKERRQ(ierr);
-      ierr = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
+      ierr = VecGetPetscMap(vec,&map);CHKERRQ(ierr);
+      ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
       n = 1;
       for (i=1; i<size; i++) {
         n = PetscMax(n,range[i] - range[i-1]);

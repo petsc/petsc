@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.65 2001/01/22 23:27:07 balay Exp balay $*/
+/*$Id: zvec.c,v 1.66 2001/02/19 16:28:29 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -127,34 +127,34 @@ void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name PETSC_MIXED_LEN(len),int *i
   FREECHAR(type_name,t);
 }
 
-void PETSC_STDCALL vecgetmap_(Vec *x,Map *map,int *ierr)
+void PETSC_STDCALL vecgetmap_(Vec *x,PetscMap *map,int *ierr)
 {
-  *ierr = VecGetMap(*x,map);
+  *ierr = VecGetPetscMap(*x,map);
 }
 
-void PETSC_STDCALL mapgetlocalsize_(Map *m,int *n,int *ierr)
+void PETSC_STDCALL mapgetlocalsize_(PetscMap *m,int *n,int *ierr)
 {
-  *ierr = MapGetLocalSize(*m,n);
+  *ierr = PetscMapGetLocalSize(*m,n);
 }
 
-void PETSC_STDCALL mapgetsize_(Map *m,int *N,int *ierr)
+void PETSC_STDCALL mapgetsize_(PetscMap *m,int *N,int *ierr)
 {
-  *ierr = MapGetSize(*m,N);
+  *ierr = PetscMapGetSize(*m,N);
 }
 
-void PETSC_STDCALL mapgetlocalrange_(Map *m,int *rstart,int *rend,int *ierr)
+void PETSC_STDCALL mapgetlocalrange_(PetscMap *m,int *rstart,int *rend,int *ierr)
 {
-  *ierr = MapGetLocalRange(*m,rstart,rend);
+  *ierr = PetscMapGetLocalRange(*m,rstart,rend);
 }
 
-void PETSC_STDCALL mapgetglobalrange_(Map *m,int **range,int *ierr)
+void PETSC_STDCALL mapgetglobalrange_(PetscMap *m,int **range,int *ierr)
 {
-  *ierr = MapGetGlobalRange(*m,range);
+  *ierr = PetscMapGetGlobalRange(*m,range);
 }
 
-void PETSC_STDCALL mapdestroy_(Map *m,int *ierr)
+void PETSC_STDCALL mapdestroy_(PetscMap *m,int *ierr)
 {
-  *ierr = MapDestroy(*m);
+  *ierr = PetscMapDestroy(*m);
 }
 
 void PETSC_STDCALL vecsetvalue_(Vec *v,int *i,Scalar *va,InsertMode *mode)
@@ -235,9 +235,9 @@ void PETSC_STDCALL vecscattercopy_(VecScatter *sctx,VecScatter *ctx,int *ierr)
   *ierr = VecScatterCopy(*sctx,ctx);
 }
 
-void PETSC_STDCALL mapcreatempi_(MPI_Comm *comm,int *n,int *N,Map *vv,int *ierr)
+void PETSC_STDCALL mapcreatempi_(MPI_Comm *comm,int *n,int *N,PetscMap *vv,int *ierr)
 {
-  *ierr = MapCreateMPI((MPI_Comm)PetscToPointerComm(*comm),*n,*N,vv);
+  *ierr = PetscMapCreateMPI((MPI_Comm)PetscToPointerComm(*comm),*n,*N,vv);
 }
 
 void PETSC_STDCALL veccreatempi_(MPI_Comm *comm,int *n,int *N,Vec *vv,int *ierr)

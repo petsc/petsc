@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.73 2001/07/18 14:21:14 balay Exp balay $ */
+/* $Id: petscda.h,v 1.74 2001/07/18 14:22:22 balay Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -166,6 +166,7 @@ EXTERN int DASetLocalAdicMFFunction_Private(DA,DALocalFunction1);
 #else
 #define DASetLocalAdicMFFunction(a,d) DASetLocalAdicMFFunction_Private(a,0)
 #endif
+EXTERN int DAFormFunctioniTest1(DA,void*);
 
 
 #include "petscmat.h"

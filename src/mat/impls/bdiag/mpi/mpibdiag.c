@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.200 2001/06/22 00:23:35 buschelm Exp curfman $*/
+/*$Id: mpibdiag.c,v 1.201 2001/06/22 18:57:46 curfman Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -805,7 +805,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
        0,
        MatDestroy_MPIBDiag,
        MatView_MPIBDiag,
-       MatGetMaps_Petsc};
+       MatGetPetscMaps_Petsc};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -957,8 +957,8 @@ int MatMPIBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,Scalar **diagv)
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
 
 
   b          = (Mat_MPIBDiag*)B->data;CHKERRQ(ierr);

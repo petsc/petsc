@@ -1,4 +1,4 @@
-/*$Id: gcreate.c,v 1.129 2001/04/25 19:26:20 bsmith Exp balay $*/
+/*$Id: gcreate.c,v 1.130 2001/07/12 19:48:05 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/matimpl.h"       /*I "petscmat.h"  I*/
@@ -219,8 +219,8 @@ int MatHeaderCopy(Mat A,Mat C)
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
 
-  ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
+  ierr = PetscMapDestroy(A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
 
   /* save the parts of A we need */
   Abops = A->bops;

@@ -1,4 +1,4 @@
-/* $Id: petscsnes.h,v 1.107 2001/03/22 20:31:48 bsmith Exp bsmith $ */
+/* $Id: petscsnes.h,v 1.108 2001/06/21 21:18:34 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -41,11 +41,12 @@ typedef char *SNESType;
 
    Level: beginner
 
-.seealso: SNESCreate()
+.seealso: SNESCreate(), SNESGetProblemType()
 E*/
 typedef enum {SNES_NONLINEAR_EQUATIONS,SNES_UNCONSTRAINED_MINIMIZATION,SNES_LEAST_SQUARES} SNESProblemType;
 
 EXTERN int SNESCreate(MPI_Comm,SNESProblemType,SNES*);
+EXTERN int SNESGetProblemType(SNES,SNESProblemType*);
 EXTERN int SNESDestroy(SNES);
 EXTERN int SNESSetType(SNES,SNESType);
 EXTERN int SNESSetMonitor(SNES,int(*)(SNES,int,double,void*),void *,int (*)(void *));
@@ -82,7 +83,9 @@ EXTERN int MatCreateSNESMF(SNES,Vec,Mat*);
 EXTERN int MatCreateMF(Vec,Mat*);
 EXTERN int MatSNESMFSetBase(Mat,Vec);
 EXTERN int MatSNESMFComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-EXTERN int MatSNESMFSetFunction(Mat,Vec,int(*)(SNES,Vec,Vec,void*),void *);
+EXTERN int MatSNESMFSetFunction(Mat,Vec,int(*)(SNES,Vec,Vec,void*),void*);
+EXTERN int MatSNESMFSetFunctioni(Mat,int (*)(int,Vec,Scalar*,void*));
+EXTERN int MatSNESMFSetFunctioniBase(Mat,int (*)(Vec,void*));
 EXTERN int MatSNESMFAddNullSpace(Mat,MatNullSpace);
 EXTERN int MatSNESMFSetHHistory(Mat,Scalar *,int);
 EXTERN int MatSNESMFResetHHistory(Mat);

@@ -1,4 +1,4 @@
-/*$Id: ramgpetsc.c,v 1.14 2001/07/05 20:33:33 bsmith Exp bsmith $*/
+/*$Id: ramgpetsc.c,v 1.15 2001/07/05 20:50:12 bsmith Exp bsmith $*/
 
 #include "ramgfunc.h"
 #include "petscfunc.h"
@@ -357,7 +357,7 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
    amg1r5_(Asky, ia, ja, u_approx, rhs, ig, &nda, &ndia, &ndja, &ndu, 
               &ndf, &ndig, &nnu, &matrix, &iswtch, &iout, &iprint, &levelx, 
               &ifirst, &ncyc, &eps, &madapt, &nrd, &nsolco, &nru, &ecg1, 
-              &ecg2, &ewt2, &nwt, &ntr, &ierr); 
+              &ecg2, &ewt2, &nwt, &ntr, &ierr);CHKERRQ(ierr);
 
    /*..Create auxilary vector..*/ 
    ierr = PetscMalloc(numnodes * sizeof(int),&cols);CHKERRQ(ierr);

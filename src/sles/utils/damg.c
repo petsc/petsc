@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.33 2001/04/20 15:11:09 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.34 2001/06/21 21:18:32 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -87,6 +87,7 @@ int DMMGDestroy(DMMG *dmmg)
     if (dmmg[i]->work1)  {ierr = VecDestroy(dmmg[i]->work1);CHKERRQ(ierr);}
     if (dmmg[i]->w)  {ierr = VecDestroy(dmmg[i]->w);CHKERRQ(ierr);}
     if (dmmg[i]->work2)  {ierr = VecDestroy(dmmg[i]->work2);CHKERRQ(ierr);}
+    if (dmmg[i]->lwork1)  {ierr = VecDestroy(dmmg[i]->lwork1);CHKERRQ(ierr);}
     if (dmmg[i]->B && dmmg[i]->B != dmmg[i]->J) {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);}
     if (dmmg[i]->J)  {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr);}
     if (dmmg[i]->Rscale)  {ierr = VecDestroy(dmmg[i]->Rscale);CHKERRQ(ierr);}
@@ -180,6 +181,10 @@ int DMMGSetUp(DMMG *dmmg)
 
     Level: advanced
 
+     Notes: For linear (SLES) problems may be called more than once, uses the same 
+    matrices but recomputes the right hand side for each new solve. Call DMMGSetSLES()
+    to generate new matrices.
+ 
 .seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetSLES(), DMMGSetUp()
 
 @*/
@@ -240,7 +245,10 @@ int DMMGSolveSLES(DMMG *dmmg,int level)
 
   PetscFunctionBegin;
   ierr = (*dmmg[level]->rhs)(dmmg[level],dmmg[level]->b);CHKERRQ(ierr); 
-  ierr = SLESSetOperators(dmmg[level]->sles,dmmg[level]->J,dmmg[level]->J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  if (dmmg[level]->matricesset) {
+    ierr = SLESSetOperators(dmmg[level]->sles,dmmg[level]->J,dmmg[level]->J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    dmmg[level]->matricesset = PETSC_FALSE;
+  }
   ierr = SLESSolve(dmmg[level]->sles,dmmg[level]->b,dmmg[level]->x,&its);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -254,7 +262,7 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 {
   int         ierr,i;
   PC          pc;
-  PetscTruth  ismg,monitor,ismf,isshell;
+  PetscTruth  ismg,monitor,ismf,isshell,ismffd;
   SLES        lsles; /* solver internal to the multigrid preconditioner */
   MPI_Comm    *comms,comm;
   PetscViewer ascii;
@@ -310,7 +318,8 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
       */
       ierr = PetscTypeCompare((PetscObject)dmmg[i]->B,MATSHELL,&isshell);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)dmmg[i]->B,MATDAAD,&ismf);CHKERRQ(ierr);
-      if (isshell || ismf) {
+      ierr = PetscTypeCompare((PetscObject)dmmg[i]->B,MATMFFD,&ismffd);CHKERRQ(ierr);
+      if (isshell || ismf || ismffd) {
         PC lpc;
         ierr = SLESGetPC(lsles,&lpc);CHKERRQ(ierr);
         ierr = PCSetType(lpc,PCNONE);CHKERRQ(ierr);
@@ -341,7 +350,11 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 
     Level: advanced
 
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetDM()
+    Notes: For linear problems my be called more than once, reevaluates the matrices if it is called more
+       than once. Call DMMGSolve() directly several times to solve with the same matrix but different 
+       right hand sides.
+   
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve()
 
 @*/
 int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
@@ -351,26 +364,29 @@ int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
 
-  /* create solvers for each level */
-  for (i=0; i<nlevels; i++) {
+  if (!dmmg[0]->sles) {
+    /* create solvers for each level */
+    for (i=0; i<nlevels; i++) {
 
-    if (!dmmg[i]->B) {
-      ierr = DMGetMatrix(dmmg[i]->dm,MATMPIAIJ,&dmmg[i]->B);CHKERRQ(ierr);
-    } 
-    if (!dmmg[i]->J) {
-      dmmg[i]->J = dmmg[i]->B;
+      if (!dmmg[i]->B) {
+        ierr = DMGetMatrix(dmmg[i]->dm,MATMPIAIJ,&dmmg[i]->B);CHKERRQ(ierr);
+      } 
+      if (!dmmg[i]->J) {
+        dmmg[i]->J = dmmg[i]->B;
+      }
+
+      ierr = SLESCreate(dmmg[i]->comm,&dmmg[i]->sles);CHKERRQ(ierr);
+      ierr = DMMGSetUpLevel(dmmg,dmmg[i]->sles,i+1);CHKERRQ(ierr);
+      ierr = SLESSetFromOptions(dmmg[i]->sles);CHKERRQ(ierr);
+      dmmg[i]->solve = DMMGSolveSLES;
+      dmmg[i]->rhs   = rhs;
     }
-
-    ierr = SLESCreate(dmmg[i]->comm,&dmmg[i]->sles);CHKERRQ(ierr);
-    ierr = DMMGSetUpLevel(dmmg,dmmg[i]->sles,i+1);CHKERRQ(ierr);
-    ierr = SLESSetFromOptions(dmmg[i]->sles);CHKERRQ(ierr);
-    dmmg[i]->solve = DMMGSolveSLES;
-    dmmg[i]->rhs   = rhs;
   }
 
   /* evalute matrix on each level */
   for (i=0; i<nlevels; i++) {
     ierr = (*func)(dmmg[i],dmmg[i]->J);CHKERRQ(ierr);
+    dmmg[i]->matricesset = PETSC_TRUE;
   }
 
   for (i=0; i<nlevels-1; i++) {

@@ -1,4 +1,4 @@
-/*$Id: bdiag.c,v 1.194 2001/06/21 23:01:27 buschelm Exp buschelm $*/
+/*$Id: bdiag.c,v 1.195 2001/06/22 00:21:46 buschelm Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -497,7 +497,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
        0,
        MatDestroy_SeqBDiag,
        MatView_SeqBDiag,
-       MatGetMaps_Petsc};
+       MatGetPetscMaps_Petsc};
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqBDiagSetPreallocation"
@@ -792,8 +792,8 @@ int MatCreate_SeqBDiag(Mat B)
   B->factor       = 0;
   B->mapping      = 0;
 
-  ierr = MapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
 
   b->ndim   = 0;
   b->mainbd = -1;

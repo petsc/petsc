@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.195 2001/04/10 19:34:56 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.196 2001/06/21 21:16:00 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -402,7 +402,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecView_Seq,
             VecPlaceArray_Seq,
             VecReplaceArray_Seq,
-            VecGetMap_Seq,
+            VecGetPetscMap_Seq,
             VecDot_Seq,
             VecTDot_Seq,
             VecNorm_Seq,
@@ -436,7 +436,7 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
   s->array           = (Scalar *)array;
   s->array_allocated = 0;
   if (!v->map) {
-    ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
+    ierr = PetscMapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
   }
   ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_SEQ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
@@ -511,8 +511,8 @@ EXTERN_C_END
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecGetMap_Seq"
-int VecGetMap_Seq(Vec win,Map *m)
+#define __FUNCT__ "VecGetPetscMap_Seq"
+int VecGetPetscMap_Seq(Vec win,PetscMap *m)
 {
   PetscFunctionBegin;
   *m = win->map;

@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.224 2001/06/22 00:28:00 buschelm Exp curfman $*/
+/*$Id: mpibaij.c,v 1.225 2001/06/22 18:58:17 curfman Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -1948,7 +1948,7 @@ static struct _MatOps MatOps_Values = {
   0,
   MatDestroy_MPIBAIJ,
   MatView_MPIBAIJ,
-  MatGetMaps_Petsc,
+  MatGetPetscMaps_Petsc,
   0,
   0,
   0,
@@ -2166,8 +2166,8 @@ int MatMPIBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_
   
   ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->m,&B->M);CHKERRQ(ierr);
   ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->n,&B->N);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
 
   b = (Mat_MPIBAIJ*)B->data;
   b->bs  = bs;

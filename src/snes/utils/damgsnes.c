@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.47 2001/07/07 03:28:53 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.48 2001/07/17 20:51:26 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -354,6 +354,15 @@ int DMMGSolveSNES(DMMG *dmmg,int level)
 .   function - the function that defines the nonlinear system
 -   jacobian - optional function to compute Jacobian
 
+    Options Database:
++    -dmmg_snes_monitor
+.    -dmmg_jacobian_fd
+.    -dmmg_jacobian_ad
+.    -dmmg_jacobian_mf_fd_operator
+.    -dmmg_jacobian_mf_fd
+.    -dmmg_jacobian_mf_ad_operator
+-    -dmmg_jacobian_mf_ad
+
     Level: advanced
 
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES(), DMMGSetSNESLocal()
@@ -374,20 +383,20 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_snes_monitor",&snesmonitor);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_fd_jacobian",&fdjacobian);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_jacobian_fd",&fdjacobian);CHKERRQ(ierr);
   if (fdjacobian) jacobian = DMMGComputeJacobianWithFD;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_ad_jacobian",&adjacobian);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_jacobian_ad",&adjacobian);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
   if (adjacobian) jacobian = DMMGComputeJacobianWithAdic;
 #else
   if (adjacobian) SETERRQ(1,"Libraries compiled without ADIC");
 #endif
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_snes_mffd_operator",&mffdoperator);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_snes_mffd",&mffd);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_jacobian_mf_fd_operator",&mffdoperator);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_jacobian_mf_fd",&mffd);CHKERRQ(ierr);
   if (mffd) mffdoperator = PETSC_TRUE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_snes_mfad_operator",&mfadoperator);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_snes_mfad",&mfad);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_jacobian_mf_ad_operator",&mfadoperator);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_jacobian_mf_ad",&mfad);CHKERRQ(ierr);
   if (mfad) mfadoperator = PETSC_TRUE;
 
   /* create solvers for each level */
@@ -590,7 +599,7 @@ static int DMMGFunctioni(int i,Vec u,Scalar* r,void* ctx)
   ierr = VecScatterBegin(u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL,gtol);CHKERRQ(ierr);
   ierr = VecScatterEnd(u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL,gtol);CHKERRQ(ierr);
 
-  ierr = DAFormFunctioni1((DA)dmmg->dm,i,U,r,ctx);CHKERRQ(ierr);
+  ierr = DAFormFunctioni1((DA)dmmg->dm,i,U,r,dmmg->user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -610,7 +619,7 @@ static int DMMGFunctioniBase(Vec u,void* ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocali"
-int DMMGSetSNESLocali(DMMG *dmmg,int (*functioni)(DALocalInfo*,MatStencil*,Vec,Scalar*,void*))
+int DMMGSetSNESLocali(DMMG *dmmg,int (*functioni)(DALocalInfo*,MatStencil*,void*,Scalar*,void*))
 {
   int ierr,i,nlevels = dmmg[0]->nlevels;
 
@@ -630,6 +639,8 @@ EXTERN_C_BEGIN
 #include "adic_utils.h"
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscADView"
 int PetscADView(int N,int nc,double *ptr,PetscViewer viewer)
 {
   int        i,j,nlen  = my_AD_GetDerivTypeSize();

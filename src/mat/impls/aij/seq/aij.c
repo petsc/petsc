@@ -1,5 +1,5 @@
 
-/*$Id: aij.c,v 1.375 2001/06/21 22:47:38 buschelm Exp buschelm $*/
+/*$Id: aij.c,v 1.376 2001/06/22 00:25:19 buschelm Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -2082,7 +2082,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        MatDestroy_SeqAIJ,
        MatView_SeqAIJ,
-       MatGetMaps_Petsc,
+       MatGetPetscMaps_Petsc,
        0,
        0,
        0,
@@ -2597,8 +2597,8 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_oneindex",&flg);CHKERRQ(ierr);
   if (flg) b->indexshift = -1;
   
-  ierr = MapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
 
   b->sorted            = PETSC_FALSE;
   b->ignorezeroentries = PETSC_FALSE;

@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.338 2001/06/21 22:01:35 buschelm Exp buschelm $*/
+/*$Id: mpiaij.c,v 1.339 2001/06/22 00:26:04 buschelm Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1516,7 +1516,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetSubMatrix_MPIAIJ,
        MatDestroy_MPIAIJ,
        MatView_MPIAIJ,
-       MatGetMaps_Petsc,
+       MatGetPetscMaps_Petsc,
        0,
        0,
        0,
@@ -1595,8 +1595,8 @@ int MatCreate_MPIAIJ(Mat B)
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   ierr = PetscMalloc(2*(b->size+2)*sizeof(int),&b->rowners);CHKERRQ(ierr);

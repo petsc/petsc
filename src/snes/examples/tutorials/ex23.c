@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.7 2001/06/21 21:18:53 bsmith Exp bsmith $*/
+/*$Id: ex23.c,v 1.8 2001/07/07 03:28:29 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 
@@ -50,11 +50,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsSetValue("-mg_levels_ksp_type","gmres");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-mg_coarse_ksp_max_it","3");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-mg_levels_ksp_max_it","3");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-snes_mf_type","wp");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
+  /* ierr = PetscOptionsSetValue("-snes_mf_type","wp");CHKERRQ(ierr); */
+  /* ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr); */
+  /* ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr); */
   ierr = PetscOptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-dmmg_snes_mffd",0);CHKERRQ(ierr);
+  /*  ierr = PetscOptionsSetValue("-dmmg_snes_mffd",0);CHKERRQ(ierr); */
   /*  ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
   

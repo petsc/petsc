@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.154 2001/06/21 22:15:57 buschelm Exp buschelm $*/
+/*$Id: mpidense.c,v 1.155 2001/06/22 00:18:05 buschelm Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -961,7 +961,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        MatGetSubMatrix_MPIDense,
        MatDestroy_MPIDense,
        MatView_MPIDense,
-       MatGetMaps_Petsc};
+       MatGetPetscMaps_Petsc};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -989,8 +989,8 @@ int MatCreate_MPIDense(Mat mat)
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreateMPI(mat->comm,mat->m,mat->M,&mat->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(mat->comm,mat->n,mat->N,&mat->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(mat->comm,mat->m,mat->M,&mat->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(mat->comm,mat->n,mat->N,&mat->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   ierr       = PetscMalloc(2*(a->size+2)*sizeof(int),&a->rowners);CHKERRQ(ierr);

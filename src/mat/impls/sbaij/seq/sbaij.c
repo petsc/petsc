@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.58 2001/06/21 23:09:55 buschelm Exp buschelm $*/
+/*$Id: sbaij.c,v 1.59 2001/06/22 00:20:57 buschelm Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1225,7 +1225,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatGetSubMatrix_SeqSBAIJ,
        0,
        0,
-       MatGetMaps_Petsc,
+       MatGetPetscMaps_Petsc,
        0,
        0,
        0,
@@ -1309,8 +1309,8 @@ int MatCreate_SeqSBAIJ(Mat B)
   b->reallocs         = 0;
   b->saved_values     = 0;
   
-  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
 
   b->sorted           = PETSC_FALSE;
   b->roworiented      = PETSC_TRUE;

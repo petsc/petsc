@@ -1,5 +1,5 @@
 !
-!  $Id: petscvec.h,v 1.34 2000/09/25 18:04:32 balay Exp balay $;
+!  $Id: petscvec.h,v 1.35 2001/04/10 22:37:56 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
@@ -8,7 +8,7 @@
 
 #define Vec PetscFortranAddr
 #define VecScatter PetscFortranAddr
-#define Map PetscFortranAddr
+#define PetscMap PetscFortranAddr
 #define NormType integer
 #define InsertMode integer
 #define ScatterMode integer 

@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.132 2001/03/28 19:42:42 balay Exp bsmith $*/
+/*$Id: da3.c,v 1.133 2001/06/21 21:19:09 bsmith Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -452,10 +452,10 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   s_z  = s;
 
   /* determine starting point of each processor */
-  nn = x*y*z;
-  ierr = PetscMalloc((2*size+1)*sizeof(int),&bases);CHKERRQ(ierr);
-  ldims = (int*)(bases+size+1);
-  ierr = MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);CHKERRQ(ierr);
+  nn       = x*y*z;
+  ierr     = PetscMalloc((2*size+1)*sizeof(int),&bases);CHKERRQ(ierr);
+  ldims    = (int*)(bases+size+1);
+  ierr     = MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
   for (i=1; i<=size; i++) {
     bases[i] = ldims[i-1];
@@ -472,7 +472,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
-  VecGetOwnershipRange(global,&start,&end);
+  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x*y*z,start,1,&to);CHKERRQ(ierr);
 
   left   = xs - Xs; 

@@ -1,4 +1,4 @@
-/*$Id: wp.c,v 1.33 2001/04/10 19:36:54 bsmith Exp bsmith $*/
+/*$Id: wp.c,v 1.34 2001/07/17 20:26:03 bsmith Exp bsmith $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code
@@ -159,13 +159,11 @@ int MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   MatSNESMFWP  *hctx;
-  int          ierr;
 
   PetscFunctionBegin;
   hctx               = (MatSNESMFWP*)ctx->hctx;
   hctx->computenorma = flag;
-
- PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 } 
 EXTERN_C_END
 
@@ -209,13 +207,11 @@ int MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   MatSNESMFWP  *hctx;
-  int          ierr;
 
   PetscFunctionBegin;
   hctx               = (MatSNESMFWP*)ctx->hctx;
   hctx->computenormU = flag;
-
- PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 } 
 EXTERN_C_END
 

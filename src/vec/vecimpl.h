@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.82 2001/01/15 21:44:23 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.83 2001/03/22 20:29:16 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -10,16 +10,16 @@
 #define __VECIMPL_H
 #include "petscvec.h"
 
-struct _MapOps {
-  int  (*getlocalsize)(Map,int*),
-       (*getglobalsize)(Map,int*),
-       (*getlocalrange)(Map,int*,int*),
-       (*getglobalrange)(Map,int**),
-       (*destroy)(Map);
+struct _PetscMapOps {
+  int  (*getlocalsize)(PetscMap,int*),
+       (*getglobalsize)(PetscMap,int*),
+       (*getlocalrange)(PetscMap,int*,int*),
+       (*getglobalrange)(PetscMap,int**),
+       (*destroy)(PetscMap);
 };
 
-struct _p_Map {
-  PETSCHEADER(struct _MapOps)
+struct _p_PetscMap {
+  PETSCHEADER(struct _PetscMapOps)
   int                    rstart,rend;       /* local start, local end + 1 */
   int                    N,n;              /* global, local vector size */
   int                    *range;
@@ -65,7 +65,7 @@ struct _VecOps {
        (*view)(Vec,PetscViewer),
        (*placearray)(Vec,const Scalar*),     /* place data array */
        (*replacearray)(Vec,const Scalar*),     /* replace data array */
-       (*getmap)(Vec,Map*),
+       (*getmap)(Vec,PetscMap*),
        (*dot_local)(Vec,Vec,Scalar*),
        (*tdot_local)(Vec,Vec,Scalar*),
        (*norm_local)(Vec,NormType,double*),
@@ -109,7 +109,7 @@ typedef struct {
 
 struct _p_Vec {
   PETSCHEADER(struct _VecOps)
-  Map                    map;
+  PetscMap               map;
   void                   *data;     /* implementation-specific data */
   int                    N,n;      /* global, local vector size */
   int                    bs;

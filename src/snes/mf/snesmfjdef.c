@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.26 2001/06/21 21:18:42 bsmith Exp bsmith $*/
+/*$Id: snesmfjdef.c,v 1.27 2001/07/17 20:26:03 bsmith Exp bsmith $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -189,7 +189,6 @@ int MatSNESMFDefaultSetUmin_Private(Mat mat,PetscReal umin)
 {
   MatSNESMFCtx     ctx = (MatSNESMFCtx)mat->data;
   MatSNESMFDefault *hctx;
-  int              ierr;
 
   PetscFunctionBegin;
   if (!ctx) {
@@ -197,8 +196,7 @@ int MatSNESMFDefaultSetUmin_Private(Mat mat,PetscReal umin)
   }
   hctx = (MatSNESMFDefault*)ctx->hctx;
   hctx->umin = umin;
-
- PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 } 
 EXTERN_C_END
 

@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.172 2001/07/17 20:41:52 bsmith Exp balay $*/
+/*$Id: da2.c,v 1.173 2001/07/18 14:22:32 balay Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1398,6 +1398,46 @@ int DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
   ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DAFormFunctioniTest1"
+int DAFormFunctioniTest1(DA da,void *w)
+{
+  Vec         vu,fu,fui;
+  int         ierr,i,n;
+  Scalar      *ui,mone = -1.0;
+  PetscRandom rnd;
+  double      norm;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&vu);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rnd);CHKERRQ(ierr);
+  ierr = VecSetRandom(rnd,vu);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rnd);CHKERRQ(ierr);
+
+  ierr = DAGetGlobalVector(da,&fu);CHKERRQ(ierr);
+  ierr = DAGetGlobalVector(da,&fui);CHKERRQ(ierr);
+  
+  ierr = DAFormFunction1(da,vu,fu,w);CHKERRQ(ierr);
+
+  ierr = VecGetArray(fui,&ui);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(fui,&n);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    ierr = DAFormFunctioni1(da,i,vu,ui+i,w);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(fui,&ui);CHKERRQ(ierr);
+
+  ierr = VecAXPY(&mone,fu,fui);CHKERRQ(ierr);
+  ierr = VecNorm(fui,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(da->comm,"Norm of difference in vectors %g\n",norm);CHKERRQ(ierr);
+  ierr = VecView(fu,0);CHKERRQ(ierr);
+  ierr = VecView(fui,0);CHKERRQ(ierr);
+
+  ierr = DARestoreLocalVector(da,&vu);CHKERRQ(ierr);
+  ierr = DARestoreGlobalVector(da,&fu);CHKERRQ(ierr);
+  ierr = DARestoreGlobalVector(da,&fui);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}  
 
 #undef __FUNCT__
 #define __FUNCT__ "DAFormFunctioni1"

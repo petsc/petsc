@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.104 2001/06/20 03:21:43 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.105 2001/06/21 21:18:53 bsmith Exp bsmith $ 
 
 # This directory contains SNES example programs for solving systems of
 # nonlinear equations.  Examples of unconstrained minimization problems
@@ -324,7 +324,7 @@ runex22:
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 runex23:
-	-@${MPIRUN} -np 2 ex23 -dmmg_snes_monitor -nox > ex23_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ex23 -dmmg_snes_monitor -nox -dmmg_snes_mffd -snes_mf_type wp -snes_mf_compute_norma no -snes_mf_compute_normu no > ex23_1.tmp 2>&1; \
 	   if (${DIFF} output/ex23_1.out ex23_1.tmp) then true; \
 	   else echo "Possible problem with ex23_1, diffs above"; fi; \
 	   ${RM} -f ex23_1.tmp

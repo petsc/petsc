@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.168 2001/01/19 23:20:08 balay Exp balay $*/
+/*$Id: vscat.c,v 1.169 2001/03/23 23:21:18 balay Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -37,9 +37,9 @@ static int VecScatterCheckIndices_Private(int nmax,int n,int *idx)
 #define __FUNCT__ "VecScatterBegin_MPI_ToAll"
 int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
-  int    ierr,yy_n,xx_n,*range;
-  Scalar *xv,*yv;
-  Map    map;
+  int      ierr,yy_n,xx_n,*range;
+  Scalar   *xv,*yv;
+  PetscMap map;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(y,&yy_n);CHKERRQ(ierr);
@@ -79,8 +79,8 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
           scat->work2 = xvt2;
           PetscLogObjectMemory(ctx,xx_n*sizeof(Scalar));
         }
-        ierr = VecGetMap(y,&map);CHKERRQ(ierr);
-        ierr = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
+        ierr = VecGetPetscMap(y,&map);CHKERRQ(ierr);
+        ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
         ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,xvt2,scat->count,range,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
         ierr = MPI_Reduce(xv,xvt,2*xx_n,MPI_DOUBLE,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
@@ -100,8 +100,8 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
         } else {SETERRQ(1,"Wrong insert option");}
         ierr = MPI_Scatterv(xvt,scat->count,map->range,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
       } else {
-        ierr = VecGetMap(y,&map);CHKERRQ(ierr);
-        ierr = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
+        ierr = VecGetPetscMap(y,&map);CHKERRQ(ierr);
+        ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
         ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,0, 0,0,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
         ierr = MPI_Reduce(xv,xvt,2*xx_n,MPI_DOUBLE,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
@@ -116,8 +116,8 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     int                  i;
 
-    ierr = VecGetMap(x,&map);CHKERRQ(ierr);
-    ierr = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
+    ierr = VecGetPetscMap(x,&map);CHKERRQ(ierr);
+    ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
     if (addv == INSERT_VALUES) {
       ierr = MPI_Allgatherv(xv,xx_n,MPIU_SCALAR,yv,scat->count,range,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
     } else {
@@ -158,7 +158,7 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
   int      rank,ierr,yy_n,xx_n,*range;
   Scalar   *xv,*yv;
   MPI_Comm comm;
-  Map      map;
+  PetscMap map;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(y,&yy_n);CHKERRQ(ierr);
@@ -175,8 +175,8 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     int                  i;
 
-    ierr = VecGetMap(y,&map);CHKERRQ(ierr);
-    ierr = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
+    ierr = VecGetPetscMap(y,&map);CHKERRQ(ierr);
+    ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
     if (addv == INSERT_VALUES) {
       ierr = MPI_Scatterv(xv,scat->count,range,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
     } else {
@@ -205,8 +205,8 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     int                  i;
 
-    ierr = VecGetMap(x,&map);CHKERRQ(ierr);
-    ierr = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
+    ierr = VecGetPetscMap(x,&map);CHKERRQ(ierr);
+    ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
     if (addv == INSERT_VALUES) {
       ierr = MPI_Gatherv(xv,xx_n,MPIU_SCALAR,yv,scat->count,range,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
     } else {
@@ -1080,13 +1080,13 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
 
       if (cando) {
-        Map map;
+        PetscMap map;
 
         ierr  = MPI_Comm_size(ctx->comm,&size);CHKERRQ(ierr);
         ierr  = PetscNew(VecScatter_MPI_ToAll,&sto);CHKERRQ(ierr);
 	ierr  = PetscMalloc(size*sizeof(int),&count);CHKERRQ(ierr);
-        ierr  = VecGetMap(xin,&map);CHKERRQ(ierr);
-        ierr  = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
+        ierr  = VecGetPetscMap(xin,&map);CHKERRQ(ierr);
+        ierr  = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
         for (i=0; i<size; i++) {
 	  count[i] = range[i+1] - range[i];
         }
@@ -1137,13 +1137,13 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
 
       if (cando) {
-        Map map;
+        PetscMap map;
 
         ierr  = MPI_Comm_size(ctx->comm,&size);CHKERRQ(ierr);
         ierr  = PetscNew(VecScatter_MPI_ToAll,&sto);CHKERRQ(ierr);
 	ierr  = PetscMalloc(size*sizeof(int),&count);CHKERRQ(ierr);
-        ierr  = VecGetMap(xin,&map);CHKERRQ(ierr);
-        ierr  = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
+        ierr  = VecGetPetscMap(xin,&map);CHKERRQ(ierr);
+        ierr  = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
         for (i=0; i<size; i++) {
 	  count[i] = range[i+1] - range[i];
         }

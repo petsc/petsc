@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.231 2001/06/21 21:15:58 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.232 2001/07/19 21:09:57 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -895,7 +895,7 @@ int VecDestroy(Vec v)
     ierr = ISLocalToGlobalMappingDestroy(v->bmapping);CHKERRQ(ierr);
   }
   if (v->map) {
-    ierr = MapDestroy(v->map);CHKERRQ(ierr);
+    ierr = PetscMapDestroy(v->map);CHKERRQ(ierr);
   }
   PetscLogObjectDestroy(v);
   PetscHeaderDestroy(v); 
@@ -1951,8 +1951,8 @@ int VecGetLocalSize(Vec x,int *size)
 @*/
 int VecGetOwnershipRange(Vec x,int *low,int *high)
 {
-  int ierr;
-  Map map;
+  int      ierr;
+  PetscMap map;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
@@ -1960,14 +1960,14 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
   if (low) PetscValidIntPointer(low);
   if (high) PetscValidIntPointer(high);
   ierr = (*x->ops->getmap)(x,&map);CHKERRQ(ierr);
-  ierr = MapGetLocalRange(map,low,high);CHKERRQ(ierr);
+  ierr = PetscMapGetLocalRange(map,low,high);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecGetMap"
+#define __FUNCT__ "VecGetPetscMap"
 /*@C
-   VecGetMap - Returns the map associated with the vector
+   VecGetPetscMap - Returns the map associated with the vector
 
    Not Collective
 
@@ -1980,7 +1980,7 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
    Level: developer
 
 @*/
-int VecGetMap(Vec x,Map *map)
+int VecGetPetscMap(Vec x,PetscMap *map)
 {
   int ierr;
 

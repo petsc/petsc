@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.159 2001/04/10 19:34:51 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.160 2001/06/07 14:58:26 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -1906,7 +1906,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   MPI_Comm               comm;
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
-  Map                    map;
+  PetscMap               map;
   PetscTruth             found;
   
   PetscFunctionBegin;
@@ -1914,8 +1914,8 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = VecGetMap(xin,&map);CHKERRQ(ierr);
-  ierr = MapGetGlobalRange(map,&owners);CHKERRQ(ierr);
+  ierr = VecGetPetscMap(xin,&map);CHKERRQ(ierr);
+  ierr = PetscMapGetGlobalRange(map,&owners);CHKERRQ(ierr);
 
   ierr = VecGetSize(yin,&lengthy);CHKERRQ(ierr);
 

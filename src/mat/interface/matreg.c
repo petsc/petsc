@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.16 2001/04/07 02:31:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.17 2001/06/21 21:16:17 bsmith Exp bsmith $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -59,11 +59,11 @@ int MatSetType(Mat mat,MatType matype)
       ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
     }
     if (mat->rmap) {
-      ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
+      ierr = PetscMapDestroy(mat->rmap);CHKERRQ(ierr);
       mat->rmap = 0;
     }
     if (mat->cmap) {
-      ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
+      ierr = PetscMapDestroy(mat->cmap);CHKERRQ(ierr);
       mat->cmap = 0;
     }
 

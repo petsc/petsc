@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.406 2001/07/11 03:08:35 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.407 2001/07/17 20:47:18 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -398,10 +398,10 @@ int MatDestroy(Mat A)
     ierr = ISLocalToGlobalMappingDestroy(A->bmapping);CHKERRQ(ierr);
   }
   if (A->rmap) {
-    ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
+    ierr = PetscMapDestroy(A->rmap);CHKERRQ(ierr);
   }
   if (A->cmap) {
-    ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
+    ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
   }
 
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
@@ -4196,9 +4196,9 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetMaps"
+#define __FUNCT__ "MatGetPetscMaps"
 /*@C
-   MatGetMaps - Returns the maps associated with the matrix.
+   MatGetPetscMaps - Returns the maps associated with the matrix.
 
    Not Collective
 
@@ -4214,7 +4214,7 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
    Concepts: maps^getting from matrix
 
 @*/
-int MatGetMaps(Mat mat,Map *rmap,Map *cmap)
+int MatGetPetscMaps(Mat mat,PetscMap *rmap,PetscMap *cmap)
 {
   int ierr;
 
@@ -4230,8 +4230,8 @@ int MatGetMaps(Mat mat,Map *rmap,Map *cmap)
       Version that works for all PETSc matrices
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetMaps_Petsc"
-int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
+#define __FUNCT__ "MatGetPetscMaps_Petsc"
+int MatGetPetscMaps_Petsc(Mat mat,PetscMap *rmap,PetscMap *cmap)
 {
   PetscFunctionBegin;
   if (rmap) *rmap = mat->rmap;

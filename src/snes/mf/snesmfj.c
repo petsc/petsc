@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.125 2001/07/11 03:34:07 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.126 2001/07/17 20:26:03 bsmith Exp bsmith $*/
 
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 #include "src/mat/matimpl.h"
@@ -143,8 +143,8 @@ int MatSNESMFRegisterDestroy(void)
 
 /* ----------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFDestroy_Private"
-int MatSNESMFDestroy_Private(Mat mat)
+#define __FUNCT__ "MatDestroy_MFFD"
+int MatDestroy_MFFD(Mat mat)
 {
   int          ierr;
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
@@ -158,12 +158,12 @@ int MatSNESMFDestroy_Private(Mat mat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFView_Private"
+#define __FUNCT__ "MatView_MFFD"
 /*
-   MatSNESMFView_Private - Views matrix-free parameters.
+   MatSNESMFView_MFFD - Views matrix-free parameters.
 
 */
-int MatSNESMFView_Private(Mat J,PetscViewer viewer)
+int MatView_MFFD(Mat J,PetscViewer viewer)
 {
   int          ierr;
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
@@ -189,7 +189,7 @@ int MatSNESMFView_Private(Mat J,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFAssemblyEnd_Private"
+#define __FUNCT__ "MatAssemblyEnd_MFFD"
 /*
    MatSNESMFAssemblyEnd_Private - Resets the ctx->ncurrenth to zero. This 
    allows the user to indicate the beginning of a new linear solve by calling
@@ -197,7 +197,7 @@ int MatSNESMFView_Private(Mat J,PetscViewer viewer)
    MatSNESMFCreate_WP() to properly compute ||U|| only the first time
    in the linear solver rather than every time.
 */
-int MatSNESMFAssemblyEnd_Private(Mat J,MatAssemblyType mt)
+int MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
 {
   int             ierr;
   MatSNESMFCtx    j = (MatSNESMFCtx)J->data;
@@ -218,7 +218,7 @@ int MatSNESMFAssemblyEnd_Private(Mat J,MatAssemblyType mt)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFMult_Private"
+#define __FUNCT__ "MatMult_MFFD"
 /*
   MatSNESMFMult_Private - Default matrix-free form for Jacobian-vector
   product, y = F'(u)*a:
@@ -228,7 +228,7 @@ int MatSNESMFAssemblyEnd_Private(Mat J,MatAssemblyType mt)
         u = current iterate
         h = difference interval
 */
-int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
+int MatMult_MFFD(Mat mat,Vec a,Vec y)
 {
   MatSNESMFCtx    ctx = (MatSNESMFCtx)mat->data;
   SNES            snes;
@@ -260,9 +260,9 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
   /* keep a record of the current differencing parameter h */  
   ctx->currenth = h;
 #if defined(PETSC_USE_COMPLEX)
-  PetscLogInfo(mat,"MatSNESMFMult_Private:Current differencing parameter: %g + %g i\n",PetscRealPart(h),PetscImaginaryPart(h));
+  PetscLogInfo(mat,"MatMult_MFFD:Current differencing parameter: %g + %g i\n",PetscRealPart(h),PetscImaginaryPart(h));
 #else
-  PetscLogInfo(mat,"MatSNESMFMult_Private:Current differencing parameter: %15.12e\n",h);
+  PetscLogInfo(mat,"MatMult_MFFD:Current differencing parameter: %15.12e\n",h);
 #endif
   if (ctx->historyh && ctx->ncurrenth < ctx->maxcurrenth) {
     ctx->historyh[ctx->ncurrenth] = h;
@@ -301,16 +301,16 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFGetDiagonal_Private"
+#define __FUNCT__ "MatGetDiagonal_MFFD"
 /*
-  MatSNESMFGetDiagonal_Private - Gets the diagonal for a matrix free matrix
+  MatGetDiagonal_MFFD - Gets the diagonal for a matrix free matrix
 
         y ~= (F(u + ha) - F(u))/h, 
   where F = nonlinear function, as set by SNESSetFunction()
         u = current iterate
         h = difference interval
 */
-int MatSNESMFGetDiagonal_Private(Mat mat,Vec a)
+int MatGetDiagonal_MFFD(Mat mat,Vec a)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   Scalar       h,*aa,*ww,v;
@@ -507,7 +507,7 @@ int MatCreate_MFFD(Mat A)
   int          ierr;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(mfctx,_p_MatSNESMFCtx,struct _MFOps,MATSNESMFCTX_COOKIE,0,"SNESMF",A->comm,MatSNESMFDestroy_Private,MatSNESMFView_Private);
+  PetscHeaderCreate(mfctx,_p_MatSNESMFCtx,struct _MFOps,MATSNESMFCTX_COOKIE,0,"SNESMF",A->comm,MatDestroy_MFFD,MatView_MFFD);
   PetscLogObjectCreate(mfctx);
   mfctx->sp              = 0;
   mfctx->snes            = 0;
@@ -525,7 +525,7 @@ int MatCreate_MFFD(Mat A)
      Create the empty data structure to contain compute-h routines.
      These will be filled in below from the command line options or 
      a later call with MatSNESMFSetType() or if that is not called 
-     then it will default in the first use of MatSNESMFMult_private()
+     then it will default in the first use of MatMult_MFFD()
   */
   mfctx->ops->compute        = 0;
   mfctx->ops->destroy        = 0;
@@ -539,11 +539,11 @@ int MatCreate_MFFD(Mat A)
 
   A->data                = mfctx;
 
-  A->ops->mult           = MatSNESMFMult_Private;
-  A->ops->destroy        = MatSNESMFDestroy_Private;
-  A->ops->view           = MatSNESMFView_Private;
-  A->ops->assemblyend    = MatSNESMFAssemblyEnd_Private;
-  A->ops->getdiagonal    = MatSNESMFGetDiagonal_Private;
+  A->ops->mult           = MatMult_MFFD;
+  A->ops->destroy        = MatDestroy_MFFD;
+  A->ops->view           = MatView_MFFD;
+  A->ops->assemblyend    = MatAssemblyEnd_MFFD;
+  A->ops->getdiagonal    = MatGetDiagonal_MFFD;
   A->ops->setfromoptions = MatSNESMFSetFromOptions;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetBase_C","MatSNESMFSetBase_FD",MatSNESMFSetBase_FD);CHKERRQ(ierr);
@@ -608,7 +608,6 @@ EXTERN_C_END
 int MatCreateMF(Vec x,Mat *J)
 {
   MPI_Comm     comm;
-  MatSNESMFCtx mfctx;
   int          n,nloc,ierr;
 
   PetscFunctionBegin;
@@ -646,7 +645,6 @@ int MatCreateMF(Vec x,Mat *J)
 int MatSNESMFGetH(Mat mat,Scalar *h)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
-  int          ierr;
 
   PetscFunctionBegin;
   *h = ctx->currenth;
@@ -719,7 +717,6 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 int MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *funcctx)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
-  int          ierr;
 
   PetscFunctionBegin;
   ctx->func    = func;
@@ -755,7 +752,6 @@ int MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *fu
 int MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,Scalar*,void *))
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
-  int          ierr;
 
   PetscFunctionBegin;
   ctx->funci   = funci;
@@ -789,7 +785,6 @@ int MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,Scalar*,void *))
 int MatSNESMFSetFunctioniBase(Mat mat,int (*func)(Vec,void *))
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
-  int          ierr;
 
   PetscFunctionBegin;
   ctx->funcisetbase   = func;
@@ -823,7 +818,6 @@ int MatSNESMFSetFunctioniBase(Mat mat,int (*func)(Vec,void *))
 int MatSNESMFSetPeriod(Mat mat,int period)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
-  int          ierr;
 
   PetscFunctionBegin;
   ctx->recomputeperiod = period;
@@ -865,7 +859,6 @@ int MatSNESMFSetPeriod(Mat mat,int period)
 int MatSNESMFSetFunctionError(Mat mat,PetscReal error)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
-  int          ierr;
 
   PetscFunctionBegin;
   if (error != PETSC_DEFAULT) ctx->error_rel = error;
@@ -937,14 +930,12 @@ int MatSNESMFAddNullSpace(Mat J,MatNullSpace nullsp)
 @*/
 int MatSNESMFSetHHistory(Mat J,Scalar *history,int nhistory)
 {
-  int          ierr;
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 
   PetscFunctionBegin;
   ctx->historyh    = history;
   ctx->maxcurrenth = nhistory;
   ctx->currenth    = 0;
-
   PetscFunctionReturn(0);
 }
 
@@ -973,12 +964,10 @@ int MatSNESMFSetHHistory(Mat J,Scalar *history,int nhistory)
 @*/
 int MatSNESMFResetHHistory(Mat J)
 {
-  int          ierr;
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 
   PetscFunctionBegin;
   ctx->ncurrenth    = 0;
-
   PetscFunctionReturn(0);
 }
 

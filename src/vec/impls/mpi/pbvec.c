@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.166 2001/04/10 19:34:57 bsmith Exp bsmith $*/
+/*$Id: pbvec.c,v 1.167 2001/07/19 21:08:05 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -123,7 +123,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecView_MPI,
             VecPlaceArray_Seq,
             VecReplaceArray_Seq,
-            VecGetMap_Seq,
+            VecGetPetscMap_Seq,
             VecDot_Seq,
             VecTDot_Seq,
             VecNorm_Seq,
@@ -142,7 +142,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
     VecCreateMPIWithArray(), VecCreate_Shared() (i.e. VecCreateShared()), VecCreateGhost(),
     VecDuplicate_MPI(), VecCreateGhostWithArray(), VecDuplicate_MPI(), and VecDuplicate_Shared()
 */
-int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
+int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],PetscMap map)
 {
   Vec_MPI *s;
   int     ierr,size,rank;
@@ -180,7 +180,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
 
   if (!v->map) {
     if (!map) {
-      ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
+      ierr = PetscMapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
     } else {
       v->map = map;
       ierr = PetscObjectReference((PetscObject)map);CHKERRQ(ierr);

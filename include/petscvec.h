@@ -1,4 +1,4 @@
-/* $Id: petscvec.h,v 1.120 2001/06/21 21:15:48 bsmith Exp bsmith $ */
+/* $Id: petscvec.h,v 1.121 2001/07/19 21:07:09 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -15,7 +15,7 @@
 #define VEC_SCATTER_COOKIE PETSC_COOKIE+4
 
 /*S
-     Map - Abstract PETSc object that defines the layout of vector and
+     PetscMap - Abstract PETSc object that defines the layout of vector and
   matrices across processors
 
    Level: advanced
@@ -25,9 +25,9 @@
 
   Concepts: parallel decomposition
 
-.seealso:  MapCreateMPI()
+.seealso:  PetscMapCreateMPI()
 S*/
-typedef struct _p_Map*         Map;
+typedef struct _p_PetscMap*         PetscMap;
 
 /*S
      Vec - Abstract PETSc vector object
@@ -68,7 +68,7 @@ E*/
 typedef char*                  VecType;
 
 EXTERN int VecCreateSeq(MPI_Comm,int,Vec*);
-EXTERN int MapCreateMPI(MPI_Comm,int,int,Map*);  
+EXTERN int PetscMapCreateMPI(MPI_Comm,int,int,PetscMap*);  
 EXTERN int VecCreateMPI(MPI_Comm,int,int,Vec*);  
 EXTERN int VecCreateSeqWithArray(MPI_Comm,int,const Scalar[],Vec*);  
 EXTERN int VecCreateMPIWithArray(MPI_Comm,int,int,const Scalar[],Vec*);  
@@ -79,11 +79,11 @@ EXTERN int VecSetFromOptions(Vec);
 
 EXTERN int VecDestroy(Vec);        
 
-EXTERN int MapDestroy(Map);
-EXTERN int MapGetLocalSize(Map,int *);
-EXTERN int MapGetSize(Map,int *);
-EXTERN int MapGetLocalRange(Map,int *,int *);
-EXTERN int MapGetGlobalRange(Map,int *[]);
+EXTERN int PetscMapDestroy(PetscMap);
+EXTERN int PetscMapGetLocalSize(PetscMap,int *);
+EXTERN int PetscMapGetSize(PetscMap,int *);
+EXTERN int PetscMapGetLocalRange(PetscMap,int *,int *);
+EXTERN int PetscMapGetGlobalRange(PetscMap,int *[]);
 
 EXTERN int VecDot(Vec,Vec,Scalar*);
 EXTERN int VecTDot(Vec,Vec,Scalar*);  
@@ -122,7 +122,7 @@ EXTERN int VecAbs(Vec);
 EXTERN int VecDuplicate(Vec,Vec*);          
 EXTERN int VecDuplicateVecs(Vec,int,Vec*[]);         
 EXTERN int VecDestroyVecs(const Vec[],int); 
-EXTERN int VecGetMap(Vec,Map*);
+EXTERN int VecGetPetscMap(Vec,PetscMap*);
 
 /*E
     InsertMode - Whether entries are inserted or added into vectors or matrices

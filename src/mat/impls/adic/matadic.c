@@ -1,4 +1,4 @@
-/*$Id: matadic.c,v 1.5 2001/07/05 15:27:46 bsmith Exp bsmith $*/
+/*$Id: matadic.c,v 1.6 2001/07/06 14:26:10 bsmith Exp bsmith $*/
 /*
     ADIC matrix-free matrix implementation
 */
@@ -219,8 +219,8 @@ int MatCreate_DAAD(Mat B)
   ierr = PetscMemzero(b,sizeof(Mat_DAAD));CHKERRQ(ierr);
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   
-  ierr = MapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATDAAD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSNESMFSetBase_C","MatSNESMFSetBase_AD",MatSNESMFSetBase_AD);CHKERRQ(ierr);

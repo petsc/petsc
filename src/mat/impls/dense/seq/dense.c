@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.202 2001/06/21 23:04:23 buschelm Exp buschelm $*/
+/*$Id: dense.c,v 1.203 2001/06/22 00:15:47 buschelm Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -1413,7 +1413,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        MatDestroy_SeqDense,
        MatView_SeqDense,
-       MatGetMaps_Petsc};
+       MatGetPetscMaps_Petsc};
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqDense"
@@ -1524,8 +1524,8 @@ int MatCreate_SeqDense(Mat B)
   PetscLogObjectMemory(B,sizeof(struct _p_Mat));
   B->data         = (void*)b;
 
-  ierr = MapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
 
   b->pivots       = 0;
   b->roworiented  = PETSC_TRUE;

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.122 2001/06/21 21:16:13 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.123 2001/07/18 18:05:23 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -80,7 +80,7 @@ struct _MatOps {
             (*getsubmatrix)(Mat,IS,IS,int,MatReuse,Mat*),
             (*destroy)(Mat),
             (*view)(Mat,PetscViewer),
-            (*getmaps)(Mat,Map*,Map*),
+            (*getmaps)(Mat,PetscMap*,PetscMap*),
             (*usescaledform)(Mat,PetscTruth),
             (*scalesystem)(Mat,Vec,Vec),
             (*unscalesystem)(Mat,Vec,Vec),
@@ -102,7 +102,7 @@ struct _MatOps {
 EXTERN int MatConvert_Basic(Mat,MatType,Mat*);
 EXTERN int MatCopy_Basic(Mat,Mat,MatStructure);
 EXTERN int MatView_Private(Mat);
-EXTERN int MatGetMaps_Petsc(Mat,Map *,Map *);
+EXTERN int MatGetPetscMaps_Petsc(Mat,PetscMap *,PetscMap *);
 EXTERN int MatHeaderCopy(Mat,Mat);
 
 /* 
@@ -159,7 +159,7 @@ typedef struct {
 
 struct _p_Mat {
   PETSCHEADER(struct _MatOps)
-  Map                    rmap,cmap;
+  PetscMap               rmap,cmap;
   void                   *data;            /* implementation-specific data */
   int                    factor;           /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
   double                 lupivotthreshold; /* threshold for pivoting */

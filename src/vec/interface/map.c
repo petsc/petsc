@@ -1,4 +1,4 @@
-/*$Id: map.c,v 1.13 2001/01/15 21:44:52 bsmith Exp balay $*/
+/*$Id: map.c,v 1.14 2001/03/23 23:21:22 balay Exp bsmith $*/
 /*
      Provides the interface functions for all map operations.
    These are the map functions the user calls.
@@ -6,9 +6,9 @@
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "MapGetLocalSize"
+#define __FUNCT__ "PetscMapGetLocalSize"
 /*@C
-   MapGetLocalSize - Gets the number of elements associated with this processor.
+   PetscMapGetLocalSize - Gets the number of elements associated with this processor.
 
    Not Collective
 
@@ -20,12 +20,12 @@
 
    Level: developer
 
-.seealso: MapGetSize(), MapGetLocalRange(), MapGetGlobalRange()
+.seealso: PetscMapGetSize(), PetscMapGetLocalRange(), PetscMapGetGlobalRange()
 
-   Concepts: Map^local size
+   Concepts: PetscMap^local size
 
 @*/
-int MapGetLocalSize(Map m,int *n)
+int PetscMapGetLocalSize(PetscMap m,int *n)
 {
   int ierr;
 
@@ -36,9 +36,9 @@ int MapGetLocalSize(Map m,int *n)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MapGetSize"
+#define __FUNCT__ "PetscMapGetSize"
 /*@C
-   MapGetSize - Gets the total number of elements associated with this map.
+   PetscMapGetSize - Gets the total number of elements associated with this map.
 
    Not Collective
 
@@ -50,11 +50,11 @@ int MapGetLocalSize(Map m,int *n)
 
    Level: developer
 
-.seealso: MapGetLocalSize(), MapGetLocalRange(), MapGetGlobalRange()
+.seealso: PetscMapGetLocalSize(), PetscMapGetLocalRange(), PetscMapGetGlobalRange()
 
-   Concepts: Map^size
+   Concepts: PetscMap^size
 @*/
-int MapGetSize(Map m,int *N)
+int PetscMapGetSize(PetscMap m,int *N)
 {
   int ierr;
 
@@ -65,9 +65,9 @@ int MapGetSize(Map m,int *N)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MapGetLocalRange"
+#define __FUNCT__ "PetscMapGetLocalRange"
 /*@C
-   MapGetLocalRange - Gets the local ownership range for this procesor.
+   PetscMapGetLocalRange - Gets the local ownership range for this procesor.
 
    Not Collective
 
@@ -80,10 +80,10 @@ int MapGetSize(Map m,int *N)
 
    Level: developer
 
-.seealso: MapGetLocalSize(), MapGetGlobalRange()
+.seealso: PetscMapGetLocalSize(), PetscMapGetGlobalRange()
 
 @*/
-int MapGetLocalRange(Map m,int *rstart,int *rend)
+int PetscMapGetLocalRange(PetscMap m,int *rstart,int *rend)
 {
   int ierr;
 
@@ -94,9 +94,9 @@ int MapGetLocalRange(Map m,int *rstart,int *rend)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MapGetGlobalRange"
+#define __FUNCT__ "PetscMapGetGlobalRange"
 /*@C
-   MapGetGlobalRange - Gets the ownership ranges for all processors.
+   PetscMapGetGlobalRange - Gets the ownership ranges for all processors.
 
    Not Collective
 
@@ -110,10 +110,10 @@ int MapGetLocalRange(Map m,int *rstart,int *rend)
 
    Level: developer
 
-.seealso: MapGetSize(), MapGetLocalRange()
+.seealso: PetscMapGetSize(), PetscMapGetLocalRange()
 
 @*/
-int MapGetGlobalRange(Map m,int *range[])
+int PetscMapGetGlobalRange(PetscMap m,int *range[])
 {
   int ierr;
 
@@ -124,9 +124,9 @@ int MapGetGlobalRange(Map m,int *range[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MapDestroy"
+#define __FUNCT__ "PetscMapDestroy"
 /*@C
-   MapDestroy - Destroys a map object.
+   PetscMapDestroy - Destroys a map object.
 
    Not Collective
 
@@ -135,10 +135,10 @@ int MapGetGlobalRange(Map m,int *range[])
 
    Level: developer
 
-.seealso: MapCreateMPI()
+.seealso: PetscMapCreateMPI()
 
 @*/
-int MapDestroy(Map m)
+int PetscMapDestroy(PetscMap m)
 {
   int ierr;
 

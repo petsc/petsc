@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.221 2001/06/21 23:28:43 buschelm Exp bsmith $ */
+/* $Id: petscmat.h,v 1.222 2001/07/11 15:46:57 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -81,7 +81,7 @@ EXTERN int MatCreateAdic(MPI_Comm,int,int,int,int,int,void (*)(void),Mat*);
 EXTERN int MatDestroy(Mat);
 
 EXTERN int MatPrintHelp(Mat);
-EXTERN int MatGetMaps(Mat,Map*,Map*);
+EXTERN int MatGetPetscMaps(Mat,PetscMap*,PetscMap*);
 
 /* ------------------------------------------------------------*/
 EXTERN int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
