@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.12 1998/05/05 20:09:19 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.13 1998/06/01 03:28:26 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -32,7 +32,7 @@
 #define HAVE_FAST_MPI_WTIME
 
 #define SIZEOF_VOIDP 8
-#define SIZEOF_INT 4
+#define SIZEOF_INT 8
 
 #define HAVE_MISSING_DGESVD
 #define HAVE_PXFGETARG
