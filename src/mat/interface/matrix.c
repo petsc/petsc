@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.216 1997/01/06 20:24:04 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.217 1997/01/12 04:33:46 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -807,8 +807,15 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   PLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0); 
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {
-      ierr = MatView(mat,VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
-      ierr = ViewerFlush(VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
+    ierr = OptionsHasName(0,"-mat_view_contour",&flg); CHKERRQ(ierr);
+    if (flg) {
+      ViewerPushFormat(VIEWER_DRAWX_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+    }
+    ierr = MatView(*fact,VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
+    if (flg) {
+      ViewerPopFormat(VIEWER_DRAWX_(mat->comm));CHKERRQ(ierr);
+    }
   }
   return 0;
 }
@@ -1378,13 +1385,23 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
    Output Parameter:
 .  v - the diagonal of the matrix
 
+   Notes: For the SeqAIJ matrix format, this routine may also be called
+    on a LU factored matrix; in that case it routines the reciprocal of 
+    the diagonal entries in U. It returns the entries permuted by the 
+    row and column permutation used during the symbolic factorization.
+
 .keywords: matrix, get, diagonal
 @*/
 int MatGetDiagonal(Mat mat,Vec v)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(v,VEC_COOKIE);
   if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  /*
+     The error checking for a factored matrix is handled inside 
+    each matrix type, since MatGetDiagonal() is supported by 
+    factored AIJ matrices
+  */
+  /* if (mat->factor) SETERRQ(1,0,"Not for factored matrix");  */
   if (!mat->ops.getdiagonal) SETERRQ(PETSC_ERR_SUP,0,"");
   return (*mat->ops.getdiagonal)(mat,v);
 }
@@ -1411,6 +1428,35 @@ int MatTranspose(Mat mat,Mat *B)
   if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
   if (!mat->ops.transpose) SETERRQ(PETSC_ERR_SUP,0,""); 
   return (*mat->ops.transpose)(mat,B);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatPermute"
+/*@C
+   MatPermute - Creates a new matrix with rows and columns permuted from the 
+       original.
+
+   Input Parameter:
+.  mat - the matrix to permute
+.  row - row permutation
+.  col - column permutation
+
+   Output Parameters:
+.  B - the permuted matrix
+
+.keywords: matrix, transpose
+
+.seealso: MatGetReordering()
+@*/
+int MatPermute(Mat mat,IS row,IS col,Mat *B)
+{
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(row,IS_COOKIE);
+  PetscValidHeaderSpecific(col,IS_COOKIE);
+  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->ops.permute) SETERRQ(PETSC_ERR_SUP,0,""); 
+  return (*mat->ops.permute)(mat,row,col,B);
 }
 
 #undef __FUNC__  
@@ -1660,8 +1706,15 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
     }
     ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
     if (flg) {
+      ierr = OptionsHasName(0,"-mat_view_contour",&flg); CHKERRQ(ierr);
+      if (flg) {
+        ViewerPushFormat(VIEWER_DRAWX_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+      }
       ierr = MatView(mat,VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
       ierr = ViewerFlush(VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
+      if (flg) {
+        ViewerPopFormat(VIEWER_DRAWX_(mat->comm));CHKERRQ(ierr);
+      }
     }
   }
   inassm--;
