@@ -1661,7 +1661,7 @@ int MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,int bs,int d_nz,int *d_nnz,int o_
   PetscLogObjectParent(B,b->A);
 
   ierr = MatCreate(PETSC_COMM_SELF,B->m,B->M,B->m,B->M,&b->B);CHKERRQ(ierr);
-  ierr = MatSetType(b->B,MATSEQSBAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(b->B,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(b->B,bs,o_nz,o_nnz);CHKERRQ(ierr);
   PetscLogObjectParent(B,b->B);
 
