@@ -425,7 +425,7 @@ $                    natural - see KSPSetNormType()
 @*/
 int KSPSetFromOptions(KSP ksp)
 {
-  int        ierr,index;
+  int        ierr,indx;
   char       type[256],*stype[] = {"none","preconditioned","unpreconditioned","natural"};
   PetscTruth flg;
 
@@ -451,9 +451,9 @@ int KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsLogical("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,
                                   &ksp->guess_knoll,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsEList("-ksp_norm_type","KSP Norm type","KSPSetNormType",stype,4,"preconditioned",&index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ksp_norm_type","KSP Norm type","KSPSetNormType",stype,4,"preconditioned",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      switch (index) {
+      switch (indx) {
       case 0:
         ierr = KSPSetNormType(ksp,KSP_NO_NORM);CHKERRQ(ierr);
         ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0);CHKERRQ(ierr);

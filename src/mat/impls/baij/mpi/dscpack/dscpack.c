@@ -430,7 +430,7 @@ int MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
 int MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F) {
   Mat        B;
   Mat_DSC    *lu;   
-  int        ierr,bs,index; 
+  int        ierr,bs,indx; 
   PetscTruth flg;
   char       *ftype[]={"LDLT","LLT"},*ltype[]={"LBLAS1","LBLAS2","LBLAS3"},*dtype[]={"DBLAS1","DBLAS2"}; 
 
@@ -472,9 +472,9 @@ int MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F) {
          "None",
          lu->scheme_code,&lu->scheme_code,PETSC_NULL);CHKERRQ(ierr);
   
-  ierr = PetscOptionsEList("-mat_dscpack_factor","factor_type","None",ftype,2,ftype[0],&index,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-mat_dscpack_factor","factor_type","None",ftype,2,ftype[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
-    switch (index) {
+    switch (indx) {
     case 0:
       lu->factor_type = DSC_LDLT;
       break;
@@ -489,9 +489,9 @@ int MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F) {
   ierr = PetscOptionsInt("-mat_dscpack_stats","display stats: 0 = no display,  1 = display",
          "None", lu->stat,&lu->stat,PETSC_NULL);CHKERRQ(ierr);
   
-  ierr = PetscOptionsEList("-mat_dscpack_LBLAS","BLAS level used in the local phase","None",ltype,3,ltype[2],&index,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-mat_dscpack_LBLAS","BLAS level used in the local phase","None",ltype,3,ltype[2],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
-    switch (index) {
+    switch (indx) {
     case 0:
       lu->LBLASLevel = DSC_LBLAS1;
       break;
@@ -504,9 +504,9 @@ int MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F) {
     }
   }
 
-  ierr = PetscOptionsEList("-mat_dscpack_DBLAS","BLAS level used in the distributed phase","None",dtype,2,dtype[1],&index,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-mat_dscpack_DBLAS","BLAS level used in the distributed phase","None",dtype,2,dtype[1],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
-    switch (index) {
+    switch (indx) {
     case 0:
       lu->DBLASLevel = DSC_DBLAS1;
       break;

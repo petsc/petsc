@@ -401,7 +401,7 @@ int MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat               B;
   Mat_SuperLU_DIST  *lu;   
-  int               ierr,M=A->M,N=A->N,size,index;
+  int               ierr,M=A->M,N=A->N,size,indx;
   superlu_options_t options;
   PetscTruth        flg;
   char              *ptype[] = {"MMD_AT_PLUS_A","NATURAL","MMD_ATA","COLAMD"}; 
@@ -444,9 +444,9 @@ int MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
       options.Equil = NO;
     }
 
-    ierr = PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",prtype,2,prtype[0],&index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",prtype,2,prtype[0],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      switch (index) {
+      switch (indx) {
       case 0:
         options.RowPerm = LargeDiag;
         break;
@@ -456,9 +456,9 @@ int MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
       }
     }
 
-    ierr = PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",ptype,4,ptype[0],&index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",ptype,4,ptype[0],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      switch (index) {
+      switch (indx) {
       case 0:
         options.ColPerm = MMD_AT_PLUS_A;
         break;

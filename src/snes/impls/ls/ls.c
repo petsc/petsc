@@ -986,7 +986,7 @@ static int SNESSetFromOptions_LS(SNES snes)
 {
   SNES_LS    *ls = (SNES_LS *)snes->data;
   char       *lses[] = {"basic","basicnonorms","quadratic","cubic"};
-  int        ierr,index;
+  int        ierr,indx;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -995,9 +995,9 @@ static int SNESSetFromOptions_LS(SNES snes)
     ierr = PetscOptionsReal("-snes_ls_maxstep","Step must be less than","None",ls->maxstep,&ls->maxstep,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_ls_steptol","Step must be greater than","None",ls->steptol,&ls->steptol,0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsEList("-snes_ls","Line search used","SNESSetLineSearch",lses,4,"cubic",&index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-snes_ls","Line search used","SNESSetLineSearch",lses,4,"cubic",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      switch (index) {
+      switch (indx) {
       case 0:
         ierr = SNESSetLineSearch(snes,SNESNoLineSearch,PETSC_NULL);CHKERRQ(ierr);
         break;

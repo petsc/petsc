@@ -341,19 +341,19 @@ int TSSetUp_PVode_Nonlinear(TS ts)
 int TSSetFromOptions_PVode_Nonlinear(TS ts)
 {
   TS_PVode   *cvode = (TS_PVode*)ts->data;
-  int        ierr,index;
+  int        ierr,indx;
   char       *btype[] = {"bdf","adams"},*otype[] = {"modified","unmodified"};
   PetscTruth flag;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PVODE ODE solver options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-ts_pvode_type","Scheme","TSPVodeSetType",btype,2,"bdf",&index,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_pvode_type","Scheme","TSPVodeSetType",btype,2,"bdf",&indx,&flag);CHKERRQ(ierr);
     if (flag) {
-      ierr = TSPVodeSetType(ts,(TSPVodeType)index);CHKERRQ(ierr);
+      ierr = TSPVodeSetType(ts,(TSPVodeType)indx);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEList("-ts_pvode_gramschmidt_type","Type of orthogonalization","TSPVodeSetGramSchmidtType",otype,2,"unmodified",&index,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_pvode_gramschmidt_type","Type of orthogonalization","TSPVodeSetGramSchmidtType",otype,2,"unmodified",&indx,&flag);CHKERRQ(ierr);
     if (flag) {
-      ierr = TSPVodeSetGramSchmidtType(ts,(TSPVodeGramSchmidtType)index);CHKERRQ(ierr);
+      ierr = TSPVodeSetGramSchmidtType(ts,(TSPVodeGramSchmidtType)indx);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-ts_pvode_atol","Absolute tolerance for convergence","TSPVodeSetTolerance",cvode->abstol,&cvode->abstol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_pvode_rtol","Relative tolerance for convergence","TSPVodeSetTolerance",cvode->reltol,&cvode->reltol,PETSC_NULL);CHKERRQ(ierr);

@@ -11,7 +11,7 @@
 int SetSpoolesOptions(Mat A, Spooles_options *options)
 {
   int          ierr;
-  char         *ordertype[]={"BestOfNDandMS","MMD","MS","ND"},index;
+  char         *ordertype[]={"BestOfNDandMS","MMD","MS","ND"},indx;
   PetscTruth   flg;
 
   PetscFunctionBegin;	
@@ -57,8 +57,8 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
         PetscPrintf(PETSC_COMM_SELF,"\n Spooles' output is written into the file 'spooles.msgFile' \n\n");
     } 
 
-    ierr = PetscOptionsEList("-mat_spooles_ordering","ordering type","None",ordertype,4,ordertype[0],&index,&flg);CHKERRQ(ierr);
-    if (flg) {options->ordering = index;}
+    ierr = PetscOptionsEList("-mat_spooles_ordering","ordering type","None",ordertype,4,ordertype[0],&indx,&flg);CHKERRQ(ierr);
+    if (flg) {options->ordering = indx;}
    
     ierr = PetscOptionsInt("-mat_spooles_maxdomainsize","maxdomainsize","None",\
                            options->maxdomainsize,&options->maxdomainsize,PETSC_NULL);CHKERRQ(ierr);

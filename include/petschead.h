@@ -395,7 +395,7 @@ M*/
 M*/
 #define PetscObjectGetRealComposedData(obj,id,data,flag)             \
 0; {                                                                 \
-  if ((int)((obj)->realcomposedstate)) {                             \
+  if (((obj)->realcomposedstate)) {                                  \
     if ((obj)->realcomposedstate[id] == (obj)->state) {              \
       data = (obj)->realcomposeddata[id];                            \
       flag = PETSC_TRUE;                                             \

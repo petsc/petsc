@@ -283,7 +283,7 @@ static char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","
 static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 {
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
-  int        ierr,n = 4,i,index;
+  int        ierr,n = 4,i,indx;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -401,23 +401,23 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     ierr = HYPRE_BoomerAMGSetGridRelaxPoints(jac->hsolver,jac->gridrelaxpoints);CHKERRQ(ierr);
 
 
-    ierr = PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,2,HYPREBoomerAMGMeasureType[0],&index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,2,HYPREBoomerAMGMeasureType[0],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      jac->measuretype = index;
+      jac->measuretype = indx;
     }
     ierr = HYPRE_BoomerAMGSetMeasureType(jac->hsolver,jac->measuretype);CHKERRQ(ierr); 
-    ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,7,HYPREBoomerAMGCoarsenType[6],&index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,7,HYPREBoomerAMGCoarsenType[6],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      jac->coarsentype = index;
+      jac->coarsentype = indx;
     }
     ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,jac->coarsentype);CHKERRQ(ierr); 
-    ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type","Relax type","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],&index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type","Relax type","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      jac->relaxtype[0] = jac->relaxtype[1] = jac->relaxtype[2] = index;
+      jac->relaxtype[0] = jac->relaxtype[1] = jac->relaxtype[2] = indx;
     }
-    ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_coarse","Relax type on coarse grid","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],&index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_coarse","Relax type on coarse grid","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      jac->relaxtype[3] = index;
+      jac->relaxtype[3] = indx;
     }
     ierr = HYPRE_BoomerAMGSetGridRelaxType(jac->hsolver,jac->relaxtype);CHKERRQ(ierr); 
     ierr = PetscOptionsLogical("-pc_hypre_boomeramg_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
@@ -501,9 +501,9 @@ static int PCSetFromOptions_HYPRE_ParaSails(PC pc)
     ierr = PetscOptionsLogical("-pc_hypre_parasails_reuse","Reuse nonzero pattern in preconditioner","None",(PetscTruth)jac->ruse,(PetscTruth*)&jac->ruse,0);CHKERRQ(ierr);
     ierr = HYPRE_ParaSailsSetReuse(jac->hsolver,jac->ruse);CHKERRQ(ierr);
 
-    ierr = PetscOptionsEList("-pc_hypre_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,3,symtlist[0],&index,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_hypre_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,3,symtlist[0],&indx,&flag);CHKERRQ(ierr);
     if (flag) {
-      jac->symt = index;
+      jac->symt = indx;
     }
     ierr = HYPRE_ParaSailsSetSym(jac->hsolver,jac->symt);CHKERRQ(ierr);
 
@@ -619,21 +619,21 @@ static int PCHYPRESetType_HYPRE(PC pc,const char name[])
 #define __FUNCT__ "PCSetFromOptions_HYPRE"
 static int PCSetFromOptions_HYPRE(PC pc)
 {
-  int        index,ierr;
+  int        indx,ierr;
   char       *type[] = {"pilut","parasails","boomerAMG","euclid"};
   PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("HYPRE preconditioner options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,4,"pilut",&index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,4,"pilut",&indx,&flg);CHKERRQ(ierr);
     if (PetscOptionsPublishCount) {   /* force the default if it was not yet set and user did not set with option */
       if (!flg && !pc->ops->apply) {
         flg   = PETSC_TRUE;
-        index = 0
+        indx = 0
       }
     }
     if (flg) {
-      ierr = PCHYPRESetType_HYPRE(pc,type[index]);CHKERRQ(ierr);
+      ierr = PCHYPRESetType_HYPRE(pc,type[indx]);CHKERRQ(ierr);
     } 
     if (pc->ops->setfromoptions) {
       ierr = pc->ops->setfromoptions(pc);CHKERRQ(ierr);

@@ -361,7 +361,7 @@ static int PCDestroy_ASM(PC pc)
 static int PCSetFromOptions_ASM(PC pc)
 {
   PC_ASM     *osm = (PC_ASM*)pc->data;
-  int        blocks,ovl,ierr,index;
+  int        blocks,ovl,ierr,indx;
   PetscTruth flg;
   char       *type[] = {"basic","restrict","interpolate","none"};
 
@@ -373,9 +373,9 @@ static int PCSetFromOptions_ASM(PC pc)
     if (flg) {ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr); }
     ierr = PetscOptionsName("-pc_asm_in_place","Perform matrix factorization inplace","PCASMSetUseInPlace",&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetUseInPlace(pc);CHKERRQ(ierr); }
-    ierr = PetscOptionsEList("-pc_asm_type","Type of restriction/extension","PCASMSetType",type,4,type[1],&index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_asm_type","Type of restriction/extension","PCASMSetType",type,4,type[1],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCASMSetType(pc,(PCASMType)index);CHKERRQ(ierr);
+      ierr = PCASMSetType(pc,(PCASMType)indx);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

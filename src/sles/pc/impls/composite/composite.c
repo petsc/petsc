@@ -144,16 +144,16 @@ static int PCDestroy_Composite(PC pc)
 static int PCSetFromOptions_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
-  int              ierr,nmax = 8,i,index;
+  int              ierr,nmax = 8,i,indx;
   PC_CompositeLink next;
   char             *pcs[8],*types[] = {"multiplicative","additive","special"};
   PetscTruth       flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Composite preconditioner options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-pc_composite_type","Type of composition","PCCompositeSetType",types,3,types[0],&index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_composite_type","Type of composition","PCCompositeSetType",types,3,types[0],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCCompositeSetType(pc,(PCCompositeType)index);CHKERRQ(ierr);
+      ierr = PCCompositeSetType(pc,(PCCompositeType)indx);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-pc_composite_true","Use true matrix for inner solves","PCCompositeSetUseTrue",&flg);CHKERRQ(ierr);
     if (flg) {

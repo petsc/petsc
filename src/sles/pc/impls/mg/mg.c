@@ -223,7 +223,7 @@ static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal
 #define __FUNCT__ "PCSetFromOptions_MG"
 static int PCSetFromOptions_MG(PC pc)
 {
-  int        ierr,index,m,levels = 1;
+  int        ierr,indx,m,levels = 1;
   PetscTruth flg;
   char       *type[] = {"additive","multiplicative","full","cascade","kascade"};
 
@@ -246,10 +246,10 @@ static int PCSetFromOptions_MG(PC pc)
     if (flg) {
       ierr = MGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEList("-pc_mg_type","Multigrid type","MGSetType",type,5,type[1],&index,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_mg_type","Multigrid type","MGSetType",type,5,type[1],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       MGType     mg;
-      switch (index) {
+      switch (indx) {
       case 0:
         mg = MGADDITIVE;
         break;

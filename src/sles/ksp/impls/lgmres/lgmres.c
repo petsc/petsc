@@ -834,7 +834,7 @@ int KSPView_LGMRES(KSP ksp,PetscViewer viewer)
 #define __FUNCT__ "KSPSetFromOptions_LGMRES"
 int KSPSetFromOptions_LGMRES(KSP ksp)
 {
-  int         ierr, restart, aug,index;
+  int         ierr, restart, aug,indx;
   PetscReal   haptol;
   KSP_LGMRES *lgmres = (KSP_LGMRES*) ksp->data;
   PetscTruth  flg;
@@ -855,9 +855,9 @@ int KSPSetFromOptions_LGMRES(KSP ksp)
     if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESClassicalGramSchmidtOrthogonalization);CHKERRQ(ierr);}
     ierr = PetscOptionsLogicalGroup("-ksp_gmres_modifiedgramschmidt","Use modified Gram-Schmidt (slow but more stable)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-    ierr = PetscOptionsEList("-ksp_gmres_cgs_refinement_type","Type of iterative refinement for classical (unmodified) Gram-Schmidt","KSPGMRESSetCGSRefinementType()",types,3,types[lgmres->cgstype],&index,&flg);CHKERRQ(ierr);    
+    ierr = PetscOptionsEList("-ksp_gmres_cgs_refinement_type","Type of iterative refinement for classical (unmodified) Gram-Schmidt","KSPGMRESSetCGSRefinementType()",types,3,types[lgmres->cgstype],&indx,&flg);CHKERRQ(ierr);    
     if (flg) {
-      ierr = KSPGMRESSetCGSRefinementType(ksp,(KSPGMRESCGSRefinementType)index);CHKERRQ(ierr);
+      ierr = KSPGMRESSetCGSRefinementType(ksp,(KSPGMRESCGSRefinementType)indx);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsName("-ksp_gmres_krylov_monitor","Graphically plot the Krylov directions","KSPSetMonitor",&flg);CHKERRQ(ierr);
