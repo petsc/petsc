@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f.F,v 1.14 1998/03/24 16:46:39 balay Exp balay $";
+!  "$Id: ex1f.F,v 1.15 1998/04/07 00:26:12 balay Exp balay $";
 !
 !/*T
 !    Concepts: Index sets^Manipulating a general index set;
@@ -20,7 +20,7 @@
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/is.h"
 
-      integer     ierr, indices(5),rank,n
+      integer     ierr, indices(5),rank,n,index1,index5
       PetscOffset ix
       IS          is
 
@@ -52,7 +52,13 @@
 !   Now any code that needs access to the list of integers
 !   has access to it here
 
-      write(6,100) rank,indices(ix+1),indices(ix+5)
+!
+!      Bug in IRIX64-F90 libraries - write/format cannot handle integer(integer*8 + integer)
+!
+
+      index1 = indices(ix+1)
+      index5 = indices(ix+5)
+      write(6,100) rank,index1,index5
  100  format('[',i5,'] First index = ',i5,' fifth index = ',i5)
       
 !   Once we no longer need access to the indices they should 
