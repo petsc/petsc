@@ -3,11 +3,13 @@
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
-SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c snesj2.c
-SOURCEF  =
+SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c snesj2.c \
+           snesmfj2.c snesnoise.c
+SOURCEF  = snesdnest.F
 SOURCEH  = 
-OBJSC    = snesregi.o snes.o snesj.o snesmfj.o snesut.o snesj2.o
-OBJSF    =
+OBJSC    = snesregi.o snes.o snesj.o snesmfj.o snesut.o snesj2.o \
+           snesmfj2.o snesnoise.o
+OBJSF    = snesdnest.o
 LIBBASE  = libpetscsnes
 MANSEC   = n
 LOCDIR   = src/snes/interface/
