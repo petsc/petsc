@@ -38,6 +38,10 @@ testexamples: chkpetsc_dir
 	-@echo "Using linker: $(CLINKER)"
 	-@echo "Using libraries: $(PETSC_LIB)"
 	-@echo "------------------------------------------"
+	-@echo "Due to different numerical round-off on   "
+	-@echo "certain machines all the numbers may not  "
+	-@echo "match exactly. This is not due to errors. "
+	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
            ACTION=testexamples_1  tree 
 	$(RANLIB) $(PDIR)/*.a
