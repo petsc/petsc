@@ -207,7 +207,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
       }
     }
     *tagvalp = (int)*shared;
-    PetscLogInfo(0,"PetscSharedTmp: processors %s %s\n",(*shared == PETSC_TRUE) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));
+    PetscLogInfo(0,"PetscSharedTmp: processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));
   } else {
     *shared = (PetscTruth) *tagvalp;
   }
@@ -331,7 +331,7 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
   } else {
     *shared = (PetscTruth) *tagvalp;
   }
-  PetscLogInfo(0,"PetscSharedWorkingDirectory: processors %s working directory\n",(*shared == PETSC_TRUE) ? "shared" : "do NOT share");
+  PetscLogInfo(0,"PetscSharedWorkingDirectory: processors %s working directory\n",(*shared) ? "shared" : "do NOT share");
   PetscFunctionReturn(0);
 }
 

@@ -111,7 +111,7 @@ int PetscStrcpy(char s[],const char t[])
 {
   PetscFunctionBegin;
   if (t && !s) {
-    SETERRQ(1,"Trying to copy string into null pointer");
+    SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
   }
   if (t) {strcpy(s,t);}
   else {s[0] = 0;}
@@ -601,8 +601,8 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char b[],int len)
   PetscTruth flag;
 
   PetscFunctionBegin;
-  if (len <= 0) SETERRQ(1,"Length of b must be greater than 0");
-  if (!a || !b) SETERRQ(1,"a and b strings must be nonnull");
+  if (len <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Length of b must be greater than 0");
+  if (!a || !b) SETERRQ(PETSC_ERR_ARG_NULL,"a and b strings must be nonnull");
   ierr = PetscMalloc(len*sizeof(char*),&work);CHKERRQ(ierr);
 
   /* get values for replaced variables */
@@ -628,7 +628,7 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char b[],int len)
       ierr = PetscStrlen(r[i],&l2);CHKERRQ(ierr);
       ierr = PetscStrlen(par,&l3);CHKERRQ(ierr);
       if (l1 + l2 + l3 >= len) {
-        SETERRQ(1,"b len is not long enough to hold new values");
+        SETERRQ(PETSC_ERR_ARG_SIZ,"b len is not long enough to hold new values");
       }
       ierr  = PetscStrcpy(work,b);CHKERRQ(ierr);
       ierr  = PetscStrcat(work,r[i]);CHKERRQ(ierr);

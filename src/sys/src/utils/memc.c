@@ -171,7 +171,7 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
 int PetscMemzero(void *a,int n)
 {
   PetscFunctionBegin;
-  if (n < 0) SETERRQ(1,"Memory length must be >= 0");
+  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Memory length must be >= 0");
   if (n > 0) {
 #if defined(PETSC_PREFER_ZERO_FOR_MEMZERO)
     if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {

@@ -45,7 +45,7 @@ int PetscOptionsAtoi(const char name[],int *a)
 
   PetscFunctionBegin;
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-  if (!len) SETERRQ(1,"character string of length zero has no numerical value");
+  if (!len) SETERRQ(PETSC_ERR_ARG_WRONG,"character string of length zero has no numerical value");
 
   ierr = PetscStrcasecmp(name,"PETSC_DEFAULT",&tdefault);CHKERRQ(ierr);
   if (!tdefault) {
@@ -86,7 +86,7 @@ int PetscOptionsAtod(const char name[],PetscReal *a)
 
   PetscFunctionBegin;
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-  if (!len) SETERRQ(1,"character string of length zero has no numerical value");
+  if (!len) SETERRQ(PETSC_ERR_ARG_WRONG,"character string of length zero has no numerical value");
 
   ierr = PetscStrcasecmp(name,"PETSC_DEFAULT",&tdefault);CHKERRQ(ierr);
   if (!tdefault) {
@@ -1087,7 +1087,7 @@ int PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue
 
       ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
       ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
-      if (!tvalue) { SETERRQ(1,"unknown string specified\n"); }
+      if (!tvalue) { SETERRQ(PETSC_ERR_ARG_WRONG,"unknown string specified\n"); }
       ierr    = PetscOptionsAtod(tvalue,&re);CHKERRQ(ierr);
       ierr    = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
       if (!tvalue) { /* Unknown separator used. using only real value */

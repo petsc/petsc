@@ -241,7 +241,7 @@ int PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap colormap)
 
   PetscFunctionBegin;
   if (XiWin->depth < 8) {
-    SETERRQ(1,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
+    SETERRQ(PETSC_ERR_SUP_SYS,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
   }
   if (!gColormap){
     Display  *display;  /* Private display will exist forever contains colormap shared by all windows */

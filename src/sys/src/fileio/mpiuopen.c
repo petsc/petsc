@@ -129,7 +129,7 @@ int PetscPClose(MPI_Comm comm,FILE *fd)
 #if defined(PETSC_HAVE_POPEN)
     pclose(fd);
 #else
-    SETERRQ(1,"Cannot run programs, no popen()");
+    SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run programs, no popen() on this computing system");
 #endif
   }
   PetscFunctionReturn(0);
@@ -207,7 +207,7 @@ int PetscPOpen(MPI_Comm comm,const char machine[],const char program[],const cha
     }
     if (fp) *fp = fd;
 #else 
-    SETERRQ(1,"Cannot run programs, no popen()");
+    SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run programs, no popen() on this system");
 #endif
   }
   PetscFunctionReturn(0);

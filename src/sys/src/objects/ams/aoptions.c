@@ -96,7 +96,7 @@ int PetscOptionsEnd_Private(void)
     char            option[256],value[1024],tmp[32];
     int             j;
 
-    if (amspub.amem < 0) SETERRQ(1,"Called without a call to PetscOptionsBegin()");
+    if (amspub.amem < 0) SETERRQ(PETSC_ERR_ORDER,"Called without a call to PetscOptionsBegin()");
     ierr = AMS_Memory_publish(amspub.amem);CHKERRQ(ierr);
     ierr = AMS_Memory_grant_access(amspub.amem);CHKERRQ(ierr);
     /* wait until accessor has unlocked the memory */

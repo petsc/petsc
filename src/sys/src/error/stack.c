@@ -26,7 +26,7 @@ int PetscStackPublish(void)
   AMS_Comm acomm;
 
   PetscFunctionBegin;
-  if (!petscstack) SETERRQ(1,"Stack not available to publish");
+  if (!petscstack) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Stack not available to publish");
   ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_WORLD,&acomm);CHKERRQ(ierr);
   ierr = AMS_Memory_create(acomm,"stack_memory",&stack_mem);CHKERRQ(ierr);
          
