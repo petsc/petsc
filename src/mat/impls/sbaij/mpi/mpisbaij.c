@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.33 2000/10/30 15:12:15 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.34 2000/10/30 16:14:29 balay Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -2238,7 +2238,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   PetscReal    atmp;
   double       *work,*svalues,*rvalues;
   int          ierr,i,bs,mbs,*bi,*bj,brow,j,ncols,krow,kcol,col,row,Mbs,bcol;
-  int          rank,size,*rowners_bs,dest,count,source,tag;
+  int          rank,size,*rowners_bs,dest,count,source;
   Scalar       *ba,*va;
   MPI_Status   stat;
 
@@ -2312,7 +2312,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
     rvalues = work;
     count = rowners_bs[rank+1]-rowners_bs[rank];
     for (source=0; source<rank; source++){     
-      ierr = MPI_Recv(rvalues,count,MPI_DOUBLE,MPI_ANY_SOURCE,tag,PETSC_COMM_WORLD,&stat);CHKERRQ(ierr);
+      ierr = MPI_Recv(rvalues,count,MPI_DOUBLE,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&stat);CHKERRQ(ierr);
       /* process values */     
       for (i=0; i<count; i++){
         if (PetscRealPart(va[i]) < rvalues[i]) va[i] = rvalues[i];
