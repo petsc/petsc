@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: update-docs.py,v 1.3 2000/03/27 19:05:45 balay Exp balay $ 
+# $Id: update-docs.py,v 1.4 2000/03/27 19:43:35 balay Exp balay $ 
 #
 # update-docs.py DOCS_DIR
 import os
@@ -24,7 +24,7 @@ def modifyfile(filename):
     header = string.split(string.split(buf, '<!##end>')[0],'<!##begin>')[1]
     body = string.split(string.split(buf, '<!##end>')[1],'<!##begin>')[1]
 
-    outbuf = '<body BGCOLOR="FFFFFF">\n' + header + '\n' + body
+    outbuf = '<html>\n<body BGCOLOR="FFFFFF">\n' + header + '\n' + body + '</body>\n</html>\n'
 
     #fix http://www-unix.mcs.anl.gov/petsc/docs
     w = re.compile(r'http://www-unix.mcs.anl.gov/petsc/docs/')
