@@ -1,7 +1,13 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base,v 1.19 1997/09/10 18:14:20 balay Exp bsmith $ 
 
 PARCH    = linux
 CC       = gcc  -DPARCH_linux -fPIC
+#
+#  Indicates the version of the compiler you are using; if you do not know
+#  how to get the version number then leave this blank.
+#
+CCV      = $(CC) --version
+#
 FC       = f77
 AR       = ar
 RM       = rm -f

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.131 1997/08/22 15:12:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.132 1997/09/12 16:35:52 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -187,6 +187,11 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
+
+  if (pc->setupcalled < 2) {
+    ierr = PCSetUp(pc); CHKERRQ(ierr);
+  }
+
   if (!apply_double_count) {PLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);}apply_double_count++;
   ierr = (*pc->applysymmetricleft)(pc,x,y); CHKERRQ(ierr);
   if (apply_double_count == 1) {PLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);}apply_double_count--;
@@ -218,6 +223,11 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
+
+  if (pc->setupcalled < 2) {
+    ierr = PCSetUp(pc); CHKERRQ(ierr);
+  }
+
   if (!apply_double_count) {PLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);}apply_double_count++;
   ierr = (*pc->applysymmetricright)(pc,x,y); CHKERRQ(ierr);
   if (apply_double_count == 1){PLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);}apply_double_count--;
@@ -248,6 +258,11 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
   if (!pc->applytrans) SETERRQ(PETSC_ERR_SUP,0,"");
+
+  if (pc->setupcalled < 2) {
+    ierr = PCSetUp(pc); CHKERRQ(ierr);
+  }
+
   if (!apply_double_count) {PLogEventBegin(PC_Apply,pc,x,y,0);}apply_double_count++;
   ierr = (*pc->applytrans)(pc,x,y); CHKERRQ(ierr);
   if (apply_double_count == 1) {PLogEventEnd(PC_Apply,pc,x,y,0);}apply_double_count--;
@@ -284,6 +299,11 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
   if (side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Side must be right, left, or symmetric");
   }
+
+  if (pc->setupcalled < 2) {
+    ierr = PCSetUp(pc); CHKERRQ(ierr);
+  }
+
   if (pc->applyBA) {
     ierr = (*pc->applyBA)(pc,side,x,y,work); CHKERRQ(ierr);
   } else if (side == PC_RIGHT) {
@@ -339,6 +359,11 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
   if (side != PC_LEFT && side != PC_RIGHT) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Side must be right or left");
   }
+
+  if (pc->setupcalled < 2) {
+    ierr = PCSetUp(pc); CHKERRQ(ierr);
+  }
+
   if (side == PC_RIGHT) {
     ierr = MatMultTrans(pc->mat,x,work); CHKERRQ(ierr);
     return PCApplyTrans(pc,work,y);

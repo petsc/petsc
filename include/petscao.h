@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.2 1996/08/05 03:51:28 bsmith Exp balay $ */
+/* $Id: ao.h,v 1.3 1997/05/23 16:06:25 balay Exp bsmith $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -28,6 +28,13 @@ extern int AOApplicationToPetscIS(AO,IS);
 
 extern int AODestroy(AO);
 extern int AOView(AO,Viewer);
+
+/* ----------------------------------------------------*/
+
+typedef enum {AODATA_DEBUG=0, AODATA_BASIC=1} AODataType;
+
+
+
 
 #endif
 

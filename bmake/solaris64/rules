@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base,v 1.20 1997/09/10 18:19:00 balay Exp bsmith $ 
 
 PARCH    = solaris
 #
@@ -6,6 +6,12 @@ PARCH    = solaris
 #  -dalign -xtarget=native from below.
 #
 CC       = cc -DPARCH_solaris -KPIC -dalign -xtarget=native
+#
+#  Indicates the version of the compiler you are using; if you do not know
+#  how to get the version number then leave this blank.
+#
+CCV      = $(CC) -V
+#
 FC       = f77
 AR       = ar
 RM       = rm -f

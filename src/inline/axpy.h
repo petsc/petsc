@@ -1,4 +1,4 @@
-/* $Id: axpy.h,v 1.7 1997/09/13 01:16:08 curfman Exp curfman $ */
+/* $Id: axpy.h,v 1.8 1997/09/13 01:26:17 curfman Exp bsmith $ */
 
 /* 
    These are macros for daxpy like operations.  The format is
@@ -59,7 +59,7 @@
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n) {\
   while (n--) *U++ += a1 * *p1++ + a2 * *p2++ + a3 * *p3++ + a4 * *p4++;}
 
-#elif defined(INLINE_BLAS)
+#elif defined(USE_BLAS_KERNELS)
 
 #define APXY(U,a1,p1,n)  {int one=1;\
   daxpy_(&n,&a1,p1,&one,U,&one);}
@@ -70,7 +70,7 @@ aa[0]=a1;aa[1]=a2;\
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){APXY2(U,a1,a2,p1,p2,n);\
   APXY2(U,a3,a4,p3,p4,n);}
 
-#elif defined(INLINE_FOR)
+#elif defined(USE_FOR_KERNELS)
 
 #define APXY(U,a1,p1,n)  {int __i;Scalar __s1, __s2; \
   for(__i=0;__i<n-1;__i+=2){__s1=a1*p1[__i];__s2=a1*p1[__i+1];\

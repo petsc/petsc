@@ -1,10 +1,10 @@
-/* $Id: dot.h,v 1.2 1995/05/03 15:56:22 bsmith Exp curfman $ */
+/* $Id: dot.h,v 1.3 1996/03/22 00:44:58 curfman Exp bsmith $ */
 
 #ifndef DOT
 
 #if !defined(PETSC_COMPLEX)
 
-#ifdef UNROLL
+#ifdef USE_UNROLL_KERNELS
 #define DOT(sum,x,y,n) {\
 switch (n & 0x3) {\
 case 3: sum += *x++ * *y++;\
@@ -26,7 +26,7 @@ n -= 4;case 0:break;}\
 while (n>0) {sum += x[0]*x[0]+x[1]*x[1]+x[2]*x[2]+x[3]*x[3];x+=4;\
 n -= 4;}}
 
-#elif defined(INLINE_WHILE)
+#elif defined(USE_WHILE_KERNELS)
 #define DOT(sum,x,y,n) {
 while(n--) sum+= *x++ * *y++;}
 #define DOT2(sum1,sum2,x,y1,y2,n) {\
@@ -34,7 +34,7 @@ while(n--){sum1+= *x**y1++;sum2+=*x++**y2++;}}
 #define SQR(sum,x,n)   {\
 while(n--) {sum+= *x * *x; x++;}}
 
-#elif defined(INLINE_BLAS)
+#elif defined(USE_BLAS_KERNELS)
 extern double ddot_();
 #define DOT(sum,x,y,n) {int one=1;\
 sum=ddot_(&n,x,&one,y,&one);}
@@ -54,7 +54,7 @@ for(__i=0;__i<n;__i++)sum+=x[__i]*x[__i];}
 
 #else
 
-#ifdef UNROLL
+#ifdef USE_UNROLL_KERNELS
 #define DOT(sum,x,y,n) {\
 switch (n & 0x3) {\
 case 3: sum += *x * conj(*y); x++; y++;\
@@ -76,7 +76,7 @@ n -= 4;case 0:break;}\
 while (n>0) {sum += x[0]*conj(x[0])+x[1]*conj(x[1])+x[2]*conj(x[2])+x[3]*conj(x[3]);x+=4;\
 n -= 4;}}
 
-#elif defined(INLINE_WHILE)
+#elif defined(USE_WHILE_KERNELS)
 #define DOT(sum,x,y,n) {
 while(n--) sum+= *x++ * conj(*y++);}
 #define DOT2(sum1,sum2,x,y1,y2,n) {\

@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.12 1997/09/01 16:42:51 balay Exp bsmith $";
+C "$Id: ex1f.F,v 1.13 1997/09/10 17:27:00 bsmith Exp bsmith $";
 C
 C       Formatted test for TS routines.
 C
@@ -12,7 +12,6 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       program main
       implicit none
 #include "FINCLUDE/petsc.h"
-#include "FINCLUDE/petscmath.h"
 #include "FINCLUDE/vec.h"
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
@@ -245,7 +244,6 @@ C  -------------------------------------------------------------------
       subroutine Initial(global,ctx,ierr)
       implicit none
 #include "FINCLUDE/petsc.h"
-#include "FINCLUDE/petscmath.h"
 #include "FINCLUDE/vec.h"
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
@@ -294,7 +292,6 @@ C
       subroutine Solution(t,sol,ctx)
       implicit none
 #include "FINCLUDE/petsc.h"
-#include "FINCLUDE/petscmath.h"
 #include "FINCLUDE/vec.h"
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
@@ -344,7 +341,6 @@ C ------------------------------------------------------------------------------
       subroutine Monitor(ts,step,time,global,ctx,ierr)
       implicit none
 #include "FINCLUDE/petsc.h"
-#include "FINCLUDE/petscmath.h"
 #include "FINCLUDE/vec.h"
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
@@ -399,7 +395,6 @@ C  -----------------------------------------------------------------------
       subroutine RHSMatrixFree(mat,x,y,ierr)
       implicit none
 #include "FINCLUDE/petsc.h"
-#include "FINCLUDE/petscmath.h"
 #include "FINCLUDE/vec.h"
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
@@ -425,7 +420,6 @@ C -------------------------------------------------------------------------
       subroutine RHSFunctionHeat(ts,t,globalin,globalout,ctx,ierr)
       implicit none
 #include "FINCLUDE/petsc.h"
-#include "FINCLUDE/petscmath.h"
 #include "FINCLUDE/vec.h"
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
@@ -491,7 +485,6 @@ C  ---------------------------------------------------------------------
       subroutine RHSMatrixHeat(ts,t,AA,BB,str,ctx,ierr)
       implicit none
 #include "FINCLUDE/petsc.h"
-#include "FINCLUDE/petscmath.h"
 #include "FINCLUDE/vec.h"
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
@@ -565,7 +558,6 @@ C ------------------------------------------------------------------------------
       subroutine RHSJacobianHeat(ts,t,x,AA,BB,str,ctx,ierr)
       implicit none
 #include "FINCLUDE/petsc.h"
-#include "FINCLUDE/petscmath.h"
 #include "FINCLUDE/vec.h"
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"

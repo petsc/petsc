@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.47 1997/09/14 02:54:12 bsmith Exp bsmith $;
+C  $Id: petsc.h,v 1.48 1997/09/15 00:22:00 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -73,7 +73,49 @@ C
       double precision PetscGetTime,PetscGetCPUTime,PetscGetFlops
 C
 C
-#include "include/FINCLUDE/petscmath.h"
-     
 C     End of base Fortran include file for the PETSc package
+C
+C ------------------------------------------------------------------------
+C     PETSc mathematics include file. Defines certain basic mathematical 
+C    constants and functions for working with single and double precision
+C    floating point numbers as well as complex and integers.
+C
+C
+C     Macro for templating between real and complex
+C
+#if defined(PETSC_COMPLEX)
+#define PetscReal(a) real(a)
+#define Scalar        double complex
+#define DoubleComplex double complex
+#define MPIU_SCALAR   MPI_DOUBLE_COMPLEX
+C
+C     Representation of complex i
+C
+      DoubleComplex PETSC_i
+      parameter (PETSC_i = (0,1.0))
+#else
+#define PetscReal(a) a
+#define Scalar       double precision
+#define MPIU_SCALAR  MPI_DOUBLE_PRECISION
+#endif
+
+C ----------------------------------------------------------------------------
+C
+C     Basic constants
+C
+      double precision PETSC_PI,PETSC_DEGREES_TO_RADIANS,
+     &                 PETSC_MAX,PETSC_MIN
+
+      parameter (PETSC_PI = 3.14159265358979323846264d0,
+     &           PETSC_DEGREES_TO_RADIANS = 0.01745329251994d0,
+     &           PETSC_MAX = 1.d300, PETSC_MIN = -1.d300)
+
+C ----------------------------------------------------------------------------
+C
+C    PLogDouble variables are used to contain double precision numbers
+C  that are not used in the numerical computations, but rather in logging,
+C  timing etc.
+C
+#define PLogDouble double precision
+
 
