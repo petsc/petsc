@@ -669,7 +669,7 @@ PetscErrorCode SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 
   /********** The process repeats for setting boundary conditions ************/
 
-  ierr = MatZeroRowsIS(*jac,grid->isboundary_df,&one);CHKERRQ(ierr);
+  ierr = MatZeroRowsIS(*jac,grid->isboundary_df,one);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

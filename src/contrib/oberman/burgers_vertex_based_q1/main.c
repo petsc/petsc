@@ -648,7 +648,7 @@ PetscErrorCode SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
          Apply Dirichlet boundary conditions
       -----------------------------------------------------------*/
 
-  ierr = MatZeroRowsLocalIS(*jac,vertex_boundary_blocked,&one);CHKERRQ(ierr);
+  ierr = MatZeroRowsLocalIS(*jac,vertex_boundary_blocked,one);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
