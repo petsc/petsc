@@ -1,3 +1,4 @@
+/* "$Id: ex9.c,v 1.45 1999/03/19 21:22:03 bsmith Exp $"; */
 /* 
    This file contains information for ex9.c, which demonstrates advanced
    use of the PETSc/BlockSolve interface.  Most PETSc users should not
