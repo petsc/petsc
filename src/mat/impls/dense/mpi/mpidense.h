@@ -1,33 +1,32 @@
-/* $Id: mpidense.h,v 1.4 1995/11/03 02:49:37 bsmith Exp curfman $ */
+/* $Id: mpidense.h,v 1.5 1995/12/10 18:58:08 curfman Exp curfman $ */
 
 #include "dense.h"
 
   /*  Data stuctures for basic parallel dense matrix  */
 
 /* Structure to hold the information for factorization of a dense matrix */
+/* Most of this info is used in the pipe send/recv routines */
 typedef struct {
   int    nlnr;        /* number of local rows downstream */
+  int    nrend;       /* rend for downstream processor */
   int    nbr, pnbr;   /* Down and upstream neighbors */
-  int    tag;
+  int    tag0, tag1;  /* message tags */
+  int    currow;      /* current row number */
+  int    phase;       /* phase (used to set tag) */
+  int    up;          /* Are we moving up or down in row number? */
+  int    use_bcast;   /* Are we broadcasting max length? */
+  int    nsend;       /* number of sends */
+  int    nrecv;       /* number of receives */
+
+  /* data initially in matrix context */
   int    k;           /* Blocking factor (unused as yet) */
   int    k2;          /* Blocking factor for solves */
-  int    use_bcast;
-  double *temp;
-} FactCtx;
+  Scalar *temp;
+  int    nlptr;
+  int    *lrows;
+} FactorCtx;
 
 #define PIPEPHASE (ctx->phase == 0)
-/* This stucture is used in the pipe send/recv routines */
-typedef struct {
-  int nbr, pnbr;
-  int nlnr, nlptr, *nlrows;
-  int currow; 
-  int up;             /* Are we moving up or down in row number? */
-  int tag;
-  int phase;
-  int use_bcast;
-  int nsend;
-  int nrecv;
-} PSPPipe;
 
 typedef struct {
   int           *rowners, *cowners;     /* ranges owned by each processor */
@@ -54,5 +53,5 @@ typedef struct {
   Vec           lvec;                   /* local vector */
   VecScatter    Mvctx;                  /* scatter context for vector */
 
-  FactCtx       *factor;                /* factorization context */
+  FactorCtx     *factor;                /* factorization context */
 } Mat_MPIDense;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.29 1995/12/19 21:53:34 balay Exp curfman $";
+static char vcid[] = "$Id: mpiu.c,v 1.30 1995/12/19 23:42:28 curfman Exp curfman $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -271,7 +271,8 @@ static int MPIU_DelTag(MPI_Comm *comm,int* keyval,void* attr_val,void* extra_sta
   MPI_SUCCESS on success, MPI error class on failure.
 
   Notes:
-  This routine returns one tag number
+  This routine returns one tag number.
+  Call MPIU_Comm_free() when finished with the communicator.
 */
 int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 {
@@ -307,6 +308,9 @@ int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
   return MPI_SUCCESS;
 }
 
+/*
+  MPIU_Comm_free - Frees communicator.  Use in conjunction with MPIU_Comm_dup().
+*/
 int MPIU_Comm_free(MPI_Comm *comm)
 {
   int ierr,*tagvalp,flag;
