@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.7 1996/01/12 22:08:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex14.c,v 1.8 1996/01/23 00:20:56 curfman Exp curfman $";
 #endif
 
 static char help[] = "Tests the preconditioner ASM\n\n";
@@ -22,7 +22,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,0,0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr); /* mesh lines in x */
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr); /* mesh lines in y */
-  irer = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr); /* subdomains in x */
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr); /* subdomains in x */
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr); /* subdomains in y */
   ierr = OptionsGetInt(PETSC_NULL,"-overlap",&overlap,&flg); CHKERRA(ierr);
 
