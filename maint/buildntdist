@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.38 1999/06/02 20:02:26 balay Exp balay $ 
+# $Id: buildntdist,v 1.39 1999/10/04 16:32:57 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -52,6 +52,20 @@ find $tmpdir/petscnt -type d -name output -exec /bin/rm -rf {} \;
 /bin/rm -rf bmake/nt_gnu bmake/t3d bmake/t3e bmake/IRIX* bmake/i386*
 /bin/rm -f  bmake/common. bmake/common bmake/ascired*
 /bin/rm -rf src/blaslapack/examples
+#
+# Eliminate the '#requirespackage' stuff
+#
+/bin/rm -rf src/mat/impls/rowbs/mpi
+/bin/rm -rf src/mat/impls/rowbs
+/bin/rm -rf src/mat/partition/impls/pmetis
+/bin/rm -rf src/sys/src/objects/ams
+/bin/rm -rf src/sys/src/objects/ams/java
+/bin/rm -rf src/sys/src/viewer/impls/socket/matlab
+/bin/rm -rf src/sys/src/viewer/impls/ams
+/bin/rm -rf src/sys/src/draw/impls/x
+/bin/rm -rf src/contrib/pc/spai
+/bin/rm -rf src/ts/impls/implicit/pvode
+
 
 #
 # Build the tag files
