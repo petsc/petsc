@@ -62,6 +62,7 @@ petsc/bmake/IRIX/make_dso_IRIX
 petsc/bmake/freebsd_nolog
 petsc/bmake/alpha_nolog
 petsc/bmake/rs6000_old
+petsc/bmake/rs6000_quad
 petsc/bmake/rs6000_gnu
 petsc/include/finclude/generateincludes
 petsc/include/finclude/RCS
