@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.35 1996/05/30 20:54:55 balay Exp curfman $";
+static char vcid[] = "$Id: da3.c,v 1.36 1996/06/09 20:04:48 curfman Exp balay $";
 #endif
 
 /*
@@ -176,7 +176,7 @@ $  -da_view : call DAView() at the conclusion of DACreate3d()
 int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type, 
                int M,int N,int P,int m,int n,int p,int w,int s,DA *inra)
 {
-  int           rank,size,ierr,start,end,pm,flg;
+  int           rank,size,ierr,start,end,pm,flg1,flg2;
   int           xs,xe,ys,ye,zs,ze,x,y,z,Xs,Xe,Ys,Ye,Zs,Ze;
   int           left,up,down,bottom,top,i,j,k,*idx,nn;
   int           n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
@@ -271,8 +271,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (N < n) SETERRQ(1,"DACreate3d:Partition in y direction is too fine!");
   if (P < p) SETERRQ(1,"DACreate3d:Partition in z direction is too fine!");
 
-  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg); CHKERRQ(ierr);
-  if (flg) { /* Block Comm type Distribution */
+  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2); CHKERRQ(ierr);
+  if (flg1) { /* Block Comm type Distribution */
+    xs = (rank%m)*M/m;
+    x  = (rank%m + 1)*M/m - xs;
+    ys = ((rank%(m*n))/m)*N/n;
+    y  = ((rank%(m*n))/m + 1)*N/n - ys;
+    zs = (rank/(m*n))*P/p;
+    z  = (rank/(m*n) + 1)*P/p -zs;
+    
+    if (x < s) SETERRQ(1,"DACreate3d:Column width is too thin for stencil!");
+    if (y < s) SETERRQ(1,"DACreate3d:Row width is too thin for stencil!");      
+    if (z < s) SETERRQ(1,"DACreate3d:Plane width is too thin for stencil!");    
+  }
+  else if (flg2) { 
     x = (M + rank%m)/m;
     y = (N + (rank%(m*n))/m)/n;
     z = (P + rank/(m*n))/p;
@@ -1437,8 +1450,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = DFVecShellAssociate(da->dfshell,global); CHKERRQ(ierr);
   ierr = DFVecShellAssociate(df_local,local); CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg); CHKERRQ(ierr);
-  if (flg) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRQ(ierr);}
+  ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1); CHKERRQ(ierr);
+  if (flg1) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRQ(ierr);}
 
   return 0;
 }
