@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.81 1996/04/09 20:31:40 balay Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.82 1996/04/10 19:01:09 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -118,29 +118,32 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 .  comm - MPI communicator
  
    Output Parameter:
-.  V - location to stash resulting matrix
+.  A - the matrix
 
-   Options Database Keywords:
-$  -mat_seqaij   : AIJ type, uses MatCreateSeqAIJ
-$  -mat_mpiaij   : AIJ type, uses MatCreateMPIAIJ
-$  -mat_aij      : AIJ type, (Seq or MPI depending on comm) 
-$  -mat_seqbdiag : block diagonal type, uses 
-$                  MatCreateSeqBDiag()
-$  -mat_mpibdiag : block diagonal type, uses 
-$                  MatCreateMPIBDiag()
-$  -mat_bdiag    : block diagonal type, 
-$                  (Seq or MPI depending on comm)
-$  -mat_mpirowbs : rowbs type, uses MatCreateMPIRowbs()
-$  -mat_dense    : dense type, (Seq or MPI depending on comm)
-$  -mat_seqdense : dense type, uses MatCreateSeqDense()
-$  -mat_mpidense : dense type, uses MatCreateMPIDense()
-$  -mat_seqbaij  : Block AIJ type, uses MatCreateSeaBAIJ
+   Basic Options Database Keys:
+   These options use MatCreateSeqXXX or MatCreateMPIXXX,
+   depending on the communicator, comm.
+$    -mat_aij      : AIJ type
+$    -mat_dense    : dense type
+$    -mat_bdiag    : block diagonal type
+
+   More Options Database Keys:
+$    -mat_seqaij   : AIJ type, uses MatCreateSeqAIJ
+$    -mat_mpiaij   : AIJ type, uses MatCreateMPIAIJ
+$    -mat_seqbdiag : block diagonal type, uses 
+$                    MatCreateSeqBDiag()
+$    -mat_mpibdiag : block diagonal type, uses 
+$                    MatCreateMPIBDiag()
+$    -mat_mpirowbs : rowbs type, uses MatCreateMPIRowbs()
+$    -mat_seqdense : dense type, uses MatCreateSeqDense()
+$    -mat_mpidense : dense type, uses MatCreateMPIDense()
+$    -mat_seqbaij  : block AIJ type, uses MatCreateSeqBAIJ()
 
    Notes:
    The default matrix type is AIJ, using MatCreateSeqAIJ() and
    MatCreateMPIAIJ(). 
 
-.keywords: matrix, create, initial
+.keywords: matrix, create
 
 .seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
           MatCreateSeqBDiag(),MatCreateMPIBDiag(),
