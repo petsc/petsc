@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.63 1999/11/05 14:48:14 bsmith Exp bsmith $*/
+/*$Id: zoptions.c,v 1.64 1999/12/13 17:46:02 balay Exp balay $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -298,8 +298,9 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
     if (shift) {
       (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
       (*PetscErrorPrintf)("not commonly aligned.\n");
+      /* double/int doesn't work with ADIC */
       (*PetscErrorPrintf)("Locations/sizeof(Scalar): C %f Fortran %f\n",
-                         ((double) tmp3)/sizeof(Scalar),((double) tmp1)/sizeof(Scalar));
+                         ((double) tmp3)/(double)sizeof(Scalar),((double) tmp1)/(double)sizeof(Scalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
     PLogInfo((void *)obj,"PetscScalarAddressToFortran:Efficiency warning, copying array in XXXGetArray() due\n\

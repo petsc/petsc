@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.106 1999/11/05 14:47:52 bsmith Exp bsmith $*/
+/*$Id: da1.c,v 1.107 1999/11/24 21:55:34 bsmith Exp balay $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -46,10 +46,12 @@ int DAView_1d(DA da,Viewer viewer)
 
     /* first processor draws all node lines */
     if (!rank) {
+      int xmin_tmp;
       ymin = 0.0; ymax = 0.3;
-
-      for ( xmin=0; xmin<da->M; xmin++ ) {
-         ierr = DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_BLACK);CHKERRQ(ierr);
+      
+      /* ADIC doesn't like doubles in a for loop */
+      for ( xmin_tmp =0; xmin_tmp < (int)da->M; xmin_tmp++ ) {
+         ierr = DrawLine(draw,(double)xmin_tmp,ymin,(double)xmin_tmp,ymax,DRAW_BLACK);CHKERRQ(ierr);
       }
 
       xmin = 0.0; xmax = da->M - 1;
