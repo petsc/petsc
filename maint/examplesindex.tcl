@@ -464,9 +464,16 @@ proc main { }  {
         }
         set buf [format "%s%s" $buf "<P><B>Location:</B>" ]
         #puts $buf
-        regsub  "<BR><P><B>Location:</B>" $routine_file_buff $buf routine_file_buff
-        set routines_fileid [ open $routines_file.bak.html w ]
-        puts "Writing to $routines_file.bak.html"
+        set temp [regsub  "<BR><P><B>Location:</B>" $routine_file_buff $buf routine_file_buff]
+        if { $temp == 0 } {
+           set temp [ regsub  "<P><B>Location:</B>" $routine_file_buff $buf routine_file_buff]
+            if { $temp == 0 } { 
+                puts " Could'nt add to  $routines_file
+                return  0
+            }
+        }
+        set routines_fileid [ open $routines_file w ]
+        #puts "Writing to $routines_file"
         puts  $routines_fileid $routine_file_buff
         close $routines_fileid  
     }

@@ -273,6 +273,7 @@ allwwwpages: deletewwwpages
 	-cd src/fortran/custom; make wwwpages
 	-make ACTION=wwwpages tree
 	-maint/wwwman
+	-maint/index.tcl
 
 alllatexpages: deletelatexpages
 	-make ACTION=latexpages tree
