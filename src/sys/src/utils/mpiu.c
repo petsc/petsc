@@ -1,10 +1,9 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.40 1996/04/16 16:20:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.41 1996/04/16 16:20:51 bsmith Exp bsmith $";
 #endif
 /*
-      Some PETSc utilites routines (beginning with MPIU_) to add simple
-  IO capability to MPI.
+      Some PETSc utilites routines to add simple IO capability to MPI.
 */
 #include "petsc.h"        /*I    "sys.h"   I*/
 #include <stdio.h>
@@ -15,8 +14,8 @@ static char vcid[] = "$Id: mpiu.c,v 1.40 1996/04/16 16:20:22 bsmith Exp bsmith $
 #include "pinclude/petscfix.h"
 
 /*
-   If petsc_history is on then all MPI_*printf() results are saved
-   if the appropriate (usually .petschistory) directory.
+   If petsc_history is on then all Petsc*Printf() results are saved
+   if the appropriate (usually .petschistory) file.
 */
 extern FILE *petsc_history;
 
@@ -155,31 +154,30 @@ $
 @*/
 int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 {
-  int        lidx, np;
-  int        flag;
+  int        lidx, np, flag;
   MPI_Comm   local_comm;
   MPI_Status status;
 
   /* Get the private communicator for the sequential operations */
   if (MPIU_Seq_keyval == MPI_KEYVAL_INVALID) {
-    MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&MPIU_Seq_keyval,(void*)0);
+    MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&MPIU_Seq_keyval,0);
   }
   MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) {
     /* This expects a communicator to be a pointer */
     MPI_Comm_dup( comm, &local_comm );
-    MPI_Attr_put( comm, MPIU_Seq_keyval, (void *)local_comm );
+    MPI_Attr_put( comm, MPIU_Seq_keyval, local_comm );
   }
   MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
   if (np == 1) return 0;
   if (lidx != 0) {
-    MPI_Recv( (void*)0, 0, MPI_INT, lidx-1, 0, local_comm, &status );
+    MPI_Recv( 0, 0, MPI_INT, lidx-1, 0, local_comm, &status );
   }
   /* Send to the next process in the group unless we are the last process 
    in the processor set */
-  if ( (lidx % ng) < ng - 1 && lidx != np - 1) {
-    MPI_Send( (void*)0, 0, MPI_INT, lidx + 1, 0, local_comm );
+  if ((lidx % ng) < ng - 1 && lidx != np - 1) {
+    MPI_Send( 0, 0, MPI_INT, lidx + 1, 0, local_comm );
   }
   return 0;
 }
@@ -208,7 +206,7 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
   if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
   /* Send to the first process in the next group OR to the first process
      in the processor set */
-  if ( (lidx % ng) == ng - 1 || lidx == np - 1) {
+  if ((lidx % ng) == ng - 1 || lidx == np - 1) {
     MPI_Send( 0, 0, MPI_INT, (lidx + 1) % np, 0, local_comm );
   }
   if (lidx == 0) {
@@ -272,21 +270,21 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
        new standard, if you are using an MPI implementation that uses 
        the older version you will get a warning message about the next line,
        it is only a warning message and should do no harm */
-    MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,(void *)0);
+    MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,(void*)0);
   }
 
-  ierr = MPI_Attr_get(comm_in,MPIU_Tag_keyval,(void**)&tagvalp,&flag); CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm_in,MPIU_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
 
   if (!flag) {
     /* This communicator is not yet known to this system, so we
        dup it and set the first value */
     MPI_Comm_dup( comm_in, comm_out );
     MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );
-    tagvalp = (int *)PetscMalloc( 2*sizeof(int) );
+    tagvalp = (int *) PetscMalloc( 2*sizeof(int) );
     if (!tagvalp) return MPI_ERR_OTHER;
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
-    MPI_Attr_put(*comm_out,MPIU_Tag_keyval, (void*)tagvalp);
+    MPI_Attr_put(*comm_out,MPIU_Tag_keyval, tagvalp);
   }
   else {
     *comm_out = comm_in;
@@ -308,6 +306,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 int PetscCommFree_Private(MPI_Comm *comm)
 {
   int ierr,*tagvalp,flag;
+
   ierr = MPI_Attr_get(*comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
   tagvalp[1]--;
   if (!tagvalp[1]) {MPI_Comm_free(comm);}
