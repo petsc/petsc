@@ -108,8 +108,11 @@ class Make(script.Script):
     framework.header = os.path.join('include', 'config.h')
     framework.cHeader = os.path.join('include', 'configC.h')
     try:
-      framework.addChild(self.getModule(self.root, 'configure').Configure(framework))
+      self.configureObj = self.getModule(self.root, 'configure').Configure(framework)
+      self.logPrint('Configure module found in '+self.configureObj.root)
+      framework.addChild(self.configureObj)
     except ImportError, e:
+      self.configureObj = None
       self.logPrint('Configure module not present: '+str(e))
       return 0
     return 1
@@ -128,6 +131,8 @@ class Make(script.Script):
       else:
         self.framework         = framework
         self.builder.framework = self.framework
+        if not self.configureObj is None:
+          self.configureObj = self.framework.require('configure', None)
     if doConfigure:
       self.logPrint('Starting new configuration')
       self.framework.configure()
@@ -143,6 +148,10 @@ class Make(script.Script):
   def updateDependencies(self, sourceDB):
     '''Override this method to update dependencies between source files. This method saves the database'''
     sourceDB.save()
+    return
+
+  def setupBuild(self, builder):
+    '''Override this method to execute all build setup operations. This method does nothing.'''
     return
 
   def build(self, builder, setupOnly = 0):
@@ -177,8 +186,8 @@ class Make(script.Script):
     try:
       self.logPrint('Starting Build', debugSection = 'build')
       self.executeSection(self.configure, self.builder)
-      self.build(self.builder, setupOnly)
-      self.updateDependencies(self.builder.sourceDB)
+      self.executeSection(self.build, self.builder, setupOnly)
+      self.executeSection(self.updateDependencies, self.builder.sourceDB)
       self.executeSection(self.install, self.builder, self.argDB)
       self.logPrint('Ending Build', debugSection = 'build')
     except Exception, e:
@@ -192,6 +201,212 @@ try:
   import sets
 except ImportError:
   import config.setsBackport
+
+class struct:
+  '''Container class'''
+
+class BasicMake(Make):
+  '''A basic make template that acts much like a traditional makefile'''
+  languageNames = {'C': 'C', 'Cxx': 'Cxx', 'FC': 'fortran'}
+
+  def __init__(self, implicitRoot = 0):
+    '''Setup the library and driver source descriptions'''
+    if not implicitRoot:
+      self.root = os.getcwd()
+    Make.__init__(self)
+    self.lib = {}
+    self.bin = {}
+    return
+
+  def classifySource(self, srcList):
+    src = {}
+    for f in srcList:
+      base, ext = os.path.splitext(f)
+      if ext in ['.c', '.h']:
+        if not 'C' in src:
+          src['C'] = []
+        src['C'].append(f)
+      elif ext in ['.cc', '.hh', '.C', '.cpp']:
+        if not 'Cxx' in src:
+          src['Cxx'] = []
+        src['Cxx'].append(f)
+      elif ext in ['.F', '.f']:
+        if not 'FC' in src:
+          src['FC'] = []
+        src['FC'].append(f)
+    return src
+
+  def parseDocString(self, docstring, defaultName = None):
+    parts = docstring.split(':', 1)
+    if len(parts) < 2:
+      if defaultName is None:
+        raise RuntimeError('No target specified in docstring')
+      name = defaultName
+      src = parts[0].split()
+    else:
+      name = parts[0]
+      src = parts[1].split()
+    return (name, self.classifySource(src))
+
+  def setupConfigure(self, framework):
+    '''We always want to configure'''
+    Make.setupConfigure(self, framework)
+    framework.require('config.setCompilers', self.configureObj)
+    framework.require('config.compilers', self.configureObj)
+    framework.require('config.libraries', self.configureObj)
+    framework.require('config.headers', self.configureObj)
+    return 1
+
+  def configure(self, builder):
+    framework = Make.configure(self, builder)
+    self.setCompilers = framework.require('config.setCompilers', None)
+    self.compilers = framework.require('config.compilers', None)
+    self.libraries = framework.require('config.libraries', None)
+    self.headers = framework.require('config.headers', None)
+    return framework
+
+  def getImplicitLibraries(self):
+    import sys
+    d = sys.modules['__main__']
+    for name in dir(d):
+      if not name.startswith('lib_'):
+        continue
+      func = getattr(d, name)
+      lib = struct()
+      lib.name, lib.src = self.parseDocString(func.__doc__, name[4:])
+      lib.includes, lib.libs = func(self)
+      lib.configuration = name[4:]
+      self.lib[lib.name] = lib
+    return
+
+  def getImplicitExecutables(self):
+    import sys
+    d = sys.modules['__main__']
+    for name in dir(d):
+      if not name.startswith('bin_'):
+        continue
+      func = getattr(d, name)
+      bin = struct()
+      bin.name, bin.src = self.parseDocString(func.__doc__, name[4:])
+      bin.includes, bin.libs = func(self)
+      bin.configuration = name[4:]
+      self.bin[bin.name] = bin
+    return
+
+  def setupDirectories(self, builder):
+    '''Determine the directories for source includes, libraries, and binaries'''
+    languages = sets.Set()
+    [languages.update(lib.src.keys()) for lib in self.lib.values()]
+    self.srcDir = {}
+    self.includeDir = {}
+    for language in languages:
+      self.srcDir[language] = os.path.abspath(os.path.join('src', self.languageNames[language].lower()))
+      self.includeDir[language] = os.path.abspath('include')
+    self.libDir = os.path.abspath('lib')
+    self.binDir = os.path.abspath('bin')
+    return
+
+  def setupLibraries(self, builder):
+    '''Configures the builder for libraries'''
+    for lib in self.lib.values():
+      languages = sets.Set(lib.src.keys())
+      builder.pushConfiguration(lib.configuration)
+      for language in languages:
+        builder.pushLanguage(language)
+        compiler = builder.getCompilerObject()
+        compiler.includeDirectories.update(lib.includes)
+        builder.popLanguage()
+      builder.popConfiguration()
+    return
+
+  def setupExecutables(self, builder):
+    '''Configures the builder for the executable'''
+    for bin in self.bin.values():
+      languages = sets.Set(bin.src.keys())
+      builder.pushConfiguration(bin.configuration)
+      for language in languages:
+        builder.pushLanguage(language)
+        compiler = builder.getCompilerObject()
+        compiler.includeDirectories.update(bin.includes)
+        builder.popLanguage()
+      linker = builder.getLinkerObject()
+      for l in bin.libs:
+        if isinstance(l, str):
+          self.logPrint('Adding library '+str(l))
+          linker.libraries.add(l)
+        else:
+          self.logPrint('Adding library '+os.path.join(self.libDir, l.name+'.'+self.setCompilers.sharedLibraryExt))
+          linker.libraries.add(os.path.join(self.libDir, l.name+'.'+self.setCompilers.sharedLibraryExt))
+      linker.libraries.update(self.compilers.fmainlibs)
+      linker.libraries.update(self.compilers.flibs)
+      if self.libraries.math:
+        linker.libraries.update(self.libraries.math)
+      builder.popConfiguration()
+    return
+
+  def buildDirectories(self, builder):
+    '''Create the necessary directories'''
+    languages = sets.Set()
+    [languages.update(lib.src.keys()) for lib in self.lib.values()]
+    for language in languages:
+      if not os.path.isdir(self.includeDir[language]):
+        os.mkdir(self.includeDir[language])
+    if not os.path.isdir(self.libDir):
+      os.mkdir(self.libDir)
+    if not os.path.isdir(self.binDir):
+      os.mkdir(self.binDir)
+    return
+
+  def buildLibraries(self, builder):
+    '''Builds the libraries'''
+    for lib in self.lib.values():
+      self.logPrint('Building library: '+lib.name)
+      builder.pushConfiguration(lib.configuration)
+      objects = []
+      for language in lib.src:
+        builder.pushLanguage(language)
+        sources = [os.path.join(self.srcDir, self.srcDir[language], f) for f in lib.src[language]]
+        for f in sources:
+          builder.compile([f])
+        objects.extend([self.builder.getCompilerTarget(f) for f in sources])
+        builder.popLanguage()
+        builder.link(objects, os.path.join(self.libDir, lib.name+'.'+self.setCompilers.sharedLibraryExt), shared = 1)
+      builder.popConfiguration()
+    return
+
+  def buildExecutables(self, builder):
+    '''Builds the executables'''
+    for bin in self.bin.values():
+      source = []
+      builder.pushConfiguration(bin.configuration)
+      for language in bin.src:
+        builder.pushLanguage(language)
+        source.extend([os.path.join(self.srcDir, self.srcDir[language], f) for f in bin.src[language]])
+        for f in source:
+          builder.compile([f])
+        builder.popLanguage()
+      # Note that we popLanguage before linking, since the linker is configure independently of the exe source language
+      # If the executable is in Fortran, we need to add the appropriate runtime libs
+      builder.link([builder.getCompilerTarget(f) for f in source], os.path.join(self.binDir, bin.name))
+      builder.popConfiguration()
+    return
+
+  def setupBuild(self, builder):
+    self.getImplicitLibraries()
+    self.getImplicitExecutables()
+    self.setupDirectories(builder)
+    self.setupLibraries(builder)
+    self.setupExecutables(builder)
+    return
+
+  def build(self, builder, setupOnly):
+    self.setupBuild(builder)
+    if setupOnly:
+      return
+    self.buildDirectories(builder)
+    self.buildLibraries(builder)
+    self.buildExecutables(builder)
+    return
 
 class SIDLMake(Make):
   def __init__(self, builder = None):
@@ -668,15 +883,12 @@ class SIDLMake(Make):
       builder.shouldCompile.force(self.sidl)
     return
 
-  def buildSetup(self, builder):
-    '''This is a utility method used when only setup is necessary'''
-    self.setupBootstrap(builder)
-    for f in self.sidl:
-      self.executeSection(self.setupSIDL, builder, f)
-      for language in self.serverLanguages:
-        self.executeSection(getattr(self, 'setup'+language+'Server'), builder, f, language)
-      for language in self.clientLanguages:
-        self.executeSection(getattr(self, 'setup'+language+'Client'), builder, f, language)
+  def setupBuild(self, builder, f):
+    self.executeSection(self.setupSIDL, builder, f)
+    for language in self.serverLanguages:
+      self.executeSection(getattr(self, 'setup'+language+'Server'), builder, f, language)
+    for language in self.clientLanguages:
+      self.executeSection(getattr(self, 'setup'+language+'Client'), builder, f, language)
     return
 
   def build(self, builder, setupOnly = 0):
@@ -684,11 +896,7 @@ class SIDLMake(Make):
 
     self.setupBootstrap(builder)
     for f in self.sidl:
-      self.executeSection(self.setupSIDL, builder, f)
-      for language in self.serverLanguages:
-        self.executeSection(getattr(self, 'setup'+language+'Server'), builder, f, language)
-      for language in self.clientLanguages:
-        self.executeSection(getattr(self, 'setup'+language+'Client'), builder, f, language)
+      self.setupBuild(builder, f)
       if not setupOnly:
         # We here require certain keys to be present in generatedSource, e.g. 'Server IOR Python'.
         # These keys can be checked for, and if absent the SIDL file would be compiled
