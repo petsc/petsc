@@ -1682,9 +1682,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_SeqDense"
 PetscErrorCode MatCreate_SeqDense(Mat B)
 {
-  Mat_SeqDense *b;
+  Mat_SeqDense   *b;
   PetscErrorCode ierr;
-  int          size;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);

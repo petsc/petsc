@@ -1781,7 +1781,7 @@ previously existed, space will be allocated for the new entries.
 To prevent the allocation of additional memory and simply discard those 
 new entries, one can use the option \findex{MatSetOption()}
 \begin{tabbing}
-  MatSetOption(Mat A,MAT_NO_NEW_NONZERO_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
 \end{tabbing}
 Once the matrix has been assembled, one can factor it numerically
 without repeating the ordering or the symbolic factorization. 
@@ -1820,7 +1820,7 @@ same positions and the matrix retains the same nonzero structure, the user
 can call MatZeroRows() in the first iteration. Then, before generating 
 the matrix in the second iteration the user should call
 \begin{tabbing}
-  MatSetOption(Mat A,MAT_NO_NEW_NONZERO_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
 \end{tabbing}
 From that point, \findex{MatSetOption()}
 no new values will be inserted into those (boundary) rows of 

@@ -52,10 +52,10 @@ FILE      *PetscLogInfoFile      = PETSC_NULL;
 
 .seealso: PetscLogInfo()
 @*/
-PetscErrorCode PetscLogInfoAllow(PetscTruth flag, char *filename)
+PetscErrorCode PetscLogInfoAllow(PetscTruth flag, const char filename[])
 {
-  char fname[PETSC_MAX_PATH_LEN], tname[5];
-  int  rank;
+  char           fname[PETSC_MAX_PATH_LEN], tname[5];
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

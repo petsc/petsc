@@ -432,15 +432,13 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   Mat_SeqAIJ     *b = (Mat_SeqAIJ *)B->data;
   Mat_SeqAIJ     *c = (Mat_SeqAIJ *)C->data;
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
-  PetscInt       am=A->M,cn=C->N;
-  PetscInt       i,j,k,anzi,bnzi,cnzi,brow;
-  MatScalar      *aa=a->a,*ba=b->a,*baj,*ca=c->a,*temp;
+  PetscInt       am=A->M,cm=C->M;
+  PetscInt       i,j,k,anzi,bnzi,cnzi,brow,nextb;
+  MatScalar      *aa=a->a,*ba=b->a,*baj,*ca=c->a; 
 
   PetscFunctionBegin;  
-
-  /* Allocate temp accumulation space to avoid searching for nonzero columns in C */
-  ierr = PetscMalloc((cn+1)*sizeof(MatScalar),&temp);CHKERRQ(ierr);
-  ierr = PetscMemzero(temp,cn*sizeof(MatScalar));CHKERRQ(ierr);
+  /* clean old values in C */
+  ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
   /* Traverse A row-wise. */
   /* Build the ith row in C by summing over nonzero columns in A, */
   /* the rows of B corresponding to nonzeros of A. */
@@ -451,26 +449,22 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
       bnzi = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       baj  = ba + bi[brow];
-      for (k=0;k<bnzi;k++) {
-        temp[bjj[k]] += (*aa)*baj[k];
+      nextb = 0;
+      for (k=0; nextb<bnzi; k++) {
+        if (cj[k] == bjj[nextb]){ /* ccol == bcol */
+          ca[k] += (*aa)*baj[nextb++];
+        }
       }
       flops += 2*bnzi;
       aa++;
     }
-    /* Store row back into C, and re-zero temp */
     cnzi = ci[i+1] - ci[i];
-    for (j=0;j<cnzi;j++) {
-      ca[j] = temp[cj[j]];
-      temp[cj[j]] = 0.0;
-    }
     ca += cnzi;
     cj += cnzi;
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-                         
-  /* Free temp */
-  ierr = PetscFree(temp);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);     
+
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/vec/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		  ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex21.c ex22.c \
-		  ex23.c ex24.c ex25.c ex26.c ex28.c ex29.c ex31.c ex33.c ex34.c
+		  ex23.c ex24.c ex25.c ex28.c ex29.c ex31.c ex33.c ex34.c
 EXAMPLESF       = ex17f.F ex19f.F ex20f.F ex30f.F ex32f.F
 MANSEC          = Vec
 
@@ -334,7 +334,7 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex12.rm ex13.PETSc runex13 ex13.rm ex14.PETSc runex14 ex14.rm\
 		  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
                   ex17.PETSc runex17 ex17.rm ex21.PETSc runex21 runex21_2 ex21.rm ex25.PETSc runex25 ex25.rm \
-                  ex26.PETSc runex26 ex26.rm ex29.PETSc runex29 ex29.rm \
+                  ex29.PETSc runex29 ex29.rm \
                   ex34.PETSc runex34 ex34.rm
 TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm \
 		  ex23.PETSc runex23 ex23.rm ex24.PETSc runex24 ex24.rm \

@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscReal   norm1,norm2,tol=1.e-10;
   PetscScalar neg_one = -1.0,four=4.0,value[3];  
   IS          perm;
-  PetscRandom rand;
+  PetscRandom rdm;
   PetscTruth  reorder=PETSC_TRUE;
   MatFactorInfo  factinfo;
 
@@ -141,11 +141,11 @@ int main(int argc,char **args)
   /* MatView(sA, PETSC_VIEWER_STDOUT_WORLD); */
 
   /* Vectors */
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
-  ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
+  ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
 
   /* Test MatReordering() */
   ierr = PetscMalloc(mbs*sizeof(int),&ip_ptr);CHKERRQ(ierr);
@@ -203,7 +203,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);  
   ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;

@@ -43,7 +43,7 @@ S*/
 extern char      _BT_mask,_BT_c;
 extern PetscInt  _BT_idx;
 
-#define PetscBTLength(m)        ((m)/PETSC_BITS_PER_BYTE+1)*sizeof(char)
+#define PetscBTLength(m)        ((m)/PETSC_BITS_PER_BYTE+1)
 #define PetscBTMemzero(m,array) PetscMemzero(array,(m)/PETSC_BITS_PER_BYTE+1)
 #define PetscBTDestroy(array)   PetscFree(array)
 

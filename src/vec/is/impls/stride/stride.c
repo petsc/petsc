@@ -159,9 +159,11 @@ PetscErrorCode ISGetIndices_Stride(IS in,PetscInt **idx)
   PetscInt       i;
 
   PetscFunctionBegin;
-  ierr      = PetscMalloc((sub->n+1)*sizeof(PetscInt),idx);CHKERRQ(ierr);
-  (*idx)[0] = sub->first;
-  for (i=1; i<sub->n; i++) (*idx)[i] = (*idx)[i-1] + sub->step;
+  ierr      = PetscMalloc(sub->n*sizeof(PetscInt),idx);CHKERRQ(ierr);
+  if (sub->n) {
+    (*idx)[0] = sub->first;
+    for (i=1; i<sub->n; i++) (*idx)[i] = (*idx)[i-1] + sub->step;
+  }
   PetscFunctionReturn(0);
 }
 

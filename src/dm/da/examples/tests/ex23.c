@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   PetscScalar    mone = -1.0;
   PetscReal      norm;
   PetscViewer    viewer;
-  PetscRandom    rand;
+  PetscRandom    rdm;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
@@ -43,9 +43,9 @@ int main(int argc,char **argv)
   }
 
   ierr = DACreateGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
-  ierr = VecSetRandom(rand,global1);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);
+  ierr = VecSetRandom(rdm,global1);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
 
   ierr = DACreateGlobalVector(da,&global2);CHKERRQ(ierr);
 

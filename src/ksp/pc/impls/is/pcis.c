@@ -195,8 +195,7 @@ PetscErrorCode PCISSetUp(PC pc)
     ierr = KSPSetUp(pcis->ksp_N);CHKERRQ(ierr);
   }
 
-  ierr = ISLocalToGlobalMappingGetInfo(((Mat_IS*)(pc->mat->data))->mapping,&(pcis->n_neigh),&(pcis->neigh),
-                                       &(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetInfo(((Mat_IS*)(pc->mat->data))->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
   pcis->ISLocalToGlobalMappingGetInfoWasCalled = PETSC_TRUE;
 
   PetscFunctionReturn(0);

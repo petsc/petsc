@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscScalar    *vals,rval;
   IS             *is1,*is2;
-  PetscRandom    rand;
+  PetscRandom    rdm;
   Vec            xx,s1,s2;
   PetscReal      s1norm,s2norm,rnorm,tol = 1.e-10;
   PetscTruth     flg;
@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,PETSC_NULL,&A);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,M,M,15,PETSC_NULL,&B);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);
 
   ierr = PetscMalloc(bs*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   ierr = PetscMalloc(bs*sizeof(PetscInt),&cols);CHKERRQ(ierr);
@@ -37,9 +37,9 @@ int main(int argc,char **args)
   
   /* Now set blocks of values */
   for (i=0; i<20*bs; i++) {
-      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
       cols[0] = bs*(int)(PetscRealPart(rval)*m);
-      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
       rows[0] = bs*(int)(PetscRealPart(rval)*m);
       for (j=1; j<bs; j++) {
         rows[j] = rows[j-1]+1;
@@ -47,7 +47,7 @@ int main(int argc,char **args)
       }
 
       for (j=0; j<bs*bs; j++) {
-        ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
         vals[j] = rval;
       }
       ierr = MatSetValues(A,bs,rows,bs,cols,vals,ADD_VALUES);CHKERRQ(ierr);
@@ -65,10 +65,10 @@ int main(int argc,char **args)
 
   
   for (i=0; i<nd; i++) {
-    ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+    ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
     lsize = (int)(PetscRealPart(rval)*m);
     for (j=0; j<lsize; j++) {
-      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
       idx[j*bs] = bs*(int)(PetscRealPart(rval)*m);
       for (k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
     }
@@ -98,7 +98,7 @@ int main(int argc,char **args)
     ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
     ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);
     for (j=0; j<3; j++) {
-      ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
+      ierr = VecSetRandom(rdm,xx);CHKERRQ(ierr);
       ierr = MatMult(submatA[i],xx,s1);CHKERRQ(ierr);
       ierr = MatMult(submatB[i],xx,s2);CHKERRQ(ierr);
       ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ int main(int argc,char **args)
     ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
     ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);
     for (j=0; j<3; j++) {
-      ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
+      ierr = VecSetRandom(rdm,xx);CHKERRQ(ierr);
       ierr = MatMult(submatA[i],xx,s1);CHKERRQ(ierr);
       ierr = MatMult(submatB[i],xx,s2);CHKERRQ(ierr);
       ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
@@ -155,7 +155,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(B);CHKERRQ(ierr);
   ierr = PetscFree(submatA);CHKERRQ(ierr);
   ierr = PetscFree(submatB);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

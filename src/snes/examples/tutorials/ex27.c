@@ -110,7 +110,7 @@ typedef struct {
   Parameter    *param;
 } AppCtx;
 
-extern int FormInitialGuess(SNES,Vec,void*);
+extern int FormInitialGuess(DMMG,Vec);
 extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
 extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
 extern int Update(DMMG *);
@@ -328,9 +328,8 @@ int Initialize(DMMG *dmmg)
    Output Parameter:
    X - vector
  */
-int FormInitialGuess(SNES snes,Vec X,void *ptr)
+int FormInitialGuess(DMMG dmmg,Vec X)
 {
-  DMMG      dmmg = (DMMG)ptr;
   AppCtx    *user = (AppCtx*)dmmg->user;
   TstepCtx  *tsCtx = user->tsCtx;
   int       ierr;

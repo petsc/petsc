@@ -241,7 +241,7 @@ PetscErrorCode DMMGSolve(DMMG *dmmg)
   ierr = PetscOptionsHasName(0,"-dmmg_vecmonitor",&vecmonitor);CHKERRQ(ierr);
   if (gridseq) {
     if (dmmg[0]->initialguess) {
-      ierr = (*dmmg[0]->initialguess)(dmmg[0]->snes,dmmg[0]->x,dmmg[0]);CHKERRQ(ierr);
+      ierr = (*dmmg[0]->initialguess)(dmmg[0],dmmg[0]->x);CHKERRQ(ierr);
       if (dmmg[0]->ksp && !dmmg[0]->snes) {
         ierr = KSPSetInitialGuessNonzero(dmmg[0]->ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
@@ -258,7 +258,7 @@ PetscErrorCode DMMGSolve(DMMG *dmmg)
     }
   } else {
     if (dmmg[nlevels-1]->initialguess) {
-      ierr = (*dmmg[nlevels-1]->initialguess)(dmmg[nlevels-1]->snes,dmmg[nlevels-1]->x,dmmg[nlevels-1]);CHKERRQ(ierr);
+      ierr = (*dmmg[nlevels-1]->initialguess)(dmmg[nlevels-1],dmmg[nlevels-1]->x);CHKERRQ(ierr);
     }
   }
   ierr = (*DMMGGetFine(dmmg)->solve)(dmmg,nlevels-1);CHKERRQ(ierr);
@@ -581,14 +581,35 @@ PetscErrorCode DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscE
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGInitialGuessCurrent"
+/*@C
+    DMMGInitialGuessCurrent - Use with DMMGSetInitialGuess() to use the current value in the 
+       solution vector (obtainable with DMMGGetx() as the initial guess)
 
+    Collective on DMMG
+
+    Input Parameter:
++   dmmg - the context
+-   vec - dummy argument
+
+    Level: intermediate
+
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess()
+
+@*/
+PetscErrorCode DMMGInitialGuessCurrent(DMMG dmmg,Vec vec)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetInitialGuess"
 /*@C
     DMMGSetInitialGuess - Sets the function that computes an initial guess.
 
-    Collective on DMMG and SNES
+    Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context
@@ -601,16 +622,16 @@ PetscErrorCode DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscE
              is used only on the coarsest grid.
            For linear problems, if this is not set, then 0 is used as an initial guess.
              If you would like the linear solver to also (like the nonlinear solver) use
-             the current solution vector as the initial guess then provide a dummy guess
-             function that does nothing.
+             the current solution vector as the initial guess then use DMMGInitialGuessCurrent()
+             as the function you pass in
 
     Level: intermediate
 
 
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGInitialGuessCurrent()
 
 @*/
-PetscErrorCode DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(SNES,Vec,void*))
+PetscErrorCode DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(DMMG,Vec))
 {
   PetscInt i,nlevels = dmmg[0]->nlevels;
 

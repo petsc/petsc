@@ -266,12 +266,118 @@ EXTERN PetscErrorCode        PetscCommDestroy(MPI_Comm*);
 
    Notes: Memory is always allocated at least double aligned
 
+          If you request memory of zero size it will allocate no space and assign the pointer to 0; PetscFree() will 
+          properly handle not freeing the null pointer.
+
 .seealso: PetscFree(), PetscNew()
 
   Concepts: memory allocation
 
 M*/
-#define PetscMalloc(a,b)     (*PetscTrMalloc)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__,(void**)(b))
+#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__,(void**)(b)) : (*(b) = 0,0) )
+
+/*MC
+   PetscMalloc2 - Allocates 2 chunks of  memory
+
+   Input Parameter:
++  m1 - number of elements to allocate in 1st chunk  (may be zero)
+.  t1 - type of first memory elements 
+.  m2 - number of elements to allocate in 2nd chunk  (may be zero)
+-  t2 - type of second memory elements
+
+   Output Parameter:
++  r1 - memory allocated in first chunk
+-  r2 - memory allocated in second chunk
+
+   Synopsis:
+   PetscErrorCode PetscMalloc(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2)
+
+   Level: beginner
+
+   Notes: Memory of first chunk is always allocated at least double aligned
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc()
+
+  Concepts: memory allocation
+
+M*/
+#if defined(PETSC_USE_BOPT_g)
+#define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2))
+#else
+#define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2),r1) || (*(r2) = (t2*)(*(r1)+m1),0))
+#endif
+
+/*MC
+   PetscMalloc3 - Allocates 3 chunks of  memory
+
+   Input Parameter:
++  m1 - number of elements to allocate in 1st chunk  (may be zero)
+.  t1 - type of first memory elements 
+.  m2 - number of elements to allocate in 2nd chunk  (may be zero)
+.  t2 - type of second memory elements
+.  m3 - number of elements to allocate in 3rd chunk  (may be zero)
+-  t3 - type of third memory elements
+
+   Output Parameter:
++  r1 - memory allocated in first chunk
+.  r2 - memory allocated in second chunk
+-  r3 - memory allocated in third chunk
+
+   Synopsis:
+   PetscErrorCode PetscMalloc(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3)
+
+   Level: beginner
+
+   Notes: Memory of first chunk is always allocated at least double aligned
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3()
+
+  Concepts: memory allocation
+
+M*/
+#if defined(PETSC_USE_BOPT_g)
+#define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3))
+#else
+#define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),0))
+#endif
+
+/*MC
+   PetscMalloc4 - Allocates 4 chunks of  memory
+
+   Input Parameter:
++  m1 - number of elements to allocate in 1st chunk  (may be zero)
+.  t1 - type of first memory elements 
+.  m2 - number of elements to allocate in 2nd chunk  (may be zero)
+.  t2 - type of second memory elements
+.  m3 - number of elements to allocate in 3rd chunk  (may be zero)
+.  t3 - type of third memory elements
+.  m4 - number of elements to allocate in 4th chunk  (may be zero)
+-  t4 - type of fourth memory elements
+
+   Output Parameter:
++  r1 - memory allocated in first chunk
+.  r2 - memory allocated in second chunk
+.  r3 - memory allocated in third chunk
+-  r4 - memory allocated in fourth chunk
+
+   Synopsis:
+   PetscErrorCode PetscMalloc(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4)
+
+   Level: beginner
+
+   Notes: Memory of first chunk is always allocated at least double aligned
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3(), PetscFree4()
+
+  Concepts: memory allocation
+
+M*/
+#if defined(PETSC_USE_BOPT_g)
+#define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4))
+#else
+#define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),*(r4) = (t4*)(*(r3)+m3),0))
+#endif
+
 /*MC
    PetscNew - Allocates memory of a particular type
 
@@ -292,6 +398,7 @@ M*/
 
 M*/
 #define PetscNew(A,b)        PetscMalloc(sizeof(A),(b))
+
 /*MC
    PetscFree - Frees memory
 
@@ -310,7 +417,89 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFree(a)   ((*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__) || ((a = 0),0))
+#define PetscFree(a)   ((a) ? ((*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__) || ((a = 0),0)) : 0)
+
+/*MC
+   PetscFree2 - Frees 2 chunks of memory obtained with PetscMalloc2()
+
+   Input Parameter:
++   memory1 - memory to free
+-   memory2 - 2nd memory to free
+
+
+   Synopsis:
+   PetscErrorCode PetscFree2(void *memory1,void *memory2)
+
+   Level: beginner
+
+   Notes: Memory must have been obtained with PetscMalloc2()
+
+.seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree()
+
+  Concepts: memory allocation
+
+M*/
+#if defined(PETSC_USE_BOPT_g)
+#define PetscFree2(m1,m2)   (PetscFree(m2) || PetscFree(m1))
+#else
+#define PetscFree2(m1,m2)   (PetscFree(m1))
+#endif
+
+/*MC
+   PetscFree3 - Frees 3 chunks of memory obtained with PetscMalloc3()
+
+   Input Parameter:
++   memory1 - memory to free
+.   memory2 - 2nd memory to free
+-   memory3 - 3rd memory to free
+
+
+   Synopsis:
+   PetscErrorCode PetscFree3(void *memory1,void *memory2,void *memory3)
+
+   Level: beginner
+
+   Notes: Memory must have been obtained with PetscMalloc3()
+
+.seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3()
+
+  Concepts: memory allocation
+
+M*/
+#if defined(PETSC_USE_BOPT_g)
+#define PetscFree3(m1,m2,m3)   (PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
+#else
+#define PetscFree3(m1,m2,m3)   (PetscFree(m1))
+#endif
+
+/*MC
+   PetscFree4 - Frees 4 chunks of memory obtained with PetscMalloc4()
+
+   Input Parameter:
++   m1 - memory to free
+.   m2 - 2nd memory to free
+.   m3 - 3rd memory to free
+-   m4 - 4th memory to free
+
+
+   Synopsis:
+   PetscErrorCode PetscFree3(void *m1,void *m2,void *m3,void *m4)
+
+   Level: beginner
+
+   Notes: Memory must have been obtained with PetscMalloc4()
+
+.seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4()
+
+  Concepts: memory allocation
+
+M*/
+#if defined(PETSC_USE_BOPT_g)
+#define PetscFree4(m1,m2,m3,m4)   (PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
+#else
+#define PetscFree4(m1,m2,m3,m4)   (PetscFree(m1))
+#endif
+
 EXTERN PetscErrorCode  (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
 EXTERN PetscErrorCode  (*PetscTrFree)(void*,int,const char[],const char[],const char[]);
 EXTERN PetscErrorCode  PetscSetMalloc(PetscErrorCode (*)(size_t,int,const char[],const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[],const char[]));
@@ -441,6 +630,7 @@ typedef struct _PetscFList *PetscFList;
 #include "petscviewer.h"
 #include "petscoptions.h"
 
+EXTERN PetscErrorCode PetscLogInfoAllow(PetscTruth,const char []);
 EXTERN PetscErrorCode PetscShowMemoryUsage(PetscViewer,const char[]);
 EXTERN PetscErrorCode PetscGetTime(PetscLogDouble*);
 EXTERN PetscErrorCode PetscGetCPUTime(PetscLogDouble*);

@@ -104,7 +104,7 @@ typedef struct { /* application context */
 } AppCtx;
 
 /* Callback functions (static interface) */
-extern int FormInitialGuess(SNES,Vec,void*);
+extern int FormInitialGuess(DMMG,Vec);
 extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
 
 /* Main routines */
@@ -317,15 +317,13 @@ int UpdateSolution(DMMG *dmmg, AppCtx *user, int *nits)
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
 /*  used by SNESSolve to get an initial guess for the solution X */
-int FormInitialGuess(SNES snes,Vec X,void *ptr)
+int FormInitialGuess(DMMG dmmg,Vec X)
 /* ------------------------------------------------------------------- */
 {
-  DMMG      dmmg = (DMMG)ptr;
   AppCtx    *user = (AppCtx*)dmmg->user;
   int       ierr;
 
   ierr = VecCopy(user->Xguess, X); CHKERRQ(ierr);
-
   return 0;
 } 
 
@@ -477,8 +475,8 @@ PetscScalar XMomentumResidual(Field **x, int i, int j, AppCtx *user)
   Parameter      *param=user->param;
   GridInfo       *grid =user->grid;
   PetscScalar    dx = grid->dx, dz=grid->dz;
-  PetscScalar    etaN,etaS,etaE,etaW,epsN,epsS,epsE,epsW;
-  PetscScalar    TE, TN, TS, TW, dPdx, residual, z_scale;
+  PetscScalar    etaN,etaS,etaE,etaW,epsN=0.0,epsS=0.0,epsE=0.0,epsW=0.0;
+  PetscScalar    TE=0.0,TN=0.0,TS=0.0,TW=0.0, dPdx, residual, z_scale;
   PetscScalar    dudxW,dudxE,dudzN,dudzS,dwdxN,dwdxS;
   int            jlim = grid->nj-1;
 
@@ -533,8 +531,8 @@ PetscScalar ZMomentumResidual(Field **x, int i, int j, AppCtx *user)
   Parameter      *param=user->param;
   GridInfo       *grid =user->grid;
   PetscScalar    dx = grid->dx, dz=grid->dz;
-  PetscScalar    etaN,etaS,etaE,etaW,epsN,epsS,epsE,epsW;
-  PetscScalar    TE, TN, TS, TW, dPdz, residual,z_scale;
+  PetscScalar    etaN=0.0,etaS=0.0,etaE=0.0,etaW=0.0,epsN=0.0,epsS=0.0,epsE=0.0,epsW=0.0;
+  PetscScalar    TE=0.0,TN=0.0,TS=0.0,TW=0.0, dPdz, residual,z_scale;
   PetscScalar    dudzE,dudzW,dwdxW,dwdxE,dwdzN,dwdzS;
   int            ilim = grid->ni-1;
 
@@ -705,7 +703,7 @@ PetscScalar XNormalStress(Field **x, int i, int j, int ipos, AppCtx *user)
   GridInfo       *grid =user->grid;
   PetscScalar    dx = grid->dx, dz=grid->dz;
   int            ilim=grid->ni-1, jlim=grid->nj-1, ivisc;
-  PetscScalar    epsC, etaC, TC, uE, uW, pC, z_scale;
+  PetscScalar    epsC=0.0, etaC, TC, uE, uW, pC, z_scale;
   if (i<j || j<=grid->jlid) return EPS_ZERO;
 
   ivisc=param->ivisc;  z_scale = param->z_scale; 
@@ -745,7 +743,7 @@ PetscScalar ZNormalStress(Field **x, int i, int j, int ipos, AppCtx *user)
   GridInfo       *grid =user->grid;
   PetscScalar    dz=grid->dz;
   int            ilim=grid->ni-1, jlim=grid->nj-1, ivisc;
-  PetscScalar    epsC, etaC, TC;
+  PetscScalar    epsC=0.0, etaC, TC;
   PetscScalar    pC, wN, wS, z_scale;
   if (i<j || j<=grid->jlid) return EPS_ZERO;
 
@@ -832,7 +830,7 @@ PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PassiveScalar z,
 		       Parameter *param)
 /*---------------------------------------------------------------------*/
 {
-  PetscScalar  result;
+  PetscScalar  result=0.0;
   ViscParam    difn=param->diffusion, disl=param->dislocation;
   int          iVisc=param->ivisc;
   double       eps_scale=param->V/(param->L*1000.0);
@@ -1015,7 +1013,7 @@ int ReportParams(Parameter *param, GridInfo *grid)
   char       date[30];
   PetscReal  PI = 3.14159265358979323846;
 
-  ierr = PetscGetInitialDate(date,30);CHKERRQ(ierr);
+  ierr = PetscGetDate(date,30);CHKERRQ(ierr);
 
   if ( !(param->quiet) ) {
     PetscPrintf(PETSC_COMM_WORLD,"---------------------BEGIN ex30 PARAM REPORT-------------------\n");

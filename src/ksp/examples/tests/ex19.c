@@ -138,10 +138,10 @@ int main(int argc,char **argv)
 
   ierr = VecSet(&one,user.fine.b);CHKERRQ(ierr);
   {
-    PetscRandom rand;
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
-    ierr = VecSetRandom(rand,user.fine.b);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+    PetscRandom rdm;
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);
+    ierr = VecSetRandom(rdm,user.fine.b);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
   }
 
   /* Set options, then solve nonlinear system */

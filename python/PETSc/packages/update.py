@@ -29,7 +29,14 @@ class Configure(config.base.Configure):
       self.framework.argDB['PETSC_DIR'] = os.getcwd()
     elif os.path.realpath(self.framework.argDB['PETSC_DIR']) != os.path.realpath(os.getcwd()) :
       # Check if PETSC_DIR provided points to the wrong location
-      raise RuntimeError('  Wrong PETSC_DIR option specified: '+ self.framework.argDB['PETSC_DIR'] + '\n  Configure invoked in: '+ os.path.realpath(os.getcwd()))
+      try:
+      # If you're using cygwin, realpath might not be properly implemented, so take the output from cygpath
+        (pdirpath, error, status) = self.executeShellCommand('cygpath -wl '+self.framework.argDB['PETSC_DIR'])
+        (cwdpath, error, status)  = self.executeShellCommand('cygpath -wl '+os.getcwd())
+        if pdirpath != cwdpath :
+          raise RuntimeError('  Wrong PETSC_DIR option specified: '+ self.framework.argDB['PETSC_DIR'] + '\n  Configure invoked in: '+ os.path.realpath(os.getcwd()))
+      except RuntimeError, e:
+        raise RuntimeError('  Wrong PETSC_DIR option specified: '+ self.framework.argDB['PETSC_DIR'] + '\n  Configure invoked in: '+ os.path.realpath(os.getcwd()))
     self.dir = self.framework.argDB['PETSC_DIR']
     # Check for version
     if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
