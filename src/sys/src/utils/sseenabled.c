@@ -2,25 +2,33 @@
 
 /* Processor specific version for PentiumIII and Pentium4 */
 __declspec(cpu_specific(pentium_iii))
-PetscTruth PetscSSEIsEnabled(void) {
-  return(PETSC_TRUE);
+int PetscSSEIsEnabled(PetscTruth *flag) {
+  flag = PETSC_TRUE;
+  return(0);
 }
 
+__declspec(cpu_specific(pentium_iii_no_xmm_regs))
+int PetscSSEIsEnabled(PetscTruth *flag) {
+  flag = PETSC_FALSE;
+  return(0);
+}
 /* Generic Intel processor version (i.e., not PIII,P4) */
 __declspec(cpu_specific(generic))
-PetscTruth PetscSSEIsEnabled(void) {
-  return(PETSC_FALSE);
+int PetscSSEIsEnabled(PetscTruth *flag) {
+  flag = PETSC_FALSE;
+  return(0);
 }
 
 /* Dummy stub performs the dispatch of appropriate version */ 
-__declspec(cpu_dispatch(generic,pentium_iii))
-PetscTruth PetscSSEIsEnabled(void) {}
+__declspec(cpu_dispatch(generic,pentium_iii_no_xmm_regs,pentium_iii))
+int PetscSSEIsEnabled(void) {}
 
 #else
 
 /* Version to use if not compiling with ICL */
-PetscTruth PetscSSEIsEnabled(void) {
-  return(PETSC_FALSE);
+int PetscSSEIsEnabled(PetscTruth *flag) {
+  flag = PETSC_FALSE;
+  return(0);
 }
 
 #endif
