@@ -38,7 +38,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS is[],int ov)
     /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
     for (j=0; j<n ; ++j){
       ival = idx[j]/bs; /* convert the indices into block indices */
-      if (ival>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
+      if (ival>=m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
       if(!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);

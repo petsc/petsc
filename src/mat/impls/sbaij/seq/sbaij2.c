@@ -6,13 +6,73 @@
 #include "petscbt.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 
+/* MatIncreaseOverlap_SeqSBAIJ() is vertually same as MatIncreaseOverlap_SeqBAIJ()
+   except in the line 1: Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+   and is slightly polished.
+   Should the two function be combined into a single piece of code? */
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_SeqSBAIJ"
 int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS is[],int ov)
 {
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  int          brow,i,j,k,l,mbs,n,*idx,ierr,*nidx,isz,bcol;
+  int          start,end,*ai,*aj,bs,*nidx2;
+  PetscBT      table;
+
   PetscFunctionBegin;
-  SETERRQ(1,"Function not yet written for SBAIJ format");
-  /* PetscFunctionReturn(0); */
+  mbs = a->mbs;
+  ai  = a->i;
+  aj  = a->j;
+  bs  = a->bs;
+
+  if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
+
+  ierr = PetscBTCreate(mbs,table);CHKERRQ(ierr);
+  ierr = PetscMalloc((mbs+1)*sizeof(int),&nidx);CHKERRQ(ierr); 
+  ierr = PetscMalloc((A->m+1)*sizeof(int),&nidx2);CHKERRQ(ierr);
+
+  for (i=0; i<is_max; i++) {
+    /* Initialise the two local arrays */
+    isz  = 0;
+    ierr = PetscBTMemzero(mbs,table);CHKERRQ(ierr);
+                 
+    /* Extract the indices, assume there can be duplicate entries */
+    ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is[i],&n);CHKERRQ(ierr);
+
+    /* Enter these into the temp arrays i.e mark table[brow], enter brow into new index */
+    for (j=0; j<n ; ++j){
+      bcol = idx[j]/bs; /* convert the indices into block indices */
+      if (bcol >= mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
+      if(!PetscBTLookupSet(table,bcol)) { nidx[isz++] = bcol;}
+    }
+    ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
+    ierr = ISDestroy(is[i]);CHKERRQ(ierr);
+    
+    k = 0;
+    for (j=0; j<ov; j++){ /* for each overlap*/
+      n = isz;
+      for (; k<n ; k++){ /* do only those brows in nidx[k], which are not done yet */
+        brow   = nidx[k];
+        start = ai[brow];
+        end   = ai[brow+1];
+        for (l = start; l<end ; l++){
+          bcol = aj[l];
+          if (!PetscBTLookupSet(table,bcol)) {nidx[isz++] = bcol;}
+        }
+      }
+    }
+    /* expand the Index Set */
+    for (j=0; j<isz; j++) {
+      for (k=0; k<bs; k++)
+        nidx2[j*bs+k] = nidx[j]*bs+k;
+    }
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz*bs,nidx2,is+i);CHKERRQ(ierr);
+  }
+  ierr = PetscBTDestroy(table);CHKERRQ(ierr);
+  ierr = PetscFree(nidx);CHKERRQ(ierr);
+  ierr = PetscFree(nidx2);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
