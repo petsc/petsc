@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.51 2000/10/24 20:27:24 bsmith Exp bsmith $*/
+/*$Id: beuler.c,v 1.52 2001/01/15 21:48:30 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -382,9 +382,6 @@ int TSCreate_BEuler(TS ts)
     ierr = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
-    if (!ts->A) {
-      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set Jacobian for nonlinear problem");
-    }
     ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
     if (isshell) {
       ts->Ashell = ts->A;

@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.24 2000/10/24 20:27:25 bsmith Exp bsmith $*/
+/*$Id: cn.c,v 1.25 2001/01/15 21:48:31 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -438,9 +438,6 @@ int TSCreate_CN(TS ts)
     ierr = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
-    if (!ts->A) {
-      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set Jacobian for nonlinear problem");
-    }
     ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
     if (isshell) {
       ts->Ashell = ts->A;

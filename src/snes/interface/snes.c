@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.224 2001/01/15 21:47:49 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.225 2001/01/20 03:36:08 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -1302,7 +1302,7 @@ int SNESSetUp(SNES snes,Vec x)
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     PetscLogObjectParent(snes,J);
     snes->mfshell = J;
-    PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free perator and preconditioner routines\n");
+    PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free operator and preconditioner routines\n");
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
       ierr = SNESSetJacobian(snes,J,J,MatSNESMFFormJacobian,snes->funP);CHKERRQ(ierr);
     } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
@@ -1928,7 +1928,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
   ierr = (*(snes)->solve)(snes,its);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(snes->prefix,"-snes_view",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = SNESView(snes,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
+  if (flg && !PetscPreLoadingOn) { ierr = SNESView(snes,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
