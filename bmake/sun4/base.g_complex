@@ -1,3 +1,5 @@
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 CLINKER    = g++ $(COPTFLAGS)
 FLINKER    = g++ $(COPTFLAGS)
 CC         = g++ -DPARCH_sun4  -fPIC

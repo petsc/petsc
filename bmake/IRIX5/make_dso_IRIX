@@ -1,5 +1,8 @@
 #! /bin/csh 
 #
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+#
+#
 # This Utility converts the static ".a" library files to dynamic ".so" files
 # invoked as make_dso_IRIX $(PETSC_LIBRARY_PATH)
 #

@@ -1,3 +1,5 @@
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 PARCH    = hpux
 #
 #   The name of the C compiler to use, the -Aa option is mandatory

@@ -1,3 +1,5 @@
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 COPTFLAGS  = -O -Wall -Wshadow -fomit-frame-pointer
 PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_BOPT_O -DPETSC_LOG
 FOPTFLAGS  = -O -dalign

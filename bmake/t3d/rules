@@ -1,3 +1,5 @@
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 PARCH    = t3d
 CC       = cc -DPARCH_t3d -h jump
 FC       = cf77 -dp

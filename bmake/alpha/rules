@@ -1,3 +1,5 @@
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 PARCH    = alpha
 CC       = cc -DPARCH_alpha
 FC       = f77 -w

@@ -1,3 +1,5 @@
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 PARCH    = IRIX
 CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
 FC       = f77 -64

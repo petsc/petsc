@@ -1,3 +1,5 @@
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 PARCH    = freebsd
 CC       = /usr/local/gcc-2.7.2/bin/gcc  -DPARCH_freebsd
 #

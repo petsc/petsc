@@ -1,3 +1,5 @@
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 PARCH    = solaris
 #
 #  If you are using gcc or an old version cc you may need to remove the

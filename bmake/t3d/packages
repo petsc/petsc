@@ -1,3 +1,5 @@
+# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
