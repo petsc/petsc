@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.47 1997/02/04 15:40:57 bsmith Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.48 1997/02/04 19:10:15 curfman Exp curfman $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -36,18 +36,18 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
   FILE         *fd;
   PC_ASM       *jac = (PC_ASM *) pc->data;
   int          rank, ierr;
+  char         *cstring;
   ViewerType   vtype;
-  char         *typename;
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"    Additive Schwarz: number of blocks = %d\n", jac->n);
-    if (jac->type == PC_ASM_NONE) typename = "limited restriction and interpolation (PC_ASM_NONE)";
-    else if (jac->type == PC_ASM_RESTRICT) typename = "full restriction (PC_ASM_RESTRICT)";
-    else if (jac->type == PC_ASM_INTERPOLATE) typename = "full interpolation (PC_ASM_INTERPOLATE)";
-    else if (jac->type == PC_ASM_BASIC) typename = "full restriction and interpolation (PC_ASM_BASIC)";
-    PetscFPrintf(pc->comm,fd,"    Additive Schwarz: type - %s\n",typename);
+    if (jac->type == PC_ASM_NONE) cstring = "limited restriction and interpolation (PC_ASM_NONE)";
+    else if (jac->type == PC_ASM_RESTRICT) cstring = "full restriction (PC_ASM_RESTRICT)";
+    else if (jac->type == PC_ASM_INTERPOLATE) cstring = "full interpolation (PC_ASM_INTERPOLATE)";
+    else if (jac->type == PC_ASM_BASIC) cstring = "full restriction and interpolation (PC_ASM_BASIC)";
+    PetscFPrintf(pc->comm,fd,"    Additive Schwarz: type - %s\n",cstring);
     MPI_Comm_rank(pc->comm,&rank);
     if (jac->sles) {ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
   } else if (vtype == STRING_VIEWER) {
