@@ -68,9 +68,9 @@ rsh maverick "cd $hme/$src_dir; $make BOPT=g_c++"
 # IRIX
 arch=IRIX
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-#rsh cyan "cd $hme/$src_dir; $make BOPT=g"
-#rsh cyan "cd $hme/$src_dir; $make BOPT=O"
-#rsh cyan "cd $hme/$src_dir; $make BOPT=g_c++"
+#rsh violet "cd $hme/$src_dir; $make BOPT=g"
+#rsh violet "cd $hme/$src_dir; $make BOPT=O"
+#rsh violet "cd $hme/$src_dir; $make BOPT=g_c++"
 
 
 # rs6000_p4

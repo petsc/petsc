@@ -3,7 +3,7 @@
 #  Removes PETSc libraries on some nightly build machines
 #
 rsh elvis -n /bin/rm -f "/tmp/petsc/lib/lib*/freebsd/*"
-rsh cyan -n /bin/rm -f "/tmp/petsc/lib/lib*/IRIX/*"
+rsh violet -n /bin/rm -f "/tmp/petsc/lib/lib*/IRIX/*"
 rsh maverick -n /bin/rm -f "/tmp/petsc/lib/lib*/sun4*/*.so.* /tmp/petsc/lib/lib*/sun4_uni/*"
 /bin/rm -f /home/curfman/petsc/lib/lib*/alpha/* /home/petsc/petsc/lib/lib*/hpux/* /home/balay/petsc/lib/lib*/solaris/*
 
