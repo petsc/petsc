@@ -10,6 +10,9 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     self.libraries    = libraries
     self.compilers    = self.framework.require('config.compilers', self)
+    self.headers      = self.framework.require('config.headers',   self)
+    self.headers.headers.append('dlfcn.h')
+    self.libraries.append(('dl', 'dlopen'))
     return
 
   def getLibArgument(self, library):
@@ -93,6 +96,126 @@ class Configure(config.base.Configure):
       self.framework.argDB['LIBS'] = oldLibs
     self.popLanguage()
     return found
+
+  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = []):
+    '''Determine whether a library is shared
+       - initFunction(int *argc, char *argv[]) is called to initialize some static data
+       - checkFunction(int *check) is called to verify that the static data wer set properly
+       - finiFunction() is called to finalize the data, and may be omitted
+       - checkLink may be given as ana alternative to the one in base.Configure'''
+    isShared = 0
+    if checkLink is None: checkLink = self.checkLink
+
+    oldFlags                         = self.framework.argDB['LDFLAGS']
+    self.framework.argDB['LDFLAGS'] += ' -shared'
+    for lib in libraries:
+      self.framework.argDB['LDFLAGS'] += ' -Wl,-rpath,'+os.path.dirname(lib)
+
+    # Make a library which calls initFunction(), and returns checkFunction()
+    codeBegin = '''
+#ifdef __cplusplus
+extern "C"
+#endif
+int init(int argc,  char *argv[]) {
+'''
+    body      = '''
+  int isInitialized;
+
+  %s(&argc, &argv);
+  %s(&isInitialized);
+  return isInitialized;
+''' % (initFunction, checkFunction)
+    codeEnd   = '\n}\n'
+    if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd):
+      if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+      self.framework.argDB['LDFLAGS'] = oldFlags
+      raise RuntimeError('Could not complete shared library check')
+    if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+    os.rename(self.linkerObj, 'lib1.so')
+
+    # Make a library which calls checkFunction()
+    codeBegin = '''
+#ifdef __cplusplus
+extern "C"
+#endif
+int checkInit(void) {
+'''
+    body      = '''
+  int isInitialized;
+
+  %s(&isInitialized);
+  return isInitialized;
+''' % checkFunction
+    codeEnd   = '\n}\n'
+    if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd):
+      if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+      self.framework.argDB['LDFLAGS'] = oldFlags
+      self.framework.log.write('Could not complete shared library check\n')
+      return 0
+    if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+    os.rename(self.linkerObj, 'lib2.so')
+
+    self.framework.argDB['LDFLAGS'] = oldFlags
+
+    # Make an executable that dynamically loads and calls both libraries
+    #   If the check returns true in the second library, the static data was shared
+    guard = self.headers.getDefineName('dlfcn.h')
+    if self.headers.headerPrefix:
+      guard = self.headers.headerPrefix+'_'+guard
+    includes = '''
+#include <stdio.h>
+#include <stdlib.h>
+#ifdef %s
+  #include <dlfcn.h>
+#endif
+    ''' % guard
+    body = '''
+  int   argc    = 1;
+  char *argv[1] = {"conftest"};
+  void *lib;
+  int (*init)(int, char **);
+  int (*checkInit)(void);
+
+  lib = dlopen("./lib1.so", RTLD_LAZY);
+  if (!lib) {
+    fprintf(stderr, "Could not open lib1.so: %s\\n", dlerror());
+    exit(1);
+  }
+  init = (int (*)(int, char **)) dlsym(lib, "init");
+  if (!init) {
+    fprintf(stderr, "Could not find initialization function\\n");
+    exit(1);
+  }
+  if (!(*init)(argc, argv)) {
+    fprintf(stderr, "Could not initialize library\\n");
+    exit(1);
+  }
+  lib = dlopen("./lib2.so", RTLD_LAZY);
+  if (!lib) {
+    fprintf(stderr, "Could not open lib2.so: %s\\n", dlerror());
+    exit(1);
+  }
+  checkInit = (int (*)(void)) dlsym(lib, "checkInit");
+  if (!checkInit) {
+    fprintf(stderr, "Could not find initialization check function\\n");
+    exit(1);
+  }
+  if (!(*checkInit)()) {
+    fprintf(stderr, "Did not link with shared library\\n");
+    exit(2);
+  }
+    '''
+    oldLibs = self.framework.argDB['LIBS']
+    if self.haveLib('dl'):
+      self.framework.argDB['LIBS'] += ' -ldl'
+    if self.checkRun(includes, body):
+      isShared = 1
+    self.framework.argDB['LIBS'] = oldLibs
+    if os.path.isfile('lib1.so'): os.remove('lib1.so')
+    if os.path.isfile('lib2.so'): os.remove('lib2.so')
+    if not isShared:
+      self.framework.log.write('Library was not shared\n')
+    return isShared
 
   def checkMath(self):
     '''Check for sin() in libm, the math library'''
