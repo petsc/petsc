@@ -6,9 +6,9 @@
 
 #define TS PetscFortranAddr
 #define TSType character*(80)
-#define TSPVodeType integer
-#define TSProblemType integer 
-#define TSPVodeGramSchmitdType integer
+#define TSPVodeType PetscEnum
+#define TSProblemType PetscEnum 
+#define TSPVodeGramSchmitdType PetscEnum
 
 #define TS_EULER 'euler'
 #define TS_BEULER 'beuler'
@@ -23,17 +23,17 @@
 !
 !  TSProblemType
 !
-      integer TS_LINEAR,TS_NONLINEAR
+      PetscEnum TS_LINEAR,TS_NONLINEAR
       parameter (TS_LINEAR = 0,TS_NONLINEAR = 1)
 !
 !  TSPvodeType
 !
-      integer PVODE_ADAMS,PVODE_BDF
+      PetscEnum PVODE_ADAMS,PVODE_BDF
       parameter (PVODE_ADAMS=0,PVODE_BDF=1)
 !
 !  TSPvodeGramSchmidtType
 !
-      integer PVODE_MODIFIED_GS,PVODE_CLASSICAL_GS,PVODE_UNMODIFIED_GS
+      PetscEnum PVODE_MODIFIED_GS,PVODE_CLASSICAL_GS,PVODE_UNMODIFIED_GS
 
       parameter (PVODE_MODIFIED_GS=0,PVODE_CLASSICAL_GS=1)
       parameter (PVODE_UNMODIFIED_GS=1)

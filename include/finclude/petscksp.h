@@ -7,10 +7,10 @@
 
 #define KSP PetscFortranAddr
 #define KSPType character*(80)
-#define KSPCGType integer
-#define KSPConvergedReason integer 
-#define KSPNormType integer
-#define KSPGMRESCGSRefinementType integer
+#define KSPCGType PetscEnum
+#define KSPConvergedReason PetscEnum 
+#define KSPNormType PetscEnum
+#define KSPGMRESCGSRefinementType PetscEnum
 !
 !  Various Krylov subspace methods
 !
@@ -38,20 +38,20 @@
 !
 !  CG Types
 !
-      integer KSP_CG_SYMMETRIC,KSP_CG_HERMITIAN
+      PetscEnum KSP_CG_SYMMETRIC,KSP_CG_HERMITIAN
 
       parameter (KSP_CG_SYMMETRIC=1,KSP_CG_HERMITIAN=2)
 
-      integer KSP_CONVERGED_RTOL,KSP_CONVERGED_ATOL
-      integer KSP_CONVERGED_ITS
-      integer KSP_DIVERGED_ITS,KSP_DIVERGED_DTOL
-      integer KSP_DIVERGED_BREAKDOWN,KSP_CONVERGED_ITERATING
-      integer KSP_CONVERGED_QCG_NEG_CURVE
-      integer KSP_CONVERGED_QCG_CONSTRAINED
-      integer KSP_CONVERGED_STEP_LENGTH
-      integer KSP_DIVERGED_BREAKDOWN_BICG
-      integer KSP_DIVERGED_NONSYMMETRIC
-      integer KSP_DIVERGED_INDEFINITE_PC
+      PetscEnum KSP_CONVERGED_RTOL,KSP_CONVERGED_ATOL
+      PetscEnum KSP_CONVERGED_ITS
+      PetscEnum KSP_DIVERGED_ITS,KSP_DIVERGED_DTOL
+      PetscEnum KSP_DIVERGED_BREAKDOWN,KSP_CONVERGED_ITERATING
+      PetscEnum KSP_CONVERGED_QCG_NEG_CURVE
+      PetscEnum KSP_CONVERGED_QCG_CONSTRAINED
+      PetscEnum KSP_CONVERGED_STEP_LENGTH
+      PetscEnum KSP_DIVERGED_BREAKDOWN_BICG
+      PetscEnum KSP_DIVERGED_NONSYMMETRIC
+      PetscEnum KSP_DIVERGED_INDEFINITE_PC
 
       parameter (KSP_CONVERGED_RTOL      = 2)
       parameter (KSP_CONVERGED_ATOL      = 3)
@@ -71,10 +71,10 @@
 !
 !  Possible arguments to KSPSetNormType()
 !
-      integer KSP_NO_NORM
-      integer KSP_PRECONDITIONED_NORM
-      integer KSP_UNPRECONDITIONED_NORM
-      integer KSP_NATURAL_NORM 
+      PetscEnum KSP_NO_NORM
+      PetscEnum KSP_PRECONDITIONED_NORM
+      PetscEnum KSP_UNPRECONDITIONED_NORM
+      PetscEnum KSP_NATURAL_NORM 
       
       parameter (KSP_NO_NORM=0)
       parameter (KSP_PRECONDITIONED_NORM=1)
@@ -94,9 +94,9 @@
 !
 !   Possible arguments to KSPGMRESSetRefinementType()
 !
-      integer KSP_GMRES_CGS_REFINE_NEVER
-      integer KSP_GMRES_CGS_REFINE_IFNEEDED
-      integer KSP_GMRES_CGS_REFINE_ALWAYS
+      PetscEnum KSP_GMRES_CGS_REFINE_NEVER
+      PetscEnum KSP_GMRES_CGS_REFINE_IFNEEDED
+      PetscEnum KSP_GMRES_CGS_REFINE_ALWAYS
 !
       parameter (KSP_GMRES_CGS_REFINE_NEVER = 0)
       parameter (KSP_GMRES_CGS_REFINE_IFNEEDED = 1)

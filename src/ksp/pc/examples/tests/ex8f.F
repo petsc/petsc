@@ -35,7 +35,8 @@
       Mat              A 
       Vec              x,b,u
       PC               pc
-      integer          n,dim,ierr,istart,iend,i,j,jj,ii
+      PetscInt  n,dim,istart,iend,i,j,jj,ii,one,zero
+      PetscErrorCode ierr
       double precision v,h2
       external         MyResidual
       PetscScalar      pfive
@@ -49,6 +50,8 @@
       pfive = .5d0
       n      = 6
       dim    = n*n
+      one    = 1
+      zero   = 0
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !      Compute the matrix and right-hand-side vector that define
@@ -84,22 +87,22 @@
         j = II - i*n  
         if (i.gt.0) then
           JJ = II - n
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
         if (i.lt.n-1) then
           JJ = II + n
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
         if (j.gt.0) then
           JJ = II - 1
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
         v = 4.0
-        call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
+        call  MatSetValues(A,one,II,one,II,v,ADD_VALUES,ierr)
  10   continue
 
 !  Assemble matrix, using the 2-step process:
@@ -136,10 +139,10 @@
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCMG,ierr)
-      call MGSetLevels(pc,1,PETSC_NULL_OBJECT,ierr)
-      call MGSetResidual(pc,0,MGDefaultResidual,A,ierr)
+      call MGSetLevels(pc,one,PETSC_NULL_OBJECT,ierr)
+      call MGSetResidual(pc,zero,MGDefaultResidual,A,ierr)
 
-      call MGSetResidual(pc,0,MyResidual,A,ierr)
+      call MGSetResidual(pc,zero,MyResidual,A,ierr)
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.

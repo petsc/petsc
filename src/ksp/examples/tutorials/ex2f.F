@@ -77,8 +77,9 @@
 !  See the Fortran section of the PETSc users manual for details.
 !  
       double precision  norm
-      integer     i,j,II,JJ,ierr,m,n
-      integer     rank,size,its,Istart,Iend
+      PetscInt  i,j,II,JJ,m,n,its,Istart,Iend,ione
+      PetscErrorCode ierr
+      PetscMPIInt     rank,size
       PetscTruth  flg
       PetscScalar v,one,neg_one
       Vec         x,b,u
@@ -105,6 +106,7 @@
       n = 3
       one  = 1.0
       neg_one = -1.0
+      ione    = 1
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
@@ -149,22 +151,22 @@
         j = II - i*n  
         if (i.gt.0) then
           JJ = II - n
-          call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
+          call MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr)
         endif
         if (i.lt.m-1) then
           JJ = II + n
-          call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
+          call MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr)
         endif
         if (j.gt.0) then
           JJ = II - 1
-          call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
+          call MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr)
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
+          call MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr)
         endif
         v = 4.0
-        call  MatSetValues(A,1,II,1,II,v,INSERT_VALUES,ierr)
+        call  MatSetValues(A,ione,II,ione,II,v,INSERT_VALUES,ierr)
  10   continue
 
 !  Assemble matrix, using the 2-step process:
@@ -336,7 +338,9 @@
 
       KSP              ksp
       Vec              x
-      integer          ierr,n,dummy,rank
+      PetscErrorCode ierr
+      PetscInt n,dummy
+      PetscMPIInt rank
       double precision rnorm
 
 !  Build the solution vector
@@ -378,7 +382,9 @@
 #include "include/finclude/petscksp.h"
 
       KSP              ksp
-      integer          ierr,n,dummy,flag
+      PetscErrorCode ierr
+      PetscInt n,dummy
+      KSPConvergedReason flag
       double precision rnorm
 
       if (rnorm .le. .05) then 

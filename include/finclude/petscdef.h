@@ -121,7 +121,6 @@
 !
 !     Declare PETSC_NULL_OBJECT
 !
-#define PETSC_NULL_OBJECT PETSC_NULL_INTEGER
 !
 !     PetscLogDouble variables are used to contain double precision numbers
 !     that are not used in the numerical computations, but rather in logging,

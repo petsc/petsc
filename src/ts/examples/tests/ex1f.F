@@ -26,7 +26,10 @@
       parameter (linear_no_matrix = 0,linear_no_time = 1,linear = 2)
       parameter (nonlinear_no_jacobian = 3,nonlinear = 4)
 
-      integer          ierr,time_steps,steps,flg,size,problem
+      PetscErrorCode  ierr
+      PetscInt time_steps,steps
+      PetscMPIInt size
+      integer problem
       Vec              local,global
       double precision dt,ftime,zero,tmax
       TS               ts
@@ -44,14 +47,17 @@
       Vec              localwork,csolution
       DA               da
       PetscViewer           viewer1,viewer2
-      integer          M
+      PetscInt          M,i1,i60
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
-     &               ,viewer2,M
+      common /tsctx/ h,nrm_2,nrm_max,nox,M,localwork,csolution,da,         &
+     &               viewer1 ,viewer2
+      PetscTruth flg
 
       external Monitor,RHSFunctionHeat,RHSMatrixFree,Initial
       external RHSMatrixHeat,RHSJacobianHeat
 
+      i1         = 1
+      i60        = 60
       zero       = 0.0
       time_steps = 100
       problem    = linear_no_matrix
@@ -77,7 +83,7 @@
 
 !   Set up the ghost point communication pattern                       
 
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,            &
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,i1,i1,            &
      &     PETSC_NULL_INTEGER,da,ierr)
       call DACreateGlobalVector(da,global,ierr) 
       call VecGetLocalSize(global,m,ierr) 
@@ -219,7 +225,8 @@
 
       call TSSetUp(ts,ierr) 
       call TSStep(ts,steps,ftime,ierr) 
-      call PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,60,viewer,ierr) 
+      call PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,i60,viewer,         &
+     &                           ierr) 
       call TSView(ts,viewer,ierr) 
       call TSGetType(ts,type,ierr)
 
@@ -277,10 +284,11 @@
 #include "finclude/petscts.h"
 #include "finclude/petscviewer.h"
       Vec         global
-      integer     ctx
+      PetscObject    ctx
 
       PetscScalar localptr(1)
-      integer     i,mybase,myend,ierr
+      PetscInt     i,mybase,myend
+      PetscErrorCode ierr
       PetscOffset idx
 
 !
@@ -289,10 +297,10 @@
       Vec              localwork,csolution
       DA               da
       PetscViewer           viewer1,viewer2
-      integer          M
+      PetscInt          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
-     &               ,viewer2,M
+      common /tsctx/ h,nrm_2,nrm_max,nox,M,localwork,csolution,da,         &
+     &               viewer1 ,viewer2
 
 !   determine starting point of each processor 
 
@@ -330,7 +338,8 @@
       integer           ctx
 
       PetscScalar       localptr(1),ex1,ex2,sc1,sc2
-      integer           i,mybase,myend,ierr
+      PetscInt           i,mybase,myend
+      PetscErrorCode ierr
       PetscOffset       idx
 
 !
@@ -339,10 +348,10 @@
       Vec               localwork,csolution
       DA                da
       PetscViewer            viewer1,viewer2
-      integer           M
+      PetscInt           M
       double precision  h,nrm_2,nrm_max,nox
-      common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
-     &               ,viewer2,M
+      common /tsctx/ h,nrm_2,nrm_max,nox,M,localwork,csolution,da,         &
+     &               viewer1 ,viewer2
 
 !   determine starting point of each processor 
 
@@ -377,7 +386,9 @@
 #include "finclude/petscdraw.h"
 #include "finclude/petscviewer.h"
       TS                ts
-      integer           step,ctx,ierr
+      PetscInt           step
+      integer ctx
+      PetscErrorCode ierr
       double precision  time,lnrm_2,lnrm_max
       Vec               global
       PetscScalar       mone
@@ -388,10 +399,10 @@
       Vec              localwork,csolution
       DA               da
       PetscViewer           viewer1,viewer2
-      integer          M
+      PetscInt          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
-     &               ,viewer2,M
+      common /tsctx/ h,nrm_2,nrm_max,nox,M,localwork,csolution,da,         &
+     &               viewer1 ,viewer2
 
       call VecView(global,viewer1,ierr) 
 
@@ -430,13 +441,13 @@
 #include "finclude/petscviewer.h"
       Mat              mat
       Vec              x,y
-      integer          ierr
+      PetscErrorCode          ierr
       double precision zero
       TS               ts0
 
       zero = 0.0
 
-      ts0 = PETSC_NULL_INTEGER
+      ts0 = PETSC_NULL_OBJECT
 
       call RHSFunctionHeat(ts0,zero,x,y,0,ierr) 
       return
@@ -459,9 +470,10 @@
       TS               ts
       double precision t
       Vec              globalin,globalout
-      integer          ctx
+      PetscObject      ctx
       Vec              local
-      integer          ierr,i,localsize
+      PetscErrorCode  ierr
+      PetscInt i,localsize
       PetscOffset      ldx,cdx 
       PetscScalar      copyptr(1),localptr(1),sc
 !
@@ -470,10 +482,10 @@
       Vec              localwork,csolution
       DA               da
       PetscViewer           viewer1,viewer2
-      integer          M
+      PetscInt          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
-     &               ,viewer2,M
+      common /tsctx/ h,nrm_2,nrm_max,nox,M,localwork,csolution,da,         &
+     &               viewer1 ,viewer2
 
 !  Extract local array  
 
@@ -526,10 +538,12 @@
       double precision t
       TS               ts
       MatStructure     str
-      integer          ctx,ierr
+      PetscObject          ctx
+      PetscErrorCode ierr
 
       Mat              A
-      integer          i,mstart,mend,rank,size,idx(3)
+      PetscInt       i,mstart,mend,idx(3)
+      PetscMPIInt rank,size
       PetscScalar      v(3),stwo,sone
 
 !
@@ -538,11 +552,13 @@
       Vec              localwork,csolution
       DA               da
       PetscViewer           viewer1,viewer2
-      integer          M
+      PetscInt          M,i1,i3
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
-     &               ,viewer2,M
+      common /tsctx/ h,nrm_2,nrm_max,nox,M,localwork,csolution,da,         &
+     &               viewer1 ,viewer2
 
+      i1 = 1
+      i3 = 3
       A    = AA
       stwo = -2./(h*h)
       sone = -.5*stwo
@@ -554,13 +570,13 @@
       call MatGetOwnershipRange(A,mstart,mend,ierr) 
       if (mstart .eq. 0) then
         v(1) = 1.0
-        call MatSetValues(A,1,mstart,1,mstart,v,INSERT_VALUES,ierr) 
+        call MatSetValues(A,i1,mstart,i1,mstart,v,INSERT_VALUES,ierr) 
         mstart = mstart + 1
       endif
       if (mend .eq. M) then
         mend = mend - 1
         v(1) = 1.0
-        call MatSetValues(A,1,mend,1,mend,v,INSERT_VALUES,ierr) 
+        call MatSetValues(A,i1,mend,i1,mend,v,INSERT_VALUES,ierr) 
       endif
 
 !  
@@ -573,7 +589,7 @@
         idx(1) = i-1
         idx(2) = i 
         idx(3) = i+1
-        call MatSetValues(A,1,i,3,idx,v,INSERT_VALUES,ierr) 
+        call MatSetValues(A,i1,i,i3,idx,v,INSERT_VALUES,ierr) 
  10   continue
 
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr) 
@@ -600,7 +616,8 @@
       Vec              x
       Mat              AA,BB
       MatStructure     str
-      integer          ctx,ierr
+      PetscObject      ctx
+      PetscErrorCode ierr
 
       call RHSMatrixHeat(ts,t,AA,BB,str,ctx,ierr)
       return

@@ -58,14 +58,15 @@
 !     gxm, gym - widths of local grid (including ghost points)
 
       DA      da
-      integer xs,xe,xm,gxs,gxe,gxm
-      integer ys,ye,ym,gys,gye,gym
-      integer mx,my,rank,size
+      PetscInt xs,xe,xm,gxs,gxe,gxm
+      PetscInt ys,ye,ym,gys,gye,gym
+      PetscInt mx,my
+      PetscMPIInt rank,size
       double precision lambda
 
       common /params/ lambda,mx,my
-      common /pdata/  da,rank,size
       common /pdata/  xs,xe,xm,gxs,gxe,gxm
       common /pdata/  ys,ye,ym,gys,gye,gym
+      common /pdata/  da,rank,size
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -191,17 +191,20 @@ EXTERN PetscErrorCode   MatCreateDAAD(DA,Mat*);
 
   Concepts: distributed array
 
+  Developer note: Then entries in this struct are int instead of PetscInt so that the elements may
+                  be extracted in Fortran as if from an integer array
+
 .seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DA, DAGetLocalInfo(), DAGetInfo()
 S*/
 typedef struct {
-  PetscInt       dim,dof,sw;
+  int            dim,dof,sw;
   DAPeriodicType pt;
   DAStencilType  st;
-  PetscInt       mx,my,mz;    /* global number of grid points in each direction */
-  PetscInt       xs,ys,zs;    /* starting pointd of this processor, excluding ghosts */
-  PetscInt       xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
-  PetscInt       gxs,gys,gzs;    /* starting point of this processor including ghosts */
-  PetscInt       gxm,gym,gzm;    /* number of grid points on this processor including ghosts */
+  int            mx,my,mz;    /* global number of grid points in each direction */
+  int            xs,ys,zs;    /* starting pointd of this processor, excluding ghosts */
+  int            xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
+  int            gxs,gys,gzs;    /* starting point of this processor including ghosts */
+  int            gxm,gym,gzm;    /* number of grid points on this processor including ghosts */
   DA             da;
 } DALocalInfo;
 

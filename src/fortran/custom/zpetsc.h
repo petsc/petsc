@@ -14,6 +14,7 @@ extern void   *PETSC_NULL_Fortran;
 extern void   *PETSC_NULL_SCALAR_Fortran;
 extern void   *PETSC_NULL_DOUBLE_Fortran;
 extern void   *PETSC_NULL_REAL_Fortran;
+extern void   *PETSC_NULL_OBJECT_Fortran;
 EXTERN_C_BEGIN
 extern void   (*PETSC_NULL_FUNCTION_Fortran)(void);
 EXTERN_C_END
