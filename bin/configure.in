@@ -2,6 +2,22 @@ dnl Process this file with autoconf to produce a configure script.
 dnl The file must be relative to the location of the configure program
 dnl itself
 dnl
+dnl Here is a typical configure usage
+dnl setenv PETSC_ARCH sun4config
+dnl ./bin/configure --enable-installsite --enable-opt=-O --enable-optname=O \
+dnl                --with-blas=/usr/local/lapack/lib/blas.a \
+dnl                --with-lapack=/usr/local/lapack/lib/lapack.a
+dnl
+dnl To build a new version of configure, execute the following:
+dnl    autoheader
+dnl    autoconf
+dnl These should correspond to at least version 2.12; these are in 
+dnl /mcs/bin at Argonne.
+dnl
+dnl The documentation for configure is available through Emacs info; look
+dnl for autoconf 2.12.
+dnl 
+dnl --------- End of Header ----------
 dnl Caching is usually WRONG for systems with cross-mounted file systems
 dnl (the cache file may correspond to a different system).  Since configure
 dnl is not on a performance-critical path, go for robustness over speed.
@@ -9,26 +25,72 @@ dnl
 define([AC_CACHE_LOAD], )dnl
 define([AC_CACHE_SAVE], )dnl
 dnl
+dnl We may prefer to allow an alternate cache to be specified; in that case,
+dnl we may want to set cache_file to /dev/null instead of defining load/save
+dnl as empty.
+dnl
 dnl Set CFLAGS for C compiler
 dnl Set LDFLAGS for things like -L/usr/local/mpi
 dnl See the petsc.conf file below for an alternative approach
 dnl
+dnl Make sure that we're in the correct directory by looking for a file
+dnl that must be present.  Initialize configure (this will process the
+dnl command line)
 AC_INIT(../include/petsc.h)
+dnl
+dnl Insist on autoconf 2.12 or later
+AC_PREREQ(2.12)
+dnl
+dnl Find the root PETSC directory if it hasn't been specified
 if test -z "$PETSC_DIR" ; then 
     PETSC_DIR=`pwd`
 fi
+dnl
+dnl Try to determine the architecture if PETSC_ARCH is not defined.
+dnl The name is likely to be long and specific; a user might want to 
+dnl pick a shorter name.
 if test -z "$PETSC_ARCH" ; then
     AC_CANONICAL_HOST
     PETSC_ARCH="$host"
-    echo "PETSC_ARCH must be defined"
-    exit 1
+    echo "PETSC_ARCH must be defined; guessing $PETSC_ARCH"
 fi
+dnl AC_SUBST causes @PETSC_ARCH@ in the output files to be replaced with the
+dnl value of the variable PETSC_ARCH.  AC_SUBST is implicit in many of the
+dnl autoconf commands.
 AC_SUBST(PETSC_ARCH)
+dnl
+dnl Also remove any local petscconf.h file
+rm -f petscconf.h
+dnl
+dnl
+dnl NOT DONE YET
+dnl Read in a "petsc.conf" file containing values to use, particularly for
+dnl things like the location of BlockSolve, MPI, etc.
+dnl
+dnl This adds a definition of the CPP name PETSC_ARCH_NAME with the value 
+dnl "$PETSC_ARCH" (including the quotes!) to the generated petscconf.h file
+dnl (see below)
 AC_DEFINE_UNQUOTED(PETSC_ARCH_NAME,"$PETSC_ARCH")
 dnl
 dnl Place the ARG processing AFTER the petsc.conf file so that the
 dnl command line args can override any defaults.
+dnl 
+dnl To activate these, you do things like
+dnl  --enable-echo
+dnl  --with-mpi
+dnl  --with-mpi=no  (no mpi)
+dnl  --with-blocksolve=<library location>
+dnl  --with-blocksolve-inc=<include location>
+dnl  --enable-opt="-g -Wall"
+dnl configure -help will remind you of much of this
 dnl
+dnl This is fairly awkward; if you want an easier syntax for command line
+dnl arguments, the right way to do it is to write a separate script that
+dnl converts friendly formated command line args to the uglier configure
+dnl arguments, and then invokes configure.  Similar things can be done
+dnl for the environment variables.
+dnl
+AC_ARG_ENABLE(echo,Turn on strong echoing,set -x)
 AC_ARG_WITH(mpi, mpi - Choose MPI implementation,USE_MPI=1,USE_MPI=0)
 AC_ARG_ENABLE(opt, opt=flagsChoose compiler optimization,
               COPTFLAGS="$COPTFLAGS $enable_opt")
@@ -46,22 +108,43 @@ AC_SUBST(LAPACK_LIB)
 dnl
 AC_ARG_WITH(blocksolve, blocksolve=library - Use BlockSolve95,BS_LIB=$withval)
 AC_ARG_WITH(blocksolve-inc, blocksolve-inc=dir - Use BlockSolve95 (include path),BS_INCLUDE=$withval)
+dnl
+dnl convert the BlockSolve include into a CPP command
 if test -n "$BS_INCLUDE" ; then
     BS_INCLUDE="-I$BS_INCLUDE"
 fi
+dnl
+dnl Set default optname
+if test -z "$BOPTNAME" ; then
+    if test -n "$enable_opt" ; then 
+	BOPTNAME=`echo $enable_opt | sed -e 's/-//' -e 's/^(.).*$/\1/'`
+    fi
+fi
+dnl
+dnl Determine if HAVE_BLOCKSOLVE should be defined.  
 if test -n "$BS_INCLUDE" -a -n "$BS_LIB" ; then 
-    PCONF="$PCONF -DHAVE_BLOCKSOLVE"
+    dnl
+    dnl Add information on this CPP variable to acconfig.h as well (this 
+    dnl is used to generate petscconf.h.in automatically with the autoheader
+    dnl command)
+    AC_DEFINE(HAVE_BLOCKSOLVE)
+    dnl Previously, this was put into the PCONF variable; it should be
+    dnl in the definitions file instead.
+    dnl    PCONF="$PCONF -DHAVE_BLOCKSOLVE"
 fi
 AC_SUBST(BS_LIB)
 AC_SUBST(BS_INCLUDE)
 dnl
 AC_ARG_WITH(pvode, pvode=library - Use PVODE,PVODE_LIB=$withval)
 AC_ARG_WITH(pvode-inc, pvode-inc=dir - Use PVODE (include path),PVODE_INCLUDE=$withval)
+dnl
+dnl as for BLOCKSOLVE
 if test -n "$PVODE_INCLUDE" ; then
     PVODE_INCLUDE="-I$PVODE_INCLUDE"
 fi
 if test -n "$PVODE_INCLUDE" -a -n "$PVODE_LIB" ; then 
-    PCONF="$PCONF -DHAVE_PVODE"
+    AC_DEFINE(HAVE_PVODE)
+    dnl PCONF="$PCONF -DHAVE_PVODE"
 fi
 AC_SUBST(PVODE_LIB)
 AC_SUBST(PVODE_INCLUDE)
@@ -77,6 +160,16 @@ AC_SUBST(ADIC_LIB)
 AC_SUBST(ADIC_CC)
 dnl
 AC_ARG_WITH(sitefile, sitefile=file - Specify sitefile,sitefile=$withval)
+dnl
+dnl
+dnl This defines a file that will contain the definitions that configure
+dnl determines (rather than put them in CFLAGS or DEFS).  This is preferable,
+dnl since (a) some compilers/systems limit the command line length and (b)
+dnl the file can be kept with the libraries, showing how they were compiled
+dnl and ensuring that definitions are consistent.  It also makes user
+dnl Makefiles simpler, and allows users to concoct their own Makefiles more
+dnl easily (the Makefiles are currently one place where PETSc really, really
+dnl wants to be in charge).
 dnl
 AC_CONFIG_HEADER(petscconf.h)
 dnl
@@ -94,6 +187,8 @@ dnl LAPACK_LIB - Full LD specification for LAPACK
 AC_MSG_CHECKING(for petsc.conf file)
 if test -n "$sitefile" -a -s "$sitefile" ; then
     AC_MSG_RESULT(using $sitefile)
+    dnl This syntax is just the sh way to read a file; it is similar to 
+    dnl source filename in csh.
     . $sitefile
 elif test -s petsc.conf ; then
     AC_MSG_RESULT(found petsc.conf)
@@ -104,15 +199,23 @@ elif test -s $PETSC_DIR/bmake/$PETSC_ARCH/petsc.conf ; then
 else
     AC_MSG_RESULT(none)
 fi
-
+dnl
+dnl Now we turn to fairly standard autoconf commands.  There are two major 
+dnl types:  Specific and General.  The Specific types know how to look for
+dnl things like X11 or awk that might have different versions or strange
+dnl places to hide in.  The General ones test for arbitrary header files, 
+dnl functions, programs, and such.
+dnl
 dnl Checks for programs.
 AC_PROG_AWK
 dnl This checks preferentially for gcc.  To change, set CC
 AC_PROG_CC
 if test "$GCC" = "yes" ; then
     # Check if -D__USE_FIXED_PROTOTYPES__ is needed
+    dnl This test is not yet available.
     :
 fi
+dnl
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
@@ -134,18 +237,79 @@ dnl Checks for libraries.
 dnl Math library
 dnl AC_CHECK_LIB(m, sin)
 
+# libnsl needed on Solaris for socket and gethostbyname calls
+AC_CHECK_LIB(nsl,gethostbyname)
+AC_CHECK_LIB(socket,socket)
+#
+# BLAS are in sunperf.  They include a C version, so we need only test for
+# the C name
+# LAPACK is also in sunperf (check for sgebak)
+# Note that sunperf expect -lm
+# sunperf is actually licensed, so you need bizarre syntax to access it
+# It also doesn't want to work with the C compiler/linker (apparently it
+# expects to be linked with Fortran always)
+# It needs -xlic_lib=sunperf
+#
+# Check that the specified libraries exist
+if test -n "$BLAS_LIB" -a ! -f "$BLAS_LIB" ; then
+    echo "BLAS library $BLAS_LIB does not exist!"
+    BLAS_LIB=""
+fi
+if test -n "$LAPACK_LIB" -a ! -f "$LAPACK_LIB" ; then
+    echo "LAPACK library $LAPACK_LIB does not exist!"
+    LAPACK_LIB=""
+fi
+if test -z "$BLAS_LIB" -a -z "$LAPACK_LIB" ; then 
+    SAVE_LIBS="$LIBS"
+    LIBS="$LIBS -xlic_lib=sunperf"
+    AC_CHECK_FUNC(dgemm,found_insunperf=1,found_insunperf=0)
+    if test $found_insunperf = 1 ; then
+	:
+    else
+        LIBS="$SAVE_LIBS"
+    fi
+fi
+
 if test $USE_MPI = 1 ; then 
     dnl MPI library; if not found, select uniprocessor version
-    AC_CHECK_LIB(mpi, MPI_Init,,
-    echo "No MPI library; PETSc will be compiled in uniprocessor mode" ;
-    MPI_LIB="-lmpiuni";
-    MPI_INCLUDE="-I$PETSC_DIR/src/mpiuni"
-    MPIRUN="$PETSC_DIR/src/mpiuni/mpirun";
-    )
-else
+    dnl We could look for the library in the directory MPILIBPATH
+    dnl or check the PETSc arch for likely locations.  On some vendor
+    dnl systems, the simple check below will work
+    dnl
+    AC_CHECK_LIB(mpi, MPI_Init,,USE_MPI=0)
+    if test $USE_MPI = 0 ; then
+	# Try harder
+        LDFLAGSSAV=$LDFLAGS
+        LDFLAGS="$LDFLAGS $MPILIBPATH"
+        USE_MPI=1
+        AC_CHECK_LIB(mpi, MPI_Init,,USE_MPI=0)
+	LDFLAGS="$LDFLAGSSAV"
+        if test $USE_MPI = 0 ; then
+	    LDFLAGS="$LDFLAGSSAV"
+	fi
+    fi
+    if test $USE_MPI = 0 ; then
+        echo "No MPI library; PETSc will be compiled in uniprocessor mode" 
+	echo "You can set a library path with the environment variable"
+	echo "MPILIBPATH.  For example, "
+	echo "setenv MPILIBPATH /usr/local/mpich/lib/sun4/ch_p4/libmpich.a"
+    fi
+fi
+if test $USE_MPI = 0 ; then
     MPI_LIB="-lmpiuni"
-    MPI_INCLUDE="-I$PETSC_DIR/src/mpiuni"
-    MPIRUN="$PETSC_DIR/src/mpiuni/mpirun"
+    MPI_INCLUDE="-I$PETSC_DIR/src/sys/src/mpiuni"
+    MPIRUN="$PETSC_DIR/src/sys/src/mpiuni/mpirun"
+    # The location of mpi.h in PETSc has moved
+    if test ! -s $PETSC_DIR/src/sys/src/mpiuni/mpi.h ; then
+	echo "Could not find PETSc's mpi.h file!"
+	echo "configure expected to find PETSc's mpi.h (for running in"
+        echo "single processor mode) in  $PETSC_DIR/src/sys/src/mpiuni/mpi.h"
+        echo "Check that you have PETSC_DIR set correctly, and that the"
+	echo "PETSc source tree has been correctly unpacked (for example,"
+        echo "check that the extraction was not terminated due to low disk"
+        echo "space)."
+	exit 1
+    fi
 fi
 AC_SUBST(MPI_LIB)
 AC_SUBST(MPIRUN)
@@ -153,7 +317,8 @@ AC_SUBST(MPI_INCLUDE)
 dnl
 dnl MPICH MPE libraries
 if test -n "$MPE_LIB" -a -n "$MPE_INCLUDE" ; then 
-    PCONF="$PCONF -DHAVE_MPE"
+    AC_DEFINE(HAVE_MPE)
+    dnl PCONF="$PCONF -DHAVE_MPE"
 fi
 AC_SUBST(MPE_LIB)
 AC_SUBST(MPE_INCLUDE)
@@ -164,72 +329,19 @@ dnl Fortran support
 export CC
 export FC
 FC_LIB=`bin/findftnlibs | tr '\012' ' '`
+if test -n "$FC_LIB" ; then
+    echo "Fortran linker needs $FC_LIB"
+fi
 AC_SUBST(FC_LIB)
-dnl
-dnl Determine Fortran name form
-dnl FORTRAN_NAMING="-DHAVE_FORTRAN_UNDERSCORE"
-#
-AC_MSG_CHECKING(for Fortran external names)
-# First, compile a Fortran program:
-/bin/rm -f conff.f
-cat > conff.f <<EOF
-        subroutine d1chk()
-        return
-        end
-EOF
-if $FC -c conff.f >/dev/null 2>&1 ; then 
-    :
-else
-    echo "Could not compile Fortran routine"
-fi
-# Now, build a C program and try to link with it
-cat > conf.c <<EOF
-main() {
-d1chk_();
-return 0;
-}
-EOF
-if $CC -o conf conf.c conff.o >/dev/null 2>&1 ; then
-    FORTRAN_NAMING="-DHAVE_FORTRAN_UNDERSCORE"
-    /bin/rm -f conf conf.c conff.f conff.o conf.o
-    AC_MSG_RESULT(trailing underscore)
-else
-    /bin/rm -f conf conf.c conf.o
-    cat > conf.c <<EOF
-main() {
-d1chk();
-return 0;
-}
-EOF
-    if $CC -o conf conf.c conff.o >/dev/null 2>&1 ; then 
-        FORTRAN_NAMING="-DHAVE_FORTRAN_NOUNDERSCORE"
-        /bin/rm -f conf conf.c conff.f conff.o conf.o
-        AC_MSG_RESULT(no underscore)
-    else
-        /bin/rm -f conf conf.c conf.o
-        cat > conf.c <<EOF
-main() {
-D1CHK();
-return 0;
-}
-EOF
-        if $CC -o conf conf.c conff.o >/dev/null 2>&1 ; then 
-            FORTRAN_NAMING="-DHAVE_FORTRAN_CAPS"
-            /bin/rm -f conf conf.c conff.f conff.o conf.o
-            AC_MSG_RESULT(uppercase)
-        else
-	    FORTRAN_NAMING=""
-            AC_MSG_RESULT(unknown!)
-        fi
-    fi
-fi
-/bin/rm -f conf conf.c conff.f conff.o conf.o
-#
 # End of Fortran name checks
-AC_SUBST(FORTRAN_NAMING)
+dnl Check for needs _fcdtocp
+dnl ... not done yet ... (in MPICH, we use include <fortran.h>, since
+dnl _fcdtocp might be a macro)
+dnl
+AC_FORTRAN_NAMES_IN_C
 dnl
 dnl These need to know the Fortran naming rules first
-
+dnl NOT DONE YET
 dnl if test "$FORTRAN_NAMING" = "-DHAVE_FORTRAN_UNDERSCORE" ; then
 dnl     AC_CHECK_LIB(blas,ddot_)
 dnl     AC_CHECK_LIB(lapack,dgemm_)
@@ -252,6 +364,36 @@ dnl
 AC_SUBST(COPTFLAGS)
 AC_SUBST(PETSCFLAGS)
 AC_SUBST(FOPTFLAGS)
+
+#
+# Determine shared library options if possible
+# Options are -fPIC for C (gcc)
+# -KPIC (Solaris SunPro)
+# (none) (AIX, but makeing the library itself is a mess)
+if test -z "$CC_SHARED_OPT" ; then
+    PAC_CHECK_COMPILER_OPTION(-fPIC,CC_SHARED_OPT=-fPIC)
+    SHAREDKIND=gcc
+fi
+if test -z "$CC_SHARED_OPT" ; then
+    PAC_CHECK_COMPILER_OPTION(-KPIC,CC_SHARED_OPT=-KPIC)
+    if test $ARCH = "solaris" ; then
+	    SHAREDKIND=solaris
+    fi
+fi
+# Fortran choices
+# -PIC (SunOS)
+# -KPIC (Solaris)
+if test -z "$FC_SHARED_OPT" ; then
+    PAC_CHECK_FC_COMPILER_OPTION(-PIC,FC_SHARED_OPT=-PIC)
+fi
+if test -z "$FC_SHARED_OPT" ; then
+    PAC_CHECK_FC_COMPILER_OPTION(-fPIC,FC_SHARED_OPT=-fPIC)
+fi
+if test -z "$FC_SHARED_OPT" ; then
+    PAC_CHECK_FC_COMPILER_OPTION(-fPIC,FC_SHARED_OPT=-KPIC)
+fi
+AC_SUBST(CC_SHARED_OPT)
+AC_SUBST(FC_SHARED_OPT)
 dnl
 dnl This is needed on some older IRIX systems
 AC_CHECK_LIB(sun,getpwnam)
@@ -274,10 +416,15 @@ if test -n "$x_libraries" ; then
      AC_SUBST(X_LIBRARIES)
 fi
 dnl
+dnl Look for header files.  Some of these need special tests because 
+dnl some are not implemented correctly on all platforms.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h malloc.h strings.h sys/time.h unistd.h)
-AC_CHECK_HEADERS(stropts.h search.h pwd.h string.h sys/systeminfo.h)
+AC_CHECK_HEADERS(stropts.h search.h pwd.h string.h sys/systeminfo.h sys/resource.h)
+dnl io.h is really only an NT header; we include this as part of unifying
+dnl the configuration
+AC_CHECK_HEADERS(io.h)
 dnl 
 dnl STDC checks for stdlib but also for some others.  We should probably
 dnl NOT use HAVE_STDLIB_H; instead, use #if STDC_HEADERS .... #else declare 
@@ -287,25 +434,43 @@ dnl
 dnl Check that the stat macros work correctly.  Define STAT_MACROS_BROKEN
 dnl otherwise
 AC_HEADER_STAT
-
+dnl
 dnl Checks for typedefs, structures, and compiler characteristics.
+dnl If this discovers that const doesn't work, defines const as empty
+dnl so that you can use const in the program without fear.
+AC_C_BIGENDIAN
 AC_C_CONST
+AC_CHECK_SIZEOF(void *,4)
+AC_CHECK_SIZEOF(int,4)
+dnl
+dnl TYPE_UID_T and TYPE_SIZE_T get the types of these; if they aren't around,
+dnl adds definitions that make these ints (again so you can use them without
+dnl fear)
 AC_TYPE_UID_T
 AC_TYPE_SIZE_T
+dnl
+dnl See if both time.h and sys/time.h may be included (see autoconf 2 docs)
 AC_HEADER_TIME
-
+dnl
 dnl Checks for library functions.
+dnl This tests for needing -traditional on gcc when using ioctl.
 AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
+dnl
+dnl PETSc also wants the check that VPRINTF takes void * or char * pointers.
+dnl
+dnl This is an example of a general test for the named functions)
 AC_CHECK_FUNCS(getcwd gethostname gettimeofday getwd socket strstr sysinfo uname drand48 memmove realpath readlink)
+AC_CHECK_FUNCS(rand)
 AC_CHECK_FUNCS(sigaction signal sigset)
 dnl
 dnl T3D didn't provide DGESVD
 dnl AC_CHECK_FUNCS(dgesvd_)
 dnl
 dnl IBM MPI needs
+dnl (nee a test for this)
 dnl AC_DEFINE(HAVE_BROKEN_REQUEST_FREE)
 dnl
 dnl Fortran BLAS should define
@@ -314,13 +479,14 @@ dnl
 dnl Special routines
 echo "checking for special routines for floating-point exceptions"
 case $PETSC_ARCH in
-    sun4*) 
+    sun4*|solaris) 
           # Despite the documentation, the IEEE functions are in libm,
           # at least in SunOS 4.1.4.  We need to do this to get 
           # the compiler to link against -lm .
           AC_CHECK_LIB(m,sin)
-	  AC_CHECK_HEADERS(floatingpoint.h)
-          AC_CHECK_FUNCS(ieee_flags ieee_handler)
+          AC_CHECK_LIB(sunmath,standard_arithmetic)
+	  AC_CHECK_HEADERS(floatingpoint.h sunmath.h)
+          AC_CHECK_FUNCS(ieee_flags ieee_handler standard_arithmetic)
 	  ;;
     IRIX*|SGI*) 
 	  AC_CHECK_LIB(fpe,handle_sigfpes)
@@ -347,18 +513,40 @@ dnl Note that the input and output filenames are not handled correctly
 dnl by configure in the case where configure lives in a subdirectory.
 dnl To work around this, we use the output:input file name options
 dnl
-AC_OUTPUT(bin/config/base.site:config/base.site.in bin/config/base.opt:config/base.opt.in bin/config/base:config/base.in)
+AC_OUTPUT(bin/config/base.site:config/base.site.in bin/config/base:config/base.in bin/config/base_variables:config/base_variables.in)
+dnl
+dnl If the user asked us, move the files into the bmake area in their own
+dnl directory
 dnl
 if test $install_sitefiles = 1 ; then 
     if test ! -d $PETSC_DIR/bmake/$PETSC_ARCH ; then
         mkdir $PETSC_DIR/bmake/$PETSC_ARCH
+    else 
+	# Check that this is a config directory; else move it aside
+	if test ! -f $PETSC_DIR/bmake/$PETSC_ARCH/.isconfig ; then
+	     if test -d $PETSC_DIR/bmake/$PETSC_ARCH.bak ; then
+		if test -f $PETSC_DIR/bmake/$PETSC_ARCH/.isconfig ; then
+		    rm -rf $PETSC_DIR/bmake/$PETSC_ARCH.bak
+		fi
+	     fi
+ 	    if test ! -d $PETSC_DIR/bmake/$PETSC_ARCH.bak ; then 
+                mv -f $PETSC_DIR/bmake/$PETSC_ARCH $PETSC_DIR/bmake/$PETSC_ARCH.bak
+		mkdir $PETSC_DIR/bmake/$PETSC_ARCH
+	    fi
+	fi
     fi
+    echo "Moving created files to $PETSC_DIR/bmake/$PETSC_ARCH"
     mv bin/config/base.site $PETSC_DIR/bmake/$PETSC_ARCH/base.site
-    mv bin/config/base.opt $PETSC_DIR/bmake/$PETSC_ARCH/base.$BOPTNAME
+    mv bin/config/base_variables $PETSC_DIR/bmake/$PETSC_ARCH/base_variables
     mv bin/config/base     $PETSC_DIR/bmake/$PETSC_ARCH/base
     cp petscconf.h $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.h    
     # If we move the petscconf.h into the lib directory, we need to
     # fix the make all target to NOT delete it
-    echo '' > $PETSC_DIR/bmake/$PETSC_ARCH/base.
+    # Leave a marker that configure setup this directory
+    rm -f $PETSC_DIR/bmake/$PETSC_ARCH/.isconfig
+    date > $PETSC_DIR/bmake/$PETSC_ARCH/.isconfig
+else
+    echo "Moving petscconf.h to bin/config/petscconf.h"
+    mv -f petscconf.h bin/config
 fi
 
