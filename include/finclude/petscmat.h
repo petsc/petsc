@@ -1,9 +1,12 @@
 !
-!  $Id: mat.h,v 1.42 1998/02/18 19:39:38 balay Exp balay $;
+!  $Id: mat.h,v 1.43 1998/03/24 16:11:32 balay Exp balay $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
-#define Mat                 integer
+#define Mat                 PETScAddr
+#define MatFDColoring       PETScAddr
+#define Partitioning        PETScAddr
+#define MatAIJIndices       PETScAddr
 #define MatType             integer
 #define MatOption           integer 
 #define MatAssemblyType     integer
@@ -13,12 +16,10 @@
 #define MatGetSubMatrixCall integer
 #define MatOperation        integer
 #define MatColoringType     integer
-#define MatFDColoring       integer
 #define MatInfo             double precision
 #define MatStructure        integer
-#define Partitioning        integer
 #define PartitioningType    integer
-#define MatAIJIndices       integer
+
 !
 !  Matrix types
 !

@@ -1,15 +1,15 @@
 !
-!  $Id: draw.h,v 1.13 1997/11/13 19:13:26 balay Exp balay $;
+!  $Id: draw.h,v 1.14 1998/03/24 16:11:39 balay Exp balay $;
 !
 !  Include file for Fortran use of the Draw package in PETSc
 !
-#define Draw       integer
-#define DrawLG     integer
-#define DrawAxis   integer
+#define Draw       PETScAddr
+#define DrawLG     PETScAddr
+#define DrawAxis   PETScAddr
+#define DrawSP     PETScAddr
+#define DrawHist   PETScAddr
+#define DrawMesh   PETScAddr
 #define DrawButton integer
-#define DrawSP     integer
-#define DrawHist   integer
-#define DrawMesh   integer
 !
 !  types of draw context
 !

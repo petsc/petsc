@@ -1,9 +1,9 @@
 !
-!  "$Id: ksp.h,v 1.12 1998/03/06 00:21:29 bsmith Exp balay $";
+!  "$Id: ksp.h,v 1.13 1998/03/24 16:11:34 balay Exp balay $";
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
-#define KSP          integer
+#define KSP          PETScAddr
 #define KSPCGType    integer
 !
 !  Various Krylov subspace methods

@@ -1,9 +1,9 @@
 !
-!  $Id: viewer.h,v 1.14 1997/11/14 14:56:11 bsmith Exp balay $;
+!  $Id: viewer.h,v 1.15 1998/03/24 16:11:10 balay Exp balay $;
 !
 !  Include file for Fortran use of the Viewer package in PETSc
 !
-#define Viewer           integer
+#define Viewer           PETScAddr
 #define ViewerType       integer
 #define ViewerBinaryType integer
 

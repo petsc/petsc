@@ -1,10 +1,10 @@
 !
-!  $Id: pc.h,v 1.22 1998/03/06 00:21:29 bsmith Exp balay $;
+!  $Id: pc.h,v 1.23 1998/03/24 16:11:27 balay Exp balay $;
 !
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
-#define PC           integer
-#define PCNullSpace  integer
+#define PC           PETScAddr
+#define PCNullSpace  PETScAddr
 #define PCSide       integer
 #define PCBGSType    integer
 #define PCASMType    integer
