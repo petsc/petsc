@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daview.c,v 1.12 1996/08/08 14:47:19 bsmith Exp balay $";
+static char vcid[] = "$Id: daview.c,v 1.13 1996/12/16 21:12:07 balay Exp bsmith $";
 #endif
  
 /*
@@ -8,9 +8,9 @@ static char vcid[] = "$Id: daview.c,v 1.12 1996/08/08 14:47:19 bsmith Exp balay 
 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DAView"
-/*@
+#undef __FUNC__  
+#define __FUNC__ "DAView"
+/*@C
    DAView - Visualizes a distributed array object.
 
    Input Parameters:
@@ -24,10 +24,11 @@ $     VIEWER_STDOUT_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 
+$     VIEWER_DRAWX_WORLD - to default window
 
    The user can open alternative vistualization contexts with
 $    ViewerFileOpenASCII() - output to a specified file
-$    DrawOpenX() - output processor layout to an 
+$    ViewerDrawOpenX() - output processor layout to an 
 $         X window display
 
    Default Output Format:
@@ -66,8 +67,8 @@ int DAView(DA da, Viewer v)
   return (*da->view)((PetscObject)da,v);
 }  
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DAGetInfo"
+#undef __FUNC__  
+#define __FUNC__ "DAGetInfo"
 /*@
    DAGetInfo - Gets information about a given distributed array.
 

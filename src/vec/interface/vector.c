@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.97 1996/12/18 23:00:13 balay Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.98 1997/01/01 03:35:28 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: vector.c,v 1.97 1996/12/18 23:00:13 balay Exp bsmith 
 */
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecValid"
+#undef __FUNC__  
+#define __FUNC__ "VecValid"
 /*@
    VecValid - Checks whether a vector object is valid.
 
@@ -32,8 +32,8 @@ int VecValid(Vec v,PetscTruth *flg)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecDot"
+#undef __FUNC__  
+#define __FUNC__ "VecDot"
 /*@
    VecDot - Computes the vector dot product.
 
@@ -77,8 +77,8 @@ int VecDot(Vec x, Vec y, Scalar *val)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecNorm"
+#undef __FUNC__  
+#define __FUNC__ "VecNorm"
 /*@
    VecNorm  - Computes the vector norm.
 
@@ -112,8 +112,8 @@ int VecNorm(Vec x,NormType type,double *val)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecMax"
+#undef __FUNC__  
+#define __FUNC__ "VecMax"
 /*@
    VecMax - Determines the maximum vector component and its location.
 
@@ -139,8 +139,8 @@ int VecMax(Vec x,int *p,double *val)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecMin"
+#undef __FUNC__  
+#define __FUNC__ "VecMin"
 /*@
    VecMin - Determines the minimum vector component and its location.
 
@@ -166,8 +166,8 @@ int VecMin(Vec x,int *p,double *val)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecTDot"
+#undef __FUNC__  
+#define __FUNC__ "VecTDot"
 /*@
    VecTDot - Computes an indefinite vector dot product. That is, this
    routine does NOT use the complex conjugate.
@@ -204,8 +204,8 @@ int VecTDot(Vec x,Vec y,Scalar *val)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScale"
+#undef __FUNC__  
+#define __FUNC__ "VecScale"
 /*@
    VecScale - Scales a vector. 
 
@@ -233,8 +233,8 @@ int VecScale(Scalar *alpha,Vec x)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecSet"
+#undef __FUNC__  
+#define __FUNC__ "VecSet"
 /*@
    VecCopy - Copies a vector. 
 
@@ -286,8 +286,8 @@ int VecSet(Scalar *alpha,Vec x)
   return 0;
 } 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecSetRandom"
+#undef __FUNC__  
+#define __FUNC__ "VecSetRandom"
 /*@C
    VecSetRandom - Sets all components of a vector to random numbers.
 
@@ -318,8 +318,8 @@ int VecSetRandom(PetscRandom rctx,Vec x)
   return 0;
 } 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecAXPY"
+#undef __FUNC__  
+#define __FUNC__ "VecAXPY"
 /*@
    VecAXPY - Computes y = alpha x + y. 
 
@@ -346,8 +346,8 @@ int VecAXPY(Scalar *alpha,Vec x,Vec y)
   return 0;
 } 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecAXPBY"
+#undef __FUNC__  
+#define __FUNC__ "VecAXPBY"
 /*@
    VecAXPBY - Computes y = alpha x + beta y. 
 
@@ -375,8 +375,8 @@ int VecAXPBY(Scalar *alpha,Scalar *beta,Vec x,Vec y)
   return 0;
 } 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecAYPX"
+#undef __FUNC__  
+#define __FUNC__ "VecAYPX"
 /*@
    VecAYPX - Computes y = x + alpha y.
 
@@ -403,8 +403,8 @@ int VecAYPX(Scalar *alpha,Vec x,Vec y)
   return 0;
 } 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecSwap"
+#undef __FUNC__  
+#define __FUNC__ "VecSwap"
 /*@
    VecSwap - Swaps the vectors x and y.
 
@@ -425,8 +425,8 @@ int VecSwap(Vec x,Vec y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecWAXPY"
+#undef __FUNC__  
+#define __FUNC__ "VecWAXPY"
 /*@
    VecWAXPY - Computes w = alpha x + y.
 
@@ -455,8 +455,8 @@ int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecPointwiseMult"
+#undef __FUNC__  
+#define __FUNC__ "VecPointwiseMult"
 /*@
    VecPointwiseMult - Computes the componentwise multiplication w = x*y.
 
@@ -482,8 +482,8 @@ int VecPointwiseMult(Vec x,Vec y,Vec w)
   return 0;
 } 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecPointwiseDivide"
+#undef __FUNC__  
+#define __FUNC__ "VecPointwiseDivide"
 /*@
    VecPointwiseDivide - Computes the componentwise division w = x/y.
 
@@ -505,8 +505,8 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
   return (*x->ops.pointwisedivide)(x,y,w);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecDuplicate"
+#undef __FUNC__  
+#define __FUNC__ "VecDuplicate"
 /*@C
    VecDuplicate - Creates a new vector of the same type as an existing vector.
 
@@ -534,8 +534,8 @@ int VecDuplicate(Vec v,Vec *newv)
   return   (*v->ops.duplicate)(v,newv);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecDestroy"
+#undef __FUNC__  
+#define __FUNC__ "VecDestroy"
 /*@C
    VecDestroy - Destroys a vector.
 
@@ -552,8 +552,8 @@ int VecDestroy(Vec v)
   return (*v->destroy)((PetscObject )v);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecDuplicateVecs"
+#undef __FUNC__  
+#define __FUNC__ "VecDuplicateVecs"
 /*@C
    VecDuplicateVecs - Creates several vectors of the same type as an existing vector.
 
@@ -584,8 +584,8 @@ int VecDuplicateVecs(Vec v,int m,Vec **V)
   return (*v->ops.duplicatevecs)( v, m,V );
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecDestroyVecs"
+#undef __FUNC__  
+#define __FUNC__ "VecDestroyVecs"
 /*@C
    VecDestroyVecs - Frees a block of vectors obtained with VecDuplicateVecs().
 
@@ -609,8 +609,8 @@ int VecDestroyVecs(Vec *vv,int m)
   return (*(*vv)->ops.destroyvecs)( vv, m );
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecSetValues"
+#undef __FUNC__  
+#define __FUNC__ "VecSetValues"
 /*@
    VecSetValues - Inserts or adds values into certain locations of a vector. 
 
@@ -650,8 +650,8 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecSetLocalToGlobalMapping"
+#undef __FUNC__  
+#define __FUNC__ "VecSetLocalToGlobalMapping"
 /*@
    VecSetLocalToGlobalMapping - Sets a local numbering to global numbering used
    by the routine VecSetValuesLocal() to allow users to insert vector entries
@@ -683,8 +683,8 @@ int VecSetLocalToGlobalMapping(Vec x, int n,int *indices)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecSetValuesLocal"
+#undef __FUNC__  
+#define __FUNC__ "VecSetValuesLocal"
 /*@
    VecSetValuesLocal - Inserts or adds values into certain locations of a vector,
    using a local ordering of the nodes. 
@@ -733,8 +733,8 @@ int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecAssemblyBegin"
+#undef __FUNC__  
+#define __FUNC__ "VecAssemblyBegin"
 /*@
    VecAssemblyBegin - Begins assembling the vector.  This routine should
    be called after completing all calls to VecSetValues().
@@ -758,8 +758,8 @@ int VecAssemblyBegin(Vec vec)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecAssemblyEnd"
+#undef __FUNC__  
+#define __FUNC__ "VecAssemblyEnd"
 /*@
    VecAssemblyEnd - Completes assembling the vector.  This routine should
    be called after VecAssemblyBegin().
@@ -797,26 +797,20 @@ int VecAssemblyEnd(Vec vec)
   }
   ierr = OptionsHasName(PETSC_NULL,"-vec_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerDrawOpenX(vec->comm,0,0,0,0,300,300,&viewer); CHKERRQ(ierr);
-    ierr = VecView(vec,viewer); CHKERRQ(ierr);
-    ierr = ViewerFlush(viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = VecView(vec,VIEWER_DRAWX_(vec->comm)); CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAWX_(vec->comm)); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-vec_view_draw_lg",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerDrawOpenX(vec->comm,0,0,0,0,300,300,&viewer); CHKERRQ(ierr);
-    ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_DRAW_LG,0); CHKERRQ(ierr);
-    ierr = VecView(vec,viewer); CHKERRQ(ierr);
-    ierr = ViewerFlush(viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ViewerSetFormat(VIEWER_DRAWX_(vec->comm),VIEWER_FORMAT_DRAW_LG,0); CHKERRQ(ierr);
+    ierr = VecView(vec,VIEWER_DRAWX_(vec->comm)); CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAWX_(vec->comm)); CHKERRQ(ierr);
   }
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecMTDot"
+#undef __FUNC__  
+#define __FUNC__ "VecMTDot"
 /*@C
    VecMTDot - Computes indefinite vector multiple dot products. 
    That is, it does NOT use the complex conjugate.
@@ -855,8 +849,8 @@ int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecMDot"
+#undef __FUNC__  
+#define __FUNC__ "VecMDot"
 /*@C
    VecMDot - Computes vector multiple dot products. 
 
@@ -894,8 +888,8 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecMAXPY"
+#undef __FUNC__  
+#define __FUNC__ "VecMAXPY"
 /*@C
    VecMAXPY - Computes y[j] = alpha[j] x + y[j]. 
 
@@ -925,8 +919,8 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
   return 0;
 } 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecGetArray"
+#undef __FUNC__  
+#define __FUNC__ "VecGetArray"
 /*@C
    VecGetArray - Returns a pointer to vector data. For default PETSc
    vectors, VecGetArray() returns a pointer to the local data array. Otherwise,
@@ -955,8 +949,8 @@ int VecGetArray(Vec x,Scalar **a)
   return (*x->ops.getarray)(x,a);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecGetArrays"
+#undef __FUNC__  
+#define __FUNC__ "VecGetArrays"
 /*@C
    VecGetArrays - Returns a pointer to the arrays in a set of vectors
    that were created by a call to VecDuplicateVecs().  You MUST call
@@ -991,8 +985,8 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecRestoreArrays"
+#undef __FUNC__  
+#define __FUNC__ "VecRestoreArrays"
 /*@C
    VecRestoreArrays - Restores a group of vectors after VecGetArrays()
    has been called.
@@ -1023,8 +1017,8 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecRestoreArray"
+#undef __FUNC__  
+#define __FUNC__ "VecRestoreArray"
 /*@C
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
@@ -1048,9 +1042,9 @@ int VecRestoreArray(Vec x,Scalar **a)
   else return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecView"
-/*@
+#undef __FUNC__  
+#define __FUNC__ "VecView"
+/*@C
    VecView - Views a vector object. 
 
    Input Parameters:
@@ -1064,13 +1058,13 @@ $     VIEWER_STDOUT_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 
+$     VIEWER_DRAWX_WORLD - graphical display of vector
 
    The user can open alternative vistualization contexts with
 $    ViewerFileOpenASCII() - output vector to a specified file
 $    ViewerFileOpenBinary() - output in binary to a
 $         specified file; corresponding input uses VecLoad()
 $    ViewerDrawOpenX() - output vector to an X window display
-$    DrawLGCreate() - output vector as a line graph to an X window display
 $    ViewerMatlabOpen() - output vector to Matlab viewer
 
 .keywords: Vec, view, visualize, output, print, write, draw
@@ -1086,8 +1080,8 @@ int VecView(Vec v,Viewer viewer)
   return (*v->view)((PetscObject)v,viewer);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecGetSize"
+#undef __FUNC__  
+#define __FUNC__ "VecGetSize"
 /*@
    VecGetSize - Returns the global number of elements of the vector.
 
@@ -1108,8 +1102,8 @@ int VecGetSize(Vec x,int *size)
   return (*x->ops.getsize)(x,size);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecGetLocalSize"
+#undef __FUNC__  
+#define __FUNC__ "VecGetLocalSize"
 /*@
    VecGetLocalSize - Returns the number of elements of the vector stored 
    in local memory. This routine may be implementation dependent, so use 
@@ -1132,8 +1126,8 @@ int VecGetLocalSize(Vec x,int *size)
   return (*x->ops.getlocalsize)(x,size);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecGetOwnershipRange"
+#undef __FUNC__  
+#define __FUNC__ "VecGetOwnershipRange"
 /*@
    VecGetOwnershipRange - Returns the range of indices owned by 
    this processor, assuming that the vectors are laid out with the
@@ -1160,8 +1154,8 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
   return (*x->ops.getownershiprange)(x,low,high);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecSetOption"
+#undef __FUNC__  
+#define __FUNC__ "VecSetOption"
 /*@
    VecSetOption - Allows one to set options for a vectors behavior.
 
@@ -1186,8 +1180,8 @@ int VecSetOption(Vec x,VecOption op)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecDuplicateVecs_Default"
+#undef __FUNC__  
+#define __FUNC__ "VecDuplicateVecs_Default"
 /* Default routines for obtaining and releasing; */
 /* may be used by any implementation */
 int VecDuplicateVecs_Default(Vec w,int m,Vec **V )
@@ -1202,8 +1196,8 @@ int VecDuplicateVecs_Default(Vec w,int m,Vec **V )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecDestroyVecs_Default"
+#undef __FUNC__  
+#define __FUNC__ "VecDestroyVecs_Default"
 int VecDestroyVecs_Default( Vec *v, int m )
 {
   int i,ierr;

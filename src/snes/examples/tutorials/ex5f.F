@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.17 1996/12/10 23:25:43 curfman Exp bsmith $";
+C "$Id: ex5f.F,v 1.18 1997/01/01 03:41:24 bsmith Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -16,7 +16,7 @@ C/*T
 C  Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
 C  Concepts: DA^Using distributed arrays;
 C  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-C  Routines: SNESSolve(); SNESSetFromOptions();
+C  Routines: SNESSolve(); SNESSetFromOptions(); DAView();
 C  Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
 C  Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
 C  Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
@@ -201,6 +201,11 @@ C  Create distributed array (DA) to manage parallel grid and vectors
       call DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,
      &                my,Nx,Ny,1,1,da,ierr)
       user(3) = da
+
+C
+C   Visualize the distribution of the array across the processors
+C
+C     call DAView(da,VIEWER_DRAWX_WORLD,ierr)
 
 C  Extract global and local vectors from DA; then duplicate for remaining
 C  vectors that are the same types

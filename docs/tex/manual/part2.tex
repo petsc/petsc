@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.177 1996/12/20 17:59:15 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.178 1997/01/01 03:42:59 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -525,7 +525,7 @@ required for local computation. \sindex{ghost points} \sindex{global representat
 PETSc provides routines to help map indices from a local numbering scheme to 
 the PETSc global numbering scheme. This is done via the following routines
 \begin{verbatim}
-   ierr = ISLocalToGlobalMappingCreate(int N, int* globalnumbers, ISLocalToGlobalMapping* ctx);
+   ierr = ISLocalToGlobalMappingCreate(int N,int* globalnumbers,ISLocalToGlobalMapping* ctx);
    ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,int *out);
    ierr = ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,IS* isout);
    ierr = ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
@@ -1948,8 +1948,8 @@ One can also access the this functionality from the options database
 with the command {\tt -ksp\_xmonitor [x,y,w,h]}. \findex{-ksp_xmonitor} 
 Where {\tt x, y, w, h} are the optional location and size of the window.
 
-Once can cancel all hardwired monitoring routines for KSP at runtime with the 
-option {\tt -ksp\_cancelmonitors}. \findex{-ksp_cancelmonitors}
+Once can cancel all hardwired monitoring routines for KSP at runtime with 
+{\tt -ksp\_cancelmonitors}. \findex{-ksp_cancelmonitors}
 
 \subsection{Understanding the Operators Spectrum}
 Since the convergence of Krylov subspace methods depends strongly on 
@@ -2940,8 +2940,8 @@ SNES monitor routine, {\tt SNESDefaultMonitor()}, \findex{SNESDefaultMonitor()}
 while {\tt -snes\_xmonitor} \findex{-snes_xmonitor} draws
 a simple line graph of the residual norm's convergence.
 
-Once can cancel all hardwired monitoring routines for SNES at runtime with the 
-option {\tt -snes\_cancelmonitors}. \findex{-snes_cancelmonitors}
+Once can cancel all hardwired monitoring routines for SNES at runtime with 
+{\tt -snes\_cancelmonitors}. \findex{-snes_cancelmonitors}
 
 
 The routines \findex{SNESGetSolution()} \findex{SNESGetFunction}
@@ -4580,8 +4580,12 @@ higher-level PETSc routines include the statistics for the lower
 levels of which they are made up.  For example, the communication within
 matrix-vector products {\tt MatMult()} consists of vector scatter
 operations, as given by the routines {\tt VecScatterBegin()} and {\tt
-VecScatterEnd()}. (Details about the implementation of parallel
-matrix-vector products are given in \cite{petsc-mpi-paper}.)
+VecScatterEnd()}. 
+%
+%  Temp removed
+%
+%(Details about the implementation of parallel
+%matrix-vector products are given in \cite{petsc-mpi-paper}.)
 
 The final data presented are the percentages of the various statistics
 (time ({\tt \%T}), flops/sec ({\tt \%F}), messages({\tt \%M}), average message length ({\tt \%L}),
@@ -6568,8 +6572,11 @@ matrix type.
 
 \subsection{Parallel AIJ Sparse Matrices}
 
-The implementation of the parallel AIJ matrix data structure is 
-described in detail within \cite{petsc-mpi-paper}.
+%
+%  Temp remove
+%
+%The implementation of the parallel AIJ matrix data structure is 
+%described in detail within \cite{petsc-mpi-paper}.
 
 \subsection{Sequential Block AIJ Sparse Matrices}
 

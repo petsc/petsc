@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.46 1996/12/18 22:50:54 balay Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.47 1997/01/01 03:41:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,8 +12,8 @@ static char vcid[] = "$Id: da3.c,v 1.46 1996/12/18 22:50:54 balay Exp bsmith $";
 #include <math.h>
 #include "draw.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DAView_3d"
+#undef __FUNC__  
+#define __FUNC__ "DAView_3d"
 int DAView_3d(PetscObject dain,Viewer viewer)
 {
   DA          da = (DA) dain;
@@ -147,8 +147,8 @@ int DAView_3d(PetscObject dain,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DACreate3d"
+#undef __FUNC__  
+#define __FUNC__ "DACreate3d"
 /*@C
     DACreate3d - Creates a three-dimensional regular array that is
     distributed across some processors.
@@ -1497,7 +1497,10 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
-
+  ierr = OptionsHasName(PETSC_NULL,"-da_view_draw",&flg1); CHKERRQ(ierr);
+  if (flg1) {ierr = DAView(da,VIEWER_DRAWX_(da->comm)); CHKERRQ(ierr);}
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
+  if (flg1) {ierr = DAPrintHelp(da); CHKERRQ(ierr);}
   return 0;
 }
 

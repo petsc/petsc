@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.13 1996/09/30 20:18:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.14 1996/11/07 15:10:49 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -284,7 +284,7 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
-    ierr = VecView(appctx->solution,appctx->viewer1); CHKERRQ(ierr);
+  ierr = VecView(appctx->solution,appctx->viewer1); CHKERRQ(ierr);
 
   return 0;
 }

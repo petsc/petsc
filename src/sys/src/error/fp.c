@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.29 1997/01/01 03:36:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.30 1997/01/01 13:48:51 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -42,30 +42,32 @@ struct { int code_no; char *name; } error_codes[] = {
 } ;
 #define SIGPC(scp) (scp->sc_pc)
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "sigfpe_handler_type SYsample_handler"
+#undef __FUNC__  
+#define __FUNC__ "sigfpe_handler_type SYsample_handler"
 sigfpe_handler_type SYsample_handler(int sig,int code,struct sigcontext *scp,
                                      char *addr)
 {
   int err_ind, j,ierr;
 
   err_ind = -1 ;
-  for ( j = 0 ; error_codes[j].code_no ; j++ )
-    {if ( error_codes[j].code_no == code ) err_ind = j ;}
+  for ( j = 0 ; error_codes[j].code_no ; j++ ) {
+    if ( error_codes[j].code_no == code ) err_ind = j ;
+  }
 
-    if ( err_ind >= 0 )
-      fprintf(stderr, "*** %s occurred at pc=%X ***\n",
+  if ( err_ind >= 0 )
+    fprintf(stderr, "*** %s occurred at pc=%X ***\n",
 			error_codes[err_ind].name, SIGPC(scp));
-    else
-      fprintf(stderr,
+  else
+    fprintf(stderr,
               "*** floating point error 0x%x occurred at pc=%X ***\n",
               code, SIGPC(scp));
-    ierr = PetscError(PETSC_ERR_FP,0,"Unknown file",0,1,0,"floating point error");
-    MPI_Abort(PETSC_COMM_WORLD,0);
+  ierr = PetscError(PETSC_ERR_FP,0,"Unknown file",0,1,0,"floating point error");
+  MPI_Abort(PETSC_COMM_WORLD,0);
+  return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetFPTrap"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetFPTrap"
 /*@
    PetscSetFPTrap - Enables traps/exceptions on common floating point errors.
                     This option may not work on certain machines.
@@ -109,8 +111,8 @@ int PetscSetFPTrap(int flag)
    64 bit machine does not have fp handling!!!!
 */
 #elif defined(PARCH_IRIX64)
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetFPTrap"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int flag)
 {
   return 0;
@@ -126,8 +128,8 @@ struct { int code_no; char *name; } error_codes[] = {
        { _DIVZERO   , "floating divide" } ,
        { 0          , "unknown error" }
 } ;
-#undef __FUNCTION__  
-#define __FUNCTION__ "SYsample_handler"
+#undef __FUNC__  
+#define __FUNC__ "SYsample_handler"
 void SYsample_handler( unsigned exception[],int val[] )
 {
     int err_ind, j, code,ierr;
@@ -146,8 +148,8 @@ void SYsample_handler( unsigned exception[],int val[] )
     MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetFPTrap"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int flag)
 {
   if (flag == PETSC_FP_TRAP_ON) {
@@ -179,16 +181,16 @@ struct { int code_no; char *name; } error_codes[] = {
        { 0      , "unknown error" }
 } ;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SYsample_handler"
+#undef __FUNC__  
+#define __FUNC__ "SYsample_handler"
 void SYsample_handler(int sig)
 {
   int ierr;
   ierr = PetscError(PETSC_ERR_FP,0,"Unknown file",0,1,0,"floating point error");
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetFPTrap"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int on)
 {
   int flag;
@@ -234,8 +236,8 @@ struct { int code_no; char *name; } error_codes[] = {
    some strange interaction with the "POSIX_SOURCE" that we require.
  */
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SYsample_handler"
+#undef __FUNC__  
+#define __FUNC__ "SYsample_handler"
 void SYsample_handler(int sig,int code,struct sigcontext *scp )
 {
   int ierr,err_ind, j;
@@ -264,8 +266,8 @@ void SYsample_handler(int sig,int code,struct sigcontext *scp )
     MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetFPTrap"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int on)
 {
   int flag;
@@ -296,8 +298,8 @@ int PetscSetFPTrap(int on)
 struct { int code_no; char *name; } error_codes[] = {
 	   { 0		, "unknown error\0" } 
 } ;
-#undef __FUNCTION__  
-#define __FUNCTION__ "SYsample_handler"
+#undef __FUNC__  
+#define __FUNC__ "SYsample_handler"
 /*ARGSUSED*/
 void SYsample_handler(int sig)
 {
@@ -306,8 +308,8 @@ void SYsample_handler(int sig)
   ierr = PetscError(PETSC_ERR_FP,0,"Unknown file",0,1,0,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetFPTrap"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int on)
 {
   int flag;
@@ -334,8 +336,8 @@ int PetscSetFPTrap(int on)
   we provide routines to change to/from a benign mode.
  ***************************************************************************/
 #if defined(PARCH_paragon)
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetBenignUnderflows"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetBenignUnderflows"
 int PetscSetBenignUnderflows()
 {
   /* This needs the following assembly-language program:
@@ -353,8 +355,8 @@ int PetscSetBenignUnderflows()
   return 0;
 }
 #elif defined(PARCH_rs6000)
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetBenignUnderflows"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetBenignUnderflows"
 int PetscSetBenignUnderflows()
 {
   /* abrupt_underflow seems to have disappeared! */
@@ -362,8 +364,8 @@ int PetscSetBenignUnderflows()
   return 0;
 }
 #else
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetBenignUnderflows"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetBenignUnderflows"
 int PetscSetBenignUnderflows()
 {
   return 0;
@@ -372,8 +374,8 @@ int PetscSetBenignUnderflows()
 
 #else
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetFPTrap"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int flag)
 {
   return 0;

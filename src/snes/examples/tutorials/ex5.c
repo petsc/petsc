@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.70 1996/12/02 23:11:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.71 1997/01/01 03:41:24 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -17,7 +17,7 @@ The command line options include:\n\
    Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
    Concepts: DA^Using distributed arrays;
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions();
+   Routines: SNESSolve(); SNESSetFromOptions(); DAView();
    Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
    Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
    Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
@@ -126,6 +126,12 @@ int main( int argc, char **argv )
     SETERRA(1,0,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
                     user.my,Nx,Ny,1,1,&user.da); CHKERRA(ierr);
+
+  /*
+     Visualize the distribution of the array across the processors
+  */
+  /* ierr =  DAView(user.da,VIEWER_DRAWX_WORLD); CHKERRA(ierr); */
+
 
   /*
      Extract global and local vectors from DA; then duplicate for remaining

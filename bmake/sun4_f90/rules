@@ -3,16 +3,18 @@
 #  If you are not using the Gnu C compiler then replace the compiler name 
 # gcc with your own and remove the -D__USE_FIXED_PROTOTYPES__ and the -fPIC.
 #
+#  Setup to use the NAG Fortran 90 compiler.
+#
 PARCH    = sun4
 CC       = gcc -DPARCH_sun4 -D__USE_FIXED_PROTOTYPES__ -fPIC
-FC       = f77
+FC       = f90 -f77 -mismatch
 AR       = ar
 RM       = rm -f
 OMAKE    = make
 RANLIB   = ranlib
 SHELL    = /bin/sh
 CLINKER  = gcc $(COPTFLAGS)
-FLINKER  = f77 $(FOPTFLAGS)
+FLINKER  = f90 -f77 $(FOPTFLAGS)
 CONF     = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H \
            -DHAVE_MALLOC_H -DHAVE_X11 -DHAVE_FORTRAN_UNDERSCORE \
            -DHAVE_DRAND48 -DHAVE_GETDOMAINNAME  -DHAVE_UNISTD_H \
@@ -25,12 +27,6 @@ libf: $(LIBNAME)($(OBJSF))
 
 #############
 
-.F.o: 
-	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) $*.F
-.F.a: 
-	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) $*.F
-	$(AR) clr $(LIBNAME) $*.o
-	$(RM) $*.o
 #
 #   These are alternative rules for Fortran compilers that 
 #  do not understand the .F suffix
@@ -42,18 +38,17 @@ libf: $(LIBNAME)($(OBJSF))
 #  handled in the Fortran manner, so MPICH crashes on initializing
 #  the command line arguments.
 #
-#.F.o:
-#	-$(RM) $*.f
-#	-cpp $(CFLAGS) $< | grep -v '^ *#' > $*.f
-#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-#	-$(RM) $*.f
-#.F.a:
-#	-$(RM) $*.f
-#	-cpp $(CFLAGS)  $< | grep -v '^ *#' > $*.f
-#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-#	-$(AR) cr $(LIBNAME) $*.o
-#	-$(RM) $*.o	$*.f
-
+.F.o:
+	-$(RM) $*.f
+	-cpp $(CFLAGS) $< | grep -v '^ *#' > $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+	-$(RM) $*.f
+.F.a:
+	-$(RM) $*.f
+	-cpp $(CFLAGS)  $< | grep -v '^ *#' > $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+	-$(AR) cr $(LIBNAME) $*.o
+	-$(RM) $*.o	$*.f
 
 SLSUFFIX = so.1.0 
 shared: chkopts_basic

@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.27 1996/08/05 03:52:21 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.28 1996/11/07 15:12:51 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -25,6 +25,8 @@ extern int   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,
                         int,int,int,int,int,int,int,int,DA *);
 extern int   DADestroy(DA);
 extern int   DAView(DA,Viewer);
+
+extern int   DAPrintHelp(DA);
 
 extern int   DAGlobalToLocalBegin(DA,Vec, InsertMode,Vec);
 extern int   DAGlobalToLocalEnd(DA,Vec, InsertMode,Vec);

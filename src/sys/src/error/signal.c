@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.31 1996/12/16 22:08:20 balay Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.32 1997/01/01 03:36:26 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -28,8 +28,8 @@ static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
                            "TERM",    "URG",  "STOP", "TSTP", "CONT", 
                            "CHLD" }; 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSignalHandler"
+#undef __FUNC__  
+#define __FUNC__ "PetscSignalHandler"
 /*
     This is the signal handler called by the system. This calls 
   your signal handler.
@@ -51,8 +51,8 @@ static void PetscSignalHandler( int sig )
 }
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscDefaultSignalHandler"
+#undef __FUNC__  
+#define __FUNC__ "PetscDefaultSignalHandler"
 /*@
    PetscDefaultSignalHandler - Default signal handler.
 
@@ -74,13 +74,13 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
   PetscStrcat(buf,"PETSC ERROR: Try option -start_in_debugger or ");
   PetscStrcat(buf,"-on_error_attach_debugger ");
   PetscStrcat(buf,"to\nPETSC ERROR: determine where problem occurs");
-  ierr =  PetscError(0,0,0,"Unknown file and line number",PETSC_ERR_SIG,0,buf);
+  ierr =  PetscError(0,0,"Unknown file",0,PETSC_ERR_SIG,0,buf);
   MPI_Abort(PETSC_COMM_WORLD,ierr);
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscPushSignalHandler"
+#undef __FUNC__  
+#define __FUNC__ "PetscPushSignalHandler"
 /*@C
    PetscPushSignalHandler - Catches the usual fatal errors and 
    calls a user-provided routine.
@@ -135,8 +135,8 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscPopSignalHandler"
+#undef __FUNC__  
+#define __FUNC__ "PetscPopSignalHandler"
 int PetscPopSignalHandler()
 {
   struct SH *tmp;

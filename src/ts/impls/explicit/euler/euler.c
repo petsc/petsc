@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: euler.c,v 1.5 1996/09/30 20:19:44 curfman Exp balay $";
+static char vcid[] = "$Id: euler.c,v 1.6 1996/12/18 17:46:07 balay Exp bsmith $";
 #endif
 /*
        Code for Timestepping with explicit Euler.
@@ -14,8 +14,8 @@ typedef struct {
   Vec update;     /* work vector where F(t[i],u[i]) is stored */
 } TS_Euler;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSSetUp_Euler"
+#undef __FUNC__  
+#define __FUNC__ "TSSetUp_Euler"
 static int TSSetUp_Euler(TS ts)
 {
   TS_Euler *euler = (TS_Euler*) ts->data;
@@ -25,8 +25,8 @@ static int TSSetUp_Euler(TS ts)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSStep_Euler"
+#undef __FUNC__  
+#define __FUNC__ "TSStep_Euler"
 static int TSStep_Euler(TS ts,int *steps,double *time)
 {
   TS_Euler *euler = (TS_Euler*) ts->data;
@@ -51,8 +51,8 @@ static int TSStep_Euler(TS ts,int *steps,double *time)
   return 0;
 }
 /*------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSDestroy_Euler"
+#undef __FUNC__  
+#define __FUNC__ "TSDestroy_Euler"
 static int TSDestroy_Euler(PetscObject obj )
 {
   TS       ts = (TS) obj;
@@ -64,32 +64,32 @@ static int TSDestroy_Euler(PetscObject obj )
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSSetFromOptions_Euler"
+#undef __FUNC__  
+#define __FUNC__ "TSSetFromOptions_Euler"
 static int TSSetFromOptions_Euler(TS ts)
 {
 
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSPrintHelp_Euler"
+#undef __FUNC__  
+#define __FUNC__ "TSPrintHelp_Euler"
 static int TSPrintHelp_Euler(TS ts)
 {
 
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSView_Euler"
+#undef __FUNC__  
+#define __FUNC__ "TSView_Euler"
 static int TSView_Euler(PetscObject obj,Viewer viewer)
 {
   return 0;
 }
 
 /* ------------------------------------------------------------ */
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSCreate_Euler"
+#undef __FUNC__  
+#define __FUNC__ "TSCreate_Euler"
 int TSCreate_Euler(TS ts )
 {
   TS_Euler *euler;

@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.33 1996/10/02 19:08:52 bsmith Exp bsmith $;
+C  $Id: petsc.h,v 1.34 1997/01/01 03:42:52 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -14,11 +14,9 @@ C     real on the Cray T3d is actually double precision
 C
 #if defined(PARCH_t3d)
 #define Double real
-#define DoubleComplex complex
 #define DBLE(a) real(a)
 #else
 #define Double double precision
-#define DoubleComplex double complex
 #define DBLE(a) dble(a)
 #endif
 C
@@ -38,7 +36,20 @@ C
 C     Default Viewers
 C
       integer   VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF,
-     *          VIEWER_STDOUT_WORLD
+     *          VIEWER_STDOUT_WORLD, VIEWER_DRAWX_WORLD,
+     *          VIEWER_DRAWX_WORLD_0,VIEWER_DRAWX_WORLD_1,
+     *          VIEWER_DRAWX_WORLD_2,VIEWER_DRAWX_SELF,
+     *          VIEWER_MATLAB_WORLD
+C
+C     The numbers used below should match those in 
+C     src/fortran/custom/zpetsc.h
+C
+      parameter (VIEWER_DRAWX_WORLD_0 = -4, 
+     *           VIEWER_DRAWX_WORLD_1 = -5,
+     *           VIEWER_DRAWX_WORLD_2 = -6, 
+     *           VIEWER_DRAWX_SELF = -7,
+     *           VIEWER_MATLAB_WORLD = -8, 
+     *           VIEWER_DRAWX_WORLD = VIEWER_DRAWX_WORLD_0)
 
 C
 C     Fortran Null
@@ -46,11 +57,6 @@ C
       integer        PETSC_NULL
       character*(80) PETSC_NULL_CHARACTER
 
-C
-C     Representation of complex i
-C
-      DoubleComplex PETSC_i
-      parameter (PETSC_i = (0,1.0))
 C
 C PETSc world communicator
 C
@@ -67,9 +73,16 @@ C
 #define PetscReal(a) real(a)
 #if defined(PARCH_t3d)
 #define Scalar  complex
+#define DoubleComplex complex
 #else
 #define Scalar  double complex
+#define DoubleComplex double complex
 #endif
+C
+C     Representation of complex i
+C
+      DoubleComplex PETSC_i
+      parameter (PETSC_i = (0,1.0))
 #else
 #define PetscReal(a) a
 #if defined(PARCH_t3d)
@@ -83,8 +96,8 @@ C
 C     Macros for error checking
 C
 #if defined(PETSC_DEBUG)
-#define SETERRA(n,p,s)   call MPI_Abort(PETSC_COMM_WORLD,n)
-#define CHKERRA(n)       if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n)
+#define SETERRA(n,p,s) call MPI_Abort(PETSC_COMM_WORLD,n)
+#define CHKERRA(n) if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n)
 #else
 #define SETERRA(n,p,s)   
 #define CHKERRA(n)     

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.51 1996/12/18 22:51:13 balay Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.52 1997/01/01 03:41:35 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -12,8 +12,8 @@ static char vcid[] = "$Id: da1.c,v 1.51 1996/12/18 22:51:13 balay Exp bsmith $";
 #include <math.h>
 #include "draw.h"      /*I  "draw.h"  I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DAView_1d"
+#undef __FUNC__  
+#define __FUNC__ "DAView_1d"
 static int DAView_1d(PetscObject pobj,Viewer viewer)
 {
   DA          da  = (DA) pobj;
@@ -91,8 +91,8 @@ static int DAView_1d(PetscObject pobj,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DACreate1d"
+#undef __FUNC__  
+#define __FUNC__ "DACreate1d"
 /*@C
     DACreate1d - Creates a one-dimensional regular array that is
     distributed across some processors.
@@ -322,7 +322,10 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
-
+  ierr = OptionsHasName(PETSC_NULL,"-da_view_draw",&flg1); CHKERRQ(ierr);
+  if (flg1) {ierr = DAView(da,VIEWER_DRAWX_(da->comm)); CHKERRQ(ierr);}
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
+  if (flg1) {ierr = DAPrintHelp(da); CHKERRQ(ierr);}
   *inra = da;
   return 0;
 }

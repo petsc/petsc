@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.65 1996/12/18 22:59:05 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.66 1997/01/01 03:36:26 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -27,8 +27,8 @@ int  PetscTrFreeDefault( void *, int, char *,char *,char *);
 void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEE;
 int  TrMallocUsed = 0;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetUseTrMalloc_Private"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetUseTrMalloc_Private"
 int PetscSetUseTrMalloc_Private()
 {
   int ierr;
@@ -136,8 +136,8 @@ int MPI_Corrupted()
 }
 */
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscTrValid"
+#undef __FUNC__  
+#define __FUNC__ "PetscTrValid"
 /*
    PetscTrValid - Test the allocated blocks for validity.  This can be used to
    check for memory overwrites.
@@ -199,15 +199,15 @@ int PetscTrValid(int line,char *function,char *file,char *dir )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscTrMallocDefault"
+#undef __FUNC__  
+#define __FUNC__ "PetscTrMallocDefault"
 /*
     PetscTrMallocDefault - Malloc with tracing.
 
     Input Parameters:
 .   a   - number of bytes to allocate
 .   lineno - line number where used.  Use __LINE__ for this
-.   function - function calling routine. Use __FUNCTION__ for this
+.   function - function calling routine. Use __FUNC__ for this
 .   filename  - file name where used.  Use __FILE__ for this
 .   dir - directory where file is. Use __DIR__ for this
 
@@ -258,15 +258,15 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
   head->lineno   = lineno;
 
   if ((l = PetscStrlen(filename)) > TR_FILENAME_LEN-1) filename += (l - (TR_FILENAME_LEN-1));
-  PetscStrncpy( head->filename, filename, (TR_FILENAME_LEN-1) );
+  if (filename) PetscStrncpy( head->filename, filename, (TR_FILENAME_LEN-1) );
   head->filename[TR_FILENAME_LEN-1] = 0;
 
   if ((l = PetscStrlen(function)) > TR_FUNCTIONNAME_LEN-1) function += (l-(TR_FUNCTIONNAME_LEN-1));
-  PetscStrncpy( head->functionname, function, (TR_FUNCTIONNAME_LEN-1) );
+  if (function) PetscStrncpy( head->functionname, function, (TR_FUNCTIONNAME_LEN-1) );
   head->functionname[TR_FUNCTIONNAME_LEN-1] = 0;
 
   if ((l = PetscStrlen(dir)) > TR_DIRNAME_LEN-1) dir += (l-(TR_DIRNAME_LEN-1));
-  PetscStrncpy( head->dirname, dir, (TR_DIRNAME_LEN-1) );
+  if (dir) PetscStrncpy( head->dirname, dir, (TR_DIRNAME_LEN-1) );
   head->dirname[TR_DIRNAME_LEN-1] = 0;
 
   head->cookie                = COOKIE_VALUE;
@@ -283,15 +283,15 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
 }
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscTrFreeDefault"
+#undef __FUNC__  
+#define __FUNC__ "PetscTrFreeDefault"
 /*
    PetscTrFreeDefault - Free with tracing.
 
    Input Parameters:
 .   a    - pointer to a block allocated with PetscTrMalloc
 .   lineno - line number where used.  Use __LINE__ for this
-.   function - function calling routine. Use __FUNCTION__ for this
+.   function - function calling routine. Use __FUNC__ for this
 .   file  - file name where used.  Use __FILE__ for this
 .   dir - directory where file is. Use __DIR__ for this
  */
@@ -359,11 +359,11 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
      allocated location */
   if (line > 0 && line < 50000) {
     head->lineno = line;
-    PetscStrncpy( head->filename, file, (TR_FILENAME_LEN-1) );
+    if (file) PetscStrncpy( head->filename, file, (TR_FILENAME_LEN-1) );
     head->filename[TR_FILENAME_LEN-1]= 0;  /* Just in case */
-    PetscStrncpy( head->functionname, function, (TR_FUNCTIONNAME_LEN-1) );
+    if (function) PetscStrncpy( head->functionname, function, (TR_FUNCTIONNAME_LEN-1) );
     head->functionname[TR_FUNCTIONNAME_LEN-1]= 0;  /* Just in case */
-    PetscStrncpy( head->dirname, dir, (TR_DIRNAME_LEN-1) );
+    if (dir) PetscStrncpy( head->dirname, dir, (TR_DIRNAME_LEN-1) );
     head->dirname[TR_DIRNAME_LEN-1]= 0;  /* Just in case */
   }
   else {
@@ -380,8 +380,8 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscTrSpace"
+#undef __FUNC__  
+#define __FUNC__ "PetscTrSpace"
 /*@
     PetscTrSpace - Returns space statistics.
    
@@ -402,8 +402,8 @@ int PetscTrSpace( double *space, double *fr, double *maxs )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscTrDump"
+#undef __FUNC__  
+#define __FUNC__ "PetscTrDump"
 /*@C
    PetscTrDump - Dumps the allocated memory blocks to a file. The information 
    printed is: size of space (in bytes), address of space, id of space, 
@@ -439,8 +439,8 @@ int PetscTrDump( FILE *fp )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscTrDebugLevel"
+#undef __FUNC__  
+#define __FUNC__ "PetscTrDebugLevel"
 /*
     PetscTrDebugLevel - Set the level of debugging for the space management 
                    routines.

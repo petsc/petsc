@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.63 1996/12/18 22:51:07 balay Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.64 1997/01/01 03:41:35 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: da2.c,v 1.63 1996/12/18 22:51:07 balay Exp bsmith $";
 #include "draw.h"
 #include <math.h>
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DAView_2d"
+#undef __FUNC__  
+#define __FUNC__ "DAView_2d"
 static int DAView_2d(PetscObject dain,Viewer viewer)
 {
   DA          da = (DA) dain;
@@ -104,8 +104,8 @@ static int DAView_2d(PetscObject dain,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DACreate2d"
+#undef __FUNC__  
+#define __FUNC__ "DACreate2d"
 /*@C
     DACreate2d - Creates a two-dimensional regular array that is
     distributed across some processors.
@@ -722,11 +722,43 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
+  ierr = OptionsHasName(PETSC_NULL,"-da_view_draw",&flg1); CHKERRQ(ierr);
+  if (flg1) {ierr = DAView(da,VIEWER_DRAWX_(da->comm)); CHKERRQ(ierr);}
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
+  if (flg1) {ierr = DAPrintHelp(da); CHKERRQ(ierr);}
+  
+  return 0; 
+}
+
+/*@
+     DAPrintHelp - Prints command line options for DA.
+
+  Input Parameters:
+.   da - the distributed array
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d()
+
+.keywords: DA, help
+
+@*/
+int DAPrintHelp(DA da)
+{
+  static int called = 0;
+  MPI_Comm   comm;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+
+  comm = da->comm;
+  if (!called) {
+    PetscPrintf(comm,"General da options:\n");
+    PetscPrintf(comm,"  -da_view : print da distribution to screen\n");
+    PetscPrintf(comm,"  -da_view_draw : display DA in window\n");
+    called = 1;
+  }
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DARefine"
+#undef __FUNC__  
+#define __FUNC__ "DARefine"
 /*@
    DARefine - Creates a new distributed array that is a refinement of a given
    distributed array.

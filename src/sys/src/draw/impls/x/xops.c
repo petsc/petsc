@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.68 1996/12/18 23:17:56 balay Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.69 1997/01/01 03:39:35 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -22,8 +22,8 @@ static char vcid[] = "$Id: xops.c,v 1.68 1996/12/18 23:17:56 balay Exp bsmith $"
                                        ((win)->port_yr - (win)->port_yl))/\
                                        ((win)->coor_yr - (win)->coor_yl))))
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawLine_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawLine_X"
 int DrawLine_X(Draw Win, double xl, double yl, double xr, double yr,int cl)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -36,8 +36,8 @@ int DrawLine_X(Draw Win, double xl, double yl, double xr, double yr,int cl)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawPoint_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawPoint_X"
 static int DrawPoint_X(Draw Win,double x,double  y,int c)
 {
   int     xx,yy;
@@ -49,8 +49,8 @@ static int DrawPoint_X(Draw Win,double x,double  y,int c)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawRectangle_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawRectangle_X"
 static int DrawRectangle_X(Draw Win, double xl, double yl, double xr, double yr,
                            int c1, int c2,int c3,int c4)
 {
@@ -67,8 +67,8 @@ static int DrawRectangle_X(Draw Win, double xl, double yl, double xr, double yr,
 
 extern int XiDrawInterpolatedTriangle(Draw_X*,int,int,int,int,int,int,int,int,int);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawTriangle_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawTriangle_X"
 static int DrawTriangle_X(Draw Win, double X1, double Y1, double X2, 
                           double Y2,double X3,double Y3, int c1, int c2,int c3)
 {
@@ -99,8 +99,8 @@ static int DrawTriangle_X(Draw Win, double X1, double Y1, double X2,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawText_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawText_X"
 static int DrawText_X(Draw Win,double x,double  y,int c,char *chrs )
 {
   int     xx,yy;
@@ -115,8 +115,8 @@ static int DrawText_X(Draw Win,double x,double  y,int c,char *chrs )
 
 int XiFontFixed( Draw_X*,int, int,XiFont **);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawTextSetSize_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawTextSetSize_X"
 static int DrawTextSetSize_X(Draw Win,double x,double  y)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -128,8 +128,8 @@ static int DrawTextSetSize_X(Draw Win,double x,double  y)
   return XiFontFixed( XiWin,w, h, &XiWin->font);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawTextGetSize_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawTextGetSize_X"
 int DrawTextGetSize_X(Draw Win,double *x,double  *y)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -141,8 +141,8 @@ int DrawTextGetSize_X(Draw Win,double *x,double  *y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawTextVertical_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawTextVertical_X"
 int DrawTextVertical_X(Draw Win,double x,double  y,int c,char *chrs )
 {
   int     xx,yy,n = PetscStrlen(chrs),i;
@@ -163,8 +163,8 @@ int DrawTextVertical_X(Draw Win,double x,double  y,int c,char *chrs )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawFlush_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawFlush_X"
 static int DrawFlush_X(Draw Win )
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -172,8 +172,8 @@ static int DrawFlush_X(Draw Win )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawSyncFlush_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawSyncFlush_X"
 static int DrawSyncFlush_X(Draw Win )
 {
   int     rank;
@@ -194,8 +194,8 @@ static int DrawSyncFlush_X(Draw Win )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawSetViewport_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawSetViewport_X"
 static int DrawSetViewport_X(Draw Win,double xl,double yl,double xr,double yr)
 {
   Draw_X*    XiWin = (Draw_X*) Win->data;
@@ -207,8 +207,8 @@ static int DrawSetViewport_X(Draw Win,double xl,double yl,double xr,double yr)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawClear_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawClear_X"
 static int DrawClear_X(Draw Win)
 {
   Draw_X*  XiWin = (Draw_X*) Win->data;
@@ -223,8 +223,8 @@ static int DrawClear_X(Draw Win)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawSyncClear_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawSyncClear_X"
 static int DrawSyncClear_X(Draw Win)
 {
   int     rank;
@@ -240,8 +240,8 @@ static int DrawSyncClear_X(Draw Win)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawSetDoubleBuffer_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawSetDoubleBuffer_X"
 static int DrawSetDoubleBuffer_X(Draw Win)
 {
   Draw_X*  win = (Draw_X*) Win->data;
@@ -258,8 +258,10 @@ static int DrawSetDoubleBuffer_X(Draw Win)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawGetMouseButton_X"
+#include <X11/cursorfont.h>
+
+#undef __FUNC__  
+#define __FUNC__ "DrawGetMouseButton_X"
 static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
                                 double *y_user,double *x_phys,double *y_phys)
 {
@@ -268,6 +270,18 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
   Window       root, child;
   int          root_x, root_y,px,py;
   unsigned int keys_button;
+  Cursor       cursor = 0;
+
+  /* 
+         Try to change the border color to red to indicate requesting input.
+       Does not appear to work.
+  XSetWindowBorder(win->disp, win->win,win->cmapping[DRAW_RED]);
+  XFlush( win->disp ); XSync(win->disp,False);
+  */
+  if (!cursor) {
+    cursor = XCreateFontCursor(win->disp,XC_hand2); 
+  }
+  XDefineCursor(win->disp, win->win, cursor);
 
   XSelectInput( win->disp, win->win, ButtonPressMask | ButtonReleaseMask );
 
@@ -289,11 +303,13 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
   if (y_user) *y_user = draw->coor_yl + 
                         ((1.0 - ((double) py)/((double) win->h)-draw->port_yl))*
                         (draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
+
+  XDefineCursor(win->disp, win->win, None);
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawPause_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawPause_X"
 static int DrawPause_X(Draw draw)
 {
   int ierr;
@@ -311,8 +327,8 @@ static int DrawPause_X(Draw draw)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawCreatePopUp_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawCreatePopUp_X"
 static int DrawCreatePopUp_X(Draw draw,Draw *popup)
 {
   int     ierr;
@@ -324,8 +340,8 @@ static int DrawCreatePopUp_X(Draw draw,Draw *popup)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawSetTitle_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawSetTitle_X"
 static int DrawSetTitle_X(Draw draw,char *title)
 {
   Draw_X        *win = (Draw_X *) draw->data;
@@ -338,8 +354,8 @@ static int DrawSetTitle_X(Draw draw,char *title)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawCheckResizedWindow_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawCheckResizedWindow_X"
 static int DrawCheckResizedWindow_X(Draw draw)
 {
   Draw_X       *win = (Draw_X *) draw->data;
@@ -389,8 +405,8 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawSetTitle_X,
                                  DrawCheckResizedWindow_X };
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawDestroy_X"
+#undef __FUNC__  
+#define __FUNC__ "DrawDestroy_X"
 int DrawDestroy_X(PetscObject obj)
 {
   Draw   ctx = (Draw) obj;
@@ -409,8 +425,8 @@ int DrawDestroy_X(PetscObject obj)
 extern int XiQuickWindow(Draw_X*,char*,char*,int,int,int,int,int);
 extern int XiQuickWindowFromWindow(Draw_X*,char*,Window,int);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawXGetDisplaySize_Private"
+#undef __FUNC__  
+#define __FUNC__ "DrawXGetDisplaySize_Private"
 int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
 {
   Display *display;
@@ -424,8 +440,8 @@ int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawOpenX"
+#undef __FUNC__  
+#define __FUNC__ "DrawOpenX"
 /*@C
    DrawOpenX - Opens an X-window for use with the Draw routines.
 
@@ -585,8 +601,8 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 #else
 
 #include "draw.h"
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawOpenX"
+#undef __FUNC__  
+#define __FUNC__ "DrawOpenX"
 int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* ctx)
 {
   int rank,flag;
@@ -602,8 +618,8 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
 #endif
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerDrawOpenX"
+#undef __FUNC__  
+#define __FUNC__ "ViewerDrawOpenX"
 /*@C
    ViewerDrawOpenX - Opens an X window for use as a viewer. If you want to 
    do graphics in this window, you must call ViewerDrawGetDraw() and
@@ -675,8 +691,8 @@ int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
 Viewer VIEWER_DRAWX_SELF_PRIVATE = 0, VIEWER_DRAWX_WORLD_PRIVATE_0 = 0,
        VIEWER_DRAWX_WORLD_PRIVATE_1 = 0, VIEWER_DRAWX_WORLD_PRIVATE_2 = 0;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerInitializeDrawXSelf_Private"
+#undef __FUNC__  
+#define __FUNC__ "ViewerInitializeDrawXSelf_Private"
 int ViewerInitializeDrawXSelf_Private()
 {
   int ierr,xywh[4],size = 4,flg;
@@ -690,8 +706,8 @@ int ViewerInitializeDrawXSelf_Private()
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerInitializeDrawXWorld_Private_0"
+#undef __FUNC__  
+#define __FUNC__ "ViewerInitializeDrawXWorld_Private_0"
 int ViewerInitializeDrawXWorld_Private_0()
 {
   int ierr,xywh[4],size = 4,flg;
@@ -705,8 +721,8 @@ int ViewerInitializeDrawXWorld_Private_0()
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerInitializeDrawXWorld_Private_1"
+#undef __FUNC__  
+#define __FUNC__ "ViewerInitializeDrawXWorld_Private_1"
 int ViewerInitializeDrawXWorld_Private_1()
 {
   int ierr,xywh[4],size = 4,flg;
@@ -720,8 +736,8 @@ int ViewerInitializeDrawXWorld_Private_1()
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerInitializeDrawXWorld_Private_2"
+#undef __FUNC__  
+#define __FUNC__ "ViewerInitializeDrawXWorld_Private_2"
 int ViewerInitializeDrawXWorld_Private_2()
 {
   int ierr,xywh[4],size = 4,flg;
@@ -735,8 +751,8 @@ int ViewerInitializeDrawXWorld_Private_2()
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerDestroyDrawX_Private"
+#undef __FUNC__  
+#define __FUNC__ "ViewerDestroyDrawX_Private"
 int ViewerDestroyDrawX_Private()
 {
   int ierr;
@@ -755,3 +771,43 @@ int ViewerDestroyDrawX_Private()
   }
   return 0;
 }
+
+/* ---------------------------------------------------------------------*/
+/*
+    The variable Petsc_Viewer_Drawx_keyval is used to indicate an MPI attribute that
+  is attached to a communicator, in this case the attribute is a Viewer.
+*/
+static int Petsc_Viewer_Drawx_keyval = MPI_KEYVAL_INVALID;
+
+#undef __FUNC__  
+#define __FUNC__ "VIEWER_DRAWX_"
+/*@
+     VIEWER_DRAWX_ - Creates a window viewer shared by all processors 
+                     in a communicator.
+
+  Input Parameters:
+.  comm - the MPI communicator to share the window viewer
+
+  Note: Unlike almost all other PETSc routines this does not return 
+   an error code. Usually used in the form
+$      XXXView(XXX object,VIEWER_DRAWX_(comm));
+
+.seealso: VIEWER_DRAWX_WORLD, VIEWER_DRAWX_SELF, ViewerDrawOpenX(), 
+@*/
+Viewer VIEWER_DRAWX_(MPI_Comm comm)
+{
+  int    ierr,flag;
+  Viewer viewer;
+
+  if (Petsc_Viewer_Drawx_keyval == MPI_KEYVAL_INVALID) {
+    MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Drawx_keyval,0);
+  }
+  MPI_Attr_get( comm, Petsc_Viewer_Drawx_keyval, (void **)&viewer, &flag );
+  if (!flag) { /* viewer not yet created */
+    ierr = ViewerDrawOpenX(comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer); 
+    if (ierr) {PetscError(__LINE__,"VIEWER_DRAWX_",__FILE__,__DIR__,1,1,0); viewer = 0;}
+    MPI_Attr_put( comm, Petsc_Viewer_Drawx_keyval, (void *) viewer );
+  } 
+  return viewer;
+}
+

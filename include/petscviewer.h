@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.36 1996/09/14 13:00:18 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.37 1996/11/07 15:12:51 bsmith Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -58,6 +58,8 @@ extern int    ViewerInitializeDrawXWorld_Private_0();
 extern int    ViewerInitializeDrawXWorld_Private_1();
 extern int    ViewerInitializeDrawXWorld_Private_2();
 extern int    ViewerInitializeDrawXSelf_Private();
+extern int    ViewerInitializeMatlabWorld_Private();
+extern Viewer VIEWER_DRAWX_(MPI_Comm);
 
 #define VIEWER_DRAWX_WORLD_0 \
               (ViewerInitializeDrawXWorld_Private_0(),VIEWER_DRAWX_WORLD_PRIVATE_0) 
