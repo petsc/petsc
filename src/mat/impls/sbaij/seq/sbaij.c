@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.8 2000/07/24 21:19:12 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.9 2000/07/26 14:07:20 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1198,6 +1198,9 @@ extern int MatMultAdd_SeqSBAIJ_6(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqSBAIJ_7(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqSBAIJ_N(Mat,Vec,Vec,Vec);
 
+#ifdef MatIncompleteCholeskyFactor
+/* This function is modified from MatILUFactor_SeqSBAIJ. 
+   Needs further work! Don't forget to add the function to the matrix table. */
 #undef __FUNC__  
 #define __FUNC__ "MatIncompleteCholeskyFactor_SeqSBAIJ"
 int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
@@ -1285,6 +1288,8 @@ int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
 
   PetscFunctionReturn(0);
 }
+#endif
+
 #undef __FUNC__  
 #define __FUNC__ "MatPrintHelp_SeqSBAIJ"
 int MatPrintHelp_SeqSBAIJ(Mat A)
@@ -1403,7 +1408,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        0,
-       MatIncompleteCholeskyFactor_SeqSBAIJ,
+       0,
        0,
        MatGetSubMatrices_SeqSBAIJ,
        MatIncreaseOverlap_SeqSBAIJ,

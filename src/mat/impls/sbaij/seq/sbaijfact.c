@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.6 2000/07/25 13:40:46 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.7 2000/07/25 13:47:46 hzhang Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -12,7 +12,7 @@ See page 85, "Iterative Methods ..." by Saad. */
 
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactorSymbolic_SeqSBAIJ"
-int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,MatLUInfo *info,Mat *B)
+int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,PetscReal f,Mat *B)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
   IS          isicol,isrow;
@@ -20,7 +20,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,MatLUInfo *info,Mat *B)
   int         *jutmp,bs = a->bs,bs2=a->bs2;
   int         m,nzi,realloc = 0;
   int         *jl,*q,jumin,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
-  PetscReal   f = 1.0;
+  /* PetscReal   f = 1.0; */
 
   PetscFunctionBegin;
   isrow = iscol;   /* remove isrow later! */
@@ -41,7 +41,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,MatLUInfo *info,Mat *B)
   /* initialization */
   /* Don't know how many column pointers are needed so estimate. 
      Use Modified Sparse Row storage for u and ju, see Sasd pp.85 */
-  if (info) f = info->fill; 
+  /* if (info) f = info->fill; */
   umax = (int)(f*ai[mbs] + 1); umax += mbs + 1; 
   ju = iu = (int*)PetscMalloc(umax*sizeof(int));CHKPTRQ(ju);
   iu[0] = mbs+1; 
