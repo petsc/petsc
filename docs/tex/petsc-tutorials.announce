@@ -16,12 +16,14 @@ the organization and use of PETSc for the parallel solution of PDEs.
     - further information: 
       http://www.parcfd.org/1999conf/
 
-Both courses cover similar topics, including
+Both courses focus on the basics of using the PETSc libraries, including
   - Solvers 
     - using linear, nonlinear, and time-stepping solvers
   - Field and grid data management
-    - assembly of parallel vectors and sparse matrices
+    - assembling parallel vectors and sparse matrices
   - Profiling, performance tuning, and debugging
+The 1-day course includes more in-depth coverage of these topics
+than the 1/2-day course.
 
 Instructors and Organizers:
    Satish Balay, William Gropp, Lois Curfman McInnes, Barry Smith
@@ -46,3 +48,4 @@ Recommended Background:
 
 Feel free to write to us at petsc-maint@mcs.anl.gov if you have any questions
 or comments about these short courses.
+
