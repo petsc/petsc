@@ -1,6 +1,6 @@
 #! /usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: helpindex.py,v 1.10 2000/09/27 17:16:08 balay Exp balay $ 
+# $Id: helpindex.py,v 1.11 2000/09/27 17:18:46 balay Exp balay $ 
 # 
 # reads in docs/tex/exampleconcepts,manconcepts, and create
 # the file help.html
@@ -205,6 +205,7 @@ def printdata(fd,dict):
                         # Extract the first element from link_names
                         link_name = link_names[0]
                         link_names = link_names[1:]
+                        filename = dict[prim_key][sub_key][link_name]
                         temp = "<A HREF=\"" + "../../" + filename + "\">" + link_name + "</A>"
                         fd.write("<TABLE>")
                         fd.write("<TD WIDTH=60 ><BR></TD>")
