@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.3 1995/03/25 03:12:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.4 1995/03/27 22:58:23 bsmith Exp curfman $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -27,12 +27,13 @@ int MatConvert_AIJ(Mat mat, MATTYPE newtype, Mat *newmat)
       SETERR(1,"Only MATROW and MATDENSE are currently suported.");
   }
   for (i=0; i<m; i++) {
-    ierr = MatGetRow(mat,i,&nz,&cwork,&vwork);		CHKERR(ierr);
-    ierr = MatSetValues(*newmat,1,&i,nz,cwork,vwork,InsertValues); CHKERR(ierr);
-    ierr = MatRestoreRow(mat,i,&nz,&cwork,&vwork);	CHKERR(ierr);
+    ierr = MatGetRow(mat,i,&nz,&cwork,&vwork); CHKERR(ierr);
+    ierr = MatSetValues(*newmat,1,&i,nz,cwork,vwork,InsertValues); 
+           CHKERR(ierr);
+    ierr = MatRestoreRow(mat,i,&nz,&cwork,&vwork); CHKERR(ierr);
   }
-  ierr = MatBeginAssembly(*newmat);			CHKERR(ierr);
-  ierr = MatEndAssembly(*newmat);			CHKERR(ierr);
+  ierr = MatBeginAssembly(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatEndAssembly(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------ */
@@ -62,10 +63,10 @@ int MatConvert_MPIAIJ(Mat mat, MATTYPE newtype, Mat *newmat)
     ig   = i + rstart;
     ierr = MatGetRow(mat,ig,&nz,&cwork,&vwork);	CHKERR(ierr);
     ierr = MatSetValues(*newmat,1,&ig,nz,cwork,vwork,
-		InsertValues);				CHKERR(ierr);
-    ierr = MatRestoreRow(mat,ig,&nz,&cwork,&vwork);	CHKERR(ierr);
+		InsertValues); CHKERR(ierr);
+    ierr = MatRestoreRow(mat,ig,&nz,&cwork,&vwork); CHKERR(ierr);
   }
-  ierr = MatBeginAssembly(*newmat);			CHKERR(ierr);
-  ierr = MatEndAssembly(*newmat);			CHKERR(ierr);
+  ierr = MatBeginAssembly(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatEndAssembly(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
   return 0;
 }
