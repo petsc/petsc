@@ -22,7 +22,7 @@ BUILDEXAMPLES_8 = ex1.PETSc ex1.rm clean
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF       = deptfg.f dgl1fg.f dgl2fg.f dmsafg.f dodcfg.f dpjbfg.f \
 		  dsscfg.f dgl1hs.f dgl2hs.f dmsahs.f dodchs.f dpjbhs.f \
-		  dsschs.f dmsabc.f dodcps.f dgl2co.f mpinter.f pdgl2fg.f
+		  dsschs.f dmsabc.f dodcps.f dgl2co.f mpinter.f
 DIRS            = 
 
 FOBJ1 = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \

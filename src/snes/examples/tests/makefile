@@ -27,7 +27,7 @@ BUILDEXAMPLES_9 =
 
 EXAMPLESC       = ex1.c ex7.c ex9.c ex11.c ex13.c
 EXAMPLESF       = ex12.F ex10.f dficfj.f dsfdfj.f dhhdfj.f dcprfj.f \
-                  dcpffj.f dsfifj.f dfdcfj.f mpinter.f
+                  dcpffj.f dsfifj.f dfdcfj.f
 DIRS	        = umin
 
 FOBJ1 = dficfj.o dsfdfj.o dhhdfj.o dcprfj.o dcpffj.o dfdcfj.o dsfifj.o

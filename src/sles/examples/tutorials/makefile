@@ -5,7 +5,7 @@ CFLAGS	         = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"' $(BS_INCLUDE)
 FFLAGS	         = 
 SOURCEC	         = 
 SOURCEF	         =
-SOURCEH	         = pargrid.h
+SOURCEH	         = 
 OBJSC	         =
 OBJSF	         =
 LIBBASE	         = libpetscsles

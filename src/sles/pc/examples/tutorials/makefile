@@ -16,7 +16,7 @@ BUILDEXAMPLES_1 =
 BUILDEXAMPLES_2 =
 BUILDEXAMPLES_4 =
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c
+EXAMPLESC       = 
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
