@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.2 1996/01/23 00:20:56 curfman Exp curfman $";
+static char vcid[] = "$Id: ex17.c,v 1.3 1996/01/23 17:48:24 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -115,7 +115,7 @@ int FormTestMatrix(Mat A,int n,int kind)
     i = n-1; col[0] = n-2; col[1] = n-1;
     ierr = MatSetValues(A,1,&i,2,col,val,INSERT_VALUES); CHKERRQ(ierr);
     i = 0; col[0] = 0; col[1] = 1; col[2] = 2; col[3] = 3;
-    ierr = MatSetValues(A,1,&i,3,col,&val[1],INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&i,4,col,&val[1],INSERT_VALUES); CHKERRQ(ierr);
   } 
   else SETERRQ(1,"FormTestMatrix: this kind of test matrix not supported");
 
