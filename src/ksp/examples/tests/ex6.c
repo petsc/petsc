@@ -12,7 +12,8 @@ Input arguments are:\n\
 int main(int argc,char **args)
 {
 #if !defined(PETSC_USE_COMPLEX)
-  int            ierr,its,stage1,stage2;
+  PetscErrorCode ierr;
+  PetscInt       its,stage1,stage2;
   PetscReal      norm;
   PetscLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
   PetscScalar    zero = 0.0,none = -1.0;
@@ -106,11 +107,11 @@ int main(int argc,char **args)
     ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,120,&viewer);CHKERRQ(ierr);
     ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
     ierr = PetscStrrchr(file,'/',&matrixname);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %2.1e %2.1e %2.1e %s \n",
                        matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,kspinfo);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %A\n",norm);CHKERRQ(ierr);
   }
 

@@ -8,7 +8,8 @@ static char help[] = "Tests DA interpolation.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            M1 = 3,M2,ierr,dof = 1,s = 1,ratio = 2,dim = 1;
+  PetscInt       M1 = 3,M2,dof = 1,s = 1,ratio = 2,dim = 1;
+  PetscErrorCode ierr;
   DA             da_c,da_f;
   Vec            v_c,v_f;
   Mat            I;

@@ -10,8 +10,8 @@
 PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int        rank;
-  PetscTruth iascii,isdraw;
+  PetscMPIInt    rank;
+  PetscTruth     iascii,isdraw;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
@@ -26,7 +26,7 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
   } else if (isdraw) {
     PetscDraw       draw;
     double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
-    int        base;
+    PetscInt        base;
     char       node[10];
     PetscTruth isnull;
 
@@ -38,11 +38,11 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
 
     /* first processor draws all node lines */
     if (!rank) {
-      int xmin_tmp;
+      PetscInt xmin_tmp;
       ymin = 0.0; ymax = 0.3;
       
       /* ADIC doesn't like doubles in a for loop */
-      for (xmin_tmp =0; xmin_tmp < (int)da->M; xmin_tmp++) {
+      for (xmin_tmp =0; xmin_tmp < da->M; xmin_tmp++) {
          ierr = PetscDrawLine(draw,(double)xmin_tmp,ymin,(double)xmin_tmp,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
 
@@ -120,16 +120,16 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
           DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
-PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA *inra)
+PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt dof,PetscInt s,PetscInt *lc,DA *inra)
 {
   PetscErrorCode ierr;
-  int        rank,size,xs,xe,x,Xs,Xe,start,end,m;
-  int        i,*idx,nn,left,refine_x = 2,tM = M;
-  PetscTruth flg1,flg2;
-  DA         da;
-  Vec        local,global;
-  VecScatter ltog,gtol;
-  IS         to,from;
+  PetscMPIInt    rank,size;
+  PetscInt       i,*idx,nn,left,refine_x = 2,tM = M,xs,xe,x,Xs,Xe,start,end,m;
+  PetscTruth     flg1,flg2;
+  DA             da;
+  Vec            local,global;
+  VecScatter     ltog,gtol;
+  IS             to,from;
 
   PetscFunctionBegin;
   PetscValidPointer(inra,7);
@@ -189,8 +189,8 @@ PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,
     } else { /* The odd nodes are evenly distributed across the first k nodes */
       /* Regular PETSc Distribution */
       x = M/m + ((M % m) > rank);
-      if (rank >= (M % m)) {xs = (rank * (int)(M/m) + M % m);}
-      else                 {xs = rank * (int)(M/m) + rank;}
+      if (rank >= (M % m)) {xs = (rank * (PetscInt)(M/m) + M % m);}
+      else                 {xs = rank * (PetscInt)(M/m) + rank;}
     }
   } else {
     x  = lc[rank];
@@ -247,8 +247,8 @@ PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,
   /* global to local must retrieve ghost points */
   ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
  
-  ierr = PetscMalloc((x+2*s)*sizeof(int),&idx);CHKERRQ(ierr);  
-  PetscLogObjectMemory(da,(x+2*s)*sizeof(int));
+  ierr = PetscMalloc((x+2*s)*sizeof(PetscInt),&idx);CHKERRQ(ierr);  
+  PetscLogObjectMemory(da,(x+2*s)*sizeof(PetscInt));
 
   nn = 0;
   if (wrap == DA_XPERIODIC) {    /* Handle all cases with wrap first */

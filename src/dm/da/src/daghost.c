@@ -35,9 +35,9 @@
 .seealso: DAGetCorners(), DACreate1d(), DACreate2d(), DACreate3d()
 
 @*/
-PetscErrorCode DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p)
+PetscErrorCode DAGetGhostCorners(DA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
-  int w;
+  PetscInt w;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

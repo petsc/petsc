@@ -3,18 +3,18 @@
 
 /* Data used by Jorge's diff parameter computation method */
 typedef struct {
-  Vec    *workv;          /* work vectors */
-  FILE   *fp;             /* output file */
-  int    function_count;  /* count of function evaluations for diff param estimation */
-  double fnoise_min;      /* minimim allowable noise */
-  double hopt_min;        /* minimum allowable hopt */
-  double h_first_try;     /* first try for h used in diff parameter estimate */
-  int    fnoise_resets;   /* number of times we've reset the noise estimate */
-  int    hopt_resets;     /* number of times we've reset the hopt estimate */
+  Vec       *workv;          /* work vectors */
+  FILE      *fp;             /* output file */
+  int       function_count;  /* count of function evaluations for diff param estimation */
+  double    fnoise_min;      /* minimim allowable noise */
+  double    hopt_min;        /* minimum allowable hopt */
+  double    h_first_try;     /* first try for h used in diff parameter estimate */
+  PetscInt  fnoise_resets;   /* number of times we've reset the noise estimate */
+  PetscInt  hopt_resets;     /* number of times we've reset the hopt estimate */
 } DIFFPAR_MORE;
 
 
-extern int dnest_(int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,PetscScalar*);
+extern PetscErrorCode dnest_(PetscInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*);
 EXTERN PetscErrorCode JacMatMultCompare(SNES,Vec,Vec,double);
 EXTERN PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);
 EXTERN PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes);
@@ -23,12 +23,12 @@ EXTERN PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes);
 #define __FUNCT__ "DiffParameterCreate_More"
 PetscErrorCode DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
 {
-  DIFFPAR_MORE *neP;
-  Vec          w;
-  PetscRandom  rctx;  /* random number generator context */
+  DIFFPAR_MORE   *neP;
+  Vec            w;
+  PetscRandom    rctx;  /* random number generator context */
   PetscErrorCode ierr;
-  PetscTruth   flg;
-  char         noise_file[PETSC_MAX_PATH_LEN];
+  PetscTruth     flg;
+  char           noise_file[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
 
@@ -67,7 +67,7 @@ PetscErrorCode DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
 #define __FUNCT__ "DiffParameterDestroy_More"
 PetscErrorCode DiffParameterDestroy_More(void *nePv)
 {
-  DIFFPAR_MORE *neP = (DIFFPAR_MORE *)nePv;
+  DIFFPAR_MORE   *neP = (DIFFPAR_MORE *)nePv;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -82,19 +82,19 @@ PetscErrorCode DiffParameterDestroy_More(void *nePv)
 #define __FUNCT__ "DiffParameterCompute_More"
 PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,double *hopt)
 {
-  DIFFPAR_MORE *neP = (DIFFPAR_MORE *)nePv;
-  Vec         w, xp, fvec;    /* work vectors to use in computing h */
-  double      zero = 0.0, hl, hu, h, fnoise_s, fder2_s;
-  PetscScalar alpha;
-  PetscScalar fval[7], tab[7][7], eps[7], f;
-  double      rerrf, fder2;
+  DIFFPAR_MORE   *neP = (DIFFPAR_MORE *)nePv;
+  Vec            w, xp, fvec;    /* work vectors to use in computing h */
+  double         zero = 0.0, hl, hu, h, fnoise_s, fder2_s;
+  PetscScalar    alpha;
+  PetscScalar    fval[7], tab[7][7], eps[7], f;
+  double         rerrf, fder2;
   PetscErrorCode ierr;
-  PetscInt         iter, k, i, j,  info;
-  PetscInt         nf = 7;         /* number of function evaluations */
-  PetscInt         fcount;
-  MPI_Comm    comm = snes->comm;
-  FILE        *fp;
-  PetscTruth  noise_test;
+  PetscInt       iter, k, i, j,  info;
+  PetscInt       nf = 7;         /* number of function evaluations */
+  PetscInt       fcount;
+  MPI_Comm       comm = snes->comm;
+  FILE           *fp;
+  PetscTruth     noise_test;
 
   PetscFunctionBegin;
   /* Call to SNESSetUp() just to set data structures in SNES context */
@@ -227,20 +227,20 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
 #define __FUNCT__ "JacMatMultCompare"
 PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
 {
-  Vec          yy1, yy2; /* work vectors */
-  PetscViewer  view2;    /* viewer */
-  Mat          J;        /* analytic Jacobian (set as preconditioner matrix) */
-  Mat          Jmf;      /* matrix-free Jacobian (set as true system matrix) */
-  double       h;        /* differencing parameter */
-  Vec          f;
-  MatStructure sparsity = DIFFERENT_NONZERO_PATTERN;
-  PetscScalar  alpha;
-  PetscReal    yy1n,yy2n,enorm;
+  Vec            yy1, yy2; /* work vectors */
+  PetscViewer    view2;    /* viewer */
+  Mat            J;        /* analytic Jacobian (set as preconditioner matrix) */
+  Mat            Jmf;      /* matrix-free Jacobian (set as true system matrix) */
+  double         h;        /* differencing parameter */
+  Vec            f;
+  MatStructure   sparsity = DIFFERENT_NONZERO_PATTERN;
+  PetscScalar    alpha;
+  PetscReal      yy1n,yy2n,enorm;
   PetscErrorCode ierr;
-  int          i;
-  PetscTruth   printv;
-  char         filename[32];
-  MPI_Comm     comm = snes->comm;
+  PetscInt       i;
+  PetscTruth     printv;
+  char           filename[32];
+  MPI_Comm       comm = snes->comm;
 
   PetscFunctionBegin;
 
@@ -297,7 +297,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   PetscFunctionReturn(0);
 }
 
-static int lin_its_total = 0;
+static PetscInt lin_its_total = 0;
 
 PetscErrorCode MyMonitor(SNES snes,PetscInt its,double fnorm,void *dummy)
 {

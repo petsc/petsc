@@ -116,9 +116,6 @@ PetscErrorCode PetscDefaultSignalHandler(int sig,void *ptr)
 #if !defined(PETSC_MISSING_SIGSEGV)
   SIGNAME[SIGSEGV] = "SEGV: Segmentation Violation, probably memory access out of range";
 #endif
-#if !defined(PETSC_MISSING_SIGSTOP)
-  SIGNAME[SIGSTOP] = "STOP";
-#endif
 #if !defined(PETSC_MISSING_SIGSYS)
   SIGNAME[SIGSYS]  = "SYS";
 #endif
@@ -230,9 +227,6 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void*
 #if !defined(PETSC_MISSING_SIGSEGV)
     signal(SIGSEGV, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(PETSC_MISSING_SIGSTOP)
-    signal(SIGSTOP, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
-#endif
 #if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
@@ -286,9 +280,6 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void*
 #endif
 #if !defined(PETSC_MISSING_SIGSEGV)
     signal(SIGSEGV, 0);
-#endif
-#if !defined(PETSC_MISSING_SIGSTOP)
-    signal(SIGSTOP, 0);
 #endif
 #if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  0);
@@ -379,9 +370,6 @@ PetscErrorCode PetscPopSignalHandler(void)
 #endif
 #if !defined(PETSC_MISSING_SIGSEGV)
     signal(SIGSEGV, 0);
-#endif
-#if !defined(PETSC_MISSING_SIGSTOP)
-    signal(SIGSTOP, 0);
 #endif
 #if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  0);

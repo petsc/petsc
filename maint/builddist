@@ -127,8 +127,6 @@ for i in bmake/predefined/*/packages ; do
     sed "s/^PETSC_HAVE_SUPERLU_DIST/#PETSC_HAVE_SUPERLU_DIST/g" | \
     sed "s/^DSCPACK_INCLUDE/#DSCPACK_INCLUDE/g" | \
     sed "s/^DSCPACK_LIB/#DSCPACK_LIB/g" | \
-    sed "s/^JAVA/#JAVA/g" | sed "s/^JAVAC/#JAVAC/g" | sed "s/^PETSC_HAVE_JAVA/#PETSC_HAVE_JAVA/g" | \
-    sed "s/^RAMG_LIB/#RAMG_LIB/g" | sed "s/^PETSC_HAVE_RAMG/#PETSC_HAVE_RAMG/g" | \
     sed "s/^ADIFOR_LIB/#ADIFOR_LIB/g" | sed "s/^ADIFOR_FC/#ADIFOR_FC/g" | sed "s/^PETSC_HAVE_ADIFOR/#PETSC_HAVE_ADIFOR/g" | \
     sed "s/^SPOOLES_INCLUDE/#SPOOLES_INCLUDE/g" | sed "s/^SPOOLES_LIB/#SPOOLES_LIB/g" | \
     sed "s/^PETSC_HAVE_SPOOLES/#PETSC_HAVE_SPOOLES/g" | \

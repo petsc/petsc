@@ -1,6 +1,4 @@
 
-#requirespackage  'PETSC_USE_32BIT_INT'
-
 ALL: lib
 
 DIRS     = seq mpi

@@ -9,28 +9,27 @@
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat A,Mat *B)
 {
-  Mat                C = *B;
-  Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
+  Mat            C = *B;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   PetscErrorCode ierr;
-  int i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
-  int                *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
-  MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
-  MatScalar          *u,*d,*w,*wp,u0,u1,u2,u3,u4,u5,u6,u7,u8,u9,u10,u11,u12;
-  MatScalar          u13,u14,u15,u16,u17,u18,u19,u20,u21,u22,u23,u24,u25,u26,u27;
-  MatScalar          u28,u29,u30,u31,u32,u33,u34,u35;
-  MatScalar          d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12;
-  MatScalar          d13,d14,d15,d16,d17,d18,d19,d20,d21,d22,d23,d24,d25,d26,d27;
-  MatScalar          d28,d29,d30,d31,d32,d33,d34,d35;
-  MatScalar          m0,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12;
-  MatScalar          m13,m14,m15,m16,m17,m18,m19,m20,m21,m22,m23,m24,m25,m26,m27;
-  MatScalar          m28,m29,m30,m31,m32,m33,m34,m35;
+  PetscInt       i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscInt       *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
+  MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
+  MatScalar      *u,*d,*w,*wp,u0,u1,u2,u3,u4,u5,u6,u7,u8,u9,u10,u11,u12;
+  MatScalar      u13,u14,u15,u16,u17,u18,u19,u20,u21,u22,u23,u24,u25,u26,u27;
+  MatScalar      u28,u29,u30,u31,u32,u33,u34,u35;
+  MatScalar      d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12;
+  MatScalar      d13,d14,d15,d16,d17,d18,d19,d20,d21,d22,d23,d24,d25,d26,d27;
+  MatScalar      d28,d29,d30,d31,d32,d33,d34,d35;
+  MatScalar      m0,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12;
+  MatScalar      m13,m14,m15,m16,m17,m18,m19,m20,m21,m22,m23,m24,m25,m26,m27;
+  MatScalar      m28,m29,m30,m31,m32,m33,m34,m35;
   
   PetscFunctionBegin;
-  
   /* initialization */
   ierr = PetscMalloc(36*mbs*sizeof(MatScalar),&w);CHKERRQ(ierr);
   ierr = PetscMemzero(w,36*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
-  ierr = PetscMalloc(2*mbs*sizeof(int),&il);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*mbs*sizeof(PetscInt),&il);CHKERRQ(ierr);
   jl = il + mbs;
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;

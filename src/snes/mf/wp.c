@@ -48,8 +48,8 @@ typedef struct {
 */
 static PetscErrorCode MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
 {
-  MatSNESMFWP   *hctx = (MatSNESMFWP*)ctx->hctx;
-  PetscReal     normU,norma = 1.0;
+  MatSNESMFWP    *hctx = (MatSNESMFWP*)ctx->hctx;
+  PetscReal      normU,norma = 1.0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -89,9 +89,9 @@ static PetscErrorCode MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,PetscScal
 */   
 static PetscErrorCode MatSNESMFView_WP(MatSNESMFCtx ctx,PetscViewer viewer)
 {
-  MatSNESMFWP *hctx = (MatSNESMFWP *)ctx->hctx;
+  MatSNESMFWP    *hctx = (MatSNESMFWP *)ctx->hctx;
   PetscErrorCode ierr;
-  PetscTruth  iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ static PetscErrorCode MatSNESMFView_WP(MatSNESMFCtx ctx,PetscViewer viewer)
 static PetscErrorCode MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
 {
   PetscErrorCode ierr;
-  MatSNESMFWP *hctx = (MatSNESMFWP*)ctx->hctx;
+  MatSNESMFWP    *hctx = (MatSNESMFWP*)ctx->hctx;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Walker-Pernice options");CHKERRQ(ierr);
@@ -267,7 +267,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatSNESMFCreate_WP(MatSNESMFCtx ctx)
 {
   PetscErrorCode ierr;
-  MatSNESMFWP *hctx;
+  MatSNESMFWP    *hctx;
 
   PetscFunctionBegin;
 

@@ -19,8 +19,8 @@ typedef struct {
 static PetscErrorCode PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 {
   PetscErrorCode ierr;
-  PC           pc;
-  PC_Eisenstat *eis;
+  PC             pc;
+  PC_Eisenstat   *eis;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&pc);CHKERRQ(ierr);
@@ -33,7 +33,7 @@ static PetscErrorCode PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 #define __FUNCT__ "PCApply_Eisenstat"
 static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -43,11 +43,11 @@ static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCPre_Eisenstat"
-static PetscErrorCode PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
+#define __FUNCT__ "PCPreSolve_Eisenstat"
+static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
-  PetscTruth   nonzero;
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
+  PetscTruth     nonzero;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -72,21 +72,19 @@ static PetscErrorCode PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
   }
 
   /* modify b by (L + D)^{-1} */
-  ierr =   MatRelax(eis->A,b,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
-                                        SOR_FORWARD_SWEEP),0.0,1,1,b);CHKERRQ(ierr);  
+  ierr =   MatRelax(eis->A,b,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_FORWARD_SWEEP),0.0,1,1,b);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCPost_Eisenstat"
-static PetscErrorCode PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
+#define __FUNCT__ "PCPostSolve_Eisenstat"
+static PetscErrorCode PCPostSolve_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
-                                 SOR_BACKWARD_SWEEP),0.0,1,1,x);CHKERRQ(ierr);
+  ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_BACKWARD_SWEEP),0.0,1,1,x);CHKERRQ(ierr);
   pc->mat = eis->A;
   /* get back true b */
   ierr = VecCopy(eis->b,b);CHKERRQ(ierr);
@@ -97,7 +95,7 @@ static PetscErrorCode PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 #define __FUNCT__ "PCDestroy_Eisenstat"
 static PetscErrorCode PCDestroy_Eisenstat(PC pc)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat *)pc->data; 
+  PC_Eisenstat   *eis = (PC_Eisenstat *)pc->data; 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -112,9 +110,9 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc)
 #define __FUNCT__ "PCSetFromOptions_Eisenstat"
 static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data; 
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data; 
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Eisenstat SSOR options");CHKERRQ(ierr);
@@ -131,9 +129,9 @@ static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc)
 #define __FUNCT__ "PCView_Eisenstat"
 static PetscErrorCode PCView_Eisenstat(PC pc,PetscViewer viewer)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data; 
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data; 
   PetscErrorCode ierr;
-  PetscTruth   iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -155,8 +153,8 @@ static PetscErrorCode PCView_Eisenstat(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetUp_Eisenstat(PC pc)
 {
   PetscErrorCode ierr;
-  int M,N,m,n;
-  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
+  PetscInt       M,N,m,n;
+  PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
@@ -318,15 +316,15 @@ EXTERN_C_BEGIN
 PetscErrorCode PCCreate_Eisenstat(PC pc)
 {
   PetscErrorCode ierr;
-  PC_Eisenstat *eis;
+  PC_Eisenstat   *eis;
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_Eisenstat,&eis);CHKERRQ(ierr);
   PetscLogObjectMemory(pc,sizeof(PC_Eisenstat));
 
   pc->ops->apply           = PCApply_Eisenstat;
-  pc->ops->presolve        = PCPre_Eisenstat;
-  pc->ops->postsolve       = PCPost_Eisenstat;
+  pc->ops->presolve        = PCPreSolve_Eisenstat;
+  pc->ops->postsolve       = PCPostSolve_Eisenstat;
   pc->ops->applyrichardson = 0;
   pc->ops->setfromoptions  = PCSetFromOptions_Eisenstat;
   pc->ops->destroy         = PCDestroy_Eisenstat;

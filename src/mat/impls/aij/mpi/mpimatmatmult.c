@@ -25,32 +25,48 @@ PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectContainerDestroy_Mat_MatMatMultMPI"
+PetscErrorCode PetscObjectContainerDestroy_Mat_MatMatMultMPI(PetscObject obj)
+{
+  PetscErrorCode       ierr;
+  Mat                  A=(Mat)obj;
+  PetscObjectContainer container;
+  Mat_MatMatMultMPI    *mult=PETSC_NULL;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)A,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
+  if (container) {
+    ierr = PetscObjectContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
+    if (mult->startsj){ierr = PetscFree(mult->startsj);CHKERRQ(ierr);}
+    if (mult->bufa){ierr = PetscFree(mult->bufa);CHKERRQ(ierr);}
+    if (mult->isrowa){ierr = ISDestroy(mult->isrowa);CHKERRQ(ierr);}
+    if (mult->isrowb){ierr = ISDestroy(mult->isrowb);CHKERRQ(ierr);}
+    if (mult->iscolb){ierr = ISDestroy(mult->iscolb);CHKERRQ(ierr);}
+    if (mult->C_seq){ierr = MatDestroy(mult->C_seq);CHKERRQ(ierr);} 
+    if (mult->A_loc){ierr = MatDestroy(mult->A_loc);CHKERRQ(ierr); }
+    if (mult->B_seq){ierr = MatDestroy(mult->B_seq);CHKERRQ(ierr);}
+    if (mult->B_loc){ierr = MatDestroy(mult->B_loc);CHKERRQ(ierr);}
+    if (mult->B_oth){ierr = MatDestroy(mult->B_oth);CHKERRQ(ierr);}
+    if (mult->abi){ierr = PetscFree(mult->abi);CHKERRQ(ierr);}
+    if (mult->abj){ierr = PetscFree(mult->abj);CHKERRQ(ierr);}
+    ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)A,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
+    ierr = PetscFree(mult);CHKERRQ(ierr); 
+  }
+  PetscFunctionReturn(0);
+}
+
 EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_MatMatMult"
 PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
 {
   PetscErrorCode       ierr;
-  Mat_MatMatMultMPI    *mult;
-  PetscObjectContainer container;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)A,"MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
-  if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
-    ierr = ISDestroy(mult->isrowb);CHKERRQ(ierr);
-    ierr = ISDestroy(mult->iscolb);CHKERRQ(ierr);
-    ierr = ISDestroy(mult->isrowa);CHKERRQ(ierr);
-    ierr = MatDestroy(mult->A_loc);CHKERRQ(ierr); 
-    ierr = MatDestroy(mult->B_seq);CHKERRQ(ierr); 
-    ierr = MatDestroy(mult->C_seq);CHKERRQ(ierr);  
-
-    ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)A,"MatMatMultMPI",0);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(mult);CHKERRQ(ierr); 
+  ierr = PetscObjectContainerDestroy_Mat_MatMatMultMPI((PetscObject)A);CHKERRQ(ierr);
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -69,6 +85,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
     SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",a->cstart,a->cend,b->rstart,b->rend);
   }
   ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
+  ierr = PetscMemzero(mult,sizeof(Mat_MatMatMultMPI));CHKERRQ(ierr);
 
   /* create a seq matrix B_seq = submatrix of B by taking rows of B that equal to nonzero col of A */
   ierr = MatGetBrowsOfAcols(A,B,MAT_INITIAL_MATRIX,&mult->isrowb,&mult->iscolb,&mult->brstart,&mult->B_seq);CHKERRQ(ierr);
@@ -88,7 +105,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
   /* attach the supporting struct to C for reuse of symbolic C */
   ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
   ierr = PetscObjectContainerSetPointer(container,mult);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)(*C),"MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)(*C),"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
 
   (*C)->ops->destroy  = MatDestroy_MPIAIJ_MatMatMult; 
   
@@ -106,7 +123,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
   PetscObjectContainer container;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)C,"MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)C,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
     ierr  = PetscObjectContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
   }

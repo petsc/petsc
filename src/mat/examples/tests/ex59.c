@@ -7,12 +7,14 @@ static char help[] = "Tests MatGetSubmatrix() in parallel.";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C,A;
-  int         i,j,m = 3,n = 2,rank,size,ierr,rstart,rend;
-  PetscScalar v;
-  IS          isrow,iscol;
-  PetscTruth  flg;
-  char        type[256];
+  Mat            C,A;
+  PetscInt       i,j,m = 3,n = 2,rstart,rend;
+  PetscMPIInt    size,rank;
+  PetscErrorCode ierr;
+  PetscScalar    v;
+  IS             isrow,iscol;
+  PetscTruth     flg;
+  char           type[256];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

@@ -177,7 +177,7 @@ EXTERN_C_END
       else if (b->nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
-        PetscInt       new_nz = bi[b->mbs] + CHUNKSIZE,len,*new_i,*new_j; \
+        PetscInt  new_nz = bi[b->mbs] + CHUNKSIZE,len,*new_i,*new_j; \
         MatScalar *new_a; \
  \
         if (b->nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col); \
@@ -670,8 +670,9 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)baij->A->data;
   Mat_SeqBAIJ    *b=(Mat_SeqBAIJ*)baij->B->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,rstart,ncols,n,flg,bs2=baij->bs2;
+  PetscInt       i,j,rstart,ncols,flg,bs2=baij->bs2;
   PetscInt       *row,*col,other_disassembled;
+  PetscMPIInt    n;
   PetscTruth     r1,r2,r3;
   MatScalar      *val;
   InsertMode     addv = mat->insertmode;
@@ -1652,7 +1653,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt d
   b->Mbs = Mbs;
   b->Nbs = Mbs; 
 
-  ierr = MPI_Allgather(&b->mbs,1,MPI_INT,b->rowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&b->mbs,1,MPIU_INT,b->rowners+1,1,MPIU_INT,B->comm);CHKERRQ(ierr);
   b->rowners[0]    = 0;
   for (i=2; i<=b->size; i++) {
     b->rowners[i] += b->rowners[i-1];
@@ -1870,6 +1871,8 @@ EXTERN_C_END
    If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
    than it must be used on all processors that share the object for that argument.
 
+   If the *_nnz parameter is given then the *_nz parameter is ignored
+
    Storage Information:
    For a square global matrix we define each processor's diagonal portion 
    to be its local rows and the corresponding columns (a square submatrix);  
@@ -1975,6 +1978,8 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const
 
    If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
    than it must be used on all processors that share the object for that argument.
+
+   If the *_nnz parameter is given then the *_nz parameter is ignored
 
    Storage Information:
    For a square global matrix we define each processor's diagonal portion 
@@ -2159,16 +2164,17 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
 {
   Mat            A;
   PetscErrorCode ierr;
-  PetscInt       i,nz,j,rstart,rend,fd;
+  PetscInt       i,nz,j,rstart,rend;
   PetscScalar    *vals,*buf;
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
   MPI_Status     status;
-  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
-  PetscInt       header[4],*rowlengths = 0,M,N,m,*rowners,*browners,maxnz,*cols;
-  PetscInt       *locrowlens,*sndcounts = 0,*procsnz = 0,jj,*mycols,*ibuf;
+  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,*sndcounts = 0,*browners,maxnz,*rowners;
+  PetscInt       header[4],*rowlengths = 0,M,N,m,*cols;
+  PetscInt       *locrowlens,*procsnz = 0,jj,*mycols,*ibuf;
   PetscInt       bs=1,Mbs,mbs,extra_rows;
   PetscInt       *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
   PetscInt       dcount,kmax,k,nzcount,tmp;
+  int            fd;
  
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -2184,7 +2190,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
     }
   }
 
-  ierr = MPI_Bcast(header+1,3,MPI_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
   M = header[1]; N = header[2];
 
   if (M != N) SETERRQ(PETSC_ERR_SUP,"Can only do square matrices");
@@ -2204,7 +2210,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
   /* determine ownership of all rows */
   mbs        = Mbs/size + ((Mbs % size) > rank);
   m          = mbs*bs;
-  ierr       = PetscMalloc(2*(size+2)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
+  ierr       = PetscMalloc(2*(size+2)*sizeof(PetscMPIInt),&rowners);CHKERRQ(ierr);
   browners   = rowners + size + 1;
   ierr       = MPI_Allgather(&mbs,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
@@ -2219,12 +2225,12 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
     ierr = PetscMalloc((M+extra_rows)*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
     for (i=0; i<extra_rows; i++) rowlengths[M+i] = 1;
-    ierr = PetscMalloc(size*sizeof(PetscInt),&sndcounts);CHKERRQ(ierr);
+    ierr = PetscMalloc(size*sizeof(PetscMPIInt),&sndcounts);CHKERRQ(ierr);
     for (i=0; i<size; i++) sndcounts[i] = browners[i+1] - browners[i];
-    ierr = MPI_Scatterv(rowlengths,sndcounts,browners,MPI_INT,locrowlens,(rend-rstart)*bs,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Scatterv(rowlengths,sndcounts,browners,MPIU_INT,locrowlens,(rend-rstart)*bs,MPIU_INT,0,comm);CHKERRQ(ierr);
     ierr = PetscFree(sndcounts);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Scatterv(0,0,0,MPI_INT,locrowlens,(rend-rstart)*bs,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Scatterv(0,0,0,MPIU_INT,locrowlens,(rend-rstart)*bs,MPIU_INT,0,comm);CHKERRQ(ierr);
   }
   
   if (!rank) {   /* procs[0] */
@@ -2257,14 +2263,14 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
     for (i=1; i<size-1; i++) {
       nz   = procsnz[i];
       ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
-      ierr = MPI_Send(cols,nz,MPI_INT,i,tag,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(cols,nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
     }
     /* read in the stuff for the last proc */
     if (size != 1) {
       nz   = procsnz[size-1] - extra_rows;  /* the extra rows are not on the disk */
       ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
       for (i=0; i<extra_rows; i++) cols[nz+i] = M+i;
-      ierr = MPI_Send(cols,nz+extra_rows,MPI_INT,size-1,tag,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(cols,nz+extra_rows,MPIU_INT,size-1,tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);
   } else {  /* procs[i], i>0 */
@@ -2276,8 +2282,8 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
     ierr   = PetscMalloc(nz*sizeof(PetscInt),&ibuf);CHKERRQ(ierr);
     mycols = ibuf;
     /* receive message of column indices*/
-    ierr = MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);CHKERRQ(ierr);
-    ierr = MPI_Get_count(&status,MPI_INT,&maxnz);CHKERRQ(ierr);
+    ierr = MPI_Recv(mycols,nz,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
+    ierr = MPI_Get_count(&status,MPIU_INT,&maxnz);CHKERRQ(ierr);
     if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
   }
 

@@ -8,9 +8,11 @@ static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat          A;
-  int          m=2,ierr,bs=1,M,row,col,rank,size,start,end;
-  PetscScalar  data=100;
+  Mat            A;
+  PetscInt       m=2,bs=1,M,row,col,start,end;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscScalar    data=100;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

@@ -5,7 +5,7 @@ intended to test the complex numbers version of various solvers.\n\n";
 #include "petscksp.h"
 
 typedef enum {TEST_1,TEST_2,TEST_3,HELMHOLTZ_1,HELMHOLTZ_2} TestType;
-extern int FormTestMatrix(Mat,int,TestType);
+extern PetscErrorCode FormTestMatrix(Mat,PetscInt,TestType);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -87,7 +87,7 @@ int main(int argc,char **args)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormTestMatrix"
-int FormTestMatrix(Mat A,PetscInt n,TestType type)
+PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
 {
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(1,"FormTestMatrix: These problems require complex numbers.");

@@ -23,15 +23,16 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  KSP         ksp;             /* linear solver context */
-  Mat         A,B;                /* matrix */
-  Vec         x,b,u;          /* approx solution, RHS, exact solution */
-  PetscViewer fd;               /* viewer */
-  char        file[2][PETSC_MAX_PATH_LEN];     /* input file name */
-  int         ierr,its;
-  PetscTruth  flg;
-  PetscReal   norm;
-  PetscScalar zero = 0.0,none = -1.0;
+  KSP            ksp;             /* linear solver context */
+  Mat            A,B;                /* matrix */
+  Vec            x,b,u;          /* approx solution, RHS, exact solution */
+  PetscViewer    fd;               /* viewer */
+  char           file[2][PETSC_MAX_PATH_LEN];     /* input file name */
+  PetscErrorCode ierr;
+  PetscInt       its;
+  PetscTruth     flg;
+  PetscReal      norm;
+  PetscScalar    zero = 0.0,none = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -62,8 +63,8 @@ int main(int argc,char **args)
        to match the block size of the system), then create a new padded vector.
   */
   { 
-      int    m,n,j,mvec,start,end,idx;
-      Vec    tmp;
+      PetscInt     m,n,j,mvec,start,end,idx;
+      Vec          tmp;
       PetscScalar *bold;
 
       /* Create a new vector b by padding the old one */
@@ -117,7 +118,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %A\n",norm);CHKERRQ(ierr);
 
   /* 

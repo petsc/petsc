@@ -50,14 +50,14 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
 {
   SNES_TR             *neP = (SNES_TR*)snes->data;
   Vec                 X,F,Y,G,TMP,Ytmp;
-  PetscErrorCode ierr;
-  int                 maxits,i,lits,breakout = 0;
+  PetscErrorCode      ierr;
+  PetscInt            maxits,i,lits;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal           rho,fnorm,gnorm,gpnorm,xnorm,delta,nrm,ynorm,norm1;
   PetscScalar         mone = -1.0,cnorm;
   KSP                 ksp;
   SNESConvergedReason reason;
-  PetscTruth          conv;
+  PetscTruth          conv,breakout = PETSC_FALSE;
 
   PetscFunctionBegin;
   maxits	= snes->max_its;	/* maximum number of iterations */
@@ -141,12 +141,12 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       if (rho > neP->sigma) break;
       PetscLogInfo(snes,"SNESSolve_TR: Trying again in smaller region\n");
       /* check to see if progress is hopeless */
-      neP->itflag = 0;
+      neP->itflag = PETSC_FALSE;
       ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) {
         /* We're not progressing, so return with the current iterate */
         SNESMonitor(snes,i+1,fnorm);
-        breakout = 1;
+        breakout = PETSC_TRUE;
         break;
       }
       snes->numFailures++;
@@ -164,7 +164,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       SNESMonitor(snes,i+1,fnorm);
 
       /* Test for convergence */
-      neP->itflag = 1;
+      neP->itflag = PETSC_TRUE;
       ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) {
         break;
@@ -359,7 +359,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "SNESCreate_TR"
 PetscErrorCode SNESCreate_TR(SNES snes)
 {
-  SNES_TR *neP;
+  SNES_TR        *neP;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -382,7 +382,7 @@ PetscErrorCode SNESCreate_TR(SNES snes)
   neP->delta2		= 0.75;
   neP->delta3		= 2.0;
   neP->sigma		= 0.0001;
-  neP->itflag		= 0;
+  neP->itflag		= PETSC_FALSE;
   neP->rnorm0		= 0;
   neP->ttol		= 0;
   PetscFunctionReturn(0);

@@ -6,11 +6,11 @@
 #define __PETSCIS_H
 
 #define IS PetscFortranAddr
-#define ISType integer
+#define ISType PetscEnum
 #define ISColoring PetscFortranAddr
 #define ISLocalToGlobalMapping PetscFortranAddr
-#define ISGlobalToLocalMappingType integer
-#define ISColoringType integer
+#define ISGlobalToLocalMappingType PetscEnum
+#define ISColoringType PetscEnum
 
 
 #endif
@@ -18,13 +18,13 @@
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
-      integer IS_COLORING_LOCAL,IS_COLORING_GHOSTED
+      PetscEnum IS_COLORING_LOCAL,IS_COLORING_GHOSTED
       parameter (IS_COLORING_LOCAL = 0,IS_COLORING_GHOSTED = 1)
 
-      integer IS_GENERAL,IS_STRIDE,IS_BLOCK
+      PetscEnum IS_GENERAL,IS_STRIDE,IS_BLOCK
       parameter (IS_GENERAL = 0,IS_STRIDE = 1,IS_BLOCK = 2)
 
-      integer IS_GTOLM_MASK,IS_GTOLM_DROP 
+      PetscEnum IS_GTOLM_MASK,IS_GTOLM_DROP 
       parameter (IS_GTOLM_MASK =0,IS_GTOLM_DROP = 1)
 
 !

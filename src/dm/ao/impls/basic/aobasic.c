@@ -7,9 +7,9 @@
 #include "petscsys.h"
 
 typedef struct {
-  int N;
-  int *app,*petsc;  /* app[i] is the partner for the ith PETSc slot */
-                    /* petsc[j] is the partner for the jth app slot */
+  PetscInt N;
+  PetscInt *app,*petsc;  /* app[i] is the partner for the ith PETSc slot */
+                         /* petsc[j] is the partner for the jth app slot */
 } AO_Basic;
 
 /*
@@ -20,9 +20,10 @@ typedef struct {
 PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int        rank,i;
-  AO_Basic   *aodebug = (AO_Basic*)ao->data;
-  PetscTruth iascii;
+  PetscMPIInt    rank;
+  PetscInt       i;
+  AO_Basic       *aodebug = (AO_Basic*)ao->data;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(ao->comm,&rank);CHKERRQ(ierr);
@@ -32,7 +33,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",aodebug->N);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n");CHKERRQ(ierr);
       for (i=0; i<aodebug->N; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%3d  %3d    %3d  %3d\n",i,aodebug->app[i],i,aodebug->petsc[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",i,aodebug->app[i],i,aodebug->petsc[i]);CHKERRQ(ierr);
       }
     } else {
       SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
@@ -46,7 +47,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
 #define __FUNCT__ "AODestroy_Basic" 
 PetscErrorCode AODestroy_Basic(AO ao)
 {
-  AO_Basic *aodebug = (AO_Basic*)ao->data;
+  AO_Basic       *aodebug = (AO_Basic*)ao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -57,7 +58,7 @@ PetscErrorCode AODestroy_Basic(AO ao)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOBasicGetIndices_Private" 
-PetscErrorCode AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
+PetscErrorCode AOBasicGetIndices_Private(AO ao,PetscInt **app,PetscInt **petsc)
 {
   AO_Basic *basic = (AO_Basic*)ao->data;
 
@@ -69,9 +70,9 @@ PetscErrorCode AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOPetscToApplication_Basic"  
-PetscErrorCode AOPetscToApplication_Basic(AO ao,int n,int *ia)
+PetscErrorCode AOPetscToApplication_Basic(AO ao,PetscInt n,PetscInt *ia)
 {
-  int      i;
+  PetscInt i;
   AO_Basic *aodebug = (AO_Basic*)ao->data;
 
   PetscFunctionBegin;
@@ -83,9 +84,9 @@ PetscErrorCode AOPetscToApplication_Basic(AO ao,int n,int *ia)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOApplicationToPetsc_Basic" 
-PetscErrorCode AOApplicationToPetsc_Basic(AO ao,int n,int *ia)
+PetscErrorCode AOApplicationToPetsc_Basic(AO ao,PetscInt n,PetscInt *ia)
 {
-  int      i;
+  PetscInt i;
   AO_Basic *aodebug = (AO_Basic*)ao->data;
 
   PetscFunctionBegin;
@@ -97,76 +98,76 @@ PetscErrorCode AOApplicationToPetsc_Basic(AO ao,int n,int *ia)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOPetscToApplicationPermuteInt_Basic"
-PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, int block, int *array)
+PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
-  AO_Basic *aodebug = (AO_Basic *) ao->data;
-  int      *temp;
-  int       i, j;
+  AO_Basic       *aodebug = (AO_Basic *) ao->data;
+  PetscInt       *temp;
+  PetscInt       i, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(aodebug->N*block * sizeof(int), &temp);CHKERRQ(ierr);
+  ierr = PetscMalloc(aodebug->N*block * sizeof(PetscInt), &temp);CHKERRQ(ierr);
   for(i = 0; i < aodebug->N; i++) {
     for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->petsc[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOApplicationToPetscPermuteInt_Basic"
-PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, int block, int *array)
+PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
-  AO_Basic *aodebug = (AO_Basic *) ao->data;
-  int      *temp;
-  int       i, j;
+  AO_Basic       *aodebug = (AO_Basic *) ao->data;
+  PetscInt       *temp;
+  PetscInt       i, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(aodebug->N*block * sizeof(int), &temp);CHKERRQ(ierr);
+  ierr = PetscMalloc(aodebug->N*block * sizeof(PetscInt), &temp);CHKERRQ(ierr);
   for(i = 0; i < aodebug->N; i++) {
     for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->app[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOPetscToApplicationPermuteReal_Basic"
-PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, int block, double *array)
+PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
-  AO_Basic *aodebug = (AO_Basic *) ao->data;
-  double   *temp;
-  int       i, j;
+  AO_Basic       *aodebug = (AO_Basic *) ao->data;
+  PetscReal      *temp;
+  PetscInt       i, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(aodebug->N*block * sizeof(double), &temp);CHKERRQ(ierr);
+  ierr = PetscMalloc(aodebug->N*block * sizeof(PetscReal), &temp);CHKERRQ(ierr);
   for(i = 0; i < aodebug->N; i++) {
     for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->petsc[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(double));CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOApplicationToPetscPermuteReal_Basic"
-PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, int block, double *array)
+PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
-  AO_Basic *aodebug = (AO_Basic *) ao->data;
-  double   *temp;
-  int       i, j;
+  AO_Basic       *aodebug = (AO_Basic *) ao->data;
+  PetscReal      *temp;
+  PetscInt       i, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(aodebug->N*block * sizeof(double), &temp);CHKERRQ(ierr);
+  ierr = PetscMalloc(aodebug->N*block * sizeof(PetscReal), &temp);CHKERRQ(ierr);
   for(i = 0; i < aodebug->N; i++) {
     for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->app[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(double));CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -206,13 +207,13 @@ static struct _AOOps AOops = {AOView_Basic,
 
 .seealso: AOCreateBasicIS(), AODestroy()
 @*/
-PetscErrorCode AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],AO *aoout)
+PetscErrorCode AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
 {
-  AO_Basic   *aobasic;
-  AO         ao;
-  int        *lens,size,rank,N,i,*petsc,start;
-  int        *allpetsc,*allapp,*disp,ip,ia;
-  PetscTruth opt;
+  AO_Basic       *aobasic;
+  AO             ao;
+  PetscMPIInt    *lens,size,rank,nnapp,*disp;
+  PetscInt       *allpetsc,*allapp,ip,ia,N,i,*petsc,start;
+  PetscTruth     opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -231,11 +232,12 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int 
   ao->data = (void*) aobasic;
 
   /* transmit all lengths to all processors */
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*size * sizeof(int), &lens);CHKERRQ(ierr);
-  disp = lens + size;
-  ierr = MPI_Allgather(&napp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
+  ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr  = PetscMalloc(2*size * sizeof(PetscMPIInt), &lens);CHKERRQ(ierr);
+  disp  = lens + size;
+  nnapp = napp;
+  ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    =  0;
   for(i = 0; i < size; i++) {
     disp[i] = N;
@@ -248,26 +250,26 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int 
   */
   if (!mypetsc) {
     start = disp[rank];
-    ierr  = PetscMalloc((napp+1) * sizeof(int), &petsc);CHKERRQ(ierr);
+    ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
     for (i=0; i<napp; i++) {
       petsc[i] = start + i;
     }
   } else {
-    petsc = (int*)mypetsc;
+    petsc = (PetscInt*)mypetsc;
   }
 
   /* get all indices on all processors */
-  ierr   = PetscMalloc(2*N * sizeof(int), &allpetsc);CHKERRQ(ierr);
+  ierr   = PetscMalloc(2*N * sizeof(PetscInt), &allpetsc);CHKERRQ(ierr);
   allapp = allpetsc + N;
-  ierr   = MPI_Allgatherv(petsc, napp, MPI_INT, allpetsc, lens, disp, MPI_INT, comm);CHKERRQ(ierr);
-  ierr   = MPI_Allgatherv((void*)myapp, napp, MPI_INT, allapp, lens, disp, MPI_INT, comm);CHKERRQ(ierr);
+  ierr   = MPI_Allgatherv(petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr   = MPI_Allgatherv((void*)myapp, napp, MPIU_INT, allapp, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr   = PetscFree(lens);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
-  ierr = PetscMalloc(2*N * sizeof(int), &aobasic->app);CHKERRQ(ierr);
-  PetscLogObjectMemory(ao,2*N*sizeof(int));
+  ierr = PetscMalloc(2*N * sizeof(PetscInt), &aobasic->app);CHKERRQ(ierr);
+  PetscLogObjectMemory(ao,2*N*sizeof(PetscInt));
   aobasic->petsc = aobasic->app + N;
-  ierr = PetscMemzero(aobasic->app, 2*N*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemzero(aobasic->app, 2*N*sizeof(PetscInt));CHKERRQ(ierr);
   for(i = 0; i < N; i++) {
     ip = allpetsc[i];
     ia = allapp[i];
@@ -323,8 +325,8 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int 
 PetscErrorCode AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
 {
   PetscErrorCode ierr;
-  int       *mypetsc = 0,*myapp,napp,npetsc;
-  MPI_Comm  comm;
+  PetscInt       *mypetsc = 0,*myapp,napp,npetsc;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);

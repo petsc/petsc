@@ -12,38 +12,38 @@
 */
 struct _AOOps {
       /* Generic Operations */
-  PetscErrorCode (*view)(AO, PetscViewer),
-      (*destroy)(AO),
+       PetscErrorCode (*view)(AO, PetscViewer),
+                      (*destroy)(AO),
       /* AO-Specific Operations */
-      (*petsctoapplication)(AO, int, int[]),
-      (*applicationtopetsc)(AO, int, int[]),
-      (*petsctoapplicationpermuteint)(AO, int, int[]),
-      (*applicationtopetscpermuteint)(AO, int, int[]),
-      (*petsctoapplicationpermutereal)(AO, int, double[]),
-      (*applicationtopetscpermutereal)(AO, int, double[]);
+                      (*petsctoapplication)(AO, PetscInt, PetscInt[]),
+                      (*applicationtopetsc)(AO, PetscInt, PetscInt[]),
+                      (*petsctoapplicationpermuteint)(AO, PetscInt, PetscInt[]),
+                      (*applicationtopetscpermuteint)(AO, PetscInt, PetscInt[]),
+                      (*petsctoapplicationpermutereal)(AO, PetscInt, PetscReal[]),
+                      (*applicationtopetscpermutereal)(AO, PetscInt, PetscReal[]);
 };
 
 struct _p_AO {
   PETSCHEADER(struct _AOOps)
   void          *data;                   /* implementation-specific data */
-  int           N,n;                    /* global, local vector size */
+  PetscInt      N,n;                    /* global, local vector size */
 };
 
 /*
     Defines the abstract AOData operations
 */
 struct _AODataOps {
-  PetscErrorCode (*segmentadd)(AOData,const char[],const char[],int,int,int*,void*,PetscDataType);
-  PetscErrorCode (*segmentget)(AOData,const char[],const char[],int,int*,void**);
-  PetscErrorCode (*segmentrestore)(AOData,const char[],const char[],int,int*,void**);
-  PetscErrorCode (*segmentgetlocal)(AOData,const char[],const char[],int,int*,void**);
-  PetscErrorCode (*segmentrestorelocal)(AOData,const char[],const char[],int,int*,void**);
-  PetscErrorCode (*segmentgetreduced)(AOData,const char[],const char[],int,int*,IS *);
+  PetscErrorCode (*segmentadd)(AOData,const char[],const char[],PetscInt,PetscInt,PetscInt*,void*,PetscDataType);
+  PetscErrorCode (*segmentget)(AOData,const char[],const char[],PetscInt,PetscInt*,void**);
+  PetscErrorCode (*segmentrestore)(AOData,const char[],const char[],PetscInt,PetscInt*,void**);
+  PetscErrorCode (*segmentgetlocal)(AOData,const char[],const char[],PetscInt,PetscInt*,void**);
+  PetscErrorCode (*segmentrestorelocal)(AOData,const char[],const char[],PetscInt,PetscInt*,void**);
+  PetscErrorCode (*segmentgetreduced)(AOData,const char[],const char[],PetscInt,PetscInt*,IS *);
   PetscErrorCode (*segmentgetextrema)(AOData,const char[],const char[],void *,void *);
   PetscErrorCode (*keyremap)(AOData,const char[],AO);
   PetscErrorCode (*keygetadjacency)(AOData,const char[],Mat*);
-  PetscErrorCode (*keygetactive)(AOData,const char[],const char[],int,int*,int,IS*);
-  PetscErrorCode (*keygetactivelocal)(AOData,const char[],const char[],int,int*,int,IS*);
+  PetscErrorCode (*keygetactive)(AOData,const char[],const char[],PetscInt,PetscInt*,PetscInt,IS*);
+  PetscErrorCode (*keygetactivelocal)(AOData,const char[],const char[],PetscInt,PetscInt*,PetscInt,IS*);
   PetscErrorCode (*segmentpartition)(AOData,const char[],const char[]);
   PetscErrorCode (*keyremove)(AOData,const char[]);
   PetscErrorCode (*segmentremove)(AOData,const char[],const char[]);
@@ -77,8 +77,8 @@ typedef struct __AODataSegment AODataSegment;
 struct __AODataSegment {
   void              *data;                   /* implementation-specific data */
   char              *name;
-  int               bs;                      /* block size of basic chunk */
-  PetscDataType     datatype;                /* type of data item, int, double etc */
+  PetscInt          bs;                      /* block size of basic chunk */
+  PetscDataType     datatype;                /* type of data item, PetscInt, double etc */
   AODataSegment     *next;  
 };
 
@@ -86,16 +86,16 @@ typedef struct __AODataKey AODataKey;
 struct __AODataKey {
   void                   *data;                   /* implementation-specific data */
   char                   *name;
-  int                    N;                       /* number of key entries */
-  int                    nsegments;               /* number of segments in key */
+  PetscInt               N;                       /* number of key entries */
+  PetscInt               nsegments;               /* number of segments in key */
   AODataSegment          *segments;
   ISLocalToGlobalMapping ltog;
 
   /* should the following be so public? */
 
-  int                    nlocal;                  /* number of key entries owned locally */
-  int                    *rowners;                /* ownership range of each processor */
-  int                    rstart,rend;             /* first and 1 + last owned locally */
+  PetscInt               nlocal;                  /* number of key entries owned locally */
+  PetscInt               *rowners;                /* ownership range of each processor */
+  PetscInt               rstart,rend;             /* first and 1 + last owned locally */
   AODataKey              *next;
 };
 
@@ -108,10 +108,10 @@ struct __AODataAlias {
 
 struct _p_AOData {
   PETSCHEADER(struct _AODataOps)
-  int               nkeys;                   /* current number of keys */
+  PetscInt          nkeys;                   /* current number of keys */
   AODataKey         *keys;
   void              *data;
-  int               datacomplete;            /* indicates all AOData object is fully set */
+  PetscInt          datacomplete;            /* indicates all AOData object is fully set */
   AODataAlias       *aliases;
 };
 
@@ -122,12 +122,12 @@ EXTERN PetscErrorCode AODataSegmentFind_Private(AOData,const char[],const char[]
 #include "petscbt.h"
 
 struct _p_AOData2dGrid {
-   int       cell_n, vertex_n, edge_n;
-   int       cell_max, vertex_max, edge_max;
-   int       *cell_vertex,*cell_edge,*cell_cell;
+   PetscInt  cell_n, vertex_n, edge_n;
+   PetscInt  cell_max, vertex_max, edge_max;
+   PetscInt  *cell_vertex,*cell_edge,*cell_cell;
    PetscReal *vertex;
    PetscReal xmin,xmax,ymin,ymax;
-   int       *edge_vertex,*edge_cell;
+   PetscInt  *edge_vertex,*edge_cell;
    PetscBT   vertex_boundary;
 };
 

@@ -7,14 +7,16 @@ static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for sequen
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A,Atrans,sA,*submatA,*submatsA;
-  int         bs=1,m=43,ov=1,i,j,k,*rows,*cols,ierr,M,nd=5,*idx,size,mm,nn;
-  PetscScalar *vals,rval,one=1.0;
-  IS          *is1,*is2;
-  PetscRandom rand;
-  Vec         xx,s1,s2;
-  PetscReal   s1norm,s2norm,rnorm,tol = 1.e-10;
-  PetscTruth  flg;
+  Mat            A,Atrans,sA,*submatA,*submatsA;
+  PetscInt       bs=1,m=43,ov=1,i,j,k,*rows,*cols,M,nd=5,*idx,mm,nn;
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+  PetscScalar    *vals,rval,one=1.0;
+  IS             *is1,*is2;
+  PetscRandom    rand;
+  Vec            xx,s1,s2;
+  PetscReal      s1norm,s2norm,rnorm,tol = 1.e-10;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
  
@@ -29,8 +31,8 @@ int main(int argc,char **args)
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,PETSC_NULL,&A);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(bs*sizeof(int),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*sizeof(PetscInt),&cols);CHKERRQ(ierr);
   ierr = PetscMalloc(bs*bs*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
   ierr = PetscMalloc(M*sizeof(PetscScalar),&idx);CHKERRQ(ierr);
   

@@ -7,10 +7,12 @@ static char help[] = "Tests MatGetColumnVector().";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C;
-  int         i,j,m = 3,n = 2,rank,size,I,J,ierr,col = 0;
-  PetscScalar v;
-  Vec         yy;
+  Mat            C;
+  PetscInt       i,j,m = 3,n = 2,I,J,col = 0;
+  PetscMPIInt    size,rank;
+  PetscErrorCode ierr;
+  PetscScalar    v;
+  Vec            yy;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-col",&col,PETSC_NULL);CHKERRQ(ierr);

@@ -27,7 +27,10 @@
 
       Vec               x
       PetscReal         norm
-      integer           n,ierr,flg,rank
+      PetscTruth flg
+      PetscMPIInt rank
+      PetscInt n,bs,comp
+      PetscErrorCode ierr
       PetscScalar       one
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -71,27 +74,29 @@
  100     format ('Norm of entire vector ',1pe8.2)
       endif
 
-      call VecSetBlockSize(x,2,ierr)
-      call VecStrideNorm(x,0,NORM_2,norm,ierr) 
+      bs = 2
+      call VecSetBlockSize(x,bs,ierr)
+      comp = 0
+      call VecStrideNorm(x,comp,NORM_2,norm,ierr) 
       if (rank .eq. 0) then
          write (6,200) norm
  200     format ('Norm of subvector ',1pe8.2)
       endif
 
-
-      call VecStrideNorm(x,1,NORM_2,norm,ierr) 
+      comp = 1
+      call VecStrideNorm(x,comp,NORM_2,norm,ierr) 
       if (rank .eq. 0) then
          write (6,300) norm
  300     format ('Norm of subvector ',1pe8.2)
       endif
 
-      call VecStrideNorm(x,1,NORM_1,norm,ierr) 
+      call VecStrideNorm(x,comp,NORM_1,norm,ierr) 
       if (rank .eq. 0) then
          write (6,400) norm
  400     format ('Norm of subvector ',1pe8.2)
       endif
 
-      call VecStrideNorm(x,1,NORM_INFINITY,norm,ierr) 
+      call VecStrideNorm(x,comp,NORM_INFINITY,norm,ierr) 
       if (rank .eq. 0) then
          write (6,500) norm
  500     format ('Norm of subvector ',1pe8.2)

@@ -634,7 +634,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   } 
   PetscLogInfo(A,"MatAssemblyEnd_SeqAIJ:Matrix size: %D X %D; storage space: %D unneeded,%D used\n",m,A->n,fshift,a->nz);
   PetscLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues() is %D\n",a->reallocs);
-  PetscLogInfo(A,"MatAssemblyEnd_SeqAIJ:Most nonzeros in any row is %D\n",rmax);
+  PetscLogInfo(A,"MatAssemblyEnd_SeqAIJ:Maximum nonzeros in any row is %D\n",rmax);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (double)fshift;
   a->rmax              = rmax;
@@ -1828,10 +1828,11 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
   for (i=0; i<m; i++) {
     ierr = MatGetRow_SeqAIJ(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     for (j=0; j<nz; j++) { cnew[j] = col[cwork[j]];}
-    ierr = MatSetValues(*B,1,&row[i],nz,cnew,vwork,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues_SeqAIJ(*B,1,&row[i],nz,cnew,vwork,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqAIJ(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
   }
   ierr = PetscFree(cnew);CHKERRQ(ierr);
+  (*B)->assembled     = PETSC_FALSE;
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irowp,&row);CHKERRQ(ierr);
@@ -2443,6 +2444,8 @@ PetscErrorCode MatRetrieveValues(Mat mat)
 .  A - the matrix 
 
    Notes:
+   If nnz is given then nz is ignored
+
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage), is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
@@ -2505,7 +2508,9 @@ PetscErrorCode MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,c
 .  A - the matrix 
 
    Notes:
-   The AIJ format (also called the Yale sparse matrix format or
+     If nnz is given then nz is ignored
+
+    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage), is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
@@ -2655,6 +2660,7 @@ PetscErrorCode MatCreate_SeqAIJ(Mat B)
   b->col              = 0;
   b->icol             = 0;
   b->reallocs         = 0;
+  b->lu_shift         = PETSC_FALSE;
  
   ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
   ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);

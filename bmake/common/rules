@@ -476,6 +476,7 @@ fortranstubs:
           grep -v "WARNING 134: weak definition of" | \
           grep -v 'continuing despite warning messages' | \
           grep -v "warning prebinding disabled"  |\
+          grep -v "ex20f.F:34: warning:" | \
 	  grep -v "Unused dummy argument" | \
           grep -v "warning multiple definitions of symbol _matgetarray_" | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \

@@ -9,18 +9,18 @@
 #include "petscsys.h"
 
 typedef struct {
-  int N;
-  int *app;       /* app[i] is the partner for petsc[appPerm[i]] */
-  int *appPerm;
-  int *petsc;     /* petsc[j] is the partner for app[petscPerm[j]] */
-  int *petscPerm;
+  PetscInt N;
+  PetscInt *app;       /* app[i] is the partner for petsc[appPerm[i]] */
+  PetscInt *appPerm;
+  PetscInt *petsc;     /* petsc[j] is the partner for app[petscPerm[j]] */
+  PetscInt *petscPerm;
 } AO_Mapping;
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODestroy_Mapping"
 PetscErrorCode AODestroy_Mapping(AO ao)
 {
-  AO_Mapping *aomap = (AO_Mapping *) ao->data;
+  AO_Mapping     *aomap = (AO_Mapping *) ao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -33,9 +33,10 @@ PetscErrorCode AODestroy_Mapping(AO ao)
 #define __FUNCT__ "AOView_Mapping"
 PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
 {
-  AO_Mapping *aomap = (AO_Mapping *) ao->data;
-  int         rank, i;
-  PetscTruth  iascii;
+  AO_Mapping     *aomap = (AO_Mapping *) ao->data;
+  PetscMPIInt    rank;
+  PetscInt       i;
+  PetscTruth     iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -59,16 +60,16 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOPetscToApplication_Mapping"
-PetscErrorCode AOPetscToApplication_Mapping(AO ao, int n, int *ia)
+PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
 {
   AO_Mapping *aomap = (AO_Mapping *) ao->data;
-  int        *app   = aomap->app;
-  int        *petsc = aomap->petsc;
-  int        *perm  = aomap->petscPerm;
-  int         N     = aomap->N;
-  int         low, high, mid=0;
-  int         idex;
-  int         i;
+  PetscInt   *app   = aomap->app;
+  PetscInt   *petsc = aomap->petsc;
+  PetscInt   *perm  = aomap->petscPerm;
+  PetscInt   N     = aomap->N;
+  PetscInt   low, high, mid=0;
+  PetscInt   idex;
+  PetscInt   i;
 
   /* It would be possible to use a single bisection search, which
      recursively divided the indices to be converted, and searched
@@ -100,16 +101,16 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, int n, int *ia)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOApplicationToPetsc_Mapping"
-PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, int n, int *ia)
+PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
 {
   AO_Mapping *aomap = (AO_Mapping *) ao->data;
-  int        *app   = aomap->app;
-  int        *petsc = aomap->petsc;
-  int        *perm  = aomap->appPerm;
-  int         N     = aomap->N;
-  int         low, high, mid=0;
-  int         idex;
-  int         i;
+  PetscInt   *app   = aomap->app;
+  PetscInt   *petsc = aomap->petsc;
+  PetscInt   *perm  = aomap->appPerm;
+  PetscInt   N     = aomap->N;
+  PetscInt   low, high, mid=0;
+  PetscInt   idex;
+  PetscInt   i;
 
   /* It would be possible to use a single bisection search, which
      recursively divided the indices to be converted, and searched
@@ -165,11 +166,11 @@ static struct _AOOps AOps = {AOView_Mapping,
 .keywords: AO, index
 .seealso: AOMappingHasPetscIndex(), AOCreateMapping()
 @*/
-PetscErrorCode AOMappingHasApplicationIndex(AO ao, int idex, PetscTruth *hasIndex)
+PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscTruth *hasIndex)
 {
   AO_Mapping *aomap;
-  int        *app;
-  int         low, high, mid;
+  PetscInt   *app;
+  PetscInt   low, high, mid;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_COOKIE,1);
@@ -214,11 +215,11 @@ PetscErrorCode AOMappingHasApplicationIndex(AO ao, int idex, PetscTruth *hasInde
 .keywords: AO, index
 .seealso: AOMappingHasApplicationIndex(), AOCreateMapping()
 @*/
-PetscErrorCode AOMappingHasPetscIndex(AO ao, int idex, PetscTruth *hasIndex)
+PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscTruth *hasIndex)
 {
   AO_Mapping *aomap;
-  int        *petsc;
-  int         low, high, mid;
+  PetscInt   *petsc;
+  PetscInt   low, high, mid;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_COOKIE,1);
@@ -268,18 +269,17 @@ $ -ao_view : call AOView() at the conclusion of AOCreateMapping()
 .keywords: AO, create
 .seealso: AOCreateDebug(), AOCreateBasic(), AOCreateMappingIS(), AODestroy()
 @*/
-PetscErrorCode AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],AO *aoout)
+PetscErrorCode AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
 {
-  AO          ao;
-  AO_Mapping *aomap;
-  int        *lens, *disp;
-  int        *allpetsc,  *allapp;
-  int        *petscPerm, *appPerm;
-  int        *petsc;
-  int         size, rank;
-  int         N, start;
-  int         i;
-  PetscTruth  opt;
+  AO             ao;
+  AO_Mapping     *aomap;
+  PetscInt       *allpetsc,  *allapp;
+  PetscInt       *petscPerm, *appPerm;
+  PetscInt       *petsc;
+  PetscMPIInt    size, rank,*lens, *disp,nnapp;
+  PetscInt       N, start;
+  PetscInt       i;
+  PetscTruth     opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -297,11 +297,12 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const in
   ao->data = (void*) aomap;
 
   /* transmit all lengths to all processors */
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*size * sizeof(int), &lens);CHKERRQ(ierr);
-  disp = lens + size;
-  ierr = MPI_Allgather(&napp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
+  ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr  = PetscMalloc(2*size * sizeof(PetscMPIInt), &lens);CHKERRQ(ierr);
+  disp  = lens + size;
+  nnapp = napp;
+  ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    = 0;
   for(i = 0; i < size; i++) {
     disp[i] = N;
@@ -314,26 +315,26 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const in
   /* If mypetsc is 0 then use "natural" numbering */
   if (!mypetsc) {
     start = disp[rank];
-    ierr  = PetscMalloc((napp+1) * sizeof(int), &petsc);CHKERRQ(ierr);
+    ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
     for(i = 0; i < napp; i++) {
       petsc[i] = start + i;
     }
   } else {
-    petsc = (int*)mypetsc;
+    petsc = (PetscInt*)mypetsc;
   }
 
   /* get all indices on all processors */
-  ierr = PetscMalloc(N*4 * sizeof(int), &allapp);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*4 * sizeof(PetscInt), &allapp);CHKERRQ(ierr);
   appPerm   = allapp   + N;
   allpetsc  = appPerm  + N;
   petscPerm = allpetsc + N;
-  ierr = MPI_Allgatherv((void*)myapp,   napp, MPI_INT, allapp,   lens, disp, MPI_INT, comm);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv((void*)mypetsc, napp, MPI_INT, allpetsc, lens, disp, MPI_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv((void*)myapp,   napp, MPIU_INT, allapp,   lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv((void*)mypetsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = PetscFree(lens);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
-  ierr = PetscMalloc(N*4 * sizeof(int), &aomap->app);CHKERRQ(ierr);
-  PetscLogObjectMemory(ao, 4*N * sizeof(int));
+  ierr = PetscMalloc(N*4 * sizeof(PetscInt), &aomap->app);CHKERRQ(ierr);
+  PetscLogObjectMemory(ao, 4*N * sizeof(PetscInt));
   aomap->appPerm   = aomap->app     + N;
   aomap->petsc     = aomap->appPerm + N;
   aomap->petscPerm = aomap->petsc   + N;
@@ -409,9 +410,9 @@ $ -ao_view : call AOView() at the conclusion of AOCreateMappingIS()
 @*/
 PetscErrorCode AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
 {
-  MPI_Comm comm;
-  int     *mypetsc, *myapp;
-  int      napp, npetsc;
+  MPI_Comm       comm;
+  PetscInt       *mypetsc, *myapp;
+  PetscInt       napp, npetsc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

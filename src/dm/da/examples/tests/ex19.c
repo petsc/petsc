@@ -8,9 +8,10 @@ static char help[] = "Tests DA with variable multiple degrees of freedom per nod
 #include "petscda.h"
 #include "petscsys.h"
 
-int doit(DA da,Vec global)
+PetscErrorCode doit(DA da,Vec global)
 {
-  PetscErrorCode ierr,i,j,k,M,N,dof;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,M,N,dof;
 
   ierr = DAGetInfo(da,0,&M,&N,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   {
@@ -19,12 +20,12 @@ int doit(DA da,Vec global)
     for ( i=0; i<N; i++) {
       for ( j=0; j<M; j++) {
 	for ( k=0; k<dof; k++) {
-	  printf("%d %d %g\n",i,j,mystruct[i][j].inside[0]);
+	  ierr = PetscPrintf(PETSC_COMM_WORLD,"%d %d %g\n",i,j,mystruct[i][j].inside[0]);CHKERRQ(ierr);
 	  mystruct[i][j].inside[1] = 2.1;
 	}
       }
     }
-    ierr = DAVecRestoreArray(da,global,(void*) &mystruct);
+    ierr = DAVecRestoreArray(da,global,(void*) &mystruct);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -33,10 +34,10 @@ int doit(DA da,Vec global)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         i,j,k,dof = 2, rank,M = 3,N = 3,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
-  DA          da;
-  PetscScalar value;
-  Vec         global,local;
+  PetscInt       dof = 2,M = 3,N = 3,m = PETSC_DECIDE,n = PETSC_DECIDE;
+  PetscErrorCode ierr;
+  DA             da;
+  Vec            global,local;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

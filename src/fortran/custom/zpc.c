@@ -17,8 +17,8 @@
 #define pcgetfactoredmatrix_       PCGETFACTOREDMATRIX
 #define pcsetoptionsprefix_        PCSETOPTIONSPREFIX
 #define pcappendoptionsprefix_     PCAPPENDOPTIONSPREFIX
-#define pcbjacobigetsubksp_       PCBJACOBIGETSUBKSP
-#define pcasmgetsubksp_           PCASMGETSUBKSP
+#define pcbjacobigetsubksp_        PCBJACOBIGETSUBKSP
+#define pcasmgetsubksp_            PCASMGETSUBKSP
 #define mggetcoarsesolve_          MGGETCOARSESOLVE
 #define mggetsmoother_             MGGETSMOOTHER
 #define mggetsmootherup_           MGGETSMOOTHERUP
@@ -54,8 +54,8 @@
 #define pcgetfactoredmatrix_       pcgetfactoredmatrix
 #define pcsetoptionsprefix_        pcsetoptionsprefix
 #define pcappendoptionsprefix_     pcappendoptionsprefix
-#define pcbjacobigetsubksp_       pcbjacobigetsubksp
-#define pcasmgetsubksp_           pcasmgetsubksp
+#define pcbjacobigetsubksp_        pcbjacobigetsubksp
+#define pcasmgetsubksp_            pcasmgetsubksp
 #define mggetcoarsesolve_          mggetcoarsesolve
 #define mggetsmoother_             mggetsmoother
 #define mggetsmootherup_           mggetsmootherup
@@ -78,14 +78,14 @@
 #endif
 
 EXTERN_C_BEGIN
-static void (PETSC_STDCALL *f2)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,PetscErrorCode*);
+static void (PETSC_STDCALL *f2)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscErrorCode*);
 static void (PETSC_STDCALL *f1)(void*,Vec*,Vec*,PetscErrorCode*);
 static void (PETSC_STDCALL *f3)(void*,Vec*,Vec*,PetscErrorCode*);
 static void (PETSC_STDCALL *f9)(void*,PetscErrorCode*);
 EXTERN_C_END
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-static PetscErrorCode ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,int m)
+static PetscErrorCode ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m)
 {
   PetscErrorCode ierr = 0;
 
@@ -134,7 +134,7 @@ void PETSC_STDCALL pccompositesettype_(PC *pc,PCCompositeType *type,PetscErrorCo
   *ierr = PCCompositeSetType(*pc,*type);
 }
 
-void PETSC_STDCALL pccompositeaddpc_(PC *pc,CHAR type PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL pccompositeaddpc_(PC *pc,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -143,14 +143,14 @@ void PETSC_STDCALL pccompositeaddpc_(PC *pc,CHAR type PETSC_MIXED_LEN(len),int *
   FREECHAR(type,t);
 }
 
-void PETSC_STDCALL pccompositegetpc_(PC *pc,int *n,PC *subpc,PetscErrorCode *ierr)
+void PETSC_STDCALL pccompositegetpc_(PC *pc,PetscInt *n,PC *subpc,PetscErrorCode *ierr)
 {
   *ierr = PCCompositeGetPC(*pc,*n,subpc);
 }
 
-void PETSC_STDCALL mgsetlevels_(PC *pc,int *levels,MPI_Comm *comms, PetscErrorCode *ierr)
+void PETSC_STDCALL mgsetlevels_(PC *pc,PetscInt *levels,MPI_Comm *comms, PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECT(comms);
+  CHKFORTRANNULLINTEGER(comms);
   *ierr = MGSetLevels(*pc,*levels,comms);
 }
 
@@ -161,12 +161,12 @@ void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, PetscErrorCode *ierr)
   *ierr = PCView(*pc,v);
 }
 
-void PETSC_STDCALL matnullspacecreate_(MPI_Comm *comm,PetscTruth *has_cnst,int *n,Vec *vecs,MatNullSpace *SP,PetscErrorCode *ierr)
+void PETSC_STDCALL matnullspacecreate_(MPI_Comm *comm,PetscTruth *has_cnst,PetscInt *n,Vec *vecs,MatNullSpace *SP,PetscErrorCode *ierr)
 {
   *ierr = MatNullSpaceCreate((MPI_Comm)PetscToPointerComm(*comm),*has_cnst,*n,vecs,SP);
 }
 
-void PETSC_STDCALL pcsettype_(PC *pc,CHAR type PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL pcsettype_(PC *pc,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -200,7 +200,7 @@ void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,Pet
 /* -----------------------------------------------------------------*/
 
 void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,
-         void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,PetscReal*,PetscReal*,PetscReal*,int*,PetscErrorCode*),
+         void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscErrorCode*),
          void *ptr,PetscErrorCode *ierr)
 {
   f2 = apply;
@@ -212,25 +212,25 @@ void PETSC_STDCALL mggetcoarsesolve_(PC *pc,KSP *ksp,PetscErrorCode *ierr)
   *ierr = MGGetCoarseSolve(*pc,ksp);
 }
 
-void PETSC_STDCALL mggetsmoother_(PC *pc,int *l,KSP *ksp,PetscErrorCode *ierr)
+void PETSC_STDCALL mggetsmoother_(PC *pc,PetscInt *l,KSP *ksp,PetscErrorCode *ierr)
 {
   *ierr = MGGetSmoother(*pc,*l,ksp);
 }
 
-void PETSC_STDCALL mggetsmootherup_(PC *pc,int *l,KSP *ksp,PetscErrorCode *ierr)
+void PETSC_STDCALL mggetsmootherup_(PC *pc,PetscInt *l,KSP *ksp,PetscErrorCode *ierr)
 {
   *ierr = MGGetSmootherUp(*pc,*l,ksp);
 }
 
-void PETSC_STDCALL mggetsmootherdown_(PC *pc,int *l,KSP *ksp,PetscErrorCode *ierr)
+void PETSC_STDCALL mggetsmootherdown_(PC *pc,PetscInt *l,KSP *ksp,PetscErrorCode *ierr)
 {
   *ierr = MGGetSmootherDown(*pc,*l,ksp);
 }
 
-void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,int *n_local,int *first_local,KSP *ksp,PetscErrorCode *ierr)
+void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
 {
   KSP *tksp;
-  int  i,nloc;
+  PetscInt  i,nloc;
   CHKFORTRANNULLINTEGER(n_local);
   CHKFORTRANNULLINTEGER(first_local);
   *ierr = PCBJacobiGetSubKSP(*pc,&nloc,first_local,&tksp);
@@ -240,10 +240,10 @@ void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,int *n_local,int *first_local,KSP 
   }
 }
 
-void PETSC_STDCALL pcasmgetsubksp_(PC *pc,int *n_local,int *first_local,KSP *ksp,PetscErrorCode *ierr)
+void PETSC_STDCALL pcasmgetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
 {
   KSP *tksp;
-  int  i,nloc;
+  PetscInt  i,nloc;
   CHKFORTRANNULLINTEGER(n_local);
   CHKFORTRANNULLINTEGER(first_local);
   *ierr = PCASMGetSubKSP(*pc,&nloc,first_local,&tksp);
@@ -255,7 +255,6 @@ void PETSC_STDCALL pcasmgetsubksp_(PC *pc,int *n_local,int *first_local,KSP *ksp
 
 void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLINTEGER(flag);
   CHKFORTRANNULLOBJECT(mat);
   CHKFORTRANNULLOBJECT(pmat)
   *ierr = PCGetOperators(*pc,mat,pmat,flag);
@@ -267,7 +266,7 @@ void PETSC_STDCALL pcgetfactoredmatrix_(PC *pc,Mat *mat,PetscErrorCode *ierr)
 }
  
 void PETSC_STDCALL pcsetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
-                                       int *ierr PETSC_END_LEN(len))
+                                       PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -277,7 +276,7 @@ void PETSC_STDCALL pcsetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
 }
 
 void PETSC_STDCALL pcappendoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
-                                          int *ierr PETSC_END_LEN(len))
+                                          PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -301,7 +300,7 @@ void PETSC_STDCALL pcregisterdestroy_(PetscErrorCode *ierr)
   *ierr = PCRegisterDestroy();
 }
 
-void PETSC_STDCALL pcgettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL pcgettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *tname;
 
@@ -319,7 +318,7 @@ void PETSC_STDCALL pcgettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),int *ierr PE
 }
 
 void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
-                                       int *ierr PETSC_END_LEN(len))
+                                       PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *tname;
 
@@ -334,21 +333,21 @@ void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
 #endif
 }
 
-void PETSC_STDCALL pcasmsetlocalsubdomains_(PC *pc,int *n,IS *is, PetscErrorCode *ierr)
+void PETSC_STDCALL pcasmsetlocalsubdomains_(PC *pc,PetscInt *n,IS *is, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(is);
   *ierr = PCASMSetLocalSubdomains(*pc,*n,is);
 }
 
-void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,int *N,IS *is, PetscErrorCode *ierr)
+void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,PetscInt *N,IS *is, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(is);
   *ierr = PCASMSetTotalSubdomains(*pc,*N,is);
 }
 
-void PETSC_STDCALL pcasmgetlocalsubmatrices_(PC *pc,int *n,Mat *mat, PetscErrorCode *ierr)
+void PETSC_STDCALL pcasmgetlocalsubmatrices_(PC *pc,PetscInt *n,Mat *mat, PetscErrorCode *ierr)
 {
-  int nloc,i;
+  PetscInt nloc,i;
   Mat  *tmat;
   CHKFORTRANNULLOBJECT(mat);
   CHKFORTRANNULLINTEGER(n);
@@ -360,9 +359,9 @@ void PETSC_STDCALL pcasmgetlocalsubmatrices_(PC *pc,int *n,Mat *mat, PetscErrorC
     }
   }
 }
-void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,int *n,IS *is, PetscErrorCode *ierr)
+void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,PetscInt *n,IS *is, PetscErrorCode *ierr)
 {
-  int nloc,i;
+  PetscInt nloc,i;
   IS  *tis;
   CHKFORTRANNULLOBJECT(is);
   CHKFORTRANNULLINTEGER(n);
@@ -380,7 +379,7 @@ void mgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, PetscErrorCode *ierr)
   *ierr = MGDefaultResidual(*mat,*b,*x,*r);
 }
 
-void PETSC_STDCALL mgsetresidual_(PC *pc,int *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
+void PETSC_STDCALL mgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
 {
   MVVVV rr;
   if ((FCNVOID)residual == (FCNVOID)mgdefaultresidual_) rr = MGDefaultResidual;
@@ -394,7 +393,7 @@ void PETSC_STDCALL mgsetresidual_(PC *pc,int *l,PetscErrorCode (*residual)(Mat*,
   *ierr = MGSetResidual(*pc,*l,rr,*mat);
 }
 
-void PETSC_STDCALL pcilusetmatordering_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), int *ierr PETSC_END_LEN(len)){
+void PETSC_STDCALL pcilusetmatordering_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len)){
   char *t;
 
     FIXCHAR(ordering,len,t);
@@ -402,7 +401,7 @@ void PETSC_STDCALL pcilusetmatordering_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len
     FREECHAR(ordering,t);
 }
 
-void PETSC_STDCALL pclusetmatordering_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), int *ierr PETSC_END_LEN(len)){
+void PETSC_STDCALL pclusetmatordering_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len)){
   char *t;
 
     FIXCHAR(ordering,len,t);
@@ -422,7 +421,7 @@ EXTERN_C_END
 #if defined(__cplusplus)
 extern "C" {
 #endif
-void PETSC_STDCALL  pchypresettype_(PC pc, CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL  pchypresettype_(PC *pc, CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len) )
 {
   char *t;
   FIXCHAR(name,len,t);

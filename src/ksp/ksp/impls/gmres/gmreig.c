@@ -16,7 +16,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
 #else
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
-  int            n = gmres->it + 1,i,N = gmres->max_k + 2;
+  PetscInt       n = gmres->it + 1,i,N = gmres->max_k + 2;
   PetscBLASInt   bn = (PetscBLASInt)n,bN = (PetscBLASInt)N,lwork = (PetscBLASInt)5*N,idummy = (PetscBLASInt)N,lierr;
   PetscScalar    *R = gmres->Rsvd,*work = R + N*N,sdummy;
   PetscReal      *realpart = gmres->Dsvd;
@@ -52,16 +52,16 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
 /* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeEigenvalues_GMRES"
-PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
+PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c,PetscInt *neig)
 {
 #if defined(PETSC_HAVE_ESSL)
-  KSP_GMRES   *gmres = (KSP_GMRES*)ksp->data;
+  KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
-  int         n = gmres->it + 1,N = gmres->max_k + 1,lwork = 5*N;
-  int         idummy = N,i,*perm,zero;
-  PetscScalar *R = gmres->Rsvd;
-  PetscScalar *cwork = R + N*N,sdummy;
-  PetscReal   *work,*realpart = gmres->Dsvd ;
+  PetscInt       n = gmres->it + 1,N = gmres->max_k + 1,lwork = 5*N;
+  PetscInt       idummy = N,i,*perm,zero;
+  PetscScalar    *R = gmres->Rsvd;
+  PetscScalar    *cwork = R + N*N,sdummy;
+  PetscReal      *work,*realpart = gmres->Dsvd ;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
@@ -85,7 +85,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscRe
 
   /* For now we stick with the convention of storing the real and imaginary
      components of evalues separately.  But is this what we really want? */
-  ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
 
 #if !defined(PETSC_USE_COMPLEX)
   for (i=0; i<n; i++) {
@@ -115,7 +115,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscRe
 #elif !defined(PETSC_USE_COMPLEX)
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
-  int            n = gmres->it + 1,N = gmres->max_k + 1,i,*perm;
+  PetscInt       n = gmres->it + 1,N = gmres->max_k + 1,i,*perm;
   PetscBLASInt   bn = (PetscBLASInt)n,bN = (PetscBLASInt)N,lwork = (PetscBLASInt)5*N,idummy = (PetscBLASInt)N,lierr;
   PetscScalar    *R = gmres->Rsvd,*work = R + N*N;
   PetscScalar    *realpart = gmres->Dsvd,*imagpart = realpart + N,sdummy;
@@ -134,7 +134,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscRe
   /* compute eigenvalues */
   LAgeev_("N","N",&bn,R,&bN,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr);
   if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
-  ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) { perm[i] = i;}
   ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -143,9 +143,9 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscRe
   }
   ierr = PetscFree(perm);CHKERRQ(ierr);
 #else
-  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
+  KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
-  int       n = gmres->it + 1,N = gmres->max_k + 1,lwork = 5*N,idummy = N,i,*perm;
+  PetscInt       n = gmres->it + 1,N = gmres->max_k + 1,lwork = 5*N,idummy = N,i,*perm;
   PetscScalar    *R = gmres->Rsvd,*work = R + N*N,*eigs = work + 5*N,sdummy;
 
   PetscFunctionBegin;
@@ -161,7 +161,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscRe
   /* compute eigenvalues */
   LAgeev_("N","N",&n,R,&N,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&ierr);
   if (ierr) SETERRQ(PETSC_ERR_LIB,"Error in LAPACK routine");
-  ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) { perm[i] = i;}
   for (i=0; i<n; i++) { r[i]    = PetscRealPart(eigs[i]);}
   ierr = PetscSortRealWithPermutation(n,r,perm);CHKERRQ(ierr);

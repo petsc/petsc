@@ -16,8 +16,8 @@ extern PetscTruth PetscBeganMPI;
 #define petscoptionsclearvalue_            PETSCOPTIONSCLEARVALUE
 #define petscoptionshasname_               PETSCOPTIONSHASNAME
 #define petscoptionsgetint_                PETSCOPTIONSGETINT
-#define petscoptionsgetreal_             PETSCOPTIONSGETREAL
-#define petscoptionsgetrealarray_        PETSCOPTIONSGETREALARRAY
+#define petscoptionsgetreal_               PETSCOPTIONSGETREAL
+#define petscoptionsgetrealarray_          PETSCOPTIONSGETREALARRAY
 #define petscoptionsgetstring_             PETSCOPTIONSGETSTRING
 #define petscgetprogramname                PETSCGETPROGRAMNAME
 #define petscoptionsinsertfile_            PETSCOPTIONSINSERTFILE
@@ -28,8 +28,8 @@ extern PetscTruth PetscBeganMPI;
 #define petscoptionsclearvalue_            petscoptionsclearvalue
 #define petscoptionshasname_               petscoptionshasname
 #define petscoptionsgetint_                petscoptionsgetint
-#define petscoptionsgetreal_             petscoptionsgetreal
-#define petscoptionsgetrealarray_        petscoptionsgetrealarray
+#define petscoptionsgetreal_               petscoptionsgetreal
+#define petscoptionsgetrealarray_          petscoptionsgetrealarray
 #define petscoptionsgetstring_             petscoptionsgetstring
 #define petscoptionsgetintarray_           petscoptionsgetintarray
 #define petscgetprogramname_               petscgetprogramname
@@ -40,7 +40,7 @@ EXTERN_C_BEGIN
 
 /* ---------------------------------------------------------------------*/
 
-void PETSC_STDCALL petscoptionsinsertfile_(CHAR file PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscoptionsinsertfile_(CHAR file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
@@ -50,7 +50,7 @@ void PETSC_STDCALL petscoptionsinsertfile_(CHAR file PETSC_MIXED_LEN(len),int *i
 }
 
 void PETSC_STDCALL petscoptionssetvalue_(CHAR name PETSC_MIXED_LEN(len1),CHAR value PETSC_MIXED_LEN(len2),
-                   int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                   PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -61,7 +61,7 @@ void PETSC_STDCALL petscoptionssetvalue_(CHAR name PETSC_MIXED_LEN(len1),CHAR va
   FREECHAR(value,c2);
 }
 
-void PETSC_STDCALL petscoptionsclearvalue_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscoptionsclearvalue_(CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
@@ -71,7 +71,7 @@ void PETSC_STDCALL petscoptionsclearvalue_(CHAR name PETSC_MIXED_LEN(len),int *i
 }
 
 void PETSC_STDCALL petscoptionshasname_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                    PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -83,7 +83,7 @@ void PETSC_STDCALL petscoptionshasname_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name
 }
 
 void PETSC_STDCALL petscoptionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    int *ivalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                    PetscInt *ivalue,PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -95,7 +95,7 @@ void PETSC_STDCALL petscoptionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name 
 }
 
 void PETSC_STDCALL petscoptionsgetlogical_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    PetscTruth *ivalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                    PetscTruth *ivalue,PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -107,7 +107,7 @@ void PETSC_STDCALL petscoptionsgetlogical_(CHAR pre PETSC_MIXED_LEN(len1),CHAR n
 }
 
 void PETSC_STDCALL petscoptionsgetreal_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    PetscReal *dvalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                    PetscReal *dvalue,PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -119,7 +119,7 @@ void PETSC_STDCALL petscoptionsgetreal_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name
 }
 
 void PETSC_STDCALL petscoptionsgetrealarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                PetscReal *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                PetscReal *dvalue,PetscInt *nmax,PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -131,7 +131,7 @@ void PETSC_STDCALL petscoptionsgetrealarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR
 }
 
 void PETSC_STDCALL petscoptionsgetintarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                   int *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                   PetscInt *dvalue,PetscInt *nmax,PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -144,7 +144,7 @@ void PETSC_STDCALL petscoptionsgetintarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR 
 
 void PETSC_STDCALL petscoptionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     CHAR string PETSC_MIXED_LEN(len),PetscTruth *flg,
-                    int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len))
+                    PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len))
 {
   char *c1,*c2,*c3;
   int  len3;
@@ -165,7 +165,7 @@ void PETSC_STDCALL petscoptionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR na
   FIXRETURNCHAR(string,len);
 }
 
-void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USES_CPTOFCD)
   char *tstr = _fcdtocp(str); 
@@ -178,7 +178,7 @@ void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),int *ierr PET
 
 }
 
-void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),int *ierr PETSC_END_LEN(len_in))
+void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),PetscErrorCode *ierr PETSC_END_LEN(len_in))
 {
   char *tmp;
   int  len;
@@ -201,6 +201,7 @@ EXTERN_C_END
 */
 char   *PETSC_NULL_CHARACTER_Fortran = 0;
 void   *PETSC_NULL_INTEGER_Fortran   = 0;
+void   *PETSC_NULL_OBJECT_Fortran    = 0;
 void   *PETSC_NULL_Fortran           = 0;
 void   *PETSC_NULL_SCALAR_Fortran    = 0;
 void   *PETSC_NULL_DOUBLE_Fortran    = 0;
@@ -208,7 +209,7 @@ void   *PETSC_NULL_REAL_Fortran      = 0;
 EXTERN_C_BEGIN
 void   (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
-long PetscIntAddressToFortran(int *base,int *addr)
+long PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
 {
   unsigned long tmp1 = (unsigned long) base,tmp2 = 0;
   unsigned long tmp3 = (unsigned long) addr;
@@ -216,10 +217,10 @@ long PetscIntAddressToFortran(int *base,int *addr)
 
 #if !defined(PETSC_HAVE_CRAY90_POINTER)
   if (tmp3 > tmp1) {
-    tmp2  = (tmp3 - tmp1)/sizeof(int);
+    tmp2  = (tmp3 - tmp1)/sizeof(PetscInt);
     itmp2 = (long) tmp2;
   } else {
-    tmp2  = (tmp1 - tmp3)/sizeof(int);
+    tmp2  = (tmp1 - tmp3)/sizeof(PetscInt);
     itmp2 = -((long) tmp2);
   }
 #else
@@ -235,13 +236,13 @@ long PetscIntAddressToFortran(int *base,int *addr)
   if (base + itmp2 != addr) {
     (*PetscErrorPrintf)("PetscIntAddressToFortran:C and Fortran arrays are\n");
     (*PetscErrorPrintf)("not commonly aligned or are too far apart to be indexed \n");
-    (*PetscErrorPrintf)("by an integer. Locations: C %ld Fortran %ld\n",tmp1,tmp3);
+    (*PetscErrorPrintf)("by an integer. Locations: C %uld Fortran %uld\n",tmp1,tmp3);
     MPI_Abort(PETSC_COMM_WORLD,1);
   }
   return itmp2;
 }
 
-int *PetscIntAddressFromFortran(int *base,long addr)
+PetscInt *PetscIntAddressFromFortran(PetscInt *base,long addr)
 {
   return base + addr;
 }
@@ -252,6 +253,7 @@ int *PetscIntAddressFromFortran(int *base,long addr)
        addr - C array address
        res  - will contain offset from C to Fortran
        shift - number of bytes that prevent base and addr from being commonly aligned
+       N - size of the array
 
    To fix! If tmp2 is larger than a signed long can handle MUST genrate error,
  currently we just stick into the signed and don't check.
@@ -290,7 +292,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,Pet
         Fortran and C not PetscScalar aligned,recover by copying values into
         memory that is aligned with the Fortran
     */
-    PetscErrorCode ierr;
+    PetscErrorCode       ierr;
     PetscScalar          *work;
     PetscObjectContainer container;
 

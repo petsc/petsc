@@ -141,7 +141,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapp
 PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscInt indices[],ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
-  PetscInt *in;
+  PetscInt       *in;
 
   PetscFunctionBegin;
   PetscValidIntPointer(indices,3);
@@ -745,15 +745,25 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pets
   nrecvs2 = nsends;
   ierr = PetscMalloc((nrecvs2+1)*sizeof(PetscInt),&lens2);CHKERRQ(ierr);  
   ierr = PetscMalloc((nrecvs2+1)*sizeof(PetscInt),&starts3);CHKERRQ(ierr);  
-  nt      = 0;
+  ierr = PetscMalloc((nrecvs2+1)*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
   for (i=0; i<nrecvs2; i++) {
-    ierr =  MPI_Recv(&lens2[i],1,MPIU_INT,dest[i],tag2,comm,&recv_status);CHKERRQ(ierr);
-    nt   += lens2[i];
+    ierr =  MPI_Irecv(&lens2[i],1,MPIU_INT,dest[i],tag2,comm,recv_waits+i);CHKERRQ(ierr);
   }
+
+  /* wait on receives of lens */
+  ierr = PetscMalloc((nrecvs2+1)*sizeof(MPI_Status),&recv_statuses);CHKERRQ(ierr);
+  ierr = MPI_Waitall(nrecvs2,recv_waits,recv_statuses);CHKERRQ(ierr);
+  ierr = PetscFree(recv_statuses);CHKERRQ(ierr);
+  ierr = PetscFree(recv_waits);
+
   starts3[0] = 0;
+  nt         = 0;
   for (i=0; i<nrecvs2-1; i++) {
     starts3[i+1] = starts3[i] + lens2[i];
+    nt          += lens2[i];
   }
+  nt += lens2[nrecvs2-1];
+
   ierr = PetscMalloc((nt+1)*sizeof(PetscInt),&recvs2);CHKERRQ(ierr);
   ierr = PetscMalloc((nrecvs2+1)*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
   for (i=0; i<nrecvs2; i++) {

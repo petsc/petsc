@@ -5,10 +5,11 @@
        program main
 #include "finclude/petsc.h"
 
-      integer size,ierr
+      PetscMPIInt size
+      PetscErrorCode ierr
 
       call MPI_Init(ierr)
-      call PetscSetCommWorld(PETSC_COMM_SELF,ierr)
+      call PetscSetCommWorld(MPI_COMM_SELF,ierr)
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
    
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)

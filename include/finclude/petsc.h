@@ -16,21 +16,21 @@
 !    
 !     Flags
 !
-      integer   PETSC_TRUE,PETSC_FALSE
-      integer   PETSC_YES,PETSC_NO
+      PetscEnum   PETSC_TRUE,PETSC_FALSE
+      PetscEnum   PETSC_YES,PETSC_NO
       parameter (PETSC_TRUE = 1,PETSC_FALSE = 0)
       parameter (PETSC_YES=1, PETSC_NO=0)
 
-      integer   PETSC_DECIDE,PETSC_DETERMINE
+      PetscInt   PETSC_DECIDE,PETSC_DETERMINE
       parameter (PETSC_DECIDE=-1,PETSC_DETERMINE=-1)
 
-      integer   PETSC_DEFAULT_INTEGER
+      PetscInt  PETSC_DEFAULT_INTEGER
       parameter (PETSC_DEFAULT_INTEGER = -2)
 
       PetscFortranDouble PETSC_DEFAULT_DOUBLE_PRECISION
       parameter (PETSC_DEFAULT_DOUBLE_PRECISION=-2.0d0)
 
-      integer   PETSC_FP_TRAP_OFF,PETSC_FP_TRAP_ON
+      PetscEnum   PETSC_FP_TRAP_OFF,PETSC_FP_TRAP_ON
       parameter (PETSC_FP_TRAP_OFF = 0,PETSC_FP_TRAP_ON = 1) 
 
 
@@ -70,9 +70,9 @@
 !
 !     PETSc DataTypes
 !
-      integer PETSC_INT,PETSC_DOUBLE,PETSC_COMPLEX
-      integer PETSC_LONG,PETSC_SHORT,PETSC_FLOAT
-      integer PETSC_CHAR,PETSC_LOGICAL
+      PetscEnum PETSC_INT,PETSC_DOUBLE,PETSC_COMPLEX
+      PetscEnum PETSC_LONG,PETSC_SHORT,PETSC_FLOAT
+      PetscEnum PETSC_CHAR,PETSC_LOGICAL
 
       parameter (PETSC_INT=0,PETSC_DOUBLE=1,PETSC_COMPLEX=2)
       parameter (PETSC_LONG=3,PETSC_SHORT=4,PETSC_FLOAT=5)
@@ -122,9 +122,10 @@
 !     Fortran Null
 !
       PetscChar(80)       PETSC_NULL_CHARACTER
-      PetscFortranInt     PETSC_NULL_INTEGER
+      PetscInt            PETSC_NULL_INTEGER
       PetscFortranDouble  PETSC_NULL_DOUBLE
-      PetscFortranInt     PETSC_NULL
+      PetscInt            PETSC_NULL
+      PetscObject         PETSC_NULL_OBJECT
 !
 !      A PETSC_NULL_FUNCTION pointer
 !
@@ -145,6 +146,7 @@
       common /petscfortran5/ PETSC_NULL_DOUBLE
       common /petscfortran6/ PETSC_NULL_REAL
       common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
+      common /petscfortran8/ PETSC_NULL_OBJECT
 !
 !     Possible arguments to PetscPushErrorHandler()
 !

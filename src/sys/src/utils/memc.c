@@ -129,10 +129,10 @@ PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 .seealso: PetscMemmove(), PetscMemcpy()
 
 @*/
-PetscErrorCode PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtype)
+PetscErrorCode PetscBitMemcpy(void *a,PetscInt ai,const void *b,PetscInt bi,PetscInt bs,PetscDataType dtype)
 {
-  char *aa = (char *)a,*bb = (char *)b;
-  int  dsize;
+  char           *aa = (char *)a,*bb = (char *)b;
+  PetscInt       dsize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -39,14 +39,14 @@ static char help[] ="Solves the time dependent Bratu problem using pseudo-timest
 */
 typedef struct {
   PetscReal   param;        /* test problem parameter */
-  int         mx;           /* Discretization in x-direction */
-  int         my;           /* Discretization in y-direction */
+  PetscInt    mx;           /* Discretization in x-direction */
+  PetscInt    my;           /* Discretization in y-direction */
 } AppCtx;
 
 /* 
    User-defined routines
 */
-extern int  FormJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),
+extern PetscErrorCode  FormJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(TS,PetscReal,Vec,Vec,void*),
      FormInitialGuess(Vec,AppCtx*);
 
@@ -54,14 +54,14 @@ extern int  FormJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS        ts;                 /* timestepping context */
-  Vec       x,r;               /* solution, residual vectors */
-  Mat       J;                  /* Jacobian matrix */
-  AppCtx    user;               /* user-defined work context */
-  int       its;                /* iterations for convergence */
-  int       ierr,N; 
-  PetscReal param_max = 6.81,param_min = 0.,dt;
-  PetscReal ftime;
+  TS             ts;                 /* timestepping context */
+  Vec            x,r;               /* solution, residual vectors */
+  Mat            J;                  /* Jacobian matrix */
+  AppCtx         user;               /* user-defined work context */
+  PetscInt       its,N;                /* iterations for convergence */
+  PetscErrorCode ierr; 
+  PetscReal      param_max = 6.81,param_min = 0.,dt;
+  PetscReal      ftime;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   user.mx        = 4;
@@ -183,12 +183,13 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-int FormInitialGuess(Vec X,AppCtx *user)
+PetscErrorCode FormInitialGuess(Vec X,AppCtx *user)
 {
-  int         i,j,row,mx,my,ierr;
-  PetscReal   one = 1.0,lambda;
-  PetscReal   temp1,temp,hx,hy;
-  PetscScalar *x;
+  PetscInt       i,j,row,mx,my;
+  PetscErrorCode ierr;
+  PetscReal      one = 1.0,lambda;
+  PetscReal      temp1,temp,hx,hy;
+  PetscScalar    *x;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -217,13 +218,14 @@ int FormInitialGuess(Vec X,AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-int FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
+PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
-  AppCtx      *user = (AppCtx*)ptr;
-  int         ierr,i,j,row,mx,my;
-  PetscReal   two = 2.0,one = 1.0,lambda;
-  PetscReal   hx,hy,hxdhy,hydhx;
-  PetscScalar ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
+  AppCtx         *user = (AppCtx*)ptr;
+  PetscErrorCode ierr;
+  PetscInt       i,j,row,mx,my;
+  PetscReal      two = 2.0,one = 1.0,lambda;
+  PetscReal      hx,hy,hxdhy,hydhx;
+  PetscScalar    ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -262,13 +264,14 @@ int FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-int FormJacobian(TS ts,PetscReal t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx      *user = (AppCtx*)ptr;
-  Mat         jac = *B;
-  int         i,j,row,mx,my,col[5],ierr;
-  PetscScalar two = 2.0,one = 1.0,lambda,v[5],sc,*x;
-  PetscReal   hx,hy,hxdhy,hydhx;
+  AppCtx         *user = (AppCtx*)ptr;
+  Mat            jac = *B;
+  PetscInt       i,j,row,mx,my,col[5];
+  PetscErrorCode ierr;
+  PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;
+  PetscReal      hx,hy,hxdhy,hydhx;
 
 
   mx	 = user->mx; 

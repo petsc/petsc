@@ -31,14 +31,14 @@
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESClassicalGramSchmidtOrthogonalization"
-PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,int it)
+PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,PetscInt it)
 {
-  KSP_GMRES   *gmres = (KSP_GMRES *)(ksp->data);
+  KSP_GMRES      *gmres = (KSP_GMRES *)(ksp->data);
   PetscErrorCode ierr;
-  int         j;
-  PetscScalar *hh,*hes,shh[500],*lhh;
-  PetscReal   hnrm, wnrm;
-  PetscTruth  refine = (PetscTruth)(gmres->cgstype == KSP_GMRES_CGS_REFINE_ALWAYS);
+  PetscInt       j;
+  PetscScalar    *hh,*hes,shh[500],*lhh;
+  PetscReal      hnrm, wnrm;
+  PetscTruth     refine = (PetscTruth)(gmres->cgstype == KSP_GMRES_CGS_REFINE_ALWAYS);
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);

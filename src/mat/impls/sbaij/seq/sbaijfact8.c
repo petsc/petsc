@@ -9,20 +9,19 @@
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat A,Mat *B)
 {
-  Mat                C = *B;
-  Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
+  Mat            C = *B;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   PetscErrorCode ierr;
-  int i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
-  int                *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
-  MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
-  MatScalar          *u,*d,*rtmp,*rtmp_ptr;
+  PetscInt       i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscInt       *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
+  MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
+  MatScalar      *u,*d,*rtmp,*rtmp_ptr;
 
   PetscFunctionBegin;
-  
   /* initialization */
   ierr = PetscMalloc(25*mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,25*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
-  ierr = PetscMalloc(2*mbs*sizeof(int),&il);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*mbs*sizeof(PetscInt),&il);CHKERRQ(ierr);
   jl = il + mbs;
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;

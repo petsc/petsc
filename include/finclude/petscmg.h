@@ -5,21 +5,21 @@
 #if !defined (__PETSCMG_H)
 #define __PETSCMG_H
 
-#define MGType integer
+#define MGType PetscEnum
 
 #endif
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 !
 !
-      integer MGMULTIPLICATIVE,MGADDITIVE,MGFULL,MGKASKADE,MGCASCADE
+      PetscEnum MGMULTIPLICATIVE,MGADDITIVE,MGFULL,MGKASKADE,MGCASCADE
       parameter (MGMULTIPLICATIVE=0,MGADDITIVE=1,MGFULL=2,MGKASKADE=3)
       parameter (MGCASCADE=3)
 
 !
 !  Other defines
 !
-      integer MG_V_CYCLE,MG_W_CYCLE
+      PetscEnum MG_V_CYCLE,MG_W_CYCLE
       parameter (MG_V_CYCLE=1,MG_W_CYCLE=2)
 
       external MGDEFAULTRESIDUAL

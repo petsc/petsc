@@ -14,8 +14,9 @@ static char help[] = "Tests SDALocalToLocalxxx().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            size,rank,M=8,ierr,dof=1,stencil_width=1,i,start,end,P=5;
-  int            N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE;
+  PetscMPIInt    size,rank;
+  PetscInt       M=8,dof=1,stencil_width=1,i,start,end,P=5,N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,pt,st;
+  PetscErrorCode ierr;
   PetscTruth     flg2,flg3,flg;
   DAPeriodicType periodic = DA_NONPERIODIC;
   DAStencilType  stencil_type = DA_STENCIL_STAR;
@@ -25,7 +26,7 @@ int main(int argc,char **argv)
   PetscScalar    value,mone = -1.0,*in,*out;
   PetscReal      norm,work;
   PetscViewer    viewer;
-  char           filename[64];
+  char           filename[PETSC_MAX_PATH_LEN];
   FILE           *file;
 
 
@@ -36,8 +37,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",(int*)&periodic,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",(int*)&stencil_type,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",&pt,PETSC_NULL);CHKERRQ(ierr); 
+  periodic = (DAPeriodicType) pt;
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",&st,PETSC_NULL);CHKERRQ(ierr); 
+  stencil_type = (DAStencilType) st;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-1d",&flg2);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-2d",&flg2);CHKERRQ(ierr);

@@ -9,8 +9,10 @@
 #include "include/finclude/petscis.h"
 #include "include/finclude/petscvec.h"
 
-      integer ierr, nlocal, n, irank, iprocs
-      integer from(10), to(10)
+      PetscErrorCode ierr
+      PetscInt  nlocal, n, row, nlocal2,n2,eight
+      PetscMPIInt rank, size
+      PetscInt from(10), to(10)
 
       PetscScalar num
       Vec v1, v2, v3
@@ -19,27 +21,37 @@
       n=8
       nlocal=2
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_COMM_RANK(PETSC_COMM_WORLD,irank,ierr)
-      call MPI_COMM_SIZE(PETSC_COMM_WORLD,iprocs,ierr)
-      if (iprocs.ne.4) then
+      call MPI_COMM_RANK(PETSC_COMM_WORLD,rank,ierr)
+      call MPI_COMM_SIZE(PETSC_COMM_WORLD,size,ierr)
+      if (size.ne.4) then
          print *, 'Four processor test'
          stop
       end if
       
-      call VecCreateMPI(PETSC_COMM_WORLD,nlocal*2,n*2,v1,ierr)
+      nlocal2 = 2*nlocal
+      n2      = 2*n
+      call VecCreateMPI(PETSC_COMM_WORLD,nlocal2,n2,v1,ierr)
       call VecCreateMPI(PETSC_COMM_WORLD,nlocal,n,v2,ierr)
       call VecCreateSeq(PETSC_COMM_SELF,n,v3,ierr)
 
       num=2.0
-      call VecSetValue(v1,1,num,INSERT_VALUES,ierr)
-      call VecSetValue(v1,5,num,INSERT_VALUES,ierr)
-      call VecSetValue(v1,9,num,INSERT_VALUES,ierr)
-      call VecSetValue(v1,13,num,INSERT_VALUES,ierr)
+      row = 1
+      call VecSetValue(v1,row,num,INSERT_VALUES,ierr)
+      row = 5
+      call VecSetValue(v1,row,num,INSERT_VALUES,ierr)
+      row = 9
+      call VecSetValue(v1,row,num,INSERT_VALUES,ierr)
+      row = 13
+      call VecSetValue(v1,row,num,INSERT_VALUES,ierr)
       num=1.0
-      call VecSetValue(v1,15,num,INSERT_VALUES,ierr)
-      call VecSetValue(v1,3,num,INSERT_VALUES,ierr)
-      call VecSetValue(v1,7,num,INSERT_VALUES,ierr)
-      call VecSetValue(v1,11,num,INSERT_VALUES,ierr)
+      row = 15
+      call VecSetValue(v1,row,num,INSERT_VALUES,ierr)
+      row = 3
+      call VecSetValue(v1,row,num,INSERT_VALUES,ierr)
+      row = 7
+      call VecSetValue(v1,row,num,INSERT_VALUES,ierr)
+      row = 11
+      call VecSetValue(v1,row,num,INSERT_VALUES,ierr)
 
       call VecAssemblyBegin(v1,ierr)
       call VecAssemblyEnd(v1,ierr)
@@ -65,8 +77,9 @@
       to(7)=7
       to(8)=7
 
-      call ISCreateGeneral(PETSC_COMM_SELF,8,from,fromis,ierr)
-      call ISCreateGeneral(PETSC_COMM_SELF,8,to,tois,ierr)
+      eight = 8
+      call ISCreateGeneral(PETSC_COMM_SELF,eight,from,fromis,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,eight,to,tois,ierr)
       call VecScatterCreate(v1,fromis,v2,tois,scat1,ierr)
       call VecScatterCreate(v1,fromis,v3,tois,scat2,ierr)
       call ISDestroy(fromis,ierr)
@@ -78,11 +91,11 @@
       call VecScatterBegin(v1,v3,ADD_VALUES,SCATTER_FORWARD,scat2,ierr)
       call VecScatterEnd(v1,v3,ADD_VALUES,SCATTER_FORWARD,scat2,ierr)
       
-      if (irank.eq.0) print *, "V1"
+      if (rank.eq.0) print *, "V1"
       call VecView(v1,PETSC_VIEWER_STDOUT_WORLD,ierr)
-      if (irank.eq.0) print *, "V2"
+      if (rank.eq.0) print *, "V2"
       call VecView(v2,PETSC_VIEWER_STDOUT_WORLD,ierr)
-      if (irank.eq.0) then
+      if (rank.eq.0) then
          print *, "V3"
          call VecView(v3,PETSC_VIEWER_STDOUT_SELF,ierr)
       end if

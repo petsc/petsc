@@ -41,19 +41,21 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec          x,b,u;                 /* approx solution, RHS, exact solution */
-  Mat          A;                       /* linear system matrix */
-  KSP          ksp;                    /* linear solver context */
-  PC           pc;                      /* PC context */
-  IS           *is;                     /* array of index sets that define the subdomains */
-  int          overlap = 1;             /* width of subdomain overlap */
-  int          Nsub;                    /* number of subdomains */
-  int          m = 15,n = 17;          /* mesh dimensions in x- and y- directions */
-  int          M = 2,N = 1;            /* number of subdomains in x- and y- directions */
-  int          i,j,I,J,ierr,Istart,Iend,size;
-  PetscTruth   flg;
-  PetscTruth   user_subdomains;         /* flag - 1 indicates user-defined subdomains */
-  PetscScalar  v, one = 1.0;
+  Vec            x,b,u;                 /* approx solution, RHS, exact solution */
+  Mat            A;                       /* linear system matrix */
+  KSP            ksp;                    /* linear solver context */
+  PC             pc;                      /* PC context */
+  IS             *is;                     /* array of index sets that define the subdomains */
+  PetscInt       overlap = 1;             /* width of subdomain overlap */
+  PetscInt       Nsub;                    /* number of subdomains */
+  PetscInt       m = 15,n = 17;          /* mesh dimensions in x- and y- directions */
+  PetscInt       M = 2,N = 1;            /* number of subdomains in x- and y- directions */
+  PetscInt       i,j,I,J,Istart,Iend;
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+  PetscTruth     flg;
+  PetscTruth     user_subdomains;         /* flag - 1 indicates user-defined subdomains */
+  PetscScalar    v, one = 1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -183,8 +185,8 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-user_set_subdomain_solvers",&flg);CHKERRQ(ierr);
   if (flg) {
-    KSP       *subksp;       /* array of KSP contexts for local subblocks */
-    int        nlocal,first;  /* number of local subblocks, first local subblock */
+    KSP        *subksp;       /* array of KSP contexts for local subblocks */
+    PetscInt   nlocal,first;  /* number of local subblocks, first local subblock */
     PC         subpc;          /* PC context for subblock */
     PetscTruth isasm;
 

@@ -31,6 +31,7 @@ class Configure(config.base.Configure):
     self.framework.log.write('Downloading Sowing\n')
     try:
       sowingDir = self.getDir()
+      self.framework.log.write('Sowing tar file already downloaded\n')
     except RuntimeError:
       import urllib
 
@@ -65,6 +66,7 @@ class Configure(config.base.Configure):
     except:
       oldargs = ''
     if not oldargs == args:
+      self.framework.log.write('Need to configure and compile Sowing: old args = '+oldargs+' new args '+args+'\n')
       try:
         output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:

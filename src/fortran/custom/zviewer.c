@@ -38,21 +38,21 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petscviewersocketputscalar(PetscViewer *viewer,int *m,int *n,PetscScalar *s,int *ierr)
+void PETSC_STDCALL petscviewersocketputscalar(PetscViewer *viewer,PetscInt *m,PetscInt *n,PetscScalar *s,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscViewerSocketPutScalar(v,*m,*n,s);
 }
 
-void PETSC_STDCALL petscviewersocketputreal(PetscViewer *viewer,int *m,int *n,PetscReal *s,int *ierr)
+void PETSC_STDCALL petscviewersocketputreal(PetscViewer *viewer,PetscInt *m,PetscInt *n,PetscReal *s,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscViewerSocketPutReal(v,*m,*n,s);
 }
 
-void PETSC_STDCALL petscviewersocketputint(PetscViewer *viewer,int *m,int *s,int *ierr)
+void PETSC_STDCALL petscviewersocketputint(PetscViewer *viewer,PetscInt *m,PetscInt *s,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
@@ -60,7 +60,7 @@ void PETSC_STDCALL petscviewersocketputint(PetscViewer *viewer,int *m,int *s,int
 }
 
 void PETSC_STDCALL petscviewersetfilename_(PetscViewer *viewer,CHAR name PETSC_MIXED_LEN(len),
-                                      int *ierr PETSC_END_LEN(len))
+                                      PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char   *c1;
   PetscViewer v;
@@ -70,14 +70,14 @@ void PETSC_STDCALL petscviewersetfilename_(PetscViewer *viewer,CHAR name PETSC_M
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL  petscviewersetfiletype_(PetscViewer *viewer,PetscViewerFileType *type,int *ierr)
+void PETSC_STDCALL  petscviewersetfiletype_(PetscViewer *viewer,PetscViewerFileType *type,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscViewerSetFileType(v,*type);
 }
 
-void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),int *port,PetscViewer *lab,int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),int *port,PetscViewer *lab,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char   *c1;
   FIXCHAR(name,len,c1);
@@ -86,7 +86,7 @@ void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
 }
 
 void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewerFileType *type,
-                           PetscViewer *binv,int *ierr PETSC_END_LEN(len))
+                           PetscViewer *binv,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char   *c1;
   FIXCHAR(name,len,c1);
@@ -96,7 +96,7 @@ void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
 
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
 void PETSC_STDCALL petscviewermatlabopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewerFileType *type,
-                           PetscViewer *binv,int *ierr PETSC_END_LEN(len))
+                           PetscViewer *binv,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char   *c1;
   FIXCHAR(name,len,c1);
@@ -106,7 +106,7 @@ void PETSC_STDCALL petscviewermatlabopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
 #endif
 
 void PETSC_STDCALL petscviewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewer *lab,
-                                    int *ierr PETSC_END_LEN(len))
+                                    PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char   *c1;
   FIXCHAR(name,len,c1);
@@ -114,34 +114,34 @@ void PETSC_STDCALL petscviewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LE
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL petscviewersetformat_(PetscViewer *vin,PetscViewerFormat *format,int *ierr)
+void PETSC_STDCALL petscviewersetformat_(PetscViewer *vin,PetscViewerFormat *format,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = PetscViewerSetFormat(v,*format);
 }
 
-void PETSC_STDCALL petscviewerpushformat_(PetscViewer *vin,PetscViewerFormat *format,int *ierr)
+void PETSC_STDCALL petscviewerpushformat_(PetscViewer *vin,PetscViewerFormat *format,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = PetscViewerPushFormat(v,*format);
 }
 
-void PETSC_STDCALL petscviewerpopformat_(PetscViewer *vin,int *ierr)
+void PETSC_STDCALL petscviewerpopformat_(PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = PetscViewerPopFormat(v);
 }
 
-void PETSC_STDCALL petscviewerdestroy_(PetscViewer *v,int *ierr)
+void PETSC_STDCALL petscviewerdestroy_(PetscViewer *v,PetscErrorCode *ierr)
 {
   *ierr = PetscViewerDestroy(*v);
 }
 
-void PETSC_STDCALL petscviewerstringopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len1),int *len,PetscViewer *str,
-                                     int *ierr PETSC_END_LEN(len1))
+void PETSC_STDCALL petscviewerstringopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len1),PetscInt *len,PetscViewer *str,
+                                     PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
 #if defined(PETSC_USES_CPTOFCD)
   *ierr = PetscViewerStringOpen((MPI_Comm)PetscToPointerComm(*comm),_fcdtocp(name),*len,str);
@@ -152,7 +152,7 @@ void PETSC_STDCALL petscviewerstringopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
   
 void PETSC_STDCALL petscviewerdrawopen_(MPI_Comm *comm,CHAR display PETSC_MIXED_LEN(len1),
                    CHAR title PETSC_MIXED_LEN(len2),int *x,int*y,int*w,int*h,PetscViewer *v,
-                   int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                   PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char   *c1,*c2;
 

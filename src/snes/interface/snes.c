@@ -101,7 +101,7 @@ PetscErrorCode SNESView(SNES snes,PetscViewer viewer)
   line options. These are called at the end SNESSetFromOptions()
 */
 #define MAXSETFROMOPTIONS 5
-static int numberofsetfromoptions;
+static PetscInt numberofsetfromoptions;
 static PetscErrorCode (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 
 #undef __FUNCT__  
@@ -469,7 +469,7 @@ PetscErrorCode SNESSetMaximumUnsuccessfulSteps(SNES snes, PetscInt maxFails)
 
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
 @*/
-PetscErrorCode SNESGetMaximumUnsuccessfulSteps(SNES snes, int *maxFails)
+PetscErrorCode SNESGetMaximumUnsuccessfulSteps(SNES snes, PetscInt *maxFails)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -499,7 +499,7 @@ PetscErrorCode SNESGetMaximumUnsuccessfulSteps(SNES snes, int *maxFails)
 
 .keywords: SNES, nonlinear, get, number, linear, iterations
 @*/
-PetscErrorCode SNESGetNumberLinearIterations(SNES snes,int* lits)
+PetscErrorCode SNESGetNumberLinearIterations(SNES snes,PetscInt* lits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -590,7 +590,7 @@ PetscErrorCode SNESCreate(MPI_Comm comm,SNES *outsnes)
   ierr = SNESInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(snes,_p_SNES,int,SNES_COOKIE,0,"SNES",comm,SNESDestroy,SNESView);
+  PetscHeaderCreate(snes,_p_SNES,PetscInt,SNES_COOKIE,0,"SNES",comm,SNESDestroy,SNESView);
   PetscLogObjectCreate(snes);
   snes->bops->publish     = SNESPublish_Petsc;
   snes->max_its           = 50;
@@ -868,7 +868,7 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix
 
-.seealso: KSPSetOperators(), SNESSetFunction()
+.seealso: KSPSetOperators(), SNESSetFunction(), , MatSNESMFComputeJacobian(), SNESDefaultComputeJacobianColor()
 @*/
 PetscErrorCode SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
@@ -1201,7 +1201,7 @@ PetscErrorCode SNESSetTrustRegionTolerance(SNES snes,PetscReal tol)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLGMonitor"
-PetscErrorCode SNESLGMonitor(SNES snes,int it,PetscReal norm,void *ctx)
+PetscErrorCode SNESLGMonitor(SNES snes,PetscInt it,PetscReal norm,void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -1253,7 +1253,7 @@ PetscErrorCode SNESLGMonitorDestroy(PetscDrawLG draw)
           (may be PETSC_NULL)
 
    Calling sequence of func:
-$     int func(SNES snes,int its, PetscReal norm,void *mctx)
+$     int func(SNES snes,PetscInt its, PetscReal norm,void *mctx)
 
 +    snes - the SNES context
 .    its - iteration number

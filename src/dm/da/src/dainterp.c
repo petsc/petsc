@@ -195,8 +195,8 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   PetscInt       i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
   PetscInt       m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
   PetscInt       row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratioi,ratioj;
-  PetscInt       i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
-  PetscInt       size_c,size_f,rank_f,col_shift,col_scale;
+  PetscInt       i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c,col_shift,col_scale;
+  PetscMPIInt    size_c,size_f,rank_f;
   PetscScalar    v[4],x,y;
   Mat            mat;
   DAPeriodicType pt;
@@ -684,7 +684,7 @@ PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
 
   /* loop over local fine grid nodes setting interpolation for those*/
   nc = 0;
-  ierr = PetscMalloc(n_f*m_f*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc(n_f*m_f*sizeof(PetscInt),&cols);CHKERRQ(ierr);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
 

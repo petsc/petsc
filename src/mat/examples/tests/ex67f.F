@@ -9,7 +9,8 @@
 #include "include/finclude/petscviewer.h"
 
       Mat      A,B
-      integer  ierr
+      PetscErrorCode  ierr
+      PetscInt one,zero
       PetscViewer   v    
       IS       isrow
 
@@ -20,14 +21,16 @@
 
       call MatLoad(v,MATSEQAIJ,A,ierr)
 
-      call ISCreateGeneral(PETSC_COMM_SELF,1,0,isrow,ierr)
+      one  = 1
+      zero = 0
+      call ISCreateGeneral(PETSC_COMM_SELF,one,zero,isrow,ierr)
 
-      call MatGetSubmatrices(A,1,isrow,isrow,                           &
+      call MatGetSubmatrices(A,one,isrow,isrow,                           &
      &        MAT_INITIAL_MATRIX,B,ierr)
 
       call MatView(B,PETSC_VIEWER_STDOUT_SELF,ierr)
 
-      call MatGetSubmatrices(A,1,isrow,isrow,                           &
+      call MatGetSubmatrices(A,one,isrow,isrow,                           &
      &        MAT_REUSE_MATRIX,B,ierr)
 
       call MatView(B,PETSC_VIEWER_STDOUT_SELF,ierr)

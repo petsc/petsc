@@ -27,7 +27,7 @@
 #define snessetjacobian_                 SNESSETJACOBIAN
 #define snescreate_                      SNESCREATE
 #define snessetfunction_                 SNESSETFUNCTION
-#define snesgetksp_                     SNESGETKSP
+#define snesgetksp_                      SNESGETKSP
 #define snessetmonitor_                  SNESSETMONITOR
 #define snessetconvergencetest_          SNESSETCONVERGENCETEST
 #define snesregisterdestroy_             SNESREGISTERDESTROY
@@ -85,7 +85,7 @@
 #define snessetjacobian_                 snessetjacobian
 #define snescreate_                      snescreate
 #define snessetfunction_                 snessetfunction
-#define snesgetksp_                     snesgetksp
+#define snesgetksp_                      snesgetksp
 #define snesdestroy_                     snesdestroy
 #define snessetmonitor_                  snessetmonitor
 #define snessetconvergencetest_          snessetconvergencetest
@@ -109,18 +109,18 @@
 #endif
 
 EXTERN_C_BEGIN
-static void (PETSC_STDCALL *f7)(SNES*,int*,PetscReal*,void*,PetscErrorCode*);
+static void (PETSC_STDCALL *f7)(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f71)(void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f8)(SNES*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f2)(SNES*,Vec*,Vec*,void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f11)(SNES*,Vec*,Vec*,void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f3)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*);
-static void (PETSC_STDCALL *f73)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,PetscErrorCode*);
+static void (PETSC_STDCALL *f73)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscTruth*,PetscErrorCode*);
 static void (PETSC_STDCALL *f74)(SNES*,void *,Vec*,PetscTruth*,PetscErrorCode*);
 EXTERN_C_END
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-PetscErrorCode OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal*ynorm,PetscReal*gnorm,int *flag)
+PetscErrorCode OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal*ynorm,PetscReal*gnorm,PetscTruth *flag)
 {
   PetscErrorCode ierr = 0;
   (*f73)(&snes,(void*)&ctx,&x,&f,&g,&y,&w,&fnorm,ynorm,gnorm,flag,&ierr);CHKERRQ(ierr);
@@ -134,7 +134,7 @@ PetscErrorCode OurSNESLineSearchCheck(SNES snes,void *checkCtx,Vec x,PetscTruth 
   return 0;
 }
 
-static PetscErrorCode oursnesmonitor(SNES snes,int i,PetscReal d,void*ctx)
+static PetscErrorCode oursnesmonitor(SNES snes,PetscInt i,PetscReal d,void*ctx)
 {
   PetscErrorCode ierr = 0;
 
@@ -181,20 +181,20 @@ static PetscErrorCode ourrhs(SNES snes,Vec vec,Vec vec2,void*ctx)
 {
   PetscErrorCode ierr = 0;
   DMMG *dmmg = (DMMG*)ctx;
-  (*(int (PETSC_STDCALL *)(SNES*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)dmmg->dm)->fortran_func_pointers[0]))(&snes,&vec,&vec2,&ierr);
+  (*(PetscErrorCode (PETSC_STDCALL *)(SNES*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)dmmg->dm)->fortran_func_pointers[0]))(&snes,&vec,&vec2,&ierr);
   return ierr;
 }
 
 static PetscErrorCode ourmat(DMMG dmmg,Mat mat)
 {
   PetscErrorCode ierr = 0;
-  (*(int (PETSC_STDCALL *)(DMMG*,Vec*,PetscErrorCode*))(((PetscObject)dmmg->dm)->fortran_func_pointers[1]))(&dmmg,&vec,&ierr);
+  (*(PetscErrorCode (PETSC_STDCALL *)(DMMG*,Vec*,PetscErrorCode*))(((PetscObject)dmmg->dm)->fortran_func_pointers[1]))(&dmmg,&vec,&ierr);
   return ierr;
 }
 
-void PETSC_STDCALL dmmgsetsnes_(DMMG **dmmg,int (PETSC_STDCALL *rhs)(SNES*,Vec*,Vec*,PetscErrorCode*),int (PETSC_STDCALL *mat)(DMMG*,Mat*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL dmmgsetsnes_(DMMG **dmmg,PetscErrorCode (PETSC_STDCALL *rhs)(SNES*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode (PETSC_STDCALL *mat)(DMMG*,Mat*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  int i;
+  PetscInt i;
   theirmat = mat;
   *ierr = DMMGSetSNES(*dmmg,ourrhs,ourmat,*dmmg);
   /*
@@ -260,7 +260,7 @@ void PETSC_STDCALL snesgetjacobian_(SNES *snes,Mat *A,Mat *B,void **ctx,int *fun
 }
 
 void PETSC_STDCALL matsnesmfsettype_(Mat *mat,CHAR ftype PETSC_MIXED_LEN(len),
-                                     int *ierr PETSC_END_LEN(len))
+                                     PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(ftype,len,t);
@@ -268,13 +268,13 @@ void PETSC_STDCALL matsnesmfsettype_(Mat *mat,CHAR ftype PETSC_MIXED_LEN(len),
   FREECHAR(ftype,t);
 }
 
-void PETSC_STDCALL snesgetconvergencehistory_(SNES *snes,int *na,PetscErrorCode *ierr)
+void PETSC_STDCALL snesgetconvergencehistory_(SNES *snes,PetscInt *na,PetscErrorCode *ierr)
 {
   *ierr = SNESGetConvergenceHistory(*snes,PETSC_NULL,PETSC_NULL,na);
 }
 
 void PETSC_STDCALL snessettype_(SNES *snes,CHAR type PETSC_MIXED_LEN(len),
-                                int *ierr PETSC_END_LEN(len))
+                                PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -284,7 +284,7 @@ void PETSC_STDCALL snessettype_(SNES *snes,CHAR type PETSC_MIXED_LEN(len),
 }
 
 void PETSC_STDCALL snesappendoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_LEN(len),
-                                            int *ierr PETSC_END_LEN(len))
+                                            PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -305,28 +305,28 @@ void PETSC_STDCALL matcreatemf_(Vec *x,Mat *J,PetscErrorCode *ierr)
 
 /* functions, hence no STDCALL */
 
-void sneslgmonitor_(SNES *snes,int *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+void sneslgmonitor_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
   *ierr = SNESLGMonitor(*snes,*its,*fgnorm,dummy);
 }
 
-void snesdefaultmonitor_(SNES *snes,int *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+void snesdefaultmonitor_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
   *ierr = SNESDefaultMonitor(*snes,*its,*fgnorm,dummy);
 }
 
-void snesvecviewmonitor_(SNES *snes,int *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+void snesvecviewmonitor_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
   *ierr = SNESVecViewMonitor(*snes,*its,*fgnorm,dummy);
 }
 
-void snesvecviewupdatemonitor_(SNES *snes,int *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+void snesvecviewupdatemonitor_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
   *ierr = SNESVecViewUpdateMonitor(*snes,*its,*fgnorm,dummy);
 }
 
 
-void PETSC_STDCALL snessetmonitor_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,int*,PetscReal*,void*,PetscErrorCode*),
+void PETSC_STDCALL snessetmonitor_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*),
                     void *mctx,void (PETSC_STDCALL *mondestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(mctx);
@@ -351,28 +351,28 @@ void PETSC_STDCALL snessetmonitor_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,i
 
 /* -----------------------------------------------------------------------------------------------------*/
 void snescubiclinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
-                                        PetscReal *ynorm,PetscReal *gnorm,int *flag,PetscErrorCode *ierr)
+                                        PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag,PetscErrorCode *ierr)
 {
   *ierr = SNESCubicLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
 void snesquadraticlinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
-                                        PetscReal *ynorm,PetscReal *gnorm,int *flag,PetscErrorCode *ierr)
+                                        PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag,PetscErrorCode *ierr)
 {
   *ierr = SNESQuadraticLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
 void snesnolinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
-                                        PetscReal *ynorm,PetscReal *gnorm,int *flag,PetscErrorCode *ierr)
+                                        PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag,PetscErrorCode *ierr)
 {
   *ierr = SNESNoLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
 void snesnolinesearchnonorms_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
-                                        PetscReal *ynorm,PetscReal *gnorm,int *flag,PetscErrorCode *ierr)
+                                        PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag,PetscErrorCode *ierr)
 {
   *ierr = SNESNoLineSearchNoNorms(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
 
 
-void PETSC_STDCALL snessetlinesearch_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+void PETSC_STDCALL snessetlinesearch_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscTruth*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   if ((FCNVOID)f == (FCNVOID)snescubiclinesearch_) {
     *ierr = SNESSetLineSearch(*snes,SNESCubicLineSearch,ctx);
@@ -441,7 +441,7 @@ void PETSC_STDCALL snesgetsolutionupdate_(SNES *snes,Vec *x,PetscErrorCode *ierr
 void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void **ctx,void *func,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(ctx);
-  CHKFORTRANNULLINTEGER(r);
+  CHKFORTRANNULLOBJECT(r);
   *ierr = SNESGetFunction(*snes,r,ctx,PETSC_NULL);
 }
 
@@ -552,7 +552,7 @@ void PETSC_STDCALL snesregisterdestroy_(PetscErrorCode *ierr)
 }
 
 void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
-                                int *ierr PETSC_END_LEN(len))
+                                PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *tname;
 
@@ -569,7 +569,7 @@ void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
 }
 
 void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_LEN(len),
-                                         int *ierr PETSC_END_LEN(len))
+                                         PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *tname;
 

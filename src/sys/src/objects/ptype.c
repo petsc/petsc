@@ -47,7 +47,7 @@ PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtyp
   PetscFunctionReturn(0);
 }
 
-typedef enum {PETSC_INT_SIZE = sizeof(int),PETSC_DOUBLE_SIZE = sizeof(double),
+typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(double),
               PETSC_COMPLEX_SIZE = sizeof(PetscScalar),PETSC_LONG_SIZE=sizeof(long),
               PETSC_SHORT_SIZE = sizeof(short),PETSC_FLOAT_SIZE = sizeof(float),
               PETSC_CHAR_SIZE = sizeof(char),PETSC_LOGICAL_SIZE = 1} PetscDataTypeSize;
@@ -81,7 +81,7 @@ typedef enum {PETSC_INT_SIZE = sizeof(int),PETSC_DOUBLE_SIZE = sizeof(double),
    
 .seealso: PetscDataType, PetscDataTypeGetName(), PetscDataTypeToMPIDataType()
 @*/
-PetscErrorCode PetscDataTypeGetSize(PetscDataType ptype,int *size)
+PetscErrorCode PetscDataTypeGetSize(PetscDataType ptype,PetscInt *size)
 {
   PetscFunctionBegin;
   if (ptype == PETSC_INT) {

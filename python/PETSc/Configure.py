@@ -10,7 +10,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = 'PETSC'
     self.usingMPIUni  = 0
     self.defineAutoconfMacros()
-    headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
+    headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/stat', 'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
@@ -26,6 +26,7 @@ class Configure(config.base.Configure):
     self.headers      = self.framework.require('config.headers',      self)
     self.functions    = self.framework.require('config.functions',    self)
     self.libraries    = self.framework.require('config.libraries',    self)
+    self.update       = self.framework.require('PETSc.packages.update',self)
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
     self.headers.headerPrefix   = self.headerPrefix
@@ -63,6 +64,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-debug=<bool>',          nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
     help.addArgument('PETSc', '-with-log=<bool>',            nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
     help.addArgument('PETSc', '-with-stack=<bool>',          nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
+    help.addArgument('PETSc', '-with-ctable=<bool>',         nargs.ArgBool(None, 1, 'Use CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-dynamic=<bool>',        nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
     help.addArgument('PETSc', '-with-shared=<bool>',         nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
     help.addArgument('PETSc', '-with-etags=<bool>',          nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
@@ -75,7 +77,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
     help.addArgument('PETSc', '-prefix=<path>',              nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
     help.addArgument('PETSc', '-with-gcov=<bool>',           nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
-    help.addArgument('PETSc', '-with-64-bit-int=<bool>',     nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))    
+    help.addArgument('PETSc', '-with-64-bit-ints=<bool>',     nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))    
     return
 
   def defineAutoconfMacros(self):
@@ -83,13 +85,15 @@ class Configure(config.base.Configure):
     return
 
   def configureLibraryOptions(self):
-    '''Sets PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_STACK, and PETSC_USE_FORTRAN_KERNELS'''
+    '''Sets PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_STACK, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
     self.useDebug = self.framework.argDB['with-debug']
     self.addDefine('USE_DEBUG', self.useDebug)
     self.useLog   = self.framework.argDB['with-log']
     self.addDefine('USE_LOG',   self.useLog)
     self.useStack = self.framework.argDB['with-stack']
     self.addDefine('USE_STACK', self.useStack)
+    self.useCtable = self.framework.argDB['with-ctable']
+    self.addDefine('USE_CTABLE', self.useCtable)
     self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
     self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
     return
@@ -312,6 +316,16 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_GZIP',1)
     return
 
+  def configureMissingDefines(self):
+    '''Checks for limits'''
+    if not self.checkCompile('#ifdef PETSC_HAVE_LIMITS_H\n  #include <limits.h>\n#endif\n', 'int i=INT_MAX;\n\nif (i);\n'):
+      self.addDefine('INT_MIN', '(-INT_MAX - 1)')
+      self.addDefine('INT_MAX', 2147483647)
+    if not self.checkCompile('#ifdef PETSC_HAVE_FLOAT_H\n  #include <float.h>\n#endif\n', 'double d=DBL_MAX;\n\nif (d);\n'):
+      self.addDefine('DBL_MIN', 2.2250738585072014e-308)
+      self.addDefine('DBL_MAX', 1.7976931348623157e+308)
+    return
+
   def configureMissingFunctions(self):
     '''Checks for SOCKETS'''
     if not self.functions.haveFunction('socket'):
@@ -369,8 +383,14 @@ class Configure(config.base.Configure):
           self.addDefine('HAVE_SUN4_STYLE_FPTRAP', 1)
     return
 
+  def checkPrototype(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
+    (output, error, status) = self.outputCompile(includes, body, cleanup, codeBegin, codeEnd)
+    if output.find('implicit') >= 0 or output.find('Implicit') >= 0:
+      return 0
+    return 1
+
   def configureGetDomainName(self):
-    if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
+    if not self.checkPrototype('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
       self.addPrototype('int getdomainname(char *, int);', 'C')
     if 'CXX' in self.framework.argDB:
       self.pushLanguage('C++')
@@ -547,6 +567,8 @@ class Configure(config.base.Configure):
         jobs.append('2')
       if 'FC' in self.framework.argDB:
         jobs.append('3')
+      if self.update.hasdatafiles:
+        jobs.append('6')        
     if os.path.isfile(os.path.join(self.bmakeDir, 'jobs')):
       try:
         os.unlink(os.path.join(self.bmakeDir, 'jobs'))
@@ -597,7 +619,7 @@ class Configure(config.base.Configure):
     self.framework.addSubstitutionFile('bmake/config/packages.in',   'bmake/'+self.framework.argDB['PETSC_ARCH']+'/packages')
     self.framework.addSubstitutionFile('bmake/config/rules.in',      'bmake/'+self.framework.argDB['PETSC_ARCH']+'/rules')
     self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.argDB['PETSC_ARCH']+'/variables')
-    if self.framework.argDB['with-64-bit-int']:
+    if self.framework.argDB['with-64-bit-ints']:
       self.addDefine('USE_64BIT_INT', 1)
     else:
       self.addDefine('USE_32BIT_INT', 1)
@@ -613,6 +635,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureArchiver)
     self.executeTest(self.configureRanlib)
     self.executeTest(self.configurePrograms)
+    self.executeTest(self.configureMissingDefines)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
     self.executeTest(self.configureMemorySize)

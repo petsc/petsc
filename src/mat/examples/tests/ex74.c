@@ -7,12 +7,12 @@ static char help[] = "Tests the various sequential routines in MatSBAIJ format.\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
+  PetscMPIInt        size;
+  PetscErrorCode     ierr;
   Vec                x,y,b,s1,s2;      
   Mat                A;             /* linear system matrix */ 
   Mat                sA,sB,sC;         /* symmetric part of the matrices */ 
-  int                n,mbs=16,bs=1,nz=3,prob=1;
-  int                ierr,i,j,col[3],size,block, row,I,J,n1,inc; 
-  int                lf;           /* level of fill for icc */
+  PetscInt           n,mbs=16,bs=1,nz=3,prob=1,i,j,col[3],lf,block, row,I,J,n1,inc; 
   PetscReal          norm1,norm2,tol=1.e-10;
   PetscScalar        neg_one = -1.0,four=4.0,value[3],alpha=0.1;  
   IS                 perm, iscol;

@@ -11,23 +11,23 @@
  */
 
 typedef struct {
-  int           *rowners;           /* row range owned by each processor */
-  int           rstart,rend;        /* starting and ending local rows */
-  int           brstart,brend;      /* block starting and ending local rows */
+  PetscInt      *rowners;           /* row range owned by each processor */
+  PetscInt      rstart,rend;        /* starting and ending local rows */
+  PetscInt      brstart,brend;      /* block starting and ending local rows */
   Mat           A;                  /* local matrix */
-  int           gnd;                /* number of global diagonals */
-  int           *gdiag;             /* global matrix diagonal numbers */
-  int           size;               /* size of communicator */
-  int           rank;               /* rank of proc in communicator */ 
+  PetscInt      gnd;                /* number of global diagonals */
+  PetscInt      *gdiag;             /* global matrix diagonal numbers */
+  PetscMPIInt   size;               /* size of communicator */
+  PetscMPIInt   rank;               /* rank of proc in communicator */ 
 
   /* The following variables are used for matrix assembly */
   PetscTruth    donotstash;             /* 1 if off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
-  int           nsends,nrecvs;         /* numbers of sends and receives */
+  PetscInt      nsends,nrecvs;         /* numbers of sends and receives */
   PetscScalar   *svalues,*rvalues;     /* sending and receiving data */
-  int           rmax;                   /* maximum message length */
-  int           *garray;                /* work array */
+  PetscInt      rmax;                   /* maximum message length */
+  PetscInt      *garray;                /* work array */
   PetscTruth    roworiented;            /* indicates MatSetValues() input default 1*/
 
   /* The following variables are used for matrix-vector products */

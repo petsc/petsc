@@ -7,9 +7,9 @@ static char help[] = "Demonstrates opening and drawing a window\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscDraw draw;
+  PetscDraw      draw;
   PetscErrorCode ierr;
-  int       x = 0,y = 0,width = 300,height = 300;
+  int            x = 0,y = 0,width = 300,height = 300;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 

@@ -5,15 +5,15 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataSegmentGetReduced_Basic"
-PetscErrorCode AODataSegmentGetReduced_Basic(AOData ao,const char name[],const char segname[],int n,int *keys,IS *is)
+PetscErrorCode AODataSegmentGetReduced_Basic(AOData ao,const char name[],const char segname[],PetscInt n,PetscInt *keys,IS *is)
 {
-  AODataSegment *segment; 
-  AODataKey     *key;
+  AODataSegment  *segment; 
+  AODataKey      *key;
   PetscErrorCode ierr;
-  int dsize,i,bs,*found,count,imin,imax,*out;
-  char          *idata,*odata;
-  PetscBT       mask;
-  PetscTruth    flag;
+  PetscInt       dsize,i,bs,*found,count,imin,imax,*out;
+  char           *idata,*odata;
+  PetscBT        mask;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   /* find the correct segment */
@@ -34,7 +34,7 @@ PetscErrorCode AODataSegmentGetReduced_Basic(AOData ao,const char name[],const c
     ierr = PetscMemcpy(odata + i*bs*dsize,idata + keys[i]*bs*dsize,bs*dsize);CHKERRQ(ierr);
   }
 
-  found = (int*)odata;
+  found = (PetscInt*)odata;
   n     = n*bs;
 
   /*  Determine the max and min values */
@@ -57,7 +57,7 @@ PetscErrorCode AODataSegmentGetReduced_Basic(AOData ao,const char name[],const c
     if (!PetscBTLookupSet(mask,found[i] - imin)) count++;
   }
   ierr = PetscBTMemzero(imax-imin,mask);CHKERRQ(ierr);
-  ierr = PetscMalloc((count+1)*sizeof(int),&out);CHKERRQ(ierr);
+  ierr = PetscMalloc((count+1)*sizeof(PetscInt),&out);CHKERRQ(ierr);
   count = 0;
   for (i=0; i<n; i++) {
     if (found[i] < 0) continue;

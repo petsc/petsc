@@ -58,7 +58,7 @@ typedef struct {
 
   IS                     vertex_global;
 
-  double                 *vertex_coords; /* x,y coordinates of vertices on this processor */
+  PetscReal                 *vertex_coords; /* x,y coordinates of vertices on this processor */
 
   PetscBT                vertex_boundary_flag;
   IS                     vertex_boundary;
@@ -110,19 +110,19 @@ Values at the gauss points of the bilinear basis functions
 
 typedef struct {
   int dorhs;     /* flag to see if we are computing rhs */
-  double Values[4][4];  /* values of reference element */
-  double DxValues[4][4]; /* for reference element */
-  double DyValues[4][4]; /* for reference element */
-  double dx[16]; /* for local element */
-  double dy[16]; /*for local element */
-  double detDh[4]; /* determinant of map from reference element to the local element */
-  double x[4];/* x coord of image of gauss point */
-  double y[4];/* y coord of image of gauss point */
+  PetscReal Values[4][4];  /* values of reference element */
+  PetscReal DxValues[4][4]; /* for reference element */
+  PetscReal DyValues[4][4]; /* for reference element */
+  PetscReal dx[16]; /* for local element */
+  PetscReal dy[16]; /*for local element */
+  PetscReal detDh[4]; /* determinant of map from reference element to the local element */
+  PetscReal x[4];/* x coord of image of gauss point */
+  PetscReal y[4];/* y coord of image of gauss point */
 } AppElement;
 
  
 
- typedef double (*DFP)(double,double); /* pointer to a function of 2 vars */
+ typedef PetscReal (*DFP)(PetscReal,PetscReal); /* pointer to a function of 2 vars */
 
 typedef struct {
   char *rhs_string;
@@ -131,7 +131,7 @@ typedef struct {
   DFP g; /* rhs for v */
   DFP bc1;/* bc for u */
   DFP bc2;/* bc for v */
-  double eta; /* the viscosity */
+  PetscReal eta; /* the viscosity */
 
   /*  int DFs;   Number of Degrees of Freedom in the Problem */
 }AppEquations;
@@ -162,11 +162,11 @@ extern int AppCtxGraphics(AppCtx *);
 extern int AppCtxViewMatlab(AppCtx*);
 
 
- double pde_f(double, double); 
- double pde_g(double, double); 
- double pde_bc1(double, double); 
- double pde_bc2(double, double); 
-double pde_soln(double, double);
+ PetscReal pde_f(PetscReal, PetscReal); 
+ PetscReal pde_g(PetscReal, PetscReal); 
+ PetscReal pde_bc1(PetscReal, PetscReal); 
+ PetscReal pde_bc2(PetscReal, PetscReal); 
+PetscReal pde_soln(PetscReal, PetscReal);
 
 int AppCtxSetRhs(AppCtx*);
 int AppCtxCreateVector(AppCtx*);
@@ -178,11 +178,11 @@ int SetNonlinearFunction(Vec, AppCtx *, Vec);
 
 extern int AppCtxSetReferenceElement(AppCtx*);
 extern int AppCtxSetFunctions(AppCtx*);
-extern int SetLocalElement(AppElement *, double *);
-extern int ComputeRHS( DFP, DFP, AppElement *, double *);
-extern int ComputeMatrix( AppElement *, double *);
-extern int ComputeNonlinear(AppElement *, double *, double *);
-extern int ComputeJacobian(AppElement *, double *, double *);
+extern int SetLocalElement(AppElement *, PetscReal *);
+extern int ComputeRHS( DFP, DFP, AppElement *, PetscReal *);
+extern int ComputeMatrix( AppElement *, PetscReal *);
+extern int ComputeNonlinear(AppElement *, PetscReal *, PetscReal *);
+extern int ComputeJacobian(AppElement *, PetscReal *, PetscReal *);
 
 extern int FormInitialGuess(AppCtx *);
 extern int SetJacobian(Vec,AppCtx *,Mat*);

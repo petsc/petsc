@@ -9,17 +9,16 @@ static char help[] = "Tests the vatious routines in MatMPISBAIJ format.\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int               bs=1, mbs=16, d_nz=3, o_nz=3, prob=2;
   Vec               x,y,u,s1,s2;    
   Mat               A,sA,sB;     
   PetscRandom       rctx;         
-  double            r1,r2,tol=1.e-10;
-  int               i,j,i2,j2,I,J,ierr;
+  PetscReal         r1,r2,tol=1.e-10;
   PetscScalar       one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1;
   const PetscScalar *vr;
-  int               n,rank,size,col[3],n1,block,row;
-  int               ncols,rstart,rend;
-  const int         *cols;
+  PetscInt          n,col[3],n1,block,row,i,j,i2,j2,I,J,ncols,rstart,rend,bs=1, mbs=16, d_nz=3, o_nz=3, prob=2;
+  PetscErrorCode    ierr;
+  PetscMPIInt       size,rank;
+  const PetscInt    *cols;
   PetscTruth        flg;
   MatType           type;
 

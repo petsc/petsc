@@ -34,7 +34,9 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       Vec     x
-      integer N,ierr,rank,i
+      PetscInt N,i,ione
+      PetscErrorCode ierr
+      PetscMPIInt rank
       PetscScalar  one
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -48,8 +50,8 @@
 !     local size PETSc will choose a reasonable partition trying 
 !     to put nearly an equal number of elements on each processor.
 
-
-      call VecCreateMPI(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,x,ierr)
+      N = rank + 1
+      call VecCreateMPI(PETSC_COMM_WORLD,N,PETSC_DECIDE,x,ierr)
       call VecGetSize(x,N,ierr)
       call VecSet(one,x,ierr)
 
@@ -64,8 +66,9 @@
 !   - In this example, the flag ADD_VALUES indicates that all
 !     contributions will be added together.
 
+      ione = 1
       do 100 i=0,N-rank-1
-         call VecSetValues(x,1,i,one,ADD_VALUES,ierr)
+         call VecSetValues(x,ione,i,one,ADD_VALUES,ierr)
  100  continue
 
 !  Assemble vector, using the 2-step process:

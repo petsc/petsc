@@ -14,8 +14,8 @@ static PetscErrorCode KSPSetUp_PREONLY(KSP ksp)
 static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 {
   PetscErrorCode ierr;
-  Vec        X,B;
-  PetscTruth diagonalscale;
+  Vec            X,B;
+  PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -24,7 +24,6 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
     SETERRQ(PETSC_ERR_USER,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
                you probably want a KSP type of Richardson");
   }
-
   ksp->its    = 0;
   X           = ksp->vec_sol;
   B           = ksp->vec_rhs;

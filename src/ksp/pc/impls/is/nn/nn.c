@@ -48,13 +48,12 @@ static PetscErrorCode PCSetUp_NN(PC pc)
 #define __FUNCT__ "PCApply_NN"
 static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
 {
-  PC_IS       *pcis = (PC_IS*)(pc->data);
+  PC_IS          *pcis = (PC_IS*)(pc->data);
   PetscErrorCode ierr;
-  PetscScalar m_one = -1.0;
-  Vec         w = pcis->vec1_global;
+  PetscScalar    m_one = -1.0;
+  Vec            w = pcis->vec1_global;
 
   PetscFunctionBegin;
-
   /*
     Dirichlet solvers.
     Solving $ B_I^{(i)}r_I^{(i)} $ at each processor.
@@ -99,7 +98,6 @@ static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
   ierr = VecScale(&m_one,pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->vec2_D,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->vec2_D,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -117,11 +115,10 @@ static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
 #define __FUNCT__ "PCDestroy_NN"
 static PetscErrorCode PCDestroy_NN(PC pc)
 {
-  PC_NN *pcnn = (PC_NN*)pc->data;
+  PC_NN          *pcnn = (PC_NN*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ierr = PCISDestroy(pc);CHKERRQ(ierr);
 
   if (pcnn->coarse_mat)  {ierr = MatDestroy(pcnn->coarse_mat);CHKERRQ(ierr);}
@@ -177,10 +174,9 @@ EXTERN_C_BEGIN
 PetscErrorCode PCCreate_NN(PC pc)
 {
   PetscErrorCode ierr;
-  PC_NN *pcnn;
+  PC_NN          *pcnn;
 
   PetscFunctionBegin;
-
   /*
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
@@ -216,7 +212,6 @@ PetscErrorCode PCCreate_NN(PC pc)
   pc->ops->applyrichardson     = 0;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -232,22 +227,20 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 {
   MPI_Request    *send_request, *recv_request;
   PetscErrorCode ierr;
-  int            i, j, k;
-
+  PetscInt       i, j, k;
   PetscScalar*   mat;    /* Sub-matrix with this subdomain's contribution to the coarse matrix             */
   PetscScalar**  DZ_OUT; /* proc[k].DZ_OUT[i][] = bit of vector to be sent from processor k to processor i */
 
   /* aliasing some names */
   PC_IS*         pcis     = (PC_IS*)(pc->data);
   PC_NN*         pcnn     = (PC_NN*)pc->data;
-  int            n_neigh  = pcis->n_neigh;
-  int*           neigh    = pcis->neigh;
-  int*           n_shared = pcis->n_shared;
-  int**          shared   = pcis->shared;  
+  PetscInt       n_neigh  = pcis->n_neigh;
+  PetscInt*      neigh    = pcis->neigh;
+  PetscInt*      n_shared = pcis->n_shared;
+  PetscInt**     shared   = pcis->shared;  
   PetscScalar**  DZ_IN;   /* Must be initialized after memory allocation. */
 
   PetscFunctionBegin;
-
   /* Allocate memory for mat (the +1 is to handle the case n_neigh equal to zero) */
   ierr = PetscMalloc((n_neigh*n_neigh+1)*sizeof(PetscScalar),&mat);CHKERRQ(ierr);
 
@@ -255,7 +248,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   /* Notice that DZ_OUT[0] is allocated some space that is never used. */
   /* This is just in order to DZ_OUT and DZ_IN to have exactly the same form. */
   {
-    int size_of_Z = 0;
+    PetscInt size_of_Z = 0;
     ierr  = PetscMalloc ((n_neigh+1)*sizeof(PetscScalar*),&pcnn->DZ_IN);CHKERRQ(ierr);
     DZ_IN = pcnn->DZ_IN;
     ierr  = PetscMalloc ((n_neigh+1)*sizeof(PetscScalar*),&DZ_OUT);CHKERRQ(ierr);
@@ -283,7 +276,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   /* Notice that send_request[] and recv_request[] could have one less element. */
   /* We make them longer to have request[i] corresponding to neigh[i].          */
   {
-    int tag;
+    PetscMPIInt tag;
     ierr = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
     ierr = PetscMalloc((2*(n_neigh)+1)*sizeof(MPI_Request),&send_request);CHKERRQ(ierr);
     recv_request = send_request + (n_neigh);
@@ -307,8 +300,8 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 
   /* Compute the first column, while completing the receiving. */
   for (i=0; i<n_neigh; i++) {
-    MPI_Status stat;
-    int ind=0;
+    MPI_Status  stat;
+    PetscMPIInt ind=0;
     if (i>0) { ierr = MPI_Waitany(n_neigh-1,recv_request+1,&ind,&stat);CHKERRQ(ierr); ind++;}
     mat[ind*n_neigh+0] = 0.0;
     for (k=0; k<n_shared[ind]; k++) {
@@ -346,7 +339,8 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   }
 
   {
-    int size,n_neigh_m1;
+    PetscMPIInt size;
+    PetscInt    n_neigh_m1;
     ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
     n_neigh_m1 = (n_neigh) ? n_neigh-1 : 0;
     /* Create the global coarse vectors (rhs and solution). */
@@ -363,7 +357,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   }
 
   {
-    int         rank;
+    PetscMPIInt rank;
     PetscScalar one = 1.0; 
     IS          is;
     ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
@@ -413,7 +407,6 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   pcnn->factor_coarse_rhs = (pcis->pure_neumann) ? 1.0 : 0.0;
 
   /* See historical note 02, at the bottom of this file. */
-
   PetscFunctionReturn(0);
 }
 
@@ -437,20 +430,18 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCNNApplySchurToChunk"
-PetscErrorCode PCNNApplySchurToChunk(PC pc, int n, int* idx, PetscScalar *chunk, PetscScalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
+PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt* idx, PetscScalar *chunk, PetscScalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   PetscErrorCode ierr;
-  int   i;
-  PC_IS *pcis = (PC_IS*)(pc->data);
+  PetscInt       i;
+  PC_IS          *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
-
   ierr = PetscMemzero((void*)array_N, pcis->n*sizeof(PetscScalar));CHKERRQ(ierr);
   for (i=0; i<n; i++) { array_N[idx[i]] = chunk[i]; }
   ierr = PCISScatterArrayNToVecB(array_N,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pc);CHKERRQ(ierr);
   ierr = PCISApplySchur(pc,vec2_B,vec1_B,(Vec)0,vec1_D,vec2_D);CHKERRQ(ierr);
   ierr = PCISScatterArrayNToVecB(array_N,vec1_B,INSERT_VALUES,SCATTER_REVERSE,pc);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -482,10 +473,9 @@ PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScala
                                       Vec vec2_D, Vec vec1_N, Vec vec2_N)
 {
   PetscErrorCode ierr;
-  PC_IS* pcis = (PC_IS*)(pc->data);
+  PC_IS*         pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
-
   /*
     First balancing step.
   */
@@ -525,7 +515,6 @@ PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScala
       ierr = VecScatterEnd  (vec2_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
     }
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -558,7 +547,7 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
                    Vec vec1_D, Vec vec2_D, PetscScalar *work_N)
 {
   PetscErrorCode ierr;
-  int            k;
+  PetscInt       k;
   PetscScalar    zero     =  0.0;
   PetscScalar    m_one    = -1.0;
   PetscScalar    value;
@@ -568,7 +557,6 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
-
   if (u) { 
     if (!vec3_B) { vec3_B = u; }
     ierr = VecPointwiseMult(pcis->D,u,vec1_B);CHKERRQ(ierr);
@@ -591,7 +579,7 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
   for (k=0, value=0.0; k<pcis->n_shared[0]; k++) { value += pcnn->DZ_IN[0][k] * work_N[pcis->shared[0][k]]; }
   value *= pcnn->factor_coarse_rhs;  /* This factor is set in CreateCoarseMatrix(). */
   {
-    int rank;
+    PetscMPIInt rank;
     ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
     ierr = VecSetValue(pcnn->coarse_b,rank,value,INSERT_VALUES);CHKERRQ(ierr);
     /*
@@ -619,7 +607,6 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
   ierr = VecScatterBegin(vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
   ierr = VecScatterEnd  (vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

@@ -126,7 +126,7 @@ int FormInitialGuess(AppCtx* appctx)
     AppAlgebra             *algebra = &appctx->algebra;
     Vec g = algebra->g;
     PetscErrorCode ierr;
-    double onep1 = 1.234;
+    PetscReal onep1 = 1.234;
     ierr = VecSet(&onep1,g);CHKERRQ(ierr);
  PetscFunctionReturn(0);
 }
@@ -253,12 +253,12 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   Mat J;
   
  /********** Internal Variables **********/
-  double *sdnz,*sonz;  /* non-zero entries on this processor, non-zero entries off this processor */
+  PetscReal *sdnz,*sonz;  /* non-zero entries on this processor, non-zero entries off this processor */
    int *onz,*dnz;
-   int rank; double srank;  /* copies of the integer variables */
+   int rank; PetscReal srank;  /* copies of the integer variables */
    const int four = 4;
-   double *procs; 
-   double  wght,zero = 0.0;
+   PetscReal *procs; 
+   PetscReal  wght,zero = 0.0;
    int   ierr,cproc,i,j;
    int  *cells,*vertices; 
 
@@ -392,7 +392,7 @@ to see if they need to be recomputed */
 
   /* Internal Variables */
   PetscErrorCode ierr;
-  double zero = 0.0,mone = -1.0;
+  PetscReal zero = 0.0,mone = -1.0;
 
 /****** Perform computation ***********/
 /*  printf("input to nonlinear fun) \n");    */
@@ -435,7 +435,7 @@ int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
   /* Global to Local scatter (the blocked version) */
   VecScatter dgtol = algebra->dgtol;         
  /* The geometrical values of the vertices */
-  double     *vertex_coords = grid->vertex_coords;
+  PetscReal     *vertex_coords = grid->vertex_coords;
  /* The array of vertices in the local numbering for each cell */
   int  *cell_vertex = grid->cell_vertex;
  /* the number of cells on this processor */
@@ -447,12 +447,12 @@ int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
   /* need a local vector of size 2*(vertex_n)*/
   Vec f_local = algebra->f_local;
   
-  double result[8],coors[8];
-  double cell_values[8],*uvvals;
+  PetscReal result[8],coors[8];
+  PetscReal cell_values[8],*uvvals;
   PetscErrorCode ierr,i,j;
   int *vertex_ptr;
   int  nindices,*indices;
-  double  *bvs,xval,yval;
+  PetscReal  *bvs,xval,yval;
 
  /*  Loop over local elements, extracting the values from g  and add them into f  */
 
@@ -516,7 +516,7 @@ PetscSynchronizedFlush(PETSC_COMM_WORLD);
   ierr = ISGetLocalSize(vertex_boundary,&nindices);CHKERRQ(ierr);
 
   /* create space for the array of boundary values */
-  ierr = PetscMalloc(2*(nindices+1)*sizeof(double),&bvs);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*(nindices+1)*sizeof(PetscReal),&bvs);CHKERRQ(ierr);
 
  /****** Perform computation ***********/
   ierr = ISGetIndices(vertex_boundary,&indices);CHKERRQ(ierr);
@@ -589,7 +589,7 @@ int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 /* number of vertices on this processor */
  /* number of vertices including ghosted ones */
   /* The geometrical values of the vertices */
-  double     *vertex_coords = grid->vertex_coords;
+  PetscReal     *vertex_coords = grid->vertex_coords;
   /* the number of cells on this processor */
   int  cell_n = grid->cell_n;
  
@@ -603,10 +603,10 @@ int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 /****** Internal Variables ***********/
   int  i,j,ierr;
   int    *vert_ptr; 
-  double   *uvvals,cell_values[8];
-  double values[4*4*2*2];  /* the integral of the combination of phis */
-  double coors[8]; /* the coordinates of one element */
- double one = 1.0;
+  PetscReal   *uvvals,cell_values[8];
+  PetscReal values[4*4*2*2];  /* the integral of the combination of phis */
+  PetscReal coors[8]; /* the coordinates of one element */
+ PetscReal one = 1.0;
 
   PetscFunctionBegin;
   /* Matrix is set to the linear part already, so just ADD_VALUES the nonlinear part  */
@@ -670,7 +670,7 @@ int AppCtxSetRhs(AppCtx* appctx)
   /* The array of vertices in the local numbering for each cell */
   int        *cell_vertex = grid->cell_vertex;
   /* The geometrical values of the vertices */
-  double     *vertex_coords = grid->vertex_coords;
+  PetscReal     *vertex_coords = grid->vertex_coords;
  /* The number of vertices per cell (4 in the case of billinear) */
   int NVs = grid->NVs;
   /* extract the rhs functions */
@@ -679,8 +679,8 @@ int AppCtxSetRhs(AppCtx* appctx)
 
   /********* Declare Local Variables ******************/
   /* Room to hold the coordinates of a single cell, plus the RHS generated from a single cell.  */
-  double coors[4*2]; /* quad cell */
-  double values[4*2]; /* number of elements * number of variables */  
+  PetscReal coors[4*2]; /* quad cell */
+  PetscReal values[4*2]; /* number of elements * number of variables */  
   PetscErrorCode ierr,i,*vertices, j;
 
   /* set flag for element computation */
@@ -741,11 +741,11 @@ int AppCtxSetMatrix(AppCtx* appctx)
  /* The array of vertices in the local numbering for each cell */
   int        *cell_vertex = grid->cell_vertex;
   /* The geometrical values of the vertices */
-  double     *vertex_coords = grid->vertex_coords;
+  PetscReal     *vertex_coords = grid->vertex_coords;
   /* The number of vertices on this processor */
 
   /* The viscosity */
-  double eta = equations->eta;
+  PetscReal eta = equations->eta;
   
   /* The matrix we are working with */
   Mat        A = algebra->A;
@@ -755,8 +755,8 @@ int AppCtxSetMatrix(AppCtx* appctx)
   int  *vert_ptr;
 
 
-  double values[4*4*2*2];  /* the integral of the combination of phis */
-  double coors[2*4]; /* the coordinates of one element */
+  PetscReal values[4*4*2*2];  /* the integral of the combination of phis */
+  PetscReal coors[2*4]; /* the coordinates of one element */
 
   PetscFunctionBegin;
   /************ Set Up **************/ 

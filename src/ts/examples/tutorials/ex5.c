@@ -65,7 +65,7 @@ Input parameters include:\n\
 */
 typedef struct {
   Vec         solution;          /* global exact solution vector */
-  int         m;                 /* total number of grid points */
+  PetscInt         m;                 /* total number of grid points */
   PetscReal   h;                 /* mesh width h = 1/(m-1) */
   PetscTruth  debug;             /* flag (1 indicates activation of debugging printouts) */
   PetscViewer viewer1,viewer2;  /* viewers for the solution and error */
@@ -75,25 +75,27 @@ typedef struct {
 /* 
    User-defined routines
 */
-extern int InitialConditions(Vec,AppCtx*);
-extern int RHSMatrixHeat(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
-extern int Monitor(TS,int,PetscReal,Vec,void*);
-extern int ExactSolution(PetscReal,Vec,AppCtx*);
+extern PetscErrorCode InitialConditions(Vec,AppCtx*);
+extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
+extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  AppCtx        appctx;                 /* user-defined application context */
-  TS            ts;                     /* timestepping context */
-  Mat           A;                      /* matrix data structure */
-  Vec           u;                      /* approximate solution vector */
-  PetscReal     time_total_max = 100.0; /* default max total time */
-  int           time_steps_max = 100;   /* default max timesteps */
-  PetscDraw     draw;                   /* drawing context */
-  int           ierr,steps,size,m;
-  PetscTruth    flg;
-  PetscReal     dt,ftime;
+  AppCtx         appctx;                 /* user-defined application context */
+  TS             ts;                     /* timestepping context */
+  Mat            A;                      /* matrix data structure */
+  Vec            u;                      /* approximate solution vector */
+  PetscReal      time_total_max = 100.0; /* default max total time */
+  PetscInt       time_steps_max = 100;   /* default max timesteps */
+  PetscDraw      draw;                   /* drawing context */
+  PetscErrorCode ierr;
+  PetscInt       steps,m;
+  PetscMPIInt    size;
+  PetscTruth     flg;
+  PetscReal      dt,ftime;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
@@ -251,10 +253,11 @@ int main(int argc,char **argv)
    Output Parameter:
    u - vector with solution at initial time (global)
 */ 
-int InitialConditions(Vec u,AppCtx *appctx)
+PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
 {
-  PetscScalar *u_localptr,h = appctx->h;
-  int    i,ierr;
+  PetscScalar    *u_localptr,h = appctx->h;
+  PetscInt       i;
+  PetscErrorCode ierr;
 
   /* 
     Get a pointer to vector data.
@@ -305,10 +308,11 @@ int InitialConditions(Vec u,AppCtx *appctx)
    Output Parameter:
    solution - vector with the newly computed exact solution
 */
-int ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
+PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
 {
-  PetscScalar *s_localptr,h = appctx->h,ex1,ex2,sc1,sc2,tc = t;
-  int         i,ierr;
+  PetscScalar    *s_localptr,h = appctx->h,ex1,ex2,sc1,sc2,tc = t;
+  PetscInt       i;
+  PetscErrorCode ierr;
 
   /*
      Get a pointer to vector data.
@@ -350,12 +354,12 @@ int ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
             information about the problem size, workspace and the exact 
             solution.
 */
-int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
+PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 {
-  AppCtx      *appctx = (AppCtx*) ctx;   /* user-defined application context */
-  int         ierr;
-  PetscReal   norm_2,norm_max;
-  PetscScalar mone = -1.0;
+  AppCtx         *appctx = (AppCtx*) ctx;   /* user-defined application context */
+  PetscErrorCode ierr;
+  PetscReal      norm_2,norm_max;
+  PetscScalar    mone = -1.0;
 
   /* 
      View a graph of the current iterate
@@ -385,8 +389,8 @@ int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
   norm_2 = sqrt(appctx->h)*norm_2;
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
-  printf("Timestep %D: time = %g, 2-norm error = %g, max norm error = %g\n",
-         step,time,norm_2,norm_max);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %D: time = %g, 2-norm error = %g, max norm error = %g\n",
+         step,time,norm_2,norm_max);CHKERRQ(ierr);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
@@ -427,14 +431,15 @@ int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
   Recall that MatSetValues() uses 0-based row and column numbers
   in Fortran as well as in C.
 */
-int RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  Mat    A = *AA;                      /* Jacobian matrix */
-  AppCtx *appctx = (AppCtx*)ctx;     /* user-defined application context */
-  int    mstart = 0;
-  int    mend = appctx->m;
-  int    ierr,i,idx[3];
-  PetscScalar v[3],stwo = -2./(appctx->h*appctx->h),sone = -.5*stwo;
+  Mat            A = *AA;                      /* Jacobian matrix */
+  AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
+  PetscInt       mstart = 0;
+  PetscInt       mend = appctx->m;
+  PetscErrorCode ierr;
+  PetscInt       i,idx[3];
+  PetscScalar    v[3],stwo = -2./(appctx->h*appctx->h),sone = -.5*stwo;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute entries for the locally owned part of the matrix

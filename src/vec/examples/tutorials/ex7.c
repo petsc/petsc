@@ -58,7 +58,7 @@ int main(int argc,char **args)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ex7c_"
-void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,int* ierr)
+void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,PetscErrorCode* ierr)
 {
   MPI_Comm comm;
   PetscInt vsize;

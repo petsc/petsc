@@ -32,26 +32,26 @@ typedef enum { MGMULTIPLICATIVE,MGADDITIVE,MGFULL,MGKASKADE } MGType;
 
 EXTERN PetscErrorCode MGSetType(PC,MGType);
 EXTERN PetscErrorCode MGCheck(PC);
-EXTERN PetscErrorCode MGSetLevels(PC,int,MPI_Comm*);
-EXTERN PetscErrorCode MGGetLevels(PC,int*);
+EXTERN PetscErrorCode MGSetLevels(PC,PetscInt,MPI_Comm*);
+EXTERN PetscErrorCode MGGetLevels(PC,PetscInt*);
 
-EXTERN PetscErrorCode MGSetNumberSmoothUp(PC,int);
-EXTERN PetscErrorCode MGSetNumberSmoothDown(PC,int);
-EXTERN PetscErrorCode MGSetCycles(PC,int);
-EXTERN PetscErrorCode MGSetCyclesOnLevel(PC,int,int);
+EXTERN PetscErrorCode MGSetNumberSmoothUp(PC,PetscInt);
+EXTERN PetscErrorCode MGSetNumberSmoothDown(PC,PetscInt);
+EXTERN PetscErrorCode MGSetCycles(PC,PetscInt);
+EXTERN PetscErrorCode MGSetCyclesOnLevel(PC,PetscInt,PetscInt);
 
-EXTERN PetscErrorCode MGGetSmoother(PC,int,KSP*);
-EXTERN PetscErrorCode MGGetSmootherDown(PC,int,KSP*);
-EXTERN PetscErrorCode MGGetSmootherUp(PC,int,KSP*);
+EXTERN PetscErrorCode MGGetSmoother(PC,PetscInt,KSP*);
+EXTERN PetscErrorCode MGGetSmootherDown(PC,PetscInt,KSP*);
+EXTERN PetscErrorCode MGGetSmootherUp(PC,PetscInt,KSP*);
 EXTERN PetscErrorCode MGGetCoarseSolve(PC,KSP*);
 
-EXTERN PetscErrorCode MGSetRhs(PC,int,Vec);
-EXTERN PetscErrorCode MGSetX(PC,int,Vec);
-EXTERN PetscErrorCode MGSetR(PC,int,Vec);
+EXTERN PetscErrorCode MGSetRhs(PC,PetscInt,Vec);
+EXTERN PetscErrorCode MGSetX(PC,PetscInt,Vec);
+EXTERN PetscErrorCode MGSetR(PC,PetscInt,Vec);
 
-EXTERN PetscErrorCode MGSetRestriction(PC,int,Mat);
-EXTERN PetscErrorCode MGSetInterpolate(PC,int,Mat);
-EXTERN PetscErrorCode MGSetResidual(PC,int,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
+EXTERN PetscErrorCode MGSetRestriction(PC,PetscInt,Mat);
+EXTERN PetscErrorCode MGSetInterpolate(PC,PetscInt,Mat);
+EXTERN PetscErrorCode MGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 EXTERN PetscErrorCode MGDefaultResidual(Mat,Vec,Vec,Vec);
 
 

@@ -35,12 +35,12 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
 #define __FUNCT__ "MatReorderingSeqSBAIJ"
 PetscErrorCode MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
-  Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ *)A->data;
+  Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ *)A->data;
   PetscErrorCode ierr;
-  int             *r,i,mbs=a->mbs,*rip,*riip;
-  int             *ai,*aj;
-  int             *nzr,nz,jmin,jmax,j,k,ajk,len;
-  IS              iperm;  /* inverse of perm */
+  PetscInt       *r,i,mbs=a->mbs,*rip,*riip;
+  PetscInt       *ai,*aj;
+  PetscInt       *nzr,nz,jmin,jmax,j,k,ajk,len;
+  IS             iperm;  /* inverse of perm */
 
   PetscFunctionBegin;
   if (!mbs) PetscFunctionReturn(0);  
@@ -55,14 +55,14 @@ PetscErrorCode MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = ISDestroy(iperm);CHKERRQ(ierr);
   
   if (!a->inew){ 
-    len  = (mbs+1 + 2*(a->i[mbs]))*sizeof(int);
+    len  = (mbs+1 + 2*(a->i[mbs]))*sizeof(PetscInt);
     ierr = PetscMalloc(len,&ai);CHKERRQ(ierr);
     aj   = ai + mbs+1;    
   } else {
     ai = a->inew; aj = a->jnew;
   }  
-  ierr  = PetscMemcpy(ai,a->i,(mbs+1)*sizeof(int));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(aj,a->j,(a->i[mbs])*sizeof(int));CHKERRQ(ierr);
+  ierr  = PetscMemcpy(ai,a->i,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscMemcpy(aj,a->j,(a->i[mbs])*sizeof(PetscInt));CHKERRQ(ierr);
   
   /* 
      Phase 1: Find row index r in which to store each nonzero. 
@@ -71,8 +71,8 @@ PetscErrorCode MatReorderingSeqSBAIJ(Mat A,IS perm)
               s.t. a(perm(r),perm(aj)) will fall into upper triangle part.
   */
 
-  ierr = PetscMalloc(mbs*sizeof(int),&nzr);CHKERRQ(ierr); 
-  ierr = PetscMalloc(ai[mbs]*sizeof(int),&r);CHKERRQ(ierr); 
+  ierr = PetscMalloc(mbs*sizeof(PetscInt),&nzr);CHKERRQ(ierr); 
+  ierr = PetscMalloc(ai[mbs]*sizeof(PetscInt),&r);CHKERRQ(ierr); 
   for (i=0; i<mbs; i++) nzr[i] = 0;
   for (i=0; i<ai[mbs]; i++) r[i] = 0; 
                                                               
@@ -120,7 +120,7 @@ PetscErrorCode MatReorderingSeqSBAIJ(Mat A,IS perm)
   }         
   
   a->a2anew = aj + ai[mbs];
-  ierr  = PetscMemcpy(a->a2anew,r,ai[mbs]*sizeof(int));CHKERRQ(ierr);
+  ierr  = PetscMemcpy(a->a2anew,r,ai[mbs]*sizeof(PetscInt));CHKERRQ(ierr);
                                          
   /* Phase 3: permute (aj,a) to upper triangular form (wrt new ordering) */
   for (j=jmin; j<jmax; j++){

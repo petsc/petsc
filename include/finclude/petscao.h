@@ -7,8 +7,8 @@
 
 #define AO PetscFortranAddr
 #define AOData PetscFortranAddr
-#define AOType integer
-#define AODataType integer
+#define AOType PetscEnum
+#define AODataType PetscEnum
 #define AOData2dGrid PetscFortranAddr
 
 #endif
@@ -16,10 +16,10 @@
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
-      integer AO_BASIC,AO_ADVANCED
+      PetscEnum AO_BASIC,AO_ADVANCED
       parameter (AO_BASIC = 0,AO_ADVANCED = 1)
 
-      integer AODATA_BASIC,AODATA_ADVANCED
+      PetscEnum AODATA_BASIC,AODATA_ADVANCED
       parameter (AODATA_BASIC=0,AODATA_ADVANCED=1)
 !
 !  End of Fortran include file for the AO package in PETSc

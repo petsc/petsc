@@ -12,8 +12,8 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 typedef struct {
-  int             msglvl,pivotingflag,symflag,seed,FrontMtxInfo,typeflag;
-  int             ordering,maxdomainsize,maxzeros,maxsize,
+  PetscInt        msglvl,pivotingflag,symflag,seed,FrontMtxInfo,typeflag;
+  PetscInt        ordering,maxdomainsize,maxzeros,maxsize,
                   patchAndGoFlag,storeids,storevalues;
   PetscTruth      useQR;
   double          tau,toosmall,fudge;
@@ -30,7 +30,7 @@ typedef struct {
   SubMtxManager   *mtxmanager  ;  /* working array */
   MatStructure    flg;
   double          cpus[20] ;
-  int             *oldToNew,stats[20];
+  PetscInt        *oldToNew,stats[20];
   Spooles_options options;
   Graph           *graph;
 
@@ -40,7 +40,7 @@ typedef struct {
   SolveMap        *solvemap;
   DenseMtx        *mtxY, *mtxX;
   double          *entX;
-  int             *rowindX,rstart,firsttag,nmycol;
+  PetscInt        *rowindX,rstart,firsttag,nmycol;
   Vec             vec_spooles;
   IS              iden,is_petsc;
   VecScatter      scat;
@@ -52,10 +52,10 @@ typedef struct {
   PetscErrorCode (*MatView)(Mat,PetscViewer);
   PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
   PetscErrorCode (*MatDestroy)(Mat);
-  PetscErrorCode (*MatPreallocate)(Mat,int,int,int*,int,int*);
+  PetscErrorCode (*MatPreallocate)(Mat,PetscInt,PetscInt,PetscInt*,PetscInt,PetscInt*);
 
-  MatType    basetype;
-  PetscTruth CleanUpSpooles,useQR;
+  MatType        basetype;
+  PetscTruth     CleanUpSpooles,useQR;
 } Mat_Spooles;
 
 EXTERN PetscErrorCode SetSpoolesOptions(Mat, Spooles_options *);
@@ -78,7 +78,7 @@ EXTERN PetscErrorCode MatAssemblyEnd_MPIAIJSpooles(Mat,MatAssemblyType);
 EXTERN PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
 
 EXTERN PetscErrorCode MatDestroy_SeqSBAIJSpooles(Mat);
-EXTERN PetscErrorCode MatGetInertia_SeqSBAIJSpooles(Mat,int*,int*,int*);
+EXTERN PetscErrorCode MatGetInertia_SeqSBAIJSpooles(Mat,PetscInt*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);
 
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);

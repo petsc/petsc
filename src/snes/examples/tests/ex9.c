@@ -29,28 +29,28 @@ ignition) test problem. The command line options are:\n\
 
 typedef struct {
     PetscReal param;           /* test problem nonlinearity parameter */
-    int       mx,my,mz;      /* discretization in x,y,z-directions */
+    PetscInt  mx,my,mz;      /* discretization in x,y,z-directions */
     Vec       localX,localF;  /* ghosted local vectors */
     DA        da;              /* distributed array datastructure */
 } AppCtx;
 
-extern int FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(AppCtx*,Vec);
+extern PetscErrorCode  FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(AppCtx*,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES          snes;                 /* nonlinear solver */
-  KSP           ksp;                 /* linear solver */
-  PC            pc;                   /* preconditioner */
-  Mat           J;                    /* Jacobian matrix */
-  AppCtx        user;                 /* user-defined application context */
-  Vec           x,r;                  /* vectors */
-  DAStencilType stencil = DA_STENCIL_BOX;
-  int           ierr,its;
-  PetscTruth    flg;
-  int           Nx = PETSC_DECIDE,Ny = PETSC_DECIDE,Nz = PETSC_DECIDE; 
-  PetscReal     bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  SNES           snes;                 /* nonlinear solver */
+  KSP            ksp;                 /* linear solver */
+  PC             pc;                   /* preconditioner */
+  Mat            J;                    /* Jacobian matrix */
+  AppCtx         user;                 /* user-defined application context */
+  Vec            x,r;                  /* vectors */
+  DAStencilType  stencil = DA_STENCIL_BOX;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscInt       Nx = PETSC_DECIDE,Ny = PETSC_DECIDE,Nz = PETSC_DECIDE,its;
+  PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsHasName(PETSC_NULL,"-star",&flg);CHKERRQ(ierr);
@@ -111,12 +111,13 @@ int main(int argc,char **argv)
 }/* --------------------  Form initial approximation ----------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess1"
-int FormInitialGuess1(AppCtx *user,Vec X)
+PetscErrorCode  FormInitialGuess1(AppCtx *user,Vec X)
 {
-  int          i,j,k,loc,mx,my,mz,ierr,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs,base1;
-  PetscReal    one = 1.0,lambda,temp1,temp,Hx,Hy;
-  PetscScalar  *x;
-  Vec          localX = user->localX;
+  PetscInt       i,j,k,loc,mx,my,mz,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs,base1;
+  PetscErrorCode ierr;
+  PetscReal      one = 1.0,lambda,temp1,temp,Hx,Hy;
+  PetscScalar    *x;
+  Vec            localX = user->localX;
 
   mx	 = user->mx; my	 = user->my; mz = user->mz; lambda = user->param;
   Hx     = one / (PetscReal)(mx-1);     Hy     = one / (PetscReal)(my-1);
@@ -148,14 +149,14 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 }/* --------------------  Evaluate Function F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction1"
-int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode  FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx       *user = (AppCtx*)ptr;
-  int          ierr,i,j,k,loc,mx,my,mz,xs,ys,zs,xm,ym,zm,Xs,Ys,Zs,Xm,Ym,Zm;
-  int          base1,base2;
-  PetscReal    two = 2.0,one = 1.0,lambda,Hx,Hy,Hz,HxHzdHy,HyHzdHx,HxHydHz;
-  PetscScalar  u,uxx,uyy,sc,*x,*f,uzz;
-  Vec          localX = user->localX,localF = user->localF; 
+  AppCtx         *user = (AppCtx*)ptr;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,loc,mx,my,mz,xs,ys,zs,xm,ym,zm,Xs,Ys,Zs,Xm,Ym,Zm,base1,base2;
+  PetscReal      two = 2.0,one = 1.0,lambda,Hx,Hy,Hz,HxHzdHy,HyHzdHx,HxHydHz;
+  PetscScalar    u,uxx,uyy,sc,*x,*f,uzz;
+  Vec            localX = user->localX,localF = user->localF; 
 
   mx      = user->mx; my = user->my; mz = user->mz; lambda = user->param;
   Hx      = one / (PetscReal)(mx-1);

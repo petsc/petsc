@@ -52,16 +52,16 @@ T*/
 */
 typedef struct {
       PetscReal   param;        /* test problem parameter */
-      int         mx;           /* Discretization in x-direction */
-      int         my;           /* Discretization in y-direction */
+      PetscInt    mx;           /* Discretization in x-direction */
+      PetscInt    my;           /* Discretization in y-direction */
 } AppCtx;
 
 /* 
    User-defined routines
 */
-extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int FormFunction(SNES,Vec,Vec,void*);
-extern int FormInitialGuess(AppCtx*,Vec);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -72,7 +72,8 @@ int main(int argc,char **argv)
   Mat            J;                    /* Jacobian matrix */
   AppCtx         user;                 /* user-defined application context */
   PetscErrorCode ierr;
-  int            i,its,N,size,hist_its[50]; 
+  PetscInt       i,its,N,hist_its[50]; 
+  PetscMPIInt    size;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
   MatFDColoring  fdcoloring;           
   PetscTruth     matrix_free,flg,fd_coloring;
@@ -265,9 +266,10 @@ int main(int argc,char **argv)
  */
 PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 {
-  int         i,j,row,mx,my,ierr;
-  PetscReal   lambda,temp1,temp,hx,hy;
-  PetscScalar *x;
+  PetscInt       i,j,row,mx,my;
+  PetscErrorCode ierr;
+  PetscReal      lambda,temp1,temp,hx,hy;
+  PetscScalar    *x;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -319,10 +321,11 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
  */
 PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx       *user = (AppCtx*)ptr;
-  int          ierr,i,j,row,mx,my;
-  PetscReal    two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
-  PetscScalar  ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
+  AppCtx         *user = (AppCtx*)ptr;
+  PetscInt       i,j,row,mx,my;
+  PetscErrorCode ierr;
+  PetscReal      two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
+  PetscScalar    ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -385,11 +388,12 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx      *user = (AppCtx*)ptr;   /* user-defined applicatin context */
-  Mat         jac = *J;                /* Jacobian matrix */
-  int         i,j,row,mx,my,col[5],ierr;
-  PetscScalar two = 2.0,one = 1.0,lambda,v[5],sc,*x;
-  PetscReal   hx,hy,hxdhy,hydhx;
+  AppCtx         *user = (AppCtx*)ptr;   /* user-defined applicatin context */
+  Mat            jac = *J;                /* Jacobian matrix */
+  PetscInt       i,j,row,mx,my,col[5];
+  PetscErrorCode ierr;
+  PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;
+  PetscReal      hx,hy,hxdhy,hydhx;
 
   mx	 = user->mx; 
   my	 = user->my;

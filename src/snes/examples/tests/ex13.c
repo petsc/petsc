@@ -33,13 +33,13 @@ options are:\n\
 /* User-defined application context */
 typedef struct {
    PetscReal   param;         /* test problem parameter */
-   int         mx,my;         /* discretization in x, y directions */
+   PetscInt    mx,my;         /* discretization in x, y directions */
    Vec         localX,localF; /* ghosted local vector */
    DA          da;            /* distributed array data structure */
 } AppCtx;
 
-extern int FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(AppCtx*,Vec);
-extern int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(AppCtx*,Vec);
+extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -50,9 +50,10 @@ int main(int argc,char **argv)
   Vec            x,r;                       /* solution, residual vectors */
   Mat            J;                         /* Jacobian matrix */
   AppCtx         user;                      /* user-defined work context */
-  int            i,ierr,its,N,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
+  PetscInt       i,its,N,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
+  PetscErrorCode ierr;
   PetscTruth     matrix_free;
-  int            size; 
+  PetscMPIInt    size; 
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -126,12 +127,13 @@ int main(int argc,char **argv)
 }/* --------------------  Form initial approximation ----------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess1"
-int FormInitialGuess1(AppCtx *user,Vec X)
+PetscErrorCode FormInitialGuess1(AppCtx *user,Vec X)
 {
-  int          i,j,row,mx,my,ierr,xs,ys,xm,ym,Xm,Ym,Xs,Ys;
-  PetscReal    one = 1.0,lambda,temp1,temp,hx,hy;
-  PetscScalar  *x;
-  Vec          localX = user->localX;
+  PetscInt       i,j,row,mx,my,xs,ys,xm,ym,Xm,Ym,Xs,Ys;
+  PetscErrorCode ierr;
+  PetscReal      one = 1.0,lambda,temp1,temp,hx,hy;
+  PetscScalar    *x;
+  Vec            localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -162,13 +164,14 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 } /* --------------------  Evaluate Function F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction1"
-int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx       *user = (AppCtx*)ptr;
-  int          ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym;
-  PetscReal    two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar  u,uxx,uyy,*x,*f;
-  Vec          localX = user->localX,localF = user->localF; 
+  AppCtx         *user = (AppCtx*)ptr;
+  PetscErrorCode ierr;
+  PetscInt       i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym;
+  PetscReal      two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar    u,uxx,uyy,*x,*f;
+  Vec            localX = user->localX,localF = user->localF; 
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -207,14 +210,15 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 } /* --------------------  Evaluate Jacobian F'(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian1"
-int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx  *user = (AppCtx*)ptr;
-  Mat     jac = *J;
-  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
-  int     nloc,*ltog,grow;
-  PetscScalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
-  Vec     localX = user->localX;
+  AppCtx         *user = (AppCtx*)ptr;
+  Mat            jac = *J;
+  PetscErrorCode ierr;
+  PetscInt       i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
+  PetscInt       nloc,*ltog,grow;
+  PetscScalar    two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
+  Vec            localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);

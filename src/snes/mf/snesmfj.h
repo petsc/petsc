@@ -33,11 +33,11 @@ struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
   PetscReal        error_rel;              /* square root of relative error in computing function */
   PetscScalar      currenth;               /* last differencing parameter h used */
   PetscScalar      *historyh;              /* history of differencing parameter h */
-  int              ncurrenth,maxcurrenth; 
+  PetscInt         ncurrenth,maxcurrenth; 
   void             *hctx;
   Mat              mat;                    /* back reference to shell matrix that contains this */
-  int              recomputeperiod;        /* how often the h is recomputed; default to 1 */
-  int              count;                  /* used by recomputeperiod */
+  PetscInt         recomputeperiod;        /* how often the h is recomputed; default to 1 */
+  PetscInt         count;                  /* used by recomputeperiod */
   void             *checkhctx;             /* optional context used by MatSNESMFSetCheckh() */
   PetscErrorCode (*checkh)(Vec,Vec,PetscScalar*,void*);
   /*
@@ -52,7 +52,7 @@ struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
   PetscTruth       usesnes;                      /* if false indicates that one should (*func) 
                                                     instead of SNES even if snes is present */
 
-  PetscErrorCode (*funci)(int,Vec,PetscScalar*,void*);  /* Evaluates func_[i]() */
+  PetscErrorCode (*funci)(PetscInt,Vec,PetscScalar*,void*);  /* Evaluates func_[i]() */
   PetscErrorCode (*funcisetbase)(Vec,void*);            /* Sets base for future evaluations of func_[i]() */
 
   PetscScalar      vscale,vshift;

@@ -2,6 +2,7 @@ from __future__ import generators
 import config.base
 
 import os
+import os.path
 import re
 
 class Configure(config.base.Configure):
@@ -464,6 +465,7 @@ class Configure(config.base.Configure):
       sel.addSubstitution('MPIRUN', self.mpirun)
       return
     if 'with-mpirun' in self.framework.argDB:
+      self.framework.argDB['with-mpirun'] = os.path.expanduser(self.framework.argDB['with-mpirun'])
       if not self.getExecutable(self.framework.argDB['with-mpirun'], resultName = 'mpirun'):
         raise RuntimeError('Invalid mpirun specified: '+str(self.framework.argDB['with-mpirun']))
       return

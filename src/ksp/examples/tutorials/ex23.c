@@ -24,13 +24,14 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec         x, b, u;      /* approx solution, RHS, exact solution */
-  Mat         A;            /* linear system matrix */
-  KSP         ksp;         /* linear solver context */
-  PC          pc;           /* preconditioner context */
-  PetscReal   norm;         /* norm of solution error */
-  int         ierr,i,n = 10,col[3],its,rstart,rend,nlocal;
-  PetscScalar neg_one = -1.0,one = 1.0,value[3];
+  Vec            x, b, u;      /* approx solution, RHS, exact solution */
+  Mat            A;            /* linear system matrix */
+  KSP            ksp;         /* linear solver context */
+  PC             pc;           /* preconditioner context */
+  PetscReal      norm;         /* norm of solution error */
+  PetscErrorCode ierr;
+  PetscInt       i,n = 10,col[3],its,rstart,rend,nlocal;
+  PetscScalar    neg_one = -1.0,one = 1.0,value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

@@ -112,7 +112,7 @@ static PetscErrorCode MGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI_C
 
     } else {
       char tprefix[128];
-      sprintf(tprefix,"mg_levels_%d_",i);
+      sprintf(tprefix,"mg_levels_%d_",(int)i);
       ierr = KSPAppendOptionsPrefix(mg[i]->smoothd,tprefix);CHKERRQ(ierr);
     }
     PetscLogObjectParent(pc,mg[i]->smoothd);
@@ -475,7 +475,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
 
 .seealso: MGSetType(), MGGetLevels()
 @*/
-PetscErrorCode MGSetLevels(PC pc,int levels,MPI_Comm *comms)
+PetscErrorCode MGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 {
   PetscErrorCode ierr;
   MG             *mg;
@@ -513,7 +513,7 @@ PetscErrorCode MGSetLevels(PC pc,int levels,MPI_Comm *comms)
 
 .seealso: MGSetLevels()
 @*/
-PetscErrorCode MGGetLevels(PC pc,int *levels)
+PetscErrorCode MGGetLevels(PC pc,PetscInt *levels)
 {
   MG  *mg;
 

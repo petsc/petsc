@@ -56,10 +56,11 @@
       SNES                   snes
       Vec                    x,r
       Mat                    J,A
-      integer                its,flg,ierr
+      PetscInt                its,i1,i4
+      PetscErrorCode ierr
       double precision       lambda_max,lambda_min
       ISColoring             coloring
-      PetscTruth             adifor_jacobian,adiformf_jacobian
+      PetscTruth             adifor_jacobian,adiformf_jacobian,flg
 
 !  Note: Any user-defined Fortran routines (such as FormJacobianLocal)
 !  MUST be declared as external.
@@ -80,6 +81,8 @@
 
 !  Initialize problem parameters
 
+      i1 = 1
+      i4 = -4
       lambda_max = 6.81
       lambda_min = 0.0
       lambda     = 6.0
@@ -105,7 +108,7 @@
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
       call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,            &
-     &     -4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL_INTEGER,                &
+     &     i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,                &
      &     PETSC_NULL_INTEGER,da,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
@@ -148,7 +151,6 @@
      &         g_FormFunctionLocal,ierr)
 #endif
       call SNESSetFunction(snes,r,SNESDAFormFunction,da,ierr)
-
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -163,7 +165,6 @@
 !
 
       call DAGetMatrix(da,MATAIJ,J,ierr)
-
 #if defined(PETSC_HAVE_ADIFOR) && !defined(PETSC_USE_COMPLEX)
       call PetscOptionsGetLogical(PETSC_NULL_CHARACTER                            &
      &     ,'-adiformf_jacobian',                                                 &
@@ -183,7 +184,6 @@
 
       call SNESSetJacobian(snes,A,J,SNESDAComputeJacobian,                        &
      &                       da,ierr)
-
 #if defined(PETSC_HAVE_ADIFOR) && !defined(PETSC_USE_COMPLEX)
       call PetscOptionsGetLogical(PETSC_NULL_CHARACTER                            &
      &     ,'-adifor_jacobian',                                                   &
@@ -206,7 +206,6 @@
 !  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
 
           call SNESSetFromOptions(snes,ierr)
-
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Evaluate initial guess; then solve nonlinear system.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -264,7 +263,7 @@
 
 !  Input/output variables:
       Vec      X
-      integer  ierr
+      PetscErrorCode  ierr
 
 !  Declarations for use with local arrays:
       PetscScalar lx_v(0:1)
@@ -296,7 +295,7 @@
 
       call DALocalToGlobal(da,localX,INSERT_VALUES,X,ierr)
       call DARestoreLocalVector(da,localX,ierr)
-      return 
+      return
       end
 
 ! ---------------------------------------------------------------------
@@ -321,11 +320,11 @@
 
 !  Input/output variables:
       PetscScalar  x(gxs:gxe,gys:gye)
-      integer ierr
+      PetscErrorCode ierr
 
 !  Local variables:
-      integer  i,j,hxdhy,hydhx
-      PetscScalar   temp1,temp,hx,hy,sc,one
+      PetscInt  i,j
+      PetscScalar   temp1,temp,hx,hy,sc,one,hxdhy,hydhx
 
 !  Set parameters
 
@@ -381,14 +380,13 @@
       DALocalInfo info(DA_LOCAL_INFO_SIZE)
       PetscScalar x(gxs:gxe,gys:gye)
       PetscScalar f(xs:xe,ys:ye)
-      integer     ierr
+      PetscErrorCode     ierr
       PetscObject dummy
 
 !  Local variables:
       PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc
       PetscScalar   u,uxx,uyy
-      integer  i,j
-
+      PetscInt  i,j
 
       xs     = info(DA_LOCAL_INFO_XS)+1
       xe     = xs+info(DA_LOCAL_INFO_XM)-1
@@ -475,16 +473,19 @@
 !  Input/output variables:
       PetscScalar x(gxs:gxe,gys:gye)
       Mat         jac
-      integer     ierr,ctx
+      PetscErrorCode  ierr
+      integer ctx
       DALocalInfo info(DA_LOCAL_INFO_SIZE)
       
 
 !  Local variables:
-      integer  row,col(5),i,j
+      PetscInt  row,col(5),i,j,i1,i5
       PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc,v(5)
 
 !  Set parameters
 
+      i1     = 1
+      i5     = 5
       one    = 1.0
       two    = 2.0
       hx     = one/dble(mx-1)
@@ -515,7 +516,7 @@
 !       Some f90 compilers need 4th arg to be of same type in both calls
                col(1) = row
                v(1)   = one
-               call MatSetValuesLocal(jac,1,row,1,col,v,                &
+               call MatSetValuesLocal(jac,i1,row,i1,col,v,                &
      &                           INSERT_VALUES,ierr)
 !           interior grid points
             else
@@ -530,7 +531,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + gxm
-               call MatSetValuesLocal(jac,1,row,5,col,v,                &
+               call MatSetValuesLocal(jac,i1,row,i5,col,v,                &
      &                                INSERT_VALUES,ierr)
             endif
  10      continue

@@ -101,7 +101,7 @@ class Configure(config.base.Configure):
     self.addSubstitution('MATLAB_LIB', '')
 
   def configure(self):
-    if not self.framework.argDB['with-matlab']  or self.framework.argDB['with-64-bit-int']:
+    if not self.framework.argDB['with-matlab']  or self.framework.argDB['with-64-bit-ints']:
       self.emptySubstitutions()
       return
     self.executeTest(self.configureLibrary)

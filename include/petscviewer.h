@@ -159,7 +159,7 @@ M*/
 
 EXTERN PetscErrorCode PetscViewerBinaryOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
 EXTERN PetscErrorCode PetscViewerSocketOpen(MPI_Comm,const char[],int,PetscViewer*);
-EXTERN PetscErrorCode PetscViewerStringOpen(MPI_Comm,char[],int,PetscViewer*);
+EXTERN PetscErrorCode PetscViewerStringOpen(MPI_Comm,char[],PetscInt,PetscViewer*);
 EXTERN PetscErrorCode PetscViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,PetscViewer*);
 EXTERN PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm, int, const char[], const char[], PetscViewer *);
 EXTERN PetscErrorCode PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
@@ -226,12 +226,12 @@ EXTERN PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[
 EXTERN PetscErrorCode PetscViewerASCIIPushTab(PetscViewer);
 EXTERN PetscErrorCode PetscViewerASCIIPopTab(PetscViewer);
 EXTERN PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer,PetscTruth);
-EXTERN PetscErrorCode PetscViewerASCIISetTab(PetscViewer,int);
+EXTERN PetscErrorCode PetscViewerASCIISetTab(PetscViewer,PetscInt);
 EXTERN PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer,int*);
 EXTERN PetscErrorCode PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **);
 EXTERN PetscErrorCode PetscViewerSetFileType(PetscViewer,PetscViewerFileType);
 EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
-EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer,char[],int);
+EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer,char[],PetscInt);
 EXTERN PetscErrorCode PetscViewerDrawClear(PetscViewer);
 EXTERN PetscErrorCode PetscViewerDrawSetInfo(PetscViewer,const char[],const char[],int,int,int,int);
 EXTERN PetscErrorCode PetscViewerSocketSetConnection(PetscViewer,const char[],PetscInt);

@@ -23,11 +23,11 @@ static PetscErrorCode KSPSetUp_CGS(KSP ksp)
 static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 {
   PetscErrorCode ierr;
-  int          i;
-  PetscScalar  rho,rhoold,a,s,b,tmp,one = 1.0; 
-  Vec          X,B,V,P,R,RP,T,Q,U,AUQ;
-  PetscReal    dp = 0.0;
-  PetscTruth   diagonalscale;
+  PetscInt       i;
+  PetscScalar    rho,rhoold,a,s,b,tmp,one = 1.0; 
+  Vec            X,B,V,P,R,RP,T,Q,U,AUQ;
+  PetscReal      dp = 0.0;
+  PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -71,7 +71,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
   if (ksp->normtype == KSP_NATURAL_NORM) {
      PetscReal vr0max;
      PetscScalar *tmp_RP=0;
-     int         numnp=0, *max_pos=0;
+     PetscInt    numnp=0, *max_pos=0;
      ierr = VecMax(RP, max_pos, &vr0max);CHKERRQ(ierr);
      ierr = VecGetArray(RP, &tmp_RP);CHKERRQ(ierr);
      ierr = VecGetLocalSize(RP, &numnp);CHKERRQ(ierr);

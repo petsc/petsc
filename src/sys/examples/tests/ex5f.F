@@ -3,7 +3,8 @@
 !
        program main
 #include "include/finclude/petsc.h"
-       integer        ierr,rank
+       PetscErrorCode  ierr
+       PetscMPIInt     rank
        character*(80) arch
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

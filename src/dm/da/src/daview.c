@@ -51,8 +51,8 @@ PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
 PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int            rank;
-  int            i,dim,m,n,p,dof,swidth,M,N,P;
+  PetscMPIInt    rank;
+  PetscInt       i,dim,m,n,p,dof,swidth,M,N,P;
   size_t         j,len;
   DAStencilType  stencil;
   DAPeriodicType periodic;
@@ -180,7 +180,7 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 PetscErrorCode DAView(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int i,dof = da->w;
+  PetscInt i,dof = da->w;
   PetscTruth iascii,fieldsnamed = PETSC_FALSE,isbinary;
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   PetscTruth ismatlab;
@@ -256,7 +256,7 @@ PetscErrorCode DAView(DA da,PetscViewer viewer)
 
 .seealso: DAView(), DAGetCorners(), DAGetLocalInfo()
 @*/
-PetscErrorCode DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,int *s,DAPeriodicType *wrap,DAStencilType *st)
+PetscErrorCode DAGetInfo(DA da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DAPeriodicType *wrap,DAStencilType *st)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -295,7 +295,7 @@ PetscErrorCode DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *
 @*/
 PetscErrorCode DAGetLocalInfo(DA da,DALocalInfo *info)
 {
-  int w;
+  PetscInt w;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

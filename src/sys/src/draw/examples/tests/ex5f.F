@@ -10,25 +10,29 @@
       PetscDraw         draw
       PetscDrawLG       lg
       PetscDrawAxis     axis
-      integer           n,i,ierr,x,y,width,height,flg
+      PetscErrorCode    ierr
+      PetscTruth        flg
+      integer           x,y,width,height
       PetscScalar       xd,yd
+      PetscInt          i,n,w,h
 
       n      = 20
       x      = 0
       y      = 0
-      width  = 300
-      height = 300
+      w      = 300
+      h      = 300
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-width',width,      &
+!  GetInt requires a PetscInt so have to do this ugly setting
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-width',w,          &
      &     flg,ierr) 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-height',height,    &
+      width = w
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-height',h,         &
      &     flg,ierr)
+      height = h
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-!     call PetscDrawOpenX(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,         &
-!                   PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr)
       call PetscDrawCreate(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,        &
      &               PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr)
       call PetscDrawSetType(draw,PETSC_DRAW_X,ierr)

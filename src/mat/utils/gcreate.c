@@ -75,7 +75,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
 @*/
 PetscErrorCode MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A)
 {
-  Mat B;
+  Mat            B;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   PetscErrorCode ierr;
 #endif
@@ -206,10 +206,10 @@ PetscErrorCode MatSetUpPreallocation(Mat B)
 PetscErrorCode MatHeaderCopy(Mat A,Mat C)
 {
   PetscErrorCode ierr;
-  int refct;
-  PetscOps    *Abops;
-  MatOps      Aops;
-  char        *mtype,*mname;
+  PetscInt       refct;
+  PetscOps       *Abops;
+  MatOps         Aops;
+  char           *mtype,*mname;
 
   PetscFunctionBegin;
   /* free all the interior data structures from mat */

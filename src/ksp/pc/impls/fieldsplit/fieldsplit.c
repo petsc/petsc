@@ -288,7 +288,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
     ierr = PCFieldSplitSetType(pc,(PCCompositeType)indx);CHKERRQ(ierr);
   }
   while (PETSC_TRUE) {
-    sprintf(optionname,"-pc_fieldsplit_%d_fields",i++);
+    sprintf(optionname,"-pc_fieldsplit_%d_fields",(int)i++);
     nfields = 12;
     ierr    = PetscOptionsIntArray(optionname,"Fields in this split","PCFieldSplitSetFields",fields,&nfields,&flg);CHKERRQ(ierr);
     if (!flg) break;
@@ -321,9 +321,9 @@ PetscErrorCode PCFieldSplitSetFields_FieldSplit(PC pc,PetscInt n,PetscInt *field
   ierr          = KSPSetType(link->ksp,KSPPREONLY);CHKERRQ(ierr);
 
   if (pc->prefix) {
-    sprintf(prefix,"%sfieldsplit_%d_",pc->prefix,jac->nsplits);
+    sprintf(prefix,"%sfieldsplit_%d_",pc->prefix,(int)jac->nsplits);
   } else {
-    sprintf(prefix,"fieldsplit_%d_",jac->nsplits);
+    sprintf(prefix,"fieldsplit_%d_",(int)jac->nsplits);
   }
   ierr = KSPSetOptionsPrefix(link->ksp,prefix);CHKERRQ(ierr);
 

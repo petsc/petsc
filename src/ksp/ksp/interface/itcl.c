@@ -10,7 +10,7 @@
     line options. These are called at the end KSPSetFromOptions()
 */
 #define MAXSETFROMOPTIONS 5
-int numberofsetfromoptions = 0;
+PetscInt numberofsetfromoptions = 0;
 PetscErrorCode (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP) = {0};
 
 #undef __FUNCT__  

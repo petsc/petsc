@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90GetID"
-PetscErrorCode F90GetID(PetscDataType type,int *id)
+PetscErrorCode F90GetID(PetscDataType type,PetscInt *id)
 {
   PetscFunctionBegin;
   if (type == PETSC_INT) {
@@ -26,9 +26,9 @@ PetscErrorCode F90GetID(PetscDataType type,int *id)
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array1dCreate"
-PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
+PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,PetscInt len,F90Array1d *ptr)
 {
-  int size,size_int,id;
+  PetscInt size,size_int,id;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -52,10 +52,10 @@ PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,int start,int len
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array2dCreate"
-PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
+PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,F90Array2d *ptr)
 {
 
-  int size,size_int,id;
+  PetscInt size,size_int,id;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

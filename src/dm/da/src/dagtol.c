@@ -177,7 +177,7 @@ PetscErrorCode DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode DAGetNatural_Private(DA,int*,IS*);
+EXTERN PetscErrorCode DAGetNatural_Private(DA,PetscInt*,IS*);
 #undef __FUNCT__  
 #define __FUNCT__ "DAGlobalToNatural_Create"
 /*
@@ -201,7 +201,7 @@ EXTERN PetscErrorCode DAGetNatural_Private(DA,int*,IS*);
 PetscErrorCode DAGlobalToNatural_Create(DA da)
 {
   PetscErrorCode ierr;
-  int  m,start,Nlocal;
+  PetscInt  m,start,Nlocal;
   IS  from,to;
   Vec global;
 

@@ -949,8 +949,8 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   } else {
     /* assemble the entire matrix onto first processor. */
     Mat         A;
-    Mat_SeqAIJ *Aloc;
-    PetscInt         M = mat->M,N = mat->N,m,*ai,*aj,row,*cols,i,*ct;
+    Mat_SeqAIJ  *Aloc;
+    PetscInt    M = mat->M,N = mat->N,m,*ai,*aj,row,*cols,i,*ct;
     PetscScalar *a;
 
     if (!rank) {
@@ -1631,11 +1631,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatSetOption_MPIAIJ,
        MatZeroEntries_MPIAIJ,
 /*25*/ MatZeroRows_MPIAIJ,
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_64BIT_INT)
-       MatLUFactorSymbolic_MPIAIJ_TFS,
-#else
        0,
-#endif
        0,
        0,
        0,
@@ -1890,11 +1886,11 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
   MPI_Status     status;
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,*sndcounts = 0,*rowners,maxnz,mm;
+  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,maxnz;
   PetscInt       i,nz,j,rstart,rend;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*cols;
   PetscInt       *ourlens,*procsnz = 0,*offlens,jj,*mycols,*smycols;
-  PetscInt       cend,cstart,n;
+  PetscInt       cend,cstart,n,*rowners;
   int            fd;
 
   PetscFunctionBegin;
@@ -1904,18 +1900,14 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
     if (header[0] != MAT_FILE_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
-    if (header[3] < 0) {
-      SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Matrix in special format on disk, cannot load as MPIAIJ");
-    }
   }
 
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
   M = header[1]; N = header[2];
   /* determine ownership of all rows */
-  m = M/size + ((M % size) > rank);
-  mm = (PetscMPIInt) m;
-  ierr = PetscMalloc((size+2)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&mm,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
+  m    = M/size + ((M % size) > rank);
+  ierr = PetscMalloc((size+1)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
   for (i=2; i<=size; i++) {
     rowners[i] += rowners[i-1];
@@ -1924,33 +1916,32 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
   rend   = rowners[rank+1]; 
 
   /* distribute row lengths to all processors */
-  ierr    = PetscMalloc(2*(rend-rstart+1)*sizeof(PetscInt),&ourlens);CHKERRQ(ierr);
-  offlens = ourlens + (rend-rstart);
+  ierr    = PetscMalloc2(m,PetscInt,&ourlens,m,PetscInt,&offlens);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscMalloc(M*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscMalloc(size*sizeof(PetscMPIInt),&sndcounts);CHKERRQ(ierr);
-    for (i=0; i<size; i++) sndcounts[i] = rowners[i+1] - rowners[i];
-    ierr = MPI_Scatterv(rowlengths,sndcounts,rowners,MPIU_INT,ourlens,rend-rstart,MPIU_INT,0,comm);CHKERRQ(ierr);
-    ierr = PetscFree(sndcounts);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,ourlens,m,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
+    ierr = PetscMalloc(size*sizeof(PetscInt),&procsnz);CHKERRQ(ierr);
+    ierr = PetscMemzero(procsnz,size*sizeof(PetscInt));CHKERRQ(ierr);
+    for (j=0; j<m; j++) {
+      procsnz[0] += ourlens[j];
+    }
+    for (i=1; i<size; i++) {
+      ierr = PetscBinaryRead(fd,rowlengths,rowners[i+1]-rowners[i],PETSC_INT);CHKERRQ(ierr);
+      /* calculate the number of nonzeros on each processor */
+      for (j=0; j<rowners[i+1]-rowners[i]; j++) {
+        procsnz[i] += rowlengths[j];
+      }
+      ierr = MPI_Send(rowlengths,rowners[i+1]-rowners[i],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Scatterv(0,0,0,MPIU_INT,ourlens,rend-rstart,MPIU_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Recv(ourlens,m,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
   }
 
   if (!rank) {
-    /* calculate the number of nonzeros on each processor */
-    ierr = PetscMalloc(size*sizeof(PetscInt),&procsnz);CHKERRQ(ierr);
-    ierr = PetscMemzero(procsnz,size*sizeof(PetscInt));CHKERRQ(ierr);
-    for (i=0; i<size; i++) {
-      for (j=rowners[i]; j< rowners[i+1]; j++) {
-        procsnz[i] += rowlengths[j];
-      }
-    }
-    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
-
     /* determine max buffer needed and allocate it */
     maxnz = 0;
-    for (i=0; i<size; i++) {
+    for (i=1; i<size; i++) {
       maxnz = PetscMax(maxnz,procsnz[i]);
     }
     ierr = PetscMalloc(maxnz*sizeof(PetscInt),&cols);CHKERRQ(ierr);
@@ -1973,7 +1964,7 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
     for (i=0; i<m; i++) {
       nz += ourlens[i];
     }
-    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&mycols);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(PetscInt),&mycols);CHKERRQ(ierr);
 
     /* receive message of column indices*/
     ierr = MPI_Recv(mycols,nz,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
@@ -2027,7 +2018,7 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
     smycols = mycols;
     svals   = vals;
     for (i=0; i<m; i++) {
-      ierr = MatSetValues(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues_MPIAIJ(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
       smycols += ourlens[i];
       svals   += ourlens[i];
       jj++;
@@ -2054,13 +2045,13 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
     smycols = mycols;
     svals   = vals;
     for (i=0; i<m; i++) {
-      ierr     = MatSetValues(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr     = MatSetValues_MPIAIJ(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
       smycols += ourlens[i];
       svals   += ourlens[i];
       jj++;
     }
   }
-  ierr = PetscFree(ourlens);CHKERRQ(ierr);
+  ierr = PetscFree2(ourlens,offlens);CHKERRQ(ierr);
   ierr = PetscFree(vals);CHKERRQ(ierr);
   ierr = PetscFree(mycols);CHKERRQ(ierr);
   ierr = PetscFree(rowners);CHKERRQ(ierr);
@@ -2321,6 +2312,8 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Petsc
            structure. The size of this array is equal to the number 
            of local rows, i.e 'm'. 
 
+   If the *_nnz parameter is given then the *_nz parameter is ignored
+
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage (CSR)), is fully compatible with standard Fortran 77
    storage.  The stored row and column indices begin with zero.  See the users manual for details.
@@ -2466,6 +2459,8 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nn
 .  A - the matrix 
 
    Notes:
+   If the *_nnz parameter is given then the *_nz parameter is ignored
+
    m,n,M,N parameters specify the size of the matrix, and its partitioning across
    processors, while d_nz,d_nnz,o_nz,o_nnz parameters specify the approximate
    storage requirements for this matrix.
@@ -3335,7 +3330,7 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
         ca[k++] = *aa++; 
       }
       /* off-diagonal portion of A */
-      for (j=jo;j<ncols_o; j++) {
+      for (j=jo; j<ncols_o; j++) {
         cj[k]   = cmap[*bj++]; 
         ca[k++] = *ba++; 
       }
@@ -3356,13 +3351,15 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
       for (jo=0; jo<ncols_o; jo++) {
         col = cmap[*bj];
         if (col >= cstart) break;
-        *ca++ = *ba++; 
+        *ca++ = *ba++; bj++;
       }
       /* diagonal portion of A */
       ncols_d = ai[i+1] - ai[i];
       for (j=0; j<ncols_d; j++) *ca++ = *aa++; 
       /* off-diagonal portion of A */
-      for (j=jo;j<ncols_o; j++) *ca++ = *ba++; 
+      for (j=jo; j<ncols_o; j++) {
+        *ca++ = *ba++; bj++;
+      }
     }
   } else {
     SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
@@ -3557,11 +3554,12 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj
   PetscMPIInt       *rprocs,*sprocs,tag=ctx->tag,rank; 
   PetscInt          *rowlen,*bufj,*bufJ,ncols,aBn=a->B->n,row,*b_othi,*b_othj;
   PetscScalar       *rvalues,*svalues,*b_otha,*bufa,*bufA;
-  PetscInt          i,j,k,l,nrecvs,nsends,nrows,*rrow,*srow,*rstarts,*rstartsj,*sstarts,*sstartsj,len;
+  PetscInt          i,k,l,nrecvs,nsends,nrows,*rrow,*srow,*rstarts,*rstartsj,*sstarts,*sstartsj,len;
   MPI_Request       *rwaits,*swaits;
   MPI_Status        *sstatus,rstatus;
   const PetscInt    *cols;
   const PetscScalar *vals;
+  PetscMPIInt       j;
  
   PetscFunctionBegin;
   if (a->cstart != b->rstart || a->cend != b->rend){

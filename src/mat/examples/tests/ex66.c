@@ -7,9 +7,9 @@ static char help[] = "Reads in rectangular matrix from disk, stored from ex65.c\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int         ierr;
-  Mat         A;
-  PetscViewer fd;
+  PetscErrorCode ierr;
+  Mat            A;
+  PetscViewer    fd;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

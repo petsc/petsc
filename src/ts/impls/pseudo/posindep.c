@@ -11,9 +11,9 @@ typedef struct {
   /* information used for Pseudo-timestepping */
 
   PetscErrorCode (*dt)(TS,PetscReal*,void*);              /* compute next timestep, and related context */
-  void   *dtctx;              
-  PetscErrorCode (*verify)(TS,Vec,void*,PetscReal*,int*); /* verify previous timestep and related context */
-  void   *verifyctx;     
+  void           *dtctx;              
+  PetscErrorCode (*verify)(TS,Vec,void*,PetscReal*,PetscTruth*); /* verify previous timestep and related context */
+  void           *verifyctx;     
 
   PetscReal  initial_fnorm,fnorm;                  /* original and current norm of F(u) */
   PetscReal  fnorm_previous;
@@ -88,10 +88,10 @@ PetscErrorCode TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
-PetscErrorCode TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,PetscReal *newdt,int *flag)
+PetscErrorCode TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,PetscReal *newdt,PetscTruth *flag)
 {
   PetscFunctionBegin;
-  *flag = 1;
+  *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -121,13 +121,13 @@ PetscErrorCode TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,PetscR
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoDefaultVerifyTimeStep()
 @*/
-PetscErrorCode TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,int *flag)
+PetscErrorCode TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscTruth *flag)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
+  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!pseudo->verify) {*flag = 1; PetscFunctionReturn(0);}
+  if (!pseudo->verify) {*flag = PETSC_TRUE; PetscFunctionReturn(0);}
 
   ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag);CHKERRQ(ierr);
 
@@ -138,13 +138,14 @@ PetscErrorCode TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,int *flag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_Pseudo"
-static PetscErrorCode TSStep_Pseudo(TS ts,int *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_Pseudo(TS ts,PetscInt *steps,PetscReal *ptime)
 {
-  Vec       sol = ts->vec_sol;
+  Vec            sol = ts->vec_sol;
   PetscErrorCode ierr;
-  int i,max_steps = ts->max_steps,its,ok,lits;
-  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
-  PetscReal current_time_step;
+  PetscInt       i,max_steps = ts->max_steps,its,lits;
+  PetscTruth     ok;
+  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
+  PetscReal      current_time_step;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -208,7 +209,7 @@ PetscErrorCode TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
   TS     ts = (TS) ctx;
   PetscScalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
   PetscErrorCode ierr;
-  int i,n;
+  PetscInt i,n;
 
   PetscFunctionBegin;
   /* apply user provided function */
@@ -276,7 +277,7 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoDefaultMonitor"
-PetscErrorCode TSPseudoDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
+PetscErrorCode TSPseudoDefaultMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -337,7 +338,7 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
    Level: advanced
 
    Calling sequence of func:
-.  func (TS ts,Vec update,void *ctx,PetscReal *newdt,int *flag);
+.  func (TS ts,Vec update,void *ctx,PetscReal *newdt,PetscTruth *flag);
 
 .  update - latest solution vector
 .  ctx - [optional] timestep context
@@ -352,9 +353,9 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
 
 .seealso: TSPseudoDefaultVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
-PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void*,PetscReal*,int*),void* ctx)
+PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void*,PetscReal*,PetscTruth*),void* ctx)
 {
-  PetscErrorCode ierr,(*f)(TS,PetscErrorCode (*)(TS,Vec,void*,PetscReal *,int *),void *);
+  PetscErrorCode ierr,(*f)(TS,PetscErrorCode (*)(TS,Vec,void*,PetscReal *,PetscTruth *),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -485,7 +486,7 @@ PetscErrorCode TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(TS,PetscReal*,void
 
 /* ----------------------------------------------------------------------------- */
 
-typedef PetscErrorCode (*FCN1)(TS,Vec,void*,PetscReal*,int*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN1)(TS,Vec,void*,PetscReal*,PetscTruth*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetVerifyTimeStep_Pseudo"

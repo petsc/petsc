@@ -81,7 +81,7 @@ void PETSC_STDCALL dmmggetksp_(DMMG **dmmg,KSP *x,PetscErrorCode *ierr)
   *x    = DMMGGetKSP(*dmmg);
 }
 
-void PETSC_STDCALL dmmggetlevels_(DMMG **dmmg,int *x,PetscErrorCode *ierr)
+void PETSC_STDCALL dmmggetlevels_(DMMG **dmmg,PetscInt *x,PetscErrorCode *ierr)
 {
   *ierr = 0;
   *x    = DMMGGetLevels(*dmmg);
@@ -91,7 +91,7 @@ void PETSC_STDCALL dmmggetlevels_(DMMG **dmmg,int *x,PetscErrorCode *ierr)
 
 void PETSC_STDCALL dmmgsetksp_(DMMG **dmmg,void (PETSC_STDCALL *rhs)(DMMG*,Vec*,PetscErrorCode*),void (PETSC_STDCALL *mat)(DMMG*,Mat*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  int i;
+  PetscInt i;
   theirmat = mat;
   *ierr = DMMGSetKSP(*dmmg,ourrhs,ourmat);
   /*
@@ -112,7 +112,7 @@ void PETSC_STDCALL dmmggetda_(DMMG *dmmg,DA *da,PetscErrorCode *ierr)
 
 void PETSC_STDCALL dmmgsetdm_(DMMG **dmmg,DM *dm,PetscErrorCode *ierr)
 {
-  int i;
+  PetscInt i;
   *ierr = DMMGSetDM(*dmmg,*dm);if (*ierr) return;
   /* loop over the levels added a place to hang the function pointers in the DM for each level*/
   for (i=0; i<(**dmmg)->nlevels; i++) {
@@ -130,7 +130,7 @@ void PETSC_STDCALL dmmgsolve_(DMMG **dmmg,PetscErrorCode *ierr)
   *ierr = DMMGSolve(*dmmg);
 }
 
-void PETSC_STDCALL dmmgcreate_(MPI_Comm *comm,int *nlevels,void *user,DMMG **dmmg,PetscErrorCode *ierr)
+void PETSC_STDCALL dmmgcreate_(MPI_Comm *comm,PetscInt *nlevels,void *user,DMMG **dmmg,PetscErrorCode *ierr)
 {
   *ierr = DMMGCreate((MPI_Comm)PetscToPointerComm(*comm),*nlevels,user,dmmg);
 }

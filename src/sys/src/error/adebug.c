@@ -380,7 +380,7 @@ PetscErrorCode PetscAttachDebugger(void)
       }
 
       if (execvp("xterm",(char**)args)  < 0) {
-        perror("Unable to start debugger");
+        perror("Unable to start debugger in xterm");
         exit(0);
       }
     }

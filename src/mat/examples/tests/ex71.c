@@ -7,11 +7,12 @@ static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int         ierr,m = 4,n = 5,i,j,I,J;
-  PetscScalar one = 1.0,v;
-  Vec         x;
-  Mat         A;
-  PetscViewer viewer;
+  PetscErrorCode ierr;
+  PetscInt       m = 4,n = 5,i,j,I,J;
+  PetscScalar    one = 1.0,v;
+  Vec            x;
+  Mat            A;
+  PetscViewer    viewer;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

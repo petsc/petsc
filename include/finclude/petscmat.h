@@ -10,22 +10,22 @@
 #define MatPartitioning PetscFortranAddr
 #define MatAIJIndices PetscFortranAddr
 #define MatType character*(80)
-#define MatOption integer 
-#define MatAssemblyType integer
+#define MatOption PetscEnum 
+#define MatAssemblyType PetscEnum
 #define MatOrderingType character*(80)
-#define MatSORType integer
-#define MatInfoType integer
-#define MatReuse integer
-#define MatOperation integer
+#define MatSORType PetscEnum
+#define MatInfoType PetscEnum
+#define MatReuse PetscEnum
+#define MatOperation PetscEnum
 #define MatColoringType character*(80)
 #define MatInfo double precision
 #define MatFactorInfo double precision
-#define MatDuplicateOption integer      
-#define MatStructure integer
+#define MatDuplicateOption PetscEnum      
+#define MatStructure PetscEnum
 #define MatPartitioningType character*(80)
 #define MatNullSpace PetscFortranAddr
 
-#define MatStencil integer
+#define MatStencil PetscInt
 #define MatStencil_k 1
 #define MatStencil_j 2
 #define MatStencil_i 3
@@ -101,27 +101,27 @@
 !
 !  Flag for matrix assembly
 !
-      integer MAT_FLUSH_ASSEMBLY,MAT_FINAL_ASSEMBLY
+      PetscEnum MAT_FLUSH_ASSEMBLY,MAT_FINAL_ASSEMBLY
 
       parameter(MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0)
 !
 !  Matrix options; must match those in include/petscmat.h
 !
-      integer MAT_ROW_ORIENTED,MAT_COLUMN_ORIENTED,MAT_ROWS_SORTED
-      integer MAT_COLUMNS_SORTED,MAT_NO_NEW_NONZERO_LOCATIONS
-      integer MAT_YES_NEW_NONZERO_LOCATIONS,MAT_SYMMETRIC
-      integer MAT_STRUCTURALLY_SYMMETRIC,MAT_NO_NEW_DIAGONALS
-      integer MAT_YES_NEW_DIAGONALS,MAT_INODE_LIMIT_1
-      integer MAT_INODE_LIMIT_2,MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4
-      integer MAT_INODE_LIMIT_5,MAT_IGNORE_OFF_PROC_ENTRIES
-      integer MAT_ROWS_UNSORTED,MAT_COLUMNS_UNSORTED
-      integer MAT_NEW_NONZERO_LOCATION_ERR
-      integer MAT_NEW_NONZERO_ALLOCATION_ERR,MAT_USE_HASH_TABLE
-      integer MAT_KEEP_ZEROED_ROWS,MAT_IGNORE_ZERO_ENTRIES
-      integer MAT_USE_INODES,MAT_DO_NOT_USE_INODES
-      integer MAT_NOT_SYMMETRIC,MAT_HERMITIAN
-      integer MAT_NOT_STRUCTURALLY_SYMMETRIC,MAT_NOT_HERMITIAN
-      integer MAT_SYMMETRY_ETERNAL,MAT_NOT_SYMMETRY_ETERNAL
+      PetscEnum MAT_ROW_ORIENTED,MAT_COLUMN_ORIENTED,MAT_ROWS_SORTED
+      PetscEnum MAT_COLUMNS_SORTED,MAT_NO_NEW_NONZERO_LOCATIONS
+      PetscEnum MAT_YES_NEW_NONZERO_LOCATIONS,MAT_SYMMETRIC
+      PetscEnum MAT_STRUCTURALLY_SYMMETRIC,MAT_NO_NEW_DIAGONALS
+      PetscEnum MAT_YES_NEW_DIAGONALS,MAT_INODE_LIMIT_1
+      PetscEnum MAT_INODE_LIMIT_2,MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4
+      PetscEnum MAT_INODE_LIMIT_5,MAT_IGNORE_OFF_PROC_ENTRIES
+      PetscEnum MAT_ROWS_UNSORTED,MAT_COLUMNS_UNSORTED
+      PetscEnum MAT_NEW_NONZERO_LOCATION_ERR
+      PetscEnum MAT_NEW_NONZERO_ALLOCATION_ERR,MAT_USE_HASH_TABLE
+      PetscEnum MAT_KEEP_ZEROED_ROWS,MAT_IGNORE_ZERO_ENTRIES
+      PetscEnum MAT_USE_INODES,MAT_DO_NOT_USE_INODES
+      PetscEnum MAT_NOT_SYMMETRIC,MAT_HERMITIAN
+      PetscEnum MAT_NOT_STRUCTURALLY_SYMMETRIC,MAT_NOT_HERMITIAN
+      PetscEnum MAT_SYMMETRY_ETERNAL,MAT_NOT_SYMMETRY_ETERNAL
 
       parameter (MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2)
       parameter (MAT_ROWS_SORTED=4,MAT_COLUMNS_SORTED=8)
@@ -147,13 +147,13 @@
 !
 !  MatDuplicateOption
 !
-      integer MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES
+      PetscEnum MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES
       parameter (MAT_DO_NOT_COPY_VALUES=0,MAT_COPY_VALUES=1)
 !
 !  Flags for PCSetOperators()
 !
-      integer SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN
-      integer SAME_PRECONDITIONER
+      PetscEnum SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN
+      PetscEnum SAME_PRECONDITIONER
 
       parameter (SAME_NONZERO_PATTERN = 0,DIFFERENT_NONZERO_PATTERN = 1)
       parameter (SAME_PRECONDITIONER = 2)
@@ -162,17 +162,17 @@
 !  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
 !  (See petsc/include/petscmat.h)
 !
-      integer   MAT_INFO_SIZE
+      PetscEnum   MAT_INFO_SIZE
 
       parameter (MAT_INFO_SIZE=14)
 
-      integer MAT_INFO_ROWS_GLOBAL,MAT_INFO_COLUMNS_GLOBAL
-      integer MAT_INFO_ROWS_LOCAL,MAT_INFO_COLUMNS_LOCAL
-      integer MAT_INFO_BLOCK_SIZE,MAT_INFO_NZ_ALLOCATED
-      integer MAT_INFO_NZ_USED,MAT_INFO_NZ_UNNEEDED
-      integer MAT_INFO_MEMORY,MAT_INFO_ASSEMBLIES
-      integer MAT_INFO_MALLOCS,MAT_INFO_FILL_RATIO_GIVEN
-      integer MAT_INFO_FILL_RATIO_NEEDED,MAT_INFO_FACTOR_MALLOCS
+      PetscEnum MAT_INFO_ROWS_GLOBAL,MAT_INFO_COLUMNS_GLOBAL
+      PetscEnum MAT_INFO_ROWS_LOCAL,MAT_INFO_COLUMNS_LOCAL
+      PetscEnum MAT_INFO_BLOCK_SIZE,MAT_INFO_NZ_ALLOCATED
+      PetscEnum MAT_INFO_NZ_USED,MAT_INFO_NZ_UNNEEDED
+      PetscEnum MAT_INFO_MEMORY,MAT_INFO_ASSEMBLIES
+      PetscEnum MAT_INFO_MALLOCS,MAT_INFO_FILL_RATIO_GIVEN
+      PetscEnum MAT_INFO_FILL_RATIO_NEEDED,MAT_INFO_FACTOR_MALLOCS
 
       parameter (MAT_INFO_ROWS_GLOBAL=1,MAT_INFO_COLUMNS_GLOBAL=2)
       parameter (MAT_INFO_ROWS_LOCAL=3,MAT_INFO_COLUMNS_LOCAL=4)
@@ -185,14 +185,14 @@
 !
 !  MatReuse
 !
-      integer MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX
+      PetscEnum MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX
 
       parameter (MAT_INITIAL_MATRIX=0,MAT_REUSE_MATRIX=1)
 
 !
 !  MatInfoType
 !
-      integer MAT_LOCAL,MAT_GLOBAL_MAX,MAT_GLOBAL_SUM
+      PetscEnum MAT_LOCAL,MAT_GLOBAL_MAX,MAT_GLOBAL_SUM
 
       parameter (MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3)
 
@@ -200,21 +200,21 @@
 !  Note: MAT_FACTORINFO_SIZE must equal # elements in MatFactorInfo structure
 !  (See petsc/include/petscmat.h)
 !
-      integer   MAT_FACTORINFO_SIZE
+      PetscEnum   MAT_FACTORINFO_SIZE
 
       parameter (MAT_FACTORINFO_SIZE=11)
 
-      integer MAT_FACTORINFO_LEVELS
-      integer MAT_FACTORINFO_FILL
-      integer MAT_FACTORINFO_DIAGONAL_FILL
-      integer MAT_FACTORINFO_DT
-      integer MAT_FACTORINFO_DTCOL
-      integer MAT_FACTORINFO_DTCOUNT
-      integer MAT_FACTORINFO_DAMPING
-      integer MAT_FACTORINFO_SHIFT
-      integer MAT_FACTORINFO_SHIFT_FRACTION
-      integer MAT_FACTORINFO_ZERO_PIVOT
-      integer MAT_FACTORINFO_PIVOT_IN_BLOCKS
+      PetscEnum MAT_FACTORINFO_LEVELS
+      PetscEnum MAT_FACTORINFO_FILL
+      PetscEnum MAT_FACTORINFO_DIAGONAL_FILL
+      PetscEnum MAT_FACTORINFO_DT
+      PetscEnum MAT_FACTORINFO_DTCOL
+      PetscEnum MAT_FACTORINFO_DTCOUNT
+      PetscEnum MAT_FACTORINFO_DAMPING
+      PetscEnum MAT_FACTORINFO_SHIFT
+      PetscEnum MAT_FACTORINFO_SHIFT_FRACTION
+      PetscEnum MAT_FACTORINFO_ZERO_PIVOT
+      PetscEnum MAT_FACTORINFO_PIVOT_IN_BLOCKS
 
       parameter (MAT_FACTORINFO_DAMPING = 1)
       parameter (MAT_FACTORINFO_SHIFT = 2)
@@ -233,10 +233,10 @@
 !  Options for SOR and SSOR
 !  MatSorType may be bitwise ORd together, so do not change the numbers
 !
-      integer SOR_FORWARD_SWEEP,SOR_BACKWARD_SWEEP,SOR_SYMMETRIC_SWEEP
-      integer SOR_LOCAL_FORWARD_SWEEP,SOR_LOCAL_BACKWARD_SWEEP
-      integer SOR_LOCAL_SYMMETRIC_SWEEP,SOR_ZERO_INITIAL_GUESS
-      integer SOR_EISENSTAT,SOR_APPLY_UPPER,SOR_APPLY_LOWER
+      PetscEnum SOR_FORWARD_SWEEP,SOR_BACKWARD_SWEEP,SOR_SYMMETRIC_SWEEP
+      PetscEnum SOR_LOCAL_FORWARD_SWEEP,SOR_LOCAL_BACKWARD_SWEEP
+      PetscEnum SOR_LOCAL_SYMMETRIC_SWEEP,SOR_ZERO_INITIAL_GUESS
+      PetscEnum SOR_EISENSTAT,SOR_APPLY_UPPER,SOR_APPLY_LOWER
 
       parameter (SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2)
       parameter (SOR_SYMMETRIC_SWEEP=3,SOR_LOCAL_FORWARD_SWEEP=4)
@@ -247,104 +247,104 @@
 !
 !  MatOperation
 !
-      integer MATOP_SET_VALUES
-      integer MATOP_GET_ROW
-      integer MATOP_RESTORE_ROW
-      integer MATOP_MULT
-      integer MATOP_MULT_ADD
-      integer MATOP_MULT_TRANSPOSE
-      integer MATOP_MULT_TRANSPOSE_ADD
-      integer MATOP_SOLVE
-      integer MATOP_SOLVE_ADD
-      integer MATOP_SOLVE_TRANSPOSE
-      integer MATOP_SOLVE_TRANSPOSE_ADD
-      integer MATOP_LUFACTOR
-      integer MATOP_CHOLESKYFACTOR
-      integer MATOP_RELAX
-      integer MATOP_TRANSPOSE
-      integer MATOP_GETINFO
-      integer MATOP_EQUAL
-      integer MATOP_GET_DIAGONAL 
-      integer MATOP_DIAGONAL_SCALE
-      integer MATOP_NORM
-      integer MATOP_ASSEMBLY_BEGIN
-      integer MATOP_ASSEMBLY_END
-      integer MATOP_COMPRESS
-      integer MATOP_SET_OPTION
-      integer MATOP_ZERO_ENTRIES
-      integer MATOP_ZERO_ROWS
-      integer MATOP_LUFACTOR_SYMBOLIC
-      integer MATOP_LUFACTOR_NUMERIC
-      integer MATOP_CHOLESKY_FACTOR_SYMBOLIC
-      integer MATOP_CHOLESKY_FACTOR_NUMERIC
-      integer MATOP_SETUP_PREALLOCATION
-      integer MATOP_ILUFACTOR_SYMBOLIC
-      integer MATOP_ICCFACTOR_SYMBOLIC
-      integer MATOP_GET_ARRAY
-      integer MATOP_RESTORE_ARRAY
+      PetscEnum MATOP_SET_VALUES
+      PetscEnum MATOP_GET_ROW
+      PetscEnum MATOP_RESTORE_ROW
+      PetscEnum MATOP_MULT
+      PetscEnum MATOP_MULT_ADD
+      PetscEnum MATOP_MULT_TRANSPOSE
+      PetscEnum MATOP_MULT_TRANSPOSE_ADD
+      PetscEnum MATOP_SOLVE
+      PetscEnum MATOP_SOLVE_ADD
+      PetscEnum MATOP_SOLVE_TRANSPOSE
+      PetscEnum MATOP_SOLVE_TRANSPOSE_ADD
+      PetscEnum MATOP_LUFACTOR
+      PetscEnum MATOP_CHOLESKYFACTOR
+      PetscEnum MATOP_RELAX
+      PetscEnum MATOP_TRANSPOSE
+      PetscEnum MATOP_GETINFO
+      PetscEnum MATOP_EQUAL
+      PetscEnum MATOP_GET_DIAGONAL 
+      PetscEnum MATOP_DIAGONAL_SCALE
+      PetscEnum MATOP_NORM
+      PetscEnum MATOP_ASSEMBLY_BEGIN
+      PetscEnum MATOP_ASSEMBLY_END
+      PetscEnum MATOP_COMPRESS
+      PetscEnum MATOP_SET_OPTION
+      PetscEnum MATOP_ZERO_ENTRIES
+      PetscEnum MATOP_ZERO_ROWS
+      PetscEnum MATOP_LUFACTOR_SYMBOLIC
+      PetscEnum MATOP_LUFACTOR_NUMERIC
+      PetscEnum MATOP_CHOLESKY_FACTOR_SYMBOLIC
+      PetscEnum MATOP_CHOLESKY_FACTOR_NUMERIC
+      PetscEnum MATOP_SETUP_PREALLOCATION
+      PetscEnum MATOP_ILUFACTOR_SYMBOLIC
+      PetscEnum MATOP_ICCFACTOR_SYMBOLIC
+      PetscEnum MATOP_GET_ARRAY
+      PetscEnum MATOP_RESTORE_ARRAY
 
-      integer MATOP_DUPLICATE
-      integer MATOP_FORWARD_SOLVE
-      integer MATOP_BACKWARD_SOLVE
-      integer MATOP_ILUFACTOR
-      integer MATOP_ICCFACTOR
-      integer MATOP_AXPY
-      integer MATOP_GET_SUBMATRICES
-      integer MATOP_INCREASE_OVERLAP
-      integer MATOP_GET_VALUES
-      integer MATOP_COPY
-      integer MATOP_PRINT_HELP
-      integer MATOP_SCALE
-      integer MATOP_SHIFT
-      integer MATOP_DIAGONAL_SHIFT
-      integer MATOP_ILUDT_FACTOR
-      integer MATOP_GET_BLOCK_SIZE
+      PetscEnum MATOP_DUPLICATE
+      PetscEnum MATOP_FORWARD_SOLVE
+      PetscEnum MATOP_BACKWARD_SOLVE
+      PetscEnum MATOP_ILUFACTOR
+      PetscEnum MATOP_ICCFACTOR
+      PetscEnum MATOP_AXPY
+      PetscEnum MATOP_GET_SUBMATRICES
+      PetscEnum MATOP_INCREASE_OVERLAP
+      PetscEnum MATOP_GET_VALUES
+      PetscEnum MATOP_COPY
+      PetscEnum MATOP_PRINT_HELP
+      PetscEnum MATOP_SCALE
+      PetscEnum MATOP_SHIFT
+      PetscEnum MATOP_DIAGONAL_SHIFT
+      PetscEnum MATOP_ILUDT_FACTOR
+      PetscEnum MATOP_GET_BLOCK_SIZE
 
-      integer MATOP_GET_ROW_IJ
-      integer MATOP_RESTORE_ROW_IJ
-      integer MATOP_GET_COLUMN_IJ
-      integer MATOP_RESTORE_COLUMN_IJ
-      integer MATOP_FDCOLORING_CREATE
-      integer MATOP_COLORING_PATCH
-      integer MATOP_SET_UNFACTORED
-      integer MATOP_PERMUTE
-      integer MATOP_SET_VALUES_BLOCKED
-      integer MATOP_GET_SUBMATRIX
-      integer MATOP_DESTROY
-      integer MATOP_VIEW
-      integer MATOP_GET_MAPS
-      integer MATOP_USE_SCALED_FORM
-      integer MATOP_SCALE_SYSTEM
-      integer MATOP_UNSCALE_SYSTEM
-      integer MATOP_SET_LOCAL_TO_GLOBAL_MAP
-      integer MATOP_SET_VALUES_LOCAL
-      integer MATOP_ZERO_ROWS_LOCAL
-      integer MATOP_GET_ROW_MAX
-      integer MATOP_CONVERT
-      integer MATOP_SET_COLORING
-      integer MATOP_SET_VALUES_ADIC
-      integer MATOP_SET_VALUES_ADIFOR
-      integer MATOP_FD_COLORING_APPLY
-      integer MATOP_SET_FROM_OPTIONS
-      integer MATOP_MULT_CON
-      integer MATOP_MULT_TRANSPOSE_CON
-      integer MATOP_ILU_FACTOR_SYMBOLIC_CON
-      integer MATOP_PERMUTE_SPARSIFY
-      integer MATOP_MULT_MULTIPLE
-      integer MATOP_SOLVE_MULTIPLE
-      integer MATOP_GET_INERTIA
-      integer MATOP_LOAD
-      integer MATOP_IS_SYMMETRIC
-      integer MATOP_IS_HERMITIAN
-      integer MATOP_IS_STRUCTURALLY_SYMMETRIC
-      integer MATOP_PB_RELAX
-      integer MATOP_GET_VECS
-      integer MATOP_MAT_MULT
-      integer MATOP_MAT_MULT_SYMBOLIC
-      integer MATOP_MAT_MULT_NUMERIC
-      integer MATOP_PTAP
-      integer MATOP_PTAP_SYMBOLIC
-      integer MATOP_PTAP_NUMERIC
+      PetscEnum MATOP_GET_ROW_IJ
+      PetscEnum MATOP_RESTORE_ROW_IJ
+      PetscEnum MATOP_GET_COLUMN_IJ
+      PetscEnum MATOP_RESTORE_COLUMN_IJ
+      PetscEnum MATOP_FDCOLORING_CREATE
+      PetscEnum MATOP_COLORING_PATCH
+      PetscEnum MATOP_SET_UNFACTORED
+      PetscEnum MATOP_PERMUTE
+      PetscEnum MATOP_SET_VALUES_BLOCKED
+      PetscEnum MATOP_GET_SUBMATRIX
+      PetscEnum MATOP_DESTROY
+      PetscEnum MATOP_VIEW
+      PetscEnum MATOP_GET_MAPS
+      PetscEnum MATOP_USE_SCALED_FORM
+      PetscEnum MATOP_SCALE_SYSTEM
+      PetscEnum MATOP_UNSCALE_SYSTEM
+      PetscEnum MATOP_SET_LOCAL_TO_GLOBAL_MAP
+      PetscEnum MATOP_SET_VALUES_LOCAL
+      PetscEnum MATOP_ZERO_ROWS_LOCAL
+      PetscEnum MATOP_GET_ROW_MAX
+      PetscEnum MATOP_CONVERT
+      PetscEnum MATOP_SET_COLORING
+      PetscEnum MATOP_SET_VALUES_ADIC
+      PetscEnum MATOP_SET_VALUES_ADIFOR
+      PetscEnum MATOP_FD_COLORING_APPLY
+      PetscEnum MATOP_SET_FROM_OPTIONS
+      PetscEnum MATOP_MULT_CON
+      PetscEnum MATOP_MULT_TRANSPOSE_CON
+      PetscEnum MATOP_ILU_FACTOR_SYMBOLIC_CON
+      PetscEnum MATOP_PERMUTE_SPARSIFY
+      PetscEnum MATOP_MULT_MULTIPLE
+      PetscEnum MATOP_SOLVE_MULTIPLE
+      PetscEnum MATOP_GET_INERTIA
+      PetscEnum MATOP_LOAD
+      PetscEnum MATOP_IS_SYMMETRIC
+      PetscEnum MATOP_IS_HERMITIAN
+      PetscEnum MATOP_IS_STRUCTURALLY_SYMMETRIC
+      PetscEnum MATOP_PB_RELAX
+      PetscEnum MATOP_GET_VECS
+      PetscEnum MATOP_MAT_MULT
+      PetscEnum MATOP_MAT_MULT_SYMBOLIC
+      PetscEnum MATOP_MAT_MULT_NUMERIC
+      PetscEnum MATOP_PTAP
+      PetscEnum MATOP_PTAP_SYMBOLIC
+      PetscEnum MATOP_PTAP_NUMERIC
 
       parameter(MATOP_SET_VALUES=0)
       parameter(MATOP_GET_ROW=1)
@@ -445,7 +445,7 @@
 !
 !  
 !
-      integer MATRIX_BINARY_FORMAT_DENSE
+      PetscEnum MATRIX_BINARY_FORMAT_DENSE
       parameter (MATRIX_BINARY_FORMAT_DENSE=-1)
 !
 !  End of Fortran include file for the Mat package in PETSc

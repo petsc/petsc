@@ -7,14 +7,15 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C,A,B,D; 
-  int         ierr,i,j,k,ntypes = 3,size;
-  MatType     type[9] = {MATSEQAIJ,MATSEQBAIJ,MATSEQSBAIJ,MATMPIROWBS};
-  char        file[PETSC_MAX_PATH_LEN];
-  PetscViewer fd;
-  PetscTruth  equal,flg_loadmat;
-  int         bs,mbs,m,n,block,d_nz=3, o_nz=3,col[3],row,msglvl=0;
-  PetscScalar one=1.0, neg_one=-1.0, value[3], four=4.0;
+  Mat            C,A,B,D; 
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,ntypes = 3,bs,mbs,m,n,block,d_nz=3, o_nz=3,col[3],row,msglvl=0;
+  PetscMPIInt    size;
+  const MatType  type[9] = {MATSEQAIJ,MATSEQBAIJ,MATSEQSBAIJ,MATMPIROWBS};
+  char           file[PETSC_MAX_PATH_LEN];
+  PetscViewer    fd;
+  PetscTruth     equal,flg_loadmat;
+  PetscScalar    value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg_loadmat);CHKERRQ(ierr);

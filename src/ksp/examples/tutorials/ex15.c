@@ -28,10 +28,10 @@ typedef struct {
 } SampleShellPC;
 
 /* Declare routines for user-provided preconditioner */
-extern int SampleShellPCCreate(SampleShellPC**);
-extern int SampleShellPCSetUp(SampleShellPC*,Mat,Vec);
-extern int SampleShellPCApply(void*,Vec x,Vec y);
-extern int SampleShellPCDestroy(SampleShellPC*);
+extern PetscErrorCode SampleShellPCCreate(SampleShellPC**);
+extern PetscErrorCode SampleShellPCSetUp(SampleShellPC*,Mat,Vec);
+extern PetscErrorCode SampleShellPCApply(void*,Vec x,Vec y);
+extern PetscErrorCode SampleShellPCDestroy(SampleShellPC*);
 
 /* 
    User-defined routines.  Note that immediately before each routine below,
@@ -48,15 +48,16 @@ extern int SampleShellPCDestroy(SampleShellPC*);
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec           x,b,u;   /* approx solution, RHS, exact solution */
-  Mat           A;         /* linear system matrix */
-  KSP           ksp;      /* linear solver context */
-  PC            pc;        /* preconditioner context */
-  PetscReal     norm;      /* norm of solution error */
-  SampleShellPC *shell;    /* user-defined preconditioner context */
-  PetscScalar   v,one = 1.0,none = -1.0;
-  int           i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
-  PetscTruth    user_defined_pc;
+  Vec            x,b,u;   /* approx solution, RHS, exact solution */
+  Mat            A;         /* linear system matrix */
+  KSP            ksp;      /* linear solver context */
+  PC             pc;        /* preconditioner context */
+  PetscReal      norm;      /* norm of solution error */
+  SampleShellPC  *shell;    /* user-defined preconditioner context */
+  PetscScalar    v,one = 1.0,none = -1.0;
+  PetscInt       i,j,I,J,Istart,Iend,m = 8,n = 7,its;
+  PetscErrorCode ierr;
+  PetscTruth     user_defined_pc;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -233,10 +234,10 @@ int main(int argc,char **args)
    Output Parameter:
 .  shell - user-defined preconditioner context
 */
-int SampleShellPCCreate(SampleShellPC **shell)
+PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
 {
-  SampleShellPC *newctx;
-  int           ierr;
+  SampleShellPC  *newctx;
+  PetscErrorCode ierr;
 
   ierr         = PetscNew(SampleShellPC,&newctx);CHKERRQ(ierr);
   newctx->diag = 0;
@@ -264,9 +265,9 @@ int SampleShellPCCreate(SampleShellPC **shell)
    of the diagonal of the preconditioner matrix; this vector is then
    used within the routine SampleShellPCApply().
 */
-int SampleShellPCSetUp(SampleShellPC *shell,Mat pmat,Vec x)
+PetscErrorCode SampleShellPCSetUp(SampleShellPC *shell,Mat pmat,Vec x)
 {
-  Vec diag;
+  Vec            diag;
   PetscErrorCode ierr;
 
   ierr = VecDuplicate(x,&diag);CHKERRQ(ierr);
@@ -299,10 +300,10 @@ int SampleShellPCSetUp(SampleShellPC *shell,Mat pmat,Vec x)
    example of working with a PCSHELL.  Note that the Jacobi method
    is already provided within PETSc.
 */
-int SampleShellPCApply(void *ctx,Vec x,Vec y)
+PetscErrorCode SampleShellPCApply(void *ctx,Vec x,Vec y)
 {
-  SampleShellPC *shell = (SampleShellPC*)ctx;
-  int           ierr;
+  SampleShellPC   *shell = (SampleShellPC*)ctx;
+  PetscErrorCode  ierr;
 
   ierr = VecPointwiseMult(x,shell->diag,y);CHKERRQ(ierr);
 
@@ -318,7 +319,7 @@ int SampleShellPCApply(void *ctx,Vec x,Vec y)
    Input Parameter:
 .  shell - user-defined preconditioner context
 */
-int SampleShellPCDestroy(SampleShellPC *shell)
+PetscErrorCode SampleShellPCDestroy(SampleShellPC *shell)
 {
   PetscErrorCode ierr;
 

@@ -11,7 +11,9 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscviewer.h"
-      integer ierr,row,col,rank
+      PetscErrorCode ierr
+      PetscInt row,col,ten
+      PetscMPIInt rank
       PetscScalar  v
       Mat     A
       PetscViewer  view
@@ -23,7 +25,8 @@
 !     Proc-0 Create a seq-dense matrix and write it to a file
 !
       if (rank .eq. 0) then
-         call MatCreateSeqDense(PETSC_COMM_SELF,10,10,                  &
+         ten = 10
+         call MatCreateSeqDense(PETSC_COMM_SELF,ten,ten,                  &
      &        PETSC_NULL_SCALAR,A,ierr)
          v = 1.0d0
          do row=0,9 

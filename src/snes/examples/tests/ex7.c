@@ -4,10 +4,10 @@ static char help[] = "Solves u`` + u^{2} = f with Newton-like methods. Using\n\
 
 #include "petscsnes.h"
 
-extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int  FormFunction(SNES,Vec,Vec,void*);
-extern int  FormInitialGuess(SNES,Vec);
-extern int  Monitor(SNES,int,PetscReal,void *);
+extern PetscErrorCode   FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode   FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode   FormInitialGuess(SNES,Vec);
+extern PetscErrorCode   Monitor(SNES,PetscInt,PetscReal,void *);
 
 typedef struct {
    PetscViewer viewer;
@@ -29,7 +29,8 @@ int main(int argc,char **argv)
   MonitorCtx     monP;                 /* monitoring context */
   AppCtx         user;                 /* user-defined work context */
   PetscScalar    h,xp = 0.0,v;
-  int            ierr,its,n = 5,i;
+  PetscInt       its,n = 5,i;
+  PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -81,7 +82,7 @@ int main(int argc,char **argv)
   ierr = FormInitialGuess(snes,x);CHKERRQ(ierr);
   ierr = SNESSolve(snes,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %D\n\n",its);CHKERRQ(ierr);
 
   /* Free data structures */
   if (user.variant) {
@@ -98,10 +99,11 @@ int main(int argc,char **argv)
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 
-int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
+PetscErrorCode  FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
-  PetscScalar *xx,*ff,*FF,d;
-  int    i,ierr,n;
+  PetscScalar    *xx,*ff,*FF,d;
+  PetscInt       i,n;
+  PetscErrorCode ierr;
 
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
@@ -122,9 +124,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-int FormInitialGuess(SNES snes,Vec x)
+PetscErrorCode  FormInitialGuess(SNES snes,Vec x)
 {
-  int    ierr;
+  PetscErrorCode     ierr;
   PetscScalar pfive = .50;
   ierr = VecSet(&pfive,x);CHKERRQ(ierr);
   return 0;
@@ -137,16 +139,17 @@ int FormInitialGuess(SNES snes,Vec x)
     also EXACTLY the Jacobian. In general, it would be some lower
     order, simplified apprioximation */
 
-int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
+PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
-  PetscScalar *xx,A[3],d;
-  int    i,n,j[3],ierr,iter;
-  AppCtx *user = (AppCtx*) dummy;
+  PetscScalar    *xx,A[3],d;
+  PetscInt       i,n,j[3],iter;
+  PetscErrorCode ierr;
+  AppCtx         *user = (AppCtx*) dummy;
 
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
 
   if (iter%2 ==0) { /* Compute new preconditioner matrix */
-    printf("iter=%d, computing new preconditioning matrix\n",iter+1);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"iter=%D, computing new preconditioning matrix\n",iter+1);CHKERRQ(ierr);
     *B = user->precond;
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
     ierr = VecGetSize(x,&n);CHKERRQ(ierr);
@@ -166,7 +169,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
     *flag = SAME_NONZERO_PATTERN;
   }  else { /* reuse preconditioner from last iteration */
-    printf("iter=%d, using old preconditioning matrix\n",iter+1);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"iter=%D, using old preconditioning matrix\n",iter+1);CHKERRQ(ierr);
     *flag = SAME_PRECONDITIONER;
   }
   if (user->variant) {
@@ -180,15 +183,15 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
-int Monitor(SNES snes,int its,PetscReal fnorm,void *dummy)
+PetscErrorCode  Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *dummy)
 {
-  int        ierr;
-  MonitorCtx *monP = (MonitorCtx*) dummy;
-  Vec        x;
-  MPI_Comm   comm;
+  PetscErrorCode ierr;
+  MonitorCtx     *monP = (MonitorCtx*) dummy;
+  Vec            x;
+  MPI_Comm       comm;
 
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,stdout,"iter = %d, SNES Function norm %g \n",its,fnorm);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,stdout,"iter = %D, SNES Function norm %g \n",its,fnorm);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   return 0;

@@ -13,14 +13,16 @@ output file. Input parameters are:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A;
-  Vec         b;
-  char        filein[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
-  int         i,m,n,nnz,ierr,size,col,row;
-  PetscScalar val;
-  FILE*       file;
-  PetscViewer view;
-  PetscRandom r;
+  Mat            A;
+  Vec            b;
+  char           filein[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
+  PetscInt       i,m,n,nnz,col,row;
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+  PetscScalar    val;
+  FILE*          file;
+  PetscViewer    view;
+  PetscRandom    r;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -46,7 +48,7 @@ int main(int argc,char **args)
   ierr = VecSetRandom(r,b);CHKERRQ(ierr);
 
   for (i=0; i<nnz; i++) {
-    fscanf(file,"%d %d %le\n",&row,&col,&val);
+    fscanf(file,"%d %d %le\n",&row,&col,(double*)&val);
     row = row-1; col = col-1 ;
     ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
     if (row != col) {

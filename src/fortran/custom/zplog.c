@@ -34,7 +34,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petsclogprintsummary_(MPI_Comm *comm,CHAR filename PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petsclogprintsummary_(MPI_Comm *comm,CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t;
@@ -45,7 +45,7 @@ void PETSC_STDCALL petsclogprintsummary_(MPI_Comm *comm,CHAR filename PETSC_MIXE
 
 
 
-void PETSC_STDCALL petsclogdump_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petsclogdump_(CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t1;
@@ -54,7 +54,7 @@ void PETSC_STDCALL petsclogdump_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_
   FREECHAR(name,t1);
 #endif
 }
-void PETSC_STDCALL petsclogeventregister_(PetscEvent *e,CHAR string PETSC_MIXED_LEN(len),int *cookie,int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petsclogeventregister_(PetscEvent *e,CHAR string PETSC_MIXED_LEN(len),int *cookie,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t1;
@@ -63,7 +63,7 @@ void PETSC_STDCALL petsclogeventregister_(PetscEvent *e,CHAR string PETSC_MIXED_
   FREECHAR(string,t1);
 #endif
 }
-void PETSC_STDCALL petsclogclassregister_(PetscCookie *e,CHAR string PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petsclogclassregister_(PetscCookie *e,CHAR string PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t1;
@@ -74,44 +74,44 @@ void PETSC_STDCALL petsclogclassregister_(PetscCookie *e,CHAR string PETSC_MIXED
 #endif
 }
 
-void PETSC_STDCALL petsclogallbegin_(int *ierr){
+void PETSC_STDCALL petsclogallbegin_(PetscErrorCode *ierr){
 #if defined(PETSC_USE_LOG)
   *ierr = PetscLogAllBegin();
 #endif
 }
 
-void PETSC_STDCALL petsclogdestroy_(int *ierr){
+void PETSC_STDCALL petsclogdestroy_(PetscErrorCode *ierr){
 #if defined(PETSC_USE_LOG)
   *ierr = PetscLogDestroy();
 #endif
 }
 
-void PETSC_STDCALL petsclogbegin_(int *ierr){
+void PETSC_STDCALL petsclogbegin_(PetscErrorCode *ierr){
 #if defined(PETSC_USE_LOG)
   *ierr = PetscLogBegin();
 #endif
 }
 
-void PETSC_STDCALL petsclogeventbegin_(PetscEvent *e,int *_ierr){
-  *_ierr = PetscLogEventBegin(*e,0,0,0,0);
+void PETSC_STDCALL petsclogeventbegin_(PetscEvent *e,PetscErrorCode *ierr){
+  *ierr = PetscLogEventBegin(*e,0,0,0,0);
 }
 
-void PETSC_STDCALL petsclogeventend_(PetscEvent *e,int *_ierr){
-  *_ierr = PetscLogEventEnd(*e,0,0,0,0);
+void PETSC_STDCALL petsclogeventend_(PetscEvent *e,PetscErrorCode *ierr){
+  *ierr = PetscLogEventEnd(*e,0,0,0,0);
 }
 
-void PETSC_STDCALL petsclogflops_(int *f,int *_ierr) {
-  *_ierr = PetscLogFlops(*f);
+void PETSC_STDCALL petsclogflops_(int *f,PetscErrorCode *ierr) {
+  *ierr = PetscLogFlops(*f);
 }
 
-void PETSC_STDCALL petsclogstagepop_(int *ierr)
+void PETSC_STDCALL petsclogstagepop_(PetscErrorCode *ierr)
 {
 #if defined(PETSC_USE_LOG)
   *ierr = PetscLogStagePop();
 #endif
 }
 
-void PETSC_STDCALL petsclogstageregister_(int *stage,CHAR sname PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petsclogstageregister_(int *stage,CHAR sname PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t;
@@ -120,7 +120,7 @@ void PETSC_STDCALL petsclogstageregister_(int *stage,CHAR sname PETSC_MIXED_LEN(
 #endif
 }
 
-void PETSC_STDCALL petsclogstagepush_(int *stage,int *ierr){
+void PETSC_STDCALL petsclogstagepush_(int *stage,PetscErrorCode *ierr){
 #if defined(PETSC_USE_LOG)
   *ierr = PetscLogStagePush(*stage);
 #endif

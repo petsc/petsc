@@ -54,12 +54,12 @@ E*/
 #define PCSPAI            "spai"
 #define PCNN              "nn"
 #define PCCHOLESKY        "cholesky"
-#define PCRAMG            "ramg"
 #define PCSAMG            "samg"
 #define PCPBJACOBI        "pbjacobi"
 #define PCMAT             "mat"
 #define PCHYPRE           "hypre"
 #define PCFIELDSPLIT      "fieldsplit"
+#define PCTFS             "tfs"
 
 /* Logging support */
 extern PetscCookie PC_COOKIE;
@@ -87,7 +87,7 @@ EXTERN PetscErrorCode PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
 EXTERN PetscErrorCode PCApplyTranspose(PC,Vec,Vec);
 EXTERN PetscErrorCode PCHasApplyTranspose(PC,PetscTruth*);
 EXTERN PetscErrorCode PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
-EXTERN PetscErrorCode PCApplyRichardson(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
+EXTERN PetscErrorCode PCApplyRichardson(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt);
 EXTERN PetscErrorCode PCApplyRichardsonExists(PC,PetscTruth*);
 
 EXTERN PetscErrorCode        PCRegisterDestroy(void);
@@ -148,8 +148,8 @@ EXTERN PetscErrorCode PCSetFromOptions(PC);
 EXTERN PetscErrorCode PCGetType(PC,PCType*);
 
 EXTERN PetscErrorCode PCGetFactoredMatrix(PC,Mat*);
-EXTERN PetscErrorCode PCSetModifySubMatrices(PC,int(*)(PC,int,const IS[],const IS[],Mat[],void*),void*);
-EXTERN PetscErrorCode PCModifySubMatrices(PC,int,const IS[],const IS[],Mat[],void*);
+EXTERN PetscErrorCode PCSetModifySubMatrices(PC,PetscErrorCode(*)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void*);
+EXTERN PetscErrorCode PCModifySubMatrices(PC,PetscInt,const IS[],const IS[],Mat[],void*);
 
 EXTERN PetscErrorCode PCSetOperators(PC,Mat,Mat,MatStructure);
 EXTERN PetscErrorCode PCGetOperators(PC,Mat*,Mat*,MatStructure*);
@@ -176,7 +176,7 @@ EXTERN PetscErrorCode PCDiagonalScaleSet(PC,Vec);
 EXTERN PetscErrorCode PCJacobiSetUseRowMax(PC);
 EXTERN PetscErrorCode PCSORSetSymmetric(PC,MatSORType);
 EXTERN PetscErrorCode PCSORSetOmega(PC,PetscReal);
-EXTERN PetscErrorCode PCSORSetIterations(PC,int,int);
+EXTERN PetscErrorCode PCSORSetIterations(PC,PetscInt,PetscInt);
 
 EXTERN PetscErrorCode PCEisenstatSetOmega(PC,PetscReal);
 EXTERN PetscErrorCode PCEisenstatNoDiagonalScaling(PC);
@@ -184,15 +184,15 @@ EXTERN PetscErrorCode PCEisenstatNoDiagonalScaling(PC);
 #define USE_PRECONDITIONER_MATRIX 0
 #define USE_TRUE_MATRIX           1
 EXTERN PetscErrorCode PCBJacobiSetUseTrueLocal(PC);
-EXTERN PetscErrorCode PCBJacobiSetTotalBlocks(PC,int,const int[]);
-EXTERN PetscErrorCode PCBJacobiSetLocalBlocks(PC,int,const int[]);
+EXTERN PetscErrorCode PCBJacobiSetTotalBlocks(PC,PetscInt,const PetscInt[]);
+EXTERN PetscErrorCode PCBJacobiSetLocalBlocks(PC,PetscInt,const PetscInt[]);
 
 EXTERN PetscErrorCode PCKSPSetUseTrue(PC);
 
 EXTERN PetscErrorCode PCShellSetApply(PC,PetscErrorCode (*)(void*,Vec,Vec),void*); 
 EXTERN PetscErrorCode PCShellSetApplyTranspose(PC,PetscErrorCode (*)(void*,Vec,Vec));
 EXTERN PetscErrorCode PCShellSetSetUp(PC,PetscErrorCode (*)(void*));
-EXTERN PetscErrorCode PCShellSetApplyRichardson(PC,PetscErrorCode (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void*);
+EXTERN PetscErrorCode PCShellSetApplyRichardson(PC,PetscErrorCode (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt),void*);
 EXTERN PetscErrorCode PCShellSetView(PC,PetscErrorCode (*)(void*,PetscViewer));
 EXTERN PetscErrorCode PCShellSetName(PC,const char[]);
 EXTERN PetscErrorCode PCShellGetName(PC,char*[]);
@@ -260,10 +260,10 @@ $                not very good.
 E*/
 typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0} PCASMType;
 EXTERN PetscErrorCode PCASMSetType(PC,PCASMType);
-EXTERN PetscErrorCode PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
+EXTERN PetscErrorCode PCASMCreateSubdomains2D(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt *,IS **);
 EXTERN PetscErrorCode PCASMSetUseInPlace(PC);
-EXTERN PetscErrorCode PCASMGetLocalSubdomains(PC,int*,IS*[]);
-EXTERN PetscErrorCode PCASMGetLocalSubmatrices(PC,int*,Mat*[]);
+EXTERN PetscErrorCode PCASMGetLocalSubdomains(PC,PetscInt*,IS*[]);
+EXTERN PetscErrorCode PCASMGetLocalSubmatrices(PC,PetscInt*,Mat*[]);
 
 /*E
     PCCompositeType - Determines how two or more preconditioner are composed
@@ -283,7 +283,7 @@ typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SPE
 EXTERN PetscErrorCode PCCompositeSetUseTrue(PC);
 EXTERN PetscErrorCode PCCompositeSetType(PC,PCCompositeType);
 EXTERN PetscErrorCode PCCompositeAddPC(PC,PCType);
-EXTERN PetscErrorCode PCCompositeGetPC(PC pc,int n,PC *);
+EXTERN PetscErrorCode PCCompositeGetPC(PC pc,PetscInt n,PC *);
 EXTERN PetscErrorCode PCCompositeSpecialSetAlpha(PC,PetscScalar);
 
 EXTERN PetscErrorCode PCRedundantSetScatter(PC,VecScatter,VecScatter);
@@ -292,17 +292,17 @@ EXTERN PetscErrorCode PCRedundantGetPC(PC,PC*);
 EXTERN PetscErrorCode MatGetOrderingList(PetscFList *list);
 
 EXTERN PetscErrorCode PCSPAISetEpsilon(PC,double);
-EXTERN PetscErrorCode PCSPAISetNBSteps(PC,int);
-EXTERN PetscErrorCode PCSPAISetMax(PC,int);
-EXTERN PetscErrorCode PCSPAISetMaxNew(PC,int);
-EXTERN PetscErrorCode PCSPAISetBlockSize(PC,int);
-EXTERN PetscErrorCode PCSPAISetCacheSize(PC,int);
-EXTERN PetscErrorCode PCSPAISetVerbose(PC,int);
-EXTERN PetscErrorCode PCSPAISetSp(PC,int);
+EXTERN PetscErrorCode PCSPAISetNBSteps(PC,PetscInt);
+EXTERN PetscErrorCode PCSPAISetMax(PC,PetscInt);
+EXTERN PetscErrorCode PCSPAISetMaxNew(PC,PetscInt);
+EXTERN PetscErrorCode PCSPAISetBlockSize(PC,PetscInt);
+EXTERN PetscErrorCode PCSPAISetCacheSize(PC,PetscInt);
+EXTERN PetscErrorCode PCSPAISetVerbose(PC,PetscInt);
+EXTERN PetscErrorCode PCSPAISetSp(PC,PetscInt);
 
 EXTERN PetscErrorCode PCHYPRESetType(PC,const char[]);
-EXTERN PetscErrorCode PCBJacobiGetLocalBlocks(PC,int*,const int*[]);
-EXTERN PetscErrorCode PCBJacobiGetTotalBlocks(PC,int*,const int*[]);
+EXTERN PetscErrorCode PCBJacobiGetLocalBlocks(PC,PetscInt*,const PetscInt*[]);
+EXTERN PetscErrorCode PCBJacobiGetTotalBlocks(PC,PetscInt*,const PetscInt*[]);
 
 EXTERN PetscErrorCode PCFieldSplitSetFields(PC,PetscInt,PetscInt*);
 EXTERN PetscErrorCode PCFieldSplitSetType(PC,PCCompositeType);

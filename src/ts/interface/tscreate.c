@@ -29,7 +29,7 @@ static PetscErrorCode TSPublish_Petsc(PetscObject obj)
 .seealso: TSSetType(), TSSetUp(), TSDestroy(), MeshCreate(), TSSetProblemType()
 @*/
 PetscErrorCode TSCreate(MPI_Comm comm, TS *ts) {
-  TS  t;
+  TS             t;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

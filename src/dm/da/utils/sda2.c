@@ -54,13 +54,13 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 
 .seealso: SDADestroy(), SDACreate2d(), SDACreate3d()
 @*/
-PetscErrorCode SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA *sda)
+PetscErrorCode SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt w,PetscInt s,PetscInt *lc,SDA *sda)
 {
   PetscErrorCode ierr;
-  DA            da;
-  char          **args;
-  int           argc = 0;
-  Vec           tmp;
+  DA             da;
+  char           **args;
+  int            argc = 0;
+  Vec            tmp;
 
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
@@ -121,13 +121,13 @@ $           the x and y coordinates, or PETSC_NULL
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
 PetscErrorCode SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
-                int M,int N,int m,int n,int w,int s,int *lx,int *ly,SDA *sda)
+                PetscInt M,PetscInt N,PetscInt m,PetscInt n,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,SDA *sda)
 {
   PetscErrorCode ierr;
-  DA            da;
-  char          **args;
-  int           argc = 0;
-  Vec           tmp;
+  DA             da;
+  char           **args;
+  int            argc = 0;
+  Vec            tmp;
 
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
@@ -187,14 +187,14 @@ $           the x, y, and z coordinates, or PETSC_NUL
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
-PetscErrorCode SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
-                int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,SDA *sda)
+PetscErrorCode SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
+                PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,SDA *sda)
 {
   PetscErrorCode ierr;
-  DA            da;
-  Vec           tmp;
-  char          **args;
-  int           argc = 0;
+  DA             da;
+  Vec            tmp;
+  char           **args;
+  int            argc = 0;
 
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
@@ -274,8 +274,8 @@ PetscErrorCode SDADestroy(SDA sda)
 PetscErrorCode SDALocalToLocalBegin(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
 {
   PetscErrorCode ierr;
-  DA  da = sda->da;
-  Vec gvec = sda->gvec,lvec = sda->lvec;
+  DA             da = sda->da;
+  Vec            gvec = sda->gvec,lvec = sda->lvec;
 
   PetscFunctionBegin;
   ierr = VecPlaceArray(gvec,g);CHKERRQ(ierr);
@@ -308,8 +308,8 @@ PetscErrorCode SDALocalToLocalBegin(SDA sda,PetscScalar *g,InsertMode mode,Petsc
 PetscErrorCode SDALocalToLocalEnd(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
 {
   PetscErrorCode ierr;
-  DA  da = sda->da;
-  Vec gvec = sda->gvec,lvec = sda->lvec;
+  DA             da = sda->da;
+  Vec            gvec = sda->gvec,lvec = sda->lvec;
 
   PetscFunctionBegin;
   ierr = VecPlaceArray(gvec,g);CHKERRQ(ierr);
@@ -342,7 +342,7 @@ $    n and p are optional (used for 2D and 3D problems)
 
 .seealso: SDAGetGhostCorners()
 @*/
-PetscErrorCode SDAGetCorners(SDA da,int *x,int *y,int *z,int *m,int *n,int *p)
+PetscErrorCode SDAGetCorners(SDA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
   PetscErrorCode ierr;
 
@@ -376,7 +376,7 @@ $    n and p are optional (used for 2D and 3D problems)
 
 .seealso: SDAGetCorners()
 @*/
-PetscErrorCode SDAGetGhostCorners(SDA da,int *x,int *y,int *z,int *m,int *n,int *p)
+PetscErrorCode SDAGetGhostCorners(SDA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
   PetscErrorCode ierr;
 

@@ -8,9 +8,9 @@ static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            i,M = 3,N = 5,P=3,s=1,w=2;
-  int            m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,ierr;
-  int            *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
+  PetscInt       i,M = 3,N = 5,P=3,s=1,w=2,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
+  PetscErrorCode ierr;
+  PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
   DA             da;
   PetscTruth     flg,test_order;
   ISColoring     coloring;
@@ -36,15 +36,15 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRQ(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRQ(1,"Must set -m option with -distribute option");
-    ierr = PetscMalloc(m*sizeof(int),&lx);CHKERRQ(ierr);
+    ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
     for (i=0; i<m-1; i++) { lx[i] = 4;}
     lx[m-1] = M - 4*(m-1);
     if (n == PETSC_DECIDE) SETERRQ(1,"Must set -n option with -distribute option");
-    ierr = PetscMalloc(n*sizeof(int),&ly);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
     for (i=0; i<n-1; i++) { ly[i] = 2;}
     ly[n-1] = N - 2*(n-1);
     if (p == PETSC_DECIDE) SETERRQ(1,"Must set -p option with -distribute option");
-    ierr = PetscMalloc(p*sizeof(int),&lz);CHKERRQ(ierr);
+    ierr = PetscMalloc(p*sizeof(PetscInt),&lz);CHKERRQ(ierr);
     for (i=0; i<p-1; i++) { lz[i] = 2;}
     lz[p-1] = P - 2*(p-1);
   }

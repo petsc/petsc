@@ -8,35 +8,38 @@
 #include "include/finclude/petscviewer.h"
 
       Mat      A
-      integer  err,i,cols(500),ncols
+      PetscErrorCode ierr
+      PetscInt i,cols(500),ncols,row
       PetscScalar   values(500)
       PetscViewer   v    
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,err)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'small',              &
-     & PETSC_FILE_RDONLY,v,err)
+     & PETSC_FILE_RDONLY,v,ierr)
 
-      call MatLoad(v,MATSEQAIJ,A,err)
+      call MatLoad(v,MATSEQAIJ,A,ierr)
 
-      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,err)
+      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
-      call MatGetRow(A,2,ncols,cols,values,err)
+      row = 2
+      call MatGetRow(A,row,ncols,cols,values,ierr)
       do 10, i=1,ncols
         print*,i,cols(i),values(i)
  10   continue
-      call MatRestoreRow(A,2,ncols,cols,values,err)
+      call MatRestoreRow(A,row,ncols,cols,values,ierr)
 
-      call MatGetRow(A,5,ncols,cols,values,err)
+      row = 5
+      call MatGetRow(A,row,ncols,cols,values,ierr)
       do 20, i=1,ncols
         print*,i,cols(i),values(i)
  20   continue
-      call MatRestoreRow(A,2,ncols,cols,values,err)
+      call MatRestoreRow(A,row,ncols,cols,values,ierr)
 
-      call MatDestroy(A,err)
-      call PetscViewerDestroy(v,err)
+      call MatDestroy(A,ierr)
+      call PetscViewerDestroy(v,ierr)
 
-      call PetscFinalize(err)
+      call PetscFinalize(ierr)
       end
 
 

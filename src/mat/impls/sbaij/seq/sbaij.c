@@ -16,9 +16,9 @@
 #define __FUNCT__ "MatMissingDiagonal_SeqSBAIJ"
 PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
   PetscErrorCode ierr;
-  int         *diag,*jj = a->j,i;
+  PetscInt       *diag,*jj = a->j,i;
 
   PetscFunctionBegin;
   ierr = MatMarkDiagonal_SeqSBAIJ(A);CHKERRQ(ierr);
@@ -33,25 +33,25 @@ PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A)
 #define __FUNCT__ "MatMarkDiagonal_SeqSBAIJ"
 PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
   PetscErrorCode ierr;
-  int          i,mbs = a->mbs;
+  PetscInt       i,mbs = a->mbs;
 
   PetscFunctionBegin;
   if (a->diag) PetscFunctionReturn(0);
 
-  ierr = PetscMalloc((mbs+1)*sizeof(int),&a->diag);CHKERRQ(ierr); 
-  PetscLogObjectMemory(A,(mbs+1)*sizeof(int));
+  ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&a->diag);CHKERRQ(ierr); 
+  PetscLogObjectMemory(A,(mbs+1)*sizeof(PetscInt));
   for (i=0; i<mbs; i++) a->diag[i] = a->i[i];  
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqSBAIJ"
-static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int *ia[],int *ja[],PetscTruth *done)
+static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int         n = a->mbs,i;
+  PetscInt     n = a->mbs,i;
 
   PetscFunctionBegin;
   *nn = n;
@@ -59,7 +59,7 @@ static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric
 
   if (oshift == 1) {
     /* temporarily add 1 to i and j indices */
-    int nz = a->i[n]; 
+    PetscInt nz = a->i[n]; 
     for (i=0; i<nz; i++) a->j[i]++;
     for (i=0; i<n+1; i++) a->i[i]++;
     *ia = a->i; *ja = a->j;
@@ -71,16 +71,16 @@ static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowIJ_SeqSBAIJ" 
-static PetscErrorCode MatRestoreRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int *ia[],int *ja[],PetscTruth *done)
+static PetscErrorCode MatRestoreRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int         i,n = a->mbs;
+  PetscInt     i,n = a->mbs;
 
   PetscFunctionBegin;
   if (!ia) PetscFunctionReturn(0);
 
   if (oshift == 1) {
-    int nz = a->i[n]-1; 
+    PetscInt nz = a->i[n]-1; 
     for (i=0; i<nz; i++) a->j[i]--;
     for (i=0; i<n+1; i++) a->i[i]--;
   }
@@ -91,7 +91,7 @@ static PetscErrorCode MatRestoreRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symme
 #define __FUNCT__ "MatDestroy_SeqSBAIJ"
 PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -191,13 +191,13 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_SeqSBAIJ"
-PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,int row,int *ncols,int **cols,PetscScalar **v)
+PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscScalar **v)
 {
-  Mat_SeqSBAIJ  *a = (Mat_SeqSBAIJ*)A->data;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  int          itmp,i,j,k,M,*ai,*aj,bs,bn,bp,*cols_i,bs2;
-  MatScalar    *aa,*aa_i;
-  PetscScalar  *v_i;
+  PetscInt       itmp,i,j,k,M,*ai,*aj,bs,bn,bp,*cols_i,bs2;
+  MatScalar      *aa,*aa_i;
+  PetscScalar    *v_i;
 
   PetscFunctionBegin;
   bs  = A->bs;
@@ -228,7 +228,7 @@ PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,int row,int *ncols,int **cols,PetscScala
   if (cols) {
     *cols = 0;
     if (*ncols) {
-      ierr = PetscMalloc((*ncols+row)*sizeof(int),cols);CHKERRQ(ierr);
+      ierr = PetscMalloc((*ncols+row)*sizeof(PetscInt),cols);CHKERRQ(ierr);
       for (i=0; i<M; i++) { /* for each block in the block row */
         cols_i = *cols + i*bs;
         itmp  = bs*aj[ai[bn] + i];
@@ -264,7 +264,7 @@ PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,int row,int *ncols,int **cols,PetscScala
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_SeqSBAIJ"
-PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat A,int row,int *nz,int **idx,PetscScalar **v)
+PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   PetscErrorCode ierr;
 
@@ -367,7 +367,8 @@ static PetscErrorCode MatView_SeqSBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
   Mat            A = (Mat) Aa;
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       row,i,j,k,l,mbs=a->mbs,color,bs=A->bs,bs2=a->bs2,rank;
+  PetscInt       row,i,j,k,l,mbs=a->mbs,color,bs=A->bs,bs2=a->bs2;
+  PetscMPIInt    rank;
   PetscReal      xl,yl,xr,yr,x_l,x_r,y_l,y_r;
   MatScalar      *aa;
   MPI_Comm       comm;
@@ -440,9 +441,9 @@ static PetscErrorCode MatView_SeqSBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
 static PetscErrorCode MatView_SeqSBAIJ_Draw(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscReal    xl,yl,xr,yr,w,h;
-  PetscDraw    draw;
-  PetscTruth   isnull;
+  PetscReal      xl,yl,xr,yr,w,h;
+  PetscDraw      draw;
+  PetscTruth     isnull;
 
   PetscFunctionBegin; 
 
@@ -463,7 +464,7 @@ static PetscErrorCode MatView_SeqSBAIJ_Draw(Mat A,PetscViewer viewer)
 PetscErrorCode MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth iascii,isdraw;
+  PetscTruth     iascii,isdraw;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -484,13 +485,13 @@ PetscErrorCode MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_SeqSBAIJ"
-PetscErrorCode MatGetValues_SeqSBAIJ(Mat A,int m,const int im[],int n,const int in[],PetscScalar v[])
+PetscErrorCode MatGetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int        *rp,k,low,high,t,row,nrow,i,col,l,*aj = a->j;
-  int        *ai = a->i,*ailen = a->ilen;
-  int        brow,bcol,ridx,cidx,bs=A->bs,bs2=a->bs2;
-  MatScalar  *ap,*aa = a->a,zero = 0.0;
+  PetscInt     *rp,k,low,high,t,row,nrow,i,col,l,*aj = a->j;
+  PetscInt     *ai = a->i,*ailen = a->ilen;
+  PetscInt     brow,bcol,ridx,cidx,bs=A->bs,bs2=a->bs2;
+  MatScalar    *ap,*aa = a->a,zero = 0.0;
 
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over rows */
@@ -530,13 +531,13 @@ PetscErrorCode MatGetValues_SeqSBAIJ(Mat A,int m,const int im[],int n,const int 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_SeqSBAIJ"
-PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode is)
+PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  int             *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
-  int             *imax=a->imax,*ai=a->i,*ailen=a->ilen;
-  int             *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=A->bs,stepval;
+  PetscErrorCode  ierr;
+  PetscInt        *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
+  PetscInt        *imax=a->imax,*ai=a->i,*ailen=a->ilen;
+  PetscInt        *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=A->bs,stepval;
   PetscTruth      roworiented=a->roworiented; 
   const MatScalar *value = v;
   MatScalar       *ap,*aa = a->a,*bap;
@@ -616,23 +617,23 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,const int im[],int n,con
       else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
-        int       new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
+        PetscInt       new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
         MatScalar *new_a;
 
         if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
 
         /* malloc new storage space */
-        len     = new_nz*(sizeof(int)+bs2*sizeof(MatScalar))+(a->mbs+1)*sizeof(int);
+        len     = new_nz*(sizeof(PetscInt)+bs2*sizeof(MatScalar))+(a->mbs+1)*sizeof(PetscInt);
 	ierr    = PetscMalloc(len,&new_a);CHKERRQ(ierr);
-        new_j   = (int*)(new_a + bs2*new_nz);
+        new_j   = (PetscInt*)(new_a + bs2*new_nz);
         new_i   = new_j + new_nz;
 
         /* copy over old data into new slots */
         for (ii=0; ii<row+1; ii++) {new_i[ii] = ai[ii];}
         for (ii=row+1; ii<a->mbs+1; ii++) {new_i[ii] = ai[ii]+CHUNKSIZE;}
-        ierr = PetscMemcpy(new_j,aj,(ai[row]+nrow)*sizeof(int));CHKERRQ(ierr);
+        ierr = PetscMemcpy(new_j,aj,(ai[row]+nrow)*sizeof(PetscInt));CHKERRQ(ierr);
         len  = (new_nz - CHUNKSIZE - ai[row] - nrow);
-        ierr = PetscMemcpy(new_j+ai[row]+nrow+CHUNKSIZE,aj+ai[row]+nrow,len*sizeof(int));CHKERRQ(ierr);
+        ierr = PetscMemcpy(new_j+ai[row]+nrow+CHUNKSIZE,aj+ai[row]+nrow,len*sizeof(PetscInt));CHKERRQ(ierr);
         ierr = PetscMemcpy(new_a,aa,(ai[row]+nrow)*bs2*sizeof(MatScalar));CHKERRQ(ierr);
         ierr = PetscMemzero(new_a+bs2*(ai[row]+nrow),bs2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr);
         ierr = PetscMemcpy(new_a+bs2*(ai[row]+nrow+CHUNKSIZE),aa+bs2*(ai[row]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);
@@ -647,7 +648,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,const int im[],int n,con
 
         rp   = aj + ai[row]; ap = aa + bs2*ai[row];
         rmax = imax[row] = imax[row] + CHUNKSIZE;
-        PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + bs2*sizeof(MatScalar)));
+        PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + bs2*sizeof(MatScalar)));
         a->maxnz += bs2*CHUNKSIZE;
         a->reallocs++;
         a->nz++;
@@ -688,12 +689,12 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,const int im[],int n,con
 #define __FUNCT__ "MatAssemblyEnd_SeqSBAIJ"
 PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  int        fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax;
-  int        m = A->m,*ip,N,*ailen = a->ilen;
-  int        mbs = a->mbs,bs2 = a->bs2,rmax = 0;
-  MatScalar  *aa = a->a,*ap;
+  PetscInt       fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax;
+  PetscInt       m = A->m,*ip,N,*ailen = a->ilen;
+  PetscInt       mbs = a->mbs,bs2 = a->bs2,rmax = 0;
+  MatScalar      *aa = a->a,*ap;
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -725,7 +726,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
 
   /* diagonals may have moved, reset it */
   if (a->diag) {
-    ierr = PetscMemcpy(a->diag,ai,(mbs+1)*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMemcpy(a->diag,ai,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
   } 
   PetscLogInfo(A,"MatAssemblyEnd_SeqSBAIJ:Matrix size: %D X %D, block size %D; storage space: %D unneeded, %D used\n",
            m,A->m,A->bs,fshift*bs2,a->nz*bs2);
@@ -746,9 +747,9 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqSBAIJ_Check_Blocks"
-PetscErrorCode MatZeroRows_SeqSBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[], int *bs_max)
+PetscErrorCode MatZeroRows_SeqSBAIJ_Check_Blocks(PetscInt idx[],PetscInt n,PetscInt bs,PetscInt sizes[], PetscInt *bs_max)
 {
-  int        i,j,k,row;
+  PetscInt   i,j,k,row;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -795,15 +796,15 @@ PetscErrorCode MatZeroRows_SeqSBAIJ(Mat A,IS is,const PetscScalar *diag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_SeqSBAIJ"
-PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode is)
+PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
-  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen,roworiented=a->roworiented;
-  int         *aj=a->j,nonew=a->nonew,bs=A->bs,brow,bcol;
-  int         ridx,cidx,bs2=a->bs2;
-  MatScalar   *ap,value,*aa=a->a,*bap;
+  PetscInt       *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
+  PetscInt       *imax=a->imax,*ai=a->i,*ailen=a->ilen,roworiented=a->roworiented;
+  PetscInt       *aj=a->j,nonew=a->nonew,bs=A->bs,brow,bcol;
+  PetscInt       ridx,cidx,bs2=a->bs2;
+  MatScalar      *ap,value,*aa=a->a,*bap;
 
   PetscFunctionBegin;
 
@@ -866,23 +867,23 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,int m,const int im[],int n,const int 
       else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
-        int       new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
+        PetscInt       new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
         MatScalar *new_a;
 
         if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
 
         /* Malloc new storage space */
-        len   = new_nz*(sizeof(int)+bs2*sizeof(MatScalar))+(a->mbs+1)*sizeof(int);
+        len   = new_nz*(sizeof(PetscInt)+bs2*sizeof(MatScalar))+(a->mbs+1)*sizeof(PetscInt);
         ierr  = PetscMalloc(len,&new_a);CHKERRQ(ierr);
-        new_j = (int*)(new_a + bs2*new_nz);
+        new_j = (PetscInt*)(new_a + bs2*new_nz);
         new_i = new_j + new_nz;
 
         /* copy over old data into new slots */
         for (ii=0; ii<brow+1; ii++) {new_i[ii] = ai[ii];}
         for (ii=brow+1; ii<a->mbs+1; ii++) {new_i[ii] = ai[ii]+CHUNKSIZE;}
-        ierr = PetscMemcpy(new_j,aj,(ai[brow]+nrow)*sizeof(int));CHKERRQ(ierr);
+        ierr = PetscMemcpy(new_j,aj,(ai[brow]+nrow)*sizeof(PetscInt));CHKERRQ(ierr);
         len  = (new_nz - CHUNKSIZE - ai[brow] - nrow);
-        ierr = PetscMemcpy(new_j+ai[brow]+nrow+CHUNKSIZE,aj+ai[brow]+nrow,len*sizeof(int));CHKERRQ(ierr);
+        ierr = PetscMemcpy(new_j+ai[brow]+nrow+CHUNKSIZE,aj+ai[brow]+nrow,len*sizeof(PetscInt));CHKERRQ(ierr);
         ierr = PetscMemcpy(new_a,aa,(ai[brow]+nrow)*bs2*sizeof(MatScalar));CHKERRQ(ierr);
         ierr = PetscMemzero(new_a+bs2*(ai[brow]+nrow),bs2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr);
         ierr = PetscMemcpy(new_a+bs2*(ai[brow]+nrow+CHUNKSIZE),aa+bs2*(ai[brow]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);
@@ -897,7 +898,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,int m,const int im[],int n,const int 
 
         rp   = aj + ai[brow]; ap = aa + bs2*ai[brow];
         rmax = imax[brow] = imax[brow] + CHUNKSIZE;
-        PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + bs2*sizeof(MatScalar)));
+        PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + bs2*sizeof(MatScalar)));
         a->maxnz += bs2*CHUNKSIZE;
         a->reallocs++;
         a->nz++;
@@ -928,9 +929,9 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,int m,const int im[],int n,const int 
 
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatCholeskyFactor_SeqSBAIJ(Mat,IS,MatFactorInfo*);
-EXTERN PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat,int,IS[],int);
-EXTERN PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
-EXTERN PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat,int,const IS[],const IS[],MatReuse,Mat*[]);
+EXTERN PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat,PetscInt,IS[],PetscInt);
+EXTERN PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,PetscInt,MatReuse,Mat*);
+EXTERN PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
 EXTERN PetscErrorCode MatScale_SeqSBAIJ(const PetscScalar*,Mat);
 EXTERN PetscErrorCode MatNorm_SeqSBAIJ(Mat,NormType,PetscReal *);
 EXTERN PetscErrorCode MatEqual_SeqSBAIJ(Mat,Mat,PetscTruth*);
@@ -968,7 +969,7 @@ EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat,Mat*);
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat,Mat*);
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat,Mat*);
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat,Mat*);
-EXTERN PetscErrorCode MatGetInertia_SeqSBAIJ(Mat,int*,int*,int*);
+EXTERN PetscErrorCode MatGetInertia_SeqSBAIJ(Mat,PetscInt*,PetscInt*,PetscInt*);
 
 EXTERN PetscErrorCode MatMult_SeqSBAIJ_1(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatMult_SeqSBAIJ_2(Mat,Vec,Vec);
@@ -994,10 +995,10 @@ EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat,Vec,Vec,Vec);
 #define __FUNCT__ "MatICCFactor_SeqSBAIJ"
 PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)inA->data;
-  Mat         outA;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)inA->data;
+  Mat            outA;
   PetscErrorCode ierr;
-  PetscTruth  row_identity,col_identity;
+  PetscTruth     row_identity,col_identity;
 
   PetscFunctionBegin;
   outA          = inA; 
@@ -1080,7 +1081,7 @@ PetscErrorCode MatPrintHelp_SeqSBAIJ(Mat A)
 {
   static PetscTruth called = PETSC_FALSE; 
   MPI_Comm          comm = A->comm;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
@@ -1092,10 +1093,10 @@ PetscErrorCode MatPrintHelp_SeqSBAIJ(Mat A)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqSBAIJSetColumnIndices_SeqSBAIJ"
-PetscErrorCode MatSeqSBAIJSetColumnIndices_SeqSBAIJ(Mat mat,int *indices)
+PetscErrorCode MatSeqSBAIJSetColumnIndices_SeqSBAIJ(Mat mat,PetscInt *indices)
 {
   Mat_SeqSBAIJ *baij = (Mat_SeqSBAIJ *)mat->data;
-  int         i,nz,n;
+  PetscInt     i,nz,n;
 
   PetscFunctionBegin;
   nz = baij->maxnz;
@@ -1136,9 +1137,9 @@ EXTERN_C_END
 
 .seealso: MatCreateSeqSBAIJ
 @*/ 
-PetscErrorCode MatSeqSBAIJSetColumnIndices(Mat mat,int *indices)
+PetscErrorCode MatSeqSBAIJSetColumnIndices(Mat mat,PetscInt *indices)
 {
-  PetscErrorCode ierr,(*f)(Mat,int *);
+  PetscErrorCode ierr,(*f)(Mat,PetscInt *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1401,12 +1402,12 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqSBAIJSetPreallocation_SeqSBAIJ"
-PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,int bs,int nz,int *nnz)
+PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt nz,PetscInt *nnz)
 {
-  Mat_SeqSBAIJ *b = (Mat_SeqSBAIJ*)B->data;
+  Mat_SeqSBAIJ   *b = (Mat_SeqSBAIJ*)B->data;
   PetscErrorCode ierr;
-  int          i,len,mbs,bs2;
-  PetscTruth   flg;
+  PetscInt       i,len,mbs,bs2;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
@@ -1485,7 +1486,7 @@ PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,int bs,int nz,int *nnz
 
   b->mbs = mbs;
   b->nbs = mbs; 
-  ierr   = PetscMalloc((mbs+1)*sizeof(int),&b->imax);CHKERRQ(ierr);
+  ierr   = PetscMalloc((mbs+1)*sizeof(PetscInt),&b->imax);CHKERRQ(ierr);
   if (!nnz) {
     if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
     else if (nz <= 0)        nz = 1;
@@ -1500,11 +1501,11 @@ PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,int bs,int nz,int *nnz
   /* nz=(nz+mbs)/2; */ /* total diagonal and superdiagonal nonzero blocks */
 
   /* allocate the matrix space */
-  len  = nz*sizeof(int) + nz*bs2*sizeof(MatScalar) + (B->m+1)*sizeof(int);
+  len  = nz*sizeof(PetscInt) + nz*bs2*sizeof(MatScalar) + (B->m+1)*sizeof(PetscInt);
   ierr = PetscMalloc(len,&b->a);CHKERRQ(ierr);
   ierr = PetscMemzero(b->a,nz*bs2*sizeof(MatScalar));CHKERRQ(ierr);
-  b->j = (int*)(b->a + nz*bs2);
-  ierr = PetscMemzero(b->j,nz*sizeof(int));CHKERRQ(ierr);
+  b->j = (PetscInt*)(b->a + nz*bs2);
+  ierr = PetscMemzero(b->j,nz*sizeof(PetscInt));CHKERRQ(ierr);
   b->i = b->j + nz;
   b->singlemalloc = PETSC_TRUE;
 
@@ -1515,8 +1516,8 @@ PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,int bs,int nz,int *nnz
   }
 
   /* b->ilen will count nonzeros in each block row so far. */
-  ierr = PetscMalloc((mbs+1)*sizeof(int),&b->ilen);CHKERRQ(ierr);
-  PetscLogObjectMemory(B,len+2*(mbs+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_SeqSBAIJ));
+  ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&b->ilen);CHKERRQ(ierr);
+  PetscLogObjectMemory(B,len+2*(mbs+1)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_SeqSBAIJ));
   for (i=0; i<mbs; i++) { b->ilen[i] = 0;}
   
   B->bs               = bs;
@@ -1555,9 +1556,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_SeqSBAIJ"
 PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
 {
-  Mat_SeqSBAIJ *b;
+  Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
-  int size;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
@@ -1657,10 +1658,14 @@ EXTERN_C_END
    allocation.  For additional details, see the users manual chapter on
    matrices.
 
+   If the nnz parameter is given then the nz parameter is ignored
+
+
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPISBAIJ()
 @*/
-PetscErrorCode MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,const int nnz[]) {
-  PetscErrorCode ierr,(*f)(Mat,int,int,const int[]);
+PetscErrorCode MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[]) 
+{
+  PetscErrorCode ierr,(*f)(Mat,PetscInt,PetscInt,const PetscInt[]);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqSBAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -1706,9 +1711,11 @@ PetscErrorCode MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,const int nnz[]) 
    allocation.  For additional details, see the users manual chapter on
    matrices.
 
+   If the nnz parameter is given then the nz parameter is ignored
+
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPISBAIJ()
 @*/
-PetscErrorCode MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,const int nnz[],Mat *A)
+PetscErrorCode MatCreateSeqSBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
   PetscErrorCode ierr;
  
@@ -1723,10 +1730,10 @@ PetscErrorCode MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,const i
 #define __FUNCT__ "MatDuplicate_SeqSBAIJ"
 PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
-  Mat          C;
-  Mat_SeqSBAIJ *c,*a = (Mat_SeqSBAIJ*)A->data;
+  Mat            C;
+  Mat_SeqSBAIJ   *c,*a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  int          i,len,mbs = a->mbs,nz = a->nz,bs2 =a->bs2;
+  PetscInt       i,len,mbs = a->mbs,nz = a->nz,bs2 =a->bs2;
 
   PetscFunctionBegin;
   if (a->i[mbs] != nz) SETERRQ(PETSC_ERR_PLIB,"Corrupt matrix");
@@ -1752,8 +1759,8 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->mbs  = a->mbs;
   c->nbs  = a->nbs;
 
-  ierr = PetscMalloc((mbs+1)*sizeof(int),&c->imax);CHKERRQ(ierr);
-  ierr = PetscMalloc((mbs+1)*sizeof(int),&c->ilen);CHKERRQ(ierr);
+  ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&c->imax);CHKERRQ(ierr);
+  ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&c->ilen);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     c->imax[i] = a->imax[i];
     c->ilen[i] = a->ilen[i]; 
@@ -1761,13 +1768,13 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
   /* allocate the matrix space */
   c->singlemalloc = PETSC_TRUE;
-  len  = (mbs+1)*sizeof(int) + nz*(bs2*sizeof(MatScalar) + sizeof(int));
+  len  = (mbs+1)*sizeof(PetscInt) + nz*(bs2*sizeof(MatScalar) + sizeof(PetscInt));
   ierr = PetscMalloc(len,&c->a);CHKERRQ(ierr);
-  c->j = (int*)(c->a + nz*bs2);
+  c->j = (PetscInt*)(c->a + nz*bs2);
   c->i = c->j + nz;
-  ierr = PetscMemcpy(c->i,a->i,(mbs+1)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(c->i,a->i,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
   if (mbs > 0) {
-    ierr = PetscMemcpy(c->j,a->j,nz*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMemcpy(c->j,a->j,nz*sizeof(PetscInt));CHKERRQ(ierr);
     if (cpvalues == MAT_COPY_VALUES) {
       ierr = PetscMemcpy(c->a,a->a,bs2*nz*sizeof(MatScalar));CHKERRQ(ierr);
     } else {
@@ -1775,14 +1782,14 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     }
   }
 
-  PetscLogObjectMemory(C,len+2*(mbs+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_SeqSBAIJ));  
+  PetscLogObjectMemory(C,len+2*(mbs+1)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_SeqSBAIJ));  
   c->sorted      = a->sorted;
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;
 
   if (a->diag) {
-    ierr = PetscMalloc((mbs+1)*sizeof(int),&c->diag);CHKERRQ(ierr);
-    PetscLogObjectMemory(C,(mbs+1)*sizeof(int));
+    ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&c->diag);CHKERRQ(ierr);
+    PetscLogObjectMemory(C,(mbs+1)*sizeof(PetscInt));
     for (i=0; i<mbs; i++) {
       c->diag[i] = a->diag[i];
     }
@@ -1800,15 +1807,17 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 #define __FUNCT__ "MatLoad_SeqSBAIJ"
 PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer,const MatType type,Mat *A)
 {
-  Mat_SeqSBAIJ *a;
-  Mat          B;
+  Mat_SeqSBAIJ   *a;
+  Mat            B;
   PetscErrorCode ierr;
-  int          i,nz,fd,header[4],size,*rowlengths=0,M,N,bs=1;
-  int          *mask,mbs,*jj,j,rowcount,nzcount,k,*s_browlengths,maskcount;
-  int          kmax,jcount,block,idx,point,nzcountb,extra_rows;
-  int          *masked,nmask,tmp,bs2,ishift;
-  PetscScalar  *aa;
-  MPI_Comm     comm = ((PetscObject)viewer)->comm;
+  int            fd;
+  PetscMPIInt    size;
+  PetscInt       i,nz,header[4],*rowlengths=0,M,N,bs=1;
+  PetscInt       *mask,mbs,*jj,j,rowcount,nzcount,k,*s_browlengths,maskcount;
+  PetscInt       kmax,jcount,block,idx,point,nzcountb,extra_rows;
+  PetscInt       *masked,nmask,tmp,bs2,ishift;
+  PetscScalar    *aa;
+  MPI_Comm       comm = ((PetscObject)viewer)->comm;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -1840,20 +1849,20 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer,const MatType type,Mat *A)
   }
 
   /* read in row lengths */
-  ierr = PetscMalloc((M+extra_rows)*sizeof(int),&rowlengths);CHKERRQ(ierr);
+  ierr = PetscMalloc((M+extra_rows)*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
   for (i=0; i<extra_rows; i++) rowlengths[M+i] = 1;
 
   /* read in column indices */
-  ierr = PetscMalloc((nz+extra_rows)*sizeof(int),&jj);CHKERRQ(ierr);
+  ierr = PetscMalloc((nz+extra_rows)*sizeof(PetscInt),&jj);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,jj,nz,PETSC_INT);CHKERRQ(ierr);
   for (i=0; i<extra_rows; i++) jj[nz+i] = M+i;
 
   /* loop over row lengths determining block row lengths */
-  ierr     = PetscMalloc(mbs*sizeof(int),&s_browlengths);CHKERRQ(ierr);
-  ierr     = PetscMemzero(s_browlengths,mbs*sizeof(int));CHKERRQ(ierr);
-  ierr     = PetscMalloc(2*mbs*sizeof(int),&mask);CHKERRQ(ierr);
-  ierr     = PetscMemzero(mask,mbs*sizeof(int));CHKERRQ(ierr);
+  ierr     = PetscMalloc(mbs*sizeof(PetscInt),&s_browlengths);CHKERRQ(ierr);
+  ierr     = PetscMemzero(s_browlengths,mbs*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr     = PetscMalloc(2*mbs*sizeof(PetscInt),&mask);CHKERRQ(ierr);
+  ierr     = PetscMemzero(mask,mbs*sizeof(PetscInt));CHKERRQ(ierr);
   masked   = mask + mbs;
   rowcount = 0; nzcount = 0;
   for (i=0; i<mbs; i++) {
@@ -1948,7 +1957,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer,const MatType type,Mat *A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqSBAIJ"
-PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
+PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   MatScalar      *aa=a->a,*v,*v1;

@@ -98,7 +98,7 @@ PetscErrorCode MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
   Mat_Spooles    *lu = (Mat_Spooles*)A->spptr; 
   PetscErrorCode ierr;
   int            size;
-  char           *s;
+  char           *s="";
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);

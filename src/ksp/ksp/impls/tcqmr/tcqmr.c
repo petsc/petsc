@@ -12,10 +12,10 @@
 #define __FUNCT__ "KSPSolve_TCQMR"
 static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
 {
-  PetscReal   rnorm0,rnorm,dp1,Gamma;
-  PetscScalar theta,ep,cl1,sl1,cl,sl,sprod,tau_n1,f; 
-  PetscScalar deltmp,rho,beta,eptmp,ta,s,c,tau_n,delta;
-  PetscScalar dp11,dp2,rhom1,alpha,tmp,zero = 0.0;
+  PetscReal      rnorm0,rnorm,dp1,Gamma;
+  PetscScalar    theta,ep,cl1,sl1,cl,sl,sprod,tau_n1,f; 
+  PetscScalar    deltmp,rho,beta,eptmp,ta,s,c,tau_n,delta;
+  PetscScalar    dp11,dp2,rhom1,alpha,tmp,zero = 0.0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

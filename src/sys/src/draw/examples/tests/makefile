@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/src/draw/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex9.c ex10.c
-EXAMPLESF       = ex4f.F ex5.F
+EXAMPLESF       = ex4f.F ex5f.F
 MANSEC          = Draw
 
 include ${PETSC_DIR}/bmake/common/base
@@ -30,9 +30,9 @@ ex4f: ex4f.o  chkopts
 	-${FLINKER} -o ex4f ex4f.o ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
 	${RM} -f ex4f.o
 
-ex5: ex5.o  chkopts
-	-${FLINKER} -o ex5 ex5.o ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
-	${RM} -f ex5.o
+ex5f: ex5f.o  chkopts
+	-${FLINKER} -o ex5f ex5f.o ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
+	${RM} -f ex5f.o
 
 ex6: ex6.o  chkopts
 	-${CLINKER} -o ex6 ex6.o  ${PETSC_SYS_LIB}
@@ -63,12 +63,14 @@ runex3:
 	-@${MPIRUN} -np 1 ex3
 runex4:
 	-@${MPIRUN} -np 1 ex4
+runex9:
+	-@${MPIRUN} -np 1 ex9
 runex10:
 	-@${MPIRUN} -np 1 ex10
 
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
-		  runex3 ex3.rm ex10.PETSc runex10 ex10.rm ex4.PETSc runex4 ex4.rm
-TESTEXAMPLES_3  = ex4f.PETSc ex4f.rm ex5.PETSc ex5.rm 
+		  runex3 ex3.rm ex10.PETSc runex10 ex10.rm ex4.PETSc runex4 ex4.rm ex9.PETSc runex9 ex9.rm
+TESTEXAMPLES_3  = ex4f.PETSc ex4f.rm ex5f.PETSc ex5f.rm 
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm 
 TESTEXAMPLES_13 = ex9.PETSc ex9.rm 
 

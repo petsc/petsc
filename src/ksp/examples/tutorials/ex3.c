@@ -22,8 +22,8 @@ T*/
 #include "petscksp.h"
 
 /* Declare user-defined routines */
-extern int FormElementStiffness(PetscReal,PetscScalar*);
-extern int FormElementRhs(PetscReal,PetscReal,PetscReal,PetscScalar*);
+extern PetscErrorCode FormElementStiffness(PetscReal,PetscScalar*);
+extern PetscErrorCode FormElementRhs(PetscReal,PetscReal,PetscReal,PetscScalar*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -113,7 +113,7 @@ int main(int argc,char **args)
   /* 
      Modify matrix and right-hand-side for Dirichlet boundary conditions
   */
-  ierr = PetscMalloc(4*m*sizeof(int),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(4*m*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   for (i=0; i<m+1; i++) {
     rows[i] = i; /* bottom */
     rows[3*m - 1 +i] = m*(m+1) + i; /* top */
@@ -197,7 +197,7 @@ int main(int argc,char **args)
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"
    /* element stiffness for Laplacian */
-int FormElementStiffness(PetscReal H,PetscScalar *Ke)
+PetscErrorCode FormElementStiffness(PetscReal H,PetscScalar *Ke)
 {
   PetscFunctionBegin;
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
@@ -209,7 +209,7 @@ int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormElementRhs"
-int FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
+PetscErrorCode FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 {
   PetscFunctionBegin;
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 

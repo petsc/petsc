@@ -123,12 +123,12 @@ class Configure(config.base.Configure):
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')])
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), os.path.join(dir, 'libmkl_def.a'), 'guide', 'pthread'])
       mkldir = dir
-      if self.framework.argDB['with-64-bit']:
+      if self.framework.argDB['with-64-bit-pointers']:
         mkldir = os.path.join(mkldir, 'lib', '64')
       else:
         mkldir = os.path.join(mkldir, 'lib', '32')
       yield ('User specified MKL Linux installation root', None, [os.path.join(mkldir, 'libmkl_lapack.a'), os.path.join(mkldir, 'libmkl_def.a'), 'guide', 'pthread'])
-      if self.framework.argDB['with-64-bit']:
+      if self.framework.argDB['with-64-bit-pointers']:
         mkldir = os.path.join(dir, 'ia64', 'lib')
       else:
         mkldir = os.path.join(dir, 'ia32', 'lib')
@@ -156,18 +156,19 @@ class Configure(config.base.Configure):
     # Try MacOSX location
     yield ('MacOSX BLAS/LAPACK library', None, os.path.join('/System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'))
     # Sun locations
-    yield ('Sun BLAS/LAPACK library', None, ['libsunperf.a','libsunmath.a'])
-    yield ('Sun BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a'])
+    yield ('Sun sunperf BLAS/LAPACK library', None, '-xlic_lib=sunperf')    
+    yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libsunmath.a'])
+    yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a'])
     # Try Microsoft Windows location
     MKL_Dir = os.path.join('/cygdrive', 'c', 'Program\\ Files', 'Intel', 'MKL')
-    if self.framework.argDB['with-64-bit']:
+    if self.framework.argDB['with-64-bit-pointers']:
       MKL_Dir = os.path.join(MKL_Dir, 'ia64', 'lib')
     else:
       MKL_Dir = os.path.join(MKL_Dir, 'ia32', 'lib')
     yield ('Microsoft Windows, Intel MKL library', None, os.path.join(MKL_Dir,'mkl_c_dll.lib'))
     # Try MKL61 on windows (copy code from above)
     MKL_Dir = os.path.join('/cygdrive', 'c', 'Program\\ Files', 'Intel', 'MKL61')
-    if self.framework.argDB['with-64-bit']:
+    if self.framework.argDB['with-64-bit-pointers']:
       MKL_Dir = os.path.join(MKL_Dir, 'ia64', 'lib')
     else:
       MKL_Dir = os.path.join(MKL_Dir, 'ia32', 'lib')

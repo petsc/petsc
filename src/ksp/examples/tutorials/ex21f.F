@@ -48,8 +48,10 @@
       KSP              ksp   
       PetscScalar      v,one,neg_one
       double precision norm,tol
-      integer          i,j,II,JJ,Istart,Iend,ierr,m,n
-      integer          its,flg,rank
+      PetscInt i,j,II,JJ,Istart,Iend,m,n,its,ione
+      PetscMPIInt rank
+      PetscTruth flg
+      PetscErrorCode ierr
 
 !  Note: Any user-defined Fortran routines MUST be declared as external.
 
@@ -69,6 +71,7 @@
       neg_one = -1.0
       m       = 8
       n       = 7
+      ione    = 1
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
@@ -108,22 +111,22 @@
         j = II - i*n  
         if (i.gt.0) then
           JJ = II - n
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,ione,II,ione,JJ,v,ADD_VALUES,ierr)
         endif
         if (i.lt.m-1) then
           JJ = II + n
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,ione,II,ione,JJ,v,ADD_VALUES,ierr)
         endif
         if (j.gt.0) then
           JJ = II - 1
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,ione,II,ione,JJ,v,ADD_VALUES,ierr)
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,ione,II,ione,JJ,v,ADD_VALUES,ierr)
         endif
         v = 4.0
-        call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
+        call  MatSetValues(A,ione,II,ione,II,v,ADD_VALUES,ierr)
  10   continue
 
 !  Assemble matrix, using the 2-step process:
@@ -277,7 +280,7 @@
 
       Vec     x
       Mat     pmat
-      integer ierr
+      PetscErrorCode ierr
 
 !  Common block to store data for user-provided preconditioner 
       common /mypcs/ jacobi,sor,work
@@ -330,7 +333,8 @@
 #include "include/finclude/petscpc.h"
 
       Vec     x,y
-      integer dummy,ierr
+      integer dummy
+      PetscErrorCode ierr
       PetscScalar  one
       
 !  Common block to store data for user-provided preconditioner 

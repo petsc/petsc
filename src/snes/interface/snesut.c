@@ -144,7 +144,7 @@ PetscErrorCode SNESDefaultMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(snes->comm);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3d SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -180,10 +180,10 @@ PetscErrorCode SNESRatioMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *du
 
   ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,&len);CHKERRQ(ierr);
   if (!its || !history || its > len) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3d SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
   } else {
     PetscReal ratio = fgnorm/history[its-1];
-    ierr = PetscViewerASCIIPrintf(viewer,"%3d SNES Function norm %14.12e %g \n",its,fgnorm,ratio);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e %g \n",its,fgnorm,ratio);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -460,7 +460,7 @@ PetscErrorCode SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNES_KSP_EW_Converged_Private"
-PetscErrorCode SNES_KSP_EW_Converged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
+PetscErrorCode SNES_KSP_EW_Converged_Private(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   SNES                snes = (SNES)ctx;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;

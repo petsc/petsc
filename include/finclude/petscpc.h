@@ -6,9 +6,9 @@
 #define __PETSCPC_H
 
 #define PC PetscFortranAddr
-#define PCSide integer
-#define PCASMType integer
-#define PCCompositeType integer
+#define PCSide PetscEnum
+#define PCASMType PetscEnum
+#define PCCompositeType PetscEnum
 #define PCType character*(80)
 !
 !  Various preconditioners
@@ -31,7 +31,6 @@
 #define PCMILU 'milu'
 #define PCNN 'nn'
 #define PCCHOLESKY 'cholesky'
-#define PCRAMG 'ramg'
 #define PCSAMG 'samg'
 #define PCPBJACOBI 'pbjacobi'
 #define PCMAT 'mat'
@@ -44,25 +43,25 @@
 !
 !  PCSide
 !
-      integer PC_LEFT,PC_RIGHT,PC_SYMMETRIC 
+      PetscEnum PC_LEFT,PC_RIGHT,PC_SYMMETRIC 
       parameter (PC_LEFT=0,PC_RIGHT=1,PC_SYMMETRIC=2)
 
-      integer USE_PRECONDITIONER_MATRIX,USE_TRUE_MATRIX
+      PetscEnum USE_PRECONDITIONER_MATRIX,USE_TRUE_MATRIX
       parameter (USE_PRECONDITIONER_MATRIX=0,USE_TRUE_MATRIX=1)
 
 !
 ! PCASMType
 !
-      integer PC_ASM_BASIC,PC_ASM_RESTRICT,PC_ASM_INTERPOLATE
-      integer PC_ASM_NONE
+      PetscEnum PC_ASM_BASIC,PC_ASM_RESTRICT,PC_ASM_INTERPOLATE
+      PetscEnum PC_ASM_NONE
 
       parameter (PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1)
       parameter (PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0)
 !
 ! PCCompositeType
 !
-      integer PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE
-      integer PC_COMPOSITE_SPECIAL
+      PetscEnum PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE
+      PetscEnum PC_COMPOSITE_SPECIAL
       parameter (PC_COMPOSITE_ADDITIVE=0,PC_COMPOSITE_MULTIPLICATIVE=1)
       parameter (PC_COMPOSITE_SPECIAL=2)
 !

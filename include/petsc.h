@@ -678,7 +678,7 @@ EXTERN PetscErrorCode   PetscGetResidentSetSize(PetscLogDouble *);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
-              PETSC_LONG =3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
+              PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
               PETSC_CHAR = 6,PETSC_LOGICAL = 7} PetscDataType;
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX
@@ -697,7 +697,7 @@ typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
 #define PETSC_FORTRANADDR PETSC_LONG
 
 EXTERN PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
-EXTERN PetscErrorCode PetscDataTypeGetSize(PetscDataType,int*);
+EXTERN PetscErrorCode PetscDataTypeGetSize(PetscDataType,PetscInt*);
 EXTERN PetscErrorCode PetscDataTypeGetName(PetscDataType,const char*[]);
 
 /*
@@ -706,7 +706,7 @@ EXTERN PetscErrorCode PetscDataTypeGetName(PetscDataType,const char*[]);
    functionality and/or error checking.
 */
 EXTERN PetscErrorCode   PetscMemcpy(void*,const void *,size_t);
-EXTERN PetscErrorCode   PetscBitMemcpy(void*,int,const void*,int,int,PetscDataType);
+EXTERN PetscErrorCode   PetscBitMemcpy(void*,PetscInt,const void*,PetscInt,PetscInt,PetscDataType);
 EXTERN PetscErrorCode   PetscMemmove(void*,void *,size_t);
 EXTERN PetscErrorCode   PetscMemzero(void*,size_t);
 EXTERN PetscErrorCode   PetscMemcmp(const void*,const void*,size_t,PetscTruth *);
@@ -819,7 +819,7 @@ EXTERN PetscErrorCode PetscObjectGetType(PetscObject,int *);
 EXTERN PetscErrorCode PetscObjectSetName(PetscObject,const char[]);
 EXTERN PetscErrorCode PetscObjectGetName(PetscObject,char*[]);
 EXTERN PetscErrorCode PetscObjectReference(PetscObject);
-EXTERN PetscErrorCode PetscObjectGetReference(PetscObject,int*);
+EXTERN PetscErrorCode PetscObjectGetReference(PetscObject,PetscInt*);
 EXTERN PetscErrorCode PetscObjectDereference(PetscObject);
 EXTERN PetscErrorCode PetscObjectGetNewTag(PetscObject,PetscMPIInt *);
 EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);

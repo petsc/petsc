@@ -7,12 +7,13 @@ static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for r
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A;
-  int         bs=3,m=4,n=6,i,j,val = 10,ierr,size,rank,rstart;
-  PetscScalar x[6][9],y[3][3],one=1.0;
-  int         row[2],col[3],eval;
-  IS          is;
-  PetscTruth  flg,testsbaij=PETSC_FALSE;
+  Mat            A;
+  PetscInt       bs=3,m=4,n=6,i,j,val = 10,row[2],col[3],eval,rstart;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscScalar    x[6][9],y[3][3],one=1.0;
+  IS             is;
+  PetscTruth     flg,testsbaij=PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

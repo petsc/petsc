@@ -27,17 +27,20 @@
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscda.h"
       DMMG             dmmg
-      integer          ierr
+      PetscErrorCode   ierr
       double precision norm
       DA               da
       external         ComputeRHS,ComputeJacobian
       Vec              x
+      PetscInt i1,i3
 
       call  PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL_INTEGER,dmmg,ierr)
-      call DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,3,            &
-     &                3,3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,               &
+      i3 = 3
+      i1 = 1
+      call DMMGCreate(PETSC_COMM_WORLD,i3,PETSC_NULL_INTEGER,dmmg,ierr)
+      call DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,            &
+     &            i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,i1,i1,               &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
      &                PETSC_NULL_INTEGER,da,ierr)  
       call DMMGSetDM(dmmg,da,ierr)
@@ -63,7 +66,8 @@
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscda.h"
 
-      integer      ierr,mx,my,mz
+      PetscErrorCode  ierr
+      PetscInt mx,my,mz
       PetscScalar  h
       Vec          b
       DMMG         dmmg
@@ -92,13 +96,15 @@
 
       DMMG         dmmg
       Mat          jac
-      integer      ierr
+      PetscErrorCode    ierr
 
       DA           da
-      integer      i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs
+      PetscInt    i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,i1,i7
       PetscScalar  v(7),Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy
       MatStencil   row(4),col(4,7)
 
+      i1 = 1
+      i7 = 7
       call DMMGGetDA(dmmg,da,ierr)
       call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
@@ -123,7 +129,7 @@
           if (i.eq.0 .or. j.eq.0 .or. k.eq.0 .or. i.eq.mx-1 .or.         &
      &         j.eq.my-1 .or. k.eq.mz-1) then
             v(1) = 2.d0*(HxHydHz + HxHzdHy + HyHzdHx)
-            call MatSetValuesStencil(jac,1,row,1,row,v,INSERT_VALUES,    &
+            call MatSetValuesStencil(jac,i1,row,i1,row,v,INSERT_VALUES,    &
      &                               ierr)
 	  else 
             v(1) = -HxHydHz
@@ -154,7 +160,8 @@
              col(MatStencil_i,7) = i 
              col(MatStencil_j,7) = j 
              col(MatStencil_k,7) = k+1
-	    call MatSetValuesStencil(jac,1,row,7,col,v,INSERT_VALUES,ierr)
+      call MatSetValuesStencil(jac,i1,row,i7,col,v,INSERT_VALUES,               &
+     &                               ierr)
           endif
  30       continue
  20     continue

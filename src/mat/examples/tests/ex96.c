@@ -17,7 +17,7 @@ static char help[] ="Tests sequential and parallel MatMatMult() and MatPtAP()\n\
 
 /* User-defined application contexts */
 typedef struct {
-   int        mx,my,mz;         /* number grid points in x, y and z direction */
+   PetscInt   mx,my,mz;         /* number grid points in x, y and z direction */
    Vec        localX,localF;    /* local vectors with ghost region */
    DA         da;
    Vec        x,b,r;            /* global vectors */
@@ -27,7 +27,7 @@ typedef struct {
    GridCtx     fine;
    GridCtx     coarse;
    KSP         ksp_coarse;
-   int         ratio;
+   PetscInt    ratio;
    Mat         I;               /* interpolation from coarse to fine */
 } AppCtx;
 
@@ -43,17 +43,18 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   AppCtx         user;                      
-  int            Nx=PETSC_DECIDE,Ny=PETSC_DECIDE,Nz=PETSC_DECIDE;
-  int            size,rank,m,n,M,N,i,nrows,*ia,*ja; 
-  PetscScalar   one = 1.0;
-  PetscReal     fill=2.0;
-  Mat           A,A_tmp,P,C;
-  PetscScalar   *array,none = -1.0,alpha;
-  PetscTruth    flg;
-  Vec          x,v1,v2;
-  PetscReal    norm,norm_tmp,norm_tmp1,tol=1.e-12;
-  PetscRandom  rdm;
-  PetscTruth   Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE;
+  PetscInt       Nx=PETSC_DECIDE,Ny=PETSC_DECIDE,Nz=PETSC_DECIDE;
+  PetscMPIInt    size,rank;
+  PetscInt       m,n,M,N,i,nrows,*ia,*ja; 
+  PetscScalar    one = 1.0;
+  PetscReal      fill=2.0;
+  Mat            A,A_tmp,P,C;
+  PetscScalar    *array,none = -1.0,alpha;
+  PetscTruth     flg;
+  Vec           x,v1,v2,v3,v4;
+  PetscReal     norm,norm_tmp,norm_tmp1,tol=1.e-12;
+  PetscRandom   rdm;
+  PetscTruth    Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-tol",&tol,PETSC_NULL);CHKERRQ(ierr);
@@ -197,7 +198,6 @@ int main(int argc,char **argv)
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   
-    Vec v3,v4;
     ierr = VecCreate(PETSC_COMM_WORLD,&v3);CHKERRQ(ierr);
     ierr = VecSetSizes(v3,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(v3);CHKERRQ(ierr);

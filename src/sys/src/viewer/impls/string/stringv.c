@@ -97,7 +97,7 @@ PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer,const char format[],.
 
 .seealso: PetscViewerDestroy(), PetscViewerStringSPrintf()
 @*/
-PetscErrorCode PetscViewerStringOpen(MPI_Comm comm,char string[],int len,PetscViewer *lab)
+PetscErrorCode PetscViewerStringOpen(MPI_Comm comm,char string[],PetscInt len,PetscViewer *lab)
 {
   PetscErrorCode ierr;
   
@@ -173,7 +173,7 @@ EXTERN_C_END
 
 .seealso: PetscViewerStringOpen()
 @*/
-PetscErrorCode PetscViewerStringSetString(PetscViewer viewer,char string[],int len)
+PetscErrorCode PetscViewerStringSetString(PetscViewer viewer,char string[],PetscInt len)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
   PetscErrorCode     ierr;

@@ -81,9 +81,6 @@ PETSC_HAVE_LUSOL = -DPETSC_HAVE_LUSOL
 #
 # Location of the AMG library
 #
-RAMG_LIB        = /home/petsc/software/ramg/libramg_linux_pgf90.a
-PETSC_HAVE_RAMG = -DPETSC_HAVE_RAMG
-#
 #  Location of SPAI;
 #
 SPAI_INCLUDE    = -I/home/petsc/software/spai_3.0/lib

@@ -262,7 +262,7 @@ runex19f:
 	   ${RM} -f ex19_1.tmp
 runex20f:
 	-@${MPIRUN} -np 1 ex20f > ex20_1.tmp 2>&1;\
-	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
+	   if (${DIFF} output/ex20f_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi;\
 	   ${RM} -f ex20_1.tmp vector.dat
 runex21:
@@ -312,13 +312,16 @@ runex30f:
 	   if (${DIFF} output/ex30f_1.out ex30f_1.tmp) then true; \
 	   else echo "Possible problem with ex30f_1, diffs above"; fi;\
 	   ${RM} -f ex30f_1.tmp
-
+runex32f:
+	-@${MPIRUN}  -np 1 ex32f > ex32f_1.tmp 2>&1;\
+	   if (${DIFF} output/ex32f_1.out ex32f_1.tmp) then true; \
+	   else echo "Possible problem with ex32f_1, diffs above"; fi;\
+	   ${RM} -f ex32f_1.tmp
 runex33:
 	-@${MPIRUN} -np 4 ex33 > ex33_1.tmp 2>&1;\
 	   if (${DIFF} output/ex33_1.out ex33_1.tmp) then true; \
 	   else echo "Possible problem with ex33_1, diffs above"; fi;\
 	   ${RM} -f ex33_1.tmp
-
 runex34:
 	-@${MPIRUN} -np 1  ex34 > ex34_1.tmp 2>&1;
 	-@cat ex34_1.tmp | sed s/e-00/e+00/g | awk '{ $$1=""; if (v!="") { if (v!=$$0) {print "  orig <" v "> \n  cached <" $$0 ">"}; v=""} else {v=$$0} }' > ex34_1.dif
@@ -340,7 +343,7 @@ TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm \
 		  ex23.PETSc runex23 ex23.rm ex24.PETSc runex24 ex24.rm \
 		  ex28.PETSc runex28 ex28.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_3  = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc ex19f.rm \
-	          ex20f.PETSc ex20f.rm ex30f.PETSc runex30f ex30f.rm
+	          ex20f.PETSc ex20f.rm ex30f.PETSc runex30f ex30f.rm ex32f.PETSc runex32f ex32f.rm
 TESTEXAMPLES_9  = ex19f.PETSc runex19f ex19f.rm 
 TESTEXAMPLES_4  = ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		  ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm \

@@ -10,11 +10,15 @@
 !  This example demonstrates writing an array to a file in binary format
 !  that may be read in by PETSc's VecLoad() routine.
 !
-       integer          n,ierr,i,fd,veccookie(1)
+       PetscInt n,i,ione
+       PetscErrorCode ierr
+       integer fd
+       PetscInt veccookie(1)
        PetscScalar      array(5)
        Vec              x
        PetscViewer           v
 
+       ione         = 1
        n            = 5
        veccookie(1) = 1211211 + 3
 
@@ -27,9 +31,10 @@
 !   Open binary file for writing
        call PetscBinaryOpen('testfile',PETSC_FILE_CREATE,fd,ierr)
 !   Write the Vec header
-       call PetscBinaryWrite(fd,veccookie,1,PETSC_INT,PETSC_FALSE,ierr)
+       call PetscBinaryWrite(fd,veccookie,ione,PETSC_INT,                    &
+     &                       PETSC_FALSE,ierr)
 !   Write the array length
-       call PetscBinaryWrite(fd,n,1,PETSC_INT,PETSC_FALSE,ierr)
+       call PetscBinaryWrite(fd,n,ione,PETSC_INT,PETSC_FALSE,ierr)
 !   Write the array
        call PetscBinaryWrite(fd,array,n,PETSC_DOUBLE,PETSC_FALSE,ierr)
 !   Close the file

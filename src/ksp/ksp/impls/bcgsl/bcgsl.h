@@ -8,7 +8,7 @@
 
 typedef struct {
 
-	int ell;			/* Number of search directions. */
+	PetscInt        ell;		/* Number of search directions. */
 	PetscReal	delta;		/* Threshold for recomputing exact residual norm */
 	PetscTruth	bConvex;	/* Compute Enhanced BiCGstab polynomial when set to PETWSC_TRUE */
 
@@ -21,8 +21,8 @@ typedef struct {
 	Vec	*vvU;
 
 	/* Workspace Arrays */
-	int	ldz;	
-	int	ldzc;
+	PetscInt	ldz;	
+	PetscInt	ldzc;
 	PetscScalar	*vY0c, *vYlc, *vYtc;
 	PetscScalar	*mZa, *mZb;
 } KSP_BiCGStabL;

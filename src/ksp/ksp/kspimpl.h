@@ -18,7 +18,7 @@ struct _KSPOps {
   PetscErrorCode (*setfromoptions)(KSP);
   PetscErrorCode (*publishoptions)(KSP);
   PetscErrorCode (*computeextremesingularvalues)(KSP,PetscReal*,PetscReal*);
-  PetscErrorCode (*computeeigenvalues)(KSP,int,PetscReal*,PetscReal*,int *);
+  PetscErrorCode (*computeeigenvalues)(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
   PetscErrorCode (*destroy)(KSP);
   PetscErrorCode (*view)(KSP,PetscViewer);
 };
@@ -34,7 +34,7 @@ struct _KSPOps {
 struct _p_KSP {
   PETSCHEADER(struct _KSPOps)
   /*------------------------- User parameters--------------------------*/
-  int max_it;                     /* maximum number of iterations */
+  PetscInt max_it;                     /* maximum number of iterations */
   PetscTruth    guess_zero,                  /* flag for whether initial guess is 0 */
                 calc_sings,                  /* calculate extreme Singular Values */
                 guess_knoll;                /* use initial guess of PCApply(ksp->B,b */
@@ -54,17 +54,17 @@ struct _p_KSP {
                                       never touched by the code, only 
                                       passed back to the user */ 
   PetscReal     *res_hist;            /* If !0 stores residual at iterations*/
-  int           res_hist_len;         /* current size of residual history array */
-  int           res_hist_max;         /* actual amount of data in residual_history */
+  PetscInt           res_hist_len;         /* current size of residual history array */
+  PetscInt           res_hist_max;         /* actual amount of data in residual_history */
   PetscTruth    res_hist_reset;       /* reset history to size zero for each new solve */
 
   /* --------User (or default) routines (most return -1 on error) --------*/
-  PetscErrorCode (*monitor[MAXKSPMONITORS])(KSP,int,PetscReal,void*); /* returns control to user after */
+  PetscErrorCode (*monitor[MAXKSPMONITORS])(KSP,PetscInt,PetscReal,void*); /* returns control to user after */
   PetscErrorCode (*monitordestroy[MAXKSPMONITORS])(void*);         /* */
   void *monitorcontext[MAXKSPMONITORS];                  /* residual calculation, allows user */
-  int  numbermonitors;                                   /* to, for instance, print residual norm, etc. */
+  PetscInt  numbermonitors;                                   /* to, for instance, print residual norm, etc. */
 
-  PetscErrorCode (*converged)(KSP,int,PetscReal,KSPConvergedReason*,void*);
+  PetscErrorCode (*converged)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
   void       *cnvP; 
 
   PC         pc;
@@ -73,12 +73,12 @@ struct _p_KSP {
                                    with a particular iterative solver */
 
   /* ----------------Default work-area management -------------------- */
-  int        nwork;
+  PetscInt        nwork;
   Vec        *work;
 
-  int        setupcalled;
+  PetscInt        setupcalled;
 
-  int        its;       /* number of iterations so far computed */
+  PetscInt        its;       /* number of iterations so far computed */
 
   PetscTruth transpose_solve;    /* solve transpose system instead */
 
@@ -100,7 +100,7 @@ struct _p_KSP {
      ksp->res_hist[ksp->res_hist_len++] = norm;}
 
 #define KSPMonitor(ksp,it,rnorm) \
-        { PetscErrorCode _ierr; int _i,_im = ksp->numbermonitors; \
+        { PetscErrorCode _ierr; PetscInt _i,_im = ksp->numbermonitors; \
           for (_i=0; _i<_im; _i++) {\
             _ierr = (*ksp->monitor[_i])(ksp,it,rnorm,ksp->monitorcontext[_i]);CHKERRQ(_ierr); \
 	  } \
@@ -109,8 +109,8 @@ struct _p_KSP {
 EXTERN PetscErrorCode KSPDefaultBuildSolution(KSP,Vec,Vec*);
 EXTERN PetscErrorCode KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 EXTERN PetscErrorCode KSPDefaultDestroy(KSP);
-EXTERN PetscErrorCode KSPGetVecs(KSP,int,Vec**);
-EXTERN PetscErrorCode KSPDefaultGetWork(KSP,int);
+EXTERN PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**);
+EXTERN PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);
 EXTERN PetscErrorCode KSPDefaultFreeWork(KSP);
 EXTERN PetscErrorCode KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,Vec);
 EXTERN PetscErrorCode KSPUnwindPreconditioner(KSP,Vec,Vec);

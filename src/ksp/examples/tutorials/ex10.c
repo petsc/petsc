@@ -109,7 +109,7 @@ int main(int argc,char **args)
     ierrp = VecLoad(fd,PETSC_NULL,&b);
     ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
     if (ierrp) { /* if file contains no RHS, then use a vector of all ones */
-      int         m;
+      PetscInt    m;
       PetscScalar one = 1.0;
       PetscLogInfo(0,"Using vector of ones for RHS\n");
       ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
@@ -164,7 +164,7 @@ int main(int argc,char **args)
        to match the block size of the system), then create a new padded vector.
     */
     { 
-      int         m,n,j,mvec,start,end,indx;
+      PetscInt    m,n,j,mvec,start,end,indx;
       Vec         tmp;
       PetscScalar *bold;
 
@@ -198,11 +198,12 @@ int main(int argc,char **args)
     if (partition) {
       MatPartitioning mpart;
       IS              mis,nis,isn,is;
-      int             *count,size,rank;
+      PetscInt        *count;
+      PetscMPIInt     rank,size;
       Mat             BB;
       ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(int),&count);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(PetscInt),&count);CHKERRQ(ierr);
       ierr = MatPartitioningCreate(PETSC_COMM_WORLD, &mpart);CHKERRQ(ierr);
       ierr = MatPartitioningSetAdjacency(mpart, A);CHKERRQ(ierr);
       /* ierr = MatPartitioningSetVertexWeights(mpart, weight);CHKERRQ(ierr); */
@@ -283,9 +284,9 @@ int main(int argc,char **args)
     */
     ierr = PetscOptionsHasName(PETSC_NULL,"-diagonal_scale",&diagonalscale);CHKERRQ(ierr);
     if (diagonalscale) {
-      PC     pc;
-      int    j,start,end,n;
-      Vec    scale;
+      PC       pc;
+      PetscInt j,start,end,n;
+      Vec      scale;
       
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
       ierr = VecGetSize(x,&n);CHKERRQ(ierr);
@@ -316,8 +317,9 @@ int main(int argc,char **args)
     ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
     if (trans) {
       ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);
+      ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     } else {
-      int  num_rhs=1;
+      PetscInt  num_rhs=1;
       ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsHasName(PETSC_NULL,"-cknorm",&cknorm);CHKERRQ(ierr);
       while ( num_rhs-- ) {
@@ -332,7 +334,7 @@ int main(int argc,char **args)
         }
         ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
         ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3d\n",its);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3D\n",its);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %A\n",norm);CHKERRQ(ierr);
       }
     } /* while ( num_rhs-- ) */
@@ -375,7 +377,7 @@ int main(int argc,char **args)
       ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,120,&viewer);CHKERRQ(ierr);
       ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
       ierr = PetscStrrchr(file[PreLoadIt],'/',&matrixname);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %2.1e %2.1e %2.1e %s \n",
                 matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,kspinfo);CHKERRQ(ierr);
 
       /*
@@ -383,7 +385,7 @@ int main(int argc,char **args)
       */
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
     }
 

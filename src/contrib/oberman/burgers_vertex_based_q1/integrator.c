@@ -9,13 +9,13 @@
 
 /* input is x, output the nonlinear part into f for a particulat element */
 /* Much of the code is dublicated from ComputeMatrix; the integral is different */
-int ComputeJacobian(AppElement *phi,double *uv,double *result)
+int ComputeJacobian(AppElement *phi,PetscReal *uv,PetscReal *result)
 {
   /* How can I test this??  */
   int i,j,k,ii ;
-  double u[4],v[4];
-  double dxint[4][4][4]; /* This is integral of phi_dx[i]*phi[j]*phi[k] */
-  double dyint[4][4][4]; /* This is integral of phi_dy[i]*phi[j]*phi[k] */
+  PetscReal u[4],v[4];
+  PetscReal dxint[4][4][4]; /* This is integral of phi_dx[i]*phi[j]*phi[k] */
+  PetscReal dyint[4][4][4]; /* This is integral of phi_dy[i]*phi[j]*phi[k] */
 
   /* copy array into more convenient form */
   for(i=0;i<4;i++){    u[i] = uv[2*i];     v[i] = uv[2*i+1];}
@@ -65,10 +65,10 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
 #undef __FUNCT__
 #define __FUNCT__ "ComputeNonlinear"
 /* input is x, output the nonlinear part into f for a particular element */
-int ComputeNonlinear(AppElement *phi,double *uvvals,double *result)
+int ComputeNonlinear(AppElement *phi,PetscReal *uvvals,PetscReal *result)
 { 
   int i,j,k,ii ;
-  double u[4],v[4];
+  PetscReal u[4],v[4];
 
   /* copy array into more convenient form */
   for(i=0;i<4;i++){  u[i] = uvvals[2*i]; v[i] = uvvals[2*i+1];  }
@@ -102,7 +102,7 @@ Put the result in index k.  Add all possibilities up to get contribution to k, a
    PetscFunctionReturn(0);
 }
 
-int ComputeRHS(DFP f,DFP g,AppElement *phi,double *integrals){
+int ComputeRHS(DFP f,DFP g,AppElement *phi,PetscReal *integrals){
   int i,j;
   /* need to go over each element, then each variable */
  for(i = 0; i < 4; i++){ /* loop over basis functions */
@@ -125,7 +125,7 @@ integral over (ref element) of
 this is evaluated by quadrature:
 = sum over gauss points, above evaluated at gauss pts
 */
-int ComputeMatrix(AppElement *phi,double *result){
+int ComputeMatrix(AppElement *phi,PetscReal *result){
    int i,j,k;
  
    /******* Messed the indexing up when I put in  the dx ***********/
@@ -159,7 +159,7 @@ PetscFunctionReturn(0);
 int AppCtxSetReferenceElement(AppCtx* appctx){
 
   AppElement *phi = &appctx->element;
-  double psi,psi_m,psi_p,psi_pp,psi_mp,psi_pm,psi_mm;
+  PetscReal psi,psi_m,psi_p,psi_pp,psi_mp,psi_pm,psi_mm;
 
 phi->dorhs = 0;
 
@@ -192,13 +192,13 @@ PetscFunctionReturn(0);
 }
 
 
-int SetLocalElement(AppElement *phi,double *coords)
+int SetLocalElement(AppElement *phi,PetscReal *coords)
 {
   int i,j,k;
-  double Dh[4][2][2],Dhinv[4][2][2]; 
-  double *dx = phi->dx,*dy = phi->dy;
-  double *detDh = phi->detDh;
-  double *x = phi->x,*y = phi->y;  /* image of gauss point */
+  PetscReal Dh[4][2][2],Dhinv[4][2][2]; 
+  PetscReal *dx = phi->dx,*dy = phi->dy;
+  PetscReal *detDh = phi->detDh;
+  PetscReal *x = phi->x,*y = phi->y;  /* image of gauss point */
 
   /* Could put in a flag to skip computing this when it is not needed */
 

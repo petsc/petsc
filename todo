@@ -1,4 +1,9 @@
 
+Before release
+   PetscInt long long
+
+   configure for all packages, with install option for as many as possible
+
 PETSc configure
    Get version for mpcc_r, mpCC_r, mpxlf_r, absoft F90, intel F90 (ifc and ifort), compaq F90
 
@@ -44,10 +49,15 @@ Vectors
    Check if indices passed into create are sorted (often they will be); if they are then 
    do much faster check to which processor owns them
 
+   Added VecScatterGetMerged() that tells if the update is done in the begin or end or middle
+and fix MatMultTranspose_xxx to handle both beginning and end. Currently gives wrong answer with beginning.
+
 Error handling
    Add troubleshooting entries and error messages with web address for common errors.
 
 PC/Mat
+
+  For seqaij and seqbaij handle many empty rows for optimization re Jris
 
   Fix all MatPartitioners to optionally turn on edge weights from the matrix values.
   Currently the are ignored for all partitioners except parmetis, where they are 

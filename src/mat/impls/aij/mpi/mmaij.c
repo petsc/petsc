@@ -24,7 +24,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   PetscFunctionBegin;
 
 #if defined (PETSC_USE_CTABLE)
-  /* use a table - Mark Adams (this has not been tested with "shift") */
+  /* use a table - Mark Adams */
   ierr = PetscTableCreate(aij->B->m,&gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<aij->B->m; i++) {
     for (j=0; j<B->ilen[i]; j++) {

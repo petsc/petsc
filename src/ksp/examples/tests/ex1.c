@@ -7,12 +7,13 @@ static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C; 
-  int         ierr,N = 0;
-  Vec         u,b,x;
-  KSP        ksp;
-  PetscScalar zero = 0.0,mone = -1.0;
-  PetscReal   norm;
+  Mat            C; 
+  PetscErrorCode ierr;
+  PetscInt       N = 0;
+  Vec            u,b,x;
+  KSP            ksp;
+  PetscScalar    zero = 0.0,mone = -1.0;
+  PetscReal      norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

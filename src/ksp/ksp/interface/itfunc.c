@@ -99,7 +99,7 @@ PetscErrorCode KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal
 
 .seealso: KSPSetComputeSingularValues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues()
 @*/
-PetscErrorCode KSPComputeEigenvalues(KSP ksp,int n,PetscReal *r,PetscReal *c,int *neig)
+PetscErrorCode KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal *r,PetscReal *c,PetscInt *neig)
 {
   PetscErrorCode ierr;
 
@@ -202,7 +202,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
     ierr = PCGetOperators(ksp->pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
     if (mat == pmat) {
       PetscScalar  *xx;
-      int          i,n;
+      PetscInt          i,n;
       PetscTruth   zeroflag = PETSC_FALSE;
 
       if (!ksp->diagonal) { /* allocate vector to hold diagonal */
@@ -339,11 +339,12 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     }
   }
 
+  /* KSPSetUp() scales the matrix if needed */
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
 
   ksp->transpose_solve = PETSC_FALSE;
-  ierr = PCPreSolve(ksp->pc,ksp);CHKERRQ(ierr);
+
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
     ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_rhs,ksp->vec_rhs);CHKERRQ(ierr);
@@ -355,8 +356,8 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
       ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
     }
   }
+  ierr = PCPreSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   if (ksp->guess_knoll) {
     ierr            = PCApply(ksp->pc,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
@@ -376,6 +377,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   }
 
   /* diagonal scale solution if called for */
+  ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
   if (ksp->dscale) {
     ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_sol,ksp->vec_sol);CHKERRQ(ierr);
     /* unscale right hand side and matrix */
@@ -390,7 +392,6 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
       ksp->dscalefix2 = PETSC_TRUE;
     }
   }
-  ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
@@ -440,7 +441,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
-    int       n,i;
+    PetscInt       n,i;
     PetscReal *r,*c;
     ierr = VecGetSize(ksp->vec_sol,&n);CHKERRQ(ierr);
     ierr = PetscMalloc(2*n*sizeof(PetscReal),&r);CHKERRQ(ierr);
@@ -532,7 +533,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 PetscErrorCode KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
-  PetscScalar   zero = 0.0;
+  PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -695,7 +696,7 @@ PetscErrorCode KSPGetPreconditionerSide(KSP ksp,PCSide *side)
 
 .seealso: KSPSetTolerances()
 @*/
-PetscErrorCode KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,PetscReal *dtol,int *maxits)
+PetscErrorCode KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,PetscReal *dtol,PetscInt *maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -745,7 +746,7 @@ PetscErrorCode KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,PetscR
 
 .seealso: KSPGetTolerances(), KSPDefaultConverged(), KSPSetConvergenceTest()
 @*/
-PetscErrorCode KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscReal dtol,int maxits)
+PetscErrorCode KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1109,7 +1110,7 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 
 .seealso: KSPDefaultMonitor(), KSPLGMonitorCreate(), KSPClearMonitor()
 @*/
-PetscErrorCode KSPSetMonitor(KSP ksp,PetscErrorCode (*monitor)(KSP,int,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
+PetscErrorCode KSPSetMonitor(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1208,7 +1209,7 @@ PetscErrorCode KSPGetMonitorContext(KSP ksp,void **ctx)
 .seealso: KSPGetResidualHistory()
 
 @*/
-PetscErrorCode KSPSetResidualHistory(KSP ksp,PetscReal a[],int na,PetscTruth reset)
+PetscErrorCode KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscTruth reset)
 {
   PetscErrorCode ierr;
 
@@ -1256,7 +1257,7 @@ $   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
 .seealso: KSPGetResidualHistory()
 
 @*/
-PetscErrorCode KSPGetResidualHistory(KSP ksp,PetscReal *a[],int *na)
+PetscErrorCode KSPGetResidualHistory(KSP ksp,PetscReal *a[],PetscInt *na)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1308,7 +1309,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
 .seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
 @*/
-PetscErrorCode KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,int,PetscReal,KSPConvergedReason*,void*),void *cctx)
+PetscErrorCode KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1424,8 +1425,8 @@ PetscErrorCode KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 PetscErrorCode KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
-  int flag = 0;
-  Vec w = v,tt = t;
+  PetscTruth     flag = PETSC_FALSE;
+  Vec            w = v,tt = t;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1434,7 +1435,7 @@ PetscErrorCode KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
     PetscLogObjectParent((PetscObject)ksp,w);
   }
   if (!tt) {
-    ierr = VecDuplicate(ksp->vec_rhs,&tt);CHKERRQ(ierr); flag = 1;
+    ierr = VecDuplicate(ksp->vec_rhs,&tt);CHKERRQ(ierr); flag = PETSC_TRUE;
     PetscLogObjectParent((PetscObject)ksp,tt);
   }
   ierr = (*ksp->ops->buildresidual)(ksp,tt,w,V);CHKERRQ(ierr);
@@ -1445,7 +1446,7 @@ PetscErrorCode KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetDiagonalScale"
 /*@
-   KSPSetDiagonalScale - Tells KSP to diagonally scale the system
+   KSPSetDiagonalScale - Tells KSP to symmetrically diagonally scale the system
      before solving. This actually CHANGES the matrix (and right hand side).
 
    Collective on KSP
@@ -1454,7 +1455,11 @@ PetscErrorCode KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 +  ksp - the KSP context
 -  scale - PETSC_TRUE or PETSC_FALSE
 
-   Notes:
+   Options Database Key:
++   -ksp_diagonal_scale - 
+-   -ksp_diagonal_scale_fix - scale the matrix back AFTER the solve 
+
+
     BE CAREFUL with this routine: it actually scales the matrix and right 
     hand side that define the system. After the system is solved the matrix
     and right hand side remain scaled.

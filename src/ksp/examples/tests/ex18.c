@@ -13,7 +13,8 @@ Input arguments are:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int            ierr,its,m,n,mvec;
+  PetscErrorCode ierr;
+  PetscInt       its,m,n,mvec;
   PetscLogDouble time1,time2,time;
   PetscReal      norm;
   PetscScalar    zero = 0.0,none = -1.0;
@@ -73,7 +74,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Time for solve = %5.2f seconds\n",time);CHKERRQ(ierr);
 

@@ -4,7 +4,8 @@
 !
 #include "finclude/petsc.h"
 
-      integer   ierr,rank,size,color
+      PetscErrorCode  ierr
+      PetscMPIInt rank,size,color
       MPI_Comm  newcomm
 
       call MPI_Init(ierr)

@@ -94,7 +94,7 @@ int InputGrid (AOData *aodata)
     double *coords, *p;
     ierr = PetscOptionsHasName(PETSC_NULL,"-dirichlet_on_left",&flg);CHKERRQ(ierr);
     ierr = PetscBTCreate(n_vertices,boundary);CHKERRQ(ierr);
-    ierr = PetscMalloc (2 * n_vertices * sizeof(double),&coors);CHKERRQ(ierr);
+    ierr = PetscMalloc (2 * n_vertices * sizeof(PetscReal),&coors);CHKERRQ(ierr);
     p = coords;
     if (!flg) { /* All the boundary is Dirichlet */
       for (i=0; i<=n_x; i++) {

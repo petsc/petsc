@@ -20,12 +20,13 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  MatType         mtype = MATMPIAIJ; /* matrix format */
+  const MatType   mtype = MATMPIAIJ; /* matrix format */
   Mat             A,B;               /* matrix */
   PetscViewer     fd;                /* viewer */
   char            file[PETSC_MAX_PATH_LEN];         /* input file name */
   PetscTruth      flg;
-  int             ierr,*nlocal,rank,size;
+  PetscInt        ierr,*nlocal;
+  PetscMPIInt     rank,size;
   MatPartitioning part;
   IS              is,isn;
 
@@ -62,7 +63,7 @@ int main(int argc,char **args)
   ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
   /* get new global number of each old global number */
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(int),&nlocal);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(PetscInt),&nlocal);CHKERRQ(ierr);
   /* get number of new vertices for each processor */
   ierr = ISPartitioningCount(is,nlocal);CHKERRQ(ierr); 
   ierr = ISDestroy(is);CHKERRQ(ierr);

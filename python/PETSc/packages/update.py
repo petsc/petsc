@@ -8,8 +8,9 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.updated  = 0
-    self.strmsg   = ''
+    self.updated      = 0
+    self.strmsg       = ''
+    self.hasdatafiles = 0
     return
 
   def __str__(self):
@@ -139,14 +140,18 @@ class Configure(config.base.Configure):
     '''Checks what DATAFILESPATH should be'''
     datafilespath = None
     if self.framework.argDB.has_key('DATAFILESPATH'):
-      datafilespath = self.framework.argDB['DATAFILESPATH']
-    elif os.path.isdir(os.path.join('/home','petsc','datafiles')):
+      if os.path.isdir(self.framework.argDB['DATAFILESPATH']) & os.path.isdir(os.path.join(self.framework.argDB['DATAFILESPATH'],'matrices')):
+        datafilespath = self.framework.argDB['DATAFILESPATH']
+      else:
+        raise RuntimeError('Path given with option -DATAFILES='+self.framework.argDB['DATAFILESPATH']+' is not a valid datafiles directory')
+    elif os.path.isdir(os.path.join('/home','petsc','datafiles')) & os.path.isdir(os.path.join('/home','petsc','datafiles','matrices')):
       datafilespath = os.path.join('/home','petsc','datafiles')
-    elif os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],'..','datafiles')):
+    elif os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],'..','datafiles')) &  os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],'..','datafiles','matrices')):
       datafilespath = os.path.join(self.framework.argDB['PETSC_DIR'],'..','datafiles')
       
     if datafilespath:
       self.framework.addSubstitution('SET_DATAFILESPATH', 'DATAFILESPATH ='+datafilespath)
+      self.hasdatafiles = 1
     else:
       self.framework.addSubstitution('SET_DATAFILESPATH', '')
     return

@@ -32,8 +32,8 @@
 PetscErrorCode AODataPartitionAndSetupLocal(AOData ao,const char keyname[],const char segmentname[],IS *iskey,IS *issegment,ISLocalToGlobalMapping *ltog)
 {
   ISLocalToGlobalMapping ltogkey;
-  PetscErrorCode ierr;
-  int rstart,rend;
+  PetscErrorCode         ierr;
+  PetscInt               rstart,rend;
   MPI_Comm               comm;
 
   PetscFunctionBegin;  

@@ -23,25 +23,26 @@ T*/
     in the linear solution process.
 */
 typedef struct {
-   Vec    x,b;      /* solution vector, right-hand-side vector */
-   Mat    A;         /* sparse matrix */
-   KSP   ksp;      /* linear solver context */
-   int    m,n;      /* grid dimensions */
+   Vec         x,b;      /* solution vector, right-hand-side vector */
+   Mat         A;         /* sparse matrix */
+   KSP         ksp;      /* linear solver context */
+   PetscInt    m,n;      /* grid dimensions */
    PetscScalar hx2,hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
 } UserCtx;
 
-extern int UserInitializeLinearSolver(int,int,UserCtx *);
-extern int UserFinalizeLinearSolver(UserCtx *);
-extern int UserDoLinearSolver(PetscScalar *,UserCtx *userctx,PetscScalar *b,PetscScalar *x);
+extern PetscErrorCode UserInitializeLinearSolver(PetscInt,PetscInt,UserCtx *);
+extern PetscErrorCode UserFinalizeLinearSolver(UserCtx *);
+extern PetscErrorCode UserDoLinearSolver(PetscScalar *,UserCtx *userctx,PetscScalar *b,PetscScalar *x);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  UserCtx     userctx;
-  int         ierr,m = 6,n = 7,t,tmax = 2,i,I,j,N;
-  PetscScalar *userx,*rho,*solution,*userb,hx,hy,x,y;
-  PetscReal   enorm;
+  UserCtx        userctx;
+  PetscErrorCode ierr;
+  PetscInt       m = 6,n = 7,t,tmax = 2,i,I,j,N;
+  PetscScalar    *userx,*rho,*solution,*userb,hx,hy,x,y;
+  PetscReal      enorm;
   /*
      Initialize the PETSc libraries
   */
@@ -119,7 +120,7 @@ int main(int argc,char **args)
       enorm += PetscRealPart(PetscConj(solution[i]-userx[i])*(solution[i]-userx[i]));
     }
     enorm *= PetscRealPart(hx*hy);
-    printf("m %d n %d error norm %g\n",m,n,enorm);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"m %D n %D error norm %g\n",m,n,enorm);CHKERRQ(ierr);
   }
 
   /*
@@ -139,9 +140,10 @@ int main(int argc,char **args)
 /* ------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "UserInitializedLinearSolve"
-int UserInitializeLinearSolver(int m,int n,UserCtx *userctx)
+PetscErrorCode UserInitializeLinearSolver(PetscInt m,PetscInt n,UserCtx *userctx)
 {
-  int N,ierr;
+  PetscErrorCode ierr;
+  PetscInt       N;
 
   /*
      Here we assume use of a grid of size m x n, with all points on the
@@ -185,12 +187,13 @@ int UserInitializeLinearSolver(int m,int n,UserCtx *userctx)
    style by columns. userb is a standard one-dimensional array.
 */ 
 /* ------------------------------------------------------------------------*/
-int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,PetscScalar *userx)
+PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,PetscScalar *userx)
 {
-  int         ierr,i,j,I,J,m = userctx->m,n = userctx->n;
-  Mat         A = userctx->A;
-  PC          pc;
-  PetscScalar v,hx2 = userctx->hx2,hy2 = userctx->hy2;
+  PetscErrorCode ierr;
+  PetscInt       i,j,I,J,m = userctx->m,n = userctx->n;
+  Mat            A = userctx->A;
+  PC             pc;
+  PetscScalar    v,hx2 = userctx->hx2,hy2 = userctx->hy2;
 
   /*
      This is not the most efficient way of generating the matrix 
@@ -295,7 +298,7 @@ int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,Pets
 /* ------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "UserFinalizeLinearSolve"
-int UserFinalizeLinearSolver(UserCtx *userctx)
+PetscErrorCode UserFinalizeLinearSolver(UserCtx *userctx)
 {
   PetscErrorCode ierr;
   /* 

@@ -17,13 +17,13 @@ static char help[] = "Solve the convection-diffusion equation. \n\n";
 #include "petscsys.h"
 #include "petscts.h"
 
-extern int Monitor(TS,int,PetscReal,Vec,void *);
-extern int Initial(Vec,void *);
+extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void *);
+extern PetscErrorCode Initial(Vec,void *);
 
 typedef struct 
 {
-  int 		m;	/* the number of mesh points in x-direction */
-  int 		n;      /* the number of mesh points in y-direction */
+  PetscInt 		m;	/* the number of mesh points in x-direction */
+  PetscInt 		n;      /* the number of mesh points in y-direction */
   PetscReal 	dx;     /* the grid space in x-direction */
   PetscReal     dy;     /* the grid space in y-direction */
   PetscReal     a;      /* the convection coefficient    */
@@ -31,10 +31,10 @@ typedef struct
 } Data;
 
 /* two temporal functions */
-extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int FormFunction(SNES,Vec,Vec,void*);
-extern int RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern int RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
 
 /* the initial function */
 PetscReal f_ini(PetscReal x,PetscReal y)
@@ -55,22 +55,24 @@ PetscReal f_ini(PetscReal x,PetscReal y)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           ierr,time_steps = 100,steps,size;
-  Vec           global;
-  PetscReal     dt,ftime;
-  TS            ts;
-  PetscViewer	viewfile;
-  MatStructure  A_structure;
-  Mat           A = 0;
-  TSProblemType tsproblem = TS_NONLINEAR; /* Need to be TS_NONLINEAR */
-  SNES  	snes;
-  Vec 		x;
-  Data		data;
-  int 		mn;
+  PetscErrorCode ierr;
+  PetscInt       time_steps = 100,steps;
+  PetscMPIInt    size;
+  Vec            global;
+  PetscReal      dt,ftime;
+  TS             ts;
+  PetscViewer	 viewfile;
+  MatStructure   A_structure;
+  Mat            A = 0;
+  TSProblemType  tsproblem = TS_NONLINEAR; /* Need to be TS_NONLINEAR */
+  SNES  	 snes;
+  Vec 		 x;
+  Data		 data;
+  PetscInt 	 mn;
 #if defined(PETSC_HAVE_PVODE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-  PC		pc;
-  PetscViewer   viewer;
-  char          pcinfo[120],tsinfo[120];
+  PC		 pc;
+  PetscViewer    viewer;
+  char           pcinfo[120],tsinfo[120];
 #endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -177,14 +179,14 @@ int main(int argc,char **argv)
 /* -------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "Initial"
-int Initial(Vec global,void *ctx)
+PetscErrorCode Initial(Vec global,void *ctx)
 {
-  Data        *data = (Data*)ctx;
-  int         m;
-  int         row,col;
-  PetscReal   x,y,dx,dy;
-  PetscScalar *localptr;
-  int         i,mybase,myend,ierr,locsize;
+  Data           *data = (Data*)ctx;
+  PetscInt       m,row,col;
+  PetscReal      x,y,dx,dy;
+  PetscScalar    *localptr;
+  PetscInt       i,mybase,myend,locsize;
+  PetscErrorCode ierr;
 
   /* make the local  copies of parameters */
   m = data->m;
@@ -212,20 +214,20 @@ int Initial(Vec global,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
-int Monitor(TS ts,int step,PetscReal time,Vec global,void *ctx)
+PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 {
-  VecScatter scatter;
-  IS from,to;
-  int i,n,*idx;
-  Vec tmp_vec;
-  int      ierr;
-  PetscScalar   *tmp;
+  VecScatter     scatter;
+  IS             from,to;
+  PetscInt       i,n,*idx;
+  Vec            tmp_vec;
+  PetscErrorCode ierr;
+  PetscScalar    *tmp;
 
   /* Get the size of the vector */
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(n*sizeof(int),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   for(i=0; i<n; i++) idx[i]=i;
  
   /* Create local sequential vectors */
@@ -249,20 +251,20 @@ int Monitor(TS ts,int step,PetscReal time,Vec global,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-int FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
+PetscErrorCode FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
 { 
-  Data        *data = (Data*)ptr;
-  int         m,n,mn;
-  PetscReal   dx,dy;
-  PetscReal   xc,xl,xr,yl,yr;
-  PetscReal   a,epsilon;
-  PetscScalar *inptr,*outptr;
-  int         i,j,len,ierr;
-
-  IS          from,to;
-  int         *idx;
-  VecScatter  scatter;
-  Vec         tmp_in,tmp_out;
+  Data           *data = (Data*)ptr;
+  PetscInt       m,n,mn;
+  PetscReal      dx,dy;
+  PetscReal      xc,xl,xr,yl,yr;
+  PetscReal      a,epsilon;
+  PetscScalar    *inptr,*outptr;
+  PetscInt       i,j,len;
+  PetscErrorCode ierr;
+  IS             from,to;
+  PetscInt       *idx;
+  VecScatter     scatter;
+  Vec            tmp_in,tmp_out;
 
   m = data->m;
   n = data->n;
@@ -282,7 +284,7 @@ int FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   ierr = VecGetSize(globalin,&len);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(len*sizeof(int),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc(len*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   for(i=0; i<len; i++) idx[i]=i;
  
   /* Create local sequential vectors */
@@ -352,13 +354,14 @@ int FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-int FormJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
 {  
-  Data *data = (Data*)ptr;
-  Mat A = *AA;
-  PetscScalar v[1],one = 1.0;
-  int idx[1],i,j,row,ierr;
-  int m,n,mn;
+  Data           *data = (Data*)ptr;
+  Mat            A = *AA;
+  PetscScalar    v[1],one = 1.0;
+  PetscInt       idx[1],i,j,row;
+  PetscErrorCode ierr;
+  PetscInt       m,n,mn;
 
   m = data->m;
   n = data->n;
@@ -410,14 +413,15 @@ int FormJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
-int RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
 {
-  Data        *data = (Data*)ptr;
-  Mat         A = *AA;
-  PetscScalar v[5];
-  int         idx[5],i,j,row,ierr;
-  int         m,n,mn;
-  PetscReal   dx,dy,a,epsilon,xc,xl,xr,yl,yr;
+  Data           *data = (Data*)ptr;
+  Mat            A = *AA;
+  PetscScalar    v[5];
+  PetscInt       idx[5],i,j,row;
+  PetscErrorCode ierr;
+  PetscInt       m,n,mn;
+  PetscReal      dx,dy,a,epsilon,xc,xl,xr,yl,yr;
 
   m = data->m;
   n = data->n;
@@ -498,7 +502,7 @@ int RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void 
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunction"
-int RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
+PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
   PetscErrorCode ierr;
   SNES snes = PETSC_NULL;

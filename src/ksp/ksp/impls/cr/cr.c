@@ -19,16 +19,15 @@ static PetscErrorCode KSPSetUp_CR(KSP ksp)
 static PetscErrorCode  KSPSolve_CR(KSP ksp)
 {
   PetscErrorCode ierr;
-  int          i = 0;
-  MatStructure pflag;
-  PetscReal    dp;
-  PetscScalar  ai, bi;
-  PetscScalar  apq,btop, bbot, mone = -1.0;
-  Vec          X,B,R,RT,P,AP,ART,Q;
-  Mat          Amat, Pmat;
+  PetscInt       i = 0;
+  MatStructure   pflag;
+  PetscReal      dp;
+  PetscScalar    ai, bi;
+  PetscScalar    apq,btop, bbot, mone = -1.0;
+  Vec            X,B,R,RT,P,AP,ART,Q;
+  Mat            Amat, Pmat;
 
   PetscFunctionBegin;
-
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
   R       = ksp->work[0];

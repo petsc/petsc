@@ -269,7 +269,7 @@ PetscErrorCode PCCompositeAddPC_Composite(PC pc,PCType type)
   }
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
   ierr = PCSetOptionsPrefix(link->pc,prefix);CHKERRQ(ierr);
-  sprintf(newprefix,"sub_%d_",cnt);
+  sprintf(newprefix,"sub_%d_",(int)cnt);
   ierr = PCAppendOptionsPrefix(link->pc,newprefix);CHKERRQ(ierr);
   /* type is set after prefix, because some methods may modify prefix, e.g. pcksp */
   ierr = PCSetType(link->pc,type);CHKERRQ(ierr);
@@ -424,9 +424,9 @@ PetscErrorCode PCCompositeAddPC(PC pc,PCType type)
 
 .seealso: PCCompositeAddPC()
 @*/
-PetscErrorCode PCCompositeGetPC(PC pc,int n,PC *subpc)
+PetscErrorCode PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 {
-  PetscErrorCode ierr,(*f)(PC,int,PC *);
+  PetscErrorCode ierr,(*f)(PC,PetscInt,PC *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);

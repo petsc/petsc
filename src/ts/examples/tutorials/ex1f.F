@@ -40,7 +40,7 @@
 !  entries indexed by param, lmx, lmy.
 !
       double precision user(3)
-      integer          param,lmx,lmy
+      PetscInt          param,lmx,lmy,i5
       parameter (param = 1,lmx = 2,lmy = 3)
 !
 !   User-defined routines
@@ -52,11 +52,13 @@
       TS                ts                
       Vec               x,r              
       Mat               J                 
-      integer           its               
-      integer           ierr,N,flg 
+      PetscInt           its,N,i1000                
+      PetscTruth flg
+      PetscErrorCode      ierr
       double precision  param_max,param_min,dt,tmax,zero
       double precision  ftime
 
+      i5 = 5
       param_max = 6.81
       param_min = 0
 
@@ -98,8 +100,8 @@
 !    the Performance chapter of the users manual for information on 
 !    preallocating memory in sparse matrices.
 !
-
-      call MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,PETSC_NULL_INTEGER,    &
+      i5 = 5
+      call MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,i5,PETSC_NULL_INTEGER,    &
      &     J,ierr) 
 
 !
@@ -156,8 +158,9 @@
 !      Set a large number of timesteps and final duration time
 !     to insure convergence to steady state.
 !
-      tmax = 1.e12
-      call TSSetDuration(ts,1000,tmax,ierr)
+      i1000 = 1000
+      tmax  = 1.e12
+      call TSSetDuration(ts,i1000,tmax,ierr)
 
 !
 !      Set any additional options from the options database. This
@@ -201,13 +204,14 @@
 #include "finclude/petscts.h"
       Vec              X
       double precision user(3)
-      integer          i,j,row,mx,my,ierr
+      PetscInt          i,j,row,mx,my
+      PetscErrorCode ierr
       PetscOffset      xidx
       double precision two,one,lambda
       double precision temp1,temp,hx,hy,hxdhy,hydhx
       double precision sc
       PetscScalar      xx(1)
-      integer          param,lmx,lmy
+      PetscInt          param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 
       two = 2.0
@@ -255,13 +259,14 @@
       double precision  t
       Vec               X,F
       double precision  user(3)
-      integer           ierr,i,j,row,mx,my
+      PetscErrorCode     ierr
+      PetscInt         i,j,row,mx,my
       PetscOffset       xidx,fidx
       double precision  two,one,lambda
       double precision  hx,hy,hxdhy,hydhx
       PetscScalar       ut,ub,ul,ur,u,uxx,uyy,sc
       PetscScalar       xx(1),ff(1)
-      integer           param,lmx,lmy
+      PetscInt           param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 
       two = 2.0
@@ -319,14 +324,17 @@
       MatStructure     flag
       double precision user(3),ctime
       Mat              jac
-      integer          i,j,row,mx,my,col(5),ierr
+      PetscInt          i,j,row,mx,my,col(5),i1,i5
+      PetscErrorCode    ierr
       PetscOffset      xidx
       PetscScalar      two,one,lambda,v(5),sc,xx(1)
       double precision hx,hy,hxdhy,hydhx
 
-      integer   param,lmx,lmy
+      PetscInt  param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 
+      i1 = 1
+      i5 = 5
       jac = B
       two = 2.0
       one = 1.0
@@ -351,7 +359,7 @@
           row = i - 1 + (j-1)*mx
           if (i .eq. 1 .or. j .eq. 1 .or.                               &
      &        i .eq. mx .or. j .eq. my) then
-            call MatSetValues(jac,1,row,1,row,one,INSERT_VALUES,ierr) 
+            call MatSetValues(jac,i1,row,i1,row,one,INSERT_VALUES,ierr) 
           else
             v(1)   = hxdhy 
             col(1) = row - mx
@@ -363,7 +371,7 @@
             col(4) = row + 1
             v(5)   = hxdhy 
             col(5) = row + mx
-            call MatSetValues(jac,1,row,5,col,v,INSERT_VALUES,ierr) 
+            call MatSetValues(jac,i1,row,i5,col,v,INSERT_VALUES,ierr) 
           endif
  20     continue
  10   continue

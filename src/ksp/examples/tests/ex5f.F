@@ -14,7 +14,8 @@
 
       Mat         A
       Vec         x,y
-      integer     m,ierr
+      PetscInt  m
+      PetscErrorCode ierr
       KSP        ksp
       external    mymatmult
       PetscScalar one
@@ -54,11 +55,12 @@
      
       Mat A
       Vec x,y
-      integer m,ierr
+      PetscInt m
+      PetscErrorCode ierr
  
       m = 10
 
-      call VecCopy(y,x,ierr)
+      call VecCopy(x,y,ierr)
 
       return 
       end

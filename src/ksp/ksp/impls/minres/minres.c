@@ -26,15 +26,15 @@ PetscErrorCode KSPSetUp_MINRES(KSP ksp)
 PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 {
   PetscErrorCode ierr;
-  int i;
-  PetscScalar  alpha,malpha,beta,mbeta,ibeta,betaold,eta,c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
-  PetscScalar  rho0,rho1,irho1,rho2,mrho2,rho3,mrho3,mone = -1.0,zero = 0.0,dp = 0.0;
-  PetscReal    np;
-  Vec          X,B,R,Z,U,V,W,UOLD,VOLD,WOLD,WOOLD;
-  Mat          Amat,Pmat;
-  MatStructure pflag;
-  KSP_MINRES   *minres = (KSP_MINRES*)ksp->data;
-  PetscTruth   diagonalscale;
+  PetscInt       i;
+  PetscScalar    alpha,malpha,beta,mbeta,ibeta,betaold,eta,c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
+  PetscScalar    rho0,rho1,irho1,rho2,mrho2,rho3,mrho3,mone = -1.0,zero = 0.0,dp = 0.0;
+  PetscReal      np;
+  Vec            X,B,R,Z,U,V,W,UOLD,VOLD,WOLD,WOOLD;
+  Mat            Amat,Pmat;
+  MatStructure   pflag;
+  KSP_MINRES     *minres = (KSP_MINRES*)ksp->data;
+  PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -214,7 +214,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_MINRES"
 PetscErrorCode KSPCreate_MINRES(KSP ksp)
 {
-  KSP_MINRES *minres;
+  KSP_MINRES     *minres;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -234,7 +234,6 @@ PetscErrorCode KSPCreate_MINRES(KSP ksp)
   ksp->ops->setfromoptions       = 0;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

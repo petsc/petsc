@@ -58,9 +58,12 @@ runex1f:
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
 
+runex2f:
+	-@${MPIRUN} -np 1 ex2f 
+
 TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex6.PETSc ex6.rm
 TESTEXAMPLES_2  = 
-TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
 TESTEXAMPLES_4  =  
 TESTEXAMPLES_13 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
 		  ex5.PETSc ex5.rm
