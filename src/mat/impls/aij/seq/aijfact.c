@@ -440,14 +440,11 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   IS           isrow = b->row,isicol = b->icol;
   int          *r,*ic,ierr,i,j,n = A->m,*ai = b->i,*aj = b->j;
   int          *ajtmpold,*ajtmp,nz,row,*ics,shift = a->indexshift;
-  int          *diag_offset = b->diag,diag;
-  int          *pj,ndamp = 0;
+  int          *diag_offset = b->diag,diag,*pj,ndamp = 0, nshift=0;
   PetscScalar  *rtmp,*v,*pc,multiplier,*pv,*rtmps;
-  PetscReal    damping = b->lu_damping, zeropivot = b->lu_zeropivot,rs;
-  PetscTruth   damp;
-  PetscReal row_shift,shift_fraction,shift_amount,
-    shift_lo=0., shift_hi=1., shift_top=0.;
-  PetscTruth lushift; int nshift=0;
+  PetscReal    damping = b->lu_damping, zeropivot = b->lu_zeropivot,rs,d;
+  PetscReal    row_shift,shift_fraction,shift_amount,shift_lo=0., shift_hi=1., shift_top=0.;
+  PetscTruth   damp,lushift;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -456,14 +453,15 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   ierr  = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   rtmps = rtmp + shift; ics = ic + shift;
 
+  if (!a->diag) {
+    ierr = MatMarkDiagonal_SeqAIJ(A); CHKERRQ(ierr);
+  }
+
   if (b->lu_shift) { /* set max shift */
-    int *aai = a->i,*ddiag;
+    int *aai = a->i,*ddiag = a->diag;
     shift_top = 0;
-    if (!a->diag) {
-      ierr = MatMarkDiagonal_SeqAIJ(A); CHKERRQ(ierr);}
-    ddiag = a->diag;
     for (i=0; i<n; i++) {
-      PetscReal d = PetscAbsScalar((a->a)[ddiag[i]+shift]);
+      d = PetscAbsScalar((a->a)[ddiag[i]+shift]);
       /* calculate amt of shift needed for this row */
       if (d<0) row_shift = 0; else row_shift = -2*PetscAbsScalar(d);
       v = a->a+aai[i]+shift;
@@ -475,7 +473,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 
   shift_fraction = 0; shift_amount = 0;
   do {
-    damp = PETSC_FALSE;
+    damp    = PETSC_FALSE;
     lushift = PETSC_FALSE;
     for (i=0; i<n; i++) {
       nz    = ai[i+1] - ai[i];
@@ -521,14 +519,16 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 #define MAX_NSHIFT 5
       if (PetscRealPart(pv[diag]) < zeropivot*rs && b->lu_shift) {
 	if (nshift>MAX_NSHIFT) {
-	  SETERRQ(1,"This can't happen"); /* actually, it just might */
+	  SETERRQ(1,"Unable to determine shift to enforce positive definite preconditioner");
 	} else if (nshift==MAX_NSHIFT) {
 	  shift_fraction = shift_hi;
 	} else {
 	  shift_lo = shift_fraction; shift_fraction = (shift_hi+shift_lo)/2.;
 	}
 	shift_amount = shift_fraction * shift_top;
-	lushift = PETSC_TRUE; nshift++; break;
+	lushift      = PETSC_TRUE;
+        nshift++; 
+        break;
       }
       if (PetscAbsScalar(pv[diag]) < zeropivot*rs) {
         if (damping) {
@@ -546,9 +546,11 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
        * if not already shifting up & shifting & started shifting & can refine,
        * then try lower shift
        */
-      shift_hi = shift_fraction; shift_fraction = (shift_hi+shift_lo)/2.;
-      shift_amount = shift_fraction * shift_top;
-      lushift = PETSC_TRUE; nshift++;
+      shift_hi       = shift_fraction;
+      shift_fraction = (shift_hi+shift_lo)/2.;
+      shift_amount   = shift_fraction * shift_top;
+      lushift        = PETSC_TRUE;
+      nshift++;
     }
   } while (damp || lushift);
 
