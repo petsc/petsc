@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = 
-DOCS     = manualpages/sec/bop.* tex/manual/manual.tex \
+DOCS     = manualpages/sec/header_* tex/manual/manual.tex \
 	   tex/manual/part1.tex tex/manual/part2.tex tex/manual/intro.tex \
 	   tex/manual/abstract.tex tex/manual/acknowl.tex tex/petsc.bib
 OBJSC    =

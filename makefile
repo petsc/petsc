@@ -454,7 +454,7 @@ checkbadfortranstubs:
 #
 # Automatically generates PETSc exercises in html from the tutorial examples.
 #
-# The introduction for each section is obtained from docs/manualpages/bop.${MANSEC} is under RCS and may be edited
+# The introduction for each section is obtained from docs/manualpages/header_${MANSEC} is under RCS and may be edited
 #  (used also in introductions to the manual pages)
 # The overall introduction is in docs/exercises/introduction.html and is under RCS and may be edited
 # The list of exercises is from TUTORIALS in each directory's makefile

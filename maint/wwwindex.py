@@ -297,7 +297,7 @@ def main():
       for dirname in mandirs:
             outfilename  = dirname + '/index.html'
             dname,secname  = posixpath.split(dirname)
-            headfilename = PETSC_DIR + '/docs/manualpages/sec/bop.' + secname
+            headfilename = PETSC_DIR + '/docs/manualpages/sec/header_' + secname
             table        = createtable(dirname,levels,secname)
             if not table: continue
             singlelist   = addtolist(dirname,singlelist)
