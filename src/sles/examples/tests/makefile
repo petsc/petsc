@@ -12,7 +12,6 @@ OBJSF     =
 LIBBASE   = libpetscsles
 EXAMPLES  = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10
 EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c
-SYSLIB    = $(PETSC_LIB) -lm 
 LINCLUDE  = $(SOURCEH)
 
 runexamples:
@@ -135,43 +134,43 @@ runexamples:
            $(RM) -f ex8_2.tmp
 
 ex1: ex1.o 
-	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)
+	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) ex1.o
 
 ex2: ex2.o 
-	-$(CLINKER) -o ex2 ex2.o  $(SYSLIB)
+	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
 	$(RM) ex2.o
 
 ex3: ex3.o 
-	-$(CLINKER) -o ex3 ex3.o  $(SYSLIB)
+	-$(CLINKER) -o ex3 ex3.o  $(PETSC_LIB)
 	$(RM) ex3.o
 
 ex4: ex4.o 
-	-$(CLINKER) -o ex4 ex4.o  $(SYSLIB)
+	-$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
 	$(RM) ex4.o
 
 ex5: ex5.o 
-	-$(CLINKER) -o ex5 ex5.o  $(SYSLIB)
+	-$(CLINKER) -o ex5 ex5.o  $(PETSC_LIB)
 	$(RM) ex5.o
 
 ex6: ex6.o 
-	-$(CLINKER) -o ex6 ex6.o  $(SYSLIB)
+	-$(CLINKER) -o ex6 ex6.o  $(PETSC_LIB)
 	$(RM) ex6.o
 
 ex7: ex7.o 
-	-$(CLINKER) -o ex7 ex7.o  $(SYSLIB)
+	-$(CLINKER) -o ex7 ex7.o  $(PETSC_LIB)
 	$(RM) ex7.o
 
 ex8: ex8.o 
-	-$(CLINKER) -o ex8 ex8.o  $(SYSLIB)
+	-$(CLINKER) -o ex8 ex8.o  $(PETSC_LIB)
 	$(RM) ex8.o
 
 ex9: ex9.o 
-	-$(CLINKER) -o ex9 ex9.o  $(SYSLIB)
+	-$(CLINKER) -o ex9 ex9.o  $(PETSC_LIB)
 	$(RM) ex9.o
 
 ex10: ex10.o 
-	-$(CLINKER) -o ex10 ex10.o  $(SYSLIB)
+	-$(CLINKER) -o ex10 ex10.o  $(PETSC_LIB)
 	$(RM) ex10.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
