@@ -3,7 +3,7 @@
 #     See the file bmake/variables.defs for a complete explanation of all these fields
 #
 WIN32FE            = ${PETSC_DIR}/bin/win32fe/win32fe.exe
-AR		   = ${WIN32FE} tlib -C -P256
+AR		   = ${WIN32FE} tlib -C -P512
 AR_FLAGS	   = -u
 LIB_SUFFIX         = lib
 RM		   = rm -f
