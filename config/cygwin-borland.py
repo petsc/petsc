@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-import os
-import sys
 
+configure_options = [
+  # path set to $PETSC_DIR/bin/win32fe
+  '--with-vendor-compilers=borland',
+  '--with-fc=0',
+  '--with-ranlib=true',
+  '--with-blas-lapack-dir=/cygdrive/c/software/f2cblaslapack/win32_borland',
+  '--with-mpi=0'
+  ]
+  
 if __name__ == '__main__':
-    import configure
+  import configure
+  configure.petsc_configure(configure_options)
 
-    configure_options = [
-    # path set to $PETSC_DIR/bin/win32fe
-    '--with-vendor-compilers=borland',
-    '--with-fc=0',
-    '--with-ranlib=true',
-    '--with-blas-lapack-dir=/cygdrive/c/software/f2cblaslapack/win32_borland',
-    '--with-mpi=0'
-    ]
-
-    configure.petsc_configure(configure_options)
+# Extra options used for testing locally
+test_options = []
