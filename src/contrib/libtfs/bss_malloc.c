@@ -1,4 +1,4 @@
-/*$Id: bss_malloc.c,v 1.3 2001/04/12 20:59:29 balay Exp balay $*/
+/*$Id: bss_malloc.c,v 1.4 2001/04/12 21:01:18 balay Exp balay $*/
 /********************************bss_malloc.c**********************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -22,7 +22,6 @@ File Description:
 *********************************bss_malloc.c*********************************/
 #include <stdio.h>
 #include <stdlib.h>
-#include "petsc.h"
 
 #if   defined NXSRC
 #ifndef DELTA

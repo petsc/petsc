@@ -1,4 +1,4 @@
-/*$Id: xyt.c,v 1.4 2001/04/11 13:30:39 balay Exp balay $*/
+/*$Id: xyt.c,v 1.5 2001/04/12 15:34:58 balay Exp balay $*/
 /*************************************xyt.c************************************
 Module Name: xyt
 Module Info:
@@ -1233,6 +1233,7 @@ det_separators(xyt_ADT xyt_handle)
   rvec_zero(lhs,m);
   rvec_set(lhs,1.0,n);
   gs_gop_hc(gs_handle,lhs,"+\0",level);
+  error_msg_warning("done first gs_gop_hc\n");
   rvec_zero(rsum,2);
   for (ct=i=0;i<n;i++)
     {
@@ -1249,7 +1250,7 @@ det_separators(xyt_ADT xyt_handle)
   rsum[0]+=0.1;
   rsum[1]+=0.1;
 
-  /*  
+  /*
       if (!my_id)
       {
       printf("xyt n unique = %d (%g)\n",(int) rsum[0], rsum[0]);
