@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.24 2001/01/16 18:20:03 balay Exp bsmith $*/
+/*$Id: damg.c,v 1.25 2001/01/17 22:25:50 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -266,7 +266,7 @@ int DMMGSetUp(DMMG *dmmg)
     ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->b);CHKERRQ(ierr);
     ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->r);CHKERRQ(ierr);
     if (!dmmg[i]->matrixfree) {
-      ierr = DMGetColoring(dmmg[i]->dm,PETSC_NULL,&dmmg[i]->J);CHKERRQ(ierr);
+      ierr = DMGetColoring(dmmg[i]->dm,MATMPIAIJ,PETSC_NULL,&dmmg[i]->J);CHKERRQ(ierr);
     } 
     dmmg[i]->B = dmmg[i]->J;
   }
@@ -396,6 +396,14 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
         ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
         ierr = PetscViewerASCIISetTab(ascii,1+dmmg[0]->nlevels-i);CHKERRQ(ierr);
         ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      }
+      /* If using a matrix free multiply and did not provide an explicit matrix to build
+         the preconditioner then must use no preconditioner 
+      */
+      if (dmmg[i]->matrixfree && dmmg[i]->J == dmmg[i]->B) {
+        PC lpc;
+        ierr = SLESGetPC(lsles,&lpc);CHKERRQ(ierr);
+        ierr = PCSetType(lpc,PCNONE);CHKERRQ(ierr);
       }
     }
 

@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.105 2001/01/22 23:07:03 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.106 2001/01/23 17:24:24 bsmith Exp balay $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
@@ -100,7 +100,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
 
     /* Line search */
     neP->step = 1.0;
-    ierr = (*neP->LineSearch)(snes,X,G,S,W,f,&(neP->step),&tnorm,&(neP->line));
+    ierr = (*neP->LineSearch)(snes,X,G,S,W,f,&(neP->step),&tnorm,&(neP->line));CHKERRQ(ierr);
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->norm = tnorm;
     ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);

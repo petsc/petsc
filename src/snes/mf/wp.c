@@ -1,4 +1,4 @@
-/*$Id: wp.c,v 1.29 2001/01/15 21:47:52 bsmith Exp balay $*/
+/*$Id: wp.c,v 1.30 2001/01/16 18:20:09 balay Exp balay $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code
@@ -122,7 +122,7 @@ static int MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
   MatSNESMFWP *hctx = (MatSNESMFWP*)ctx->hctx;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Walker-Pernice options");
+  ierr = PetscOptionsHead("Walker-Pernice options");CHKERRQ(ierr);
     ierr = PetscOptionsLogical("-snes_mf_compute_norma","Compute the norm of a","MatSNESMFWPSetComputeNormA",
                           hctx->computenorma,&hctx->computenorma,0);CHKERRQ(ierr);
     ierr = PetscOptionsLogical("-snes_mf_compute_normu","Compute the norm of u","MatSNESMFWPSetComputeNormU",

@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.156 2001/01/19 23:22:22 balay Exp bsmith $*/
+/*$Id: da2.c,v 1.157 2001/03/09 19:18:14 balay Exp balay $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -895,7 +895,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     }
     if (n8 >= 0) { /* right above */
       x_t = lx[n8 % m]*dof;
-      y_t = ly[(n8/m)];
+      /* y_t = ly[(n8/m)]; */
       s_t = bases[n8] + (i-1)*x_t;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }

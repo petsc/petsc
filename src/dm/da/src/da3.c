@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.126 2001/01/18 17:37:47 bsmith Exp balay $*/
+/*$Id: da3.c,v 1.127 2001/01/19 23:22:22 balay Exp balay $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -473,7 +473,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
 
   /* global to local must include ghost points */
   if (stencil_type == DA_STENCIL_BOX) {
-    ierr = ISCreateStride(comm,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),0,1,&to); 
+    ierr = ISCreateStride(comm,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),0,1,&to);CHKERRQ(ierr);
   } else {
     /* This is way ugly! We need to list the funny cross type region */
     /* the bottom chunck */
@@ -1693,7 +1693,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n26 >= 0) { /* right above */
         x_t = lx[n26 % m]*dof;
         y_t = ly[(n26 % (m*n))/m];
-        z_t = lz[n26 / (m*n)];
+        /* z_t = lz[n26 / (m*n)]; */
         s_t = bases[n26] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
