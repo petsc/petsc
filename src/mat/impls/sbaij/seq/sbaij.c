@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.22 2000/09/11 21:29:30 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.23 2000/09/13 20:05:46 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1397,9 +1397,9 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
     if (nz == PETSC_DEFAULT) nz = 5;
     else if (nz <= 0)        nz = 1;
     for (i=0; i<mbs; i++) {
-      b->imax[i] = (nz+1)/2; 
+      b->imax[i] = (nz+1)/2; /* s_imax */
     }
-    nz = nz*mbs; 
+    nz = nz*mbs; /* total nz */
   } else {
     nz = 0;
     for (i=0; i<mbs; i++) {b->imax[i] = (nnz[i]+1)/2; nz += nnz[i];}
@@ -1428,7 +1428,7 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   
   b->bs               = bs;
   b->bs2              = bs2;
-  /* b->mbs              = mbs; redundant */ 
+  b->mbs              = mbs; /* redundant? */ 
   b->s_nz               = 0;
   b->s_maxnz            = s_nz*bs2;
   b->sorted           = PETSC_FALSE;
@@ -1440,12 +1440,12 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   b->spptr            = 0;
   B->info.nz_unneeded = (PetscReal)b->s_maxnz;
   b->keepzeroedrows   = PETSC_FALSE;
-  /*
+  
   b->inew             = 0;
   b->jnew             = 0;
   b->anew             = 0;
   b->a2anew           = 0;
-  */
+  
   *A = B;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatPrintHelp(B);CHKERRQ(ierr); }
@@ -1459,7 +1459,8 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C",
                                      "MatSeqSBAIJSetColumnIndices_SeqSBAIJ",
                                      (void*)MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
-   /* printf("In MatCreateSeqSBAIJ, \n");                                   
+  /* printf("In MatCreateSeqSBAIJ, s_nz = %d, bs2=%d, m=%d, mbs=%d \n", s_nz,bs2,m,mbs); */ 
+   /*
    for (i=0; i<mbs; i++){
      printf("imax[%d]= %d, ilen[%d]= %d\n", i,b->imax[i], i,b->ilen[i]);
    }       */                           
