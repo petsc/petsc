@@ -9,8 +9,8 @@
 PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_MPIAdj        *a = (Mat_MPIAdj*)A->data;
-  PetscErrorCode ierr;
-  int i,j,m = A->m;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,m = A->m;
   char              *name;
   PetscViewerFormat format;
 
@@ -41,7 +41,7 @@ PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
 PetscErrorCode MatView_MPIAdj(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ PetscErrorCode MatView_MPIAdj(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatDestroy_MPIAdj"
 PetscErrorCode MatDestroy_MPIAdj(Mat mat)
 {
-  Mat_MPIAdj *a = (Mat_MPIAdj*)mat->data;
+  Mat_MPIAdj     *a = (Mat_MPIAdj*)mat->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -114,13 +114,13 @@ PetscErrorCode MatSetOption_MPIAdj(Mat A,MatOption op)
 #define __FUNCT__ "MatMarkDiagonal_MPIAdj"
 PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
 {
-  Mat_MPIAdj *a = (Mat_MPIAdj*)A->data; 
+  Mat_MPIAdj     *a = (Mat_MPIAdj*)A->data; 
   PetscErrorCode ierr;
-  int        i,j,*diag,m = A->m;
+  PetscInt       i,j,*diag,m = A->m;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc((m+1)*sizeof(int),&diag);CHKERRQ(ierr);
-  PetscLogObjectMemory(A,(m+1)*sizeof(int));
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&diag);CHKERRQ(ierr);
+  PetscLogObjectMemory(A,(m+1)*sizeof(PetscInt));
   for (i=0; i<A->m; i++) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
       if (a->j[j] == i) {
@@ -135,10 +135,10 @@ PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIAdj"
-PetscErrorCode MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar **v)
+PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
-  int        *itmp;
+  PetscInt   *itmp;
 
   PetscFunctionBegin;
   row -= a->rstart;
@@ -159,7 +159,7 @@ PetscErrorCode MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_MPIAdj"
-PetscErrorCode MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar **v)
+PetscErrorCode MatRestoreRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -167,7 +167,7 @@ PetscErrorCode MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetBlockSize_MPIAdj"
-PetscErrorCode MatGetBlockSize_MPIAdj(Mat A,int *bs)
+PetscErrorCode MatGetBlockSize_MPIAdj(Mat A,PetscInt *bs)
 {
   PetscFunctionBegin;
   *bs = 1;
@@ -179,9 +179,9 @@ PetscErrorCode MatGetBlockSize_MPIAdj(Mat A,int *bs)
 #define __FUNCT__ "MatEqual_MPIAdj"
 PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
 {
-  Mat_MPIAdj *a = (Mat_MPIAdj *)A->data,*b = (Mat_MPIAdj *)B->data;
+  Mat_MPIAdj     *a = (Mat_MPIAdj *)A->data,*b = (Mat_MPIAdj *)B->data;
   PetscErrorCode ierr;
-  PetscTruth  flag;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   /* If the  matrix dimensions are not equal,or no of nonzeros */
@@ -190,10 +190,10 @@ PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
   }
   
   /* if the a->i are the same */
-  ierr = PetscMemcmp(a->i,b->i,(A->m+1)*sizeof(int),&flag);CHKERRQ(ierr);
+  ierr = PetscMemcmp(a->i,b->i,(A->m+1)*sizeof(PetscInt),&flag);CHKERRQ(ierr);
   
   /* if a->j are the same */
-  ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(int),&flag);CHKERRQ(ierr);
+  ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(PetscInt),&flag);CHKERRQ(ierr);
 
   ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_LAND,A->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -201,11 +201,12 @@ PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_MPIAdj"
-PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int *ia[],int *ja[],PetscTruth *done)
+PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
-  int size,i;
-  Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
+  PetscMPIInt    size;
+  PetscInt       i;
+  Mat_MPIAdj     *a = (Mat_MPIAdj *)A->data;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
@@ -225,9 +226,9 @@ PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,i
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowIJ_MPIAdj"
-PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int *ia[],int *ja[],PetscTruth *done)
+PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
-  int        i;
+  PetscInt   i;
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
 
   PetscFunctionBegin;
@@ -346,12 +347,12 @@ static struct _MatOps MatOps_Values = {0,
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAdjSetPreallocation_MPIAdj"
-PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B,int *i,int *j,int *values)
+PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
 {
-  Mat_MPIAdj *b = (Mat_MPIAdj *)B->data;
+  Mat_MPIAdj     *b = (Mat_MPIAdj *)B->data;
   PetscErrorCode ierr;
 #if defined(PETSC_USE_BOPT_g)
-  int        ii;
+  PetscInt       ii;
 #endif
 
   PetscFunctionBegin;
@@ -399,9 +400,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_MPIAdj"
 PetscErrorCode MatCreate_MPIAdj(Mat B)
 {
-  Mat_MPIAdj *b;
+  Mat_MPIAdj     *b;
   PetscErrorCode ierr;
-  int        ii,size,rank;
+  PetscInt       ii;
+  PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
@@ -425,8 +427,8 @@ PetscErrorCode MatCreate_MPIAdj(Mat B)
   /* we don't know the "local columns" so just use the row information :-(*/
   ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((size+1)*sizeof(int),&b->rowners);CHKERRQ(ierr);
-  PetscLogObjectMemory(B,(size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));
+  ierr = PetscMalloc((size+1)*sizeof(PetscInt),&b->rowners);CHKERRQ(ierr);
+  PetscLogObjectMemory(B,(size+2)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));
   ierr = MPI_Allgather(&B->m,1,MPI_INT,b->rowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
   b->rowners[0] = 0;
   for (ii=2; ii<=size; ii++) {
@@ -459,9 +461,9 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateMPIAdj(), MatSetValues()
 @*/
-PetscErrorCode MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
+PetscErrorCode MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
 {
-  PetscErrorCode ierr,(*f)(Mat,int*,int*,int*);
+  PetscErrorCode ierr,(*f)(Mat,PetscInt*,PetscInt*,PetscInt*);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIAdjSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -508,7 +510,7 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
 
 .seealso: MatCreate(), MatConvert(), MatGetOrdering()
 @*/
-PetscErrorCode MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
+PetscErrorCode MatCreateMPIAdj(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt *i,PetscInt *j,PetscInt *values,Mat *A)
 {
   PetscErrorCode ierr;
 
@@ -525,9 +527,9 @@ EXTERN_C_BEGIN
 PetscErrorCode MatConvertTo_MPIAdj(Mat A,MatType type,Mat *newmat)
 {
   Mat               B;
-  PetscErrorCode ierr;
-  int               i,m,N,nzeros = 0,*ia,*ja,len,rstart,cnt,j,*a;
-  const int         *rj;
+  PetscErrorCode    ierr;
+  PetscInt          i,m,N,nzeros = 0,*ia,*ja,len,rstart,cnt,j,*a;
+  const PetscInt    *rj;
   const PetscScalar *ra;
   MPI_Comm          comm;
 
@@ -547,9 +549,9 @@ PetscErrorCode MatConvertTo_MPIAdj(Mat A,MatType type,Mat *newmat)
   }
 
   /* malloc space for nonzeros */
-  ierr = PetscMalloc((nzeros+1)*sizeof(int),&a);CHKERRQ(ierr);
-  ierr = PetscMalloc((N+1)*sizeof(int),&ia);CHKERRQ(ierr);
-  ierr = PetscMalloc((nzeros+1)*sizeof(int),&ja);CHKERRQ(ierr);
+  ierr = PetscMalloc((nzeros+1)*sizeof(PetscInt),&a);CHKERRQ(ierr);
+  ierr = PetscMalloc((N+1)*sizeof(PetscInt),&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc((nzeros+1)*sizeof(PetscInt),&ja);CHKERRQ(ierr);
 
   nzeros = 0;
   ia[0]  = 0;
@@ -558,7 +560,7 @@ PetscErrorCode MatConvertTo_MPIAdj(Mat A,MatType type,Mat *newmat)
     cnt     = 0;
     for (j=0; j<len; j++) {
       if (rj[j] != i+rstart) { /* if not diagonal */
-        a[nzeros+cnt]    = (int) PetscAbsScalar(ra[j]);
+        a[nzeros+cnt]    = (PetscInt) PetscAbsScalar(ra[j]);
         ja[nzeros+cnt++] = rj[j];
       } 
     }
