@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.73 1998/04/24 17:34:24 balay Exp balay $;
+!  $Id: petsc.h,v 1.74 1998/04/25 23:45:47 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -174,10 +174,10 @@
       common /petscfortran1/ PETSC_NULL_CHARACTER
       common /petscfortran2/ PETSC_NULL_INTEGER
       common /petscfortran3/ PETSC_NULL_SCALAR
-      common /petscfortran3/ PETSC_NULL_DOUBLE
-      common /petscfortran4/ VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF
-      common /petscfortran5/ VIEWER_STDOUT_WORLD
-      common /petscfortran6/ PETSC_COMM_WORLD,PETSC_COMM_SELF
+      common /petscfortran4/ PETSC_NULL_DOUBLE
+      common /petscfortran5/ VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF
+      common /petscfortran6/ VIEWER_STDOUT_WORLD
+      common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
 !
 !     PLogDouble variables are used to contain double precision numbers
 !     that are not used in the numerical computations, but rather in logging,
