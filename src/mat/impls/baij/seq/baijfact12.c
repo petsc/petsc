@@ -160,12 +160,14 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
   Mat            C = *B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
   int            ierr,i,j,n = a->mbs;
-  unsigned short *bi = (unsigned short *)(b->i),*bj = (unsigned short *)(b->j),*bjtmp,row,*pj;
-  int            *ajtmpold,nz;
+  unsigned short *bj = (unsigned short *)(b->j),*bjtmp,*pj;
+  unsigned int   row;
+  int            *ajtmpold,nz,*bi=b->i;
   int            *diag_offset = b->diag,*ai=a->i,*aj=a->j;
   MatScalar      *pv,*v,*rtmp,*pc,*w,*x;
   MatScalar      *ba = b->a,*aa = a->a;
-  int            nonzero=0,colscale = 16;
+  int            nonzero=0;
+/*    int            nonzero=0,colscale = 16; */
   PetscTruth     pivotinblocks = b->pivotinblocks;
 
   PetscFunctionBegin;
@@ -175,9 +177,9 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
   if ((unsigned long)ba%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
   ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   if ((unsigned long)rtmp%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
-  if ((unsigned long)bj==(unsigned long)aj) {
-    colscale = 4;
-  }
+/*    if ((unsigned long)bj==(unsigned long)aj) { */
+/*      colscale = 4; */
+/*    } */
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
     bjtmp = bj + bi[i];
@@ -185,7 +187,8 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
     /* zero out one register */ 
     XOR_PS(XMM7,XMM7);
     for  (j=0; j<nz; j++) {
-      x = rtmp+4*bjtmp[j];
+      x = rtmp+16*((unsigned int)bjtmp[j]);
+/*        x = rtmp+4*bjtmp[j]; */
       SSE_INLINE_BEGIN_1(x)
         /* Copy zero register to memory locations */
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
@@ -204,7 +207,8 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
     ajtmpold = aj + ai[i];
     v        = aa + 16*ai[i];
     for (j=0; j<nz; j++) {
-      x = rtmp+colscale*ajtmpold[j];
+      x = rtmp+16*ajtmpold[j];
+/*        x = rtmp+colscale*ajtmpold[j]; */
       /* Copy v block into x block */ 
       SSE_INLINE_BEGIN_2(v,x)
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
@@ -235,8 +239,8 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
 
       v += 16;
     }
-    row = (*bjtmp)/4;
-    bjtmp++;
+/*      row = (*bjtmp++)/4; */
+    row = (unsigned int)(*bjtmp++);
     while (row < i) {
       pc  = rtmp + 16*row;
       SSE_INLINE_BEGIN_1(pc)
@@ -401,7 +405,8 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
         pv += 16;
         for (j=0; j<nz; j++) {
           PREFETCH_L1(&pv[16]);
-          x = rtmp + 4*pj[j];
+          x = rtmp + 16*((unsigned int)pj[j]);
+/*            x = rtmp + 4*pj[j]; */
 
           /* X:=X-M*PV, One column at a time */
           /* Note: M is already loaded columnwise into registers XMM0-XMM3 */
@@ -524,8 +529,9 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
         }
         PetscLogFlops(128*nz+112);
       } 
-      row = (*bjtmp)/4;
-      bjtmp++;
+      row = (unsigned int)(*bjtmp++);
+/*        row = (*bjtmp++)/4; */
+/*        bjtmp++; */
     }
     /* finished row so stick it into b->a */
     pv = ba + 16*bi[i];
@@ -534,7 +540,8 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
 
     /* Copy x block back into pv block */
     for (j=0; j<nz; j++) {
-      x  = rtmp+4*pj[j];
+      x  = rtmp+16*((unsigned int)pj[j]);
+/*        x  = rtmp+4*pj[j]; */
 
       SSE_INLINE_BEGIN_2(x,pv)
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
