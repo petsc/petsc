@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.49 1998/01/14 02:42:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.50 1998/04/13 17:43:46 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -21,11 +21,11 @@ static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*
     MatLoadRegister - Allows one to register a routine that reads matrices
         from a binary file for a particular matrix type.
 
-  Input Parameters:
-.   type - the type of matrix (defined in include/mat.h), for example, MATSEQAIJ.
-.   loader - the function that reads the matrix from the binary file.
-
   Not Collective
+
+  Input Parameters:
++   type - the type of matrix (defined in include/mat.h), for example, MATSEQAIJ.
+-   loader - the function that reads the matrix from the binary file.
 
 .seealso: MatLoadRegisterAll()
 
@@ -63,42 +63,42 @@ static int MatLoadPrintHelp_Private(Mat A)
    Generates a parallel MPI matrix if the communicator has more than one
    processor.  The default matrix type is AIJ.
 
+   Collective on Viewer
+
    Input Parameters:
-.  viewer - binary file viewer, created with ViewerFileOpenBinary()
-.  outtype - type of matrix desired, for example MATSEQAIJ,
++  viewer - binary file viewer, created with ViewerFileOpenBinary()
+-  outtype - type of matrix desired, for example MATSEQAIJ,
    MATMPIROWBS, etc.  See types in petsc/include/mat.h.
 
    Output Parameters:
 .  newmat - new matrix
 
-   Collective on Viewer
-
    Basic Options Database Keys:
    These options use MatCreateSeqXXX or MatCreateMPIXXX,
    depending on the communicator, comm.
-$    -mat_aij      : AIJ type
-$    -mat_baij     : block AIJ type
-$    -mat_dense    : dense type
-$    -mat_bdiag    : block diagonal type
++    -mat_aij      - AIJ type
+.    -mat_baij     - block AIJ type
+.    -mat_dense    - dense type
+-    -mat_bdiag    - block diagonal type
 
    More Options Database Keys:
-$    -mat_seqaij   : AIJ type
-$    -mat_mpiaij   : parallel AIJ type
-$    -mat_seqbaij  : block AIJ type
-$    -mat_mpibaij  : parallel block AIJ type
-$    -mat_seqbdiag : block diagonal type
-$    -mat_mpibdiag : parallel block diagonal type
-$    -mat_mpirowbs : parallel rowbs type
-$    -mat_seqdense : dense type
-$    -mat_mpidense : parallel dense type
++    -mat_seqaij   - AIJ type
+.    -mat_mpiaij   - parallel AIJ type
+.    -mat_seqbaij  - block AIJ type
+.    -mat_mpibaij  - parallel block AIJ type
+.    -mat_seqbdiag - block diagonal type
+.    -mat_mpibdiag - parallel block diagonal type
+.    -mat_mpirowbs - parallel rowbs type
+.    -mat_seqdense - dense type
+-    -mat_mpidense - parallel dense type
 
    More Options Database Keys:
    Used with block matrix formats (MATSEQBAIJ, MATMPIBDIAG, ...) to specify
    block size
-$    -matload_block_size <bs>
+.    -matload_block_size <bs>
 
    Used to specify block diagonal numbers for MATSEQBDIAG and MATMPIBDIAG formats
-$    -matload_bdiag_diags <s1,s2,s3,...>
+.    -matload_bdiag_diags <s1,s2,s3,...>
 
    Notes:
    In parallel, each processor can load a subset of rows (or the

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.95 1998/04/09 04:09:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.96 1998/04/13 17:28:14 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -743,41 +743,39 @@ int KSPGetPC(KSP ksp, PC *B)
    KSPSetMonitor - Sets an ADDITIONAL function to be called at every iteration to monitor 
    the residual/error etc.
       
-
-   Input Parameters:
-.  ksp - iterative context obtained from KSPCreate()
-.  monitor - pointer to function (if this is PETSC_NULL, it turns off monitoring
-.  mctx    - [optional] context for private data for the
-             monitor routine (use PETSC_NULL if no context
-             is desired)
-
    Collective on KSP
 
+   Input Parameters:
++  ksp - iterative context obtained from KSPCreate()
+.  monitor - pointer to function (if this is PETSC_NULL, it turns off monitoring
+-  mctx    - [optional] context for private data for the
+             monitor routine (use PETSC_NULL if no context is desired)
+
    Calling sequence of monitor:
-.  monitor (KSP ksp, int it, double rnorm, void *mctx)
+$  monitor (KSP ksp, int it, double rnorm, void *mctx)
 
    Input parameters of monitor:
-.  ksp - iterative context obtained from KSPCreate()
++  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
 .  rnorm - (estimated) 2-norm of (preconditioned) residual
-.  mctx  - optional monitoring context, as set by KSPSetMonitor()
+-  mctx  - optional monitoring context, as set by KSPSetMonitor()
 
    Options Database Keys:
-$    -ksp_monitor        : sets KSPDefaultMonitor()
-$    -ksp_truemonitor    : sets KSPTrueMonitor()
-$    -ksp_xmonitor       : sets line graph monitor,
-$                          uses KSPLGMonitorCreate()
-$    -ksp_xtruemonitor   : sets line graph monitor,
-$                          uses KSPLGMonitorCreate()
-$    -ksp_singmonitor    : sets KSPSingularValueMonitor()
-$    -ksp_bsmonitor      : sets BlockSolve95 monitor that
-$                          prints both scaled and unscaled
-$                          residual norms
-$    -ksp_cancelmonitors : cancels all monitors that have
-$                          been hardwired into a code by 
-$                          calls to KSPSetMonitor(), but
-$                          does not cancel those set via
-$                          the options database.
++    -ksp_monitor        - sets KSPDefaultMonitor()
+.    -ksp_truemonitor    - sets KSPTrueMonitor()
+.    -ksp_xmonitor       - sets line graph monitor,
+                           uses KSPLGMonitorCreate()
+.    -ksp_xtruemonitor   - sets line graph monitor,
+                           uses KSPLGMonitorCreate()
+.    -ksp_singmonitor    - sets KSPSingularValueMonitor()
+.    -ksp_bsmonitor      - sets BlockSolve95 monitor that
+                          prints both scaled and unscaled
+                          residual norms
+-    -ksp_cancelmonitors - cancels all monitors that have
+                          been hardwired into a code by 
+                          calls to KSPSetMonitor(), but
+                          does not cancel those set via
+                          the options database.
 
    Notes:  
    The default is to do nothing.  To print the residual, or preconditioned 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.3 1998/04/20 19:30:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.4 1998/04/22 22:16:56 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -44,7 +44,9 @@ T*/
 typedef struct {
   int n_vert,n_ele;
   int mlocal_vert,mlocal_ele;
+  int *ele;
   int *ia,*ja;
+  IS  isnewproc;
 } GridData;
 
 /*
@@ -289,6 +291,7 @@ int ReadData(GridData *gdata)
   gdata->n_ele       = n_ele;
   gdata->mlocal_vert = mlocal_vert;
   gdata->mlocal_ele  = mlocal_ele;
+  gdata->ele         = ele;
 
   gdata->ia          = ia;
   gdata->ja          = ja;
@@ -335,6 +338,7 @@ int PartitionData(GridData *gdata)
   */
   PetscPrintf(PETSC_COMM_WORLD,"New processor assignment for each element");
   ierr = ISView(isnewproc,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  gdata->isnewproc = isnewproc;
 
   /*
       Free the adjacency graph data structures
@@ -351,11 +355,61 @@ int PartitionData(GridData *gdata)
 */
 int MoveData(GridData *gdata)
 {
+  int        ierr,*counts,rank,size,i;
+  Vec        vele,veleold;
+  Scalar     *array;
+  IS         isscat,isnum;
+  VecScatter vecscat;
 
-  /* 
-      We first must move the element vertex information to the processor
+  /* ---------------------------------------------------------------
+      First must move the element vertex information to the processor
     that needs it.
   */
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+
+  /* determine how many elements are assigned to each processor */
+  counts = PetscMalloc(size*sizeof(int));CHKPTRQ(counts);
+  ierr   = ISPartitioningCount(gdata->isnewproc,counts);CHKERRQ(ierr);
+
+  /* create a vector to contain the newly ordered element information */
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,3*counts[rank],PETSC_DECIDE,&vele);CHKERRQ(ierr);
+
+  /* create an index set from the isnewproc index set to indicate the mapping TO */
+  ierr = ISPartitioningToNumbering(gdata->isnewproc,&isnum);CHKERRQ(ierr);
+  ierr = ISGetIndices(isnum,&idx):CHKERRQ(ierr);
+  for ( i=0; i<counts[rank]; i++ ) {
+    idx[i] *= 3;
+  }
+  ierr = ISCreateBlock(PETSC_COMM_WORLD,3,counts[rank],idx,&isscat);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isnum,&idx);CHKERRQ(ierr);
+  ierr = ISDestroy(isnum);CHKERRQ(ierr);
+
+  /* create a vector to contain the old ordered element information */
+  ierr = VecCreateSeq(PETSC_COMM_SELF,3*gdata->mlocal_ele,&veleold);CHKERRQ(ierr);
+  ierr = VecGetArray(veleold,&array);CHKERRQ(ierr);
+  for ( i=0; i<3*gdata->mlocal_ele; i++ ) {
+    array[i] = gdata->ele[i];
+  }
+  ierr = VecRestoreArray(veleold,&array);CHKERRQ(ierr);
+  
+  /* scatter the element vertex information to the correct processor */
+  ierr = VecScatterCreate(veleold,PETSC_NULL,vele,isscat,&vecscat);CHKERRQ(ierr);
+  ierr = ISDestroy(isscat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(veleold,vele,INSERT_VALUES,SCATTER_FORWARD,vecscat);CHKERRQ(ierr);
+  ierr = VecScatterEnd(veleold,vele,INSERT_VALUES,SCATTER_FORWARD,vecscat);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(vecscat);CHKERRQ(ierr);
+  ierr = VecDestroy(veleold);CHKERRQ(ierr);
+
+  PetscFree(gdata->ele);
+  gdata->mlocal_ele = counts[rank];
+  gdata->ele = PetscMalloc(3*gdata->mlocal_ele*sizeof(int));CHKERRQ(ierr);
+  ierr = VecGetArray(vele,&array);CHKERRQ(ierr);
+  for ( i=0; i<3*gdata->mlocal_ele; i++ ) {
+    gdata->ele[i] = (int) array[i];
+  }
+  ierr = VecRestoreArray(vele,&array);CHKERRQ(ierr);
+  ierr = VecDestroy(vele);CHKERRQ(ierr);
 
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.20 1998/04/13 17:43:46 bsmith Exp curfman $";
+static char vcid[] = "$Id: zerodiag.c,v 1.21 1998/04/15 22:52:39 curfman Exp bsmith $";
 #endif
 
 /*
@@ -58,12 +58,12 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
     zeros from diagonal. This may help in the LU factorization to 
     prevent a zero pivot.
 
-    Input Parameters:
-.   mat  - matrix to reorder
-.   rmap,cmap - row and column permutations.  Usually obtained from 
-.               MatGetReordering().
-
     Collective on Mat
+
+    Input Parameters:
++   mat  - matrix to reorder
+-   rmap,cmap - row and column permutations.  Usually obtained from 
+               MatGetReordering().
 
     Notes:
     This is not intended as a replacement for pivoting for matrices that
@@ -72,14 +72,15 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
     ordering defined in cis.
 
     Options Database Keys (When using SLES):
-$      -pc_ilu_nonzeros_along_diagonal
-$      -pc_lu_nonzeros_along_diagonal
++      -pc_ilu_nonzeros_along_diagonal
+-      -pc_lu_nonzeros_along_diagonal
 
     Algorithm:
     Column pivoting is used.  Choice of column is made by looking at the
     non-zero elements in the row.  This algorithm is simple and fast but
     does NOT guarantee that a non-singular or well conditioned
     principle submatrix will be produced.
+
 @*/
 int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
 {

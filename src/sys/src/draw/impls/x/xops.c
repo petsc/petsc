@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.109 1998/04/09 04:16:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.110 1998/04/13 17:47:59 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -29,13 +29,13 @@ static char vcid[] = "$Id: xops.c,v 1.109 1998/04/09 04:16:23 bsmith Exp bsmith 
 int DrawLine_X(Draw Win, double xl, double yl, double xr, double yr,int cl)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
-  int     x1,y1,x2,y2;
+  int     x1,y_1,x2,y2;
 
   PetscFunctionBegin;
   XiSetColor( XiWin, cl );
   x1 = XTRANS(Win,XiWin,xl);   x2  = XTRANS(Win,XiWin,xr); 
-  y1 = YTRANS(Win,XiWin,yl);   y2  = YTRANS(Win,XiWin,yr); 
-  XDrawLine( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, x1, y1, x2, y2);
+  y_1 = YTRANS(Win,XiWin,yl);   y2  = YTRANS(Win,XiWin,yr); 
+  XDrawLine( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, x1, y_1, x2, y2);
   PetscFunctionReturn(0);
 }
 
@@ -59,14 +59,14 @@ static int DrawRectangle_X(Draw Win, double xl, double yl, double xr, double yr,
                            int c1, int c2,int c3,int c4)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
-  int     x1,y1,w,h, c = (c1 + c2 + c3 + c4)/4;
+  int     x1,y_1,w,h, c = (c1 + c2 + c3 + c4)/4;
 
   PetscFunctionBegin;
   XiSetColor( XiWin, c );
   x1 = XTRANS(Win,XiWin,xl);   w  = XTRANS(Win,XiWin,xr) - x1; 
-  y1 = YTRANS(Win,XiWin,yr);   h  = YTRANS(Win,XiWin,yl) - y1;
+  y_1 = YTRANS(Win,XiWin,yr);   h  = YTRANS(Win,XiWin,yl) - y_1;
   if (w <= 0) w = 1; if (h <= 0) h = 1;
-  XFillRectangle( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, x1, y1, w, h);
+  XFillRectangle( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, x1, y_1, w, h);
   PetscFunctionReturn(0);
 }
 
@@ -74,7 +74,7 @@ extern int XiDrawInterpolatedTriangle(Draw_X*,int,int,int,int,int,int,int,int,in
 
 #undef __FUNC__  
 #define __FUNC__ "DrawTriangle_X" 
-static int DrawTriangle_X(Draw Win, double X1, double Y1, double X2, 
+static int DrawTriangle_X(Draw Win, double X1, double Y_1, double X2, 
                           double Y2,double X3,double Y3, int c1, int c2,int c3)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -84,7 +84,7 @@ static int DrawTriangle_X(Draw Win, double X1, double Y1, double X2,
     XPoint pt[3];
     XiSetColor( XiWin, c1 );
     pt[0].x = XTRANS(Win,XiWin,X1);
-    pt[0].y = YTRANS(Win,XiWin,Y1); 
+    pt[0].y = YTRANS(Win,XiWin,Y_1); 
     pt[1].x = XTRANS(Win,XiWin,X2);
     pt[1].y = YTRANS(Win,XiWin,Y2); 
     pt[2].x = XTRANS(Win,XiWin,X3);
@@ -92,14 +92,14 @@ static int DrawTriangle_X(Draw Win, double X1, double Y1, double X2,
     XFillPolygon(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,pt,3,Convex,
                  CoordModeOrigin);
   } else {
-    int x1,y1,x2,y2,x3,y3;
+    int x1,y_1,x2,y2,x3,y3;
     x1 = XTRANS(Win,XiWin,X1);
-    y1 = YTRANS(Win,XiWin,Y1); 
+    y_1 = YTRANS(Win,XiWin,Y_1); 
     x2 = XTRANS(Win,XiWin,X2);
     y2 = YTRANS(Win,XiWin,Y2); 
     x3 = XTRANS(Win,XiWin,X3);
     y3 = YTRANS(Win,XiWin,Y3); 
-    XiDrawInterpolatedTriangle(XiWin,x1,y1,c1,x2,y2,c2,x3,y3,c3);
+    XiDrawInterpolatedTriangle(XiWin,x1,y_1,c1,x2,y2,c2,x3,y3,c3);
   }
   PetscFunctionReturn(0);
 }

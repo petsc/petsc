@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.23 1998/04/08 14:19:54 balay Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.24 1998/04/13 18:01:48 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -688,10 +688,11 @@ int AODataKeyGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
    Collective on AOData and IS
 
    Example:
-$                      keys    ->      0  1  2  3  4   5  6  7
-$      if the segment contains ->      1  2  1  3  1   4  2  0
-$  and you request keys 0 1 2 5 7 it will return 1 2 4 0
-
+.vb
+                      keys    ->      0  1  2  3  4   5  6  7
+      if the segment contains ->      1  2  1  3  1   4  2  0
+   and you request keys 0 1 2 5 7 it will return 1 2 4 0
+.ve
 .keywords: database transactions
 
 .seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),

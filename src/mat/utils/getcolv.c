@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: getcolv.c,v 1.2 1998/03/06 00:16:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: getcolv.c,v 1.3 1998/04/13 17:43:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -9,12 +9,12 @@ static char vcid[] = "$Id: getcolv.c,v 1.2 1998/03/06 00:16:14 bsmith Exp bsmith
 /*@
    MatGetColumnVector - Gets the values from a given column of a matrix.
 
-   Input Parameters:
-.  X - the matrix
-.  v - the vector
-.  c - the column requested
-
    Collective on Mat and Vec
+
+   Input Parameters:
++  X - the matrix
+.  v - the vector
+-  c - the column requested
 
    Contributed by: Denis Vanderstraeten
 

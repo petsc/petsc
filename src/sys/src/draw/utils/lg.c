@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.51 1998/04/03 23:16:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.52 1998/04/13 17:49:45 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -309,7 +309,7 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
 int DrawLGDraw(DrawLG lg)
 {
   double   xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
-  int      i, j, dim = lg->dim,nopts = lg->nopts,rank;
+  int      i, j, dim = lg->dim,nopts = lg->nopts,rank,ierr;
   Draw     win = lg->win;
 
   PetscFunctionBegin;
@@ -318,24 +318,24 @@ int DrawLGDraw(DrawLG lg)
 
   if (nopts < 2) PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
-  DrawClear(win);
-  DrawAxisSetLimits(lg->axis, xmin, xmax, ymin, ymax);
-  DrawAxisDraw(lg->axis);
+  ierr = DrawClear(win);CHKERRQ(ierr);
+  ierr = DrawAxisSetLimits(lg->axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
+  ierr = DrawAxisDraw(lg->axis);CHKERRQ(ierr);
 
   MPI_Comm_rank(lg->comm,&rank);
-  if (!rank) PetscFunctionReturn(0);
+  if (rank) PetscFunctionReturn(0);
 
   for ( i=0; i<dim; i++ ) {
     for ( j=1; j<nopts; j++ ) {
-      DrawLine(win,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
-                   lg->x[j*dim+i],lg->y[j*dim+i],DRAW_BLACK+i);
+      ierr = DrawLine(win,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
+                   lg->x[j*dim+i],lg->y[j*dim+i],DRAW_BLACK+i);CHKERRQ(ierr);
       if (lg->use_dots) {
-        DrawString(win,lg->x[j*dim+i],lg->y[j*dim+i],DRAW_RED,"x");
+        ierr = DrawString(win,lg->x[j*dim+i],lg->y[j*dim+i],DRAW_RED,"x");CHKERRQ(ierr);
       }
     }
   }
-  DrawFlush(lg->win);
-  DrawPause(lg->win);
+  ierr = DrawFlush(lg->win);CHKERRQ(ierr);
+  ierr = DrawPause(lg->win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
  

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.28 1997/10/19 03:23:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.29 1998/04/13 17:28:14 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -53,16 +53,17 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
 #define __FUNC__ "KSPLGMonitor"
 int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
 {
-  DrawLG lg = (DrawLG) monctx;
+  DrawLG    lg = (DrawLG) monctx;
+  int       ierr;
   double    x, y;
 
   PetscFunctionBegin;
-  if (!n) DrawLGReset(lg);
+  if (!n) {ierr = DrawLGReset(lg);CHKERRQ(ierr);}
   x = (double) n;
   if (rnorm > 0.0) y = log10(rnorm); else y = -15.0;
-  DrawLGAddPoint(lg,&x,&y);
+  ierr = DrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   if (n < 20 || (n % 5)) {
-    DrawLGDraw(lg);
+    ierr = DrawLGDraw(lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 } 

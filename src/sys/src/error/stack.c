@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.6 1998/03/24 21:00:18 balay Exp bsmith $";
+static char vcid[] = "$Id: stack.c,v 1.7 1998/04/09 04:10:48 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -29,6 +29,12 @@ int PetscStackCreate(int stacksize)
   petscstack_in->line      = (int *) PetscMalloc(stacksize*sizeof(int));CHKPTRQ(petscstack_in->line);
   petscstack_in->directory = (char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->directory);
   petscstack_in->file      = (char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->file);
+
+  PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));
+  PetscMemzero(petscstack_in->line,stacksize*sizeof(int));
+  PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));
+  PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));
+
   petscstack = petscstack_in;
   return 0;
 }

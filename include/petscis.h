@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.42 1997/11/03 04:51:27 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.43 1997/11/09 04:10:30 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -94,6 +94,7 @@ extern int ISColoringCreate(MPI_Comm,int,int*,ISColoring*);
 /* --------------------------------------------------------------------------*/
 
 extern int ISPartitioningToNumbering(IS,IS*);
+extern int ISPartitioningCount(IS,int *);
 
 #endif
 

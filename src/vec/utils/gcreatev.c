@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.43 1998/04/15 22:45:37 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreatev.c,v 1.44 1998/04/16 02:09:53 curfman Exp bsmith $";
 #endif
 
 
@@ -15,21 +15,22 @@ static char vcid[] = "$Id: gcreatev.c,v 1.43 1998/04/15 22:45:37 curfman Exp cur
     from the options database.  Generates a parallel MPI vector if the 
     communicator has more than one processor.
 
+    Collective on MPI_Comm
+
     Input Parameters:
-.   comm - MPI communicator
++   comm - MPI communicator
 .   n - local vector length (or PETSC_DECIDE)
-.   N - global vector length (or PETSC_DETERMINE)
+-   N - global vector length (or PETSC_DETERMINE)
  
     Output Parameter:
 .   V - location to stash resulting vector
 
-    Collective on MPI_Comm
-
     Options Database Keys:
-$   -vec_mpi - use MPI vectors, even for the uniprocessor case
-$              by internally calling VecCreateMPI()
-$   -vec_shared - use shared memory parallel vectors
-$              by internally calling VecCreateShared()
++   -vec_mpi - use MPI vectors, even for the uniprocessor case
+               by internally calling VecCreateMPI()
+-   -vec_shared - use shared memory parallel vectors
+               by internally calling VecCreateShared()
+
 
     Notes:
     Use VecDuplicate() or VecDuplicateVecs() to form additional vectors

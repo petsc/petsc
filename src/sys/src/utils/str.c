@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.17 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.18 1998/03/06 00:12:03 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -147,6 +147,10 @@ char *PetscStrtok(char *a,char *b)
   char *tmp;
 
   PetscFunctionBegin;
+#if defined(PARCH_linux)
+  /* Linux has bug in strtok() when argument is carriage return */
+  if (b && b[0] == '\n') PetscFunctionReturn(a);
+#endif
   tmp = strtok(a,b);
   PetscFunctionReturn(tmp);
 }

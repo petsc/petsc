@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.31 1998/03/12 23:20:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.32 1998/04/13 17:43:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -9,11 +9,11 @@ static char vcid[] = "$Id: axpy.c,v 1.31 1998/03/12 23:20:13 bsmith Exp bsmith $
 /*@
    MatAXPY - Computes Y = a*X + Y.
 
-   Input Parameters:
-.  X,Y - the matrices
-.  a - the scalar multiplier
-
    Collective on Mat
+
+   Input Parameters:
++  X,Y - the matrices
+-  a - the scalar multiplier
 
    Contributed by: Matthew Knepley
 
@@ -67,11 +67,11 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
    MatShift - Computes Y =  Y + a I, where a is a scalar and I is the identity
    matrix.
 
-   Input Parameters:
-.  Y - the matrices
-.  a - the scalar 
-
    Collective on Mat
+
+   Input Parameters:
++  Y - the matrices
+-  a - the scalar 
 
 .keywords: matrix, add, shift
 
@@ -105,8 +105,8 @@ int MatShift(Scalar *a,Mat Y)
    that is represented as a vector.
 
    Input Parameters:
-.  Y - the input matrix
-.  D - the diagonal matrix, represented as a vector
++  Y - the input matrix
+-  D - the diagonal matrix, represented as a vector
 
    Input Parameters:
 .  Y - the shifted ouput matrix
@@ -151,11 +151,11 @@ int MatDiagonalShift(Mat Y,Vec D)
 /*@
    MatAYPX - Computes Y = X + a*Y.
 
-   Input Parameters:
-.  X,Y - the matrices
-.  a - the scalar multiplier
-
    Collective on Mat
+
+   Input Parameters:
++  X,Y - the matrices
+-  a - the scalar multiplier
 
    Contributed by: Matthew Knepley
 
