@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.76 1995/12/14 16:29:57 bsmith Exp curfman $ */
+/* $Id: petsc.h,v 1.77 1995/12/15 15:28:33 curfman Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -122,6 +122,9 @@ extern int PetscObjectGetCookie(PetscObject,int *cookie);
 extern int PetscObjectGetType(PetscObject,int *type);
 extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
+
+extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **));
+#define PetscObjectChild(a) (((PetscObject) (a))->child)
 
 extern int PetscDefaultErrorHandler(int,char*,char*,int,char*,void*);
 extern int PetscAbortErrorHandler(int,char*,char*,int,char*,void* );
