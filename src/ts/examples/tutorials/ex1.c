@@ -1,37 +1,38 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.6 1997/01/01 03:40:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.7 1997/01/21 18:42:14 bsmith Exp curfman $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
 
 /*
-   Concepts: TS,Pseudo-timestepping,nonlinear problems
-   Routines: TSCreate(),TSSetSolution(),TSSetRHSFunction(),TSSetRHSJacobian()
-   Routines: TSSetType(), TS_PSEUDO, TSSetInitialTimeStep(),TSSetDuration()
-   Routines: TSPseudoSetTimeStep(),TSSetFromOptions(),TSStep(),TSDestroy()
+   Concepts: TS^Pseudo-timestepping^nonlinear problems
+   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
+   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration();
+   Routines: TSPseudoSetTimeStep(); TSSetFromOptions(); TSStep(); TSDestroy();
    Processors: 1
 
 */
 
+/* ------------------------------------------------------------------------
+
+    This code demonstrates how one may solve a nonlinear problem 
+    with pseudo-timestepping. In this simple example, the pseudo-timestep
+    is the same for all grid points, i.e., this is equivalent to using
+    the backward Euler method with a variable timestep.
+
+    Note: This example does not require pseudo-timestepping since it
+    is an easy nonlinear problem, but it is included to demonstrate how
+    the pseudo-timestepping may be done.
+
+    See snes/examples/tutorials/ex4.c[ex4f.F] and 
+    snes/examples/tutorials/ex5.c[ex5f.F] where the problem is described
+    and solved using Newton's method alone.
+
+  ----------------------------------------------------------------------------- */
 /*
-     Demonstrates how one may solve a nonlinear problem 
-   with pseudo timestepping. In this simple example, the pseudo-time
-   step is the same for all grid points, i.e. this is equivalent to 
-   a backward Euler with variable timestep.
-
-     Note: this example does not require pseudo-timestepping since it
-   is an easy nonlinear problem; but it is included to demonstrate how
-   the pseudo-timestepping may be done.
-
-     See snes/examples/tutorials/ex4.c[ex4f.F] and 
-   snes/examples/tutorials/ex5.c[ex5f.F] where the problem is described
-   and solved using Newton's method alone.
-
-*/
-/* ------------------------------------------------------------------------------*/
-/*
-    Include "ts.h" to use the PETSc timestepping routines. Note that this
-    file automatically includes: "petsc.h" and other lower level PETSc include files
+    Include "ts.h" to use the PETSc timestepping routines. Note that
+    this file automatically includes "petsc.h" and other lower-level
+    PETSc include files.
 */
 #include "ts.h"
 #include <math.h>

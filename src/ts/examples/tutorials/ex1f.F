@@ -1,32 +1,32 @@
 C
-C "$Id: ex1f.F,v 1.5 1996/11/25 23:40:31 balay Exp bsmith $"
+C "$Id: ex1f.F,v 1.6 1997/01/21 18:42:14 bsmith Exp curfman $"
 C
-C    Solves the time dependent Bratu problem using pseudo-timestepping
+C   Solves the time dependent Bratu problem using pseudo-timestepping
 C
-C
-C   Concepts: TS,Pseudo-timestepping,nonlinear problems
-C   Routines: TSCreate(),TSSetSolution(),TSSetRHSFunction(),TSSetRHSJacobian()
-C   Routines: TSSetType(), TS_PSEUDO, TSSetInitialTimeStep(),TSSetDuration()
-C   Routines: TSSetFromOptions(),TSStep(),TSDestroy()
+C   Concepts: TS^Pseudo-timestepping^nonlinear problems
+C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian(); 
+C   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration(); 
+C   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); 
 C   Processors: 1
 C
-C     Demonstrates how one may solve a nonlinear problem 
-C   with pseudo timestepping. In this simple example, the pseudo-time
-C   step is the same for all grid points, i.e. this is equivalent to 
-C   a backward Euler with variable timestep.
+C   This code demonstrates how one may solve a nonlinear problem 
+C   with pseudo-timestepping. In this simple example, the pseudo-timestep
+C   is the same for all grid points, i.e., this is equivalent to using
+C   the backward Euler method with a variable timestep.
 C
-C     Note: this example does not require pseudo-timestepping since it
-C   is an easy nonlinear problem; but it is included to demonstrate how
+C   Note: This example does not require pseudo-timestepping since it
+C   is an easy nonlinear problem, but it is included to demonstrate how
 C   the pseudo-timestepping may be done.
 C
-C     See snes/examples/tutorials/ex4.c[ex4f.F] and 
+C   See snes/examples/tutorials/ex4.c[ex4f.F] and 
 C   snes/examples/tutorials/ex5.c[ex5f.F] where the problem is described
 C   and solved using the method of Newton alone.
 C
-C    Include "ts.h"    to use the PETSc timestepping routines.
-C            "petsc.h" for basic PETSc operations
-C            "mat.h"   for matrix operations
-C            "vec.h"   for vector operations
+C   Include "ts.h"    to use the PETSc timestepping routines,
+C           "petsc.h" for basic PETSc operation,
+C           "mat.h"   for matrix operations,
+C           "pc.h"    for preconditions, and
+C           "vec.h"   for vector operations.
 C
 C23456789012345678901234567890123456789012345678901234567890123456789012
       program main
@@ -40,7 +40,7 @@ C
 C  Create an application context to contain data needed by the 
 C  application-provided call-back routines, FormJacobian() and
 C  FormFunction(). We use a double precision array with three
-C  entries indexed by param, lmx,lmy 
+C  entries indexed by param, lmx, lmy.
 C
       Double    user(3)
       integer   param,lmx,lmy

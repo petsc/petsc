@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mem.c,v 1.13 1997/04/01 22:45:58 balay Exp curfman $";
+static char vcid[] = "$Id: mem.c,v 1.14 1997/04/02 21:11:21 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -37,9 +37,11 @@ extern int getpagesize();
 .    -trmalloc_log
 
    Notes:
-   The memory usage reported here includes all arrays in Fortran, thus giving
-   a more complete picture of memory usage than PetscTrSpace() if you are using
-   Fortran with hardwired arrays.
+   The memory usage reported here includes all Fortran arrays 
+   (that may be used in application-defined sections of code).
+   This routine thus provides a more complete picture of memory
+   usage than PetscTrSpace() for codes that employ Fortran with
+   hardwired arrays.
 
 .seealso: PetscTrSpace()
 
