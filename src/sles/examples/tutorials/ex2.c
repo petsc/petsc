@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.73 1998/04/28 03:39:52 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.74 1998/04/28 04:00:19 curfman Exp curfman $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
@@ -56,6 +56,16 @@ int main(int argc,char **args)
      When using MatCreate(), the matrix format can be specified at
      runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
+
+     Performance tuning note:  For problems of substantial size,
+     preallocation of matrix memory is crucial for attaining good 
+     performance.  Since preallocation is not possible via the generic
+     matrix creation routine MatCreate(), we recommend for practical 
+     problems instead to use the creation routine for a particular matrix
+     format, e.g.,
+         MatCreateMPIAIJ() - parallel AIJ (compressed sparse row)
+         MatCreateMPIBAIJ() - parallel block AIJ
+     See the matrix chapter of the users manual for details.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.69 1998/04/28 03:46:43 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.70 1998/04/28 03:49:10 curfman Exp curfman $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -48,6 +48,16 @@ int main(int argc,char **args)
   /* 
      Create matrix.  When using MatCreate(), the matrix format can
      be specified at runtime.
+
+     Performance tuning note:  For problems of substantial size,
+     preallocation of matrix memory is crucial for attaining good 
+     performance.  Since preallocation is not possible via the generic
+     matrix creation routine MatCreate(), we recommend for practical 
+     problems instead to use the creation routine for a particular matrix
+     format, e.g.,
+         MatCreateSeqAIJ() - sequential AIJ (compressed sparse row)
+         MatCreateSeqBAIJ() - block AIJ
+     See the matrix chapter of the users manual for details.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,n,n,&A); CHKERRA(ierr);
 
