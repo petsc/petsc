@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.174 1999/05/12 03:30:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.175 1999/06/30 22:51:03 bsmith Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -1264,7 +1264,7 @@ int PCView(PC pc,Viewer viewer)
 
    Sample usage:
 .vb
-   PCRegister("my_solver","/home/username/my_lib/lib/libO/solaris/mylib.a",
+   PCRegister("my_solver","/home/username/my_lib/lib/libO/solaris/mylib",
               "MySolverCreate",MySolverCreate);
 .ve
 
