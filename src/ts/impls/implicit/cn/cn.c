@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.31 2001/08/06 21:18:12 bsmith Exp balay $*/
+/*$Id: cn.c,v 1.32 2001/08/07 03:04:23 balay Exp bsmith $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -22,7 +22,7 @@ typedef struct {
 */
 int TSComputeRHSFunctionEuler(TS ts,PetscReal t,Vec x,Vec y)
 {
-  int    ierr;
+  int         ierr;
   PetscScalar neg_two = -2.0,neg_mdt = -1.0/ts->time_step;
 
   PetscFunctionBegin;
@@ -62,11 +62,11 @@ int TSComputeRHSFunctionEuler(TS ts,PetscReal t,Vec x,Vec y)
 #define __FUNCT__ "TSStep_CN_Linear_Constant_Matrix"
 static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
 {
-  TS_CN     *cn = (TS_CN*)ts->data;
-  Vec       sol = ts->vec_sol,update = cn->update;
-  Vec       rhs = cn->rhs;
-  int       ierr,i,max_steps = ts->max_steps,its;
-  PetscScalar    dt = ts->time_step,two = 2.0;
+  TS_CN       *cn = (TS_CN*)ts->data;
+  Vec         sol = ts->vec_sol,update = cn->update;
+  Vec         rhs = cn->rhs;
+  int         ierr,i,max_steps = ts->max_steps,its;
+  PetscScalar dt = ts->time_step,two = 2.0;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -164,8 +164,8 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
 #define __FUNCT__ "TSStep_CN_Nonlinear"
 static int TSStep_CN_Nonlinear(TS ts,int *steps,PetscReal *ptime)
 {
-  Vec       sol = ts->vec_sol;
-  int       ierr,i,max_steps = ts->max_steps,its,lits;
+  Vec   sol = ts->vec_sol;
+  int   ierr,i,max_steps = ts->max_steps,its,lits;
   TS_CN *cn = (TS_CN*)ts->data;
   
   PetscFunctionBegin;
@@ -195,7 +195,7 @@ static int TSStep_CN_Nonlinear(TS ts,int *steps,PetscReal *ptime)
 static int TSDestroy_CN(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
-  int       ierr;
+  int   ierr;
 
   PetscFunctionBegin;
   if (cn->update) {ierr = VecDestroy(cn->update);CHKERRQ(ierr);}
@@ -216,9 +216,9 @@ static int TSDestroy_CN(TS ts)
 #define __FUNCT__ "TSCnMatMult"
 int TSCnMatMult(Mat mat,Vec x,Vec y)
 {
-  TS     ts;
+  TS          ts;
   PetscScalar two = 2.0,neg_dt;
-  int    ierr;
+  int         ierr;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ts);CHKERRQ(ierr);
@@ -240,9 +240,9 @@ int TSCnMatMult(Mat mat,Vec x,Vec y)
 #define __FUNCT__ "TSCnFunction"
 int TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
-  TS     ts = (TS) ctx;
+  TS          ts = (TS) ctx;
   PetscScalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
-  int    ierr,i,n;
+  int         ierr,i,n;
 
   PetscFunctionBegin;
   /* apply user provided function */
@@ -300,8 +300,8 @@ int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 #define __FUNCT__ "TSSetUp_CN_Linear_Constant_Matrix"
 static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 {
-  TS_CN   *cn = (TS_CN*)ts->data;
-  int     ierr,M,m;
+  TS_CN        *cn = (TS_CN*)ts->data;
+  int          ierr,M,m;
   PetscScalar  two = 2.0,neg_dt = -1.0*ts->time_step;
 
   PetscFunctionBegin;
@@ -332,7 +332,7 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
-  int       ierr,M,m;
+  int   ierr,M,m;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
@@ -351,7 +351,7 @@ static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
 static int TSSetUp_CN_Nonlinear(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
-  int       ierr,M,m;
+  int   ierr,M,m;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
@@ -376,7 +376,6 @@ static int TSSetFromOptions_CN_Linear(TS ts)
 
   PetscFunctionBegin;
   ierr = SLESSetFromOptions(ts->sles);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -388,7 +387,6 @@ static int TSSetFromOptions_CN_Nonlinear(TS ts)
 
   PetscFunctionBegin;
   ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
