@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.1 1999/10/06 16:37:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.2 1999/10/06 18:54:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -50,13 +50,12 @@ typedef struct {
    DA         da;
    Vec        x,b,r;            /* global vectors */
    Mat        J;                /* Jacobian on grid */
+   SLES       sles;
 } GridCtx;
 
 typedef struct {
    GridCtx     fine;
    GridCtx     coarse;
-   SLES        sles_coarse;
-   SLES        sles_fine;
    int         ratio;
    Mat         R;              /* restriction fine to coarse */
    Vec	       Rscale;
@@ -150,18 +149,18 @@ int main( int argc, char **argv )
   ierr = MGSetType(pc,MGADDITIVE); CHKERRA(ierr);
 
   /* Create coarse level */
-  ierr = MGGetCoarseSolve(pc,&user.sles_coarse); CHKERRA(ierr);
-  ierr = SLESSetOptionsPrefix(user.sles_coarse,"coarse_"); CHKERRA(ierr);
-  ierr = SLESSetFromOptions(user.sles_coarse); CHKERRA(ierr);
-  ierr = SLESSetOperators(user.sles_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = MGGetCoarseSolve(pc,&user.coarse.sles); CHKERRA(ierr);
+  ierr = SLESSetOptionsPrefix(user.coarse.sles,"coarse_"); CHKERRA(ierr);
+  ierr = SLESSetFromOptions(user.coarse.sles); CHKERRA(ierr);
+  ierr = SLESSetOperators(user.coarse.sles,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = MGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRA(ierr); 
   ierr = MGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRA(ierr); 
 
   /* Create fine level */
-  ierr = MGGetSmoother(pc,FINE_LEVEL,&user.sles_fine); CHKERRA(ierr);
-  ierr = SLESSetOptionsPrefix(user.sles_fine,"fine_"); CHKERRA(ierr);
-  ierr = SLESSetFromOptions(user.sles_fine); CHKERRA(ierr);
-  ierr = SLESSetOperators(user.sles_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = MGGetSmoother(pc,FINE_LEVEL,&user.fine.sles); CHKERRA(ierr);
+  ierr = SLESSetOptionsPrefix(user.fine.sles,"fine_"); CHKERRA(ierr);
+  ierr = SLESSetFromOptions(user.fine.sles); CHKERRA(ierr);
+  ierr = SLESSetOperators(user.fine.sles,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = MGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRA(ierr); 
   ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.fine.J); CHKERRA(ierr);
 
@@ -762,7 +761,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
   if (PetscTypeCompare(pc,PCMG)) {
 
-    ierr = SLESSetOperators(user->sles_fine,user->fine.J,user->fine.J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
+    ierr = SLESSetOperators(user->fine.sles,user->fine.J,user->fine.J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
 
     /* restrict X to coarse grid */
     ierr = MGRestrict(user->R,X,user->coarse.x);CHKERRQ(ierr);
@@ -770,7 +769,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
     /* form Jacobian on coarse grid */
     ierr = FormJacobian_Grid(user,&user->coarse,user->coarse.x,&user->coarse.J,&user->coarse.J);CHKERRQ(ierr);
     
-    ierr = SLESSetOperators(user->sles_coarse,user->coarse.J,user->coarse.J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
+    ierr = SLESSetOperators(user->coarse.sles,user->coarse.J,user->coarse.J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
 
   }
 
