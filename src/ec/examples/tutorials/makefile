@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.10 1998/04/23 22:46:41 balay Exp balay $ 
+# $Id: makefile,v 1.11 1998/06/13 05:09:47 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -19,7 +19,7 @@ EXAMPLESC       =
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
-ex1: ex1.o 
+ex1: ex1.o   chkopts 
 	-${CLINKER} -o ex1 ex1.o ${SLES_LIB}
 	${RM} ex1.o
 

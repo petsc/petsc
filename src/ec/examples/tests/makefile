@@ -1,14 +1,8 @@
-# $Id: makefile,v 1.10 1998/03/30 22:27:45 balay Exp balay $ 
+# $Id: makefile,v 1.11 1998/04/23 22:46:29 balay Exp bsmith $ 
 
 ALL: ex1
 
 CFLAGS	        = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        =
-OBJSC	        =
-OBJSF	        =
-LIBBASE	        = libpetscec
 LOCDIR          = src/ec/examples/tests/
 TESTEXAMPLES_1  = 
 TESTEXAMPLES_2  = 
@@ -20,23 +14,23 @@ EXAMPLESC       =
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
-ex1: ex1.o 
-	-${CLINKER} -o ex1 ex1.o ${PETSC_LIB}
+ex1: ex1.o   chkopts 
+	-${CLINKER} -o ex1 ex1.o ${PETSC_LIB} -lpetscec ${PETSC_LIB}
 	${RM} ex1.o
 
-ex2: ex2.o 
+ex2: ex2.o   chkopts
 	-${CLINKER} -o ex2 ex2.o ${PETSC_LIB}
 	${RM} ex2.o
 
-ex3: ex3.o 
+ex3: ex3.o   chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_LIB}
 	${RM} ex3.o
 
-ex4: ex4.o 
+ex4: ex4.o   chkopts
 	-${CLINKER} -o ex4 ex4.o ${PETSC_LIB}
 	${RM} ex4.o
 
-ex5: ex5.o 
+ex5: ex5.o   chkopts
 	-${CLINKER} -o ex5 ex5.o ${PETSC_LIB}
 	${RM} ex5.o
 

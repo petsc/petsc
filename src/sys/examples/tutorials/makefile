@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.18 1998/04/29 00:46:22 balay Exp balay $ 
+# $Id: makefile,v 1.19 1998/06/12 22:12:14 balay Exp bsmith $ 
 
 ALL:
 
@@ -23,19 +23,19 @@ EXAMPLESF       = ex3f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
-ex1: ex1.o 
+ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
 	${RM} -f ex1.o
 
-ex2: ex2.o 
+ex2: ex2.o   chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
 	${RM} -f ex2.o
 
-ex3: ex3.o 
+ex3: ex3.o   chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
 	${RM} -f ex3.o
 
-ex3f: ex3f.o 
+ex3f: ex3f.o   chkopts
 	-${FLINKER} -o ex3f ex3f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
 	${RM} -f ex3f.o
 

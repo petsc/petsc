@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.82 1998/11/20 15:31:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.83 1998/11/21 01:05:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -445,18 +445,10 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   ierr = VecCreateMPI(comm,x*y*z,PETSC_DECIDE,&global); CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),&local);CHKERRQ(ierr);
 
-  /* compose the DA into the MPI vector so it has access to the 
+  /* compose the DA into the vectors so they have access to the 
      distribution information */
   ierr = PetscObjectCompose((PetscObject)global,"DA",(PetscObject)da);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)local,"DA",(PetscObject)da);CHKERRQ(ierr);
-  ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
-  ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
-#if defined(HAVE_AMS)
-  ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
-#endif
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
@@ -1826,6 +1818,16 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAPrintHelp(da); CHKERRQ(ierr);}
   PetscPublishAll(da);
+
+#if defined(HAVE_AMS)
+  ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
+         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",
+         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+  if (((PetscObject)global)->amem > -1) {
+    ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.11 1998/06/12 21:55:27 balay Exp balay $ 
+# $Id: makefile,v 1.12 1998/06/12 22:24:22 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -14,7 +14,7 @@ LINCLUDE  = ${SOURCEH}
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
-ex1: ex1.o ${PETSC_ARCH}${BOPT}ysmp.a
+ex1: chkopts ex1.o ${PETSC_ARCH}${BOPT}ysmp.a
 	-${CLINKER} -o ex1 ex1.o ${LIBNAME} ${PETSC_LIB} ${PETSC_ARCH}${BOPT}ysmp.a
 	${RM} ex1.o
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.83 1998/11/20 15:31:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.84 1998/11/21 01:06:37 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -224,14 +224,6 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
      distribution information */
   ierr = PetscObjectCompose((PetscObject)global,"DA",(PetscObject)da);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)local,"DA",(PetscObject)da);CHKERRQ(ierr);
-  ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
-  ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
-#if defined(HAVE_AMS)
-  ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
-#endif
 
   /* Create Local to Global Vector Scatter Context */
   /* local to global inserts non-ghost point region into global */
@@ -379,6 +371,15 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   if (flg1) {ierr = DAPrintHelp(da); CHKERRQ(ierr);}
   *inra = da;
   PetscPublishAll(da);  
+#if defined(HAVE_AMS)
+  ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
+         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",
+         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+  if (((PetscObject)global)->amem > -1) {
+    ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
