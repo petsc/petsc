@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.27 1995/07/18 19:58:19 curfman Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.28 1995/07/18 20:21:59 curfman Exp curfman $";
 #endif
 
 /*
@@ -86,7 +86,7 @@ static int PCView_SOR(PetscObject obj,Viewer viewer)
   char       *sortype;
 
   if (sym & SOR_ZERO_INITIAL_GUESS) 
-    MPIU_fprintf(pc->comm,fd,"     SOR:  zero initial guess\n");
+    MPIU_fprintf(pc->comm,fd,"    SOR:  zero initial guess\n");
   if (sym == SOR_APPLY_UPPER)              sortype = "apply_upper";
   else if (sym == SOR_APPLY_LOWER)         sortype = "apply_lower";
   else if (sym & SOR_EISENSTAT)            sortype = "Eisenstat";
