@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.7 1999/02/25 18:26:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.8 1999/02/25 22:56:46 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -14,20 +14,19 @@ EXTERN_C_BEGIN
 #define __FUNC__ "VecView_MPI_Draw_DA2d"
 int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 {
-  DA             da;
+  DA             da,dac,dag;
   int            i,rank,size,ierr,igstart,N,step,s,M;
   int            istart,isize,j,jgstart;
   int            c1, c2, c3, c4, k,id,n,m,*lx,*ly;
-  double         coors[4],ymin,ymax,min,max,xmin,xmax,xminw,xmaxw,yminw,ymaxw;
+  double         coors[4],ymin,ymax,min,max,xmin,xmax;
   double         x1, x2, x3, x4, y_1, y2, y3, y4,scale;
   double         minw,maxw;
   Scalar         *v,*xy;
   Draw           draw,popup;
   PetscTruth     isnull;
   MPI_Comm       comm;
-  Vec            xlocal,xcoor;
+  Vec            xlocal,xcoor,xcoorl;
   DAPeriodicType periodic;
-  DA             dac;
   DAStencilType  st;
 
   PetscFunctionBegin;
@@ -39,15 +38,16 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
 
+  ierr = DAGetInfo(da,0,&M,&N,0,&m,&n,0,0,&s,&periodic,&st);CHKERRQ(ierr);
+  ierr = DAGetOwnershipRange(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsGhosted",(PetscObject*) &xlocal);CHKERRQ(ierr);
   if (!xlocal) {
-    ierr = DAGetInfo(da,0,&M,&N,0,&m,&n,0,0,&s,&periodic,&st);CHKERRQ(ierr);
     if (periodic != DA_NONPERIODIC || s != 1 || st != DA_STENCIL_BOX) {
       /* 
          if original da is not of stencil width one, or periodic or not a box stencil then
          create a special DA to handle one level of ghost points for graphics
       */
-      ierr = DAGetOwnershipRange(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
       ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,m,n,1,s,lx,ly,&dac);CHKERRQ(ierr); 
       PLogInfo(da,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics ghost points\n");
     } else {
@@ -70,9 +70,6 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   ierr = DAGlobalToLocalEnd(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = VecGetArray(xlocal,&v); CHKERRQ(ierr);
 
-  ierr = DAGetInfo(dac,0,&M,&N,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(dac,&igstart,&jgstart,0,&m,&n,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
 
   /* get coordinates of nodes */
   ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
@@ -81,25 +78,41 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
     ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   }
 
-  MPI_Comm_rank(comm,&rank);
-
   /*
       Determine the min and max  coordinates in plot 
   */
-  ierr = VecStrideMin(xcoor,0,PETSC_NULL,&xminw);CHKERRQ(ierr);
-  ierr = VecStrideMax(xcoor,0,PETSC_NULL,&xmaxw);CHKERRQ(ierr);
-  ierr = VecStrideMin(xcoor,1,PETSC_NULL,&yminw);CHKERRQ(ierr);
-  ierr = VecStrideMax(xcoor,1,PETSC_NULL,&ymaxw);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&xminw,&xmin,1,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&xmaxw,&xmax,1,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&yminw,&ymin,1,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&ymaxw,&ymax,1,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = VecStrideMin(xcoor,0,PETSC_NULL,&xmin);CHKERRQ(ierr);
+  ierr = VecStrideMax(xcoor,0,PETSC_NULL,&xmax);CHKERRQ(ierr);
+  ierr = VecStrideMin(xcoor,1,PETSC_NULL,&ymin);CHKERRQ(ierr);
+  ierr = VecStrideMax(xcoor,1,PETSC_NULL,&ymax);CHKERRQ(ierr);
   coors[0] = xmin - .05*(xmax- xmin); coors[2] = xmax + .05*(xmax - xmin);
   coors[1] = ymin - .05*(ymax- ymin); coors[3] = ymax + .05*(ymax - ymin);
-  ierr = VecGetArray(xcoor,&xy);CHKERRQ(ierr);
-
   PLogInfo(da,"VecView_MPI_Draw_DA2d:Preparing DA 2d contour plot coordinates %g %g %g %g\n",
            coors[0],coors[1],coors[2],coors[3]);
+
+  /*
+       get local ghosted version of coordinates 
+  */
+  ierr = PetscObjectQuery((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject*) &xcoorl);CHKERRQ(ierr);
+  if (!xcoorl) {
+    /* create DA to get local version of graphics */
+    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,m,n,2,1,lx,ly,&dag);CHKERRQ(ierr); 
+    PLogInfo(dag,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics coordinates ghost points\n");
+    ierr = DACreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)dag);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)xcoorl);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectQuery((PetscObject)xcoorl,"DA",(PetscObject*) &dag);CHKERRQ(ierr);
+  }
+  ierr = DAGlobalToLocalBegin(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
+  ierr = VecGetArray(xcoorl,&xy);CHKERRQ(ierr);
+  
+  MPI_Comm_rank(comm,&rank);
+  ierr = DAGetInfo(dac,0,&M,&N,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(dac,&igstart,&jgstart,0,&m,&n,0);CHKERRQ(ierr);
+  ierr = DAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
 
   for ( k=0; k<step; k++ ) {
     ierr = ViewerDrawGetDraw(viewer,k,&draw);CHKERRQ(ierr);
@@ -153,11 +166,12 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
     ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr);
     ierr = DrawPause(draw); CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(xcoor,&xy);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xcoorl,&xy);CHKERRQ(ierr);
   ierr = VecRestoreArray(xlocal,&v); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
 
 
 
