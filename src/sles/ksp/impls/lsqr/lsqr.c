@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.3 1994/11/21 06:45:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.4 1994/12/23 20:25:48 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -33,8 +33,6 @@ double    beta, alpha, rnorm, *history;
 Scalar    tmp, zero = 0.0;
 Vec       X,B,V,V1,U,U1,TMP,W,BINVF;
 
-res     = itP->calc_res;
-pres    = itP->use_pres;
 maxit   = itP->max_it;
 history = itP->residual_history;
 hist_len= itP->res_hist_size;

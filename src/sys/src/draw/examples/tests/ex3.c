@@ -22,7 +22,7 @@ int main(int argc,char **argv)
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
-  OptionsCreate(&argc,&argv,(char*)0,(char*)0);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,help);
   OptionsGetInt(0,0,"-width",&width);
   OptionsGetInt(0,0,"-height",&height);
@@ -30,7 +30,8 @@ int main(int argc,char **argv)
   if (OptionsHasName(0,0,"-nolabels")) {
     xlabel = (char *)0; toplabel = (char *)0;
   }
-  ierr = DrawOpenX(0,"Window Title",x,y,width,height,&draw); CHKERR(ierr);
+  ierr = DrawOpenX(MPI_COMM_SELF,0,"Window Title",x,y,width,height,&draw);
+  CHKERR(ierr);
   ierr = DrawLGCreate(draw,1,&lg); CHKERR(ierr);
   ierr = DrawLGGetAxisCtx(lg,&axis); CHKERR(ierr);
   ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE);
@@ -43,7 +44,7 @@ int main(int argc,char **argv)
 
   ierr = DrawLG(lg); CHKERR(ierr);
   ierr = DrawFlush(draw);
-  sleep(500);
+  sleep(2);
 
   DrawLGDestroy(lg);
   PetscFinalize();

@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   DrawCtx       win;
   DrawLGCtx     lg;
 
-  OptionsCreate(&argc,&argv,(char*)0,(char*)0);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-n",&n);
 
@@ -32,11 +32,11 @@ int main(int argc,char **argv)
   VecBeginAssembly(x);
   VecEndAssembly(x);
 
-  ierr = DrawOpenX(0,0,0,0,300,300,&win); CHKERR(ierr);
+  ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,300,300,&win); CHKERR(ierr);
   ierr = DrawLGCreate(win,1,&lg); CHKERR(ierr);
 
   VecView(x,(Viewer) lg);
-  sleep(5);
+  sleep(2);
 
   ierr = DrawLGDestroy(lg); CHKERR(ierr);
 

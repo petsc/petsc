@@ -22,6 +22,7 @@ extern int    PCApplyBAorABTrans(PC,int,Vec,Vec,Vec);
 extern int    PCApplyRichardson(PC,Vec,Vec,Vec,int);
 extern int    PCApplyRichardsonExists(PC);
 extern int    PCRegisterAll();
+extern int    PCRegisterDestroy();
 extern int    PCRegister(PCMETHOD,char *,int (*)(PC));
 extern int    PCDestroy(PC);
 extern int    PCSetFromOptions(PC);

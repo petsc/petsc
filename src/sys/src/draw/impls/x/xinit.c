@@ -27,7 +27,6 @@ extern int XiFontFixed(XiWindow*,int,int,XiFont** );
 */
 int XiOpenDisplay(XiWindow* XiWin,char *display_name )
 {
-  if (display_name && display_name[0] == 0)  display_name = 0;
   XiWin->disp = XOpenDisplay( display_name );
   if (!XiWin->disp)  return 1;
   XiWin->screen = DefaultScreen( XiWin->disp );
@@ -120,11 +119,8 @@ int XiDisplayWindow( XiWindow* XiWin, char *label, int x, int y,
   if (w > wavail) w   = wavail;
   if (h > havail)  h   = havail;
 
-  /* Find out if the user specified the position */
-  q_user_pos  = (x >= 0) && (y >= 0);
-
   /* changed the next line from xtools version */
-  border_width   = 4;
+  border_width   = 0;
   if (x < 0) x   = 0;
   if (y < 0) y   = 0;
   x   = (x + w > wavail) ? wavail - w : x;
@@ -238,18 +234,14 @@ int XiQuickWindow(XiWindow* mywindow,char* host,char* name,int x,int y,
 /* 
    And a version from an already defined window
  */
-int XiQuickWindowFromWindow( XiWindow* mywindow,char *host, Window win )
+int XiQuickWindowFromWindow(XiWindow* mywindow,char *host,Window win,int nc)
 {
   Window       root;
-  int          d;
+  int          d,ierr;
   unsigned int ud;
-  if (XiOpenDisplay( mywindow, host )) {
-    fprintf( stderr, "Could not open display\n" );
-    return 1;
-  }
+  if (XiOpenDisplay( mywindow, host )) {SETERR(1,"Cannot open display");}
   if (XiSetVisual( mywindow, 1, (Colormap)0, 0 )) {
-    fprintf( stderr, "Could not set visual to default\n" );
-    return 1;
+    SETERR(1,"Cannot set visual in display");
   }
 
   mywindow->win = win;
@@ -260,6 +252,9 @@ int XiQuickWindowFromWindow( XiWindow* mywindow,char *host, Window win )
   mywindow->x = mywindow->y = 0;
 
   XiSetGC( mywindow, mywindow->cmapping[1] );
+  XiSetPixVal(mywindow, mywindow->background );
+  ierr = XiUniformHues(mywindow,nc-36); CHKERR(ierr);
+  ierr = XiFontFixed( mywindow,6, 10,&mywindow->font ); CHKERR(ierr);
   return 0;
 }
 

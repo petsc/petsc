@@ -33,6 +33,7 @@ extern int MatSetOption(Mat,int);
 #define COLUMNS_SORTED            8
 #define NO_NEW_NONZERO_LOCATIONS  16
 #define YES_NEW_NONZERO_LOCATIONS 32
+#define ALLOW_OUT_OF_RANGE        64
 
 extern int MatGetValues(Mat,Scalar*,int,int*,int,int*);
 extern int MatGetRow(Mat,int,int *,int **,Scalar**);
@@ -64,11 +65,14 @@ extern int MatSolveAdd(Mat,Vec,Vec,Vec);
 extern int MatSolveTran(Mat,Vec,Vec);
 extern int MatSolveTranAdd(Mat,Vec,Vec,Vec);
 
-#define SOR_FORWARD_SWEEP      1
-#define SOR_BACKWARD_SWEEP     2
-#define SOR_SYMMETRIC_SWEEP    3
-#define SOR_ZERO_INITIAL_GUESS 4
-extern int MatRelax(Mat,Vec,double,int,IS,int,Vec);
+#define SOR_FORWARD_SWEEP            1
+#define SOR_BACKWARD_SWEEP           2
+#define SOR_SYMMETRIC_SWEEP          3
+#define SOR_LOCAL_FORWARD_SWEEP      4
+#define SOR_LOCAL_BACKWARD_SWEEP     8
+#define SOR_LOCAL_SYMMETRIC_SWEEP    12
+#define SOR_ZERO_INITIAL_GUESS 16
+extern int MatRelax(Mat,Vec,double,int,double,int,Vec);
 
 extern int MatCopy(Mat,Mat*);
 extern int MatView(Mat,Viewer);
@@ -100,6 +104,8 @@ extern int MatDestroy(Mat);
 
 extern int MatGetSize(Mat,int*,int*);
 extern int MatGetLocalSize(Mat,int*,int*);
+extern int MatGetOwnershipRange(Mat,int*,int*);
+extern int MatSetIndexWindow(Mat,int,int,int,int);
 
 extern int MatCreateInitialMatrix(int,int,Mat*);
 

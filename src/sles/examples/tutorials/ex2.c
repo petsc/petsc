@@ -27,7 +27,7 @@ int main(int argc,char **args)
   n = 2*numtids;
 
   /* create the matrix for the five point stencil, YET AGAIN*/
-  ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,-1,-1,m*n,m*n,5,0,5,0,&C); 
+  ierr = MatCreateInitialMatrix(m*n,m*n,&C); 
   CHKERR(ierr);
 
   for ( i=0; i<m; i++ ) { 
@@ -43,7 +43,7 @@ int main(int argc,char **args)
   ierr = MatBeginAssembly(C); CHKERR(ierr);
   ierr = MatEndAssembly(C); CHKERR(ierr);
 
-  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,m*n,&u); CHKERR(ierr);
+  ierr = VecCreateInitialVector(m*n,&u); CHKERR(ierr);
   ierr = VecCreate(u,&b); CHKERR(ierr);
   ierr = VecCreate(b,&x); CHKERR(ierr);
   VecSet(&one,u); VecSet(&zero,x);

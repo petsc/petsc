@@ -63,7 +63,16 @@ int PetscAttachDebugger()
     char  *args[8],pid[8];
     kill(child,SIGSTOP);
     sprintf(pid,"%d",child); 
-    if (!Xterm) {
+    if (!strcmp(Debugger,"xxgdb")) {
+      args[1] = program; args[2] = pid; args[3] = "-display";
+      args[0] = Debugger; args[4] = Display; args[5] = 0;
+      fprintf(stderr,"Attaching %s to %s %s\n",args[0],args[1],pid);
+      if (execvp(args[0], args)  < 0) {
+        perror("Unable to start debugger");
+        exit(0);
+      }
+    }
+    else if (!Xterm) {
       args[1] = program; args[2] = pid; args[3] = 0;
       args[0] = Debugger;
       fprintf(stderr,"Attaching %s to %s %s\n",args[0],args[1],pid);

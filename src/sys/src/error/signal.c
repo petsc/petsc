@@ -68,7 +68,7 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
   else
     strcpy( buf, "Error: Caught signal " );
   ierr =  PetscError(0,0,"Unknown",buf,1);
-  exit(ierr);
+  MPI_Abort(MPI_COMM_WORLD,ierr);
   return 0;
 }
 

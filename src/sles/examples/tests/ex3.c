@@ -48,7 +48,7 @@ int main(int argc,char **args)
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
 
   /* create stiffness matrix */
-  ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,-1,-1,N,N,9,0,9,0,&C); 
+  ierr = MatCreateInitialMatrix(N,N,&C); 
   CHKERR(ierr);
 
   start = mytid*(M/numtids) + ((M%numtids) < mytid ? (M%numtids) : mytid);
@@ -68,7 +68,7 @@ int main(int argc,char **args)
 
   /* create right hand side and solution */
 
-  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,N,&u); CHKERR(ierr); 
+  ierr = VecCreateInitialVector(N,&u); CHKERR(ierr); 
   ierr = VecCreate(u,&b); CHKERR(ierr);
   ierr = VecCreate(b,&ustar); CHKERR(ierr);
   VecSet(&zero,u); VecSet(&zero,b);
@@ -113,6 +113,14 @@ int main(int argc,char **args)
   ierr = MatZeroRows(C,is,&one); CHKERR(ierr);
   ISDestroy(is);
 
+
+  { Mat A;
+  ierr = MatCopy(C,&A); CHKERR(ierr);
+  ierr = MatDestroy(C); CHKERR(ierr);
+  ierr = MatCopy(A,&C); CHKERR(ierr);
+  ierr = MatDestroy(A); CHKERR(ierr);
+  }
+
 /* MatView(C,0); VecView(b,0); */
 
   /* solve linear system */
@@ -124,8 +132,7 @@ int main(int argc,char **args)
   if (ierr = SLESSolve(sles,b,u,&its)) SETERR(ierr,0);
 
   /* check error */
-  start = mytid*(N/numtids) + ((N%numtids) < mytid ? (N%numtids) : mytid);
-  end   = start + N/numtids + ((N%numtids) > mytid); 
+  VecGetOwnershipRange(ustar,&start,&end);
   for ( i=start; i<end; i++ ) {
      x = h*(i % (m+1)); y = h*(i/(m+1)); 
      val = y;
@@ -147,3 +154,5 @@ int main(int argc,char **args)
   PetscFinalize();
   return 0;
 }
+
+

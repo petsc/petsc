@@ -12,10 +12,11 @@
 #else
 #define MPI_SCALAR MPI_DOUBLE
 #endif
-FILE *MPE_fopen(MPI_Comm,char *,char *);
-int MPE_fclose(MPI_Comm,FILE*);
-int MPE_fprintf(MPI_Comm,FILE*,char *,...);
-int MPE_printf(MPI_Comm,char *,...);
+extern FILE *MPE_fopen(MPI_Comm,char *,char *);
+extern int MPE_fclose(MPI_Comm,FILE*);
+extern int MPE_fprintf(MPI_Comm,FILE*,char *,...);
+extern int MPE_printf(MPI_Comm,char *,...);
+extern int MPE_Set_display(MPI_Comm,char **);
 
 
 #if defined(PETSC_COMPLEX)
@@ -51,12 +52,18 @@ int MPE_printf(MPI_Comm,char *,...);
 #define __DIR__ 0
 #endif
 #define SETERR(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
+#define SETERRA(n,s)    \
+                {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,s,n);\
+                 MPI_Abort(MPI_COMM_WORLD,_ierr);}
 #define CHKERR(n)       {if (n) SETERR(n,(char *)0);}
+#define CHKERRA(n)      {if (n) SETERRA(n,(char *)0);}
 #define CHKPTR(p)       if (!p) SETERR(1,"No memory");
+#define CHKPTRA(p)      if (!p) SETERRA(1,"No memory");
 
 
 typedef struct _PetscObject* PetscObject;
 typedef struct _Viewer*      Viewer;
+#define ViewerPrintf    (void *) 0
 
 /* useful Petsc routines (used often) */
 extern int  PetscInitialize(int*,char***,char*,char*);

@@ -14,7 +14,7 @@ static int PCiSORApply(PC pc,Vec x,Vec y)
 {
   PCiSOR *jac = (PCiSOR *) pc->data;
   int    ierr, flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
-  if (ierr = MatRelax(pc->mat,x,jac->omega,flag,0,jac->its,y)) return ierr;
+  if (ierr = MatRelax(pc->mat,x,jac->omega,flag,0.0,jac->its,y)) return ierr;
   return 0;
 }
 
@@ -23,7 +23,7 @@ static int PCiSORApplyrich(PC pc,Vec b,Vec y,Vec w,int its)
   PCiSOR *jac = (PCiSOR *) pc->data;
   int    ierr, flag;
   flag = jac->sym;
-  if (ierr = MatRelax(pc->mat,b,jac->omega,flag,0,its,y)) return ierr;
+  if (ierr = MatRelax(pc->mat,b,jac->omega,flag,0.0,its,y)) return ierr;
   return 0;
 }
 
@@ -46,6 +46,15 @@ static int PCisetfrom(PC pc)
   if (OptionsHasName(0,pc->prefix,"-sor_backward")) {
     PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);
   }
+  if (OptionsHasName(0,pc->prefix,"-sor_local_symmetric")) {
+    PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);
+  }
+  if (OptionsHasName(0,pc->prefix,"-sor_local_backward")) {
+    PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);
+  }
+  if (OptionsHasName(0,pc->prefix,"-sor_local_forward")) {
+    PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);
+  }
   return 0;
 }
 
@@ -56,6 +65,9 @@ int PCiSORprinthelp(PC pc)
   fprintf(stderr,"%ssor_omega omega: relaxation factor. 0 < omega <2\n",p);
   fprintf(stderr,"%ssor_symmetric: use SSOR\n",p);
   fprintf(stderr,"%ssor_backward: use backward sweep instead of forward\n",p);
+  fprintf(stderr,"%ssor_local_symmetric: use SSOR on each processor\n",p);
+  fprintf(stderr,"%ssor_local_backward: use backward sweep\n",p);
+  fprintf(stderr,"%ssor_local_forward: use forward sweep locally\n",p);
   fprintf(stderr,"%ssor_its its: number of inner SOR iterations to use\n",p);
   return 0;
 }

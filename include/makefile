@@ -4,8 +4,8 @@ CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(ITOOLSDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
-SOURCEH  = comm.h draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \
-           sysio.h vec.h sles.h
+SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \
+           sysio.h vec.h sles.h grid.h
 OBJSC    =
 WOBJS    = 
 OBJSF    =

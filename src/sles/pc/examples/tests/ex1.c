@@ -11,7 +11,7 @@ int main(int argc,char **args)
   PC  pc;
   int ierr;
 
-  OptionsCreate(&argc,&args,0,0);
+  PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   ierr = PCCreate(&pc); CHKERR(ierr);
 

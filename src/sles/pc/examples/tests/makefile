@@ -18,9 +18,12 @@ SYSLIB   = -L$(LDIR) -lpetscsles -lpetscksp -lpetscmat \
 LINCLUDE = $(SOURCEH)
 
 runexamples: 
-	-ex1
-	-ex2 -kspmethod cg -kspmonitor 
-	-ex3 -kspmethod gmres -kspmonitor -pcmethod sor -sor_symmetric
+	-$(MPIRUN) ex1
+	-$(MPIRUN) ex2 -kspmethod cg -kspmonitor 
+	-$(MPIRUN) ex3 -kspmethod gmres -kspmonitor -pcmethod sor\
+                             -sor_symmetric
+	-$(MPIRUN) ex4 -kspmethod cg -kspmonitor 
+	-$(MPIRUN) ex4 -kspmethod bcgs -kspmonitor 
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o $(LIBNAME) $(SYSLIB)

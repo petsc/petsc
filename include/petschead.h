@@ -38,7 +38,7 @@
 
 #define FREEDHEADER -1
 
-extern void *PetscLow,* PetscHigh;
+extern void *PetscLow,*PetscHigh;
 
 #define VALIDHEADER(h,ck)                             \
   {if (!h) {SETERR(1,"Null Object");}                 \

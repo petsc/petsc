@@ -1,4 +1,5 @@
 
+
 /*
    Support for the parallel AIJ matrix vector multiply
 */
@@ -19,8 +20,10 @@ int MPIAIJSetUpMultiply(Mat mat)
   /* mark those columns that are in aij->B */
   indices = (int *) MALLOC( N*sizeof(int) ); CHKPTR(indices);
   MEMSET(indices,0,N*sizeof(int));
-  for ( i=0; i<n; i++ ) {
-    if (aj[i]) { if (!indices[aj[i]-1]) ec++; indices[aj[i]-1] = 1;}
+  for ( i=0; i<B->m; i++ ) {
+    for ( j=0; j<B->ilen[i]; j++ ) {
+     if (!indices[aj[B->i[i] - 1 + j]-1]) ec++; 
+     indices[aj[B->i[i] - 1 + j]-1] = 1;}
   }
 
   /* form array of columns we need */
@@ -36,15 +39,18 @@ int MPIAIJSetUpMultiply(Mat mat)
   }
 
   /* compact out the extra columns in B */
-  for ( i=0; i<n; i++ ) {
-    if (aj[i]) aj[i] = indices[aj[i]-1];
+  for ( i=0; i<B->m; i++ ) {
+    for ( j=0; j<B->ilen[i]; j++ ) {
+      aj[B->i[i] - 1 + j] = indices[aj[B->i[i] - 1 + j]-1];
+    }
   }
+  B->n = ec;
   FREE(indices);
   
   /* create local vector that is used to scatter into */
   ierr = VecCreateSequential(ec,&aij->lvec); CHKERR(ierr);
 
-  /* create two temporary Index sets fot build scatter gather */
+  /* create two temporary Index sets for build scatter gather */
   ierr = ISCreateSequential(ec,garray,&from); CHKERR(ierr);
   ierr = ISCreateStrideSequential(ec,0,1,&to); CHKERR(ierr);
 
@@ -52,7 +58,7 @@ int MPIAIJSetUpMultiply(Mat mat)
   /* this is inefficient, but otherwise we must do either 
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(aij->comm,aij->n,aij->N,&gvec); CHKERR(ierr);
+  ierr = VecCreateMPI(mat->comm,aij->n,aij->N,&gvec); CHKERR(ierr);
 
   /* gnerate the scatter context */
   ierr = VecScatterCtxCreate(gvec,from,aij->lvec,to,&aij->Mvctx); CHKERR(ierr);

@@ -27,6 +27,17 @@ int XiDrawLine(DrawCtx Win, double xl, double yl, double xr, double yr,
   return 0;
 }
 
+int XiDrawPoint(DrawCtx Win,double x,double  y,int c)
+{
+  int    xx,yy;
+  XiWindow* XiWin = (XiWindow*) Win->data;
+  xx = XTRANS(Win,XiWin,x);  yy = YTRANS(Win,XiWin,y);
+  XiSetColor( XiWin, c );
+  XDrawPoint( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set,
+               xx, yy);
+  return 0;
+}
+
 int XiDrawText(DrawCtx Win,double x,double  y,int c,char *chrs )
 {
   int    xx,yy;
@@ -85,11 +96,26 @@ int XiDrawTextVertical(DrawCtx Win,double x,double  y,int c,char *chrs )
 int XiFlush(DrawCtx Win )
 {
   XiWindow* XiWin = (XiWindow*) Win->data;
-  if (XiWin->drw) {
-    XCopyArea( XiWin->disp, XiWin->drw, XiWin->win, XiWin->gc.set, 0, 0, 
-	       XiWin->w, XiWin->h, XiWin->x, XiWin->y );
-  }
   XFlush( XiWin->disp );
+  return 0;
+}
+
+int XiSFlush(DrawCtx Win )
+{
+  int       rank;
+  XiWindow* XiWin = (XiWindow*) Win->data;
+  XFlush( XiWin->disp );
+  if (XiWin->drw) {
+    MPI_Comm_rank(Win->comm,&rank);
+    /* make sure data has actually arrived at server */
+    XSync(XiWin->disp,False);
+    MPI_Barrier(Win->comm);
+    if (!rank) {
+      XCopyArea( XiWin->disp, XiWin->drw, XiWin->win, XiWin->gc.set, 0, 0, 
+	       XiWin->w, XiWin->h, XiWin->x, XiWin->y );
+      XFlush( XiWin->disp );
+    }
+  }
   return 0;
 }
 
@@ -116,12 +142,27 @@ int XiClearWindow(DrawCtx Win)
   return 0;
 }
 
+int XiDB(DrawCtx Win)
+{
+  XiWindow*  win = (XiWindow*) Win->data;
+  int        mytid;
+  if (win->drw) return 0;
+
+  MPI_Comm_rank(Win->comm,&mytid);
+  if (!mytid) {
+    win->drw = XCreatePixmap(win->disp,win->win,win->w,win->h,win->depth);
+  }
+  /* try to make sure it is actually done before passing info to all */
+  XSync(win->disp,False);
+  MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,Win->comm);
+  return 0;
+}
 extern int XiQuickWindow(XiWindow*,char*,char*,int,int,int,int,int);
 
-static struct _DrawOps DvOps = { 0,XiFlush,XiDrawLine,0,0,0,
+static struct _DrawOps DvOps = { XiDB,XiFlush,XiDrawLine,0,XiDrawPoint,0,
                                  XiDrawText,XiDrawTextVertical,
                                  XiDrawTextSize,XiDrawTextGetSize,
-                                 Xiviewport,XiClearWindow};
+                                 Xiviewport,XiClearWindow,XiSFlush};
 
 int XDestroy(PetscObject obj)
 {
@@ -133,11 +174,13 @@ int XDestroy(PetscObject obj)
   return 0;
 }
 
+extern int XiQuickWindowFromWindow(XiWindow*,char*,Window,int);
 
 /*@
     DrawOpenX - Opens an X window for use with the Draw routines.
 
   Input Parameters:
+.   comm - communicator that will share window
 .   display - the X display to open on, or null for the local machine
 .   title - the title to put in the title bar
 .   x,y - the screen coordinates of the upper left corner of window
@@ -146,12 +189,13 @@ int XDestroy(PetscObject obj)
   Output Parameters:
 .   ctx - the drawing context.
 @*/
-int DrawOpenX(char* display,char *title,int x,int y,int w,int h,
+int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
               DrawCtx* inctx)
 {
   DrawCtx  ctx;
   XiWindow *Xwin;
-  int      ierr;
+  int      ierr,len,numtid,mytid;
+  char     string[128];
 
   *inctx = 0;
   CREATEHEADER(ctx,_DrawCtx);
@@ -160,6 +204,7 @@ int DrawOpenX(char* display,char *title,int x,int y,int w,int h,
   ctx->ops     = &DvOps;
   ctx->destroy = XDestroy;
   ctx->view    = 0;
+  ctx->comm    = comm;
   ctx->coor_xl = 0.0;  ctx->coor_xr = 1.0;
   ctx->coor_yl = 0.0;  ctx->coor_yr = 1.0;
   ctx->port_xl = 0.0;  ctx->port_xr = 1.0;
@@ -167,8 +212,29 @@ int DrawOpenX(char* display,char *title,int x,int y,int w,int h,
 
   /* actually create and open the window */
   Xwin         = (XiWindow *) MALLOC( sizeof(XiWindow) ); CHKPTR(Xwin);
-  ierr         = XiQuickWindow(Xwin,display,title,x,y,w,h,256); CHKERR(ierr);
-
+  MEMSET(Xwin,0,sizeof(XiWindow));
+  MPI_Comm_size(comm,&numtid);
+  MPI_Comm_rank(comm,&mytid);
+  if (mytid == 0) {
+    if (!display && OptionsGetString(0,0,"-display",string,128)) {
+      display = string;
+    }
+    if (!display) {MPE_Set_display(comm,&display);}
+    ierr = XiQuickWindow(Xwin,display,title,x,y,w,h,256); CHKERR(ierr);
+    if (display != string) FREE(display);
+    MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);
+  }
+  else {
+    unsigned long win;
+    if (!display && OptionsGetString(0,0,"-display",string,128)) {
+      display = string;
+    }
+    if (!display) {MPE_Set_display(comm,&display);}
+    MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);
+    ierr = XiQuickWindowFromWindow( Xwin,display, win,256 ); CHKERR(ierr);
+    if (display != string) FREE(display);
+  }
+ 
   ctx->data    = (void *) Xwin;
   *inctx       = ctx;
   return 0;

@@ -11,27 +11,32 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
-           ex15
+           ex15 ex16
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
-           ex11.c ex12.c ex13.c ex14.c ex15.c
+           ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c
 SYSLIB   = -L$(LDIR) -lpetscvec \
            -lpetscsys $(BLAS) -lpetscdraw $(X11LIB) $(CLIB) $(SLIB) -lm 
 LINCLUDE = $(SOURCEH)
 
 runexamples:
-	-mpirun $(NP) ex1
-	-mpirun $(NP) ex1 -mpi
-	-ex2
-	-mpirun -np 2 ex3 -mpi
-	-ex6
-	-ex7
-	-ex8
-	-mpirun $(NP) ex9 
-	-mpirun $(NP) ex10 
-	-mpirun $(NP) ex11
-	-mpirun $(NP) ex12
-	-mpirun $(NP) ex13
-	-mpirun $(NP) ex14
+	-$(MPIRUN)  ex1
+	-$(MPIRUN)  ex1 -mpi_vecs
+	-$(MPIRUN)  -np 2 ex1 
+	-$(MPIRUN)  ex2
+	-$(MPIRUN) -np 2 ex3 -mpi
+	-$(MPIRUN) -np 2 ex4 -mpi
+	-$(MPIRUN) -np 2 ex5 -mpi
+	-$(MPIRUN)  ex6
+	-$(MPIRUN)  ex7
+	-$(MPIRUN)  ex8
+	-$(MPIRUN)  -np 2 ex9 
+	-$(MPIRUN)  -np 2 ex10 
+	-$(MPIRUN)  -np 2 ex11
+	-$(MPIRUN)  -np 2 ex12
+	-$(MPIRUN)  -np 2 ex13
+	-$(MPIRUN)  -np 2 ex14
+	-$(MPIRUN)  ex15
+	-$(MPIRUN) -np 3 ex16
 	
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)
@@ -92,6 +97,10 @@ ex14: ex14.o
 ex15: ex15.o 
 	-$(CLINKER) -o ex15 ex15.o  $(SYSLIB) 
 	$(RM) -f ex15.o
+
+ex16: ex16.o 
+	-$(CLINKER) -o ex16 ex16.o  $(SYSLIB) 
+	$(RM) -f ex16.o
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 

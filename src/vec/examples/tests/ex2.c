@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   IS            is1,is2;
   VecScatterCtx ctx = 0;
 
-  OptionsCreate(&argc,&argv,(char*)0,(char*)0);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-n",&n);
 
@@ -33,13 +33,16 @@ int main(int argc,char **argv)
 
   ierr = VecSet(&one,x);CHKERR(ierr);
   ierr = VecSet(&two,y);CHKERR(ierr);
-  ierr = VecScatterBegin(x,is1,y,is2,InsertValues,&ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,InsertValues,&ctx); CHKERR(ierr);
+  ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERR(ierr);
+  ierr = VecScatterBegin(x,is1,y,is2,InsertValues,ScatterAll,ctx);
+  CHKERR(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,InsertValues,ScatterAll,ctx); CHKERR(ierr);
   
   VecView(y,0);
 
-  ierr = VecScatterBegin(y,is1,x,is2,InsertValues,&ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(y,is1,x,is2,InsertValues,&ctx); CHKERR(ierr);
+  ierr = VecScatterBegin(y,is1,x,is2,InsertValues,ScatterAll,ctx);
+  CHKERR(ierr);
+  ierr = VecScatterEnd(y,is1,x,is2,InsertValues,ScatterAll,ctx); CHKERR(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERR(ierr);
 
   printf("-------\n");VecView(x,0);

@@ -17,15 +17,16 @@ int main(int argc,char **argv)
   int     ierr, x = 0, y = 0, width = 256, height = 256,i; 
   double  xx;
 
-  OptionsCreate(&argc,&argv,(char*)0,(char*)0);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,help);
 
-  ierr = DrawOpenX(0,"Window Title",x,y,width,height,&draw); CHKERR(ierr);
+  ierr = DrawOpenX(MPI_COMM_SELF,0,"Window Title",x,y,width,height,&draw);
+  CHKERR(ierr);
   for ( i=0; i<256; i++) {
     ierr = DrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i,i);
   }
   ierr = DrawFlush(draw);
-  sleep(5);
+  sleep(2);
   PetscFinalize();
   return 0;
 }

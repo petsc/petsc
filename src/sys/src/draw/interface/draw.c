@@ -161,6 +161,26 @@ int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
   ctx->coor_xr = xr; ctx->coor_yr = yr;
   return 0;
 }
+
+/*@
+    DrawGetCoordinates - Gets the application coordinates of the 
+          corners of the window (or page).
+
+  Input Paramters:
+.  ctx - the drawing object
+
+  Ouput Parameters:
+.  xl,yl,xr,yr - the coordinates of the lower left corner and upper
+                 right corner of the drawing region.
+@*/
+int DrawGetCoordinates(DrawCtx ctx,double *xl,double *yl,double *xr,double *yr)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  *xl = ctx->coor_xl; *yl = ctx->coor_yl;
+  *xr = ctx->coor_xr; *yr = ctx->coor_yr;
+  return 0;
+}
+
 /*@
    DrawSetDoubleBuffer - Sets a window to be double buffered. 
 
@@ -173,6 +193,7 @@ int DrawSetDoubleBuffer(DrawCtx ctx)
   if (ctx->ops->doublebuff) return (*ctx->ops->doublebuff)(ctx);
   return 0;
 }
+
 /*@
    DrawFlush - Flushs graphical output.
 
@@ -185,6 +206,23 @@ int DrawFlush(DrawCtx ctx)
   if (ctx->ops->flush) return (*ctx->ops->flush)(ctx);
   return 0;
 }
+
+/*@
+   DrawSyncFlush - Flushs graphical output. This waits until all 
+      processors have arrived and flushed, then does a global flush.
+      This is usually done to change the frame for double buffered 
+      graphics.
+
+  Input Parameters:
+.  ctx - the drawing context
+@*/
+int DrawSyncFlush(DrawCtx ctx)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->ops->flush) return (*ctx->ops->sflush)(ctx);
+  return 0;
+}
+
 /*@
    DrawClear - Clears graphical output.
 

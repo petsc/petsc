@@ -6,7 +6,8 @@
 
 /*@C
       MatCreateInitialMatrix - Reads from command line to determine 
-           what type of matrix to create.
+           what type of matrix to create. Also uses MPI matrices if 
+           number processors in MPI_COMM_WORLD greater then one.
 
   Input Parameters:
 .   m,n - matrix dimensions
@@ -16,11 +17,14 @@
 @*/
 int MatCreateInitialMatrix(int m,int n,Mat *V)
 {
-  if (OptionsHasName(0,0,"-dense")) {
-    fprintf(stdout,"Using BLAS+LAPACK sequential dense matrices\n");
+  int numtid;
+  MPI_Comm_size(MPI_COMM_WORLD,&numtid);
+  if (OptionsHasName(0,0,"-dense_mat")) {
     return MatCreateSequentialDense(m,n,V);
   }
-  fprintf(stdout,"Using standard sequential AIJ matrices\n");
+  if (OptionsHasName(0,0,"-mpi_mats") || numtid >1) {
+    return MatCreateMPIAIJ(MPI_COMM_WORLD,-1,-1,m,n,5,0,0,0,V);
+  }
   return MatCreateSequentialAIJ(m,n,10,0,V);
 }
  

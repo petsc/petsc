@@ -12,7 +12,9 @@ extern int    SYSetUserTimerRoutine();
 
 extern int    SYGetDayTime( ), SYGetDate();
 
-extern int    SYIsort(), SYDsort();
+extern int    SYIsort(int,int*);
+extern int    SYIsortperm(int,int*,int*);
+extern int    SYDsort(int,double*);
 
 extern int    SYCreateRndm();
 extern int    SYDRndm();

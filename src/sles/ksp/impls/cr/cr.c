@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.3 1994/11/21 06:44:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.4 1994/12/23 20:25:34 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -29,7 +29,6 @@ static int  KSPiCRSolve(KSP itP,int *its)
   Scalar    btop, bbot, bbotold, tmp, zero = 0.0, one = 1.0, mone = -1.0;
   Vec       X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T, Tmp;
 
-  res     = itP->calc_res;
   pres    = itP->use_pres;
   maxit   = itP->max_it;
   history = itP->residual_history;

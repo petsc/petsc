@@ -153,6 +153,8 @@ int DrawAxis(DrawAxisCtx ad )
   DrawCtx   awin = ad->win;
   double    h,w,tw,th,xl,xr,yl,yr,ow,oh;
 
+  if (ad->xlow == ad->xhigh) {ad->xlow -= .5; ad->xhigh += .5;}
+  if (ad->ylow == ad->yhigh) {ad->ylow -= .5; ad->yhigh += .5;}
   xl = ad->xlow; xr = ad->xhigh; yl = ad->ylow; yr = ad->yhigh;
   DrawSetCoordinates(awin,xl,yl,xr,yr);
   DrawTextGetSize(awin,&tw,&th);
@@ -168,7 +170,7 @@ int DrawAxis(DrawAxisCtx ad )
   DrawLine( awin, ad->xlow,ad->ylow,ad->xlow,ad->yhigh,ac,ac );
 
   if (ad->toplabel) {
-    w = xl + .5*(xr - xl) - .5*strlen(ad->xlabel)*tw;
+    w = xl + .5*(xr - xl) - .5*strlen(ad->toplabel)*tw;
     h = ad->yhigh;
     DrawText(awin,w,h,cc,ad->toplabel); 
   }

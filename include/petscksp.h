@@ -24,6 +24,7 @@ extern int KSPSolve(KSP,int *);
 extern int KSPDestroy(KSP);
 
 extern int KSPRegisterAll();
+extern int KSPRegisterDestroy();
 extern int KSPRegister(KSPMETHOD,char *,int (*)(KSP));
 
 extern int KSPGetMethodName(KSPMETHOD,char **);

@@ -5,6 +5,7 @@
 #include <math.h>
 #include "kspimpl.h"  /*I "ksp.h" I*/
 #include "cgctx.h"
+int ccgtql1(int *, Scalar *, Scalar *, int *);
 
 /* ------------------------------------------------------------------
 *      calculates eigenvalues of symmetric tridiagonal
@@ -101,6 +102,7 @@ int KSPCGDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
     printf("%d %14.12e %% %g %g %g \n",n,rnorm,cgP->emax,cgP->emin,c);
 #endif
   }
+  return 0;
 }
 
 /* tql1.f -- translated by f2c (version of 25 March 1992  12:58:56).
@@ -313,8 +315,7 @@ L1001:
     return 0;
 } /* cgtql1_ */
 
-static double cgpthy(a, b)
-double *a, *b;
+static double cgpthy(double *a, double *b)
 {
     /* System generated locals */
     double ret_val, d__1, d__2, d__3;

@@ -24,7 +24,7 @@ static struct _VeOps DvOps = { VeiDVBCreateVector,
               VeiDVBaxpy, VeiDVmaxpy, VeiDVaypx, VeiDVwaxpy, VeiDVpmult,
               VeiDVpdiv,  
               VeiDVinsertvalues,0,0,
-              VeiDVgetarray, VeiDVsize, VeiDVsize };
+              VeiDVgetarray, VeiDVsize, VeiDVsize,VeiDVrange };
 
 int VecCreateSequentialBLAS(int n,Vec *V)
 {

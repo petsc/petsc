@@ -43,15 +43,3 @@ int Xi_wait_map( XiWindow *XiWin)
   return 0;
 }
 
-/*
-    This routine reads a pixel from a window, thus insuring that everything
-    has actually been drawn.  If the window is null, do ALL windows.
- */
-int XiSync( XiWindow *XiWin )
-{
-  XImage   *xi;
-  if (XiWin->win) {
-    xi = XGetImage(XiWin->disp, XiWin->win, 0, 0, 1, 1, AllPlanes,XYPixmap);
-  }
-  return 0;
-}

@@ -17,7 +17,7 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,
 {
   DrawCtx win;
   int     ierr;
-  ierr = DrawOpenX(host,label,x,y,m,n,&win); CHKERR(ierr);
+  ierr = DrawOpenX(MPI_COMM_SELF,host,label,x,y,m,n,&win); CHKERR(ierr);
   ierr = DrawLGCreate(win,1,ctx); CHKERR(ierr);
   return 0;
 }

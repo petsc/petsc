@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.4 1994/11/21 06:44:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.5 1994/12/23 20:25:41 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -26,8 +26,6 @@ Scalar    rho, rhoold, a, s, b, tmp, one = 1.0;
 Vec       X,B,V,P,R,RP,T,Q,U, BINVF, AUQ;
 double    *history, dp;
 
-res     = itP->calc_res;
-pres    = itP->use_pres;
 maxit   = itP->max_it;
 history = itP->residual_history;
 hist_len= itP->res_hist_size;

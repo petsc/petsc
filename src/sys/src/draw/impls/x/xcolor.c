@@ -1,10 +1,16 @@
 
 #include "ximpl.h"
 
+static char *(colornames[]) = { "white", "black", "red", "yellow", "green", 
+                                "cyan", "blue", "magenta", "aquamarine",
+                                "forestgreen", "orange", "violet", "brown",
+                                "pink", "coral", "gray" };
+
 extern int XiInitCmap( XiWindow* );
 extern int XiAllocBW( XiWindow*, PixVal*,PixVal*);
 extern int XiGetVisualClass( XiWindow * );
 extern int XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned char*);
+Colormap XiCreateColormap(Display*,int,Visual *);
 
 /*
     This file contains routines to provide color support where available.
@@ -21,7 +27,6 @@ extern int XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned char*);
 int XiInitColors(XiWindow* XiWin,Colormap cmap,int nc )
 {
   PixVal   white_pixel, black_pixel;
-  Colormap XiCreateColormap(Display*,int,Visual* );
 
   /* reset the number of colors from info on the display */
   /* This is wrong; it needs to take the value from the visual */
@@ -462,7 +467,7 @@ PixVal XiSimColor(XiWindow *XiWin,PixVal pixel, int intensity, int is_fore)
     blue  = (blue  < WHITE_AMOUNT) ? 0 : blue - WHITE_AMOUNT;
   }
   sprintf( RGBcolor, "rgb:%4.4x/%4.4x/%4.4x", red, green, blue );
-  st = XLookupColor( XiWin->disp, XiWin->cmap, RGBcolor, &colordef, 
+  XLookupColor( XiWin->disp, XiWin->cmap, RGBcolor, &colordef, 
                      &colorsdef );
   return  colorsdef.pixel;
 }

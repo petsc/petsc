@@ -12,16 +12,18 @@ OBJSF     =
 LIBBASE   = libpetscsles
 EXAMPLES  = ex1 ex2 ex3 ex4
 EXAMPLESC = ex1.c ex2.c ex3.c ex4.c
-SYSLIB    = -L$(LDIR) -lpetscsles -lpetscksp \
-           -lpetscmat \
+SYSLIB    = -L$(LDIR) -lpetscsles -lpetscksp -lpetscmat \
            -lpetscvec -lpetscsys -lpetscdraw \
            $(LAPACK) $(BLAS) $(X11LIB) $(CLIB) $(SLIB) $(FCLIB) -lm 
 LINCLUDE  = $(SOURCEH)
 
 runexamples:
-	-ex1 
-	-mpirun $(NP) ex2 -m 5
-	-mpirun $(NP) ex3 -m 5
+	-$(MPIRUN) ex1 
+	-$(MPIRUN) -np 2 ex1 
+	-$(MPIRUN) ex2 -m 5
+	-$(MPIRUN) -np 2 ex2 -m 5
+	-$(MPIRUN) ex3 -m 5
+	-$(MPIRUN) -np 2 ex3 -m 5
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o $(LIBNAME) $(SYSLIB)

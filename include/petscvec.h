@@ -20,8 +20,8 @@
 
 #define VEC_COOKIE 0x101010
 
-typedef struct _Vec*           Vec;
-typedef struct _VecScatterCtx* VecScatterCtx;
+typedef struct _Vec*            Vec;
+typedef struct _VecScatterCtx*  VecScatterCtx;
 
 extern int VecCreateSequential(int,Vec *);  
 extern int VecCreateSequentialBLAS(int,Vec *); 
@@ -59,10 +59,19 @@ extern int VecSetValues(Vec, int, int *,Scalar*,InsertMode);
 extern int VecBeginAssembly(Vec);
 extern int VecEndAssembly(Vec);
 
-extern int VecScatterBegin(Vec,IS,Vec,IS,InsertMode,VecScatterCtx *);
-extern int VecScatterEnd(Vec,IS,Vec,IS,InsertMode,VecScatterCtx *); 
+#define ScatterDown 0
+#define ScatterUp   1
+#define ScatterAll  2
+extern int VecScatterBegin(Vec,IS,Vec,IS,InsertMode,int,VecScatterCtx);
+extern int VecScatterEnd(Vec,IS,Vec,IS,InsertMode,int,VecScatterCtx); 
 extern int VecScatterCtxCreate(Vec,IS,Vec,IS,VecScatterCtx *);
 extern int VecScatterCtxDestroy(VecScatterCtx);
+extern int VecScatterCtxCopy(VecScatterCtx,VecScatterCtx *);
+
+#define PipelineDown 0
+#define PipelineUp   1
+extern int VecPipelineBegin(Vec,IS,Vec,IS,InsertMode,int,VecScatterCtx);
+extern int VecPipelineEnd(Vec,IS,Vec,IS,InsertMode,int,VecScatterCtx); 
 
 extern int VecGetArray(Vec,Scalar**);
 extern int VecValidVector(Vec);
@@ -70,6 +79,7 @@ extern int VecView(Vec, Viewer);
 
 extern int VecGetSize(Vec,int *);
 extern int VecGetLocalSize(Vec,int *);
+extern int VecGetOwnershipRange(Vec,int*,int*);
 
 /* utility routines */
 extern int VecReciprocal(Vec);

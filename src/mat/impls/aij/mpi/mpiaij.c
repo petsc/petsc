@@ -1,7 +1,7 @@
 
 #include "mpiaij.h"
 #include "vec/vecimpl.h"
-
+#include "inline/spops.h"
 
 #define CHUNCKSIZE   100
 /*
@@ -61,22 +61,21 @@ static int MatiAIJInsertValues(Mat mat,int m,int *idxm,int n,
   }
   aij->insertmode = addv;
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0 || idxm[i] >= aij->M) {
-      if (aij->outofrange) continue;
-      else SETERR(1,"row index out of range");
-    }
+    if (idxm[i] < 0) continue;
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (idxn[i] < 0 || idxn[i] >= aij->N) {
-          if (aij->outofrange) continue;
-          else SETERR(1,"column index out of range");
-        }   
+        if (idxn[j] < 0) continue;
         if (idxn[j] >= cstart && idxn[j] < cend){
           col = idxn[j] - cstart;
           ierr = MatSetValues(aij->A,1,&row,1,&col,v+i*n+j,addv);CHKERR(ierr);
         }
         else {
+          if (aij->assembled) {
+            SETERR(1,"Cannot insert off diagonal block in already\
+                     assembled matrix. Contact petsc-maint@mcs.anl.gov\
+                     if your need this feature");
+          }
           col = idxn[j];
           ierr = MatSetValues(aij->B,1,&row,1,&col,v+i*n+j,addv);CHKERR(ierr);
         }
@@ -98,7 +97,7 @@ static int MatiAIJInsertValues(Mat mat,int m,int *idxm,int n,
 static int MatiAIJBeginAssemble(Mat mat)
 { 
   Matimpiaij  *aij = (Matimpiaij *) mat->data;
-  MPI_Comm    comm = aij->comm;
+  MPI_Comm    comm = mat->comm;
   int         ierr, numtids = aij->numtids, *owners = aij->rowners;
   int         mytid = aij->mytid;
   MPI_Request *send_waits,*recv_waits;
@@ -140,7 +139,7 @@ static int MatiAIJBeginAssemble(Mat mat)
   /* post receives: 
        1) each message will consist of ordered pairs 
      (global index,value) we store the global index as a double 
-     to simply the message passing. 
+     to simplify the message passing. 
        2) since we don't know how long each individual message is we 
      allocate the largest needed buffer for each receive. Potentially 
      this is a lot of wasted space.
@@ -204,16 +203,16 @@ static int MatiAIJEndAssemble(Mat mat)
   Matimpiaij *aij = (Matimpiaij *) mat->data;
 
   MPI_Status  *send_status,recv_status;
-  int         index,idx,nrecvs = aij->nrecvs, count = nrecvs, i, n;
+  int         imdex,idx,nrecvs = aij->nrecvs, count = nrecvs, i, n;
   int         row,col;
   Scalar      *values,val;
   InsertMode  addv = aij->insertmode;
 
   /*  wait on receives */
   while (count) {
-    MPI_Waitany(nrecvs,aij->recv_waits,&index,&recv_status);
+    MPI_Waitany(nrecvs,aij->recv_waits,&imdex,&recv_status);
     /* unpack receives into our local space */
-    values = aij->rvalues + 3*index*aij->rmax;
+    values = aij->rvalues + 3*imdex*aij->rmax;
     MPI_Get_count(&recv_status,MPI_SCALAR,&n);
     n = n/3;
     for ( i=0; i<n; i++ ) {
@@ -225,6 +224,11 @@ static int MatiAIJEndAssemble(Mat mat)
         MatSetValues(aij->A,1,&row,1,&col,&val,addv);
       } 
       else {
+        if (aij->assembled) {
+          SETERR(1,"Cannot insert off diagonal block in already\
+                   assembled matrix. Contact petsc-maint@mcs.anl.gov\
+                   if your need this feature");
+        }
         MatSetValues(aij->B,1,&row,1,&col,&val,addv);
       }
     }
@@ -245,9 +249,18 @@ static int MatiAIJEndAssemble(Mat mat)
   ierr = MatBeginAssembly(aij->A); CHKERR(ierr);
   ierr = MatEndAssembly(aij->A); CHKERR(ierr);
 
+
+  if (aij->assembled) {
+    /* this is because the present implimentation doesn't support 
+     inserting values off the diagonal block.*/
+    return 0;
+  }
+
   ierr = MPIAIJSetUpMultiply(mat); CHKERR(ierr);
   ierr = MatBeginAssembly(aij->B); CHKERR(ierr);
   ierr = MatEndAssembly(aij->B); CHKERR(ierr);
+
+  aij->assembled = 1;
   return 0;
 }
 
@@ -276,8 +289,8 @@ static int MatiZerorows(Mat A,IS is,Scalar *diag)
   int            *localrows,*procs,*nprocs,j,found,idx,nsends,*work;
   int            nmax,*svalues,*starts,*owner,nrecvs,mytid = l->mytid;
   int            *rvalues,tag = 67,count,base,slen,n,len,*source;
-  int            *lens,index,*lrows,*values;
-  MPI_Comm       comm = l->comm;
+  int            *lens,imdex,*lrows,*values;
+  MPI_Comm       comm = A->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
   IS             istmp;
@@ -297,7 +310,7 @@ static int MatiZerorows(Mat A,IS is,Scalar *diag)
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERR(1,"Index out of range");
+    if (!found) SETERR(1,"Imdex out of range");
   }
   nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
 
@@ -352,11 +365,11 @@ static int MatiZerorows(Mat A,IS is,Scalar *diag)
   source = lens + nrecvs;
   count = nrecvs; slen = 0;
   while (count) {
-    MPI_Waitany(nrecvs,recv_waits,&index,&recv_status);
+    MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);
     /* unpack receives into our local space */
     MPI_Get_count(&recv_status,MPI_INT,&n);
-    source[index]  = recv_status.MPI_SOURCE;
-    lens[index]  = n;
+    source[imdex]  = recv_status.MPI_SOURCE;
+    lens[imdex]  = n;
     slen += n;
     count--;
   }
@@ -398,10 +411,11 @@ static int MatiAIJMult(Mat aijin,Vec xx,Vec yy)
   Matimpiaij *aij = (Matimpiaij *) aijin->data;
   int        ierr;
 
-  ierr = VecScatterBegin(xx,0,aij->lvec,0,InsertValues,&aij->Mvctx);
+  ierr = VecScatterBegin(xx,0,aij->lvec,0,InsertValues,ScatterAll,aij->Mvctx);
   CHKERR(ierr);
   ierr = MatMult(aij->A,xx,yy); CHKERR(ierr);
-  ierr = VecScatterEnd(xx,0,aij->lvec,0,InsertValues,&aij->Mvctx); CHKERR(ierr);
+  ierr = VecScatterEnd(xx,0,aij->lvec,0,InsertValues,ScatterAll,aij->Mvctx);
+  CHKERR(ierr);
   ierr = MatMultAdd(aij->B,aij->lvec,yy,yy); CHKERR(ierr);
   return 0;
 }
@@ -436,43 +450,218 @@ static int MatiView(PetscObject obj,Viewer viewer)
   Matimpiaij *aij = (Matimpiaij *) mat->data;
   int        ierr;
 
-  MPE_Seq_begin(aij->comm,1);
+  MPE_Seq_begin(mat->comm,1);
   printf("[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
           aij->mytid,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
           aij->cend);
   ierr = MatView(aij->A,viewer); CHKERR(ierr);
   ierr = MatView(aij->B,viewer); CHKERR(ierr);
-  MPE_Seq_end(aij->comm,1);
+  MPE_Seq_end(mat->comm,1);
   return 0;
 }
 
+extern int MatiAIJmarkdiag(Matiaij  *);
 /*
     This has to provide several versions.
 
      1) per sequential 
      2) a) use only local smoothing updating outer values only once.
         b) local smoothing updating outer values each inner iteration
-     3) color updating out values betwen colors. (this imples an 
-        ordering that is sort of related to the IS argument, it 
-        is not clear a IS argument makes the most sense perhaps it 
-        should be dropped.
+     3) color updating out values betwen colors.
 */
-static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,IS is,
+static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,double shift,
                         int its,Vec xx)
 {
   Matimpiaij *mat = (Matimpiaij *) matin->data;
-  Scalar     zero = 0.0;
-  int        ierr,one = 1, tmp, *idx, *diag;
+  Mat        AA = mat->A, BB = mat->B;
+  Matiaij    *A = (Matiaij *) AA->data, *B = (Matiaij *)BB->data;
+  Scalar     zero = 0.0,*b,*x,*w,*xs,*ls,d,*v,sum;
+  int        ierr,one = 1, tmp, *idx, *diag,mytid;
   int        n = mat->n, m = mat->m, i, j;
 
-  if (is) SETERR(1,"No support for ordering in relaxation");
   if (flag & SOR_ZERO_INITIAL_GUESS) {
+    /* could be more efficient by incorporating with below */
     if (ierr = VecSet(&zero,xx)) return ierr;
   }
 
-  /* update outer values from other processors*/
- 
-  /* smooth locally */
+  VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
+  xs = x - 1; /* shift by one for index start of 1 */
+  ls--;;
+  if (!A->diag) {if (ierr = MatiAIJmarkdiag(A)) return ierr;}
+  diag = A->diag;
+
+  if ((flag & SOR_SYMMETRIC_SWEEP) == SOR_SYMMETRIC_SWEEP){
+    ierr=VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterUp,mat->Mvctx);
+    CHKERR(ierr);
+    ierr = VecScatterEnd(xx,0,mat->lvec,0,InsertValues,ScatterUp,mat->Mvctx);
+    CHKERR(ierr);
+    while (its--) {
+      /* go down through the rows */
+      ierr = VecPipelineBegin(xx,0,mat->lvec,0,InsertValues,PipelineDown,
+                              mat->Mvctx); CHKERR(ierr);
+      for ( i=0; i<m; i++ ) {
+        n    = A->i[i+1] - A->i[i]; 
+        idx  = A->j + A->i[i] - 1;
+        v    = A->a + A->i[i] - 1;
+        sum  = b[i];
+        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        d    = shift + A->a[diag[i]-1];
+        n    = B->i[i+1] - B->i[i]; 
+        idx  = B->j + B->i[i] - 1;
+        v    = B->a + B->i[i] - 1;
+        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
+        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+      }
+      ierr = VecPipelineEnd(xx,0,mat->lvec,0,InsertValues,PipelineDown,
+                            mat->Mvctx); CHKERR(ierr);
+      /* come up through the rows */
+      ierr = VecPipelineBegin(xx,0,mat->lvec,0,InsertValues,PipelineUp,
+                              mat->Mvctx); CHKERR(ierr);
+      for ( i=m-1; i>-1; i-- ) {
+        n    = A->i[i+1] - A->i[i]; 
+        idx  = A->j + A->i[i] - 1;
+        v    = A->a + A->i[i] - 1;
+        sum  = b[i];
+        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        d    = shift + A->a[diag[i]-1];
+        n    = B->i[i+1] - B->i[i]; 
+        idx  = B->j + B->i[i] - 1;
+        v    = B->a + B->i[i] - 1;
+        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
+        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+      }
+      ierr = VecPipelineEnd(xx,0,mat->lvec,0,InsertValues,PipelineUp,
+                            mat->Mvctx); CHKERR(ierr);
+    }    
+  }
+  else if (flag & SOR_FORWARD_SWEEP){
+    while (its--) {
+      ierr=VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterUp,mat->Mvctx);
+      CHKERR(ierr);
+      ierr = VecScatterEnd(xx,0,mat->lvec,0,InsertValues,ScatterUp,mat->Mvctx);
+      CHKERR(ierr);
+      ierr = VecPipelineBegin(xx,0,mat->lvec,0,InsertValues,PipelineDown,
+                              mat->Mvctx); CHKERR(ierr);
+      for ( i=0; i<m; i++ ) {
+        n    = A->i[i+1] - A->i[i]; 
+        idx  = A->j + A->i[i] - 1;
+        v    = A->a + A->i[i] - 1;
+        sum  = b[i];
+        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        d    = shift + A->a[diag[i]-1];
+        n    = B->i[i+1] - B->i[i]; 
+        idx  = B->j + B->i[i] - 1;
+        v    = B->a + B->i[i] - 1;
+        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
+        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+      }
+      ierr = VecPipelineEnd(xx,0,mat->lvec,0,InsertValues,PipelineDown,
+                            mat->Mvctx); CHKERR(ierr);
+    } 
+  }
+  else if (flag & SOR_BACKWARD_SWEEP){
+    while (its--) {
+      ierr = VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterDown,
+                            mat->Mvctx); CHKERR(ierr);
+      ierr = VecScatterEnd(xx,0,mat->lvec,0,InsertValues,ScatterDown,
+                            mat->Mvctx); CHKERR(ierr);
+      ierr = VecPipelineBegin(xx,0,mat->lvec,0,InsertValues,PipelineUp,
+                              mat->Mvctx); CHKERR(ierr);
+      for ( i=m-1; i>-1; i-- ) {
+        n    = A->i[i+1] - A->i[i]; 
+        idx  = A->j + A->i[i] - 1;
+        v    = A->a + A->i[i] - 1;
+        sum  = b[i];
+        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        d    = shift + A->a[diag[i]-1];
+        n    = B->i[i+1] - B->i[i]; 
+        idx  = B->j + B->i[i] - 1;
+        v    = B->a + B->i[i] - 1;
+        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
+        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+      }
+      ierr = VecPipelineEnd(xx,0,mat->lvec,0,InsertValues,PipelineUp,
+                            mat->Mvctx); CHKERR(ierr);
+    } 
+  }
+  else if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
+    ierr=VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterAll,mat->Mvctx);
+    CHKERR(ierr);
+    ierr = VecScatterEnd(xx,0,mat->lvec,0,InsertValues,ScatterAll,mat->Mvctx);
+    CHKERR(ierr);
+    while (its--) {
+      /* go down through the rows */
+      for ( i=0; i<m; i++ ) {
+        n    = A->i[i+1] - A->i[i]; 
+        idx  = A->j + A->i[i] - 1;
+        v    = A->a + A->i[i] - 1;
+        sum  = b[i];
+        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        d    = shift + A->a[diag[i]-1];
+        n    = B->i[i+1] - B->i[i]; 
+        idx  = B->j + B->i[i] - 1;
+        v    = B->a + B->i[i] - 1;
+        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
+        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+      }
+      /* come up through the rows */
+      for ( i=m-1; i>-1; i-- ) {
+        n    = A->i[i+1] - A->i[i]; 
+        idx  = A->j + A->i[i] - 1;
+        v    = A->a + A->i[i] - 1;
+        sum  = b[i];
+        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        d    = shift + A->a[diag[i]-1];
+        n    = B->i[i+1] - B->i[i]; 
+        idx  = B->j + B->i[i] - 1;
+        v    = B->a + B->i[i] - 1;
+        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
+        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+      }
+    }    
+  }
+  else if (flag & SOR_LOCAL_FORWARD_SWEEP){
+    ierr=VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterAll,mat->Mvctx);
+    CHKERR(ierr);
+    ierr = VecScatterEnd(xx,0,mat->lvec,0,InsertValues,ScatterAll,mat->Mvctx);
+    CHKERR(ierr);
+    while (its--) {
+      for ( i=0; i<m; i++ ) {
+        n    = A->i[i+1] - A->i[i]; 
+        idx  = A->j + A->i[i] - 1;
+        v    = A->a + A->i[i] - 1;
+        sum  = b[i];
+        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        d    = shift + A->a[diag[i]-1];
+        n    = B->i[i+1] - B->i[i]; 
+        idx  = B->j + B->i[i] - 1;
+        v    = B->a + B->i[i] - 1;
+        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
+        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+      }
+    } 
+  }
+  else if (flag & SOR_LOCAL_BACKWARD_SWEEP){
+    ierr = VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterAll,
+                            mat->Mvctx); CHKERR(ierr);
+    ierr = VecScatterEnd(xx,0,mat->lvec,0,InsertValues,ScatterAll,
+                            mat->Mvctx); CHKERR(ierr);
+    while (its--) {
+      for ( i=m-1; i>-1; i-- ) {
+        n    = A->i[i+1] - A->i[i]; 
+        idx  = A->j + A->i[i] - 1;
+        v    = A->a + A->i[i] - 1;
+        sum  = b[i];
+        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        d    = shift + A->a[diag[i]-1];
+        n    = B->i[i+1] - B->i[i]; 
+        idx  = B->j + B->i[i] - 1;
+        v    = B->a + B->i[i] - 1;
+        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
+        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+      }
+    } 
+  }
   return 0;
 } 
 static int MatiAIJinsopt(Mat aijin,int op)
@@ -487,7 +676,6 @@ static int MatiAIJinsopt(Mat aijin,int op)
     MatSetOption(aij->A,op);
     MatSetOption(aij->B,op);
   }
-  else if (op == ALLOW_OUT_OF_RANGE)  aij->outofrange  = 1;
   else if (op == COLUMN_ORIENTED) SETERR(1,"Column oriented not supported");
   return 0;
 }
@@ -513,6 +701,8 @@ static int MatiAIJrange(Mat matin,int *m,int *n)
   return 0;
 }
 
+static int MatiCopy(Mat,Mat *);
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatiAIJInsertValues,
        0, 0,
@@ -522,7 +712,7 @@ static struct _MatOps MatOps = {MatiAIJInsertValues,
        MatiAIJrelax,
        0,
        0,0,0,
-       0,
+       MatiCopy,
        MatiAIJgetdiag,0,0,
        MatiAIJBeginAssemble,MatiAIJEndAssemble,
        0,
@@ -570,14 +760,21 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   mat->factor     = 0;
   mat->row        = 0;
   mat->col        = 0;
-  aij->comm       = comm;
+  mat->outofrange = 0;
+  mat->Mlow       = 0;
+  mat->Mhigh      = M;
+  mat->Nlow       = 0;
+  mat->Nhigh      = N;
+
+
+  mat->comm       = comm;
   aij->insertmode = NotSetValues;
   MPI_Comm_rank(comm,&aij->mytid);
   MPI_Comm_size(comm,&aij->numtids);
 
   if (M == -1 || N == -1) {
     work[0] = m; work[1] = n;
-    MPI_Allreduce((void *) work,(void *) sum,1,MPI_INT,MPI_SUM,comm );
+    MPI_Allreduce((void *) work,(void *) sum,2,MPI_INT,MPI_SUM,comm );
     if (M == -1) M = sum[0];
     if (N == -1) N = sum[1];
   }
@@ -622,9 +819,62 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   /* stuff used for matrix vector multiply */
   aij->lvec      = 0;
   aij->Mvctx     = 0;
+  aij->assembled = 0;
 
-  aij->outofrange = 0;
+  *newmat = mat;
+  return 0;
+}
 
+static int MatiCopy(Mat matin,Mat *newmat)
+{
+  Mat        mat;
+  Matimpiaij *aij,*oldmat = (Matimpiaij *) matin->data;
+  int        i,rl,len, m = oldmat->m, n = oldmat->n,ierr;
+  *newmat      = 0;
+
+  if (!oldmat->assembled) SETERR(1,"Cannot copy unassembled matrix");
+  CREATEHEADER(mat,_Mat);
+  mat->data       = (void *) (aij = NEW(Matimpiaij)); CHKPTR(aij);
+  mat->cookie     = MAT_COOKIE;
+  mat->ops        = &MatOps;
+  mat->destroy    = MatiAIJdestroy;
+  mat->view       = MatiView;
+  mat->type       = MATAIJSEQ;
+  mat->factor     = matin->factor;
+  mat->row        = 0;
+  mat->col        = 0;
+  mat->outofrange = matin->outofrange;
+  mat->Mlow       = matin->Mlow;
+  mat->Mhigh      = matin->Mhigh;
+  mat->Nlow       = matin->Nlow;
+  mat->Nhigh      = matin->Nhigh;
+
+  aij->m          = oldmat->m;
+  aij->n          = oldmat->n;
+  aij->M          = oldmat->M;
+  aij->N          = oldmat->N;
+
+  aij->assembled  = 1;
+  aij->rstart     = oldmat->rstart;
+  aij->rend       = oldmat->rend;
+  aij->cstart     = oldmat->cstart;
+  aij->cend       = oldmat->cend;
+  aij->numtids    = oldmat->numtids;
+  aij->mytid      = oldmat->mytid;
+  aij->insertmode = NotSetValues;
+
+  aij->rowners    = (int *) MALLOC( (aij->numtids+1)*sizeof(int) );
+  CHKPTR(aij->rowners);
+  MEMCPY(aij->rowners,oldmat->rowners,(aij->numtids+1)*sizeof(int));
+  aij->stash.nmax = 0;
+  aij->stash.n    = 0;
+  aij->stash.array= 0;
+  mat->comm       = matin->comm;
+  
+  ierr =  VecCreate(oldmat->lvec,&aij->lvec); CHKERR(ierr);
+  ierr =  VecScatterCtxCopy(oldmat->Mvctx,&aij->Mvctx); CHKERR(ierr);
+  ierr =  MatCopy(oldmat->A,&aij->A); CHKERR(ierr);
+  ierr =  MatCopy(oldmat->B,&aij->B); CHKERR(ierr);
   *newmat = mat;
   return 0;
 }

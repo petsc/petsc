@@ -1,4 +1,5 @@
 
+
 /*
        This code does not use data encapsulation. The reason is the 
    we need to scatter between different vector types (now chiefly 
@@ -15,7 +16,7 @@
 /*
     Sequential general to general scatter 
 */
-static int SGtoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv)
+static int SGtoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
 {
   VecScatterGeneral *gen_to = (VecScatterGeneral *) ctx->todata;
   VecScatterGeneral *gen_from = (VecScatterGeneral *) ctx->fromdata;
@@ -32,7 +33,7 @@ static int SGtoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv)
   }
   return 0;
 }
-static int SGtoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv)
+static int SGtoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
 {
   VecScatterStride  *gen_to = (VecScatterStride *) ctx->todata;
   VecScatterGeneral *gen_from = (VecScatterGeneral *) ctx->fromdata;
@@ -50,7 +51,7 @@ static int SGtoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv)
   return 0;
 }
 
-static int SStoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv)
+static int SStoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
 {
   VecScatterStride  *gen_from = (VecScatterStride *) ctx->fromdata;
   VecScatterGeneral *gen_to = (VecScatterGeneral *) ctx->todata;
@@ -68,7 +69,7 @@ static int SStoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv)
   return 0;
 }
 
-static int SStoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv)
+static int SStoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
 {
   VecScatterStride  *gen_to = (VecScatterStride *) ctx->todata;
   VecScatterStride  *gen_from = (VecScatterStride *) ctx->fromdata;
@@ -155,7 +156,8 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       MEMCPY(from->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
       ctx->begin = SGtoSG; ctx->destroy = SGtoSGDestroy;
-      ctx->end = 0;
+      ctx->end = 0; ctx->copy = 0;
+      ctx->beginpipe = 0; ctx->endpipe = 0;
       *newctx = ctx;
       return 0;
     }
@@ -173,7 +175,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       from->n = nx; from->first = from_first; from->step = from_step;
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
       ctx->begin = SStoSS; ctx->destroy = SGtoSGDestroy;
-      ctx->end = 0;
+      ctx->end = 0; ctx->beginpipe = 0; ctx->endpipe = 0; ctx->copy = 0;
       *newctx = ctx;
       return 0;
     }
@@ -193,7 +195,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       MEMCPY(from->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
       ctx->begin = SGtoSS; ctx->destroy = SGtoSGDestroy;
-      ctx->end = 0;
+      ctx->end = 0; ctx->beginpipe = 0; ctx->endpipe = 0; ctx->copy = 0;
       *newctx = ctx;
       return 0;
     }
@@ -214,7 +216,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       MEMCPY(to->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
       ctx->begin = SStoSG; ctx->destroy = SGtoSGDestroy;
-      ctx->end = 0;
+      ctx->end = 0; ctx->beginpipe = 0; ctx->endpipe = 0; ctx->copy = 0;
       *newctx = ctx;
       return 0;
     }
@@ -245,7 +247,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
         from->n = nx; from->first = from_first-start; from->step = from_step;
         ctx->todata = (void *) to; ctx->fromdata = (void *) from;
         ctx->begin = SStoSS; ctx->destroy = SGtoSGDestroy;
-        ctx->end = 0;
+        ctx->end = 0; ctx->beginpipe = 0; ctx->endpipe = 0; ctx->copy = 0;
         *newctx = ctx;
         return 0;
       }
@@ -284,7 +286,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
         from->n = nx; from->first = from_first; from->step = from_step;
         ctx->todata = (void *) to; ctx->fromdata = (void *) from;
         ctx->begin = SStoSS; ctx->destroy = SGtoSGDestroy;
-        ctx->end = 0;
+        ctx->end = 0; ctx->beginpipe = 0; ctx->endpipe = 0; ctx->copy = 0;
         *newctx = ctx;
         return 0;
       }
@@ -300,10 +302,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       return 0;
     }
   }
-  else {
-    SETERR(1,"Cannot generate such Scatter Context yet");
-  }
-  return 0;
+  SETERR(1,"Cannot generate such Scatter Context yet");
 }
 
 /* ------------------------------------------------------------------*/
@@ -322,29 +321,25 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
 .  x - vector to scatter from
 .  ix - indices of elements in x to take
 .  iy - indices of locations in y to insert 
-.  inctx - it not pointing to null, is used to coordinate communication
+.  inctx - is used to coordinate communication
 .  addv - either AddValues or InsertValues
+.  mode - either ScatterAll, ScatterUp, or ScatterDown
+.  inctx - scatter context obtained with VecScatterCtxCreate()
 
   Output Parameters:
 .  y - vector to scatter to 
-.  inctx - if points to null then it is set and used
 
   Notes:
 .   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 .   destroy inctx with VecScatterCtxDestroy() when no longer needed.
 @*/
-int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv, 
-                                                   VecScatterCtx *inctx)
+int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode, 
+                                                   VecScatterCtx inctx)
 {
-  int           ierr;
-  VecScatterCtx ctx;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   if (ix) VALIDHEADER(ix,IS_COOKIE); if (iy) VALIDHEADER(iy,IS_COOKIE);
-
-  if (!*inctx) {
-    ierr = VecScatterCtxCreate(x,ix,y,iy,inctx); CHKERR(ierr);
-  }
-  return (*(*inctx)->begin)(x,y,*inctx,addv);
+  VALIDHEADER(inctx,VEC_SCATTER_COOKIE);
+  return (*(inctx)->begin)(x,y,inctx,addv,mode);
 }
 
 /* --------------------------------------------------------------------*/
@@ -357,6 +352,7 @@ int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,
 .  ix - indices of elements in x to take
 .  iy - indices of locations in y to insert 
 .  addv - either AddValues or InsertValues
+.  mode - either ScatterAll, ScatterUp, or ScatterDown
 
   Output Parameters:
 .  y - vector to scatter to 
@@ -364,19 +360,20 @@ int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,
   Notes:
 .   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 @*/
-int VecScatterEnd(Vec x,IS ix,Vec y,IS iy,InsertMode addv,VecScatterCtx *ctx)
+int VecScatterEnd(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode,
+                                                       VecScatterCtx ctx)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   if (ix) VALIDHEADER(ix,IS_COOKIE); if (iy) VALIDHEADER(iy,IS_COOKIE);
-  VALIDHEADER(*ctx,VEC_SCATTER_COOKIE);
-  if ((*ctx)->end) return (*(*ctx)->end)(x,y,*ctx,addv);
+  VALIDHEADER(ctx,VEC_SCATTER_COOKIE);
+  if ((ctx)->end) return (*(ctx)->end)(x,y,ctx,addv,mode);
   else return 0;
 }
 
 
 /*@
      VecScatterCtxDestroy - Destroys a scatter context created by 
-              VecScatter(), VecScatterAdd() or VecScatterCtxCreate().
+              VecScatterCtxCreate().
 
   Input Parameters:
 .   sctx - the scatter context
@@ -388,4 +385,87 @@ int VecScatterCtxDestroy( VecScatterCtx ctx )
   return (*ctx->destroy)((PetscObject)ctx);
 }
 
+/*@
+     VecScatterCtxCopy - Makes a copy of a scatter context.
 
+  Input Parameters:
+.   sctx - the scatter context
+
+  Output Parameters:
+.   ctx - the result
+
+  Keywords: vector, scatter, copy
+@*/
+int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
+{
+  if (!sctx->copy) SETERR(1,"VecScatterCtxCopy: cannot copy this type");
+  /* generate the Scatter context */
+  CREATEHEADER(*ctx,_VecScatterCtx);
+  (*ctx)->cookie = VEC_SCATTER_COOKIE;
+  return (*sctx->copy)(sctx,*ctx);
+}
+
+
+/* ------------------------------------------------------------------*/
+/*@
+     VecPipelineBegin  -  Begins a vector pipeline operation. Receives
+                         results. The send your results with VecPipelineEnd().
+
+  Input Parameters:
+.  x - vector to scatter from
+.  ix - indices of elements in x to take
+.  iy - indices of locations in y to insert 
+.  inctx - is used to coordinate communication
+.  addv - either AddValues or InsertValues
+.  inctx - scatter context obtained with VecScatterCtxCreate()
+.  mode - either PipelineUp or PipelineDown
+
+  Output Parameters:
+.  y - vector to scatter to 
+
+  Notes:
+.   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
+.   destroy inctx with VecScatterCtxDestroy() when no longer needed.
+@*/
+int VecPipelineBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode, 
+                                        VecScatterCtx inctx)
+{
+  int numtid;
+  VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
+  if (ix) VALIDHEADER(ix,IS_COOKIE); if (iy) VALIDHEADER(iy,IS_COOKIE);
+  VALIDHEADER(inctx,VEC_SCATTER_COOKIE);
+  MPI_Comm_size(inctx->comm,&numtid);
+  if (numtid == 1) return 0;
+  if (!inctx->beginpipe) SETERR(1,"No pipeline for this context");
+  return (*(inctx)->beginpipe)(x,y,inctx,addv,mode);
+}
+
+/* --------------------------------------------------------------------*/
+/*@
+     VecPipelineEnd  - Sends results to next processor in pipeline.
+
+  Input Parameters:
+.  x - vector to scatter from
+.  ix - indices of elements in x to take
+.  iy - indices of locations in y to insert 
+.  addv - either AddValues or InsertValues
+.  mode - either PipelineUp or PipelineDown
+
+  Output Parameters:
+.  y - vector to scatter to 
+
+  Notes:
+.   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
+@*/
+int VecPipelineEnd(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode,
+                   VecScatterCtx ctx)
+{
+  int numtid;
+  VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
+  if (ix) VALIDHEADER(ix,IS_COOKIE); if (iy) VALIDHEADER(iy,IS_COOKIE);
+  VALIDHEADER(ctx,VEC_SCATTER_COOKIE);
+  MPI_Comm_size(ctx->comm,&numtid);
+  if (numtid == 1) return 0;
+  if ((ctx)->endpipe) return (*(ctx)->endpipe)(x,y,ctx,addv,mode);
+  else return 0;
+}

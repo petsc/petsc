@@ -10,7 +10,7 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
-DIRS     = inline is vec ksp sys pc mat sles options draw 
+DIRS     = inline is vec ksp sys pc mat sles options draw grid stencil
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 

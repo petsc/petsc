@@ -128,8 +128,9 @@ int KSPSetMethod(KSP ctx,KSPMETHOD itmethod)
 @*/
 int  KSPRegister(KSPMETHOD name, char *sname, int  (*create)(KSP))
 {
-  int (*dummy)() = (int (*)()) create;
-  if (!__ITList) __ITList = NRCreate();
+  int ierr;
+  int (*dummy)(void *) = (int (*)(void *)) create;
+  if (!__ITList) {ierr = NRCreate(&__ITList); CHKERR(ierr);}
   return NRRegister( __ITList, (int) name, sname, dummy );
 }
 
@@ -177,7 +178,7 @@ int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod )
 int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
 {
   if (!__ITList) KSPRegisterAll();
-  *name = NRFindName( __ITList, itmeth );
+  *name = NRFindName( __ITList, (int) itmeth );
   return 0;
 }
 

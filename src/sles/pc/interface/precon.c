@@ -34,7 +34,10 @@ int PCDestroy(PC pc)
   int ierr = 0;
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->destroy) ierr =  (*pc->destroy)((PetscObject)pc);
-  else   FREE(pc);
+  else {
+    if (pc->data) FREE(pc->data);
+    FREE(pc);
+  }
   return ierr;
 }
 

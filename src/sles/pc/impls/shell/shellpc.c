@@ -59,7 +59,7 @@ int PCiShellCreate(PC pc)
   shell          = NEW(PCShell); CHKPTR(shell);
   pc->data       = (void *) shell;
   pc->apply      = PCShellApply;
-  pc->applyrich  = PCShellApplyRichardson;
+  pc->applyrich  = 0;
   pc->setup      = 0;
   pc->type       = PCSHELL;
   shell->apply   = 0;
@@ -103,6 +103,7 @@ int PCShellSetApplyRichardson(PC pc, int (*mult)(void*,Vec,Vec,Vec,int),
   PCShell *shell;
   VALIDHEADER(pc,PC_COOKIE);
   shell            = (PCShell *) pc->data;
+  pc->applyrich    = PCShellApplyRichardson;
   shell->applyrich = mult;
   shell->ctxrich   = ptr;
   return 0;

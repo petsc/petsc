@@ -13,7 +13,7 @@ int main(int argc,char **args)
   SLES   sles;
   double norm;
 
-  OptionsCreate(&argc,&args,0,0);
+  PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-n",&n);
 

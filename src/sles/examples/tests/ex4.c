@@ -34,7 +34,7 @@ int main(int argc,char **args)
   KSP         ksp;
   IS          is;
 
-  OptionsCreate(&argc,&args,0,0);
+  PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-m",&m);
   N = (m+1)*(m+1); /* dimension of matrix */

@@ -181,7 +181,8 @@ int DrawLG(DrawLGCtx lg)
   DrawCtx  win = lg->win;
   VALIDHEADER(lg,LG_COOKIE);
 
-  if (xmin >= xmax || ymin >= ymax) return 0;
+  if (nopts < 2) return 0;
+  if (xmin > xmax || ymin > ymax) return 0;
   DrawClear(win);
   DrawAxisSetLimits(lg->axis, xmin, xmax, ymin, ymax);
   DrawAxis(lg->axis);

@@ -122,7 +122,6 @@ int XiInitFonts( XiWindow *XBWin )
   }
   /* If the above fails, try this: */
   if (act_nfonts == 0) {
-    XFontStruct *info;
     /* This just gets the most basic fixed-width fonts */
     names   = XListFontsWithInfo( XBWin->disp, "?x", NFONTS, &cnt, &info );
     j       = 0;
@@ -172,9 +171,12 @@ int XiMatchFontSize( XiFont *font, int w, int h )
     if (tmp < max) {max = tmp; imax = i;}
   }
 
+/*
   fprintf(stderr,"Warning could not match to font of %d fonts\n",act_nfonts);
   fprintf(stderr,"Wanted Size %d %d Using %d %d \n",w,h, nfonts[imax].w,
                                                          nfonts[imax].h);
+*/
+
   /* should use font with closest match */
   font->font_w        = nfonts[imax].w;
   font->font_h        = nfonts[imax].h;

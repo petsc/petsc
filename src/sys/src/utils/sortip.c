@@ -1,6 +1,4 @@
-#ifndef lint
-static char vcid[] = "$Id: comsort.c,v 1.1 1994/03/18 00:21:34 gropp Exp $";
-#endif
+
 
 /*
    This file contains routines for sorting "common" objects.
@@ -15,13 +13,12 @@ static char vcid[] = "$Id: comsort.c,v 1.1 1994/03/18 00:21:34 gropp Exp $";
    aliased.  For some compilers, this can cause the compiler to fail to
    place inner-loop variables into registers.
  */
-#include "tools.h"
-#include "system/system.h"
+#include "petsc.h"
+#include "sys.h"
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
-void SYiIqsort(), SYiDqsort();
-void SYiIqsortPerm();
+int SYiIqsort(int *,int), SYiDqsort(double*,int), SYiIqsortPerm(int*,int*,int);
 
 /*@
   SYIsort - sort an array of integer inplace in increasing order
@@ -30,8 +27,7 @@ void SYiIqsortPerm();
 . n  - number of values
 . i  - array of integers
 @*/
-void SYIsort( n, i )
-register int n, *i;
+int SYIsort( int n, int *i )
 {
 register int j, k, tmp, ik;
 
@@ -48,13 +44,13 @@ if (n<8) {
     }
 else 
     SYiIqsort(i,n-1);
+  return 0;
 }
 
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
    Assumes 0 origin for v, number of elements = right+1 (right is index of
    right-most member). */
-void SYiIqsort(v,right)
-register int *v,right;
+int SYiIqsort(int *v,int right)
 {
   int          tmp;
   register int i, vl, last;
@@ -62,7 +58,7 @@ register int *v,right;
       if (right == 1) {
 	  if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
 	  }
-      return;
+      return 0;
       }
   SWAP(v[0],v[right/2],tmp);
   vl   = v[0];
@@ -73,6 +69,7 @@ register int *v,right;
   SWAP(v[0],v[last],tmp);
   SYiIqsort(v,last-1);
   SYiIqsort(v+last+1,right-(last+1));
+  return 0;
 }
 
 /*@
@@ -82,9 +79,7 @@ register int *v,right;
 . n  - number of values
 . v  - array of doubles
 @*/
-void SYDsort( n, v )
-register int n;
-register double *v;
+int SYDsort(int n, double *v )
 {
 register int    j, k;
 register double tmp, vk;
@@ -102,12 +97,11 @@ if (n<8) {
     }
 else
     SYiDqsort( v, n-1 );
+  return 0;
 }
    
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
-void SYiDqsort(v,right)
-register int    right;
-register double *v;
+int SYiDqsort(double *v,int right)
 {
   register int    i,last;
   register double vl;
@@ -117,7 +111,7 @@ register double *v;
       if (right == 1) {
 	  if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
 	  }
-      return;
+      return 0;
       }
   SWAP(v[0],v[right/2],tmp);
   vl   = v[0];
@@ -128,9 +122,10 @@ register double *v;
   SWAP(v[0],v[last],tmp);
   SYiDqsort(v,last-1);
   SYiDqsort(v+last+1,right-(last+1));
+  return 0;
 }
 
-/*
+/*@
    Compute the permutation of values that gives a sorted sequence
 
    Input Parameters:
@@ -140,9 +135,8 @@ register double *v;
 
    Notes: 
    i is unchanged on output.
- */
-void SYiIsortPerm( n, i, idx )
-register int n, *i, *idx;
+ @*/
+int SYIsortperm(int n, int *i, int *idx )
 {
 register int j, k, tmp, ik;
 
@@ -159,10 +153,10 @@ if (n<8) {
     }
 else 
     SYiIqsortPerm(i,idx,n-1);
+  return 0;
 }
 
-void SYiIqsortPerm(v,vdx,right)
-register int *v,*vdx,right;
+int SYiIqsortPerm(int *v,int *vdx,int right)
 {
   int          tmp;
   register int i, vl, last;
@@ -170,7 +164,7 @@ register int *v,*vdx,right;
       if (right == 1) {
 	  if (v[vdx[0]] > v[vdx[1]]) SWAP(vdx[0],vdx[1],tmp);
 	  }
-      return;
+      return 0;
       }
   SWAP(vdx[0],vdx[right/2],tmp);
   vl   = v[vdx[0]];
@@ -181,4 +175,5 @@ register int *v,*vdx,right;
   SWAP(vdx[0],vdx[last],tmp);
   SYiIqsortPerm(v,vdx,last-1);
   SYiIqsortPerm(v,vdx+last+1,right-(last+1));
+  return 0;
 }

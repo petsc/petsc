@@ -10,27 +10,28 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscmat
-EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12
+EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
-           ex10.c ex11.c ex12.c
+           ex10.c ex11.c ex12.c ex13.c
 SYSLIB   = -L$(LDIR) -lpetscvec -lpetscsys -lpetscdraw\
            $(LAPACK) $(BLAS) \
            $(CLIB) $(SLIB) $(FCLIB) $(X11LIB) -lm 
 LINCLUDE = $(SOURCEH)
 
 runexamples:
-	-ex1
-	-ex2
-	-ex3
-	-ex4
-	-ex5
-	-ex6
-	-ex7
-	-ex8
-	-mpirun $(NP) ex9
-	-ex10
-	-ex11
-	-mpirun $(NP) ex12
+	-$(MPIRUN)  ex1
+	-$(MPIRUN)  ex2
+	-$(MPIRUN)  ex3
+	-$(MPIRUN)  ex4
+	-$(MPIRUN)  ex5
+	-$(MPIRUN)  ex6
+	-$(MPIRUN)  ex7
+	-$(MPIRUN)  ex8
+	-$(MPIRUN)  -np 2 ex9
+	-$(MPIRUN)  ex10
+	-$(MPIRUN)  ex11
+	-$(MPIRUN)  -np 2 ex12
+	-$(MPIRUN)  ex13
 
 ex1: ex1.o
 	-$(CLINKER)  -o ex1 ex1.o $(LIBNAME) $(SYSLIB)
@@ -79,5 +80,9 @@ ex11: ex11.o
 ex12: ex12.o
 	-$(CLINKER) -o ex12 ex12.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex12.o
+
+ex13: ex13.o
+	-$(CLINKER) -o ex13 ex13.o $(LIBNAME) $(SYSLIB)
+	$(RM) ex13.o
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

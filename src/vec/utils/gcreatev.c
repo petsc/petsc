@@ -8,7 +8,8 @@
 
 /*@C
       VecCreateInitialVector - Reads from command line to determine 
-           what type of vector to create.
+           what type of vector to create. Also generates parallel vector
+           if MPI_COMM_WORLD has more then one processor.
 
   Input Parameters:
 .   n - total vector length
@@ -18,19 +19,17 @@
 @*/
 int VecCreateInitialVector(int n,Vec *V)
 {
-  if (OptionsHasName(0,0,"-mpi")) {
-    fprintf(stdout,"Using MPI vectors\n");
-    return VecCreateMPI(MPI_COMM_WORLD,-1,n,V);
-  }
-  if (OptionsHasName(0,0,"-mpiblas")) {
-    fprintf(stdout,"Using MPI BLAS vectors\n");
+  int numtid;
+  MPI_Comm_size(MPI_COMM_WORLD,&numtid);
+  if (OptionsHasName(0,0,"-mpi_blas_vecs")) {
     return VecCreateMPIBLAS(MPI_COMM_WORLD,-1,n,V);
   }
-  if (OptionsHasName(0,0,"-blas")) {
-    fprintf(stdout,"Using BLAS sequential vectors\n");
+  if (OptionsHasName(0,0,"-mpi_vecs") || numtid > 1) {
+    return VecCreateMPI(MPI_COMM_WORLD,-1,n,V);
+  }
+  if (OptionsHasName(0,0,"-blas_vecs")) {
     return VecCreateSequentialBLAS(n,V);
   }
-  fprintf(stdout,"Using standard sequential vectors\n");
   return VecCreateSequential(n,V);
 }
  

@@ -21,7 +21,7 @@ int main(int argc,char **args)
   PCMETHOD  pcmethod;
   char      *kspname, *pcname;
 
-  OptionsCreate(&argc,&args,0,0);
+  PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-n",&n);
   ierr = VecCreateSequential(n,&b);     CHKERR(ierr);

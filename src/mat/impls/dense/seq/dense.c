@@ -100,14 +100,13 @@ static int MatiSDsolvetrans(Mat matin,Vec xx,Vec yy)
 {return 0;}
 
 /* ------------------------------------------------------------------*/
-static int MatiSDrelax(Mat matin,Vec bb,double omega,int flag,IS is,
+static int MatiSDrelax(Mat matin,Vec bb,double omega,int flag,double shift,
                        int its,Vec xx)
 {
   MatiSD *mat = (MatiSD *) matin->data;
   Scalar *x, *b, *v = mat->v, zero = 0.0, xt;
   int    o = 1, tmp,n = mat->n,ierr, m = mat->m, i, j;
 
-  if (is) SETERR(1,"No support for ordering in relaxation");
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     /* this is a hack fix, should have another version without 
        the second BLdot */
@@ -118,13 +117,13 @@ static int MatiSDrelax(Mat matin,Vec bb,double omega,int flag,IS is,
     if (flag & SOR_FORWARD_SWEEP){
       for ( i=0; i<m; i++ ) {
         xt = b[i]-BLdot_(&m,v+i,&m,x,&o);
-        x[i] = (1. - omega)*x[i] + omega*(xt/v[i + i*m] + x[i]);
+        x[i] = (1. - omega)*x[i] + omega*(xt/(v[i + i*m]+shift) + x[i]);
       }
     }
     if (flag & SOR_BACKWARD_SWEEP) {
       for ( i=m-1; i>=0; i-- ) {
         xt = b[i]-BLdot_(&m,v+i,&m,x,&o);
-        x[i] = (1. - omega)*x[i] + omega*(xt/v[i + i*m] + x[i]);
+        x[i] = (1. - omega)*x[i] + omega*(xt/(v[i + i*m]+shift) + x[i]);
       }
     }
   } 
@@ -209,18 +208,23 @@ static int MatiSDinsert(Mat matin,int m,int *indexm,int n,
                         int *indexn,Scalar *v,InsertMode addv)
 { 
   MatiSD *mat = (MatiSD *) matin->data;
-  int i,j;
+  int    i,j;
+ 
   if (!mat->roworiented) {
     if (addv == InsertValues) {
       for ( j=0; j<n; j++ ) {
+        if (indexn[j] < 0) {*v += m; continue;}
         for ( i=0; i<m; i++ ) {
+          if (indexm[i] < 0) {*v++; continue;}
           mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
         }
       }
     }
     else {
       for ( j=0; j<n; j++ ) {
+        if (indexn[j] < 0) {*v += m; continue;}
         for ( i=0; i<m; i++ ) {
+          if (indexm[i] < 0) {*v++; continue;}
           mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
         }
       }
@@ -229,14 +233,18 @@ static int MatiSDinsert(Mat matin,int m,int *indexm,int n,
   else {
     if (addv == InsertValues) {
       for ( i=0; i<m; i++ ) {
+        if (indexm[i] < 0) {*v += n; continue;}
         for ( j=0; j<n; j++ ) {
+          if (indexn[j] < 0) {*v++; continue;}
           mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
         }
       }
     }
     else {
       for ( i=0; i<m; i++ ) {
+        if (indexm[i] < 0) {*v += n; continue;}
         for ( j=0; j<n; j++ ) {
+          if (indexn[j] < 0) {*v++; continue;}
           mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
         }
       }
@@ -396,8 +404,8 @@ static int MatiSDnorm(Mat matin,int type,double *norm)
 static int MatiDenseinsopt(Mat aijin,int op)
 {
   MatiSD *aij = (MatiSD *) aijin->data;
-  if (op == ROW_ORIENTED)         aij->roworiented = 1;
-  else if (op == COLUMN_ORIENTED) aij->roworiented = 0;
+  if (op == ROW_ORIENTED)            aij->roworiented = 1;
+  else if (op == COLUMN_ORIENTED)    aij->roworiented = 0;
   /* doesn't care about sorted rows or columns */
   return 0;
 }
@@ -475,11 +483,18 @@ int MatCreateSequentialDense(int m,int n,Mat *newmat)
   mat->factor    = 0;
   mat->col       = 0;
   mat->row       = 0;
+  mat->outofrange= 0;
+  mat->Mlow      = 0;
+  mat->Mhigh     = m;
+  mat->Nlow      = 0;
+  mat->Nhigh     = n;
+
   l->m           = m;
   l->n           = n;
   l->v           = (Scalar *) (l + 1);
   l->pivots      = 0;
   l->roworiented = 1;
+
   MEMSET(l->v,0,m*n*sizeof(Scalar));
   *newmat = mat;
   return 0;

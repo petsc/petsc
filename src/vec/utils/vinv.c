@@ -21,3 +21,47 @@ int VecReciprocal(Vec v)
   }
   return 0;
 }
+
+/*@
+     VecSum - Sum of all the components of a vector.
+
+  Input Parameters:
+.   v - the vector 
+
+  Output Parameters:
+.   sum - the result
+@*/
+int VecSum(Vec v,Scalar *sum)
+{
+  int    ierr, i,n;
+  Scalar *x,lsum = 0.0;
+  VALIDHEADER(v,VEC_COOKIE);
+  if (ierr = VecGetLocalSize(v,&n)) return ierr;
+  if (ierr = VecGetArray(v,&x)) return ierr;
+  for ( i=0; i<n; i++ ) {
+    lsum += x[i];
+  }
+  *sum = lsum;
+  return 0;
+}
+
+/*@
+     VecShift - Shift all of the components of a vector.
+
+  Input Parameters:
+.   v - the vector 
+.   sum - the shift
+
+@*/
+int VecShift(Scalar *sum,Vec v)
+{
+  int    ierr, i,n;
+  Scalar *x,lsum = *sum;
+  VALIDHEADER(v,VEC_COOKIE);
+  if (ierr = VecGetLocalSize(v,&n)) return ierr;
+  if (ierr = VecGetArray(v,&x)) return ierr;
+  for ( i=0; i<n; i++ ) {
+    x[i] += lsum;
+  }
+  return 0;
+}

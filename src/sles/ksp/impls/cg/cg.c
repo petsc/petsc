@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.3 1994/11/21 06:44:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.4 1994/12/23 20:25:38 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -41,14 +41,13 @@ int KSPiCGSetUp(KSP itP)
 int  KSPiCGSolve(KSP itP,int *its)
 {
   int       ierr, i = 0,maxit,eigs,res,pres, hist_len, cerr;
-  Scalar    dpi, a,beta,betaold,b,*e,*d, mone = -1.0, ma; 
+  Scalar    dpi, a = 1.0,beta,betaold = 1.0,b,*e,*d, mone = -1.0, ma; 
   double   *history, dp;
   Vec       X,B,Z,R,P;
   CGCntx    *cgP;
   cgP = (CGCntx *) itP->MethodPrivate;
 
   eigs    = itP->calc_eigs;
-  res     = itP->calc_res;
   pres    = itP->use_pres;
   maxit   = itP->max_it;
   history = itP->residual_history;

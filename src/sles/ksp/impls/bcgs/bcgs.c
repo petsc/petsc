@@ -23,8 +23,6 @@ Scalar    zero = 0.0, tmp;
 Vec       X,B,V,P,R,RP,T,S, BINVF;
 double    dp, *history;
 
-res     = itP->calc_res;
-pres    = itP->use_pres;
 maxit   = itP->max_it;
 history = itP->residual_history;
 hist_len= itP->res_hist_size;

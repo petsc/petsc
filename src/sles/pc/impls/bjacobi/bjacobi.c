@@ -21,10 +21,7 @@ static int PCiBJacobiSetup(PC pc)
   if (mat->type == MATAIJMPI) {
     return PCiBJacobiMPIAIJSetup(pc);
   }
-  else {
-    SETERR(1,"Cannot use block Jacobi on this matrix type\n");
-  }
-  return 0;
+  SETERR(1,"Cannot use block Jacobi on this matrix type\n");
 }
 
 int PCiBJacobiMPIAIJApply(PC,Vec,Vec);

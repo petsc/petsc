@@ -50,7 +50,7 @@ static struct _VeOps DvOps = { VeiDVPCreateVectorMPIBLAS,
             VeiDVpdiv,
             VeiPDVinsertvalues,
             VeiDVPBeginAssembly,VeiDVPEndAssembly,
-            VeiDVgetarray, VeiPgsize,VeiDVsize};
+            VeiDVgetarray, VeiPgsize,VeiDVsize,VeiPrange};
 
 static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
                             int *owners,Vec *vv)

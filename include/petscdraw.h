@@ -3,9 +3,13 @@
 */
 #if !defined(__DRAW_PACKAGE)
 #define __DRAW_PACKAGE
+#include "petsc.h"
 
 #define DRAW_COOKIE 0x101010
 
+/* types of draw contexts */
+#define XWINDOW 1
+ 
 typedef struct _DrawCtx* DrawCtx;
 
 #define DRAW_WHITE  0
@@ -16,7 +20,7 @@ typedef struct _DrawCtx* DrawCtx;
 #define DRAW_CYAN   5
 #define DRAW_BLUE   6
 
-int DrawOpenX(char*,char *,int,int,int,int,DrawCtx*);
+int DrawOpenX(MPI_Comm,char *,char *,int,int,int,int,DrawCtx*);
 int DrawDestroy(DrawCtx);
 
 int DrawLine(DrawCtx,double,double,double,double,int,int);
@@ -32,8 +36,11 @@ int DrawTextGetSize(DrawCtx,double*,double*);
 
 int DrawSetViewPort(DrawCtx,double,double,double,double);
 int DrawSetCoordinates(DrawCtx,double,double,double,double);
+int DrawGetCoordinates(DrawCtx,double*,double*,double*,double*);
+
 int DrawSetDoubleBuffer(DrawCtx);
 int DrawFlush(DrawCtx);
+int DrawSyncFlush(DrawCtx);
 int DrawClear(DrawCtx);
 
 /* routines related to drawing Axis and line graphs */

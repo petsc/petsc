@@ -1,6 +1,4 @@
-#ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.1 1994/11/09 22:57:53 bsmith Exp bsmith $";
-#endif
+
 
 #include "aij.h"
 

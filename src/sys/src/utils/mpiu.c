@@ -79,5 +79,49 @@ int MPE_printf(MPI_Comm comm,char *format,...)
   return 0;
 }
 
+extern char *getenv(char*);
 
+/*@
+     MPE_Set_display - Tries to set the display variable for all processors.
 
+  Input Parameters:
+.   comm - the communicatior, probably MPI_COMM_WORLD
+
+  Output Parameters:
+.   display - the display string, may (and should) be freed.
+
+@*/
+int MPE_Set_display(MPI_Comm comm,char **display)
+{
+  int  MPI_Used,numtid,mytid,len;
+  char *string,*str;
+  MPI_Initialized(&MPI_Used);
+  if (!MPI_Used) { *display = 0; return 0;}
+  MPI_Comm_size(comm,&numtid);
+  MPI_Comm_rank(comm,&mytid);  
+  if (!mytid) {
+    str = getenv("DISPLAY");
+    if (!str || str[0] == ':') {
+      string = (char *) MALLOC( 256*sizeof(char) ); CHKPTR(string);
+      MPI_Get_processor_name(string,&len);
+      *display = (char *) MALLOC( (5+len)*sizeof(char) ); CHKPTR(*display);
+      strcpy(*display,string); FREE(string);
+      strcat(*display,":0.0");
+    }
+    else {
+      len = strlen(str);
+      *display = (char *) MALLOC( (5+len)*sizeof(char) ); CHKPTR(*display);
+      strcpy(*display,str);
+    }
+    len = strlen(*display);
+    MPI_Bcast(&len,1,MPI_INT,0,comm);
+    MPI_Bcast(*display,len,MPI_CHAR,0,comm);
+  }
+  else {
+    MPI_Bcast(&len,1,MPI_INT,0,comm);
+    *display = (char *) MALLOC( (len+1)*sizeof(char) ); CHKPTR(*display);
+    MPI_Bcast(*display,len,MPI_CHAR,0,comm);
+    (*display)[len] = 0;
+  }
+  return 0;  
+}

@@ -477,6 +477,24 @@ int VecGetLocalSize(Vec x,int *size)
   return (*x->ops->localsize)(x,size);
 }
 
+/*@
+    VecGetOwnershipRange - Returns the range of indices owned by 
+        this processor. Assumes the vectors are laid out with 
+        first n1 elements on first processor, next n2 on second, etc..
+
+  Input Parameter:
+.   x - the vector
+
+  Output Parameters:
+.  low - first local element
+.  high - one more then last local element.
+@*/
+int VecGetOwnershipRange(Vec x,int *low,int *high)
+{
+  VALIDHEADER(x,VEC_COOKIE);
+  return (*x->ops->getrange)(x,low,high);
+}
+
 /* Default routines for obtaining and releasing; */
 /* may be used by any implementation */
 int Veiobtain_vectors(Vec w,int m,Vec **V )

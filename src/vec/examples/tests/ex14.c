@@ -38,8 +38,9 @@ int main(int argc,char **argv)
 
   value = mytid+1; VecSet(&value,x);
 
-  ierr = VecScatterBegin(x,is1,y,is2,AddValues,&ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,AddValues,&ctx); CHKERR(ierr);
+  ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERR(ierr);
+  ierr = VecScatterBegin(x,is1,y,is2,AddValues,ScatterAll,ctx); CHKERR(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,AddValues,ScatterAll,ctx); CHKERR(ierr);
   VecScatterCtxDestroy(ctx);
   
   VecView(y,0);

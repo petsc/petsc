@@ -254,7 +254,6 @@ static int MGCycle(PC pc,Vec b,Vec x)
    else {
      return MGFCycle(mg);
    }
-   return 0;
 }
 
 static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)

@@ -19,7 +19,7 @@ int main(int argc,char **args)
   int       ierr, n = 5, i, its, col[3];
   Scalar    value[3], one = 1.0, zero = 0.0;
 
-  OptionsCreate(&argc,&args,0,0);
+  PetscInitialize(&argc,&args,0,0);
   ierr = VecCreateSequential(n,&b);     CHKERR(ierr);
   ierr = VecCreateSequential(n,&u);     CHKERR(ierr);
 

@@ -43,7 +43,7 @@ int main(int Argc, char **Args)
   KSP         ksp,kspmg;
   PC          pcmg,pc;
 
-  OptionsCreate(&Argc,&Args,0,0);
+  PetscInitialize(&Argc,&Args,0,0);
 
   OptionsGetInt(1,0,"-x",&x_mesh);  
   OptionsGetInt(1,0,"-l",&levels);  

@@ -1,5 +1,5 @@
 ITOOLSDIR = ../../..
-ALL: 
+ALL: ex1
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS)$(CONF) $(COPT)
 SOURCEC  = 
@@ -14,10 +14,14 @@ EXAMPLES = ex1 ex2 ex3 ex4
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c
 SYSLIB   = -L$(LDIR) -lpetscdraw -lpetscsys \
            $(LAPACK) $(BLAS) \
-           $(CLIB) $(X11LIB) $(SLIB) $(FCLIB) -lm 
+           $(CLIB) $(X11LIB) $(SLIB) $(MALLOCDEBUG) $(FCLIB) -lm 
 LINCLUDE = $(SOURCEH)
 
 runexamples:
+	-$(MPIRUN) ex1
+	-$(MPIRUN) ex2
+	-$(MPIRUN) ex3
+	-$(MPIRUN) ex4
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)

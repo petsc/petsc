@@ -269,7 +269,6 @@ static int KSPiGMRESSolve(KSP itP,int *outits )
   int restart, its, itcount, it;
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)itP->MethodPrivate;
 
-  it      = 0;
   restart = 0;
   itcount = 0;
   /* Save binv*f */
