@@ -2018,7 +2018,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
     /* move the data into the send scatter */
     for (i=0; i<nrecvs; i++) {
       to->starts[i+1] = to->starts[i] + lens[indx[i]];
-      to->procs[2i]    = source[indx[i]];
+      to->procs[i]    = source[indx[i]];
       values = rvalues + indx[i]*nmax;
       for (j=0; j<lens[indx[i]]; j++) {
         to->indices[to->starts[i] + j] = values[j] - base;
