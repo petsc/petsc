@@ -1908,7 +1908,7 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
 
     /* first get start and end of "diagonal" columns */
     if (csize == PETSC_DECIDE) {
-      nlocal = n/size + ((n % size) > rank);
+      nlocal = m;
     } else {
       nlocal = csize;
     }
