@@ -1,10 +1,9 @@
 #! /bin/sh
-# $Id: petscrsh,v 1.1 2000/10/06 18:58:40 bsmith Exp bsmith $ 
+# $Id: petscrun,v 1.1 2000/10/26 15:51:30 bsmith Exp bsmith $ 
 #
-# Remote shells to a remote machine and runs rmake.out on that machine 
-# to compile the program
+# Remote shells to a remote machine and runs a program
 #
-command=$1
+np=$1
 shift
 machine=$1
 shift
@@ -14,5 +13,6 @@ pdir=$1
 shift
 dir=$1
 shift
-rsh $machine "cd $pdir/$dir ; setenv BOPT g; setenv PETSC_DIR $pdir ; setenv PETSC_ARCH $arch; $command -np 1 $*"
+echo "petscmpirun -np $np $*"
+rsh $machine "cd $pdir/$dir ; setenv BOPT g; setenv PETSC_DIR $pdir ; setenv PETSC_ARCH $arch; petscmpirun -np $np $*"
 
