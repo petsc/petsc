@@ -1,3 +1,6 @@
+petsc/bin/petscopt
+petsc/bin/petscoptsinfo.text
+petsc/bin/petscconf.h.in.sav
 petsc/src/contrib/sif
 petsc/bin/configure.in.old
 petsc/bin/petscrun
