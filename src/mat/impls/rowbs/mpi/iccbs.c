@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.16 1996/08/04 23:12:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.17 1996/08/12 03:41:39 bsmith Exp balay $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -31,6 +31,8 @@ static char vcid[] = "$Id: iccbs.c,v 1.16 1996/08/04 23:12:40 bsmith Exp bsmith 
 #include "src/ksp/kspimpl.h"
 #include "mpirowbs.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCDestroy_ICC_MPIRowbs"
 static int PCDestroy_ICC_MPIRowbs(PetscObject obj)
 {
   PC     pc = (PC) obj;
@@ -47,6 +49,8 @@ static int PCDestroy_ICC_MPIRowbs(PetscObject obj)
 /* Note:  We only call PCPreSolve_MPIRowbs() if both
    the linear system matrix and preconditioning matrix
    are stored in the MATMPIROWBS format */
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCPreSolve_MPIRowbs"
 int PCPreSolve_MPIRowbs(PC pc,KSP ksp)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) pc->pmat->data;
@@ -76,6 +80,8 @@ int PCPreSolve_MPIRowbs(PC pc,KSP ksp)
 /* Note:  We only call PCPostSolve_MPIRowbs() if both
    the linear system matrix and preconditioning matrix
    are stored in the MATMPIROWBS format */
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCPostSolve_MPIRowbs"
 int PCPostSolve_MPIRowbs(PC pc,KSP ksp)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) pc->pmat->data;
@@ -102,6 +108,8 @@ int PCPostSolve_MPIRowbs(PC pc,KSP ksp)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetUp_ICC_MPIRowbs"
 int PCSetUp_ICC_MPIRowbs(PC pc)
 {
   PC_ICC       *icc = (PC_ICC *) pc->data;
@@ -149,6 +157,8 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
    Options Database Keys:
 $  -ksp_bsmonitor
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPMonitor_MPIRowbs"
 int KSPMonitor_MPIRowbs(KSP ksp,int n,double rnorm,void *dummy)
 {
   Mat_MPIRowbs *bsif;
@@ -168,6 +178,8 @@ int KSPMonitor_MPIRowbs(KSP ksp,int n,double rnorm,void *dummy)
   return 0;
 }
   
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCBSIterSolve"
 /* @ 
     PCBSIterSolve - Solves a linear system using the BlockSolve iterative
     solvers instead of the usual SLES/KSP solvers.  
@@ -207,6 +219,8 @@ int PCBSIterSolve(PC pc,Vec b,Vec x,int *its)
 */
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCBSIterSetFromOptions"
 /* @
   PCBSIterSetFromOptions - Sets various options for the BlockSolve 
   iterative solvers.
@@ -238,6 +252,8 @@ int PCBSIterSetFromOptions(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCBSIterSetBlockSolve"
 /*
    PCBSIterSetBlockSolve - Sets flag so that BlockSolve iterative solver is
    used instead of default KSP routines.  This routine should be called
@@ -263,7 +279,9 @@ int PCBSIterSetBlockSolve(PC pc)
 }
 
 #else
-int MatNull_MPIRowbs()
+i#undef __FUNCTION__  
+#define __FUNCTION__ "MatNull_MPIRowbs"
+nt MatNull_MPIRowbs()
 {return 0;}
 #endif
 

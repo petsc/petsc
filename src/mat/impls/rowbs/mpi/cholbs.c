@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.38 1996/10/02 16:54:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.39 1996/10/02 17:23:17 bsmith Exp balay $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -14,6 +14,8 @@ static char vcid[] = "$Id: cholbs.c,v 1.38 1996/10/02 16:54:37 bsmith Exp bsmith
 
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatCholeskyFactorNumeric_MPIRowbs"
 int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
@@ -47,6 +49,8 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatLUFactorNumeric_MPIRowbs"
 int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
@@ -72,6 +76,8 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSolve_MPIRowbs"
 int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
@@ -122,6 +128,8 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 }
 
 /* ------------------------------------------------------------------- */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatForwardSolve_MPIRowbs"
 int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
@@ -160,6 +168,8 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 }
 
 /* ------------------------------------------------------------------- */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatBackwardSolve_MPIRowbs"
 int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
@@ -195,6 +205,8 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 }
 
 #else
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatNullMPIRowbs"
 int MatNullMPIRowbs()
 {return 0;}
 #endif
