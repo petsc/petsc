@@ -35,6 +35,7 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
     options->storevalues    = 1;
     options->toosmall       = 1.e-9;
     options->fudge          = 1.e-9;
+    options->inertiaflag    = PETSC_FALSE;
   } 
 
   /* get runtime input parameters */
@@ -102,7 +103,8 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
                            options->storeids,&options->storeids,PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsInt("-mat_spooles_storevalues","storevalues","None", \
                            options->storevalues,&options->storevalues,PETSC_NULL);CHKERRQ(ierr);
-      
+      ierr = PetscOptionsLogical("-mat_spooles_inertia","get inertia","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+      if (flg) options->inertiaflag = PETSC_TRUE;      
     }
   PetscOptionsEnd(); 
 
@@ -164,6 +166,10 @@ int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  storeids:       %d \n",lu->options.storeids);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  storevalues:    %d \n",lu->options.storevalues);CHKERRQ(ierr);
     }
+    switch (lu->options.inertiaflag) {
+    case 0: s = "no"; break;
+    case 1: s = "yes"; break;}
+    ierr = PetscViewerASCIIPrintf(viewer,"  inertiaflag:    %s \n",s);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

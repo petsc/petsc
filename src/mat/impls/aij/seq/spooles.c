@@ -244,6 +244,9 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   rootchv = FrontMtx_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, 0.0, 
             chvmanager, &ierr, lu->cpus, lu->stats, lu->options.msglvl, lu->options.msgFile) ; 
   ChvManager_free(chvmanager) ;
+  if ( lu->options.symflag == SPOOLES_SYMMETRIC && lu->options.inertiaflag) {
+    FrontMtx_inertia(lu->frontmtx, &lu->inertia.nneg, &lu->inertia.nzero, &lu->inertia.npos) ;
+  }
   if(lu->options.FrontMtxInfo){
     PetscPrintf(PETSC_COMM_SELF,"\n %8d pivots, %8d pivot tests, %8d delayed rows and columns\n",\
                lu->stats[0], lu->stats[1], lu->stats[2]);
