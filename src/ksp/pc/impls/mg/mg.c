@@ -86,9 +86,11 @@ static PetscErrorCode MGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI_C
 
   for (i=0; i<levels; i++) {
     ierr = PetscNew(struct _MG,&mg[i]);CHKERRQ(ierr);
-    mg[i]->level  = i;
-    mg[i]->levels = levels;
-    mg[i]->cycles = 1;
+    mg[i]->level           = i;
+    mg[i]->levels          = levels;
+    mg[i]->cycles          = 1;
+    mg[i]->galerkin        = PETSC_FALSE;
+    mg[i]->galerkinused    = PETSC_FALSE;
     mg[i]->default_smoothu = 1;
     mg[i]->default_smoothd = 1;
 
@@ -138,6 +140,14 @@ static PetscErrorCode PCDestroy_MG(PC pc)
   PetscInt       i,n = mg[0]->levels;
 
   PetscFunctionBegin;
+  if (mg[0]->galerkinused) {
+    Mat B;
+    for (i=0; i<n-1; i++) {
+      ierr = KSPGetOperators(mg[i]->smoothd,0,&B,0);CHKERRQ(ierr);
+      ierr = MatDestroy(B);CHKERRQ(ierr);
+    }
+  }
+
   for (i=0; i<n; i++) {
     if (mg[i]->smoothd != mg[i]->smoothu) {
       ierr = KSPDestroy(mg[i]->smoothd);CHKERRQ(ierr);
@@ -244,6 +254,10 @@ static PetscErrorCode PCSetFromOptions_MG(PC pc)
     if (flg) {
       ierr = MGSetCycles(pc,m);CHKERRQ(ierr);
     } 
+    ierr = PetscOptionsName("-pc_mg_galerkin","Use Galerkin process to compute coarser operators","MGSetGalerkin",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MGSetGalerkin(pc);CHKERRQ(ierr);
+    } 
     ierr = PetscOptionsInt("-pc_mg_smoothup","Number of post-smoothing steps","MGSetNumberSmoothUp",1,&m,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MGSetNumberSmoothUp(pc,m);CHKERRQ(ierr);
@@ -312,6 +326,9 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     else cstring = "unknown";
     ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%D, pre-smooths=%D, post-smooths=%D\n",
                       cstring,levels,mg[0]->cycles,mg[0]->default_smoothd,mg[0]->default_smoothu);CHKERRQ(ierr);
+    if (mg[0]->galerkin) {
+      ierr = PetscViewerASCIIPrintf(viewer,"    Using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
+    }
     for (i=0; i<levels; i++) {
       if (!i) {
         ierr = PetscViewerASCIIPrintf(viewer,"Coarse gride solver -- level %D -------------------------------\n",i);CHKERRQ(ierr);
@@ -350,21 +367,21 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   PetscTruth     preonly,lu,redundant,monitor = PETSC_FALSE,dump;
   PetscViewer    ascii;
   MPI_Comm       comm;
+  Mat            dA,dB;
+  MatStructure   uflag;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     ierr = PetscOptionsHasName(0,"-pc_mg_monitor",&monitor);CHKERRQ(ierr);
      
     for (i=0; i<n; i++) {
-      if (mg[i]->smoothd) {
-        if (monitor) {
-          ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothd,&comm);CHKERRQ(ierr);
-          ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
-          ierr = PetscViewerASCIISetTab(ascii,n-i);CHKERRQ(ierr);
-          ierr = KSPSetMonitor(mg[i]->smoothd,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
-        }
-        ierr = KSPSetFromOptions(mg[i]->smoothd);CHKERRQ(ierr);
+      if (monitor) {
+        ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothd,&comm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISetTab(ascii,n-i);CHKERRQ(ierr);
+        ierr = KSPSetMonitor(mg[i]->smoothd,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
       }
+      ierr = KSPSetFromOptions(mg[i]->smoothd);CHKERRQ(ierr);
     }
     for (i=1; i<n; i++) {
       if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
@@ -379,22 +396,50 @@ static PetscErrorCode PCSetUp_MG(PC pc)
     }
   }
 
-  for (i=1; i<n; i++) {
-    if (mg[i]->smoothd) {
-      if (mg[i]->smoothu == mg[i]->smoothd) {
-        /* if doing only down then initial guess is zero */
-        ierr = KSPSetInitialGuessNonzero(mg[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
+  /* If user did not provide fine grid operators, use those from PC */
+  /* BUG BUG BUG This will work ONLY the first time called: hence if the user changes
+     the PC matrices between solves PCMG will continue to use first set provided */
+  ierr = KSPGetOperators(mg[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
+  if (!dA  && !dB) {
+    ierr = PetscLogInfo((pc,"PCSetUp_MG: Using outer operators to define finest grid operator \n  because MGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n"));
+    ierr = KSPSetOperators(mg[n-1]->smoothd,pc->mat,pc->pmat,uflag);CHKERRQ(ierr);
+  }
+
+  if (mg[0]->galerkin) {
+    mg[0]->galerkinused = PETSC_TRUE;
+    /* currently only handle case where mat and pmat are the same on coarser levels */
+    Mat B;
+    ierr = KSPGetOperators(mg[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
+    if (!pc->setupcalled) {
+      for (i=n-2; i>-1; i--) {
+        ierr = MatPtAP(dB,mg[i+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
+        ierr = KSPSetOperators(mg[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
+        dB   = B;
       }
-      if (mg[i]->eventsetup) {ierr = PetscLogEventBegin(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
-      ierr = KSPSetUp(mg[i]->smoothd);CHKERRQ(ierr);
-      if (mg[i]->eventsetup) {ierr = PetscLogEventEnd(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
+    } else {
+      for (i=n-2; i>-1; i--) {
+        ierr = KSPGetOperators(mg[i]->smoothd,0,&B,0);CHKERRQ(ierr);
+        ierr = MatPtAP(dB,mg[i]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
+        ierr = KSPSetOperators(mg[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
+        dB   = B;
+      }
     }
+  }
+
+  for (i=1; i<n; i++) {
+    if (mg[i]->smoothu == mg[i]->smoothd) {
+      /* if doing only down then initial guess is zero */
+      ierr = KSPSetInitialGuessNonzero(mg[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    if (mg[i]->eventsetup) {ierr = PetscLogEventBegin(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
+    ierr = KSPSetUp(mg[i]->smoothd);CHKERRQ(ierr);
+    if (mg[i]->eventsetup) {ierr = PetscLogEventEnd(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
   }
   for (i=1; i<n; i++) {
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
-        PC           downpc,uppc;
-        Mat          downmat,downpmat,upmat,uppmat;
-        MatStructure matflag;
+      PC           uppc,downpc;
+      Mat          downmat,downpmat,upmat,uppmat;
+      MatStructure matflag;
 
       /* check if operators have been set for up, if not use down operators to set them */
       ierr = KSPGetPC(mg[i]->smoothu,&uppc);CHKERRQ(ierr);
@@ -453,7 +498,16 @@ static PetscErrorCode PCSetUp_MG(PC pc)
       ierr = MatView(pc->mat,PETSC_VIEWER_SOCKET_(pc->comm));CHKERRQ(ierr);
     }
   }
-
+  ierr = PetscOptionsHasName(pc->prefix,"-pc_mg_dump_binary",&dump);CHKERRQ(ierr);
+  if (dump) {
+    for (i=1; i<n; i++) {
+      ierr = MatView(mg[i]->restrct,PETSC_VIEWER_BINARY_(pc->comm));CHKERRQ(ierr);
+    }
+    for (i=0; i<n; i++) {
+      ierr = KSPGetPC(mg[i]->smoothd,&pc);CHKERRQ(ierr);
+      ierr = MatView(pc->mat,PETSC_VIEWER_BINARY_(pc->comm));CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -581,7 +635,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetType(PC pc,MGType form)
    Collective on PC
 
    Input Parameters:
-+  mg - the multigrid context 
++  pc - the multigrid context 
 -  n - the number of cycles
 
    Options Database Key:
@@ -606,6 +660,43 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetCycles(PC pc,PetscInt n)
 
   for (i=0; i<levels; i++) {  
     mg[i]->cycles  = n; 
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetGalerkin"
+/*@
+   MGSetGalerkin - Causes the coarser grid matrices to be computed from the
+      finest grid via the Galerkin process: A_i-1 = r_i * A_i * r_i^t
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the multigrid context 
+-  n - the number of cycles
+
+   Options Database Key:
+$  -pc_mg_galerkin
+
+   Level: intermediate
+
+.keywords: MG, set, Galerkin
+
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetGalerkin(PC pc)
+{ 
+  MG       *mg;
+  PetscInt i,levels;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  mg     = (MG*)pc->data;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  levels = mg[0]->levels;
+
+  for (i=0; i<levels; i++) {  
+    mg[i]->galerkin = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -644,15 +735,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGCheck(PC pc)
     }    
     if (!mg[i]->interpolate) {
       (*PetscErrorPrintf)("No interpolate set level %D \n",n-i); count++;
-    }
-    if (!mg[i]->residual) {
-      (*PetscErrorPrintf)("No residual set level %D \n",n-i); count++;
-    }
-    if (!mg[i]->smoothu) {
-      (*PetscErrorPrintf)("No smoothup set level %D \n",n-i); count++;
-    }  
-    if (!mg[i]->smoothd) {
-      (*PetscErrorPrintf)("No smoothdown set level %D \n",n-i); count++;
     }
     if (!mg[i]->r) {
       (*PetscErrorPrintf)("No r set level %D \n",n-i); count++;

@@ -31,7 +31,6 @@ typedef enum { MGMULTIPLICATIVE,MGADDITIVE,MGFULL,MGKASKADE } MGType;
 #define MG_W_CYCLE     2
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGSetType(PC,MGType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGCheck(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGSetLevels(PC,PetscInt,MPI_Comm*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGGetLevels(PC,PetscInt*);
 
@@ -39,11 +38,13 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGSetNumberSmoothUp(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGSetNumberSmoothDown(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGSetCycles(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGSetCyclesOnLevel(PC,PetscInt,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGSetGalerkin(PC);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGGetSmoother(PC,PetscInt,KSP*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGGetSmootherDown(PC,PetscInt,KSP*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGGetSmootherUp(PC,PetscInt,KSP*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGGetCoarseSolve(PC,KSP*);
+
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGSetRhs(PC,PetscInt,Vec);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGSetX(PC,PetscInt,Vec);
@@ -54,6 +55,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGSetInterpolate(PC,PetscInt,Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGDefaultResidual(Mat,Vec,Vec,Vec);
 
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MGCheck(PC);
 
 PETSC_EXTERN_CXX_END
 #endif

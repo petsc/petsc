@@ -57,6 +57,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_ARG_INCOMP       75   /* two arguments are incompatible */
 #define PETSC_ERR_ARG_NULL         85   /* argument is null that should not be */
 #define PETSC_ERR_ARG_UNKNOWN_TYPE 86   /* type name doesn't match any registered type */
+#define PETSC_ERR_ARG_DOMAIN       87   /* argument is not in domain of function */
 
 #define PETSC_ERR_FILE_OPEN        65   /* unable to open file */
 #define PETSC_ERR_FILE_READ        66   /* unable to read from file */
