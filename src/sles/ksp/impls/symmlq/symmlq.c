@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.2 2000/08/21 15:19:51 hzhang Exp hzhang $*/
+/*$Id: symmlq.c,v 1.3 2000/08/25 19:12:07 hzhang Exp hzhang $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -29,13 +29,12 @@ int KSPSetUp_SYMMLQ(KSP ksp)
 int  KSPSolve_SYMMLQ(KSP ksp,int *its)
 {
   int          ierr,i,maxit;
-  Scalar       alpha,malpha,beta,mbeta,ibeta,betaold,beta1,eta;
+  Scalar       alpha,malpha,beta,mbeta,ibeta,betaold,beta1;
   Scalar       ceta,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
-  Scalar       c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms,s_prod;
-  Scalar       rho0,rho1,irho1,rho2,mrho2,rho3,mrho3;
-  Scalar       mone = -1.0,zero = 0.0; 
-  Scalar       dp = 0.0;
-  PetscReal    np;
+  Scalar       c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms;
+  Scalar       rho0,rho1,rho2,rho3;
+  Scalar       mone = -1.0,zero = 0.0,dp = 0.0;
+  PetscReal    np,s_prod;
   Vec          X,B,R,Z,U,V,W,UOLD,VOLD,Wbar;
   Mat          Amat,Pmat;
   MatStructure pflag;
@@ -76,7 +75,7 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   dp = PetscSqrtScalar(dp); 
   beta = dp;                         /*  beta <- sqrt(r'*z)  */
   beta1 = beta;
-  eta  = beta;
+  /* eta  = beta; */
   s_prod = PetscAbsScalar(beta1); 
 
   ierr = VecCopy(R,V);CHKERRQ(ierr);  /* v <- r; */
