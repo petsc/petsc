@@ -22,7 +22,7 @@ foreach file ($allfiles)
     set omit=0
     foreach bad ("\.a" "\.o" "PI" "\.ln" "l\.outa" "mputil.mp_" "core"\
                  "\.map" "\.log" "gmon\.out" "trashz" "\.tmp" "\.b" "\~"\
-                 "f\.c" "\#")
+                  "\#")
       set dummy=`echo $file | grep $bad` 
       if ($dummy == $file) then
         set dummy=`echo $file | grep -v "\.out"` 
