@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.9 1999/07/26 22:57:09 balay Exp balay $ 
+# $Id: base.site,v 1.10 1999/07/26 22:57:17 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -28,8 +28,9 @@ X11_LIB        = -L/usr/openwin/lib -lX11
 #
 # Note: if ch_shmem version of mpich is used, replace -lsocket by -lthread
 #
-MPI_LIB        = -L/home/petsc/software/lam62b/solaris/lib -lmpi -ltstdio -ltrillium -largs -lt -lsocket -lnsl -lgen
-MPI_INCLUDE    = -I/home/petsc/software/lam62b/solaris/h -DPETSC_HAVE_MPI_COMM_F2C
+MPI_HOME       = /home/petsc/software/lam-6.3-b1/solaris
+MPI_LIB        = -L${MPI_HOME}/lib -lmpi -ltstdio -ltrillium -largs -lt -lsocket -lnsl -lgen
+MPI_INCLUDE    = -I${MPI_HOME}/h -DPETSC_HAVE_MPI_COMM_F2C
 MPIRUN         = ${PETSC_DIR}/bin/mpirun.lam
 #
 # For the Berkeley am2 device for MPICH use
