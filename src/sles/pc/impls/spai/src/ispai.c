@@ -1000,7 +1000,7 @@ int MM_to_PETSC(char *f0,char *f1,char *f2)
   ierr = ConvertMatrixToMat(PETSC_COMM_SELF,A_spai,&A_PETSC);CHKERRQ(ierr);
   ierr = ConvertVectorToVec(PETSC_COMM_SELF,b_spai,&b_PETSC);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,f1,PETSC_BINARY_CREATE,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,f1,PETSC_FILE_CREATE,&fd);CHKERRQ(ierr);
   ierr = MatView(A_PETSC,fd);CHKERRQ(ierr);
   ierr = VecView(b_PETSC,fd);CHKERRQ(ierr);
 

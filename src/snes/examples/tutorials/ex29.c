@@ -419,7 +419,7 @@ int Initialize(DMMG *dmmg)
   ierr = PetscOptionsHasName(0,"-restart",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"binaryoutput",PETSC_BINARY_RDONLY,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"binaryoutput",PETSC_FILE_RDONLY,&viewer);CHKERRQ(ierr);
     ierr = VecLoadIntoVector(viewer,dmmg[param->mglevels-1]->x);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -745,7 +745,7 @@ int Update(DMMG *dmmg)
       strcpy(file, "matrix");
 
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, file,
-                                   PETSC_BINARY_CREATE, &viewer);
+                                   PETSC_FILE_CREATE, &viewer);
       CHKERRQ(ierr);
 
       ierr = SNESGetSLES(snes, &sles);

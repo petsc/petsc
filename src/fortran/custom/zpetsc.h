@@ -151,6 +151,8 @@ EXTERN_C_END
 #define PETSC_VIEWER_STDERR_SELF_FORTRAN    -11
 #define PETSC_VIEWER_BINARY_WORLD_FORTRAN   -12
 #define PETSC_VIEWER_BINARY_SELF_FORTRAN    -13
+#define PETSC_VIEWER_MATLAB_WORLD_FORTRAN   -14
+#define PETSC_VIEWER_MATLAB_SELF_FORTRAN    -15
 
 #define PetscPatchDefaultViewers_Fortran(vin,v) \
 { \
@@ -173,6 +175,10 @@ EXTERN_C_END
     } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_BINARY_WORLD_FORTRAN) { \
       v = PETSC_VIEWER_BINARY_WORLD; \
     } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_BINARY_SELF_FORTRAN) { \
+      v = PETSC_VIEWER_BINARY_SELF; \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_MATLAB_WORLD_FORTRAN) { \
+      v = PETSC_VIEWER_BINARY_WORLD; \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_MATLAB_SELF_FORTRAN) { \
       v = PETSC_VIEWER_BINARY_SELF; \
     } else { \
       v = *vin; \

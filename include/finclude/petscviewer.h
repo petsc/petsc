@@ -8,7 +8,7 @@
 
 #define PetscViewer PetscFortranAddr
 #define PetscViewers PetscFortranAddr
-#define PetscViewerBinaryType integer
+#define PetscViewerFileType integer
 #define PetscViewerType character*(80)
 #define PetscViewerFormat integer
 
@@ -18,6 +18,9 @@
 #define PETSC_VIEWER_STRING 'string'
 #define PETSC_VIEWER_DRAW 'draw'
 #define PETSC_VIEWER_AMS 'ams'
+#define PETSC_VIEWER_HDF4 'hdf4'
+#define PETSC_VIEWER_NETCDF 'netcdf'
+#define PETSC_VIEWER_MATLAB 'matlab'
 
 #endif
 
@@ -26,11 +29,11 @@
 !
 !  Flags for binary I/O
 !
-      integer  PETSC_BINARY_RDONLY,PETSC_BINARY_WRONLY
-      integer  PETSC_BINARY_CREATE
+      integer  PETSC_FILE_RDONLY,PETSC_FILE_WRONLY
+      integer  PETSC_FILE_CREATE
 
-      parameter (PETSC_BINARY_RDONLY = 0,PETSC_BINARY_WRONLY = 1)
-      parameter (PETSC_BINARY_CREATE = 2)
+      parameter (PETSC_FILE_RDONLY = 0,PETSC_FILE_WRONLY = 1)
+      parameter (PETSC_FILE_CREATE = 2)
 !
 !  PetscViewer formats
 !

@@ -108,16 +108,15 @@ EXTERN int PetscViewerCreate(MPI_Comm,PetscViewer*);
 EXTERN int PetscViewerSetFromOptions(PetscViewer);
 
 EXTERN int PetscViewerASCIIOpen(MPI_Comm,const char[],PetscViewer*);
-typedef enum {PETSC_BINARY_RDONLY,PETSC_BINARY_WRONLY,PETSC_BINARY_CREATE} PetscViewerBinaryType;
-EXTERN int PetscViewerBinaryOpen(MPI_Comm,const char[],PetscViewerBinaryType,PetscViewer*);
+typedef enum {PETSC_FILE_RDONLY,PETSC_FILE_WRONLY,PETSC_FILE_CREATE} PetscViewerFileType;
+EXTERN int PetscViewerBinaryOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
 EXTERN int PetscViewerSocketOpen(MPI_Comm,const char[],int,PetscViewer*);
 EXTERN int PetscViewerStringOpen(MPI_Comm,char[],int,PetscViewer*);
 EXTERN int PetscViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,PetscViewer*);
 EXTERN int PetscViewerAMSSetCommName(PetscViewer,const char[]);
 EXTERN int PetscViewerMathematicaOpen(MPI_Comm, int, const char[], const char[], PetscViewer *);
 EXTERN int PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
-typedef enum {PETSC_MATLAB_RDONLY,PETSC_MATLAB_WRONLY,PETSC_MATLAB_CREATE} PetscViewerMatlabType;
-EXTERN int PetscViewerMatlabOpen(MPI_Comm,const char[],PetscViewerMatlabType,PetscViewer*);
+EXTERN int PetscViewerMatlabOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
 
 EXTERN int PetscViewerGetType(PetscViewer,PetscViewerType*);
 EXTERN int PetscViewerSetType(PetscViewer,PetscViewerType);
@@ -183,7 +182,7 @@ EXTERN int PetscViewerASCIIUseTabs(PetscViewer,PetscTruth);
 EXTERN int PetscViewerASCIISetTab(PetscViewer,int);
 EXTERN int PetscViewerBinaryGetDescriptor(PetscViewer,int*);
 EXTERN int PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **);
-EXTERN int PetscViewerBinarySetType(PetscViewer,PetscViewerBinaryType);
+EXTERN int PetscViewerSetFileType(PetscViewer,PetscViewerFileType);
 EXTERN int PetscViewerStringSPrintf(PetscViewer,char *,...) PETSC_PRINTF_FORMAT_CHECK(2,3);
 EXTERN int PetscViewerStringSetString(PetscViewer,char[],int);
 EXTERN int PetscViewerDrawClear(PetscViewer);
@@ -220,11 +219,10 @@ EXTERN int PetscViewerSiloGetMeshName(PetscViewer, char **);
 EXTERN int PetscViewerSiloSetMeshName(PetscViewer, const char []);
 EXTERN int PetscViewerSiloClearMeshName(PetscViewer);
 
-typedef enum {PETSC_NETCDF_RDONLY,PETSC_NETCDF_RDWR,PETSC_NETCDF_CREATE} PetscViewerNetcdfType;
-EXTERN int PetscViewerNetcdfOpen(MPI_Comm,const char[],PetscViewerNetcdfType,PetscViewer*);
+EXTERN int PetscViewerNetcdfOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
 EXTERN int PetscViewerNetcdfGetID(PetscViewer, int *);
 
-EXTERN int PetscViewerHDF4Open(MPI_Comm,const char[],PetscViewerBinaryType,PetscViewer*);
+EXTERN int PetscViewerHDF4Open(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
 EXTERN int PetscViewerHDF4WriteSDS(PetscViewer viewer, float *xf, int d, int *dims, int bs);
 
 /*
@@ -332,7 +330,6 @@ EXTERN int         PETSC_VIEWER_AMS_Destroy(MPI_Comm);
 */
 EXTERN int PetscViewerMatlabPutArray(PetscViewer,int,int,PetscScalar*,char*);
 EXTERN int PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,char*);
-EXTERN int PetscViewerMatlabSetType(PetscViewer,PetscViewerMatlabType);
 EXTERN int PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
 
 /* 

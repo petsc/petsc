@@ -29,7 +29,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
     ---------------------------------------------------------------------------*/
   ierr = PetscOptionsGetString(0,"-f",filename,256,&flag);CHKERRQ(ierr);
   if (!flag) PetscStrcpy(filename,"gridfile");
-  ierr = PetscViewerBinaryOpen((*appctx)->comm,filename,PETSC_BINARY_RDONLY,&binary);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen((*appctx)->comm,filename,PETSC_FILE_RDONLY,&binary);CHKERRQ(ierr);
   ierr = AODataLoadBasic(binary,&(*appctx)->aodata);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
 

@@ -127,7 +127,7 @@ int main(int argc,char **args)
 
   /* Write the matrix, rhs and exact solution in Petsc binary file */
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write matrix and rhs in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",PETSC_BINARY_CREATE,&view);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",PETSC_FILE_CREATE,&view);CHKERRQ(ierr);
     ierr = MatView(A,view);CHKERRQ(ierr);
     ierr = VecView(b,view);CHKERRQ(ierr);
     ierr = VecView(u,view);CHKERRQ(ierr);

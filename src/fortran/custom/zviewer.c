@@ -10,10 +10,11 @@
 #define petscviewerpushformat_     PETSCVIEWERPUSHFORMAT
 #define petscviewerpopformat_      PETSCVIEWERPOPFORMAT
 #define petscviewerbinaryopen_     PETSCVIEWERBINARYOPEN
+#define petscviewermatlabopen_     PETSCVIEWERMATLABOPEN
 #define petscviewersocketopen_     PETSCVIEWERSOCKETOPEN
 #define petscviewerstringopen_     PETSCVIEWERSTRINGOPEN
 #define petscviewerdrawopen_       PETSCVIEWERDRAWOPEN
-#define petscviewerbinarysettype_  PETSCVIEWERBINARYSETTYPE
+#define petscviewersetfiletype_    PETSCVIEWERSETFILETYPE
 #define petscviewersetfilename_    PETSCVIEWERSETFILENAME
 #define petscviewersocketputscalar_ PETSCVIEWERSOCKETPUTSCALAR
 #define petscviewersocketputint_    PETSCVIEWERSOCKETPUTINT
@@ -28,10 +29,11 @@
 #define petscviewerpushformat_     petscviewerpushformat
 #define petscviewerpopformat_      petscviewerpopformat
 #define petscviewerbinaryopen_     petscviewerbinaryopen
+#define petscviewermatlabopen_     petscviewermatlabopen
 #define petscviewersocketopen_     petscviewersocketopen
 #define petscviewerstringopen_     petscviewerstringopen
 #define petscviewerdrawopen_       petscviewerdrawopen
-#define petscviewerbinarysettype_  petscviewerbinarysettype
+#define petscviewersetfiletype_    petscviewersetfiletype
 #define petscviewersetfilename_    petscviewersetfilename
 #endif
 
@@ -69,11 +71,11 @@ void PETSC_STDCALL petscviewersetfilename_(PetscViewer *viewer,CHAR name PETSC_M
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL  petscviewerbinarysettype_(PetscViewer *viewer,PetscViewerBinaryType *type,int *ierr)
+void PETSC_STDCALL  petscviewersetfiletype_(PetscViewer *viewer,PetscViewerFileType *type,int *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
-  *ierr = PetscViewerBinarySetType(v,*type);
+  *ierr = PetscViewerSetFileType(v,*type);
 }
 
 void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),int *port,PetscViewer *lab,int *ierr PETSC_END_LEN(len))
@@ -84,12 +86,21 @@ void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewerBinaryType *type,
+void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewerFileType *type,
                            PetscViewer *binv,int *ierr PETSC_END_LEN(len))
 {
   char   *c1;
   FIXCHAR(name,len,c1);
   *ierr = PetscViewerBinaryOpen((MPI_Comm)PetscToPointerComm(*comm),c1,*type,binv);
+  FREECHAR(name,c1);
+}
+
+void PETSC_STDCALL petscviewermatlabopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewerFileType *type,
+                           PetscViewer *binv,int *ierr PETSC_END_LEN(len))
+{
+  char   *c1;
+  FIXCHAR(name,len,c1);
+  *ierr = PetscViewerMatlabOpen((MPI_Comm)PetscToPointerComm(*comm),c1,*type,binv);
   FREECHAR(name,c1);
 }
 
