@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: posindep.c,v 1.3 1996/09/30 20:23:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.4 1996/10/01 15:03:34 bsmith Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -40,7 +40,7 @@ typedef struct {
 
 .keywords: timestep, pseudo, default
 
-.seealso: TSPseudoSetTimeStep()
+.seealso: TSPseudoSetTimeStep(), TSPseudoComputeTimeStep()
 @*/
 int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
 {
@@ -66,11 +66,22 @@ int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
    Input Parameters:
 .  ts - timestep context
 .  dt - function to compute timestep
-.  ctx - [optional] context required by function
+.  ctx - [optional] user-defined context for private data
+         required by the function (may be PETSC_NULL)
+
+   Calling sequence of func:
+.  func (TS ts,double *newdt,void *ctx);
+
+.  newdt - the newly computed timestep
+.  ctx - [optional] timestep context
+
+   Notes:
+   The routine set here will be called by TSPseudoComputeTimeStep()
+   during the timestepping process.
 
 .keywords: timestep, pseudo, set
 
-.seealso: TSPseudoDefaultTimeStep()
+.seealso: TSPseudoDefaultTimeStep(), TSPseudoComputeTimeStep()
 @*/
 int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
 {
@@ -87,7 +98,7 @@ int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
 
 /*@
     TSPseudoComputeTimeStep - Computes the next timestep for a currently running
-    pseudo-timestepping.
+    pseudo-timestepping process.
 
     Input Parameter:
 .   ts - timestep context
@@ -95,7 +106,14 @@ int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
     Output Parameter:
 .   dt - newly computed timestep
 
+
+    Notes:
+    The routine to be called here to compute the timestep should be
+    set by calling TSPseudoSetTimeStep().
+
 .keywords: timestep, pseudo, compute
+
+.seealso: TSPseudoDefaultTimeStep(), TSPseudoSetTimeStep()
 @*/
 int TSPseudoComputeTimeStep(TS ts,double *dt)
 {
@@ -103,7 +121,7 @@ int TSPseudoComputeTimeStep(TS ts,double *dt)
   int       ierr;
 
   PLogEventBegin(TS_PseudoComputeTimeStep,ts,0,0,0);
-  ierr = (*pseudo->dt)(ts,dt, pseudo->dtctx); CHKERRQ(ierr);
+  ierr = (*pseudo->dt)(ts,dt,pseudo->dtctx); CHKERRQ(ierr);
   PLogEventEnd(TS_PseudoComputeTimeStep,ts,0,0,0);
   return 0;
 }
@@ -111,30 +129,56 @@ int TSPseudoComputeTimeStep(TS ts,double *dt)
 
 /* ------------------------------------------------------------------------------*/
 /*@C
-   TSPseudoDefaultVerifyTimeStep - Default code to verify last timestep.
+   TSPseudoDefaultVerifyTimeStep - Default code to verify the quality of the last ttimestep.
 
    Input Parameters:
 .  ts - the timestep context
 .  dtctx - unused timestep context
+.  update - latest solution vector
 
-   Output Parameter:
+   Output Parameters:
 .  newdt - the timestep to use for the next step
+.  flag - flag indicating whether the last time step was acceptable
 
+   Note:
+   This routine always returns a flag of 1, indicating an acceptable 
+   timestep.
+
+.keywords: timestep, pseudo, default, verify 
+
+.seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
-int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void* dtctx,double* newdt,int *flag)
+int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,double *newdt,int *flag)
 {
   *flag = 1;
   return 0;
 }
 
 /*@
-   TSPseudoSetVerifyTimeStep - Sets the user routine to verify quality of last timestep.
+   TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the 
+   last timestep.
 
    Input Parameters:
 .  ts - timestep context
-.  dt - function to verify
-.  ctx - [optional] context required by function
+.  dt - user-defined function to verify timestep
+.  ctx - [optional] user-defined context for private data
+         for the timestep verification routine (may be PETSC_NULL)
 
+   Calling sequence of func:
+.  func (TS ts,Vec update,void *ctx,double *newdt,int *flag);
+
+.  update - latest solution vector
+.  ctx - [optional] timestep context
+.  newdt - the timestep to use for the next step
+.  flag - flag indicating whether the last time step was acceptable
+
+   Notes:
+   The routine set here will be called by TSPseudoVerifyTimeStep()
+   during the timestepping process.
+
+.keywords: timestep, pseudo, set, verify 
+
+.seealso: TSPseudoDefaultVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
 int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* ctx)
 {
@@ -150,16 +194,23 @@ int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* c
 }
 
 /*@
-    TSPseudoVerifyTimeStep - Verifies that the last timestep was OK.
+    TSPseudoVerifyTimeStep - Verifies whether the last timestep was acceptable.
 
     Input Parameters:
 .   ts - timestep context
-.   update - latest solution
+.   update - latest solution vector
 
     Output Parameters:
 .   dt - newly computed timestep (if it had to shrink)
 .   flag - indicates if current timestep was ok
 
+    Notes:
+    The routine to be called here to compute the timestep should be
+    set by calling TSPseudoSetVerifyTimeStep().
+
+.keywords: timestep, pseudo, verify 
+
+.seealso: TSPseudoSetVerifyTimeStep(), TSPseudoDefaultVerifyTimeStep()
 @*/
 int TSPseudoVerifyTimeStep(TS ts,Vec update,double *dt,int *flag)
 {
@@ -351,7 +402,6 @@ static int TSSetFromOptions_Pseudo(TS ts)
 
 static int TSPrintHelp_Pseudo(TS ts)
 {
-
   return 0;
 }
 
@@ -400,15 +450,17 @@ int TSCreate_Pseudo(TS ts )
 
 
 /*@
-      TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to 
-         dt when using the TSPseudoDefaultTimeStep() routine.
+    TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to 
+    dt when using the TSPseudoDefaultTimeStep() routine.
 
-  Input Parameters:
+    Input Parameters:
 .   ts - the timestep context
 .   inc - the scaling factor >= 1.0
 
-   Options Database Key:
-$  -ts_pseudo_increment <increment>
+    Options Database Key:
+$    -ts_pseudo_increment <increment>
+
+.keywords: timestep, pseudo, set, increment
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
 @*/
