@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.93 1998/01/04 21:01:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.94 1998/03/12 23:15:32 bsmith Exp balay $";
 #endif
 
 /*
@@ -223,9 +223,10 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
    VecCreateMPIWithArray - Creates a parallel vector with a user provided array.
 
    Input Parameters:
-.  comm - the MPI communicator to use
-.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
-.  array - the location to store the vector values
+.  comm  - the MPI communicator to use
+.  n     - local vector length (or PETSC_DECIDE to have calculated if N is given)
+.  N     - global vector length (or PETSC_DECIDE to have calculated if n is given)
+.  array - the user provided array to store the vector values
 
    Output Parameter:
 .  vv - the vector
@@ -233,11 +234,13 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
    Notes:
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
+   If use provided array is PETSC_NULL, then VecPlaceArray() can be used
+   at a later atage to SET the array for storing the vector values.
 
 .keywords: vector, create, MPI
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
-          VecCreateMPI(), VecCreateGhostWithArray()
+          VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 
 @*/ 
 int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
