@@ -22,15 +22,45 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 # Builds PETSc libraries for a given BOPT and architecture
 all: chkpetsc_dir
 	-$(RM) -f $(PDIR)/*.a
+	-@echo "Beginning to compile libraries in all directories"
+	-@echo "Using $(CC) $(PETSC_INCLUDE) $(CONF) $(PCONF) $(BASEOPT)"
+	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
            ACTION=libfast  tree 
 	$(RANLIB) $(PDIR)/*.a
+	-@echo "Completed building libraries"
+	-@echo "------------------------------------------"
+
+# Builds PETSc test examples for a given BOPT and architecture
+testexamples: chkpetsc_dir
+	-@echo "Beginning to compile and run test examples"
+	-@echo "Using $(CLINKER)  $(PETSC_LIB)"
+	-@echo "------------------------------------------"
+	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
+           ACTION=testexamples_1  tree 
+	$(RANLIB) $(PDIR)/*.a
+	-@echo "Completed compiling and running test examples"
+	-@echo "------------------------------------------"
+
+# Builds PETSc test examples for a given BOPT and architecture
+testfortran: chkpetsc_dir
+	-@echo "Beginning to compile and run Fortran test examples"
+	-@echo "Using $(FLINKER) $(PETSC_FORTRAN_LIB) \
+                $(PETSC_LIB)"
+	-@echo "------------------------------------------"
+	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
+           ACTION=testexamples_3  tree 
+	$(RANLIB) $(PDIR)/*.a
+	-@echo "Completed compiling and running Fortran test examples"
+	-@echo "------------------------------------------"
 
 #
 # Builds PETSc Fortran interface libary
 # Note:  libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
 fortran: chkpetsc_dir
+	-@echo "Beginning to compile Fortran interface library"
+	-@echo "------------------------------------------"
 	-@cd src/fortran/custom; \
           $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
           grep -v clog trashz | grep -v "information sections" | \
@@ -40,6 +70,8 @@ fortran: chkpetsc_dir
 	-@cd src/fortran/auto; \
           $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
 	$(RANLIB) $(PDIR)/libpetscfortran.a
+	-@echo "Completed compiling Fortran interface library"
+	-@echo "------------------------------------------"
     
 ranlib:
 	$(RANLIB) $(PDIR)/*.a
