@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.71 1998/04/13 17:54:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.72 1998/05/11 18:09:52 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -62,19 +62,20 @@ static int Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 #undef __FUNC__  
 #define __FUNC__ "VIEWER_STDOUT_" 
 /*@C
-     VIEWER_STDOUT_ - Creates a window viewer shared by all processors 
-                     in a communicator.
+   VIEWER_STDOUT_ - Creates a window viewer shared by all processors 
+                    in a communicator.
 
-  Input Parameters:
+   Input Parameter:
 .  comm - the MPI communicator to share the window viewer
 
    Collective on MPI_Comm
 
-  Note: Unlike almost all other PETSc routines this does not return 
+   Notes: 
+   Unlike almost all other PETSc routines, this does not return 
    an error code. Usually used in the form
 $      XXXView(XXX object,VIEWER_STDOUT_(comm));
 
-.seealso: VIEWER_DRAWX_, ViewerFileOpenASCII(), 
+.seealso: VIEWER_DRAWX_, ViewerFileOpenASCII()
 C@*/
 Viewer VIEWER_STDOUT_(MPI_Comm comm)
 {
@@ -127,15 +128,16 @@ static int Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 #undef __FUNC__  
 #define __FUNC__ "VIEWER_STDERR_" 
 /*@C
-     VIEWER_STDERR_ - Creates a window viewer shared by all processors 
-                     in a communicator.
+   VIEWER_STDERR_ - Creates a window viewer shared by all processors 
+                    in a communicator.
 
-  Input Parameters:
+   Input Parameter:
 .  comm - the MPI communicator to share the window viewer
 
    Collective on MPI_Comm
 
-  Note: Unlike almost all other PETSc routines this does not return 
+   Note: 
+   Unlike almost all other PETSc routines, this does not return 
    an error code. Usually used in the form
 $      XXXView(XXX object,VIEWER_STDERR_(comm));
 
@@ -215,8 +217,8 @@ int ViewerFlush_File(Viewer v)
 /*@C
     ViewerASCIIGetPointer - Extracts the file pointer from an ASCII viewer.
 
-.   viewer - viewer context, obtained from ViewerFileOpenASCII()
-.   fd - file pointer
++   viewer - viewer context, obtained from ViewerFileOpenASCII()
+-   fd - file pointer
 
     Not Collective
 
@@ -258,8 +260,8 @@ int ViewerGetFormat(Viewer viewer,int *format)
    ViewerFileOpenASCII - Opens an ASCII file as a viewer.
 
    Input Parameters:
-.  comm - the communicator
-.  name - the file name
++  comm - the communicator
+-  name - the file name
 
    Collective on MPI_Comm
 
@@ -267,6 +269,8 @@ int ViewerGetFormat(Viewer viewer,int *format)
 .  lab - the viewer to use with the specified file
 
    Notes:
+   This viewer can be destroyed with ViewerDestroy().
+
    If a multiprocessor communicator is used (such as PETSC_COMM_WORLD), 
    then only the first processor in the group opens the file.  All other 
    processors send their data to the first processor to print. 
@@ -276,11 +280,10 @@ int ViewerGetFormat(Viewer viewer,int *format)
 
    As shown below, ViewerFileOpenASCII() is useful in conjunction with 
    MatView() and VecView()
-$
-$    ViewerFileOpenASCII(PETSC_COMM_WORLD,"mat.output",&viewer);
-$    MatView(matrix,viewer);
-
-   This viewer can be destroyed with ViewerDestroy().
+.vb
+     ViewerFileOpenASCII(PETSC_COMM_WORLD,"mat.output",&viewer);
+     MatView(matrix,viewer);
+.ve
 
 .keywords: Viewer, file, open
 
@@ -325,31 +328,31 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
    ViewerSetFormat - Sets the format for viewers.
 
    Input Parameters:
-.  v - the viewer
++  v - the viewer
 .  format - the format
-.  char - optional object name
+-  char - optional object name
 
    Collective on Viewer
 
    Notes:
    Available formats include
-$    VIEWER_FORMAT_ASCII_DEFAULT - default
-$    VIEWER_FORMAT_ASCII_MATLAB - Matlab format
-$    VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
-$      (which is in many cases the same as the default)
-$    VIEWER_FORMAT_ASCII_INFO - basic information about object
-$    VIEWER_FORMAT_ASCII_INFO_LONG - more detailed info
-$       about object
-$    VIEWER_FORMAT_ASCII_COMMON - identical output format for
-$       all objects of a particular type
-$    VIEWER_FORMAT_ASCII_INDEX - for vectors prints the vector
-$       element number next to each vector entry
-$    VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
-$      file in its native format (for example, dense
-$       matrices are stored as dense)
-$    VIEWER_FORMAT_DRAW_BASIC - View the vector with a simple 1d plot
-$    VIEWER_FORMAT_DRAW_LG - View the vector with a line graph
-$    VIEWER_FORMAT_DRAW_CONTOUR - View the vector with a contour
++    VIEWER_FORMAT_ASCII_DEFAULT - default format
+.    VIEWER_FORMAT_ASCII_MATLAB - Matlab format
+.    VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
+      (which is in many cases the same as the default)
+.    VIEWER_FORMAT_ASCII_INFO - basic information about object
+.    VIEWER_FORMAT_ASCII_INFO_LONG - more detailed info
+       about object
+.    VIEWER_FORMAT_ASCII_COMMON - identical output format for
+       all objects of a particular type
+.    VIEWER_FORMAT_ASCII_INDEX - (for vectors) prints the vector
+       element number next to each vector entry
+.    VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
+      file in its native format (for example, dense
+       matrices are stored as dense)
+.    VIEWER_FORMAT_DRAW_BASIC - views the vector with a simple 1d plot
+.    VIEWER_FORMAT_DRAW_LG - views the vector with a line graph
+-    VIEWER_FORMAT_DRAW_CONTOUR - views the vector with a contour plot
 
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
@@ -378,28 +381,31 @@ int ViewerSetFormat(Viewer v,int format,char *name)
    ViewerPushFormat - Sets the format for file viewers.
 
    Input Parameters:
-.  v - the viewer
++  v - the viewer
 .  format - the format
-.  char - optional object name
+-  char - optional object name
 
    Collective on Viewer
 
    Notes:
    Available formats include
-$    VIEWER_FORMAT_ASCII_DEFAULT - default
-$    VIEWER_FORMAT_ASCII_MATLAB - Matlab format
-$    VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
-$      (which is in many cases the same as the default)
-$    VIEWER_FORMAT_ASCII_INFO - basic information about object
-$    VIEWER_FORMAT_ASCII_INFO_LONG - more detailed info
-$       about object
-$    VIEWER_FORMAT_ASCII_COMMON - identical output format for
-$       all objects of a particular type
-$    VIEWER_FORMAT_ASCII_INDEX - for vectors prints the vector
-$       element number next to each vector entry
-$    VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
-$      file in its native format (for example, dense
-$       matrices are stored as dense)
++    VIEWER_FORMAT_ASCII_DEFAULT - default format
+.    VIEWER_FORMAT_ASCII_MATLAB - Matlab format
+.    VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
+      (which is in many cases the same as the default)
+.    VIEWER_FORMAT_ASCII_INFO - basic information about object
+.    VIEWER_FORMAT_ASCII_INFO_LONG - more detailed info
+       about object
+.    VIEWER_FORMAT_ASCII_COMMON - identical output format for
+       all objects of a particular type
+.    VIEWER_FORMAT_ASCII_INDEX - (for vectors) prints the vector
+       element number next to each vector entry
+.    VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
+      file in its native format (for example, dense
+       matrices are stored as dense)
+.    VIEWER_FORMAT_DRAW_BASIC - views the vector with a simple 1d plot
+.    VIEWER_FORMAT_DRAW_LG - views the vector with a line graph
+-    VIEWER_FORMAT_DRAW_CONTOUR - views the vector with a contour plot
 
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
