@@ -61,9 +61,9 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-FFLAGS=<string>',   nargs.Arg(None, '',   'Specify the Fortran compiler options'))
 
     help.addArgument('Compilers', '-LD=<prog>',         nargs.Arg(None, None, 'Specify the default linker'))
-    help.addArgument('Compilers', '-LD_CC=<prog>',      nargs.Arg(None, None, 'Specify the linker for C only'))
-    help.addArgument('Compilers', '-LD_CXX=<prog>',     nargs.Arg(None, None, 'Specify the linker for C++ only'))
-    help.addArgument('Compilers', '-LD_FC=<prog>',      nargs.Arg(None, None, 'Specify the linker for Fortran only'))
+    help.addArgument('Compilers', '-CC_LD=<prog>',      nargs.Arg(None, None, 'Specify the linker for C only'))
+    help.addArgument('Compilers', '-CXX_LD=<prog>',     nargs.Arg(None, None, 'Specify the linker for C++ only'))
+    help.addArgument('Compilers', '-FC_LD=<prog>',      nargs.Arg(None, None, 'Specify the linker for Fortran only'))
     help.addArgument('Compilers', '-LDFLAGS=<string>',  nargs.Arg(None, '',   'Specify the linker options'))
     return
 
