@@ -1,11 +1,12 @@
 
-C    "$Id: ex2f.F,v 1.32 1996/09/25 20:56:26 curfman Exp curfman $";
+C    "$Id: ex2f.F,v 1.33 1996/09/26 02:53:51 curfman Exp curfman $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
 C
 /*T
-C  Concepts: SLES (Setting a user-defined monitoring routine when solving a linear system)
+C  Concepts: SLES^Solving a system of linear equations (basic parallel example);
+C  Concepts: SLES^Setting a user-defined monitoring routine when solving a linear system;
 C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
 C  Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); PCSetType();
 C  Routines: KSPBuildSolution(); KSPSetMonitor(); KSPSetTolerances();
