@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.15 1998/09/28 21:09:49 balay Exp balay $ 
+# $Id: solid.make,v 1.16 1998/09/30 00:05:30 balay Exp balay $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.23"
@@ -72,15 +72,23 @@ rsh -n fire "cd $hme/$src_dir; $make BOPT=g"
 rsh -n fire "cd $hme/$src_dir; $make BOPT=O"
 #rsh -n fire "cd $hme/$src_dir; $make BOPT=g_c++"
 #rsh -n fire "cd $hme/$src_dir; $make BOPT=O_c++"
-#rsh -n fire "cd $hme/$src_dir; $make BOPT=g_complex"
-#rsh -n fire "cd $hme/$src_dir; $make BOPT=O_complex"
+rsh -n fire "cd $hme/$src_dir; $make BOPT=g_complex"
+rsh -n fire "cd $hme/$src_dir; $make BOPT=O_complex"
 
 arch=IRIX64
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=g"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=O"
+rsh -n denali "cd $hme/$src_dir; $make BOPT=O3"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=g_complex"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=O_complex"
+
+# yukon uses a different ARCH as binaries are not
+# compatible between yukon and denali
+arch=IRIX64_yukon
+make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
+rsh -n yukon "cd $hme/$src_dir; $make BOPT=g"
+rsh -n yukon "cd $hme/$src_dir; $make BOPT=O"
 
 # rs6000
 arch=rs6000
@@ -99,6 +107,11 @@ make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh -n violet "cd $hme/$src_dir; $make BOPT=g"
 rsh -n violet "cd $hme/$src_dir; $make BOPT=O"
 
+# rs6000_shmem is used by Tom Canfeild on octa nodes
+arch=rs6000_shmem
+make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
+rsh -n octa01 "cd $hme/$src_dir; $make BOPT=O"
+
 # sun4
 arch=sun4
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
@@ -113,7 +126,3 @@ make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 #rsh -n doc "cd $hme/$src_dir; $make BOPT=g"
 #rsh -n doc "cd $hme/$src_dir; $make BOPT=O"
 
-# rs6000_shmem is used by Tom Canfeild on octa nodes
-arch=rs6000_shmem
-make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh -n octa01 "cd $hme/$src_dir; $make BOPT=O"
