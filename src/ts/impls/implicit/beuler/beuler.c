@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.1 1996/01/17 04:45:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.2 1996/01/31 03:59:33 bsmith Exp bsmith $";
 #endif
 /*
        Code for Time Stepping with implicit backwards Euler.
@@ -10,7 +10,8 @@ static char vcid[] = "$Id: beuler.c,v 1.1 1996/01/17 04:45:47 bsmith Exp bsmith 
 
 
 typedef struct {
-  Vec update;     /* work vector where F(t[i],u[i]) is stored */
+  Vec update;      /* work vector where new solution is formed */
+  Vec func   ;     /* work vector where F(t[i],u[i]) is stored */
 } TS_BEuler;
 
 /*
@@ -26,13 +27,16 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,Scalar *time)
   *steps = -ts->steps;
   ierr = (*ts->monitor)(ts,ts->steps,ts->ptime,sol,ts->monP); CHKERRQ(ierr);
 
+  /* set initial guess to be previous solution */
+  ierr = VecCopy(sol,update); CHKERRQ(ierr);
+
   for ( i=0; i<max_steps; i++ ) {
+    ts->ptime += ts->time_step;
+    if (ts->ptime > ts->max_time) break;
     ierr = SLESSolve(ts->sles,sol,update,&its); CHKERRQ(ierr);
     ierr = VecCopy(update,sol); CHKERRQ(ierr);
-    ts->ptime += ts->time_step;
     ts->steps++;
-    ierr = (*ts->monitor)(ts,ts->steps,ts->ptime,sol,ts->monP); CHKERRQ(ierr);
-    if (ts->ptime > ts->max_time) break;
+    ierr = (*ts->monitor)(ts,ts->steps,ts->ptime,sol,ts->monP);CHKERRQ(ierr);
   }
 
   *steps += ts->steps;
@@ -51,13 +55,18 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,Scalar *time)
   MatStructure str;
 
   *steps = -ts->steps;
-  ierr = (*ts->monitor)(ts,ts->steps,ts->ptime,sol,ts->monP); CHKERRQ(ierr);
+  ierr = (*ts->monitor)(ts,ts->steps,ts->ptime,sol,ts->monP);CHKERRQ(ierr);
+
+  /* set initial guess to be previous solution */
+  ierr = VecCopy(sol,update); CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
+    ts->ptime += ts->time_step;
+    if (ts->ptime > ts->max_time) break;
     /* 
         evaluate matrix function 
     */
-    ierr = (*ts->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->funP); CHKERRQ(ierr);
+    ierr = (*ts->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->funP);CHKERRQ(ierr);
     ierr = MatScale(&mdt,ts->A); CHKERRQ(ierr);
     ierr = MatShift(&one,ts->A); CHKERRQ(ierr);
     if (ts->B != ts->A) {
@@ -68,10 +77,8 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,Scalar *time)
     ierr = SLESSetOperators(ts->sles,ts->A,ts->B,str); CHKERRQ(ierr);
     ierr = SLESSolve(ts->sles,sol,update,&its); CHKERRQ(ierr);
     ierr = VecCopy(update,sol); CHKERRQ(ierr);
-    ierr = (*ts->monitor)(ts,ts->steps,ts->ptime,sol,ts->monP); CHKERRQ(ierr);
-    ts->ptime += ts->time_step;
     ts->steps++;
-    if (ts->ptime > ts->max_time) break;
+    ierr = (*ts->monitor)(ts,ts->steps,ts->ptime,sol,ts->monP); CHKERRQ(ierr);
   }
 
   *steps += ts->steps;
@@ -91,13 +98,13 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,Scalar *time)
   ierr = (*ts->monitor)(ts,ts->steps,ts->ptime,sol,ts->monP); CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
+    ts->ptime += ts->time_step;
+    if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,beuler->update); CHKERRQ(ierr);
     ierr = SNESSolve(ts->snes,beuler->update,&its); CHKERRQ(ierr);
     ierr = VecCopy(beuler->update,sol); CHKERRQ(ierr);
-    ierr = (*ts->monitor)(ts,ts->steps,ts->ptime,sol,ts->monP); CHKERRQ(ierr);
-    ts->ptime += ts->time_step;
     ts->steps++;
-    if (ts->ptime > ts->max_time) break;
+    ierr = (*ts->monitor)(ts,ts->steps,ts->ptime,sol,ts->monP);CHKERRQ(ierr);
   }
 
   *steps += ts->steps;
@@ -112,8 +119,8 @@ static int TSDestroy_BEuler(PetscObject obj )
   TS_BEuler *beuler = (TS_BEuler*) ts->data;
   int       ierr;
 
-
   ierr = VecDestroy(beuler->update); CHKERRQ(ierr);
+  if (beuler->func) {ierr = VecDestroy(beuler->func);CHKERRQ(ierr);}
   PetscFree(beuler);
   return 0;
 }
@@ -188,7 +195,6 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
   TS_BEuler *beuler = (TS_BEuler*) ts->data;
   int       ierr;
   Scalar    mdt = -ts->time_step, one = 1.0;
-  KSP       ksp;
 
   ierr = VecDuplicate(ts->vec_sol,&beuler->update); CHKERRQ(ierr);  
     
@@ -199,9 +205,7 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
     ierr = MatScale(&mdt,ts->B); CHKERRQ(ierr);
     ierr = MatShift(&one,ts->B); CHKERRQ(ierr);
   }
-  ierr = SLESSetOperators(ts->sles,ts->A,ts->B,MAT_SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = SLESGetKSP(ts->sles,&ksp); CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
+  ierr = SLESSetOperators(ts->sles,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   return 0;
 }
 
@@ -228,7 +232,7 @@ static int TSSetUp_BEuler_Linear_No_Matrix(TS ts)
   ierr = MatShellSetMult(ts->A,TSBEulerMatMult_Linear); CHKERRQ(ierr);
   /* no support yet for different B from A */
   ts->B = ts->A;
-  ierr = SLESSetOperators(ts->sles,ts->A,ts->B,MAT_SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = SLESSetOperators(ts->sles,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   return 0;
 }
 
@@ -243,7 +247,8 @@ static int TSSetUp_BEuler_Nonlinear_No_Jacobian(TS ts)
   */
   ierr = SNESDefaultMatrixFreeMatCreate(ts->snes,ts->vec_sol,&J); CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&beuler->update); CHKERRQ(ierr);  
-  ierr = SNESSetFunction(ts->snes,beuler->update,TSBEulerFunction_Nonlinear,ts);
+  ierr = VecDuplicate(ts->vec_sol,&beuler->func); CHKERRQ(ierr);  
+  ierr = SNESSetFunction(ts->snes,beuler->func,TSBEulerFunction_Nonlinear,ts);
          CHKERRQ(ierr);
 
   ts->B = ts->A = J;
@@ -257,7 +262,8 @@ static int TSSetUp_BEuler_Nonlinear_Jacobian(TS ts)
   int       ierr;
 
   ierr = VecDuplicate(ts->vec_sol,&beuler->update); CHKERRQ(ierr);  
-  ierr = SNESSetFunction(ts->snes,beuler->update,TSBEulerFunction_Nonlinear,ts);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&beuler->func); CHKERRQ(ierr);  
+  ierr = SNESSetFunction(ts->snes,beuler->func,TSBEulerFunction_Nonlinear,ts);CHKERRQ(ierr);
 
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSBEulerJacobian_Nonlinear,ts);CHKERRQ(ierr);
   return 0;
@@ -296,6 +302,7 @@ int TSCreate_BEuler(TS ts )
 {
   TS_BEuler *beuler;
   int       ierr;
+  KSP       ksp;
 
   ts->type 	      = 0;
   ts->destroy         = TSDestroy_BEuler;
@@ -307,16 +314,22 @@ int TSCreate_BEuler(TS ts )
     ts->step            = TSStep_BEuler_Linear_Constant_Matrix;
     ts->setfromoptions  = TSSetFromOptions_BEuler_Linear;
     ierr = SLESCreate(ts->comm,&ts->sles); CHKERRQ(ierr);
+    ierr = SLESGetKSP(ts->sles,&ksp); CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
   } else if (ts->problem_type == TS_LINEAR_VARIABLE_MATRIX) {
     ts->setup	        = TSSetUp_BEuler_Linear_Variable_Matrix;
     ts->step            = TSStep_BEuler_Linear_Variable_Matrix;
     ts->setfromoptions  = TSSetFromOptions_BEuler_Linear;
     ierr = SLESCreate(ts->comm,&ts->sles); CHKERRQ(ierr);
+    ierr = SLESGetKSP(ts->sles,&ksp); CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
   } else if (ts->problem_type == TS_LINEAR_NO_MATRIX) {
     ts->setup	        = TSSetUp_BEuler_Linear_No_Matrix;
     ts->step            = TSStep_BEuler_Linear_Constant_Matrix;
     ts->setfromoptions  = TSSetFromOptions_BEuler_Linear;
     ierr = SLESCreate(ts->comm,&ts->sles); CHKERRQ(ierr);
+    ierr = SLESGetKSP(ts->sles,&ksp); CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR_NO_JACOBIAN) {
     ts->setup	        = TSSetUp_BEuler_Nonlinear_No_Jacobian;
     ts->step            = TSStep_BEuler_Nonlinear;
