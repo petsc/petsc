@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zpc.c,v 1.17 1998/03/06 00:06:09 bsmith Exp balay $";
+static char vcid[] = "$Id: zpc.c,v 1.18 1998/03/30 22:22:13 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -135,7 +135,7 @@ void pcbjacobigetsubsles_(PC pc,int *n_local,int *first_local,PetscFortranAddr *
 
 void pcgetoperators_(PC pc,Mat *mat,Mat *pmat,MatStructure *flag, int *__ierr){
   Mat m,p;
-  if ((void*)flag == PETSC_NULL_Fortran) flag = 0;
+  if (FORTRANNULLINTEGER(flag)) flag = PETSC_NULL;
   *__ierr = PCGetOperators((PC)PetscToPointer(pc),&m,&p,flag);
   if (mat) *(PetscFortranAddr*) mat = PetscFromPointer(m);
   if (pmat) *(PetscFortranAddr*) pmat = PetscFromPointer(p);

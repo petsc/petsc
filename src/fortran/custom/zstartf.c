@@ -62,18 +62,26 @@ void petscinitializefortran_(void)
 }
 
 #if defined(USES_CPTOFCD)
-void petscsetfortranbasepointers_(void *fnull,_fcd fcnull,void *ffnull)
+void petscsetfortranbasepointers_(_fcd fnull_character,void *fnull_integer,
+                                  void *fnull_scalar,void * fnull_double,
+                                  void *fnull_function)
 {
-  PETSC_NULL_Fortran            = fnull;
-  PETSC_NULL_CHARACTER_Fortran  = _fcdtocp(fcnull);
-  PETSC_NULL_FUNCTION_Fortran   = ffnull;
+  PETSC_NULL_CHARACTER_Fortran  = _fcdtocp(fnull_character);
+  PETSC_NULL_INTEGER_Fortran    = fnull_integer;
+  PETSC_NULL_SCALAR_Fortran     = fnull_scalar;
+  PETSC_NULL_DOUBLE_Fortran     = fnull_double;
+  PETSC_NULL_FUNCTION_Fortran   = fnull_function;
 }
 #else
-void petscsetfortranbasepointers_(void *fnull,char *fcnull,void *ffnull)
+void petscsetfortranbasepointers_(char *fnull_character,void *fnull_integer,
+                                  void *fnull_scalar,void * fnull_double,
+                                  void *fnull_function)
 {
-  PETSC_NULL_Fortran            = fnull;
-  PETSC_NULL_CHARACTER_Fortran  = fcnull;
-  PETSC_NULL_FUNCTION_Fortran   = ffnull;
+  PETSC_NULL_CHARACTER_Fortran  = fnull_character;
+  PETSC_NULL_INTEGER_Fortran    = fnull_integer;
+  PETSC_NULL_SCALAR_Fortran     = fnull_scalar;
+  PETSC_NULL_DOUBLE_Fortran     = fnull_double;
+  PETSC_NULL_FUNCTION_Fortran   = fnull_function;
 }
 #endif 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.19 1998/03/20 22:42:42 bsmith Exp balay $";
+static char vcid[] = "$Id: zda.c,v 1.20 1998/03/30 22:21:56 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -76,9 +76,9 @@ void dagetscatter_(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,
 {
   VecScatter l,g,ll;
   *__ierr = DAGetScatter((DA)PetscToPointer(da),&l,&g,&ll);
-  if (!FORTRANNULL(ltog)) *(PetscFortranAddr*) ltog = PetscFromPointer(l);
-  if (!FORTRANNULL(gtol)) *(PetscFortranAddr*) gtol = PetscFromPointer(g);
-  if (!FORTRANNULL(ltol)) *(PetscFortranAddr*) ltol = PetscFromPointer(ll);
+  if (!FORTRANNULLINTEGER(ltog)) *(PetscFortranAddr*) ltog = PetscFromPointer(l);
+  if (!FORTRANNULLINTEGER(gtol)) *(PetscFortranAddr*) gtol = PetscFromPointer(g);
+  if (!FORTRANNULLINTEGER(ltol)) *(PetscFortranAddr*) ltol = PetscFromPointer(ll);
 }
 
 void dadestroy_(DA da, int *__ierr )
@@ -92,8 +92,8 @@ void dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                   int *s,int *lx,int *ly,DA *inra, int *__ierr )
 {
   DA da;
-  if (FORTRANNULL(lx)) lx = PETSC_NULL;
-  if (FORTRANNULL(ly)) ly = PETSC_NULL;
+  if (FORTRANNULLINTEGER(lx)) lx = PETSC_NULL;
+  if (FORTRANNULLINTEGER(ly)) ly = PETSC_NULL;
   *__ierr = DACreate2d((MPI_Comm)PetscToPointerComm( *comm ),*wrap,
                        *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,&da);
   *(PetscFortranAddr*) inra = PetscFromPointer(da);
@@ -103,7 +103,7 @@ void dacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,int *M,int *w,int *s,
                  int *lc,DA *inra, int *__ierr )
 {
   DA da;
-  if (FORTRANNULL(lc)) lc = PETSC_NULL;
+  if (FORTRANNULLINTEGER(lc)) lc = PETSC_NULL;
   *__ierr = DACreate1d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*M,*w,*s,lc,&da);
   *(PetscFortranAddr*) inra = PetscFromPointer(da);
 }
@@ -113,9 +113,9 @@ void dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                  int *w,int *s,int *lx,int *ly,int *lz,DA *inra, int *__ierr )
 {
   DA da;
-  if (FORTRANNULL(lx)) lx = PETSC_NULL;
-  if (FORTRANNULL(ly)) ly = PETSC_NULL;
-  if (FORTRANNULL(lz)) lz = PETSC_NULL;
+  if (FORTRANNULLINTEGER(lx)) lx = PETSC_NULL;
+  if (FORTRANNULLINTEGER(ly)) ly = PETSC_NULL;
+  if (FORTRANNULLINTEGER(lz)) lz = PETSC_NULL;
   *__ierr = DACreate3d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,
                         *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,&da);
   *(PetscFortranAddr*) inra = PetscFromPointer(da);

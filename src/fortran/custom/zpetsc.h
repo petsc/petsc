@@ -7,8 +7,10 @@ extern int     PetscScalarAddressToFortran(PetscObject,Scalar*,Scalar*,int,long*
 extern int     PetscScalarAddressFromFortran(PetscObject,Scalar*,long,int,Scalar **);
 extern long    PetscIntAddressToFortran(int*,int*);
 extern int    *PetscIntAddressFromFortran(int*,long); 
-extern void   *PETSC_NULL_Fortran;
 extern char   *PETSC_NULL_CHARACTER_Fortran;
+extern void   *PETSC_NULL_INTEGER_Fortran;
+extern void   *PETSC_NULL_SCALAR_Fortran;
+extern void   *PETSC_NULL_DOUBLE_Fortran;
 extern void   *PETSC_NULL_FUNCTION_Fortran;
 /*  ----------------------------------------------------------------------*/
 /*
@@ -121,14 +123,15 @@ extern int   MPIR_FromPointer(void*);
 #define FREECHAR(a,b) if (b) PetscFree(b);
 
 #else
-
-#define CHAR char*
-#define FIXCHAR(a,n,b) \
-{\
+/*
   if (a == ((char*) PETSC_NULL_Fortran)) {  \
     (*PetscErrorPrintf)("PETSC ERROR: Must use PETSC_NULL_CHARACTER!"); \
     *__ierr = 1; return; \
-  }  \
+  } 
+*/
+#define CHAR char*
+#define FIXCHAR(a,n,b) \
+{\
   if (a == PETSC_NULL_CHARACTER_Fortran) { \
     b = a = 0; \
   } else { \
@@ -145,7 +148,9 @@ extern int   MPIR_FromPointer(void*);
 
 #endif
 
-#define FORTRANNULL(a) (((void *) a) == PETSC_NULL_Fortran)
+#define FORTRANNULLINTEGER(a)  (((void *) a) == PETSC_NULL_INTEGER_Fortran)
+#define FORTRANNULLSCALAR(a)   (((void *) a) == PETSC_NULL_SCALAR_Fortran)
+#define FORTRANNULLDOUBLE(a)   (((void *) a) == PETSC_NULL_DOUBLE_Fortran)
 #define FORTRANNULLFUNCTION(a) (((void *) a) == PETSC_NULL_FUNCTION_Fortran)
 /*
     These are used to support the default viewers that are 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.18 1997/11/28 16:17:05 bsmith Exp balay $";
+static char vcid[] = "$Id: zdraw.c,v 1.19 1998/03/30 22:21:59 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -53,8 +53,10 @@ extern "C" {
 void drawtensorcontour_(Draw win,int *m,int *n,double *x,double *y,Vec V, int *__ierr )
 {
   double *xx,*yy;
-  if ((void*)x == PETSC_NULL_Fortran) xx = PETSC_NULL; else xx = x;
-  if ((void*)y == PETSC_NULL_Fortran) yy = PETSC_NULL; else yy = y;
+  if (FORTRANNULLDOUBLE(x)) xx = PETSC_NULL; 
+  else xx = x;
+  if (FORTRANNULLDOUBLE(y)) yy = PETSC_NULL; 
+  else yy = y;
 
   *__ierr = DrawTensorContour((Draw)PetscToPointer(win),*m,*n,xx,yy,
 	                      (Vec)PetscToPointer(V));

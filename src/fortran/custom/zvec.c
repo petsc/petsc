@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.33 1998/04/16 03:56:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.34 1998/04/16 15:01:56 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -69,7 +69,7 @@ void vecview_(Vec v,Viewer viewer, int *__ierr )
 void vecgettype_(Vec vv,VecType *type,CHAR name,int *__ierr,int len)
 {
   char *tname;
-  if (FORTRANNULL(type)) type = PETSC_NULL;
+  if (FORTRANNULLINTEGER(type)) type = PETSC_NULL;
   *__ierr = VecGetType((Vec)PetscToPointer(vv),type,&tname);
 #if defined(USES_CPTOFCD)
   {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.42 1998/04/16 15:46:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.43 1998/04/20 19:26:19 bsmith Exp balay $";
 #endif
 
 /*
@@ -192,8 +192,10 @@ void petscgetprogramname_(CHAR name, int *__ierr,int len_in )
     This is code for translating PETSc memory addresses to integer offsets 
     for Fortran.
 */
-void   *PETSC_NULL_Fortran;
 char   *PETSC_NULL_CHARACTER_Fortran;
+void   *PETSC_NULL_INTEGER_Fortran;
+void   *PETSC_NULL_SCALAR_Fortran;
+void   *PETSC_NULL_DOUBLE_Fortran;
 void   *PETSC_NULL_FUNCTION_Fortran;
 
 long PetscIntAddressToFortran(int *base,int *addr)

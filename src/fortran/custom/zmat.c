@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.47 1998/04/16 15:02:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.48 1998/04/20 19:26:43 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -116,8 +116,8 @@ void matgetrow_(Mat mat,int *row,int *ncols,int *cols,Scalar *vals,int *ierr)
      *ierr = 1;
      return;
   }
-  if (FORTRANNULL(cols)) oocols = PETSC_NULL;
-  if (FORTRANNULL(vals)) oovals = PETSC_NULL;
+  if (FORTRANNULLINTEGER(cols)) oocols = PETSC_NULL;
+  if (FORTRANNULLSCALAR(vals)) oovals = PETSC_NULL;
 
   *ierr = MatGetRow((Mat)PetscToPointer(mat),*row,ncols,oocols,oovals); 
   if (*ierr) return;
@@ -137,8 +137,8 @@ void matrestorerow_(Mat mat,int *row,int *ncols,int *cols,Scalar *vals,int *ierr
      *ierr = 1;
      return;
   }
-  if (FORTRANNULL(cols)) oocols = PETSC_NULL;
-  if (FORTRANNULL(vals)) oovals = PETSC_NULL;
+  if (FORTRANNULLINTEGER(cols)) oocols = PETSC_NULL;
+  if (FORTRANNULLSCALAR(vals)) oovals = PETSC_NULL;
   *ierr = MatRestoreRow((Mat)PetscToPointer(mat),*row,ncols,oocols,oovals); 
   matgetrowactive = 0;
 }
@@ -216,7 +216,7 @@ void matrestorearray_(Mat mat,Scalar *fa,long *ia,int *__ierr)
 void mattranspose_(Mat mat,Mat *B, int *__ierr )
 {
   Mat mm;
-  if (FORTRANNULL(B)) B = PETSC_NULL;
+  if (FORTRANNULLINTEGER(B)) B = PETSC_NULL;
   *__ierr = MatTranspose((Mat)PetscToPointer(mat),&mm);
   *(PetscFortranAddr*) B = PetscFromPointer(mm);
 }
@@ -238,7 +238,7 @@ void matconvert_(Mat mat,MatType *newtype,Mat *M, int *__ierr )
 void matcreateseqdense_(MPI_Comm *comm,int *m,int *n,Scalar *data,Mat *newmat,int *__ierr )
 {
   Mat mm;
-  if (FORTRANNULL(data)) data = PETSC_NULL;
+  if (FORTRANNULLSCALAR(data)) data = PETSC_NULL;
   *__ierr = MatCreateSeqDense((MPI_Comm)PetscToPointerComm(*comm),*m,*n,data,&mm);
   *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
 }
@@ -246,7 +246,7 @@ void matcreateseqdense_(MPI_Comm *comm,int *m,int *n,Scalar *data,Mat *newmat,in
 void matcreatempidense_(MPI_Comm *comm,int *m,int *n,int *M,int *N,Scalar *data,Mat *newmat,
                         int *__ierr ){
   Mat mm;
-  if (FORTRANNULL(data)) data = PETSC_NULL;
+  if (FORTRANNULLSCALAR(data)) data = PETSC_NULL;
   *__ierr = MatCreateMPIDense((MPI_Comm)PetscToPointerComm( *comm ),*m,*n,*M,*N,data,&mm);
   *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
 }
@@ -276,7 +276,7 @@ void matcreatempirowbs_(MPI_Comm *comm,int *m,int *M,int *nz,int *nnz,
                        void *procinfo,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  if (FORTRANNULL(nnz)) nnz = PETSC_NULL;
+  if (FORTRANNULLINTEGER(nnz)) nnz = PETSC_NULL;
   *__ierr = MatCreateMPIRowbs((MPI_Comm)PetscToPointerComm( *comm ),
                                *m,*M,*nz,nnz,PETSC_NULL,&mm);
   *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
@@ -300,7 +300,7 @@ void matgettype_(Mat mm,MatType *type,CHAR name,int *__ierr,int len)
 {
   char *tname;
 
-  if (FORTRANNULL(type)) type = PETSC_NULL;
+  if (FORTRANNULLINTEGER(type)) type = PETSC_NULL;
   *__ierr = MatGetType((Mat)PetscToPointer(mm),type,&tname);
 #if defined(USES_CPTOFCD)
   {
@@ -323,7 +323,7 @@ void matcreateseqaij_(MPI_Comm *comm,int *m,int *n,int *nz,
                            int *nnz,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  if (FORTRANNULL(nnz)) nnz = PETSC_NULL;
+  if (FORTRANNULLINTEGER(nnz)) nnz = PETSC_NULL;
   *__ierr = MatCreateSeqAIJ((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*nz,nnz,&mm);
   *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
 }
@@ -332,7 +332,7 @@ void matcreateseqbaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *nz,
                            int *nnz,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  if (FORTRANNULL(nnz)) nnz = PETSC_NULL;
+  if (FORTRANNULLINTEGER(nnz)) nnz = PETSC_NULL;
   *__ierr = MatCreateSeqBAIJ((MPI_Comm)PetscToPointerComm(*comm),*bs,*m,*n,*nz,nnz,&mm);
   *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
 }
@@ -358,8 +358,8 @@ void matcreatempiaij_(MPI_Comm *comm,int *m,int *n,int *M,int *N,
          int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  if (FORTRANNULL(d_nnz)) d_nnz = PETSC_NULL;
-  if (FORTRANNULL(o_nnz)) o_nnz = PETSC_NULL;
+  if (FORTRANNULLINTEGER(d_nnz)) d_nnz = PETSC_NULL;
+  if (FORTRANNULLINTEGER(o_nnz)) o_nnz = PETSC_NULL;
   *__ierr = MatCreateMPIAIJ((MPI_Comm)PetscToPointerComm(*comm),
                              *m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,&mm);
   *(PetscFortranAddr*)newmat = PetscFromPointer(mm);
@@ -368,8 +368,8 @@ void matcreatempibaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *M,int *N,
          int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  if (FORTRANNULL(d_nnz)) d_nnz = PETSC_NULL;
-  if (FORTRANNULL(o_nnz)) o_nnz = PETSC_NULL;
+  if (FORTRANNULLINTEGER(d_nnz)) d_nnz = PETSC_NULL;
+  if (FORTRANNULLINTEGER(o_nnz)) o_nnz = PETSC_NULL;
   *__ierr = MatCreateMPIBAIJ((MPI_Comm)PetscToPointerComm(*comm),
                              *bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,&mm);
   *(PetscFortranAddr*)newmat = PetscFromPointer(mm);
