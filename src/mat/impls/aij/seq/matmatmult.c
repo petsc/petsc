@@ -23,6 +23,13 @@ static int logkey_matapplypapt_numeric  = 0;
      Note: C is assumed to be uncreated.
            If this is not the case, Destroy C before calling this routine.
 */
+#ifdef USE_INTSORT
+/* 
+This roution is modified by the one below for better performance.
+The changes are:
+   -- PetscSortInt() is replace by a linked list
+   -- malloc larger Initial FreeSpace 
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMult_Symbolic_SeqAIJ_SeqAIJ"
 int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
@@ -107,6 +114,118 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   ierr = PetscMalloc((ci[am]+1)*sizeof(int),&cj);CHKERRQ(ierr);
   ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscFree(denserow);CHKERRQ(ierr);
+    
+  /* Allocate space for ca */
+  ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+  ierr = PetscMemzero(ca,(ci[am]+1)*sizeof(MatScalar));CHKERRQ(ierr);
+  
+  /* put together the new matrix */
+  ierr = MatCreateSeqAIJWithArrays(A->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
+
+  /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
+  /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
+  c = (Mat_SeqAIJ *)((*C)->data);
+  c->freedata = PETSC_TRUE;
+  c->nonew    = 0;
+
+  ierr = PetscLogEventEnd(logkey_matmatmult_symbolic,A,B,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif /*  USE_INTSORT */
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatMult_Symbolic_SeqAIJ_SeqAIJ"
+int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
+{
+  int            ierr;
+  FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
+  int            aishift=a->indexshift,bishift=b->indexshift;
+  int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
+  int            *ci,*cj,*lnk,idx0,idx,bcol;
+  int            an=A->N,am=A->M,bn=B->N,bm=B->M;
+  int            i,j,k,anzi,brow,bnzj,cnzi;
+  MatScalar      *ca;
+  PetscLogDouble t0,t1,etime=0.0;
+
+  PetscFunctionBegin;
+  /* some error checking which could be moved into interface layer */
+  if (aishift || bishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
+  if (an!=bm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",an,bm);
+  
+  /* Set up timers */
+  if (!logkey_matmatmult_symbolic) {
+    ierr = PetscLogEventRegister(&logkey_matmatmult_symbolic,"MatMatMult_Symbolic",MAT_COOKIE);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventBegin(logkey_matmatmult_symbolic,A,B,0,0);CHKERRQ(ierr);
+
+  /* Set up */
+  /* Allocate ci array, arrays for fill computation and */
+  /* free space for accumulating nonzero column info */
+  ierr = PetscMalloc(((am+1)+1)*sizeof(int),&ci);CHKERRQ(ierr);
+  ci[0] = 0;
+  
+  ierr = PetscMalloc((bn+1)*sizeof(int),&lnk);CHKERRQ(ierr);
+  for (i=0; i<bn; i++) lnk[i] = -1;
+
+  /* Initial FreeSpace size is nnz(B)=4*bi[bm] */
+  ierr = GetMoreSpace(4*bi[bm],&free_space);CHKERRQ(ierr);
+  current_space = free_space;
+
+  /* Determine symbolic info for each row of the product: */
+  for (i=0;i<am;i++) {
+    anzi = ai[i+1] - ai[i];
+    cnzi = 0;
+    lnk[bn] = bn;
+    for (j=0;j<anzi;j++) {
+      brow = *aj++;
+      bnzj = bi[brow+1] - bi[brow];
+      bjj  = bj + bi[brow];
+      idx  = bn;
+      for (k=0;k<bnzj;k++) {
+        bcol = bjj[k];
+        if (lnk[bcol] == -1) { /* new col */   
+          if (k>0) idx = bjj[k-1];   
+          do { 
+            idx0 = idx;
+            idx  = lnk[idx0];
+          } while (bcol > idx);           
+          lnk[idx0] = bcol;
+          lnk[bcol] = idx;
+          cnzi++;
+        }
+      }
+    }
+
+    /* If free space is not available, make more free space */
+    /* Double the amount of total space in the list */
+    if (current_space->local_remaining<cnzi) {
+      printf("...%d -th row, double space ...\n",i);
+      ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+    }
+
+    /* Copy data into free space, and zero out denserow and lnk */
+    idx = bn;
+    for (j=0; j<cnzi; j++){
+      idx0 = idx;
+      idx  = lnk[idx0];     
+      *current_space->array++ = idx; 
+      lnk[idx0] = -1;
+    }
+    lnk[idx] = -1;
+
+    current_space->local_used      += cnzi;
+    current_space->local_remaining -= cnzi;
+
+    ci[i+1] = ci[i] + cnzi;
+  }
+
+  /* Column indices are in the list of free space */
+  /* Allocate space for cj, initialize cj, and */
+  /* destroy list of free space and other temporary array(s) */
+  ierr = PetscMalloc((ci[am]+1)*sizeof(int),&cj);CHKERRQ(ierr);
+  ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
+  ierr = PetscFree(lnk);CHKERRQ(ierr);
     
   /* Allocate space for ca */
   ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
