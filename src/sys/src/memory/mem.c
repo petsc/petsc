@@ -1,13 +1,15 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mem.c,v 1.4 1997/03/26 16:00:51 balay Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.5 1997/03/26 16:05:04 balay Exp balay $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
 #include <sys/types.h>
 #include <sys/time.h>
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
+#endif
 #include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
