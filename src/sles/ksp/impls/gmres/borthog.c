@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.6 1995/04/26 18:22:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.7 1995/10/11 15:18:46 bsmith Exp bsmith $";
 #endif
 
 #define RERROR  gmres_error
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: borthog.c,v 1.6 1995/04/26 18:22:06 bsmith Exp bsmith
  */
 int GMRESBasicOrthog( KSP itP,int it )
 {
-  KSP_GMRES *gmresP = (KSP_GMRES *)(itP->MethodPrivate);
+  KSP_GMRES *gmresP = (KSP_GMRES *)(itP->data);
   int    j;
   Scalar *hh, *hes, tmp;
 
@@ -39,7 +39,7 @@ int GMRESBasicOrthog( KSP itP,int it )
  */
 int GMRESUnmodifiedOrthog(KSP  itP,int it )
 {
-  KSP_GMRES *gmresP = (KSP_GMRES *)(itP->MethodPrivate);
+  KSP_GMRES *gmresP = (KSP_GMRES *)(itP->data);
   int    j;
   Scalar *hh, *hes;
 
