@@ -54,98 +54,52 @@ try:
       addpw   = object[5]
       writepw = object[6]
 
-      dargs.logfile.write("Received "+request+" in "+str(name)+"("+key+") "+" from "+self.client_address[0]+" "+time.asctime(time.localtime())+'\n')
+      dargs.logfile.write('Received '+request+' in '+str(name)+'('+key+')  from '+self.client_address[0]+' '+time.asctime(time.localtime())+'\n')
       dargs.logfile.flush()
-      if request == "__getitem__":
-        self.getitem(dargs, name, key, readpw)
-      elif request == "__setitem__":
-        self.setitem(dargs, name, key, readpw, dictpw, addpw, writepw)
-      elif request == "__delitem__":
-        self.delitem(dargs, name, key, writepw)
-      elif request == "has_key":
-        self.has_key(dargs, name, key, readpw)
-      elif request == "__len__":
-        self.len(dargs, name, readpw)
-      elif request == "keys":
-        self.keys(dargs, name, readpw)
-      elif request == "dicts":
-        self.dicts(dargs, readpw)
-      elif request == "clear":
-        self.clear(dargs, name, writepw)
-      elif request == "stop":
+      # Actions independent of the dictionary
+      if request == 'stop':
         return 0
-      return 1
+      elif request == 'dicts':
+        return self.dicts(dargs, readpw)
+      elif request == '__setitem__':
+        return self.setitem(dargs, name, key, readpw, dictpw, addpw, writepw, object[7])
 
-    def getitem(self, dargs, name, key, readpw):
-      if dargs.data.has_key(name) and dargs.data[name].data.has_key(key) and dargs.data[name].readpw == readpw:
-        cPickle.dump((1, dargs.data[name].data[key]), self.wfile)
-      else:
-        dargs.logfile.write("Rejected, missing dictionary key or wrong readpw\n");
-        dargs.logfile.flush()
-        cPickle.dump((0, None), self.wfile)
-      return
-
-    def setitem(self, dargs, name, key, readpw, dictpw, addpw, writepw):
+      # Actions independent of the key
       if not dargs.data.has_key(name):
-        if dargs.dictpw == dictpw:
-          dargs.data[name] = Args(name, readpw, addpw, writepw)
-          dargs.saveifold()
-        else:
-          dargs.logfile.write("Rejected, wrong dictpw\n");
-          dargs.logfile.flush()
-          cPickle.dump((0, None), self.wfile)
-          return
+        dargs.logfile.write('Rejected, missing dictionary "'+name+'"\n')
+        dargs.logfile.flush()
+        cPickle.dump((0, None), self.wfile)
+        return 1
+      if request == '__len__':
+        return self.len(dargs, name, readpw)
+      elif request == 'keys':
+        return self.keys(dargs, name, readpw)
+      elif request == 'clear':
+        return self.clear(dargs, name, writepw)
 
-      if dargs.data[name].writepw == writepw or (dargs.data[name].addpw == addpw and not dargs.data[name].has_key(key)):
-        dargs.data[name].data[key] = object[7]
-        dargs.saveifold()
+      # Actions requiring a key
+      if not dargs.data[name].data.has_key(key):
+        dargs.logfile.write('Rejected, missing dictionary key "'+str(key)+'"\n')
+        dargs.logfile.flush()
+        cPickle.dump((0, None), self.wfile)
+        return 1
+      if not isinstance(dargs.data[name].readpw, str):
+        dargs.data[name].readpw = 'open'
+      if not isinstance(dargs.data[name].writepw, str):
+        dargs.data[name].writepw = 'open'
+      if not isinstance(dargs.data[name].addpw, str):
+        dargs.data[name].addpw = 'open'
+      if request == '__getitem__':
+        return self.getitem(dargs, name, key, readpw)
+      elif request == '__delitem__':
+        return self.delitem(dargs, name, key, writepw)
+      elif request == 'has_key':
+        return self.has_key(dargs, name, key, readpw)
+
+      dargs.logfile.write('Rejected, invalid request "'+str(request)+'"\n')
+      dargs.logfile.flush()
       cPickle.dump((0, None), self.wfile)
-      return
-
-    def delitem(self, dargs, name, key, writepw):
-      if dargs.data.has_key(name):
-        if dargs.data[name].writepw == writepw:
-          try:
-            del dargs.data[name].data[key]
-            dargs.saveifold()
-          except KeyError:
-            dargs.logfile.write("Rejected, missing key\n");
-            dargs.logfile.flush()
-        else:
-          dargs.logfile.write("Rejected, wrong writepw\n");
-          dargs.logfile.flush()
-      else:
-        dargs.logfile.write("Rejected, missing dictionary\n");
-        dargs.logfile.flush()
-      cPickle.dump((0,None),self.wfile)
-      return
-
-    def has_key(self, dargs, name, key, readpw):
-      if dargs.data.has_key(name) and dargs.data[name].data.has_key(key) and dargs.data[name].readpw == readpw:
-        cPickle.dump((1, None), self.wfile)
-      else:
-        dargs.logfile.write("Rejected, missing dictionary key or wrong readpw\n");
-        dargs.logfile.flush()
-        cPickle.dump((0, None), self.wfile)
-      return
-
-    def len(self, dargs, name, readpw):
-      if dargs.data.has_key(name) and dargs.data[name].readpw == readpw:
-        cPickle.dump((len(dargs.data[name].data),None),self.wfile)
-      else:
-        dargs.logfile.write("Rejected, missing dictionary or wrong readpw\n");
-        dargs.logfile.flush()
-        cPickle.dump((0, None), self.wfile)
-      return
-
-    def keys(self, dargs, name, readpw):
-      if dargs.data.has_key(name) and dargs.data[name].readpw == readpw:
-        cPickle.dump((1, dargs.data[name].data.keys()), self.wfile)
-      else:
-        dargs.logfile.write("Rejected, missing dictionary or wrong readpw\n");
-        dargs.logfile.flush()
-        cPickle.dump((0, None), self.wfile)
-      return
+      return 1
 
     def dicts(self, dargs, readpw):
       di = []
@@ -153,17 +107,85 @@ try:
         if dargs.data[d].readpw == readpw:
           di.append(d)
       cPickle.dump((0, tuple(di)), self.wfile)
-      return
+      return 1
+
+    def setitem(self, dargs, name, key, readpw, dictpw, addpw, writepw, value):
+      if not dargs.data.has_key(name):
+        if dargs.dictpw == dictpw:
+          dargs.data[name] = Args(name, readpw, addpw, writepw)
+          dargs.saveifold()
+        else:
+          dargs.logfile.write('Rejected, wrong dictpw "'+dictpw+'" should be "'+dargs.dictpw+'"\n')
+          dargs.logfile.flush()
+          cPickle.dump((0, None), self.wfile)
+          return 1
+
+      if dargs.data[name].writepw == writepw or (dargs.data[name].addpw == addpw and not dargs.data[name].has_key(key)):
+        dargs.data[name].data[key] = value
+        dargs.saveifold()
+      else:
+        if dargs.data[name].writepw == writepw and not dargs.data[name].has_key(key):
+          dargs.logfile.write('Rejected, wrong addpw "'+str(addpw)+'" should be "'+str(dargs.data[name].addpw)+'"\n')
+        else:
+          dargs.logfile.write('Rejected, wrong writepw "'+str(writepw)+'" should be "'+str(dargs.data[name].writepw)+'"\n')
+      cPickle.dump((0, None), self.wfile)
+      return 1
+
+    def len(self, dargs, name, readpw):
+      if dargs.data[name].readpw == readpw:
+        cPickle.dump((len(dargs.data[name].data),None),self.wfile)
+      else:
+        dargs.logfile.write('Rejected, wrong readpw "'+readpw+'" should be "'+dargs.data[name].readpw+'"\n')
+        dargs.logfile.flush()
+        cPickle.dump((0, None), self.wfile)
+      return 1
+
+    def keys(self, dargs, name, readpw):
+      if dargs.data[name].readpw == readpw:
+        cPickle.dump((1, dargs.data[name].data.keys()), self.wfile)
+      else:
+        dargs.logfile.write('Rejected, wrong readpw "'+readpw+'" should be "'+dargs.data[name].readpw+'"\n')
+        dargs.logfile.flush()
+        cPickle.dump((0, None), self.wfile)
+      return 1
 
     def clear(self, dargs, writepw):
-      if dargs.data.has_key(name) and dargs.data[name].writepw == writepw:
+      if dargs.data[name].writepw == writepw:
         dargs.data[name].data.clear()
         dargs.saveifold()
       else:
-        dargs.logfile.write("Rejected, missing dictionary or wrong writepw\n");
+        dargs.logfile.write('Rejected, wrong writepw "'+writepw+'" should be "'+dargs.data[name].writepw+'"\n')
         dargs.logfile.flush()
       cPickle.dump((0, None), self.wfile)
-      return
+      return 1
+
+    def getitem(self, dargs, name, key, readpw):
+      if dargs.data[name].readpw == readpw:
+        cPickle.dump((1, dargs.data[name].data[key]), self.wfile)
+      else:
+        dargs.logfile.write('Rejected, wrong readpw "'+readpw+'" should be "'+dargs.data[name].readpw+'"\n')
+        dargs.logfile.flush()
+        cPickle.dump((0, None), self.wfile)
+      return 1
+
+    def delitem(self, dargs, name, key, writepw):
+      if dargs.data[name].writepw == writepw:
+        del dargs.data[name].data[key]
+        dargs.saveifold()
+      else:
+        dargs.logfile.write('Rejected, wrong writepw "'+writepw+'" should be "'+dargs.data[name].writepw+'"\n')
+        dargs.logfile.flush()
+      cPickle.dump((0, None), self.wfile)
+      return 1
+
+    def has_key(self, dargs, name, key, readpw):
+      if dargs.data[name].readpw == readpw:
+        cPickle.dump((1, None), self.wfile)
+      else:
+        dargs.logfile.write('Rejected, wrong readpw "'+readpw+'" should be "'+dargs.data[name].readpw+'"\n')
+        dargs.logfile.flush()
+        cPickle.dump((0, None), self.wfile)
+      return 1
 except ImportError: pass
 
 #
@@ -181,10 +203,11 @@ class Args (UserDict.UserDict):
     self.readpw  = readpw
     self.addpw   = addpw
     self.writepw = writepw
+    return
 
 #  This is the remote dictionary server
 class DArgs:
-  def __init__(self, dictpw = "open"):
+  def __init__(self, dictpw = 'open'):
     self.dictpw    = dictpw
     self.savedelay = 30
     self.timer     = 0
@@ -330,11 +353,11 @@ class RArgs (UserDict.UserDict):
     filename = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.loc')
     try: os.unlink(filename)
     except: pass
-    os.spawnvp(os.P_NOWAIT,'python',['python',os.path.join(os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)),'RDict.py'),"server"])
+    os.spawnvp(os.P_NOWAIT, 'python', ['python', os.path.join(os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)), 'RDict.py'), 'server'])
     for i in range(10):
       time.sleep(1)
       if os.path.exists(filename): return
-    raise RuntimeError,"No running server: Could not start it"
+    raise RuntimeError('No running server: Could not start it')
 
   def getServerAddr(self):
     filename = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.loc')
