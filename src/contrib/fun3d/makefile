@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 2000/01/15 15:02:17 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.7 2000/01/15 18:11:03 bsmith Exp bsmith $ 
 
 #requiresscalar real
 
@@ -24,7 +24,7 @@ EXAMPLESF        = user.F userJac.F
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 flow: flow.o $(OBJSF) chkopts
-	-$(FLINKER) flow.o $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	-$(FLINKER) -o flow flow.o $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 
 user.o:
 #f77 -c -r8 -i4 -O4 -xs user.f
