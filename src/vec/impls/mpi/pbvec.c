@@ -243,11 +243,15 @@ int VecSerialize_MPI(MPI_Comm comm, Vec *vec, PetscViewer viewer, PetscTruth sto
     ierr = MPI_Allreduce(&locVars, &size, 1, MPI_INT, MPI_SUM, comm);                                     CHKERRQ(ierr);
     if (size != vars) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Invalid row partition");
     ierr = VecCreate(comm, &v);                                                                           CHKERRQ(ierr);
-    ierr = VecSetSizes(v, locVars, vars);                                                                  CHKERRQ(ierr);
-    ierr = PetscMalloc((locVars + ghostVars) * sizeof(PetscScalar), &array);                              CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,  array,     locVars + ghostVars, PETSC_SCALAR);                            CHKERRQ(ierr);
-    ierr = VecCreate_MPI_Private(v, ghostVars, array, PETSC_NULL);                                        CHKERRQ(ierr);
-    ((Vec_MPI *) v->data)->array_allocated = array;
+    ierr = VecSetSizes(v, locVars, vars);                                                                 CHKERRQ(ierr);
+    if (locVars + ghostVars > 0) {
+      ierr = PetscMalloc((locVars + ghostVars) * sizeof(PetscScalar), &array);                            CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,  array,     locVars + ghostVars, PETSC_SCALAR);                          CHKERRQ(ierr);
+      ierr = VecCreate_MPI_Private(v, ghostVars, array, PETSC_NULL);                                      CHKERRQ(ierr);
+      ((Vec_MPI *) v->data)->array_allocated = array;
+    } else {
+      ierr = VecCreate_MPI_Private(v, ghostVars, PETSC_NULL, PETSC_NULL);                                 CHKERRQ(ierr);
+    }
 
     ierr = VecAssemblyBegin(v);                                                                           CHKERRQ(ierr);
     ierr = VecAssemblyEnd(v);                                                                             CHKERRQ(ierr);
