@@ -1,6 +1,7 @@
 
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.50 1998/10/31 03:11:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.51 1998/10/31 22:21:22 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
