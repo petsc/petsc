@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.32 1998/06/13 19:16:16 curfman Exp curfman $ 
+# $Id: makefile,v 1.33 1998/06/13 21:51:22 curfman Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -255,10 +255,10 @@ runtest_2b:
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6f_cc1_asm2_p16.m f_m6f_3d_mf_lnone_asm2_p16.m
 
-# -order_rtol = 1.e-7 works well for the m6n grid
+# -order_rtol = 1.e-5 works well for the m6n grid; 1.e-3 is too large
 runtest_3:
 	-@${MPIRUN} -np 16 -maxtime 30 ex1 -problem 3 -optionsleft -vecscatter_rr \
-	   -order 1.5 -order_rtol 1.e-7 -limiter none -bc_imperm 0 \
+	   -order 1.5 -order_rtol 1.e-5 -limiter none -bc_imperm 0 \
 	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
 	   -matrix_free -cfl_advance > log.m6n.3d.mf.asm2.p16 2>&1; \
 	   if (diff output/order1-2/log.m6n.3d.mf.lnone.asm2.p16 log.m6n.3d.mf.lnone.asm2.p16) then true; \
