@@ -8,6 +8,8 @@ Before release
 
   need python tool to find all manual page functions that are missing in the users manual.
 
+  print error message at the end of make if any error detected in compile
+
 PETSc configure
  
    Make test in compilers.py if compiler is f90 or not

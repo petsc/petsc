@@ -898,7 +898,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)mat->data;
   PetscErrorCode    ierr;
   PetscMPIInt       rank = aij->rank,size = aij->size;
-  PetscTruth        isdraw,iascii,flg,isbinary;
+  PetscTruth        isdraw,iascii,isbinary;
   PetscViewer       sviewer;
   PetscViewerFormat format;
 
@@ -909,11 +909,11 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   if (iascii) { 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      MatInfo info;
+      MatInfo    info;
+      Mat_SeqAIJ *a = (Mat_SeqAIJ*) aij->A->data;
       ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-      ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg);CHKERRQ(ierr);
-      if (flg) {
+      if (!a->inode.size) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %D nz %D nz alloced %D mem %D, not using I-node routines\n",
 					      rank,mat->m,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(PetscInt)info.memory);CHKERRQ(ierr);
       } else {
@@ -928,6 +928,12 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       ierr = VecScatterView(aij->Mvctx,viewer);CHKERRQ(ierr);
       PetscFunctionReturn(0); 
     } else if (format == PETSC_VIEWER_ASCII_INFO) {
+      Mat_SeqAIJ *a = (Mat_SeqAIJ*) aij->A->data;
+      if (a->inode.size) {
+        ierr = PetscViewerASCIIPrintf(viewer,"using I-node (on process 0) routines: found %D nodes, limit used is %D\n",a->inode.node_count,a->inode.limit);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"not using I-node (on process 0) routines\n");CHKERRQ(ierr);
+      }
       PetscFunctionReturn(0);
     } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
       PetscFunctionReturn(0);

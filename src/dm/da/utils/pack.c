@@ -69,7 +69,6 @@ PetscErrorCode VecPackCreate(MPI_Comm comm,VecPack *packer)
 #endif
 
   PetscHeaderCreate(p,_p_VecPack,struct _VecPackOps,DA_COOKIE,0,"VecPack",comm,VecPackDestroy,0);
-  PetscLogObjectCreate(p);
   p->n            = 0;
   p->next         = PETSC_NULL;
   p->comm         = comm;
@@ -119,7 +118,7 @@ PetscErrorCode VecPackDestroy(VecPack packer)
   if (packer->globalvector) {
     ierr = VecDestroy(packer->globalvector);CHKERRQ(ierr);
   }
-  PetscHeaderDestroy(packer);
+  ierr = PetscHeaderDestroy(packer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

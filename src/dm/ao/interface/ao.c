@@ -76,8 +76,7 @@ PetscErrorCode AODestroy(AO ao)
   ierr = PetscObjectDepublish(ao);CHKERRQ(ierr);
 
   ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
-  PetscLogObjectDestroy(ao);
-  PetscHeaderDestroy(ao);
+  ierr = PetscHeaderDestroy(ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

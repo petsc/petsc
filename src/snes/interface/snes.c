@@ -591,7 +591,6 @@ PetscErrorCode SNESCreate(MPI_Comm comm,SNES *outsnes)
 #endif
 
   PetscHeaderCreate(snes,_p_SNES,PetscInt,SNES_COOKIE,0,"SNES",comm,SNESDestroy,SNESView);
-  PetscLogObjectCreate(snes);
   snes->bops->publish     = SNESPublish_Petsc;
   snes->max_its           = 50;
   snes->max_funcs	  = 10000;
@@ -1077,8 +1076,7 @@ PetscErrorCode SNESDestroy(SNES snes)
       ierr = (*snes->monitordestroy[i])(snes->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
-  PetscLogObjectDestroy((PetscObject)snes);
-  PetscHeaderDestroy((PetscObject)snes);
+  ierr = PetscHeaderDestroy((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

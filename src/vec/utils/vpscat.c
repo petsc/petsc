@@ -221,7 +221,7 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   ierr = PetscFree(gen_from->values);CHKERRQ(ierr);
   ierr = PetscFree(gen_from);CHKERRQ(ierr);
   ierr = PetscFree(gen_to);CHKERRQ(ierr);
-  PetscHeaderDestroy(ctx);
+  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2106,7 +2106,7 @@ PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
   ierr = PetscFree(gen_from->values);CHKERRQ(ierr);
   ierr = PetscFree(gen_to);CHKERRQ(ierr);
   ierr = PetscFree(gen_from);CHKERRQ(ierr);
-  PetscHeaderDestroy(ctx);
+  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

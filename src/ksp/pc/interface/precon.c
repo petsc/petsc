@@ -82,8 +82,7 @@ PetscErrorCode PCDestroy(PC pc)
   if (pc->diagonalscaleright) {ierr = VecDestroy(pc->diagonalscaleright);CHKERRQ(ierr);}
   if (pc->diagonalscaleleft)  {ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);}
 
-  PetscLogObjectDestroy(pc);
-  PetscHeaderDestroy(pc);
+  ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -294,7 +293,6 @@ PetscErrorCode PCCreate(MPI_Comm comm,PC *newpc)
 #endif
 
   PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_COOKIE,-1,"PC",comm,PCDestroy,PCView);
-  PetscLogObjectCreate(pc);
   pc->bops->publish      = PCPublish_Petsc;
   pc->mat                = 0;
   pc->setupcalled        = 0;

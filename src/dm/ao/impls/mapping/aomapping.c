@@ -290,7 +290,6 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp[
 #endif
 
   PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_MAPPING, "AO", comm, AODestroy, AOView);
-  PetscLogObjectCreate(ao);
   ierr = PetscNew(AO_Mapping, &aomap);CHKERRQ(ierr);
   PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Mapping));
   ierr = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);

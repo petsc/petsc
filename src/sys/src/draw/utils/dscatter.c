@@ -168,8 +168,7 @@ PetscErrorCode PetscDrawSPDestroy(PetscDrawSP sp)
   }
   ierr = PetscDrawAxisDestroy(sp->axis);CHKERRQ(ierr);
   ierr = PetscFree(sp->x);CHKERRQ(ierr);
-  PetscLogObjectDestroy(sp);
-  PetscHeaderDestroy(sp);
+  ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

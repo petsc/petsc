@@ -142,8 +142,8 @@ PetscErrorCode ISDestroy_Stride(IS is)
 
   PetscFunctionBegin;
   ierr = PetscFree(is->data);CHKERRQ(ierr);
-  PetscLogObjectDestroy(is);
-  PetscHeaderDestroy(is); PetscFunctionReturn(0);
+  ierr = PetscHeaderDestroy(is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -323,7 +323,6 @@ PetscErrorCode ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt s
 #endif
 
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,"IS",comm,ISDestroy,ISView); 
-  PetscLogObjectCreate(Nindex);
   PetscLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _p_IS));
   ierr           = PetscNew(IS_Stride,&sub);CHKERRQ(ierr);
   sub->n         = n;

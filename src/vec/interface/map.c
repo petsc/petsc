@@ -168,8 +168,7 @@ PetscErrorCode PetscMapDestroy(PetscMap map)
   if (map->ops->destroy) {
     ierr = (*map->ops->destroy)(map);CHKERRQ(ierr);
   }
-  PetscLogObjectDestroy(map);
-  PetscHeaderDestroy(map);
+  ierr = PetscHeaderDestroy(map);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

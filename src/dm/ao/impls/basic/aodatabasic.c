@@ -42,9 +42,7 @@ PetscErrorCode AODataDestroy_Basic(AOData ao)
     ierr = PetscFree(key);CHKERRQ(ierr);
     key     = nextkey;
   }
-  
-  PetscLogObjectDestroy(ao);
-  PetscHeaderDestroy(ao);
+  ierr = PetscHeaderDestroy(ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -905,7 +903,6 @@ PetscErrorCode AODataCreateBasic(MPI_Comm comm,AOData *aoout)
 #endif
 
   PetscHeaderCreate(ao,_p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,"AOData",comm,AODataDestroy,AODataView); 
-  PetscLogObjectCreate(ao);
   PetscLogObjectMemory(ao,sizeof(struct _p_AOData));
 
   ierr = PetscMemcpy(ao->ops,&myops,sizeof(myops));CHKERRQ(ierr);
@@ -976,7 +973,6 @@ PetscErrorCode AODataLoadBasic(PetscViewer viewer,AOData *aoout)
   ierr = PetscBinaryRead(fd,&nkeys,1,PETSC_INT);CHKERRQ(ierr);
 
   PetscHeaderCreate(ao,_p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,"AOData",comm,AODataDestroy,AODataView); 
-  PetscLogObjectCreate(ao);
   PetscLogObjectMemory(ao,sizeof(struct _p_AOData) + nkeys*sizeof(void*));
 
   ierr = PetscMemcpy(ao->ops,&myops,sizeof(myops));CHKERRQ(ierr);

@@ -140,7 +140,7 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
   }
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
   if (ctx->sp) {ierr = MatNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
-  PetscHeaderDestroy(ctx);
+  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatSNESMFSetBase_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatSNESMFSetFunctioniBase_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -558,7 +558,6 @@ PetscErrorCode MatCreate_MFFD(Mat A)
 #endif
 
   PetscHeaderCreate(mfctx,_p_MatSNESMFCtx,struct _MFOps,MATSNESMFCTX_COOKIE,0,"SNESMF",A->comm,MatDestroy_MFFD,MatView_MFFD);
-  PetscLogObjectCreate(mfctx);
   mfctx->sp              = 0;
   mfctx->snes            = 0;
   mfctx->error_rel       = PETSC_SQRT_MACHINE_EPSILON;

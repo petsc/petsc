@@ -43,7 +43,6 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],PetscM
     ierr = PetscLogClassRegister(&MATLABENGINE_COOKIE,"Matlab Engine");CHKERRQ(ierr);
   }
   PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_COOKIE,0,"MatlabEngine",comm,PetscMatlabEngineDestroy,0);
-  PetscLogObjectCreate(e);
 
   if (!machine) machine = "\0";
   PetscLogInfo(0,"Starting Matlab engine on %s\n",machine);
@@ -82,8 +81,7 @@ PetscErrorCode PetscMatlabEngineDestroy(PetscMatlabEngine v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,MATLABENGINE_COOKIE,1);
   if (--v->refct > 0) PetscFunctionReturn(0);
-  PetscLogObjectDestroy(v);
-  PetscHeaderDestroy(v); 
+  ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -597,7 +597,7 @@ static PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw draw,PetscDraw *sdra
   ierr = PetscStrfree((*sdraw)->display);CHKERRQ(ierr);
   ierr = PetscFree(sXwin->font);CHKERRQ(ierr);
   ierr = PetscFree(sXwin);CHKERRQ(ierr);
-  PetscHeaderDestroy(*sdraw);
+  ierr = PetscHeaderDestroy(*sdraw);CHKERRQ(ierr);
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }

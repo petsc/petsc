@@ -305,8 +305,7 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning part)
   if (part->part_weights){
     ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
   }
-  PetscLogObjectDestroy(part);
-  PetscHeaderDestroy(part);
+  ierr = PetscHeaderDestroy(part);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -412,7 +411,6 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 
   PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_COOKIE,-1,"MatPartitioning",comm,MatPartitioningDestroy,
                     MatPartitioningView);
-  PetscLogObjectCreate(part);
   part->type           = -1;
   part->vertex_weights = PETSC_NULL;
   part->part_weights   = PETSC_NULL;

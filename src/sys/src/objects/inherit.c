@@ -527,10 +527,11 @@ PetscErrorCode PetscObjectContainerSetPointer(PetscObjectContainer obj,void *ptr
 @*/
 PetscErrorCode PetscObjectContainerDestroy(PetscObjectContainer obj)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   if (--obj->refct > 0) PetscFunctionReturn(0);
   if (obj->userdestroy) (*obj->userdestroy)(obj->ptr);
-  PetscHeaderDestroy(obj);
+  ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

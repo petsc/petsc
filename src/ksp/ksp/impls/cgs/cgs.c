@@ -69,7 +69,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
      we change all the 0 values in the vector RP to the maximum.
   */
   if (ksp->normtype == KSP_NATURAL_NORM) {
-     PetscReal vr0max;
+     PetscReal   vr0max;
      PetscScalar *tmp_RP=0;
      PetscInt    numnp=0, *max_pos=0;
      ierr = VecMax(RP, max_pos, &vr0max);CHKERRQ(ierr);
@@ -116,9 +116,9 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
     if (ksp->reason) break;
 
     b    = rho / rhoold;                             /* b <- rho / rhoold    */
-    ierr = VecWAXPY(&b,Q,R,U);CHKERRQ(ierr);        /* u <- r + b q         */
+    ierr = VecWAXPY(&b,Q,R,U);CHKERRQ(ierr);         /* u <- r + b q         */
     ierr = VecAXPY(&b,P,Q);CHKERRQ(ierr);
-    ierr = VecWAXPY(&b,Q,U,P);CHKERRQ(ierr);        /* p <- u + b(q + b p)  */
+    ierr = VecWAXPY(&b,Q,U,P);CHKERRQ(ierr);         /* p <- u + b(q + b p)  */
     ierr = KSP_PCApplyBAorAB(ksp,P,V,Q);CHKERRQ(ierr);      /* v <- K p    */
     rhoold = rho;
     i++;

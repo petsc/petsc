@@ -43,7 +43,6 @@ PetscErrorCode MatNullSpaceCreate(MPI_Comm comm,PetscTruth has_cnst,PetscInt n,c
 
   PetscFunctionBegin;
   PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);
-  PetscLogObjectCreate(sp);
   PetscLogObjectMemory(sp,sizeof(struct _p_MatNullSpace));
 
   sp->has_cnst = has_cnst; 
@@ -91,8 +90,7 @@ PetscErrorCode MatNullSpaceDestroy(MatNullSpace sp)
   if (sp->vecs) {
     ierr = VecDestroyVecs(sp->vecs,sp->n);CHKERRQ(ierr);
   }
-  PetscLogObjectDestroy(sp);
-  PetscHeaderDestroy(sp);
+  ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

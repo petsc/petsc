@@ -69,6 +69,8 @@ PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
   unsigned long nl = (unsigned long) n;
 
   PetscFunctionBegin;
+  if (n > 0 && !b) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
+  if (n > 0 && !a) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy to a null pointer");
   if (a != b) {
 #if !defined(PETSC_HAVE_CRAY90_POINTER)
     if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
@@ -136,6 +138,8 @@ PetscErrorCode PetscBitMemcpy(void *a,PetscInt ai,const void *b,PetscInt bi,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (bs > 0 && !b) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
+  if (bs > 0 && !a) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy to a null pointer");
   if (dtype != PETSC_LOGICAL) {
     ierr = PetscDataTypeGetSize(dtype,&dsize);CHKERRQ(ierr);
     ierr = PetscMemcpy(aa+ai*dsize,bb+bi*dsize,bs*dsize);CHKERRQ(ierr);
@@ -177,6 +181,7 @@ PetscErrorCode PetscMemzero(void *a,size_t n)
 {
   PetscFunctionBegin;
   if (n > 0) {
+    if (!a) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to zero at a null pointer");
 #if defined(PETSC_PREFER_ZERO_FOR_MEMZERO)
     if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
       int         i,len = n/sizeof(PetscScalar);
@@ -227,6 +232,8 @@ PetscErrorCode PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTru
   int r;
 
   PetscFunctionBegin;
+  if (len > 0 && !str1) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
+  if (len > 0 && !str2) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
   r = memcmp((char *)str1,(char *)str2,len);
   if (!r) *e = PETSC_TRUE;
   else    *e = PETSC_FALSE;
@@ -254,8 +261,6 @@ PetscErrorCode PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTru
    Note:
    This routine is analogous to memmove().
 
-   Contributed by: Matthew Knepley
-
    Concepts: memory^copying with overlap
    Concepts: copying^memory with overlap
 
@@ -264,6 +269,8 @@ PetscErrorCode PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTru
 PetscErrorCode PetscMemmove(void *a,void *b,size_t n)
 {
   PetscFunctionBegin;
+  if (n > 0 && !a) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy to null pointer");
+  if (n > 0 && !b) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
 #if !defined(PETSC_HAVE_MEMMOVE)
   if (a < b) {
     if (a <= b - n) {

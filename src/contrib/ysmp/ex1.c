@@ -169,8 +169,7 @@ int MatDestroy_SeqAIJ_YSMP(PetscObject obj)
 
   PetscFree(a->solve_work);
   PetscFree(a); 
-  PLogObjectDestroy(mat);
-  PetscHeaderDestroy(mat);
+  ierr = PetscHeaderDestroy(mat);CHKERRQ(ierr);
   return 0;
 }
 

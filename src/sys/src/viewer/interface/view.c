@@ -31,8 +31,7 @@ PetscErrorCode PetscViewerDestroy(PetscViewer viewer)
   if (viewer->ops->destroy) {
     ierr = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
   }
-  PetscLogObjectDestroy((PetscObject)viewer);
-  PetscHeaderDestroy((PetscObject)viewer);
+  ierr = PetscHeaderDestroy((PetscObject)viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
