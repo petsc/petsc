@@ -62,6 +62,13 @@ userid: barrys
 password: petsc-password
 Account (whatever that means?) ryc
 
+NCSA Origin2000
+Machine: modi4.ncsa.uiuc.edu
+userid: barrys
+password: petsc-password
+Account (whatever that means?) ryc
+help: consult@ncsa.uiuc.edu, future@ncsa.uiuc.edu
+
 Other Machines at NCSA:
 solaris: pecos
 sun4   : space
