@@ -55,7 +55,21 @@ class Retriever(install.base.Base):
   def bkRetrieve(self, url, root, canExist = 0, force = 0):
     self.debugPrint('Retrieving '+url+' --> '+root+' via bk', 3, 'install')
     if os.path.exists(root):
-      output = self.executeShellCommand('cd '+root+'; bk pull')
+      try:
+        output = self.executeShellCommand('cd '+root+'; bk pull')
+      except RuntimeError, e:
+        # Try removing user from parent
+        parentUrl = self.executeShellCommand('cd '+root+'; bk parent')[21:]
+        (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(parentUrl)
+        index = location.find('@')
+        if index >= 0:
+          login  = location[0:index]
+          newUrl = urlparse.urlunparse((scheme, location[index+1:], path, parameters, query, fragment))
+          self.debugPrint('Changing parent from '+parentUrl+' --> '+newUrl, 1, 'install')
+          output = self.executeShellCommand('cd '+root+'; bk parent '+newUrl)
+          output = self.executeShellCommand('cd '+root+'; bk pull')
+        else:
+          raise e
     else:
       (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
       if not location:
