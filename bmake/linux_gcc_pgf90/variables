@@ -39,7 +39,7 @@ CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = g++
 CXX_FLINKER	   = pgf90
 CXX_CCV		   = ${CXX_CC} --version
-CXX_SYS_LIB        = -ldl -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl -lpgf90rtl -lpgftnrtl -lm -lstdc++ -lpgc -lgcc -lc -lgcc
+CXX_SYS_LIB        = -ldl -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl -lpgf90rtl -lpgftnrtl -lm -lstdc++ -lpgc -lgcc -lc -lgcc -lpgf90
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g

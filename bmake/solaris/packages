@@ -24,7 +24,7 @@ BLASLAPACK_LIB  =  -lsunperf
 # If using ch_shmem, run 'mpich/lib/solaris/ch_shmem/mpicc -show'
 #
 MPI_HOME       = /home/petsc/soft/solaris-9/mpich-1.2.5
-MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lmpich -lsocket -lnsl -lrt -lnsl -laio
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich -lsocket -lnsl -lrt -lnsl -laio
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
 MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
 #
@@ -43,7 +43,7 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
 MPE_INCLUDE    = 
-MPE_LIB        = -lmpe
+MPE_LIB        = -L${MPI_HOME}/lib -lmpe
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Location of BlockSolve (MPI version)
@@ -85,7 +85,7 @@ PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 # Location of ParMetis
 #
 PARMETIS_INCLUDE    = -I/home/petsc/soft/solaris-9/ParMetis-3.0
-PARMETIS_LIB        = -L/home/petsc/soft/solaris-9/ParMetis-3.0/lib/solaris -lparmetis -lmetis
+PARMETIS_LIB        = -L/home/petsc/soft/solaris-9/ParMetis-3.0 -lparmetis -lmetis
 PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
 #  Location for ALICE Memory Snooper

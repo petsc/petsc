@@ -32,12 +32,12 @@ O_COPTFLAGS	   = -O3 -qmaxmem=-1 -w -qspill=8000 -qarch=auto -qtune=auto -qcache
 O_FOPTFLAGS	   = -O3 -w -qmaxmem=-1 -qarch=auto -qtune=auto -qcache=auto -qhot
 # ########################## C++ compiler ##################################
 #
-CXX_CC		   = mpxlC_r -+ -q64
+CXX_CC		   = mpCC_r -+ -q64
 CXX_FC		   = mpxlf -q64
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
-CXX_CLINKER	   = mpxlC_r -q64 -bmaxdata:3000000000 and -bmaxstack:2000000000 
-CXX_FLINKER	   = mpxlC_r -q64 -bmaxdata:3000000000 and -bmaxstack:2000000000 
+CXX_CLINKER	   = mpCC_r -q64 -bmaxdata:3000000000 and -bmaxstack:2000000000 
+CXX_FLINKER	   = mpCC_r -q64 -bmaxdata:3000000000 and -bmaxstack:2000000000 
 CXX_CCV		   = echo "unknown"
 CXX_SYS_LIB	   = -lcomplex -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a -lm
 # ------------------------- BOPT - g_c++ options ------------------------------

@@ -39,7 +39,7 @@ CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = g++
 CXX_FLINKER	   = g++
 CXX_CCV		   = ${CXX_CC} --version
-C_SYS_LIB          = -ldl -lfrtbegin -lg2c -lm ${CLINKER_SLFLAG}/home/petsc/soft/linux-alpha/gcc-3.2.2/lib
+CXX_SYS_LIB        = -ldl -lfrtbegin -lg2c -lm ${CLINKER_SLFLAG}/home/petsc/soft/linux-alpha/gcc-3.2.2/lib
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g
