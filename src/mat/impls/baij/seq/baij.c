@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.147 1998/10/28 16:05:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.148 1998/12/03 04:01:06 bsmith Exp balay $";
 #endif
 
 /*
@@ -464,10 +464,9 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
 {
   Mat          A = (Mat) Aa;
   Mat_SeqBAIJ  *a=(Mat_SeqBAIJ *) A->data;
-  int          row,ierr,i,j,k,l,mbs=a->mbs,pause,color,bs=a->bs,bs2=a->bs2,rank;
-  double       xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r;
+  int          row,ierr,i,j,k,l,mbs=a->mbs,color,bs=a->bs,bs2=a->bs2,rank;
+  double       xl,yl,xr,yr,yc,x_l,x_r,y_l,y_r;
   Scalar       *aa;
-  DrawButton   button;
   PetscTruth   isnull;
   MPI_Comm     comm;
   Viewer       viewer;
@@ -538,11 +537,9 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
 static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ  *a=(Mat_SeqBAIJ *) A->data;
-  int          row,ierr,i,j,k,l,mbs=a->mbs,pause,color,bs=a->bs,bs2=a->bs2,rank;
-  double       xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r;
-  Scalar       *aa;
+  int          ierr;
+  double       xl,yl,xr,yr,w,h;
   Draw         draw;
-  DrawButton   button;
   PetscTruth   isnull;
 
   PetscFunctionBegin; 
