@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.40 1997/10/05 23:28:27 curfman Exp balay $ 
+# $Id: builddist,v 1.41 1997/10/07 20:07:24 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -10,13 +10,14 @@ echo "(1) Built wwwpages, latexpages by running make allmanpages?"
 echo "(2) Set the version number in manual_tex.tex, manual.tex, and intro.tex?"
 echo "(3) Built the users manual (and intro) in .ps and .html?"
 echo "(4) Set the version number and release date in petsc.h?"
-echo "(5) Removed the option -u from BASEOPTF in bmake/sun4/base.g?"
-echo "(6) Rebuilt and checked all Fortran stubs?"
-echo "(7) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run correctly?"
-echo "(8) Made sure Fortran include files match C ones?"
-echo "(9) Converted hpux/base.* files to nonshared mode?"
-echo "(10) Taken away chmod g+* from petsc/makefile?"
-echo "(12) Fixed default flag -DUSE_FORTRAN_KERNELS (or not) in base.O_complex, base.g_complex files?"
+echo "(5) Rebuilt and checked all Fortran stubs?"
+echo "(6) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run correctly?"
+echo "(7) Made sure Fortran include files match C ones?"
+echo "(8) Fixed default flag -DUSE_FORTRAN_KERNELS (or not) in base.O_complex, base.g_complex files?"
+
+#echo "(5) Removed the option -u from BASEOPTF in bmake/sun4/base.g?"
+#echo "(9) Converted hpux/base.* files to nonshared mode?"
+#echo "(10) Taken away chmod g+* from petsc/makefile?"
 #
 if ($#argv == 1) then
   set version=$1
@@ -35,11 +36,30 @@ tar cFFXf /home/bsmith/petsc/maint/xclude ~/petsc.tar petsc
 #
 cd /mcs/tmp
 tar xf ~/petsc.tar
+#
+# Before Creating the tarfile, make changes to the bmakefiles/makefiles,
+# create tagfiles etc. permissions etc.
+cd /mcs/tmp/petsc
+
+# Eliminate chmods in the makefile
+/bin/mv makefile makefile.bak
+/bin/grep -v 'chmod' makefile.bak > makefile
+/bin/rm -f makefile.bak
+# Eliminate chmods in bmake/common
+/bin/mv bmake/common bmake/common.bak
+/bin/grep -v 'chmod' bmake/common.bak > bmake/common
+/bin/rm bmake/common.bak
+# Create ETAGS and CTAGS
+make etags ctags
+
+cd /mcs/tmp
 chmod -R u+w petsc
 /bin/rm -f ~/petsc.tar
 if ($#argv == 1) then
   mv petsc petsc$version
 endif
+
+
 tar cf ~/petsc$version.tar petsc$version
 /bin/rm -r -f /mcs/tmp/petsc$version
 
@@ -47,24 +67,18 @@ tar cf ~/petsc$version.tar petsc$version
 #  To test locally and build petsc.solid
 #
 # tar xf petsc$version.tar
-# do chmod g+ws petsc$version
 # do chgrp -R pdetools petsc$version
 # do chmod -R g+w petsc$version
+# do find petsc$version -type d -name '*' chmod g+s petsc$version
 # Run du on petsc$version to make sure there is no garbage
 # Test manpages and manual in petsc$version
 # Do builds in petsc$version -- Remember that you must set
 # PETSC_DIR in .cshrc to  point to petsc$version
 #
-# For local distribution, remember to make etags in petsc$version
-#
 # Put a .gz and .Z file in the ftp site.
 # Add to petsc.html the current release and date (in Overview section)
 # and to docs/tex/Releases
-
 #
 # After build Restore the local copy by undoing the following
 #
-# 1. Add chmod u+* back to petsc/makefile
-# 2. Change HPUX back to shared mode
-# 3. Add the flag -u to bmake/sun4/base.g to FOPTFLAGS
 # 4. fix DUSE_FORTRAN_KERNELS in sun4/bmake.*complex
