@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.58 1997/03/13 21:03:42 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.59 1997/03/26 01:36:18 bsmith Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -220,14 +220,18 @@ extern int MatSetValuesBlocked_SeqBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode)
 int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
-  Scalar      *value,*tmp;
+  Scalar      *value,*barray=baij->barray;
   int         ierr,i,j,ii,jj,row,col,k,l;
   int         roworiented = baij->roworiented,rstart=baij->rstart ;
   int         rend=baij->rend,cstart=baij->cstart,stepval;
   int         cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
 
-  /* Should be stashed somewhere to avoid multiple mallocs */
-  tmp = (Scalar*) PetscMalloc(bs2*sizeof(Scalar)); CHKPTRQ(tmp);
+  
+  if(!barray) {
+    barray = (Scalar*) PetscMalloc(bs2*sizeof(Scalar)); CHKPTRQ(barray);
+    baij->barray = barray;
+  }
+
   if (roworiented) { 
     stepval = (n-1)*bs;
   } else {
@@ -248,12 +252,12 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
         }
         for ( ii=0; ii<bs; ii++,value+=stepval )
           for (jj=0; jj<bs; jj++ )
-            *tmp++  = *value++; 
-        tmp -=bs2;
+            *barray++  = *value++; 
+        barray -=bs2;
         
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;
-          ierr = MatSetValuesBlocked_SeqBAIJ(baij->A,1,&row,1,&col,tmp,addv);CHKERRQ(ierr);
+          ierr = MatSetValuesBlocked_SeqBAIJ(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         }
 #if defined(PETSC_BOPT_g)
         else if (in[j] < 0) {SETERRQ(1,0,"Negative column");}
@@ -271,7 +275,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
             }
           }
           else col = in[j];
-          ierr = MatSetValuesBlocked_SeqBAIJ(baij->B,1,&row,1,&col,tmp,addv);CHKERRQ(ierr);
+          ierr = MatSetValuesBlocked_SeqBAIJ(baij->B,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         }
       }
     } 
@@ -303,7 +307,6 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
       }
     }
   }
-  PetscFree(tmp);
   return 0;
 }
 
@@ -738,6 +741,7 @@ int MatDestroy_MPIBAIJ(PetscObject obj)
   if (baij->lvec)   VecDestroy(baij->lvec);
   if (baij->Mvctx)  VecScatterDestroy(baij->Mvctx);
   if (baij->rowvalues) PetscFree(baij->rowvalues);
+  if (baij->barray) PetscFree(baij->barray);
   PetscFree(baij); 
   if (mat->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
@@ -1527,9 +1531,12 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   b->garray      = 0;
   b->roworiented = 1;
 
+  /* stuff used in block assembly */
+  b->barray      = 0;
+
   /* stuff used for matrix vector multiply */
-  b->lvec      = 0;
-  b->Mvctx     = 0;
+  b->lvec        = 0;
+  b->Mvctx       = 0;
 
   /* stuff for MatGetRow() */
   b->rowindices   = 0;
@@ -1579,6 +1586,7 @@ static int MatConvertSameType_MPIBAIJ(Mat matin,Mat *newmat,int cpvalues)
   mat->insertmode = NOT_SET_VALUES;
   a->rowvalues    = 0;
   a->getrowactive = PETSC_FALSE;
+  a->barray       = 0;
 
   a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
   PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_MPIBAIJ));
