@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: ex1.c,v 1.22 1995/08/17 14:11:05 curfman Exp $";
+#endif
 
 static char help[] = "This example tests parallel vector assembly.  Input\n\
 arguments are\n\

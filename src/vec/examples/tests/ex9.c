@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: ex1.c,v 1.22 1995/08/17 14:11:05 curfman Exp $";
+#endif
 
 static char help[]= 
 "This example scatters from a parallel vector to a sequential vector.\n\n";
@@ -53,6 +56,8 @@ int main(int argc,char **argv)
     printf("scattered vector\n"); 
     ierr = VecView(y,STDOUT_VIEWER); CHKERRA(ierr);
   }
+  ierr = ISDestroy(is1); CHKERRA(ierr);
+  ierr = ISDestroy(is2); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(y); CHKERRA(ierr);
 
