@@ -749,7 +749,9 @@
 !           boundary points
             if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. user%mx .or. j .eq. user%my) then
-               call MatSetValuesLocal(jac,1,row,1,row,one,              &
+               col(1) = row
+               v(1)   = one
+               call MatSetValuesLocal(jac,1,row,1,col,v,                &
      &                           INSERT_VALUES,ierr)
 !           interior grid points
             else

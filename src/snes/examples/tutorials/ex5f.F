@@ -508,7 +508,10 @@
 !           boundary points
             if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. mx .or. j .eq. my) then
-               call MatSetValuesLocal(jac,1,row,1,row,one,              &
+!       Some f90 compilers need 4th arg to be of same type in both calls
+               col(1) = row
+               v(1)   = one
+               call MatSetValuesLocal(jac,1,row,1,col,v,                &
      &                           INSERT_VALUES,ierr)
 !           interior grid points
             else

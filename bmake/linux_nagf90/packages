@@ -1,0 +1,96 @@
+# $Id: packages,v 1.63 2001/10/10 18:50:03 balay Exp $ 
+
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
+# for information on retrieving them.
+#
+#BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/linux -lflapack -lfblas
+BLASLAPACK_LIB = ${CLINKER_SLFLAG}/home/petsc/software/mkl-52/lib/32 -L/home/petsc/software/mkl-52/lib/32 -lmkl_lapack -lmkl_def -lguide 
+#
+# Location of MPI (Message Passing Interface) software
+#
+MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
+MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
+MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
+#
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
+#
+# Location of X-windows software
+#
+X11_INCLUDE    =
+X11_LIB        = -L/usr/X11R6/lib -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# Location of MPE
+# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
+#
+#MPE_INCLUDE   = -I/home/petsc/mpich-1.1.1/mpe
+#MPE_LIB       = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpe -lpmpich
+#MPE_INCLUDE   =
+#MPE_LIB       = -L${MPI_HOME}/lib -lmpe
+#PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
+#
+# Location of BlockSolve (MPI version)
+#
+#BLOCKSOLVE_INCLUDE     = -I/home/petsc/software/BlockSolve95/include
+#BLOCKSOLVE_LIB         =  -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
+#
+# Location where adiC is installed
+#
+#ADIC_DEFINES    = -Dad_GRAD_MAX=36
+#ADIC_CC         = adiC -a -d gradient
+#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
+#
+# Location of PVODE; Alan Hindmarsh's parallel ODE solver
+# 
+#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/linux/libpvode.a
+#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
+#
+# Location of ParMetis
+#
+#PARMETIS_INCLUDE    = -I/home/petsc/software/ParMetis-2.0
+#PARMETIS_LIB        = -L/home/petsc/software/ParMetis-2.0/linux -lparmetis -lmetis
+#PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
+#
+#
+# Location of the LUSOL sparse LU factorization code (part of MINOS)
+# developed by Michael Saunders, saunders@stanford.edu at the
+# Systems Optimization Laboratory, Stanford University.
+#  http://www.sbsi-sol-optimize.com/
+# Uses the two files mi25bfac.f and mi15blas.f (or LUSOL.f LUSOL_BLAS.f
+# depending on how they are named)
+#
+#PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
+#LUSOL_LIB
+#
+#
+#  Location of Trilinos
+#
+#TRILINOS_INCLUDE    = -I/home/alice/software/Trilinos/src/petra_esi -I/home/alice/software/Trilinos/src/petra
+#PETSC_HAVE_TRILINOS = -DPETSC_HAVE_TRILINOS
+#TRILINOS_LIB        = -L/home/alice/software/Trilinos/lib/LINUX.MPI -lpetraesi -lpetra -lmachdep
+#
+#
+#  Location of hypre
+#
+#HYPRE_INCLUDE    = -I/home/petsc/software/hypre-1.6.0/hypre-1.6.0/src/hypre/include
+#HYPRE_LIB        = -L/home/petsc/software/hypre-1.6.0/hypre-1.6.0/src/hypre/lib  -lHYPRE_parcsr_ls -lHYPRE_DistributedMatrix -lHYPRE_parcsr_mv  -lHYPRE_FEI -lHYPRE_seq_mv -lHYPRE_IJ_mv -lkrylov -lHYPRE_DistributedMatrixPilutSolver -lHYPRE_utilities  -lHYPRE_MatrixMatrix -lHYPRE_ParaSails -lHYPRE_Euclid -lHYPRE_parcsr_ls -lHYPRE_DistributedMatrix -lHYPRE_parcsr_mv  -lHYPRE_FEI -lHYPRE_seq_mv -lHYPRE_IJ_mv -lkrylov -lHYPRE_DistributedMatrixPilutSolver -lHYPRE_utilities  -lHYPRE_MatrixMatrix -lHYPRE_ParaSails -lHYPRE_Euclid 
+
+#PETSC_HAVE_HYPRE = -DPETSC_HAVE_HYPRE
+
+# ------------------------------------------------------------------------------
+# If you are using shared version of any external libraries you must make this
+# point to the directories where all your shared libraries are stored.
+#
+C_DYLIBPATH     = 
+F_DYLIBPATH     = 
