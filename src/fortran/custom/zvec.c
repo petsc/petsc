@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.34 1998/04/16 15:01:56 bsmith Exp balay $";
+static char vcid[] = "$Id: zvec.c,v 1.35 1998/04/21 18:23:47 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -26,7 +26,19 @@ static char vcid[] = "$Id: zvec.c,v 1.34 1998/04/16 15:01:56 bsmith Exp balay $"
 #define vecgettype_            VECGETTYPE
 #define vecduplicatevecs_      VECDUPLICATEVECS
 #define vecview_               VECVIEW
+#define mapgetlocalsize_       MAPGETLOCALSIZE
+#define mapgetglobalsize_      MAPGETGLOBALSIZE
+#define mapgetlocalrange_      MAPGETLOCALRANGE
+#define mapgetglobalrange_     MAPGETGLOBALRANGE
+#define mapdestroy_            MAPDESTROY
+#define mapcreatempi_          MAPCREATEMPI
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define mapcreatempi_          mapcreatempi
+#define mapgetglobalrange_     mapgetglobalrange
+#define mapgetglobalsize_      mapgetglobalsize
+#define mapgetlocalsize_       mapgetlocalsize
+#define mapgetlocalrange_      mapgetlocalrange
+#define mapdestroy_            mapdestroy
 #define vecsetvalue_           vecsetvalue
 #define vecview_               vecview
 #define vecmaxpy_              vecmaxpy
@@ -53,6 +65,31 @@ static char vcid[] = "$Id: zvec.c,v 1.34 1998/04/16 15:01:56 bsmith Exp balay $"
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void mapgetlocalsize_(Map *m,int *n, int *__ierr )
+{
+  *__ierr = MapGetLocalSize((Map)PetscObject(m),n);
+}
+
+void mapgetglobalsize_(Map *m,int *N, int *__ierr )
+{
+  *__ierr = MapGetGlobalSize((Map)PetscObject(m),N);
+}
+
+void mapgetlocalrange_(Map *m,int *rstart,int *rend, int *__ierr )
+{
+  *__ierr = MapGetLocalRange((Map)PetscObject(m),rstart,rend);
+}
+
+void mapgetglobalrange_(Map *m,int **range, int *__ierr )
+{
+  *__ierr = MapGetGlobalRange((Map)PetscObject(m),range);
+}
+
+void mapdestroy_(Map *m, int *__ierr )
+{
+  *__ierr = MapDestroy((Map)PetscObject(m));
+}
 
 void vecsetvalue_(Vec v,int *i,Scalar *va,InsertMode *mode)
 {
@@ -139,6 +176,13 @@ void vecscattercopy_(VecScatter sctx,VecScatter *ctx, int *__ierr )
   VecScatter lV;
   *__ierr = VecScatterCopy((VecScatter)PetscToPointer(sctx),&lV);
    *(PetscFortranAddr*) ctx = PetscFromPointer(lV); 
+}
+
+void mapcreatempi_(MPI_Comm *comm,int *n,int *N,Map *vv, int *__ierr )
+{
+  Map lV;
+  *__ierr = MapCreateMPI((MPI_Comm)PetscToPointerComm( *comm ),*n,*N,&lV);
+  *(PetscFortranAddr*)vv = PetscFromPointer(lV);
 }
 
 void veccreatempi_(MPI_Comm *comm,int *n,int *N,Vec *vv, int *__ierr )

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.100 1998/04/09 04:09:00 bsmith Exp balay $";
+ static char vcid[] = "$Id: vpscat.c,v 1.101 1998/04/27 20:36:09 balay Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -1598,7 +1598,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   Vec_MPI                *x = (Vec_MPI *)xin->data;
   Vec_Seq                *y = (Vec_Seq *) yin->data;
   VecScatter_MPI_General *from,*to;
-  int                    *source,*lens,rank = x->rank, *owners = x->ownership;
+  int                    *source,*lens,rank = x->rank, *owners = xin->map->range;
   int                    size = x->size,*lowner,*start,found, lengthy = y->n;
   int                    *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
   int                    *owner,*starts,count,tag = xin->tag,slen,ierr;
@@ -1705,7 +1705,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   if (nrecvs) {
     indx = (int *) PetscMalloc( nrecvs*sizeof(int) ); CHKPTRQ(indx);
     for ( i=0; i<nrecvs; i++ ) indx[i] = i;
-    PetscSortIntWithPermutation(nrecvs,source,indx);
+    ierr = PetscSortIntWithPermutation(nrecvs,source,indx);CHKERRQ(ierr);
 
     /* move the data into the send scatter */
     for ( i=0; i<nrecvs; i++ ) {
@@ -1903,7 +1903,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
 {
   Vec_MPI                *y = (Vec_MPI *)yin->data;
   VecScatter_MPI_General *from,*to;
-  int                    *source,nprocslocal,*lens,rank = y->rank, *owners = y->ownership;
+  int                    *source,nprocslocal,*lens,rank = y->rank, *owners = yin->map->range;
   int                    ierr,size = y->size,*lowner,*start;
   int                    *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
   int                    *owner,*starts,count,tag = yin->tag,slen;
@@ -2108,7 +2108,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
 int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,VecScatter ctx)
 {
   Vec_MPI     *x = (Vec_MPI *)xin->data;
-  int         *lens,rank = x->rank, *owners = x->ownership,size = x->size,found;
+  int         *lens,rank = x->rank, *owners = xin->map->range,size = x->size,found;
   int         *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work,*local_inidx,*local_inidy;
   int         *owner,*starts,count,tag = xin->tag,slen,ierr;
   int         *rvalues,*svalues,base,imdex,nmax,*values;
