@@ -11,24 +11,37 @@ int MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat)
   Mat          B;
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
   Mat_SeqAIJ   *b;
-  int          ierr,bs = a->bs,*ai=a->i,*aj=a->j,m=A->M/bs,*bi,*bj,
-               i,*rowlengths,nz,*rowstart;
+  int          ierr,*ai=a->i,*aj=a->j,m=A->m,n=A->n,i,j,k,*bi,*bj,
+               *rowlengths,nz,*rowstart,itmp;
+  int          bs=a->bs,bs2=bs*bs,mbs=A->m/bs;
   PetscScalar  *av,*bv;
 
   PetscFunctionBegin;
+
   /* compute rowlengths of newmat */
-  ierr = PetscMalloc(m*bs*sizeof(int),&rowlengths);CHKERRQ(ierr);
-  for (i=0; i<m; i++) rowlengths[i] = 0;
+  ierr = PetscMalloc((2*m+1)*sizeof(int),&rowlengths);CHKERRQ(ierr);
+  rowstart = rowlengths + m;
+  
+  for (i=0; i<mbs; i++) rowlengths[i*bs] = 0;
   aj = a->j;
-  for (i=0; i<m; i++) {
+  k = 0;
+  for (i=0; i<mbs; i++) {
     nz = ai[i+1] - ai[i];
-    rowlengths[i] += nz; /* upper triangular part */
-    aj++; nz--;          /* skip diagonal */
-    while (nz--) { rowlengths[*aj++]++; }  /* lower triangular part */
+    aj++; /* skip diagonal */
+    for (j=1; j<nz; j++) { /* no. of lower triangular blocks */
+      rowlengths[(*aj)*bs]++; aj++;
+    }
+    rowlengths[k] += nz;   /* no. of upper triangular blocks */
+    rowlengths[k] *= bs;
+    for (j=1; j<bs; j++) {
+      rowlengths[k+j] = rowlengths[k];
+    }
+    k += bs;
+    /* printf(" rowlengths[%d]: %d\n",i, rowlengths[i]); */
   }
   
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,m,0,rowlengths,&B);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,0,rowlengths,&B);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   
@@ -38,32 +51,51 @@ int MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat)
   bv = b->a; 
 
   /* set b->i */
-  rowstart = rowlengths; /* rowstart renames rowlengths for code understanding */
-  bi[0] = 0;
-  for (i=0; i<m; i++){
-    b->ilen[i]  = rowlengths[i];
-    bi[i+1]     = bi[i] + rowlengths[i]; 
-    rowstart[i] = bi[i];  
+  bi[0] = 0; rowstart[0] = 0;
+  for (i=0; i<mbs; i++){
+    for (j=0; j<bs; j++){
+      b->ilen[i*bs+j]  = rowlengths[i*bs];
+      rowstart[i*bs+j+1] = rowstart[i*bs+j] + rowlengths[i*bs];
+    }
+    bi[i+1]     = bi[i] + rowlengths[i*bs]/bs; 
   }
-  if (bi[m] != 2*a->nz - m) SETERRQ2(1,"bi[m]: %d != 2*a->nz-m: %d\n",bi[m],2*a->nz - m);
+  if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(1,"bi[mbs]: %d != 2*a->nz-mbs: %d\n",bi[mbs],2*a->nz - mbs);
 
   /* set b->j and b->a */
   aj = a->j; av = a->a;
-  for (i=0; i<m; i++) {
-    /* diagonal */
-    *(bj + rowstart[i]) = *aj; aj++;
-    *(bv + rowstart[i]) = *av; av++; 
-    rowstart[i]++; 
-    nz = ai[i+1] - ai[i] - 1;
+  for (i=0; i<mbs; i++) {
+    /* diagonal block */
+    for (j=0; j<bs; j++){   /* row i*bs+j */
+      itmp = i*bs+j;
+      for (k=0; k<bs; k++){ /* col i*bs+k */
+        *(bj + rowstart[itmp]) = (*aj)*bs+k;
+        *(bv + rowstart[itmp]) = *(av+k*bs+j); 
+        rowstart[itmp]++;
+      }
+    }
+    aj++; av += bs2; 
+    
+    nz = ai[i+1] - ai[i] -1;
     while (nz--){
-      /* lower triangular part */
-      *(bj + rowstart[*aj]) = i; 
-      *(bv + rowstart[*aj]) = *av; 
-      rowstart[*aj]++; 
-      /* upper triangular part */
-      *(bj + rowstart[i]) = *aj; aj++;
-      *(bv + rowstart[i]) = *av; av++; 
-      rowstart[i]++; 
+      /* lower triangular blocks */
+      for (j=0; j<bs; j++){   /* row (*aj)*bs+j */
+        itmp = (*aj)*bs+j;
+        for (k=0; k<bs; k++){ /* col i*bs+k */
+          *(bj + rowstart[itmp]) = i*bs+k;
+          *(bv + rowstart[itmp]) = *(av+k*bs+j); 
+          rowstart[itmp]++;
+        }
+      }
+      /* upper triangular blocks */
+      for (j=0; j<bs; j++){   /* row i*bs+j */
+        itmp = i*bs+j;
+        for (k=0; k<bs; k++){ /* col (*aj)*bs+k */
+          *(bj + rowstart[itmp]) = (*aj)*bs+k;
+          *(bv + rowstart[itmp]) = *(av+k*bs+j); 
+          rowstart[itmp]++;
+        }
+      }
+      aj++; av += bs2;
     }
   }
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
@@ -75,7 +107,6 @@ int MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat)
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
   *newmat = B;
-  
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
