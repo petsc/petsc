@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.50 1996/05/30 18:47:13 balay Exp balay $";
+static char vcid[] = "$Id: da2.c,v 1.51 1996/05/30 20:55:42 balay Exp balay $";
 #endif
  
 #include "daimpl.h"    /*I   "da.h"   I*/
@@ -137,7 +137,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 {
   int           rank, size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
-  int           xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count,flg;
+  int           xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count,flg1,flg2;
   int           s_x,s_y; /* s proportionalized to w */
   int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim;
   DA            da;
@@ -172,8 +172,16 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (M < m) SETERRQ(1,"DACreate2d:Partition in x direction is too fine!");
   if (N < n) SETERRQ(1,"DACreate2d:Partition in y direction is too fine!");
 
-  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg); CHKERRQ(ierr);
-  if (flg) { /* Block Comm type Distribution */
+  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2); CHKERRQ(ierr);
+  if (flg1) {  /* Block Comm type Distribution */
+        xs = (rank%m)*M/m;
+        x = (rank%m + 1)*M/m - xs;
+        ys = (rank/m)*N/n;
+        y = (rank/m + 1)*N/n - ys;
+      
+  }
+  else if (flg2) { 
     x = (M + rank%m)/m;
     y = (N + rank/m)/n;
     
@@ -667,8 +675,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = DFVecShellAssociate(da->dfshell,global); CHKERRQ(ierr);
   ierr = DFVecShellAssociate(df_local,local); CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg); CHKERRQ(ierr);
-  if (flg) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRQ(ierr);}
+  ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1); CHKERRQ(ierr);
+  if (flg1) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRQ(ierr);}
   return 0;
 }
 
