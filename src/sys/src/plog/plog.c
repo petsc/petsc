@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.113 1996/07/13 16:15:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.114 1996/07/26 03:16:32 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -50,7 +50,7 @@ int PLogInfoAllow(PetscTruth flag)
 extern FILE *petsc_history;
 
 /*@
-    PLogInfoDeActivateClass - Deactivates PlogInfo() messages for a PETSc 
+    PLogInfoDeactivateClass - Deactivates PlogInfo() messages for a PETSc 
                               object class.
 
     Input Parameter:
