@@ -86,3 +86,23 @@ PetscErrorCode TSCreate(MPI_Comm comm, TS *ts) {
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "TSScaleShiftMatrices"
+PetscErrorCode TSScaleShiftMatrices(TS ts,Mat A,Mat B,MatStructure str)
+{
+  PetscTruth     flg;
+  PetscErrorCode ierr;
+  PetscScalar    mone = -1,mdt = 1.0/ts->time_step;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)ts->A,MATMFFD,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
+  }
+  if (ts->B != ts->A && str != SAME_PRECONDITIONER) {
+    ierr = MatScale(&mone,ts->B);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,ts->B);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}

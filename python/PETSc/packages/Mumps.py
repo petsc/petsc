@@ -216,9 +216,9 @@ class Configure(config.base.Configure):
     else:
       self.framework.log.write('Must specify either a library or installation root directory for BLACS, or -download-blacs=yes\n')
 
-  def checkLib(self,lib,func):
+  def checkLib(self,lib,func,otherLibs = []):
     oldLibs = self.framework.argDB['LIBS']
-    otherLibs = self.blasLapack.lapackLibrary
+    otherLibs += self.blasLapack.lapackLibrary
     if not None in self.blasLapack.blasLibrary:
       otherLibs = otherLibs+self.blasLapack.blasLibrary
     otherLibs = ' '.join([self.libraries.getLibArgument(lib1) for lib1 in otherLibs])
@@ -242,7 +242,7 @@ class Configure(config.base.Configure):
       found = self.executeTest(self.checkLib,[libs,'blacs_pinfo'])
       break  
     if found:
-          self.blacslib = libs
+          self.blacslib = [libs]
     else:
       raise RuntimeError('Could not find a functional BLACS: use --with-blacs-dir or --with-blacs-lib to indicate location\n')
 
@@ -250,11 +250,12 @@ class Configure(config.base.Configure):
     found  = 0
     for (configstr,libs) in self.generateScalapackLibGuesses():
       self.framework.log.write('Checking for a functional SCALAPACK in '+configstr+'\n')
-      if found:
-        self.scalapacklib = libs
-        break
-      else:
-        raise RuntimeError('Could not find a functional SCALAPACK: use --with-scalapack-dir or --with-scalapack-lib to indicate location\n')
+      found = self.executeTest(self.checkLib,[libs,'ssytrd',self.blacslib])
+      break
+    if found:
+      self.scalapacklib = [libs]
+    else:
+      raise RuntimeError('Could not find a functional SCALAPACK: use --with-scalapack-dir or --with-scalapack-lib to indicate location\n')
 
 
     found  = 0

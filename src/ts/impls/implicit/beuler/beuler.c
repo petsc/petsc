@@ -55,6 +55,7 @@ static PetscErrorCode TSStep_BEuler_Linear_Constant_Matrix(TS ts,PetscInt *steps
   *ptime  = ts->ptime;
   PetscFunctionReturn(0);
 }
+
 /*
       Version where matrix depends on time 
 */
@@ -66,10 +67,9 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
   Vec            sol = ts->vec_sol,update = beuler->update,rhs = beuler->rhs;
   PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps,its;
-  PetscScalar    mdt = 1.0/ts->time_step,mone = -1.0;
+  PetscScalar    mdt = 1.0/ts->time_step;
   MatStructure   str;
   KSP            ksp;
-  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = TSGetKSP(ts,&ksp);CHKERRQ(ierr);
@@ -91,15 +91,7 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
         evaluate matrix function 
     */
     ierr = (*ts->ops->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)ts->A,MATMFFD,&flg);CHKERRQ(ierr);
-    if (!flg) {
-      ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
-      ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
-    }
-    if (ts->B != ts->A && str != SAME_PRECONDITIONER) {
-      ierr = MatScale(&mone,ts->B);CHKERRQ(ierr);
-      ierr = MatShift(&mdt,ts->B);CHKERRQ(ierr);
-    }
+    ierr = TSScaleShiftMatrices(ts,ts->A,ts->B,str);CHKERRQ(ierr);
     ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,str);CHKERRQ(ierr);
     ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -208,8 +200,6 @@ PetscErrorCode TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *st
 {
   TS             ts = (TS) ctx;
   PetscErrorCode ierr;
-  PetscScalar    mone = -1.0,mdt = 1.0/ts->time_step;
-  PetscTruth     flg;
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
@@ -220,16 +210,7 @@ PetscErrorCode TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *st
      obtained from -snes_mf_operator and there is computed directly from the 
      FormFunction() SNES is given and therefor does not need to be shifted/scaled
      BUT maybe it could be MATMFFD and does require shift in some other case? */
-  ierr = PetscTypeCompare((PetscObject)*AA,MATMFFD,&flg);CHKERRQ(ierr);
-  if (!flg) {
-    ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
-    ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
-  }
-  if (*BB != *AA && *str != SAME_PRECONDITIONER) {
-    ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
-    ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);
-  }
-
+  ierr = TSScaleShiftMatrices(ts,*AA,*BB,*str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -240,8 +221,6 @@ static PetscErrorCode TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
 {
   TS_BEuler      *beuler = (TS_BEuler*)ts->data;
   PetscErrorCode ierr;
-  PetscScalar    mdt = 1.0/ts->time_step,mone = -1.0;
-  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
@@ -249,15 +228,7 @@ static PetscErrorCode TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
     
   /* build linear system to be solved */
-  ierr = PetscTypeCompare((PetscObject)ts->A,MATMFFD,&flg);CHKERRQ(ierr);
-  if (!flg) {
-    ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
-    ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
-  }
-  if (ts->A != ts->B) {
-    ierr = MatScale(&mone,ts->B);CHKERRQ(ierr);
-    ierr = MatShift(&mdt,ts->B);CHKERRQ(ierr);
-  }
+  ierr = TSScaleShiftMatrices(ts,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
