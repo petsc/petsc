@@ -250,16 +250,17 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
       }   
       ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     } else {
-
+      PetscInt n_global; 
+      ierr = MPI_Allreduce(&jac->n_local,&n_global,1,MPIU_INT,MPI_MAX,pc->comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] number of local blocks = %D, first local block number = %D\n",
                    rank,jac->n_local,jac->first_local);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      for (i=0; i<jac->n_local; i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] local block number %D\n",rank,i);CHKERRQ(ierr);
+      for (i=0; i<n_global; i++) {
         ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-        ierr = KSPView(jac->ksp[i],sviewer);CHKERRQ(ierr);
-        if (i != jac->n_local-1) {
+        if (i < jac->n_local) {
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] local block number %D\n",rank,i);CHKERRQ(ierr);
+          ierr = KSPView(jac->ksp[i],sviewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
         }
         ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
