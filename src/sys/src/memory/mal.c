@@ -1,4 +1,4 @@
-/*$Id: mal.c,v 1.52 2001/01/15 21:43:50 bsmith Exp balay $*/
+/*$Id: mal.c,v 1.53 2001/03/23 23:20:36 balay Exp bsmith $*/
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
@@ -22,25 +22,37 @@
 */
 #define SHIFT_COOKIE 456123
 
+/* need to use 16 and 8 below instead of sizeof() cause #if cannot handle sizeof() */
+#if !defined(PETSC_MEMALIGN)
+#  if defined(PETSC_USE_COMPLEX)
+#    define PETSC_MEMALIGN 16
+#  else
+#    define PETSC_MEMALIGN 8
+#  endif
+#endif
+
 int PetscMallocAlign(int mem,int line,char *func,char *file,char *dir,void** result)
 {
-#if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
   *result = malloc(mem);
 #elif defined(PETSC_HAVE_MEMALIGN)
-  *result = memalign(sizeof(Scalar),mem);
+  *result = memalign(PETSC_MEMALIGN,mem);
 #else
   {
     int *ptr,shift;
     /*
-      malloc space for two extra Scalar and shift ptr 1 + enough to get it Scalar aligned
+      malloc space for two extra chunks and shift ptr 1 + enough to get it Scalar aligned
     */
-    ptr = (int*)malloc(mem + 2*sizeof(Scalar));
-    if (!ptr) return 1;
-    shift = (int)(((unsigned long) ptr) % sizeof(Scalar));
-    shift = (2*sizeof(Scalar) - shift)/sizeof(int);
-    ptr     += shift;
-    ptr[-1]  = shift + SHIFT_COOKIE ;
-    *result = (void*)ptr;
+    ptr = (int*)malloc(mem + 2*PETSC_MEMALIGN);
+    if (ptr) {
+      shift    = (int)(((unsigned long) ptr) % PETSC_MEMALIGN);
+      shift    = (2*PETSC_MEMALIGN - shift)/sizeof(int);
+      ptr     += shift;
+      ptr[-1]  = shift + SHIFT_COOKIE ;
+      *result  = (void*)ptr;
+    } else {
+      *result  = 0;
+    }
   }
 #endif
   if (!*result) return 1;
@@ -51,14 +63,14 @@ int PetscFreeAlign(void *ptr,int line,char *func,char *file,char *dir)
 {
   int ierr = 0;
 
-#if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && !defined(PETSC_USE_COMPLEX))) && !defined(PETSC_HAVE_MEMALIGN)
+#if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(PETSC_HAVE_MEMALIGN))
   int shift;
   /*
        Previous int tells us how many ints the pointer has been shifted from
     the original address provided by the system malloc().
   */
   shift = ((int *)ptr)[-1] - SHIFT_COOKIE;   
-  if (shift > 15) PetscError(line,func,file,dir,1,1,"Likely memory corruption in heap");
+  if (shift > PETSC_MEMALIGN-1) return PetscError(line,func,file,dir,1,1,"Likely memory corruption in heap");
   ptr   = (void*)(((int*)ptr) - shift);
 #endif
 
