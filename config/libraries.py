@@ -122,6 +122,7 @@ class Configure(config.base.Configure):
       for lib in libName:
         if self.haveLib(lib): continue
         self.framework.argDB['LIBS'] += ' '+self.getLibArgument(lib)
+        if lib.startswith('-L'): continue
         strippedlib = os.path.splitext(os.path.basename(lib))[0]
         if strippedlib: self.addDefine(self.getDefineName(strippedlib), 1)
     else:
