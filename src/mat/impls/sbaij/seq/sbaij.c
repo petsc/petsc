@@ -1806,12 +1806,13 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
         t[i] = b[i];
 
       for (i=0; i<m; i++){
-        d  = *(aa + ai[i]);  /* diag */
+        d  = *(aa + ai[i]);  /* diag[i] */
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;       
         x[i] = omega*t[i]/d;
         while (nz--) t[*vj++] -= x[i]*(*v++); /* update rhs */
+        PetscLogFlops(2*nz-1);
       }
     }
 
@@ -1824,6 +1825,7 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
         while (nz--) t[*vj++] -= x[i]*(*v++);
+        PetscLogFlops(2*nz-1);
       }
       for (i=m-1; i>=0; i--){
         d  = *(aa + ai[i]);  
@@ -1832,6 +1834,7 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
         nz = ai[i+1] - ai[i] - 1;
         sum = t[i];
         while (nz--) sum -= x[*vj++]*(*v++);
+        PetscLogFlops(2*nz-1);
         x[i] =   (1-omega)*x[i] + omega*sum/d;        
       }
     }
@@ -1839,13 +1842,20 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
   }
 
   while (its--) {
-    
+    /* 
+       forward sweep:
+       for i=0,...,m-1:
+         sum[i] = (b[i] - U(i,:)x )/d[i];
+         x[i]   = (1-omega)x[i] + omega*sum[i];
+         b      = b - x[i]*U^T(i,:);
+         
+    */ 
     if (flag & SOR_FORWARD_SWEEP ){
       for (i=0; i<m; i++)
         t[i] = b[i];
 
       for (i=0; i<m; i++){
-        d  = *(aa + ai[i]);  /* diag */
+        d  = *(aa + ai[i]);  /* diag[i] */
         v  = aa + ai[i] + 1; v1=v;
         vj = aj + ai[i] + 1; vj1=vj;   
         nz = ai[i+1] - ai[i] - 1; nz1=nz;
@@ -1853,10 +1863,18 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
         while (nz1--) sum -= (*v1++)*x[*vj1++]; 
         x[i] = (1-omega)*x[i] + omega*sum/d;
         while (nz--) t[*vj++] -= x[i]*(*v++); 
+        PetscLogFlops(4*nz-2);
       }
     }
   
     if (flag & SOR_BACKWARD_SWEEP){
+      /* 
+       backward sweep:
+       b = b - x[i]*U^T(i,:), i=0,...,n-2
+       for i=m-1,...,0:
+         sum[i] = (b[i] - U(i,:)x )/d[i];
+         x[i]   = (1-omega)x[i] + omega*sum[i];
+      */ 
       for (i=0; i<m; i++)
         t[i] = b[i];
   
@@ -1865,6 +1883,7 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
         while (nz--) t[*vj++] -= x[i]*(*v++);
+        PetscLogFlops(2*nz-1);
       }
       for (i=m-1; i>=0; i--){
         d  = *(aa + ai[i]);  
@@ -1873,12 +1892,12 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
         nz = ai[i+1] - ai[i] - 1;
         sum = t[i];
         while (nz--) sum -= x[*vj++]*(*v++);
+        PetscLogFlops(2*nz-1);
         x[i] =   (1-omega)*x[i] + omega*sum/d;        
       }
     }
   }
 
-  /* PetscLogFlops(m); -- to be put later */
   ierr = PetscFree(t); CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   if (bb != xx) { 
