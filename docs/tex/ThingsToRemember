@@ -32,25 +32,26 @@ PETScView info:
   the owner has write permission.  Otherwise, each new PETScView user
   will be given a default .petscviewrc that is not writable to him.
 
-Nightly build:
-  On solaris it is at poplar.math.ucla.edu username bsmith
-  On Cray t3d it is at h4p.nersc.gov       username bsmith
-     For the t3d we are not allowed to use cron so buildtest 
-     uses at to start itself up again 24 hours later.
-  The password is in petsc/maint/autoftp
 
 ------------Accounts (around the world and around the block) -----
 UT account:
   brazos.pe.utexas.edu  and frankfort
 
-ICASE/NASA paragon: crabcake.larc.nasa.gov
-ICASE/NASA SP: poseidon.larc.nasa.gov
 
-SGI Power Challenge (IRIX64): machine: inca.usi.utah.edu; login: usilcm
+SGI Power Challenge (IRIX64): 
    machine:  inca.usi.utah.edu
    login ID:  usilcm
    info:  http://www.usi.utah.edu 
           http://usi.utah.edu/user_guides/cug/cug.html
+
+ICASE/NASA paragon: crabcake.larc.nasa.gov, account: mcinnes
+   See the file ~mcinnes/README on crabcake for up-to-date info on
+   the paragon's quirks: 
+      - unalias doesn't work
+      - must use make -e PETSC_DIR=<whatever>
+      - for BlockSolve95 muse use 
+            make -e BS_DIR=<whatever> PETSC_DIR=<whatever>
+ICASE/NASA SP: poseidon.larc.nasa.gov, account: mcinnes
 
 Paragon account at San Diego
    telnet paragate.sdsc.edu 7577
@@ -59,18 +60,22 @@ Paragon account at San Diego
    use /usr/local/bin/rftp to get out, you must use numerical
        IP address with rftp
    you must run make with the -e option and have the environmental
-   argument IPETSCDIR properly set.
+   argument PETSC_DIR properly set.
 
+Nightly build:
+  On solaris it is at poplar.math.ucla.edu username bsmith
+  On Cray t3d it is at h4p.nersc.gov       username bsmith
+     For the t3d we are not allowed to use cron so buildtest 
+     uses at to start itself up again 24 hours later.
+  The password is in petsc/maint/autoftp
 
-some of the machines at icase are
-ete08-f.icase.ed
-elc02.icase.edu
-dolphin.icase.ed
+ICASE suns:
+  ete08-f.icase.ed
+  elc02.icase.edu
+  dolphin.icase.ed
 
-
-I'm snot sure which of these are suns. 
-A good idea is to look at mpich***/util/machines/machines.sun4 at icase.
-It lists the good sun4s at icase.
+  A good idea is to look at mpich***/util/machines/machines.sun4 at icase.
+  It lists the good sun4s at icase.
 
 ----------------------------------------------------------------------
 
