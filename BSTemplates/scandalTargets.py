@@ -61,7 +61,9 @@ class Defaults:
     return BSTemplates.sidlDefaults.TagSIDL()
 
   def setupIncludes(self, action):
+    print 'dir:  '+self.usingSIDL.repositoryDir
     action.repositoryDirs.append(self.usingSIDL.repositoryDir)
+    print 'dirs: '+str(self.usingSIDL.repositoryDirs)
     action.repositoryDirs.extend(self.usingSIDL.repositoryDirs)
     return
 
