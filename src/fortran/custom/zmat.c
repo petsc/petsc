@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.11 1995/11/27 19:55:24 curfman Exp curfman $";
+static char vcid[] = "$Id: zmat.c,v 1.12 1995/11/28 18:53:03 curfman Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -9,62 +9,75 @@ static char vcid[] = "$Id: zmat.c,v 1.11 1995/11/27 19:55:24 curfman Exp curfman
 #include "pinclude/petscfix.h"
 
 #ifdef FORTRANCAPS
-#define matgetformatfromoptions_      MATGETFORMATFROMOPTIONS
-#define matgetreordering_             MATGETREORDERING
-#define matreorderingregisterall_     MATREORDERINGREGISTERALL
-#define matdestroy_                   MATDESTROY
-#define matcreatempiaij_              MATCREATEMPIAIJ
-#define matcreateseqaij_              MATCREATESEQAIJ
-#define matgetname_                   MATGETNAME
-#define matcreate_                    MATCREATE
-#define matshellcreate_               MATSHELLCREATE
-#define matshellsetmulttransadd_      MATSHELLSETMULTTRANSADD
-#define matshellsetdestroy_           MATSHELLSETDESTROY
-#define matshellsetmult_              MATSHELLSETMULT
-#define matreorderingregisterdestroy_ MATREORDERINGREGISTERDESTROY
-#define matcreatempirow_              MATCREATEMPIROW
-#define matcreateseqrow_              MATCREATESEQROW
-#define matcreatempirowbs_            MATCREATEMPIROWBS
-#define matcreateseqbdiag_            MATCREATESEQBDIAG
-#define matcreatempibdiag_            MATCREATEMPIBDIAG
-#define matcreateseqdense_            MATCREATESEQDENSE
-#define matcreatempidense_            MATCREATEMPIDENSE
-#define matconvert_                   MATCONVERT
-#define matreorderingregister_        MATREORDERINGREGISTER
-#define matgetsubmatrix_              MATGETSUBMATRIX
-#define matload_                      MATLOAD
-#define mattranspose_                 MATTRANSPOSE
-#define matgetarray_                  MATGETARRAY
+#define matgetreorderingtypefromoptions_ MATGETREORDERINGTYPEFROMOPTIONS
+#define matgetformatfromoptions_         MATGETFORMATFROMOPTIONS
+#define matgetreordering_                MATGETREORDERING
+#define matreorderingregisterall_        MATREORDERINGREGISTERALL
+#define matdestroy_                      MATDESTROY
+#define matcreatempiaij_                 MATCREATEMPIAIJ
+#define matcreateseqaij_                 MATCREATESEQAIJ
+#define matgetname_                      MATGETNAME
+#define matcreate_                       MATCREATE
+#define matshellcreate_                  MATSHELLCREATE
+#define matshellsetmulttransadd_         MATSHELLSETMULTTRANSADD
+#define matshellsetdestroy_              MATSHELLSETDESTROY
+#define matshellsetmult_                 MATSHELLSETMULT
+#define matreorderingregisterdestroy_    MATREORDERINGREGISTERDESTROY
+#define matcreatempirow_                 MATCREATEMPIROW
+#define matcreateseqrow_                 MATCREATESEQROW
+#define matcreatempirowbs_               MATCREATEMPIROWBS
+#define matcreateseqbdiag_               MATCREATESEQBDIAG
+#define matcreatempibdiag_               MATCREATEMPIBDIAG
+#define matcreateseqdense_               MATCREATESEQDENSE
+#define matcreatempidense_               MATCREATEMPIDENSE
+#define matconvert_                      MATCONVERT
+#define matreorderingregister_           MATREORDERINGREGISTER
+#define matgetsubmatrix_                 MATGETSUBMATRIX
+#define matload_                         MATLOAD
+#define mattranspose_                    MATTRANSPOSE
+#define matgetarray_                     MATGETARRAY
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define matgetformatfromoptions_      matgetformatfromoptions
-#define matreorderingregisterall_     matreorderingregisterall
-#define matdestroy_                   matdestroy
-#define matcreatempiaij_              matcreatempiaij
-#define matcreateseqaij_              matcreateseqaij
-#define matgetname_                   matgetname
-#define matcreate_                    matcreate
-#define matshellsetmult_              matshellsetmult
-#define matshellcreate_               matshellcreate
-#define matshellsetmulttransadd_      matshellsetmulttransadd
-#define matshellsetdestroy_           matshellsetdestroy
-#define matreorderingregisterdestroy_ matreorderingregisterdestroy
-#define matgetreordering_             matgetreordering
-#define matcreatempirow_              matcreatempirow
-#define matcreateseqrow_              matcreateseqrow
-#define matcreatempirowbs_            matcreatempirowbs
-#define matcreateseqbdiag_            matcreateseqbdiag
-#define matcreatempibdiag_            matcreatempibdiag
-#define matcreateseqdense_            matcreateseqdense
-#define matcreatempidense_            matcreatempidense
-#define matconvert_                   matconvert
-#define matreorderingregister_        matreorderingregister
-#define matgetsubmatrix_              matgetsubmatrix
-#define matload_                      matload
-#define mattranspose_                 mattranspose
-#define matgetarray_                  matgetarray
+#define matgetformatfromoptions_         matgetformatfromoptions
+#define matreorderingregisterall_        matreorderingregisterall
+#define matdestroy_                      matdestroy
+#define matcreatempiaij_                 matcreatempiaij
+#define matcreateseqaij_                 matcreateseqaij
+#define matgetname_                      matgetname
+#define matcreate_                       matcreate
+#define matshellsetmult_                 matshellsetmult
+#define matshellcreate_                  matshellcreate
+#define matshellsetmulttransadd_         matshellsetmulttransadd
+#define matshellsetdestroy_              matshellsetdestroy
+#define matreorderingregisterdestroy_    matreorderingregisterdestroy
+#define matgetreordering_                matgetreordering
+#define matcreatempirow_                 matcreatempirow
+#define matcreateseqrow_                 matcreateseqrow
+#define matcreatempirowbs_               matcreatempirowbs
+#define matcreateseqbdiag_               matcreateseqbdiag
+#define matcreatempibdiag_               matcreatempibdiag
+#define matcreateseqdense_               matcreateseqdense
+#define matcreatempidense_               matcreatempidense
+#define matconvert_                      matconvert
+#define matreorderingregister_           matreorderingregister
+#define matgetsubmatrix_                 matgetsubmatrix
+#define matload_                         matload
+#define mattranspose_                    mattranspose
+#define matgetarray_                     matgetarray
 #endif
 
 /* Definitions of Fortran Wrapper routines */
+
+void matgetreorderingtypefromoptions_(char *prefix,MatOrdering *type, int *__ierr,int len ){
+  char *t;
+  if (prefix[len] != 0) {
+    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
+    PetscStrncpy(t,prefix,len);
+    t[len] = 0;
+  }
+  else t = prefix;
+  *__ierr = MatGetReorderingTypeFromOptions(t,
+        (MatOrdering* )MPIR_ToPointer( *(int*)(type) ));
+}
 
 void matgetformatfromoptions_(MPI_Comm comm,char *prefix,MatType *type,int *set,int *__ierr,int len){
   char *t;
@@ -146,14 +159,14 @@ void matconvert_(Mat mat,MatType *newtype,Mat *M, int *__ierr )
 void matcreateseqdense_(MPI_Comm comm,int *m,int *n,Scalar *data,Mat *newmat,int *__ierr )
 {
   Mat mm;
-  if (data == PetscNull_Fortran) data = 0;
+  if (data == PetscNull_Fortran) data = PetscNull;
   *__ierr = MatCreateSeqDense((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,data,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
 void matcreatempidense_(MPI_Comm comm,int *m,int *n,int *M,int *N,Scalar *data,Mat *newmat, int *__ierr ){
   Mat mm;
-  if (data == PetscNull_Fortran) data = 0;
+  if (data == PetscNull_Fortran) data = PetscNull;
 *__ierr = MatCreateMPIDense(
 	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,*M,*N,data,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
@@ -165,7 +178,7 @@ void matcreatempibdiag_(MPI_Comm comm,int *m,int *M,int *N,int *nd,int *nb,
 {
   Mat mm;
   *__ierr = MatCreateMPIBDiag((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),
-                              *m,*M,*N,*nd,*nb,diag,0,&mm);
+                              *m,*M,*N,*nd,*nb,diag,PetscNull,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
@@ -175,7 +188,7 @@ void matcreateseqbdiag_(MPI_Comm comm,int *m,int *n,int *nd,int *nb,
 {
   Mat mm;
   *__ierr = MatCreateSeqBDiag(
-    (MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,*nd,*nb,diag,0,&mm);
+    (MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,*nd,*nb,diag,PetscNull,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
@@ -184,9 +197,9 @@ void matcreatempirowbs_(MPI_Comm comm,int *m,int *M,int *nz,int *nnz,
                        void *procinfo,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  if (nnz == PetscNull_Fortran) nnz = 0;
+  if (nnz == PetscNull_Fortran) nnz = PetscNull;
   *__ierr = MatCreateMPIRowbs((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),
-                               *m,*M,*nz,nnz,0,&mm);
+                               *m,*M,*nz,nnz,PetscNull,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
@@ -194,7 +207,7 @@ void matcreateseqrow_(MPI_Comm comm,int *m,int *n,int *nz,
                            int *nnz,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  if (nnz == PetscNull_Fortran) nnz = 0;
+  if (nnz == PetscNull_Fortran) nnz = PetscNull;
   *__ierr = MatCreateSeqRow((MPI_Comm)MPIR_ToPointer(*(int*)(comm)),*m,*n,*nz,nnz,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
@@ -202,8 +215,8 @@ void matcreatempirow_(MPI_Comm comm,int *m,int *n,int *M,int *N,
        int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  if (d_nnz == PetscNull_Fortran) d_nnz = 0;
-  if (o_nnz == PetscNull_Fortran) o_nnz = 0;
+  if (d_nnz == PetscNull_Fortran) d_nnz = PetscNull;
+  if (o_nnz == PetscNull_Fortran) o_nnz = PetscNull;
   *__ierr = MatCreateMPIRow((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),
                             *m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
@@ -301,7 +314,7 @@ void matcreateseqaij_(MPI_Comm comm,int *m,int *n,int *nz,
                            int *nnz,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  if (nnz == PetscNull_Fortran) nnz = 0;
+  if (nnz == PetscNull_Fortran) nnz = PetscNull;
   *__ierr = MatCreateSeqAIJ((MPI_Comm)MPIR_ToPointer(*(int*)(comm)),*m,*n,*nz,nnz,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
@@ -321,8 +334,8 @@ void matcreatempiaij_(MPI_Comm comm,int *m,int *n,int *M,int *N,
          int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  if (d_nnz == PetscNull_Fortran) d_nnz = 0;
-  if (o_nnz == PetscNull_Fortran) o_nnz = 0;
+  if (d_nnz == PetscNull_Fortran) d_nnz = PetscNull;
+  if (o_nnz == PetscNull_Fortran) o_nnz = PetscNull;
   *__ierr = MatCreateMPIAIJ((MPI_Comm)MPIR_ToPointer(*(int*)(comm)),*m,*n,*M,*N,*d_nz,
                              d_nnz,*o_nz,o_nnz,&mm);
   *(int*)newmat = MPIR_FromPointer(mm);

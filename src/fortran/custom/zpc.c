@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zpc.c,v 1.3 1995/10/09 21:58:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.4 1995/11/23 04:15:38 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -8,6 +8,7 @@ static char vcid[] = "$Id: zpc.c,v 1.3 1995/10/09 21:58:54 bsmith Exp bsmith $";
 #include "pinclude/petscfix.h"
 
 #ifdef FORTRANCAPS
+#define pcregisterall_             PCREGISTERALL
 #define pcregisterdestroy_         PCREGISTERDESTROY
 #define pcdestroy_                 PCDESTROY
 #define pccreate_                  PCCREATE
@@ -23,6 +24,7 @@ static char vcid[] = "$Id: zpc.c,v 1.3 1995/10/09 21:58:54 bsmith Exp bsmith $";
 #define pcshellsetapply_           PCSHELLSETAPPLY
 #define pcshellsetapplyrichardson_ PCSHELLSETAPPLYRICHARDSON
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define pcregisterall_             pcregisterall
 #define pcregisterdestroy_         pcregisterdestroy
 #define pcdestroy_                 pcdestroy
 #define pccreate_                  pccreate
@@ -148,4 +150,8 @@ void pccreate_(MPI_Comm comm,PC *newpc, int *__ierr ){
 
 void pcregisterdestroy_(int *__ierr){
   *__ierr = PCRegisterDestroy();
+}
+
+void pcregisterall_(int *__ierr){
+  *__ierr = PCRegisterAll();
 }
