@@ -554,7 +554,7 @@ class Framework(base.Base):
       print 'Invalid target: '+str(target)
     return output
 
-  def expandTargets(target):
+  def expandTargets(self,target):
     '''Return a copy of targets, after expansion of special targets'''
     if target is None:
       target = self.argDB.target[:]
