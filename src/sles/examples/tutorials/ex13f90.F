@@ -1,5 +1,5 @@
 C
-C    "$Id: ex14f.F,v 1.2 1997/04/25 01:44:22 curfman Exp curfman $";
+C    "$Id: ex13f.F,v 1.1 1997/04/25 02:35:54 curfman Exp balay $";
 C
 C
 C/*T
@@ -176,8 +176,6 @@ C  data structures.
   PetscFree(userb);
       ierr = UserFinalizeLinearSolver(&userctx); CHKERRA(ierr);
       call PetscFinalize(ierr)
-
-      stop
       end
 C ----------------------------------------------------------------
 integer function UserInitializeLinearSolver(m,n,userctx,ierr)

@@ -1,5 +1,5 @@
 
-/* "$Id: ex2.F,v 1.3 1996/11/25 23:43:16 bsmith Exp balay $"; */
+/* "$Id: ex2.F,v 1.4 1996/11/25 23:49:17 balay Exp bsmith $"; */
 
 
 #include "include/FINCLUDE/petsc.h"
@@ -50,19 +50,23 @@ C   not also work with DA contexts.
       call OptionsHasName(PETSC_NULL_CHARACTER,'-3d',flg3,ierr)
       if (flg2 .ne. 0) then
         call DACreate2d(MPI_COMM_WORLD,periodic,stencil_type,
-     *                  MM,NN,m,n,dof,stencil_width,da,ierr)
+     *                  MM,NN,m,n,dof,stencil_width,PETSC_NULL,
+     *                  PETSC_NULL,da,ierr)
         call SDACreate2d(MPI_COMM_WORLD,periodic,stencil_type,
-     *                  MM,NN,m,n,dof,stencil_width,sda,ierr)
+     *                  MM,NN,m,n,dof,stencil_width,PETSC_NULL,
+     *                  PETSC_NULL,sda,ierr)
       else if (flg3 .ne. 0) then
         call DACreate3d(MPI_COMM_WORLD,periodic,stencil_type,
-     *                  MM,NN,PP,m,n,p,dof,stencil_width,da,ierr)
+     *                  MM,NN,PP,m,n,p,dof,stencil_width,
+                        PETSC_NULL,PETSC_NULL,PETSC_NULL,da,ierr)
         call SDACreate3d(MPI_COMM_WORLD,periodic,stencil_type,
-     *                  MM,NN,PP,m,n,p,dof,stencil_width,sda,ierr)
+     *                  MM,NN,PP,m,n,p,dof,stencil_width,
+                        PETSC_NULL,PETSC_NULL,PETSC_NULL,sda,ierr)
       else
         call DACreate1d(MPI_COMM_WORLD,periodic,MM,dof,
-     *                  stencil_width,da,ierr)
+     *                  stencil_width,PETSC_NULL,da,ierr)
         call SDACreate1d(MPI_COMM_WORLD,periodic,MM,dof,
-     *                  stencil_width,sda,ierr)
+     *                  stencil_width,PETSC_NULL,sda,ierr)
       endif
 
       call DAGetDistributedVector(da,global,ierr)
