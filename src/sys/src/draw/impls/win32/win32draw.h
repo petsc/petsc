@@ -2,12 +2,19 @@
 #define __WIN32DRAW_H
 
 #include <stdio.h>
+#if defined(PETSC_HAVE_WINDOWS_H)
 #include <windows.h>
+#endif
+#if defined(PETSC_HAVE_WINDOWSX_H)
 #include <windowsx.h>
+#endif
 #include <math.h>
+#if defined(PETSC_HAVE_TIME_H)
 #include <time.h>
-#include <conio.h>
+#endif
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
+#endif
 #include "petscdraw.h"
 
 /* Nodes that record mouse actions when needed */

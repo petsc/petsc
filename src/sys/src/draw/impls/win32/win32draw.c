@@ -9,10 +9,13 @@
 #define MAX_LOADSTRING 100
 
 #if !defined(SelectPen)
-#define SelectPen(hdc, hpen)  ((HPEN)SelectObject((hdc),  (HGDIOBJ)(HPEN)(hpen)))
+#define SelectPen(hdc, hpen)      ((HPEN)SelectObject((hdc), (HGDIOBJ)(HPEN)(hpen)))
 #endif
 #if !defined(SelectFont)
-#define SelectFont(hdc,hfont) ((HFONT)SelectObject((hdc), (HGDIOBJ)(HFONT)(hfont)))
+#define SelectFont(hdc,hfont)    ((HFONT)SelectObject((hdc), (HGDIOBJ)(HFONT)(hfont)))
+#endif
+#if !defined(SelectBrush)
+#define SelectBrush(hdc,hbrush) ((HBRUSH)SelectObject((hdc), (HGDIOBJ)(HBRUSH)(hbrush)))
 #endif
 #if !defined(GetStockBrush)
 #define GetStockBrush(i)      ((HBRUSH)GetStockObject(i))
@@ -38,16 +41,14 @@ unsigned char BlueMap[]  = {255,0,0,0,255,255,225,212,34,0,238,42,193,80,190,0,0
 
 /* Foward declarations of functions included in this code module: */
 LRESULT CALLBACK  WndProc(HWND, UINT, WPARAM, LPARAM);
-extern int  TranslateColor_Win32(PetscDraw,int);
-extern int  AverageColorRectangle_Win32(PetscDraw,int,int,int,int);
-extern int  AverageColorTriangle_Win32(PetscDraw,int,int,int);
-extern void MessageLoopThread(PetscDraw_Win32 *);
-extern int  deletemouselist_Win32(WindowNode);
-extern void OnPaint_Win32(HWND);
-extern void OnDestroy_Win32(HWND);
-extern void OnSize_Win32(HWND,UINT,int,int);
-extern int  MouseRecord_Win32(HWND,PetscDrawButton);
-extern int  PetscDrawGetPopup_Win32(PetscDraw,PetscDraw *);
+static PetscErrorCode TranslateColor_Win32(PetscDraw,int);
+static PetscErrorCode AverageColorRectangle_Win32(PetscDraw,int,int,int,int);
+static PetscErrorCode AverageColorTriangle_Win32(PetscDraw,int,int,int);
+static PetscErrorCode deletemouselist_Win32(WindowNode);
+static void OnPaint_Win32(HWND);
+static void OnDestroy_Win32(HWND);
+static PetscErrorCode MouseRecord_Win32(HWND,PetscDrawButton);
+static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw,PetscDraw *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSetDoubleBuffer_Win32" 
@@ -223,15 +224,15 @@ static PetscErrorCode PetscDrawRectangle_Win32(PetscDraw draw,double xl,double y
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   HBRUSH          hbrush;
   RECT            rect;
-  int             x1,y1,x2,y2;
+  int             x1,yone,x2,y2;
   HDC             hdc;
   
   PetscFunctionBegin;
   x1 = XTRANS(draw,windraw,xl);
   x2 = XTRANS(draw,windraw,xr);
-  y1 = YTRANS(draw,windraw,yl);
+  yone = YTRANS(draw,windraw,yl);
   y2 = YTRANS(draw,windraw,yr);
-  SetRect(&rect,x1,y2,x2,y1);        
+  SetRect(&rect,x1,y2,x2,yone);        
   if (c1==c2 && c2==c3 && c3==c4) {         
     TranslateColor_Win32(draw,c1);
   } else {                                   
@@ -256,13 +257,13 @@ static PetscErrorCode PetscDrawLine_Win32(PetscDraw draw,double xl,double yl,dou
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   HPEN            hpen;
-  int             x1,y1,x2,y2;
+  int             x1,yone,x2,y2;
   HDC             hdc;
   
   PetscFunctionBegin;
   TranslateColor_Win32(draw,color);
   x1   = XTRANS(draw,windraw,xl);x2  = XTRANS(draw,windraw,xr); 
-  y1   = YTRANS(draw,windraw,yl);y2  = YTRANS(draw,windraw,yr); 
+  yone   = YTRANS(draw,windraw,yl);y2  = YTRANS(draw,windraw,yr); 
   hpen = CreatePen (PS_SOLID, windraw->linewidth, windraw->currentcolor);
   if(windraw->node->DoubleBuffered) {
     hdc = windraw->node->DoubleBuffer;
@@ -270,7 +271,7 @@ static PetscErrorCode PetscDrawLine_Win32(PetscDraw draw,double xl,double yl,dou
     hdc = windraw->node->Buffer;
   }
   SelectPen(hdc,hpen);
-  MoveToEx(hdc,x1,y1,NULL);
+  MoveToEx(hdc,x1,yone,NULL);
   LineTo(hdc,x2,y2);
   /* Forces a WM_PAINT message and erases background */
   InvalidateRect(windraw->hWnd,NULL,TRUE);
@@ -315,13 +316,13 @@ static PetscErrorCode PetscDrawPoint_Win32(PetscDraw draw,double x,double y,int 
   HBRUSH          hbrush;
   HRGN            hrgn;
   int             radius;
-  int             x1,y1,left,right,top,bottom;
+  int             x1,yone;
   HDC             hdc;
   
   PetscFunctionBegin;
   TranslateColor_Win32(draw,color);
   x1     = XTRANS(draw,windraw,x);   
-  y1     = YTRANS(draw,windraw,y);
+  yone     = YTRANS(draw,windraw,y);
   hbrush = CreateSolidBrush(windraw->currentcolor);
   if(windraw->node->DoubleBuffered) {
     hdc = windraw->node->DoubleBuffer;
@@ -330,11 +331,11 @@ static PetscErrorCode PetscDrawPoint_Win32(PetscDraw draw,double x,double y,int 
   }
   /* desired size is one logical pixel so just turn it on */
   if (windraw->pointdiameter == 1) {
-    SetPixelV(hdc,x1,y1,windraw->currentcolor);
+    SetPixelV(hdc,x1,yone,windraw->currentcolor);
   } else {
     /* draw point around position determined */
     radius = (int)floor(windraw->pointdiameter/2);
-    hrgn   = CreateEllipticRgn(x1-radius,y1-radius,x1+radius,y1+radius);
+    hrgn   = CreateEllipticRgn(x1-radius,yone-radius,x1+radius,yone+radius);
     FillRgn(hdc,hrgn,hbrush);
   }
   /* Forces a WM_PAINT and erases background */
@@ -367,16 +368,16 @@ static PetscErrorCode PetscDrawString_Win32(PetscDraw draw,double x,double y,int
   RECT            r;
   HFONT           hfont;                                                                    
   LOGFONT         logfont; 
-  int             x1,y1;
+  int             x1,yone;
   HDC             hdc;
   
   PetscFunctionBegin;
   x1              = XTRANS(draw,windraw,x);
-  y1              = YTRANS(draw,windraw,y);
-  r.bottom        = y1;
+  yone              = YTRANS(draw,windraw,y);
+  r.bottom        = yone;
   r.left          = x1;
   r.right         = x1 + 1; 
-  r.top           = y1 + 1;
+  r.top           = yone + 1;
   logfont.lfHeight         = windraw->stringheight;
   logfont.lfWidth          = windraw->stringwidth;
   logfont.lfEscapement     = 0;
@@ -414,16 +415,16 @@ static PetscErrorCode PetscDrawStringVertical_Win32(PetscDraw draw,double x,doub
   RECT            r;
   HFONT           hfont;                                                                                    
   LOGFONT         logfont;
-  int             x1,y1;
+  int             x1,yone;
   HDC             hdc;
   
   PetscFunctionBegin;
   x1           = XTRANS(draw,windraw,x);
-  y1           = YTRANS(draw,windraw,y);
+  yone           = YTRANS(draw,windraw,y);
   r.left       = x1;
-  r.bottom     = y1 + 30;
+  r.bottom     = yone + 30;
   r.right      = x1 + 1;
-  r.top        = y1 - 30;
+  r.top        = yone - 30;
   logfont.lfEscapement     = 2700; /* Causes verticle text drawing */
   logfont.lfHeight         = windraw->stringheight;
   logfont.lfWidth          = windraw->stringwidth;
@@ -552,7 +553,7 @@ static PetscErrorCode PetscDrawClear_Win32(PetscDraw draw)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawTriangle_Win32"
-static PetscErrorCode PetscDrawTriangle_Win32(PetscDraw draw,double x1,double y1,double x2,double y2,double x3,double y3,
+static PetscErrorCode PetscDrawTriangle_Win32(PetscDraw draw,double x1,double yone,double x2,double y2,double x3,double y3,
                               int c1,int c2,int c3)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
@@ -568,7 +569,7 @@ static PetscErrorCode PetscDrawTriangle_Win32(PetscDraw draw,double x1,double y1
   p1x = XTRANS(draw,windraw,x1);
   p2x = XTRANS(draw,windraw,x2);
   p3x = XTRANS(draw,windraw,x3);
-  p1y = YTRANS(draw,windraw,y1);
+  p1y = YTRANS(draw,windraw,yone);
   p2y = YTRANS(draw,windraw,y2);
   p3y = YTRANS(draw,windraw,y3);
   
@@ -641,7 +642,7 @@ void PopMessageLoopThread_Win32(PetscDraw popdraw)
   pop->h = height;
   
   if(!hWnd) {
-    lpMsgBuf = "Window Not Succesfully Created";
+    lpMsgBuf = (LPVOID)"Window Not Succesfully Created";
     MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
     LocalFree( lpMsgBuf );
     exit(0);
@@ -729,7 +730,7 @@ void MessageLoopThread_Win32(PetscDraw draw)
                         NULL);
   
   if (!hWnd) {
-    lpMsgBuf = "Window Not Succesfully Created";
+    lpMsgBuf = (LPVOID)"Window Not Succesfully Created";
     MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
     LocalFree( lpMsgBuf );
     exit(0);
@@ -914,7 +915,6 @@ EXTERN_C_END
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
   int         wmId, wmEvent;
-  PAINTSTRUCT ps;
   
   switch (message) {
     HANDLE_MSG(hWnd,WM_PAINT,OnPaint_Win32);
