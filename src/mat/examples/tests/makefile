@@ -1,46 +1,67 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS 	       =	  $(CPPFLAGS)  -D__DIR__='"$(LOCDIR)"'
-FFLAGS	       = 
-SOURCEC	       = 
-SOURCEF	       =
-SOURCEH	       =
-OBJSC	       =
-OBJSF	       =
-LIBBASE	       = libpetscmat
-LOCDIR         = src/mat/examples/
-TESTEXAMPLES_1 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
-		runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
-		runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm\
-		ex11.PETSc runex11 ex11.rm ex14.PETSc runex14 ex14.rm \
-		ex15.PETSc runex15 ex15.rm ex19.PETSc ex19.rm ex20.PETSc runex20 \
-		ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm
-TESTEXAMPLES_2 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
-		runex7 ex7.rm ex12.PETSc runex12 ex12.rm  ex13.PETSc runex13 \
-		ex13.rm ex17.PETSc ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc \
-		ex24.rm ex25.PETSc ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
-		ex29.PETSc ex29.rm ex30.PETSc ex30.rm ex31.PETSc ex31.rm ex32.PETSc\
-		ex32.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm ex35.PETSc runex35 \
-		ex35.rm ex37.PETSc ex37.rm ex38.PETSc ex38.rm \
-		ex43.PETSc ex43.rm ex46.PETSc runex46 ex46.rm ex48.PETSc runex48 \
-		ex48.rm ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm
-TESTEXAMPLES_3 = ex36.PETSc runex36 ex36.rm
-TESTEXAMPLES_4 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
-		runex4 ex4.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 ex6.rm\
-		ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm ex15.PETSc\
-		runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 \
-		ex21.rm ex35.PETSc runex35 ex35.rm 
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
-		ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex17.c \
-		ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
-		ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
-		ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c\
-		ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c
-TESTEXAMPLES_6 = ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 ex42.rm \
-                 ex41.PETSc ex41.rm ex47.PETSc ex47.rm 
+CFLAGS 	        =	  $(CPPFLAGS)  -D__DIR__='"$(LOCDIR)"'
+FFLAGS	        = 
+SOURCEC	        = 
+SOURCEF	        =
+SOURCEH	        =
+OBJSC	        =
+OBJSF	        =
+LIBBASE	        = libpetscmat
+LOCDIR          = src/mat/examples/
+TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
+		  runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
+		  runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm\
+		  ex11.PETSc runex11 ex11.rm ex14.PETSc runex14 ex14.rm \
+		  ex15.PETSc runex15 ex15.rm ex19.PETSc ex19.rm ex20.PETSc runex20 \
+		  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm
+TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
+		  runex7 ex7.rm ex12.PETSc runex12 ex12.rm  ex13.PETSc runex13 \
+		  ex13.rm ex17.PETSc ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc \
+		  ex24.rm ex25.PETSc ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
+		  ex29.PETSc ex29.rm ex30.PETSc ex30.rm ex31.PETSc ex31.rm ex32.PETSc\
+		  ex32.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm ex35.PETSc runex35 \
+		  ex35.rm ex37.PETSc ex37.rm ex38.PETSc ex38.rm \
+		  ex43.PETSc ex43.rm ex46.PETSc runex46 ex46.rm ex48.PETSc runex48 \
+		  ex48.rm ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm
+TESTEXAMPLES_3  = ex36.PETSc runex36 ex36.rm
+TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
+		  runex4 ex4.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 ex6.rm\
+		  ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm ex15.PETSc\
+		  runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 \
+		  ex21.rm ex35.PETSc runex35 ex35.rm 
+TESTEXAMPLES_6  = ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 ex42.rm \
+                  ex41.PETSc ex41.rm ex47.PETSc ex47.rm 
+BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex3.PETSc ex3.rm ex5.PETSc ex5.rm ex6.PETSc \
+		  ex6.rm ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm\
+		  ex11.PETSc ex11.rm ex14.PETSc ex14.rm	ex15.PETSc ex15.rm \
+		  ex19.PETSc ex19.rm ex20.PETSc \
+		  ex20.rm ex21.PETSc ex21.rm ex22.PETSc ex22.rm
+BUILDEXAMPLES_2 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex7.PETSc ex7.rm ex12.PETSc \
+		  ex12.rm  ex13.PETSc ex13.rm ex17.PETSc ex17.rm ex19.PETSc \
+		  ex19.rm ex24.PETSc ex24.rm ex25.PETSc ex25.rm ex27.PETSc ex27.rm\
+		  ex28.PETSc ex28.rm ex29.PETSc ex29.rm ex30.PETSc ex30.rm ex31.PETSc\
+		  ex31.rm ex32.PETSc ex32.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm \
+		  ex35.PETSc ex35.rm ex37.PETSc ex37.rm ex38.PETSc ex38.rm \
+		  ex43.PETSc ex43.rm ex46.PETSc ex46.rm ex48.PETSc ex48.rm  \
+		  ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm
+BUILDEXAMPLES_3 = ex36.PETSc ex36.rm
+BUILDEXAMPLES_4 = ex1.PETSc  ex1.rm ex2.PETSc ex2.rm ex4.PETSc\
+		  ex4.rm ex5.PETSc ex5.rm ex6.PETSc ex6.rm\
+		  ex10.PETSc ex10.rm ex14.PETSc ex14.rm ex15.PETSc\
+		  runex15 ex15.rm ex20.PETSc ex20.rm ex21.PETSc \
+		  ex21.rm ex35.PETSc ex35.rm 
+BUILDEXAMPLES_6 = ex40.PETSc ex40.rm ex42.PETSc ex42.rm \
+                  ex41.PETSc ex41.rm ex47.PETSc ex47.rm 
 
-EXAMPLESF     = ex36.F
+EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
+		 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex17.c \
+		 ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
+		 ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
+		 ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c\
+		 ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c
+EXAMPLESF      = ex36.F
 
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB) 
