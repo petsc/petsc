@@ -2713,6 +2713,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
     for (i=2; i<size; i++) {
       mmax = PetscMax(mmax,rowners[i]);
     }
+    mmax*=bs;
   } else mmax = m;
 
   rowners[0] = 0;
