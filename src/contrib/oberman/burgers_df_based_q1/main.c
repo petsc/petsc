@@ -1,5 +1,5 @@
 
-static char help[] ="Solves the 2d time-dependant burgers equation.\ndu/dt + u*du/dx + v*du/dy - c(lap(u)) = f.\n  dv/dt + u*dv/dv + v*dv/dy - c(lap(v)) =g.  This has exact solution, see fletcher.\n  This version has new indexing of Degrees of Freedom";
+static char help[] ="Solves the 2d Burgers equation.\n u*du/dx + v*du/dy - c(lap(u)) = f.\n  u*dv/dx + v*dv/dy - c(lap(v)) =g.  This has exact solution, see Fletcher.\n  This version has new indexing of Degrees of Freedom";
 
 #include "appctx.h"
 extern int FormInitialGuess(AppCtx*);
@@ -24,7 +24,7 @@ int main( int argc, char **argv )
   /*      Initialize graphics */
   ierr = AppCtxGraphics(appctx); CHKERRA(ierr);
 
-  /*   Setup the linear system and solve it*/
+  /*   Setup the system and solve it*/
   ierr = AppCtxSolve(appctx);CHKERRQ(ierr);
 
   /* Send to  matlab viewer */
@@ -37,7 +37,7 @@ int main( int argc, char **argv )
   PetscFunctionReturn(0);
 }
 
-/*
+/*----------------------------------------------------------------------------
          Sets up the non-linear system associated with the PDE and solves it
 */
 #undef __FUNC__
@@ -89,6 +89,7 @@ int AppCtxSolve(AppCtx* appctx)
   PetscFunctionReturn(0);
 }
 
+/*------------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "FormInitialGuess"
 int FormInitialGuess(AppCtx* appctx)
@@ -100,8 +101,10 @@ int FormInitialGuess(AppCtx* appctx)
     PetscFunctionReturn(0);
 }
 
-/* FormStationaryFunction - Evaluates the nonlinear function, F(x), which is the discretised equations, 
-     Input Parameters:
+/*------------------------------------------------------------------------------- 
+FormStationaryFunction - Evaluates the nonlinear function, F(x), 
+        which is the discretised equations, 
+   Input Parameters:
     - the vector x, corresponding to u values at each vertex
     - snes, the SNES context
     - appctx
@@ -149,6 +152,7 @@ to see if they need to be recomputed */
   PetscFunctionReturn(0);
 }
 
+/*---------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "FormStationaryJacobian"
 int FormStationaryJacobian(SNES snes, Vec g, Mat *jac, Mat *B, MatStructure *flag, void *dappctx)
@@ -166,6 +170,7 @@ int FormStationaryJacobian(SNES snes, Vec g, Mat *jac, Mat *B, MatStructure *fla
   PetscFunctionReturn(0);
 }
 
+/*--------------------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "SetNonlinearFunction"
 /* input vector is g, output is f.  Loop over elements, getting coords of each vertex and 
@@ -214,6 +219,7 @@ int SetNonlinearFunction(Vec g, AppCtx *appctx, Vec f)
 }
 
 
+/*----------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "SetBoundaryConditions"
 int SetBoundaryConditions(Vec g, AppCtx *appctx, Vec f)
@@ -254,6 +260,7 @@ int SetBoundaryConditions(Vec g, AppCtx *appctx, Vec f)
   PetscFunctionReturn(0);
 }
 
+/*----------------------------------------------------------------------*/
 /* input is the input vector , output is the jacobian jac */
 #undef __FUNC__
 #define __FUNC__ "SetJacobian"
@@ -309,6 +316,7 @@ int SetJacobian(Vec g, AppCtx *appctx, Mat* jac)
 
 }
 
+/*----------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "AppCxtSetRhs"
 int AppCtxSetRhs(AppCtx* appctx)
@@ -345,7 +353,7 @@ int AppCtxSetRhs(AppCtx* appctx)
   PetscFunctionReturn(0);
 }  
 
-
+/*---------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "AppCxtSetMatrix"
 int AppCtxSetMatrix(AppCtx* appctx)
