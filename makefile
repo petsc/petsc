@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.325 2000/09/22 20:05:16 balay Exp balay $ 
+# $Id: makefile,v 1.326 2000/09/23 14:46:59 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -99,7 +99,7 @@ info_h:
 build_c:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=libfast tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree 
 	${RANLIB} ${PDIR}/*.a
 	-@chmod g+w  ${PDIR}/*.a
 	-@echo "Completed building libraries"
@@ -114,11 +114,11 @@ build_fortran:
 	-@echo "BEGINNING TO COMPILE FORTRAN SOURCE"
 	-@echo "========================================="
 	-@cd src/fortran/custom; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} libf clean 
+	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} libf clean 
 	-@cd src/fortran/kernels; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} libf  clean
+	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} libf  clean
 	-@cd src/mat/impls/aij/seq; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} lib clean
+	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} lib clean
 	${RANLIB} ${PDIR}/libpetscfortran.a
 	${RANLIB} ${PDIR}/libpetsc.a
 	-@chmod g+w  ${PDIR}/*.a
@@ -130,7 +130,7 @@ petscblas: info chkpetsc_dir
 	-@echo "BEGINNING TO COMPILE C VERSION OF BLAS AND LAPACK"
 	-@echo "========================================="
 	-@cd src/blaslapack/c; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=libfast tree
+	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
 	${RANLIB} ${PDIR}/libpetscblas.a
 	-@chmod g+w  ${PDIR}/*.a
 	-@echo "Completed compiling C version of BLAS and LAPACK"
@@ -143,7 +143,7 @@ testexamples: info chkopts
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=testexamples_1  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=testexamples_1  tree 
 	-@echo "Completed compiling and running test examples"
 	-@echo "========================================="
 testfortran: info chkopts
@@ -153,7 +153,7 @@ testfortran: info chkopts
 	-@echo "machines or the way Fortran formats numbers"
 	-@echo "some of the results may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=testexamples_3  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_3  tree 
 	-@echo "Completed compiling and running Fortran test examples"
 	-@echo "========================================="
 testexamples_uni: info chkopts
@@ -161,7 +161,7 @@ testexamples_uni: info chkopts
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=testexamples_4  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_4  tree 
 	-@echo "Completed compiling and running uniprocessor test examples"
 	-@echo "========================================="
 testfortran_uni: info chkopts
@@ -169,7 +169,7 @@ testfortran_uni: info chkopts
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=testexamples_9  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_9  tree 
 	-@echo "Completed compiling and running uniprocessor fortran test examples"
 	-@echo "========================================="
 matlabcodes:

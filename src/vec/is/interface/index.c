@@ -1,4 +1,4 @@
-/*$Id: index.c,v 1.78 2000/09/28 21:09:55 bsmith Exp bsmith $*/
+/*$Id: index.c,v 1.79 2000/10/24 20:24:50 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
@@ -116,7 +116,7 @@ int ISSetPermutation(IS is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
-  is->isperm = 1;
+  is->isperm = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

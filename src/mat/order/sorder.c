@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.80 2000/09/28 21:12:22 bsmith Exp bsmith $*/
+/*$Id: sorder.c,v 1.81 2000/10/24 20:26:19 bsmith Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -143,7 +143,7 @@ $     MatOrderingSetType(part,"my_order)
 $     -pc_ilu_mat_ordering_type my_order
 $     -pc_lu_mat_ordering_type my_order
 
-   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+   ${PETSC_ARCH} and ${BOPT} occuring in pathname will be replaced with appropriate values.
 
 .keywords: matrix, ordering, register
 

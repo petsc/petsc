@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.5 1999/12/16 22:25:58 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.6 2000/05/05 18:28:31 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -41,4 +41,5 @@
 #define PETSC_HAVE_RTLD_GLOBAL 1
 #endif
 
+#define PETSC_MISSING_SIGSYS
 #endif

@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.7 1999/10/24 14:01:38 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.8 2000/01/11 20:59:47 bsmith Exp bsmith $*/
 
 /*
      Tests PetscSetCommWorld()
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
 
   ierr = PetscSetCommWorld(newcomm);
   if (ierr) {
-    fprintf(stderr,"Unable to set PETSC_COMM_WORLD\n");
+    fprintf(stdout,"Unable to set PETSC_COMM_WORLD\n");
   }
 
   PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);

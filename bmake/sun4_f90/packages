@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.28 2000/09/22 20:40:11 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.29 2000/09/28 21:06:05 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -68,17 +68,11 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 # developed by Michael Saunders, saunders@stanford.edu at the
 # Systems Optimization Laboratory, Stanford University.
 #  http://www.sbsi-sol-optimize.com/
-#
-# Put the two files mi25bfac.f and mi15blas.f (or LUSOL.f LUSOL_BLAS.f
-# depending on how they are named) into src/mat/impls/aij/seq and 
-# uncomment the appropriate lines below
+# Uses the two files mi25bfac.f and mi15blas.f (or LUSOL.f LUSOL_BLAS.f
+# depending on how they are named)
 #
 #PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
-#PETSC_LUSOL_SOURCE_F = LUSOL.f LUSOL_BLAS.f
-#PETSC_LUSOL_SOURCE_O = LUSOL.o LUSOL_BLAS.o
-#PETSC_LUSOL_SOURCE_F = mi25bfac.f mi15blas.f
-#PETSC_LUSOL_SOURCE_O = mi25bfac.o mi15blas.o
-
+#LUSOL_LIB = 
 
 
 

@@ -1,4 +1,4 @@
-/* $Id: smatlab.c,v 1.8 2000/06/17 20:47:59 bsmith Exp bsmith $ */
+/* $Id: smatlab.c,v 1.9 2000/06/23 14:32:12 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -34,14 +34,14 @@ int PetscStartMatlab(MPI_Comm comm,char *machine,char *script,FILE **fp)
   int  ierr;
   FILE *fd;
   char command[512];
-#if defined(PARCH_solaris)
+#if defined(PETSC_HAVE_UCBPS)
   char buf[1024],*found;
   int  rank;
 #endif
 
   PetscFunctionBegin;
 
-#if defined(PARCH_solaris)
+#if defined(PETSC_HAVE_UCBPS)
   /* check if Matlab is not already running */
   ierr = PetscPOpen(comm,machine,"/usr/ucb/ps -ugxww | grep matlab | grep -v grep","r",&fd);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

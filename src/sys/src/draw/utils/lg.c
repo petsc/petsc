@@ -1,4 +1,4 @@
-/*$Id: lg.c,v 1.70 2000/04/12 04:21:18 bsmith Exp bsmith $*/
+/*$Id: lg.c,v 1.71 2000/09/22 20:42:13 bsmith Exp bsmith $*/
 /*
        Contains the data structure for plotting several line
     graphs in a window with an axis. This is intended for line 
@@ -17,7 +17,7 @@ struct _p_DrawLG {
   DrawAxis    axis;
   PetscReal   xmin,xmax,ymin,ymax,*x,*y;
   int         nopts,dim;
-  int         use_dots;
+  PetscTruth  use_dots;
 };
 
 #define CHUNCKSIZE 100
@@ -72,7 +72,7 @@ int DrawLGCreate(Draw draw,int dim,DrawLG *outctx)
   lg->y       = lg->x + dim*CHUNCKSIZE;
   lg->len     = dim*CHUNCKSIZE;
   lg->loc     = 0;
-  lg->use_dots= 0;
+  lg->use_dots= PETSC_FALSE;
   ierr = DrawAxisCreate(draw,&lg->axis);CHKERRQ(ierr);
   PLogObjectParent(lg,lg->axis);
   *outctx = lg;
@@ -248,7 +248,7 @@ int DrawLGIndicateDataPoints(DrawLG lg)
   PetscFunctionBegin;
   if (lg && lg->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
 
-  lg->use_dots = 1;
+  lg->use_dots = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.22 1999/11/24 21:52:17 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.23 2000/05/05 18:28:31 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -42,4 +42,7 @@
 #define PETSC_SIZEOF_DOUBLE 8
 
 #define PETSC_USE_NT_TIME
+
+#define PETSC_MISSING_SIGSYS
+
 #endif

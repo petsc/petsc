@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.147 2000/09/07 15:18:20 balay Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.148 2000/09/28 21:12:46 bsmith Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -259,7 +259,9 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
     }
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," blks=%d",jac->n);CHKERRQ(ierr);
-    if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);CHKERRQ(ierr);}
+    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    if (jac->sles) {ierr = SLESView(jac->sles[0],sviewer);CHKERRQ(ierr);}
+    ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for block Jacobi",((PetscObject)viewer)->type_name);
   }

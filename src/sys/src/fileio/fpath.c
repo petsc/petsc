@@ -1,4 +1,4 @@
-/*$Id: fpath.c,v 1.35 2000/09/22 20:42:19 bsmith Exp bsmith $*/
+/*$Id: fpath.c,v 1.36 2000/10/24 20:24:33 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -86,6 +86,7 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
   if (fullpath[0] == '~') {
     char tmppath[MAXPATHLEN];
     if (fullpath[1] == '/') {
+#if !defined(PETSC_MISSING_GETPWUID)
 	pwde = getpwuid(geteuid());
 	if (!pwde) PetscFunctionReturn(0);
 	ierr = PetscStrcpy(tmppath,pwde->pw_dir);CHKERRQ(ierr);
@@ -93,6 +94,9 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
 	if (tmppath[ln-1] != '/') {ierr = PetscStrcat(tmppath+ln-1,"/");CHKERRQ(ierr);}
 	ierr = PetscStrcat(tmppath,fullpath + 2);CHKERRQ(ierr);
 	ierr = PetscStrncpy(fullpath,tmppath,flen);CHKERRQ(ierr);
+#else
+        PetscFunctionReturn(0);
+#endif
     } else {
 	char *p,*name;
 

@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.163 2000/09/28 21:10:10 bsmith Exp bsmith $*/
+/*$Id: vscat.c,v 1.164 2000/10/24 20:24:58 bsmith Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -721,8 +721,8 @@ EXTERN int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 +  -vecscatter_merge     - Merges scatter send and receive (may offer better performance with some MPIs)
 .  -vecscatter_ssend     - Uses MPI_Ssend_init() instead of MPI_Send_init() (may offer better performance with some MPIs)
 .  -vecscatter_sendfirst - Posts sends before receives (may offer better performance with some MPIs)
--  -vecscatter_rr        - use ready receiver mode for MPI sends in scatters (rarely used)
-
+.  -vecscatter_rr        - use ready receiver mode for MPI sends in scatters (rarely used)
+-  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
     Level: intermediate
 
   Notes:
@@ -742,10 +742,10 @@ EXTERN int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter ctx;
-  int        len,size,cando,islocal,totalv,ierr,*range,xin_type = VECSEQ,yin_type = VECSEQ; 
+  int        len,size,cando,totalv,ierr,*range,xin_type = VECSEQ,yin_type = VECSEQ; 
   PetscTruth flag;
   MPI_Comm   comm,ycomm;
-  PetscTruth ixblock,iyblock,iystride;
+  PetscTruth ixblock,iyblock,iystride,islocal;
   IS         tix = 0,tiy = 0;
 
   PetscFunctionBegin;
@@ -775,6 +775,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ierr = OptionsHasName(PETSC_NULL,"-vecscatter_merge",&ctx->beginandendtogether);CHKERRQ(ierr);
   if (ctx->beginandendtogether) {
     PLogInfo(ctx,"VecScatterCreate:Using combined (merged) vector scatter begin and end\n");
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-vecscatter_packtogether",&ctx->packtogether);CHKERRQ(ierr);
+  if (ctx->packtogether) {
+    PLogInfo(ctx,"VecScatterCreate:Pack all messages before sending\n");
   }
 
   ierr = VecGetLocalSize(xin,&ctx->from_n);CHKERRQ(ierr);
@@ -1008,7 +1012,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   /* ===========================================================================================================
         Check for special cases
      ==========================================================================================================*/
-    islocal = 0;
+    islocal = PETSC_FALSE;
     /* special case extracting (subset of) local portion */ 
     if (ix->type == IS_STRIDE && iy->type == IS_STRIDE){
       int                   nx,ny,to_first,to_step,from_first,from_step;
@@ -1021,7 +1025,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr); 
       ierr = ISStrideGetInfo(iy,&to_first,&to_step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-      if (ix->min >= start && ix->max < end) islocal = 1; else islocal = 0;
+      if (ix->min >= start && ix->max < end) islocal = PETSC_TRUE; else islocal = PETSC_FALSE;
       ierr = MPI_Allreduce(&islocal,&cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
       if (cando) {
         to12                = PetscNew(VecScatter_Seq_Stride);CHKPTRQ(to12);
@@ -1220,7 +1224,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         Check for special cases
      ==========================================================================================================*/
     /* special case local copy portion */ 
-    islocal = 0;
+    islocal = PETSC_FALSE;
     if (ix->type == IS_STRIDE && iy->type == IS_STRIDE){
       int                   nx,ny,to_first,to_step,from_step,start,end,from_first;
       VecScatter_Seq_Stride *from,*to;
@@ -1231,7 +1235,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr); 
       ierr = ISStrideGetInfo(iy,&to_first,&to_step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-      if (iy->min >= start && iy->max < end) islocal = 1; else islocal = 0;
+      if (iy->min >= start && iy->max < end) islocal = PETSC_TRUE; else islocal = PETSC_FALSE;
       ierr = MPI_Allreduce(&islocal,&cando,1,MPI_INT,MPI_LAND,yin->comm);CHKERRQ(ierr);
       if (cando) {
         to                = PetscNew(VecScatter_Seq_Stride);CHKPTRQ(to);

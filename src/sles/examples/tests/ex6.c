@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.64 2000/09/28 21:13:39 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.65 2000/10/24 20:26:51 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -22,7 +22,7 @@ int main(int argc,char **args)
   SLES       sles;
   char       file[128];
   Viewer     fd;
-  PetscTruth table,flg,set;
+  PetscTruth table,flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

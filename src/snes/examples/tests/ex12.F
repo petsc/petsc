@@ -1,5 +1,5 @@
 !
-!    "$Id: ex12.F,v 1.56 2000/09/26 23:20:16 balay Exp bsmith $";
+!    "$Id: ex12.F,v 1.57 2000/09/27 20:10:20 bsmith Exp bsmith $";
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
 !  
@@ -68,7 +68,7 @@
       call MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N, &
      &     N,3,PETSC_NULL_INTEGER,0,PETSC_NULL_INTEGER,J,ierr)
 
-      call MatGetType(J,PETSC_NULL_OBJECT,matrixname,ierr)
+      call MatGetType(J,matrixname,ierr)
 
 ! Store right-hand-side of PDE and exact solution
       call VecGetOwnershipRange(x,start,end,ierr)

@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.144 2000/09/28 21:10:58 bsmith Exp bsmith $*/
+/*$Id: mpidense.c,v 1.145 2000/10/24 20:25:30 bsmith Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -269,7 +269,7 @@ int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIDense   *l = (Mat_MPIDense*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
-  int            *procs,*nprocs,j,found,idx,nsends,*work;
+  int            *procs,*nprocs,j,idx,nsends,*work;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
   int            *lens,imdex,*lrows,*values;
@@ -277,6 +277,7 @@ int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
   IS             istmp;
+  PetscTruth     found;
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
@@ -289,10 +290,10 @@ int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
   owner  = (int*)PetscMalloc((N+1)*sizeof(int));CHKPTRQ(owner); /* see note*/
   for (i=0; i<N; i++) {
     idx = rows[i];
-    found = 0;
+    found = PETSC_FALSE;
     for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
+        nprocs[j]++; procs[j] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
     if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Index out of range");

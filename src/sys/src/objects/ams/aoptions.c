@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.22 2000/09/22 20:42:29 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.23 2000/09/28 21:09:19 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -104,7 +104,7 @@ int OptionsEnd_Private(void)
     ierr = AMS_Memory_lock(amspub.amem,0);CHKERRQ(ierr);
     ierr = AMS_Memory_take_access(amspub.amem);CHKERRQ(ierr);
 
-    /* reset counter to -1; this updates the screen with the new options for the selected method */
+    /* reset counter to -2; this updates the screen with the new options for the selected method */
     if (amspub.changedmethod) OptionsPublishCount = -2; 
 
     /*

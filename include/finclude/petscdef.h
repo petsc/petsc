@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.22 2000/09/25 17:51:38 balay Exp bsmith $;
+!  $Id: petscdef.h,v 1.23 2000/10/04 14:34:15 bsmith Exp bsmith $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -15,9 +15,9 @@
 !
 #define MPI_Comm integer
 !
-#define PetscTruth integer
+#define PetscTruth    integer
 #define PetscDataType integer
-#define PetscFPTrap integer
+#define PetscFPTrap   integer
 !
 !
 ! The real*8,complex*16 notatiton is used so that the 
@@ -29,29 +29,29 @@
 !
 
 #if (PETSC_SIZEOF_VOIDP == 8)
-#define PetscOffset integer*8
+#define PetscOffset      integer*8
 #define PetscFortranAddr integer*8
-#elif defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_SOLARISF90_OLD)
-#define PetscOffset integer
+#elif defined (PETSC_MISSING_FORTRANSTAR)
+#define PetscOffset      integer
 #define PetscFortranAddr integer
 #else
-#define PetscOffset integer*4
+#define PetscOffset      integer*4
 #define PetscFortranAddr integer*4
 #endif
 
 #if (PETSC_SIZEOF_INT == 8)
 #define PetscFortranInt integer*8
-#elif defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_SOLARISF90_OLD)
+#elif defined (PETSC_MISSING_FORTRANSTAR)
 #define PetscFortranInt integer
 #else
 #define PetscFortranInt integer*4
 #endif
 
-#if defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_SOLARISF90_OLD)
-#define PetscFortranDouble double precision
+#if defined (PETSC_MISSING_FORTRANSTAR)
+#define PetscFortranDouble  double precision
 #define PetscFortranComplex complex (KIND=SELECTED_REAL_KIND(14))
 #else
-#define PetscFortranDouble real*8
+#define PetscFortranDouble  real*8
 #define PetscFortranComplex complex*16
 #endif
 
@@ -68,19 +68,19 @@
 !
 ! F90 uses real(), conjg() when KIND parameter is used.
 !
-#if defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_IRIXF90) || defined (PARCH_freebsd)
+#if defined (PETSC_MISSING_DREAL)
 #define PetscRealPart(a) real(a)
-#define PetscConj(a) conjg(a)
+#define PetscConj(a)     conjg(a)
 #else
 #define PetscRealPart(a) dreal(a)
-#define PetscConj(a) dconjg(a)
+#define PetscConj(a)     dconjg(a)
 #endif
-#define MPIU_SCALAR MPI_DOUBLE_COMPLEX
+#define MPIU_SCALAR      MPI_DOUBLE_COMPLEX
 #else
-#define Scalar PetscFortranDouble
+#define Scalar           PetscFortranDouble
 #define PetscRealPart(a) a
-#define PetscConj(a) a
-#define MPIU_SCALAR MPI_DOUBLE_PRECISION
+#define PetscConj(a)     a
+#define MPIU_SCALAR      MPI_DOUBLE_PRECISION
 #endif
 !
 !    Allows the matrix Fortran Kernels to work with single precision

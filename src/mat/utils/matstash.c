@@ -1,4 +1,4 @@
-/*$Id: matstash.c,v 1.44 2000/04/26 22:27:35 balay Exp bsmith $*/
+/*$Id: matstash.c,v 1.45 2000/07/10 03:39:59 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"
 
@@ -544,8 +544,9 @@ int MatStashScatterBegin_Private(MatStash *stash,int *owners)
 #define __FUNC__ /*<a name=""></a>*/"MatStashScatterGetMesg_Private"
 int MatStashScatterGetMesg_Private(MatStash *stash,int *nvals,int **rows,int** cols,MatScalar **vals,int *flg)
 {
-  int         i,ierr,size=stash->size,*flg_v,*flg_i,i1,i2,*rindices,match_found=0,bs2;
+  int         i,ierr,size=stash->size,*flg_v,*flg_i,i1,i2,*rindices,bs2;
   MPI_Status  recv_status;
+  PetscTruth  match_found;
 
   PetscFunctionBegin;
 
@@ -581,7 +582,7 @@ int MatStashScatterGetMesg_Private(MatStash *stash,int *nvals,int **rows,int** c
       *vals       = stash->rvalues + i1*bs2*stash->rmax;
       *flg        = 1;
       stash->nprocessed ++;
-      match_found = 1;
+      match_found = PETSC_TRUE;
     }
   }
   PetscFunctionReturn(0);

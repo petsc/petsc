@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.13 2000/03/25 00:12:13 balay Exp balay $ 
+# $Id: base_variables,v 1.14 2000/04/20 16:06:56 balay Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -13,7 +13,7 @@ SED		   = /bin/sed
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = cc -64 -woff 1164 -woff 1048
-C_FC		   = f90 -cpp -64 -DPETSC_HAVE_IRIXF90
+C_FC		   = f90 -cpp -64 -DPETSC_HAVE_IRIXF90 -DPETSC_MISSING_DREAL
 C_CLINKER_SLFLAG   = -rpath
 C_FLINKER_SLFLAG   = -rpath
 C_CLINKER	   = cc  -64 -Wl,-woff,84,-woff,85,-woff,134
@@ -30,7 +30,7 @@ O_FOPTFLAGS	   = -O3
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = CC -64 -woff 1164 -woff 1048
-CXX_FC		   = f90 -cpp -64 -DPETSC_HAVE_IRIXF90
+CXX_FC		   = f90 -cpp -64 -DPETSC_HAVE_IRIXF90 -DPETSC_MISSING_DREAL
 CXX_CLINKER_SLFLAG = -rpath
 CXX_FLINKER_SLFLAG = -rpath
 CXX_CLINKER	   = CC -64 -Wl,-woff,84,-woff,85,-woff,134

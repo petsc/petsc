@@ -1,4 +1,4 @@
-/*$Id: ghome.c,v 1.35 2000/09/22 20:42:19 bsmith Exp bsmith $*/
+/*$Id: ghome.c,v 1.36 2000/10/24 20:24:33 bsmith Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -65,10 +65,12 @@ int PetscGetHomeDirectory(char dir[],int maxlen)
 #if defined(PARCH_win32) || defined(PARCH_win32_gnu)
   if (!d1) d1 ="c:";
   ierr = PetscStrncpy(dir,d1,maxlen);CHKERRQ(ierr);
-#else
+#elif !defined(PETSC_MISSING_GETPWUID)
   pw = getpwuid(getuid());
-  if (!pw)  PetscFunctionReturn(0);
+  if (!pw)  {dir[0] = 0; PetscFunctionReturn(0);}
   ierr = PetscStrncpy(dir,pw->pw_dir,maxlen);CHKERRQ(ierr);
+#else 
+  dir[0] = 0;
 #endif
   PetscFunctionReturn(0);
 }

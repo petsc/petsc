@@ -1,4 +1,4 @@
-/*$Id: pcregis.c,v 1.59 2000/08/24 22:42:28 bsmith Exp curfman $*/
+/*$Id: pcregis.c,v 1.60 2000/11/22 23:01:10 bsmith Exp bsmith $*/
 
 #include "src/sles/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
 
@@ -21,6 +21,9 @@ EXTERN int PCCreate_NN(PC);
 EXTERN int PCCreate_Cholesky(PC);
 #if defined(PETSC_HAVE_SPAI)
 EXTERN int PCCreate_SPAI(PC);
+#endif
+#if defined(PETSC_HAVE_RAMG)
+EXTERN int PCCreate_RAMG(PC);
 #endif
 EXTERN int PCCreate_mILU(PC);
 EXTERN_C_END
@@ -67,7 +70,10 @@ int PCRegisterAll(char *path)
 #if defined(PETSC_HAVE_SPAI)
   ierr = PCRegisterDynamic(PCSPAI         ,path,"PCCreate_SPAI",PCCreate_SPAI);CHKERRQ(ierr);
 #endif
-  ierr = PCRegisterDynamic(PCMILU          ,path,"PCCreate_mILU",PCCreate_mILU);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_RAMG)
+  ierr = PCRegisterDynamic(PCRAMG         ,path,"PCCreate_RAMG",PCCreate_RAMG);CHKERRQ(ierr);
+#endif
+  ierr = PCRegisterDynamic(PCMILU         ,path,"PCCreate_mILU",PCCreate_mILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.32 2000/05/05 18:28:31 bsmith Exp balay $"
+"$Id: petscconf.h,v 1.33 2000/09/07 02:46:35 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -54,5 +54,10 @@
 
 #define PETSC_HAVE_F90_H "f90impl/f90_IRIX.h"
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_IRIX.c"
+
+#if defined(__cplusplus)
+#define PETSC_SIGNAL_CAST (void (*)(int))
+#endif
+#define PETSC_HAVE_IRIX_STYLE_FPTRAP
 
 #endif

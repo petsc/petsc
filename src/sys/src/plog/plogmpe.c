@@ -1,4 +1,4 @@
-/*$Id: plogmpe.c,v 1.52 2000/05/05 22:14:18 balay Exp bsmith $*/
+/*$Id: plogmpe.c,v 1.53 2000/09/22 20:42:37 bsmith Exp bsmith $*/
 /*
       PETSc code to log PETSc events using MPE
 */
@@ -283,8 +283,8 @@ int PLogEventColorMalloced[] = {0,0,0,0,0,0,0,0,0,0,
                                 0,0,0,0,0,0,0,0,0,0,
                                 0,0,0,0,0,0,0,0,0,0};
 
-int UseMPE = 0;
-int PetscBeganMPE = 0;
+PetscTruth UseMPE = PETSC_FALSE;
+PetscTruth PetscBeganMPE = PETSC_FALSE;
 extern char *PLogEventName[];
 
 #undef __FUNC__  
@@ -323,7 +323,7 @@ int PLogMPEBegin(void)
   if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.2 and higher */
     PLogInfo(0,"PLogMPEBegin: Initializing MPE.\n");
     ierr = MPE_Init_log();CHKERRQ(ierr);
-    PetscBeganMPE = 1;
+    PetscBeganMPE = PETSC_TRUE;
   } else {
     PLogInfo(0,"PLogMPEBegin: MPE already initialized. Not attempting to reinitialize.\n");
   }
@@ -334,7 +334,7 @@ int PLogMPEBegin(void)
   } else {
     PLogInfo(0,"PLogMPEBegin: Initializing MPE.\n");
     ierr = MPE_Init_log();CHKERRQ(ierr);
-    PetscBeganMPE = 1;
+    PetscBeganMPE = PETSC_TRUE;
   }
 #endif
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -345,7 +345,7 @@ int PLogMPEBegin(void)
       }
     }
   }
-  UseMPE = 1;
+  UseMPE = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -430,7 +430,7 @@ int PLogMPEDump(const char sname[])
   int  ierr;
 
   PetscFunctionBegin;
-  if (PetscBeganMPE == 1) {
+  if (PetscBeganMPE) {
     PLogInfo(0,"PLogMPEDump: Finalizing MPE.\n");
     if (sname) { ierr = PetscStrcpy(name,sname);CHKERRQ(ierr);}
     else { ierr = PetscGetProgramName(name,256);CHKERRQ(ierr);}

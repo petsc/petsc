@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.37 2000/05/05 22:18:59 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.38 2000/10/24 20:27:27 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -190,11 +190,11 @@ int main(int argc,char **argv)
     ierr = PetscTypeCompare((PetscObject)ts,"euler",&iseuler);CHKERRA(ierr);
     if (iseuler) {
       if (!PETSC_NEAR(appctx.norm_2/steps,0.00257244,1.e-4)) {
-        fprintf(stderr,"Error in Euler method: 2-norm %g expecting: 0.00257244\n",appctx.norm_2/steps);
+        fprintf(stdout,"Error in Euler method: 2-norm %g expecting: 0.00257244\n",appctx.norm_2/steps);
       }
     } else {
       if (!PETSC_NEAR(appctx.norm_2/steps,0.00506174,1.e-4)) {
-        fprintf(stderr,"Error in %s method: 2-norm %g expecting: 0.00506174\n",tsinfo,appctx.norm_2/steps);
+        fprintf(stdout,"Error in %s method: 2-norm %g expecting: 0.00506174\n",tsinfo,appctx.norm_2/steps);
       }
     }
   } else {

@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.21 2000/11/02 17:16:48 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.22 2000/11/02 20:46:18 bsmith Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -383,6 +383,11 @@ EXTERN_C_END
 { \
   msgemvt_(&bs,&ncols,A,x,z);\
 }
+
+/* These do not work yet */
+#define Kernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C) 
+#define  Kernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w) 
+
 
 #endif
 

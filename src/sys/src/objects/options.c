@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.239 2000/09/28 21:09:12 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.240 2000/10/24 20:24:36 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -24,12 +24,12 @@
 #define MAXALIASES 25
 
 typedef struct {
-  int  N,argc,Naliases;
-  char **args,*names[MAXOPTIONS],*values[MAXOPTIONS];
-  char *aliases1[MAXALIASES],*aliases2[MAXALIASES];
-  int  used[MAXOPTIONS];
-  int  namegiven;
-  char programname[256]; /* HP includes entire path in name */
+  int        N,argc,Naliases;
+  char       **args,*names[MAXOPTIONS],*values[MAXOPTIONS];
+  char       *aliases1[MAXALIASES],*aliases2[MAXALIASES];
+  int        used[MAXOPTIONS];
+  PetscTruth namegiven;
+  char       programname[256]; /* HP includes entire path in name */
 } OptionsTable;
 
 static OptionsTable *options = 0;
@@ -147,7 +147,7 @@ int PetscSetProgramName(const char name[])
   int  ierr;
 
   PetscFunctionBegin;
-  options->namegiven = 1;
+  options->namegiven = PETSC_TRUE;
   /* Now strip away the path, if absulute path is specified */
   ierr = PetscStrrchr(name,'/',&sname);CHKERRQ(ierr);
   ierr  = PetscStrncpy(options->programname,sname,256);CHKERRQ(ierr);
@@ -1260,6 +1260,6 @@ int OptionsCreate(void)
   PetscFunctionBegin;
   options = (OptionsTable*) malloc(sizeof(OptionsTable));CHKPTRQ(options);
   ierr = PetscMemzero(options->used,MAXOPTIONS*sizeof(int));CHKERRQ(ierr);
-  options->namegiven = 0;
+  options->namegiven = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

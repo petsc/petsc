@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.10 2000/10/24 20:24:39 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.11 2000/11/19 00:44:24 bsmith Exp bsmith $ 
 
 #requirespackage  'PETSC_HAVE_JAVA'
 
@@ -32,25 +32,25 @@ PETScRun:
 	-@${RM} *.class
 
 PETScView:
-	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScView.java
-	-@mv PETScView*.class AMSBean
+	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScView.java PutAMSACC.java
+	-@mv PETScView*.class PutAMSACC*.class AMSBean
 	-@cd AMSBean; jar cf PETScView.jar *
 	-@mv -f AMSBean/PETScView.jar ../../../../../../bin
 	-@cp -f PETScView.html ../../../../../../bin
 	-@${RM} AMSBean/*.class
 
 PETScRund:
-	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScRund.java PumpStream.java Servers.java
-	-@jar cf PETScRund.jar PETScRund*.class PumpStream*.class Servers*.class
+	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScRund.java PumpStream.java
+	-@jar cf PETScRund.jar PETScRund*.class PumpStream*.class
 	-@mv -f PETScRund.jar ../../../../../../bin
 	-@${RM} *.class
 
-AMSPETScOptions:
-	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} AMSPETScOptions.java
-	-@mv AMSPETScOptions*.class AMSBean
-	-@cd AMSBean; jar cf AMSPETScOptions.jar *
-	-@mv -f AMSBean/AMSPETScOptions.jar ../../../../../../bin
-	-@cp -f AMSPETScOptions.html ../../../../../../bin
+PETScOptions:
+	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScOptions.java  PutAMSACC.java
+	-@mv PETScOptions*.class PutAMSACC*.class AMSBean
+	-@cd AMSBean; jar cf PETScOptions.jar *
+	-@mv -f AMSBean/PETScOptions.jar ../../../../../../bin
+	-@cp -f PETScOptions.html ../../../../../../bin
 	-@${RM} AMSBean/*.class
 
 runPETScRun:

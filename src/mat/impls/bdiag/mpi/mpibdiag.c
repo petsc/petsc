@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.191 2000/10/24 20:25:50 bsmith Exp bsmith $*/
+/*$Id: mpibdiag.c,v 1.192 2000/10/30 17:03:36 bsmith Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -191,7 +191,7 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIBDiag   *l = (Mat_MPIBDiag*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
-  int            *procs,*nprocs,j,found,idx,nsends,*work;
+  int            *procs,*nprocs,j,idx,nsends,*work;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
   int            *lens,imdex,*lrows,*values;
@@ -199,6 +199,7 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
   IS             istmp;
+  PetscTruth     found;
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
@@ -211,10 +212,10 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   owner  = (int*)PetscMalloc((N+1)*sizeof(int));CHKPTRQ(owner); /* see note*/
   for (i=0; i<N; i++) {
     idx = rows[i];
-    found = 0;
+    found = PETSC_FALSE;
     for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
+        nprocs[j]++; procs[j] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
     if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"row out of range");

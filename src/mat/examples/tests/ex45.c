@@ -1,4 +1,4 @@
-/*$Id: ex45.c,v 1.7 2000/01/11 21:01:03 bsmith Exp bsmith $*/
+/*$Id: ex45.c,v 1.8 2000/05/10 16:41:02 bsmith Exp bsmith $*/
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -45,7 +45,7 @@ void Store2DArray(int m,int n,double *a,char *filename,int *fdd)
   if (!fd) {
     fd = creat(filename,0666); 
     if (fd == -1) {
-      fprintf(stderr,"Unable to open binary file\n");
+      fprintf(stdout,"Unable to open binary file\n");
       exit(0);
     }
     *fdd = fd;
@@ -60,7 +60,7 @@ void Store2DArray(int m,int n,double *a,char *filename,int *fdd)
    */
   vals = (double*)malloc(m*n*sizeof(double));
   if (!vals) {
-    fprintf(stderr,"Out of memory ");
+    fprintf(stdout,"Out of memory ");
     exit(0);
   }
   for (i=0; i<m; i++) {
@@ -84,7 +84,7 @@ void Store1DArray(int m,double *a,char *filename,int *fdd)
   if (fd == -1) {
     fd = creat(filename,0666); 
     if (fd == -1) {
-      fprintf(stderr,"Unable to open binary file\n");
+      fprintf(stdout,"Unable to open binary file\n");
       exit(0);
     }
     *fdd = fd;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.10 2000/09/28 21:10:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.11 2000/10/24 20:25:24 bsmith Exp bsmith $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -47,21 +47,35 @@ int MatSetType(Mat mat,MatType matype)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
 
   ierr = PetscTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
-  if (sametype) PetscFunctionReturn(0);
+  if (!sametype) {
 
-  /* Get the function pointers for the matrix requested */
-  if (!MatRegisterAllCalled) {ierr = MatRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+    /* Get the function pointers for the matrix requested */
+    if (!MatRegisterAllCalled) {ierr = MatRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+    ierr =  FListFind(mat->comm,MatList,matype,(int(**)(void*))&r);CHKERRQ(ierr);
+    if (!r) SETERRQ1(1,"Unknown Mat type given: %s",matype);
 
-  ierr =  FListFind(mat->comm,MatList,matype,(int(**)(void*))&r);CHKERRQ(ierr);
+    /* free the old data structure if it existed */
+    if (mat->ops->destroy) {
+      ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
+    }
+    if (mat->rmap) {
+      ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
+      mat->rmap = 0;
+    }
+    if (mat->cmap) {
+      ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
+      mat->cmap = 0;
+    }
 
-  if (!r) SETERRQ1(1,"Unknown Mat type given: %s",matype);
+    /* create the new data structure */
+    ierr = (*r)(mat);CHKERRQ(ierr);
 
-  mat->data        = 0;
-  ierr = (*r)(mat);CHKERRQ(ierr);
-
-  ierr = PetscObjectChangeTypeName((PetscObject)mat,matype);CHKERRQ(ierr);
+    ierr = PetscObjectChangeTypeName((PetscObject)mat,matype);CHKERRQ(ierr);
+  }
+  ierr = PetscPublishAll(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNC__  
 #define __FUNC__ "MatRegisterDestroy"

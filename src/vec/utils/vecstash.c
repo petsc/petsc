@@ -1,4 +1,4 @@
-/*$Id: vecstash.c,v 1.22 2000/06/15 14:55:41 bsmith Exp bsmith $*/
+/*$Id: vecstash.c,v 1.23 2000/07/10 03:39:13 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"
 
@@ -365,8 +365,9 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
 int VecStashScatterGetMesg_Private(VecStash *stash,int *nvals,int **rows,Scalar **vals,int *flg)
 {
   int         i,ierr,size=stash->size,*flg_v,*flg_i;
-  int         i1,i2,*rindices,match_found=0,bs=stash->bs;
+  int         i1,i2,*rindices,bs=stash->bs;
   MPI_Status  recv_status;
+  PetscTruth  match_found = PETSC_FALSE;
 
   PetscFunctionBegin;
 
@@ -399,7 +400,7 @@ int VecStashScatterGetMesg_Private(VecStash *stash,int *nvals,int **rows,Scalar 
       *vals       = stash->rvalues + i1*bs*stash->rmax;
       *flg        = 1;
       stash->nprocessed ++;
-      match_found = 1;
+      match_found = PETSC_TRUE;
     }
   }
   PetscFunctionReturn(0);

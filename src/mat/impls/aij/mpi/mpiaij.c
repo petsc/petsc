@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.321 2000/09/28 21:11:06 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.322 2000/10/24 20:25:36 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -422,7 +422,7 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIAIJ     *l = (Mat_MPIAIJ*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
-  int            *procs,*nprocs,j,found,idx,nsends,*work,row;
+  int            *procs,*nprocs,j,idx,nsends,*work,row;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
   int            *lens,imdex,*lrows,*values,rstart=l->rstart;
@@ -430,6 +430,7 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
   IS             istmp;
+  PetscTruth     found;
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
@@ -442,10 +443,10 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   owner  = (int*)PetscMalloc((N+1)*sizeof(int));CHKPTRQ(owner); /* see note*/
   for (i=0; i<N; i++) {
     idx = rows[i];
-    found = 0;
+    found = PETSC_FALSE;
     for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
+        nprocs[j]++; procs[j] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
     if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Index out of range");
@@ -1717,7 +1718,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   rend   = rowners[rank+1]; 
 
   /* distribute row lengths to all processors */
-  ourlens = (int*)PetscMalloc(2*(rend-rstart)*sizeof(int));CHKPTRQ(ourlens);
+  ourlens = (int*)PetscMalloc(2*(rend-rstart+1)*sizeof(int));CHKPTRQ(ourlens);
   offlens = ourlens + (rend-rstart);
   if (!rank) {
     rowlengths = (int*)PetscMalloc(M*sizeof(int));CHKPTRQ(rowlengths);
@@ -1766,7 +1767,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
     for (i=0; i<m; i++) {
       nz += ourlens[i];
     }
-    mycols = (int*)PetscMalloc(nz*sizeof(int));CHKPTRQ(mycols);
+    mycols = (int*)PetscMalloc((nz+1)*sizeof(int));CHKPTRQ(mycols);
 
     /* receive message of column indices*/
     ierr = MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);CHKERRQ(ierr);
@@ -1833,7 +1834,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
     ierr = PetscFree(procsnz);CHKERRQ(ierr);
   } else {
     /* receive numeric values */
-    vals = (Scalar*)PetscMalloc(nz*sizeof(Scalar));CHKPTRQ(vals);
+    vals = (Scalar*)PetscMalloc((nz+1)*sizeof(Scalar));CHKPTRQ(vals);
 
     /* receive message of values*/
     ierr = MPI_Recv(vals,nz,MPIU_SCALAR,0,A->tag,comm,&status);CHKERRQ(ierr);

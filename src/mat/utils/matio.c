@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.72 2000/09/28 21:12:12 bsmith Exp bsmith $*/
+/*$Id: matio.c,v 1.73 2000/10/24 20:26:14 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -49,6 +49,8 @@ static int MatLoadPrintHelp_Private(Mat A)
   PetscFunctionBegin;
   if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
   ierr = (*PetscHelpPrintf)(comm," Options for MatLoad:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_type <type>\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -matload_type <type>\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -matload_block_size <block_size> :Used for MATBAIJ, MATBDIAG\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -matload_bdiag_diags <s1,s2,s3,...> : Used for MATBDIAG\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -161,11 +163,15 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
     SETERRQ(PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with ViewerBinaryOpen()");
   }
 
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    outtype = mtype;
+  }
   ierr = OptionsGetString(PETSC_NULL,"-matload_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     outtype = mtype;
   }
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   if (!outtype) outtype = MATMPIAIJ;
   ierr =  FListFind(comm,MatLoadList,outtype,(int(**)(void*))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unknown Mat type given: %s",outtype);

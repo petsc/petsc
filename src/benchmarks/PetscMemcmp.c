@@ -1,4 +1,4 @@
-/*$Id: PetscMemcmp.c,v 1.12 1999/10/24 14:04:16 bsmith Exp bsmith $*/
+/*$Id: PetscMemcmp.c,v 1.13 2000/01/11 21:03:44 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -44,9 +44,9 @@ int main(int argc,char **argv)
   PetscMemcmp(A,B,sizeof(Scalar)*0);
   ierr = PetscGetTime(&z);CHKERRA(ierr);
 
-  fprintf(stderr,"%s : \n","PetscMemcmp");
-  fprintf(stderr,"    %-11s : %e sec\n","Latency",(z-y)/10.0);
-  fprintf(stderr,"    %-11s : %e sec\n","Per Scalar",(2*y-x-z)/100000);
+  fprintf(stdout,"%s : \n","PetscMemcmp");
+  fprintf(stdout,"    %-11s : %e sec\n","Latency",(z-y)/10.0);
+  fprintf(stdout,"    %-11s : %e sec\n","Per Scalar",(2*y-x-z)/100000);
 
   PetscFinalize();
   PetscFunctionReturn(0);

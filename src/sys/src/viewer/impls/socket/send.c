@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.115 2000/09/28 21:08:02 bsmith Exp bsmith $ */
+/* $Id: send.c,v 1.116 2000/10/24 20:24:13 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -42,9 +42,6 @@ typedef unsigned long   u_long;
 #include "petscfix.h"
 
 EXTERN_C_BEGIN
-#if defined(PETSC_NEED_SETSOCKETOPT_PROTO)
-extern int setsockopt(int,int,int,char*,int);
-#endif
 #if defined(PETSC_NEED_CLOSE_PROTO)
 extern int close(int);
 #endif
@@ -83,6 +80,10 @@ static int ViewerDestroy_Socket(Viewer viewer)
 #define __FUNC__ /*<a name="SOCKCall_Private"></a>*/"SOCKCall_Private" 
 int SOCKCall_Private(char *hostname,int portnum,int *t)
 {
+#if defined(PETSC_MISSING_SOCKETS)
+  SETERRQ(1,"This system does not support Unix tcp/ip");
+  PetscFunctionReturn(0);
+#else
   struct sockaddr_in sa;
   struct hostent     *hp;
   int                s = 0,ierr;
@@ -127,6 +128,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
   }
   *t = s;
   PetscFunctionReturn(0);
+#endif
 }
 
 #undef __FUNC__  

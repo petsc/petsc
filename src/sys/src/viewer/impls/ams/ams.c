@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.41 2000/09/28 21:08:15 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.42 2000/09/28 22:52:56 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -48,7 +48,7 @@ int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
     ierr = OptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg2);CHKERRQ(ierr);
     if (flg2) {
       char dir[256];
-#if defined(PARCH_solaris)
+#if defined(PETSC_HAVE_UCBPS)
       char buf[1024],*found;
       FILE *fp;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.20 2000/05/04 19:01:35 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.21 2000/05/05 18:28:31 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -50,4 +50,6 @@
 #define PETSC_HAVE_SLEEP_RETURNS_EARLY
 #define PETSC_USE_KBYTES_FOR_SIZE
 #define PETSC_USE_A_FOR_DEBUGGER
+
+#define PETSC_HAVE_RS6000_STYLE_FPTRAP
 #endif

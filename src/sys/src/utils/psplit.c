@@ -1,6 +1,52 @@
-/*$Id: psplit.c,v 1.11 2000/08/01 20:00:58 bsmith Exp bsmith $*/
+/*$Id: psplit.c,v 1.12 2000/09/28 21:09:22 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I    "petsc.h" I*/
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PetscSplitOwnershipBlock"
+/*@C
+    PetscSplitOwnershipBlock - Given a global (or local) length determines a local 
+        (or global) length via a simple formula. Splits so each processors local size
+        is divisible by the block size.
+
+   Collective on MPI_Comm (if N is PETSC_DECIDE)
+
+   Input Parameters:
++    comm - MPI communicator that shares the object being divided
+.    bs - block size
+.    n - local length (or PETSC_DECIDE to have it set)
+-    N - global length (or PETSC_DECIDE)
+
+  Level: developer
+
+   Notes:
+     n and N cannot be both PETSC_DECIDE
+
+     If one processor calls this with N of PETSC_DECIDE then all processors
+     must, otherwise the program will hang.
+
+.seealso: PetscSplitOwnership()
+
+@*/
+int PetscSplitOwnershipBlock(MPI_Comm comm,int bs,int *n,int *N)
+{
+  int ierr,size,rank;
+
+  PetscFunctionBegin;
+  if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(1,"Both n and N cannot be PETSC_DECIDE");
+
+  if (*N == PETSC_DECIDE) { 
+    if (*n % bs != 0) SETERRQ2(1,"local size %d not divisible by block size %d",*n,bs);
+    ierr = MPI_Allreduce(n,N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  } else if (*n == PETSC_DECIDE) { 
+    int Nbs = *N/bs;
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
+    *n = bs*(Nbs/size + ((Nbs % size) > rank));
+  }
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PetscSplitOwnership"
@@ -23,6 +69,8 @@
      If one processor calls this with N of PETSC_DECIDE then all processors
      must, otherwise the program will hang.
 
+.seealso: PetscSplitOwnershipBlock()
+
 @*/
 int PetscSplitOwnership(MPI_Comm comm,int *n,int *N)
 {
@@ -38,16 +86,6 @@ int PetscSplitOwnership(MPI_Comm comm,int *n,int *N)
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
     *n = *N/size + ((*N % size) > rank);
   }
-#if defined(old_test)
-  else {
-    int tmp;
-    ierr = MPI_Allreduce(n,&tmp,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    if (tmp != *N) {
-      SETERRQ2(1,"Global length %d not equal sum of local lengths %d",*N,tmp);
-    }
-  }
-#endif
-
   PetscFunctionReturn(0);
 }
 

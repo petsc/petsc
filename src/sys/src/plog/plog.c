@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.248 2000/10/03 21:19:03 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.249 2000/11/07 21:48:01 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -22,14 +22,14 @@
 
 /*
     The next three variables determine which, if any, PLogInfo() calls are used.
-  If PLogPrintInfo is zero, no info messages are printed. 
-  IF PLogPrintInfoNull is zero, no info messages associated with a null object are printed.
+  If PLogPrintInfo is false, no info messages are printed. 
+  IF PLogPrintInfoNull is false, no info messages associated with a null object are printed.
 
   If PLogInfoFlags[OBJECT_COOKIE - PETSC_COOKIE] is zero, no messages related
   to that object are printed. OBJECT_COOKIE is, for example, MAT_COOKIE.
 */
-int  PLogPrintInfo = 0,PLogPrintInfoNull = 0;
-int  PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+PetscTruth PLogPrintInfo = PETSC_FALSE,PLogPrintInfoNull = PETSC_FALSE;
+int        PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1};
 FILE *PLogInfoFile;
@@ -63,8 +63,8 @@ int PLogInfoAllow(PetscTruth flag,char *filename)
   int  ierr,rank;
 
   PetscFunctionBegin;
-  PLogPrintInfo     = (int)flag;
-  PLogPrintInfoNull = (int)flag;
+  PLogPrintInfo     = flag;
+  PLogPrintInfoNull = flag;
   if (flag && filename) {
     ierr = PetscFixFilename(filename,fname);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -101,7 +101,7 @@ int PLogInfoDeactivateClass(int objclass)
   PetscFunctionBegin;
   
   if (!objclass) {
-    PLogPrintInfoNull = 0;
+    PLogPrintInfoNull = PETSC_FALSE;
     PetscFunctionReturn(0); 
   } 
   PLogInfoFlags[objclass - PETSC_COOKIE - 1] = 0;
@@ -132,7 +132,7 @@ int PLogInfoActivateClass(int objclass)
 {
   PetscFunctionBegin;
   if (!objclass) {
-    PLogPrintInfoNull = 1;
+    PLogPrintInfoNull = PETSC_FALSE;
   } else {
     PLogInfoFlags[objclass - PETSC_COOKIE - 1] = 1;
     if (objclass == SLES_COOKIE) {

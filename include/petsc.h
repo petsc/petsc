@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.277 2000/08/17 04:53:46 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.278 2000/09/06 23:01:11 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -298,6 +298,7 @@ EXTERN int PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **);
      Useful utility routines
 */
 EXTERN int PetscSplitOwnership(MPI_Comm,int*,int*);
+EXTERN int PetscSplitOwnershipBlock(MPI_Comm,int,int*,int*);
 EXTERN int PetscSequentialPhaseBegin(MPI_Comm,int);
 EXTERN int PetscSequentialPhaseEnd(MPI_Comm,int);
 EXTERN int PetscBarrier(PetscObject);
@@ -326,10 +327,7 @@ EXTERN int PetscMPIDump(FILE*);
 #if defined(PETSC_HAVE_AMS)
 
 extern PetscTruth PetscAMSPublishAll;
-#define PetscPublishAll(v) 0;\
-  { if (PetscAMSPublishAll) { \
-    int __ierr; __ierr = PetscObjectPublish((PetscObject)v);CHKERRQ(__ierr);\
-  }}
+#define PetscPublishAll(v) (PetscAMSPublishAll ? PetscObjectPublish((PetscObject)v) : 0)
 #define PetscObjectTakeAccess(obj)  ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amem))
 #define PetscObjectGrantAccess(obj) ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amem))
 #define PetscObjectDepublish(obj)   ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_destroy(((PetscObject)(obj))->amem)); \

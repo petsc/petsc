@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.147 2000/09/19 14:55:26 balay Exp bsmith $ */
+/* $Id: petsclog.h,v 1.148 2000/10/24 20:28:06 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -136,10 +136,10 @@
 extern PLogDouble _TotalFlops;
 
 /* General logging of information; different from event logging */
-EXTERN int PLogInfo(void*,const char[],...);
-EXTERN int PLogInfoDeactivateClass(int);
-EXTERN int PLogInfoActivateClass(int);
-extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
+EXTERN int        PLogInfo(void*,const char[],...);
+EXTERN int        PLogInfoDeactivateClass(int);
+EXTERN int        PLogInfoActivateClass(int);
+extern PetscTruth PLogPrintInfo;  /* if true, indicates PLogInfo() is turned on */
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
 
@@ -165,11 +165,12 @@ extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
 #if defined (PETSC_HAVE_MPE)
 #include "mpe.h"
 #define MPEBEGIN    1000 
-EXTERN int PLogMPEBegin(void);
-EXTERN int PLogMPEDump(const char[]);
-extern int UseMPE,PLogEventMPEFlags[];
-EXTERN int PLogEventMPEActivate(int);
-EXTERN int PLogEventMPEDeactivate(int);
+EXTERN int        PLogMPEBegin(void);
+EXTERN int        PLogMPEDump(const char[]);
+extern PetscTruth UseMPE;
+extern int        PLogEventMPEFlags[];
+EXTERN int        PLogEventMPEActivate(int);
+EXTERN int        PLogEventMPEDeactivate(int);
 #else
 #define PLogEventMPEActivate(a) 0
 #define PLogEventMPEDeactivate(a) 0

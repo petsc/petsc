@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.18 1999/11/24 21:52:17 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.19 2000/05/05 18:28:31 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -48,5 +48,7 @@
 #define PETSC_NEED_SETSOCKETOPT_PROTO
 #define PETSC_NEED_CONNECT_PROTO
 #define PETSC_NEED_SOCKET_PROTO
+
+#define PETSC_HAVE_SUN4_STYLE_FPTRAP
 
 #endif

@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.49 2000/11/07 20:31:04 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.50 2000/11/08 17:29:32 hzhang Exp bsmith $*/
 /*
     Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -228,6 +228,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
 
   PetscFunctionReturn(0); 
 }
+
 
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_N"

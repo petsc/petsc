@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.16 1999/11/24 21:52:17 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.17 2000/05/05 18:28:31 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -60,5 +60,7 @@
 
 #define PETSC_HAVE_TEMPLATED_COMPLEX
 #define PETSC_HAVE_TIMES
+
+#define PETSC_HAVE_UCBPS
 
 #endif

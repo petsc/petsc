@@ -1,4 +1,4 @@
-/*$Id: fp.c,v 1.72 2000/10/05 15:18:07 bsmith Exp bsmith $*/
+/*$Id: fp.c,v 1.73 2000/10/24 20:24:29 bsmith Exp bsmith $*/
 /*
 *	IEEE error handler for all machines. Since each machine has 
 *   enough slight differences we have completely separate codes for each one.
@@ -13,8 +13,8 @@
 #include "petscfix.h"
 
 
-/*----------------sun4 ---------------------------------------------------*/
-#if defined(PARCH_sun4) 
+/*--------------------------------------- ---------------------------------------------------*/
+#if defined(PETSC_HAVE_SUN4_STYLE_FPTRAP)
 #include <floatingpoint.h>
 
 EXTERN_C_BEGIN
@@ -41,7 +41,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
 
   PetscFunctionBegin;
   for (j = 0 ; error_codes[j].code_no ; j++) {
-    if (error_codes[j].code_no == code) err_ind = j ;
+    if (error_codes[j].code_no == code) err_ind = j;
   }
 
   if (err_ind >= 0) {
@@ -88,8 +88,7 @@ int PetscSetFPTrap(PetscFPTrap flag)
   char *out; 
 
   PetscFunctionBegin;
-  /* Clear accumulated exceptions.  Used to try and suppress
-	   meaningless messages from f77 programs */
+  /* Clear accumulated exceptions.  Used to suppress meaningless messages from f77 programs */
   (void) ieee_flags("clear","exception","all",&out);
   if (flag == PETSC_FP_TRAP_ON) {
     if (ieee_handler("set","common",PetscDefaultFPTrap)) {
@@ -107,8 +106,8 @@ int PetscSetFPTrap(PetscFPTrap flag)
   PetscFunctionReturn(0);
 }
 
-/* ------------------------ SOLARIS --------------------------------------*/
-#elif defined(PARCH_solaris) && defined(PETSC_HAVE_SUNMATH_H)
+/* -------------------------------------------------------------------------------------------*/
+#elif defined(PETSC_HAVE_SOLARIS_STYLE_FPTRAP)
 #include <sunmath.h>
 #include <floatingpoint.h>
 #include <siginfo.h>
@@ -133,7 +132,7 @@ void PetscDefaultFPTrap(int sig,siginfo_t *scp,ucontext_t *uap)
   PetscFunctionBegin;
   err_ind = -1 ;
   for (j = 0 ; error_codes[j].code_no ; j++) {
-    if (error_codes[j].code_no == code) err_ind = j ;
+    if (error_codes[j].code_no == code) err_ind = j;
   }
 
   if (err_ind >= 0) {
@@ -152,19 +151,12 @@ int PetscSetFPTrap(PetscFPTrap flag)
   char *out; 
 
   PetscFunctionBegin;
+  /* Clear accumulated exceptions.  Used to suppress meaningless messages from f77 programs */
   (void) ieee_flags("clear","exception","all",&out);
   if (flag == PETSC_FP_TRAP_ON) {
     if (ieee_handler("set","common",(sigfpe_handler_type)PetscDefaultFPTrap)) {
       (*PetscErrorPrintf)("Can't set floating point handler\n");
     }
-  
-    /*
-    sigfpe(FPE_FLTINV,PetscDefaultFPTrap);
-    sigfpe(FPE_FLTRES,PetscDefaultFPTrap);
-    sigfpe(FPE_FLTDIV,PetscDefaultFPTrap);
-    sigfpe(FPE_FLTUND,PetscDefaultFPTrap);
-    sigfpe(FPE_FLTOVF,PetscDefaultFPTrap); 
-    */
   } else {
     if (ieee_handler("clear","common",(sigfpe_handler_type)PetscDefaultFPTrap)) {
      (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
@@ -173,19 +165,9 @@ int PetscSetFPTrap(PetscFPTrap flag)
   PetscFunctionReturn(0);
 }
 
-/* ------------------------ IRIX64(old machines)-----------------------------*/
+/* ------------------------------------------------------------------------------------------*/
 
-#elif defined(HAVE_BROKEN_FP_SIG_HANDLER)
-#undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSetFPTrap"></a>*/"PetscSetFPTrap"
-int PetscSetFPTrap(int flag)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-/* ------------------------ IRIX --------------------------------------*/
-
-#elif defined (PARCH_IRIX5) || defined(PARCH_IRIX64) || defined (PARCH_IRIX)
+#elif defined (PETSC_HAVE_IRIX_STYPE_FPTRAP)
 #include <sigfpe.h>
 struct { int code_no; char *name; } error_codes[] = {
        { _INVALID   ,"IEEE operand error" },
@@ -204,7 +186,7 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
   code = exception[0];
   err_ind = -1 ;
   for (j = 0 ; error_codes[j].code_no ; j++){
-    if (error_codes[j].code_no == code) err_ind = j ;
+    if (error_codes[j].code_no == code) err_ind = j;
   }
   if (err_ind >= 0){
     (*PetscErrorPrintf)("*** %s occurred ***\n",error_codes[err_ind].name);
@@ -227,53 +209,10 @@ int PetscSetFPTrap(PetscFPTrap flag)
   }
   PetscFunctionReturn(0);
 }
-/* ------------------------Paragon-------------------------------------*/
-#elif defined(PARCH_paragon)
-/* 
-    You have to compile YOUR code with -Knoieee to catch divide-by-zero 
-*/
-
-#include <ieeefp.h>
-struct { int code_no; char *name; } error_codes[] = {
-       { FP_X_OFL    ,"floating point overflow" },
-       { FP_X_DZ     ,"floating point divide" },
-       { FP_X_INV    ,"invalid floating point operand" },
-       { 0           ,"unknown error" }
-} ;
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name="PetscDefaultFPTrap"></a>*/"PetscDefaultFPTrap"
-void PetscDefaultFPTrap(int sig)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,"floating point error");
-  PetscFunctionReturn(ierr);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSetFPTrap"></a>*/"PetscSetFPTrap"
-int PetscSetFPTrap(PetscFPTrap on)
-{
-  PetscFunctionBegin;
-  if (on == PETSC_FP_TRAP_ON) {
-    fpsetmask(FP_X_OFL | FP_X_DZ | FP_X_INV);
-    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) {
-      (*PetscErrorPrintf)("Can't set floatingpoint handler\n");
-    }
-  } else {
-    fpsetmask(0);
-    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) {
-      (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
-    }
-  }
-  PetscFunctionReturn(0);
-}
-/*--------------- IBM RS6000.----------------------------------------------*/
+/*----------------------------------------------- --------------------------------------------*/
 /* In "fast" mode, floating point traps are imprecise and ignored.
    This is the reason for the fptrap(FP_TRAP_SYNC) call */
-#elif defined(PARCH_rs6000) 
+#elif defined(PETSC_HAVE_RS6000_STYLE_FPTRAP) 
 struct sigcontext;
 #include <fpxcp.h>
 #include <fptrap.h>
@@ -311,7 +250,7 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
     
   err_ind = -1 ;
   for (j = 0 ; error_codes[j].code_no ; j++) {
-    if (error_codes[j].code_no == flt_context.trap) err_ind = j ;
+    if (error_codes[j].code_no == flt_context.trap) err_ind = j;
   }
 
   if (err_ind >= 0){
@@ -382,58 +321,6 @@ int PetscSetFPTrap(PetscFPTrap on)
   PetscFunctionReturn(0);
 }
 #endif
-
-/***************************************************************************
-  This code enables and clears "benign" underflows.  This is for code that
-  does NOT care how underflows are handled, just that they be handled "fast".
-  Note that for general-purpose code, this can be very, very dangerous.
-  But for many PDE calculations, it may even be provable that underflows
-  are benign.
-
-  Not all machines need worry or care about this, but for those that do,
-  we provide routines to change to/from a benign mode.
- ***************************************************************************/
-#if defined(PARCH_paragon)
-#undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSetBenignUnderflows"></a>*/"PetscSetBenignUnderflows"
-int PetscSetBenignUnderflows(void)
-{
-
-  PetscFunctionBegin;
-  /* This needs the following assembly-language program:
-  .globl     _set_fsr
-  .globl     _set_fsr_
-
-  _set_fsr:
-  _set_fsr_:
-      st.c   r16,fsr
-      bri    r1
-      nop
- */
-
-  /*         set_fsr(0x21);  */
-  PetscFunctionReturn(0);
-}
-#elif defined(PARCH_rs6000)
-#undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSetBenignUnderflows"></a>*/"PetscSetBenignUnderflows"
-int PetscSetBenignUnderflows(void)
-{
-  PetscFunctionBegin;
-  /* abrupt_underflow seems to have disappeared! */
-  /* abrupt_underflow(); */
-  PetscFunctionReturn(0);
-}
-#else
-#undef __FUNC__  
-#define __FUNC__ /*<a name="PetscSetBenignUnderflows"></a>*/"PetscSetBenignUnderflows"
-int PetscSetBenignUnderflows(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#endif
-
 
 
 

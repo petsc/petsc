@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.77 2000/08/14 20:29:40 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.78 2000/08/17 04:50:57 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -127,8 +127,8 @@ struct _p_Vec {
   Scalar *array_allocated;            
 
 /* Default obtain and release vectors; can be used by any implementation */
-EXTERN int     VecDuplicateVecs_Default(Vec,int,Vec *[]);
-EXTERN int     VecDestroyVecs_Default(const Vec [],int);
+EXTERN int VecDuplicateVecs_Default(Vec,int,Vec *[]);
+EXTERN int VecDestroyVecs_Default(const Vec [],int);
 
 EXTERN int VecLoadIntoVector_Default(Viewer,Vec);
 
@@ -203,6 +203,7 @@ struct _p_VecScatter {
   PetscTruth beginandendtogether;         /* indicates that the scatter begin and end
                                           function are called together, VecScatterEnd()
                                           is then treated as a nop */
+  PetscTruth packtogether; /* packs all the messages before sending, same with receive */
   int        (*postrecvs)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
   int        (*begin)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
   int        (*end)(Vec,Vec,InsertMode,ScatterMode,VecScatter);

@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.205 2000/10/24 20:25:55 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.206 2000/11/10 21:17:14 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -1655,7 +1655,7 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIBAIJ    *l = (Mat_MPIBAIJ*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
-  int            *procs,*nprocs,j,found,idx,nsends,*work,row;
+  int            *procs,*nprocs,j,idx,nsends,*work,row;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
   int            *lens,imdex,*lrows,*values,bs=l->bs,rstart_bs=l->rstart_bs;
@@ -1663,6 +1663,7 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
   IS             istmp;
+  PetscTruth     found;
   
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
@@ -1675,10 +1676,10 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
   owner  = (int*)PetscMalloc((N+1)*sizeof(int));CHKPTRQ(owner); /* see note*/
   for (i=0; i<N; i++) {
     idx   = rows[i];
-    found = 0;
+    found = PETSC_FALSE;
     for (j=0; j<size; j++) {
       if (idx >= owners[j]*bs && idx < owners[j+1]*bs) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
+        nprocs[j]++; procs[j] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
     if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Index out of range");

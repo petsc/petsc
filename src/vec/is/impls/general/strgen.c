@@ -1,4 +1,4 @@
-/*$Id: strgen.c,v 1.17 2000/09/25 03:36:09 bsmith Exp bsmith $*/
+/*$Id: strgen.c,v 1.18 2000/09/28 21:09:56 bsmith Exp bsmith $*/
 
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
@@ -66,7 +66,7 @@ int ISStrideToGeneral(IS inis)
 
   inis->type         = IS_GENERAL;
   inis->data         = (void*)sub;
-  inis->isperm       = 0;
+  inis->isperm       = PETSC_FALSE;
   ierr = PetscMemcpy(inis->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {

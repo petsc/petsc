@@ -1,4 +1,4 @@
-/*$Id: PetscTime.c,v 1.14 2000/01/11 21:03:44 bsmith Exp balay $*/
+/*$Id: PetscTime.c,v 1.15 2000/08/16 15:11:25 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscfix.h"
@@ -28,12 +28,12 @@ int main(int argc,char **argv)
     PetscTime(y);
     PetscTime(y);
 
-    fprintf(stderr,"%-15s : %e sec\n","PetscTime",(y-x)/10.0);
+    fprintf(stdout,"%-15s : %e sec\n","PetscTime",(y-x)/10.0);
   }
   PetscTime(x);
   ierr = PetscSleep(10);CHKERRA(ierr);
   PetscTime(y); 
-  fprintf(stderr,"%-15s : %e sec - Slept for 10 sec \n","PetscTime",(y-x));
+  fprintf(stdout,"%-15s : %e sec - Slept for 10 sec \n","PetscTime",(y-x));
 
   PetscFinalize();
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: PetscMemcpy.c,v 1.14 1999/10/24 14:04:16 bsmith Exp bsmith $*/
+/*$Id: PetscMemcpy.c,v 1.15 2000/01/11 21:03:44 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -55,10 +55,10 @@ int main(int argc,char **argv)
   ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
   ierr = PetscGetTime(&z);CHKERRA(ierr);
 
-  fprintf(stderr,"%s : \n","PetscMemcpy");
-  fprintf(stderr,"    %-11s : %e MB/s\n","Bandwidth",10.0*8*8/(y-x));
-  fprintf(stderr,"    %-11s : %e sec\n","Latency",(z-y)/10.0);
-  fprintf(stderr,"    %-11s : %e sec\n","Per Scalar",(2*y-x-z)/8000000.0);
+  fprintf(stdout,"%s : \n","PetscMemcpy");
+  fprintf(stdout,"    %-11s : %e MB/s\n","Bandwidth",10.0*8*8/(y-x));
+  fprintf(stdout,"    %-11s : %e sec\n","Latency",(z-y)/10.0);
+  fprintf(stdout,"    %-11s : %e sec\n","Per Scalar",(2*y-x-z)/8000000.0);
 
   PetscFinalize();
   PetscFunctionReturn(0);

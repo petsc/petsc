@@ -1,4 +1,4 @@
-/*$Id: ploginfo.c,v 1.18 2000/05/05 22:14:18 balay Exp bsmith $*/
+/*$Id: ploginfo.c,v 1.19 2000/09/22 20:42:37 bsmith Exp bsmith $*/
 /*
       PLogInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.
@@ -15,9 +15,9 @@
 #endif
 #include "petscfix.h"
 
-extern int  PLogPrintInfo,PLogPrintInfoNull;
-extern int  PLogInfoFlags[];
-extern FILE *PLogInfoFile;
+extern PetscTruth PLogPrintInfo,PLogPrintInfoNull;
+extern int        PLogInfoFlags[];
+extern FILE       *PLogInfoFile;
 
 /*
    If the option -log_history was used, then all printed PLogInfo() 

@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.99 2000/09/26 21:07:15 bsmith Exp bsmith $*/
+/*$Id: stride.c,v 1.100 2000/09/28 21:09:57 bsmith Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -327,7 +327,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   Nindex->max     = max;
   Nindex->data    = (void*)sub;
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  Nindex->isperm  = 0;
+  Nindex->isperm  = PETSC_FALSE;
   ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);

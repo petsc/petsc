@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.144 2000/09/28 21:10:10 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.145 2000/10/24 20:24:58 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -1116,7 +1116,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
   VecScatter_MPI_General *gen_to,*gen_from;
   Scalar                 *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
-  int                    ierr,i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
+  int                    ierr,i,*indices,*sstarts,iend,j,nrecvs,nsends,idx,len;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -1165,35 +1165,35 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
     }
 
     if (!gen_to->sendfirst) {
-      /* this version packs all the messages together and sends */
-      /*
-      len  = 4*sstarts[nsends];
-      val  = svalues;
-      for (i=0; i<len; i += 4) {
-        idx     = *indices++;
-        val[0] = xv[idx];
-        val[1] = xv[idx+1];
-        val[2] = xv[idx+2];
-        val[3] = xv[idx+3];
-        val      += 4;
-      }
-      ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
-      */
-
-      /* this version packs and sends one at a time */
-      val  = svalues;
-      for (i=0; i<nsends; i++) {
-        iend = sstarts[i+1]-sstarts[i];
-  
-        for (j=0; j<iend; j++) {
+      if (ctx->packtogether) {
+        /* this version packs all the messages together and sends */
+        len  = 4*sstarts[nsends];
+        val  = svalues;
+        for (i=0; i<len; i += 4) {
           idx     = *indices++;
           val[0] = xv[idx];
           val[1] = xv[idx+1];
           val[2] = xv[idx+2];
           val[3] = xv[idx+3];
-          val    += 4;
-        } 
-        ierr = MPI_Start_isend(4*iend,swaits+i);CHKERRQ(ierr);
+          val      += 4;
+        }
+        ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
+      } else {
+        /* this version packs and sends one at a time */
+        val  = svalues;
+        for (i=0; i<nsends; i++) {
+          iend = sstarts[i+1]-sstarts[i];
+  
+          for (j=0; j<iend; j++) {
+            idx     = *indices++;
+            val[0] = xv[idx];
+            val[1] = xv[idx+1];
+            val[2] = xv[idx+2];
+            val[3] = xv[idx+3];
+            val    += 4;
+          } 
+          ierr = MPI_Start_isend(4*iend,swaits+i);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -1204,7 +1204,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
     int n       = gen_to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
       if (gen_to->local.is_copy) {
-        ierr = PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
+        ierr = PetscMemcpy(yv+gen_from->local.copy_start,xv+gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
       } else {
         for (i=0; i<n; i++) {
           il = fslots[i]; ir = tslots[i];
@@ -1800,7 +1800,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
 {
   VecScatter_MPI_General *from,*to;
   int                    *source,*lens,rank,*owners;
-  int                    size,*lowner,*start,found,lengthy;
+  int                    size,*lowner,*start,lengthy;
   int                    *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
   int                    *owner,*starts,count,tag,slen,ierr;
   int                    *rvalues,*svalues,base,imdex,nmax,*values,len,*indx,nprocslocal;
@@ -1808,6 +1808,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
   Map                    map;
+  PetscTruth             found;
   
   PetscFunctionBegin;
   ierr = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
@@ -1826,10 +1827,10 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   owner  = (int*)PetscMalloc((nx+1)*sizeof(int));CHKPTRQ(owner);
   for (i=0; i<nx; i++) {
     idx = inidx[i];
-    found = 0;
+    found = PETSC_FALSE;
     for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
+        nprocs[j]++; procs[j] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
     if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %d out of range",idx);
@@ -2138,7 +2139,8 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   int                    ierr,size = y->size,*lowner,*start;
   int                    *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
   int                    *owner,*starts,count,tag,slen;
-  int                    *rvalues,*svalues,base,imdex,nmax,*values,len,found;
+  int                    *rvalues,*svalues,base,imdex,nmax,*values,len;
+  PetscTruth             found;
   MPI_Comm               comm = yin->comm;
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
@@ -2152,10 +2154,10 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   owner  = (int*)PetscMalloc((nx+1)*sizeof(int));CHKPTRQ(owner); 
   for (i=0; i<nx; i++) {
     idx = inidy[i];
-    found = 0;
+    found = PETSC_FALSE;
     for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
+        nprocs[j]++; procs[j] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
     if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %d out of range",idx);
@@ -2347,14 +2349,14 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
 #define __FUNC__ /*<a name=""></a>*/"VecScatterCreate_PtoP"
 int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,VecScatter ctx)
 {
-  int         *lens,rank,*owners = xin->map->range,size,found;
+  int         *lens,rank,*owners = xin->map->range,size;
   int         *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work,*local_inidx,*local_inidy;
   int         *owner,*starts,count,tag,slen,ierr;
   int         *rvalues,*svalues,base,imdex,nmax,*values;
   MPI_Comm    comm;
   MPI_Request *send_waits,*recv_waits;
   MPI_Status  recv_status;
-  PetscTruth  duplicate = PETSC_FALSE;
+  PetscTruth  duplicate = PETSC_FALSE,found;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
@@ -2377,10 +2379,10 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
   owner   = (int*)PetscMalloc((nx+1)*sizeof(int));CHKPTRQ(owner);
   for (i=0; i<nx; i++) {
     idx   = inidx[i];
-    found = 0;
+    found = PETSC_FALSE;
     for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
+        nprocs[j]++; procs[j] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
     if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %d out of range",idx);

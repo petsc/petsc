@@ -1,4 +1,4 @@
-/*$Id: lusol.c,v 1.4 2000/09/24 18:17:45 bsmith Exp bsmith $*/
+/*$Id: lusol.c,v 1.5 2000/10/24 20:25:32 bsmith Exp bsmith $*/
 /* 
         Provides an interface to the LUSOL package of ....
 
@@ -241,7 +241,7 @@ int MatSolve_SeqAIJ_LUSOL(Mat A,Vec b,Vec x)
 
      if (status != 0)
      {
-	  SETERRQ(PETSC_ERR_ARG_SIZ, 0, "solve failed"); 
+	  SETERRQ(PETSC_ERR_ARG_SIZ,"solve failed"); 
      }
 
      ierr = VecRestoreArray(x, &xx);CHKERRQ(ierr);
@@ -261,21 +261,11 @@ int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
      int              factorizations;
 
      PetscFunctionBegin;
-
      ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);CHKERRQ(ierr);
-     if (m != n) {
-       SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be square"); 
-     }
-
-     ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
-     if (!flg) {
-	  SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be Seq_AIJ");
-     }
-
      a = (Mat_SeqAIJ *)A->data;
 
      if (m != lusol->n) {
-       SETERRQ(PETSC_ERR_ARG_SIZ, 0, "factorization struct inconsistent");
+       SETERRQ(PETSC_ERR_ARG_SIZ,"factorization struct inconsistent");
      }
 
      factorizations = 0;
@@ -371,14 +361,14 @@ int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 
 	  case 1:
 	  case -1:		/* singular */
-	       SETERRQ(PETSC_ERR_ARG_SIZ, 0, "singular matrix"); 
+	       SETERRQ(PETSC_ERR_ARG_SIZ,"singular matrix"); 
 
 	  case 3:
 	  case 4:		/* error conditions */
-	       SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix error"); 
+	       SETERRQ(PETSC_ERR_ARG_SIZ,"matrix error"); 
 
 	  default:		/* unknown condition */
-	       SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix unknown return code"); 
+	       SETERRQ(PETSC_ERR_ARG_SIZ,"matrix unknown return code"); 
 	  }
 
 	  factorizations++;
@@ -411,15 +401,6 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatLUInfo *info, Mat *F)
      /************************************************************************/
 
      ierr = MatGetSize(A, &m, &n);CHKERRQ(ierr);
-     if (m != n) {
-       SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be square"); 
-     }
-
-     ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
-     if (!flg) {
-       SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be Seq_AIJ");
-     }
-
      nz = ((Mat_SeqAIJ *)A->data)->nz;
 
      /************************************************************************/
@@ -500,18 +481,19 @@ EXTERN_C_END
 #define __FUNC__ "MatUseLUSOL_SeqAIJ"
 int MatUseLUSOL_SeqAIJ(Mat A)
 {
-  MatType type;
-  int     ierr, m, n;
+  MatType    type;
+  int        ierr, m, n;
+  PetscTruth match;
      
   PetscFunctionBegin;
   ierr = MatGetSize(A, &m, &n);CHKERRQ(ierr);
   if (m != n) {
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be square");
+    SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square");
   }
-			      
-  ierr = MatGetType(A, &type, PETSC_NULL);CHKERRQ(ierr);
-  if (type != MATSEQAIJ){
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be Seq_AIJ");
+		
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&match);CHKERRQ(ierr);      
+  if (!match) {
+    SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be Seq_AIJ");
   }
 							    
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_LUSOL;

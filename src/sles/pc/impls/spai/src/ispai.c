@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.16 2000/09/02 02:49:00 bsmith Exp bsmith $*/
+/* $Id: ispai.c,v 1.17 2000/09/28 21:12:59 bsmith Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -97,7 +97,7 @@ static int PCSetUp_SPAI(PC pc)
                               verbose == 1 prints timing and matrix statistics */
 
   ispai->M = bspai(ispai->B,
-		   stderr,
+		   stdout,
 		   ispai->epsilon,
 		   ispai->nbsteps,
 		   ispai->max,

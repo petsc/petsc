@@ -1,11 +1,9 @@
+/* $Id: makefile,v 1.1 2000/11/22 22:25:41 bsmith Exp bsmith $ */
 #ifndef PETSCFUNC_H
 #define PETSCFUNC_H
 
 /* #include "sles.h" */ 
 #include "petscsles.h"
-
-/*..Low level timing routine..*/ 
-extern "C" float dtime_(float*); 
 
 /*..KSP monitoring routines..*/ 
 extern int KSPMonitorWriteConvHist(KSP ksp,int n,double rnorm,void* ctx);
@@ -59,7 +57,7 @@ extern int RamgShellPCCreate(RamgShellPC **shell);
 extern int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat);
 extern int RamgShellPCApply(void *ctx, Vec r, Vec z); 
 extern int RamgShellPCDestroy(RamgShellPC *shell); 
-extern int RamgGetParam(RAMG_PARAM *ramg_param);
+extern int RamgGetParam(struct RAMG_PARAM *ramg_param);
 
 /*..Structure used in the interface to SAMG..*/ 
 typedef struct{
@@ -75,7 +73,7 @@ extern int SamgShellPCCreate(SamgShellPC **shell);
 extern int SamgShellPCSetUp(SamgShellPC *shell, Mat pmat);
 extern int SamgShellPCApply(void *ctx, Vec r, Vec z); 
 extern int SamgShellPCDestroy(SamgShellPC *shell); 
-extern int SamgGetParam(SAMG_PARAM *samg_param);
+extern int SamgGetParam(struct SAMG_PARAM *samg_param);
 
 /*..Multigrid structure for PETSc..*/ 
 

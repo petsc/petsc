@@ -1,4 +1,4 @@
-/*$Id: general.c,v 1.99 2000/09/25 03:35:19 bsmith Exp bsmith $*/
+/*$Id: general.c,v 1.100 2000/09/28 21:09:56 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
@@ -275,7 +275,7 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
   Nindex->max     = max;
   Nindex->data    = (void*)sub;
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  Nindex->isperm     = 0;
+  Nindex->isperm     = PETSC_FALSE;
   Nindex->isidentity = PETSC_FALSE;
   ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {

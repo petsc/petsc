@@ -1,4 +1,4 @@
-/*$Id: bdiag2.c,v 1.15 2000/09/28 21:11:17 bsmith Exp bsmith $*/
+/*$Id: bdiag2.c,v 1.16 2000/10/24 20:25:42 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -12,9 +12,9 @@
 int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          kk,ldiag,row,dfound,newnz,*bdlen_new;
+  int          kk,ldiag,row,newnz,*bdlen_new;
   int          j,k, *diag_new,ierr;
-  PetscTruth   roworiented = a->roworiented;
+  PetscTruth   roworiented = a->roworiented,dfound;
   Scalar       value,**diagv_new;
 
   PetscFunctionBegin;
@@ -25,8 +25,8 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
     for (j=0; j<n; j++) {
       if (in[j] < 0) continue;
       if (in[j] >= A->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
-      ldiag = row - in[j]; /* diagonal number */
-      dfound = 0;
+      ldiag  = row - in[j]; /* diagonal number */
+      dfound = PETSC_FALSE;
       if (roworiented) {
         value = v[j + kk*n]; 
       } else {
@@ -35,7 +35,7 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
       /* search diagonals for required one */
       for (k=0; k<a->nd; k++) {
 	if (a->diag[k] == ldiag) {
-          dfound = 1;
+          dfound = PETSC_TRUE;
           if (is == ADD_VALUES) a->diagv[k][row] += value;
 	  else                  a->diagv[k][row]  = value;
           break;
@@ -101,9 +101,9 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
 int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          kk,ldiag,shift,row,dfound,newnz,*bdlen_new,ierr;
+  int          kk,ldiag,shift,row,newnz,*bdlen_new,ierr;
   int          j,k,bs = a->bs,*diag_new;
-  PetscTruth   roworiented = a->roworiented;
+  PetscTruth   roworiented = a->roworiented,dfound;
   Scalar       value,**diagv_new;
 
   PetscFunctionBegin;
@@ -113,8 +113,8 @@ int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
     if (row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     shift = (row/bs)*bs*bs + row%bs;
     for (j=0; j<n; j++) {
-      ldiag = row/bs - in[j]/bs; /* block diagonal */
-      dfound = 0;
+      ldiag  = row/bs - in[j]/bs; /* block diagonal */
+      dfound = PETSC_FALSE;
       if (roworiented) {
         value = *v++; 
       } else {
@@ -123,7 +123,7 @@ int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
       /* seach for appropriate diagonal */
       for (k=0; k<a->nd; k++) {
         if (a->diag[k] == ldiag) {
-          dfound = 1;
+          dfound = PETSC_TRUE;
           if (is == ADD_VALUES) a->diagv[k][shift + (in[j]%bs)*bs] += value;
 	  else                  a->diagv[k][shift + (in[j]%bs)*bs] = value;
           break;
@@ -187,8 +187,9 @@ int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
 int MatGetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          kk,ldiag,row,dfound,j,k;
+  int          kk,ldiag,row,j,k;
   Scalar       zero = 0.0;
+  PetscTruth   dfound;
 
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over rows */
@@ -199,10 +200,10 @@ int MatGetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v)
       if (in[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
       if (in[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
       ldiag = row - in[j]; /* diagonal number */
-      dfound = 0;
+      dfound = PETSC_FALSE;
       for (k=0; k<a->nd; k++) {
         if (a->diag[k] == ldiag) {
-          dfound = 1;
+          dfound = PETSC_TRUE;
           *v++ = a->diagv[k][row];
           break;
         }
@@ -218,8 +219,9 @@ int MatGetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v)
 int MatGetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          kk,ldiag,shift,row,dfound,j,k,bs = a->bs;
+  int          kk,ldiag,shift,row,j,k,bs = a->bs;
   Scalar       zero = 0.0;
+  PetscTruth   dfound;
 
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over rows */
@@ -228,11 +230,11 @@ int MatGetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v)
     if (row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     shift = (row/bs)*bs*bs + row%bs;
     for (j=0; j<n; j++) {
-      ldiag = row/bs - in[j]/bs; /* block diagonal */
-      dfound = 0;
+      ldiag  = row/bs - in[j]/bs; /* block diagonal */
+      dfound = PETSC_FALSE;
       for (k=0; k<a->nd; k++) {
         if (a->diag[k] == ldiag) {
-          dfound = 1;
+          dfound = PETSC_TRUE;
           *v++ = a->diagv[k][shift + (in[j]%bs)*bs ];
           break;
         }

@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.39 2000/08/01 20:58:32 bsmith Exp balay $*/
+/*$Id: zpc.c,v 1.40 2000/09/26 19:11:19 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -26,6 +26,7 @@
 #define pcnullspaceattach_         PCNULLSPACEATTACH
 #define matnullspacecreate_        MATNULLSPACECREATE
 #define pcview_                    PCVIEW
+#define mgsetlevels_               MGSETLEVELS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matnullspacecreate_        matnullspacecreate
 #define pcnullspaceattach_         pcnullspaceattach
@@ -48,9 +49,17 @@
 #define pcsettype_                 pcsettype
 #define pcgetoptionsprefix_        pcgetoptionsprefix
 #define pcview_                    pcview
+#define mgsetlevels_               mgsetlevels
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL mgsetlevels_(PC *pc,int *levels,MPI_Comm *comms, int *__ierr )
+{
+  MPI_Comm *comm = comms;
+  if (FORTRANNULLOBJECT(comms)) comm = 0;
+  *__ierr = MGSetLevels(*pc,*levels,comm);
+}
 
 void PETSC_STDCALL pcview_(PC *pc,Viewer *viewer, int *ierr)
 {

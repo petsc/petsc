@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.383 2000/10/24 20:25:24 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.384 2000/11/07 16:18:58 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -785,7 +785,8 @@ int MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
 
    Concepts: matrices^putting entries in with local numbering
 
-.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping()
+.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
+           MatSetValueLocal()
 @*/
 int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,InsertMode addv) 
 {

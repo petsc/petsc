@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.7 1999/12/08 22:36:16 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.8 2000/05/05 18:28:31 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -49,4 +49,9 @@
 #define PETSC_USE_KBYTES_FOR_SIZE
 #define PETSC_USE_P_FOR_DEBUGGER
 
+#if defined(__cplusplus)
+#define PETSC_SIGNAL_CAST (void (*)(int))
+#endif
+
+#define PETSC_HAVE_IRIX_STYLE_FPTRAP
 #endif

@@ -1,4 +1,4 @@
-/*$Id: baijfact.c,v 1.84 2000/09/28 21:11:23 bsmith Exp bsmith $*/
+/*$Id: baijfact.c,v 1.85 2000/10/24 20:25:52 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -1875,7 +1875,6 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-
 /* ------------------------------------------------------------*/
 /*
       Version for when blocks are 3 by 3
@@ -2169,7 +2168,6 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
     /* invert diagonal block */
     w = ba + 4*diag_offset[i];
     ierr = Kernel_A_gets_inverse_A_2(w);CHKERRQ(ierr);
-    /*Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);*/
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);

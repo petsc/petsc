@@ -1,4 +1,4 @@
-/*$Id: errstop.c,v 1.12 2000/09/22 20:42:15 bsmith Exp bsmith $*/
+/*$Id: errstop.c,v 1.13 2000/10/24 20:24:29 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -64,12 +64,10 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
       (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
       (*PetscErrorPrintf)("[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);
     }
-    n = 1;
   } else if (n == PETSC_ERR_SUP) {
     (*PetscErrorPrintf)("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
     (*PetscErrorPrintf)("[%d]PETSC ERROR: No support for this operation for this object type!\n",rank);
     (*PetscErrorPrintf)("[%d]PETSC ERROR: %s\n",rank,mess);
-    n = 1;
   } else if (n == PETSC_ERR_SIG) {
     (*PetscErrorPrintf)("[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
   } else {

@@ -1,13 +1,12 @@
-# $Id: makefile,v 1.53 2000/08/23 21:04:08 bsmith Exp balay $ 
+# $Id: makefile,v 1.54 2000/09/07 03:13:54 balay Exp bsmith $ 
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
 SOURCEF  =
-SOURCEH  = petscdraw.h petscis.h petscksp.h petscmat.h petscoptions.h petscpc.h petsc.h petscsys.h \
-           petscvec.h petscsles.h petscmg.h petscviewer.h petscsnes.h petscao.h\
-           petscda.h petsclog.h petschead.h petscerror.h petscts.h \
-	   petscmath.h petscbt.h petscpf.h petscengine.h petscblaslapack.h petscf90.h
+SOURCEH  = petscoptions.h petsc.h petscsys.h \
+           petsclog.h petschead.h petscerror.h \
+	   petscmath.h petscbt.h petscengine.h petscblaslapack.h petscf90.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.22 2000/05/05 18:28:31 bsmith Exp balay $"
+"$Id: petscconf.h,v 1.23 2000/09/07 02:55:08 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -53,5 +53,7 @@
 
 #define PETSC_HAVE_F90_H "f90impl/f90_rs6000.h"
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_rs6000.c"
+
+#define PETSC_HAVE_RS6000_STYLE_FPTRAP
 
 #endif

@@ -1,4 +1,4 @@
-#include "global.h"
+
 #include "ramgfunc.h"
 #include "petscfunc.h"
 #include "petscsles.h"
@@ -18,14 +18,6 @@
 /*  [2] J. Ruge and K. St\"{u}ben, "Algebraic Multigrid" in "Multigrid    */
 /*      Methods" S. McCormick, Ed., vol. 3 of Frontiers in Applied        */
 /*      Mathmatics, pp. 73--130, SIAM, Philadelphia, PA, 1987             */ 
-/*                                                                        */
-/**************************************************************************/
-
-/**************************************************************************/
-/*                                                                        */
-/* Notes on PETSc part of this interface                                  */
-/* Information on how to set up shell preconditioners in PETSc can be     */
-/* in the PETSc documentation under preconditioners.                      */ 
 /*                                                                        */
 /**************************************************************************/
 
@@ -139,10 +131,21 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
      ia[I] = nnz_count; 
      for (j=0;j<ncols_getrow;j++){
            J               = cols_getrow[j];
-           rowentry        = vals_getrow[j]; 
-           Asky[nnz_count] = rowentry; 
-           ja[nnz_count]   = J; 
-           nnz_count++; 
+	   if (J == I) {
+             rowentry        = vals_getrow[j]; 
+             Asky[nnz_count] = rowentry; 
+             ja[nnz_count]   = J; 
+             nnz_count++; 
+           }
+     }
+     for (j=0;j<ncols_getrow;j++){
+           J               = cols_getrow[j];
+	   if (J != I) {
+             rowentry        = vals_getrow[j]; 
+             Asky[nnz_count] = rowentry; 
+             ja[nnz_count]   = J; 
+             nnz_count++; 
+           }
      }
    }
    ia[numnodes] = nnz_count; 
@@ -473,5 +476,21 @@ int PCCreate_RAMG(PC pc)
 }
 EXTERN_C_END
 
+/*
+      The AMG code uses a silly timing routine. This captures it
+*/
+EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define ctime_ CTIME
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define ctime_ ctime
+#endif
+void ctime_(float *time)
+{
+  double ltime;
+  PetscGetTime(&ltime);
+  *time = (float) ltime;
+}
+EXTERN_C_END
 
 

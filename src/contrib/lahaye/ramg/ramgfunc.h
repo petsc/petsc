@@ -1,4 +1,4 @@
-/* $Id: makefile,v 1.1 2000/11/22 22:25:41 bsmith Exp bsmith $ */
+/* $Id: ramgfunc.h,v 1.2 2000/11/27 17:25:33 bsmith Exp bsmith $ */
 #ifndef RAMGFUNC_H
 #define RAMGFUNC_H
 #include "petsc.h"
@@ -36,7 +36,7 @@ struct RAMG_PARAM{
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define amg1r5_ AMG1R5
-#elif !defined(PETSC_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define amg1r5_ amg1r5
 #endif
 extern void amg1r5_(double* a,int* ia,int* ja,double* u,double* f,

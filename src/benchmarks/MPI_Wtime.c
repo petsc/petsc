@@ -1,4 +1,4 @@
-/*$Id: MPI_Wtime.c,v 1.11 1999/10/24 14:04:16 bsmith Exp bsmith $*/
+/*$Id: MPI_Wtime.c,v 1.12 2000/01/11 21:03:44 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -24,14 +24,14 @@ int main(int argc,char **argv)
   y = MPI_Wtime();
   y = MPI_Wtime();
 
-  fprintf(stderr,"%-15s : %e sec\n","MPI_Wtime",(y-x)/10.0);
+  fprintf(stdout,"%-15s : %e sec\n","MPI_Wtime",(y-x)/10.0);
   y = MPI_Wtick();
   fprintf(stderr,"%-15s : %e sec\n","MPI_Wtick",y);
 
   x = MPI_Wtime();
   ierr = PetscSleep(10);CHKERRA(ierr);
   y = MPI_Wtime();
-  fprintf(stderr,"%-15s : %e sec - Slept for 10 sec \n","MPI_Wtime",(y-x));
+  fprintf(stdout,"%-15s : %e sec - Slept for 10 sec \n","MPI_Wtime",(y-x));
 
   PetscFinalize();
   PetscFunctionReturn(0);

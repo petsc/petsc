@@ -1,4 +1,4 @@
-/*$Id: mpitr.c,v 1.25 2000/05/10 16:39:35 bsmith Exp bsmith $*/
+/*$Id: mpitr.c,v 1.26 2000/09/22 20:42:37 bsmith Exp bsmith $*/
 
 /*
     Code for tracing mistakes in MPI usage. For example, sends that are never received,
@@ -18,7 +18,7 @@
    Collective on PETSC_COMM_WORLD
 
    Input Parameter:
-.  fp - file pointer.  If fp is NULL, stderr is assumed.
+.  fp - file pointer.  If fp is NULL, stdout is assumed.
 
    Options Database Key:
 .  -mpidump - Dumps MPI incompleteness during call to PetscFinalize()

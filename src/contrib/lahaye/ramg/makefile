@@ -1,17 +1,21 @@
-# $Id: makefile,v 1.31 2000/08/17 04:52:03 bsmith Exp $ 
+# $Id: makefile,v 1.1 2000/11/22 22:25:41 bsmith Exp bsmith $ 
+
+#requirespackage 'PETSC_HAVE_RAMG'
+#requireslanguage CONLY
+#requiresscalar real 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = sles.c 
+SOURCEC  = petscfunc.c  ramgpetsc.c
 SOURCEF  = 
-SOURCEH  = 
-OBJSC    = sles.o 
+SOURCEH  = petscfunc.h  ramgfunc.h
+OBJSC    = petscfunc.o  ramgpetsc.o
 OBJSF    =
 LIBBASE  = libpetscsles
-MANSEC   = SLES
-LOCDIR   = src/sles/interface/
+MANSEC   = PC
+LOCDIR   = src/contrib/lahaye
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 include ${PETSC_DIR}/bmake/common_test

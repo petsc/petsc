@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.356 2000/09/28 21:11:00 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.357 2000/10/24 20:25:32 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -2363,6 +2363,8 @@ int MatCreate_SeqAIJ(Mat B)
   b->idiag             = 0;
   b->ssor              = 0;
   b->keepzeroedrows    = PETSC_FALSE;
+
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
 
   /*  SuperLU is not currently supported through PETSc */
 #if defined(PETSC_HAVE_SUPERLU)

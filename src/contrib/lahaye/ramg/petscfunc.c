@@ -1,5 +1,5 @@
 #include "petscfunc.h"
-#include "samgfunc.h"
+#include "ramgfunc.h"
 #include "petscsles.h"
 
 /* ------------------------------------------------------------------- */
@@ -286,7 +286,7 @@ int PrintMatrix(Mat mat, char* path, char* base)
    /*..Get size and number of unknowns of matrix..*/ 
    ierr = MatGetSize(mat, &numrows, &numcols); CHKERRQ(ierr);
    ierr = MatGetInfo(mat,MAT_LOCAL,&info); CHKERRQ(ierr); 
-   numnonzero = info.nz_used;
+   numnonzero = (int)info.nz_used;
 
    /*..Set file and open file for reading..*/ 
    sprintf(filename, "%s%s", path, base);
@@ -366,3 +366,9 @@ int PrintVector(Vec vec, char* path, char* base)
    printf("   [PrintVector]::Done Generating file !\n", filename);    
    return 0; 
 }
+
+
+
+
+
+

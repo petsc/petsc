@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.212 2000/09/28 21:11:23 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.213 2000/10/24 20:25:52 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1562,6 +1562,7 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->bs2        = a->bs2;
   c->mbs        = a->mbs;
   c->nbs        = a->nbs;
+  ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 
   c->imax       = (int*)PetscMalloc((mbs+1)*sizeof(int));CHKPTRQ(c->imax);
   c->ilen       = (int*)PetscMalloc((mbs+1)*sizeof(int));CHKPTRQ(c->ilen);
@@ -1772,8 +1773,8 @@ EXTERN_C_END
 .  bs - size of block
 .  m - number of rows
 .  n - number of columns
-.  nz - number of block nonzeros per block row (same for all rows)
--  nnz - array containing the number of block nonzeros in the various block rows 
+.  nz - number of nonzero blocks  per block row (same for all rows)
+-  nnz - array containing the number of nonzero blocks in the various block rows 
          (possibly different for each block row) or PETSC_NULL
 
    Output Parameter:
@@ -1787,6 +1788,8 @@ EXTERN_C_END
    Level: intermediate
 
    Notes:
+   A nonzero block is any block that as 1 or more nonzeros in it
+
    The block AIJ format is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
@@ -1868,7 +1871,7 @@ int MatSeqBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
   bs2  = bs*bs;
 
   if (mbs*bs!=B->m || nbs*bs!=B->n) {
-    SETERRQ(PETSC_ERR_ARG_SIZ,"Number rows, cols must be divisible by blocksize");
+    SETERRQ3(PETSC_ERR_ARG_SIZ,"Number rows %d, cols %d must be divisible by blocksize %d",B->m,B->n,bs);
   }
 
   if (nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than -2: value %d",nz);

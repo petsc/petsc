@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.28 2000/07/21 13:28:55 balay Exp balay $"
+"$Id: petscconf.h,v 1.29 2000/09/07 02:58:05 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -58,5 +58,8 @@
 #define PETSC_HAVE_F90_H "f90impl/f90_solaris.h"
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_solaris.c"
 
+#define PETSC_HAVE_UCBPS
+
+#define PETSC_HAVE_SOLARIS_STYLE_FPTRAP
 #endif
 

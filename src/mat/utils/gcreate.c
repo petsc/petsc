@@ -1,7 +1,33 @@
-/*$Id: gcreate.c,v 1.123 2000/09/25 19:57:36 curfman Exp bsmith $*/
+/*$Id: gcreate.c,v 1.124 2000/10/24 20:26:14 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/matimpl.h"       /*I "petscmat.h"  I*/
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatPublish_Base"></a>*/"MatPublish_Base"
+static int MatPublish_Base(PetscObject obj)
+{
+#if defined(PETSC_HAVE_AMS)
+  Mat mat = (Mat)obj;
+  int ierr;
+#endif
+
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_AMS)
+  /* if it is already published then return */
+  if (mat->amem >=0) PetscFunctionReturn(0);
+
+  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field((AMS_Memory)mat->amem,"globalsizes",&mat->M,2,AMS_INT,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field((AMS_Memory)mat->amem,"localsizes",&mat->m,2,AMS_INT,AMS_READ,
+                                AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
+#endif
+
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatCreate"
@@ -71,8 +97,8 @@ int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
   B->M = M;
   B->N = N;
 
-  B->preallocated = PETSC_FALSE;
-
+  B->preallocated  = PETSC_FALSE;
+  B->bops->publish = MatPublish_Base;
   *A = B;
   PetscFunctionReturn(0);
 }
