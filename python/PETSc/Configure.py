@@ -76,6 +76,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-libtool',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
     help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make', 'Specify make'))
     help.addArgument('PETSc', '-with-ar',                    nargs.Arg(None, 'ar',   'Specify the archiver'))
+    help.addArgument('PETSc', 'AR',                          nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('PETSc', 'AR_FLAGS',                    nargs.Arg(None, 'cr',   'Specify the archiver flags'))
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
     return
@@ -96,26 +97,6 @@ class Configure(config.base.Configure):
     self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
     return
 
-  def configurePIC(self):
-    '''Determine the PIC option for each compiler
-       - There needs to be a test that checks that the functionality is actually working'''
-    languages = ['C']
-    if 'CXX' in self.framework.argDB:
-      languages.append('C++')
-    if 'FC' in self.framework.argDB:
-      languages.append('F77')
-    for language in languages:
-      self.pushLanguage(language)
-      for testFlag in ['-PIC', '-fPIC', '-KPIC']:
-        try:
-          self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
-          self.addCompilerFlag(testFlag)
-          break
-        except RuntimeError:
-          self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
-      self.popLanguage()
-    return
-
   def configureFortranCPP(self):
     '''Handle case where Fortran cannot preprocess properly'''
     if 'FC' in self.framework.argDB:
@@ -132,17 +113,17 @@ class Configure(config.base.Configure):
       self.framework.addSubstitution('F_to_o_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.fortran.none')
     return
 
-
   def configureDynamicLibraries(self):
     '''Checks whether dynamic libraries should be used, for which you must
       - Specify --enable-dynamic
       - Find dlfcn.h and libdl
     Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
+    self.useDynamic = 0
     if not (self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix') or (self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and not (self.usingMPIUni and not self.framework.argDB.has_key('FC')))):
-      useDynamic = self.framework.argDB['enable-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
-      self.addDefine('USE_DYNAMIC_LIBRARIES', useDynamic)
-      if useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
+      self.useDynamic = self.framework.argDB['enable-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
+      self.addDefine('USE_DYNAMIC_LIBRARIES', self.useDynamic)
+      if self.useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
 
     #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
@@ -159,6 +140,28 @@ class Configure(config.base.Configure):
       flag = '-L'
     self.addSubstitution('CLINKER_SLFLAG', flag)
     self.addSubstitution('FLINKER_SLFLAG', flag)
+    return
+
+  def configurePIC(self):
+    '''Determine the PIC option for each compiler
+       - There needs to be a test that checks that the functionality is actually working'''
+    if not self.useDynamic:
+      return
+    languages = ['C']
+    if 'CXX' in self.framework.argDB:
+      languages.append('C++')
+    if 'FC' in self.framework.argDB:
+      languages.append('F77')
+    for language in languages:
+      self.pushLanguage(language)
+      for testFlag in ['-PIC', '-fPIC', '-KPIC']:
+        try:
+          self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
+          self.addCompilerFlag(testFlag)
+          break
+        except RuntimeError:
+          self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
+      self.popLanguage()
     return
 
   def configureLibtool(self):
@@ -522,10 +525,10 @@ class Configure(config.base.Configure):
     self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.argDB['PETSC_ARCH']+'/variables')
     self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
-    self.executeTest(self.configurePIC)
     self.executeTest(self.configureFortranCPP)
-    self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureDynamicLibraries)
+    self.executeTest(self.configurePIC)
+    self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
     self.executeTest(self.configureMkdir)
