@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.101 2000/09/28 21:14:19 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.102 2001/01/15 21:47:59 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
@@ -168,6 +168,10 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
 {
   SNES_UM_LS *ctx = (SNES_UM_LS *)snes->data;
   int        ierr;
+  SLES       sles;
+  PC         pc;
+  PetscTruth ismatshell,nopcset;
+  Mat        pmat;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES trust region options for minimization");CHKERRQ(ierr);
@@ -179,6 +183,23 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
     ierr = PetscOptionsDouble("-snes_um_ls_stepmin","Lower bound for step","None",ctx->stepmin,&ctx->stepmin,0);CHKERRQ(ierr);
     ierr = PetscOptionsDouble("-snes_um_ls_stepmax","upper bound for step","None",ctx->stepmax,&ctx->stepmax,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  /* if preconditioner has not been set yet, and not using a matrix shell then
+     set preconditioner to Jacobi. This is to prevent PCSetFromOptions() from 
+     setting a default of ILU or block Jacobi-ILU which won't work since TR 
+     requires a symmetric preconditioner
+  */
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,0,&nopcset);CHKERRQ(ierr);
+  if (nopcset) {
+    ierr = PCGetOperators(pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
+    if (pmat) {
+      ierr = PetscTypeCompare((PetscObject)pmat,MATSHELL,&ismatshell);CHKERRQ(ierr);
+      if (!ismatshell) {
+        ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -527,8 +548,6 @@ EXTERN_C_BEGIN
 int SNESCreate_UM_LS(SNES snes)
 {
   SNES_UM_LS *neP;
-  SLES      sles;
-  PC        pc;
   int       ierr;
 
   PetscFunctionBegin;
@@ -560,11 +579,6 @@ int SNESCreate_UM_LS(SNES snes)
   neP->bracket		  = 0; 
   neP->infoc              = 1;
   neP->maxfev		  = 30;
-
-  /* Set default preconditioner to be Jacobi, to override SLES default. */
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchGetDampingParameter_C",
                                     "SNESLineSearchGetDampingParameter_UM_LS",
