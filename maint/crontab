@@ -9,6 +9,7 @@
 #
 1  23 * * * /home/bsmith/petsc/maint/buildremotetest
 1  23 * * * /bin/rm /home/bsmith/petsc/maint/nightlylogs/*.log
+1  23 * * * /home/bsmith/petsc/maint/removelibs
 #
 30 23 * * * /home/bsmith/petsc/maint/buildtest 1
 30 23 * * * /home/bsmith/petsc/maint/buildtest 2

@@ -16,7 +16,8 @@ Additional Capabilities that PETSc Needs:
     turning them all off???? Maybe not. Currently PETsc itself does
     this by turning off events one at a time for its own classes.
 
-  - Add feature in nightly builds to remove old libraries (maybe?)
+  * Add feature in nightly builds to remove old libraries (maybe?)
+    See maint/removelibs
 
   - Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
     A prototype is on poseidon:~mcinnes/mpibaij.bak
