@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.39 1998/04/08 22:30:13 balay Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.40 1998/04/14 16:54:18 balay Exp bsmith $";
 #endif
 
 /*
@@ -50,10 +50,6 @@ extern int          PetscBeganMPI;
 
 #endif
 
-int OptionsCheckInitial_Private(),
-    OptionsCreate_Private(int*,char***,char*),
-    OptionsSetAlias_Private(char *,char *);
-
 /*
     The extra _ is because the f2c compiler puts an
   extra _ at the end if the original routine name 
@@ -85,6 +81,8 @@ extern void PXFGETARG(int *,_fcd,int*,int*);
 #if defined(__cplusplus)
 }
 #endif
+
+extern int OptionsCheckInitial_Private(void);
 
 /*
     Reads in Fortran command line argments and sends them to 
@@ -142,14 +140,21 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   return 0;   
 }
 
-extern int PetscInitializeOptions(void);
 extern int PetscInitialize_DynamicLibraries(void);
-extern int OptionsSetProgramName(char *);
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
+#undef __FUNC__  
+#define __FUNC__ "petscinitialize"
+/*
+    petscinitialize - Version called from Fortran.
+
+    Notes:
+      Since this is called from Fortran it does not return error codes
+      
+*/
 void petscinitialize_(CHAR filename,int *__ierr,int len)
 {
 #if defined (PARCH_nt)
@@ -164,7 +169,7 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   PetscMemzero(name,256);
   if (PetscInitializedCalled) {*__ierr = 0; return;}
   
-  *__ierr = PetscInitializeOptions(); 
+  *__ierr = OptionsCreate(); 
   if (*__ierr) return;
   i = 0;
 #if defined(PARCH_t3d)
@@ -185,7 +190,7 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
     }
   }
 #endif
-  OptionsSetProgramName(name);
+  PetscSetProgramName(name);
 
   MPI_Initialized(&flag);
   if (!flag) {
@@ -224,7 +229,7 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
 
   PETScParseFortranArgs_Private(&argc,&args);
   FIXCHAR(filename,len,t1);
-  *__ierr = OptionsCreate_Private(&argc,&args,t1); 
+  *__ierr = OptionsInsert(&argc,&args,t1); 
   FREECHAR(filename,t1);
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Creating options database");return;}
   PetscFree(args);
