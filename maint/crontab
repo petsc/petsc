@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.90 1997/10/21 17:03:33 balay Exp balay $ 
+# $Id: crontab,v 1.91 1997/10/22 20:37:20 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -41,4 +41,8 @@
 # Backup the PETSc source dir
 #
 45 5 * * *  /usr/ucb/rsh eagle /home/bsmith/petsc/maint/buildbackup
+#
+# Rebuild the fortran stubs - before the nightly builds are started.
+#
+01 22 * * * /usr/ucb/rsh eagle "cd /home/bsmith/petsc; make allfortranstubs"
 #

@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: checknightly,v 1.22 1997/10/01 15:10:15 balay Exp balay $ 
+# $Id: checknightly,v 1.23 1997/11/02 04:29:40 balay Exp balay $ 
 
 #
 # Crontab job that checks if the nightly runs have finished by 7:30 am,
@@ -116,7 +116,6 @@ proc main { } {
     # Build the TAGS files 
     cd /home/bsmith/petsc
     exec /bin/make alletags >>& /dev/null
-    exec /bin/make allfortranstubs >>& /dev/null
     return 0
 }
 ##########################################
