@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.131 1996/01/03 16:10:05 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.132 1996/01/04 15:53:20 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1018,14 +1018,14 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
       kstart  = ai[irow[i]]+shift; 
       kend    = kstart + ailen[irow[i]];
       for ( k=kstart; k<kend; k++ ) {
-        if (aj[k] >= first) {
+        if (aj[k]+shift >= first) {
           starts[i] = k;
           break;
 	}
       }
       sum = 0;
       while (k < kend) {
-        if (aj[k++] >= first+ncols) break;
+        if (aj[k++]+shift >= first+ncols) break;
         sum++;
       }
       lens[i] = sum;
@@ -1035,7 +1035,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
       int n_cols,n_rows;
       ierr = MatGetSize(*B,&n_rows,&n_cols); CHKERRQ(ierr);
       if (n_rows != nrows || n_cols != ncols) SETERRQ(1,"MatGetSubMatrix_SeqAIJ:");
-      MatZeroEntries(*B);
+      ierr = MatZeroEntries(*B); CHKERRQ(ierr);
       C = *B;
     }
     else {  
@@ -1072,11 +1072,11 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
     for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
     /* determine lens of each row */
     for (i=0; i<nrows; i++) {
-      kstart  = a->i[irow[i]]+shift; 
+      kstart  = ai[irow[i]]+shift; 
       kend    = kstart + a->ilen[irow[i]];
       lens[i] = 0;
       for ( k=kstart; k<kend; k++ ) {
-        if (ssmap[a->j[k]]) {
+        if (ssmap[aj[k]]) {
           lens[i]++;
         }
       }
@@ -1086,7 +1086,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
       int n_cols,n_rows;
       ierr = MatGetSize(*B,&n_rows,&n_cols); CHKERRQ(ierr);
       if (n_rows != nrows || n_cols != ncols) SETERRQ(1,"MatGetSubMatrix_SeqAIJ:");
-      MatZeroEntries(*B);
+      ierr = MatZeroEntries(*B); CHKERRQ(ierr);
       C = *B;
     }
     else {  
@@ -1094,7 +1094,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
     }
     for (i=0; i<nrows; i++) {
       nznew  = 0;
-      kstart = a->i[irow[i]]+shift; 
+      kstart = ai[irow[i]]+shift; 
       kend   = kstart + a->ilen[irow[i]];
       for ( k=kstart; k<kend; k++ ) {
         if (ssmap[a->j[k]]) {
