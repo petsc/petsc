@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.52 1996/01/09 14:31:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.53 1996/01/26 04:32:43 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -59,8 +59,8 @@ static char vcid[] = "$Id: gmres.c,v 1.52 1996/01/09 14:31:58 curfman Exp bsmith
 #include <stdio.h>
 #include "gmresp.h"       /*I  "ksp.h"  I*/
 #include "pinclude/pviewer.h"
-#define GMRES_DELTA_DIRECTIONS 5
-#define GMRES_DEFAULT_MAXK 10
+#define GMRES_DELTA_DIRECTIONS 10
+#define GMRES_DEFAULT_MAXK     30
 static int    GMRESGetNewVectors( KSP ,int );
 static int    GMRESUpdateHessenberg( KSP , int,double * );
 static int    BuildGmresSoln(Scalar* ,Vec,Vec ,KSP, int);
