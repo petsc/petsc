@@ -1,4 +1,4 @@
-# $Id: base,v 1.53 1999/02/24 23:27:41 balay Exp balay $ 
+# $Id: base,v 1.54 1999/04/19 22:10:34 balay Exp balay $ 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 include ${PETSC_DIR}/bmake/common
@@ -66,11 +66,11 @@ oshared:
 # On some HP 10.20 Machines use
 # C_SYS_LIB  =  -lV3 -lU77 
 #
-# Alternative FC_LIB which worked for some users
+# Alternative C_SYS_LIB which worked for some users
 #
-# FC_LIB = -L/opt/fortran90/lib/pa2.0 -L/opt/fortran90/lib \
+# C_SYS_LIB = -L/opt/fortran90/lib/pa2.0 -L/opt/fortran90/lib \
 # -L/opt/langtools/lib -lF90 -lcl -lc -lisamstub
 #
 # Use this if using f77 instead of f90 compiler
-#FC_LIB		=  -lf -L/opt/fortran/lib  -lU77
+# C_SYS_LIB		=  -lf -L/opt/fortran/lib  -lU77
 #
