@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.268 1997/11/03 04:45:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.269 1997/11/06 22:40:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2775,7 +2775,7 @@ int MatGetBlockSize(Mat mat,int *bs)
 
   Input Parameters:
 .   mat - the matrix
-.   shift - 1 or zero indicating we want the indices starting at 0 or 1
+.   shift -  0 or 1 indicating we want the indices starting at 0 or 1
 .   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
                 symmetrized
 
