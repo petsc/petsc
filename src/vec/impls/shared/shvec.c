@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.20 1999/03/01 04:51:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: shvec.c,v 1.21 1999/03/07 14:28:45 curfman Exp bsmith $";
 #endif
 
 /*
@@ -52,7 +52,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "VecCreate_Shared"
 int VecCreate_Shared(Vec vv)
 {
-  int     ierr,i;
+  int     ierr;
   Scalar  *array;
 
   PetscFunctionBegin;
