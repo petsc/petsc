@@ -329,14 +329,15 @@ int main(int argc,char **argv)
      are not distorted by output during the solve. */
   if (app->no_output) {
     FILE *fp; int i;
-    fp = fopen("fnorm.m","w"); 
     if (app->rank == 0) {
+      fp = fopen("fnorm.m","w"); 
       fprintf(fp,"zsnes = [\n");
       for (i=0; i<=its; i++) {
         fprintf(fp,"  %d    %8.4f   %12.1f   %10.2f\n",
                 i,app->flog[i],app->fcfl[i],app->ftime[i]);
       }
       fprintf(fp," ];\n");
+      fclose(fp);
     }
   } 
 
@@ -411,7 +412,7 @@ int UserSetJacobian(SNES snes,Euler *app)
     if (nc_block == nc) wkdim = app->lbkdim;
     else                wkdim = app->ldim;
   }
-  else SETERRQ(1,1,"UserSetJacobian:Matrix format not currently supported.");
+  else SETERRQ(1,1,"Matrix format not currently supported.");
 
   /* Allocate work arrays */
   nnz_d = (int *)PetscMalloc(2*wkdim * sizeof(int)); CHKPTRQ(nnz_d);
@@ -462,7 +463,7 @@ int UserSetJacobian(SNES snes,Euler *app)
     ierr = MatCreateMPIBAIJ(comm,nc_block,ldim,ldim,
            gdim,gdim,PETSC_NULL,nnz_d,PETSC_NULL,nnz_o,&J); CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"UserSetJacobian:Matrix format not currently supported.");
+    SETERRQ(1,1,"Matrix format not currently supported.");
   }
   if (nnz_d) PetscFree(nnz_d);
   app->J = J;
@@ -480,7 +481,7 @@ int UserSetJacobian(SNES snes,Euler *app)
   } else {
     /* Use matrix-free Jacobian to define Newton system; use finite difference
        approximation of Jacobian for preconditioner */
-   if (app->bctype != IMPLICIT) SETERRQ(1,1,"UserSetJacobian: Matrix-free method requires implicit BCs!");
+   if (app->bctype != IMPLICIT) SETERRQ(1,1,"Matrix-free method requires implicit BCs!");
    ierr = UserMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr);
    ierr = SNESSetJacobian(snes,app->Jmf,J,ComputeJacobian,app); CHKERRQ(ierr);
    ierr = UserSetMatrixFreeParameters(snes,app->eps_mf_default,PETSC_DEFAULT); CHKERRQ(ierr);
@@ -858,9 +859,9 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
  */
 int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
 {
-  Euler *app = (Euler *)ptr;
-  int     ierr, base_unit, fortvec, iter;
-  Scalar  zero = 0.0;
+  Euler  *app = (Euler *)ptr;
+  int    ierr, base_unit, fortvec, iter;
+  Scalar zero = 0.0, *farray;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         Do setup (not required for the first function evaluation)
@@ -929,14 +930,16 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
 
   if (app->bctype == IMPLICIT || app->bctype == IMPLICIT_SIZE) {
 
-    /* Initialize vector to zero */
+    /* Initialize vector to zero.  These values will be overwritten everywhere but
+       the edges of the 3D domain */
     ierr = VecSet(&zero,F); CHKERRQ(ierr);
 
-    /* Transform F to a Fortran vector */
-    ierr = PetscCObjectToFortranObject(F,&fortvec); CHKERRQ(ierr);
+    if (app->use_vecsetvalues) {
+      /* Transform F to a Fortran vector */
+      ierr = PetscCObjectToFortranObject(F,&fortvec); CHKERRQ(ierr);
 
-    /* Build F(X) */
-    ierr = rbuild_(&fortvec, &app->sctype, app->dt, app->dr, app->dru, app->drv,
+      /* Build F(X) using VecSetValues() */
+      ierr = rbuild_(&fortvec, &app->sctype, app->dt, app->dr, app->dru, app->drv,
            app->drw, app->de, app->ltog, &app->nloc,
 	   app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
            app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
@@ -944,7 +947,21 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
            app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
            app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
            app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
+    } else {
+      /* Transform F to a Fortran vector */
+      ierr = PetscCObjectToFortranObject(F,&fortvec); CHKERRQ(ierr);
 
+      /* Build F(X) directly, without using VecSetValues() */
+      ierr = VecGetArray(F,&farray); CHKERRQ(ierr);
+      ierr = rbuild_direct_(&fortvec, farray, &app->sctype, app->dt, app->dr, app->dru, app->drv,
+           app->drw, app->de, app->ltog, &app->nloc,
+	   app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
+           app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
+           app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
+           app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
+           app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
+           app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
+    }
   } else if (app->bctype == EXPLICIT) {
     /* Scale if necessary; then build Function */
     if (app->sctype == DT_MULT) {
@@ -1060,7 +1077,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   MPI_Comm_size(comm,&app->size);
   MPI_Comm_rank(comm,&app->rank);
   if (solve_with_julianne && app->size != 1)
-    SETERRQ(1,1,"UserCreateEuler: Julianne solver is uniprocessor only!");
+    SETERRQ(1,1,"Julianne solver is uniprocessor only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                   Set problem parameters and flags 
@@ -1103,7 +1120,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       ierr = OptionsGetInt(PETSC_NULL,"-nk1",&nk1,&flg); CHKERRQ(ierr);
       break;
     default:
-      SETERRQ(1,1,"UserCreateEuler:Unsupported problem, only 1,2,3 or 4 supported");
+      SETERRQ(1,1,"Unsupported problem, only 1,2,3 or 4 supported");
   }
 
   /* Set various defaults */
@@ -1116,6 +1133,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->mat_assemble_direct = 1;        /* by default, we assemble Jacobian directly */
   app->jfreq               = 10;       /* default frequency of computing Jacobian matrix */
   app->no_output           = 0;        /* flag - by default print some output as program runs */
+  app->use_vecsetvalues    = 0;        /* flag - by default assemble local vector data directly */
   app->fstagnate_ratio     = .01;      /* stagnation detection parameter */
   app->farray              = 0;        /* work array */
   app->favg                = 0;        /* work array */
@@ -1124,6 +1142,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
   /* Override default with runtime options */
   ierr = OptionsHasName(PETSC_NULL,"-cfl_advance",&app->cfl_advance); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-use_vecsetvalues",&app->use_vecsetvalues); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_switch",&app->cfl_switch,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&app->cfl_max,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-f_red",&app->f_reduction,&flg); CHKERRQ(ierr);
@@ -1773,7 +1792,7 @@ int UserSetGrid(Euler *app)
       ((app->bctype == IMPLICIT || app->bctype == IMPLICIT_SIZE)
           && (app->ktip+1 != ktip || app->itl+1 != itl 
             || app->itu+1 != itu || app->ile+1 != ile)))
-     SETERRQ(1,1,"UserSetGrid: Conflicting wing parameters");
+     SETERRQ(1,1,"Conflicting wing parameters");
 
   /* Create local mesh and free global mesh if using > 1 processor;
      otherwise, return. */

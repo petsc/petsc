@@ -663,28 +663,6 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
          do 200 i=xsf2,xef01
            ijkx = nc * (i-gxsf + jk)
-           IF (K.GT.KTIP) GO TO 123
-           IF (I.LE.ITL.OR.I.GT.ITU) GO TO 123
-           pos(1) = ltog(ijkx)
-           pos(2) = ltog(ijkx+1)
-           pos(3) = ltog(ijkx+2)
-           pos(4) = ltog(ijkx+3)
-           pos(5) = ltog(ijkx+4)
-           val(1) = fbcrj1(i,k)
-           val(2) = fbcruj1(i,k)
-           val(3) = fbcrvj1(i,k)
-           val(4) = fbcrwj1(i,k)
-           val(5) = fbcej1(i,k)
-           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
-           if (ierr .ne. 0) then
-              write(6,*) 'rbuild:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
-              rbuild = -1
-              return
-           endif
-
-           goto 200
- 123       continue
-
            pos(1) = ltog(ijkx)
            pos(2) = ltog(ijkx+1)
            pos(3) = ltog(ijkx+2)
@@ -916,9 +894,9 @@ c     uniprocessor grid!
 #include "ibcwork.h"
 
 
-      Double  val(5), f(0:*)
-      integer nc,i,j,k,jk,sctype,ijkx,ierr,ik
-      integer nloc,ltog(0:nloc-1),pos(5)
+      Double  f(0:*)
+      integer nc,i,j,k,jk,sctype,ijkx,ik
+      integer nloc,ltog(0:nloc-1)
       Vec     Fvec
 
       rbuild_direct = 0
@@ -960,72 +938,28 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       if (ysf1 .eq. 1) then
          j=1
          do 200 k=zsf2,zef01
-           jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
+           jk = (j-ysf)*xm + (k-zsf)*xm*ym
          do 200 i=xsf2,xef01
-           ijkx = nc * (i-gxsf + jk)
-           IF (K.GT.KTIP) GO TO 123
-           IF (I.LE.ITL.OR.I.GT.ITU) GO TO 123
-           pos(1) = ltog(ijkx)
-           pos(2) = ltog(ijkx+1)
-           pos(3) = ltog(ijkx+2)
-           pos(4) = ltog(ijkx+3)
-           pos(5) = ltog(ijkx+4)
-           val(1) = fbcrj1(i,k)
-           val(2) = fbcruj1(i,k)
-           val(3) = fbcrvj1(i,k)
-           val(4) = fbcrwj1(i,k)
-           val(5) = fbcej1(i,k)
-           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
-           if (ierr .ne. 0) then
-              write(6,*) 'rbuild_direct:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
-              rbuild_direct = -1
-              return
-           endif
-
-           goto 200
- 123       continue
-
-           pos(1) = ltog(ijkx)
-           pos(2) = ltog(ijkx+1)
-           pos(3) = ltog(ijkx+2)
-           pos(4) = ltog(ijkx+3)
-           pos(5) = ltog(ijkx+4)
-           val(1) = fbcrj1(i,k)
-           val(2) = fbcruj1(i,k)
-           val(3) = fbcrvj1(i,k)
-           val(4) = fbcrwj1(i,k)
-           val(5) = fbcej1(i,k)
-           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
-           if (ierr .ne. 0) then
-              write(6,*) 'rbuild_direct:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
-              rbuild_direct = -1
-              return
-           endif
+           ijkx = nc * (i-xsf + jk)
+           f(ijkx)   = fbcrj1(i,k)
+           f(ijkx+1) = fbcruj1(i,k)
+           f(ijkx+2) = fbcrvj1(i,k)
+           f(ijkx+3) = fbcrwj1(i,k)
+           f(ijkx+4) = fbcej1(i,k)
  200    continue
       endif
 
       if (xsf1 .eq. 1) then
         i=1
         do 300 k=zsf2,zef01
-           ik = i-gxsf + (k-gzsf)*gxm*gym
+           ik = i-xsf + (k-zsf)*xm*ym
         do 300 j=ysf2,yef01
-           ijkx = nc * (ik + (j-gysf)*gxm)
-           pos(1) = ltog(ijkx)
-           pos(2) = ltog(ijkx+1)
-           pos(3) = ltog(ijkx+2)
-           pos(4) = ltog(ijkx+3)
-           pos(5) = ltog(ijkx+4)
-           val(1) = fbcri1(j,k)
-           val(2) = fbcrui1(j,k)
-           val(3) = fbcrvi1(j,k)
-           val(4) = fbcrwi1(j,k)
-           val(5) = fbcei1(j,k)
-           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
-           if (ierr .ne. 0) then
-              write(6,*) 'rbuild_direct:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
-              rbuild_direct = -1
-              return
-           endif
+           ijkx = nc * (ik + (j-ysf)*xm)
+           f(ijkx)   = fbcri1(j,k)
+           f(ijkx+1) = fbcrui1(j,k)
+           f(ijkx+2) = fbcrvi1(j,k)
+           f(ijkx+3) = fbcrwi1(j,k)
+           f(ijkx+4) = fbcei1(j,k)
  300     continue
       endif
 
@@ -1074,75 +1008,42 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       if (xef01 .eq. ni) then
         i=ni1
         do 500 k=zsf2,zef01
-           ik = i-gxsf + (k-gzsf)*gxm*gym
+           ik = i-xsf + (k-zsf)*xm*ym
         do 500 j=ysf2,yef01
-           ijkx = nc * (ik + (j-gysf)*gxm)
-           pos(1) = ltog(ijkx)
-           pos(2) = ltog(ijkx+1)
-           pos(3) = ltog(ijkx+2)
-           pos(4) = ltog(ijkx+3)
-           pos(5) = ltog(ijkx+4)
-           val(1) = fbcri2(j,k)
-           val(2) = fbcrui2(j,k)
-           val(3) = fbcrvi2(j,k)
-           val(4) = fbcrwi2(j,k)
-           val(5) = fbcei2(j,k)
-           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
-           if (ierr .ne. 0) then
-              write(6,*) 'rbuild_direct:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
-              rbuild_direct = -1
-              return
-           endif
+           ijkx = nc * (ik + (j-ysf)*xm)
+           f(ijkx)   = fbcri2(j,k)
+           f(ijkx+1) = fbcrui2(j,k)
+           f(ijkx+2) = fbcrvi2(j,k)
+           f(ijkx+3) = fbcrwi2(j,k)
+           f(ijkx+4) = fbcei2(j,k)
  500    continue
       endif
 
       if (yef01 .eq. nj) then
         j=nj1
         do 600 k=zsf2,zef01
-           jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
+           jk = (j-ysf)*xm + (k-zsf)*xm*ym
         do 600 i=xsf2,xef01
-           ijkx = nc * (i-gxsf + jk)
-           pos(1) = ltog(ijkx)
-           pos(2) = ltog(ijkx+1)
-           pos(3) = ltog(ijkx+2)
-           pos(4) = ltog(ijkx+3)
-           pos(5) = ltog(ijkx+4)
-           val(1) = fbcrj2(i,k)
-           val(2) = fbcruj2(i,k)
-           val(3) = fbcrvj2(i,k)
-           val(4) = fbcrwj2(i,k)
-           val(5) = fbcej2(i,k)
-           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
-           if (ierr .ne. 0) then
-              write(6,*) 'rbuild_direct:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
-              rbuild_direct = -1
-              return
-           endif
+           ijkx = nc * (i-xsf + jk)
+           f(ijkx)   = fbcrj2(i,k)
+           f(ijkx+1) = fbcruj2(i,k)
+           f(ijkx+2) = fbcrvj2(i,k)
+           f(ijkx+3) = fbcrwj2(i,k)
+           f(ijkx+4) = fbcej2(i,k)
  600    continue
       endif
 
       if (zef01 .eq. nk) then
         k=nk1
         do 700 j=ysf2,yef01
-           jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
+           jk = (j-ysf)*xm + (k-zsf)*xm*ym
         do 700 i=xsf2,xef01
-           ijkx = nc * (i-gxsf + jk)
-           pos(1) = ltog(ijkx)
-           pos(2) = ltog(ijkx+1)
-           pos(3) = ltog(ijkx+2)
-           pos(4) = ltog(ijkx+3)
-           pos(5) = ltog(ijkx+4)
-           val(1) = fbcrk2(i,j)
-           val(2) = fbcruk2(i,j)
-           val(3) = fbcrvk2(i,j)
-           val(4) = fbcrwk2(i,j)
-           val(5) = fbcek2(i,j)
-           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
-           if (ierr .ne. 0) then
-              write(6,*) 'rbuild_direct:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
-              rbuild_direct = -1
-              return
-           endif
+           ijkx = nc * (i-xsf + jk)
+           f(ijkx)   = fbcrk2(i,j)
+           f(ijkx+1) = fbcruk2(i,j)
+           f(ijkx+2) = fbcrvk2(i,j)
+           f(ijkx+3) = fbcrwk2(i,j)
+           f(ijkx+4) = fbcek2(i,j)
  700    continue
       endif
       endif
