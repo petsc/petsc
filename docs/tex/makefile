@@ -44,7 +44,7 @@ petsc.html: petsc.tex
 
 clean:
 	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err \
-                          *.ilg *.idx *.ind
+                          *.ilg *.idx *.ind sindex.tex findex.tex
 
 routines.red: routines.tex rsum/rsum1.tex rsum/rsum2.tex rsum/rsum3.tex \
               rsum/rsum4.tex rsum/rsum5.tex rsum/rsum6.tex rsum/rsum7.tex \
