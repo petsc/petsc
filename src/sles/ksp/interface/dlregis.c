@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.3 1998/03/06 00:10:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.4 1998/03/20 22:46:50 bsmith Exp curfman $";
 #endif
 
 #include "sles.h"
@@ -9,10 +9,12 @@ static char vcid[] = "$Id: dlregis.c,v 1.3 1998/03/06 00:10:28 bsmith Exp bsmith
 /*
   DLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
-       This one registers all the KSP and PC methods that are in the basic PETSc libpetscsles
-    library.
+  This one registers all the KSP and PC methods that are in the basic PETSc libpetscsles
+  library.
 
-@*/
+  Input Parameter:
+  path - library path
+ */
 int DLLibraryRegister(char *path)
 {
   int ierr;
