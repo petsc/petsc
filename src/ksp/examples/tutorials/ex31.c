@@ -722,9 +722,11 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat jac)
 {
   DA             da   = (DA) dmmg->dm;
   UserContext   *user = (UserContext *) dmmg->user;
+  /* not being used!
   PetscScalar    identity[9] = {0.16666666667, 0.08333333333, 0.08333333333,
                                 0.08333333333, 0.16666666667, 0.08333333333,
                                 0.08333333333, 0.08333333333, 0.16666666667};
+  */
   PetscScalar    values[3][3];
   PetscInt       idx[3];
   PetscReal      hx, hy, hx2, hy2, area, phi_dt2;

@@ -89,7 +89,7 @@ PetscErrorCode MatDestroy_AIJ(Mat A)
 PetscErrorCode MatConvertFrom_AIJviaSeqAIJ(Mat A, const MatType type, Mat *newmat)
 {
   PetscErrorCode ierr;
-  PetscTruth     inplace;
+  PetscTruth     inplace=PETSC_FALSE;
 
   PetscFunctionBegin;
   if (*newmat == A) inplace = PETSC_TRUE;

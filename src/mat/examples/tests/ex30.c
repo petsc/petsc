@@ -21,6 +21,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   IS             row,col;
   PetscViewer    viewer1,viewer2;
+  MatFactorInfo  info;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -62,8 +63,6 @@ int main(int argc,char **args)
   if (flg1){ 
     ierr = MatLUFactorSymbolic(C,row,col,PETSC_NULL,&A);CHKERRQ(ierr);
   } else {
-    MatFactorInfo info;
-
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     info.levels        = lf;
     info.fill          = 1.0;

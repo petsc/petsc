@@ -1,8 +1,8 @@
 static char help[] = "Testing PtAP for SeqMAIJ matrix, P, with SeqAIJ matrix, A.\n\n";
 
 #include "petscmat.h"
-MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat,Mat,PetscReal,Mat*);
-MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat,Mat,Mat);
+EXTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat,Mat,PetscReal,Mat*);
+EXTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat,Mat,Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
