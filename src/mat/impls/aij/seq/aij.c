@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.270 1998/05/29 22:49:34 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.271 1998/07/13 18:48:11 bsmith Exp balay $";
 #endif
 
 /*
@@ -814,7 +814,7 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *v, sum;
   int        ierr,m = a->m, *idx, shift = a->indexshift,*ii;
-#if !defined(USE_FORTRAN_KERNELS)
+#if !defined(USE_FORTRAN_KERNEL_MULTAIJ)
   int        n, i, jrow,j;
 #endif
 
@@ -829,7 +829,7 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   idx  = a->j;
   v    = a->a;
   ii   = a->i;
-#if defined(USE_FORTRAN_KERNELS)
+#if defined(USE_FORTRAN_KERNEL_MULT_AIJ)
   fortranmultaij_(&m,x,ii,idx+shift,v+shift,y);
 #else
   v    += shift; /* shift for Fortran start by 1 indexing */
@@ -857,7 +857,7 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *z, *v, sum;
   int        ierr,m = a->m, *idx, shift = a->indexshift,*ii;
-#if !defined(USE_FORTRAN_KERNELS)
+#if !defined(USE_FORTRAN_KERNEL_MULTADDAIJ)
   int        n,i,jrow,j;
 #endif
 
@@ -869,7 +869,7 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   idx  = a->j;
   v    = a->a;
   ii   = a->i;
-#if defined(USE_FORTRAN_KERNELS)
+#if defined(USE_FORTRAN_KERNEL_MULTADDAIJ)
   fortranmultaddaij_(&m,x,ii,idx+shift,v+shift,y,z);
 #else
   v   += shift; /* shift for Fortran start by 1 indexing */
