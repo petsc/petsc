@@ -17,6 +17,7 @@ include ${PETSC_DIR}/bmake/common/test
 # Basic targets to build PETSc libraries.
 # all     : builds the c, fortran, and f90 libraries
 all       : chk_petsc_dir info info_h chklib_dir deletelibs build shared
+all_lt    : chk_petsc_dir info info_h chklib_dir deletelibs build_lt shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -471,7 +472,7 @@ exercises:
 	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
 	-@echo "========================================="
 
-.PHONY: info info_h build build_lt testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs clean update chk_petsc_dir \
+.PHONY: info info_h build build_lt testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples updatewebdocs alldoc allmanualpages \
         allhtml allcleanhtml allfortranstubs allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
         countcfunctions difffortranfunctions checkbadfortranstubs noise exercises
