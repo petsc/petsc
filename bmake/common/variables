@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.22 2001/01/09 18:27:20 balay Exp bsmith $ 
+# $Id: common_variables,v 1.23 2001/01/11 20:36:11 bsmith Exp balay $ 
 #
 # PDIR (defined from $PETSC_DIR) determines where the PETSc libraries are built.
 # LDIR defines location of libraries similar to PDIR. It can be reset by external packages like TAO.
@@ -36,24 +36,31 @@ F_SH_LIB_PATH  = ${FLINKER_SLFLAG}${PDIR} ${F_DYLIBPATH}
 # and all lower level PETSc components (such as vectors and matrices).
 # The order of listing these libraries is important!
 #
-PETSC_SYS_LIB  = -L${PDIR} -lpetsc \
-                 ${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} \
-                 ${MPI_LIB} ${SYS_LIB}
 
-PETSC_VEC_LIB  = -L${PDIR} -lpetscvec ${PETSC_SYS_LIB}
+PETSC_EXTERNAL_LIB_BASIC   = ${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} \
+                             ${MPI_LIB} ${SYS_LIB}
+PETSC_SYS_LIB_BASIC     = -lpetsc 
+PETSC_VEC_LIB_BASIC     = -lpetscvec ${PETSC_SYS_LIB_BASIC}
+PETSC_MAT_LIB_BASIC     = -lpetscmat ${PETSC_VEC_LIB_BASIC}
+PETSC_DM_LIB_BASIC      = -lpetscdm ${PETSC_MAT_LIB_BASIC}
+PETSC_SLES_LIB_BASIC    = -lpetscsles ${PETSC_DM_LIB_BASIC}
+PETSC_SNES_LIB_BASIC    = -lpetscsnes ${PETSC_SLES_LIB_BASIC}
+PETSC_TS_LIB_BASIC      = -lpetscts ${PETSC_SNES_LIB_BASIC}
+PETSC_LIB_BASIC         = ${PETSC_TS_LIB_BASIC}
+PETSC_FORTRAN_LIB_BASIC = -lpetscfortran
+PETSC_CONTRIB_BASIC     = -lpetsccontrib
 
-PETSC_MAT_LIB  = -L${PDIR} -lpetscmat ${PETSC_VEC_LIB}
+PETSC_SYS_LIB     = -L${PDIR} ${PETSC_SYS_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_VEC_LIB     = -L${PDIR} ${PETSC_VEC_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_MAT_LIB     = -L${PDIR} ${PETSC_MAT_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_DM_LIB      = -L${PDIR} ${PETSC_DM_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_SLES_LIB    = -L${PDIR} ${PETSC_SLES_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_SNES_LIB    = -L${PDIR} ${PETSC_SNES_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_TS_LIB      = -L${PDIR} ${PETSC_TS_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_LIB         = -L${PDIR} ${PETSC_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_FORTRAN_LIB = -L${PDIR} ${PETSC_FORTRAN_LIB_BASIC}
+PETSC_CONTRIB     = -L${PDIR} ${PETSC_CONTRIB_BASIC}
 
-PETSC_DM_LIB  = -L${PDIR} -lpetscdm ${PETSC_MAT_LIB}
-
-PETSC_SLES_LIB  = -L${PDIR} -lpetscsles ${PETSC_DM_LIB}
-
-PETSC_SNES_LIB  = -L${PDIR} -lpetscsnes ${PETSC_SLES_LIB}
-
-PETSC_TS_LIB  = -L${PDIR} -lpetscts ${PETSC_SNES_LIB}
-
-PETSC_LIB   = -L${PDIR} -lpetscts -lpetscsnes  -lpetscsles -lpetscdm -lpetscmat \
-		-lpetscvec ${PETSC_SYS_LIB}
 #
 # ---------------------------------------------------------------------------------------
 #
@@ -84,11 +91,10 @@ PETSC_ADIC_LIB  = -L${PDIR} -lpetscsnes -lpetscsles \
 #
 # Link if you are using the PETSc Fortran interface.
 #
-PETSC_FORTRAN_LIB = -L${PDIR} -lpetscfortran
+
 #
 # Link if you are using code from the contributed part of PETSc
 #
-PETSC_CONTRIB = -L${PDIR} -lpetsccontrib
 #
 # Some variables used to build shared libraries
 SHLIBS = libpetsccontrib libpetsc libpetscmat libpetscsles \
