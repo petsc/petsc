@@ -1,6 +1,6 @@
 
-#ifndef lint
-static char vcid[] = "$Id: ex18.c,v 1.3 1996/03/19 21:27:49 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex18.c,v 1.4 1996/03/26 15:09:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -9,14 +9,13 @@ Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
                     use the file petsc/src/mat/examples/matbinary.ex\n\n";
 
-#include "draw.h"
 #include "mat.h"
 #include "sles.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {
-  int        ierr, its, set,flg,m,n,mvec;
+  int        ierr, its, flg,m,n,mvec;
+  PetscTruth set;
   double     time1, norm;
   Scalar     zero = 0.0, none = -1.0;
   Vec        x, b, u;
@@ -28,14 +27,14 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-#if defined(PETSC_COMPLEX)
-  SETERRA(1,"This example does not work with complex numbers");
+#if defined(USE_PETSC_COMPLEX)
+  SETERRA(1,0,"This example does not work with complex numbers");
 #else
 
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
-  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
+  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
   ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
@@ -50,7 +49,7 @@ int main(int argc,char **args)
     Vec    tmp;
     Scalar *bold,*bnew;
     /* create a new vector b by padding the old one */
-    ierr = VecCreate(MPI_COMM_WORLD,m,&tmp); CHKERRA(ierr);
+    ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&tmp); CHKERRA(ierr);
     ierr = VecGetArray(tmp,&bnew); CHKERRA(ierr);
     ierr = VecGetArray(b,&bold); CHKERRA(ierr);
     PetscMemcpy(bnew,bold,mvec*sizeof(Scalar)); CHKERRA(ierr);
@@ -65,7 +64,7 @@ int main(int argc,char **args)
 
   /* Solve system */
   PLogStagePush(1);
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   time1 = PetscGetTime();
@@ -77,13 +76,13 @@ int main(int argc,char **args)
   ierr = MatMult(A,x,u);
   ierr = VecAXPY(&none,b,u); CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);
+  PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);
   if (norm < 1.e-10) {
-    PetscPrintf(MPI_COMM_WORLD,"Residual norm < 1.e-10\n");
+    PetscPrintf(PETSC_COMM_WORLD,"Residual norm < 1.e-10\n");
   } else {
-    PetscPrintf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
+    PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %10.4e\n",norm);
   }
-  PetscPrintf(MPI_COMM_WORLD,"Time for solve = %5.2f seconds\n",time1); 
+  PetscPrintf(PETSC_COMM_WORLD,"Time for solve = %5.2f seconds\n",time1); 
 
   /* Cleanup */
   ierr = SLESDestroy(sles); CHKERRA(ierr);

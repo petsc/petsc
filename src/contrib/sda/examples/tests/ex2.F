@@ -1,5 +1,5 @@
 
-/* "$Id: ex2.F,v 1.6 1997/07/10 20:21:00 balay Exp balay $"; */
+/* "$Id: ex2.F,v 1.7 1997/09/22 15:15:43 balay Exp bsmith $"; */
 
 
 #include "include/FINCLUDE/petsc.h"
@@ -12,14 +12,14 @@ C   not also work with DA contexts.
 
 
       integer        MM,ierr,dof,stencil_width,flg,i,start,end,PP
-      integer        flg2,flg3,NN,m,n,p,in_idx,out_idx
+      integer        flg2,flg3,NN,m,n,p
+      PetscOffset    in_idx,out_idx
       DAPeriodicType periodic
       DAStencilType  stencil_type
       DA             da
       integer        sda
       Vec            local,global,local_copy
       Scalar         value,mone,in(1),out(1)
-      common         in, out
       Scalar         norm,work
  
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -69,8 +69,8 @@ C   not also work with DA contexts.
      *                  stencil_width,PETSC_NULL,sda,ierr)
       endif
 
-      call DAGetDistributedVector(da,global,ierr)
-      call DAGetLocalVector(da,local,ierr)
+      call DACreateGlobalVector(da,global,ierr)
+      call DACreateLocalVector(da,local,ierr)
       call VecDuplicate(local,local_copy,ierr)
 
   

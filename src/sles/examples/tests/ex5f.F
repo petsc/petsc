@@ -1,5 +1,5 @@
 
-C      "$Id: ex5f.F,v 1.2 1997/07/10 20:21:26 balay Exp balay $";
+C      "$Id: ex5f.F,v 1.3 1997/07/10 20:21:42 balay Exp bsmith $";
 
        implicit none
 
@@ -23,12 +23,12 @@ C
      
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call SLESCreate(MPI_COMM_SELF,sles,ierr)
+      call SLESCreate(PETSC_COMM_SELF,sles,ierr)
 
-      call MatCreateShell(MPI_COMM_SELF,m,m,m,m,PETSC_NULL,A,ierr)
+      call MatCreateShell(PETSC_COMM_SELF,m,m,m,m,PETSC_NULL,A,ierr)
       call MatShellSetOperation(A,MATOP_MULT,mymatmult,ierr)
 
-      call VecCreateSeq(MPI_COMM_SELF,m,x,ierr)
+      call VecCreateSeq(PETSC_COMM_SELF,m,x,ierr)
       call VecDuplicate(x,y,ierr)
       call VecSet(1.d0,x,ierr)
 
