@@ -144,10 +144,10 @@ foreach job ($*)
   if ( $job6 != 0 ) then 
     rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job6 tree  >>& maint/examples_$arch_$bopt.log"
   endif
-  rsh $mach -n "cd $hme ;echo 'Finished Build on $mach $arch $bopt `date`' >> maint/examples_$arch_$bopt.log"
-  rsh $mach -n "cd $hme ; echo 'Finished Build `date`' >> maint/build_$arch_$bopt.log"
-  rsh $mach -n "cd $hme ;echo 'Finished Build `date`' >> maint/examples_$arch_$bopt.log"
-  rsh $mach -n "cd $hme ;/bin/cp  maint/examples_$arch_$bopt.log /home/bsmith/petsc/maint/nightlylogs"
-  rsh $mach -n "cd $hme ;/bin/cp  maint/build_$arch_$bopt.log /home/bsmith/petsc/maint/nightlylogs"
+  rsh $mach -n "cd $hme ;echo 'Finished Build on $mach $arch $bopt `date`' >> maint/examples_$arch_$bopt_$mach.log"
+  rsh $mach -n "cd $hme ; echo 'Finished Build `date`' >> maint/build_$arch_$bopt_$mach.log"
+  rsh $mach -n "cd $hme ;echo 'Finished Build `date`' >> maint/examples_$arch_$bopt_$mach.log"
+  rsh $mach -n "cd $hme ;/bin/cp  maint/examples_$arch_$bopt_$mach.log /home/bsmith/petsc/maint/nightlylogs"
+  rsh $mach -n "cd $hme ;/bin/cp  maint/build_$arch_$bopt_$mach.log /home/bsmith/petsc/maint/nightlylogs"
 end
 
