@@ -62,7 +62,7 @@ void lib::FindInstallation(void) {
   tool::FindInstallation();
   string::size_type n = InstallDir.length()-1;
   VisualStudioDir = InstallDir.substr(0,n);
-  n = VisualStudioDir.find_last_of("\\");
+  n = VisualStudioDir.rfind("\\");
   VisualStudioDir = VisualStudioDir.substr(0,n+1);
   VSVersion = InstallDir.substr(0,InstallDir.length()-1);
   VSVersion = VSVersion.substr(VisualStudioDir.length());

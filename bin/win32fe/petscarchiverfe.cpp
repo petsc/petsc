@@ -28,7 +28,7 @@ void archiver::Execute(void) {
   if ((!helpfound) || (!versionfound)) {
     string archivename = file.front();
     file.pop_front();
-    string::size_type n = archivename.find_last_of("\\");
+    string::size_type n = archivename.rfind("\\");
     if (n!=string::npos) {
       string dir = archivename.substr(0,n);
       if (GetShortPath(dir)) {
@@ -96,12 +96,9 @@ void archiver::Merge(string &str,list<string> &liststr,LI &i) {
 
 void archiver::DisplayVersion(void) {
   tool::DisplayVersion();
-  version_string = archivearg.front();
-  version_string += " 2>&1 | head -1";
-  if (verbose) {
-    cout << version_string << endl;
-  }
-  system(version_string.c_str());
+  string version = archivearg.front();
+  version += " 2>&1 | head -1";
+  system(version.c_str());
 }
  
 bool archiver::IsAKnownTool(void) {

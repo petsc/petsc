@@ -24,10 +24,18 @@ void cl::FindInstallation(void) {
   tool::FindInstallation();
   string::size_type n = InstallDir.length()-1;
   VisualStudioDir = InstallDir.substr(0,n);
-  n = VisualStudioDir.find_last_of("\\");
+  n = VisualStudioDir.rfind("\\");
   VisualStudioDir = VisualStudioDir.substr(0,n+1);
+  if (verbose) {
+    string longpath;
+    GetLongPath(VisualStudioDir,longpath);
+    cout << "win32fe: Visual Studio Installation: " << longpath << endl;
+  }
   VSVersion = InstallDir.substr(0,InstallDir.length()-1);
   VSVersion = VSVersion.substr(VisualStudioDir.length());
+  if (verbose) {
+    cout << "win32fe: Visual C++ Version: " << VSVersion << endl;
+  }
 }
 
 void cl::AddPaths(void) {
@@ -65,9 +73,14 @@ void cl::Help(void) {
 void cl::FoundL(LI &i) {
   string temp = i->substr(2);
   ReplaceSlashWithBackslash(temp);
-  GetShortPath(temp);
-  temp = "-libpath:"+temp;
-  linkarg.push_back(temp);
+  if (GetShortPath(temp)) {
+    temp = "-libpath:"+temp;
+    linkarg.push_back(temp);
+  } else {
+    if (!woff) {
+      cerr << "Warning: win32fe Library Path Not Found:" << i->substr(2) << endl;
+    }
+  }
 }
 
 void df::Help(void) {
@@ -88,8 +101,8 @@ void df::Help(void) {
 void df::AddPaths(void) {
   string addpath1,addpath2,DFVersion;
   addpath1 = DFVersion = InstallDir.substr(0,InstallDir.length()-1);
-  DFVersion = DFVersion.substr(DFVersion.find_last_of("\\")+1);
-  addpath2 = addpath1 = addpath1.substr(0,addpath1.find_last_of("\\")+1);
+  DFVersion = DFVersion.substr(DFVersion.rfind("\\")+1);
+  addpath2 = addpath1 = addpath1.substr(0,addpath1.rfind("\\")+1);
 
   if (DFVersion=="DF98") {
     addpath1 += "Common\\MSDev98\\Bin";
@@ -114,12 +127,17 @@ void df::AddSystemLib(void) {
   string::size_type len_m_1 = InstallDir.length()-1;
   string libdir,DFVersion;
   libdir = DFVersion = InstallDir.substr(0,len_m_1);
-  DFVersion = DFVersion.substr(DFVersion.find_last_of("\\")+1,len_m_1);
-  libdir = libdir.substr(0,libdir.find_last_of("\\")+1);
+  DFVersion = DFVersion.substr(DFVersion.rfind("\\")+1,len_m_1);
+  libdir = libdir.substr(0,libdir.rfind("\\")+1);
 
   if (DFVersion=="DF98") {
     libdir += "VC98\\Lib";
     GetShortPath(libdir);
+    if (verbose) {
+      string longpath;
+      GetLongPath(libdir,longpath);
+      cout << "win32fe: Adding Flag: -L" << longpath << endl;
+    }
     libdir = "-L" + libdir;
     LI i = arg.end();
     arg.push_back(libdir);

@@ -53,19 +53,31 @@ void compiler::AddSystemInfo(void) {
 }
 
 void compiler::AddSystemInclude(void) {
-    /* System headers are in InstallDir/include */
-    arg.push_back("-I" + InstallDir + "include");
-    LI i = arg.end();
-    FoundI(--i);
-    arg.pop_back();
+  /* System headers are in InstallDir/include */
+  string include = InstallDir + "include";
+  if (verbose) {
+    string longpath;
+    GetLongPath(include,longpath);
+    cout << "win32fe: Adding Flag: -I" << longpath << endl;
+  }
+  arg.push_back("-I" + include);
+  LI i = arg.end();
+  FoundI(--i);
+  arg.pop_back();
 }
 
 void compiler::AddSystemLib(void) {
-    /* System libraries are in InstallDir/lib */ 
-    arg.push_back("-L" + InstallDir + "lib");
-    LI i = arg.end();
-    FoundL(--i);
-    arg.pop_back();
+  /* System libraries are in InstallDir/lib */ 
+  string lib = InstallDir + "lib";
+  if (verbose) {
+    string longpath;
+    GetLongPath(lib,longpath);
+    cout << "win32fe: Adding Flag: -L" << longpath << endl;
+  }
+  arg.push_back("-L" + lib);
+  LI i = arg.end();
+  FoundL(--i);
+  arg.pop_back();
 }
 
 void compiler::Execute(void) {
@@ -124,7 +136,7 @@ void compiler::Compile(void) {
 
     if (OutputFlag==compilearg.end()) {
       /* Make default output a .o not a .obj */
-      n = outfile.find_last_of(".");
+      n = outfile.rfind(".");
       outfile = outfile.substr(0,n) + ".o";
     } else {
       /* remove output file from compilearg list */
@@ -137,7 +149,7 @@ void compiler::Compile(void) {
     }
 
     /* Make sure output directory exists */ 
-    string::size_type n = outfile.find_last_of("\\");
+    string::size_type n = outfile.rfind("\\");
     if (n!=string::npos) {
       string dir = outfile.substr(0,n);
       if (GetShortPath(dir)) {
@@ -154,7 +166,7 @@ void compiler::Compile(void) {
     string filename = *i;
     n = filename.find(":");
     if (n==string::npos) {
-      n = filename.find_last_of("\\");
+      n = filename.rfind("\\");
       if (n!=string::npos) {
         if (!GetShortPath(filename)) {
           cerr << "Error: win32fe: Input File Not Found: " << *i << endl;
@@ -276,12 +288,9 @@ void compiler::FixOutput(void) {
 
 void compiler::DisplayVersion(void) {
   tool::DisplayVersion();
-  version_string = compilearg.front();
-  version_string += " 2>&1 | head -1";
-  if (verbose) {
-    cout << version_string << endl;
-  }
-  system(version_string.c_str());
+  string version = compilearg.front();
+  version += " 2>&1 | head -1";
+  system(version.c_str());
 }
 
 bool compiler::IsAKnownTool(void) {

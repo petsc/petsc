@@ -90,15 +90,28 @@ void tool::FindInstallation(void) {
       ierr = true;
     }
   }
-  InstallDir = InstallDir.substr(0,InstallDir.find_last_of("\\"));
-  InstallDir = InstallDir.substr(0,InstallDir.find_last_of("\\")+1);
+  string tool=arg.front();
+  n = tool.rfind("\\")+1;
+  tool = tool.substr(n,tool.rfind(".")-n);
   if (GetShortPath(InstallDir)) {
     inpath = true;
+    n = InstallDir.rfind("\\BIN\\");
+    if (n==string::npos) {
+      n = InstallDir.rfind("\\Bin\\");
+    }
+    if (n==string::npos) {
+      n = InstallDir.rfind("\\bin\\");
+    }
+    InstallDir = InstallDir.substr(0,n+1);
+    if (verbose) {
+      string longpath;
+      GetLongPath(InstallDir,longpath);
+      cout << "win32fe: " << tool << " Installation Found: " << longpath << endl;
+    }
   } else {
     ierr = true;
   }
   if (ierr) {
-    string tool=arg.front();
     cerr << endl << "Error: win32fe: Tool Not Found: " << tool << endl;
     cerr << "  Specify the complete path to " << tool << " with --use" << endl;
     cerr << "  Use --help for more information on win32fe options." << endl << endl;
@@ -158,24 +171,33 @@ void tool::FoundPath(LI &i) {
   if (*i=="--path") {
     i = arg.erase(i);
     if (i!=arg.end()) {
-      string shortpath = *i;
       int length = 1024*sizeof(char);
       char buff[1024];
       string path="PATH";
       GetEnvironmentVariable(path.c_str(),buff,length);
       string newpath = (string)buff;
-      int noterr = GetShortPath(shortpath);
-      if (noterr) {
-        if (verbose) {
-          cout << "win32fe: Adding to path: " << *i << endl;
+
+      string shortpath,inpath = *i;
+      string::size_type n=inpath.find(";");
+      string::size_type nold=0;
+      do {
+        string longpath,pathi=inpath.substr(nold,n);
+        if (GetShortPath(pathi)) {
+          if (verbose) {
+            GetLongPath(pathi,longpath);
+            cout << "win32fe: Adding to path: " << longpath << endl;
+          }
+          shortpath += pathi + ";";
+        } else {
+          if (!woff) {
+            cout << "Warning: win32fe Path Not Found: " << inpath.substr(nold,n) << endl;
+          }
         }
-        newpath = shortpath + ";" + newpath;
-        SetEnvironmentVariable(path.c_str(),newpath.c_str());
-      } else {
-        if (!woff) {
-          cout << "Warning: win32fe Path Not Found: " << *i << endl;
-        }
-      }
+        nold = n;
+        n = inpath.find(";",nold+1);
+      } while (nold++!=string::npos);
+      newpath = shortpath + newpath;
+      SetEnvironmentVariable(path.c_str(),newpath.c_str());
       i = arg.erase(i);
     } else {
       i--;
@@ -249,7 +271,7 @@ void tool::FoundHelp(LI &i) {
 void tool::FoundFile(LI &i) {
   string temp = *i;
   ReplaceSlashWithBackslash(temp);
-  string::size_type n = temp.find_last_of("\\");
+  string::size_type n = temp.rfind("\\");
   if (n!=string::npos) {
     string dir = temp.substr(0,n);
     if (GetShortPath(dir)) {

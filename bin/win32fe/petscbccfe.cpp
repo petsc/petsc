@@ -38,7 +38,7 @@ void bcc::Link(void) {
   vector<string> ext(file.size(),"");
   vector<string> temp(file.size(),"");
   for (i=0,f=file.begin();f!=file.end();i++,f++) {
-    int n = (*f).find_last_of(".");
+    int n = (*f).rfind(".");
     ext[i] = (*f).substr(n,string::npos);
     if (ext[i] == ".o") {
       temp[i]=*f;
