@@ -120,7 +120,7 @@ class Configure(config.base.Configure):
       packages = self.framework.argDB['with-external-packages-dir']
       try:
         self.logPrint("Retrieving Party; this may take several minutes\n", debugSection='screen')
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/PARTY_1.99.tar.gz', os.path.join(packages, 'PARTY_1.99.tar.gz'))
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/PARTY_1.99.tar.gz', os.path.join(packages, 'PARTY_1.99.tar.gz'))
       except Exception, e:
         raise RuntimeError('Error downloading Party: '+str(e))
       try:

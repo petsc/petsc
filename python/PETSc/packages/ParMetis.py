@@ -173,7 +173,7 @@ class Configure(config.base.Configure):
       else:
         try:
           self.logPrint("Retrieving ParMetis; this may take several minutes\n", debugSection='screen')
-          urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/parmetis.tar.gz', os.path.join(packages, 'parmetis.tar.gz'))
+          urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/parmetis.tar.gz', os.path.join(packages, 'parmetis.tar.gz'))
         except Exception, e:
           raise RuntimeError('Error downloading ParMetis: '+str(e))
         try:

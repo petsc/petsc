@@ -110,7 +110,7 @@ class Configure(config.base.Configure):
       packages = self.framework.argDB['with-external-packages-dir']
       try:
         self.logPrint("Retrieving Chaco; this may take several minutes\n", debugSection='screen')
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/Chaco-2.2.tar.gz', os.path.join(packages, 'Chaco-2.2.tar.gz'))
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/Chaco-2.2.tar.gz', os.path.join(packages, 'Chaco-2.2.tar.gz'))
       except Exception, e:
         raise RuntimeError('Error downloading Chaco: '+str(e))
       try:

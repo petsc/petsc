@@ -121,7 +121,7 @@ class Configure(config.base.Configure):
       packages = self.framework.argDB['with-external-packages-dir']
       try:
         self.logPrint("Retrieving Jostle; this may take several minutes\n", debugSection='screen')
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/jostle.tar.gz', os.path.join(packages, 'jostle.tar.gz'))
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/jostle.tar.gz', os.path.join(packages, 'jostle.tar.gz'))
       except Exception, e:
         raise RuntimeError('Error downloading Jostle: '+str(e))
       try:
