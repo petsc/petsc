@@ -40,7 +40,7 @@ class Configure(config.base.Configure):
 
     help.addArgument('Compilers', '-with-gnu-compilers=<bool>',             nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
     help.addArgument('Compilers', '-with-vendor-compilers=<vendor>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument all vendors, 0 no vendors)'))
-    help.addArgument('Compilers', '-with-64-bit=<bool>',                    nargs.ArgBool(None, 0, 'Use 64 bit compilers and libraries'))
+    help.addArgument('Compilers', '-with-64-bit-pointers=<bool>',                    nargs.ArgBool(None, 0, 'Use 64 bit compilers and libraries'))
 
     help.addArgument('Compilers', '-CPP=<prog>',            nargs.Arg(None, None, 'Specify the C preprocessor'))
     help.addArgument('Compilers', '-CPPFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C preprocessor options'))
@@ -159,7 +159,7 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'CC'):
           self.framework.argDB['CC'] = self.CC
           self.checkCompiler('C')
-          if self.framework.argDB['with-64-bit']:
+          if self.framework.argDB['with-64-bit-pointers']:
             if Configure.isGNU(self.CC):
               raise RuntimeError('Cannot handle 64 bit with gnu compilers yet')
             else:
@@ -292,7 +292,7 @@ class Configure(config.base.Configure):
           if self.getExecutable(compiler, resultName = 'CXX'):
             self.framework.argDB['CXX'] = self.CXX
             self.checkCompiler('Cxx')
-            if self.framework.argDB['with-64-bit']:
+            if self.framework.argDB['with-64-bit-pointers']:
               if Configure.isGNU(self.CC):
                 raise RuntimeError('Cannot handle 64 bit with gnu compilers yet')
               else:
@@ -416,7 +416,7 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'FC'):
           self.framework.argDB['FC'] = self.FC
           self.checkCompiler('F77')
-          if self.framework.argDB['with-64-bit']:
+          if self.framework.argDB['with-64-bit-pointers']:
             if Configure.isGNU(self.CC):
               raise RuntimeError('Cannot handle 64 bit with gnu compilers yet')
             else:
