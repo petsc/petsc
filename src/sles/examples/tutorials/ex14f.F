@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.11 1998/04/21 18:31:00 balay Exp bsmith $";
+!    "$Id: ex14f.F,v 1.12 1998/10/26 17:15:35 bsmith Exp bsmith $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -314,8 +314,9 @@
         temp = (min(j,my-j-1))*hy
         do 40 i=xs,xs+xm-1
           row = i - gxs + (j - gys)*gxm + 1
-          if (i.eq.0 .or. j.eq.0 .or. i.eq.mx-1 .or. j.eq.my-1) then
-            xx(idx+row) = 0.0 
+          if (i .eq. 0 .or. j .eq. 0 .or. i .eq. mx-1 .or.              &
+     &        j .eq. my-1) then
+            xx(idx+row) = 0.d0 
             continue
           endif
           xx(idx+row) = temp1*sqrt(min( (min(i,mx-i-1))*hx,temp))
@@ -411,7 +412,8 @@
         do 60 i=xs,xs+xm-1
           row = row + 1
 
-          if (i.eq.0 .or. j.eq.0 .or. i.eq.mx-1 .or. j.eq.my-1) then
+          if (i .eq. 0 .or. j .eq. 0 .or. i .eq. mx-1 .or.              &
+     &        j .eq. my-1) then
             ff(idf+row) = xx(idx+row)
             goto 60
           endif
@@ -533,7 +535,7 @@
         do 20 i=xs,xs+xm-1
           row = row + 1
           grow = ltog(idltog+row)
-          if (i.eq.0 .or. j.eq.0 .or. i. eq. (mx-1) .or.                &
+          if (i .eq. 0 .or. j .eq. 0 .or. i .eq. (mx-1) .or.            &
      &        j .eq. (my-1)) then
              call MatSetValues(jac,1,grow,1,grow,one,INSERT_VALUES,ierr)
              go to 20
