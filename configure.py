@@ -19,6 +19,7 @@ class Configure:
     self.framework = framework
     self.defines   = {}
     self.subst     = {}
+    self.argSubst  = {}
     self.help      = {}
     # Interaction with Autoconf
     self.m4           = '/usr/bin/m4'
@@ -44,6 +45,12 @@ class Configure:
   def addSubstitution(self, name, value, comment = ''):
     '''Designate that "@name@" should be replaced by "value" in all files which experience substitution'''
     self.subst[name] = value
+    if comment: self.addHelp(name, comment)
+    return
+
+  def addArgumentSubstitution(self, name, arg, comment = ''):
+    '''Designate that "@name@" should be replaced by argDB["arg"] in all files which experience substitution'''
+    self.argSubst[name] = arg
     if comment: self.addHelp(name, comment)
     return
 
@@ -519,6 +526,8 @@ class Framework(Configure):
     name = match.group('name')
     if self.subst.has_key(name):
       return self.subst[name]
+    elif self.argSubst.has_key(name):
+      return self.argDB[self.argSubst[name]]
     else:
       for child in self.children:
         if not hasattr(child, 'subst') or not isinstance(child.defines, dict):
@@ -527,13 +536,18 @@ class Framework(Configure):
           substPrefix = self.getSubstitutionPrefix(child)
         else:
           substPrefix = prefix
-        if substPrefix: substPrefix = substPrefix+'_'
-        if substPrefix and name.startswith(substPrefix):
-          childName = name.replace(substPrefix, '', 1)
+        if substPrefix:
+          substPrefix = substPrefix+'_'
+          if name.startswith(substPrefix):
+            childName = name.replace(substPrefix, '', 1)
+          else:
+            continue
         else:
           childName = name
         if child.subst.has_key(childName):
           return child.subst[childName]
+        elif child.argSubst.has_key(childName):
+          return self.argDB[child.argSubst[childName]]
     return '@'+name+'_UNKNOWN@'
 
   def substituteFile(self, inName, outName):
@@ -556,6 +570,8 @@ class Framework(Configure):
   def dumpSubstitutions(self):
     for pair in self.subst.items():
       print pair[0]+'  --->  '+pair[1]
+    for pair in self.argSubst.items():
+      print pair[0]+'  --->  '+self.argDB[pair[1]]
     for child in self.children:
       if not hasattr(child, 'subst') or not isinstance(child.defines, dict): continue
       substPrefix = self.getSubstitutionPrefix(child)
@@ -564,6 +580,11 @@ class Framework(Configure):
           print substPrefix+'_'+pair[0]+'  --->  '+pair[1]
         else:
           print pair[0]+'  --->  '+pair[1]
+      for pair in child.argSubst.items():
+        if substPrefix:
+          print substPrefix+'_'+pair[0]+'  --->  '+self.argDB[pair[1]]
+        else:
+          print pair[0]+'  --->  '+self.argDB[pair[1]]
     return
 
   def outputDefine(self, f, name, value = None, comment = ''):

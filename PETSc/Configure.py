@@ -321,8 +321,6 @@ class Configure(configure.Configure):
     '''Fix up all the things that we currently need to run'''
     self.addSubstitution('LT_CC', '${PETSC_LIBTOOL} ${LIBTOOL} --mode=compile')
     self.addSubstitution('CC_SHARED_OPT', '')
-    self.addSubstitution('LDFLAGS', self.framework.argDB['LDFLAGS'])
-    self.addSubstitution('LIBS',    self.framework.argDB['LIBS'])
     return
 
   def configure(self):
