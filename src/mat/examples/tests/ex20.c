@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.10 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex20.c,v 1.11 2000/01/11 21:01:03 bsmith Exp balay $*/
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
 
@@ -16,6 +16,10 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+
+  /* This example does not work correctly for np > 2 */
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  if (size > 2) SETERRA(1,0,"Use np <= 2");
 
  /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
