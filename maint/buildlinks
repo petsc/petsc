@@ -19,9 +19,9 @@ find . \(  -name man -prune -o -name www -prune \) \
 #
 # make links directly to docs/www and docs/man
 #
-if (! -e $shadowdir/docs/man) then
-        ln -s $petscdir/docs/man $shadowdir/docs/man
-endif
+#if (! -e $shadowdir/docs/man) then
+#        ln -s $petscdir/docs/man $shadowdir/docs/man
+#endif
 if (! -e $shadowdir/docs/www) then
         ln -s $petscdir/docs/www $shadowdir/docs/www
 endif
