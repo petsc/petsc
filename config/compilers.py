@@ -710,7 +710,7 @@ class Configure(config.base.Configure):
   def checkSharedLinkerPaths(self):
     '''Determine whether the linker accepts the -rpath'''
     flag = '-Wl,-rpath,'
-    if not self.checkLinkerFlag(flag):
+    if not self.checkLinkerFlag(flag+'`pwd`'):
       flag = ''
     self.addSubstitution('RPATH', flag)
     self.slpath = flag
