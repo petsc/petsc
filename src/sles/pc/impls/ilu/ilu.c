@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.20 1995/07/09 23:16:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.21 1995/07/17 03:54:45 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -7,6 +7,7 @@ static char vcid[] = "$Id: ilu.c,v 1.20 1995/07/09 23:16:31 bsmith Exp bsmith $"
          a direct solver.
 */
 #include "pcimpl.h"
+#include "pviewer.h"
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif
@@ -98,7 +99,28 @@ static int PCPrintHelp_ILU(PC pc)
   if (pc->prefix) p = pc->prefix; else p = "-";
   fprintf(stderr," %spc_ilu_ordering name: ordering to reduce fill",p);
   fprintf(stderr," (nd,natural,1wd,rcm,qmd)\n");
-  fprintf(stderr," %spc_ilu_levels levels: levels of fill",p);
+  fprintf(stderr," %spc_ilu_levels levels: levels of fill\n",p);
+  return 0;
+}
+
+static int PCView_ILU(PetscObject obj,Viewer viewer)
+{
+  PC     pc = (PC)obj;
+  FILE   *fd = ViewerFileGetPointer_Private(viewer);
+  PC_ILU *lu = (PC_ILU *) pc->data;
+  char  *cstring;
+  if (lu->ordering == ORDER_ND) cstring = "nested dissection";
+  else if (lu->ordering == ORDER_NATURAL) cstring = "natural";
+  else if (lu->ordering == ORDER_1WD) cstring = "1-way dissection";
+  else if (lu->ordering == ORDER_RCM) cstring = "Reverse Cuthill-McGee";
+  else if (lu->ordering == ORDER_QMD) cstring = "quotient minimum degree";
+  else cstring = "unknown";
+  if (lu->levels == 1)
+    MPIU_fprintf(pc->comm,fd,"    ILU: %d level of fill, ordering is %s\n",
+    lu->levels,cstring);
+  else
+    MPIU_fprintf(pc->comm,fd,"    ILU: %d levels of fill, ordering is %s\n",
+    lu->levels,cstring);
   return 0;
 }
 
@@ -151,5 +173,6 @@ int PCCreate_ILU(PC pc)
   pc->data      = (void *) dir;
   pc->setfrom   = PCSetFromOptions_ILU;
   pc->printhelp = PCPrintHelp_ILU;
+  pc->view      = PCView_ILU;
   return 0;
 }

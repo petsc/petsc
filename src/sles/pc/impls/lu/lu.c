@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.29 1995/07/11 02:47:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.30 1995/07/17 03:54:35 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -7,6 +7,7 @@ static char vcid[] = "$Id: lu.c,v 1.29 1995/07/11 02:47:46 curfman Exp bsmith $"
          a direct solver.
 */
 #include "pcimpl.h"
+#include "pviewer.h"
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif
@@ -79,6 +80,7 @@ int PCLUSetUseInplace(PC pc)
   dir->inplace = 1;
   return 0;
 }
+
 static int PCSetFromOptions_LU(PC pc)
 {
   char        name[10];
@@ -105,6 +107,24 @@ static int PCPrintHelp_LU(PC pc)
   fprintf(stderr," %spc_lu_in_place: do factorization in place\n",p);
   fprintf(stderr," %spc_lu_ordering name: ordering to reduce fill",p);
   fprintf(stderr," (nd,natural,1wd,rcm,qmd)\n");
+  return 0;
+}
+
+static int PCView_LU(PetscObject obj,Viewer viewer)
+{
+  PC    pc = (PC)obj;
+  FILE  *fd = ViewerFileGetPointer_Private(viewer);
+  PC_LU *lu = (PC_LU *) pc->data;
+  char  *cstring;
+  if (lu->ordering == ORDER_ND) cstring = "nested dissection";
+  else if (lu->ordering == ORDER_NATURAL) cstring = "natural";
+  else if (lu->ordering == ORDER_1WD) cstring = "1-way dissection";
+  else if (lu->ordering == ORDER_RCM) cstring = "Reverse Cuthill-McGee";
+  else if (lu->ordering == ORDER_QMD) cstring = "quotient minimum degree";
+  else cstring = "unknown";
+  if (lu->inplace) MPIU_fprintf(pc->comm,fd,
+    "    LU: in-place factorization, ordering is %s\n",cstring);
+  else MPIU_fprintf(pc->comm,fd,"    LU: ordering is %s\n",cstring);
   return 0;
 }
 
@@ -174,6 +194,7 @@ int PCCreate_LU(PC pc)
   pc->data       = (void *) dir;
   pc->setfrom    = PCSetFromOptions_LU;
   pc->printhelp  = PCPrintHelp_LU;
+  pc->view       = PCView_LU;
   pc->getfactmat = PCGetFactoredMatrix_LU;
   return 0;
 }
