@@ -15,13 +15,13 @@ LIB_SUFFIX         = a
 DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = gcc -fPIC
+C_CC		   = ${PETSC_DIR}/bin/taucc.py -cc=gcc -pdt_parse=${PDT_PARSE} -tau_instr=${TAU_INSTR} -fPIC
 C_FC		   = g77 -Wno-globals
 C_CLINKER_SLFLAG   = -Wl,-rpath,
 C_FLINKER_SLFLAG   = -Wl,-rpath,
 C_CLINKER	   = gcc
 C_FLINKER	   = g77
-C_CCV		   = ${C_CC} --version
+C_CCV		   = gcc --version
 C_FCV              = g77 --version | head -1
 C_SYS_LIB	   = -ldl -lc -lg2c -lm
 #C_SYS_LIB	   = -ldl -lc -lf2c -lm
@@ -34,13 +34,13 @@ O_COPTFLAGS	   = -O -Wall -Wshadow  -fomit-frame-pointer
 O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
 #
-CXX_CC		   = g++ -fPIC
+CXX_CC		   = ${PETSC_DIR}/bin/taucc.py -cc=g++ -pdt_parse=${PDT_PARSE} -tau_instr=${TAU_INSTR} -fPIC
 CXX_FC		   = g77 -Wno-globals
 CXX_CLINKER_SLFLAG = -Wl,-rpath,
 CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = g++
 CXX_FLINKER	   = g++
-CXX_CCV		   = ${CXX_CC} --version
+CXX_CCV		   = g++ --version
 #CXX_SYS_LIB	   = -ldl -lc -lf2c -lm
 CXX_SYS_LIB	   = -ldl -lstdc++ -lc -lg2c  -lm
 #CXX_SYS_LIB	   = -ldl -lc /usr/lib/libf2c.a -lm
