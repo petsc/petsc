@@ -28,7 +28,8 @@ class Configure(config.base.Configure):
     self.functions    = self.framework.require('config.functions',         self)
     self.libraries    = self.framework.require('config.libraries',         self)
     self.arch         = self.framework.require('PETSc.utilities.arch',     self)
-    self.bmake        = self.framework.require('PETSc.utilities.bmakeDir', self)    
+    self.bmake        = self.framework.require('PETSc.utilities.bmakeDir', self)
+    self.dynamic      = self.framework.require('PETSc.utilities.dynamicLibraries', self)        
     self.x11          = self.framework.require('PETSc.packages.X11',       self)
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
@@ -66,9 +67,6 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-
-    help.addArgument('PETSc', '-with-dynamic=<bool>',          nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
-    help.addArgument('PETSc', '-with-shared=<bool>',           nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
     help.addArgument('PETSc', '-prefix=<path>',                nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
     help.addArgument('PETSc', '-with-external-packages=<bool>',nargs.ArgBool(None, 1, 'Allow external packages like Spooles, ParMetis, etc'))        
     return
@@ -78,47 +76,11 @@ class Configure(config.base.Configure):
     return
 
 
-  def configureFortranCommandline(self):
-    '''Check for the mechanism to retrieve command line arguments in Fortran'''
-    self.pushLanguage('C')
-    if self.functions.check('ipxfargc_', libraries = self.compilers.flibs):
-      self.addDefine('HAVE_PXFGETARG_NEW',1)
-    elif self.functions.check('f90_unix_MP_iargc', libraries = self.compilers.flibs):
-      self.addDefine('HAVE_NAGF90',1)
-    elif self.functions.check('PXFGETARG', libraries = self.compilers.flibs):
-      self.addDefine('HAVE_PXFGETARG',1)
-    elif self.functions.check('GETARG@16', libraries = self.compilers.flibs): 
-      self.addDefine('USE_NARGS',1)
-      self.addDefine('HAVE_IARG_COUNT_PROGNAME',1)
-    return
-
-  def configureDynamicLibraries(self):
-    '''Checks whether dynamic libraries should be used, for which you must
-      - Specify --with-dynamic
-      - Find dlfcn.h and libdl
-    Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
-    Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
-    self.useDynamic = 0
-    if not (self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix') or (self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and not (self.mpi.usingMPIUni and not self.framework.argDB.has_key('FC')))):
-      self.useDynamic = self.framework.argDB['with-shared'] and self.framework.argDB['with-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
-      self.addDefine('USE_DYNAMIC_LIBRARIES', self.useDynamic)
-      if self.useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
-        self.addDefine('HAVE_RTLD_GLOBAL', 1)
-
-    #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
-    if self.useDynamic and self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and self.mpi.usingMPIUni and not self.framework.argDB.has_key('FC'):
-      if self.blaslapack.sharedBlasLapack: bls = 'BLASLAPACK_LIB_SHARED=${BLASLAPACK_LIB}\n'
-      else:                                bls = ''
-      self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', bls+'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
-    else:
-      self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.basic')
-
-    return
 
   def configurePIC(self):
     '''Determine the PIC option for each compiler
        - There needs to be a test that checks that the functionality is actually working'''
-    if not self.useDynamic:
+    if not self.dynamic.useDynamic:
       return
     if self.framework.argDB['PETSC_ARCH_BASE'].startswith('hpux') and not config.setCompilers.Configure.isGNU(self.framework.argDB['CC']):
       return
@@ -501,8 +463,6 @@ class Configure(config.base.Configure):
     self.framework.cHeader         = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h'
     self.framework.makeMacroHeader = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf'
     self.framework.makeRuleHeader  = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscrules'        
-    self.executeTest(self.configureFortranCommandline)
-    self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configurePIC)
     self.executeTest(self.configureDebuggers)
     self.executeTest(self.configureMkdir)

@@ -114,5 +114,7 @@ SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf
 # some systems like this line between the two includes
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscrules
+# some systems like this line between the two includes
+include ${PETSC_DIR}/bmake/common/rules.shared.basic
 
 
