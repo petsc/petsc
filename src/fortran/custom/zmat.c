@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.25 1996/04/09 02:23:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.26 1996/08/22 16:23:12 bsmith Exp curfman $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -63,12 +63,24 @@ static char vcid[] = "$Id: zmat.c,v 1.25 1996/04/09 02:23:39 curfman Exp bsmith 
 extern "C" {
 #endif
 
-void matgetinfo_(Mat mat,MatInfoType *flag,int *nz,int *nzalloc,int *mem, int *__ierr ){
-  if (FORTRANNULL(nz))      nz      = 0;
-  if (FORTRANNULL(nzalloc)) nzalloc = 0;
-  if (FORTRANNULL(mem))     mem     = 0;
-*__ierr = MatGetInfo(
-	(Mat)MPIR_ToPointer( *(int*)(mat) ),*flag,nz,nzalloc,mem);
+void matgetinfo_(Mat mat,MatInfoType *flag,double *finfo,int *__ierr ){
+  MatInfo info;
+  *__ierr = MatGetInfo(
+	    (Mat)MPIR_ToPointer( *(int*)(mat) ),*flag,&info);
+  finfo[0]  = info.rows_global;
+  finfo[1]  = info.columns_global;
+  finfo[2]  = info.rows_local;
+  finfo[3]  = info.columns_global;
+  finfo[4]  = info.block_size;
+  finfo[5]  = info.nz_allocated;
+  finfo[6]  = info.nz_used;
+  finfo[7]  = info.nz_unneeded;
+  finfo[8]  = info.memory;
+  finfo[9]  = info.assemblies;
+  finfo[10] = info.mallocs;
+  finfo[11] = info.fill_ratio_given;
+  finfo[12] = info.fill_ratio_needed;
+  finfo[13] = info.factor_mallocs;
 }
 
   /*

@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.13 1996/03/06 03:30:21 bsmith Exp bsmith $";
+C      "$Id: ex12.F,v 1.14 1996/03/19 21:27:49 bsmith Exp curfman $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -21,7 +21,7 @@ C
       SLES             sles
       character*(128)  f 
       Viewer           fd
-
+      MatInfo          info(MAT_INFO_SIZE)
 
       none = -1.0
       call PetscInitialize(PETSC_NULL_CHAR,ierr)
@@ -36,6 +36,11 @@ C Read in matrix and RHS
 
       call MatLoad(fd,MATSEQAIJ,A,ierr)
 
+      call MatGetInfo(A,MAT_GLOBAL_SUM,info,ierr)
+      write(6,100) info(1),info(2),info(3),info(4),info(5),info(6),
+     &             info(7),info(8),info(9),info(10),info(11),
+     &             info(12),info(13),info(14)
+ 100  format(14(g7.1,1x))
       call VecLoad(fd,b,ierr)
       call ViewerDestroy(fd,ierr)
 
