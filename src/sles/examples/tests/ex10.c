@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.61 1996/11/30 17:16:45 balay Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.62 1996/12/07 15:58:18 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -271,7 +271,7 @@ int Elastic20Stiff(double **Ke)
       for ( k=0; k<3; k++ ) {
         for ( l=0; l<3; l++ ) {
           Ke[3*rmap[i]+k][3*rmap[j]+l] = v = K[I+k][J+l];
-          m = PetscMax(m,PetscAbsScalar(v));
+          m = PetscMax(m,PetscAbsDouble(v));
         }
       }
       J += 3;
@@ -282,7 +282,7 @@ int Elastic20Stiff(double **Ke)
   m = (1.e-8)*m;
   for ( i=0; i<81; i++ ) {
     for ( j=0; j<81; j++ ) {
-      if (PetscAbsScalar(Ke[i][j]) < m)  Ke[i][j] = 0.0;
+      if (PetscAbsDouble(Ke[i][j]) < m)  Ke[i][j] = 0.0;
     }
   }  
   /* force the matrix to be exactly symmetric */
