@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.13 2001/03/15 21:29:50 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.14 2001/03/15 21:34:20 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -162,53 +162,49 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
   double  hx,hy,hxdhy,hydhx;
   double  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
   double  tleft,tright,beta;
-  Scalar  *x,*f;
-  Vec     localX,localF;
+  Scalar  **x,**f;
+  Vec     localX;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
-  ierr = DAGetLocalVector((DA)dmmg->dm,&localF);CHKERRQ(ierr);
   ierr = DAGetInfo((DA)dmmg->dm,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
-  hxdhy = hx/hy;            hydhx = hy/hx;
-  tleft = user->tleft;      tright = user->tright;
-  beta = user->beta;
+  hx    = one/(double)(mx-1);  hy    = one/(double)(my-1);
+  hxdhy = hx/hy;               hydhx = hy/hx;
+  tleft = user->tleft;         tright = user->tright;
+  beta  = user->beta;
  
   /* Get ghost points */
   ierr = DAGlobalToLocalBegin((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners((DA)dmmg->dm,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
 
   /* Evaluate function */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - Ys)*Xm + xs - Xs - 1; 
     for (i=xs; i<xs+xm; i++) {
-      row++;
-      t0 = x[row];
+      t0 = x[j][i];
 
       if (i > 0 && i < mx-1 && j > 0 && j < my-1) {
 
 	/* general interior volume */
 
-        tw = x[row - 1];   
+        tw = x[j][i-1];
         aw = 0.5*(t0 + tw);                 
         dw = pow(aw,beta);
         fw = dw*(t0 - tw);
 
-	te = x[row + 1];
+	te = x[j][i+1];
         ae = 0.5*(t0 + te);
         de = pow(ae,beta);
         fe = de*(te - t0);
 
-	ts = x[row - Xm];
+	ts = x[j-1][i];
         as = 0.5*(t0 + ts);
         ds = pow(as,beta);
         fs = ds*(t0 - ts);
   
-        tn = x[row + Xm];  
+        tn = x[j+1][i];
         an = 0.5*(t0 + tn);
         dn = pow(an,beta);
         fn = dn*(tn - t0);
@@ -221,13 +217,13 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
         dw = pow(aw,beta);
         fw = dw*(t0 - tw);
 
-	te = x[row + 1];
+	te = x[j][i+1];
         ae = 0.5*(t0 + te);
         de = pow(ae,beta);
         fe = de*(te - t0);
 
 	if (j > 0) {
-	  ts = x[row - Xm];
+	  ts = x[j-1][i];
           as = 0.5*(t0 + ts);
           ds = pow(as,beta);
           fs = ds*(t0 - ts);
@@ -236,7 +232,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 	}
 
 	if (j < my-1) { 
-          tn = x[row + Xm];  
+          tn = x[j+1][i];
           an = 0.5*(t0 + tn);
           dn = pow(an,beta);
 	  fn = dn*(tn - t0);
@@ -247,7 +243,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
       } else if (i == mx-1) {
 
         /* right-hand boundary */ 
-        tw = x[row - 1];   
+        tw = x[j][i-1];
         aw = 0.5*(t0 + tw);
         dw = pow(aw,beta);
         fw = dw*(t0 - tw);
@@ -258,7 +254,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
         fe = de*(te - t0);
  
         if (j > 0) { 
-          ts = x[row - Xm];
+          ts = x[j-1][i];
           as = 0.5*(t0 + ts);
           ds = pow(as,beta);
           fs = ds*(t0 - ts);
@@ -267,7 +263,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
         }
  
         if (j < my-1) {
-          tn = x[row + Xm];
+          tn = x[j+1][i];
           an = 0.5*(t0 + tn);
           dn = pow(an,beta);
           fn = dn*(tn - t0); 
@@ -278,19 +274,19 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
       } else if (j == 0) {
 
 	/* bottom boundary,and i <> 0 or mx-1 */
-        tw = x[row - 1];
+        tw = x[j][i-1];
         aw = 0.5*(t0 + tw);
         dw = pow(aw,beta);
         fw = dw*(t0 - tw);
 
-        te = x[row + 1];
+        te = x[j][i+1];
         ae = 0.5*(t0 + te);
         de = pow(ae,beta);
         fe = de*(te - t0);
 
         fs = zero;
 
-        tn = x[row + Xm];
+        tn = x[j+1][i];
         an = 0.5*(t0 + tn);
         dn = pow(an,beta);
         fn = dn*(tn - t0);
@@ -298,17 +294,17 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
       } else if (j == my-1) {
 
 	/* top boundary,and i <> 0 or mx-1 */ 
-        tw = x[row - 1];
+        tw = x[j][i-1];
         aw = 0.5*(t0 + tw);
         dw = pow(aw,beta);
         fw = dw*(t0 - tw);
 
-        te = x[row + 1];
+        te = x[j][i+1];
         ae = 0.5*(t0 + te);
         de = pow(ae,beta);
         fe = de*(te - t0);
 
-        ts = x[row - Xm];
+        ts = x[j-1][i];
         as = 0.5*(t0 + ts);
         ds = pow(as,beta);
         fs = ds*(t0 - ts);
@@ -317,12 +313,12 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 
       }
 
-      f[row] = - hydhx*(fe-fw) - hxdhy*(fn-fs); 
+      f[j][i] = - hydhx*(fe-fw) - hxdhy*(fn-fs); 
 
     }
   }
-  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(localF,&f);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops((22 + 4*POWFLOP)*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
