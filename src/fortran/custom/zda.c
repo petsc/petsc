@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zda.c,v 1.1 1995/08/27 00:35:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -12,6 +12,7 @@ static char vcid[] = "$Id: zda.c,v 1.1 1995/08/27 00:35:57 bsmith Exp bsmith $";
 #define dagetdistributedvector_ DAGETDISTRIBUTEDVECTOR
 #define dagetlocalvector_       DAGETLOCALVECTOR
 #define dagetscatterctx_        DAGETSCATTERCTX
+#define dagetglobalindices_     DAGETGLOBALINDICES
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dacreate1d_             dacreate1d
 #define dacreate3d_             dacreate3d
@@ -20,8 +21,15 @@ static char vcid[] = "$Id: zda.c,v 1.1 1995/08/27 00:35:57 bsmith Exp bsmith $";
 #define dagetdistributedvector_ dagetdistributedvector
 #define dagetlocalvector_       dagetlocalvector
 #define dagetscatterctx_        dagetscatterctx
+#define dagetglobalindices_     dagetglobalindices
 #endif
 
+void dagetglobalindices_(DA da,int *n, int *indices, int *__ierr )
+{
+  int *idx;
+  *__ierr = DAGetGlobalIndices((DA)MPIR_ToPointer(*(int*)(da)),n,&idx);
+  PetscMemcpy(indices,idx,(*n)*sizeof(int));
+}
 
 void dagetdistributedvector_(DA da,Vec* g, int *__ierr )
 {
@@ -35,10 +43,9 @@ void dagetlocalvector_(DA da,Vec* l, int *__ierr )
   *__ierr = DAGetLocalVector((DA)MPIR_ToPointer(*(int*)(da)),&v);
   *(int*) l = MPIR_FromPointer(v);
 }
-void dagetscatterctx_(DA da,VecScatterCtx *ltog,VecScatterCtx *gtol,
-                      int *__ierr )
+void dagetscatterctx_(DA da,VecScatter *ltog,VecScatter *gtol,int *__ierr )
 {
-  VecScatterCtx l,g;
+  VecScatter l,g;
   *__ierr = DAGetScatterCtx((DA)MPIR_ToPointer(*(int*)(da)),&l,&g);
   *(int*) ltog = MPIR_FromPointer(l);
   *(int*) gtol = MPIR_FromPointer(g);

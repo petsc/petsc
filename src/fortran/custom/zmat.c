@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.3 1995/10/09 21:58:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.4 1995/10/11 15:19:13 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -30,6 +30,7 @@ static char vcid[] = "$Id: zmat.c,v 1.3 1995/10/09 21:58:54 bsmith Exp bsmith $"
 #define matreorderingregister_        MATREORDERINGREGISTER
 #define matgetsubmatrix_              MATGETSUBMATRIX
 #define matload_                      MATLOAD
+#define mattranspose_                 MATTRANSPOSE
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define matreorderingregisterall_     matreorderingregisterall
 #define matdestroy_                   matdestroy
@@ -53,7 +54,15 @@ static char vcid[] = "$Id: zmat.c,v 1.3 1995/10/09 21:58:54 bsmith Exp bsmith $"
 #define matreorderingregister_        matreorderingregister
 #define matgetsubmatrix_              matgetsubmatrix
 #define matload_                      matload
+#define mattranspose_                 mattranspose
 #endif
+
+void mattranspose_(Mat mat,Mat *B, int *__ierr )
+{
+  Mat mm;
+  *__ierr = MatTranspose((Mat)MPIR_ToPointer( *(int*)(mat) ),&mm);
+  *(int*) B = MPIR_FromPointer(mm);
+}
 
 void matload_(Viewer bview,MatType *outtype,Mat *newmat, int *__ierr )
 {

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zdraw.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zdraw.c,v 1.3 1995/10/09 21:58:54 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -86,7 +86,7 @@ void drawopenx_(MPI_Comm comm,char* display,char *title,int *x,int *y,
       PetscStrncpy(t2,title,len2);
       t2[len2] = 0;
     }
-    else t2 = display;
+    else t2 = title;
   }  
   *__ierr = DrawOpenX((MPI_Comm)MPIR_ToPointer( *(int*)(comm)),t1,t2,
                        *x,*y,*w,*h,&a);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.3 1995/10/09 21:58:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: zsys.c,v 1.4 1995/10/10 01:17:08 curfman Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -7,9 +7,7 @@ static char vcid[] = "$Id: zsys.c,v 1.3 1995/10/09 21:58:54 bsmith Exp curfman $
 #include "pinclude/petscfix.h"
 
 #ifdef FORTRANCAPS
-#define petscsetdebugger_     PETSCSETDEBUGGER
 #define petscattachdebugger_  PETSCATTACHDEBUGGER
-#define petscpoperrorhandler_ PETSCPOPERRORHANDLER
 #define plogallbegin_         PLOGALLBEGIN
 #define plogdestroy_          PLOGDESTROY
 #define plogbegin_            PLOGBEGIN
@@ -21,9 +19,7 @@ static char vcid[] = "$Id: zsys.c,v 1.3 1995/10/09 21:58:54 bsmith Exp curfman $
 #define plogeventregister_    PLOGEVENTREGISTER
 #define petscerror_           PETSCERROR
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define petscsetdebugger_     petscsetdebugger
 #define petscattachdebugger_  petscattachdebugger
-#define petscpoperrorhandler_ petscpoperrorhandler
 #define plogallbegin_         plogallbegin
 #define plogdestroy_          plogdestroy
 #define plogbegin_            plogbegin
@@ -78,16 +74,8 @@ void petscobjectgetcomm_(PetscObject obj,MPI_Comm *comm, int *__ierr ){
   *(int*)comm = MPIR_FromPointer(c);
 }
 
-void petscsetdebugger_(char *debugger,int *xterm,char *display, int *__ierr ){
-  *__ierr = PetscSetDebugger(debugger,*xterm,display);
-}
-
 void petscattachdebugger_(int *__ierr){
   *__ierr = PetscAttachDebugger();
-}
-
-void petscpoperrorhandler_(int *__ierr){
-  *__ierr = PetscPopErrorHandler();
 }
 
 void plogallbegin_(int *__ierr){
@@ -118,7 +106,7 @@ void petscobjectsetname_(PetscObject obj,char *name,int *__ierr,int len)
   *__ierr = PetscObjectSetName((PetscObject)MPIR_ToPointer(*(int*)(obj)),t1);
 }
 
-void petscerror_(char *message,int *number,int *__ierr,int len)
+void petscerror_(int *number,char *message,int *__ierr,int len)
 {
   char *t1;
   if (message[len] != 0) {
@@ -128,5 +116,5 @@ void petscerror_(char *message,int *number,int *__ierr,int len)
     t1[len] = 0;
   }
   else t1 = message;
-  *__ierr = PetscError(-1,"fortran_interface_unknown_dir/","fortran_interface_unknown_file",t1,*number);
+  *__ierr = PetscError(-1,0,"fortran_interface_unknown_file",*number,t1);
 }
