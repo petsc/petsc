@@ -1,4 +1,4 @@
-/* $Id: mpidense.h,v 1.5 1995/12/10 18:58:08 curfman Exp curfman $ */
+/* $Id: mpidense.h,v 1.6 1995/12/21 22:41:19 curfman Exp bsmith $ */
 
 #include "dense.h"
 
@@ -54,4 +54,5 @@ typedef struct {
   VecScatter    Mvctx;                  /* scatter context for vector */
 
   FactorCtx     *factor;                /* factorization context */
+  int           roworiented;            /* if true, row oriented input (default) */
 } Mat_MPIDense;
