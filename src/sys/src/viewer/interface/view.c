@@ -1,16 +1,18 @@
 #ifndef lint
-static char vcid[] = "$Id: view.c,v 1.1 1995/06/21 22:27:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.2 1995/06/23 12:41:45 bsmith Exp curfman $";
 #endif
 
 #include "ptscimpl.h"
 
 /*@
-       ViewerDestroy - Destroys a viewer.
+   ViewerDestroy - Destroys a viewer.
 
-  Input Parameters:
-.   viewer - the viewer to be destroyed.
+   Input Parameters:
+.  viewer - the viewer to be destroyed.
 
 .seealso: ViewerMatlabOpen(), ViewerFileOpen(), ViewerFileOpenSync()
+
+.keywords: Viewer, destroy
 @*/
 int ViewerDestroy(Viewer v)
 {
@@ -18,3 +20,5 @@ int ViewerDestroy(Viewer v)
   if (!v) SETERRQ(1,"ViewerDestroy: trying to destroy null viewer");
   return (*o->destroy)(o);
 }
+
+
