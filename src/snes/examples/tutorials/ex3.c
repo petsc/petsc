@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.56 1999/03/15 02:10:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.57 1999/03/15 02:56:43 curfman Exp balay $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -518,7 +518,8 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
   int            ierr, i, iter, ldim;
   ApplicationCtx *user;
   StepCheckCtx   *check = (StepCheckCtx*) ctx;
-  Scalar         *xa, *xa_last, rdiff, tmp;
+  Scalar         *xa, *xa_last, tmp;
+  double         rdiff;
 
   *flag = PETSC_FALSE;
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
