@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.149 1998/04/01 00:31:41 balay Exp balay $ 
+# $Id: makefile,v 1.150 1998/04/07 16:19:34 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -219,7 +219,7 @@ runex5:
 #
 runex6:
 	-@${MPIRUN} -np 1 ex6 -ksp_type preonly  -pc_type lu \
-	   -f ../../../mat/examples/matrices/arco1 > ex6_1.tmp 2>&1; \
+	   -f ${PETSC_DIR}/src/mat/examples/matrices/arco1 > ex6_1.tmp 2>&1; \
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
