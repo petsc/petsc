@@ -599,7 +599,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm,const char a[],char b[],size_t len)
   PetscErrorCode ierr;
   int            i = 0;
   size_t         l,l1,l2,l3;
-  char           *work,*par,*epar,env[1024];
+  char           *work,*par,*epar,env[1024],*tfree;
   const char     *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
   const char     *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
   PetscTruth     flag;
@@ -642,8 +642,8 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm,const char a[],char b[],size_t len)
     i++;
   }
   for ( i=4; i<8; i++){
-    work = (char*)r[i];
-    ierr = PetscFree(work);CHKERRQ(ierr);
+    tfree = (char*)r[i];
+    ierr = PetscFree(tfree);CHKERRQ(ierr);
   }
 
   /* look for any other ${xxx} strings to replace from environmental variables */
