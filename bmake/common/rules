@@ -8,12 +8,14 @@ INCLUDEDIRS = -I$(IPETSCDIR) -I$(IPETSCDIR)/include $(MPI_INCLUDE) \
                -I$(IPETSCDIR)/src
 
 PETSC_LIB   = -L$(LDIR) -lpetscstencil -lpetscgrid \
-                -lpetscsnes -lpetscsles -lpetscksp -lpetscmat \
-                -lpetscvec -lpetscdraw -lpetscsys \
+                -lpetscsnes  -lpetscsles -lpetscksp \
+                -lpetscmat  -lpetscvec -lpetscdraw \
+                -lpetscsys \
                 $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
                 $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
-SLES_LIB    = -L$(LDIR) -lpetscsles -lpetscksp -lpetscmat \
-                -lpetscvec -lpetscdraw -lpetscsys \
+SLES_LIB    =   -L$(LDIR) -lpetscsles -lpetscksp \
+                -lpetscmat  -lpetscvec -lpetscdraw \
+                -lpetscsys \
                 $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
                 $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 
@@ -45,7 +47,7 @@ examples: chkbopt
 	@-if [ "$(EXAMPLES)" != "" ] ; then \
           (for ex in $(EXAMPLES) foo ; do \
           $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
-          > trashz 2>&1; egrep -i 'Error|warning =' trashz >> /dev/null ; \
+          > trashz 2>&1; egrep -i '(Error|warning)' trashz >> /dev/null ; \
           if [ "$$?" != 1 ]; then \
           cat trashz ; fi; $(RM) trashz;\
           done;) fi
