@@ -58,12 +58,14 @@ class Configure(config.base.Configure):
     return found
 
   def generateLibList(self,dir):
-    dir = os.path.join(dir,self.framework.argDB['PETSC_ARCH'],'lib')
+    dir = os.path.join(dir,'lib')
     libs = ['DistributedMatrix',
             'DistributedMatrixPilutSolver',
             'Euclid',
             'IJ_mv',
             'LSI',
+            'superlu',
+            'blas',
             'MatrixMatrix',
             'ParaSails',
             'krylov',
@@ -84,7 +86,7 @@ class Configure(config.base.Configure):
           
   def generateLibGuesses(self):
     if self.framework.argDB['download-'+self.package] == 1:
-      dir = self.downLoadhypre()
+      dir = os.path.join(self.downLoadhypre(),self.framework.argDB['PETSC_ARCH'])
       alllibs = self.generateLibList(dir)
       yield('Download '+self.PACKAGE, alllibs)
       raise RuntimeError('Downloaded hypre could not be used. Please check install in '+dir+'\n')
@@ -96,7 +98,7 @@ class Configure(config.base.Configure):
       else:
         self.framework.log.write('Must specify an installation root directory for '+self.PACKAGE+'\n')
     if self.framework.argDB['download-hypre'] == 2:
-      dir = self.downLoadhypre()
+      dir = os.path.join(self.downLoadhypre(),self.framework.argDB['PETSC_ARCH'])
       alllibs = self.generateLibList(dir)
       yield('Download '+self.PACKAGE, alllibs)
       raise RuntimeError('Downloaded hypre could not be used. Please check install in '+dir+'\n')

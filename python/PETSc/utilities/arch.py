@@ -71,9 +71,9 @@ class Configure(config.base.Configure):
       data = fd.read()
       fd.close()
       if data.find('\r\n') >= 0:
-        raise RuntimeError('''It appears you have uncompressed petsc.tar.gz using WINZIP!
-          Unfortunately WINZIP introduces extraneous LF characters into files, and your system
-          does not interpret them properly.  Please use gunzip and tar to uncompress petsc.tar.gz\n''')
+        raise RuntimeError('''It appears petsc.tar.gz is uncompressed on Windows (perhaps with Winzip)
+          and files copied over to Unix/Linux. Windows introduces LF characters which are
+          inappropriate on other systems. Please use gunzip/tar on the install machine.\n''')
       raise RuntimeError('Unable to determine host type using '+configSub+': '+str(e))
     m = re.match(r'^(?P<cpu>[^-]*)-(?P<vendor>[^-]*)-(?P<os>.*)$', output)
     if not m:
