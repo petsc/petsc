@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.72 1998/05/13 16:50:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.73 1998/06/11 19:55:11 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -375,7 +375,7 @@ int  KSPDefaultGetWork( KSP ksp, int nw )
   int ierr;
 
   PetscFunctionBegin;
-  if (ksp->work) KSPDefaultFreeWork( ksp );
+  if (ksp->work) {ierr = KSPDefaultFreeWork( ksp );CHKERRQ(ierr);}
   ksp->nwork = nw;
   ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&ksp->work); CHKERRQ(ierr);
   PLogObjectParents(ksp,nw,ksp->work);
