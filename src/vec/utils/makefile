@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../impls -I.. -I$(IPETSCDIR)/pinclude\
            -I$(IPETSCDIR)/src/draw $(COPT) $(CONF) -D__DIR__='"vec/utils/"'
-SOURCEC  = vinv.c gcreatev.c vscat.c vpscat.c cmesh.c
+SOURCEC  = vinv.c gcreatev.c vscat.c vpscat.c cmesh.c vecio.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = vinv.o gcreatev.o vscat.o vpscat.o cmesh.o
+OBJSC    = vinv.o gcreatev.o vscat.o vpscat.o cmesh.o vecio.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = 1
