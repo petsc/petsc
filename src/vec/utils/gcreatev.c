@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.44 1998/04/16 02:09:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.45 1998/04/24 02:14:07 bsmith Exp curfman $";
 #endif
 
 
@@ -26,11 +26,10 @@ static char vcid[] = "$Id: gcreatev.c,v 1.44 1998/04/16 02:09:53 curfman Exp bsm
 .   V - location to stash resulting vector
 
     Options Database Keys:
-+   -vec_mpi - use MPI vectors, even for the uniprocessor case
++   -vec_mpi - Activates use of MPI vectors, even for the uniprocessor case
                by internally calling VecCreateMPI()
--   -vec_shared - use shared memory parallel vectors
+-   -vec_shared - Activates use of shared memory parallel vectors
                by internally calling VecCreateShared()
-
 
     Notes:
     Use VecDuplicate() or VecDuplicateVecs() to form additional vectors
@@ -58,7 +57,7 @@ int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
   } else if (size > 1 || flg) {
     ierr = VecCreateMPI(comm,n,N,V); CHKERRQ(ierr);
   } else {
-    ierr = VecCreateSeq(comm,PetscMax(n,N),V);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = VecCreateSeq(comm,PetscMax(n,N),V);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -69,14 +68,14 @@ int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
 /*@C
    VecGetType - Gets the vector type and name (as a string) from the vector.
 
+   Not Collective
+
    Input Parameter:
 .  mat - the vector
 
    Output Parameter:
-.  type - the vector type (or use PETSC_NULL)
-.  name - name of vector type (or use PETSC_NULL)
-
-   Not Collective
++  type - the vector type (or use PETSC_NULL)
+-  name - name of vector type (or use PETSC_NULL)
 
 .keywords: vector, get, type, name
 @*/
