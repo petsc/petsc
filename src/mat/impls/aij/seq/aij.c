@@ -1832,7 +1832,7 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
     ierr = MatRestoreRow_SeqAIJ(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
   }
   ierr = PetscFree(cnew);CHKERRQ(ierr);
-  M->assembled     = PETSC_FALSE;
+  (*B)->assembled     = PETSC_FALSE;
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irowp,&row);CHKERRQ(ierr);

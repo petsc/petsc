@@ -97,6 +97,11 @@ PNETCDF_LIB        = @NETCDF_LIB@
 PVODE_INCLUDE      = @PVODE_INCLUDE@
 PVODE_LIB          = @PVODE_LIB@
 #
+# Location of hypre; LLNL preconditioner library
+# 
+HYPRE_INCLUDE      = @HYPRE_INCLUDE@
+HYPRE_LIB          = @HYPRE_LIB@
+#
 # Location of Triangle; Jon Shewchucks's mesh generator
 #
 TRIANGLE_INCLUDE   = @TRIANGLE_INCLUDE@

@@ -49,6 +49,9 @@ Vectors
    Check if indices passed into create are sorted (often they will be); if they are then 
    do much faster check to which processor owns them
 
+   Added VecScatterGetMerged() that tells if the update is done in the begin or end or middle
+and fix MatMultTranspose_xxx to handle both beginning and end. Currently gives wrong answer with beginning.
+
 Error handling
    Add troubleshooting entries and error messages with web address for common errors.
 
