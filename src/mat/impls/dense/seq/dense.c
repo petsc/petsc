@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.139 1998/03/16 18:40:12 balay Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.140 1998/04/03 21:48:26 bsmith Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -737,7 +737,7 @@ int MatView_SeqDense(Mat A,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
   if (vtype == MATLAB_VIEWER) {
-    ierr = ViewerMatlabPutArray_Private(viewer,a->m,a->n,a->v); CHKERRQ(ierr);
+    ierr = ViewerMatlabPutScalar_Private(viewer,a->m,a->n,a->v); CHKERRQ(ierr);
   } else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (vtype == BINARY_FILE_VIEWER) {
