@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ghome.c,v 1.7 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: ghome.c,v 1.8 1997/02/26 23:15:35 balay Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -22,7 +22,6 @@ static char vcid[] = "$Id: ghome.c,v 1.7 1997/02/22 02:23:29 bsmith Exp balay $"
 
 .keywords: system, get, real, path
 
-.seealso: PetscRemoveHomeDirectory()
 @*/
 int PetscGetHomeDirectory(int maxlen,char *dir)
 {

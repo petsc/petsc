@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.23 1996/10/22 18:55:24 curfman Exp bsmith $ */
+/* $Id: sys.h,v 1.24 1997/02/03 06:03:27 bsmith Exp balay $ */
 /*
     Provides access to a small number of system related and general utility routines.
 */
@@ -38,7 +38,6 @@ extern int PetscGetRelativePath(char*,char*,int);
 extern int PetscGetWorkingDirectory(char *, int);
 extern int PetscGetRealPath(char *,char*);
 extern int PetscGetHomeDirectory(int,char*);
-extern int PetscRemoveHomeDirectory(char*);
 
 typedef enum { BINARY_INT, BINARY_DOUBLE, BINARY_SHORT, BINARY_FLOAT,
                BINARY_CHAR } PetscBinaryType;
