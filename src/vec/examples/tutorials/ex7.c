@@ -1,8 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.10 1996/11/19 19:50:14 balay Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.11 1996/11/19 23:56:49 balay Exp balay $";
 #endif
 
-static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\n";
+static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
+Also demonstrates passing  PETSc objects, MPI Communicators from C to Fortran\n\
+and from Fortran to C\n\n";
 
 #include <stdio.h>
 #include "vec.h"
@@ -21,14 +23,14 @@ static char help[] = "Demonstrates calling a Fortran computational routine from 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-extern void ex7f_(int*);
+extern void ex7f_(int*,int*);
 #if defined(__cplusplus)
 }
 #endif
 
 int main(int argc,char **args)
 {
-  int     ierr, m = 10,fvec;
+  int     ierr, m = 10,fvec,fcomm;
   Vec     vec;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -44,9 +46,13 @@ int main(int argc,char **args)
      Call Fortran routine - the use of PetscCObjectToFortranObject()
      insures that the PETSc vector is properly interpreted on the 
      Fortran side. Note that Fortran treats all PETSc objects as integers.
+     Similarly the MPI Communicator is passed through MPICCommToFortranComm()
+     so that it can be properly interpreted from Fortran.
   */
-  ierr = PetscCObjectToFortranObject(vec,&fvec);
-  ex7f_(&fvec);
+  ierr = PetscCObjectToFortranObject(vec,&fvec); CHKERRA(ierr);
+  ierr = MPICCommToFortranComm(MPI_COMM_WORLD,&fcomm); CHKERRA(ierr);
+
+  ex7f_(&fvec,&fcomm);
 
   ierr = VecView(vec,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   ierr = VecDestroy(vec); CHKERRA(ierr);
@@ -58,16 +64,24 @@ int main(int argc,char **args)
 extern "C" {
 #endif
 
-int ex7c_(int *fvec)
+int ex7c_(int *fvec, int *fcomm)
 {
   Vec vec;
+  MPI_Comm comm;
   int ierr,size;
 
   /*
-      Translate Fortran integer pointer back to C
+    Translate Fortran integer pointer back to C and
+    Fortran Communicator back to C communicator
   */
   ierr = PetscFortranObjectToCObject(*fvec,&vec);
+  ierr = MPIFortranCommToCComm(*fcomm,&comm);
+  
+  /*
+    Some PETSc/MPI operations on Vec/Communicator objects 
+  */
   ierr = VecGetSize(vec,&size); CHKERRA(ierr);
+  MPI_Barrier(comm);
   
   return 0;
 }
