@@ -46,6 +46,17 @@ class SolverIterative : public virtual Solver<Scalar, Ordinal>
   */
   virtual ErrorCode getNumIterationsTaken(Ordinal& itersTaken) = 0;
 
+  class Factory 
+  {
+    public:
+
+      // Destructor.
+      virtual ~Factory(void){};
+
+      // Construct a SolverIterative
+      virtual esi::ErrorCode create(char *commname,void *comm,esi::SolverIterative<Scalar,Ordinal>*&v) = 0; 
+  };
+
 };     // esi::SolverIterative class
 };     // esi namespace
 #endif //__ESI_SolverIterative_h

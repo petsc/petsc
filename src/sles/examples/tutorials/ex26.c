@@ -14,34 +14,30 @@ Input parameters include:\n\
 T*/
 
 /* 
-   Currently includes the PETSc specific versions of the include file. 
-This is only because that is where the ESI factories are defined. If the 
-abstract factory classes are moved to ESI then one would include no
-PETSc specific header files except petsc.h
 
    Note the usual PETSc objects all work. Those related to vec, mat, pc, ksp, and sles
 are prefixed with esi_
 
 */
-#include "esi/petsc/solveriterative.h"
-#include "esi/petsc/matrix.h"
-#include "esi/petsc/vector.h"
+#include "esi/ESI.h"
+
+#include "petsc.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  ::esi::IndexSpace<int>                    *indexspace;
-  ::esi::Vector<double,int>                 *x,*b;      
-  ::esi::Operator<double,int>               *op;  
-  ::esi::SolverIterative<double,int>        *solver;    
-  ::esi::MatrixRowWriteAccess<double,int>   *A;
-  int                                       ierr,i,n = 3,Istart,Iend,c[3],N;
-  double                                    v[3],*barray;
-  ::esi::IndexSpaceFactory<int>             *ifactory;
-  ::esi::VectorFactory<double,int>          *vfactory;
-  ::esi::OperatorFactory<double,int>        *ofactory;
-  ::esi::SolverIterativeFactory<double,int> *sfactory;     /* linear solver context */
+  ::esi::IndexSpace<int>                      *indexspace;
+  ::esi::Vector<double,int>                   *x,*b;      
+  ::esi::Operator<double,int>                 *op;  
+  ::esi::SolverIterative<double,int>          *solver;    
+  ::esi::MatrixRowWriteAccess<double,int>     *A;
+  int                                         ierr,i,n = 3,Istart,Iend,c[3],N;
+  double                                      v[3],*barray;
+  ::esi::IndexSpace<int>::Factory             *ifactory;
+  ::esi::Vector<double,int>::Factory          *vfactory;
+  ::esi::Operator<double,int>::Factory        *ofactory;
+  ::esi::SolverIterative<double,int>::Factory *sfactory;     /* linear solver context */
 
   PetscInitialize(&argc,&args,(char *)0,help);
   /*
@@ -57,7 +53,7 @@ int main(int argc,char **args)
   /*
         Define the layout of the vectors and matrices across the processors
   */
-  ierr = ifactory->getIndexSpace("MPI",(void*)&PETSC_COMM_WORLD,n,PETSC_DECIDE,PETSC_DECIDE,indexspace);CHKERRQ(ierr);
+  ierr = ifactory->create("MPI",(void*)&PETSC_COMM_WORLD,n,PETSC_DECIDE,PETSC_DECIDE,indexspace);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -71,7 +67,7 @@ int main(int argc,char **args)
      performance.  Preallocation is not possible via the generic
      matrix creation routine
   */
-  ierr = ofactory->getOperator(*indexspace,*indexspace,op);CHKERRQ(ierr);
+  ierr = ofactory->create(*indexspace,*indexspace,op);CHKERRQ(ierr);
   
   /* 
      ESI parallel matrix formats are partitioned by
@@ -126,7 +122,7 @@ int main(int argc,char **args)
         (replacing the PETSC_DECIDE argument in the VecSetSizes() statement
         below).
   */
-  ierr = vfactory->getVector(*indexspace,x);CHKERRQ(ierr);
+  ierr = vfactory->create(*indexspace,x);CHKERRQ(ierr);
   ierr = x->clone(b);CHKERRQ(ierr);
 
   ierr = b->getCoefPtrReadWriteLock(barray);CHKERRQ(ierr);
@@ -142,7 +138,7 @@ int main(int argc,char **args)
   /* 
      Create linear solver context
   */
-  ierr = sfactory->getSolverIterative("MPI",(void*)&PETSC_COMM_WORLD,solver);CHKERRQ(ierr);
+  ierr = sfactory->create("MPI",(void*)&PETSC_COMM_WORLD,solver);CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system

@@ -270,32 +270,18 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getRowSum(esi::Vector<double,int>
 
 /* ------------------------------------------------------------------------------------------------*/
 
-namespace esi{namespace petsc{
-  template<class Scalar,class Ordinal> class OperatorFactory : public virtual ::esi::OperatorFactory<Scalar,Ordinal>
+::esi::ErrorCode esi::petsc::Matrix<double,int>::Factory::create(::esi::IndexSpace<int>&rmap,::esi::IndexSpace<int>&cmap,::esi::Operator<double,int>*&v)
 {
-  public:
-
-    // constructor
-    OperatorFactory(void){};
-  
-    // Destructor.
-    virtual ~OperatorFactory(void){};
-
-    // Construct a Operator
-    virtual ::esi::ErrorCode getOperator(::esi::IndexSpace<Ordinal>&rmap,::esi::IndexSpace<Ordinal>&cmap,::esi::Operator<Scalar,Ordinal>*&v)
-    {
-      v = new esi::petsc::Matrix<Scalar,Ordinal>(&rmap,&cmap);
-      return 0;
-    };
+  v = new esi::petsc::Matrix<double,int>(&rmap,&cmap);
+  return 0;
 };
-}}
 
 /* ::esi::petsc::OperatorFactory<double,int> OFInstForIntel64CompilerBug; */
 
 EXTERN_C_BEGIN
-::esi::OperatorFactory<double,int> *create_esi_petsc_operatorfactory(void)
+::esi::Operator<double,int>::Factory *create_esi_petsc_operatorfactory(void)
 {
-  return dynamic_cast< ::esi::OperatorFactory<double,int> *>(new esi::petsc::OperatorFactory<double,int>);
+  return dynamic_cast< ::esi::Operator<double,int>::Factory *>(new esi::petsc::Matrix<double,int>::Factory);
 }
 EXTERN_C_END
 

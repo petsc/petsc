@@ -216,6 +216,17 @@ class IndexSpace : public virtual Object
   */
   virtual ErrorCode getGlobalPartitionOffsets( Ordinal * partitionOffsets ) = 0;
 
+  class Factory 
+  {
+    public:
+
+    // Destructor.
+    virtual ~Factory(void){};
+
+    // Construct a IndexSpace
+    virtual esi::ErrorCode create(const char * name,void *comm,int m,int M,int base,esi::IndexSpace<Ordinal>*&v) = 0; 
+  };
+
 };     // esi::IndexSpace class
 };     // esi namespace
 #endif // __ESI_IndexSpace_h

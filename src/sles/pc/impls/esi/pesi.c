@@ -156,17 +156,16 @@ extern PetscFList CCAList;
 @*/
 int PCESISetType(PC V,char *name)
 {
-  int                                      ierr;
-  ::esi::Preconditioner<double,int>        *ve;
-  ::esi::PreconditionerFactory<double,int> *f;
-  ::esi::PreconditionerFactory<double,int> *(*r)(void);
+  int                                        ierr;
+  ::esi::Preconditioner<double,int>          *ve;
+  ::esi::Preconditioner<double,int>::Factory *f,*(*r)(void);
 
   PetscFunctionBegin;
   ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unable to load esi::PreconditionerFactory constructor %s",name);
   f    = (*r)();
 
-  ierr = f->getPreconditioner("MPI",(void*)&V->comm,ve);CHKERRQ(ierr);
+  ierr = f->create("MPI",(void*)&V->comm,ve);CHKERRQ(ierr);
   delete f;
   ierr = PCESISetPreconditioner(V,ve);CHKERRQ(ierr);
   ierr = ve->deleteReference();CHKERRQ(ierr);

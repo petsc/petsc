@@ -185,33 +185,19 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::getNumIterationsTaken(in
 }
 
 // --------------------------------------------------------------------------
-namespace esi{namespace petsc{
-  template<class Scalar,class Ordinal> class SolverIterativeFactory : public virtual ::esi::SolverIterativeFactory<Scalar,Ordinal>
+::esi::ErrorCode esi::petsc::SolverIterative<double,int>::Factory::create (char *commname,void *comm,::esi::SolverIterative<double,int>*&v)
 {
-  public:
-
-    // constructor
-    SolverIterativeFactory(void){};
-  
-    // Destructor.
-    virtual ~SolverIterativeFactory(void){};
-
-    // Construct a SolverIterative
-    virtual ::esi::ErrorCode getSolverIterative(char *commname,void *comm,::esi::SolverIterative<Scalar,Ordinal>*&v)
-    {
-      PetscTruth flg;
-      int        ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
-      v = new esi::petsc::SolverIterative<Scalar,Ordinal>(*(MPI_Comm*)comm);
-      return 0;
-    };
+  PetscTruth flg;
+  int        ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
+  v = new esi::petsc::SolverIterative<double,int>(*(MPI_Comm*)comm);
+  return 0;
 };
-}}
 
-::esi::petsc::SolverIterativeFactory<double,int> SFInstForIntel64CompilerBug;
+//::esi::petsc::SolverIterativeFactory<double,int> SFInstForIntel64CompilerBug;
 
 EXTERN_C_BEGIN
-::esi::SolverIterativeFactory<double,int> *create_esi_petsc_solveriterativefactory(void)
+::esi::SolverIterative<double,int>::Factory *create_esi_petsc_solveriterativefactory(void)
 {
-  return dynamic_cast< ::esi::SolverIterativeFactory<double,int> *>(new esi::petsc::SolverIterativeFactory<double,int>);
+  return dynamic_cast< ::esi::SolverIterative<double,int>::Factory *>(new esi::petsc::SolverIterative<double,int>::Factory);
 }
 EXTERN_C_END

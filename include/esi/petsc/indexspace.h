@@ -60,6 +60,17 @@ class IndexSpace : public virtual esi::IndexSpace<Ordinal>, public esi::petsc::O
     // Get the local size offset info in this dimension.
     virtual esi::ErrorCode getLocalPartitionOffset(Ordinal& localOffset);
 
+  class Factory : public virtual ::esi::IndexSpace<Ordinal>::Factory
+  {
+    public:
+
+    // Destructor.
+    virtual ~Factory(void){};
+
+    // Construct a IndexSpace
+    virtual esi::ErrorCode create(const char * name,void *comm,int m,int M,int base,esi::IndexSpace<Ordinal>*&v); 
+  };
+
   private:
     PetscMap map;
 };
@@ -116,26 +127,22 @@ class IndexSpace<int>: public virtual esi::IndexSpace<int>, public esi::petsc::O
     // Get the local size offset info in this dimension.
     virtual esi::ErrorCode getLocalPartitionOffset(int& localOffset);
 
+    class Factory : public virtual ::esi::IndexSpace<int>::Factory
+  {
+    public:
+
+    // Destructor.
+    virtual ~Factory(void){};
+
+    // Construct a IndexSpace
+    virtual esi::ErrorCode create(const char * name,void *comm,int m,int M,int base,esi::IndexSpace<int>*&v); 
+  };
+
   private:
     PetscMap map;
 };
 
-
-}
-
-  /* -------------------------------------------------------------------------*/
-
-template<class Ordinal> class IndexSpaceFactory 
-{
-  public:
-
-    // Destructor.
-  virtual ~IndexSpaceFactory(void){};
-
-    // Construct a IndexSpace
-    virtual esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,int M,int base,esi::IndexSpace<Ordinal>*&v) = 0; 
-};
-}
+}}
 
 extern int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace<int>*&v);
 #endif

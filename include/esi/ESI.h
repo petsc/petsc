@@ -38,4 +38,6 @@
 #include "../esi/Solver.h"
 #include "../esi/SolverIterative.h"
 
+extern int ESILoadFactory(char *commname,void *comm,char *classname,void *&f);
+
 #endif /* __ESI_h_seen */

@@ -241,33 +241,18 @@ esi::petsc::Vector<double,int>::~Vector()
   return VecPlaceArray(this->vec,pointer);
 }
 
-// --------------------------------------------------------------------------------------------------------
-namespace esi{namespace petsc{
-  template<class Scalar,class Ordinal> class VectorFactory : public virtual ::esi::VectorFactory<Scalar,Ordinal>
+::esi::ErrorCode esi::petsc::Vector<double,int>::Factory::create(::esi::IndexSpace<int>&map,::esi::Vector<double,int>*&v)
 {
-  public:
-
-    // constructor
-    VectorFactory(void){};
-  
-    // Destructor.
-    virtual ~VectorFactory(void){};
-
-    // Construct a Vector
-    virtual ::esi::ErrorCode getVector(::esi::IndexSpace<Ordinal>&map,::esi::Vector<Scalar,Ordinal>*&v)
-    {
-      v = new esi::petsc::Vector<Scalar,Ordinal>(&map);
-      return 0;
-    };
+  v = new esi::petsc::Vector<double,int>(&map);
+  return 0;
 };
-}}
 
 /* ::esi::petsc::VectorFactory<double,int> VFInstForIntel64CompilerBug; */
 
 EXTERN_C_BEGIN
-::esi::VectorFactory<double,int> *create_esi_petsc_vectorfactory(void)
+::esi::Vector<double,int>::Factory *create_esi_petsc_vectorfactory(void)
 {
-  return dynamic_cast< ::esi::VectorFactory<double,int> *>(new esi::petsc::VectorFactory<double,int>);
+  return dynamic_cast< ::esi::Vector<double,int>::Factory *>(new esi::petsc::Vector<double,int>::Factory);
 }
 EXTERN_C_END
 

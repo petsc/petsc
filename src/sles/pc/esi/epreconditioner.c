@@ -147,35 +147,20 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::setOperator( esi::Operato
   return 0;
 }
 
-// --------------------------------------------------------------------------
-namespace esi{namespace petsc{
-  template<class Scalar,class Ordinal> class PreconditionerFactory : public virtual ::esi::PreconditionerFactory<Scalar,Ordinal>
+::esi::ErrorCode esi::petsc::Preconditioner<double,int>::Factory::create(char *commname,void *comm,::esi::Preconditioner<double,int>*&v)
 {
-  public:
-
-    // constructor
-    PreconditionerFactory(void){};
-  
-    // Destructor.
-    virtual ~PreconditionerFactory(void){};
-
-    // Construct a Preconditioner
-    virtual ::esi::ErrorCode getPreconditioner(char *commname,void *comm,::esi::Preconditioner<Scalar,Ordinal>*&v)
-    {
-      PetscTruth flg;
-      int        ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ1(1,"Does not support %s, only supports MPI",commname);
-      v = new esi::petsc::Preconditioner<Scalar,Ordinal>(*(MPI_Comm*)comm);
-      return 0;
-    };
+   PetscTruth flg;
+   int        ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
+   if (!flg) SETERRQ1(1,"Does not support %s, only supports MPI",commname);
+   v = new esi::petsc::Preconditioner<double,int>(*(MPI_Comm*)comm);
+   return 0;
 };
-}}
 
 /* ::esi::petsc::PreconditionerFactory<double,int> PFInstForIntel64CompilerBug; */
 
 EXTERN_C_BEGIN
-::esi::PreconditionerFactory<double,int> *create_esi_petsc_preconditionerfactory(void)
+::esi::Preconditioner<double,int>::Factory *create_esi_petsc_preconditionerfactory(void)
 {
-  return dynamic_cast< ::esi::PreconditionerFactory<double,int> *>(new esi::petsc::PreconditionerFactory<double,int>);
+  return dynamic_cast< ::esi::Preconditioner<double,int>::Factory *>(new esi::petsc::Preconditioner<double,int>::Factory);
 }
 EXTERN_C_END

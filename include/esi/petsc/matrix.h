@@ -76,6 +76,17 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     virtual esi::ErrorCode copyOutRowIndices(Ordinal, int *,int,int&) {return 1;};
     virtual esi::ErrorCode copyOutRowCoefficients(Ordinal, Scalar *,int,int&) {return 1;};
 
+    class Factory  : public virtual esi::Operator<Scalar,Ordinal>::Factory
+    {
+      public:
+
+        // Destructor.
+        virtual ~Factory(void){};
+
+        // Construct a Operator
+        virtual esi::ErrorCode create(esi::IndexSpace<Ordinal>&,esi::IndexSpace<Ordinal>&,esi::Operator<Scalar,Ordinal>*&v); 
+    };
+
   private:
     Mat                        mat;
     ::esi::IndexSpace<Ordinal> *rmap,*cmap;
@@ -144,27 +155,26 @@ class Matrix<double,int> : public virtual esi::Operator<double,int>,
     virtual esi::ErrorCode copyOutRowIndices(int, int *,int,int&) {return 1;};
     virtual esi::ErrorCode copyOutRowCoefficients(int, double *,int,int&) {return 1;};
 
+    class Factory  : public virtual esi::Operator<double,int>::Factory
+    {
+      public:
+
+        // Destructor.
+        virtual ~Factory(void){};
+
+        // Construct a Operator
+        virtual esi::ErrorCode create(esi::IndexSpace<int>&,esi::IndexSpace<int>&,esi::Operator<double,int>*&v); 
+    };
+
   private:
     Mat                    mat;
     ::esi::IndexSpace<int> *rmap,*cmap;
 };
 
-}
+}}
 
-  /* -------------------------------------------------------------------------*/
 
-template<class Scalar,class Ordinal> class OperatorFactory 
-{
-  public:
 
-    // Destructor.
-  virtual ~OperatorFactory(void){};
-
-    // Construct a Operator
-    virtual esi::ErrorCode getOperator(esi::IndexSpace<Ordinal>&,esi::IndexSpace<Ordinal>&,esi::Operator<Scalar,Ordinal>*&v) = 0; 
-};
-
-}
 EXTERN int MatESIWrap(Mat,esi::Operator<double,int>**);
 
 

@@ -63,6 +63,17 @@ template<class Scalar,class Ordinal>
    
     virtual esi::ErrorCode setArrayPointer(Scalar* array, Ordinal length);
 
+    class Factory : public virtual ::esi::Vector<Scalar,Ordinal>::Factory
+    {
+      public:
+
+      // Destructor.
+      virtual ~Factory(void){};
+
+      // Construct a Vector
+      virtual esi::ErrorCode create(esi::IndexSpace<Ordinal>&,esi::Vector<Scalar,Ordinal>*&v);
+    };
+
   private:
     Vec                      vec;
     esi::IndexSpace<Ordinal> *map;
@@ -117,26 +128,23 @@ template<>
    
     virtual esi::ErrorCode setArrayPointer(double* array, int length);
 
+    class Factory : public virtual ::esi::Vector<double,int>::Factory
+    {
+      public:
+
+      // Destructor.
+      virtual ~Factory(void){};
+
+      // Construct a Vector
+      virtual esi::ErrorCode create(esi::IndexSpace<int>&,esi::Vector<double,int>*&v);
+    };
+
   private:
     Vec                    vec;
     ::esi::IndexSpace<int> *map;
 };
 
-}
-  /* -------------------------------------------------------------------------*/
-
-template<class Scalar,class Ordinal> class VectorFactory 
-{
-  public:
-
-    // Destructor.
-  virtual ~VectorFactory(void){};
-
-    // Construct a Vector
-    virtual esi::ErrorCode getVector(esi::IndexSpace<Ordinal>&,esi::Vector<Scalar,Ordinal>*&v) = 0; 
-};
-
-}
+}}
 EXTERN int VecESIWrap(Vec,esi::Vector<double,int>**);
 
 #endif

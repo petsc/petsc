@@ -62,6 +62,18 @@ class Preconditioner : public virtual esi::Preconditioner<Scalar,Ordinal>,
     virtual esi::ErrorCode setPreconditionerSide( PreconditionerSide side );
 
     virtual esi::ErrorCode setOperator( esi::Operator<Scalar,Ordinal> &op);
+
+    class Factory : public virtual esi::Preconditioner<Scalar,Ordinal>::Factory
+    {
+      public:
+
+        // Destructor.
+        virtual ~Factory(void){};
+
+        // Construct a Preconditioner
+        virtual esi::ErrorCode create(char *commname,void* comm,esi::Preconditioner<Scalar,Ordinal>*&v); 
+    };
+
   private:
     PC                         pc;
     esi::PreconditionerSide    side;
@@ -116,27 +128,26 @@ class Preconditioner<double,int> : public virtual esi::Preconditioner<double,int
     virtual esi::ErrorCode setPreconditionerSide( PreconditionerSide side );
 
     virtual esi::ErrorCode setOperator( esi::Operator<double,int> &op);
+
+    class Factory : public virtual esi::Preconditioner<double,int>::Factory
+    {
+      public:
+
+        // Destructor.
+        virtual ~Factory(void){};
+
+        // Construct a Preconditioner
+        virtual esi::ErrorCode create(char *commname,void* comm,esi::Preconditioner<double,int>*&v); 
+    };
+
+
   private:
     PC                       pc;
     esi::IndexSpace<int>     *rmap,*cmap;
     esi::PreconditionerSide  side;
 };
-}
+}}
 
-  /* -------------------------------------------------------------------------*/
-
-template<class Scalar,class Ordinal> class PreconditionerFactory 
-{
-  public:
-
-    // Destructor.
-    virtual ~PreconditionerFactory(void){};
-
-    // Construct a Preconditioner
-    virtual esi::ErrorCode getPreconditioner(char *commname,void* comm,esi::Preconditioner<Scalar,Ordinal>*&v) = 0; 
-};
-
-}
 
 EXTERN int PCESISetPreconditioner(PC,esi::Preconditioner<double,int>*);
 

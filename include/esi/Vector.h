@@ -264,6 +264,17 @@ class Vector : public virtual Object
 
   //@} // end common direct memory access
 
+  class Factory 
+  {
+    public:
+
+    // Destructor.
+    virtual ~Factory(void){};
+
+    // Construct a Vector
+    virtual esi::ErrorCode create(esi::IndexSpace<Ordinal>&,esi::Vector<Scalar,Ordinal>*&v) = 0; 
+  };
+
 }; // esi::Vector class
 }; // esi namespace
 #endif //__ESI_Vector_h

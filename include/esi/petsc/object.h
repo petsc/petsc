@@ -49,7 +49,6 @@ class Object : public virtual esi::Object
 
 }}
 
-extern int ESILoadFactory(char *commname,void *comm,char *classname,void *&f);
 
 #endif
 

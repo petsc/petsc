@@ -1,4 +1,6 @@
 
+
+
 /*$Id: ebvec1.c,v 1.9 2001/09/26 17:10:29 balay Exp $*/
 
 
@@ -527,11 +529,11 @@ extern PetscFList CCAList;
 @*/
 int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace<int>*&v)
 {
-  int                           ierr;
-  ::esi::IndexSpaceFactory<int> *f;
-  ::esi::IndexSpaceFactory<int> *(*r)(void);
-  char                          name[1024];
-  PetscTruth                    found;
+  int                             ierr;
+  ::esi::IndexSpace<int>::Factory *f;
+  ::esi::IndexSpace<int>::Factory *(*r)(void);
+  char                            name[1024];
+  PetscTruth                      found;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetString(PETSC_NULL,"-is_esi_type",name,1024,&found);CHKERRQ(ierr);
@@ -541,7 +543,7 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace
   ierr = PetscFListFind(*(MPI_Comm*)comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unable to load esi::IndexSpace Factory constructor %s",name);
   f    = (*r)();
-  ierr = f->getIndexSpace(commname,comm,m,PETSC_DECIDE,PETSC_DECIDE,v);CHKERRQ(ierr);
+  ierr = f->create(commname,comm,m,PETSC_DECIDE,PETSC_DECIDE,v);CHKERRQ(ierr);
   delete f;
   PetscFunctionReturn(0);
 }
@@ -556,11 +558,10 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace
 @*/
 int VecESISetType(Vec V,char *name)
 {
-  int                              ierr;
-  ::esi::Vector<double,int>        *ve;
-  ::esi::VectorFactory<double,int> *f;
-  ::esi::VectorFactory<double,int> *(*r)(void);
-  ::esi::IndexSpace<int>           *map;
+  int                                ierr;
+  ::esi::Vector<double,int>          *ve;
+  ::esi::Vector<double,int>::Factory *f,*(*r)(void);
+  ::esi::IndexSpace<int>             *map;
 
   PetscFunctionBegin;
   ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
@@ -570,7 +571,7 @@ int VecESISetType(Vec V,char *name)
     ierr = PetscSplitOwnership(V->comm,&V->n,&V->N);CHKERRQ(ierr);
   }
   ierr = ESICreateIndexSpace("MPI",&V->comm,V->n,map);CHKERRQ(ierr);
-  ierr = f->getVector(*map,ve);CHKERRQ(ierr);
+  ierr = f->create(*map,ve);CHKERRQ(ierr);
   ierr = map->deleteReference();CHKERRQ(ierr);
   delete f;
   ierr = VecESISetVector(V,ve);CHKERRQ(ierr);

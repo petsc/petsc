@@ -74,6 +74,17 @@ class SolverIterative : public virtual esi::SolverIterative<Scalar,Ordinal>,
      */
     virtual esi::ErrorCode getNumIterationsTaken(Ordinal& itersTaken);
 
+    class Factory : public virtual esi::SolverIterative<Scalar,Ordinal>::Factory
+    {
+      public:
+
+        // Destructor.
+        virtual ~Factory(void){};
+
+        // Construct a SolverIterative
+        virtual esi::ErrorCode create(char *commname,void *comm,esi::SolverIterative<Scalar,Ordinal>*&v); 
+    };
+
   private:
     SLES                                  sles;
     ::esi::Preconditioner<Scalar,Ordinal> *pre;
@@ -140,27 +151,25 @@ class SolverIterative<double,int> : public virtual esi::SolverIterative<double,i
      */
     virtual esi::ErrorCode getNumIterationsTaken(int& itersTaken);
 
+    class Factory : public virtual esi::SolverIterative<double,int>::Factory
+    {
+      public:
+
+        // Destructor.
+        virtual ~Factory(void){};
+
+        // Construct a SolverIterative
+        virtual esi::ErrorCode create(char *commname,void *comm,esi::SolverIterative<double,int>*&v); 
+    };
+
   private:
     SLES                              sles;
     ::esi::Preconditioner<double,int> *pre;
     ::esi::Operator<double,int>       *op;
 };
 
-/**=========================================================================**/
-}
+}}
 
-template<class Scalar,class Ordinal> class SolverIterativeFactory 
-{
-  public:
-
-    // Destructor.
-    virtual ~SolverIterativeFactory(void){};
-
-    // Construct a SolverIterative
-    virtual esi::ErrorCode getSolverIterative(char *commname,void *comm,esi::SolverIterative<Scalar,Ordinal>*&v) = 0; 
-};
-
-}
 
 #endif
 

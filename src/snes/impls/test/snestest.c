@@ -59,7 +59,10 @@ int SNESSolve_Test(SNES snes,int *its)
     ierr = PetscPrintf(snes->comm,"Norm of matrix ratio %g difference %g\n",nrm/gnorm,nrm);CHKERRQ(ierr);
   }
   ierr = MatDestroy(B);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+  /*
+         Return error code cause Jacobian not good
+  */
+  PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
 }
 /* ------------------------------------------------------------ */
 #undef __FUNCT__  

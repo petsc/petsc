@@ -77,6 +77,19 @@ class Preconditioner : public virtual Operator<Scalar, Ordinal>
   */
   virtual ErrorCode setOperator(Operator<Scalar, Ordinal> & A) = 0;
 
+  /* -------------------------------------------------------------------------*/
+
+  class Factory 
+  {
+    public:
+
+      // Destructor.
+      virtual ~Factory(void){};
+
+      // Construct a Preconditioner
+    virtual esi::ErrorCode create(char *commname,void* comm,esi::Preconditioner<Scalar,Ordinal>*&v) = 0; 
+  };
+
 };     // esi::Preconditioner class
 };     // esi namespace
 #endif // __ESI_Preconditioner_h

@@ -31,6 +31,20 @@ class Operator : public virtual Object
   virtual ErrorCode apply( Vector<Scalar, Ordinal> & x,
                            Vector<Scalar, Ordinal> & y ) = 0;
 
+  /* -------------------------------------------------------------------------*/
+
+  class Factory 
+  {
+    public:
+
+    // Destructor.
+    virtual ~Factory(void){};
+
+    // Construct a Operator
+    virtual esi::ErrorCode create(esi::IndexSpace<Ordinal>&,esi::IndexSpace<Ordinal>&,esi::Operator<Scalar,Ordinal>*&v) = 0; 
+  };
+
+
 };     // esi::Operator class
 };     // esi namespace
 #endif //__ESI_Operator_h

@@ -1,4 +1,5 @@
 
+
 /*$Id: mesi.c,v 1.1 2001/09/12 03:30:08 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
@@ -109,11 +110,11 @@ extern PetscFList CCAList;
 @*/
 int MatESISetType(Mat V,char *name)
 {
-  int                                ierr;
-  ::esi::Operator<double,int>        *ve;
-  ::esi::OperatorFactory<double,int> *f;
-  ::esi::OperatorFactory<double,int> *(*r)(void);
-  ::esi::IndexSpace<int>             *rmap,*cmap;
+  int                                  ierr;
+  ::esi::Operator<double,int>          *ve;
+  ::esi::Operator<double,int>::Factory *f;
+  ::esi::Operator<double,int>::Factory *(*r)(void);
+  ::esi::IndexSpace<int>               *rmap,*cmap;
 
   PetscFunctionBegin;
   ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
@@ -127,7 +128,7 @@ int MatESISetType(Mat V,char *name)
     ierr = PetscSplitOwnership(V->comm,&V->n,&V->N);CHKERRQ(ierr);
   }
   ierr = ESICreateIndexSpace("MPI",&V->comm,V->n,cmap);CHKERRQ(ierr);
-  ierr = f->getOperator(*rmap,*cmap,ve);CHKERRQ(ierr);
+  ierr = f->create(*rmap,*cmap,ve);CHKERRQ(ierr);
   ierr = rmap->deleteReference();CHKERRQ(ierr);
   ierr = cmap->deleteReference();CHKERRQ(ierr);
   delete f;
