@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.29 1996/01/18 22:49:36 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.30 1996/01/24 05:45:53 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -691,6 +691,7 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       sum3   -= *v3-- * tmp0;
       sum4   -= *v4-- * tmp0;
       tmp0    = x[*c--] = tmp[row] = sum3*a_a[ad[row]+shift]; row--;
+      sum4   -= *v4-- * tmp0;
       x[*c--] = tmp[row] = sum4*a_a[ad[row]+shift]; row--;
       break;
     case 5 :
