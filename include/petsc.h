@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.206 1998/04/09 04:19:44 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.207 1998/04/13 18:04:41 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -9,12 +9,12 @@
 /* 
    Current PETSc Version 
 */
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.22, Released ??? ??, 1998."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.22, Released April 21, 1998."
 
 #define PETSC_VERSION_MAJOR    2
 #define PETSC_VERSION_MINOR    0
 #define PETSC_VERSION_SUBMINOR 22
-#define PETSC_VERSION_DATE     "??? ??, 1998"
+#define PETSC_VERSION_DATE     "April 21, 1998"
 
 /* ========================================================================== */
 /* Before anything else, include the PETSc configuration file.  This 
@@ -280,6 +280,12 @@ extern int  PetscSynchronizedPrintf(MPI_Comm,char *,...);
 extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscSynchronizedFlush(MPI_Comm);
 
+
+typedef struct _p_PetscObjectContainer*  PetscObjectContainer;
+extern int PetscObjectContainerGetPointer(PetscObjectContainer,void **);
+extern int PetscObjectContainerSetPointer(PetscObjectContainer,void *);
+extern int PetscObjectContainerDestroy(PetscObjectContainer);
+extern int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *);
 
 /*
     C code optimization is often enhanced by telling the compiler 

@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.23 1998/04/08 22:29:47 balay Exp balay $";
+! "$Id: ex1f.F,v 1.24 1998/04/15 18:00:49 balay Exp bsmith $";
 !
 !       Formatted test for TS routines.
 !
@@ -480,7 +480,7 @@
  10   continue
       copyptr(localsize-1+1+cdx) = localptr(localsize-1+1+ldx)
       call VecRestoreArray(localwork,copyptr,cdx,ierr) 
-      call VecRestoreArray(local,localptr,cdx,ierr) 
+      call VecRestoreArray(local,localptr,ldx,ierr) 
       call VecDestroy(local,ierr)
 
 !   Local to Global 

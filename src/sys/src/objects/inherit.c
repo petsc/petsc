@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.29 1998/04/03 23:13:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.30 1998/04/13 17:30:26 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -214,13 +214,21 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,char *name,void **ptr)
    Notes:
    The second objects reference count is automatically increased by one when it is
    composed.
+
+   Replaces any previous object that had the same name.
+
+   If ptr is null and name has previously been composed using an object, that entry
+   is removed from the obj.
+
+   See PetscObjectContainerCreate() for how to create an object from a user pointer
+   that may then be composed with PETSc objects.
    
    PetscObjectCompose() can be used with any PETSc object such at
    Mat, Vec, KSP, SNES, etc, or any user provided object. 
 
 .keywords: object, composition
 
-.seealso: PetscObjectQuery()
+.seealso: PetscObjectQuery(), PetscObjectContainerCreate()
 @*/
 int PetscObjectCompose(PetscObject obj,char *name,PetscObject ptr)
 {
@@ -396,3 +404,97 @@ int PetscDataTypeGetName(PetscDataType ptype,char **name)
   PetscFunctionReturn(0);
 }
 
+
+struct _p_PetscObjectContainer {
+  PETSCHEADER(int)
+  void   *ptr;
+};
+
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectContainerGetPointer"
+/*@C
+   PetscObjectContainerGetPointer - Gets the pointer value contained in the container.
+
+   Input Parameter:
+.  obj - the object created with PetscObjectContainerCreate()
+
+   Output Parameter:
+.  ptr - the pointer value
+
+   Collective on obj
+
+.seealso: PetscObjectContainerCreate(), PetscObjectContainerDestroy(), 
+          PetscObjectContainerSetPointer()
+@*/
+int PetscObjectContainerGetPointer(PetscObjectContainer obj,void **ptr)
+{
+  PetscFunctionBegin;
+  *ptr = obj->ptr;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectContainerSetPointer"
+/*@C
+   PetscObjectContainerSetPointer - Sets the pointer value contained in the container.
+
+   Input Parameters:
+.  obj - the object created with PetscObjectContainerCreate()
+.  ptr - the pointer value
+
+   Collective on obj
+
+.seealso: PetscObjectContainerCreate(), PetscObjectContainerDestroy(), 
+          PetscObjectContainerGetPointer()
+@*/
+int PetscObjectContainerSetPointer(PetscObjectContainer obj,void *ptr)
+{
+  PetscFunctionBegin;
+  obj->ptr = ptr;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectContainerDestroy"
+/*@C
+   PetscObjectContainerDestroy - Destroys a PETSc container object.
+
+   Input Parameter:
+.  obj - the object created with PetscObjectContainerCreate()
+
+   Collective on obj
+
+.seealso: PetscObjectContainerCreate()
+@*/
+int PetscObjectContainerDestroy(PetscObjectContainer obj)
+{
+  PetscFunctionBegin;
+  if (--obj->refct > 0) PetscFunctionReturn(0);
+  PetscHeaderDestroy(obj);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectContainerDestroy"
+/*@C
+   PetscObjectContainerCreate - Creates a PETSc object that has room to hold
+       a single pointer. This allows one to attach any type of data (accessible
+       through a pointer) with the PetscObjectCompose() function to a PetscObject.
+
+   Input Parameters:
+.  comm - MPI communicator that shares the object
+
+@*/
+int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
+{
+  PetscObjectContainer contain;
+
+  PetscFunctionBegin;
+
+  PetscHeaderCreate(contain, _p_PetscObjectContainer,int,PETSC_COOKIE,0,comm,
+                    PetscObjectContainerDestroy,0);
+  *container = contain;
+  PetscFunctionReturn(0);
+}
