@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.30 2000/10/16 18:39:46 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.31 2000/10/24 17:12:43 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -140,9 +140,11 @@ int main(int argc,char **args)
   MatView(sA, VIEWER_STDOUT_WORLD); 
   */
 
-  /* Test MatNorm() */
+  /* Test MatNorm(), MatDuplicate() */
   ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRA(ierr); 
-  ierr = MatNorm(sA,NORM_FROBENIUS,&norm2);CHKERRA(ierr);
+  ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sC);CHKERRQ(ierr);
+  ierr = MatNorm(sC,NORM_FROBENIUS,&norm2);CHKERRA(ierr);x
+  ierr = MatDestroy(sC);CHKERRA(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol){ 
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n",norm1);CHKERRQ(ierr);

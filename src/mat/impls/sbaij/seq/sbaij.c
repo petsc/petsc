@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.38 2000/10/24 20:26:00 bsmith Exp hzhang $*/
+/*$Id: sbaij.c,v 1.39 2000/10/25 14:54:39 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1536,8 +1536,10 @@ int MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   if (a->i[mbs] != nz) SETERRQ(PETSC_ERR_PLIB,"Corrupt matrix");
 
   *B = 0;
-  ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&C);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATSEQBAIJ);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,&C);CHKERRQ(ierr);
+  ierr = MatSetType(C,MATSEQSBAIJ);CHKERRQ(ierr);
+  c    = (Mat_SeqSBAIJ*)C->data;
+
   ierr              = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   C->preallocated   = PETSC_TRUE;
   C->factor         = A->factor;
