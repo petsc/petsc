@@ -14,8 +14,9 @@ DIRS   = src include docs
 CONFIGURE_OPTIONS_FILE = ./config/configure_options
 CONFIGURE_OPTIONS      = $(shell cat $(CONFIGURE_OPTIONS_FILE))
 CONFIGURE_LOG_FILE     = configure_petsc.log
+CONFIGURE_ARCH         = `config/configarch`
 AUTOMAKE_ADD_FILES     = config/config.guess config/config.sub config/install-sh config/missing config/mkinstalldirs \
-                         config/ltconfig config/ltmain.sh
+                         config/ltmain.sh
 BMAKE_TEMPLATE_FILES   = bmake/config/packages.in bmake/config/rules.in bmake/config/variables.in
 
 include ${PETSC_DIR}/bmake/common/base
@@ -64,8 +65,12 @@ configure_petsc: start_configure configure Makefile.in
 $(CONFIGURE_OPTIONS_FILE):
 	touch $(CONFIGURE_OPTIONS_FILE) 
 
-$(CONFIGURE_LOG_FILE): $(CONFIGURE_OPTIONS_FILE) $(BMAKE_TEMPLATE_FILE)
-	$(MAKE) configure_petsc
+$(CONFIGURE_LOG_FILE): $(CONFIGURE_OPTIONS_FILE) $(BMAKE_TEMPLATE_FILES)
+	@if test "${INCLUDE_ARCH}" = "${CONFIGURE_ARCH}"; then \
+	    $(MAKE) configure_petsc; \
+    else \
+        echo "Petsc is preconfigured for architecture ${INCLUDE_ARCH}" > $(CONFIGURE_LOG_FILE); \
+    fi
 
 configure_clean:
 	-@$(RM) aclocal.m4
@@ -74,10 +79,11 @@ configure_clean:
 	-@$(RM) configure
 #
 # Basic targets to build PETSc libraries.
-# all     : builds the c, fortran, and f90 libraries
-all       : $(CONFIGURE_LOG_FILE) nall
-all_lt    : $(CONFIGURE_LOG_FILE) chk_petsc_dir info info_h chklib_dir deletelibs build_lt shared
-nall      : chk_petsc_dir info info_h chklib_dir deletelibs build shared
+# all: builds the c, fortran, and f90 libraries
+all: $(CONFIGURE_LOG_FILE)
+	${MAKE} all_build
+# This is necessary if configure jsut created files to have them reread
+all_build: chk_petsc_dir info info_h chklib_dir deletelibs build shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -97,25 +103,26 @@ info:
 	-@echo Machine characteristics: `uname -a`
 	-@echo "-----------------------------------------"
 	-@echo "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}"
-	-@if [ -n "${C_CCV}" -a "${C_CCV}" != "unknown" ] ; then \
-	  echo "C Compiler version:" ; ${C_CCV} ; fi ; true 
-	-@if [ -n "${CXX_CCV}" -a "${CXX_CCV}" != "unknown" ] ; then \
-	  echo "C++ Compiler version:" ; ${CXX_CCV} ; fi; true
+	-@if [ -n "${C_CCV}" -a "${C_CCV}" != "unknown" ]; then \
+        echo "C Compiler version: " `${C_CCV}`; fi
+	-@echo "Using C++ compiler: ${CXX} ${COPTFLAGS} ${CCPPFLAGS}"
+	-@if [ -n "${CXX_CCV}" -a "${CXX_CCV}" != "unknown" ]; then \
+        echo "C++ Compiler version: " `${CXX_CCV}`; fi
 	-@echo "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}"
-	-@if [ -n "${C_FCV}" -a "${C_FCV}" != "unknown" ] ; then \
-	  echo "Fortran Compiler version:" ; ${C_FCV} ; fi; true
+	-@if [ -n "${C_FCV}" -a "${C_FCV}" != "unknown" ]; then \
+	  echo "Fortran Compiler version: " `${C_FCV}`; fi
 	-@echo "-----------------------------------------"
 	-@grep PETSC_VERSION_NUMBER ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//"
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"
 	-@echo "Using configuration flags:"
-	-@grep "define " ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h
+	-@grep "\#define " ${PETSC_DIR}/bmake/${INCLUDE_ARCH}/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
-	-@echo "Using PETSc arch: ${PETSC_ARCH}"
+	-@echo "Using PETSc arch: ${INCLUDE_ARCH}"
 	-@echo "------------------------------------------"
 	-@echo "Using C linker: ${CLINKER}"
 	-@echo "Using Fortran linker: ${FLINKER}"
@@ -123,14 +130,14 @@ info:
 	-@echo "=========================================="
 #
 #
-MINFO = ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscmachineinfo.h
+MINFO = ${PETSC_DIR}/bmake/${INCLUDE_ARCH}/petscmachineinfo.h
 info_h:
 	-@$(RM) -f MINFO ${MINFO}
 	-@echo  "static char *petscmachineinfo = \"  " >> MINFO
 	-@echo  "Libraries compiled on `date` on `hostname` " >> MINFO
 	-@echo  Machine characteristics: `uname -a` "" >> MINFO
 	-@echo  "Using PETSc directory: ${PETSC_DIR}" >> MINFO
-	-@echo  "Using PETSc arch: ${PETSC_ARCH}" >> MINFO
+	-@echo  "Using PETSc arch: ${INCLUDE_ARCH}" >> MINFO
 	-@echo  "-----------------------------------------\"; " >> MINFO
 	-@echo  "static char *petsccompilerinfo = \"  " >> MINFO
 	-@echo  "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS} " >> MINFO
@@ -164,7 +171,8 @@ info_h:
 build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree 
+	${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree \
+         2>&1 | tee make_log_${BOPT} | egrep "(^lib|^*\.c:|Error)"
 	${RANLIB} ${PETSC_LIB_DIR}/*.a
 	-@chmod g+w  ${PETSC_LIB_DIR}/*.a
 	-@echo "Completed building libraries"
@@ -176,7 +184,7 @@ build:
 build_lt:
 	-@echo "BEGINNING TO COMPILE LIBTOOL LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=lib tree \
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=lib tree \
           2>&1 | tee make_log_${BOPT} | egrep "(^lib|^*\.c:|Error)"
 	-@echo "Completed building libraries"
 	-@echo "========================================="
@@ -188,7 +196,7 @@ testexamples: info chkopts
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=testexamples_1  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=testexamples_1  tree 
 	-@echo "Completed compiling and running test examples"
 	-@echo "========================================="
 testfortran: info chkopts
@@ -198,7 +206,7 @@ testfortran: info chkopts
 	-@echo "machines or the way Fortran formats numbers"
 	-@echo "some of the results may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_3  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_3  tree 
 	-@echo "Completed compiling and running Fortran test examples"
 	-@echo "========================================="
 testexamples_uni: info chkopts
@@ -206,7 +214,7 @@ testexamples_uni: info chkopts
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_4  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_4  tree 
 	-@echo "Completed compiling and running uniprocessor test examples"
 	-@echo "========================================="
 testfortran_uni: info chkopts
@@ -214,7 +222,7 @@ testfortran_uni: info chkopts
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_9  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_9  tree 
 	-@echo "Completed compiling and running uniprocessor fortran test examples"
 	-@echo "========================================="
 
@@ -228,7 +236,7 @@ deletelibs: chkopts_basic
 
 # Cleans up build
 allclean: deletelibs
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=clean tree
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=clean tree
 
 #
 #   Updates your PETSc version to the latest set of patches
@@ -393,21 +401,21 @@ allfortranstubs:
 	-@cd src/fortran/auto; ${OMAKE} fixfortran
 
 allci: 
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=ci  alltree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} ACTION=ci  alltree 
 
 allco: 
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=co  alltree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} ACTION=co  alltree 
 
 # usage make allrcslabel NEW_RCS_LABEL=v_2_0_28
 allrcslabel: 
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} NEW_RCS_LABEL=${NEW_RCS_LABEL} ACTION=rcslabel  alltree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} NEW_RCS_LABEL=${NEW_RCS_LABEL} ACTION=rcslabel  alltree 
 #
 #   The commands below are for generating ADIC versions of the code;
 # they are not currently used.
 #
 alladicignore:
 	-@${RM} ${INSTALL_LIB_DIR}/adicignore
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adicignore  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} ACTION=adicignore  tree 
 
 alladic:
 	-@echo "Beginning to compile ADIC source code in all directories"
@@ -415,11 +423,11 @@ alladic:
 	-@echo "========================================="
 	-@cd include ; \
            ${ADIC_CC} -s -f 1 ${CCPPFLAGS} petsc.h 
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} ACTION=adic  tree 
 	-@cd src/inline ; \
-            ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} adic
+            ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} adic
 	-@cd src/blaslapack ; \
-            ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree
+            ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} ACTION=adic  tree
 
 alladiclib:
 	-@echo "Beginning to compile ADIC libraries in all directories"
@@ -428,19 +436,19 @@ alladiclib:
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"
 	-@echo "Using configuration flags:"
-	-@grep "define " bmake/${PETSC_ARCH}/petscconf.h
+	-@grep "define " bmake/${INLUDE_ARCH}/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
-	-@echo "Using PETSc arch: ${PETSC_ARCH}"
+	-@echo "Using PETSc arch: ${INCLUDE_ARCH}"
 	-@echo "========================================="
 	-@${RM} -f  ${INSTALL_LIB_DIR}/*adic.a
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} ACTION=adiclib  tree
 	-@cd src/blaslapack ; \
-            ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
+            ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} ACTION=adiclib  tree
 	-@cd src/adic/src ; \
-            ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} lib
+            ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} lib
 
 # -------------------------------------------------------------------------------
 #
@@ -492,7 +500,7 @@ noise: info chklib_dir
 	-@echo "Beginning to compile noise routines"
 	-@echo "========================================="
 	-@cd src/snes/interface/noise; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} lib > trashz 2>&1; \
+	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${INCLUDE_ARCH} lib > trashz 2>&1; \
 	  grep -v clog trashz | grep -v "information sections" | \
 	  egrep -i '(Error|warning|Can)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \

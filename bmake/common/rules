@@ -10,7 +10,7 @@ chklib_dir:
 	  echo "For example, use: make BOPT=g ex1"; \
           echo "Remove all .o files and rerun make with appropriate BOPT"; \
 	  echo "******************************************************";  false; fi
-	@if [ ! -d ${INSTALL_LIB_DIR} ]; then \
+	@if [ ! -d "${INSTALL_LIB_DIR}" ]; then \
 	  echo Making directory ${INSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
 
 # 1. Checks that user has set BOPT variable
@@ -106,13 +106,20 @@ lib: chklib_dir ${SOURCE}
 # Builds library - fast version
 libfast: chklib_dir ${SOURCEC} ${SOURCEF}
 	-@if [ "${SPECIALFASTLIB}" = "yes" ] ; then \
-	   ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} specialfastlib;  \
-	  else \
-          if [ "${SOURCEC}" != "" ] ; then \
-	     ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCEC} ${SSOURCE} ;\
-	  ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
-	  ${RM} ${OBJSC} ${SOBJS}; \
-	  fi; fi
+	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} specialfastlib;  \
+	else \
+        if [ "${SOURCEC}" != "" ]; then \
+	        if test -n "${LIBTOOL}"; then \
+	            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} libc; \
+	            ${RANLIB} ${LIBNAME}; \
+	            ${RM} ${OBJS}; \
+	        else \
+	            ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCEC} ${SSOURCE}; \
+	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
+	            ${RM} ${OBJSC} ${SOBJS}; \
+	        fi; \
+	    fi; \
+	fi
 
 # Removes garbage files
 clean:
@@ -732,7 +739,7 @@ fixfortran:
 	done
 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/rules
+include ${PETSC_DIR}/bmake/${INCLUDE_ARCH}/rules
 
 
 
