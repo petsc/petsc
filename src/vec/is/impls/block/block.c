@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.33 1999/01/13 16:25:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.34 1999/01/31 16:03:29 bsmith Exp curfman $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -199,6 +199,8 @@ static struct _ISOps myops = { ISGetSize_Block,
    If you wish to index the values {0,1,4,5}, then use
    a block size of 2 and idx of {0,4}.
 
+   Level: beginner
+
 .keywords: IS, index set, create, block
 
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
@@ -252,6 +254,8 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
    Output Parameter:
 .  idx - the integer indices
 
+   Level: intermediate
+
 .keywords: IS, index set, block, get, indices
 
 .seealso: ISGetIndices(), ISBlockRestoreIndices()
@@ -283,6 +287,8 @@ int ISBlockGetIndices(IS in,int *idx[])
    Output Parameter:
 .  idx - the integer indices
 
+   Level: intermediate
+
 .keywords: IS, index set, block, restore, indices
 
 .seealso: ISRestoreIndices(), ISBlockGetIndices()
@@ -309,6 +315,8 @@ int ISBlockRestoreIndices(IS is,int *idx[])
    Output Parameter:
 .  size - the number of elements in a block
 
+   Level: intermediate
+
 .keywords: IS, index set, block, get, size
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISBlock(), ISCreateBlock()
@@ -330,7 +338,7 @@ int ISBlockGetBlockSize(IS is,int *size)
 #undef __FUNC__  
 #define __FUNC__ "ISBlock" 
 /*@C
-   ISBlock - Checks if an index set is blocked.
+   ISBlock - Checks whether an index set is blocked.
 
    Not Collective
 
@@ -339,6 +347,8 @@ int ISBlockGetBlockSize(IS is,int *size)
 
    Output Parameter:
 .  flag - PETSC_TRUE if a block index set, else PETSC_FALSE
+
+   Level: intermediate
 
 .keywords: IS, index set, block
 
@@ -366,6 +376,8 @@ int ISBlock(IS is,PetscTruth *flag)
 
    Output Parameter:
 .  size - the number of blocks
+
+   Level: intermediate
 
 .keywords: IS, index set, block, get, size
 
