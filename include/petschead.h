@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.64 1998/06/02 00:54:57 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.65 1998/06/11 19:59:10 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -51,6 +51,7 @@ typedef struct {
    int (*queryfunction)(PetscObject,char *, void **);
    int (*composelanguage)(PetscObject,PetscLanguage,void *);
    int (*querylanguage)(PetscObject,PetscLanguage,void **);
+   int (*publish)(PetscObject);
 } PetscOps;
 
 #define PETSCHEADER(ObjectOps)                         \
@@ -63,13 +64,14 @@ typedef struct {
   int         id;                                      \
   int         refct;                                   \
   int         tag;                                     \
-  DLList      qlist;                                   \
+  FList      qlist;                                   \
   OList       olist;                                   \
   char        *type_name;                              \
   PetscObject parent;                                  \
   char*       name;                                    \
   char        *prefix;                                 \
   void        *cpp;                                    \
+  int         amem;                                    \
   void**      fortran_func_pointers;       
 
   /*  ... */                               
@@ -84,7 +86,7 @@ extern int PetscHeaderDestroy_Private(PetscObject);
 
     Input Parameters:
 +   tp - the data structure type of the object
-.   pops - the data structure type of the objects operations (for example _VecOps)
+.   pops - the data structure type of the objects operations (for example VecOps)
 .   cook - the cookie associated with this object
 .   t - type (no longer should be used)
 .   com - the MPI Communicator
