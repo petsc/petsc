@@ -257,6 +257,26 @@ int PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSetDisplay"
+/*@
+  PetscDrawSetDisplay - Sets the display where a PetscDraw object will be displayed
+
+  Input Parameter:
++ draw - the drawing context
+- display - the X windows display
+
+@*/
+int PetscDrawSetDisplay(PetscDraw draw,char *display)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr          = PetscStrfree(draw->display);CHKERRQ(ierr); 
+  ierr          = PetscStrallocpy(display,&draw->display);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawCreate_Null" 
