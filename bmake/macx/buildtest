@@ -8,7 +8,7 @@ set MACH=playstation
 set ARCH=macx
 set TEST=testexamples_
 set NICE=''
-set RSH=ssh
+set RSH='ssh -x'
 set RCP='scp -q -B'
 set RSYNCSSH='-z -e ssh'
 #
