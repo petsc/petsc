@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.9 1999/12/13 03:21:04 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.10 2000/01/11 21:02:14 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -17,7 +17,7 @@
 #define FGMRES_DELTA_DIRECTIONS 10
 #define FGMRES_DEFAULT_MAXK     30
 static int    FGMRESGetNewVectors(KSP,int);
-static int    FGMRESUpdateHessenberg(KSP,int,int,PetscReal *);
+static int    FGMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal *);
 static int    BuildFgmresSoln(Scalar*,Vec,Vec,KSP,int);
 
 /*
@@ -165,9 +165,9 @@ int FGMREScycle(int *itcount,KSP ksp)
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)(ksp->data);
   PetscReal    res_norm;             
   PetscReal    hapbnd,tt;
-  Scalar       zero=0.0;
+  Scalar       zero = 0.0;
   Scalar       tmp;
-  int          hapend=0;              /* indicates happy breakdown ending */
+  PetscTruth   hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
   int          ierr;
   int          loc_it;                /* local count of # of dir. in Krylov space */ 
   int          max_k = fgmres->max_k; /* max # of directions Krylov space */
@@ -262,8 +262,8 @@ int FGMREScycle(int *itcount,KSP ksp)
     } else {
         /* This happens when the solution is exactly reached. */
         /* So there is no new direction... */
-          ierr = VecSet(&zero,VEC_TEMP);CHKERRQ(ierr); /* set VEC_TEMP to 0 */
-          hapend = 1;
+          ierr   = VecSet(&zero,VEC_TEMP);CHKERRQ(ierr); /* set VEC_TEMP to 0 */
+          hapend = PETSC_TRUE;
     }
     /* note that for FGMRES we could get HES(loc_it+1, loc_it)  = 0 and the
        current solution would not be exact if HES was singular.  Note that 
@@ -489,7 +489,7 @@ static int BuildFgmresSoln(Scalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 .        ksp -    Krylov space object
 .	 it  -    plane rotations are applied to the (it+1)th column of the 
                   modified hessenberg (i.e. HH(:,it))
-.        hapend - 0=not happy breakdown ending.
+.        hapend - PETSC_FALSE not happy breakdown ending.
 
     output parameters:
 .        res - the new residual
@@ -497,7 +497,7 @@ static int BuildFgmresSoln(Scalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
  */
 #undef __FUNC__  
 #define __FUNC__ "FGMRESUpdateHessenberg"
-static int FGMRESUpdateHessenberg(KSP ksp,int it,int hapend,PetscReal *res)
+static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
 {
   Scalar     *hh,*cc,*ss,tt;
   int        j;
