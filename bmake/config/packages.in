@@ -37,10 +37,15 @@ MPE_INCLUDE        = @MPE_INCLUDE@
 BLOCKSOLVE_INCLUDE = @BLOCKSOLVE_INCLUDE@
 BLOCKSOLVE_LIB     = @BLOCKSOLVE_LIB@
 #
-# Location of BlockSolve (MPI version)
+# Location of UMFPACK
 #
 UMFPACK_INCLUDE = @UMFPACK_INCLUDE@
 UMFPACK_LIB     = @UMFPACK_LIB@
+#
+# Location of AMD
+#
+AMD_INCLUDE = @AMD_INCLUDE@
+AMD_LIB     = @AMD_LIB@
 #
 # Location of Matlab
 #
