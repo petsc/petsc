@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.40 1999/04/16 16:10:23 bsmith Exp bsmith $";
+! "$Id: ex4f.F,v 1.41 1999/11/24 21:55:18 bsmith Exp balay $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -424,7 +424,7 @@
 !  This routine merely accesses the local vector data via
 !  VecGetArray() and VecRestoreArray().
 !
-      subroutine FormFunction(snes,X,F,dummy)
+      subroutine FormFunction(snes,X,F,dummy,ierr)
       implicit none
 
 #include "include/finclude/petsc.h"
@@ -432,17 +432,15 @@
 #include "include/finclude/snes.h"
 
 !  Input/output variables:
-      SNES     snes
-      Vec      X, F
-      integer  dummy
+      SNES              snes
+      Vec               X, F
+      PetscFortranAddr  dummy
+      integer           ierr
 
 !  Common blocks:
       double precision   lambda
       integer  mx, my
       common /params/ lambda, mx, my
-
-!  Local variables:
-      integer  ierr
 
 !  Declarations for use with local arrays:
       Scalar      lx_v(0:1), lf_v(0:1)
