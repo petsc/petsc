@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.141 2000/01/11 21:00:37 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.142 2000/01/18 20:47:44 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -179,7 +179,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
     ierr = PetscFree(old_i2);CHKERRQ(ierr);
   } else {
     /* fix permutation of old_j that the factorization introduced */
-    for (i=old_i[0]; i<=old_i[n]; i++) {
+    for (i=old_i[0]; i<old_i[n]; i++) {
       old_j[i-1] = iperm[old_j[i-1]-1]; 
     }
   }
