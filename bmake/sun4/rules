@@ -32,16 +32,16 @@ libf: $(LIBNAME)($(OBJSF))
 	$(RM) $*.o
 
 shared: chkopts
-	-@echo making shared libraries in $(LDIR) ;\
+	-@ echo making shared libraries in $(LDIR) ;\
 	cd $(LDIR); \
 	$(RM) -rf tmp; \
 	mkdir tmp; \
 	cd tmp; \
 	for LIBNAME in $(SHLIBS) ; \
-	  do \
-	    $(AR) x ../$$LIBNAME.a ;\
-	    gcc -shared  *.o  -o ../$$LIBNAME.so.1.0 ; \
-	    $(RM) -f * ; \
+	do \
+	  $(AR) x ../$$LIBNAME.a ;\
+	  gcc -shared  *.o  -o ../$$LIBNAME.so.1.0 ; \
+	  $(RM) -f * ; \
 	done ;\
 	cd ../ ; \
 	$(RM) -rf tmp
