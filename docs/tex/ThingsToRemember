@@ -168,6 +168,10 @@ Multimedia lab SP2:
     http://www.mhpcc.edu/training/workshop/html/poe/poe.html
 
 ---------------
+NERSC IBM SP
+machine: gseaborg.nersc.gov
+login: kaushik
+passwd: petsc-passwd
 
 Nersc Cray T3E
 machine: mcurie.nersc.gov
@@ -332,6 +336,11 @@ ODU: solaris,irix, (others too?)
   user: mcinnes
   passwd: odupasswd
   solaris: (Ultra-1) pitfall, dustdevil, wave, dew, rose, orca
+
+ODU Sun Enterprise
+machine: horus.lions.odu.edu
+user: dkaus001
+passwd: petsc-passwd
 
 ---------
 
