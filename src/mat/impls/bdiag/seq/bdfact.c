@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.8 1995/10/01 21:52:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.9 1995/10/05 01:31:43 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -20,7 +20,10 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          ierr, n = a->m;
+
   if (n != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Matrix must be square");
+  if (isrow || iscol) PLogInfo((PetscObject)A,
+    "MatILUFactorSymbolic_SeqBDiag: row and col permutations not supported.\n");
   if (levels != 0)
     SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Only ILU(0) is supported");
   ierr = MatConvert(A,MATSAME,fact); CHKERRQ(ierr);
@@ -31,49 +34,52 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
 {
   Mat          C = *B;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data;
-  int          info, i, k, d, d2, dgk, row, col, nb = a->nb, nd = a->nd;
-  int          *diag = a->diag, ds, dn, m = a->m, mainbd = a->mainbd;
-  Scalar       *submat, **dv = a->diagv, *dd = dv[mainbd];
+  int          info, i, k, d, d2, dgk, pivot_row, col, nb = a->nb, nd = a->nd;
+  int          *diag = a->diag, ds, m = a->m, mainbd = a->mainbd;
+  Scalar       *submat, **dv = a->diagv, *dd = dv[mainbd], mult;
 
   if (nb == 1) {
-    for ( k=0; k<m-1; k++ ) {
-      for ( d=0; d<mainbd; d++ ) {
-        if (diag[d] >= k) {
-          dv[d][k] /= dd[k];
-          row = k + diag[d];
-          for ( d2=d+1; d2<nd; d2++ ) {
-            dn  = diag[d2];
-            col = row - dn;
-            dgk = k - col;
-            if (dn > 0) { /* lower triangle */
-              if (dgk > 0) { /* lower triangle */
-                for ( ds=0; ds<mainbd; ds++ ) {
-                  if (diag[ds] <= dgk) {
-                    if (diag[ds] == dgk) dv[d2][col] -= dv[d][k] * dv[ds][col];
-                    break;
+    for ( k=0; k<m; k++ ) {
+      dd[k] = 1.0/dd[k];
+      for ( d=mainbd-1; d>=0; d-- ) { /*      for ( d=0; d<mainbd; d++ ) { */
+        pivot_row = k + diag[d];
+        if (diag[d] >= k && pivot_row < m) {
+          if (dv[d][k] != 0) { /* nonzero pivot */
+            dv[d][k] *= dd[k];
+            mult = dv[d][k];
+            for ( d2=d+1; d2<nd; d2++ ) {
+              col = pivot_row - diag[d2];
+              dgk = k - col;
+              if (diag[d2] > 0) { /* lower triangle */
+                if (dgk > 0) { /* lower triangle */
+                  for ( ds=0; ds<mainbd; ds++ ) {
+                    if (diag[ds] <= dgk) {
+                      if (diag[ds] == dgk) dv[d2][col] -= mult * dv[ds][col];
+                      break;
+                    }
+                  }
+                } else { /* upper triangle */
+                  for ( ds=mainbd; ds<nd; ds++ ) {
+                    if (diag[ds] <= dgk) {
+                      if (diag[ds] == dgk) dv[d2][col] -= mult * dv[ds][k];
+                      break;
+                    }
                   }
                 }
               } else { /* upper triangle */
-                for ( ds=mainbd; ds<nd; ds++ ) {
-                  if (diag[ds] <= dgk) {
-                    if (diag[ds] == dgk) dv[d2][col] -= dv[d][k] * dv[ds][k];
-                    break;
+                if (dgk > 0) { /* lower triangle */
+                  for ( ds=0; ds<mainbd; ds++ ) {
+                    if (diag[ds] <= dgk) {
+                      if (diag[ds] == dgk) dv[d2][pivot_row] -= mult * dv[ds][col];
+                      break;
+                    }
                   }
-                }
-              }
-            } else { /* upper triangle */
-              if (dgk > 0) { /* lower triangle */
-                for ( ds=0; ds<mainbd; ds++ ) {
-                  if (diag[ds] <= dgk) {
-                    if (diag[ds] == dgk) dv[d2][row] -= dv[d][k] * dv[ds][col];
-                    break;
-                  }
-                }
-              } else { /* upper triangle */
-                for ( ds=mainbd; ds<nd; ds++ ) {
-                  if (diag[ds] <= dgk) {
-                    if (diag[ds] == dgk) dv[d2][row] -= dv[d][k] * dv[ds][k];
-                    break;
+                } else { /* upper triangle */
+                  for ( ds=mainbd; ds<nd; ds++ ) {
+                    if (diag[ds] <= dgk) {
+                      if (diag[ds] == dgk) dv[d2][pivot_row] -= mult * dv[ds][k];
+                      break;
+                    }
                   }
                 }
               }
