@@ -326,6 +326,9 @@ $    MatDestroy(mat);
    with KSP (such as, for use with matrix-free methods). You should not
    use the shell type if you plan to define a complete matrix class.
 
+   Fortran Notes: The context can only be an integer or a PetscObject
+      unfortunately it cannot be a Fortran array or derived type.
+
    PETSc requires that matrices and vectors being used for certain
    operations are partitioned accordingly.  For example, when
    creating a shell matrix, A, that supports parallel matrix-vector
@@ -380,6 +383,8 @@ PetscErrorCode MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pet
 
    Level: advanced
 
+   Fortran Notes: The context can only be an integer or a PetscObject
+      unfortunately it cannot be a Fortran array or derived type.
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
 @*/

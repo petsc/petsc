@@ -62,6 +62,9 @@ Error handling
 
 PC/Mat
 
+  Add PCShellSetContext()/GetContext() and remove the ctx and ctxrich passed into setapply and setapplyrichardson()
+  indicates limits on context from Fortran. (Make like MatShell())
+
   Manual pages for mat ordering/coloring/partitioning types
 
   Modify PC_MG to allow setters and fold DMMG and ML (and maybe hypre) into it?
