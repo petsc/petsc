@@ -159,8 +159,7 @@ ICASE/NASA SP2: poseidon.larc.nasa.gov, account: mcinnes
      of using the command: acct_ytd 
    - Now jobs submitted to poseidon may actually run on babbage, the
          NASA Ames machine, so that staging input/output files is crucial!
-   - Example of script file using staging:  Note that sometimes the stagein
-     copies do not work - for no aparent reason.  Other times, they work fine.
+   - Example of script file using staging:
        [poseidon] qsub run.job
      where run.job is a script such as the following:
          
@@ -174,6 +173,10 @@ poe ex1 -mat_baij -optionsleft out.1
 
     Note: home directories and scratch directoreis are same names on babbage
     and poseidon.
+
+    Note: Sometimes the stagein copies do not work - for no apparent reason. 
+    Other times, they work fine.  Workaround:  manually copy input files so
+    that no staging is needed.
 
 ---------
 

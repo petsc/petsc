@@ -217,6 +217,6 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 # Note: We get significantly different convergence results for 
 # matrix-free Newton-Krylov methods when using ESSL's ddot.
 #
-  DOT = /ump/hpcc/home3/mcinnes/work/blas/ddot.o
-  LAPACK_LIB = $(DOT) -lessl /ump/hpcc/home3/mcinnes/lapack/lapack.a
-# LAPACK_LIB = -lessl /ump/hpcc/home3/mcinnes/lapack/lapack.a
+# DOT = /ump/hpcc/home3/mcinnes/work/blas/ddot.o
+# LAPACK_LIB = $(DOT) -lessl /ump/hpcc/home3/mcinnes/lapack/lapack.a
+## LAPACK_LIB = -lessl /ump/hpcc/home3/mcinnes/lapack/lapack.a
