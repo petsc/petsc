@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.3 1999/01/14 00:22:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.4 1999/03/19 21:16:22 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests repeatedly setting a window type\n";
@@ -16,9 +16,13 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = DrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw); CHKERRA(ierr);
+#if defined (HAVE_X11)
   ierr = DrawSetType(draw,"x"); CHKERRA(ierr);
   ierr = DrawSetType(draw,"null"); CHKERRA(ierr);
   ierr = DrawSetType(draw,"x"); CHKERRA(ierr);
+#else
+  ierr = DrawSetType(draw,"null"); CHKERRA(ierr);
+#endif
   ierr = DrawSetViewPort(draw,.25,.25,.75,.75); CHKERRA(ierr);
   ierr = DrawLine(draw,0.0,0.0,1.0,1.0,DRAW_BLACK); CHKERRA(ierr);
   ierr = DrawString(draw,.2,.2,DRAW_RED,"Some Text"); CHKERRA(ierr);
