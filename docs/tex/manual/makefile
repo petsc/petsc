@@ -35,16 +35,13 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit
 	cat ../../manualpages/manualpages.cit | sed 's/+man+../+man+manualpages/g' > www.cit 
 	/home/gropp/bin/solaris/tohtml -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
-	       -mapref ../../manualpages/manualpages.cit
+	       -nonavnames -nobottomnav -mapref ../../manualpages/manualpages.cit
 	/home/gropp/bin/solaris/tohtml -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
-	       -mapref ../../manualpages/manualpages.cit
+	       -nonavnames -nobottomnav -mapref ../../manualpages/manualpages.cit
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv manual.html manual_html.html
 	cat manual_html.html \
-            | grep -v Up: \
-            | grep -v Next: \
-            | grep -v Previous: \
-            |sed 's/H1/H2/g' \
+            | sed 's/H1/H2/g' \
             | sed 's/H0/H1/g' \
             | sed 's/<pre><tt>/<pre><tt>   /g' \
             | sed 's/&amp;gt;/   /g' \
