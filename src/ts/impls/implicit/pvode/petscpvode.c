@@ -808,15 +808,15 @@ int TSCreate_PVode(TS ts)
   int      ierr;
 
   PetscFunctionBegin;
-  ts->destroy         = TSDestroy_PVode;
-  ts->view            = TSView_PVode;
+  ts->ops->destroy         = TSDestroy_PVode;
+  ts->ops->view            = TSView_PVode;
 
   if (ts->problem_type != TS_NONLINEAR) {
     SETERRQ(PETSC_ERR_SUP,"Only support for nonlinear problems");
   }
-  ts->setup           = TSSetUp_PVode_Nonlinear;  
-  ts->step            = TSStep_PVode_Nonlinear;
-  ts->setfromoptions  = TSSetFromOptions_PVode_Nonlinear;
+  ts->ops->setup           = TSSetUp_PVode_Nonlinear;  
+  ts->ops->step            = TSStep_PVode_Nonlinear;
+  ts->ops->setfromoptions  = TSSetFromOptions_PVode_Nonlinear;
 
   ierr  = PetscNew(TS_PVode,&cvode);CHKERRQ(ierr);
   ierr  = PetscMemzero(cvode,sizeof(TS_PVode));CHKERRQ(ierr);

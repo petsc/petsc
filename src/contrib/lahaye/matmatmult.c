@@ -4,7 +4,6 @@
           C = A * B
 */
 
-#include "petscsys.h"
 #include "src/mat/impls/aij/seq/aij.h"
 
 typedef struct _p_Space *FreeSpace;
