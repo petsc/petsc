@@ -31,6 +31,7 @@ typedef struct {
   int          *pivot;           /* pivots for LU factorization (temporary loc) */
   PetscTruth   roworiented;      /* inputs to MatSetValue() are row oriented (default = 1) */
   int          reallocs;         /* number of allocations during MatSetValues */
+  PetscScalar  *solvework;       /* work space for triangular solves for large block sizes */
 } Mat_SeqBDiag;
 
 EXTERN PetscErrorCode MatNorm_SeqBDiag_Columns(Mat,PetscReal*,int);

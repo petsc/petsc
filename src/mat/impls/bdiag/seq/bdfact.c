@@ -119,6 +119,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
   }
   ierr = PetscFree(dgptr);CHKERRQ(ierr);
   ierr = PetscFree(v_work);CHKERRQ(ierr);
+  if (!a->solvework) {
+    ierr = PetscMalloc(bs*sizeof(PetscScalar),&a->solvework);CHKERRQ(ierr);
+  }
   C->factor = FACTOR_LU;
   PetscFunctionReturn(0);
 }
@@ -490,12 +493,11 @@ PetscErrorCode MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   PetscErrorCode ierr;
   int   bs = a->bs,m = A->m,*diag = a->diag,col,bs2 = bs*bs;
   PetscScalar  *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv;
-  PetscScalar  work[25];
+  PetscScalar  *work = a->solvework;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  if (bs > 25) SETERRQ(PETSC_ERR_SUP,"Blocks must be smaller then 25");
   ierr = PetscMemcpy(y,x,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
