@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.106 1999/02/25 19:40:53 balay Exp balay $ 
+static char vcid[] = $Id: pdvec.c,v 1.107 1999/02/25 21:53:37 balay Exp bsmith $ 
 #endif
 
 /*
@@ -399,7 +399,13 @@ int VecView_MPI(Vec xin,Viewer viewer)
   } else if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
     ierr = VecView_MPI_Socket(xin,viewer);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
-    ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
+    int (*f)(Vec,Viewer);
+    ierr = PetscObjectQueryFunction((PetscObject)xin,"VecView_MPI_Binary_C",(void **)&f);CHKERRQ(ierr);
+    if (f) {
+      ierr = (*f)(xin,viewer);CHKERRQ(ierr);
+    } else {
+      ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
+    }
   } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
     int format, (*f)(Vec,Viewer);
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
@@ -407,7 +413,7 @@ int VecView_MPI(Vec xin,Viewer viewer)
       ierr = VecView_MPI_Draw_LG(xin, viewer ); CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
-    ierr = PetscObjectQueryFunction((PetscObject)xin,"VecView_MPI_Draw_C",(void **)&f); CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)xin,"VecView_MPI_Draw_C",(void **)&f);CHKERRQ(ierr);
     if (f) {
       ierr = (*f)(xin,viewer);CHKERRQ(ierr);
     } else {
