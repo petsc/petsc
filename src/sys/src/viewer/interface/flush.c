@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: flush.c,v 1.13 1998/03/06 00:18:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: flush.c,v 1.14 1998/03/12 23:22:39 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"  /*I "petsc.h" I*/
@@ -17,6 +17,8 @@ struct _p_Viewer {
 
    Input Parameters:
 .  viewer - the viewer to be flushed
+
+   Collective on Viewer
 
 .keywords: Viewer, flush
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.24 1998/03/16 18:55:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.25 1998/04/03 23:15:34 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -290,9 +290,13 @@ int MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
 #define __FUNC__ "MatMult_SeqBAIJ_3"
 int MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
 {
-  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
-   Scalar *x,*z,*v,*xb,sum1,sum2,sum3,x1,x2,x3;
-  int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+  Mat_SeqBAIJ  *a = (Mat_SeqBAIJ *) A->data;
+  Scalar       *x,*z,*v,*xb,sum1,sum2,sum3,x1,x2,x3;
+  int          ierr,mbs=a->mbs,i,*idx,*ii,j,n;
+
+#if defined(HAVE_PRAGMA_DISJOINT)
+#pragma disjoint(*v,*z,*xb)
+#endif
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);

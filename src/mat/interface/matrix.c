@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.283 1998/03/20 22:48:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.284 1998/04/03 23:14:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -25,6 +25,8 @@ static char vcid[] = "$Id: matrix.c,v 1.283 1998/03/20 22:48:33 bsmith Exp bsmit
 .  ncols -  the number of nonzeros in the row
 .  cols - if nonzero, the column numbers
 .  vals - if nonzero, the values
+
+   Not Collective
 
    Notes:
    This routine is provided for people who need to have direct access
@@ -91,6 +93,8 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 .  ncols, cols - the number of nonzeros and their columns
 .  vals - if nonzero the column values
 
+   Not Collective
+
    Notes: 
 $    This should be called after you have finished examining the entries.
 
@@ -134,7 +138,9 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 .  mat - the matrix
 .  ptr - visualization context
 
-   Notes:
+   Collective on Mat unless Viewer is VIEWER_STDOUT_SELF
+
+  Notes:
    The available visualization contexts include
 $     VIEWER_STDOUT_SELF - standard output (default)
 $     VIEWER_STDOUT_WORLD - synchronized standard
@@ -216,6 +222,8 @@ int MatView(Mat mat,Viewer viewer)
    Input Parameter:
 .  mat - the matrix
 
+   Collective on Mat
+
 .keywords: matrix, destroy
 @*/
 int MatDestroy(Mat mat)
@@ -249,6 +257,8 @@ int MatDestroy(Mat mat)
 $     PETSC_TRUE if matrix is valid;
 $     PETSC_FALSE otherwise.
 
+   Collective on Mat
+
 .keywords: matrix, valid
 @*/
 int MatValid(Mat m,PetscTruth *flg)
@@ -276,6 +286,8 @@ int MatValid(Mat m,PetscTruth *flg)
 .  addv - either ADD_VALUES or INSERT_VALUES, where
 $     ADD_VALUES - adds values to any existing entries
 $     INSERT_VALUES - replaces existing entries with new values
+
+   Not Collective
 
    Notes:
    By default the values, v, are row-oriented and unsorted.
@@ -339,6 +351,8 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
 .  addv - either ADD_VALUES or INSERT_VALUES, where
 $     ADD_VALUES - adds values to any existing entries
 $     INSERT_VALUES - replaces existing entries with new values
+
+   Not Collective
 
    Notes:
    By default the values, v, are row-oriented and unsorted. So the layout of 
@@ -426,6 +440,8 @@ M*/
 .  m, idxm - the number of rows and their global indices 
 .  n, idxn - the number of columns and their global indices
 
+   Not Collective; currently only returns a local block
+
    Notes:
    The user must allocate space (m*n Scalars) for the values, v.
    The values, v, are then returned in a row-oriented format, 
@@ -474,6 +490,8 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 .  mapping - mapping created with ISLocalToGlobalMappingCreate() 
              or ISLocalToGlobalMappingCreateIS()
 
+   Not Collective
+
 .keywords: matrix, set, values, local, global, mapping
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesLocal()
@@ -504,6 +522,8 @@ int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
 .  x - the matrix
 .  mapping - mapping created with ISLocalToGlobalMappingCreate() or
              ISLocalToGlobalMappingCreateIS()
+
+   Not Collective
 
 .keywords: matrix, set, values, local ordering
 
@@ -539,6 +559,8 @@ int MatSetLocalToGlobalMappingBlocked(Mat x,ISLocalToGlobalMapping mapping)
 .  addv - either INSERT_VALUES or ADD_VALUES, where
 $     ADD_VALUES - adds values to any existing entries
 $     INSERT_VALUES - replaces existing entries with new values
+
+   Not Collective
 
    Notes:
    Before calling MatSetValuesLocal(), the user must first set the
@@ -608,6 +630,8 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
 $     ADD_VALUES - adds values to any existing entries
 $     INSERT_VALUES - replaces existing entries with new values
 
+   Not Collective
+
    Notes:
    Before calling MatSetValuesBlockedLocal(), the user must first set the
    local-to-global mapping by calling MatSetLocalToGlobalMappingBlocked(),
@@ -674,6 +698,8 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scala
    Output Parameters:
 .  y - the result
 
+   Collective on Mat and Vec
+
    Notes:
    The vectors x and y cannot be the same.  I.e., one cannot
    call MatMult(A,y,y).
@@ -715,6 +741,8 @@ int MatMult(Mat mat,Vec x,Vec y)
    Output Parameters:
 .  y - the result
 
+   Collective on Mat and Vec
+
    Notes:
    The vectors x and y cannot be the same.  I.e., one cannot
    call MatMultTrans(A,y,y).
@@ -752,6 +780,8 @@ int MatMultTrans(Mat mat,Vec x,Vec y)
 
     Output Parameters:
 .   v3 - the result
+
+   Collective on Mat and Vec
 
    Notes:
    The vectors v1 and v3 cannot be the same.  I.e., one cannot
@@ -794,6 +824,8 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 
    Output Parameters:
 .  v3 - the result
+
+   Collective on Mat and Vec
 
    Notes:
    The vectors v1 and v3 cannot be the same.  I.e., one cannot
@@ -839,6 +871,8 @@ $    flag = MAT_LOCAL: local matrix
 $    flag = MAT_GLOBAL_MAX: maximum over all processors
 $    flag = MAT_GLOBAL_SUM: sum over all processors
 .  info - matrix information context
+
+    Collective on Mat if MAT_GLOBAL_MAX or MAT_GLOBAL_SUM is passed in
 
    Notes:
    The MatInfo context contains a variety of matrix data, including
@@ -908,6 +942,8 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
    Output Parameters:
 .  fact - the factored matrix
 
+   Collective on Mat
+
 .keywords: matrix, factor, LU, in-place
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
@@ -940,6 +976,8 @@ int MatILUDTFactor(Mat mat,double dt,int maxnz,IS row,IS col,Mat *fact)
 .  row - row permutation
 .  col - column permutation
 .  f - expected fill as ratio of original fill.
+
+   Collective on Mat
 
 .keywords: matrix, factor, LU, in-place
 
@@ -974,8 +1012,11 @@ int MatLUFactor(Mat mat,IS row,IS col,double f)
 .  f - expected fill as ratio of original fill.
 .  level - number of levels of fill.
 
+   Collective on Mat
+
    Notes: 
-   Probably really in-place only when level of fill is zero.
+   Probably really in-place only when level of fill is zero, otherwise allocates
+   new space to store factored matrix and deletes previous memory.
 
 .keywords: matrix, factor, ILU, in-place
 
@@ -1015,8 +1056,10 @@ int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
    Output Parameter:
 .  fact - new matrix that has been symbolically factored
 
+   Collective on Mat
+
    Notes:
-   See the file ${PETSC_DIR}/Performace for additional information about
+   See the file ${PETSC_DIR}/Performance for additional information about
    choosing the fill factor for better efficiency.
 
 .keywords: matrix, factor, LU, symbolic, fill
@@ -1054,6 +1097,8 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
    Output Parameters:
 .  fact - symbolically factored matrix that must have been generated
           by MatLUFactorSymbolic()
+
+   Collective on Mat
 
    Notes:
    See MatLUFactor() for in-place factorization.  See 
@@ -1105,6 +1150,8 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
 .  perm - row and column permutations
 .  f - expected fill as ratio of original fill
 
+   Collective on Mat
+
    Notes:
    See MatLUFactor() for the nonsymmetric case.  See also
    MatCholeskyFactorSymbolic(), and MatCholeskyFactorNumeric().
@@ -1143,6 +1190,8 @@ int MatCholeskyFactor(Mat mat,IS perm,double f)
 
    Output Parameter:
 .  fact - the factored matrix
+
+   Collective on Mat
 
    Notes:
    See MatLUFactorSymbolic() for the nonsymmetric case.  See also
@@ -1183,6 +1232,8 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,double f,Mat *fact)
    Output Parameter:
 .  fact - the factored matrix
 
+   Collective on Mat
+
 .keywords: matrix, factor, numeric, Cholesky
 
 .seealso: MatCholeskyFactorSymbolic(), MatCholeskyFactor(), MatLUFactorNumeric()
@@ -1217,6 +1268,8 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
 
    Output Parameter:
 .  x - the result vector
+
+   Collective on Mat and Vec
 
    Notes:
    The vectors b and x cannot be the same.  I.e., one cannot
@@ -1346,6 +1399,8 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
    Output Parameter:
 .  x - the result vector
 
+   Collective on Mat and Vec
+
    Notes:
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatSolveAdd(A,x,y,x).
@@ -1405,6 +1460,8 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
    Output Parameter:
 .  x - the result vector
 
+   Collective on Mat and Vec
+
    Notes:
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatSolveTrans(A,x,x).
@@ -1445,6 +1502,8 @@ int MatSolveTrans(Mat mat,Vec b,Vec x)
 
    Output Parameter:
 .  x - the result vector
+
+   Collective on Mat and Vec
 
    Notes:
    The vectors b and x cannot be the same.  I.e., one cannot
@@ -1520,6 +1579,8 @@ $     SOR_ZERO_INITIAL_GUESS - zero initial guess
    Output Parameters:
 .  x - the solution (can contain an initial guess)
 
+   Collective on Mat and Vec
+
    Notes:
    SOR_LOCAL_FORWARD_SWEEP, SOR_LOCAL_BACKWARD_SWEEP, and
    SOR_LOCAL_SYMMETRIC_SWEEP perform seperate independent smoothings
@@ -1590,6 +1651,8 @@ int MatCopy_Basic(Mat A,Mat B)
    Output Parameter:
 .  B - where the copy is put
 
+   Collective on Mat
+
    Notes:
    MatCopy() copies the matrix entries of a matrix to another existing
    matrix (after first zeroing the second matrix).  A related routine is
@@ -1639,6 +1702,8 @@ static int (*MatConverters[MAX_MATRIX_TYPES][MAX_MATRIX_TYPES])(Mat,MatType,Mat*
 .   intype - the type of matrix (defined in include/mat.h), for example, MATSEQAIJ.
 .   outtype - new matrix type, or MATSAME
 
+  Not Collective
+
 .seealso: MatConvertRegisterAll()
 @*/
 int MatConvertRegister(MatType intype,MatType outtype,int (*converter)(Mat,MatType,Mat*))
@@ -1662,6 +1727,8 @@ int MatConvertRegister(MatType intype,MatType outtype,int (*converter)(Mat,MatTy
 
    Output Parameter:
 .  M - pointer to place new matrix
+
+   Collective on Mat
 
    Notes:
    MatConvert() first creates a new matrix and then copies the data from
@@ -1719,6 +1786,8 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
    Output Parameter:
 .  M - pointer to place new matrix
 
+   Collective on Mat
+
 .keywords: matrix, copy, convert, duplicate
 
 .seealso: MatCopy(), MatDuplicate(), MatConvert()
@@ -1754,6 +1823,8 @@ int MatDuplicate(Mat mat,Mat *M)
 
    Output Parameter:
 .  v - the diagonal of the matrix
+
+   Collective on Mat and Vec
 
    Notes: For the SeqAIJ matrix format, this routine may also be called
     on a LU factored matrix; in that case it routines the reciprocal of 
@@ -1791,6 +1862,8 @@ int MatGetDiagonal(Mat mat,Vec v)
    Output Parameters:
 .  B - the transpose (or pass in PETSC_NULL for an in-place transpose)
 
+   Collective on Mat
+
 .keywords: matrix, transpose
 
 .seealso: MatMultTrans(), MatMultTransAdd()
@@ -1821,6 +1894,8 @@ int MatTranspose(Mat mat,Mat *B)
 
    Output Parameters:
 .  B - the permuted matrix
+
+   Collective on Mat
 
 .keywords: matrix, transpose
 
@@ -1854,6 +1929,8 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
 .  flg : PETSC_TRUE if the matrices are equal;
          PETSC_FALSE otherwise.
 
+   Collective on Mat
+
 .keywords: matrix, equal, equivalent
 @*/
 int MatEqual(Mat A,Mat B,PetscTruth *flg)
@@ -1882,6 +1959,8 @@ int MatEqual(Mat A,Mat B,PetscTruth *flg)
 .  mat - the matrix to be scaled
 .  l - the left scaling vector (or PETSC_NULL)
 .  r - the right scaling vector (or PETSC_NULL)
+
+   Collective on Mat
 
    Notes:
    MatDiagonalScale() computes A <- LAR, where
@@ -1922,6 +2001,8 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
     Output Parameter:
 .   mat - the scaled matrix
 
+   Collective on Mat
+
 .keywords: matrix, scale
 
 .seealso: MatDiagonalScale()
@@ -1955,6 +2036,8 @@ int MatScale(Scalar *a,Mat mat)
    Output Parameters:
 .  norm - the resulting norm 
 
+   Collective on Mat
+
 .keywords: matrix, norm, Frobenius
 @*/
 int MatNorm(Mat mat,NormType type,double *norm)
@@ -1987,6 +2070,8 @@ static int MatAssemblyEnd_InUse = 0;
 .  mat - the matrix 
 .  type - type of assembly, either MAT_FLUSH_ASSEMBLY or MAT_FINAL_ASSEMBLY
  
+   Collective on Mat
+
    Notes: 
    MatSetValues() generally caches the values.  The matrix is ready to
    use only after MatAssemblyBegin() and MatAssemblyEnd() have been called.
@@ -2078,6 +2163,8 @@ int MatView_Private(Mat mat)
 .  mat - the matrix 
 .  type - type of assembly, either MAT_FLUSH_ASSEMBLY or MAT_FINAL_ASSEMBLY
 
+   Collective on Mat
+
    Options Database Keys:
 $  -mat_view_info : Prints info on matrix at
 $      conclusion of MatEndAssembly()
@@ -2141,6 +2228,8 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
    Input Parameters:
 .  mat - the matrix 
 
+   Collective on Mat
+
 .keywords: matrix, compress
 @*/
 int MatCompress(Mat mat)
@@ -2166,6 +2255,8 @@ int MatCompress(Mat mat)
 .  mat - the matrix 
 .  option - the option, one of those listed below (and possibly others),
              e.g., MAT_ROWS_SORTED, MAT_NEW_NONZERO_LOCATION_ERROR
+
+   Collective on Mat
 
    Options Describing Matrix Structure:
 $    MAT_SYMMETRIC - symmetric in terms of both structure and value
@@ -2260,6 +2351,8 @@ int MatSetOption(Mat mat,MatOption op)
    Input Parameters:
 .  mat - the matrix 
 
+   Collective on Mat
+
 .keywords: matrix, zero, entries
 
 .seealso: MatZeroRows()
@@ -2291,6 +2384,8 @@ int MatZeroEntries(Mat mat)
 .  diag - pointer to value put in all diagonals of eliminated rows.
           Note that diag is not a pointer to an array, but merely a
           pointer to a single value.
+
+   Collective on Mat
 
    Notes:
    For the AIJ matrix formats this removes the old nonzero structure,
@@ -2341,6 +2436,8 @@ int MatZeroRows(Mat mat,IS is, Scalar *diag)
           Note that diag is not a pointer to an array, but merely a
           pointer to a single value.
 
+   Collective on Mat
+
    Notes:
    For the AIJ matrix formats this removes the old nonzero structure,
    but does not release memory.  For the dense and block diagonal
@@ -2386,6 +2483,8 @@ int MatZeroRowsLocal(Mat mat,IS is, Scalar *diag)
 .  m - the number of global rows
 .  n - the number of global columns
 
+   Not Collective
+
 .keywords: matrix, dimension, size, rows, columns, global, get
 
 .seealso: MatGetLocalSize()
@@ -2413,6 +2512,8 @@ int MatGetSize(Mat mat,int *m,int* n)
    Output Parameters:
 .  m - the number of local rows
 .  n - the number of local columns
+
+   Not Collective
 
 .keywords: matrix, dimension, size, local, rows, columns, get
 
@@ -2442,6 +2543,8 @@ int MatGetLocalSize(Mat mat,int *m,int* n)
    Output Parameters:
 .  m - the global index of the first local row
 .  n - one more than the global index of the last local row
+
+   Not Collective
 
 .keywords: matrix, get, range, ownership
 @*/
@@ -2477,6 +2580,8 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
 
    Output Parameters:
 .  fact - new matrix that has been symbolically factored
+
+   Collective on Mat
 
    Notes:
    See the file ${PETSC_DIR}/Performace for additional information about
@@ -2520,6 +2625,8 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,double f,int fill,Mat *fact)
    Output Parameter:
 .  fact - the factored matrix
 
+   Collective on Mat
+
    Note:  Currently only no-fill factorization is supported.
 
 .keywords: matrix, factor, incomplete, ICC, Cholesky, symbolic, fill
@@ -2548,8 +2655,8 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,Mat *f
 #define __FUNC__ "MatGetArray"
 /*@C
    MatGetArray - Returns a pointer to the element values in the matrix.
-   This routine  is implementation dependent, and may not even work for 
-   certain matrix types. You MUST call MatRestoreArray() when you no 
+   The result of this routine is dependent on the underlying matrix data-structure, 
+   and may not even work for certain matrix types. You MUST call MatRestoreArray() when you no 
    longer need to access the array.
 
    Input Parameter:
@@ -2558,7 +2665,12 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,Mat *f
    Output Parameter:
 .  v - the location of the values
 
-   Fortran Note:
+   Not Collective
+
+   Currently only returns an array for the dense formats, giving access to the local portion
+   of the matrix in the usual Fortran column oriented format.
+
+  Fortran Note:
    The Fortran interface is slightly different from that given below.
    See the Fortran chapter of the users manual and 
    petsc/src/mat/examples for details.
@@ -2582,13 +2694,15 @@ int MatGetArray(Mat mat,Scalar **v)
 #undef __FUNC__  
 #define __FUNC__ "MatRestoreArray"
 /*@C
-   MatRestoreArray - Restores the matrix after MatGetArray has been called.
+   MatRestoreArray - Restores the matrix after MatGetArray() has been called.
 
    Input Parameter:
 .  mat - the matrix
 .  v - the location of the values
 
-   Fortran Note:
+   Not Collective
+
+    Fortran Note:
    The Fortran interface is slightly different from that given below.
    See the users manual and petsc/src/mat/examples for details.
 
@@ -2623,6 +2737,8 @@ int MatRestoreArray(Mat mat,Scalar **v)
 
    Output Parameter:
 .  submat - the array of submatrices
+
+   Collective on Mat
 
    Notes:
    MatGetSubMatrices() can extract only sequential submatrices
@@ -2665,6 +2781,8 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatGetSubMatrixCall scall,
 .  n - the number of local matrices
 .  mat - the matrices
 
+   Collective on Mat
+
 .keywords: matrix, destroy, submatrix, submatrices
 
 .seealso: MatGetSubMatrices()
@@ -2696,6 +2814,8 @@ int MatDestroyMatrices(int n,Mat **mat)
 .  is  - the array of pointers to index sets
 .  ov  - the additional overlap requested
 
+   Collective on Mat
+
 .keywords: matrix, overlap, Schwarz
 
 .seealso: MatGetSubMatrices()
@@ -2724,6 +2844,8 @@ int MatIncreaseOverlap(Mat mat,int n, IS *is,int ov)
 
    Input Parameter:
 .  mat - the matrix 
+
+   Collective on Mat
 
    Options Database Keys:
 $  -help, -h
@@ -2769,6 +2891,8 @@ int MatPrintHelp(Mat mat)
    Output Parameter:
 .  bs - block size
 
+   Not Collective
+
    Notes:
 $  block diagonal formats: MATSEQBDIAG, MATMPIBDIAG
 $  block row formats: MATSEQBAIJ, MATMPIBAIJ
@@ -2806,6 +2930,9 @@ int MatGetBlockSize(Mat mat,int *bs)
 .   ia - the row indices
 .   ja - the column indices
 .   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
+
+   Collective on Mat
+
 @*/
 int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
 {
@@ -2841,6 +2968,8 @@ int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,
 .   ia - the Column indices
 .   ja - the column indices
 .   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
+
+   Collective on Mat
 @*/
 int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
 {
@@ -2877,6 +3006,9 @@ int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** 
 .   ia - the row indices
 .   ja - the column indices
 .   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
+
+  Collective on Mat
+
 @*/
 int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
 {
@@ -2913,6 +3045,9 @@ int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int**
 .   ia - the Column indices
 .   ja - the column indices
 .   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
+
+  Collective on Mat
+
 @*/
 int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
 {
@@ -2946,6 +3081,8 @@ int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,in
   Output Parameters:
 .   iscoloring - coloring generated using colorarray information
 
+  Collective on Mat
+
 @*/
 int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
 {
@@ -2970,6 +3107,8 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
 
    Input Paramter:
 .  mat - the factored matrix to be reset
+
+   Collective on Mat
 
    Notes: 
    This routine should be used only with factored matrices formed by in-place
@@ -3016,6 +3155,8 @@ int MatSetUnfactored(Mat mat)
    Output Parameter:
 .  type - the matrix type (or use PETSC_NULL)
 .  name - name of matrix type (or use PETSC_NULL)
+
+   Not Collective
 
 .keywords: matrix, get, type, name
 @*/
@@ -3123,6 +3264,8 @@ M*/
    Output Parameters:
 .   newmat - the new submatrix, of the same type as the old
 
+   Collective on Mat
+
 .seealso: MatGetSubMatrices()
 
 @*/
@@ -3135,10 +3278,10 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCall cll,
   MPI_Comm_size(mat->comm,&size);
 
   /* if original matrix is on just one processor then use submatrix generated */
-  if (size == 1 && cll == MAT_REUSE_MATRIX) {
+  if (!mat->ops->getsubmatrix && size == 1 && cll == MAT_REUSE_MATRIX) {
     ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  } else if (size == 1) {
+  } else if (!mat->ops->getsubmatrix && size == 1) {
     ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     *newmat = *local;
     PetscFree(local);

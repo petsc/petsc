@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itres.c,v 1.30 1997/07/09 20:50:16 balay Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.31 1997/10/19 03:23:06 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: itres.c,v 1.30 1997/07/09 20:50:16 balay Exp bsmith $
 .  vres     - calculated residual
 .  vbinvf   - the result of binv^{-1} b.  If null, don't do it.
 .  vb       - right-hand-side vector
+
+   Collective on KSP
 
    Notes:
    This routine assumes that an iterative method, designed for
@@ -80,6 +82,8 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 
    Output Parameter:
 .  vsoln - contains solution on output  
+
+   Collective on KSP
 
    Notes:
    If preconditioning either symmetrically or on the right, this routine solves

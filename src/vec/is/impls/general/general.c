@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.68 1998/04/03 23:12:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.69 1998/04/09 04:08:29 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -178,6 +178,12 @@ static struct _ISOps myops = { ISGetSize_General,
 
    Output Parameter:
 .  is - the new index set
+
+   Collective on MPI_Comm
+
+   Notes: When comm is not MPI_COMM_SELF the operations on IS are NOT
+          conceptually the same as MPI_Group operations. The IS are 
+          distributed sets of indices. 
 
 .keywords: IS, general, index set, create
 

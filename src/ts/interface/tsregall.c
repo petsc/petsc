@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsregall.c,v 1.13 1998/01/17 17:38:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsregall.c,v 1.14 1998/03/06 00:17:24 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"     /*I  "ts.h"  I*/
@@ -31,6 +31,8 @@ static int TSRegister_Private(char *sname,char *path,char *name,int (*function)(
 /*@C
   TSRegisterAll - Registers all of the timesteppers in the TS 
   package. 
+
+   Not Collective
 
 .keywords: TS, timestepper, register, all
 

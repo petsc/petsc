@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dpoint.c,v 1.12 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dpoint.c,v 1.13 1998/03/12 23:20:42 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: dpoint.c,v 1.12 1997/10/19 03:27:39 bsmith Exp bsmith
 .  draw - the drawing context
 .  xl,yl - the coordinates of the point
 .  cl - the color of the point
+
+   Not collective
 
 .keywords:  draw, point
 @*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.8 1998/04/05 15:57:10 balay Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.9 1998/04/09 04:15:06 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -98,6 +98,8 @@ int PartitioningView_Parmetis(Partitioning part,Viewer viewer)
 
   Input Parameter:
 .  part - the partitioning context
+
+  Collective on Partitioning
 
 @*/
 int PartitioningParmetisSetCoarseSequential(Partitioning part)

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.28 1998/01/17 17:37:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.29 1998/03/23 21:21:49 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -220,6 +220,8 @@ int MatColoringRegisterAllCalled = 0;
    Output Parameters:
 .  oname - number associated with the coloring (for example COLORING_SL)
 
+   Not Collective
+
 .keywords: matrix, coloring, register
 
 .seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
@@ -244,6 +246,8 @@ int MatColoringRegister(MatColoringType name,MatColoringType *oname,char *sname,
 #define __FUNC__ "MatColoringRegisterDestroy" 
 /*@C
    MatColoringRegisterDestroy - Frees the list of coloringing routines.
+
+   Not Collective
 
 .keywords: matrix, register, destroy
 
@@ -271,6 +275,8 @@ int MatColoringRegisterDestroy(void)
 
    Output Parameter:
 .  type - coloring method
+
+   Not Collective
 
    Options Database Keys:
    To specify the coloringing through the options database, use one of
@@ -307,6 +313,8 @@ int MatGetColoringTypeFromOptions(char *prefix,MatColoringType *type)
    Output Parameter:
 .  name - name of coloring
 
+   Not Collective
+
 .keywords: matrix, get, coloring, name
 @*/
 int MatColoringGetName(MatColoringType meth,char **name)
@@ -337,6 +345,8 @@ $      COLORING_ID - incidence-degree
 
    Output Parameters:
 .   iscoloring - the coloring
+
+   Collective on Mat
 
    Options Database Keys:
    To specify the coloring through the options database, use one of

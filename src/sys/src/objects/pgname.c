@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pgname.c,v 1.12 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pgname.c,v 1.13 1998/03/20 22:47:23 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -14,6 +14,8 @@ static char vcid[] = "$Id: pgname.c,v 1.12 1997/12/01 01:53:22 bsmith Exp bsmith
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectGetName((PetscObject) mat,&name);
 .  name - the name associated with obj
+
+   Not Collective
 
 .keywords: object, get, name
 

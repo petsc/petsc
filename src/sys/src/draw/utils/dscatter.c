@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.16 1998/03/12 23:21:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dscatter.c,v 1.17 1998/04/03 23:16:38 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -33,6 +33,8 @@ struct _p_DrawSP {
 
     Output Parameters:
 .   outctx - the scatter plot context
+
+    Collective over Draw
 
 .keywords:  draw, scatter plot, graph, create
 
@@ -80,6 +82,8 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
 .  sp - the line graph context.
 .  dim - the number of curves.
 
+   Not Collective (ignored on all processors except processor 0 of DrawSP)
+
 .keywords:  draw, line, graph, reset
 @*/
 int DrawSPSetDimension(DrawSP sp,int dim)
@@ -106,6 +110,8 @@ int DrawSPSetDimension(DrawSP sp,int dim)
    Input Parameter:
 .  sp - the line graph context.
 
+   Not Collective (ignored on all processors except processor 0 of DrawSP)
+
 .keywords:  draw, line, graph, reset
 @*/
 int DrawSPReset(DrawSP sp)
@@ -129,6 +135,8 @@ int DrawSPReset(DrawSP sp)
 
    Input Parameter:
 .  sp - the line graph context
+
+   Collective over DrawSP
 
 .keywords:  draw, line, graph, destroy
 
@@ -164,6 +172,8 @@ int DrawSPDestroy(DrawSP sp)
 .  sp - the scatter plot data structure
 .  x, y - the points to two vectors containing the new x and y 
           point for each curve.
+
+   Not Collective (ignored on all processors except processor 0 of DrawSP)
 
 .keywords:  draw, line, graph, add, point
 
@@ -213,6 +223,8 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
 .  xx,yy - points to two arrays of pointers that point to arrays 
            containing the new x and y points for each curve.
 .  n - number of points being added
+
+   Not Collective (ignored on all processors except processor 0 of DrawSP)
 
 .keywords:  draw, line, graph, add, points
 
@@ -266,12 +278,14 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
    Input Parameter:
 .  sp - the line graph context
 
+   Not Collective (ignored on all processors except processor 0 of DrawSP)
+
 .keywords:  draw, line, graph
 @*/
 int DrawSPDraw(DrawSP sp)
 {
   double   xmin=sp->xmin, xmax=sp->xmax, ymin=sp->ymin, ymax=sp->ymax;
-  int      i, j, dim = sp->dim,nopts = sp->nopts;
+  int      i, j, dim = sp->dim,nopts = sp->nopts,rank;
   Draw     win = sp->win;
 
   PetscFunctionBegin;
@@ -283,12 +297,15 @@ int DrawSPDraw(DrawSP sp)
   DrawClear(win);
   DrawAxisSetLimits(sp->axis, xmin, xmax, ymin, ymax);
   DrawAxisDraw(sp->axis);
+  
+  MPI_Comm_rank(sp->comm,&rank);
+  if (rank)   PetscFunctionReturn(0);
   for ( i=0; i<dim; i++ ) {
     for ( j=0; j<nopts; j++ ) {
       DrawString(win,sp->x[j*dim+i],sp->y[j*dim+i],DRAW_RED,"x");
     }
   }
-  DrawSynchronizedFlush(sp->win);
+  DrawFlush(sp->win);
   DrawPause(sp->win);
   PetscFunctionReturn(0);
 } 
@@ -303,6 +320,8 @@ int DrawSPDraw(DrawSP sp)
    Input Parameters:
 .  xsp - the line graph context
 .  x_min,x_max,y_min,y_max - the limits
+
+   Not Collective (ignored on all processors except processor 0 of DrawSP)
 
 .keywords:  draw, line, graph, set limits
 @*/
@@ -333,6 +352,8 @@ int DrawSPSetLimits( DrawSP sp,double x_min,double x_max,double y_min,
    Output Parameter:
 .  axis - the axis context
 
+   Not Collective (except DrawAxis can only be used on processor 0 of DrawSP)
+
 .keywords: draw, line, graph, get, axis
 @*/
 int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
@@ -357,6 +378,8 @@ int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
 
    Output Parameter:
 .  win - the draw context
+
+   Not Collective, Draw is parallel if DrawSP is parallel
 
 .keywords: draw, line, graph, get, context
 @*/

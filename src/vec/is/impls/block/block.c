@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.23 1998/04/03 23:12:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.24 1998/04/09 04:08:37 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -189,6 +189,12 @@ static struct _ISOps myops = { ISGetSize_Block,
    Output Parameter:
 .  is - the new index set
 
+   Collective on MPI_Comm
+
+   Notes: When comm is not MPI_COMM_SELF the operations on IS are NOT
+          conceptually the same as MPI_Group operations. The IS are 
+          distributed sets of indices. 
+
    Example:
 $   If you wish to index {0,1,4,5} then use
 $   a block size of 2 and idx of 0,4.
@@ -244,6 +250,8 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
    Output Parameter:
 .  idx - the integer indices
 
+   Not Collective
+
 .keywords: IS, index set, block, get, indices
 
 .seealso: ISGetIndices(), ISBlockRestoreIndices()
@@ -273,6 +281,8 @@ int ISBlockGetIndices(IS in,int **idx)
    Output Parameter:
 .  idx - the integer indices
 
+   Not Collective
+
 .keywords: IS, index set, block, restore, indices
 
 .seealso: ISRestoreIndices(), ISBlockGetIndices()
@@ -296,6 +306,8 @@ int ISBlockRestoreIndices(IS is,int **idx)
 
    Output Parameter:
 .  size - the number of elements in a block
+
+   Not Collective
 
 .keywords: IS, index set, block, get, size
 
@@ -326,6 +338,8 @@ int ISBlockGetBlockSize(IS is,int *size)
    Output Parameter:
 .  flag - PETSC_TRUE if a block index set, else PETSC_FALSE
 
+   Not Collective
+
 .keywords: IS, index set, block
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISBlockGetBlockSize(), ISCreateBlock()
@@ -350,6 +364,8 @@ int ISBlock(IS is,PetscTruth *flag)
 
    Output Parameter:
 .  size - the number of blocks
+
+   Not Collective
 
 .keywords: IS, index set, block, get, size
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.12 1997/08/22 15:18:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dacorn.c,v 1.13 1997/10/19 03:30:13 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -22,6 +22,8 @@ static char vcid[] = "$Id: dacorn.c,v 1.12 1997/08/22 15:18:43 bsmith Exp bsmith
 $    y and z are optional (used for 2D and 3D problems)
 .  m,n,p - widths in the corresponding directions
 $    n and p are optional (used for 2D and 3D problems)
+
+   Not Collective
 
    Note:
    The corner information is independent of the number of degrees of 

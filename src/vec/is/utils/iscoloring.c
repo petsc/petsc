@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.22 1997/12/01 01:52:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.23 1998/04/03 23:12:49 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -13,6 +13,8 @@ static char vcid[] = "$Id: iscoloring.c,v 1.22 1997/12/01 01:52:33 bsmith Exp bs
 
   Input Parameter:
 .   iscoloring - the coloring context
+
+  Collective on ISColoring
 
 .seealso: ISColoringView(), MatGetColoring()
 @*/
@@ -40,6 +42,8 @@ int ISColoringDestroy(ISColoring iscoloring)
   Input Parameter:
 .   iscoloring - the coloring context
 .   viewer- the viewer with which to view
+
+  Collective on ISColoring unless Viewer is VIEWER_STDOUT_SELF
 
 .seealso: ISColoringDestroy(), MatGetColoring()
 @*/
@@ -88,7 +92,9 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
     Output Parameter:
 .   iscoloring - the resulting coloring data structure
 
-    Database Options:
+    Collective on MPI_Comm
+
+ Database Options:
 .    -is_coloring_view
 
 .seealso: MatColoringCreate(), ISColoringView(),ISColoringDestroy()
@@ -178,6 +184,7 @@ int ISColoringCreate(MPI_Comm comm,int n,int *colors,ISColoring *iscoloring)
     Output Parameter:
 .     is - on each processor the index sets that defines the global numbers for that processor
 
+    Collective over IS
 
 .seealso: PartitioningCreate(), AOCreateBasic()
 
@@ -252,6 +259,8 @@ int ISPartitioningToNumbering(IS part,IS *is)
 
   Output Parameter:
 .   isout - the concatenated IS, same on all processors
+
+    Collective over IS
 
     Notes: Clearly not scalable for large index sets.
 

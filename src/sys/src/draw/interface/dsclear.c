@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dsclear.c,v 1.13 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dsclear.c,v 1.14 1998/03/12 23:20:42 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -14,6 +14,8 @@ static char vcid[] = "$Id: dsclear.c,v 1.13 1997/10/19 03:27:39 bsmith Exp bsmit
 
    Input Parameters:
 .  draw - the drawing context
+
+   Collective on Draw
 
 .keywords: draw, clear
 @*/

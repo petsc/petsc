@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.48 1997/12/01 01:55:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.49 1998/01/14 02:42:34 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -24,6 +24,8 @@ static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*
   Input Parameters:
 .   type - the type of matrix (defined in include/mat.h), for example, MATSEQAIJ.
 .   loader - the function that reads the matrix from the binary file.
+
+  Not Collective
 
 .seealso: MatLoadRegisterAll()
 
@@ -68,6 +70,8 @@ static int MatLoadPrintHelp_Private(Mat A)
 
    Output Parameters:
 .  newmat - new matrix
+
+   Collective on Viewer
 
    Basic Options Database Keys:
    These options use MatCreateSeqXXX or MatCreateMPIXXX,

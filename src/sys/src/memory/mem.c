@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.20 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mem.c,v 1.21 1998/03/06 00:12:03 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -40,6 +40,8 @@ extern int getpagesize();
 
    Output Parameter:
    mem - memory usage in bytes
+
+   Not Collective
 
    Options Database Key:
 .    -trmalloc_log

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.22 1998/04/03 23:18:47 bsmith Exp balay $";
+static char vcid[] = "$Id: aodata.c,v 1.23 1998/04/08 14:19:54 balay Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -17,6 +17,8 @@ static char vcid[] = "$Id: aodata.c,v 1.22 1998/04/03 23:18:47 bsmith Exp balay 
    Output Parameters:
 .   nkeys - the number of keys
 .   keys - the names of the keys (or PETSC_NULL)
+
+   Not collective
 
 @*/ 
 int AODataGetInfo(AOData ao,int *nkeys,char ***keys)

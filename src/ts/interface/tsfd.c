@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsfd.c,v 1.4 1997/10/28 14:24:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsfd.c,v 1.5 1997/11/03 04:48:05 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -24,6 +24,8 @@ $      as created via MatFDColoringCreate()
 .   J - Jacobian matrix (not altered in this routine)
 .   B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
 .   flag - flag indicating whether the matrix sparsity structure has changed
+
+    Collective on TS, Vec and Mat
 
    Options Database Keys:
 $  -mat_fd_coloring_freq <freq> 
@@ -72,6 +74,8 @@ int TSDefaultComputeJacobianWithColoring(TS ts,double t,Vec x1,Mat *J,Mat *B,Mat
 .   fd - the matrix coloring object
 .   A  - the Jacobian matrix
 .   B  - the preconditioner matrix (often the same as A)
+
+    Collective on TS, MatFDColoring and Mat
 
     Note: This is equivalent to calling
       TSSetRHSJacobian(ts,A,B,TSDefaultComputeJacobianWithColoring,fd);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.50 1998/03/12 23:21:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.51 1998/04/03 23:16:38 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -35,6 +35,8 @@ struct _p_DrawLG {
 
     Output Parameters:
 .   outctx - the line graph context
+
+    Collective over Draw
 
 .keywords:  draw, line, graph, create
 
@@ -83,6 +85,8 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 .  lg - the line graph context.
 .  dim - the number of curves.
 
+    Collective over DrawLG
+
 .keywords:  draw, line, graph, reset
 @*/
 int DrawLGSetDimension(DrawLG lg,int dim)
@@ -109,6 +113,8 @@ int DrawLGSetDimension(DrawLG lg,int dim)
    Input Parameter:
 .  lg - the line graph context.
 
+    Collective over DrawLG
+
 .keywords:  draw, line, graph, reset
 @*/
 int DrawLGReset(DrawLG lg)
@@ -132,6 +138,8 @@ int DrawLGReset(DrawLG lg)
 
    Input Parameter:
 .  lg - the line graph context
+
+    Collective over DrawLG
 
 .keywords:  draw, line, graph, destroy
 
@@ -168,6 +176,8 @@ int DrawLGDestroy(DrawLG lg)
 .  lg - the LineGraph data structure
 .  x, y - the points to two vectors containing the new x and y 
           point for each curve.
+
+  Not Collective, but ignored by all processors except processor 0 in DrawLG
 
 .keywords:  draw, line, graph, add, point
 
@@ -213,6 +223,8 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
    Input Parameters:
 .  lg - the linegraph context
 
+  Not Collective, but ignored by all processors except processor 0 in DrawLG
+
 .keywords:  draw, line, graph, indicate, data, points
 @*/
 int DrawLGIndicateDataPoints(DrawLG lg)
@@ -235,6 +247,8 @@ int DrawLGIndicateDataPoints(DrawLG lg)
 .  xx,yy - points to two arrays of pointers that point to arrays 
            containing the new x and y points for each curve.
 .  n - number of points being added
+
+  Not Collective, but ignored by all processors except processor 0 in DrawLG
 
 .keywords:  draw, line, graph, add, points
 
@@ -288,12 +302,14 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
    Input Parameter:
 .  lg - the line graph context
 
+   Not Collective, but ignored by all processors except processor 0 in DrawLG
+
 .keywords:  draw, line, graph
 @*/
 int DrawLGDraw(DrawLG lg)
 {
   double   xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
-  int      i, j, dim = lg->dim,nopts = lg->nopts;
+  int      i, j, dim = lg->dim,nopts = lg->nopts,rank;
   Draw     win = lg->win;
 
   PetscFunctionBegin;
@@ -305,6 +321,10 @@ int DrawLGDraw(DrawLG lg)
   DrawClear(win);
   DrawAxisSetLimits(lg->axis, xmin, xmax, ymin, ymax);
   DrawAxisDraw(lg->axis);
+
+  MPI_Comm_rank(lg->comm,&rank);
+  if (!rank) PetscFunctionReturn(0);
+
   for ( i=0; i<dim; i++ ) {
     for ( j=1; j<nopts; j++ ) {
       DrawLine(win,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
@@ -314,7 +334,7 @@ int DrawLGDraw(DrawLG lg)
       }
     }
   }
-  DrawSynchronizedFlush(lg->win);
+  DrawFlush(lg->win);
   DrawPause(lg->win);
   PetscFunctionReturn(0);
 } 
@@ -329,6 +349,8 @@ int DrawLGDraw(DrawLG lg)
    Input Parameters:
 .  xlg - the line graph context
 .  x_min,x_max,y_min,y_max - the limits
+
+  Not Collective, but ignored by all processors except processor 0 in DrawLG
 
 .keywords:  draw, line, graph, set limits
 @*/
@@ -359,6 +381,8 @@ int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
    Output Parameter:
 .  axis - the axis context
 
+   Not Collective, if DrawLG is parallel then DrawAxis is parallel
+
 .keywords: draw, line, graph, get, axis
 @*/
 int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
@@ -383,6 +407,8 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 
    Output Parameter:
 .  win - the draw context
+
+   Not Collective, if DrawLG is parallel then Draw is parallel
 
 .keywords: draw, line, graph, get, context
 @*/

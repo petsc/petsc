@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreate.c,v 1.104 1997/07/09 20:56:43 balay Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.105 1997/10/19 03:27:05 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -20,6 +20,8 @@ static char vcid[] = "$Id: gcreate.c,v 1.104 1997/07/09 20:56:43 balay Exp bsmit
  
    Output Parameter:
 .  A - the matrix
+
+   Collective on MPI_Comm
 
    Basic Options Database Keys:
    These options use MatCreateSeqXXX or MatCreateMPIXXX,

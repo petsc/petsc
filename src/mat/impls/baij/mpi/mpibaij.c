@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.114 1998/04/03 23:15:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.115 1998/04/09 04:14:42 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1808,7 +1808,9 @@ static struct _MatOps MatOps = {
    Output Parameter:
 .  A - the matrix 
 
-   Notes:
+   Collective on MPI_Comm
+
+  Notes:
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
@@ -2330,7 +2332,9 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
 .  mat  - the matrix
 .  fact - factor
 
-   Notes:
+   Collective on Mat
+
+  Notes:
    This can also be set by the command line option: -mat_use_hash_table fact
 
 .keywords: matrix, hashtable, factor, HT

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.6 1997/10/19 03:23:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eige.c,v 1.7 1997/12/01 01:53:00 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -14,6 +14,8 @@ static char vcid[] = "$Id: eige.c,v 1.6 1997/10/19 03:23:06 bsmith Exp bsmith $"
 
     Output Parameter:
 .   mat - the explict preconditioned operator
+
+   Collective on KSP
 
     Notes:
     This computation is done by applying the operators to columns of the 
@@ -97,6 +99,8 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
    Output Parameters:
 .  r - real part of computed eigenvalues
 .  c - complex part of computed eigenvalues
+
+  Collective on KSP
 
    Notes:
    This approach is very slow but will generally provide accurate eigenvalue

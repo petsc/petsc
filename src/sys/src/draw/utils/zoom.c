@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoom.c,v 1.1 1997/11/05 03:54:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoom.c,v 1.2 1997/11/09 03:59:46 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"     /*I "draw.h"  I*/
@@ -14,6 +14,7 @@ static char vcid[] = "$Id: zoom.c,v 1.1 1997/11/05 03:54:53 bsmith Exp bsmith $"
 .   func - users function that draws the graphic
 .   ctx - pointer to any user required data
 
+    Collective on Draw
 
 .keywords:  draw, zoom
 

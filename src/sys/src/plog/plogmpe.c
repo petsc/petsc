@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.29 1998/03/24 00:04:07 balay Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.30 1998/03/24 20:59:24 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -294,6 +294,8 @@ extern char *PLogEventName[];
    PLogMPEBegin - Turns on MPE logging of events. This creates large log files 
      and slows the program down.
 
+   Collective over PETSC_COMM_WORLD
+
    Options Database Keys:
 $  -log_mpe : Prints extensive log information (for code compiled
 $      with USE_PETSC_LOG)
@@ -335,6 +337,8 @@ int PLogMPEBegin(void)
        PETSc event (found in include/petsclog.h) or an event number obtained
        with PLogEventRegister().
 
+   Not Collective
+
   Input Parameter:
 .   event - integer indicating event
 
@@ -369,6 +373,8 @@ int PLogEventMPEDeactivate(int event)
   Input Parameter:
 .   event - integer indicating event
 
+   Not Collective
+
    Example of Usage:
 $
 $     PetscInitialize(int *argc,char ***args,0,0);
@@ -394,6 +400,7 @@ int PLogEventMPEActivate(int event)
 /*@C
    PLogMPEDump - Dumps the MPE logging info to file for later use with Upshot.
 
+  Collective over PETSC_COMM_WORLD
 
 .keywords: log, destroy
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.9 1997/10/19 03:27:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.10 1997/11/28 16:20:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -15,6 +15,7 @@ differently from the way it is assembled.  Input arguments are:\n\
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); PCSetType();
    Routines: KSPSetTolerances(); KSPSetInitialGuessNonzero(); 
+   Routines: PetscObjectSetName();
    Processors: n
 T*/
 

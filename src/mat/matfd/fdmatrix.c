@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.30 1998/04/08 16:06:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.31 1998/04/09 04:12:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -79,6 +79,8 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 .  c - the coloring context
 .  viewer - visualization context
 
+   Collective on MatFDColoring unless Viewer is VIEWER_STDOUT_SELF
+
    Notes:
    The available visualization contexts include
 $     VIEWER_STDOUT_SELF - standard output (default)
@@ -151,6 +153,8 @@ $   dx_{i} = (0, ... 1, .... 0)
 .  error_rel - relative error
 .  umin - minimum allowable u-value
 
+   Collective on MatFDColoring
+
 .keywords: Mat, finite differences, coloring, set, parameters
 
 .seealso: MatFDColoringCreate()
@@ -174,6 +178,8 @@ int MatFDColoringSetParameters(MatFDColoring matfd,double error,double umin)
    Input Parameters:
 .  coloring - the coloring context
 .  freq - frequency (default is 1)
+
+   Collective on MatFDColoring
 
    Notes:
    Using a modified Newton strategy, where the Jacobian remains fixed for several
@@ -207,6 +213,8 @@ int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
    Output Parameters:
 .  freq - frequency (default is 1)
 
+   Not Collective
+
    Notes:
    Using a modified Newton strategy, where the Jacobian remains fixed for several
    iterations, can be cost effective in terms of overall nonlinear solution 
@@ -237,6 +245,8 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 .  f - the function
 .  fctx - the optional user-defined function context
 
+   Collective on MatFDColoring
+
 .keywords: Mat, Jacobian, finite differences, set, function
 @*/
 int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
@@ -265,6 +275,8 @@ $   dx_{i} = (0, ... 1, .... 0)
 
    Input Parameters:
 .  coloring - the coloring context
+
+   Collective on MatFDColoring
 
    Options Database Keys:
 $  -mat_fd_coloring_error <err>, where <err> is the square root
@@ -306,6 +318,8 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
 
     Input Parameter:
 .   fdcoloring - the MatFDColoring context
+
+   Collective on MatFDColoring
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringSetFromOptions()
 @*/
@@ -359,6 +373,8 @@ int MatFDColoringView_Private(MatFDColoring fd)
     Output Parameter:
 .   color - the new coloring context
    
+   Collective on Mat
+
     Options Database Keys:
 $    -mat_fd_coloring_view 
 $    -mat_fd_coloring_view_draw
@@ -406,6 +422,8 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
     Input Parameter:
 .   c - coloring context
 
+    Collective on MatFDColoring
+
 .seealso: MatFDColoringCreate()
 @*/
 int MatFDColoringDestroy(MatFDColoring c)
@@ -450,6 +468,8 @@ int MatFDColoringDestroy(MatFDColoring c)
 .   coloring - coloring context created with MatFDColoringCreate()
 .   x1 - location at which Jacobian is to be computed
 .   sctx - optional context required by function (actually a SNES context)
+
+   Collective on MatFDColoring
 
    Options Database Keys:
 $  -mat_fd_coloring_freq <freq> 
@@ -565,6 +585,8 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 .   coloring - coloring context created with MatFDColoringCreate()
 .   x1 - location at which Jacobian is to be computed
 .   sctx - optional context required by function (actually a SNES context)
+
+   Collective on Mat, MatFDColoring, and Vec
 
    Options Database Keys:
 $  -mat_fd_coloring_freq <freq> 

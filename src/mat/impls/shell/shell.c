@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.54 1998/03/12 23:18:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.55 1998/04/03 23:15:11 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -29,6 +29,8 @@ typedef struct {
 
     Output Parameter:
 .   ctx - the user provided context
+
+    Not Collective
 
     Notes:
     This routine is intended for use within various shell matrix routines,
@@ -156,7 +158,9 @@ static struct _MatOps MatOps = {0,
    Output Parameter:
 .  A - the matrix
 
-   Usage:
+  Collective on MPI_Comm
+
+  Usage:
 $    MatCreateShell(comm,m,n,M,N,ctx,&mat);
 $    MatShellSetOperation(mat,MATOP_MULT,mult);
 $    [ Use matrix for operations that have been set ]
@@ -232,6 +236,8 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
 .   op - the name of the operation
 .   f - the function that provides the operation.
 
+   Collective on Mat
+
     Usage:
 $      extern int usermult(Mat,Vec,Vec);
 $      ierr = MatCreateShell(comm,m,n,M,N,ctx,&A);
@@ -286,6 +292,8 @@ int MatShellSetOperation(Mat mat,MatOperation op, void *f)
 
     Output Parameter:
 .   f - the function that provides the operation.
+
+    Not Collective
 
     Notes:
     See the file petsc/include/mat.h for a complete list of matrix

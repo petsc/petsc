@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matioall.c,v 1.7 1997/10/19 03:27:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matioall.c,v 1.8 1998/03/23 21:22:35 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -21,6 +21,8 @@ extern int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
 /*@C
     MatLoadRegisterAll - Registers all standard matrix type routines to load
         matrices from a binary file.
+
+  Not Collective
 
   Notes: To prevent registering all matrix types; copy this routine to 
          your source code and comment out the versions below that you do not need.

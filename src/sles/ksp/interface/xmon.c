@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.27 1997/08/22 15:11:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.28 1997/10/19 03:23:06 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -23,6 +23,8 @@ static char vcid[] = "$Id: xmon.c,v 1.27 1997/08/22 15:11:05 bsmith Exp bsmith $
 
    Output Parameter:
 .  draw - the drawing context
+
+   Collective on KSP
 
    Options Database Key:
 $    -ksp_xmonitor : automatically sets line graph monitor
@@ -74,6 +76,8 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
    Input Parameter:
 .  draw - the drawing context
 
+   Collective on KSP
+
 .keywords: KSP, monitor, line graph, destroy
 
 .seealso: KSPLGMonitorCreate(), KSPLGTrueMonitorDestroy(), KSPSetMonitor()
@@ -105,6 +109,8 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
 
    Output Parameter:
 .  draw - the drawing context
+
+   Collective on KSP
 
    Options Database Key:
 $    -ksp_xtruemonitor : automatically sets true line graph monitor
@@ -173,6 +179,8 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
 
    Input Parameter:
 .  draw - the drawing context
+
+   Collective on KSP
 
 .keywords: KSP, monitor, line graph, destroy, true
 

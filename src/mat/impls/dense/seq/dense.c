@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.142 1998/04/06 20:57:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.143 1998/04/09 04:12:30 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1235,6 +1235,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
 
    Output Parameter:
 .  A - the matrix
+
+   Collective on MPI_Comm
 
   Notes:
   The data input variable is intended primarily for Fortran programmers

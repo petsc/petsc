@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.95 1998/03/12 23:20:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.96 1998/04/09 21:16:16 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -13,6 +13,8 @@ static char vcid[] = "$Id: sles.c,v 1.95 1998/03/12 23:20:20 bsmith Exp bsmith $
    Input Parameters:
 .  SLES - the SLES context
 .  viewer - optional visualization context
+
+   Collective on SLES unless Viewer is  VIEWER_STDOUT_SELF
 
    Options Database Key:
 $  -sles_view : calls SLESView() at end of SLESSolve()
@@ -56,6 +58,8 @@ int SLESView(SLES sles,Viewer viewer)
    Input Parameter:
 .  sles - the SLES context
 
+   Collective on SLES
+
 .keywords: SLES, help
 
 .seealso: SLESSetFromOptions()
@@ -84,6 +88,8 @@ int SLESPrintHelp(SLES sles)
    Input Parameter:
 .  sles - the SLES context
 .  prefix - the prefix to prepend to all option names
+
+   Collective on SLES
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -119,6 +125,8 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
    Input Parameter:
 .  sles - the SLES context
 .  prefix - the prefix to prepend to all option names
+
+   Collective on SLES
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -157,6 +165,8 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
    Output Parameter:
 .  prefix - pointer to the prefix string used
 
+   Not Collective
+
    Notes:
    This prefix is particularly useful for nested use of SLES.  For
    example, the block Jacobi and block diagonal preconditioners use
@@ -185,6 +195,8 @@ int SLESGetOptionsPrefix(SLES sles,char **prefix)
    Input Parameter:
 .  sles - the SLES context
 
+   Collective on SLES
+
 .keywords: SLES, set, options, database
 
 .seealso: SLESPrintHelp()
@@ -211,6 +223,8 @@ int SLESSetFromOptions(SLES sles)
 
    Output Parameter:
 .  sles - the newly created SLES context
+
+   Collective on MPI_Comm
 
 .keywords: SLES, create, context
 
@@ -242,6 +256,8 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
    Input Parameters:
 .  sles - the SLES context
 
+   Collective on SLES
+
 .keywords: SLES, destroy, context
 
 .seealso: SLESCreate(), SLESSolve()
@@ -270,6 +286,8 @@ int SLESDestroy(SLES sles)
 .  sles - the SLES context
 .  b - the right hand side
 .  x - location to hold solution
+
+   Collective on SLES
 
    Note:
    For basic use of the SLES solvers the user need not explicitly call
@@ -320,6 +338,8 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
    Output Parameters:
 .  x - the approximate solution
 .  its - the number of iterations until termination
+
+   Collective on SLES
 
    Notes:
      On return, the parameter "its" contains
@@ -404,6 +424,8 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
    Output Parameter:
 .  ksp - the Krylov space context
 
+   Not Collective, but if KSP will be a parallel object if SLES is
+
    Notes:  
    The user can then directly manipulate the KSP context to set various 
    options, etc.
@@ -430,6 +452,8 @@ int SLESGetKSP(SLES sles,KSP *ksp)
 
    Output Parameter:
 .  pc - the preconditioner context
+
+   Not Collective, but if PC will be a parallel object if SLES is
 
    Notes:  
    The user can then directly manipulate the PC context to set various 
@@ -463,6 +487,8 @@ int SLESGetPC(SLES sles,PC *pc)
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
+
+   Collective on SLES and Mat
 
    Notes: 
    The flag can be used to eliminate unnecessary work in the preconditioner 
@@ -516,6 +542,8 @@ int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
 
    Input parameters:
 .  pc - the preconditioner context
+
+   Collective on SLES
 
    Notes:
    SLESSetUpOnBlocks() is a routine that the user can optinally call for

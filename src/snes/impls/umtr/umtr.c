@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.67 1998/04/03 23:17:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.68 1998/04/09 04:18:21 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -223,6 +223,8 @@ static int SNESDestroy_UM_TR(SNES snes )
 .  gnorm - 2-norm of current gradient
 .  f - objective function value
 .  dummy - unused dummy context
+
+   Collective on SNES
 
    Returns:
 $  1  if  ( f < fmin ),

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.178 1998/04/06 15:19:38 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.179 1998/04/06 23:45:24 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -139,6 +139,8 @@ double PetscCompareTolerance = 1.e-10;
    Input Parameter:
 .  d - integer to compare
 
+   Collective on PETSC_COMM_WORLD
+
    Options Database Key:
 .  -compare
 
@@ -167,6 +169,8 @@ int PetscCompareInt(int d)
 
    Input Parameter:
 .  d - double precision number to compare
+
+   Collective on PETSC_COMM_WORLD
 
    Options Database Key:
 .  -compare
@@ -200,6 +204,7 @@ int PetscCompareDouble(double d)
    Input Parameter:
 .  d - scalar to compare
 
+   Collective on PETSC_COMM_WORLD
 
    Options Database Key:
 .  -compare
@@ -340,6 +345,8 @@ int PetscInitializeNoArguments(void)
           (use PETSC_NULL for default)
 .  help - [optional] Help message to print, use PETSC_NULL for no message
 
+   Collective on MPI_COMM_WORLD or PETSC_COMM_WORLD if it has been set
+
    Notes:
    If for some reason you must call MPI_Init() separately, call
    it before PetscInitialize().
@@ -469,6 +476,8 @@ extern int DLRegisterDestroyAll();
 /*@C 
    PetscFinalize - Checks for options to be called at the conclusion
    of the program and calls MPI_Finalize().
+
+   Collective on PETSC_COMM_WORLD
 
    Options Database Keys:
 $  -optionstable : Calls OptionsPrint()
@@ -1019,6 +1028,8 @@ int OptionsCheckInitial_Private(void)
     Output Parameter:
 .   name - the name of the running program
 
+    Not Collective
+
     Notes:
     The name of the program is copied into the user-provided character
     array of length len.  On some machines the program name includes 
@@ -1199,6 +1210,8 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
    Input Parameter:
 .  FILE fd - location to print options (usually stdout or stderr)
 
+   Collective on PETSC_COMM_WORLD
+
    Options Database Key:
 $  -optionstable : checked within PetscFinalize()
 
@@ -1264,6 +1277,9 @@ static int OptionsDestroy_Private(void)
    Input Parameters:
 .  name - name of option, this SHOULD have the - prepended
 .  value - the option value (not used for all options)
+
+   Not Collective, but setting values on certain processors could cause problems
+     for parallel objects looking for options.
 
    Note:
    Only some options have values associated with them, such as
@@ -1346,6 +1362,8 @@ int OptionsSetValue(char *name,char *value)
    Input Parameters:
 .  name - name of option, this SHOULD have the - prepended
 
+   Not Collective, but setting values on certain processors could cause problems
+     for parallel objects looking for options.
 
 .keywords: options, database, set, value, clear
 
@@ -1449,6 +1467,8 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
 .  name - the option one is seeking 
 .  mess - error message 
 
+   Not Collective, but setting values on certain processors could cause problems
+     for parallel objects looking for options.
 
 .keywords: options, database, has, name
 
@@ -1481,6 +1501,8 @@ int OptionsReject(char* name,char *mess)
    Output Parameters:
 .   flg - 1 if found else 0.
 
+   Not Collective
+
 
 .keywords: options, database, has, name
 
@@ -1510,6 +1532,8 @@ int OptionsHasName(char* pre,char *name,int *flg)
    Output Parameter:
 .  ivalue - the integer value to return
 .  flg - 1 if found, else 0
+
+   Not Collective
 
 .keywords: options, database, get, int
 
@@ -1546,6 +1570,8 @@ int OptionsGetInt(char*pre,char *name,int *ivalue,int *flg)
 .  dvalue - the double value to return
 .  flg - 1 if found, 0 if not found
 
+   Not Collective
+
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
@@ -1581,6 +1607,8 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue,int *flg)
    Output Parameter:
 .  dvalue - the double value to return
 .  flg - 1 if found, else 0
+
+   Not Collective
 
 .keywords: options, database, get, double
 
@@ -1619,6 +1647,8 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue,int *flg)
 .  dvalue - the double value to return
 .  nmax - actual number of values retreived
 .  flg - 1 if found, else 0
+
+   Not Collective
 
 .keywords: options, database, get, double
 
@@ -1671,6 +1701,8 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
 .  nmax - actual number of values retreived
 .  flg - 1 if found, else 0
 
+   Not Collective
+
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
@@ -1720,6 +1752,8 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
 .  string - location to copy string
 .  flg - 1 if found, else 0
 
+   Not Collective
+
    Fortran Note:
    The Fortran interface is slightly different from the C/C++
    interface (len is not used).  Sample usage in Fortran --
@@ -1761,6 +1795,8 @@ int OptionsGetString(char *pre,char *name,char *string,int len, int *flg)
    Output Parameter:
 .  strings - location to copy strings
 .  flg - 1 if found, else 0
+
+   Not Collective
 
    Notes: 
    The user is responsible for deallocating the strings that are
@@ -1813,6 +1849,8 @@ int OptionsGetStringArray(char *pre, char *name, char **strings, int *nmax, int 
 /*@C
    OptionsAllUsed - Returns a count of the number of options in the 
    database that have never been selected.
+
+   Not Collective
 
    Options Database Key:
 $  -optionsleft : checked within PetscFinalize()

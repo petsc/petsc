@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.89 1998/04/03 23:14:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.90 1998/04/09 04:11:29 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -222,6 +222,9 @@ int PCLUSetMatReordering_LU(PC pc, MatReorderingType ordering)
 .  pc - the preconditioner context
 .  fill - amount of expected fill
 
+   Collective on PC
+   
+   Options Database Keys:
 $  -pc_lu_fill <fill>
 
    Note:
@@ -258,6 +261,8 @@ int PCLUSetFill(PC pc,double fill)
    Input Parameters:
 .  pc - the preconditioner context
 
+   Collective on PC
+
    Options Database Key:
 $  -pc_lu_in_place
 
@@ -291,6 +296,8 @@ int PCLUSetUseInPlace(PC pc)
     Input Parameters:
 .   pc - the preconditioner context
 .   ordering - the matrix ordering name, for example, ORDER_ND or ORDER_RCM
+
+   Collective on PC
 
    Options Database:
 .   -mat_order <nd,rcm,...>

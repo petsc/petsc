@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aopart.c,v 1.1 1997/11/05 23:24:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aopart.c,v 1.2 1997/11/09 04:09:56 bsmith Exp bsmith $";
 #endif
 
 #include "ao.h"       /*I  "ao.h"  I*/
@@ -14,6 +14,8 @@ static char vcid[] = "$Id: aopart.c,v 1.1 1997/11/05 23:24:08 bsmith Exp bsmith 
     Input Parameters:
 .    aodata - the database
 .    key - the key you wish partitioned and renumbered
+
+   Collective on AOData
 
 .seealso: AODataSegmentPartition()
 @*/

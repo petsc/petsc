@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.49 1998/03/16 18:32:51 balay Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.50 1998/04/03 23:12:53 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -48,6 +48,8 @@ int DrawScalePopup(Draw popup,double min,double max)
 .   x,y - the locations of the global mesh points (optional, use PETSC_NULL
           to indicate uniform spacing on [0,1])
 .   V - the vector
+
+    Collective on Draw and Vec
 
    Options Database Keys:
 $  -draw_x_private_colormap
@@ -183,6 +185,8 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 /*@
      VecContourScale - Prepares a vector of values to be plotted using 
           the DrawTriangle() contour plotter.
+
+   Collective on Vec
 
   Input Paramters:
 .   v - the vector of values

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.73 1998/04/03 23:14:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.74 1998/04/09 04:12:01 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -419,8 +419,7 @@ int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
 #define __FUNC__ "PCASMSetLocalSubdomains"
 /*@
     PCASMSetLocalSubdomains - Sets the local subdomains (for this processor
-    only) for the additive Schwarz preconditioner.  Either all or no
-    processors in the PC communicator must call this routine.
+    only) for the additive Schwarz preconditioner. 
 
     Input Parameters:
 .   pc - the preconditioner context
@@ -428,7 +427,11 @@ int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
 .   is - the index sets that define the subdomains for this processor
          (or PETSC_NULL for PETSc to determine subdomains)
 
+    Collective on PC 
+
     Notes:
+    The IS numbering is in the parallel, global numbering of the vector.
+
     By default the ASM preconditioner uses 1 block per processor.  
 
     These index sets cannot be destroyed until after completion of the
@@ -447,7 +450,7 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetLocalSubdomains",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetLocalSubdomains",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n,is);CHKERRQ(ierr);
   } 
@@ -461,11 +464,15 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
     additive Schwarz preconditioner.  Either all or no processors in the
     PC communicator must call this routine, with the same index sets.
 
+    Currently you cannot use this to set the actual subdomains with the argument is.
+
     Input Parameters:
 .   pc - the preconditioner context
 .   n - the number of subdomains for all processors
 .   is - the index sets that define the subdomains for all processor
          (or PETSC_NULL for PETSc to determine subdomains)
+
+    Collective on PC
 
     Options Database Key:
     To set the total number of subdomain blocks rather than specify the
@@ -511,6 +518,8 @@ int PCASMSetTotalSubdomains(PC pc, int N, IS *is)
 
     Options Database Key:
 $   -pc_asm_overlap <ovl>
+
+    Collective on PC
 
     Notes:
     By default the ASM preconditioner uses 1 block per processor.  To use
@@ -562,6 +571,8 @@ $      PC_ASM_RESTRICT    - full restriction, local processor interpolation
 $      PC_ASM_INTERPOLATE - full interpolation, local processor restriction
 $      PC_ASM_NONE        - local processor restriction and interpolation
 
+    Collective on PC
+
     Options Database Key:
 $   -pc_asm_type [basic,restrict,interpolate,none]
 
@@ -596,6 +607,8 @@ int PCASMSetType(PC pc,PCASMType type)
 .  n_local - the number of blocks on this processor
 .  first_local - the global number of the first block on this processor
 .  sles - the array of SLES contexts
+
+   Not Collective
 
    Note:  
    Currently for some matrix implementations only 1 block per processor 
@@ -683,6 +696,8 @@ int PCCreate_ASM(PC pc)
    Output Parameters:
 .  Nsub - the number of subdomains created
 .  is - the array of index sets defining the subdomains
+
+   Note Collective
 
    Note:
    Presently PCAMSCreateSubdomains2d() is valid only for sequential

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.130 1998/04/03 23:15:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.131 1998/04/09 04:14:25 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1176,6 +1176,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
 
    Output Parameter:
 .  A - the matrix 
+
+   Collective on MPI_Comm
 
    Options Database Keys:
 $    -mat_no_unroll - uses code that does not unroll the loops in the 

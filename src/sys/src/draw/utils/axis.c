@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.44 1998/03/12 23:21:18 bsmith Exp balay $";
+static char vcid[] = "$Id: axis.c,v 1.45 1998/04/01 20:26:20 balay Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -47,9 +47,12 @@ static double PetscRint(double x )
    DrawAxisCreate - Generate the axis data structure.
 
    Input Parameters:
+.   win - Draw object where axis to to be made
 
    Ouput Parameters:
 .   axis - the axis datastructure
+
+   Collective over Draw
 
 @*/
 int DrawAxisCreate(Draw win,DrawAxis *ctx)
@@ -89,6 +92,9 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
 
   Input Parameters:
 .   axis - the axis context
+ 
+  Collective over DrawAxis
+
 @*/
 int DrawAxisDestroy(DrawAxis ad)
 {
@@ -112,6 +118,9 @@ int DrawAxisDestroy(DrawAxis ad)
 .   ac - the color of the axis lines
 .   tc - the color of the tick marks
 .   cc - the color of the text strings
+
+      Not Collective (ignored on all processors except processor 0 of DrawAxis)
+
 @*/
 int DrawAxisSetColors(DrawAxis ad,int ac,int tc,int cc)
 {
@@ -131,6 +140,10 @@ int DrawAxisSetColors(DrawAxis ad,int ac,int tc,int cc)
 .   axis - the axis
 .   top - the label at the top of the image
 .   xlabel,ylabel - the labes for the x and y axis
+
+   Not Collective (ignored on all processors except processor 0 of DrawAxis)
+
+
 @*/
 int DrawAxisSetLabels(DrawAxis ad,char* top,char *xlabel,char *ylabel)
 {
@@ -151,6 +164,9 @@ int DrawAxisSetLabels(DrawAxis ad,char* top,char *xlabel,char *ylabel)
 .   ad - Axis structure
 .   xmin,xmax - limits in x
 .   ymin,ymax - limits in y
+
+   Not Collective (ignored on all processors except processor 0 of DrawAxis)
+
 @*/
 int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double ymax)
 {
@@ -170,6 +186,8 @@ int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double yma
 
     Input Parameter:
 .   ad - Axis structure
+
+   Not Collective (ignored on all processors except processor 0 of DrawAxis)
 
     Note:
     This draws the actual axis.  The limits etc have already been set.

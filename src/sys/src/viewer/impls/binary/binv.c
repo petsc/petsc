@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.43 1998/03/12 23:22:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.44 1998/04/03 23:17:31 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -26,6 +26,8 @@ struct _p_Viewer {
 .   viewer - viewer context, obtained from ViewerFileOpenBinary()
 .   fdes - file descriptor
 
+    Not Collective
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -48,6 +50,8 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 
 .   viewer - viewer context, obtained from ViewerFileOpenBinary()
 .   file - file pointer
+
+    Not Collective
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -93,6 +97,8 @@ $    BINARY_WRONLY - open existing file for binary output
 
    Output Parameter:
 .  binv - viewer for binary input/output to use with the specified file
+
+   Collective on MPI_Comm
 
    Note:
    This viewer can be destroyed with ViewerDestroy().

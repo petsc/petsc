@@ -1,5 +1,5 @@
 !
-!  "$Id: ex2f.F,v 1.11 1998/03/24 16:46:59 balay Exp $"
+!  "$Id: ex1f.F,v 1.10 1998/03/24 16:47:25 balay Exp bsmith $"
 !
 !  Formatted test for IS general routines
 !
@@ -20,7 +20,7 @@
 
 !     Test IS of size 0 
 
-       call ISCreateGeneral(PETSC_COMM_SELF,0,n,is,ierr) 
+       call ISCreateGeneral(PETSC_COMM_SELF,0,indices,is,ierr) 
             CHKERRA(ierr)
        call ISGetSize(is,n,ierr) 
             CHKERRA(ierr)

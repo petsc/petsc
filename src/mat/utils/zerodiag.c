@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.18 1997/10/19 03:27:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.19 1997/12/01 01:55:30 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -62,6 +62,8 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
 .   mat  - matrix to reorder
 .   rmap,cmap - row and column permutations.  Usually obtained from 
 .               MatGetReordering().
+
+    Collective on Mat
 
     Notes:
     This is not intended as a replacement for pivoting for matrices that

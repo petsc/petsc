@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.72 1998/04/03 23:18:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.73 1998/04/09 04:18:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -171,6 +171,8 @@ $           m,n, or p cannot be PETSC_DECIDE.
 
    Output Parameter:
 .  inra - the resulting distributed array object
+
+   Collective on MPI_Comm
 
    Options Database Key:
 $  -da_view : call DAView() at the conclusion of DACreate3d()

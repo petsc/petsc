@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.23 1998/03/12 23:22:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.24 1998/04/03 23:17:39 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h" /*I "petsc.h" I*/
@@ -16,6 +16,8 @@ struct _p_Viewer {
 
    Input Parameters:
 .  viewer - the viewer to be destroyed.
+
+  Collective on Viewer
 
 .seealso: ViewerMatlabOpen(), ViewerFileOpenASCII()
 
@@ -48,6 +50,8 @@ $    ASCII_FILES_VIEWER,
 $    BINARY_FILE_VIEWER,
 $    STRING_VIEWER,
 $    DRAW_VIEWER, ...
+
+   Not Collective
 
    Note:
    See petsc/include/viewer.h for a complete list of viewers.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.116 1998/04/03 23:13:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.117 1998/04/09 04:09:46 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -20,6 +20,8 @@ int KSPRegisterAllCalled = 0;
    Input Parameters:
 .  ksp - the Krylov space context
 .  viewer - visualization context
+
+   Collective on KSP unless Viewer is VIEWER_STDOUT_SELF
 
    Note:
    The available visualization contexts include
@@ -79,8 +81,11 @@ DLList KSPList = 0;
 .  ksp - location to put the KSP context
 .  comm - MPI communicator
 
+   Collective on KSP
+
    Notes:
-   The default KSP type is GMRES with a restart of 30.
+   The default KSP type is GMRES with a restart of 30, using modified Gram-Schmidt
+   orthogonalization.
 
 .keywords: KSP, create, context
 
@@ -148,6 +153,8 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
 .  ctx      - the Krylov space context
 .  itmethod - a known method
 
+   Collective on KSP
+
    Options Database Command:
 $  -ksp_type  <method>
 $      Use -help for a list of available methods
@@ -206,6 +213,8 @@ int KSPSetType(KSP ksp,KSPType itmethod)
    KSPRegisterDestroy - Frees the list of KSP methods that were
    registered by KSPRegister().
 
+   Not Collective
+
 .keywords: KSP, register, destroy
 
 .seealso: KSPRegister(), KSPRegisterAll()
@@ -226,14 +235,15 @@ int KSPRegisterDestroy(void)
 #undef __FUNC__  
 #define __FUNC__ "KSPGetType"
 /*@C
-   KSPGetType - Gets the KSP type as a string from 
-                the method type.
+   KSPGetType - Gets the KSP type as a string from the KSP object.
 
    Input Parameter:
 .  ksp - Krylov context 
 
    Output Parameters:
 .  name - name of KSP method 
+
+   Not Collective
 
 .keywords: KSP, get, method, name
 @*/
@@ -251,6 +261,8 @@ int KSPGetType(KSP ksp,KSPType *type)
 
    Input Parameter:
 .  ksp - the KSP context
+
+   Collective on KSP
 
    Options Database Keys:
 $  -help, -h
@@ -324,6 +336,8 @@ extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 
    Input Parameters:
 .  ksp - the Krylov space context
+
+   Collective on KSP
 
    Notes:  To see all options, run your program with the -help option;
            or consult the users manual.

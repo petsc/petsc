@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.9 1998/04/03 23:15:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.10 1998/04/09 04:15:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -268,6 +268,8 @@ static struct _MatOps MatOps = {0,
 
    Output Parameter:
 .  A - the matrix 
+
+   Collective on MPI_Comm
 
    Notes: You must NOT free the ii and jj arrays yourself. PETSc will free them
    when the matrix is destroyed.

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.66 1998/03/23 21:19:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.67 1998/04/03 23:14:05 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -25,6 +25,8 @@ DLList PCList = 0;
    Input Parameter:
 .  pc - the preconditioner context.
 .  type - a known method
+
+   Collective on PC
 
    Options Database Command:
 $  -pc_type  <type>
@@ -99,6 +101,8 @@ int PCSetType(PC ctx,PCType type)
    PCRegisterDestroy - Frees the list of preconditioners that were
    registered by PCRegister().
 
+   Not Collective
+
 .keywords: PC, register, destroy
 
 .seealso: PCRegisterAll(), PCRegisterAll()
@@ -123,6 +127,8 @@ int PCRegisterDestroy(void)
 
    Input Parameter:
 .  pc - the preconditioner context
+
+   Collective on PC
 
    Options Database Keys:
 $  -help, -h
@@ -163,6 +169,8 @@ int PCPrintHelp(PC pc)
    Output Parameter:
 .  name - name of preconditioner 
 
+   Not Collective
+
 .keywords: PC, get, method, name, type
 @*/
 int PCGetType(PC pc,PCType *meth)
@@ -184,6 +192,8 @@ int PCGetType(PC pc,PCType *meth)
 
    Input Parameters:
 .  pc - the preconditioner context
+
+   Collective on PC
 
 .keywords: PC, set, from, options, database
 

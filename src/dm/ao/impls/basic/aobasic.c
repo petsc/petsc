@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.33 1998/04/03 23:18:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.34 1998/04/09 04:19:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -119,6 +119,8 @@ static struct _AOOps myops = {AOPetscToApplication_Basic,
    Output Parameter:
 .  aoout - the new application ordering
 
+   Collective on MPI_Comm
+
    Options Database Key:
 $   -ao_view : call AOView() at the conclusion of AOCreateBasic()
 
@@ -216,6 +218,8 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 
    Output Parameter:
 .  aoout - the new application ordering
+
+   Collective on IS
 
    Options Database Key:
 $   -ao_view : call AOView() at the conclusion of AOCreateBasicIS()

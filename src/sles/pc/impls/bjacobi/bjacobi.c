@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.105 1998/04/03 23:14:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.106 1998/04/09 04:11:39 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -275,6 +275,8 @@ int PCBJacobiSetLocalBlocks_BJacobi(PC pc, int blocks,int *lens)
 $    PCBGS_FORWARD_SWEEP
 $    PCBGS_SYMMETRIC_SWEEP
 
+   Collective on PC
+
    Options Database Keys:
 $  -pc_gs_symmetric
 
@@ -311,7 +313,9 @@ int PCBGSSetSymmetric(PC pc, PCBGSType flag)
    Options Database Key:
 $  -pc_bjacobi_truelocal
 
-   Note:
+  Collective on PC
+
+  Note:
    For the common case in which the preconditioning and linear 
    system matrices are identical, this routine is unnecessary.
 
@@ -346,6 +350,8 @@ int PCBJacobiSetUseTrueLocal(PC pc)
    Input Parameters:
 .  pc - the preconditioner context
 
+   Collective on PC
+
    Options Database Key:
 $  -pc_bgs_truelocal
 
@@ -379,6 +385,8 @@ int PCBGSSetUseTrueLocal(PC pc)
 .  n_local - the number of blocks on this processor
 .  first_local - the global number of the first block on this processor
 .  sles - the array of SLES contexts
+
+   Note Collective
 
    Note:  
    Currently for some matrix implementations only 1 block per processor 
@@ -421,6 +429,8 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 .  first_local - the global number of the first block on this processor
 .  sles - the array of SLES contexts
 
+   Not Collective
+
    Note:  
    Currently for some matrix implementations only 1 block per processor 
    is supported.
@@ -454,7 +464,9 @@ int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
    Options Database Key:
 $  -pc_bjacobi_blocks <blocks>
 
-   Notes:  
+   Collective on PC
+
+  Notes:  
    Currently only a limited number of blocking configurations are supported.
    All processors sharing the PC must call this routine with the same data.
 
@@ -490,6 +502,8 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
    Options Database Key:
 $  -pc_bgs_blocks <blocks>
 
+   Collective on PC
+
    Notes:  
    Currently only a limited number of blocking configurations are supported.
    All processors sharing the PC must call this routine with the same data.
@@ -517,6 +531,8 @@ int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens)
 .  pc - the preconditioner context
 .  blocks - the number of blocks
 .  lens - [optional] integer array containing size of each block
+
+   Not Collective
 
    Note:  
    Currently only a limited number of blocking configurations are supported.
@@ -549,6 +565,8 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
 .  pc - the preconditioner context
 .  blocks - the number of blocks
 .  lens - [optional] integer array containing size of each block
+
+   Not Collective
 
    Note:  
    Currently only a limited number of blocking configurations are supported.

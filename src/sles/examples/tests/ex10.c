@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.71 1998/03/24 20:59:43 balay Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.72 1998/03/24 21:13:17 balay Exp bsmith $";
 #endif
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
 dimensions using 20 node serendipity elements and the equations of linear\n\
-elasticity. This also demonstrates use of MatGetSubMatrix() and the block\n\
+elasticity. This also demonstrates use of  block\n\
 diagonal data structure.  Input arguments are:\n\
   -m : problem size\n\n";
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.19 1997/10/19 03:30:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.20 1998/04/03 23:18:16 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: daview.c,v 1.19 1997/10/19 03:30:13 bsmith Exp bsmith
    Input Parameters:
 .  da - the distributed array
 .  ptr - an optional visualization context
+
+   Collective on DA, unless Viewer is VIEWER_STDOUT_SELF
 
    Notes:
    The available visualization contexts include
@@ -86,6 +88,8 @@ int DAView(DA da, Viewer v)
 .  w - number of degrees of freedom per node
 .  s - stencil width
 .  wrap - type of periodicity
+
+   Not Collective
 
    Note:
    Use PETSC_NULL in place of any output parameter that is not of interest.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.25 1998/03/20 22:51:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.26 1998/04/03 23:17:00 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -42,6 +42,7 @@ typedef struct {
     Output Parameter:
 .   dt - newly computed timestep
 
+   Collective on TS
 
     Notes:
     The routine to be called here to compute the timestep should be
@@ -79,6 +80,8 @@ int TSPseudoComputeTimeStep(TS ts,double *dt)
 .  newdt - the timestep to use for the next step
 .  flag - flag indicating whether the last time step was acceptable
 
+   Collective on TS
+
    Note:
    This routine always returns a flag of 1, indicating an acceptable 
    timestep.
@@ -107,6 +110,8 @@ int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,double *newdt,int
     Output Parameters:
 .   dt - newly computed timestep (if it had to shrink)
 .   flag - indicates if current timestep was ok
+
+   Collective on TS
 
     Notes:
     The routine to be called here to compute the timestep should be
@@ -368,6 +373,8 @@ static int TSView_Pseudo(TS ts,Viewer viewer)
 .  ctx - [optional] user-defined context for private data
          for the timestep verification routine (may be PETSC_NULL)
 
+   Collective on TS
+
    Calling sequence of func:
 .  func (TS ts,Vec update,void *ctx,double *newdt,int *flag);
 
@@ -408,6 +415,8 @@ int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* c
 .   ts - the timestep context
 .   inc - the scaling factor >= 1.0
 
+   Collective on TS
+
     Options Database Key:
 $    -ts_pseudo_increment <increment>
 
@@ -440,6 +449,8 @@ $         dt = current_dt*previous_fnorm/current_fnorm.
 
     Input Parameter:
 .   ts - the timestep context
+
+   Collective on TS
 
     Options Database Key:
 $    -ts_pseudo_increment_dt_from_initial_dt
@@ -474,6 +485,8 @@ int TSPseudoIncrementDtFromInitialDt(TS ts)
 .  dt - function to compute timestep
 .  ctx - [optional] user-defined context for private data
          required by the function (may be PETSC_NULL)
+
+   Collective on TS
 
    Calling sequence of func:
 .  func (TS ts,double *newdt,void *ctx);
@@ -620,6 +633,8 @@ int TSCreate_Pseudo(TS ts )
    Input Parameters:
 .  ts - the timestep context
 .  dtctx - unused timestep context
+
+   Collective on TS
 
    Output Parameter:
 .  newdt - the timestep to use for the next step

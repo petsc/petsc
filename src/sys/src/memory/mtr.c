@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.100 1998/03/20 22:47:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.101 1998/03/23 21:18:59 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -386,6 +386,8 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
 .   frags - number of blocks currently allocated
 .   maxs - maximum number of bytes ever allocated
 
+    Not Collective
+
 .keywords: memory, allocation, tracing, space, statistics
 
 .seealso: PetscTrDump()
@@ -410,6 +412,8 @@ int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
 
    Input Parameter:
 .  fp  - file pointer.  If fp is NULL, stderr is assumed.
+
+   Collective on PETSC_COMM_WORLD
 
    Options Database Key:
 $  -trdump : dumps unfreed memory during call to PetscFinalize()
@@ -445,6 +449,8 @@ int PetscTrDump( FILE *fp )
 /*@C
     PetscTrLog - Activates logging of all calls to malloc.
 
+    Not Collective
+
     Options Database Key:
 .     -trmalloc_log
 
@@ -466,6 +472,8 @@ int PetscTrLog(void)
 
     Input Parameters:
 .   fp - file pointer; or PETSC_NULL
+
+    Collective on PETSC_COMM_WORLD
 
     Options Database Key:
 $   -trmalloc_log
@@ -578,6 +586,7 @@ typedef union { long l[2]; double d; } NANDouble;
 .  p   - pointer to data
 .  n   - length of data (in Scalars)
 
+   Not Collective
    Options Database Key:
 $   -trmalloc_nan
 
@@ -626,6 +635,8 @@ int PetscInitializeNans(Scalar *p,int n )
    Input parameters:
 .  p   - pointer to data
 .  n   - length of data (in ints)
+
+   Not Collective
 
    Options Database Key:
 $   -trmalloc_nan

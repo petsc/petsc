@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.234 1998/04/03 23:15:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.235 1998/04/09 04:13:09 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1540,6 +1540,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    Output Parameter:
 .  A - the matrix 
 
+   Collective on MPI_Comm
+
    Notes:
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage), is fully compatible with standard Fortran 77
@@ -1942,7 +1944,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
 int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCall call,Mat *newmat)
 {
   int        ierr, i, m,n,rstart,row,rend,nz,*cwork,size,rank,j;
-  Mat        *local,M;
+  Mat        *local,M, Mreuse;
   Scalar     *vwork,*aa;
   MPI_Comm   comm = mat->comm;
   Mat_SeqAIJ *aij;
@@ -1952,16 +1954,25 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCa
   MPI_Comm_rank(comm,&rank);
   MPI_Comm_size(comm,&size);
 
-  ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
+  if (call ==  MAT_REUSE_MATRIX) {
+    ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject *)&Mreuse);CHKERRQ(ierr);
+    if (!Mreuse) SETERRQ(1,1,"Submatrix passed in was not used before, cannot reuse");
+    local = &Mreuse;
+    ierr  = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&local);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
+    Mreuse = *local;
+    PetscFree(local);
+  }
 
   /* 
       m - number of local rows
       n - number of columns (same on all processors)
       rstart - first row in new global matrix generated
   */
-  ierr = MatGetSize(*local,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(Mreuse,&m,&n);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {
-    aij = (Mat_SeqAIJ *) (*local)->data;
+    aij = (Mat_SeqAIJ *) (Mreuse)->data;
     if (aij->indexshift) SETERRQ(PETSC_ERR_SUP,1,"No support for index shifted matrix");
     ii  = aij->i;
     jj  = aij->j;
@@ -2009,7 +2020,7 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCa
     ierr = MatZeroEntries(M);CHKERRQ(ierr);
   }
   ierr = MatGetOwnershipRange(M,&rstart,&rend); CHKERRQ(ierr);
-  aij = (Mat_SeqAIJ *) (*local)->data;
+  aij = (Mat_SeqAIJ *) (Mreuse)->data;
   if (aij->indexshift) SETERRQ(PETSC_ERR_SUP,1,"No support for index shifted matrix");
   ii  = aij->i;
   jj  = aij->j;
@@ -2022,9 +2033,20 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCa
     ierr = MatSetValues_MPIAIJ(M,1,&row,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
   }
 
-  ierr = MatDestroyMatrices(1,&local);CHKERRQ(ierr);
+
+
+
   ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   *newmat = M;
+
+  MatView(M,VIEWER_STDOUT_SELF);
+
+  /* save submatrix used in processor for next request */
+  if (call ==  MAT_INITIAL_MATRIX) {
+    ierr = PetscObjectCompose((PetscObject)M,"SubMatrix",(PetscObject)Mreuse);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)Mreuse);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }

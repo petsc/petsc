@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.35 1998/01/17 17:36:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: sysio.c,v 1.36 1998/01/27 13:58:00 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -130,6 +130,8 @@ int PetscByteSwapDouble(double *buff,int n)
    Output Parameters:
 .  p - the buffer
 
+   Not Collective
+
    Notes: 
    PetscBinaryRead() uses byte swapping to work on all machines.
    Integers are stored on the file as 32 long, regardless of whether
@@ -217,6 +219,8 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 .  p    - the buffer
 .  n    - the number of items to write
 .  type - the type of items to read (PETSC_INT or PETSC_SCALAR)
+
+   Not Collective
 
    Notes: 
    PetscBinaryWrite() uses byte swapping to work on all machines.
@@ -313,6 +317,8 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
    Output Parameter:
 .  fd - the file
 
+   Not Collective
+
 .keywords: binary, output, write
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite()
@@ -360,6 +366,8 @@ int PetscBinaryOpen(char *name,int type,int *fd)
    Output Parameter:
 .  fd - the file
 
+   Not Collective
+
 .keywords: binary, output, write
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
@@ -384,6 +392,8 @@ int PetscBinaryClose(int fd)
             if BINARY_SEEK_END then size is offset from end of file
 .  size - number of bytes to move. Use PETSC_INT_SIZE, BINARY_SCALAR_SIZE,
           etc in your calculation rather then sizeof() to compute byte lengths.
+
+   Not Collective
 
    Notes: 
    Integers are stored on the file as 32 long, regardless of whether

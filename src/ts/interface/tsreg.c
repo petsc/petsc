@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.33 1998/03/23 21:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.34 1998/04/03 23:16:43 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -18,6 +18,8 @@ int TSRegisterAllCalled = 0;
    Input Parameters:
 .  ts - the TS context
 .  method - a known method
+
+   Collective on TS
 
   Options Database Command:
 $ -ts_type  <method>
@@ -79,6 +81,8 @@ int TSSetType(TS ts,TSType method)
    TSRegisterDestroy - Frees the list of timesteppers that were
    registered by DLRegister().
 
+   Not Collective
+
 .keywords: TS, timestepper, register, destroy
 
 .seealso: TSRegisterAll()
@@ -99,13 +103,15 @@ int TSRegisterDestroy(void)
 #undef __FUNC__  
 #define __FUNC__ "TSGetType"
 /*@C
-   TSGetType - Gets the TS method type and name (as a string).
+   TSGetType - Gets the TS method type (as a string).
 
    Input Parameter:
 .  ts - timestepper solver context
 
    Output Parameter:
 .  type - name of TS method
+
+   Not Collective
 
 .keywords: TS, timestepper, get, type, name
 @*/
@@ -129,6 +135,8 @@ int TSGetType(TS ts, TSType *type)
 
    Options Database Keys:
 $  -help, -h
+
+   Collective on TS
 
 .keywords: TS, timestep, print, help
 
@@ -160,6 +168,8 @@ int TSPrintHelp(TS ts)
 
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
+
+   Collective on TS
 
 .keywords: TS, timestep, set, options, database
 

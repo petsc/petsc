@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.85 1998/03/16 18:55:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.86 1998/04/03 23:14:54 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -387,6 +387,10 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   int        ierr,*idx, i1, i2, n, i, row,node_max, *ns, *ii, nsz, sz;
   int        shift = a->indexshift;
   
+#if defined(HAVE_PRAGMA_DISJOINT)
+#pragma disjoint(*x,*y,*v1,*v2,*v3,*v4,*v5)
+#endif
+
   PetscFunctionBegin;  
   if (!a->inode.size) SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
   node_max = a->inode.node_count;                

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.72 1998/04/03 20:31:35 bsmith Exp balay $";
+static char vcid[] = "$Id: err.c,v 1.73 1998/04/03 21:46:07 balay Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -37,6 +37,8 @@ static struct EH* eh = 0;
 .  n - the generic error number
 .  p - specific error number
 .  ctx - error handler context
+
+   Not Collective
 
    Options Database Keys:
 $   -on_error_abort
@@ -86,6 +88,8 @@ int PetscAbortErrorHandler(int line,char *func,char *file,char* dir,int n,int p,
 .  n - the generic error number
 .  p - specific error number
 .  ctx - error handler context
+
+   Not Collective
 
    Notes:
    Most users need not directly employ this routine and the other error 
@@ -170,6 +174,8 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
 .  p - the specific error number
 .  ctx - error handler context
 
+   Not Collective
+
    Notes:
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERRQ, which has 
@@ -238,6 +244,8 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
    Input Parameters:
 .  func - error handler routine
 
+   Not Collective
+
    Calling sequence of func:
    int func (int line,char *func,char *file,char *dir,int n,int p,char *mess);
 
@@ -272,6 +280,8 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
 /*@C
    PetscPopErrorHandler - Removes the latest error handler that was 
    pushed with PetscPushErrorHandler().
+
+   Not Collective
 
    Fortran Note:
    This routine is not supported in Fortran.
@@ -308,6 +318,8 @@ int PetscPopErrorHandler(void)
 .  n - the generic error number
 .  p - the specific error number
 
+   Not Collective
+
    Notes:
    Most users need not directly use this routine and the error handlers, but
    can instead use the simplified interface SETERRQ, which has the calling 
@@ -339,6 +351,8 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
 .   N - number of integers in array
 .   idx - array of integers
 .   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
+
+   Collective on Viewer
 
     Notes:
     If using a viewer with more than one processor, you must call PetscSynchronizedFlush()
@@ -424,6 +438,8 @@ int PetscIntView(int N,int* idx,Viewer viewer)
 .   N - number of doubles in array
 .   idx - array of doubles
 .   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
+
+   Collective on Viewer
 
    Notes:
    If using a viewer with more than one processor, you must call PetscSynchronizedFlush()

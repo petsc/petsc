@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.51 1998/03/12 23:14:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.52 1998/04/03 23:12:37 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -18,6 +18,8 @@ static char vcid[] = "$Id: index.c,v 1.51 1998/03/12 23:14:52 bsmith Exp bsmith 
 
    Output Parameters:
 .  ident - PETSC_TRUE if an identity, else PETSC_FALSE
+
+   Collective on IS
 
 .keywords: IS, index set, identity
 
@@ -39,6 +41,8 @@ int ISIdentity(IS is,PetscTruth *ident)
 
    Input Parmeters:
 .  is - the index set
+
+   Collective on IS
 
 .keywords: IS, index set, identity
 
@@ -64,6 +68,8 @@ int ISSetIdentity(IS is)
    Output Parameters:
 .  perm - PETSC_TRUE if a permutation, else PETSC_FALSE
 
+   Collective on IS
+
 .keywords: IS, index set, permutation
 
 .seealso: ISSetPermutation()
@@ -85,6 +91,8 @@ int ISPermutation(IS is,PetscTruth *perm)
    Input Parmeters:
 .  is - the index set
 
+   Collective on IS
+
 .keywords: IS, index set, permutation
 
 .seealso: ISPermutation()
@@ -104,6 +112,8 @@ int ISSetPermutation(IS is)
 
    Input Parameters:
 .  is - the index set
+
+   Collective on IS
 
 .keywords: IS, index set, destroy
 
@@ -132,6 +142,8 @@ int ISDestroy(IS is)
    Output Parameter:
 .  isout - the inverse permutation
 
+   Collective on IS
+
 .keywords: IS, index set, invert, inverse, permutation
 @*/
 int ISInvertPermutation(IS is,IS *isout)
@@ -155,6 +167,8 @@ int ISInvertPermutation(IS is,IS *isout)
 
    Output Parameter:
 .  size - the global size
+
+  Not Collective
 
 .keywords: IS, index set, get, global, size
 
@@ -183,6 +197,7 @@ int ISGetSize(IS is,int *size)
    Output Parameter:
 .  ptr - the location to put the pointer to the indices
 
+  Not Collective
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
@@ -214,6 +229,8 @@ int ISGetIndices(IS is,int **ptr)
 .  is - the index set
 .  ptr - the pointer obtained by ISGetIndices()
 
+  Not Collective
+
    Fortran Note:
    The Fortran interface is slightly different from that given below.
    See the users manual and petsc/src/is/examples for details.
@@ -244,6 +261,8 @@ int ISRestoreIndices(IS is,int **ptr)
 .  is - the index set
 .  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
 
+   Collective on IS unless Viewer is sequential
+
 .keywords: IS, index set, indices
 
 .seealso: ViewerFileOpenASCII()
@@ -267,6 +286,8 @@ int ISView(IS is, Viewer viewer)
 
    Input Parameters:
 .  is - the index set
+
+  Collective on IS
 
 .keywords: IS, index set, sort, indices
 
@@ -295,6 +316,8 @@ int ISSort(IS is)
 $     PETSC_TRUE if the index set is sorted;
 $     PETSC_FALSE otherwise.
 
+  Collective on IS
+
 .keywords: IS, index set, sort, indices
 
 .seealso: ISSort()
@@ -320,6 +343,8 @@ int ISSorted(IS is, PetscTruth *flg)
 
    Output Parameters:
 .  ident - PETSC_TRUE if an identity, else PETSC_FALSE
+
+  Collective on IS
 
 .keywords: IS, index set, identity
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.28 1998/03/20 22:47:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.29 1998/04/03 23:13:50 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -75,6 +75,8 @@ int PetscHeaderDestroy_Private(PetscObject h)
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectReference((PetscObject) mat);
 
+   Collective on PetscObject
+
 .seealso: PetscObjectCompose(), PetscObjectDereference()
 
 @*/
@@ -100,6 +102,8 @@ int PetscObjectReference(PetscObject obj)
   Output Parameter:
 .  cnt - the reference count
 
+  Not Collective
+
 .seealso: PetscObjectCompose(), PetscObjectDereference(), PetscObjectReference()
 
 @*/
@@ -122,6 +126,8 @@ int PetscObjectGetReference(PetscObject obj,int *cnt)
 .  obj - the PETSc object
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectDereference((PetscObject) mat);
+
+   Collective on PetscObject
 
 .seealso: PetscObjectCompose(), PetscObjectReference()
 
@@ -203,6 +209,8 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,char *name,void **ptr)
 .  ptr - the other PETSc object to associate with the PETSc object, this must also be 
          cast with (PetscObject)
 
+   Not Collective
+
    Notes:
    The second objects reference count is automatically increased by one when it is
    composed.
@@ -235,6 +243,8 @@ int PetscObjectCompose(PetscObject obj,char *name,PetscObject ptr)
 .  name - name associated with child object 
 .  ptr - the other PETSc object associated with the PETSc object, this must also be 
          cast with (PetscObject)
+
+   Not Collective
 
 .keywords: object, composition
 
@@ -293,6 +303,8 @@ int PetscObjectComposeFunction_Private(PetscObject obj,char *name,char *fname,vo
 
    Output Parameter:
 .   ptr - function pointer
+
+   Collective on PetscObject
 
 .keywords: object, composition
 

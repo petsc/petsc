@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtext.c,v 1.13 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtext.c,v 1.14 1998/03/12 23:20:42 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: dtext.c,v 1.13 1997/10/19 03:27:39 bsmith Exp bsmith 
 .  xl,yl - the coordinates of lower left corner of text
 .  cl - the color of the text
 .  text - the text to draw
+
+  Not Collective
 
 .keywords:  draw, text
 @*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj2.c,v 1.12 1997/10/19 03:29:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj2.c,v 1.13 1997/11/28 16:21:38 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -22,6 +22,8 @@ $      as created via MatFDColoringCreate()
 .   J - Jacobian matrix (not altered in this routine)
 .   B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
 .   flag - flag indicating whether the matrix sparsity structure has changed
+
+   Collective on SNES
 
    Options Database Keys:
 $  -mat_fd_coloring_freq <freq> 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.102 1998/04/03 23:14:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.103 1998/04/09 04:11:55 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -124,6 +124,8 @@ int PCILUSetUseInPlace_ILU(PC pc)
 .  dt - the drop tolerance
 .  dtcount - the max number of nonzeros allowed in a row?
 
+   Collective on PC
+
    Options Database Key:
 $  -pc_ilu_use_drop_tolerance <dt,dtcount>
 
@@ -154,6 +156,8 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
    Input Parameters:
 .  pc - the preconditioner context
 .  fill - amount of expected fill
+
+   Collective on PC
 
    Options Database:
 $  -pc_ilu_fill <fill>
@@ -192,6 +196,8 @@ int PCILUSetFill(PC pc,double fill)
 .   pc - the preconditioner context
 .   ordering - the matrix ordering name, for example, ORDER_ND or ORDER_RCM
 
+   Collective on PC
+
    Options Database:
 .   -mat_order <nd,rcm,...>
 
@@ -220,6 +226,8 @@ int PCILUSetMatReordering(PC pc, MatReorderingType ordering)
    Input Parameters:
 .  pc - the preconditioner context
 .  flag - PETSC_TRUE to reuse else PETSC_FALSE
+
+   Collective on PC
 
    Options Database Key:
 $  -pc_ilu_reuse_reordering
@@ -251,6 +259,8 @@ int PCILUSetReuseReordering(PC pc,PetscTruth flag)
 .  pc - the preconditioner context
 .  flag - PETSC_TRUE to reuse else PETSC_FALSE
 
+   Collective on PC
+
    Options Database Key:
 $  -pc_ilu_reuse_fill
 
@@ -280,6 +290,8 @@ int PCILUSetReuseFill(PC pc,PetscTruth flag)
 .  pc - the preconditioner context
 .  levels - number of levels of fill
 
+   Collective on PC
+
    Options Database Key:
 $  -pc_ilu_levels <levels>
 
@@ -306,6 +318,8 @@ int PCILUSetLevels(PC pc,int levels)
 
    Input Parameters:
 .  pc - the preconditioner context
+
+   Collective on PC
 
    Options Database Key:
 $  -pc_ilu_in_place

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.81 1998/03/20 22:47:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.82 1998/03/23 21:18:59 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites
@@ -131,6 +131,8 @@ static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 .  ng   - Number in processor group.  This many processes are allowed to execute
    at the same time (usually 1)
 
+   Collective on MPI_Comm
+
    Notes:
    PetscSequentialPhaseBegin() and PetscSequentialPhaseEnd() provide a
    way to force a section of code to be executed by the processes in
@@ -182,6 +184,7 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 .  ng   - Number in processor group.  This many processes are allowed to execute
    at the same time (usually 1)
 
+   Collective on MPI_Comm
 
    Notes:
    See PetscSequentialPhaseBegin() for more details.
@@ -258,6 +261,8 @@ int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
     Output Parameter:
 .   tag - the new tag
 
+    Collective on PetscObject
+
 .keywords: object, get, new, tag
 
 .seealso: PetscObjectRestoreNewTag()
@@ -292,6 +297,8 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 
     Output Parameter:
 .   tag - the new tag
+
+    Collective on PetscObject
 
 .keywords: object, restore, new, tag
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.75 1998/04/03 23:18:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.76 1998/04/09 04:18:39 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -108,6 +108,8 @@ $       If non-null, must be of length as m.
 
    Output Parameter:
 .  inra - the resulting distributed array object
+
+   Collective on MPI_Comm
 
    Notes:
    The array data itself is NOT stored in the DA, it is stored in Vec objects;

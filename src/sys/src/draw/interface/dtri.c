@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.18 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtri.c,v 1.19 1998/03/12 23:20:42 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: dtri.c,v 1.18 1997/10/19 03:27:39 bsmith Exp bsmith $
 .  draw - the drawing context
 .  x1,y1,x2,y2,x3,y3 - the coordinates of the vertices
 .  c1,c2,c3 - the colors of the corners in counter clockwise order
+
+  Not Collective
 
 .keywords: draw, triangle
 @*/
@@ -42,6 +44,8 @@ int DrawTriangle(Draw draw,double x1,double y1,double x2,double y2,
 .   x,y - the locations of the local mesh points
 .   max,min - the maximum and minimum value in the entire contour
 .   v - the data
+
+  Not Collective
 
    Options Database Keys:
 $  -draw_x_private_colormap

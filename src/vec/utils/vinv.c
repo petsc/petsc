@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.37 1997/11/03 04:42:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.38 1998/04/03 23:12:53 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -17,6 +17,8 @@ static char vcid[] = "$Id: vinv.c,v 1.37 1997/11/03 04:42:39 bsmith Exp bsmith $
 
    Output Parameter:
 .  v - the vector reciprocal
+
+   Collective on Vec
 
 .keywords: vector, reciprocal
 @*/
@@ -46,6 +48,8 @@ int VecReciprocal(Vec v)
 
    Output Parameter:
 .  sum - the result
+
+   Collective on Vec
 
 .keywords: vector, sum
 
@@ -85,6 +89,8 @@ int VecSum(Vec v,Scalar *sum)
    Output Parameter:
 .  v - the shifted vector 
 
+   Collective on Vec
+
 .keywords: vector, shift
 @*/
 int VecShift(Scalar *shift,Vec v)
@@ -110,6 +116,8 @@ int VecShift(Scalar *shift,Vec v)
 
    Input Parameters:
 .  v - the vector 
+
+   Collective on Vec
 
 .keywords: vector,absolute value
 @*/
@@ -140,6 +148,8 @@ int VecAbs(Vec v)
    Input Parameters:
 .  vec - the vector
 .  array - the array
+
+   Not Collective
 
   Notes:
   You should back up the original array by calling VecGetArray() and 
@@ -175,26 +185,33 @@ int VecPlaceArray(Vec vec,Scalar *array)
 .  flg : PETSC_TRUE if the vectors are equal;
          PETSC_FALSE otherwise.
 
+   Collective on Vec
+
 .keywords: vec, equal, equivalent
 @*/
 int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
 {
   Scalar *v1,*v2;
-  int    n1,n2,ierr;
+  int    n1,n2,ierr,flg1;
 
   PetscFunctionBegin;
   ierr = VecGetSize(vec1,&n1); CHKERRQ(ierr);
   ierr = VecGetSize(vec2,&n2); CHKERRQ(ierr);
-  if (n1 != n2) { *flg = PETSC_FALSE; PetscFunctionReturn(0);}
+  if (n1 != n2) {
+    flg1 = PETSC_FALSE;
+  } else {
+    ierr = VecGetArray(vec1,&v1); CHKERRQ(ierr);
+    ierr = VecGetArray(vec2,&v2); CHKERRQ(ierr);
 
-  ierr = VecGetArray(vec1,&v1); CHKERRQ(ierr);
-  ierr = VecGetArray(vec2,&v2); CHKERRQ(ierr);
+    if (PetscMemcmp(v1,v2,n1*sizeof(Scalar))) flg1 = PETSC_FALSE;
+    else  flg1 = PETSC_TRUE;
+    ierr = VecRestoreArray(vec1,&v1); CHKERRQ(ierr);
+    ierr = VecRestoreArray(vec2,&v2); CHKERRQ(ierr);
+  }
 
-  if (PetscMemcmp(v1,v2,n1*sizeof(Scalar))) *flg = PETSC_FALSE;
-  else  *flg = PETSC_TRUE;
+  /* combine results from all processors */
+  MPI_Allreduce(&flg1,flg,1,MPI_INT,MPI_MIN,vec1->comm);
   
-  ierr = VecRestoreArray(vec1,&v1); CHKERRQ(ierr);
-  ierr = VecRestoreArray(vec2,&v2); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dpoints.c,v 1.16 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dpoints.c,v 1.17 1998/03/12 23:20:42 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: dpoints.c,v 1.16 1997/10/19 03:27:39 bsmith Exp bsmit
    Input Parameters:
 .  draw - the drawing context
 .  width - the width in user coordinates
+
+   Not collective
 
    Note: 
    Even a size of zero insures that a single pixel is colored.

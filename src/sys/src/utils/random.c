@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.34 1998/03/06 00:12:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.35 1998/03/12 23:16:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -39,6 +39,8 @@ struct _p_PetscRandom {
    Intput Parameter:
 .  r  - the random number generator context
 
+   Collective on PetscRandom
+
 .keywords: random, destroy
 
 .seealso: PetscRandomGetValue(), PetscRandomCreate(), VecSetRandom()
@@ -63,8 +65,10 @@ int PetscRandomDestroy(PetscRandom r)
    Input Parameters:
 .  r  - the random number generator context
 
+   Collective on PetscRandom
+
    Example of Usage:
-$    PetscRandomCreate(RANDOM_DEFAULT,&r);
+$    PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
 $    PetscRandomSetInterval(RANDOM_DEFAULT,&r);
 $    PetscRandomGetValue(r,&value1);
 $    PetscRandomGetValue(r,&value2);
@@ -119,6 +123,8 @@ extern void   srand48(long);
 
    Output Parameter:
 .  r  - the random number generator context
+
+   Collective on MPI_Comm
 
    Notes:
    By default, we generate random numbers via srand48()/drand48() that
@@ -176,11 +182,13 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
    Intput Parameter:
 .  r  - the random number generator context
 
+   Not Collective
+
    Notes:
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
    Example of Usage:
-$    PetscRandomCreate(RANDOM_DEFAULT,&r);
+$    PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
 $    PetscRandomGetValue(r,&value1);
 $    PetscRandomGetValue(r,&value2);
 $    PetscRandomGetValue(r,&value3);

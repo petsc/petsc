@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.49 1997/12/01 01:54:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.50 1998/03/23 21:21:23 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -127,6 +127,8 @@ int MatOrder_RowLength(Mat mat,MatReorderingType type,IS *irow,IS *icol)
    Output Parameters:
 .  out - number associated with the reordering 
 
+   Not Collective
+
 .keywords: matrix, reordering, register
 
 .seealso: MatReorderingRegisterDestroy(), MatReorderingRegisterAll()
@@ -154,6 +156,8 @@ int  MatReorderingRegister(MatReorderingType name,MatReorderingType *out,char *s
 /*@C
    MatReorderingRegisterDestroy - Frees the list of ordering routines.
 
+   Not Collective
+
 .keywords: matrix, register, destroy
 
 .seealso: MatReorderingRegister(), MatReorderingRegisterAll()
@@ -180,6 +184,8 @@ int MatReorderingRegisterDestroy(void)
 
    Output Parameter:
 .  type - reordering method
+
+   Not Collective
 
    Options Database Keys:
    To specify the ordering through the options database, use one of
@@ -219,6 +225,8 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatReorderingType *type)
    Output Parameter:
 .  name - name of reordering
 
+   Not Collective
+
 .keywords: PC, get, method, name, type
 @*/
 int MatReorderingGetName(MatReorderingType meth,char **name)
@@ -252,6 +260,8 @@ $      ORDER_QMD - Quotient Minimum Degree
    Output Parameters:
 .  rperm - row permutation indices
 .  cperm - column permutation indices
+
+   Collective on Mat
 
    Options Database Keys:
    To specify the ordering through the options database, use one of

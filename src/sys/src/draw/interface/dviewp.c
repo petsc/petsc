@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dviewp.c,v 1.16 1997/10/28 14:23:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dviewp.c,v 1.17 1998/03/12 23:20:42 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -18,6 +18,8 @@ static char vcid[] = "$Id: dviewp.c,v 1.16 1997/10/28 14:23:49 bsmith Exp bsmith
                  These numbers must always be between 0.0 and 1.0.
                  Lower left corner is (0,0).
 .  draw - the drawing context
+
+   Collective on Draw
 
 .keywords:  draw, set, view, port
 @*/
@@ -46,6 +48,8 @@ int DrawSetViewPort(Draw draw,double xl,double yl,double xr,double yr)
 
    Input Parameters:
 .  draw - the drawing context
+
+   Collective on Draw
 
 .keywords:  draw, set, view, port, split
 @*/

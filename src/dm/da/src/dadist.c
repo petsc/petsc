@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadist.c,v 1.12 1998/03/20 22:53:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dadist.c,v 1.13 1998/04/03 23:18:16 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -30,6 +30,8 @@ int DAGetGlobalToGlobal1_Private(DA da,int **gtog1)
 
    Output Parameter:
 .  g - the distributed global vector
+
+   Collective on DA
 
    Note:
     This is a regular PETSc vector that should be destroyed with 

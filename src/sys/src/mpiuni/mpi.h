@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.60 1998/03/23 21:26:09 bsmith Exp balay $ */
+/* $Id: mpi.h,v 1.61 1998/03/24 21:13:53 balay Exp bsmith $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -369,7 +369,15 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
      MPI_SUCCESS)
 #define MPI_Scatter( sendbuf, sendcount,  sendtype, \
      recvbuf, recvcount,  recvtype, \
-     root, comm) MPI_Abort(MPI_COMM_WORLD,0)
+     root, comm) \
+     (MPIUNI_TMP = (void *) (sendbuf), \
+     MPIUNI_TMP = (void *) (sendcount, \
+     MPIUNI_TMP = (void *) (sendtype), \
+     MPIUNI_TMP = (void *) (recvbuf), \
+     MPIUNI_TMP = (void *) (recvcount), \
+     MPIUNI_TMP = (void *) (recvtype), \
+     MPIUNI_TMP = (void *) (root), \
+     MPIUNI_TMP = (void *) (comm), MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Scatterv( sendbuf, sendcounts, displs, \
      sendtype,  recvbuf, recvcount, \
      recvtype, root, comm) MPI_Abort(MPI_COMM_WORLD,0)

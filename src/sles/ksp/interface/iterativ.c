@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.66 1997/11/13 02:02:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.67 1998/04/03 23:13:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -32,7 +32,8 @@ int KSPDefaultFreeWork( KSP ksp )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGetResidualNorm"
-/*@C KSPGetResidualNorm - Gets the last (approximate preconditioned)
+/*@C
+     KSPGetResidualNorm - Gets the last (approximate preconditioned)
     residual norm that has been computed.
  
     Input Parameters:
@@ -40,6 +41,8 @@ int KSPDefaultFreeWork( KSP ksp )
 
     Output Parameters:
 .   rnorm - residual norm
+
+    Not Collective
 
 .keywords: KSP, get, residual norm
 
@@ -64,6 +67,8 @@ int KSPGetResidualNorm(KSP ksp,double *rnorm)
 .   ksp - the iterative context
 .   n  - the iteration
 .   rnorm - the two norm of the residual
+
+    Collective on KSP
 
     Options Database Key:
 $     -ksp_singmonitor
@@ -97,7 +102,6 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPDefaultMonitor"
-/*ARGSUSED*/
 /*@C
    KSPDefaultMonitor - Print the residual norm at each iteration of an
    iterative solver.
@@ -107,6 +111,8 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 .  n     - iteration number
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
 .  dummy - unused monitor context 
+
+   Collective on KSP
 
 .keywords: KSP, default, monitor, residual
 
@@ -130,6 +136,8 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 .  n     - iteration number
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
 .  dummy - unused monitor context 
+
+   Collective on KSP
 
    Options Database Key:
 $   -ksp_truemonitor
@@ -189,7 +197,6 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPDefaultConverged"
-/*ARGSUSED*/
 /*@C
    KSPDefaultConverged - Determines convergence of
    the iterative solvers (default code).
@@ -204,6 +211,8 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 $   1 if the iteration has converged;
 $  -1 if residual norm exceeds divergence threshold;
 $   0 otherwise.
+
+   Collective on KSP
 
    Notes:
    KSPDefaultConverged() reaches convergence when

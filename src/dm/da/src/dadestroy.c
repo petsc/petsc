@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.13 1997/10/19 03:30:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dadestroy.c,v 1.14 1998/03/20 22:53:07 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: dadestroy.c,v 1.13 1997/10/19 03:30:13 bsmith Exp bsm
 
    Input Parameter:
 .  da - the distributed array to destroy 
+
+   Collective on DA
 
 .keywords: distributed array, destroy
 
@@ -52,6 +54,8 @@ static char vcid[] = "$Id: dadestroy.c,v 1.13 1997/10/19 03:30:13 bsmith Exp bsm
 
    Output Parameter:
 .  ltog - the mapping
+
+   Not Collective
 
 .keywords: distributed array, destroy
 

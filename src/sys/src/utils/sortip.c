@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortip.c,v 1.19 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sortip.c,v 1.20 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -53,6 +53,8 @@ static int PetsciIqsortPerm(int *v,int *vdx,int right)
 .  n  - number of values to sort
 .  i  - values to sort
 .  idx - permutation array.  Must be initialized to 0:n-1 on input.
+
+   Not Collective
 
    Notes: 
    i is unchanged on output.
@@ -121,6 +123,8 @@ static int PetsciDqsortPerm(double *v,int *vdx,int right)
 .  n  - number of values to sort
 .  i  - values to sort
 .  idx - permutation array.  Must be initialized to 0:n-1 on input.
+
+   Not Collective
 
    Notes: 
    i is unchanged on output.

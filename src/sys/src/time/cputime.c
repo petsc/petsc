@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.14 1998/03/23 21:18:59 bsmith Exp balay $";
+static char vcid[] = "$Id: cputime.c,v 1.15 1998/03/31 23:42:28 balay Exp bsmith $";
 #endif
 
 /*
@@ -80,8 +80,10 @@ extern int getrusage(int,struct rusage*);
          Also on many systems the accuracy is only on the order of 
          microseconds.
 
-    Returns:
-    Time in seconds charged to the process.
+    Output Parameter:
+.   t - Time in seconds charged to the process.
+
+     Not Collective
 
     Example:
 $   #include "petsc.h"

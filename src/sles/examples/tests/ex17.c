@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.20 1997/10/19 03:27:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.21 1997/11/28 16:20:34 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -173,7 +173,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
        Dirichlet b.c.'s on 3 sides
        du/dn = i*alpha*u on (1,y), 0<y<1
      */
-    double  h, h2, sigma1 = 200.0, alpha = 10.0;
+    double  h2, sigma1 = 200.0;
     Scalar alpha_h;
     ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,&flg); CHKERRA(ierr);
     h2 = 1.0/((n+1)*(n+1));

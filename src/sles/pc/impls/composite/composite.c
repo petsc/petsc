@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.9 1998/04/03 23:14:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.10 1998/04/09 04:12:07 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -306,6 +306,7 @@ int PCCompositeSetUseTrue_Composite(PC pc)
 .  pc - the preconditioner context
 .  type - PC_COMPOSITE_ADDITIVE (default) or PC_COMPOSITE_MULTIPLICATIVE
 
+   Collective on PC
 
 .keywords:  set,  composite preconditioner, additive, multiplicative
 
@@ -332,6 +333,7 @@ int PCCompositeSetType(PC pc,PCCompositeType type)
 .  pc - the preconditioner context
 .  type - the type of the new preconditioner
 
+   Collective on PC
 
 .keywords:  composite preconditioner
 
@@ -361,6 +363,7 @@ int PCCompositeAddPC(PC pc,PCType type)
    Output Parameters:
 .  subpc - the PC requested
 
+   Not Collective
 
 .keywords:  get, composite preconditioner, sub preconditioner
 
@@ -391,6 +394,8 @@ int PCCompositeGetPC(PC pc,int n,PC *subpc)
 
    Input Parameters:
 .  pc - the preconditioner context
+
+   Collective on PC
 
    Options Database Key:
 $  -pc_composite_true

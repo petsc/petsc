@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres2.c,v 1.8 1998/03/20 22:47:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres2.c,v 1.9 1998/04/03 23:13:32 bsmith Exp bsmith $";
 #endif
 #include <math.h>
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
@@ -13,6 +13,8 @@ static char vcid[] = "$Id: gmres2.c,v 1.8 1998/03/20 22:47:08 bsmith Exp bsmith 
     Input Parameters:
 .   ksp - the iterative context
 .   max_k - the number of directions
+
+    Collective on KSP
 
     Options Database Key:
 $   -ksp_gmres_restart <max_k>
@@ -46,6 +48,8 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
   Input Parameters:
 .   ksp   - iterative context obtained from KSPCreate
 .   fcn   - Orthogonalization function
+
+   Collective on KSP
 
   Notes:
   Several orthogonalization routines are predefined.

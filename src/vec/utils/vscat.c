@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.112 1998/03/26 23:26:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.113 1998/04/03 23:12:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -560,6 +560,8 @@ $         of vectors to which we scatter
    Output Parameter:
 .  newctx - location to store the new scatter context
 
+   Collective on Vec
+
    Notes:
    In calls to VecScatter() you can use different vectors than the xin and 
    yin you used above; BUT they must have the same parallel data layout, for example,
@@ -1048,6 +1050,8 @@ $    SCATTER_FORWARD, SCATTER_REVERSE
    Output Parameter:
 .  y - the vector to which we scatter
 
+   Collective on VecScatter
+
    Notes:
    If you use SCATTER_REVERSE the first two arguments should be reversed, from 
    the SCATTER_FORWARD.
@@ -1095,6 +1099,8 @@ $    SCATTER_FORWARD, SCATTER_REVERSE
 
    Output Parameter:
 .  y - the vector to which we scatter
+
+   Collective on VecScatter and Vec
 
    Notes:
    The vectors x and y need not be the same vectors used in the call 
@@ -1186,6 +1192,8 @@ $    SCATTER_FORWARD, SCATTER_REVERSE
    Output Parameter:
 .  y - the vector to which we scatter
 
+   Collective on VecScatter and Vec
+
    Notes:
    If you use SCATTER_REVERSE the first two arguments should be reversed, from 
    the SCATTER_FORWARD.
@@ -1219,6 +1227,8 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
    Input Parameter:
 .  ctx - the scatter context
 
+   Collective on VecScatter
+
 .keywords: vector, scatter, context, destroy
 
 .seealso: VecScatterCreate(), VecScatterCopy()
@@ -1245,6 +1255,8 @@ int VecScatterDestroy( VecScatter ctx )
 
    Output Parameter:
 .  ctx - the context copy
+
+   Collective on VecScatter
 
 .keywords: vector, scatter, copy, context
 
@@ -1278,6 +1290,8 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
 .  ctx - the scatter context
 .  viewer - the viewer for displaying the context
 
+   Collective on VecScatter unless Viewer is VIEWER_STDOUT_SELF
+
 .keywords: vector, scatter, view
 @*/
 int VecScatterView(VecScatter ctx, Viewer viewer)
@@ -1304,6 +1318,8 @@ int VecScatterView(VecScatter ctx, Viewer viewer)
 .   scat - vector scatter context
 .   from - remapping for "from" indices (may be PETSC_NULL)
 .   to   - remapping for "to" indices (may be PETSC_NULL)
+
+   Collective on VecScatter
 
 .keywords: Vec, scatter, remap
 @*/

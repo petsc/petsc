@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.62 1998/04/03 23:17:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.63 1998/04/09 04:18:06 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -192,6 +192,8 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
    Output Parameter:
 .  J - the matrix-free matrix
 
+   Collective on SNES and Vec
+
    Notes:
    The matrix-free matrix context merely contains the function pointers
    and work space for performing finite difference approximations of
@@ -271,6 +273,8 @@ $
      the relative error in the function evaluations)
 .  umin - minimum allowable u-value
 
+   Collective on SNES
+
 .keywords: SNES, matrix-free, parameters
 
 .seealso: SNESDefaultMatrixFreeMatCreate()
@@ -305,6 +309,8 @@ int SNESSetMatrixFreeParameters(SNES snes,double error,double umin)
 .  n - number of vectors (excluding constant vector) in null space
 .  vecs - the vectors that span the null space (excluding the constant vector);
 .         these vectors must be orthonormal
+
+   Collective on Mat 
 
 .keywords: SNES, matrix-free, null space
 @*/

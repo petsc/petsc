@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.82 1998/04/03 23:14:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.83 1998/04/09 04:12:40 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -887,11 +887,9 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
        MatGetRow_MPIDense,MatRestoreRow_MPIDense,
        MatMult_MPIDense,MatMultAdd_MPIDense,
        MatMultTrans_MPIDense,MatMultTransAdd_MPIDense,
-/*       MatSolve_MPIDense,0, */
        0,0,
        0,0,
        0,0,
-/*       MatLUFactor_MPIDense,0, */
        0,MatTranspose_MPIDense,
        MatGetInfo_MPIDense,0,
        MatGetDiagonal_MPIDense,0,MatNorm_MPIDense,
@@ -899,7 +897,6 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
        0,
        MatSetOption_MPIDense,MatZeroEntries_MPIDense,MatZeroRows_MPIDense,
        0,0,
-/*       0,MatLUFactorSymbolic_MPIDense,MatLUFactorNumeric_MPIDense, */
        0,0,
        MatGetSize_MPIDense,MatGetLocalSize_MPIDense,
        MatGetOwnershipRange_MPIDense,
@@ -927,6 +924,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
 
    Output Parameter:
 .  A - the matrix
+
+   Collective on MPI_Comm
 
    Notes:
    The dense format is fully compatible with standard Fortran 77

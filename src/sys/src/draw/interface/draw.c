@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.48 1998/03/12 23:20:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.49 1998/04/03 23:16:21 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -14,6 +14,8 @@ static char vcid[] = "$Id: draw.c,v 1.48 1998/03/12 23:20:42 bsmith Exp bsmith $
   Input Parameter:
 .  draw - the window
 .  w,h - the new width and height of the window
+
+  Collective on Draw
 
 @*/
 int DrawResizeWindow(Draw draw,int w,int h)
@@ -34,8 +36,7 @@ int DrawResizeWindow(Draw draw,int w,int h)
   Input Parameter:
 .  draw - the window
 
-     Notes: 
-      All processors that share this drawable must call this routine.
+  Collective on Draw
 
 @*/
 int DrawCheckResizedWindow(Draw draw)
@@ -58,6 +59,9 @@ int DrawCheckResizedWindow(Draw draw)
 
    Output Parameter:
 .    title - the title
+
+   Not collective
+
 @*/
 int DrawGetTitle(Draw draw,char **title)
 {
@@ -75,6 +79,8 @@ int DrawGetTitle(Draw draw,char **title)
    Input Parameters:
 .    draw - the graphics context
 .    title - the title
+
+   Not collective (any processor or all may call this)
 
    Note: A copy of the string is made, so you may destroy the 
          title string after calling this routine.
@@ -107,6 +113,8 @@ int DrawSetTitle(Draw draw,char *title)
    Input Parameters:
 .    draw - the graphics context
 .    title - the title
+
+   Not collective (any processor or all can call this)
 
    Note: A copy of the string is made, so you may destroy the 
          title string after calling this routine.
@@ -147,6 +155,8 @@ int DrawAppendTitle(Draw draw,char *title)
    Input Parameters:
 .  draw - the drawing context
 
+   Collective on Draw
+
 .keywords: draw, destroy
 @*/
 int DrawDestroy(Draw draw)
@@ -172,6 +182,9 @@ int DrawDestroy(Draw draw)
 
   Output Parameter:
 .  popup - the new popup window
+
+  Collective on Draw
+
 @*/
 int DrawGetPopup(Draw draw,Draw *popup)
 {

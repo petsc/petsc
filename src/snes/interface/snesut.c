@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.36 1998/01/14 02:44:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesut.c,v 1.37 1998/02/10 19:49:03 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: snesut.c,v 1.36 1998/01/14 02:44:45 bsmith Exp curfma
 .  its - iteration number
 .  fgnorm - 2-norm of residual (or gradient)
 .  dummy - unused context
+
+   Collective on SNES
 
    Notes:
    For SNES_NONLINEAR_EQUATIONS methods the routine prints the 
@@ -102,6 +104,8 @@ $           set with SNESSetTolerances()
 $    rtol - relative function norm tolerance,
 $           set with SNESSetTolerances()
 
+   Collective on SNES
+
 .keywords: SNES, nonlinear, default, converged, convergence
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
@@ -151,6 +155,8 @@ int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *d
    Input Parameter:
 .  snes - SNES context
 
+   Collective on SNES
+
    Notes:
    Currently, the default is to use a constant relative tolerance for 
    the inner linear solvers.  Alternatively, one can use the 
@@ -179,20 +185,22 @@ int SNES_KSP_SetConvergenceTestEW(SNES snes)
    Newton method.
 
    Input Parameters:
-.  snes - SNES context
-.  version - version 1 or 2 (default is 2)
-.  rtol_0 - initial relative tolerance 
-$    (0 <= rtol_0 < 1)
-.  rtol_max - maximum relative tolerance
-$    (0 <= rtol_max < 1)
-.  alpha - power for version 2 rtol computation
-$    (1 < alpha <= 2)
-.  alpha2 - power for safeguard
-.  gamma2 - multiplicative factor for version 2 rtol computation
-$    (0 <= gamma2 <= 1)
-.  threshold - threshold for imposing safeguard
-$    (0 < threshold < 1)
+.    snes - SNES context
+.    version - version 1 or 2 (default is 2)
+.    rtol_0 - initial relative tolerance 
+$      (0 <= rtol_0 < 1)
+.    rtol_max - maximum relative tolerance
+$      (0 <= rtol_max < 1)
+.    alpha - power for version 2 rtol computation
+$      (1 < alpha <= 2)
+.    alpha2 - power for safeguard
+.    gamma2 - multiplicative factor for version 2 rtol computation
+$      (0 <= gamma2 <= 1)
+.    threshold - threshold for imposing safeguard
+$      (0 < threshold < 1)
 
+   Collective on SNES
+ 
    Note:
    Use PETSC_DEFAULT to retain the default for any of the parameters.
 

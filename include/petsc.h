@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.205 1998/03/31 23:34:38 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.206 1998/04/09 04:19:44 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -19,50 +19,12 @@
 /* ========================================================================== */
 /* Before anything else, include the PETSc configuration file.  This 
    contains various definitions that handle portability issues and the 
-   presence of important features.  For backward compatibility while 
-   developing, this configuration is itself conditionally included.
+   presence of important features. 
 
    petscconf.h is contained in bmake/${PETSC_ARCH}/petscconf.h  
 */
-#ifdef HAVE_PETSCCONF_H
 #include "petscconf.h"
-#endif
 
-/* These are temporary; they contain PARCH_xxxx -> feature-specific
-   definitions */
-/* Common definitions (sometimes undef'ed below) */
-#define HAVE_READLINK
-#define HAVE_MEMMOVE
-
-#if defined(PARCH_sun4)
-/* Fortran BLAS have slow dnrm2 */
-#define HAVE_SLOW_NRM2
-/* Functions that we count on Sun4's having */
-#define HAVE_GETWD
-#define HAVE_REALPATH
-/* Functions that Sun4's don't have */
-#undef HAVE_MEMMOVE
-#endif
-
-#if defined(PARCH_rs6000)
-/* Use bzero instead of memset( ,0, ) */
-#define PREFER_BZERO
-/* Some versions of AIX require u_type definitions */
-/* #define NEED_UTYPE_TYPEDEFS */
-#endif
-
-#if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)
-/* For some reason, we don't use readlink in grpath.c for IRIX */
-#undef HAVE_READLINK
-/* gettimeofday required sys/resource.h and C++ prototype for gettimeof
-   day */
-#define NEEDS_GETTIMEOFDAY_PROTO
-#endif
-
-#if defined(PARCH_paragon) ||  defined(PARCH_alpha)
-/* Some versions of these systems require u_type definitions */
-#define NEED_UTYPE_TYPEDEFS
-#endif
 
 /* ========================================================================== */
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.38 1997/11/28 16:18:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.39 1998/01/14 02:38:06 bsmith Exp bsmith $";
 #endif
 
 
@@ -22,6 +22,8 @@ static char vcid[] = "$Id: gcreatev.c,v 1.38 1997/11/28 16:18:15 bsmith Exp bsmi
  
     Output Parameter:
 .   V - location to stash resulting vector
+
+    Collective on MPI_Comm
 
     Options Database Key:
 $   -vec_mpi : use MPI vectors, even for the uniprocessor case
@@ -70,6 +72,8 @@ int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
    Output Parameter:
 .  type - the vector type (or use PETSC_NULL)
 .  name - name of vector type (or use PETSC_NULL)
+
+   Not Collective
 
 .keywords: vector, get, type, name
 @*/

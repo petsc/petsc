@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sregis.c,v 1.22 1997/11/03 04:45:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sregis.c,v 1.23 1998/03/23 21:21:23 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"     /*I       "mat.h"   I*/
@@ -17,6 +17,8 @@ extern int MatOrder_Flow(Mat,MatReorderingType,IS*,IS*);
 /*@C
   MatReorderingRegisterAll - Registers all of the matrix 
   reordering routines in PETSc.
+
+  Not Collective
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and 

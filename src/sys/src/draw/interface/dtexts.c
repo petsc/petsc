@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtexts.c,v 1.15 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtexts.c,v 1.16 1998/03/12 23:20:42 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -17,6 +17,8 @@ static char vcid[] = "$Id: dtexts.c,v 1.15 1997/10/19 03:27:39 bsmith Exp bsmith
 .  draw - the drawing context
 .  width - the width in user coordinates
 .  height - the charactor height
+
+  Not Collective
 
   Note:
   Only a limited range of sizes are available.

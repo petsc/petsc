@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: getcolv.c,v 1.1 1998/01/28 21:03:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: getcolv.c,v 1.2 1998/03/06 00:16:14 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -13,6 +13,8 @@ static char vcid[] = "$Id: getcolv.c,v 1.1 1998/01/28 21:03:00 bsmith Exp bsmith
 .  X - the matrix
 .  v - the vector
 .  c - the column requested
+
+   Collective on Mat and Vec
 
    Contributed by: Denis Vanderstraeten
 

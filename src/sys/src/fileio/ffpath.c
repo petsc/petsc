@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.12 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ffpath.c,v 1.13 1998/01/06 20:09:29 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -24,6 +24,8 @@ static char vcid[] = "$Id: ffpath.c,v 1.12 1997/10/19 03:23:45 bsmith Exp bsmith
 
    Output Parameter:
 .  fname - qualified file name
+
+   Not Collective
 
    Returns:
    1 on success, 0 on failure.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.22 1998/04/03 23:16:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.23 1998/04/09 04:17:02 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -505,6 +505,8 @@ int TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
 .   nonlin - number of nonlinear iterations
 .   lin    - number of linear iterations
 
+   Not Collective
+
 .keywords: non-linear iterations, linear iterations
 
 @*/
@@ -528,6 +530,8 @@ int TSPVodeGetIterations(TS ts, int *nonlin,int *lin )
    Input parameters:
     ts     - the time-step context
     type - one of  PVODE_ADAMS or PVODE_BDF
+
+   Collective on TS
 
     Contributed by: Liyang Xu
 
@@ -557,6 +561,7 @@ int TSPVodeSetType(TS ts, TSPVodeType type)
     ts     - the time-step context
     restart - number of direction vectors (the restart size).
 
+   Collective on TS
 
 .keywords: GMRES, restart
 
@@ -585,6 +590,7 @@ int TSPVodeSetGMRESRestart(TS ts, int restart)
     tol    - the factor by which the tolerance on the nonlinear solver is
              multiplied to get the tolerance on the linear solver, .05 by default.
 
+   Collective on TS
 
 .keywords: GMRES, linear convergence tolerance, PVODE
 
@@ -611,6 +617,8 @@ int TSPVodeSetLinearTolerance(TS ts, double tol)
 .    ts  - the time-step context
 .    type - either PVODE_MODIFIED_GS or PVODE_CLASSICAL_GS
 
+   Collective on TS
+
 .keywords: PVode, orthogonalization
 
 @*/
@@ -636,6 +644,8 @@ int TSPVodeSetGramSchmidtType(TS ts, TSPVodeGramSchmidtType type)
 .    ts  - the time-step context
 .    aabs - the absolute tolerance  
 .    rel - the relative tolerance
+
+   Collective on TS
 
     Contributed by: Liyang Xu
 

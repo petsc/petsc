@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ghome.c,v 1.16 1997/11/23 04:41:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ghome.c,v 1.17 1997/11/23 04:42:50 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: ghome.c,v 1.16 1997/11/23 04:41:49 bsmith Exp bsmith 
 
    Output Parameter:
 .  dir - the home directory
+
+   Not Collective
 
    Note:
    On Windows NT machine the enviornmental variable HOME specifies the home directory.
@@ -50,6 +52,8 @@ int PetscGetHomeDirectory(int maxlen,char *dir)
 
   Input Parameter:
 .   name - name of file (must be in writable memory)
+
+   Not Collective
 
    Notes: Call just before fopen()
 

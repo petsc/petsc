@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.22 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.23 1998/04/03 23:16:21 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -43,6 +43,8 @@ int ViewerFlush_Draw(Viewer v)
     Ouput Parameter:
 .   draw - the draw object
 
+    Not collective (but Draw returned will be parallel object if Viewer is)
+
 .keywords: viewer, draw, get
 
 .seealso: ViewerDrawGetLG(), ViewerDrawGetAxis()
@@ -71,6 +73,7 @@ int ViewerDrawGetDraw(Viewer v, Draw *draw)
     Ouput Parameter:
 .   draw - the draw line graph object
 
+    Not Collective (but DrawLG object will be parallel if Viewer is)
 
 .keywords: viewer, draw, get, line graph
 
@@ -105,6 +108,7 @@ int ViewerDrawGetDrawLG(Viewer v, DrawLG *drawlg)
     Ouput Parameter:
 .   drawaxis - the draw axis object
 
+    Not Collective (but DrawAxis object will be parallel if Viewer is)
 
 .keywords: viewer, draw, get, line graph
 

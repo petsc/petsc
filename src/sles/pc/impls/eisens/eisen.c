@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.71 1998/04/03 23:14:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.72 1998/04/09 04:11:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -237,6 +237,8 @@ int PCEisenstatUseDiagonalScaling_Eisenstat(PC pc)
 .  pc - the preconditioner context
 .  omega - relaxation coefficient (0 < omega < 2)
 
+   Collective on PC
+
    Options Database Key:
 $  -pc_eisenstat_omega  omega
 
@@ -276,6 +278,8 @@ int PCEisenstatSetOmega(PC pc,double omega)
 
    Input Parameter:
 .  pc - the preconditioner context
+
+   Collective on PC
 
    Options Database Key:
 $  -pc_eisenstat_diagonal_scaling

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dascatter.c,v 1.11 1997/08/22 15:18:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dascatter.c,v 1.12 1997/10/19 03:30:13 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -21,6 +21,8 @@ static char vcid[] = "$Id: dascatter.c,v 1.11 1997/08/22 15:18:43 bsmith Exp bsm
 .  ltog - local-to-global scatter context (may be PETSC_NULL)
 .  gtol - global-to-local scatter context (may be PETSC_NULL) 
 .  ltol - local-to-local scatter context (may be PETSC_NULL)
+
+   Not Collective, but VecScatter is parallel if DA is parallel
 
 Notes:
    The output contexts are valid only as long as the input da is valid.

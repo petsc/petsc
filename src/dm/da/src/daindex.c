@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daindex.c,v 1.15 1997/08/22 15:18:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daindex.c,v 1.16 1997/10/19 03:30:13 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -20,6 +20,8 @@ static char vcid[] = "$Id: daindex.c,v 1.15 1997/08/22 15:18:43 bsmith Exp bsmit
    Output Parameters:
 .  n - the number of local elements, including ghost nodes (or PETSC_NULL)
 .  idx - the global indices
+
+   Not Collective
 
    Note: 
    For DA_STENCIL_STAR stencils the inactive corner ghost nodes are also included
@@ -55,6 +57,8 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
 
    Output Parameters:
 .  ao - the application ordering context for DAs
+
+   Not Collective, but AO is parallel if DA is parallel
 
    Notes:
    In this case, the AO maps to the natural grid ordering that would be used

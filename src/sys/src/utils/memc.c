@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.42 1997/12/04 19:33:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.43 1997/12/12 19:37:06 bsmith Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -38,6 +38,8 @@ static char vcid[] = "$Id: memc.c,v 1.42 1997/12/04 19:33:53 bsmith Exp bsmith $
    Output Parameter:
 .  a - pointer to copy space
 
+   Not Collective
+
    Note:
    This routine is analogous to memcpy().
 
@@ -73,6 +75,8 @@ int PetscMemcpy(void *a,void *b,int n)
 
 .  a - pointer to result memory space
 .  ai - offset of result memory space (in elementary chunk sizes)
+
+   Not Collective
 
    Note:
    This routine is analogous to PetscMemcpy(), except when the data type is 
@@ -114,6 +118,8 @@ int PetscBitMemcpy(void *a,int ai,void *b,int bi,int bs,PetscDataType dtype)
 .  a - pointer to beginning memory location
 .  n - length (in bytes) of memory to initialize
 
+   Not Collective
+
 .keywords: Petsc, zero, initialize, memory
 
 .seealso: PetscMemcpy()
@@ -145,6 +151,8 @@ int PetscMemzero(void *a,int n)
    greater than 0, according to whether str11 is 
    less than, equal to, or greater than str2.
 
+   Not Collective
+
    Note: 
    This routine is anologous to memcmp()
 @*/
@@ -170,6 +178,8 @@ int PetscMemcmp(void * str1, void *str2, int len)
 
    Output Parameter:
 .  a - pointer to copy space
+
+   Not Collective
 
    Note:
    This routine is analogous to memmove().

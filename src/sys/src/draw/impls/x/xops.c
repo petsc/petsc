@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.108 1998/04/03 23:16:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.109 1998/04/09 04:16:23 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -537,6 +537,8 @@ int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
    Output Parameters:
 .  ctx - the drawing context.
 
+   Collective on MPI_Comm
+
    Options Database Keys:
 $  -nox : disables all x-windows output
 $  -display <name> : name of machine for the X display
@@ -743,6 +745,8 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
    Output Parameters:
 .  viewer - the viewer
 
+   Collective on MPI_Comm
+
    Format Options:
 .   VIEWER_FORMAT_DRAW_BASIC
 .   VIEWER_FORMAT_DRAW_LG     - displays using a line graph
@@ -794,6 +798,8 @@ int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
 #define __FUNC__ "ViewerDrawClear" 
 /*@
     ViewerDrawClear - Clears a Draw graphic associated with a viewer.
+
+    Not Collective
 
   Input Parameter:
 .  viewer - the viewer 
@@ -950,6 +956,8 @@ static int Petsc_Viewer_Drawx_keyval = MPI_KEYVAL_INVALID;
 
   Input Parameters:
 .  comm - the MPI communicator to share the window viewer
+
+  Collective on MPI_Comm
 
   Note: Unlike almost all other PETSc routines this does not return 
    an error code. Usually used in the form

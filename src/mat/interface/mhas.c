@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mhas.c,v 1.11 1997/08/22 15:13:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mhas.c,v 1.12 1997/10/19 03:24:58 bsmith Exp bsmith $";
 #endif
 
 
@@ -18,6 +18,8 @@ static char vcid[] = "$Id: mhas.c,v 1.11 1997/08/22 15:13:06 bsmith Exp bsmith $
 
    Output Parameter:
 .  has - either PETSC_TRUE or PETSC_FALSE
+
+   Collective on Mat
 
    Notes:
    See the file petsc/include/mat.h for a complete list of matrix

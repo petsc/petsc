@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.30 1997/12/01 01:55:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.31 1998/03/12 23:20:13 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -12,6 +12,8 @@ static char vcid[] = "$Id: axpy.c,v 1.30 1997/12/01 01:55:30 bsmith Exp bsmith $
    Input Parameters:
 .  X,Y - the matrices
 .  a - the scalar multiplier
+
+   Collective on Mat
 
    Contributed by: Matthew Knepley
 
@@ -69,6 +71,8 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
 .  Y - the matrices
 .  a - the scalar 
 
+   Collective on Mat
+
 .keywords: matrix, add, shift
 
 .seealso: MatDiagonalShift()
@@ -106,6 +110,8 @@ int MatShift(Scalar *a,Mat Y)
 
    Input Parameters:
 .  Y - the shifted ouput matrix
+
+   Collective on Mat and Vec
 
 .keywords: matrix, add, shift, diagonal
 
@@ -148,6 +154,8 @@ int MatDiagonalShift(Mat Y,Vec D)
    Input Parameters:
 .  X,Y - the matrices
 .  a - the scalar multiplier
+
+   Collective on Mat
 
    Contributed by: Matthew Knepley
 

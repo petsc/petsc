@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlinew.c,v 1.13 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlinew.c,v 1.14 1998/03/12 23:20:42 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: dlinew.c,v 1.13 1997/10/19 03:27:39 bsmith Exp bsmith
    Input Parameters:
 .  draw - the drawing context
 .  width - the width in user coordinates
+
+   Not collective
 
 .keywords:  draw, line, set, width
 

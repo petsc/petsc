@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.94 1998/04/03 23:13:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.95 1998/04/09 04:09:46 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -19,6 +19,8 @@ static char vcid[] = "$Id: itfunc.c,v 1.94 1998/04/03 23:13:21 bsmith Exp bsmith
 
    Output Parameters:
 .  emin, emax - extreme singular values
+
+   Not Collective
 
    Notes:
    One must call KSPSetComputeSingularValues() before calling KSPSetUp() 
@@ -63,6 +65,8 @@ int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
    Output Parameters:
 .  r - real part of computed eigenvalues
 .  c - complex part of computed eigenvalues
+
+   Not Collective
 
    Options Database Key:
 $     -ksp_compute_eigenvalues : prints eigenvalues to 
@@ -111,6 +115,8 @@ int KSPComputeEigenvalues(KSP ksp,int n,double *r,double *c)
    Input Parameter:
 .  ksp   - iterative context obtained from KSPCreate()
 
+   Collective on KSP
+
 .keywords: KSP, setup
 
 .seealso: KSPCreate(), KSPSolve(), KSPDestroy()
@@ -144,6 +150,8 @@ int KSPSetUp(KSP ksp)
 
    Output Parameter:
 .  its - number of iterations required
+
+   Collective on KSP
 
    Notes:
    On return, the parameter "its" contains
@@ -261,6 +269,8 @@ int KSPSolve(KSP ksp, int *its)
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate()
 
+   Collective on KSP
+
 .keywords: KSP, destroy
 
 .seealso: KSPCreate(), KSPSetUp(), KSPSolve()
@@ -295,6 +305,8 @@ $
 $      PC_LEFT - left preconditioning (default)
 $      PC_RIGHT - right preconditioning
 $      PC_SYMMETRIC - symmetric preconditioning
+
+   Collective on KSP
 
    Options Database Keys:
 $  -ksp_left_pc, -ksp_right_pc, -ksp_symmetric_pc,
@@ -332,6 +344,8 @@ $      PC_LEFT - left preconditioning (default)
 $      PC_RIGHT - right preconditioning
 $      PC_SYMMETRIC - symmetric preconditioning
 
+   Not Collective
+
 .keywords: KSP, get, right, left, symmetric, side, preconditioner, flag
 
 .seealso: KSPSetPreconditionerSide()
@@ -358,6 +372,8 @@ int KSPGetPreconditionerSide(KSP ksp, PCSide *side)
 .  atol - the absolute convergence tolerance
 .  dtol - the divergence tolerance
 .  maxits - maximum number of iterations
+
+   Not Collective
 
    Notes:
    The user can specify PETSC_NULL for any parameter that is not needed.
@@ -394,6 +410,8 @@ int KSPGetTolerances(KSP ksp,double *rtol,double *atol,double *dtol,int *maxits)
    (amount residual can increase before KSPDefaultConverged
    concludes that the method is diverging)
 .  maxits - maximum number of iterations to use
+
+   Collective on KSP
 
    Notes:
    Use PETSC_DEFAULT to retain the default value of any of the tolerances.
@@ -434,6 +452,8 @@ int KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits)
 .  ksp - iterative context obtained from KSPCreate()
 .  flag - PETSC_TRUE or PETSC_FALSE
 
+   Collective on KSP
+
    Notes:
    Most Krylov methods do not yet take advantage of flag = PETSC_FALSE.
 
@@ -456,6 +476,8 @@ int KSPSetComputeResidual(KSP ksp,PetscTruth flag)
 
    Input Parameter:
 .  ksp  - iterative context obtained from KSPCreate()
+
+   Collective on KSP
 
    Notes:
    Currently only CG, CHEBYCHEV, and RICHARDSON use this with left
@@ -483,6 +505,8 @@ int KSPSetUsePreconditionedResidual(KSP ksp)
    initial guess is nonzero; otherwise KSP assumes the initial guess
    is to be zero (and thus zeros it out before solving).
 
+   Collective on KSP
+
    Input Parameters:
 .  ksp - iterative context obtained from KSPCreate()
 
@@ -504,6 +528,8 @@ int KSPSetInitialGuessNonzero(KSP ksp)
 
    Input Parameters:
 .  ksp - iterative context obtained from KSPCreate()
+
+   Collective on KSP
 
    Options Database Key:
 $  -ksp_singmonitor
@@ -537,6 +563,8 @@ int KSPSetComputeSingularValues(KSP ksp)
    Input Parameters:
 .  ksp - iterative context obtained from KSPCreate()
 
+   Collective on KSP
+
    Notes:
    Currently this option is not valid for all iterative methods.
 
@@ -561,6 +589,8 @@ int KSPSetComputeEigenvalues(KSP ksp)
    Input Parameters:
 .  ksp - Iterative context obtained from KSPCreate()
 .  b   - right-hand-side vector
+
+   Collective on KSP and Vec
 
 .keywords: KSP, set, right-hand-side, rhs
 
@@ -587,6 +617,8 @@ int KSPSetRhs(KSP ksp,Vec b)
    Output Parameter:
 .  r - right-hand-side vector
 
+   Not Collective
+
 .keywords: KSP, get, right-hand-side, rhs
 
 .seealso: KSPSetRhs(), KSPGetSolution()
@@ -595,7 +627,8 @@ int KSPGetRhs(KSP ksp,Vec *r)
 {   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  *r = ksp->vec_rhs; PetscFunctionReturn(0);
+  *r = ksp->vec_rhs; 
+  PetscFunctionReturn(0);
 } 
 
 #undef __FUNC__  
@@ -607,6 +640,8 @@ int KSPGetRhs(KSP ksp,Vec *r)
    Input Parameters:
 .  ksp - iterative context obtained from KSPCreate()
 .  x   - solution vector
+
+  Collective on KSP and Vec
 
 .keywords: KSP, set, solution
 
@@ -634,6 +669,8 @@ int KSPSetSolution(KSP ksp, Vec x)
    Output Parameters:
 .  v - solution vector
 
+   Not Collective
+
 .keywords: KSP, get, solution
 
 .seealso: KSPGetRhs(), KSPSetSolution()
@@ -654,6 +691,8 @@ int KSPGetSolution(KSP ksp, Vec *v)
    Input Parameters:
 .  ksp - iterative context obtained from KSPCreate()
 .  B   - the preconditioner object
+
+   Collective on KSP
 
    Notes:
    Use KSPGetPC() to retrieve the preconditioner context (for example,
@@ -684,6 +723,8 @@ int KSPSetPC(KSP ksp,PC B)
    Output Parameter:
 .  B - preconditioner context
 
+   Not Collective
+
 .keywords: KSP, get, preconditioner, Binv
 
 .seealso: KSPSetPC()
@@ -709,6 +750,8 @@ int KSPGetPC(KSP ksp, PC *B)
 .  mctx    - [optional] context for private data for the
              monitor routine (use PETSC_NULL if no context
              is desired)
+
+   Collective on KSP
 
    Calling sequence of monitor:
 .  monitor (KSP ksp, int it, double rnorm, void *mctx)
@@ -771,6 +814,8 @@ int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
    Input Parameters:
 .  ksp - iterative context obtained from KSPCreate()
 
+   Collective on KSP
+
    Options Database Keys:
 $    -ksp_cancelmonitors : cancels all monitors that have
 $                          been hardwired into a code by 
@@ -802,6 +847,8 @@ int KSPClearMonitor(KSP ksp)
    Output Parameter:
 .  ctx - monitoring context
 
+   Not Collective
+
 .keywords: KSP, get, monitor, context
 
 .seealso: KSPDefaultMonitor(), KSPLGMonitorCreate()
@@ -826,6 +873,8 @@ int KSPGetMonitorContext(KSP ksp, void **ctx)
 .  a   - array to hold history
 .  na  - size of a
 
+   Not Collective
+
 .keywords: KSP, set, residual, history, norm
 @*/
 int KSPSetResidualHistory(KSP ksp, double *a, int na)
@@ -849,6 +898,8 @@ int KSPSetResidualHistory(KSP ksp, double *a, int na)
 .  converge - pointer to int function
 .  cctx    - context for private data for the convergence routine (may be 
               null)
+
+   Collective on KSP
 
    Calling sequence of converge:
 .  converge (KSP ksp, int it, double rnorm, void *mctx)
@@ -895,6 +946,8 @@ int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,double,void*),void *cc
    Output Parameter:
 .  ctx - monitoring context
 
+   Not Collective
+
 .keywords: KSP, get, convergence, test, context
 
 .seealso: KSPDefaultConverged(), KSPSetConvergenceTest()
@@ -921,6 +974,8 @@ int KSPGetConvergenceContext(KSP ksp, void **ctx)
 .  V - the solution is returned in this location. This vector is created 
        internally. This vector should NOT be destroyed by the user with
        VecDestroy().
+
+   Collective on KSP
 
    Notes:
    This routine must be called after SLESSolve().
@@ -963,6 +1018,8 @@ int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
          then a location is generated.
 .  t   - work vector.  If not provided then one is generated.
 .  V   - the residual
+
+   Collective on KSP
 
    Notes:
    Regardless of whether or not v is provided, the residual is 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorti.c,v 1.12 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorti.c,v 1.13 1998/03/12 23:16:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -224,6 +224,8 @@ static int PetsciIqsort(int *v,int right)
    Input Parameters:
 .  n  - number of values
 .  i  - array of integers
+
+   Not Collective
 
 .keywords: sort, integer
 

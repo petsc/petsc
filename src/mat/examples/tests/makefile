@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.187 1998/04/06 20:44:53 balay Exp balay $ 
+# $Id: makefile,v 1.188 1998/04/07 00:33:07 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -23,11 +23,11 @@ TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
 		   runex7 ex7.rm ex12.PETSc runex12 runex12_2 ex12.rm  ex13.PETSc runex13 \
 		   ex13.rm ex17.PETSc ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc \
 		   ex24.rm ex25.PETSc ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
-		   ex30.PETSc ex30.rm ex31.PETSc ex31.rm ex32.PETSc\
-		   ex32.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm ex35.PETSc runex35 \
+		   ex30.PETSc ex30.rm ex31.PETSc ex31.rm \
+                   ex33.PETSc ex33.rm ex34.PETSc ex34.rm ex35.PETSc runex35 \
 		   ex35.rm ex37.PETSc ex37.rm ex38.PETSc ex38.rm \
 		   ex43.PETSc ex43.rm ex48.PETSc runex48 ex48.rm ex49.PETSc ex49.rm \
-		   ex50.PETSc ex50.rm ex51.PETSc runex51 ex51.rm \
+		   ex51.PETSc runex51 ex51.rm \
 		   ex52.PETSc ex52.rm ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 \
 		   runex56_2  runex56_3  runex56_4 runex56_5 ex56.rm clean 
 TESTEXAMPLES_3	 = ex36.PETSc runex36 ex36.rm clean
@@ -37,9 +37,9 @@ TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		   ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm ex15.PETSc\
 		   runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 \
 		   ex21.rm ex35.PETSc runex35 ex35.rm  ex48.PETSc runex48 ex48.rm clean
-TESTEXAMPLES_6	 = ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 ex42.rm \
-                   ex41.PETSc ex41.rm ex47.PETSc ex47.rm  ex53.PETSc runex53 \
-                   ex53.rm clean
+TESTEXAMPLES_6	 = ex32.PETSc ex32.rm ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 ex42.rm \
+                   ex41.PETSc ex41.rm ex47.PETSc ex47.rm  ex50.PETSc ex50.rm \
+                   ex53.PETSc runex53 ex53.rm clean
 TESTEXAMPLES_7	 = ex5.PETSc runex5_3 ex5.rm ex46.PETSc runex46 ex46.rm clean
 TESTEXAMPLES_12	 = ex16f90.PETSc runex16f90 ex16f90.rm clean 
 BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex3.PETSc ex3.rm ex5.PETSc ex5.rm ex6.PETSc \

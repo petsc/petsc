@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.7 1998/01/06 20:09:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.8 1998/01/14 02:39:22 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -41,6 +41,8 @@ static FILE        *queuefile  = PETSC_NULL;
     Input Parameters:
 .   comm - the communicator
 .   format - the usual printf() format string 
+
+    Not Collective
 
     Notes:
      You cannot mix usage with more then one MPI communicator without an 
@@ -108,6 +110,8 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
 .   comm - the communicator
 .   fd - the file pointer
 .   format - the usual printf() format string 
+
+    Not Collective
 
     Notes:
      You cannot mix usage with more then one MPI communicator or with different
@@ -177,6 +181,8 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,char *format,...)
     Input Parameters:
 .   comm - the communicator
 
+    Collective on MPI_Comm
+
     Notes:
      You cannot mix usage with more then one MPI communicator without an 
      intervening call to PetscSynchronizedFlush().
@@ -243,6 +249,8 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 .   fd - the file pointer
 .   format - the usual printf() format string 
 
+    Not Collective
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -288,6 +296,8 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
 .  comm - the communicator
 .  format - the usual printf() format string 
 
+    Not Collective
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -328,12 +338,14 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
 #undef __FUNC__  
 #define __FUNC__ "PetscHelpPrintfDefault" 
 /*@C
-    PetscPrintf - Prints to standard out, only from the first
+    PetscHelpPrintfDefault - Prints to standard out, only from the first
     processor in the communicator.
 
    Input Parameters:
 .  comm - the communicator
 .  format - the usual printf() format string 
+
+   Not Collective
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -379,6 +391,8 @@ int PetscHelpPrintfDefault(MPI_Comm comm,char *format,...)
 
    Input Parameters:
 .  format - the usual printf() format string 
+
+   Not Collective
 
     Fortran Note:
     This routine is not supported in Fortran.

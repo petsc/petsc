@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.66 1998/04/03 23:17:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.67 1998/04/09 04:18:22 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -228,6 +228,8 @@ static int SNESView_UM_LS(SNES snes,Viewer viewer)
 .  gnorm - 2-norm of current gradient
 .  f - objective function value
 .  dummy - unused dummy context
+
+   Collective on SNES
 
    Returns:
 $   1  if  ( f < fmin ),

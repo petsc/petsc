@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.151 1998/04/03 23:15:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.152 1998/04/09 04:13:41 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -2190,7 +2190,9 @@ $     as needed.
    Output Parameters:
 .  A - the matrix
 
-   Options database:
+    Collective on MPI_Comm
+
+  Options database:
 .  -mat_blocksize bs
 .  -mat_bdiag_diags s1,s2,s3,...
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isdiff.c,v 1.3 1997/10/10 04:01:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isdiff.c,v 1.4 1997/10/19 03:22:23 bsmith Exp bsmith $";
 #endif
 
 #include "is.h"                    /*I "is.h"  I*/
@@ -18,6 +18,8 @@ static char vcid[] = "$Id: isdiff.c,v 1.3 1997/10/10 04:01:58 bsmith Exp bsmith 
 
   Output Parameters:
 .   isout - is1 - is2
+
+  Collective over IS
 
   Notes: Negative values are removed from the lists. is2 may have values
          that are not in is1. This requires O(imax-imin) memory and 
@@ -101,6 +103,8 @@ int ISDifference(IS is1,IS is2, IS *isout)
 
   Output Parameters:
 .   isout - is1 + is2 The index set is2 is appended to is1 removing duplicates
+
+  Collective over IS
 
   Notes: Negative values are removed from the lists. This requires O(imax-imin) 
          memory and O(imax-imin) work, where imin and imax are the bounds on the 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcregis.c,v 1.38 1998/01/12 15:55:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.39 1998/03/06 00:13:26 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -46,6 +46,8 @@ static int PCRegister_Private(char *sname,char *path,char *name,int (*function)(
 
   Input Parameter:
 .   path - the library where the routines are to be found (optional)
+
+  Not Collective
 
 .keywords: PC, register, all
 

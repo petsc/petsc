@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grpath.c,v 1.12 1997/09/05 18:28:16 gropp Exp bsmith $";
+static char vcid[] = "$Id: grpath.c,v 1.13 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -18,6 +18,8 @@ static char vcid[] = "$Id: grpath.c,v 1.12 1997/09/05 18:28:16 gropp Exp bsmith 
 
    Output Parameter:
 .  rpath - resolved path
+
+   Not Collective
 
    Notes: 
    rpath is assumed to be of length MAXPATHLEN.

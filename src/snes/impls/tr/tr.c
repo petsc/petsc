@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.82 1998/04/03 23:17:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.83 1998/04/09 04:18:19 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -295,6 +295,8 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
 .  pnorm - 2-norm of current step 
 .  fnorm - 2-norm of function
 .  dummy - unused context
+
+   Collective on SNES
 
    Returns:
 $  1  if  ( delta < xnorm*deltatol ),

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesregi.c,v 1.21 1997/10/19 03:29:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesregi.c,v 1.22 1998/03/06 00:18:38 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
@@ -39,6 +39,8 @@ extern int SNESRegisterAllCalled;
 #define __FUNC__ "SNESRegisterAll"
 /*@C
   SNESRegisterAll - Registers all of the nonlinear solver methods in the SNES package.
+
+  Not Collective
 
 .keywords: SNES, register, all
 

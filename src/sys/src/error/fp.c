@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.45 1998/03/16 21:57:30 balay Exp balay $";
+static char vcid[] = "$Id: fp.c,v 1.46 1998/03/24 20:59:22 balay Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -66,6 +66,14 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
    PetscSetFPTrap - Enables traps/exceptions on common floating point errors.
                     This option may not work on certain machines.
 
+   Input Parameters:
+.  flag - PETSC_FP_TRAP_ON, PETSC_FP_TRAP_OFF.
+
+   Not Collective
+
+   Options Database Keys:
+$  -fp_trap - turns on floating point trapping
+
    Description:
    On systems that support it, this routine causes floating point
    overflow, divide-by-zero, and invalid-operand (e.g., a NaN) to
@@ -75,11 +83,6 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
    On certain machines, in particular the IBM rs6000, floating point 
    trapping is VERY slow.
 
-   Input Parameters:
-.  flag - PETSC_FP_TRAP_ON, PETSC_FP_TRAP_OFF.
-
-   Options Database Keys:
-$  -fp_trap - turns on floating point trapping
 
 .keywords: floating point trap, overflow, divide-by-zero, invalid-operand
 @*/

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.10 1998/03/23 21:22:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.11 1998/04/03 23:15:54 bsmith Exp bsmith $";
 #endif
  
 
@@ -63,6 +63,8 @@ int PartitioningRegisterAllCalled = 0;
    Output Parameters:
 .  oname - number associated with the partitioning (for example PARTITIONING_CURRENT)
 
+   Not Collective
+
 .keywords: matrix, partitioning, register
 
 .seealso: PartitioningRegisterDestroy(), PartitioningRegisterAll()
@@ -89,6 +91,8 @@ int PartitioningRegister(PartitioningType name,PartitioningType *oname,char *sna
 #define __FUNC__ "PartitioningRegisterDestroy" 
 /*@C
    PartitioningRegisterDestroy - Frees the list of partitioning routines.
+
+  Not Collective
 
 .keywords: matrix, register, destroy
 
@@ -118,6 +122,8 @@ int PartitioningRegisterDestroy(void)
 .  meth - partitioner type (or use PETSC_NULL)
 .  name - name of partitioner (or use PETSC_NULL)
 
+   Not Collective
+
 .keywords: Partitioning, get, method, name, type
 @*/
 int PartitioningGetType(Partitioning partitioning,PartitioningType *meth,char **name)
@@ -141,6 +147,8 @@ int PartitioningGetType(Partitioning partitioning,PartitioningType *meth,char **
 
    Output Parameters:
 .   partitioning - the partitioning
+
+   Collective on Mat
 
    Options Database Keys:
    To specify the partitioning through the options database, use one of
@@ -186,6 +194,8 @@ int PartitioningApply(Partitioning matp,IS *partitioning)
 .  part - the partitioning context
 .  adj - the adjacency matrix
 
+   Collective on Partitioning and Mat
+
 .keywords: Partitioning, adjacency
 
 .seealso: PartitioningCreate()
@@ -206,6 +216,8 @@ int PartitioningSetAdjacency(Partitioning part,Mat adj)
 
    Input Parameters:
 .  part - the partitioning context
+
+   Collective on Partitioning
 
 .keywords: Partitioning, destroy, context
 
@@ -238,6 +250,7 @@ int PartitioningDestroy(Partitioning part)
    Output Parameter:
 .  newp - location to put the context
 
+   Collective on MPI_Comm
 
 .keywords: Partitioning, create, context
 
@@ -272,6 +285,8 @@ int PartitioningCreate(MPI_Comm comm,Partitioning *newp)
    Input Parameters:
 .  part - the partitioning context
 .  viewer - optional visualization context
+
+   Collective on Partitioning unless Viewer is VIEWER_STDOUT_SELF
 
    Note:
    The available visualization contexts include
@@ -322,6 +337,8 @@ int PartitioningView(Partitioning  part,Viewer viewer)
    Input Parameters:
 .  part - the partitioning context
 
+   Collective on Partitioning
+
 .keywords: Partitioning, help
 
 .seealso: 
@@ -352,6 +369,8 @@ int PartitioningPrintHelp(Partitioning  part)
    Input Parameter:
 .  part - the partitioning context.
 .  type - a known method
+
+   Collective on Partitioning
 
    Options Database Command:
 $  -partitioning_type  <type>
@@ -394,6 +413,8 @@ int PartitioningSetType(Partitioning part,PartitioningType type)
 
    Input Parameter:
 .  part - the partitioning context.
+
+   Collective on Partitioning
 
    Options Database Command:
 $  -partitioning_type  <type>

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.39 1998/04/03 23:14:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.40 1998/04/09 04:11:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -144,6 +144,8 @@ int PCShellSetApplyRichardson_Shell(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),v
 .  xin - input vector
 .  xout - output vector
 
+   Collective on PC
+
 .keywords: PC, shell, set, apply, user-provided
 
 .seealso: PCShellSetApplyRichardson()
@@ -170,6 +172,8 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
    Input Parameters:
 .  pc - the preconditioner context
 .  name - character string describing shell preconditioner
+
+   Not Collective
 
 .keywords: PC, shell, set, name, user-provided
 
@@ -200,6 +204,8 @@ int PCShellSetName(PC pc,char *name)
    Output Parameter:
 .  name - character string describing shell preconditioner
 
+   Not Collective
+
 .keywords: PC, shell, get, name, user-provided
 
 .seealso: PCShellSetName()
@@ -229,6 +235,8 @@ int PCShellGetName(PC pc,char **name)
 .  pc - the preconditioner context
 .  apply - the application-provided preconditioning routine
 .  ptr - pointer to data needed by this routine
+
+   Collective on PC
 
    Calling sequence of apply:
    int apply (void *ptr,Vec x,Vec b,Vec r,int maxits)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.95 1998/04/03 23:18:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.96 1998/04/09 04:18:39 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -125,6 +125,8 @@ $           m, or n cannot be PETSC_DECIDE.
 
    Output Parameter:
 .  inra - the resulting distributed array object
+
+   Collective on MPI_Comm
 
    Options Database Key:
 $  -da_view : call DAView() at the conclusion of DACreate2d()
@@ -892,6 +894,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   Input Parameters:
 .   da - the distributed array
 
+   Collective on DA
+
 .seealso: DACreate1d(), DACreate2d(), DACreate3d()
 
 .keywords: DA, help
@@ -926,6 +930,8 @@ int DAPrintHelp(DA da)
 
    Output Parameter:
 .  daref - refined distributed array
+
+   Collective on DA
 
    Note:
    Currently, refinement consists of just doubling the number of grid spaces

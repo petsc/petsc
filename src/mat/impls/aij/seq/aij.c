@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.256 1998/04/03 23:14:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.257 1998/04/09 04:12:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -860,6 +860,10 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   int        n, i, jrow,j;
 #endif
 
+#if defined(HAVE_PRAGMA_DISJOINT)
+#pragma disjoint(*x,*y,*v)
+#endif
+
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
@@ -1384,6 +1388,7 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatGetSubMatrixCall
   int          *starts,*j_new,*i_new,*aj = a->j, *ai = a->i,ii,*ailen = a->ilen;
   Scalar       *a_new,*mat_a;
   Mat          C;
+  PetscTruth   stride;
 
   PetscFunctionBegin;
   ierr = ISSorted(isrow,(PetscTruth*)&i);CHKERRQ(ierr);
@@ -1395,7 +1400,9 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatGetSubMatrixCall
   ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
   ierr = ISGetSize(iscol,&ncols); CHKERRQ(ierr);
 
-  if (ISStrideGetInfo(iscol,&first,&step) && step == 1) { /* no need to sort */
+  ierr = ISStrideGetInfo(iscol,&first,&step); CHKERRQ(ierr);
+  ierr = ISStride(iscol,&stride); CHKERRQ(ierr);
+  if (stride && step == 1) { 
     /* special case of contiguous rows */
     lens   = (int *) PetscMalloc((ncols+nrows+1)*sizeof(int)); CHKPTRQ(lens);
     starts = lens + ncols;
@@ -1466,7 +1473,6 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatGetSubMatrixCall
     /* Create and fill new matrix */
     if (scall == MAT_REUSE_MATRIX) {
       c = (Mat_SeqAIJ *)((*B)->data);
-
       if (c->m  != nrows || c->n != ncols) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong size");
       if (PetscMemcmp(c->ilen,lens, c->m *sizeof(int))) {
         SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong no of nonzeros");
@@ -1761,6 +1767,8 @@ extern int MatUseDXML_SeqAIJ(Mat);
 
    Output Parameter:
 .  A - the matrix 
+
+   Collective on MPI_Comm
 
    Notes:
    The AIJ format (also called the Yale sparse matrix format or

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.126 1998/03/12 23:15:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.127 1998/04/03 23:13:00 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -17,6 +17,8 @@ static char vcid[] = "$Id: vector.c,v 1.126 1998/03/12 23:15:22 bsmith Exp bsmit
    Input Parameter:
 .  v - the vector
 .  bs - the blocksize
+
+   Collective on Vec
 
    Notes:
      All vectors obtained by VecDuplicate() inherit the same blocksize
@@ -49,6 +51,8 @@ int VecSetBlockSize(Vec v,int bs)
 $     PETSC_TRUE if vector is valid;
 $     PETSC_FALSE otherwise.
 
+   Not Collective
+
 .keywords: vector, valid
 @*/
 int VecValid(Vec v,PetscTruth *flg)
@@ -71,6 +75,8 @@ int VecValid(Vec v,PetscTruth *flg)
 
    Output Parameter:
 .  alpha - the dot product
+
+   Collective on Vec
 
    Notes for Users of Complex Numbers:
    For complex vectors, VecDot() computes 
@@ -124,6 +130,8 @@ int VecDot(Vec x, Vec y, Scalar *val)
    Output Parameter:
 .  val - the norm 
 
+   Collective on Vec
+
 .keywords: vector, norm
 
 .seealso: VecDot(), VecTDot()
@@ -164,6 +172,8 @@ int VecNorm(Vec x,NormType type,double *val)
 .  val - the maximum component
 .  p - the location of val
 
+   Collective on Vec
+
    Notes:
    Returns the value PETSC_MIN and p = -1 if the vector is of length 0.
 
@@ -196,6 +206,8 @@ int VecMax(Vec x,int *p,double *val)
 .  val - the minimum component
 .  p - the location of val
 
+   Collective on Vec
+
    Notes: Returns the value PETSC_MAX and p = -1 if the vector is of length 0.
 
 .keywords: vector, minimum
@@ -226,6 +238,8 @@ int VecMin(Vec x,int *p,double *val)
 
    Output Parameter:
 .  val - the dot product
+
+   Collective on Vec
 
    Notes for Users of Complex Numbers:
    For complex vectors, VecTDot() computes the indefinite form
@@ -267,6 +281,8 @@ int VecTDot(Vec x,Vec y,Scalar *val)
    Output Parameter:
 .  x - the scaled vector
 
+   Collective on Vec
+
    Note:
    For a vector with n components, VecScale() computes 
 $      x[i] = alpha * x[i], for i=1,...,n.
@@ -297,6 +313,8 @@ int VecScale(Scalar *alpha,Vec x)
    Output Parameter:
 .  y - the copy
 
+   Collective on Vec
+
 .keywords: vector, copy
 
 .seealso: VecDuplicate()
@@ -325,6 +343,8 @@ int VecCopy(Vec x,Vec y)
 
    Output Parameter:
 .  x  - the vector
+
+   Collective on Vec
 
    Note:
    For a vector with n components, VecSet() computes
@@ -356,6 +376,8 @@ int VecSet(Scalar *alpha,Vec x)
 
    Output Parameter:
 .  x  - the vector
+
+   Collective on Vec
 
    Example of Usage:
 $    PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);
@@ -391,6 +413,8 @@ int VecSetRandom(PetscRandom rctx,Vec x)
    Output Parameter:
 .  y - output vector
 
+   Collective on Vec
+
 .keywords: vector, saxpy
 
 .seealso: VecAYPX(), VecMAXPY(), VecWAXPY()
@@ -420,6 +444,8 @@ int VecAXPY(Scalar *alpha,Vec x,Vec y)
 
    Output Parameter:
 .  y - output vector
+
+   Collective on Vec
 
 .keywords: vector, saxpy
 
@@ -452,6 +478,8 @@ int VecAXPBY(Scalar *alpha,Scalar *beta,Vec x,Vec y)
    Output Parameter:
 .  y - output vector
 
+   Collective on Vec
+
 .keywords: vector, saypx
 
 .seealso: VecAXPY(), VecWAXPY()
@@ -477,6 +505,8 @@ int VecAYPX(Scalar *alpha,Vec x,Vec y)
 
    Input Parameters:
 .  x, y  - the vectors
+
+   Collective on Vec
 
 .keywords: vector, swap
 @*/
@@ -505,6 +535,8 @@ int VecSwap(Vec x,Vec y)
 
    Output Parameter:
 .  w - the result
+
+   Collective on Vec
 
 .keywords: vector, waxpy
 
@@ -537,6 +569,8 @@ int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
    Output Parameter:
 .  w - the result
 
+   Collective on Vec
+
 .keywords: vector, multiply, componentwise, pointwise
 
 .seealso: VecPointwiseDivide()
@@ -566,6 +600,8 @@ int VecPointwiseMult(Vec x,Vec y,Vec w)
    Output Parameter:
 .  w - the result
 
+   Collective on Vec
+
 .keywords: vector, divide, componentwise, pointwise
 
 .seealso: VecPointwiseMult()
@@ -592,6 +628,8 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
 
    Output Parameter:
 .  newv - location to put new vector
+
+   Collective on Vec
 
    Notes:
    VecDuplicate() does not copy the vector, but rather allocates storage
@@ -623,6 +661,8 @@ int VecDuplicate(Vec v,Vec *newv)
    Input Parameters:
 .  v  - the vector
 
+   Collective on Vec
+
 .keywords: vector, destroy
 
 .seealso: VecDuplicate()
@@ -650,6 +690,8 @@ int VecDestroy(Vec v)
 
    Output Parameter:
 .  V - location to put pointer to array of vectors
+
+   Collective on Vec
 
    Notes:
    Use VecDestroyVecs() to free the space. Use VecDuplicate() to form a single
@@ -684,6 +726,8 @@ int VecDuplicateVecs(Vec v,int m,Vec **V)
 .  vv - pointer to array of vector pointers
 .  m - the number of vectors previously obtained
 
+   Collective on Vec
+
    Fortran Note:
    The Fortran interface is slightly different from that given below.
    See the Fortran chapter of the users manual and 
@@ -715,6 +759,8 @@ int VecDestroyVecs(Vec *vv,int m)
 .  ix - indices where to add
 .  y - array of values
 .  iora - either INSERT_VALUES or ADD_VALUES
+
+   Not Collective
 
    Notes: 
    x[ix[i]] = y[i], for i=0,...,ni-1.
@@ -759,6 +805,8 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 .  ix - indices where to add in block count, rather than element count
 .  y - array of values
 .  iora - either INSERT_VALUES or ADD_VALUES
+
+   Not Collective
 
    Notes: 
    x[ix[bs*i]+j] = y[bs*i+j], for j=0,...,bs, for i=0,...,ni-1. where bs was set with 
@@ -822,6 +870,8 @@ M*/
 .  x - vector
 .  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
 
+   Collective on Vec
+
    Notes: 
    All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
 
@@ -855,6 +905,8 @@ int VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
    Input Parameters:
 .  x - vector
 .  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
+
+   Collective on Vec
 
    Notes: 
    All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
@@ -890,6 +942,8 @@ int VecSetLocalToGlobalMappingBlocked(Vec x, ISLocalToGlobalMapping mapping)
 .  ix - indices where to add
 .  y - array of values
 .  iora - either INSERT_VALUES or ADD_VALUES
+
+   Not Collective
 
    Notes: 
    x[ix[i]] = y[i], for i=0,...,ni-1.
@@ -947,6 +1001,8 @@ int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 .  y - array of values
 .  iora - either INSERT_VALUES or ADD_VALUES
 
+   Not Collective
+
    Notes: 
    x[bs*ix[i]+j] = y[bs*i+j], for j=0,..bs-1, for i=0,...,ni-1.
    Where bs is set with VecSetBlockSize()
@@ -1000,6 +1056,8 @@ int VecSetValuesBlockedLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
    Input Parameter:
 .  vec - the vector
 
+   Collective on Vec
+
 .keywords: vector, begin, assembly, assemble
 
 .seealso: VecAssemblyEnd(), VecSetValues()
@@ -1026,6 +1084,8 @@ int VecAssemblyBegin(Vec vec)
 
    Input Parameter:
 .  vec - the vector
+
+   Collective on Vec
 
 .keywords: vector, end, assembly, assemble
 
@@ -1080,6 +1140,8 @@ int VecAssemblyEnd(Vec vec)
    Output Parameter:
 .  val - array of the dot products
 
+   Collective on Vec
+
    Notes for Users of Complex Numbers:
    For complex vectors, VecMTDot() computes the indefinite form
 $      val = (x,y) = y^T x,
@@ -1120,6 +1182,8 @@ int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
 
    Output Parameter:
 .  val - array of the dot products
+
+   Collective on Vec
 
    Notes for Users of Complex Numbers:
    For complex vectors, VecMDot() computes 
@@ -1163,6 +1227,8 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
    Output Parameter:
 .  y  - array of vectors
 
+   Collective on Vec
+
 .keywords: vector, saxpy, maxpy, multiple
 
 .seealso: VecAXPY(), VecWAXPY(), VecAYPX()
@@ -1195,6 +1261,8 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 
    Output Parameter:
 .  a - location to put pointer to the array
+
+   Not Collective
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
@@ -1229,6 +1297,8 @@ int VecGetArray(Vec x,Scalar **a)
 
    Output Parameter:
 .  a - location to put pointer to the array
+
+   Not Collective
 
    Fortran Note:
    This routine is not supported in Fortran.
@@ -1265,6 +1335,8 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
 .  n - the number of vectors
 .  a - location of pointer to arrays obtained from VecGetArrays()
 
+  Not Collective
+
    Fortran Note:
    This routine is not supported in Fortran.
 
@@ -1297,6 +1369,8 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 .  x - the vector
 .  a - location of pointer to array obtained from VecGetArray()
 
+   Not Collective
+
    Fortran Note:
    The Fortran interface is slightly different from that given below.
    See the users manual and petsc/src/vec/examples for details.
@@ -1326,6 +1400,8 @@ int VecRestoreArray(Vec x,Scalar **a)
    Input Parameters:
 .  v - the vector
 .  viewer - an optional visualization context
+
+   Collective on Vec unless Viewer is VIEWER_STDOUT_SELF
 
    Notes:
    The available visualization contexts include
@@ -1371,6 +1447,8 @@ int VecView(Vec v,Viewer viewer)
    Output Parameters:
 .  size - the global length of the vector
 
+   Not Collective
+
 .keywords: vector, get, size, global, dimension
 
 .seealso: VecGetLocalSize()
@@ -1398,6 +1476,8 @@ int VecGetSize(Vec x,int *size)
 
    Output Parameter:
 .  size - the length of the local piece of the vector
+
+   Not Collective
 
 .keywords: vector, get, dimension, size, local
 
@@ -1430,6 +1510,8 @@ int VecGetLocalSize(Vec x,int *size)
 .  low - the first local element
 .  high - one more than the last local element
 
+   Not Collective
+
   Note: The high argument is one more then the last element stored locally.
 
 .keywords: vector, get, range, ownership
@@ -1455,6 +1537,7 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 .  x - the vector
 .  op - the option
 
+   Collective on Vec
 
   Note: Currently the only option supported is
 $ VEC_IGNORE_OFF_PROC_ENTRIES which causes VecSetValues() to ignore 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.46 1997/11/03 04:49:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.47 1997/12/01 01:56:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -17,6 +17,8 @@ static char vcid[] = "$Id: snesj.c,v 1.46 1997/11/03 04:49:09 bsmith Exp bsmith 
 .  J - Jacobian matrix (not altered in this routine)
 .  B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
 .  flag - flag indicating whether the matrix sparsity structure has changed
+
+   Collective on SNES
 
    Options Database Key:
 $  -snes_fd
@@ -123,6 +125,8 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
 .  J - Hessian matrix (not altered in this routine)
 .  B - newly computed Hessian matrix to use with preconditioner (generally the same as J)
 .  flag - flag indicating whether the matrix sparsity structure has changed
+
+   Collective on SNES
 
    Options Database Key:
 $  -snes_fd

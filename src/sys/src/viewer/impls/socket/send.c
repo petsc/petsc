@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.67 1998/03/24 20:58:51 balay Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.68 1998/04/03 20:58:25 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -179,6 +179,8 @@ int SOCKCall_Private(char *hostname,int portnum)
 
    Output Parameter:
 .  lab - a context to use when communicating with the server
+
+   Collective on MPI_Comm
 
    Notes:
    Most users should employ the following commands to access the 

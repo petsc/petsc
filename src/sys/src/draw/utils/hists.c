@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: hists.c,v 1.5 1998/03/12 23:21:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: hists.c,v 1.6 1998/04/03 23:16:38 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -38,6 +38,8 @@ struct _p_DrawHist {
 
   Output Parameters:
 . hist - The histogram context
+
+  Collective over Draw
 
   Contributed by: Matthew Knepley
 
@@ -88,6 +90,8 @@ int DrawHistCreate(Draw win, int bins, DrawHist *hist)
 . hist - The histogram context.
 . dim  - The number of curves.
 
+  Not Collective (ignored except on processor 0 of DrawHist)
+
   Contributed by: Matthew Knepley
 
 .keywords:  draw, histogram, graph, create
@@ -118,6 +122,8 @@ int DrawHistSetNumberBins(DrawHist hist, int bins)
   Input Parameter:
 . hist - The histogram context.
 
+  Not Collective (ignored except on processor 0 of DrawHist)
+
   Contributed by: Matthew Knepley
 
 .keywords:  draw, histogram, graph, reset
@@ -142,6 +148,8 @@ int DrawHistReset(DrawHist hist)
 
   Input Parameter:
 . hist - The histogram context
+
+  Collective over DrawHist
 
   Contributed by: Matthew Knepley
 
@@ -180,6 +188,8 @@ int DrawHistDestroy(DrawHist hist)
   Input Parameters:
 . hist  - The histogram
 . value - The value 
+
+  Not Collective (ignored except on processor 0 of DrawHist)
 
   Contributed by: Matthew Knepley
 
@@ -239,6 +249,8 @@ int DrawHistAddValue(DrawHist hist, double value)
   Input Parameter:
 . hist - The histogram context
 
+  Not Collective (ignored except on processor 0 of DrawHist)
+
   Contributed by: Matthew Knepley
 
 .keywords:  draw, histogram, graph
@@ -247,13 +259,16 @@ int DrawHistDraw(DrawHist hist)
 {
   Draw     win;
   double   xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft, binRight,maxHeight;
-  int      numBins,numValues,i, p,ierr,bcolor, color;;
+  int      numBins,numValues,i, p,ierr,bcolor, color,rank;
 
   PetscFunctionBegin;
   if (hist && hist->cookie == DRAW_COOKIE && hist->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(hist, DRAW_COOKIE);
   if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
+
+  MPI_Comm_rank(hist->comm,&rank);
+  if (rank) PetscFunctionReturn(0);
 
   color = hist->color; 
   if (color == DRAW_ROTATE) {bcolor = 2;} else {bcolor = color;}
@@ -293,7 +308,7 @@ int DrawHistDraw(DrawHist hist)
     ierr = DrawLine(win,binRight,ymin,binRight,bins[i],DRAW_BLACK); CHKERRQ(ierr);
     ierr = DrawLine(win,binLeft,bins[i],binRight,bins[i],DRAW_BLACK);CHKERRQ(ierr);
   }
-  DrawSynchronizedFlush(win);
+  DrawFlush(win);
   DrawPause(win);
   PetscFunctionReturn(0);
 } 
@@ -307,6 +322,8 @@ int DrawHistDraw(DrawHist hist)
 . hist - The histogram context
 . color - one of the colors defined in draw.h or DRAW_ROTATE to make each bar a 
           different color
+
+  Not Collective (ignored except on processor 0 of DrawHist)
 
 .keywords:  draw, histogram, graph, color
 
@@ -330,6 +347,8 @@ int DrawHistSetColor(DrawHist hist, int color)
   Input Parameters:
 . hist - The histogram context
 . x_min,x_max,y_min,y_max - The limits
+
+  Not Collective (ignored except on processor 0 of DrawHist)
 
   Contributed by: Matthew Knepley
 
@@ -362,6 +381,8 @@ int DrawHistSetLimits(DrawHist hist, double x_min, double x_max, int y_min, int 
   Output Parameter:
 . axis - The axis context
 
+  Not Collective (ignored except on processor 0 of DrawHist)
+
   Contributed by: Matthew Knepley
 
 .keywords: draw, histogram, graph, get, axis
@@ -389,6 +410,8 @@ int DrawHistGetAxis(DrawHist hist, DrawAxis *axis)
 
   Output Parameter:
 . win  - The draw context
+
+  Not Collective, Draw is parallel if DrawHist is parallel
 
   Contributed by: Matthew Knepley
 

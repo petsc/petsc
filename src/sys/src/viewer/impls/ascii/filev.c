@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.69 1998/03/24 20:58:54 balay Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.70 1998/04/03 23:17:28 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -68,6 +68,8 @@ static int Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
   Input Parameters:
 .  comm - the MPI communicator to share the window viewer
 
+   Collective on MPI_Comm
+
   Note: Unlike almost all other PETSc routines this does not return 
    an error code. Usually used in the form
 $      XXXView(XXX object,VIEWER_STDOUT_(comm));
@@ -130,6 +132,8 @@ static int Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 
   Input Parameters:
 .  comm - the MPI communicator to share the window viewer
+
+   Collective on MPI_Comm
 
   Note: Unlike almost all other PETSc routines this does not return 
    an error code. Usually used in the form
@@ -214,6 +218,8 @@ int ViewerFlush_File(Viewer v)
 .   viewer - viewer context, obtained from ViewerFileOpenASCII()
 .   fd - file pointer
 
+    Not Collective
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -254,6 +260,8 @@ int ViewerGetFormat(Viewer viewer,int *format)
    Input Parameters:
 .  comm - the communicator
 .  name - the file name
+
+   Collective on MPI_Comm
 
    Output Parameter:
 .  lab - the viewer to use with the specified file
@@ -321,6 +329,8 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 .  format - the format
 .  char - optional object name
 
+   Collective on Viewer
+
    Notes:
    Available formats include
 $    VIEWER_FORMAT_ASCII_DEFAULT - default
@@ -370,6 +380,8 @@ int ViewerSetFormat(Viewer v,int format,char *name)
 .  format - the format
 .  char - optional object name
 
+   Collective on Viewer
+
    Notes:
    Available formats include
 $    VIEWER_FORMAT_ASCII_DEFAULT - default
@@ -418,6 +430,8 @@ int ViewerPushFormat(Viewer v,int format,char *name)
 
    Input Parameters:
 .  v - the viewer
+
+   Collective on Viewer
 
 .keywords: Viewer, file, set, format, push, pop
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.55 1998/04/03 23:13:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.56 1998/04/09 04:10:22 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -44,6 +44,8 @@ int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,double emax,double emin)
    Input Parameters:
 .  ksp - the Krylov space context
 .  emax, emin - the eigenvalue estimates
+
+   Collective on KSP
 
 .keywords: KSP, Chebyshev, set, eigenvalues
 @*/

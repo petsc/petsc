@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.73 1998/03/23 21:18:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.74 1998/04/09 04:10:48 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -35,6 +35,8 @@ $     0 to start debugger in initial window (zero makes no
 .           sense when using more than one processor.)
 .   display - name of display for opening xterm, or null.
 
+    Not Collective
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -61,6 +63,8 @@ int PetscSetDebugger(char *debugger, int xterm,char *display)
 /*@C
    PetscAttachDebugger - Attaches the debugger to the running process.
 
+   Not Collective
+
 .keywords: attach, debugger
 
 .seealso: PetscSetDebugger()
@@ -76,12 +80,10 @@ int PetscAttachDebugger(void)
     (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name\n");
     PetscFunctionReturn(1);
   }
-#if defined(PARCH_t3d) 
-  (*PetscErrorPrintf)("PETSC ERROR: Cray t3d cannot start debugger\n");
-  MPI_Finalize();
-  exit(0);
-#elif defined(PARCH_nt) 
-  (*PetscErrorPrintf)("PETSC ERROR: Windows NT cannot start debugger\n");
+#if defined(CANNOT_START_DEBUGGER) 
+  (*PetscErrorPrintf)("PETSC ERROR: System cannot start debugger\n");
+  (*PetscErrorPrintf)("PETSC ERROR: On Cray run program in Totalview debugger\n");
+  (*PetscErrorPrintf)("PETSC ERROR: On Windows run program in Developers Studio debugger\n");
   MPI_Finalize();
   exit(0);
 #else
@@ -290,6 +292,8 @@ int PetscAttachDebugger(void)
 .  number - the generic error number
 .  p - the specific error number
 .  ctx - error handler context
+
+   Not Collective
 
    Options Database Keys:
 $   -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb]

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.7 1998/04/03 23:14:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.8 1998/04/09 04:12:05 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -154,6 +154,8 @@ int PCSLESGetSLES_SLES(PC pc,SLES *sles)
    Input Parameters:
 .  pc - the preconditioner context
 
+   Collective on PC
+
    Options Database Key:
 $  -pc_sles_true
 
@@ -188,6 +190,8 @@ int PCSLESSetUseTrue(PC pc)
 
    Output Parameters:
 .  sles - the PC solver
+
+   Not Collective but SLES returned is parallel if PC was parallel
 
    You must call SLESSetUp() before calling PCSLESGetSLES().
 

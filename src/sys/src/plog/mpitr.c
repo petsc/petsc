@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpitr.c,v 1.11 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpitr.c,v 1.12 1997/11/03 04:43:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,6 +19,8 @@ static char vcid[] = "$Id: mpitr.c,v 1.11 1997/10/19 03:23:45 bsmith Exp bsmith 
 
    Input Parameter:
 .  fp  - file pointer.  If fp is NULL, stderr is assumed.
+
+   Collective on PETSC_COMM_WORLD
 
    Options Database Key:
 $  -mpidump : dumps MPI incompleteness during call to PetscFinalize()

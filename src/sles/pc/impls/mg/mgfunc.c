@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mgfunc.c,v 1.23 1997/10/19 03:24:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.24 1998/03/06 00:13:43 bsmith Exp bsmith $";
 #endif
 
 #include "src/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
@@ -17,6 +17,8 @@ static char vcid[] = "$Id: mgfunc.c,v 1.23 1997/10/19 03:24:36 bsmith Exp bsmith
  
    Output Parameter:
 .  r - location to store the residual
+
+   Collective on Mat and Vec
 
 .keywords: MG, default, multigrid, residual
 
@@ -46,6 +48,8 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
    Output Parameter:
 .  sles - the coarse grid solver context 
 
+   Not Collective
+
 .keywords: MG, multigrid, get, coarse grid
 @*/ 
 int MGGetCoarseSolve(PC pc,SLES *sles)  
@@ -68,6 +72,8 @@ int MGGetCoarseSolve(PC pc,SLES *sles)
 .  l        - the level to supply
 .  residual - function used to form residual (usually MGDefaultResidual)
 .  mat      - matrix associated with residual
+
+   Collective on PC and Mat
 
 .keywords:  MG, set, multigrid, residual, level
 
@@ -94,6 +100,8 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 .  mat - the interpolation operator
 .  l   - the level to supply
 
+   Collective on PC and Mat
+
 .keywords:  multigrid, set, interpolate, level
 
 .seealso: MGSetRestriction()
@@ -117,6 +125,8 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
 .  pc - the multigrid context 
 .  mat - the restriction matrix
 .  l - the level to supply
+
+   Collective on PC and Mat
 
 .keywords: MG, set, multigrid, restriction, level
 
@@ -146,6 +156,8 @@ int MGSetRestriction(PC pc,int l,Mat mat)
    Ouput Parameters:
 .  sles - the smoother
 
+   Not Collective, SLES returned is parallel if PC is 
+
 .keywords: MG, get, multigrid, level, smoother, pre-smoother, post-smoother
 
 .seealso: MGGetSmootherUp(), MGGetSmootherDown()
@@ -171,6 +183,8 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
 
    Ouput Parameters:
 .  sles - the smoother
+
+   Not Collective, SLES returned is parallel if PC is
 
 .keywords: MG, multigrid, get, smoother, up, post-smoother, level
 
@@ -212,6 +226,8 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
    Ouput Parameters:
 .  sles - the smoother
 
+   Not Collective, SLES returned is parallel if PC is
+
 .keywords: MG, multigrid, get, smoother, down, pre-smoother, level
 
 .seealso: MGGetSmootherUp(), MGGetSmoother()
@@ -234,6 +250,8 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
 .  pc - the multigrid context 
 .  l  - the level this is to be used for
 .  n  - the number of cycles
+
+   Collective on PC
 
 .keywords: MG, multigrid, set, cycles, V-cycle, W-cycle, level
 
@@ -260,6 +278,8 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
 .  l  - the level this is to be used for
 .  c  - the space
 
+  Collective on PC and Vec
+
 .keywords: MG, multigrid, set, right-hand-side, rhs, level
 
 .seealso: MGSetX(), MGSetR()
@@ -285,6 +305,8 @@ int MGSetRhs(PC pc,int l,Vec c)
 .  l - the level this is to be used for
 .  c - the space
 
+  Collective on PC and Vec
+
 .keywords: MG, multigrid, set, solution, level
 
 .seealso: MGSetRhs(), MGSetR()
@@ -309,6 +331,8 @@ int MGSetX(PC pc,int l,Vec c)
 .  pc - the multigrid context 
 .  l - the level this is to be used for
 .  c - the space
+
+  Collective on PC and Vec
 
 .keywords: MG, multigrid, set, residual, level
 @*/

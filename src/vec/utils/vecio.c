@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.37 1997/11/28 16:18:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.38 1997/12/01 01:52:36 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -20,11 +20,12 @@ static char vcid[] = "$Id: vecio.c,v 1.37 1997/11/28 16:18:15 bsmith Exp bsmith 
   with VecView().
 
   Input Parameters:
-. comm - MPI communicator
 . viewer - binary file viewer, obtained from ViewerFileOpenBinary()
 
   Output Parameter:
 . newvec - the newly loaded vector
+
+   Collective on Viewer 
 
   Notes:
   The input file must contain the full global vector, as

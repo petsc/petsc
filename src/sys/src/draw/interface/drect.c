@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drect.c,v 1.12 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drect.c,v 1.13 1998/03/12 23:20:42 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: drect.c,v 1.12 1997/10/19 03:27:39 bsmith Exp bsmith 
 .  draw - the drawing context
 .  xl,yl,xr,yr - the coordinates of the lower left, upper right corners
 .  c1,c2,c3,c4 - the colors of the four corners in counter clockwise order
+
+   Not Collective
 
 .keywords: draw, rectangle
 @*/

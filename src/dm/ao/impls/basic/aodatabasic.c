@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.23 1998/04/03 23:18:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.24 1998/04/09 04:19:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -849,6 +849,8 @@ static struct _AODataOps myops = {AODataSegmentAdd_Basic,
    Output Parameter:
 .  aoout - the new database
 
+   Collective on MPI_Comm
+
    Options Database Key:
 $   -ao_data_view : call AODataView() at the conclusion of AODataAdd()
 $   -ao_data_view_info : call AODataView() at the conclusion of AODataAdd()
@@ -888,6 +890,8 @@ int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
 
    Output Parameter:
 .  aoout - the new database
+
+   Collective on Viewer
 
    Options Database Key:
 $   -ao_data_view : call AODataView() at the conclusion of AODataLoadBasic()

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.141 1998/03/12 23:17:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.142 1998/04/03 23:14:05 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: precon.c,v 1.141 1998/03/12 23:17:20 bsmith Exp bsmit
 
    Input Parameter:
 .  pc - the preconditioner context
+
+   Collective on PC
 
 .keywords: PC, destroy
 
@@ -45,6 +47,8 @@ int PCDestroy(PC pc)
 
    Output Parameter:
 .  pc - location to put the preconditioner context
+
+   Collective on MPI_Comm
 
    Notes:
    The default preconditioner on one processor is PCILU with 0 fill on more 
@@ -105,6 +109,8 @@ static int apply_double_count = 0;
    Output Parameter:
 .  y - output vector
 
+   Collective on PC and Vec
+
 .keywords: PC, apply
 
 .seealso: PCApplyTrans(), PCApplyBAorAB()
@@ -140,6 +146,8 @@ int PCApply(PC pc,Vec x,Vec y)
 
    Output Parameter:
 .  y - output vector
+
+   Collective on PC and Vec
 
    Notes:
    Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
@@ -179,6 +187,8 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
    Output Parameter:
 .  y - output vector
 
+   Collective on PC and Vec
+
    Notes:
    Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
 
@@ -216,6 +226,8 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 
    Output Parameter:
 .  y - output vector
+
+   Collective on PC and Vec
 
 .keywords: PC, apply, transpose
 
@@ -256,6 +268,8 @@ $   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
 
    Output Parameter:
 .  y - output vector
+
+   Collective on PC and Vec
 
 .keywords: PC, apply, operator
 
@@ -319,6 +333,8 @@ $   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
    Output Parameter:
 .  y - output vector
 
+   Collective on PC and Vec
+
 .keywords: PC, apply, operator, transpose
 
 .seealso: PCApply(), PCApplyTrans(), PCApplyBAorAB()
@@ -370,6 +386,8 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
    Output Parameter:
 .  exists - PETSC_TRUE or PETSC_FALSE
 
+   Not Collective
+
 .keywords: PC, apply, Richardson, exists
 
 .seealso: PCApplyRichardson()
@@ -399,6 +417,8 @@ int PCApplyRichardsonExists(PC pc, PetscTruth *exists)
 
    Output Parameter:
 .  y - the solution
+
+  Collective on PC
 
    Notes: 
    Most preconditioners do not support this function. Use the command
@@ -440,6 +460,8 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
    Input parameters:
 .  pc - the preconditioner context
 
+   Collective on PC
+
 .keywords: PC, setup
 
 .seealso: PCCreate(), PCApply(), PCDestroy()
@@ -480,6 +502,8 @@ int PCSetUp(PC pc)
    Input Parameters:
 .  pc - the preconditioner context
 
+   Collective on PC
+
 .keywords: PC, setup, blocks
 
 .seealso: PCCreate(), PCApply(), PCDestroy(), PCSetUp()
@@ -510,6 +534,8 @@ int PCSetUpOnBlocks(PC pc)
 .  pc - the preconditioner context
 .  func - routine for modifying the submatrices
 .  ctx - optional user-defined context (may be null)
+
+   Collective on PC
 
    Calling sequence of func:
 .  func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
@@ -566,6 +592,8 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx
 .  submat - array of local submatrices (the entries of which may
             have been modified)
 
+   Collective on PC
+
    Notes:
    The user should NOT generally call this routine, as it will
    automatically be called within certain preconditioners (currently
@@ -607,6 +635,8 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
+
+   Collective on PC and Mat
 
    Notes: 
    The flag can be used to eliminate unnecessary work in the preconditioner 
@@ -700,6 +730,8 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 .  flag - flag indicating information about the preconditioner
           matrix structure.  See PCSetOperators() for details.
 
+   Not Collective though parallel Mats are returned if the PC is parallel
+
 .keywords: PC, get, operators, matrix, linear system
 
 .seealso: PCSetOperators()
@@ -722,6 +754,8 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
    Input Parameters:
 .  pc - the preconditioner context
 .  vec - the vector
+
+   Collective on PC and Vec
 
    Notes:
    The vector must be set so that the preconditioner knows what type
@@ -751,6 +785,8 @@ int PCSetVector(PC pc,Vec vec)
    Output parameters:
 .  mat - the factored matrix
 
+   Not Collective on PC though Mat is parallel if PC is parallel
+
 .keywords: PC, get, factored, matrix
 @*/
 int PCGetFactoredMatrix(PC pc,Mat *mat)
@@ -774,6 +810,8 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
    Input Parameters:
 .  pc - the preconditioner context
 .  prefix - the prefix string to prepend to all PC option requests
+
+   Collective on PC
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -803,6 +841,8 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
    Input Parameters:
 .  pc - the preconditioner context
 .  prefix - the prefix string to prepend to all PC option requests
+
+   Collective on PC
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -835,6 +875,8 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
    Output Parameters:
 .  prefix - pointer to the prefix string used, is returned
 
+   Not Collective
+
 .keywords: PC, get, options, prefix, database
 
 .seealso: PCSetOptionsPrefix(), PCAppendOptionsPrefix()
@@ -859,6 +901,8 @@ int PCGetOptionsPrefix(PC pc,char **prefix)
    Input Parameters:
 .  pc - the preconditioner context
 .  ksp - the Krylov subspace context
+
+   Collective on PC
 
    Sample of Usage:
 $    PCPreSolve(pc,ksp);
@@ -895,6 +939,8 @@ int PCPreSolve(PC pc,KSP ksp)
 .  pc - the preconditioner context
 .  ksp - the Krylov subspace context
 
+   Collective on PC
+
    Sample of Usage:
 $    PCPreSolve(pc,ksp);
 $    KSPSolve(ksp,its);
@@ -924,6 +970,8 @@ int PCPostSolve(PC pc,KSP ksp)
    Input Parameters:
 .  PC - the PC context
 .  viewer - optional visualization context
+
+   Collective on PC unless Viewer is VIEWER_STDOUT_SELF  
 
    Note:
    The available visualization contexts include

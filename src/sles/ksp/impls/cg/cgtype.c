@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgtype.c,v 1.8 1998/03/20 22:47:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgtype.c,v 1.9 1998/04/03 23:13:29 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: cgtype.c,v 1.8 1998/03/20 22:47:04 bsmith Exp bsmith 
 .   type - the variant of CG to use, one of
 $     KSP_CG_HERMITIAN - complex, Hermitian matrix (default)
 $     KSP_CG_SYMMETRIC - complex, symmetric matrix
+
+    Collective on KSP
 
     Options Database Keys:
 $   -ksp_cg_Hermitian

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.95 1998/03/12 23:20:51 balay Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.96 1998/04/03 21:47:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -187,6 +187,8 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
    Output Parameter:
 .  vv - the vector
  
+   Collective on MPI_Comm
+
    Notes:
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
@@ -231,6 +233,8 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
    Output Parameter:
 .  vv - the vector
  
+   Collective on MPI_Comm
+
    Notes:
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
@@ -276,6 +280,8 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
     Output Parameter:
 .    l - the local (ghosted) representation
 
+    Not Collective
+
      Notes:
        This routine does not actually update the ghost values, it returns a 
      sequential vector that includes the locations for the ghost values and their
@@ -318,6 +324,8 @@ int VecGhostGetLocalRepresentation(Vec g,Vec *l)
 .    g - the global vector
 .    l - the local (ghosted) representation
 
+    Not Collective
+
      Notes:
        This routine does not actually update the ghost values, it allow returns a 
      sequential vector that includes the locations for the ghost values and their
@@ -345,6 +353,8 @@ int VecGhostRestoreLocalRepresentation(Vec g,Vec *l)
 .   g - the vector (obtained with VecCreateGhost() or VecDuplicate())
 .   insertmode - one of ADD_VALUES or INSERT_VALUES
 .   scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
+
+   Collective on Vec
 
    Notes:
 $     To update the ghost regions with correct values from the owning processor use
@@ -389,6 +399,8 @@ int VecGhostUpdateBegin(Vec g, InsertMode insertmode,ScatterMode scattermode)
 .   g - the vector (obtained with VecCreateGhost() or VecDuplicate())
 .   insertmode - one of ADD_VALUES or INSERT_VALUES
 .   scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
+
+   Collective on Vec
 
    Notes:
 $     To update the ghost regions with correct values from the owning processor use
@@ -438,6 +450,8 @@ int VecGhostUpdateEnd(Vec g, InsertMode insertmode,ScatterMode scattermode)
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
  
+   Collective on MPI_Comm
+
    Notes:
     Use VecGhostGetLocalRepresentation() to access the local, ghosted representation 
     of the vector.
@@ -506,6 +520,8 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Sca
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
  
+   Collective on MPI_Comm
+
    Notes:
     Use VecGhostGetLocalRepresentation() to access the local, ghosted representation 
     of the vector.

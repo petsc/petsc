@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.181 1998/03/24 20:38:45 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.182 1998/03/31 23:43:03 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -41,6 +41,8 @@ int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     Input Parameter:
 .   flag - PETSC_TRUE or PETSC_FALSE
 
+    Not Collective
+
     Options Database Key:
 $    -log_info 
 
@@ -64,6 +66,8 @@ int PLogInfoAllow(PetscTruth flag)
     Input Parameter:
 .   objclass - for example, MAT_COOKIE, SNES_COOKIE, etc.
 
+    Not Collective
+
 .seealso: PLogInfoActivateClass(), PLogInfo(), PLogInfoAllow()
 @*/
 int PLogInfoDeactivateClass(int objclass)
@@ -85,6 +89,8 @@ int PLogInfoDeactivateClass(int objclass)
 
     Input Parameter:
 .   objclass - for example, MAT_COOKIE, SNES_COOKIE, etc.
+
+    Not Collective
 
 .seealso: PLogInfoDeactivateClass(), PLogInfo(), PLogInfoAllow()
 @*/
@@ -414,6 +420,8 @@ static PLogDouble  EventsType[10][PLOG_USER_EVENT_HIGH][6];
 .   stage - the stage from 0 to 9 inclusive
 .   sname - the name to associate with that stage
 
+    Not Collective
+
     Notes:
     The string information (for stage names) is not copied, so the user
     should NOT change any strings specified here.
@@ -436,6 +444,8 @@ int PLogStageRegister(int stage, char *sname)
 
    Input Parameters:
 .  stage - stage on which to log (0 <= stage <= 9)
+
+    Not Collective
 
    Example of Usage:
    If the option -log_sumary is used to run the program containing the 
@@ -491,6 +501,8 @@ int PLogStagePush(int stage)
 /*@C
    PLogStagePop - Users can log up to 10 stages within a code by using
    -log_summary in conjunction with PLogStagePush() and PLogStagePop().
+
+    Not Collective
 
    Example of Usage:
    If the option -log_sumary is used to run the program containing the 
@@ -820,6 +832,8 @@ int PLogObjectState(PetscObject obj,char *format,...)
     PLogSet - Sets the logging functions called at the beginning and ending 
               of every event.
 
+    Not Collective
+
    Input Parameters:
 .    b - function called at beginning of event
 .    e - function called at end of event
@@ -841,6 +855,8 @@ int PLogSet(int (*b)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
 /*@C
    PLogAllBegin - Turns on extensive logging of objects and events. Logs 
    all events. This creates large log files and slows the program down.
+
+    Not Collective
 
    Options Database Keys:
 $  -log_all : Prints extensive log information (for code compiled
@@ -878,6 +894,8 @@ int PLogAllBegin(void)
    PLogDestroy - Destroys the object and event logging data and resets the 
    global counters. 
 
+    Not Collective
+
    Notes:
    This routine should not usually be used by programmers. Instead employ 
    PLogStagePush() and PLogStagePop().
@@ -911,6 +929,8 @@ int PLogDestroy(void)
     PLogBegin - Turns on logging of objects and events. This logs flop
     rates and object creation and should not slow programs down too much.
     This routine may be called more than once.
+
+    Not Collective
 
    Options Database Keys:
 $  -log : Prints basic log information (for code compiled 
@@ -948,6 +968,8 @@ int PLogBegin(void)
     Input Parameter:
 .   file - file to print trace in (e.g. stdout)
 
+    Not Collective
+
     Options Database Keys:
 $   -log_trace [filename]:
 
@@ -979,6 +1001,8 @@ int PLogTraceBegin(FILE *file)
 
    Input Parameter:
 .  name - an optional file name
+
+   Collective on PETSC_COMM_WORLD
 
    Options Database Keys:
 $  -log : Prints basic log information (for code compiled 
@@ -1060,6 +1084,8 @@ extern int  PLogEventColorMalloced[];
             
     Output Parameter:
 .   e -  event id for use with PLogEventBegin() and PLogEventEnd().
+
+    Not Collective
 
     Notes: 
     PETSc automatically logs library events if the code has been
@@ -1159,6 +1185,8 @@ int PLogEventRegisterDestroy_Private(void)
   Input Parameter:
 .   event - integer indicating event
 
+   Not Collective
+
    Example of Usage:
 $
 $     PetscInitialize(int *argc,char ***args,0,0);
@@ -1190,7 +1218,9 @@ int PLogEventDeactivate(int event)
   Input Parameter:
 .   event - integer indicating event
 
-   Example of Usage:
+  Not Collective
+
+  Example of Usage:
 $
 $     PetscInitialize(int *argc,char ***args,0,0);
 $     PLogEventDeactivate(VEC_SetValues);
@@ -1219,6 +1249,8 @@ int PLogEventActivate(int event)
    Input Parameter:
 .  file - an optional file name
 .  comm - MPI communicator (one processor prints)
+
+   Collective over PETSC_COMM_WORLD
 
    Options Database Keys:
 $  -log_summary : Prints summary of log information (for code
@@ -1527,6 +1559,8 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
    Output Parameter:
    returns the number of flops as a double.
 
+   Not Collective
+
    Notes:
    A global counter logs all PETSc flop counts.  The user can use
    PLogFlops() to increment this counter to include flops for the 
@@ -1559,6 +1593,8 @@ int PetscGetFlops(PLogDouble *flops)
 
   Input Parameter:
 .    cookie - for example MAT_COOKIE, SNES_COOKIE,
+
+  Not Collective
 
 .seealso: PLogInfoActivate(),PLogInfo(),PLogInfoAllow(),PLogEventDeactivateClass(),
           PLogEventActivate(),PLogEventDeactivate()
@@ -1658,6 +1694,8 @@ int PLogEventActivateClass(int cookie)
 
   Input Parameter:
 .    cookie - for example MAT_COOKIE, SNES_COOKIE,
+
+  Not Collective
 
 .seealso: PLogInfoActivate(),PLogInfo(),PLogInfoAllow(),PLogEventActivateClass(),
           PLogEventActivate(),PLogEventDeactivate()
@@ -1772,6 +1810,8 @@ int PLogObjectState(PetscObject obj,char *format,...)
 
    Output Parameter:
 .  v - time counter
+
+   Not Collective
 
    Usage: 
 $     PLogDouble v1,v2,elapsed_time;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.103 1998/04/03 23:17:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.104 1998/04/09 04:18:17 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -156,6 +156,8 @@ int SNESDestroy_EQ_LS(SNES snes)
 .  ynorm - 2-norm of search length
 .  flag - set to 0, indicating a successful line search
 
+   Collective on SNES and Vec
+
    Options Database Key:
 $  -snes_eq_ls basic
 
@@ -207,6 +209,8 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 .  ynorm - not changed
 .  flag - set to 0, indicating a successful line search
 
+   Collective on SNES and Vec
+
    Options Database Key:
 $  -snes_eq_ls basicnonorms
 
@@ -249,6 +253,8 @@ int SNESNoLineSearchNoNorms(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 .  gnorm - 2-norm of g
 .  ynorm - 2-norm of search length
 .  flag - 0 if line search succeeds; -1 on failure.
+
+   Collective on SNES
 
    Options Database Key:
 $  -snes_eq_ls cubic
@@ -422,6 +428,8 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
 .  ynorm - 2-norm of search length
 .  flag - 0 if line search succeeds; -1 on failure.
 
+   Collective on SNES and Vec
+
    Options Database Key:
 $  -snes_eq_ls quadratic
 
@@ -537,6 +545,8 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
    Input Parameters:
 .  snes - nonlinear context obtained from SNESCreate()
 .  func - pointer to int function
+
+   Collective on SNES
 
    Available Routines:
 .  SNESCubicLineSearch() - default line search

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.19 1997/12/01 01:52:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.20 1998/03/12 23:15:10 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: isltog.c,v 1.19 1997/12/01 01:52:33 bsmith Exp bsmith
     Input Parameters:
 .   ltog - local to global mapping
 
-   Collective on ISLocalToGlobalMapping and Viewer
+   Not Collective
 
 .keywords: IS, local-to-global mapping, create
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.67 1998/04/03 23:12:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.68 1998/04/09 04:08:32 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -63,6 +63,8 @@ int ISInvertPermutation_Stride(IS is, IS *perm)
 .  first - the first index
 .  step - the stride width
 
+   Not Collective
+
    Notes:
    Returns info on stride index set. This is a pseudo-public function that
    should not be needed by most users.
@@ -96,6 +98,8 @@ int ISStrideGetInfo(IS is,int *first,int *step)
 
    Output Parameters:
 .  flag - either PETSC_TRUE or PETSC_FALSE
+
+   Not Collective
 
 .keywords: IS, index set, stride, get, information
 
@@ -246,6 +250,12 @@ static struct _ISOps myops = { ISGetSize_Stride,
 
    Output Parameter:
 .  is - the new index set
+
+   Collective on MPI_Comm
+
+   Notes: When comm is not MPI_COMM_SELF the operations on IS are NOT
+          conceptually the same as MPI_Group operations. The IS are 
+          distributed sets of indices. 
 
 .keywords: IS, index set, create, stride
 

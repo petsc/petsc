@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spartition.c,v 1.5 1997/11/03 04:46:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spartition.c,v 1.6 1998/03/23 21:22:00 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -13,6 +13,8 @@ extern int PartitioningCreate_Parmetis(Partitioning);
 #define __FUNC__ "PartitioningRegisterAll" 
 /*@C
   PartitioningRegisterAll - Registers all of the matrix Partitioning routines in PETSc.
+
+  Not Collective
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and 
