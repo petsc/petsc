@@ -1,9 +1,16 @@
-function [varargout] = PetscBinaryRead(filename)
+function [varargout] = PetscBinaryRead(file)
 %
 %  Reads in PETSc binary file matrices or vectors
-%  emits as Matlab sparse matrice or vectors
+%  emits as Matlab sparse matrice or vectors.
 %
-fd = fopen(filename,'r','ieee-be');
+%  Argument may be file name (string) or matlab
+%  file descriptor.
+%
+   
+if ischar(file) fd = fopen(file,'r','ieee-be');
+else            fd = file;
+end
+   
 for l=1:nargout
   header = fread(fd,1,'int32');
   if isempty(header)
@@ -46,4 +53,4 @@ for l=1:nargout
      varargout(l) = {b};
   end
 end
-fclose(fd);
+if ischar(file) fclose(fd); end;
