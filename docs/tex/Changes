@@ -18,6 +18,8 @@ add to it).
     Fixed bugs in MatReorderForNonzeroDiagonal() and made it more
     robust.   
 
+    Fixed bugs in factorization for AIJ matrices with variable size
+    inodes
    
 
   KSP
@@ -45,6 +47,8 @@ add to it).
     Changed ViewerDrawOpenX() to ViewerDrawOpen()
 
     Changed ViewerFileOpenBinary() to ViewerBinaryOpen()
+
+    Changed ViewerDrawOpenX() to ViewerDrawOpen()
 
     Remove the gvec directory from the distribution. If you are using this
  please let us and know and we can provide it or provide alternative code

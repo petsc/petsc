@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.83 1998/11/21 01:05:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.84 1998/11/24 04:12:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -11,8 +11,10 @@ static char vcid[] = "$Id: da3.c,v 1.83 1998/11/21 01:05:18 bsmith Exp bsmith $"
 #include "pinclude/pviewer.h"
 #include <math.h>
 
-#if defined(HAVE_AMS)
+#if defined (HAVE_AMS)
+EXTERN_C_BEGIN
 extern int AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
+EXTERN_C_END
 #endif
 
 #undef __FUNC__  
@@ -234,6 +236,19 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   MPI_Comm_size(comm,&size); 
   MPI_Comm_rank(comm,&rank); 
 
+  if (m != PETSC_DECIDE) {
+    if (m < 1) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in X direction");}
+    else if (m > size) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in X direction");}
+  }
+  if (n != PETSC_DECIDE) {
+    if (n < 1) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in Y direction");}
+    else if (n > size) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in Y direction");}
+  }
+  if (p != PETSC_DECIDE) {
+    if (p < 1) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in Z direction");}
+    else if (p > size) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in Z direction");}
+  }
+
   /* Partition the array among the processors */
   if (m == PETSC_DECIDE && n != PETSC_DECIDE && p != PETSC_DECIDE) {
     m = size/(n*p);
@@ -443,7 +458,9 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x*y*z,PETSC_DECIDE,&global); CHKERRQ(ierr);
+  ierr = VecSetBlockSize(global,w);CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),&local);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(local,w);CHKERRQ(ierr);
 
   /* compose the DA into the vectors so they have access to the 
      distribution information */
