@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.231 2000/04/09 04:34:38 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.232 2000/04/12 04:21:29 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -823,8 +823,7 @@ int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,Pets
     if (flg) *flg = PETSC_TRUE;
     if (!value) {
       *ivalue = PETSC_TRUE;
-    }
-    else {
+    } else {
       *ivalue = PETSC_TRUE;
       ierr = PetscStrcmp(value,"TRUE",&istrue);CHKERRQ(ierr);
       if (istrue) PetscFunctionReturn(0);
