@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.50 2001/04/25 15:18:48 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.51 2001/05/15 03:13:58 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -216,6 +216,10 @@ static char **PetscGlobalArgs = 0;
 -  args - the command line arguments
 
    Level: intermediate
+
+   Notes:
+      This is usually used to pass the command line arguments into other libraries
+   that are called internally deep in PETSc or the application.
 
    Concepts: command line arguments
    
