@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.45 2000/11/03 18:39:54 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.46 2000/11/05 20:01:21 hzhang Exp hzhang $*/
 /*
     Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -695,6 +695,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering(Mat A,Mat *B)
   MatScalar          *u,*d,*w,*wp;
 
   PetscFunctionBegin;
+  printf("called FactorNumeric_SeqSBAIJ_7_NaturalOrdering\n");
   /* initialization */
   w  = (MatScalar*)PetscMalloc(49*mbs*sizeof(MatScalar));CHKPTRQ(w);
   ierr = PetscMemzero(w,49*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
@@ -1257,6 +1258,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat A,Mat *B)
   MatScalar          *u,*d,*w,*wp;
 
   PetscFunctionBegin;
+  printf("called FactorNumeric_SeqSBAIJ_6_NaturalOrdering\n");
   /* initialization */
   w  = (MatScalar*)PetscMalloc(36*mbs*sizeof(MatScalar));CHKPTRQ(w);
   ierr = PetscMemzero(w,36*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
@@ -1741,6 +1743,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat A,Mat *B)
   MatScalar          *u,*d,*rtmp,*rtmp_ptr;
 
   PetscFunctionBegin;
+  printf("called FactorNumeric_SeqSBAIJ_5_NaturalOrdering\n");
   /* initialization */
   rtmp  = (MatScalar*)PetscMalloc(25*mbs*sizeof(MatScalar));CHKPTRQ(rtmp);
   ierr = PetscMemzero(rtmp,25*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
@@ -1947,6 +1950,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat A,Mat *B)
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
 
   PetscFunctionBegin;
+  printf("called FactorNumeric_SeqSBAIJ_4_NaturalOrdering\n");
   /* initialization */
   rtmp  = (MatScalar*)PetscMalloc(16*mbs*sizeof(MatScalar));CHKPTRQ(rtmp);
   ierr = PetscMemzero(rtmp,16*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
@@ -2333,6 +2337,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat A,Mat *B)
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
 
   PetscFunctionBegin;
+  /* printf("called FactorNumeric_SeqSBAIJ_3\n"); */
   /* initialization */
   rtmp  = (MatScalar*)PetscMalloc(9*mbs*sizeof(MatScalar));CHKPTRQ(rtmp);
   ierr = PetscMemzero(rtmp,9*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
@@ -2522,6 +2527,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat A,Mat *B)
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
 
   PetscFunctionBegin;
+  printf("called FactorNumeric_SeqSBAIJ_3_NaturalOrdering\n");
   /* initialization */
   rtmp  = (MatScalar*)PetscMalloc(9*mbs*sizeof(MatScalar));CHKPTRQ(rtmp);
   ierr = PetscMemzero(rtmp,9*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
@@ -2675,7 +2681,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
 
   PetscFunctionBegin;
-  /* printf("called Numeric_SeqSBAIJ_2\n"); */
+  /* printf("called FactorNumeric_SeqSBAIJ_2\n"); */
   /* initialization */
   /* il and jl record the first nonzero element in each row of the accessing 
      window U(0:k, k:mbs-1).
@@ -2849,7 +2855,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
 
   PetscFunctionBegin;
-  /* printf("called Numeric_SeqSBAIJ_2_NaturalOrdering\n"); */
+  printf("called FactorNumeric_SeqSBAIJ_2_NaturalOrdering\n"); 
   /* initialization */
   /* il and jl record the first nonzero element in each row of the accessing 
      window U(0:k, k:mbs-1).
