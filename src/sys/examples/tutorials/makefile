@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.16 1998/04/28 15:15:39 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.17 1998/04/29 00:46:06 balay Exp balay $ 
 
 ALL:
 
@@ -39,7 +39,7 @@ ex3: ex3.o
 	${RM} -f ex3.o
 
 ex3f: ex3f.o 
-	-${FLINKER} -o ex3f ex3f.o  ${PETSC__FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex3f ex3f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
 	${RM} -f ex3f.o
 
 #
