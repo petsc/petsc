@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.91 2001/04/19 17:27:08 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.92 2001/04/19 17:32:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
@@ -129,12 +129,12 @@ EXTERN_C_BEGIN
     endif
 */
 
-void PETSC_STDCALL petsctrspace_(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDouble *maxs, int *ierr )
+void PETSC_STDCALL petsctrspace_(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDouble *maxs, int *ierr)
 {
   *ierr = PetscTrSpace(space,fr,maxs);
 }
 
-void PETSC_STDCALL petscgetresidentsetsize_(PetscLogDouble *foo, int *ierr )
+void PETSC_STDCALL petscgetresidentsetsize_(PetscLogDouble *foo, int *ierr)
 {
   *ierr = PetscGetResidentSetSize(foo);
 }
@@ -145,12 +145,12 @@ void PETSC_STDCALL petscoffsetfortran_(Scalar *x,Scalar *y,int *shift,int *ierr)
   *shift = y - x;
 }
 
-void PETSC_STDCALL petscgettime_(PetscLogDouble *t, int *ierr )
+void PETSC_STDCALL petscgettime_(PetscLogDouble *t, int *ierr)
 {
   *ierr = PetscGetTime(t);
 }
 
-void PETSC_STDCALL petscgetcputime_(PetscLogDouble *t, int *ierr )
+void PETSC_STDCALL petscgetcputime_(PetscLogDouble *t, int *ierr)
 {
   *ierr = PetscGetCPUTime(t);
 }

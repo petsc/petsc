@@ -1,4 +1,4 @@
-/*$Id: zda.c,v 1.43 2001/04/18 22:16:15 balay Exp bsmith $*/
+/*$Id: zda.c,v 1.44 2001/04/25 14:56:44 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -68,16 +68,14 @@ void PETSC_STDCALL dagetinterpolation_(DA *dac,DA *daf,Mat *A,Vec *scale,int *ie
   *ierr = DAGetInterpolation(*dac,*daf,A,scale);
 }
 
-void PETSC_STDCALL dasetfieldname_(DA *da,int *nf,CHAR name PETSC_MIXED_LEN(len),
-                                   int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL dasetfieldname_(DA *da,int *nf,CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(name,len,t);
   *ierr = DASetFieldName(*da,*nf,t);
   FREECHAR(name,t);
 }
-void PETSC_STDCALL dagetfieldname(DA *da,int *nf,CHAR name PETSC_MIXED_LEN(len),
-                                  int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL dagetfieldname(DA *da,int *nf,CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *tname;
 
