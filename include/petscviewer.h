@@ -144,7 +144,7 @@ EXTERN int PetscPLAPACKInitializePackage(char *);
 EXTERN int PetscPLAPACKFinalizePackage();
 
 EXTERN int PetscViewerMathematicaInitializePackage(char *);
-EXTERN int PetscViewerMathematicaFinalizePackage();
+EXTERN int PetscViewerMathematicaFinalizePackage(void);
 EXTERN int PetscViewerMathematicaGetName(PetscViewer, const char **);
 EXTERN int PetscViewerMathematicaSetName(PetscViewer, const char []);
 EXTERN int PetscViewerMathematicaClearName(PetscViewer);

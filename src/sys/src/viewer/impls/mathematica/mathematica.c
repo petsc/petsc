@@ -60,7 +60,7 @@ int PetscViewerMathematicaInitializePackage(char *path) {
 .keywords: Petsc, destroy, package, mathematica
 .seealso: PetscFinalize()
 @*/
-int PetscViewerMathematicaFinalizePackage(char *path) {
+int PetscViewerMathematicaFinalizePackage(void) {
   PetscFunctionBegin;
 #ifdef PETSC_HAVE_MATHEMATICA
   if (mathematicaEnv != PETSC_NULL) MLDeinitialize((MLEnvironment) mathematicaEnv);
