@@ -434,7 +434,7 @@ class LinkSharedLibrary (Action):
       for lib in self.extraLibraries.getFiles():
         (dir, file) = os.path.split(lib)
         (base, ext) = os.path.splitext(file)
-        command += '-L'+dir+' -l'+base
+        command += ' -L'+dir+' -l'+base[3:]
       self.executeShellCommand(command)
       map(os.remove, os.listdir(linkDir))
       os.chdir(oldDir)
