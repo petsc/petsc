@@ -230,7 +230,7 @@ PetscErrorCode PetscCompareInitialize(double tol)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,i,*gflag,mysize;
-  char           pname[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
+  char           pname[PETSC_MAX_PATH_LEN],bname[PETSC_MAX_PATH_LEN];
   MPI_Group      group_all,group_sub;
   PetscTruth     work;
 
@@ -241,14 +241,14 @@ PetscErrorCode PetscCompareInitialize(double tol)
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscStrcpy(basename,pname);CHKERRQ(ierr);
+    ierr = PetscStrcpy(bname,pname);CHKERRQ(ierr);
   }
 
   /* broadcase name from first processor to all processors */
-  ierr = MPI_Bcast(basename,PETSC_MAX_PATH_LEN,MPI_CHAR,0,MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(bname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,MPI_COMM_WORLD);CHKERRQ(ierr);
 
   /* determine what processors belong to my group */
-  ierr = PetscStrcmp(pname,basename,&work);CHKERRQ(ierr);
+  ierr = PetscStrcmp(pname,bname,&work);CHKERRQ(ierr);
 
   gflag = (int*)malloc(size*sizeof(PetscMPIInt));
   ierr = MPI_Allgather(&work,1,MPI_INT,gflag,1,MPI_INT,MPI_COMM_WORLD);CHKERRQ(ierr);

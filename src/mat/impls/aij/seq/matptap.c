@@ -164,14 +164,13 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscObjectContainer container;
   FreeSpaceList        free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*c;
+  Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ           *p_loc,*p_oth;
   PetscInt             *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pti,*ptj,*ptJ,*ajj,*pjj;
   PetscInt             *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,nnz,cstart=a->cstart,cend=a->cend,col; 
   PetscInt             pm=P->m,pn=P->n,nlnk,*lnk,*ci,*cj,*cji,*ptaj; 
   PetscInt             aN=A->N,am=A->m,pN=P->N;
   PetscInt             i,j,k,ptnzi,arow,anzj,prow,pnzj,cnzi;
-  MatScalar            *ca;
   PetscBT              lnkbt;
   PetscInt             prstart,prend,nprow_loc,nprow_oth;
   PetscInt             *ptadenserow_loc,*ptadenserow_oth,*ptasparserow_loc,*ptasparserow_oth; 

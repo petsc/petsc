@@ -1269,7 +1269,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   PetscErrorCode ierr;
   int         *rip,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
   int         *jutmp,bs = a->bs,bs2=a->bs2;
-  int         m,realloc = 0,*levtmp;
+  int         m,reallocs = 0,*levtmp;
   int         *prowl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd,*jl;
   int         incrlev,*lev,shift,prow,nz;
   int         *il,ili,nextprow;
@@ -1413,7 +1413,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
       ierr     = PetscMemcpy(jutmp,lev,(iu[k])*sizeof(int));CHKERRQ(ierr); 
       ierr     = PetscFree(lev);CHKERRQ(ierr);       
       lev      = jutmp;
-      realloc += 2; /* count how many times we realloc */
+      reallocs += 2; /* count how many times we realloc */
     }
 
     /* save nonzero structure of k-th row in ju */
@@ -1431,7 +1431,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
 
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",realloc,f,af);
+    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_cholesky_fill %g or use \n",af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCCholeskySetFill(pc,%g);\n",af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:for best performance.\n");
@@ -1476,7 +1476,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   b->factor_zeropivot = info->zeropivot;
 
   (*B)->factor                 = FACTOR_CHOLESKY;
-  (*B)->info.factor_mallocs    = realloc;
+  (*B)->info.factor_mallocs    = reallocs;
   (*B)->info.fill_ratio_given  = f;
   if (ai[mbs] != 0) {
     (*B)->info.fill_ratio_needed = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
@@ -1599,7 +1599,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
       ierr     = PetscMemcpy(jutmp,lev,(iu[k]-shift)*sizeof(int));CHKERRQ(ierr); 
       ierr     = PetscFree(lev);CHKERRQ(ierr);       
       lev      = jutmp;
-      realloc += 2; /* count how many times we realloc */
+      reallocs += 2; /* count how many times we realloc */
     }
 
     /* save nonzero structure of k-th row in ju */
@@ -1614,7 +1614,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
-    PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",realloc,f,af);
+    PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af);
     PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Run with -pc_icc_fill %g or use \n",af);
     PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:PCICCSetFill(pc,%g);\n",af);
     PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:for best performance.\n");
@@ -1662,7 +1662,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   b->maxnz = b->nz = iu[mbs];
   
   (*B)->factor                 = FACTOR_CHOLESKY;
-  (*B)->info.factor_mallocs    = realloc;
+  (*B)->info.factor_mallocs    = reallocs;
   (*B)->info.fill_ratio_given  = f;
   if (ai[mbs] != 0) {
     (*B)->info.fill_ratio_needed = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);

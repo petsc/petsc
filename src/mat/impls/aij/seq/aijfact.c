@@ -271,7 +271,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   PetscErrorCode ierr;
   PetscInt       *r,*ic,i,n = A->m,*ai = a->i,*aj = a->j;
   PetscInt       *ainew,*ajnew,jmax,*fill,*ajtmp,nz;
-  PetscInt       *idnew,idx,row,m,fm,nnz,nzi,realloc = 0,nzbd,*im;
+  PetscInt       *idnew,idx,row,m,fm,nnz,nzi,reallocs = 0,nzbd,*im;
   PetscReal      f;
 
   PetscFunctionBegin;
@@ -350,7 +350,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
       ierr  = PetscMemcpy(ajtmp,ajnew,(ainew[i])*sizeof(PetscInt));CHKERRQ(ierr);
       ierr  = PetscFree(ajnew);CHKERRQ(ierr);
       ajnew = ajtmp;
-      realloc++; /* count how many times we realloc */
+      reallocs++; /* count how many times we realloc */
     }
     ajtmp = ajnew + ainew[i];
     fm    = fill[n];
@@ -365,7 +365,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   }
   if (ai[n] != 0) {
     PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
-    PetscLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",realloc,f,af);
+    PetscLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af);
     PetscLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:Run with -pc_lu_fill %g or use \n",af);
     PetscLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:PCLUSetFill(pc,%g);\n",af);
     PetscLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:for best performance.\n");
@@ -411,7 +411,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   b->maxnz = b->nz = ainew[n] ;
 
   (*B)->factor                 =  FACTOR_LU;
-  (*B)->info.factor_mallocs    = realloc;
+  (*B)->info.factor_mallocs    = reallocs;
   (*B)->info.fill_ratio_given  = f;
   ierr = Mat_AIJ_CheckInode(*B,PETSC_FALSE);CHKERRQ(ierr);
   (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
@@ -883,7 +883,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   PetscErrorCode ierr;
   PetscInt       *r,*ic,prow,n = A->m,*ai = a->i,*aj = a->j;
   PetscInt       *ainew,*ajnew,jmax,*fill,*xi,nz,*im,*ajfill,*flev;
-  PetscInt       *dloc,idx,row,m,fm,nzf,nzi,len, realloc = 0,dcount = 0;
+  PetscInt       *dloc,idx,row,m,fm,nzf,nzi,len, reallocs = 0,dcount = 0;
   PetscInt       incrlev,nnz,i,levels,diagonal_fill;
   PetscTruth     col_identity,row_identity;
   PetscReal      f;
@@ -1022,7 +1022,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
       ierr   = PetscMemcpy(xi,ajfill,(ainew[prow])*sizeof(PetscInt));CHKERRQ(ierr);
       ierr   = PetscFree(ajfill);CHKERRQ(ierr);
       ajfill = xi;
-      realloc++; /* count how many times we realloc */
+      reallocs++; /* count how many times we realloc */
     }
     xi          = ajnew + ainew[prow] ;
     flev        = ajfill + ainew[prow] ;
@@ -1047,7 +1047,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
 
   {
     PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
-    PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",realloc,f,af);
+    PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af);
     PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Run with -[sub_]pc_ilu_fill %g or use \n",af);
     PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:PCILUSetFill([sub]pc,%g);\n",af);
     PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:for best performance.\n");
@@ -1093,7 +1093,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   ierr = Mat_AIJ_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
   (*fact)->ops->lufactornumeric =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
 
-  (*fact)->info.factor_mallocs    = realloc;
+  (*fact)->info.factor_mallocs    = reallocs;
   (*fact)->info.fill_ratio_given  = f;
   (*fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
   PetscFunctionReturn(0); 

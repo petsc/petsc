@@ -18,7 +18,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   PetscErrorCode ierr;
   PetscInt       *r,*ic,i,n = a->mbs,*ai = a->i,*aj = a->j;
   PetscInt       *ainew,*ajnew,jmax,*fill,*ajtmp,nz,bs = a->bs,bs2=a->bs2;
-  PetscInt       *idnew,idx,row,m,fm,nnz,nzi,realloc = 0,nzbd,*im;
+  PetscInt       *idnew,idx,row,m,fm,nnz,nzi,reallocs = 0,nzbd,*im;
   PetscReal      f = 1.0;
 
   PetscFunctionBegin;
@@ -97,7 +97,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
       ierr  = PetscMemcpy(ajtmp,ajnew,ainew[i]*sizeof(PetscInt));CHKERRQ(ierr);
       ierr  = PetscFree(ajnew);CHKERRQ(ierr);
       ajnew = ajtmp;
-      realloc++; /* count how many times we realloc */
+      reallocs++; /* count how many times we realloc */
     }
     ajtmp = ajnew + ainew[i];
     fm    = fill[n];
@@ -113,7 +113,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
 
   if (ai[n] != 0) {
     PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
-    PetscLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",realloc,f,af);
+    PetscLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af);
     PetscLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Run with -pc_lu_fill %g or use \n",af);
     PetscLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:PCLUSetFill(pc,%g);\n",af);
     PetscLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:for best performance.\n");
@@ -156,7 +156,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   b->maxnz = b->nz = ainew[n];
   
   (*B)->factor                 = FACTOR_LU;
-  (*B)->info.factor_mallocs    = realloc;
+  (*B)->info.factor_mallocs    = reallocs;
   (*B)->info.fill_ratio_given  = f;
   if (ai[n] != 0) {
     (*B)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
