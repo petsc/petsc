@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: update-docs.py,v 1.4 2000/03/27 19:43:35 balay Exp balay $ 
+# $Id: update-docs.py,v 1.5 2000/10/09 15:28:41 balay Exp balay $ 
 #
 # update-docs.py DOCS_DIR
 import os
@@ -26,17 +26,17 @@ def modifyfile(filename):
 
     outbuf = '<html>\n<body BGCOLOR="FFFFFF">\n' + header + '\n' + body + '</body>\n</html>\n'
 
-    #fix http://www-unix.mcs.anl.gov/petsc/docs
-    w = re.compile(r'http://www-unix.mcs.anl.gov/petsc/docs/')
+    #fix http://www-unix.mcs.anl.gov/petsc/petsc-current/docs
+    w = re.compile(r'http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/')
     outbuf = w.sub('',outbuf)
 
-    #fix http://www-unix.mcs.anl.gov/petsc/include (for petscversion.h)
-    w = re.compile(r'http://www-unix.mcs.anl.gov/petsc/include/')
+    #fix http://www-unix.mcs.anl.gov/petsc/petsc-current/include (for petscversion.h)
+    w = re.compile(r'http://www-unix.mcs.anl.gov/petsc/petsc-current/include/')
     outbuf = w.sub('',outbuf)
 
     # now revert all the links to the splitmanuals back to the website
     w = re.compile(r'splitmanual/')
-    outbuf = w.sub('http://www-unix.mcs.anl.gov/petsc/docs/splitmanual/',outbuf)
+    outbuf = w.sub('http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/splitmanual/',outbuf)
     
     # Now overwrite the original file 
     outfilename = filename
