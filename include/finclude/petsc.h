@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.98 2001/08/10 16:50:53 balay Exp balay $;
+!  $Id: petsc.h,v 1.99 2001/08/22 18:03:12 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package.
 !
@@ -118,7 +118,7 @@
 !
 !     Fortran Null
 !
-      character*(80)      PETSC_NULL_CHARACTER
+      PetscChar(80)       PETSC_NULL_CHARACTER
       PetscFortranInt     PETSC_NULL_INTEGER
       PetscFortranDouble  PETSC_NULL_DOUBLE
 !
