@@ -43,18 +43,18 @@ deletelatexpages:
 
 etags:
 	$(RM) TAGS
-	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h src/*/examples/*.c
+	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h 
+	etags -a -f TAGS src/*/examples/*.c
 	etags -a -f TAGS src/*/*.h src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS src/*/impls/*/*/*.c src/*/impls/*/*/*/*.c 
-	etags -a -f TAGS src/*/utils/*.c docs/tex/manual.tex 
-	etags -a -f TAGS include/*.h pinclude/*.h
-	etags -a -f TAGS src/*/impls/*.c 
+	etags -a -f TAGS include/*.h pinclude/*.h bmake/common
+	etags -a -f TAGS src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS makefile src/*/src/makefile src/makefile 
 	etags -a -f TAGS src/*/impls/makefile src/*/impls/*/makefile
-	etags -a -f TAGS bmake/common docs/tex/routin.tex
 	etags -a -f TAGS src/*/utils/makefile src/*/examples/makefile
 	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
 	etags -a -f TAGS bmake/common.* bmake/sun4/sun4* bmake/rs6000/rs6000* 
 	etags -a -f TAGS bmake/IRIX/*.* bmake/freebsd/freebsd*
 	etags -a -f TAGS bmake/hpux/*.* bmake/NeXT/NeXT* bmake/alpha/alpha*
+	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex
 	chmod g+w TAGS
