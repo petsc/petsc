@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.18 1995/07/07 17:15:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.19 1995/07/08 20:16:01 bsmith Exp curfman $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -108,7 +108,8 @@ $  -log_all : Prints log information (for code compiled
 $      with PETSC_LOG)
 $  -log : Prints log information (for code compiled 
 $      with PETSC_LOG)
-$  -log_summary : Prints summary of flop information to screen
+$  -log_summary : Prints summary of flop information 
+$      to screen (for code compiled with PETSC_LOG)
 $  -fp_trap : stops on floating point exceptions
 
 .keywords: finalize, exit, end
@@ -333,7 +334,7 @@ static int OptionsCheckInitial_Private()
     MPIU_printf(comm," -notrmalloc: don't use error checking malloc\n");
     MPIU_printf(comm," -optionstable: dump list of options inputted\n");
     MPIU_printf(comm," -optionsleft: dump list of unused options\n");
-    MPIU_printf(comm," -log[all summary]: logging objects and events\n");
+    MPIU_printf(comm," -log[_all _summary]: logging objects and events\n");
     MPIU_printf(comm," -v: prints PETSc version number and release date\n");
     MPIU_printf(comm,"-----------------------------------------------\n");
   }
