@@ -98,6 +98,14 @@ user :bsmith
 passwd:petsc-passwd
 eple.ii.uib.no ( also plomme, morell, rips)
 
+Linux accounts:
+  machine: ursula.cs.msstate.edu
+  user:    curfman
+  passwd:  petsc-passwd
+
+  See petsc-maint mail from Igor Markov (UCLA) for another account 
+     on his home PC running Linux.
+
 ----------------------------------------------------------------------
 
 To kill the running crontab remove bmake/common and bmake/RCS/common,v
