@@ -17,8 +17,9 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers', self)
     self.types        = self.framework.require('config.types',     self)
     self.libraries    = self.framework.require('config.libraries', self)
-    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
-      self.libraries.libraries.extend([(['rt','nsl','aio'], 'exit')])
+##  Not sure how to make this work yet
+##    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
+##      self.libraries.libraries.extend([(['rt','nsl','aio'], 'exit')])
     return
 
   def __str__(self):
