@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.251 1998/03/14 15:30:00 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.252 1998/03/14 15:30:44 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -563,6 +563,24 @@ create a new vector object, but rather extracts the one existing
 vector of its type from the distributed array.  Thus, if additional
 vectors are needed in a code, they can be obtained by duplicating {\tt l}
 or {\tt g} via {\tt VecDuplicate()} or {\tt VecDuplicateVecs()}.
+
+We emphasize that a distributed array really consists of two parts:
+(1) the array of data within the vector being distributed and (2) the
+information needed to communicate the ghost point information between
+processes.  In many cases, several different arrays could share the
+same communication information.  The design of the distributed array
+object makes this relatively easy.  Each {\tt DA} operation may
+operate on a vector of the appropriate size.  The two obvious options
+are the local and global vectors created by the {\tt DA} creation
+routines (e.g., {\tt DACreate2d()}) and accessible through {\tt
+DAGetLocalVector()} and {\tt DAGetDistributedVector()}, but, as
+mentioned above, vectors created via {\tt VecDuplicate()} on these may
+also be used.  This is why there are vector arguments to {\tt
+DALocalToGlobal()}, etc. (see below).
+
+PETSc currently provides no container for multiple arrays sharing the
+same distributed array communication; note, however, that the {\tt dof}
+parameter handles many cases of interest.
 
 At certain stages of many applications, there is a need to work 
 on a local portion of the vector, including the ghost points. 
@@ -3504,13 +3522,14 @@ $ ^\dagger $ Set user-defined matrix formation routine with {\tt SNESSetJacobian
 PETSc provides some tools to help approximate the Jacobian matrices efficiently via 
 finite differences.  These tools are intended for use in certain situations where
 one is unable to compute Jacobian matrices analytically, and matrix-free methods
-do not work due to very poor conditioning.  The approximation requires several steps:
+do not work well due to very poor conditioning.  The approximation requires several steps:
 \begin{itemize}
 \item First, one colors the columns of the (not yet built) Jacobian matrix, so that 
       columns of the same color do not share any common rows.
 \item Next, one creates a {\tt MatFDColoring} data structure that will be used later in 
       actually computing the Jacobian.
-\item Finally, one tells SNES to use the {\tt SNESDefaultComputeJacobianWithColoring()}
+\item Finally, one tells the nonlinear solvers of SNES to use the
+      {\tt SNESDefaultComputeJacobianWithColoring()}
       routine to compute the Jacobians. 
 \end{itemize}
 A code fragment that demonstrates this process is given below.
