@@ -52,8 +52,12 @@ extern PETSC_DLL_IMPORT PetscTruth PetscBeganMPI;
 #if defined(PETSC_HAVE_FORTRAN_IARGC_UNDERSCORE) /* HPUX + no underscore */
 #undef iargc_
 #undef getarg_
-#define iargc   iargc_
-#define getarg  getarg_
+#define iargc_   iargc_
+#define getarg_  getarg_
+#endif
+#if defined(PETSC_HAVE_GFORTRAN_IARGC) /* gfortran from gcc4 */
+#define iargc_  _gfortran_iargc
+#define getarg_ _gfortran_getarg_i4
 #endif
 
 /*
