@@ -93,7 +93,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
   Vec_Seq           *x = (Vec_Seq *)xin->data;
   PetscErrorCode    ierr;
   PetscInt          i,n = xin->n;
-  char              *name;
+  const char        *name;
   PetscViewerFormat format;
 
   PetscFunctionBegin;

@@ -105,7 +105,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer,const VecType outty
     PetscErrorCode (*r)(PetscViewer,const VecType,Vec*);
     PetscMPIInt    size;
 
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,&prefix);CHKERRQ(ierr);
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char**)&prefix);CHKERRQ(ierr);
     ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {
       outtype = vtype;
@@ -376,7 +376,7 @@ PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
     if (n != rows) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Vector in file different length then input vector");
     ierr = MPI_Bcast(&rows,1,MPIU_INT,0,comm);CHKERRQ(ierr);
 
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)vec,&prefix);CHKERRQ(ierr);
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)vec,(const char**)&prefix);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(prefix,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);

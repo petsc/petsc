@@ -161,7 +161,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC,PetscViewer);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetOptionsPrefix(PC,const char[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCAppendOptionsPrefix(PC,const char[]);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGetOptionsPrefix(PC,char*[]);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGetOptionsPrefix(PC,const char*[]);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCComputeExplicitOperator(PC,Mat*);
 

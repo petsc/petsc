@@ -266,7 +266,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscInt          i,j,m = A->m,shift=0;
-  char              *name;
+  const char        *name;
   PetscViewerFormat format;
 
   PetscFunctionBegin;  

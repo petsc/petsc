@@ -113,14 +113,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer,const MatType outty
   PetscTruth     isbinary,flg;
   MPI_Comm       comm;
   PetscErrorCode (*r)(PetscViewer,const MatType,Mat*);
-  char           mtype[256],*prefix;
+  char           mtype[256], *prefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   PetscValidPointer(newmat,3);
   *newmat = 0;
 
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,&prefix);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char **)&prefix);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");

@@ -102,7 +102,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   IS             isl;
   KSP            ksp;
   PC             subpc;
-  char           *prefix,*pprefix;
+  const char     *prefix,*pprefix;
   Vec            vec;
 
   PetscFunctionBegin;

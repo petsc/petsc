@@ -1181,7 +1181,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCAppendOptionsPrefix(PC pc,const char prefix[
 
 .seealso: PCSetOptionsPrefix(), PCAppendOptionsPrefix()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGetOptionsPrefix(PC pc,char *prefix[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCGetOptionsPrefix(PC pc,const char *prefix[])
 {
   PetscErrorCode ierr;
 

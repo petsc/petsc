@@ -247,7 +247,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC_Composite(PC pc,PCType type)
   PC_CompositeLink next,ilink;
   PetscErrorCode   ierr;
   PetscInt         cnt = 0;
-  char             *prefix,newprefix[8];
+  const char       *prefix;
+  char             newprefix[8];
 
   PetscFunctionBegin;
   ierr       = PetscNew(struct _PC_CompositeLink,&ilink);CHKERRQ(ierr);

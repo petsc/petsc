@@ -13,7 +13,7 @@ PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
   Mat_MPIAdj        *a = (Mat_MPIAdj*)A->data;
   PetscErrorCode    ierr;
   PetscInt          i,j,m = A->m;
-  char              *name;
+  const char        *name;
   PetscViewerFormat format;
 
   PetscFunctionBegin;

@@ -376,7 +376,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_PNETCDF)
   PetscTruth     isnetcdf;
 #endif
-  char           *prefix;
+  const char     *prefix;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
@@ -436,7 +436,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,
   DA             da;
   PetscErrorCode ierr;
   Vec            natural;
-  char           *prefix;
+  const char     *prefix;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);

@@ -129,7 +129,7 @@ PetscErrorCode MatDestroy_Matlab(Mat A)
 PetscErrorCode MatSolve_Matlab(Mat A,Vec b,Vec x)
 {
   PetscErrorCode ierr;
-  char            *_A,*_b,*_x;
+  const char     *_A,*_b,*_x;
 
   PetscFunctionBegin;
   /* make sure objects have names; use default if not */
@@ -195,7 +195,7 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Ma
 PetscErrorCode MatSolve_Matlab_QR(Mat A,Vec b,Vec x)
 {
   PetscErrorCode ierr;
-  char            *_A,*_b,*_x;
+  const char     *_A,*_b,*_x;
 
   PetscFunctionBegin;
   /* make sure objects have names; use default if not */

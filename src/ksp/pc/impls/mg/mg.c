@@ -67,7 +67,7 @@ static PetscErrorCode PCMGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI
   PetscErrorCode ierr;
   PetscInt       i;
   PetscMPIInt    size;
-  char           *prefix;
+  const char     *prefix;
   PC             ipc;
 
   PetscFunctionBegin;

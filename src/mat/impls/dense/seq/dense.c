@@ -752,7 +752,7 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
   Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
   PetscErrorCode    ierr;
   PetscInt          i,j;
-  char              *name;
+  const char        *name;
   PetscScalar       *v;
   PetscViewerFormat format;
 

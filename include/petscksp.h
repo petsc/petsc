@@ -250,7 +250,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP,Mat,Mat,MatStructur
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperators(KSP,Mat*,Mat*,MatStructure*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOptionsPrefix(KSP,const char[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPAppendOptionsPrefix(KSP,const char[]);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOptionsPrefix(KSP,char*[]);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOptionsPrefix(KSP,const char*[]);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScale(KSP,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScale(KSP,PetscTruth*);

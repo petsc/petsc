@@ -60,7 +60,7 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSClearMonitor(TS);
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetOptionsPrefix(TS,const char[]);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSAppendOptionsPrefix(TS,const char[]);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGetOptionsPrefix(TS,char *[]);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGetOptionsPrefix(TS,const char *[]);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetFromOptions(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetUp(TS);
 

@@ -472,7 +472,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewe
     }
 #endif
   } else {
-    char *tname;
+    const char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
     SETERRQ1(PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
   }
@@ -558,7 +558,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,PetscReal idx[],PetscVie
     }
 #endif
   } else {
-    char *tname;
+    const char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
     SETERRQ1(PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
   }
@@ -656,7 +656,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,PetscScalar idx[],Pets
     }
 #endif
   } else {
-    char *tname;
+    const char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
     SETERRQ1(PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
   }

@@ -20,7 +20,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   PetscInt       N,M,start,i,sum,end;
   PetscInt       bs,i_start=-1,i_end=-1;
   PetscMPIInt    rank,size;
-  char           *pprefix,*mprefix;
+  const char     *pprefix,*mprefix;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
@@ -884,7 +884,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
 
   /* set default direct solver with no Krylov method */
   if (!pc->setupcalled) {
-    char *prefix;
+    const char *prefix;
     ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,ksp);CHKERRQ(ierr);
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
@@ -1080,7 +1080,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode         ierr;
   PetscInt               m,n_local,N,M,start,i;
-  char                   *prefix,*pprefix,*mprefix;
+  const char             *prefix,*pprefix,*mprefix;
   KSP                    ksp;
   Vec                    x,y;
   PC_BJacobi_Multiblock  *bjac = (PC_BJacobi_Multiblock*)jac->data;
