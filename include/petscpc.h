@@ -89,7 +89,7 @@ EXTERN int PCApplySymmetricLeft(PC,Vec,Vec);
 EXTERN int PCApplySymmetricRight(PC,Vec,Vec);
 EXTERN int PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
 EXTERN int PCApplyTranspose(PC,Vec,Vec);
-EXTERN int PCHasTransposeApply(PC,PetscTruth*);
+EXTERN int PCHasApplyTranspose(PC,PetscTruth*);
 EXTERN int PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
 EXTERN int PCApplyRichardson(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
 EXTERN int PCApplyRichardsonExists(PC,PetscTruth*);

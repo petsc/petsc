@@ -20,7 +20,6 @@ int main(int argc,char **argv)
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,0,0); CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-options_left",PETSC_NULL); CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
   
   ierr = VecCreateSeq(comm,10,&V); CHKERRQ(ierr);
@@ -30,19 +29,19 @@ int main(int argc,char **argv)
 
   ierr = VecNorm(V,NORM_1,&nrm1); CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2); CHKERRQ(ierr);
-  PetscPrintf(comm,"Vector created  : norm1=%e, norm2=%e\n",nrm1,nrm2);
+  PetscPrintf(comm,"norm1=%e, norm2=%e\n",nrm1,nrm2);
   ierr = VecNorm(V,NORM_1,&nrm1); CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2); CHKERRQ(ierr);
-  PetscPrintf(comm,"  reused values : norm1=%e, norm2=%e\n",nrm1,nrm2);
+  PetscPrintf(comm,"norm1=%e, norm2=%e\n",nrm1,nrm2);
 
   ierr = VecSetValues(V,1,&ione,&one,INSERT_VALUES); CHKERRQ(ierr);
 
   ierr = VecNorm(V,NORM_1,&nrm1); CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2); CHKERRQ(ierr);
-  PetscPrintf(comm,"Vector altered  : norm1=%e, norm2=%e\n",nrm1,nrm2);
+  PetscPrintf(comm,"norm1=%e, norm2=%e\n",nrm1,nrm2);
   ierr = VecNorm(V,NORM_1,&nrm1); CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2); CHKERRQ(ierr);
-  PetscPrintf(comm,"  reused values : norm1=%e, norm2=%e\n",nrm1,nrm2);
+  PetscPrintf(comm,"norm1=%e, norm2=%e\n",nrm1,nrm2);
 
   PetscFinalize();
   PetscFunctionReturn(0);
