@@ -1,16 +1,19 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.15 1997/09/27 15:51:19 curfman Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.16 1997/10/10 19:32:41 bsmith Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
 #include "mat.h"    /*I      "mat.h"    I*/
 
+extern int DAGetColoring2d_1(DA,ISColoring *,Mat *);
+extern int DAGetColoring2d(DA,ISColoring *,Mat *);
+extern int DAGetColoring3d(DA,ISColoring *,Mat *);
+
 #undef __FUNC__  
-#define __FUNC__ "DAGetColoring2dBox" 
+#define __FUNC__ "DAGetColoring" 
 /*@C
-      DAGetColoring2dBox - Gets the coloring required for computing the Jacobian via
-      finite differences on a function defined using the nine point stencil
-      on a two dimensional grid. 
+      DAGetColoring - Gets the coloring required for computing the Jacobian via
+      finite differences on a function defined using a stencil on the DA.
 
      Input Parameter:
 .    da - the distributed array
@@ -21,20 +24,10 @@ static char vcid[] = "$Id: fdda.c,v 1.15 1997/09/27 15:51:19 curfman Exp bsmith 
             (obviously without the correct Jacobian values)
 
 @*/
-int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)
+int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
 {
-  int      ierr, xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,ys1,ny1,nx1,gnx,gny;           
-  int      m,n,dim,w,s,N,*indices,*gindices,k,xs1,nc,ng,*cols,col;
-  MPI_Comm comm;
-  Scalar   *values;
-
-  /*     
-         nc - number of components per grid point 
-         col - number of colors needed in one direction for single component problem
-  
-  */
-  nc     = w;
-  col    = 2*s + 1;
+  int            ierr,dim;
+  DAPeriodicType wrap;
 
 
   /*
@@ -53,16 +46,60 @@ int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)
          |                                                     |
           -----------------------------------------------------
   */
+
+  /*     
+         nc - number of components per grid point 
+         col - number of colors needed in one direction for single component problem
+  
+  */
+  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,&wrap); CHKERRQ(ierr);
+
+  if (dim == 1)               SETERRQ(1,0,"No support for 1d");
+  if (wrap != DA_NONPERIODIC) SETERRQ(1,0,"Currently no support for periodice");
+
+  if (dim == 2) {
+    return DAGetColoring2d(da,coloring,J);
+  } else if (dim == 3) {
+    return DAGetColoring3d(da,coloring,J);
+  }
+
+  return 0;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "DAGetColoring2d" 
+int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
+{
+  int            ierr, xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
+  int            m,n,dim,w,s,N,*cols,*gindices,k,nc,ng,*rows,col,cnt,l,p;
+  int            lstart,lend,pstart,pend;
+  MPI_Comm       comm;
+  Scalar         *values;
+
+  /*     
+         nc - number of components per grid point 
+         col - number of colors needed in one direction for single component problem
+  
+  */
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,0); CHKERRQ(ierr);
+  nc     = w;
+  col    = 2*s + 1;
+
   N       = m*n;
 
-  if (dim != 2)                   SETERRQ(1,0,"2d only");
-  if (da->wrap != DA_NONPERIODIC) SETERRQ(1,0,"Currently no support for periodice");
+  /*
+      Faster code for stencil width of 1 
+  */
+  if (s == 1) {
+    return DAGetColoring2d_1(da,coloring,J);
+  }
 
-  values = (Scalar *) PetscMalloc( col*col*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
-  PetscMemzero(values,9*nc*nc*sizeof(Scalar));
-  cols    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(cols);
-  indices = (int *) PetscMalloc( col*col*nc*nc*sizeof(int) ); CHKPTRQ(cols);
+  values  = (Scalar *) PetscMalloc( col*col*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
+  PetscMemzero(values,col*col*nc*nc*sizeof(Scalar));
+  rows    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(rows);
+  cols    = (int *) PetscMalloc( col*col*nc*nc*sizeof(int) ); CHKPTRQ(cols);
 
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0); CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0); CHKERRQ(ierr);
@@ -84,6 +121,210 @@ int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)
 
   /* create empty Jacobian matrix */
   ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,col*col*nc,0,0,0,J);CHKERRQ(ierr);  
+
+  ierr = DAGetGlobalIndices(da,&ng,&gindices);
+  {
+    ISLocalToGlobalMapping ltog;
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,&ltog);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(*J,ltog); CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(ltog); CHKERRQ(ierr);
+  }
+
+  /*
+      For each node in the grid: we get the neighbors in the local (on processor ordering
+    that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
+    PETSc ordering.
+  */
+  for ( i=xs; i<xs+nx; i++ ) {
+
+    pstart = PetscMax(-s,-i);
+    pend   = PetscMin(s,m-i-1);
+
+    for ( j=ys; j<ys+ny; j++ ) {
+      slot = i - gxs + gnx*(j - gys);
+
+      lstart = PetscMax(-s,-j); 
+      lend   = PetscMin(s,n-j-1);
+
+      cnt  = 0;
+      for ( k=0; k<nc; k++ ) {
+        for ( l=lstart; l<lend+1; l++ ) {
+          for ( p=pstart; p<pend+1; p++ ) {
+            cols[cnt++]  = k + nc*(slot + gnx*l + p);
+          }
+        }
+        rows[k]      = k + nc*(slot);
+      }
+      ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES); CHKERRQ(ierr);
+    }
+  }
+  PetscFree(values); 
+  PetscFree(rows);
+  PetscFree(cols);
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
+  return 0;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "DAGetColoring3d" 
+int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
+{
+  int            ierr, xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
+  int            m,n,dim,s,N,*cols,*gindices,k,nc,ng,*rows,col,cnt,l,p;
+  int            istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,i1,j1,k1;
+  MPI_Comm       comm;
+  Scalar         *values;
+
+  /*     
+         nc - number of components per grid point 
+         col - number of colors needed in one direction for single component problem
+  
+  */
+  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,0); CHKERRQ(ierr);
+  col    = 2*s + 1;
+
+  N       = m*n;
+
+  values  = (Scalar *) PetscMalloc( col*col*col*nc*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
+  PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(Scalar));
+  rows    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(rows);
+  cols    = (int *) PetscMalloc( col*col*col*nc*nc*nc*sizeof(int) ); CHKPTRQ(cols);
+
+  ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm); CHKERRQ(ierr);
+
+
+  /* create the coloring */
+  colors = (int *) PetscMalloc( nc*nx*ny*nz*sizeof(int) ); CHKPTRQ(colors);
+  ii = 0;
+  for ( k=zs; j<zs+nz; k++ ) {
+    for ( j=ys; j<ys+ny; j++ ) {
+      for ( i=xs; i<xs+nx; i++ ) {
+        for ( k=0; k<nc; k++ ) {
+          colors[ii++] = k + nc*((i % col) + col*(j % col) + col*col*(k % col));
+        }
+      }
+    }
+  }
+  ierr = ISColoringCreate(comm,nc*nx*ny*nz,colors,coloring); CHKERRQ(ierr);
+  PetscFree(colors);
+
+  /* create empty Jacobian matrix */
+  ierr = MatCreateMPIAIJ(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,col*col*col*nc,0,0,0,J);
+         CHKERRQ(ierr);  
+
+  ierr = DAGetGlobalIndices(da,&ng,&gindices);
+  {
+    ISLocalToGlobalMapping ltog;
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,&ltog);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(*J,ltog); CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(ltog); CHKERRQ(ierr);
+  }
+
+  /*
+      For each node in the grid: we get the neighbors in the local (on processor ordering
+    that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
+    PETSc ordering.
+  */
+  for ( i=xs; i<xs+nx; i++ ) {
+    istart = PetscMax(-s,-i);
+    iend   = PetscMin(s,m-i-1);
+    for ( j=ys; j<ys+ny; j++ ) {
+      jstart = PetscMax(-s,-j); 
+      jend   = PetscMin(s,n-j-1);
+      for ( k=zs; k<zs+nz; k++ ) {
+        kstart = PetscMax(-s,-k); 
+        kend   = PetscMin(s,p-k-1);
+
+        slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+
+        cnt  = 0;
+        for ( l=0; l<nc; l++ ) {
+          for ( i1=istart; i1<iend+1; i1++ ) {
+            for ( j1=jstart; j1<jend+1; j1++ ) {
+              for ( k1=kstart; k1<kend+1; k1++ ) {
+                cols[cnt++]  = l + nc*(slot + gnx*j1 + gnx*gny*k1);
+              }
+            }
+          }
+        }
+        rows[l]      = l + nc*(slot);
+      }
+      ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES); CHKERRQ(ierr);
+    }
+  }
+  PetscFree(values); 
+  PetscFree(rows);
+  PetscFree(cols);
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
+  return 0;
+}
+
+
+/*  ------------------------------------------------------------------------------------*/
+/*
+      Special optimized code with a stencil width of 1
+
+      The difference is that we don't have max and min inside the loops
+*/
+#undef __FUNC__  
+#define __FUNC__ "DAGetColoring2d_1" 
+int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
+{
+  int      ierr, xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,ys1,ny1,nx1,gnx,gny;           
+  int      m,n,dim,w,s,N,*indices,*gindices,k,xs1,nc,ng,*cols;
+  MPI_Comm comm;
+  Scalar   *values;
+  /*
+                                  m
+          ------------------------------------------------------
+         |                                                     |
+         |                                                     |
+         |               ----------------------                |
+         |               |                    |                |
+      n  |           yn  |                    |                |
+         |               |                    |                |
+         |               .---------------------                |
+         |             (xs,ys)     xn                          |
+         |            .                                        |
+         |         (gxs,gys)                                   |
+         |                                                     |
+          -----------------------------------------------------
+  */
+  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,0); CHKERRQ(ierr);
+
+  nc     = w;
+  values = (Scalar *) PetscMalloc( 9*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
+  PetscMemzero(values,9*nc*nc*sizeof(Scalar));
+  cols    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(cols);
+  indices = (int *) PetscMalloc( 9*nc*nc*sizeof(int) ); CHKPTRQ(cols);
+  N       = m*n;
+
+  ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm); CHKERRQ(ierr);
+
+
+  /* create the coloring */
+  colors = (int *) PetscMalloc( nc*nx*ny*sizeof(int) ); CHKPTRQ(colors);
+  ii = 0;
+  for ( j=ys; j<ys+ny; j++ ) {
+    for ( i=xs; i<xs+nx; i++ ) {
+      for ( k=0; k<nc; k++ ) {
+        colors[ii++] = k + nc*((i % 3) + 3*(j % 3));
+      }
+    }
+  }
+  ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring); CHKERRQ(ierr);
+  PetscFree(colors);
+
+  /* create empty Jacobian matrix */
+  ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,9*nc,0,0,0,J);CHKERRQ(ierr);  
 
   ierr = DAGetGlobalIndices(da,&ng,&gindices);
   {
@@ -261,5 +502,4 @@ int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
   return 0;
 }
-
 
