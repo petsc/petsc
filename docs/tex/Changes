@@ -31,6 +31,8 @@ add to it).
 
   IS
 
+   ISEqual now is collective and returns true only if each processor has the same
+   indices 
 
   PF now contains the type PFMATLAB with -pf_type matlab -pf_matlab matlab_commands  
 

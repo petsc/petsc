@@ -1,4 +1,4 @@
-/*$Id: iscomp.c,v 1.27 2000/05/23 00:30:07 bsmith Exp bsmith $*/
+/*$Id: iscomp.c,v 1.28 2000/05/25 22:27:04 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -22,7 +22,14 @@
 
    Note: 
    This routine sorts the contents of the index sets before
-   the comparision is made, so the order of the indices is immaterial.
+   the comparision is made, so the order of the indices on a processor is immaterial.
+
+   Each processor has to have the same indices in the two sets, for example,
+$           Processor 
+$             0      1
+$    is1 = {0, 1} {2, 3}
+$    is2 = {2, 3} {0, 1}
+   will return false.
 
 .keywords: IS, index set, equal
 @*/
