@@ -1,14 +1,19 @@
 #!/usr/bin/env python
+#
+#   This is absolute crap; we really need to parse the impls and process them
+#
 import user
 
 import os
 import sys
 import re
 import cPickle
+import string
 
 def setSplicersDir(splicedimpls,dir,names):
 
-  reg = re.compile('splicer.begin\(([A-Za-z0-9._]*)\)')
+  reg        = re.compile('splicer.begin\(([A-Za-z0-9._]*)\)')
+  reginclude = re.compile('#include [ ]*"([a-zA-Z_0-9/]*.[h]*)"')
 
   if 'SCCS' in names: del names[names.index('SCCS')]
   if 'BitKeeper' in names: del names[names.index('BitKeeper')]
@@ -34,31 +39,51 @@ def setSplicersDir(splicedimpls,dir,names):
           body = body + line
           line = fd.readline()
 
+            
         # replace body with saved splicer block
-        if name in splicedimpls[ext] and not body == splicedimpls[ext][name]:          
+        if name.endswith('._includes') and ext == '.cc':
+          foundreplacement = 1
+#          print 'handling includes for class '+name
+          name = name[0:-10]
+          len1  = len(name)
+          body = '#include "SIDL.hh"\n'
+          for n in splicedimpls[ext]:
+            if n.startswith(name) and n.endswith('._includes') and n[len1+1:-10].find('.') == -1:
+#              print '   '+n
+              body = body + splicedimpls[ext][n]
+        elif name in splicedimpls[ext]:
           foundreplacement = 1
 #          print 'Replacing -------'+name
 #          print body
 #          print 'with ------------'
 #          print splicedimpls[ext][name]
           body = splicedimpls[ext][name]
-        elif name.endswith('._includes') and ext == '.cc':
-          print 'handling includes for class '+name
-          name = name[0:-10]
-          len1  = len(name)
-          body = ''
-          for n in splicedimpls[ext]:
-            if n.startswith(name) and n.endswith('._includes') and n[len1+1:-10].find('.') == -1:
-              body = body + splicedimpls[ext][n]
-          print body
-
-        text = text+body
+        else:
+#          print 'Cannot find splicer block '+name+' '+f+' ext '+ext
+          pass
+          
+#         convert ASE directory hierarchy of includes
+        nb = ''
+        for l in body.split('\n'):
+          if reginclude.search(l):
+            fname    = reginclude.match(l).group(1)
+            (fn,extmp) = os.path.splitext(fname)
+            fn = fn.split('/')
+            if len(fn) > 1 and fn[-1] == fn[-2]:
+              t = '#include "'+string.join(fn[0:-1],'_')+'.hh"'
+              nb = nb + t + '\n'
+            else:
+              nb = nb + l + '\n'              
+          else:
+            nb = nb + l + '\n'              
+          
+        text = text+nb
         text = text+line
       line = fd.readline()
     fd.close()
 
     if foundreplacement:
-      print 'Replaced blocks in '+os.path.join(dir,f)
+#      print 'Replaced blocks in '+os.path.join(dir,f)
       fd = open(os.path.join(dir,f),'w')
       fd.write(text)
       fd.close()
@@ -71,6 +96,40 @@ def setSplicers(directory):
   splicedimpls = cPickle.load(f)
   f.close()
 
+  # change SIDL.Args and SIDL.ProjectState impl names
+  replaces =  {'SIDL.Args':'SIDLASE.Args','SIDL.ProjectState':'SIDLASE.ProjectState'}
+  for i in splicedimpls:
+    sillytmp = splicedimpls[i]
+    for j in sillytmp:
+      for k in replaces:
+        if not string.find(j,k) == -1:
+          newname = j.replace(k,replaces[k])
+#          print 'Converting '+j+' to '+newname+' ext '+i
+          splicedimpls[i][newname] = splicedimpls[i][j]
+          del splicedimpls[i][j]
+
+  
+  regset    = re.compile('\.set\(([->< a-zA-Z_0-9/.\(\)\[\]&+*]*),([->< a-zA-Z_0-9/.\(\)\[\]&+*]*)\)[ ]*;')
+  regcreate = re.compile('\.create\(([->< a-zA-Z_0-9/.\(\)\[\]&+*]*),([->< a-zA-Z_0-9/.\(\)\[\]&+*]*),([->< a-zA-Z_0-9/.\(\)\[\]&+*]*)\)[ ]*;')
+  reginst   = re.compile('\.isInstanceOf\("([-a-zA-Z_0-9.]*)"\)')
+  replaces =  {'SIDL/Args':'SIDLASE/Args',    'SIDL/ProjectState':'SIDLASE/ProjectState',
+               'SIDL::Args':'SIDLASE::Args',  'SIDL::ProjectState':'SIDLASE::ProjectState',
+               '.dim(':'.dimen(',             '.destroy(':'.deleteRef(',
+               '.setMessage(':'.setNote(',    '.getMessage(':'getNote(',
+               '.isInstanceOf(':'.queryInt(', ' IDENT':' MPIB::IDENT',
+               ' SIMILAR':' MPIB::SIMILAR',    ' CONGRUENT':' MPIB::CONGRUENT',
+               '__enum':''}
+  for i in splicedimpls:
+    for j in splicedimpls[i]:
+      if regset.search(splicedimpls[i][j]):
+        splicedimpls[i][j] = regset.sub('.set(\\2,\\1);',splicedimpls[i][j])
+      if regcreate.search(splicedimpls[i][j]):
+        splicedimpls[i][j] = regcreate.sub('.createRow(\\1,\\2,\\3);',splicedimpls[i][j])
+      if reginst.search(splicedimpls[i][j]):
+        splicedimpls[i][j] = reginst.sub('.queryInt("\\1") != 0',splicedimpls[i][j])
+      for k in replaces:    
+        splicedimpls[i][j] = splicedimpls[i][j].replace(k,replaces[k])
+  
   if not directory: directory = os.getcwd()
   os.path.walk(directory,setSplicersDir,splicedimpls)
 

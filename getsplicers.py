@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+#
+#   This is absolute crap; we really need to parse the impls and process them
+#
 import user
 
 import os
@@ -38,11 +41,12 @@ def getSplicersDir(splicedimpls,dir,names):
       line = fd.readline()
     fd.close()
   
-def getSplicers(directory = None):
+def getSplicers(directories):
   splicedimpls = {'.c' : {}, '.h' : {}, '.cc' : {}, '.hh' : {}, '.py' : {}, '.m' : {}}
 
-  if not directory: directory = os.getcwd()
-  os.path.walk(directory,getSplicersDir,splicedimpls)
+  if not directories: directories = [os.getcwd()]
+  for directory in directories:
+    os.path.walk(directory,getSplicersDir,splicedimpls)
 
   f    = open('splicerblocks', 'w')
   cPickle.dump(splicedimpls,f)
@@ -50,6 +54,5 @@ def getSplicers(directory = None):
     
 if __name__ ==  '__main__':
   if len(sys.argv) > 2: sys.exit('Usage: getsplicers.py <directory>')
-  sys.argv.append(None)
-  getSplicers(sys.argv[1])
+  getSplicers(sys.argv[1:-1])
 
