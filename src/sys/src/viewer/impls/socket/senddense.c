@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: senddense.c,v 1.25 1998/04/03 21:47:43 balay Exp balay $";
+static char vcid[] = "$Id: senddense.c,v 1.26 1998/04/04 00:04:06 balay Exp curfman $";
 #endif
 
 #include "src/viewer/impls/matlab/matlab.h"
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: senddense.c,v 1.25 1998/04/03 21:47:43 balay Exp bala
 /*
    ViewerMatlabPutScalar_Private - Passes an Scalar array to a Matlab viewer.
 
-  Input Paramters:
+  Input Parameters:
 .  viewer - obtained from ViewerMatlabOpen()
 .  m, n - number of rows and columns of array
 .  array - the array stored in Fortran 77 style (matrix or vector data) 
@@ -17,11 +17,11 @@ static char vcid[] = "$Id: senddense.c,v 1.25 1998/04/03 21:47:43 balay Exp bala
    Notes:
    Most users should not call this routine, but instead should employ
    either
-$     MatView(Mat matrix,Viewer viewer)
-$
-$              or
-$
-$     VecView(Vec vector,Viewer viewer)
+.vb
+     MatView(Mat matrix,Viewer viewer)
+              or
+     VecView(Vec vector,Viewer viewer)
+.ve
 
 .keywords: Viewer, Matlab, put, dense, array, vector
 
@@ -48,7 +48,7 @@ int ViewerMatlabPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
 /*
    ViewerMatlabPutDouble_Private - Passes an integer array to a Matlab viewer.
 
-  Input Paramters:
+  Input Parameters:
 .  viewer - obtained from ViewerMatlabOpen()
 .  m, n - number of rows and columns of array
 .  array - the array stored in Fortran 77 style (matrix or vector data) 
@@ -86,19 +86,18 @@ int ViewerMatlabPutDouble_Private(Viewer viewer,int m,int n,double *array)
 /*
    ViewerMatlabPutInt_Private - Passes an integer array to a Matlab viewer.
 
-  Input Paramters:
-.  viewer - obtained from ViewerMatlabOpen()
+   Input Parameters:
++  viewer - obtained from ViewerMatlabOpen()
 .  m - number of rows of array
-.  array - the array stored in Fortran 77 style (matrix or vector data) 
+-  array - the array stored in Fortran 77 style (matrix or vector data) 
 
    Notes:
-   Most users should not call this routine, but instead should employ
-   either
-$     MatView(Mat matrix,Viewer viewer)
-$
-$              or
-$
-$     VecView(Vec vector,Viewer viewer)
+   Most users should not call this routine, but instead should employ either
+.vb
+     MatView(Mat matrix,Viewer viewer)
+              or
+     VecView(Vec vector,Viewer viewer)
+.ve
 
 .keywords: Viewer, Matlab, put, dense, array, vector
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.24 1998/04/03 23:17:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.25 1998/04/13 17:55:15 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h" /*I "petsc.h" I*/
@@ -14,10 +14,10 @@ struct _p_Viewer {
 /*@C
    ViewerDestroy - Destroys a viewer.
 
+   Collective on Viewer
+
    Input Parameters:
 .  viewer - the viewer to be destroyed.
-
-  Collective on Viewer
 
 .seealso: ViewerMatlabOpen(), ViewerFileOpenASCII()
 
@@ -39,19 +39,21 @@ int ViewerDestroy(Viewer v)
 /*@
    ViewerGetType - Returns the type of a viewer.
 
+   Not Collective
+
    Input Parameter:
    v - the viewer
 
    Output Parameter:
-.  type - one of
-$    MATLAB_VIEWER,
-$    ASCII_FILE_VIEWER,
-$    ASCII_FILES_VIEWER,
-$    BINARY_FILE_VIEWER,
-$    STRING_VIEWER,
-$    DRAW_VIEWER, ...
+.  type - viewer type (see below)
 
-   Not Collective
+   Available Types Include:
+.  MATLAB_VIEWER - Matlab viewer
+.  ASCII_FILE_VIEWER - uniprocess ASCII viewer
+.  ASCII_FILES_VIEWER - parallel ASCII viewer
+.  BINARY_FILE_VIEWER - binary file viewer
+.  STRING_VIEWER - string viewer
+.  DRAW_VIEWER - drawing viewer
 
    Note:
    See petsc/include/viewer.h for a complete list of viewers.

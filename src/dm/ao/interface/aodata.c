@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.24 1998/04/13 18:01:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.25 1998/04/24 02:18:05 bsmith Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -9,17 +9,20 @@ static char vcid[] = "$Id: aodata.c,v 1.24 1998/04/13 18:01:48 bsmith Exp bsmith
 #undef __FUNC__  
 #define __FUNC__ "AODataGetInfo" 
 /*@C
-      AODataGetInfo - Gets the number of keys and their names in a database.
+    AODataGetInfo - Gets the number of keys and their names in a database.
 
-   Input Parameter:
+    Not collective
+
+    Input Parameter:
 .   ao - the AOData database
 
-   Output Parameters:
-.   nkeys - the number of keys
-.   keys - the names of the keys (or PETSC_NULL)
+    Output Parameters:
++   nkeys - the number of keys
+-   keys - the names of the keys (or PETSC_NULL)
 
-   Not collective
+.keywords: application ordering
 
+.seealso:  AODataSegmentGetInfo()
 @*/ 
 int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 {
@@ -46,14 +49,14 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 /*
    AODataKeyFind_Private - Given a keyname  finds the key. Generates a flag if not found.
 
-   Input Paramters:
-.    keyname - string name of key
+   Not collective
+
+   Input Parameters:
+.  keyname - string name of key
 
    Output Parameter:
-.    flag - 1 if found, 0 if not found
-.    key - the associated key
-
-   Not collective
++  flag - 1 if found, 0 if not found
+-  key - the associated key
 
 */
 int AODataKeyFind_Private(AOData aodata,char *keyname, int *flag,AODataKey **key)
@@ -81,13 +84,13 @@ int AODataKeyFind_Private(AOData aodata,char *keyname, int *flag,AODataKey **key
 /*@C
    AODataKeyExists - Determines if a key exists in the database.
 
-   Input Paramters:
-.    keyname - string name of key
+   Not collective
+
+   Input Parameters:
+.  keyname - string name of key
 
    Output Parameter:
-.    flag - PETSC_TRUE if found, else PETSC_FALSE
-
-   Not collective
+.  flag - PETSC_TRUE if found, otherwise PETSC_FALSE
 
 @*/
 int AODataKeyExists(AOData aodata,char *keyname, PetscTruth *flag)
@@ -108,18 +111,18 @@ int AODataKeyExists(AOData aodata,char *keyname, PetscTruth *flag)
 #define __FUNC__ "AODataSegmentFind_Private" 
 /*
    AODataSegmentFind_Private - Given a key and segment finds the int key, segment
-     coordinates. Generates a flag if not found.
-
-   Input Paramters:
-.    keyname - string name of key
-.    segname - string name of segment
-
-   Output Parameter:
-.    flag - 1 if found, 0 if key but no segment, -1 if no key no segment
-     key - integer of keyname
-     segment - integer of segment
+   coordinates. Generates a flag if not found.
 
    Not collective
+
+   Input Parameters:
++  keyname - string name of key
+-  segname - string name of segment
+
+   Output Parameter:
++  flag - 1 if found, 0 if key but no segment, -1 if no key no segment
+.  key - integer of keyname
+-  segment - integer of segment
 
 */
 int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, int *flag,AODataKey **key,
@@ -155,14 +158,14 @@ int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, int *f
 /*@C
    AODataSegmentExists - Determines if a key  and segment exists in the database.
 
-   Input Paramters:
-.    keyname - string name of key
-.    segname - string name of segment
+   Not collective
+
+   Input Parameters:
++  keyname - string name of key
+-  segname - string name of segment
 
    Output Parameter:
-.    flag - PETSC_TRUE if found, else PETSC_FALSE
-
-   Not collective
+.  flag - PETSC_TRUE if found, else PETSC_FALSE
 
 @*/
 int AODataSegmentExists(AOData aodata,char *keyname, char *segname,PetscTruth *flag)
@@ -186,18 +189,18 @@ int AODataSegmentExists(AOData aodata,char *keyname, char *segname,PetscTruth *f
 /*@C
    AODataKeyGetActive - Get a sublist of key indices that have a logical flag on.
 
+   Collective on AOData
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
 .  n - the number of key indices provided by this processor
 .  keys - the keys provided by this processor
-.  wl - which logical key in the block (for block size 1 this is always 0)
+-  wl - which logical key in the block (for block size 1 this is always 0)
 
    Output Parameters:
 .  IS - the list of key indices
-
-   Collective on AOData
 
 .keywords: database transactions
 
@@ -220,17 +223,17 @@ int AODataKeyGetActive(AOData aodata,char *name,char *segment,int n,int *keys,in
 /*@C
    AODataKeyGetActiveIS - Get a sublist of key indices that have a logical flag on.
 
+   Collective on AOData
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
 .  in - the key indices we are checking
-.  wl - which logical key in the block (for block size 1 this is always 0)
+-  wl - which logical key in the block (for block size 1 this is always 0)
 
    Output Parameters:
 .  IS - the list of key indices
-
-   Collective on AOData
 
 .keywords: database transactions
 
@@ -255,18 +258,18 @@ int AODataKeyGetActiveIS(AOData aodata,char *name,char *segname,IS in,int wl,IS 
 /*@C
    AODataKeyGetActiveLocal - Get a sublist of key indices that have a logical flag on.
 
+   Collective on AOData
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
 .  n - the number of key indices provided by this processor
 .  keys - the keys provided by this processor
-.  wl - which logical key in the block (for block size 1 this is always 0)
+-  wl - which logical key in the block (for block size 1 this is always 0)
 
    Output Parameters:
 .  IS - the list of key indices
-
-   Collective on AOData
 
 .keywords: database transactions
 
@@ -289,17 +292,17 @@ int AODataKeyGetActiveLocal(AOData aodata,char *name,char *segment,int n,int *ke
 /*@C
    AODataKeyGetActiveLocalIS - Get a sublist of key indices that have a logical flag on.
 
+   Collective on AOData
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
 .  in - the key indices we are checking
-.  wl - which logical key in the block (for block size 1 this is always 0)
+-  wl - which logical key in the block (for block size 1 this is always 0)
 
    Output Parameters:
 .  IS - the list of key indices
-
-   Collective on AOData
 
 .keywords: database transactions
 
@@ -326,17 +329,17 @@ int AODataKeyGetActiveLocalIS(AOData aodata,char *name,char *segname,IS in,int w
 /*@C
    AODataSegmentGet - Get data from a particular segment of a database.
 
+   Collective on AOData
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
 .  n - the number of data items needed by this processor
-.  keys - the keys provided by this processor
+-  keys - the keys provided by this processor
 
    Output Parameters:
 .  data - the actual data
-
-   Collective on AOData
 
 .keywords: database transactions
 
@@ -359,21 +362,21 @@ int AODataSegmentGet(AOData aodata,char *name,char *segment,int n,int *keys,void
 /*@C
    AODataSegmentRestore - Restores data from a particular segment of a database.
 
+   Collective on AOData
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
 .  n - the number of data items needed by this processor
-.  keys - the keys provided by this processor
+-  keys - the keys provided by this processor
 
    Output Parameters:
 .  data - the actual data
 
-   Collective on AOData
-
 .keywords: database transactions
 
-.seealso: 
+.seealso: AODataSegmentRestoreIS()
 @*/
 int AODataSegmentRestore(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
 {
@@ -390,20 +393,19 @@ int AODataSegmentRestore(AOData aodata,char *name,char *segment,int n,int *keys,
 /*@C
    AODataSegmentGetIS - Get data from a particular segment of a database.
 
+   Collective on AOData and IS
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
-.  is - the keys for data requested on this processor
+-  is - the keys for data requested on this processor
 
    Output Parameters:
 .  data - the actual data
 
-   Collective on AOData and IS
-
 .keywords: database transactions
 
-.seealso:
 @*/
 int AODataSegmentGetIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
@@ -425,20 +427,20 @@ int AODataSegmentGetIS(AOData aodata,char *name,char *segment,IS is,void **data)
 /*@C
    AODataSegmentRestoreIS - Restores data from a particular segment of a database.
 
+   Collective on AOData and IS
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the data key
 .  segment - the name of the segment
-.  is - the keys provided by this processor
+-  is - the keys provided by this processor
 
    Output Parameters:
 .  data - the actual data
 
-   Collective on AOData and IS
-
 .keywords: database transactions
 
-.seealso:
+.seealso: AODataSegmentRestore()
 @*/
 int AODataSegmentRestoreIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
@@ -457,19 +459,19 @@ int AODataSegmentRestoreIS(AOData aodata,char *name,char *segment,IS is,void **d
 #define __FUNC__ "AODataSegmentGetLocal" 
 /*@C
    AODataSegmentGetLocal - Get data from a particular segment of a database. Returns the 
-       values in the local numbering; valid only for integer segments.
+   values in the local numbering; valid only for integer segments.
+
+   Collective on AOData
 
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
 .  n - the number of data items needed by this processor
-.  keys - the keys provided by this processor in local numbering
+-  keys - the keys provided by this processor in local numbering
 
    Output Parameters:
 .  data - the actual data
-
-   Collective on AOData
 
 .keywords: database transactions
 
@@ -492,21 +494,20 @@ int AODataSegmentGetLocal(AOData aodata,char *name,char *segment,int n,int *keys
 /*@C
    AODataSegmentRestoreLocal - Restores data from a particular segment of a database.
 
+   Collective on AOData
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
 .  n - the number of data items needed by this processor
-.  keys - the keys provided by this processor
+-  keys - the keys provided by this processor
 
    Output Parameters:
 .  data - the actual data
 
-   Collective on AOData
-
 .keywords: database transactions
 
-.seealso: 
 @*/
 int AODataSegmentRestoreLocal(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
 {
@@ -522,22 +523,22 @@ int AODataSegmentRestoreLocal(AOData aodata,char *name,char *segment,int n,int *
 #define __FUNC__ "AODataSegmentGetLocalIS" 
 /*@C
    AODataSegmentGetLocalIS - Get data from a particular segment of a database. Returns the 
-       values in the local numbering; valid only for integer segments.
+   values in the local numbering; valid only for integer segments.
+
+   Collective on AOData and IS
 
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
-.  is - the keys for data requested on this processor
+-  is - the keys for data requested on this processor
 
    Output Parameters:
 .  data - the actual data
 
-   Collective on AOData and IS
-
 .keywords: database transactions
 
-.seealso:
+.seealso: AODataSegmentRestoreLocalIS()
 @*/
 int AODataSegmentGetLocalIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
@@ -559,20 +560,20 @@ int AODataSegmentGetLocalIS(AOData aodata,char *name,char *segment,IS is,void **
 /*@C
    AODataSegmentRestoreLocalIS - Restores data from a particular segment of a database.
 
+   Collective on AOData and IS
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the data key
 .  segment - the name of the segment
-.  is - the keys provided by this processor
+-  is - the keys provided by this processor
 
    Output Parameters:
 .  data - the actual data
 
-   Collective on AOData and IS
-
 .keywords: database transactions
 
-.seealso:
+.seealso: AODataSegmentGetLocalIS()
 @*/
 int AODataSegmentRestoreLocalIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
@@ -590,18 +591,18 @@ int AODataSegmentRestoreLocalIS(AOData aodata,char *name,char *segment,IS is,voi
 #define __FUNC__ "AODataKeyGetNeighbors" 
 /*@C
    AODataKeyGetNeighbors - Given a list of keys generates a new list containing
-         those keys plus neighbors found in a neighbors list.
+   those keys plus neighbors found in a neighbors list.
+
+   Collective on AOData
 
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  n - the number of data items needed by this processor
-.  keys - the keys provided by this processor
+-  keys - the keys provided by this processor
 
    Output Parameters:
 .  is - the indices retrieved
-
-   Collective on AOData
 
 .keywords: database transactions
 
@@ -633,18 +634,18 @@ int AODataKeyGetNeighbors(AOData aodata,char *name,int n,int *keys,IS *is)
 #define __FUNC__ "AODataKeyGetNeighborsIS" 
 /*@C
    AODataKeyGetNeighborsIS - Given a list of keys generates a new list containing
-         those keys plus neighbors found in a neighbors list.
+   those keys plus neighbors found in a neighbors list.
+
+   Collective on AOData and IS
 
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  n - the number of data items needed by this processor
-.  keys - the keys provided by this processor
+-  keys - the keys provided by this processor
 
    Output Parameters:
 .  is - the indices retrieved
-
-   Collective on AOData and IS
 
 .keywords: database transactions
 
@@ -673,19 +674,19 @@ int AODataKeyGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
 #define __FUNC__ "AODataSegmentGetReduced" 
 /*@C
    AODataSegmentGetReduced - Gets the unique list of segment values, by removing 
-           duplicates.
+   duplicates.
+
+   Collective on AOData and IS
 
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
 .  n - the number of data items needed by this processor
-.  keys - the keys provided by this processor
+-  keys - the keys provided by this processor
 
    Output Parameters:
 .  is - the indices retrieved
-
-   Collective on AOData and IS
 
    Example:
 .vb
@@ -693,6 +694,7 @@ int AODataKeyGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
       if the segment contains ->      1  2  1  3  1   4  2  0
    and you request keys 0 1 2 5 7 it will return 1 2 4 0
 .ve
+
 .keywords: database transactions
 
 .seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
@@ -714,16 +716,16 @@ int AODataSegmentGetReduced(AOData aodata,char *name,char *segment,int n,int *ke
 /*@C
    AODataSegmentGetExtrema - Gets the largest and smallest values for each entry in the block
 
+   Collective on AOData
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
-.  segment - the name of the segment
+-  segment - the name of the segment
 
    Output Parameters:
-.  vmax - the maximum values (user must provide enough space)
-.  vmin - the minimum values (user must provide enough space)
-
-   Collective on AOData
++  vmax - the maximum values (user must provide enough space)
+-  vmin - the minimum values (user must provide enough space)
 
 .keywords: database transactions
 
@@ -745,23 +747,26 @@ int AODataSegmentGetExtrema(AOData aodata,char *name,char *segment,void *vmax,vo
 #define __FUNC__ "AODataSegmentGetReducedIS" 
 /*@C
    AODataSegmentGetReducedIS -  Gets the unique list of segment values, by removing 
-           duplicates.
+   duplicates.
+
+   Collective on AOData and IS
 
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
-.  is - the keys for data requested on this processor
+-  is - the keys for data requested on this processor
 
    Output Parameters:
 .  isout - the indices retreived
 
    Example:
-$                      keys    ->      0  1  2  3  4   5  6  7
-$      if the segment contains ->      1  2  1  3  1   4  2  0
-$  and you request keys 0 1 2 5 7 it will return 1 2 4 0
+.vb
+                      keys    ->      0  1  2  3  4   5  6  7
+      if the segment contains ->      1  2  1  3  1   4  2  0
 
-   Collective on AOData and IS
+  and you request keys 0 1 2 5 7, AODataSegmentGetReducedIS() will return 1 2 4 0
+.vb
 
 .keywords: database transactions
 
@@ -789,12 +794,12 @@ int AODataSegmentGetReducedIS(AOData aodata,char *name,char *segment,IS is,IS *i
 /*@C
    AODataKeySetLocalToGlobalMapping - Add another data key to a AOData database.
 
-   Input Parameters:
-.   aodata - the database
-.   name - the name of the key
-.   map - local to global mapping
-
    Not collective
+
+   Input Parameters:
++  aodata - the database
+.   name - the name of the key
+-  map - local to global mapping
 
 .keywords: database additions
 
@@ -823,14 +828,14 @@ int AODataKeySetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 /*@C
    AODataKeyGetLocalToGlobalMapping - Add another data key to a AOData database.
 
+   Not collective
+
    Input Parameters:
-.  aodata - the database
-.  name - the name of the key
++  aodata - the database
+-  name - the name of the key
 
    Output Parameters:
-.   map - local to global mapping
-
-   Not collective
+.  map - local to global mapping
 
 .keywords: database additions
 
@@ -856,11 +861,11 @@ int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 /*@C
    AODataKeyRemove - Remove a data key from a AOData database.
 
-   Input Parameters:
-.  aodata - the database
-.  name - the name of the key
-
    Collective on AOData
+
+   Input Parameters:
++  aodata - the database
+-  name - the name of the key
 
 .keywords: database removal
 
@@ -881,12 +886,12 @@ int AODataKeyRemove(AOData aodata,char *name)
 /*@C
    AODataSegmentRemove - Remove a data segment from a AOData database.
 
-   Input Parameters:
-.  aodata - the database
-.  name - the name of the key
-.  segname - name of the segment
-
    Collective on AOData
+
+   Input Parameters:
++  aodata - the database
+.  name - the name of the key
+-  segname - name of the segment
 
 .keywords: database removal
 
@@ -907,13 +912,13 @@ int AODataSegmentRemove(AOData aodata,char *name,char *segname)
 /*@C
    AODataKeyAdd - Add another data key to a AOData database.
 
+   Collective on AOData
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  N - the number of indices in the key
-.  nlocal - number of indices to be associated with this processor
-
-   Collective on AOData
+-  nlocal - number of indices to be associated with this processor
 
 .keywords: database additions
 
@@ -977,21 +982,21 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
 /*@C
    AODataSegmentAdd - Add another data segment to a AOData database.
 
+   Collective on AOData
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - the name of the data segment
 .  bs - the fundamental blocksize of the data
 .  n - the number of data items contributed by this processor
 .  keys - the keys provided by this processor
 .  data - the actual data
-.  dtype - the data type, one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR etc
-
-   Collective on AOData
+-  dtype - the data type, one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR, etc.
 
 .keywords: database additions
 
-.seealso:
+.seealso: AODataSegmentAddIS()
 @*/
 int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *keys,void *data,
                      PetscDataType dtype)
@@ -1023,20 +1028,20 @@ int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *ke
 /*@C
    AODataSegmentAddIS - Add another data segment to a AOData database.
 
+   Collective on AOData and IS
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  name - the name of the key
 .  segment - name of segment
 .  bs - the fundamental blocksize of the data
 .  is - the keys provided by this processor
 .  data - the actual data
-.  dtype - the data type, one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR etc
-
-   Collective on AOData and IS
+-  dtype - the data type, one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR, etc.
 
 .keywords: database additions
 
-.seealso:
+.seealso: AODataSegmentAdd()
 @*/
 int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void *data,
                        PetscDataType dtype)
@@ -1059,19 +1064,19 @@ int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void 
 /*@C
    AODataKeyGetOwnershipRange - Gets the ownership range to this key type.
 
+   Not collective
+
    Input Parameters:
-.  aodata - the database
-.  name - the name of the key
++  aodata - the database
+-  name - the name of the key
 
    Output Parameters:
-.  rstart - first key owned locally
-.  rend - last key owned locally
-
-   Not collective
++  rstart - first key owned locally
+-  rend - last key owned locally
 
 .keywords: database accessing
 
-.seealso:
+.seealso: AODataKeyGetInfo()
 @*/
 int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
 {
@@ -1095,21 +1100,21 @@ int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
 /*@C
    AODataKeyGetInfo - Gets the global size, local size and number of segments in a key.
 
+   Not collective
+
    Input Parameters:
-.  aodata - the database
-.  name - the name of the key
++  aodata - the database
+-  name - the name of the key
 
    Output Parameters:
-.  nglobal - global number of keys
++  nglobal - global number of keys
 .  nlocal - local number of keys
 .  nsegments - number of segments associated with key
-.  segnames - names of the segments or PETSC_NULL
-
-   Not collective
+-  segnames - names of the segments or PETSC_NULL
 
 .keywords: database accessing
 
-.seealso:
+.seealso: AODataKeyGetOwnershipRange()
 @*/
 int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nsegments,
                      char ***segnames)
@@ -1145,20 +1150,20 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
 /*@C
    AODataSegmentGetInfo - Gets the blocksize and type of a data segment
 
+   Not collective
+
    Input Parameters:
-.  aodata - the database
++  aodata - the database
 .  keyname - the name of the key
-.  segname - the name of the segment
+-  segname - the name of the segment
 
    Output Parameters:
-.  bs - the blocksize
-.  dtype - the datatype
-
-   Not collective
++  bs - the blocksize
+-  dtype - the datatype
 
 .keywords: database accessing
 
-.seealso:
+.seealso:  AODataGetInfo()
 @*/
 int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs, PetscDataType *dtype)
 {
@@ -1183,11 +1188,21 @@ int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs, Pets
 /*@C
    AODataView - Displays an application ordering.
 
-   Input Parameters:
-.  aodata - the database
-.  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
-
    Collective on AOData and Viewer
+
+   Input Parameters:
++  aodata - the database
+-  viewer - viewer used for display
+
+   The available visualization contexts include
++     VIEWER_STDOUT_SELF - standard output (default)
+-     VIEWER_STDOUT_WORLD - synchronized standard
+         output where only the first processor opens
+         the file.  All other processors send their 
+         data to the first processor to print. 
+
+   The user can open an alternative visualization context with
+   ViewerFileOpenASCII() - output to a specified file.
 
 .keywords: database viewing
 
@@ -1208,10 +1223,10 @@ int AODataView(AOData aodata, Viewer viewer)
 /*@C
    AODataDestroy - Destroys an application ordering set.
 
+   Collective on AOData
+
    Input Parameters:
 .  aodata - the database
-
-   Collective on AOData
 
 .keywords: destroy, database
 
@@ -1234,19 +1249,19 @@ int AODataDestroy(AOData aodata)
 #define __FUNC__ "AODataKeyRemap" 
 /*@C
    AODataKeyRemap - Remaps a key and all references to a key to a new numbering 
-     scheme where each processor indicates its new nodes by listing them in the
-     previous numbering scheme.
-
-   Input Parameters:
-.  aodata - the database
-.  key  - the key to remap
-.  ao - the old to new ordering
+   scheme where each processor indicates its new nodes by listing them in the
+   previous numbering scheme.
 
    Collective on AOData and AO
 
+   Input Parameters:
++  aodata - the database
+.  key  - the key to remap
+-  ao - the old to new ordering
+
 .keywords: database remapping
 
-.seealso: 
+.seealso: AODataKeyGetAdjacency()
 @*/
 int AODataKeyRemap(AOData aodata, char *key,AO ao)
 {
@@ -1264,18 +1279,18 @@ int AODataKeyRemap(AOData aodata, char *key,AO ao)
 /*@C
    AODataKeyGetAdjacency - Gets the adjacency graph for a key.
 
+   Collective on AOData
+
    Input Parameters:
-.  aodata - the database
-.  key  - the key
++  aodata - the database
+-  key  - the key
 
    Output Parameter:
 .  adj - the adjacency graph
 
-   Collective on AOData
-
 .keywords: database, adjacency graph
 
-.seealso: 
+.seealso: AODataKeyRemap()
 @*/
 int AODataKeyGetAdjacency(AOData aodata, char *key,Mat *adj)
 {
@@ -1290,16 +1305,16 @@ int AODataKeyGetAdjacency(AOData aodata, char *key,Mat *adj)
 #undef __FUNC__
 #define __FUNC__ "AODataSegmentPartition"
 /*@C
-     AODataSegmentPartition - Partition a segment type across processors 
-         relative to a key that is partitioned. This will try to keep as
-         many elements of the segment on the same processor as corresponding
-         neighboring key elements are.
+    AODataSegmentPartition - Partitions a segment type across processors 
+    relative to a key that is partitioned. This will try to keep as
+    many elements of the segment on the same processor as corresponding
+    neighboring key elements are.
+
+    Collective on AOData
 
     Input Parameters:
-.    aodata - the database
-.    key - the key you wish partitioned and renumbered
-
-   Collective on AOData
++   aodata - the database
+-   key - the key to be partitioned and renumbered
 
 .seealso: AODataKeyPartition()
 @*/

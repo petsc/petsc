@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgcoor.c,v 1.13 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgcoor.c,v 1.14 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -12,14 +12,14 @@ static char vcid[] = "$Id: dgcoor.c,v 1.13 1997/10/19 03:27:39 bsmith Exp bsmith
    DrawGetCoordinates - Gets the application coordinates of the corners of
    the window (or page).
 
-   Input Paramter:
+   Not Collective
+
+   Input Parameter:
 .  draw - the drawing object
 
    Ouput Parameters:
 .  xl,yl,xr,yr - the coordinates of the lower left corner and upper
                  right corner of the drawing region.
-
-   Not Collective
 
 .keywords:  draw, get, coordinates
 @*/
