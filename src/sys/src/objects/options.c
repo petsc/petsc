@@ -22,7 +22,7 @@
 /* 
     For simplicity, we use a static size database
 */
-#define MAXOPTIONS 256
+#define MAXOPTIONS 512
 #define MAXALIASES 25
 
 typedef struct {
