@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.41 1998/04/16 15:02:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.42 1998/04/16 15:46:46 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -303,21 +303,21 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
 */     
 int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,Scalar **lx)
 {
-  int                  ierr,shift,m,n;
+  int                  ierr,shift;
   PetscObjectContainer container;
   Scalar               *tlx;
 
-  ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject *)&container);
+  ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void **) lx);
+    ierr  = PetscObjectContainerGetPointer(container,(void **) lx);CHKERRQ(ierr);
     tlx   = base + addr;
 
     shift = *(int *)*lx;
     PetscMemcpy(*lx,tlx,N*sizeof(Scalar));
     tlx  = (Scalar *) (((char *)tlx) - shift);
     PetscFree(tlx);
-    ierr = PetscObjectContainerDestroy(container);
-    ierr = PetscObjectCompose(obj,"GetArrayPtr",0);
+    ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
+    ierr = PetscObjectCompose(obj,"GetArrayPtr",0);CHKERRQ(ierr);
   } else {
     *lx = base + addr;
   }
