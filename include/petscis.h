@@ -13,7 +13,7 @@ typedef struct _IS* IS;
 extern int   ISCreateSequential(MPI_Comm,int,int *,IS *);
 extern int   ISCreateMPI(int,int,int *,MPI_Comm,IS *);
 extern int   ISCreateStrideSequential(MPI_Comm,int,int,int,IS *);
-extern int   ISAddStrideSequential(IS,int,int,int);
+extern int   ISAddStrideSequential(IS*,int,int,int);
 extern int   ISStrideGetInfo(IS,int *,int*);
 
 extern int   ISSetPermutation(IS);
