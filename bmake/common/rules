@@ -491,7 +491,7 @@ fortranstubs:
 # configure generated targets:
 shared_irix6: shared_irix
 shared_osf5: shared_alpha
-shared_solaris9: shared_solaris
+shared_solaris2: shared_solaris
 shared_darwin6: 
 
 shared_irix:
