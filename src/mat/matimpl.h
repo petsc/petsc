@@ -186,7 +186,7 @@ typedef struct {
   PetscInt   *rindex;                       /* compressed row index               */
   PetscTruth checked;                       /* if compressed row format have been checked for */
 } Mat_CompressedRow;
-EXTERN PetscErrorCode Mat_CheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,PetscReal);
+EXTERN PetscErrorCode Mat_CheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,PetscInt,PetscReal);
 
 struct _p_Mat {
   PETSCHEADER(struct _MatOps)
