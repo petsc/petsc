@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.55 2001/08/07 21:30:54 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.56 2001/09/05 15:19:18 bsmith Exp bsmith $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 This version first preloads and solves a small system, then loads \n\
@@ -164,13 +164,13 @@ int main(int argc,char **args)
       ierr = ISDestroy(nis);CHKERRQ(ierr);
       ierr = ISSort(is);CHKERRQ(ierr);
       ierr = ISAllGather(is,&isn);CHKERRQ(ierr);
-      ISView(is,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));
       ierr = MatGetSubMatrix(A,is,isn,PETSC_DECIDE,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+
+      /* need to move the vector also */
       ierr = ISDestroy(is);CHKERRQ(ierr);
       ierr = ISDestroy(isn);CHKERRQ(ierr);
       ierr = MatDestroy(A);CHKERRQ(ierr);
       A    = B;
-      MatView(A,PETSC_VIEWER_DRAW_WORLD);
     }
  
     /*
