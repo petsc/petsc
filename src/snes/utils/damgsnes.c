@@ -1,63 +1,12 @@
-/*$Id: damgsnes.c,v 1.40 2001/05/22 03:34:19 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.41 2001/05/22 18:08:42 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
 
 /*
       These evaluate the Jacobian on all of the grids. It is used by DMMG to "replace"
-   the user provided Jacobian function. In fact, it calls the user provided one at each level.
+   the user provided Jacobian function. It calls the user provided one at each level.
 */
-/*
-          Version for matrix-free Jacobian 
-*/
-#undef __FUNCT__
-#define __FUNCT__ "DMMGComputeJacobian_MF"
-int DMMGComputeJacobian_MF(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
-{
-  DMMG       *dmmg = (DMMG*)ptr;
-  int        ierr,i,nlevels = dmmg[0]->nlevels;
-  SLES       sles,lsles;
-  PC         pc;
-  PetscTruth ismg;
-
-  PetscFunctionBegin;
-  if (!dmmg) SETERRQ(1,"Passing null as user context which should contain DMMG");
-
-  /* The finest level matrix is "shared" by the corresponding SNES object so we need
-     only call MatAssemblyXXX() on it to indicate it is being used in a new solve */
-  ierr = MatAssemblyBegin(dmmg[nlevels-1]->J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(dmmg[nlevels-1]->J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  /*
-     The other levels MUST be told the vector from which we are doing the differencing
-  */
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
-  if (ismg) {
-
-    ierr = MGGetSmoother(pc,nlevels-1,&lsles);CHKERRQ(ierr);
-    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->B,*flag);CHKERRQ(ierr);
-
-    for (i=nlevels-1; i>0; i--) {
-
-      /* restrict X to coarse grid */
-      ierr = MatRestrict(dmmg[i]->R,X,dmmg[i-1]->work2);CHKERRQ(ierr);
-      X    = dmmg[i-1]->work2;      
-
-      /* scale to "natural" scaling for that grid */
-      ierr = VecPointwiseMult(dmmg[i]->Rscale,X,X);CHKERRQ(ierr);
-
-      ierr = MatSNESMFSetBase(dmmg[i-1]->J,X);CHKERRQ(ierr);
-      ierr = MatAssemblyBegin(dmmg[i-1]->J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(dmmg[i-1]->J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-      ierr = MGGetSmoother(pc,i-1,&lsles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,*flag);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
 
 /*
     Version for user provided Jacobian
@@ -191,7 +140,7 @@ EXTERN int DMMGSetUpLevel(DMMG*,SLES,int);
 int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   int         ierr,i,nlevels = dmmg[0]->nlevels;
-  PetscTruth  usefd,snesmonitor;
+  PetscTruth  usefd,snesmonitor,ismf,ismfoperator;
   SLES        sles;
   PetscViewer ascii;
   MPI_Comm    comm;
@@ -200,6 +149,10 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_snes_monitor",&snesmonitor);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_snes_mf_operator",&ismfoperator);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_snes_mf",&ismf);CHKERRQ(ierr);
+  if (ismf) ismfoperator = PETSC_TRUE;
+
   /* create solvers for each level */
   for (i=0; i<nlevels; i++) {
     ierr = SNESCreate(dmmg[i]->comm,SNES_NONLINEAR_EQUATIONS,&dmmg[i]->snes);CHKERRQ(ierr);
@@ -209,14 +162,15 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
       ierr = PetscViewerASCIISetTab(ascii,nlevels-i);CHKERRQ(ierr);
       ierr = SNESSetMonitor(dmmg[i]->snes,SNESDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
     }
-    if (dmmg[0]->matrixfree) {
+
+    if (ismfoperator) {
       ierr = MatCreateSNESMF(dmmg[i]->snes,dmmg[i]->x,&dmmg[i]->J);CHKERRQ(ierr);
-      if (!dmmg[i]->B) dmmg[i]->B = dmmg[i]->J;
       if (i != nlevels-1) {
         ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->work1);CHKERRQ(ierr);
         ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->work2);CHKERRQ(ierr);
         ierr = MatSNESMFSetFunction(dmmg[i]->J,dmmg[i]->work1,function,dmmg[i]);CHKERRQ(ierr);
       }
+      if (ismf) dmmg[i]->B = dmmg[i]->J;
     }
 
     ierr = SNESGetSLES(dmmg[i]->snes,&sles);CHKERRQ(ierr);
@@ -243,13 +197,13 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     }
 
     ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
-    dmmg[i]->solve = DMMGSolveSNES;
+    dmmg[i]->solve           = DMMGSolveSNES;
     dmmg[i]->computejacobian = jacobian;
     dmmg[i]->computefunction = function;
   }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_fd",&usefd);CHKERRQ(ierr);
-  if ((!jacobian && !dmmg[0]->matrixfree) || usefd) {
+  if ((!jacobian && !ismf) || usefd) {
     ISColoring iscoloring;
     for (i=0; i<nlevels; i++) {
       ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_LOCAL,MATMPIAIJ,&iscoloring,PETSC_NULL);CHKERRQ(ierr);
@@ -271,9 +225,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   }
 
   for (i=0; i<nlevels; i++) {
-    if (dmmg[i]->matrixfree) {
-      ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_MF,dmmg);CHKERRQ(ierr);
-    } else if (dmmg[i]->computejacobian == SNESDefaultComputeJacobianColor) {
+    if (dmmg[i]->computejacobian == SNESDefaultComputeJacobianColor) {
       ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_FD,dmmg);CHKERRQ(ierr);
     } else {
       ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_User,dmmg);CHKERRQ(ierr);
