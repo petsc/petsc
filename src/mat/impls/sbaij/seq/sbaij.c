@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.21 2000/09/08 13:59:43 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.22 2000/09/11 21:29:30 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -82,7 +82,7 @@ static int MatRestoreRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *n
   PetscFunctionBegin;
   if (!ia) PetscFunctionReturn(0);
   SETERRQ(1,1,"Function not yet written for SBAIJ format, only supports natural ordering");
-  PetscFunctionReturn(0); 
+  /* PetscFunctionReturn(0); */
 }
 
 #undef __FUNC__  
@@ -286,7 +286,7 @@ int MatTranspose_SeqSBAIJ(Mat A,Mat *B)
 { 
   PetscFunctionBegin;
   SETERRQ(1,1,"Matrix is symmetric. MatTranspose() should not be called");
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 }
 
 #undef __FUNC__  
@@ -605,7 +605,7 @@ int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Ins
 {
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format");
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 } 
 
 #undef __FUNC__  
@@ -1420,7 +1420,6 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   for (i=1; i<mbs+1; i++) {
     b->i[i] = b->i[i-1] + b->imax[i-1];
   }
-  
 
   /* b->ilen will count nonzeros in each block row so far. */
   b->ilen = (int*)PetscMalloc((mbs+1)*sizeof(int)); 
@@ -1441,7 +1440,12 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   b->spptr            = 0;
   B->info.nz_unneeded = (PetscReal)b->s_maxnz;
   b->keepzeroedrows   = PETSC_FALSE;
-
+  /*
+  b->inew             = 0;
+  b->jnew             = 0;
+  b->anew             = 0;
+  b->a2anew           = 0;
+  */
   *A = B;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatPrintHelp(B);CHKERRQ(ierr); }
