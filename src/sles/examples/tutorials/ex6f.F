@@ -1,5 +1,5 @@
 
-C    "$Id: ex6f.F 1.16 1996/09/26 02:54:01 curfman Exp curfman $";
+C    "$Id: ex6f.F 1.17 1996/09/26 03:22:28 curfman Exp curfman $";
 C
 C  Description: This example demonstrates repeated linear solves as
 C  well as the use of different preconditioner and linear system
@@ -7,8 +7,8 @@ C  matrices.  This example also illustrates how to save PETSc objects
 C  in common blocks.
 C
 C/*T
-C  Concepts: SLES (repeatedly solving linear systems)
-C  Concepts: SLES (different matrices for linear system and preconditioner)
+C  Concepts: SLES^Repeatedly solving linear systems;
+C  Concepts: SLES^Different matrices for linear system and preconditioner;
 C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
 C  Routines: SLESSolve(); SLESGetKSP(); KSPSetMonitor();
 C  Routines: KSPBuildSolution();

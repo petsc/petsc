@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.28 1996/08/27 22:34:34 curfman Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.29 1996/08/28 19:57:21 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -17,8 +17,7 @@ linear solvers on the individual blocks.\n\n";
  */
 
 /*T
-   Concepts: SLES (solving linear equations);
-   Concepts: block Jacobi preconditioner
+   Concepts: SLES^Customizing the block Jacobi preconditioner
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESGetPC(); SLESGetKSP(); SLESSolve(); SLESView();
    Routines: PCSetType(); PCGetType();

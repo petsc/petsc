@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.38 1996/04/15 22:04:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.39 1996/07/08 22:23:15 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -10,12 +10,33 @@ with a user-provided preconditioner.  Input arguments are:\n\
    -user_precond : Employ a user-defined preconditioner.  Used only with\n\
                    matrix-free methods in this example.\n\n";
 
+/*T
+   Concepts: SNES^Using different matrices for the Jacobian and preconditioner;
+   Concepts: SNES^Using matrix-free methods and a user-provided preconditioner;
+   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
+   Routines: SNESSolve(); SNESSetFromOptions();
+   Processors: n
+T*/
+
+/* 
+   Include "snes.h" so that we can use SNES solvers.  Note that this
+   file automatically includes:
+     petsc.h  - base PETSc routines   vec.h - vectors
+     sys.h    - system routines       mat.h - matrices
+     is.h     - index sets            ksp.h - Krylov subspace methods
+     viewer.h - viewers               pc.h  - preconditioners
+     sles.h   - linear solvers
+*/
+
 #include "snes.h"
 #include <math.h>
 
-int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
-     FormFunction(SNES,Vec,Vec,void*),
-     MatrixFreePreconditioner(void *ctx,Vec x,Vec y);
+/* 
+   User-defined routines
+*/
+int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+int FormFunction(SNES,Vec,Vec,void*);
+int MatrixFreePreconditioner(void *ctx,Vec x,Vec y);
 
 int main( int argc, char **argv )
 {
