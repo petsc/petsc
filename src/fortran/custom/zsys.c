@@ -202,13 +202,13 @@ static int ourerrorhandler(int line,char *fun,char *file,char *dir,int n,int p,c
 
 #if defined(PETSC_USES_CPTOFCD)
  {
-   CHAR fun_c,file_c,dir_c,ness_c;
+   CHAR fun_c,file_c,dir_c,mess_c;
 
    fun_c  = _cptofcd(fun,len1);
    file_c = _cptofcd(file,len2);
    dir_c  = _cptofcd(dir,len3);
    mess_c = _cptofcd(mess,len4);
-   (*f2)(&line_c,fun_c,file_c,dir,&n,&p,mess_c,ctx,&ierr,len1,len2,len3,len4);
+   (*f2)(&line,fun_c,file_c,dir_c,&n,&p,mess_c,ctx,&ierr,len1,len2,len3,len4);
 
  }
 #elif defined(PETSC_USE_FORTRAN_MIXED_STR_ARG)
