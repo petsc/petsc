@@ -71,6 +71,15 @@ EXTERN int SNESGetConvergenceHistory(SNES,PetscReal**,int **,int *);
 EXTERN int SNESSetUp(SNES,Vec);
 EXTERN int SNESSolve(SNES,Vec,int*);
 
+EXTERN int SNESAddOptionsChecker(int (*)(SNES));
+
+EXTERN int SNESSetRhsBC(SNES, int (*)(SNES, Vec, void *));
+EXTERN int SNESDefaultRhsBC(SNES, Vec, void *);
+EXTERN int SNESSetSolutionBC(SNES, int (*)(SNES, Vec, void *));
+EXTERN int SNESDefaultSolutionBC(SNES, Vec, void *);
+EXTERN int SNESSetUpdate(SNES, int (*)(SNES, int));
+EXTERN int SNESDefaultUpdate(SNES, int);
+
 extern PetscFList SNESList;
 EXTERN int SNESRegisterDestroy(void);
 EXTERN int SNESRegisterAll(char *);
