@@ -21,17 +21,17 @@ def FixFile(filename):
           ff.close()
 
           # gotta be a better way to do this
-	  data = re.subn('^void ','void PETSC_STDCALL ',data)[0]
-	  data = re.subn('^PetscErrorCode ','void PETSC_STDCALL ',data)[0]
+	  data = re.subn('\nvoid ','\nvoid PETSC_STDCALL ',data)[0]
+	  data = re.subn('\nPetscErrorCode ','\nvoid PETSC_STDCALL ',data)[0]
 	  data = re.subn('Petsc([ToRm]*)Pointer\(int\)','Petsc\\1Pointer(void*)',data)[0]	  
 	  data = re.subn('PetscToPointer\(a\) \(a\)','PetscToPointer(a) (*(long *)(a))',data)[0]
-	  data = re.subn('PetscFromPointer\(a\) \(int\)\(a\)','PetscToPointer(a) (long)(a)',data)[0]
+	  data = re.subn('PetscFromPointer\(a\) \(int\)\(a\)','PetscFromPointer(a) (long)(a)',data)[0]
   	  data = re.subn('PetscToPointer\( \*\(int\*\)','PetscToPointer(',data)[0]
   	  data = re.subn('MPI_Comm comm','MPI_Comm *comm',data)[0]
   	  data = re.subn('\(MPI_Comm\)PetscToPointer\( \(comm\) \)','(MPI_Comm)MPI_Comm_f2c(*(MPI_Fint*)(comm))',data)[0]
   	  data = re.subn('\(PetscInt\* \)PetscToPointer','',data)[0]
-	  
-  	  ff = open(os.path.join(dir,filename),'w')
+
+  	  ff = open(filename,'w')
 	  ff.write('#include "petsc.h"\n#include "petscfix.h"\n'+data)
           ff.close()
     
