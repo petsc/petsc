@@ -83,13 +83,13 @@ runex3f90:
 	   else echo "Possible problem with ex3f90, diffs above"; fi ;\
 	   ${RM} -f ex3f90.tmp
 
-TESTEXAMPLES_1   = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
+TESTEXAMPLES_C   = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
                    runex3 ex3.rm
-TESTEXAMPLES_2   = 
-TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
-TESTEXAMPLES_9   = 
-TESTEXAMPLES_4   =
-TESTEXAMPLES_12  = ex1f90.PETSc runex1f90 ex1f90.rm ex3f90.PETSc runex3f90 ex3f90.rm
+TESTEXAMPLES_C_X11   = 
+TESTEXAMPLES_FORTRAN   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
+TESTEXAMPLES_FORTRAN_MPIUNI   = 
+TESTEXAMPLES_C_X11_MPIUNI   =
+TESTEXAMPLES_F90  = ex1f90.PETSc runex1f90 ex1f90.rm ex3f90.PETSc runex3f90 ex3f90.rm
 TESTEXAMPLES_13  = ex4.PETSc ex4.rm
 
 include ${PETSC_DIR}/bmake/common/test

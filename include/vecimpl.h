@@ -2,6 +2,8 @@
 /* 
    This private file should not be included in users' code.
    Defines the fields shared by all vector implementations.
+
+   It is in the public include directories so that VecGetArray() (which is public) can be defined
 */
 
 #ifndef __VECIMPL_H

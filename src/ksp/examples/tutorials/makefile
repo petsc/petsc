@@ -549,7 +549,7 @@ runex30:
 	   else echo "Possible problem with ex30_1, diffs above"; fi; \
 	   ${RM} -f ex30_1.tmp
 
-TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
+TESTEXAMPLES_C   = ex1.PETSc runex1 runex1_2 runex1_3 \
 		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
 		   ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 \
 		   runex5_2 ex5.rm ex9.PETSc runex9 ex9.rm \
@@ -558,26 +558,26 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
                    ex16.PETSc runex16 ex16.rm ex22.PETSc runex22 ex22.rm \
                    ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
                    ex29.PETSc runex29 runex29_2 ex29.rm ex31.PETSc ex31.rm
-TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
+TESTEXAMPLES_C_X11   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
 	           runex5_5 ex5.rm ex8.rm 
-TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
+TESTEXAMPLES_FORTRAN   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
                    ex6f.PETSc ex6f.rm ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f ex22f.rm \
                    ex21f.PETSc runex21f ex21f.rm
-TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm
-TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
+TESTEXAMPLES_FORTRAN_MPIUNI   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm
+TESTEXAMPLES_C_X11_MPIUNI   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
 		   runex2_3 ex2.rm ex7.PETSc ex7.rm ex5.PETSc ex5.rm \
 		   ex4.PETSc ex4.rm ex9.PETSc runex9 ex9.rm \
                    ex23.PETSc runex23 ex23.rm
-TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm
+TESTEXAMPLES_C_COMPLEX   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
                    runex10_5 runex10_6 runex10_7 runex10_8 runex10_9 \
                    runex10_10 runex10_19 runex10_20 ex10.rm
 TESTEXAMPLES_BLOCKSOLVE   = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
-TESTEXAMPLES_8             =
-TESTEXAMPLES_10            = ex11f.PETSc runex11f ex11f.rm
-TESTEXAMPLES_12            = ex13f90.PETSc runex13f90 ex13f90.rm
+TESTEXAMPLES_FORTRAN_NOCOMPLEX             =
+TESTEXAMPLES_FORTRAN_COMPLEX            = ex11f.PETSc runex11f ex11f.rm
+TESTEXAMPLES_F90            = ex13f90.PETSc runex13f90 ex13f90.rm
 TESTEXAMPLES_13            = ex3.PETSc ex3.rm ex14f.PETSc ex14f.rm
 TESTEXAMPLES_MATLAB_ENGINE = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17            = ex10.PETSc runex10_11 ex10.rm

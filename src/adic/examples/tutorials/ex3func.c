@@ -87,7 +87,7 @@ int Function(Vec F, Vec x)
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
 
   /* 
-     Set SNES/SLES/KSP/PC runtime options, e.g.,
+     Set SNES/KSP/PC runtime options, e.g.,
          -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
   */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);

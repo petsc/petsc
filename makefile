@@ -136,7 +136,7 @@ testexamples: info
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=testexamples_1  tree 
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C  tree 
 	-@echo "Completed compiling and running test examples"
 	-@echo "========================================="
 testfortran: info 
@@ -147,7 +147,7 @@ testfortran: info
 	-@echo "some of the results may not match exactly."
 	-@echo "========================================="
 	-@if [ "${FC}" != "" ]; then \
-            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_3 tree; \
+            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_fortran tree; \
             echo "Completed compiling and running Fortran test examples"; \
           else \
             echo "Error: No FORTRAN compiler available"; \
@@ -158,7 +158,7 @@ testexamples_uni: info
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_4  tree 
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C_X11_MPIUni  tree 
 	-@echo "Completed compiling and running uniprocessor test examples"
 	-@echo "========================================="
 testfortran_uni: info 
@@ -167,7 +167,7 @@ testfortran_uni: info
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
 	-@if [ "${FC}" != "" ]; then \
-            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_9  tree; \
+            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_Fortran_MPIUni  tree; \
             echo "Completed compiling and running uniprocessor fortran test examples"; \
           else \
             echo "Error: No FORTRAN compiler available"; \

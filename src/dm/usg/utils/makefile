@@ -38,7 +38,7 @@ triconvert: chkopts triconvert.o
 include ${PETSC_DIR}/bmake/common/base
 
 #--------------------------------------------------
-TESTEXAMPLES_1 = input.PETSc input.rm triconvert.PETSc triconvert.rm
+TESTEXAMPLES_C = input.PETSc input.rm triconvert.PETSc triconvert.rm
 
 include ${PETSC_DIR}/bmake/common/test
 

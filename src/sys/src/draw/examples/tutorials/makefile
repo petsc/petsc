@@ -46,8 +46,8 @@ runex4:
 runex4_2:
 	-@${MPIRUN} -np 2 ./ex4
 
-TESTEXAMPLES_2  = 
-TESTEXAMPLES_3  =
-TESTEXAMPLES_4  =
+TESTEXAMPLES_C_X11  = 
+TESTEXAMPLES_FORTRAN  =
+TESTEXAMPLES_C_X11_MPIUNI  =
 
 include ${PETSC_DIR}/bmake/common/test

@@ -55,10 +55,10 @@ runex2_2:
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   ${RM} -f ex2_2.tmp
 
-TESTEXAMPLES_1  =
-TESTEXAMPLES_2  = 
-TESTEXAMPLES_3  =
-TESTEXAMPLES_4  =
+TESTEXAMPLES_C  =
+TESTEXAMPLES_C_X11  = 
+TESTEXAMPLES_FORTRAN  =
+TESTEXAMPLES_C_X11_MPIUNI  =
 TESTEXAMPLES_6  = ex2.PETSc ex2.rm 
 TESTEXAMPLES_13 = ex1.PETSc ex1.rm
 TESTEXAMPLES_PARMETIS = ex2.PETSc runex2 runex2_2 ex2.rm 

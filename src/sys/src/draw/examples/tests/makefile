@@ -68,10 +68,10 @@ runex9:
 runex10:
 	-@${MPIRUN} -np 1 ./ex10
 
-TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
+TESTEXAMPLES_C_X11  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
 		  runex3 ex3.rm ex10.PETSc runex10 ex10.rm ex4.PETSc runex4 ex4.rm ex9.PETSc runex9 ex9.rm
-TESTEXAMPLES_3  = ex4f.PETSc ex4f.rm ex5f.PETSc ex5f.rm 
-TESTEXAMPLES_4  = ex1.PETSc ex1.rm 
+TESTEXAMPLES_FORTRAN  = ex4f.PETSc ex4f.rm ex5f.PETSc ex5f.rm 
+TESTEXAMPLES_C_X11_MPIUNI  = ex1.PETSc ex1.rm 
 TESTEXAMPLES_13 = ex9.PETSc ex9.rm 
 
 include ${PETSC_DIR}/bmake/common/test
