@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: f90_nag.c,v 1.2 1997/04/02 23:16:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: f90_IRIX.c,v 1.1 1998/03/12 18:01:55 balay Exp balay $";
 #endif
 
 /*
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: f90_nag.c,v 1.2 1997/04/02 23:16:36 bsmith Exp bsmith
 
 #include "src/fortran/custom/zpetsc.h"
 #include "src/fortran/f90/f90_IRIX.h"
-#include <values.h>
+
 /* --------------------------------------------------------*/
 /*
     PetscF90Create1dArrayScalar - Given a C pointer to a one dimensional
@@ -27,8 +27,6 @@ static char vcid[] = "$Id: f90_nag.c,v 1.2 1997/04/02 23:16:36 bsmith Exp bsmith
 int PetscF90Create1dArrayScalar(void *array,int len, array1d *ptr)
 {
   ptr->addr          = array;
-  ptr->sizeof_data   = BITS(Scalar);
-  ptr->ndim          = 1;
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(Scalar)/sizeof(int);
   ptr->dim[0].lower  = 1;
@@ -80,8 +78,6 @@ int PetscF90Destroy1dArrayScalar(array1d *ptr)
 int PetscF90Create2dArrayScalar(void *array,int m,int n, array2d *ptr)
 {
   ptr->addr          = array;
-  ptr->sizeof_data   = BITS(Scalar);
-  ptr->ndim          = 2;
   ptr->dim[0].extent = m;
   ptr->dim[0].mult   = sizeof(Scalar)/sizeof(int);
   ptr->dim[0].lower  = 1;
@@ -136,8 +132,6 @@ int PetscF90Destroy2dArrayScalar(array2d *ptr)
 int PetscF90Create1dArrayInt(void *array,int len, array1d *ptr)
 {
   ptr->addr          = array;
-  ptr->sizeof_data   = BITS(int);
-  ptr->ndim          = 1;
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(int)/sizeof(int);
   ptr->dim[0].lower  = 1;
