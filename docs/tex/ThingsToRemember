@@ -1,4 +1,14 @@
 
+PETSc grammar review:
+ - Distinction between words "then" and "than"
+    - THAN: used in comparisons
+       - PETSc is faster THAN, better THAN, more flexible THAN, ...
+         all other software in the world :)
+    - THEN: used with "if/then" or to indicate time
+         If you use PETSc, THEN all your coding worries will be solved ;)
+         First preallocate matrix space; THEN assemble the matrix.
+
+----------------------------------------------------------------
 
 Whenever you introduce ANYTHING new in PETSc, be sure to add 
 it to the Fortran include files and fix the interface files as
