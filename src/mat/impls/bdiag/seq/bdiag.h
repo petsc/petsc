@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.11 1995/10/07 20:48:18 curfman Exp curfman $ */
+/* $Id: bdiag.h,v 1.12 1995/10/11 03:53:44 curfman Exp curfman $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -17,7 +17,9 @@
 typedef struct {
   int    m, n;             /* rows, columns */
   int    mblock, nblock;   /* block rows and columns */
-  int    assembled, nonew;
+  int    assembled;        /* if true, matrix is assembled */
+  int    nonew;            /* if true, no new nonzeros allowed in matrix */
+  int    nonew_diag;       /* if true, no new diagonals allowed in matrix */
   int    nz,maxnz;         /* nonzeros, allocated nonzeros */
   int    nd;               /* number of block diagonals */
   int    mainbd;           /* the number of the main block diagonal */
@@ -27,11 +29,10 @@ typedef struct {
   int    ndim;             /* diagonals come from an ndim pde (if 0, ignore) */
   int    ndims[3];         /* sizes of the mesh if ndim > 0 */
   int    user_alloc;       /* true if the user provided the diagonals */
-  int    *colloc;          /* used to hold the column locations if
-			      MatGetRow is used */
+  int    *colloc;          /* holds column locations if using MatGetRow */
   Scalar **diagv;          /* The actual diagonals */
   Scalar *dvalue;          /* Used to hold a row if MatGetRow is used */
-  int    *pivots;          /* pivots for LU factorization (temporary loc) */
+  int    **pivot;          /* pivots for LU factorization (temporary loc) */
 } Mat_SeqBDiag;
 
 #endif

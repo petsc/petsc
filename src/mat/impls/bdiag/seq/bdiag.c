@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.57 1995/10/07 20:48:43 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.58 1995/10/11 03:53:33 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -40,7 +40,7 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
           }
         }
         if (!dfound) {
-          if (a->nonew) {
+          if (a->nonew || a->nonew_diag) {
 #if !defined(PETSC_COMPLEX)
             if (a->user_alloc && value) {
 #else
@@ -119,7 +119,7 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
           }
         }
         if (!dfound) {
-          if (a->nonew) {
+          if (a->nonew || a->nonew_diag) {
 #if !defined(PETSC_COMPLEX)
             if (a->user_alloc && value) {
 #else
@@ -888,7 +888,10 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
     if (!a->user_alloc) { /* Free the actual diagonals */
       for (i=0; i<a->nd; i++) PETSCFREE( a->diagv[i] );
     }
-    if (a->pivots) PETSCFREE(a->pivots);
+    if (a->pivot) {
+      for (i=0; i<a->nd; i++) PETSCFREE( a->pivot[i] );
+      PETSCFREE(a->pivot);
+    }
     PETSCFREE(a->diagv); PETSCFREE(a->diag);
     PETSCFREE(a->colloc); PETSCFREE(a->dvalue);
     PETSCFREE(a);
@@ -1064,7 +1067,10 @@ static int MatDestroy_SeqBDiag(PetscObject obj)
   if (!a->user_alloc) { /* Free the actual diagonals */
     for (i=0; i<a->nd; i++) PETSCFREE( a->diagv[i] );
   }
-  if (a->pivots) PETSCFREE(a->pivots);
+  if (a->pivot) {
+    for (i=0; i<a->nd; i++) PETSCFREE( a->pivot[i] );
+    PETSCFREE(a->pivot);
+  }
   PETSCFREE(a->diagv); PETSCFREE(a->diag);
   PETSCFREE(a->colloc); PETSCFREE(a->dvalue);
   PETSCFREE(a);
@@ -1111,6 +1117,17 @@ static int MatSetOption_SeqBDiag(Mat A,MatOption op)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   if (op == NO_NEW_NONZERO_LOCATIONS)       a->nonew = 1;
   else if (op == YES_NEW_NONZERO_LOCATIONS) a->nonew = 0;
+  else if (op == NO_NEW_DIAGONALS)          a->nonew_diag = 1;
+  else if (op == YES_NEW_DIAGONALS)         a->nonew_diag = 0;
+  else if (op == ROWS_SORTED || 
+           op == ROW_ORIENTED ||
+           op == SYMMETRIC_MATRIX ||
+           op == STRUCTURALLY_SYMMETRIC_MATRIX)
+    PLogInfo((PetscObject)A,"Info:MatSetOption_SeqBDiag:Option ignored\n");
+  else if (op == COLUMN_ORIENTED)
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBDiag:COLUMN_ORIENTED not supported");}
+  else 
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBDiag:Option not supported");}
   return 0;
 }
 
@@ -1322,7 +1339,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   a->nb     = nb;
   a->ndim   = 0;
   a->mainbd = -1;
-  a->pivots = 0;
+  a->pivot  = 0;
 
   a->diag   = (int *)PETSCMALLOC(2*nda*sizeof(int)); CHKPTRQ(a->diag);
   a->bdlen  = a->diag + nda;
@@ -1362,9 +1379,9 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
       CHKPTRQ(a->diagv[i]);
       PetscZero(a->diagv[i],nb*nb*a->bdlen[i]*sizeof(Scalar));
     }
-    a->nonew = 0;
+    a->nonew = 0; a->nonew_diag = 0;
   } else { /* diagonals are set on input; don't allow dynamic allocation */
-    a->nonew = 1;
+    a->nonew = 1; a->nonew_diag = 1;
   }
 
   a->nz         = a->maxnz; /* Currently not keeping track of exact count */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.86 1995/10/11 15:19:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.87 1995/10/11 17:55:12 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -971,22 +971,26 @@ extern int MatSolveTransAdd_MPIAIJ(Mat,Vec,Vec,Vec);
 
 static int MatSetOption_MPIAIJ(Mat A,MatOption op)
 {
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) A->data;
+  Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
 
-  if      (op == NO_NEW_NONZERO_LOCATIONS)  {
-    MatSetOption(aij->A,op);
-    MatSetOption(aij->B,op);
+  if (op == NO_NEW_NONZERO_LOCATIONS ||
+      op == YES_NEW_NONZERO_LOCATIONS ||
+      op == COLUMNS_SORTED ||
+      op == ROW_ORIENTED) {
+        MatSetOption(a->A,op);
+        MatSetOption(a->B,op);
   }
-  else if (op == YES_NEW_NONZERO_LOCATIONS) {
-    MatSetOption(aij->A,op);
-    MatSetOption(aij->B,op);
-  }
-  else if (op == COLUMNS_SORTED) {
-    MatSetOption(aij->A,op);
-    MatSetOption(aij->B,op);
-  }
-  else if (op == COLUMN_ORIENTED) 
-    SETERRQ(1,"MatSetOption_MPIAIJ:Column oriented not supported");
+  else if (op == ROWS_SORTED || 
+           op == SYMMETRIC_MATRIX ||
+           op == STRUCTURALLY_SYMMETRIC_MATRIX ||
+           op == YES_NEW_DIAGONALS)
+    PLogInfo((PetscObject)A,"Info:MatSetOption_MPIAIJ:Option ignored\n");
+  else if (op == COLUMN_ORIENTED)
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:COLUMN_ORIENTED not supported");}
+  else if (op == NO_NEW_DIAGONALS)
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:NO_NEW_DIAGONALS not supported");}
+  else 
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:Option not supported");}
   return 0;
 }
 

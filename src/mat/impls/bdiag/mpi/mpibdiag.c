@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.40 1995/10/11 20:57:58 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.41 1995/10/11 20:58:30 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -492,14 +492,25 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-static int MatSetOption_MPIBDiag(Mat mat,MatOption op)
+static int MatSetOption_MPIBDiag(Mat A,MatOption op)
 {
-  Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
+  Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) A->data;
 
-  if      (op == NO_NEW_NONZERO_LOCATIONS)  MatSetOption(mbd->A,op);
-  else if (op == YES_NEW_NONZERO_LOCATIONS) MatSetOption(mbd->A,op);
-  else if (op == COLUMN_ORIENTED) 
-    SETERRQ(1,"MatSetOption_MPIBDiag:Column-oriented not supported");
+  if (op == NO_NEW_NONZERO_LOCATIONS ||
+      op == YES_NEW_NONZERO_LOCATIONS ||
+      op == NO_NEW_DIAGONALS ||
+      op == YES_NEW_DIAGONALS) {
+        MatSetOption(mbd->A,op);
+  }
+  else if (op == ROWS_SORTED || 
+           op == SYMMETRIC_MATRIX ||
+           op == STRUCTURALLY_SYMMETRIC_MATRIX ||
+           op == YES_NEW_DIAGONALS)
+    PLogInfo((PetscObject)A,"Info:MatSetOption_MPIBDiag:Option ignored\n");
+  else if (op == COLUMN_ORIENTED)
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIBDiag:COLUMN_ORIENTED not supported");}
+  else 
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIBDiag:Option not supported");}
   return 0;
 }
 
@@ -717,7 +728,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 }
 
 /*@
-   MatSeqBDiagGetData - Gets the data for the block diagonal matrix format.
+   MatBDiagGetData - Gets the data for the block diagonal matrix format.
    For the parallel case, this returns information for the local submatrix.
 
    Input Parameters:
