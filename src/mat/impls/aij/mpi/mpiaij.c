@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.169 1996/09/23 18:20:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.170 1996/09/24 20:14:40 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -12,7 +12,7 @@ number to the local number in the off-diagonal part of the local
 storage of the matrix.  This is done in a non scable way since the 
 length of colmap equals the global matrix length. 
 */
-static int CreateColmap_MPIAIJ_Private(Mat mat)
+int CreateColmap_MPIAIJ_Private(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ *B = (Mat_SeqAIJ*) aij->B->data;
@@ -49,6 +49,8 @@ static int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,
   return 0;
 }
 
+extern int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
+
 static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -57,23 +59,29 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
   int        cstart = aij->cstart, cend = aij->cend,row,col;
   int        roworiented = aij->roworiented;
 
+#if defined(PETSC_BOPT_g)
   if (aij->insertmode != NOT_SET_VALUES && aij->insertmode != addv) {
     SETERRQ(1,"MatSetValues_MPIAIJ:Cannot mix inserts and adds");
   }
+#endif
   aij->insertmode = addv;
   for ( i=0; i<m; i++ ) {
+#if defined(PETSC_BOPT_g)
     if (im[i] < 0) SETERRQ(1,"MatSetValues_MPIAIJ:Negative row");
     if (im[i] >= aij->M) SETERRQ(1,"MatSetValues_MPIAIJ:Row too large");
+#endif
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (in[j] < 0) SETERRQ(1,"MatSetValues_MPIAIJ:Negative column");
-        if (in[j] >= aij->N) SETERRQ(1,"MatSetValues_MPIAIJ:Col too large");
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          ierr = MatSetValues(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
+          ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
         }
+#if defined(PETSC_BOPT_g)
+        else if (in[j] < 0) {SETERRQ(1,"MatSetValues_MPIAIJ:Negative column");}
+        else if (in[j] >= aij->N) {SETERRQ(1,"MatSetValues_MPIAIJ:Col too large");}
+#endif
         else {
           if (mat->was_assembled) {
             if (!aij->colmap) {
@@ -87,7 +95,7 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
           }
           else col = in[j];
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          ierr = MatSetValues(aij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
+          ierr = MatSetValues_SeqAIJ(aij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
         }
       }
     } 
@@ -287,8 +295,7 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
  
   /* wait on sends */
   if (aij->nsends) {
-    send_status = (MPI_Status *) PetscMalloc(aij->nsends*sizeof(MPI_Status));
-    CHKPTRQ(send_status);
+    send_status = (MPI_Status *) PetscMalloc(aij->nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     MPI_Waitall(aij->nsends,aij->send_waits,send_status);
     PetscFree(send_status);
   }
@@ -512,8 +519,7 @@ static int MatMultTransAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
-  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,
-                  (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
   return 0;
 }
 
@@ -587,7 +593,7 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILES_VIEWER || vtype == ASCII_FILE_VIEWER) { 
     ierr = ViewerGetFormat(viewer,&format);
-    if (format == ASCII_FORMAT_INFO_DETAILED) {
+    if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
       int     flg;
       MPI_Comm_rank(mat->comm,&rank);
@@ -608,7 +614,7 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       ierr = VecScatterView(aij->Mvctx,viewer); CHKERRQ(ierr);
       return 0; 
     }
-    else if (format == ASCII_FORMAT_INFO) {
+    else if (format == VIEWER_FORMAT_ASCII_INFO) {
       return 0;
     }
   }
@@ -1184,7 +1190,8 @@ static int MatGetBlockSize_MPIAIJ(Mat A,int *bs)
 extern int MatConvert_MPIAIJ(Mat,MatType,Mat *);
 static int MatConvertSameType_MPIAIJ(Mat,Mat *,int);
 extern int MatIncreaseOverlap_MPIAIJ(Mat , int, IS *, int);
-int MatGetSubMatrices_MPIAIJ (Mat ,int , IS *,IS *,MatGetSubMatrixCall,Mat **);
+extern int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
+extern int MatGetSubMatrices_MPIAIJ (Mat ,int , IS *,IS *,MatGetSubMatrixCall,Mat **);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,MatRestoreRow_MPIAIJ,
@@ -1208,7 +1215,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatGetSubMatrices_MPIAIJ,MatIncreaseOverlap_MPIAIJ,MatGetValues_MPIAIJ,0,
        MatPrintHelp_MPIAIJ,
        MatScale_MPIAIJ,0,0,0,
-       MatGetBlockSize_MPIAIJ};
+       MatGetBlockSize_MPIAIJ,0,0,0,0, 
+       MatFDColoringCreate_MPIAIJ};
 
 
 /*@C
