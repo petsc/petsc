@@ -24,6 +24,7 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 all: chkpetsc_dir
 	-$(RM) -f $(PDIR)/*
 	-@echo "Beginning to compile libraries in all directories"
+	-@echo On `date` on `hostname`
 	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
@@ -47,6 +48,7 @@ all: chkpetsc_dir
 # Builds PETSc test examples for a given BOPT and architecture
 testexamples: chkopts
 	-@echo "Beginning to compile and run test examples"
+	-@echo On `date` on `hostname`
 	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
@@ -70,6 +72,7 @@ testexamples: chkopts
 # Builds PETSc test examples for a given BOPT and architecture
 testexamples_uni: chkopts
 	-@echo "Beginning to compile and run uniprocessor test examples"
+	-@echo On `date` on `hostname`
 	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
 	-@echo "Using linker: $(CLINKER)"
 	-@echo "------------------------------------------"
@@ -98,6 +101,7 @@ testexamples_uni: chkopts
 fortran: chkpetsc_dir
 	-$(RM) -f $(PDIR)/libpetscfortran.*
 	-@echo "Beginning to compile Fortran interface library"
+	-@echo On `date` on `hostname`
 	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
 	-@echo "------------------------------------------"
@@ -126,6 +130,7 @@ fortran: chkpetsc_dir
 # Builds PETSc test examples for a given BOPT and architecture
 testfortran: chkopts
 	-@echo "Beginning to compile and run Fortran test examples"
+	-@echo On `date` on `hostname`
 	-@echo "Using compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using linker: $(FLINKER)"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
@@ -160,6 +165,7 @@ testfortran: chkopts
 # Note: F90 interface currently only supported in NAG F90 compiler
 fortran90: chkpetsc_dir fortran
 	-@echo "Beginning to compile Fortran90 interface library"
+	-@echo On `date` on `hostname`
 	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
 	-@echo "------------------------------------------"
