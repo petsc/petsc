@@ -36,7 +36,7 @@ typedef struct exception_info {
 
      struct exception_info *down;
 } exception_info;
-static char *exceptions[] = {
+static const char *exceptions[] = {
 #include "names.h"
 };
 

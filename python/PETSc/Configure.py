@@ -118,11 +118,11 @@ class Configure(config.base.Configure):
     self.pushLanguage('C')
     if self.functions.check('ipxfargvc_'):
       self.addDefine('HAVE_PXFGETARG_NEW')
-    else self.functions.check('f90_unix_MP_iargc'):
+    elif self.functions.check('f90_unix_MP_iargc'):
       self.addDefine('HAVE_NAGF90')
-    else self.functions.check('PXFGETARG'):
+    elif self.functions.check('PXFGETARG'):
       self.addDefine('HAVE_PXFGETARG')
-    else self.functions.check('GETARG16'): 
+    elif self.functions.check('GETARG16'): 
       self.addDefine('USE_NARGS')
       self.addDefine('HAVE_IARG_COUNT_PROGNAME')
     self.popLanguage('C')
