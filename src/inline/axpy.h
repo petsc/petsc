@@ -138,9 +138,9 @@ EXTERN_C_END
 #define APXY2(U,a1,a2,p1,p2,n)  {int one=1,two=2,off=(int)(p2-p1);\
   double fone=1.0,aa[2];\
 aa[0]=a1;aa[1]=a2;\
-  dgemv_("N",&n,&two,&fone,p1,&off,aa,&one,&fone,U,&one,1);}
+  LAgemv_("N",&n,&two,&fone,p1,&off,aa,&one,&fone,U,&one);}
 #define APXY3(U,a1,a2,a3,p1,p2,p3,n){APXY2(U,a1,a2,p1,p2,n);\
-  APXY(U,a3,a4,p3,n);}
+  APXY(U,a3,p3,n);}
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){APXY2(U,a1,a2,p1,p2,n);\
   APXY2(U,a3,a4,p3,p4,n);}
 
