@@ -25,13 +25,6 @@ File Description:
 #include <float.h>
 #include <limits.h>
 
-#include "petscconf.h"
-#if defined(HAVE_STRINGS_H)
-#include <strings.h>
-#endif
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 
 #if   defined NXSRC
 #ifndef DELTA
@@ -40,7 +33,14 @@ File Description:
 
 #elif defined MPISRC
 #include <mpi.h>
+#endif
 
+#include "petscconf.h"
+#if defined(HAVE_STRINGS_H)
+#include <strings.h>
+#endif
+#if defined(HAVE_STRING_H)
+#include <string.h>
 #endif
 
 #include "const.h"

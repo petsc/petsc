@@ -78,6 +78,7 @@ int PetscMapSerialize_MPI(MPI_Comm comm, PetscMap *map, PetscViewer viewer, Pets
     ierr = PetscMapCreate(comm, &m);                                                                      CHKERRQ(ierr);
     ierr = PetscMapSetLocalSize(m, n);                                                                    CHKERRQ(ierr);
     ierr = PetscMapSetSize(m, N);                                                                         CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm, &numProcs);                                                                CHKERRQ(ierr);
     ierr = PetscMalloc((numProcs+1) * sizeof(int), &m->range);                                            CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd, &m->rstart, 1,          PETSC_INT);                                        CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd, &m->rend,   1,          PETSC_INT);                                        CHKERRQ(ierr);
