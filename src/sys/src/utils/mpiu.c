@@ -1,9 +1,9 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.48 1996/07/24 15:19:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.49 1996/08/04 23:11:37 bsmith Exp bsmith $";
 #endif
 /*
-      Some PETSc utilites routines to add simple IO capability to MPI.
+      Some PETSc utilites routines to add simple IO capability.
 */
 #include "petsc.h"        /*I    "sys.h"   I*/
 #include <stdio.h>
@@ -52,6 +52,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
   }
   return 0;
 }
+
 /*@C
     PetscPrintf - Prints to standard out, only from the first
     processor in the communicator.
@@ -86,12 +87,13 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
   return 0;
 }
 
-static char PetscDisplay[128];
-
 /*
-     PetscSetDisplay - Tries to set the display variable for all processors.
+     PetscSetDisplay - Tries to set the X windows display variable for all processors.
+                       The variable PetscDisplay contains the X windows display variable.
 
 */
+static char PetscDisplay[128]; 
+
 int PetscSetDisplay()
 {
   int  size,rank,len,ierr,flag;
@@ -105,13 +107,10 @@ int PetscSetDisplay()
   if (!rank) {
     str = getenv("DISPLAY");
     if (!str || (str[0] == ':' && size > 1)) {
-      string = (char *) PetscMalloc( 256*sizeof(char) ); CHKPTRQ(string);
-      MPI_Get_processor_name(string,&len);
-      PetscStrncpy(PetscDisplay,string,128-4); PetscFree(string);
+      ierr = PetscGetHostName(string,124); CHKERRQ(ierr);
       PetscStrcat(PetscDisplay,":0.0");
     }
     else {
-      len = PetscStrlen(str);
       PetscStrncpy(PetscDisplay,str,128);
     }
     len = PetscStrlen(PetscDisplay);
@@ -127,7 +126,7 @@ int PetscSetDisplay()
 }
 
 /*
-     PetscGtDisplay - Gets the display variable for all processors.
+     PetscGetDisplay - Gets the display variable for all processors.
 
   Input Parameters:
 .   n - length of string display
@@ -143,6 +142,10 @@ int PetscGetDisplay(char *display,int n)
 }
 
 /* ---------------------------------------------------------------------*/
+/*
+    The variable MPIU_Seq_keyval is used to indicate an MPI attribute that
+  is attached to a communicator that manages the sequential phase code below.
+*/
 static int MPIU_Seq_keyval = MPI_KEYVAL_INVALID;
 
 /*@
@@ -186,7 +189,7 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
   if (!flag) {
     MPI_Comm_dup( comm, &local_comm );
     /*
-      This expects a communicator to be a pointer. On the Cray T3d
+      This expects a communicator to be a pointer. On the Cray T3d and IBM Sp
       a MPI_Comm is an integer, thus we must cast it below.
     */
     MPI_Attr_put( comm, MPIU_Seq_keyval, (void *) local_comm );
@@ -197,8 +200,7 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
   if (lidx != 0) {
     MPI_Recv( 0, 0, MPI_INT, lidx-1, 0, local_comm, &status );
   }
-  /* Send to the next process in the group unless we are the last process 
-   in the processor set */
+  /* Send to the next process in the group unless we are the last process */ 
   if ((lidx % ng) < ng - 1 && lidx != np - 1) {
     MPI_Send( 0, 0, MPI_INT, lidx + 1, 0, local_comm );
   }
@@ -232,8 +234,7 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
   if (np == 1) return 0;
   MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
-  /* Send to the first process in the next group OR to the first process
-     in the processor set */
+  /* Send to the first process in the next group */
   if ((lidx % ng) == ng - 1 || lidx == np - 1) {
     MPI_Send( 0, 0, MPI_INT, (lidx + 1) % np, 0, local_comm );
   }
@@ -242,7 +243,8 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
   }
   return 0;
 }
-/* ----------------------------------------------------------------
+/* ---------------------------------------------------------------- */
+/*
    A simple way to manage tags inside a private 
    communicator.  It uses the attribute to determine if a new communicator
    is needed.
@@ -251,8 +253,8 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
 
    The tagvalues to use are stored in a two element array.  The first element
    is the first free tag value.  The second is used to indicate how
-   many "copies" of the commincator there are used in destroying.
- */
+   many "copies" of the communicator there are used in destroying.
+*/
 
 static int MPIU_Tag_keyval = MPI_KEYVAL_INVALID;
 
@@ -272,7 +274,8 @@ static int MPIU_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
 /*@
     PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All 
         processors that share the object MUST call this EXACTLY the same
-        number of times.
+        number of times. This tag should only be used with the current objects
+        communicator, do not use it with any other MPI communicator.
 
   Input Parameter:
 .  obj - the PETSc object
@@ -280,7 +283,7 @@ static int MPIU_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
   Output Parameter:
 .  tag - the new tag
 
-.seealso: PetscObjectRestoreNewTag
+.seealso: PetscObjectRestoreNewTag()
 @*/
 int PetscObjectGetNewTag(PetscObject obj,int *tag)
 {
@@ -300,7 +303,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 /*@
     PetscObjectRestoreNewTag - Restores new tag from a PETSc object. All 
         processors that share the object MUST call this EXACTLY the same
-        number of times.
+        number of times. 
 
   Input Parameter:
 .  obj - the PETSc object
@@ -308,7 +311,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
   Output Parameter:
 .  tag - the new tag
 
-.seealso: PetscObjectGetNewTag
+.seealso: PetscObjectGetNewTag()
 @*/
 int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 {
@@ -323,14 +326,12 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
   if (*tagvalp == *tag - 1) {
     tagvalp[0]++;
   }
-
   return 0;
 }
 
 /*
-  PetscCommDup_Private - Duplicates only if communicator is not a PETSc 
+  PetscCommDup_Private - Duplicates the communicator only if it is not already PETSc 
                          communicator.
-
 
   Input Parameters:
 . comm_in - Input communicator
@@ -351,23 +352,23 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
   int ierr = MPI_SUCCESS, *tagvalp, *maxval, flag;
 
   if (MPIU_Tag_keyval == MPI_KEYVAL_INVALID) {
-    /* the calling sequence of the 2nd argument to this function changed
+    /* 
+       The calling sequence of the 2nd argument to this function changed
        between MPI Standard 1.0 and the revisions 1.1 Here we match the 
        new standard, if you are using an MPI implementation that uses 
        the older version you will get a warning message about the next line,
-       it is only a warning message and should do no harm */
+       it is only a warning message and should do no harm
+    */
     MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,(void*)0);
   }
 
   ierr = MPI_Attr_get(comm_in,MPIU_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
 
   if (!flag) {
-    /* This communicator is not yet known to this system, so we
-       dup it and set the first value */
+    /* This communicator is not yet known to this system, so we dup it and set its value */
     MPI_Comm_dup( comm_in, comm_out );
     MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );
-    tagvalp = (int *) PetscMalloc( 2*sizeof(int) );
-    if (!tagvalp) return MPI_ERR_OTHER;
+    tagvalp = (int *) PetscMalloc( 2*sizeof(int) ); CHKPTRQ(tagvalp);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     MPI_Attr_put(*comm_out,MPIU_Tag_keyval, tagvalp);
@@ -383,8 +384,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 }
 
 /*
-  PetscCommFree_Private - Frees communicator.  Use in conjunction with 
-      PetscCommDup_Private().
+  PetscCommFree_Private - Frees communicator.  Use in conjunction with PetscCommDup_Private().
 */
 int PetscCommFree_Private(MPI_Comm *comm)
 {
@@ -395,3 +395,7 @@ int PetscCommFree_Private(MPI_Comm *comm)
   if (!tagvalp[1]) {MPI_Comm_free(comm);}
   return 0;
 }
+
+
+
+
