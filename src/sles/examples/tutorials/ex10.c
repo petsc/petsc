@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.21 1998/04/21 18:31:00 balay Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.22 1998/05/20 23:03:44 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -199,7 +199,7 @@ int main(int argc,char **args)
     ierr = PetscGetTime(&tsolve2); CHKERRA(ierr);
     tsolve = tsolve2 - tsolve1;
 
-    /* 
+   /* 
        Conclude profiling this stage
     */
     PLogStagePop();

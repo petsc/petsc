@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.80 1998/04/22 14:24:26 curfman Exp bsmith $ */
+/* $Id: pc.h,v 1.81 1998/06/11 19:59:10 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -8,7 +8,7 @@
 #include "petsc.h"
 #include "mat.h"
 
-extern DLList PCList;
+extern FList PCList;
 typedef char *PCType;
 
 #define PCNONE      "none"
@@ -108,11 +108,15 @@ extern int PCSLESSetUseTrue(PC);
 extern int PCCompositeSetUseTrue(PC);
 
 extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
+extern int PCShellSetSetUp(PC, int (*)(void*));
 extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
 extern int PCShellSetName(PC,char*);
 extern int PCShellGetName(PC,char**);
 
 extern int PCLUSetMatReordering(PC,MatReorderingType);
+extern int PCLUSetReuseReordering(PC,PetscTruth);
+extern int PCLUSetReuseFill(PC,PetscTruth);
+
 extern int PCILUSetMatReordering(PC,MatReorderingType);
 extern int PCLUSetUseInPlace(PC);
 extern int PCLUSetFill(PC,double);
