@@ -4,4 +4,14 @@ then
 $*
 exit 0
 fi
+
+if [ $2 =  "1" ]
+then
+shift
+shift
+$*
+exit 0
+fi
+
+
 echo "Uniprocessor version of MPI can only use one processor"
