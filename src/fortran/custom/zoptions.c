@@ -393,12 +393,12 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,l
 PetscErrorCode MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 {
   PetscErrorCode ierr;
-  int size;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   /* call to MPI_Comm_size() is for error checking on comm */
   ierr = MPI_Comm_size(comm,&size);
-  if (ierr) SETERRQ(1,"Invalid MPI communicator");
+  if (ierr) SETERRQ(PETSC_ERR_ARG_CORRUPT ,"Invalid MPI communicator");
 
   *fcomm = PetscFromPointerComm(comm);
   PetscFunctionReturn(0);
@@ -433,13 +433,13 @@ PetscErrorCode MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 PetscErrorCode MPIFortranCommToCComm(int fcomm,MPI_Comm *comm)
 {
   PetscErrorCode ierr;
-  int size;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   *comm = (MPI_Comm)PetscToPointerComm(fcomm);
   /* call to MPI_Comm_size() is for error checking on comm */
   ierr = MPI_Comm_size(*comm,&size);
-  if (ierr) SETERRQ(1,"Invalid MPI communicator");
+  if (ierr) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid MPI communicator");
   PetscFunctionReturn(0);
 }
 

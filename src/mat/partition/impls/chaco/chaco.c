@@ -214,9 +214,9 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
 {
 
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
-    PetscErrorCode ierr;
-    int  rank;
-    PetscTruth iascii;
+    PetscErrorCode        ierr;
+    PetscMPIInt           rank;
+    PetscTruth            iascii;
 
     PetscFunctionBegin;
 
@@ -227,8 +227,7 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
             ierr = PetscViewerASCIIPrintf(viewer, "%s\n", chaco->mesg_log);CHKERRQ(ierr);
         }
     } else {
-        SETERRQ1(1, "Viewer type %s not supported for this Chaco partitioner",
-            ((PetscObject) viewer)->type_name);
+        SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this Chaco partitioner",((PetscObject) viewer)->type_name);
     }
 
     PetscFunctionReturn(0);

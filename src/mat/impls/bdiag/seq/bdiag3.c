@@ -682,7 +682,7 @@ PetscErrorCode MatView_SeqBDiag(Mat A,PetscViewer viewer)
   } else if (isdraw) {
     ierr = MatView_SeqBDiag_Draw(A,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by BDiag matrices",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by BDiag matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

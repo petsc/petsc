@@ -97,7 +97,7 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for DA2d",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for DA2d",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -935,7 +935,7 @@ PetscErrorCode DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
 
   csize = 4*size;
   do {
-    if (csize % 4) SETERRQ4(1,"Cannot split communicator of size %d tried %d %d %d",size,csize,x,y);
+    if (csize % 4) SETERRQ4(PETSC_ERR_ARG_INCOMP,"Cannot split communicator of size %d tried %d %d %d",size,csize,x,y);
     csize   = csize/4;
   
     m = (int)(0.5 + sqrt(((double)M)*((double)csize)/((double)N)));

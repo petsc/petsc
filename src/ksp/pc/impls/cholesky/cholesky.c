@@ -122,7 +122,7 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for PCCholesky",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCCholesky",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

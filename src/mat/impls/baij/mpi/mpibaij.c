@@ -1210,7 +1210,7 @@ PetscErrorCode MatView_MPIBAIJ(Mat mat,PetscViewer viewer)
   if (iascii || isdraw || issocket || isbinary) { 
     ierr = MatView_MPIBAIJ_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by MPIBAIJ matrices",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by MPIBAIJ matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -1526,7 +1526,7 @@ PetscErrorCode MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else {
-    SETERRQ1(1,"Unknown MatInfoType argument %d",flag);
+    SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown MatInfoType argument %d",flag);
   }
   info->rows_global       = (PetscReal)A->M;
   info->columns_global    = (PetscReal)A->N;

@@ -17,14 +17,14 @@ static PetscErrorCode InputGrid(AOData *aodata);
 int main( int argc, char **argv )
 {
   PetscErrorCode ierr;
-  int      size;
-  char     filename[513] = "gridfile";
-  AOData   aodata;
+  PetscMPIInt    size;
+  char           filename[513] = "gridfile";
+  AOData         aodata;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) {
-    SETERRQ(1,"Must run input program with exactly one processor");
+    SETERRQ(PETSC_ERR_USER,"Must run input program with exactly one processor");
   }
   x_min = 0.0; x_max = 1.0;
   y_min = 0.0; y_max = 1.0;

@@ -43,7 +43,7 @@ PetscErrorCode VecStrideScale(Vec v,PetscInt start,PetscScalar *scale)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(1,"Start of stride subvector (%d) is too large for stride\n\
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%d) is too large for stride\n\
             Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
@@ -108,7 +108,7 @@ PetscErrorCode VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(1,"Start of stride subvector (%d) is too large for stride\n\
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%d) is too large for stride\n\
             Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
@@ -878,11 +878,11 @@ PetscErrorCode VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(1,"Start of stride subvector (%d) is too large for stride\n\
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%d) is too large for stride\n\
             Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   if (n != ns*bs) {
-    SETERRQ2(1,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
   }
   x += start;
   n =  n/bs;
@@ -957,11 +957,11 @@ PetscErrorCode VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(1,"Start of stride subvector (%d) is too large for stride\n\
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%d) is too large for stride\n\
             Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   if (n != ns*bs) {
-    SETERRQ2(1,"Subvector length * blocksize %d not correct for scatter to multicomponent vector %d",ns*bs,n);
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %d not correct for scatter to multicomponent vector %d",ns*bs,n);
   }
   x += start;
   n =  n/bs;

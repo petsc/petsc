@@ -92,7 +92,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
       ierr = VecAXPY(&ai,AP,R);CHKERRQ(ierr);           /*   R   <- R - ai*AP    */
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */
     } else {
-      SETERRQ1(1,"KSPNormType of %d not supported",(int)ksp->normtype);
+      SETERRQ1(PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);
     }
 
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);

@@ -61,7 +61,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
     for (i=0; i<mat->m; i++) {
       for (j=xadj[i]; j<xadj[i+1]; j++) {
-        if (adjncy[j] == i+rstart) SETERRQ1(1,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
+        if (adjncy[j] == i+rstart) SETERRQ1(PETSC_ERR_ARG_WRONG,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
       }
     }
   }
@@ -124,7 +124,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d]Number of cuts found %d\n",rank,parmetis->cuts);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for this Parmetis partitioner",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this Parmetis partitioner",((PetscObject)viewer)->type_name);
   }
 
   PetscFunctionReturn(0);

@@ -251,7 +251,7 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **hand
 #endif
 
   if (!*handle) {
-    SETERRQ3(1,"Unable to open dynamic library:\n  %s\n  %s\n  Error message from dlopen() %s\n",libname,par2,dlerror());
+    SETERRQ3(PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  %s\n  Error message from dlopen() %s\n",libname,par2,dlerror());
   }
 
   /* run the function PetscFListAddDynamic() if it is in the library */
@@ -371,7 +371,7 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm,PetscDLLibraryList *inlist,const 
     done:; 
     *value   = dlsym(handle,symbol);
     if (!*value) {
-      SETERRQ2(1,"Unable to locate function %s in dynamic library %s",insymbol,path);
+      SETERRQ2(PETSC_ERR_PLIB,"Unable to locate function %s in dynamic library %s",insymbol,path);
     }
     PetscLogInfo(0,"PetscDLLibrarySym:Loading function %s from dynamic library %s\n",insymbol,path);
 

@@ -42,10 +42,10 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   ierr = DAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   if (pt == DA_XPERIODIC) {
     ratio = mx/Mx;
-    if (ratio*Mx != mx) SETERRQ2(1,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
+    if (ratio*Mx != mx) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
   } else {
     ratio = (mx-1)/(Mx-1);
-    if (ratio*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+    if (ratio*(Mx-1) != mx-1) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
   }
 
   ierr = DAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
@@ -75,7 +75,7 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
     row    = idx_f[dof*(i-i_start_ghost)]/dof;
 
     i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
-    if (i_c < i_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
+    if (i_c < i_start_ghost_c) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
     i_start %d i_c %d i_start_ghost_c %d",i_start,i_c,i_start_ghost_c);
 
     /* 
@@ -134,10 +134,10 @@ PetscErrorCode DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
   ierr = DAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   if (pt == DA_XPERIODIC) {
     ratio = mx/Mx;
-    if (ratio*Mx != mx) SETERRQ2(1,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
+    if (ratio*Mx != mx) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
   } else {
     ratio = (mx-1)/(Mx-1);
-    if (ratio*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+    if (ratio*(Mx-1) != mx-1) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
   }
 
   ierr = DAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
@@ -210,17 +210,17 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   ierr = DAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   if (DAXPeriodic(pt)){
     ratioi = mx/Mx;
-    if (ratioi*Mx != mx) SETERRQ2(1,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
+    if (ratioi*Mx != mx) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
-    if (ratioi*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+    if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
   }
   if (DAYPeriodic(pt)){
     ratioj = my/My;
-    if (ratioj*My != my) SETERRQ2(1,"Ratio between levels: my/My  must be integer: my %d My %d",my,My);
+    if (ratioj*My != my) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %d My %d",my,My);
   } else {
     ratioj = (my-1)/(My-1);
-    if (ratioj*(My-1) != my-1) SETERRQ2(1,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %d My %d",my,My);
+    if (ratioj*(My-1) != my-1) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %d My %d",my,My);
   }
 
 
@@ -257,9 +257,9 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
       i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 
-      if (j_c < j_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
+      if (j_c < j_start_ghost_c) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
     j_start %d j_c %d j_start_ghost_c %d",j_start,j_c,j_start_ghost_c);
-      if (i_c < i_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
+      if (i_c < i_start_ghost_c) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
     i_start %d i_c %d i_start_ghost_c %d",i_start,i_c,i_start_ghost_c);
 
       /* 
@@ -387,28 +387,28 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
     ratioi = 1;
   } else if (DAXPeriodic(pt)){
     ratioi = mx/Mx;
-    if (ratioi*Mx != mx) SETERRQ2(1,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
+    if (ratioi*Mx != mx) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
-    if (ratioi*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+    if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
   }
   if (my == My) {
     ratioj = 1;
   } else if (DAYPeriodic(pt)){
     ratioj = my/My;
-    if (ratioj*My != my) SETERRQ2(1,"Ratio between levels: my/My  must be integer: my %d My %d",my,My);
+    if (ratioj*My != my) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %d My %d",my,My);
   } else {
     ratioj = (my-1)/(My-1);
-    if (ratioj*(My-1) != my-1) SETERRQ2(1,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %d My %d",my,My);
+    if (ratioj*(My-1) != my-1) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %d My %d",my,My);
   }
   if (mz == Mz) {
     ratiok = 1;
   } else if (DAZPeriodic(pt)){
     ratiok = mz/Mz;
-    if (ratiok*Mz != mz) SETERRQ2(1,"Ratio between levels: mz/Mz  must be integer: mz %d Mz %d",mz,Mz);
+    if (ratiok*Mz != mz) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %d Mz %d",mz,Mz);
   } else {
     ratiok = (mz-1)/(Mz-1);
-    if (ratiok*(Mz-1) != mz-1) SETERRQ2(1,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %d Mz %d",mz,Mz);
+    if (ratiok*(Mz-1) != mz-1) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %d Mz %d",mz,Mz);
   }
 
   ierr = DAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
@@ -430,11 +430,11 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
         i_c = (i/ratioi);
         j_c = (j/ratioj);
         l_c = (l/ratiok);
-        if (l_c < l_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
+        if (l_c < l_start_ghost_c) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
           l_start %d l_c %d l_start_ghost_c %d",l_start,l_c,l_start_ghost_c);
-        if (j_c < j_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
+        if (j_c < j_start_ghost_c) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
           j_start %d j_c %d j_start_ghost_c %d",j_start,j_c,j_start_ghost_c);
-        if (i_c < i_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
+        if (i_c < i_start_ghost_c) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
           i_start %d i_c %d i_start_ghost_c %d",i_start,i_c,i_start_ghost_c);
 
         /* 
@@ -612,9 +612,6 @@ PetscErrorCode DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
   if (dimc != dimf) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %d %d",dimc,dimf);CHKERRQ(ierr);
-  /* if (mc != mf) SETERRQ2(1,"Processor dimensions of DA in X %d %d do not match",mc,mf);CHKERRQ(ierr);
-     if (nc != nf) SETERRQ2(1,"Processor dimensions of DA in Y %d %d do not match",nc,nf);CHKERRQ(ierr);
-     if (pc != pf) SETERRQ2(1,"Processor dimensions of DA in Z %d %d do not match",pc,pf);CHKERRQ(ierr); */
   if (dofc != doff) SETERRQ2(PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %d %d",dofc,doff);CHKERRQ(ierr);
   if (sc != sf) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %d %d",sc,sf);CHKERRQ(ierr);
   if (wrapc != wrapf) SETERRQ(PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
@@ -631,13 +628,13 @@ PetscErrorCode DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
     } else if (dimc == 3){
       ierr = DAGetInterpolation_3D_Q1(dac,daf,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(1,"No support for this DA dimension %d for interpolation type %d",dimc,dac->interptype);
+      SETERRQ2(PETSC_ERR_SUP,"No support for this DA dimension %d for interpolation type %d",dimc,dac->interptype);
     }
   } else if (dac->interptype == DA_Q0){
     if (dimc == 1){
       ierr = DAGetInterpolation_1D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(1,"No support for this DA dimension %d for interpolation type %d",dimc,dac->interptype);
+      SETERRQ2(PETSC_ERR_SUP,"No support for this DA dimension %d for interpolation type %d",dimc,dac->interptype);
     }
   }
   if (scale) {
@@ -666,17 +663,17 @@ PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
   ierr = DAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   if (DAXPeriodic(pt)){
     ratioi = mx/Mx;
-    if (ratioi*Mx != mx) SETERRQ2(1,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
+    if (ratioi*Mx != mx) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
-    if (ratioi*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+    if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
   }
   if (DAYPeriodic(pt)){
     ratioj = my/My;
-    if (ratioj*My != my) SETERRQ2(1,"Ratio between levels: my/My  must be integer: my %d My %d",my,My);
+    if (ratioj*My != my) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %d My %d",my,My);
   } else {
     ratioj = (my-1)/(My-1);
-    if (ratioj*(My-1) != my-1) SETERRQ2(1,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %d My %d",my,My);
+    if (ratioj*(My-1) != my-1) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %d My %d",my,My);
   }
 
 
@@ -753,9 +750,6 @@ PetscErrorCode DAGetInjection(DA dac,DA daf,VecScatter *inject)
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
   if (dimc != dimf) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %d %d",dimc,dimf);CHKERRQ(ierr);
-  /* if (mc != mf) SETERRQ2(1,"Processor dimensions of DA in X %d %d do not match",mc,mf);CHKERRQ(ierr);
-     if (nc != nf) SETERRQ2(1,"Processor dimensions of DA in Y %d %d do not match",nc,nf);CHKERRQ(ierr);
-     if (pc != pf) SETERRQ2(1,"Processor dimensions of DA in Z %d %d do not match",pc,pf);CHKERRQ(ierr); */
   if (dofc != doff) SETERRQ2(PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %d %d",dofc,doff);CHKERRQ(ierr);
   if (sc != sf) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %d %d",sc,sf);CHKERRQ(ierr);
   if (wrapc != wrapf) SETERRQ(PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
@@ -767,7 +761,7 @@ PetscErrorCode DAGetInjection(DA dac,DA daf,VecScatter *inject)
   if (dimc == 2){
     ierr = DAGetInjection_2D(dac,daf,inject);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"No support for this DA dimension %d",dimc);
+    SETERRQ1(PETSC_ERR_SUP,"No support for this DA dimension %d",dimc);
   }
   PetscFunctionReturn(0);
 } 

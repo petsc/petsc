@@ -355,7 +355,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,i
     }
     PetscFunctionReturn(0);
   }
-  if (*HH(it,it) == 0.0) SETERRQ2(1,"HH(it,it) is identically zero; it = %d GRS(it) = %g",it,PetscAbsScalar(*GRS(it)));
+  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %d GRS(it) = %g",it,PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) {
     nrs[it] = *GRS(it) / *HH(it,it);
   } else {
@@ -536,7 +536,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"%s restart %d",cstr,gmres->max_k);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for KSP GMRES",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP GMRES",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

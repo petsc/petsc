@@ -163,7 +163,7 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for PCLU",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCLU",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -350,7 +350,7 @@ PetscErrorCode PCLUSetPivoting_LU(PC pc,PetscReal dtcol)
   PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(1,"Column pivot tolerance is %g must be between 0 and 1",dtcol);
+  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Column pivot tolerance is %g must be between 0 and 1",dtcol);
   dir->info.dtcol = dtcol;
   PetscFunctionReturn(0);
 }

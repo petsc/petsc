@@ -161,25 +161,20 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
 #define __FUNCT__ "MatPartitioningView_Jostle"
 PetscErrorCode MatPartitioningView_Jostle(MatPartitioning part, PetscViewer viewer)
 {
+  MatPartitioning_Jostle *jostle_struct = (MatPartitioning_Jostle *) part->data;
+  PetscErrorCode         ierr;
+  PetscTruth             iascii;
 
-    MatPartitioning_Jostle *jostle_struct =
-        (MatPartitioning_Jostle *) part->data;
-    PetscErrorCode ierr;
-    PetscTruth iascii;
-
-    PetscFunctionBegin;
-
-    ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
-    if (iascii) {
-        if (jostle_struct->mesg_log) {
-            ierr = PetscViewerASCIIPrintf(viewer, "%s\n", jostle_struct->mesg_log);CHKERRQ(ierr);
-        }
-    } else {
-        SETERRQ1(1, "Viewer type %s not supported for this Jostle partitioner",
-            ((PetscObject) viewer)->type_name);
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {
+    if (jostle_struct->mesg_log) {
+      ierr = PetscViewerASCIIPrintf(viewer, "%s\n", jostle_struct->mesg_log);CHKERRQ(ierr);
     }
-
-    PetscFunctionReturn(0);
+  } else {
+    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Jostle partitioner",((PetscObject) viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -196,8 +191,7 @@ PetscErrorCode MatPartitioningView_Jostle(MatPartitioning part, PetscViewer view
 @*/
 PetscErrorCode MatPartitioningJostleSetCoarseLevel(MatPartitioning part, PetscReal level)
 {
-    MatPartitioning_Jostle *jostle_struct =
-        (MatPartitioning_Jostle *) part->data;
+    MatPartitioning_Jostle *jostle_struct = (MatPartitioning_Jostle *) part->data;
 
     PetscFunctionBegin;
 

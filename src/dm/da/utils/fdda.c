@@ -163,7 +163,7 @@ PetscErrorCode DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
   } else if (dim == 3) {
     ierr =  DAGetColoring3d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else {
-      SETERRQ1(1,"Not done for %d dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
+      SETERRQ1(PETSC_ERR_SUP,"Not done for %d dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
   }
   PetscFunctionReturn(0);
 }
@@ -238,7 +238,7 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
       *coloring = da->ghostedcoloring;
-    } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
+    } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",ctype);
   }
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -319,7 +319,7 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
-  } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
+  } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",ctype);
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -383,7 +383,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
-  } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
+  } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",ctype);
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -449,7 +449,7 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
-  } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
+  } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",ctype);
   PetscFunctionReturn(0);
 }
 

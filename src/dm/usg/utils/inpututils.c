@@ -113,7 +113,7 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
     /* wait for second vertex */
     ierr = PetscDrawGetMouseButton(draw,&button,&cx,&cy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     if (button != BUTTON_LEFT) {
-      SETERRQ(1,"Must press left button to complete cellrilateral");
+      SETERRQ(PETSC_ERR_USER,"Must press left button to complete quadrilateral");
     }
     ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn);CHKERRQ(ierr);
     cell[4*agrid->cell_n+1] = cn;
@@ -125,7 +125,7 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
     /* wait for third vertex */
     ierr = PetscDrawGetMouseButton(draw,&button,&cx,&cy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     if (button != BUTTON_LEFT) {
-      SETERRQ(1,"Must press left button to complete cellrilateral");
+      SETERRQ(PETSC_ERR_USER,"Must press left button to complete quadrilateral");
     }
     ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn);CHKERRQ(ierr);
     cell[4*agrid->cell_n+2] = cn;
@@ -137,7 +137,7 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
     /* wait for fourth vertex */
     ierr = PetscDrawGetMouseButton(draw,&button,&cx,&cy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     if (button != BUTTON_LEFT) {
-      SETERRQ(1,"Must press left button to complete cellrilateral");
+      SETERRQ(PETSC_ERR_USER,"Must press left button to complete quadrilateral");
     }
     ierr = AOData2dGridAddNode(agrid,cx,cy,&cn);CHKERRQ(ierr);
     cell[4*agrid->cell_n+3] = cn;
@@ -189,7 +189,7 @@ PetscErrorCode AOData2dGridFlipCells(AOData2dGrid agrid)
             vertex[1+2*cell[4*i+2]]*vertex[2*cell[4*i+3]] - vertex[1+2*cell[4*i+3]]*vertex[2*cell[4*i]];
 
      if (sign == 0.0) {
-       SETERRQ(1,"Bad cell");
+       SETERRQ(PETSC_ERR_USER,"Bad cell, zero area");
      } else if (sign > 0) {
        int q1tmp = cell[4*i+1];
        cell[4*i+1] = cell[4*i+3];

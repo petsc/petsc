@@ -82,7 +82,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
   ierr = PCHasApplyTranspose(ksp->pc,&transpose_pc);CHKERRQ(ierr);
 
   cg            = (KSP_CG*)ksp->data;
@@ -254,7 +254,7 @@ PetscErrorCode KSPView_CGNE(KSP ksp,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  CG: unknown variant\n");CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
   }
 #endif
   PetscFunctionReturn(0);

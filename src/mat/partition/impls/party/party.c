@@ -177,26 +177,22 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
 #define __FUNCT__ "MatPartitioningView_Party"
 PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewer)
 {
+  MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
+  PetscErrorCode        ierr;
+  PetscMPIInt           rank;
+  PetscTruth            iascii;
 
-    MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
-    PetscErrorCode ierr;
-    int  rank;
-    PetscTruth iascii;
-
-    PetscFunctionBegin;
-
-    ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
-    if (iascii) {
-        if (!rank && party->mesg_log) {
-            ierr = PetscViewerASCIIPrintf(viewer, "%s\n", party->mesg_log);CHKERRQ(ierr);
-        }
-    } else {
-        SETERRQ1(1, "Viewer type %s not supported for this Party partitioner",
-            ((PetscObject) viewer)->type_name);
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {
+    if (!rank && party->mesg_log) {
+      ierr = PetscViewerASCIIPrintf(viewer, "%s\n", party->mesg_log);CHKERRQ(ierr);
     }
-
-    PetscFunctionReturn(0);
+  } else {
+    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Party partitioner",((PetscObject) viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

@@ -46,7 +46,7 @@ PetscErrorCode DAVecGetArray(DA da,Vec vec,void *array)
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    SETERRQ3(1,"Vector local size %d is not compatible with DA local sizes %d %d\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+    SETERRQ3(PETSC_ERR_ARG_INCOMP,"Vector local size %d is not compatible with DA local sizes %d %d\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
   }
 
   if (dim == 1) {
@@ -56,7 +56,7 @@ PetscErrorCode DAVecGetArray(DA da,Vec vec,void *array)
   } else if (dim == 3) {
     ierr = VecGetArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"DA dimension not 1, 2, or 3, it is %d\n",dim);
+    SETERRQ1(PETSC_ERR_ARG_CORRUPT,"DA dimension not 1, 2, or 3, it is %d\n",dim);
   }
 
   PetscFunctionReturn(0);
@@ -109,7 +109,7 @@ PetscErrorCode DAVecRestoreArray(DA da,Vec vec,void *array)
   } else if (dim == 3) {
     ierr = VecRestoreArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"DA dimension not 1, 2, or 3, it is %d\n",dim);
+    SETERRQ1(PETSC_ERR_ARG_CORRUPT,"DA dimension not 1, 2, or 3, it is %d\n",dim);
   }
   PetscFunctionReturn(0);
 }

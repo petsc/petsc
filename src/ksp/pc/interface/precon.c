@@ -1391,7 +1391,7 @@ PetscErrorCode PCView(PC pc,PetscViewer viewer)
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
     if (pc->ops->view) {ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);}
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by PC",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by PC",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -35,7 +35,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"%3d  %3d    %3d  %3d\n",i,aodebug->app[i],i,aodebug->petsc[i]);CHKERRQ(ierr);
       }
     } else {
-      SETERRQ1(1,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
+      SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

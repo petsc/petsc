@@ -103,7 +103,7 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
     } else if (dim == 3) {
       ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
     } else {
-      SETERRQ1(1,"Dimension is not 1 2 or 3: %d\n",dim);
+      SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %d\n",dim);
     }
     ierr = DACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);

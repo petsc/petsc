@@ -176,7 +176,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
        ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
      }
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for SNES matrix free matrix",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for SNES matrix free matrix",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

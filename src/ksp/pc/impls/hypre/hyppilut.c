@@ -89,7 +89,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   ierr = HYPRE_IJVectorGetObject(jac->b,(void**)&bv);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->x,(void**)&xv);CHKERRQ(ierr);
   hierr = (*jac->setup)(jac->hsolver,hmat,bv,xv);
-  if (hierr) SETERRQ1(1,"Error in HYPRE setup, error code %d",hierr);
+  if (hierr) SETERRQ1(PETSC_ERR_LIB,"Error in HYPRE setup, error code %d",hierr);
   PetscFunctionReturn(0);
 }
 
@@ -130,7 +130,7 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
   ierr = HYPRE_IJVectorGetObject(jac->x,(void**)&jxv);CHKERRQ(ierr);
   hierr = (*jac->solve)(jac->hsolver,hmat,jbv,jxv);
   /* error code of 1 in boomerAMG merely means convergence not achieved */
-  if (hierr && (hierr != 1 || jac->solve != HYPRE_BoomerAMGSolve)) SETERRQ1(1,"Error in HYPRE solver, error code %d",hierr);
+  if (hierr && (hierr != 1 || jac->solve != HYPRE_BoomerAMGSolve)) SETERRQ1(PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
   
 
   HYPREReplacePointer(jac->b,sbv,bv);
@@ -234,7 +234,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc)
     ierr = PetscOptionsInt("-pc_hypre_euclid_levels","Number of levels of fill ILU(k)","None",jac->levels,&jac->levels,&flag);CHKERRQ(ierr);
     if (flag) {
       char levels[16];
-      if (jac->levels < 0) SETERRQ1(1,"Number of levels %d must be nonegative",jac->levels);
+      if (jac->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of levels %d must be nonegative",jac->levels);
       sprintf(levels,"%d",jac->levels);
       args[0] = "-level"; args[1] = levels;
       ierr = HYPRE_EuclidSetParams(jac->hsolver,2,args);CHKERRQ(ierr);
@@ -313,28 +313,28 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   ierr = PetscOptionsHead("HYPRE BoomerAMG Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_levels","Number of levels (of grids) allowed","None",jac->maxlevels,&jac->maxlevels,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (jac->maxlevels < 2) SETERRQ1(1,"Number of levels %d must be at least two",jac->maxlevels);
+      if (jac->maxlevels < 2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of levels %d must be at least two",jac->maxlevels);
       ierr = HYPRE_BoomerAMGSetMaxLevels(jac->hsolver,jac->maxlevels);CHKERRQ(ierr);
     } 
     ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_iter","Maximum iterations used","None",jac->maxiter,&jac->maxiter,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (jac->maxiter < 1) SETERRQ1(1,"Number of iterations %d must be at least one",jac->maxiter);
+      if (jac->maxiter < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of iterations %d must be at least one",jac->maxiter);
       ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
     } 
     ierr = PetscOptionsScalar("-pc_hypre_boomeramg_tol","Convergence tolerance","None",jac->tol,&jac->tol,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (jac->tol < 0.0) SETERRQ1(1,"Tolerance %g must be great than or equal zero",jac->tol);
+      if (jac->tol < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance %g must be great than or equal zero",jac->tol);
       ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
     } 
     ierr = PetscOptionsScalar("-pc_hypre_boomeramg_strong_threshold","Threshold for being strongly connected","None",jac->strongthreshold,&jac->strongthreshold,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (jac->strongthreshold < 0.0) SETERRQ1(1,"Strong threshold %g must be great than or equal zero",jac->strongthreshold);
+      if (jac->strongthreshold < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Strong threshold %g must be great than or equal zero",jac->strongthreshold);
       ierr = HYPRE_BoomerAMGSetStrongThreshold(jac->hsolver,jac->strongthreshold);CHKERRQ(ierr);
     } 
     ierr = PetscOptionsScalar("-pc_hypre_boomeramg_max_row_sum","Maximum row sum","None",jac->maxrowsum,&jac->maxrowsum,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (jac->maxrowsum < 0.0) SETERRQ1(1,"Maximum row sum %g must be greater than zero",jac->maxrowsum);
-      if (jac->maxrowsum > 1.0) SETERRQ1(1,"Maximum row sum %g must be less than or equal one",jac->maxrowsum);
+      if (jac->maxrowsum < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %g must be greater than zero",jac->maxrowsum);
+      if (jac->maxrowsum > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %g must be less than or equal one",jac->maxrowsum);
       ierr = HYPRE_BoomerAMGSetMaxRowSum(jac->hsolver,jac->maxrowsum);CHKERRQ(ierr);
     } 
     
@@ -345,7 +345,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 	jac->gridsweeps[1] = jac->gridsweeps[2] =  jac->gridsweeps[3] = jac->gridsweeps[0];
         n = 4;
       }
-      if (n != 4) SETERRQ1(1,"You must provide either 1 or 4 values seperated by commas, you provided %d",n);
+      if (n != 4) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"You must provide either 1 or 4 values seperated by commas, you provided %d",n);
       ierr = HYPRE_BoomerAMGSetNumGridSweeps(jac->hsolver,jac->gridsweeps);CHKERRQ(ierr);
       CHKMEMQ;
     } 
@@ -543,7 +543,7 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
     } else if (jac->symt == 2) {
       symt = "nonsymmetric matrix but SPD preconditioner";
     } else {
-      SETERRQ1(1,"Unknown HYPRE ParaSails sym option %d",jac->symt);
+      SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown HYPRE ParaSails symmetric option %d",jac->symt);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: %s\n",symt);CHKERRQ(ierr);
   }

@@ -231,7 +231,7 @@ PetscErrorCode VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec v
   PetscFunctionBegin;
   if (!packer->rank) {
     ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
-    if (varray+mine->rstart == array) SETERRQ(1,"You need not VecPackGather() into objects obtained via VecPackGetAccess()");
+    if (varray+mine->rstart == array) SETERRQ(PETSC_ERR_ARG_WRONG,"You need not VecPackGather() into objects obtained via VecPackGetAccess()");
     ierr    = PetscMemcpy(varray+mine->rstart,array,mine->n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
   }
@@ -289,7 +289,7 @@ PetscErrorCode VecPackGetAccess(VecPack packer,Vec gvec,...)
 
   PetscFunctionBegin;
   if (!packer->globalvector) {
-    SETERRQ(1,"Must first create global vector with VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERR_ORDER,"Must first create global vector with VecPackCreateGlobalVector()");
   }
 
   /* loop over packed objects, handling one at at time */
@@ -304,7 +304,7 @@ PetscErrorCode VecPackGetAccess(VecPack packer,Vec gvec,...)
       vec  = va_arg(Argp, Vec*);
       ierr = VecPackGetAccess_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -340,7 +340,7 @@ PetscErrorCode VecPackRestoreAccess(VecPack packer,Vec gvec,...)
 
   PetscFunctionBegin;
   if (!packer->globalvector) {
-    SETERRQ(1,"Must first create global vector with VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERR_ORDER,"Must first create global vector with VecPackCreateGlobalVector()");
   }
 
   /* loop over packed objects, handling one at at time */
@@ -355,7 +355,7 @@ PetscErrorCode VecPackRestoreAccess(VecPack packer,Vec gvec,...)
       vec  = va_arg(Argp, Vec*);
       ierr = VecPackRestoreAccess_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -389,7 +389,7 @@ PetscErrorCode VecPackScatter(VecPack packer,Vec gvec,...)
 
   PetscFunctionBegin;
   if (!packer->globalvector) {
-    SETERRQ(1,"Must first create global vector with VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERROR_ORDER,"Must first create global vector with VecPackCreateGlobalVector()");
   }
 
   /* loop over packed objects, handling one at at time */
@@ -405,7 +405,7 @@ PetscErrorCode VecPackScatter(VecPack packer,Vec gvec,...)
       PetscValidHeaderSpecific(vec,VEC_COOKIE,3);
       ierr = VecPackScatter_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERROR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -439,7 +439,7 @@ PetscErrorCode VecPackGather(VecPack packer,Vec gvec,...)
 
   PetscFunctionBegin;
   if (!packer->globalvector) {
-    SETERRQ(1,"Must first create global vector with VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERR_ORDER,"Must first create global vector with VecPackCreateGlobalVector()");
   }
 
   /* loop over packed objects, handling one at at time */
@@ -455,7 +455,7 @@ PetscErrorCode VecPackGather(VecPack packer,Vec gvec,...)
       PetscValidHeaderSpecific(vec,VEC_COOKIE,3);
       ierr = VecPackGather_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -488,7 +488,7 @@ PetscErrorCode VecPackAddArray(VecPack packer,int n)
 
   PetscFunctionBegin;
   if (packer->globalvector) {
-    SETERRQ(1,"Cannot add an array once you have called VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot add an array once you have called VecPackCreateGlobalVector()");
   }
 
   /* create new link */
@@ -536,7 +536,7 @@ PetscErrorCode VecPackAddDA(VecPack packer,DA da)
 
   PetscFunctionBegin;
   if (packer->globalvector) {
-    SETERRQ(1,"Cannot add a DA once you have called VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot add a DA once you have called VecPackCreateGlobalVector()");
   }
 
   /* create new link */
@@ -694,7 +694,7 @@ PetscErrorCode VecPackGetGlobalIndices(VecPack packer,...)
       ierr    = VecDestroy(local);CHKERRQ(ierr);
 
     } else {
-      SETERRQ(1,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -786,7 +786,7 @@ PetscErrorCode VecPackGetLocalVectors(VecPack packer,...)
       vec = va_arg(Argp, Vec*);
       ierr = VecPackGetLocalVectors_DA(packer,next,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -835,7 +835,7 @@ PetscErrorCode VecPackRestoreLocalVectors(VecPack packer,...)
       vec = va_arg(Argp, Vec*);
       ierr = VecPackRestoreLocalVectors_DA(packer,next,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -903,7 +903,7 @@ PetscErrorCode VecPackGetEntries(VecPack packer,...)
       da = va_arg(Argp, DA*);
       ierr = VecPackGetEntries_DA(packer,next,da);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -949,7 +949,7 @@ PetscErrorCode VecPackRefine(VecPack packer,MPI_Comm comm,VecPack *fine)
       ierr = VecPackAddDA(*fine,da);CHKERRQ(ierr);
       ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -1021,7 +1021,7 @@ PetscErrorCode MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscTruth add)
       ierr  = DARestoreGlobalVector(ynext->da,&yglobal);CHKERRQ(ierr);
       anext = anext->next;
     } else {
-      SETERRQ(1,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     xnext = xnext->next;
     ynext = ynext->next;
@@ -1035,7 +1035,7 @@ PetscErrorCode MatMultAdd_Shell_Pack(Mat A,Vec x,Vec y,Vec z)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (z != y) SETERRQ(1,"Handles y == z only");
+  if (z != y) SETERRQ(PETSC_ERR_SUP,"Handles y == z only");
   ierr = MatMultBoth_Shell_Pack(A,x,y,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1092,7 +1092,7 @@ PetscErrorCode MatMultTranspose_Shell_Pack(Mat A,Vec x,Vec y)
       ierr  = DARestoreGlobalVector(ynext->da,&yglobal);CHKERRQ(ierr);
       anext = anext->next;
     } else {
-      SETERRQ(1,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     xnext = xnext->next;
     ynext = ynext->next;
@@ -1177,7 +1177,7 @@ PetscErrorCode VecPackGetInterpolation(VecPack coarse,VecPack fine,Mat *A,Vec *v
 
   /* loop over packed objects, handling one at at time */
   while (nextc) {
-    if (nextc->type != nextf->type) SETERRQ(1,"Two VecPack have different layout");
+    if (nextc->type != nextf->type) SETERRQ(PETSC_ERR_ARG_INCOMP,"Two VecPack have different layout");
 
     if (nextc->type == VECPACK_ARRAY) {
       ;
@@ -1193,7 +1193,7 @@ PetscErrorCode VecPackGetInterpolation(VecPack coarse,VecPack fine,Mat *A,Vec *v
       }
       ierr = DAGetInterpolation(nextc->da,nextf->da,&nextmat->A,PETSC_NULL);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     nextc = nextc->next;
     nextf = nextf->next;

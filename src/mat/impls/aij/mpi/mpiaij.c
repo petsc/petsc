@@ -866,7 +866,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
       column_values[cnt++] = B->a[j];
     }
   }
-  if (cnt != A->nz + B->nz) SETERRQ2(1,"Internal PETSc error: cnt = %d nz = %d",cnt,A->nz+B->nz);
+  if (cnt != A->nz + B->nz) SETERRQ2(PETSC_ERR_PLIB,"Internal PETSc error: cnt = %d nz = %d",cnt,A->nz+B->nz);
 
   /* store the column values to the file */
   if (!rank) {
@@ -1018,7 +1018,7 @@ PetscErrorCode MatView_MPIAIJ(Mat mat,PetscViewer viewer)
   if (iascii || isdraw || isbinary || issocket) { 
     ierr = MatView_MPIAIJ_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by MPIAIJ matrices",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by MPIAIJ matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -2237,7 +2237,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,PetscInt csize,M
     ierr   = MPI_Scan(&nlocal,&rend,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
     rstart = rend - nlocal;
     if (rank == size - 1 && rend != n) {
-      SETERRQ2(1,"Local column sizes %d do not add up to total number of columns %d",rend,n);
+      SETERRQ2(PETSC_ERR_ARG_SIZ,"Local column sizes %d do not add up to total number of columns %d",rend,n);
     }
 
     /* next, compute all the lengths */
@@ -2696,7 +2696,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
     ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(ocoloring);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"No support ISColoringType %d",coloring->ctype);
+    SETERRQ1(PETSC_ERR_SUP,"No support ISColoringType %d",coloring->ctype);
   }
 
   PetscFunctionReturn(0);

@@ -153,8 +153,7 @@ PetscErrorCode  BAIJtoMyANonz( int *AIndex, int *AStruct, int bs,
   } /* end outer loop for i */
 
   ierr = PetscFree(NewColNum); 
-  if (MyANonz_last != NumLocalNonz) 
-    SETERRQ2(1,"MyANonz_last %d != NumLocalNonz %d\n",MyANonz_last, NumLocalNonz);
+  if (MyANonz_last != NumLocalNonz) SETERRQ2(PETSC_ERR_PLIB,"MyANonz_last %d != NumLocalNonz %d\n",MyANonz_last, NumLocalNonz);
   PetscFunctionReturn(0);
 }
 
@@ -343,7 +342,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
                        &my_a_nonz);
       if (ierr <0) {
           DSC_ErrorDisplay(lu->My_DSC_Solver);
-          SETERRQ1(1,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
+          SETERRQ1(PETSC_ERR_LIB,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
       }
 
       /* get local_cols_old_num and IS my_cols to be used later */
@@ -407,7 +406,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
                        &my_a_nonz);
         if (ierr <0) {
           DSC_ErrorDisplay(lu->My_DSC_Solver);
-          SETERRQ1(1,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
+          SETERRQ1(PETSC_ERR_LIB,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
         }
      
         ierr = PetscFree(idx);
@@ -424,7 +423,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
                        &my_a_nonz);
       if (ierr <0) {
         DSC_ErrorDisplay(lu->My_DSC_Solver);
-        SETERRQ1(1,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
+        SETERRQ1(PETSC_ERR_LIB,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
       }
     }
     if ( size>1 ) {ierr = MatDestroy(A_seq);CHKERRQ(ierr); }   

@@ -174,7 +174,7 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
       ierr = PetscStrcat(par,vbinary->filename);CHKERRQ(ierr);
       ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);
       if (fgets(buf,1024,fp)) {
-        SETERRQ2(1,"Error from command %s\n%s",par,buf);
+        SETERRQ2(PETSC_ERR_LIB,"Error from command %s\n%s",par,buf);
       }
       ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
     }

@@ -71,7 +71,7 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

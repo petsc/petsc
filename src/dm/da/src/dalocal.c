@@ -419,7 +419,7 @@ PetscErrorCode DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(1,"Dimension %d not supported",da->dim);
+      SETERRQ1(PETSC_ERR_SUP,"Dimension %d not supported",da->dim);
   }
 
   done:
@@ -638,7 +638,7 @@ PetscErrorCode DAGetArray(DA da,PetscTruth ghosted,void **iptr)
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(1,"Dimension %d not supported",da->dim);
+      SETERRQ1(PETSC_ERR_SUP,"Dimension %d not supported",da->dim);
   }
 
   done:
@@ -835,7 +835,7 @@ PetscErrorCode DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **arra
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(1,"Dimension %d not supported",da->dim);
+      SETERRQ1(PETSC_ERR_SUP,"Dimension %d not supported",da->dim);
   }
 
   done:

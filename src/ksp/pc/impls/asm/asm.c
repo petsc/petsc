@@ -83,7 +83,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
       if (jac->ksp) {ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);}
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for PCASM",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCASM",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

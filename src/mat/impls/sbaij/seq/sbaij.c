@@ -24,7 +24,7 @@ PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A)
   ierr = MatMarkDiagonal_SeqSBAIJ(A);CHKERRQ(ierr);
   diag = a->diag;
   for (i=0; i<a->mbs; i++) {
-    if (jj[diag[i]] != i) SETERRQ1(1,"Matrix is missing diagonal number %d",i);
+    if (jj[diag[i]] != i) SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Matrix is missing diagonal number %d",i);
   }
   PetscFunctionReturn(0);
 }

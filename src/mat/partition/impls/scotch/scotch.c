@@ -184,7 +184,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
             /* generate the graph that represents the arch */
             file1 = fopen(scotch->arch, "r");
             if (!file1)
-                SETERRQ1(1, "Scotch: unable to open architecture file %s", scotch->arch);
+                SETERRQ1(PETSC_ERR_FILE_OPEN, "Scotch: unable to open architecture file %s", scotch->arch);
 
             ierr = SCOTCH_graphInit(&grafarch);CHKERRQ(ierr);
             ierr = SCOTCH_graphLoad(&grafarch, file1, baseval, 3);CHKERRQ(ierr);
@@ -201,7 +201,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 
             file2 = fopen(scotch->host_list, "r");
             if (!file2)
-                SETERRQ1(1, "Scotch: unable to open host list file %s", scotch->host_list);
+                SETERRQ1(PETSC_ERR_FILE_OPEN, "Scotch: unable to open host list file %s", scotch->host_list);
 
             i = -1;
             flg = PETSC_FALSE;
@@ -212,7 +212,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
             }
             fclose(file2);
             if (!flg) {
-                SETERRQ1(1, "Scotch: unable to find '%s' in host list file", host_buf);
+                SETERRQ1(PETSC_ERR_LIB, "Scotch: unable to find '%s' in host list file", host_buf);
             }
 
             listnbr = size;
@@ -305,25 +305,22 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 #define __FUNCT__ "MatPartitioningView_Scotch"
 PetscErrorCode MatPartitioningView_Scotch(MatPartitioning part, PetscViewer viewer)
 {
-    MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-    PetscErrorCode ierr;
-    int  rank;
-    PetscTruth iascii;
-
-    PetscFunctionBegin;
-
-    ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
-    if (iascii) {
-        if (!rank && scotch->mesg_log) {
-            ierr = PetscViewerASCIIPrintf(viewer, "%s\n", scotch->mesg_log);CHKERRQ(ierr);
-        }
-    } else {
-        SETERRQ1(1, "Viewer type %s not supported for this Scotch partitioner",
-            ((PetscObject) viewer)->type_name);
+  MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
+  PetscErrorCode         ierr;
+  PetscMPIInt            rank;
+  PetscTruth             iascii;
+  
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {
+    if (!rank && scotch->mesg_log) {
+      ierr = PetscViewerASCIIPrintf(viewer, "%s\n", scotch->mesg_log);CHKERRQ(ierr);
     }
-
-    PetscFunctionReturn(0);
+  } else {
+    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Scotch partitioner",((PetscObject) viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
