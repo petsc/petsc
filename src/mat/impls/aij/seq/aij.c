@@ -1,10 +1,10 @@
-/*$Id: aij.c,v 1.371 2001/04/19 20:29:41 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.372 2001/05/29 21:02:54 bsmith Exp balay $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
 */
 
-#include "petscsys.h"
+#include "petscsys.h"                           /*I "petscmat.h" I*/
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
