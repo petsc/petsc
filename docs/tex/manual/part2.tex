@@ -1975,7 +1975,7 @@ The combination of a Krylov subspace method and a preconditioner is at
 the center of most modern numerical codes for the iterative solution of
 linear systems.  See, for example, \cite{fgn} for an overview of the theory
 of such methods.  SLES creates a simplified interface to the
-lower-level KSP and PC modules within the PETSc package.  The KSP component, 
+lower-level KSP and PC modules within the PETSc package.  The KSP package,
 discussed in
 Section~\ref{sec_ksp}, provides many popular Krylov
 \sindex{Krylov subspace methods} subspace iterative methods;
@@ -3004,7 +3004,7 @@ interface to the multigrid solvers for linear and nonlinear problems using the D
 A large suite of routines is available for using multigrid as a
 preconditioner. In the PC framework the user is required to provide 
 the coarse grid solver, smoothers, restriction, and interpolation, 
-as well as the code to calculate residuals. The PC component 
+as well as the code to calculate residuals. The PC package
 allows all of that to be wrapped up into a PETSc compliant preconditioner. 
 We fully support both matrix-free and matrix-based multigrid solvers.
 
@@ -3227,7 +3227,7 @@ by specifying -help (or -h) at runtime.
 
 The solution of large-scale nonlinear problems pervades many facets of
 computational science and demands robust and flexible solution
-strategies. The SNES component of PETSc provides a powerful suite of
+strategies. The SNES library of PETSc provides a powerful suite of
 data-structure-neutral numerical routines for such problems.  Built on
 top of the linear solvers and data structures discussed in preceding
 chapters, SNES enables the user to easily customize the nonlinear
@@ -3991,7 +3991,7 @@ supported for the AIJ matrix format.
 \sindex{ODE solvers}
 
 \findex{TS} 
-The TS component provides a framework for the scalable solution of ODEs
+The TS library provides a framework for the scalable solution of ODEs
 arising from the discretization of time-dependent PDEs, and of
 steady-state problems using pseudo-timestepping.
 
@@ -4012,7 +4012,7 @@ with centered finite differences results in
 \[
           (u_i)_t = \frac{u_{i+1} - 2 u_{i} + u_{i-1}}{h^2}.
 \]
-The TS component provides code to solve these equations (currently 
+The TS library provides code to solve these equations (currently 
 using the forward or backward Euler method) as well as an interface to 
 other sophisticated ODE solvers, in a clean and easy manner,
 where the user need only provide code for the evaluation of $ F(u,t) $ and 
@@ -4170,7 +4170,7 @@ corresponds to SNESDefaultComputeJacobian(). \findex{TSDefaultComputeJacobianCol
 \label{sec_pvode}
 
 PVODE is a parallel ODE solver developed by Hindmarsh et al. at LLNL.
-The TS component provides an interface to use PVODE directly from PETSc.
+The TS library provides an interface to use PVODE directly from PETSc.
 (To install PETSc to use PVODE, see the installation guide, \trl{docs/installation/index.htm}.) 
 
 To use the PVODE integrators, call 
@@ -4189,9 +4189,9 @@ or the command line option \trl{-ts_pvode_type <adams,bdf>}. BDF is
 the default. \findex{-ts_pvode_type} \findex{TSPVodeType}
 \findex{TSPVodeSetType()} \sindex{Adams} \sindex{BDF}
 
-PVODE does not use the SNES component of PETSc for its nonlinear
+PVODE does not use the SNES library within PETSc for its nonlinear
 solvers, so one cannot change the nonlinear solver options via
-SNES. Rather, PVODE uses the preconditioners within the PC component
+SNES. Rather, PVODE uses the preconditioners within the PC package
 of PETSc, which can be accessed via
 \begin{tabbing}
  TSPVodeGetPC(TS ts,PC *pc);
@@ -4380,7 +4380,7 @@ would be
 \begin{tabbing}
 int localfunction(DALocalInfo *info,double ***x, double ***f,void *ctx)
 \end{tabbing}
-For a 2d multicomponent problem with u, v, and p components one would write
+For a 2d multi-component problem with u, v, and p components one would write
 \begin{tabbing}
 typedef struct {
   PetscScalar u,v,p;
@@ -4715,7 +4715,7 @@ such as the following:
 \end{tabbing}
 Since one must be very careful to include each file no more than once
 in a Fortran routine, application programmers must manually include
-each file needed for the various PETSc components within their
+each file needed for the various PETSc libraries within their
 program.  This approach differs from the PETSc C/C++ interface, where
 the user need only include the highest level file, for example, \trl{
 petscsnes.h}, which then automatically includes all of the required lower
@@ -4984,7 +4984,7 @@ use the Fortran90 vector include file,
 \begin{tabbing}
     \#include "include/finclude/petscvec.h90"
 \end{tabbing}
-Analogous include files for other components are \trl{petscda.h90},
+Analogous include files for other libraries are \trl{petscda.h90},
 \trl{petscmat.h90}, and \trl{petscis.h90}.
 
 Unfortunately, these routines currently work only on certain machines with 
@@ -5098,7 +5098,7 @@ data can also be printed at any time within a program by calling \trl{
 PetscLogPrintSummary()}.
 
 We print performance data for each routine, organized by PETSc
-components, followed by any user-defined events (discussed in
+libraries, followed by any user-defined events (discussed in
 Section~\ref{sec_profileuser}).  For each routine, the output data
 include the maximum time and floating point operation (flop) rate over
 all processors.  Information about parallel performance is also
@@ -5114,17 +5114,17 @@ present only a limited view of performance, since memory loads and stores are
 the real performance barrier.
 
 For simplicity, the remainder of this discussion focuses on
-interpreting profile data for the SLES component, 
+interpreting profile data for the SLES library, 
 which provides the linear solvers at the heart of the
 PETSc package.  Recall the hierarchical organization of the PETSc
 library, as shown in Figure~\ref{fig_1}.  Each SLES solver 
-is composed of a PC (preconditioner) and KSP (Krylov
-subspace) component, which are in turn built on top of the Mat 
+is composed of a PC (preconditioner) and a KSP (Krylov
+subspace) part, which are in turn built on top of the Mat 
 (matrix) and Vec (vector) modules.  Thus, operations in the
 SLES module are composed of lower-level operations in these
-components.  Note also that the nonlinear solvers component, SNES, 
+packages.  Note also that the nonlinear solvers library, SNES, 
 is build on top of the SLES module, and the timestepping
-component, TS, is in turn built on top of SNES.
+library, TS, is in turn built on top of SNES.
 
 We briefly discuss interpretation of the sample output in
 Figure~\ref{fig_exprof}, which was generated by solving a linear
@@ -5536,7 +5536,7 @@ PETSc also provides routines that deactivate (or activate)
 logging for entire components of the library. Currently, the 
 components that support such logging (de)activation are Mat (matrices),
 Vec (vectors), SLES (linear solvers, including KSP 
-and PC components), and SNES (nonlinear solvers):
+and PC), and SNES (nonlinear solvers):
 \begin{tabbing}
    PetscLogEventDeactivateClass(MAT\_COOKIE);\\
    PetscLogEventDeactivateClass(SLES\_COOKIE); /* includes PC and KSP */\\
@@ -5601,9 +5601,9 @@ Messages can be reactivated with the command
    PetscLogInfoActivateClass(int object\_cookie)
 \end{tabbing}
 Such deactivation can be useful when one wishes to view information
-about higher level PETSc components (e.g., TS and SNES) without 
+about higher-level PETSc libraries (e.g., TS and SNES) without 
 seeing all lower level data as well (e.g., Mat).  One can deactivate
-events at runtime for matrix and linear solver components via \trl{-log_info [no_mat, no_sles]}.
+events at runtime for matrix and linear solver libraries via \trl{-log_info [no_mat, no_sles]}.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \section{Time}
@@ -6469,8 +6469,8 @@ PETSc include file), can freely use any MPI routine.
 \section{Graphics}
 \sindex{graphics}
 
-PETSc graphics components are not intended to compete with 
-high-quality graphics packages.  Instead, they are intended to be 
+PETSc graphics library is not intended to compete with 
+high-quality graphics packages.  Instead, it is intended to be 
 easy to use interactively with PETSc programs. We urge users
 to generate their publication-quality graphics using a
 professional graphics package. If a user wants to hook
@@ -6814,7 +6814,7 @@ within the makefile.
 Note that the variable \trl{${PETSC_LIB}} (as listed on the link
 line in the above makefile) specifies {\em all} of the various PETSc
 libraries in the appropriate order for correct linking.  For users who
-employ only a specific PETSc component, can use alternative variables
+employ only a specific PETSc library, can use alternative variables
 like  \trl{${PETSC_SYS_LIB}}, \trl{${PETSC_VEC_LIB}}, 
 \trl{${PETSC_MAT_LIB}}, \trl{${PETSC_DM_LIB}},
 \trl{${PETSC_SLES_LIB}}, \trl{${PETSC_SNES_LIB}} or
@@ -7198,8 +7198,8 @@ use SOR in the Richardson framework, that is,
 is much more expensive than just updating the values.
 With this addition it is reasonable to state that {\em all} our
 iterative methods are obtained by combining a preconditioner from 
-the \trl{PC} component with a Krylov method from the \trl{KSP}
-component. This strategy makes things much simpler conceptually, so 
+the \trl{PC} package with a Krylov method from the \trl{KSP}
+package. This strategy makes things much simpler conceptually, so 
 (we hope)
 clean code will result. {\em Note}: We had this idea already implicitly in 
 older versions of SLES, but, for instance, just doing Gauss-Seidel

@@ -17,36 +17,36 @@ functionality, and documentation for PETSc.
 Some of the source code and utilities in PETSc (or software used by PETSc)
 have been written by 
 \begin{itemize}
-  \item Mark Adams, scalability features of MPIBAIJ matrices,
-  \item Allison Baker, the flexible GMRES code,
-  \item Tony Caola, the SPARSEKIT2 ilutp() interface,
-  \item Chad Carroll, Win32 graphics,
-  \item Cameron Cooper, portions of the VecScatter routines, 
-  \item Victor Eijkhout,
-  \item Paulo Goldfeld, balancing Neumann-Neumann preconditioner,
-  \item Matt Hille, 
-  \item Domenico Lahaye, the interface to John Ruge and Klaus Stueben's AMG,
-  \item Peter Mell, portions of the DA routines,
-  \item Todd Munson, the LUSOL (sparse solver in MINOS) interface,
-  \item Wing-Lok Wan, the ILU portion of BlockSolve95,
-  \item Liyang Xu, the interface to PVODE.
+  \item Mark Adams - scalability features of MPIBAIJ matrices;
+  \item Allison Baker - the flexible GMRES code;
+  \item Tony Caola - the SPARSEKIT2 ilutp() interface;
+  \item Chad Carroll - Win32 graphics;
+  \item Cameron Cooper - portions of the VecScatter routines;
+  \item Victor Eijkhout;
+  \item Paulo Goldfeld - balancing Neumann-Neumann preconditioner;
+  \item Matt Hille;
+  \item Domenico Lahaye - the interface to John Ruge and Klaus Stueben's AMG;
+  \item Peter Mell - portions of the DA routines;
+  \item Todd Munson - the LUSOL (sparse solver in MINOS) interface;
+  \item Wing-Lok Wan - the ILU portion of BlockSolve95;
+  \item Liyang Xu - the interface to PVODE;
 \end{itemize}
 
 \vspace{.3in}
 \noindent
 PETSc uses routines from 
 \begin{itemize}
-  \item BLAS
-  \item LAPACK
-  \item LINPACK      dense matrix factorization and solve; converted to C using {\tt f2c} and then 
-                      hand-optimized for small matrix sizes, for block matrix data structures,
-  \item MINPACK      see page \pageref{sec_fdmatrix}, sequential matrix coloring routines for finite difference Jacobian
-                       evaluations; converted to C using {\tt f2c},
-  \item SPARSPAK     see page \pageref{sec_factorization}, matrix reordering routines, converted to C using {\tt f2c},
-  \item SPARSEKIT2   see page \pageref{sec_ilu_icc}, written by Yousef Saad, iludtp(), converted to C using {\tt f2c}. 
+  \item BLAS;
+  \item LAPACK;
+  \item LINPACK -    dense matrix factorization and solve; converted to C using {\tt f2c} and then 
+                     hand-optimized for small matrix sizes, for block matrix data structures;
+  \item MINPACK -    see page \pageref{sec_fdmatrix}, sequential matrix coloring routines for finite difference Jacobian
+                     evaluations; converted to C using {\tt f2c};
+  \item SPARSPAK -   see page \pageref{sec_factorization}, matrix reordering routines, converted to C using {\tt f2c};
+  \item SPARSEKIT2 - see page \pageref{sec_ilu_icc}, written by Yousef Saad, iludtp(), converted to C using {\tt f2c};
                      These routines 
                      are copyrighted by Saad under the GNU copyright, see \trl{${PETSC_DIR}/src/mat/impls/aij/seq/ilut.c}.
-  \item libtfs, the efficient, parallel direct solver developed by Henry Tufo and Paul Fischer for the direct solution of a coarse grid problem (a linear system with very few degrees of freedom per processor).
+  \item libtfs     - the efficient, parallel direct solver developed by Henry Tufo and Paul Fischer for the direct solution of a coarse grid problem (a linear system with very few degrees of freedom per processor).
 \end{itemize}
 
 
@@ -54,27 +54,27 @@ PETSc uses routines from
 \noindent
 PETSc interfaces to the following external software:
 \begin{itemize}
-  \item AMG          the algebraic multigrid code of John Ruge and Klaus Stueben,
+  \item AMG -         the algebraic multigrid code of John Ruge and Klaus Stueben,
                      \trllink{http://www.mgnet.org/mgnet-codes-gmd.html}{http://www.mgnet.org/mgnet-codes-gmd.html}
-  \item BlockSolve95 see page \pageref{sec_blocksolve}, for parallel ICC(0) and ILU(0) preconditioning,
+  \item BlockSolve95 - see page \pageref{sec_blocksolve}, for parallel ICC(0) and ILU(0) preconditioning,
                      \trllink{http://www.mcs.anl.gov/blocksolve}{http://www.mcs.anl.gov/blocksolve},
-  \item DSCPACK,     Domain-Separator Codes for solving sparse symmetric positive-definite systems, 
+  \item DSCPACK -     Domain-Separator Codes for solving sparse symmetric positive-definite systems, 
                      developed by Padma Raghavan,   
                      \trllink{http://www.cse.psu.edu/~raghavan/Dscpack/}{http://www.cse.psu.edu/~raghavan/Dscpack/},
-  \item ESSL         IBM's math library for fast sparse direct LU factorization,
-  \item LUSOL        sparse LU factorization code (part of MINOS) developed by Michael Saunders,
+  \item ESSL -         IBM's math library for fast sparse direct LU factorization,
+  \item LUSOL -       sparse LU factorization code (part of MINOS) developed by Michael Saunders,
                       Systems Optimization Laboratory, Stanford University,
                      \trllink{http://www.sbsi-sol-optimize.com/}{http://www.sbsi-sol-optimize.com/},
-  \item Matlab       see page \pageref{ch_matlab},
-  \item ParMeTiS      see page \pageref{sec_partitioning}, parallel graph partitioner,
+  \item Matlab -      see page \pageref{ch_matlab},
+  \item ParMeTiS -     see page \pageref{sec_partitioning}, parallel graph partitioner,
                      \trllink{http://www-users.cs.umn.edu/~karypis/metis/}{http://www-users.cs.umn.edu/~karypis/metis/},
-  \item PVODE        see page \pageref{sec_pvode}, parallel ODE integrator,
+  \item PVODE -       see page \pageref{sec_pvode}, parallel ODE integrator,
                      \trllink{http://www.llnl.gov/CASC/PVODE}{http://www.llnl.gov/CASC/PVODE},
-  \item SPAI         for parallel sparse approximate inverse preconditiong, 
+  \item SPAI -        for parallel sparse approximate inverse preconditiong, 
                      \trllink{http://www.sam.math.ethz.ch/~grote/spai/}{http://www.sam.math.ethz.ch/~grote/spai/},
-  \item SPOOLES, SParse Object Oriented Linear Equations Solver, developed by Cleve Ashcraft, 
+  \item SPOOLES - SParse Object Oriented Linear Equations Solver, developed by Cleve Ashcraft, 
                     \trllink{http://www.netlib.org/linalg/spooles/spooles.2.2.html}{http://www.netlib.org/linalg/spooles/spooles.2.2.html},
-  \item SuperLU and SuperLU\_Dist, the efficient sparse LU codes developed by Jim Demmel,  Xiaoye S. Li, and John Gilbert, 
+  \item SuperLU and SuperLU\_Dist - the efficient sparse LU codes developed by Jim Demmel,  Xiaoye S. Li, and John Gilbert, 
                     \trllink{http://www.nersc.gov/~xiaoye/SuperLU}{http://www.nersc.gov/~xiaoye/SuperLU}.
 \end{itemize}
 These are all optional packages and do not need to be installed to use PETSc.

@@ -19,9 +19,9 @@ the software has evolved into a powerful set of tools for the
 numerical solution of partial differential equations and related problems 
 on high-performance computers.
 
-PETSc consists of a variety of components (similar to classes in C++),
+PETSc consists of a variety of libraries (similar to classes in C++),
 which are discussed in detail in Parts II and III of the users manual.
-Each component manipulates a particular family of objects (for instance,
+Each library manipulates a particular family of objects (for instance,
 vectors) and the operations one would like to perform on the objects.
 The objects and operations in PETSc are derived from our long 
 experiences with scientific computation. Some of the PETSc modules deal with 
@@ -36,7 +36,7 @@ experiences with scientific computation. Some of the PETSc modules deal with
 \item nonlinear solvers; and
 \item timesteppers for solving time-dependent (nonlinear) PDEs.
 \end{itemize}
-Each of these components consists of an abstract interface 
+Each consists of an abstract interface 
 (simply a set of calling sequences) and one or more implementations 
 using particular data structures. Thus, PETSc provides clean and 
 effective codes for the various phases of solving PDEs, with a uniform 
@@ -47,7 +47,7 @@ or truncated Newton methods).
 Hence, PETSc provides a rich environment for modeling scientific
 applications as well as for rapid algorithm design and prototyping.
 
-The components enable easy customization and extension of both algorithms
+The libraries enable easy customization and extension of both algorithms
 and implementations.  This approach promotes code reuse and
 flexibility, and separates the issues of parallelism from the choice
 of algorithms.  The PETSc infrastructure creates a
@@ -55,8 +55,8 @@ foundation for building large-scale applications.
 
 It is useful to consider the interrelationships among different
 pieces of PETSc.  Figure \ref{fig_1} is a diagram of some 
-of the components of PETSc; Figure \ref{fig_2} presents
-several of the individual components in more detail.
+of these pieces; Figure \ref{fig_2} presents
+several of the individual parts in more detail.
 These figures illustrate the library's hierarchical organization,
 which enables users to employ the level of abstraction that is most 
 appropriate for a particular problem.  
@@ -65,14 +65,14 @@ appropriate for a particular problem.
 \centerline{ \includegraphics{petscwww}}
 %\centerline{\psfig{file=petscwww.ps,angle=270,height=3.4in}}
 % \centerline{\psfig{file=petsc_pt.eps,angle=0,height=4in,width=5in}}
-\caption{Organization of the PETSc Library}
+\caption{Organization of the PETSc Libraries}
 \label{fig_1}
 \end{figure}
 
 \begin{figure}[hbt]
 \centerline{ \includegraphics{zoom}}
 %\centerline{\psfig{file=zoom_ls.ps,angle=270,height=3.4in}}
-\caption{Numerical Components of PETSc}
+\caption{Numerical Libraries of PETSc}
 \label{fig_2}
 \end{figure}
 
@@ -97,7 +97,7 @@ Readers of this separate distribution of Part I should note that all
 references within the text to particular chapters and sections 
 indicate locations in the complete users manual.
 
-Part II explains in detail the use of the various PETSc components,
+Part II explains in detail the use of the various PETSc libraries,
 such as vectors, matrices, index sets, linear and nonlinear
 solvers, and graphics.  Part III describes a variety of useful
 information, including profiling, the options database, viewers, error
@@ -328,7 +328,7 @@ The C/C++ include files for PETSc should be used via statements such as
 \begin{tabbing}
    \#include "petscsles.h"
 \end{tabbing}
-where \trl{petscsles.h} is the include file for the SLES component.
+where \trl{petscsles.h} is the include file for the SLES library.
 Each PETSc program must specify an
 include file that corresponds to the highest level PETSc objects
 needed within the program; all of the required lower level include
@@ -443,7 +443,7 @@ the convergence tolerance, set various monitoring routines, etc.
 (see, e.g., Figure~\ref{fig_exprof}).
 
 Chapter~\ref{ch_sles} describes in detail the SLES package, including
-the PC and KSP components for preconditioners and Krylov subspace methods.
+the PC and KSP packages for preconditioners and Krylov subspace methods.
 
 \subsection*{Nonlinear Solvers}
 Most PDE problems of interest are inherently nonlinear. PETSc provides 
@@ -661,10 +661,10 @@ and can serve as templates for developing
 custom applications.  We suggest that new PETSc
 users examine programs in the directories 
 \begin{tabbing}
-  \${PETSC\_DIR}/src/<component>/examples/tutorials,
+  \${PETSC\_DIR}/src/<library>/examples/tutorials,
 \end{tabbing}
-where \trl{<component>}
-denotes any of the PETSc components (listed in the following
+where \trl{<library>}
+denotes any of the PETSc libraries (listed in the following
 section), such as \trl{snes} or \trl{sles}.  
 The manual pages located at
 \begin{tabbing}
@@ -677,7 +677,7 @@ To write a new application program using PETSc, we suggest the
 following procedure:
 \begin{enumerate}
 \item Install and test PETSc according to the instructions at the PETSc web site.
-\item Copy one of the many PETSc examples in the component directory
+\item Copy one of the many PETSc examples in the directory
       that corresponds to the class of problem of interest (e.g.,
       for linear solvers, see \trl{${PETSC_DIR}/src/sles/examples/tutorials}).
 \item Copy the corresponding makefile within the example directory;
@@ -741,7 +741,7 @@ The root directory of PETSc contains the following directories:
                                   the .F suffix (recommended).
 \item \trl{include/pinclude}    - Private PETSc include files that should {\em not} 
                                   be used by application programmers.
-\item \trl{src} - The source code for all PETSc components, which
+\item \trl{src} - The source code for all PETSc libraries, which
                   currently includes
  \begin{itemize}
  \item \trl{vec} - vectors,
@@ -774,7 +774,7 @@ The root directory of PETSc contains the following directories:
  \end{itemize}
 \end{itemize}
 
-Each PETSc source code component directory has the following subdirectories:
+Each PETSc source code library directory has the following subdirectories:
 \begin{itemize}
 \item  \trl{examples} - Example programs for the component, including
   \begin{itemize}
