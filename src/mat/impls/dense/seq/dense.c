@@ -1,7 +1,5 @@
-
-
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.46 1995/08/07 21:59:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.49 1995/08/17 13:29:40 curfman Exp $";
 #endif
 
 /*
@@ -28,7 +26,7 @@ static int MatGetInfo_Dense(Mat matin,MatInfoType flag,int *nz,
   int    i,N = mat->m*mat->n,count = 0;
   Scalar *v = mat->v;
   for ( i=0; i<N; i++ ) {if (*v != 0.0) count++; v++;}
-  *nz = count; *nzalloc = N; *mem = N*sizeof(Scalar);
+  *nz = count; *nzalloc = N; *mem = (int)matin->mem;
   return 0;
 }
   
@@ -40,11 +38,12 @@ static int MatLUFactor_Dense(Mat matin,IS row,IS col,double f)
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    info;
   if (!mat->pivots) {
-    mat->pivots = (int *) PETSCMALLOC( mat->m*sizeof(int) );
+    mat->pivots = (int *) PETSCMALLOC(mat->m*sizeof(int));
     CHKPTRQ(mat->pivots);
+    PLogObjectMemory(matin,mat->m*sizeof(int));
   }
   LAgetrf_(&mat->m,&mat->n,mat->v,&mat->m,mat->pivots,&info);
-  if (info) SETERRQ(1,"MatLUFactor_Dense:Bad LU factorization");
+  if (info) SETERRQ(1,"MatLUFactor_Dense: Bad LU factorization");
   matin->factor = FACTOR_LU;
   return 0;
 }
@@ -73,9 +72,13 @@ static int MatCholeskyFactor_Dense(Mat matin,IS perm,double f)
 {
   Mat_Dense    *mat = (Mat_Dense *) matin->data;
   int       info;
-  if (mat->pivots) {PETSCFREE(mat->pivots); mat->pivots = 0;}
+  if (mat->pivots) {
+    PETSCFREE(mat->pivots);
+    PLogObjectMemory(matin,-mat->m*sizeof(int));
+    mat->pivots = 0;
+  }
   LApotrf_("L",&mat->n,mat->v,&mat->m,&info);
-  if (info) SETERRQ(1,"MatCholeskyFactor_Dense:Bad factorization");
+  if (info) SETERRQ(1,"MatCholeskyFactor_Dense: Bad factorization");
   matin->factor = FACTOR_CHOLESKY;
   return 0;
 }
@@ -95,8 +98,8 @@ static int MatSolve_Dense(Mat matin,Vec xx,Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
-  else SETERRQ(1,"MatSolve_Dense:Matrix must be factored to solve");
-  if (info) SETERRQ(1,"MatSolve_Dense:Bad solve");
+  else SETERRQ(1,"MatSolve_Dense: Matrix must be factored to solve");
+  if (info) SETERRQ(1,"MatSolve_Dense: Bad solve");
   return 0;
 }
 static int MatSolveTrans_Dense(Mat matin,Vec xx,Vec yy)
@@ -106,7 +109,7 @@ static int MatSolveTrans_Dense(Mat matin,Vec xx,Vec yy)
   Scalar *x, *y;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
-  /* assume if pivots exist then LU else Cholesky */
+  /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
     LAgetrs_( "T", &mat->m, &one, mat->v, &mat->m, mat->pivots,
               y, &mat->m, &info );
@@ -115,7 +118,7 @@ static int MatSolveTrans_Dense(Mat matin,Vec xx,Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,"MatSolveTrans_Dense:Bad solve");
+  if (info) SETERRQ(1,"MatSolveTrans_Dense: Bad solve");
   return 0;
 }
 static int MatSolveAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
@@ -131,7 +134,7 @@ static int MatSolveAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
     ierr = VecCopy(yy,tmp); CHKERRQ(ierr);
   } 
   PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
-  /* assume if pivots exist then LU else Cholesky */
+  /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
     LAgetrs_( "N", &mat->m, &one, mat->v, &mat->m, mat->pivots,
               y, &mat->m, &info );
@@ -140,7 +143,7 @@ static int MatSolveAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,"MatSolveAdd_Dense:Bad solve");
+  if (info) SETERRQ(1,"MatSolveAdd_Dense: Bad solve");
   if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
   else VecAXPY(&sone,zz,yy);
   return 0;
@@ -158,7 +161,7 @@ static int MatSolveTransAdd_Dense(Mat matin,Vec xx,Vec zz, Vec yy)
     ierr = VecCopy(yy,tmp); CHKERRQ(ierr);
   } 
   PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
-  /* assume if pivots exist then LU else Cholesky */
+  /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
     LAgetrs_( "T", &mat->m, &one, mat->v, &mat->m, mat->pivots,
               y, &mat->m, &info );
@@ -167,7 +170,7 @@ static int MatSolveTransAdd_Dense(Mat matin,Vec xx,Vec zz, Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,"MatSolveTransAdd_Dense:Bad solve");
+  if (info) SETERRQ(1,"MatSolveTransAdd_Dense: Bad solve");
   if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
   else VecAXPY(&sone,zz,yy);
   return 0;
@@ -662,6 +665,7 @@ int MatCreateSequentialDense(MPI_Comm comm,int m,int n,Mat *newmat)
   mat->view      = MatView_Dense;
   mat->data      = (void *) l;
   mat->factor    = 0;
+  PLogObjectMemory(mat,sizeof(struct _Mat) + size);
 
   l->m           = m;
   l->n           = n;
