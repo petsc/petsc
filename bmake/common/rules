@@ -1,7 +1,6 @@
 
-
-LDIR        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
-LIBNAME     = $(LDIR)/$(LIBBASE).a
+LDIR        = $(IPETSCDIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
+LIBNAME     = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)/$(LIBBASE).a
 SOURCE      = $(SOURCEC) $(SOURCEF)
 OBJS        = $(OBJSC) $(OBJSF)
 INCLUDEDIRS = -I$(IPETSCDIR) -I$(IPETSCDIR)/include $(MPI_INCLUDE) \
