@@ -1,8 +1,7 @@
-/* $Id: petscconf.h,v 1.8 1998/04/20 19:27:19 bsmith Exp balay $ */
-
-/*
-    Defines the configuration for this machine
-*/
+#ifdef PETSC_RCS_HEADER
+"$Id: petscconf.h,v 1.8 1998/04/25 23:18:34 balay Exp $"
+"Defines the configuration for this machine"
+#endif
 
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
