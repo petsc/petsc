@@ -1,9 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.25 1996/01/09 03:30:34 curfman Exp curfman $";
+static char vcid[] = "$Id: bcgs.c,v 1.26 1996/01/09 14:32:26 curfman Exp curfman $";
 #endif
 
 /*                       
-       This implements BiCG Stab
+    This code implements the BiCGStab (Stabilized version of BiConjugate
+    Gradient Squared) method.  Reference: van der Vorst, 1992.
+
+    Note that for the complex numbers version, the VecDot() arguments
+    within the code MUST remain in the order given for correct computation
+    of inner products.
 */
 #include <stdio.h>
 #include <math.h>
@@ -59,7 +64,7 @@ static int  KSPSolve_BCGS(KSP itP,int *its)
   ierr = VecSet(&zero,V); CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
-    ierr = VecDot(R,RP,&rho); CHKERRQ(ierr);       /*   rho <- rp' r       */
+    ierr = VecDot(RP,R,&rho); CHKERRQ(ierr);       /*   rho <- rp' r       */
     if (rho == 0.0) {fprintf(stderr,"Breakdown\n"); *its = -(i+1);return 0;} 
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
@@ -71,7 +76,7 @@ static int  KSPSolve_BCGS(KSP itP,int *its)
     ierr = VecWAXPY(&tmp,V,R,S); CHKERRQ(ierr);    /*   s <- r - a v       */
     ierr = PCApplyBAorAB(itP->B,itP->pc_side,
                          S,T,R); CHKERRQ(ierr);    /*   t <- K s           */
-    ierr = VecDot(S,T,&d1); CHKERRQ(ierr);
+    ierr = VecDot(T,S,&d1); CHKERRQ(ierr);
     ierr = VecDot(T,T,&d2); CHKERRQ(ierr);
     if (d2 == 0.0) {
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
@@ -83,7 +88,7 @@ static int  KSPSolve_BCGS(KSP itP,int *its)
       MONITOR(itP,0.0,i+1);
       break;
     }
-    omega = d1 / d2;                               /*   w <- (s't) / (t't) */
+    omega = d1 / d2;                               /*   w <- (t's) / (t't) */
     ierr = VecAXPY(&alpha,P,X); CHKERRQ(ierr);     /*   x <- x + a p       */
     ierr = VecAXPY(&omega,S,X); CHKERRQ(ierr);     /*   x <- x + w s       */
     tmp = -omega; 

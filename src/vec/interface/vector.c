@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.63 1996/01/22 01:41:34 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.64 1996/01/22 01:53:57 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -222,27 +222,29 @@ int VecSet(Scalar *alpha,Vec x)
    VecSetRandom - Sets all components of a vector to random numbers.
 
    Input Parameters:
-.  type - the type of random numbers to be generated
+.  rctx - the random number context, formed by SYCreateRandom()
 .  x  - the vector
 
    Output Parameter:
 .  x  - the vector
 
-   Note:
-   Currently, the only type of random numbers supported is
-   RANDOM_DEFAULT.
+   Example of Usage:
+$    SYRandomCreate(RANDOM_DEFAULT,&rctx);
+$    VecSetRandom(rctx,x);
+$    SYRandomDestroy(&rctx);
 
 .keywords: vector, set, random
 
-.seealso: VecSet(), VecSetValues(), SYCreateRandom()
+.seealso: VecSet(), VecSetValues(), SYRandomCreate(), SYRandomDestroy()
 @*/
-int VecSetRandom(SYRandomType type,Vec x) 
+int VecSetRandom(SYRandom rctx,Vec x) 
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
-  PLogEventBegin(VEC_SetRandom,x,0,0,0);
-  ierr = (*x->ops.setrandom)(type,x); CHKERRQ(ierr);
-  PLogEventEnd(VEC_SetRandom,x,0,0,0);
+  PETSCVALIDHEADERSPECIFIC(rctx,SYRANDOM_COOKIE);
+  PLogEventBegin(VEC_SetRandom,x,rctx,0,0);
+  ierr = (*x->ops.setrandom)(rctx,x); CHKERRQ(ierr);
+  PLogEventEnd(VEC_SetRandom,x,rctx,0,0);
   return 0;
 } 
 

@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.41 1996/01/01 01:05:46 bsmith Exp curfman $ */
+/* $Id: vec.h,v 1.42 1996/01/22 01:13:50 curfman Exp curfman $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -45,7 +45,7 @@ extern int VecMax(Vec,int*,double*);
 extern int VecMin(Vec,int*,double*);
 extern int VecScale(Scalar*,Vec);    
 extern int VecCopy(Vec,Vec);        
-extern int VecSetRandom(SYRandomType,Vec);
+extern int VecSetRandom(SYRandom,Vec);
 extern int VecSet(Scalar*,Vec);
 extern int VecSwap(Vec,Vec);
 extern int VecAXPY(Scalar*,Vec,Vec);  

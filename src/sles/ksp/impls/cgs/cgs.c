@@ -1,9 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.20 1996/01/09 03:30:45 curfman Exp curfman $";
+static char vcid[] = "$Id: cgs.c,v 1.21 1996/01/09 14:32:15 curfman Exp curfman $";
 #endif
 
 /*                       
-       This implements CGS
+    This code implements the CGS (Conjugate Gradient Squared) method. 
+    Reference: Sonneveld, 1989.
+
+    Note that for the complex numbers version, the VecDot() arguments
+    within the code MUST remain in the order given for correct computation
+    of inner products.
 */
 #include <stdio.h>
 #include <math.h>
@@ -76,7 +81,7 @@ static int  KSPSolve_CGS(KSP itP,int *its)
     if (cerr) break;
 
     ierr = VecDot(RP,R,&rho); CHKERRQ(ierr);         /* newrho <- rp' r      */
-    b    = rho / rhoold;                                /* b <- rho / rhoold    */
+    b    = rho / rhoold;                             /* b <- rho / rhoold    */
     ierr = VecWAXPY(&b,Q,R,U); CHKERRQ(ierr);        /* u <- r + b q         */
     ierr = VecAXPY(&b,P,Q); CHKERRQ(ierr);
     ierr = VecWAXPY(&b,Q,U,P); CHKERRQ(ierr);        /* p <- u + b(q + b p)  */

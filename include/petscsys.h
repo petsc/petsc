@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.10 1995/11/19 00:56:24 bsmith Exp curfman $ */
+/* $Id: sys.h,v 1.11 1996/01/22 01:13:28 curfman Exp curfman $ */
 /*
     Provides access to a small number of system related and general utility routines.
 */
@@ -14,6 +14,8 @@ extern int  SYDsort(int,double*);
 extern char *SYGetDate();
 extern int  TrDebugLevel(int);
 extern int  TrValid();
+
+#define SYRANDOM_COOKIE PETSC_COOKIE+19
 
 typedef enum { RANDOM_DEFAULT } SYRandomType;
 
