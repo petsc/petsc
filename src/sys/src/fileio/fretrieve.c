@@ -359,7 +359,7 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
 @*/
 int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,PetscTruth *found)
 {
-  char              buf[1024],tmpdir[256],urlget[256],*par;
+  char              buf[1024],tmpdir[256],urlget[256],*par,*pdir;
   FILE              *fp;
   int               i,rank,ierr,len = 0;
   PetscTruth        flg1,flg2,sharedtmp,exists;
@@ -387,7 +387,8 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
   if (!rank || !sharedtmp) {
   
     /* Construct the script to get URL file */
-    ierr = PetscStrcpy(urlget,PETSC_DIR);CHKERRQ(ierr);
+    ierr = PetscGetPetscDir(&pdir);CHKERRQ(ierr);
+    ierr = PetscStrcpy(urlget,pdir);CHKERRQ(ierr);
     ierr = PetscStrcat(urlget,"/bin/urlget");CHKERRQ(ierr);
     ierr = PetscTestFile(urlget,'r',&exists);CHKERRQ(ierr);
     if (!exists) {

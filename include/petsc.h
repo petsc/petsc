@@ -463,6 +463,7 @@ EXTERN int  PetscSynchronizedFlush(MPI_Comm);
 EXTERN int  PetscSynchronizedFGets(MPI_Comm,FILE*,int,char[]);
 EXTERN int  PetscStartMatlab(MPI_Comm,char *,char*,FILE**);
 EXTERN int  PetscStartJava(MPI_Comm,char *,char*,FILE**);
+EXTERN int  PetscGetPetscDir(char**);
 
 EXTERN int  PetscPopUpSelect(MPI_Comm,char*,char*,int,char**,int*);
 /*S

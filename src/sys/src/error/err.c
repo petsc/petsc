@@ -63,12 +63,13 @@ $     SETERRQ(number,p,mess)
 int PetscEmacsClientErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
 {
   int         ierr;
-  char        command[1024];
+  char        command[1024],*pdir;
   FILE        *fp;
 
   PetscFunctionBegin;
   /* Note: don't check error codes since this an error handler :-) */
-  sprintf(command,"emacsclient +%d %s/%s%s\n",line,PETSC_DIR,dir,file);
+  ierr = PetscGetPetscDir(&pdir);CHKERRQ(ierr);
+  sprintf(command,"emacsclient +%d %s/%s%s\n",line,pdir,dir,file);
   ierr = PetscPOpen(MPI_COMM_WORLD,(char*)ctx,command,"r",&fp);
   ierr = PetscFClose(MPI_COMM_WORLD,fp);
   ierr = PetscPopErrorHandler(); /* remove this handler from the stack of handlers */

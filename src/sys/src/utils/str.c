@@ -552,6 +552,25 @@ int PetscStrstr(const char a[],const char b[],char **tmp)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGetPetscDir"
+/*@C
+   PetscGetPetscDir - Gets the directory PETSc is installed in
+
+   Not Collective
+
+   Output Parameter:
+.  dir - the directory
+
+   Level: developer
+
+@*/
+int PetscGetPetscDir(char **dir)
+{
+  PetscFunctionBegin;
+  *dir = PETSC_DIR;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrreplace"

@@ -20,7 +20,7 @@ int PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
   PetscViewer_AMS *vams = (PetscViewer_AMS*)v->data;
   int             ierr,port = -1;
   PetscTruth      flg,flg2;
-  char            m[16];
+  char            m[16],*pdir;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ams_port",&port,PETSC_NULL);CHKERRQ(ierr);
@@ -44,7 +44,12 @@ int PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
   if (flg) {
     ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_options",&flg2);CHKERRQ(ierr);
     if (flg2) {
-      ierr = PetscPOpen(v->comm,m,"cd ${PETSC_DIR}/src/sys/src/objects/ams/java;make runamsoptions AMS_OPTIONS=\"-ams_server ${HOSTNAME}\"","r",PETSC_NULL);CHKERRQ(ierr);
+      char cmd[1024];
+      ierr = PetscStrcpy(cmd,"cd ");CHKERRQ(ierr);
+      ierr = PetscGetPetscDir(&pdir);CHKERRQ(ierr);
+      ierr = PetscStrcat(cmd,pdir);CHKERRQ(ierr);
+      ierr = PetscStrcat(cmd,"/src/sys/src/objects/ams/java;make runamsoptions AMS_OPTIONS=\"-ams_server ${HOSTNAME}\"");CHKERRQ(ierr);
+      ierr = PetscPOpen(v->comm,m,cmd,"r",PETSC_NULL);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg2);CHKERRQ(ierr);
