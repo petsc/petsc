@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.28 1996/12/19 16:15:14 balay Exp balay $ */
+/* $Id: ptime.h,v 1.29 1997/02/20 00:39:50 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -88,21 +88,21 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #if defined(__cplusplus) 
-extern "C" { extern UTP_readTime(struct timestruc_t *);}
+extern "C" { extern rs6000_time(struct timestruc_t *);}
 #else 
-extern UTP_readTime(struct timestruc_t *);
+extern rs6000_time(struct timestruc_t *);
 #endif
 
 #define PetscTime(v)         {static struct  timestruc_t _tp; \
-                             UTP_readTime(&_tp); \
+                             rs6000_time(&_tp); \
                              (v)=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 #define PetscTimeSubtract(v) {static struct timestruc_t  _tp; \
-                             UTP_readTime(&_tp); \
+                             rs6000_time(&_tp); \
                              (v)-=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 #define PetscTimeAdd(v)      {static struct timestruc_t  _tp; \
-                             UTP_readTime(&_tp); \
+                             rs6000_time(&_tp); \
                              (v)+=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 /*
     Dec Alpha has a very fast system clock accessible through getclock()
@@ -137,18 +137,12 @@ extern UTP_readTime(struct timestruc_t *);
 
 #elif defined(PARCH_nt_gnu)
 #include <time.h>
+extern double nt_gnu_time()
+#define PetscTime(v)         (v)=nt_gnu_time();
 
-#define PetscTime(v)         {static clock_t _tp; \
-                             _tp = clock(); \
-                             (v)=((double)_tp/CLK_TCK);}
+#define PetscTimeSubtract(v) (v)-=nt_gnu_time();
 
-#define PetscTimeSubtract(v) {static clock_t _tp; \
-                             _tp = clock(); \
-                             (v)-=((double)_tp/CLK_TCK);}
-
-#define PetscTimeAdd(v)      {static clock_t _tp; \
-                             _tp = clock(); \
-                             (v)+=((double)_tp/CLK_TCK);}
+#define PetscTimeAdd(v)      (v)+=nt_gnu_time();
 
 #elif defined(HAVE_SYS_TIME_H)
 /*
