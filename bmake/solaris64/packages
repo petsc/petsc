@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.69 1999/10/04 22:24:26 balay Exp bsmith $ 
+# $Id: base.site,v 1.70 1999/11/05 14:42:55 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -30,11 +30,10 @@ BLAS_LIB       =  -lsunperf ${FC_LIB}
 #MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
 #MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
-MPI_HOME       = /sandbox/balay/mpich
-MPI_BUILD_HOME = ${MPI_HOME}/build/solaris/ch_p4
-MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich -lsocket -lnsl
-MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include -DPETSC_HAVE_INT_MPI_COMM
-MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
+MPI_HOME       = /home/petsc/software/mpich-1.2.0/solaris64
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}include
+MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 
 #
 #

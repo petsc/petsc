@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.48 1999/11/05 14:42:55 bsmith Exp balay $ 
+# $Id: base.site,v 1.49 1999/12/20 23:17:58 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -21,9 +21,11 @@ X11_LIB        = -L/usr/X11R6/lib -lX11
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = -L/home/petsc/software/mpich-1.2.0/linux/lib -lmpich
-MPI_INCLUDE    = -I/home/petsc/software/mpich-1.2.0/linux/include
-MPIRUN         =   /home/petsc/software/mpich-1.2.0/linux/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
+MPI_HOME       = /home/petsc/software/mpich-1.2.0/linux
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}include
+MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
+
 #MPI_HOME       = /home/petsc/software/mpich-1.1.2
 #MPI_BUILD_HOME = ${MPI_HOME}/build/LINUX/ch_p4
 #MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
