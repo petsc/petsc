@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.143 2000/01/26 21:57:16 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.144 2000/02/02 20:08:56 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -147,8 +147,8 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   SPARSEKIT2ilutp(&n,o_a,o_j,o_i,&lfill,&info->dt,&permtol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&ierr); 
   if (ierr) {
     switch (ierr) {
-      case -3: SETERRQ1(1,1,"ilutp(), matrix U overflows, need larger info->fill value %d",jmax);
-      case -2: SETERRQ1(1,1,"ilutp(), matrix L overflows, need larger info->fill value %d",jmax);
+      case -3: SETERRQ2(1,1,"ilutp(), matrix U overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
+      case -2: SETERRQ2(1,1,"ilutp(), matrix L overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
       case -5: SETERRQ(1,1,"ilutp(), zero row encountered");
       case -1: SETERRQ(1,1,"ilutp(), input matrix may be wrong");
       case -4: SETERRQ1(1,1,"ilutp(), illegal info->fill value %d",jmax);
