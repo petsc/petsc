@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.37 2000/07/10 03:38:52 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.38 2000/09/22 20:42:24 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -280,7 +280,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 {
   int        ierr,flag,dummy_tag,size;
   PetscTruth flg;
-  char       hostname[16];
+  char       hostname[64];
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
@@ -368,7 +368,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   PLogInfo(0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size);
-  ierr = PetscGetHostName(hostname,16);CHKERRQ(ierr);
+  ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
   PLogInfo(0,"PetscInitialize:Running on machine: %s\n",hostname);
 
   ierr = OptionsCheckInitial_Components();CHKERRQ(ierr);

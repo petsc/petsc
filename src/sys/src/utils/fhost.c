@@ -1,4 +1,4 @@
-/*$Id: fhost.c,v 1.45 2000/05/05 22:14:11 balay Exp bsmith $*/
+/*$Id: fhost.c,v 1.46 2000/09/22 20:42:32 bsmith Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -79,7 +79,7 @@ int PetscGetHostName(char name[],int nlen)
   if (!domain) {
     int  l;
     ierr = PetscStrlen(name,&l);CHKERRQ(ierr);
-    if (l == nlen) PetscFunctionReturn(0);
+    if (l == nlen) {name[nlen-1] = 0; PetscFunctionReturn(0);}
     name[l++] = '.';
 #if defined(PETSC_HAVE_SYSINFO)
     sysinfo(SI_SRPC_DOMAIN,name+l,nlen-l);
@@ -100,5 +100,6 @@ int PetscGetHostName(char name[],int nlen)
       name[l-1] = 0;
     }
   }
+  name[nlen-1] = 0;
   PetscFunctionReturn(0);
 }
