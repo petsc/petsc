@@ -52,12 +52,7 @@ int SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure 
     *flag = SAME_NONZERO_PATTERN;
     ierr  = SNESGetFunction(snes,&f,0,0);CHKERRQ(ierr);
     ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
-    ierr  = PetscLogEventBegin(SNES_FunctionEval,snes,x1,0,0);CHKERRQ(ierr);
-    PetscStackPush("SNES user function");
     ierr  = MatFDColoringApply(*B,color,x1,flag,snes);CHKERRQ(ierr);
-    PetscStackPop;
-    snes->nfuncs++;
-    ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x1,0,0);CHKERRQ(ierr);
   }
   if (J != B) {
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

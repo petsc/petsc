@@ -139,17 +139,17 @@ PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 #
 #  Location of SuperLU
 #
-SUPERLU_LIB        = /home/petsc/software/SuperLU/superlu_linux_gcc_pgf90.a
-SUPERLU_INCLUDE    = -I/home/petsc/software/SuperLU/SRC
-PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU 
+#SUPERLU_LIB        = /home/petsc/software/SuperLU/superlu_linux_gcc_pgf90.a
+#SUPERLU_INCLUDE    = -I/home/petsc/software/SuperLU/SRC
+#PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU 
 #
 #  Location of SuperLU_DIST with the current release of SuperLU and SuperLU_Dist
 # Note: compiler superlu_dist with the option -DPRNTlevel=0 to prevent it from 
 # printing information about factorization to the screen
 #
-SUPERLUDIST_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
-SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux_gcc_pgf90.a
-PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
+#SUPERLUDIST_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
+#SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux_gcc_pgf90.a
+#PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
 #
 # ------------------------------------------------------------------------------
 # If you are using shared version of any external libraries you must make this

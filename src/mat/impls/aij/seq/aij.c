@@ -1971,7 +1971,9 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
     w1          = coloring->F;
     coloring->F = 0;
   } else {
+    ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
   }
 
   /* 
@@ -2042,7 +2044,9 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
        Evaluate function at x1 + dx (here dx is a vector of perturbations)
     */
 
+    ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
 
     /*

@@ -17,7 +17,7 @@ int MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_Cho
 int MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
 int MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering;
 int MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
-int MAT_FDColoringApply,MAT_Transpose;
+int MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow"

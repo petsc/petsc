@@ -87,7 +87,7 @@ int DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
 int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,ii,gxs,gys,gnx,gny;           
-  int                    m,n,M,N,dim,w,s,k,nc,col,size;
+  int                    m,n,M,N,dim,s,k,nc,col,size;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
   DAStencilType          st;
@@ -98,57 +98,59 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,0,&M,&N,0,&w,&s,&wrap,&st);CHKERRQ(ierr);
-  nc     = w;
+  ierr = DAGetInfo(da,&dim,&m,&n,0,&M,&N,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
   col    = 2*s + 1;
-  if (DAXPeriodic(wrap) && (m % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
-  if (DAYPeriodic(wrap) && (n % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  /* create the coloring */
-  if (st == DA_STENCIL_STAR && s == 1 && !DAXPeriodic(wrap) && !DAYPeriodic(wrap)) {
+  /* special case as taught to us by Paul Hovland */
+  if (st == DA_STENCIL_STAR && s == 1) {
     ierr = DAGetColoring2d_5pt_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
-  } else if (ctype == IS_COLORING_LOCAL) {
-    if (!da->localcoloring) {
-    ierr = PetscMalloc(nc*nx*ny*sizeof(int),&colors);CHKERRQ(ierr);
-    ii = 0;
-    for (j=ys; j<ys+ny; j++) {
-        for (i=xs; i<xs+nx; i++) {
-          for (k=0; k<nc; k++) {
-            colors[ii++] = k + nc*((i % col) + col*(j % col));
-          }
-        }
-      }
-      ierr = ISColoringCreate(comm,nc*nx*ny,colors,&da->localcoloring);CHKERRQ(ierr);
+  } else {
+
+    if (DAXPeriodic(wrap) && (m % col)){ 
+      SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+                 by 2*stencil_width + 1\n");
     }
-    *coloring = da->localcoloring;
-  } else if (ctype == IS_COLORING_GHOSTED) {
-    if (!da->ghostedcoloring) {
-      ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
-      ii = 0;
-      for (j=gys; j<gys+gny; j++) {
-        for (i=gxs; i<gxs+gnx; i++) {
-          for (k=0; k<nc; k++) {
-            /* the complicated stuff is to handle periodic boundaries */
-            colors[ii++] = k + nc*(    (((i < 0) ? m+i:((i >= m) ? i-m:i)) % col) +
-  			           col*(((j < 0) ? n+j:((j >= n) ? j-n:j)) % col));
-          }
-        }
-      }
-      ierr = ISColoringCreate(comm,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
-      ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+    if (DAYPeriodic(wrap) && (n % col)){ 
+      SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+                 by 2*stencil_width + 1\n");
     }
-    *coloring = da->ghostedcoloring;
-  } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
+    if (ctype == IS_COLORING_LOCAL) {
+      if (!da->localcoloring) {
+	ierr = PetscMalloc(nc*nx*ny*sizeof(int),&colors);CHKERRQ(ierr);
+	ii = 0;
+	for (j=ys; j<ys+ny; j++) {
+	  for (i=xs; i<xs+nx; i++) {
+	    for (k=0; k<nc; k++) {
+	      colors[ii++] = k + nc*((i % col) + col*(j % col));
+	    }
+	  }
+	}
+	ierr = ISColoringCreate(comm,nc*nx*ny,colors,&da->localcoloring);CHKERRQ(ierr);
+      }
+      *coloring = da->localcoloring;
+    } else if (ctype == IS_COLORING_GHOSTED) {
+      if (!da->ghostedcoloring) {
+	ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
+	ii = 0;
+	for (j=gys; j<gys+gny; j++) {
+	  for (i=gxs; i<gxs+gnx; i++) {
+	    for (k=0; k<nc; k++) {
+	      /* the complicated stuff is to handle periodic boundaries */
+	      colors[ii++] = k + nc*(    (((i < 0) ? m+i:((i >= m) ? i-m:i)) % col) +
+					 col*(((j < 0) ? n+j:((j >= n) ? j-n:j)) % col));
+	    }
+	  }
+	}
+	ierr = ISColoringCreate(comm,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+	ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+      }
+      *coloring = da->ghostedcoloring;
+    } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
+  }
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -299,9 +301,10 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 #define __FUNCT__ "DAGetColoring2d_5pt_MPIAIJ" 
 int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  int      ierr,xs,ys,nx,ny,*colors,i,j,ii,gxs,gys,gnx,gny;           
-  int      m,n,dim,w,s,k,nc;
-  MPI_Comm comm;
+  int            ierr,xs,ys,nx,ny,*colors,i,j,ii,gxs,gys,gnx,gny;           
+  int            m,n,dim,s,k,nc;
+  MPI_Comm       comm;
+  DAPeriodicType wrap;
 
   PetscFunctionBegin;
   /*     
@@ -309,11 +312,19 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr   = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,0,0);CHKERRQ(ierr);
-  nc     = w;
+  ierr   = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,&wrap,0);CHKERRQ(ierr);
   ierr   = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr   = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr   = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+
+  if (DAXPeriodic(wrap) && (m % 5)){ 
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+                 by 5\n");
+  }
+  if (DAYPeriodic(wrap) && (n % 5)){ 
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+                 by 5\n");
+  }
 
   /* create the coloring */
   if (ctype == IS_COLORING_LOCAL) {
@@ -468,14 +479,6 @@ int DAGetMatrix2d_MPIAIJ(DA da,Mat *J)
   */
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
   col = 2*s + 1;
-  if (DAXPeriodic(wrap) && (m % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
-  if (DAYPeriodic(wrap) && (n % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -594,18 +597,6 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat *J)
   */
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
   col    = 2*s + 1;
-  if (DAXPeriodic(wrap) && (m % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
-  if (DAYPeriodic(wrap) && (n % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
-  if (DAZPeriodic(wrap) && (p % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
 
   ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
@@ -733,12 +724,6 @@ int DAGetMatrix1d_MPIAIJ(DA da,Mat *J)
   */
   ierr = DAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&wrap,0);CHKERRQ(ierr);
   col    = 2*s + 1;
-
-  if (DAXPeriodic(wrap) && (m % col)) {
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
-
 
   ierr = DAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);

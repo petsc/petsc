@@ -79,6 +79,7 @@ int MatInitializePackage(char *path) {
   ierr = PetscLogEventRegister(&MAT_AXPY,                     "MatAXPY",          MAT_COOKIE);            CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_FDColoringCreate,         "MatFDColorCreate", MAT_FDCOLORING_COOKIE); CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_FDColoringApply,          "MatFDColorApply",  MAT_FDCOLORING_COOKIE); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_FDColoringFunction,       "MatFDColorFunc",   MAT_FDCOLORING_COOKIE); CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_Transpose,                "MatTranspose",     MAT_COOKIE);            CHKERRQ(ierr);
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);                                           CHKERRQ(ierr);

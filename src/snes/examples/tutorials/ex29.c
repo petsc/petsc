@@ -128,7 +128,7 @@ int main(int argc,char **argv)
       Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
     */
-    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,-6,-6,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,-5,-5,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
 
     /* overwrite the matrix allocation routine with one specific for this codes nonzero structure */
     ierr = PetscOptionsHasName(PETSC_NULL,"-default_nonzero_structure",&defaultnonzerostructure);CHKERRQ(ierr);
@@ -416,18 +416,16 @@ int ComputeMaxima(DA da, Vec X, PetscReal t)
 #define __FUNCT__ "FormFunctionLocal"
 int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 {
-  AppCtx       *user = (AppCtx*)ptr;
-  TstepCtx     *tsCtx = user->tsCtx;
-  int          ierr,i,j;
-  int          xints,xinte,yints,yinte;
-  PassiveReal  hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
-  PassiveReal  de2,rhos2,nu,dde2;
-  PassiveReal  two = 2.0,one = 1.0,p5 = 0.5;
-  PetscScalar  vx,vy,avx,avy,vxp,vxm,vyp,vym;
-  PetscScalar  Bx,By,aBx,aBy,Bxp,Bxm,Byp,Bym;
-  PetscScalar  xx;
-  PetscScalar  F_eq_x;
-  PetscScalar  By_eq;
+  AppCtx        *user = (AppCtx*)ptr;
+  TstepCtx      *tsCtx = user->tsCtx;
+  int           ierr,i,j;
+  int           xints,xinte,yints,yinte;
+  PassiveReal   hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
+  PassiveReal   de2,rhos2,nu,dde2;
+  PassiveReal   two = 2.0,one = 1.0,p5 = 0.5;
+  PetscScalar   vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  PetscScalar   Bx,By,aBx,aBy,Bxp,Bxm,Byp,Bym;
+  PetscScalar xx,F_eq_x,By_eq;
 
   PetscFunctionBegin;
   de2     = sqr(user->param->d_e);
@@ -696,14 +694,6 @@ int DAGetMatrix_Specialized(DA da,MatType ignored,Mat *J)
   */
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,0,&st);CHKERRQ(ierr);
   col = 2*s + 1;
-  if ((m % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
-  if ((n % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
 
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);

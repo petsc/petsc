@@ -28,3 +28,8 @@ MPE_INCLUDE   =
 MPE_LIB       =  -lmpe
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
+# Location where adiC is installed
+#
+ADIC_DEFINES    = -Dad_GRAD_MAX=36
+ADIC_CC         = adiC -a -d gradient
+PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC

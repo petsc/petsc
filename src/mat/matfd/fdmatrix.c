@@ -588,7 +588,9 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       w1          = coloring->F; /* use already computed value of function */
       coloring->F = 0; 
     } else {
+      ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
       ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     }
 
     /* 
@@ -659,7 +661,9 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 	Evaluate function at x1 + dx (here dx is a vector of perturbations)
       */
 
+      ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
       ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
       ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
 
       /*
@@ -752,7 +756,9 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
 
   ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
   ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
   ierr = (*f)(sctx,t,x1,w1,fctx);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
 
   /* 
       Compute all the scale factors and share with other processors
@@ -816,7 +822,9 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
     /*
        Evaluate function at x1 + dx (here dx is a vector of perturbations)
     */
+    ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,t,w3,w2,fctx);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
 
     /*
