@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.8 1995/03/06 04:29:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.9 1995/03/17 04:57:18 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "ximpl.h"
@@ -189,6 +189,7 @@ int XDestroy(PetscObject obj)
   DrawCtx  ctx = (DrawCtx) obj;
   XiWindow *win = (XiWindow *) ctx->data;
   FREE(win);
+  PLogObjectDestroy(ctx);
   PETSCHEADERDESTROY(ctx);
   return 0;
 }
@@ -219,6 +220,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 
   *inctx = 0;
   PETSCHEADERCREATE(ctx,_DrawCtx,DRAW_COOKIE,XWINDOW,comm);
+  PLogObjectCreate(ctx);
   ctx->ops     = &DvOps;
   ctx->destroy = XDestroy;
   ctx->view    = 0;

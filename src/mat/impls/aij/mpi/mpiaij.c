@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.9 1995/03/17 00:29:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.10 1995/03/17 04:56:54 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -521,6 +521,9 @@ static int MatiAIJdestroy(PetscObject obj)
   Mat        mat = (Mat) obj;
   Matimpiaij *aij = (Matimpiaij *) mat->data;
   int        ierr;
+#if defined(PETSC_LOG)
+  PLogObjectState(obj,"Rows %d Cols %d",aij->M,aij->N);
+#endif
   FREE(aij->rowners); 
   ierr = MatDestroy(aij->A); CHKERR(ierr);
   ierr = MatDestroy(aij->B); CHKERR(ierr);
@@ -528,7 +531,9 @@ static int MatiAIJdestroy(PetscObject obj)
   if (aij->garray) FREE(aij->garray);
   if (aij->lvec) VecDestroy(aij->lvec);
   if (aij->Mvctx) VecScatterCtxDestroy(aij->Mvctx);
-  FREE(aij); PETSCHEADERDESTROY(mat);
+  FREE(aij); 
+  PLogObjectDestroy(mat);
+  PETSCHEADERDESTROY(mat);
   return 0;
 }
 
@@ -962,6 +967,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   int          ierr, i,sum[2],work[2];
   *newmat         = 0;
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATAIJMPI,comm);
+  PLogObjectCreate(mat);
   mat->data       = (void *) (aij = NEW(Matimpiaij)); CHKPTR(aij);
   mat->ops        = &MatOps;
   mat->destroy    = MatiAIJdestroy;
@@ -1009,7 +1015,9 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
 
 
   ierr = MatCreateSequentialAIJ(m,n,d_nz,d_nnz,&aij->A); CHKERR(ierr);
+  PLogObjectParent(mat,aij->A);
   ierr = MatCreateSequentialAIJ(m,N,o_nz,o_nnz,&aij->B); CHKERR(ierr);
+  PLogObjectParent(mat,aij->B);
 
   /* build cache for off array entries formed */
   aij->stash.nmax = CHUNCKSIZE; /* completely arbratray number */
@@ -1039,6 +1047,7 @@ static int MatiCopy(Mat matin,Mat *newmat)
 
   if (!oldmat->assembled) SETERR(1,"Cannot copy unassembled matrix");
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATAIJMPI,matin->comm);
+  PLogObjectCreate(mat);
   mat->data       = (void *) (aij = NEW(Matimpiaij)); CHKPTR(aij);
   mat->ops        = &MatOps;
   mat->destroy    = MatiAIJdestroy;
@@ -1072,9 +1081,13 @@ static int MatiCopy(Mat matin,Mat *newmat)
   mat->comm       = matin->comm;
   
   ierr =  VecCreate(oldmat->lvec,&aij->lvec); CHKERR(ierr);
+  PLogObjectParent(mat,aij->lvec);
   ierr =  VecScatterCtxCopy(oldmat->Mvctx,&aij->Mvctx); CHKERR(ierr);
+  PLogObjectParent(mat,aij->Mvctx);
   ierr =  MatCopy(oldmat->A,&aij->A); CHKERR(ierr);
+  PLogObjectParent(mat,aij->A);
   ierr =  MatCopy(oldmat->B,&aij->B); CHKERR(ierr);
+  PLogObjectParent(mat,aij->B);
   *newmat = mat;
   return 0;
 }

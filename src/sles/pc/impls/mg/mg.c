@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.5 1995/03/06 04:15:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.6 1995/03/17 04:56:32 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -103,6 +103,7 @@ static int MGDestroy(PetscObject obj)
      FREE(mg[i]);
   }
   FREE(mg);
+  PLogObjectDestroy(pc);
   PETSCHEADERDESTROY(pc);
   return 0;
 }

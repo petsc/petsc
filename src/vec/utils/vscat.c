@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.9 1995/03/06 03:59:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.10 1995/03/17 04:55:37 bsmith Exp bsmith $";
 #endif
 
 
@@ -110,7 +110,9 @@ static int SStoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
 static int SGtoSGDestroy(PetscObject obj)
 {
   VecScatterCtx ctx = (VecScatterCtx) obj;
-  FREE(ctx->todata); FREE(ctx->fromdata); PETSCHEADERDESTROY(ctx);
+  FREE(ctx->todata); FREE(ctx->fromdata); 
+  PLogObjectDestroy(ctx);
+  PETSCHEADERDESTROY(ctx);
   return 0;
 }
 

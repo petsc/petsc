@@ -91,6 +91,8 @@ extern int  PetscFinalize();
 
 extern int  PetscDestroy(PetscObject);
 extern int  PetscView(PetscObject,Viewer);
+extern int  PetscObjectSetName(PetscObject,char*);
+extern int  PetscObjectGetName(PetscObject,char**);
 
 extern int  PetscDefaultErrorHandler(int,char*,char*,char*,int,void*);
 extern int  PetscAbortErrorHandler(int,char*,char*,char*,int,void* );

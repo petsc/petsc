@@ -69,7 +69,9 @@ int main(int argc,char **args)
   /* create right hand side and solution */
 
   ierr = VecCreateInitialVector(N,&u); CHKERR(ierr); 
+  PetscObjectSetName((PetscObject)u,"Approx. Solution");
   ierr = VecCreate(u,&b); CHKERR(ierr);
+  PetscObjectSetName((PetscObject)b,"Right hand side");
   ierr = VecCreate(b,&ustar); CHKERR(ierr);
   VecSet(&zero,u); VecSet(&zero,b);
 

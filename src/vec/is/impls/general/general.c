@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.8 1995/03/06 04:11:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.9 1995/03/17 04:55:29 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -14,7 +14,9 @@ typedef struct {
 static int ISidestroy(PetscObject obj)
 {
   IS is = (IS) obj;
-  FREE(is->data); PETSCHEADERDESTROY(is); return 0;
+  FREE(is->data); 
+  PLogObjectDestroy(is);
+  PETSCHEADERDESTROY(is); return 0;
 }
 
 static int ISiIndices(IS in,int **idx)
@@ -79,6 +81,7 @@ int ISCreateSequential(int n,int *idx,IS *is)
 
   *is = 0;
   PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISGENERALSEQUENTIAL,MPI_COMM_SELF); 
+  PLogObjectCreate(Nindex);
   sub            = (IndexiGeneral *) MALLOC(size); CHKPTR(sub);
   sub->idx       = (int *) (sub+1);
   sub->n         = n;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.5 1995/03/06 04:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.6 1995/03/17 04:55:31 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -24,6 +24,7 @@ static int ISidestroy(PetscObject obj)
 {
   IS is = (IS) obj;
   FREE(is->data); 
+  PLogObjectDestroy(is);
   PETSCHEADERDESTROY(is); return 0;
 }
 
@@ -99,6 +100,7 @@ int ISCreateStrideSequential(int n,int first,int step,IS *is)
   if (step == 0) SETERR(1,"Step must be nonzero");
 
   PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISSTRIDESEQUENTIAL,MPI_COMM_SELF); 
+  PLogObjectCreate(Nindex);
   sub            = (IndexiStride *) MALLOC(size); CHKPTR(sub);
   sub->n         = n;
   sub->first     = first;

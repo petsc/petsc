@@ -34,6 +34,7 @@ static int MatShellDestroy(PetscObject obj)
   MatShell *shell;
   shell = (MatShell *) mat->data;
   FREE(shell); 
+  PLogObjectDestroy(mat);
   PETSCHEADERDESTROY(mat);
   return 0;
 }
@@ -79,6 +80,7 @@ int MatShellCreate(int m, int n, void *ctx,Mat *mat)
   Mat      newmat;
   MatShell *shell;
   PETSCHEADERCREATE(newmat,_Mat,MAT_COOKIE,MATSHELL,MPI_COMM_WORLD);
+  PLogObjectCreate(newmat);
   *mat           = newmat;
   newmat->factor = 0;
   newmat->row    = 0;

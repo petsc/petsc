@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.11 1995/03/10 04:44:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.12 1995/03/17 04:56:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -368,10 +368,14 @@ int MatiSDview(PetscObject obj,Viewer ptr)
 
 static int MatiSDdestroy(PetscObject obj)
 {
-  Mat mat = (Mat) obj;
+  Mat    mat = (Mat) obj;
   MatiSD *l = (MatiSD *) mat->data;
+#if defined(PETSC_LOG)
+  PLogObjectState(obj,"Rows %d Cols %d",l->m,l->n);
+#endif
   if (l->pivots) FREE(l->pivots);
   FREE(l);
+  PLogObjectDestroy(mat);
   PETSCHEADERDESTROY(mat);
   return 0;
 }
@@ -573,6 +577,7 @@ int MatCreateSequentialDense(int m,int n,Mat *newmat)
   MatiSD    *l;
   *newmat        = 0;
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATDENSESEQ,MPI_COMM_SELF);
+  PLogObjectCreate(mat);
   l              = (MatiSD *) MALLOC(size); CHKPTR(l);
   mat->ops       = &MatOps;
   mat->destroy   = MatiSDdestroy;
