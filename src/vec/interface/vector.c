@@ -1,7 +1,7 @@
 /* 
    This is where the abstract vector operations are defined
  */
-#include "vecimpl.h"
+#include "vecimpl.h"    /*I "vec.h" I*/
 
 /*@
      VecValidVector - returns 1 if this is a valid vector else 0
@@ -32,7 +32,7 @@ VecScalar val;
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  return (*x->ops->dot)(x->data,y->data,val);
+  return (*x->ops->dot)(x,y,val);
 }
 
 /*@
@@ -50,7 +50,7 @@ Vec       x;
 VecScalar val;
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->norm)(x->data,val);
+  return (*x->ops->norm)(x,val);
 }
 /*@
      VecASum  - Computes vector one norm.
@@ -67,7 +67,7 @@ Vec       x;
 VecScalar val;
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->asum)(x->data,val);
+  return (*x->ops->asum)(x,val);
 }
 
 /*@
@@ -86,7 +86,7 @@ VecScalar val;
 int      *p;
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->max)(x->data,p,val);
+  return (*x->ops->max)(x,p,val);
 }
 
 /*@
@@ -105,7 +105,7 @@ VecScalar val;
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  return (*x->ops->tdot)(x->data,y->data,val);
+  return (*x->ops->tdot)(x,y,val);
 }
 /*@
      VecScale  - Scales a vector. 
@@ -119,7 +119,7 @@ VecScalar alpha;
 Vec       x;
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->scal)(alpha,x->data);
+  return (*x->ops->scal)(alpha,x);
 }
 
 /*@
@@ -136,7 +136,7 @@ Vec x,y;
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  return (*x->ops->copy)(x->data,y->data);
+  return (*x->ops->copy)(x,y);
 }
  
 /*@
@@ -153,7 +153,7 @@ Vec       x;
 VecScalar alpha;
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->set)(alpha,x->data);
+  return (*x->ops->set)(alpha,x);
 } 
 
 /*@
@@ -169,7 +169,7 @@ Vec       x,y;
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  return (*x->ops->axpy)(alpha,x->data,y->data);
+  return (*x->ops->axpy)(alpha,x,y);
 } 
 /*@
      VecAYPX  -  Computes y <- x + alpha y.
@@ -185,7 +185,7 @@ VecScalar alpha;
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  return (*x->ops->aypx)(alpha,x->data,y->data);
+  return (*x->ops->aypx)(alpha,x,y);
 } 
 /*@
      VecSwap  -  Swaps x and y.
@@ -198,7 +198,7 @@ Vec x,y;
 {
   VALIDHEADER(x,VEC_COOKIE);  VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  return (*x->ops->swap)(x->data,y->data);
+  return (*x->ops->swap)(x,y);
 }
 /*@
      VecWAXPY  -  Computes w <- alpha x + y.
@@ -217,10 +217,10 @@ VecScalar alpha;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(w,VEC_COOKIE);
   CHKSAME(x,y); CHKSAME(y,w);
-  return (*x->ops->waxpy)(alpha,x->data,y->data,w->data); 
+  return (*x->ops->waxpy)(alpha,x,y,w); 
 }
 /*@
-     VPMult  -  Computes the componentwise multiplication w = x*y.
+     VecPMult  -  Computes the componentwise multiplication w = x*y.
 
   Input Parameters:
 .  x,y  - the vectors
@@ -235,7 +235,7 @@ Vec x,y,w;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(w,VEC_COOKIE);
   CHKSAME(x,y); CHKSAME(y,w);
-  return (*x->ops->pmult)(x->data,y->data,w->data);
+  return (*x->ops->pmult)(x,y,w);
 } 
 /*@
      VecPDiv  -  Computes the componentwise division w = x/y.
@@ -252,7 +252,7 @@ Vec x,y,w;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(w,VEC_COOKIE);
   CHKSAME(x,y); CHKSAME(y,w);
-  return (*x->ops->pdiv)(x->data,y->data,w->data);
+  return (*x->ops->pdiv)(x,y,w);
 }
 /*@
      VecCreate  -  Creates a vector from another vector. Use VecDestroy()
@@ -263,13 +263,13 @@ Vec x,y,w;
 .  v - a vector to mimic
 
   Output Parameter:
-.  returns a pointer to a vector 
+.  newv - location to put new vector
 @*/
 int VecCreate(v,newv) 
 Vec v,*newv;
 {
   VALIDHEADER(v,VEC_COOKIE);
-  return   (*v->ops->create_vector)(v->data,newv);
+  return   (*v->ops->create_vector)(v,newv);
 }
 /*@
      VecDestroy  -  Destroys  a vector created with VecCreate().
@@ -293,7 +293,7 @@ Vec v;
 .  v - a vector
 
   Output Parameters:
-.  returns a pointer to an array of pointers.
+.  V - location to put pointer to array of vectors.
 @*/
 int VecGetVecs(v,m,V)  
 int m;
@@ -308,7 +308,7 @@ Vec v,**V;
 
   Input Parameters:
 .  vv - pointer to array of vector pointers
-.  m - the number of vectors to obtain
+.  m - the number of vectors previously obtained
 @*/
 int VecFreeVecs(vv,m)
 Vec *vv;
@@ -433,7 +433,7 @@ VecScalar y;
 int       *ix, ni;
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->addvalues)( x->data, ni,ix, y );
+  return (*x->ops->addvalues)( x, ni,ix, y );
 }
 /*@
      VecInsertValues - insert values into certain locations in vector. These
@@ -457,7 +457,7 @@ VecScalar y;
 int       *ix, ni;
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->insertvalues)( x->data, ni,ix, y );
+  return (*x->ops->insertvalues)( x, ni,ix, y );
 }
 
 /*@
@@ -471,7 +471,7 @@ int VecBeginAssembly(vec)
 Vec vec;
 {
   VALIDHEADER(vec,VEC_COOKIE);
-  if (vec->ops->beginassm) return (*vec->ops->beginassm)(vec->data);
+  if (vec->ops->beginassm) return (*vec->ops->beginassm)(vec);
   else return 0;
 }
 
@@ -486,7 +486,7 @@ int VecEndAssembly(vec)
 Vec vec;
 {
   VALIDHEADER(vec,VEC_COOKIE);
-  if (vec->ops->endassm) return (*vec->ops->endassm)(vec->data);
+  if (vec->ops->endassm) return (*vec->ops->endassm)(vec);
   else return 0;
 }
 
@@ -509,7 +509,7 @@ int       nv;
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(*y,VEC_COOKIE);
   CHKSAME(x,*y);
-  return (*x->ops->mtdot)(nv,x->data,y,val);
+  return (*x->ops->mtdot)(nv,x,y,val);
 }
 /*@
      VecMDot  - non-Hermitian vector multiple dot product. That is, it does NOT
@@ -530,7 +530,7 @@ int       nv;
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(*y,VEC_COOKIE);
   CHKSAME(x,*y);
-  return (*x->ops->mdot)(nv,x->data,y,val);
+  return (*x->ops->mdot)(nv,x,y,val);
 }
 
 /*@
@@ -549,7 +549,7 @@ int       nv;
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(*y,VEC_COOKIE);
   CHKSAME(x,*y);
-  return (*x->ops->maxpy)(nv,alpha,x->data,y);
+  return (*x->ops->maxpy)(nv,alpha,x,y);
 } 
 
 /*@
@@ -560,14 +560,15 @@ int       nv;
   Input Parameters:
 .   x - the vector
 
-  Returns pointer to the array
+   Output Parameters:
+.   a - location to put pointer to the array.
 @*/
 int VecGetArray(x,a)
-Vec x;
-VecScalar **a;
+Vec       x;
+VecScalar *a;
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->getarray)(x->data,a);
+  return (*x->ops->getarray)(x,a);
 }
 
 /*@
@@ -583,7 +584,7 @@ Vec  v;
 void *ptr;
 {
   VALIDHEADER(v,VEC_COOKIE);
-  return (*v->ops->view)(v->data,ptr);
+  return (*v->ops->view)(v,ptr);
 }
 
 /*@
@@ -593,14 +594,14 @@ void *ptr;
 .   x - the vector
 
   Output Parameters:
-.  returns the vector length
+.  size - the length of the vector.
 @*/
 int VecGetSize(x,size)
 Vec x;
 int *size;
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->getsize)(x->data,size);
+  return (*x->ops->getsize)(x,size);
 }
 
 /*@
@@ -612,14 +613,14 @@ int *size;
 .   x - the vector
 
   Output Parameters:
-.  returns the vector length stored locally
+.  size - the length of the local piece of the vector.
 @*/
 int VecGetLocalSize(x,size)
 Vec x;
 int *size;
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->localsize)(x->data,size);
+  return (*x->ops->localsize)(x,size);
 }
 
 /* Default routines for obtaining and releasing; */
