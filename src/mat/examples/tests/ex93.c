@@ -5,12 +5,12 @@ static char help[] = "Testing Matrix-Matrix multiplication for SeqAIJ matrices.\
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv) {
-  Mat A,B,C,D;
-  PetscScalar a[]={1.,1.,0.,0.,1.,1.,0.,0.,1.};
-  int ij[]={0,1,2};
-  PetscScalar none=-1.;
-  int ierr;
-  PetscReal fill=4;
+  Mat            A,B,C,D;
+  PetscScalar    a[]={1.,1.,0.,0.,1.,1.,0.,0.,1.};
+  int            ij[]={0,1,2};
+  PetscScalar    none=-1.;
+  PetscErrorCode ierr;
+  PetscReal      fill=4;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MatCreate(PETSC_COMM_SELF,3,3,3,3,&A);CHKERRQ(ierr);
