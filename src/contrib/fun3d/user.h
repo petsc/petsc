@@ -1,7 +1,8 @@
-/*$Id: user.h,v 1.3 2000/01/13 17:15:57 bsmith Exp bsmith $*/
-#if defined(HAVE_FORTRAN_UNDERSCORE)
+/*$Id: user.h,v 1.4 2000/01/15 15:21:27 bsmith Exp bsmith $*/
+#include "petsc.h"
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #       define f77name(ucase,lcase,lcbar) lcbar
-#elif defined(HAVE_FORTRAN_CAPS)
+#elif defined(PETSC_HAVE_FORTRAN_CAPS)
 #       define f77name(ucase,lcase,lcbar) ucase
 #else
 #       define f77name(ucase,lcase,lcbar) lcase
