@@ -9,8 +9,6 @@ SOURCEF  = mcsrch.f
 SOURCEH  = umls.h
 OBJSC    = umls.o
 OBJSF    = mcsrch.o
-WSOURCEC = 
-WOBJS    = 
 LIBBASE  = libpetscsnes
 MANSEC   = n
 
