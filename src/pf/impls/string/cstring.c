@@ -1,4 +1,4 @@
-/*$Id: cstring.c,v 1.6 2000/05/05 22:20:12 balay Exp bsmith $*/
+/*$Id: cstring.c,v 1.7 2000/06/20 20:20:08 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -66,7 +66,7 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
   if (keeptmpfiles) {
     sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./petscmakefile ; make BOPT=${BOPT} MIN=%d NOUT=%d -f petscmakefile petscdlib STRINGFUNCTION=\"%s\" ; sync\n",tmp,pf->dimin,pf->dimout,string);
   } else {
-    sprintf(task,"cd %s ; mkdir petsctmp ;cd petsctmp; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./petscmakefile ; make BOPT=${BOPT} MIN=%d NOUT=%d -f petscmakefile petscdlib STRINGFUNCTION=\"%s\" ; \\rm -f petscmakefile petscdlib.c libpetscdlib.a ;  sync\n",tmp,pf->dimin,pf->dimout,string);
+    sprintf(task,"cd %s ; mkdir ${USERNAME} ;cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./petscmakefile ; make BOPT=${BOPT} MIN=%d NOUT=%d -f petscmakefile petscdlib STRINGFUNCTION=\"%s\" ; \\rm -f petscmakefile petscdlib.c libpetscdlib.a ;  sync\n",tmp,pf->dimin,pf->dimout,string);
   }
   ierr = PetscPOpen(comm,PETSC_NULL,task,"r",&fd);CHKERRQ(ierr);
   ierr = PetscPClose(comm,fd);CHKERRQ(ierr);
