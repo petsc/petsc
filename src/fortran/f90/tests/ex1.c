@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.4 2000/08/23 18:56:04 balay Exp balay $*/
+/*$Id: ex1.c,v 1.5 2000/08/30 21:18:39 balay Exp balay $*/
 
 #include <stdio.h>
 #include "petscf90.h"
@@ -13,32 +13,25 @@
 
 typedef struct {
   int a;
-  void *b;
-} part1;
-
-typedef struct {
+  F90Array1d ptr;
   int c;
-} part2;
+} abc;
+
 
 EXTERN_C_BEGIN
 
-extern void fortran_routine_(void *x);
-
-void c_routine_(void *in)
+extern void fortran_routine_(abc *);
+void c_routine_(abc *x)
 {
   double     *data;
-  part2      *y;
-  part1      *x  = (part1 *)in;
-  F90Array1d ptr = (F90Array1d)&(x->b);
 
-  F90Array1dAccess(ptr,(void **)&data);
-  F90Array1dGetNextRecord(ptr,(void**)&y);
-  printf("From C: %d %5.2e %d\n",x->a,data[0],y->c);
+  F90Array1dAccess(&(x->ptr),(void **)&data);
+  printf("From C: %d %5.2e %d\n",x->a,data[0],x->c);
   fflush(stdout);
   x->a = 2;
 
   data[0] = 22.0;
-  y->c = 222;
+  x->c = 222;
   fortran_routine_(x); 
 }
 

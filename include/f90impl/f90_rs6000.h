@@ -1,4 +1,4 @@
-/* $Id: f90_rs6000.h,v 1.5 1998/09/25 00:09:05 balay Exp balay $ */
+/* $Id: f90_rs6000.h,v 1.6 1999/11/11 16:46:16 balay Exp balay $ */
 
 #if !defined (__F90_RS6000_H)
 #define __F90_RS6000_H
@@ -38,22 +38,21 @@ int   sum_d;   /* -sumof(lower*mult) */
 typedef struct {
   f90_header()
   tripple dim[1];
-}array1d;
+}F90Array1d;
 
 typedef struct {
   f90_header()
   tripple dim[2];   /* dim2,dim1 */
-}array2d;
+}F90Array2d;
 
 typedef struct {
   f90_header()
   tripple dim[3];   /* dim3,dim2,dim1 */
-}array3d;
+}F90Array3d;
 
 typedef struct {
   f90_header()
   tripple dim[4];   /* dim4,dim3,dim2,dim1 */
-}array4d;
-
+}F90Array4d;
 
 #endif

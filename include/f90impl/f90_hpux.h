@@ -1,4 +1,4 @@
-/* $Id: f90_hpux.h,v 1.4 2000/03/03 14:23:26 bsmith Exp balay $ */
+/* $Id: f90_hpux.h,v 1.5 2000/07/12 22:24:23 balay Exp balay $ */
 
 #if !defined (__F90_HPUX_H)
 #define __F90_HPUX_H
@@ -33,21 +33,21 @@ typedef struct {
 typedef struct {
   f90_header()
   tripple dim[1];
-}array1d;
+}F90Array1d;
 
 typedef struct {
   f90_header()
   tripple dim[2];   /* dim2,dim1 */
-}array2d;
+}F90Array2d;
 
 typedef struct {
   f90_header()
   tripple dim[3];   /* dim3,dim2,dim1 */
-}array3d;
+}F90Array3d;
 
 typedef struct {
   f90_header()
   tripple dim[4];   /* dim4,dim3,dim2,dim1 */
-}array4d;
+}F90Array4d;
 
 #endif

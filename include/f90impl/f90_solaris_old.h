@@ -1,4 +1,4 @@
-/* $Id: f90_solaris_old.h,v 1.4 2000/04/09 03:11:48 bsmith Exp balay $ */
+/* $Id: f90_solaris_old.h,v 1.5 2000/07/21 01:11:24 balay Exp balay $ */
 
 #if !defined (__F90_SOLARIS_OLD_H)
 #define __F90_SOLARIS_OLD_H
@@ -39,22 +39,21 @@ int            a,b;     /* unknown stuff - always zero. */
 typedef struct {
   f90_header()
   tripple dim[1];
-}array1d;
+}F90Array1d;
 
 typedef struct {
   f90_header()
   tripple dim[2];   /* dim1,dim2 */
-}array2d;
+}F90Array2d;
 
 typedef struct {
   f90_header()
   tripple dim[3];   /* dim1,dim2,dim3 */
-}array3d;
+}F90Array3d;
 
 typedef struct {
   f90_header()
   tripple dim[4];   /* dim1,dim2,dim3,dim4 */
-}array4d;
-
+}F90Array4d;
 
 #endif

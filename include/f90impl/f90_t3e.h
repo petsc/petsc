@@ -1,4 +1,4 @@
-/* $Id: f90_t3e.h,v 1.1 1998/04/25 21:09:24 balay Exp balay $ */
+/* $Id: f90_t3e.h,v 1.2 1998/09/25 00:10:22 balay Exp balay $ */
 
 #if !defined (__F90_T3E_H)
 #define __F90_T3E_H
@@ -32,21 +32,21 @@ int   a,b;
 typedef struct {
   f90_header()
   tripple dim[1];
-}array1d;
+}F90Array1d;
 
 typedef struct {
   f90_header()
   tripple dim[2];
-}array2d;
+}F90Array2d;
 
 typedef struct {
   f90_header()
   tripple dim[3];
-}array3d;
+}F90Array3d;
 
 typedef struct {
   f90_header()
   tripple dim[4];
-}array4d;
+}F90Array4d;
 
 #endif

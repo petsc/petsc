@@ -1,4 +1,4 @@
-/* $Id: f90_IRIX.h,v 1.7 2000/07/27 20:15:52 balay Exp balay $ */
+/* $Id: f90_IRIX.h,v 1.8 2000/07/27 20:32:20 balay Exp balay $ */
 
 #if !defined(__F90_IRIX_H)
 #define __F90_IRIX_H
@@ -41,21 +41,21 @@ long  size; /* len1*len2* ... * sd */
 typedef struct {
   f90_header()
   tripple dim[1];
-}array1d;
+}F90Array1d;
 
 typedef struct {
   f90_header()
   tripple dim[2];
-}array2d;
+}F90Array2d;
 
 typedef struct {
   f90_header()
   tripple dim[3];
-}array3d;
+}F90Array3d;
 
 typedef struct {
   f90_header()
   tripple dim[4];
-}array4d;
+}F90Array4d;
 
 #endif

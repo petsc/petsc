@@ -1,4 +1,4 @@
-/* $Id: f90_IRIX.h,v 1.8 2000/07/27 20:32:20 balay Exp balay $ */
+/* $Id: f90_absoft.h,v 1.1 2000/09/07 19:56:59 balay Exp balay $ */
 
 #if !defined(__F90_ABSOFT_H)
 #define __F90_ABSOFT_H
@@ -16,6 +16,8 @@ typedef struct {
 #define F90_COMPLEX_ID 268960772
 #define F90_CHAR_ID    32774
 
+#define F90_LONG_ID F90_INT_ID
+
 #if !defined (PETSC_COMPLEX)
 #define F90_SCALAR_ID F90_DOUBLE_ID
 #else
@@ -23,11 +25,11 @@ typedef struct {
 #endif
 
 #define f90_header() \
-void* addr;        /* Pointer to the data/array */ \
-int   sd;          /* sizeof(DataType) in bits */  \
-short cookie; \
-short dim_id;        /* No of dimentions */          \
-int   id; /* ID corresponding to datatype */ \
+void* addr;      /* Pointer to the data/array */ \
+int   sd;        /* sizeof(DataType) in bits */  \
+short cookie;    \
+short dim_id;    /* No of dimentions */          \
+int   id;        /* ID corresponding to datatype */ \
 int   a,b;
 
 typedef struct {
