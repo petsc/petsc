@@ -25,8 +25,10 @@ manual.html: manual.tex part1.tex
 	tohtml -mapman ../www/www.cit manual.tex -notopnames \
 	       -mapref../www/petsc.cit -nobottomnav
 	-@chmod g+w manual.hux latex.err manual.html
+	-mv manual.html tmp.html
+	cat tmp.html | sed 's/H1/H2/g' | sed 's/H0/H1/g'> manual.html
 	-mv manual.html ..
-	rm -f  *.xbm latex.err findex.tex sindex.tex
+	rm -f  *.xbm latex.err findex.tex sindex.tex tmp.html
 
 intro.dvi: intro.tex part1.tex
 	latex intro
@@ -37,14 +39,6 @@ intro.dvi: intro.tex part1.tex
 intro.ps: 
 	dvips intro
 	-@chmod g+w intro.ps
-
-intro.html: intro.tex part1.tex
-	tohtml -mapman ../www/www.cit intro.tex -notopnames \
-	       -mapref../www/petsc.cit  -nobottomnav
-	tohtml -mapman ../www/www.cit intro.tex -notopnames \
-	       -mapref../www/petsc.cit  -nobottomnav
-	-@chmod g+w intro.hux latex.err intro.html
-	rm -f *.xbm latex.err findex.tex sindex.tex
 
 onepager.ps: onepager.tex
 	latex onepager
@@ -115,7 +109,6 @@ homepage:
 	-/usr/bin/cp onepager.html /mcs/www/petsc
 	-/usr/bin/cp summaries.html /mcs/www/petsc
 	-/usr/bin/cp ../www.html /mcs/www/petsc
-	-/usr/bin/cp intro.html /mcs/www/petsc
 	-/usr/bin/cp intro.ps /home/ftp/pub/petsc
 	-/usr/bin/cp papers/mpi.html /mcs/www/petsc/mpidev.html
 	-/usr/bin/cp ../../FAQ /home/ftp/pub/petsc
