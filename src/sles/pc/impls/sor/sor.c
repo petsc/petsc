@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.8 1995/04/12 20:57:31 curfman Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.9 1995/04/13 00:45:35 curfman Exp curfman $";
 #endif
 
 /*
@@ -124,7 +124,7 @@ int PCSORSetSymmetric(PC pc, int flag)
 
    Input Parameters:
 .  pc - the preconditioner context
-.  omega - relaxation coefficient, 0 < omega < 2. 
+.  omega - relaxation coefficient (0 < omega < 2). 
 
    Options Database Key:
 $  -sor_omega  omega
