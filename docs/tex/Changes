@@ -93,6 +93,10 @@ have the error flag as the final argument.
 
   The BT bitarray macros are now prefixed with PetscBT
 
+  Added PetscSum_Op to replace MPI_SUM for reductions with MPIU_SCALAR
+
+  Added PetscMaxSum_Op to do max on first half of entries and sum on second half.
+
   Viewer
 
  Added ViewerASCIISynchronizedPrintf(viewer,....)
