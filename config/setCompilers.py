@@ -258,7 +258,7 @@ class Configure(config.base.Configure):
           yield 'ecc'          
           yield 'win32fe icl'
         if vendor == 'microsoft' or not vendor:
-          yield 'cl'
+          yield 'win32fe cl'
         if vendor == 'portland' or not vendor:
           yield 'pgCC'
         if vendor == 'solaris':
