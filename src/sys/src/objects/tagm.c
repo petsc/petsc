@@ -1,15 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tagm.c,v 1.13 1999/06/30 22:49:26 bsmith Exp balay $";
+static char vcid[] = "$Id: tagm.c,v 1.14 1999/06/30 23:49:38 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites
 */
 #include "sys.h"             /*I    "sys.h"   I*/
-#include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "pinclude/petscfix.h"
 
 /* ---------------------------------------------------------------- */
 /*
