@@ -305,6 +305,8 @@ class Configure(script.Script):
     f.write(self.getCode(includes, body, codeBegin, codeEnd))
     f.close()
     (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, log = self.framework.log)
+    if not os.path.isfile(self.compilerObj):
+      err += '\nPETSc Error: No output file produced'
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerFixes): os.remove(self.compilerFixes)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
@@ -348,7 +350,7 @@ class Configure(script.Script):
     # Lahaye F95
     if output.find('Invalid suboption') >= 0:
       valid = 0
-    if output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('not recognized') >= 0 or output.find('ignored') >= 0 or output.find('illegal option') >= 0  or output.find('linker input file unused because linking not done') >= 0 or output.find('Unknown switch') >= 0:
+    if output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('not recognized') >= 0 or output.find('ignored') >= 0 or output.find('illegal option') >= 0  or output.find('linker input file unused because linking not done') >= 0 or output.find('Unknown switch') >= 0 or output.find('PETSc Error') >= 0:
       valid = 0
     self.framework.argDB[flagsArg] = oldFlags
     return valid
