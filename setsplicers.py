@@ -14,14 +14,9 @@ def setSplicersDir(splicedimpls,dir,names):
   if 'BitKeeper' in names: del names[names.index('BitKeeper')]
   if 'docs' in names: del names[names.index('docs')]
   for f in names:
-    if f.endswith('.pyc'): continue
-    if f.endswith('.log'): continue
-    if f.endswith('.db'): continue
+    ext = os.path.splitext(f)[1]
+    if not ext in splicedimpls: continue
     if f == '__init__.py': continue
-    if f.endswith('.sidl'): continue
-    if f.endswith('.o'): continue
-    if f.endswith('.a'): continue
-    if f.endswith('.so'): continue
     if not os.path.isfile(os.path.join(dir,f)): continue
     fd = open(os.path.join(dir,f),'r')
     foundreplacement = 0
@@ -40,13 +35,13 @@ def setSplicersDir(splicedimpls,dir,names):
           line = fd.readline()
 
         # replace body with saved splicer block
-        if name in splicedimpls and not body == splicedimpls[name]:
+        if name in splicedimpls[ext] and not body == splicedimpls[ext][name]:          
           foundreplacement = 1
           print 'Replacing -------'+name
           print body
           print 'with ------------'
-          print splicedimpls[name]
-          body = splicedimpls[name]
+          print splicedimpls[ext][name]
+          body = splicedimpls[ext][name]
 
         text = text+body
         text = text+line

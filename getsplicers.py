@@ -14,14 +14,9 @@ def getSplicersDir(splicedimpls,dir,names):
   if 'BitKeeper' in names: del names[names.index('BitKeeper')]
   if 'docs' in names: del names[names.index('docs')]
   for f in names:
-    if f.endswith('.pyc'): continue
-    if f.endswith('.log'): continue
-    if f.endswith('.db'): continue
+    ext = os.path.splitext(f)[1]
+    if not ext in splicedimpls: continue
     if f == '__init__.py': continue
-    if f.endswith('.sidl'): continue
-    if f.endswith('.o'): continue
-    if f.endswith('.a'): continue
-    if f.endswith('.so'): continue
     if not os.path.isfile(os.path.join(dir,f)): continue
     fd = open(os.path.join(dir,f),'r')
     line = fd.readline()
@@ -35,13 +30,13 @@ def getSplicersDir(splicedimpls,dir,names):
         while line.find('splicer.end') == -1:
           body = body + line
           line = fd.readline()
-        splicedimpls[name] = body
+        splicedimpls[ext][name] = body
 
       line = fd.readline()
     fd.close()
   
 def getSplicers(directory):
-  splicedimpls = {}
+  splicedimpls = {'.c' : {}, '.h' : {}, '.cc' : {}, '.hh' : {}, '.py' : {}, '.m' : {}}
 
   if not directory: directory = os.getcwd()
   os.path.walk(directory,getSplicersDir,splicedimpls)
