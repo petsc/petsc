@@ -1572,15 +1572,14 @@ PetscErrorCode VecDestroyVecs(Vec vv[],PetscInt m)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetValues"
 /*@
    VecSetValues - Inserts or adds values into certain locations of a vector. 
 
-   Input Parameters:
    Not Collective
 
+   Input Parameters:
 +  x - vector to insert in
 .  ni - number of elements to add
 .  ix - indices where to add
@@ -1611,7 +1610,7 @@ PetscErrorCode VecDestroyVecs(Vec vv[],PetscInt m)
    Concepts: vector^setting values
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal(),
-           VecSetValue(), VecSetValuesBlocked(), InsertMode, INSERT_VALUES, ADD_VALUES
+           VecSetValue(), VecSetValuesBlocked(), InsertMode, INSERT_VALUES, ADD_VALUES, VecGetValues()
 @*/
 PetscErrorCode VecSetValues(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora) 
 {
@@ -1626,6 +1625,51 @@ PetscErrorCode VecSetValues(Vec x,PetscInt ni,const PetscInt ix[],const PetscSca
   ierr = (*x->ops->setvalues)(x,ni,ix,y,iora);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectIncreaseState((PetscObject)x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecGetValues"
+/*@
+   VecGetValues - Gets values from certain locations of a vector. Currently 
+          can only get values on the same processor
+
+    Collective on Vec
+ 
+   Input Parameters:
++  x - vector to get values from
+.  ni - number of elements to get
+-  ix - indices where to get them from (in global 1d numbering)
+
+   Output Parameter:
+.   y - array of values
+
+   Notes: 
+   The user provides the allocated array y; it is NOT allocated in this routine
+
+   VecGetValues() gets y[i] = x[ix[i]], for i=0,...,ni-1.
+
+   VecAssemblyBegin() and VecAssemblyEnd()  MUST be called before calling this
+
+   VecGetValues() uses 0-based indices in Fortran as well as in C.
+
+   Level: beginner
+
+   Concepts: vector^getting values
+
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecGetValuesLocal(),
+           VecGetValue(), VecGetValuesBlocked(), InsertMode, INSERT_VALUES, ADD_VALUES, VecSetValues()
+@*/
+PetscErrorCode VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidIntPointer(ix,3);
+  PetscValidScalarPointer(y,4);
+  PetscValidType(x,1);
+  ierr = (*x->ops->getvalues)(x,ni,ix,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -239,6 +239,7 @@ EXTERN PetscErrorCode VecStrideGatherAll(Vec,Vec*,InsertMode);
 EXTERN PetscErrorCode VecStrideScatterAll(Vec*,Vec,InsertMode);
 
 EXTERN PetscErrorCode VecSetValues(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+EXTERN PetscErrorCode VecGetValues(Vec,PetscInt,const PetscInt[],PetscScalar[]);
 EXTERN PetscErrorCode VecAssemblyBegin(Vec);
 EXTERN PetscErrorCode VecAssemblyEnd(Vec);
 EXTERN PetscErrorCode VecStashSetInitialSize(Vec,PetscInt,PetscInt);

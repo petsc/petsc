@@ -629,6 +629,25 @@ PetscErrorCode VecGetSize_MPI(Vec xin,PetscInt *N)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecGetValues_MPI"
+PetscErrorCode VecGetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],PetscScalar y[])
+{
+  Vec_MPI     *x = (Vec_MPI *)xin->data;
+  PetscScalar *xx = x->array;
+  PetscInt    i,tmp,start = xin->map->range[xin->stash.rank];
+
+  PetscFunctionBegin;
+  for (i=0; i<ni; i++) {
+    tmp = ix[i] - start;
+#if defined(PETSC_USE_DEBUG)
+    if (tmp < 0 || tmp >= xin->n) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Can only get local values, trying %D",ix[i]);
+#endif
+    y[i] = xx[tmp];
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecSetValues_MPI"
 PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode addv)
 {

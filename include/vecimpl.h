@@ -76,7 +76,8 @@ struct _VecOps {
        (*load)(PetscViewer,const VecType,Vec*),
        (*pointwisemax)(Vec,Vec,Vec),                 /* w = max(x , y) */
        (*pointwisemaxabs)(Vec,Vec,Vec),                 /* w = max(abs(x) , abs(y)) */
-       (*pointwisemin)(Vec,Vec,Vec);                 /* w = min(x , y) */
+       (*pointwisemin)(Vec,Vec,Vec),                 /* w = min(x , y) */
+       (*getvalues)(Vec,PetscInt n,const PetscInt[],PetscScalar[]);
 };
 
 /* 
