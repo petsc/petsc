@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.28 1996/01/23 00:20:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.29 1996/01/24 05:47:31 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -33,7 +33,7 @@ int main( int argc, char **argv )
   MatType        mtype;
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  OptionsGetInt(PETSC_NULL,"-n",&N,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&N,&flg); CHKERRA(ierr);
   ctx.h = 1.0/(N-1);
 
   MPI_Comm_rank(MPI_COMM_WORLD,&ctx.rank);
@@ -78,15 +78,14 @@ int main( int argc, char **argv )
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
-  /* Set various routines */
-  ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
+  /* Set various routines and options */
   ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&ctx);CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&ctx); CHKERRA(ierr);
-
-  /* Set up nonlinear solver; then execute it */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = SNESSetUp(snes); CHKERRA(ierr);
+
+  /* Solve nonlinear system */
+  ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n\n", its );
 
