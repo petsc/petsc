@@ -18,12 +18,14 @@ Local Users:
 canfield - Tom Canfield, needs parallel, symmetric linear solvers
 maa (maayj@eden.eecs.nwu.edu) - Yann Maa, needs nonlinear solvers
 freitag - Lori, needs makefile infrastructure
-diachin - Darin, working with Lori, makefiles
-herzog - Jim, working with Lori, makefiles
 plassman - ILU, BlockSolve
 cooper - Cameron Cooper
+kwong - Man Kwong, writing preprocessor
 
 Not currently active local users:
+
+diachin - Darin, working with Lori, makefiles
+herzog - Jim, working with Lori, makefiles
 mell - Peter Mell
 hille - Matt Hille
 wan   - Justin Wan
