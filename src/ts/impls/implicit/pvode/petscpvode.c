@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.50 1999/11/10 03:21:47 bsmith Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.51 2000/01/11 21:03:01 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -49,7 +49,7 @@ int TSPrecond_PVode(integer N,real tn,N_Vector y,
     ierr = VecPlaceArray(tmpy,&N_VIth(y,0));CHKERRQ(ierr);
 
     /* compute the Jacobian */
-    ierr = (*ts->rhsjacobian)(ts,ts->ptime,tmpy,&Jac,&Jac,&str,ts->jacP);CHKERRQ(ierr);
+    ierr = TSComputeRHSJacobian(ts,ts->ptime,tmpy,&Jac,&Jac,&str);CHKERRQ(ierr);
 
     /* copy the Jacobian matrix */
     if (!cvode->pmat) {

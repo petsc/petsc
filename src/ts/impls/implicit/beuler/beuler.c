@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.40 1999/10/24 14:03:51 bsmith Exp bsmith $*/
+/*$Id: beuler.c,v 1.41 2000/01/11 21:02:59 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -225,9 +225,7 @@ int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
-  if (ts->rhsjacobian) {
-    ierr = (*ts->rhsjacobian)(ts,ts->ptime,x,AA,BB,str,ts->jacP);CHKERRQ(ierr);
-  }
+  ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
 
   /* shift and scale Jacobian, if not matrix-free */
   ierr = MatGetType(*AA,&mtype,PETSC_NULL);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.16 1999/10/24 14:03:52 bsmith Exp bsmith $*/
+/*$Id: cn.c,v 1.17 2000/01/11 21:03:00 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -278,9 +278,7 @@ int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
-  if (ts->rhsjacobian) {
-    ierr = (*ts->rhsjacobian)(ts,ts->ptime,x,AA,BB,str,ts->jacP);CHKERRQ(ierr);
-  }
+  ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
 
   /* shift and scale Jacobian, if not matrix-free */
   ierr = MatGetType(*AA,&mtype,PETSC_NULL);CHKERRQ(ierr);

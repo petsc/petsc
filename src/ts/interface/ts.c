@@ -1,5 +1,60 @@
-/* $Id: ts.c,v 1.18 2000/01/11 21:02:55 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.19 2000/02/02 20:10:14 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
+
+/*@
+   TSComputeJacobian - Computes the Jacobian matrix that has been
+      set with TSSetRHSJacobian().
+
+   Collective on TS and Vec
+
+   Input Parameters:
++  ts - the SNES context
+.  t - current timestep
+-  x - input vector
+
+   Output Parameters:
++  A - Jacobian matrix
+.  B - optional preconditioning matrix
+-  flag - flag indicating matrix structure
+
+   Notes: 
+   Most users should not need to explicitly call this routine, as it 
+   is used internally within the nonlinear solvers. 
+
+   See SLESSetOperators() for important information about setting the
+   flag parameter.
+
+   TSComputeJacobian() is valid only for TS_NONLINEAR
+
+   Level: developer
+
+.keywords: SNES, compute, Jacobian, matrix
+
+.seealso:  TSSetRHSJacobian(), SLESSetOperators()
+@*/
+int TSComputeRHSJacobian(TS ts,double t,Vec X,Mat *A,Mat *B,MatStructure *flg)
+{
+  int    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(X,VEC_COOKIE);
+  PetscCheckSameComm(ts,X);
+  if (ts->problem_type != TS_NONLINEAR) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For TS_NONLINEAR only");
+  }
+  if (!ts->rhsjacobian) PetscFunctionReturn(0);
+  PLogEventBegin(TS_JacobianEval,ts,X,*A,*B);
+  *flg = DIFFERENT_NONZERO_PATTERN;
+  PetscStackPush("TS user Jacobian function");
+  ierr = (*ts->rhsjacobian)(ts,t,X,A,B,flg,ts->jacP);CHKERRQ(ierr);
+  PetscStackPop;
+  PLogEventEnd(TS_JacobianEval,ts,X,*A,*B);
+  /* make sure user returned a correct Jacobian and preconditioner */
+  PetscValidHeaderSpecific(*A,MAT_COOKIE);
+  PetscValidHeaderSpecific(*B,MAT_COOKIE);  
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "TSComputeRHSFunction"
@@ -195,8 +250,7 @@ $     func (TS ts,double t,Vec u,Mat *A,Mat *B,int *flag,void *ctx);
           SNESDefaultComputeJacobianColor()
 
 @*/
-int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,
-                     MatStructure*,void*),void *ctx)
+int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);

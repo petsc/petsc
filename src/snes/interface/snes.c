@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.205 2000/01/11 21:02:29 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.206 2000/02/02 20:09:59 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
 
@@ -1049,10 +1049,6 @@ int SNESComputeGradient(SNES snes,Vec x,Vec y)
    SNESComputeJacobian() is valid only for SNES_NONLINEAR_EQUATIONS
    methods. An analogous routine for SNES_UNCONSTRAINED_MINIMIZATION 
    methods is SNESComputeHessian().
-
-   SNESComputeJacobian() is typically used within nonlinear solver
-   implementations, so most users would not generally call this routine
-   themselves.
 
    Level: developer
 

@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.38 2000/01/11 21:04:04 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.39 2000/02/02 21:21:25 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -74,6 +74,7 @@ extern int TSPseudoIncrementDtFromInitialDt(TS);
 
 extern int TSComputeRHSFunction(TS,double,Vec,Vec);
 extern int TSComputeRHSBoundaryConditions(TS,double,Vec);
+extern int TSComputeRHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*);
 
 extern FList      TSList;
 extern int        TSRegisterAll(char*);

@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.38 1999/11/05 14:47:36 bsmith Exp bsmith $*/
+/*$Id: posindep.c,v 1.39 2000/01/11 21:03:02 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -262,9 +262,7 @@ int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 
   PetscFunctionBegin;
   /* construct users Jacobian */
-  if (ts->rhsjacobian) {
-    ierr = (*ts->rhsjacobian)(ts,ts->ptime,x,AA,BB,str,ts->jacP);CHKERRQ(ierr);
-  }
+  ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
 
   /* shift and scale Jacobian, if not a shell matrix */
   ierr = MatGetType(*AA,&mtype,PETSC_NULL);CHKERRQ(ierr);
