@@ -18,30 +18,42 @@ class Configure(config.base.Configure):
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'readlink',
                  'realpath', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'uname']
     libraries = [('dl', 'dlopen')]
-    self.compilers = self.framework.require('config.compilers', self)
-    self.types     = self.framework.require('config.types',     self)
-    self.headers   = self.framework.require('config.headers',   self)
-    self.functions = self.framework.require('config.functions', self)
-    self.libraries = self.framework.require('config.libraries', self)
-    self.blas      = self.framework.require('config.packages.BLAS',   self)
-    self.lapack    = self.framework.require('config.packages.LAPACK', self)
-    self.mpi       = self.framework.require('config.packages.MPI',    self)
-    self.framework.require('config.packages.ADIC',        self)
-    self.framework.require('config.packages.Matlab',      self)
-    self.framework.require('config.packages.Mathematica', self)
-    self.framework.require('config.packages.Triangle',    self)
-    self.framework.require('config.packages.ParMetis',    self)
-    self.framework.require('config.packages.PLAPACK',     self)
-    self.framework.require('config.packages.PVODE',       self)
-    self.framework.require('config.packages.BlockSolve',  self)
+    self.compilers   = self.framework.require('config.compilers', self)
+    self.types       = self.framework.require('config.types',     self)
+    self.headers     = self.framework.require('config.headers',   self)
+    self.functions   = self.framework.require('config.functions', self)
+    self.libraries   = self.framework.require('config.libraries', self)
+    self.blas        = self.framework.require('config.packages.BLAS',   self)
+    self.lapack      = self.framework.require('config.packages.LAPACK', self)
+    self.mpi         = self.framework.require('config.packages.MPI',    self)
+    self.adic        = self.framework.require('config.packages.ADIC',        self)
+    self.matlab      = self.framework.require('config.packages.Matlab',      self)
+    self.mathematica = self.framework.require('config.packages.Mathematica', self)
+    self.triangle    = self.framework.require('config.packages.Triangle',    self)
+    self.parmetis    = self.framework.require('config.packages.ParMetis',    self)
+    self.plapack     = self.framework.require('config.packages.PLAPACK',     self)
+    self.pvode       = self.framework.require('config.packages.PVODE',       self)
+    self.blocksolve  = self.framework.require('config.packages.BlockSolve',  self)
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries)
     # Put all defines in the PETSc namespace
-    self.types.headerPrefix     = self.headerPrefix
-    self.headers.headerPrefix   = self.headerPrefix
-    self.functions.headerPrefix = self.headerPrefix
-    self.libraries.headerPrefix = self.headerPrefix
+    self.compilers.headerPrefix   = self.headerPrefix
+    self.types.headerPrefix       = self.headerPrefix
+    self.headers.headerPrefix     = self.headerPrefix
+    self.functions.headerPrefix   = self.headerPrefix
+    self.libraries.headerPrefix   = self.headerPrefix
+    self.blas.headerPrefix        = self.headerPrefix
+    self.lapack.headerPrefix      = self.headerPrefix
+    self.mpi.headerPrefix         = self.headerPrefix
+    self.adic.headerPrefix        = self.headerPrefix
+    self.matlab.headerPrefix      = self.headerPrefix
+    self.mathematica.headerPrefix = self.headerPrefix
+    self.triangle.headerPrefix    = self.headerPrefix
+    self.parmetis.headerPrefix    = self.headerPrefix
+    self.plapack.headerPrefix     = self.headerPrefix
+    self.pvode.headerPrefix       = self.headerPrefix
+    self.blocksolve.headerPrefix  = self.headerPrefix
     return
 
   def defineAutoconfMacros(self):
