@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.5 1999/02/24 22:39:49 balay Exp bsmith $ 
+# $Id: base_variables,v 1.6 1999/03/31 18:38:56 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -16,6 +16,7 @@ C_CLINKER        = gcc ${COPTFLAGS} -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
 C_FLINKER        = g77 ${FOPTFLAGS} -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
 C_CCV            = ${C_CC} --version
 C_SYS_LIB        = -ldl -lc -lg2c -lm
+#C_SYS_LIB        = -ldl -lc -lf2c -lm  #Use -lf2c if that's what your f77 uses.
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -g 
 G_FOPTFLAGS      = -g
@@ -30,6 +31,7 @@ CXX_CLINKER      = g++ ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 CXX_FLINKER      = g++ ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 CXX_CCV          = ${CXX_CC} --version
 CXX_SYS_LIB      = -ldl -lc -lg2c -lm
+#CXX_SYS_LIB      = -ldl -lc -lf2c -lm
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g 
 GCXX_FOPTFLAGS   = -g
