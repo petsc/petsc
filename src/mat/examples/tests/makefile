@@ -382,7 +382,7 @@ runex42_2:
 	   else echo "Possible problem with ex42_2, diffs above"; fi; \
 	   $(RM) -f ex42_2.tmp
 runex46:
-	-@$(MPIRUN)  ex46 -mat_mpirowbs > ex46_1.tmp 2>&1; \
+	-@$(MPIRUN)  ex46  -np 2  ex46 -mat_view > ex46_1.tmp 2>&1; \
 	   if (diff output/ex46_1.out ex46_1.tmp) then true; \
 	   else echo "Possible problem with ex46_1, diffs above"; fi; \
 	   $(RM) -f ex46_1.tmp
