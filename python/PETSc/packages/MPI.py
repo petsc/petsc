@@ -92,7 +92,8 @@ class Configure(config.base.Configure):
     if not self.checkMPILink('#include <mpi.h>\n', 'MPI_Comm comm = MPI_COMM_WORLD;\nint size;\n\nMPI_Comm_size(comm, &size);\n'):
       self.framework.log.write('MPI cannot link, which indicates a problem with the MPI installation\n')
       return 0
-
+    self.framework.log.write('MPI can link with C\n')
+      
     if 'CXX' in self.framework.argDB:
       self.pushLanguage('C++')
       self.sourceExtension = '.C'
@@ -101,7 +102,8 @@ class Configure(config.base.Configure):
         self.popLanguage()
         return 0
       self.popLanguage()
-
+      self.framework.log.write('MPI can link with C++\n')
+    
     if 'FC' in self.framework.argDB:
       self.pushLanguage('F77')
       self.sourceExtension = '.F'
@@ -122,6 +124,7 @@ class Configure(config.base.Configure):
       # #include "mpif.h"
       # 3) compile bug.F
       self.popLanguage()
+      self.framework.log.write('MPI can link with Fortran\n')
     return 1
 
 
