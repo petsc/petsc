@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.1 2000/12/04 21:36:36 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.2 2000/12/05 22:57:15 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -38,8 +38,6 @@ static char help[] = "Solves PDE optimization problem\n\n";
 
 typedef struct {
   DA      da;
-  Vec     u_lambda,fu_lambda;
-  Scalar  *w,*fw;
   int     nredundant;
   VecPack packer;
   Viewer  u_lambda_viewer;
@@ -71,16 +69,9 @@ int main(int argc,char **argv)
   ierr = VecPackCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&FU);CHKERRQ(ierr);
 
-  /* create local work vectors (that include ghost points where appropriate */
-  user.w = (Scalar*)PetscMalloc(user.nredundant*sizeof(Scalar));CHKPTRQ(user.w);
-  ierr = DACreateLocalVector(user.da,&user.u_lambda);CHKERRQ(ierr);
-  user.fw = (Scalar*)PetscMalloc(user.nredundant*sizeof(Scalar));CHKPTRQ(user.fw);
-  ierr = DACreateLocalVector(user.da,&user.fu_lambda);CHKERRQ(ierr);
-
   /* create graphics windows */
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"u_lambda - state variables and Lagrange multipliers",-1,-1,-1,-1,&user.u_lambda_viewer);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"fu_lambda - derivate w.r.t. state variables and Lagrange multipliers",-1,-1,-1,-1,&user.fu_lambda_viewer);CHKERRQ(ierr);
-
 
   /* create nonlinear solver */
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
@@ -91,34 +82,36 @@ int main(int argc,char **argv)
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
 
   ierr = DADestroy(user.da);CHKERRQ(ierr);
-  ierr = VecDestroy(user.u_lambda);CHKERRQ(ierr);
-  ierr = VecDestroy(user.fu_lambda);CHKERRQ(ierr);
-  ierr = PetscFree(user.w);CHKERRQ(ierr);
-  ierr = PetscFree(user.fw);CHKERRQ(ierr);
   ierr = VecPackDestroy(user.packer);CHKERRQ(ierr);
   ierr = VecDestroy(U);CHKERRQ(ierr);
   ierr = VecDestroy(FU);CHKERRQ(ierr);
+  ierr = ViewerDestroy(user.u_lambda_viewer);CHKERRQ(ierr);
+  ierr = ViewerDestroy(user.fu_lambda_viewer);CHKERRQ(ierr);
+
   PetscFinalize();
   return 0;
 }
  
 /*
-      Evaluates FU = Gradiant( L(w,u,lambda) )
+      Evaluates FU = Gradiant(L(w,u,lambda))
 
 */
 int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
   UserCtx *user = (UserCtx*)dummy;
   int     ierr,xs,xm,i,N;
-  Scalar  **u_lambda,*w = user->w,*fw = user->fw,**fu_lambda,d;
+  Scalar  **u_lambda,*w,*fw,**fu_lambda,d;
+  Vec     vu_lambda,vfu_lambda;
 
   PetscFunctionBegin;
-  ierr = VecPackScatter(user->packer,U,user->w,user->u_lambda);CHKERRQ(ierr);
+  ierr = VecPackGetLocalVectors(user->packer,&w,&vu_lambda);CHKERRQ(ierr);
+  ierr = VecPackGetLocalVectors(user->packer,&fw,&vfu_lambda);CHKERRQ(ierr);
+  ierr = VecPackScatter(user->packer,U,w,vu_lambda);CHKERRQ(ierr);
 
   ierr = DAGetCorners(user->da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetInfo(user->da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da,user->u_lambda,(void**)&u_lambda);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da,user->fu_lambda,(void**)&fu_lambda);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da,vu_lambda,(void**)&u_lambda);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da,vfu_lambda,(void**)&fu_lambda);CHKERRQ(ierr);
   d    = (N-1.0)*(N-1.0);
 
 #define u(i)        u_lambda[i][0]
@@ -145,9 +138,11 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     else               flambda(i)   = d*(u(i+1) - 2.0*u(i) + u(i-1)) - 2.0;
   } 
 
-  ierr = DAVecRestoreArray(user->da,user->u_lambda,(void**)&u_lambda);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(user->da,user->fu_lambda,(void**)&fu_lambda);CHKERRQ(ierr);
-  ierr = VecPackGather(user->packer,FU,user->fw,user->fu_lambda);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da,vu_lambda,(void**)&u_lambda);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da,vfu_lambda,(void**)&fu_lambda);CHKERRQ(ierr);
+  ierr = VecPackGather(user->packer,FU,fw,vfu_lambda);CHKERRQ(ierr);
+  ierr = VecPackRestoreLocalVectors(user->packer,&w,&vu_lambda);CHKERRQ(ierr);
+  ierr = VecPackRestoreLocalVectors(user->packer,&fw,&vfu_lambda);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
