@@ -137,10 +137,10 @@ def petsc_configure(configure_options):
     raise RuntimeError('Run configure from $PETSC_DIR, not '+os.path.abspath('.'))
   if not os.path.isdir(bsDir):
     print '================================================================================='
-    print '''++ Could not locate BuildSystem in $PETSC_DIR/python.'''
-    print '''++ Downloading it using "bk clone bk://sidl.bkbits.net/BuildSystem $PETSC_DIR/python/BuildSystem"'''
+    print '''++ Could not locate BuildSystem in %s/python.''' % os.getcwd()
+    print '''++ Downloading it using "bk clone http://sidl.bkbits.net/BuildSystem %s/python/BuildSystem"''' % os.getcwd()
     print '================================================================================='
-    (status,output) = commands.getstatusoutput('bk clone bk://sidl.bkbits.net/BuildSystem python/BuildSystem')
+    (status,output) = commands.getstatusoutput('bk clone http://sidl.bkbits.net/BuildSystem python/BuildSystem')
     if status:
       if output.find('ommand not found') >= 0:
         print '================================================================================='

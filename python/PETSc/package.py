@@ -167,11 +167,9 @@ class Package(config.base.Configure):
     if hasattr(self.source,'bk'):
       for url in self.download:
         if url.startswith('bk://'):
-          import commands
-
           try:
             self.framework.log.write('Downloading it using "bk clone '+url+' '+os.path.join(packages,self.package)+'"\n')
-            (status,output) = commands.getstatusoutput('bk clone '+url+' '+os.path.join(packages,self.package))
+            (output, error, status) = config.base.Configure.executeShellCommand('bk clone '+url+' '+os.path.join(packages,self.package))
           except RuntimeError, e:
             raise RuntimeError('Error bk cloning '+self.package+' '+str(e))        
           if status:
@@ -179,6 +177,14 @@ class Package(config.base.Configure):
               raise RuntimeError('Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path')
             elif output.find('Cannot resolve host') >= 0:
               raise RuntimeError('Unable to download '+self.package+'. You must be off the network. Connect to the internet and run config/configure.py again')
+            else:
+              # Bitkeeper ports could be blocked
+              try:
+                (output, error, status) = config.base.Configure.executeShellCommand('bk clone '+url.replace('bk://', 'http://')+' '+os.path.join(packages,self.package))
+              except RuntimeError, e:
+                raise RuntimeError('Error bk cloning '+self.package+' '+str(e))        
+              if status:
+                self.logPrint('Unable to clone '+self.package+' into '+self.getDir(0)+'\n'+output+'\n'+error)
           self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+' into '+self.getDir(0))
           return
 
