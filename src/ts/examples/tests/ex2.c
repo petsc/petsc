@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.18 1997/06/3 01:37:07 lixu Exp $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex2.c,v 1.7 1997/07/29 15:28:09 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -28,11 +28,7 @@ int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 int Monitor(TS, int, double, Vec, void *);
 int Initial(Vec, void *);
 
-#define linear_no_matrix       0
-#define linear_no_time         1
-#define linear                 2
-#define nonlinear_no_jacobian  3
-#define nonlinear              4
+double solx(double),soly(double),solz(double);
 
 int main(int argc,char **argv)
 {
@@ -43,11 +39,7 @@ int main(int argc,char **argv)
   TSType        type;
   Viewer	viewer;
   MatStructure  A_structure;
-
-  PC		pc;
-
   Mat           A = 0;
-  TSProblemType tsproblem = TS_NONLINEAR; /* Need to be TS_NONLINEAR */
   char          pcinfo[120], tsinfo[120];
  
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -60,7 +52,7 @@ int main(int argc,char **argv)
   ierr = Initial(global,NULL); CHKERRA(ierr);
  
   /* make timestep context */
-  ierr = TSCreate(PETSC_COMM_WORLD,tsproblem,&ts); CHKERRA(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts); CHKERRA(ierr);
   ierr = TSSetMonitor(ts,Monitor,NULL); CHKERRA(ierr);
 
   dt = 0.1;
@@ -73,9 +65,6 @@ int main(int argc,char **argv)
   ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,NULL); CHKERRA(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL); CHKERRA(ierr);  
  
-  /* Use CVODE */
-  ierr = TSSetType(ts, TS_CVODE); CHKERRA(ierr);
-
   ierr = TSSetFromOptions(ts);CHKERRA(ierr);
   ierr = TSGetType(ts,&type,PETSC_NULL); CHKERRA(ierr);
 
@@ -84,25 +73,13 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,global); CHKERRA(ierr);
 
 
-  /* Pick up a Petsc preconditioner */
-  /* one can always set method or preconditioner during the run time */
-  /*
-  ierr = TSPVodePCSetType(ts, PCJACOBI); CHKERRA(ierr);
-  ierr = TSPVodeSetMethod(ts, PVODE_BDF); CHKERRA(ierr);
-  ierr = TSPVodeSetMethodFromOptions(ts); CHKERRA(ierr);
-  */
-
   ierr = TSSetUp(ts); CHKERRA(ierr);
   ierr = TSStep(ts,&steps,&ftime); CHKERRA(ierr);
-
-  /* extracts the PC  from ts */
-  ierr = TSPVodeGetPC(ts, &pc); CHKERRA(ierr);
 
   ierr = ViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer); CHKERRA(ierr);
   ierr = TSView(ts,viewer); CHKERRQ(ierr);
 
   ierr = ViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer); CHKERRA(ierr);
-  ierr = PCView(pc,viewer); CHKERRQ(ierr);
 
   PetscPrintf(PETSC_COMM_WORLD,"%d Procs, %s Preconditioner, %s\n",
                 size,tsinfo,pcinfo);
@@ -111,7 +88,6 @@ int main(int argc,char **argv)
   ierr = TSDestroy(ts); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);
   if (A) {ierr= MatDestroy(A); CHKERRA(ierr);}
-  ierr = PCDestroy(pc); CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
@@ -171,6 +147,8 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   ierr = VecGetArray(tmp_vec,&tmp); CHKERRQ(ierr);
   PetscPrintf(MPI_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
     time,tmp[0],tmp[1],tmp[2]);
+  PetscPrintf(MPI_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
+    time,tmp[0]-solx(time),tmp[1]-soly(time),tmp[2]-solz(time));
   ierr = VecRestoreArray(tmp_vec,&tmp);
   return 0;
 }
@@ -263,7 +241,26 @@ int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB, MatStructure *str,void *ct
   return 0;
 }
 
+/*
+      The exact solutions 
+*/
+double solx(double t) 
+{
+  return exp((2.0 - sqrt(2.0))*t)/2.0 - exp((2.0 - sqrt(2.0))*t)/(2.0*sqrt(2.0)) + 
+         exp((2.0 + sqrt(2.0))*t)/2.0 + exp((2.0 + sqrt(2.0))*t)/(2.0*sqrt(2.0));
+};
 
+double soly(double t) 
+{
+  return exp((2.0 - sqrt(2.0))*t)/2.0 - exp((2.0 - sqrt(2.0))*t)/sqrt(2.0) + 
+         exp((2.0 + sqrt(2.0))*t)/2.0 + exp((2.0 + sqrt(2.0))*t)/sqrt(2.0);
+};
+ 
+double solz(double t) 
+{
+  return exp((2.0 - sqrt(2.0))*t)/2.0 - exp((2.0 - sqrt(2.0))*t)/(2.0*sqrt(2.0)) + 
+         exp((2.0 + sqrt(2.0))*t)/2.0 + exp((2.0 + sqrt(2.0))*t)/(2.0*sqrt(2.0));
+};
 
 
 
