@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.54 2000/08/13 15:14:37 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.55 2000/08/13 15:15:48 bsmith Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -770,6 +770,7 @@ int GetLocalOrdering(GRID *grid)
   int        nnbound,nvbound,nfbound;
   int        fdes,currentPos = 0,newPos = 0;
   int        grid_param = 13;
+  int        cross_edges = 0;
   int        *edge_bit,*pordering;
   int	     *l2p,*l2a,*p2l,*a2l,*v2p,*eperm;
   int	     *tmp,*tmp1,*tmp2;
@@ -970,14 +971,21 @@ int GetLocalOrdering(GRID *grid)
   }
   k = 0;
   for (i = 0; i < nedgeLoc; i++) {
-#if defined(INTERLACING) 
-    grid->eptr[k++] = tmp[eperm[i]] + 1;
-    grid->eptr[k++] = tmp[nedgeLoc+eperm[i]] + 1;
+    int cross_node=nnodesLoc/2;
+    node1 = tmp[eperm[i]] + 1;
+    node2 = tmp[nedgeLoc+eperm[i]] + 1;
+#if defined(INTERLACING)
+    grid->eptr[k++] = node1;
+    grid->eptr[k++] = node2;
 #else
-    grid->eptr[i] = tmp[eperm[i]] + 1;
-    grid->eptr[nedgeLoc+i] = tmp[nedgeLoc+eperm[i]] + 1;
+    grid->eptr[i] = node1;
+    grid->eptr[nedgeLoc+i] = node2;
 #endif
+    if ((node1 <= cross_node) && (node2 > cross_node)) {
+      cross_edges++;
+    }
   }
+  ierr = PetscPrintf(comm,"Number of cross edges %d\n", cross_edges);CHKERRQ(ierr);
   ierr = PetscFree(tmp);CHKERRQ(ierr);
 
   /* Now make the local 'ia' and 'ja' arrays */
