@@ -30,4 +30,8 @@
 #
 45  8 * * * /usr/ucb/rsh eagle /home/bsmith/petsc/maint/checknightly
 #
+# Zap unfinished processes on eagle
+#
+45 9 * * * /usr/ucb/rsh eagle zap tcsh petsc
+#
 45 23 * * * /home/bsmith/petsc/maint/accesslogs/www/buildwwwlogs
