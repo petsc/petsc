@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.10 2000/07/13 16:07:54 hzhang Exp balay $*/
+/*$Id: ex74.c,v 1.11 2000/07/13 22:27:35 balay Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -25,9 +25,9 @@ int main(int argc,char **args)
   MatILUInfo       info;
   
   int      lf; /* level of fill for ilu */
-  Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
+  Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk,r1,r2;
   int      *cols1,*cols2,mbs;
-  double   norm1,norm2,tol=1.e-10,r1,r2;
+  double   norm1,norm2,tol=1.e-10;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -36,6 +36,7 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&n,PETSC_NULL);CHKERRA(ierr);
 
   mbs = n/bs;
+  if (mbs*bs != n) SETERRA(1,0,"Number rows/cols must be divisible by bs");
   ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &A); CHKERRA(ierr);
   ierr=MatCreateSeqSBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &sA); CHKERRA(ierr);
 
@@ -198,17 +199,19 @@ int main(int argc,char **args)
       VecSetValue(x,i,*vr2_wk - *vr1_wk, INSERT_VALUES);
       vr2_wk--; vr1_wk--;
     }  
-    ierr = VecNorm(x,NORM_1,&r2); CHKERRA(ierr);
-    if (r2<-tol || r2>tol) {
+    ierr = VecNorm(x,NORM_1,&norm2); CHKERRA(ierr);
+    if (norm2<-tol || norm2>tol) {
       PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRow()\n");
     } 
     ierr = VecDestroy(x);CHKERRA(ierr);  
     ierr = MatRestoreRow( A,row,&J,&cols1,&vr1); CHKERRA(ierr);
     ierr = MatRestoreRow(sA,row,&j,&cols2,&vr2); CHKERRA(ierr);
+    ierr = PetscFree(vr1); CHKERRA(ierr); 
+    ierr = PetscFree(vr2); CHKERRA(ierr);
 
     /* Test GetSubMatrix() */
-    /* get a submatrix consisting of every next block row and column of the original matrix*/
-    /* list all the rows we want on THIS processor. For symm. matrix, iscol=isrow. */
+    /* get a submatrix consisting of every next block row and column of the original matrix */
+    /* for symm. matrix, iscol=isrow. */
     ip_ptr = (int*)PetscMalloc(n*sizeof(int)); CHKERRA(ierr);
     j = 0;
     for (n1=0; n1<mbs; n1 += 2){ /* n1: block row */
@@ -216,8 +219,6 @@ int main(int argc,char **args)
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF, j, ip_ptr, &isrow); CHKERRA(ierr);
     ierr = PetscFree(ip_ptr); CHKERRA(ierr); 
-    /* ierr = PetscFree(vr1); CHKERRA(ierr); */
-    /* ierr = PetscFree(vr2); CHKERRA(ierr); */
     /* ISView(isrow, VIEWER_STDOUT_SELF); CHKERRA(ierr); */
     
     ierr = MatGetSubMatrix(sA,isrow,isrow,PETSC_DECIDE,MAT_INITIAL_MATRIX,&sC);
@@ -258,10 +259,10 @@ int main(int argc,char **args)
     ierr = VecSetRandom(rand,x);CHKERRA(ierr);
     ierr = MatMult(A,x,s1);CHKERRA(ierr);
     ierr = MatMult(sA,x,s2);CHKERRA(ierr);
-    ierr = VecNorm(s1,NORM_1,&r1);CHKERRA(ierr);
-    ierr = VecNorm(s2,NORM_1,&r2);CHKERRA(ierr);
-    r1 -= r2;
-    if (r1<-tol || r1>tol) { 
+    ierr = VecNorm(s1,NORM_1,&norm1);CHKERRA(ierr);
+    ierr = VecNorm(s2,NORM_1,&norm2);CHKERRA(ierr);
+    norm1 -= norm2;
+    if (norm1<-tol || norm1>tol) { 
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMult(), MatDiagonalScale() or MatScale()\n");CHKERRA(ierr);
     }
   }  
@@ -271,10 +272,10 @@ int main(int argc,char **args)
     ierr = VecSetRandom(rand,y);CHKERRA(ierr);
     ierr = MatMultAdd(A,x,y,s1);CHKERRA(ierr);
     ierr = MatMultAdd(sA,x,y,s2);CHKERRA(ierr);
-    ierr = VecNorm(s1,NORM_1,&r1);CHKERRA(ierr);
-    ierr = VecNorm(s2,NORM_1,&r2);CHKERRA(ierr);
-    r1 -= r2;
-    if (r1<-tol || r1>tol) { 
+    ierr = VecNorm(s1,NORM_1,&norm1);CHKERRA(ierr);
+    ierr = VecNorm(s2,NORM_1,&norm2);CHKERRA(ierr);
+    norm1 -= norm2;
+    if (norm1<-tol || norm1>tol) { 
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd(), MatDiagonalScale() or MatScale() \n");CHKERRA(ierr);
     } 
   }
@@ -287,7 +288,7 @@ int main(int argc,char **args)
     ISGetIndices(ip,&ip_ptr);      
     i = ip_ptr[1]; ip_ptr[1] = ip_ptr[n-2]; ip_ptr[n-2] = i; 
     i = ip_ptr[0]; ip_ptr[0] = ip_ptr[n-1]; ip_ptr[n-1] = i; 
-    ISRestoreIndices(ip,&ip_ptr);
+    ierr= ISRestoreIndices(ip,&ip_ptr); CHKERRA(ierr);
 
     ierr = MatReorderingSeqSBAIJ(sA, ip); CHKERRA(ierr);  
     /* ierr = ISView(ip, VIEWER_STDOUT_SELF); CHKERRA(ierr); 
@@ -297,9 +298,9 @@ int main(int argc,char **args)
   if (bs>1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"bs>1 is not supported for Cholesky Factor in SBAIJ matrix format");
     
   for (lf=-1; lf<10; lf++){   
-    if (lf==-1) {
+    if (lf==-1) {  /* LU */
       ierr = MatLUFactorSymbolic(sA,ip,ip,PETSC_NULL,&sC);CHKERRA(ierr);
-    } else {  
+    } else {       /* ILU */
       info.levels        = lf;
       info.fill          = 2.0;
       info.diagonal_fill = 0;
@@ -314,8 +315,8 @@ int main(int argc,char **args)
   
     /* Check the error */
     ierr = VecAXPY(&neg_one,x,y);CHKERRA(ierr);
-    ierr = VecNorm(y,NORM_2,&r1);CHKERRA(ierr);
-    /* ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, Norm of error=%g\n",lf,r1);CHKERRA(ierr);*/
+    ierr = VecNorm(y,NORM_2,&norm1);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, Norm of error=%g\n",lf,norm1);CHKERRA(ierr);
   } 
   
   ierr = MatDestroy(A);CHKERRA(ierr);
