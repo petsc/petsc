@@ -34,7 +34,7 @@ class Configure(config.base.Configure):
       except RuntimeError:
         pass
     if not os.path.samefile(self.dir, os.getcwd()):
-      raise RuntimeError('Wrong PETSC_DIR option specified: '+self.framework.argDB['PETSC_DIR'] + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
+      raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
     if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
       raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
 
