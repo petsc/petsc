@@ -45,7 +45,7 @@ int main(int argc,char **args)
   /* check error */
   if ((ierr = VecAXPY(&none,u,x))) SETERRA(ierr,0);
   if ((ierr = VecNorm(x,&norm))) SETERRA(ierr,0);
-  printf("Norm of error %g Iterations %d\n",norm,its);
+  MPE_printf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm,its);
  
   VecDestroy(x); VecDestroy(u); VecDestroy(b);
   MatDestroy(A); SLESDestroy(sles);
