@@ -1,29 +1,69 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.104 1998/04/09 04:18:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.105 1998/04/13 17:56:04 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
 #include "src/snes/impls/ls/ls.h"
 #include "pinclude/pviewer.h"
 
+/*  -------------------------------------------------------------------- 
+
+     This file implements a truncated Newton method with a line search,
+     for solving a system of nonlinear equations, using the SLES, Vec, 
+     and Mat interfaces for linear solvers, vectors, and matrices, 
+     respectively.
+
+     The following basic routines are required for each nonlinear solver
+          SNESCreate_XXX()          - Creates a nonlinear solver context
+          SNESSetFromOptions_XXX()  - Sets runtime options
+          SNESSolve_XXX()           - Solves the nonlinear solver
+          SNESDestroy_XXX()         - Destroys the nonlinear solver context
+     The suffix "_XXX" denotes a particular implementation, in this case
+     we use _EQ_LS (e.g., SNESCreate_EQ_LS, SNESSolve_EQ_LS) for solving
+     systems of nonlinear equations (EQ) with a line search (LS) method.
+     These routines are actually called via the common user interface
+     routines SNESCreate(), SNESSetFromOptions(), SNESSolve(), and 
+     SNESDestroy(), so the application code interface remains identical 
+     for all nonlinear solvers.
+
+     Another key routine is:
+          SNESSetUp_XXX()           - Prepares for the use of a nonlinear solver
+     by setting data structures and options.   The interface routine SNESSetUp()
+     is not usually called directly by the user, but instead is called by
+     SNESSolve() if necessary.
+
+     Additional basic routines are:
+          SNESPrintHelp_XXX()       - Prints nonlinear solver runtime options
+          SNESView_XXX()            - Prints details of runtime options that
+                                    have actually been used.
+     These are called by application codes via the interface routines
+     SNESPrintHelp() and SNESView().
+
+     The various types of solvers (preconditioners, Krylov subspace methods,
+     nonlinear solvers, timesteppers) are all organized similarly, so the
+     above description applies to these categories also.  
+
+    -------------------------------------------------------------------- */
 /*
-     Implements a line search variant of Newton's Method 
-    for solving systems of nonlinear equations.  
+   SNESSolve_EQ_LS - Solves a nonlinear system with a truncated Newton
+   method with a line search.
 
-    Input parameters:
-.   snes - nonlinear context obtained from SNESCreate()
+   Input Parameters:
+.  snes - the SNES context
+.  x - the solution vector
 
-    Output Parameters:
-.   outits  - Number of global iterations until termination.
+   Output Parameter:
+.  its - number of iterations until termination
 
-    Notes:
-    This implements essentially a truncated Newton method with a
-    line search.  By default a cubic backtracking line search 
-    is employed, as described in the text "Numerical Methods for
-    Unconstrained Optimization and Nonlinear Equations" by Dennis 
-    and Schnabel.
+   Application Interface Routine: SNESSolve()
+
+   Notes:
+   This implements essentially a truncated Newton method with a
+   line search.  By default a cubic backtracking line search 
+   is employed, as described in the text "Numerical Methods for
+   Unconstrained Optimization and Nonlinear Equations" by Dennis 
+   and Schnabel.
 */
-
 #undef __FUNC__  
 #define __FUNC__ "SNESSolve_EQ_LS"
 int SNESSolve_EQ_LS(SNES snes,int *outits)
@@ -104,10 +144,25 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   *outits = i+1;
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*
+   SNESSetUp_EQ_LS - Sets up the internal data structures for the later use
+   of the SNES_EQ_LS nonlinear solver.
+
+   Input Parameter:
+.  snes - the SNES context
+.  x - the solution vector
+
+   Application Interface Routine: SNESSetUp()
+
+   Notes:
+   For basic use of the SNES solvers the user need not explicitly call
+   SNESSetUp(), since these actions will automatically occur during
+   the call to SNESSolve().
+ */
 #undef __FUNC__  
 #define __FUNC__ "SNESSetUp_EQ_LS"
-int SNESSetUp_EQ_LS(SNES snes )
+int SNESSetUp_EQ_LS(SNES snes)
 {
   int ierr;
 
@@ -118,7 +173,16 @@ int SNESSetUp_EQ_LS(SNES snes )
   snes->vec_sol_update_always = snes->work[3];
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*
+   SNESDestroy_EQ_LS - Destroys the private SNES_LS context that was created
+   with SNESCreate_EQ_LS().
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Application Interface Routine: SNESSetDestroy()
+ */
 #undef __FUNC__  
 #define __FUNC__ "SNESDestroy_EQ_LS"
 int SNESDestroy_EQ_LS(SNES snes)
@@ -132,7 +196,7 @@ int SNESDestroy_EQ_LS(SNES snes)
   PetscFree(snes->data);
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "SNESNoLineSearch"
 
@@ -182,7 +246,7 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "SNESNoLineSearchNoNorms"
 
@@ -233,7 +297,7 @@ int SNESNoLineSearchNoNorms(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "SNESCubicLineSearch"
 /*@C
@@ -407,7 +471,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "SNESQuadraticLineSearch"
 /*@C
@@ -534,8 +598,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   PetscFunctionReturn(0);
 }
-
-/* ------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "SNESSetLineSearch"
 /*@C
@@ -597,7 +660,7 @@ int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
   }
   PetscFunctionReturn(0);
 }
-
+/* -------------------------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "SNESSetLineSearch_LS"
 int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
@@ -607,8 +670,16 @@ int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
   ((SNES_LS *)(snes->data))->LineSearch = func;
   PetscFunctionReturn(0);
 }
+/* -------------------------------------------------------------------------- */
+/*
+   SNESPrintHelp_EQ_LS - Prints all options for the SNES_EQ_LS method.
 
-/* ------------------------------------------------------------------ */
+   Input Parameter:
+.  snes - the SNES context
+
+   Application Interface Routine: SNESPrintHelp()
+*/
+
 #undef __FUNC__  
 #define __FUNC__ "SNESPrintHelp_EQ_LS"
 static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
@@ -623,7 +694,16 @@ static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
   (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_steptol <tol> (default %g)\n",p,ls->steptol);
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*
+   SNESView_EQ_LS - Prints the SNES_EQ_LS data structure.
+
+   Input Parameters:
+.  SNES - the SNES context
+.  viewer - visualization context
+
+   Application Interface Routine: SNESView()
+*/
 #undef __FUNC__  
 #define __FUNC__ "SNESView_EQ_LS"
 static int SNESView_EQ_LS(SNES snes,Viewer viewer)
@@ -650,7 +730,15 @@ static int SNESView_EQ_LS(SNES snes,Viewer viewer)
   }
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*
+   SNESSetFromOptions_EQ_LS - Sets various parameters for the SNES_EQ_LS method.
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Application Interface Routine: SNESSetFromOptions()
+*/
 #undef __FUNC__  
 #define __FUNC__ "SNESSetFromOptions_EQ_LS"
 static int SNESSetFromOptions_EQ_LS(SNES snes)
@@ -691,10 +779,21 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
   }
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*
+   SNESCreate_EQ_LS - Creates a nonlinear solver context for the SNES_EQ_LS method,
+   SNES_LS, and sets this as the private data within the generic nonlinear solver
+   context, SNES, that was created within SNESCreate().
+
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Application Interface Routine: SNESCreate()
+ */
 #undef __FUNC__  
 #define __FUNC__ "SNESCreate_EQ_LS"
-int SNESCreate_EQ_LS(SNES  snes )
+int SNESCreate_EQ_LS(SNES snes)
 {
   int     ierr;
   SNES_LS *neP;
