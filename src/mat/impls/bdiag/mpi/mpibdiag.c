@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.164 1999/03/16 21:10:35 balay Exp balay $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.165 1999/03/18 00:35:52 balay Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -32,11 +32,13 @@ int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
           ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i+j*m,addv); CHKERRQ(ierr);
         }
       }
-    } else {
-      if (roworiented) {
-        ierr = MatStashValuesRow_Private(&mat->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
-      } else {
-        ierr = MatStashValuesCol_Private(&mat->stash,idxm[i],n,idxn,v+i,m);CHKERRQ(ierr);
+    } else { 
+      if (!mbd->donotstash) {
+        if (roworiented) {
+          ierr = MatStashValuesRow_Private(&mat->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
+        } else {
+          ierr = MatStashValuesCol_Private(&mat->stash,idxm[i],n,idxn,v+i,m);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -601,6 +603,8 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
   } else if (op == MAT_COLUMN_ORIENTED) {
     mbd->roworiented = 0;
     MatSetOption(mbd->A,op);
+  } else if (op == MAT_IGNORE_OFF_PROC_ENTRIES) {
+    mbd->donotstash = 1;
   } else if (op == MAT_ROWS_SORTED || 
              op == MAT_ROWS_UNSORTED || 
              op == MAT_COLUMNS_SORTED || 
@@ -1007,6 +1011,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(comm,1,&B->stash); CHKERRQ(ierr);
+  b->donotstash = 0;
 
   /* stuff used for matrix-vector multiply */
   b->lvec        = 0;

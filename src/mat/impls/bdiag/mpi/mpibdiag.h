@@ -1,4 +1,4 @@
-/* $Id: mpibdiag.h,v 1.14 1997/03/09 17:58:36 bsmith Exp balay $ */
+/* $Id: mpibdiag.h,v 1.15 1999/03/18 00:43:23 balay Exp balay $ */
 
 #include "src/mat/impls/bdiag/seq/bdiag.h"
 
@@ -23,7 +23,7 @@ typedef struct {
   int           rank;               /* rank of proc in communicator */ 
 
   /* The following variables are used for matrix assembly */
-
+  int           donotstash;             /* 1 if off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   int           nsends, nrecvs;         /* numbers of sends and receives */

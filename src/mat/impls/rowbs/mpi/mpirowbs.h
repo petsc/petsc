@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.39 1999/01/27 19:47:31 bsmith Exp balay $ */
+/* $Id: mpirowbs.h,v 1.40 1999/03/18 00:43:13 balay Exp balay $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(USE_PETSC_COMPLEX) && \
     !defined(__MPIROWBS_H)
@@ -30,7 +30,7 @@ typedef struct {
   int         *imax;              /* allocated matrix space per row */
 
   /*  The following variables are used in matrix assembly */
-
+  int         donotstash;         /* 1 if off processor entries dropped */
   MPI_Request *send_waits;        /* array of send requests */
   MPI_Request *recv_waits;        /* array of receive requests */
   int         nsends, nrecvs;     /* numbers of sends and receives */

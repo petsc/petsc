@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.109 1999/03/16 21:10:18 balay Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.110 1999/03/18 00:36:01 balay Exp balay $";
 #endif
 
 /*
@@ -35,10 +35,12 @@ int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Inse
         }
       }
     } else {
-      if (roworiented) {
-        ierr = MatStashValuesRow_Private(&mat->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
-      } else {
-        ierr = MatStashValuesCol_Private(&mat->stash,idxm[i],n,idxn,v+i,m);CHKERRQ(ierr);
+      if ( !A->donotstash) {
+        if (roworiented) {
+          ierr = MatStashValuesRow_Private(&mat->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
+        } else {
+          ierr = MatStashValuesCol_Private(&mat->stash,idxm[i],n,idxn,v+i,m);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -598,6 +600,8 @@ int MatSetOption_MPIDense(Mat A,MatOption op)
     PLogInfo(A,"MatSetOption_MPIDense:Option ignored\n");
   } else if (op == MAT_COLUMN_ORIENTED) {
     a->roworiented = 0; MatSetOption(a->A,op);
+  } else if (op == MAT_IGNORE_OFF_PROC_ENTRIES) {
+    a->donotstash = 1;
   } else if (op == MAT_NO_NEW_DIAGONALS) {
     SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");
   } else {
@@ -965,6 +969,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   PLogObjectParent(mat,a->A);
 
   /* build cache for off array entries formed */
+  a->donotstash = 0;
   ierr = MatStashCreate_Private(comm,1,&mat->stash); CHKERRQ(ierr);
 
   /* stuff used for matrix vector multiply */
@@ -1014,7 +1019,7 @@ static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
   a->size         = oldmat->size;
   a->rank         = oldmat->rank;
   mat->insertmode = NOT_SET_VALUES;
-
+  a->donotstash   = oldmat->donotstash;
   a->rowners = (int *) PetscMalloc((a->size+1)*sizeof(int)); CHKPTRQ(a->rowners);
   PLogObjectMemory(mat,(a->size+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));
   PetscMemcpy(a->rowners,oldmat->rowners,(a->size+1)*sizeof(int));
