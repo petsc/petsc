@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.101 1998/01/27 23:43:07 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.102 1998/02/01 07:42:11 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -384,11 +384,12 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
   int         ierr,i,j,row,col;
   int         roworiented = baij->roworiented,rstart_orig=baij->rstart_bs ;
   int         rend_orig=baij->rend_bs,Nbs=baij->Nbs;
-  int         total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
   int         h1,key,size=baij->ht_size,bs=baij->bs,*HT=baij->ht,idx;
   double      tmp;
   Scalar      ** HD = baij->hd,value;
-
+#if defined(USE_PETSC_BOPT_g)
+  int         total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
+#endif
 
   PetscFunctionBegin;
 
@@ -463,11 +464,12 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
   int         ierr,i,j,ii,jj,row,col,k,l;
   int         roworiented = baij->roworiented,rstart=baij->rstart ;
   int         rend=baij->rend,stepval,bs=baij->bs,bs2=baij->bs2;
-  int         total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
-
   int         h1,key,size=baij->ht_size,idx,*HT=baij->ht,Nbs=baij->Nbs;
   double      tmp;
   Scalar      ** HD = baij->hd,*value,*v_t,*baij_a;
+#if defined(USE_PETSC_BOPT_g)
+  int         total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
+#endif
  
   PetscFunctionBegin;
 
@@ -773,11 +775,14 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
   Mat         A = baij->A, B=baij->B;
   Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data, *b=(Mat_SeqBAIJ *)B->data;
   int         i,j,k,nz=a->nz+b->nz,h1,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  int         size,ct=0,max=0,bs2=baij->bs2,rstart=baij->rstart;
+  int         size,bs2=baij->bs2,rstart=baij->rstart;
   int         cstart=baij->cstart,*garray=baij->garray,row,col,Nbs=baij->Nbs;
   int         *HT,key;
   Scalar      **HD;
   double      tmp;
+#if defined(USE_PETSC_BOPT_g)
+  int         ct=0,max=0;
+#endif
 
   PetscFunctionBegin;
   baij->ht_size=(int)(factor*nz);
