@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 1999/12/09 15:02:27 hzhang Exp hzhang $ 
+# $Id: makefile,v 1.4 1999/12/09 15:23:04 hzhang Exp bsmith $ 
 
 # -----------------------------------------------------------------------
 # Specify PETSc installation and user-defined compiler flags
@@ -10,6 +10,7 @@ CFLAGS    =
 #    
 TESTEXAMPLES_1 = main.PETSc main.rm
 EXAMPLESC      = main.c appview.c appload.c functions.c appctx.h appsetalg.c
+EXAMPLESCH     = appctx.h
 
 ALL: main
 

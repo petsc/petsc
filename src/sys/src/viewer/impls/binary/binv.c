@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.83 2000/05/04 14:04:53 balay Exp balay $*/
+/*$Id: binv.c,v 1.84 2000/05/05 22:13:12 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -86,7 +86,7 @@ int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerDestroy_Binary" 
+#define __FUNC__ /*<a name="ViewerDestroy_Binary"></a>*/"ViewerDestroy_Binary" 
 int ViewerDestroy_Binary(Viewer v)
 {
   Viewer_Binary *vbinary = (Viewer_Binary*)v->data;
@@ -116,7 +116,7 @@ int ViewerDestroy_Binary(Viewer v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerBinaryOpen" 
+#define __FUNC__ /*<a name="ViewerBinaryOpen"></a>*/"ViewerBinaryOpen" 
 /*@C
    ViewerBinaryOpen - Opens a file for binary input/output.
 
@@ -168,7 +168,7 @@ int ViewerBinaryOpen(MPI_Comm comm,const char name[],ViewerBinaryType type,Viewe
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerBinarySetType" 
+#define __FUNC__ /*<a name="ViewerBinarySetType"></a>*/"ViewerBinarySetType" 
 /*@C
      ViewerBinarySetType - Sets the type of binary file to be open
 
@@ -202,7 +202,7 @@ int ViewerBinarySetType(Viewer viewer,ViewerBinaryType type)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerBinarySetType_Binary" 
+#define __FUNC__ /*<a name="ViewerBinarySetType_Binary"></a>*/"ViewerBinarySetType_Binary" 
 int ViewerBinarySetType_Binary(Viewer viewer,ViewerBinaryType type)
 {
   Viewer_Binary    *vbinary = (Viewer_Binary*)viewer->data;
@@ -214,7 +214,7 @@ int ViewerBinarySetType_Binary(Viewer viewer,ViewerBinaryType type)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerBinaryLoadInfo" 
+#define __FUNC__ /*<a name="ViewerBinaryLoadInfo"></a>*/"ViewerBinaryLoadInfo" 
 /*
     ViewerBinaryLoadInfo options from the name.info file
     if it exists.
@@ -275,7 +275,7 @@ int ViewerBinaryLoadInfo(Viewer viewer)
 */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerSetFilename_Binary" 
+#define __FUNC__ /*<a name="ViewerSetFilename_Binary"></a>*/"ViewerSetFilename_Binary" 
 int ViewerSetFilename_Binary(Viewer viewer,const char name[])
 {
   int              rank,ierr,len;
@@ -402,7 +402,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerCreate_Binary" 
+#define __FUNC__ /*<a name="ViewerCreate_Binary"></a>*/"ViewerCreate_Binary" 
 int ViewerCreate_Binary(Viewer v)
 {  
   int           ierr;

@@ -1,4 +1,4 @@
-/* $Id: petscpf.h,v 1.4 2000/04/09 03:11:53 bsmith Exp balay $ */
+/* $Id: petscpf.h,v 1.5 2000/05/08 15:09:50 balay Exp bsmith $ */
 
 /*
       mathematical function module. 
@@ -26,30 +26,30 @@ typedef struct _p_PF* PF;
 #define PF_COOKIE     PETSC_COOKIE+9
 
 
-extern int PFCreate(MPI_Comm,int,int,PF*);
-extern int PFSetType(PF,PFType,void*);
-extern int PFSet(PF,int(*)(void*,int,Scalar*,Scalar*),int(*)(void*,Vec,Vec),int(*)(void*,Viewer),int(*)(void*),void*);
-extern int PFApply(PF,int,Scalar*,Scalar*);
-extern int PFApplyVec(PF,Vec,Vec);
+EXTERN int PFCreate(MPI_Comm,int,int,PF*);
+EXTERN int PFSetType(PF,PFType,void*);
+EXTERN int PFSet(PF,int(*)(void*,int,Scalar*,Scalar*),int(*)(void*,Vec,Vec),int(*)(void*,Viewer),int(*)(void*),void*);
+EXTERN int PFApply(PF,int,Scalar*,Scalar*);
+EXTERN int PFApplyVec(PF,Vec,Vec);
 
-extern int        PFRegisterDestroy(void);
-extern int        PFRegisterAll(char*);
+EXTERN int        PFRegisterDestroy(void);
+EXTERN int        PFRegisterAll(char*);
 extern PetscTruth PFRegisterAllCalled;
 
-extern int PFRegister(char*,char*,char*,int(*)(PF,void*));
+EXTERN int PFRegister(char*,char*,char*,int(*)(PF,void*));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PFRegisterDynamic(a,b,c,d) PFRegister(a,b,c,0)
 #else
 #define PFRegisterDynamic(a,b,c,d) PFRegister(a,b,c,d)
 #endif
 
-extern int PFDestroy(PF);
-extern int PFSetFromOptions(PF);
-extern int PFSetTypeFromOptions(PF);
-extern int PFGetType(PF,PFType*);
+EXTERN int PFDestroy(PF);
+EXTERN int PFSetFromOptions(PF);
+EXTERN int PFSetTypeFromOptions(PF);
+EXTERN int PFGetType(PF,PFType*);
 
-extern int PFView(PF,Viewer);
-extern int PFPrintHelp(PF);
+EXTERN int PFView(PF,Viewer);
+EXTERN int PFPrintHelp(PF);
 
 #define PFSetOptionsPrefix(a,s) PetscObjectSetOptionsPrefix((PetscObject)(a),s)
 #endif

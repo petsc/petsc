@@ -1,10 +1,10 @@
-/*$Id: snesmfj2.c,v 1.23 2000/05/05 20:10:17 balay Exp balay $*/
+/*$Id: snesmfj2.c,v 1.24 2000/05/08 15:08:58 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
-extern int DiffParameterCreate_More(SNES,Vec,void**);
-extern int DiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
-extern int DiffParameterDestroy_More(void*);
+EXTERN int DiffParameterCreate_More(SNES,Vec,void**);
+EXTERN int DiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
+EXTERN int DiffParameterDestroy_More(void*);
 
 typedef struct {  /* default context for matrix-free SNES */
   SNES        snes;             /* SNES context */

@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.52 2000/04/07 04:47:14 bsmith Exp balay $ */
+/* $Id: petscda.h,v 1.53 2000/05/08 15:09:50 balay Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -18,58 +18,58 @@ typedef enum { DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC,
                DAPeriodicType;
 typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
-extern int   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,DA *);
-extern int   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int*,int*,DA *);
-extern int   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,
+EXTERN int   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,DA *);
+EXTERN int   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int*,int*,DA *);
+EXTERN int   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,
                         int,int,int,int,int,int,int,int,int *,int *,int *,DA *);
-extern int   DADestroy(DA);
-extern int   DAView(DA,Viewer);
+EXTERN int   DADestroy(DA);
+EXTERN int   DAView(DA,Viewer);
 
-extern int   DAPrintHelp(DA);
+EXTERN int   DAPrintHelp(DA);
 
-extern int   DAGlobalToLocalBegin(DA,Vec,InsertMode,Vec);
-extern int   DAGlobalToLocalEnd(DA,Vec,InsertMode,Vec);
-extern int   DAGlobalToNaturalBegin(DA,Vec,InsertMode,Vec);
-extern int   DAGlobalToNaturalEnd(DA,Vec,InsertMode,Vec);
-extern int   DANaturalToGlobalBegin(DA,Vec,InsertMode,Vec);
-extern int   DANaturalToGlobalEnd(DA,Vec,InsertMode,Vec);
-extern int   DALocalToLocalBegin(DA,Vec,InsertMode,Vec);
-extern int   DALocalToLocalEnd(DA,Vec,InsertMode,Vec);
-extern int   DALocalToGlobal(DA,Vec,InsertMode,Vec);
-extern int   DAGetOwnershipRange(DA,int **,int **,int **);
-extern int   DACreateGlobalVector(DA,Vec *);
-extern int   DACreateNaturalVector(DA,Vec *);
-extern int   DACreateLocalVector(DA,Vec *);
-extern int   DALoad(Viewer,int,int,int,DA *);
-extern int   DAGetCorners(DA,int*,int*,int*,int*,int*,int*);
-extern int   DAGetGhostCorners(DA,int*,int*,int*,int*,int*,int*);
-extern int   DAGetInfo(DA,int*,int*,int*,int*,int*,int*,int*,int*,int*,DAPeriodicType*,DAStencilType*);
-extern int   DAGetProcessorSubset(DA,DADirection,int,MPI_Comm*);
-extern int   DARefine(DA,DA*);
+EXTERN int   DAGlobalToLocalBegin(DA,Vec,InsertMode,Vec);
+EXTERN int   DAGlobalToLocalEnd(DA,Vec,InsertMode,Vec);
+EXTERN int   DAGlobalToNaturalBegin(DA,Vec,InsertMode,Vec);
+EXTERN int   DAGlobalToNaturalEnd(DA,Vec,InsertMode,Vec);
+EXTERN int   DANaturalToGlobalBegin(DA,Vec,InsertMode,Vec);
+EXTERN int   DANaturalToGlobalEnd(DA,Vec,InsertMode,Vec);
+EXTERN int   DALocalToLocalBegin(DA,Vec,InsertMode,Vec);
+EXTERN int   DALocalToLocalEnd(DA,Vec,InsertMode,Vec);
+EXTERN int   DALocalToGlobal(DA,Vec,InsertMode,Vec);
+EXTERN int   DAGetOwnershipRange(DA,int **,int **,int **);
+EXTERN int   DACreateGlobalVector(DA,Vec *);
+EXTERN int   DACreateNaturalVector(DA,Vec *);
+EXTERN int   DACreateLocalVector(DA,Vec *);
+EXTERN int   DALoad(Viewer,int,int,int,DA *);
+EXTERN int   DAGetCorners(DA,int*,int*,int*,int*,int*,int*);
+EXTERN int   DAGetGhostCorners(DA,int*,int*,int*,int*,int*,int*);
+EXTERN int   DAGetInfo(DA,int*,int*,int*,int*,int*,int*,int*,int*,int*,DAPeriodicType*,DAStencilType*);
+EXTERN int   DAGetProcessorSubset(DA,DADirection,int,MPI_Comm*);
+EXTERN int   DARefine(DA,DA*);
 
-extern int   DAGlobalToNaturalAllCreate(DA,VecScatter*);
-extern int   DANaturalAllToGlobalCreate(DA,VecScatter*);
+EXTERN int   DAGlobalToNaturalAllCreate(DA,VecScatter*);
+EXTERN int   DANaturalAllToGlobalCreate(DA,VecScatter*);
 
-extern int   DAGetGlobalIndices(DA,int*,int**);
-extern int   DAGetISLocalToGlobalMapping(DA,ISLocalToGlobalMapping*);
+EXTERN int   DAGetGlobalIndices(DA,int*,int**);
+EXTERN int   DAGetISLocalToGlobalMapping(DA,ISLocalToGlobalMapping*);
 
-extern int   DAGetScatter(DA,VecScatter*,VecScatter*,VecScatter*);
+EXTERN int   DAGetScatter(DA,VecScatter*,VecScatter*,VecScatter*);
 
-extern int   DAGetAO(DA,AO*);
-extern int   DASetCoordinates(DA,Vec); 
-extern int   DAGetCoordinates(DA,Vec *);
-extern int   DASetUniformCoordinates(DA,double,double,double,double,double,double);
-extern int   DASetFieldName(DA,int,const char[]);
-extern int   DAGetFieldName(DA,int,char **);
+EXTERN int   DAGetAO(DA,AO*);
+EXTERN int   DASetCoordinates(DA,Vec); 
+EXTERN int   DAGetCoordinates(DA,Vec *);
+EXTERN int   DASetUniformCoordinates(DA,double,double,double,double,double,double);
+EXTERN int   DASetFieldName(DA,int,const char[]);
+EXTERN int   DAGetFieldName(DA,int,char **);
 
-extern int   DAVecGetArray(DA,Vec,void **);
-extern int   DAVecRestoreArray(DA,Vec,void **);
+EXTERN int   DAVecGetArray(DA,Vec,void **);
+EXTERN int   DAVecRestoreArray(DA,Vec,void **);
 
 #include "petscmat.h"
-extern int   DAGetColoring(DA,ISColoring *,Mat *);
-extern int   DAGetInterpolation(DA,DA,Mat*,Vec*);
+EXTERN int   DAGetColoring(DA,ISColoring *,Mat *);
+EXTERN int   DAGetInterpolation(DA,DA,Mat*,Vec*);
 
 #include "petscpf.h"
-extern int DACreatePF(DA,PF*);
+EXTERN int DACreatePF(DA,PF*);
 
 #endif

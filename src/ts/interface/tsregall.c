@@ -1,12 +1,12 @@
-/*$Id: tsregall.c,v 1.28 2000/04/12 04:25:55 bsmith Exp balay $*/
+/*$Id: tsregall.c,v 1.29 2000/05/05 22:18:49 balay Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"     /*I  "petscts.h"  I*/
 EXTERN_C_BEGIN
-extern int TSCreate_Euler(TS);
-extern int TSCreate_BEuler(TS);
-extern int TSCreate_Pseudo(TS);
-extern int TSCreate_PVode(TS);
-extern int TSCreate_CN(TS);
+EXTERN int TSCreate_Euler(TS);
+EXTERN int TSCreate_BEuler(TS);
+EXTERN int TSCreate_Pseudo(TS);
+EXTERN int TSCreate_PVode(TS);
+EXTERN int TSCreate_CN(TS);
 EXTERN_C_END
 
 #undef __FUNC__  

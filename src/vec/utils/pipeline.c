@@ -1,4 +1,4 @@
-/*$Id: pipeline.c,v 1.21 2000/05/04 16:25:07 bsmith Exp balay $*/
+/*$Id: pipeline.c,v 1.22 2000/05/05 22:14:53 balay Exp bsmith $*/
 
 /*
        Vector pipeline routines. These routines have all been contributed
@@ -178,14 +178,14 @@ int VecPipelineSetup(VecPipeline ctx)
 /*
    VecPipelineSetType
 */
-extern int ProcYes(int proc,PetscObject pipe_info);
-extern int ProcUp(int proc,PetscObject pipe_info);
-extern int ProcDown(int proc,PetscObject pipe_info);
-extern int ProcColorUp(int proc,PetscObject pipe_info);
-extern int ProcColorDown(int proc,PetscObject pipe_info);
-extern int PipelineSequentialSetup(VecPipeline,PetscObject,PetscObject*);
-extern int PipelineRedblackSetup(VecPipeline,PetscObject,PetscObject*);
-extern int PipelineMulticolorSetup(VecPipeline,PetscObject,PetscObject*);
+EXTERN int ProcYes(int proc,PetscObject pipe_info);
+EXTERN int ProcUp(int proc,PetscObject pipe_info);
+EXTERN int ProcDown(int proc,PetscObject pipe_info);
+EXTERN int ProcColorUp(int proc,PetscObject pipe_info);
+EXTERN int ProcColorDown(int proc,PetscObject pipe_info);
+EXTERN int PipelineSequentialSetup(VecPipeline,PetscObject,PetscObject*);
+EXTERN int PipelineRedblackSetup(VecPipeline,PetscObject,PetscObject*);
+EXTERN int PipelineMulticolorSetup(VecPipeline,PetscObject,PetscObject*);
 
 int ProcNo(int proc,PetscObject pipe_info);
 

@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.44 2000/01/11 21:01:55 bsmith Exp balay $ */
+/* $Id: kspimpl.h,v 1.45 2000/05/05 22:17:26 balay Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -97,13 +97,13 @@ struct _p_KSP {
 	  } \
 	}
 
-extern int KSPDefaultBuildSolution(KSP,Vec,Vec*);
-extern int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
-extern int KSPDefaultDestroy(KSP);
-extern int KSPDefaultGetWork(KSP,int);
-extern int KSPDefaultFreeWork(KSP);
-extern int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
-extern int KSPUnwindPreconditioner(KSP,Vec,Vec);
+EXTERN int KSPDefaultBuildSolution(KSP,Vec,Vec*);
+EXTERN int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
+EXTERN int KSPDefaultDestroy(KSP);
+EXTERN int KSPDefaultGetWork(KSP,int);
+EXTERN int KSPDefaultFreeWork(KSP);
+EXTERN int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
+EXTERN int KSPUnwindPreconditioner(KSP,Vec,Vec);
 
 /*
        These allow the various Krylov methods to apply to either the linear system

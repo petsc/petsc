@@ -1,4 +1,4 @@
-/* $Id: petscis.h,v 1.51 2000/02/02 21:21:25 bsmith Exp balay $ */
+/* $Id: petscis.h,v 1.52 2000/05/08 15:09:50 balay Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -16,41 +16,41 @@ typedef struct _p_IS* IS;
     Default index set data structures that PETSc provides.
 */
 typedef enum {IS_GENERAL=0,IS_STRIDE=1,IS_BLOCK = 2} ISType;
-extern int   ISCreateGeneral(MPI_Comm,int,const int[],IS *);
-extern int   ISCreateBlock(MPI_Comm,int,int,const int[],IS *);
-extern int   ISCreateStride(MPI_Comm,int,int,int,IS *);
+EXTERN int   ISCreateGeneral(MPI_Comm,int,const int[],IS *);
+EXTERN int   ISCreateBlock(MPI_Comm,int,int,const int[],IS *);
+EXTERN int   ISCreateStride(MPI_Comm,int,int,int,IS *);
 
-extern int   ISDestroy(IS);
+EXTERN int   ISDestroy(IS);
 
-extern int   ISSetPermutation(IS);
-extern int   ISPermutation(IS,PetscTruth*); 
-extern int   ISSetIdentity(IS);
-extern int   ISIdentity(IS,PetscTruth*);
+EXTERN int   ISSetPermutation(IS);
+EXTERN int   ISPermutation(IS,PetscTruth*); 
+EXTERN int   ISSetIdentity(IS);
+EXTERN int   ISIdentity(IS,PetscTruth*);
 
-extern int   ISGetIndices(IS,int *[]);
-extern int   ISRestoreIndices(IS,int *[]);
-extern int   ISGetSize(IS,int *);
-extern int   ISInvertPermutation(IS,int,IS*);
-extern int   ISView(IS,Viewer);
-extern int   ISEqual(IS,IS,PetscTruth *);
-extern int   ISSort(IS);
-extern int   ISSorted(IS,PetscTruth *);
-extern int   ISDifference(IS,IS,IS*);
-extern int   ISSum(IS,IS,IS*);
+EXTERN int   ISGetIndices(IS,int *[]);
+EXTERN int   ISRestoreIndices(IS,int *[]);
+EXTERN int   ISGetSize(IS,int *);
+EXTERN int   ISInvertPermutation(IS,int,IS*);
+EXTERN int   ISView(IS,Viewer);
+EXTERN int   ISEqual(IS,IS,PetscTruth *);
+EXTERN int   ISSort(IS);
+EXTERN int   ISSorted(IS,PetscTruth *);
+EXTERN int   ISDifference(IS,IS,IS*);
+EXTERN int   ISSum(IS,IS,IS*);
 
-extern int   ISBlock(IS,PetscTruth*);
-extern int   ISBlockGetIndices(IS,int *[]);
-extern int   ISBlockRestoreIndices(IS,int *[]);
-extern int   ISBlockGetSize(IS,int *);
-extern int   ISBlockGetBlockSize(IS,int *);
+EXTERN int   ISBlock(IS,PetscTruth*);
+EXTERN int   ISBlockGetIndices(IS,int *[]);
+EXTERN int   ISBlockRestoreIndices(IS,int *[]);
+EXTERN int   ISBlockGetSize(IS,int *);
+EXTERN int   ISBlockGetBlockSize(IS,int *);
 
-extern int   ISStride(IS,PetscTruth*);
-extern int   ISStrideGetInfo(IS,int *,int*);
+EXTERN int   ISStride(IS,PetscTruth*);
+EXTERN int   ISStrideGetInfo(IS,int *,int*);
 
-extern int   ISStrideToGeneral(IS);
+EXTERN int   ISStrideToGeneral(IS);
 
-extern int   ISDuplicate(IS,IS*);
-extern int   ISAllGather(IS,IS*);
+EXTERN int   ISDuplicate(IS,IS*);
+EXTERN int   ISAllGather(IS,IS*);
 
 /* --------------------------------------------------------------------------*/
 
@@ -67,13 +67,13 @@ extern int   ISAllGather(IS,IS*);
 typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 typedef enum {IS_GTOLM_MASK,IS_GTOLM_DROP} ISGlobalToLocalMappingType;
 
-extern int ISLocalToGlobalMappingCreate(MPI_Comm,int,const int[],ISLocalToGlobalMapping*);
-extern int ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
-extern int ISLocalToGlobalMappingView(ISLocalToGlobalMapping,Viewer);
-extern int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
-extern int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping,int,const int[],int[]);
-extern int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
-extern int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,
+EXTERN int ISLocalToGlobalMappingCreate(MPI_Comm,int,const int[],ISLocalToGlobalMapping*);
+EXTERN int ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
+EXTERN int ISLocalToGlobalMappingView(ISLocalToGlobalMapping,Viewer);
+EXTERN int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
+EXTERN int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping,int,const int[],int[]);
+EXTERN int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
+EXTERN int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,
                                        int,const int[],int*,int[]);
 
 /* --------------------------------------------------------------------------*/
@@ -89,15 +89,15 @@ struct _p_ISColoring {
 };
 typedef struct _p_ISColoring* ISColoring;
 
-extern int ISColoringCreate(MPI_Comm,int,const int[],ISColoring*);
-extern int ISColoringDestroy(ISColoring);
-extern int ISColoringView(ISColoring,Viewer);
-extern int ISColoringGetIS(ISColoring,int*,IS*[]);
+EXTERN int ISColoringCreate(MPI_Comm,int,const int[],ISColoring*);
+EXTERN int ISColoringDestroy(ISColoring);
+EXTERN int ISColoringView(ISColoring,Viewer);
+EXTERN int ISColoringGetIS(ISColoring,int*,IS*[]);
 
 /* --------------------------------------------------------------------------*/
 
-extern int ISPartitioningToNumbering(IS,IS*);
-extern int ISPartitioningCount(IS,int[]);
+EXTERN int ISPartitioningToNumbering(IS,IS*);
+EXTERN int ISPartitioningCount(IS,int[]);
 
 #endif
 

@@ -1,4 +1,4 @@
-/* $Id: petscdraw.h,v 1.70 2000/01/11 21:04:04 bsmith Exp balay $ */
+/* $Id: petscdraw.h,v 1.71 2000/05/08 15:09:50 balay Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -17,19 +17,19 @@ typedef struct _p_Draw* Draw;
 
 typedef char* DrawType;
 extern FList DrawList;
-extern int DrawRegisterAll(char *);
-extern int DrawRegisterDestroy(void);
+EXTERN int DrawRegisterAll(char *);
+EXTERN int DrawRegisterDestroy(void);
 
-extern int DrawRegister(char*,char*,char*,int(*)(Draw));
+EXTERN int DrawRegister(char*,char*,char*,int(*)(Draw));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define DrawRegisterDynamic(a,b,c,d) DrawRegister(a,b,c,0)
 #else
 #define DrawRegisterDynamic(a,b,c,d) DrawRegister(a,b,c,d)
 #endif
-extern int DrawGetType(Draw,DrawType*);
-extern int DrawSetType(Draw,DrawType);
-extern int DrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,Draw*);
-extern int DrawSetFromOptions(Draw);
+EXTERN int DrawGetType(Draw,DrawType*);
+EXTERN int DrawSetType(Draw,DrawType);
+EXTERN int DrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,Draw*);
+EXTERN int DrawSetFromOptions(Draw);
 
 /*
    Number of basic colors in the draw routines, the others are used
@@ -73,69 +73,69 @@ extern int DrawSetFromOptions(Draw);
 #define DRAW_LAVENDERBLUSH   31
 
 
-extern int DrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,Draw*);
-extern int DrawOpenPS(MPI_Comm,char *,Draw *);
+EXTERN int DrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,Draw*);
+EXTERN int DrawOpenPS(MPI_Comm,char *,Draw *);
 #define DRAW_FULL_SIZE    -3
 #define DRAW_HALF_SIZE    -4
 #define DRAW_THIRD_SIZE   -5
 #define DRAW_QUARTER_SIZE -6
 
-extern int DrawOpenNull(MPI_Comm,Draw *);
-extern int DrawDestroy(Draw);
-extern int DrawIsNull(Draw,PetscTruth*);
+EXTERN int DrawOpenNull(MPI_Comm,Draw *);
+EXTERN int DrawDestroy(Draw);
+EXTERN int DrawIsNull(Draw,PetscTruth*);
 
-extern int DrawGetPopup(Draw,Draw*);
-extern int DrawCheckResizedWindow(Draw);
-extern int DrawResizeWindow(Draw,int,int);
+EXTERN int DrawGetPopup(Draw,Draw*);
+EXTERN int DrawCheckResizedWindow(Draw);
+EXTERN int DrawResizeWindow(Draw,int,int);
 
-extern int DrawScalePopup(Draw,double min,double max); 
+EXTERN int DrawScalePopup(Draw,double min,double max); 
 
-extern int DrawLine(Draw,double,double,double,double,int);
-extern int DrawLineSetWidth(Draw,double);
-extern int DrawLineGetWidth(Draw,double*);
+EXTERN int DrawLine(Draw,double,double,double,double,int);
+EXTERN int DrawLineSetWidth(Draw,double);
+EXTERN int DrawLineGetWidth(Draw,double*);
 
-extern int DrawPoint(Draw,double,double,int);
-extern int DrawPointSetSize(Draw,double);
+EXTERN int DrawPoint(Draw,double,double,int);
+EXTERN int DrawPointSetSize(Draw,double);
 
-extern int DrawRectangle(Draw,double,double,double,double,int,int,int,int);
-extern int DrawTriangle(Draw,double,double,double,double,double,double,int,int,int);
-extern int DrawTensorContourPatch(Draw,int,int,double*,double*,double,double,Scalar*);
-extern int DrawTensorContour(Draw,int,int,const double[],const double[],Scalar *);
+EXTERN int DrawRectangle(Draw,double,double,double,double,int,int,int,int);
+EXTERN int DrawTriangle(Draw,double,double,double,double,double,double,int,int,int);
+EXTERN int DrawTensorContourPatch(Draw,int,int,double*,double*,double,double,Scalar*);
+EXTERN int DrawTensorContour(Draw,int,int,const double[],const double[],Scalar *);
 
-extern int DrawString(Draw,double,double,int,char*);
-extern int DrawStringVertical(Draw,double,double,int,char*);
-extern int DrawStringSetSize(Draw,double,double);
-extern int DrawStringGetSize(Draw,double*,double*);
+EXTERN int DrawString(Draw,double,double,int,char*);
+EXTERN int DrawStringVertical(Draw,double,double,int,char*);
+EXTERN int DrawStringSetSize(Draw,double,double);
+EXTERN int DrawStringGetSize(Draw,double*,double*);
 
-extern int DrawSetViewPort(Draw,double,double,double,double);
-extern int DrawSplitViewPort(Draw);
+EXTERN int DrawSetViewPort(Draw,double,double,double,double);
+EXTERN int DrawSplitViewPort(Draw);
 
-extern int DrawSetCoordinates(Draw,double,double,double,double);
-extern int DrawGetCoordinates(Draw,double*,double*,double*,double*);
+EXTERN int DrawSetCoordinates(Draw,double,double,double,double);
+EXTERN int DrawGetCoordinates(Draw,double*,double*,double*,double*);
 
-extern int DrawSetTitle(Draw,char *);
-extern int DrawAppendTitle(Draw,char *);
-extern int DrawGetTitle(Draw,char **);
+EXTERN int DrawSetTitle(Draw,char *);
+EXTERN int DrawAppendTitle(Draw,char *);
+EXTERN int DrawGetTitle(Draw,char **);
 
-extern int DrawSetPause(Draw,int);
-extern int DrawGetPause(Draw,int*);
-extern int DrawPause(Draw);
-extern int DrawSetDoubleBuffer(Draw);
-extern int DrawFlush(Draw);
-extern int DrawSynchronizedFlush(Draw);
-extern int DrawClear(Draw);
-extern int DrawSynchronizedClear(Draw);
-extern int DrawBOP(Draw);
-extern int DrawEOP(Draw);
+EXTERN int DrawSetPause(Draw,int);
+EXTERN int DrawGetPause(Draw,int*);
+EXTERN int DrawPause(Draw);
+EXTERN int DrawSetDoubleBuffer(Draw);
+EXTERN int DrawFlush(Draw);
+EXTERN int DrawSynchronizedFlush(Draw);
+EXTERN int DrawClear(Draw);
+EXTERN int DrawSynchronizedClear(Draw);
+EXTERN int DrawBOP(Draw);
+EXTERN int DrawEOP(Draw);
 
-extern int DrawGetSingleton(Draw,Draw*);
-extern int DrawRestoreSingleton(Draw,Draw*);
+EXTERN int DrawGetSingleton(Draw,Draw*);
+EXTERN int DrawRestoreSingleton(Draw,Draw*);
 
 typedef enum {BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT } DrawButton;
-extern int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
-extern int DrawSynchronizedGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
+EXTERN int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
+EXTERN int DrawSynchronizedGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
 
-extern int DrawZoom(Draw,int (*)(Draw,void *),void *);
+EXTERN int DrawZoom(Draw,int (*)(Draw,void *),void *);
 
 /*   Allows one to maintain a subset of viewports for a single window */
 typedef struct {
@@ -143,80 +143,80 @@ typedef struct {
   double *xl,*xr,*yl,*yr;
   Draw   draw;
 } DrawViewPorts;
-extern int DrawViewPortsCreate(Draw,int,DrawViewPorts**);
-extern int DrawViewPortsDestroy(DrawViewPorts*);
-extern int DrawViewPortsSet(DrawViewPorts*,int);
+EXTERN int DrawViewPortsCreate(Draw,int,DrawViewPorts**);
+EXTERN int DrawViewPortsDestroy(DrawViewPorts*);
+EXTERN int DrawViewPortsSet(DrawViewPorts*,int);
 
 /*
     Routines for drawing X-Y axises in a Draw object
 */
 typedef struct _p_DrawAxis* DrawAxis;
 #define DRAWAXIS_COOKIE PETSC_COOKIE+16
-extern int DrawAxisCreate(Draw,DrawAxis *);
-extern int DrawAxisDestroy(DrawAxis);
-extern int DrawAxisDraw(DrawAxis);
-extern int DrawAxisSetLimits(DrawAxis,double,double,double,double);
-extern int DrawAxisSetColors(DrawAxis,int,int,int);
-extern int DrawAxisSetLabels(DrawAxis,char*,char*,char*);
+EXTERN int DrawAxisCreate(Draw,DrawAxis *);
+EXTERN int DrawAxisDestroy(DrawAxis);
+EXTERN int DrawAxisDraw(DrawAxis);
+EXTERN int DrawAxisSetLimits(DrawAxis,double,double,double,double);
+EXTERN int DrawAxisSetColors(DrawAxis,int,int,int);
+EXTERN int DrawAxisSetLabels(DrawAxis,char*,char*,char*);
 
 /*
     Routines to draw line curves in X-Y space
 */
 typedef struct _p_DrawLG*   DrawLG;
 #define DRAWLG_COOKIE PETSC_COOKIE+7
-extern int DrawLGCreate(Draw,int,DrawLG *);
-extern int DrawLGDestroy(DrawLG);
-extern int DrawLGAddPoint(DrawLG,double*,double*);
-extern int DrawLGAddPoints(DrawLG,int,double**,double**);
-extern int DrawLGDraw(DrawLG);
-extern int DrawLGReset(DrawLG);
-extern int DrawLGSetDimension(DrawLG,int);
-extern int DrawLGGetAxis(DrawLG,DrawAxis *);
-extern int DrawLGGetDraw(DrawLG,Draw *);
-extern int DrawLGIndicateDataPoints(DrawLG);
-extern int DrawLGSetLimits(DrawLG,double,double,double,double); 
+EXTERN int DrawLGCreate(Draw,int,DrawLG *);
+EXTERN int DrawLGDestroy(DrawLG);
+EXTERN int DrawLGAddPoint(DrawLG,double*,double*);
+EXTERN int DrawLGAddPoints(DrawLG,int,double**,double**);
+EXTERN int DrawLGDraw(DrawLG);
+EXTERN int DrawLGReset(DrawLG);
+EXTERN int DrawLGSetDimension(DrawLG,int);
+EXTERN int DrawLGGetAxis(DrawLG,DrawAxis *);
+EXTERN int DrawLGGetDraw(DrawLG,Draw *);
+EXTERN int DrawLGIndicateDataPoints(DrawLG);
+EXTERN int DrawLGSetLimits(DrawLG,double,double,double,double); 
 
 /*
     Routines to draw scatter plots in complex space
 */
 typedef struct _p_DrawSP*   DrawSP;
 #define DRAWSP_COOKIE PETSC_COOKIE+27
-extern int DrawSPCreate(Draw,int,DrawSP *);
-extern int DrawSPDestroy(DrawSP);
-extern int DrawSPAddPoint(DrawSP,double*,double*);
-extern int DrawSPAddPoints(DrawSP,int,double**,double**);
-extern int DrawSPDraw(DrawSP);
-extern int DrawSPReset(DrawSP);
-extern int DrawSPSetDimension(DrawSP,int);
-extern int DrawSPGetAxis(DrawSP,DrawAxis *);
-extern int DrawSPGetDraw(DrawSP,Draw *);
-extern int DrawSPSetLimits(DrawSP,double,double,double,double); 
+EXTERN int DrawSPCreate(Draw,int,DrawSP *);
+EXTERN int DrawSPDestroy(DrawSP);
+EXTERN int DrawSPAddPoint(DrawSP,double*,double*);
+EXTERN int DrawSPAddPoints(DrawSP,int,double**,double**);
+EXTERN int DrawSPDraw(DrawSP);
+EXTERN int DrawSPReset(DrawSP);
+EXTERN int DrawSPSetDimension(DrawSP,int);
+EXTERN int DrawSPGetAxis(DrawSP,DrawAxis *);
+EXTERN int DrawSPGetDraw(DrawSP,Draw *);
+EXTERN int DrawSPSetLimits(DrawSP,double,double,double,double); 
 
 /*
     Routines to draw histograms
 */
 typedef struct _p_DrawHG*   DrawHG;
 #define DRAWHG_COOKIE PETSC_COOKIE+15
-extern int DrawHGCreate(Draw,int,DrawHG *);
-extern int DrawHGDestroy(DrawHG);
-extern int DrawHGAddValue(DrawHG,double);
-extern int DrawHGDraw(DrawHG);
-extern int DrawHGReset(DrawHG);
-extern int DrawHGGetAxis(DrawHG,DrawAxis *);
-extern int DrawHGGetDraw(DrawHG,Draw *);
-extern int DrawHGSetLimits(DrawHG,double,double,int,int);
-extern int DrawHGSetNumberBins(DrawHG,int);
-extern int DrawHGSetColor(DrawHG,int);
+EXTERN int DrawHGCreate(Draw,int,DrawHG *);
+EXTERN int DrawHGDestroy(DrawHG);
+EXTERN int DrawHGAddValue(DrawHG,double);
+EXTERN int DrawHGDraw(DrawHG);
+EXTERN int DrawHGReset(DrawHG);
+EXTERN int DrawHGGetAxis(DrawHG,DrawAxis *);
+EXTERN int DrawHGGetDraw(DrawHG,Draw *);
+EXTERN int DrawHGSetLimits(DrawHG,double,double,int,int);
+EXTERN int DrawHGSetNumberBins(DrawHG,int);
+EXTERN int DrawHGSetColor(DrawHG,int);
 
 /*
     Viewer routines that allow you to access underlying Draw objects
 */
-extern int ViewerDrawGetDraw(Viewer,int,Draw*);
-extern int ViewerDrawGetDrawLG(Viewer,int,DrawLG*);
-extern int ViewerDrawGetDrawAxis(Viewer,int,DrawAxis*);
+EXTERN int ViewerDrawGetDraw(Viewer,int,Draw*);
+EXTERN int ViewerDrawGetDrawLG(Viewer,int,DrawLG*);
+EXTERN int ViewerDrawGetDrawAxis(Viewer,int,DrawAxis*);
 
-extern int DrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
-extern int DrawUtilitySetGamma(double);
+EXTERN int DrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
+EXTERN int DrawUtilitySetGamma(double);
 
 /* Mesh management routines */
 typedef struct _p_DrawMesh* DrawMesh;

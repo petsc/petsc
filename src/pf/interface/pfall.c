@@ -1,11 +1,11 @@
-/*$Id: pfall.c,v 1.5 2000/04/12 04:26:58 bsmith Exp balay $*/
+/*$Id: pfall.c,v 1.6 2000/05/05 22:20:09 balay Exp bsmith $*/
 
 #include "petscpf.h"          /*I   "petscpf.h"   I*/
 
 EXTERN_C_BEGIN
-extern int PFCreate_Constant(PF,void*);
-extern int PFCreate_String(PF,void*);
-extern int PFCreate_Quick(PF,void*);
+EXTERN int PFCreate_Constant(PF,void*);
+EXTERN int PFCreate_String(PF,void*);
+EXTERN int PFCreate_Quick(PF,void*);
 EXTERN_C_END
 
 #undef __FUNC__  

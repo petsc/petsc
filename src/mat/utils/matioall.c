@@ -1,17 +1,17 @@
-/*$Id: matioall.c,v 1.16 2000/04/12 04:24:13 bsmith Exp balay $*/
+/*$Id: matioall.c,v 1.17 2000/05/05 22:16:35 balay Exp bsmith $*/
 
 #include "petscmat.h"
 
-extern int MatLoad_MPIRowbs(Viewer,MatType,Mat*);
-extern int MatLoad_SeqAIJ(Viewer,MatType,Mat*);
-extern int MatLoad_MPIAIJ(Viewer,MatType,Mat*);
-extern int MatLoad_SeqBDiag(Viewer,MatType,Mat*);
-extern int MatLoad_MPIBDiag(Viewer,MatType,Mat*);
-extern int MatLoad_SeqDense(Viewer,MatType,Mat*);
-extern int MatLoad_MPIDense(Viewer,MatType,Mat*);
-extern int MatLoad_SeqBAIJ(Viewer,MatType,Mat*);
-extern int MatLoad_SeqAdj(Viewer,MatType,Mat*);
-extern int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
+EXTERN int MatLoad_MPIRowbs(Viewer,MatType,Mat*);
+EXTERN int MatLoad_SeqAIJ(Viewer,MatType,Mat*);
+EXTERN int MatLoad_MPIAIJ(Viewer,MatType,Mat*);
+EXTERN int MatLoad_SeqBDiag(Viewer,MatType,Mat*);
+EXTERN int MatLoad_MPIBDiag(Viewer,MatType,Mat*);
+EXTERN int MatLoad_SeqDense(Viewer,MatType,Mat*);
+EXTERN int MatLoad_MPIDense(Viewer,MatType,Mat*);
+EXTERN int MatLoad_SeqBAIJ(Viewer,MatType,Mat*);
+EXTERN int MatLoad_SeqAdj(Viewer,MatType,Mat*);
+EXTERN int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoadRegisterAll"

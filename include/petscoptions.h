@@ -1,4 +1,4 @@
-/* $Id: petscoptions.h,v 1.37 2000/01/16 23:42:41 bsmith Exp balay $ */
+/* $Id: petscoptions.h,v 1.38 2000/05/08 15:09:50 balay Exp bsmith $ */
 /*
    Routines to determine options set in the options database.
 */
@@ -6,41 +6,41 @@
 #define __PETSCOPTIONS_H
 #include "petsc.h"
 
-extern int  OptionsHasName(const char[],const char[],PetscTruth*);
-extern int  OptionsGetInt(const char[],const char [],int *,PetscTruth*);
-extern int  OptionsGetLogical(const char[],const char [],PetscTruth *,PetscTruth*);
-extern int  OptionsGetDouble(const char[],const char[],double *,PetscTruth*);
-extern int  OptionsGetScalar(const char[],const char[],Scalar *,PetscTruth*);
-extern int  OptionsGetIntArray(const char[],const char[],int[],int *,PetscTruth*);
-extern int  OptionsGetDoubleArray(const char[],const char[],double[],int *,PetscTruth*);
-extern int  OptionsGetString(const char[],const char[],char[],int,PetscTruth*);
-extern int  OptionsGetStringArray(const char[],const char[],char**,int*,PetscTruth*);
+EXTERN int  OptionsHasName(const char[],const char[],PetscTruth*);
+EXTERN int  OptionsGetInt(const char[],const char [],int *,PetscTruth*);
+EXTERN int  OptionsGetLogical(const char[],const char [],PetscTruth *,PetscTruth*);
+EXTERN int  OptionsGetDouble(const char[],const char[],double *,PetscTruth*);
+EXTERN int  OptionsGetScalar(const char[],const char[],Scalar *,PetscTruth*);
+EXTERN int  OptionsGetIntArray(const char[],const char[],int[],int *,PetscTruth*);
+EXTERN int  OptionsGetDoubleArray(const char[],const char[],double[],int *,PetscTruth*);
+EXTERN int  OptionsGetString(const char[],const char[],char[],int,PetscTruth*);
+EXTERN int  OptionsGetStringArray(const char[],const char[],char**,int*,PetscTruth*);
 
-extern int  OptionsSetAlias(const char[],const char[]);
-extern int  OptionsSetValue(const char[],const char[]);
-extern int  OptionsClearValue(const char[]);
+EXTERN int  OptionsSetAlias(const char[],const char[]);
+EXTERN int  OptionsSetValue(const char[],const char[]);
+EXTERN int  OptionsClearValue(const char[]);
 
-extern int  OptionsAllUsed(int *);
-extern int  OptionsLeft(void);
-extern int  OptionsPrint(FILE *);
+EXTERN int  OptionsAllUsed(int *);
+EXTERN int  OptionsLeft(void);
+EXTERN int  OptionsPrint(FILE *);
 
-extern int  OptionsCreate(void);
-extern int  OptionsInsert(int *,char ***,const char[]);
-extern int  OptionsInsertFile(const char[]);
-extern int  OptionsDestroy(void);
+EXTERN int  OptionsCreate(void);
+EXTERN int  OptionsInsert(int *,char ***,const char[]);
+EXTERN int  OptionsInsertFile(const char[]);
+EXTERN int  OptionsDestroy(void);
 
-extern int  OptionsReject(const char[],const char[]);
-extern int  OptionsGetAll(char*[]);
+EXTERN int  OptionsReject(const char[],const char[]);
+EXTERN int  OptionsGetAll(char*[]);
 
-extern int  OptionsGetenv(MPI_Comm,const char *,char[],int,PetscTruth *);
-extern int  OptionsAtoi(const char[],int*);
-extern int  OptionsAtod(const char[],double*);
+EXTERN int  OptionsGetenv(MPI_Comm,const char *,char[],int,PetscTruth *);
+EXTERN int  OptionsAtoi(const char[],int*);
+EXTERN int  OptionsAtod(const char[],double*);
 
 extern PetscTruth PetscPublishOptions;
-extern int        OptionsSelectBegin(MPI_Comm,char*,char*);
-extern int        OptionsSelectInt(MPI_Comm,char*,char*,int);
-extern int        OptionsSelectDouble(MPI_Comm,char*,char*,double);
-extern int        OptionsSelectName(MPI_Comm,char*,char*);
-extern int        OptionsSelectList(MPI_Comm,char*,char*,char**,int,char*);
-extern int        OptionsSelectEnd(MPI_Comm);
+EXTERN int        OptionsSelectBegin(MPI_Comm,char*,char*);
+EXTERN int        OptionsSelectInt(MPI_Comm,char*,char*,int);
+EXTERN int        OptionsSelectDouble(MPI_Comm,char*,char*,double);
+EXTERN int        OptionsSelectName(MPI_Comm,char*,char*);
+EXTERN int        OptionsSelectList(MPI_Comm,char*,char*,char**,int,char*);
+EXTERN int        OptionsSelectEnd(MPI_Comm);
 #endif

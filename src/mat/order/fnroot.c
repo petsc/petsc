@@ -1,4 +1,4 @@
-/*$Id: fnroot.c,v 1.12 2000/04/09 04:37:05 bsmith Exp bsmith $*/
+/*$Id: fnroot.c,v 1.13 2000/04/12 04:24:20 bsmith Exp bsmith $*/
 /* fnroot.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -40,7 +40,7 @@ int SPARSEPACKfnroot(int *root, int *xadj, int *adjncy,
     /* Local variables */
     int ndeg, node, j, k, nabor, kstop, jstrt, kstrt, mindeg, 
 	    ccsize, nunlvl;
-    extern int SPARSEPACKrootls(int *, int *, int *, 
+    EXTERN int SPARSEPACKrootls(int *, int *, int *, 
 	    int *, int *, int *, int *);
 /*       DETERMINE THE LEVEL STRUCTURE ROOTED AT ROOT. */
 

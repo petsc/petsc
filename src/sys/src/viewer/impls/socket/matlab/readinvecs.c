@@ -1,4 +1,4 @@
-/*$Id: readinvecs.c,v 1.4 2000/04/12 04:20:49 bsmith Exp balay $*/
+/*$Id: readinvecs.c,v 1.5 2000/05/05 22:13:07 balay Exp bsmith $*/
 
 /*    Reads in PETSc vectors from a PETSc binary file into matlab
 
@@ -17,7 +17,7 @@
 #include <io.h>
 #endif
 
-#define ERROR(a) {fprintf(stderr,"ReadInVecs %s \n",a); return -1;}
+#define ERROR(a) {fprintf(stdout,"ReadInVecs %s \n",a); return -1;}
 /*-----------------------------------------------------------------*/
 /*
        Reads in a single vector
@@ -58,7 +58,7 @@ int ReadInVecs(Matrix *plhs[],int t,int dim,int *dims)
 }
 
 #undef ERROR
-#define ERROR(a) {fprintf(stderr,"ReadInVecs %s \n",a); return;}
+#define ERROR(a) {fprintf(stdout,"ReadInVecs %s \n",a); return;}
 /*-----------------------------------------------------------------*/
 
 #undef __FUNC__  

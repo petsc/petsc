@@ -1,15 +1,15 @@
-/*$Id: mpiaij.c,v 1.315 2000/05/04 14:04:42 balay Exp balay $*/
+/*$Id: mpiaij.c,v 1.316 2000/05/05 22:15:43 balay Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 
-extern int MatSetUpMultiply_MPIAIJ(Mat);
-extern int DisAssemble_MPIAIJ(Mat);
-extern int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
-extern int MatGetRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
-extern int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
-extern int MatPrintHelp_SeqAIJ(Mat);
+EXTERN int MatSetUpMultiply_MPIAIJ(Mat);
+EXTERN int DisAssemble_MPIAIJ(Mat);
+EXTERN int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
+EXTERN int MatGetRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
+EXTERN int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
+EXTERN int MatPrintHelp_SeqAIJ(Mat);
 
 /* 
   Local utility routine that creates a mapping from the global column 
@@ -1494,11 +1494,11 @@ int MatCopy_MPIAIJ(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-extern int MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat *);
-extern int MatIncreaseOverlap_MPIAIJ(Mat,int,IS *,int);
-extern int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
-extern int MatGetSubMatrices_MPIAIJ (Mat,int,IS *,IS *,MatReuse,Mat **);
-extern int MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
+EXTERN int MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat *);
+EXTERN int MatIncreaseOverlap_MPIAIJ(Mat,int,IS *,int);
+EXTERN int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
+EXTERN int MatGetSubMatrices_MPIAIJ (Mat,int,IS *,IS *,MatReuse,Mat **);
+EXTERN int MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
@@ -1602,7 +1602,7 @@ EXTERN_C_END
 
 #include "petscpc.h"
 EXTERN_C_BEGIN
-extern int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
+EXTERN int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
 EXTERN_C_END
 
 #undef __FUNC__  

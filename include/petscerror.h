@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.46 2000/04/05 21:53:37 balay Exp balay $ */
+/* $Id: petscerror.h,v 1.47 2000/04/05 21:54:53 balay Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -123,21 +123,21 @@ extern  int __gierr;
 
 #endif
 
-extern int PetscTraceBackErrorHandler(int,char*,char*,char*,int,int,char*,void*);
-extern int PetscEmacsClientErrorHandler(int,char*,char*,char*,int,int,char*,void*);
-extern int PetscStopErrorHandler(int,char*,char*,char*,int,int,char*,void*);
-extern int PetscAbortErrorHandler(int,char*,char*,char*,int,int,char*,void*);
-extern int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,int,char*,void*); 
-extern int PetscError(int,char*,char*,char*,int,int,char*,...);
-extern int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,int,char*,void*),void*);
-extern int PetscPopErrorHandler(void);
+EXTERN int PetscTraceBackErrorHandler(int,char*,char*,char*,int,int,char*,void*);
+EXTERN int PetscEmacsClientErrorHandler(int,char*,char*,char*,int,int,char*,void*);
+EXTERN int PetscStopErrorHandler(int,char*,char*,char*,int,int,char*,void*);
+EXTERN int PetscAbortErrorHandler(int,char*,char*,char*,int,int,char*,void*);
+EXTERN int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,int,char*,void*); 
+EXTERN int PetscError(int,char*,char*,char*,int,int,char*,...);
+EXTERN int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,int,char*,void*),void*);
+EXTERN int PetscPopErrorHandler(void);
 
-extern int PetscDefaultSignalHandler(int,void*);
-extern int PetscPushSignalHandler(int (*)(int,void *),void*);
-extern int PetscPopSignalHandler(void);
+EXTERN int PetscDefaultSignalHandler(int,void*);
+EXTERN int PetscPushSignalHandler(int (*)(int,void *),void*);
+EXTERN int PetscPopSignalHandler(void);
 
 typedef enum {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;
-extern int PetscSetFPTrap(PetscFPTrap);
+EXTERN int PetscSetFPTrap(PetscFPTrap);
 
 /*
       Allows the code to build a stack frame as it runs
@@ -155,8 +155,8 @@ typedef struct  {
 } PetscStack;
 
 extern PetscStack *petscstack;
-extern int PetscStackCopy(PetscStack*,PetscStack*);
-extern int PetscStackPrint(PetscStack*,FILE* fp);
+EXTERN int PetscStackCopy(PetscStack*,PetscStack*);
+EXTERN int PetscStackPrint(PetscStack*,FILE* fp);
 
 #define PetscStackActive (petscstack != 0)
 
@@ -269,11 +269,11 @@ extern int        stack_err;
 
 #endif
 
-extern int PetscStackCreate(void);
-extern int PetscStackView(Viewer);
-extern int PetscStackDestroy(void);
-extern int PetscStackPublish(void);
-extern int PetscStackDepublish(void);
+EXTERN int PetscStackCreate(void);
+EXTERN int PetscStackView(Viewer);
+EXTERN int PetscStackDestroy(void);
+EXTERN int PetscStackPublish(void);
+EXTERN int PetscStackDepublish(void);
 
 
 #endif

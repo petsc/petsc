@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.38 2000/04/09 04:36:19 bsmith Exp bsmith $*/
+/*$Id: baijfact2.c,v 1.39 2000/04/12 04:23:32 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2219,7 +2219,7 @@ int MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
    except that the data structure of Mat_SeqAIJ is slightly different.
    Not a good example of code reuse.
 */
-extern int MatMissingDiagonal_SeqBAIJ(Mat);
+EXTERN int MatMissingDiagonal_SeqBAIJ(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatILUFactorSymbolic_SeqBAIJ"

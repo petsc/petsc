@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.106 2000/05/04 16:26:01 bsmith Exp balay $*/
+/*$Id: mg.c,v 1.107 2000/05/05 22:17:11 balay Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -101,9 +101,9 @@ static int PCDestroy_MG(PC pc)
 
 
 
-extern int MGACycle_Private(MG*);
-extern int MGFCycle_Private(MG*);
-extern int MGKCycle_Private(MG*);
+EXTERN int MGACycle_Private(MG*);
+EXTERN int MGFCycle_Private(MG*);
+EXTERN int MGKCycle_Private(MG*);
 
 /*
    MGCycle - Runs either an additive, multiplicative, Kaskadic

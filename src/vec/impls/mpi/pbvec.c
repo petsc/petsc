@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.153 2000/05/05 18:29:29 bsmith Exp balay $*/
+/*$Id: pbvec.c,v 1.154 2000/05/05 22:15:06 balay Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -87,9 +87,9 @@ int VecSetOption_MPI(Vec v,VecOption op)
   PetscFunctionReturn(0);
 }
     
-extern int VecDuplicate_MPI(Vec,Vec *);
+EXTERN int VecDuplicate_MPI(Vec,Vec *);
 EXTERN_C_BEGIN
-extern int VecView_MPI_Draw(Vec,Viewer);
+EXTERN int VecView_MPI_Draw(Vec,Viewer);
 EXTERN_C_END
 
 static struct _VecOps DvOps = { VecDuplicate_MPI,

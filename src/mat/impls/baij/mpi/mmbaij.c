@@ -1,11 +1,11 @@
-/*$Id: mmbaij.c,v 1.31 2000/04/09 04:36:25 bsmith Exp bsmith $*/
+/*$Id: mmbaij.c,v 1.32 2000/04/12 04:23:40 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
 */
 #include "src/mat/impls/baij/mpi/mpibaij.h"
 #include "src/vec/vecimpl.h"
-extern int MatSetValues_SeqBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
+EXTERN int MatSetValues_SeqBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatSetUpMultiply_MPIBAIJ"

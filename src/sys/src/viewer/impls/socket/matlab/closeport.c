@@ -1,4 +1,4 @@
-/*$Id: closeport.c,v 1.14 1999/10/24 14:01:02 bsmith Exp bsmith $*/
+/*$Id: closeport.c,v 1.15 2000/01/11 20:58:54 bsmith Exp bsmith $*/
 /* This was part of the MatlabSockettool package. 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
@@ -22,7 +22,7 @@ typedef unsigned long   u_long;
 #include <fcntl.h>
 #include "src/sys/src/viewer/impls/socket/socket.h"
 #include "mex.h"
-#define ERROR(a) {fprintf(stderr,"CLOSEPORT: %s \n",a); return ;}
+#define ERROR(a) {fprintf(stdout,"CLOSEPORT: %s \n",a); return ;}
 typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/
 /*                                                                 */

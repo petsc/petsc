@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.143 2000/05/05 18:30:52 bsmith Exp balay $*/
+/*$Id: da2.c,v 1.144 2000/05/05 22:19:22 balay Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -205,11 +205,12 @@ int VecMatlabEnginePut_DA2d(PetscObject obj,void *engine)
 
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  mat  = mxCreateDoubleMatrix(n,m,(mxComplexity)0);
+  mat  = mxCreateDoubleMatrix(m,n,(mxComplexity)0);
 #else
-  mat  = mxCreateDoubleMatrix(n,m,(mxComplexity)1);
+  mat  = mxCreateDoubleMatrix(m,n,(mxComplexity)1);
 #endif
   ierr = PetscMemcpy(mxGetPr(mat),array,n*m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscObjectName(obj);CHKERRQ(ierr);
   mxSetName(mat,obj->name);
   engPutArray((Engine *)engine,mat);
   

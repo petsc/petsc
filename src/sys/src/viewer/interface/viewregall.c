@@ -1,14 +1,14 @@
-/*$Id: viewregall.c,v 1.11 2000/04/09 04:34:00 bsmith Exp bsmith $*/
+/*$Id: viewregall.c,v 1.12 2000/04/12 04:20:59 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 EXTERN_C_BEGIN
-extern int ViewerCreate_Socket(Viewer);
-extern int ViewerCreate_ASCII(Viewer);
-extern int ViewerCreate_Binary(Viewer);
-extern int ViewerCreate_String(Viewer);
-extern int ViewerCreate_Draw(Viewer);
-extern int ViewerCreate_AMS(Viewer);
+EXTERN int ViewerCreate_Socket(Viewer);
+EXTERN int ViewerCreate_ASCII(Viewer);
+EXTERN int ViewerCreate_Binary(Viewer);
+EXTERN int ViewerCreate_String(Viewer);
+EXTERN int ViewerCreate_Draw(Viewer);
+EXTERN int ViewerCreate_AMS(Viewer);
 EXTERN_C_END
   
 #undef __FUNC__  

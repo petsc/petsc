@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.1 2000/04/24 16:18:38 bsmith Exp bsmith $*/
+/*$Id: ex16.c,v 1.2 2000/05/04 16:24:58 bsmith Exp bsmith $*/
 
 /* 
    Demonstrates PetscMatlabEngineXXX()
@@ -17,16 +17,16 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,0);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
-  ierr = PetscMatlabEngineGetOutput(PETSC_COMM_WORLD,&output);
+  ierr = PetscMatlabEngineGetOutput(MATLAB_ENGINE_(PETSC_COMM_WORLD),&output);CHKERRQ(ierr);
 
-  ierr = PetscMatlabEngineEvaluate(PETSC_COMM_WORLD,"MPI_Comm_rank");
+  ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(PETSC_COMM_WORLD),"MPI_Comm_rank");CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]Processor rank is %s",rank,output);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,">>");CHKERRQ(ierr);
   ierr = PetscSynchronizedFGets(PETSC_COMM_WORLD,stdin,256,user);CHKERRQ(ierr); 
   ierr = PetscStrncmp(user,"exit",4,&userhappy);CHKERRQ(ierr);
   while (!userhappy) {
-    ierr = PetscMatlabEngineEvaluate(PETSC_COMM_WORLD,user);
+    ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(PETSC_COMM_WORLD),user);CHKERRQ(ierr);
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]The result is %s",rank,output);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,">>");CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: axis.c,v 1.67 2000/04/09 04:34:21 bsmith Exp bsmith $*/
+/*$Id: axis.c,v 1.68 2000/04/12 04:21:18 bsmith Exp bsmith $*/
 /*
    This file contains a simple routine for generating a 2-d axis.
 */
@@ -20,8 +20,8 @@ struct _p_DrawAxis {
 
 #define MAXSEGS 20
 
-extern int    PetscADefTicks(PetscReal,PetscReal,int,int*,PetscReal*,int);
-extern int    PetscADefLabel(PetscReal,PetscReal,char**);
+EXTERN int    PetscADefTicks(PetscReal,PetscReal,int,int*,PetscReal*,int);
+EXTERN int    PetscADefLabel(PetscReal,PetscReal,char**);
 static int    PetscAGetNice(PetscReal,PetscReal,int,PetscReal*);
 static int    PetscAGetBase(PetscReal,PetscReal,int,PetscReal*,int*);
 

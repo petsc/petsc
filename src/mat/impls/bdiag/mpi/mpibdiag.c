@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.186 2000/05/04 18:59:17 balay Exp balay $*/
+/*$Id: mpibdiag.c,v 1.187 2000/05/05 22:15:57 balay Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -88,7 +88,7 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   PLogInfo(0,"MatAssemblyBegin_MPIBDiag:Stash has %d entries,uses %d mallocs.\n",nstash,reallocs);
   PetscFunctionReturn(0);
 }
-extern int MatSetUpMultiply_MPIBDiag(Mat);
+EXTERN int MatSetUpMultiply_MPIBDiag(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatAssemblyEnd_MPIBDiag"
@@ -733,7 +733,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *norm)
   PetscFunctionReturn(0);
 }
 
-extern int MatPrintHelp_SeqBDiag(Mat);
+EXTERN int MatPrintHelp_SeqBDiag(Mat);
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatPrintHelp_MPIBDiag"
 int MatPrintHelp_MPIBDiag(Mat A)
@@ -748,7 +748,7 @@ int MatPrintHelp_MPIBDiag(Mat A)
   PetscFunctionReturn(0);
 }
 
-extern int MatScale_SeqBDiag(Scalar*,Mat);
+EXTERN int MatScale_SeqBDiag(Scalar*,Mat);
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatScale_MPIBDiag"
 int MatScale_MPIBDiag(Scalar *alpha,Mat A)

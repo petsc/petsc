@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.39 2000/04/12 04:23:45 bsmith Exp balay $*/
+/*$Id: mpiadj.c,v 1.40 2000/05/05 22:16:12 balay Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -8,7 +8,7 @@
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatView_MPIAdj_ASCII"
-extern int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
+int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
 {
   Mat_MPIAdj  *a = (Mat_MPIAdj*)A->data;
   int         ierr,i,j,m = a->m, format;

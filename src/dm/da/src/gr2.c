@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.38 2000/04/12 04:26:20 bsmith Exp balay $*/
+/*$Id: gr2.c,v 1.39 2000/05/05 22:19:22 balay Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -242,7 +242,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern int VecView_MPI_Draw_DA1d(Vec,Viewer);
+EXTERN int VecView_MPI_Draw_DA1d(Vec,Viewer);
 
 EXTERN_C_BEGIN
 #undef __FUNC__  

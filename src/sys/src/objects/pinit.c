@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.32 2000/05/04 16:24:45 bsmith Exp balay $*/
+/*$Id: pinit.c,v 1.33 2000/05/05 22:14:00 balay Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -10,14 +10,14 @@
 
 extern FILE *petsc_history;
 
-extern int PetscInitialize_DynamicLibraries(void);
-extern int PetscFinalize_DynamicLibraries(void);
-extern int FListDestroyAll(void);
-extern int PLogEventRegisterDestroy_Private(void);
-extern int PLogStageDestroy_Private(void);
-extern int PetscSequentialPhaseBegin_Private(MPI_Comm,int);
-extern int PetscSequentialPhaseEnd_Private(MPI_Comm,int);
-extern int PLogCloseHistoryFile(FILE **);
+EXTERN int PetscInitialize_DynamicLibraries(void);
+EXTERN int PetscFinalize_DynamicLibraries(void);
+EXTERN int FListDestroyAll(void);
+EXTERN int PLogEventRegisterDestroy_Private(void);
+EXTERN int PLogStageDestroy_Private(void);
+EXTERN int PetscSequentialPhaseBegin_Private(MPI_Comm,int);
+EXTERN int PetscSequentialPhaseEnd_Private(MPI_Comm,int);
+EXTERN int PLogCloseHistoryFile(FILE **);
 
 #include "petscsnes.h" /* so that cookies are defined */
 
@@ -138,7 +138,7 @@ int PetscInitializeNoArguments(void)
   PetscFunctionReturn(ierr);
 }
 
-extern int        OptionsCheckInitial(void);
+EXTERN int        OptionsCheckInitial(void);
 extern PetscTruth PetscBeganMPI;
 
 /*
@@ -576,7 +576,7 @@ int PetscFinalize(void)
 
       ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
       ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
-        ierr = PetscTrDump(stderr);CHKERRQ(ierr);
+        ierr = PetscTrDump(stdout);CHKERRQ(ierr);
       ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
       ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
     }

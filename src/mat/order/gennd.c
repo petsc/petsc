@@ -1,4 +1,4 @@
-/*$Id: gennd.c,v 1.13 2000/04/09 04:37:05 bsmith Exp bsmith $*/
+/*$Id: gennd.c,v 1.14 2000/04/12 04:24:20 bsmith Exp bsmith $*/
 /* gennd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -63,7 +63,7 @@ int SPARSEPACKgennd(int *neqns,int *xadj,int *adjncy,int *mask,int *perm,int *xl
 
     /* Local variables */
     int nsep,root,i;
-    extern int SPARSEPACKfndsep(int *,int *,int *,int *,int *,int *,int *,int *);
+    EXTERN int SPARSEPACKfndsep(int *,int *,int *,int *,int *,int *,int *,int *);
     int num;
 
     PetscFunctionBegin;

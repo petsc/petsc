@@ -1,13 +1,13 @@
-/*$Id: snesregi.c,v 1.34 2000/04/12 04:25:27 bsmith Exp balay $*/
+/*$Id: snesregi.c,v 1.35 2000/05/05 22:18:12 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
-extern int SNESCreate_EQ_LS(SNES);
-extern int SNESCreate_EQ_TR(SNES);
-extern int SNESCreate_UM_TR(SNES);
-extern int SNESCreate_UM_LS(SNES);
-extern int SNESCreate_Test(SNES);
+EXTERN int SNESCreate_EQ_LS(SNES);
+EXTERN int SNESCreate_EQ_TR(SNES);
+EXTERN int SNESCreate_UM_TR(SNES);
+EXTERN int SNESCreate_UM_LS(SNES);
+EXTERN int SNESCreate_Test(SNES);
 EXTERN_C_END
   
 /*

@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.21 2000/05/05 22:19:08 balay Exp balay $ */
+/* $Id: aoimpl.h,v 1.22 2000/05/08 15:09:17 balay Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -109,8 +109,8 @@ struct _p_AOData {
   AODataAlias       *aliases;
 };
 
-extern int AODataKeyFind_Private(AOData,char *,PetscTruth *,AODataKey **);
-extern int AODataSegmentFind_Private(AOData,char *,char *,PetscTruth *,AODataKey **,AODataSegment **);
+EXTERN int AODataKeyFind_Private(AOData,char *,PetscTruth *,AODataKey **);
+EXTERN int AODataSegmentFind_Private(AOData,char *,char *,PetscTruth *,AODataKey **,AODataSegment **);
 
 
 #include "petscbt.h"

@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.105 2000/04/12 04:20:52 bsmith Exp balay $ */
+/* $Id: filev.c,v 1.106 2000/05/04 14:04:55 balay Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -239,19 +239,9 @@ int ViewerASCIIUseTabs(Viewer viewer,PetscTruth flg)
   PetscFunctionReturn(0);
 }
 
-
 /* ----------------------------------------------------------------------- */
-/*
-       These are defined in the file with PetscPrintf()
-*/
-typedef struct _PrintfQueue *PrintfQueue;
-struct _PrintfQueue {
-  char        string[256];
-  PrintfQueue next;
-};
-extern PrintfQueue queue,queuebase;
-extern int         queuelength;
-extern FILE        *queuefile;
+
+#include "src/sys/src/fileio/mprint.h" /* defines the queue datastructures and variables */
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="ViewerASCIIPrintf"></a>*/"ViewerASCIIPrintf" 
@@ -625,7 +615,7 @@ int ViewerASCIISynchronizedPrintf(Viewer viewer,const char format[],...)
 #endif
     va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then 256 bytes");
+    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
   }
   PetscFunctionReturn(0);
 }

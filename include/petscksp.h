@@ -1,4 +1,4 @@
-/* $Id: petscksp.h,v 1.89 2000/05/04 03:47:37 bsmith Exp balay $ */
+/* $Id: petscksp.h,v 1.90 2000/05/08 15:09:50 balay Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -27,98 +27,98 @@ typedef struct _p_KSP*     KSP;
 #define KSPMINRES     "minres"
 typedef char * KSPType;
 
-extern int KSPCreate(MPI_Comm,KSP *);
-extern int KSPSetType(KSP,KSPType);
-extern int KSPSetUp(KSP);
-extern int KSPSolve(KSP,int *);
-extern int KSPSolveTranspose(KSP,int *);
-extern int KSPDestroy(KSP);
+EXTERN int KSPCreate(MPI_Comm,KSP *);
+EXTERN int KSPSetType(KSP,KSPType);
+EXTERN int KSPSetUp(KSP);
+EXTERN int KSPSolve(KSP,int *);
+EXTERN int KSPSolveTranspose(KSP,int *);
+EXTERN int KSPDestroy(KSP);
 
 extern FList KSPList;
-extern int KSPRegisterAll(char *);
-extern int KSPRegisterDestroy(void);
+EXTERN int KSPRegisterAll(char *);
+EXTERN int KSPRegisterDestroy(void);
 
-extern int KSPRegister(char*,char*,char*,int(*)(KSP));
+EXTERN int KSPRegister(char*,char*,char*,int(*)(KSP));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define KSPRegisterDynamic(a,b,c,d) KSPRegister(a,b,c,0)
 #else
 #define KSPRegisterDynamic(a,b,c,d) KSPRegister(a,b,c,d)
 #endif
 
-extern int KSPGetType(KSP,KSPType *);
-extern int KSPSetPreconditionerSide(KSP,PCSide);
-extern int KSPGetPreconditionerSide(KSP,PCSide*);
-extern int KSPGetTolerances(KSP,double*,double*,double*,int*);
-extern int KSPSetTolerances(KSP,double,double,double,int);
-extern int KSPSetComputeResidual(KSP,PetscTruth);
-extern int KSPSetUsePreconditionedResidual(KSP);
-extern int KSPSetInitialGuessNonzero(KSP);
-extern int KSPGetInitialGuessNonzero(KSP,PetscTruth *);
-extern int KSPSetComputeEigenvalues(KSP);
-extern int KSPSetComputeSingularValues(KSP);
-extern int KSPSetRhs(KSP,Vec);
-extern int KSPGetRhs(KSP,Vec *);
-extern int KSPSetSolution(KSP,Vec);
-extern int KSPGetSolution(KSP,Vec *);
-extern int KSPGetResidualNorm(KSP,double*);
-extern int KSPGetIterationNumber(KSP,int*);
+EXTERN int KSPGetType(KSP,KSPType *);
+EXTERN int KSPSetPreconditionerSide(KSP,PCSide);
+EXTERN int KSPGetPreconditionerSide(KSP,PCSide*);
+EXTERN int KSPGetTolerances(KSP,double*,double*,double*,int*);
+EXTERN int KSPSetTolerances(KSP,double,double,double,int);
+EXTERN int KSPSetComputeResidual(KSP,PetscTruth);
+EXTERN int KSPSetUsePreconditionedResidual(KSP);
+EXTERN int KSPSetInitialGuessNonzero(KSP);
+EXTERN int KSPGetInitialGuessNonzero(KSP,PetscTruth *);
+EXTERN int KSPSetComputeEigenvalues(KSP);
+EXTERN int KSPSetComputeSingularValues(KSP);
+EXTERN int KSPSetRhs(KSP,Vec);
+EXTERN int KSPGetRhs(KSP,Vec *);
+EXTERN int KSPSetSolution(KSP,Vec);
+EXTERN int KSPGetSolution(KSP,Vec *);
+EXTERN int KSPGetResidualNorm(KSP,double*);
+EXTERN int KSPGetIterationNumber(KSP,int*);
 
-extern int KSPSetPC(KSP,PC);
-extern int KSPGetPC(KSP,PC*);
+EXTERN int KSPSetPC(KSP,PC);
+EXTERN int KSPGetPC(KSP,PC*);
 
-extern int KSPSetAvoidNorms(KSP);
+EXTERN int KSPSetAvoidNorms(KSP);
 
-extern int KSPSetMonitor(KSP,int (*)(KSP,int,double,void*),void *,int (*)(void*));
-extern int KSPClearMonitor(KSP);
-extern int KSPGetMonitorContext(KSP,void **);
-extern int KSPGetResidualHistory(KSP,double **,int *);
-extern int KSPSetResidualHistory(KSP,double *,int,PetscTruth);
-
-
-extern int KSPBuildSolution(KSP,Vec,Vec *);
-extern int KSPBuildResidual(KSP,Vec,Vec,Vec *);
-
-extern int KSPRichardsonSetScale(KSP,double);
-extern int KSPChebychevSetEigenvalues(KSP,double,double);
-extern int KSPComputeExtremeSingularValues(KSP,double*,double*);
-extern int KSPComputeEigenvalues(KSP,int,double*,double*,int *);
-extern int KSPComputeEigenvaluesExplicitly(KSP,int,double*,double*);
-
-extern int KSPGMRESSetRestart(KSP,int);
-extern int KSPGMRESSetPreAllocateVectors(KSP);
-extern int KSPGMRESSetOrthogonalization(KSP,int (*)(KSP,int));
-extern int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP,int);
-extern int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,int);
-extern int KSPGMRESIROrthogonalization(KSP,int);
-
-extern int KSPFGMRESModifyPCNoChange(KSP,int,int,double,void*);
-extern int KSPFGMRESModifyPCSLES(KSP,int,int,double,void*);
-extern int KSPFGMRESSetModifyPC(KSP,int (*)(KSP,int,int,double,void*),void*,int(*)(void*));
-
-extern int KSPSetFromOptions(KSP);
-extern int KSPSetTypeFromOptions(KSP);
-extern int KSPAddOptionsChecker(int (*)(KSP));
-
-extern int KSPSingularValueMonitor(KSP,int,double,void *);
-extern int KSPDefaultMonitor(KSP,int,double,void *);
-extern int KSPTrueMonitor(KSP,int,double,void *);
-extern int KSPDefaultSMonitor(KSP,int,double,void *);
-extern int KSPVecViewMonitor(KSP,int,double,void *);
-extern int KSPGMRESKrylovMonitor(KSP,int,double,void *);
+EXTERN int KSPSetMonitor(KSP,int (*)(KSP,int,double,void*),void *,int (*)(void*));
+EXTERN int KSPClearMonitor(KSP);
+EXTERN int KSPGetMonitorContext(KSP,void **);
+EXTERN int KSPGetResidualHistory(KSP,double **,int *);
+EXTERN int KSPSetResidualHistory(KSP,double *,int,PetscTruth);
 
 
-extern int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
-extern int KSPUnwindPreconditioner(KSP,Vec,Vec);
-extern int KSPDefaultBuildSolution(KSP,Vec,Vec*);
-extern int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
+EXTERN int KSPBuildSolution(KSP,Vec,Vec *);
+EXTERN int KSPBuildResidual(KSP,Vec,Vec,Vec *);
 
-extern int KSPPrintHelp(KSP);
+EXTERN int KSPRichardsonSetScale(KSP,double);
+EXTERN int KSPChebychevSetEigenvalues(KSP,double,double);
+EXTERN int KSPComputeExtremeSingularValues(KSP,double*,double*);
+EXTERN int KSPComputeEigenvalues(KSP,int,double*,double*,int *);
+EXTERN int KSPComputeEigenvaluesExplicitly(KSP,int,double*,double*);
 
-extern int KSPSetOptionsPrefix(KSP,char*);
-extern int KSPAppendOptionsPrefix(KSP,char*);
-extern int KSPGetOptionsPrefix(KSP,char**);
+EXTERN int KSPGMRESSetRestart(KSP,int);
+EXTERN int KSPGMRESSetPreAllocateVectors(KSP);
+EXTERN int KSPGMRESSetOrthogonalization(KSP,int (*)(KSP,int));
+EXTERN int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP,int);
+EXTERN int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,int);
+EXTERN int KSPGMRESIROrthogonalization(KSP,int);
 
-extern int KSPView(KSP,Viewer);
+EXTERN int KSPFGMRESModifyPCNoChange(KSP,int,int,double,void*);
+EXTERN int KSPFGMRESModifyPCSLES(KSP,int,int,double,void*);
+EXTERN int KSPFGMRESSetModifyPC(KSP,int (*)(KSP,int,int,double,void*),void*,int(*)(void*));
+
+EXTERN int KSPSetFromOptions(KSP);
+EXTERN int KSPSetTypeFromOptions(KSP);
+EXTERN int KSPAddOptionsChecker(int (*)(KSP));
+
+EXTERN int KSPSingularValueMonitor(KSP,int,double,void *);
+EXTERN int KSPDefaultMonitor(KSP,int,double,void *);
+EXTERN int KSPTrueMonitor(KSP,int,double,void *);
+EXTERN int KSPDefaultSMonitor(KSP,int,double,void *);
+EXTERN int KSPVecViewMonitor(KSP,int,double,void *);
+EXTERN int KSPGMRESKrylovMonitor(KSP,int,double,void *);
+
+
+EXTERN int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
+EXTERN int KSPUnwindPreconditioner(KSP,Vec,Vec);
+EXTERN int KSPDefaultBuildSolution(KSP,Vec,Vec*);
+EXTERN int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
+
+EXTERN int KSPPrintHelp(KSP);
+
+EXTERN int KSPSetOptionsPrefix(KSP,char*);
+EXTERN int KSPAppendOptionsPrefix(KSP,char*);
+EXTERN int KSPGetOptionsPrefix(KSP,char**);
+
+EXTERN int KSPView(KSP,Viewer);
 
 typedef enum {/* converged */
               KSP_CONVERGED_RTOL               =  2,
@@ -137,26 +137,26 @@ typedef enum {/* converged */
  
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
 
-extern int KSPSetConvergenceTest(KSP,int (*)(KSP,int,double,KSPConvergedReason*,void*),void *);
-extern int KSPGetConvergenceContext(KSP,void **);
-extern int KSPDefaultConverged(KSP,int,double,KSPConvergedReason*,void *);
-extern int KSPSkipConverged(KSP,int,double,KSPConvergedReason*,void *);
-extern int KSPGetConvergedReason(KSP,KSPConvergedReason *);
+EXTERN int KSPSetConvergenceTest(KSP,int (*)(KSP,int,double,KSPConvergedReason*,void*),void *);
+EXTERN int KSPGetConvergenceContext(KSP,void **);
+EXTERN int KSPDefaultConverged(KSP,int,double,KSPConvergedReason*,void *);
+EXTERN int KSPSkipConverged(KSP,int,double,KSPConvergedReason*,void *);
+EXTERN int KSPGetConvergedReason(KSP,KSPConvergedReason *);
 
-extern int KSPComputeExplicitOperator(KSP,Mat *);
+EXTERN int KSPComputeExplicitOperator(KSP,Mat *);
 
 typedef enum {KSP_CG_SYMMETRIC=1,KSP_CG_HERMITIAN=2} KSPCGType;
-extern int KSPCGSetType(KSP,KSPCGType);
+EXTERN int KSPCGSetType(KSP,KSPCGType);
 
-extern int PCPreSolve(PC,KSP);
-extern int PCPostSolve(PC,KSP);
+EXTERN int PCPreSolve(PC,KSP);
+EXTERN int PCPostSolve(PC,KSP);
 
-extern int KSPLGMonitorCreate(char*,char*,int,int,int,int,DrawLG*);
-extern int KSPLGMonitor(KSP,int,double,void*);
-extern int KSPLGMonitorDestroy(DrawLG);
-extern int KSPLGTrueMonitorCreate(MPI_Comm,char*,char*,int,int,int,int,DrawLG*);
-extern int KSPLGTrueMonitor(KSP,int,double,void*);
-extern int KSPLGTrueMonitorDestroy(DrawLG);
+EXTERN int KSPLGMonitorCreate(char*,char*,int,int,int,int,DrawLG*);
+EXTERN int KSPLGMonitor(KSP,int,double,void*);
+EXTERN int KSPLGMonitorDestroy(DrawLG);
+EXTERN int KSPLGTrueMonitorCreate(MPI_Comm,char*,char*,int,int,int,int,DrawLG*);
+EXTERN int KSPLGTrueMonitor(KSP,int,double,void*);
+EXTERN int KSPLGTrueMonitorDestroy(DrawLG);
 
 #endif
 

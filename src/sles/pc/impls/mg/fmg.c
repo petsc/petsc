@@ -1,10 +1,10 @@
-/*$Id: fmg.c,v 1.20 2000/04/09 04:37:28 bsmith Exp bsmith $*/
+/*$Id: fmg.c,v 1.21 2000/04/12 04:24:39 bsmith Exp bsmith $*/
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */
 #include "src/sles/pc/impls/mg/mgimpl.h"
 
-extern int MGMCycle_Private(MG *);
+EXTERN int MGMCycle_Private(MG *);
 
 /*
        MGFCycle_Private - Given an MG structure created with MGCreate() runs 

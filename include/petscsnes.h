@@ -1,4 +1,4 @@
-/* $Id: petscsnes.h,v 1.98 2000/04/01 04:24:29 bsmith Exp balay $ */
+/* $Id: petscsnes.h,v 1.99 2000/05/08 15:09:50 balay Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -20,92 +20,92 @@ typedef char *SNESType;
 
 typedef enum {SNES_NONLINEAR_EQUATIONS,SNES_UNCONSTRAINED_MINIMIZATION,SNES_LEAST_SQUARES} SNESProblemType;
 
-extern int SNESCreate(MPI_Comm,SNESProblemType,SNES*);
-extern int SNESDestroy(SNES);
-extern int SNESSetType(SNES,SNESType);
-extern int SNESSetMonitor(SNES,int(*)(SNES,int,double,void*),void *,int (*)(void *));
-extern int SNESClearMonitor(SNES);
-extern int SNESSetConvergenceHistory(SNES,double*,int *,int,PetscTruth);
-extern int SNESGetConvergenceHistory(SNES,double**,int **,int *);
-extern int SNESSetUp(SNES,Vec);
-extern int SNESSolve(SNES,Vec,int*);
+EXTERN int SNESCreate(MPI_Comm,SNESProblemType,SNES*);
+EXTERN int SNESDestroy(SNES);
+EXTERN int SNESSetType(SNES,SNESType);
+EXTERN int SNESSetMonitor(SNES,int(*)(SNES,int,double,void*),void *,int (*)(void *));
+EXTERN int SNESClearMonitor(SNES);
+EXTERN int SNESSetConvergenceHistory(SNES,double*,int *,int,PetscTruth);
+EXTERN int SNESGetConvergenceHistory(SNES,double**,int **,int *);
+EXTERN int SNESSetUp(SNES,Vec);
+EXTERN int SNESSolve(SNES,Vec,int*);
 
 extern FList SNESList;
-extern int SNESRegisterDestroy(void);
-extern int SNESRegisterAll(char *);
+EXTERN int SNESRegisterDestroy(void);
+EXTERN int SNESRegisterAll(char *);
 
-extern int SNESRegister(char*,char*,char*,int(*)(SNES));
+EXTERN int SNESRegister(char*,char*,char*,int(*)(SNES));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define SNESRegisterDynamic(a,b,c,d) SNESRegister(a,b,c,0)
 #else
 #define SNESRegisterDynamic(a,b,c,d) SNESRegister(a,b,c,d)
 #endif
 
-extern int SNESGetSLES(SNES,SLES*);
-extern int SNESGetSolution(SNES,Vec*);
-extern int SNESGetSolutionUpdate(SNES,Vec*);
-extern int SNESGetFunction(SNES,Vec*,void**);
-extern int SNESPrintHelp(SNES);
-extern int SNESView(SNES,Viewer);
+EXTERN int SNESGetSLES(SNES,SLES*);
+EXTERN int SNESGetSolution(SNES,Vec*);
+EXTERN int SNESGetSolutionUpdate(SNES,Vec*);
+EXTERN int SNESGetFunction(SNES,Vec*,void**);
+EXTERN int SNESPrintHelp(SNES);
+EXTERN int SNESView(SNES,Viewer);
 
-extern int SNESSetOptionsPrefix(SNES,char*);
-extern int SNESAppendOptionsPrefix(SNES,char*);
-extern int SNESGetOptionsPrefix(SNES,char**);
-extern int SNESSetFromOptions(SNES);
-extern int SNESSetTypeFromOptions(SNES);
-extern int SNESAddOptionsChecker(int (*)(SNES));
+EXTERN int SNESSetOptionsPrefix(SNES,char*);
+EXTERN int SNESAppendOptionsPrefix(SNES,char*);
+EXTERN int SNESGetOptionsPrefix(SNES,char**);
+EXTERN int SNESSetFromOptions(SNES);
+EXTERN int SNESSetTypeFromOptions(SNES);
+EXTERN int SNESAddOptionsChecker(int (*)(SNES));
 
 #define MATSNESMF_DEFAULT "default"
 #define MATSNESMF_WP      "wp"
-extern int MatCreateSNESMF(SNES,Vec,Mat*);
-extern int MatSNESMFSetFunction(Mat,Vec,int(*)(SNES,Vec,Vec,void*),void *);
-extern int MatSNESMFAddNullSpace(Mat,PCNullSpace);
-extern int MatSNESMFSetHHistory(Mat,Scalar *,int);
-extern int MatSNESMFResetHHistory(Mat);
-extern int MatSNESMFSetFunctionError(Mat,double);
-extern int MatSNESMFSetPeriod(Mat,int);
-extern int MatSNESMFGetH(Mat,Scalar *);
-extern int MatSNESMFKSPMonitor(KSP,int,double,void *);
-extern int MatSNESMFSetFromOptions(Mat);
+EXTERN int MatCreateSNESMF(SNES,Vec,Mat*);
+EXTERN int MatSNESMFSetFunction(Mat,Vec,int(*)(SNES,Vec,Vec,void*),void *);
+EXTERN int MatSNESMFAddNullSpace(Mat,PCNullSpace);
+EXTERN int MatSNESMFSetHHistory(Mat,Scalar *,int);
+EXTERN int MatSNESMFResetHHistory(Mat);
+EXTERN int MatSNESMFSetFunctionError(Mat,double);
+EXTERN int MatSNESMFSetPeriod(Mat,int);
+EXTERN int MatSNESMFGetH(Mat,Scalar *);
+EXTERN int MatSNESMFKSPMonitor(KSP,int,double,void *);
+EXTERN int MatSNESMFSetFromOptions(Mat);
 typedef struct _p_MatSNESMFCtx   *MatSNESMFCtx;
 typedef char* MatSNESMFType;
-extern int MatSNESMFSetType(Mat,MatSNESMFType);
-extern int MatSNESMFRegister(char *,char *,char *,int (*)(MatSNESMFCtx));
+EXTERN int MatSNESMFSetType(Mat,MatSNESMFType);
+EXTERN int MatSNESMFRegister(char *,char *,char *,int (*)(MatSNESMFCtx));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatSNESMFRegisterDynamic(a,b,c,d) MatSNESMFRegister(a,b,c,0)
 #else
 #define MatSNESMFRegisterDynamic(a,b,c,d) MatSNESMFRegister(a,b,c,d)
 #endif
-extern int MatSNESMFRegisterAll(char *);
-extern int MatSNESMFRegisterDestroy(void);
-extern int MatSNESMFDefaultSetUmin(Mat,double);
-extern int MatSNESMFWPSetComputeNormA(Mat,PetscTruth);
-extern int MatSNESMFWPSetComputeNormU(Mat,PetscTruth);
+EXTERN int MatSNESMFRegisterAll(char *);
+EXTERN int MatSNESMFRegisterDestroy(void);
+EXTERN int MatSNESMFDefaultSetUmin(Mat,double);
+EXTERN int MatSNESMFWPSetComputeNormA(Mat,PetscTruth);
+EXTERN int MatSNESMFWPSetComputeNormU(Mat,PetscTruth);
 
-extern int SNESGetType(SNES,SNESType*);
-extern int SNESDefaultMonitor(SNES,int,double,void *);
-extern int SNESVecViewMonitor(SNES,int,double,void *);
-extern int SNESVecViewUpdateMonitor(SNES,int,double,void *);
-extern int SNESDefaultSMonitor(SNES,int,double,void *);
-extern int SNESSetTolerances(SNES,double,double,double,int,int);
-extern int SNESGetTolerances(SNES,double*,double*,double*,int*,int*);
-extern int SNESSetTrustRegionTolerance(SNES,double);
-extern int SNESGetIterationNumber(SNES,int*);
-extern int SNESGetFunctionNorm(SNES,Scalar*);
-extern int SNESGetNumberUnsuccessfulSteps(SNES,int*);
-extern int SNESGetNumberLinearIterations(SNES,int*);
-extern int SNES_KSP_SetParametersEW(SNES,int,double,double,double,double,double,double);
-extern int SNES_KSP_SetConvergenceTestEW(SNES);
+EXTERN int SNESGetType(SNES,SNESType*);
+EXTERN int SNESDefaultMonitor(SNES,int,double,void *);
+EXTERN int SNESVecViewMonitor(SNES,int,double,void *);
+EXTERN int SNESVecViewUpdateMonitor(SNES,int,double,void *);
+EXTERN int SNESDefaultSMonitor(SNES,int,double,void *);
+EXTERN int SNESSetTolerances(SNES,double,double,double,int,int);
+EXTERN int SNESGetTolerances(SNES,double*,double*,double*,int*,int*);
+EXTERN int SNESSetTrustRegionTolerance(SNES,double);
+EXTERN int SNESGetIterationNumber(SNES,int*);
+EXTERN int SNESGetFunctionNorm(SNES,Scalar*);
+EXTERN int SNESGetNumberUnsuccessfulSteps(SNES,int*);
+EXTERN int SNESGetNumberLinearIterations(SNES,int*);
+EXTERN int SNES_KSP_SetParametersEW(SNES,int,double,double,double,double,double,double);
+EXTERN int SNES_KSP_SetConvergenceTestEW(SNES);
 
 /*
      Reuse the default KSP monitor routines for SNES
 */
-extern int SNESLGMonitorCreate(char*,char*,int,int,int,int,DrawLG*);
-extern int SNESLGMonitor(SNES,int,double,void*);
-extern int SNESLGMonitorDestroy(DrawLG);
+EXTERN int SNESLGMonitorCreate(char*,char*,int,int,int,int,DrawLG*);
+EXTERN int SNESLGMonitor(SNES,int,double,void*);
+EXTERN int SNESLGMonitorDestroy(DrawLG);
 
-extern int SNESSetApplicationContext(SNES,void *);
-extern int SNESGetApplicationContext(SNES,void **);
+EXTERN int SNESSetApplicationContext(SNES,void *);
+EXTERN int SNESGetApplicationContext(SNES,void **);
 
 typedef enum {/* converged */
               SNES_CONVERGED_FNORM_ABS         =  2, /* F < F_minabs */
@@ -122,48 +122,48 @@ typedef enum {/* converged */
               SNES_DIVERGED_TR_REDUCTION       = -7,
               SNES_CONVERGED_ITERATING         =  0} SNESConvergedReason;
 
-extern int SNESSetConvergenceTest(SNES,int (*)(SNES,double,double,double,SNESConvergedReason*,void*),void*);
-extern int SNESConverged_UM_LS(SNES,double,double,double,SNESConvergedReason*,void*);
-extern int SNESConverged_UM_TR(SNES,double,double,double,SNESConvergedReason*,void*);
-extern int SNESConverged_EQ_LS(SNES,double,double,double,SNESConvergedReason*,void*);
-extern int SNESConverged_EQ_TR(SNES,double,double,double,SNESConvergedReason*,void*);
-extern int SNESGetConvergedReason(SNES,SNESConvergedReason*);
+EXTERN int SNESSetConvergenceTest(SNES,int (*)(SNES,double,double,double,SNESConvergedReason*,void*),void*);
+EXTERN int SNESConverged_UM_LS(SNES,double,double,double,SNESConvergedReason*,void*);
+EXTERN int SNESConverged_UM_TR(SNES,double,double,double,SNESConvergedReason*,void*);
+EXTERN int SNESConverged_EQ_LS(SNES,double,double,double,SNESConvergedReason*,void*);
+EXTERN int SNESConverged_EQ_TR(SNES,double,double,double,SNESConvergedReason*,void*);
+EXTERN int SNESGetConvergedReason(SNES,SNESConvergedReason*);
 
 /* --------- Solving systems of nonlinear equations --------------- */
-extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *);
-extern int SNESComputeFunction(SNES,Vec,Vec);
-extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
-extern int SNESGetJacobian(SNES,Mat*,Mat*,void **);
-extern int SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int SNESSetLineSearch(SNES,int(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*),void*);
-extern int SNESNoLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
-extern int SNESNoLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
-extern int SNESCubicLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
-extern int SNESQuadraticLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
-extern int SNESSetLineSearchCheck(SNES,int(*)(SNES,void*,Vec,PetscTruth*),void*);
-extern int SNESSetLineSearchParams(SNES,double,double,double);
-extern int SNESGetLineSearchParams(SNES,double*,double*,double*);
+EXTERN int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *);
+EXTERN int SNESComputeFunction(SNES,Vec,Vec);
+EXTERN int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
+EXTERN int SNESGetJacobian(SNES,Mat*,Mat*,void **);
+EXTERN int SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+EXTERN int SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+EXTERN int SNESSetLineSearch(SNES,int(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*),void*);
+EXTERN int SNESNoLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
+EXTERN int SNESNoLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
+EXTERN int SNESCubicLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
+EXTERN int SNESQuadraticLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
+EXTERN int SNESSetLineSearchCheck(SNES,int(*)(SNES,void*,Vec,PetscTruth*),void*);
+EXTERN int SNESSetLineSearchParams(SNES,double,double,double);
+EXTERN int SNESGetLineSearchParams(SNES,double*,double*,double*);
 
 /* --------- Unconstrained minimization routines --------------------------------*/
-extern int SNESSetHessian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
-extern int SNESGetHessian(SNES,Mat*,Mat*,void **);
-extern int SNESDefaultComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int SNESDefaultComputeHessianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int SNESSetGradient(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void*);
-extern int SNESGetGradient(SNES,Vec*,void**);
-extern int SNESGetGradientNorm(SNES,Scalar*);
-extern int SNESComputeGradient(SNES,Vec,Vec);
-extern int SNESSetMinimizationFunction(SNES,int(*)(SNES,Vec,double*,void*),void*);
-extern int SNESComputeMinimizationFunction(SNES,Vec,double*);
-extern int SNESGetMinimizationFunction(SNES,double*,void**);
-extern int SNESSetMinimizationFunctionTolerance(SNES,double);
-extern int SNESLineSearchSetDampingParameter(SNES,Scalar*);
+EXTERN int SNESSetHessian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
+EXTERN int SNESGetHessian(SNES,Mat*,Mat*,void **);
+EXTERN int SNESDefaultComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+EXTERN int SNESDefaultComputeHessianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+EXTERN int SNESSetGradient(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void*);
+EXTERN int SNESGetGradient(SNES,Vec*,void**);
+EXTERN int SNESGetGradientNorm(SNES,Scalar*);
+EXTERN int SNESComputeGradient(SNES,Vec,Vec);
+EXTERN int SNESSetMinimizationFunction(SNES,int(*)(SNES,Vec,double*,void*),void*);
+EXTERN int SNESComputeMinimizationFunction(SNES,Vec,double*);
+EXTERN int SNESGetMinimizationFunction(SNES,double*,void**);
+EXTERN int SNESSetMinimizationFunctionTolerance(SNES,double);
+EXTERN int SNESLineSearchSetDampingParameter(SNES,Scalar*);
 
 
 /* Should these 2 routines be private? */
-extern int SNESComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*);
-extern int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
+EXTERN int SNESComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*);
+EXTERN int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 
 #endif
 

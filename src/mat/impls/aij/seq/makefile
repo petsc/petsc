@@ -1,13 +1,13 @@
-# $Id: makefile,v 1.41 1999/02/02 21:26:24 balay Exp bsmith $ 
+# $Id: makefile,v 1.42 1999/12/17 19:23:04 bsmith Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = ${MATLAB_INCLUDE}
 FFLAGS   =
-SOURCEC  = aij.c aijfact.c ij.c essl.c dxml.c aijnode.c fdaij.c unary.c ilut.c
+SOURCEC  = aij.c aijfact.c ij.c essl.c dxml.c aijnode.c fdaij.c unary.c ilut.c aijmatlab.c
 SOURCEF  = 
 SOURCEH  = aij.h
-OBJSC    = aij.o aijfact.o ij.o essl.o dxml.o aijnode.o fdaij.o unary.o ilut.o
+OBJSC    = aij.o aijfact.o ij.o essl.o dxml.o aijnode.o fdaij.o unary.o ilut.o aijmatlab.o
 OBJSF    = 
 LIBBASE  = libpetscmat
 DIRS     = 

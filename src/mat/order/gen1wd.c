@@ -1,4 +1,4 @@
-/*$Id: gen1wd.c,v 1.12 2000/04/09 04:37:05 bsmith Exp bsmith $*/
+/*$Id: gen1wd.c,v 1.13 2000/04/12 04:24:20 bsmith Exp bsmith $*/
 /* gen1wd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -38,10 +38,10 @@ int SPARSEPACKgen1wd(int *neqns, int *xadj, int *adjncy,
 
     /* Local variables */
     int node, nsep, lnum, nlvl, root;
-    extern int SPARSEPACKfn1wd(int *, int *, int *, 
+    EXTERN int SPARSEPACKfn1wd(int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);
     int i, j, k, ccsize;
-    extern int SPARSEPACKrevrse(int *, int *), SPARSEPACKrootls(
+    EXTERN int SPARSEPACKrevrse(int *, int *), SPARSEPACKrootls(
 	    int *, int *, int *, int *, int *, int *, int *);
     int num;
 

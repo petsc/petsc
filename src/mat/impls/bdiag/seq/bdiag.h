@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.26 1999/11/24 21:53:54 bsmith Exp bsmith $ */
+/* $Id: bdiag.h,v 1.27 2000/01/11 21:00:48 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -35,11 +35,11 @@ typedef struct {
   int    reallocs;         /* number of allocations during MatSetValues */
 } Mat_SeqBDiag;
 
-extern int MatConvert_SeqBDiag(Mat,MatType,Mat *);
-extern int MatNorm_SeqBDiag_Columns(Mat,double*,int);
-extern int MatMult_SeqBDiag_N(Mat A,Vec,Vec);
-extern int MatMultAdd_SeqBDiag_N(Mat A,Vec,Vec,Vec);
-extern int MatMultTranspose_SeqBDiag_N(Mat A,Vec,Vec);
-extern int MatMultTransposeAdd_SeqBDiag_N(Mat A,Vec,Vec,Vec);
+EXTERN int MatConvert_SeqBDiag(Mat,MatType,Mat *);
+EXTERN int MatNorm_SeqBDiag_Columns(Mat,double*,int);
+EXTERN int MatMult_SeqBDiag_N(Mat A,Vec,Vec);
+EXTERN int MatMultAdd_SeqBDiag_N(Mat A,Vec,Vec,Vec);
+EXTERN int MatMultTranspose_SeqBDiag_N(Mat A,Vec,Vec);
+EXTERN int MatMultTransposeAdd_SeqBDiag_N(Mat A,Vec,Vec,Vec);
 
 #endif

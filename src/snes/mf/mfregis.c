@@ -1,10 +1,10 @@
-/*$Id: mfregis.c,v 1.10 2000/04/12 04:25:30 bsmith Exp balay $*/
+/*$Id: mfregis.c,v 1.11 2000/05/05 22:18:16 balay Exp bsmith $*/
 
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 EXTERN_C_BEGIN
-extern int MatSNESMFCreate_Default(MatSNESMFCtx);
-extern int MatSNESMFCreate_WP(MatSNESMFCtx);
+EXTERN int MatSNESMFCreate_Default(MatSNESMFCtx);
+EXTERN int MatSNESMFCreate_WP(MatSNESMFCtx);
 EXTERN_C_END
 
 #undef __FUNC__  

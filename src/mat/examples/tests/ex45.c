@@ -1,4 +1,4 @@
-/*$Id: ex45.c,v 1.6 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex45.c,v 1.7 2000/01/11 21:01:03 bsmith Exp bsmith $*/
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -11,8 +11,8 @@
 PETSc files on Paragon/Dec Alpha.
 */
 
-extern void Store2DArray(int,int,double*,char*,int *);
-extern void Store1DArray(int,double*,char*,int *);
+EXTERN void Store2DArray(int,int,double*,char*,int *);
+EXTERN void Store1DArray(int,double*,char*,int *);
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,4 +1,4 @@
-/*$Id: rcm.c,v 1.12 2000/04/09 04:37:05 bsmith Exp bsmith $*/
+/*$Id: rcm.c,v 1.13 2000/04/12 04:24:20 bsmith Exp bsmith $*/
 /* rcm.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -47,7 +47,7 @@ int SPARSEPACKrcm(int *root, int *xadj, int *adjncy,
 
     /* Local variables */
     int node, fnbr, lnbr, i, j, k, l, lperm, jstop, jstrt;
-    extern int SPARSEPACKdegree(int *, int *, int *, 
+    EXTERN int SPARSEPACKdegree(int *, int *, int *, 
 	    int *, int *, int *, int *);
     int lbegin, lvlend, nbr;
 

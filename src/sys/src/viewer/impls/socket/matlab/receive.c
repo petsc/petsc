@@ -1,4 +1,4 @@
-/*$Id: receive.c,v 1.15 2000/01/11 20:58:54 bsmith Exp balay $*/
+/*$Id: receive.c,v 1.16 2000/05/05 22:13:07 balay Exp bsmith $*/
 /*
  
   This is a MATLAB Mex program which waits at a particular 
@@ -16,10 +16,10 @@
 #include "petscsys.h"
 #include "src/sys/src/viewer/impls/socket/socket.h"
 #include "mex.h"
-extern int ReceiveSparseMatrix(Matrix **,int);
-extern int ReceiveIntDenseMatrix(Matrix **,int);
+EXTERN int ReceiveSparseMatrix(Matrix **,int);
+EXTERN int ReceiveIntDenseMatrix(Matrix **,int);
 
-#define ERROR(a) {fprintf(stderr,"RECEIVE: %s \n",a); return ;}
+#define ERROR(a) {fprintf(stdout,"RECEIVE: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/

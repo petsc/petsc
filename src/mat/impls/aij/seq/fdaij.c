@@ -1,10 +1,10 @@
-/*$Id: fdaij.c,v 1.28 2000/04/12 04:23:03 bsmith Exp bsmith $*/
+/*$Id: fdaij.c,v 1.29 2000/05/04 16:25:26 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 
-extern int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
-extern int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatFDColoringCreate_SeqAIJ"

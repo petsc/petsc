@@ -1,11 +1,11 @@
-/*$Id: spartition.c,v 1.18 2000/04/12 04:24:18 bsmith Exp balay $*/
+/*$Id: spartition.c,v 1.19 2000/05/05 22:16:41 balay Exp bsmith $*/
  
 #include "petsc.h"
 #include "petscmat.h"
 
 EXTERN_C_BEGIN
-extern int MatPartitioningCreate_Current(MatPartitioning);
-extern int MatPartitioningCreate_Parmetis(MatPartitioning);
+EXTERN int MatPartitioningCreate_Current(MatPartitioning);
+EXTERN int MatPartitioningCreate_Parmetis(MatPartitioning);
 EXTERN_C_END
 
 #undef __FUNC__  

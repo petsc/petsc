@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.138 2000/05/04 14:04:46 balay Exp balay $*/
+/*$Id: mpidense.c,v 1.139 2000/05/05 22:15:35 balay Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -36,7 +36,7 @@ int MatGetDiagonalBlock_MPIDense(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *B)
 }
 EXTERN_C_END
 
-extern int MatSetUpMultiply_MPIDense(Mat);
+EXTERN int MatSetUpMultiply_MPIDense(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatSetValues_MPIDense"
@@ -933,7 +933,7 @@ int MatScale_MPIDense(Scalar *alpha,Mat inA)
 }
 
 static int MatDuplicate_MPIDense(Mat,MatDuplicateOption,Mat *);
-extern int MatGetSubMatrices_MPIDense(Mat,int,IS *,IS *,MatReuse,Mat **);
+EXTERN int MatGetSubMatrices_MPIDense(Mat,int,IS *,IS *,MatReuse,Mat **);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,

@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.59 2000/05/04 16:24:41 bsmith Exp balay $*/
+/*$Id: reg.c,v 1.60 2000/05/05 22:13:53 balay Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -130,7 +130,7 @@ int PetscFinalize_DynamicLibraries(void)
 
 #else /* not using dynamic libraries */
 
-extern int DLLibraryRegister_Petsc(char *);
+EXTERN int DLLibraryRegister_Petsc(char *);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="PetscInitalize_DynamicLibraries"></a>*/"PetscInitalize_DynamicLibraries"

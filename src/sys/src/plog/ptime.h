@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.67 2000/01/11 21:04:10 bsmith Exp balay $ */
+/* $Id: ptime.h,v 1.68 2000/05/08 15:09:59 balay Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -14,7 +14,7 @@
 #endif
 #if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
 EXTERN_C_BEGIN
-extern int gettimeofday(struct timeval *,struct timezone *);
+EXTERN int gettimeofday(struct timeval *,struct timezone *);
 EXTERN_C_END
 #endif
 
@@ -105,7 +105,7 @@ EXTERN_C_END
    Power1,2,3,PC machines have a fast clock read_real_time()
 */ 
 #elif defined(PETSC_USE_READ_REAL_TIME)
-extern PLogDouble rs6000_time(void);
+EXTERN PLogDouble rs6000_time(void);
 #define PetscTime(v)         (v)=rs6000_time();
 
 #define PetscTimeSubtract(v) (v)-=rs6000_time();
@@ -118,7 +118,7 @@ extern PLogDouble rs6000_time(void);
 */
 #elif defined(PETSC_USE_GETCLOCK)
 EXTERN_C_BEGIN
-extern int getclock(int clock_type,struct timespec *tp);
+EXTERN int getclock(int clock_type,struct timespec *tp);
 EXTERN_C_END
 
 
@@ -139,7 +139,7 @@ EXTERN_C_END
 */
 #elif defined (PETSC_USE_DCLOCK)
 EXTERN_C_BEGIN
-extern PLogDouble dclock();
+EXTERN PLogDouble dclock();
 EXTERN_C_BEGIN
 
 #define PetscTime(v)         (v)=dclock();
@@ -154,7 +154,7 @@ EXTERN_C_BEGIN
 */
 #elif defined (PETSC_USE_NT_TIME)
 #include <time.h>
-extern PLogDouble nt_time();
+EXTERN PLogDouble nt_time();
 #define PetscTime(v)         (v)=nt_time();
 
 #define PetscTimeSubtract(v) (v)-=nt_time();

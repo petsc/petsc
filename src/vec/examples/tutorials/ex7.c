@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.26 2000/01/11 21:00:24 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.27 2000/05/05 22:15:21 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
 Also demonstrates passing  PETSc objects, MPI Communicators from C to Fortran\n\
@@ -18,7 +18,7 @@ and from Fortran to C\n\n";
 #define ex7c_ ex7c
 #endif
 EXTERN_C_BEGIN
-extern void ex7f_(Vec *,int*);
+EXTERN void ex7f_(Vec *,int*);
 EXTERN_C_END
 
 #undef __FUNC__

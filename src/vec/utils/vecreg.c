@@ -1,11 +1,11 @@
-/*$Id: vecreg.c,v 1.14 2000/04/12 04:22:10 bsmith Exp balay $*/
+/*$Id: vecreg.c,v 1.15 2000/05/05 22:14:53 balay Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"  /*I "petscvec.h" I*/
 
 EXTERN_C_BEGIN
-extern int VecCreate_Seq(Vec);
-extern int VecCreate_MPI(Vec);
-extern int VecCreate_Shared(Vec);
+EXTERN int VecCreate_Seq(Vec);
+EXTERN int VecCreate_MPI(Vec);
+EXTERN int VecCreate_Shared(Vec);
 EXTERN_C_END
 
 

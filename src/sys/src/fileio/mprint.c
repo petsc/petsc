@@ -1,14 +1,8 @@
-/*$Id: mprint.c,v 1.49 2000/05/05 18:29:04 bsmith Exp balay $*/
+/*$Id: mprint.c,v 1.50 2000/05/05 22:13:54 balay Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
-#include "petscsys.h"             /*I    "petscsys.h"   I*/
-#include <stdarg.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#include "petscfix.h"
-
+#include "src/sys/src/fileio/mprint.h"
 /*
    If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.
@@ -17,11 +11,6 @@ extern FILE *petsc_history;
 
 /* ----------------------------------------------------------------------- */
 
-typedef struct _PrintfQueue *PrintfQueue;
-struct _PrintfQueue {
-  char        string[1024];
-  PrintfQueue next;
-};
 PrintfQueue queue       = 0,queuebase = 0;
 int         queuelength = 0;
 FILE        *queuefile  = PETSC_NULL;
@@ -44,7 +33,7 @@ FILE        *queuefile  = PETSC_NULL;
     REQUIRES a intervening call to PetscSynchronizedFlush() for the information 
     from all the processors to be printed.
 
-    The length of the formatted message cannot exceed 1024 charactors.
+    The length of the formatted message cannot exceed QUEUESTRINGSIZE charactors.
 
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
           PetscPrintf(), ViewerASCIIPrintf(), ViewerASCIISynchronizedPrintf()
@@ -79,7 +68,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     int         len;
     va_list     Argp;
     PrintfQueue next = PetscNew(struct _PrintfQueue);CHKPTRQ(next);
-    if (queue) {queue->next = next; queue = next;}
+    if (queue) {queue->next = next; queue = next; queue->next = 0;}
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start(Argp,format);
@@ -90,7 +79,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 #endif
     va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > 1024) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer than 1024 bytes");
+    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer than %d bytes",QUEUESTRINGSIZE);
   }
     
   PetscFunctionReturn(0);
@@ -116,7 +105,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     REQUIRES a intervening call to PetscSynchronizedFlush() for the information 
     from all the processors to be printed.
 
-    The length of the formatted message cannot exceed 1024 charactors.
+    The length of the formatted message cannot exceed QUEUESTRINGSIZE charactors.
 
     Contributed by: Matthew Knepley
 
@@ -155,7 +144,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
     int         len;
     va_list     Argp;
     PrintfQueue next = PetscNew(struct _PrintfQueue);CHKPTRQ(next);
-    if (queue) {queue->next = next; queue = next;}
+    if (queue) {queue->next = next; queue = next; queue->next = 0;}
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start(Argp,format);
@@ -166,7 +155,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 #endif
     va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > 1024) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then 1024 bytes");
+    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
   }
     
   PetscFunctionReturn(0);
@@ -195,7 +184,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 int PetscSynchronizedFlush(MPI_Comm comm)
 {
   int        rank,size,i,j,n,tag,ierr;
-  char       message[1024];
+  char       message[QUEUESTRINGSIZE];
   MPI_Status status;
   FILE       *fd;
 
@@ -214,7 +203,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
     for (i=1; i<size; i++) {
       ierr = MPI_Recv(&n,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
       for (j=0; j<n; j++) {
-        ierr = MPI_Recv(message,1024,MPI_CHAR,i,tag,comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Recv(message,QUEUESTRINGSIZE,MPI_CHAR,i,tag,comm,&status);CHKERRQ(ierr);
         fprintf(fd,"%s",message);
         if (petsc_history) {
           fprintf(petsc_history,"%s",message);
@@ -229,7 +218,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 
     ierr = MPI_Send(&queuelength,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
     for (i=0; i<queuelength; i++) {
-      ierr     = MPI_Send(next->string,1024,MPI_CHAR,0,tag,comm);CHKERRQ(ierr);
+      ierr     = MPI_Send(next->string,QUEUESTRINGSIZE,MPI_CHAR,0,tag,comm);CHKERRQ(ierr);
       previous = next; 
       next     = next->next;
       ierr     = PetscFree(previous);CHKERRQ(ierr);
@@ -485,36 +474,36 @@ int PetscErrorPrintfDefault(const char format[],...)
     PetscGetUserName(username,16);
     PetscGetProgramName(pname,256);
     PetscGetInitialDate(date,64);
-    fprintf(stderr,"--------------------------------------------\
+    fprintf(stdout,"--------------------------------------------\
 ------------------------------\n");
-    fprintf(stderr,"%s\n",PETSC_VERSION_NUMBER);
-    fprintf(stderr,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
-    fprintf(stderr,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
-    fprintf(stderr,"Web page: http://www.mcs.anl.gov/petsc/\n");
-    fprintf(stderr,"See docs/copyright.html for copyright information.\n");
-    fprintf(stderr,"See docs/changes.html for recent updates.\n");
-    fprintf(stderr,"See docs/troubleshooting.html for hints about trouble shooting.\n");
-    fprintf(stderr,"See docs/manualpages/index.html for manual pages.\n");
-    fprintf(stderr,"--------------------------------------------\
+    fprintf(stdout,"%s\n",PETSC_VERSION_NUMBER);
+    fprintf(stdout,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
+    fprintf(stdout,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
+    fprintf(stdout,"Web page: http://www.mcs.anl.gov/petsc/\n");
+    fprintf(stdout,"See docs/copyright.html for copyright information.\n");
+    fprintf(stdout,"See docs/changes.html for recent updates.\n");
+    fprintf(stdout,"See docs/troubleshooting.html for hints about trouble shooting.\n");
+    fprintf(stdout,"See docs/manualpages/index.html for manual pages.\n");
+    fprintf(stdout,"--------------------------------------------\
 ---------------------------\n");
-    fprintf(stderr,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
+    fprintf(stdout,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
 #if !defined (PARCH_win32)
-    fprintf(stderr,"Libraries linked from %s\n",PETSC_LDIR);
+    fprintf(stdout,"Libraries linked from %s\n",PETSC_LDIR);
 #endif
-    fprintf(stderr,"--------------------------------------------\
+    fprintf(stdout,"--------------------------------------------\
 ---------------------------\n");
-    fflush(stderr);
+    fflush(stdout);
     InPetscErrorPrintfDefault = 0;
   }
 
   if (!InPetscErrorPrintfDefault) {
     va_start(Argp,format);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(stderr,format,(char *)Argp);
+    vfprintf(stdout,format,(char *)Argp);
 #else
-    vfprintf(stderr,format,Argp);
+    vfprintf(stdout,format,Argp);
 #endif
-    fflush(stderr);
+    fflush(stdout);
     va_end(Argp);
   }
   return 0;

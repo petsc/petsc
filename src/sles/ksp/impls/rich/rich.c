@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.90 2000/05/04 14:04:07 balay Exp balay $*/
+/*$Id: rich.c,v 1.91 2000/05/05 22:17:41 balay Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -115,7 +115,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPView_Richardson" 
-extern int KSPView_Richardson(KSP ksp,Viewer viewer)
+int KSPView_Richardson(KSP ksp,Viewer viewer)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
   int            ierr;

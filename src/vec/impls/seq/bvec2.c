@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.177 2000/05/05 18:29:27 bsmith Exp balay $*/
+/*$Id: bvec2.c,v 1.178 2000/05/05 22:15:03 balay Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -7,7 +7,7 @@
 #include "src/vec/impls/dvecimpl.h" 
 #include "pinclude/blaslapack.h"
 #if defined(PETSC_HAVE_AMS)
-extern int ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
+EXTERN int ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
 #endif
 
 #undef __FUNC__  

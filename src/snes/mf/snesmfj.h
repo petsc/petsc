@@ -1,4 +1,4 @@
-/* "$Id: snesmfj.h,v 1.8 2000/02/02 20:10:02 bsmith Exp balay $"; */
+/* "$Id: snesmfj.h,v 1.9 2000/05/05 22:18:16 balay Exp bsmith $"; */
 /*
     This file should be included in NEW routines that compute the
     differencing parameter for finite difference based matrix-free
@@ -48,7 +48,7 @@ struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
   Vec              funcvec;                      /* location to store func(u) */
 };
 
-extern FList      MatSNESMFList;
-extern PetscTruth MatSNESMFRegisterAllCalled;
+EXTERN FList      MatSNESMFList;
+EXTERN PetscTruth MatSNESMFRegisterAllCalled;
 
 #endif

@@ -1,22 +1,22 @@
-/*$Id: pcregis.c,v 1.55 2000/04/12 04:24:31 bsmith Exp balay $*/
+/*$Id: pcregis.c,v 1.56 2000/05/05 22:16:59 balay Exp bsmith $*/
 
 #include "src/sles/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
 
 EXTERN_C_BEGIN
-extern int PCCreate_Jacobi(PC);
-extern int PCCreate_BJacobi(PC);
-extern int PCCreate_ILU(PC);
-extern int PCCreate_None(PC);
-extern int PCCreate_LU(PC);
-extern int PCCreate_SOR(PC);
-extern int PCCreate_Shell(PC);
-extern int PCCreate_MG(PC);
-extern int PCCreate_Eisenstat(PC);
-extern int PCCreate_ICC(PC);
-extern int PCCreate_ASM(PC);
-extern int PCCreate_SLES(PC);
-extern int PCCreate_Composite(PC);
-extern int PCCreate_Redundant(PC);
+EXTERN int PCCreate_Jacobi(PC);
+EXTERN int PCCreate_BJacobi(PC);
+EXTERN int PCCreate_ILU(PC);
+EXTERN int PCCreate_None(PC);
+EXTERN int PCCreate_LU(PC);
+EXTERN int PCCreate_SOR(PC);
+EXTERN int PCCreate_Shell(PC);
+EXTERN int PCCreate_MG(PC);
+EXTERN int PCCreate_Eisenstat(PC);
+EXTERN int PCCreate_ICC(PC);
+EXTERN int PCCreate_ASM(PC);
+EXTERN int PCCreate_SLES(PC);
+EXTERN int PCCreate_Composite(PC);
+EXTERN int PCCreate_Redundant(PC);
 EXTERN_C_END
 
 #undef __FUNC__  

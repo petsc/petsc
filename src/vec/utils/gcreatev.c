@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.75 2000/05/05 18:29:24 bsmith Exp balay $*/
+/*$Id: gcreatev.c,v 1.76 2000/05/05 22:14:53 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "petsc.h"
@@ -241,6 +241,7 @@ int VecMatlabEnginePut_Default(PetscObject obj,void *engine)
   mat  = mxCreateDoubleMatrix(n,1,(mxComplexity)1);
 #endif
   ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscObjectName(obj);CHKERRQ(ierr);
   mxSetName(mat,obj->name);
   engPutArray((Engine *)engine,mat);
   
@@ -263,9 +264,13 @@ int VecMatlabEngineGet_Default(PetscObject obj,void *engine)
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   mat  = engGetArray((Engine *)engine,obj->name);
+  if (!mat) SETERRQ1(1,1,"Unable to get object %s from matlab",obj->name);
   ierr = PetscMemcpy(array,mxGetPr(mat),n*sizeof(Scalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 #endif
+
+
+

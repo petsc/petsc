@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.185 2000/04/30 22:07:34 bsmith Exp balay $*/
+/*$Id: itcreate.c,v 1.186 2000/05/05 22:17:27 balay Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -419,7 +419,7 @@ int KSPPrintHelp(KSP ksp)
 
 #define MAXSETFROMOPTIONS 5
 extern int numberofsetfromoptions;
-extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
+EXTERN int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPSetTypeFromOptions"

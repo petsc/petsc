@@ -1,16 +1,16 @@
-/*$Id: inherit.c,v 1.59 2000/04/09 04:34:38 bsmith Exp bsmith $*/
+/*$Id: inherit.c,v 1.60 2000/04/12 04:21:29 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
-extern int PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
-extern int PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
-extern int PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject *);
-extern int PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void *);
-extern int PetscObjectQueryFunction_Petsc(PetscObject,const char[],void **);
-extern int PetscObjectComposeLanguage_Petsc(PetscObject,PetscLanguage,void *);
-extern int PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
+EXTERN int PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
+EXTERN int PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
+EXTERN int PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject *);
+EXTERN int PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void *);
+EXTERN int PetscObjectQueryFunction_Petsc(PetscObject,const char[],void **);
+EXTERN int PetscObjectComposeLanguage_Petsc(PetscObject,PetscLanguage,void *);
+EXTERN int PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PetscHeaderCreate_Private"

@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.144 2000/05/04 14:04:13 balay Exp balay $*/
+/*$Id: gmres.c,v 1.145 2000/05/05 22:17:37 balay Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -649,8 +649,8 @@ int KSPSetFromOptions_GMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-extern int KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
-extern int KSPComputeEigenvalues_GMRES(KSP,int,PetscReal *,PetscReal *,int *);
+EXTERN int KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
+EXTERN int KSPComputeEigenvalues_GMRES(KSP,int,PetscReal *,PetscReal *,int *);
 
 
 EXTERN_C_BEGIN

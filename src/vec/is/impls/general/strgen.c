@@ -1,16 +1,16 @@
-/*$Id: strgen.c,v 1.13 2000/05/04 16:25:02 bsmith Exp balay $*/
+/*$Id: strgen.c,v 1.14 2000/05/05 22:14:40 balay Exp bsmith $*/
 
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
-extern int ISDuplicate_General(IS,IS *);
-extern int ISDestroy_General(IS);
-extern int ISGetIndices_General(IS,int **);
-extern int ISRestoreIndices_General(IS,int **);
-extern int ISGetSize_General(IS,int *);
-extern int ISInvertPermutation_General(IS,int,IS *);
-extern int ISView_General(IS,Viewer);
-extern int ISSort_General(IS);
-extern int ISSorted_General(IS,PetscTruth*);
+EXTERN int ISDuplicate_General(IS,IS *);
+EXTERN int ISDestroy_General(IS);
+EXTERN int ISGetIndices_General(IS,int **);
+EXTERN int ISRestoreIndices_General(IS,int **);
+EXTERN int ISGetSize_General(IS,int *);
+EXTERN int ISInvertPermutation_General(IS,int,IS *);
+EXTERN int ISView_General(IS,Viewer);
+EXTERN int ISSort_General(IS);
+EXTERN int ISSorted_General(IS,PetscTruth*);
 
 static struct _ISOps myops = { ISGetSize_General,
                                ISGetSize_General,

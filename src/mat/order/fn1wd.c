@@ -1,4 +1,4 @@
-/*$Id: fn1wd.c,v 1.19 2000/04/09 04:37:05 bsmith Exp bsmith $*/
+/*$Id: fn1wd.c,v 1.20 2000/04/12 04:24:20 bsmith Exp bsmith $*/
 /* fn1wd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -44,7 +44,7 @@ int SPARSEPACKfn1wd(int *root, int *xadj, int *adjncy,
     int kstop, kstrt, lp1beg, lp1end;
     PetscReal deltp1;
     int lvlbeg, lvlend;
-    extern int SPARSEPACKfnroot(int *, int *, int *, 
+    EXTERN int SPARSEPACKfnroot(int *, int *, int *, 
 	    int *, int *, int *, int *);
     int nbr, lvl;
 

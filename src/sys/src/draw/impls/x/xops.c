@@ -1,4 +1,4 @@
-/* $Id: xops.c,v 1.146 2000/04/09 04:34:12 bsmith Exp bsmith $*/
+/* $Id: xops.c,v 1.147 2000/04/12 04:21:09 bsmith Exp bsmith $*/
 
 /*
     Defines the operations for the X Draw implementation.
@@ -64,7 +64,7 @@ static int DrawRectangle_X(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,Pets
   PetscFunctionReturn(0);
 }
 
-extern int DrawInterpolatedTriangle_X(Draw_X*,int,int,int,int,int,int,int,int,int);
+EXTERN int DrawInterpolatedTriangle_X(Draw_X*,int,int,int,int,int,int,int,int,int);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DrawTriangle_X" 
@@ -124,7 +124,7 @@ static int DrawString_X(Draw draw,PetscReal x,PetscReal  y,int c,char *chrs)
   PetscFunctionReturn(0);
 }
 
-extern int XiFontFixed(Draw_X*,int,int,XiFont **);
+EXTERN int XiFontFixed(Draw_X*,int,int,XiFont **);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DrawStringSetSize_X" 
@@ -499,8 +499,8 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawRestoreSingleton_X };
 
 
-extern int XiQuickWindow(Draw_X*,char*,char*,int,int,int,int);
-extern int XiQuickWindowFromWindow(Draw_X*,char*,Window);
+EXTERN int XiQuickWindow(Draw_X*,char*,char*,int,int,int,int);
+EXTERN int XiQuickWindowFromWindow(Draw_X*,char*,Window);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DrawGetSingleton_X" 

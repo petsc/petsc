@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.37 2000/01/11 21:00:37 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.38 2000/02/02 20:08:56 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -53,15 +53,15 @@ typedef struct {
   PetscTruth       ignorezeroentries;
 } Mat_SeqAIJ;
 
-extern int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
-extern int MatConvert_SeqAIJ(Mat,MatType,Mat *);
-extern int MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
-extern int MatMarkDiagonal_SeqAIJ(Mat);
+EXTERN int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
+EXTERN int MatConvert_SeqAIJ(Mat,MatType,Mat *);
+EXTERN int MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
+EXTERN int MatMarkDiagonal_SeqAIJ(Mat);
 
-extern int MatMult_SeqAIJ(Mat A,Vec,Vec);
-extern int MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
-extern int MatMultTranspose_SeqAIJ(Mat A,Vec,Vec);
-extern int MatMultTransposeAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
-extern int MatRelax_SeqAIJ(Mat,Vec,double,MatSORType,double,int,Vec);
+EXTERN int MatMult_SeqAIJ(Mat A,Vec,Vec);
+EXTERN int MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
+EXTERN int MatMultTranspose_SeqAIJ(Mat A,Vec,Vec);
+EXTERN int MatMultTransposeAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
+EXTERN int MatRelax_SeqAIJ(Mat,Vec,double,MatSORType,double,int,Vec);
 
 #endif

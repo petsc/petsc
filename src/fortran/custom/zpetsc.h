@@ -1,14 +1,14 @@
-/*$Id: zpetsc.h,v 1.54 2000/01/11 21:03:48 bsmith Exp bsmith $*/
+/*$Id: zpetsc.h,v 1.55 2000/05/04 16:27:10 bsmith Exp bsmith $*/
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
 #include "petsc.h"
 #include "petscfix.h"
 
-extern int     PetscScalarAddressToFortran(PetscObject,Scalar*,Scalar*,int,long*);
-extern int     PetscScalarAddressFromFortran(PetscObject,Scalar*,long,int,Scalar **);
-extern long    PetscIntAddressToFortran(int*,int*);
-extern int    *PetscIntAddressFromFortran(int*,long); 
+EXTERN int     PetscScalarAddressToFortran(PetscObject,Scalar*,Scalar*,int,long*);
+EXTERN int     PetscScalarAddressFromFortran(PetscObject,Scalar*,long,int,Scalar **);
+EXTERN long    PetscIntAddressToFortran(int*,int*);
+EXTERN int    *PetscIntAddressFromFortran(int*,long); 
 extern char   *PETSC_NULL_CHARACTER_Fortran;
 extern void   *PETSC_NULL_INTEGER_Fortran;
 extern void   *PETSC_NULL_SCALAR_Fortran;

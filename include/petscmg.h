@@ -1,4 +1,4 @@
-/* $Id: petscmg.h,v 1.17 2000/01/11 21:04:04 bsmith Exp balay $ */
+/* $Id: petscmg.h,v 1.18 2000/05/08 15:09:50 balay Exp bsmith $ */
 /*
       Structure used for Multigrid preconditioners 
 */
@@ -13,29 +13,29 @@ typedef enum { MGMULTIPLICATIVE,MGADDITIVE,MGFULL,MGKASKADE } MGType;
 #define MG_V_CYCLE     1
 #define MG_W_CYCLE     2
 
-extern int MGSetType(PC,MGType);
-extern int MGCheck(PC);
-extern int MGSetLevels(PC,int);
-extern int MGGetLevels(PC,int*);
+EXTERN int MGSetType(PC,MGType);
+EXTERN int MGCheck(PC);
+EXTERN int MGSetLevels(PC,int);
+EXTERN int MGGetLevels(PC,int*);
 
-extern int MGSetNumberSmoothUp(PC,int);
-extern int MGSetNumberSmoothDown(PC,int);
-extern int MGSetCycles(PC,int);
-extern int MGSetCyclesOnLevel(PC,int,int);
+EXTERN int MGSetNumberSmoothUp(PC,int);
+EXTERN int MGSetNumberSmoothDown(PC,int);
+EXTERN int MGSetCycles(PC,int);
+EXTERN int MGSetCyclesOnLevel(PC,int,int);
 
-extern int MGGetSmoother(PC,int,SLES*);
-extern int MGGetSmootherDown(PC,int,SLES*);
-extern int MGGetSmootherUp(PC,int,SLES*);
-extern int MGGetCoarseSolve(PC,SLES*);
+EXTERN int MGGetSmoother(PC,int,SLES*);
+EXTERN int MGGetSmootherDown(PC,int,SLES*);
+EXTERN int MGGetSmootherUp(PC,int,SLES*);
+EXTERN int MGGetCoarseSolve(PC,SLES*);
 
-extern int MGSetRhs(PC,int,Vec);
-extern int MGSetX(PC,int,Vec);
-extern int MGSetR(PC,int,Vec);
+EXTERN int MGSetRhs(PC,int,Vec);
+EXTERN int MGSetX(PC,int,Vec);
+EXTERN int MGSetR(PC,int,Vec);
 
-extern int MGSetRestriction(PC,int,Mat);
-extern int MGSetInterpolate(PC,int,Mat);
-extern int MGSetResidual(PC,int,int (*)(Mat,Vec,Vec,Vec),Mat);
-extern int MGDefaultResidual(Mat,Vec,Vec,Vec);
+EXTERN int MGSetRestriction(PC,int,Mat);
+EXTERN int MGSetInterpolate(PC,int,Mat);
+EXTERN int MGSetResidual(PC,int,int (*)(Mat,Vec,Vec,Vec),Mat);
+EXTERN int MGDefaultResidual(Mat,Vec,Vec,Vec);
 
 
 #endif

@@ -1,19 +1,19 @@
-/*$Id: mpibaij.c,v 1.197 2000/05/04 14:04:37 balay Exp balay $*/
+/*$Id: mpibaij.c,v 1.198 2000/05/05 22:16:08 balay Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
 
-extern int MatSetUpMultiply_MPIBAIJ(Mat); 
-extern int DisAssemble_MPIBAIJ(Mat);
-extern int MatIncreaseOverlap_MPIBAIJ(Mat,int,IS *,int);
-extern int MatGetSubMatrices_MPIBAIJ(Mat,int,IS *,IS *,MatReuse,Mat **);
-extern int MatGetValues_SeqBAIJ(Mat,int,int *,int,int *,Scalar *);
-extern int MatSetValues_SeqBAIJ(Mat,int,int *,int,int *,Scalar *,InsertMode);
-extern int MatSetValuesBlocked_SeqBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
-extern int MatGetRow_SeqBAIJ(Mat,int,int*,int**,Scalar**);
-extern int MatRestoreRow_SeqBAIJ(Mat,int,int*,int**,Scalar**);
-extern int MatPrintHelp_SeqBAIJ(Mat);
-extern int MatZeroRows_SeqBAIJ(Mat,IS,Scalar*);
+EXTERN int MatSetUpMultiply_MPIBAIJ(Mat); 
+EXTERN int DisAssemble_MPIBAIJ(Mat);
+EXTERN int MatIncreaseOverlap_MPIBAIJ(Mat,int,IS *,int);
+EXTERN int MatGetSubMatrices_MPIBAIJ(Mat,int,IS *,IS *,MatReuse,Mat **);
+EXTERN int MatGetValues_SeqBAIJ(Mat,int,int *,int,int *,Scalar *);
+EXTERN int MatSetValues_SeqBAIJ(Mat,int,int *,int,int *,Scalar *,InsertMode);
+EXTERN int MatSetValuesBlocked_SeqBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
+EXTERN int MatGetRow_SeqBAIJ(Mat,int,int*,int**,Scalar**);
+EXTERN int MatRestoreRow_SeqBAIJ(Mat,int,int*,int**,Scalar**);
+EXTERN int MatPrintHelp_SeqBAIJ(Mat);
+EXTERN int MatZeroRows_SeqBAIJ(Mat,IS,Scalar*);
 
 /*  UGLY, ugly, ugly
    When MatScalar == Scalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
@@ -23,11 +23,11 @@ extern int MatZeroRows_SeqBAIJ(Mat,IS,Scalar*);
    into the single precision data structures.
 */
 #if defined(PETSC_USE_MAT_SINGLE)
-extern int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-extern int MatSetValues_MPIBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-extern int MatSetValuesBlocked_MPIBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-extern int MatSetValues_MPIBAIJ_HT_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-extern int MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+EXTERN int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+EXTERN int MatSetValues_MPIBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+EXTERN int MatSetValuesBlocked_MPIBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+EXTERN int MatSetValues_MPIBAIJ_HT_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+EXTERN int MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
 #else
 #define MatSetValuesBlocked_SeqBAIJ_MatScalar      MatSetValuesBlocked_SeqBAIJ
 #define MatSetValues_MPIBAIJ_MatScalar             MatSetValues_MPIBAIJ

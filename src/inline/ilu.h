@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.16 2000/01/11 20:58:48 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.17 2000/04/09 03:08:50 bsmith Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -21,14 +21,14 @@
    src/mat/impls/baij/seq
 */
 
-extern int  LINPACKdgefa(MatScalar *,int,int *);
-extern int  LINPACKdgedi(MatScalar *,int,int *,MatScalar*);
-extern int  Kernel_A_gets_inverse_A_2(MatScalar *);
-extern int  Kernel_A_gets_inverse_A_3(MatScalar *);
-extern int  Kernel_A_gets_inverse_A_4(MatScalar *);
-extern int  Kernel_A_gets_inverse_A_5(MatScalar *);
-extern int  Kernel_A_gets_inverse_A_6(MatScalar *);
-extern int  Kernel_A_gets_inverse_A_7(MatScalar *);
+EXTERN int  LINPACKdgefa(MatScalar *,int,int *);
+EXTERN int  LINPACKdgedi(MatScalar *,int,int *,MatScalar*);
+EXTERN int  Kernel_A_gets_inverse_A_2(MatScalar *);
+EXTERN int  Kernel_A_gets_inverse_A_3(MatScalar *);
+EXTERN int  Kernel_A_gets_inverse_A_4(MatScalar *);
+EXTERN int  Kernel_A_gets_inverse_A_5(MatScalar *);
+EXTERN int  Kernel_A_gets_inverse_A_6(MatScalar *);
+EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 
 
 /*
@@ -182,12 +182,12 @@ extern int  Kernel_A_gets_inverse_A_7(MatScalar *);
 #define msgemm_  msgemm
 #endif
 EXTERN_C_BEGIN
-extern void msgemv_(int *,int *,MatScalar*,Scalar*,Scalar*);
-extern void msgemvp_(int *,int *,MatScalar*,Scalar*,Scalar*);
-extern void msgemvm_(int *,int *,MatScalar*,Scalar*,Scalar*);
-extern void msgemvt_(int *,int *,MatScalar*,Scalar*,Scalar*);
-extern void msgemmi_(int *,MatScalar*,MatScalar*,MatScalar*);
-extern void msgemm_(int *,MatScalar*,MatScalar*,MatScalar*);
+EXTERN void msgemv_(int *,int *,MatScalar*,Scalar*,Scalar*);
+EXTERN void msgemvp_(int *,int *,MatScalar*,Scalar*,Scalar*);
+EXTERN void msgemvm_(int *,int *,MatScalar*,Scalar*,Scalar*);
+EXTERN void msgemvt_(int *,int *,MatScalar*,Scalar*,Scalar*);
+EXTERN void msgemmi_(int *,MatScalar*,MatScalar*,MatScalar*);
+EXTERN void msgemm_(int *,MatScalar*,MatScalar*,MatScalar*);
 EXTERN_C_END
 
 /*

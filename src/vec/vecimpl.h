@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.71 2000/05/05 18:29:18 bsmith Exp balay $ */
+/* $Id: vecimpl.h,v 1.72 2000/05/05 22:14:36 balay Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -124,10 +124,10 @@ struct _p_Vec {
   Scalar *array_allocated;            
 
 /* Default obtain and release vectors; can be used by any implementation */
-extern int     VecDuplicateVecs_Default(Vec,int,Vec *[]);
-extern int     VecDestroyVecs_Default(const Vec [],int);
+EXTERN int     VecDuplicateVecs_Default(Vec,int,Vec *[]);
+EXTERN int     VecDestroyVecs_Default(const Vec [],int);
 
-extern int VecLoadIntoVector_Default(Viewer,Vec);
+EXTERN int VecLoadIntoVector_Default(Viewer,Vec);
 
 /* --------------------------------------------------------------------*/
 /*                                                                     */
@@ -209,14 +209,14 @@ struct _p_VecScatter {
   void       *fromdata,*todata;
 };
 
-extern int VecStashCreate_Private(MPI_Comm,int,VecStash*);
-extern int VecStashDestroy_Private(VecStash*);
-extern int VecStashExpand_Private(VecStash*,int);
-extern int VecStashScatterEnd_Private(VecStash*);
-extern int VecStashSetInitialSize_Private(VecStash*,int);
-extern int VecStashGetInfo_Private(VecStash*,int*,int*);
-extern int VecStashScatterBegin_Private(VecStash*,int*);
-extern int VecStashScatterGetMesg_Private(VecStash*,int*,int**,Scalar**,int*);
+EXTERN int VecStashCreate_Private(MPI_Comm,int,VecStash*);
+EXTERN int VecStashDestroy_Private(VecStash*);
+EXTERN int VecStashExpand_Private(VecStash*,int);
+EXTERN int VecStashScatterEnd_Private(VecStash*);
+EXTERN int VecStashSetInitialSize_Private(VecStash*,int);
+EXTERN int VecStashGetInfo_Private(VecStash*,int*,int*);
+EXTERN int VecStashScatterBegin_Private(VecStash*,int*);
+EXTERN int VecStashScatterGetMesg_Private(VecStash*,int*,int**,Scalar**,int*);
 
 /* 
    The following are implemented as macros to avoid the function
@@ -266,12 +266,12 @@ extern int VecStashScatterGetMesg_Private(VecStash*,int*,int**,Scalar**,int*);
   (stash)->n++; \
 }
 
-extern int VecReciprocal_Default(Vec);
+EXTERN int VecReciprocal_Default(Vec);
 
 #if defined(PETSC_HAVE_MATLAB)
 EXTERN_C_BEGIN
-extern int VecMatlabEnginePut_Default(PetscObject,void*);
-extern int VecMatlabEngineGet_Default(PetscObject,void*);
+EXTERN int VecMatlabEnginePut_Default(PetscObject,void*);
+EXTERN int VecMatlabEngineGet_Default(PetscObject,void*);
 EXTERN_C_END
 #endif
 

@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.15 2000/05/04 14:04:05 balay Exp balay $ */
+/* $Id: fgmres.c,v 1.16 2000/05/05 22:17:51 balay Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -750,8 +750,8 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-extern int KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
-extern int KSPComputeEigenvalues_GMRES(KSP,int,PetscReal *,PetscReal *,int *);
+EXTERN int KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
+EXTERN int KSPComputeEigenvalues_GMRES(KSP,int,PetscReal *,PetscReal *,int *);
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -768,9 +768,9 @@ int KSPFGMRESSetModifyPC_FGMRES(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-extern int KSPGMRESSetPreAllocateVectors_GMRES(KSP);
-extern int KSPGMRESSetRestart_GMRES(KSP,int);
-extern int KSPGMRESSetOrthogonalization_GMRES(KSP,int (*)(KSP,int));
+EXTERN int KSPGMRESSetPreAllocateVectors_GMRES(KSP);
+EXTERN int KSPGMRESSetRestart_GMRES(KSP,int);
+EXTERN int KSPGMRESSetOrthogonalization_GMRES(KSP,int (*)(KSP,int));
 EXTERN_C_END
 
 EXTERN_C_BEGIN

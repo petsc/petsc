@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.148 2000/04/09 04:36:00 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.149 2000/04/12 04:23:03 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -17,12 +17,12 @@ int MatOrdering_Flow_SeqAIJ(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 }
 
 
-extern int MatMarkDiagonal_SeqAIJ(Mat);
-extern int Mat_AIJ_CheckInode(Mat);
+EXTERN int MatMarkDiagonal_SeqAIJ(Mat);
+EXTERN int Mat_AIJ_CheckInode(Mat);
 
-extern int SPARSEKIT2dperm(int*,Scalar*,int*,int*,Scalar*,int*,int*,int*,int*,int*);
-extern int SPARSEKIT2ilutp(int*,Scalar*,int*,int*,int*,PetscReal*,PetscReal*,int*,Scalar*,int*,int*,int*,Scalar*,int*,int*,int*);
-extern int SPARSEKIT2msrcsr(int*,Scalar*,int*,Scalar*,int*,int*,Scalar*,int*);
+EXTERN int SPARSEKIT2dperm(int*,Scalar*,int*,int*,Scalar*,int*,int*,int*,int*,int*);
+EXTERN int SPARSEKIT2ilutp(int*,Scalar*,int*,int*,int*,PetscReal*,PetscReal*,int*,Scalar*,int*,int*,int*,Scalar*,int*,int*,int*);
+EXTERN int SPARSEKIT2msrcsr(int*,Scalar*,int*,Scalar*,int*,int*,Scalar*,int*);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatILUDTFactor_SeqAIJ"
@@ -426,7 +426,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,PetscReal f,Mat *B)
   PetscFunctionReturn(0); 
 }
 /* ----------------------------------------------------------- */
-extern int Mat_AIJ_CheckInode(Mat);
+EXTERN int Mat_AIJ_CheckInode(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqAIJ"
@@ -866,7 +866,7 @@ int MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
-extern int MatMissingDiagonal_SeqAIJ(Mat);
+EXTERN int MatMissingDiagonal_SeqAIJ(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatILUFactorSymbolic_SeqAIJ"

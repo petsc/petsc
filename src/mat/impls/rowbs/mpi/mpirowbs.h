@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.44 1999/11/05 14:45:25 bsmith Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.45 2000/01/11 21:00:45 bsmith Exp bsmith $ */
 
 #if !defined(__MPIROWBS_H)
 #define __MPIROWBS_H
@@ -64,7 +64,7 @@ typedef struct {
 } Mat_MPIRowbs;
 
 
-extern int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat);
+EXTERN int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat);
 
 #define CHKERRBS(a) {if (__BSERROR_STATUS) {(*PetscErrorPrintf)(\
         "BlockSolve95 Error Code %d\n",__BSERROR_STATUS);CHKERRQ(1);}}

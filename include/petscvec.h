@@ -1,4 +1,4 @@
-/* $Id: petscvec.h,v 1.107 2000/05/04 16:27:19 bsmith Exp balay $ */
+/* $Id: petscvec.h,v 1.108 2000/05/08 15:09:50 balay Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -22,83 +22,83 @@ typedef struct _p_VecScatter*  VecScatter;
 #define VEC_SHARED "shared"
 typedef char*                  VecType;
 
-extern int VecCreateSeq(MPI_Comm,int,Vec*);
-extern int MapCreateMPI(MPI_Comm,int,int,Map*);  
-extern int VecCreateMPI(MPI_Comm,int,int,Vec*);  
-extern int VecCreateSeqWithArray(MPI_Comm,int,const Scalar[],Vec*);  
-extern int VecCreateMPIWithArray(MPI_Comm,int,int,const Scalar[],Vec*);  
-extern int VecCreateShared(MPI_Comm,int,int,Vec*);  
-extern int VecCreate(MPI_Comm,int,int,Vec*); 
-extern int VecSetType(Vec,VecType); 
-extern int VecSetFromOptions(Vec);
-extern int VecPrintHelp(Vec);
+EXTERN int VecCreateSeq(MPI_Comm,int,Vec*);
+EXTERN int MapCreateMPI(MPI_Comm,int,int,Map*);  
+EXTERN int VecCreateMPI(MPI_Comm,int,int,Vec*);  
+EXTERN int VecCreateSeqWithArray(MPI_Comm,int,const Scalar[],Vec*);  
+EXTERN int VecCreateMPIWithArray(MPI_Comm,int,int,const Scalar[],Vec*);  
+EXTERN int VecCreateShared(MPI_Comm,int,int,Vec*);  
+EXTERN int VecCreate(MPI_Comm,int,int,Vec*); 
+EXTERN int VecSetType(Vec,VecType); 
+EXTERN int VecSetFromOptions(Vec);
+EXTERN int VecPrintHelp(Vec);
 
-extern int VecDestroy(Vec);        
+EXTERN int VecDestroy(Vec);        
 
-extern int MapDestroy(Map);
-extern int MapGetLocalSize(Map,int *);
-extern int MapGetSize(Map,int *);
-extern int MapGetLocalRange(Map,int *,int *);
-extern int MapGetGlobalRange(Map,int *[]);
+EXTERN int MapDestroy(Map);
+EXTERN int MapGetLocalSize(Map,int *);
+EXTERN int MapGetSize(Map,int *);
+EXTERN int MapGetLocalRange(Map,int *,int *);
+EXTERN int MapGetGlobalRange(Map,int *[]);
 
-extern int VecDot(Vec,Vec,Scalar*);
-extern int VecTDot(Vec,Vec,Scalar*);  
-extern int VecMDot(int,Vec,const Vec[],Scalar*);
-extern int VecMTDot(int,Vec,const Vec[],Scalar*); 
+EXTERN int VecDot(Vec,Vec,Scalar*);
+EXTERN int VecTDot(Vec,Vec,Scalar*);  
+EXTERN int VecMDot(int,Vec,const Vec[],Scalar*);
+EXTERN int VecMTDot(int,Vec,const Vec[],Scalar*); 
 
 typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4,NORM_1_AND_2=5} NormType;
 #define NORM_MAX NORM_INFINITY
-extern int VecNorm(Vec,NormType,double *);
-extern int VecSum(Vec,Scalar*);
-extern int VecMax(Vec,int*,double*);
-extern int VecMin(Vec,int*,double*);
-extern int VecScale(const Scalar*,Vec);    
-extern int VecCopy(Vec,Vec);        
-extern int VecSetRandom(PetscRandom,Vec);
-extern int VecSet(const Scalar*,Vec);
-extern int VecSwap(Vec,Vec);
-extern int VecAXPY(const Scalar*,Vec,Vec);  
-extern int VecAXPBY(const Scalar*,const Scalar *,Vec,Vec);  
-extern int VecMAXPY(int,const Scalar*,Vec,Vec*);
-extern int VecAYPX(const Scalar*,Vec,Vec);
-extern int VecWAXPY(const Scalar*,Vec,Vec,Vec);
-extern int VecPointwiseMult(Vec,Vec,Vec);    
-extern int VecPointwiseDivide(Vec,Vec,Vec);    
-extern int VecShift(const Scalar*,Vec);
-extern int VecReciprocal(Vec);
-extern int VecAbs(Vec);
-extern int VecDuplicate(Vec,Vec*);          
-extern int VecDuplicateVecs(Vec,int,Vec*[]);         
-extern int VecDestroyVecs(const Vec[],int); 
-extern int VecGetMap(Vec,Map*);
+EXTERN int VecNorm(Vec,NormType,double *);
+EXTERN int VecSum(Vec,Scalar*);
+EXTERN int VecMax(Vec,int*,double*);
+EXTERN int VecMin(Vec,int*,double*);
+EXTERN int VecScale(const Scalar*,Vec);    
+EXTERN int VecCopy(Vec,Vec);        
+EXTERN int VecSetRandom(PetscRandom,Vec);
+EXTERN int VecSet(const Scalar*,Vec);
+EXTERN int VecSwap(Vec,Vec);
+EXTERN int VecAXPY(const Scalar*,Vec,Vec);  
+EXTERN int VecAXPBY(const Scalar*,const Scalar *,Vec,Vec);  
+EXTERN int VecMAXPY(int,const Scalar*,Vec,Vec*);
+EXTERN int VecAYPX(const Scalar*,Vec,Vec);
+EXTERN int VecWAXPY(const Scalar*,Vec,Vec,Vec);
+EXTERN int VecPointwiseMult(Vec,Vec,Vec);    
+EXTERN int VecPointwiseDivide(Vec,Vec,Vec);    
+EXTERN int VecShift(const Scalar*,Vec);
+EXTERN int VecReciprocal(Vec);
+EXTERN int VecAbs(Vec);
+EXTERN int VecDuplicate(Vec,Vec*);          
+EXTERN int VecDuplicateVecs(Vec,int,Vec*[]);         
+EXTERN int VecDestroyVecs(const Vec[],int); 
+EXTERN int VecGetMap(Vec,Map*);
 
 typedef enum {NOT_SET_VALUES,INSERT_VALUES,ADD_VALUES,MAX_VALUES} InsertMode;
 
-extern int VecStrideNorm(Vec,int,NormType,double*);
-extern int VecStrideGather(Vec,int,Vec,InsertMode);
-extern int VecStrideScatter(Vec,int,Vec,InsertMode);
-extern int VecStrideMax(Vec,int,int *,double *);
-extern int VecStrideMin(Vec,int,int *,double *);
-extern int VecStrideGatherAll(Vec,Vec*,InsertMode);
-extern int VecStrideScatterAll(Vec*,Vec,InsertMode);
+EXTERN int VecStrideNorm(Vec,int,NormType,double*);
+EXTERN int VecStrideGather(Vec,int,Vec,InsertMode);
+EXTERN int VecStrideScatter(Vec,int,Vec,InsertMode);
+EXTERN int VecStrideMax(Vec,int,int *,double *);
+EXTERN int VecStrideMin(Vec,int,int *,double *);
+EXTERN int VecStrideGatherAll(Vec,Vec*,InsertMode);
+EXTERN int VecStrideScatterAll(Vec*,Vec,InsertMode);
 
-extern int VecSetValues(Vec,int,const int[],const Scalar[],InsertMode);
-extern int VecAssemblyBegin(Vec);
-extern int VecAssemblyEnd(Vec);
-extern int VecSetStashInitialSize(Vec,int,int);
-extern int VecStashView(Vec,Viewer);
+EXTERN int VecSetValues(Vec,int,const int[],const Scalar[],InsertMode);
+EXTERN int VecAssemblyBegin(Vec);
+EXTERN int VecAssemblyEnd(Vec);
+EXTERN int VecSetStashInitialSize(Vec,int,int);
+EXTERN int VecStashView(Vec,Viewer);
 
 #define VecSetValue(v,i,va,mode) \
 {int _ierr,_row = i; Scalar _va = va; \
   _ierr = VecSetValues(v,1,&_row,&_va,mode);CHKERRQ(_ierr); \
 }
-extern int VecSetBlockSize(Vec,int);
-extern int VecGetBlockSize(Vec,int*);
-extern int VecSetValuesBlocked(Vec,int,const int[],const Scalar[],InsertMode);
+EXTERN int VecSetBlockSize(Vec,int);
+EXTERN int VecGetBlockSize(Vec,int*);
+EXTERN int VecSetValuesBlocked(Vec,int,const int[],const Scalar[],InsertMode);
 
 extern PetscTruth VecRegisterAllCalled;
-extern int        VecRegisterAll(const char []);
-extern int        VecRegister(const char[],const char[],const char[],int(*)(Vec));
+EXTERN int        VecRegisterAll(const char []);
+EXTERN int        VecRegister(const char[],const char[],const char[],int(*)(Vec));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define VecRegisterDynamic(a,b,c,d) VecRegister(a,b,c,0)
 #else
@@ -107,14 +107,14 @@ extern int        VecRegister(const char[],const char[],const char[],int(*)(Vec)
 
 typedef enum {SCATTER_FORWARD=0,SCATTER_REVERSE=1,SCATTER_FORWARD_LOCAL=2,
               SCATTER_REVERSE_LOCAL=3,SCATTER_LOCAL=2} ScatterMode;
-extern int VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
-extern int VecScatterPostRecvs(Vec,Vec,InsertMode,ScatterMode,VecScatter);
-extern int VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatter);
-extern int VecScatterEnd(Vec,Vec,InsertMode,ScatterMode,VecScatter); 
-extern int VecScatterDestroy(VecScatter);
-extern int VecScatterCopy(VecScatter,VecScatter *);
-extern int VecScatterView(VecScatter,Viewer);
-extern int VecScatterRemap(VecScatter,int *,int*);
+EXTERN int VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
+EXTERN int VecScatterPostRecvs(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+EXTERN int VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+EXTERN int VecScatterEnd(Vec,Vec,InsertMode,ScatterMode,VecScatter); 
+EXTERN int VecScatterDestroy(VecScatter);
+EXTERN int VecScatterCopy(VecScatter,VecScatter *);
+EXTERN int VecScatterView(VecScatter,Viewer);
+EXTERN int VecScatterRemap(VecScatter,int *,int*);
 
 typedef enum {PIPELINE_DOWN=0,PIPELINE_UP=1} PipelineDirection;
 typedef enum {PIPELINE_NONE=1,PIPELINE_SEQUENTIAL=2,
@@ -122,57 +122,57 @@ typedef enum {PIPELINE_NONE=1,PIPELINE_SEQUENTIAL=2,
 
 typedef struct _p_VecPipeline*  VecPipeline;
 
-extern int VecPipelineCreate(MPI_Comm,Vec,IS,Vec,IS,VecPipeline *);
-extern int VecPipelineSetType(VecPipeline,PipelineType,PetscObject);
-extern int VecPipelineSetup(VecPipeline);
-extern int VecPipelineBegin(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline);
-extern int VecPipelineEnd(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline); 
-extern int VecPipelineView(VecPipeline,Viewer);
-extern int VecPipelineDestroy(VecPipeline);
+EXTERN int VecPipelineCreate(MPI_Comm,Vec,IS,Vec,IS,VecPipeline *);
+EXTERN int VecPipelineSetType(VecPipeline,PipelineType,PetscObject);
+EXTERN int VecPipelineSetup(VecPipeline);
+EXTERN int VecPipelineBegin(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline);
+EXTERN int VecPipelineEnd(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline); 
+EXTERN int VecPipelineView(VecPipeline,Viewer);
+EXTERN int VecPipelineDestroy(VecPipeline);
 
-extern int VecGetArray(Vec,Scalar*[]);
-extern int VecRestoreArray(Vec,Scalar*[]);
-extern int VecGetArray4d(Vec,int,int,int,int,int,int,int,int,Scalar**[]);
-extern int VecRestoreArray4d(Vec,int,int,int,int,int,int,int,int,Scalar**[]);
-extern int VecGetArray3d(Vec,int,int,int,int,int,int,Scalar**[]);
-extern int VecRestoreArray3d(Vec,int,int,int,int,int,int,Scalar**[]);
-extern int VecGetArray2d(Vec,int,int,int,int,Scalar**[]);
-extern int VecRestoreArray2d(Vec,int,int,int,int,Scalar**[]);
-extern int VecGetArray1d(Vec,int,int,Scalar *[]);
-extern int VecRestoreArray1d(Vec,int,int,Scalar *[]);
+EXTERN int VecGetArray(Vec,Scalar*[]);
+EXTERN int VecRestoreArray(Vec,Scalar*[]);
+EXTERN int VecGetArray4d(Vec,int,int,int,int,int,int,int,int,Scalar**[]);
+EXTERN int VecRestoreArray4d(Vec,int,int,int,int,int,int,int,int,Scalar**[]);
+EXTERN int VecGetArray3d(Vec,int,int,int,int,int,int,Scalar**[]);
+EXTERN int VecRestoreArray3d(Vec,int,int,int,int,int,int,Scalar**[]);
+EXTERN int VecGetArray2d(Vec,int,int,int,int,Scalar**[]);
+EXTERN int VecRestoreArray2d(Vec,int,int,int,int,Scalar**[]);
+EXTERN int VecGetArray1d(Vec,int,int,Scalar *[]);
+EXTERN int VecRestoreArray1d(Vec,int,int,Scalar *[]);
 
-extern int VecPlaceArray(Vec,const Scalar[]);
-extern int VecReplaceArray(Vec,const Scalar[]);
-extern int VecGetArrays(const Vec[],int,Scalar**[]);
-extern int VecRestoreArrays(const Vec[],int,Scalar**[]);
+EXTERN int VecPlaceArray(Vec,const Scalar[]);
+EXTERN int VecReplaceArray(Vec,const Scalar[]);
+EXTERN int VecGetArrays(const Vec[],int,Scalar**[]);
+EXTERN int VecRestoreArrays(const Vec[],int,Scalar**[]);
 
-extern int VecValid(Vec,PetscTruth*);
-extern int VecView(Vec,Viewer);
-extern int VecEqual(Vec,Vec,PetscTruth*);
-extern int VecLoad(Viewer,Vec*);
-extern int VecLoadIntoVector(Viewer,Vec);
+EXTERN int VecValid(Vec,PetscTruth*);
+EXTERN int VecView(Vec,Viewer);
+EXTERN int VecEqual(Vec,Vec,PetscTruth*);
+EXTERN int VecLoad(Viewer,Vec*);
+EXTERN int VecLoadIntoVector(Viewer,Vec);
 
-extern int VecGetSize(Vec,int*);
-extern int VecGetType(Vec,VecType*);
-extern int VecGetLocalSize(Vec,int*);
-extern int VecGetOwnershipRange(Vec,int*,int*);
+EXTERN int VecGetSize(Vec,int*);
+EXTERN int VecGetType(Vec,VecType*);
+EXTERN int VecGetLocalSize(Vec,int*);
+EXTERN int VecGetOwnershipRange(Vec,int*,int*);
 
-extern int VecSetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping);
-extern int VecSetValuesLocal(Vec,int,const int[],const Scalar[],InsertMode);
-extern int VecSetLocalToGlobalMappingBlocked(Vec,ISLocalToGlobalMapping);
-extern int VecSetValuesBlockedLocal(Vec,int,const int[],const Scalar[],InsertMode);
+EXTERN int VecSetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping);
+EXTERN int VecSetValuesLocal(Vec,int,const int[],const Scalar[],InsertMode);
+EXTERN int VecSetLocalToGlobalMappingBlocked(Vec,ISLocalToGlobalMapping);
+EXTERN int VecSetValuesBlockedLocal(Vec,int,const int[],const Scalar[],InsertMode);
 
-extern int VecDotBegin(Vec,Vec,Scalar *);
-extern int VecDotEnd(Vec,Vec,Scalar *);
-extern int VecTDotBegin(Vec,Vec,Scalar *);
-extern int VecTDotEnd(Vec,Vec,Scalar *);
-extern int VecNormBegin(Vec,NormType,double *);
-extern int VecNormEnd(Vec,NormType,double *);
+EXTERN int VecDotBegin(Vec,Vec,Scalar *);
+EXTERN int VecDotEnd(Vec,Vec,Scalar *);
+EXTERN int VecTDotBegin(Vec,Vec,Scalar *);
+EXTERN int VecTDotEnd(Vec,Vec,Scalar *);
+EXTERN int VecNormBegin(Vec,NormType,double *);
+EXTERN int VecNormEnd(Vec,NormType,double *);
 
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES} VecOption;
-extern int VecSetOption(Vec,VecOption);
+EXTERN int VecSetOption(Vec,VecOption);
 
-extern int VecContourScale(Vec,double,double);
+EXTERN int VecContourScale(Vec,double,double);
 
 /*
     These numbers need to match the entries in 
@@ -181,20 +181,20 @@ extern int VecContourScale(Vec,double,double);
 typedef enum { VECOP_VIEW = 33,
                VECOP_LOADINTOVECTOR = 40
              } VecOperation;
-extern int VecSetOperation(Vec,VecOperation,void*); /*  */
+EXTERN int VecSetOperation(Vec,VecOperation,void*); /*  */
 
 /*
      Routines for dealing with ghosted vectors:
   vectors with ghost elements at the end of the array.
 */
-extern int VecCreateGhost(MPI_Comm,int,int,int,const int[],Vec*);  
-extern int VecCreateGhostWithArray(MPI_Comm,int,int,int,const int[],const Scalar[],Vec*);  
-extern int VecCreateGhostBlock(MPI_Comm,int,int,int,int,const int[],Vec*);  
-extern int VecCreateGhostBlockWithArray(MPI_Comm,int,int,int,int,const int[],const Scalar[],Vec*);  
-extern int VecGhostGetLocalForm(Vec,Vec*);
-extern int VecGhostRestoreLocalForm(Vec,Vec*);
-extern int VecGhostUpdateBegin(Vec,InsertMode,ScatterMode);
-extern int VecGhostUpdateEnd(Vec,InsertMode,ScatterMode);
+EXTERN int VecCreateGhost(MPI_Comm,int,int,int,const int[],Vec*);  
+EXTERN int VecCreateGhostWithArray(MPI_Comm,int,int,int,const int[],const Scalar[],Vec*);  
+EXTERN int VecCreateGhostBlock(MPI_Comm,int,int,int,int,const int[],Vec*);  
+EXTERN int VecCreateGhostBlockWithArray(MPI_Comm,int,int,int,int,const int[],const Scalar[],Vec*);  
+EXTERN int VecGhostGetLocalForm(Vec,Vec*);
+EXTERN int VecGhostRestoreLocalForm(Vec,Vec*);
+EXTERN int VecGhostUpdateBegin(Vec,InsertMode,ScatterMode);
+EXTERN int VecGhostUpdateEnd(Vec,InsertMode,ScatterMode);
 
 
 

@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.31 2000/01/11 21:03:18 bsmith Exp balay $ */
+/* $Id: daimpl.h,v 1.32 2000/05/05 22:19:21 balay Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -58,12 +58,12 @@ struct _p_DA {
             nearest neighbor timestepping.
 */
 
-extern int DAView_Binary(DA,Viewer);
+EXTERN int DAView_Binary(DA,Viewer);
 EXTERN_C_BEGIN
-extern int VecView_MPI_DA(Vec,Viewer);
-extern int VecLoadIntoVector_Binary_DA(Viewer,Vec);
+EXTERN int VecView_MPI_DA(Vec,Viewer);
+EXTERN int VecLoadIntoVector_Binary_DA(Viewer,Vec);
 EXTERN_C_END
 
-extern int DAGetGlobalToGlobal1_Private(DA,int**);
+EXTERN int DAGetGlobalToGlobal1_Private(DA,int**);
 
 #endif

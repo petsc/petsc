@@ -1,4 +1,4 @@
-/*$Id: launch.c,v 1.11 2000/04/09 04:33:48 bsmith Exp bsmith $*/
+/*$Id: launch.c,v 1.12 2000/04/12 04:20:49 bsmith Exp bsmith $*/
 /* 
   Usage: A = launch(programname,number processors); 
  
@@ -10,7 +10,7 @@ extern int fork();
 extern int system(const char *);
 #include "src/sys/src/viewer/impls/socket/socket.h"
 #include "mex.h"
-#define ERROR(a) {fprintf(stderr,"LAUNCH: %s \n",a); return ;}
+#define ERROR(a) {fprintf(stdout,"LAUNCH: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.21 2000/04/12 04:23:25 bsmith Exp balay $*/
+/*$Id: bdiag3.c,v 1.22 2000/05/05 22:15:54 balay Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -7,28 +7,28 @@
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 
-extern int MatSetValues_SeqBDiag_1(Mat,int,int *,int,int *,Scalar *,InsertMode);
-extern int MatSetValues_SeqBDiag_N(Mat,int,int *,int,int *,Scalar *,InsertMode);
-extern int MatGetValues_SeqBDiag_1(Mat,int,int *,int,int *,Scalar *);
-extern int MatGetValues_SeqBDiag_N(Mat,int,int *,int,int *,Scalar *);
-extern int MatMult_SeqBDiag_1(Mat,Vec,Vec);
-extern int MatMult_SeqBDiag_2(Mat,Vec,Vec);
-extern int MatMult_SeqBDiag_3(Mat,Vec,Vec);
-extern int MatMult_SeqBDiag_4(Mat,Vec,Vec);
-extern int MatMult_SeqBDiag_5(Mat,Vec,Vec);
-extern int MatMult_SeqBDiag_N(Mat,Vec,Vec);
-extern int MatMultAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
-extern int MatMultAdd_SeqBDiag_2(Mat,Vec,Vec,Vec);
-extern int MatMultAdd_SeqBDiag_3(Mat,Vec,Vec,Vec);
-extern int MatMultAdd_SeqBDiag_4(Mat,Vec,Vec,Vec);
-extern int MatMultAdd_SeqBDiag_5(Mat,Vec,Vec,Vec);
-extern int MatMultAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
-extern int MatMultTranspose_SeqBDiag_1(Mat,Vec,Vec);
-extern int MatMultTranspose_SeqBDiag_N(Mat,Vec,Vec);
-extern int MatMultTransposeAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
-extern int MatMultTransposeAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
-extern int MatRelax_SeqBDiag_N(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
-extern int MatRelax_SeqBDiag_1(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
+EXTERN int MatSetValues_SeqBDiag_1(Mat,int,int *,int,int *,Scalar *,InsertMode);
+EXTERN int MatSetValues_SeqBDiag_N(Mat,int,int *,int,int *,Scalar *,InsertMode);
+EXTERN int MatGetValues_SeqBDiag_1(Mat,int,int *,int,int *,Scalar *);
+EXTERN int MatGetValues_SeqBDiag_N(Mat,int,int *,int,int *,Scalar *);
+EXTERN int MatMult_SeqBDiag_1(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBDiag_2(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBDiag_3(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBDiag_4(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBDiag_5(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBDiag_N(Mat,Vec,Vec);
+EXTERN int MatMultAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBDiag_2(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBDiag_3(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBDiag_4(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBDiag_5(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
+EXTERN int MatMultTranspose_SeqBDiag_1(Mat,Vec,Vec);
+EXTERN int MatMultTranspose_SeqBDiag_N(Mat,Vec,Vec);
+EXTERN int MatMultTransposeAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
+EXTERN int MatMultTransposeAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
+EXTERN int MatRelax_SeqBDiag_N(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
+EXTERN int MatRelax_SeqBDiag_1(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
 
 
 #undef __FUNC__  

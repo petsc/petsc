@@ -1,4 +1,4 @@
-/*$Id: frame.c,v 1.25 2000/04/09 04:34:12 bsmith Exp bsmith $*/
+/*$Id: frame.c,v 1.26 2000/04/12 04:21:09 bsmith Exp bsmith $*/
 
 /*
    This file contains routines to draw a 3-d like frame about a given 
@@ -10,7 +10,7 @@
 
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
-extern PixVal XiGetColor(Draw_X *,char *,int);
+EXTERN PixVal XiGetColor(Draw_X *,char *,int);
 
 /* 50% grey stipple pattern */
 static Pixmap grey50 = (Pixmap)0;         

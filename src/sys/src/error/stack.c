@@ -1,4 +1,4 @@
-/*$Id: stack.c,v 1.27 2000/04/12 04:21:20 bsmith Exp balay $*/
+/*$Id: stack.c,v 1.28 2000/05/05 22:13:49 balay Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
@@ -88,7 +88,7 @@ int PetscStackView(Viewer viewer)
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
 
-  if (file == stderr) {
+  if (file == stdout) {
     (*PetscErrorPrintf)("Note: The EXACT line numbers in the stack are not available,\n");
     (*PetscErrorPrintf)("      INSTEAD the line number of the start of the function\n");
     (*PetscErrorPrintf)("      is given.\n");

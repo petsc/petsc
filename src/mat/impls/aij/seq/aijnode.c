@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.112 2000/04/09 04:36:00 bsmith Exp bsmith $*/
+/*$Id: aijnode.c,v 1.113 2000/04/12 04:23:03 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -6,19 +6,19 @@
 #include "src/mat/impls/aij/seq/aij.h"                
 #include "src/vec/vecimpl.h"
 
-extern int Mat_AIJ_CheckInode(Mat);
-extern int MatSolve_SeqAIJ_Inode(Mat,Vec,Vec);
-extern int MatLUFactorNumeric_SeqAIJ_Inode(Mat,Mat *);
+EXTERN int Mat_AIJ_CheckInode(Mat);
+EXTERN int MatSolve_SeqAIJ_Inode(Mat,Vec,Vec);
+EXTERN int MatLUFactorNumeric_SeqAIJ_Inode(Mat,Mat *);
 
-extern int MatMult_SeqAIJ(Mat,Vec,Vec);
-extern int MatMultAdd_SeqAIJ(Mat,Vec,Vec,Vec);
-extern int MatSolve_SeqAIJ(Mat,Vec,Vec);
-extern int MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
-extern int MatGetRowIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
-extern int MatRestoreRowIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
-extern int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
-extern int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
-extern int MatColoringPatch_SeqAIJ(Mat,int,int*,ISColoring*);
+EXTERN int MatMult_SeqAIJ(Mat,Vec,Vec);
+EXTERN int MatMultAdd_SeqAIJ(Mat,Vec,Vec,Vec);
+EXTERN int MatSolve_SeqAIJ(Mat,Vec,Vec);
+EXTERN int MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
+EXTERN int MatGetRowIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+EXTERN int MatRestoreRowIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+EXTERN int MatColoringPatch_SeqAIJ(Mat,int,int*,ISColoring*);
 
 
 #undef __FUNC__  
@@ -764,7 +764,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
-extern int MatColoringPatch_SeqAIJ_Inode(Mat,int,int *,ISColoring *);
+EXTERN int MatColoringPatch_SeqAIJ_Inode(Mat,int,int *,ISColoring *);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"Mat_AIJ_CheckInode"

@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.142 2000/04/16 04:39:17 bsmith Exp bsmith $*/
+/*$Id: mtr.c,v 1.143 2000/05/04 16:24:44 bsmith Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -16,10 +16,10 @@
 /*
      These are defined in mal.c and ensure that malloced space is Scalar aligned
 */
-extern void *PetscMallocAlign(int,int,char*,char*,char*);
-extern int PetscFreeAlign(void*,int,char*,char*,char*);
-extern void *PetscTrMallocDefault(int,int,char*,char*,char*);
-extern int  PetscTrFreeDefault(void*,int,char*,char*,char*);
+EXTERN void *PetscMallocAlign(int,int,char*,char*,char*);
+EXTERN int   PetscFreeAlign(void*,int,char*,char*,char*);
+EXTERN void *PetscTrMallocDefault(int,int,char*,char*,char*);
+EXTERN int   PetscTrFreeDefault(void*,int,char*,char*,char*);
 
 /*
   Code for checking if a pointer is out of the range 
@@ -115,13 +115,6 @@ static long    TRMaxMem     = 0;
 static int  PetscLogMallocMax = 10000,PetscLogMalloc = -1,*PetscLogMallocLength;
 static char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallocFunction;
 
-#if defined(PETSC_HAVE_MALLOC_VERIFY)
-EXTERN_C_BEGIN
-extern int malloc_verify();
-EXTERN_C_END
-#endif
-
-
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PetscTrValid"
 /*@C
@@ -193,9 +186,6 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
     }
     head = head->next;
   }
-#if defined(PETSC_HAVE_MALLOC_VERIFY) && defined(PETSC_USE_BOPT_g)
-  malloc_verify();
-#endif
 
   PetscFunctionReturn(0);
 }
@@ -473,7 +463,7 @@ int PetscTrSpace(PLogDouble *space,PLogDouble *fr,PLogDouble *maxs)
    Collective on PETSC_COMM_WORLD
 
    Input Parameter:
-.  fp  - file pointer.  If fp is NULL, stderr is assumed.
+.  fp  - file pointer.  If fp is NULL, stdout is assumed.
 
    Options Database Key:
 .  -trdump - Dumps unfreed memory during call to PetscFinalize()
@@ -498,7 +488,7 @@ int PetscTrDump(FILE *fp)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (!fp) fp = stderr;
+  if (!fp) fp = stdout;
   if (TRallocated > 0) {
     ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d]Total space allocated %d bytes\n",rank,(int)TRallocated);CHKERRQ(ierr);
   }
@@ -581,7 +571,7 @@ int PetscTrLogDump(FILE *fp)
   }
 
 
-  if (!fp) fp = stderr;
+  if (!fp) fp = stdout;
   ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_WORLD,fp,"[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);CHKERRQ(ierr);
 

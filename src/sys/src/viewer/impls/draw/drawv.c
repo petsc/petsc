@@ -1,10 +1,10 @@
-/*$Id: drawv.c,v 1.49 2000/05/04 16:24:25 bsmith Exp balay $*/
+/*$Id: drawv.c,v 1.50 2000/05/05 22:13:17 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerDestroy_Draw" 
+#define __FUNC__ /*<a name="ViewerDestroy_Draw"></a>*/"ViewerDestroy_Draw" 
 int ViewerDestroy_Draw(Viewer v)
 {
   int         ierr,i;
@@ -24,7 +24,7 @@ int ViewerDestroy_Draw(Viewer v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerFlush_Draw" 
+#define __FUNC__ /*<a name="ViewerFlush_Draw"></a>*/"ViewerFlush_Draw" 
 int ViewerFlush_Draw(Viewer v)
 {
   int         ierr,i;
@@ -38,7 +38,7 @@ int ViewerFlush_Draw(Viewer v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerDrawGetDraw" 
+#define __FUNC__ /*<a name="ViewerDrawGetDraw"></a>*/"ViewerDrawGetDraw" 
 /*@C
     ViewerDrawGetDraw - Returns Draw object from Viewer object.
     This Draw object may then be used to perform graphics using 
@@ -87,7 +87,7 @@ int ViewerDrawGetDraw(Viewer viewer,int windownumber,Draw *draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerDrawGetDrawLG" 
+#define __FUNC__ /*<a name="ViewerDrawGetDrawLG"></a>*/"ViewerDrawGetDrawLG" 
 /*@C
     ViewerDrawGetDrawLG - Returns DrawLG object from Viewer object.
     This DrawLG object may then be used to perform graphics using 
@@ -138,7 +138,7 @@ int ViewerDrawGetDrawLG(Viewer viewer,int windownumber,DrawLG *drawlg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerDrawGetDrawAxis" 
+#define __FUNC__ /*<a name="ViewerDrawGetDrawAxis"></a>*/"ViewerDrawGetDrawAxis" 
 /*@C
     ViewerDrawGetDrawAxis - Returns DrawAxis object from Viewer object.
     This DrawAxis object may then be used to perform graphics using 
@@ -189,7 +189,7 @@ int ViewerDrawGetDrawAxis(Viewer viewer,int windownumber,DrawAxis *drawaxis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerDrawSetInfo" 
+#define __FUNC__ /*<a name="ViewerDrawSetInfo"></a>*/"ViewerDrawSetInfo" 
 int ViewerDrawSetInfo(Viewer v,const char display[],const char title[],int x,int y,int w,int h)
 {
   int         ierr;
@@ -206,7 +206,7 @@ int ViewerDrawSetInfo(Viewer v,const char display[],const char title[],int x,int
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerDrawOpen" 
+#define __FUNC__ /*<a name="ViewerDrawOpen"></a>*/"ViewerDrawOpen" 
 /*@C
    ViewerDrawOpen - Opens an X window for use as a viewer. If you want to 
    do graphics in this window, you must call ViewerDrawGetDraw() and
@@ -264,7 +264,7 @@ int ViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,i
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerGetSingleton_Draw" 
+#define __FUNC__ /*<a name="ViewerGetSingleton_Draw"></a>*/"ViewerGetSingleton_Draw" 
 int ViewerGetSingleton_Draw(Viewer viewer,Viewer *sviewer)
 {
   int         ierr,rank,i;
@@ -291,7 +291,7 @@ int ViewerGetSingleton_Draw(Viewer viewer,Viewer *sviewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerRestoreSingleton_Draw" 
+#define __FUNC__ /*<a name="ViewerRestoreSingleton_Draw"></a>*/"ViewerRestoreSingleton_Draw" 
 int ViewerRestoreSingleton_Draw(Viewer viewer,Viewer *sviewer)
 {
   int         ierr,rank,i;
@@ -318,7 +318,7 @@ int ViewerRestoreSingleton_Draw(Viewer viewer,Viewer *sviewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerCreate_Draw" 
+#define __FUNC__ /*<a name="ViewerCreate_Draw"></a>*/"ViewerCreate_Draw" 
 int ViewerCreate_Draw(Viewer viewer)
 {
   int         i;
@@ -346,7 +346,7 @@ int ViewerCreate_Draw(Viewer viewer)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ViewerDrawClear" 
+#define __FUNC__ /*<a name="ViewerDrawClear"></a>*/"ViewerDrawClear" 
 /*@
     ViewerDrawClear - Clears a Draw graphic associated with a viewer.
 
@@ -385,7 +385,7 @@ int ViewerDrawClear(Viewer viewer)
 static int Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"VIEWER_DRAW_" 
+#define __FUNC__ /*<a name="VIEWER_DRAW_"></a>*/"VIEWER_DRAW_" 
 /*@C
      VIEWER_DRAW_ - Creates a window viewer shared by all processors 
                      in a communicator.

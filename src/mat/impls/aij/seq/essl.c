@@ -1,4 +1,4 @@
-/*$Id: essl.c,v 1.39 2000/04/12 04:23:03 bsmith Exp bsmith $*/
+/*$Id: essl.c,v 1.40 2000/05/09 03:57:05 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver
@@ -23,11 +23,11 @@ typedef struct {
 } Mat_SeqAIJ_Essl;
 
 
-extern int MatDestroy_SeqAIJ(Mat);
+EXTERN int MatDestroy_SeqAIJ(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="MatDestroy_SeqAIJ_Essl"></a>*/"MatDestroy_SeqAIJ_Essl"
-extern int MatDestroy_SeqAIJ_Essl(Mat A)
+int MatDestroy_SeqAIJ_Essl(Mat A)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)a->spptr;
@@ -42,7 +42,7 @@ extern int MatDestroy_SeqAIJ_Essl(Mat A)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="MatSolve_SeqAIJ_Essl"></a>*/"MatSolve_SeqAIJ_Essl"
-extern int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
+int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)a->spptr;
@@ -60,7 +60,7 @@ extern int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="MatLUFactorNumeric_SeqAIJ_Essl"></a>*/"MatLUFactorNumeric_SeqAIJ_Essl"
-extern int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
+int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)(*F)->data;
   Mat_SeqAIJ      *aa = (Mat_SeqAIJ*)(A)->data;
@@ -94,7 +94,7 @@ extern int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="MatLUFactorSymbolic_SeqAIJ_Essl"></a>*/"MatLUFactorSymbolic_SeqAIJ_Essl"
-extern int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,PetscReal f,Mat *F)
+int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,PetscReal f,Mat *F)
 {
   Mat             B;
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*b;

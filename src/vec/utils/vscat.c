@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.158 2000/05/02 03:24:57 bsmith Exp balay $*/
+/*$Id: vscat.c,v 1.159 2000/05/05 22:14:53 balay Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -691,9 +691,9 @@ int VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
   PetscFunctionReturn(0);
 }
 
-extern int VecScatterCreate_PtoS(int,int *,int,int *,Vec,Vec,int,VecScatter);
-extern int VecScatterCreate_PtoP(int,int *,int,int *,Vec,Vec,VecScatter);
-extern int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
+EXTERN int VecScatterCreate_PtoS(int,int *,int,int *,Vec,Vec,int,VecScatter);
+EXTERN int VecScatterCreate_PtoP(int,int *,int,int *,Vec,Vec,VecScatter);
+EXTERN int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 
 /* =======================================================================*/
 #define VECSEQ 0

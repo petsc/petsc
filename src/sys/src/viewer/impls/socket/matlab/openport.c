@@ -1,4 +1,4 @@
-/*$Id: openport.c,v 1.17 2000/04/12 04:20:49 bsmith Exp balay $*/
+/*$Id: openport.c,v 1.18 2000/05/05 22:13:07 balay Exp bsmith $*/
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  
@@ -51,8 +51,8 @@ typedef unsigned long   u_long;
 #include "petscfix.h"
 #include "mex.h"
 
-extern int SOCKConnect_Private(int);
-#define ERROR(a) {fprintf(stderr,"OPENPORT: %s \n",a); return ;}
+EXTERN int SOCKConnect_Private(int);
+#define ERROR(a) {fprintf(stdout,"OPENPORT: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
@@ -109,14 +109,14 @@ int SOCKConnect_Private(int portnumber)
 /* open port*/
   listenport = establish((u_short) portnumber);
   if (listenport == -1) {
-       fprintf(stderr,"RECEIVE: unable to establish port\n");
+       fprintf(stdout,"RECEIVE: unable to establish port\n");
        return -1;
   }
 
 /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
   if ((t = accept(listenport,(struct sockaddr *)&isa,&i)) < 0) {
-     fprintf(stderr,"RECEIVE: error from accept\n");
+     fprintf(stdout,"RECEIVE: error from accept\n");
      return(-1);
   }
   close(listenport);  
@@ -139,7 +139,7 @@ int establish(u_short portnum)
   bzero(&sa,sizeof(struct sockaddr_in));
   hp = gethostbyname(myname);
   if (hp == NULL) {
-     fprintf(stderr,"RECEIVE: error from gethostbyname\n");
+     fprintf(stdout,"RECEIVE: error from gethostbyname\n");
      return(-1);
   }
 
@@ -147,7 +147,7 @@ int establish(u_short portnum)
   sa.sin_port = htons(portnum); 
 
   if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) {
-     fprintf(stderr,"RECEIVE: error from socket\n");
+     fprintf(stdout,"RECEIVE: error from socket\n");
      return(-1);
   }
   {
@@ -158,7 +158,7 @@ int establish(u_short portnum)
   while (bind(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
      if (errno != EADDRINUSE) { 
         close(s);
-        fprintf(stderr,"RECEIVE: error from bind\n");
+        fprintf(stdout,"RECEIVE: error from bind\n");
         return(-1);
      }
      close(listenport); 

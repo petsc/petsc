@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.62 2000/05/05 22:14:00 balay Exp balay $*/
+/*$Id: init.c,v 1.63 2000/05/08 15:07:31 balay Exp bsmith $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -51,8 +51,8 @@ PetscTruth PetscAMSPublishAll = PETSC_FALSE;
 /*
        Function that is called to display all error messages
 */
-extern int  PetscErrorPrintfDefault(const char [],...);
-extern int  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
+EXTERN int  PetscErrorPrintfDefault(const char [],...);
+EXTERN int  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 int (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
 int (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
 
@@ -308,15 +308,9 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,int *flag)
   }
 }
 
-#if defined(PETSC_HAVE_MALLOC_VERIFY)
-EXTERN_C_BEGIN
-extern int malloc_debug(int);
-EXTERN_C_END
-#endif
-
 PetscTruth        PetscPublishOptions = PETSC_FALSE;
-extern int        PLogInfoAllow(PetscTruth,char *);
-extern int        PetscSetUseTrMalloc_Private(void);
+EXTERN int        PLogInfoAllow(PetscTruth,char *);
+EXTERN int        PetscSetUseTrMalloc_Private(void);
 extern PetscTruth petscsetmallocvisited;
 static char       emacsmachinename[128];
 
@@ -385,9 +379,6 @@ int OptionsCheckInitial(void)
   ierr = OptionsHasName(PETSC_NULL,"-trdebug",&flg1);CHKERRQ(ierr);
   if (flg1) { 
     ierr = PetscTrDebugLevel(1);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MALLOC_VERIFY) && defined(PETSC_USE_BOPT_g)
-    malloc_debug(2);
-#endif
   }
 
   /*

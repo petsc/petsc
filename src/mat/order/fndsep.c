@@ -1,4 +1,4 @@
-/*$Id: fndsep.c,v 1.18 2000/04/09 04:37:05 bsmith Exp bsmith $*/
+/*$Id: fndsep.c,v 1.19 2000/04/12 04:24:20 bsmith Exp bsmith $*/
 /* fndsep.f -- translated by f2c (version 19931217).
 */
 
@@ -44,7 +44,7 @@ int SPARSEPACKfndsep(int *root, int *xadj, int *adjncy,
     /* Local variables */
     int node, nlvl, i, j, jstop, jstrt, mp1beg, mp1end, midbeg, 
 	    midend, midlvl;
-    extern int SPARSEPACKfnroot(int *, int *, int *, 
+    EXTERN int SPARSEPACKfnroot(int *, int *, int *, 
 	    int *, int *, int *, int *);
     int nbr;
 

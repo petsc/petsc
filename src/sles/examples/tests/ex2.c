@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.16 2000/01/11 21:02:16 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.17 2000/05/05 22:17:55 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
 
@@ -27,7 +27,7 @@ T*/
 */
 #include "petscsles.h"
 
-extern int slesex(int,char**);
+EXTERN int slesex(int,char**);
 
 #undef __FUNC__
 #define __FUNC__ "main"

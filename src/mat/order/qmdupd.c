@@ -1,4 +1,4 @@
-/*$Id: qmdupd.c,v 1.15 2000/04/09 04:37:05 bsmith Exp bsmith $*/
+/*$Id: qmdupd.c,v 1.16 2000/04/12 04:24:20 bsmith Exp bsmith $*/
 /* qmdupd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -40,7 +40,7 @@ int SPARSEPACKqmdupd(int *xadj, int *adjncy, int *nlist,
 
     /* Local variables */
     int inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
-    extern int SPARSEPACKqmdrch(int *, int *, int *, 
+    EXTERN int SPARSEPACKqmdrch(int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *),
 	     SPARSEPACKqmdmrg(int *, int *, int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);

@@ -1,4 +1,4 @@
-  /* $Id: tsimpl.h,v 1.19 2000/01/11 21:02:54 bsmith Exp balay $ */
+  /* $Id: tsimpl.h,v 1.20 2000/05/05 22:18:48 balay Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -75,7 +75,7 @@ struct _p_TS {
   int           (*view)(TS,Viewer);
 };
 
-extern int TSMonitor(TS,int,double,Vec);
-extern int TSComputeRHSBoundaryConditions(TS,double,Vec); 
+EXTERN int TSMonitor(TS,int,double,Vec);
+EXTERN int TSComputeRHSBoundaryConditions(TS,double,Vec); 
 
 #endif

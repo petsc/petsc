@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.103 2000/05/04 14:04:15 balay Exp balay $*/
+/*$Id: cg.c,v 1.104 2000/05/05 22:17:34 balay Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -44,8 +44,8 @@
     data used during the optional Lanczo process used to compute eigenvalues
 */
 #include "src/sles/ksp/impls/cg/cgctx.h"       /*I "petscksp.h" I*/
-extern int KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
-extern int KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,int *);
+EXTERN int KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
+EXTERN int KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,int *);
 
 /*
      KSPSetUp_CG - Sets up the workspace needed by the CG method. 

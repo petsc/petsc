@@ -1,5 +1,5 @@
 
-/* $Id: sda.h,v 1.7 2000/01/11 21:03:35 bsmith Exp balay $ */
+/* $Id: sda.h,v 1.8 2000/05/05 22:19:45 balay Exp bsmith $ */
 /*
     Defines the interface object for the simplified distributed array
     */
@@ -11,16 +11,16 @@
 
 typedef struct _SDA* SDA;
 
-extern int SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,
+EXTERN int SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,
                 int,int,int,int,int,int,int,int,int *,int *,int *,SDA *);
-extern int SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,
+EXTERN int SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,
                 int,int,int,int,int,int,int *,int *,SDA *);
-extern int SDACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,SDA *);
-extern int SDADestroy(SDA);
-extern int SDALocalToLocalBegin(SDA,Scalar*,InsertMode,Scalar*);
-extern int SDALocalToLocalEnd(SDA,Scalar*,InsertMode,Scalar*);
+EXTERN int SDACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,SDA *);
+EXTERN int SDADestroy(SDA);
+EXTERN int SDALocalToLocalBegin(SDA,Scalar*,InsertMode,Scalar*);
+EXTERN int SDALocalToLocalEnd(SDA,Scalar*,InsertMode,Scalar*);
 
-extern int SDAGetCorners(SDA,int*,int*,int*,int*,int*,int*);
-extern int SDAGetGhostCorners(SDA,int*,int*,int*,int*,int*,int*);
+EXTERN int SDAGetCorners(SDA,int*,int*,int*,int*,int*,int*);
+EXTERN int SDAGetGhostCorners(SDA,int*,int*,int*,int*,int*,int*);
 
 #endif

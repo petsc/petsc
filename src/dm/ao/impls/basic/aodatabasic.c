@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.53 2000/05/05 22:19:12 balay Exp balay $*/
+/*$Id: aodatabasic.c,v 1.54 2000/05/08 15:09:19 balay Exp bsmith $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.
@@ -592,7 +592,7 @@ int AODataSegmentRestoreLocal_Basic(AOData aodata,char *name,char *segname,int n
   PetscFunctionReturn(0);
 }
 
-extern int AOBasicGetIndices_Private(AO,int **,int **);
+EXTERN int AOBasicGetIndices_Private(AO,int **,int **);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"AODataKeyRemap_Basic"
@@ -828,8 +828,8 @@ int AODataKeyGetActiveLocal_Basic(AOData aodata,char *name,char *segname,int n,i
   PetscFunctionReturn(0);
 }
 
-extern int AODataSegmentGetReduced_Basic(AOData,char *,char *,int,int*,IS *);
-extern int AODataPublish_Petsc(PetscObject);
+EXTERN int AODataSegmentGetReduced_Basic(AOData,char *,char *,int,int*,IS *);
+EXTERN int AODataPublish_Petsc(PetscObject);
 
 static struct _AODataOps myops = {AODataSegmentAdd_Basic,
                                   AODataSegmentGet_Basic,

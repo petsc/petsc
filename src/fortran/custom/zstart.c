@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.72 2000/05/04 16:27:10 bsmith Exp balay $*/
+/*$Id: zstart.c,v 1.73 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -98,9 +98,9 @@ EXTERN_C_BEGIN
 extern void PetscMaxSum_Local(void *,void *,int *,MPI_Datatype *);
 EXTERN_C_END
 
-extern int OptionsCheckInitial(void);
-extern int OptionsCheckInitial_Components(void);
-extern int PetscInitialize_DynamicLibraries(void);
+EXTERN int OptionsCheckInitial(void);
+EXTERN int OptionsCheckInitial_Components(void);
+EXTERN int PetscInitialize_DynamicLibraries(void);
 
 /*
     Reads in Fortran command line argments and sends them to 

@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.48 2000/05/04 16:25:54 bsmith Exp balay $*/
+/*$Id: color.c,v 1.49 2000/05/05 22:16:51 balay Exp bsmith $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -286,7 +286,7 @@ int MatColoringRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-extern int MatAdjustForInodes(Mat,IS *,IS *);
+EXTERN int MatAdjustForInodes(Mat,IS *,IS *);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetColoring" 

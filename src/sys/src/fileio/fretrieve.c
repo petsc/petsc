@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.29 2000/04/12 04:21:24 bsmith Exp balay $*/
+/*$Id: fretrieve.c,v 1.30 2000/05/05 22:13:54 balay Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -37,7 +37,7 @@
 #include "petscfix.h"
 
 EXTERN_C_BEGIN
-extern int Petsc_DelTag(MPI_Comm,int,void*,void*);
+EXTERN int Petsc_DelTag(MPI_Comm,int,void*,void*);
 EXTERN_C_END
 
 #undef __FUNC__  

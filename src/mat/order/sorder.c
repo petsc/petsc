@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.71 2000/04/12 04:24:20 bsmith Exp balay $*/
+/*$Id: sorder.c,v 1.72 2000/05/05 22:16:44 balay Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -9,7 +9,7 @@
 FList      MatOrderingList = 0;
 PetscTruth MatOrderingRegisterAllCalled = PETSC_FALSE;
 
-extern int MatOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS *,IS *);
+EXTERN int MatOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS *,IS *);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatOrdering_Flow"
@@ -190,7 +190,7 @@ int MatOrderingRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-extern int MatAdjustForInodes(Mat,IS *,IS *);
+EXTERN int MatAdjustForInodes(Mat,IS *,IS *);
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #undef __FUNC__  

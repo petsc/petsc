@@ -1,4 +1,4 @@
-/* $Id: dot.h,v 1.17 1999/11/11 20:40:55 balay Exp bsmith $ */
+/* $Id: dot.h,v 1.18 2000/01/11 20:58:48 bsmith Exp bsmith $ */
 
 #ifndef DOT
 #include "petsc.h"
@@ -17,13 +17,13 @@ EXTERN_C_BEGIN
 #define fortranmdot2_      fortranmdot2
 #define fortranmdot1_      fortranmdot1
 #endif
-extern void fortranmdot4_(void *,void *,void *,void *,void *,int *,
+EXTERN void fortranmdot4_(void *,void *,void *,void *,void *,int *,
                            void *,void *,void *,void *);
-extern void fortranmdot3_(void *,void *,void *,void *,int *,
+EXTERN void fortranmdot3_(void *,void *,void *,void *,int *,
                            void *,void *,void *);
-extern void fortranmdot2_(void *,void *,void *,int *,
+EXTERN void fortranmdot2_(void *,void *,void *,int *,
                            void *,void *);
-extern void fortranmdot1_(void *,void *,int *,
+EXTERN void fortranmdot1_(void *,void *,int *,
                            void *);
 #endif
 
@@ -33,7 +33,7 @@ extern void fortranmdot1_(void *,void *,int *,
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortrannormsqr_    fortrannormsqr
 #endif
-extern void fortrannormsqr_(void *,int *,void *);
+EXTERN void fortrannormsqr_(void *,int *,void *);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
@@ -42,7 +42,7 @@ extern void fortrannormsqr_(void *,int *,void *);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultaij_    fortranmultaij
 #endif
-extern void fortranmultaij_(int *,void*,int *,int *,void *,void*);
+EXTERN void fortranmultaij_(int *,void*,int *,int *,void *,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
@@ -51,7 +51,7 @@ extern void fortranmultaij_(int *,void*,int *,int *,void *,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultaddaij_ fortranmultaddaij
 #endif
-extern void fortranmultaddaij_(int *,void*,int *,int *,void *,void*,void*);
+EXTERN void fortranmultaddaij_(int *,void*,int *,int *,void *,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
@@ -60,7 +60,7 @@ extern void fortranmultaddaij_(int *,void*,int *,int *,void *,void*,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolveaij_   fortransolveaij
 #endif
-extern void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
+EXTERN void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
@@ -69,7 +69,7 @@ extern void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4_          fortransolvebaij4
 #endif
-extern void fortransolvebaij4_(int *,void*,int *,int *,int*,void *,void*,void *);
+EXTERN void fortransolvebaij4_(int *,void*,int *,int *,int*,void *,void*,void *);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJUNROLL)
@@ -78,7 +78,7 @@ extern void fortransolvebaij4_(int *,void*,int *,int *,int*,void *,void*,void *)
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4unroll_    fortransolvebaij4unroll
 #endif
-extern void fortransolvebaij4unroll_(int *,void*,int *,int *,int*,void *,void*);
+EXTERN void fortransolvebaij4unroll_(int *,void*,int *,int *,int*,void *,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJBLAS)
@@ -87,7 +87,7 @@ extern void fortransolvebaij4unroll_(int *,void*,int *,int *,int*,void *,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4blas_      fortransolvebaij4blas
 #endif
-extern void fortransolvebaij4blas_(int *,void*,int *,int *,int*,void *,void*,void *);
+EXTERN void fortransolvebaij4blas_(int *,void*,int *,int *,int*,void *,void*,void *);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
@@ -96,7 +96,7 @@ extern void fortransolvebaij4blas_(int *,void*,int *,int *,int*,void *,void*,voi
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranxtimesy_ fortranxtimesy
 #endif
-extern void fortranxtimesy_(void *,void *,void *,int *);
+EXTERN void fortranxtimesy_(void *,void *,void *,int *);
 #endif
 
 EXTERN_C_END
@@ -137,7 +137,7 @@ while(n--){sum1+= *x**y1++;sum2+=*x++**y2++;}}
 while(n--) {sum+= *x * *x; x++;}}
 
 #elif defined(PETSC_USE_BLAS_KERNELS)
-extern double ddot_();
+EXTERN double ddot_();
 #define DOT(sum,x,y,n) {int one=1;\
 sum=ddot_(&n,x,&one,y,&one);}
 #define DOT2(sum1,sum2,x,y1,y2,n) {int __i;\

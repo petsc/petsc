@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.108 2000/05/04 16:25:22 bsmith Exp balay $ */
+/* $Id: matimpl.h,v 1.109 2000/05/05 22:15:27 balay Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -89,10 +89,10 @@ struct _MatOps {
 /*
    Utility private matrix routines
 */
-extern int MatConvert_Basic(Mat,MatType,Mat*);
-extern int MatCopy_Basic(Mat,Mat,MatStructure);
-extern int MatView_Private(Mat);
-extern int MatGetMaps_Petsc(Mat,Map *,Map *);
+EXTERN int MatConvert_Basic(Mat,MatType,Mat*);
+EXTERN int MatCopy_Basic(Mat,Mat,MatStructure);
+EXTERN int MatView_Private(Mat);
+EXTERN int MatGetMaps_Petsc(Mat,Map *,Map *);
 
 /* 
   The stash is used to temporarily store inserted matrix values that 
@@ -124,17 +124,17 @@ typedef struct {
   int           nprocessed;             /* number of messages already processed */
 } MatStash;
 
-extern int MatStashCreate_Private(MPI_Comm,int,MatStash*);
-extern int MatStashDestroy_Private(MatStash*);
-extern int MatStashScatterEnd_Private(MatStash*);
-extern int MatStashSetInitialSize_Private(MatStash*,int);
-extern int MatStashGetInfo_Private(MatStash*,int*,int*);
-extern int MatStashValuesRow_Private(MatStash*,int,int,int*,MatScalar*);
-extern int MatStashValuesCol_Private(MatStash*,int,int,int*,MatScalar*,int);
-extern int MatStashValuesRowBlocked_Private(MatStash*,int,int,int*,MatScalar*,int,int,int);
-extern int MatStashValuesColBlocked_Private(MatStash*,int,int,int*,MatScalar*,int,int,int);
-extern int MatStashScatterBegin_Private(MatStash*,int*);
-extern int MatStashScatterGetMesg_Private(MatStash*,int*,int**,int**,MatScalar**,int*);
+EXTERN int MatStashCreate_Private(MPI_Comm,int,MatStash*);
+EXTERN int MatStashDestroy_Private(MatStash*);
+EXTERN int MatStashScatterEnd_Private(MatStash*);
+EXTERN int MatStashSetInitialSize_Private(MatStash*,int);
+EXTERN int MatStashGetInfo_Private(MatStash*,int*,int*);
+EXTERN int MatStashValuesRow_Private(MatStash*,int,int,int*,MatScalar*);
+EXTERN int MatStashValuesCol_Private(MatStash*,int,int,int*,MatScalar*,int);
+EXTERN int MatStashValuesRowBlocked_Private(MatStash*,int,int,int*,MatScalar*,int,int,int);
+EXTERN int MatStashValuesColBlocked_Private(MatStash*,int,int,int*,MatScalar*,int,int,int);
+EXTERN int MatStashScatterBegin_Private(MatStash*,int*);
+EXTERN int MatStashScatterGetMesg_Private(MatStash*,int*,int**,int**,MatScalar**,int*);
 
 #define FACTOR_LU       1
 #define FACTOR_CHOLESKY 2

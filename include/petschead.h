@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.76 1999/10/23 00:02:04 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.77 2000/01/11 21:04:04 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -8,10 +8,10 @@
 #define _PHEAD_H
 #include "petsc.h"  
 
-extern int PetscCommDuplicate_Private(MPI_Comm,MPI_Comm*,int*);
-extern int PetscCommDestroy_Private(MPI_Comm*);
+EXTERN int PetscCommDuplicate_Private(MPI_Comm,MPI_Comm*,int*);
+EXTERN int PetscCommDestroy_Private(MPI_Comm*);
 
-extern int PetscRegisterCookie(int *);
+EXTERN int PetscRegisterCookie(int *);
 
 /*
    All major PETSc data structures have a common core; this is defined 
@@ -80,9 +80,9 @@ typedef struct {
 
 #define  PETSCFREEDHEADER -1
 
-extern int PetscHeaderCreate_Private(PetscObject,int,int,char *,MPI_Comm,
+EXTERN int PetscHeaderCreate_Private(PetscObject,int,int,char *,MPI_Comm,
                                      int (*)(PetscObject),int (*)(PetscObject,Viewer));
-extern int PetscHeaderDestroy_Private(PetscObject);
+EXTERN int PetscHeaderDestroy_Private(PetscObject);
 
 /*
     PetscHeaderCreate - Creates a PETSc object
@@ -258,8 +258,8 @@ struct _p_PetscObject {
   PETSCHEADER(int)
 };
 
-extern int PetscObjectPublishBaseBegin(PetscObject);
-extern int PetscObjectPublishBaseEnd(PetscObject);
+EXTERN int PetscObjectPublishBaseBegin(PetscObject);
+EXTERN int PetscObjectPublishBaseEnd(PetscObject);
 
 #endif
 

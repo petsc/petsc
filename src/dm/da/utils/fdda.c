@@ -1,13 +1,13 @@
-/*$Id: fdda.c,v 1.45 2000/04/12 04:26:32 bsmith Exp balay $*/
+/*$Id: fdda.c,v 1.46 2000/05/05 22:19:37 balay Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
 #include "src/dm/da/daimpl.h" 
 
-extern int DAGetColoring1d(DA,ISColoring *,Mat *);
-extern int DAGetColoring2d_1(DA,ISColoring *,Mat *);
-extern int DAGetColoring2d(DA,ISColoring *,Mat *);
-extern int DAGetColoring3d(DA,ISColoring *,Mat *);
+EXTERN int DAGetColoring1d(DA,ISColoring *,Mat *);
+EXTERN int DAGetColoring2d_1(DA,ISColoring *,Mat *);
+EXTERN int DAGetColoring2d(DA,ISColoring *,Mat *);
+EXTERN int DAGetColoring3d(DA,ISColoring *,Mat *);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DAGetColoring" 

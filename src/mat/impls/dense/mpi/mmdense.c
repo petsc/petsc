@@ -1,4 +1,4 @@
-/*$Id: mmdense.c,v 1.28 2000/04/09 04:35:58 bsmith Exp bsmith $*/
+/*$Id: mmdense.c,v 1.29 2000/04/12 04:22:59 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel dense matrix vector multiply
@@ -39,7 +39,7 @@ int MatSetUpMultiply_MPIDense(Mat mat)
   PetscFunctionReturn(0);
 }
 
-extern int MatGetSubMatrices_MPIDense_Local(Mat,int,IS*,IS*,MatReuse,Mat*);
+EXTERN int MatGetSubMatrices_MPIDense_Local(Mat,int,IS*,IS*,MatReuse,Mat*);
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetSubMatrices_MPIDense" 
 int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat **submat)

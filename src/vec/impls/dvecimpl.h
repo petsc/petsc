@@ -1,4 +1,4 @@
-/* $Id: dvecimpl.h,v 1.14 1999/03/10 22:32:02 bsmith Exp bsmith $ */
+/* $Id: dvecimpl.h,v 1.15 2000/01/11 21:00:11 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 
@@ -17,30 +17,30 @@ typedef struct {
   VECHEADER
 } Vec_Seq;
 
-extern int VecMDot_Seq(int,Vec,const Vec[],Scalar *);
-extern int VecMTDot_Seq(int,Vec,const Vec[],Scalar *);
-extern int VecMin_Seq(Vec,int*,double *);
-extern int VecSet_Seq(const Scalar*,Vec);
-extern int VecSetRandom_Seq(PetscRandom,Vec);
-extern int VecMAXPY_Seq(int,const Scalar *,Vec,Vec *);
-extern int VecAYPX_Seq(const Scalar *,Vec,Vec);
-extern int VecWAXPY_Seq(const Scalar*,Vec,Vec,Vec);
-extern int VecPointwiseMult_Seq(Vec,Vec,Vec);
-extern int VecPointwiseDivide_Seq(Vec,Vec,Vec);
-extern int VecGetArray_Seq(Vec,Scalar *[]);
-extern int VecRestoreArray_Seq(Vec,Scalar *[]);
-extern int VecPlaceArray_Seq(Vec,const Scalar *);
-extern int VecReplaceArray_Seq(Vec,const Scalar *);
-extern int VecGetSize_Seq(Vec,int *);
-extern int VecDot_Seq(Vec,Vec,Scalar *);
-extern int VecTDot_Seq(Vec,Vec,Scalar *);
-extern int VecScale_Seq(const Scalar *,Vec);
-extern int VecCopy_Seq(Vec,Vec);
-extern int VecSwap_Seq(Vec,Vec);
-extern int VecAXPY_Seq(const Scalar *,Vec,Vec);
-extern int VecAXPBY_Seq(const Scalar *,const Scalar *,Vec,Vec);
-extern int VecMax_Seq(Vec,int*,double *);
-extern int VecDuplicate_Seq(Vec,Vec *);
-extern int VecGetMap_Seq(Vec,Map *);
+EXTERN int VecMDot_Seq(int,Vec,const Vec[],Scalar *);
+EXTERN int VecMTDot_Seq(int,Vec,const Vec[],Scalar *);
+EXTERN int VecMin_Seq(Vec,int*,double *);
+EXTERN int VecSet_Seq(const Scalar*,Vec);
+EXTERN int VecSetRandom_Seq(PetscRandom,Vec);
+EXTERN int VecMAXPY_Seq(int,const Scalar *,Vec,Vec *);
+EXTERN int VecAYPX_Seq(const Scalar *,Vec,Vec);
+EXTERN int VecWAXPY_Seq(const Scalar*,Vec,Vec,Vec);
+EXTERN int VecPointwiseMult_Seq(Vec,Vec,Vec);
+EXTERN int VecPointwiseDivide_Seq(Vec,Vec,Vec);
+EXTERN int VecGetArray_Seq(Vec,Scalar *[]);
+EXTERN int VecRestoreArray_Seq(Vec,Scalar *[]);
+EXTERN int VecPlaceArray_Seq(Vec,const Scalar *);
+EXTERN int VecReplaceArray_Seq(Vec,const Scalar *);
+EXTERN int VecGetSize_Seq(Vec,int *);
+EXTERN int VecDot_Seq(Vec,Vec,Scalar *);
+EXTERN int VecTDot_Seq(Vec,Vec,Scalar *);
+EXTERN int VecScale_Seq(const Scalar *,Vec);
+EXTERN int VecCopy_Seq(Vec,Vec);
+EXTERN int VecSwap_Seq(Vec,Vec);
+EXTERN int VecAXPY_Seq(const Scalar *,Vec,Vec);
+EXTERN int VecAXPBY_Seq(const Scalar *,const Scalar *,Vec,Vec);
+EXTERN int VecMax_Seq(Vec,int*,double *);
+EXTERN int VecDuplicate_Seq(Vec,Vec *);
+EXTERN int VecGetMap_Seq(Vec,Map *);
 
 #endif

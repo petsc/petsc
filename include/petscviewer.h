@@ -1,4 +1,4 @@
-/* $Id: petscviewer.h,v 1.74 2000/05/04 16:27:19 bsmith Exp balay $ */
+/* $Id: petscviewer.h,v 1.75 2000/05/08 15:09:50 balay Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -25,33 +25,33 @@ typedef char* ViewerType;
 #define AMS_VIEWER          "ams"
 
 extern FList ViewerList;
-extern int ViewerRegisterAll(char *);
-extern int ViewerRegisterDestroy(void);
+EXTERN int ViewerRegisterAll(char *);
+EXTERN int ViewerRegisterDestroy(void);
 
-extern int ViewerRegister(char*,char*,char*,int(*)(Viewer));
+EXTERN int ViewerRegister(char*,char*,char*,int(*)(Viewer));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define ViewerRegisterDynamic(a,b,c,d) ViewerRegister(a,b,c,0)
 #else
 #define ViewerRegisterDynamic(a,b,c,d) ViewerRegister(a,b,c,d)
 #endif
-extern int ViewerCreate(MPI_Comm,Viewer*);
-extern int ViewerSetFromOptions(Viewer);
+EXTERN int ViewerCreate(MPI_Comm,Viewer*);
+EXTERN int ViewerSetFromOptions(Viewer);
 
 
-extern int ViewerASCIIOpen(MPI_Comm,const char[],Viewer*);
+EXTERN int ViewerASCIIOpen(MPI_Comm,const char[],Viewer*);
 typedef enum {BINARY_RDONLY,BINARY_WRONLY,BINARY_CREATE} ViewerBinaryType;
-extern int ViewerBinaryOpen(MPI_Comm,const char[],ViewerBinaryType,Viewer*);
-extern int ViewerSocketOpen(MPI_Comm,const char[],int,Viewer*);
-extern int ViewerStringOpen(MPI_Comm,char[],int,Viewer*);
-extern int ViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,Viewer*);
-extern int ViewerAMSSetCommName(Viewer,const char[]);
+EXTERN int ViewerBinaryOpen(MPI_Comm,const char[],ViewerBinaryType,Viewer*);
+EXTERN int ViewerSocketOpen(MPI_Comm,const char[],int,Viewer*);
+EXTERN int ViewerStringOpen(MPI_Comm,char[],int,Viewer*);
+EXTERN int ViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,Viewer*);
+EXTERN int ViewerAMSSetCommName(Viewer,const char[]);
 
-extern int ViewerGetOutputname(Viewer,char**);  
-extern int ViewerGetType(Viewer,ViewerType*);
-extern int ViewerSetType(Viewer,ViewerType);
-extern int ViewerDestroy(Viewer);
-extern int ViewerGetSingleton(Viewer,Viewer*);
-extern int ViewerRestoreSingleton(Viewer,Viewer*);
+EXTERN int ViewerGetOutputname(Viewer,char**);  
+EXTERN int ViewerGetType(Viewer,ViewerType*);
+EXTERN int ViewerSetType(Viewer,ViewerType);
+EXTERN int ViewerDestroy(Viewer);
+EXTERN int ViewerGetSingleton(Viewer,Viewer*);
+EXTERN int ViewerRestoreSingleton(Viewer,Viewer*);
 
 #define VIEWER_FORMAT_ASCII_DEFAULT       0
 #define VIEWER_FORMAT_ASCII_MATLAB        1
@@ -73,45 +73,45 @@ extern int ViewerRestoreSingleton(Viewer,Viewer*);
 
 #define VIEWER_FORMAT_NATIVE              14
 
-extern int    ViewerSetFormat(Viewer,int,char[]);
-extern int    ViewerPushFormat(Viewer,int,char[]);
-extern int    ViewerPopFormat(Viewer);
-extern int    ViewerGetFormat(Viewer,int*);
-extern int    ViewerFlush(Viewer);
+EXTERN int    ViewerSetFormat(Viewer,int,char[]);
+EXTERN int    ViewerPushFormat(Viewer,int,char[]);
+EXTERN int    ViewerPopFormat(Viewer);
+EXTERN int    ViewerGetFormat(Viewer,int*);
+EXTERN int    ViewerFlush(Viewer);
 
 /*
    Operations explicit to a particular class of viewers
 */
-extern int ViewerASCIIGetPointer(Viewer,FILE**);
-extern int ViewerASCIIPrintf(Viewer,const char[],...);
-extern int ViewerASCIISynchronizedPrintf(Viewer,const char[],...);
-extern int ViewerASCIIPushTab(Viewer);
-extern int ViewerASCIIPopTab(Viewer);
-extern int ViewerASCIIUseTabs(Viewer,PetscTruth);
-extern int ViewerBinaryGetDescriptor(Viewer,int*);
-extern int ViewerBinaryGetInfoPointer(Viewer,FILE **);
-extern int ViewerBinarySetType(Viewer,ViewerBinaryType);
-extern int ViewerStringSPrintf(Viewer,char *,...);
-extern int ViewerStringSetString(Viewer,char[],int);
-extern int ViewerDrawClear(Viewer);
-extern int ViewerDrawSetInfo(Viewer,const char[],const char[],int,int,int,int);
-extern int ViewerSocketSetConnection(Viewer,const char[],int);
+EXTERN int ViewerASCIIGetPointer(Viewer,FILE**);
+EXTERN int ViewerASCIIPrintf(Viewer,const char[],...);
+EXTERN int ViewerASCIISynchronizedPrintf(Viewer,const char[],...);
+EXTERN int ViewerASCIIPushTab(Viewer);
+EXTERN int ViewerASCIIPopTab(Viewer);
+EXTERN int ViewerASCIIUseTabs(Viewer,PetscTruth);
+EXTERN int ViewerBinaryGetDescriptor(Viewer,int*);
+EXTERN int ViewerBinaryGetInfoPointer(Viewer,FILE **);
+EXTERN int ViewerBinarySetType(Viewer,ViewerBinaryType);
+EXTERN int ViewerStringSPrintf(Viewer,char *,...);
+EXTERN int ViewerStringSetString(Viewer,char[],int);
+EXTERN int ViewerDrawClear(Viewer);
+EXTERN int ViewerDrawSetInfo(Viewer,const char[],const char[],int,int,int,int);
+EXTERN int ViewerSocketSetConnection(Viewer,const char[],int);
 
-extern int ViewerSetFilename(Viewer,const char[]);
-extern int ViewerGetFilename(Viewer,char**);
+EXTERN int ViewerSetFilename(Viewer,const char[]);
+EXTERN int ViewerGetFilename(Viewer,char**);
 
 /*
      These are all the default viewers that do not have 
    to be explicitly opened
 */
-extern Viewer VIEWER_STDOUT_(MPI_Comm);
-extern int    VIEWER_STDOUT_Destroy(MPI_Comm);
-extern Viewer VIEWER_STDERR_(MPI_Comm);
-extern int    VIEWER_STDERR_Destroy(MPI_Comm);
-extern Viewer VIEWER_DRAW_(MPI_Comm);
-extern int    VIEWER_DRAW_Destroy(MPI_Comm);
-extern Viewer VIEWER_SOCKET_(MPI_Comm);
-extern int    VIEWER_SOCKET_Destroy(MPI_Comm);
+EXTERN Viewer VIEWER_STDOUT_(MPI_Comm);
+EXTERN int    VIEWER_STDOUT_Destroy(MPI_Comm);
+EXTERN Viewer VIEWER_STDERR_(MPI_Comm);
+EXTERN int    VIEWER_STDERR_Destroy(MPI_Comm);
+EXTERN Viewer VIEWER_DRAW_(MPI_Comm);
+EXTERN int    VIEWER_DRAW_Destroy(MPI_Comm);
+EXTERN Viewer VIEWER_SOCKET_(MPI_Comm);
+EXTERN int    VIEWER_SOCKET_Destroy(MPI_Comm);
 
 #define VIEWER_STDOUT_SELF  VIEWER_STDOUT_(PETSC_COMM_SELF)
 #define VIEWER_STDOUT_WORLD VIEWER_STDOUT_(PETSC_COMM_WORLD)
@@ -127,10 +127,10 @@ extern int    VIEWER_SOCKET_Destroy(MPI_Comm);
 */
 #if defined(PETSC_HAVE_AMS)
 #include "ams.h"
-extern int    ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
-extern int    ViewerAMSOpen(MPI_Comm,const char[],Viewer*);
-extern Viewer VIEWER_AMS_(MPI_Comm);
-extern int    VIEWER_AMS_Destroy(MPI_Comm);
+EXTERN int    ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
+EXTERN int    ViewerAMSOpen(MPI_Comm,const char[],Viewer*);
+EXTERN Viewer VIEWER_AMS_(MPI_Comm);
+EXTERN int    VIEWER_AMS_Destroy(MPI_Comm);
 #define VIEWER_AMS_WORLD VIEWER_AMS_(PETSC_COMM_WORLD)
 #endif
 
@@ -138,20 +138,20 @@ extern int    VIEWER_AMS_Destroy(MPI_Comm);
     Viewer utility routines used by PETSc that are not normally used
    by users.
 */
-extern int  ViewerSocketPutScalar_Private(Viewer,int,int,Scalar*);
-extern int  ViewerSocketPutReal_Private(Viewer,int,int,double*);
-extern int  ViewerSocketPutInt_Private(Viewer,int,int*);
-extern int  ViewerSocketPutSparse_Private(Viewer,int,int,int,Scalar*,int*,int *);
+EXTERN int  ViewerSocketPutScalar_Private(Viewer,int,int,Scalar*);
+EXTERN int  ViewerSocketPutReal_Private(Viewer,int,int,double*);
+EXTERN int  ViewerSocketPutInt_Private(Viewer,int,int*);
+EXTERN int  ViewerSocketPutSparse_Private(Viewer,int,int,int,Scalar*,int*,int *);
 
-extern int  ViewerDestroyAMS_Private(void);
+EXTERN int  ViewerDestroyAMS_Private(void);
 
 /*
     Manages sets of viewers
 */
 typedef struct _p_Viewers* Viewers;
-extern int ViewersCreate(MPI_Comm,Viewers*);
-extern int ViewersDestroy(Viewers);
-extern int ViewersGetViewer(Viewers,int,Viewer*);
+EXTERN int ViewersCreate(MPI_Comm,Viewers*);
+EXTERN int ViewersDestroy(Viewers);
+EXTERN int ViewersGetViewer(Viewers,int,Viewer*);
 
 #endif
 

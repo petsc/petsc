@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.139 2000/04/09 03:11:53 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.140 2000/05/04 16:27:19 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -135,9 +135,9 @@
 extern PLogDouble _TotalFlops;
 
 /* General logging of information; different from event logging */
-extern int PLogInfo(void*,const char[],...);
-extern int PLogInfoDeactivateClass(int);
-extern int PLogInfoActivateClass(int);
+EXTERN int PLogInfo(void*,const char[],...);
+EXTERN int PLogInfoDeactivateClass(int);
+EXTERN int PLogInfoActivateClass(int);
 extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
@@ -164,27 +164,27 @@ extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
 #if defined (PETSC_HAVE_MPE)
 #include "mpe.h"
 #define MPEBEGIN    1000 
-extern int PLogMPEBegin(void);
-extern int PLogMPEDump(const char[]);
+EXTERN int PLogMPEBegin(void);
+EXTERN int PLogMPEDump(const char[]);
 extern int UseMPE,PLogEventMPEFlags[];
-extern int PLogEventMPEActivate(int);
-extern int PLogEventMPEDeactivate(int);
+EXTERN int PLogEventMPEActivate(int);
+EXTERN int PLogEventMPEDeactivate(int);
 #else
 #define PLogEventMPEActivate(a) 0
 #define PLogEventMPEDeactivate(a) 0
 #endif
 
-extern int PLogEventActivate(int);
-extern int PLogEventDeactivate(int);
+EXTERN int PLogEventActivate(int);
+EXTERN int PLogEventDeactivate(int);
 
-extern int PLogEventActivateClass(int);
-extern int PLogEventDeactivateClass(int);
+EXTERN int PLogEventActivateClass(int);
+EXTERN int PLogEventDeactivateClass(int);
 
 extern PetscTruth PLogEventFlags[];
-extern int (*_PLogPLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
-extern int (*_PLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
-extern int (*_PLogPHC)(PetscObject);
-extern int (*_PLogPHD)(PetscObject);
+EXTERN int (*_PLogPLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
+EXTERN int (*_PLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
+EXTERN int (*_PLogPHC)(PetscObject);
+EXTERN int (*_PLogPHD)(PetscObject);
 
 extern int PLogEventDepth[];
 
@@ -262,20 +262,20 @@ extern int PLogEventDepth[];
 #define PLogObjectDestroy(h)        {if (_PLogPHD) (*_PLogPHD)((PetscObject)h);}
 #define PLogObjectMemory(p,m)       {PetscValidHeader((PetscObject)p);\
                                     ((PetscObject)(p))->mem += (m);}
-extern int  PLogObjectState(PetscObject,const char[],...);
-extern int  PLogDestroy(void);
-extern int  PLogStagePush(int);
-extern int  PLogStagePop(void);
-extern int  PLogStageRegister(int,const char[]);
-extern int  PLogPrintSummary(MPI_Comm,const char[]);
-extern int  PLogBegin(void);
-extern int  PLogTraceBegin(FILE *);
-extern int  PLogAllBegin(void);
-extern int  PLogSet(int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
+EXTERN int  PLogObjectState(PetscObject,const char[],...);
+EXTERN int  PLogDestroy(void);
+EXTERN int  PLogStagePush(int);
+EXTERN int  PLogStagePop(void);
+EXTERN int  PLogStageRegister(int,const char[]);
+EXTERN int  PLogPrintSummary(MPI_Comm,const char[]);
+EXTERN int  PLogBegin(void);
+EXTERN int  PLogTraceBegin(FILE *);
+EXTERN int  PLogAllBegin(void);
+EXTERN int  PLogSet(int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
                     int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject));
-extern int  PLogDump(const char[]);
-extern int  PLogEventRegister(int*,const char[],const char[]);
-extern int  PetscGetFlops(PLogDouble*);
+EXTERN int  PLogDump(const char[]);
+EXTERN int  PLogEventRegister(int*,const char[],const char[]);
+EXTERN int  PetscGetFlops(PLogDouble*);
 
 extern PLogDouble irecv_ct,isend_ct,wait_ct,wait_any_ct,recv_ct,send_ct;
 extern PLogDouble irecv_len,isend_len,recv_len,send_len;
@@ -430,7 +430,7 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 #define PLogAllBegin()                  0
 #define PLogDump(c)                     0
 #define PLogEventRegister(a,b,c)        0
-extern int PLogObjectState(PetscObject,const char[],...);
+EXTERN int PLogObjectState(PetscObject,const char[],...);
 
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
 #define MPI_Startall_irecv(count,number,requests) MPI_Startall(number,requests)

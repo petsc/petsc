@@ -1,14 +1,14 @@
-/*$Id: sregis.c,v 1.32 2000/04/12 04:24:20 bsmith Exp balay $*/
+/*$Id: sregis.c,v 1.33 2000/05/05 22:16:44 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"     /*I       "petscmat.h"   I*/
 
 EXTERN_C_BEGIN
-extern int MatOrdering_Natural(Mat,MatOrderingType,IS*,IS*);
-extern int MatOrdering_ND(Mat,MatOrderingType,IS*,IS*);
-extern int MatOrdering_1WD(Mat,MatOrderingType,IS*,IS*);
-extern int MatOrdering_QMD(Mat,MatOrderingType,IS*,IS*);
-extern int MatOrdering_RCM(Mat,MatOrderingType,IS*,IS*);
-extern int MatOrdering_RowLength(Mat,MatOrderingType,IS*,IS*);
+EXTERN int MatOrdering_Natural(Mat,MatOrderingType,IS*,IS*);
+EXTERN int MatOrdering_ND(Mat,MatOrderingType,IS*,IS*);
+EXTERN int MatOrdering_1WD(Mat,MatOrderingType,IS*,IS*);
+EXTERN int MatOrdering_QMD(Mat,MatOrderingType,IS*,IS*);
+EXTERN int MatOrdering_RCM(Mat,MatOrderingType,IS*,IS*);
+EXTERN int MatOrdering_RowLength(Mat,MatOrderingType,IS*,IS*);
 EXTERN_C_END
 
 #undef __FUNC__  

@@ -1,4 +1,4 @@
-/*$Id: signal.c,v 1.68 2000/04/12 04:21:20 bsmith Exp balay $*/
+/*$Id: signal.c,v 1.69 2000/05/05 22:13:49 balay Exp bsmith $*/
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
@@ -115,7 +115,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
     PetscStackPop;
     ierr = PetscStrcat(buf,"PETSC ERROR: likely location of problem given above in stack\n");CHKERRQ(ierr);
     (*PetscErrorPrintf)("--------------- Stack Frames ---------------\n");
-    PetscStackView(VIEWER_STDERR_WORLD);
+    PetscStackView(VIEWER_STDOUT_WORLD);
     (*PetscErrorPrintf)("--------------------------------------------\n");
   }
 #endif

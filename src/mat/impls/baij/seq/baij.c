@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.207 2000/05/04 18:59:14 balay Exp balay $*/
+/*$Id: baij.c,v 1.208 2000/05/05 22:16:00 balay Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -17,7 +17,7 @@
    into the single precision data structures.
 */
 #if defined(PETSC_USE_MAT_SINGLE)
-extern int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+EXTERN int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
 #else
 #define MatSetValuesBlocked_SeqBAIJ_MatScalar MatSetValuesBlocked_SeqBAIJ
 #endif
@@ -71,7 +71,7 @@ int MatMarkDiagonal_SeqBAIJ(Mat A)
 }
 
 
-extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
+EXTERN int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetRowIJ_SeqBAIJ"
@@ -1141,62 +1141,62 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
   PetscFunctionReturn(0);
 } 
 
-extern int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,PetscReal,Mat*);
-extern int MatLUFactor_SeqBAIJ(Mat,IS,IS,PetscReal);
-extern int MatIncreaseOverlap_SeqBAIJ(Mat,int,IS*,int);
-extern int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
-extern int MatGetSubMatrices_SeqBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);
-extern int MatMultTranspose_SeqBAIJ(Mat,Vec,Vec);
-extern int MatMultTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
-extern int MatScale_SeqBAIJ(Scalar*,Mat);
-extern int MatNorm_SeqBAIJ(Mat,NormType,PetscReal *);
-extern int MatEqual_SeqBAIJ(Mat,Mat,PetscTruth*);
-extern int MatGetDiagonal_SeqBAIJ(Mat,Vec);
-extern int MatDiagonalScale_SeqBAIJ(Mat,Vec,Vec);
-extern int MatGetInfo_SeqBAIJ(Mat,MatInfoType,MatInfo *);
-extern int MatZeroEntries_SeqBAIJ(Mat);
+EXTERN int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,PetscReal,Mat*);
+EXTERN int MatLUFactor_SeqBAIJ(Mat,IS,IS,PetscReal);
+EXTERN int MatIncreaseOverlap_SeqBAIJ(Mat,int,IS*,int);
+EXTERN int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
+EXTERN int MatGetSubMatrices_SeqBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);
+EXTERN int MatMultTranspose_SeqBAIJ(Mat,Vec,Vec);
+EXTERN int MatMultTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
+EXTERN int MatScale_SeqBAIJ(Scalar*,Mat);
+EXTERN int MatNorm_SeqBAIJ(Mat,NormType,PetscReal *);
+EXTERN int MatEqual_SeqBAIJ(Mat,Mat,PetscTruth*);
+EXTERN int MatGetDiagonal_SeqBAIJ(Mat,Vec);
+EXTERN int MatDiagonalScale_SeqBAIJ(Mat,Vec,Vec);
+EXTERN int MatGetInfo_SeqBAIJ(Mat,MatInfoType,MatInfo *);
+EXTERN int MatZeroEntries_SeqBAIJ(Mat);
 
-extern int MatSolve_SeqBAIJ_N(Mat,Vec,Vec);
-extern int MatSolve_SeqBAIJ_1(Mat,Vec,Vec);
-extern int MatSolve_SeqBAIJ_2(Mat,Vec,Vec);
-extern int MatSolve_SeqBAIJ_3(Mat,Vec,Vec);
-extern int MatSolve_SeqBAIJ_4(Mat,Vec,Vec);
-extern int MatSolve_SeqBAIJ_5(Mat,Vec,Vec);
-extern int MatSolve_SeqBAIJ_6(Mat,Vec,Vec);
-extern int MatSolve_SeqBAIJ_7(Mat,Vec,Vec);
-extern int MatSolveTranspose_SeqBAIJ_7(Mat,Vec,Vec);
-extern int MatSolveTranspose_SeqBAIJ_6(Mat,Vec,Vec);
-extern int MatSolveTranspose_SeqBAIJ_5(Mat,Vec,Vec);
-extern int MatSolveTranspose_SeqBAIJ_4(Mat,Vec,Vec);
-extern int MatSolveTranspose_SeqBAIJ_3(Mat,Vec,Vec);
-extern int MatSolveTranspose_SeqBAIJ_2(Mat,Vec,Vec);
-extern int MatSolveTranspose_SeqBAIJ_1(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBAIJ_N(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBAIJ_1(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBAIJ_2(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBAIJ_3(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBAIJ_4(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBAIJ_5(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBAIJ_6(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBAIJ_7(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_7(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_6(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_5(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_4(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_3(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_2(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_1(Mat,Vec,Vec);
 
-extern int MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqBAIJ_1(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqBAIJ_2(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqBAIJ_3(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqBAIJ_5(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqBAIJ_6(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_1(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_2(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_3(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_5(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_6(Mat,Mat*);
 
-extern int MatMult_SeqBAIJ_1(Mat,Vec,Vec);
-extern int MatMult_SeqBAIJ_2(Mat,Vec,Vec);
-extern int MatMult_SeqBAIJ_3(Mat,Vec,Vec);
-extern int MatMult_SeqBAIJ_4(Mat,Vec,Vec);
-extern int MatMult_SeqBAIJ_5(Mat,Vec,Vec);
-extern int MatMult_SeqBAIJ_6(Mat,Vec,Vec);
-extern int MatMult_SeqBAIJ_7(Mat,Vec,Vec);
-extern int MatMult_SeqBAIJ_N(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_1(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_2(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_3(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_4(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_5(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_6(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_7(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_N(Mat,Vec,Vec);
 
-extern int MatMultAdd_SeqBAIJ_1(Mat,Vec,Vec,Vec);
-extern int MatMultAdd_SeqBAIJ_2(Mat,Vec,Vec,Vec);
-extern int MatMultAdd_SeqBAIJ_3(Mat,Vec,Vec,Vec);
-extern int MatMultAdd_SeqBAIJ_4(Mat,Vec,Vec,Vec);
-extern int MatMultAdd_SeqBAIJ_5(Mat,Vec,Vec,Vec);
-extern int MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
-extern int MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
-extern int MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_1(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_2(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_3(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_4(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_5(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatILUFactor_SeqBAIJ"

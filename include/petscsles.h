@@ -1,4 +1,4 @@
-/* $Id: petscsles.h,v 1.32 1999/11/24 21:55:57 bsmith Exp balay $ */
+/* $Id: petscsles.h,v 1.33 2000/05/08 15:09:50 balay Exp bsmith $ */
 /*
    Defines PETSc interface to the linear solvers. The details of Krylov methods
   and preconditioners are handled in the petscksp.h and petscpc.h files
@@ -12,30 +12,30 @@
 
 typedef struct _p_SLES* SLES;
 
-extern int SLESCreate(MPI_Comm,SLES*);
-extern int SLESDestroy(SLES);
+EXTERN int SLESCreate(MPI_Comm,SLES*);
+EXTERN int SLESDestroy(SLES);
 
-extern int SLESGetPC(SLES,PC*);
-extern int SLESGetKSP(SLES,KSP*);
-extern int SLESSetOperators(SLES,Mat,Mat,MatStructure);
-extern int SLESSolve(SLES,Vec,Vec,int*);
-extern int SLESSolveTranspose(SLES,Vec,Vec,int*);
-extern int SLESSetFromOptions(SLES);
-extern int SLESSetTypesFromOptions(SLES);
-extern int SLESPrintHelp(SLES);
-extern int SLESView(SLES,Viewer);
-extern int SLESSetUp(SLES,Vec,Vec);
-extern int SLESSetUpOnBlocks(SLES);
-extern int SLESSetDiagonalScale(SLES,PetscTruth);
-extern int SLESGetDiagonalScale(SLES,PetscTruth*);
-extern int SLESSetDiagonalScaleFix(SLES);
+EXTERN int SLESGetPC(SLES,PC*);
+EXTERN int SLESGetKSP(SLES,KSP*);
+EXTERN int SLESSetOperators(SLES,Mat,Mat,MatStructure);
+EXTERN int SLESSolve(SLES,Vec,Vec,int*);
+EXTERN int SLESSolveTranspose(SLES,Vec,Vec,int*);
+EXTERN int SLESSetFromOptions(SLES);
+EXTERN int SLESSetTypesFromOptions(SLES);
+EXTERN int SLESPrintHelp(SLES);
+EXTERN int SLESView(SLES,Viewer);
+EXTERN int SLESSetUp(SLES,Vec,Vec);
+EXTERN int SLESSetUpOnBlocks(SLES);
+EXTERN int SLESSetDiagonalScale(SLES,PetscTruth);
+EXTERN int SLESGetDiagonalScale(SLES,PetscTruth*);
+EXTERN int SLESSetDiagonalScaleFix(SLES);
 
-extern int SLESSetOptionsPrefix(SLES,char*);
-extern int SLESAppendOptionsPrefix(SLES,char*);
-extern int SLESGetOptionsPrefix(SLES,char**);
+EXTERN int SLESSetOptionsPrefix(SLES,char*);
+EXTERN int SLESAppendOptionsPrefix(SLES,char*);
+EXTERN int SLESGetOptionsPrefix(SLES,char**);
 
-extern int PCBJacobiGetSubSLES(PC,int*,int*,SLES**);
-extern int PCASMGetSubSLES(PC,int*,int*,SLES**);
-extern int PCSLESGetSLES(PC,SLES *);
+EXTERN int PCBJacobiGetSubSLES(PC,int*,int*,SLES**);
+EXTERN int PCASMGetSubSLES(PC,int*,int*,SLES**);
+EXTERN int PCSLESGetSLES(PC,SLES *);
 
 #endif

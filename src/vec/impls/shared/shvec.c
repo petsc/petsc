@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.41 2000/04/12 04:22:26 bsmith Exp balay $*/
+/*$Id: shvec.c,v 1.42 2000/05/05 22:15:09 balay Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -11,7 +11,7 @@
 */
 #if defined(PETSC_USE_SHARED_MEMORY) && !defined(__cplusplus)
 
-extern void *PetscSharedMalloc(int,int,MPI_Comm);
+EXTERN void *PetscSharedMalloc(int,int,MPI_Comm);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"VecDuplicate_Shared"

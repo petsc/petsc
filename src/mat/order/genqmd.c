@@ -1,4 +1,4 @@
-/*$Id: genqmd.c,v 1.13 2000/04/09 04:37:05 bsmith Exp bsmith $*/
+/*$Id: genqmd.c,v 1.14 2000/04/12 04:24:20 bsmith Exp bsmith $*/
 /* genqmd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -52,9 +52,9 @@ int SPARSEPACKgenqmd(int *neqns, int *xadj, int *adjncy,
 
     /* Local variables */
     int ndeg, irch, node, nump1, j, inode;
-    extern int SPARSEPACKqmdqt(int *, int *, int *, int *, int *, int *, int *);
+    EXTERN int SPARSEPACKqmdqt(int *, int *, int *, int *, int *, int *, int *);
     int ip, np, mindeg, search;
-    extern int SPARSEPACKqmdrch(int *, int *, int *, 
+    EXTERN int SPARSEPACKqmdrch(int *, int *, int *, 
 	      int *, int *, int *, int *, int *, int *),
 	   SPARSEPACKqmdupd(int *, int *, int *, int *, int *, 
 	      int *, int *, int *, int *, int *);

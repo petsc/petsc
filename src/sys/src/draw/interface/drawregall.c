@@ -1,13 +1,13 @@
-/*$Id: drawregall.c,v 1.12 2000/04/12 04:21:02 bsmith Exp balay $*/
+/*$Id: drawregall.c,v 1.13 2000/05/05 22:13:25 balay Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 EXTERN_C_BEGIN
-extern int DrawCreate_X(Draw);
-extern int DrawCreate_PS(Draw);
-extern int DrawCreate_Null(Draw);
+EXTERN int DrawCreate_X(Draw);
+EXTERN int DrawCreate_PS(Draw);
+EXTERN int DrawCreate_Null(Draw);
 EXTERN_C_END
   
 #undef __FUNC__  

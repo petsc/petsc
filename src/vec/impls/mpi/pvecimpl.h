@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.29 1999/10/13 20:37:07 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.30 2000/01/11 21:00:13 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -25,27 +25,27 @@ typedef struct {
   VecScatter  localupdate;              /* scatter to update ghost values */
 } Vec_MPI;
 
-extern int VecNorm_Seq(Vec,NormType,double *work);
-extern int VecMDot_MPI(int,Vec,const Vec[],Scalar *);
-extern int VecMTDot_MPI(int,Vec,const Vec[],Scalar *);
-extern int VecNorm_MPI(Vec,NormType,double *);
-extern int VecMax_MPI(Vec,int *,double *);
-extern int VecMin_MPI(Vec,int *,double *);
-extern int VecGetOwnershipRange_MPI(Vec,int *,int*); 
-extern int VecDestroy_MPI(Vec);
-extern int VecView_MPI_File(Vec,Viewer);
-extern int VecView_MPI_Files(Vec,Viewer);
-extern int VecView_MPI_Binary(Vec,Viewer);
-extern int VecView_MPI_Draw_LG(Vec,Viewer);
-extern int VecView_MPI_Socket(Vec,Viewer);
-extern int VecView_MPI(Vec,Viewer);
-extern int VecGetSize_MPI(Vec,int *);
-extern int VecSetValues_MPI(Vec,int,const int [],const Scalar[],InsertMode);
-extern int VecSetValuesBlocked_MPI(Vec,int,const int [],const Scalar[],InsertMode);
-extern int VecAssemblyBegin_MPI(Vec);
-extern int VecAssemblyEnd_MPI(Vec);
+EXTERN int VecNorm_Seq(Vec,NormType,double *work);
+EXTERN int VecMDot_MPI(int,Vec,const Vec[],Scalar *);
+EXTERN int VecMTDot_MPI(int,Vec,const Vec[],Scalar *);
+EXTERN int VecNorm_MPI(Vec,NormType,double *);
+EXTERN int VecMax_MPI(Vec,int *,double *);
+EXTERN int VecMin_MPI(Vec,int *,double *);
+EXTERN int VecGetOwnershipRange_MPI(Vec,int *,int*); 
+EXTERN int VecDestroy_MPI(Vec);
+EXTERN int VecView_MPI_File(Vec,Viewer);
+EXTERN int VecView_MPI_Files(Vec,Viewer);
+EXTERN int VecView_MPI_Binary(Vec,Viewer);
+EXTERN int VecView_MPI_Draw_LG(Vec,Viewer);
+EXTERN int VecView_MPI_Socket(Vec,Viewer);
+EXTERN int VecView_MPI(Vec,Viewer);
+EXTERN int VecGetSize_MPI(Vec,int *);
+EXTERN int VecSetValues_MPI(Vec,int,const int [],const Scalar[],InsertMode);
+EXTERN int VecSetValuesBlocked_MPI(Vec,int,const int [],const Scalar[],InsertMode);
+EXTERN int VecAssemblyBegin_MPI(Vec);
+EXTERN int VecAssemblyEnd_MPI(Vec);
 
-extern int VecCreate_MPI_Private(Vec,int,const Scalar[],Map);
+EXTERN int VecCreate_MPI_Private(Vec,int,const Scalar[],Map);
 
 #endif
 

@@ -1,4 +1,4 @@
-/*$Id: xinit.c,v 1.65 2000/04/09 04:34:12 bsmith Exp bsmith $*/
+/*$Id: xinit.c,v 1.66 2000/04/12 04:21:09 bsmith Exp bsmith $*/
 
 /* 
    This file contains routines to open an X window display and window
@@ -14,12 +14,12 @@
 
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
-extern int XiUniformHues(Draw_X *,int);
-extern int Xi_wait_map(Draw_X*);
-extern int XiInitColors(Draw_X*,Colormap);
-extern int XiFontFixed(Draw_X*,int,int,XiFont**);
-extern int XiInitCmap(Draw_X*);
-extern int DrawSetColormap_X(Draw_X*,char *,Colormap);
+EXTERN int XiUniformHues(Draw_X *,int);
+EXTERN int Xi_wait_map(Draw_X*);
+EXTERN int XiInitColors(Draw_X*,Colormap);
+EXTERN int XiFontFixed(Draw_X*,int,int,XiFont**);
+EXTERN int XiInitCmap(Draw_X*);
+EXTERN int DrawSetColormap_X(Draw_X*,char *,Colormap);
 
 /*
   XiOpenDisplay - Open a display

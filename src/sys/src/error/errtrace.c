@@ -1,4 +1,4 @@
-/*$Id: errtrace.c,v 1.13 2000/04/09 04:34:23 bsmith Exp bsmith $*/
+/*$Id: errtrace.c,v 1.14 2000/04/12 04:21:20 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -60,10 +60,10 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
     OptionsHasName(PETSC_NULL,"-trdump",&flg1);
     OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg2);
     if (flg2) {
-      ierr = PetscTrLogDump(stderr);CHKERRQ(ierr);
+      ierr = PetscTrLogDump(stdout);CHKERRQ(ierr);
     } else if (flg1) {
       (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
-      ierr = PetscTrDump(stderr);CHKERRQ(ierr);
+      ierr = PetscTrDump(stdout);CHKERRQ(ierr);
     } else {
       (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
       (*PetscErrorPrintf)("[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);

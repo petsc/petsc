@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.114 2000/05/04 18:58:54 balay Exp balay $*/
+/*$Id: da3.c,v 1.115 2000/05/05 22:19:22 balay Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -9,7 +9,7 @@
 
 #if defined (PETSC_HAVE_AMS)
 EXTERN_C_BEGIN
-extern int AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
+EXTERN int AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
 EXTERN_C_END
 #endif
 
@@ -140,7 +140,7 @@ int DAView_3d(DA da,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern int DAPublish_Petsc(PetscObject);
+EXTERN int DAPublish_Petsc(PetscObject);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DACreate3d"

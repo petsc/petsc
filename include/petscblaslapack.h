@@ -1,4 +1,4 @@
-/* $Id: blaslapack.h,v 1.37 1999/11/05 14:48:34 bsmith Exp bsmith $ */
+/* $Id: blaslapack.h,v 1.38 2000/01/11 21:04:10 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -288,75 +288,75 @@ EXTERN_C_BEGIN
    BLdot cannot be used with COMPLEX because it cannot 
    handle returing a double complex to C++.
 */
-extern double BLdot_(int*,Scalar*,int*,Scalar*,int*);
-extern double BLnrm2_(int*,Scalar*,int*),BLasum_(int*,Scalar*,int*);
-extern void   BLscal_(int*,Scalar*,Scalar*,int*);
-extern void   BLcopy_(int*,Scalar*,int*,Scalar*,int*);
-extern void   BLswap_(int*,Scalar*,int*,Scalar*,int*);
-extern void   BLaxpy_(int*,Scalar*,Scalar*,int*,Scalar*,int*);
-extern void   LAgetrf_(int*,int*,Scalar*,int*,int*,int*);
-extern void   LAgetf2_(int*,int*,Scalar*,int*,int*,int*);
-extern void   LAgeqrf_(int*,int*,Scalar*,int*,Scalar*,Scalar*,int*,int*);
+EXTERN double BLdot_(int*,Scalar*,int*,Scalar*,int*);
+EXTERN double BLnrm2_(int*,Scalar*,int*),BLasum_(int*,Scalar*,int*);
+EXTERN void   BLscal_(int*,Scalar*,Scalar*,int*);
+EXTERN void   BLcopy_(int*,Scalar*,int*,Scalar*,int*);
+EXTERN void   BLswap_(int*,Scalar*,int*,Scalar*,int*);
+EXTERN void   BLaxpy_(int*,Scalar*,Scalar*,int*,Scalar*,int*);
+EXTERN void   LAgetrf_(int*,int*,Scalar*,int*,int*,int*);
+EXTERN void   LAgetf2_(int*,int*,Scalar*,int*,int*,int*);
+EXTERN void   LAgeqrf_(int*,int*,Scalar*,int*,Scalar*,Scalar*,int*,int*);
 
 #if defined(PETSC_USES_CPTOFCD)
 
 #if defined(PETSC_USE_COMPLEX)
-extern void   ZPOTRF(_fcd,int*,Scalar*,int*,int*);
-extern void   ZGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
+EXTERN void   ZPOTRF(_fcd,int*,Scalar*,int*,int*);
+EXTERN void   ZGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                         Scalar*,Scalar*,int*);
-extern void   ZPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
-extern void   ZGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
-extern void   ZGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
+EXTERN void   ZPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
+EXTERN void   ZGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
+EXTERN void   ZGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
-extern void   ZGESVD(_fcd,_fcd,int *,int*,Scalar *,int*,double*,Scalar*,
+EXTERN void   ZGESVD(_fcd,_fcd,int *,int*,Scalar *,int*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,double*,int*);
-extern void   ZGEEV(_fcd,_fcd,int *,Scalar *,int*,Scalar*,Scalar*,
+EXTERN void   ZGEEV(_fcd,_fcd,int *,Scalar *,int*,Scalar*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,double*,int*);
 #else
-extern void   DPOTRF(_fcd,int*,Scalar*,int*,int*);
-extern void   DGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
+EXTERN void   DPOTRF(_fcd,int*,Scalar*,int*,int*);
+EXTERN void   DGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                         Scalar*,Scalar*,int*);
-extern void   DPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
-extern void   DGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
-extern void   DGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
+EXTERN void   DPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
+EXTERN void   DGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
+EXTERN void   DGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
-extern void   DGESVD(_fcd,_fcd,int *,int*,Scalar *,int*,Scalar*,Scalar*,
+EXTERN void   DGESVD(_fcd,_fcd,int *,int*,Scalar *,int*,Scalar*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
-extern void   DGEEV(_fcd,_fcd,int *,Scalar *,int*,Scalar*,Scalar*,Scalar*,
+EXTERN void   DGEEV(_fcd,_fcd,int *,Scalar *,int*,Scalar*,Scalar*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
 #endif
 
 #else
-extern void   LAormqr_(char*,char*,int*,int*,int*,Scalar*,int*,Scalar*,Scalar*,
+EXTERN void   LAormqr_(char*,char*,int*,int*,int*,Scalar*,int*,Scalar*,Scalar*,
                        int*,Scalar*,int*,int*);
-extern void   LAtrtrs_(char*,char*,char*,int*,int*,Scalar*,int*,Scalar*,int*,
+EXTERN void   LAtrtrs_(char*,char*,char*,int*,int*,Scalar*,int*,Scalar*,int*,
                        int*);
-extern void   LApotrf_(char*,int*,Scalar*,int*,int*);
-extern void   LAgemv_(char*,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
+EXTERN void   LApotrf_(char*,int*,Scalar*,int*,int*);
+EXTERN void   LAgemv_(char*,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                        Scalar*,Scalar*,int*);
-extern void   LApotrs_(char*,int*,int*,Scalar*,int*,Scalar*,int*,int*);
-extern void   LAgetrs_(char*,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
-extern void   BLgemm_(char *,char*,int*,int*,int*,Scalar*,Scalar*,int*,
+EXTERN void   LApotrs_(char*,int*,int*,Scalar*,int*,Scalar*,int*,int*);
+EXTERN void   LAgetrs_(char*,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
+EXTERN void   BLgemm_(char *,char*,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
 
 /* ESSL uses a different calling sequence for dgeev(), zgeev() than LAPACK; */
 #if defined(PETSC_HAVE_ESSL) && defined(PETSC_USE_COMPLEX)
-extern void   LAgeev_(int*,Scalar*,int*,Scalar*,Scalar*,int*,int*,int*,double*,int*);
-extern void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
+EXTERN void   LAgeev_(int*,Scalar*,int*,Scalar*,Scalar*,int*,int*,int*,double*,int*);
+EXTERN void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,double*,int*);
 #elif defined(PETSC_HAVE_ESSL)
-extern void   LAgeev_(int*,Scalar*,int*,Scalar*,Scalar*,int*,int*,int*,double*,int*);
-extern void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
+EXTERN void   LAgeev_(int*,Scalar*,int*,Scalar*,Scalar*,int*,int*,int*,double*,int*);
+EXTERN void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
 #elif !defined(PETSC_USE_COMPLEX)
-extern void   LAgeev_(char *,char *,int *,Scalar *,int*,double*,double*,Scalar*,
+EXTERN void   LAgeev_(char *,char *,int *,Scalar *,int*,double*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
-extern void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
+EXTERN void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
 #else
-extern void   LAgeev_(char *,char *,int *,Scalar *,int*,Scalar*,Scalar*,
+EXTERN void   LAgeev_(char *,char *,int *,Scalar *,int*,Scalar*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,double*,int*);
-extern void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
+EXTERN void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,double*,int*);
 #endif
 #endif

@@ -1,23 +1,23 @@
-/*$Id: itregis.c,v 1.50 2000/05/04 16:26:08 bsmith Exp balay $*/
+/*$Id: itregis.c,v 1.51 2000/05/05 22:17:27 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"  /*I "petscksp.h" I*/
 
 EXTERN_C_BEGIN
-extern int KSPCreate_Richardson(KSP);
-extern int KSPCreate_Chebychev(KSP);
-extern int KSPCreate_CG(KSP);
-extern int KSPCreate_TCQMR(KSP);
-extern int KSPCreate_GMRES(KSP);
-extern int KSPCreate_BCGS(KSP);
-extern int KSPCreate_CGS(KSP);
-extern int KSPCreate_TFQMR(KSP);
-extern int KSPCreate_LSQR(KSP);
-extern int KSPCreate_PREONLY(KSP);
-extern int KSPCreate_CR(KSP);
-extern int KSPCreate_QCG(KSP);
-extern int KSPCreate_BiCG(KSP);
-extern int KSPCreate_FGMRES(KSP);
-extern int KSPCreate_MINRES(KSP);
+EXTERN int KSPCreate_Richardson(KSP);
+EXTERN int KSPCreate_Chebychev(KSP);
+EXTERN int KSPCreate_CG(KSP);
+EXTERN int KSPCreate_TCQMR(KSP);
+EXTERN int KSPCreate_GMRES(KSP);
+EXTERN int KSPCreate_BCGS(KSP);
+EXTERN int KSPCreate_CGS(KSP);
+EXTERN int KSPCreate_TFQMR(KSP);
+EXTERN int KSPCreate_LSQR(KSP);
+EXTERN int KSPCreate_PREONLY(KSP);
+EXTERN int KSPCreate_CR(KSP);
+EXTERN int KSPCreate_QCG(KSP);
+EXTERN int KSPCreate_BiCG(KSP);
+EXTERN int KSPCreate_FGMRES(KSP);
+EXTERN int KSPCreate_MINRES(KSP);
 EXTERN_C_END
   
 /*
@@ -25,7 +25,7 @@ EXTERN_C_END
     KSPRegisterAll() is called. In general, if there is more than one
     DLL, then KSPRegisterAll() may be called several times.
 */
-extern PetscTruth KSPRegisterAllCalled;
+EXTERN PetscTruth KSPRegisterAllCalled;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPRegisterAll"

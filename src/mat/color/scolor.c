@@ -1,13 +1,13 @@
-/*$Id: scolor.c,v 1.20 2000/04/12 04:24:26 bsmith Exp balay $*/
+/*$Id: scolor.c,v 1.21 2000/05/05 22:16:51 balay Exp bsmith $*/
  
 #include "petscmat.h"
 #include "src/mat/color/color.h"
 
 EXTERN_C_BEGIN
-extern int MatColoring_Natural(Mat,MatColoringType,ISColoring*);
-extern int MatFDColoringSL_Minpack(Mat,MatColoringType,ISColoring*);
-extern int MatFDColoringLF_Minpack(Mat,MatColoringType,ISColoring*);
-extern int MatFDColoringID_Minpack(Mat,MatColoringType,ISColoring*);
+EXTERN int MatColoring_Natural(Mat,MatColoringType,ISColoring*);
+EXTERN int MatFDColoringSL_Minpack(Mat,MatColoringType,ISColoring*);
+EXTERN int MatFDColoringLF_Minpack(Mat,MatColoringType,ISColoring*);
+EXTERN int MatFDColoringID_Minpack(Mat,MatColoringType,ISColoring*);
 EXTERN_C_END
 
 #undef __FUNC__  

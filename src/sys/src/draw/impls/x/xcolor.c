@@ -1,4 +1,4 @@
-/*$Id: xcolor.c,v 1.63 2000/04/12 04:21:09 bsmith Exp bsmith $*/
+/*$Id: xcolor.c,v 1.64 2000/04/16 16:42:42 bsmith Exp bsmith $*/
 
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -44,8 +44,8 @@ static char *(colornames[DRAW_BASIC_COLORS]) = { "white",
                                                  "limegreen",
                                                  "lavenderblush" };
 
-extern int XiInitCmap(Draw_X*);
-extern int XiGetVisualClass(Draw_X *);
+EXTERN int XiInitCmap(Draw_X*);
+EXTERN int XiGetVisualClass(Draw_X *);
 
 /*
    Sets up a color map for a display. This is shared by all the windows

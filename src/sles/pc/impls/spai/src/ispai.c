@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.13 2000/05/04 14:03:46 balay Exp balay $*/
+/* $Id: ispai.c,v 1.14 2000/05/08 15:09:34 balay Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -29,9 +29,9 @@ EXTERN_C_BEGIN
 #include "read_mm_matrix.h"
 EXTERN_C_END
 
-extern int ConvertMatToMatrix(Mat,Mat,matrix**);
-extern int ConvertMatrixToMat(matrix *,Mat *);
-extern int MM_to_PETSC(char *,char *,char *);
+EXTERN int ConvertMatToMatrix(Mat,Mat,matrix**);
+EXTERN int ConvertMatrixToMat(matrix *,Mat *);
+EXTERN int MM_to_PETSC(char *,char *,char *);
 
 typedef struct {
 

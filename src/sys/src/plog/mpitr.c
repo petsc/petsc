@@ -1,4 +1,4 @@
-/*$Id: mpitr.c,v 1.23 2000/04/09 04:34:52 bsmith Exp bsmith $*/
+/*$Id: mpitr.c,v 1.24 2000/04/12 04:21:43 bsmith Exp bsmith $*/
 
 /*
     Code for tracing mistakes in MPI usage. For example, sends that are never received,
@@ -36,7 +36,7 @@ int PetscMPIDump(FILE *fd)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (!fd) fd = stderr;
+  if (!fd) fd = stdout;
    
   /* Did we wait on all the non-blocking sends and receives? */
   ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
