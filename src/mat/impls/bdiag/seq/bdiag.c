@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.130 1997/04/03 17:07:23 balay Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.131 1997/04/05 00:02:07 balay Exp balay $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1346,7 +1346,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
     PetscFree(tmp);
   }
   else if (type == NORM_INFINITY) { /* max row norm */
-    tmp = (double *) PetscMalloc( a->m*sizeof(double) ); CHKPTRQ(tmp);
+    tmp = (double *) PetscMalloc( (a->m+1)*sizeof(double) ); CHKPTRQ(tmp);
     PetscMemzero(tmp,a->m*sizeof(double));
     *norm = 0.0;
     if (bs == 1) {
@@ -1411,7 +1411,7 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
   int          bs = a->bs, kshift,shifto,shiftn;
   Scalar       *dwork, *dvnew;
 
-  diagnew = (int *) PetscMalloc(nd*sizeof(int)); CHKPTRQ(diagnew);
+  diagnew = (int *) PetscMalloc((nd+1)*sizeof(int)); CHKPTRQ(diagnew);
   for (i=0; i<nd; i++) {
     diagnew[i] = -diag[nd-i-1]; /* assume sorted in descending order */
   }
