@@ -1,6 +1,6 @@
 #! /usr/local/tcl/bin/tclsh
 #!/gnuwin32/b18/tcl/bin/tclsh76.exe
-# $Id: htmlkeywords.tcl,v 1.6 1997/09/10 19:44:00 balay Exp $ 
+# $Id: makecpp.tcl,v 1.1 1997/11/12 23:26:52 balay Exp balay $ 
 
 
 proc movefilesin { dir } {
@@ -65,9 +65,10 @@ proc updatemakefile { makefile } {
         #
         regsub -all {\-o[ ]+e[^ ]* } $databuff "" databuff
         #
-        # Strip out -f option to RM from the makefile.
+        # Strip out -f option to RM from the makefile, and add *.pdb
+        # *.ilk etc to the list
         #
-        regsub -all { \-f} $databuff "" databuff        
+        regsub -all { \-f} $databuff "*.pdb *.ilk" databuff        
 
         set fileid [ open $makefile w ]
         puts $fileid $databuff
