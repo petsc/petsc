@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.180 1997/08/19 15:46:31 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -159,7 +159,6 @@ testfortran: chkopts
 	   ACTION=testexamples_3  tree 
 	-@echo "Completed compiling and running Fortran test examples"
 	-@echo "========================================="
-    
 #
 # Builds PETSc Fortran90 interface libary
 # Note:	 libfast cannot run on .F files on certain machines, so we
@@ -217,6 +216,30 @@ noise: chkpetsc_dir
 	$(RANLIB) $(PDIR)/libpetscsnes.a
 	-@chmod g+w  $(PDIR)/libpetscsnes.a
 	-@echo "Completed compiling noise routines"
+	-@echo "========================================="
+
+petscblas: chkpetsc_dir
+	-$(RM) -f $(PDIR)/libpetscblas.*
+	-@echo "Beginning to compile CBLAS and CLAPACK"
+	-@echo On `date` on `hostname`
+	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
+	-@echo "------------------------------------------"
+	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "------------------------------------------"
+	-@echo "Using configuration flags: $(CONF)"
+	-@echo "------------------------------------------"
+	-@echo "Using include paths: $(PETSC_INCLUDE)"
+	-@echo "------------------------------------------"
+	-@echo "Using PETSc directory: $(PETSC_DIR)"
+	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+	-@echo "========================================="
+	-@cd src/adic/blas; \
+	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
+	-@cd src/adic/lapack; \
+	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=libfast tree
+	$(RANLIB) $(PDIR)/libpetscblas.a
+	-@chmod g+w  $(PDIR)/*.a
+	-@echo "Completed compiling CBLAS and CLAPACK"
 	-@echo "========================================="
 
 
