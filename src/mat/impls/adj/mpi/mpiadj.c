@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.5 1997/12/01 01:55:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.6 1998/01/06 20:11:04 bsmith Exp balay $";
 #endif
 
 /*
@@ -272,7 +272,7 @@ static struct _MatOps MatOps = {0,
    Notes: You must NOT free the ii and jj arrays yourself. PETSc will free them
    when the matrix is destroyed.
 
-.  MatSetOptions() possible values - MAT_STRUCTURALLY_SYMMETRIC
+.  MatSetOption() possible values - MAT_STRUCTURALLY_SYMMETRIC
 
 .seealso: MatCreate(), MatCreateSeqAdj(), MatGetReordering()
 @*/

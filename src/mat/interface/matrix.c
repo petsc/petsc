@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.277 1998/01/29 15:44:49 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.278 1998/01/31 20:02:18 curfman Exp balay $";
 #endif
 
 /*
@@ -279,7 +279,7 @@ $     INSERT_VALUES - replaces existing entries with new values
 
    Notes:
    By default the values, v, are row-oriented and unsorted.
-   See MatSetOptions() for other options.
+   See MatSetOption() for other options.
 
    Calls to MatSetValues() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
@@ -294,7 +294,7 @@ $     INSERT_VALUES - replaces existing entries with new values
 
 .keywords: matrix, insert, add, set, values
 
-.seealso: MatSetOptions(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked()
+.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked()
 @*/
 int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
 {
@@ -342,7 +342,7 @@ $     INSERT_VALUES - replaces existing entries with new values
 
    Notes:
    By default the values, v, are row-oriented and unsorted. So the layout of 
-   v is the same as for MatSetValues(). See MatSetOptions() for other options.
+   v is the same as for MatSetValues(). See MatSetOption() for other options.
 
    Calls to MatSetValuesBlocked() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
@@ -364,7 +364,7 @@ $     INSERT_VALUES - replaces existing entries with new values
 
 .keywords: matrix, insert, add, set, values
 
-.seealso: MatSetOptions(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues()
+.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues()
 @*/
 int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
 {
