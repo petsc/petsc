@@ -30,7 +30,7 @@ X11_LIB        = -lX11
 #
 # Optional location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
-# below if it is there.
+# below if it is there. You cannot use blocksolve with oomplex
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
 BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
