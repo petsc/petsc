@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.5 1995/03/17 04:57:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.6 1995/03/21 23:20:10 bsmith Exp bsmith $";
 #endif
 /* This is part of the MatlabSockettool package. 
  
@@ -55,7 +55,7 @@ static int MatlabDestroy(PetscObject obj)
 #if !defined(PARCH_IRIX) 
   usleep((unsigned) 100);
 #endif
-  FREE(viewer);
+  PETSCHEADERDESTROY(viewer);
   return 0;
 }
 
