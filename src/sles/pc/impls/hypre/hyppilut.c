@@ -303,7 +303,7 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     } 
     ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_iter","Maximum iterations used","None",jac->maxiter,&jac->maxiter,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (jac->maxiter < 2) SETERRQ1(1,"Number of iterations %d must be at least two",jac->maxlevels);
+      if (jac->maxiter < 1) SETERRQ1(1,"Number of iterations %d must be at least one",jac->maxiter);
       ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
     } 
     ierr = PetscOptionsScalar("-pc_hypre_boomeramg_tol","Convergence tolerance","None",jac->tol,&jac->tol,&flg);CHKERRQ(ierr);
@@ -401,9 +401,10 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
         }
       }
       if (type == -1) SETERRQ1(1,"Unknown measure type %s",result);
-      ierr = HYPRE_BoomerAMGSetMeasureType(jac->hsolver,type);CHKERRQ(ierr); 
+      jac->measuretype = type;
+      ierr = HYPRE_BoomerAMGSetMeasureType(jac->hsolver,jac->measuretype);CHKERRQ(ierr); 
     }
-    ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,7,HYPREBoomerAMGCoarsenType[6],result,16,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,7,HYPREBoomerAMGCoarsenType[6],result,25,&flg);CHKERRQ(ierr);
     if (flg) {
       int i,type = -1;
       for (i=0; i<7; i++) {
@@ -414,7 +415,8 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
         }
       }
       if (type == -1) SETERRQ1(1,"Unknown coarsen type %s",result);
-      ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,type);CHKERRQ(ierr); 
+      jac->coarsentype = type;
+      ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,jac->coarsentype);CHKERRQ(ierr); 
     }
     ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type","Relax type","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],result,32,&flg);CHKERRQ(ierr);
     if (flg) {
