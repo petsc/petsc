@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.40 1997/11/13 20:51:27 balay Exp bsmith $;
+C  $Id: mat.h,v 1.41 1998/01/17 17:39:58 bsmith Exp balay $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -51,7 +51,8 @@ C
      *        MAT_INODE_LIMIT_2,MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4,
      *        MAT_INODE_LIMIT_5,MAT_IGNORE_OFF_PROC_ENTRIES,
      *        MAT_ROWS_UNSORTED,MAT_COLUMNS_UNSORTED,
-     *        MAT_NEW_NONZERO_LOCATION_ERROR
+     *        MAT_NEW_NONZERO_LOCATION_ERROR,MAT_USE_HASH_TABLE
+
       
       parameter (MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,
      *           MAT_ROWS_SORTED=4,MAT_COLUMNS_SORTED=8,
@@ -67,7 +68,8 @@ C
      *           MAT_IGNORE_OFF_PROC_ENTRIES=73,
      *           MAT_ROWS_UNSORTED=74,
      *           MAT_COLUMNS_UNSORTED=75,
-     *           MAT_NEW_NONZERO_LOCATION_ERROR=76)
+     *           MAT_NEW_NONZERO_LOCATION_ERROR=76,
+     *           MAT_USE_HASH_TABLE=77)
 
 C
 C  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
