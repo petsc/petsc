@@ -1,4 +1,4 @@
-/*$Id: f90_win32.c,v 1.4 2000/09/06 22:57:36 balay Exp balay $*/
+/*$Id: f90_win32.c,v 1.5 2000/09/07 03:20:36 balay Exp balay $*/
 
 /*-------------------------------------------------------------*/
 #undef __FUNC__  
@@ -26,7 +26,7 @@ int F90GetID(PetscDataType type,int *id)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array1dCreate"
-int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d ptr)
+int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
 {
   int size,ierr,id;
 
@@ -49,7 +49,7 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array2dCreate"
-int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d ptr)
+int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
 {
   int size,ierr,id;
 
@@ -62,12 +62,12 @@ int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int star
   ptr->id            = id;
   ptr->sd            = size;
   ptr->ndim          = 2;
-  ptr->dim[1].extent = len1;
-  ptr->dim[1].mult   = size;
-  ptr->dim[1].lower  = start1;
-  ptr->dim[0].extent = len2;
-  ptr->dim[0].mult   = len1*size;
-  ptr->dim[0].lower  = start2;
+  ptr->dim[0].extent = len1;
+  ptr->dim[0].mult   = size;
+  ptr->dim[0].lower  = start1;
+  ptr->dim[1].extent = len2;
+  ptr->dim[1].mult   = len1*size;
+  ptr->dim[1].lower  = start2;
   ptr->sum_d         = -(ptr->dim[0].lower*ptr->dim[0].mult+ptr->dim[1].lower*ptr->dim[1].mult);
 
   PetscFunctionReturn(0);

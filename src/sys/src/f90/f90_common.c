@@ -1,13 +1,18 @@
-/*$Id: f90_common.c,v 1.2 2000/09/06 22:57:36 balay Exp balay $*/
+/*$Id: f90_common.c,v 1.3 2000/09/07 03:14:24 balay Exp balay $*/
 
 #include "petscf90.h"
 #if defined (PETSC_HAVE_F90_C)
 #include PETSC_HAVE_F90_C
 
+/* Check if PETSC_HAVE_F90_H is also specified */
+#if !defined(PETSC_HAVE_F90_H)
+#error "Both PETSC_HAVE_F90_H and PETSC_HAVE_F90_C flags have to be speficied"
+#endif
+
 /*-------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array1dAccess"
-int F90Array1dAccess(F90Array1d ptr,void **array)
+int F90Array1dAccess(F90Array1d *ptr,void **array)
 {
   PetscFunctionBegin;
   PetscValidPointer(array);
@@ -18,7 +23,7 @@ int F90Array1dAccess(F90Array1d ptr,void **array)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array1dDestroy"
-int F90Array1dDestroy(F90Array1d ptr)
+int F90Array1dDestroy(F90Array1d *ptr)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr);
@@ -27,7 +32,7 @@ int F90Array1dDestroy(F90Array1d ptr)
 }
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array1dGetNextRecord"
-int F90Array1dGetNextRecord(F90Array1d ptr,void **next)
+int F90Array1dGetNextRecord(F90Array1d *ptr,void **next)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr);
@@ -39,7 +44,7 @@ int F90Array1dGetNextRecord(F90Array1d ptr,void **next)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array2dAccess"
-int F90Array2dAccess(F90Array2d ptr,void **array)
+int F90Array2dAccess(F90Array2d *ptr,void **array)
 {
   PetscFunctionBegin;
   PetscValidPointer(array);
@@ -50,7 +55,7 @@ int F90Array2dAccess(F90Array2d ptr,void **array)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array2dDestroy"
-int F90Array2dDestroy(F90Array2d ptr)
+int F90Array2dDestroy(F90Array2d *ptr)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr);
@@ -59,7 +64,7 @@ int F90Array2dDestroy(F90Array2d ptr)
 }
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array1dGetNextRecord"
-int F90Array2dGetNextRecord(F90Array2d ptr,void **next)
+int F90Array2dGetNextRecord(F90Array2d *ptr,void **next)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr);

@@ -1,4 +1,4 @@
-/*$Id: f90_alpha.c,v 1.5 2000/09/06 22:57:36 balay Exp balay $*/
+/*$Id: f90_alpha.c,v 1.6 2000/09/07 03:16:47 balay Exp balay $*/
 
 /*-------------------------------------------------------------*/
 
@@ -27,7 +27,7 @@ int F90GetID(PetscDataType type,int *id)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array1dCreate"
-int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d ptr)
+int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
 {
   int size,size_int,ierr,id;
 
@@ -52,7 +52,7 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array2dCreate"
-int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d ptr)
+int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
 {
 
   int size,size_int,ierr,id;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.6 1999/12/16 22:26:47 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.7 2000/05/05 18:28:31 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -26,6 +26,7 @@
 #define PETSC_HAVE_TEMPLATED_COMPLEX
 #define PETSC_HAVE_READLINK
 #define PETSC_HAVE_MEMMOVE
+#define PETSC_HAVE_SYS_UTSNAME_H
 
 #define PETSC_HAVE_DOUBLE_ALIGN_MALLOC
 #define PETSC_HAVE_MEMALIGN
@@ -39,5 +40,7 @@
 #define PETSC_HAVE_RTLD_GLOBAL 1
 #endif
 
-#define PETSC_HAVE_SYS_UTSNAME_H
+#define PETSC_HAVE_F90_H "f90impl/f90_absoft.h"
+#define PETSC_HAVE_F90_C "src/sys/src/f90/f90_absoft.c"
+
 #endif

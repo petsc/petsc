@@ -1,10 +1,10 @@
-/*$Id: f90_nag.c,v 1.13 2000/09/06 22:57:36 balay Exp balay $*/
+/*$Id: f90_nag.c,v 1.14 2000/09/07 03:17:55 balay Exp balay $*/
 
 /*-------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array1dCreate"
-int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d ptr)
+int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
 {
   int size,ierr;
 
@@ -23,7 +23,7 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array2dCreate"
-int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d ptr)
+int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
 {
   int size,ierr;
 

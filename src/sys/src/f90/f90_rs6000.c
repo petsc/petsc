@@ -1,4 +1,4 @@
-/*$Id: f90_rs6000.c,v 1.12 2000/09/06 22:57:36 balay Exp balay $*/
+/*$Id: f90_rs6000.c,v 1.13 2000/09/07 03:18:23 balay Exp balay $*/
 
 /*-------------------------------------------------------------*/
 
@@ -27,7 +27,7 @@ int F90GetID(PetscDataType type,int *id)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array1dCreate"
-int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d ptr)
+int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
 {
   int size,size_int,ierr,id;
 
@@ -52,7 +52,7 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array2dCreate"
-int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d ptr)
+int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
 {
 
   int size,size_int,ierr,id;
@@ -67,6 +67,8 @@ int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int star
   ptr->cookie        = F90_COOKIE;
   ptr->sd            = size;
   ptr->ndim          = 2;
+
+  /* Note dims are in the reverse order for IBM */
   ptr->dim[1].extent = len1;
   ptr->dim[1].mult   = size;
   ptr->dim[1].lower  = start1;

@@ -1,10 +1,10 @@
-/*$Id: f90_hpux.c,v 1.5 2000/09/06 22:57:36 balay Exp balay $*/
+/*$Id: f90_hpux.c,v 1.6 2000/09/07 03:17:26 balay Exp balay $*/
 
 /*-------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array1dCreate"
-int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d ptr)
+int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
 {
   int size,ierr;
 
@@ -24,7 +24,7 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array2dCreate"
-int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d ptr)
+int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
 {
   int size,ierr;
 
@@ -36,9 +36,9 @@ int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int star
   ptr->cookie        = F90_COOKIE;
   ptr->sd            = size;
   ptr->ndim          = F90_2D_ID;
-  ptr->dim[0].extent = start1;
+  ptr->dim[0].extent = len1;
   ptr->dim[0].mult   = size;
-  ptr->dim[0].lower  = start;
+  ptr->dim[0].lower  = start1;
   ptr->dim[1].extent = len2;
   ptr->dim[1].mult   = len1*size;
   ptr->dim[1].lower  = start2;
