@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 /* 
     Provides an interface to the MUMPS_4.3.1 sparse solver
@@ -48,7 +49,7 @@ typedef struct {
 
 EXTERN PetscErrorCode MatDuplicate_MUMPS(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
-PetscErrorCode MatConvert_SBAIJ_SBAIJMUMPS(Mat,const MatType,MatReuse,Mat*);
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SBAIJ_SBAIJMUMPS(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 /* convert Petsc mpiaij matrix to triples: row[nz], col[nz], val[nz] */
 /*
@@ -150,7 +151,7 @@ PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,i
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MUMPS_Base"
-PetscErrorCode MatConvert_MUMPS_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) \
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MUMPS_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) \
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
@@ -724,7 +725,7 @@ PetscErrorCode MatAssemblyEnd_AIJMUMPS(Mat A,MatAssemblyType mode) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_AIJ_AIJMUMPS"
-PetscErrorCode MatConvert_AIJ_AIJMUMPS(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_AIJMUMPS(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -819,7 +820,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_AIJMUMPS"
-PetscErrorCode MatCreate_AIJMUMPS(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJMUMPS(Mat A) 
 {
   PetscErrorCode ierr;
   int      size;
@@ -862,7 +863,7 @@ PetscErrorCode MatAssemblyEnd_SBAIJMUMPS(Mat A,MatAssemblyType mode)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBAIJMUMPS"
-PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJMUMPS(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJMUMPS(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 {
   Mat       A;
   Mat_MUMPS *mumps=(Mat_MUMPS*)B->spptr;
@@ -886,7 +887,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SBAIJ_SBAIJMUMPS"
-PetscErrorCode MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -1002,7 +1003,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SBAIJMUMPS"
-PetscErrorCode MatCreate_SBAIJMUMPS(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJMUMPS(Mat A) 
 {
   PetscErrorCode ierr;
   int size;

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 /* 
         Provides an interface to the Tufo-Fischer parallel direct solver
 */
@@ -167,7 +168,7 @@ static PetscErrorCode PCView_TFS(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_TFS"
-PetscErrorCode PCCreate_TFS(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC pc)
 {
   PetscErrorCode ierr;
   PC_TFS         *tfs;

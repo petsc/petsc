@@ -27,6 +27,7 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 #include "petscda.h"
 #include "petscksp.h"
 #include "petscmg.h"
+#include "petscdmmg.h"
 
 extern PetscErrorCode ComputeJacobian(DMMG,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);

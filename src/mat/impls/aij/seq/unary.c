@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* unary.f -- translated by f2c (version of 25 March 1992  12:58:56).
 
         This code is protected by the GNU copyright. See the file 

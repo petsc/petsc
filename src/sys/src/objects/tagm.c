@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
       Some PETSc utilites
 */
@@ -34,7 +35,7 @@ EXTERN_C_BEGIN
     Note: this is declared extern "C" because it is passed to the system routine signal()
           which is an extern "C" routine. 
 */
-PetscMPIInt Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+PetscMPIInt PETSC_DLLEXPORT Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
 {
   PetscErrorCode ierr;
 
@@ -70,7 +71,7 @@ EXTERN_C_END
 
 .seealso: PetscCommGetNewTag()
 @*/
-PetscErrorCode PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
 {
   PetscErrorCode ierr;
   PetscMPIInt    *tagvalp = 0,*maxval;
@@ -119,7 +120,7 @@ PetscErrorCode PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
 
 .seealso: PetscObjectGetNewTag(), PetscCommDuplicate()
 @*/
-PetscErrorCode PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
+PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
 {
   PetscErrorCode ierr;
   PetscMPIInt    *tagvalp=0,*maxval;
@@ -171,7 +172,7 @@ PetscErrorCode PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
 
 .seealso: PetscObjectGetNewTag(), PetscCommGetNewTag()
 @*/
-PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPIInt* first_tag)
+PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPIInt* first_tag)
 {
   PetscErrorCode ierr;
   PetscMPIInt    *tagvalp,*maxval;
@@ -245,7 +246,7 @@ PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPIIn
    Concepts: communicator^destroy
 
 @*/
-PetscErrorCode PetscCommDestroy(MPI_Comm *comm)
+PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm *comm)
 {
   PetscErrorCode ierr;
   PetscMPIInt    *tagvalp;

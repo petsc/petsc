@@ -124,7 +124,7 @@ ex21f: ex21f.o  chkopts
 	${RM} ex21f.o
 
 ex22: ex22.o  chkopts
-	-${CLINKER} -o ex22 ex22.o  ${PETSC_KSP_LIB}
+	-${CLINKER} -o ex22 ex22.o  ${PETSC_SNES_LIB}
 	${RM} ex22.o
 
 ex22f: ex22f.o  chkopts
@@ -136,7 +136,7 @@ ex23: ex23.o  chkopts
 	${RM} ex23.o
 
 ex25: ex25.o  chkopts
-	-${CLINKER} -o ex25 ex25.o  ${PETSC_KSP_LIB}
+	-${CLINKER} -o ex25 ex25.o  ${PETSC_SNES_LIB}
 	${RM} ex25.o
 
 ex26: ex26.o  chkopts
@@ -148,11 +148,11 @@ ex27: ex27.o  chkopts
 	${RM} ex27.o
 
 ex28: ex28.o  chkopts
-	-${CLINKER} -o ex28 ex28.o  ${PETSC_KSP_LIB}
+	-${CLINKER} -o ex28 ex28.o  ${PETSC_SNES_LIB}
 	${RM} ex28.o
 
 ex29: ex29.o  chkopts
-	-${CLINKER} -o ex29 ex29.o  ${PETSC_KSP_LIB}
+	-${CLINKER} -o ex29 ex29.o  ${PETSC_SNES_LIB}
 	${RM} ex29.o
 
 ex30: ex30.o  chkopts
@@ -571,7 +571,7 @@ TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
 TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
                    runex10_5 runex10_6 runex10_7 runex10_8 runex10_9 \
-                   runex10_10 runex10_19 runex10_20 ex10.rm \
+                   runex10_10 runex10_19 runex10_20 ex10.rm
 TESTEXAMPLES_BLOCKSOLVE   = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples

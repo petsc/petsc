@@ -1,3 +1,4 @@
+#define PETSC_DLL
 #include "petsc.h"
 #include "petscsys.h"
 
@@ -90,7 +91,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 /*--------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "SOCKCall_Private" 
-PetscErrorCode SOCKCall_Private(char *hostname,int portnum,int *t)
+PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *t)
 {
 #if defined(PETSC_HAVE_SOCKET)
   struct sockaddr_in sa;
@@ -214,7 +215,7 @@ $    -viewer_socket_port <port>
           PetscViewerSocketSetConnection(), PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, 
           PETSC_VIEWER_SOCKET_SELF
 @*/
-PetscErrorCode PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
   PetscErrorCode ierr;
 
@@ -260,7 +261,7 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Socket" 
-PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscViewer_Socket *vmatlab;
   PetscErrorCode     ierr;
@@ -293,7 +294,7 @@ EXTERN_C_END
 
 .seealso: PetscViewerSocketOpen()
 @*/ 
-PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v,const char machine[],PetscInt port)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,const char machine[],PetscInt port)
 {
   PetscErrorCode     ierr;
   PetscMPIInt        rank;
@@ -372,7 +373,7 @@ $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
 .seealso: PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF, PetscViewerSocketOpen(), PetscViewerCreate(),
           PetscViewerSocketSetConnection(), PetscViewerDestroy(), PETSC_VIEWER_SOCKET_()
 @*/
-PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
+PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
@@ -400,14 +401,14 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
  
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSocketOpen" 
-PetscErrorCode PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_SOCKET_" 
-PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
+PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -415,7 +416,7 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Socket" 
-PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

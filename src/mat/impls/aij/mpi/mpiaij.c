@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/inline/spops.h"
@@ -653,7 +654,7 @@ PetscErrorCode MatMultTranspose_MPIAIJ(Mat A,Vec xx,Vec yy)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatIsTranspose_MPIAIJ"
-PetscErrorCode MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth tol,PetscTruth *f)
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth tol,PetscTruth *f)
 {
   MPI_Comm       comm;
   Mat_MPIAIJ     *Aij = (Mat_MPIAIJ *) Amat->data, *Bij;
@@ -1750,7 +1751,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatStoreValues_MPIAIJ"
-PetscErrorCode MatStoreValues_MPIAIJ(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ *)mat->data;
   PetscErrorCode ierr;
@@ -1765,7 +1766,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatRetrieveValues_MPIAIJ"
-PetscErrorCode MatRetrieveValues_MPIAIJ(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ *)mat->data;
   PetscErrorCode ierr;
@@ -1781,7 +1782,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJ"
-PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ     *b;
   PetscErrorCode ierr;
@@ -2204,7 +2205,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,PetscInt csize,M
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJSetPreallocationCSR_MPIAIJ"
-PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt I[],const PetscInt J[],const PetscScalar v[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt I[],const PetscInt J[],const PetscScalar v[])
 {
   Mat_MPIAIJ     *b = (Mat_MPIAIJ *)B->data;
   PetscInt       m = B->m,cstart = b->cstart, cend = b->cend,j,nnz,i,d; 
@@ -2285,7 +2286,7 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatCreateMPIAIJ(), MPIAIJ
 @*/
-PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
 {
   PetscErrorCode ierr,(*f)(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]);
 
@@ -2420,7 +2421,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Petsc
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIAIJ(), MatMPIAIJSetPreallocationCSR(),
           MPIAIJ
 @*/
-PetscErrorCode MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 
@@ -2591,7 +2592,7 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nn
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
           MPIAIJ
 @*/
-PetscErrorCode MatCreateMPIAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -2611,7 +2612,7 @@ PetscErrorCode MatCreateMPIAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJGetSeqAIJ"
-PetscErrorCode MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,PetscInt *colmap[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,PetscInt *colmap[])
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
 
@@ -2736,7 +2737,7 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,PetscInt nl,void *advalues)
    Notes: The number of columns of the matrix in EACH processor MUST be the same.
 
 @*/
-PetscErrorCode MatMerge(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMerge(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
   PetscErrorCode ierr;
   PetscInt       m,N,i,rstart,nnz,I,*dnz,*onz;
@@ -2843,7 +2844,7 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
 EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_SeqsToMPI"
-PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 {
   PetscErrorCode       ierr;
   Mat_Merge_SeqsToMPI  *merge; 
@@ -2902,7 +2903,7 @@ PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
      destroyed when mpimat is destroyed. Call PetscObjectQuery() to access seqmat.
 @*/
 static PetscEvent logkey_seqstompinum = 0;
-PetscErrorCode MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat) 
 {
   PetscErrorCode       ierr; 
   MPI_Comm             comm=mpimat->comm;
@@ -3022,7 +3023,7 @@ PetscErrorCode MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
   PetscFunctionReturn(0);
 }
 static PetscEvent logkey_seqstompisym = 0;
-PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat) 
 {
   PetscErrorCode       ierr; 
   Mat                  B_mpi;
@@ -3271,7 +3272,7 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
 }
 
 static PetscEvent logkey_seqstompi = 0;
-PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat) 
 {
   PetscErrorCode   ierr;
 
@@ -3305,7 +3306,7 @@ static PetscEvent logkey_getlocalmat = 0;
     Level: developer
 
 @*/
-PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc) 
 {
   PetscErrorCode  ierr;
   Mat_MPIAIJ      *mpimat=(Mat_MPIAIJ*)A->data; 
@@ -3403,7 +3404,7 @@ static PetscEvent logkey_getlocalmatcondensed = 0;
     Level: developer
 
 @*/
-PetscErrorCode MatGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc) 
 {
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data;
   PetscErrorCode    ierr;
@@ -3479,7 +3480,7 @@ static PetscEvent logkey_GetBrowsOfAcols = 0;
     Level: developer
 
 @*/
-PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,PetscInt *brstart,Mat *B_seq) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,PetscInt *brstart,Mat *B_seq) 
 {
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*b=(Mat_MPIAIJ*)B->data;
   PetscErrorCode    ierr;
@@ -3558,7 +3559,7 @@ static PetscEvent logkey_GetBrowsOfAocols = 0;
     Level: developer
 
 @*/
-PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj,PetscScalar **bufa_ptr,Mat *B_oth) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj,PetscScalar **bufa_ptr,Mat *B_oth) 
 {
   VecScatter_MPI_General *gen_to,*gen_from;
   PetscErrorCode         ierr;
@@ -3771,7 +3772,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIAIJ"
-PetscErrorCode MatCreate_MPIAIJ(Mat B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
 {
   Mat_MPIAIJ     *b;
   PetscErrorCode ierr;

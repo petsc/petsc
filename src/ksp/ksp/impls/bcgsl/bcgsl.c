@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 /*
  * Implementation of BiCGstab(L) the paper by D.R. Fokkema,
  * "Enhanced implementation of BiCGStab(L) for solving linear systems
@@ -354,7 +355,7 @@ EXTERN_C_BEGIN
 
 .seealso: KSPBCGSLSetEll(), KSPBCGSLSetPol()
 @*/
-PetscErrorCode KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 {
   KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *)ksp->data;
   PetscErrorCode ierr;
@@ -395,7 +396,7 @@ EXTERN_C_BEGIN
 
 .seealso: @()
 @*/
-PetscErrorCode KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
 {
   KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *)ksp->data;
   PetscErrorCode ierr;
@@ -436,7 +437,7 @@ EXTERN_C_BEGIN
 
 .seealso: @()
 @*/
-PetscErrorCode KSPBCGSLSetEll(KSP ksp, int ell)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP ksp, int ell)
 {
   KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *)ksp->data;
   PetscErrorCode ierr;
@@ -566,7 +567,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_BCGSL"
-PetscErrorCode KSPCreate_BCGSL(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGSL(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_BiCGStabL *bcgsl;

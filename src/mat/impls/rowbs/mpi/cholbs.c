@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "petsc.h"
 
@@ -233,13 +234,13 @@ PetscErrorCode MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   logging but we have no choice, plus it is unlikely BlockSolve will be developed
   in the near future anyways.
 */
-double MLOG_flops;
-double MLOG_event_flops;
-double MLOG_time_stamp;
-PetscErrorCode    MLOG_sequence_num;
+PETSCMAT_DLLEXPORT double MLOG_flops;
+PETSCMAT_DLLEXPORT double MLOG_event_flops;
+PETSCMAT_DLLEXPORT double MLOG_time_stamp;
+PETSCMAT_DLLEXPORT PetscErrorCode    MLOG_sequence_num;
 #if defined (MLOG_MAX_EVNTS) 
-MLOG_log_type MLOG_event_log[MLOG_MAX_EVNTS];
-MLOG_log_type MLOG_accum_log[MLOG_MAX_ACCUM];
+PETSCMAT_DLLEXPORT MLOG_log_type MLOG_event_log[MLOG_MAX_EVNTS];
+PETSCMAT_DLLEXPORT MLOG_log_type MLOG_accum_log[MLOG_MAX_ACCUM];
 #else
 typedef struct __MLOG_log_type {
 	double	time_stamp;
@@ -249,7 +250,7 @@ typedef struct __MLOG_log_type {
 } MLOG_log_type;
 #define	MLOG_MAX_EVNTS 1300
 #define	MLOG_MAX_ACCUM 75
-MLOG_log_type MLOG_event_log[MLOG_MAX_EVNTS];
-MLOG_log_type MLOG_accum_log[MLOG_MAX_ACCUM];
+PETSCMAT_DLLEXPORT MLOG_log_type MLOG_event_log[MLOG_MAX_EVNTS];
+PETSCMAT_DLLEXPORT MLOG_log_type MLOG_accum_log[MLOG_MAX_ACCUM];
 #endif
 

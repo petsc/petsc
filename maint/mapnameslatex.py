@@ -8,6 +8,7 @@ import sys
 from sys import *
 import lex
 import re
+import os
 # Reserved words
 
 tokens = (
@@ -159,7 +160,7 @@ if __name__ == "__main__":
 #  Read in mapping of names to manual pages
 #
     reg = re.compile('man:\+([a-zA-Z_0-9]*)\+\+([a-zA-Z_0-9 .:]*)\+\+\+\+man\+([a-zA-Z_0-9#./:-]*)')
-    fd = open("htmlmap")
+    fd = open(os.path.join(os.getenv('PETSC_DIR'),'docs/manualpages','htmlmap'))
     lines = fd.readlines()
     n = len(lines)
     mappedstring = { }
@@ -167,7 +168,7 @@ if __name__ == "__main__":
     for i in range(0,n):
 	fl = reg.search(lines[i])
 	if not fl:
-           print 'Bad line in manualpages.cit',lines[i]
+           print 'Bad line in '+os.path.join(os.getenv('PETSC_DIR'),'docs','manualpages','htmlmap'),lines[i]
         else:
             tofind = fl.group(1)
 #   replace all _ in tofind with \_
@@ -199,7 +200,7 @@ if __name__ == "__main__":
             if bracket == 0:
 		value = token.value
 		if mappedstring.has_key(value):
-		    value = '\\trllink{'+mappedlink[value]+'}{'+mappedstring[value]+'}'
+		    value = '\\href{'+mappedlink[value]+'}{'+mappedstring[value]+'}'
             else:
 		value = token.value
 	    if token.value[0] == '}':

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 /*
@@ -93,7 +94,7 @@ static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
    Concepts: sequential stage
 
 @*/
-PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
+PetscErrorCode PETSC_DLLEXPORT PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -138,7 +139,7 @@ PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
    Concepts: sequential stage
 
 @*/
-PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
+PetscErrorCode PETSC_DLLEXPORT PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,flag;

@@ -12,7 +12,7 @@ int main(int argc,char **args)
   Vec               x,y,u,s1,s2;    
   Mat               A,sA,sB;     
   PetscRandom       rctx;         
-  PetscReal         r1,r2,tol=1.e-10;
+  PetscReal         r1,r2,rnorm,tol=1.e-10;
   PetscScalar       one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1;
   PetscInt          n,col[3],n1,block,row,i,j,i2,j2,I,J,rstart,rend,bs=1,mbs=16,d_nz=3,o_nz=3,prob=2;
   PetscErrorCode    ierr;
@@ -197,10 +197,21 @@ int main(int argc,char **args)
   /* Test MatNorm() */
   ierr = MatNorm(A,NORM_FROBENIUS,&r1);CHKERRQ(ierr); 
   ierr = MatNorm(sA,NORM_FROBENIUS,&r2);CHKERRQ(ierr);
-  r1 -= r2;
-  if (r1<-tol || r1>tol){    
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatNorm(), A_fnorm - sA_fnorm = %16.14e\n",rank,r1);
-    PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  rnorm = PetscAbsScalar(r1-r2)/r2;
+  if (rnorm > tol && !rank){    
+    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);
+  }
+  ierr = MatNorm(A,NORM_INFINITY,&r1);CHKERRQ(ierr); 
+  ierr = MatNorm(sA,NORM_INFINITY,&r2);CHKERRQ(ierr);
+  rnorm = PetscAbsScalar(r1-r2)/r2;
+  if (rnorm > tol && !rank){    
+    PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_INFINITY(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);
+  }
+  ierr = MatNorm(A,NORM_1,&r1);CHKERRQ(ierr); 
+  ierr = MatNorm(sA,NORM_1,&r2);CHKERRQ(ierr);
+  rnorm = PetscAbsScalar(r1-r2)/r2;
+  if (rnorm > tol && !rank){    
+    PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_1(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);
   }
 
   /* Test MatGetOwnershipRange() */ 

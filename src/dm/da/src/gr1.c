@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /* 
    Plots vectors obtained with DACreate1d()
 */
@@ -22,7 +24,7 @@
 .seealso: DASetCoordinates(), DAGetCoordinates(), DACreate1d(), DACreate2d(), DACreate3d()
 
 @*/
-PetscErrorCode DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
+PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
   PetscErrorCode ierr;
   PetscInt            i,j,k,M,N,P,istart,isize,jstart,jsize,kstart,ksize,dim,cnt;

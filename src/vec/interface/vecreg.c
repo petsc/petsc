@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 
 #include "vecimpl.h"    /*I "petscvec.h"  I*/
 
@@ -29,7 +30,7 @@ PetscTruth VecRegisterAllCalled          = PETSC_FALSE;
 .keywords: vector, set, type
 .seealso: VecGetType(), VecCreate()
 @*/
-PetscErrorCode VecSetType(Vec vec, const VecType method)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, const VecType method)
 {
   PetscErrorCode (*r)(Vec);
   PetscTruth match;
@@ -76,7 +77,7 @@ PetscErrorCode VecSetType(Vec vec, const VecType method)
 .keywords: vector, get, type, name
 .seealso: VecSetType(), VecCreate()
 @*/
-PetscErrorCode VecGetType(Vec vec, VecType *type)
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec vec, VecType *type)
 {
   PetscErrorCode ierr;
 
@@ -100,7 +101,7 @@ PetscErrorCode VecGetType(Vec vec, VecType *type)
 
   Level: advanced
 @*/
-PetscErrorCode VecRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(Vec))
+PetscErrorCode PETSCVEC_DLLEXPORT VecRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(Vec))
 {
   char fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -127,7 +128,7 @@ PetscErrorCode VecRegister(const char sname[], const char path[], const char nam
 .keywords: Vec, register, destroy
 .seealso: VecRegister(), VecRegisterAll(), VecRegisterDynamic()
 @*/
-PetscErrorCode VecRegisterDestroy(void)
+PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 

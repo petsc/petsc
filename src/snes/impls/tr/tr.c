@@ -1,3 +1,4 @@
+#define PETSCSNES_DLL
  
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
@@ -305,7 +306,7 @@ $  SNES_CONVERGED_ITERATING       - (otherwise)
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-PetscErrorCode SNESConverged_TR(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_TR(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   SNES_TR *neP = (SNES_TR *)snes->data;
   PetscErrorCode ierr;
@@ -357,7 +358,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_TR"
-PetscErrorCode SNESCreate_TR(SNES snes)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_TR(SNES snes)
 {
   SNES_TR        *neP;
   PetscErrorCode ierr;

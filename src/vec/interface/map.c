@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*
      Provides the interface functions for all map operations.
    These are the map functions the user calls.
@@ -77,7 +78,7 @@ static PetscErrorCode PetscMapSetTypeFromOptions_Private(PetscMap map)
 .keywords: PetscMap, set, options, database
 .seealso: PetscMapCreate(), PetscMapPrintHelp(), PetscMaphSetOptionsPrefix()
 @*/
-PetscErrorCode PetscMapSetFromOptions(PetscMap map)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetFromOptions(PetscMap map)
 {
   PetscTruth opt;
   PetscErrorCode ierr;
@@ -122,7 +123,7 @@ $  -help, -h
 .keywords: PetscMap, help
 .seealso: PetscMapSetFromOptions()
 @*/
-PetscErrorCode PetscMapPrintHelp(PetscMap map)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapPrintHelp(PetscMap map)
 {
   char p[64];
   PetscErrorCode ierr;
@@ -155,7 +156,7 @@ PetscErrorCode PetscMapPrintHelp(PetscMap map)
 .seealso: PetscMapCreateMPI()
 
 @*/
-PetscErrorCode PetscMapDestroy(PetscMap map)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapDestroy(PetscMap map)
 {
   PetscErrorCode ierr;
 
@@ -188,7 +189,7 @@ PetscErrorCode PetscMapDestroy(PetscMap map)
 .seealso: PetscMapSetSize(), PetscMapGetLocalRange(), PetscMapGetGlobalRange()
 Concepts: PetscMap^local size
 @*/
-PetscErrorCode PetscMapSetLocalSize(PetscMap m,PetscInt n)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap m,PetscInt n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -216,7 +217,7 @@ PetscErrorCode PetscMapSetLocalSize(PetscMap m,PetscInt n)
    Concepts: PetscMap^local size
 
 @*/
-PetscErrorCode PetscMapGetLocalSize(PetscMap m,PetscInt *n)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap m,PetscInt *n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -241,7 +242,7 @@ PetscErrorCode PetscMapGetLocalSize(PetscMap m,PetscInt *n)
 .seealso: PetscMapSetLocalSize(), PetscMapGetLocalRange(), PetscMapGetGlobalRange()
  Concepts: PetscMap^size
 @*/
-PetscErrorCode PetscMapSetSize(PetscMap m,PetscInt N)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap m,PetscInt N)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -268,7 +269,7 @@ PetscErrorCode PetscMapSetSize(PetscMap m,PetscInt N)
 
    Concepts: PetscMap^size
 @*/
-PetscErrorCode PetscMapGetSize(PetscMap m,PetscInt *N)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap m,PetscInt *N)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -295,7 +296,7 @@ PetscErrorCode PetscMapGetSize(PetscMap m,PetscInt *N)
 
 .seealso: PetscMapGetLocalSize(), PetscMapGetGlobalRange()
 @*/
-PetscErrorCode PetscMapGetLocalRange(PetscMap m,PetscInt *rstart,PetscInt *rend)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap m,PetscInt *rstart,PetscInt *rend)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -326,7 +327,7 @@ PetscErrorCode PetscMapGetLocalRange(PetscMap m,PetscInt *rstart,PetscInt *rend)
 .seealso: PetscMapGetSize(), PetscMapGetLocalRange()
 
 @*/
-PetscErrorCode PetscMapGetGlobalRange(PetscMap m,PetscInt *range[])
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap m,PetscInt *range[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 
@@ -22,7 +23,7 @@
 
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetOrthogonalization()
 @*/
-PetscErrorCode KSPGMRESSetPreAllocateVectors(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors(KSP ksp)
 {
   PetscErrorCode ierr,(*f)(KSP);
 

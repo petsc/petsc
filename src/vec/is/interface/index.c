@@ -1,10 +1,12 @@
+#define PETSCVEC_DLL
+
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
 #include "src/vec/is/isimpl.h"      /*I "petscis.h" I*/
 
 /* Logging support */
-PetscCookie IS_COOKIE = 0;
+PetscCookie PETSCVEC_DLLEXPORT IS_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity" 
@@ -26,7 +28,7 @@ PetscCookie IS_COOKIE = 0;
 
 .seealso: ISSetIdentity()
 @*/
-PetscErrorCode ISIdentity(IS is,PetscTruth *ident)
+PetscErrorCode PETSCVEC_DLLEXPORT ISIdentity(IS is,PetscTruth *ident)
 {
   PetscErrorCode ierr;
 
@@ -58,7 +60,7 @@ PetscErrorCode ISIdentity(IS is,PetscTruth *ident)
 
 .seealso: ISIdentity()
 @*/
-PetscErrorCode ISSetIdentity(IS is)
+PetscErrorCode PETSCVEC_DLLEXPORT ISSetIdentity(IS is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -87,7 +89,7 @@ PetscErrorCode ISSetIdentity(IS is)
 
 .seealso: ISSetPermutation()
 @*/
-PetscErrorCode ISPermutation(IS is,PetscTruth *perm)
+PetscErrorCode PETSCVEC_DLLEXPORT ISPermutation(IS is,PetscTruth *perm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -113,7 +115,7 @@ PetscErrorCode ISPermutation(IS is,PetscTruth *perm)
 
 .seealso: ISPermutation()
 @*/
-PetscErrorCode ISSetPermutation(IS is)
+PetscErrorCode PETSCVEC_DLLEXPORT ISSetPermutation(IS is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -135,7 +137,7 @@ PetscErrorCode ISSetPermutation(IS is)
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlocked()
 @*/
-PetscErrorCode ISDestroy(IS is)
+PetscErrorCode PETSCVEC_DLLEXPORT ISDestroy(IS is)
 {
   PetscErrorCode ierr;
 
@@ -171,7 +173,7 @@ PetscErrorCode ISDestroy(IS is)
    Concepts: permutation^inverse
    Concepts: index sets^inverting
 @*/
-PetscErrorCode ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
+PetscErrorCode PETSCVEC_DLLEXPORT ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 {
   PetscErrorCode ierr;
 
@@ -187,7 +189,7 @@ PetscErrorCode ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
 #if defined(__cplusplus)
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetSizeNew" 
-PetscErrorCode ISGetSizeNew(IS is,PetscInt *size)
+PetscErrorCode PETSCVEC_DLLEXPORT ISGetSizeNew(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
 
@@ -218,7 +220,7 @@ PetscErrorCode ISGetSizeNew(IS is,PetscInt *size)
    Concepts: index sets^size
 
 @*/
-PetscErrorCode ISGetSize(IS is,PetscInt *size)
+PetscErrorCode PETSCVEC_DLLEXPORT ISGetSize(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
 
@@ -249,7 +251,7 @@ PetscErrorCode ISGetSize(IS is,PetscInt *size)
    Concepts: index sets^local size
   
 @*/
-PetscErrorCode ISGetLocalSize(IS is,PetscInt *size)
+PetscErrorCode PETSCVEC_DLLEXPORT ISGetLocalSize(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
 
@@ -299,7 +301,7 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: ISRestoreIndices(), ISGetIndicesF90()
 @*/
-PetscErrorCode ISGetIndices(IS is,PetscInt *ptr[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISGetIndices(IS is,PetscInt *ptr[])
 {
   PetscErrorCode ierr;
 
@@ -343,7 +345,7 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: ISGetIndices(), ISRestoreIndicesF90()
 @*/
-PetscErrorCode ISRestoreIndices(IS is,PetscInt *ptr[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreIndices(IS is,PetscInt *ptr[])
 {
   PetscErrorCode ierr;
 
@@ -371,7 +373,7 @@ PetscErrorCode ISRestoreIndices(IS is,PetscInt *ptr[])
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-PetscErrorCode ISView(IS is,PetscViewer viewer)
+PetscErrorCode PETSCVEC_DLLEXPORT ISView(IS is,PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -402,7 +404,7 @@ PetscErrorCode ISView(IS is,PetscViewer viewer)
 
 .seealso: ISSorted()
 @*/
-PetscErrorCode ISSort(IS is)
+PetscErrorCode PETSCVEC_DLLEXPORT ISSort(IS is)
 {
   PetscErrorCode ierr;
 
@@ -434,7 +436,7 @@ PetscErrorCode ISSort(IS is)
 
 .seealso: ISSort()
 @*/
-PetscErrorCode ISSorted(IS is,PetscTruth *flg)
+PetscErrorCode PETSCVEC_DLLEXPORT ISSorted(IS is,PetscTruth *flg)
 {
   PetscErrorCode ierr;
 
@@ -464,7 +466,7 @@ PetscErrorCode ISSorted(IS is,PetscTruth *flg)
 
 .seealso: ISCreateGeneral()
 @*/
-PetscErrorCode ISDuplicate(IS is,IS *newIS)
+PetscErrorCode PETSCVEC_DLLEXPORT ISDuplicate(IS is,IS *newIS)
 {
   PetscErrorCode ierr;
 

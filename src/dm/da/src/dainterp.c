@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
   Code for interpolating between grids represented by DAs
 */
@@ -7,7 +9,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolationScale"
-PetscErrorCode DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
+PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 {
   PetscErrorCode ierr;
   Vec            fine;
@@ -592,7 +594,7 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
 
 .seealso: DARefine(), DAGetInjection()
 @*/
-PetscErrorCode DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
 {
   PetscErrorCode ierr;
   PetscInt       dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
@@ -736,7 +738,7 @@ PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
 
 .seealso: DARefine(), DAGetInterpolation()
 @*/
-PetscErrorCode DAGetInjection(DA dac,DA daf,VecScatter *inject)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetInjection(DA dac,DA daf,VecScatter *inject)
 {
   PetscErrorCode ierr;
   PetscInt       dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;

@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
     Reference:  Saad, 1993.
@@ -717,7 +719,7 @@ typedef PetscErrorCode (*FCN2)(void*);
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFGMRESSetModifyPC_FGMRES" 
-PetscErrorCode KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -729,9 +731,9 @@ PetscErrorCode KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP);
-EXTERN PetscErrorCode KSPGMRESSetRestart_GMRES(KSP,PetscInt);
-EXTERN PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors_GMRES(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -806,7 +808,7 @@ PetscErrorCode KSPDestroy_FGMRES_Internal(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetRestart_FGMRES" 
-PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
 {
   KSP_FGMRES     *gmres = (KSP_FGMRES *)ksp->data;
   PetscErrorCode ierr;
@@ -826,7 +828,7 @@ PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
 EXTERN_C_END
 
 /*MC
@@ -862,7 +864,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_FGMRES"
-PetscErrorCode KSPCreate_FGMRES(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_FGMRES(KSP ksp)
 {
   KSP_FGMRES     *fgmres;
   PetscErrorCode ierr;

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "petscmat.h"
 
@@ -8,7 +9,7 @@
   code, rather then through the PETSc interface.
 
 */
-PetscErrorCode MatDumpSPAI(Mat A,FILE *file)
+PetscErrorCode PETSCKSP_DLLEXPORT MatDumpSPAI(Mat A,FILE *file)
 {
   const PetscScalar *vals;
   PetscErrorCode ierr;
@@ -36,7 +37,7 @@ PetscErrorCode MatDumpSPAI(Mat A,FILE *file)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecDumpSPAI(Vec b,FILE *file)
+PetscErrorCode PETSCKSP_DLLEXPORT VecDumpSPAI(Vec b,FILE *file)
 {
   PetscErrorCode ierr;
   int    n,i;

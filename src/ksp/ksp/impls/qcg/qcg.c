@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/kspimpl.h"             /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/qcg/qcg.h"
@@ -22,7 +23,7 @@ static PetscErrorCode QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,Petsc
 
 .keywords: KSP, QCG, set, trust region radius
 @*/
-PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
 {
   PetscErrorCode ierr,(*f)(KSP,PetscReal);
 
@@ -53,7 +54,7 @@ PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
 
     Level: advanced
 @*/
-PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
 {
   PetscErrorCode ierr,(*f)(KSP,PetscReal*);
 
@@ -94,7 +95,7 @@ PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
 
     Level: advanced
 @*/
-PetscErrorCode KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
 {
   PetscErrorCode ierr,(*f)(KSP,PetscReal*);
 
@@ -405,7 +406,7 @@ PetscErrorCode KSPDestroy_QCG(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGSetTrustRegionRadius_QCG"
-PetscErrorCode KSPQCGSetTrustRegionRadius_QCG(KSP ksp,PetscReal delta)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGSetTrustRegionRadius_QCG(KSP ksp,PetscReal delta)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -418,7 +419,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGGetTrialStepNorm_QCG"
-PetscErrorCode KSPQCGGetTrialStepNorm_QCG(KSP ksp,PetscReal *ltsnrm)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetTrialStepNorm_QCG(KSP ksp,PetscReal *ltsnrm)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -431,7 +432,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGGetQuadratic_QCG"
-PetscErrorCode KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -476,7 +477,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_QCG"
-PetscErrorCode KSPCreate_QCG(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_QCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_QCG        *cgP;

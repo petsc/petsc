@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /* 
    Plots vectors obtained with DACreate2d()
 */
@@ -361,7 +363,7 @@ EXTERN PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_DA"
-PetscErrorCode VecView_MPI_DA(Vec xin,PetscViewer viewer)
+PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
 {
   DA             da;
   PetscErrorCode ierr;
@@ -429,7 +431,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoadIntoVector_Binary_DA"
-PetscErrorCode VecLoadIntoVector_Binary_DA(PetscViewer viewer,Vec xin)
+PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,Vec xin)
 {
   DA             da;
   PetscErrorCode ierr;

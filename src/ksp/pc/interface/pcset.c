@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 /*
     Routines to set PC methods and options.
 */
@@ -51,7 +52,7 @@ PetscFList PCList = 0;
 .seealso: KSPSetType(), PCType
 
 @*/
-PetscErrorCode PCSetType(PC pc,const PCType type)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc,const PCType type)
 {
   PetscErrorCode ierr,(*r)(PC);
   PetscTruth     match;
@@ -115,7 +116,7 @@ PetscErrorCode PCSetType(PC pc,const PCType type)
 .seealso: PCRegisterAll(), PCRegisterAll()
 
 @*/
-PetscErrorCode PCRegisterDestroy(void)
+PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -149,7 +150,7 @@ PetscErrorCode PCRegisterDestroy(void)
 .seealso: PCSetType()
 
 @*/
-PetscErrorCode PCGetType(PC pc,PCType *meth)
+PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC pc,PCType *meth)
 {
   PetscFunctionBegin;
   *meth = (PCType) pc->type_name;
@@ -177,7 +178,7 @@ EXTERN PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
 .seealso: 
 
 @*/
-PetscErrorCode PCSetFromOptions(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC pc)
 {
   PetscErrorCode ierr;
   char           type[256];

@@ -6,48 +6,48 @@
 #include "petsc.h"
 PETSC_EXTERN_CXX_BEGIN
 
-EXTERN PetscErrorCode  PetscOptionsHasName(const char[],const char[],PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsHasName(const char[],const char[],PetscTruth*);
 PetscPolymorphicSubroutine(PetscOptionsHasName,(const char b[],PetscTruth *f),(PETSC_NULL,b,f))
-EXTERN PetscErrorCode  PetscOptionsGetInt(const char[],const char [],PetscInt *,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetInt(const char[],const char [],PetscInt *,PetscTruth*);
 PetscPolymorphicSubroutine(PetscOptionsGetInt,(const char b[],PetscInt *i,PetscTruth *f),(PETSC_NULL,b,i,f))
-EXTERN PetscErrorCode  PetscOptionsGetLogical(const char[],const char [],PetscTruth *,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetLogical(const char[],const char [],PetscTruth *,PetscTruth*);
 PetscPolymorphicSubroutine(PetscOptionsGetLogical,(const char b[],PetscTruth *i,PetscTruth *f),(PETSC_NULL,b,i,f))
-EXTERN PetscErrorCode  PetscOptionsGetReal(const char[],const char[],PetscReal *,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetReal(const char[],const char[],PetscReal *,PetscTruth*);
 PetscPolymorphicSubroutine(PetscOptionsGetReal,(const char b[],PetscReal *i,PetscTruth *f),(PETSC_NULL,b,i,f))
-EXTERN PetscErrorCode  PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscTruth*);
 PetscPolymorphicSubroutine(PetscOptionsGetScalar,(const char b[],PetscScalar i[],PetscTruth *f),(PETSC_NULL,b,i,f))
-EXTERN PetscErrorCode  PetscOptionsGetIntArray(const char[],const char[],PetscInt[],PetscInt *,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetIntArray(const char[],const char[],PetscInt[],PetscInt *,PetscTruth*);
 PetscPolymorphicSubroutine(PetscOptionsGetIntArray,(const char b[],PetscInt i[],PetscInt *ii,PetscTruth *f),(PETSC_NULL,b,i,ii,f))
-EXTERN PetscErrorCode  PetscOptionsGetRealArray(const char[],const char[],PetscReal[],PetscInt *,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetRealArray(const char[],const char[],PetscReal[],PetscInt *,PetscTruth*);
 PetscPolymorphicSubroutine(PetscOptionsGetRealArray,(const char b[],PetscReal i[],PetscInt *ii,PetscTruth *f),(PETSC_NULL,b,i,ii,f))
-EXTERN PetscErrorCode  PetscOptionsGetString(const char[],const char[],char[],size_t,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetString(const char[],const char[],char[],size_t,PetscTruth*);
 PetscPolymorphicSubroutine(PetscOptionsGetString,(const char b[],char i[],size_t s,PetscTruth *f),(PETSC_NULL,b,i,s,f))
-EXTERN PetscErrorCode  PetscOptionsGetStringArray(const char[],const char[],char*[],PetscInt*,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetStringArray(const char[],const char[],char*[],PetscInt*,PetscTruth*);
 PetscPolymorphicSubroutine(PetscOptionsGetStringArray,(const char b[],char *i[],PetscInt *ii,PetscTruth *f),(PETSC_NULL,b,i,ii,f))
 
-EXTERN PetscErrorCode  PetscOptionsSetAlias(const char[],const char[]);
-EXTERN PetscErrorCode  PetscOptionsSetValue(const char[],const char[]);
-EXTERN PetscErrorCode  PetscOptionsClearValue(const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsSetAlias(const char[],const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsSetValue(const char[],const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsClearValue(const char[]);
 
-EXTERN PetscErrorCode  PetscOptionsAllUsed(int*);
-EXTERN PetscErrorCode  PetscOptionsLeft(void);
-EXTERN PetscErrorCode  PetscOptionsPrint(FILE *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsAllUsed(int*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsLeft(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsPrint(FILE *);
 
-EXTERN PetscErrorCode  PetscOptionsCreate(void);
-EXTERN PetscErrorCode  PetscOptionsInsert(int*,char ***,const char[]);
-EXTERN PetscErrorCode  PetscOptionsInsertFile(const char[]);
-EXTERN PetscErrorCode  PetscOptionsInsertString(const char[]);
-EXTERN PetscErrorCode  PetscOptionsDestroy(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsCreate(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsInsert(int*,char ***,const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsInsertFile(const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsInsertString(const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsDestroy(void);
 
-EXTERN PetscErrorCode  PetscOptionsReject(const char[],const char[]);
-EXTERN PetscErrorCode  PetscOptionsGetAll(char*[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsReject(const char[],const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetAll(char*[]);
 
-EXTERN PetscErrorCode  PetscOptionsGetenv(MPI_Comm,const char[],char[],size_t,PetscTruth *);
-EXTERN PetscErrorCode  PetscOptionsAtoi(const char[],PetscInt*);
-EXTERN PetscErrorCode  PetscOptionsAtod(const char[],PetscReal*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetenv(MPI_Comm,const char[],char[],size_t,PetscTruth *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsAtoi(const char[],PetscInt*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsAtod(const char[],PetscReal*);
 
-extern PetscTruth PetscOptionsPublish;
-extern int        PetscOptionsPublishCount;
+extern PETSC_DLLEXPORT PetscTruth PetscOptionsPublish;
+extern PETSC_DLLEXPORT int        PetscOptionsPublishCount;
 
 /*MC
     PetscOptionsBegin - Begins a set of queries on the options database that are related and should be
@@ -105,9 +105,9 @@ M*/
 M*/
 #define    PetscOptionsEnd() _5_ierr = PetscOptionsEnd_Private();CHKERRQ(_5_ierr);}}
 
-EXTERN PetscErrorCode PetscOptionsBegin_Private(MPI_Comm,const char[],const char[],const char[]);
-EXTERN PetscErrorCode PetscOptionsEnd_Private(void);
-EXTERN PetscErrorCode PetscOptionsHead(const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsBegin_Private(MPI_Comm,const char[],const char[],const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsEnd_Private(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsHead(const char[]);
 
 /*MC
      PetscOptionsTail - Ends a section of options begun with PetscOptionsHead()
@@ -134,20 +134,20 @@ EXTERN PetscErrorCode PetscOptionsHead(const char[]);
 M*/
 #define    PetscOptionsTail() 0; {if (PetscOptionsPublishCount != 1) PetscFunctionReturn(0);}
 
-EXTERN PetscErrorCode PetscOptionsInt(const char[],const char[],const char[],PetscInt,PetscInt*,PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsReal(const char[],const char[],const char[],PetscReal,PetscReal*,PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsScalar(const char[],const char[],const char[],PetscScalar,PetscScalar*,PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsName(const char[],const char[],const char[],PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsString(const char[],const char[],const char[],const char[],char*,size_t,PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsLogical(const char[],const char[],const char[],PetscTruth,PetscTruth*,PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsLogicalGroupBegin(const char[],const char[],const char[],PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsLogicalGroup(const char[],const char[],const char[],PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsLogicalGroupEnd(const char[],const char[],const char[],PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsList(const char[],const char[],const char[],PetscFList,const char[],char[],PetscInt,PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsEList(const char[],const char[],const char[],const char*[],PetscInt,const char[],PetscInt*,PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsRealArray(const char[],const char[],const char[],PetscReal[],PetscInt*,PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsIntArray(const char[],const char[],const char[],PetscInt[],PetscInt*,PetscTruth*);
-EXTERN PetscErrorCode PetscOptionsStringArray(const char[],const char[],const char[],char*[],PetscInt*,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsInt(const char[],const char[],const char[],PetscInt,PetscInt*,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsReal(const char[],const char[],const char[],PetscReal,PetscReal*,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsScalar(const char[],const char[],const char[],PetscScalar,PetscScalar*,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsName(const char[],const char[],const char[],PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsString(const char[],const char[],const char[],const char[],char*,size_t,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsLogical(const char[],const char[],const char[],PetscTruth,PetscTruth*,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsLogicalGroupBegin(const char[],const char[],const char[],PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsLogicalGroup(const char[],const char[],const char[],PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsLogicalGroupEnd(const char[],const char[],const char[],PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsList(const char[],const char[],const char[],PetscFList,const char[],char[],PetscInt,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsEList(const char[],const char[],const char[],const char*[],PetscInt,const char[],PetscInt*,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsRealArray(const char[],const char[],const char[],PetscReal[],PetscInt*,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsIntArray(const char[],const char[],const char[],PetscInt[],PetscInt*,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsStringArray(const char[],const char[],const char[],char*[],PetscInt*,PetscTruth*);
 
 PETSC_EXTERN_CXX_END
 #endif

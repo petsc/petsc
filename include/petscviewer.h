@@ -31,7 +31,7 @@ typedef struct _p_PetscViewer* PetscViewer;
 extern "C" {
 #endif
 
-extern PetscCookie PETSC_VIEWER_COOKIE;
+extern PETSC_DLLEXPORT PetscCookie PETSC_VIEWER_COOKIE;
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 }
@@ -64,10 +64,10 @@ E*/
 #define PETSC_VIEWER_MATLAB       "matlab"
 
 extern PetscFList PetscViewerList;
-EXTERN PetscErrorCode PetscViewerRegisterAll(const char *);
-EXTERN PetscErrorCode PetscViewerRegisterDestroy(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterAll(const char *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterDestroy(void);
 
-EXTERN PetscErrorCode PetscViewerRegister(const char*,const char*,const char*,PetscErrorCode (*)(PetscViewer));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRegister(const char*,const char*,const char*,PetscErrorCode (*)(PetscViewer));
 
 /*MC
    PetscViewerRegisterDynamic - Adds a method to the Krylov subspace solver package.
@@ -112,11 +112,11 @@ M*/
 #define PetscViewerRegisterDynamic(a,b,c,d) PetscViewerRegister(a,b,c,d)
 #endif
 
-EXTERN PetscErrorCode PetscViewerCreate(MPI_Comm,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate(MPI_Comm,PetscViewer*);
 PetscPolymorphicSubroutine(PetscViewerCreate,(PetscViewer *v),(PETSC_COMM_SELF,v))
-EXTERN PetscErrorCode PetscViewerSetFromOptions(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFromOptions(PetscViewer);
 
-EXTERN PetscErrorCode PetscViewerASCIIOpen(MPI_Comm,const char[],PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm,const char[],PetscViewer*);
 
 /*E
   PetscViewerFileType - Indicates how the file should be opened for the viewer
@@ -158,19 +158,19 @@ M*/
 
 M*/
 
-EXTERN PetscErrorCode PetscViewerBinaryOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
-EXTERN PetscErrorCode PetscViewerSocketOpen(MPI_Comm,const char[],int,PetscViewer*);
-EXTERN PetscErrorCode PetscViewerStringOpen(MPI_Comm,char[],PetscInt,PetscViewer*);
-EXTERN PetscErrorCode PetscViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,PetscViewer*);
-EXTERN PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm, int, const char[], const char[], PetscViewer *);
-EXTERN PetscErrorCode PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
-EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketOpen(MPI_Comm,const char[],int,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerStringOpen(MPI_Comm,char[],PetscInt,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaOpen(MPI_Comm, int, const char[], const char[], PetscViewer *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
 
-EXTERN PetscErrorCode PetscViewerGetType(PetscViewer,PetscViewerType*);
-EXTERN PetscErrorCode PetscViewerSetType(PetscViewer,const PetscViewerType);
-EXTERN PetscErrorCode PetscViewerDestroy(PetscViewer);
-EXTERN PetscErrorCode PetscViewerGetSingleton(PetscViewer,PetscViewer*);
-EXTERN PetscErrorCode PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer,PetscViewerType*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetType(PetscViewer,const PetscViewerType);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDestroy(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetSingleton(PetscViewer,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
 
 
 /*E
@@ -201,11 +201,11 @@ typedef enum {
   PETSC_VIEWER_NOFORMAT,
   PETSC_VIEWER_ASCII_FACTOR_INFO} PetscViewerFormat;
 
-EXTERN PetscErrorCode PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
-EXTERN PetscErrorCode PetscViewerPushFormat(PetscViewer,PetscViewerFormat);
-EXTERN PetscErrorCode PetscViewerPopFormat(PetscViewer);
-EXTERN PetscErrorCode PetscViewerGetFormat(PetscViewer,PetscViewerFormat*);
-EXTERN PetscErrorCode PetscViewerFlush(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerPushFormat(PetscViewer,PetscViewerFormat);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerPopFormat(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFormat(PetscViewer,PetscViewerFormat*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerFlush(PetscViewer);
 
 /*
    Operations explicit to a particular class of viewers
@@ -220,69 +220,69 @@ EXTERN PetscErrorCode PetscViewerFlush(PetscViewer);
 E*/
 typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
 
-EXTERN PetscErrorCode PetscViewerASCIIGetPointer(PetscViewer,FILE**);
-EXTERN PetscErrorCode PetscViewerASCIISetMode(PetscViewer,PetscFileMode);
-EXTERN PetscErrorCode PetscViewerASCIIPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
-EXTERN PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
-EXTERN PetscErrorCode PetscViewerASCIIPushTab(PetscViewer);
-EXTERN PetscErrorCode PetscViewerASCIIPopTab(PetscViewer);
-EXTERN PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer,PetscTruth);
-EXTERN PetscErrorCode PetscViewerASCIISetTab(PetscViewer,PetscInt);
-EXTERN PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer,int*);
-EXTERN PetscErrorCode PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **);
-EXTERN PetscErrorCode PetscViewerSetFileType(PetscViewer,PetscViewerFileType);
-EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
-EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer,char[],PetscInt);
-EXTERN PetscErrorCode PetscViewerDrawClear(PetscViewer);
-EXTERN PetscErrorCode PetscViewerDrawSetInfo(PetscViewer,const char[],const char[],int,int,int,int);
-EXTERN PetscErrorCode PetscViewerSocketSetConnection(PetscViewer,const char[],PetscInt);
-EXTERN PetscErrorCode PetscViewerBinarySkipInfo(PetscViewer);
-EXTERN PetscErrorCode PetscViewerBinaryLoadInfo(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIGetPointer(PetscViewer,FILE**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISetMode(PetscViewer,PetscFileMode);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPushTab(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPopTab(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIUseTabs(PetscViewer,PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISetTab(PetscViewer,PetscInt);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetDescriptor(PetscViewer,int*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFileType(PetscViewer,PetscViewerFileType);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerStringSPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerStringSetString(PetscViewer,char[],PetscInt);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawClear(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawSetInfo(PetscViewer,const char[],const char[],int,int,int,int);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer,const char[],PetscInt);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySkipInfo(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryLoadInfo(PetscViewer);
 
 
-EXTERN PetscErrorCode PetscViewerSetFilename(PetscViewer,const char[]);
-EXTERN PetscErrorCode PetscViewerGetFilename(PetscViewer,char**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename(PetscViewer,const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFilename(PetscViewer,char**);
 
-EXTERN PetscErrorCode PetscPLAPACKInitializePackage(char *);
-EXTERN PetscErrorCode PetscPLAPACKFinalizePackage(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(char *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKFinalizePackage(void);
 
-EXTERN PetscErrorCode PetscViewerVUGetPointer(PetscViewer, FILE**);
-EXTERN PetscErrorCode PetscViewerVUSetMode(PetscViewer, PetscFileMode);
-EXTERN PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer, PetscTruth);
-EXTERN PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer, PetscTruth *);
-EXTERN PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer, const char [], ...) PETSC_PRINTF_FORMAT_CHECK(2,3);
-EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerVUGetPointer(PetscViewer, FILE**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerVUSetMode(PetscViewer, PetscFileMode);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerVUSetVecSeen(PetscViewer, PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerVUGetVecSeen(PetscViewer, PetscTruth *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerVUPrintDeferred(PetscViewer, const char [], ...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerVUFlushDeferred(PetscViewer);
 
-EXTERN PetscErrorCode PetscViewerMathematicaInitializePackage(char *);
-EXTERN PetscErrorCode PetscViewerMathematicaFinalizePackage(void);
-EXTERN PetscErrorCode PetscViewerMathematicaGetName(PetscViewer, const char **);
-EXTERN PetscErrorCode PetscViewerMathematicaSetName(PetscViewer, const char []);
-EXTERN PetscErrorCode PetscViewerMathematicaClearName(PetscViewer);
-EXTERN PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer, int);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaInitializePackage(char *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaFinalizePackage(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaGetName(PetscViewer, const char **);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetName(PetscViewer, const char []);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaClearName(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSkipPackets(PetscViewer, int);
 
-EXTERN PetscErrorCode PetscViewerSiloGetName(PetscViewer, char **);
-EXTERN PetscErrorCode PetscViewerSiloSetName(PetscViewer, const char []);
-EXTERN PetscErrorCode PetscViewerSiloClearName(PetscViewer);
-EXTERN PetscErrorCode PetscViewerSiloGetMeshName(PetscViewer, char **);
-EXTERN PetscErrorCode PetscViewerSiloSetMeshName(PetscViewer, const char []);
-EXTERN PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloGetName(PetscViewer, char **);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloSetName(PetscViewer, const char []);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloClearName(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloGetMeshName(PetscViewer, char **);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloSetMeshName(PetscViewer, const char []);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloClearMeshName(PetscViewer);
 
-EXTERN PetscErrorCode PetscViewerNetcdfOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
-EXTERN PetscErrorCode PetscViewerNetcdfGetID(PetscViewer, int *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerNetcdfOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerNetcdfGetID(PetscViewer, int *);
 
-EXTERN PetscErrorCode PetscViewerHDF4Open(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
-EXTERN PetscErrorCode PetscViewerHDF4WriteSDS(PetscViewer viewer, float *xf, int d, int *dims, int bs);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4Open(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4WriteSDS(PetscViewer viewer, float *xf, int d, int *dims, int bs);
 
 /*
      These are all the default viewers that do not have 
    to be explicitly opened
 */
-EXTERN PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm);
-EXTERN PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm);
-EXTERN PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm);
-EXTERN PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm);
-EXTERN PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm);
-EXTERN PetscViewer PETSC_VIEWER_MATLAB_(MPI_Comm);
+EXTERN PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDOUT_(MPI_Comm);
+EXTERN PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDERR_(MPI_Comm);
+EXTERN PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_DRAW_(MPI_Comm);
+EXTERN PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm);
+EXTERN PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_BINARY_(MPI_Comm);
+EXTERN PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_MATLAB_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE;
 
 #define PETSC_VIEWER_STDERR_SELF  PETSC_VIEWER_STDERR_(PETSC_COMM_SELF)
@@ -363,18 +363,18 @@ M*/
 /*
    petscViewer writes to Matlab .mat file
 */
-EXTERN PetscErrorCode PetscViewerMatlabPutArray(PetscViewer,int,int,PetscScalar*,char*);
-EXTERN PetscErrorCode PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,char*);
-EXTERN PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabPutArray(PetscViewer,int,int,PetscScalar*,char*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,char*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
 
 /* 
     PetscViewer utility routines used by PETSc that are not normally used
    by users.
 */
-EXTERN PetscErrorCode  PetscViewerSocketPutScalar(PetscViewer,PetscInt,PetscInt,PetscScalar*);
-EXTERN PetscErrorCode  PetscViewerSocketPutReal(PetscViewer,PetscInt,PetscInt,PetscReal*);
-EXTERN PetscErrorCode  PetscViewerSocketPutInt(PetscViewer,PetscInt,PetscInt*);
-EXTERN PetscErrorCode  PetscViewerSocketPutSparse_Private(PetscViewer,PetscInt,PetscInt,PetscInt,PetscScalar*,PetscInt*,PetscInt *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscViewerSocketPutScalar(PetscViewer,PetscInt,PetscInt,PetscScalar*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscViewerSocketPutReal(PetscViewer,PetscInt,PetscInt,PetscReal*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscViewerSocketPutInt(PetscViewer,PetscInt,PetscInt*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscViewerSocketPutSparse_Private(PetscViewer,PetscInt,PetscInt,PetscInt,PetscScalar*,PetscInt*,PetscInt *);
 
 /*S
      PetscViewers - Abstract collection of PetscViewers
@@ -387,9 +387,9 @@ EXTERN PetscErrorCode  PetscViewerSocketPutSparse_Private(PetscViewer,PetscInt,P
            PetscViewersGetViewer()
 S*/
 typedef struct _p_PetscViewers* PetscViewers;
-EXTERN PetscErrorCode PetscViewersCreate(MPI_Comm,PetscViewers*);
-EXTERN PetscErrorCode PetscViewersDestroy(PetscViewers);
-EXTERN PetscErrorCode PetscViewersGetViewer(PetscViewers,int,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersCreate(MPI_Comm,PetscViewers*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersDestroy(PetscViewers);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers,int,PetscViewer*);
 
 PETSC_EXTERN_CXX_END
 #endif

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
       PetscLogInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.
@@ -22,8 +23,8 @@
   If PetscLogInfoFlags[OBJECT_COOKIE - PETSC_COOKIE] is zero, no messages related
   to that object are printed. OBJECT_COOKIE is, for example, MAT_COOKIE.
 */
-PetscTruth PetscLogPrintInfo     = PETSC_FALSE;
-PetscTruth PetscLogPrintInfoNull = PETSC_FALSE;
+PetscTruth PETSC_DLLEXPORT PetscLogPrintInfo     = PETSC_FALSE;
+PetscTruth PETSC_DLLEXPORT PetscLogPrintInfoNull = PETSC_FALSE;
 int        PetscLogInfoFlags[]   = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                     1,1,1,1,1,1,1,1,1,1,1,1};
@@ -52,7 +53,7 @@ FILE      *PetscLogInfoFile      = PETSC_NULL;
 
 .seealso: PetscLogInfo()
 @*/
-PetscErrorCode PetscLogInfoAllow(PetscTruth flag, const char filename[])
+PetscErrorCode PETSC_DLLEXPORT PetscLogInfoAllow(PetscTruth flag, const char filename[])
 {
   char           fname[PETSC_MAX_PATH_LEN], tname[5];
   PetscMPIInt    rank;
@@ -92,7 +93,7 @@ PetscErrorCode PetscLogInfoAllow(PetscTruth flag, const char filename[])
 .keywords: allow, information, printing, monitoring
 .seealso: PetscLogInfoActivateClass(), PetscLogInfo(), PetscLogInfoAllow()
 @*/
-PetscErrorCode PetscLogInfoDeactivateClass(int objclass)
+PetscErrorCode PETSC_DLLEXPORT PetscLogInfoDeactivateClass(int objclass)
 {
   PetscFunctionBegin;
   if (!objclass) {
@@ -121,7 +122,7 @@ PetscErrorCode PetscLogInfoDeactivateClass(int objclass)
 .keywords: allow, information, printing, monitoring
 .seealso: PetscLogInfoDeactivateClass(), PetscLogInfo(), PetscLogInfoAllow()
 @*/
-PetscErrorCode PetscLogInfoActivateClass(int objclass)
+PetscErrorCode PETSC_DLLEXPORT PetscLogInfoActivateClass(int objclass)
 {
   PetscFunctionBegin;
   if (!objclass) {
@@ -174,7 +175,7 @@ $
 
 .seealso: PetscLogInfoAllow()
 @*/
-PetscErrorCode PetscLogInfo_Private(void *vobj, const char message[], ...)  
+PetscErrorCode PETSC_DLLEXPORT PetscLogInfo_Private(void *vobj, const char message[], ...)  
 {
   va_list        Argp;
   PetscMPIInt    rank,urank;

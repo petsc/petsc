@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*$Id: dxml.c,v 1.24 2001/08/07 03:02:47 balay Exp $*/
 
 /* 
@@ -36,7 +38,7 @@ int MatUseDXML_SeqAIJ(Mat A)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJ_DXML"
-int MatCreate_SeqAIJ_DXML(Mat A) {
+int PETSCMAT_DLLEXPORT MatCreate_SeqAIJ_DXML(Mat A) {
   int ierr;
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"Presently not being supported");

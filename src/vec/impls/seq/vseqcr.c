@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*
    Implements the sequential vectors.
 */
@@ -29,7 +30,7 @@
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
-PetscErrorCode VecCreateSeq(MPI_Comm comm,PetscInt n,Vec *v)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreateSeq(MPI_Comm comm,PetscInt n,Vec *v)
 {
   PetscErrorCode ierr;
 

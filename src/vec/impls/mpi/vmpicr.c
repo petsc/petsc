@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*
    This file contains routines for Parallel vector operations.
  */
@@ -31,7 +32,7 @@
           VecCreateMPIWithArray(), VecCreateGhostWithArray()
 
 @*/ 
-PetscErrorCode VecCreateMPI(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPI(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
 {
   PetscErrorCode ierr;
 

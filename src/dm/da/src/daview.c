@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
@@ -177,7 +179,7 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), DAGetInfo(), DAGetCorners(),
           DAGetGhostCorners()
 @*/
-PetscErrorCode DAView(DA da,PetscViewer viewer)
+PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt i,dof = da->w;
@@ -256,7 +258,7 @@ PetscErrorCode DAView(DA da,PetscViewer viewer)
 
 .seealso: DAView(), DAGetCorners(), DAGetLocalInfo()
 @*/
-PetscErrorCode DAGetInfo(DA da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DAPeriodicType *wrap,DAStencilType *st)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetInfo(DA da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DAPeriodicType *wrap,DAStencilType *st)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -293,7 +295,7 @@ PetscErrorCode DAGetInfo(DA da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P
 
 .seealso: DAGetInfo(), DAGetCorners()
 @*/
-PetscErrorCode DAGetLocalInfo(DA da,DALocalInfo *info)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalInfo(DA da,DALocalInfo *info)
 {
   PetscInt w;
 

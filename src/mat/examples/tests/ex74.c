@@ -13,7 +13,7 @@ int main(int argc,char **args)
   Mat                A;             /* linear system matrix */ 
   Mat                sA,sB,sC;         /* symmetric part of the matrices */ 
   PetscInt           n,mbs=16,bs=1,nz=3,prob=1,i,j,col[3],lf,block, row,I,J,n1,inc; 
-  PetscReal          norm1,norm2,tol=1.e-10;
+  PetscReal          norm1,norm2,rnorm,tol=1.e-10;
   PetscScalar        neg_one = -1.0,four=4.0,value[3],alpha=0.1;  
   IS                 perm, iscol;
   PetscRandom        rdm;
@@ -142,22 +142,30 @@ int main(int argc,char **args)
   MatView(sA, PETSC_VIEWER_STDOUT_WORLD); 
   */
 
-  /* Test MatNorm(), MatDuplicate() */
+  /* Test MatDuplicate() */
   ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr); 
   ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sB);CHKERRQ(ierr);
   ierr = MatEqual(sA,sB,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDuplicate()");
 
+  /* Test MatNorm() */
+  ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr); 
   ierr = MatNorm(sB,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
-  norm1 -= norm2;
-  if (norm1<-tol || norm1>tol){ 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n",norm1);CHKERRQ(ierr);
+  rnorm = PetscAbsScalar(norm1-norm2)/norm2;
+  if (rnorm > tol){ 
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS, NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
   }
   ierr = MatNorm(A,NORM_INFINITY,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(sB,NORM_INFINITY,&norm2);CHKERRQ(ierr);
-  norm1 -= norm2;
-  if (norm1<-tol || norm1>tol){ 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n",norm1);CHKERRQ(ierr);
+  rnorm = PetscAbsScalar(norm1-norm2)/norm2;
+  if (rnorm > tol){ 
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
+  }
+  ierr = MatNorm(A,NORM_1,&norm1);CHKERRQ(ierr);
+  ierr = MatNorm(sB,NORM_1,&norm2);CHKERRQ(ierr);
+  rnorm = PetscAbsScalar(norm1-norm2)/norm2;
+  if (rnorm > tol){ 
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
   }
 
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/kspimpl.h"         /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/rich/richctx.h"
@@ -19,7 +20,7 @@
 
 .keywords: KSP, Richardson, set, scale
 @*/
-PetscErrorCode KSPRichardsonSetScale(KSP ksp,PetscReal scale)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 {
   PetscErrorCode ierr,(*f)(KSP,PetscReal);
 

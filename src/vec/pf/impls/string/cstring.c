@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 
 #include "src/vec/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
@@ -49,7 +50,7 @@ PetscErrorCode PFDestroy_String(void *value)
 .seealso: PFSetFromOptions()
 
 */
-PetscErrorCode PFStringCreateFunction(PF pf,char *string,void **f)
+PetscErrorCode PETSCVEC_DLLEXPORT PFStringCreateFunction(PF pf,char *string,void **f)
 {
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   PetscErrorCode ierr;
@@ -120,7 +121,7 @@ typedef PetscErrorCode (*FCN)(void*,PetscInt,PetscScalar*,PetscScalar*); /* forc
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_String"
-PetscErrorCode PFCreate_String(PF pf,void *value)
+PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_String(PF pf,void *value)
 {
   PetscErrorCode ierr;
   FCN        f = 0;

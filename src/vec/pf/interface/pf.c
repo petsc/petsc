@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -30,7 +31,7 @@ PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 .seealso: PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec()
 @*/
-PetscErrorCode PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,PetscScalar*,PetscScalar*),PetscErrorCode (*applyvec)(void*,Vec,Vec),PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*destroy)(void*),void*ctx)
+PetscErrorCode PETSCVEC_DLLEXPORT PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,PetscScalar*,PetscScalar*),PetscErrorCode (*applyvec)(void*,Vec,Vec),PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*destroy)(void*),void*ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
@@ -60,7 +61,7 @@ PetscErrorCode PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,PetscScalar*,P
 
 .seealso: PFCreate(), PFSet(), PFSetType()
 @*/
-PetscErrorCode PFDestroy(PF pf)
+PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF pf)
 {
   PetscErrorCode ierr;
   PetscTruth flg;
@@ -125,7 +126,7 @@ static PetscErrorCode PFPublish_Petsc(PetscObject obj)
 
 .seealso: PFSetUp(), PFApply(), PFDestroy(), PFApplyVec()
 @*/
-PetscErrorCode PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
+PetscErrorCode PETSCVEC_DLLEXPORT PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 {
   PF  newpf;
   PetscErrorCode ierr;
@@ -176,7 +177,7 @@ PetscErrorCode PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 
 .seealso: PFApply(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-PetscErrorCode PFApplyVec(PF pf,Vec x,Vec y)
+PetscErrorCode PETSCVEC_DLLEXPORT PFApplyVec(PF pf,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscInt       i,rstart,rend,n,p;
@@ -252,7 +253,7 @@ PetscErrorCode PFApplyVec(PF pf,Vec x,Vec y)
 
 .seealso: PFApplyVec(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-PetscErrorCode PFApply(PF pf,PetscInt n,PetscScalar* x,PetscScalar* y)
+PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF pf,PetscInt n,PetscScalar* x,PetscScalar* y)
 {
   PetscErrorCode ierr;
 
@@ -295,7 +296,7 @@ PetscErrorCode PFApply(PF pf,PetscInt n,PetscScalar* x,PetscScalar* y)
 
 .seealso: PetscViewerCreate(), PetscViewerASCIIOpen()
 @*/
-PetscErrorCode PFView(PF pf,PetscViewer viewer)
+PetscErrorCode PETSCVEC_DLLEXPORT PFView(PF pf,PetscViewer viewer)
 {
   PFType            cstr;
   PetscErrorCode ierr;
@@ -372,7 +373,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFRegister"
-PetscErrorCode PFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PF,void*))
+PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PF,void*))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
@@ -406,7 +407,7 @@ PetscErrorCode PFRegister(const char sname[],const char path[],const char name[]
 .seealso: PFSetType()
 
 @*/
-PetscErrorCode PFGetType(PF pf,PFType *meth)
+PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,PFType *meth)
 {
   PetscFunctionBegin;
   *meth = (PFType) pf->type_name;
@@ -441,7 +442,7 @@ PetscErrorCode PFGetType(PF pf,PFType *meth)
 .seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DACreatePF()
 
 @*/
-PetscErrorCode PFSetType(PF pf,const PFType type,void *ctx)
+PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,const PFType type,void *ctx)
 {
   PetscErrorCode ierr,(*r)(PF,void*);
   PetscTruth match;
@@ -495,7 +496,7 @@ PetscErrorCode PFSetType(PF pf,const PFType type,void *ctx)
 
 .seealso:
 @*/
-PetscErrorCode PFSetFromOptions(PF pf)
+PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
 {
   PetscErrorCode ierr;
   char       type[256];

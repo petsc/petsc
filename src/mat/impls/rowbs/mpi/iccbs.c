@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
 

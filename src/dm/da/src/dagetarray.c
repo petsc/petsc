@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
  
 #include "petscda.h"    /*I   "petscda.h"   I*/
 
@@ -26,7 +27,7 @@
 
 .seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecRestoreArray()
 @*/
-PetscErrorCode DAVecGetArray(DA da,Vec vec,void *array)
+PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArray(DA da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
@@ -81,7 +82,7 @@ PetscErrorCode DAVecGetArray(DA da,Vec vec,void *array)
 
 .seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecGetArray()
 @*/
-PetscErrorCode DAVecRestoreArray(DA da,Vec vec,void *array)
+PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DA da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
@@ -139,7 +140,7 @@ PetscErrorCode DAVecRestoreArray(DA da,Vec vec,void *array)
 
 .seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecRestoreArray(), DAVecGetArray(), DAVecRestoreArrayDOF()
 @*/
-PetscErrorCode DAVecGetArrayDOF(DA da,Vec vec,void *array)
+PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArrayDOF(DA da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
@@ -193,7 +194,7 @@ PetscErrorCode DAVecGetArrayDOF(DA da,Vec vec,void *array)
 
 .seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecGetArray(), DAVecGetArrayDOF(), DAVecRestoreArrayDOF()
 @*/
-PetscErrorCode DAVecRestoreArrayDOF(DA da,Vec vec,void *array)
+PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArrayDOF(DA da,Vec vec,void *array)
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;

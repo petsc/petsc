@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
 
 /*
   These AO application ordering routines do not require that the input
@@ -166,7 +167,7 @@ static struct _AOOps AOps = {AOView_Mapping,
 .keywords: AO, index
 .seealso: AOMappingHasPetscIndex(), AOCreateMapping()
 @*/
-PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscTruth *hasIndex)
+PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscTruth *hasIndex)
 {
   AO_Mapping *aomap;
   PetscInt   *app;
@@ -215,7 +216,7 @@ PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscTruth *ha
 .keywords: AO, index
 .seealso: AOMappingHasApplicationIndex(), AOCreateMapping()
 @*/
-PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscTruth *hasIndex)
+PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscTruth *hasIndex)
 {
   AO_Mapping *aomap;
   PetscInt   *petsc;
@@ -269,7 +270,7 @@ $ -ao_view : call AOView() at the conclusion of AOCreateMapping()
 .keywords: AO, create
 .seealso: AOCreateDebug(), AOCreateBasic(), AOCreateMappingIS(), AODestroy()
 @*/
-PetscErrorCode AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
+PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
 {
   AO             ao;
   AO_Mapping     *aomap;
@@ -407,7 +408,7 @@ $ -ao_view : call AOView() at the conclusion of AOCreateMappingIS()
 .keywords: AO, create
 .seealso: AOCreateBasic(), AOCreateMapping(), AODestroy()
 @*/
-PetscErrorCode AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
+PetscErrorCode PETSCDM_DLLEXPORT AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
 {
   MPI_Comm       comm;
   PetscInt       *mypetsc, *myapp;

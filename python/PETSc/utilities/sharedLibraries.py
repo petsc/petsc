@@ -25,7 +25,7 @@ class Configure(config.base.Configure):
     if self.useShared:
       self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase)
     else:
-      self.addMakeRule('shared','')
+      self.addMakeRule('shared_arch','')
 
   def configure(self):
     self.executeTest(self.configureSharedLibraries)

@@ -1,10 +1,13 @@
+#define PETSCDM_DLL
+
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
 #include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
 /* Logging support */
-PetscCookie AO_COOKIE = 0, AODATA_COOKIE = 0;
+PetscCookie PETSCDM_DLLEXPORT AO_COOKIE = 0;
+PetscCookie PETSCDM_DLLEXPORT AODATA_COOKIE = 0;
 PetscEvent  AO_PetscToApplication = 0, AO_ApplicationToPetsc = 0;
 
 #undef __FUNCT__  
@@ -35,7 +38,7 @@ PetscEvent  AO_PetscToApplication = 0, AO_ApplicationToPetsc = 0;
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-PetscErrorCode AOView(AO ao,PetscViewer viewer)
+PetscErrorCode PETSCDM_DLLEXPORT AOView(AO ao,PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -63,7 +66,7 @@ PetscErrorCode AOView(AO ao,PetscViewer viewer)
 
 .seealso: AOCreateBasic()
 @*/
-PetscErrorCode AODestroy(AO ao)
+PetscErrorCode PETSCDM_DLLEXPORT AODestroy(AO ao)
 {
   PetscErrorCode ierr;
 
@@ -109,7 +112,7 @@ PetscErrorCode AODestroy(AO ao)
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
           AOApplicationToPetscIS(),AOPetscToApplication()
 @*/
-PetscErrorCode AOPetscToApplicationIS(AO ao,IS is)
+PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationIS(AO ao,IS is)
 {
   PetscErrorCode ierr;
   PetscInt       n,*ia;
@@ -158,7 +161,7 @@ PetscErrorCode AOPetscToApplicationIS(AO ao,IS is)
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-PetscErrorCode AOApplicationToPetscIS(AO ao,IS is)
+PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscIS(AO ao,IS is)
 {
   PetscErrorCode ierr;
   PetscInt       n,*ia;
@@ -206,7 +209,7 @@ PetscErrorCode AOApplicationToPetscIS(AO ao,IS is)
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-PetscErrorCode AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
+PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
 {
   PetscErrorCode ierr;
 
@@ -242,7 +245,7 @@ PetscErrorCode AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-PetscErrorCode AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
+PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
 {
   PetscErrorCode ierr;
 
@@ -271,7 +274,7 @@ PetscErrorCode AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
 .keywords: application ordering, mapping
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt array[])
+PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt array[])
 {
   PetscErrorCode ierr;
 
@@ -301,7 +304,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt ar
 
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt array[])
+PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt array[])
 {
   PetscErrorCode ierr;
 
@@ -331,7 +334,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt ar
 
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal array[])
+PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal array[])
 {
   PetscErrorCode ierr;
 
@@ -361,7 +364,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal 
 
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal array[])
+PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal array[])
 {
   PetscErrorCode ierr;
 

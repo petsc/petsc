@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 /*
     Code for managing color the X implementation of the PetscDraw routines.

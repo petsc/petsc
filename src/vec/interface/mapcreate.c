@@ -1,4 +1,4 @@
-
+#define PETSCVEC_DLL
 #include "vecimpl.h"      /*I "petscvec.h"  I*/
 
 
@@ -20,7 +20,7 @@
 .keywords: PetscMap, create
 .seealso: PetscMapDestroy(), PetscMapGetLocalSize(), PetscMapGetSize(), PetscMapGetGlobalRange(), PetscMapGetLocalRange()
 @*/ 
-PetscErrorCode PetscMapCreate(MPI_Comm comm, PetscMap *map)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCreate(MPI_Comm comm, PetscMap *map)
 {
   PetscMap m;
   PetscErrorCode ierr;

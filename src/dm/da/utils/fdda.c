@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
  
 #include "src/dm/da/daimpl.h" /*I      "petscda.h"     I*/
 #include "petscmat.h"         /*I      "petscmat.h"    I*/
@@ -83,7 +84,7 @@ $                            0, 1, 1}
 .seealso DAGetMatrix(), DASetGetMatrix()
 
 @*/
-PetscErrorCode DASetBlockFills(DA da,PetscInt *dfill,PetscInt *ofill)
+PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt *ofill)
 {
   PetscErrorCode ierr;
 
@@ -121,7 +122,7 @@ PetscErrorCode DASetBlockFills(DA da,PetscInt *dfill,PetscInt *ofill)
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), ISColoringType, ISColoring
 
 @*/
-PetscErrorCode DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
   PetscInt       dim;
@@ -488,7 +489,7 @@ EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
 
 @*/
-PetscErrorCode DAGetMatrix(DA da,const MatType mtype,Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da,const MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3];

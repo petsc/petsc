@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
@@ -1447,7 +1448,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,Mat *B)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatIsTranspose_SeqAIJ"
-PetscErrorCode MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscTruth *f)
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscTruth *f)
 {
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ *) A->data,*bij = (Mat_SeqAIJ*) A->data;
   PetscInt       *adx,*bdx,*aii,*bii,*aptr,*bptr; PetscScalar *va,*vb;
@@ -2246,7 +2247,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqAIJSetColumnIndices_SeqAIJ"
-PetscErrorCode MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)mat->data;
   PetscInt   i,nz,n;
@@ -2292,7 +2293,7 @@ EXTERN_C_END
     The indices should start with zero, not one.
 
 @*/ 
-PetscErrorCode MatSeqAIJSetColumnIndices(Mat mat,PetscInt *indices)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetColumnIndices(Mat mat,PetscInt *indices)
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt *);
 
@@ -2313,7 +2314,7 @@ PetscErrorCode MatSeqAIJSetColumnIndices(Mat mat,PetscInt *indices)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatStoreValues_SeqAIJ"
-PetscErrorCode MatStoreValues_SeqAIJ(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_SeqAIJ(Mat mat)
 {
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ *)mat->data;
   PetscErrorCode ierr;
@@ -2381,7 +2382,7 @@ $    endloop
 .seealso: MatRetrieveValues()
 
 @*/ 
-PetscErrorCode MatStoreValues(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues(Mat mat)
 {
   PetscErrorCode ierr,(*f)(Mat);
 
@@ -2402,7 +2403,7 @@ PetscErrorCode MatStoreValues(Mat mat)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatRetrieveValues_SeqAIJ"
-PetscErrorCode MatRetrieveValues_SeqAIJ(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_SeqAIJ(Mat mat)
 {
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ *)mat->data;
   PetscErrorCode ierr;
@@ -2438,7 +2439,7 @@ EXTERN_C_END
 .seealso: MatStoreValues()
 
 @*/ 
-PetscErrorCode MatRetrieveValues(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues(Mat mat)
 {
   PetscErrorCode ierr,(*f)(Mat);
 
@@ -2510,7 +2511,7 @@ PetscErrorCode MatRetrieveValues(Mat mat)
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays()
 
 @*/
-PetscErrorCode MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
   PetscErrorCode ierr;
 
@@ -2574,7 +2575,7 @@ PetscErrorCode MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,c
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays()
 
 @*/
-PetscErrorCode MatSeqAIJSetPreallocation(Mat B,PetscInt nz,const PetscInt nnz[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation(Mat B,PetscInt nz,const PetscInt nnz[])
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt,const PetscInt[]);
 
@@ -2589,7 +2590,7 @@ PetscErrorCode MatSeqAIJSetPreallocation(Mat B,PetscInt nz,const PetscInt nnz[])
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqAIJSetPreallocation_SeqAIJ"
-PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,PetscInt *nnz)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,PetscInt *nnz)
 {
   Mat_SeqAIJ     *b;
   size_t         len = 0;
@@ -2671,7 +2672,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqAIJ"
-PetscErrorCode MatCreate_SeqAIJ(Mat B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
 {
   Mat_SeqAIJ     *b;
   PetscErrorCode ierr;
@@ -2968,7 +2969,7 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatCreateSeqAIJ()
 
 @*/
-PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt* i,PetscInt*j,PetscScalar *a,Mat *mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt* i,PetscInt*j,PetscScalar *a,Mat *mat)
 {
   PetscErrorCode ierr;
   PetscInt       ii;

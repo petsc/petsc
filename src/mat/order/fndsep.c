@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* fndsep.f -- translated by f2c (version 19931217).
 */
 

@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
@@ -5,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 /* Logging support */
-PetscCookie DA_COOKIE = 0;
+PetscCookie PETSCDM_DLLEXPORT DA_COOKIE = 0;
 PetscEvent  DA_GlobalToLocal = 0, DA_LocalToGlobal = 0, DA_LocalADFunction = 0;
 
 #undef __FUNCT__  
@@ -24,7 +26,7 @@ PetscEvent  DA_GlobalToLocal = 0, DA_LocalToGlobal = 0, DA_LocalADFunction = 0;
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d()
 @*/
-PetscErrorCode DADestroy(DA da)
+PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
 {
   PetscErrorCode ierr;
   PetscErrorCode i,cnt = 0;
@@ -170,7 +172,7 @@ PetscErrorCode DADestroy(DA da)
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), VecSetLocalToGlobalMapping(),
           MatSetLocalToGlobalMapping(), DAGetGlobalIndices(), DAGetISLocalToGlobalMappingBlck()
 @*/
-PetscErrorCode DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -206,7 +208,7 @@ PetscErrorCode DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), VecSetLocalToGlobalMapping(),
           MatSetLocalToGlobalMapping(), DAGetGlobalIndices(), DAGetISLocalToGlobalMapping()
 @*/
-PetscErrorCode DAGetISLocalToGlobalMappingBlck(DA da,ISLocalToGlobalMapping *map)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMappingBlck(DA da,ISLocalToGlobalMapping *map)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

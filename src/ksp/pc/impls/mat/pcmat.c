@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/pc/pcimpl.h"   /*I "petscpc.h" I*/
 
@@ -48,7 +49,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Mat"
-PetscErrorCode PCCreate_Mat(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Mat(PC pc)
 {
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_Mat;

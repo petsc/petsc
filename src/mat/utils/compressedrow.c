@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 

@@ -1,3 +1,4 @@
+#define PETSCSNES_DLL
 
 #include "petscsnes.h"
 
@@ -16,7 +17,7 @@
 .keywords: SNES, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode SNESInitializePackage(const char path[]) {
+PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char              *className;
@@ -36,6 +37,7 @@ PetscErrorCode SNESInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&SNES_LineSearch,               "SNESLineSearch",   SNES_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&SNES_FunctionEval,             "SNESFunctionEval", SNES_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&SNES_JacobianEval,             "SNESJacobianEval", SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MATSNESMF_Mult,                "MatMultMatrixFre", MAT_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
@@ -68,7 +70,7 @@ EXTERN_C_BEGIN
   path - library path
 
  */
-PetscErrorCode PetscDLLibraryRegister(char *path)
+PetscErrorCode PETSCSNES_DLLEXPORT PetscDLLibraryRegister(char *path)
 {
   PetscErrorCode ierr;
 

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/pc/pcimpl.h"                /*I "petscpc.h" I*/
 
@@ -27,7 +28,7 @@
 
 .seealso: PCFactorSetShiftNonzero(), PCFactorSetShiftPd()
 @*/
-PetscErrorCode PCFactorSetZeroPivot(PC pc,PetscReal zero)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot(PC pc,PetscReal zero)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);
 
@@ -64,7 +65,7 @@ PetscErrorCode PCFactorSetZeroPivot(PC pc,PetscReal zero)
 
 .seealso: PCFactorSetZeroPivot(), PCFactorSetShiftPd()
 @*/
-PetscErrorCode PCFactorSetShiftNonzero(PC pc,PetscReal shift)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero(PC pc,PetscReal shift)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);
 
@@ -102,7 +103,7 @@ PetscErrorCode PCFactorSetShiftNonzero(PC pc,PetscReal shift)
 
 .seealso: PCFactorSetZeroPivot(), PCFactorSetShiftNonzero()
 @*/
-PetscErrorCode PCFactorSetShiftPd(PC pc,PetscTruth shift)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd(PC pc,PetscTruth shift)
 {
   PetscErrorCode ierr,(*f)(PC,PetscTruth);
 

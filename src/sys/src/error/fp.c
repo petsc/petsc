@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
 *	IEEE error handler for all machines. Since each machine has 
 *   enough slight differences we have completely separate codes for each one.
@@ -310,7 +311,7 @@ void PetscDefaultFPTrap(int sig)
 EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetFPTrap"
-PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
+PetscErrorCode PETSC_DLLEXPORT PetscSetFPTrap(PetscFPTrap on)
 {
   PetscFunctionBegin;
   if (on == PETSC_FP_TRAP_ON) {

@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 
 #include "vecimpl.h"
 

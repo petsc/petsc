@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
        
@@ -28,7 +29,7 @@
 
 .seealso: MatCreateShell()
 @*/
-PetscErrorCode MatHasOperation(Mat mat,MatOperation op,PetscTruth *has)
+PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat mat,MatOperation op,PetscTruth *has)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);

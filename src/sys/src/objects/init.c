@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
 
    This file defines part of the initialization of PETSc
@@ -21,37 +22,39 @@
      Indicates if PETSc started up MPI, or it was 
    already started before PETSc was initialized.
 */
-PetscTruth  PetscBeganMPI         = PETSC_FALSE;
-PetscTruth  PetscInitializeCalled = PETSC_FALSE;
-PetscTruth  PetscFinalizeCalled   = PETSC_FALSE;
-PetscMPIInt PetscGlobalRank = -1,PetscGlobalSize = -1;
-MPI_Comm    PETSC_COMM_WORLD = 0;
-MPI_Comm    PETSC_COMM_SELF  = 0;
+PetscTruth  PETSC_DLLEXPORT PetscBeganMPI         = PETSC_FALSE;
+PetscTruth  PETSC_DLLEXPORT PetscInitializeCalled = PETSC_FALSE;
+PetscTruth  PETSC_DLLEXPORT PetscFinalizeCalled   = PETSC_FALSE;
+PetscMPIInt PETSC_DLLEXPORT PetscGlobalRank = -1;
+PetscMPIInt PETSC_DLLEXPORT PetscGlobalSize = -1;
+MPI_Comm    PETSC_DLLEXPORT PETSC_COMM_WORLD = 0;
+MPI_Comm    PETSC_DLLEXPORT PETSC_COMM_SELF  = 0;
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
 template <> class std::complex<double>; /* instantiate complex template class */
 #endif
-MPI_Datatype  MPIU_COMPLEX;
-PetscScalar   PETSC_i; 
+MPI_Datatype  PETSC_DLLEXPORT MPIU_COMPLEX;
+PetscScalar   PETSC_DLLEXPORT PETSC_i; 
 #else
-PetscScalar   PETSC_i = 0.0; 
+PetscScalar   PETSC_DLLEXPORT PETSC_i = 0.0; 
 #endif
-MPI_Datatype  MPIU_2SCALAR = 0;
-MPI_Datatype  MPIU_2INT = 0;
+MPI_Datatype  PETSC_DLLEXPORT MPIU_2SCALAR = 0;
+MPI_Datatype  PETSC_DLLEXPORT MPIU_2INT = 0;
 /*
      These are needed by petscbt.h
 */
-char      _BT_mask = ' ',_BT_c = ' ';
-PetscInt  _BT_idx  = 0;
+char     PETSC_DLLEXPORT _BT_mask = ' ';
+char     PETSC_DLLEXPORT _BT_c = ' ';
+PetscInt PETSC_DLLEXPORT _BT_idx  = 0;
 
 /*
        Function that is called to display all error messages
 */
 EXTERN PetscErrorCode  PetscErrorPrintfDefault(const char [],...);
 EXTERN PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
-PetscErrorCode (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
-PetscErrorCode (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
+PetscErrorCode PETSC_DLLEXPORT (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
+PetscErrorCode PETSC_DLLEXPORT (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
 
 /* ------------------------------------------------------------------------------*/
 /* 
@@ -61,7 +64,7 @@ FILE *petsc_history = PETSC_NULL;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogOpenHistoryFile"
-PetscErrorCode PetscLogOpenHistoryFile(const char filename[],FILE **fd)
+PetscErrorCode PETSC_DLLEXPORT PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -98,7 +101,7 @@ PetscErrorCode PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogCloseHistoryFile"
-PetscErrorCode PetscLogCloseHistoryFile(FILE **fd)
+PetscErrorCode PETSC_DLLEXPORT PetscLogCloseHistoryFile(FILE **fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -119,7 +122,7 @@ PetscErrorCode PetscLogCloseHistoryFile(FILE **fd)
 
 /* ------------------------------------------------------------------------------*/
 
-PetscTruth PetscCompare          = PETSC_FALSE;
+PetscTruth PETSC_DLLEXPORT PetscCompare          = PETSC_FALSE;
 PetscReal  PetscCompareTolerance = 1.e-10;
 
 #undef __FUNCT__  
@@ -140,7 +143,7 @@ PetscReal  PetscCompareTolerance = 1.e-10;
 
 .seealso: PetscCompareDouble(), PetscCompareScalar()
 @*/
-PetscErrorCode PetscCompareInt(PetscInt d)
+PetscErrorCode PETSC_DLLEXPORT PetscCompareInt(PetscInt d)
 {
   PetscErrorCode ierr;
   PetscInt       work = d;
@@ -171,7 +174,7 @@ PetscErrorCode PetscCompareInt(PetscInt d)
 
 .seealso: PetscCompareInt(), PetscComparseScalar()
 @*/
-PetscErrorCode PetscCompareDouble(double d)
+PetscErrorCode PETSC_DLLEXPORT PetscCompareDouble(double d)
 {
   double         work = d;
   PetscErrorCode ierr;
@@ -203,7 +206,7 @@ PetscErrorCode PetscCompareDouble(double d)
 
 .seealso: PetscCompareInt(), PetscComparseDouble()
 @*/
-PetscErrorCode PetscCompareScalar(PetscScalar d)
+PetscErrorCode PETSC_DLLEXPORT PetscCompareScalar(PetscScalar d)
 {
   PetscScalar    work = d;
   PetscErrorCode ierr;
@@ -227,7 +230,7 @@ PetscErrorCode PetscCompareScalar(PetscScalar d)
     Note: 
     Only works with C programs.
 */
-PetscErrorCode PetscCompareInitialize(double tol)
+PetscErrorCode PETSC_DLLEXPORT PetscCompareInitialize(double tol)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,i,*gflag,mysize;
@@ -325,7 +328,7 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag)
 
 .seealso: PetscInitialize(), PetscOptionsPrint(), PetscMallocDump(), PetscMPIDump(), PetscFinalize()
 @*/
-PetscErrorCode PetscEnd(void)
+PetscErrorCode PETSC_DLLEXPORT PetscEnd(void)
 {
   PetscFunctionBegin;
   PetscFinalize();
@@ -357,7 +360,7 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
    Concepts: package help message
 
 @*/
-PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),PetscErrorCode (*version)(MPI_Comm))
+PetscErrorCode PETSC_DLLEXPORT PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),PetscErrorCode (*version)(MPI_Comm))
 {
   PetscFunctionBegin;
   PetscExternalHelpFunction    = help;
@@ -367,7 +370,7 @@ PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pet
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
-PetscErrorCode PetscOptionsCheckInitial_Private(void)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;

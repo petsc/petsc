@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 #include "global.h"
 #include "petscfunc.h"
 #include "petscksp.h"

@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -25,7 +26,7 @@
 
 .seealso: MatAYPX()
  @*/
-PetscErrorCode MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
+PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
   PetscErrorCode ierr;
   PetscInt       m1,m2,n1,n2;
@@ -101,7 +102,7 @@ PetscErrorCode MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 
 .seealso: MatDiagonalSet()
  @*/
-PetscErrorCode MatShift(const PetscScalar *a,Mat Y)
+PetscErrorCode PETSCMAT_DLLEXPORT MatShift(const PetscScalar *a,Mat Y)
 {
   PetscErrorCode ierr;
   PetscInt       i,start,end;
@@ -145,7 +146,7 @@ PetscErrorCode MatShift(const PetscScalar *a,Mat Y)
 
 .seealso: MatShift()
 @*/
-PetscErrorCode MatDiagonalSet(Mat Y,Vec D,InsertMode is)
+PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode ierr;
   PetscInt       i,start,end;
@@ -198,7 +199,7 @@ PetscErrorCode MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 
 .seealso: MatAXPY()
  @*/
-PetscErrorCode MatAYPX(const PetscScalar *a,Mat X,Mat Y)
+PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(const PetscScalar *a,Mat X,Mat Y)
 {
   PetscScalar    one = 1.0;
   PetscErrorCode ierr;
@@ -244,7 +245,7 @@ PetscErrorCode MatAYPX(const PetscScalar *a,Mat X,Mat Y)
 .keywords: Mat, compute, explicit, operator
 
 @*/
-PetscErrorCode MatComputeExplicitOperator(Mat inmat,Mat *mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatComputeExplicitOperator(Mat inmat,Mat *mat)
 {
   Vec            in,out;
   PetscErrorCode ierr;

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
@@ -107,8 +108,8 @@ PetscErrorCode PetscFreeDefault(void *ptr,int line,char *func,char *file,char *d
   return 0;
 }
 
-PetscErrorCode  (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**) = PetscMallocAlign;
-PetscErrorCode  (*PetscTrFree)(void*,int,const char[],const char[],const char[])          = PetscFreeAlign;
+PetscErrorCode  PETSC_DLLEXPORT (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**) = PetscMallocAlign;
+PetscErrorCode  PETSC_DLLEXPORT (*PetscTrFree)(void*,int,const char[],const char[],const char[])          = PetscFreeAlign;
 
 PetscTruth petscsetmallocvisited = PETSC_FALSE;
 
@@ -131,7 +132,7 @@ PetscTruth petscsetmallocvisited = PETSC_FALSE;
    Concepts: memory^allocation 
 
 @*/
-PetscErrorCode PetscSetMalloc(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
+PetscErrorCode PETSC_DLLEXPORT PetscSetMalloc(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
                    PetscErrorCode (*ifree)(void*,int,const char[],const char[],const char[]))
 {
   PetscFunctionBegin;
@@ -158,7 +159,7 @@ PetscErrorCode PetscSetMalloc(PetscErrorCode (*imalloc)(size_t,int,const char[],
     free() an address that was malloced by a different memory management system
 
 @*/
-PetscErrorCode PetscClearMalloc(void)
+PetscErrorCode PETSC_DLLEXPORT PetscClearMalloc(void)
 {
   PetscFunctionBegin;
   PetscTrMalloc         = PetscMallocAlign;

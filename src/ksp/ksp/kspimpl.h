@@ -106,14 +106,10 @@ struct _p_KSP {
 	  } \
 	}
 
-EXTERN PetscErrorCode KSPDefaultBuildSolution(KSP,Vec,Vec*);
-EXTERN PetscErrorCode KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 EXTERN PetscErrorCode KSPDefaultDestroy(KSP);
 EXTERN PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**);
 EXTERN PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);
 EXTERN PetscErrorCode KSPDefaultFreeWork(KSP);
-EXTERN PetscErrorCode KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,Vec);
-EXTERN PetscErrorCode KSPUnwindPreconditioner(KSP,Vec,Vec);
 
 /*
        These allow the various Krylov methods to apply to either the linear system or its transpose.

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -25,7 +26,7 @@
 .seealso: PetscDrawStringVertical()
 
 @*/
-PetscErrorCode PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
+PetscErrorCode PETSC_DLLEXPORT PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
 {
   PetscErrorCode ierr ;
   PetscTruth isnull;

@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 #include "src/ksp/ksp/kspimpl.h"
 
 typedef struct {
@@ -210,7 +212,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_MINRES"
-PetscErrorCode KSPCreate_MINRES(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_MINRES(KSP ksp)
 {
   KSP_MINRES     *minres;
   PetscErrorCode ierr;

@@ -39,7 +39,9 @@ class Configure(PETSc.package.Package):
             ]
     alllibs = []
     for l in libs:
-      alllibs.append(os.path.join(dir,'libHYPRE_'+l+'.a'))
+      alllibs.append('libHYPRE_'+l+'.a')
+    # Now specify -L hypre-lib-path only to the first library
+    alllibs[0] = os.path.join(dir,alllibs[0])
     import config.setCompilers
     self.framework.pushLanguage('C')
     if config.setCompilers.Configure.isGNU(self.framework.getCompiler()):

@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* 
    Provides an interface to the Spooles serial sparse solver
 */
@@ -93,7 +95,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInf
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqSBAIJSpooles"
-PetscErrorCode MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,const MatType type,MatReuse reuse,Mat *newmat) {
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,const MatType type,MatReuse reuse,Mat *newmat) {
   /* This routine is only called to convert a MATSEQSBAIJ matrix */
   /* to a MATSEQSBAIJSPOOLES matrix, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
@@ -170,7 +172,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqSBAIJSpooles"
-PetscErrorCode MatCreate_SeqSBAIJSpooles(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJSpooles(Mat A) 
 {
   PetscErrorCode ierr;
 
@@ -221,7 +223,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SBAIJSpooles"
-PetscErrorCode MatCreate_SBAIJSpooles(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJSpooles(Mat A) 
 {
   PetscErrorCode ierr;
   int size;

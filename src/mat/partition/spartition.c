@@ -1,15 +1,16 @@
- 
+#define PETSCMAT_DLL
+
 #include "petsc.h"
 #include "petscmat.h"
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning);
-EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning);
-EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning);
-EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning);
-EXTERN PetscErrorCode MatPartitioningCreate_Jostle(MatPartitioning);
-EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning);
-EXTERN PetscErrorCode MatPartitioningCreate_Scotch(MatPartitioning);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Current(MatPartitioning);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Square(MatPartitioning);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Parmetis(MatPartitioning);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Chaco(MatPartitioning);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Jostle(MatPartitioning);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Party(MatPartitioning);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Scotch(MatPartitioning);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -36,7 +37,7 @@ EXTERN_C_END
 
 .seealso: MatPartitioningRegisterDynamic(), MatPartitioningRegisterDestroy()
 @*/
-PetscErrorCode MatPartitioningRegisterAll(const char path[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

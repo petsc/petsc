@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "petscksp.h" 
 #undef __FUNCT__  
@@ -38,7 +39,7 @@
 .seealso: KSPFGMRESModifyPCNoChange(), KSPFGMRESModifyPCKSP()
 
 @*/
-PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,PetscInt,PetscReal,void*),void* ctx,PetscErrorCode (*d)(void*))
+PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,PetscInt,PetscReal,void*),void* ctx,PetscErrorCode (*d)(void*))
 {
   PetscErrorCode ierr,(*f)(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscInt,PetscReal,void*),void*,PetscErrorCode (*)(void*));
 
@@ -77,7 +78,7 @@ You can use this as a template!
 .seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCKSP()
 
 @*/
-PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void* dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void* dummy)
 {
   PetscFunctionBegin;
 
@@ -108,7 +109,7 @@ PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt loc
 .seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCKSP()
 
 @*/
-PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESModifyPCKSP(KSP ksp,PetscInt total_its,PetscInt loc_its,PetscReal res_norm,void *dummy)
 {
   PC             pc;
   PetscErrorCode ierr;

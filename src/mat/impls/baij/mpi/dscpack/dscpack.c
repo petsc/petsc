@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* 
         Provides an interface to the DSCPACK (Domain-Separator Codes) sparse direct solver
 */
@@ -39,7 +41,7 @@ typedef struct {
 
 EXTERN PetscErrorCode MatDuplicate_DSCPACK(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatConvert_Base_DSCPACK(Mat,const MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_DSCPACK(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 /* DSC function */
@@ -160,7 +162,7 @@ PetscErrorCode  BAIJtoMyANonz( PetscInt *AIndex, PetscInt *AStruct, PetscInt bs,
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_DSCPACK_Base"
-PetscErrorCode MatConvert_DSCPACK_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_DSCPACK_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
@@ -647,7 +649,7 @@ PetscErrorCode MatView_DSCPACK(Mat A,PetscViewer viewer) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJSetPreallocation_MPIDSCPACK"
-PetscErrorCode MatMPIBAIJSetPreallocation_MPIDSCPACK(Mat  B,PetscInt bs,PetscInt d_nz,PetscInt *d_nnz,PetscInt o_nz,PetscInt *o_nnz)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation_MPIDSCPACK(Mat  B,PetscInt bs,PetscInt d_nz,PetscInt *d_nnz,PetscInt o_nz,PetscInt *o_nnz)
 {
   Mat     A;
   Mat_DSC *lu = (Mat_DSC*)B->spptr;
@@ -671,7 +673,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Base_DSCPACK"
-PetscErrorCode MatConvert_Base_DSCPACK(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_DSCPACK(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATDSCPACK */
   /* from MATSEQBAIJ if A has a single process communicator */
@@ -778,7 +780,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_DSCPACK"
-PetscErrorCode MatCreate_DSCPACK(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DSCPACK(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

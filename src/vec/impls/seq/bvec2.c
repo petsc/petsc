@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*
    Implements the sequential vectors.
 */
@@ -588,7 +589,7 @@ static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
 .seealso: VecCreateMPIWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
           VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/
-PetscErrorCode VecCreateSeqWithArray(MPI_Comm comm,PetscInt n,const PetscScalar array[],Vec *V)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreateSeqWithArray(MPI_Comm comm,PetscInt n,const PetscScalar array[],Vec *V)
 {
   PetscErrorCode ierr;
 
@@ -613,7 +614,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Seq"
-PetscErrorCode VecCreate_Seq(Vec V)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec V)
 {
   Vec_Seq        *s;
   PetscScalar    *array;

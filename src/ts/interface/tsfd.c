@@ -1,3 +1,4 @@
+#define PETSCTS_DLL
 
 #include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "src/ts/tsimpl.h"        /*I  "petscts.h"  I*/
@@ -31,7 +32,7 @@ $  -mat_fd_coloring_freq <freq>
 
 .seealso: TSSetJacobian(), MatFDColoringCreate(), MatFDColoringSetFunction()
 @*/
-PetscErrorCode TSDefaultComputeJacobianColor(TS ts,PetscReal t,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode PETSCTS_DLLEXPORT TSDefaultComputeJacobianColor(TS ts,PetscReal t,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   MatFDColoring  color = (MatFDColoring) ctx;
   SNES           snes;

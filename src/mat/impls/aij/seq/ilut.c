@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* ilut.f -- translated by f2c (version of 25 March 1992  12:58:56).
 
      The Fortran version of this code was developed by Yousef Saad.

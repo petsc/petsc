@@ -1,3 +1,5 @@
+#define PETSCVEC_DLL
+
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -5,7 +7,7 @@
 #include "vecimpl.h"    /*I "petscvec.h" I*/
 
 /* Logging support */
-PetscCookie VEC_COOKIE = 0;
+PetscCookie PETSCVEC_DLLEXPORT VEC_COOKIE = 0;
 PetscEvent  VEC_View = 0, VEC_Max = 0, VEC_Min = 0, VEC_DotBarrier = 0, VEC_Dot = 0, VEC_MDotBarrier = 0, VEC_MDot = 0, VEC_TDot = 0;
 PetscEvent  VEC_Norm = 0, VEC_Normalize = 0, VEC_Scale = 0, VEC_Copy = 0, VEC_Set = 0, VEC_AXPY = 0, VEC_AYPX = 0, VEC_WAXPY = 0; 
 PetscEvent  VEC_MTDot = 0, VEC_NormBarrier = 0, VEC_MAXPY = 0, VEC_Swap = 0, VEC_AssemblyBegin = 0, VEC_ScatterBegin = 0, VEC_ScatterEnd = 0;
@@ -13,8 +15,8 @@ PetscEvent  VEC_AssemblyEnd = 0, VEC_PointwiseMult = 0, VEC_SetValues = 0, VEC_L
 PetscEvent  VEC_SetRandom = 0, VEC_ReduceArithmetic = 0, VEC_ReduceBarrier = 0, VEC_ReduceCommunication = 0;
 
 /* ugly globals for VecSetValue() and VecSetValueLocal() */
-PetscInt    VecSetValue_Row = 0;
-PetscScalar VecSetValue_Value = 0.0;
+PetscInt    PETSCVEC_DLLEXPORT VecSetValue_Row = 0;
+PetscScalar PETSCVEC_DLLEXPORT VecSetValue_Value = 0.0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetTypeFromOptions_Private"
@@ -85,7 +87,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
 .keywords: Vec, set, options, database
 .seealso: VecCreate(), VecPrintHelp(), VecSetOptionsPrefix()
 @*/
-PetscErrorCode VecSetFromOptions(Vec vec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec vec)
 {
   PetscTruth     opt;
   PetscErrorCode ierr;
@@ -130,7 +132,7 @@ $  -help, -h
 .keywords: Vec, help
 .seealso: VecSetFromOptions()
 @*/
-PetscErrorCode VecPrintHelp(Vec vec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecPrintHelp(Vec vec)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
@@ -157,7 +159,7 @@ PetscErrorCode VecPrintHelp(Vec vec)
 
 .seealso: VecGetSize(), PetscSplitOwnership()
 @*/
-PetscErrorCode VecSetSizes(Vec v, PetscInt n, PetscInt N)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec v, PetscInt n, PetscInt N)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_COOKIE,1); 
@@ -189,7 +191,7 @@ PetscErrorCode VecSetSizes(Vec v, PetscInt n, PetscInt N)
 
   Concepts: block size^vectors
 @*/
-PetscErrorCode VecSetBlockSize(Vec v,PetscInt bs)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec v,PetscInt bs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1); 
@@ -230,7 +232,7 @@ PetscErrorCode VecSetBlockSize(Vec v,PetscInt bs)
    Concepts: block^vector
 
 @*/
-PetscErrorCode VecGetBlockSize(Vec v,PetscInt *bs)
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetBlockSize(Vec v,PetscInt *bs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1); 
@@ -256,7 +258,7 @@ PetscErrorCode VecGetBlockSize(Vec v,PetscInt *bs)
    Level: developer
 
 @*/
-PetscErrorCode VecValid(Vec v,PetscTruth *flg)
+PetscErrorCode PETSCVEC_DLLEXPORT VecValid(Vec v,PetscTruth *flg)
 {
   PetscFunctionBegin;
   PetscValidIntPointer(flg,2);
@@ -301,7 +303,7 @@ $     val = (x,y) = y^T x,
 
 .seealso: VecMDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd()
 @*/
-PetscErrorCode VecDot(Vec x,Vec y,PetscScalar *val)
+PetscErrorCode PETSCVEC_DLLEXPORT VecDot(Vec x,Vec y,PetscScalar *val)
 {
   PetscErrorCode ierr;
 
@@ -372,7 +374,7 @@ $     NORM_INFINITY denotes max_i |x_i|
           VecNormBegin(), VecNormEnd()
 
 @*/
-PetscErrorCode VecNorm(Vec x,NormType type,PetscReal *val)  
+PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec x,NormType type,PetscReal *val)  
 {
   PetscTruth     flg;
   PetscErrorCode ierr;
@@ -417,7 +419,7 @@ PetscErrorCode VecNorm(Vec x,NormType type,PetscReal *val)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecNormRegisterComposedDataID"
-PetscErrorCode VecNormComposedDataID(NormType type,PetscInt *type_id)
+PetscErrorCode PETSCVEC_DLLEXPORT VecNormComposedDataID(NormType type,PetscInt *type_id)
 {
   static PetscInt id_norm1=-1,id_norm2=-1,id_normInf=-1,id_normF=-1,id_norm12=-1;
   PetscErrorCode  ierr;
@@ -471,7 +473,7 @@ PetscErrorCode VecNormComposedDataID(NormType type,PetscInt *type_id)
    Concepts: normalizing^vector
 
 @*/
-PetscErrorCode VecNormalize(Vec x,PetscReal *val)
+PetscErrorCode PETSCVEC_DLLEXPORT VecNormalize(Vec x,PetscReal *val)
 {
   PetscErrorCode ierr;
 
@@ -516,7 +518,7 @@ PetscErrorCode VecNormalize(Vec x,PetscReal *val)
 
 .seealso: VecNorm(), VecMin()
 @*/
-PetscErrorCode VecMax(Vec x,PetscInt *p,PetscReal *val)
+PetscErrorCode PETSCVEC_DLLEXPORT VecMax(Vec x,PetscInt *p,PetscReal *val)
 {
   PetscErrorCode ierr;
 
@@ -554,7 +556,7 @@ PetscErrorCode VecMax(Vec x,PetscInt *p,PetscReal *val)
 
 .seealso: VecMax()
 @*/
-PetscErrorCode VecMin(Vec x,PetscInt *p,PetscReal *val)
+PetscErrorCode PETSCVEC_DLLEXPORT VecMin(Vec x,PetscInt *p,PetscReal *val)
 {
   PetscErrorCode ierr;
 
@@ -599,7 +601,7 @@ $     val = (x,y) = y^H x,
 
 .seealso: VecDot(), VecMTDot()
 @*/
-PetscErrorCode VecTDot(Vec x,Vec y,PetscScalar *val) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecTDot(Vec x,Vec y,PetscScalar *val) 
 {
   PetscErrorCode ierr;
 
@@ -643,7 +645,7 @@ $      x[i] = alpha * x[i], for i=1,...,n.
    Concepts: scaling^vector
 
 @*/
-PetscErrorCode VecScale (const PetscScalar *alpha,Vec x)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScale (const PetscScalar *alpha,Vec x)
 {
   PetscReal      scale,norm1=0.0,norm2=0.0,normInf=0.0,normF=0.0;
   PetscTruth     flg1,flg2,flgInf,flgF;
@@ -722,7 +724,7 @@ PetscErrorCode VecScale (const PetscScalar *alpha,Vec x)
 
 .seealso: VecDuplicate()
 @*/
-PetscErrorCode VecCopy(Vec x,Vec y)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
 {
   PetscTruth     flg;
   PetscReal      norm=0.0;
@@ -807,7 +809,7 @@ $     x[i] = alpha, for i=1,...,n,
    Concepts: vector^setting to constant
 
 @*/
-PetscErrorCode VecSet(const PetscScalar *alpha,Vec x) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecSet(const PetscScalar *alpha,Vec x) 
 {
   PetscReal      val;
   PetscErrorCode ierr;
@@ -876,7 +878,7 @@ PetscErrorCode VecSet(const PetscScalar *alpha,Vec x)
 
 .seealso: VecSet(), VecSetValues(), PetscRandomCreate(), PetscRandomDestroy()
 @*/
-PetscErrorCode VecSetRandom(PetscRandom rctx,Vec x) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(PetscRandom rctx,Vec x) 
 {
   PetscErrorCode ierr;
   PetscRandom    randObj = PETSC_NULL;
@@ -926,7 +928,7 @@ PetscErrorCode VecSetRandom(PetscRandom rctx,Vec x)
 
 .seealso: VecAYPX(), VecMAXPY(), VecWAXPY()
 @*/
-PetscErrorCode VecAXPY(const PetscScalar *alpha,Vec x,Vec y)
+PetscErrorCode PETSCVEC_DLLEXPORT VecAXPY(const PetscScalar *alpha,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -968,7 +970,7 @@ PetscErrorCode VecAXPY(const PetscScalar *alpha,Vec x,Vec y)
 
 .seealso: VecAYPX(), VecMAXPY(), VecWAXPY(), VecAXPY()
 @*/
-PetscErrorCode VecAXPBY(const PetscScalar *alpha,const PetscScalar *beta,Vec x,Vec y)
+PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(const PetscScalar *alpha,const PetscScalar *beta,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -1011,7 +1013,7 @@ PetscErrorCode VecAXPBY(const PetscScalar *alpha,const PetscScalar *beta,Vec x,V
 
 .seealso: VecAXPY(), VecWAXPY()
 @*/
-PetscErrorCode VecAYPX(const PetscScalar *alpha,Vec x,Vec y)
+PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(const PetscScalar *alpha,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -1047,7 +1049,7 @@ PetscErrorCode VecAYPX(const PetscScalar *alpha,Vec x,Vec y)
    Concepts: vector^swapping values
 
 @*/
-PetscErrorCode VecSwap(Vec x,Vec y)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
 {
   PetscReal      norm1x=0.0,norm2x=0.0,normInfx=0.0,normFx=0.0;
   PetscReal      norm1y=0.0,norm2y=0.0,normInfy=0.0,normFy=0.0;
@@ -1148,7 +1150,7 @@ PetscErrorCode VecSwap(Vec x,Vec y)
 
 .seealso: VecAXPY(), VecAYPX()
 @*/
-PetscErrorCode VecWAXPY(const PetscScalar *alpha,Vec x,Vec y,Vec w)
+PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(const PetscScalar *alpha,Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
 
@@ -1193,7 +1195,7 @@ PetscErrorCode VecWAXPY(const PetscScalar *alpha,Vec x,Vec y,Vec w)
 
 .seealso: VecPointwiseDivide(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
-PetscErrorCode VecPointwiseMult(Vec x,Vec y,Vec w)
+PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
 
@@ -1238,7 +1240,7 @@ PetscErrorCode VecPointwiseMult(Vec x,Vec y,Vec w)
 
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
-PetscErrorCode VecPointwiseMax(Vec x,Vec y,Vec w)
+PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
 
@@ -1282,7 +1284,7 @@ PetscErrorCode VecPointwiseMax(Vec x,Vec y,Vec w)
 
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
-PetscErrorCode VecPointwiseMin(Vec x,Vec y,Vec w)
+PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
 
@@ -1324,7 +1326,7 @@ PetscErrorCode VecPointwiseMin(Vec x,Vec y,Vec w)
 
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMin(), VecPointwiseMax(), VecMaxPointwiseDivide()
 @*/
-PetscErrorCode VecPointwiseMaxAbs(Vec x,Vec y,Vec w)
+PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
 
@@ -1366,7 +1368,7 @@ PetscErrorCode VecPointwiseMaxAbs(Vec x,Vec y,Vec w)
 
 .seealso: VecPointwiseMult(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
-PetscErrorCode VecPointwiseDivide(Vec x,Vec y,Vec w)
+PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
 
@@ -1406,7 +1408,7 @@ PetscErrorCode VecPointwiseDivide(Vec x,Vec y,Vec w)
 
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs()
 @*/
-PetscErrorCode VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *max)
+PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *max)
 {
   PetscErrorCode ierr;
 
@@ -1448,7 +1450,7 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *max)
 
 .seealso: VecDestroy(), VecDuplicateVecs(), VecCreate(), VecCopy()
 @*/
-PetscErrorCode VecDuplicate(Vec x,Vec *newv) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec x,Vec *newv) 
 {
   PetscErrorCode ierr;
 
@@ -1475,7 +1477,7 @@ PetscErrorCode VecDuplicate(Vec x,Vec *newv)
 
 .seealso: VecDuplicate(), VecDestroyVecs()
 @*/
-PetscErrorCode VecDestroy(Vec v)
+PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec v)
 {
   PetscErrorCode ierr;
 
@@ -1527,7 +1529,7 @@ PetscErrorCode VecDestroy(Vec v)
 
 .seealso:  VecDestroyVecs(), VecDuplicate(), VecCreate(), VecDuplicateVecsF90()
 @*/
-PetscErrorCode VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])  
+PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])  
 {
   PetscErrorCode ierr;
 
@@ -1559,7 +1561,7 @@ PetscErrorCode VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
 
 .seealso: VecDuplicateVecs(), VecDestroyVecsf90()
 @*/
-PetscErrorCode VecDestroyVecs(Vec vv[],PetscInt m)
+PetscErrorCode PETSCVEC_DLLEXPORT VecDestroyVecs(Vec vv[],PetscInt m)
 {
   PetscErrorCode ierr;
 
@@ -1611,7 +1613,7 @@ PetscErrorCode VecDestroyVecs(Vec vv[],PetscInt m)
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal(),
            VecSetValue(), VecSetValuesBlocked(), InsertMode, INSERT_VALUES, ADD_VALUES, VecGetValues()
 @*/
-PetscErrorCode VecSetValues(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetValues(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora) 
 {
   PetscErrorCode ierr;
 
@@ -1659,7 +1661,7 @@ PetscErrorCode VecSetValues(Vec x,PetscInt ni,const PetscInt ix[],const PetscSca
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecGetValuesLocal(),
            VecGetValue(), VecGetValuesBlocked(), InsertMode, INSERT_VALUES, ADD_VALUES, VecSetValues()
 @*/
-PetscErrorCode VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y[])
 {
   PetscErrorCode ierr;
 
@@ -1713,7 +1715,7 @@ PetscErrorCode VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y[
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(),
            VecSetValues()
 @*/
-PetscErrorCode VecSetValuesBlocked(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlocked(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora) 
 {
   PetscErrorCode ierr;
 
@@ -1752,7 +1754,7 @@ PetscErrorCode VecSetValuesBlocked(Vec x,PetscInt ni,const PetscInt ix[],const P
 seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
            VecSetLocalToGlobalMappingBlocked(), VecSetValuesBlockedLocal()
 @*/
-PetscErrorCode VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 {
   PetscErrorCode ierr;
 
@@ -1796,7 +1798,7 @@ PetscErrorCode VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
            VecSetLocalToGlobalMapping(), VecSetValuesBlockedLocal()
 @*/
-PetscErrorCode VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping mapping)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping mapping)
 {
   PetscErrorCode ierr;
 
@@ -1848,7 +1850,7 @@ PetscErrorCode VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping mapp
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetLocalToGlobalMapping(),
            VecSetValuesBlockedLocal()
 @*/
-PetscErrorCode VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora) 
 {
   PetscErrorCode ierr;
   PetscInt       lixp[128],*lix = lixp;
@@ -1918,7 +1920,7 @@ PetscErrorCode VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const Pet
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesBlocked(), 
            VecSetLocalToGlobalMappingBlocked()
 @*/
-PetscErrorCode VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora) 
 {
   PetscErrorCode ierr;
   PetscInt       lixp[128],*lix = lixp;
@@ -1963,7 +1965,7 @@ PetscErrorCode VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],co
 
 .seealso: VecAssemblyEnd(), VecSetValues()
 @*/
-PetscErrorCode VecAssemblyBegin(Vec vec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyBegin(Vec vec)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
@@ -2010,7 +2012,7 @@ PetscErrorCode VecAssemblyBegin(Vec vec)
 
 .seealso: VecAssemblyBegin(), VecSetValues()
 @*/
-PetscErrorCode VecAssemblyEnd(Vec vec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
@@ -2100,7 +2102,7 @@ $      val = (x,y) = y^H x,
 
 .seealso: VecMDot(), VecTDot()
 @*/
-PetscErrorCode VecMTDot(PetscInt nv,Vec x,const Vec y[],PetscScalar *val)
+PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(PetscInt nv,Vec x,const Vec y[],PetscScalar *val)
 {
   PetscErrorCode ierr;
 
@@ -2152,7 +2154,7 @@ $     val = (x,y) = y^T x,
 
 .seealso: VecMTDot(), VecDot()
 @*/
-PetscErrorCode VecMDot(PetscInt nv,Vec x,const Vec y[],PetscScalar *val)
+PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(PetscInt nv,Vec x,const Vec y[],PetscScalar *val)
 {
   PetscErrorCode ierr;
 
@@ -2192,7 +2194,7 @@ PetscErrorCode VecMDot(PetscInt nv,Vec x,const Vec y[],PetscScalar *val)
 
 .seealso: VecAXPY(), VecWAXPY(), VecAYPX()
 @*/
-PetscErrorCode  VecMAXPY(PetscInt nv,const PetscScalar *alpha,Vec y,Vec *x)
+PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(PetscInt nv,const PetscScalar *alpha,Vec y,Vec *x)
 {
   PetscErrorCode ierr;
 
@@ -2296,7 +2298,7 @@ PetscErrorCode VecGetArray_Private(Vec x,PetscScalar *a[])
 
 .seealso: VecGetArray(), VecRestoreArrays()
 @*/
-PetscErrorCode VecGetArrays(const Vec x[],PetscInt n,PetscScalar **a[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -2341,7 +2343,7 @@ PetscErrorCode VecGetArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 
 .seealso: VecGetArrays(), VecRestoreArray()
 @*/
-PetscErrorCode VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -2439,7 +2441,7 @@ PetscErrorCode VecRestoreArray_Private(Vec x,PetscScalar *a[])
 .keywords: Vec, view, options, database
 .seealso: VecSetFromOptions(), VecView()
 @*/
-PetscErrorCode VecViewFromOptions(Vec vec, char *title)
+PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, char *title)
 {
   PetscViewer    viewer;
   PetscDraw      draw;
@@ -2537,7 +2539,7 @@ PetscErrorCode VecViewFromOptions(Vec vec, char *title)
           PetscViewerSocketOpen(), PetscViewerBinaryOpen(), VecLoad(), PetscViewerCreate(),
           PetscRealView(), PetscScalarView(), PetscIntView()
 @*/
-PetscErrorCode VecView(Vec vec,PetscViewer viewer)
+PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscViewerFormat format;
@@ -2583,7 +2585,7 @@ PetscErrorCode VecView(Vec vec,PetscViewer viewer)
 
 .seealso: VecGetLocalSize()
 @*/
-PetscErrorCode VecGetSize(Vec x,PetscInt *size)
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetSize(Vec x,PetscInt *size)
 {
   PetscErrorCode ierr;
 
@@ -2616,7 +2618,7 @@ PetscErrorCode VecGetSize(Vec x,PetscInt *size)
 
 .seealso: VecGetSize()
 @*/
-PetscErrorCode VecGetLocalSize(Vec x,PetscInt *size)
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetLocalSize(Vec x,PetscInt *size)
 {
   PetscErrorCode ierr;
 
@@ -2657,7 +2659,7 @@ PetscErrorCode VecGetLocalSize(Vec x,PetscInt *size)
    Concepts: vector^ownership of elements
 
 @*/
-PetscErrorCode VecGetOwnershipRange(Vec x,PetscInt *low,PetscInt *high)
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec x,PetscInt *low,PetscInt *high)
 {
   PetscErrorCode ierr;
 
@@ -2686,7 +2688,7 @@ PetscErrorCode VecGetOwnershipRange(Vec x,PetscInt *low,PetscInt *high)
    Level: developer
 
 @*/
-PetscErrorCode VecGetPetscMap(Vec x,PetscMap *map)
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetPetscMap(Vec x,PetscMap *map)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
@@ -2717,7 +2719,7 @@ PetscErrorCode VecGetPetscMap(Vec x,PetscMap *map)
    Level: intermediate
 
 @*/
-PetscErrorCode VecSetOption(Vec x,VecOption op)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec x,VecOption op)
 {
   PetscErrorCode ierr;
 
@@ -2784,7 +2786,7 @@ PetscErrorCode VecDestroyVecs_Default(Vec v[], PetscInt m)
 .seealso: VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecResetArray()
 
 @*/
-PetscErrorCode VecPlaceArray(Vec vec,const PetscScalar array[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecPlaceArray(Vec vec,const PetscScalar array[])
 {
   PetscErrorCode ierr;
 
@@ -2817,7 +2819,7 @@ PetscErrorCode VecPlaceArray(Vec vec,const PetscScalar array[])
 .seealso: VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecPlaceArray()
 
 @*/
-PetscErrorCode VecResetArray(Vec vec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
 {
   PetscErrorCode ierr;
 
@@ -2860,7 +2862,7 @@ PetscErrorCode VecResetArray(Vec vec)
 .seealso: VecGetArray(), VecRestoreArray(), VecPlaceArray(), VecResetArray()
 
 @*/
-PetscErrorCode VecReplaceArray(Vec vec,const PetscScalar array[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecReplaceArray(Vec vec,const PetscScalar array[])
 {
   PetscErrorCode ierr;
 
@@ -3056,7 +3058,7 @@ and PetscWriteBinary() to see how this may be done.
 
 .seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad() 
 @*/  
-PetscErrorCode VecLoadIntoVector(PetscViewer viewer,Vec vec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
 {
   PetscErrorCode ierr;
 
@@ -3090,7 +3092,7 @@ PetscErrorCode VecLoadIntoVector(PetscViewer viewer,Vec vec)
    Concepts: vector^reciprocal
 
 @*/
-PetscErrorCode VecReciprocal(Vec vec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec vec)
 {
   PetscErrorCode ierr;
 
@@ -3108,7 +3110,7 @@ PetscErrorCode VecReciprocal(Vec vec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetOperation"
-PetscErrorCode VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
@@ -3156,7 +3158,7 @@ PetscErrorCode VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked(), VecStashView()
 
 @*/
-PetscErrorCode VecStashSetInitialSize(Vec vec,PetscInt size,PetscInt bsize)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStashSetInitialSize(Vec vec,PetscInt size,PetscInt bsize)
 {
   PetscErrorCode ierr;
 
@@ -3186,7 +3188,7 @@ PetscErrorCode VecStashSetInitialSize(Vec vec,PetscInt size,PetscInt bsize)
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked()
 
 @*/
-PetscErrorCode VecStashView(Vec v,PetscViewer viewer)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStashView(Vec v,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -3275,7 +3277,7 @@ PetscErrorCode VecStashView(Vec v,PetscViewer viewer)
           VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
-PetscErrorCode VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
 {
   PetscErrorCode ierr;
   PetscInt       i,N;
@@ -3324,7 +3326,7 @@ PetscErrorCode VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscIn
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
-PetscErrorCode VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
 {
   PetscErrorCode ierr;
   void           *dummy;
@@ -3369,7 +3371,7 @@ PetscErrorCode VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,Pet
           VecRestoreArray2d(), DAVecGetArray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetArray2d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
-PetscErrorCode VecGetArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
 {
   PetscErrorCode ierr;
   PetscInt       N;
@@ -3414,7 +3416,7 @@ PetscErrorCode VecGetArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
           VecGetArray1d(), VecRestoreArray2d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
-PetscErrorCode VecRestoreArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
 {
   PetscErrorCode ierr;
 
@@ -3440,7 +3442,7 @@ PetscErrorCode VecRestoreArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a
    Concepts: vector^conjugate
 
 @*/
-PetscErrorCode VecConjugate(Vec x)
+PetscErrorCode PETSCVEC_DLLEXPORT VecConjugate(Vec x)
 {
 #ifdef PETSC_USE_COMPLEX
   PetscErrorCode ierr;
@@ -3495,7 +3497,7 @@ PetscErrorCode VecConjugate(Vec x)
           VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
-PetscErrorCode VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
 {
   PetscErrorCode ierr;
   PetscInt       i,N,j;
@@ -3552,7 +3554,7 @@ PetscErrorCode VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mst
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d(), VecGet
 @*/
-PetscErrorCode VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
 {
   PetscErrorCode ierr;
   void           *dummy;
@@ -3606,7 +3608,7 @@ PetscErrorCode VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt
           VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
-PetscErrorCode VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
 {
   PetscErrorCode ierr;
   PetscInt       i,N,j,k;
@@ -3673,7 +3675,7 @@ PetscErrorCode VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,P
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d(), VecGet
 @*/
-PetscErrorCode VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
 {
   PetscErrorCode ierr;
   void           *dummy;
@@ -3711,7 +3713,7 @@ EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 .seealso: VecAssemblyBegin(), VecAssemblyEnd(), Vec, VecStashSetInitialSize(), VecStashView()
   
 @*/
-PetscErrorCode VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,PetscInt *bnstash,PetscInt *brealloc)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,PetscInt *bnstash,PetscInt *brealloc)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

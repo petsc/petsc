@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
@@ -37,7 +39,7 @@
 .seealso: DAGlobalToLocalBegin(), DACreate2d(), DALocalToLocalBegin(),
            DALocalToLocalEnd(), DALocalToGlobalBegin(), DALocalToGlobalEnd()
 @*/
-PetscErrorCode DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec g)
+PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
 

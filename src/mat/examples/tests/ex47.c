@@ -48,7 +48,7 @@ int main(int argc,char **args)
 
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(B,&m2,&n2);CHKERRQ(ierr);
-  if (m!=m2) SETERRQ(1,"Matrices are of different sixe. Cannot run this example");
+  if (m!=m2) SETERRQ(1,"Matrices are of different size. Cannot run this example");
  
   /* Test MatEqual() */
   ierr = MatEqual(B,C,&tflg);CHKERRQ(ierr);
@@ -65,7 +65,6 @@ int main(int argc,char **args)
   if (!tflg)  SETERRQ(1,"MatGetDiagonal() failed");
 
   /* Test MatDiagonalScale() */
-  
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
   ierr = VecSetRandom(r,x);CHKERRQ(ierr);
   ierr = VecSetRandom(r,y);CHKERRQ(ierr);

@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* 
    This file contains simple binary read/write routines for matrices.
  */
@@ -104,7 +106,7 @@ and PetscWriteBinary() to see how this may be done.
 .seealso: PetscViewerBinaryOpen(), MatView(), VecLoad()
 
  @*/  
-PetscErrorCode MatLoad(PetscViewer viewer,const MatType outtype,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer,const MatType outtype,Mat *newmat)
 {
   Mat            factory;
   PetscErrorCode ierr;

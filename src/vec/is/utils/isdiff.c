@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 
 #include "petscis.h"                    /*I "petscis.h"  I*/
 #include "petscbt.h"
@@ -29,7 +30,7 @@
 .seealso: ISDestroy(), ISView(), ISSum()
 
 @*/
-PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
+PetscErrorCode PETSCVEC_DLLEXPORT ISDifference(IS is1,IS is2,IS *isout)
 {
   PetscErrorCode ierr;
   PetscInt      i,*i1,*i2,n1,n2,imin,imax,nout,*iout;
@@ -118,7 +119,7 @@ PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
    Concepts: IS^union
 
 @*/
-PetscErrorCode ISSum(IS *is1,IS is2)
+PetscErrorCode PETSCVEC_DLLEXPORT ISSum(IS *is1,IS is2)
 {
   MPI_Comm       comm;
   PetscTruth     f;

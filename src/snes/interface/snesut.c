@@ -1,3 +1,4 @@
+#define PETSCSNES_DLL
 
 #include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
@@ -21,7 +22,7 @@
 
 .seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
 @*/
-PetscErrorCode SNESVecViewMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -59,7 +60,7 @@ PetscErrorCode SNESVecViewMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *
 
 .seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
 @*/
-PetscErrorCode SNESVecViewResidualMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewResidualMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -97,7 +98,7 @@ PetscErrorCode SNESVecViewResidualMonitor(SNES snes,PetscInt its,PetscReal fgnor
 
 .seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
 @*/
-PetscErrorCode SNESVecViewUpdateMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewUpdateMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -137,7 +138,7 @@ PetscErrorCode SNESVecViewUpdateMonitor(SNES snes,PetscInt its,PetscReal fgnorm,
 
 .seealso: SNESSetMonitor(), SNESVecViewMonitor()
 @*/
-PetscErrorCode SNESDefaultMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer) dummy;
@@ -168,7 +169,7 @@ PetscErrorCode SNESDefaultMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *
 
 .seealso: SNESSetMonitor(), SNESVecViewMonitor()
 @*/
-PetscErrorCode SNESRatioMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESRatioMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   PetscInt       len;
@@ -219,7 +220,7 @@ PetscErrorCode SNESRatioMonitorDestroy(void *history)
 
 .seealso: SNESSetMonitor(), SNESVecViewMonitor(), SNESDefaultMonitor()
 @*/
-PetscErrorCode SNESSetRatioMonitor(SNES snes)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetRatioMonitor(SNES snes)
 {
   PetscErrorCode ierr;
   PetscReal      *history;
@@ -247,7 +248,7 @@ PetscErrorCode SNESSetRatioMonitor(SNES snes)
   different on different machines; by using this routine different 
   machines will usually generate the same output.
 */
-PetscErrorCode SNESDefaultSMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultSMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
 
@@ -300,7 +301,7 @@ $  SNES_CONVERGED_ITERATING       - (otherwise),
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-PetscErrorCode SNESConverged_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 
@@ -352,7 +353,7 @@ PetscErrorCode SNESConverged_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscR
 
 .keywords: SNES, KSP, Eisenstat, Walker, convergence, test, inexact, Newton
 @*/
-PetscErrorCode SNES_KSP_SetConvergenceTestEW(SNES snes)
+PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetConvergenceTestEW(SNES snes)
 {
   PetscFunctionBegin;
   snes->ksp_ewconv = PETSC_TRUE;
@@ -393,7 +394,7 @@ PetscErrorCode SNES_KSP_SetConvergenceTestEW(SNES snes)
 
 .seealso: SNES_KSP_SetConvergenceTestEW()
 @*/
-PetscErrorCode SNES_KSP_SetParametersEW(SNES snes,PetscInt version,PetscReal rtol_0,PetscReal rtol_max,PetscReal gamma2,PetscReal alpha,
+PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetParametersEW(SNES snes,PetscInt version,PetscReal rtol_0,PetscReal rtol_max,PetscReal gamma2,PetscReal alpha,
                                         PetscReal alpha2,PetscReal threshold)
 {
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;

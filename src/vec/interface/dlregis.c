@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 
 #include "petscvec.h"
 #include "petscpf.h"
@@ -7,9 +8,9 @@ extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
 
 EXTERN_C_BEGIN
-extern void VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void PETSCVEC_DLLEXPORT VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void PETSCVEC_DLLEXPORT VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void PETSCVEC_DLLEXPORT PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -27,7 +28,7 @@ EXTERN_C_END
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode VecInitializePackage(char *path) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path) 
 {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
@@ -151,7 +152,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PetscDLLibraryRegister(char *path)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscDLLibraryRegister(char *path)
 {
   PetscErrorCode ierr;
 

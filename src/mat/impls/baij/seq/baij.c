@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.
@@ -8,9 +10,40 @@
 
 #include "src/inline/ilu.h"
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqBAIJInvertBlockDiagonal"
+/*@C
+  MatSeqBAIJInvertBlockDiagonal - Inverts the block diagonal entries.
+
+  Collective on Mat
+
+  Input Parameters:
+. mat - the matrix
+
+  Level: advanced
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJInvertBlockDiagonal(Mat mat)
+{
+  PetscErrorCode ierr,(*f)(Mat);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqBAIJInvertBlockDiagonal_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_ERR_SUP,"Currently only implemented for SeqBAIJ.");
+  }
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatInvertBlockDiagonal_SeqBAIJ"
-PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*) A->data;
   PetscErrorCode ierr;
@@ -78,6 +111,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A)
   a->idiagvalid = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPBRelax_SeqBAIJ_2"
@@ -541,7 +575,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "matsetvaluesblocked4_"
-void matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[])
+void PETSCMAT_DLLEXPORT matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[])
 {
   Mat               A = *AA;
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
@@ -601,6 +635,7 @@ void matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn
     }
     ailen[row] = nrow;
   }
+  PetscFunctionReturnVoid();
 } 
 EXTERN_C_END
 
@@ -613,7 +648,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues4_"
-void matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscInt *nn,PetscInt *in,PetscScalar *v)
+void PETSCMAT_DLLEXPORT matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscInt *nn,PetscInt *in,PetscScalar *v)
 {
   Mat         A = *AA;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
@@ -664,6 +699,7 @@ void matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscInt *nn,PetscInt *in,
     }
     ailen[brow] = nrow;
   }
+  PetscFunctionReturnVoid();
 } 
 EXTERN_C_END
 
@@ -818,6 +854,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
 
   ierr = PetscFree(a);CHKERRQ(ierr);
 
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJInvertBlockDiagonal_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetColumnIndices_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -1855,7 +1892,7 @@ PetscErrorCode MatPrintHelp_SeqBAIJ(Mat A)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqBAIJSetColumnIndices_SeqBAIJ"
-PetscErrorCode MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat,PetscInt *indices)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat,PetscInt *indices)
 {
   Mat_SeqBAIJ *baij = (Mat_SeqBAIJ *)mat->data;
   PetscInt    i,nz,nbs;
@@ -1898,7 +1935,7 @@ EXTERN_C_END
     MUST be called before any calls to MatSetValues();
 
 @*/ 
-PetscErrorCode MatSeqBAIJSetColumnIndices(Mat mat,PetscInt *indices)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetColumnIndices(Mat mat,PetscInt *indices)
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt *);
 
@@ -2128,7 +2165,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatStoreValues_SeqBAIJ"
-PetscErrorCode MatStoreValues_SeqBAIJ(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_SeqBAIJ(Mat mat)
 {
   Mat_SeqBAIJ    *aij = (Mat_SeqBAIJ *)mat->data;
   PetscInt       nz = aij->i[mat->m]*mat->bs*aij->bs2;
@@ -2153,7 +2190,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatRetrieveValues_SeqBAIJ"
-PetscErrorCode MatRetrieveValues_SeqBAIJ(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_SeqBAIJ(Mat mat)
 {
   Mat_SeqBAIJ    *aij = (Mat_SeqBAIJ *)mat->data;
   PetscErrorCode ierr;
@@ -2174,14 +2211,14 @@ PetscErrorCode MatRetrieveValues_SeqBAIJ(Mat mat)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-extern PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat,const MatType,MatReuse,Mat*);
-extern PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqAIJ(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqSBAIJ(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqBAIJSetPreallocation_SeqBAIJ"
-PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz,PetscInt *nnz)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz,PetscInt *nnz)
 {
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
@@ -2324,7 +2361,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqBAIJ"
-PetscErrorCode MatCreate_SeqBAIJ(Mat B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat B)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -2372,6 +2409,9 @@ PetscErrorCode MatCreate_SeqBAIJ(Mat B)
   b->compressedrow.checked = PETSC_FALSE;
   B->same_nonzero          = PETSC_FALSE;
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBAIJInvertBlockDiagonal_C",
+                                     "MatInvertBlockDiagonal_SeqBAIJ",
+                                      MatInvertBlockDiagonal_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_SeqBAIJ",
                                       MatStoreValues_SeqBAIJ);CHKERRQ(ierr);
@@ -2680,7 +2720,7 @@ PetscErrorCode MatLoad_SeqBAIJ(PetscViewer viewer,const MatType type,Mat *A)
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/
-PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
   PetscErrorCode ierr;
  
@@ -2730,7 +2770,7 @@ PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/
-PetscErrorCode MatSeqBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[])
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt,PetscInt,const PetscInt[]);
 

@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
        This routine was converted by f2c from Linpack source
              linpack. this version dated 08/14/78 

@@ -1,3 +1,4 @@
+#define PETSCSNES_DLL
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
@@ -95,7 +96,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
      with particular objects, hence alleviating the more general problem. */
-  ierr = PetscLogEventBegin(MAT_MultMatrixFree,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MATSNESMF_Mult,a,y,0,0);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
@@ -160,14 +161,14 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   ierr = VecScale(&hs,y);CHKERRQ(ierr);
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr = PetscLogEventEnd(MAT_MultMatrixFree,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MATSNESMF_Mult,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESMatrixFreeMatCreate2"
+#define __FUNCT__ "SNESMatrixFreeCreate2"
 /*@C
-   SNESMatrixFreeMatCreate2 - Creates a matrix-free matrix
+   SNESMatrixFreeCreate2 - Creates a matrix-free matrix
    context for use with a SNES solver.  This matrix can be used as
    the Jacobian argument for the routine SNESSetJacobian().
 
@@ -214,7 +215,7 @@ $  -snes_mf_jorge
 
 .seealso: MatDestroy(), MatSNESMFSetFunctionError()
 @*/
-PetscErrorCode SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
 {
   MPI_Comm       comm;
   MFCtx_Private  *mfctx;
@@ -309,7 +310,7 @@ $
 
 .seealso: MatCreateSNESMF()
 @*/
-PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat mat,PetscReal error,PetscReal umin,PetscReal h)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeSetParameters2(Mat mat,PetscReal error,PetscReal umin,PetscReal h)
 {
   MFCtx_Private  *ctx;
   PetscErrorCode ierr;
@@ -327,7 +328,7 @@ PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat mat,PetscReal error,Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESUnSetMatrixFreeParameter(SNES snes)
 {
   MFCtx_Private  *ctx;
   PetscErrorCode ierr;

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/pc/pcimpl.h"   /*I "petscpc.h" I*/
 #include "petscksp.h"            /*I "petscksp.h" I*/
@@ -120,7 +121,7 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCKSPSetUseTrue_KSP"
-PetscErrorCode PCKSPSetUseTrue_KSP(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCKSPSetUseTrue_KSP(PC pc)
 {
   PC_KSP   *jac;
 
@@ -134,7 +135,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCKSPGetKSP_KSP"
-PetscErrorCode PCKSPGetKSP_KSP(PC pc,KSP *ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 {
   PC_KSP   *jac;
 
@@ -170,7 +171,7 @@ EXTERN_C_END
 
 .seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal()
 @*/
-PetscErrorCode PCKSPSetUseTrue(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCKSPSetUseTrue(PC pc)
 {
   PetscErrorCode ierr,(*f)(PC);
 
@@ -203,7 +204,7 @@ PetscErrorCode PCKSPSetUseTrue(PC pc)
 
 .keywords:  PC, KSP, get, context
 @*/
-PetscErrorCode PCKSPGetKSP(PC pc,KSP *ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT PCKSPGetKSP(PC pc,KSP *ksp)
 {
   PetscErrorCode ierr,(*f)(PC,KSP*);
 
@@ -245,7 +246,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_KSP"
-PetscErrorCode PCCreate_KSP(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_KSP(PC pc)
 {
   PetscErrorCode ierr;
   char           *prefix;

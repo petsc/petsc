@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*
       Split phase global vector reductions with support for combining the
    communication portion of several operations. Using MPI-1.1 support only
@@ -50,7 +51,7 @@ some of each.
 /*
    PetscSplitReductionCreate - Creates a data structure to contain the queued information.
 */
-PetscErrorCode PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReduction **sr)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReduction **sr)
 {
   PetscErrorCode ierr;
 
@@ -79,7 +80,7 @@ MPI_Op PetscSplitReduction_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscSplitReduction_Local"
-void PetscSplitReduction_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSCVEC_DLLEXPORT PetscSplitReduction_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = (PetscInt)*cnt;
@@ -115,7 +116,7 @@ EXTERN_C_END
 /*
    PetscSplitReductionApply - Actually do the communication required for a split phase reduction
 */
-PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscSplitReductionApply(PetscSplitReduction *sr)
 {
   PetscErrorCode ierr;
   PetscInt            i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
@@ -195,7 +196,7 @@ PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
 /*
    PetscSplitReductionExtend - Double the amount of space (slots) allocated for a split reduction object.
 */
-PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction *sr)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscSplitReductionExtend(PetscSplitReduction *sr)
 {
   PetscErrorCode ierr;
   PetscInt         maxops = sr->maxops,*reducetype = sr->reducetype;
@@ -221,7 +222,7 @@ PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction *sr)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSplitReductionDestroy"
-PetscErrorCode PetscSplitReductionDestroy(PetscSplitReduction *sr)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscSplitReductionDestroy(PetscSplitReduction *sr)
 {
   PetscErrorCode ierr;
 
@@ -246,7 +247,7 @@ EXTERN_C_BEGIN
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.  
 */
-int Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
+int PETSCVEC_DLLEXPORT Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
 {
   PetscErrorCode ierr;
 
@@ -264,7 +265,7 @@ EXTERN_C_END
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscSplitReductionGet"
-PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 {
   PetscErrorCode ierr;
   PetscMPIInt    flag;
@@ -310,7 +311,7 @@ PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 seealso: VecDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
          VecTDotBegin(), VecTDotEnd()
 @*/
-PetscErrorCode VecDotBegin(Vec x,Vec y,PetscScalar *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecDotBegin(Vec x,Vec y,PetscScalar *result) 
 {
   PetscErrorCode ierr;
   PetscSplitReduction *sr;
@@ -353,7 +354,7 @@ seealso: VecDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMD
          VecTDotBegin(),VecTDotEnd()
 
 @*/
-PetscErrorCode VecDotEnd(Vec x,Vec y,PetscScalar *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecDotEnd(Vec x,Vec y,PetscScalar *result) 
 {
   PetscErrorCode ierr;
   PetscSplitReduction *sr;
@@ -409,7 +410,7 @@ seealso: VecTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDo
          VecDotBegin(), VecDotEnd()
 
 @*/
-PetscErrorCode VecTDotBegin(Vec x,Vec y,PetscScalar *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecTDotBegin(Vec x,Vec y,PetscScalar *result) 
 {
   PetscErrorCode ierr;
   PetscSplitReduction *sr;
@@ -451,7 +452,7 @@ PetscErrorCode VecTDotBegin(Vec x,Vec y,PetscScalar *result)
 seealso: VecTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
          VecDotBegin(), VecDotEnd()
 @*/
-PetscErrorCode VecTDotEnd(Vec x,Vec y,PetscScalar *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecTDotEnd(Vec x,Vec y,PetscScalar *result) 
 {
   PetscErrorCode ierr;
 
@@ -483,7 +484,7 @@ PetscErrorCode VecTDotEnd(Vec x,Vec y,PetscScalar *result)
 .seealso: VecNormEnd(), VecNorm(), VecDot(), VecMDot(), VecDotBegin(), VecDotEnd()
 
 @*/
-PetscErrorCode VecNormBegin(Vec x,NormType ntype,PetscReal *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecNormBegin(Vec x,NormType ntype,PetscReal *result) 
 {
   PetscErrorCode ierr;
   PetscSplitReduction *sr;
@@ -535,7 +536,7 @@ PetscErrorCode VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 .seealso: VecNormBegin(), VecNorm(), VecDot(), VecMDot(), VecDotBegin(), VecDotEnd()
 
 @*/
-PetscErrorCode VecNormEnd(Vec x,NormType ntype,PetscReal *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecNormEnd(Vec x,NormType ntype,PetscReal *result) 
 {
   PetscErrorCode      ierr;
   PetscInt            type_id;

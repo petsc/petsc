@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
     Simplified interface to PETSC DA (distributed array) object. 
    This is for a user who is not using PETSc Vecs (vectors).
@@ -14,7 +16,7 @@ struct _SDA {
 
 #undef __FUNCT__  
 #define __FUNCT__ "SDAArrayView"
-PetscErrorCode SDAArrayView(SDA da,PetscScalar *values,PetscViewer v)
+PetscErrorCode PETSCDM_DLLEXPORT SDAArrayView(SDA da,PetscScalar *values,PetscViewer v)
 {
   PetscErrorCode ierr;
 
@@ -54,7 +56,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 
 .seealso: SDADestroy(), SDACreate2d(), SDACreate3d()
 @*/
-PetscErrorCode SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt w,PetscInt s,PetscInt *lc,SDA *sda)
+PetscErrorCode PETSCDM_DLLEXPORT SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt w,PetscInt s,PetscInt *lc,SDA *sda)
 {
   PetscErrorCode ierr;
   DA             da;
@@ -120,7 +122,7 @@ $           the x and y coordinates, or PETSC_NULL
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
-PetscErrorCode SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
+PetscErrorCode PETSCDM_DLLEXPORT SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                 PetscInt M,PetscInt N,PetscInt m,PetscInt n,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,SDA *sda)
 {
   PetscErrorCode ierr;
@@ -187,7 +189,7 @@ $           the x, y, and z coordinates, or PETSC_NUL
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
-PetscErrorCode SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
+PetscErrorCode PETSCDM_DLLEXPORT SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
                 PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,SDA *sda)
 {
   PetscErrorCode ierr;
@@ -237,7 +239,7 @@ PetscErrorCode SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenc
 
 .seealso: SDACreate1d(), SDACreate2d(), SDACreate3d()
 @*/
-PetscErrorCode SDADestroy(SDA sda)
+PetscErrorCode PETSCDM_DLLEXPORT SDADestroy(SDA sda)
 {
   PetscErrorCode ierr;
 
@@ -271,7 +273,7 @@ PetscErrorCode SDADestroy(SDA sda)
 
 .seealso: SDALocalToLocalEnd(), SDACreate2d()
 @*/
-PetscErrorCode SDALocalToLocalBegin(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
+PetscErrorCode PETSCDM_DLLEXPORT SDALocalToLocalBegin(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
 {
   PetscErrorCode ierr;
   DA             da = sda->da;
@@ -305,7 +307,7 @@ PetscErrorCode SDALocalToLocalBegin(SDA sda,PetscScalar *g,InsertMode mode,Petsc
 
 .seealso: SDALocalToLocalBegin(), SDACreate2d()
 @*/
-PetscErrorCode SDALocalToLocalEnd(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
+PetscErrorCode PETSCDM_DLLEXPORT SDALocalToLocalEnd(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
 {
   PetscErrorCode ierr;
   DA             da = sda->da;
@@ -342,7 +344,7 @@ $    n and p are optional (used for 2D and 3D problems)
 
 .seealso: SDAGetGhostCorners()
 @*/
-PetscErrorCode SDAGetCorners(SDA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
+PetscErrorCode PETSCDM_DLLEXPORT SDAGetCorners(SDA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
   PetscErrorCode ierr;
 
@@ -376,7 +378,7 @@ $    n and p are optional (used for 2D and 3D problems)
 
 .seealso: SDAGetCorners()
 @*/
-PetscErrorCode SDAGetGhostCorners(SDA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
+PetscErrorCode PETSCDM_DLLEXPORT SDAGetGhostCorners(SDA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
   PetscErrorCode ierr;
 

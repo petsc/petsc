@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
       Code for opening and closing files.
 */
@@ -45,7 +46,7 @@
 
 .seealso: PetscGetRelativePath()
 @*/
-PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],size_t flen)
+PetscErrorCode PETSC_DLLEXPORT PetscGetFullPath(const char path[],char fullpath[],size_t flen)
 {
   struct passwd *pwde;
   PetscErrorCode ierr;
@@ -116,7 +117,7 @@ PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],size_t flen)
 #elif defined(PETSC_HAVE__FULLPATH)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFullPath"
-PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],size_t flen)
+PetscErrorCode PETSC_DLLEXPORT PetscGetFullPath(const char path[],char fullpath[],size_t flen)
 {
   PetscFunctionBegin;
   _fullpath(fullpath,path,flen);
@@ -125,7 +126,7 @@ PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],size_t flen)
 #else
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFullPath"
-PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],size_t flen)
+PetscErrorCode PETSC_DLLEXPORT PetscGetFullPath(const char path[],char fullpath[],size_t flen)
 {
   PetscErrorCode ierr;
 

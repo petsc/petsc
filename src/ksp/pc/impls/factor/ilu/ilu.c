@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -9,7 +11,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetZeroPivot_ILU"
-PetscErrorCode PCFactorSetZeroPivot_ILU(PC pc,PetscReal z)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_ILU(PC pc,PetscReal z)
 {
   PC_ILU *ilu;
 
@@ -23,7 +25,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftNonzero_ILU"
-PetscErrorCode PCFactorSetShiftNonzero_ILU(PC pc,PetscReal shift)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero_ILU(PC pc,PetscReal shift)
 {
   PC_ILU *dir;
 
@@ -41,7 +43,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftPd_ILU"
-PetscErrorCode PCFactorSetShiftPd_ILU(PC pc,PetscTruth shift)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_ILU(PC pc,PetscTruth shift)
 {
   PC_ILU *dir;
  
@@ -56,7 +58,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUReorderForNonzeroDiagonal_ILU"
-PetscErrorCode PCILUReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
 
@@ -88,7 +90,7 @@ PetscErrorCode PCDestroy_ILU_Internal(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetUseDropTolerance_ILU"
-PetscErrorCode PCILUSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
 {
   PC_ILU         *ilu;
   PetscErrorCode ierr;
@@ -111,7 +113,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetFill_ILU"
-PetscErrorCode PCILUSetFill_ILU(PC pc,PetscReal fill)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetFill_ILU(PC pc,PetscReal fill)
 {
   PC_ILU *dir;
 
@@ -125,7 +127,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetMatOrdering_ILU"
-PetscErrorCode PCILUSetMatOrdering_ILU(PC pc,MatOrderingType ordering)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetMatOrdering_ILU(PC pc,MatOrderingType ordering)
 {
   PC_ILU         *dir = (PC_ILU*)pc->data;
   PetscErrorCode ierr;
@@ -152,7 +154,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetReuseOrdering_ILU"
-PetscErrorCode PCILUSetReuseOrdering_ILU(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetReuseOrdering_ILU(PC pc,PetscTruth flag)
 {
   PC_ILU *ilu;
 
@@ -166,7 +168,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUDTSetReuseFill_ILUDT"
-PetscErrorCode PCILUDTSetReuseFill_ILUDT(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUDTSetReuseFill_ILUDT(PC pc,PetscTruth flag)
 {
   PC_ILU *ilu;
 
@@ -181,7 +183,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetLevels_ILU"
-PetscErrorCode PCILUSetLevels_ILU(PC pc,PetscInt levels)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetLevels_ILU(PC pc,PetscInt levels)
 {
   PC_ILU         *ilu;
   PetscErrorCode ierr;
@@ -204,7 +206,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetUseInPlace_ILU"
-PetscErrorCode PCILUSetUseInPlace_ILU(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseInPlace_ILU(PC pc)
 {
   PC_ILU *dir;
 
@@ -218,7 +220,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetAllowDiagonalFill"
-PetscErrorCode PCILUSetAllowDiagonalFill_ILU(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetAllowDiagonalFill_ILU(PC pc)
 {
   PC_ILU *dir;
 
@@ -254,7 +256,7 @@ EXTERN_C_END
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 @*/
-PetscErrorCode PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal,PetscReal,PetscInt);
 
@@ -294,7 +296,7 @@ $  -pc_ilu_fill <fill>
 
 .seealso: PCLUSetFill()
 @*/
-PetscErrorCode PCILUSetFill(PC pc,PetscReal fill)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetFill(PC pc,PetscReal fill)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);
 
@@ -332,7 +334,7 @@ PetscErrorCode PCILUSetFill(PC pc,PetscReal fill)
 .keywords: PC, ILU, set, matrix, reordering
 
 @*/
-PetscErrorCode PCILUSetMatOrdering(PC pc,MatOrderingType ordering)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetMatOrdering(PC pc,MatOrderingType ordering)
 {
   PetscErrorCode ierr,(*f)(PC,MatOrderingType);
 
@@ -367,7 +369,7 @@ PetscErrorCode PCILUSetMatOrdering(PC pc,MatOrderingType ordering)
 
 .seealso: PCILUDTSetReuseFill(), PCLUSetReuseOrdering(), PCLUSetReuseFill()
 @*/
-PetscErrorCode PCILUSetReuseOrdering(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetReuseOrdering(PC pc,PetscTruth flag)
 {
   PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
@@ -401,7 +403,7 @@ PetscErrorCode PCILUSetReuseOrdering(PC pc,PetscTruth flag)
 
 .seealso: PCILUSetReuseOrdering(), PCLUSetReuseOrdering(), PCLUSetReuseFill()
 @*/
-PetscErrorCode PCILUDTSetReuseFill(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUDTSetReuseFill(PC pc,PetscTruth flag)
 {
   PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
@@ -432,7 +434,7 @@ PetscErrorCode PCILUDTSetReuseFill(PC pc,PetscTruth flag)
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
-PetscErrorCode PCILUSetLevels(PC pc,PetscInt levels)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetLevels(PC pc,PetscInt levels)
 {
   PetscErrorCode ierr,(*f)(PC,PetscInt);
 
@@ -467,7 +469,7 @@ PetscErrorCode PCILUSetLevels(PC pc,PetscInt levels)
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
-PetscErrorCode PCILUSetAllowDiagonalFill(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetAllowDiagonalFill(PC pc)
 {
   PetscErrorCode ierr,(*f)(PC);
 
@@ -508,7 +510,7 @@ PetscErrorCode PCILUSetAllowDiagonalFill(PC pc)
 
 .seealso:  PCLUSetUseInPlace()
 @*/
-PetscErrorCode PCILUSetUseInPlace(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseInPlace(PC pc)
 {
   PetscErrorCode ierr,(*f)(PC);
 
@@ -541,7 +543,7 @@ PetscErrorCode PCILUSetUseInPlace(PC pc)
 
 .seealso: PCILUSetFill(), MatReorderForNonzeroDiagonal()
 @*/
-PetscErrorCode PCILUReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);
 
@@ -573,7 +575,7 @@ PetscErrorCode PCILUReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 
 .seealso: PCIILUSetMatOrdering(), PCILUSetPivoting()
 @*/
-PetscErrorCode PCILUSetPivotInBlocks(PC pc,PetscTruth pivot)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetPivotInBlocks(PC pc,PetscTruth pivot)
 {
   PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
@@ -590,7 +592,7 @@ PetscErrorCode PCILUSetPivotInBlocks(PC pc,PetscTruth pivot)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetPivotInBlocks_ILU"
-PetscErrorCode PCILUSetPivotInBlocks_ILU(PC pc,PetscTruth pivot)
+PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetPivotInBlocks_ILU(PC pc,PetscTruth pivot)
 {
   PC_ILU *dir = (PC_ILU*)pc->data;
 
@@ -884,7 +886,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ILU"
-PetscErrorCode PCCreate_ILU(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
 {
   PetscErrorCode ierr;
   PC_ILU         *ilu;

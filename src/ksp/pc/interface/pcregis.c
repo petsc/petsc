@@ -1,43 +1,44 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PCCreate_Jacobi(PC);
-EXTERN PetscErrorCode PCCreate_BJacobi(PC);
-EXTERN PetscErrorCode PCCreate_PBJacobi(PC);
-EXTERN PetscErrorCode PCCreate_ILU(PC);
-EXTERN PetscErrorCode PCCreate_None(PC);
-EXTERN PetscErrorCode PCCreate_LU(PC);
-EXTERN PetscErrorCode PCCreate_SOR(PC);
-EXTERN PetscErrorCode PCCreate_Shell(PC);
-EXTERN PetscErrorCode PCCreate_MG(PC);
-EXTERN PetscErrorCode PCCreate_Eisenstat(PC);
-EXTERN PetscErrorCode PCCreate_ICC(PC);
-EXTERN PetscErrorCode PCCreate_ASM(PC);
-EXTERN PetscErrorCode PCCreate_KSP(PC);
-EXTERN PetscErrorCode PCCreate_Composite(PC);
-EXTERN PetscErrorCode PCCreate_Redundant(PC);
-EXTERN PetscErrorCode PCCreate_NN(PC);
-EXTERN PetscErrorCode PCCreate_Cholesky(PC);
-EXTERN PetscErrorCode PCCreate_FieldSplit(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Jacobi(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_BJacobi(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PBJacobi(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_None(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SOR(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_MG(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Eisenstat(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASM(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_KSP(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Composite(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_NN(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC);
 #if defined(PETSC_HAVE_ML)
-EXTERN PetscErrorCode PCCreate_ML(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC);
 #endif
 #if defined(PETSC_HAVE_SPAI)
-EXTERN PetscErrorCode PCCreate_SPAI(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC);
 #endif
 #if defined(PETSC_HAVE_SAMG)
-EXTERN PetscErrorCode PCCreate_SAMG(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SAMG(PC);
 #endif
-EXTERN PetscErrorCode PCCreate_Mat(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Mat(PC);
 #if defined(PETSC_HAVE_HYPRE)
-EXTERN PetscErrorCode PCCreate_HYPRE(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_HYPRE(PC);
 #endif
 #if !defined(PETSC_USE_64BIT_INT) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-EXTERN PetscErrorCode PCCreate_TFS(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC);
 #endif
 #if defined(PETSC_HAVE_PROMETHEUS)
-EXTERN PetscErrorCode PCCreate_Prometheus(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Prometheus(PC);
 #endif
 
 
@@ -59,7 +60,7 @@ EXTERN_C_END
 
 .seealso: PCRegisterDynamic(), PCRegisterDestroy()
 @*/
-PetscErrorCode PCRegisterAll(const char path[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

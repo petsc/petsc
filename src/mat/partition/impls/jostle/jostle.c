@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/impls/adj/mpi/mpiadj.h"       /*I "petscmat.h" I*/
 
@@ -189,7 +190,7 @@ PetscErrorCode MatPartitioningView_Jostle(MatPartitioning part, PetscViewer view
    Level: advanced
 
 @*/
-PetscErrorCode MatPartitioningJostleSetCoarseLevel(MatPartitioning part, PetscReal level)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningJostleSetCoarseLevel(MatPartitioning part, PetscReal level)
 {
     MatPartitioning_Jostle *jostle_struct = (MatPartitioning_Jostle *) part->data;
 
@@ -219,7 +220,7 @@ PetscErrorCode MatPartitioningJostleSetCoarseLevel(MatPartitioning part, PetscRe
    Level: advanced
 
 @*/
-PetscErrorCode MatPartitioningJostleSetCoarseSequential(MatPartitioning part)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningJostleSetCoarseSequential(MatPartitioning part)
 {
     MatPartitioning_Jostle *jostle_struct =
         (MatPartitioning_Jostle *) part->data;
@@ -299,7 +300,7 @@ EXTERN_C_BEGIN
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
 @*/
-PetscErrorCode MatPartitioningCreate_Jostle(MatPartitioning part)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Jostle(MatPartitioning part)
 {
     PetscErrorCode ierr;
     MatPartitioning_Jostle *jostle_struct;

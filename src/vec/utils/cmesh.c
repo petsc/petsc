@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 
 #include "petscvec.h"        /*I "petscvec.h" I*/
 
@@ -20,7 +21,7 @@
 .seealso: PetscDrawTensorContour(),PetscDrawTensorContourPatch()
 
 @*/
-PetscErrorCode VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
+PetscErrorCode PETSCVEC_DLLEXPORT VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
 {
   PetscScalar    *values;
   PetscErrorCode ierr;

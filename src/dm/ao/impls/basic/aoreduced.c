@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
 
 #include "src/dm/ao/aoimpl.h"     /*I   "petscao.h"  I*/
 #include "petscsys.h"

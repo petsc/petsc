@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"           /*I "petsc.h" I*/
 #include "petscsys.h"
@@ -69,7 +70,7 @@
    Concepts: memory usage
 
 @*/
-PetscErrorCode PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
+PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 {
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
   FILE                   *file;
@@ -171,7 +172,7 @@ PetscLogDouble PetscMemoryMaximumUsage = 0;
    Concepts: memory usage
 
 @*/
-PetscErrorCode PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
+PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
 {
   PetscFunctionBegin;
   if (!PetscMemoryCollectMaximumUsage) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"To use this function you must first call PetscMemorySetGetMaximumUsage()");
@@ -200,7 +201,7 @@ PetscErrorCode PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
    Concepts: memory usage
 
 @*/
-PetscErrorCode PetscMemorySetGetMaximumUsage(void)
+PetscErrorCode PETSC_DLLEXPORT PetscMemorySetGetMaximumUsage(void)
 {
   PetscFunctionBegin;
   PetscMemoryCollectMaximumUsage = PETSC_TRUE;

@@ -1,9 +1,10 @@
+#define PETSCSNES_DLL
 
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatSNESMFCreate_Default(MatSNESMFCtx);
-EXTERN PetscErrorCode MatSNESMFCreate_WP(MatSNESMFCtx);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_Default(MatSNESMFCtx);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_WP(MatSNESMFCtx);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -20,7 +21,7 @@ EXTERN_C_END
 .seealso:  MatSNESMFRegisterDestroy(), MatSNESMFRegisterDynamic), MatSNESMFCreate(), 
            MatSNESMFSetType()
 @*/
-PetscErrorCode MatSNESMFRegisterAll(const char *path)
+PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegisterAll(const char *path)
 {
   PetscErrorCode ierr;
 

@@ -1,12 +1,13 @@
+#define PETSCMAT_DLL
  
 #include "petscmat.h"
 #include "src/mat/color/color.h"
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatColoring_Natural(Mat,const MatColoringType,ISColoring*);
-EXTERN PetscErrorCode MatFDColoringSL_Minpack(Mat,const MatColoringType,ISColoring*);
-EXTERN PetscErrorCode MatFDColoringLF_Minpack(Mat,const MatColoringType,ISColoring*);
-EXTERN PetscErrorCode MatFDColoringID_Minpack(Mat,const MatColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_Natural(Mat,const MatColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSL_Minpack(Mat,const MatColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringLF_Minpack(Mat,const MatColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringID_Minpack(Mat,const MatColoringType,ISColoring*);
 EXTERN_C_END
 
 #undef __FUNCT__  

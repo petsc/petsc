@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -24,7 +25,7 @@
    Concepts: PETSC_COMM_WORLD^setting
 
 @*/
-PetscErrorCode PetscSetCommWorld(MPI_Comm comm)
+PetscErrorCode PETSC_DLLEXPORT PetscSetCommWorld(MPI_Comm comm)
 {
   PetscFunctionBegin;
   if (PetscInitializeCalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call before PetscInitialize()");

@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
      Tools to help solve the coarse grid problem redundantly.
   Provides two scatter contexts that (1) map from the usual global vector
@@ -29,7 +31,7 @@
 .seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
 @*/
-PetscErrorCode DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
+PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
 {
   PetscErrorCode ierr;
   PetscInt N;
@@ -80,7 +82,7 @@ PetscErrorCode DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
 .seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
 @*/
-PetscErrorCode DANaturalAllToGlobalCreate(DA da,VecScatter *scatter)
+PetscErrorCode PETSCDM_DLLEXPORT DANaturalAllToGlobalCreate(DA da,VecScatter *scatter)
 {
   PetscErrorCode ierr;
   PetscInt M,m = da->Nlocal,start;

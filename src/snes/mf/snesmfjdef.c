@@ -1,3 +1,5 @@
+#define PETSCSNES_DLL
+
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -220,7 +222,7 @@ EXTERN_C_END
 .seealso: MatSNESMFSetFunctionError(), MatCreateSNESMF()
 
 @*/
-PetscErrorCode MatSNESMFDefaultSetUmin(Mat A,PetscReal umin)
+PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFDefaultSetUmin(Mat A,PetscReal umin)
 {
   PetscErrorCode ierr,(*f)(Mat,PetscReal);
 
@@ -261,7 +263,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFCreate_Default"
-PetscErrorCode MatSNESMFCreate_Default(MatSNESMFCtx ctx)
+PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_Default(MatSNESMFCtx ctx)
 {
   MatSNESMFDefault *hctx;
   PetscErrorCode   ierr;

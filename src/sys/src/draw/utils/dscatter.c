@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Contains the data structure for drawing scatter plots
     graphs in a window with an axis. This is intended for scatter
@@ -41,7 +42,7 @@ struct _p_DrawSP {
 
 .seealso:  PetscDrawSPDestroy()
 @*/
-PetscErrorCode PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 {
   PetscErrorCode ierr;
   PetscTruth  isnull;
@@ -93,7 +94,7 @@ PetscErrorCode PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
    Concepts: scatter plot^setting number of data types
 
 @*/
-PetscErrorCode PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 {
   PetscErrorCode ierr;
 
@@ -126,7 +127,7 @@ PetscErrorCode PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
   Concepts: scatter plot^resetting
 
 @*/
-PetscErrorCode PetscDrawSPReset(PetscDrawSP sp)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSPReset(PetscDrawSP sp)
 {
   PetscFunctionBegin;
   if (sp && sp->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
@@ -154,7 +155,7 @@ PetscErrorCode PetscDrawSPReset(PetscDrawSP sp)
 
 .seealso:  PetscDrawSPCreate()
 @*/
-PetscErrorCode PetscDrawSPDestroy(PetscDrawSP sp)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSPDestroy(PetscDrawSP sp)
 {
   PetscErrorCode ierr;
 
@@ -190,7 +191,7 @@ PetscErrorCode PetscDrawSPDestroy(PetscDrawSP sp)
 
 .seealso: PetscDrawSPAddPoints()
 @*/
-PetscErrorCode PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 {
   PetscErrorCode ierr;
   int i;
@@ -243,7 +244,7 @@ PetscErrorCode PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 
 .seealso: PetscDrawSPAddPoint()
 @*/
-PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
 {
   PetscErrorCode ierr;
   int       i,j,k;
@@ -299,7 +300,7 @@ PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRea
 .seealso: PetscDrawLGDraw(), PetscDrawLGSPDraw()
 
 @*/
-PetscErrorCode PetscDrawSPDraw(PetscDrawSP sp)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSPDraw(PetscDrawSP sp)
 {
   PetscReal xmin=sp->xmin,xmax=sp->xmax,ymin=sp->ymin,ymax=sp->ymax;
   PetscErrorCode ierr;
@@ -347,7 +348,7 @@ PetscErrorCode PetscDrawSPDraw(PetscDrawSP sp)
    Concepts: scatter plot^setting axis
 
 @*/
-PetscErrorCode PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
 {
   PetscFunctionBegin;
   if (sp && sp->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
@@ -378,7 +379,7 @@ PetscErrorCode PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_m
    Level: intermediate
 
 @*/
-PetscErrorCode PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   if (sp && sp->cookie == PETSC_DRAW_COOKIE) {
@@ -406,7 +407,7 @@ PetscErrorCode PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
    Level: intermediate
 
 @*/
-PetscErrorCode PetscDrawSPGetDraw(PetscDrawSP sp,PetscDraw *draw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSPGetDraw(PetscDrawSP sp,PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeader(sp,1);

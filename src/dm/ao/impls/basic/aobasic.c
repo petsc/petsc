@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
     The most basic AO application ordering routines. These store the 
   entire orderings on each processor.
@@ -207,7 +209,7 @@ static struct _AOOps AOops = {AOView_Basic,
 
 .seealso: AOCreateBasicIS(), AODestroy()
 @*/
-PetscErrorCode AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
+PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
 {
   AO_Basic       *aobasic;
   AO             ao;
@@ -321,7 +323,7 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],
 
 .seealso: AOCreateBasic(),  AODestroy()
 @*/
-PetscErrorCode AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
+PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
 {
   PetscErrorCode ierr;
   PetscInt       *mypetsc = 0,*myapp,napp,npetsc;

@@ -1,3 +1,5 @@
+#define PETSCTS_DLL
+
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -48,7 +50,7 @@ typedef struct {
 
 .seealso: TSPseudoDefaultTimeStep(), TSPseudoSetTimeStep()
 @*/
-PetscErrorCode TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -88,7 +90,7 @@ PetscErrorCode TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
-PetscErrorCode TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,PetscReal *newdt,PetscTruth *flag)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,PetscReal *newdt,PetscTruth *flag)
 {
   PetscFunctionBegin;
   *flag = PETSC_TRUE;
@@ -121,7 +123,7 @@ PetscErrorCode TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,PetscR
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoDefaultVerifyTimeStep()
 @*/
-PetscErrorCode TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscTruth *flag)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscTruth *flag)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -346,7 +348,7 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
 
 .seealso: TSPseudoDefaultVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
-PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void*,PetscReal*,PetscTruth*),void* ctx)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void*,PetscReal*,PetscTruth*),void* ctx)
 {
   PetscErrorCode ierr,(*f)(TS,PetscErrorCode (*)(TS,Vec,void*,PetscReal *,PetscTruth *),void *);
 
@@ -381,7 +383,7 @@ $    -ts_pseudo_increment <increment>
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
 @*/
-PetscErrorCode TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
 {
   PetscErrorCode ierr,(*f)(TS,PetscReal);
 
@@ -418,7 +420,7 @@ $    -ts_pseudo_increment_dt_from_initial_dt
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
 @*/
-PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS ts)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoIncrementDtFromInitialDt(TS ts)
 {
   PetscErrorCode ierr,(*f)(TS);
 
@@ -463,7 +465,7 @@ PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS ts)
 
 .seealso: TSPseudoDefaultTimeStep(), TSPseudoComputeTimeStep()
 @*/
-PetscErrorCode TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(TS,PetscReal*,void*),void* ctx)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(TS,PetscReal*,void*),void* ctx)
 {
   PetscErrorCode ierr,(*f)(TS,PetscErrorCode (*)(TS,PetscReal *,void *),void *);
 
@@ -483,7 +485,7 @@ typedef PetscErrorCode (*FCN1)(TS,Vec,void*,PetscReal*,PetscTruth*); /* force ar
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetVerifyTimeStep_Pseudo"
-PetscErrorCode TSPseudoSetVerifyTimeStep_Pseudo(TS ts,FCN1 dt,void* ctx)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetVerifyTimeStep_Pseudo(TS ts,FCN1 dt,void* ctx)
 {
   TS_Pseudo *pseudo;
 
@@ -498,7 +500,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetTimeStepIncrement_Pseudo"
-PetscErrorCode TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 
@@ -511,7 +513,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoIncrementDtFromInitialDt_Pseudo"
-PetscErrorCode TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 
@@ -525,7 +527,7 @@ typedef PetscErrorCode (*FCN2)(TS,PetscReal*,void*); /* force argument to next f
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetTimeStep_Pseudo"
-PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts,FCN2 dt,void* ctx)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetTimeStep_Pseudo(TS ts,FCN2 dt,void* ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 
@@ -541,7 +543,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_Pseudo"
-PetscErrorCode TSCreate_Pseudo(TS ts)
+PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Pseudo(TS ts)
 {
   TS_Pseudo  *pseudo;
   PetscErrorCode ierr;
@@ -611,7 +613,7 @@ EXTERN_C_END
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoComputeTimeStep()
 @*/
-PetscErrorCode TSPseudoDefaultTimeStep(TS ts,PetscReal* newdt,void* dtctx)
+PetscErrorCode PETSCTS_DLLEXPORT TSPseudoDefaultTimeStep(TS ts,PetscReal* newdt,void* dtctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   PetscReal inc = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;

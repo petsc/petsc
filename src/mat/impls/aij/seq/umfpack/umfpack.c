@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 /* 
         Provides an interface to the UMFPACKv4.3 sparse solver
@@ -33,7 +34,7 @@ EXTERN PetscErrorCode MatDuplicate_UMFPACK(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_UMFPACK_SeqAIJ"
-PetscErrorCode MatConvert_UMFPACK_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_UMFPACK_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   /* This routine is only called to convert an unfactored PETSc-UMFPACK matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
@@ -338,7 +339,7 @@ PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_UMFPACK"
-PetscErrorCode MatConvert_SeqAIJ_UMFPACK(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_UMFPACK(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATUMFPACK */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
@@ -370,7 +371,7 @@ PetscErrorCode MatConvert_SeqAIJ_UMFPACK(Mat A,const MatType type,MatReuse reuse
                                            "MatConvert_SeqAIJ_UMFPACK",MatConvert_SeqAIJ_UMFPACK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_umfpack_seqaij_C",
                                            "MatConvert_UMFPACK_SeqAIJ",MatConvert_UMFPACK_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscLogInfo((0,"MatConvert_SeqAIJ_UMFPACK:Using UMFPACK for SeqAIJ LU factorization and solves.\n");CHKERRQ(ierr);
+  ierr = PetscLogInfo((0,"MatConvert_SeqAIJ_UMFPACK:Using UMFPACK for SeqAIJ LU factorization and solves.\n"));CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATUMFPACK);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -424,7 +425,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_UMFPACK"
-PetscErrorCode MatCreate_UMFPACK(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_UMFPACK(Mat A) 
 {
   PetscErrorCode ierr;
 

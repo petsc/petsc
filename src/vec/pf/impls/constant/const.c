@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 
 #include "src/vec/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
@@ -70,7 +71,7 @@ PetscErrorCode PFSetFromOptions_Constant(PF pf)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_Constant"
-PetscErrorCode PFCreate_Constant(PF pf,void *value)
+PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Constant(PF pf,void *value)
 {
   PetscErrorCode ierr;
   PetscScalar    *loc;
@@ -91,7 +92,7 @@ typedef PetscErrorCode (*FCN)(void*,PetscInt,PetscScalar*,PetscScalar*); /* forc
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_Quick"
-PetscErrorCode PFCreate_Quick(PF pf,void *function)
+PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Quick(PF pf,void *function)
 {
   PetscErrorCode ierr;
 
@@ -152,7 +153,7 @@ PetscErrorCode PFDestroy_Identity(void *value)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_Identity"
-PetscErrorCode PFCreate_Identity(PF pf,void *value)
+PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Identity(PF pf,void *value)
 {
   PetscErrorCode ierr;
   PetscInt       *loc;

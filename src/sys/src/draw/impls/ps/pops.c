@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 /*
     Defines the operations for the Postscript PetscDraw implementation.
@@ -23,7 +24,7 @@
 
 .seealso: PetscDrawDestroy(), PetscDrawOpenX(), PetscDrawCreate(), PetscViewerDrawOpen(), PetscViewerDrawGetDraw()
 @*/
-PetscErrorCode PetscDrawOpenPS(MPI_Comm comm,char *filename,PetscDraw *draw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawOpenPS(MPI_Comm comm,char *filename,PetscDraw *draw)
 {
   PetscErrorCode ierr;
 
@@ -277,7 +278,7 @@ static struct _PetscDrawOps DvOps = { 0,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawCreate_PS" 
-PetscErrorCode PetscDrawCreate_PS(PetscDraw draw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate_PS(PetscDraw draw)
 {
   PetscDraw_PS  *ps;
   PetscErrorCode ierr;

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"           /*I    "petsc.h" I*/
 
@@ -27,7 +28,7 @@
 .seealso: PetscSplitOwnership()
 
 @*/
-PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,PetscInt *N)
+PetscErrorCode PETSC_DLLEXPORT PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,PetscInt *N)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
@@ -72,7 +73,7 @@ PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,Pe
 .seealso: PetscSplitOwnershipBlock()
 
 @*/
-PetscErrorCode PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
+PetscErrorCode PETSC_DLLEXPORT PetscSplitOwnership(MPI_Comm comm,PetscInt *n,PetscInt *N)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;

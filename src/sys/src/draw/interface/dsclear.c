@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -19,7 +20,7 @@
    Concepts: clear^window
 
 @*/
-PetscErrorCode PetscDrawSynchronizedClear(PetscDraw draw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSynchronizedClear(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

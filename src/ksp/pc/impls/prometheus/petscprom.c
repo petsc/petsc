@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 //  Contributed by:             Mark F. Adams
 //  Copyright (c) 2004 by Mark F. Adams 
 //  Filename:           petscprom.c
@@ -376,7 +378,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Prometheus"
-PetscErrorCode PCCreate_Prometheus(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Prometheus(PC pc)
 {
   PetscErrorCode ierr;
 

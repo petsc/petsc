@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /* 
    Include files needed for the PBJacobi preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners 
@@ -119,7 +121,6 @@ static PetscErrorCode PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_PBJacobi"
 static PetscErrorCode PCSetUp_PBJacobi(PC pc)
@@ -142,7 +143,7 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   if (mpibaij || (baij && (size > 1))) A = ((Mat_MPIBAIJ*)A->data)->A;
   if (A->m != A->n) SETERRQ(PETSC_ERR_SUP,"Supported only for square matrices and square storage");
 
-  ierr        =  MatInvertBlockDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
+  ierr        =  MatSeqBAIJInvertBlockDiagonal(A);CHKERRQ(ierr);
   a           = (Mat_SeqBAIJ*)A->data;
   jac->diag   = a->idiag;
   jac->bs     = A->bs;
@@ -198,7 +199,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_PBJacobi"
-PetscErrorCode PCCreate_PBJacobi(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PBJacobi(PC pc)
 {
   PC_PBJacobi    *jac;
   PetscErrorCode ierr;

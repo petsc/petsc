@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
       Inverts 5 by 5 matrix using partial pivoting.
 

@@ -1,3 +1,4 @@
+#define PETSCTS_DLL
 
 #include "petscts.h"
 
@@ -16,7 +17,7 @@
 .keywords: TS, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode TSInitializePackage(const char path[]) {
+PetscErrorCode PETSCTS_DLLEXPORT TSInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char              *className;
@@ -66,7 +67,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PetscDLLibraryRegister(char *path)
+PetscErrorCode PETSCTS_DLLEXPORT PetscDLLibraryRegister(char *path)
 {
   PetscErrorCode ierr;
 

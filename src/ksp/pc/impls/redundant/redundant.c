@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -175,7 +177,7 @@ static PetscErrorCode PCSetFromOptions_Redundant(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCRedundantSetScatter_Redundant"
-PetscErrorCode PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
+PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
@@ -207,7 +209,7 @@ EXTERN_C_END
 
 .keywords: PC, redundant solve
 @*/
-PetscErrorCode PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
+PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 {
   PetscErrorCode ierr,(*f)(PC,VecScatter,VecScatter);
 
@@ -225,7 +227,7 @@ PetscErrorCode PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCRedundantGetPC_Redundant"
-PetscErrorCode PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
 
@@ -252,7 +254,7 @@ EXTERN_C_END
 
 .keywords: PC, redundant solve
 @*/
-PetscErrorCode PCRedundantGetPC(PC pc,PC *innerpc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetPC(PC pc,PC *innerpc)
 {
   PetscErrorCode ierr,(*f)(PC,PC*);
 
@@ -269,7 +271,7 @@ PetscErrorCode PCRedundantGetPC(PC pc,PC *innerpc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCRedundantGetOperators_Redundant"
-PetscErrorCode PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
+PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
 
@@ -298,7 +300,7 @@ EXTERN_C_END
 
 .keywords: PC, redundant solve
 @*/
-PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
+PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 {
   PetscErrorCode ierr,(*f)(PC,Mat*,Mat*);
 
@@ -331,7 +333,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Redundant"
-PetscErrorCode PCCreate_Redundant(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red;

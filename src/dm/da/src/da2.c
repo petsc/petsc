@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -20,7 +21,7 @@
 
 .seealso: DAElementType, DASetElementType(), DARestoreElements()
 @*/
-PetscErrorCode DAGetElements(DA da,PetscInt *n,const PetscInt *e[])
+PetscErrorCode PETSCDM_DLLEXPORT DAGetElements(DA da,PetscInt *n,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -46,7 +47,7 @@ PetscErrorCode DAGetElements(DA da,PetscInt *n,const PetscInt *e[])
 
 .seealso: DAElementType, DASetElementType(), DAGetElements()
 @*/
-PetscErrorCode DARestoreElements(DA da,PetscInt *n,const PetscInt *e[])
+PetscErrorCode PETSCDM_DLLEXPORT DARestoreElements(DA da,PetscInt *n,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -59,7 +60,7 @@ PetscErrorCode DARestoreElements(DA da,PetscInt *n,const PetscInt *e[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetOwnershipRange"
-PetscErrorCode DAGetOwnershipRange(DA da,PetscInt **lx,PetscInt **ly,PetscInt **lz)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRange(DA da,PetscInt **lx,PetscInt **ly,PetscInt **lz)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -254,7 +255,7 @@ PetscErrorCode DAGetElements_2d_P1(DA da,PetscInt *n,const PetscInt *e[])
           DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
-PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
+PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                           PetscInt M,PetscInt N,PetscInt m,PetscInt n,PetscInt dof,PetscInt s,PetscInt *lx,PetscInt *ly,DA *inra)
 {
   PetscErrorCode ierr;
@@ -827,7 +828,7 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
 .keywords: DA, help
 
 @*/
-PetscErrorCode DAPrintHelp(DA da)
+PetscErrorCode PETSCDM_DLLEXPORT DAPrintHelp(DA da)
 {
   static PetscTruth called = PETSC_FALSE;
   MPI_Comm          comm;
@@ -872,7 +873,7 @@ PetscErrorCode DAPrintHelp(DA da)
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy()
 @*/
-PetscErrorCode DARefine(DA da,MPI_Comm comm,DA *daref)
+PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
 {
   PetscErrorCode ierr;
   PetscInt       M,N,P;
@@ -948,7 +949,7 @@ PetscErrorCode DARefine(DA da,MPI_Comm comm,DA *daref)
 
 .seealso: DARefine(), DAGetRefinementFactor()
 @*/
-PetscErrorCode DASetRefinementFactor(DA da, PetscInt refine_x, PetscInt refine_y,PetscInt refine_z)
+PetscErrorCode PETSCDM_DLLEXPORT DASetRefinementFactor(DA da, PetscInt refine_x, PetscInt refine_y,PetscInt refine_z)
 {
   PetscFunctionBegin;
   if (refine_x > 0) da->refine_x = refine_x;
@@ -976,7 +977,7 @@ PetscErrorCode DASetRefinementFactor(DA da, PetscInt refine_x, PetscInt refine_y
 
 .seealso: DARefine(), DASetRefinementFactor()
 @*/
-PetscErrorCode DAGetRefinementFactor(DA da, PetscInt *refine_x, PetscInt *refine_y,PetscInt *refine_z)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DA da, PetscInt *refine_x, PetscInt *refine_y,PetscInt *refine_z)
 {
   PetscFunctionBegin;
   if (refine_x) *refine_x = da->refine_x;
@@ -1001,7 +1002,7 @@ PetscErrorCode DAGetRefinementFactor(DA da, PetscInt *refine_x, PetscInt *refine
 
 .seealso: DAGetMatrix(), DASetBlockFills()
 @*/
-PetscErrorCode DASetGetMatrix(DA da,PetscErrorCode (*f)(DA,const MatType,Mat*))
+PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DA da,PetscErrorCode (*f)(DA,const MatType,Mat*))
 {
   PetscFunctionBegin;
   da->ops->getmatrix = f;
@@ -1015,7 +1016,7 @@ PetscErrorCode DASetGetMatrix(DA da,PetscErrorCode (*f)(DA,const MatType,Mat*))
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DASplitComm2d"
-PetscErrorCode DASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,MPI_Comm *outcomm)
+PetscErrorCode PETSCDM_DLLEXPORT DASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,MPI_Comm *outcomm)
 {
   PetscErrorCode ierr;
   PetscInt       m,n = 0,x = 0,y = 0;
@@ -1082,7 +1083,7 @@ PetscErrorCode DASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,MPI
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunctioni()
 @*/
-PetscErrorCode DASetLocalFunction(DA da,DALocalFunction1 lf)
+PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunction(DA da,DALocalFunction1 lf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -1107,7 +1108,7 @@ PetscErrorCode DASetLocalFunction(DA da,DALocalFunction1 lf)
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction()
 @*/
-PetscErrorCode DASetLocalFunctioni(DA da,PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
+PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctioni(DA da,PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -1236,7 +1237,7 @@ PetscErrorCode DASetLocalAdicMFFunction_Private(DA da,DALocalFunction1 ad_lf)
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "DASetLocalJacobian"
-PetscErrorCode DASetLocalJacobian(DA da,DALocalFunction1 lj)
+PetscErrorCode PETSCDM_DLLEXPORT DASetLocalJacobian(DA da,DALocalFunction1 lj)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -1263,7 +1264,7 @@ PetscErrorCode DASetLocalJacobian(DA da,DALocalFunction1 lj)
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DASetLocalFunction()
 @*/
-PetscErrorCode DAGetLocalFunction(DA da,DALocalFunction1 *lf)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -1290,7 +1291,7 @@ PetscErrorCode DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 .seealso: DAComputeJacobian1WithAdic()
 
 @*/
-PetscErrorCode DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
+PetscErrorCode PETSCDM_DLLEXPORT DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
 {
   PetscErrorCode ierr;
   void           *u,*fu;
@@ -1311,7 +1312,7 @@ PetscErrorCode DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
 
 #undef __FUNCT__
 #define __FUNCT__ "DAFormFunctioniTest1"
-PetscErrorCode DAFormFunctioniTest1(DA da,void *w)
+PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctioniTest1(DA da,void *w)
 {
   Vec            vu,fu,fui;
   PetscErrorCode ierr;
@@ -1369,7 +1370,7 @@ PetscErrorCode DAFormFunctioniTest1(DA da,void *w)
 .seealso: DAComputeJacobian1WithAdic()
 
 @*/
-PetscErrorCode DAFormFunctioni1(DA da,PetscInt i,Vec vu,PetscScalar *vfu,void *w)
+PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctioni1(DA da,PetscInt i,Vec vu,PetscScalar *vfu,void *w)
 {
   PetscErrorCode ierr;
   void           *u;
@@ -1469,7 +1470,7 @@ EXTERN_C_END
 .seealso: DAFormFunction1()
 
 @*/
-PetscErrorCode DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
+PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 {
   PetscErrorCode ierr;
   PetscInt       gtdof,tdof;
@@ -1530,7 +1531,7 @@ PetscErrorCode DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 .seealso: DAFormFunction1()
 
 @*/
-PetscErrorCode DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
+PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
 {
   PetscErrorCode ierr;
   PetscInt       i,gtdof,tdof;
@@ -1594,7 +1595,7 @@ PetscErrorCode DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
 .seealso: DAFormFunction1()
 
 @*/
-PetscErrorCode DAComputeJacobian1(DA da,Vec vu,Mat J,void *w)
+PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1(DA da,Vec vu,Mat J,void *w)
 {
   PetscErrorCode ierr;
   void           *u;
@@ -1626,7 +1627,7 @@ PetscErrorCode DAComputeJacobian1(DA da,Vec vu,Mat J,void *w)
 .seealso: DAFormFunction1()
 
 */
-PetscErrorCode DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
+PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
 {
   PetscErrorCode  ierr;
   PetscInt        i,Nc,N;
@@ -1697,7 +1698,7 @@ PetscErrorCode DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
 .seealso: DAFormFunction1(), DAMultiplyByJacobian1WithAdifor(), DAMultiplyByJacobian1WithAdic()
 
 @*/
-PetscErrorCode DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,Vec f,void *w)
+PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,Vec f,void *w)
 {
   PetscErrorCode ierr;
 
@@ -1737,7 +1738,7 @@ PetscErrorCode DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,Vec f,void *w)
 .seealso: DAFormFunction1()
 
 @*/
-PetscErrorCode DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec v,Vec f,void *w)
+PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec v,Vec f,void *w)
 {
   PetscErrorCode ierr;
   PetscScalar    *au,*av,*af,*awork;
@@ -1784,7 +1785,7 @@ PetscErrorCode DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec v,Vec f,void *w)
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DA, DAInterpolationType
 @*/
-PetscErrorCode DASetInterpolationType(DA da,DAInterpolationType ctype)
+PetscErrorCode PETSCDM_DLLEXPORT DASetInterpolationType(DA da,DAInterpolationType ctype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

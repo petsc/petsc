@@ -147,7 +147,7 @@ runex20_2:
                 for dof in 1 2 3; do \
                   for stencil_width in 1 2; do \
                     for stencil_type in 0 1; do \
-                      ${MPIRUN} -np $$np ex20 $$d -periodic $$per -dof $$dof -stencil_width $$stencil_width -stencil_type $$stencil_type ;\
+                      ${MPIRUN} -np $$np ./ex20 $$d -periodic $$per -dof $$dof -stencil_width $$stencil_width -stencil_type $$stencil_type ;\
                     done; \
                   done; \
                 done; \
@@ -160,7 +160,7 @@ runex23:
             for np in 1 2 3 4; do \
               for dof in 1 2 3; do \
                 for stencil_type in 0 1; do \
-                  ${MPIRUN} -np $$np ex23 $$d -dof $$dof -stencil_type $$stencil_type ;\
+                  ${MPIRUN} -np $$np ./ex23 $$d -dof $$dof -stencil_type $$stencil_type ;\
                 done; \
               done; \
             done; \

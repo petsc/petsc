@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
@@ -28,7 +30,7 @@
 
 .seealso: DAGetGhostCorners(), DAGetCoordinates(), DASetUniformCoordinates(). DAGetGhostCoordinates(), DAGetCoordinateDA()
 @*/
-PetscErrorCode DASetCoordinates(DA da,Vec c)
+PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
 {
   PetscErrorCode ierr;
 
@@ -68,7 +70,7 @@ PetscErrorCode DASetCoordinates(DA da,Vec c)
 
 .seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetCoordinateDA()
 @*/
-PetscErrorCode DAGetCoordinates(DA da,Vec *c)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
 {
   PetscFunctionBegin;
  
@@ -99,7 +101,7 @@ PetscErrorCode DAGetCoordinates(DA da,Vec *c)
 
 .seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetGhostedCoordinates()
 @*/
-PetscErrorCode DAGetCoordinateDA(DA da,DA *cda)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
 {
   DAStencilType  st;
   PetscErrorCode ierr;
@@ -207,7 +209,7 @@ PetscErrorCode DAGetCoordinateDA(DA da,DA *cda)
 
 .seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetCoordinateDA()
 @*/
-PetscErrorCode DAGetGhostedCoordinates(DA da,Vec *c)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DA da,Vec *c)
 {
   PetscFunctionBegin;
  
@@ -247,7 +249,7 @@ PetscErrorCode DAGetGhostedCoordinates(DA da,Vec *c)
 
 .seealso: DAGetFieldName()
 @*/
-PetscErrorCode DASetFieldName(DA da,PetscInt nf,const char name[])
+PetscErrorCode PETSCDM_DLLEXPORT DASetFieldName(DA da,PetscInt nf,const char name[])
 {
   PetscErrorCode ierr;
 
@@ -283,7 +285,7 @@ PetscErrorCode DASetFieldName(DA da,PetscInt nf,const char name[])
 
 .seealso: DASetFieldName()
 @*/
-PetscErrorCode DAGetFieldName(DA da,PetscInt nf,char **name)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DA da,PetscInt nf,char **name)
 {
   PetscFunctionBegin;
  
@@ -324,7 +326,7 @@ PetscErrorCode DAGetFieldName(DA da,PetscInt nf,char **name)
 
 .seealso: DAGetGhostCorners()
 @*/
-PetscErrorCode DAGetCorners(DA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {
   PetscInt w;
 

@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -5,7 +7,7 @@
 #include "petscsys.h"
 
 /* Logging support */
-PetscCookie KSP_COOKIE = 0;
+PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE = 0;
 PetscEvent  KSP_GMRESOrthogonalization = 0, KSP_SetUp = 0, KSP_Solve = 0;
 
 
@@ -42,7 +44,7 @@ PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 
 .seealso: PCView(), PetscViewerASCIIOpen()
 @*/
-PetscErrorCode KSPView(KSP ksp,PetscViewer viewer)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
 {
   char           *type;
   PetscErrorCode ierr;
@@ -126,7 +128,7 @@ $   KSP_NATURAL_NORM - supported  by cg, cr, and cgs
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged()                               
 @*/
-PetscErrorCode KSPSetNormType(KSP ksp,KSPNormType normtype)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
   PetscErrorCode ierr;
 
@@ -199,7 +201,7 @@ $      Pmat does not have the same nonzero structure.
 
 .seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPGetOperators()
 @*/
-PetscErrorCode KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 {
   PetscErrorCode ierr;
 
@@ -238,7 +240,7 @@ PetscErrorCode KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 
 .seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPSetOperators()
 @*/
-PetscErrorCode KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,MatStructure *flag)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,MatStructure *flag)
 {
   PetscErrorCode ierr;
 
@@ -271,7 +273,7 @@ PetscErrorCode KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,MatStructure *flag)
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP
 @*/
-PetscErrorCode KSPCreate(MPI_Comm comm,KSP *inksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
 {
   KSP            ksp;
   PetscErrorCode ierr;
@@ -370,7 +372,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm,KSP *inksp)
 .seealso: PCSetType(), KSPType
 
 @*/
-PetscErrorCode KSPSetType(KSP ksp,const KSPType type)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp,const KSPType type)
 {
   PetscErrorCode ierr,(*r)(KSP);
   PetscTruth     match;
@@ -411,7 +413,7 @@ PetscErrorCode KSPSetType(KSP ksp,const KSPType type)
 
 .seealso: KSPRegisterDynamic(), KSPRegisterAll()
 @*/
-PetscErrorCode KSPRegisterDestroy(void)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -443,7 +445,7 @@ PetscErrorCode KSPRegisterDestroy(void)
 
 .seealso: KSPSetType()
 @*/
-PetscErrorCode KSPGetType(KSP ksp,KSPType *type)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetType(KSP ksp,KSPType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -496,7 +498,7 @@ $                    natural - see KSPSetNormType()
 
 .seealso: 
 @*/
-PetscErrorCode KSPSetFromOptions(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       indx;
@@ -669,7 +671,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
 
   Level: advanced
 @*/
-PetscErrorCode KSPRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(KSP))
+PetscErrorCode PETSCKSP_DLLEXPORT KSPRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(KSP))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -695,7 +697,7 @@ PetscErrorCode KSPRegister(const char sname[],const char path[],const char name[
 
 .seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPGetNullSpace()
 @*/
-PetscErrorCode KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
 {
   PetscErrorCode ierr;
 
@@ -723,7 +725,7 @@ PetscErrorCode KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
 
 .seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPSetNullSpace()
 @*/
-PetscErrorCode KSPGetNullSpace(KSP ksp,MatNullSpace *nullsp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNullSpace(KSP ksp,MatNullSpace *nullsp)
 {
   PetscFunctionBegin;
   *nullsp = ksp->nullsp;

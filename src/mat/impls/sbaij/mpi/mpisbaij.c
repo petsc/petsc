@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "mpisbaij.h"
@@ -44,7 +45,7 @@ EXTERN PetscErrorCode MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat,PetscInt,con
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatStoreValues_MPISBAIJ"
-PetscErrorCode MatStoreValues_MPISBAIJ(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ   *aij = (Mat_MPISBAIJ *)mat->data;
   PetscErrorCode ierr;
@@ -59,7 +60,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatRetrieveValues_MPISBAIJ"
-PetscErrorCode MatRetrieveValues_MPISBAIJ(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ   *aij = (Mat_MPISBAIJ *)mat->data;
   PetscErrorCode ierr;
@@ -559,6 +560,56 @@ PetscErrorCode MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
       ierr = MPI_Allreduce(lnorm2,&sum,2,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
       *norm = sqrt(sum[0] + 2*sum[1]);
       ierr = PetscFree(lnorm2);CHKERRQ(ierr);
+    } else if (type == NORM_INFINITY || type == NORM_1) { /* max row/column sum */
+      Mat_SeqSBAIJ *amat=(Mat_SeqSBAIJ*)baij->A->data;
+      Mat_SeqBAIJ  *bmat=(Mat_SeqBAIJ*)baij->B->data;
+      PetscReal    *rsum,*rsum2,vabs; 
+      PetscInt     *jj,*garray=baij->garray,rstart=baij->rstart,nz;
+      PetscInt     brow,bcol,col,bs=baij->A->bs,row,grow,gcol,mbs=amat->mbs;
+      MatScalar    *v;
+
+      ierr  = PetscMalloc((2*mat->N+1)*sizeof(PetscReal),&rsum);CHKERRQ(ierr);
+      rsum2 = rsum + mat->N;
+      ierr  = PetscMemzero(rsum,mat->N*sizeof(PetscReal));CHKERRQ(ierr);
+      /* Amat */
+      v = amat->a; jj = amat->j;
+      for (brow=0; brow<mbs; brow++) {
+        grow = bs*(rstart + brow);
+        nz = amat->i[brow+1] - amat->i[brow];
+        for (bcol=0; bcol<nz; bcol++){
+          gcol = bs*(rstart + *jj); jj++;
+          for (col=0; col<bs; col++){
+            for (row=0; row<bs; row++){
+              vabs = PetscAbsScalar(*v); v++;
+              rsum[gcol+col] += vabs;  
+              /* non-diagonal block */
+              if (bcol > 0 && vabs > 0.0) rsum[grow+row] += vabs; 
+            }
+          }
+        }
+      }
+      /* Bmat */
+      v = bmat->a; jj = bmat->j;
+      for (brow=0; brow<mbs; brow++) {
+        grow = bs*(rstart + brow);
+        nz = bmat->i[brow+1] - bmat->i[brow];
+        for (bcol=0; bcol<nz; bcol++){
+          gcol = bs*garray[*jj]; jj++;
+          for (col=0; col<bs; col++){
+            for (row=0; row<bs; row++){
+              vabs = PetscAbsScalar(*v); v++;
+              rsum[gcol+col] += vabs;
+              rsum[grow+row] += vabs; 
+            }
+          }
+        }
+      }
+      ierr = MPI_Allreduce(rsum,rsum2,mat->N,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
+      *norm = 0.0;
+      for (col=0; col<mat->N; col++) {
+        if (rsum2[col] > *norm) *norm = rsum2[col];
+      }
+      ierr = PetscFree(rsum);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"No support for this norm yet");
     }
@@ -1439,7 +1490,7 @@ static struct _MatOps MatOps_Values = {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonalBlock_MPISBAIJ"
-PetscErrorCode MatGetDiagonalBlock_MPISBAIJ(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPISBAIJ(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
 {
   PetscFunctionBegin;
   *a      = ((Mat_MPISBAIJ *)A->data)->A;
@@ -1451,7 +1502,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBAIJ"
-PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt d_nz,PetscInt *d_nnz,PetscInt o_nz,PetscInt *o_nnz)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt d_nz,PetscInt *d_nnz,PetscInt o_nz,PetscInt *o_nnz)
 {
   Mat_MPISBAIJ   *b;
   PetscErrorCode ierr;
@@ -1545,7 +1596,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPISBAIJ"
-PetscErrorCode MatCreate_MPISBAIJ(Mat B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat B)
 {
   Mat_MPISBAIJ   *b;
   PetscErrorCode ierr;
@@ -1659,7 +1710,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SBAIJ"
-PetscErrorCode MatCreate_SBAIJ(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJ(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -1757,7 +1808,7 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/
-PetscErrorCode MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 
@@ -1868,7 +1919,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const
 .seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/
 
-PetscErrorCode MatCreateMPISBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPISBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

@@ -1,3 +1,5 @@
+#define PETSCVEC_DLL
+
 /*
      Some useful vector utility functions.
 */
@@ -29,7 +31,7 @@
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
 @*/
-PetscErrorCode VecStrideScale(Vec v,PetscInt start,PetscScalar *scale)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec v,PetscInt start,PetscScalar *scale)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,bs;
@@ -91,7 +93,7 @@ PetscErrorCode VecStrideScale(Vec v,PetscInt start,PetscScalar *scale)
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
-PetscErrorCode VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,bs;
@@ -180,7 +182,7 @@ PetscErrorCode VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm)
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
-PetscErrorCode VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,bs;
@@ -262,7 +264,7 @@ PetscErrorCode VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
-PetscErrorCode VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,bs;
@@ -333,7 +335,7 @@ PetscErrorCode VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
 .seealso: VecNorm(), VecStrideScale(), VecScale(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
-PetscErrorCode VecStrideScaleAll(Vec v,PetscScalar *scales)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScaleAll(Vec v,PetscScalar *scales)
 {
   PetscErrorCode ierr;
   PetscInt         i,j,n,bs;
@@ -391,7 +393,7 @@ PetscErrorCode VecStrideScaleAll(Vec v,PetscScalar *scales)
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
-PetscErrorCode VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
 {
   PetscErrorCode ierr;
   PetscInt         i,j,n,bs;
@@ -487,7 +489,7 @@ PetscErrorCode VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
-PetscErrorCode VecStrideMaxAll(Vec v,PetscInt *idex,PetscReal *nrm)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec v,PetscInt *idex,PetscReal *nrm)
 {
   PetscErrorCode ierr;
   PetscInt         i,j,n,bs;
@@ -567,7 +569,7 @@ PetscErrorCode VecStrideMaxAll(Vec v,PetscInt *idex,PetscReal *nrm)
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
-PetscErrorCode VecStrideMinAll(Vec v,PetscInt *idex,PetscReal *nrm)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec v,PetscInt *idex,PetscReal *nrm)
 {
   PetscErrorCode ierr;
   PetscInt         i,n,bs,j;
@@ -652,7 +654,7 @@ PetscErrorCode VecStrideMinAll(Vec v,PetscInt *idex,PetscReal *nrm)
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
           VecStrideScatterAll()
 @*/
-PetscErrorCode VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,bs,j,k,*bss,nv,jj,nvc;
@@ -755,7 +757,7 @@ PetscErrorCode VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
           VecStrideScatterAll()
 @*/
-PetscErrorCode VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 {
   PetscErrorCode ierr;
   PetscInt        i,n,bs,j,jj,k,*bss,nv,nvc;
@@ -862,7 +864,7 @@ PetscErrorCode VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll()
 @*/
-PetscErrorCode VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,bs,ns;
@@ -941,7 +943,7 @@ PetscErrorCode VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
 .seealso: VecStrideNorm(), VecStrideGather(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll()
 @*/
-PetscErrorCode VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,bs,ns;
@@ -1028,7 +1030,7 @@ PetscErrorCode VecReciprocal_Default(Vec v)
 
 .keywords: vector, sqrt, square root
 @*/
-PetscErrorCode VecSqrt(Vec v)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSqrt(Vec v)
 {
   PetscScalar *x;
   PetscInt         i, n;
@@ -1064,7 +1066,7 @@ PetscErrorCode VecSqrt(Vec v)
 
 .seealso: VecNorm()
 @*/
-PetscErrorCode VecSum(Vec v,PetscScalar *sum)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSum(Vec v,PetscScalar *sum)
 {
   PetscErrorCode ierr;
   PetscInt         i,n;
@@ -1103,7 +1105,7 @@ PetscErrorCode VecSum(Vec v,PetscScalar *sum)
    Concepts: vector^adding constant
 
 @*/
-PetscErrorCode VecShift(const PetscScalar *shift,Vec v)
+PetscErrorCode PETSCVEC_DLLEXPORT VecShift(const PetscScalar *shift,Vec v)
 {
   PetscErrorCode ierr;
   PetscInt         i,n;
@@ -1136,7 +1138,7 @@ PetscErrorCode VecShift(const PetscScalar *shift,Vec v)
    Concepts: vector^absolute value
 
 @*/
-PetscErrorCode VecAbs(Vec v)
+PetscErrorCode PETSCVEC_DLLEXPORT VecAbs(Vec v)
 {
   PetscErrorCode ierr;
   PetscInt       i,n;
@@ -1170,7 +1172,7 @@ PetscErrorCode VecAbs(Vec v)
 .seealso: MatPermute()
 .keywords: vec, permute
 @*/
-PetscErrorCode VecPermute(Vec x, IS row, PetscTruth inv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecPermute(Vec x, IS row, PetscTruth inv)
 {
   PetscScalar    *array, *newArray;
   PetscInt       *idx;
@@ -1219,7 +1221,7 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscTruth inv)
    Concepts: vector^equality
 
 @*/
-PetscErrorCode VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
+PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
 {
   PetscScalar    *v1,*v2;
   PetscErrorCode ierr;

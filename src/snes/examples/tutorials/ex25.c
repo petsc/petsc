@@ -31,6 +31,7 @@ T*/
 #include "petscsnes.h"
 #include "petscda.h"
 #include "petscmg.h"
+#include "petscdmmg.h"
 
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,void*);

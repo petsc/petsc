@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
      Additive Multigrid V Cycle routine    
 */

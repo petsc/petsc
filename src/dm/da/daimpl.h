@@ -134,8 +134,8 @@ struct _p_DA {
 */
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode VecView_MPI_DA(Vec,PetscViewer);
-EXTERN PetscErrorCode VecLoadIntoVector_Binary_DA(PetscViewer,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec,PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer,Vec);
 EXTERN_C_END
 
 #endif

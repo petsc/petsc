@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/kspimpl.h"
 
@@ -142,7 +143,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_BCGS"
-PetscErrorCode KSPCreate_BCGS(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGS(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                 = (void*)0;

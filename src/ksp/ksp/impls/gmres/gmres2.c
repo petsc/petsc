@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 #include "src/ksp/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 
 #undef __FUNCT__  
@@ -37,7 +39,7 @@ $    i.e. the size of Krylov space minus one
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetCGSRefinementType(),
           KSPGMRESModifiedGramSchmidtOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization()
 @*/
-PetscErrorCode KSPGMRESSetOrthogonalization(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt))
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt))
 {
   PetscErrorCode ierr,(*f)(KSP,PetscErrorCode (*)(KSP,PetscInt));
 

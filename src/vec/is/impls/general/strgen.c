@@ -1,4 +1,4 @@
-
+#define PETSCVEC_DLL
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
 EXTERN PetscErrorCode ISDuplicate_General(IS,IS *);
@@ -40,7 +40,7 @@ static struct _ISOps myops = { ISGetSize_General,
 
 .seealso: ISCreateStride(), ISCreateBlock(), ISCreateGeneral()
 @*/
-PetscErrorCode ISStrideToGeneral(IS inis)
+PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
 {
   PetscErrorCode ierr;
   PetscInt       step;

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
   Contains the data structure for plotting a histogram in a window with an axis.
 */
@@ -50,7 +51,7 @@ struct _p_DrawHG {
 .seealso: PetscDrawHGDestroy()
 
 @*/
-PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   PetscDrawHG h;
   MPI_Comm    comm;
   PetscTruth  isnull;
@@ -108,7 +109,7 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
    Concepts: histogram^setting number of bins
 
 @*/
-PetscErrorCode PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -139,7 +140,7 @@ PetscErrorCode PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
 
   Concepts: histogram^resetting
 @*/
-PetscErrorCode PetscDrawHGReset(PetscDrawHG hist)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGReset(PetscDrawHG hist)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -167,7 +168,7 @@ PetscErrorCode PetscDrawHGReset(PetscDrawHG hist)
 
 .seealso:  PetscDrawHGCreate()
 @*/
-PetscErrorCode PetscDrawHGDestroy(PetscDrawHG hist)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDestroy(PetscDrawHG hist)
 {
   PetscErrorCode ierr;
 
@@ -204,7 +205,7 @@ PetscErrorCode PetscDrawHGDestroy(PetscDrawHG hist)
 
 .seealso: PetscDrawHGAddValues()
 @*/
-PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -271,7 +272,7 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 
   Contributed by: Matthew Knepley
 @*/
-PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
 {
   PetscDraw  draw = hist->win;
   PetscTruth isnull;
@@ -416,7 +417,7 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
 
 .keywords:  draw, histogram
 @*/
-PetscErrorCode PetscDrawHGPrint(PetscDrawHG hist)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
 {
   PetscReal xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
   PetscErrorCode ierr;
@@ -510,7 +511,7 @@ PetscErrorCode PetscDrawHGPrint(PetscDrawHG hist)
   Level: intermediate
 
 @*/
-PetscErrorCode PetscDrawHGSetColor(PetscDrawHG hist, int color)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetColor(PetscDrawHG hist, int color)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -537,7 +538,7 @@ PetscErrorCode PetscDrawHGSetColor(PetscDrawHG hist, int color)
 
   Concepts: histogram^setting axis
 @*/
-PetscErrorCode PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max) 
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max) 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -566,7 +567,7 @@ PetscErrorCode PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal
 .keywords:  draw, histogram, statistics
 
 @*/
-PetscErrorCode PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -591,7 +592,7 @@ PetscErrorCode PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
 
 .keywords:  draw, histogram, statistics
 @*/
-PetscErrorCode PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTruth ints)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTruth ints)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -619,7 +620,7 @@ PetscErrorCode PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTruth ints)
 
   Contributed by: Matthew Knepley
 @*/
-PetscErrorCode PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -645,7 +646,7 @@ PetscErrorCode PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
 
   Contributed by: Matthew Knepley
 @*/
-PetscErrorCode PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *win)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *win)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
       Code for manipulating files.
 */
@@ -43,7 +44,7 @@
 
 .seealso: PetscGetUserName()
 @*/
-PetscErrorCode PetscGetHostName(char name[],size_t nlen)
+PetscErrorCode PETSC_DLLEXPORT PetscGetHostName(char name[],size_t nlen)
 {
   char           *domain;
   PetscErrorCode ierr;

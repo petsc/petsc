@@ -5,6 +5,7 @@ static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjo
 #include "petscpf.h"
 #include "petscmg.h"
 #include "petscsnes.h"
+#include "petscdmmg.h"
 
 /*
 

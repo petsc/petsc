@@ -12,22 +12,22 @@
 #include "mat.h"  
 PETSC_EXTERN_CXX_BEGIN
 
-EXTERN PetscErrorCode  ad_PetscInitialize(int *,char ***,char *,char*);
-EXTERN PetscErrorCode  ad_PetscFinalize(void);
-EXTERN PetscErrorCode  ad_AD_Init(void);
-EXTERN PetscErrorCode  ad_AD_Final(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT ad_PetscInitialize(int *,char ***,char *,char*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT ad_PetscFinalize(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT ad_AD_Init(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT ad_AD_Final(void);
 
 typedef struct _p_PetscADICFunction *PetscADICFunction;
 
-EXTERN PetscErrorCode  PetscADICFunctionCreate(Vec,Vec,PetscErrorCode (*)(Vec,Vec),PetscErrorCode (*)(void **),PetscADICFunction*);
-EXTERN PetscErrorCode  PetscADICFunctionInitialize(PetscADICFunction);
-EXTERN PetscErrorCode  PetscADICFunctionEvaluateGradient(PetscADICFunction,Vec,Vec,Mat);
-EXTERN PetscErrorCode  PetscADICFunctionApplyGradientInitialize(PetscADICFunction,Vec,Mat*);
-EXTERN PetscErrorCode  PetscADICFunctionApplyGradientReset(Mat,Vec);
-EXTERN PetscErrorCode  PetscADICFunctionDestroy(PetscADICFunction);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscADICFunctionCreate(Vec,Vec,PetscErrorCode (*)(Vec,Vec),PetscErrorCode (*)(void **),PetscADICFunction*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscADICFunctionInitialize(PetscADICFunction);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscADICFunctionEvaluateGradient(PetscADICFunction,Vec,Vec,Mat);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscADICFunctionApplyGradientInitialize(PetscADICFunction,Vec,Mat*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscADICFunctionApplyGradientReset(Mat,Vec);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscADICFunctionDestroy(PetscADICFunction);
 
-EXTERN PetscErrorCode  PetscADICFunctionSetFunction(PetscADICFunction,PetscErrorCode (*)(Vec,Vec),PetscErrorCode (*)(void **));
-EXTERN PetscErrorCode  PetscADICFunctionEvaluateGradientFD(PetscADICFunction,Vec,Vec,Mat);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscADICFunctionSetFunction(PetscADICFunction,PetscErrorCode (*)(Vec,Vec),PetscErrorCode (*)(void **));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscADICFunctionEvaluateGradientFD(PetscADICFunction,Vec,Vec,Mat);
 
 PETSC_EXTERN_CXX_END
 #endif

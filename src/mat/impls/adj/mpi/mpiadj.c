@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure. 
 */
@@ -338,7 +340,7 @@ static struct _MatOps MatOps_Values = {0,
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAdjSetPreallocation_MPIAdj"
-PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
 {
   Mat_MPIAdj     *b = (Mat_MPIAdj *)B->data;
   PetscErrorCode ierr;
@@ -389,7 +391,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIAdj"
-PetscErrorCode MatCreate_MPIAdj(Mat B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat B)
 {
   Mat_MPIAdj     *b;
   PetscErrorCode ierr;
@@ -450,7 +452,7 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateMPIAdj(), MatSetValues()
 @*/
-PetscErrorCode MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt*,PetscInt*,PetscInt*);
 
@@ -499,7 +501,7 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt 
 
 .seealso: MatCreate(), MatConvert(), MatGetOrdering()
 @*/
-PetscErrorCode MatCreateMPIAdj(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt *i,PetscInt *j,PetscInt *values,Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAdj(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt *i,PetscInt *j,PetscInt *values,Mat *A)
 {
   PetscErrorCode ierr;
 
@@ -513,7 +515,7 @@ PetscErrorCode MatCreateMPIAdj(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt *i,P
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvertTo_MPIAdj"
-PetscErrorCode MatConvertTo_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvertTo_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   Mat               B;
   PetscErrorCode    ierr;

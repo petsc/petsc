@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
 
 #include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
@@ -20,7 +21,7 @@
 
 .seealso:  
 @*/ 
-PetscErrorCode AODataAddAlias(AOData ao,char *alias,char *name)
+PetscErrorCode PETSCDM_DLLEXPORT AODataAddAlias(AOData ao,char *alias,char *name)
 {
   AODataAlias *aoalias,*t;
   PetscErrorCode ierr;

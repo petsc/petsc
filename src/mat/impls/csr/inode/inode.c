@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
   This file provides high performance routines for the Inode format (compressed sparse row)
   by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -1719,7 +1721,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatInodeAdjustForInodes"
-PetscErrorCode MatInodeAdjustForInodes(Mat A,IS *rperm,IS *cperm)
+PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 {
   PetscErrorCode ierr,(*f)(Mat,IS*,IS*);
 
@@ -1734,7 +1736,7 @@ PetscErrorCode MatInodeAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatAdjustForInodes_Inode"
-PetscErrorCode MatInodeAdjustForInodes_Inode(Mat A,IS *rperm,IS *cperm)
+PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_Inode(Mat A,IS *rperm,IS *cperm)
 {
   Mat_inode      *a=(Mat_inode*)A->data;
   PetscErrorCode ierr;
@@ -1821,7 +1823,7 @@ EXTERN_C_END
 
 .seealso: MatGetInfo()
 @*/
-PetscErrorCode MatInodeGetInodeSizes(Mat A,PetscInt *node_count,PetscInt *sizes[],PetscInt *limit)
+PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes(Mat A,PetscInt *node_count,PetscInt *sizes[],PetscInt *limit)
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt*,PetscInt*[],PetscInt*);
 
@@ -1837,7 +1839,7 @@ PetscErrorCode MatInodeGetInodeSizes(Mat A,PetscInt *node_count,PetscInt *sizes[
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatInodeGetInodeSizes_Inode"
-PetscErrorCode MatInodeGetInodeSizes_Inode(Mat A,PetscInt *node_count,PetscInt *sizes[],PetscInt *limit)
+PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes_Inode(Mat A,PetscInt *node_count,PetscInt *sizes[],PetscInt *limit)
 {
   Mat_inode *a = (Mat_inode*)A->data;
 

@@ -1,9 +1,10 @@
+#define PETSCVEC_DLL
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
 
-EXTERN PetscErrorCode VecInitializePackage(char *);
-PetscCookie IS_LTOGM_COOKIE = -1;
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *);
+PetscCookie PETSCVEC_DLLEXPORT IS_LTOGM_COOKIE = -1;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingGetSize"
@@ -24,7 +25,7 @@ PetscCookie IS_LTOGM_COOKIE = -1;
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
-PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,PetscInt *n)
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,PetscInt *n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
@@ -50,7 +51,7 @@ PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,Pets
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
-PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscViewer viewer)
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscViewer viewer)
 {
   PetscInt        i;
   PetscMPIInt     rank;
@@ -96,7 +97,7 @@ PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscVi
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
-PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
   PetscInt      n,*indices;
@@ -138,7 +139,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapp
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreateNC()
 @*/
-PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscInt indices[],ISLocalToGlobalMapping *mapping)
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscInt indices[],ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
   PetscInt       *in;
@@ -177,7 +178,7 @@ PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscIn
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate()
 @*/
-PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm cm,PetscInt n,const PetscInt indices[],ISLocalToGlobalMapping *mapping)
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateNC(MPI_Comm cm,PetscInt n,const PetscInt indices[],ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
 
@@ -229,7 +230,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm cm,PetscInt n,const Petsc
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingCreateIS()
 @*/
-PetscErrorCode ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,PetscInt bs,ISLocalToGlobalMapping *outmap)
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,PetscInt bs,ISLocalToGlobalMapping *outmap)
 {
   PetscErrorCode ierr;
   PetscInt       *ii,i,n;
@@ -266,7 +267,7 @@ PetscErrorCode ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,PetscInt
 
 .seealso: ISLocalToGlobalMappingCreate()
 @*/
-PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -305,7 +306,7 @@ PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 .seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy(), ISGlobalToLocalMappingApply()
 @*/
-PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis)
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis)
 {
   PetscErrorCode ierr;
   PetscInt            n,i,*idxin,*idxmap,*idxout,Nmax = mapping->n;
@@ -435,7 +436,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
 .seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy()
 @*/
-PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
+PetscErrorCode PETSCVEC_DLLEXPORT ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
                                   PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
 {
   PetscInt i,*globals,nf = 0,tmp,start,end;
@@ -509,7 +510,7 @@ PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlob
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingRestoreInfo()
 @*/
-PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag1,tag2,tag3,*len,*source,imdex;
@@ -927,7 +928,7 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pets
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingGetInfo()
 @*/
-PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
   PetscErrorCode ierr;
   PetscInt i;

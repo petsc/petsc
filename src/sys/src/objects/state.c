@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -31,7 +32,7 @@
    Concepts: state
 
 @*/
-PetscErrorCode PetscObjectStateQuery(PetscObject obj,PetscInt *state)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectStateQuery(PetscObject obj,PetscInt *state)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
@@ -65,7 +66,7 @@ PetscErrorCode PetscObjectStateQuery(PetscObject obj,PetscInt *state)
    Concepts: state
 
 @*/
-PetscErrorCode PetscObjectSetState(PetscObject obj,PetscInt state)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectSetState(PetscObject obj,PetscInt state)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
@@ -103,7 +104,7 @@ PetscErrorCode PetscObjectSetState(PetscObject obj,PetscInt state)
    Concepts: state
 
 @*/
-PetscErrorCode PetscObjectStateIncrease(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectStateIncrease(PetscObject obj)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
@@ -111,8 +112,9 @@ PetscErrorCode PetscObjectStateIncrease(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-PetscInt globalcurrentstate = 0, globalmaxstate = 10;
-PetscErrorCode PetscObjectComposedDataRegister(PetscInt *id)
+PetscInt PETSC_DLLEXPORT globalcurrentstate = 0;
+PetscInt PETSC_DLLEXPORT globalmaxstate = 10;
+PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataRegister(PetscInt *id)
 {
   PetscFunctionBegin;
   *id = globalcurrentstate++;
@@ -120,7 +122,7 @@ PetscErrorCode PetscObjectComposedDataRegister(PetscInt *id)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseInt(PetscObject obj)
 {
   PetscInt       *ar = obj->intcomposeddata,*new_ar;
   PetscInt       *ir = obj->intcomposedstate,*new_ir,n = obj->int_idmax,new_n,i;
@@ -143,7 +145,7 @@ PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject obj)
   obj->intcomposeddata = new_ar; obj->intcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
-PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
 {
   PetscInt       **ar = obj->intstarcomposeddata,**new_ar;
   PetscInt       *ir = obj->intstarcomposedstate,*new_ir,n = obj->intstar_idmax,new_n,i;
@@ -167,7 +169,7 @@ PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectComposedDataIncreaseReal(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseReal(PetscObject obj)
 {
   PetscReal      *ar = obj->realcomposeddata,*new_ar;
   PetscInt       *ir = obj->realcomposedstate,*new_ir,n = obj->real_idmax,new_n,i;
@@ -191,7 +193,7 @@ PetscErrorCode PetscObjectComposedDataIncreaseReal(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
 {
   PetscReal      **ar = obj->realstarcomposeddata,**new_ar;
   PetscInt       *ir = obj->realstarcomposedstate,*new_ir,n = obj->realstar_idmax,new_n,i;
@@ -215,7 +217,7 @@ PetscErrorCode PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseScalar(PetscObject obj)
 {
   PetscScalar    *ar = obj->scalarcomposeddata,*new_ar;
   PetscInt       *ir = obj->scalarcomposedstate,*new_ir,n = obj->scalar_idmax,new_n,i;
@@ -239,7 +241,7 @@ PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
 {
   PetscScalar    **ar = obj->scalarstarcomposeddata,**new_ar;
   PetscInt       *ir = obj->scalarstarcomposedstate,*new_ir,n = obj->scalarstar_idmax,new_n,i;

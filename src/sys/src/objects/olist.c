@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
          Provides a general mechanism to maintain a linked list of PETSc objects.
      This is used to allow PETSc objects to carry a list of "composed" objects
@@ -20,7 +21,7 @@ struct _PetscOList {
 
 .seealso: PetscOListDestroy()
 */
-PetscErrorCode PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
 {
   PetscOList olist,nlist,prev;
   PetscErrorCode ierr;
@@ -89,7 +90,7 @@ PetscErrorCode PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
     Input Parameter:
 .   fl   - pointer to list
 */
-PetscErrorCode PetscOListDestroy(PetscOList *fl)
+PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList *fl)
 {
   PetscOList   tmp, entry = *fl;
   PetscErrorCode ierr;
@@ -125,7 +126,7 @@ PetscErrorCode PetscOListDestroy(PetscOList *fl)
 .seealso: PetscOListReverseFind()
 
 */
-PetscErrorCode PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
+PetscErrorCode PETSC_DLLEXPORT PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 {
   PetscErrorCode ierr;
   PetscTruth match;
@@ -163,7 +164,7 @@ PetscErrorCode PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 .seealso: PetscOListFind()
 
 */
-PetscErrorCode PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
+PetscErrorCode PETSC_DLLEXPORT PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
 {
   PetscFunctionBegin;
 
@@ -192,7 +193,7 @@ PetscErrorCode PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
 
 
 */
-PetscErrorCode PetscOListDuplicate(PetscOList fl,PetscOList *nl)
+PetscErrorCode PETSC_DLLEXPORT PetscOListDuplicate(PetscOList fl,PetscOList *nl)
 {
   PetscErrorCode ierr;
 

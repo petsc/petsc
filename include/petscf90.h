@@ -12,19 +12,19 @@ PETSC_EXTERN_CXX_BEGIN
 #error "Both PETSC_HAVE_F90_H and PETSC_HAVE_F90_C flags have to be speficied"
 #endif
 
-EXTERN PetscErrorCode F90Array1dCreate(void*,PetscDataType,int,int,F90Array1d*);
-EXTERN PetscErrorCode F90Array1dAccess(F90Array1d*,void**);
-EXTERN PetscErrorCode F90Array1dDestroy(F90Array1d*);
-EXTERN PetscErrorCode F90Array1dGetNextRecord(F90Array1d*,void**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dCreate(void*,PetscDataType,int,int,F90Array1d*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dAccess(F90Array1d*,void**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dDestroy(F90Array1d*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dGetNextRecord(F90Array1d*,void**);
 
-EXTERN PetscErrorCode F90Array2dCreate(void*,PetscDataType,int,int,int,int,F90Array2d*);
-EXTERN PetscErrorCode F90Array2dAccess(F90Array2d*,void**);
-EXTERN PetscErrorCode F90Array2dDestroy(F90Array2d*);
-EXTERN PetscErrorCode F90Array2dGetNextRecord(F90Array2d*,void**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dCreate(void*,PetscDataType,int,int,int,int,F90Array2d*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dAccess(F90Array2d*,void**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dDestroy(F90Array2d*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dGetNextRecord(F90Array2d*,void**);
 
 /* 
-EXTERN PetscErrorCode F90Array1dGetInfo(F90Array1d*,PetscDataType*,int*,int*);
-EXTERN PetscErrorCode F90Array2dGetInfo(F90Array2d*,PetscDataType*,int*,int*,int*,int*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dGetInfo(F90Array1d*,PetscDataType*,int*,int*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dGetInfo(F90Array2d*,PetscDataType*,int*,int*,int*,int*);
 */
 
 /*

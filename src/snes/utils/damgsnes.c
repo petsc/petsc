@@ -1,7 +1,8 @@
+#define PETSCSNES_DLL
  
-#include "petscda.h"      /*I      "petscda.h"     I*/
+#include "petscda.h"      /*I      "petscda.h"    I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
-
+#include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
 
 /*
       period of -1 indicates update only on zeroth iteration of SNES
@@ -144,7 +145,7 @@ PetscErrorCode DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
           SNESSetFunction(), SNESSetJacobian()
 
 @*/
-PetscErrorCode SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   PetscErrorCode ierr;
   Vec            localX;
@@ -272,7 +273,7 @@ PetscErrorCode DMMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *f
 .seealso: DASetLocalFunction(), DASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 @*/
-PetscErrorCode SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DA             da = *(DA*) ptr;
   PetscErrorCode ierr;
@@ -317,7 +318,7 @@ PetscErrorCode SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatSt
 .seealso: DASetLocalFunction(), DASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 */
-PetscErrorCode SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DA             da = *(DA*) ptr;
   PetscErrorCode ierr;
@@ -360,7 +361,7 @@ PetscErrorCode SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,Mat
 .seealso: DASetLocalFunction(), DASetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
 
 */
-PetscErrorCode SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DA             da = *(DA*) ptr;
   PetscErrorCode ierr;
@@ -397,12 +398,12 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 }
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode NLFCreate_DAAD(NLF*);
-EXTERN PetscErrorCode NLFRelax_DAAD(NLF,MatSORType,PetscInt,Vec);
-EXTERN PetscErrorCode NLFDAADSetDA_DAAD(NLF,DA);
-EXTERN PetscErrorCode NLFDAADSetCtx_DAAD(NLF,void*);
-EXTERN PetscErrorCode NLFDAADSetResidual_DAAD(NLF,Vec);
-EXTERN PetscErrorCode NLFDAADSetNewtonIterations_DAAD(NLF,PetscInt);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFCreate_DAAD(NLF*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD(NLF,MatSORType,PetscInt,Vec);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFDAADSetDA_DAAD(NLF,DA);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFDAADSetCtx_DAAD(NLF,void*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFDAADSetResidual_DAAD(NLF,Vec);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFDAADSetNewtonIterations_DAAD(NLF,PetscInt);
 EXTERN_C_END
 
 #if defined(PETSC_HAVE_ADIC)
@@ -559,7 +560,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNESLocal()
 
 @*/
-PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/pc/impls/is/pcis.h"
 
@@ -7,7 +8,7 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCISSetUp"
-PetscErrorCode PCISSetUp(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
 {
   PC_IS           *pcis = (PC_IS*)(pc->data);
   Mat_IS          *matis = (Mat_IS*)pc->mat->data; 
@@ -204,7 +205,7 @@ PetscErrorCode PCISSetUp(PC pc)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCISDestroy"
-PetscErrorCode PCISDestroy(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCISDestroy(PC pc)
 {
   PC_IS          *pcis = (PC_IS*)(pc->data);
   PetscErrorCode ierr;
@@ -246,7 +247,7 @@ PetscErrorCode PCISDestroy(PC pc)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCISCreate"
-PetscErrorCode PCISCreate(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCISCreate(PC pc)
 {
   PC_IS *pcis = (PC_IS*)(pc->data);
 
@@ -296,7 +297,7 @@ PetscErrorCode PCISCreate(PC pc)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCIterSuApplySchur"
-PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
+PetscErrorCode PETSCKSP_DLLEXPORT PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   PetscErrorCode ierr;
   PetscScalar    m_one = -1.0;
@@ -333,7 +334,7 @@ PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, 
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCISScatterArrayNToVecB"
-PetscErrorCode PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
 {
   PetscInt       i, *idex;
   PetscErrorCode ierr;
@@ -383,7 +384,7 @@ PetscErrorCode PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMod
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCISApplyInvSchur"
-PetscErrorCode PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
+PetscErrorCode PETSCKSP_DLLEXPORT PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 {
   PetscErrorCode ierr;
   PC_IS          *pcis = (PC_IS*)(pc->data);

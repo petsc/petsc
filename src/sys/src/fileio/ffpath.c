@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -48,7 +49,7 @@
    Concepts: path^searching for file
 
 @*/
-PetscErrorCode PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mode)
+PetscErrorCode PETSC_DLLEXPORT PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mode)
 {
   char       *p,*cdir,trial[PETSC_MAX_PATH_LEN],*senv,*env;
   size_t     ln;
