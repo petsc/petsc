@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.25 1995/07/24 21:10:10 curfman Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.26 1995/07/26 15:27:19 curfman Exp curfman $";
 #endif
 
 /*
@@ -122,7 +122,7 @@ int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   if ( n == 0 ) {
-    itP->ttol   = MAX(itP->rtol*rnorm,itP->atol);
+    itP->ttol   = PETSCMAX(itP->rtol*rnorm,itP->atol);
     itP->rnorm0 = rnorm;
   }
   if ( rnorm <= itP->ttol )      return 1;

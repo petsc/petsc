@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.8 1995/07/17 20:39:55 bsmith Exp curfman $ */
+/* $Id: kspimpl.h,v 1.9 1995/07/21 17:46:04 curfman Exp curfman $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -71,11 +71,6 @@ struct _KSP {
 #define MONITOR(itP,rnorm,it) if (itP->monitor) { \
                                 (*itP->monitor)(itP,it,rnorm,itP->monP);\
                               }
-
-
-#if !defined(MAX)
-#define  MAX(a,b)           ((a) > (b) ? (a) : (b))
-#endif
 
 int KSPCreate_Richardson(KSP);
 int KSPCreate_Chebychev(KSP);
