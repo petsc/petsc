@@ -16,12 +16,12 @@ Additional Capabilities that PETSc Needs:
    - Fix documentation for matrices in manual (also AIJ man pages).  
      Fix help info for matrices.
 
-   - Design better ILU/ICC interface for mpirowbs format (so that PC 
+   * Design better ILU/ICC interface for mpirowbs format (so that PC 
      selection is correct and symmetric matrix can use ILU). Cannot do.
 
    - Fix bug in MatCreateMPIAIJ() for rectangular matrices (not square)
 
-   - Fix bug in MatTranspose_AIJ for rectangular matrices.
+   - Fix bug in MatTranspose_AIJ() for rectangular matrices.
 
    - Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix.
 
@@ -33,8 +33,12 @@ Additional Capabilities that PETSc Needs:
 
    - Do overlapping additive Schwarz for Seq and MPI AIJ.
 
+   - Complex versions of the Krylov subspace solvers
+
    - Test PETSc with LAM.
     
+   X Parallel vector to parallel vector scatter.
+
    X Fix KSPSetGMRESxxx routines:  possibly zap 
      KSPGMRESSetUseUnmodifiedGramSchmidt() in favor of just
      KSPGMRESSetOrthogRoutine().
@@ -51,6 +55,9 @@ Additional Capabilities that PETSc Needs:
    To do sometime soon:
   ----------------------
 
+   - Check why block Jacobi with ILU on blocks is slower per iteration then 
+     ILU global is for SeqAIJ matrices. See file docs/tex/pictures/bjacobi_8_ilu_0
+
    - Develop basic PETSc benchmark suite
 
    - Redue parts of inline for basic operations and improved performance.
@@ -58,7 +65,7 @@ Additional Capabilities that PETSc Needs:
 
    - Make PETSc work using include/mpiuni.h (i.e. no MPI needed)
 
-   - Parallel dense matrix implementation.
+   * Parallel dense matrix implementation.
 
    - Block compressed row storage format implementation.
 
@@ -71,19 +78,17 @@ Additional Capabilities that PETSc Needs:
 
    - Develop more thorough test program suite.
 
-   - Complex versions of the Krylov subspace solvers
-
-   - Make it possible to zoom in on viewed matrices.
-
    - Make special MatLUFactorNumeric_SeqAIJ() for identity permutation.
 
    * Improve history (-log_history) logging.
 
-   * In-place ILU(0) for AIJ (Done), Row matrix formats (not done, should we?)
+   X In-place ILU(0) for AIJ (Done), Row matrix formats (not done, should we?)
 
    * Upgrade tohtml and doc2tex
 
    * More nonlinear solvers, including those for unconstrained minimization
+
+   X Make it possible to zoom in on viewed matrices.
 
    X Add iterative refinement or some similar technique to Unmodified Gram-Schmidt
      code to cheaply stablize.
