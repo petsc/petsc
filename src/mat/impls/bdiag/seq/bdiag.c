@@ -19,7 +19,8 @@ PetscErrorCode MatDestroy_SeqBDiag(Mat A)
   if (!a->user_alloc) { /* Free the actual diagonals */
     for (i=0; i<a->nd; i++) {
       if (a->diag[i] > 0) {
-        ierr = PetscFree(a->diagv[i] + bs*bs*a->diag[i]);CHKERRQ(ierr);
+        PetscScalar *dummy = a->diagv[i] + bs*bs*a->diag[i]; 
+        ierr = PetscFree(dummy);CHKERRQ(ierr);
       } else {
         ierr = PetscFree(a->diagv[i]);CHKERRQ(ierr);
       }

@@ -49,6 +49,5 @@ typedef struct {
 #define LDZc	(bcgsl->ldzc)
 
 #define	DELTA	(bcgsl->delta)
-#define	ELL	(bcgsl->ell)
 
 #endif

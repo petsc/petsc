@@ -307,7 +307,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFree(a)         (*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__)
+#define PetscFree(a)   ((*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__) || (a = 0))
 EXTERN PetscErrorCode  (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
 EXTERN PetscErrorCode  (*PetscTrFree)(void*,int,const char[],const char[],const char[]);
 EXTERN PetscErrorCode  PetscSetMalloc(PetscErrorCode (*)(size_t,int,const char[],const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[],const char[]));

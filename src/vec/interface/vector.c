@@ -3137,12 +3137,14 @@ PetscErrorCode VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscIn
 PetscErrorCode VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
 {
   PetscErrorCode ierr;
+  void           *dummy;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidPointer(a,6);
   PetscValidType(x,1);
-  ierr = PetscFree(*a + mstart);CHKERRQ(ierr);
+  dummy = (void*)(*a + mstart);
+  ierr = PetscFree(dummy);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3362,12 +3364,14 @@ PetscErrorCode VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mst
 PetscErrorCode VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
 {
   PetscErrorCode ierr;
+  void           *dummy;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidPointer(a,8);
   PetscValidType(x,1);
-  ierr = PetscFree(*a + mstart);CHKERRQ(ierr);
+  dummy = (void*)(*a + mstart);
+  ierr = PetscFree(dummy);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
