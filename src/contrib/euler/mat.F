@@ -872,6 +872,284 @@ c  so no message-pasing is performed during these phases.
       return
       end
 
+c ----------------------------------------------------------------------
+c
+      integer function rbuild_direct( Fvec, f, sctype, dt, dr, dru, 
+     &                drv, drw, de, ltog, nloc,
+     &                fbcri1, fbcrui1, fbcrvi1, fbcrwi1, fbcei1,
+     &                fbcri2, fbcrui2, fbcrvi2, fbcrwi2, fbcei2,
+     &                fbcrj1, fbcruj1, fbcrvj1, fbcrwj1, fbcej1,
+     &                fbcrj2, fbcruj2, fbcrvj2, fbcrwj2, fbcej2,
+     &                fbcrk1, fbcruk1, fbcrvk1, fbcrwk1, fbcek1,
+     &                fbcrk2, fbcruk2, fbcrvk2, fbcrwk2, fbcek2 )
+c
+c  rbuild - Assembles residual vector directly (without using
+c           VecSetValues().
+c
+c  Input Parameters:
+c    Fvec   - PETSc vector data structure
+c    sctype - type of scaling
+c    dt     - pseudo-transient continuation parameter
+c    dr, dru, drv, drw, de - residual components
+c    ltog     - local-to-global mapping for distributed arrays
+c    nloc     - number of elements in ltog mapping
+c
+c  Output Parameter:
+c    Fvec      - fully assembled residual vector
+c
+c  Notes:
+c
+c   - All calls to VecSetValues() use 0-based indexing.  I.e., for
+c     a vector of dimension N, the indices are 0 through N-1,
+c     rather than the usual Fortran convention of 1 through N.
+c
+c   - Due to grid point reordering with DAs, we must always work
+c     with the local grid points, then transform them to the new
+c     global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
+c     We cannot work directly with the global numbers for the original
+c     uniprocessor grid!
+
+#include "param.h"
+#include "wing.h"
+#include "dt.h"
+#include "dvarbls.h"
+#include "ibcwork.h"
+
+
+      Double  val(5), f(0:*)
+      integer nc,i,j,k,jk,sctype,ijkx,ierr,ik
+      integer nloc,ltog(0:nloc-1),pos(5)
+      Vec     Fvec
+
+      rbuild_direct = 0
+      if ((bctype .ne. EXPLICIT) .and. (bctype .ne. IMPLICIT)) then
+        if (rank .eq. 0) 
+     &    write(6,*) 'rbuild_direct: invalid value of bctype flag!'
+        rbuild_direct = -1
+        return
+      endif
+      if (sctype .ne. DT_MULT .and. sctype .ne. DT_DIV) then
+        if (rank .eq. 0) 
+     &    write(6,*) 'rbuild_direct: invalid value of sctype flag!'
+        rbuild_direct = -1
+        return
+      endif
+
+      nc = 5
+
+c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c  Implicit boundary conditions for i=1, j=1, k=1
+c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      if (bctype .eq. IMPLICIT) then
+
+      if (zsf1 .eq. 1) then
+        k=1
+        do 100 j=ysf2,yef01
+           jk = (j-ysf)*xm + (k-zsf)*xm*ym
+        do 100 i=xsf2,xef01
+           ijkx = nc * (i-xsf + jk)
+           f(ijkx)   = fbcrk1(i,j) 
+           f(ijkx+1) = fbcruk1(i,j)
+           f(ijkx+2) = fbcrvk1(i,j)
+           f(ijkx+3) = fbcrwk1(i,j)
+           f(ijkx+4) = fbcek1(i,j)
+ 100    continue
+      endif
+
+      if (ysf1 .eq. 1) then
+         j=1
+         do 200 k=zsf2,zef01
+           jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
+         do 200 i=xsf2,xef01
+           ijkx = nc * (i-gxsf + jk)
+           IF (K.GT.KTIP) GO TO 123
+           IF (I.LE.ITL.OR.I.GT.ITU) GO TO 123
+           pos(1) = ltog(ijkx)
+           pos(2) = ltog(ijkx+1)
+           pos(3) = ltog(ijkx+2)
+           pos(4) = ltog(ijkx+3)
+           pos(5) = ltog(ijkx+4)
+           val(1) = fbcrj1(i,k)
+           val(2) = fbcruj1(i,k)
+           val(3) = fbcrvj1(i,k)
+           val(4) = fbcrwj1(i,k)
+           val(5) = fbcej1(i,k)
+           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
+           if (ierr .ne. 0) then
+              write(6,*) 'rbuild_direct:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
+              rbuild_direct = -1
+              return
+           endif
+
+           goto 200
+ 123       continue
+
+           pos(1) = ltog(ijkx)
+           pos(2) = ltog(ijkx+1)
+           pos(3) = ltog(ijkx+2)
+           pos(4) = ltog(ijkx+3)
+           pos(5) = ltog(ijkx+4)
+           val(1) = fbcrj1(i,k)
+           val(2) = fbcruj1(i,k)
+           val(3) = fbcrvj1(i,k)
+           val(4) = fbcrwj1(i,k)
+           val(5) = fbcej1(i,k)
+           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
+           if (ierr .ne. 0) then
+              write(6,*) 'rbuild_direct:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
+              rbuild_direct = -1
+              return
+           endif
+ 200    continue
+      endif
+
+      if (xsf1 .eq. 1) then
+        i=1
+        do 300 k=zsf2,zef01
+           ik = i-gxsf + (k-gzsf)*gxm*gym
+        do 300 j=ysf2,yef01
+           ijkx = nc * (ik + (j-gysf)*gxm)
+           pos(1) = ltog(ijkx)
+           pos(2) = ltog(ijkx+1)
+           pos(3) = ltog(ijkx+2)
+           pos(4) = ltog(ijkx+3)
+           pos(5) = ltog(ijkx+4)
+           val(1) = fbcri1(j,k)
+           val(2) = fbcrui1(j,k)
+           val(3) = fbcrvi1(j,k)
+           val(4) = fbcrwi1(j,k)
+           val(5) = fbcei1(j,k)
+           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
+           if (ierr .ne. 0) then
+              write(6,*) 'rbuild_direct:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
+              rbuild_direct = -1
+              return
+           endif
+ 300     continue
+      endif
+
+      endif
+
+c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c  Interior grid points i=2,ni; j=2,nj; k=2,nk
+c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      if (sctype .eq. DT_MULT) then
+         do 400 k=zsf2,zef01
+         do 400 j=ysf2,yef01
+             jk = (j-ysf)*xm + (k-zsf)*xm*ym
+         do 400 i=xsf2,xef01
+             ijkx      = nc * (i-xsf + jk)
+             f(ijkx)   = dr(i,j,k)*dt(i,j,k)
+             f(ijkx+1) = dru(i,j,k)*dt(i,j,k)
+             f(ijkx+2) = drv(i,j,k)*dt(i,j,k)
+             f(ijkx+3) = drw(i,j,k)*dt(i,j,k)
+             f(ijkx+4) = de(i,j,k)*dt(i,j,k)
+ 400     continue
+      else if (sctype .eq. DT_DIV) then
+         do 450 k=zsf2,zef01
+         do 450 j=ysf2,yef01
+             jk = (j-ysf)*xm + (k-zsf)*xm*ym
+         do 450 i=xsf2,xef01
+             ijkx   = nc * (i-xsf + jk)
+             f(ijkx)   = dr(i,j,k)
+             f(ijkx+1) = dru(i,j,k)
+             f(ijkx+2) = drv(i,j,k)
+             f(ijkx+3) = drw(i,j,k)
+             f(ijkx+4) = de(i,j,k)
+ 450     continue
+      else
+        if (rank .eq. 0) write(6,*) 'rbuild_direct: invalid sctype!'
+        rbuild_direct = -1
+        return
+      endif
+
+c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c  Implicit boundary conditions for i=ni1, j=nj1, k=nk1
+c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      if (bctype .eq. IMPLICIT) then
+
+      if (xef01 .eq. ni) then
+        i=ni1
+        do 500 k=zsf2,zef01
+           ik = i-gxsf + (k-gzsf)*gxm*gym
+        do 500 j=ysf2,yef01
+           ijkx = nc * (ik + (j-gysf)*gxm)
+           pos(1) = ltog(ijkx)
+           pos(2) = ltog(ijkx+1)
+           pos(3) = ltog(ijkx+2)
+           pos(4) = ltog(ijkx+3)
+           pos(5) = ltog(ijkx+4)
+           val(1) = fbcri2(j,k)
+           val(2) = fbcrui2(j,k)
+           val(3) = fbcrvi2(j,k)
+           val(4) = fbcrwi2(j,k)
+           val(5) = fbcei2(j,k)
+           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
+           if (ierr .ne. 0) then
+              write(6,*) 'rbuild_direct:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
+              rbuild_direct = -1
+              return
+           endif
+ 500    continue
+      endif
+
+      if (yef01 .eq. nj) then
+        j=nj1
+        do 600 k=zsf2,zef01
+           jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
+        do 600 i=xsf2,xef01
+           ijkx = nc * (i-gxsf + jk)
+           pos(1) = ltog(ijkx)
+           pos(2) = ltog(ijkx+1)
+           pos(3) = ltog(ijkx+2)
+           pos(4) = ltog(ijkx+3)
+           pos(5) = ltog(ijkx+4)
+           val(1) = fbcrj2(i,k)
+           val(2) = fbcruj2(i,k)
+           val(3) = fbcrvj2(i,k)
+           val(4) = fbcrwj2(i,k)
+           val(5) = fbcej2(i,k)
+           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
+           if (ierr .ne. 0) then
+              write(6,*) 'rbuild_direct:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
+              rbuild_direct = -1
+              return
+           endif
+ 600    continue
+      endif
+
+      if (zef01 .eq. nk) then
+        k=nk1
+        do 700 j=ysf2,yef01
+           jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
+        do 700 i=xsf2,xef01
+           ijkx = nc * (i-gxsf + jk)
+           pos(1) = ltog(ijkx)
+           pos(2) = ltog(ijkx+1)
+           pos(3) = ltog(ijkx+2)
+           pos(4) = ltog(ijkx+3)
+           pos(5) = ltog(ijkx+4)
+           val(1) = fbcrk2(i,j)
+           val(2) = fbcruk2(i,j)
+           val(3) = fbcrvk2(i,j)
+           val(4) = fbcrwk2(i,j)
+           val(5) = fbcek2(i,j)
+           call VecSetValues(Fvec,5,pos,val,INSERT_VALUES,ierr)
+           if (ierr .ne. 0) then
+              write(6,*) 'rbuild_direct:rank,k,j,i,ijkx = ',rank,k,j,i,ijkx
+              rbuild_direct = -1
+              return
+           endif
+ 700    continue
+      endif
+      endif
+
+      return
+      end
+
 c -------------------------------------------------------------------
 
       integer function nzmat(format,nc,nc_block,istart,iend,is1,
