@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: sles.c,v 1.10 1995/03/06 04:17:28 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"
@@ -157,17 +157,21 @@ int SLESGetPC(SLES sles,PC *pc)
 
 #include "mat/matimpl.h"
 /*@
-    SLESSetMat - Sets the matrix to use for the sles solver.
+    SLESSetOperators - Sets the matrix to use for the sles solver.
 
   Input Parameters:
 .   sles - the sles context
 .   mat - the matrix to use
+.   pmat - alternative matrix to use in constructing preconditioner
+.   flag - use 0 or MAT_SAME_NONZERO_PATTERN
+
 @*/
-int SLESSetMat(SLES sles,Mat mat)
+int SLESSetOperators(SLES sles,Mat mat,Mat pmat,int flag)
 {
   VALIDHEADER(sles,SLES_COOKIE);
   VALIDHEADER(mat,MAT_COOKIE);
-  PCSetMat(sles->pc,mat);
+  VALIDHEADER(pmat,MAT_COOKIE);
+  PCSetOperators(sles->pc,mat,pmat,flag);
   return 0;
 }
 

@@ -15,7 +15,6 @@ int main(int argc,char **argv)
   int           n = 5, ierr, idx2[3] = {0,2,3}, idx1[3] = {0,1,2};
   int           numtids,mytid,i;
   Scalar        mone = -1.0, value;
-  double        norm;
   Vec           x,y;
   IS            is1,is2;
   VecScatterCtx ctx = 0;

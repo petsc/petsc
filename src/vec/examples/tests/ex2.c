@@ -12,9 +12,8 @@ static char help[] = "Tests vector scatter gathers\n";
 int main(int argc,char **argv)
 {
   int           n = 5, ierr, idx1[2] = {0,3}, idx2[2] = {1,4};
-  Scalar        one = 1.0, two = 2.0, three = 3.0, dots[3],dot;
-  double        norm;
-  Vec           x,y,w,*z;
+  Scalar        one = 1.0, two = 2.0;
+  Vec           x,y;
   IS            is1,is2;
   VecScatterCtx ctx = 0;
 

@@ -17,6 +17,7 @@ static char help[] = "           Test of Multigrid Code\n\
 #include <stdio.h>
 #include "draw.h"
 #include "mg.h"
+#include "options.h"
 
 int  residual(Mat,Vec,Vec,Vec);
 int  gauss_seidel(void *,Vec,Vec,Vec,int);
@@ -72,7 +73,7 @@ int main(int Argc, char **Args)
   ierr = MGSetMethod(pcmg,am); CHKERR(ierr);
 
   MGGetCoarseSolve(pcmg,&csles);
-  SLESSetMat(csles,cmat);
+  SLESSetOperators(csles,cmat,cmat,0);
   SLESGetPC(csles,&pc); PCSetMethod(pc,PCDIRECT);
   SLESGetKSP(csles,&ksp); KSPSetMethod(ksp,KSPPREONLY);
 
@@ -90,7 +91,7 @@ int main(int Argc, char **Args)
       MGGetSmoother(pcmg,levels - 1 - i,&sles[i]);
       SLESGetPC(sles[i],&pc);
       PCSetMethod(pc,PCSHELL);
-      SLESSetMat(sles[i],mat[i]); /* this is a dummy! */
+      SLESSetOperators(sles[i],mat[i],mat[i],0); /* this is a dummy! */
       PCShellSetApplyRichardson(pc,gauss_seidel,(void *)0);
       if (use_jacobi) { PCShellSetApplyRichardson(pc,jacobi,(void *)0); }
       SLESGetKSP(sles[i],&ksp);
@@ -113,7 +114,7 @@ int main(int Argc, char **Args)
   /* create matrix multiply for finest level */
   MatShellCreate(N[0],N[0],(void *)0,&fmat);
   MatShellSetMult(fmat,amult);
-  SLESSetMat(slesmg,fmat);
+  SLESSetOperators(slesmg,fmat,fmat,0);
 
   CalculateSolution(N[0],&solution);
   CalculateRhs(B[levels-1]);
@@ -163,7 +164,7 @@ int residual(Mat mat,Vec bb,Vec xx,Vec rr)
 int amult(void *ptr,Vec xx,Vec yy)
 {
   int    i, n1;
-  Scalar *y,*x,*r;
+  Scalar *y,*x;
 
   VecGetSize(xx,&n1);
   VecGetArray(xx,&x); VecGetArray(yy,&y);
@@ -301,7 +302,6 @@ int CalculateSolution(int n,Vec *solution)
 
 int CalculateError(Vec solution,Vec u,Vec r,double *e)
 {
-  int    i;
   Scalar mone = -1.0;
 
   VecNorm(r,e+2);

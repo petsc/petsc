@@ -12,10 +12,9 @@ static char help[] = "Scatters from a parallel vector to a sequential vector.\n"
 
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, idx2[3] = {0,2,3};
+  int           ierr;
   int           numtids,mytid,i,N;
   Scalar        mone = -1.0, value;
-  double        norm;
   Vec           x,y;
   IS            is1,is2;
   VecScatterCtx ctx = 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: eisen.c,v 1.4 1995/03/06 04:15:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -35,6 +35,11 @@ static int PCiPre(PC pc,KSP ksp)
   PCiESOR *jac = (PCiESOR *) pc->data;
   Vec     b;
   int     ierr;
+
+  if (pc->mat != pc->pmat) {
+    SETERR(1,"Eisenstat preconditioner cannot have different mat from pmat"); 
+  }
+ 
   /* swap shell matrix and true matrix */
   jac->A    = pc->mat;
   pc->mat   = jac->shell;
@@ -113,6 +118,7 @@ int PCiESORCreate(PC pc)
   pc->destroy   = PCiESORDestroy;
   pc->type      = PCESOR;
   pc->data      = (void *) jac;
+  pc->setup     = 0;
   jac->omega    = 1.0;
   jac->b        = 0;
   ierr = MatShellCreate(0,0,(void*) pc,&jac->shell); CHKERR(ierr);

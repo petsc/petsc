@@ -24,7 +24,7 @@ int main(int argc,char **args)
   ierr = VecCreateSequential(n,&u);		CHKERR(ierr);
   ierr = PCSetVector(pc,u);			CHKERR(ierr);
   ierr = MatCreateSequentialAIJ(n,n,3,0,&mat);	CHKERR(ierr);
-  ierr = PCSetMat(pc,mat);			CHKERR(ierr);
+  ierr = PCSetOperators(pc,mat,mat,0);		CHKERR(ierr);
 
   ierr = PCSetUp(pc);				CHKERR(ierr);
 

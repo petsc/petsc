@@ -11,6 +11,10 @@ typedef struct _Mat*           Mat;
 typedef struct _MatScatterCtx* MatScatterCtx;
 
 
+#define MATDENSESEQ  1
+#define MATAIJSEQ    2
+#define MATAIJMPI    3
+
 extern int MatCreateSequentialDense(int,int,Mat*);
 extern int MatCreateSequentialAIJ(int,int,int,int *,Mat*);
 extern int MatCreateMPIAIJ(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
@@ -63,8 +67,8 @@ extern int MatCholeskyFactorNumeric(Mat,Mat*);
 
 extern int MatSolve(Mat,Vec,Vec);
 extern int MatSolveAdd(Mat,Vec,Vec,Vec);
-extern int MatSolveTran(Mat,Vec,Vec);
-extern int MatSolveTranAdd(Mat,Vec,Vec,Vec);
+extern int MatSolveTrans(Mat,Vec,Vec);
+extern int MatSolveTransAdd(Mat,Vec,Vec,Vec);
 
 #define SOR_FORWARD_SWEEP            1
 #define SOR_BACKWARD_SWEEP           2

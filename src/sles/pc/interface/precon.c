@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: precon.c,v 1.9 1995/03/06 04:12:38 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -157,6 +157,11 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
   return (*pc->applyrich)(pc,x,y,w,its);
 }
 
+/* 
+      a setupcall of 0 indicates never setup, 
+                     1 needs to be resetup,
+                     2 does not need any changes.
+*/
 /*@
     PCSetUp - Prepares for the use of a preconditioner.
 
@@ -165,25 +170,39 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 @*/
 int PCSetUp(PC pc)
 {
-  if (pc->setupcalled) return 0;
+  int ierr;
+  if (pc->setupcalled > 1) return 0;
   if (!pc->vec) {SETERR(1,"Vector must be set before calling PCSetUp");}
   if (!pc->mat) {SETERR(1,"Matrix must be set before calling PCSetUp");}
-  pc->setupcalled = 1;
-  if (pc->setup) return (*pc->setup)(pc);
-  else           return 0;
+  if (pc->setup) { ierr = (*pc->setup)(pc); CHKERR(ierr);}
+  pc->setupcalled = 2;
+  return 0;
 }
 
 /*@
-    PCSetMat - Set the matrix associated with the preconditioner.
+    PCSetOperators - Set the matrix associated with the linear system and 
+          a (possibly) different one associated with the preconditioner.
 
   Input Parameters:
 .  pc - the preconditioner context
 .  mat - the matrix
+.  pre - matrix to be used in constructing preconditioner, usually the same
+.  flags - use either 0 or MAT_SAME_NONZERO_PATTERN
+
 @*/
-int PCSetMat(PC pc,Mat mat)
+int PCSetOperators(PC pc,Mat mat,Mat pmat,int flag)
 {
   VALIDHEADER(pc,PC_COOKIE);
-  pc->mat = mat;
+  pc->mat         = mat;
+  if (pc->setupcalled == 0 && !pmat) SETERR(1,"Must set preconditioner");
+  if (pc->setupcalled && pmat) {
+    pc->pmat        = pmat;
+    pc->setupcalled = 1;  
+  }
+  else if (pc->setupcalled == 0) {
+    pc->pmat = pmat;
+  }
+  pc->flag        = flag;
   return 0;
 }
 /*@

@@ -12,10 +12,9 @@ static char help[] = "Tests parallel vector assembly\n";
 
 int main(int argc,char **argv)
 {
-  int          n = 5, ierr, idx1[2] = {0,3},numtids,mytid;
-  Scalar       one = 1.0, two = 2.0, three = 3.0, dots[3],dot;
-  double       norm;
-  Vec          x,y,w,*z;
+  int          n = 5, ierr, numtids,mytid;
+  Scalar       one = 1.0, two = 2.0, three = 3.0;
+  Vec          x,y;
   int          idx;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);

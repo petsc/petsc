@@ -41,6 +41,7 @@
 
 extern void *PetscLow,*PetscHigh;
 
+#if defined(PETSC_MALLOC) && !defined(PETSC_INSIGHT)
 #define VALIDHEADER(h,ck)                             \
   {if (!h) {SETERR(1,"Null Object");}                 \
   if (PetscLow > (void *) h || PetscHigh < (void *)h){\
@@ -54,6 +55,18 @@ extern void *PetscLow,*PetscHigh;
       SETERR(2,"Invalid or Wrong Object");            \
     }                                                 \
   }}
+#else
+#define VALIDHEADER(h,ck)                             \
+  {if (!h) {SETERR(1,"Null Object");}                 \
+  if ((h)->cookie != ck) {                            \
+    if ((h)->cookie == FREEDHEADER) {                 \
+      SETERR(1,"Object already free");                \
+    }                                                 \
+    else {                                            \
+      SETERR(2,"Invalid or Wrong Object");            \
+    }                                                 \
+  }}
+#endif
 
 #define CHKSAME(a,b) \
   if ((a)->type != (b)->type) SETERR(3,"Objects not of same type");

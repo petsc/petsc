@@ -13,9 +13,8 @@ static char help[] = "A scatter with a stride and general index set\n";
 int main(int argc,char **argv)
 {
   int           n = 6, ierr, loc[6] = {0,1,2,3,4,5};
-  Scalar        one = 1.0, two = 2.0, vals[6] = {10,11,12,13,14,15};
-  double        norm;
-  Vec           x,y,w,*z;
+  Scalar        two = 2.0, vals[6] = {10,11,12,13,14,15};
+  Vec           x,y;
   IS            is1,is2;
   VecScatterCtx ctx = 0;
 

@@ -29,10 +29,10 @@ int FormElementRhs(double x, double y, double H,Scalar *r)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i,j, m = 5, mytid,numtids, N, start,end,M,its;
+  int         i, m = 5, mytid,numtids, N, start,end,M,its;
   Scalar      val, zero = 0.0, one = 1.0, none = -1.0,Ke[16],r[4];
   double      x,y,h,norm;
-  int         I, J, ierr,idx[4],count,*rows;
+  int         ierr,idx[4],count,*rows;
   Vec         u,ustar,b;
   SLES        sles;
   KSP         ksp;
@@ -107,12 +107,13 @@ int main(int argc,char **args)
      VecSetValues(b,1,&rows[i],&val,InsertValues); 
   }    
   FREE(rows);
-  VecBeginAssembly(u); VecEndAssembly(u);
-  VecBeginAssembly(b); VecEndAssembly(b);
+  ierr = VecBeginAssembly(u);  CHKERR(ierr);
+  ierr = VecEndAssembly(u); CHKERR(ierr);
+  ierr = VecBeginAssembly(b); CHKERR(ierr); 
+  ierr = VecEndAssembly(b); CHKERR(ierr);
 
   ierr = MatZeroRows(C,is,&one); CHKERR(ierr);
   ISDestroy(is);
-
 
   { Mat A;
   ierr = MatCopy(C,&A); CHKERR(ierr);
@@ -121,15 +122,13 @@ int main(int argc,char **args)
   ierr = MatDestroy(A); CHKERR(ierr);
   }
 
-/* MatView(C,0); VecView(b,0); */
-
   /* solve linear system */
-  if (ierr = SLESCreate(&sles)) SETERR(ierr,0);
-  if (ierr = SLESSetMat(sles,C)) SETERR(ierr,0);
-  if (ierr = SLESSetFromOptions(sles)) SETERR(ierr,0);
+  if ((ierr = SLESCreate(&sles))) SETERR(ierr,0);
+  if ((ierr = SLESSetOperators(sles,C,C,0))) SETERR(ierr,0);
+  if ((ierr = SLESSetFromOptions(sles))) SETERR(ierr,0);
   SLESGetKSP(sles,&ksp);
   KSPSetInitialGuessNonZero(ksp);
-  if (ierr = SLESSolve(sles,b,u,&its)) SETERR(ierr,0);
+  if ((ierr = SLESSolve(sles,b,u,&its))) SETERR(ierr,0);
 
   /* check error */
   VecGetOwnershipRange(ustar,&start,&end);
@@ -141,8 +140,8 @@ int main(int argc,char **args)
   VecBeginAssembly(ustar); VecEndAssembly(ustar);
 /*VecView(u,0); */
 /*VecView(ustar,0); */
-  if (ierr = VecAXPY(&none,ustar,u)) SETERR(ierr,0);
-  if (ierr = VecNorm(u,&norm)) SETERR(ierr,0);
+  if ((ierr = VecAXPY(&none,ustar,u))) SETERR(ierr,0);
+  if ((ierr = VecNorm(u,&norm))) SETERR(ierr,0);
   MPE_printf(MPI_COMM_WORLD,"Norm of error %g Number iterations %d\n",norm*h,its);
 
   sleep(2);

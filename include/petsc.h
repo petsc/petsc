@@ -3,10 +3,12 @@
 #define __PETSC_PACKAGE
 
 #include <stdio.h>
+#if defined(PARCH_sun4)
 int fprintf(FILE*,char*,...);
 int printf(char*,...);
 int fflush(FILE*);
 int fclose(FILE*);
+#endif
 
 /* MPI interface */
 #include "mpi.h"
@@ -55,6 +57,7 @@ extern int MPE_Set_display(MPI_Comm,char **);
 #if !defined(__DIR__)
 #define __DIR__ 0
 #endif
+#if defined(PETSC_DEBUG)
 #define SETERR(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
 #define SETERRA(n,s)    \
                 {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,s,n);\
@@ -63,7 +66,16 @@ extern int MPE_Set_display(MPI_Comm,char **);
 #define CHKERRA(n)      {if (n) SETERRA(n,(char *)0);}
 #define CHKPTR(p)       if (!p) SETERR(1,"No memory");
 #define CHKPTRA(p)      if (!p) SETERRA(1,"No memory");
-
+#else
+#define SETERR(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
+#define SETERRA(n,s)    \
+                {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,s,n);\
+                 MPI_Abort(MPI_COMM_WORLD,_ierr);}
+#define CHKERR(n)       {if (n) SETERR(n,(char *)0);}
+#define CHKERRA(n)      {if (n) SETERRA(n,(char *)0);}
+#define CHKPTR(p)       if (!p) SETERR(1,"No memory");
+#define CHKPTRA(p)      if (!p) SETERRA(1,"No memory");
+#endif
 
 typedef struct _PetscObject* PetscObject;
 
@@ -71,6 +83,7 @@ typedef struct _Viewer*      Viewer;
 #define ViewerPrintf         (void *) 0
 #define VIEWER_COOKIE        0x123123
 #define MATLAB_VIEWER        1
+extern int ViewerMatlabOpen(char*,int,Viewer *);
 
 /* useful Petsc routines (used often) */
 extern int  PetscInitialize(int*,char***,char*,char*);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: direct.c,v 1.6 1995/03/06 04:15:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: direct.c,v 1.7 1995/03/06 20:10:59 curfman Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -93,14 +93,19 @@ static int PCiDirectSetup(PC pc)
   IS        row,col;
   int       ierr;
   PCiDirect *dir = (PCiDirect *) pc->data;
-  ierr = MatGetReordering(pc->mat,dir->ordering,&row,&col); CHKERR(ierr);
+  ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERR(ierr);
   if (dir->inplace) {
-    if ((ierr = MatLUFactor(pc->mat,row,col))) SETERR(ierr,0);
+    if ((ierr = MatLUFactor(pc->pmat,row,col))) SETERR(ierr,0);
   }
   else {
-    if ((ierr = MatLUFactorSymbolic(pc->mat,row,col,&dir->fact)))
-      SETERR(ierr,0);
-    if ((ierr = MatLUFactorNumeric(pc->mat,&dir->fact))) SETERR(ierr,0);
+    if (!pc->setupcalled) {
+      ierr = MatLUFactorSymbolic(pc->pmat,row,col,&dir->fact); CHKERR(ierr);
+    }
+    else if (!(pc->flag & MAT_SAME_NONZERO_PATTERN)) { 
+      ierr = MatDestroy(dir->fact); CHKERR(ierr);
+      ierr = MatLUFactorSymbolic(pc->pmat,row,col,&dir->fact); CHKERR(ierr);
+    }
+    ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERR(ierr);
   }
   return 0;
 }
@@ -118,7 +123,7 @@ static int PCiDirectDestroy(PetscObject obj)
 static int PCiDirectApply(PC pc,Vec x,Vec y)
 {
   PCiDirect *dir = (PCiDirect *) pc->data;
-  if (dir->inplace) return MatSolve(pc->mat,x,y);
+  if (dir->inplace) return MatSolve(pc->pmat,x,y);
   else  return MatSolve(dir->fact,x,y);
 }
 

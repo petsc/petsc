@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: jacobi.c,v 1.5 1995/03/06 04:13:40 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -12,11 +12,13 @@ typedef struct {
 
 int PCiJacobiSetup(PC pc)
 {
-  int ierr;
+  int       ierr;
   PCiJacobi *jac = (PCiJacobi *) pc->data;
   Vec       diag;
-  if ((ierr = VecCreate(pc->vec,&diag))) SETERR(ierr,0);
-  if ((ierr = MatGetDiagonal(pc->mat,diag))) SETERR(ierr,0);
+  if (pc->setupcalled == 0) {
+    if ((ierr = VecCreate(pc->vec,&diag))) SETERR(ierr,0);
+  }
+  if ((ierr = MatGetDiagonal(pc->pmat,diag))) SETERR(ierr,0);
   if ((ierr = VecReciprocal(diag))) SETERR(ierr,0);
   jac->diag = diag;
   return 0;

@@ -14,10 +14,10 @@
 int main(int argc,char **args)
 {
   Mat       mat;
-  Vec       b,ustar,u;
+  Vec       b,u;
   PC        pc;
-  int       ierr, n = 5, i, its, col[3];
-  Scalar    value[3], one = 1.0, zero = 0.0;
+  int       ierr, n = 5, i, col[3];
+  Scalar    value[3], zero = 0.0;
 
   PetscInitialize(&argc,&args,0,0);
   ierr = VecCreateSequential(n,&b);     CHKERR(ierr);
@@ -39,7 +39,7 @@ int main(int argc,char **args)
   ierr = PCCreate(&pc); CHKERR(ierr);
   ierr = PCSetMethod(pc,PCSOR); CHKERR(ierr);
   PCSetFromOptions(pc);
-  ierr = PCSetMat(pc,mat); CHKERR(ierr);
+  ierr = PCSetOperators(pc,mat,mat,0); CHKERR(ierr);
   ierr = PCSetVector(pc,u);   CHKERR(ierr);
   ierr = PCSetUp(pc); CHKERR(ierr);
 

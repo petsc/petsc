@@ -48,7 +48,7 @@ int main(int argc,char **args)
   ierr = PCCreate(&pc); CHKERR(ierr);
   ierr = PCSetMethod(pc,PCNONE); CHKERR(ierr);
   PCSetFromOptions(pc);
-  ierr = PCSetMat(pc,mat); CHKERR(ierr);
+  ierr = PCSetOperators(pc,mat,mat,0); CHKERR(ierr);
   ierr = PCSetVector(pc,u);   CHKERR(ierr);
   ierr = PCSetUp(pc); CHKERR(ierr);
 
@@ -57,7 +57,7 @@ int main(int argc,char **args)
   KSPSetFromOptions(ksp);
   ierr = KSPSetSolution(ksp,u); CHKERR(ierr);
   ierr = KSPSetRhs(ksp,b); CHKERR(ierr);
-  ierr = PCSetMat(pc,mat); CHKERR(ierr);
+  ierr = PCSetOperators(pc,mat,mat,0); CHKERR(ierr);
   ierr = KSPSetBinv(ksp,pc); CHKERR(ierr);
   ierr = KSPSetUp(ksp); CHKERR(ierr);
 

@@ -8,8 +8,8 @@ static char help[] = "Passes sparse matrix to matlab";
 
 int main(int argc,char **args)
 {
-  int     ierr,i,m = 4,n = 5, its;
-  Scalar  none = -1.0, one = 1.0;
+  int     ierr,m = 4,n = 5;
+  Scalar  one = 1.0;
   Vec     x;
   Mat     A;
   Stencil stencil;
@@ -23,7 +23,7 @@ int main(int argc,char **args)
 
   ierr = ViewerMatlabOpen("eagle",-1,&viewer); CHKERR(ierr);
 
-  if (ierr = MatCreateInitialMatrix(m*n,m*n,&A)) SETERR(ierr,0);
+  if ((ierr = MatCreateInitialMatrix(m*n,m*n,&A))) SETERR(ierr,0);
   ierr = GridCreateUniform2d(MPI_COMM_WORLD,m,0.0,1.0,n,0.0,1.0,&grid);
   ierr = StencilCreate(STENCIL_Uxx,&stencil); CHKERR(ierr);
   StencilAddStage(stencil,grid,0,A); CHKERR(ierr);

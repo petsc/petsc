@@ -17,12 +17,12 @@ int main(int argc,char **args)
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-n",&n);
 
-  if (ierr = VecCreateInitialVector(n,&x)) SETERR(ierr,0);
-  if (ierr = VecCreate(x,&b)) SETERR(ierr,0);
-  if (ierr = VecCreate(x,&u)) SETERR(ierr,0);
-  if (ierr = VecSet(&one,u)) SETERR(ierr,0);
+  if ((ierr = VecCreateInitialVector(n,&x))) SETERR(ierr,0);
+  if ((ierr = VecCreate(x,&b))) SETERR(ierr,0);
+  if ((ierr = VecCreate(x,&u))) SETERR(ierr,0);
+  if ((ierr = VecSet(&one,u))) SETERR(ierr,0);
 
-  if (ierr = MatCreateInitialMatrix(n,n,&A)) SETERR(ierr,0);
+  if ((ierr = MatCreateInitialMatrix(n,n,&A))) SETERR(ierr,0);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -35,16 +35,16 @@ int main(int argc,char **args)
   ierr = MatBeginAssembly(A); CHKERR(ierr);
   ierr = MatEndAssembly(A); CHKERR(ierr);
   
-  if (ierr = MatMult(A,u,b)) SETERR(ierr,0);
+  if ((ierr = MatMult(A,u,b))) SETERR(ierr,0);
 
-  if (ierr = SLESCreate(&sles)) SETERR(ierr,0);
-  if (ierr = SLESSetMat(sles,A)) SETERR(ierr,0);
-  if (ierr = SLESSetFromOptions(sles)) SETERR(ierr,0);
-  if (ierr = SLESSolve(sles,b,x,&its)) SETERR(ierr,0);
+  if ((ierr = SLESCreate(&sles))) SETERR(ierr,0);
+  if ((ierr = SLESSetOperators(sles,A,A,0))) SETERR(ierr,0);
+  if ((ierr = SLESSetFromOptions(sles))) SETERR(ierr,0);
+  if ((ierr = SLESSolve(sles,b,x,&its))) SETERR(ierr,0);
 
   /* check error */
-  if (ierr = VecAXPY(&none,u,x)) SETERR(ierr,0);
-  if (ierr = VecNorm(x,&norm)) SETERR(ierr,0);
+  if ((ierr = VecAXPY(&none,u,x))) SETERR(ierr,0);
+  if ((ierr = VecNorm(x,&norm))) SETERR(ierr,0);
   printf("Norm of error %g Iterations %d\n",norm,its);
  
   VecDestroy(x); VecDestroy(u); MatDestroy(A); SLESDestroy(sles);

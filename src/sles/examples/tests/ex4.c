@@ -25,10 +25,10 @@ int FormElementRhs(double x, double y, double H,Scalar *r)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i,j, m = 2,  N, start,end,M,its;
+  int         i, m = 2,  N,M,its;
   Scalar      val, zero = 0.0,norm, one = 1.0, none = -1.0,Ke[16],r[4];
   double      x,y,h;
-  int         I, J, ierr,idx[4],count,*rows;
+  int         ierr,idx[4],count,*rows;
   Vec         u,ustar,b;
   SLES        sles;
   KSP         ksp;
@@ -106,12 +106,12 @@ int main(int argc,char **args)
   ISDestroy(is);
 
   /* solve linear system */
-  if (ierr = SLESCreate(&sles)) SETERR(ierr,0);
-  if (ierr = SLESSetMat(sles,C)) SETERR(ierr,0);
-  if (ierr = SLESSetFromOptions(sles)) SETERR(ierr,0);
+  if ((ierr = SLESCreate(&sles))) SETERR(ierr,0);
+  if ((ierr = SLESSetOperators(sles,C,C,0))) SETERR(ierr,0);
+  if ((ierr = SLESSetFromOptions(sles))) SETERR(ierr,0);
   SLESGetKSP(sles,&ksp);
   KSPSetInitialGuessNonZero(ksp);
-  if (ierr = SLESSolve(sles,b,u,&its)) SETERR(ierr,0);
+  if ((ierr = SLESSolve(sles,b,u,&its))) SETERR(ierr,0);
 
   /* check error */
   for ( i=0; i<N; i++ ) {
@@ -122,8 +122,8 @@ int main(int argc,char **args)
   VecBeginAssembly(ustar); VecEndAssembly(ustar);
 /*VecView(u,0); */
 /*VecView(ustar,0); */
-  if (ierr = VecAXPY(&none,ustar,u)) SETERR(ierr,0);
-  if (ierr = VecNorm(u,&norm)) SETERR(ierr,0);
+  if ((ierr = VecAXPY(&none,ustar,u))) SETERR(ierr,0);
+  if ((ierr = VecNorm(u,&norm))) SETERR(ierr,0);
   printf("Norm of error %g Number iterations %d\n",norm*h,its);
 
   sleep(2);

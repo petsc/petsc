@@ -51,14 +51,14 @@ int main(int argc,char **args)
   /* compute right hand side */
   ierr = MatMult(C,u,b); CHKERR(ierr);
 
-  if (ierr = SLESCreate(&sles)) SETERR(ierr,0);
-  if (ierr = SLESSetMat(sles,C)) SETERR(ierr,0);
-  if (ierr = SLESSetFromOptions(sles)) SETERR(ierr,0);
-  if (ierr = SLESSolve(sles,b,x,&its)) SETERR(ierr,0);
+  if ((ierr = SLESCreate(&sles))) SETERR(ierr,0);
+  if ((ierr = SLESSetOperators(sles,C,C,0))) SETERR(ierr,0);
+  if ((ierr = SLESSetFromOptions(sles))) SETERR(ierr,0);
+  if ((ierr = SLESSolve(sles,b,x,&its))) SETERR(ierr,0);
 
   /* check error */
-  if (ierr = VecAXPY(&none,u,x)) SETERR(ierr,0);
-  if (ierr = VecNorm(x,&norm)) SETERR(ierr,0);
+  if ((ierr = VecAXPY(&none,u,x))) SETERR(ierr,0);
+  if ((ierr = VecNorm(x,&norm))) SETERR(ierr,0);
   MPE_printf(MPI_COMM_WORLD,"Norm of error %g Number of iterations %d\n",norm,its);
 
   ierr = SLESDestroy(sles); CHKERR(ierr);

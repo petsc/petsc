@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.8 1995/03/06 04:32:45 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include <string.h>
 #include "petsc.h"
-#undef TRSPACE
 
+#if defined(PETSC_MALLOC)
 /*
    Experimental code for checking if a pointer is out of the range 
   of malloced memory. This will only work on flat memory models and 
@@ -13,27 +13,17 @@ static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $
 */
 void *PetscLow = (void *) 0xEEEEEEEE  , *PetscHigh = (void *) 0x0;
 
-#ifdef __MSDOS__
-#ifdef __TURBOC__
-#include <alloc.h>
-#define malloc farmalloc
-#ifndef MALLOC_DEFINED
-#define MALLOC_DEFINED
-#endif
-#endif
-#endif
-
 #if defined(__cplusplus)
 extern "C" {
 #endif
-#if !defined(PARCH_rs6000)
+#if !defined(PARCH_rs6000) && !defined(PARCH_IRIX)
 extern void *malloc(long unsigned int );
 #endif
 #if defined(__cplusplus)
 };
 #endif
 
-#if defined(PETSC_MALLOC)
+
 
 /*D
     trspace - Routines for tracing space usage.
@@ -187,9 +177,11 @@ if (!inew) return 0;
 /*
    Keep track of range of memory locations we have malloced in 
 */
+#if !defined(PETSC_INSIGHT)
 if (PetscLow > (void *) inew) PetscLow = (void *) inew;
 if (PetscHigh < (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long)))
     PetscHigh = (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long));
+#endif
 
 
 head = (TRSPACE *)inew;

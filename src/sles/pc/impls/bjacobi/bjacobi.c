@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: bjacobi.c,v 1.5 1995/03/06 04:14:20 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -43,29 +43,54 @@ static int PCisetfrom(PC pc)
   if (OptionsGetInt(0,pc->prefix,"-bjacobi_blocks",&blocks)) {
     PCBJacobiSetBlocks(pc,blocks);
   }
+  if (OptionsHasName(0,pc->prefix,"-bjacobi_truelocal")) {
+    PCBJacobiSetUseTrueLocal(pc);
+  }
   return 0;
 }
 
+/*@
+      PCBJacobiSetUseTrueLocal - If the preconditioner is different from 
+         the matrix, then if the block problem is solved iteratively
+         this determines if the block problem is the block from the matrix
+         or from the preconditioner.
+
+  Input Parameters:
+.  pc - the preconditioner context
+@*/
+int PCBJacobiSetUseTrueLocal(PC pc)
+{
+  PCiBJacobi   *jac;
+  VALIDHEADER(pc,PC_COOKIE);
+  if (pc->type != PCBJACOBI) return 0;
+  jac = (PCiBJacobi *) pc->data;
+  jac->usetruelocal = 1;
+  return 0;
+}
+  
 int PCiprinthelp(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
   fprintf(stderr,"%sbjacobi_blocks blks: number of blocks in preconditioner\n",
                  p);
+  fprintf(stderr,"%sbjacobi_truelocal: use local blocks in local it. solve\n",
+                 p);
   return 0;
 }
 
 int PCiBJacobiCreate(PC pc)
 {
-  PCiBJacobi *jac = NEW(PCiBJacobi); CHKPTR(jac);
-  pc->apply     = 0;
-  pc->setup     = PCiBJacobiSetup;
-  pc->destroy   = PCiBJacobiDestroy;
-  pc->setfrom   = PCisetfrom;
-  pc->printhelp = PCiprinthelp;
-  pc->type      = PCBJACOBI;
-  pc->data      = (void *) jac;
-  jac->n        = 0;
+  PCiBJacobi   *jac = NEW(PCiBJacobi); CHKPTR(jac);
+  pc->apply         = 0;
+  pc->setup         = PCiBJacobiSetup;
+  pc->destroy       = PCiBJacobiDestroy;
+  pc->setfrom       = PCisetfrom;
+  pc->printhelp     = PCiprinthelp;
+  pc->type          = PCBJACOBI;
+  pc->data          = (void *) jac;
+  jac->n            = 0;
+  jac->usetruelocal = 0;
   return 0;
 }
 /*@

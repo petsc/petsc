@@ -20,24 +20,79 @@ SYSLIB   = -L$(LDIR) -lpetscvec \
 LINCLUDE = $(SOURCEH)
 
 runexamples:
-	-$(MPIRUN)  ex1
-	-$(MPIRUN)  ex1 -mpi_vecs
-	-$(MPIRUN)  -np 2 ex1 
-	-$(MPIRUN)  ex2
-	-$(MPIRUN) -np 2 ex3 -mpi
-	-$(MPIRUN) -np 2 ex4 -mpi
-	-$(MPIRUN) -np 2 ex5 -mpi
-	-$(MPIRUN)  ex6
-	-$(MPIRUN)  ex7
-	-$(MPIRUN)  ex8
-	-$(MPIRUN)  -np 2 ex9 
-	-$(MPIRUN)  -np 2 ex10 
-	-$(MPIRUN)  -np 2 ex11
-	-$(MPIRUN)  -np 2 ex12
-	-$(MPIRUN)  -np 2 ex13
-	-$(MPIRUN)  -np 2 ex14
-	-$(MPIRUN)  ex15
-	-$(MPIRUN) -np 3 ex16
+	-@echo "Examples in src/vec/examples -----------"
+	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
+           if (diff ex1_1.out ex1_1.tmp) then true; \
+           else echo "Possible problem with ex1_1, diffs above"; fi; \
+           $(RM) -f ex1_1.tmp
+	-@$(MPIRUN)  ex1 -mpi_vecs > ex1_2.tmp 2>&1;\
+           if (diff ex1_2.out ex1_2.tmp) then true; \
+           else echo "Possible problem with ex1_2, diffs above"; fi ;\
+           $(RM) -f ex1_2.tmp
+	-@$(MPIRUN)  -np 2 ex1 > ex1_3.tmp 2>&1;\
+           if (diff ex1_3.out ex1_3.tmp) then true ;  \
+           else echo "Possible problem with ex1_3, diffs above"; fi ;\
+           $(RM) -f ex1_3.tmp
+	-@$(MPIRUN)  ex2 > ex2_1.tmp 2>&1;\
+           if (diff ex2_1.out ex2_1.tmp) then true; \
+           else echo "Possible problem with ex2_1, diffs above"; fi;\
+           $(RM) -f ex2_1.tmp
+	-@$(MPIRUN) -np 2 ex3 > ex3_1.tmp 2>&1;\
+           if (diff ex3_1.out ex3_1.tmp) then true; \
+           else echo "Possible problem with ex3_1, diffs above"; fi;\
+           $(RM) -f ex3_1.tmp
+	-@$(MPIRUN) -np 2 ex4 > ex4_1.tmp 2>&1;\
+           if (diff ex4_1.out ex4_1.tmp) then true; \
+           else echo "Possible problem with ex4_1, diffs above"; fi;\
+           $(RM) -f ex4_1.tmp
+	-@$(MPIRUN) -np 2 ex5 > ex5_1.tmp 2>&1;\
+           if (diff ex5_1.out ex5_1.tmp) then true; \
+           else echo "Possible problem with ex5_1, diffs above"; fi;\
+           $(RM) -f ex5_1.tmp
+	-@$(MPIRUN)  ex6 > ex6_1.tmp 2>&1;\
+           if (diff ex6_1.out ex6_1.tmp) then true; \
+           else echo "Possible problem with ex6_1, diffs above"; fi;\
+           $(RM) -f ex6_1.tmp
+	-@$(MPIRUN)  ex7 > ex7_1.tmp 2>&1;\
+           if (diff ex7_1.out ex7_1.tmp) then true; \
+           else echo "Possible problem with ex7_1, diffs above"; fi;\
+           $(RM) -f ex7_1.tmp
+	-@$(MPIRUN)  ex8 > ex8_1.tmp 2>&1;\
+           if (diff ex8_1.out ex8_1.tmp) then true; \
+           else echo "Possible problem with ex8_1, diffs above"; fi;\
+           $(RM) -f ex8_1.tmp
+	-@$(MPIRUN)  -np 2 ex9 > ex9_1.tmp 2>&1;\
+           if (diff ex9_1.out ex9_1.tmp) then true; \
+           else echo "Possible problem with ex9_1, diffs above"; fi;\
+           $(RM) -f ex9_1.tmp
+	-@$(MPIRUN)  -np 2 ex10 > ex10_1.tmp 2>&1;\
+           if (diff ex10_1.out ex10_1.tmp) then true; \
+           else echo "Possible problem with ex10_1, diffs above"; fi;\
+           $(RM) -f ex10_1.tmp
+	-@$(MPIRUN)  -np 2 ex11 > ex11_1.tmp 2>&1;\
+           if (diff ex11_1.out ex11_1.tmp) then true; \
+           else echo "Possible problem with ex11_1, diffs above"; fi;\
+           $(RM) -f ex11_1.tmp
+	-@$(MPIRUN)  -np 2 ex12 > ex12_1.tmp 2>&1;\
+           if (diff ex12_1.out ex12_1.tmp) then true; \
+           else echo "Possible problem with ex12_1, diffs above"; fi;\
+           $(RM) -f ex12_1.tmp
+	-@$(MPIRUN)  -np 2 ex13 > ex13_1.tmp 2>&1;\
+           if (diff ex13_1.out ex13_1.tmp) then true; \
+           else echo "Possible problem with ex13_1, diffs above"; fi;\
+           $(RM) -f ex13_1.tmp
+	-@$(MPIRUN)  -np 2 ex14 > ex14_1.tmp 2>&1;\
+           if (diff ex14_1.out ex14_1.tmp) then true; \
+           else echo "Possible problem with ex14_1, diffs above"; fi;\
+           $(RM) -f ex14_1.tmp
+	-@$(MPIRUN)  ex15 > ex15_1.tmp 2>&1;\
+           if (diff ex15_1.out ex15_1.tmp) then true; \
+           else echo "Possible problem with ex15_1, diffs above"; fi;\
+           $(RM) -f ex15_1.tmp
+	-@$(MPIRUN) -np 3 ex16 > ex16_1.tmp 2>&1;\
+           if (diff ex16_1.out ex16_1.tmp) then true; \
+           else echo "Possible problem with ex16_1, diffs above"; fi;\
+           $(RM) -f ex16_1.tmp
 	
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: mpiaij.c,v 1.7 1995/03/06 04:04:51 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -112,7 +112,7 @@ static int MatiAIJBeginAssemble(Mat mat)
   Scalar      *rvalues,*svalues;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  MPI_Allreduce((void *) &aij->insertmode,(void *) &addv,numtids,MPI_INT,
+  MPI_Allreduce((void *) &aij->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
   if (addv == (AddValues|InsertValues)) {
     SETERR(1,"Some processors have inserted while others have added");
@@ -152,7 +152,7 @@ static int MatiAIJBeginAssemble(Mat mat)
 
        This could be done better.
   */
-  rvalues = (Scalar *) MALLOC(3*(nreceives+1)*nmax*sizeof(Scalar));
+  rvalues = (Scalar *) MALLOC(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));
   CHKPTR(rvalues);
   recv_waits = (MPI_Request *) MALLOC((nreceives+1)*sizeof(MPI_Request));
   CHKPTR(recv_waits);
@@ -329,7 +329,7 @@ static int MatiZerorows(Mat A,IS is,Scalar *diag)
   FREE(work);
 
   /* post receives:   */
-  rvalues = (int *) MALLOC((nrecvs+1)*nmax*sizeof(int)); /*see note */
+  rvalues = (int *) MALLOC((nrecvs+1)*(nmax+1)*sizeof(int)); /*see note */
   CHKPTR(rvalues);
   recv_waits = (MPI_Request *) MALLOC((nrecvs+1)*sizeof(MPI_Request));
   CHKPTR(recv_waits);
@@ -515,11 +515,12 @@ static int MatiView(PetscObject obj,Viewer viewer)
 
   if (!aij->assembled) SETERR(1,"MatiAIJMulTrans: must assmble matrix first");
   MPE_Seq_begin(mat->comm,1);
-  printf("[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
+    printf("[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
           aij->mytid,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
           aij->cend);
-  ierr = MatView(aij->A,viewer); CHKERR(ierr);
-  ierr = MatView(aij->B,viewer); CHKERR(ierr);
+    ierr = MatView(aij->A,0); CHKERR(ierr);
+    ierr = MatView(aij->B,0); CHKERR(ierr);
+    fflush(stdout);
   MPE_Seq_end(mat->comm,1);
   return 0;
 }
@@ -1015,7 +1016,7 @@ static int MatiCopy(Mat matin,Mat *newmat)
   mat->ops        = &MatOps;
   mat->destroy    = MatiAIJdestroy;
   mat->view       = MatiView;
-  mat->type       = MATAIJSEQ;
+  mat->type       = MATAIJMPI;
   mat->factor     = matin->factor;
   mat->row        = 0;
   mat->col        = 0;

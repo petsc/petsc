@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: dense.c,v 1.10 1995/03/06 04:02:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -428,7 +428,7 @@ static int MatiSDscale(Mat matin,Vec ll,Vec rr)
   MatiSD *mat = (MatiSD *) matin->data;
   Scalar *l,*r,x,*v;
   int    i,j,m = mat->m, n = mat->n;
-  if (l) {
+  if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&m);
     if (m != mat->m) SETERR(1,"Left scaling vector wrong length");
     for ( i=0; i<m; i++ ) {
@@ -437,7 +437,7 @@ static int MatiSDscale(Mat matin,Vec ll,Vec rr)
       for ( j=0; j<n; j++ ) { (*v) *= x; v+= m;} 
     }
   }
-  if (l) {
+  if (rr) {
     VecGetArray(rr,&r); VecGetSize(rr,&n);
     if (n != mat->n) SETERR(1,"Right scaling vector wrong length");
     for ( i=0; i<n; i++ ) {
