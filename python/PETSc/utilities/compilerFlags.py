@@ -9,6 +9,7 @@ class Configure(config.base.Configure):
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
     self.setCompilers = self.framework.require('config.setCompilers', self)
+    self.clanguage    = self.framework.require('PETSc.utilities.clanguage', self)
     self.debugging    = self.framework.require('PETSc.utilities.debugging', self)
     return
 
@@ -60,12 +61,13 @@ class Configure(config.base.Configure):
       self.framework.log.write('Failed to load custom options\n')
       print 'Failed to load custom options'
     if options:
-      for language, flags in [('C', 'CFLAGS'), ('Cxx', 'CXXFLAGS'), ('F77', 'FFLAGS')]:
+      lang = self.clanguage.language
+      for language, flags in [(lang, lang+'FLAGS'), ('FC', 'FFLAGS')]:
         # Calling getCompiler() will raise an exception if a language is missing
         self.pushLanguage(language)
         try:
           # Check compiler version
-          if language == 'F77':
+          if language == 'FC':
             versionName = 'F_VERSION'
           else:
             versionName = language.upper()+'_VERSION'
