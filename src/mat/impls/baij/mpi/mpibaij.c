@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.48 1997/01/14 15:42:57 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.49 1997/01/14 15:50:48 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -87,6 +87,7 @@ static int MatRestoreRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n
           goto _noinsert; \
         } \
       } \
+      if (a->nonew) goto _noinsert; \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
         int    new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j; \

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.184 1997/01/03 18:42:33 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.185 1997/01/06 20:24:32 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -54,8 +54,68 @@ static int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,
   return 0;
 }
 
-extern int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
+#define CHUNKSIZE   15
+#define MatSetValues_SeqAIJ_A_Private(row,col,value) \
+{ \
+ \
+    rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift; \
+    rmax = imax[row]; nrow = ailen[row];  \
+      for ( _i=0; _i<nrow; _i++ ) { \
+        if (rp[_i] > col) break; \
+        if (rp[_i] == col) { \
+          if (addv == ADD_VALUES) ap[_i] += value;   \
+          else                  ap[_i] = value; \
+          goto _noinsert; \
+        } \
+      }  \
+      if (a->nonew) goto _noinsert; \
+      if (nrow >= rmax) { \
+        /* there is no extra room in row, therefore enlarge */ \
+        int    new_nz = ai[a->m] + CHUNKSIZE,len,*new_i,*new_j; \
+        Scalar *new_a; \
+ \
+        /* malloc new storage space */ \
+        len     = new_nz*(sizeof(int)+sizeof(Scalar))+(a->m+1)*sizeof(int); \
+        new_a   = (Scalar *) PetscMalloc( len ); CHKPTRQ(new_a); \
+        new_j   = (int *) (new_a + new_nz); \
+        new_i   = new_j + new_nz; \
+ \
+        /* copy over old data into new slots */ \
+        for ( ii=0; ii<row+1; ii++ ) {new_i[ii] = ai[ii];} \
+        for ( ii=row+1; ii<a->m+1; ii++ ) {new_i[ii] = ai[ii]+CHUNKSIZE;} \
+        PetscMemcpy(new_j,aj,(ai[row]+nrow+shift)*sizeof(int)); \
+        len = (new_nz - CHUNKSIZE - ai[row] - nrow - shift); \
+        PetscMemcpy(new_j+ai[row]+shift+nrow+CHUNKSIZE,aj+ai[row]+shift+nrow, \
+                                                           len*sizeof(int)); \
+        PetscMemcpy(new_a,aa,(ai[row]+nrow+shift)*sizeof(Scalar)); \
+        PetscMemcpy(new_a+ai[row]+shift+nrow+CHUNKSIZE,aa+ai[row]+shift+nrow, \
+                                                           len*sizeof(Scalar));  \
+        /* free up old matrix storage */ \
+        PetscFree(a->a);  \
+        if (!a->singlemalloc) {PetscFree(a->i);PetscFree(a->j);} \
+        aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j;  \
+        a->singlemalloc = 1; \
+ \
+        rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift; \
+        rmax = imax[row] = imax[row] + CHUNKSIZE; \
+        PLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + sizeof(Scalar))); \
+        a->maxnz += CHUNKSIZE; \
+        a->reallocs++; \
+      } \
+      N = nrow++ - 1; a->nz++; \
+      /* shift up all the later entries in this row */ \
+      for ( ii=N; ii>=_i; ii-- ) { \
+        rp[ii+1] = rp[ii]; \
+        ap[ii+1] = ap[ii]; \
+      } \
+      rp[_i] = col;  \
+      ap[_i] = value;  \
+      _noinsert:; \
+    ailen[row] = nrow; \
+  return 0; \
+} 
 
+extern int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
 #undef __FUNC__  
 #define __FUNC__ "MatSetValues_MPIAIJ"
 static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
@@ -65,6 +125,14 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
   int        ierr,i,j, rstart = aij->rstart, rend = aij->rend;
   int        cstart = aij->cstart, cend = aij->cend,row,col;
   int        roworiented = aij->roworiented;
+
+  /* Some Variables required in the macro */
+  Mat        A = aij->A;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) (A)->data; 
+  int        *rp,ii,nrow,_i,rmax,N; 
+  int        *imax=a->imax,*ai=a->i,*ailen=a->ilen; 
+  int        *aj=a->j,shift=a->indexshift;
+  Scalar     *ap,*aa=a->a;
 
 #if defined(PETSC_BOPT_g)
   if (aij->insertmode != NOT_SET_VALUES && aij->insertmode != addv) {
@@ -83,7 +151,8 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
+          MatSetValues_SeqAIJ_A_Private(row,col,value);
+          /* ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
 #if defined(PETSC_BOPT_g)
         else if (in[j] < 0) {SETERRQ(1,0,"Negative column");}

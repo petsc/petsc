@@ -23,7 +23,7 @@ Additional Capabilities that PETSc Needs:
     turning them all off???? Maybe not. Currently PETsc itself does
     this by turning off events one at a time for its own classes.
 
-  - Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
+  X Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
     A prototype is on poseidon:~mcinnes/mpibaij.bak
 
    * Finite difference approximations of derivatives using coloring
