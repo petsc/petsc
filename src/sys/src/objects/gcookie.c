@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcookie.c,v 1.13 1998/04/13 17:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcookie.c,v 1.14 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -53,7 +53,7 @@ int PetscObjectExists(PetscObject obj,int *exists)
   PetscFunctionBegin;
   *exists = 0;
   if (!obj) PetscFunctionReturn(0);
-  if (obj->cookie != PETSCFREEDHEADER) *exists = 1;
+  if (obj->cookie >= PETSC_COOKIE && obj->cookie <= LARGEST_PETSC_COOKIE) *exists = 1;
   PetscFunctionReturn(0);
 }
 
