@@ -54,14 +54,14 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base.$(BOPT)
 # if it does not exist
 chkpetsc_dir:
 	@if [ Holder = Holder$(BOPT) ] ; then \
-	  echo "You must set the variable BOPT=[g,O, or Opg]" ; false; fi
+	  echo "You must set the variable BOPT=[g,O,Opg,O_c++,O_complex,...]" ; false; fi
 	-@if [ ! -d $(PDIR) ]; then \
 	  echo Making directory $(PDIR) for library; mkdir -p $(PDIR) ; fi
 
 # Checks that user has set BOPT variable
 chkopts: 
 	@if [ Holder = Holder$(BOPT) ] ; then \
-	  echo "You must set the variable BOPT=[g,O, or Opg]" ; false; fi
+	  echo "You must set the variable BOPT=[g,O,Opg,O_c++,O_complex,...]" ; false; fi
 	@if [ ! -d $(LDIR) ]; then \
 	  echo Libraries not built for this BOPT: $(BOPT); false ; fi
 
