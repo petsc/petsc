@@ -1,7 +1,6 @@
-/*$Id: ex3.c,v 1.26 2001/01/17 22:25:35 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.27 2001/01/23 20:56:41 balay Exp bsmith $*/
 
-static char help[] = 
-"This example solves a linear system in parallel with SLES.  The matrix\n\
+static char help[] = "Solves a linear system in parallel with SLES.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
 matrix assembly, the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\

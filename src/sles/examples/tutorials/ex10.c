@@ -1,7 +1,6 @@
-/*$Id: ex10.c,v 1.48 2001/01/23 20:56:41 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.49 2001/02/05 21:17:59 bsmith Exp bsmith $*/
 
-static char help[] = 
-"Reads a PETSc matrix and vector from a file and solves a linear system.\n\
+static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 This version first preloads and solves a small system, then loads \n\
 another (larger) system and solves it as well.  This example illustrates\n\
 preloading of instructions with the smaller system so that more accurate\n\
