@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.15 1998/12/06 16:35:38 balay Exp balay $";
+static char vcid[] = "$Id: stack.c,v 1.16 1998/12/07 17:41:47 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
@@ -97,20 +97,26 @@ int PetscStackView(Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
 
   if (file == stderr) {
+    (*PetscErrorPrintf)("Note: The EXACT line numbers in the stack are not available,\n");
+    (*PetscErrorPrintf)("      INSTEAD the line number of the start of the function\n");
+    (*PetscErrorPrintf)("      is given.\n");
     for ( i=petscstacksize-1; i>=0; i-- ) {
       (*PetscErrorPrintf)("[%d] %s line %d %s%s\n",PetscGlobalRank,
-                                                petscstack->function[i],
-                                                petscstack->line[i],
-                                                petscstack->directory[i],
-                                                petscstack->file[i]);
+                                                   petscstack->function[i],
+                                                   petscstack->line[i],
+                                                   petscstack->directory[i],
+                                                   petscstack->file[i]);
     }
   } else {
+    fprintf(file,"Note: The EXACT line numbers in the stack are not available,\n");
+    fprintf(file,"      INSTEAD the line number of the start of the function\n");
+    fprintf(file,"      is given.\n");
     for ( i=petscstacksize-1; i>=0; i-- ) {
       fprintf(file,"[%d] %s line %d %s%s\n",PetscGlobalRank,
-                                              petscstack->function[i],
-                                              petscstack->line[i],
-                                              petscstack->directory[i],
-                                              petscstack->file[i]);
+                                            petscstack->function[i],
+                                            petscstack->line[i],
+                                            petscstack->directory[i],
+                                            petscstack->file[i]);
     }
   }
   return 0;
