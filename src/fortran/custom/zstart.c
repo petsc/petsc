@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.47 1998/06/26 23:45:52 balay Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.48 1998/06/29 21:07:14 balay Exp balay $";
 #endif
 
 /*
@@ -36,7 +36,7 @@ extern int          PetscBeganMPI;
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
 #if defined(PARCH_nt)
-#define IARGC                        NARGS
+#define IARGC                         NARGS
 #endif
 
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
