@@ -42,4 +42,4 @@
 
 .seealso: PetscGetProgramName()
 
-@*/
+M*/
