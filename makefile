@@ -4,8 +4,8 @@ CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
-SOURCEH  = Changes Machines readme maint/addlinks maint/buildtest \
-           maint/builddist faq\
+SOURCEH  = Changes Machines Readme maint/addlinks maint/buildtest \
+           maint/builddist FAQ Installation\
            maint/buildlinks maint/wwwman maint/xclude maint/crontab
 OBJSC    =
 WOBJS    = 
@@ -66,4 +66,5 @@ etags:
 	etags -a -f TAGS bmake/hpux/hpux* bmake/NeXT/NeXT* bmake/alpha/alpha*
 	etags -a -f TAGS bmake/t3d/t3d* bmake/paragon/paragon*
 	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex
+	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex
 	chmod g+w TAGS
