@@ -12,6 +12,15 @@ PETSc grammar review:
 
 ----------------------------------------------------------------
 
+Doctext notes:
+ - CANNOT put $ in the midst of a set of + ... -
+ - MUST have text after hyphen when using . (or +/-) i.e.,
+       . -option_name
+   will screw things up majorly.  Instead, use
+       . -option_name - Description of option
+
+----------------------------------------------------------------
+
 PETSc tutorial material:
    /home/gropp/petsc_work/byoc
 
