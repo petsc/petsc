@@ -352,14 +352,19 @@ class Configure(config.base.Configure):
 
     if self.framework.argDB.has_key('with-fc'):
       if self.framework.argDB['with-fc'] == '0': return
-      if self.framework.argDB['with-fc'] in ['ifl','ifort'] and self.framework.argDB['PETSC_ARCH_BASE'].startswith('cygwin'): self.framework.argDB['with-fc'] = 'win32fe '+self.framework.argDB['with-fc']
+      if self.framework.argDB['with-fc'] in ['ifl','df']:
+        self.framework.argDB['with-fc'] = 'win32fe '+self.framework.argDB['with-fc']
+      if self.framework.argDB['with-fc'] in ['ifort','f90'] and self.framework.argDB['PETSC_ARCH_BASE'].startswith('cygwin'): self.framework.argDB['with-fc'] = 'win32fe '+self.framework.argDB['with-fc']
       yield self.framework.argDB['with-fc']
       raise RuntimeError('Fortran compiler you provided with --with-fc='+self.framework.argDB['with-fc']+' does not work')
     elif self.framework.argDB.has_key('FC'):
       if 'FC' in os.environ and os.environ['FC'] == self.framework.argDB['FC']:
         self.startLine()
         print '\n*****WARNING: Using Fortran compiler '+self.framework.argDB['FC']+' from environmental variable FC****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again'
-      if self.framework.argDB['FC'] in ['ifl','ifort'] and self.framework.argDB['PETSC_ARCH_BASE'].startswith('cygwin'): self.framework.argDB['FC'] = 'win32fe '+self.framework.argDB['FC']
+      if self.framework.argDB['FC'] in ['ifl','df']:
+        self.framework.argDB['FC'] = 'win32fe '+self.framework.argDB['FC']
+      if self.framework.argDB['FC'] in ['ifort','f90'] and self.framework.argDB['PETSC_ARCH_BASE'].startswith('cygwin'):
+        self.framework.argDB['FC'] = 'win32fe '+self.framework.argDB['FC']
       yield self.framework.argDB['FC']
       raise RuntimeError('Fortran compiler you provided with -FC='+self.framework.argDB['FC']+' does not work')
     elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(os.path.join(self.framework.argDB['with-mpi-dir'],'bin')) and self.framework.argDB['with-mpi-compilers'] and not self.framework.argDB['download-mpich'] == 1 and self.framework.argDB['with-mpi']:
