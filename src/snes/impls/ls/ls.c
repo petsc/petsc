@@ -182,6 +182,11 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lits);CHKERRQ(ierr);
 
+    if (neP->precheckstep) {
+      PetscTruth changed_y = PETSC_FALSE;
+      ierr = (*neP->precheckstep)(snes,X,Y,neP->precheck,&changed_y);CHKERRQ(ierr);
+    }
+
     if (PetscLogPrintInfo){
       ierr = SNESLSCheckResidual_Private(snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
@@ -908,7 +913,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESQuadraticLineSearch(SNES snes,void *lsctx
 .keywords: SNES, nonlinear, set, line search, routine
 
 .seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), SNESNoLineSearch(), SNESNoLineSearchNoNorms(), 
-          SNESLineSearchSetPostCheck(), SNESSetLineSearchParams(), SNESGetLineSearchParams()
+          SNESLineSearchSetPostCheck(), SNESSetLineSearchParams(), SNESGetLineSearchParams(), SNESLineSearchSetPreCheck()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLineSearch(SNES snes,PetscErrorCode (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscTruth*),void *lsctx)
 {
@@ -990,7 +995,7 @@ EXTERN_C_END
 
 .keywords: SNES, nonlinear, set, line search check, step check, routine
 
-.seealso: SNESSetLineSearch()
+.seealso: SNESSetLineSearch(), SNESLineSearchSetPreCheck()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck(SNES snes,PetscErrorCode (*func)(SNES,Vec,Vec,Vec,void*,PetscTruth*,PetscTruth*),void *checkctx)
 {
@@ -1003,16 +1008,78 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck(SNES snes,PetscErr
   }
   PetscFunctionReturn(0);
 }
+#undef __FUNCT__  
+#define __FUNCT__ "SNESLineSearchSetPreCheck"
+/*@C
+   SNESLineSearchSetPreCheck - Sets a routine to check the validity of a new direction given by the linear solve
+
+   Input Parameters:
++  snes - nonlinear context obtained from SNESCreate()
+.  func - pointer to function
+-  checkctx - optional user-defined context for use by step checking routine 
+
+   Collective on SNES
+
+   Calling sequence of func:
+.vb
+   int func (SNES snes, Vec x,Vec y,,void *checkctx, PetscTruth *changed_y)
+.ve
+   where func returns an error code of 0 on success and a nonzero
+   on failure.
+
+   Input parameters for func:
++  snes - nonlinear context
+.  checkctx - optional user-defined context for use by step checking routine 
+.  x - previous iterate
+-  y - new search direction and length
+
+   Output parameters for func:
++  y - search direction (possibly changed)
+-  changed_y - indicates search direction was changed by this routine
+
+   Level: advanced
+
+   Notes: All line searches accept the new iterate computed by the line search checking routine.
+
+.keywords: SNES, nonlinear, set, line search check, step check, routine
+
+.seealso: SNESSetLineSearch(), SNESLineSearchSetPostCheck()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck(SNES snes,PetscErrorCode (*func)(SNES,Vec,Vec,void*,PetscTruth*),void *checkctx)
+{
+  PetscErrorCode ierr,(*f)(SNES,PetscErrorCode (*)(SNES,Vec,Vec,void*,PetscTruth*),void*);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESLineSearchSetPreCheck_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(snes,func,checkctx);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
-typedef PetscErrorCode (*FCN)(SNES,Vec,Vec,Vec,void*,PetscTruth*,PetscTruth*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN1)(SNES,Vec,Vec,Vec,void*,PetscTruth*,PetscTruth*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN3)(SNES,Vec,Vec,void*,PetscTruth*);                 /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLineSearchSetPostCheck_LS"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck_LS(SNES snes,FCN func,void *checkctx)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck_LS(SNES snes,FCN1 func,void *checkctx)
 {
   PetscFunctionBegin;
   ((SNES_LS *)(snes->data))->postcheckstep = func;
   ((SNES_LS *)(snes->data))->postcheck     = checkctx;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "SNESLineSearchSetPreCheck_LS"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck_LS(SNES snes,FCN3 func,void *checkctx)
+{
+  PetscFunctionBegin;
+  ((SNES_LS *)(snes->data))->precheckstep = func;
+  ((SNES_LS *)(snes->data))->precheck     = checkctx;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1135,7 +1202,7 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESTR, SNESSetLineSearch(), 
            SNESLineSearchSetPostCheck(), SNESNoLineSearch(), SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
-          SNESSetLineSearch(), SNESNoLineSearchNoNorms()
+          SNESSetLineSearch(), SNESNoLineSearchNoNorms(), SNESLineSearchSetPreCheck()
 
 M*/
 EXTERN_C_BEGIN
@@ -1171,6 +1238,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LS(SNES snes)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESSetLineSearch_C","SNESSetLineSearch_LS",SNESSetLineSearch_LS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPostCheck_C","SNESLineSearchSetPostCheck_LS",SNESLineSearchSetPostCheck_LS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPreCheck_C","SNESLineSearchSetPreCheck_LS",SNESLineSearchSetPreCheck_LS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

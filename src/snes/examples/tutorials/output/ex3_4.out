@@ -1,4 +1,5 @@
-Activating step checking routine
+Activating post step checking routine
+Activating pre step checking routine
 atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
 iter = 0,SNES Function norm 5.41468
 iter = 1,SNES Function norm 0.295258
