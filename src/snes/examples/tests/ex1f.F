@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.23 1997/10/01 15:08:38 balay Exp bsmith $";
+C "$Id: ex4f.F,v 1.24 1997/10/10 04:06:27 bsmith Exp balay $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -304,14 +304,14 @@ C
 
       implicit none
 
-C  Input/output variables:
-      Scalar  x(mx,my)
-      integer ierr
-
 C  Common blocks:
       double precision   lambda
       integer  mx, my
       common /params/ lambda, mx, my
+
+C  Input/output variables:
+      Scalar  x(mx,my)
+      integer ierr
 
 C  Local variables:
       integer  i, j, hxdhy, hydhx
@@ -433,14 +433,14 @@ C
 
       implicit none
 
-C  Input/output variables:
-      Scalar   x(mx,my), f(mx,my)
-      integer  ierr
-
 C  Common blocks:
       double precision   lambda
       integer  mx, my
       common /params/ lambda, mx, my
+
+C  Input/output variables:
+      Scalar   x(mx,my), f(mx,my)
+      integer  ierr
 
 C  Local variables:
       Scalar   two, one, hx, hy, hxdhy, hydhx, sc
@@ -590,15 +590,15 @@ C
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/snes.h"
 
-C  Input/output variables:
-      Scalar   x(mx,my)
-      Mat      jac, jac_prec
-      integer  ierr
-
 C  Common blocks:
       double precision   lambda
       integer  mx, my
       common /params/ lambda, mx, my
+
+C  Input/output variables:
+      Scalar   x(mx,my)
+      Mat      jac, jac_prec
+      integer  ierr
 
 C  Local variables:
       integer      ierr, i, j, row, col(5)
