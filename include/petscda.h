@@ -279,6 +279,7 @@ struct _p_DMMG {
   MPI_Comm   comm;
   int        (*solve)(DMMG*,int);
   void       *user;         
+  PetscTruth galerkin;             /* for A_c = R*A*R^T */
 
   /* SLES only */
   SLES       sles;             
@@ -309,6 +310,7 @@ EXTERN int DMMGSolve(DMMG*);
 EXTERN int DMMGSetUseMatrixFree(DMMG*);
 EXTERN int DMMGSetDM(DMMG*,DM);
 EXTERN int DMMGSetUpLevel(DMMG*,SLES,int);
+EXTERN int DMMGSetUseGalerkinCoarse(DMMG*);
 
 EXTERN int DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1,DALocalFunction1);
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)

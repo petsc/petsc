@@ -37,22 +37,53 @@ int DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
 {
   int        ierr,i;
   DMMG       *p;
+  PetscTruth galerkin;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(0,"-dmmg_nlevels",&nlevels,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(0,"-dmmg_galerkin",&galerkin);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nlevels*sizeof(DMMG),&p);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
-    ierr             = PetscNew(struct _p_DMMG,&p[i]);CHKERRQ(ierr);
-    ierr             = PetscMemzero(p[i],sizeof(struct _p_DMMG));CHKERRQ(ierr);
-    p[i]->nlevels    = nlevels - i;
-    p[i]->comm       = comm;
-    p[i]->user       = user;
+    ierr           = PetscNew(struct _p_DMMG,&p[i]);CHKERRQ(ierr);
+    ierr           = PetscMemzero(p[i],sizeof(struct _p_DMMG));CHKERRQ(ierr);
+    p[i]->nlevels  = nlevels - i;
+    p[i]->comm     = comm;
+    p[i]->user     = user;
+    p[i]->galerkin = galerkin;
   }
   *dmmg = p;
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetUseGalerkinCoarse"
+/*@C
+    DMMGSetUseGalerkinCoarse - Courses the DMMG to use R*A_f*R^T to form
+       the coarser matrices from finest 
+
+    Collective on DMMG
+
+    Input Parameter:
+.    - the context
+
+    Level: advanced
+
+.seealso DMMGCreate()
+
+@*/
+int DMMGSetUseGalerkinCoarse(DMMG* dmmg)
+{
+  int     ierr,i,nlevels = dmmg[0]->nlevels;
+
+  PetscFunctionBegin;
+  if (!dmmg) SETERRQ(1,"Passing null as DMMG");
+
+  for (i=0; i<nlevels; i++) {
+    dmmg[i]->galerkin = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGDestroy"
@@ -359,16 +390,25 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 @*/
 int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
 {
-  int  ierr,i,nlevels = dmmg[0]->nlevels;
+  int        ierr,i,nlevels = dmmg[0]->nlevels;
+  PetscTruth galerkin;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
+  galerkin = dmmg[0]->galerkin;  
+
+  if (galerkin) {
+    ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->J);CHKERRQ(ierr);
+    for (i=nlevels-2; i>-1; i--) {
+      ;
+    }
+  }
 
   if (!dmmg[0]->sles) {
     /* create solvers for each level */
     for (i=0; i<nlevels; i++) {
 
-      if (!dmmg[i]->B) {
+      if (!dmmg[i]->B && !galerkin) {
         ierr = DMGetMatrix(dmmg[i]->dm,MATMPIAIJ,&dmmg[i]->B);CHKERRQ(ierr);
       } 
       if (!dmmg[i]->J) {
@@ -385,7 +425,9 @@ int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
 
   /* evalute matrix on each level */
   for (i=0; i<nlevels; i++) {
-    ierr = (*func)(dmmg[i],dmmg[i]->J);CHKERRQ(ierr);
+    if (!galerkin) {
+      ierr = (*func)(dmmg[i],dmmg[i]->J);CHKERRQ(ierr);
+    }
     dmmg[i]->matricesset = PETSC_TRUE;
   }
 

@@ -104,10 +104,15 @@ int PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 @*/
 int PetscDrawAxisDestroy(PetscDrawAxis axis)
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
   if (--axis->refct > 0) PetscFunctionReturn(0);
 
+  ierr = PetscStrfree(axis->toplabel);CHKERRQ(ierr);
+  ierr = PetscStrfree(axis->xlabel);CHKERRQ(ierr);
+  ierr = PetscStrfree(axis->ylabel);CHKERRQ(ierr);
   PetscLogObjectDestroy(axis);
   PetscHeaderDestroy(axis);
   PetscFunctionReturn(0);
@@ -155,11 +160,13 @@ int PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
 @*/
 int PetscDrawAxisSetLabels(PetscDrawAxis axis,char* top,char *xlabel,char *ylabel)
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
-  axis->xlabel   = xlabel;
-  axis->ylabel   = ylabel;
-  axis->toplabel = top;
+  ierr = PetscStrallocpy(xlabel,&axis->xlabel);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ylabel,&axis->ylabel);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(top,&axis->toplabel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -75,7 +75,7 @@ int InputGrid (AOData *aodata)
 
   PetscFunctionBegin;
 
-  indices = (int*) PetscMalloc (n_edges * sizeof(int)); CHKERRQ(ierr);
+  ierr = PetscMalloc (n_edges * sizeof(int),&indices); CHKERRQ(ierr);
   for (i=0; i<n_edges; i++) { indices[i] = i; }
 
   ierr = AODataCreateBasic(PETSC_COMM_SELF,aodata);           CHKERRQ(ierr);

@@ -43,7 +43,11 @@ int MatDestroy_SeqAIJ_SuperLU(Mat A)
   PetscFunctionBegin;
   if (--A->refct > 0)PetscFunctionReturn(0);
   /* We have to free the global data or SuperLU crashes (sucky design)*/
-  StatFree(); 
+  /* Since we don't know if more solves on other matrices may be done
+     we cannot free the yucky SuperLU global data
+    StatFree(); 
+  */
+
   /* Free the SuperLU datastructures */
   Destroy_CompCol_Permuted(&lu->AC);
   Destroy_SuperNode_Matrix(&lu->L);
@@ -186,6 +190,8 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   PetscFunctionReturn(0);
 }
 
+static int StatInitCalled = 0;
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_SuperLU"
 int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
@@ -226,11 +232,14 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   /* Set SuperLU options */
   lu->relax      = sp_ienv(2);
   lu->panel_size = sp_ienv(1);
-  ierr           = PetscMalloc(A->n*sizeof(int),&etree);CHKERRQ(ierr);
   /* We have to initialize global data or SuperLU crashes (sucky design) */
-  StatInit(lu->panel_size,lu->relax);
+  if (!StatInitCalled) {
+    StatInit(lu->panel_size,lu->relax);
+  }
+  StatInitCalled++;
 
   /* Create the elimination tree */
+  ierr           = PetscMalloc(A->n*sizeof(int),&etree);CHKERRQ(ierr);
   sp_preorder("N",&lu->A,lu->perm_c,etree,&lu->AC);
   /* Factor the matrix */
   dgstrf("N",&lu->AC,lu->pivot_threshold,0.0,lu->relax,lu->panel_size,etree,PETSC_NULL,0,lu->perm_r,lu->perm_c,&lu->L,&lu->U,&ierr);
