@@ -1147,7 +1147,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj;
   PetscScalar    *rtmp1,*rtmp2,*rtmp3,*v1,*v2,*v3,*pc1,*pc2,*pc3,mul1,mul2,mul3;
   PetscScalar    tmp,*ba = b->a,*aa = a->a,*pv,*rtmps1,*rtmps2,*rtmps3;
-  PetscReal      rs;
+  PetscReal      rs=0.0;
   LUShift_Ctx    sctx;
   PetscInt       newshift;
 
