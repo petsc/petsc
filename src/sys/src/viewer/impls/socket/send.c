@@ -254,6 +254,8 @@ EXTERN_C_END
 .   machine - host to connect to
 -   port - the port on the machine one is connecting to
 
+    Level: advanced
+
 .seealso: PetscViewerSocketOpen()
 @*/ 
 int PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
