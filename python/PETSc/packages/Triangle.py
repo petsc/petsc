@@ -7,6 +7,10 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     return
 
+  def configureLibrary(self):
+    '''Find a Triangle installation and check if it can work with PETSc'''
+    return
+
   def setOutput(self):
     #self.addDefine('HAVE_TRIANGLE', 0)
     self.addSubstitution('TRIANGLE_INCLUDE', '')
@@ -14,5 +18,6 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
+    self.executeTest(self.configureLibrary)
     self.setOutput()
     return

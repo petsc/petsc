@@ -7,6 +7,10 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     return
 
+  def configureLibrary(self):
+    '''Find a Blocksolve installation and check if it can work with PETSc'''
+    return
+
   def setOutput(self):
     #self.addDefine('HAVE_BLOCKSOLVE', 0)
     self.addSubstitution('BLOCKSOLVE_INCLUDE', '')
