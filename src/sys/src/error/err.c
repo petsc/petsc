@@ -11,9 +11,7 @@
 .  message - a text string usually just printed to the screen
 .  number - the user provided error number.
 @*/
-int PetscErrorHandler(line,file,message,number)
-int line,number;
-char *file, *message;
+int PetscErrorHandler(int line,char *file,char *message,int number)
 {
   fprintf(stderr,"%s %d %s %d\n",file,line,message,number);
   return number;

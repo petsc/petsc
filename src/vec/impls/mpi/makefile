@@ -1,20 +1,17 @@
-ITOOLSDIR = ../../../../
+ITOOLSDIR = ../../../..
 
 ALL: lib
 
 CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I../../.. -I$(ITOOLSDIR)\
-           -I$(ITOOLSDIR)/pinclude $(CONF)
-SOURCEC  = dvec3.c bvec2.c 
+           -I$(ITOOLSDIR)/pinclude $(CONF) $(COPT)
+SOURCEC  = pvec.c pbvec.c pdvec.c
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = 
-OBJSC    = dvec3.o bvec2.o 
+OBJSC    = pvec.o pbvec.o pdvec.o 
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 
-include $(ITOOLSDIR)/bmake/$(PARCH).site
-include $(ITOOLSDIR)/bmake/$(PARCH).$(BOPT)
 include $(ITOOLSDIR)/bmake/$(PARCH)
-

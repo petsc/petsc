@@ -2,15 +2,17 @@ ITOOLSDIR = ../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I$(ITOOLSDIR) $(COPT)
+CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I$(ITOOLSDIR) \
+           -I$(ITOOLSDIR)/pinclude $(CONF)
 SOURCEC  = index.c 
-SOURCEF  =
-WSOURCEC = 
+SOURCEF  = 
+WSOURCEC = indexf.c
 SOURCEH  = 
 OBJSC    = index.o 
-WOBJS    = 
+WOBJS    = indexf.o
 OBJSF    =
 LIBBASE  = libpetscvec
-SYSLIB   = $(LDIR)/system.a $(BLAS) $(SLIB) -lm 
-LOCAL_INCLUDE = $(SOURCEH)
+LINCLUDE = $(SOURCEH)
+MANSEC   = 2
 
+include $(ITOOLSDIR)/bmake/$(PARCH)

@@ -2,8 +2,7 @@
 /*  
    Defines the abstract operations on index sets 
 */
-#include "petsc.h"
-#include "isimpl.h"
+#include "isimpl.h"      /*I "is.h" I*/
 
 
 /*@
@@ -13,11 +12,10 @@
 .  is - the index set
 
 @*/
-int ISDestroy(is)
-IS is;
+int ISDestroy(IS is)
 {
   VALIDHEADER(is,IS_COOKIE);
-  return (*is->destroy)(is);
+  return (*is->destroy)((PetscObject) is);
 }
 
 /*@
@@ -29,14 +27,12 @@ IS is;
 .  is - the index set
 
   Output Parameters:
-.  returns the number of indices in index set.
+.  size - the size.
 @*/
-int ISGetSize(is,size)
-IS  is;
-int *size;
+int ISGetSize(IS is,int *size)
 {
   VALIDHEADER(is,IS_COOKIE);
-  return (*is->ops->size)(is->data,size);
+  return (*is->ops->size)(is,size);
 }
 /*@
     ISGetLocalSize - returns length of an index set. In a parallel 
@@ -47,14 +43,12 @@ int *size;
 .  is - the index set
 
   Output Parameters:
-.  returns the number of indices in index set.
+.  size - the local size.
 @*/
-int ISGetLocalSize(is,size)
-IS is;
-int *size;
+int ISGetLocalSize(IS is,int *size)
 {
   VALIDHEADER(is,IS_COOKIE);
-  return (*is->ops->localsize)(is->data,size);
+  return (*is->ops->localsize)(is,size);
 }
 
 /*@
@@ -66,14 +60,13 @@ int *size;
 .   i - the index to check
 
   Output Parameters:
-.   returns the relative position or -1
+.   pos - relative position in list or negative -1 if not in list.
+
 @*/
-int ISGetPosition(is,i,pos)
-IS is;
-int i,*pos;
+int ISGetPosition(IS is,int i,int *pos)
 {
   VALIDHEADER(is,IS_COOKIE);
-  return (*is->ops->position)(is->data,i,pos);
+  return (*is->ops->position)(is,i,pos);
 }
 
 /*@ 
@@ -87,33 +80,30 @@ int i,*pos;
 ,  is - the index set
 
   Output Parameters:
-.   returns a pointer to the indices
+.  ptr - the location to put the pointer to the indices
 
     Note: in a parallel enviroment this probably points to 
           only the local indices to that processor.
 @*/
-int ISGetIndices(is,ptr)
-IS is;
-int **ptr;
+int ISGetIndices(IS is,int **ptr)
 {
   VALIDHEADER(is,IS_COOKIE);
-  return (*is->ops->indices)(is->data,ptr);
+  return (*is->ops->indices)(is,ptr);
 } 
 
 /*@ 
 
-    ISRestroreIndices - See ISGetIndices
+    ISRestoreIndices - See ISGetIndices. Restores and index to usable
+                       state.
 
   Input Parameters:
 ,  is - the index set
 .  ptr - the pointer obtained with ISGetIndices
 
 @*/
-int ISRestoreIndices(is,ptr)
-IS  is;
-int **ptr;
+int ISRestoreIndices(IS is,int **ptr)
 {
   VALIDHEADER(is,IS_COOKIE);
-  if (is->ops->restoreindices) return (*is->ops->restoreindices)(is->data,ptr);
+  if (is->ops->restoreindices) return (*is->ops->restoreindices)(is,ptr);
   else return 0;
 }

@@ -1,18 +1,23 @@
-
 /*
    Defines the sequential BLAS based vectors
 */
 
-#include "system/flog.h"
+#if !defined(PETSC_COMPLEX)
+
+#include "sys/flog.h"
 #include "inline/dot.h"
 #include "inline/vmult.h"
 #include "inline/setval.h"
 #include "inline/copy.h"
 #include "inline/axpy.h"
-
 #include <math.h>
 #include "vecimpl.h" 
 #include "dvecimpl.h" 
+
+#include "../bvec1.c"
+#include "../dvec2.c"
+
+static int VeiDVBCreateVector(Vec,Vec*);
 
 static struct _VeOps DvOps = { VeiDVBCreateVector, 
               Veiobtain_vectors, Veirelease_vectors, VeiDVBdot,
@@ -23,11 +28,9 @@ static struct _VeOps DvOps = { VeiDVBCreateVector,
               VeiDVaddvalues,VeiDVinsertvalues,0,0,
               VeiDVgetarray,VeiDVview, VeiDVsize, VeiDVsize };
 
-int VecCreateSequentialBLAS(n,V)
-int n;
-Vec *V;
+int VecCreateSequentialBLAS(int n,Vec *V)
 {
-  int      size = sizeof(DvVector)+n*sizeof(double);
+  int      size = sizeof(DvVector)+n*sizeof(Scalar);
   Vec      v;
   DvVector *s;
   *V             = 0;
@@ -39,14 +42,14 @@ Vec *V;
   v->ops         = &DvOps;
   v->data        = (void *) s;
   s->n           = n;
-  s->array       = (double *)(s + 1);
+  s->array       = (Scalar *)(s + 1);
   *V = v; return 0;
 }
 
-int VeiDVBCreateVector( w,V)
-DvVector *w;
-Vec      *V;
+static int VeiDVBCreateVector(Vec win,Vec *V)
 {
+  DvVector *w = (DvVector *)win->data;
   return VecCreateSequentialBLAS(w->n,V);
 }
 
+#endif

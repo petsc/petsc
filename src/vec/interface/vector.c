@@ -9,8 +9,7 @@
   Input Parameter:
 .  v - the object to check
 @*/
-int VecValidVector(v)
-Vec v;
+int VecValidVector(Vec v)
 {
   if (!v) return 0;
   if (v->cookie != VEC_COOKIE) return 0;
@@ -26,9 +25,7 @@ Vec v;
 .  val - the dot product
 
 @*/
-int VecDot(x,y,val)
-Vec       x,y;
-VecScalar val;
+int VecDot(Vec x, Vec y, Scalar *val)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
@@ -45,9 +42,7 @@ VecScalar val;
 .  val - the norm 
 
 @*/
-int VecNorm(x,val)  
-Vec       x;
-VecScalar val;
+int VecNorm(Vec x,double *val)  
 {
   VALIDHEADER(x,VEC_COOKIE);
   return (*x->ops->norm)(x,val);
@@ -62,9 +57,7 @@ VecScalar val;
 .  val - the sum 
 
 @*/
-int VecASum(x,val)
-Vec       x;
-VecScalar val;
+int VecASum(Vec x,double *val)
 {
   VALIDHEADER(x,VEC_COOKIE);
   return (*x->ops->asum)(x,val);
@@ -80,10 +73,7 @@ VecScalar val;
 .  val - the max 
 .  p - the location
 @*/
-int VecMax(x,p,val)
-Vec       x;
-VecScalar val;
-int      *p;
+int VecMax(Vec x,int *p,double *val)
 {
   VALIDHEADER(x,VEC_COOKIE);
   return (*x->ops->max)(x,p,val);
@@ -99,9 +89,7 @@ int      *p;
   Output Parameter:
 .  val - the dot product
 @*/
-int VecTDot(x,y,val) 
-Vec       x,y;
-VecScalar val;
+int VecTDot(Vec x,Vec y,Scalar *val) 
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
@@ -114,9 +102,7 @@ VecScalar val;
 .  x - the vector
 .  alpha - the scalar
 @*/
-int VecScale(alpha,x)
-VecScalar alpha;
-Vec       x;
+int VecScale(Scalar *alpha,Vec x)
 {
   VALIDHEADER(x,VEC_COOKIE);
   return (*x->ops->scal)(alpha,x);
@@ -131,8 +117,7 @@ Vec       x;
   Output Parameters:
 .  y  - the copy
 @*/
-int VecCopy(x,y)
-Vec x,y;
+int VecCopy(Vec x,Vec y)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
@@ -148,9 +133,7 @@ Vec x,y;
   Output Parameters:
 .  x  - the vector
 @*/
-int VecSet(alpha,x) 
-Vec       x;
-VecScalar alpha;
+int VecSet(Scalar *alpha,Vec x) 
 {
   VALIDHEADER(x,VEC_COOKIE);
   return (*x->ops->set)(alpha,x);
@@ -163,9 +146,7 @@ VecScalar alpha;
 .  alpha - the scalar
 .  x,y  - the vectors
 @*/
-int VecAXPY(alpha,x,y)
-VecScalar alpha;
-Vec       x,y;
+int VecAXPY(Scalar *alpha,Vec x,Vec y)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
@@ -179,9 +160,7 @@ Vec       x,y;
 .  x,y  - the vectors
 
 @*/
-int VecAYPX(alpha,x,y)
-Vec       x,y;
-VecScalar alpha;
+int VecAYPX(Scalar *alpha,Vec x,Vec y)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
@@ -193,8 +172,7 @@ VecScalar alpha;
   Input Parameters:
 .  x,y  - the vectors
 @*/
-int VecSwap(x,y)
-Vec x,y;
+int VecSwap(Vec x,Vec y)
 {
   VALIDHEADER(x,VEC_COOKIE);  VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
@@ -210,9 +188,7 @@ Vec x,y;
   Output Parameter:
 .  w - the result
 @*/
-int VecWAXPY(alpha,x,y,w)
-Vec       x,y,w;
-VecScalar alpha;
+int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(w,VEC_COOKIE);
@@ -229,8 +205,7 @@ VecScalar alpha;
 .  w - the result
 
 @*/
-int VecPMult(x,y,w)
-Vec x,y,w;
+int VecPMult(Vec x,Vec y,Vec w)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(w,VEC_COOKIE);
@@ -246,8 +221,7 @@ Vec x,y,w;
   Output Parameter:
 .  w - the result
 @*/
-int VecPDiv(x,y,w)
-Vec x,y,w;
+int VecPDiv(Vec x,Vec y,Vec w)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(w,VEC_COOKIE);
@@ -265,8 +239,7 @@ Vec x,y,w;
   Output Parameter:
 .  newv - location to put new vector
 @*/
-int VecCreate(v,newv) 
-Vec v,*newv;
+int VecCreate(Vec v,Vec *newv) 
 {
   VALIDHEADER(v,VEC_COOKIE);
   return   (*v->ops->create_vector)(v,newv);
@@ -277,11 +250,10 @@ Vec v,*newv;
   Input Parameters:
 .  v  - the vector
 @*/
-int VecDestroy(v)
-Vec v;
+int VecDestroy(Vec v)
 {
   VALIDHEADER(v,VEC_COOKIE);
-  return (*v->destroy)(v);
+  return (*v->destroy)((PetscObject )v);
 }
 
 /*@
@@ -295,9 +267,7 @@ Vec v;
   Output Parameters:
 .  V - location to put pointer to array of vectors.
 @*/
-int VecGetVecs(v,m,V)  
-int m;
-Vec v,**V;
+int VecGetVecs(Vec v,int m,Vec **V)  
 {
   VALIDHEADER(v,VEC_COOKIE);
   return (*v->ops->obtain_vectors)( v, m,V );
@@ -310,9 +280,7 @@ Vec v,**V;
 .  vv - pointer to array of vector pointers
 .  m - the number of vectors previously obtained
 @*/
-int VecFreeVecs(vv,m)
-Vec *vv;
-int m;
+int VecFreeVecs(Vec *vv,int m)
 {
   VALIDHEADER(*vv,VEC_COOKIE);
   return (*(*vv)->ops->release_vectors)( vv, m );
@@ -332,10 +300,7 @@ int m;
   Notes:
 .   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 @*/
-int VecScatterBegin(x,ix,y,iy,ctx)
-Vec y,x;
-IS  ix,iy;
-VecScatterCtx *ctx;
+int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
 {
   VALIDHEADER(y,VEC_COOKIE);
   return (*y->ops->scatterbegin)( x, ix, y, iy,ctx);
@@ -355,10 +320,7 @@ VecScatterCtx *ctx;
   Notes:
 .   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 @*/
-int VecScatterEnd(x,ix,y,iy,ctx)
-Vec y,x;
-IS  ix,iy;
-VecScatterCtx *ctx;
+int VecScatterEnd(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
 {
   VALIDHEADER(y,VEC_COOKIE);
   return (*y->ops->scatterend)( x, ix, y, iy,ctx);
@@ -378,10 +340,7 @@ VecScatterCtx *ctx;
   Notes:
 .   y[iy[i]] += x[ix[i]], for i=0,...,ni-1
 @*/
-int VecScatterAddBegin(x,ix,y,iy,ctx)
-Vec y,x;
-IS  ix,iy;
-VecScatterCtx *ctx;
+int VecScatterAddBegin(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
 {
   VALIDHEADER(y,VEC_COOKIE);
   return (*y->ops->scatteraddbegin)( x, ix, y, iy,ctx);
@@ -402,10 +361,7 @@ VecScatterCtx *ctx;
   Notes:
 .   y[iy[i]] += x[ix[i]], for i=0,...,ni-1
 @*/
-int VecScatterAddEnd(x,ix,y,iy,ctx)
-Vec y,x;
-IS  ix,iy;
-VecScatterCtx *ctx;
+int VecScatterAddEnd(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
 {
   VALIDHEADER(y,VEC_COOKIE);
   return (*y->ops->scatteraddend)( x, ix, y, iy,ctx);
@@ -427,10 +383,7 @@ VecScatterCtx *ctx;
 .  x[ix[i]] += y[i], for i=0,...,ni-1.
 
 @*/
-int VecAddValues(x,ni,ix,y) 
-Vec       x;
-VecScalar y;
-int       *ix, ni;
+int VecAddValues(Vec x,int ni,int *ix,Scalar *y) 
 {
   VALIDHEADER(x,VEC_COOKIE);
   return (*x->ops->addvalues)( x, ni,ix, y );
@@ -451,10 +404,7 @@ int       *ix, ni;
 .  x[ix[i]] = y[i], for i=0,...,ni-1.
 
 @*/
-int VecInsertValues(x,ni,ix,y) 
-Vec       x;
-VecScalar y;
-int       *ix, ni;
+int VecInsertValues(Vec x,int ni,int *ix,Scalar *y) 
 {
   VALIDHEADER(x,VEC_COOKIE);
   return (*x->ops->insertvalues)( x, ni,ix, y );
@@ -467,8 +417,7 @@ int       *ix, ni;
   Input Parameter:
 .   vec - the vector to assemble
 @*/
-int VecBeginAssembly(vec)
-Vec vec;
+int VecBeginAssembly(Vec vec)
 {
   VALIDHEADER(vec,VEC_COOKIE);
   if (vec->ops->beginassm) return (*vec->ops->beginassm)(vec);
@@ -482,8 +431,7 @@ Vec vec;
   Input Parameter:
 .   vec - the vector to assemble
 @*/
-int VecEndAssembly(vec)
-Vec vec;
+int VecEndAssembly(Vec vec)
 {
   VALIDHEADER(vec,VEC_COOKIE);
   if (vec->ops->endassm) return (*vec->ops->endassm)(vec);
@@ -502,10 +450,7 @@ Vec vec;
   Output Parameter:
 .  val - array of the dot products
 @*/
-int VecMTDot(nv,x,y,val)
-Vec       x,*y;
-VecScalar val;
-int       nv;
+int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(*y,VEC_COOKIE);
   CHKSAME(x,*y);
@@ -523,10 +468,7 @@ int       nv;
   Output Parameter:
 .  val - array of the dot products
 @*/
-int VecMDot(nv,x,y,val)
-Vec       x,*y;
-VecScalar val;
-int       nv;
+int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(*y,VEC_COOKIE);
   CHKSAME(x,*y);
@@ -542,10 +484,7 @@ int       nv;
 .  x  - one vectors
 .  y  - array of vectors
 @*/
-int  VecMAXPY(nv,alpha,x,y)
-Vec       x,*y;
-VecScalar alpha;
-int       nv;
+int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(*y,VEC_COOKIE);
   CHKSAME(x,*y);
@@ -563,9 +502,7 @@ int       nv;
    Output Parameters:
 .   a - location to put pointer to the array.
 @*/
-int VecGetArray(x,a)
-Vec       x;
-VecScalar *a;
+int VecGetArray(Vec x,Scalar **a)
 {
   VALIDHEADER(x,VEC_COOKIE);
   return (*x->ops->getarray)(x,a);
@@ -579,9 +516,7 @@ VecScalar *a;
 .  v - the vector
 .  ptr - a pointer to a viewer ctx
 @*/
-int VecView(v,ptr)
-Vec  v;
-void *ptr;
+int VecView(Vec v,void *ptr)
 {
   VALIDHEADER(v,VEC_COOKIE);
   return (*v->ops->view)(v,ptr);
@@ -596,9 +531,7 @@ void *ptr;
   Output Parameters:
 .  size - the length of the vector.
 @*/
-int VecGetSize(x,size)
-Vec x;
-int *size;
+int VecGetSize(Vec x,int *size)
 {
   VALIDHEADER(x,VEC_COOKIE);
   return (*x->ops->getsize)(x,size);
@@ -615,9 +548,7 @@ int *size;
   Output Parameters:
 .  size - the length of the local piece of the vector.
 @*/
-int VecGetLocalSize(x,size)
-Vec x;
-int *size;
+int VecGetLocalSize(Vec x,int *size)
 {
   VALIDHEADER(x,VEC_COOKIE);
   return (*x->ops->localsize)(x,size);
@@ -625,9 +556,7 @@ int *size;
 
 /* Default routines for obtaining and releasing; */
 /* may be used by any implementation */
-int Veiobtain_vectors( w, m,V )
-int m;
-Vec w,**V;
+int Veiobtain_vectors(Vec w,int m,Vec **V )
 {
   Vec *v;
   int  i;
@@ -636,9 +565,7 @@ Vec w,**V;
   return 0;
 }
 
-int Veirelease_vectors( v, m )
-int m;
-Vec *v;
+int Veirelease_vectors( Vec *v, int m )
 {
   int i;
   for (i=0; i<m; i++) VecDestroy(v[i]);
@@ -646,9 +573,9 @@ Vec *v;
   return 0;
 }
 
-int VeiDestroyVector( v )
-Vec v;
+int VeiDestroyVector(PetscObject obj )
 {
+  Vec v = (Vec ) obj;
   FREE(v->data); FREE(v);
   return 0;
 }

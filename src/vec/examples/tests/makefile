@@ -11,8 +11,8 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 EXAMPLES = ex1
-SYSLIB   = $(LDIR)/cmain$(COMM).o $(LDIR)/$(COMPLEX)/libpetscvec.a \
-           $(LDIR)/libpetscvec.a \
+EXAMPLESC= ex1.c
+SYSLIB   = $(LDIR)/cmain$(COMM).o $(LDIR)/libpetscvec.a \
            $(LDIR)/libpetscsys.a $(BLAS) $(CLIB) $(SLIB) -lm 
 LINCLUDE = $(SOURCEH)
 

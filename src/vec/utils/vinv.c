@@ -9,16 +9,15 @@
   Input Parameters:
 .   v - the vector 
 @*/
-int VecReciprocal(v)
-Vec v;
+int VecReciprocal(Vec v)
 {
   int    ierr, i,n;
-  double *x;
+  Scalar *x;
   VALIDHEADER(v,VEC_COOKIE);
   if (ierr = VecGetLocalSize(v,&n)) return ierr;
   if (ierr = VecGetArray(v,&x)) return ierr;
   for ( i=0; i<n; i++ ) {
-    if (x[i]) x[i] = 1.0/x[i];
+    if (x[i] != 0.0) x[i] = 1.0/x[i];
   }
   return 0;
 }

@@ -8,30 +8,27 @@ typedef struct {
   int *idx;
 } IndexiGeneral;
 
-static int ISidestroy(is)
-IS is;
+static int ISidestroy(PetscObject obj)
 {
+  IS is = (IS) obj;
   FREE(is->data); FREE(is); return 0;
 }
 
-static int ISiIndices(sub,idx)
-IndexiGeneral *sub;
-int           **idx;
+static int ISiIndices(IS in,int **idx)
 {
+  IndexiGeneral *sub = (IndexiGeneral *) in->data;
   *idx = sub->idx; return 0;
 }
 
-static int ISiSize(sub,size)
-IndexiGeneral *sub;
-int           *size;
+static int ISiSize(IS is,int *size)
 {
+  IndexiGeneral *sub = (IndexiGeneral *)is->data;
   *size = sub->n; return 0;
 }
 
-static int ISiPosition(sub,ii,pos)
-IndexiGeneral *sub;
-int           ii,*pos;
+static int ISiPosition(IS is,int ii,int *pos)
 {
+  IndexiGeneral *sub = (IndexiGeneral *)is->data;
   int m,*idx = sub->idx, a, b, i, n = sub->n;
   if (!sub->sorted) {
     for (i=0; i<n; i++) {
@@ -65,9 +62,7 @@ static struct _ISOps myops = { ISiSize,ISiSize,
 .   idx - the list of integers.
 
 @*/
-int ISCreateSequential(n,idx,is)
-int n, *idx;
-IS *is;
+int ISCreateSequential(int n,int *idx,IS *is)
 {
   int     i, sorted = 1, size = sizeof(IndexiGeneral) + n*sizeof(int);
   IS      Nindex;
