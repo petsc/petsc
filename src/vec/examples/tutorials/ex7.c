@@ -1,15 +1,15 @@
 #ifndef lint
-static char vcid[] = "$Id: ex24.c,v 1.1 1996/03/19 23:03:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex24.c,v 1.2 1996/03/23 18:32:43 bsmith Exp curfman $";
 #endif
 
-static char help[] = "Demonstrates calling a Fortran compute routine from C.\n\n";
+static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\n";
 
 #include <stdio.h>
 #include "vec.h"
 
 /*
-    Ugly stuff to insure the function names match between Fortran 
-  and C. Sorry but this is out of our PETSc hands to cleanup.
+  Ugly stuff to insure the function names match between Fortran 
+  and C. Sorry, but this is out of our PETSc hands to cleanup.
 */
 #if defined(HAVE_FORTRAN_CAPS)
 #define ex24f_ EX24F
@@ -35,9 +35,9 @@ int main(int argc,char **args)
   ierr = VecCreate(MPI_COMM_WORLD,m,&vec); CHKERRA(ierr);
 
   /* 
-     call Fortran routine - the use of PetscCObjectToFortranObject()
+     Call Fortran routine - the use of PetscCObjectToFortranObject()
      insures that the PETSc vector is properly interpreted on the 
-     Fortran side. Note Fortran treats all PETSc objects as integers.
+     Fortran side. Note that Fortran treats all PETSc objects as integers.
   */
   ierr = PetscCObjectToFortranObject(vec,&fvec);
   ex24f_(&fvec);

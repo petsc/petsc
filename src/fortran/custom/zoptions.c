@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.20 1996/03/20 14:45:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.21 1996/03/23 16:56:55 bsmith Exp curfman $";
 #endif
 
 /*
@@ -377,16 +377,20 @@ Scalar *PetscScalarAddressFromFortran(Scalar *base,int addr)
 }
 
 /*@
-    PetscCObjectToFortranObject - C 972832onverts a PETSc object represented
-       in C to one appropriate to pass to Fortran.
+    PetscCObjectToFortranObject - Converts a PETSc object represented
+    in C to one appropriate to pass to a Fortran routine.
 
-  Input Parameter:
+    Input Parameter:
 .   cobj - the PETSc C object
 
-  Output Parameter:
+    Output Parameter:
 .   fobj - the PETSc Fortran object
 
-  Notes: Must be called in a C/C++ routine.
+    Notes:
+    PetscCObjectToFortranObject() must be called in a C/C++ routine.
+    See examples petsc/src/vec/examples/ex24.c and ex24f.F
+
+.keywords: Fortran, C, object, convert
 
 .seealso: PetscFortranObjectToCObject()
 @*/
@@ -399,15 +403,19 @@ int PetscCObjectToFortranObject(void *cobj,int *fobj)
 
 /*@
     PetscFortranObjectToCObject - Converts a PETSc object represented
-       in Fortran to one appropriate for C.
+    in Fortran to one appropriate for C.
 
-  Input Parameter:
+    Input Parameter:
 .   fobj - the PETSc Fortran object
 
-  Output Parameter:
+    Output Parameter:
 .   cobj - the PETSc C object
 
-  Notes: Must be called in a C/C++ routine.
+    Notes:
+    PetscCObjectToFortranObject() must be called in a C/C++ routine.
+    See examples petsc/src/vec/examples/ex24.c and ex24f.F
+
+.keywords: Fortran, C, object, convert
 
 .seealso: PetscCObjectToFortranObject()
 @*/

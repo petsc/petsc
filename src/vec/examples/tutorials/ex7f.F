@@ -1,5 +1,5 @@
 
-C    "$Id: ex24f.F,v 1.1 1996/03/19 23:03:49 bsmith Exp bsmith $";
+C    "$Id: ex24f.F,v 1.2 1996/03/23 18:32:43 bsmith Exp curfman $";
 
        subroutine ex24f(vec)
 
@@ -19,7 +19,7 @@ C
        call VecSet(two,vec,ierr)
 
 C
-C  Now call C routine from Fortran passing in the matrix
+C  Now call C routine from Fortran, passing in the vector
 C
        call ex24c(vec)
 
