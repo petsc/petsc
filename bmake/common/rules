@@ -232,7 +232,7 @@ getmpirun:
 .fig.pdf:
 	fig2dev -L pdf $< $*.pdf
 .eps.pdf:
-	ps2pdf $< $*.pdf
+	epstopdf $< $*.pdf
 
 .c.o .cpp.o .cc.o .C.o .ad.o: 
 	@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
