@@ -1,4 +1,4 @@
-# $Id: matrix.c,v 1.378 2000/08/17 04:51:22 bsmith Exp $
+# $Id: makefile,v 1.2 2000/08/23 15:11:35 bsmith Exp bsmith $
 ALL: lib
 
 CFLAGS   =
@@ -14,3 +14,4 @@ MANSEC   = PC
 LOCDIR   = src/sles/pc/impls/itersub/nn/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
