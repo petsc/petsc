@@ -9,16 +9,17 @@ int CreateError(int n)
 {
   int ierr;
   if (!n) SETERR(1,"Error Created");
-  if ((ierr = CreateError(n-1))) SETERR(ierr,"Error returned");
+  ierr = CreateError(n-1); CHKERR(ierr);
   return 0;
 }
 
 int main(int argc,char **argv)
 {
+  int ierr;
   PetscInitialize(&argc,&argv,0,0);
   fprintf(stderr,"Demonstrates Petsc Error Handlers\n");
   fprintf(stderr,"The error below is a contrived error to test the code\n");
-  CreateError(5);
+  ierr = CreateError(5); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

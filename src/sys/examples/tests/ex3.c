@@ -14,12 +14,14 @@ int CreateError(double x)
 
 int main(int argc,char **argv)
 {
+  int ierr;
   PetscInitialize(&argc,&argv,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stderr,help);
   fprintf(stderr,"This is a contrived example to test floating pointing\n");
   fprintf(stderr,"It is not a true error.\n");
+  fprintf(stderr,"Run with -fp_trap to catch the floating point error\n");
   fflush(stderr);
-  CreateError(0.0);
+  ierr = CreateError(0.0); CHKERRA(ierr);
   return 0;
 }
  
