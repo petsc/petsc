@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daload.c,v 1.3 1999/03/15 02:28:48 bsmith Exp balay $";
+static char vcid[] = "$Id: daload.c,v 1.4 1999/03/15 22:11:15 balay Exp bsmith $";
 #endif
 
 #include "src/dm/da/daimpl.h"     /*I  "da.h"   I*/
@@ -24,9 +24,10 @@ static char vcid[] = "$Id: daload.c,v 1.3 1999/03/15 02:28:48 bsmith Exp balay $
 @*/
 int DALoad(Viewer viewer,int M,int N, int P,DA *da)
 {
-  int         rank, size,ierr,info[8],nmax = 8,flag,fd;
+  int         rank, size,ierr,info[8],nmax = 8,flag,fd,i;
   ViewerType  vtype;
   MPI_Comm    comm;
+  char        fieldnametag[32],fieldname[64];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
@@ -55,6 +56,13 @@ int DALoad(Viewer viewer,int M,int N, int P,DA *da)
                       info[4],info[5],0,0,0,da);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Dimension in info file is not 1, 2, or 3 it is %d",info[0]);
+  }
+  for ( i=0; i<info[4]; i++ ) {
+    sprintf(fieldnametag,"-daload_fieldname_%s",i);
+    ierr = OptionsGetString(PETSC_NULL,fieldnametag,fieldname,64,&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = DASetFieldName(*da,i,fieldname);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
