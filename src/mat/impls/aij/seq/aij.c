@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.250 1998/03/06 00:14:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.251 1998/03/12 23:18:23 bsmith Exp balay $";
 #endif
 
 /*
@@ -1504,6 +1504,9 @@ int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
   inA->factor   = FACTOR_LU;
   a->row        = row;
   a->col        = col;
+
+  /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
+  ierr = ISInvertPermutation(col,&(a->icol)); CHKERRQ(ierr);
 
   if (!a->solve_work) { /* this matrix may have been factored before */
     a->solve_work = (Scalar *) PetscMalloc( (a->m+1)*sizeof(Scalar)); CHKPTRQ(a->solve_work);

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.6 1997/10/07 23:21:46 balay Exp balay $ 
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = 
 OBJSF    =
 LIBBASE  = libpetscfortran
-DIRS     = custom
+DIRS     = custom f90
 LOCDIR   = src/fortran/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
