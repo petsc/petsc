@@ -1,5 +1,5 @@
 
-C      "$Id: ex2f.F,v 1.3 1996/09/12 16:24:50 bsmith Exp curfman $";
+C      "$Id: ex2f.F,v 1.4 1996/09/28 14:10:03 curfman Exp curfman $";
 C
 C/*T
 C    Concepts: Index sets^Manipulating a stride index set;
@@ -11,16 +11,12 @@ C
 C    Comment: Creates an index set based on a stride. Views that index set
 C    and then destroys it.
 C
+C  Include is.h so we can use PETSc IS objects. Note that this automatically 
+C  includes petsc.h when using the #include style of include statements.
 C
-C  Always include petsc.h
-C  include is.h so we can work with PETSc IS objects 
-C  include viewer.h so we can use Viewer (e.g. VIEWER_STDOUT_SELF)
       implicit none
 
-#include "FINCLUDE/petsc.h"
 #include "FINCLUDE/is.h"
-#include "FINCLUDE/viewer.h"
-
 
       integer i, n, ierr, iss, index(1), first, step
       IS      set

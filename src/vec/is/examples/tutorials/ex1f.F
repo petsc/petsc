@@ -1,5 +1,5 @@
 
-C  "$Id: ex1f.F,v 1.4 1996/09/12 16:24:50 bsmith Exp curfman $";
+C  "$Id: ex1f.F,v 1.5 1996/09/28 14:09:46 curfman Exp curfman $";
 C
 C/*T
 C    Concepts: Index sets^Manipulating a general index set;
@@ -10,14 +10,12 @@ C
 C    Comment: Creates an index set based on a set of integers. Views that index set
 C    and then destroys it.
 C
-C  Always include petsc.h
-C  include is.h so we can work with PETSc IS objects 
-C  include viewer.h so we can use Viewer (e.g. VIEWER_STDOUT_SELF)
+C  Include is.h so we can use PETSc IS objects. Note that this automatically 
+C  includes petsc.h when using the #include style of include statements.
+C
       implicit none
 
-#include "FINCLUDE/petsc.h"
 #include "FINCLUDE/is.h"
-#include "FINCLUDE/viewer.h"
 
       integer ierr, indices(5),rank,n,ix
       IS      is
