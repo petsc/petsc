@@ -51,7 +51,7 @@ struct _p_TS {
 
   /* Identifies this as a grid TS structure */
   PetscTruth  isGTS;                                 /* This problem arises from an underlying grid */
-  PetscTruth *explicit;                              /* Indicates which fields have explicit time dependence */
+  PetscTruth *isExplicit;                            /* Indicates which fields have explicit time dependence */
   int        *Iindex;                                /* The index of the identity for each time dependent field */
 
   /* ---------------------Linear Iteration---------------------------------*/

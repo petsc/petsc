@@ -686,7 +686,7 @@ int TSCreate(MPI_Comm comm, TSProblemType problemtype, TS *ts)
   t->vec_sol_always     = PETSC_NULL;
   t->numbermonitors     = 0;
   t->isGTS              = PETSC_FALSE;
-  t->explicit           = PETSC_NULL;
+  t->isExplicit         = PETSC_NULL;
   t->Iindex             = PETSC_NULL;
   t->sles               = PETSC_NULL;
   t->A                  = PETSC_NULL;
