@@ -578,6 +578,41 @@ AC_CHECK_FUNCS(memalign)
 AC_CHECK_FUNCS(rand drand48)
 AC_CHECK_FUNCS(sigaction signal sigset)
 dnl
+dnl Solaris and Linux both have sysinfo, but with different numbers of args
+dnl Linux:
+dnl #include <linux/kernel.h>
+dnl #include <linux/sys.h>
+dnl int sysinfo( struct sysinfo *info )
+dnl Solaris:
+dnl #include <sys/systeminfo.h>
+dnl long sysinfo(int command, char*buf, long count )
+AC_CACHE_CHECK([for sysinfo],ac_cv_func_sysinfo,
+[AC_TRY_LINK(,[
+    sysinfo();],ac_cv_func_sysinfo=yes,ac_cv_func_sysinfo=no)])
+if test "$ac_cv_func_sysinfo" = "yes" ; then
+    AC_CHECK_HEADERS(linux/kernel.h linux/sys.h sys/systeminfo.h)
+    AC_CACHE_CHECK([whether sysinfo takes three arguments],
+ac_cv_func_sysinfo3,
+[AC_TRY_COMPILE([
+#ifdef HAVE_LINUX_KERNEL_H
+#include <linux/kernel.h>
+#include <linux/sys.h>
+#elif defined(HAVE_SYS_SYSTEMINFO_H)
+#include <sys/systeminfo.h>
+#else
+'Cannot check sysinfo without special headers'
+#fi],[
+    char buf[10];
+    long  count=10;
+    sysinfo( 1, buf, count );],
+ac_cv_func_sysinfo3=yes,ac_cv_func_sysinfo3=no)])
+    if test "$ac_cv_func_sysinfo3" = "yes" ; then
+        AC_DEFINE(HAVE_SYSINFO_3ARG)
+    else
+        AC_DEFINE(HAVE_SYSINFO)
+    fi
+fi
+dnl
 dnl Some PETSc checks look for MISSING_xxx instead of HAVE_xxx.  The 
 dnl following handles that
 if test "$ac_cv_func_getpwuid" != "yes" ; then
