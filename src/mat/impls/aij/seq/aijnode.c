@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.30 1996/01/24 05:45:53 bsmith Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.31 1996/01/25 17:49:56 balay Exp curfman $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -374,7 +374,7 @@ int Mat_AIJ_CheckInode(Mat A)
   A->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
   a->inode.node_count    = node_count;
   a->inode.size          = ns;
-  PLogInfo((PetscObject)A,"Mat_AIJ_CheckInode: Found %d nodes. Limit used: %d. Using Inode_Routines\n",node_count,a->inode.limit);
+  PLogInfo((PetscObject)A,"Mat_AIJ_CheckInode: Found %d nodes. Limit used: %d. Using Inode routines\n",node_count,a->inode.limit);
   return 0;
 }
 

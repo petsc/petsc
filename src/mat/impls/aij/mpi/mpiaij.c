@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.125 1996/02/09 15:00:36 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.126 1996/02/09 15:10:11 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -561,17 +561,20 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
   if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
     ierr = ViewerFileGetFormat_Private(viewer,&format);
     if (format == FILE_FORMAT_INFO_DETAILED) {
-      int nz,nzalloc,mem;
+      int nz, nzalloc, mem, flg;
       MPI_Comm_rank(mat->comm,&rank);
       ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
+      ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg); CHKERRQ(ierr);
       MPIU_Seq_begin(mat->comm,1);
-      fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d \n",rank,aij->m,nz,
-                nzalloc,mem);       
+      if (flg) fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d, not using I-node routines\n",
+         rank,aij->m,nz,nzalloc,mem);       
+      else fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d, using I-node routines\n",
+         rank,aij->m,nz,nzalloc,mem);       
       ierr = MatGetInfo(aij->A,MAT_LOCAL,&nz,&nzalloc,&mem); 
-      fprintf(fd,"[%d] on diagonal nz %d \n",rank,nz); 
+      fprintf(fd,"[%d] on-diagonal part: nz %d \n",rank,nz);
       ierr = MatGetInfo(aij->B,MAT_LOCAL,&nz,&nzalloc,&mem); 
-      fprintf(fd,"[%d] off diagonal nz %d \n",rank,nz); 
+      fprintf(fd,"[%d] off-diagonal part: nz %d \n",rank,nz); 
       fflush(fd);
       MPIU_Seq_end(mat->comm,1);
       ierr = VecScatterView(aij->Mvctx,viewer); CHKERRQ(ierr);

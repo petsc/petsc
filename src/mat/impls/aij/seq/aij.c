@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.149 1996/02/15 23:59:34 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.150 1996/02/16 20:05:38 balay Exp curfman $";
 #endif
 
 /*
@@ -215,7 +215,7 @@ static int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
 static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
-  int         ierr, i,j, m = a->m, shift = a->indexshift,format;
+  int         ierr, i,j, m = a->m, shift = a->indexshift, format, flg;
   FILE        *fd;
   char        *outputname;
 
@@ -223,8 +223,14 @@ static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerFileGetFormat_Private(viewer,&format);
   if (format == FILE_FORMAT_INFO) {
-    /* no need to print additional information */ ;
+    return 0;
   } 
+  else if (format == FILE_FORMAT_INFO_DETAILED) {
+    ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg); CHKERRQ(ierr);
+    if (flg) fprintf(fd,"  not using I-node routines\n");
+    else     fprintf(fd,"  using I-node routines: found %d nodes, limit used is %d\n",
+        a->inode.node_count,a->inode.limit);
+  }
   else if (format == FILE_FORMAT_MATLAB) {
     int nz, nzalloc, mem;
     MatGetInfo(A,MAT_LOCAL,&nz,&nzalloc,&mem);
