@@ -480,6 +480,6 @@ class Framework(base.Base):
       if not self.argDB['noStackTrace']:
         import traceback
         import sys
-        self.debugPrint(traceback.print_tb(sys.exc_info()[2]), 1, 'build')
+        self.debugPrint(str(traceback.print_tb(sys.exc_info()[2])), 1, 'build')
         print traceback.print_tb(sys.exc_info()[2])
     return
