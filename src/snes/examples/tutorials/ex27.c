@@ -723,6 +723,7 @@ int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
   PetscReal      hx,hy,dhx,dhy,hxhy;
   PassiveScalar  dtinv;
   PassiveField   **xold;
+  PetscTruth     use_parab = PETSC_FALSE;
 
   PetscFunctionBegin; 
   xints = info->xs; xinte = info->xs+info->xm; yints = info->ys; yinte = info->ys+info->ym;
@@ -731,10 +732,18 @@ int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
   hxhy = hx*hy;
   ierr = DAVecGetArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
   dtinv = hxhy/(tsCtx->cfl*tsCtx->dt);
+  /* 
+     use_parab = PETSC_TRUE for parabolic equations; all the four equations have temporal term.
+               = PETSC_FALSE for differential algebraic equtions (DAE); 
+                 velocity equations do not have temporal term.
+  */
+  ierr = PetscOptionsGetLogical(PETSC_NULL,"-use_parabolic",&use_parab,PETSC_IGNORE);CHKERRQ(ierr);
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
-      f[j][i].u     += dtinv*(x[j][i].u-xold[j][i].u);
-      f[j][i].v     += dtinv*(x[j][i].v-xold[j][i].v);
+      if (use_parab) {
+	f[j][i].u     += dtinv*(x[j][i].u-xold[j][i].u);
+	f[j][i].v     += dtinv*(x[j][i].v-xold[j][i].v);
+      }
       f[j][i].omega += dtinv*(x[j][i].omega-xold[j][i].omega);
       f[j][i].temp  += dtinv*(x[j][i].temp-xold[j][i].temp);
     }
@@ -742,7 +751,3 @@ int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
   ierr = DAVecRestoreArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
