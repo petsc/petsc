@@ -129,7 +129,7 @@ def petsc_configure(configure_options):
         print '''** Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path'''
         print '''** or manually copy BuildSystem to $PETSC_DIR/python/BuildSystem from a machine where'''
         print '''** you do have bk installed and can clone BuildSystem. '''
-       print '================================================================================='
+        print '================================================================================='
       elif output.find('Cannot resolve host') >= 0:
         print '================================================================================='
         print '''** Unable to download BuildSystem. You must be off the network.'''
