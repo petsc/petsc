@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.20 1998/04/27 14:03:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.21 1998/05/21 15:35:55 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -102,10 +102,12 @@ int AOPetscToApplicationIS(AO ao,IS is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
-  ierr = ISStride(is,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(1,1,"Cannot translate stride index sets");
   ierr = ISBlock(is,&flag);CHKERRQ(ierr);
   if (flag) SETERRQ(1,1,"Cannot translate block index sets");
+  ierr = ISStride(is,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
+  }
 
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ia); CHKERRQ(ierr);
@@ -145,10 +147,12 @@ int AOApplicationToPetscIS(AO ao,IS is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
-  ierr = ISStride(is,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(1,1,"Cannot translate stride index sets");
   ierr = ISBlock(is,&flag);CHKERRQ(ierr);
   if (flag) SETERRQ(1,1,"Cannot translate block index sets");
+  ierr = ISStride(is,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
+  }
 
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ia); CHKERRQ(ierr);
