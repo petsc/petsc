@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.56 1998/12/17 21:55:59 balay Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.57 1999/01/31 16:12:02 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -36,6 +36,7 @@ static char vcid[] = "$Id: zsys.c,v 1.56 1998/12/17 21:55:59 balay Exp bsmith $"
 #define petscreleasepointer_       PETSCRELEASEPOINTER
 #define petscstrncpy_              PETSCSTRNCPY
 #define petscbarrier_              PETSCBARRIER
+#define petscsynchronizedflush_    PETSCSYNCHRONIZEDFLUSH
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscbarrier_              petscbarrier
 #define petscstrncpy_              petscstrncpy
@@ -66,6 +67,7 @@ static char vcid[] = "$Id: zsys.c,v 1.56 1998/12/17 21:55:59 balay Exp bsmith $"
 #define petscbinarywrite_          petscbinarywrite
 #define petscbinaryclose_          petscbinaryclose
 #define petscbinaryseek_           petscbinaryseek
+#define petscsynchronizedflush_    petscsynchronizedflush
 #endif
 
 EXTERN_C_BEGIN
@@ -278,6 +280,11 @@ void petscreleasepointer_(int *index,int *__ierr)
 {
    PetscRmPointer(index);
    *__ierr = 0;
+}
+
+void petscsynchronizedflush_(MPI_Comm *comm,int *__ierr){
+*__ierr = PetscSynchronizedFlush(
+	(MPI_Comm)PetscToPointerComm( *comm));
 }
 
 EXTERN_C_END
