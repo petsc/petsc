@@ -387,7 +387,7 @@ passwd:  petsc-passwd (couldn't change it to the new one yet)
 info : Useful command showq, showbf, llsubmit
 
 Kerberos logging info
-machine : fr1n05.mhpcc.edu
+machine : fr1n05.mhpcc.edu,onyx1.mhpcc.edu
 account : balay
 kerberos passwd: petsc-passwd
 
