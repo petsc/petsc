@@ -212,5 +212,74 @@ M*/
 
 EXTERN PetscErrorCode PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataType, int *, InsertMode, ScatterMode, void *, void *);
 
+/* 
+  Initialize a linked list 
+  Input Parameters:
+    lnk_init  - the initial index value indicating the entry in the list is not set yet
+    nlnk      - max length of the list
+    lnk       - linked list(an integer array) that is allocated
+  output Parameters:
+    lnk       - the linked list with all values set as lnk_int
+*/
+#define PetscLLInitialize(lnk_init,nlnk,lnk) 0;\
+{\
+  int _i;\
+  for (_i=0; _i<nlnk; _i++) lnk[_i] = lnk_init;\
+}
+
+/*
+  Add a index set into a sorted linked list
+  Input Parameters:
+    nidx      - number of input indices
+    indices   - interger array
+    lnk_head  - the header of the list
+    lnk_init  - the initial index value indicating the entry in the list is not set yet
+    lnk       - linked list(an integer array) that is created
+  output Parameters:
+    nlnk      - number of newly added indices
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+*/
+#define PetscLLAdd(nidx,indices,lnk_head,lnk_init,nlnk,lnk) 0;\
+{\
+  int _k,_entry,_location,_lnkdata;\
+  nlnk = 0;\
+  _k=nidx;\
+  while (_k){/* assume indices are almost in increasing order, starting from its end saves computation */\
+    _entry = indices[--_k];\
+    /* search for insertion location */\
+    _lnkdata  = lnk_head;\
+    do {\
+      _location = _lnkdata;\
+      _lnkdata  = lnk[_location];\
+    } while (_entry > _lnkdata);\
+    /* insertion location is found, add entry into lnk if it is new */\
+    if (_entry <  _lnkdata){/* new entry */\
+      lnk[_location] = _entry;\
+      lnk[_entry]    = _lnkdata;\
+      nlnk++;\
+    }\
+  }\
+}
+/*
+  Copy data on the list into an array, then initialize the list 
+  Input Parameters:
+    lnk_head  - the header of the list
+    lnk_init  - the initial index value indicating the entry in the list is not set yet
+    nlnk      - number of data on the list to be copied
+    lnk       - linked list
+  output Parameters:
+    indices   - array that contains the copied data
+*/
+#define PetscLLClear(lnk_head,lnk_init,nlnk,lnk,indices) 0;\
+{\
+  int _j,_idx=lnk_head,_idx0;\
+  for (_j=0; _j<nlnk; _j++){\
+    _idx0 = _idx; _idx = lnk[_idx0];\
+    *(indices+_j) = _idx;\
+    lnk[_idx0] = lnk_init;\
+  }\
+  lnk[_idx] = lnk_init;\
+}
+
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCSYS_H */

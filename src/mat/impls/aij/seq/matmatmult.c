@@ -7,72 +7,9 @@
 #include "src/mat/utils/freespace.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-/* 
-  Initialize a linked list 
-  Input Parameters:
-    lnk_init  - the initial index value indicating the entry in the list is not set yet
-    nlnk      - max length of the list
-    lnk       - linked list(an integer array) that is allocated
-  output Parameters:
-    lnk       - the linked list with all values set as lnk_int
-*/
-#define LNKLISTINITIALIZE(lnk_init,nlnk,lnk){\
-  int _i;\
-  for (_i=0; _i<nlnk; _i++) lnk[_i] = lnk_init;\
-}
-
-/*
-  Add a index set into a sorted linked list
-  Input Parameters:
-    nidx      - number of input indices
-    indices   - interger array
-    lnk_head  - the header of the list
-    lnk_init  - the initial index value indicating the entry in the list is not set yet
-    lnk       - linked list(an integer array) that is created
-  output Parameters:
-    nlnk      - number of newly added indices
-    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
-*/
-#define LNKLISTADD(nidx,indices,lnk_head,lnk_init,nlnk,lnk){\
-  int _k,_entry,_lidx=lnk_head,_idx;\
-  nlnk = 0;\
-  _k=nidx;\
-  while (_k){/* assume indices are almost in increasing order, starting from its end saves computation */\
-    _entry = indices[--_k];\
-    if (lnk[_entry] == lnk_init) { /* new col */\
-      do {\
-        _idx = _lidx;\
-        _lidx  = lnk[_idx];\
-      } while (_entry > _lidx);\
-      lnk[_idx] = _entry;\
-      lnk[_entry] = _lidx;\
-      nlnk++;\
-    }\
-  }\
-}
-/*
-  Copy data on the list into an array, then initialize the list 
-  Input Parameters:
-    lnk_head  - the header of the list
-    lnk_init  - the initial index value indicating the entry in the list is not set yet
-    nlnk      - number of data on the list to be copied
-    lnk       - linked list
-  output Parameters:
-    indices   - array that contains the copied data
-*/
-#define LNKLISTCLEAR(lnk_head,lnk_init,nlnk,lnk,indices){\
-  int _j,_idx=lnk_head,_idx0;\
-  for (_j=0; _j<nlnk; _j++){\
-    _idx0 = _idx; _idx = lnk[_idx0];\
-    *(indices+_j) = _idx;\
-    lnk[_idx0] = lnk_init;\
-  }\
-  lnk[_idx] = lnk_init;\
-}
-
 typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ for reusing symbolic mat product */
-  IS        isrowa,isrowb,iscolb;
-  Mat       *aseq,*bseq,C_seq;
+  IS     isrowa,isrowb,iscolb;
+  Mat    *aseq,*bseq,C_seq;
 } Mat_MatMatMultMPI;
 
 static int logkey_matmatmult_symbolic = 0;
@@ -318,7 +255,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ci[0] = 0;
   
   ierr = PetscMalloc((bn+1)*sizeof(int),&lnk);CHKERRQ(ierr);
-  LNKLISTINITIALIZE(lnk_init,bn,lnk);
+  nlnk = bn+1;
+  ierr = PetscLLInitialize(lnk_init,nlnk,lnk);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
   ierr = GetMoreSpace((int)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
@@ -337,7 +275,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
       bnzj = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       /* add non-zero cols of B into the sorted linked list lnk */
-      LNKLISTADD(bnzj,bjj,bn,lnk_init,nlnk,lnk);
+      ierr = PetscLLAdd(bnzj,bjj,bn,lnk_init,nlnk,lnk);CHKERRQ(ierr);
       cnzi += nlnk;
     }
 
@@ -350,7 +288,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
     }
 
     /* Copy data into free space, then initialize lnk */
-    LNKLISTCLEAR(bn,lnk_init,cnzi,lnk,current_space->array);
+    ierr = PetscLLClear(bn,lnk_init,cnzi,lnk,current_space->array);CHKERRQ(ierr);
     current_space->array += cnzi;
 
     current_space->local_used      += cnzi;
