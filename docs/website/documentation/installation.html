@@ -11,7 +11,7 @@
       <td width="25%" valign="top">
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
-        <li><a href="../../index.html"><strong>Home</strong></a></li>
+        <li><a href="../index.html"><strong>Home</strong></a></li>
       </ul>
       </td>
       <td width="75%"><!--##begin-->
@@ -22,7 +22,7 @@
             <h1><b>Docs:&nbsp; Installation</b></h1>
             </td>
             <td width="50%"><img border="0"
- src="../../images/headbang.gif" width="113" height="113"></td>
+ src="../images/headbang.gif" width="113" height="113"></td>
           </tr>
         </tbody>
       </table>
@@ -36,28 +36,28 @@
       <td width="25%" valign="top">
       <ul>
         <li><strong><font color="#ff0000"><a
- href="../../download/index.html">Download</a></font></strong></li>
-        <li><a href="../../features/index.html"><strong>Features</strong></a></li>
-        <li><a href="../index.html"><strong>Documentation</strong></a>
+ href="../download/index.html">Download</a></font></strong></li>
+        <li><a href="../features/index.html"><strong>Features</strong></a></li>
+        <li><a href="index.html"><strong>Documentation</strong></a>
           <ul>
-            <li><a href="../index.html#Manual"><strong>Manual pages and
+            <li><a href="index.html#Manual"><strong>Manual pages and
 Users Manual</strong></a></li>
-            <li><a href="../referencing.html"><strong>Referencing&nbsp;
+            <li><a href="referencing.html"><strong>Referencing&nbsp;
 PETSc</strong></a></li>
-            <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
+            <li><a href="tutorials/index.html"><strong>Tutorials</strong></a></li>
             <li><strong><font color="#ff0000">Installation</font></strong>
               </li>
-            <li><strong><a href="../changes/index.html">Changes</a></strong></li>
-            <li><strong><a href="../troubleshooting.html">Troubleshooting</a></strong></li>
-            <li><strong><a href="../bugreporting.html">Bug Reporting</a></strong></li>
-            <li><strong><a href="../codemanagement.html">Code Management</a></strong></li>
-            <li><strong><a href="../faq.html">FAQ</a> </strong></li>
-            <li><strong><a href="../copyright.html">Copyright</a> </strong></li>
+            <li><strong><a href="changes/index.html">Changes</a></strong></li>
+            <li><strong><a href="troubleshooting.html">Troubleshooting</a></strong></li>
+            <li><strong><a href="bugreporting.html">Bug Reporting</a></strong></li>
+            <li><strong><a href="codemanagement.html">Code Management</a></strong></li>
+            <li><strong><a href="faq.html">FAQ</a> </strong></li>
+            <li><strong><a href="copyright.html">Copyright</a> </strong></li>
           </ul>
         </li>
-        <li><a href="../../publications/index.html"><strong>Publications</strong></a></li>
-        <li><a href="../../talks"><strong>Presentations</strong></a></li>
-        <li><a href="../../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
+        <li><a href="../publications/index.html"><strong>Publications</strong></a></li>
+        <li><a href="../talks"><strong>Presentations</strong></a></li>
+        <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
       </ul>
       </td>
       <td width="75%" valign="top"><!--##begin--> 
@@ -342,7 +342,7 @@ that configure does not overwrite manually editable configuration files - such
 as linux, linux_intel etc.</p>
 <p>examples:</p>
 <ul>
-  <li><font color="#FF0000">config/configure.py -help</font></li>
+  <li><font color="#FF0000">config/configure.py --help</font></li>
   <li><font color="#FF0000">config/configure.py --with-mpi --with-mpi-dir=/usr/local/mpich --with-blas=/usr/lib/libblas.a 
   --with-lapack=/usr/lib/liblapack.a</font></li>
 </ul>
@@ -365,10 +365,8 @@ This tool is used as a wrapper to Microsoft/ Borland/ Intel compilers and
 associated tools - to enable building PETSc libraries using make and other UNIX 
 tools. For additional info, run ${PETSC_DIR}/bin/win32/win32fe without any 
 options.</p>
-<p><b><font color="#551A8B">Compilers:</font></b> Support Microsoft (win32_ms*), 
-Intel (win32_intel), Borland (win32_borland), Gnu compilers (win32_gnu)</p>
-<p><font color="#551A8B"><b>Project Files:</b> </font>We provide default project 
-files that work with PETSC_ARCH=win32_ms_mpich.  Be sure to build the libraries that correspond to the project configuration you are using.  To use a C++ project with Debug configuration, BOPT=g_c++ libraries are required.</p>
+<p><b><font color="#551A8B">Compilers:</font></b> Support Microsoft (win32_ms*), Intel (win32_intel), Borland (win32_borland), Gnu compilers (win32_gnu)</p>
+<p><font color="#551A8B"><b>Project Files:</b> </font>We provide default project files that work with PETSC_ARCH=win32_ms_mpich.  They are located at ${PETSC_DIR}/projects. Be sure to build the libraries that correspond to the project configuration you are using.  To use a C++ project with Debug configuration, BOPT=g_c++ libraries are required.</p>
 <p><b><font color="#551A8B">Debugger:&nbsp; </font></b>Running PETSc probrams with -start_in_debugger is not supported on this platform, so debuggers will need to be initiated manually.  Make sure your environment is properly configured to use the appropriate debugger for your compiler.  The debuggers can be initiated using Microsoft Visual Studio 6: <b>msdev&nbsp;ex1.exe</b>, Microsoft Visual Studio .NET: <b>devenv&nbsp;ex1.exe</b>, Intel Enhanced Debugger: <b>edb&nbsp;ex1.exe</b>, or GNU Debugger <b>gdb&nbsp;ex1.exe</b>.</p>
 <p>&nbsp;</p>
       </td>
