@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.24 1995/04/26 18:21:47 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.25 1995/04/27 01:04:23 curfman Exp curfman $";
 #endif
 
 /* 
@@ -672,7 +672,7 @@ $        data to the first processor to print.
 
    The user can open alternative vistualization contexts with
 $    ViewerFileOpen() - output to a specified file
-$    ViewerSyncFileOpen() - synchronized output to a 
+$    ViewerFileOpenSync() - synchronized output to a 
 $         specified file
 $    DrawOpenX() - output vector to an X window display
 $    DrawLGCreate() - output vector as a line graph to an X window display
@@ -680,7 +680,7 @@ $    ViewerMatlabOpen() - output vector to Matlab viewer
 
 .keywords: Vec, view, visualize
 
-.seealso: ViewerFileOpen(), ViewerSyncFileOpen(), DrawOpenX(), 
+.seealso: ViewerFileOpen(), ViewerFileOpenSync(), DrawOpenX(), 
           DrawLGCreate(), ViewerMatlabOpen()
 @*/
 int VecView(Vec v,Viewer ptr)
