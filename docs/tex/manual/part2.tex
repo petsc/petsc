@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.350 2001/01/17 22:29:26 bsmith Exp balay $ 
+% $Id: part2.tex,v 1.351 2001/01/19 23:23:04 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3954,7 +3954,7 @@ if one can compute the coloring \url{iscoloring} some other way, the routine
 \url{DAGetColoring()}. \findex{DAGetColoring()}
 
 \begin{verbatim}
-    ierr = DAGetColoring(da,&iscoloring,&J);
+    ierr = DAGetColoring(da,MATMPIAIJ,&iscoloring,&J);
     ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); 
     ierr = MatFDColoringSetFromOptions(fdcoloring);
     ierr = ISColoringDestroy(iscoloring);
