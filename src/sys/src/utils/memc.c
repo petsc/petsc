@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.16 1996/03/13 01:16:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: memc.c,v 1.17 1996/04/01 02:54:57 curfman Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -9,6 +9,10 @@ static char vcid[] = "$Id: memc.c,v 1.16 1996/03/13 01:16:26 bsmith Exp curfman 
 
 */
 #include "petsc.h"        /*I  "petsc.h"   I*/
+/*
+    On the IBM Rs6000 using the Gnu G++ compiler you may have to include 
+  <string.h> instead of <memory.h> 
+*/
 #include <memory.h>
 #include "pinclude/petscfix.h"
 
