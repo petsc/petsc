@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.30 1995/07/20 18:09:57 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.31 1995/07/24 20:46:39 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -147,7 +147,7 @@ int KSPGetMethodFromContext( KSP itP, KSPMethod *method )
 }
 
 /*@
-    KSPGetTolerances - Gets the relative, absolute, divergence and maximum
+    KSPGetTolerances - Gets the relative, absolute, divergence, and maximum
     iteration tolerances used by the default KSP convergence testers. 
 
    Input Parameter:
@@ -239,7 +239,7 @@ int KSPSetCalculateResidual(KSP itP,PetscTruth flag)
 
 /*@
    KSPSetUsePreconditionedResidual - Sets a flag so that the two norm of the 
-   preconditioned residual is used rather then the true residual, in the 
+   preconditioned residual is used rather than the true residual, in the 
    default convergence tests.
 
    Input Parameter:
@@ -362,8 +362,8 @@ int KSPSetSolution(KSP itP, Vec x)
 
 /*@
    KSPGetSolution - Gets the location of the solution for the 
-   linear system to be solved. Note that this may not be were the solution
-   is stored during the iterative process, see KSPBuildSolution().
+   linear system to be solved. Note that this may not be where the solution
+   is stored during the iterative process; see KSPBuildSolution().
 
    Input Parameters:
 .  itP - iterative context obtained from KSPCreate()

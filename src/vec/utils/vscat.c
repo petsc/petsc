@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.25 1995/07/05 17:22:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.26 1995/07/17 03:53:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -438,8 +438,7 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
 
 /* ------------------------------------------------------------------*/
 /*@ 
-   VecPipelineBegin - Begins a vector pipeline operation.  This
-   routine receives results.  Then send results with VecPipelineEnd().
+   VecPipelineBegin - Begins a vector pipeline operation.  
 
    Input Parameters:
 .  x - vector to scatter from
@@ -478,7 +477,7 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,
 /* --------------------------------------------------------------------*/
 /*@
    VecPipelineEnd - Sends results to next processor in pipeline.  Call
-   after first calling VecPipelineBegin().
+   after calling VecPipelineBegin().
 
    Input Parameters:
 .  x - vector to scatter from

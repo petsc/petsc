@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.31 1995/07/17 20:40:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres.c,v 1.32 1995/07/18 21:25:01 curfman Exp bsmith $";
 #endif
 
 /*
@@ -554,7 +554,7 @@ int GMRESUnmodifiedOrthog(KSP,int);
 
 /*@
     KSPGMRESSetUseUnmodifiedGrammSchmidt - Sets GMRES to use unmodified
-    Gramm-Schmidt for the orthogonalization.  This is not recommended, do 
+    Gramm-Schmidt for the orthogonalization.  This is not recommended, due 
     to possible numerical problems, although it may be faster, especially
     in a parallel environment.
 

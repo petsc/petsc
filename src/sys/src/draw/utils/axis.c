@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.13 1995/07/07 17:16:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.14 1995/07/17 20:42:11 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -78,7 +78,7 @@ int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
 }
 
 /*@
-      DrawAxisDestroy - Frees the space used by an Axis structure.
+      DrawAxisDestroy - Frees the space used by an axis structure.
 
   Input Parameters:
 .   axis - the axis context
