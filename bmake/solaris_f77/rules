@@ -1,0 +1,56 @@
+# $Id: base,v 1.41 1998/06/26 20:19:27 balay Exp $ 
+
+PARCH    = solaris
+#
+#  If you are using gcc or an old version cc you may need to remove the
+#  -dalign -xtarget=native from below.
+#
+CC       = cc -KPIC -dalign -xtarget=native
+#
+#  Indicates the version of the compiler you are using; if you do not know
+#  how to get the version number then leave this blank.
+#
+CCV      = ${CC} -V -c
+#
+#FC       = f90 -xpp=cpp
+FC       = f77
+AR       = ar
+RM       = rm -f
+OMAKE    = make
+RANLIB   = true
+SHELL    = /bin/sh
+CLINKER  = cc ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
+FLINKER  = f77 ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
+
+SYS_LIB  = -lnsl -lsocket -lgen
+
+include ${PETSC_DIR}/bmake/common
+
+libc: ${LIBNAME}(${OBJSC})
+libf: ${LIBNAME}(${OBJSF})
+
+
+#############
+shared: chkopts_basic
+	-@echo making shared libraries in ${LDIR} ;\
+	cd ${LDIR}; \
+	${RM} -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+	for LIBNAME in ${SHLIBS} ; \
+	do \
+	  flag=""; \
+	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	  else \
+	      flag="true"; \
+	  fi; \
+          if [ "$$flag" != "" ]; then \
+	    echo "building $$LIBNAME.${SLSUFFIX}"; \
+	    ${AR} x ../$$LIBNAME.a ;\
+	    ${LD} -G  -h $$LIBNAME.${SLSUFFIX} *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
+	    ${RM} -f * ; \
+	  fi; \
+	done ;\
+	cd ../ ; \
+	${RM} -rf tmp

@@ -1,0 +1,111 @@
+# $Id: base.site,v 1.30 1998/06/25 23:12:11 balay Exp $ 
+
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# FC_LIB contains the libraries for a CLINKER to use for code containing
+# FORTRAN code (such as I/O or special Fortran runtimes).  
+#
+FC_LIB         = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath 
+#
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
+# for information on retrieving them.
+#
+# If your machine has the file /opt/SUNWspro/SC4.0/lib/libsunperf.a you 
+# can use -lsunperf or /opt/SUNWspro/SC4.0/lib/libsunperf.a below instead of
+# installing BLAS and LAPACK yourself.
+#
+BLAS_LIB       =  /home/bsmith/libraries/blaslapack/blas_solaris.a  ${FC_LIB}
+LAPACK_LIB     =  /home/bsmith/libraries/blaslapack/lapack_solaris.a
+#BLAS_LIB       =  -lsunperf ${FC_LIB} -lSUNWPro_lic
+
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = -I/usr/openwin/include
+X11_LIB        = -L/usr/openwin/lib -lX11
+#
+# Location of MPI (Message Passing Interface) software
+#
+# Note: if ch_shmem version of mpich is used, replace -lsocket by -lthread
+#
+MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpi -lnsl -lsocket -lgen
+MPI_INCLUDE    = -I/home/petsc/mpich/include 
+MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
+#
+# For the Berkeley am2 device for MPICH use
+#
+#MPI_LIB        = -L/usr/now/mpi/mpich/lib/solaris/am2/ -lmpi -L/usr/now/lib -L/usr/now/am2/lib \
+#                 -lam2 -lglunix -lens -lglobex -lposix4 -lnsl -lsocket -lgen
+#MPI_INCLUDE    = -I/usr/now/mpi/mpich/include 
+#MPIRUN         = glurun
+#
+# ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
+# ----------------------------------------------------------------------------------------  
+#
+# Optional location of MPE
+#
+MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lpmpi
+MPE_INCLUDE   = -I/home/petsc/mpich/mpe
+#
+# Optional location of BlockSolve (MPI version)
+#
+BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
+#
+# Optional Matlab location
+#
+#MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
+#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
+#CMEX           = /usr/local/bin/cmex 
+#MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
+MATLAB_INCLUDE  = -I/software/solaris-2/com/packages/matlab-5.2/extern/include
+CMEX            = /software/solaris-2/com/packages/matlab-5.2/bin/cmex
+MCC             = cc
+#
+# Option location where adiC is installed
+#
+#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
+#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
+#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#
+# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# 
+PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
+PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/solaris/libpvode.a
+#
+# Optional location of ParMetis
+#
+PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis_solaris.a 
+#
+#  Optional location for ALICE Memory Snooper
+#
+AMS_INCLUDE = -I/home/bsmith/ams/src/include
+AMS_LIB     =  -L/home/bsmith/ams/lib/lib/solaris -lalicepub -lutilmt -lutil -lthread
+# 
+# ---------------------------------------------------------------------------------------
+#
+# PCONF - indicates which OPTIONAL external packages are available at your site
+#
+# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# the locations are appropriately indicated above. If you do not have the package then
+# comment out the locations indicated for that package above.
+#
+PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE -DHAVE_PVODE -DHAVE_PARMETIS -DHAVE_AMS
+#PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE 
+EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
+                ${AMS_LIB}
+#
+# ---------------------------------------------------------------------------------------
+#
+# If you are using dynamic libraries you must make this
+# point to the directories where all your shared libraries are stored.
+#
+DYLIBPATH     = /opt/SUNWspro/SC4.2/lib
