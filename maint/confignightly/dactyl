@@ -1,9 +1,7 @@
 #! /bin/csh
 
-# no bk -(alpha-glibc21) hence disabled
-
 set MACH=dactyl
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
 set TAO_LOC=/sandbox/petsc/tao-devel
-set CONF=linux_alpha
+set CONF=linux-gnu-alpha
