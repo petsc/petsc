@@ -1,4 +1,4 @@
-# $Id: base,v 1.42 1998/08/25 21:35:40 balay Exp balay $ 
+# $Id: base,v 1.43 1998/10/07 16:17:20 balay Exp bsmith $ 
 
 PARCH    = solaris
 #
@@ -45,9 +45,9 @@ shared: chkopts_basic
 	do \
 	  flag=""; \
 	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+            flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
 	  else \
-	      flag="true"; \
+	    flag="true"; \
 	  fi; \
           if [ "$$flag" != "" ]; then \
 	    echo "building $$LIBNAME.${SLSUFFIX}"; \
@@ -58,3 +58,17 @@ shared: chkopts_basic
 	done ;\
 	cd ../ ; \
 	${RM} -rf tmp
+#
+#  Generates a shared library from any .a library; not just the PETSc ones
+#  This is to allow any user to generate his or her own shared library
+#
+oshared: chkopts_basic
+	-${RM} -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+        echo "building ${LIBNAME}.${SLSUFFIX}"; \
+	${AR} x ${LIBNAME}.a ;\
+	${LD} -G  -h ${LIBNAME}.${SLSUFFIX} *.o  -o ${LIBNAME}.${SLSUFFIX} ; \
+	cd ../ ; \
+	${RM} -rf tmp
+
