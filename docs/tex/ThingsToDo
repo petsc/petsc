@@ -61,7 +61,7 @@ Additional Capabilities that PETSc Needs:
 
    X Have -log_summary print percentages for different stages.
 
-   X Test PETSc with LAM.
+   * Test PETSc with LAM.
     
    X don't require user to set diagonal entries in mpirowbs, that is
      insane - says Barry.
