@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.108 1999/12/13 17:47:14 balay Exp bsmith $*/
+/*$Id: da1.c,v 1.109 2000/01/11 21:03:19 bsmith Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -269,8 +269,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   ISDestroy(to); ISDestroy(from);
 
   da->M  = M;  da->N  = 1;  da->m  = m; da->n = 1;
-  da->xs = xs; da->xe = xe; da->ys = 0; da->ye = 0; da->zs = 0; da->ze = 0;
-  da->Xs = Xs; da->Xe = Xe; da->Ys = 0; da->Ye = 0; da->Zs = 0; da->Ze = 0;
+  da->xs = xs; da->xe = xe; da->ys = 0; da->ye = 1; da->zs = 0; da->ze = 1;
+  da->Xs = Xs; da->Xe = Xe; da->Ys = 0; da->Ye = 1; da->Zs = 0; da->Ze = 1;
   da->P  = 1;  da->p  = 1;  da->w = dof; da->s = s/dof;
 
   PLogObjectParent(da,global);
