@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.57 1999/05/06 03:13:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.58 1999/05/25 20:02:11 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -12,8 +12,7 @@ struct _p_DrawAxis {
     double  xlow, ylow, xhigh, yhigh;     /* User - coord limits */
     int     (*ylabelstr)(double,double,char **), /* routines to generate labels */ 
             (*xlabelstr)(double,double,char **);
-    int     (*xlabels)(), (*ylabels)()  , /* location of labels */
-            (*xticks)(double,double,int,int*,double*,int),
+    int     (*xticks)(double,double,int,int*,double*,int),
             (*yticks)(double,double,int,int*,double*,int);  
                                           /* location and size of ticks */
     Draw    win;
@@ -23,10 +22,10 @@ struct _p_DrawAxis {
 
 #define MAXSEGS 20
 
-extern int    PetscADefTicks(double,double,int,int*,double*,int,int*);
+extern int    PetscADefTicks(double,double,int,int*,double*,int);
 extern int    PetscADefLabel(double,double,char**);
 static int    PetscAGetNice(double,double,int,double* );
-static int    PetscAGetBase(double,double,int,double*,int*,int*);
+static int    PetscAGetBase(double,double,int,double*,int*);
 
 #undef __FUNC__  
 #define __FUNC__ "PetscRint"
@@ -494,7 +493,7 @@ int PetscADefTicks( double low, double high, int num, int *ntick,double * ticklo
   }
 
   ierr = PetscAGetBase( low, high, num, &base, &power );CHKERRQ(ierr);
-  x    = PetscAGetNice( low, base, -1 );
+  ierr = PetscAGetNice( low, base, -1,&x );CHKERRQ(ierr);
 
   /* Values are of the form j * base */
   /* Find the starting value */
@@ -556,13 +555,17 @@ static int PetscCopysign(double a,double b,double *result )
  */
 static int PetscAGetNice(double in,double base,int sign,double *result )
 {
-  double  etmp;
+  double  etmp,s,s2,m;
+  int     ierr;
 
   PetscFunctionBegin;
-  etmp    = in / base + 0.5 + PetscCopysign ( 0.5, (double) sign );
-  etmp    = etmp - 0.5 + PetscCopysign( 0.5, etmp ) -
-		       PetscCopysign ( EPS * etmp, (double) sign );
-  etmp = base * ( etmp - PetscMod( etmp, 1.0 ) );
+  ierr    = PetscCopysign ( 0.5, (double) sign,&s );CHKERRQ(ierr);
+  etmp    = in / base + 0.5 + s;
+  ierr    = PetscCopysign ( 0.5, etmp,&s );CHKERRQ(ierr);
+  ierr    = PetscCopysign ( EPS * etmp, (double) sign,&s2 );CHKERRQ(ierr);
+  etmp    = etmp - 0.5 + s - s2;
+  ierr    = PetscMod( etmp, 1.0,&m );CHKERRQ(ierr);
+  etmp    = base * ( etmp -  m);
   *result = etmp;
   PetscFunctionReturn(0);
 }
