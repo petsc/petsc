@@ -1212,6 +1212,9 @@ int MatSetOption_SeqDense(Mat A,MatOption op)
   case MAT_USE_HASH_TABLE:
     PetscLogInfo(A,"MatSetOption_SeqDense:Option ignored\n");
     break;
+  case MAT_SYMMETRIC:
+  case MAT_STRUCTURALLY_SYMMETRIC:
+    break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
   }

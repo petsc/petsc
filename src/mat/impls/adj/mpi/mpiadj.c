@@ -84,6 +84,8 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
 
   PetscFunctionBegin;
   switch (op) {
+  case MAT_SYMMETRIC:
+    break;
   case MAT_STRUCTURALLY_SYMMETRIC:
     a->symmetric = PETSC_TRUE;
     break;

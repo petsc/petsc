@@ -768,6 +768,9 @@ int MatSetOption_SeqAIJ(Mat A,MatOption op)
     case MAT_INODE_LIMIT_5:
       a->inode.limit  = 5;
       break;
+    case MAT_SYMMETRIC:
+    case MAT_STRUCTURALLY_SYMMETRIC:
+      break;
     default:
       SETERRQ(PETSC_ERR_SUP,"unknown option");
   }

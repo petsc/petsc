@@ -598,6 +598,9 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
   case MAT_COLUMNS_UNSORTED:
     PetscLogInfo(A,"MatSetOption_MPIBDiag:Option ignored\n");
     break;
+  case MAT_SYMMETRIC:
+  case MAT_STRUCTURALLY_SYMMETRIC:
+    break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
   }

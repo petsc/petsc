@@ -53,11 +53,11 @@ typedef struct {
   Vec        xwork;             /* work space for mat-vec mult */
 
   /* Cholesky factorization data */
-  double     alpha;             /* restart for failed factorization */
-  int        ierr;              /* BS factorization error */
-  int        failures;          /* number of BS factorization failures */
-  int        blocksolveassembly;/* Indicates the matrix has been assembled 
-                                   for block solve */
+  double     alpha;                 /* restart for failed factorization */
+  int        ierr;                  /* BS factorization error */
+  int        failures;              /* number of BS factorization failures */
+  int        blocksolveassembly;    /* Indicates the matrix has been assembled for block solve */
+  int        assembled_icc_storage; /* Indicates that the block solve assembly was performed for icc format */
 } Mat_MPIRowbs;
 
 EXTERN int MatCholeskyFactorNumeric_MPIRowbs(Mat,Mat*);

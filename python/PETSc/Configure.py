@@ -642,6 +642,7 @@ acfindx:
       self.missingPrototypes.append('#define X_OK 01')
       self.missingPrototypes.append('#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)')
       self.missingPrototypes.append('#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)')
+      setattr(self.framework,'suppressGuard',1)
     return
     
   def configureMPIUNI(self):

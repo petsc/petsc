@@ -885,6 +885,7 @@ int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
     }   
   }
   ierr = VecRestoreArray(a->diag,&diag);CHKERRQ(ierr);
+  a->assembled_icc_storage = a->A->icc_storage; 
   a->blocksolveassembly = 1;
   mat->was_assembled    = PETSC_TRUE;
   mat->same_nonzero     = PETSC_TRUE;
@@ -1390,6 +1391,11 @@ int MatSetOption_MPIRowbs(Mat A,MatOption op)
     break;
   case MAT_KEEP_ZEROED_ROWS:
     a->keepzeroedrows    = PETSC_TRUE;
+    break;
+  case MAT_SYMMETRIC:
+    BSset_mat_symmetric(a->A,PETSC_TRUE);CHKERRBS(0);
+    break;
+  case MAT_STRUCTURALLY_SYMMETRIC:
     break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
@@ -1967,6 +1973,13 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,MatFactorInfo 
         symmetric using the option MatSetOption(A,MAT_SYMMETRIC)");
   }
 
+  /* If the icc_storage flag wasn't set before the last blocksolveassembly,          */
+  /* we must completely redo the assembly as a different storage format is required. */
+  if (mbs->blocksolveassembly && !mbs->assembled_icc_storage) {
+    mat->same_nonzero       = PETSC_FALSE;
+    mbs->blocksolveassembly = 0;
+  }
+
   if (!mbs->blocksolveassembly) {
     BSset_mat_icc_storage(mbs->A,PETSC_TRUE);CHKERRBS(0);
     BSset_mat_symmetric(mbs->A,PETSC_TRUE);CHKERRBS(0);
@@ -2030,11 +2043,11 @@ int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactorInfo* info,
     ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat);CHKERRQ(ierr);
   }
  
-  if (mat->symmetric) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"To use ILU preconditioner with \n\
-        MatCreateMPIRowbs() matrix you CANNOT declare it to be a symmetric matrix\n\
-        using the option MatSetOption(A,MAT_SYMMETRIC)");
-  }
+/*   if (mat->symmetric) { */
+/*     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"To use ILU preconditioner with \n\ */
+/*         MatCreateMPIRowbs() matrix you CANNOT declare it to be a symmetric matrix\n\ */
+/*         using the option MatSetOption(A,MAT_SYMMETRIC)"); */
+/*   } */
 
   /* Copy permuted matrix */
   if (mbs->fpA) {BSfree_copy_par_mat(mbs->fpA);CHKERRBS(0);}

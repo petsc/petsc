@@ -1352,6 +1352,9 @@ int MatSetOption_MPISBAIJ(Mat A,MatOption op)
   case MAT_USE_HASH_TABLE:
     a->ht_flag = PETSC_TRUE;
     break;
+  case MAT_SYMMETRIC:
+  case MAT_STRUCTURALLY_SYMMETRIC:
+    break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
   }

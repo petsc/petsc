@@ -3413,8 +3413,10 @@ int MatSetOption(Mat mat,MatOption op)
     mat->structurally_symmetric = PETSC_TRUE;
     break;
   default:
-    if (mat->ops->setoption) {ierr = (*mat->ops->setoption)(mat,op);CHKERRQ(ierr);}
     break;
+  }
+  if (mat->ops->setoption) {
+    ierr = (*mat->ops->setoption)(mat,op);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
