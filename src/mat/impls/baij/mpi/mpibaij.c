@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.61 1997/03/29 00:41:11 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.62 1997/03/30 03:05:54 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -323,16 +323,23 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (roworiented) { 
-          value = v + i*(stepval+bs)*bs + j*bs;
-        } else {
-          value = v + j*(stepval+bs)*bs + i*bs;
+        /* If NumCol = 1 then a copy is not required */
+        if ((roworiented) && (n == 1)) {
+          barray = v + i*bs2;
+        } else if((!roworiented) && (m == 1)) {
+          barray = v + j*bs2;
+        } else { /* Here a copy is required */
+          if (roworiented) { 
+            value = v + i*(stepval+bs)*bs + j*bs;
+          } else {
+            value = v + j*(stepval+bs)*bs + i*bs;
+          }
+          for ( ii=0; ii<bs; ii++,value+=stepval )
+            for (jj=0; jj<bs; jj++ )
+              *barray++  = *value++; 
+          barray -=bs2;
         }
-        for ( ii=0; ii<bs; ii++,value+=stepval )
-          for (jj=0; jj<bs; jj++ )
-            *barray++  = *value++; 
-        barray -=bs2;
-        
+          
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;
           ierr = MatSetValuesBlocked_SeqBAIJ(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
