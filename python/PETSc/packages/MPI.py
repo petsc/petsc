@@ -43,7 +43,7 @@ class Configure(PETSc.package.Package):
     help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-download-mpich-machines=[machine1,machine2...]',  nargs.Arg(None, ['localhost','localhost'], 'Machines for MPI to use'))
-    help.addArgument('MPI', '-download-mpich-pm=mpd or fork',         nargs.Arg(None, 'mpd', 'Launcher for MPI processes')) 
+    help.addArgument('MPI', '-download-mpich-pm=mpd or forker',   nargs.Arg(None, 'mpd', 'Launcher for MPI processes')) 
   
   # search many obscure locations for MPI
   def getSearchDirectories(self):
