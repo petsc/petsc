@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.46 1996/04/12 15:59:50 curfman Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.47 1996/04/17 22:01:28 curfman Exp curfman $";
 #endif
 
 /*
@@ -35,7 +35,7 @@ int KSPDefaultFreeWork( KSP ksp )
 .   rnorm - the two norm of the residual
 
     Options Database Key:
-$   -ksp_singmonitor
+$     -ksp_singmonitor
 
     Notes:
     The CG solver uses the Lanczos technique for eigenvalue computation, 
@@ -91,8 +91,8 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 }
 
 /*@C
-   KSPTrueMonitor - Prints the true residual as well as the preconditioned
-   residual at each iteration of an iterative solver.
+   KSPTrueMonitor - Prints the true residual norm as well as the preconditioned
+   residual norm at each iteration of an iterative solver.
 
    Input Parameters:
 .  ksp   - iterative context
@@ -105,6 +105,12 @@ $   -ksp_truemonitor
 
    Notes:
    When using right preconditioning, these values are equivalent.
+
+   When using either ICC or ILU preconditioners in BlockSolve95 
+   (via MATMPIROWBS matrix format), then use the option
+$      -ksp_bsmonitor
+   to print both the true and scaled residual norms.  By default,
+   only the scaled residual norm is printed.
 
 .keywords: KSP, default, monitor, residual
 
@@ -294,11 +300,11 @@ int KSPDefaultAdjustWork( KSP ksp )
 }
 
 /*
-KSPDefaultDestroy - Destroys a iterative context variable for methods with
-no separate context.  Preferred calling sequence KSPDestroy().
+  KSPDefaultDestroy - Destroys a iterative context variable for methods with
+  no separate context.  Preferred calling sequence KSPDestroy().
 
-Input Parameters: 
-.   ksp - the iterative context
+  Input Parameters: 
+. ksp - the iterative context
 */
 int KSPDefaultDestroy(PetscObject obj)
 {
