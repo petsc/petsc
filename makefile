@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.201 1997/11/13 23:21:49 balay Exp balay $ 
+# $Id: makefile,v 1.202 1997/11/17 00:44:05 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -229,7 +229,8 @@ TAGS_SRC_FILES      = src/*/*.[c,h] src/*/interface/*.[c,h] src/*/src/*.[c,h] \
                       src/*/utils/*.[c,h] \
                       src/*/impls/*.[c,h] src/*/impls/*/*.[c,h] src/*/impls/*/*/*.[c,h] \
                       src/gvec/impls/*/*/*/*/*.[c,h] src/contrib/*/*.[c,h] \
-                      src/contrib/*/src/*.[c,h] src/fortran/custom/*.[c,h,F]
+                      src/contrib/*/src/*.[c,h] src/fortran/custom/*.[c,h,F] \
+		      src/fortran/f90/*.[c,h,F] src/fortran/kernels/*.[c,h,F]
 TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
                       makefile \
                       src/makefile src/*/makefile src/*/src/makefile \
