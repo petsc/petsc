@@ -2,10 +2,12 @@
 # $Id: buildtest,v 1.2 2001/10/19 16:20:25 petsc Exp $ 
 # 
 # Compiles and tests PETSc in our nightly builds.
-# Run as buildtest ARCH where ARCH is one of the PETSc archs
+# Run as buildtest ARCH where ARCH is one of the default PETSc archs
+# of a configure arch
 #
 # Example usage: ${PETSC_DIR}/maint/newbuildtest solaris
 #                ./maint/newbuildtest solaris
+#                ./maint/newbuildtest 
 #
 set nPETSC_DIR=`pwd`
 if ( ! -f ${nPETSC_DIR}/include/petsc.h ) then
@@ -25,7 +27,7 @@ if ( ! -f ${nPETSC_DIR}/include/petsc.h ) then
   endif
 endif
 
-if (${#argv} == 1) then 
+if (${#argv} > 0) then 
   set ARCH=${1}
 else
   set ARCH=`${nPETSC_DIR}/bin/configarch`
@@ -38,8 +40,8 @@ endif
 
 set MACH=`hostname`
 rm -f $nPETSC_DIR/build.log
-echo "Build on $MACH $ARCH  `date` " > $nPETSC_DIR/build.log
 rm -f $nPETSC_DIR/buildout.tar
+echo "Build on $MACH $ARCH  `date` " > $nPETSC_DIR/build.log
 
 cd $nPETSC_DIR
 make PETSC_ARCH=linux PETSC_DIR=$nPETSC_DIR update >>& $nPETSC_DIR/build.log
@@ -86,12 +88,10 @@ if ("${BOPT}" == "g_complex" ||  "${BOPT}" == "O_complex") then
   set EJOBS=""
 endif
 
-
 make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT all >>& build.log
 echo '****************************************************' >>& build.log
 echo "Finished Build on $MACH $PETSC_ARCH $BOPT `date`" >>& build.log
 tar rf buildoutput.tar build.log
-#
 #
 #
 # Run examples
