@@ -67,7 +67,7 @@ splitmanual: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	-@chmod g+w manual.hux latex.err 
 	-@/bin/rm -fr ../../splitmanual
 	-@mv manual ../../splitmanual
-	-@chmod -R ug+w ../../splitmanual/* www.cit 
+	-@chmod -R ug+w ../../splitmanual www.cit 
 	rm -f  latex.err findex.tex sindex.tex tmp.html
 
 clean:
