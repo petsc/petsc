@@ -50,7 +50,7 @@ typedef struct {
     shift   - 0: C style output triple; 1: Fortran style output triple.
     valOnly - FALSE: spaces are allocated and values are set for the triple  
               TRUE:  only the values in v array are updated
-  output:
+  output:     
     nnz     - dim of r, c, and v (number of local nonzero entries of A)
     r, c, v - row and col index, matrix values (matrix triples) 
  */
@@ -186,7 +186,7 @@ int MatDestroy_AIJ_MUMPS(Mat A)
     if (lu->irn) {
       ierr = PetscFree(lu->irn);CHKERRQ(ierr);
     }
-    if (lu->jcn) {
+    if (lu->jcn) { 
       ierr = PetscFree(lu->jcn);CHKERRQ(ierr);
     }
     if (size>1 && lu->val) {
@@ -424,7 +424,7 @@ int MatFactorNumeric_AIJ_MUMPS(Mat A,Mat *F)
       }
       if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization, get irn and jcn */
         ierr = PetscMalloc(nz*sizeof(int),&lu->irn);CHKERRQ(ierr);
-        ierr = PetscMalloc(nz*sizeof(int),&lu->jcn);CHKERRQ(ierr);
+        ierr = PetscMalloc(nz*sizeof(int),&lu->jcn);CHKERRQ(ierr); 
         nz = 0;
         for (i=0; i<M; i++){
           rnz = ai[i+1] - ai[i];
@@ -515,8 +515,9 @@ int MatFactorNumeric_AIJ_MUMPS(Mat A,Mat *F)
     SETERRQ1(1,"  lu->id.ICNTL(16):=%d\n",lu->id.INFOG(16)); 
   }
   
-  (*F)->assembled = PETSC_TRUE;
-  lu->matstruc    = SAME_NONZERO_PATTERN;
+  (*F)->assembled  = PETSC_TRUE;
+  lu->matstruc     = SAME_NONZERO_PATTERN;
+  lu->CleanUpMUMPS = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
