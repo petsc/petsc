@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.52 1997/04/02 21:03:40 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.53 1997/05/20 03:18:57 bsmith Exp balay $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -11,7 +11,7 @@
 
 #define KSP_COOKIE  PETSC_COOKIE+8
 
-typedef struct _KSP*     KSP;
+typedef struct _p_KSP*     KSP;
 
 typedef enum { KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, KSPTCQMR, KSPBCGS, 
                KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPPREONLY, KSPQCG, KSPNEW} KSPType;

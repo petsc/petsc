@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.219 1997/05/20 16:31:30 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.220 1997/05/20 16:35:30 bsmith Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -6674,12 +6674,12 @@ PETSc is designed around several components (e.g. {\tt Vec} (vectors),
 \end{itemize}
 
 Each type of object, for instance a vector, is defined in its own
-include file, by {\tt typedef \_Object* Object;}, (for example, 
-{\tt typedef \_Vec* Vec;}).  This organization
+include file, by {\tt typedef \_p_Object* Object;}, (for example, 
+{\tt typedef \_p_Vec* Vec;}).  This organization
 allows the compiler to perform type checking while at the same time
 completely removing the details of the implementation of {\tt
-\_Object} from the application code. The exact details of {\tt
-\_Object} may be changed at link time. This capability is extremely important
+\_p_Object} from the application code. The exact details of {\tt
+\_p_Object} may be changed at link time. This capability is extremely important
 because it allows the library internals to be changed
 without altering or recompiling the application code.
 
@@ -6695,7 +6695,7 @@ the name of a particular implementation is
 {\tt MatMult\_SeqAIJ} or {\tt PCCreate\_ILU}. These naming
 conventions are used to simplify code maintenance.
 
-Each object structure (named {\tt \_Object}) consists of three parts:
+Each object structure (named {\tt \_p_Object}) consists of three parts:
 a common PETSc header (defined in {\tt include/phead.h},
 a pointer to a list of operations for the
 object, and any additional information that is appropriate for the
@@ -6717,10 +6717,10 @@ operations for the object.  For example, the vector operations include
 norms, assembly routines, scatters, gathers, etc.  Finally,
 information that is appropriate for the particular abstract object is
 included. Generally, this information includes a pointer to data used
-by a particular implementation.  For example, the {\tt \_Vec}
+by a particular implementation.  For example, the {\tt \_p_Vec}
 structure is given by
 \begin{verbatim}
-   struct _Vec {
+   struct _p_Vec {
       PETSCHEADER
       struct _VeOps ops;
       void          *data;

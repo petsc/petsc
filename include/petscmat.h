@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.133 1997/05/20 03:18:17 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.134 1997/05/23 17:10:24 balay Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -8,7 +8,7 @@
 
 #define MAT_COOKIE         PETSC_COOKIE+5
 
-typedef struct _Mat*           Mat;
+typedef struct _p_Mat*           Mat;
 
 #define MAX_MATRIX_TYPES 12
 /*
@@ -208,7 +208,7 @@ extern int MatColoringPatch(Mat,int,int *,ISColoring*);
 */
 #define MAT_FDCOLORING_COOKIE PETSC_COOKIE + 22
 
-typedef struct _MatFDColoring *MatFDColoring;
+typedef struct _p_MatFDColoring *MatFDColoring;
 
 extern int MatFDColoringCreate(Mat,ISColoring,MatFDColoring *);
 extern int MatFDColoringDestroy(MatFDColoring);
@@ -305,7 +305,7 @@ extern int MatShellSetOperation(Mat,MatOperation,void *);
   for sparse matrices. Several matrices with identical nonzero structure can share
   the same MatAIJIndices.
 */ 
-typedef struct _MatAIJIndices* MatAIJIndices;
+typedef struct _p_MatAIJIndices* MatAIJIndices;
 
 extern int MatCreateAIJIndices(int,int,int*,int*,PetscTruth,MatAIJIndices*);
 extern int MatCreateAIJIndicesEmpty(int,int,int*,PetscTruth,MatAIJIndices*);

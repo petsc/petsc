@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.27 1997/01/27 18:15:20 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.28 1997/03/26 01:34:38 bsmith Exp balay $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -13,7 +13,7 @@
 /*
    Defines the KSP data structure.
 */
-struct _KSP {
+struct _p_KSP {
   PETSCHEADER
   /*------------------------- User parameters--------------------------*/
   int max_it,                      /* maximum number of iterations */

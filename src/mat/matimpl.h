@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.69 1997/02/03 05:57:39 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.70 1997/03/09 17:58:05 bsmith Exp balay $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -80,7 +80,7 @@ struct _MatOps {
 #define FACTOR_LU       1
 #define FACTOR_CHOLESKY 2
 
-struct _Mat {
+struct _p_Mat {
   PETSCHEADER                              /* general PETSc header */
   struct _MatOps         ops;              /* matrix operations */
   void                   *data;            /* implementation-specific data */
@@ -157,7 +157,7 @@ extern int MatCopy_Basic(Mat,Mat);
 
 */
 
-struct  _MatFDColoring{
+struct  _p_MatFDColoring{
   PETSCHEADER
   int    ncolors;          
   int    *ncolumns;        /* number of local columns for a color */ 
