@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.40 1995/08/22 19:35:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.41 1995/08/24 22:28:44 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -794,8 +794,17 @@ static int MatGetDiagonal_BDiag(Mat matin,Vec v)
   return 0;
 }
 
-static int MatZero_BDiag(Mat A)
+static int MatZeroEntries_BDiag(Mat matin)
 {
+  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  int       d, i, len, nb = mat->nb;
+  Scalar    *dv;
+
+  for (d=0; d<mat->nd; d++) {
+    dv  = mat->diagv[d];
+    len = mat->bdlen[d]*nb*nb;
+    for (i=0; i<len; i++) dv[i] = 0.0;
+  }
   return 0;
 }
 
@@ -913,7 +922,7 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        MatGetInfo_BDiag, 0,
        MatGetDiagonal_BDiag, 0, 0,
        0,MatAssemblyEnd_BDiag,
-       0, 0, MatZero_BDiag,MatZeroRows_BDiag, 0,
+       0, 0, MatZeroEntries_BDiag,MatZeroRows_BDiag, 0,
        MatLUFactorSymbolic_BDiag,MatLUFactorNumeric_BDiag, 0, 0,
        MatGetSize_BDiag,MatGetSize_BDiag,MatGetOwnershipRange_BDiag,
        0, 0,
