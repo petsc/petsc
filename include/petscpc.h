@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.112 2000/11/22 23:02:44 bsmith Exp bsmith $ */
+/* $Id: petscpc.h,v 1.113 2001/01/15 21:46:44 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -90,6 +90,14 @@ EXTERN int PCGetOptionsPrefix(PC,char**);
 EXTERN int PCNullSpaceAttach(PC,MatNullSpace);
 
 EXTERN int PCComputeExplicitOperator(PC,Mat*);
+
+/*
+      These are used to provide extra scaling of preconditioned 
+   operator for time-stepping schemes like in PVODE 
+*/
+EXTERN int PCDiagonalScale(PC,PetscTruth*);
+EXTERN int PCDiagonalScaleleft(PC,Vec);
+EXTERN int PCDiagonalScaleRight(PC,Vec);
 
 /* ------------- options specific to particular preconditioners --------- */
 
