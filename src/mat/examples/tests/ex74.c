@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.19 2000/07/26 19:21:44 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.20 2000/07/27 14:30:34 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -294,7 +294,7 @@ int main(int argc,char **args)
   }
 
   if (bs == 1) {
-    for (lf=-1; lf<10; lf++){   
+    for (lf=-1; lf<0; lf++){   
       if (lf==-1) {  /* Cholesky factor */
         fill = 5.0;
         ierr = MatCholeskyFactorSymbolic(sA,ip,fill,&sC);CHKERRA(ierr);
