@@ -1,5 +1,7 @@
+/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
 /*
-       Defines data structures for writing simple cell (element) based PDE codes.
+       Defines data structures for writing a simple cell (element) based PDE code
+    for solving scalar PDE problems like the Laplacian.
 */
 
 #if !defined(__APPCTX_H)
@@ -15,37 +17,34 @@
       It is created by Appload() (see appload.c) from the AO database.
 */
 typedef struct {
+  /********* Data structures for cells ************/
+  int cell_n;   /* the number of cells on this processor,*/
 
-  /* the coords of each of the 4 vertices corresponding to each cell */
+  /* ---- coordinates of each of the 4 vertices corresponding to each cell
+     cell_coords[0],cell_coords[1] represent x,y of the first cell's first vertice 
+     cell_coords[0],cell_coords[1] represent x,y of the first cell's second vertice etc, */
   double *cell_coords;
 
-  /* the index  for each of the 4 vertices of a given cell 
-     in a local (per processor) numbering */
+  /* ---- index  for each of the 4 vertices of a given cell in the local (per processor) numbering */
   int *cell_vertex;
 
-  /* the local to global mapping for vertices, i.e. if you apply ltog to a list of
+  /********* Data structures for vertices ************/
+  int vertex_count;  /* number of distinct vertices on local cells, including ghost vertices*/
+  int vertex_local_count; /* number of distinct vertices on local cells, excluding ghost vertices */
+ 
+  /* ---- local to global mapping for vertices, i.e. if you apply ltog to a list of
      vertices in local (per processor) numbering it will return them in global (parallel) numbering */
   ISLocalToGlobalMapping ltog;
 
-  /* the number of cells on this processor,*/
-  int cell_n; 
-  /* number of  vertices on local cells (including those "shared" by other processors, i.e. 
-     includes "ghost vertices" ) */
-  int vertex_count;
-  /* only those vertices on local processor which actually belong to this processor, i.e. does not 
-     include "ghost vertices" */
-  int vertex_local_count;
- 
   /********* Data structures for the boundary conditions ************/
-  /* the local indices of vertices on the boundary */
-  IS  vertex_boundary;
-  int    boundary_count;    /* number of vertices on boundary (including ghost vertices) */
+  IS      vertex_boundary;  /* local indices of vertices on the boundary */
+  int     boundary_count;   /* number of vertices on boundary (including ghost vertices) */
   double *boundary_values;  /* work space for the boundary values */
   double *boundary_coords;  /* the coordinates of the boundary points */
 
   /********* Data structures for graphics ******************** */
   IS     iscell;                   /* cells owned by this processor in global numbering */
-  int    *global_cell_vertex;      /* vertices for each local cell in global numbering */
+  /* FIX THIS */ int    *global_cell_vertex;      /* vertices for each local cell in global numbering */
 } AppGrid;
 
 /*------------------------------------------------------------
@@ -57,7 +56,7 @@ typedef struct {
 typedef struct {
   Vec b;           /* Global vector for the rhs */
   Vec x;           /* Global vector for the solution */
-  Mat A;           /* for the stiffness */
+  Mat A;           /* Global matrix for the stiffness */
 } AppAlgebra;
 
 /*------------------------------------------------------------------
@@ -65,15 +64,13 @@ typedef struct {
       contains information about what is to be displayed and where
 */
 typedef struct {
-
-  PetscTruth matlabgraphics;      /* plots solution in Matlab (using bscript.m) */
+  PetscTruth show_solution;      /* plots solution in Matlab (using bscript.m) */
   PetscTruth show_matrix;         /* displays sparsity pattern of matrix */
   PetscTruth show_griddata;       /* dumps grid database, orderings etc to screen */
   PetscTruth show_grid;           /* plots the grid with numbering of cells, vertices etc. */
 
-  Draw       drawlocal;           /* graphics window for draw local per processor part of global grid */
+  Draw       drawlocal;           /* graphics window for drawing local per processor part of global grid */
   Draw       drawglobal;          /* graphics window for drawing global (parallel grid) */
-
 } AppView;
 
 
@@ -84,33 +81,24 @@ typedef struct {
      the element stiffness and element load.
 */
 typedef struct {
-
-  /* the first two sets are the same for all elements, i.e. they are for the reference element */
-
-  /* values of the reference interpolating functions at the Gauss pts */
-  double RefVal[4][4];
+  /* ********** same for all elements, i.e. for the reference element********* */
+  double RefVal[4][4];/* values of the reference interpolating functions at the Gauss pts */
   double RefDx[4][4];
   double RefDy[4][4];
 
-  /* quadrature weights */
-  double  weights[4];
+  double weights[4];  /* quadrature weights */
+ 
+  /* **********computed for each element while computing the stiffness ******** */
 
-  /* the rest are computed for each element while computing the stiffness matrices */
-
-  /* values of the local interpolating fns at the Gauss pts */
-  double dx[4][4], dy[4][4];
+  double dx[4][4], dy[4][4];/* values of the local interpolating functions at the Gauss pts */
   double detDh[4];
 
-  /* the images of the Gauss pts in the local element */
-  double x[4], y[4];
+  double x[4], y[4];  /* the images of the Gauss pts in the local element */
 
-  /* results of local integrations */
-  double rhsresult[4];
+  double rhsresult[4];  /* results of local integrations */
   double stiffnessresult[4][4];
 
-  /* pointer to coords of current cell */
-  double *coords;
-
+  double *coords;  /* pointer to coords of current cell */
 } AppElement;
 
 /*----------------------------------------------------
@@ -140,10 +128,10 @@ extern int AppCtxGraphics(AppCtx *appctx);
 extern int AppCtxSetLocal(AppCtx *);
 extern int AppCtxSolve(AppCtx*);
 
-double f(double, double);
-double bc(double, double);
-double u(double, double);
-double v(double, double);
+double pde_f(double, double);
+double pde_bc(double, double);
+double pde_uu(double, double);
+double pde_vv(double, double);
 
 extern int AppCtxCreateRhs(AppCtx*);
 extern int AppCtxCreateMatrix(AppCtx*);

@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: appsetalg.c,v 1.6 2000/01/06 20:43:19 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -15,7 +15,7 @@ int AppCtxSolve(AppCtx* appctx)
 
   PetscFunctionBegin;
 
-  /*     A) Set the quadrature values for the reference square element  */
+  /*     A) Set the quadrature values for the reference element  */
   ierr = SetReferenceElement(appctx);CHKERRQ(ierr);
 
   /*     1) Create vector to contain load and various work vectors  */
@@ -24,7 +24,7 @@ int AppCtxSolve(AppCtx* appctx)
   /*     2)  Create the sparse matrix,with correct nonzero pattern  */
   ierr = AppCtxCreateMatrix(appctx);CHKERRQ(ierr);
 
-  /*     3)  Set the right hand side values into the vectors   */
+  /*     3)  Set the right hand side values into the load vector   */
   ierr = AppCtxSetRhs(appctx);CHKERRQ(ierr);
 
   /*     4)  Set the matrix entries   */
@@ -75,7 +75,7 @@ int AppCtxCreateRhs(AppCtx *appctx)
 
   PetscFunctionBegin;
   /*  Create vector to contain load,  local size should be number of  vertices  on this proc.  */
-  ierr = VecCreateMPI(comm,grid->vertex_local_count,PETSC_DECIDE,&algebra->b);CHKERRQ(ierr);
+  ierr = VecCreateMPI(comm,grid->vertex_local_count,PETSC_DETERMINE,&algebra->b);CHKERRQ(ierr);
 
   /* This allows one to set entries into the vector using the LOCAL numbering: via VecSetValuesLocal() */
   ierr = VecSetLocalToGlobalMapping(algebra->b,grid->ltog);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   /* use very rough estimate for nonzeros on and off the diagonal */
   ierr = MatCreateMPIAIJ(comm,grid->vertex_local_count,grid->vertex_local_count,PETSC_DETERMINE,PETSC_DETERMINE,9,0,3,0,&algebra->A);CHKERRQ(ierr);
 
-  /* Allows one to set values into the matrix using the LOCAL numbering,via MatSetValuesLocal() */
+  /* Allows one to set values into the matrix using the LOCAL numbering, via MatSetValuesLocal() */
   ierr = MatSetLocalToGlobalMapping(algebra->A,grid->ltog);  CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -117,24 +117,20 @@ int AppCtxCreateMatrix(AppCtx* appctx)
 #define __FUNC__ "AppCxtSetRhs"
 int AppCtxSetRhs(AppCtx* appctx)
 {
-  /********* Collect context informatrion ***********/
+  /********* Context informatrion ***********/
   AppGrid    *grid = &appctx->grid;
   AppAlgebra *algebra = &appctx->algebra;
   AppElement *phi = &appctx->element;
 
-  /****** Internal Variables ***********/
+  /****** Local Variables ***********/
   int        ierr,i;
   int        *vertex_ptr;
-  int        bn =4; /* basis count */
-  int        vertexn = 4; /* degree of freedom count */
+  int        bn = 4; /* number of basis functions */
+  int        vertexn = 4; /* number of degrees of freedom */
 
   PetscFunctionBegin;
   /* loop over local cells */
   for(i=0;i<grid->cell_n;i++){
-    /* loop over degrees of freedom and cell coords */
-
-    /* vertex_ptr points to place in the vector to set the values */
-    vertex_ptr = grid->cell_vertex + vertexn*i; 
 
     /* coords_ptr points to the coordinates of the current cell */
     phi->coords = grid->cell_coords + 2*bn*i;  /*number of cell coords */
@@ -147,9 +143,11 @@ int AppCtxSetRhs(AppCtx* appctx)
     ierr = ComputeRHSElement(phi);CHKERRQ(ierr);
 
     /*********  Set Values *************/
+    /* vertex_ptr points to place in the vector to set the values */
+    vertex_ptr = grid->cell_vertex + vertexn*i; 
+
     ierr = VecSetValuesLocal(algebra->b,bn,vertex_ptr,phi->rhsresult,ADD_VALUES);CHKERRQ(ierr);
   }
-  /********* Assemble Data **************/
   ierr = VecAssemblyBegin(algebra->b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(algebra->b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -163,25 +161,21 @@ int AppCtxSetRhs(AppCtx* appctx)
 #define __FUNC__ "AppCxtSetMatrix"
 int AppCtxSetMatrix(AppCtx* appctx)
 {
-  /********* Collect contex informatrion ***********/
+  /********* Contex information ***********/
   AppAlgebra *algebra = &appctx->algebra;
   AppGrid    *grid    = &appctx->grid;
   AppElement *phi = &appctx->element; 
 
-  /****** Internal Variables ***********/
+  /****** Local Variables ***********/
   int        i,ierr;
   int        *vertex_ptr;
-  int        bn =4; /* basis count */
-  int        vertexn = 4; /* degree of freedom count */
+  int        bn = 4; /* number of basis functions */
+  int        vertexn = 4; /* number of degrees of freedom */
 
   PetscFunctionBegin;
 
   /* loop over cells */
   for(i=0;i<grid->cell_n;i++){
-
-    /* loop over degrees of freedom and cell coords */
-    /* vertex_ptr points to place in the vector to set the values */
-    vertex_ptr = grid->cell_vertex + vertexn*i;
 
     /* coords_ptr points to the coordinates of the current cell */
     phi->coords = grid->cell_coords + 2*bn*i;/*number of cell coords */
@@ -194,9 +188,11 @@ int AppCtxSetMatrix(AppCtx* appctx)
     ierr = ComputeStiffnessElement(phi);CHKERRQ(ierr);
 
     /*********  Set Values *************/
+    /* vertex_ptr points to place in the matrix to set the values */
+    vertex_ptr = grid->cell_vertex + vertexn*i;
+
     ierr = MatSetValuesLocal(algebra->A,vertexn,vertex_ptr,vertexn,vertex_ptr,(double*)phi->stiffnessresult,ADD_VALUES);CHKERRQ(ierr);
   }
-  /********* Assemble Data **************/
   ierr = MatAssemblyBegin(algebra->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(algebra->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -213,17 +209,16 @@ int AppCtxSetMatrix(AppCtx* appctx)
 #define __FUNC__ "SetBoundaryConditions"
 int SetBoundaryConditions(AppCtx *appctx)
 {
- /********* Collect context informatrion ***********/
+ /********* Context informatrion ***********/
   AppAlgebra *algebra = &appctx->algebra;
   AppGrid    *grid = &appctx->grid;
 
-  /****** Internal Variables ***********/
+  /****** Local Variables ***********/
   int        ierr,i;
-  double     xval,yval; 
   int        *vertex_ptr; 
+  double     xval,yval; 
 
   PetscFunctionBegin;
-  /* Dirichlet Boundary Conditions */
 
   /*  -------------------------------------------------------------
          Apply Dirichlet boundary conditions
@@ -231,12 +226,17 @@ int SetBoundaryConditions(AppCtx *appctx)
   
   /* need to set the points on RHS corresponding to vertices on the boundary to
      the desired value. */
+
+  /* get list of vertices on the bounday */
   ierr = ISGetIndices(grid->vertex_boundary,&vertex_ptr);CHKERRQ(ierr);
   for(i=0;i<grid->boundary_count;i++){
     xval = grid->boundary_coords[2*i];
     yval = grid->boundary_coords[2*i+1];
-    grid->boundary_values[i] = bc(xval,yval);
+    /* evaluate boundary condition function at point */
+    grid->boundary_values[i] = pde_bc(xval,yval);
   }
+
+  /* set the right hand side values at those points */
   ierr = VecSetValuesLocal(algebra->b,grid->boundary_count,vertex_ptr,grid->boundary_values,INSERT_VALUES);CHKERRQ(ierr);
   ierr = ISRestoreIndices(grid->vertex_boundary,&vertex_ptr);CHKERRQ(ierr);
  
@@ -254,16 +254,16 @@ int SetBoundaryConditions(AppCtx *appctx)
 #define __FUNC__ "SetMatrixBoundaryConditions"
 int SetMatrixBoundaryConditions(AppCtx *appctx)
 {
+  /********* Context informatrion ***********/
   AppAlgebra *algebra = &appctx->algebra;
   AppGrid    *grid = &appctx->grid;
 
+  /****** Local Variables ***********/
   double     one = 1.0;
   int        ierr;
 
   PetscFunctionBegin;
-
   ierr = MatZeroRowsLocal(algebra->A,grid->vertex_boundary,&one);CHKERRQ(ierr); 
-  
   PetscFunctionReturn(0);
 }
 
@@ -313,10 +313,10 @@ static double InterpolatingFunctionsElement(int partial,int node,double xi,doubl
 int SetReferenceElement(AppCtx* appctx)
 {
   int        i,j;
-  int        bn = 4; /* basis count*/
-  int        qn = 4; /*quadrature count */
+  int        bn = 4; /* number of basis functions*/
+  int        qn = 4; /* number of quadrature points */
   double     t;  /* for quadrature point */
-  double     gx[4],gy[4]; /* gauss points: */  
+  double     gx[4],gy[4]; /* Gauss points: */  
   AppElement *phi = &appctx->element;
 
   PetscFunctionBegin;
@@ -346,23 +346,23 @@ int SetReferenceElement(AppCtx* appctx)
 }
 		  
 /*------------------------------------------------------------------
-    B - Computes derivative information for each element. This data is used
-    in C) and D) to compute the element load and stiffness.
+    B - Computes derivative information for each real element (this is called once per
+    element. This data is used in C) and D) to compute the element load and stiffness.
 */
 #undef __FUNC__
 #define __FUNC__ "SetLocalElement"
 int SetLocalElement(AppElement *phi)
 {
-  /* the coords array consists of pairs (x[0],y[0],...,x[3],y[3]) representing 
+  /* the coordinates array consists of pairs (x[0],y[0],...,x[3],y[3]) representing 
      the images of the support points for the 4 basis functions */ 
   int    i,j;
-  int    bn = 4,qn = 4; /* basis count, quadrature count */
-  double Dh[4][2][2],Dhinv[4][2][2];
+  int    bn = 4,qn = 4; /* number of basis functions, number of quadrature points */
+  double Dh[4][2][2],Dhinv[4][2][2]; /* the Jacobian and inverse of the Jacobian */
  
   PetscFunctionBegin;
- /* The function h takes the reference element to the local element.
+ /* The function h takes the reference element to the local (true) element.
                   h(x,y) = sum(i) of alpha_i*phi_i(x,y),
-   where alpha_i is the image of the support point of the ith basis fn */
+   where alpha_i is the image of the support point of the ith basis function */
 
   /*Values, i.e., (x(xi, eta), y(xi, eta)), 
             the images of the Gauss points in the local element */
@@ -402,7 +402,7 @@ int SetLocalElement(AppElement *phi)
   /* Notice that phi~ = phi(h), so Dphi~ = Dphi*Dh, (chain rule)
      so Dphi~ = Dphi*(Dh)inv    (multiply by (Dh)inv   */       
   /* partial of phi at h(gauss pt) times Dhinv */
-  /* loop over Gauss, the basis fns, then d/dx or d/dy */
+  /* loop over Gauss, the basis functions, then d/dx or d/dy */
   for(i=0;i<qn;i++){  /* loop over Gauss points */
     for(j=0;j<bn;j++){ /* loop over basis functions */
       phi->dx[j][i] = phi->RefDx[j][i]*Dhinv[i][0][0] + phi->RefDy[j][i]*Dhinv[i][1][0];
@@ -420,16 +420,14 @@ int SetLocalElement(AppElement *phi)
 int ComputeRHSElement(AppElement *phi)
 {
   int i,j; 
-  int bn,qn; /* basis count, quadrature count */
+  int bn = 4,qn = 4; /* number of basis functions, number of quadrature points */
 
   PetscFunctionBegin;
-  bn = 4;
-  qn = 4;
-  /* need to go over each element, then each variable */
+
   for(i = 0; i < bn; i++){ /* loop over basis functions */
     phi->rhsresult[i] = 0.0; 
     for(j = 0; j < qn; j++){ /* loop over Gauss points */
-      phi->rhsresult[i] +=  phi->weights[j] *f(phi->x[j],phi->y[j])*(phi->RefVal[i][j])*PetscAbsDouble(phi->detDh[j]); 
+      phi->rhsresult[i] +=  phi->weights[j]*pde_f(phi->x[j],phi->y[j])*(phi->RefVal[i][j])*PetscAbsDouble(phi->detDh[j]); 
    }
  }
  PetscFunctionReturn(0);
@@ -437,8 +435,7 @@ int ComputeRHSElement(AppElement *phi)
 
 /* ---------------------------------------------------
 
-    D - ComputeStiffness: 
-computes integrals of gradients of local phi_i and phi_j on the given quadrangle 
+    D - ComputeStiffness: computes integrals of gradients of local phi_i and phi_j on the given quadrangle 
      by changing variables to the reference quadrangle and reference basis elements phi_i and phi_j.  
      The formula used is
 
@@ -447,33 +444,29 @@ computes integrals of gradients of local phi_i and phi_j on the given quadrangle
                                       <(grad phi_j composed with h)*(grad h)^-1,
                                       (grad phi_i composed with h)*(grad h)^-1>*det(grad h).
       this is evaluated by quadrature:
-      = sum over Gauss points, above evaluated at gauss pts
+      = sum over Gauss points, above evaluated at Gauss pts
 */
 #undef __FUNC__
 #define __FUNC__ "ComputeStiffness"
 int ComputeStiffnessElement(AppElement *phi)
 {
   int i,j,k;
-  int bn,qn; /* basis count, quadrature count */
+  int bn = 4,qn = 4; /* number of basis functions, number of Gauss points */
 
   PetscFunctionBegin;
-  bn = 4;  
-  qn = 4;
-  /* Stiffness Terms */
   /* could even do half as many by exploiting symmetry  */
-  for(i=0;i<bn;i++){ /* loop over first basis fn */
-    for(j=0; j<bn; j++){ /* loop over second */
+  for(i=0;i<bn;i++){ /* loop over first basis function */
+    for(j=0; j<bn; j++){ /* loop over second besis function */
       phi->stiffnessresult[i][j] = 0;
     }
   }
 
   /* Now Integral.  term is <DphiDhinv[i],DphiDhinv[j]>*abs(detDh) */
-  for(i=0;i<bn;i++){ /* loop over first basis fn */
-    for(j=0; j<bn; j++){ /* loop over second */
+  for(i=0;i<bn;i++){ /* loop over first basis function */
+    for(j=0; j<bn; j++){ /* loop over second basis function*/
       for(k=0;k<qn;k++){ /* loop over Gauss points */
         phi->stiffnessresult[i][j] += phi->weights[k]*
-                  (phi->dx[i][k]*phi->dx[j][k] + phi->dy[i][k]*phi->dy[j][k])*
-	          PetscAbsDouble(phi->detDh[k]);
+                  (phi->dx[i][k]*phi->dx[j][k] + phi->dy[i][k]*phi->dy[j][k])*PetscAbsDouble(phi->detDh[k]);
       }
     }
   }
