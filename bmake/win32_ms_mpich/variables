@@ -16,7 +16,7 @@ DIFF             = diff -w
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = ${WIN32FE} cl
-C_FC             = ${WIN32FE} f90 -fpp:-m -iface:'(cref,nomixed_str_len_arg)'
+C_FC             = ${WIN32FE} f90 -fpp:-m
 C_CLINKER_SLFLAG = -L
 C_FLINKER_SLFLAG = -L
 C_CLINKER        = ${WIN32FE} cl
@@ -33,7 +33,7 @@ O_FOPTFLAGS      = -threads -optimize:5 -fast
 # ########################## C++ compiler ##################################
 #
 CXX_CC           = ${WIN32FE} cl -TP -GX -GR
-CXX_FC           = ${WIN32FE} f90 -fpp:-m -iface:'(cref,nomixed_str_len_arg)'
+CXX_FC           = ${WIN32FE} f90 -fpp:-m
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER      = ${WIN32FE} cl

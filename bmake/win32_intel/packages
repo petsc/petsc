@@ -19,7 +19,7 @@ BLASLAPACK_LIB         = -L'"C:/Program Files/Intel/MKL/ia32/lib"' mkl_c_dll.lib
 # To use the single processor MPI interface provided in PETSc
 #
 
-MPI_HOME       = c:/progra~1/argonn~1/mpichn~1.2/sdk
+MPI_HOME       = c:/progra~1/argonn~1/mpichn~1.3/sdk
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPI_LIB        = -L${MPI_HOME}/lib ws2_32.lib mpich.lib
 MPIRUN         = mpirun -localonly
