@@ -42,3 +42,5 @@ libf: ${OBJSF}
 	-${FC} -c ${FFLAGS} ${FOPTFLAGS} __$*.f
 	-mv __$*.o $*.o
 	-${RM} __$*.f __$*.c
+
+shared:
