@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.25 2000/01/11 21:02:45 bsmith Exp balay $";
+! "$Id: ex1f.F,v 1.26 2000/05/05 22:18:34 balay Exp balay $";
 !
 !/*T
 !  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -94,7 +94,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRA(1,0,' ')
+         SETERRA(1,0,' ',ierr)
       endif
 
 ! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 

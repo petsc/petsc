@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.23 2000/01/17 23:22:38 bsmith Exp balay $"
+!    "$Id: ex1f.F,v 1.24 2000/05/05 22:15:21 balay Exp balay $"
 !
 !   Program usage:  mpirun ex1f [-help] [all PETSc options] 
 !
@@ -212,7 +212,7 @@
          if (rank .eq. 0) then
             write(6,*) 'Corrupted vector!'
          endif
-         SETERRA(1,0,' ')
+         SETERRA(1,0,' ',ierr)
       endif
 
 !  Free work space.  All PETSc objects should be destroyed when they
