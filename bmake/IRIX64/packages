@@ -48,3 +48,6 @@ MPIRUN         = /usr/local/pub/mpich/bin/mpirun
 #
 PCONF         =   -DHAVE_BLOCKSOLVE
 #
+#  If you are using dynamic libraries  you must make this
+# point to the directories where all your shared libraries are stored.
+DYLIBPATH     = /home/bsmith/lapack

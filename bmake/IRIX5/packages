@@ -46,7 +46,7 @@ MPIRUN         = /usr/local/mpi/bin/mpirun.ch_shmem
 #
 PCONF         =   -DHAVE_BLOCKSOLVE
 #
-#  If you are using dynamic libraries (the default) you must make this
+#  If you are using dynamic libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = /home/bsmith/lapack:/home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH):/usr/local/mpi/lib/IRIX/ch_shmem/
+DYLIBPATH     = /home/bsmith/lapack
