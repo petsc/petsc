@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.14 2001/03/23 23:24:25 balay Exp bsmith $*/
+/*$Id: ex24.c,v 1.15 2001/04/10 19:37:05 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint.\n\n";
 
@@ -45,7 +45,7 @@ extern int PDEFormFunction(Scalar*,Vec,Vec,DA);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        ierr,N = 5,nlevels,i;
+  int        ierr,nlevels,i;
   DA         da;
   DMMG       *dmmg;
   VecPack    packer;
@@ -53,7 +53,6 @@ int main(int argc,char **argv)
 
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   /* Hardwire several options; can be changed at command line */
   ierr = PetscOptionsSetValue("-dmmg_grid_sequence",PETSC_NULL);CHKERRQ(ierr);
@@ -72,7 +71,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
   
   /* Create a global vector from a da arrays */
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   ierr = VecPackAddArray(packer,1);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
@@ -90,7 +89,7 @@ int main(int argc,char **argv)
   for (i=0; i<nlevels; i++) {
     packer = (VecPack)dmmg[i]->dm;
     ierr   = VecPackGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
-    ierr   = DAGetColoring(da,IS_COLORING_GLOBAL,MATMPIAIJ,PETSC_NULL,&J);CHKERRQ(ierr);
+    ierr   = DAGetColoring(da,IS_COLORING_LOCAL,MATMPIAIJ,PETSC_NULL,&J);CHKERRQ(ierr);
     dmmg[i]->user = (void*)J;
   }
 
@@ -226,6 +225,9 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscLogFlops(9*N);
   PetscFunctionReturn(0);
 }
+
+
+
 
 
 
