@@ -1,5 +1,5 @@
 c
-c  "$Id: xnd_fp.F,v 1.5 1997/10/11 18:39:18 curfman Exp keyes $";
+c  "$Id: xnd_fp.F,v 1.6 1997/10/12 20:54:59 keyes Exp curfman $";
 c
 c ----------------------------------------------------------------
 c  Full potential initial condition
@@ -31,10 +31,10 @@ c      COMMON /FREQ/ IFREQ,ISGS
       double precision xloc
 c
 c Reading would be redundant with IC for Euler if both models are 
-c in use, but is necessary when running only the FP model.  This
+c in use, but is necessary when running only the full potential model.  This
 c section MUST be skipped if already performed in the IC for Euler,
 c or the angle "conversion" will be done twice!
-c Many of the input parameters are not relevant for FP, but are
+c Many of the input parameters are not relevant for full potential, but are
 c kept as dummies for input file items.
 c
       if (model .gt. MMFP) goto 40
