@@ -210,7 +210,7 @@ M*/
     bt        - PetscBT (bitarray) with all bits set to false
 */
 #define PetscLLCreate(idx_start,lnk_max,nlnk,lnk,bt) \
-  (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt)); lnk[idx_start] = lnk_max;
+  (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk[idx_start] = lnk_max,0))
 
 
 /*
