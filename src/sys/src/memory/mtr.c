@@ -16,9 +16,9 @@
 /*
      These are defined in mal.c and ensure that malloced space is PetscScalar aligned
 */
-EXTERN int   PetscMallocAlign(int,int,char*,char*,char*,void**);
+EXTERN int   PetscMallocAlign(size_t,int,char*,char*,char*,void**);
 EXTERN int   PetscFreeAlign(void*,int,char*,char*,char*);
-EXTERN int   PetscTrMallocDefault(int,int,char*,char*,char*,void**);
+EXTERN int   PetscTrMallocDefault(size_t,int,char*,char*,char*,void**);
 EXTERN int   PetscTrFreeDefault(void*,int,char*,char*,char*);
 
 /*
@@ -206,12 +206,12 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
     double aligned pointer to requested storage, or null if not
     available.
  */
-int PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *dir,void**result)
+int PetscTrMallocDefault(size_t a,int lineno,char *function,char *filename,char *dir,void**result)
 {
   TRSPACE          *head;
   char             *inew;
   unsigned long    *nend;
-  unsigned int     nsize;
+  size_t           nsize;
   int              ierr;
 
   PetscFunctionBegin;
@@ -229,7 +229,7 @@ int PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *di
   }
   nsize = a;
   if (nsize & TR_ALIGN_MASK) nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
-  ierr = PetscMallocAlign((unsigned)(nsize+sizeof(TrSPACE)+sizeof(PetscScalar)),lineno,function,filename,dir,(void**)&inew);CHKERRQ(ierr);
+  ierr = PetscMallocAlign(nsize+sizeof(TrSPACE)+sizeof(PetscScalar),lineno,function,filename,dir,(void**)&inew);CHKERRQ(ierr);
 
 
   /*

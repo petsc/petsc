@@ -89,7 +89,7 @@ EXTERN int        PetscSetHelpVersionFunctions(int (*)(MPI_Comm),int (*)(MPI_Com
 .  result - memory allocated
 
    Synopsis:
-   int PetscMalloc(int m,void **result)
+   int PetscMalloc(size_t m,void **result)
 
    Level: beginner
 
@@ -140,9 +140,9 @@ M*/
 
 M*/
 #define PetscFree(a)         (*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__)
-EXTERN int  (*PetscTrMalloc)(int,int,char*,char*,char*,void**);
+EXTERN int  (*PetscTrMalloc)(size_t,int,char*,char*,char*,void**);
 EXTERN int  (*PetscTrFree)(void *,int,char*,char*,char*);
-EXTERN int  PetscSetMalloc(int (*)(int,int,char*,char*,char*,void**),int (*)(void *,int,char*,char*,char*));
+EXTERN int  PetscSetMalloc(int (*)(size_t,int,char*,char*,char*,void**),int (*)(void *,int,char*,char*,char*));
 EXTERN int  PetscClearMalloc(void);
 
 /*

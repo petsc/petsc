@@ -44,22 +44,23 @@ int ReceiveDenseIntMatrix(Matrix *plhs[],int t)
 {
   int    m,compx = 0,i,*array;
   double *values;
+  int    ierr;
   
   /* get size of matrix */
-  if (PetscBinaryRead(t,&m,1,PETSC_INT))   ERROR("reading number columns"); 
+  ierr = PetscBinaryRead(t,&m,1,PETSC_INT); if (ierr) ERROR("reading number columns"); 
   
   /*allocate matrix */
-  plhs[0]  = mxCreateFull(m,1,0);
+  plhs[0] = mxCreateFull(m,1,0);
 
   /* read in matrix */
-  array = (int*)malloc(m*sizeof(int)); if (!array) ERROR("reading allocating space");
-  if (PetscBinaryRead(t,array,m,PETSC_INT)) ERROR("read dense matrix");
+  ierr = PetscMalloc(m*sizeof(int), &array); if (ierr) ERROR("reading allocating space");
+  ierr = PetscBinaryRead(t,array,m,PETSC_INT); if (ierr) ERROR("read dense matrix");
 
   values = mxGetPr(plhs[0]);
   for (i =0; i<m; i++) {
     values[i] = array[i];
   }
-  free(array);
+  ierr = PetscFree(array); if (ierr) ERROR("reading deallocating space");
 
   return 0;
 }

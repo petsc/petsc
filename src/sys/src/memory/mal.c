@@ -33,7 +33,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMallocAlign"
-int PetscMallocAlign(int mem,int line,char *func,char *file,char *dir,void** result)
+int PetscMallocAlign(size_t mem,int line,char *func,char *file,char *dir,void** result)
 {
 #if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
   *result = malloc(mem);
@@ -108,8 +108,8 @@ int PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
   return 0;
 }
 
-int  (*PetscTrMalloc)(int,int,char*,char*,char*,void**)  = PetscMallocAlign;
-int  (*PetscTrFree)(void *,int,char*,char *,char*)       = PetscFreeAlign;
+int  (*PetscTrMalloc)(size_t,int,char*,char*,char*,void**) = PetscMallocAlign;
+int  (*PetscTrFree)(void *,int,char*,char *,char*)         = PetscFreeAlign;
 
 PetscTruth petscsetmallocvisited = PETSC_FALSE;
 
@@ -132,7 +132,7 @@ PetscTruth petscsetmallocvisited = PETSC_FALSE;
    Concepts: memory^allocation 
 
 @*/
-int PetscSetMalloc(int (*imalloc)(int,int,char*,char*,char*,void**),
+int PetscSetMalloc(int (*imalloc)(size_t,int,char*,char*,char*,void**),
                    int (*ifree)(void*,int,char*,char*,char*))
 {
   PetscFunctionBegin;
