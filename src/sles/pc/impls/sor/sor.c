@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.26 1995/07/13 22:41:10 curfman Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.27 1995/07/18 19:58:19 curfman Exp curfman $";
 #endif
 
 /*
@@ -93,6 +93,7 @@ static int PCView_SOR(PetscObject obj,Viewer viewer)
   else if ((sym & SOR_SYMMETRIC_SWEEP) == SOR_SYMMETRIC_SWEEP)
                                            sortype = "symmetric";
   else if (sym & SOR_BACKWARD_SWEEP)       sortype = "backward";
+  else if (sym & SOR_FORWARD_SWEEP)        sortype = "forward";
   else if ((sym & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP)
                                            sortype = "local_symmetric";
   else if (sym & SOR_LOCAL_FORWARD_SWEEP)  sortype = "local_forward";
