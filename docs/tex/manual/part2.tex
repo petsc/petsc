@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.332 1999/11/20 18:40:17 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.333 2000/01/11 21:04:16 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1832,7 +1832,7 @@ One first creates a parallel matrix that contains the connectivity information a
 grid (or other graph-type object) that is to be partitioned. This is done with the 
 command
 \begin{verbatim}
-  ierr = MatCreateMPICSR(MPI_Comm comm,int mlocal,int n,int *ia,int *ja, MatScalar *weights,Mat *Adj);
+  ierr = MatCreateMPIAdj(MPI_Comm comm,int mlocal,int n,int *ia,int *ja, MatScalar *weights,Mat *Adj);
 \end{verbatim}
 The argument {\tt mlocal} indicates the number of rows of the graph being provided
 by the given processor, {\tt n} is the total number of columns; equal to the 
