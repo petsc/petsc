@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.69 1997/05/21 01:49:17 bsmith Exp balay $ */
+/* $Id: pc.h,v 1.70 1997/05/23 15:52:48 balay Exp balay $ */
 
 /*
       Preconditioner module. 
@@ -12,7 +12,7 @@ typedef enum { PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
                PCEISENSTAT, PCILU, PCICC, PCASM, PCBGS, PCNEW } PCType;
 
 typedef struct _p_PC* PC;
-#define PC_COOKIE    PETSC_COOKIE+9
+#define PC_COOKIE     PETSC_COOKIE+9
 
 /*
       Null space code is not yet developed 
