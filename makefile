@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.253 1999/01/20 00:08:11 balay Exp balay $ 
+# $Id: makefile,v 1.254 1999/01/27 23:08:53 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -17,7 +17,7 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 # f90     : builds the fortran and the f90 libraries.
 #
 all       : info chkpetsc_dir deletelibs build_c build_fortrankernels \
-	    build_fortran build_fortran90 shared
+	    build_fortran shared
 fortran   : info chkpetsc_dir build_fortran
 fortran90 : fortran build_fortran90
 
@@ -53,6 +53,8 @@ info:
 
 #
 # Build the PETSc libraries
+# This target also builds fortran interface files, and f90
+# interface files. (except compiling *.F files)
 #
 build_c:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
@@ -73,11 +75,8 @@ build_c:
 build_fortran:
 	-@echo "BEGINNING TO COMPILE FORTRAN INTERFACE LIBRARY"
 	-@echo "========================================="
-	-${RM} -f ${PDIR}/libpetscfortran.*
-	-@cd src/fortran/auto; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} libfast
 	-@cd src/fortran/custom; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} lib > trashz 2>&1; \
+	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} libf > trashz 2>&1; \
 	  grep -v clog trashz | grep -v "information sections" | \
 	  egrep -i '(Error|warning|Can)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
@@ -85,24 +84,6 @@ build_fortran:
 	${RANLIB} ${PDIR}/libpetscfortran.a
 	-@chmod g+w  ${PDIR}/*.a
 	-@echo "Completed compiling Fortran interface library"
-	-@echo "========================================="
-
-#
-# Builds PETSc Fortran90 interface libary
-# Note: F90 interface currently supported in NAG, IRIX, IBM F90 compilers.
-#
-build_fortran90: 
-	-@echo "BEGINNING TO COMPILE FORTRAN90 INTERFACE LIBRARY"
-	-@echo "========================================="
-	-@cd src/fortran/f90; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} lib > trashz 2>&1; \
-	  grep -v clog trashz | grep -v "information sections" | \
-	  egrep -i '(Error|warning|Can)' >> /dev/null;\
-	  if [ "$$?" != 1 ]; then \
-	  cat trashz ; fi; ${RM} trashz
-	${RANLIB} ${PDIR}/libpetscfortran.a
-	-@chmod g+w  ${PDIR}/*.a
-	-@echo "Completed compiling Fortran90 interface library"
 	-@echo "========================================="
 
 #
@@ -114,7 +95,7 @@ build_fortrankernels: chkpetsc_dir
 	-@echo "BEGINNING TO COMPILE FORTRAN KERNELS LIBRARY"
 	-@echo "========================================="
 	-@cd src/fortran/kernels; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} lib
+	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} libf
 	-@chmod g+w  ${PDIR}/*.a
 	-@echo "Completed compiling Fortran kernels library"
 	-@echo "========================================="
@@ -190,11 +171,6 @@ deletelibs: chkopts_basic
 # PETSc users should not generally need to use these commands.
 #
 
-MAKEFILES  = makefile
-BMAKEFILES = bmake/common* bmake/*/base* bmake/*/petscconf.h
-DOCS       = bmake/readme bmake/petscconf.defs
-
-
 # To access the tags in EMACS, type M-x visit-tags-table and specify
 # the file petsc/TAGS.	
 # 1) To move to where a PETSc function is defined, enter M-. and the
@@ -202,123 +178,78 @@ DOCS       = bmake/readme bmake/petscconf.defs
 # 2) To search for a string and move to the first occurrence,
 #     use M-x tags-search and the string.
 #     To locate later occurrences, use M-,
-
-TAGS_INCLUDE_FILES  = include/*.h include/pinclude/*.h bmake/*/petscconf.h \
-                      include/finclude/*.h 
-TAGS_BMAKE_FILES    = bmake/common bmake/*/base*
-TAGS_EXAMPLE_FILES  = src/*/examples/*/*.[c,h,F,f] src/*/examples/*/*/*.[c,h,F,f] \
-                      src/benchmarks/*.c src/contrib/*/examples/*/*.[c,h,F,f]\
-		      src/fortran/f90/tests/*.[c,h,F,f]
-TAGS_FEXAMPLE_FILES = src/*/examples/*/*.[F,f] src/*/examples/*/*/*.[F,f] \
-                      src/contrib/*/examples/*/*.[F,f]\
-		      src/fortran/f90/tests/*.[F,f]
-TAGS_DOC_FILES      = docs/tex/manual/routin.tex docs/tex/manual/manual.tex \
-                      docs/tex/manual/manual_tex.tex docs/tex/manual/intro.tex \
-                      docs/tex/manual/part1.tex docs/tex/manual/developer.tex docs/tex/manual/part2.tex
-TAGS_SRC_FILES      = src/sys/src/*/*.c src/*/*.[c,h] src/*/interface/*.[c,h] src/*/src/*.[c,h] \
-                      src/*/utils/*.[c,h] src/snes/mf/*.[c,h] \
-                      src/*/impls/*.[c,h] src/*/impls/*/*.[c,h] src/*/impls/*/*/*.[c,h] \
-                      src/snes/interface/noise/*.[c,F,h] \
-		      src/contrib/*/*.[c,h] \
-                      src/contrib/*/src/*.[c,h] src/fortran/custom/*.[c,h,F] \
-		      src/fortran/kernels/*.[c,h,F] \
-		      src/fortran/f90/*.[c,h,F] src/fortran/f90/*/*.[c,h,F] \
-		      src/blaslapack/blas/*.c src/blaslapack/lapack/src[1,2,3]/*.c \
-                      src/contrib/pc/*/*.c
-TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
-                      makefile src/sys/src/*/makefile \
-                      src/makefile src/*/makefile src/*/src/makefile \
-                      src/*/interface/makefile \
-                      src/*/utils/makefile \
-                      src/*/impls/makefile src/*/impls/*/makefile src/*/impls/*/*/makefile \
-                      src/snes/interface/noise/makefile src/*/examples/makefile \
-		      src/*/examples/*/makefile src/*/examples/*/*/makefile \
-                      src/fortran/*/makefile src/fortran/f90/*/makefile \
-                      src/contrib/*/makefile src/contrib/*/src/makefile \
-                      src/contrib/*/examples/makefile src/contrib/*/examples/*/makefile \
-                      src/contrib/sif/*/makefile docs/makefile src/adic/*/makefile \
-                      src/contrib/pc/*/makefile src/contrib/makefile  
-
 # Builds all etags files
 alletags:
 	-${OMAKE} etags_complete
-	-${OMAKE} etags
 	-${OMAKE} etags_noexamples
 	-${OMAKE} etags_examples
 	-${OMAKE} etags_makefiles
-	-${OMAKE} ctags
-
 # Builds the basic etags file.	This should be employed by most users.
 etags:
-	-${RM} TAGS
-	-etags -f TAGS ${TAGS_INCLUDE_FILES} 
-	-etags -a -f TAGS ${TAGS_SRC_FILES} 
-	-etags -a -f TAGS ${TAGS_EXAMPLE_FILES} 
-	-etags -a -f TAGS ${TAGS_MAKEFILE_FILES} 
-	-etags -a -f TAGS ${TAGS_BMAKE_FILES} 
+	-${RM} ${PETSC_DIR}/TAGS
+	-touch ${PETSC_DIR}/TAGS
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_sourcec alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_sourceh alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_examplesc alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_examplesf alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_examplesh alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_makefile alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS etags_bmakefiles
 	-chmod g+w TAGS
-
 # Builds complete etags list; only for PETSc developers.
 etags_complete:
-	-${RM} TAGS_COMPLETE
-	-etags -f TAGS_COMPLETE ${TAGS_SRC_FILES} 
-	-etags -a -f TAGS_COMPLETE ${TAGS_INCLUDE_FILES} 
-	-etags -a -f TAGS_COMPLETE ${TAGS_EXAMPLE_FILES}
-	-etags -a -f TAGS_COMPLETE ${TAGS_MAKEFILE_FILES} 
-	-etags -a -f TAGS_COMPLETE ${TAGS_BMAKE_FILES} 
-	-etags -a -f TAGS_COMPLETE ${TAGS_DOC_FILES}
+	-${RM} ${PETSC_DIR}/TAGS_COMPLETE
+	-touch ${PETSC_DIR}/TAGS_COMPLETE
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_sourcec alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_sourceh alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_examplesc alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_examplesf alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_examplesh alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_makefile alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE etags_bmakefiles
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_docs alltree
 	-chmod g+w TAGS_COMPLETE
-
 # Builds the etags file that excludes the examples directories
 etags_noexamples:
-	-${RM} TAGS_NO_EXAMPLES
-	-etags -f TAGS_NO_EXAMPLES ${TAGS_SRC_FILES}
-	-etags -a -f TAGS_NO_EXAMPLES ${TAGS_INCLUDE_FILES} 
-	-etags -a -f TAGS_NO_EXAMPLES ${TAGS_MAKEFILE_FILES} 
-	-etags -a -f TAGS_NO_EXAMPLES ${TAGS_BMAKE_FILES} 
-	-etags -a -f TAGS_NO_EXAMPLES ${TAGS_DOC_FILES}
+	-${RM} ${PETSC_DIR}/TAGS_NO_EXAMPLES
+	-touch ${PETSC_DIR}/TAGS_NO_EXAMPLES
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_NO_EXAMPLES ACTION=etags_sourcec alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_NO_EXAMPLES ACTION=etags_sourceh alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_NO_EXAMPLES ACTION=etags_makefile alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_NO_EXAMPLES etags_bmakefiles
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_NO_EXAMPLES ACTION=etags_docs alltree
 	-chmod g+w TAGS_NO_EXAMPLES
-
 # Builds the etags file for makefiles
 etags_makefiles: 
-	-${RM} TAGS_MAKEFILES
-	-etags -f TAGS_MAKEFILES ${TAGS_MAKEFILE_FILES} 
-	-etags -a -f TAGS_MAKEFILES ${TAGS_BMAKE_FILES} 
-	-chmod g+w TAGS_MAKEFILES
-
+	-${RM} ${PETSC_DIR}/TAGS_MAKEFILE
+	-touch ${PETSC_DIR}/TAGS_MAKEFILE
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_MAKEFILE ACTION=etags_makefile alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_MAKEFILE etags_bmakefiles
+	-chmod g+w TAGS_MAKEFILE
 # Builds the etags file for examples
 etags_examples: 
-	-${RM} TAGS_EXAMPLES
-	-etags -f TAGS_EXAMPLES ${TAGS_EXAMPLE_FILES} 
+	-${RM} ${PETSC_DIR}/TAGS_EXAMPLES
+	-touch ${PETSC_DIR}/TAGS_EXAMPLES
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_EXAMPLES ACTION=etags_examplesc alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_EXAMPLES ACTION=etags_examplesh alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_EXAMPLES ACTION=etags_examplesf alltree
 	-chmod g+w TAGS_EXAMPLES
 etags_fexamples: 
-	-${RM} TAGS_FEXAMPLES
-	-etags -f TAGS_FEXAMPLES ${TAGS_FEXAMPLE_FILES} 
+	-${RM} ${PETSC_DIR}/TAGS_FEXAMPLES
+	-touch ${PETSC_DIR}/TAGS_FEXAMPLES
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_FEXAMPLES ACTION=etags_examplesf alltree
 	-chmod g+w TAGS_FEXAMPLES
 
 #
-# To use the tags file from VI do the following:
-# 1. within vi invoke the command - :set tags=/home/bsmith/petsc/vitags
-#    or add  the command to your ~/.exrc file - set tags=/home/bsmith/petsc/vitags
-# 2. now to go to a tag do - :tag TAGNAME for eg - :tag MatCreate
-# 
-ctags:  
-	-${RM} vitags
-	-ctags -w -f vitags ${TAGS_INCLUDE_FILES} 
-	-ctags -w -a -f vitags ${TAGS_SRC_FILES} 
-	-ctags -w -a -f vitags ${TAGS_EXAMPLE_FILES}
-	-ctags -w -a -f vitags ${TAGS_MAKEFILE_FILES} 
-	-ctags -w -a -f vitags ${TAGS_BMAKE_FILES}
-	-chmod g+w vitags
-#
-# These are here for the target allci and allco
+# These are here for the target allci and allco, and etags
 #
 
-DOCS	 = maint/addlinks maint/builddist \
-	   maint/buildlinks maint/wwwman maint/xclude maint/crontab\
-	   bmake/common bmake/*/base* maint/autoftp docs/manualpages/sec/* \
-           include/foldinclude/generateincludes bin/petscviewinfo.text \
-           bin/petscoptsinfo.text bmake/*/petscconf.h
+BMAKEFILES = bmake/common* bmake/*/base* bmake/*/petscconf.h
+DOCS	   = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
+	     maint/xclude maint/crontab bmake/common bmake/*/base* \
+	     maint/autoftp include/foldinclude/generateincludes \
+	     bin/petscviewinfo.text bin/petscoptsinfo.text \
+	     bmake/*/petscconf.h bmake/readme bmake/petscconf.defs
 
 # Deletes man pages (HTML version)
 deletemanualpages:
@@ -356,14 +287,10 @@ allfortranstubs:
 	chmod g+w src/fortran/auto/*.c
 
 allci: 
-	-@cd src/fortran/custom ; ${OMAKE} BOPT=${BOPT} ci
-	-@cd src/fortran/f90 ; ${OMAKE} BOPT=${BOPT} ci
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=ci  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=ci  alltree 
 
 allco: 
-	-@cd src/fortran/custom ; ${OMAKE} BOPT=${BOPT} co
-	-@cd src/fortran/f90 ; ${OMAKE} BOPT=${BOPT} co
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=co  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=co  alltree 
 
 #
 #   The commands below are for generating ADIC versions of the code;
