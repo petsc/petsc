@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.8 1995/10/24 21:54:28 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.9 1996/01/26 04:35:37 bsmith Exp curfman $ */
 
 /*
 
@@ -12,7 +12,7 @@ struct _DA {
   PETSCHEADER
   int           M,N,P;             /* array dimensions */
   int           m,n,p;             /* processor layout */
-  int           w;                 /* degrees of freedome per node */
+  int           w;                 /* degrees of freedom per node */
   int           s;                 /* stencil width */
   int           xs,xe,ys,ye,zs,ze; /* range of local values */
   int           Xs,Xe,Ys,Ye,Zs,Ze; /* range including ghost values*/
@@ -22,6 +22,7 @@ struct _DA {
   VecScatter    gtol,ltog,ltol;      
   Vec           global,local;
   DAStencilType stencil_type;
+  int           dim;               /* DA dimension (1,2, or 3) */
 };
 
 /*
