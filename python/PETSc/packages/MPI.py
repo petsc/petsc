@@ -16,6 +16,7 @@ class Configure(config.base.Configure):
     self.foundInclude = 0
     self.isPOE        = 0
     self.compilers    = self.framework.require('config.compilers', self)
+    self.setcompilers = self.framework.require('config.setCompilers', self)    
     self.types        = self.framework.require('config.types',     self)
     self.libraries    = self.framework.require('config.libraries', self)
     self.arch         = self.framework.require('PETSc.utilities.arch', self)
@@ -342,21 +343,28 @@ class Configure(config.base.Configure):
     installDir = os.path.join(mpichDir, self.framework.argDB['PETSC_ARCH'])
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
+      
     # Configure and Build MPICH
-    args = ['--prefix='+installDir, '-cc="'+self.framework.argDB['CC']+' '+self.framework.argDB['CFLAGS']+'"']
+    self.framework.pushLanguage('C')
+    args = ['--prefix='+installDir, '-cc="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    self.framework.popLanguage()
     if 'CXX' in self.framework.argDB:
-      args.append('-c++="'+self.framework.argDB['CXX']+' '+self.framework.argDB['CXXFLAGS']+'"')
+      self.framework.pushLanguage('Cxx')
+      args.append('-c++="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      self.framework.popLanguage()
     else:
       args.append('--disable-c++')
     if 'FC' in self.framework.argDB:
-      fc = self.framework.argDB['FC']
+      self.framework.pushLanguage('FC')      
+      fc = self.framework.getCompiler()
       if fc.find('f90') >= 0:
         import commands
         output  = commands.getoutput(fc+' -v')
         if output.find('IBM') >= 0:
           fc = os.path.join(os.path.dirname(fc),'xlf')
           self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling MPICH\n')      
-      args.append('-fc="'+fc+' '+self.framework.argDB['FFLAGS']+'"')
+      args.append('-fc="'+fc+' '+self.framework.getCompilerFlags()+'"')
+      self.framework.popLanguage()
     else:
       args.append('--disable-f77 --disable-f90')
     args.append('--without-mpe')
@@ -372,10 +380,12 @@ class Configure(config.base.Configure):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild MPICH oldargs = '+oldargs+' new args '+args+'\n')
       try:
+        self.logPrint("Running configure on MPICH; this may take several minutes\n", debugSection='screen')
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on MPICH: '+str(e))
       try:
+        self.logPrint("Running make on MPICH; this may take several minutes\n", debugSection='screen')
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on MPICH: '+str(e))

@@ -78,9 +78,9 @@ class Configure(config.base.Configure):
     m = re.match(r'^(?P<cpu>[^-]*)-(?P<vendor>[^-]*)-(?P<os>.*)$', output)
     if not m:
       raise RuntimeError('Unable to parse output of '+configSub+': '+output)
-    self.framework.host_cpu = m.group('cpu')
-    self.host_vendor        = m.group('vendor')
-    self.host_os            = m.group('os')
+    self.framework.host_cpu    = m.group('cpu')
+    self.framework.host_vendor = m.group('vendor')
+    self.framework.host_os     = m.group('os')
 
     if 'PETSC_ARCH' in self.framework.argDB:
       self.arch = self.framework.argDB['PETSC_ARCH']
@@ -88,12 +88,12 @@ class Configure(config.base.Configure):
       if 'PETSC_ARCH' in os.environ:
         self.arch = os.environ['PETSC_ARCH']
       else:
-        self.arch = self.host_os
+        self.arch = self.framework.host_os
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
     self.addDefine('ARCH', self.archBase)
     self.addDefine('ARCH_NAME', '"'+self.arch+'"')
     self.framework.argDB['PETSC_ARCH']      = self.arch
-    self.framework.argDB['PETSC_ARCH_BASE'] = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.host_os)
+    self.framework.argDB['PETSC_ARCH_BASE'] = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.host_os)
     self.addArgumentSubstitution('ARCH', 'PETSC_ARCH')
     return
 

@@ -148,6 +148,7 @@ class Configure(config.base.Configure):
       os.mkdir(installDir)
     if not os.path.isfile(os.path.join(installDir,'Bmake.Inc')) or not (self.getChecksum(os.path.join(installDir,'Bmake.Inc')) == self.getChecksum(os.path.join(blacsDir,'Bmake.Inc'))):
       try:
+        self.logPrint("Compiling Mumps; this may take several minutes\n", debugSection='screen')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLACS: '+str(e))
@@ -258,6 +259,7 @@ framework.log)[0]
       except RuntimeError, e:
         pass
       try:
+        self.logPrint("Compiling Scalapack; this may take several minutes\n", debugSection='screen')
         output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
