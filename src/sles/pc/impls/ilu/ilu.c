@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.4 1995/03/25 01:26:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.6 1995/04/13 00:45:47 curfman Exp $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -15,17 +15,20 @@ typedef struct {
 } PC_ILU;
 
 /*@
-      PCILUSetLevels - Sets the number of levels of fill to use.
+   PCILUSetLevels - Sets the number of levels of fill to use.
 
-  Input Parameters:
-.   pc - the preconditioner context
-.   levels - number of levels 
+   Input Parameters:
+.  pc - the preconditioner context
+.  levels - number of levels of fill
+
+   Options Database Key:
+$  -ilu_levels  levels
 @*/
 int PCILUSetLevels(PC pc,int levels)
 {
   PC_ILU *dir;
   VALIDHEADER(pc,PC_COOKIE);
-  if (levels < 0) SETERR(1,"Number of levels may not be negative");
+  if (levels < 0) SETERR(1,"Number of levels cannot be negative");
   dir = (PC_ILU *) pc->data;
   if (pc->type != PCILU) return 0;
   dir->levels = levels;
@@ -33,17 +36,20 @@ int PCILUSetLevels(PC pc,int levels)
 }
 
 /*@
-      PCILUSetOrdering - Sets the ordering to use for a direct 
-              factorization.
+   PCILUSetOrdering - Sets the ordering to use for a direct factorization.
 
   Input Parameters:
 .   pc - the preconditioner context
-.   ordering - the type of ordering to use, one of 
+.   ordering - the type of ordering to use, one of the following:
 $      ORDER_NATURAL - Natural 
 $      ORDER_ND - Nested Dissection
 $      ORDER_1WD - One-way Dissection
 $      ORDER_RCM - Reverse Cuthill-McGee
 $      ORDER_QMD - Quotient Minimum Degree
+
+  Options Database Key:
+$ -ilu_ordering <name>, where <name> is one of the following:
+$     natural, nd, 1wd, rcm, qmd
 @*/
 int PCILUSetOrdering(PC pc,int ordering)
 {
@@ -78,9 +84,9 @@ static int PCPrintHelp_ILU(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr,"%silu_ordering name: ordering to reduce fill",p);
+  fprintf(stderr," %silu_ordering name: ordering to reduce fill",p);
   fprintf(stderr," (nd,natural,1wd,rcm,qmd)\n");
-  fprintf(stderr,"%silu_levels levels: levels of fill",p);
+  fprintf(stderr," %silu_levels levels: levels of fill",p);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.12 1995/03/06 04:18:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.13 1995/04/12 18:40:18 curfman Exp curfman $";
 #endif
 /*
     Command line interface for KSP
@@ -12,16 +12,15 @@ static char vcid[] = "$Id: itcl.c,v 1.12 1995/03/06 04:18:10 bsmith Exp curfman 
 #include "options.h"
 
 /*@
-    KSPSetFromOptions - Sets KSP options from the options database.
-                            This must be called before KSPSetUp()
-                            if the user is to be allowed to set the 
-                            Krylov method. 
+   KSPSetFromOptions - Sets KSP options from the options database.
+   This must be called before KSPSetUp() if the 
+   user is to be allowed to set the Krylov method. 
 
-  Input Parameters:
+   Input Parameters:
 .  ctx - the Krylov space context
    
-  Note:
-  See KSPPrintHelp() for a list of avaliable KSP options.
+   Note:
+   See KSPPrintHelp() for a list of avaliable KSP options.
 @*/
 int KSPSetFromOptions(KSP ctx)
 {
@@ -73,7 +72,7 @@ int KSPSetFromOptions(KSP ctx)
 }
   
 /*@ 
-    KSPPrintHelp - Prints all the  options for the KSP component.
+   KSPPrintHelp - Prints all options for the KSP component.
 
    Input Parameters:
 .  ctx - the KSP context
@@ -91,32 +90,30 @@ int KSPPrintHelp(KSP ctx)
     VALIDHEADER(ctx,KSP_COOKIE);
     fprintf(stderr,"KSP Options -------------------------------------\n");
     KSPPrintMethods(p,"kspmethod");
-    fprintf(stderr," %sksprtol tol (relative tolerance: defaults to %g)\n",
+    fprintf(stderr," %sksprtol tol: relative tolerance, defaults to %g\n",
                      p,ctx->rtol);
-    fprintf(stderr," %skspatol tol (absolute tolerance: defaults to %g)\n",
+    fprintf(stderr," %skspatol tol: absolute tolerance, defaults to %g\n",
                      p,ctx->atol);
-    fprintf(stderr," %skspdivtol tol (divergence tolerance: defaults to %g)\n",
+    fprintf(stderr," %skspdivtol tol: divergence tolerance, defaults to %g\n",
                      p,ctx->divtol);
-    fprintf(stderr," %skspmax_it maxit (maximum iterations: defaults to %d)\n",
+    fprintf(stderr," %skspmax_it maxit: maximum iterations, defaults to %d\n",
                      p,ctx->max_it);
-    fprintf(stderr," %sksppreres (use precond. resid. in converg. test\n",p);
-    fprintf(stderr," %skspmonitor (use residual convergence monitor)\n",p);
-    fprintf(stderr," %skspxmonitor [x,y,w,h] (use X graphics residual\
- convergence monitor)\n",p);
-    fprintf(stderr," %skspgmres_restart maxk (gmres restart defaults to 10)\n",p);
-    fprintf(stderr," %skspeigen (calculate eigenvalues during linear solve)\n",p);
+    fprintf(stderr," %sksppreres: use precond. resid. in converg. test\n",p);
+    fprintf(stderr," %skspmonitor: use residual convergence monitor)\n",p);
+    fprintf(stderr," %skspxmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
+    fprintf(stderr," %skspgmres_restart num: gmres restart, defaults to 10)\n",p);
+    fprintf(stderr," %skspeigen: calculate eigenvalues during linear solve\n",p);
   }
   return 1;
 }
 
 /*@
-    KSPSetOptionsPrefix - Sets the prefix used for searching for all 
-       KSP options in the database.
+   KSPSetOptionsPrefix - Sets the prefix used for searching for all 
+   KSP options in the database.
 
-  Input Parameters:
+   Input Parameters:
 .  ksp - the Krylov context
 .  prefix - the prefix string to prepend to all KSP option requests
-
 @*/
 int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: direct.c,v 1.11 1995/03/25 01:26:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: direct.c,v 1.12 1995/04/05 20:31:20 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -15,17 +15,21 @@ typedef struct {
 } PC_Direct;
 
 /*@
-      PCDirectSetOrdering - Sets the ordering to use for a direct 
-              factorization.
+   PCDirectSetOrdering - Sets the ordering to use for a direct 
+   factorization.
 
   Input Parameters:
 .   pc - the preconditioner context
-.   ordering - the type of ordering to use, one of 
+.   ordering - the type of ordering to use, one of the following:
 $      ORDER_NATURAL - Natural 
 $      ORDER_ND - Nested Dissection
 $      ORDER_1WD - One-way Dissection
 $      ORDER_RCM - Reverse Cuthill-McGee
 $      ORDER_QMD - Quotient Minimum Degree
+
+  Options Database Key:
+$ -ilu_ordering <name>, where <name> is one of the following:
+$     natural, nd, 1wd, rcm, qmd
 @*/
 int PCDirectSetOrdering(PC pc,int ordering)
 {
@@ -37,18 +41,21 @@ int PCDirectSetOrdering(PC pc,int ordering)
   return 0;
 }
 /*@
-   PCDirectSetUseInplace - Tells system to do an in-place factorization.
-              For some implementations, for instance, dense matrices,
-              this enables the solution of much larger problems. 
+   PCDirectSetUseInplace - Tells the system to do an in-place factorization.
+   For some implementations, for instance, dense matrices, this enables the 
+   solution of much larger problems. 
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Options Database Key:
+$  -direct_in_place
 
    Note:
    PCDirectSetUseInplace() can only be used with the KSP method KSPPREONLY.
    This is because the Krylov space methods require an application of the 
    matrix multiplication, which is not possible here because the matrix has 
    been factored in-place, replacing the original matrix.
-
-  Input Parameters:
-.   pc - the preconditioner context
 @*/
 int PCDirectSetUseInplace(PC pc)
 {
@@ -82,8 +89,8 @@ static int PCPrintHelp_Direct(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr,"%sdirect_in_place: do factorization in place\n",p);
-  fprintf(stderr,"%sdirect_ordering name: ordering to reduce fill",p);
+  fprintf(stderr," %sdirect_in_place: do factorization in place\n",p);
+  fprintf(stderr," %sdirect_ordering name: ordering to reduce fill",p);
   fprintf(stderr," (nd,natural,1wd,rcm,qmd)\n");
   return 0;
 }
