@@ -32,7 +32,7 @@ void PetscInitializeFortran()
   s1 = MPIR_FromPointer(VIEWER_STDOUT_SELF);
   s2 = MPIR_FromPointer(VIEWER_STDERR_SELF);
   s3 = MPIR_FromPointer(VIEWER_STDOUT_WORLD);
-  s3 = MPIR_FromPointer_Comm(PETSC_COMM_WORLD);
+  s4 = MPIR_FromPointer_Comm(PETSC_COMM_WORLD);
   petscsetcommonblock_(&s1,&s2,&s3,&s4);
 }
   
