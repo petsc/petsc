@@ -102,7 +102,7 @@ class Defaults(logging.Logger):
 
   def getRepositoryTargets(self):
     action = self.compilerDefaults.getCompilerModule().CompileSIDLRepository(compilerFlags = self.usingSIDL.getCompilerFlags())
-    action.outputDir = self.usingSIDL.repositoryDir
+    action.outputDir = os.path.join(self.usingSIDL.repositoryDir, 'xml')
     action.repositoryDirs.extend(self.usingSIDL.repositoryDirs)
     return [target.Target(None, [self.compilerDefaults.getTagger('repository'), action])]
 
