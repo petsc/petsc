@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.11 2001/03/15 21:03:31 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.12 2001/03/16 21:31:18 bsmith Exp bsmith $*/
 
 static char help[] = "Solves nonlinear driven cavity with multigrid.\n\
   \n\
@@ -188,6 +188,10 @@ int main(int argc,char **argv)
 #define Temp(i)  4*(i)+3
 
 /* ------------------------------------------------------------------- */
+typedef struct {
+  Scalar u,v,omega,temp;
+} Field;
+
 #undef __FUNC__
 #define __FUNC__ "FormInitialGuess"
 /* 
@@ -205,12 +209,10 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   DMMG    dmmg = (DMMG)ptr;
   AppCtx  *user = (AppCtx*)dmmg->user;
   DA      da = (DA)dmmg->dm;
-  int     i,j,row,mx,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
+  int     i,j,row,mx,ierr,xs,ys,xm,ym;
   double  grashof,dx;
-  Scalar  *x;
-  Vec     localX;
-  
-  ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
+  Field   **x;
+
   grashof = user->grashof;
 
   ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -220,11 +222,8 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
      Get local grid boundaries (for 2-dimensional DA):
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
-       gxs, gys - starting grid indices (including ghost points)
-       gxm, gym - widths of local grid (including ghost points)
   */
   ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Get a pointer to vector data.
@@ -233,7 +232,7 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,X,(void**)&x);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -241,24 +240,17 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   */
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
-      row = i - gxs + (j - gys)*gxm; 
-      x[U(row)]     = 0.0;
-      x[V(row)]     = 0.0;
-      x[Omega(row)] = 0.0;
-      x[Temp(row)]  = (grashof>0)*i*dx;
+      x[j][i].u     = 0.0;
+      x[j][i].v     = 0.0;
+      x[j][i].omega = 0.0;
+      x[j][i].temp  = (grashof>0)*i*dx;
     }
   }
 
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
-
-  /*
-     Insert values into global vector
-  */
-  ierr = DALocalToGlobal(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,X,(void**)&x);CHKERRQ(ierr);
   return 0;
 } 
 /* ------------------------------------------------------------------- */
