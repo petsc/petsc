@@ -25,24 +25,25 @@ class Configure(config.base.Configure):
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
                  'uname','_snprintf']
     libraries = [('dl', 'dlopen'),(['socket','nsl'],'socket')]
-    self.compilers   = self.framework.require('config.compilers', self)
-    self.update      = self.framework.require('PETSc.packages.update', self.compilers)
-    self.types       = self.framework.require('config.types',     self)
-    self.headers     = self.framework.require('config.headers',   self)
-    self.functions   = self.framework.require('config.functions', self)
-    self.libraries   = self.framework.require('config.libraries', self)
-    self.blaslapack  = self.framework.require('PETSc.packages.BlasLapack',  self)
-    self.mpi         = self.framework.require('PETSc.packages.MPI',         self)
-    self.mpe         = self.framework.require('PETSc.packages.MPE',         self)
-    self.adic        = self.framework.require('PETSc.packages.ADIC',        self)
-    self.matlab      = self.framework.require('PETSc.packages.Matlab',      self)
-    self.mathematica = self.framework.require('PETSc.packages.Mathematica', self)
-    self.triangle    = self.framework.require('PETSc.packages.Triangle',    self)
-    self.parmetis    = self.framework.require('PETSc.packages.ParMetis',    self)
-    self.plapack     = self.framework.require('PETSc.packages.PLAPACK',     self)
-    self.pvode       = self.framework.require('PETSc.packages.PVODE',       self)
-    self.blocksolve  = self.framework.require('PETSc.packages.BlockSolve',  self)
-    self.netcdf      = self.framework.require('PETSc.packages.NetCDF',      self)
+    self.compilers    = self.framework.require('config.compilers',            self)
+    self.update       = self.framework.require('PETSc.packages.update',       self.compilers)
+    self.types        = self.framework.require('config.types',                self)
+    self.headers      = self.framework.require('config.headers',              self)
+    self.functions    = self.framework.require('config.functions',            self)
+    self.libraries    = self.framework.require('config.libraries',            self)
+    self.blaslapack   = self.framework.require('PETSc.packages.BlasLapack',   self)
+    self.fortranstubs = self.framework.require('PETSc.packages.fortranstubs', self.blaslapack)
+    self.mpi          = self.framework.require('PETSc.packages.MPI',          self)
+    self.mpe          = self.framework.require('PETSc.packages.MPE',          self)
+    self.adic         = self.framework.require('PETSc.packages.ADIC',         self)
+    self.matlab       = self.framework.require('PETSc.packages.Matlab',       self)
+    self.mathematica  = self.framework.require('PETSc.packages.Mathematica',  self)
+    self.triangle     = self.framework.require('PETSc.packages.Triangle',     self)
+    self.parmetis     = self.framework.require('PETSc.packages.ParMetis',     self)
+    self.plapack      = self.framework.require('PETSc.packages.PLAPACK',      self)
+    self.pvode        = self.framework.require('PETSc.packages.PVODE',        self)
+    self.blocksolve   = self.framework.require('PETSc.packages.BlockSolve',   self)
+    self.netcdf       = self.framework.require('PETSc.packages.NetCDF',       self)
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries)
@@ -220,37 +221,6 @@ class Configure(config.base.Configure):
       self.framework.addSubstitution('F_to_o_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.fortran.none')
     return
 
-  def configureFortranStubs(self):
-    '''Determine whether the Fortran stubs exist or not'''
-    stubDir = os.path.join(self.framework.argDB['PETSC_DIR'], 'src', 'fortran', 'auto')
-    if not os.path.exists(os.path.join(stubDir, 'makefile.src')):
-      self.framework.log.write('WARNING: Fortran stubs have not been generated in '+stubDir+'\n')
-      self.framework.getExecutable('bfort', getFullPath = 1)
-      if hasattr(self.framework, 'bfort'):
-        self.framework.log.write('           Running '+self.framework.bfort+' to generate Fortran stubs\n')
-        (status,output) = commands.getstatusoutput('export PETSC_ARCH=linux;make allfortranstubs')
-        # filter out the normal messages, user has to cope with error messages
-        cnt = 0
-        for i in output.split('\n'):
-          if not (i.startswith('fortranstubs in:') or i.startswith('Fixing pointers') or i.find('ACTION=') >= 0):
-            if not cnt:
-              self.framework.log.write('*******Error generating Fortran stubs****\n')
-            cnt = cnt + 1
-            self.framework.log.write(i+'\n')
-        if not cnt:
-          self.framework.log.write('           Completed generating Fortran stubs\n')
-        else:
-          self.framework.log.write('*******End of error messages from generating Fortran stubs****\n')
-      else:
-        self.framework.log.write('           See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how\n')
-        self.framework.log.write('           to obtain bfort to generate the Fortran stubs or make sure\n')
-        self.framework.log.write('           bfort is in your path\n')
-        self.framework.log.write('WARNING: Turning off Fortran interfaces for PETSc')
-        del self.framework.argDB['FC']
-        self.compilers.addSubstitution('FC', '')
-    else:
-      self.framework.log.write('Fortran stubs do exist in '+stubDir+'\n')
-    return
 
   def configureDynamicLibraries(self):
     '''Checks whether dynamic libraries should be used, for which you must
@@ -809,8 +779,6 @@ acfindx:
     self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.arch+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureCompilerFlags)
-    if 'FC' in self.framework.argDB:
-      self.executeTest(self.configureFortranStubs)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.configureFortranPIC)
     else:
