@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cn.c,v 1.8 1998/07/29 02:33:28 curfman Exp curfman $";
+static char vcid[] = "$Id: cn.c,v 1.9 1998/07/29 02:39:13 curfman Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
@@ -71,7 +71,7 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
   Vec       sol = ts->vec_sol,update = cn->update;
   Vec       rhs = cn->rhs;
   int       ierr,i,max_steps = ts->max_steps,its;
-  Scalar    dt = ts->time_step, two = 2.0, neg_one = -1.0;
+  Scalar    dt = ts->time_step, two = 2.0;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -114,7 +114,7 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *time)
   TS_CN    *cn = (TS_CN*) ts->data;
   Vec      sol = ts->vec_sol,update = cn->update, rhs = cn->rhs;
   int      ierr,i,max_steps = ts->max_steps,its;
-  Scalar   dt = ts->time_step, two = 2.0, neg_one = -1.0, neg_dt = -1.0*ts->time_step;
+  Scalar   dt = ts->time_step, two = 2.0, neg_dt = -1.0*ts->time_step;
   MatStructure str;
 
   PetscFunctionBegin;
