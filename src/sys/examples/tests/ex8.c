@@ -1,7 +1,6 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.6 1998/04/03 23:14:01 bsmith Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.7 1998/06/15 19:46:38 balay Exp balay $";
 #endif
-
 
 static char *help = "Tests the option -trmalloc_nan which initializes the memory \n\
 allocated by PetscMalloc() with NaNs\n\

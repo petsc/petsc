@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.27 1998/05/23 15:03:25 bsmith Exp balay $ 
+# $Id: makefile,v 1.28 1998/06/12 22:12:41 balay Exp balay $ 
 
 ALL: ex1
 
@@ -10,8 +10,7 @@ LOCDIR          = src/sys/examples/tests/
 
 TESTEXAMPLES_1  = ex13.PETSc runex13 ex13.rm 
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
-                  ex4.PETSc runex4 ex4.rm ex3.PETSc\
-		  runex3 ex3.rm ex8.PETSc runex8 ex8.rm clean
+		  ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm 
 TESTEXAMPLES_3  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm ex13f.PETSc runex13f ex13f.rm clean
 TESTEXAMPLES_9  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
@@ -22,7 +21,7 @@ BUILDEXAMPLES_3 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm ex13f.PETSc ex13f.rm clean
 BUILDEXAMPLES_9 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex7.c ex8.c ex9.c ex13.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex7.c ex9.c ex13.c
 EXAMPLESF       = ex5.F ex6.F ex7f.F ex13f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -58,10 +57,6 @@ ex7: ex7.o chkopts
 ex7f: ex7f.o chkopts
 	-${FLINKER} -o ex7f ex7f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
 	${RM} -f ex7f.o
-
-ex8: ex8.o chkopts
-	-${CLINKER} -o ex8 ex8.o  ${PETSC_LIB}
-	${RM} -f ex8.o
 
 ex9: ex9.o chkopts
 	-${CLINKER} -o ex9 ex9.o  ${PETSC_LIB}
@@ -112,13 +107,6 @@ runex4:
 	   if (diff output/ex4_1.out ex4_1.tmpz) then true; \
 	   else echo "Error in ex4. Problem with PetscStrtok()"; fi; \
 	   ${RM} -f ex4_1.tmp ex4_1.tmpz
-
-runex8:
-	-@${MPIRUN} -np 1 ex8 -fp_trap > ex8_1.tmp 2>&1;\
-	   grep -v p0 ex8_1.tmp > ex8_1.tmpz ;	 \
-	   if (diff output/ex8_1.out ex8_1.tmpz) then true; \
-	   else echo "This is a contrived error to test for uninitialized memory."; fi; \
-	   ${RM} -f ex8_1.tmp ex8_1.tmpz
 
 runex10:
 	-@${MPIRUN} -np 1 ex10 > ex10_1.tmp 2>&1;\

@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.146 1998/04/27 22:08:21 balay Exp balay $ 
+# $Id: buildtest,v 1.147 1998/04/28 14:18:45 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -50,7 +50,7 @@ if ($day == Mon) then
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $TMP_P      $SB_P        $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif  
 if ($day == Tue) then
-  set M =(snake  fire       violet     timewalk      tri63       ptera       lava         ico09       maverick    yukon       homer        )
+  set M =(snake  fire       alaska     timewalk      tri63       ptera       lava         ico09       maverick    yukon       homer        )
   set B =(O      g          O_complex  O             g           O           g            g           O_c++       g_c++       O_complex    )
   set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha       solaris_gnu  rs6000      sun4        IRIX64      freebsd_egcs )
   set J1=(0      1          1          1             1           1           1            1           1           1           1            )
@@ -98,8 +98,8 @@ if ($day == Fri) then
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $TMP_P      $SB_P        $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif
 if ($day == Sat) then
-  set M =(snake  fire       violet     timewalk      tri63       ptera       lava         ico09       maverick    yukon       homer        )
-  set B =(O      O          O          Opg_complex   O           Opg         g_complex    Opg         O_complex   O_c++       Opg          )
+  set M =(snake  fire       alaska     timewalk      tri63       ptera       lava         ico09       maverick    yukon       homer        )
+  set B =(O      O          g          Opg_complex   O           Opg         g_complex    Opg         O_complex   O_c++       Opg          )
   set A =(hpux   solaris    IRIX       linux         rs6000_gnu  alpha_nolog solaris_uni  rs6000      sun4        IRIX64      freebsd_egcs )
   set J1=(1      1          1          1             1           1           4            1           1           1           1            )
   set J2=(0      2          2          2             2           2           9            2           2           2           2            )
