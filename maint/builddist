@@ -38,7 +38,7 @@ fi
 /bin/rm -rf ${tmpdir}/*
 
 # Update the bk repository
-PETSC_ARCH=linux; export PETSC_ARCH
+PETSC_ARCH=dummy; export PETSC_ARCH
 PETSC_DIR=/sandbox/petsc/petsc-dist; export PETSC_DIR
 cd $PETSC_DIR/python/BuildSystem
 bk pull
@@ -88,7 +88,7 @@ cd $tmpdir/petsc/projects; make
 cd $tmpdir/petsc
 
 # Clean up the external Packages from PETSC_ARCH/packages files
-for i in bmake/*/packages ; do
+for i in bmake/predefined/*/packages ; do
   cat $i | sed "s/^MPE_INCLUDE/#MPE_INCLUDE/g" | \
     sed "s/^MPE_LIB/#MPE_LIB/g" | \
     sed "s/^PETSC_HAVE_MPE/#PETSC_HAVE_MPE/g" | \
