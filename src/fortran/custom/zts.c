@@ -199,7 +199,7 @@ void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),int *ierr PE
 #endif
 }
 
-#if defined(PETSC_HAVE_PVODE)  && !defined(__cplusplus)
+#if defined(PETSC_HAVE_PVODE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 void PETSC_STDCALL tspvodegetiterations_(TS *ts,int *nonlin,int *lin,int *ierr)
 {
   CHKFORTRANNULLINTEGER(nonlin);
