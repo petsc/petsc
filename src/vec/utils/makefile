@@ -1,15 +1,15 @@
-# $Id: makefile,v 1.39 1999/02/02 21:20:26 balay Exp bsmith $
+# $Id: makefile,v 1.40 1999/02/08 22:31:53 bsmith Exp balay $
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = vinv.c gcreatev.c vscat.c vpscat.c cmesh.c vecio.c vecreg.c dlregis.c \
-           pipeline.c comb.c
+           pipeline.c comb.c vecstash.c
 SOURCEF  =
 SOURCEH  = 
 OBJSC    = vinv.o gcreatev.o vscat.o vpscat.o cmesh.o vecio.o vecreg.o dlregis.o \
-           pipeline.o comb.o
+           pipeline.o comb.o vecstash.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
