@@ -4,6 +4,10 @@ transported into the docs/changes.html file. (Because it
 is a pain to always check that file out of SourceSafe to 
 add to it).
 
+  VEC
+    If the option VEC_IGNORE_OFF_PROC_ENTRIES is used the VecAssemblyBegin()
+    and End() will not cause any parallel communication or synchronization.
+
  
 
 

@@ -40,11 +40,6 @@ West Bethesda, Md.  20817-5700
 (301) 227-5753 (fax)
 rcheng@oasys.dt.navy.mil
 
-  - Add vector option VEC_NO_OFFPROCESSOR_SETS to avoid barrier in 
-    vec assembly
-
-  - make vecassembly print number off processor values for all processors
-    with ploginfo not just processor 0.
 
  - Add MatSeqAIJSetColumnIndices() and for SeqBAIJ also.
 
@@ -1026,3 +1021,6 @@ are drawn on top of the contour plots (that's a separate problem).
   X Reduce executable sizes 
 
   X Change config stuff to use petscconf.h
+
+  X make vecassembly print number off processor values for all processors
+    with ploginfo not just processor 0.

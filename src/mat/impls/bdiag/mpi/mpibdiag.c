@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.137 1998/04/15 22:50:33 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.138 1998/04/27 03:53:57 curfman Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -156,7 +156,7 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   PetscFree(starts); PetscFree(nprocs);
 
   /* Free cache space */
-  PLogInfo(mat,"MatAssemblyBegin_MPIBDiag:Number of off-processor values %d\n",mbd->stash.n);
+  PLogInfo(0,"MatAssemblyBegin_MPIBDiag:Number of off-processor values %d\n",mbd->stash.n);
   ierr = StashDestroy_Private(&mbd->stash); CHKERRQ(ierr);
 
   mbd->svalues    = svalues;    mbd->rvalues = rvalues;
