@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.246 1998/07/13 18:42:18 balay Exp balay $ 
+# $Id: makefile,v 1.247 1998/07/13 18:50:40 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -222,7 +222,8 @@ TAGS_SRC_FILES      = src/sys/src/*/*.c src/*/*.[c,h] src/*/interface/*.[c,h] sr
                       src/contrib/*/src/*.[c,h] src/fortran/custom/*.[c,h,F] \
 		      src/fortran/kernels/*.[c,h,F] \
 		      src/fortran/f90/*.[c,h,F] src/fortran/f90/*/*.[c,h,F] \
-		      src/adic/blas/*.c src/lapack/src[1,2,3]/*.c
+		      src/adic/blas/*.c src/lapack/src[1,2,3]/*.c \
+                      src/contrib/pc/*/*.c
 TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
                       makefile src/sys/src/*/makefile \
                       src/makefile src/*/makefile src/*/src/makefile \
@@ -236,7 +237,8 @@ TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
                       src/contrib/*/makefile src/contrib/*/src/makefile \
                       src/contrib/*/examples/makefile src/contrib/*/examples/*/makefile \
                       src/contrib/sif/*/makefile docs/makefile src/adic/*/makefile \
-		      src/adic/lapack/*/makefile 
+		      src/adic/lapack/*/makefile \
+                      src/contrib/pc/*/makefile src/contrib/makefile  
 
 # Builds all etags files
 alletags:

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sda2.c,v 1.11 1998/03/20 22:53:26 bsmith Exp $";
+static char vcid[] = "$Id: milu.c,v 1.1 1998/09/22 15:00:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -82,7 +82,7 @@ static int PCSetup_mILU(PC pc)
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(omat,&first,&last); CHKERRQ(ierr);
   lsize = last-first;
-  mprop = (Scalar *) PetscMalloc((lsize+1)*sizeof(double)); CHKPTRQ(mprop);
+  mprop = (double *) PetscMalloc((lsize+1)*sizeof(double)); CHKPTRQ(mprop);
   {
     int irow;
     for (irow=first; irow<last; irow++) {
@@ -110,27 +110,27 @@ static int PCSetup_mILU(PC pc)
   {
     Mat lu; Vec piv;
     Scalar *elt;
-    int irow,bd,t,try = 0;
+    int bd,t,try1 = 0;
     ierr = VecDuplicate(diag,&piv); CHKERRQ(ierr);
     do {
       ierr = PCSetUp(base_pc); CHKERRQ(ierr);
       ierr = PCGetFactoredMatrix(base_pc,&lu);
       ierr = MatGetDiagonal(lu,piv); CHKERRA(ierr);
       ierr = VecGetArray(piv,&elt); CHKERRA(ierr);
-      bd = 0; for (t=0; t<lsize; t++) if (elt[t]<.0) bd++;
+      bd = 0; for (t=0; t<lsize; t++) if (PetscReal(elt[t]) < 0.0) bd++;
       ierr = VecRestoreArray(piv,&elt); CHKERRA(ierr);
       if (bd>0) {
 	/*printf("negative pivots %d\n",bd);*/
-	try++;
+	try1++;
 	for (t=0; t<lsize; t++) {
-	  Scalar v = dia[t]+(mprop[t]*try)/ATTEMPTS;
+	  Scalar v = dia[t]+(mprop[t]*try1)/ATTEMPTS;
 	  int row  = first+t;
 	  ierr = MatSetValues(pmat,1,&row,1,&row,&v,INSERT_VALUES);CHKERRQ(ierr);
 	}
 	ierr = MatAssemblyBegin(pmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(pmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 	ierr = PCSetOperators(base_pc,pc->mat,pmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      } /*else printf("mILU factorisation succeeded on %d\n",try);*/
+      } /*else printf("mILU factorisation succeeded on %d\n",try1);*/
     } while (bd>0);
     ierr = VecDestroy(piv); CHKERRQ(ierr);
   }
