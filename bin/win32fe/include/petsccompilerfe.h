@@ -20,7 +20,7 @@ namespace PETScFE {
     virtual void FoundD(LI &);
     virtual void FoundI(LI &);
     virtual void FoundL(LI &);
-    virtual void Foundhelp(LI &);
+    virtual void Foundh(LI &);
     virtual void Foundc(LI &);
     virtual void Foundl(LI &);
     virtual void Foundo(LI &);
@@ -28,6 +28,7 @@ namespace PETScFE {
 
     virtual void FixOutput(void);
 
+    string InstallDir;
     string OptionTags;
     list<string> compilearg;
     list<string> linkarg;

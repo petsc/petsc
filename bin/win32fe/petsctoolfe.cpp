@@ -71,10 +71,6 @@ void tool::FoundPath(LI &i) {
       string newpath = (string)buff;
       newpath = *i + ";" + newpath;
       SetEnvironmentVariable(path.c_str(),newpath.c_str());
-      i = arg.erase(i);
-      length = 1024*sizeof(char);
-      GetEnvironmentVariable(path.c_str(),buff,length);
-      cout << (string)buff << endl;
     } else {
       i--;
       arg.push_back("--help");

@@ -1,5 +1,6 @@
 /* $Id: petsccreate.cpp,v 1.11 2001/04/17 21:16:55 buschelm Exp $ */
 #include "petscclfe.h"
+#include "petsciclfe.h"
 #include "petscbccfe.h"
 #include "petsclibfe.h"
 #include "petsctlibfe.h"

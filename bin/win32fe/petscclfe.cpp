@@ -18,6 +18,31 @@ void cl::Parse(void) {
   if (!verbose) {
     compilearg.push_back("-nologo");
   }
+  /* Find required .dll's */
+  cout << "Install Dir = " << InstallDir << endl;
+  string::size_type len_m_1 = InstallDir.length()-1;
+  string addpath,VCVersion;
+  addpath = VCVersion = InstallDir.substr(0,len_m_1);
+  VCVersion = VCVersion.substr(VCVersion.find_last_of("\\")+1,len_m_1);
+  addpath = addpath.substr(0,addpath.find_last_of("\\")+1);
+  bool KnownVersion=FALSE;
+  if(VCVersion=="VC98") {
+    addpath += "Common\\MSDev98\\Bin";
+    KnownVersion=TRUE;
+  } else if (VCVersion=="VC7") {
+    addpath += "Common7\\IDE";
+    KnownVersion=TRUE;
+  } else {
+    cerr << "Warning: win32fe cl version not recognized.";
+  }
+  if (KnownVersion) {
+    arg.push_back("--path");
+    LI i = arg.end();
+    i--;
+    cout << "Adding to path " << addpath << endl;
+    arg.push_back(addpath);
+    FoundPath(i);
+  }
 }
 
 void cl::Help(void) {
@@ -52,38 +77,6 @@ void df::Help(void) {
   cout << "      C system libraries must also be specified in the LIB environment" << endl;
   cout << "      variable or with -L<dir> since the installed location of these" << endl;
   cout << "      libraries may be independent of the FORTRAN installation." << endl << endl;
-  cout << "=========================================================================" << endl << endl;
-  string help = compilearg.front();
-  help += " -? 2>&1";
-  system(help.c_str());
-}
-
-void icl::Help(void) {
-  compiler::Help();
-  cout << "icl specific help:" << endl;
-  cout << "  icl requires the use of the Microsoft Linker (link.exe), which is" << endl;
-  cout << "      invoked seamlessly.  However certain .dll's are required which" << endl;
-  cout << "      may not be found in the PATH.  The needed path can be specified" << endl;
-  cout << "      with --path <directory>" << endl;
-  cout << "  icl also requires the use of the Microsoft Compiler (cl) header files" << endl;
-  cout << "      and system libraries.  However, these system files are installed" << endl;
-  cout << "      independently from icl, and must be specified either in the" << endl;
-  cout << "      environment variables INCLUDE and LIB, or with -I<dir> -L<dir>" << endl;
-  cout << "  Alternatively, win32fe and icl can be invoked within a command prompt" << endl;
-  cout << "      provided with the icl installation." << endl << endl;
-  cout << "=========================================================================" << endl << endl;
-  string help = compilearg.front();
-  help += " -? 2>&1";
-  system(help.c_str());
-}
- 
-void ifl::Help(void) {
-  compiler::Help();
-  cout << "ifl specific help:" << endl;
-  cout << "  ifl requires the use of the Microsoft Linker (link.exe), which is" << endl;
-  cout << "      invoked seamlessly.  However certain .dll's are required which" << endl;
-  cout << "      may not be found in the PATH.  The needed path can be specified" << endl;
-  cout << "      with --path <directory>" << endl << endl;
   cout << "=========================================================================" << endl << endl;
   string help = compilearg.front();
   help += " -? 2>&1";

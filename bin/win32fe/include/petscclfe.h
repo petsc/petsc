@@ -13,7 +13,6 @@ namespace PETScFE {
     virtual void Parse(void);
   protected:
     virtual void Help(void);
-
     virtual void FoundL(LI &);
   };
 
@@ -21,22 +20,6 @@ namespace PETScFE {
   public:
     df () {}
     ~df() {}
-  protected:
-    virtual void Help(void);
-  };
-
-  class icl : public cl {
-  public:
-    icl () {}
-    ~icl() {}
-  protected:
-    virtual void Help(void);
-  };
-
-  class ifl : public cl {
-  public:
-    ifl () {}
-    ~ifl() {}
   protected:
     virtual void Help(void);
   };

@@ -30,12 +30,12 @@ namespace PETScFE {
     list<string> file;
     int verbose;
     int helpfound;
-  private:
+
     void FoundHelp(LI &);
     void FoundPath(LI &);
     void FoundUse(LI &);
     void FoundVerbose(LI &);
-
+  private:
     string OptionTags;
     typedef void (PETScFE::tool::*ptm)(LI &);
     map<char,ptm> Options;

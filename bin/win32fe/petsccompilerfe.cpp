@@ -18,7 +18,7 @@ compiler::compiler() {
   Options['I'] = &compiler::FoundI;
   Options['L'] = &compiler::FoundL;
   Options['c'] = &compiler::Foundc;
-  Options['h'] = &compiler::Foundhelp;
+  Options['h'] = &compiler::Foundh;
   Options['l'] = &compiler::Foundl;
   Options['o'] = &compiler::Foundo;
   Options[UNKNOWN] = &compiler::FoundUnknown;
@@ -44,22 +44,17 @@ void compiler::Parse(void) {
     i++;
     arg.pop_front();
   }
-}
-
-void compiler::Execute(void) {
-  tool::Execute();
-  if (!helpfound) {
     /* Find location of system libraries and headers */
-    string dir = compilearg.front();
+    InstallDir = compilearg.front();
 
     /* First check if a full path was specified with --use */
-    string::size_type n = dir.find(":");
+    string::size_type n = InstallDir.find(":");
     if (n==string::npos) {
       char tmppath[MAX_PATH],*tmp;
       int length = MAX_PATH*sizeof(char);
       string extension = ".exe";
-      if (SearchPath(NULL,dir.c_str(),extension.c_str(),length,tmppath,&tmp)) {
-        dir = (string)tmppath;
+      if (SearchPath(NULL,InstallDir.c_str(),extension.c_str(),length,tmppath,&tmp)) {
+        InstallDir = (string)tmppath;
       } else {
         string compiler=compilearg.front();
         cerr << endl << "Error: win32fe: Compiler Not Found: ";
@@ -72,23 +67,29 @@ void compiler::Execute(void) {
       }
     }
 
-    /* Compiler is located in dir/bin/compiler.exe */
-    dir = dir.substr(0,dir.find_last_of("\\",dir.find_last_of("\\")-1)+1);
-    /* System headers are in dir/include */
-    arg.push_back("-I" + dir + "include");
-    LI i = arg.end();
+    /* Compiler is located in InstallDir/bin/compiler.exe */
+    /* Note: InstallDir includes the trailing / */
+    InstallDir = InstallDir.substr(0,InstallDir.find_last_of("\\",InstallDir.find_last_of("\\")-1)+1);
+
+    /* System headers are in InstallDir/include */
+    arg.push_back("-I" + InstallDir + "include");
+    i = arg.end();
     FoundI(--i);
     arg.pop_back();
 
-    /* System libraries are in dir/lib */ 
-    arg.push_back("-L" + dir + "lib");
+    /* System libraries are in InstallDir/lib */ 
+    arg.push_back("-L" + InstallDir + "lib");
     i = arg.end();
     FoundL(--i);
     arg.pop_back();
+}
 
+void compiler::Execute(void) {
+  tool::Execute();
+  if (!helpfound) {
     FixOutput();
     /* Determine if we are compiling, or linking */ 
-    i=linkarg.begin();
+    LI i=linkarg.begin();
     string temp = *i;
     if (temp == "-c") {
       Compile();
@@ -230,7 +231,7 @@ void compiler::Foundc(LI &i) {
   }
 }
 
-void compiler::Foundhelp(LI &i) {
+void compiler::Foundh(LI &i) {
   if (*i=="-help") {
     helpfound = -1;
   }
