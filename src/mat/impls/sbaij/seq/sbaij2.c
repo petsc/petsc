@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.18 2000/10/06 21:02:57 hzhang Exp hzhang $*/
+/*$Id: sbaij2.c,v 1.19 2000/10/09 13:38:33 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1417,9 +1417,11 @@ int MatZeroEntries_SeqSBAIJ(Mat A)
 int MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int         ierr,i,j,k,n,row,bs,*ai,*aj,ambs,bs2;
+  int         ierr,i,j,k,n,row,bs,*ai,*aj,mbs,bs2;
   Scalar      *x,zero = 0.0;
-  MatScalar   *aa,*aa_j;
+  MatScalar   *aa,*aa_j,*ap;
+  int         ncols,bcol,col,krow,kcol;
+  double      atmp;
 
   PetscFunctionBegin;
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
@@ -1427,20 +1429,30 @@ int MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
   aa   = a->a;
   ai   = a->i;
   aj   = a->j;
-  ambs = a->mbs;
+  mbs = a->mbs;
   bs2  = a->bs2;  
 
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
-  for (i=0; i<ambs; i++) {
-    j=ai[i];              
-    if (aj[j] == i) {             /* if this is a diagonal element */
-      row  = i*bs;      
-      aa_j = aa + j*bs2;  
-      for (k=0; k<bs2; k+=(bs+1),row++) x[row] = aa_j[k];       
-    }
+  for (i=0; i<mbs; i++) {
+    ap = aa + ai[i]*bs2;
+    ncols = ai[i+1] - ai[i];
+    for (j=0; j<ncols; j++){
+      bcol = *(aj + ai[i] + j); /* block col index */
+      for (kcol=0; kcol<bs; kcol++){
+        for (krow=0; krow<bs; krow++){         
+          atmp = PetscAbsScalar(*ap); ap++;
+          col = bs*bcol + kcol; /* col index */
+          row = bs*i    + krow; /* row index */
+          /* printf(" val[%d,%d]: %g\n", row,col,atmp); */
+          if (x[row] < atmp) x[row] = atmp;
+          if (bcol > i && x[col] < atmp) x[col] = atmp;
+        }
+      }
+
+    }   
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
