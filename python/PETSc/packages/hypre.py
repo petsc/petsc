@@ -81,6 +81,9 @@ class Configure(config.base.Configure):
     alllibs = []
     for l in libs:
       alllibs.append(os.path.join(dir,'libHYPRE_'+l+'.a'))
+    import config.setCompilers
+    if config.setCompilers.Configure.isGNU(self.framework.argDB['CC']):
+      alllibs.append('-lstdc++')
     return alllibs
           
   def generateLibGuesses(self):
