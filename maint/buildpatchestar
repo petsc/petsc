@@ -16,3 +16,17 @@ tar cf ~/petsc-patches.tar -I /tmp/petsc-patches-file-list.tmp
 gzip ~/petsc-patches.tar
 chgrp petsc ~/petsc-patches.tar.gz
 chmod g+w ~/petsc-patches.tar.gz
+#
+# Now build the version that works with NT
+#
+/bin/rm -rf /tmp/petscpatchdir
+mkdir /tmp/petscpatchdir
+cd  /tmp/petscpatchdir
+tar -xf ~/petsc-patches.tar.gz
+/home/bsmith/petsc/maint/makecpp.tcl /tmp/petscpatchdir
+tar -cf ~/petscnt-patches.tar *
+gzip ~/petscnt-patches.tar
+cd ~/
+/bin/rm -rf /tmp/petscpatchdir
+
+
