@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.1 1999/06/16 21:36:33 balay Exp balay $ 
+# $Id: base_variables,v 1.2 1999/06/16 21:38:01 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -12,8 +12,10 @@ SH_LD            = pgcc
 #
 C_CC             = pgcc -fPIC
 C_FC             = pgf90 
-C_CLINKER        = pgcc ${COPTFLAGS}  -Wl,-rpath,${LDIR}:${DYLIBPATH}
-C_FLINKER        = pgf90 ${FOPTFLAGS}  -Wl,-rpath,${LDIR}:${DYLIBPATH}
+C_CC_SLFLAG      = -Wl,-rpath,
+C_FC_SLFLAG      = -Wl,-rpath,
+C_CLINKER        = pgcc
+C_FLINKER        = pgf90
 C_CCV            = ${C_CC} --version
 C_SYS_LIB        = -ldl -lc -lpgftnrtl -lm
 # ---------------------------- BOPT=g options ----------------------------
@@ -26,8 +28,10 @@ O_FOPTFLAGS      = -O
 #
 CXX_CC           = pgCC -fPIC
 CXX_FC           = pgf90 
-CXX_CLINKER      = pgCC ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = pgCC ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
+CXX_CC_SLFLAG    = -Wl,-rpath,
+CXX_FC_SLFLAG    = -Wl,-rpath,
+CXX_CLINKER      = pgCC
+CXX_FLINKER      = pgCC
 CXX_CCV          = ${CXX_CC} --version
 CXX_SYS_LIB      = -ldl -lc -lpgftnrtl -lm
 # ------------------------- BOPT=g_c++ options ------------------------------

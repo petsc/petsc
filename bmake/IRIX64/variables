@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.9 1999/06/11 20:46:53 balay Exp balay $ 
+# $Id: base_variables,v 1.10 1999/07/14 21:56:18 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -12,10 +12,10 @@ SHELL            = /bin/sh
 #
 C_CC             = cc -64 -woff 1164 -woff 1048
 C_FC             = f90 -cpp -64
-C_CLINKER        = cc  -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 \
-		   -rpath ${LDIR}:${DYLIBPATH}
-C_FLINKER        = f90 -cpp ${FOPTFLAGS} -64 -Wl,-woff,84,-woff,85,-woff,134 \
-		   -rpath ${LDIR}:${DYLIBPATH}
+C_CC_SLFLAG      = -rpath
+C_FC_SLFLAG      = -rpath
+C_CLINKER        = cc  -64 -Wl,-woff,84,-woff,85,-woff,134
+C_FLINKER        = f90 -cpp -64 -Wl,-woff,84,-woff,85,-woff,134
 C_CCV            = unknown
 C_SYS_LIB        = -lfpe -lpthread -lfortran -lftn -lfastm -lmalloc 
 # ---------------------------- BOPT=g options ----------------------------
@@ -28,10 +28,10 @@ O_FOPTFLAGS      = -Ofast=ip27 -IPA:cprop=OFF -OPT:IEEE_arithmetic=1
 #
 CXX_CC           = CC -64 -woff 1164 -woff 1048
 CXX_FC           = f90 -cpp -64
-CXX_CLINKER      = CC -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 \
-		   -rpath ${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = CC -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 \
-		   -rpath ${LDIR}:${DYLIBPATH}
+C_CC_SLFLAG      = -rpath
+C_FC_SLFLAG      = -rpath
+CXX_CLINKER      = CC -64 -Wl,-woff,84,-woff,85,-woff,134
+CXX_FLINKER      = CC -64 -Wl,-woff,84,-woff,85,-woff,134
 CXX_CCV          = unknown
 CXX_SYS_LIB      = -lfpe -lcomplex -lpthread -lfortran -lftn -lfastm -lmalloc 
 

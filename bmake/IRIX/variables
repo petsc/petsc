@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.5 1999/05/12 03:24:58 bsmith Exp balay $ 
+# $Id: base_variables,v 1.6 1999/06/11 21:13:29 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -14,10 +14,10 @@ SHELL            = /bin/sh
 #
 C_CC             = cc -n32 -woff 1048
 C_FC             = f77 -n32 
-C_CLINKER        = cc  -n32 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,113 \
-	           -rpath ${LDIR}:${DYLIBPATH}
-C_FLINKER        = f77 -n32 ${FOPTFLAGS} -Wl,-woff,84,-woff,85,-woff,113 \
-		   -rpath ${LDIR}:${DYLIBPATH}
+C_CC_SLFLAG      = -rpath
+C_FC_SLFLAG      = -rpath
+C_CLINKER        = cc  -n32 -Wl,-woff,84,-woff,85,-woff,113 
+C_FLINKER        = f77 -n32 -Wl,-woff,84,-woff,85,-woff,113
 C_CCV            = unknown
 C_SYS_LIB        = -lfpe -lsun -lftn -lmalloc
 
@@ -31,10 +31,10 @@ O_FOPTFLAGS      = -O2
 #
 CXX_CC           = CC -n32 -woff 3262
 CXX_FC           = f77 -n32 
-CXX_CLINKER      = CC -n32 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,113 \
-		   -rpath ${LDIR}:${DYLIBPATH}  
-CXX_FLINKER      = CC -n32 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,113 \
-		   -rpath ${LDIR}:${DYLIBPATH}
+CXX_CC_SLFLAG    = -rpath
+CXX_FC_SLFLAG    = -rpath
+CXX_CLINKER      = CC -n32 -Wl,-woff,84,-woff,85,-woff,113
+CXX_FLINKER      = CC -n32 -Wl,-woff,84,-woff,85,-woff,113
 CXX_CCV          = unknown
 CXX_SYS_LIB      = -lcomplex -lfpe -lsun -lftn -lmalloc
 # ------------------------- BOPT=g_c++ options ------------------------------

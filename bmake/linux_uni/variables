@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.8 1999/05/12 03:24:58 bsmith Exp $ 
+# $Id: base_variables,v 1.1 1999/05/13 01:40:37 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -12,8 +12,10 @@ SH_LD            = gcc
 #
 C_CC             = gcc -fPIC
 C_FC             = g77 -Wno-globals
-C_CLINKER        = gcc ${COPTFLAGS} -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
-C_FLINKER        = g77 ${FOPTFLAGS} -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
+C_CC_SLFLAG      = -Wl,-rpath,
+C_FC_SLFLAG      = -Wl,-rpath,
+C_CLINKER        = gcc
+C_FLINKER        = g77
 C_CCV            = ${C_CC} --version
 C_SYS_LIB        = -ldl -lc -lg2c -lm
 #C_SYS_LIB        = -ldl -lc -lf2c -lm  #Use -lf2c if that's what your f77 uses.
@@ -27,8 +29,10 @@ O_FOPTFLAGS      = -O
 #
 CXX_CC           = g++ -fPIC
 CXX_FC           = g77 -Wno-globals
-CXX_CLINKER      = g++ ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = g++ ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
+CXX_CC_SLFLAG    = -Wl,-rpath,
+CXX_FC_SLFLAG    = -Wl,-rpath,
+CXX_CLINKER      = g++
+CXX_FLINKER      = g++
 CXX_CCV          = ${CXX_CC} --version
 CXX_SYS_LIB      = -ldl -lc -lg2c -lm
 #CXX_SYS_LIB      = -ldl -lc -lf2c -lm

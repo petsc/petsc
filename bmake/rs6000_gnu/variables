@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.4 1999/03/31 18:38:56 bsmith Exp bsmith $ 
+# $Id: base_variables,v 1.5 1999/05/12 03:24:58 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -11,8 +11,10 @@ SHELL            = /bin/sh
 #
 C_CC             = gcc
 C_FC             = g77 -Wno-globals
-C_CLINKER        = gcc ${COPTFLAGS} -Wl,-bbigtoc
-C_FLINKER        = g77 ${FOPTFLAGS} -Wl,-bbigtoc
+C_CC_SLFLAG      = -L
+C_FC_SLFLAG      = -L
+C_CLINKER        = gcc -Wl,-bbigtoc
+C_FLINKER        = g77 -Wl,-bbigtoc
 C_CCV            = gcc -V
 C_SYS_LIB        = -lg2c -lisode
 # ---------------------------- BOPT=g options ----------------------------
@@ -25,8 +27,10 @@ O_FOPTFLAGS      = -O
 #
 CXX_CC           = g++
 CXX_FC           = g77 -Wno-globals
-CXX_CLINKER      = g++ ${COPTFLAGS}
-CXX_FLINKER      = g++ ${COPTFLAGS}
+CXX_CC_SLFLAG    = -L
+CXX_FC_SLFLAG    = -L
+CXX_CLINKER      = g++
+CXX_FLINKER      = g++
 CXX_CCV          = g++ -V
 CXX_SYS_LIB      = -lg2c -lcomplex -lisode
 # ------------------------- BOPT=g_c++ options ------------------------------

@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.3 1999/03/31 18:38:56 bsmith Exp bsmith $ 
+# $Id: base_variables,v 1.4 1999/05/12 03:24:58 bsmith Exp balay $ 
 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
@@ -12,8 +12,10 @@ SHELL            = /bin/sh
 #
 C_CC             = cc
 C_FC             = f77 -w
-C_CLINKER        = cc ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-C_FLINKER        = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
+C_CC_SLFLAG      = -Wl,-rpath,
+C_FC_SLFLAG      = -Wl,-rpath,
+C_CLINKER        = cc
+C_FLINKER        = f77
 C_CCV            = unknown
 C_SYS_LIB        = -lfor -lutil -lFutil -lots
 # ---------------------------- BOPT=g options ----------------------------
@@ -26,8 +28,10 @@ O_FOPTFLAGS      = -O2
 #
 CXX_CC           = cxx -x cxx
 CXX_FC           = f77 -w
-CXX_CLINKER      = cxx ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
+CXX_CC_SLFLAG    = -Wl,-rpath,
+CXX_FC_SLFLAG    = -Wl,-rpath,
+CXX_CLINKER      = cxx
+CXX_FLINKER      = f77
 CXX_CCV          = unknown
 CXX_SYS_LIB      = -lfor -lutil -lFutil -lots
 # ------------------------- BOPT=g_c++ options ------------------------------

@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.10 1999/06/14 16:10:25 balay Exp balay $ 
+# $Id: base_variables,v 1.11 1999/06/14 16:10:36 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -12,10 +12,13 @@ SH_LD            = gcc
 #
 C_CC             = gcc
 C_FC             = g77 -Wno-globals
-C_CLINKER        = gcc ${COPTFLAGS} -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
-C_FLINKER        = g77 ${FOPTFLAGS} -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
+C_CC_SLFLAG      = -Wl,-rpath,
+C_FC_SLFLAG      = -Wl,-rpath,
+C_CLINKER        = gcc
+C_FLINKER        = g77
 C_CCV            = ${C_CC} --version
-C_SYS_LIB        = -ldl -lc -lg2c -lm
+C_SYS_LIB        = -ldl -lc -lf2c -lm
+#C_SYS_LIB        = -ldl -lc -lg2c -lm
 #C_SYS_LIB        = -ldl -lc /usr/lib/libf2c.a -lm  #Use /usr/lib/libf2c.a if that's what your f77 uses.
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -g 
@@ -27,10 +30,13 @@ O_FOPTFLAGS      = -O
 #
 CXX_CC           = g++ -fPIC
 CXX_FC           = g77 -Wno-globals
-CXX_CLINKER      = g++ ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = g++ ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
+CXX_CC_SLFLAG    = -Wl,-rpath,
+CXX_FC_SLFLAG    = -Wl,-rpath,
+CXX_CLINKER      = g++
+CXX_FLINKER      = g++
 CXX_CCV          = ${CXX_CC} --version
-CXX_SYS_LIB      = -ldl -lc -lg2c -lm
+CXX_SYS_LIB      = -ldl -lc -lf2c -lm
+#CXX_SYS_LIB      = -ldl -lc -lg2c -lm
 #CXX_SYS_LIB      = -ldl -lc /usr/lib/libf2c.a -lm
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g 

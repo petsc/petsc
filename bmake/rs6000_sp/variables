@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.4 1999/03/31 18:38:56 bsmith Exp bsmith $ 
+# $Id: base_variables,v 1.5 1999/05/12 03:24:58 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -11,9 +11,11 @@ SHELL            = /bin/sh
 #
 C_CC             = cc_r
 C_FC             = mpxlf_r
-C_CLINKER        = mpcc_r ${COPTFLAGS} -bmaxdata:0x70000000
+C_CC_SLFLAG      = -L
+C_FC_SLFLAG      = -L
+C_CLINKER        = mpcc_r -bmaxdata:0x70000000
 # you may need to add -bI:/usr/lpp/xlf/lib/lowsys.exp to C_LINKER
-C_FLINKER        = mpxlf_r ${FOPTFLAGS} -bmaxdata:0x70000000
+C_FLINKER        = mpxlf_r -bmaxdata:0x70000000
 C_CCV            = unknown
 C_SYS_LIB        = /usr/lib/libxlf.a /usr/lib/libxlf90.a  -lisode
 # ---------------------------- BOPT=g options ----------------------------
@@ -26,8 +28,10 @@ O_FOPTFLAGS      = -O3  -qarch=pwr2 -w
 #
 CXX_CC           = xlC_r -+
 CXX_FC           = mpxlf_r
-CXX_CLINKER      = mpCC_r ${COPTFLAGS}
-CXX_FLINKER      = mpCC_r ${COPTFLAGS}
+CXX_CC_SLFLAG    = -L
+CXX_FC_SLFLAG    = -L
+CXX_CLINKER      = mpCC_r
+CXX_FLINKER      = mpCC_r
 CXX_CCV          = unknown
 CXX_SYS_LIB      = /usr/lib/libxlf.a /usr/lib/libxlf90.a  -lcomplex -lisode
 # ------------------------- BOPT=g_c++ options ------------------------------
