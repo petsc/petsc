@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.138 1999/05/12 03:28:02 bsmith Exp balay $";
+static char vcid[] = "$Id: vscat.c,v 1.139 1999/06/30 23:50:17 balay Exp bsmith $";
 #endif
 
 /*
@@ -1478,6 +1478,9 @@ int VecScatterDestroy( VecScatter ctx )
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
   if (--ctx->refct > 0) PetscFunctionReturn(0);
+
+  /* if memory was published with AMS then destroy it */
+  ierr = PetscAMSDestroy(ctx);CHKERRQ(ierr);
 
   ierr = (*ctx->destroy)(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
