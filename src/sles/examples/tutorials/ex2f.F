@@ -1,5 +1,5 @@
 
-C    "$Id: ex2f.F,v 1.34 1996/09/28 22:28:18 curfman Exp balay $";
+C    "$Id: ex2f.F,v 1.35 1996/09/30 22:54:58 balay Exp bsmith $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -57,7 +57,7 @@ C
 C  Note:  "Double" -> "double precision" except for machines such
 C          as the Cray T3d, where "Double" -> "real"
 
-      Double   norm
+      Double   norm,tol
       integer  i, j, II, JJ, ierr, m, n
       integer  rank, size, its, Istart, Iend, flg
       Scalar   v, one, none
@@ -182,7 +182,8 @@ C     SLESSetFromOptions();
       call SLESGetKSP(sles,ksp,ierr)
       call SLESGetPC(sles,pc,ierr)
       call PCSetType(pc,PCJACOBI,ierr)
-      call KSPSetTolerances(ksp,1.d-7,PETSC_DEFAULT_DOUBLE_PRECISION,
+      tol = 1.e-7
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
      &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
 
 C  Set user-defined monitoring routine if desired
