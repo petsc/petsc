@@ -96,5 +96,5 @@ PYTHON = @PYTHON@
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-C_DYLIBPATH = @DYLIBPATH@
-F_DYLIBPATH = @DYLIBPATH@
+C_DYLIBPATH = ${CLINKER_SLFLAG}@DYLIBPATH@
+F_DYLIBPATH = ${FLINKER_SLFLAG}@DYLIBPATH@

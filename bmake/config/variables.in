@@ -22,8 +22,9 @@ C_FC       = @FC@ @FC_SHARED_OPT@
 # For now, assume that this is the linker dir flag
 C_CLINKER_SLFLAG   = -rdynamic -Wl,-rpath,
 C_FLINKER_SLFLAG   = -rdynamic -Wl,-rpath,
-C_CLINKER  = @CC@
-C_FLINKER  = @FC@
+# Must put linker flags here for now
+C_CLINKER  = @CC@ @LDFLAGS@
+C_FLINKER  = @FC@ @LDFLAGS@
 # What is CCV? Solaris base is cc -V -c | head -1
 C_CCV      = @CC@ --version | head -1
 C_FCV	   = @FC@ --version | head -1
