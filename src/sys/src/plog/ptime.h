@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.59 1999/04/01 04:36:02 bsmith Exp balay $ */
+/* $Id: ptime.h,v 1.60 1999/04/01 22:37:40 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -152,7 +152,7 @@ extern PLogDouble dclock();
 /* ------------------------------------------------------------------
    NT uses a special time code
 */
-#elif defined(PARCH_win32_gnu) || defined (PARCH_win32)
+#elif defined (USE_NT_TIME)
 #include <time.h>
 extern PLogDouble nt_time();
 #define PetscTime(v)         (v)=nt_time();
