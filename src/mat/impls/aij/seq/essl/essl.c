@@ -152,3 +152,4 @@ int MatCreate_SeqAIJ_Essl(Mat A) {
   A->ops->destroy  = MatDestroy_SeqAIJ_Essl;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

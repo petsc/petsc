@@ -56,6 +56,7 @@ E*/
 #define MATSUPERLUDIST     "superludist"
 #define MATUMFPACK         "umfpack"
 #define MATESSL            "essl"
+#define MATLUSOL           "lusol"
 typedef char* MatType;
 
 #define MAT_SER_SEQAIJ_BINARY "seqaij_binary"

@@ -40,6 +40,9 @@ EXTERN int MatCreate_SeqAIJ_UMFPACK(Mat);
 #if defined(PETSC_HAVE_ESSL) && !defined(__cplusplus)
 EXTERN int MatCreate_SeqAIJ_Essl(Mat);
 #endif
+#if defined(PETSC_HAVE_LUSOL) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+EXTERN int MatCreate_SeqAIJ_LUSOL(Mat);
+#endif
 EXTERN_C_END
   
 /*
@@ -115,6 +118,9 @@ int MatRegisterAll(char *path)
 #endif
 #if defined(PETSC_HAVE_ESSL) && !defined(__cplusplus)
   ierr = MatRegisterDynamic(MATESSL,path,"MatCreate_SeqAIJ_Essl",MatCreate_SeqAIJ_Essl);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_LUSOL) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+  ierr = MatRegisterDynamic(MATLUSOL,path,"MatCreate_SeqAIJ_LUSOL",MatCreate_SeqAIJ_LUSOL);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

@@ -80,6 +80,9 @@ int MatLoadRegisterAll(char *path)
 #if defined(PETSC_HAVE_ESSL) && !defined(__cplusplus)
   ierr = MatLoadRegisterDynamic(MATESSL,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_LUSOL) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+  ierr = MatLoadRegisterDynamic(MATLUSOL,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }  
 

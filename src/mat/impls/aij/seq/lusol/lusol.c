@@ -5,8 +5,6 @@
 */
 #include "src/mat/impls/aij/seq/aij.h"
 
-EXTERN int MatDestroy_SeqAIJ(Mat);
-
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define LU1FAC   lu1fac_
 #define LU6SOL   lu6sol_
@@ -36,8 +34,6 @@ void PETSC_STDCALL M6RDEL() {
   ;
 }
 EXTERN_C_END
-
-#if defined(PETSC_HAVE_LUSOL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 
 EXTERN_C_BEGIN
 extern void PETSC_STDCALL LU1FAC (int *m, int *n, int *nnz, int *size, int *luparm,
@@ -79,6 +75,9 @@ typedef struct
      int nz;			/* Number of nonzeros                        */
      int nnz;			/* Number of nonzeros allocated for factors  */
      int luparm[30];		/* Input/output to LUSOL                     */
+
+     int (*MatDestroy)(Mat);
+     PetscTruth CleanUpLUSOL;
 
 } Mat_SeqAIJ_LUSOL;
 
@@ -184,28 +183,30 @@ typedef struct
 int MatDestroy_SeqAIJ_LUSOL(Mat A)
 {
      Mat_SeqAIJ_LUSOL *lusol;
-     int             ierr;
+     int              ierr,(*destroy)(Mat);
 
      PetscFunctionBegin;
      lusol = (Mat_SeqAIJ_LUSOL *)A->spptr;
+     if (lusol->CleanUpLUSOL) {
+       ierr = PetscFree(lusol->ip);CHKERRQ(ierr);
+       ierr = PetscFree(lusol->iq);CHKERRQ(ierr);
+       ierr = PetscFree(lusol->lenc);CHKERRQ(ierr);
+       ierr = PetscFree(lusol->lenr);CHKERRQ(ierr);
+       ierr = PetscFree(lusol->locc);CHKERRQ(ierr);
+       ierr = PetscFree(lusol->locr);CHKERRQ(ierr);
+       ierr = PetscFree(lusol->iploc);CHKERRQ(ierr);
+       ierr = PetscFree(lusol->iqloc);CHKERRQ(ierr);
+       ierr = PetscFree(lusol->ipinv);CHKERRQ(ierr);
+       ierr = PetscFree(lusol->iqinv);CHKERRQ(ierr);
+       ierr = PetscFree(lusol->mnsw);CHKERRQ(ierr);
+       ierr = PetscFree(lusol->mnsv);CHKERRQ(ierr);
 
-     ierr = PetscFree(lusol->ip);CHKERRQ(ierr);
-     ierr = PetscFree(lusol->iq);CHKERRQ(ierr);
-     ierr = PetscFree(lusol->lenc);CHKERRQ(ierr);
-     ierr = PetscFree(lusol->lenr);CHKERRQ(ierr);
-     ierr = PetscFree(lusol->locc);CHKERRQ(ierr);
-     ierr = PetscFree(lusol->locr);CHKERRQ(ierr);
-     ierr = PetscFree(lusol->iploc);CHKERRQ(ierr);
-     ierr = PetscFree(lusol->iqloc);CHKERRQ(ierr);
-     ierr = PetscFree(lusol->ipinv);CHKERRQ(ierr);
-     ierr = PetscFree(lusol->iqinv);CHKERRQ(ierr);
-     ierr = PetscFree(lusol->mnsw);CHKERRQ(ierr);
-     ierr = PetscFree(lusol->mnsv);CHKERRQ(ierr);
+       ierr = PetscFree(lusol->indc);CHKERRQ(ierr);
+     }
 
-     ierr = PetscFree(lusol->indc);CHKERRQ(ierr);
+     destroy = lusol->MatDestroy;
      ierr = PetscFree(lusol);CHKERRQ(ierr);
-
-     ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+     ierr = (*destroy)(A);CHKERRQ(ierr);
      PetscFunctionReturn(0);
 }
 
@@ -362,7 +363,7 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, Mat 
      /* Output                                                               */
      /*     F  - matrix storing the factorization;                           */
      /************************************************************************/
-
+     Mat B;
      Mat_SeqAIJ_LUSOL *lusol;
      int              ierr,i, m, n, nz, nnz;
 
@@ -379,15 +380,14 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, Mat 
      /* Create the factorization.                                            */
      /************************************************************************/
 
-     ierr = MatCreateSeqAIJ(A->comm, m, n, 0, PETSC_NULL, F);CHKERRQ(ierr);
+     ierr = MatCreate(A->comm,PETSC_DECIDE,PETSC_DECIDE,m,n,&B);CHKERRQ(ierr);
+     ierr = MatSetType(B,MATLUSOL);CHKERRQ(ierr);
+     ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
-     (*F)->ops->destroy = MatDestroy_SeqAIJ_LUSOL;
-     (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_LUSOL;
-     (*F)->ops->solve = MatSolve_SeqAIJ_LUSOL;
-     (*F)->factor = FACTOR_LU;
-
-     ierr = PetscNew(Mat_SeqAIJ_LUSOL,&lusol);CHKERRQ(ierr);
-     (*F)->spptr = (void *)lusol;
+     B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_LUSOL;
+     B->ops->solve           = MatSolve_SeqAIJ_LUSOL;
+     B->factor               = FACTOR_LU;
+     lusol                   = (Mat_SeqAIJ_LUSOL*)(B->spptr);
 
      /************************************************************************/
      /* Initialize parameters                                                */
@@ -440,6 +440,8 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, Mat 
      ierr        = PetscMalloc((sizeof(double)+2*sizeof(int))*nnz,&lusol->indc);
      lusol->indr = lusol->indc + nnz;
      lusol->data = (double *)(lusol->indr + nnz);
+     lusol->CleanUpLUSOL = PETSC_TRUE;
+     *F = B;
      PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -457,24 +459,28 @@ int MatUseLUSOL_SeqAIJ(Mat A)
     SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square");
   }
 		
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&match);CHKERRQ(ierr);      
-  if (!match) {
-    SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be Seq_AIJ");
-  }
-							    
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_LUSOL;
   PetscLogInfo(0,"Using LUSOL for SeqAIJ LU factorization and solves.");
   PetscFunctionReturn(0);
 }
 
-#else
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseLUSOL_SeqAIJ"
-int MatUseLUSOL_SeqAIJ(Mat A)
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_SeqAIJ_LUSOL"
+int MatCreate_SeqAIJ_LUSOL(Mat A)
 {
-     PetscFunctionBegin;
-     PetscFunctionReturn(0);
-}
+  int              ierr;
+  Mat_SeqAIJ_LUSOL *lusol;
 
-#endif
+  PetscFunctionBegin;
+  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatUseLUSOL_SeqAIJ(A);CHKERRQ(ierr);
+
+  ierr                = PetscNew(Mat_SeqAIJ_LUSOL,&lusol);CHKERRQ(ierr);
+  lusol->CleanUpLUSOL = PETSC_FALSE;
+  lusol->MatDestroy   = A->ops->destroy;
+  A->ops->destroy     = MatDestroy_SeqAIJ_LUSOL;
+  A->spptr            = (void *)lusol;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END

@@ -1832,9 +1832,6 @@ int MatPrintHelp_SeqAIJ(Mat A)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_no_inode: Do not use inodes\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_inode_limit <limit>: Set inode limit (max limit=5)\n");CHKERRQ(ierr);
-#if defined(PETSC_HAVE_LUSOL)
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_lusol: Use the Stanford LUSOL sparse factorization and solve.\n");CHKERRQ(ierr);
-#endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_matlab: Use Matlab engine sparse LU factorization and solve.\n");CHKERRQ(ierr);
 #endif
@@ -2691,14 +2688,8 @@ int MatCreate_SeqAIJ(Mat B)
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_lusol",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = MatUseLUSOL_SeqAIJ(B);CHKERRQ(ierr); }
   ierr = PetscOptionsHasName(B->prefix,"-mat_aij_matlab",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatUseMatlab_SeqAIJ(B);CHKERRQ(ierr);}
-  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_dxml",&flg);CHKERRQ(ierr);
-  if (flg){
-    ierr = MatUseDXML_SeqAIJ(B);CHKERRQ(ierr);
-  }
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetColumnIndices_C",
                                      "MatSeqAIJSetColumnIndices_SeqAIJ",
                                      MatSeqAIJSetColumnIndices_SeqAIJ);CHKERRQ(ierr);
