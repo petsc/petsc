@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.18 1995/05/03 04:06:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.19 1995/05/03 13:19:07 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -9,7 +9,6 @@ static char vcid[] = "$Id: mpirowbs.c,v 1.18 1995/05/03 04:06:19 bsmith Exp bsmi
 #include "BSprivate.h"
 #include "BSsparse.h"
 
-#define CHUNCKSIZE         100
 #define CHUNCKSIZE_LOCAL   10
 
 /* We should/could share much of this code with other formats 
@@ -228,50 +227,6 @@ static int MatAssemblyEnd_MPIRowbs_local(Mat mat,MatAssemblyType mode)
 }
 
 /* ----------------------------------------------------------------- */
-/*
- This is a simple minded stash. Do a linear search to determine if
- in stash, if not add to end. (Same as MPIRow version)
-*/
-static int StashValues(Stash3 *stash,int row,int n, int *idxn,
-                       Scalar *values,InsertMode addv)
-{
-  int    i,j,N = stash->n,found,*n_idx, *n_idy;
-  Scalar val,*n_array;
-
-  for ( i=0; i<n; i++ ) {
-    found = 0;
-    val = *values++;
-    for ( j=0; j<N; j++ ) {
-      if ( stash->idx[j] == row && stash->idy[j] == idxn[i]) {
-        /* found a match */
-        if (addv == ADDVALUES) stash->array[j] += val;
-        else stash->array[j] = val;
-        found = 1;
-        break;
-      }
-    }
-    if (!found) { /* not found so add to end */
-      if ( stash->n == stash->nmax ) {
-        /* allocate a larger stash */
-        n_array = (Scalar *) MALLOC( (stash->nmax + CHUNCKSIZE)*(
-                                     2*sizeof(int) + sizeof(Scalar)));
-        CHKPTR(n_array);
-        n_idx = (int *) (n_array + stash->nmax + CHUNCKSIZE);
-        n_idy = (int *) (n_idx + stash->nmax + CHUNCKSIZE);
-        MEMCPY(n_array,stash->array,stash->nmax*sizeof(Scalar));
-        MEMCPY(n_idx,stash->idx,stash->nmax*sizeof(int));
-        MEMCPY(n_idy,stash->idy,stash->nmax*sizeof(int));
-        if (stash->array) FREE(stash->array);
-        stash->array = n_array; stash->idx = n_idx; stash->idy = n_idy;
-        stash->nmax += CHUNCKSIZE;
-      }
-      stash->array[stash->n]   = val;
-      stash->idx[stash->n]     = row;
-      stash->idy[stash->n++]   = idxn[i];
-    }
-  }
-  return 0;
-}
 
 static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode addv)
@@ -305,7 +260,8 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
       }
     } 
     else {
-      ierr = StashValues(&mrow->stash,idxm[i],n,idxn,v+i*n,addv);CHKERR(ierr);
+      ierr = StashValues_Private(&mrow->stash,idxm[i],n,idxn,v+i*n,addv);
+      CHKERR(ierr);
     }
   }
   return 0;
@@ -325,7 +281,7 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   int         mytid = mrow->mytid;
   MPI_Request *send_waits,*recv_waits;
   int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
-  int         tag = 50, *owner,*starts,count;
+  int         tag = 50, *owner,*starts,count,ierr;
   InsertMode  addv;
   Scalar      *rvalues,*svalues;
 
@@ -414,11 +370,10 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   FREE(starts); FREE(nprocs);
 
   /* Free cache space */
-  mrow->stash.nmax = mrow->stash.n = 0;
-  if (mrow->stash.array){ FREE(mrow->stash.array); mrow->stash.array = 0;}
+  ierr = StashDestroy_Private(&mrow->stash); CHKERR(ierr);
 
-  mrow->svalues    = svalues;       mrow->rvalues = rvalues;
-  mrow->nsends     = nsends;         mrow->nrecvs = nreceives;
+  mrow->svalues    = svalues;    mrow->rvalues = rvalues;
+  mrow->nsends     = nsends;     mrow->nrecvs = nreceives;
   mrow->send_waits = send_waits; mrow->recv_waits = recv_waits;
   mrow->rmax       = nmax;
 
@@ -537,7 +492,7 @@ static int MatZeroEntries_MPIRowbs(Mat mat)
   Mat_MPIRowbs *l = (Mat_MPIRowbs *) mat->data;
   BSspmat      *A = l->A;
   BSsprow      *vs;
-  int     i, j;
+  int          i, j;
 
   for (i=0; i < l->m; i++) {
     vs = A->rows[i];
@@ -874,9 +829,9 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
    Set both nz and nnz to zero for PETSc to control dynamic memory 
    allocation.
   
-.keywords: Mat, matrix, row, symmetric, sparse, parallel, BlockSolve
+.keywords: matrix, row, symmetric, sparse, parallel, BlockSolve
 
-.seealso: MatCreateMPIRow(), MatCreateMPIAIJ(), MatSetValues()
+.seealso: MatCreate(), MatSetValues()
 @*/
 int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
                        void *procinfo,Mat *newmat)
@@ -903,8 +858,9 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   MPI_Comm_rank(comm,&mrow->mytid);
   MPI_Comm_size(comm,&mrow->numtids);
 
-  if (M == -1) {MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm );}
-  if (m == -1) {m = M/mrow->numtids + ((M % mrow->numtids) > mrow->mytid);}
+  if (M == PETSC_DECIDE) {MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm );}
+  if (m == PETSC_DECIDE) 
+    {m = M/mrow->numtids + ((M % mrow->numtids) > mrow->mytid);}
   mrow->N    = M;
   mrow->M    = M;
   mrow->m    = m;
@@ -923,12 +879,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   mrow->rend   = mrow->rowners[mrow->mytid+1]; 
 
   /* build cache for off array entries formed */
-  mrow->stash.nmax = CHUNCKSIZE; /* completely arbitrary number */
-  mrow->stash.n    = 0;
-  mrow->stash.array = (Scalar *) MALLOC( mrow->stash.nmax*(2*sizeof(int) +
-                            sizeof(Scalar))); CHKPTR(mrow->stash.array);
-  mrow->stash.idx = (int *) (mrow->stash.array + mrow->stash.nmax);
-  mrow->stash.idy = (int *) (mrow->stash.idx + mrow->stash.nmax);
+  ierr = StashBuild_Private(&mrow->stash); CHKERR(ierr);
 
   /* Initialize BlockSolve information */
   mrow->A	    = 0;

@@ -1,8 +1,6 @@
 
 #include "aij.h"
 
-typedef  struct {int nmax, n, *idx, *idy; Scalar *array;} Stash;
-
 typedef struct {
   int           *rowners,*cowners;  /* ranges owned by each processor */
   int           m,n,M,N;            /* local rows, cols, global rows, cols */
@@ -23,5 +21,3 @@ typedef struct {
   Vec           lvec;
   VecScatterCtx Mvctx;
 } Mat_MPIAIJ;
-
-

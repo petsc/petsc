@@ -12,9 +12,6 @@
    interface to BlockSolve.
  */
 
-/* For now, this is just the same as the MPIAIJ stash ... */
-typedef  struct {int nmax, n, *idx, *idy; Scalar *array;} Stash3;
-
 typedef struct {
   int           *rowners;           /* range of rows owned by each processor */
   int           m,n,M,N;            /* local rows, cols, global rows, cols */
@@ -29,7 +26,7 @@ typedef struct {
   int           assembled;          /* MatAssemble has been called */
   int           reassemble_begun;   /* We're re-assembling */
   InsertMode    insertmode;
-  Stash3        stash;
+  Stash         stash;
   MPI_Request   *send_waits,*recv_waits;
   int           nsends,nrecvs;
   Scalar        *svalues,*rvalues;
@@ -66,5 +63,3 @@ typedef struct {
 
 #endif
 #endif
-
-

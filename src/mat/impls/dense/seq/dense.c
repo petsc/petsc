@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.34 1995/05/03 01:02:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.35 1995/05/03 13:18:03 bsmith Exp curfman $";
 #endif
 
 /*
@@ -18,7 +18,6 @@ typedef struct {
   int    m,n,pad;
   int    *pivots;   /* pivots in LU factorization */
 } Mat_Dense;
-
 
 static int MatGetInfo_Dense(Mat matin,MatInfoType flag,int *nz,
                             int *nzalloc,int *mem)
@@ -644,9 +643,9 @@ static struct _MatOps MatOps = {MatInsert_Dense,
    Output Parameter:
 .  newmat - the matrix
 
-.keywords: Mat, dense, matrix, LAPACK, BLAS
+.keywords: dense, matrix, LAPACK, BLAS
 
-.seealso: MatCreateSequentialAIJ()
+.seealso: MatCreate(), MatSetValues()
 @*/
 int MatCreateSequentialDense(MPI_Comm comm,int m,int n,Mat *newmat)
 {

@@ -40,8 +40,11 @@ typedef enum {ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
               COLUMNS_SORTED=8,NO_NEW_NONZERO_LOCATIONS=16,
               YES_NEW_NONZERO_LOCATIONS=32} MatOption;
 
+extern int MatGetBDiagData(Mat,int*,int*,int**,Scalar***);
+
 extern int MatSetOption(Mat,MatOption);
 
+extern int MatGetType(Mat,MatType*);
 extern int MatGetValues(Mat,int,int*,int,int*,Scalar*);
 extern int MatGetRow(Mat,int,int *,int **,Scalar**);
 extern int MatRestoreRow(Mat,int,int *,int **,Scalar**);

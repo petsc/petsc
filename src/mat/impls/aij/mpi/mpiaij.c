@@ -1,56 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.39 1995/05/03 13:18:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.40 1995/05/03 17:50:48 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
-
-#define CHUNCKSIZE   100
-/*
-   This is a simple minded stash. Do a linear search to determine if
- in stash, if not add to end.
-*/
-static int StashValues(Stash *stash,int row,int n, int *idxn,
-                       Scalar *values,InsertMode addv)
-{
-  int    i,j,N = stash->n,found,*n_idx, *n_idy;
-  Scalar val,*n_array;
-
-  for ( i=0; i<n; i++ ) {
-    found = 0;
-    val = *values++;
-    for ( j=0; j<N; j++ ) {
-      if ( stash->idx[j] == row && stash->idy[j] == idxn[i]) {
-        /* found a match */
-        if (addv == ADDVALUES) stash->array[j] += val;
-        else stash->array[j] = val;
-        found = 1;
-        break;
-      }
-    }
-    if (!found) { /* not found so add to end */
-      if ( stash->n == stash->nmax ) {
-        /* allocate a larger stash */
-        n_array = (Scalar *) MALLOC( (stash->nmax + CHUNCKSIZE)*(
-                                     2*sizeof(int) + sizeof(Scalar)));
-        CHKPTR(n_array);
-        n_idx = (int *) (n_array + stash->nmax + CHUNCKSIZE);
-        n_idy = (int *) (n_idx + stash->nmax + CHUNCKSIZE);
-        MEMCPY(n_array,stash->array,stash->nmax*sizeof(Scalar));
-        MEMCPY(n_idx,stash->idx,stash->nmax*sizeof(int));
-        MEMCPY(n_idy,stash->idy,stash->nmax*sizeof(int));
-        if (stash->array) FREE(stash->array);
-        stash->array = n_array; stash->idx = n_idx; stash->idy = n_idy;
-        stash->nmax += CHUNCKSIZE;
-      }
-      stash->array[stash->n]   = val;
-      stash->idx[stash->n]     = row;
-      stash->idy[stash->n++]   = idxn[i];
-    }
-  }
-  return 0;
-}
 
 /* local utility routine that creates a mapping from the global column 
 number to the local number in the off-diagonal part of the local 
@@ -108,14 +62,15 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
       }
     } 
     else {
-      ierr = StashValues(&aij->stash,idxm[i],n,idxn,v+i*n,addv);CHKERR(ierr);
+      ierr = StashValues_Private(&aij->stash,idxm[i],n,idxn,v+i*n,addv);
+      CHKERR(ierr);
     }
   }
   return 0;
 }
 
 /*
-    the assembly code is alot like the code for vectors, we should 
+    the assembly code is a lot like the code for vectors, we should 
     sometime derive a single assembly code that can be used for 
     either case.
 */
@@ -128,7 +83,7 @@ static int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
   int         mytid = aij->mytid;
   MPI_Request *send_waits,*recv_waits;
   int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
-  int         tag = 50, *owner,*starts,count;
+  int         tag = 50, *owner,*starts,count,ierr;
   InsertMode  addv;
   Scalar      *rvalues,*svalues;
 
@@ -211,11 +166,10 @@ static int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
   FREE(starts); FREE(nprocs);
 
   /* Free cache space */
-  aij->stash.nmax = aij->stash.n = 0;
-  if (aij->stash.array){ FREE(aij->stash.array); aij->stash.array = 0;}
+  ierr = StashDestroy_Private(&aij->stash); CHKERR(ierr);
 
-  aij->svalues    = svalues;       aij->rvalues = rvalues;
-  aij->nsends     = nsends;         aij->nrecvs = nreceives;
+  aij->svalues    = svalues;    aij->rvalues = rvalues;
+  aij->nsends     = nsends;     aij->nrecvs = nreceives;
   aij->send_waits = send_waits; aij->recv_waits = recv_waits;
   aij->rmax       = nmax;
 
@@ -293,8 +247,9 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 static int MatZeroEntries_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ *l = (Mat_MPIAIJ *) A->data;
-
-  MatZeroEntries(l->A); MatZeroEntries(l->B);
+  int ierr;
+  ierr = MatZeroEntries(l->A); CHKERR(ierr);
+  ierr = MatZeroEntries(l->B); CHKERR(ierr);
   return 0;
 }
 
@@ -1128,9 +1083,9 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    The user can set d_nz, d_nnz, o_nz, and o_nnz to zero for PETSc to
    control dynamic memory allocation.
 
-.keywords: Mat, matrix, aij, compressed row, sparse, parallel
+.keywords: matrix, aij, compressed row, sparse, parallel
 
-.seealso: MatCreateSequentialAIJ(), MatSetValues()
+.seealso: MatCreate(), MatCreateSequentialAIJ(), MatSetValues()
 @*/
 int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
                  int d_nz,int *d_nnz, int o_nz,int *o_nnz,Mat *newmat)
@@ -1152,18 +1107,20 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   MPI_Comm_rank(comm,&aij->mytid);
   MPI_Comm_size(comm,&aij->numtids);
 
-  if (M == -1 || N == -1) {
+  if (M == PETSC_DECIDE || N == PETSC_DECIDE) {
     work[0] = m; work[1] = n;
     MPI_Allreduce((void *) work,(void *) sum,2,MPI_INT,MPI_SUM,comm );
-    if (M == -1) M = sum[0];
-    if (N == -1) N = sum[1];
+    if (M == PETSC_DECIDE) M = sum[0];
+    if (N == PETSC_DECIDE) N = sum[1];
   }
-  if (m == -1) {m = M/aij->numtids + ((M % aij->numtids) > aij->mytid);}
-  if (n == -1) {n = N/aij->numtids + ((N % aij->numtids) > aij->mytid);}
-  aij->m       = m;
-  aij->n       = n;
-  aij->N       = N;
-  aij->M       = M;
+  if (m == PETSC_DECIDE) 
+    {m = M/aij->numtids + ((M % aij->numtids) > aij->mytid);}
+  if (n == PETSC_DECIDE) 
+    {n = N/aij->numtids + ((N % aij->numtids) > aij->mytid);}
+  aij->m = m;
+  aij->n = n;
+  aij->N = N;
+  aij->M = M;
 
   /* build local table of row and column ownerships */
   aij->rowners = (int *) MALLOC(2*(aij->numtids+2)*sizeof(int)); 
@@ -1193,12 +1150,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   PLogObjectParent(mat,aij->B);
 
   /* build cache for off array entries formed */
-  aij->stash.nmax = CHUNCKSIZE; /* completely arbratray number */
-  aij->stash.n    = 0;
-  aij->stash.array = (Scalar *) MALLOC( aij->stash.nmax*(2*sizeof(int) +
-                            sizeof(Scalar))); CHKPTR(aij->stash.array);
-  aij->stash.idx = (int *) (aij->stash.array + aij->stash.nmax);
-  aij->stash.idy = (int *) (aij->stash.idx + aij->stash.nmax);
+  ierr = StashBuild_Private(&aij->stash); CHKERR(ierr);
   aij->colmap    = 0;
   aij->garray    = 0;
 
@@ -1244,15 +1196,13 @@ static int MatCopy_MPIAIJ_Private(Mat matin,Mat *newmat)
   aij->rowners        = (int *) MALLOC( (aij->numtids+1)*sizeof(int) );
   CHKPTR(aij->rowners);
   MEMCPY(aij->rowners,oldmat->rowners,(aij->numtids+1)*sizeof(int));
-  aij->stash.nmax     = 0;
-  aij->stash.n        = 0;
-  aij->stash.array    = 0;
+  ierr = StashInitialize_Private(&aij->stash); CHKERR(ierr);
   if (oldmat->colmap) {
     aij->colmap      = (int *) MALLOC( (aij->N)*sizeof(int) );
     CHKPTR(aij->colmap);
     MEMCPY(aij->colmap,oldmat->colmap,(aij->N)*sizeof(int));
   } else aij->colmap = 0;
-    if (oldmat->garray && (len = ((Mat_AIJ *) (oldmat->B->data))->n)) {
+  if (oldmat->garray && (len = ((Mat_AIJ *) (oldmat->B->data))->n)) {
     aij->garray      = (int *) MALLOC(len*sizeof(int) ); CHKPTR(aij->garray);
     MEMCPY(aij->garray,oldmat->garray,len*sizeof(int));
   } else aij->garray = 0;

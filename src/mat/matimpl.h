@@ -48,6 +48,19 @@ struct _Mat {
   int            factor;   /* 0, FACTOR_LU or FACTOR_CHOLESKY */
 };
 
+/* Since most (all?) of the parallel matrix assemblies use this stashing,
+   we move it to a common place. Perhaps it ultimately belongs elsewhere. */
+
+typedef struct {
+  int    nmax, n, *idx, *idy; 
+  Scalar *array;
+} Stash;
+
+extern int StashValues_Private(Stash*,int,int,int*,Scalar*,InsertMode);
+extern int StashInitialize_Private(Stash*);
+extern int StashBuild_Private(Stash*);
+extern int StashDestroy_Private(Stash*);
+
 #endif
 
 
