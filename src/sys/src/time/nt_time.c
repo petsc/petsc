@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: nt_time.c,v 1.14 1999/04/13 20:50:03 balay Exp balay $";
+static char vcid[] = "$Id: nt_time.c,v 1.15 1999/05/04 20:29:29 balay Exp balay $";
 #endif
 
 #include <petsc.h>
@@ -36,6 +36,9 @@ PLogDouble nt_time(void)
   dHigh       = (signed)(dwCurHigh - dwStartHigh);
 
   dTime = dHigh*(double)FACTOR + (double)CurTime.LowPart - (double)StartTime.LowPart;
+  /* Use the following with older versions of Borland's compiler
+  dTime = dHigh*(double)FACTOR + (double)CurTime.u.LowPart - (double)StartTime.u.LowPart;
+  */
   time  = (double)SecInTick*dTime;
 
   PetscFunctionReturn(time);
