@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.85 1998/08/26 22:01:35 balay Exp balay $";
+static char vcid[] = "$Id: err.c,v 1.86 1998/11/25 20:28:57 balay Exp balay $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -250,15 +250,17 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
+
     for ( i=0; i<n; i++ ) {
+      PetscSynchronizedFPrintf(comm,file,"%2d:",5*i);
       for ( j=0; j<5; j++ ) {
-         PetscSynchronizedFPrintf(comm,file," %6.4e",idx[i*5+j]);
+         PetscSynchronizedFPrintf(comm,file," %12.4e",idx[i*5+j]);
       }
       PetscSynchronizedFPrintf(comm,file,"\n");
     }
     if (p) {
-      PetscSynchronizedFPrintf(comm,file,"%d:",5*n);
-      for ( i=0; i<p; i++ ) { PetscSynchronizedFPrintf(comm,file," %6.4e",idx[5*n+i]);}
+      PetscSynchronizedFPrintf(comm,file,"%2d:",5*n);
+      for ( i=0; i<p; i++ ) { PetscSynchronizedFPrintf(comm,file," %12.4e",idx[5*n+i]);}
       PetscSynchronizedFPrintf(comm,file,"\n");
     }
     PetscSynchronizedFlush(comm);
@@ -319,7 +321,7 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
 @*/
 int PetscScalarView(int N,Scalar idx[],Viewer viewer)
 {
-  int        j,i,n = N/5, p = N % 5,ierr;
+  int        j,i,n = N/3, p = N % 3,ierr;
   MPI_Comm   comm;
   ViewerType vtype;
   FILE       *file;
@@ -334,24 +336,25 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
-      for ( j=0; j<5; j++ ) {
+      PetscSynchronizedFPrintf(comm,file,"%2d:",3*i);
+      for ( j=0; j<3; j++ ) {
 #if defined (USE_PETSC_COMPLEX)
-        PetscSynchronizedFPrintf(comm,file," (%6.4e,%6.4e)",
-                                 PetscReal(idx[i*5+j]),PetscImaginary(idx[i*5+j]));
+        PetscSynchronizedFPrintf(comm,file," (%12.4e,%12.4e)",
+                                 PetscReal(idx[i*3+j]),PetscImaginary(idx[i*3+j]));
 #else       
-         PetscSynchronizedFPrintf(comm,file," %6.4e",idx[i*5+j]);
+         PetscSynchronizedFPrintf(comm,file," %12.4e",idx[i*3+j]);
 #endif
       }
       PetscSynchronizedFPrintf(comm,file,"\n");
     }
     if (p) {
-      PetscSynchronizedFPrintf(comm,file,"%d:",5*n);
+      PetscSynchronizedFPrintf(comm,file,"%2d:",3*n);
       for ( i=0; i<p; i++ ) { 
 #if defined (USE_PETSC_COMPLEX)
-        PetscSynchronizedFPrintf(comm,file," (%6.4e,%6.4e)",
-                                 PetscReal(idx[i*5+j]),PetscImaginary(idx[i*5+j]));
+        PetscSynchronizedFPrintf(comm,file," (%12.4e,%12.4e)",
+                                 PetscReal(idx[i*3+j]),PetscImaginary(idx[i*3+j]));
 #else
-        PetscSynchronizedFPrintf(comm,file," %6.4e",idx[5*n+i]);
+        PetscSynchronizedFPrintf(comm,file," %12.4e",idx[3*n+i]);
 #endif
       }
       PetscSynchronizedFPrintf(comm,file,"\n");
