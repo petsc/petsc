@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.35 1995/09/21 20:11:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.36 1995/09/30 19:30:14 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -13,10 +13,10 @@ diagonal data structure.\n\n";
 #include <stdio.h>
 
 /* This code is not intended as an efficient implementation, it is only
-   here to produce an interesting sparse matrix quickly.*/
+   here to produce an interesting sparse matrix quickly.
 
-/* PLEASE DO NOT BASE ANY OF YOUR CODES ON CODE LIKE THIS, THERE ARE MUCH 
-   BETTER WAYS TO DO THIS*/
+   PLEASE DO NOT BASE ANY OF YOUR CODES ON CODE LIKE THIS, THERE ARE MUCH 
+   BETTER WAYS TO DO THIS. */
 
 extern int GetElasticityMatrix(int,Mat*);
 extern int Elastic20Stiff(double**);
@@ -97,10 +97,10 @@ int main(int argc,char **args)
  */
 int GetElasticityMatrix(int m,Mat *newmat)
 {
-  int     i,j,k,i1,i2,j1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz,nzalloc;
+  int     i,j,k,i1,i2,j1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
   int     ict, nz, base, r1, r2, N, *rowkeep, nstart, ierr, mem;
   IS      iskeep;
-  double  **K;
+  double  **K, norm;
   Mat     mat, submat;
 
   m /= 2;   /* This is done just to be consistent with the old example */
@@ -171,20 +171,23 @@ int GetElasticityMatrix(int m,Mat *newmat)
      formats (in particular, block diagonal storage).  This is NOT the
      recommended means to solve such a problem.  */
   { MatType type = MATSEQBDIAG;
-  if (OptionsHasName(0,"-mat_row")) type = MATSEQROW; 
-  if (OptionsHasName(0,"-mat_aij")) type = MATSAME;
-  if (OptionsHasName(0,"-mat_dense")) type = MATSEQDENSE;
-  if (OptionsHasName(0,"-mat_mpiaij")) type = MATMPIAIJ;
-  if (OptionsHasName(0,"-mat_mpirow")) type = MATMPIROW;
+  if (OptionsHasName(0,"-mat_seqrow"))   type = MATSEQROW; 
+  if (OptionsHasName(0,"-mat_seqaij"))   type = MATSAME;
+  if (OptionsHasName(0,"-mat_seqdense")) type = MATSEQDENSE;
+  if (OptionsHasName(0,"-mat_mpiaij"))   type = MATMPIAIJ;
+  if (OptionsHasName(0,"-mat_mpirow"))   type = MATMPIROW;
   if (OptionsHasName(0,"-mat_mpirowbs")) type = MATMPIROWBS;
   if (OptionsHasName(0,"-mat_mpibdiag")) type = MATMPIBDIAG;
+
   ierr = MatConvert(submat,type,newmat); CHKERRQ(ierr);
   ierr = MatDestroy(submat); CHKERRQ(ierr);
   }
 
-  /* Display matrix information and nonzero structure */
-  ierr = MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRQ(ierr);
-  MPIU_printf(MPI_COMM_SELF,"matrix nonzeros = %d, allocated nonzeros = %d\n",nz,nzalloc);
+  ierr = ViewerFileSetFormat(STDOUT_VIEWER_WORLD,FILE_FORMAT_INFO,0); CHKERRQ(ierr);
+  ierr = MatView(*newmat,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
+  ierr = MatNorm(*newmat,NORM_1,&norm); CHKERRQ(ierr);
+  MPIU_printf(MPI_COMM_WORLD,"matrix 1 norm = %g\n",norm);
+
   return 0;
 }
 /* -------------------------------------------------------------------- */
