@@ -1,4 +1,4 @@
-# $Id: base,v 1.32 1998/04/09 04:04:17 bsmith Exp bsmith $ 
+# $Id: base,v 1.33 1998/04/13 16:20:43 bsmith Exp balay $ 
 
 PARCH    = solaris
 #
@@ -39,17 +39,18 @@ libf: ${LIBNAME}(${OBJSF})
 #	${RM} $*.o
 .F.f:
 	-${RM} $*.f
-	-/usr/ucb/cc -E  ${CFLAGS} $*.F | grep -v '^# '  > $*.f
+	-/usr/ucb/cc -E  ${CFLAGS} $*.F  > $*.f
 
 .F.o:
 	-${RM} $*.f
-	-/usr/ucb/cc -E  ${CFLAGS} $*.F | grep -v '^# '  > $*.f
+	-/usr/ucb/cc -E  ${CFLAGS} $*.F  > $*.f
 	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
 	-${RM} $*.f 
 
+
 .F.a:
 	-${RM} $*.f
-	-/usr/ucb/cc -E  ${CFLAGS} $*.F | grep -v '^# '  > $*.f
+	-/usr/ucb/cc -E  ${CFLAGS} $*.F > $*.f
 	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} $*.f $*.o
