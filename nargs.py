@@ -160,6 +160,9 @@ class ArgDict (RDict.RArgs):
     if self.local.has_key(key):
       rval = self.local[key]
       return rval.getValue(key)[1]
+    elif self.purelocal:
+      self.local[key] = ArgString()
+      return self.local[key].getValue(key)[1]
     else:
       # get the remote object
       try: rval = RDict.RArgs.__getitem__(self,key)
