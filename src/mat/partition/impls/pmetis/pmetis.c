@@ -38,9 +38,11 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
+  /*
   if (part->n != size) {
     SETERRQ(PETSC_ERR_SUP,"Supports exactly one domain per processor");
   }
+  */
 
   ierr = PetscTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (!flg) {
@@ -71,7 +73,27 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   ierr = PetscMalloc((mat->m+1)*sizeof(int),&locals);CHKERRQ(ierr);
 
   if (PetscLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
-  PARKMETIS(vtxdist,xadj,part->vertex_weights,adjncy,adj->values,locals,(int*)parmetis,parmetis->comm_pmetis);
+  if (part->n == size) {
+    /* just for now, keep the old behaviour around as explicit call */
+    PARKMETIS(vtxdist,xadj,part->vertex_weights,adjncy,adj->values,locals,(int*)parmetis,parmetis->comm_pmetis);
+  } else {
+    int wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[3], edgecut, i,j;
+    float *tpwgts,*ubvec;
+    ierr = PetscMalloc(ncon*nparts*sizeof(float),&tpwgts); CHKERRQ(ierr);
+    for (i=0; i<ncon; i++)
+      for (j=0; j<nparts; j++)
+	tpwgts[i*nparts+j] = 1./nparts;
+    ierr = PetscMalloc(ncon*sizeof(float),&ubvec); CHKERRQ(ierr);
+    for (i=0; i<ncon; i++)
+      ubvec[i] = 1.05;
+    options[0] = 0;
+    ParMETIS_V3_PartKway
+      (vtxdist,xadj,adjncy,part->vertex_weights,adj->values,
+       &wgtflag,&numflag,&ncon,&nparts,tpwgts,ubvec,
+       options,&edgecut,locals,&parmetis->comm_pmetis);
+    ierr = PetscFree(tpwgts); CHKERRQ(ierr);
+    ierr = PetscFree(ubvec); CHKERRQ(ierr);
+  }
   if (PetscLogPrintInfo) {parmetis->printout = itmp;}
 
   ierr = ISCreateGeneral(part->comm,mat->m,locals,partitioning);CHKERRQ(ierr);
