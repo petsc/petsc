@@ -28,6 +28,8 @@ typedef struct {
   MatScalar        *a,*anew;     /* nonzero diagonal and superdiagonal elements */
   IS               row,icol;     /* index sets, used for reorderings */
   PetscScalar      *solve_work;  /* work space used in MatSolve */
+  PetscScalar      *solves_work; /* work space used in MatSolves */
+  int              solves_work_n;/* size of solves_work */  
   int              reallocs;     /* number of mallocs done during MatSetValues() 
                                     as more values are set then were preallocated */
   PetscScalar      *mult_work;   /* work array for matrix vector product*/

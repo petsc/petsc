@@ -10,8 +10,8 @@
 /* Logging support */
 int MAT_COOKIE;
 int MATSNESMFCTX_COOKIE;
-int MAT_Mult, MAT_MultMatrixFree, MAT_MultMultiple, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
-int MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_SolveMultiple, MAT_SolveAdd, MAT_SolveTranspose;
+int MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
+int MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;
 int MAT_SolveTransposeAdd, MAT_Relax, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 int MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 int MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
@@ -4972,5 +4972,54 @@ int MatGetInertia(Mat mat,int *nneg,int *nzero,int *npos)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Numeric factor mat is not assembled");
   if (!mat->ops->getinertia) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->getinertia)(mat,nneg,nzero,npos);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* ----------------------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolves"
+/*@
+   MatSolves - Solves A x = b, given a factored matrix, for a collection of vectors
+
+   Collective on Mat and Vecs
+
+   Input Parameters:
++  mat - the factored matrix
+-  b - the right-hand-side vectors
+
+   Output Parameter:
+.  x - the result vectors
+
+   Notes:
+   The vectors b and x cannot be the same.  I.e., one cannot
+   call MatSolves(A,x,x).
+
+   Notes:
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
+
+   Concepts: matrices^triangular solves
+
+.seealso: MatSolveAdd(), MatSolveTranspose(), MatSolveTransposeAdd(), MatSolve()
+@*/
+int MatSolves(Mat mat,Vecs b,Vecs x)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
+  if (x == b) SETERRQ(PETSC_ERR_ARG_IDN,"x and b must be different vectors");
+  if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
+  if (mat->M == 0 && mat->N == 0) PetscFunctionReturn(0);
+
+  if (!mat->ops->solves) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = PetscLogEventBegin(MAT_Solves,mat,0,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->solves)(mat,b,x);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Solves,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

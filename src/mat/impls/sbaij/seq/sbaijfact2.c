@@ -1219,7 +1219,7 @@ int MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
-  t = a->solve_work;
+  t    = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rip);CHKERRQ(ierr); 
   
@@ -1241,7 +1241,7 @@ int MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
     xk = t[k];   
     nz = ai[k+1] - ai[k];    
     while (nz--) xk += (*v++) * t[*vj++]; 
-    t[k] = xk;
+    t[k]      = xk;
     x[rip[k]] = xk; 
   }
 
@@ -1251,6 +1251,68 @@ int MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
   PetscLogFlops(4*a->s_nz + A->m);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolves_SeqSBAIJ_1"
+int MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
+{
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data;
+  int          ierr;
+
+  PetscFunctionBegin;
+  if (a->bs == 1) {
+    ierr = MatSolve_SeqSBAIJ_1(A,bb->v,xx->v);CHKERRQ(ierr);
+  } else {
+    IS              isrow=a->row;
+    int             mbs=a->mbs,*ai=a->i,*aj=a->j,*rip,i;
+    MatScalar       *aa=a->a,*v;
+    PetscScalar     *x,*b,xk,*t;
+    int             nz,*vj,k,n;
+    if (bb->n > a->solves_work_n) {
+      if (a->solves_work) {ierr = PetscFree(a->solves_work);CHKERRQ(ierr);}
+      ierr = PetscMalloc(bb->n*A->m*sizeof(PetscScalar),&a->solves_work);CHKERRQ(ierr);
+      a->solves_work_n == bb->n;
+    }
+    n    = bb->n;
+    ierr = VecGetArray(bb->v,&b);CHKERRQ(ierr); 
+    ierr = VecGetArray(xx->v,&x);CHKERRQ(ierr); 
+    t    = a->solves_work;
+
+    ierr = ISGetIndices(isrow,&rip);CHKERRQ(ierr); 
+  
+    /* solve U^T*D*y = perm(b) by forward substitution */
+    for (k=0; k<mbs; k++) {for (i=0; i<n; i++) t[n*k+i] = b[rip[k]+i*mbs];} /* values are stored interlaced in t */
+    for (k=0; k<mbs; k++){
+      v  = aa + ai[k]; 
+      vj = aj + ai[k];    
+      nz = ai[k+1] - ai[k];     
+      while (nz--) {
+        for (i=0; i<n; i++) t[n*(*vj)+i] += (*v) * t[n*k+i];
+        v++;vj++;
+      }
+      for (i=0; i<n; i++) t[n*k+i] *= aa[k];  /* note: aa[k] = 1/D(k) */
+    }
+    
+    /* solve U*x = y by back substitution */   
+    for (k=mbs-1; k>=0; k--){ 
+      v  = aa + ai[k]; 
+      vj = aj + ai[k]; 
+      nz = ai[k+1] - ai[k];    
+      while (nz--) {
+        for (i=0; i<n; i++) t[n*k+i] += (*v) * t[n*(*vj)+i]; 
+        v++;vj++;
+      }
+      for (i=0; i<n; i++) x[rip[k]+i*mbs] = t[n*k+i];
+    }
+
+    ierr = ISRestoreIndices(isrow,&rip);CHKERRQ(ierr);
+    ierr = VecRestoreArray(bb->v,&b);CHKERRQ(ierr); 
+    ierr = VecRestoreArray(xx->v,&x);CHKERRQ(ierr); 
+    PetscLogFlops(bb->n*(4*a->s_nz + A->m));
+  }
+  PetscFunctionReturn(0);
+}
+
 
 /*
       Special case where the matrix was ILU(0) factored in the natural
@@ -1495,6 +1557,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
       case 1:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+        (*B)->ops->solves                = MatSolves_SeqSBAIJ_1;
         PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=1\n");
         break;
       case 2:

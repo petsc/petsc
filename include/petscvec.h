@@ -337,6 +337,27 @@ EXTERN int VecESISetFromOptions(Vec);
 EXTERN int PetscViewerMathematicaGetVector(PetscViewer, Vec);
 EXTERN int PetscViewerMathematicaPutVector(PetscViewer, Vec);
 
+/*S
+     Vecs - Collection of vectors where the data for the vectors is stored in 
+            one continquous memory
+
+   Level: advanced
+
+   Notes:
+    Temporary construct for handling multiply right hand side solves
+
+    This is faked by storing a single vector that has enough array space for 
+    n vectors
+
+  Concepts: parallel decomposition
+
+S*/
+        struct _p_Vecs  {int n; Vec v;};
+typedef struct _p_Vecs* Vecs;
+#define VecsDestroy(x)            (VecDestroy((x)->v)         || PetscFree(x))
+#define VecsCreateSeq(comm,p,m,x) (PetscNew(struct _p_Vecs,x) || VecCreateSeq(comm,p*m,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
+#define VecsCreateSeqWithArray(comm,p,m,a,x) (PetscNew(struct _p_Vecs,x) || VecCreateSeqWithArray(comm,p*m,a,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
+#define VecsDuplicate(x,y)        (PetscNew(struct _p_Vecs,y) || VecDuplicate(x->v,&(*(y))->v) || (-1 == ((*(y))->n = (x)->n)))
 #endif
 
 

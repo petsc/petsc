@@ -37,14 +37,14 @@ int MatInitializePackage(char *path) {
   /* Register Events */
   ierr = PetscLogEventRegister(&MAT_Mult,                     "MatMult",          MAT_COOKIE);            CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MultMatrixFree,           "MatMultMatrixFre", MAT_COOKIE);            CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&MAT_MultMultiple,             "MatMultMultiple",  MAT_COOKIE);            CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_Mults,                    "MatMults",         MAT_COOKIE);            CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MultConstrained,          "MatMultConstr",    MAT_COOKIE);            CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MultAdd,                  "MatMultAdd",       MAT_COOKIE);            CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MultTranspose,            "MatMultTranspose", MAT_COOKIE);            CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MultTransposeConstrained, "MatMultTrConstr",  MAT_COOKIE);            CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MultTransposeAdd,         "MatMultTrAdd",     MAT_COOKIE);            CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_Solve,                    "MatSolve",         MAT_COOKIE);            CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&MAT_SolveMultiple,            "MatSolveMultiple", MAT_COOKIE);            CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_Solves,                   "MatSolves",        MAT_COOKIE);            CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_SolveAdd,                 "MatSolveAdd",      MAT_COOKIE);            CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_SolveTranspose,           "MatSolveTranspos", MAT_COOKIE);            CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_SolveTransposeAdd,        "MatSolveTrAdd",    MAT_COOKIE);            CHKERRQ(ierr);
