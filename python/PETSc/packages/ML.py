@@ -141,7 +141,7 @@ class Configure(config.base.Configure):
 
   def configure(self):
     package = self.name.lower()
-    if not 'with-'+package in self.framework.argDB or not self.mpi.foundMPI or self.framework.argDB['with-64-bit-int']:
+    if not 'with-'+package in self.framework.argDB or not self.mpi.foundMPI or self.framework.argDB['with-64-bit-ints']:
       self.setEmptyOutput()
       return
     self.executeTest(self.configureLibrary)

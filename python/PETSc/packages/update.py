@@ -8,8 +8,9 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.updated  = 0
-    self.strmsg   = ''
+    self.updated      = 0
+    self.strmsg       = ''
+    self.hasdatafiles = 0
     return
 
   def __str__(self):
@@ -147,6 +148,7 @@ class Configure(config.base.Configure):
       
     if datafilespath:
       self.framework.addSubstitution('SET_DATAFILESPATH', 'DATAFILESPATH ='+datafilespath)
+      self.hasdatafiles = 1
     else:
       self.framework.addSubstitution('SET_DATAFILESPATH', '')
     return

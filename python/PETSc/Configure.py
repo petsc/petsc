@@ -26,6 +26,7 @@ class Configure(config.base.Configure):
     self.headers      = self.framework.require('config.headers',      self)
     self.functions    = self.framework.require('config.functions',    self)
     self.libraries    = self.framework.require('config.libraries',    self)
+    self.update       = self.framework.require('PETSc.packages.update',self)
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
     self.headers.headerPrefix   = self.headerPrefix
@@ -550,6 +551,8 @@ class Configure(config.base.Configure):
         jobs.append('2')
       if 'FC' in self.framework.argDB:
         jobs.append('3')
+      if self.update.hasdatafiles:
+        jobs.append('6')        
     if os.path.isfile(os.path.join(self.bmakeDir, 'jobs')):
       try:
         os.unlink(os.path.join(self.bmakeDir, 'jobs'))
