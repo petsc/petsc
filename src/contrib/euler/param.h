@@ -4,11 +4,12 @@ c   petsc.h - basic PETSc interface
 c   mat.h   - matrices
 c   vec.h   - vectors
 c
+        implicit none
+
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/vec.h"
 
-        implicit none
 
 c   Type of system
         integer EXPLICIT, IMPLICIT_SIZE, IMPLICIT

@@ -77,6 +77,7 @@ These shouldn't be needed anymore but were useful in writing the parallel code\n
 
 /* user-defined include file for the Euler application */
 #include "user.h"
+#include "src/fortran/custom/zpetsc.h"
 
 int main(int argc,char **argv)
 {
@@ -198,7 +199,7 @@ int main(int argc,char **argv)
 
   /* Read entire grid and initialize data */
   PLogEventBegin(init2,0,0,0,0);
-  fort_app = MPIR_FromPointer(app);
+  fort_app = PetscFromPointer(app);
   ierr = julianne_(&solve_with_julianne,&fort_app,&app->cfl,
          &rtol,app->b1,
          app->b2,app->b3,app->b4,app->b5,app->b6,app->diag,app->dt,
@@ -1217,7 +1218,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
               Setup parallel grid for Fortran code 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  fort_comm = MPIR_FromPointer(comm);
+  fort_comm = PetscFromPointerComm(comm);
   ierr = parsetup_(&fort_comm, &app->print_grid, &app->no_output,
             &app->bctype, &app->rank, &app->size, &problem,
             &app->gxsf, &app->gysf, &app->gzsf,
