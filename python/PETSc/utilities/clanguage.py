@@ -23,9 +23,21 @@ class Configure(config.base.Configure):
   def configureLanguage(self):
     # should do error checking
     self.language   = self.framework.argDB['with-language'].upper().replace('+','x').replace('X','x')
+
     self.precision  = self.framework.argDB['with-precision']
-    self.scalartype = self.framework.argDB['with-scalar-type']        
-    
+    if self.precision.lower() == 'single':
+      self.addDefine('USE_SINGLE','1')
+    elif self.precision.lower() == 'matsingle':
+      self.addDefine('USE_MAT_SINGLE','1')
+    elif not self.precision.lower() == 'double':
+      raise RuntimeError('--with-precision must be single, double or matsingle')
+
+    self.scalartype = self.framework.argDB['with-scalar-type']
+    if self.scalartype.lower() == 'complex':
+      self.addDefine('USE_COMPLEX','1')
+    elif not self.scalartype.lower() == 'real':
+      raise RuntimeError('--with-scalar-type must be real or complex')
+      
   def configure(self):
     self.executeTest(self.configureLanguage)
     return
