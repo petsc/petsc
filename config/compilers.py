@@ -562,6 +562,7 @@ class Configure(config.base.Configure):
     self.AR_FLAGS = self.setCompilers.AR_FLAGS
     self.RANLIB = self.setCompilers.RANLIB
     self.LD_SHARED = self.setCompilers.LD_SHARED
+    self.sharedLibraryFlags = self.setCompilers.sharedLibraryFlags
     if hasattr(self, 'f90HeaderPath'):
       self.addDefine('HAVE_F90_H', '"'+self.f90HeaderPath+'"')
     if hasattr(self, 'f90SourcePath'):
