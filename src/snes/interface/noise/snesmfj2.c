@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj2.c,v 1.4 1997/07/07 19:10:16 curfman Exp curfman $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.5 1997/09/25 18:59:24 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -18,7 +18,7 @@ typedef struct {  /* default context for matrix-free SNES */
   double      umin;             /* minimum allowable u'a value relative to |u|_1 */
   int         jorge;            /* flag indicating use of Jorge's method for determining
                                    the differencing parameter */
-  Scalar      h;                /* differencing parameter */
+  double      h;                /* differencing parameter */
   int         need_h;           /* flag indicating whether we must compute h */
   int         need_err;         /* flag indicating whether we must currently compute error_rel */
   int         compute_err;      /* flag indicating whether we must ever compute error_rel */
@@ -89,8 +89,8 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 {
   MFCtx_Private *ctx;
   SNES          snes;
-  double        norm, sum, umin, noise, ovalues[3],values[3];
-  Scalar        h, dot, mone = -1.0;
+  double        h, norm, sum, umin, noise, ovalues[3],values[3];
+  Scalar        hs, dot, mone = -1.0;
   Vec           w,U,F;
   int           ierr, iter, (*eval_fct)(SNES,Vec,Vec);
   MPI_Comm      comm;
@@ -152,7 +152,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
         to reduce the number of communications required
      */
    
-#if !defined(PETSC_COMPLEX)
+#if !defined(USE_PETSC_COMPLEX)
      PLogEventBegin(VEC_Dot,U,a,0,0);
      ierr = VecDot_Seq(U,a,ovalues); CHKERRQ(ierr);
      PLogEventEnd(VEC_Dot,U,a,0,0);
@@ -183,14 +183,14 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 
       /* Safeguard for step sizes too small */
       if (sum == 0.0) {dot = 1.0; norm = 1.0;}
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
       else if (abs(dot) < umin*sum && real(dot) >= 0.0) dot = umin*sum;
       else if (abs(dot) < 0.0 && real(dot) > -umin*sum) dot = -umin*sum;
 #else
       else if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
       else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
 #endif
-      h = ctx->error_rel*dot/(norm*norm);
+      h = PetscReal(ctx->error_rel*dot/(norm*norm));
     }
   } else {
     h = ctx->h;
@@ -198,11 +198,12 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   if (!ctx->jorge || !ctx->need_h) PLogInfo(snes,"SNESMatrixFreeMult2_Private: h = %g\n",h);
 
   /* Evaluate function at F(u + ha) */
-  ierr = VecWAXPY(&h,a,U,w); CHKERRQ(ierr);
+  hs = h;
+  ierr = VecWAXPY(&hs,a,U,w); CHKERRQ(ierr);
   ierr = eval_fct(snes,w,y); CHKERRQ(ierr);
   ierr = VecAXPY(&mone,F,y); CHKERRQ(ierr);
-  h = 1.0/h;
-  ierr = VecScale(&h,y); CHKERRQ(ierr);
+  hs = 1.0/hs;
+  ierr = VecScale(&hs,y); CHKERRQ(ierr);
   if (ctx->sp) {ierr = PCNullSpaceRemove(ctx->sp,y); CHKERRQ(ierr);}
 
   PLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);
