@@ -1306,18 +1306,28 @@ PetscErrorCode MatMultTranspose_MPIBAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
   PetscErrorCode ierr;
+  PetscTruth     merged;
 
   PetscFunctionBegin;
+  ierr = VecScatterGetMerged(a->Mvctx,&merged);CHKERRQ(ierr);
   /* do nondiagonal part */
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
-  /* send it on its way */
-  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-  /* do local part */
-  ierr = (*a->A->ops->multtranspose)(a->A,xx,yy);CHKERRQ(ierr);
-  /* receive remote parts: note this assumes the values are not actually */
-  /* inserted in yy until the next line, which is true for my implementation*/
-  /* but is not perhaps always true. */
-  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+  if (!merged) {
+    /* send it on its way */
+    ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+    /* do local part */
+    ierr = (*a->A->ops->multtranspose)(a->A,xx,yy);CHKERRQ(ierr);
+    /* receive remote parts: note this assumes the values are not actually */
+    /* inserted in yy until the next line */
+    ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+  } else {
+    /* do local part */
+    ierr = (*a->A->ops->multtranspose)(a->A,xx,yy);CHKERRQ(ierr);
+    /* send it on its way */
+    ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+    /* values actually were received in the Begin() but we need to call this nop */
+    ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
