@@ -1,4 +1,4 @@
-#PETSC_DIR = ../../..
+# $Id: makefile,v 1.184 1997/09/10 16:23:37 bsmith Exp $ 
 
 ALL: lib
 
