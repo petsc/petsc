@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.56 2001/07/06 14:28:34 bsmith Exp buschelm $*/
+/*$Id: baijfact2.c,v 1.57 2001/07/11 04:50:20 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2636,54 +2636,78 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   }
 
   if (row_identity && col_identity) {
-    switch (b->bs) {
-      case 2:
-        (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
-        (*fact)->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering;
-        PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
-        break;
-      case 3:
-        (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
-        (*fact)->ops->solve           = MatSolve_SeqBAIJ_3_NaturalOrdering;
-        PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:sing special in-place natural ordering factor and solve BS=3\n");
-        break; 
-      case 4:
-#if defined(PETSC_HAVE_SSE)
-        {
-          PetscTruth sse_enabled;
-          ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
-          if (sse_enabled) {
-            (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
-          } else {
-            (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
-          }
-        }
-#else
-        (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
-#endif
-        (*fact)->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
-        PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
-        break;
-      case 5:
-        (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
-        (*fact)->ops->solve           = MatSolve_SeqBAIJ_5_NaturalOrdering;
-        PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
-        break;
-      case 6: 
-        (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering;
-        (*fact)->ops->solve           = MatSolve_SeqBAIJ_6_NaturalOrdering;
-        PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
-        break; 
-      case 7:
-        (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
-        (*fact)->ops->solve           = MatSolve_SeqBAIJ_7_NaturalOrdering;
-        PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
-      break; 
-    }
+    ierr = MatSeqBAIJ_UpdateFactorizerSolver_NaturalOrdering(*fact);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0); 
 }
 
+int MatSeqBAIJ_UpdateFactorizerSolver_NaturalOrdering(Mat inA)
+{
+  /*
+      Blocksize 2, 3, 4, 5, 6 and 7 have a special faster factorization/solver 
+      with natural ordering
+  */
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)inA->data;
 
+  PetscFunctionBegin;
+  switch (a->bs) {
+  case 1:
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;
+    inA->ops->solve           = MatSolve_SeqBAIJ_1_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_1_NaturalOrdering;
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=1\n");
+  case 2:
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering;
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
+    break;
+  case 3:
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqBAIJ_3_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_3_NaturalOrdering;
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=3\n");
+    break; 
+  case 4:
+#if defined(PETSC_HAVE_SSE)
+    {
+      PetscTruth sse_enabled;
+      int        ierr;
 
-
+      ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
+      if (sse_enabled) {
+        inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
+      } else {
+        inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+      }
+    }
+#else
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+#endif
+    if (!a->single_precision_solves) { /* If this option was set, don't clobber this pointer */ 
+      inA->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
+    }
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering;
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
+    break;
+  case 5:
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqBAIJ_5_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_5_NaturalOrdering;
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
+    break;
+  case 6: 
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqBAIJ_6_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_6_NaturalOrdering;
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
+    break; 
+  case 7:
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_7_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqBAIJ_7_NaturalOrdering;
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
+    break; 
+  }
+  PetscFunctionReturn(0);
+}

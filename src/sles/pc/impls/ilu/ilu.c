@@ -695,7 +695,9 @@ static int PCSetUp_ILU(PC pc)
     }
     ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact);CHKERRQ(ierr);
   }
-  ierr = MatSetOption(ilu->fact,MAT_USE_SINGLE_PRECISION_SOLVES);
+  if (ilu->single_precision_solve) {
+    ierr = MatSetOption(ilu->fact,MAT_USE_SINGLE_PRECISION_SOLVES);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
