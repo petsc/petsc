@@ -169,7 +169,7 @@ info_h:
 	-@echo  "Using C linker: ${CLINKER}" >> MINFO
 	-@echo  "Using Fortran linker: ${FLINKER}" >> MINFO
 	-@echo  "Using libraries: ${PETSC_LIB} \"; " >> MINFO
-	-@cat MINFO | ${SED} -e 's/\^M//' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> ${MINFO}
+	-@cat MINFO | ${SED} -e 's/\^M//' | ${SED} -e 's/\\/\\\\/g' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> ${MINFO}
 	-@$(RM) MINFO
 
 #
