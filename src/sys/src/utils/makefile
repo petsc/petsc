@@ -3,7 +3,7 @@
 ALL: lib 
 
 CFLAGS    = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"' -DPETSC_ARCH='"${PETSC_ARCH}"' \
-            -DPETSC_SLSUFFIX='"${SLSUFFIX}"'
+            -DPETSC_SLSUFFIX='"${SLSUFFIX}"' -DPETSC_DIR='"${PETSC_DIR}"'
 FFLAGS    =
 SOURCEC	  = arch.c fhost.c fuser.c memc.c mpiu.c psleep.c random.c sortd.c sorti.c \
             str.c sortip.c pbarrier.c pdisplay.c ctable.c psplit.c \
