@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.296 1999/01/12 20:44:06 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.297 1999/01/12 23:18:32 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -144,7 +144,7 @@ can be employed if
 the user does not care in what order the individual processors print
 their segments of the vector.  To display the vector in an X-window,
 one can use the default X-windows viewer {\tt VIEWER\_DRAWX\_WORLD},
-\findex{VIEWER_DRAWX_WORLD}
+\findex{VIEWER_DRAW_WORLD}
 or one can create a viewer with the routine {\tt ViewerDrawOpenX()}.
 A variety of viewers are discussed further in Section \ref{sec:viewers}.
 
@@ -1563,9 +1563,9 @@ Other viewers can be used as well. For instance, one can draw the
 nonzero stucture of the matrix into the default X-window with the 
 command 
 \begin{verbatim}
-   ierr = MatView(Mat mat,VIEWER_DRAWX_WORLD);
+   ierr = MatView(Mat mat,VIEWER_DRAW_WORLD);
 \end{verbatim}
-Use \findex{VIEWER_DRAWX_WORLD}
+Use \findex{VIEWER_DRAW_WORLD}
 \begin{verbatim}
    ierr = MatView(Mat mat,Viewer viewer);
 \end{verbatim}
@@ -4219,7 +4219,7 @@ Then one can call any of the {\tt DrawXXX} commands on the {\tt draw}
 object. If one obtains the {\tt draw} object in this manner, 
 one does not call the {\tt DrawOpenX()} command discussed below.
 
-\findex{VIEWER_DRAWX_WORLD} \findex{VIEWER_DRAWX_SELF} 
+\findex{VIEWER_DRAW_WORLD} \findex{VIEWER_DRAW_SELF} 
 Predefined viewers, {\tt VIEWER\_DRAWX\_WORLD} 
 and {\tt VIEWER\_DRAWX\_SELF}, may be used at any time. Their initial
 use will cause the appropriate window to be created.
@@ -5861,9 +5861,9 @@ predefined viewers:
       parallel objects are printed in the natural order that would occur
       if only a single processor were in use for the entire problem;
       this viewer uses the communicator {\tt PETSC\_COMM\_WORLD}.
-\item {\tt VIEWER\_DRAWX\_WORLD} \findex{VIEWER_DRAWX_WORLD} causes the 
+\item {\tt VIEWER\_DRAWX\_WORLD} \findex{VIEWER_DRAW_WORLD} causes the 
       object to be drawn in a default X window.
-\item {\tt VIEWER\_DRAWX\_SELF} \findex{VIEWER_DRAWX_SELF} causes the 
+\item {\tt VIEWER\_DRAWX\_SELF} \findex{VIEWER_DRAW_SELF} causes the 
       object to be drawn in a default X window.
 \item Passing in a viewer obtained by
       {\tt ViewerDrawOpenX()} causes the object to be displayed graphically.

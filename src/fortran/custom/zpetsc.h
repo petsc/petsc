@@ -152,22 +152,22 @@ extern void             lam_F_maketype(int*,int*,void*);
 
     The numbers here must match the numbers in include/finclude/petsc.h
 */
-#define VIEWER_DRAWX_WORLD_0_FORTRAN  -4
-#define VIEWER_DRAWX_WORLD_1_FORTRAN  -5
-#define VIEWER_DRAWX_WORLD_2_FORTRAN  -6
-#define VIEWER_DRAWX_SELF_FORTRAN     -7
+#define VIEWER_DRAW_WORLD_0_FORTRAN  -4
+#define VIEWER_DRAW_WORLD_1_FORTRAN  -5
+#define VIEWER_DRAW_WORLD_2_FORTRAN  -6
+#define VIEWER_DRAW_SELF_FORTRAN     -7
 #define VIEWER_SOCKET_WORLD_FORTRAN   -8 
 
 #define PetscPatchDefaultViewers_Fortran(vin,v) \
 { \
-    if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAWX_WORLD_0_FORTRAN) { \
-      v = VIEWER_DRAWX_WORLD_0; \
-    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAWX_WORLD_1_FORTRAN) { \
-      v = VIEWER_DRAWX_WORLD_1; \
-    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAWX_WORLD_2_FORTRAN) { \
-      v = VIEWER_DRAWX_WORLD_2; \
-    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAWX_SELF_FORTRAN) { \
-      v = VIEWER_DRAWX_SELF; \
+    if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_0_FORTRAN) { \
+      v = VIEWER_DRAW_WORLD_0; \
+    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_1_FORTRAN) { \
+      v = VIEWER_DRAW_WORLD_1; \
+    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_2_FORTRAN) { \
+      v = VIEWER_DRAW_WORLD_2; \
+    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAW_SELF_FORTRAN) { \
+      v = VIEWER_DRAW_SELF; \
     } else if ( (*(PetscFortranAddr*)vin) == VIEWER_SOCKET_WORLD_FORTRAN) { \
       v = VIEWER_SOCKET_WORLD; \
     } else { \

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.25 1998/12/03 04:05:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.26 1998/12/08 23:30:58 bsmith Exp bsmith $";
 #endif
 
 #include "src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
@@ -51,7 +51,8 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (PetscStrcmp(v->type_name,"string")) PetscFunctionReturn(0);
+  if (!PetscTypeCompare(v->type_name,"string")) PetscFunctionReturn(0);
+  if (!vstr->string) SETERRQ(1,1,"Must call ViewerStringSetString() before using");
 
   va_start( Argp, format );
 #if defined(HAVE_VPRINTF_CHAR)
@@ -97,12 +98,23 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 @*/
 int ViewerStringOpen(MPI_Comm comm,char string[],int len, Viewer *lab)
 {
-  Viewer        v;
+  int ierr;
+  
+  PetscFunctionBegin;
+  ierr = ViewerCreate(comm,lab);CHKERRQ(ierr);
+  ierr = ViewerSetType(*lab,STRING_VIEWER);CHKERRQ(ierr);
+  ierr = ViewerStringSetString(*lab,string,len);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "ViewerCreate_String"
+int ViewerCreate_String(Viewer v)
+{
   Viewer_String *vstr;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
-  PLogObjectCreate(v);
   v->ops->destroy = ViewerDestroy_String;
   v->ops->view    = 0;
   v->ops->flush   = 0;
@@ -110,15 +122,25 @@ int ViewerStringOpen(MPI_Comm comm,char string[],int len, Viewer *lab)
   v->data         = (void *) vstr;
   v->type_name    = (char *) PetscMalloc((1+PetscStrlen(STRING_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
   PetscStrcpy(v->type_name,STRING_VIEWER);
+  vstr->string    = 0;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
+#undef __FUNC__  
+#define __FUNC__ "ViewerStringSetString"
+int ViewerStringSetString(Viewer v,char string[],int len)
+{
+  Viewer_String *vstr = (Viewer_String *) v->data;
+
+  PetscFunctionBegin;
+  if (!PetscTypeCompare(v->type_name,"string")) PetscFunctionReturn(0);
   PetscMemzero(string,len*sizeof(char));
   vstr->string      = string;
   vstr->head        = string;
 
   vstr->curlen      = 0;
   vstr->maxlen      = len;
-
-  *lab           = v;
   PetscFunctionReturn(0);
 }
 

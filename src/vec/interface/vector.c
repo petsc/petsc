@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.156 1999/01/04 21:47:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.157 1999/01/12 23:13:14 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1149,14 +1149,14 @@ int VecAssemblyEnd(Vec vec)
   }
   ierr = OptionsHasName(PETSC_NULL,"-vec_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {
-    ierr = VecView(vec,VIEWER_DRAWX_(vec->comm)); CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAWX_(vec->comm)); CHKERRQ(ierr);
+    ierr = VecView(vec,VIEWER_DRAW_(vec->comm)); CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAW_(vec->comm)); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-vec_view_draw_lg",&flg); CHKERRQ(ierr);
   if (flg) {
-    ierr = ViewerSetFormat(VIEWER_DRAWX_(vec->comm),VIEWER_FORMAT_DRAW_LG,0); CHKERRQ(ierr);
-    ierr = VecView(vec,VIEWER_DRAWX_(vec->comm)); CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAWX_(vec->comm)); CHKERRQ(ierr);
+    ierr = ViewerSetFormat(VIEWER_DRAW_(vec->comm),VIEWER_FORMAT_DRAW_LG,0); CHKERRQ(ierr);
+    ierr = VecView(vec,VIEWER_DRAW_(vec->comm)); CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAW_(vec->comm)); CHKERRQ(ierr);
   }
 #if defined(HAVE_AMS)
   ierr = OptionsHasName(PETSC_NULL,"-vec_view_ams",&flg); CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.60 1998/12/21 01:06:07 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.61 1999/01/12 23:18:23 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -82,8 +82,13 @@ extern int ViewerASCIIPushTab(Viewer);
 extern int ViewerASCIIPopTab(Viewer);
 extern int ViewerBinaryGetDescriptor(Viewer,int*);
 extern int ViewerBinaryGetInfoPointer(Viewer,FILE **);
+extern int ViewerBinarySetType(Viewer,ViewerBinaryType);
 extern int ViewerStringSPrintf(Viewer,char *,...);
+extern int ViewerStringSetString(Viewer,char[],int);
 extern int ViewerDrawClear(Viewer);
+extern int ViewerDrawSetInfo(Viewer,const char[],const char[],int,int,int,int);
+
+extern int ViewerSetFilename(Viewer,const char[]);
 
 /*
      These are all the default viewers that do not have 
@@ -97,10 +102,10 @@ extern int    VIEWER_STDOUT_Destroy(MPI_Comm);
 extern Viewer VIEWER_STDERR_WORLD;
 extern Viewer VIEWER_STDERR_(MPI_Comm);
 extern int    VIEWER_STDERR_Destroy(MPI_Comm);
-extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_0;
-extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_1;
-extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_2;
-extern Viewer VIEWER_DRAWX_SELF_PRIVATE; 
+extern Viewer VIEWER_DRAW_WORLD_PRIVATE_0;
+extern Viewer VIEWER_DRAW_WORLD_PRIVATE_1;
+extern Viewer VIEWER_DRAW_WORLD_PRIVATE_2;
+extern Viewer VIEWER_DRAW_SELF_PRIVATE; 
 extern Viewer VIEWER_SOCKET_WORLD_PRIVATE;
 extern Viewer VIEWER_SOCKET_SELF_PRIVATE;  /* not yet used */
 
@@ -109,19 +114,21 @@ extern int    ViewerInitializeDrawXWorld_Private_1(void);
 extern int    ViewerInitializeDrawXWorld_Private_2(void);
 extern int    ViewerInitializeDrawXSelf_Private(void);
 extern int    ViewerInitializeSocketWorld_Private(void);
-extern Viewer VIEWER_DRAWX_(MPI_Comm);
-extern int    VIEWER_DRAWX_Destroy(MPI_Comm);
+extern Viewer VIEWER_DRAW_(MPI_Comm);
+extern int    VIEWER_DRAW_Destroy(MPI_Comm);
+extern Viewer VIEWER_SOCKET_(MPI_Comm);
+extern int    VIEWER_SOCKET_Destroy(MPI_Comm);
 
-#define VIEWER_DRAWX_WORLD_0 \
-              (ViewerInitializeDrawXWorld_Private_0(),VIEWER_DRAWX_WORLD_PRIVATE_0) 
-#define VIEWER_DRAWX_WORLD_1 \
-              (ViewerInitializeDrawXWorld_Private_1(),VIEWER_DRAWX_WORLD_PRIVATE_1) 
-#define VIEWER_DRAWX_WORLD_2 \
-              (ViewerInitializeDrawXWorld_Private_2(),VIEWER_DRAWX_WORLD_PRIVATE_2) 
+#define VIEWER_DRAW_WORLD_0 \
+              (ViewerInitializeDrawXWorld_Private_0(),VIEWER_DRAW_WORLD_PRIVATE_0) 
+#define VIEWER_DRAW_WORLD_1 \
+              (ViewerInitializeDrawXWorld_Private_1(),VIEWER_DRAW_WORLD_PRIVATE_1) 
+#define VIEWER_DRAW_WORLD_2 \
+              (ViewerInitializeDrawXWorld_Private_2(),VIEWER_DRAW_WORLD_PRIVATE_2) 
 
-#define VIEWER_DRAWX_SELF \
-              (ViewerInitializeDrawXSelf_Private(),VIEWER_DRAWX_SELF_PRIVATE) 
-#define VIEWER_DRAWX_WORLD VIEWER_DRAWX_WORLD_0
+#define VIEWER_DRAW_SELF \
+              (ViewerInitializeDrawXSelf_Private(),VIEWER_DRAW_SELF_PRIVATE) 
+#define VIEWER_DRAW_WORLD VIEWER_DRAW_WORLD_0
 
 #define VIEWER_SOCKET_WORLD \
         (ViewerInitializeSocketWorld_Private(),VIEWER_SOCKET_WORLD_PRIVATE) 

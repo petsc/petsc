@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.24 1998/12/03 04:06:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.25 1998/12/17 22:12:48 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -26,7 +26,7 @@ static char vcid[] = "$Id: daview.c,v 1.24 1998/12/03 04:06:11 bsmith Exp bsmith
          output where only the first processor opens
          the file.  All other processors send their 
          data to the first processor to print. 
--     VIEWER_DRAWX_WORLD - to default window
+-     VIEWER_DRAW_WORLD - to default window
 
    The user can open alternative visualization contexts with
 +    ViewerASCIIOpen() - Outputs vector to a specified file

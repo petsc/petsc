@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 1998/04/23 22:50:08 balay Exp balay $ 
+# $Id: makefile,v 1.10 1998/06/13 05:17:39 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -12,7 +12,7 @@ TESTEXAMPLES_2  =
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex1.m
+EXAMPLESC       = ex1.c ex2.c ex1.m ex3.c
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -27,4 +27,7 @@ ex2: ex2.o   chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
 	${RM} -f ex2.o
 
+ex3: ex3.o   chkopts
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
+	${RM} -f ex3.o
 

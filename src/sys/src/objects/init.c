@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.25 1999/01/04 21:48:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.26 1999/01/12 23:14:21 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -62,6 +62,10 @@ extern int  PetscErrorPrintfDefault(const char [],...);
 extern int  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 int (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
 int (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
+
+extern int PetscInitialize_DynamicLibraries(void);
+extern int PetscFinalize_DynamicLibraries(void);
+extern int FListDestroyAll(void);
 
 /* ------------------------------------------------------------------------------*/
 /* 
@@ -841,6 +845,7 @@ int AliceFinalize(void)
   ierr = PetscStackDepublish();CHKERRQ(ierr);
   ierr = ViewerDestroyAMS_Private();CHKERRQ(ierr);
 #endif
+  ierr = FListDestroyAll(); CHKERRQ(ierr); 
 
   ierr = OptionsHasName(PETSC_NULL,"-get_resident_set_size",&flg1);CHKERRQ(ierr);
   if (flg1) {

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.39 1998/12/17 22:10:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.40 1998/12/21 00:59:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -87,7 +87,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
         output where only the first processor opens
         the file.  All other processors send their 
         data to the first processor to print. 
--     VIEWER_DRAWX_WORLD - graphical display of nonzero structure
+-     VIEWER_DRAW_WORLD - graphical display of nonzero structure
 
 .seealso: MatFDColoringCreate()
 
@@ -357,8 +357,8 @@ int MatFDColoringView_Private(MatFDColoring fd)
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {
-    ierr = MatFDColoringView(fd,VIEWER_DRAWX_(fd->comm)); CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAWX_(fd->comm)); CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,VIEWER_DRAW_(fd->comm)); CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAW_(fd->comm)); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.87 1998/12/17 22:12:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.88 1999/01/04 21:54:52 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -372,7 +372,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-da_view_draw",&flg1); CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,VIEWER_DRAWX_(da->comm)); CHKERRQ(ierr);}
+  if (flg1) {ierr = DAView(da,VIEWER_DRAW_(da->comm)); CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAPrintHelp(da); CHKERRQ(ierr);}
   *inra = da;

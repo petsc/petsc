@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.19 1998/06/12 21:33:26 balay Exp balay $ 
+# $Id: makefile,v 1.20 1998/06/15 15:46:51 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = impls examples interface utils
+DIRS     = impls examples interface
 LOCDIR   = src/viewer/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

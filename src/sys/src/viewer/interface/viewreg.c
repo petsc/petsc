@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.1 1999/01/12 21:21:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewreg.c,v 1.2 1999/01/12 23:17:36 bsmith Exp bsmith $";
 #endif
 
 #include "src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -39,9 +39,9 @@ int ViewerCreate(MPI_Comm comm,Viewer *inviewer)
 }
  
 #undef __FUNC__  
-#define __FUNC__ "DRAWSetType"
+#define __FUNC__ "ViewerSetType"
 /*@C
-   DrawSetType - Builds graphics object for a particular solver. 
+   ViewerSetType - Builds viewer for a particular implementation.
 
    Collective on Viewer
 

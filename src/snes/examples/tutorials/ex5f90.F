@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.17 1998/04/15 18:01:05 balay Exp balay $"
+! "$Id: ex5f90.F,v 1.18 1998/04/21 18:33:39 balay Exp bsmith $"
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -139,7 +139,7 @@
 !
 !   Visualize the distribution of the array across the processors
 !
-!     call DAView(da,VIEWER_DRAWX_WORLD,ierr)
+!     call DAView(da,VIEWER_DRAW_WORLD,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
 !  vectors that are the same types

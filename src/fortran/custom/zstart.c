@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.52 1998/12/03 03:53:28 bsmith Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.53 1998/12/17 21:56:01 balay Exp bsmith $";
 #endif
 
 /*
@@ -93,6 +93,8 @@ EXTERN_C_END
 
 
 extern int OptionsCheckInitial_Alice(void);
+extern int OptionsCheckInitial_Components(void);
+extern int PetscInitialize_DynamicLibraries(void);
 
 /*
     Reads in Fortran command line argments and sends them to 
@@ -258,6 +260,9 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
   }
 #endif
 
+  *__ierr = PetscInitialize_DynamicLibraries(); 
+  if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Initializing dynamic libraries");return;}
+
   *__ierr = ViewerInitializeASCII_Private(); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
   PetscInitializeFortran();
@@ -286,8 +291,6 @@ EXTERN_C_END
 
 /* -----------------------------------------------------------------------------------------------*/
 
-extern int OptionsCheckInitial_Components(void);
-extern int PetscInitialize_DynamicLibraries(void);
 
 EXTERN_C_BEGIN
 
@@ -308,8 +311,6 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   *__ierr = OptionsCheckInitial_Components(); 
   if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
 
-  *__ierr = PetscInitialize_DynamicLibraries(); 
-  if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Initializing dynamic libraries");return;}
 }
 
 void petscfinalize_(int *__ierr)

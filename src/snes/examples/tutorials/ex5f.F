@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.44 1998/04/21 18:33:39 balay Exp curfman $";
+! "$Id: ex5f.F,v 1.45 1998/04/28 03:40:31 curfman Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -137,7 +137,7 @@
 !
 !   Visualize the distribution of the array across the processors
 !
-!     call DAView(da,VIEWER_DRAWX_WORLD,ierr)
+!     call DAView(da,VIEWER_DRAW_WORLD,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
 !  vectors that are the same types

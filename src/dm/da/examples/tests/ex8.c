@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.7 1998/03/20 22:53:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.8 1998/12/03 04:06:22 bsmith Exp bsmith $";
 #endif
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
@@ -110,7 +110,7 @@ int main(int argc,char **argv)
   /* Create distributed array and get vectors */
   ierr = DACreate3d(PETSC_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,1,s,
                     lx,ly,lz,&da); CHKERRA(ierr);
-  ierr = DAView(da,VIEWER_DRAWX_WORLD); CHKERRA(ierr);
+  ierr = DAView(da,VIEWER_DRAW_WORLD); CHKERRA(ierr);
   ierr = DACreateGlobalVector(da,&global); CHKERRA(ierr);
   ierr = DACreateLocalVector(da,&local); CHKERRA(ierr);
 
@@ -122,7 +122,7 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(vslice,global,INSERT_VALUES,SCATTER_REVERSE,scatter);CHKERRA(ierr);
   ierr = VecScatterEnd(vslice,global,INSERT_VALUES,SCATTER_REVERSE,scatter);CHKERRA(ierr);
 
-  ierr = VecView(global,VIEWER_DRAWX_WORLD);CHKERRA(ierr);
+  ierr = VecView(global,VIEWER_DRAW_WORLD);CHKERRA(ierr);
 
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);

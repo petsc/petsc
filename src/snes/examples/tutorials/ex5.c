@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.100 1998/12/03 21:33:46 balay Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.101 1998/12/03 21:34:27 balay Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -134,7 +134,7 @@ int main( int argc, char **argv )
   /*
      Visualize the distribution of the array across the processors
   */
-  /* ierr =  DAView(user.da,VIEWER_DRAWX_WORLD); CHKERRA(ierr); */
+  /* ierr =  DAView(user.da,VIEWER_DRAW_WORLD); CHKERRA(ierr); */
 
 
   /*

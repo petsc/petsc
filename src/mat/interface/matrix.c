@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.311 1999/01/12 20:44:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.312 1999/01/12 23:14:59 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -147,7 +147,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
         output where only the first processor opens
         the file.  All other processors send their 
         data to the first processor to print. 
--     VIEWER_DRAWX_WORLD - graphical display of nonzero structure
+-     VIEWER_DRAW_WORLD - graphical display of nonzero structure
 
    The user can open alternative visualization contexts with
 +    ViewerASCIIOpen() - Outputs matrix to a specified file
@@ -1133,12 +1133,12 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   if (flg) {
     ierr = OptionsHasName(0,"-mat_view_contour",&flg); CHKERRQ(ierr);
     if (flg) {
-      ViewerPushFormat(VIEWER_DRAWX_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+      ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
     }
-    ierr = MatView(*fact,VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
+    ierr = MatView(*fact,VIEWER_DRAW_(mat->comm)); CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAW_(mat->comm)); CHKERRQ(ierr);
     if (flg) {
-      ViewerPopFormat(VIEWER_DRAWX_(mat->comm));CHKERRQ(ierr);
+      ViewerPopFormat(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -2148,12 +2148,12 @@ int MatView_Private(Mat mat)
   if (flg) {
     ierr = OptionsHasName(0,"-mat_view_contour",&flg); CHKERRQ(ierr);
     if (flg) {
-      ViewerPushFormat(VIEWER_DRAWX_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+      ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
     }
-    ierr = MatView(mat,VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
+    ierr = MatView(mat,VIEWER_DRAW_(mat->comm)); CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAW_(mat->comm)); CHKERRQ(ierr);
     if (flg) {
-      ViewerPopFormat(VIEWER_DRAWX_(mat->comm));CHKERRQ(ierr);
+      ViewerPopFormat(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

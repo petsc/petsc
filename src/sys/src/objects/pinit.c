@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.7 1998/12/04 23:25:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pinit.c,v 1.8 1999/01/12 23:14:21 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -14,9 +14,9 @@ static char vcid[] = "$Id: pinit.c,v 1.7 1998/12/04 23:25:28 bsmith Exp bsmith $
 /* -----------------------------------------------------------------------------------------*/
 
 
-extern int PetscInitialize_DynamicLibraries();
-extern int PetscFinalize_DynamicLibraries();
-extern int FListDestroyAll();
+extern int PetscInitialize_DynamicLibraries(void);
+extern int PetscFinalize_DynamicLibraries(void);
+extern int FListDestroyAll(void);
 
 #include "snes.h" /* so that cookies are defined */
 
@@ -230,7 +230,6 @@ int PetscFinalize(void)
      Destroy all the function registration lists created
   */
   ierr = NRDestroyAll(); CHKERRQ(ierr);
-  ierr = FListDestroyAll(); CHKERRQ(ierr); 
   ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
   ierr = AliceFinalize();
   PetscFunctionReturn(ierr);

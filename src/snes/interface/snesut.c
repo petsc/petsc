@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.41 1998/12/17 22:12:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.42 1999/01/04 21:54:02 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
@@ -35,7 +35,7 @@ int SNESVecViewMonitor(SNES snes,int its,double fgnorm,void *dummy)
   if (!viewer) {
     MPI_Comm comm;
     ierr   = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-    viewer = VIEWER_DRAWX_(comm);
+    viewer = VIEWER_DRAW_(comm);
   }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
 

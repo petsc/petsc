@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.9 1998/11/20 15:30:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.10 1998/12/03 04:05:44 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -139,7 +139,7 @@ int main( int argc, char **argv )
   /*
      Visualize the distribution of the array across the processors
   */
-  /* ierr =  DAView(user.da,VIEWER_DRAWX_WORLD); CHKERRA(ierr); */
+  /* ierr =  DAView(user.da,VIEWER_DRAW_WORLD); CHKERRA(ierr); */
 
 
   /*

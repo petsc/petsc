@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.28 1998/12/17 22:12:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.29 1999/01/12 23:17:33 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -173,6 +173,28 @@ int ViewerDrawGetDrawAxis(Viewer v, int windownumber, DrawAxis *drawaxis)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "ViewerDrawSetInfo" 
+int ViewerDrawSetInfo(Viewer v,const char display[],const char title[],int x,int y,int w,int h)
+{
+  int         ierr;
+  Viewer_Draw *vdraw = (Viewer_Draw *) v->data;
+
+  PetscFunctionBegin;
+  vdraw->h  = h;
+  vdraw->w  = w;
+  if (display) {
+    vdraw->display = (char *) PetscMalloc((1+PetscStrlen(display))*sizeof(char));CHKPTRQ(vdraw->display);
+    PetscStrcpy(vdraw->display,display);
+  } else {
+    vdraw->display = 0;
+  } 
+  ierr      = DrawCreate(v->comm,display,title,x,y,w,h,&vdraw->draw[0]);CHKERRQ(ierr);
+  ierr      = DrawSetFromOptions(vdraw->draw[0]);CHKERRQ(ierr);
+  PLogObjectParent(v,vdraw->draw[0]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "ViewerDrawOpen" 
 /*@C
    ViewerDrawOpen - Opens an X window for use as a viewer. If you want to 
@@ -218,13 +240,24 @@ int ViewerDrawGetDrawAxis(Viewer v, int windownumber, DrawAxis *drawaxis)
 int ViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,int y,
                     int w,int h,Viewer *viewer)
 {
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = ViewerCreate(comm,viewer);CHKERRQ(ierr);
+  ierr = ViewerSetType(*viewer,DRAW_VIEWER);CHKERRQ(ierr);
+  ierr = ViewerDrawSetInfo(*viewer,display,title,x,y,w,h);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "ViewerCreate_Draw" 
+int ViewerCreate_Draw(Viewer ctx)
+{
   int         ierr,i;
-  Viewer      ctx;
   Viewer_Draw *vdraw;
 
-  *viewer = 0;
-  PetscHeaderCreate(ctx,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
-  PLogObjectCreate(ctx);
+  PetscFunctionBegin;
   vdraw     = PetscNew(Viewer_Draw);CHKPTRQ(vdraw);
   ctx->data = (void *) vdraw;
 
@@ -241,20 +274,9 @@ int ViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,i
     vdraw->drawlg[i]   = 0; 
     vdraw->drawaxis[i] = 0;
   }
-  vdraw->h  = h;
-  vdraw->w  = w;
-  if (display) {
-    vdraw->display = (char *) PetscMalloc((1+PetscStrlen(display))*sizeof(char));CHKPTRQ(vdraw->display);
-    PetscStrcpy(vdraw->display,display);
-  } else {
-    vdraw->display = 0;
-  } 
-  ierr      = DrawCreate(comm,display,title,x,y,w,h,&vdraw->draw[0]);CHKERRQ(ierr);
-  ierr      = DrawSetFromOptions(vdraw->draw[0]);CHKERRQ(ierr);
-  PLogObjectParent(ctx,vdraw->draw[0]);
-  *viewer         = ctx;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerDrawClear" 
@@ -287,8 +309,8 @@ int ViewerDrawClear(Viewer viewer)
      Default X window viewers, may be used at any time.
 */
 
-Viewer VIEWER_DRAWX_SELF_PRIVATE = 0, VIEWER_DRAWX_WORLD_PRIVATE_0 = 0,
-       VIEWER_DRAWX_WORLD_PRIVATE_1 = 0, VIEWER_DRAWX_WORLD_PRIVATE_2 = 0;
+Viewer VIEWER_DRAW_SELF_PRIVATE = 0, VIEWER_DRAW_WORLD_PRIVATE_0 = 0,
+       VIEWER_DRAW_WORLD_PRIVATE_1 = 0, VIEWER_DRAW_WORLD_PRIVATE_2 = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerInitializeDrawXSelf_Private" 
@@ -297,11 +319,11 @@ int ViewerInitializeDrawXSelf_Private(void)
   int ierr,xywh[4],size = 4,flg;
 
   PetscFunctionBegin;
-  if (VIEWER_DRAWX_SELF_PRIVATE) PetscFunctionReturn(0);
+  if (VIEWER_DRAW_SELF_PRIVATE) PetscFunctionReturn(0);
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
   ierr = OptionsGetIntArray(PETSC_NULL,"-draw_self_geometry",xywh,&size,&flg);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAWX_SELF_PRIVATE); CHKERRQ(ierr);
+                         &VIEWER_DRAW_SELF_PRIVATE); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -312,11 +334,11 @@ int ViewerInitializeDrawXWorld_Private_0(void)
   int ierr,xywh[4],size = 4,flg;
 
   PetscFunctionBegin;
-  if (VIEWER_DRAWX_WORLD_PRIVATE_0) PetscFunctionReturn(0);
+  if (VIEWER_DRAW_WORLD_PRIVATE_0) PetscFunctionReturn(0);
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
   ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAWX_WORLD_PRIVATE_0); CHKERRQ(ierr);
+                         &VIEWER_DRAW_WORLD_PRIVATE_0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -327,11 +349,11 @@ int ViewerInitializeDrawXWorld_Private_1(void)
   int ierr,xywh[4],size = 4,flg;
 
   PetscFunctionBegin;
-  if (VIEWER_DRAWX_WORLD_PRIVATE_1) PetscFunctionReturn(0);
+  if (VIEWER_DRAW_WORLD_PRIVATE_1) PetscFunctionReturn(0);
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
   ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAWX_WORLD_PRIVATE_1); CHKERRQ(ierr);
+                         &VIEWER_DRAW_WORLD_PRIVATE_1); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -342,14 +364,13 @@ int ViewerInitializeDrawXWorld_Private_2(void)
   int ierr,xywh[4],size = 4,flg;
 
   PetscFunctionBegin;
-  if (VIEWER_DRAWX_WORLD_PRIVATE_2) PetscFunctionReturn(0);
+  if (VIEWER_DRAW_WORLD_PRIVATE_2) PetscFunctionReturn(0);
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
   ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAWX_WORLD_PRIVATE_2); CHKERRQ(ierr);
+                         &VIEWER_DRAW_WORLD_PRIVATE_2); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroyDrawX_Private" 
@@ -358,39 +379,39 @@ int ViewerDestroyDrawX_Private(void)
   int ierr;
 
   PetscFunctionBegin;
-  if (VIEWER_DRAWX_WORLD_PRIVATE_0) {
-    ierr = ViewerDestroy(VIEWER_DRAWX_WORLD_PRIVATE_0); CHKERRQ(ierr);
+  if (VIEWER_DRAW_WORLD_PRIVATE_0) {
+    ierr = ViewerDestroy(VIEWER_DRAW_WORLD_PRIVATE_0); CHKERRQ(ierr);
   }
-  if (VIEWER_DRAWX_WORLD_PRIVATE_1) {
-    ierr = ViewerDestroy(VIEWER_DRAWX_WORLD_PRIVATE_1); CHKERRQ(ierr);
+  if (VIEWER_DRAW_WORLD_PRIVATE_1) {
+    ierr = ViewerDestroy(VIEWER_DRAW_WORLD_PRIVATE_1); CHKERRQ(ierr);
   }
-  if (VIEWER_DRAWX_WORLD_PRIVATE_2) {
-    ierr = ViewerDestroy(VIEWER_DRAWX_WORLD_PRIVATE_2); CHKERRQ(ierr);
+  if (VIEWER_DRAW_WORLD_PRIVATE_2) {
+    ierr = ViewerDestroy(VIEWER_DRAW_WORLD_PRIVATE_2); CHKERRQ(ierr);
   }
-  if (VIEWER_DRAWX_SELF_PRIVATE) {
-    ierr = ViewerDestroy(VIEWER_DRAWX_SELF_PRIVATE); CHKERRQ(ierr);
+  if (VIEWER_DRAW_SELF_PRIVATE) {
+    ierr = ViewerDestroy(VIEWER_DRAW_SELF_PRIVATE); CHKERRQ(ierr);
   }
   /*
-      Free any viewers created with the VIEWER_DRAWX_(MPI_Comm comm) trick.
+      Free any viewers created with the VIEWER_DRAW_(MPI_Comm comm) trick.
   */
-  ierr = VIEWER_DRAWX_Destroy(PETSC_COMM_WORLD); CHKERRQ(ierr);
-  ierr = VIEWER_DRAWX_Destroy(PETSC_COMM_SELF); CHKERRQ(ierr);
-  ierr = VIEWER_DRAWX_Destroy(MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = VIEWER_DRAWX_Destroy(MPI_COMM_SELF); CHKERRQ(ierr);
+  ierr = VIEWER_DRAW_Destroy(PETSC_COMM_WORLD); CHKERRQ(ierr);
+  ierr = VIEWER_DRAW_Destroy(PETSC_COMM_SELF); CHKERRQ(ierr);
+  ierr = VIEWER_DRAW_Destroy(MPI_COMM_WORLD); CHKERRQ(ierr);
+  ierr = VIEWER_DRAW_Destroy(MPI_COMM_SELF); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------*/
 /*
-    The variable Petsc_Viewer_Drawx_keyval is used to indicate an MPI attribute that
+    The variable Petsc_Viewer_Draw_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a Viewer.
 */
-static int Petsc_Viewer_Drawx_keyval = MPI_KEYVAL_INVALID;
+static int Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define __FUNC__ "VIEWER_DRAWX_" 
+#define __FUNC__ "VIEWER_DRAW_" 
 /*@C
-     VIEWER_DRAWX_ - Creates a window viewer shared by all processors 
+     VIEWER_DRAW_ - Creates a window viewer shared by all processors 
                      in a communicator.
 
      Collective on MPI_Comm
@@ -399,29 +420,29 @@ static int Petsc_Viewer_Drawx_keyval = MPI_KEYVAL_INVALID;
 .    comm - the MPI communicator to share the window viewer
 
      Notes:
-     Unlike almost all other PETSc routines, VIEWER_DRAWX_ does not return 
+     Unlike almost all other PETSc routines, VIEWER_DRAW_ does not return 
      an error code.  The window viewer is usually used in the form
-$       XXXView(XXX object,VIEWER_DRAWX_(comm));
+$       XXXView(XXX object,VIEWER_DRAW_(comm));
 
-.seealso: VIEWER_DRAWX_WORLD, VIEWER_DRAWX_SELF, ViewerDrawOpen(), 
+.seealso: VIEWER_DRAW_WORLD, VIEWER_DRAW_SELF, ViewerDrawOpen(), 
 @*/
-Viewer VIEWER_DRAWX_(MPI_Comm comm)
+Viewer VIEWER_DRAW_(MPI_Comm comm)
 {
   int    ierr,flag;
   Viewer viewer;
 
   PetscFunctionBegin;
-  if (Petsc_Viewer_Drawx_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Drawx_keyval,0);
-    if (ierr) {PetscError(__LINE__,"VIEWER_DRAWX_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+  if (Petsc_Viewer_Draw_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Draw_keyval,0);
+    if (ierr) {PetscError(__LINE__,"VIEWER_DRAW_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Drawx_keyval, (void **)&viewer, &flag );
-  if (ierr) {PetscError(__LINE__,"VIEWER_DRAWX_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+  ierr = MPI_Attr_get( comm, Petsc_Viewer_Draw_keyval, (void **)&viewer, &flag );
+  if (ierr) {PetscError(__LINE__,"VIEWER_DRAW_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   if (!flag) { /* viewer not yet created */
     ierr = ViewerDrawOpen(comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer); 
-    if (ierr) {PetscError(__LINE__,"VIEWER_DRAWX_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-    ierr = MPI_Attr_put( comm, Petsc_Viewer_Drawx_keyval, (void *) viewer );
-    if (ierr) {PetscError(__LINE__,"VIEWER_DRAWX_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"VIEWER_DRAW_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    ierr = MPI_Attr_put( comm, Petsc_Viewer_Draw_keyval, (void *) viewer );
+    if (ierr) {PetscError(__LINE__,"VIEWER_DRAW_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
 }
@@ -429,68 +450,20 @@ Viewer VIEWER_DRAWX_(MPI_Comm comm)
 /*
        If there is a Viewer associated with this communicator it is destroyed.
 */
-int VIEWER_DRAWX_Destroy(MPI_Comm comm)
+int VIEWER_DRAW_Destroy(MPI_Comm comm)
 {
   int    ierr,flag;
   Viewer viewer;
 
   PetscFunctionBegin;
-  if (Petsc_Viewer_Drawx_keyval == MPI_KEYVAL_INVALID) {
+  if (Petsc_Viewer_Draw_keyval == MPI_KEYVAL_INVALID) {
     PetscFunctionReturn(0);
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Drawx_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
+  ierr = MPI_Attr_get( comm, Petsc_Viewer_Draw_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
   if (flag) { 
     ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
-    ierr = MPI_Attr_delete(comm,Petsc_Viewer_Drawx_keyval);CHKERRQ(ierr);
+    ierr = MPI_Attr_delete(comm,Petsc_Viewer_Draw_keyval);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
 
-/* ---------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "ViewerDrawOpenVRML" 
-/*@C
-   ViewerDrawOpenVRML - Opens an VRML file for use as a viewer. If you want to 
-   do graphics in this window, you must call ViewerDrawGetDraw() and
-   perform the graphics on the Draw object.
-
-   Input Parameters:
-+  comm - communicator that will share window
-.  fname - the filename on which to open, or null for stdout
-.  title - the title to put in the title bar
-.  x, y - the screen coordinates of the upper left corner of window
--  w, h - the screen width and height in pixels
-
-   Output Parameters:
-.  viewer - the viewer
-
-   Options Database Keys:
-.  -nox - Disables all x-windows output
-.  -display <name> - Specifies name of machine for the X display
-
-.keywords: draw, open, VRML, viewer
-
-.seealso: DrawOpenVRML()
-@*/
-int ViewerDrawOpenVRML(MPI_Comm comm,const char fname[],const char title[],Viewer *viewer)
-{
-  int         ierr;
-  Viewer      ctx;
-  Viewer_Draw *vdraw;
-
-  *viewer = 0;
-  PetscHeaderCreate(ctx,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
-  vdraw     = PetscNew(Viewer_Draw);CHKPTRQ(vdraw);
-  ctx->data = (void *) vdraw;
-  PLogObjectCreate(ctx);
-  ierr = DrawOpenVRML(comm,fname,title,&vdraw->draw[0]); CHKERRQ(ierr);
-  PLogObjectParent(ctx,vdraw->draw[0]);
-
-  ctx->ops->flush   = ViewerFlush_Draw;
-  ctx->ops->destroy = ViewerDestroy_Draw;
-  ctx->type_name = (char *)PetscMalloc((1+PetscStrlen(DRAW_VIEWER))*sizeof(char));CHKPTRQ(ctx->type_name);
-  PetscStrcpy(ctx->type_name,DRAW_VIEWER);
-
-  *viewer           = ctx;
-  PetscFunctionReturn(0);
-}
