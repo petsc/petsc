@@ -4,11 +4,11 @@
 % colored border.
 %
 \def\Background{\special{"  userdict begin
-   -000 -200 translate 90 rotate -60 -350  translate .48 .48 scale
-   SlideBackground   0   13 612  779 rectfill % Yellow background
-   SlideBorder       0   13  20  779 rectfill % Border bottom
-                     0   13  612 20  rectfill % Border  right
-                     592 13  612 779 rectfill % Border  top
+   -6 -200 translate 90 rotate -60 -350  translate .478 .478 scale
+   SlideBackground   0   5 612  779 rectfill % Yellow background
+   SlideBorder       0   5  20  779 rectfill % Border bottom
+                     0   5  612 20  rectfill % Border  right
+                     592 5  612 779 rectfill % Border  top
                      0   772 612 792 rectfill % Border  left
   /circtextdict 16 dict def
   circtextdict begin
@@ -188,13 +188,14 @@
 \def\SetRGBBorder #1 #2 #3 {\SetRGBBorders{#1}{#2}{#3}}
 
 \newcommand{\WhiteBackground}{\SetRGBBackground 0 0 0 }
+\newcommand{\PlumBackground}{\SetRGBBackground .9663 .795 .9663 }
 \newcommand{\RedBackground}{\SetRGBBackground 1 0 0 }
 \newcommand{\GreenBackground}{\SetRGBBackground 0 1 0 }
 \newcommand{\BlueBackground}{\SetRGBBackground 0 0 1 }
-\newcommand{\LightBlueBackground}{\SetRGBBackground  0 1 1 }
+\newcommand{\LightBlueBackground}{\SetRGBBackground  .7 1 1 }
 \newcommand{\PurpleBackground}{\SetRGBBackground 1 0 1 }
 \newcommand{\BlackBackground}{\SetRGBBackground 0 0 0 }
-\newcommand{\LimeGreenBackground}{\SetRGBBackground 0.1961 0.8039 0.1961 }
+\newcommand{\LimeGreenBackground}{\SetRGBBackground 0.6961 0.99 0.69 }
 \newcommand{\OrangeBackground}{\SetRGBBackground 1 0.6471 0 }
 \newcommand{\VioletBackground}{\SetRGBBackground 0.9333 0.5098 0.9333 }
 \newcommand{\PinkBackground}{\SetRGBBackground 1 0.7529 0.7961 }
