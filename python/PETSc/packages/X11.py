@@ -57,6 +57,8 @@ acfindx:
       if not status and os.path.exists('Makefile'):
         (output, error, status) = config.base.Configure.executeShellCommand(self.make.make+' acfindx', log = self.framework.log)
         results                 = self.parseShellOutput(output)
+        if not ('X_INCLUDE_ROOT' in results and 'X_USR_LIB_DIR' in results and 'X_LIB_DIR' in results):
+          raise RuntimeError('Invalid output: '+str(output))
         # Open Windows xmkmf reportedly sets LIBDIR instead of USRLIBDIR.
         for ext in ['.a', '.so', '.sl']:
           if not os.path.isfile(os.path.join(results['X_USR_LIB_DIR'])) and os.path.isfile(os.path.join(results['X_LIB_DIR'])):
@@ -69,7 +71,8 @@ acfindx:
           includeDir = results['X_INCLUDE_ROOT']
         if not (results['X_USR_LIB_DIR'] == '/lib' or results['X_USR_LIB_DIR'] == '/usr/lib') and os.path.isdir(results['X_USR_LIB_DIR']):
           libraryDir = results['X_USR_LIB_DIR']
-    except RuntimeError: pass
+    except RuntimeError, e:
+      self.framework.log.write('Error using Xmake: '+str(e)+'\n')
     # Cleanup
     os.chdir(os.path.dirname(dir))
     shutil.rmtree(dir)
