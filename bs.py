@@ -159,13 +159,15 @@ class BS (install.base.Base):
     import config.framework
     import install.base
 
+    if argDB.has_key('noConfigure') and int(argDB['noConfigure']):
+      return
     framework = config.framework.Framework(sys.argv[1:])
     # Perhaps these initializations should just be local arguments
     framework.argDB['CPPFLAGS'] = ''
     framework.argDB['LIBS']     = ''
     # Load default configure module
     try:
-      framework.children.append(install.base.Base(argDB).getMakeModule(self.getRoot(), 'configure').Configure(framework))
+      framework.children.append(install.base.Base(framework.argDB).getMakeModule(self.getRoot(), 'configure').Configure(framework))
     except ImportError:
       return
     # Run configuration
