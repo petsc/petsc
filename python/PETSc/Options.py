@@ -19,13 +19,13 @@ class Options:
       elif bopt == 'O':
         flags = '-O -Wall -Wshadow -fomit-frame-pointer'
     # Alpha
-    if re.match(r'alphaev[5-9]', self.configure.host_cpu):
+    if re.match(r'alphaev[5-9]', self.configure.framework.host_cpu):
       # Compaq C
       if compiler == 'cc':
         if bopt == 'O':
           flags = '-O2 -Olimit 2000'
     # MIPS
-    elif re.match(r'mips', self.configure.host_cpu):
+    elif re.match(r'mips', self.configure.framework.host_cpu):
       # MIPS Pro C
       if compiler == 'cc':
         if bopt == 'g':
@@ -48,13 +48,13 @@ class Options:
       elif bopt == 'O':
         flags = '-O -Wall -Wshadow -fomit-frame-pointer'
     # Alpha
-    elif re.match(r'alphaev[0-9]', self.configure.host_cpu):
+    elif re.match(r'alphaev[0-9]', self.configure.framework.host_cpu):
       # Compaq C++
       if compiler == 'cxx':
         if bopt == 'O':
           flags = '-O2'
     # MIPS
-    elif re.match(r'mips', self.configure.host_cpu):
+    elif re.match(r'mips', self.configure.framework.host_cpu):
       # MIPS Pro C++
       if compiler == 'cc':
         if bopt == 'g':
@@ -71,19 +71,19 @@ class Options:
     elif bopt == 'O':
       flags = '-O'
     # Alpha
-    if re.match(r'alphaev[0-9]', self.configure.host_cpu):
+    if re.match(r'alphaev[0-9]', self.configure.framework.host_cpu):
       # Compaq Fortran
       if compiler == 'fort':
         if bopt == 'O':
           flags = '-O2'
     # Intel
-    elif re.match(r'i[3-9]86', self.configure.host_cpu):
+    elif re.match(r'i[3-9]86', self.configure.framework.host_cpu):
       # Portland Group Fortran 90
       if compiler == 'pgf90':
         if bopt == 'O':
           flags = '-fast -tp p6 -Mnoframe'
     # MIPS
-    elif re.match(r'mips', self.configure.host_cpu):
+    elif re.match(r'mips', self.configure.framework.host_cpu):
       # MIPS Pro Fortran
       if compiler == 'f90':
         if bopt == 'g':
@@ -106,36 +106,36 @@ class Options:
   def getCompilerVersion(self, language, compiler, configure):
     version = 'Unknown'
     if language == 'C':
-      if re.match(r'alphaev[0-9]', configure.host_cpu) and compiler == 'cc':
+      if re.match(r'alphaev[0-9]', configure.framework.host_cpu) and compiler == 'cc':
         (status, output) = commands.getstatusoutput(compiler+' -V')
         if not status: version = output.split('\n')[0]
-      elif re.match(r'mips', configure.host_cpu) and compiler == 'cc':
+      elif re.match(r'mips', configure.framework.host_cpu) and compiler == 'cc':
         (status, output) = commands.getstatusoutput(compiler+' -version')
         if not status: version = output.split('\n')[0]
       else:
         (status, output) = commands.getstatusoutput(compiler+' --version')
         if not status: version = output.split('\n')[0]
     elif language == 'Cxx':
-      if re.match(r'alphaev[0-9]', configure.host_cpu) and compiler == 'cxx':
+      if re.match(r'alphaev[0-9]', configure.framework.host_cpu) and compiler == 'cxx':
         (status, output) = commands.getstatusoutput(compiler+' -V')
         if not status: version = output.split('\n')[0]
-      elif re.match(r'mips', configure.host_cpu) and compiler == 'cc':
+      elif re.match(r'mips', configure.framework.host_cpu) and compiler == 'cc':
         (status, output) = commands.getstatusoutput(compiler+' -version')
         if not status: version = output.split('\n')[0]
       else:
         (status, output) = commands.getstatusoutput(compiler+' --version')
         if not status: version = output.split('\n')[0]
     elif language == 'Fortran':
-      if re.match(r'alphaev[0-9]', configure.host_cpu) and compiler == 'fort':
+      if re.match(r'alphaev[0-9]', configure.framework.host_cpu) and compiler == 'fort':
         (status, output) = commands.getstatusoutput(compiler+' -version')
         if not status: version = output.split('\n')[0]
-      elif re.match(r'i[3-9]86', configure.host_cpu) and compiler == 'f90':
+      elif re.match(r'i[3-9]86', configure.framework.host_cpu) and compiler == 'f90':
         (status, output) = commands.getstatusoutput(compiler+' -V')
         if not status: version = output.split('\n')[0]
-      elif re.match(r'i[3-9]86', configure.host_cpu) and compiler == 'pgf90':
+      elif re.match(r'i[3-9]86', configure.framework.host_cpu) and compiler == 'pgf90':
         (status, output) = commands.getstatusoutput(compiler+' -V 2> /dev/null')
         if not status: version = output.split('\n')[0]
-      elif re.match(r'mips', configure.host_cpu) and compiler == 'f90':
+      elif re.match(r'mips', configure.framework.host_cpu) and compiler == 'f90':
         (status, output) = commands.getstatusoutput(compiler+' -version')
         if not status: version = output.split('\n')[0]
       else:

@@ -102,50 +102,6 @@ class Configure(config.base.Configure):
     self.hostMacro = 'dnl Version: 2.13\ndnl Variable: host_cpu\ndnl Variable: host_vendor\ndnl Variable: host_os\nAC_CANONICAL_HOST'
     return
 
-  def configureArchitecture(self):
-    '''Sets PETSC_ARCH'''
-    import sys
-    # Find auxilliary directory by checking for config.sub
-    auxDir = None
-    for dir in [os.path.abspath(os.path.join('bin', 'config')), os.path.abspath('config')] + sys.path:
-      if os.path.isfile(os.path.join(dir, 'config.sub')):
-        auxDir      = dir
-        configSub   = os.path.join(auxDir, 'config.sub')
-        configGuess = os.path.join(auxDir, 'config.guess')
-        break
-    if not auxDir: raise RuntimeError('Unable to locate config.sub in order to determine architecture.Your PETSc directory is incomplete.\n Get PETSc again')
-    # Try to execute config.sub
-    (status, output) = commands.getstatusoutput(self.shell+' '+configSub+' sun4')
-    if status: raise RuntimeError('Unable to execute config.sub: '+output)
-    # Guess host type (should allow user to specify this
-    (status, host) = commands.getstatusoutput(self.shell+' '+configGuess)
-    if status: raise RuntimeError('Unable to guess host type using config.guess: '+host)
-    # Get full host description
-    (status, output) = commands.getstatusoutput(self.shell+' '+configSub+' '+host)
-    if status: raise RuntimeError('Unable to determine host type using config.sub: '+output)
-    # Parse output
-    m = re.match(r'^(?P<cpu>[^-]*)-(?P<vendor>[^-]*)-(?P<os>.*)$', output)
-    if not m: raise RuntimeError('Unable to parse output of config.sub: '+output)
-    self.host_cpu    = m.group('cpu')
-    self.host_vendor = m.group('vendor')
-    self.host_os     = m.group('os')
-
-##    results = self.executeShellCode(self.macroToShell(self.hostMacro))
-##    self.host_cpu    = results['host_cpu']
-##    self.host_vendor = results['host_vendor']
-##    self.host_os     = results['host_os']
-
-    if not self.framework.argDB.has_key('PETSC_ARCH'):
-      self.arch = self.host_os
-    else:
-      self.arch = self.framework.argDB['PETSC_ARCH']
-    if not self.arch.startswith(self.host_os):
-      raise RuntimeError('PETSC_ARCH ('+self.arch+') does not have our guess ('+self.host_os+') as a prefix!\nRun bin/petscarch --suggest and set the environment variable PETSC_ARCH to the suggested value.')
-    self.addSubstitution('ARCH', self.arch)
-    self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
-    self.addDefine('ARCH', self.archBase)
-    self.addDefine('ARCH_NAME', '"'+self.arch+'"')
-    return
 
   def configureLibraryOptions(self):
     '''Sets PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_STACK, and PETSC_USE_FORTRAN_KERNELS'''
@@ -317,7 +273,7 @@ class Configure(config.base.Configure):
       - Find dlfcn.h and libdl
     Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
-    if not self.archBase.startswith('darwin') or  (self.usingMPIUni and not self.framework.argDB.has_key('FC')):
+    if not self.framework.archBase.startswith('darwin') or  (self.usingMPIUni and not self.framework.argDB.has_key('FC')):
       useDynamic = self.framework.argDB['enable-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
       self.addDefine('USE_DYNAMIC_LIBRARIES', useDynamic)
       if useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
@@ -325,16 +281,16 @@ class Configure(config.base.Configure):
 
     # This is really bad
     flag = '-L'
-    if self.archBase == 'linux':
+    if self.framework.archBase == 'linux':
       flag = '-rdynamic -Wl,-rpath,'
-    elif self.archBase.startswith('irix'):
+    elif self.framework.archBase.startswith('irix'):
       flag = '-rpath '
-    elif self.archBase.startswith('osf'):
+    elif self.framework.archBase.startswith('osf'):
       flag = '-Wl,-rpath,'
-    elif self.archBase.startswith('solaris'):
+    elif self.framework.archBase.startswith('solaris'):
       flag = '-R'
     #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
-    if self.archBase.startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
+    if self.framework.archBase.startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
     else:
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.basic')
@@ -350,7 +306,7 @@ class Configure(config.base.Configure):
     else:
       self.framework.addSubstitution('LT_CC', '')
       self.framework.addSubstitution('LIBTOOL', '')
-      self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.archBase)
+      self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.framework.archBase)
     return
 
   def configureDebuggers(self):
@@ -680,20 +636,20 @@ acfindx:
  
   def configureIRIX(self):
     '''IRIX specific stuff'''
-    if self.archBase.startswith('irix'):
+    if self.framework.archBase.startswith('irix'):
       self.addDefine('USE_KBYTES_FOR_SIZE', 1)
     return
 
   def configureSolaris(self):
     '''Solaris specific stuff'''
-    if self.archBase.startswith('solaris'):
+    if self.framework.archBase.startswith('solaris'):
       if os.path.isdir(os.path.join('/usr','ucblib')):
         self.framework.argDB['LIBS'] += ' ${CLINKER_SLFLAG}/usr/ucblib'
     return
 
   def configureLinux(self):
     '''Linux specific stuff'''
-    if self.archBase == 'linux':
+    if self.framework.archBase == 'linux':
       self.addDefine('HAVE_DOUBLE_ALIGN_MALLOC', 1)
     return
 
@@ -811,7 +767,7 @@ acfindx:
 
   def configureScript(self):
     '''Output a script in the bmake directory which will reproduce the configuration'''
-    scriptName = os.path.join('bmake', self.arch, 'configure_'+self.arch+'.py')
+    scriptName = os.path.join('bmake', self.framework.arch, 'configure_'+self.framework.arch+'.py')
     f          = file(scriptName, 'w')
     f.write('#!/usr/bin/env python\n')
     f.write('if __name__ == \'__main__\':\n')
@@ -825,12 +781,11 @@ acfindx:
     return
 
   def configure(self):
-    self.executeTest(self.configureArchitecture)
-    self.framework.header = 'bmake/'+self.arch+'/petscconf.h'
-    self.framework.addSubstitutionFile('bmake/config/packages.in',   'bmake/'+self.arch+'/packages')
-    self.framework.addSubstitutionFile('bmake/config/rules.in',      'bmake/'+self.arch+'/rules')
-    self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.arch+'/variables')
-    self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.arch+'/petscfix.h')
+    self.framework.header = 'bmake/'+self.framework.arch+'/petscconf.h'
+    self.framework.addSubstitutionFile('bmake/config/packages.in',   'bmake/'+self.framework.arch+'/packages')
+    self.framework.addSubstitutionFile('bmake/config/rules.in',      'bmake/'+self.framework.arch+'/rules')
+    self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.arch+'/variables')
+    self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.arch+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureCompilerFlags)
     if 'FC' in self.framework.argDB:

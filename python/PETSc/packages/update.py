@@ -1,6 +1,7 @@
 from __future__ import generators
 import config.base
 import os
+import re
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
@@ -16,7 +17,51 @@ class Configure(config.base.Configure):
      
   def configureHelp(self, help):
     import nargs
-    help.addArgument('Matlab', '-enable-update',                nargs.ArgBool(None, 1, 'Update source code from PETSc website'))
+    help.addArgument('Update', '-enable-update',             nargs.ArgBool(None, 1, 'Update source code from PETSc website'))
+    help.addArgument('Update', '-with-patch',                nargs.Arg(None, None, 'Location of GNU patch'))
+    return
+
+  def configureArchitecture(self):
+    '''Sets PETSC_ARCH'''
+    import sys
+    # Find auxilliary directory by checking for config.sub
+    auxDir = None
+    for dir in [os.path.abspath(os.path.join('bin', 'config')), os.path.abspath('config')] + sys.path:
+      if os.path.isfile(os.path.join(dir, 'config.sub')):
+        auxDir      = dir
+        configSub   = os.path.join(auxDir, 'config.sub')
+        configGuess = os.path.join(auxDir, 'config.guess')
+        break
+    if not auxDir: raise RuntimeError('Unable to locate config.sub in order to determine architecture.Your PETSc directory is incomplete.\n Get PETSc again')
+    try:
+      # Guess host type (should allow user to specify this
+      host = self.executeShellCommand(self.shell+' '+configGuess)
+      # Get full host description
+      output = self.executeShellCommand(self.shell+' '+configSub+' '+host)
+    except:
+      raise RuntimeError('Unable to determine host type using config.sub: '+output)
+    # Parse output
+    m = re.match(r'^(?P<cpu>[^-]*)-(?P<vendor>[^-]*)-(?P<os>.*)$', output)
+    if not m: raise RuntimeError('Unable to parse output of config.sub: '+output)
+    self.framework.host_cpu    = m.group('cpu')
+    self.host_vendor = m.group('vendor')
+    self.host_os     = m.group('os')
+
+##    results = self.executeShellCode(self.macroToShell(self.hostMacro))
+##    self.host_cpu    = results['host_cpu']
+##    self.host_vendor = results['host_vendor']
+##    self.host_os     = results['host_os']
+
+    if not self.framework.argDB.has_key('PETSC_ARCH'):
+      self.framework.arch = self.host_os
+    else:
+      self.framework.arch = self.framework.argDB['PETSC_ARCH']
+    if not self.framework.arch.startswith(self.host_os):
+      raise RuntimeError('PETSC_ARCH ('+self.framework.arch+') does not have our guess ('+self.host_os+') as a prefix!\nRun bin/petscarch --suggest and set the environment variable PETSC_ARCH to the suggested value.')
+    self.addSubstitution('ARCH', self.framework.arch)
+    self.framework.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.arch)
+    self.addDefine('ARCH', self.framework.archBase)
+    self.addDefine('ARCH_NAME', '"'+self.framework.arch+'"')
     return
 
   def configureDirectories(self):
@@ -30,6 +75,16 @@ class Configure(config.base.Configure):
     self.addSubstitution('DIR', self.dir)
     self.addDefine('DIR', self.dir)
     return
+
+  def isGNUPatch(self,patch):
+    '''Returns 1 if it is GNU patch or equivilent, exception if cannot run'''
+    if self.framework.archBase.startswith('solaris') or self.framework.archBase.startswith('alpha'):
+      try:
+        (status,output) = self.executeShellCommand(patch+' --help')
+      except:
+        raise RuntimeException('Unable to run '+patch+' command')
+      if output.find('gnu.org') == -1: return 0
+    return 1
 
   #
   #  Issues: it tries to get the patch and apply everytime configure is called. Only safe way
@@ -114,8 +169,16 @@ class Configure(config.base.Configure):
     if not hasattr(self.framework, 'patch'):
       self.framework.log.write('Cannot find patch program.\nContinuing configure without patches.\n')
       return
-    # on solaris and alpha make sure patch is gnupatch?
-
+#    try:
+    if not self.isGNUPatch(self.framework.patch):
+      self.framework.log.write('Solaris and Alpha require GNU patch, run with --with-patch=<full path of gnu patch> \n')
+      self.framework.log.write('Continuing configure without patch files\n')
+      return
+ #   except:
+#      self.framework.log.write('Error running patch --help, run with --with-patch=<full path of gnu patch> \n')
+#      self.framework.log.write('Continuing configure without patch files\n')
+      return 0
+    
     # Get PETSc current version number
     if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
       raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
@@ -151,16 +214,19 @@ class Configure(config.base.Configure):
         self.framework.log.write(output2+'\n')
         raise RuntimeError('Error applying source update.\nRun with --enable-update=0 to configure anyways')
     except RuntimeError:
-      self.framework.log.write('Error applying patches. Continuing configure anyways.\n')
-      try: os.unlink('patches1')
+      try:
+        os.unlink('patches1')
+        os.unlink('patches2')        
       except: pass
+      raise RuntimeError('Error applying source update.\nRun with --enable-update=0 to configure anyways')
     self.strmsg = 'Updated source code from PETSc website (using latest patches)'
     return 
 
   def configure(self):
     self.executeTest(self.configureDirectories)
+    self.executeTest(self.configureArchitecture)
     if not self.framework.argDB['enable-update']: return
-    if os.path.isdir('BitKeeper'): 
+    if os.path.isdir('joeBitKeeper'): 
       self.executeTest(self.updateBK)
       self.executeTest(self.updateBKBuildSystem)
     else:                          self.executeTest(self.updatePatches)
