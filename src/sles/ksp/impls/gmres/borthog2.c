@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog2.c,v 1.5 1997/07/02 22:24:27 bsmith Exp balay $";
+static char vcid[] = "$Id: borthog2.c,v 1.6 1997/07/09 20:50:40 balay Exp curfman $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -13,9 +13,8 @@ static char vcid[] = "$Id: borthog2.c,v 1.5 1997/07/02 22:24:27 bsmith Exp balay
 
 /*
   This version uses UNMODIFIED Gram-Schmidt.  It is NOT always recommended, 
-  but it can give MUCH better performance then the default modified form,
-  when running in a parallel environment
-
+  but it can give MUCH better performance than the default modified form
+  when running in a parallel environment.
  */
 #undef __FUNC__  
 #define __FUNC__ "KSPGMRESUnmodifiedGramSchmidtOrthogonalization"
