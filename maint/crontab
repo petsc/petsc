@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.144 2000/03/22 17:00:08 balay Exp balay $ 
+# $Id: crontab,v 1.145 2000/03/22 19:49:22 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -36,9 +36,6 @@
 30  9 * * * /home/bsmith/petsc/maint/copytestlog IRIX
 30  9 * * * /home/bsmith/petsc/maint/copytestlog IRIX64
 30  9 * * * /home/bsmith/petsc/maint/copytestlog rs6000_sp
-
-#
-
 #
 # Buildlinks on various machines
 #
@@ -62,10 +59,6 @@
 #
 45 5 * * 2 /usr/ucb/rcp /home/petsc/petsc.tar.gz mcshsm:~/userbackups/
 #
-# Recreate the indices on the PETSc web site once every sunday
-#
-# 45 5 * * 0 rsh maverick "cd /mcs/www-unix/petsc/petsc-index;/bin/rm -f index.log;build_index.cgi >& index.log;chmod g+w index.log"
-#
 # Rebuild the documentation every night
 #
 15 6 * * * /usr/ucb/rsh fire "cd /home/bsmith/petsc;make alldoc >& /home/bsmith/petsc/maint/nightlylogs/doc.log"
@@ -86,4 +79,3 @@
 # check for style errors in PETSc source
 #
 0 7 * * * /usr/ucb/rsh fire "cd /home/bsmith/petsc;make ACTION=checkbadSource tree >& /home/bsmith/petsc/maint/nightlylogs/source.log"
-
