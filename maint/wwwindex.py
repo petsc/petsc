@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.36 2001/03/20 16:50:37 bsmith Exp bsmith $ 
+# $Id: wwwindex.py,v 1.37 2001/03/21 16:48:34 bsmith Exp bsmith $ 
 # 
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -95,7 +95,7 @@ def printindex(outfilename,headfilename,levels,titles,tables):
                   if tables[i].index(filename) % 3 == 2 : fd.write('<TR>\n')
       fd.write('</TABLE>\n')
       # Add HTML tail info here
-      fd.write('<BR><A HREF="../index.html"><IMG SRC="../up.gif">Table of Contents</A>\n')
+      fd.write('<BR><A HREF="../../index.html"><IMG SRC="../up.gif">Table of Contents</A>\n')
       fd.close()
 
 # This routine takes in as input a dictionary, which contains the
@@ -291,7 +291,7 @@ def main():
       for dirname in mandirs:
             outfilename  = dirname + '/index.html'
             dname,secname  = posixpath.split(dirname)
-            headfilename = PETSC_DIR + 'docs/manualpages/sec/bop.' + secname
+            headfilename = PETSC_DIR + '/docs/manualpages/sec/bop.' + secname
             table        = createtable(dirname,levels,secname)
             if not table: continue
             singlelist   = addtolist(dirname,singlelist)
