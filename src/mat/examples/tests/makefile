@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.223 1999/11/22 16:43:45 balay Exp bsmith $ 
+# $Id: makefile,v 1.224 1999/11/24 15:09:21 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -46,6 +46,7 @@ TESTEXAMPLES_7	 = ex5.PETSc runex5_3 ex5.rm ex46.PETSc runex46 ex46.rm clean
 TESTEXAMPLES_8	 = ex67f.PETSc runex67f ex67f.rm clean
 TESTEXAMPLES_12	 = ex16f90.PETSc runex16f90 ex16f90.rm clean 
 TESTEXAMPLES_13  = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm clean
+TESTEXAMPLES_16  = ex73.PETSc runex73 ex73.rm
 BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex3.PETSc ex3.rm ex5.PETSc ex5.rm ex6.PETSc \
 		   ex6.rm ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm\
 		   ex11.PETSc ex11.rm ex14.PETSc ex14.rm	ex15.PETSc ex15.rm \
@@ -78,7 +79,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex34.c ex35.c ex37.c ex38.c ex40.c ex41.c ex42.c ex43.c\
 		   ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c \
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c \
-		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c
+		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c
 EXAMPLESF	 = ex36.F ex16f90.F ex58f.F ex16f90.F ex63.F ex67f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -354,6 +355,10 @@ ex71: ex71.o chkopts
 ex72: ex72.o chkopts
 	-${CLINKER} -o ex72 ex72.o ${PETSC_MAT_LIB}
 	${RM} ex72.o
+
+ex73: ex73.o chkopts
+	-${CLINKER} -o ex73 ex73.o ${PETSC_MAT_LIB}
+	${RM} ex73.o
 
 NPROCS    = 1 3
 MATTYPES  = -mat_aij -mat_dense -mat_bdiag
@@ -742,9 +747,10 @@ runex63:
 	   if (diff output/ex63_1.out ex63_1.tmp) then true; \
 	   else echo "Possible problem with ex63_1, diffs above"; fi; \
 	   ${RM} -f ex63_1.tmp dense.mat
-
 runex67f:
 	-@${MPIRUN} -np 1  ex67f -options_left_off  > ex67f_1.tmp 2>&1;   \
 	   if (diff output/ex67f_1.out ex67f_1.tmp) then true; \
 	   else echo "Possible problem with ex67f_1, diffs above"; fi; \
 	   ${RM} -f ex67f_1.tmp
+runex73:
+	-@${MPIRUN} -np 3  ex73  -nox -f /home/petsc/matrices/arco1 -mat_partitioning_type parmetis -load_ignore_info

@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.17 2000/01/25 20:57:49 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.18 2000/01/26 14:18:39 kaushik Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -11,8 +11,8 @@ and ported into PETSc framework by D. K. Kaushik, ODU and ICASE.\n\n";
 #include "is.h"
 #include "user.h"
 
-#define ICALLOC(size,y) *(y) = (int*) PetscMalloc((PetscMax(size,1))*sizeof(int)); CHKPTRA(*(y))
-#define FCALLOC(size,y) *(y) = (Scalar*) PetscMalloc((PetscMax(size,1))*sizeof(Scalar)); CHKPTRA(*(y))
+#define ICALLOC(size,y) *(y) = (int*) PetscMalloc((PetscMax(size,1))*sizeof(int));CHKPTRA(*(y))
+#define FCALLOC(size,y) *(y) = (Scalar*) PetscMalloc((PetscMax(size,1))*sizeof(Scalar));CHKPTRA(*(y))
 /* These are hacks to get Fun3d to compile with version 2.0.24 and the master copy of PETSc */
 
 #if PETSC_VERSION_SUBMINOR >= 26  
@@ -2337,58 +2337,6 @@ int write_fine_grid(GRID *grid)
    PetscFunctionReturn(0);
 }
 
-
- 
-/*========================== FCALLOC =======================================*/
-/*                                                                          */
-/* Allocates memory for REALing point numbers                              */
-/*                                                                          */
-/*==========================================================================*/
-/*
-#undef __FUNC__
-#define __FUNC__ "FCALLOC"
-void fcalloc(int size,REAL **p)
-{
-   int rsize;
- 
-   rsize = PetscMax(size,1);
-   memSize+=rsize*sizeof(REAL);
-   *p = (REAL *)PetscMalloc(rsize*sizeof(REAL)); 
-   if (!*p) {
-    PLogDouble space, maxSpace;
-    int        ierr;
-    ierr = PetscTrSpace(&space,0,&maxSpace); CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"Space allocated currently is %g\n",space);
-    PetscPrintf(PETSC_COMM_WORLD,"Max space allocated so far is %g\n",maxSpace);
-   }
-   CHKPTRA(*p);
-}
- 
-*/ 
-/*========================== ICALLOC =======================================*/
-/*                                                                          */
-/* Allocates memory for integers                                            */
-/*                                                                          */
-/*==========================================================================*/
-/*
-#undef __FUNC__
-#define __FUNC__ "icalloc"
-void icalloc(int size,int **p)
-{
-   int rsize;
-   rsize = PetscMax(size,1);
-   memSize+=rsize*sizeof(int);
-   *p = (int *)PetscMalloc(rsize*sizeof(int)); 
-   if (!*p) {
-    PLogDouble space, maxSpace;
-    int        ierr;
-    ierr = PetscTrSpace(&space,0,&maxSpace); 
-    PetscPrintf(PETSC_COMM_WORLD,"Space allocated currently is %g\n",space);
-    PetscPrintf(PETSC_COMM_WORLD,"Max space allocated so far is %g\n",maxSpace);
-   }
-   CHKPTRA(*p);
-}
-*/
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)
 int EventCountersBegin(int *gen_start, Scalar* time_start_counters)
 {
