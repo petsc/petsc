@@ -226,6 +226,9 @@ if [ $shared = "yes" ] ; then
   export PBS_NODEFILE
   chmod u+x ./.mpirun$$
   ./.mpirun$$
+#
+#  Run directly on the frontend
+#
 elif [ $local = "yes" ] ; then
   echo "localhost" > ./.pbsnodefile.$$
   echo "localhost" >> ./.pbsnodefile.$$
