@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.2 1996/01/22 00:41:57 curfman Exp curfman $";
+static char vcid[] = "$Id: random.c,v 1.3 1996/01/22 03:05:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -23,9 +23,14 @@ static char vcid[] = "$Id: random.c,v 1.2 1996/01/22 00:41:57 curfman Exp curfma
 struct _SYRandom {
   PETSCHEADER                         /* general PETSc header */
   unsigned long seed;
+  Scalar        low, high;
   /* array for shuffling ??? */
 };
 
+/* For now we've set up only the default sun4 random number generator.  
+   We need to deal with other machines as well as other variants of
+   random number generators. We should also add a routine to enable
+   restarts [seed48()] */
 #if defined(PARCH_sun4)
 #if defined(__cplusplus)
 extern "C" {
@@ -38,9 +43,11 @@ extern void   srand48();
 #endif
 
 /*@
-   SYRandomCreate - Creates a context for generating random numbers.
+   SYRandomCreate - Creates a context for generating random numbers and
+   initializes the random-number generator.
 
-   Input Parameter:
+   Input Parameters:
+.  comm - MPI communicator
 .  type - the type of random numbers to be generated
 
    Output Parameter:
@@ -63,15 +70,17 @@ $    SYRandomDestroy(r);
 
 .seealso: SYRandomGetValue(), SYRandomDestroy(), VecSetRandom()
 @*/
-int SYRandomCreate(SYRandomType type,SYRandom *r)
+int SYRandomCreate(MPI_Comm comm,SYRandomType type,SYRandom *r)
 {
   SYRandom rr;
+  int      rank;
   *r = 0;
   if (type != RANDOM_DEFAULT)
     SETERRQ(PETSC_ERR_SUP,"SyRandomCreate:Not for this random number type");
-  PetscHeaderCreate(rr,_SYRandom,SYRANDOM_COOKIE,type,MPI_COMM_SELF);
+  PetscHeaderCreate(rr,_SYRandom,SYRANDOM_COOKIE,type,comm);
   PLogObjectCreate(rr);
-  srand48(0x12345678);
+  MPI_Comm_rank(comm,&rank);
+  srand48(0x12345678+rank);
   *r = rr;
   return 0;
 }
@@ -119,8 +128,12 @@ $    SYRandomDestroy(r);
 int SYRandomGetValue(SYRandom r,Scalar *val)
 {
   PETSCVALIDHEADERSPECIFIC(r,SYRANDOM_COOKIE);
+#if defined(PETSC_COMPLEX)
+  complex  tmp(drand48(),drand48());
+  *val = tmp;
+#else
   *val = drand48();
-  /* what should we do for complex numbers? */
+#endif
   return 0;
 }
 
@@ -128,13 +141,13 @@ int SYRandomGetValue(SYRandom r,Scalar *val)
 /* Should put a simple, portable random number generator here */
 
 extern double drand48();
-int SYRandomCreate(SYRandomType type,SYRandom *r)
+int SYRandomCreate(MPI_Comm comm,SYRandomType type,SYRandom *r)
 {
   SYRandom rr;
   *r = 0;
   if (type != RANDOM_DEFAULT)
     SETERRQ(PETSC_ERR_SUP,"SyRandomCreate:Not for this random number type");
-  PetscHeaderCreate(rr,_SYRandom,SYRANDOM_COOKIE,type,MPI_COMM_SELF);
+  PetscHeaderCreate(rr,_SYRandom,SYRANDOM_COOKIE,type,comm);
   PLogObjectCreate(rr);
   *r = rr;
   return 0;
@@ -151,8 +164,11 @@ int SYRandomDestroy(SYRandom r)
 int SYRandomGetValue(SYRandom r,Scalar *val)
 {
   PETSCVALIDHEADERSPECIFIC(r,SYRANDOM_COOKIE);
-  /* what should we do for complex numbers? */
+#if defined(PETSC_COMPLEX)
+  *val = (0.5,0.5);
+#else
   *val = 0.5;
+#endif
   return 0;
 }
 #endif
