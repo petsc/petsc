@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.50 1998/07/20 00:32:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.51 1998/07/20 00:34:02 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -39,7 +39,9 @@ static char vcid[] = "$Id: zmat.c,v 1.50 1998/07/20 00:32:56 bsmith Exp bsmith $
 #define matfdcoloringcreate_             MATFDCOLORINGCREATE
 #define matfdcoloringdestroy_            MATFDCOLORINGDESTROY
 #define matfdcoloringsetfunction_        MATFDCOLORINGSETFUNCTION
+#define matcopy_                         MATCOPY
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define matcopy_                         matcopy
 #define matsetvalue_                     matsetvalue
 #define matgetrow_                       matgetrow
 #define matrestorerow_                   matrestorerow
@@ -141,6 +143,11 @@ void matview_(Mat mat,Viewer viewer, int *__ierr )
 {
   PetscPatchDefaultViewers_Fortran(viewer);
   *__ierr = MatView((Mat)PetscToPointer(mat),viewer);
+}
+
+void matcopy_(Mat A,Mat B, int *__ierr )
+{
+  *__ierr = MatView((Mat)PetscToPointer(A),(Mat)PetscToPointer(B));
 }
 
 void matgetinfo_(Mat *mat,MatInfoType *flag,double *finfo,int *__ierr ){
