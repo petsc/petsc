@@ -2,6 +2,7 @@
 #include "ramgfunc.h"
 #include "petscfunc.h"
 #include "petscsles.h"
+#include "src/mat/impls/aij/seq/aij.h"
 
 /**************************************************************************/
 /*                                                                        */
@@ -72,10 +73,13 @@ int RamgShellPCCreate(RamgShellPC **shell)
  
 int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
 {
-   int              numnodes, numnonzero, nnz_count; 
-   int              j, I, J, ncols_getrow, *cols_getrow; 
-   Scalar           *vals_getrow, rowentry; 
-   MatInfo          info;
+   int                numnodes, numnonzero, nnz_count; 
+   int                j, I, J, ncols_getrow, *cols_getrow; 
+   Scalar             *vals_getrow, rowentry; 
+   MatInfo            info;
+ 
+   Mat_SeqAIJ         *aij = (Mat_SeqAIJ*)pmat->data;
+
    /*..RAMG variables..*/
    struct RAMG_PARAM  *ramg_param; 
    double           *u_approx, *rhs, *Asky; 
@@ -125,15 +129,14 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    /*..Store PETSc matrix in compressed skyline format required by RAMG..*/ 
    nnz_count = 0;
    for (I=0;I<numnodes;I++){
+
      /*....Get row I of matrix....*/
-     ierr = MatGetRow(pmat,I,&ncols_getrow,&cols_getrow,&vals_getrow); 
-            CHKERRA(ierr); 
+     ierr = MatGetRow(pmat,I,&ncols_getrow,&cols_getrow,&vals_getrow);CHKERRA(ierr); 
      ia[I] = nnz_count; 
      for (j=0;j<ncols_getrow;j++){
            J               = cols_getrow[j];
 	   if (J == I) {
-             rowentry        = vals_getrow[j]; 
-             Asky[nnz_count] = rowentry; 
+             Asky[nnz_count] = vals_getrow[j];
              ja[nnz_count]   = J; 
              nnz_count++; 
            }
@@ -141,12 +144,12 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
      for (j=0;j<ncols_getrow;j++){
            J               = cols_getrow[j];
 	   if (J != I) {
-             rowentry        = vals_getrow[j]; 
-             Asky[nnz_count] = rowentry; 
+             Asky[nnz_count] = vals_getrow[j];
              ja[nnz_count]   = J; 
              nnz_count++; 
            }
      }
+
    }
    ia[numnodes] = nnz_count; 
 
@@ -393,7 +396,11 @@ int RamgGetParam(struct RAMG_PARAM *ramg_param)
   (*ramg_param).MATRIX    = 12;
   /*....Class 2 RAMG parameters....*/
   (*ramg_param).ISWTCH    = 4;
-  (*ramg_param).IOUT      = 13;
+  if (PLogPrintInfo) {
+    (*ramg_param).IOUT    = 13;
+  } else { /* no output by default */
+    (*ramg_param).IOUT    = 1;
+  }
   (*ramg_param).IPRINT    = 10606;
   /*....Class 3 RAMG parameters....*/
   (*ramg_param).LEVELX    = 0;
