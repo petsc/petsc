@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.6 2000/08/16 15:15:02 balay Exp hzhang $*/
+/*$Id: sbaij2.c,v 1.7 2000/09/06 19:53:50 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -12,11 +12,6 @@
 #define __FUNC__ "MatIncreaseOverlap_SeqSBAIJ"
 int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS *is,int ov)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int         row,i,j,k,l,m,n,*idx,ierr,*nidx,isz,val,ival;
-  int         start,end,*ai,*aj,bs,*nidx2;
-  PetscBT     table;
-
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format");
   PetscFunctionReturn(0);
@@ -1076,13 +1071,6 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNC__ "MatMultTranspose_SeqSBAIJ"
 int MatMultTranspose_SeqSBAIJ(Mat A,Vec xx,Vec zz)
 {
-  Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *xg,*zg,*zb,zero = 0.0;
-  Scalar          *x,*z,*xb,x1,x2,x3,x4,x5,x6,x7;
-  MatScalar       *v;
-  int             mbs=a->mbs,i,*idx,*ii,*ai=a->i,rval;
-  int             bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
-
   PetscFunctionBegin;
   SETERRQ(1,1,"Matrix is symmetric. Call MatMult().");
   PetscFunctionReturn(0);
@@ -1093,11 +1081,6 @@ int MatMultTranspose_SeqSBAIJ(Mat A,Vec xx,Vec zz)
 int MatMultTransposeAdd_SeqSBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 {
-  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
-  Scalar          *xg,*zg,*zb,*x,*z,*xb,x1,x2,x3,x4,x5;
-  MatScalar       *v;
-  int             mbs=a->mbs,i,*idx,*ii,*ai=a->i,rval,bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
-
   PetscFunctionBegin;
   SETERRQ(1,1,"Matrix is symmetric. Call MatMultAdd().");
   PetscFunctionReturn(0);

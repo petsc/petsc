@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.18 2000/09/05 14:10:58 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.19 2000/09/06 19:17:35 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -285,10 +285,6 @@ int MatRestoreRow_SeqSBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 int MatTranspose_SeqSBAIJ(Mat A,Mat *B)
 { 
   Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data;
-  Mat         C;
-  int         i,j,k,ierr,*aj=a->j,*ai=a->i,bs=a->bs,mbs=a->mbs,nbs=a->nbs,len,*col;
-  int         *rows,*cols,bs2=a->bs2,refct;
-  MatScalar   *array = a->a;
 
   PetscFunctionBegin;
   SETERRQ(1,1,"Matrix is symmetric. MatTranspose() should not be called");
@@ -610,11 +606,6 @@ int MatGetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int         *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
-  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen,roworiented=a->roworiented; 
-  int         *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=a->bs,stepval,ierr;
-  Scalar      *value = v;
-  MatScalar   *ap,*aa=a->a,*bap;
 
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format");
