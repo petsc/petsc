@@ -179,8 +179,15 @@ class Configure(config.base.Configure):
     self.addMakeMacro('CONFIGURE_RUN_TIME',time.ctime(time.time()))
     args = filter(lambda a: not a.endswith('-configModules=PETSc.Configure') , self.framework.clArgs)
     self.addMakeMacro('CONFIGURE_OPTIONS',str(args).replace('\'',''))    
-      
-#-----------------------------------------------------------------------------------------------------
+    return
+
+  def configureInline(self):
+    '''Get a generic inline keyword, depending on the language'''
+    if self.clanguage.language == 'C':
+      self.addDefine('STATIC_INLINE', self.compilers.cStaticInlineKeyword)
+    elif self.clanguage.language == 'Cxx':
+      self.addDefine('STATIC_INLINE', self.compilers.cxxStaticInlineKeyword)
+    return
 
   def configureSolaris(self):
     '''Solaris specific stuff'''
@@ -306,6 +313,7 @@ class Configure(config.base.Configure):
     self.framework.cHeader         = 'bmake/'+self.arch.arch+'/petscfix.h'
     self.framework.makeMacroHeader = 'bmake/'+self.arch.arch+'/petscconf'
     self.framework.makeRuleHeader  = 'bmake/'+self.arch.arch+'/petscrules'        
+    self.executeTest(self.configureInline)
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)
