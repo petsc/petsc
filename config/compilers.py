@@ -83,12 +83,14 @@ class Configure(config.base.Configure):
     self.pushLanguage('F77')
     # Check whether the compiler (ifc) bitches about real*8, if so try using -w90 -w to eliminate bitch
     (output, error, returnCode) = self.outputCompile('', '      real*8 variable', 1)
-    if output.find('Type size specifiers are an extension to standard Fortran 95') >= 0:
+    if (output+error).find('Type size specifiers are an extension to standard Fortran 95') >= 0:
       oldFlags = self.framework.argDB['FFLAGS']
       self.framework.argDB['FFLAGS'] += ' -w90 -w'
       (output, error, returnCode) = self.outputCompile('', '      real*8 variable', 1)
-      if returnCode or output.find('Type size specifiers are an extension to standard Fortran 95') >= 0:
+      if returnCode or (output+error).find('Type size specifiers are an extension to standard Fortran 95') >= 0:
         self.framework.argDB['FFLAGS'] = oldFlags
+      else:
+        self.framework.log.write('Looks like ifc compiler, adding -w90 -w flags to avoid warnings about real*8 etc')
     self.popLanguage()
     return
 
@@ -267,7 +269,7 @@ class Configure(config.base.Configure):
         if m:
           if not arg in lflags:
             lflags.append(arg)
-            #print 'Found full library spec: '+arg
+            self.framework.log.write( 'Found full library spec: '+arg+'\n')
             flibs.append(arg)
           continue
         # Check for ???
@@ -277,7 +279,7 @@ class Configure(config.base.Configure):
             if self.isGCC:
               lflags.append('-Xlinker')
             lflags.append(arg)
-            #print 'Found binary include: '+arg
+            self.framework.log.write( 'Found binary include: '+arg+'\n')
             flibs.append(arg)
           continue
         # Check for system libraries
@@ -287,7 +289,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-[lLR]$', arg)
         if m:
           lib = arg+argIter.next()
-          #print 'Found canonical library: '+lib
+          self.framework.log.write( 'Found canonical library: '+lib+'\n')
           flibs.append(lib)
           continue
         # Check for special library arguments
@@ -301,14 +303,14 @@ class Configure(config.base.Configure):
               pass
             else:
               lflags.append(arg)
-            #print 'Found special library: '+arg
+            self.framework.log.write( 'Found special library: '+arg+'\n')
             flibs.append(arg)
           continue
         # Check for ???
 ##        This breaks for the Intel Fortran compiler
 ##        if arg == '-u':
 ##          lib = arg+' '+argIter.next()
-##          #print 'Found u library: '+lib
+##          self.framework.log.write( 'Found u library: '+lib+'\n')
 ##          flibs.append(lib)
 ##          continue
         # Check for ???
@@ -330,14 +332,17 @@ class Configure(config.base.Configure):
       self.flibs += ' '+lib
     # Append run path
     if ldRunPath: self.flibs = ldRunPath+self.flibs
-    
+
+    self.framework.log.write('Libraries needed to link against Fortran compiler'+self.flibs+'\n')
     # check that these monster libraries can be used from C
+    self.framework.log.write('Check that Fortran libraries can be used from C\n')
     oldLibs = self.framework.argDB['LIBS']
     self.framework.argDB['LIBS'] += ' '+self.flibs
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError, e:
-      self.framework.log.write(str(e)+'\n')
+      self.framework.log.write('Fortran libraries cannot directly be used from C, try without -lcrt2.o\n')
+      self.framework.log.write('Error message from compiling {'+str(e)+'}\n')
       # try removing this one
       self.flibs = re.sub('-lcrt2.o','',self.flibs)
       self.framework.argDB['LIBS'] = oldLibs+self.flibs
@@ -347,9 +352,21 @@ class Configure(config.base.Configure):
         self.framework.log.write(str(e)+'\n')
         raise RuntimeError('Fortran libraries cannot be used with C compiler')
 
+    # check if Intel library exists (that is not linked by default but has iargc_ in it :-(
+    self.framework.log.write('Check for Intel PEPCF90 library\n')
+    self.framework.argDB['LIBS'] = oldLibs+' -lPEPCF90 '+self.flibs
+    try:
+      self.setCompilers.checkCompiler('C')
+      self.flibs = ' -lPEPCF90 '+self.flibs
+      self.framework.log.write('Intel PEPCF90 library does exist\n')
+    except RuntimeError, e:
+      self.framework.log.write('Intel PEPCF90 library does not exist\n')
+      self.framework.argDB['LIBS'] = oldLibs+' '+self.flibs
+
+    self.framework.log.write('Check that Fortran libraries can be used from C++\n')
     # check these monster libraries work from C++
     if 'CXX' in self.framework.argDB:
-      self.framework.argDB['LIBS'] += oldLibs+self.flibs
+      self.framework.argDB['LIBS'] = oldLibs+self.flibs
       try:
         self.setCompilers.checkCompiler('C++')
       except RuntimeError, e:
@@ -362,7 +379,6 @@ class Configure(config.base.Configure):
         except RuntimeError, e:
           self.framework.log.write(str(e)+'\n')
           raise RuntimeError('Fortran libraries cannot be used with C++ compiler.\n Run with --with-fc=0 or --with-cxx=0')
-
 
     self.framework.argDB['LIBS'] = oldLibs
     self.addSubstitution('FLIBS', self.flibs)
