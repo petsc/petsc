@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.27 1995/07/07 19:17:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.28 1995/07/09 23:17:12 bsmith Exp curfman $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -12,28 +12,31 @@ static char vcid[] = "$Id: sles.c,v 1.27 1995/07/07 19:17:17 curfman Exp bsmith 
 .  SLES - the SLES context
 .  viewer - the location to display context (usually 0)
 
+   Options Database Key:
+$  -sles_view : calls SLESView() at end of SLESSolve()
+
 .keywords: SLES, view
 @*/
 int SLESView(SLES sles,Viewer viewer)
 {
   PetscObject vobj = (PetscObject) viewer;
-  FILE *fd;
-  KSP ksp;
-  PC pc;
-  int ierr;
+  FILE        *fd;
+  KSP         ksp;
+  PC          pc;
+  PCMethod    pcmethod;
+  int         ierr;
   if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
                                         vobj->type == FILES_VIEWER)){
     fd = ViewerFileGetPointer_Private(viewer);
-    SLESGetKSP(sles,&ksp);
-    ierr = KSPView(ksp,viewer); CHKERRQ(ierr);
     SLESGetPC(sles,&pc);
+    SLESGetKSP(sles,&ksp);
+    PCGetMethodFromContext(pc,&pcmethod);
+    if (pcmethod != PCLU) {
+      ierr = KSPView(ksp,viewer); CHKERRQ(ierr);
+    }
     ierr = PCView(pc,viewer); CHKERRQ(ierr);
   }
   return 0;
-}
-int _SLESView(PetscObject obj,Viewer viewer)
-{
-  return SLESView((SLES) obj,viewer);
 }
 
 /*@
@@ -116,7 +119,6 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   *outsles = 0;
   PETSCHEADERCREATE(sles,_SLES,SLES_COOKIE,0,comm);
   PLogObjectCreate(sles);
-  sles->view = _SLESView;
   ierr = KSPCreate(comm,&sles->ksp); CHKERRQ(ierr);
   ierr = PCCreate(comm,&sles->pc); CHKERRQ(ierr);
   PLogObjectParent(sles,sles->ksp);
@@ -215,6 +217,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   ierr = KSPSolve(ksp,its); CHKERRQ(ierr);
   ierr = PCPostSolve(pc,ksp); CHKERRQ(ierr);
   PLogEventEnd(SLES_Solve,sles,b,x,0);
+  if (OptionsHasName(0,"-sles_view")) SLESView(sles,SYNC_STDOUT_VIEWER);
   return 0;
 }
 
