@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.35 2000/11/01 15:16:14 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.36 2000/11/03 18:33:10 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format.\n";
 
@@ -12,7 +12,7 @@ int main(int argc,char **args)
   Mat     A;             /* linear system matrix */ 
   Mat     sA,sC;         /* symmetric part of the matrices */ 
   int     n,mbs=16,bs=1,nz=3,prob=1;
-  int     ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr; 
+  int     ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr,inc; 
   int     lf;           /* level of fill for icc */
   int     *cols1,*cols2;
   double  norm1,norm2,tol=1.e-10,fill;
@@ -285,11 +285,12 @@ int main(int argc,char **args)
     } 
   }
 
-  /* Test MatCholeskyFactor(), MatIncompleteCholeskyFactor() */
+  /* Test MatCholeskyFactor(), MatIncompleteCholeskyFactor() with natural ordering */
   ierr = MatGetOrdering(A,MATORDERING_NATURAL,&perm,&iscol);CHKERRA(ierr); 
   ierr = ISDestroy(iscol);CHKERRA(ierr);
-  norm1 = tol;    
-  for (lf=-1; lf<10; lf++){   
+  norm1 = tol;  
+  inc   = bs;
+  for (lf=-1; lf<10; lf += inc){   
     if (lf==-1) {  /* Cholesky factor */
       fill = 5.0;   
       ierr = MatCholeskyFactorSymbolic(sA,perm,fill,&sC);CHKERRA(ierr); 
@@ -308,8 +309,8 @@ int main(int argc,char **args)
     ierr = VecAXPY(&neg_one,x,y);CHKERRA(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRA(ierr);
     /* printf("lf: %d, error: %g\n", lf,norm2); */
-    if (10*norm1 < norm2 && lf-bs != -1){
-      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, %d, Norm of error=%g, %g\n",lf-bs,lf,norm1,norm2);CHKERRA(ierr); 
+    if (10*norm1 < norm2 && lf-inc != -1){
+      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, %d, Norm of error=%g, %g\n",lf-inc,lf,norm1,norm2);CHKERRA(ierr); 
     } 
     norm1 = norm2;
     if (norm2 < tol && lf != -1) break;
