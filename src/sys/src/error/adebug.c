@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.8 1995/03/06 04:31:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: adebug.c,v 1.9 1995/04/19 01:28:27 curfman Exp curfman $";
 #endif/*
 */
 #include "petsc.h"
@@ -46,9 +46,11 @@ int exit(int);
 };
 #endif
 /*@
-    PetscAttachDebugger - Attaches debugger to the running process.
+   PetscAttachDebugger - Attaches the debugger to the running process.
 
-    See: PetscSetDebugger().
+.keywords: attach, debugger
+
+.seealso: PetscSetDebugger()
 @*/
 int PetscAttachDebugger()
 {
@@ -116,13 +118,42 @@ int PetscAttachDebugger()
 }
 
 /*@
-    PetscAttachDebuggerErrorHandler - Error handler that attaches a
-      a debugger to the running process when an error is detected.
-      Useful for exaimining variables etc.
+   PetscAttachDebuggerErrorHandler - Error handler that attaches a
+   a debugger to the running process when an error is detected.
+   This routine is useful for examining variables, etc. 
 
-  Use:
-.  PetscDefaultErrorHandler for tracebacks
-,  PetscAbortErrorHandler for when you are already in the debugger.
+   Input Parameters:
+.  line - the line number of the error (indicated by __LINE__)
+.  file - the file in which the error was detected (indicated by __FILE__)
+.  dir - the directory of the file (indicated by __DIR__)
+.  message - an error text string, usually just printed to the screen
+.  number - the user-provided error number
+.  ctx - error handler context
+
+   Options Database Keys:
+$   -on_error_attach_debugger [noxterm,dbx,xxgdb]
+$       [-display name]
+
+   Notes:
+   By default the GNU debugger, gdb, is used.  Alternatives are dbx and
+   xxgdb.
+
+   Most users need not directly employ this routine and the other error 
+   handlers, but can instead use the simplified interface SETERR, which has 
+   the calling sequence
+$     SETERR(number,message)
+
+   Notes for experienced users:
+   Use PetscPushErrorHandler() to set the desired error handler.  The
+   currently available PETSc error handlers are
+$    PetscDefaultErrorHandler()
+$    PetscAttachDebuggerErrorHandler()
+$    PetscAbortErrorHandler()
+
+.keywords: attach, debugger, error, handler
+
+.seealso:  PetscPushErrorHandler(), PetscDefaultErrorHandler(), 
+           PetscAbortErrorHandler()
 @*/
 int PetscAttachDebuggerErrorHandler(int line,char* dir,char* file,char* mess,
                                     int num,void *ctx)

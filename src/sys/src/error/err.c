@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: error.c,v 1.10 1995/03/06 04:31:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: error.c,v 1.11 1995/04/13 14:40:54 bsmith Exp curfman $";
 #endif
 #include "petsc.h"
 #include <stdio.h>  /*I <stdio.h> I*/
@@ -20,15 +20,42 @@ int abort();
 };
 #endif
 /*@
-    PetscAbortErrorHandler - Error handler routine that calls 
-        abort on error. This is very useful when running in the 
-        debugger, because you can look directly at the stack frames
-        and the variables.
+   PetscAbortErrorHandler - Error handler that calls abort on error. 
+   This routine is very useful when running in the debugger, because the 
+   user can look directly at the stack frames and the variables.
 
-  Use:
-.  PetscDefaultErrorHandler() for generating tracebacks
-.  PetscAttachDebuggerErrorHandler() for automatically attaching the 
-.          debugger when an error is detected.
+   Input Parameters:
+.  line - the line number of the error (indicated by __LINE__)
+.  file - the file in which the error was detected (indicated by __FILE__)
+.  dir - the directory of the file (indicated by __DIR__)
+.  message - an error text string, usually just printed to the screen
+.  number - the user-provided error number
+.  ctx - error handler context
+
+   Options Database Keys:
+$   -on_error_abort
+$   -start_in_debugger [noxterm,dbx,xxgdb]  [-display name]
+$       Starts all processes in the debugger and uses 
+$       PetscAbortErrorHandler().  By default the 
+$       debugger is gdb; alternatives are dbx and xxgdb.
+
+   Notes:
+   Most users need not directly employ this routine and the other error 
+   handlers, but can instead use the simplified interface SETERR, which has 
+   the calling sequence
+$     SETERR(number,message)
+
+   Notes for experienced users:
+   Use PetscPushErrorHandler() to set the desired error handler.  The
+   currently available PETSc error handlers are
+$    PetscDefaultErrorHandler()
+$    PetscAttachDebuggerErrorHandler()
+$    PetscAbortErrorHandler()
+
+.keywords: abort, error, handler
+
+.seealso: PetscPuchErrorHandler(), PetscDefaultErrorHandler(), 
+          PetscAttachDebuggerErrorHandler()
 @*/
 int PetscAbortErrorHandler(int line,char* dir,char *file,char *message,
                            int number,void *ctx)
@@ -36,15 +63,35 @@ int PetscAbortErrorHandler(int line,char* dir,char *file,char *message,
   abort(); return 0;
 }
 /*@
-    PetscDefaultErrorHandler - Error handler routine that generates
-        a traceback on error detection.
+   PetscDefaultErrorHandler - Default error handler routine that generates
+   a traceback on error detection.
 
-  Use:
-.  PetscAbortErrorHandler() for when you are running in the debugger and
-.         would like it to stop at the error, so you may examine variables.
-.  PetscAttachDebuggerErrorHandler() for automatically attaching the 
-.          debugger when an error is detected.
-@*/
+   Input Parameters:
+.  line - the line number of the error (indicated by __LINE__)
+.  file - the file in which the error was detected (indicated by __FILE__)
+.  dir - the directory of the file (indicated by __DIR__)
+.  message - an error text string, usually just printed to the screen
+.  number - the user-provided error number
+.  ctx - error handler context
+
+   Notes:
+   Most users need not directly employ this routine and the other error 
+   handlers, but can instead use the simplified interface SETERR, which has 
+   the calling sequence
+$     SETERR(number,message)
+
+   Notes for experienced users:
+   Use PetscPushErrorHandler() to set the desired error handler.  The
+   currently available PETSc error handlers are
+$    PetscDefaultErrorHandler()
+$    PetscAttachDebuggerErrorHandler()
+$    PetscAbortErrorHandler()
+
+.keywords: default, error, handler, traceback
+
+.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
+          PetscAbortErrorHandler()
+
 int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
                              int number,void *ctx)
 {
@@ -54,13 +101,21 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
 }
 
 /*@
-    PetscPushErrorHandler - Sets a function to be called on errors.
+   PetscPushErrorHandler - Sets a routine to be called on detection of errors.
 
-  Input Parameters:
-.  func - error handler
+   Input Parameters:
+.  func - error handler routine
 
-  Call sequence of function:
-.  int func(int line,char *dir,char *filename,char* errormessage,int errorno);
+   Calling sequence of func:
+   int func (int line,char *dir,char *file,char* message, int number);
+
+.  line - the line number of the error (indicated by __LINE__)
+.  file - the file in which the error was detected (indicated by __FILE__)
+.  dir - the directory of the file (indicated by __DIR__)
+.  message - an error text string, usually just printed to the screen
+.  number - the user-provided error number
+
+.seealso: PetscPopErrorHandler()
 @*/
 int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,void*),
                           void *ctx )
@@ -74,9 +129,12 @@ int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,void*),
   return 0;
 }
 /*@
-    PetscPopErrorHandler - Removes the latest error handler that was 
-                           pushed with PetscPushErrorHandler().
+   PetscPopErrorHandler - Removes the latest error handler that was 
+   pushed with PetscPushErrorHandler().
 
+.keywords: pop, error, handler
+
+.seealso: PetscPushErrorHandler()
 @*/
 int PetscPopErrorHandler()
 {
@@ -89,14 +147,27 @@ int PetscPopErrorHandler()
   return 0;
 }
 /*@
-    PetscError - Called when error is detected, usually called through
-                 the macro SETERR().
+   PetscError - Routine that is called when an error has been detected, 
+   usually called through the macro SETERR().
 
-  Input Parameters:
-.  line,file - the linenumber and file the error was detected in
-.  dir - the directory as indicated by __DIR__
-.  message - a text string usually just printed to the screen
-.  number - the user provided error number.
+   Input Parameters:
+.  line - the line number of the error (indicated by __LINE__)
+.  dir - the directory of file (indicated by __DIR__)
+.  file - the file in which the error was detected (indicated by __FILE__)
+.  message - an error text string, usually just printed to the screen
+.  number - the user-provided error number
+
+   Notes:
+   Most users need not directly use this routine and the error handlers, but
+   can instead use the simplified interface SETERR, which has the calling 
+   sequence
+$     SETERR(number,message)
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+.keywords: error, SETERR
+
+.seealso: PetscDefaultErrorHandler(), PetscPushErrorHandler()
 @*/
 int PetscError(int line,char *dir,char *file,char *message,int number)
 {
