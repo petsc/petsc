@@ -442,6 +442,25 @@ difffortranfunctions: countfortranfunctions countcfunctions
 	-@diff /tmp/countcfunctions /tmp/countfortranfunctions | grep "^>" | cut -d' ' -f2
 	-@$(RM)  /tmp/countcfunctions /tmp/countfortranfunctions
 
-
-
-
+checkbadfortranstubs:
+	-@echo "========================================="
+	-@echo "Functions with MPI_Comm as an Argument"
+	-@echo "========================================="
+	-@cd $(PETSC_DIR)/src/fortran/auto; grep '^void' *.c | grep 'MPI_Comm' | \
+	tr -s '' ' ' | tr -s ':' ' ' |cut -d'(' -f1 | cut -d' ' -f1,3
+	-@echo "========================================="
+	-@echo "Functions with a String as an Argument"
+	-@echo "========================================="
+	-@cd $(PETSC_DIR)/src/fortran/auto; grep '^void' *.c | grep 'char \*' | \
+	tr -s '' ' ' | tr -s ':' ' ' |cut -d'(' -f1 | cut -d' ' -f1,3
+	-@echo "========================================="
+	-@echo "Functions with Pointers to PETSc Objects as Argument"
+	-@echo "========================================="
+	-@cd $(PETSC_DIR)/src/fortran/auto; \
+	_p_OBJ=`grep _p_ $(PETSC_DIR)/include/*.h | tr -s '' ' ' | \
+	cut -d' ' -f 3 | tr -s '' '\012' | grep -v '{' | cut -d'*' -f1 | \
+	sed "s/_p_//g" | tr -s '\012 ' ' *|' ` ; \
+	for OBJ in $$_p_OBJ; do \
+	grep "$$OBJ \*" *.c | tr -s '' ' ' | tr -s ':' ' ' | \
+	cut -d'(' -f1 | cut -d' ' -f1,3; \
+	done 
