@@ -389,7 +389,7 @@ PetscErrorCode VecPackScatter(VecPack packer,Vec gvec,...)
 
   PetscFunctionBegin;
   if (!packer->globalvector) {
-    SETERRQ(PETSC_ERROR_ORDER,"Must first create global vector with VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERR_ORDER,"Must first create global vector with VecPackCreateGlobalVector()");
   }
 
   /* loop over packed objects, handling one at at time */
@@ -405,7 +405,7 @@ PetscErrorCode VecPackScatter(VecPack packer,Vec gvec,...)
       PetscValidHeaderSpecific(vec,VEC_COOKIE,3);
       ierr = VecPackScatter_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERROR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
