@@ -1,4 +1,4 @@
-% $Id: manual.tex,v 1.139 2001/04/10 19:37:53 bsmith Exp balay $ 
+% $Id: manual.tex,v 1.140 2001/04/10 22:08:51 balay Exp bsmith $ 
 %
 %
 \documentclass[twoside,11pt]{../sty/report_petsc}
@@ -6,6 +6,7 @@
 \usepackage{makeidx,xspace}
 \usepackage[bookmarksopen,colorlinks]{hyperref}
 \usepackage{color}
+\input pdfcolor.tex     
 
 \usepackage{times}
 \usepackage{psfig}
@@ -26,6 +27,16 @@
 \newcommand{\F}{\mbox{\boldmath \(F\)}}
 \newcommand{\x}{\mbox{\boldmath \(x\)}}
 \newcommand{\rr}{\mbox{\boldmath \(r\)}}
+\newcommand{\trllink}[2]{\hbox{%
+ \pdfstartlink user{%
+        /Subtype /Link
+        /A << 
+            /Type /Action 
+            /S /URI 
+            /URI (#1) 
+        >>}%
+    \Red  \trl{#2} \Black
+    \pdfendlink}}
 
 \makeindex
  
