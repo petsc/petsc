@@ -31,6 +31,7 @@ if ($day == Sun) then
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1         1         1         1         1         3         )
   set J2=(2         2         2         2         2         2         4         )
+  set J3=(3         3         3         3         3         3         5         )
 endif
 if ($day == Mon) then
   set M =(snake     eagle     puck      oban      doc       ptera     merlin    )
@@ -38,6 +39,7 @@ if ($day == Mon) then
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1         1         1         1         1         3         )
   set J2=(2         2         2         2         2         2         4         )
+  set J3=(3         3         3         3         3         3         5         )
 endif
 if ($day == Tue) then
   set M =(snake     eagle     puck      oban      doc       ptera     merlin    )
@@ -45,6 +47,7 @@ if ($day == Tue) then
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1         1         1         1         1         3         )
   set J2=(2         2         2         2         2         2         4         )
+  set J3=(3         3         3         3         3         3         5         )
 endif
 if ($day == Wed) then
   set M =(snake     eagle     puck      oban      doc       ptera     merlin    )
@@ -52,6 +55,7 @@ if ($day == Wed) then
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1         1         1         1         1         3         )
   set J2=(2         2         2         2         2         2         4         )
+  set J3=(3         3         3         3         3         3         5         )
 endif
 if ($day == Thu) then
   set M =(snake     eagle     puck      oban      doc       ptera     merlin    )
@@ -67,6 +71,7 @@ if ($day == Fri) then
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1         1         1         1         1         3         )
   set J2=(2         2         2         2         2         2         4         )
+  set J3=(3         3         3         3         3         3         5         )
 endif
 if ($day == Sat) then
   set M =(snake     eagle     puck      oban      doc       ptera     merlin    )
@@ -74,6 +79,7 @@ if ($day == Sat) then
   set A =(hpux      sun4      IRIX  freebsd_nolog rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1         1         1         1         1         3         )
   set J2=(2         2         2         2         2         2         4         )
+  set J3=(3         3         3         3         3         3         5         )
 endif
 #
 #  test for each machine
