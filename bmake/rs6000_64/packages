@@ -1,0 +1,67 @@
+# $Id: base.site,v 1.29 1999/03/24 19:15:45 balay Exp $ 
+
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
+# for information on retrieving them.
+# Important: If you use the IBM version of lapack you must include 
+#  -lessl at the end of the line defining the BLAS libraries.
+#
+BLAS_LIB       = -lblas ${FC_LIB}
+LAPACK_LIB     = -lessl /usr/local/64/lib64/liblapack.a
+#
+# Location of MPI (Message Passing Interface) software
+#
+MPI_LIB         = /usr/local/64/mpich64/build/rs6000/ch_p4/lib/libmpich.a
+MPI_INCLUDE     = -I/usr/local/64/mpich64/include  -DUSES_INT_MPI_COMM
+MPIRUN          = /usr/local/64/mpich64/build/rs6000/ch_p4/bin/mpirun
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = 
+X11_LIB        = -lX11
+#
+# Optional location of BlockSolve (MPI version), if you do not have
+# BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
+# below if it is there.
+#
+#BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+#BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+#
+# MPE Libraries
+# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
+#
+#MPE_INCLUDE  = -I/home/petsc/mpich-1.1.1/mpe
+#MPE_LIB      = -lmpe -lpmpich
+#MPE_INCLUDE   = -I${MPI_HOME}/mpe 
+#MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+#
+# Optional Matlab location, remove if not needed.
+#
+#MATLAB_LIB     = /usr/local/matlab/extern/lib/ibm_rs/libmat.a
+#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
+#CMEX           = /usr/local/matlab/bin/cmex 
+#
+# Optional location of SuperLU, if you do not have
+# SuperLU, then remove -DHAVE_SUPERLU from the PCONF definition
+# below if it is there.
+#
+#SUPERLU_LIB     = /home/bsmith/SuperLU/superlu${PETSC_ARCH}${BOPT}.a
+#SUPERLU_INCLUDE = -I/home/bsmith/SuperLU/SRC
+# 
+# PCONF - indicates which external packages are available at your site
+#    Make sure that -DHAVE_BLOCKSOLVE and -DHAVE_SUPERLU are not listed below
+# 
+#PCONF          =    -DHAVE_ESSL -DHAVE_BLOCKSOLVE -DHAVE_MPE
+PCONF          =    -DHAVE_ESSL
+#
+EXTERNAL_LIB  = ${BS_LIB} ${CVODE_LIB} ${ADIC_LIB}
+
+
+
+

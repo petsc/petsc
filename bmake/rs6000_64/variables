@@ -1,0 +1,66 @@
+# $Id: base_variables,v 1.5 1999/03/31 18:38:56 bsmith Exp $ 
+#
+#     See the file bmake/base_variables.defs for a complete explanation of all these fields
+#
+AR               = ar -X64
+RM               = rm -f
+OMAKE            = make
+RANLIB           = ranlib -X64
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = cc_r -q64
+C_FC             = xlf -q64
+C_CLINKER        = cc_r -q64 ${COPTFLAGS} -bmaxdata:0x70000000
+# you may need to add -bI:/usr/lpp/xlf/lib/lowsys.exp to C_LINKER
+C_FLINKER        = cc_r -q64 ${COPTFLAGS} -bmaxdata:0x70000000
+C_CCV            = unknown
+C_SYS_LIB        = -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g  -qfullpath
+G_FOPTFLAGS      = -g  -qfullpath
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O3 -qmaxmem=4000 -w -qspill=3000
+O_FOPTFLAGS      = -O3 -w
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = xlC_r -+ -q64
+CXX_FC           = xlf -q64
+CXX_CLINKER      = xlC_r -q64 ${COPTFLAGS}
+CXX_FLINKER      = xlC_r -q64 ${COPTFLAGS}
+CXX_CCV          = unknown
+CXX_SYS_LIB      = -lcomplex -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g  -qfullpath
+GCXX_FOPTFLAGS   = -g  -qfullpath 
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O3  -qmaxmem=4000 -qspill=3000
+OCXX_FOPTFLAGS   = -O3
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g  -qfullpath
+GCOMP_FOPTFLAGS  = -g  -qfullpath
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O3  -qmaxmem=4000 -qspill=3000
+OCOMP_FOPTFLAGS  = -O3
+# ########################### PETSc install options ###########################
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK 
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  =  -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
+
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
+#
+PARCH    = rs6000_64
+
+include ${PETSC_DIR}/bmake/common_variables
