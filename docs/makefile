@@ -20,8 +20,8 @@ LOCDIR   = docs/
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
 
+# petscapps* get built with 'builddist' and 'rsync'ed over to www-fp via the crontab
 bib2html:
-	${RM} /mcs/www-unix/petsc/petscapps.html /mcs/www-unix/petsc/petscapps-bib.html
-	/home/gropp/public_html/bib/bib2html -group tex/doctext/petsc.group -listfile /mcs/www-unix/petsc/petscapps.html -listconfig tex/doctext/petscapp.cfg tex/petscapp.bib -nospecials > /mcs/www-unix/petsc/petscapps-bib.html
-	chmod g+w /mcs/www-unix/petsc/petscapps.html /mcs/www-unix/petsc/petscapps-bib.html
+	${RM} website/publications/petscapps.html website/publications/petscapps-bib.html
+	/home/gropp/public_html/bib/bib2html -group tex/doctext/petsc.group -listfile website/publications/petscapps.html -listconfig tex/doctext/petscapp.cfg tex/petscapp.bib -nospecials > website/publications/petscapps-bib.html
 

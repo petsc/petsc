@@ -45,6 +45,10 @@ cd $PETSC_DIR
 bk pull
 bk -r co -q
 
+# update petscapps* for www-fp
+cd $PETSC_DIR/docs
+make bib2html
+
 # create fortran stubdocs and cleanup
 cd $PETSC_DIR
 make allfortranstubs
