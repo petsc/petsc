@@ -166,8 +166,6 @@ class Configure(config.base.Configure):
       libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'liblamf90mpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]      
       libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
       yield libs
-      # IBM 
-      yield [os.path.join(root, 'lib', 'libmpi_r.a')]
       #  SGI 
       yield [os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'libmpi++.a')]
       yield [os.path.join(root, 'lib', 'libmpi.a')]      
