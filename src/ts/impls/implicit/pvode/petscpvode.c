@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.9 1997/10/13 21:53:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.10 1997/10/14 18:41:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -107,8 +107,8 @@ static int TSPSolve_PVode(integer N, real tn, N_Vector y,
 }
 
 /*
-        TSPSolve_PVode - routine that we provide to PVode that applies the 
-                         right hand side.
+        TSFunction_PVode - routine that we provide to PVode that applies the 
+                           right hand side.
       
    ---------------------------------------------------------------------
 */  
@@ -413,7 +413,7 @@ int TSPVodeGetPC(TS ts, PC *pc)
 #else
 
 /* 
-     A dummy function for compilers that dislike empy files.
+     A dummy function for compilers that dislike empty files.
 */
 int adummyfunction()
 {
