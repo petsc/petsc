@@ -321,7 +321,7 @@ class Configure:
       # Log failure of compiler
       out = ready[0][0].read()
     if out and self.framework.argDB['ignoreWarnings']:
-      out = reduce(lambda s, t: s+t, filter(self.framework.warningRE.search, out.split('\n')), '')
+      out = reduce(lambda s, t: s+t, filter(lambda s: not self.framework.warningRE.search(s), out.split('\n')), '')
     if ret and not out:
       out = str(ret)
     # Ignore stupid warning from gcc about builtins
