@@ -1,4 +1,4 @@
-/* $Id: blaslapack.h,v 1.38 2000/01/11 21:04:10 bsmith Exp bsmith $ */
+/* $Id: petscblaslapack.h,v 1.39 2000/05/10 16:44:31 bsmith Exp balay $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -13,6 +13,14 @@ Cray T3D/T3E.
 #define _BLASLAPACK_H
 
 #include "petsc.h"
+
+
+#if defined(PETSC_HAVE_MKL_BLAS)
+#define PETSC_MISSING_LAPACK_GESVD
+#define PETSC_MISSING_LAPACK_GEEV
+#else defined(PETSC_HAVE_CRAYT3D_BLAS)
+#define PETSC_MISSING_LAPACK_GESVD
+#endif
 
 /*
    This include file on the Cray T3D/T3E defines the interface between 
@@ -55,7 +63,7 @@ Cray T3D/T3E.
 #define DTRSL    STRSL
 #endif
 
-#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_USE_CBLASLAPACK)
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_HAVE_CBLASLAPACK)
 #define LAgeqrf_ dgeqrf_
 #define LAgetrf_ dgetrf_
 #define LAgetf2_ dgetf2_
@@ -123,7 +131,7 @@ Cray T3D/T3E.
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
 #define LAgetrf_ DGETRF
-#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_USE_CBLASLAPACK)
+#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_HAVE_CBLASLAPACK)
 #define LAormqr_ dormqr_
 #define LAtrtrs_ dtrtrs_
 #define LApotrf_ dpotrf_
@@ -186,7 +194,7 @@ Cray T3D/T3E.
 #define ZGEEV   CGEEV
 #endif
 
-#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_USE_CBLASLAPACK)
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_HAVE_CBLASLAPACK)
 #define LAgeqrf_ zgeqrf_
 #define LAgetrf_ zgetrf_
 #define LAgetf2_ zgetf2_
@@ -241,7 +249,7 @@ Cray T3D/T3E.
                                         (f),(g),(h),(i),(j),(k),(l),(m),(n))
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
-#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_USE_CBLASLAPACK)
+#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_HAVE_CBLASLAPACK)
 #define LAtrtrs_ ztrtrs_
 #define LApotrf_ zpotrf_
 #define LApotrs_ zpotrs_
@@ -280,9 +288,7 @@ Cray T3D/T3E.
 
 #endif
 
-#if !defined(PETSC_USE_CBLASLAPACK)
 EXTERN_C_BEGIN
-#endif
 
 /* 
    BLdot cannot be used with COMPLEX because it cannot 
@@ -303,27 +309,27 @@ EXTERN void   LAgeqrf_(int*,int*,Scalar*,int*,Scalar*,Scalar*,int*,int*);
 #if defined(PETSC_USE_COMPLEX)
 EXTERN void   ZPOTRF(_fcd,int*,Scalar*,int*,int*);
 EXTERN void   ZGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
-                        Scalar*,Scalar*,int*);
+                    Scalar*,Scalar*,int*);
 EXTERN void   ZPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 EXTERN void   ZGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
 EXTERN void   ZGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
-                      Scalar*,int*,Scalar*,Scalar*,int*);
+                    Scalar*,int*,Scalar*,Scalar*,int*);
 EXTERN void   ZGESVD(_fcd,_fcd,int *,int*,Scalar *,int*,double*,Scalar*,
-                      int*,Scalar*,int*,Scalar*,int*,double*,int*);
+                     int*,Scalar*,int*,Scalar*,int*,double*,int*);
 EXTERN void   ZGEEV(_fcd,_fcd,int *,Scalar *,int*,Scalar*,Scalar*,
-                      int*,Scalar*,int*,Scalar*,int*,double*,int*);
+                    int*,Scalar*,int*,Scalar*,int*,double*,int*);
 #else
 EXTERN void   DPOTRF(_fcd,int*,Scalar*,int*,int*);
 EXTERN void   DGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
-                        Scalar*,Scalar*,int*);
+                    Scalar*,Scalar*,int*);
 EXTERN void   DPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 EXTERN void   DGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
 EXTERN void   DGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
-                      Scalar*,int*,Scalar*,Scalar*,int*);
+                    Scalar*,int*,Scalar*,Scalar*,int*);
 EXTERN void   DGESVD(_fcd,_fcd,int *,int*,Scalar *,int*,Scalar*,Scalar*,
-                      int*,Scalar*,int*,Scalar*,int*,int*);
+                     int*,Scalar*,int*,Scalar*,int*,int*);
 EXTERN void   DGEEV(_fcd,_fcd,int *,Scalar *,int*,Scalar*,Scalar*,Scalar*,
-                      int*,Scalar*,int*,Scalar*,int*,int*);
+                    int*,Scalar*,int*,Scalar*,int*,int*);
 #endif
 
 #else
@@ -333,7 +339,7 @@ EXTERN void   LAtrtrs_(char*,char*,char*,int*,int*,Scalar*,int*,Scalar*,int*,
                        int*);
 EXTERN void   LApotrf_(char*,int*,Scalar*,int*,int*);
 EXTERN void   LAgemv_(char*,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
-                       Scalar*,Scalar*,int*);
+                      Scalar*,Scalar*,int*);
 EXTERN void   LApotrs_(char*,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 EXTERN void   LAgetrs_(char*,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
 EXTERN void   BLgemm_(char *,char*,int*,int*,int*,Scalar*,Scalar*,int*,
@@ -343,27 +349,25 @@ EXTERN void   BLgemm_(char *,char*,int*,int*,int*,Scalar*,Scalar*,int*,
 #if defined(PETSC_HAVE_ESSL) && defined(PETSC_USE_COMPLEX)
 EXTERN void   LAgeev_(int*,Scalar*,int*,Scalar*,Scalar*,int*,int*,int*,double*,int*);
 EXTERN void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
-                      int*,Scalar*,int*,Scalar*,int*,double*,int*);
+                       int*,Scalar*,int*,Scalar*,int*,double*,int*);
 #elif defined(PETSC_HAVE_ESSL)
 EXTERN void   LAgeev_(int*,Scalar*,int*,Scalar*,Scalar*,int*,int*,int*,double*,int*);
 EXTERN void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
-                      int*,Scalar*,int*,Scalar*,int*,int*);
+                       int*,Scalar*,int*,Scalar*,int*,int*);
 #elif !defined(PETSC_USE_COMPLEX)
 EXTERN void   LAgeev_(char *,char *,int *,Scalar *,int*,double*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
 EXTERN void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
-                      int*,Scalar*,int*,Scalar*,int*,int*);
+                       int*,Scalar*,int*,Scalar*,int*,int*);
 #else
 EXTERN void   LAgeev_(char *,char *,int *,Scalar *,int*,Scalar*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,double*,int*);
 EXTERN void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
-                      int*,Scalar*,int*,Scalar*,int*,double*,int*);
+                       int*,Scalar*,int*,Scalar*,int*,double*,int*);
 #endif
 #endif
 
-#if !defined(PETSC_USE_CBLASLAPACK)
 EXTERN_C_END
-#endif
 
 #endif
 
