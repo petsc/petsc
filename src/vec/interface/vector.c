@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.55 1995/11/02 04:06:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.56 1995/11/09 22:26:39 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -591,13 +591,13 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
    Output Parameter:
 .  a - location to put pointer to the array
 
-   Fortran Note: From Fortran the user must pass in a Fortran array and 
-its length must be big enough to contain the entire local part of the 
-vector.
+   Fortran Note:
+   The Fortran interface is slightly different from that listed below.
+   See the users manual and petsc/src/vec/examples/*.F for details.
 
 .keywords: vector, get, array
 
-.seealso: VecRestoreArray()
+.seealso: VecRestoreArray(), VecGetArrays()
 @*/
 int VecGetArray(Vec x,Scalar **a)
 {
@@ -606,9 +606,9 @@ int VecGetArray(Vec x,Scalar **a)
 }
 
 /*@C
-   VecGetArrays - Returns a pointer to the arrays in a set of vectors.
-       You MUST call VecRestoreArrays() when you no longer need access
-       to the array. x must have been obtained by a call to VecDuplicateVecs().
+   VecGetArrays - Returns a pointer to the arrays in a set of vectors
+   that were created by a call to VecDuplicateVecs().  You MUST call
+   VecRestoreArrays() when you no longer need access to the array.
 
    Input Parameter:
 .  x - the vectors
@@ -619,7 +619,7 @@ int VecGetArray(Vec x,Scalar **a)
 
 .keywords: vector, get, arrays
 
-.seealso: VecRestoreArrays()
+.seealso: VecGetArray(), VecRestoreArrays()
 @*/
 int VecGetArrays(Vec *x,int n,Scalar ***a)
 {
@@ -635,7 +635,8 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
 }
 
 /*@C
-   VecRestoreArrays - Restores a vector after VecGetArrays() has been called.
+   VecRestoreArrays - Restores a group of vectors after VecGetArrays()
+   has been called.
 
    Input Parameters:
 .  x - the vector
@@ -644,7 +645,7 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
 
 .keywords: vector, restore, arrays
 
-.seealso: VecGetArrays()
+.seealso: VecGetArrays(), VecRestoreArray()
 @*/
 int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 {
@@ -667,7 +668,7 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 
 .keywords: vector, restore, array
 
-.seealso: VecGetArray()
+.seealso: VecGetArray(), VecRestoreArays()
 @*/
 int VecRestoreArray(Vec x,Scalar **a)
 {
