@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.12 1995/06/20 01:30:14 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.13 1995/06/21 03:33:32 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -395,7 +395,6 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
 #endif
   PETSCFREE(mbd->rowners); 
   PETSCFREE(mbd->gdiag);
-  if (mbd->gdiagv) PETSCFREE(mbd->gdiagv); 
   ierr = MatDestroy(mbd->A); CHKERRQ(ierr);
   if (mbd->lvec) VecDestroy(mbd->lvec);
   if (mbd->Mvctx) VecScatterCtxDestroy(mbd->Mvctx);
@@ -635,10 +634,10 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   mbd->brstart = (mbd->rstart)/nb;
   mbd->brend   = (mbd->rend)/nb;
 
-  printf("[%d] m=%d, n=%d, M=%d, N=%d, ",
+/*  printf("[%d] m=%d, n=%d, M=%d, N=%d, ",
     mbd->mytid, mbd->m, mbd->n, mbd->M, mbd->N ); 
   printf("[%d] rstart=%d, rend=%d, brstart=%d, brend=%d\n", mbd->mytid,
-           mbd->rstart,mbd->rend,mbd->brstart, mbd->brend);
+           mbd->rstart,mbd->rend,mbd->brstart, mbd->brend); */
 
   /* Determine local diagonals; for now, assume global rows = global cols */
   /* These are sorted in MatCreateSequentialBDiag */
@@ -650,7 +649,6 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   }
   for (i=0; i<nd; i++) {
     mbd->gdiag[i] = diag[i];
-    if (diagv) mbd->gdiagv[i] = diagv[i];
     if (diag[i] > 0) { /* lower triangular */
       if (diag[i] < mbd->brend) {
         ldiag[k] = diag[i] - mbd->brstart;
@@ -684,9 +682,9 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   for (i=0; i<k; i++) {
     if (ldiag[i] + mbd->brstart == 0) mlocal->mainbd = i; 
   }
-  for (i=0; i<nd; i++)
+/*   for (i=0; i<nd; i++)
     printf("[%d] i=%d, diag[i]=%d, ldiag[i]=%d, mainbd=%d\n", 
-         mbd->mytid,i,diag[i],ldiag[i],mlocal->mainbd);
+         mbd->mytid,i,diag[i],ldiag[i],mlocal->mainbd); */
  
   PLogObjectParent(mat,mbd->A);
   PETSCFREE(ldiag); if (ldiagv) PETSCFREE(ldiagv);

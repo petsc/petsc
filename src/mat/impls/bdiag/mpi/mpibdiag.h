@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.10 1995/06/07 17:30:43 bsmith Exp $ */
+/* $Id: mpibdiag.h,v 1.4 1995/06/07 17:33:08 bsmith Exp curfman $ */
 
 #include "bdiag.h"
 
@@ -13,12 +13,12 @@
 
 typedef struct {
   int           *rowners,*cowners;  /* ranges owned by each processor */
-  int           m,n,M,N;            /* local rows, cols, global rows, cols */
-  int           rstart,rend;
-  int           brstart,brend;
-  Mat           A;
-  int           *gdiag;             /* global matrix diagonal numbers */
+  int           m,n,M,N;            /* local rows, cols; global rows, cols */
+  int           rstart,rend;        /* starting and ending local rows */
+  int           brstart,brend;      /* block starting and ending local rows */
+  Mat           A;                  /* local matrix */
   int           gnd;                /* number of global diagonals */
+  int           *gdiag;             /* global matrix diagonal numbers */
   int           numtids,mytid;
 /*  Used in Matrix assembly */
   int           assembled;          /* MatAssemble has been called */
@@ -28,6 +28,7 @@ typedef struct {
   int           nsends,nrecvs;
   Scalar        *svalues,*rvalues;
   int           rmax;
+  int           *garray;
 /*  Used in Matrix-vector product */
   Vec           lvec;
   VecScatterCtx Mvctx;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.24 1995/06/17 19:03:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.25 1995/06/21 01:18:05 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -945,8 +945,6 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   int       i, j, nda, temp, sizetot;
   Scalar    *dtemp;
 
-  int mytid;
-
 #define  MIN(a,b) ((a) < (b) ? (a) : (b))
   *newmat       = 0;
   if ((n%nb) || (m%nb)) SETERRQ(1,"Invalid block size.");
@@ -976,6 +974,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   mat->diagv  = (Scalar **)PETSCMALLOC(nda * sizeof(Scalar*)); 
   CHKPTRQ(mat->diagv);
   sizetot = 0;
+
   if (diagv) { /* user allocated space */
     mat->user_alloc = 1;
     for (i=0; i<nd; i++) mat->diagv[i] = diagv[i];
@@ -990,15 +989,14 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
         diag[i] = diag[j];
         diag[j] = temp;
         if (diagv) {
-          dtemp = diagv[i];
-          diagv[i] = diagv[j];
-          diagv[j] = dtemp;
+          dtemp = mat->diagv[i];
+          mat->diagv[i] = mat->diagv[j];
+          mat->diagv[j] = dtemp;
         }
       }
     }
   }
 
-  MPI_Comm_rank(comm,&mytid);
   for (i=0; i<nd; i++) {
     mat->diag[i] = diag[i];
     if (diag[i] > 0) /* lower triangular */
@@ -1012,19 +1010,21 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
     }
     sizetot += mat->bdlen[i];
     if (diag[i] == 0) mat->mainbd = i;
-    printf("[%d] i=%d, diag=%d, dlen=%d\n",mytid,i,diag[i],mat->bdlen[i]);
+/*    printf("i=%d, diag=%d, dlen=%d\n",i,diag[i],mat->bdlen[i]); */
   }
   sizetot *= nb*nb;
   if (nda != nd) sizetot += 1;
   mat->maxnz  = sizetot;
-  mat->dvalue = (Scalar *)PETSCMALLOC(nb*nda * sizeof(Scalar)); CHKPTRQ(mat->dvalue);
+  mat->dvalue = (Scalar *)PETSCMALLOC(nb*nda * sizeof(Scalar)); 
+  CHKPTRQ(mat->dvalue);
   mat->mem    = (nda*(nb+2)) * sizeof(int) + nb*nda * sizeof(Scalar)
                  + nda * sizeof(Scalar*) + sizeof(Mat_BDiag)
                  + sizetot * sizeof(Scalar);
 
   if (!mat->user_alloc) {
     Scalar *d;
-    d = mat->diagv[0] = (Scalar *)PETSCMALLOC(sizetot * sizeof(Scalar)); CHKPTRQ(d);
+    d = mat->diagv[0] = (Scalar *)PETSCMALLOC(sizetot * sizeof(Scalar)); 
+    CHKPTRQ(d);
     PETSCMEMSET(d,0,sizetot*sizeof(Scalar));
     for (i=0; i<nd; i++) {
       mat->diagv[i] = d;
