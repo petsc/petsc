@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.6 1995/07/28 04:25:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.7 1995/08/14 23:16:30 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -342,6 +342,7 @@ int SNESCreate_UMTR(SNES snes)
   snes->view            = SNESView_UMTR;
 
   neP			= PETSCNEW(SNES_UMTR); CHKPTRQ(neP);
+  PLogObjectMemory(snes,sizeof(SNES_UMTR));
   snes->data	        = (void *) neP;
   neP->delta0		= 1.0e-6;
   neP->delta 		= 0.0;

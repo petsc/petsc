@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.39 1995/07/30 14:56:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.40 1995/08/07 18:50:37 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -513,11 +513,11 @@ int VecAssemblyBegin(Vec vec)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(vec,VEC_COOKIE);
-  PLogEventBegin(VEC_BeginAssembly,vec,0,0,0);
+  PLogEventBegin(VEC_AssemblyBegin,vec,0,0,0);
   if (vec->ops->assemblybegin) {
     ierr = (*vec->ops->assemblybegin)(vec); CHKERRQ(ierr);
   }
-  PLogEventEnd(VEC_BeginAssembly,vec,0,0,0);
+  PLogEventEnd(VEC_AssemblyBegin,vec,0,0,0);
   return 0;
 }
 
@@ -536,11 +536,11 @@ int VecAssemblyEnd(Vec vec)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(vec,VEC_COOKIE);
-  PLogEventBegin(VEC_EndAssembly,vec,0,0,0);
+  PLogEventBegin(VEC_AssemblyEnd,vec,0,0,0);
   if (vec->ops->assemblyend) {
     ierr = (*vec->ops->assemblyend)(vec); CHKERRQ(ierr);
   }
-  PLogEventEnd(VEC_EndAssembly,vec,0,0,0);
+  PLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);
   return 0;
 }
 

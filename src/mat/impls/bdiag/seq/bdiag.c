@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.34 1995/08/02 02:34:23 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.35 1995/08/03 01:41:46 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -450,7 +450,7 @@ static int MatGetInfo_BDiag(Mat matin,MatInfoType flag,int *nz,int *nzalloc,
   Mat_BDiag *mat = (Mat_BDiag *) matin->data;
   *nz      = mat->nz;
   *nzalloc = mat->maxnz;
-  *mem     = mat->mem;
+  *mem     = matin->mem;
   return 0;
 }
 
@@ -1033,9 +1033,9 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   mat->maxnz  = sizetot;
   mat->dvalue = (Scalar *)PETSCMALLOC(nb*nda * sizeof(Scalar)); 
   CHKPTRQ(mat->dvalue);
-  mat->mem    = (nda*(nb+2)) * sizeof(int) + nb*nda * sizeof(Scalar)
-                 + nda * sizeof(Scalar*) + sizeof(Mat_BDiag)
-                 + sizetot * sizeof(Scalar);
+  PLogObjectMemory(mat,(nda*(nb+2))*sizeof(int) + nb*nda*sizeof(Scalar)
+                    + nda*sizeof(Scalar*) + sizeof(Mat_BDiag)
+                    + sizeof(struct _Mat) + sizetot*sizeof(Scalar));
 
   if (!mat->user_alloc) {
     Scalar *d;

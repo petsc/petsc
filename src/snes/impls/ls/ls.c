@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.36 1995/07/29 04:29:53 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.37 1995/08/14 23:15:55 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -564,6 +564,7 @@ int SNESCreate_LS(SNES  snes )
   snes->view            = SNESView_LS;
 
   neP			= PETSCNEW(SNES_LS);   CHKPTRQ(neP);
+  PLogObjectMemory(snes,sizeof(SNES_LS));
   snes->data    	= (void *) neP;
   neP->alpha		= 1.e-4;
   neP->maxstep		= 1.e8;

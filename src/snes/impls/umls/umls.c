@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.5 1995/08/14 23:15:33 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.6 1995/08/15 22:26:11 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -511,6 +511,7 @@ int SNESCreate_UMLS(SNES snes)
   snes->setfromoptions  = SNESSetFromOptions_UMLS;
 
   neP			= PETSCNEW(SNES_UMLS); CHKPTRQ(neP);
+  PLogObjectMemory(snes,sizeof(SNES_UMLS));
   snes->data	        = (void *) neP;
   neP->LineSearch	= SNESMoreLineSearch; 
   neP->gamma		= 0.0;
