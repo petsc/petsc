@@ -36,6 +36,10 @@ EXTERN PetscErrorCode PCCreate_HYPRE(PC);
 #if !defined(PETSC_USE_64BIT_INT) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN PetscErrorCode PCCreate_TFS(PC);
 #endif
+#if defined(PETSC_HAVE_PROMETHEUS)
+EXTERN PetscErrorCode PCCreate_Prometheus(PC);
+#endif
+
 
 EXTERN_C_END
 
@@ -96,5 +100,9 @@ PetscErrorCode PCRegisterAll(const char path[])
 #if !defined(PETSC_USE_64BIT_INT) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCTFS         ,path,"PCCreate_TFS",PCCreate_TFS);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_PROMETHEUS)
+  ierr = PCRegisterDynamic(PCPROMETHEUS  ,path,"PCCreate_Prometheus",PCCreate_Prometheus);CHKERRQ(ierr);
+#endif
+
   PetscFunctionReturn(0);
 }
