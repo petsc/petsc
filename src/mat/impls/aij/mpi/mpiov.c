@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.18 1996/02/08 23:32:10 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.19 1996/02/10 01:37:08 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -539,16 +539,18 @@ static int FindOverlapRecievedMesg(Mat C, int nrqr, int ** rbuf, int ** xdata, i
 }  
 
 
-int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixCall 
+int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatrixCall 
                               scall, Mat **submat)
 { 
   Mat_MPIAIJ  *c = (Mat_MPIAIJ *) C->data;
   Mat         A = c->A, B = c->B;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)B->data;
-  int         **idx,*n,*w1,*w2,*w3,*w4,*rtable, start, end, size,**sbuf1,**sbuf2, rank;
-  int         m,i,j,k,l,ct1,ct2, ierr, **rbuf1, row, proc, nrqs, msz, **ptr, index;
-  int         *req_size, *ctr, *pa, tag, *tmp,bsz, nrqr , **rbuf3,*req_source,**sbuf_aj;
-  int          rstart,cstart, ashift, bshift,*ai, *aj, *bi, *bj,*garray,**rbuf2, max1;
+  int         **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,*rtable, start, end, size;
+  int         **sbuf1,**sbuf2, rank, m,i,j,k,l,ct1,ct2, ierr, **rbuf1, row, proc;
+  int         nrqs, msz, **ptr, index, *req_size, *ctr, *pa, tag, *tmp,bsz, nrqr;
+  int         **rbuf3,*req_source,**sbuf_aj, rstart,cstart, ashift, bshift,*ai, *aj;
+  int         *bi, *bj,*garray,**rbuf2, max1,max2, **rmap, **cmap, **srmap, **scmap;
+  int         **lens, is_no;
   MPI_Request *send_waits, *recv_waits, *send_waits2, *recv_waits2, *recv_waits3 ;
   MPI_Request *recv_waits4,*send_waits3,*send_waits4;
   MPI_Status  *recv_status ,*recv_status2,*send_status,*send_status3 ,*send_status2;
@@ -578,16 +580,22 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
   TrSpace( &space, &fr, &maxs );
   /*  MPIU_printf(MPI_COMM_SELF,"[%d] allocated space = %f fragments = %f max ever allocated = %f\n", rank, space, fr, maxs); */
   
-  idx    = (int **)PetscMalloc((imax+1)*sizeof(int *)); CHKPTRQ(idx);
-  n      = (int *)PetscMalloc((imax+1)*sizeof(int )); CHKPTRQ(n);
-  rtable = (int *)PetscMalloc((m+1)*sizeof(int )); CHKPTRQ(rtable);
+  irow   = (int **)PetscMalloc((ismax+1)*sizeof(int *)); CHKPTRQ(irow);
+  icol   = (int **)PetscMalloc((ismax+1)*sizeof(int *)); CHKPTRQ(icol);
+  nrow   = (int *) PetscMalloc((ismax+1)*sizeof(int )); CHKPTRQ(nrow);
+  ncol   = (int *) PetscMalloc((ismax+1)*sizeof(int )); CHKPTRQ(ncol);
+  rtable = (int *) PetscMalloc((m+1)*sizeof(int )); CHKPTRQ(rtable);
                                 /* Hash table for maping row ->proc */
-  
-  for ( i=0 ; i<imax ; i++) {
-    ierr = ISGetIndices(irow[i],&idx[i]);  CHKERRQ(ierr);
-    ierr = ISGetLocalSize(irow[i],&n[i]);  CHKERRQ(ierr);
+
+  for ( i=0 ; i<ismax ; i++) { /* Extract the indicies and sort them */
+    ierr = ISGetIndices(isrow[i],&irow[i]);  CHKERRQ(ierr);
+    ierr = ISGetIndices(iscol[i],&icol[i]);  CHKERRQ(ierr);
+    ierr = ISGetLocalSize(isrow[i],&nrow[i]);  CHKERRQ(ierr);
+    ierr = ISGetLocalSize(iscol[i],&ncol[i]);  CHKERRQ(ierr);
+    ierr = SYIsort(nrow[i], irow[i]); CHKERRQ(ierr);
+    ierr = SYIsort(ncol[i], icol[i]); CHKERRQ(ierr);
   }
-  
+
   /* Create hash table for the mapping :row -> proc*/
   for( i=0, j=0; i< size; i++) {
     for (; j <c->rowners[i+1]; j++) {
@@ -602,10 +610,10 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
   w3     = w2 + size;         /* no of IS that needs to be sent to proc i */
   w4     = w3 + size;         /* temp work space used in determining w1, w2, w3 */
   PetscMemzero(w1,(size)*3*sizeof(int)); /* initialise work vector*/
-  for ( i=0;  i<imax ; i++) { 
+  for ( i=0;  i<ismax ; i++) { 
     PetscMemzero(w4,(size)*sizeof(int)); /* initialise work vector*/
-    for ( j =0 ; j < n[i] ; j++) {
-      row  = idx[i][j];
+    for ( j =0 ; j < nrow[i] ; j++) {
+      row  = irow[i][j];
       proc = rtable[row];
       w4[proc]++;
     }
@@ -613,8 +621,8 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
       if( w4[j] ) { w1[j] += w4[j];  w3[j] += 1;} 
     }
   }
-
-  nrqs      = 0;              /* no of outgoing messages */
+  
+  nrqs     = 0;              /* no of outgoing messages */
   msz      = 0;              /* total mesg length (for all proc */
   w1[rank] = 0;              /* no mesg sent to intself */
   w3[rank] = 0;
@@ -687,11 +695,11 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
   }
   
   
-  /* Parse the irow and copy data into outbuf */
-  for ( i=0 ; i<imax ; i++) {
+  /* Parse the isrow and copy data into outbuf */
+  for ( i=0 ; i<ismax ; i++) {
     PetscMemzero(ctr,size*sizeof(int));
-    for( j=0;  j<n[i]; j++) {  /* parse the indices of each IS */
-      row  = idx[i][j];
+    for( j=0;  j<nrow[i]; j++) {  /* parse the indices of each IS */
+      row  = irow[i][j];
       proc = rtable[row];
       if (proc != rank) { /* copy to the outgoing buf*/
         ctr[proc]++;
@@ -725,7 +733,7 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
   rbuf2[0] = tmp + msz;
   for( i =1; i< nrqs; ++i){
     j = pa[i];
-    rbuf2[i] = rbuf2[i-1]+w1[i-1];
+    rbuf2[i] = rbuf2[i-1]+w1[pa[i-1]];
   }
   for( i =0; i< nrqs; ++i){
     j = pa[i];
@@ -840,7 +848,7 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
   CHKPTRQ(recv_status3);
   send_status3 = (MPI_Status *) PetscMalloc( (nrqr+1)*sizeof(MPI_Status) );
   CHKPTRQ(send_status3);
-
+  /*
   for (i=0; i< nrqs; ++i){
       MPI_Waitany(nrqs, recv_waits3, &index, recv_status3+i);
   }
@@ -848,9 +856,9 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
   for (i=0; i< nrqr; ++i){
       MPI_Waitany(nrqr, send_waits3, &index, send_status3+i);
   }
-
-  /* MPI_Waitall(nrqs,recv_waits3,recv_status3);
-  MPI_Waitall(nrqr,send_waits3,send_status3); */
+*/
+  MPI_Waitall(nrqs,recv_waits3,recv_status3);
+  MPI_Waitall(nrqr,send_waits3,send_status3); 
 
  
   /* Now allocate buffers for a->a, and send them off */
@@ -875,7 +883,7 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
         start = bi[row];
         end   = bi[row+1];
         for (l = start; l< end; l++) {
-          sbuf_aj[i][ct2++] = ba[l];
+          sbuf_aa[i][ct2++] = ba[l];
         }
       }
     }
@@ -888,23 +896,125 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
   send_status4 = (MPI_Status *) PetscMalloc( (nrqr+1)*sizeof(MPI_Status) );
   CHKPTRQ(send_status4);
   
-  for (i=0; i< nrqs; ++i){
+  /* for (i=0; i< nrqs; ++i){
       MPI_Waitany(nrqs, recv_waits4, &index, recv_status4+i);
   }
 
   for (i=0; i< nrqr; ++i){
       MPI_Waitany(nrqr, send_waits4, &index, send_status4+i);
-  }
+  }*/
 
-  /* MPI_Waitall(nrqs,recv_waits4,recv_status4);
-  MPI_Waitall(nrqr,send_waits4,send_status4); */
+  MPI_Waitall(nrqs,recv_waits4,recv_status4);
+  MPI_Waitall(nrqr,send_waits4,send_status4); 
 
 
   /* Now u have all the data required, so form the matrix */
   /* rbuf3->aj, rbuf4 -> aa */
 
-  PetscFree(idx);
-  PetscFree(n);
+  /* create col map */
+  cmap   = (int **) PetscMalloc((1+ ismax)*sizeof(int *)); CHKPTRQ(cmap);
+  scmap   = (int **)PetscMalloc((1+ ismax)*sizeof(int *)); CHKPTRQ(scmap);
+  cmap[0] = (int *)PetscMalloc((1+ ismax*c->N)*sizeof(int)); CHKPTRQ(cmap[0]);
+  PetscMemzero((char *)cmap[0],(1+ ismax*c->N)*sizeof(int));
+  for (i =1; i<ismax; i++) { cmap[i] = cmap[i-1] + c->n; }
+  for (i =0; i<ismax; i++) { scmap[i] = cmap[i] +ashift;}
+  for (i=0; i< ismax; i++) {
+    for ( j=0; j< ncol[i]; j++) { 
+      scmap[i][icol[i][j]] = j+1; 
+    }
+  }
+  
+  /* Create lens which is required for MatCreate... */
+  lens   = (int **)PetscMalloc((1+ ismax)*sizeof(int *)); CHKPTRQ(lens);
+  for (i =0, j=0; i<ismax; i++) { j +=nrow[i]; }
+  lens[0] = (int *)PetscMalloc((1+ j)*sizeof(int)); CHKPTRQ(lens[0]);
+  PetscMemzero((char *)lens[0], (1+ j)*sizeof(int));
+  for (i =1; i<ismax; i++) { lens[i] = lens[i-1] +nrow[i-1]; }
+  
+  /* Update lens from local data */
+  for (i=0; i< ismax; i++) {
+    for (j =0; j< nrow[i]; j++) {
+      row  = irow[i][j] ;
+      proc = rtable[row];
+      if (proc == rank) {
+        row  -= rstart;
+        start = ai[row];
+        end   = ai[row +1];
+        for (k =start; k < end; k++) {
+          if ( scmap[aj[k]+cstart]) { lens[i][j]++ ;}
+        }
+        start = bi[row];
+        end   = bi[row +1];
+        for (k =start; k < end; k++) {
+          if ( scmap[garray[bj[k]]]) { lens[i][j]++ ;}
+        }
+      }
+    }
+  }
+  
+  /* Create row map*/
+  rmap   = (int **)PetscMalloc((1+ ismax)*sizeof(int *)); CHKPTRQ(rmap);
+  srmap   = (int **)PetscMalloc((1+ ismax)*sizeof(int *)); CHKPTRQ(srmap);
+  rmap[0] = (int *)PetscMalloc((1+ ismax*c->M)*sizeof(int)); CHKPTRQ(rmap[0]);
+  PetscMemzero((char *)rmap[0],(1+ ismax*c->M)*sizeof(int));
+  for (i =1; i<ismax; i++) { rmap[i] = rmap[i-1] + c->m ;}
+  for (i =0; i<ismax; i++) { srmap[i] = rmap[i] +ashift;}
+  for (i=0; i< ismax; i++) {
+    for ( j=0; j< nrow[i]; j++) { 
+      srmap[i][irow[i][j]] = j; 
+    }
+  }
+  
+  /* Update lens from offproc data */
+  for ( i =0; i<nrqs; i++) {
+    index = pa[i];
+    ct1 = 2*sbuf1[index][0]+1; /* sbuf1, rbuf2*/
+    ct2 = 0;               /* rbuf3, rbuf4 */
+    for (j =1; j<= sbuf1[pa[i]][0]; j++) {
+      is_no = sbuf1[index][2*j-1];
+      max1   = sbuf1[index][2*j];
+      for (k =0; k< max1; k++, ct1++) {
+        row  = sbuf1[index][ct1];
+        row  =rmap[is_no][row]; /* the val in the new matrix to be */
+        max2 = rbuf2[i][ct1];
+        for (l=0; l<max2; l++, ct2++) {
+          if (scmap[rbuf3[i][ct2]]) {
+            lens[is_no][row]++;
+          }
+        }
+      }
+    }
+  }    
+  
+  /* Create the submatrices */
+  if( scall == MAT_REUSE_MATRIX) {
+    int n_cols, n_rows;
+    for (i=0; i<ismax; i++){
+      ierr = MatGetSize((*submat)[i],&n_rows, &n_cols); CHKERRQ(ierr);
+      if ((n_rows !=nrow[i]) || (n_cols !=ncol[i])) {
+        SETERRQ(1,"MatGetSubmatrices_MPIAIJ:");
+      }
+    }
+  }
+  else {
+    *submat = (Mat *)PetscMalloc(ismax*sizeof(Mat)); CHKPTRQ(*submat);
+    for ( i=0; i<ismax; i++) {
+      ierr = MatCreateSeqAIJ(comm, nrow[i],ncol[i],0,lens[i],(*submat)+i); CHKERRQ(ierr);
+    }
+  }
+
+  /* Assemble the matrices */
+
+
+
+  /* Restore the indices */
+  for (i=0; i<ismax; i++) {
+    ierr = ISRestoreIndices(isrow[i], irow+i); CHKERRQ(ierr);
+    ierr = ISRestoreIndices(iscol[i], icol+i); CHKERRQ(ierr);
+  }
+  /* Destroy allocated memory */
+  PetscFree(nrow);
+  PetscFree(ncol);
   PetscFree(rtable);
   PetscFree(w1);
   PetscFree(pa);
