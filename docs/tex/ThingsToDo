@@ -39,6 +39,18 @@ Additional Capabilities that PETSc Needs:
      sections of the mesh, but really this would be needed just for
      the final edge.
 
+  - Clarify documentation for MatReorderForNonzeroDiagonal().
+    Comment from Jean Utke:
+    > It is still not clear to 
+    > me whether I can apply the routine for the in place and/or out of place
+    > factorization and when I have to call it (before or after the 
+    > factorization). 
+    > In general I would like to have the manual and the man pages a bit 
+    > more specific about whether parameters get changed inside the 
+    > routine or not. The routine in question for instance has all 
+    > parameter calls by value and not by reference which raises the 
+    > question what gets changed at all ... 
+    
   - Add a searchable index for the man pages (Jeff Scroggs Complaint)
 
   - Check out the performance of VecOps ( noticed tnem to be extremely bad (Satish)
