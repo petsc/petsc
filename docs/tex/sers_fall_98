@@ -1,0 +1,17 @@
+
+   The PETSc (Portable Extensible Toolkit for Scientific computation) team at
+Argonne National Laboratory develops parallel software for the solution of
+partial differential equations (PDEs). The software runs under Unix, including 
+the SGI Origin parallel computers, Cray T3E, linux, as well as Windows 9X/NT. 
+We currently have over two hundred user sites around the world. Our small team
+designs, develops and maintains the software. More information on PETSc can
+be obtained at http://www.mcs.anl.gov/petsc.
+
+  We would like to invite Stephen Moser to join our team for the fall semester
+Part of his work would involve:
+*  developing specific parallel PDE solvers using the PETSc infrastructure
+* developing JAVA applets that allow running these applications over the web
+
+This would result in the development of a numerical laboratory that allows 
+for the easy running of "numerical" experiments in fluids and other physical
+phenomana modeled by PDEs.
