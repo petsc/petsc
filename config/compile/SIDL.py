@@ -34,6 +34,8 @@ class Compiler(script.Script):
     self.scandal.servers    = []
     self.scandal.serverDirs = {}
     self.scandal.outputSIDLFiles = not self.disableOutput
+    if 'baseDirectory' in self.argDB:
+      self.scandal.baseDirectory = self.argDB['baseDirectory']
     self.scandal.run()
     for lang in self.scandal.outputFiles:
       outputFiles['Client '+lang] = self.scandal.outputFiles[lang]
@@ -64,6 +66,8 @@ class Compiler(script.Script):
       cmd.append('--outputSIDLFiles='+str(not self.disableOutput))
       cmd.append('--outputFiles')
       cmd.append('--logAppend')
+      if 'baseDirectory' in self.argDB:
+        cmd.append('--baseDirectory='+self.argDB['baseDirectory'])
       cmd.extend(source)
       (output, error, status) = self.executeShellCommand(' '.join(cmd), timeout = None)
       scandalOutputFiles = eval(self.filterShellOutput(output))
@@ -76,6 +80,8 @@ class Compiler(script.Script):
       cmd.append('--outputSIDLFiles='+str(not self.disableOutput))
       cmd.append('--outputFiles')
       cmd.append('--logAppend')
+      if 'baseDirectory' in self.argDB:
+        cmd.append('--baseDirectory='+self.argDB['baseDirectory'])
       cmd.extend(source)
       (output, error, status) = self.executeShellCommand(' '.join(cmd), timeout = None)
       scandalOutputFiles = eval(self.filterShellOutput(output))
@@ -127,6 +133,8 @@ class Compiler(script.Script):
     self.scandal.includeDirectories = self.includeDirectories
     self.scandal.systemIncludeDirectories = self.systemIncludeDirectories
     self.scandal.outputSIDLFiles = not self.disableOutput
+    if 'baseDirectory' in self.argDB:
+      self.scandal.baseDirectory = self.argDB['baseDirectory']
     self.editServer(self.serverDirs)
     self.scandal.run()
     for lang in self.scandal.outputFiles:
@@ -152,6 +160,8 @@ class Compiler(script.Script):
       cmd.append('--outputSIDLFiles='+str(not self.disableOutput))
       cmd.append('--outputFiles')
       cmd.append('--logAppend')
+      if 'baseDirectory' in self.argDB:
+        cmd.append('--baseDirectory='+self.argDB['baseDirectory'])
       cmd.extend(source)
       (output, error, status) = self.executeShellCommand(' '.join(cmd), timeout = None)
       scandalOutputFiles = eval(self.filterShellOutput(output))
@@ -164,6 +174,8 @@ class Compiler(script.Script):
       cmd.append('--outputSIDLFiles='+str(not self.disableOutput))
       cmd.append('--outputFiles')
       cmd.append('--logAppend')
+      if 'baseDirectory' in self.argDB:
+        cmd.append('--baseDirectory='+self.argDB['baseDirectory'])
       cmd.extend(source)
       (output, error, status) = self.executeShellCommand(' '.join(cmd), timeout = None)
       scandalOutputFiles = eval(self.filterShellOutput(output))

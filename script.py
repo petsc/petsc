@@ -154,7 +154,7 @@ class Script(logging.Logger):
     if status: raise RuntimeError('Could not execute \''+command+'\':\n'+output+error)
   defaultCheckCommand = staticmethod(defaultCheckCommand)
 
-  def executeShellCommand(command, checkCommand = None, timeout = 120.0, log = None):
+  def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None):
     '''Execute a shell command returning the output, and optionally provide a custom error checker
        - This returns a tuple of the (output, error, statuscode)'''
     import threading
