@@ -1,4 +1,4 @@
-/* $Id: petscarchivefe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
+/* $Id: petscarchivefe.cpp,v 1.2 2001/03/21 19:48:17 buschelm Exp buschelm $ */
 #include <iostream>
 #include <stdlib.h>
 #include "petscfe.h"
@@ -15,6 +15,7 @@ void archiver::GetArgs(int argc,char *argv[]) {
 void archiver::Parse(void) {
   for (int i=1;i<arg.size();i++) {
     string temp = arg[i];
+    if (temp == "") break;
     if (temp[0]=='-') {
       FoundFlag(i,temp);
     } else {
