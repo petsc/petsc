@@ -27,7 +27,7 @@ C
       integer   PetscInt(1), PetscNull
       double precision PetscDouble(1)
 
-      common   /fortranview/  PetscDouble, PetscInt, PetscNull,
+      common   /petscfortran/  PetscDouble, PetscInt, PetscNull,
      *         STDOUT_VIEWER_SELF,STDERR_VIEWER_SELF,STDOUT_VIEWER_WORLD
 
 C
