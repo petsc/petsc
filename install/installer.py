@@ -57,8 +57,7 @@ class Installer(install.base.Base):
     root = self.retriever.retrieve(url, self.getInstallRoot(url, isBackup = 1), force = self.force);
     self.builder.build(root, 'sidl', ignoreDependencies = 1)
     output = self.executeShellCommand('tar -czf '+self.getRepositoryName(self.getMappedUrl(url))+'.tgz -C '+os.path.dirname(root)+' '+os.path.basename(root))
-    print 'Should remove '+os.path.dirname(root)
-    #shutil.rmtree(os.path.dirname(root))
+    shutil.rmtree(os.path.dirname(root))
     return
 
 if __name__ == '__main__':
