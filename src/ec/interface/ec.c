@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ec.c,v 1.8 1997/08/22 17:49:15 curfman Exp curfman $";
+static char vcid[] = "$Id: ec.c,v 1.9 1997/08/22 17:56:53 curfman Exp curfman $";
 #endif
 
 /*
@@ -437,7 +437,8 @@ int ECSolve(EC ec)
       ierr = ECGetEigenvalues(ec,&n,&rpart,&ipart); CHKERRQ(ierr);
       printf("%d eigenvalues computed\n",n);
       for ( i=0; i<n; i++ ) {
-        printf("%d %g + %gi\n",i,rpart[i],ipart[i]);
+        if (ipart[i] >= 0.0) printf("%d %g + %gi\n",i,rpart[i],ipart[i]);
+        else                 printf("%d %g - %gi\n",i,rpart[i],-ipart[i]);
       }
     }
   }  
