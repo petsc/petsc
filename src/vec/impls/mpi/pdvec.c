@@ -422,6 +422,7 @@ int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 #else /* !defined(PETSC_HAVE_NETCDF) */
   PetscFunctionBegin;
   SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
+  PetscFunctionReturn(0);
 #endif
 }
 #undef __FUNCT__  

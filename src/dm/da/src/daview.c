@@ -5,6 +5,9 @@
 */
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
+#if defined(PETSC_HAVE_NETCDF)
+#include "pnetcdf.h"
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAView"
@@ -270,7 +273,77 @@ int DAView_Binary(DA da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DAView_Netcdf"
+int DAView_Netcdf(DA da,PetscViewer viewer)
+{
+#if defined(PETSC_HAVE_NETCDF)
+  int            rank,ierr;
+  int            i,j,len,dim,m,n,p,dof,swidth,M,N,P;
+  DAStencilType  stencil;
+  DAPeriodicType periodic;
+  MPI_Comm       comm;
 
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
+  ierr = DAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    FILE *file;
 
+    ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
+    if (file) {
+      char           fieldname[256];
 
+      fprintf(file,"-daload_info %d,%d,%d,%d,%d,%d,%d,%d\n",dim,m,n,p,dof,swidth,stencil,periodic);
+      for (i=0; i<dof; i++) {
+        if (da->fieldname[i]) {
+          ierr = PetscStrncpy(fieldname,da->fieldname[i],256);CHKERRQ(ierr);
+          ierr = PetscStrlen(fieldname,&len);CHKERRQ(ierr);
+          len  = PetscMin(256,len);CHKERRQ(ierr);
+          for (j=0; j<len; j++) {
+            if (fieldname[j] == ' ') fieldname[j] = '_';
+          }
+          fprintf(file,"-daload_fieldname_%d %s\n",i,fieldname);
+        }
+      }
+      if (da->coordinates) { /* save the DA's coordinates */
+        fprintf(file,"-daload_coordinates\n");
+      }
+    }
+  } 
+
+  /* save the coordinates if they exist to disk (in the natural ordering) */
+  if (da->coordinates) {
+    DA  dac;
+    int *lx,*ly,*lz;
+    Vec natural;
+
+    /* create the appropriate DA to map to natural ordering */
+    ierr = DAGetOwnershipRange(da,&lx,&ly,&lz);CHKERRQ(ierr);
+    if (dim == 1) {
+      ierr = DACreate1d(comm,DA_NONPERIODIC,m,dim,0,lx,&dac);CHKERRQ(ierr); 
+    } else if (dim == 2) {
+      ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,M,N,dim,0,lx,ly,&dac);CHKERRQ(ierr); 
+    } else if (dim == 3) {
+      ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
+    } else {
+      SETERRQ1(1,"Dimension is not 1 2 or 3: %d\n",dim);
+    }
+    ierr = DACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalBegin(dac,da->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalEnd(dac,da->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
+    ierr = VecView(natural,viewer);CHKERRQ(ierr);
+    ierr = VecDestroy(natural);CHKERRQ(ierr);
+    ierr = DADestroy(dac);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+#else /* !defined(PETSC_HAVE_NETCDF) */
+  PetscFunctionBegin;
+  SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
+  PetscFunctionReturn(0);
+#endif
+}
