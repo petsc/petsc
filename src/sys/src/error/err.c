@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.18 1995/08/01 17:32:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.19 1995/08/02 04:15:10 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>  /*I <stdio.h> I*/
@@ -96,8 +96,8 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
 {
   static int out_of_memory = 0;
   if (number == PETSC_ERROR_NO_MEM && !out_of_memory) {
-    if (!dir) fprintf(stderr,"PETSC ERROR: %s %d %s %d\n",file,line);
-    else      fprintf(stderr,"PETSC ERROR: %s%s %d %s %d\n",dir,file,line);
+    if (!dir) fprintf(stderr,"PETSC ERROR: %s %d\n",file,line);
+    else      fprintf(stderr,"PETSC ERROR: %s%s %d\n",dir,file,line);
     fprintf(stderr,"PETSC ERROR: Out of memory. This could be due to \n");
     fprintf(stderr,"PETSC ERROR: allocating too large an object or \n");
     fprintf(stderr,"PETSC ERROR: bleeding by not properly destroying \n");
