@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.32 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: drawreg.c,v 1.33 2000/08/04 15:56:10 bsmith Exp balay $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -286,7 +286,9 @@ int DrawSetFromOptions(Draw draw)
 
   /* type has not been set? */
   if (!draw->type_name) {
-#if defined(PETSC_HAVE_X11)
+#if defined(PARCH_win32)
+    ierr = DrawSetType(draw,DRAW_WIN32);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_X11)
     ierr = DrawSetType(draw,DRAW_X);CHKERRQ(ierr);
 #else
     PetscTruth warn;
