@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.277 1999/03/30 17:11:31 curfman Exp curfman $ 
+# $Id: makefile,v 1.278 1999/03/30 17:12:03 curfman Exp curfman $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -231,8 +231,7 @@ etags_fexamples:
 #
 
 BMAKEFILES = bmake/common* bmake/*/base* bmake/*/petscconf.h bmake/win32/makefile.dos
-DOCS	   = bin/petscviewinfo.text bin/petscoptsinfo.text \
-	     bmake/readme bmake/petscconf.defs
+DOCS	   = bmake/readme bmake/petscconf.defs
 SCRIPTS    = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
 	     maint/xclude maint/crontab  \
 	     maint/autoftp include/foldinclude/generateincludes

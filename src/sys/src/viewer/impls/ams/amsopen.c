@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: amsopen.c,v 1.4 1999/03/17 23:21:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: amsopen.c,v 1.5 1999/03/31 03:10:30 bsmith Exp curfman $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  */
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: amsopen.c,v 1.4 1999/03/17 23:21:05 bsmith Exp bsmith
     Output Parameter:
 .   lab - the viewer
 
-    Options Database Key:
+    Options Database Keys:
 +   -ams_port <port number>
 .   -ams_publish_objects - publish all PETSc objects to be visible to the AMS memory snooper,
                            use PetscObjectPublish() to publish individual objects
@@ -35,6 +35,9 @@ static char vcid[] = "$Id: amsopen.c,v 1.4 1999/03/17 23:21:05 bsmith Exp bsmith
 
     Notes:
     This viewer can be destroyed with ViewerDestroy().
+
+    Information about the AMS (ALICE Memory Snooper) is available via
+    http://www.mcs.anl.gov/ams.
 
 .keywords: Viewer, open, AMS memory snooper
 
