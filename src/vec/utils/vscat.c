@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.12 1995/03/23 17:54:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.13 1995/03/25 01:25:18 bsmith Exp curfman $";
 #endif
 
 
@@ -359,6 +359,7 @@ int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode,
 .  iy - indices of locations in y to insert 
 .  addv - either AddValues or InsertValues
 .  mode - either ScatterAll, ScatterUp, or ScatterDown
+.  inctx - scatter context obtained with VecScatterCtxCreate()
 
   Output Parameters:
 .  y - vector to scatter to 
