@@ -1,9 +1,9 @@
-/*$Id: nt_time.c,v 1.16 1999/06/18 15:12:36 balay Exp bsmith $*/
+/*$Id: nt_time.c,v 1.17 1999/10/24 14:01:31 bsmith Exp balay $*/
 
 #include <petsc.h>
 #if defined (PARCH_win32_gnu) || defined (PARCH_win32)
 #include <Windows.h>
-#define FACTOR   4294967296.0
+#define FACTOR   4294967296.0 /* pow(2,32) */
 
 #undef __FUNC__  
 #define __FUNC__ "nt_time"
@@ -24,6 +24,8 @@ PLogDouble nt_time(void)
   if (flag) {
     ierr = QueryPerformanceCounter( &StartTime );CHKERRQ(!ierr);
     ierr = QueryPerformanceFrequency( &PerfFreq );CHKERRQ(!ierr);
+    /* Explicitly convert the higher 32 bits, and add the lower 32 bits from the counter */
+    /* works on non-pentium CPUs ? */
     SecInTick = 1.0/((double)PerfFreq.HighPart*FACTOR+(double)PerfFreq.LowPart);
     flag = 0;
   }		
