@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.34 1996/04/14 00:49:01 curfman Exp curfman $";
+static char vcid[] = "$Id: da1.c,v 1.35 1996/04/17 23:01:40 curfman Exp curfman $";
 #endif
 
 /* 
@@ -113,13 +113,13 @@ $  -da_view : call DAView() at the conclusion of DACreate1d()
 @*/
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 {
-  int           rank, size,xs,xe,x,Xs,Xe,ierr,start,end,m;
-  int           i,*idx,nn,j,count,left,flg;
-  DA            da;
-  Vec           local,global;
-  VecScatter    ltog,gtol;
-  IS            to,from;
-  DF            df_local;
+  int        rank, size,xs,xe,x,Xs,Xe,ierr,start,end,m;
+  int        i,*idx,nn,j,count,left,flg,gdim;
+  DA         da;
+  Vec        local,global;
+  VecScatter ltog,gtol;
+  IS         to,from;
+  DF         df_local;
   *inra = 0;
 
   PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
@@ -136,7 +136,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   if (M < m)     SETERRQ(1,"DACreate1d:More processors than data points!");
   if ((M-1) < s) SETERRQ(1,"DACreate1d:Array is too small for stencil!");
 
-  /* determine local owned region */
+  /* determine locally owned region */
   x = M/m + ((M % m) > (rank));
 
   if (rank >= (M % m)) {xs = (rank * (int) (M/m) + M % m);}
@@ -251,6 +251,20 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   }  
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
   PetscFree(idx);
+
+  /* Construct the mapping from current global ordering to global
+     ordering that would be used if only 1 processor were employed.
+     This mapping is intended only for internal use by discrete
+     function and matrix viewers.
+
+     We don't really need this for 1D distributed arrays, since the
+     ordering is the same regardless.  But for now we form it anyway
+     so that the DFVec routines can all be used seamlessly.  Maybe
+     we'll change in the near future.
+   */
+  ierr = VecGetSize(global,&gdim); CHKERRQ(ierr);
+  da->gtog1 = (int *)PetscMalloc(gdim*sizeof(int)); CHKPTRQ(da->gtog1);
+  for (i=0; i<gdim; i++) da->gtog1[i] = i;
 
   /* Create discrete function shell and associate with vectors in DA */
   /* Eventually will pass in optional labels for each component */

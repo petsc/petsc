@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.31 1996/04/14 00:49:07 curfman Exp curfman $";
+static char vcid[] = "$Id: da3.c,v 1.32 1996/04/17 23:01:47 curfman Exp curfman $";
 #endif
 
 /*
@@ -109,13 +109,13 @@ int DAView_3d(PetscObject dain,Viewer viewer)
     DrawPause(draw);
     MPI_Barrier(da->comm);
     for (k=0-da->s; k<da->P+da->s; k++) {  
-      /*Go through and draw for each plane*/
+      /* Go through and draw for each plane */
       if ((k >= da->Zs) && (k < da->Ze)) {
   
         /* overlay ghost numbers, useful for error checking */
         base = (da->Xe-da->Xs)*(da->Ye-da->Ys)*(k-da->Zs); idx = da->idx;
         plane=k;  
-        /*Keep z wrap around points on the dradrawg*/
+        /* Keep z wrap around points on the dradrawg */
         if (k<0)    { plane=da->P+k; }  
         if (k>=da->P) { plane=k-da->P; }
         ymin = da->Ys; ymax = da->Ye; 
@@ -129,7 +129,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
             if (y<0)      { ycoord = da->N+y; } 
 
             if (y>=da->N) { ycoord = y-da->N; }
-            xcoord = x;   /*Keep x wrap points on drawing */          
+            xcoord = x;   /* Keep x wrap points on drawing */          
 
             if (x<xmin)  { xcoord = xmax - (xmin-x); }
             if (x>=xmax) { xcoord = xmin + (x-xmax); }
@@ -181,8 +181,9 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   int           left,up,down,bottom,top,i,j,k,*idx,nn;
   int           n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
   int           n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
-  int           *bases,x_t,y_t,z_t,s_t,base,count;
+  int           *bases,*ldims,x_t,y_t,z_t,s_t,base,count;
   int           s_x,s_y,s_z; /* s proportionalized to w */
+  int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim;
   DA            da;
   Vec           local,global;
   VecScatter    ltog,gtol;
@@ -194,7 +195,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PLogObjectCreate(da);
   PLogObjectMemory(da,sizeof(struct _DA));
   da->dim = 3;
-  da->gtog1 = 0;
 
   MPI_Comm_size(comm,&size); 
   MPI_Comm_rank(comm,&rank); 
@@ -271,7 +271,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (N < n) SETERRQ(1,"DACreate3d:Partition in y direction is too fine!");
   if (P < p) SETERRQ(1,"DACreate3d:Partition in z direction is too fine!");
 
-  /* determine local owned region */
+  /* determine locally owned region */
   x = M/m + ((M % m) > (rank % m));
   y = N/n + ((N % n) > ((rank % (m*n)) /m)); 
   z = P/p + ((P % p) > (rank / (m*n)));
@@ -334,9 +334,13 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* determine starting point of each processor */
   nn = x*y*z;
-  bases = (int *) PetscMalloc( (size+1)*sizeof(int) ); CHKPTRQ(bases);
-  MPI_Allgather(&nn,1,MPI_INT,bases+1,1,MPI_INT,comm);
+  bases = (int *) PetscMalloc( (2*size+1)*sizeof(int) ); CHKPTRQ(bases);
+  ldims = (int *) (bases+size+1);
+  MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);
   bases[0] = 0;
+  for ( i=1; i<=size; i++ ) {
+    bases[i] = ldims[i-1];
+  }
   for ( i=1; i<=size; i++ ) {
     bases[i] += bases[i-1];
   }
@@ -1347,7 +1351,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       }
     }
   }
-  PetscFree(bases);
 
   /* construct the local to local scatter context */
   /* 
@@ -1371,6 +1374,39 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   }
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
   PetscFree(idx);
+
+  /* Construct the mapping from current global ordering to global
+     ordering that would be used if only 1 processor were employed.
+     This mapping is intended only for internal use by discrete
+     function and matrix viewers.
+
+     Note: At this point, x has already been adjusted for multiple
+     degrees of freedom per node.
+   */
+  ldim = x*y*z;
+  ierr = VecGetSize(global,&gdim); CHKERRQ(ierr);
+  da->gtog1 = (int *)PetscMalloc(gdim*sizeof(int)); CHKPTRQ(da->gtog1);
+  gA        = (int *)PetscMalloc((2*(gdim+ldim))*sizeof(int)); CHKPTRQ(gA);
+  gB        = (int *)(gA + ldim);
+  gAall     = (int *)(gB + ldim);
+  gBall     = (int *)(gAall + gdim);
+  /* Compute local parts of global orderings */
+  ict = 0;
+  for (k=zs; k<ze; k++) {
+    for (j=ys; j<ye; j++) {
+      for (i=xs; i<xe; i++) {
+        /* gA = global number for 1 proc; gB = current global number */
+        gA[ict] = i + j*M*w + k*M*N*w;
+        gB[ict] = start + ict;
+        ict++;
+      }
+    }
+  }
+  /* Broadcast the orderings */
+  MPI_Allgatherv(gA,ldim,MPI_INT,gAall,ldims,bases,MPI_INT,comm);
+  MPI_Allgatherv(gB,ldim,MPI_INT,gBall,ldims,bases,MPI_INT,comm);
+  for (i=0; i<gdim; i++) da->gtog1[gBall[i]] = gAall[i];
+  PetscFree(gA); PetscFree(bases);
 
   /* Create discrete function shell and associate with vectors in DA */
   /* Eventually will pass in optional labels for each component */
