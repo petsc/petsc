@@ -18,7 +18,6 @@ class Framework(base.Base):
     self.filesets        = {}
     self.configureHeader = None
     self.builder         = build.builder.Builder(None)
-    self.setupSourceDB(self.project)
     self.setupDependencies()
     self.createTmpDir()
     return
@@ -39,6 +38,11 @@ class Framework(base.Base):
     # Argument database manipulation
     argDB.setType('fileset',        nargs.Arg(None, None, 'Name of a FileSet or full path of an individual file', isTemporary = 1), forceLocal = 1)
     argDB.setType('regExp',         nargs.Arg(None, None, 'Regular expression',                                   isTemporary = 1), forceLocal = 1)
+
+    if not 'installedprojects'  in self.argDB: self.argDB['installedprojects']  = []
+    if not 'installedLanguages' in self.argDB: self.argDB['installedLanguages'] = ['Python', 'Cxx']
+    if not 'clientLanguages'    in self.argDB: self.argDB['clientLanguages']    = []
+
     base.Base.setupArgDB(self, argDB, clArgs)
     return argDB
 
@@ -55,8 +59,8 @@ class Framework(base.Base):
         self.sourceDB = cPickle.load(dbFile)
         self.sourceDB.filename = filename
         dbFile.close()
-      except Exception:
-        self.debugPrint('Source database '+str(filename)+' could not be read. Creating a new one', 2, 'sourceDB')
+      except Exception, e:
+        self.debugPrint('Source database '+str(filename)+' could not be read: '+str(e)+'. Creating a new one', 2, 'sourceDB')
         self.sourceDB = sourceDatabase.SourceDB(root, filename)
     else:
       self.debugPrint('Source database '+str(filename)+' does not exist. Creating a new one', 2, 'sourceDB')
@@ -175,8 +179,6 @@ class Framework(base.Base):
 
   def t_activate(self):
     '''Load all necessary data for this project into the current RDict, without destroying previous data'''
-    # Update language specific information
-    self.compileTemplate.install()
     # Update project in 'installedprojects'
     self.argDB['installedprojects'] = [self.project]+self.argDB['installedprojects']
     self.debugPrint('Activated project '+str(self.project), 2, 'install')
@@ -425,19 +427,14 @@ class Framework(base.Base):
         target = target[:]
       if not isinstance(target, list): target = [target]
 
-      if not 'installedprojects'  in self.argDB:
-        self.argDB['installedprojects']  = []
-      if not 'installedLanguages' in self.argDB:
-        self.argDB['installedLanguages'] = ['Python', 'Cxx']
-      if not 'clientLanguages'    in self.argDB:
-        self.argDB['clientLanguages']    = []
-
       self.setupProject()
-      # The some targets should execute before setup
-      for t in ['activate', 'configure']:
-        if t in target:
-          self.executeTarget(t)
-          target.remove(t)
+      if 'activate' in target:
+        self.executeTarget('activate')
+        target.remove('activate')
+      self.setupSourceDB(self.project)
+      if 'configure' in target:
+        self.executeTarget('configure')
+        target.remove('configure')
       self.setupBuild()
       map(self.executeTarget, target)
     except Exception, e:

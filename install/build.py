@@ -39,13 +39,14 @@ class Builder(install.urlMapping.UrlMapping):
         import cPickle
         dbFile = file(dictFilename)
         data   = cPickle.load(dbFile)
+        self.debugPrint('Loaded argument database from '+dictFilename, 2, 'install')
         keys   = self.argDB.keys()
         for k in filter(lambda k: not k in keys, data.keys()):
           if data[k].isValueSet():
             self.argDB.setType(k, data[k])
+          self.debugPrint('Set key '+key+' in argument database', 4, 'install')
         dbFile.close()
         loadedRDict = 1
-        self.debugPrint('Loaded dictionary from '+dictFilename, 2, 'install')
       except Exception, e:
         self.debugPrint('Problem loading dictionary from '+dictFilename+'\n--> '+str(e), 2, 'install')
         raise e

@@ -11,6 +11,10 @@ class PetscMake(build.framework.Framework):
     build.framework.Framework.__init__(self, project.Project('bs', 'bk://sidl.bkbits.net/BuildSystem', self.getRoot()), clArgs, argDB)
     return
 
+  def t_configure(self):
+    self.configureHeader = os.path.join(self.project.getRoot(), self.sidlTemplate.usingSIDL.getClientRootDir('Python', 'sidl'), 'cygwinpath_Module.h')
+    return build.framework.Framework.t_configure(self)
+
   def setupSIDL(self):
     import build.fileset
     self.filesets['sidl'] = build.fileset.FileSet()
@@ -25,14 +29,7 @@ class PetscMake(build.framework.Framework):
     return
 
   def setupProject(self):
-    if not 'installedprojects'  in self.argDB:
-      self.argDB['installedprojects']  = []
-    if not 'installedLanguages' in self.argDB:
-      self.argDB['installedLanguages'] = ['Python', 'Cxx']
-    if not 'clientLanguages'    in self.argDB:
-      self.argDB['clientLanguages']    = []
     self.setupSIDL()
-    self.configureHeader = os.path.join(self.project.getRoot(), self.sidlTemplate.usingSIDL.getClientRootDir('Python', 'sidl'), 'cygwinpath_Module.h')
     return
 
   def setupBuild(self):

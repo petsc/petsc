@@ -36,6 +36,7 @@ import time
 class SourceDB (dict, base.Base):
   '''A SourceDB is a dictionary of file data used during the build process.'''
   includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
+  isLoading = 0
 
   def __init__(self, root, filename = None):
     dict.__init__(self)
@@ -56,6 +57,16 @@ class SourceDB (dict, base.Base):
       output += '  Timestamp: '+str(timestamp)+'\n'
       output += '  Deps:      '+str(dependencies)+'\n'
     return output
+
+  def __setstate__(self, d):
+    base.Base.__setstate__(self, d)
+    # We have to prevent recursive calls to this when the pickled database is loaded in load()
+    #   This is to ensure that fresh copies of the database are obtained after unpickling
+    if not SourceDB.isLoading:
+      SourceDB.isLoading = 1
+      self.load()
+      SourceDB.isLoading = 0
+    return 
 
   def getRelativePath(self, path):
     '''Returns a relative source file path using the root'''
@@ -127,7 +138,7 @@ class SourceDB (dict, base.Base):
     if isinstance(source, file):
       f = source
     else:
-      f = open(source, 'r')
+      f = file(source)
     m = md5.new()
     size = 1024*1024
     buf  = f.read(size)
@@ -155,7 +166,7 @@ class SourceDB (dict, base.Base):
       (checksum, mtime, timestamp, dependencies) = self[source]
       newDep = []
       try:
-        file = open(source, 'r')
+        file = file(source)
       except IOError, e:
         if e.errno == errno.ENOENT:
           del self[source]
@@ -184,15 +195,30 @@ class SourceDB (dict, base.Base):
       self[source] = (checksum, mtime, timestamp, tuple(newDep))
       file.close()
 
+  def load(self):
+    '''Load the source database from the saved filename'''
+    filename = str(self.filename)
+    if os.path.exists(os.path.dirname(filename)):
+      self.clear()
+      self.debugPrint('Loading source database from '+filename, 2, 'sourceDB')
+      dbFile = file(filename)
+      newDB  = cPickle.load(dbFile)
+      dbFile.close()
+      self.update(newDB)
+    else:
+      self.debugPrint('Could not load source database from '+filename, 1, 'sourceDB')
+    return
+
   def save(self):
     '''Save the source database to a file. The saved database with have path names relative to the root.'''
-    if os.path.exists(os.path.dirname(self.filename)):
-      self.debugPrint('Saving source database in '+self.filename, 2, 'sourceDB')
-      dbFile = open(self.filename, 'w')
+    filename = str(self.filename)
+    if os.path.exists(os.path.dirname(filename)):
+      self.debugPrint('Saving source database in '+filename, 2, 'sourceDB')
+      dbFile = file(filename, 'w')
       cPickle.dump(self, dbFile)
       dbFile.close()
     else:
-      self.debugPrint('Could not save source database in '+self.filename, 1, 'sourceDB')
+      self.debugPrint('Could not save source database in '+filename, 1, 'sourceDB')
     return
 
 class DependencyAnalyzer (base.Base):
@@ -225,7 +251,7 @@ class DependencyAnalyzer (base.Base):
     return matchName
 
   def getNeighbors(self, source):
-    file = open(source, 'r')
+    file = file(source)
     adj  = []
     for line in file.xreadlines():
       match = self.includeRE.match(line)
