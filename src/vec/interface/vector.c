@@ -971,6 +971,7 @@ int VecWAXPY(const PetscScalar *alpha,Vec x,Vec y,Vec w)
   PetscCheckSameComm(x,y); PetscCheckSameComm(y,w);
   if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  w->normvalid = PETSC_FALSE;
 
   ierr = PetscLogEventBegin(VEC_WAXPY,x,y,w,0);CHKERRQ(ierr);
   ierr =  (*x->ops->waxpy)(alpha,x,y,w);CHKERRQ(ierr);
@@ -1014,6 +1015,7 @@ int VecPointwiseMult(Vec x,Vec y,Vec w)
   PetscCheckSameComm(x,y); PetscCheckSameComm(y,w);
   if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  w->normvalid = PETSC_FALSE;
 
   ierr = PetscLogEventBegin(VEC_PointwiseMult,x,y,w,0);CHKERRQ(ierr);
   ierr = (*x->ops->pointwisemult)(x,y,w);CHKERRQ(ierr);
@@ -1057,6 +1059,7 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
   PetscCheckSameComm(x,y); PetscCheckSameComm(y,w);
   if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  w->normvalid = PETSC_FALSE;
 
   ierr = (*x->ops->pointwisedivide)(x,y,w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1073,7 +1076,7 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
 .  x, y  - the vectors
 
    Output Parameter:
-.  w - the result
+.  max - the result
 
    Level: advanced
 
