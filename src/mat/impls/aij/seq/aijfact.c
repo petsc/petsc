@@ -486,10 +486,8 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
       v        = a->a + a->i[r[i]] + shift;
       for (j=0; j<nz; j++) {
         rtmp[ics[ajtmpold[j]]] = v[j];
-        if ( (ndamp||nshift) && ajtmpold[j] == r[i]) { /* damp the diagonal of the matrix */
-          rtmp[ics[ajtmpold[j]]] += damping + shift_amount;
-        }
       }
+      rtmp[ics[r[i]]] += damping + shift_amount; /* damp the diagonal of the matrix */
 
       row = *ajtmp++ + shift;
       while  (row < i) {
