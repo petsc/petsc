@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.18 1996/01/09 14:31:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.19 1996/03/10 17:27:25 bsmith Exp curfman $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -61,8 +61,8 @@ int KSPSolve_QCG(KSP ksp,int *its)
   Mat          Amat, Pmat;
   Vec          W, WA, WA2, R, P, ASP, BS, X, B;
   Scalar       zero = 0.0, negone = -1.0, scal, nstep, btx, xtax,beta, rntrn, step;
-  double       dzero = 0.0, bsnrm, ptasp, q1, q2, wtasp, bstp, rtr;
-  double       xnorm, step1, step2, rnrm, p5 = 0.5, *history;
+  double       ptasp, q1, q2, wtasp, bstp, rtr, xnorm, step1, step2, rnrm, p5 = 0.5;
+  double       *history, dzero = 0.0, bsnrm;
   int          i, cerr, hist_len, maxit, ierr;
   PC           pc = ksp->B;
   PCType       pctype;
@@ -332,15 +332,19 @@ int KSPCreate_QCG(KSP ksp)
 */
 static int QuadraticRoots_Private(Vec s,Vec p,double *delta,double *step1,double *step2)
 { 
-#if defined(PETSC_COMPLEX)
-  SETERRQ(1,"QuadraticRoots_Private:not done for complex numbers");
-#else
   double zero = 0.0, dsq, ptp, pts, rad, sts;
   int    ierr;
 
+#if defined(PETSC_COMPLEX)
+  Scalar cptp, cpts, csts;
+  ierr = VecDot(p,s,&cpts); CHKERRQ(ierr); pts = real(cpts);
+  ierr = VecDot(p,p,&cptp); CHKERRQ(ierr); ptp = real(cptp);
+  ierr = VecDot(s,s,&csts); CHKERRQ(ierr); sts = real(csts);
+#else
   ierr = VecDot(p,s,&pts); CHKERRQ(ierr);
   ierr = VecDot(p,p,&ptp); CHKERRQ(ierr);
   ierr = VecDot(s,s,&sts); CHKERRQ(ierr);
+#endif
   dsq  = (*delta)*(*delta);
   rad  = sqrt((pts*pts) - ptp*(sts - dsq));
   if (pts > zero) {
@@ -351,5 +355,4 @@ static int QuadraticRoots_Private(Vec s,Vec p,double *delta,double *step1,double
     *step2 = (sts - dsq)/(ptp * *step1);
   }
   return 0;
-#endif
 }
