@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscadic.c,v 1.4 1997/07/09 21:39:35 balay Exp bsmith $";
+static char vcid[] = "$Id: petscadic.c,v 1.5 1998/05/30 01:31:51 bsmith Exp balay $";
 #endif
 
 #include "petscadic.h"
@@ -113,8 +113,8 @@ int DefaultComputeJacobian(int (*Function)(Vec,Vec),Vec x1,Mat J)
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
       else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
 #else
-      if (abs(dx) < dx_min && real(dx) >= 0.0) dx = dx_par;
-      else if (real(dx) < 0.0 && abs(dx) < dx_min) dx = -dx_par;
+      if (PetscAbsScalar(dx) < dx_min && PetscReal(dx) >= 0.0) dx = dx_par;
+      else if (PetscReal(dx) < 0.0 && PetscAbsScalar(dx) < dx_min) dx = -dx_par;
 #endif
       dx *= epsilon;
       wscale = 1.0/dx;
