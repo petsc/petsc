@@ -1122,7 +1122,7 @@ slots to contain the ghost values.
 
 The input arguments \trl{INSERT_VALUES} and \trl{SCATTER_FORWARD}
 cause the ghost values to be correctly updated from the appropriate
-processor. The arguments \trl{ADD_VALUES} and \trl{SCATTER_REVERSE }
+processor. The arguments \trl{ADD_VALUES} and \trl{SCATTER_REVERSE}
 update the ``local'' portions of the vector from all the other
 processors' ghost values.  This would be appropriate, for example,
 when performing a finite element assembly of a load vector.
@@ -2837,18 +2837,18 @@ define the subdomains.
 The object PCASMType is one of \trl{PC_ASM_BASIC},
 \trl{PC_ASM_INTERPOLATE}, \trl{PC_ASM_RESTRICT}, \trl{PC_ASM_NONE}
 and may also be set with the options database 
-\trl{-pc_asm_type [basic,interpolate,restrict,none]}.
+\trl{-pc_asm_type} \trl{[basic,interpolate,restrict,none]}.
 \findex{-pc_asm_type} \findex{PCASMSetType()} \findex{PC_ASM_BASIC} 
 \findex{PC_ASM_RESTRICT} \findex{PC_ASM_INTERPOLATE} \findex{PC_ASM_NONE}
-The type \trl{PC_ASM_BASIC} (or \trl{-pc_asm_type basic}) corresponds to the
+The type \trl{PC_ASM_BASIC} (or \trl{-pc_asm_type} \trl{basic}) corresponds to the
 standard additive Schwarz method that uses the full restriction and
 interpolation operators.
-The type \trl{PC_ASM_RESTRICT} (or \trl{-pc_asm_type restrict}) uses a full
+The type \trl{PC_ASM_RESTRICT} (or \trl{-pc_asm_type} \trl{restrict}) uses a full
 restriction operator, but during the interpolation process ignores the off-processor
 values.
-Similarly, \trl{PC_ASM_INTERPOLATE} (or \trl{-pc_asm_type interpolate}) uses a limited
+Similarly, \trl{PC_ASM_INTERPOLATE} (or \trl{-pc_asm_type} \trl{interpolate}) uses a limited
 restriction process in conjunction with a full interpolation, while
-\trl{PC_ASM_NONE} (or \trl{-pc_asm_type none}) ignores off-processor valies
+\trl{PC_ASM_NONE} (or \trl{-pc_asm_type} \trl{none}) ignores off-processor valies
 for both restriction and interpolation.
 The ASM types with limited restriction or interpolation were suggested by 
 Xiao-Chuan Cai and Marcus Sarkis \cite{cs97a}.  \sindex{Cai, Xiao-Chuan}  \sindex{Sarkis, Marcus}
@@ -6905,12 +6905,12 @@ as follows:
 \item \trl{EXAMPLES_1} - examples that will be built with
              \trl{make BOPT=[g,O] examples} (see Section~\ref{sec_common})
 \item \trl{RUNEXAMPLES_1} - examples that will be run with
-             \trl{make runexamples} (see Section~\ref{sec_common})
+             \trl{make} \trl{runexamples} (see Section~\ref{sec_common})
 \item \trl{EXAMPLESC} - all C examples that will be checked in/out of RCS
-             with \trl{make ci} and \trl{make co} (not generally
+             with \trl{make} \trl{ci} and \trl{make} \trl{co} (not generally
              needed by users).
 \item \trl{EXAMPLESF} - all Fortran examples that will be checked in/out of
-             RCS with \trl{make ci} and \trl{make co} (not generally
+             RCS with \trl{make} \trl{ci} and \trl{make} \trl{co} (not generally
              needed by users).
 \item \trl{PETSC_LIB} - all of the base PETSc libraries.
              \findex{PETSC_LIB}
@@ -7040,7 +7040,7 @@ The currently available alternatives for the ordering \trl{type} are
 These orderings can also be set through the options database by specifying 
 one of the following:  \trl{-pc_lu_ordering_type} \trl{natural}, \trl{-pc_lu_ordering_type} \trl{nd}, 
 \trl{-pc_lu_ordering_type} \trl{1wd}, \trl{-pc_lu_ordering_type} \trl{rcm}, \trl{-pc_lu_ordering_type}
-\trl{ qmd}.
+\trl{qmd}.
 \findex{MATORDERING_NATURAL} \findex{MATORDERING_ND} \findex{MATORDERING_1WD}
 \findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
