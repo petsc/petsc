@@ -1,4 +1,4 @@
-/* $Id: mpibdiag.h,v 1.7 1995/10/22 22:23:29 bsmith Exp curfman $ */
+/* $Id: mpibdiag.h,v 1.8 1995/10/23 23:14:19 curfman Exp bsmith $ */
 
 #include "bdiag.h"
 
@@ -33,6 +33,7 @@ typedef struct {
   Scalar        *svalues, *rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
   int           *garray;                /* work array */
+  int           roworiented;            /* indicates MatSetValues() input default 1*/
 
   /* The following variables are used for matrix-vector products */
 
