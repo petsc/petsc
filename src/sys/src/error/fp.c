@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.9 1995/05/18 22:44:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.10 1995/06/20 01:46:42 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -147,29 +147,10 @@ struct { int code_no; char *name; } error_codes[] = {
        { FP_X_INV   , "invalide operand" } ,
        { 0      , "unknown error" }
 } ;
-#define SIGPC(scp)  0   /* maybe we could figure this out ? */
-void SYsample_handler(int sig,int code,struct sigcontext *scp)
+void SYsample_handler(int sig)
 {
-  int err_ind, j,ierr;
-  /*
-	   Sample user-written sigfpe code handler.
-	   Prints a message and continues.
-	   struct sigcontext is defined in <signal.h>.
-   */
-
-  err_ind = -1 ;
-  for ( j = 0 ; error_codes[j].code_no ; j++ )
-    {if ( error_codes[j].code_no == code ) err_ind = j ;}
-
-    if ( err_ind >= 0 )
-      fprintf(stderr, "*** %s occurred at pc=%X ***\n",
-			error_codes[err_ind].name, SIGPC(scp));
-    else
-      fprintf(stderr,
-              "*** floating point error 0x%x occurred at pc=%X ***\n",
-              code, SIGPC(scp));
-    ierr = PetscError(0,0,"Unknown","floating point error",1);
-    exit(ierr);
+  int ierr;
+  ierr = PetscError(0,0,"Unknown","floating point error",1);
 }
 int PetscSetFPTrap(int on)
 {

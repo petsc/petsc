@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.40 1995/06/28 18:28:01 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.41 1995/06/29 21:32:47 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -933,7 +933,8 @@ static int MatRestoreRow_MPIRowbs(Mat mat,int row,int *nz,int **idx,Scalar **v)
 
 /* -------------------------------------------------------------------*/
 extern int MatCholeskyFactorNumeric_MPIRowbs(Mat,Mat*);
-extern int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,int,Mat *);
+extern int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,double,
+                                                                int,Mat *);
 extern int MatSolve_MPIRowbs(Mat,Vec,Vec);
 
 static struct _MatOps MatOps = {MatSetValues_MPIRowbs,

@@ -50,6 +50,7 @@ allmanpages: deletemanpages deletewwwpages deletelatexpages
 #  To locate later occurrences, use M-,
 
 etags:
+	-@$(OMAKE)  ACTION=C2f77delete  tree
 	$(RM) TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h 
 	etags -a -f TAGS src/*/examples/*.c

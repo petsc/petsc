@@ -214,6 +214,17 @@ extern char   *mktemp(char *);
 #endif
 
 /* -------------------------------------------------------------------------*/
+#if defined(PARCH_paragon)
+
+#if defined(__cplusplus)
+
+#else
+extern char   *mktemp(char *);
+extern char   *getenv( char *);
+extern void   *malloc(long unsigned int );
+extern int    free(void *);
+#endif
+#endif
 
 #endif
 

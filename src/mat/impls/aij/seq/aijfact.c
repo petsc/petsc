@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.23 1995/07/06 17:19:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.24 1995/07/09 23:16:44 bsmith Exp bsmith $";
 #endif
 
 
@@ -15,7 +15,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
   IS      isicol;
   int     *r,*ic, ierr, i, n = aij->m, *ai = aij->i, *aj = aij->j;
   int     *ainew,*ajnew, jmax,*fill, *ajtmp, nz;
-  int     *idnew, idx, row,m,fm, nnz, nzi,len;
+  int     *idnew, idx, row,m,fm, nnz, nzi,len, realloc = 0,nzbd,*im;
  
   if (n != aij->n) 
     SETERRQ(1,"MatLUFactorSymbolic_AIJ: Matrix must be square.");
@@ -34,7 +34,8 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
   jmax = f*ai[n];
   ajnew = (int *) PETSCMALLOC( (jmax)*sizeof(int) ); CHKPTRQ(ajnew);
   /* fill is a linked list of nonzeros in active row */
-  fill = (int *) PETSCMALLOC( (n+1)*sizeof(int)); CHKPTRQ(fill);
+  fill = (int *) PETSCMALLOC( (2*n+1)*sizeof(int)); CHKPTRQ(fill);
+  im = fill + n + 1;
   /* idnew is location of diagonal in factor */
   idnew = (int *) PETSCMALLOC( (n+1)*sizeof(int)); CHKPTRQ(idnew);
   idnew[0] = 1;
@@ -56,12 +57,15 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
     }
     row = fill[n];
     while ( row < i ) {
-      ajtmp = ajnew + idnew[row] - 1;
-      nz = ainew[row+1] - idnew[row];
+      ajtmp = ajnew + idnew[row];
+      nzbd = 1 + idnew[row] - ainew[row];
+      nz = im[row] - nzbd;
       fm = row;
-      while (nz--) {
-        fm = n;
+      while (nz-- > 0) {
+        /* fm = n;  */
         idx = *ajtmp++ - 1;
+        nzbd++;
+        if (idx == i) im[row] = nzbd;
         do {
           m = fm;
           fm = fill[m];
@@ -72,6 +76,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
           fm = idx;
           nnz++;
         }
+  printf("i %d row %d nz %d idx %d fm %d\n",i,row,nz,idx,fm); 
       }
       row = fill[row];
     }
@@ -79,15 +84,20 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
     ainew[i+1] = ainew[i] + nnz;
     if (ainew[i+1] > jmax+1) {
       /* allocate a longer ajnew */
-      jmax += nnz*(n-i);
+      int maxadd;
+      maxadd = (f*ai[n]*(n-i+5))/n;
+      if (maxadd < nnz) maxadd = nnz+1;
+      jmax += maxadd;
       ajtmp = (int *) PETSCMALLOC( jmax*sizeof(int) );CHKPTRQ(ajtmp);
       PETSCMEMCPY(ajtmp,ajnew,(ainew[i]-1)*sizeof(int));
       PETSCFREE(ajnew);
       ajnew = ajtmp;
+      realloc++; /* count how many times we realloc */
     }
     ajtmp = ajnew + ainew[i] - 1;
     fm = fill[n];
     nzi = 0;
+    im[i] = nnz;
     while (nnz--) {
       if (fm < i) nzi++;
       *ajtmp++ = fm + 1;
@@ -95,6 +105,9 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
     }
     idnew[i] = ainew[i] + nzi;
   }
+
+  PLogInfo((PetscObject)mat,
+             "Number of reallocs in LU symbolic factorization %d\n",realloc);
 
   ISDestroy(isicol); PETSCFREE(fill);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.12 1995/07/07 16:16:13 bsmith Exp curfman $ ";
+static char vcid[] = "$Id: icc.c,v 1.13 1995/07/09 20:48:13 curfman Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -29,12 +29,12 @@ static int PCSetup_ICC(PC pc)
     }
 #endif
     if (icc->ImplCreate) {ierr = (*icc->ImplCreate)(pc); CHKERRQ(ierr);}
-    ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,
+    ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,
 				icc->levels,&icc->fact); CHKERRQ(ierr);
   }
   else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) {
     ierr = MatDestroy(icc->fact); CHKERRQ(ierr);
-    ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,
+    ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,
 				icc->levels,&icc->fact); CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorNumeric(pc->pmat,&icc->fact); CHKERRQ(ierr);

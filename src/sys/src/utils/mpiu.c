@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.13 1995/06/20 01:46:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.14 1995/07/07 17:15:33 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: mpiu.c,v 1.13 1995/06/20 01:46:42 bsmith Exp bsmith $
 #endif
 #include "petscfix.h"
 
-/*@
+/*@C
     MPIU_fopen - The first process in the communicator opens a file,
                 all others do nothing.
 
@@ -31,7 +31,7 @@ FILE *MPIU_fopen(MPI_Comm comm,char *name,char *mode)
   else fd = 0;
   return fd;
 }
-/*@
+/*@C
      MPIU_fclose - The first processor in the communicator closes a 
                   file, all others do nothing.
 
@@ -48,7 +48,7 @@ int MPIU_fclose(MPI_Comm comm,FILE *fd)
   else return 0;
 }
 
-/*@
+/*@C
       MPIU_fprintf - Single print to a file only from the first
                     processor in the communicator.
 
@@ -69,7 +69,7 @@ int MPIU_fprintf(MPI_Comm comm,FILE* fd,char *format,...)
   }
   return 0;
 }
-/*@
+/*@C
       MPIU_printf - Single print to standard out, only from the first
                     processor in the communicator.
 
@@ -133,7 +133,7 @@ int MPIU_Set_display(MPI_Comm comm,char *display,int n)
 
 static int MPIU_Seq_keyval = MPI_KEYVAL_INVALID;
 
-/*@
+/*@C
    MPIU_Seq_begin - Begins a sequential section of code.  
 
    Input Parameters:
@@ -187,7 +187,7 @@ int MPIU_Seq_begin(MPI_Comm comm,int ng )
   return 0;
 }
 
-/*@
+/*@C
    MPIU_Seq_end - Ends a sequential section of code.
 
    Input Parameters:
