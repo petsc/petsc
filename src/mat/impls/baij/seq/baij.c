@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.38 1996/04/15 16:21:01 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.39 1996/04/16 13:48:15 balay Exp bsmith $";
 #endif
 
 /*
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: baij.c,v 1.38 1996/04/15 16:21:01 balay Exp balay $";
   matrix storage format.
 */
 #include "baij.h"
-#include "vec/vecimpl.h"
-#include "inline/spops.h"
+#include "src/vec/vecimpl.h"
+#include "src/inline/spops.h"
 #include "petsc.h"
 
 extern   int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
@@ -41,30 +41,29 @@ static int MatGetReordering_SeqBAIJ(Mat A,MatOrdering type,IS *rperm,IS *cperm)
   ishift = 0;
   oshift = -MatReorderingIndexShift[(int)type];
   if (MatReorderingRequiresSymmetric[(int)type]) {
-    ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,ishift,oshift,&ia,&ja);
-    CHKERRQ(ierr);
-    ierr = MatGetReordering_IJ(a->n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
+    ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,ishift,oshift,&ia,&ja);CHKERRQ(ierr);
+    ierr = MatGetReordering_IJ(n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
     PetscFree(ia); PetscFree(ja);
   } else {
     if (ishift == oshift) {
-      ierr = MatGetReordering_IJ(a->n,a->i,a->j,type,rperm,cperm);CHKERRQ(ierr);
+      ierr = MatGetReordering_IJ(n,a->i,a->j,type,rperm,cperm);CHKERRQ(ierr);
     }
     else if (ishift == -1) {
       /* temporarily subtract 1 from i and j indices */
-      int nz = a->i[a->n] - 1; 
+      int nz = a->i[n] - 1; 
       for ( i=0; i<nz; i++ ) a->j[i]--;
-      for ( i=0; i<a->n+1; i++ ) a->i[i]--;
-      ierr = MatGetReordering_IJ(a->n,a->i,a->j,type,rperm,cperm);CHKERRQ(ierr);
+      for ( i=0; i<n+1; i++ ) a->i[i]--;
+      ierr = MatGetReordering_IJ(n,a->i,a->j,type,rperm,cperm);CHKERRQ(ierr);
       for ( i=0; i<nz; i++ ) a->j[i]++;
-      for ( i=0; i<a->n+1; i++ ) a->i[i]++;
+      for ( i=0; i<n+1; i++ ) a->i[i]++;
     } else {
       /* temporarily add 1 to i and j indices */
-      int nz = a->i[a->n] - 1; 
+      int nz = a->i[n] - 1; 
       for ( i=0; i<nz; i++ ) a->j[i]++;
-      for ( i=0; i<a->n+1; i++ ) a->i[i]++;
-      ierr = MatGetReordering_IJ(a->n,a->i,a->j,type,rperm,cperm);CHKERRQ(ierr);
+      for ( i=0; i<n+1; i++ ) a->i[i]++;
+      ierr = MatGetReordering_IJ(n,a->i,a->j,type,rperm,cperm);CHKERRQ(ierr);
       for ( i=0; i<nz; i++ ) a->j[i]--;
-      for ( i=0; i<a->n+1; i++ ) a->i[i]--;
+      for ( i=0; i<n+1; i++ ) a->i[i]--;
     }
   }
   return 0; 
@@ -558,24 +557,17 @@ static int MatSetOption_SeqBAIJ(Mat A,MatOption op)
 /* -------------------------------------------------------*/
 #include "pinclude/plapack.h"
 
-static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
+static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
-  Scalar          *xg,*y,*zg;
+  Scalar          *xg,*zg;
   register Scalar *x,*z,*v,sum,*xb,sum1,sum2,sum3,sum4,sum5;
   register Scalar x1,x2,x3,x4,x5;
-  int             mbs=a->mbs,m=a->m,i,*idx,*ii;
+  int             mbs=a->mbs,i,*idx,*ii;
   int             bs=a->bs,j,n,bs2=a->bs2,ierr;
 
   ierr = VecGetArray(xx,&xg); CHKERRQ(ierr); x = xg;
   ierr = VecGetArray(zz,&zg); CHKERRQ(ierr); z = zg;
-
-  if (yy==PETSC_NULL) PetscMemzero(z,m*sizeof(Scalar)); /* MatMult() */
-  else if (zz!=yy){
-    ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
-    PetscMemcpy(z,y,m*sizeof(Scalar)); 
-    ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
-  }
 
   idx   = a->j;
   v     = a->a;
@@ -587,7 +579,7 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
       n    = ii[1] - ii[0]; ii++;
       sum  = 0.0;
       while (n--) sum += *v++ * x[*idx++];
-      z[i] += sum;
+      z[i] = sum;
     }
     break;
   case 2:
@@ -600,7 +592,7 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
         sum2 += v[1]*x1 + v[3]*x2;
         v += 4;
       }
-      z[0] += sum1; z[1] += sum2;
+      z[0] = sum1; z[1] = sum2;
       z += 2;
     }
     break;
@@ -615,7 +607,7 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
         sum3 += v[2]*x1 + v[5]*x2 + v[8]*x3;
         v += 9;
       }
-      z[0] += sum1; z[1] += sum2; z[2] += sum3;
+      z[0] = sum1; z[1] = sum2; z[2] = sum3;
       z += 3;
     }
     break;
@@ -632,7 +624,7 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
         sum4 += v[3]*x1 + v[7]*x2 + v[11]*x3  + v[15]*x4;
         v += 16;
       }
-      z[0] += sum1; z[1] += sum2; z[2] += sum3; z[3] += sum4;
+      z[0] = sum1; z[1] = sum2; z[2] = sum3; z[3] = sum4;
       z += 4;
     }
     break;
@@ -650,13 +642,13 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
         sum5 += v[4]*x1 + v[9]*x2 + v[14]*x3  + v[19]*x4 + v[24]*x5;
         v += 25;
       }
-      z[0] += sum1; z[1] += sum2; z[2] += sum3; z[3] += sum4; z[4] += sum5;
+      z[0] = sum1; z[1] = sum2; z[2] = sum3; z[3] = sum4; z[4] = sum5;
       z += 5;
     }
     break;
     /* block sizes larger then 5 by 5 are handled by BLAS */
   default: {
-      int  _One = 1,ncols,k; Scalar _DOne = 1.0, *work,*workt;
+      int  _One = 1,ncols,k; Scalar _DOne = 1.0, *work,*workt, _DZero = 0.0;
       if (!a->mult_work) {
         k = PetscMax(a->m,a->n);
         a->mult_work = (Scalar *) PetscMalloc(k*sizeof(Scalar));
@@ -672,7 +664,7 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
           for ( k=0; k<bs; k++ ) workt[k] = xb[k];
           workt += bs;
         }
-        LAgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DOne,z,&_One);
+        LAgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DZero,z,&_One);
         v += n*bs2;
         z += bs;
       }
@@ -680,48 +672,22 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
   }
   ierr = VecRestoreArray(xx,&xg); CHKERRQ(ierr); 
   ierr = VecRestoreArray(zz,&zg); CHKERRQ(ierr); 
+  PLogFlops(2*a->nz*bs2 - a->m);
   return 0;
 }
 
-static int MatMult_SeqBAIJ(Mat A,Vec xx, Vec yy)
-{
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr;
-
-  ierr = MatMultAdd_SeqBAIJ_Private(A,xx,PETSC_NULL,yy); CHKERRQ(ierr);
-  PLogFlops(2*(a->bs2)*(a->nz)-a->m);
-  return 0;
-}
-
-static int MatMultAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
-{
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr;
-
-  ierr = MatMultAdd_SeqBAIJ_Private(A,xx,yy,zz); CHKERRQ(ierr);
-  PLogFlops(2*(a->bs2)*(a->nz));
-  return 0;
-}
-
-static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
+static int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
-  Scalar          *xg,*y,*zg,*zb;
+  Scalar          *xg,*zg,*zb;
   register Scalar *x,*z,*v,*xb,x1,x2,x3,x4,x5;
-  int             mbs=a->mbs,N=a->n,i,*idx,*ii,*ai=a->i,rval;
+  int             mbs=a->mbs,i,*idx,*ii,*ai=a->i,rval;
   int             bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
 
 
   ierr = VecGetArray(xx,&xg); CHKERRQ(ierr); x = xg;
   ierr = VecGetArray(zz,&zg); CHKERRQ(ierr); z = zg;
 
-  if (yy==PETSC_NULL) PetscMemzero(z,N*sizeof(Scalar)); /* MatMultTrans() */
-  else if (zz!=yy){
-    ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
-    PetscMemcpy(z,y,N*sizeof(Scalar));  
-    ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
-  }
-  
   idx   = a->j;
   v     = a->a;
   ii    = a->i;
@@ -733,7 +699,7 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
       xb = x + i; x1 = xb[0];
       ib = idx + ai[i];
       for ( j=0; j<n; j++ ) {
-        z[ib[j]] += *v++ * x1;
+        z[ib[j]] = *v++ * x1;
       }
     }
     break;
@@ -744,8 +710,8 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
       ib = idx + ai[i];
       for ( j=0; j<n; j++ ) {
         rval = ib[j]*2;
-        z[rval++] += v[0]*x1 + v[1]*x2;
-        z[rval++] += v[2]*x1 + v[3]*x2;
+        z[rval++] = v[0]*x1 + v[1]*x2;
+        z[rval++] = v[2]*x1 + v[3]*x2;
         v += 4;
       }
     }
@@ -757,9 +723,9 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
       ib = idx + ai[i];
       for ( j=0; j<n; j++ ) {
         rval = ib[j]*3;
-        z[rval++] += v[0]*x1 + v[1]*x2 + v[2]*x3;
-        z[rval++] += v[3]*x1 + v[4]*x2 + v[5]*x3;
-        z[rval++] += v[6]*x1 + v[7]*x2 + v[8]*x3;
+        z[rval++] = v[0]*x1 + v[1]*x2 + v[2]*x3;
+        z[rval++] = v[3]*x1 + v[4]*x2 + v[5]*x3;
+        z[rval++] = v[6]*x1 + v[7]*x2 + v[8]*x3;
         v += 9;
       }
     }
@@ -771,10 +737,10 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
       ib = idx + ai[i];
       for ( j=0; j<n; j++ ) {
         rval = ib[j]*4;
-        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4;
-        z[rval++] +=  v[4]*x1 +  v[5]*x2 +  v[6]*x3 +  v[7]*x4;
-        z[rval++] +=  v[8]*x1 +  v[9]*x2 + v[10]*x3 + v[11]*x4;
-        z[rval++] += v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4;
+        z[rval++] =  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4;
+        z[rval++] =  v[4]*x1 +  v[5]*x2 +  v[6]*x3 +  v[7]*x4;
+        z[rval++] =  v[8]*x1 +  v[9]*x2 + v[10]*x3 + v[11]*x4;
+        z[rval++] = v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4;
         v += 16;
       }
     }
@@ -787,11 +753,11 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
       ib = idx + ai[i];
       for ( j=0; j<n; j++ ) {
         rval = ib[j]*5;
-        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 +  v[4]*x5;
-        z[rval++] +=  v[5]*x1 +  v[6]*x2 +  v[7]*x3 +  v[8]*x4 +  v[9]*x5;
-        z[rval++] += v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4 + v[14]*x5;
-        z[rval++] += v[15]*x1 + v[16]*x2 + v[17]*x3 + v[18]*x4 + v[19]*x5;
-        z[rval++] += v[20]*x1 + v[21]*x2 + v[22]*x3 + v[23]*x4 + v[24]*x5;
+        z[rval++] =  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 +  v[4]*x5;
+        z[rval++] =  v[5]*x1 +  v[6]*x2 +  v[7]*x3 +  v[8]*x4 +  v[9]*x5;
+        z[rval++] = v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4 + v[14]*x5;
+        z[rval++] = v[15]*x1 + v[16]*x2 + v[17]*x3 + v[18]*x4 + v[19]*x5;
+        z[rval++] = v[20]*x1 + v[21]*x2 + v[22]*x3 + v[23]*x4 + v[24]*x5;
         v += 25;
       }
     }
@@ -815,7 +781,7 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
         workt = work;
         for ( j=0; j<n; j++ ) {
           zb = z + bs*(*idx++);
-          for ( k=0; k<bs; k++ ) zb[k] += workt[k] ;
+          for ( k=0; k<bs; k++ ) zb[k] = workt[k] ;
           workt += bs;
         }
       }
@@ -823,26 +789,6 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
   }
   ierr = VecRestoreArray(xx,&xg); CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zg); CHKERRQ(ierr);
-  return 0;
-}
-
-static int MatMultTrans_SeqBAIJ(Mat A,Vec xx, Vec yy)
-{
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr;
-
-  ierr = MatMultTransAdd_SeqBAIJ_Private(A,xx,PETSC_NULL,yy); CHKERRQ(ierr);
-  PLogFlops(2*(a->bs2)*(a->nz)-a->n);
-  return 0;
-}
-
-static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
-{
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr;
-
-  ierr = MatMultTransAdd_SeqBAIJ_Private(A,xx,yy,zz); CHKERRQ(ierr);
-  PLogFlops(2*(a->bs2)*(a->nz));
   return 0;
 }
 
@@ -965,8 +911,14 @@ static int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
 
 extern int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,double,Mat*);
 extern int MatLUFactor_SeqBAIJ(Mat,IS,IS,double);
-extern int MatSolve_SeqBAIJ(Mat,Vec,Vec);
-extern int MatSolveAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
+
+extern int MatSolve_SeqBAIJ_N(Mat,Vec,Vec);
+extern int MatSolve_SeqBAIJ_1(Mat,Vec,Vec);
+extern int MatSolve_SeqBAIJ_2(Mat,Vec,Vec);
+extern int MatSolve_SeqBAIJ_3(Mat,Vec,Vec);
+extern int MatSolve_SeqBAIJ_4(Mat,Vec,Vec);
+extern int MatSolve_SeqBAIJ_5(Mat,Vec,Vec);
+
 extern int MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_1(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_2(Mat,Mat*);
@@ -1074,19 +1026,12 @@ static int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
   return 0;
 } 
 
-int MatPrintHelp_SeqBAIJ(Mat A)
-{
-  static int called = 0; 
-
-  if (called) return 0; else called = 1;
-  return 0;
-}
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetRow_SeqBAIJ,MatRestoreRow_SeqBAIJ,
-       MatMult_SeqBAIJ,MatMultAdd_SeqBAIJ,
-       MatMultTrans_SeqBAIJ,MatMultTransAdd_SeqBAIJ,
-       MatSolve_SeqBAIJ,MatSolveAdd_SeqBAIJ,
+       MatMult_SeqBAIJ,0,
+       MatMultTrans_SeqBAIJ,0,
+       MatSolve_SeqBAIJ_N,0,
        0,0,
        MatLUFactor_SeqBAIJ,0,
        0,
@@ -1106,7 +1051,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatILUFactor_SeqBAIJ,0,0,
        0,0,
        MatGetValues_SeqBAIJ,0,
-       MatPrintHelp_SeqBAIJ,MatScale_SeqBAIJ,
+       0,MatScale_SeqBAIJ,
        0};
 
 /*@C
@@ -1155,22 +1100,30 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   B->data = (void *) (b = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqBAIJ));
   PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
-  switch (bs) {
-    case 1:
-      B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
-      break;
-    case 2:
-      B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;  
-      break;
-    case 3:
-      B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;  
-      break;
-    case 4:
-      B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;  
-      break;
-    case 5:
-      B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;  
-      break;
+  ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg); CHKERRQ(ierr);
+  if (!flg) {
+    switch (bs) {
+      case 1:
+        B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
+        B->ops.solve           = MatSolve_SeqBAIJ_1;
+        break;
+      case 2:
+        B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;  
+        B->ops.solve           = MatSolve_SeqBAIJ_2;
+        break;
+      case 3:
+        B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;  
+        B->ops.solve           = MatSolve_SeqBAIJ_3;
+        break;
+      case 4:
+        B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;  
+        B->ops.solve           = MatSolve_SeqBAIJ_4;
+        break;
+      case 5:
+        B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;  
+        B->ops.solve           = MatSolve_SeqBAIJ_5; 
+        break;
+    }
   }
   B->destroy          = MatDestroy_SeqBAIJ;
   B->view             = MatView_SeqBAIJ;
@@ -1317,7 +1270,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   Scalar       *aa;
   MPI_Comm     comm = ((PetscObject) viewer)->comm;
 
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,&flg);CHKERRQ(ierr);
   bs2  = bs*bs;
 
   MPI_Comm_size(comm,&size);
@@ -1338,7 +1291,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   if (extra_rows == bs) extra_rows = 0;
   else                  mbs++;
   if (extra_rows) {
-    PLogInfo(0,"MatLoad_SeqBAIJ:Padding loading matrix to match blocksize");
+    PLogInfo(0,"MatLoad_SeqBAIJ:Padding loaded matrix to match blocksize");
   }
 
   /* read in row lengths */
