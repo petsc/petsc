@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: nt_gnu_time.c,v 1.4 1997/02/21 18:23:24 balay Exp balay $";
+static char vcid[] = "$Id: nt_time.c,v 1.5 1997/02/24 23:00:13 balay Exp balay $";
 #endif
 
 #include <petsc.h>
-#if defined (PARCH_nt_gnu)
+#if defined (PARCH_nt_gnu) || defined (PARCH_nt)
 #include <Windows.h>
 #define FACTOR   4294967296.0
 
-double nt_gnu_time()
+double nt_gnu_time() 
 {
   static int    flag = 1;
   int           ierr;
