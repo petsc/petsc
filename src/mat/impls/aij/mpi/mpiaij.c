@@ -215,9 +215,9 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
       high1    = nrow1;
       lastcol2 = -1;
       rp2      = bj + bi[row]; 
-      ap2      = ba + bi[row]; \
+      ap2      = ba + bi[row]; 
       rmax2    = bimax[row]; 
-      nrow2    = bilen[row];  \
+      nrow2    = bilen[row];  
       low2     = 0; 
       high2    = nrow2;
 
@@ -249,6 +249,12 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
               B = aij->B;
               b = (Mat_SeqAIJ*)B->data; 
               bimax = b->imax; bi = b->i; bilen = b->ilen; bj = b->j;
+              rp2      = bj + bi[row]; 
+              ap2      = ba + bi[row]; 
+              rmax2    = bimax[row]; 
+              nrow2    = bilen[row];  
+              low2     = 0; 
+              high2    = nrow2;
               ba = b->a;
             }
           } else col = in[j];
