@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.16 1998/06/12 20:21:00 bsmith Exp balay $ 
+# $Id: makefile,v 1.17 1998/06/12 21:06:28 balay Exp balay $ 
 
 ALL: ex1
 
@@ -95,7 +95,7 @@ runex3:
 	   ${RM} -f ex3.tmp
 
 runex3f90:
-	-@${MPIRUN} -np 1  ex3f90 | sort > ex3f90.tmp 2>&1;\
+	-@${MPIRUN} -np 1  ex3f90 |sort > ex3f90.tmp 2>&1;\
 	   if (diff output/ex3f90.out ex3f90.tmp) then true; \
 	   else echo "Possible problem with ex3f90, diffs above"; fi ;\
 	   ${RM} -f ex3f90.tmp

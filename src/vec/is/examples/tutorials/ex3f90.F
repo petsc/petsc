@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f90.F,v 1.6 1998/03/24 16:46:23 balay Exp balay $"; */
+!      "$Id: ex3f90.F,v 1.7 1998/04/15 18:02:40 balay Exp balay $"; */
 !
 !
 !/*T
@@ -54,14 +54,16 @@
 !
       call ISGetSize(set,issize,ierr) 
       call ISGetIndicesF90(set,indices,ierr) 
-      print*,indices
+      write(*,100)indices
+ 100  format(12I3)
       call ISRestoreIndicesF90(set,indices,ierr) 
 
 !
 !    Extract the block indices. This returns one index per block.
 !
       call ISBlockGetIndicesF90(set,indices,ierr) 
-      print*, indices
+      write(*,200)indices
+ 200  format(4I3)
       call ISBlockRestoreIndicesF90(set,indices,ierr) 
 
 !
@@ -69,7 +71,7 @@
 !
       call ISBlock(set,isablock,ierr) 
       if (isablock .ne. PETSC_TRUE) then
-        print*,'Index set is not blocked!'
+        write(6,*) 'Index set is not blocked!'
       endif
 
 !
@@ -77,7 +79,7 @@
 !
       call ISBlockGetBlockSize(set,bs,ierr) 
       if (bs .ne. 3) then
-        print*,'Blocksize != 3'
+        write(6,*) 'Blocksize != 3'
       endif
 
 !
@@ -85,7 +87,7 @@
 !
       call ISBlockGetSize(set,n,ierr) 
       if (n .ne. 4) then
-        print*,'Number of blocks != 4'
+        write(6,*) 'Number of blocks != 4'
       endif
 
       call ISDestroy(set,ierr) 
