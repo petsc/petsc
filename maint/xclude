@@ -1,4 +1,4 @@
-petsc/src/contrib/src/burgers_vertex_based_q1
+petsc/src/contrib/src
 petsc/src/contrib/java
 petsc/src/contrib/ksp
 petsc/src/contrib/pc/spai/RCS
