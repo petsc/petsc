@@ -2527,7 +2527,7 @@ Some of the options for ILU preconditioner are
   PCILUSetLevels(PC pc,int levels);\\
   PCILCCSetLevels(PC pc,int levels);\\
   PCILUSetReuseOrdering(PC pc,PetscTruth flag);\\
-  PCILUSetUseDropTolerance(PC pc,double dt,int dtcount);\\
+  PCILUSetUseDropTolerance(PC pc,double dt,double dtcol,int dtcount);\\
   PCILUDTSetReuseFill(PC pc,PetscTruth flag);\\
   PCILUSetUseInPlace(PC pc); \\
   PCILUSetAllowDiagonalFill(PC pc);
@@ -2553,7 +2553,7 @@ factorization. These options may be set in the database with
 \begin{tabbing}
    \trl{-pc_ilu_levels <levels>}\\
    \trl{-pc_ilu_reuse_ordering}\\
-   \trl{-pc_ilu_use_drop_tolerance <dt>,<dtcount>}\\
+   \trl{-pc_ilu_use_drop_tolerance <dt>,<dtcol>,<dtcount>}\\
    \trl{-pc_ilu_reuse_fill}\\
    \trl{-pc_ilu_in_place}\\
    \trl{-pc_ilu_nonzeros_along_diagonal}\\

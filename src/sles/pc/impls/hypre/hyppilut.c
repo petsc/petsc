@@ -338,7 +338,7 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     /*
          Suggested by QUANDALLE Philippe <Philippe.QUANDALLE@ifp.fr>
 
-        gridrelaxpoints[i][j] are for i=0,1,2,3 (fine,up,down,coarse) and j=sweep number
+        gridrelaxpoints[i][j] are for i=0,1,2,3 (fine,down,up,coarse) and j=sweep number
         0 indicates smooth all points
         1 indicates smooth coarse points
        -1 indicates smooth fine points
@@ -368,7 +368,7 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
       if (flg) {
         jac->gridrelaxpoints[1][0] = 0;  jac->gridrelaxpoints[1][1] = 0;
       } else {
-        jac->gridrelaxpoints[1][0] = -1; jac->gridrelaxpoints[1][1] = 1;
+        jac->gridrelaxpoints[1][0] = 1; jac->gridrelaxpoints[1][1] = -1;
       }
     } else if (jac->gridsweeps[1] > 2) { 
       SETERRQ(1,"Grid sweeps can only be 0, 1, or 2");
@@ -379,7 +379,7 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
       if (flg) {
         jac->gridrelaxpoints[2][0] = 0; jac->gridrelaxpoints[2][1] = 0;
       } else {
-        jac->gridrelaxpoints[2][0] = 1; jac->gridrelaxpoints[2][1] = -1;
+        jac->gridrelaxpoints[2][0] = -1; jac->gridrelaxpoints[2][1] = 1;
       }
     } else if (jac->gridsweeps[2] > 2) { 
       SETERRQ(1,"Grid sweeps can only be 0, 1, or 2");

@@ -483,7 +483,7 @@ int PetscOptionsGetAll(char *copts[])
   /* count the length of the required string */
   for (i=0; i<options->N; i++) {
     ierr = PetscStrlen(options->names[i],&lent);CHKERRQ(ierr);
-    len += 1 + lent;
+    len += 2 + lent;
     if (options->values[i]) {
       ierr = PetscStrlen(options->values[i],&lent);CHKERRQ(ierr);
       len += 1 + lent;
