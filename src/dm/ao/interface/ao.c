@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ao.c,v 1.3 1996/07/08 22:24:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.4 1996/08/08 14:47:53 bsmith Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -45,7 +45,7 @@ int AODestroy(AO ao)
 /* ---------------------------------------------------------------------*/
 /*@
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to 
-     the application defined ordering.
+   the application-defined ordering.
 
    Input Parameters:
 .  ao - the application ordering context
@@ -68,8 +68,8 @@ int AOPetscToApplicationIS(AO ao,IS is)
 }
 
 /*@
-   AOApplicationToPetscIS - Maps an index set in the application ordering to 
-     the PETSc ordering.
+   AOApplicationToPetscIS - Maps an index set in the application-defined
+   ordering to the PETSc ordering.
 
    Input Parameters:
 .  ao - the application ordering context
@@ -93,7 +93,7 @@ int AOApplicationToPetscIS(AO ao,IS is)
 
 /*@
    AOPetscToApplication - Maps a set of integers in the PETSc ordering to 
-     the application defined ordering.
+   the application-defined ordering.
 
    Input Parameters:
 .  ao - the application ordering context
@@ -112,8 +112,8 @@ int AOPetscToApplication(AO ao,int n,int *ia)
 }
 
 /*@
-   AOApplicationToPetsc - Maps a set of integers in the application ordering
-                          to the PETSc ordering.
+   AOApplicationToPetsc - Maps a set of integers in the application-defined
+   ordering to the PETSc ordering.
 
    Input Parameters:
 .  ao - the application ordering context
