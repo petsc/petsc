@@ -41,6 +41,11 @@ static int PCSetUp_BJacobi(PC pc)
         sum += jac->l_lens[i];
       }
       if (sum != M) SETERRQ(PETSC_ERR_ARG_SIZ,"Local lens sent incorrectly");
+    } else {
+      ierr = PetscMalloc(jac->n_local*sizeof(int),&jac->l_lens);CHKERRQ(ierr);
+      for (i=0; i<jac->n_local; i++) {
+        jac->l_lens[i] = bs*((M/bs)/jac->n_local + (((M/bs) % jac->n_local) > i));
+      }
     }
   } else if (jac->n > 0 && jac->n_local < 0) { /* global block count given */
     /* global blocks given: determine which ones are local */
