@@ -135,10 +135,6 @@ rcheng@oasys.dt.navy.mil
     MatView_SeqBDiag_Draw)  and tensor plotting? etc to use DrawZoom(),
     much nicer.
 
-  - Incorporate functionality that Deb needs for VRML stuff (currently she's copied
-    a code segment from version 2.0.15 into her application because PETSc evolved
-    to be out of sync with previous versions).
-
   - Conceptual; when does SNESGetSLES() etc not increase reference count on SLES, note
                 we also have Get/Restore paradym which does not apply for GetSLES etc.
                 Is there another word we should use or some general principle?
@@ -181,8 +177,7 @@ rcheng@oasys.dt.navy.mil
 
   - PetscFree(); CHKERRQ(); on IRIX64 ( + manpages)
 
-  - Convert DACreateXd() to use ISCreateBlock() when block size is bigger then
-    1.
+  - Convert DACreateXd() to use ISCreateBlock() when block size is bigger than 1.
 
   - Decide what to do about MAT_NEW_NONZERO_ALLOCATION_ERROR; then update
     manpage and Changes file and parallel macros for MatSetValues().
@@ -281,15 +276,8 @@ Barry  * get SPAI  http://lovelace.nas.nasa.gov/NAS/SPAI/download.html
 
 Lois  - Thorougly test PetscRandomSetInterval().
 
-
-  - Add table to PETSc home page with great flop rates from Euler code,
-    take numbers from Scitools96 paper.
-
   - write SLESCompareTypes() that for a given sles runs all possible PC, KSP, options etc.
     builds giant table.
-
-
-Satish - Subdivide html manpage sections, e.g. elementary, advanced and developer.
 
   - Finish converting examples to tutorials/tests formats
 
@@ -539,6 +527,8 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 -----------------------------------------------------------------------
                 Accomplishments!  :) :)
 -----------------------------------------------------------------------
+
+  X Subdivide html manpage sections, e.g. elementary, advanced and developer.
 
   X Add support for VecReciprocal() in the vec function table (Scott Kohn et al.)
 
