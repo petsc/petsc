@@ -13,7 +13,7 @@ if ($day == Sun) then
   set J1=(1                1          1                 1             1           1                   4          )
   set J2=(0                2          2                 2             2           2                   3          )
   set J3=(0                3          3                 3             3           3                   0          )
-  set J4=(0                0          6                 6             6           0                   0          )
+  set J4=(0                5          6                 6             6           0                   0          )
   set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc  /home/curfman/petsc /tmp/petsc )
 endif
 if ($day == Mon) then
@@ -33,7 +33,7 @@ if ($day == Tue) then
   set J1=(0                1          1                 1             1           1                    1           )
   set J2=(2                2          2                 2             2           2                    2           )
   set J3=(0                3          3                 3             3           3                    3           )
-  set J4=(6                6          0                 6             6           6                    0           )
+  set J4=(6                6          5                 6             6           6                    0           )
   set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc  /home/curfman/petsc  /tmp/petsc  )
 endif
 if ($day == Wed) then
@@ -43,17 +43,17 @@ if ($day == Wed) then
   set J1=(3                1          1                 1             1           1                    4           )
   set J2=(0                2          2                 2             2           2                    3           )
   set J3=(0                3          3                 3             3           3                    0           )
-  set J4=(6                6          6                 0             0           6                    0           )
+  set J4=(6                6          6                 5             5           6                    0           )
   set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc  /home/curfman/petsc  /tmp/petsc  )
 endif
 if ($day == Thu) then
   set M =(snake            eagle      puck              elvis         doc         ptera                maverick    )
   set B =(Opg              g_complex  g_c++             O_c++         g_c++       g                    Opg_complex )
   set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4   alpha                sun4_local  )
-  set J1=(0                1          1                 1             1           1                    6           )
-  set J2=(0                2          2                 2             2           2                    0           )
-  set J3=(3                3          3                 3             3           3                    0           )
-  set J4=(6                0          6                 6             6           6                    0           )
+  set J1=(0                1          1                 1             1           1                    1           )
+  set J2=(0                2          2                 2             2           2                    2           )
+  set J3=(3                3          3                 3             3           3                    3           )
+  set J4=(6                5          6                 6             6           6                    5           )
   set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc  /home/curfman/petsc  /tmp/petsc  )
 endif
 if ($day == Fri) then
@@ -63,17 +63,17 @@ if ($day == Fri) then
   set J1=(0                1          1                 1             1           1                    1           )
   set J2=(2                2          2                 2             2           2                    2           )
   set J3=(0                3          3                 3             3           3                    3           )
-  set J4=(6                6          0                 0             6           0                    0           )
+  set J4=(6                6          5                 5             6           0                    0           )
   set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc  /home/curfman/petsc              )
 endif
 if ($day == Sat) then
   set M =(snake            eagle      ryan              elvis         doc         ptera                maverick    )
   set B =(O                O          O                 Opg_complex   g_complex   g                    g_complex   )
   set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4   alpha                sun4_uni    )
-  set J1=(1                1          1                 1             1           1                    1           )
-  set J2=(0                2          2                 2             2           2                    2           )
-  set J3=(0                3          3                 3             3           3                    3           )
-  set J4=(6                6          6                 0             0           6                    0           )
+  set J1=(1                1          1                 1             1           1                    4           )
+  set J2=(0                2          2                 2             2           2                    3           )
+  set J3=(0                3          3                 3             3           3                    5           )
+  set J4=(6                6          6                 5             5           6                    0           )
   set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc  /home/curfman/petsc  /tmp/petsc  )
 endif
 #
