@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.41 1996/09/18 12:09:09 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.42 1996/10/01 01:19:29 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
@@ -14,7 +14,7 @@ The command line options include:\n\
    Concepts: SNES^Solving a system of nonlinear equations (sequential Bratu example);
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
    Routines: SNESSolve(); SNESSetFromOptions();
-   Routines:  DrawOpenX();
+   Routines: DrawOpenX();
    Processors: 1
 T*/
 
@@ -76,11 +76,12 @@ int main( int argc, char **argv )
   Mat      J;                    /* Jacobian matrix */
   AppCtx   user;                 /* user-defined application context */
   Draw     draw;                 /* drawing context */
-  int      ierr, its, N, flg, matrix_free; 
+  int      ierr, its, N, flg, matrix_free, size; 
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
 
   /*
      Initialize problem parameters
@@ -104,7 +105,7 @@ int main( int argc, char **argv )
      Create vector data structures; set function evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecCreate(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
+  ierr = VecCreate(MPI_COMM_WORLD,N,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
 
   /* 
@@ -175,6 +176,7 @@ int main( int argc, char **argv )
   /*
      Draw contour plot of solution
   */
+  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
   ierr = DrawTensorContour(draw,user.mx,user.my,0,0,x); CHKERRA(ierr);
   ierr = DrawSyncFlush(draw); CHKERRA(ierr);
   ierr = DrawPause(draw); CHKERRA(ierr);
