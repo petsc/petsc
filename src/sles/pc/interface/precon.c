@@ -793,17 +793,17 @@ int PCSetUp(PC pc)
   if (!pc->vec) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Vector must be set first");}
   if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");}
 
-  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQSBAIJ,&flg);CHKERRQ(ierr);
-  if (flg) { /* for sbaij mat */
-    ierr = PCSetType(pc,PCICC);CHKERRQ(ierr);
-  }
-
   if (!pc->type_name) {
     int size;
 
     ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
-      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQSBAIJ,&flg);CHKERRQ(ierr);
+      if (flg) { /* for sbaij mat */
+        ierr = PCSetType(pc,PCICC);CHKERRQ(ierr);
+      } else {
+        ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
+      }
     } else {
       ierr = PCSetType(pc,PCBJACOBI);CHKERRQ(ierr);
     }
