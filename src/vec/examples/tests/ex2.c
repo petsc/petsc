@@ -1,6 +1,7 @@
 
 static char help[] = 
-"This example tests vector scatter-gather operations.\n\n";
+"This example tests vector scatter-gather operations.  Input arguments are\n\
+  -n <length> : vector length\n\n";
 
 #include "petsc.h"
 #include "is.h"
