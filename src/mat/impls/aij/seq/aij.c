@@ -165,37 +165,8 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       } 
       if (value == 0.0 && ignorezeroentries) goto noinsert;
       if (nonew == 1) goto noinsert;
-      else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
-      if (nrow >= rmax) {
-        /* there is no extra room in row, therefore enlarge */
-        PetscInt    new_nz = ai[A->m] + CHUNKSIZE,*new_i,*new_j;
-        size_t      len;
-        PetscScalar *new_a;
-
-        if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix requiring new malloc()",row,col);
-
-        /* malloc new storage space */
-        ierr = PetscMalloc3(new_nz,PetscScalar,&new_a,new_nz,PetscInt,&new_j,A->m+1,PetscInt,&new_i);CHKERRQ(ierr);
-
-        /* copy over old data into new slots */
-        for (ii=0; ii<row+1; ii++) {new_i[ii] = ai[ii];}
-        for (ii=row+1; ii<A->m+1; ii++) {new_i[ii] = ai[ii]+CHUNKSIZE;}
-        ierr = PetscMemcpy(new_j,aj,(ai[row]+nrow)*sizeof(PetscInt));CHKERRQ(ierr);
-        len  = (((size_t) new_nz) - CHUNKSIZE - ai[row] - nrow );
-        ierr = PetscMemcpy(new_j+ai[row]+nrow+CHUNKSIZE,aj+ai[row]+nrow,len*sizeof(PetscInt));CHKERRQ(ierr);
-        ierr = PetscMemcpy(new_a,aa,(((size_t) ai[row])+nrow)*sizeof(PetscScalar));CHKERRQ(ierr);
-        ierr = PetscMemcpy(new_a+ai[row]+nrow+CHUNKSIZE,aa+ai[row]+nrow,len*sizeof(PetscScalar));CHKERRQ(ierr);
-        /* free up old matrix storage */
-        ierr = MatSeqXAIJFreeAIJ(a->singlemalloc,a->a,a->j,a->i);CHKERRQ(ierr);
-        aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
-        a->singlemalloc = PETSC_TRUE;
-
-        rp   = aj + ai[row]; ap = aa + ai[row] ;
-        rmax = imax[row] = imax[row] + CHUNKSIZE;
-        ierr = PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + sizeof(PetscScalar)));CHKERRQ(ierr);
-        a->maxnz += CHUNKSIZE;
-        a->reallocs++;
-      }
+      if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
+      MatSeqXAIJReallocateAIJ(a,nrow,rmax,aa,ai,aj,A->m,rp,ap,imax);
       N = nrow++ - 1; a->nz++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
