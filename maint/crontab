@@ -19,5 +19,3 @@
 15 0 * * * /home/bsmith/petsc/maint/buildlinks /home/curfman/petsc > /dev/null
 15 0 * * * /home/bsmith/petsc/maint/buildlinks /home/petsc/petsc > /dev/null
 15 0 * * * rsh clyde -n /home/bsmith/petsc/maint/buildlinks /sphome/curfman/petsc > /dev/null
-# I'm using this to maintain a stable uniprocessor version for Deb's code
-15 0 * * * /home/bsmith/petsc/maint/buildlinks /home/curfman/petsc.uni > /dev/null
