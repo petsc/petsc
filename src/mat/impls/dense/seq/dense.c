@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.24 1995/04/22 01:10:12 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.25 1995/04/25 19:01:18 curfman Exp curfman $";
 #endif
 
 /*
@@ -553,6 +553,58 @@ static int MatGetArray_Dense(Mat matin,Scalar **array)
   *array = mat->v;
   return 0;
 }
+
+
+static int MatGetSubMatrixInPlace_Dense(Mat matin,IS isrow,IS iscol)
+{
+  SETERR(1,"MatGetSubMatrixInPlace_Dense not yet done.");
+}
+
+static int MatGetSubMatrix_Dense(Mat matin,IS isrow,IS iscol,Mat *submat)
+{
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  int     nznew, *smap, i, j, ierr, oldcols = mat->n;
+  int     *irow, *icol, nrows, ncols, *cwork, jstart;
+  Scalar  *vwork, *val;
+  Mat     newmat;
+
+  ierr = ISGetIndices(isrow,&irow); CHKERR(ierr);
+  ierr = ISGetIndices(iscol,&icol); CHKERR(ierr);
+  ierr = ISGetSize(isrow,&nrows); CHKERR(ierr);
+  ierr = ISGetSize(iscol,&ncols); CHKERR(ierr);
+
+  smap = (int *) MALLOC(oldcols*sizeof(int)); CHKPTR(smap);
+  cwork = (int *) MALLOC(ncols*sizeof(int)); CHKPTR(cwork);
+  vwork = (Scalar *) MALLOC(ncols*sizeof(Scalar)); CHKPTR(vwork);
+  memset((char*)smap,0,oldcols*sizeof(int));
+  for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
+
+  /* Create and fill new matrix */
+  ierr = MatCreateSequentialDense(matin->comm,nrows,ncols,&newmat);
+         CHKERR(ierr);
+  for (i=0; i<nrows; i++) {
+    nznew = 0;
+    val   = mat->v + irow[i];
+    for (j=0; j<oldcols; j++) {
+      if (smap[j]) {
+        cwork[nznew]   = smap[j] - 1;
+        vwork[nznew++] = val[j * mat->m];
+      }
+    }
+    ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,InsertValues); 
+           CHKERR(ierr);
+  }
+  ierr = MatBeginAssembly(newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatEndAssembly(newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+
+  /* Free work space */
+  FREE(smap); FREE(cwork); FREE(vwork);
+  ierr = ISRestoreIndices(isrow,&irow); CHKERR(ierr);
+  ierr = ISRestoreIndices(iscol,&icol); CHKERR(ierr);
+  *submat = newmat;
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatInsert_Dense,
        MatGetRow_Dense, MatRestoreRow_Dense,
@@ -571,8 +623,9 @@ static struct _MatOps MatOps = {MatInsert_Dense,
        MatLUFactorSymbolic_Dense,MatLUFactorNumeric_Dense,
        MatChFactorSymbolic_Dense,MatChFactorNumeric_Dense,
        MatGetSize_Dense,MatGetSize_Dense,0,
-       0,0,MatGetArray_Dense
-};
+       0,0,MatGetArray_Dense,0,
+       MatGetSubMatrix_Dense,MatGetSubMatrixInPlace_Dense};
+
 /*@
    MatCreateSequentialDense - Creates a sequential dense matrix that 
    is stored in column major order (the usual Fortran 77 manner). Many 
