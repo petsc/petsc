@@ -1,3 +1,4 @@
+# $Id: matrix.c,v 1.378 2000/08/17 04:51:22 bsmith Exp $
 ALL: lib
 
 CFLAGS   =
