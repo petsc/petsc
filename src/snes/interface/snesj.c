@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.30 1996/08/01 14:35:15 curfman Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.31 1996/08/05 19:34:50 curfman Exp curfman $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -102,8 +102,8 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     }
     VecRestoreArray(j2,&y);
   }
-  MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);
-  MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 
