@@ -16,6 +16,11 @@ General WWW info:
   email.html (and charlotte:/www/ncsa_httpd/cgi-bin/petsc/petscmail)
      contains the WWW interface for petsc-maint ... NOT currently used
 
+Debugging on the Cray t3d:  use totalview:
+  With totalview you don't use mpirun; you just run totalview programname. 
+  Also when linking to use totalview you must hardwire the number of
+  processors, so add -Xnumberprocessors to the link line in the makefile.
+
 PETScView info:
   The initial file for PETScView configuration is petsc/bin/.petscviewrc
   Although we're RCS-ing this file, it must remain checked-out so that
@@ -27,7 +32,6 @@ Nightly build:
   On Cray t3d it is at h4p.nersc.gov       username bsmith
      For the t3d we are not allowed to use cron so buildtest 
      uses at to start itself up again 24 hours later.
-
   The password is in petsc/maint/autoftp
 
 UT account:
