@@ -14,14 +14,15 @@
 # For static linking use:
 #BLASLAPACK_LIB = -Wl,-Bstatic -L/home/petsc/software/mkl-52/lib/32 -lmkl_lapack -lmkl_def -lguide -lpthread
 # For dynamic linking use:
-BLASLAPACK_LIB = ${CLINKER_SLFLAG}/home/petsc/software/mkl-52/lib/32 -L/home/petsc/software/mkl-52/lib/32 -lmkl_lapack -lmkl_def -lguide
+#BLASLAPACK_LIB = ${CLINKER_SLFLAG}/home/petsc/software/mkl-52/lib/32 -L/home/petsc/software/mkl-52/lib/32 -lmkl_lapack -lmkl_def -lguide
+BLASLAPACK_LIB = ${CLINKER_SLFLAG}/home/petsc/soft/linux-rh73/mkl-52/lib/32 -L/home/petsc/soft/linux-rh73/mkl-52/lib/32 -lmkl_lapack -lmkl_def -lguide -lpthread
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /home/petsc/software/mpich-1.2.0/linux
-MPI_LIB        = ${CLINKER_SLFLAG}${MPI_HOME}/lib -L${MPI_HOME}/lib -lmpich
+MPI_HOME       = /home/petsc/soft/linux-rh73/mpich-1.2.4
+MPI_LIB        = ${CLINKER_SLFLAG}${MPI_HOME}/lib -L${MPI_HOME}/lib -lmpich -lpmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
-MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
+MPIRUN         =  ${MPI_HOME}/bin/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
@@ -62,8 +63,8 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Location of ParMetis
 #
-PARMETIS_INCLUDE    = -I/home/petsc/software/ParMetis-2.0
-PARMETIS_LIB        = -L/home/petsc/software/ParMetis-2.0/linux -lparmetis -lmetis
+PARMETIS_INCLUDE    = -I/home/petsc/soft/linux-rh73/ParMetis-3.0
+PARMETIS_LIB        = -L/home/petsc/soft/linux-rh73/ParMetis-3.0 -lparmetis -lmetis
 PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
 #
@@ -87,8 +88,8 @@ PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
 #  Location of hypre
 #
-HYPRE_INCLUDE    = -I/home/petsc/software/hypre-1.6.0/hypre-1.6.0/src/hypre/include
-HYPRE_LIB        = -L/home/petsc/software/hypre-1.6.0/hypre-1.6.0/src/hypre/lib  -lHYPRE_parcsr_ls -lHYPRE_DistributedMatrix -lHYPRE_parcsr_mv  -lHYPRE_FEI -lHYPRE_seq_mv -lHYPRE_IJ_mv -lkrylov -lHYPRE_DistributedMatrixPilutSolver -lHYPRE_utilities  -lHYPRE_MatrixMatrix -lHYPRE_ParaSails -lHYPRE_Euclid -lHYPRE_parcsr_ls -lHYPRE_DistributedMatrix -lHYPRE_parcsr_mv  -lHYPRE_FEI -lHYPRE_seq_mv -lHYPRE_IJ_mv -lkrylov -lHYPRE_DistributedMatrixPilutSolver -lHYPRE_utilities  -lHYPRE_MatrixMatrix -lHYPRE_ParaSails -lHYPRE_Euclid 
+HYPRE_INCLUDE    = -I/home/petsc/soft/linux-rh73/hypre-1.6.0/include
+HYPRE_LIB        = -L/home/petsc/soft/linux-rh73/hypre-1.6.0/lib  -lHYPRE_parcsr_ls -lHYPRE_DistributedMatrix -lHYPRE_parcsr_mv  -lHYPRE_FEI -lHYPRE_seq_mv -lHYPRE_IJ_mv -lkrylov -lHYPRE_DistributedMatrixPilutSolver -lHYPRE_utilities  -lHYPRE_MatrixMatrix -lHYPRE_ParaSails -lHYPRE_Euclid -lHYPRE_parcsr_ls -lHYPRE_DistributedMatrix -lHYPRE_parcsr_mv  -lHYPRE_FEI -lHYPRE_seq_mv -lHYPRE_IJ_mv -lkrylov -lHYPRE_DistributedMatrixPilutSolver -lHYPRE_utilities  -lHYPRE_MatrixMatrix -lHYPRE_ParaSails -lHYPRE_Euclid 
 
 PETSC_HAVE_HYPRE = -DPETSC_HAVE_HYPRE
 
@@ -96,5 +97,5 @@ PETSC_HAVE_HYPRE = -DPETSC_HAVE_HYPRE
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-C_DYLIBPATH     = ${CLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/linux
-F_DYLIBPATH     = ${FLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/linux
+#C_DYLIBPATH     = ${CLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/linux
+#F_DYLIBPATH     = ${FLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/linux

@@ -6,7 +6,7 @@
 /* turning this on causes instability?!? */
 #undef UPWINDING 
 
-static char help[] = "XXXXX with multigrid and timestepping in 2 dimensions.\n\
+static char help[] = "2D Hall Magnetic Reconnection with multigrid and timestepping in 2 dimensions.\n\
   \n\
 -da_grid_x 5 -da_grid_y 5 -dmmg_nlevels 3 lu -mg_coarse_pc_lu_damping -mg_levels_pc_type sor -mg_levels_pc_sor_symmetric -max_st 5 -ksp_type gmres -mg_levels_ksp_type richardson -ksp_left_pc \n\
   -viscosity <nu>\n\
