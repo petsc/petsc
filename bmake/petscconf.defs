@@ -40,6 +40,7 @@ SIZEOF_INT - used when reading/writing binary files. We always save using
              are first compressed to 32 bits before being written
 
 HAVE_RESTRICT - indicates that the compiler supports the keyword _Restrict (currently
-                only support be Solaris compilers)
+                only support be Solaris compilers). ADIC cannot handle the restrict keyword
+                hence this is currently turned off.
 
 

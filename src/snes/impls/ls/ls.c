@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.111 1998/05/29 20:39:00 bsmith Exp balay $";
+static char vcid[] = "$Id: ls.c,v 1.112 1998/06/02 14:45:25 balay Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -649,7 +649,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
                              double,double*,double*,int*))
 {
-  int ierr, (*f)(SNES,int (*f2)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
+  int ierr, (*f)(SNES,int (*)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESSetLineSearch_C",(void **)&f);CHKERRQ(ierr);
