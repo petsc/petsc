@@ -3,12 +3,10 @@ static char help[] =
 "This example demonstrates the use of fast Richardson for SOR, and\n\
 also tests the MatRelax() routines.\n\n";
 
-#include "vec.h"
-#include "mat.h"
 #include "ksp.h"
 #include "pc.h"
+#include "petsc.h"
 #include <stdio.h>
-#include "options.h"
 
 int main(int argc,char **args)
 {

@@ -6,11 +6,9 @@ matrix assembly, the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "vec.h"
-#include "mat.h"
-#include "options.h"
-#include  <stdio.h>
+#include "petsc.h"
 #include "sles.h"
+#include  <stdio.h>
 
 int FormElementStiffness(double H,Scalar *Ke)
 {

@@ -5,11 +5,9 @@ parallel matrix assembly, the matrix is intentionally laid out across the\n\
 processors differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "vec.h"
-#include "mat.h"
-#include "options.h"
 #include  <stdio.h>
 #include "sles.h"
+#include "petsc.h"
 
 int main(int argc,char **args)
 {

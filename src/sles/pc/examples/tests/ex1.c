@@ -2,10 +2,8 @@
 static char help[] = "This example tests the creation of a PC context.\n\n";
 
 #include "pc.h"
-#include "vec.h"
-#include "mat.h"
+#include "petsc.h"
 #include <stdio.h>
-#include "options.h"
 
 int main(int argc,char **args)
 {

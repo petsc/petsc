@@ -6,7 +6,7 @@ arguments are:\n\
 
 #include "sles.h"
 #include <stdio.h>
-#include "options.h"
+#include "petsc.h"
 
 int main(int argc,char **args)
 {

@@ -6,11 +6,9 @@ method but different matrices (having the same nonzero structure).  Input\n\
 arguments are\n\
   -m <size> : problem size\n\n";
 
-#include "vec.h"
-#include "mat.h"
-#include "options.h"
-#include  <stdio.h>
+#include "petsc.h"
 #include "sles.h"
+#include  <stdio.h>
 
 extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
 

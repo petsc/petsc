@@ -17,7 +17,7 @@ static char help[] = "           Test of Multigrid Code\n\
 #include <stdio.h>
 #include "draw.h"
 #include "mg.h"
-#include "options.h"
+#include "petsc.h"
 
 int  residual(Mat,Vec,Vec,Vec);
 int  gauss_seidel(void *,Vec,Vec,Vec,int);

@@ -4,11 +4,9 @@ static char help[] =
 bilinear elements on the unit square. Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "vec.h"
-#include "mat.h"
-#include "options.h"
-#include  <stdio.h>
+#include "petsc.h"
 #include "sles.h"
+#include  <stdio.h>
 
 int FormElementStiffness(double H,Scalar *Ke)
 {

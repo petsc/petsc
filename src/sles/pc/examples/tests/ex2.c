@@ -2,12 +2,10 @@
 static char help[] = 
 "This example tests PC and KSP on a tridiagonal matrix.\n\n";
 
-#include "vec.h"
-#include "mat.h"
 #include "ksp.h"
 #include "pc.h"
+#include "petsc.h"
 #include <stdio.h>
-#include "options.h"
 
 int main(int argc,char **args)
 {
