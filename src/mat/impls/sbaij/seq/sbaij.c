@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.34 2000/10/12 14:00:21 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.35 2000/10/12 14:03:03 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -185,7 +185,7 @@ int MatGetOwnershipRange_SeqSBAIJ(Mat A,int *m,int *n)
 
   PetscFunctionBegin;
   *m = 0; 
-  *n = a->m;
+  *n = A->m;
   PetscFunctionReturn(0);
 }
 
