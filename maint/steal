@@ -1,0 +1,9 @@
+#! /bin/sh
+# 
+# torcs full-file-name [ full-file-name .... ]
+#
+for file in $* ; do 
+ echo "Initial Version" | rcs -i -agropp,bsmith,curfman -L $file 
+ ci -l $file 
+done
+
