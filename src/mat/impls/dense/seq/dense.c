@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.89 1996/01/26 04:33:39 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.90 1996/02/01 18:52:28 curfman Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -564,19 +564,22 @@ static int MatTranspose_SeqDense(Mat A,Mat *matout)
   return 0;
 }
 
-static int MatEqual_SeqDense(Mat A1,Mat A2)
+static int MatEqual_SeqDense(Mat A1,Mat A2, int *flg)
 {
   Mat_SeqDense *mat1 = (Mat_SeqDense *) A1->data;
   Mat_SeqDense *mat2 = (Mat_SeqDense *) A2->data;
   int          i;
   Scalar       *v1 = mat1->v, *v2 = mat2->v;
-  if (mat1->m != mat2->m) return 0;
-  if (mat1->n != mat2->n) return 0;
+
+  if (A2->type != MATSEQDENSE) SETERRQ(1,"MatEqual_SeqDense:Both matrices should be of type  MATSEQDENSE");
+  if (mat1->m != mat2->m) { *flg = 0; return 0;}
+  if (mat1->n != mat2->n) {*flg =0; return 0;}
   for ( i=0; i<mat1->m*mat1->n; i++ ) {
-    if (*v1 != *v2) return 0;
+    if (*v1 != *v2) {*flg =0; return 0;}
     v1++; v2++;
   }
-  return 1;
+  *flg = 1;
+  return 0;
 }
 
 static int MatGetDiagonal_SeqDense(Mat A,Vec v)
