@@ -1,3 +1,4 @@
+petsc/docs/manual
 petsc/src/apps
 petsc/src/contrib/flash
 petsc/src/mat/impls/baij/seq/dgedi.ff
