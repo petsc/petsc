@@ -94,6 +94,10 @@ added EXTERN Viewer VIEWER_BINARY_(MPI_Comm);
 #define VIEWER_BINARY_SELF  VIEWER_BINARY_(PETSC_COMM_SELF)
 also added options -vec_view_binary and -mat_view_binary
 
+  PLog
+
+  PLogEventBegin(), PLogEventEnd(),PLogFlops() now return ierr
+
 
   SNES 
 
