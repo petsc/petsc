@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.74 2001/07/08 16:12:52 bsmith Exp balay $*/
+/*$Id: reg.c,v 1.75 2001/08/30 21:05:38 balay Exp balay $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -533,7 +533,7 @@ int PetscFListGet(PetscFList list,char ***array,int *n)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListPrintTypes"
-/*@
+/*@C
    PetscFListPrintTypes - Prints the methods available.
 
    Collective over MPI_Comm
@@ -575,7 +575,7 @@ int PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char n
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListDuplicate"
-/*@C
+/*@
     PetscFListDuplicate - Creates a new list from a given object list.
 
     Input Parameters:
