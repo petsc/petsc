@@ -1,4 +1,4 @@
-/*$Id: xxt.c,v 1.3 2001/03/23 22:05:05 bsmith Exp balay $*/
+/*$Id: xxt.c,v 1.4 2001/03/23 23:21:56 balay Exp bsmith $*/
 
 /* 
         Provides an interface to the Tufo-Fischer parallel direct solver
@@ -6,8 +6,8 @@
 */
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-#if defined(PETSC_HAVE_TFS) && !defined(__cplusplus)
-#include "xxt.h"
+#if !defined(__cplusplus)
+#include "src/contrib/libtfs/xxt.h"
 
 typedef struct {
   xxt_ADT xxt;
@@ -132,7 +132,7 @@ int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   PetscFunctionReturn(0);
 }
 
-#include "xyt.h"
+#include "src/contrib/libtfs/xyt.h"
 
 typedef struct {
   xyt_ADT xyt;

@@ -1,3 +1,4 @@
+
 /********************************bit_mask.c************************************
 SPARSE GATHER-SCATTER PACKAGE: bit_mask bss_malloc ivec error comm gs queue
 
