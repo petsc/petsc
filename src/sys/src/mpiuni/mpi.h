@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.68 1998/07/12 03:45:01 bsmith Exp bsmith $ */
+/* $Id: mpi.h,v 1.69 1998/07/12 03:46:36 bsmith Exp bsmith $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -494,7 +494,7 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
      MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Graph_map(comm, a, b, c, d) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Get_processor_name(name, result_len) \
-     (MPIUNI_Memcpy(name,"localhost",9*sizeof(char)), *(result_len) =10)
+     (MPIUNI_Memcpy(name,"localhost",9*sizeof(char)), name[10] = 0, *(result_len) = 10)
 #define MPI_Errhandler_create(function, errhandler) \
      (MPIUNI_TMP = (void *) (long) (errhandler), \
      MPI_SUCCESS)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.121 1998/06/12 14:30:06 balay Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.122 1998/06/15 16:55:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -678,6 +678,12 @@ extern int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
    Output Parameter:
 .  newctx - location to store the new scatter context
 
+   Options Database:
++  -vecscatter_merge - Merges scatter send and receive (may offer better performance with MPICH)
+.  -vecscatter_ssend - Uses MPI_Ssend_init() instead of MPI_Send_int() (may offer better performance with MPICH)
+.  -vecscatter_sendfirst - Posts sends before receives (may offer better performance with MPICH)
+-  -vecscatter_rr - user ready receiver mode for MPI sends in scatters (rarely used)
+
    Notes:
    In calls to VecScatter() you can use different vectors than the xin and 
    yin you used above; BUT they must have the same parallel data layout, for example,
@@ -720,11 +726,16 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,comm,VecScatterDestroy,VecScatterView);
   PLogObjectCreate(ctx);
   PLogObjectMemory(ctx,sizeof(struct _p_VecScatter));
-  ctx->inuse = 0;
+  ctx->inuse               = 0;
+
+  ctx->beginandendtogether = 0;
+  ierr = OptionsHasName(PETSC_NULL,"-vecscatter_merge",&ctx->beginandendtogether);CHKERRQ(ierr);
+  if (ctx->beginandendtogether) {
+    PLogInfo(ctx,"Using combined (merged) vector scatter begin and end\n");
+  }
 
   ierr = VecGetLocalSize(xin,&ctx->to_n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(yin,&ctx->from_n);CHKERRQ(ierr);
-
 
   /*
       if ix or iy is not included; assume just grabbing entire vector
@@ -1310,6 +1321,10 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
   }
 #endif   
   ierr = (*inctx->begin)(x,y,addv,mode,inctx); CHKERRQ(ierr);
+  if (inctx->beginandendtogether) {
+    inctx->inuse = 0;
+    ierr = (*inctx->end)(x,y,addv,mode,inctx); CHKERRQ(ierr);
+  }
   PLogEventEnd(VEC_ScatterBegin,inctx,x,y,0);
   PetscFunctionReturn(0);
 }
@@ -1352,9 +1367,11 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
   ctx->inuse = 0;
   if (!ctx->end) PetscFunctionReturn(0);
-  PLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);
-  ierr = (*(ctx)->end)(x,y,addv,mode,ctx); CHKERRQ(ierr);
-  PLogEventEnd(VEC_ScatterEnd,ctx,x,y,0);
+  if (!ctx->beginandendtogether) {
+    PLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);
+    ierr = (*(ctx)->end)(x,y,addv,mode,ctx); CHKERRQ(ierr);
+    PLogEventEnd(VEC_ScatterEnd,ctx,x,y,0);
+  }
   PetscFunctionReturn(0);
 }
 
