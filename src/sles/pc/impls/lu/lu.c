@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.48 1995/10/24 21:44:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.49 1995/11/01 23:16:35 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -124,7 +124,6 @@ static int PCSetUp_LU(PC pc)
       ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
       ierr = ISDestroy(dir->row); CHKERRQ(ierr);
       ierr = ISDestroy(dir->col); CHKERRQ(ierr);
-      ierr = MatGetReorderingTypeFromOptions(0,&dir->ordering); CHKERRQ(ierr);
       ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
       if (dir->row) {PLogObjectParent(pc,dir->row);PLogObjectParent(pc,dir->col);}
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact); CHKERRQ(ierr);
