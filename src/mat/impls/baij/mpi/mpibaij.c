@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.27 1996/09/24 20:24:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.28 1996/11/07 15:09:44 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -392,7 +392,7 @@ static int MatView_MPIBAIJ_Binary(Mat mat,Viewer viewer)
 static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ *) mat->data;
-  int          ierr, format,rank,bs=baij->bs;
+  int          ierr, format,rank,bs = baij->bs;
   FILE         *fd;
   ViewerType   vtype;
 
@@ -418,6 +418,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       return 0; 
     }
     else if (format == VIEWER_FORMAT_ASCII_INFO) {
+      PetscPrintf(mat->comm,"  block size is %d\n",bs);
       return 0;
     }
   }
@@ -568,6 +569,7 @@ static int MatMult_MPIBAIJ(Mat A,Vec xx,Vec yy)
   ierr = (*a->A->ops.mult)(a->A,xx,yy); CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->B->ops.multadd)(a->B,a->lvec,yy,yy); CHKERRQ(ierr);
+  ierr = VecScatterPostRecvs(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
   return 0;
 }
 
