@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.84 1999/03/17 23:21:27 bsmith Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.85 1999/03/20 00:40:00 balay Exp balay $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -181,7 +181,7 @@ int PetscAttachDebugger(void)
         exit(0);
       }
     } else {
-      if (!display) {
+      if (!display[0]) {
         args[0] = "xterm";  args[1] = "-e"; 
         args[2] = Debugger; args[3] = program; 
         args[4] = pid;      args[5] = 0;
