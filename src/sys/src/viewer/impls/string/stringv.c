@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.21 1998/04/13 17:54:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.22 1998/05/08 16:14:55 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -31,11 +31,11 @@ static int ViewerDestroy_String(Viewer viewer)
 /*@C
     ViewerStringSPrintf - Prints information to a viewer string.
 
-    Input Parameters:
-.   v - a string viewer, formed by ViewerStringOpen()
-.   format - the format of the input
-
     Collective on Viewer (Hmmm, each processor maintains a seperate string)
+
+    Input Parameters:
++   v - a string viewer, formed by ViewerStringOpen()
+-   format - the format of the input
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -80,14 +80,14 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
     simple viewer; information on the object is simply stored into 
     the string in a fairly nice way.
 
+    Collective on MPI_Comm
+
     Input Parameters:
-.   comm - the communicator
-.   string - the string to use
++   comm - the communicator
+-   string - the string to use
 
     Output Parameter:
 .   lab - the viewer
-
-    Collective on MPI_Comm
 
     Fortran Note:
     This routine is not supported in Fortran.
