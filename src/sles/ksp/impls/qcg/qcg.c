@@ -168,7 +168,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
   PC           pc = ksp->B;
   PCSide       side;
 #if defined(PETSC_USE_COMPLEX)
-  PetscScalar  cstep1,cstep2,ctasp,cbstp,crtr,cwtasp,cptasp;
+  PetscScalar  cstep1,cstep2,cbstp,crtr,cwtasp,cptasp;
 #endif
   PetscTruth   diagonalscale;
 

@@ -2747,7 +2747,7 @@ int VecStashView(Vec v,PetscViewer viewer)
   for (i=0; i<s->n; i++) {
     val = s->array[i];
 #if defined(PETSC_USE_COMPLEX)
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element % (%18.16e %18.16e) ",rank,s->idx[i],PetscRealPart(val),PetscImaginaryPart(val));CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d (%18.16e %18.16e) ",rank,s->idx[i],PetscRealPart(val),PetscImaginaryPart(val));CHKERRQ(ierr);
 #else
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d %18.16e\n",rank,s->idx[i],val);CHKERRQ(ierr);
 #endif
