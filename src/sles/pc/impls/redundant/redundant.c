@@ -9,7 +9,7 @@
 typedef struct {
   PC         pc;                    /* actual preconditioner used on each processor */
   Vec        x,b;                   /* sequential vectors to hold parallel vectors */
-  Mat        *mats,*pmats;          /* matrix and optional preconditioner matrix */
+  Mat        *pmats;          /* matrix and optional preconditioner matrix */
   VecScatter scatterin,scatterout;  /* scatter used to move all values to each processor */
   PetscTruth useparallelmat;
 } PC_Redundant;
@@ -92,12 +92,9 @@ static int PCSetUp_Redundant(PC pc)
   if (red->useparallelmat) {
     if (pc->setupcalled == 1 && pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* destroy old matrices */
-      if (red->pmats && red->pmats != red->mats) {
+      if (red->pmats) {
         ierr = MatDestroyMatrices(1,&red->pmats);CHKERRQ(ierr);
       }
-      if (red->mats) {
-        ierr = MatDestroyMatrices(1,&red->mats);CHKERRQ(ierr);
-      }   
     } else if (pc->setupcalled == 1) {
       reuse = MAT_REUSE_MATRIX;
       str   = SAME_NONZERO_PATTERN;
@@ -107,16 +104,11 @@ static int PCSetUp_Redundant(PC pc)
        grab the parallel matrix and put it on each processor
     */
     ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
-    ierr = MatGetSubMatrices(pc->mat,1,&isl,&isl,reuse,&red->mats);CHKERRQ(ierr);
-    if (pc->pmat != pc->mat) {
-      ierr = MatGetSubMatrices(pc->pmat,1,&isl,&isl,reuse,&red->pmats);CHKERRQ(ierr);
-    } else {
-      red->pmats = red->mats;
-    }
+    ierr = MatGetSubMatrices(pc->pmat,1,&isl,&isl,reuse,&red->pmats);CHKERRQ(ierr);
     ierr = ISDestroy(isl);CHKERRQ(ierr);
 
     /* tell sequential PC its operators */
-    ierr = PCSetOperators(red->pc,red->mats[0],red->pmats[0],str);CHKERRQ(ierr);
+    ierr = PCSetOperators(red->pc,red->pmats[0],red->pmats[0],str);CHKERRQ(ierr);
   } else {
     ierr = PCSetOperators(red->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
@@ -161,11 +153,8 @@ static int PCDestroy_Redundant(PC pc)
   if (red->scatterout) {ierr = VecScatterDestroy(red->scatterout);CHKERRQ(ierr);}
   if (red->x)          {ierr = VecDestroy(red->x);CHKERRQ(ierr);}
   if (red->b)          {ierr = VecDestroy(red->b);CHKERRQ(ierr);}
-  if (red->pmats && red->pmats != red->mats) {
+  if (red->pmats) {
     ierr = MatDestroyMatrices(1,&red->pmats);CHKERRQ(ierr);
-  }
-  if (red->mats) {
-    ierr = MatDestroyMatrices(1,&red->mats);CHKERRQ(ierr);
   }
   ierr = PCDestroy(red->pc);CHKERRQ(ierr);
   ierr = PetscFree(red);CHKERRQ(ierr);
@@ -279,7 +268,7 @@ int PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
   PC_Redundant *red = (PC_Redundant*)pc->data;
 
   PetscFunctionBegin;
-  if (mat)  *mat  = red->mats[0];
+  if (mat)  *mat  = red->pmats[0];
   if (pmat) *pmat = red->pmats[0];
   PetscFunctionReturn(0);
 }

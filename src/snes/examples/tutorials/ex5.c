@@ -507,7 +507,8 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
         v[1] = -hydhx;                                           col[1].j = j;     col[1].i = i-1;
         v[2] = 2.0*(hydhx + hxdhy) - sc*PetscExpScalar(x[j][i]); col[2].j = row.j; col[2].i = row.i;
         v[3] = -hydhx;                                           col[3].j = j;     col[3].i = i+1;
-        v[4] = -hxdhy;                                           col[4].j = j + 1; col[4].i = i;
+  
+      v[4] = -hxdhy;                                           col[4].j = j + 1; col[4].i = i;
         ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
@@ -659,9 +660,9 @@ int FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
   */
   ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = PetscMatlabEnginePut(MATLAB_ENGINE_(comm),(PetscObject)localX);CHKERRQ(ierr);
-  ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(comm),"localF=ex5m(localX,%18.16e,%18.16e,%18.16e)",hx,hy,lambda);CHKERRQ(ierr);
-  ierr = PetscMatlabEngineGet(MATLAB_ENGINE_(comm),(PetscObject)localF);CHKERRQ(ierr);
+  ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(comm),(PetscObject)localX);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(comm),"localF=ex5m(localX,%18.16e,%18.16e,%18.16e)",hx,hy,lambda);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineGet(PETSC_MATLAB_ENGINE_(comm),(PetscObject)localF);CHKERRQ(ierr);
 
   /*
      Insert values into global vector
