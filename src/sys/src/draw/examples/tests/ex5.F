@@ -1,9 +1,12 @@
 
-C    "$Id: ex5.c,v 1.7 1995/09/21 20:11:42 bsmith Exp bsmith $";
+C    "$Id: ex5.F,v 1.4 1995/09/30 19:30:41 bsmith Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/draw.h"
-
+C
+C  This example demonstrates basic use of the Fortran interface for
+C  Draw routines.
+C
       DrawCtx           draw
       DrawLGCtx         lg
       DrawAxisCtx       axis

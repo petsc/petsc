@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.2 1995/10/03 13:24:47 curfman Exp curfman $";
+C    "$Id: ex7.F,v 1.3 1995/10/09 19:54:24 curfman Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -27,7 +27,6 @@ C
       call OptionsGetInt(0,'-n',n,ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD,mytid,ierr)
       call MPI_Comm_size(MPI_COMM_WORLD,numtids,ierr)
-
 
 C Create and assemble matrix
       call MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.3 1995/10/09 21:58:54 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -19,6 +19,7 @@ static char vcid[] = "$Id: zsys.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $"
 #define petscobjectgetname_   PETSCOBJECTGETNAME
 #define plogdump_             PLOGDUMP
 #define plogeventregister_    PLOGEVENTREGISTER
+#define petscerror_           PETSCERROR
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define petscsetdebugger_     petscsetdebugger
 #define petscattachdebugger_  petscattachdebugger
@@ -32,8 +33,8 @@ static char vcid[] = "$Id: zsys.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $"
 #define petscobjectgetname_   petscobjectgetname
 #define plogeventregister_    plogeventregister
 #define plogdump_             plogdump
+#define petscerror_           petscerror
 #endif
-
 
 void plogdump_(char* name, int *__ierr,int len ){
   char *t1;
@@ -115,4 +116,17 @@ void petscobjectsetname_(PetscObject obj,char *name,int *__ierr,int len)
   }
   else t1 = name;
   *__ierr = PetscObjectSetName((PetscObject)MPIR_ToPointer(*(int*)(obj)),t1);
+}
+
+void petscerror_(char *message,int *number,int *__ierr,int len)
+{
+  char *t1;
+  if (message[len] != 0) {
+    t1 = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
+    if (!t1) { *__ierr = 1; return;}
+    PetscStrncpy(t1,message,len);
+    t1[len] = 0;
+  }
+  else t1 = message;
+  *__ierr = PetscError(-1,"fortran_interface_unknown_dir/","fortran_interface_unknown_file",t1,*number);
 }
