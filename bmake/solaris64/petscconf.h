@@ -64,5 +64,6 @@
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_solaris.c"
 #define PETSC_HAVE_UCBPS
 #define PETSC_HAVE_SOLARIS_STYLE_FPTRAP
+#define PETSC_HAVE_NAMESPACE
 
 #endif

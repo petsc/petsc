@@ -58,5 +58,6 @@
 #endif
 
 #define PETSC_PRINTF_FORMAT_CHECK(a,b) __attribute__ ((format (printf, a,b)))
+#define PETSC_HAVE_NAMESPACE
  
 #endif
