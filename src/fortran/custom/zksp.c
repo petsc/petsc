@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zksp.c,v 1.11 1996/01/30 00:40:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.13 1996/03/04 21:50:23 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -15,7 +15,7 @@ static char vcid[] = "$Id: zksp.c,v 1.11 1996/01/30 00:40:19 bsmith Exp bsmith $
 #define ksplgmonitorcreate_       KSPLGMONITORCREATE
 #define kspgetrhs_                KSPGETRHS
 #define kspgetsolution_           KSPGETSOLUTION
-#define kspgetbinv_               KSPGETBINV
+#define kspgetpc_                 KSPGETPC
 #define kspsetmonitor_            KSPSETMONITOR
 #define kspsetconvergencetest_    KSPSETCONVERGENCETEST
 #define kspcreate_                KSPCREATE
@@ -31,7 +31,7 @@ static char vcid[] = "$Id: zksp.c,v 1.11 1996/01/30 00:40:19 bsmith Exp bsmith $
 #define ksplgmonitorcreate_       ksplgmonitorcreate
 #define kspgetrhs_                kspgetrhs
 #define kspgetsolution_           kspgetsolution
-#define kspgetbinv_               kspgetbinv
+#define kspgetpc_                 kspgetpc
 #define kspsetmonitor_            kspsetmonitor
 #define kspsetconvergencetest_    kspsetconvergencetest
 #define kspcreate_                kspcreate
@@ -60,9 +60,9 @@ void kspgettype_(KSP ksp,KSPType *type,CHAR name,int *__ierr,int len)
 #endif
 }
 
-void kspgetpreconditionerside_(KSP itP,PCSide *side, int *__ierr ){
+void kspgetpreconditionerside_(KSP ksp,PCSide *side, int *__ierr ){
 *__ierr = KSPGetPreconditionerSide(
-	(KSP)MPIR_ToPointer( *(int*)(itP) ),side );
+	(KSP)MPIR_ToPointer( *(int*)(ksp) ),side );
 }
 
 void kspsetoptionsprefix_(KSP ksp,CHAR prefix, int *__ierr,int len ){
@@ -96,11 +96,11 @@ static int ourtest(KSP ksp,int i,double d,void* ctx)
   MPIR_RmPointer(s1);
   return 0;
 }
-void kspsetconvergencetest_(KSP itP,
+void kspsetconvergencetest_(KSP ksp,
       int (*converge)(int*,int*,double*,void*,int*),void *cctx, int *__ierr){
   f2 = converge;
   *__ierr = KSPSetConvergenceTest(
-	(KSP)MPIR_ToPointer( *(int*)(itP) ),ourtest,cctx);
+	(KSP)MPIR_ToPointer( *(int*)(ksp) ),ourtest,cctx);
 }
 
 static int (*f1)(int*,int*,double*,void*,int*);
@@ -112,26 +112,26 @@ static int ourmonitor(KSP ksp,int i,double d,void* ctx)
   MPIR_RmPointer(s1);
   return 0;
 }
-void kspsetmonitor_(KSP itP,int (*monitor)(int*,int*,double*,void*,int*),
+void kspsetmonitor_(KSP ksp,int (*monitor)(int*,int*,double*,void*,int*),
                     void *mctx, int *__ierr ){
   f1 = monitor;
-  *__ierr = KSPSetMonitor((KSP)MPIR_ToPointer(*(int*)(itP)),ourmonitor,mctx);
+  *__ierr = KSPSetMonitor((KSP)MPIR_ToPointer(*(int*)(ksp)),ourmonitor,mctx);
 }
 
-void kspgetbinv_(KSP itP,PC *B, int *__ierr ){
+void kspgetpc_(KSP ksp,PC *B, int *__ierr ){
   PC pc;
-  *__ierr = KSPGetBinv((KSP)MPIR_ToPointer( *(int*)(itP) ),&pc);
+  *__ierr = KSPGetPC((KSP)MPIR_ToPointer( *(int*)(ksp) ),&pc);
   *(int*) B = MPIR_FromPointer(pc);
 }
 
-void kspgetsolution_(KSP itP,Vec *v, int *__ierr ){
+void kspgetsolution_(KSP ksp,Vec *v, int *__ierr ){
   Vec vv;
-  *__ierr = KSPGetSolution((KSP)MPIR_ToPointer( *(int*)(itP) ),&vv);
+  *__ierr = KSPGetSolution((KSP)MPIR_ToPointer( *(int*)(ksp) ),&vv);
   *(int*) v =  MPIR_FromPointer(vv);
 }
-void kspgetrhs_(KSP itP,Vec *r, int *__ierr ){
+void kspgetrhs_(KSP ksp,Vec *r, int *__ierr ){
   Vec vv;
-  *__ierr = KSPGetRhs((KSP)MPIR_ToPointer( *(int*)(itP) ),&vv);
+  *__ierr = KSPGetRhs((KSP)MPIR_ToPointer( *(int*)(ksp) ),&vv);
   *(int*) r =  MPIR_FromPointer(vv);
 }
 
@@ -155,9 +155,9 @@ void ksplgmonitordestroy_(DrawLG ctx, int *__ierr ){
 }
 
 
-void kspdestroy_(KSP itP, int *__ierr ){
-  *__ierr = KSPDestroy((KSP)MPIR_ToPointer( *(int*)(itP) ));
-  MPIR_RmPointer(*(int*)(itP) );
+void kspdestroy_(KSP ksp, int *__ierr ){
+  *__ierr = KSPDestroy((KSP)MPIR_ToPointer( *(int*)(ksp) ));
+  MPIR_RmPointer(*(int*)(ksp) );
 }
 
 void kspregisterdestroy_(int* MPIR_ierr)

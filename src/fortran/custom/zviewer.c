@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zviewer.c,v 1.4 1996/01/30 00:40:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zviewer.c,v 1.5 1996/03/04 21:30:31 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -9,13 +9,13 @@ static char vcid[] = "$Id: zviewer.c,v 1.4 1996/01/30 00:40:19 bsmith Exp bsmith
 #ifdef HAVE_FORTRAN_CAPS
 #define viewerdestroy_        VIEWERDESTROY
 #define viewerfileopenascii_  VIEWERFILEOPENASCII
-#define viewerfilesetformat_  VIEWERFILESETFORMAT
+#define viewersetformat_      VIEWERSETFORMAT
 #define viewerfileopenbinary_ VIEWERFILEOPENBINARY
 #define viewermatlabopen_     VIEWERMATLABOPEN
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define viewerdestroy_        viewerdestroy
 #define viewerfileopenascii_  viewerfileopenascii
-#define viewerfilesetformat_  viewerfilesetformat
+#define viewersetformat_      viewersetformat
 #define viewerfileopenbinary_ viewerfileopenbinary
 #define viewermatlabopen_     viewermatlabopen
 #endif
@@ -60,11 +60,11 @@ void viewerfileopenascii_(MPI_Comm comm,CHAR name,Viewer *lab, int *__ierr,
   FREECHAR(name,c1);
 }
 
-void viewerfilesetformat_(Viewer v,int *format,CHAR name,int *__ierr,int len1)
+void viewersetformat_(Viewer v,int *format,CHAR name,int *__ierr,int len1)
 {
   char   *c1;
   FIXCHAR(name,len1,c1);
-  *__ierr = ViewerFileSetFormat((Viewer)MPIR_ToPointer(*(int*)(v)),*format,c1);
+  *__ierr = ViewerSetFormat((Viewer)MPIR_ToPointer(*(int*)(v)),*format,c1);
   FREECHAR(name,c1);
 }
 

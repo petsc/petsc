@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.19 1996/03/20 03:28:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.20 1996/03/20 14:45:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -354,10 +354,6 @@ int PetscScalarAddressToFortran(Scalar *base,Scalar *addr)
   unsigned long tmp3 = (unsigned long) addr;
   int           itmp2;
 
-  if (tmp2*sizeof(Scalar) != tmp1) {
-    fprintf(stderr,"PetscScalarAddressToFortran:unaligned Fortran double\n");
-    MPI_Abort(MPI_COMM_WORLD,1);
-  }
   if (tmp3 > tmp1) {
     tmp2  = (tmp3 - tmp1)/sizeof(Scalar);
     itmp2 = (int) tmp2;
@@ -368,7 +364,8 @@ int PetscScalarAddressToFortran(Scalar *base,Scalar *addr)
   }
   if (base + itmp2 != addr) {
     fprintf(stderr,"PetscScalarAddressToFortran:C and Fortran arrays are\n");
-    fprintf(stderr,"too far apart to be indexed by an integer.\n");
+    fprintf(stderr,"not commonly aligned or are too far apart to be indexed \n");
+    fprintf(stderr,"by an integer. Locations: C %ld Fortran %ld\n",tmp1,tmp3);
     MPI_Abort(MPI_COMM_WORLD,1);
   }
   return itmp2;
@@ -380,7 +377,7 @@ Scalar *PetscScalarAddressFromFortran(Scalar *base,int addr)
 }
 
 /*@
-    PetscCObjectToFortranObject - Converts a PETSc object represented
+    PetscCObjectToFortranObject - C 972832onverts a PETSc object represented
        in C to one appropriate to pass to Fortran.
 
   Input Parameter:

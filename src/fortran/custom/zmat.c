@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.21 1996/03/07 00:17:50 balay Exp balay $";
+static char vcid[] = "$Id: zmat.c,v 1.22 1996/03/07 00:31:10 balay Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: zmat.c,v 1.21 1996/03/07 00:17:50 balay Exp balay $";
 
 #ifdef HAVE_FORTRAN_CAPS
 #define matgetreorderingtypefromoptions_ MATGETREORDERINGTYPEFROMOPTIONS
-#define matgetformatfromoptions_         MATGETFORMATFROMOPTIONS
+#define matgettypefromoptions_           MATGETTYPEFROMOPTIONS
 #define matgetreordering_                MATGETREORDERING
 #define matreorderingregisterall_        MATREORDERINGREGISTERALL
 #define matdestroy_                      MATDESTROY
@@ -35,9 +35,11 @@ static char vcid[] = "$Id: zmat.c,v 1.21 1996/03/07 00:17:50 balay Exp balay $";
 #define matgetarray_                     MATGETARRAY
 #define matrestorearray_                 MATRESTOREARRAY
 #define matgettype_                      MATGETTYPE
+#define matgetinfo_                      MATGETINFO
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define matgetinfo_                      matgetinfo
 #define matgettype_                      matgettype
-#define matgetformatfromoptions_         matgetformatfromoptions
+#define matgettypefromoptions_           matgettypefromoptions
 #define matreorderingregisterall_        matreorderingregisterall
 #define matdestroy_                      matdestroy
 #define matcreatempiaij_                 matcreatempiaij
@@ -67,6 +69,13 @@ static char vcid[] = "$Id: zmat.c,v 1.21 1996/03/07 00:17:50 balay Exp balay $";
 extern "C" {
 #endif
 
+void matgetinfo_(Mat mat,MatInfoType *flag,int *nz,int *nzalloc,int *mem, int *__ierr ){
+  if (FORTRANNULL(nz))      nz      = 0;
+  if (FORTRANNULL(nzalloc)) nzalloc = 0;
+  if (FORTRANNULL(mem))     mem     = 0;
+*__ierr = MatGetInfo(
+	(Mat)MPIR_ToPointer( *(int*)(mat) ),*flag,nz,nzalloc,mem);
+}
 
   /*
      this next one is TOTALLY wrong 
@@ -81,12 +90,12 @@ void matgetreorderingtypefromoptions_(CHAR prefix,MatOrdering *type,
   FREECHAR(prefix,t);
 }
 
-void matgetformatfromoptions_(MPI_Comm comm,CHAR prefix,MatType *type,
+void matgettypefromoptions_(MPI_Comm comm,CHAR prefix,MatType *type,
                               int *set,int *__ierr,int len)
 {
   char *t;
   FIXCHAR(prefix,len,t);
-  *__ierr = MatGetFormatFromOptions(
+  *__ierr = MatGetTypeFromOptions(
 	(MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),t,type,set);
   FREECHAR(prefix,t);
 }
@@ -114,10 +123,10 @@ void mattranspose_(Mat mat,Mat *B, int *__ierr )
   *(int*) B = MPIR_FromPointer(mm);
 }
 
-void matload_(Viewer bview,MatType *outtype,Mat *newmat, int *__ierr )
+void matload_(Viewer viewer,MatType *outtype,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  *__ierr = MatLoad((Viewer)MPIR_ToPointer( *(int*)(bview) ),*outtype,&mm);
+  *__ierr = MatLoad((Viewer)MPIR_ToPointer( *(int*)(viewer) ),*outtype,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
@@ -140,14 +149,14 @@ static int ourorder(int* a,int* b,int* c,int *d, int* e)
   return 0;
 }
 
-void matreorderingregister_(MatOrdering *name,CHAR sname,PetscTruth *sym,int *shift,
-            void (*order)(int*,int*,int*,int*,int*,int*),int *__ierr,int len)
+void matreorderingregister_(MatOrdering *name,CHAR sname,PetscTruth *sym,
+  int *shift,void (*order)(int*,int*,int*,int*,int*,int*),int *__ierr,int len)
 {
   char *t;
   
   FIXCHAR(sname,len,t);
   f5 = order;
-  *__ierr = MatReorderingRegister(*name,t,*sym,*shift,ourorder);
+  *__ierr = MatReorderingRegister(name,t,*sym,*shift,ourorder);
   FREECHAR(sname,t);
 }			       
 

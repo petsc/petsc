@@ -46,7 +46,7 @@ extern void MPIR_RmPointer(int);
 /*
     This defines the mappings from Fortran charactor strings 
   to C charactor strings on the Cray T3D.
-  */
+*/
 #if defined(PARCH_t3d)
 #include <fortran.h>
 
@@ -72,4 +72,5 @@ extern void MPIR_RmPointer(int);
 #endif
 
 #define FORTRANNULL(a) (((void *) a) == PETSC_NULL_Fortran)
+
 

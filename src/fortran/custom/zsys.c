@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.12 1996/01/30 00:40:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.13 1996/03/04 04:35:50 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -7,6 +7,9 @@ static char vcid[] = "$Id: zsys.c,v 1.12 1996/01/30 00:40:19 bsmith Exp bsmith $
 #include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
+#define plogeventbegin_       PLOGEVENTBEGIN
+#define plogeventend_         PLOGEVENTEND
+#define plogflops_            PLOGFLOPS
 #define petscattachdebugger_  PETSCATTACHDEBUGGER
 #define plogallbegin_         PLOGALLBEGIN
 #define plogdestroy_          PLOGDESTROY
@@ -21,9 +24,12 @@ static char vcid[] = "$Id: zsys.c,v 1.12 1996/01/30 00:40:19 bsmith Exp bsmith $
 #define petscgettime_         PETSCGETTIME
 #define petscgetflops_        PETSCGETFLOPS
 #define petscerror_           PETSCERROR
-#define syrandomcreate_       SYRANDOMCREATE
-#define syrandomdestroy_      SYRANDOMDESTROY
+#define petscrandomcreate_    PETSCRANDOMCREATE
+#define petscrandomdestroy_   PETSCRANDOMDESTROY
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define plogeventbegin_       plogeventbegin
+#define plogeventend_         plogeventend
+#define plogflops_            plogflops
 #define petscattachdebugger_  petscattachdebugger
 #define plogallbegin_         plogallbegin
 #define plogdestroy_          plogdestroy
@@ -38,8 +44,8 @@ static char vcid[] = "$Id: zsys.c,v 1.12 1996/01/30 00:40:19 bsmith Exp bsmith $
 #define petscgettime_         petscgettime  
 #define petscgetflops_        petscgetflops 
 #define petscerror_           petscerror
-#define syrandomcreate_       syrandomcreate
-#define syrandomdestroy_      syrandomdestroy
+#define petscrandomcreate_    petscrandomcreate
+#define petscrandomdestroy_   petscrandomdestroy
 #endif
 
 #if defined(__cplusplus)
@@ -103,6 +109,35 @@ void plogbegin_(int *__ierr){
   *__ierr = PLogBegin();
 }
 
+void plogeventbegin_(int e,int o1,int o2,int o3,int o4){
+  PetscObject t1,t2,t3,t4;
+  if (o1) t1 = (PetscObject) MPIR_ToPointer(*(int*)(o1)); else t1 = 0;
+  if (o2) t2 = (PetscObject) MPIR_ToPointer(*(int*)(o2)); else t2 = 0;
+  if (o3) t3 = (PetscObject) MPIR_ToPointer(*(int*)(o3)); else t3 = 0;
+  if (o4) t4 = (PetscObject) MPIR_ToPointer(*(int*)(o4)); else t4 = 0;
+
+  if (_PLB) (*_PLB)(e,1,t1,t2,t3,t4);
+#if defined(HAVE_MPE)
+  if (UseMPE && MPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e,0,"");
+#endif
+}
+
+void plogeventend_(int e,int o1,int o2,int o3,int o4){
+  PetscObject t1,t2,t3,t4;
+  if (o1) t1 = (PetscObject) MPIR_ToPointer(*(int*)(o1)); else t1 = 0;
+  if (o2) t2 = (PetscObject) MPIR_ToPointer(*(int*)(o2)); else t2 = 0;
+  if (o3) t3 = (PetscObject) MPIR_ToPointer(*(int*)(o3)); else t3 = 0;
+  if (o4) t4 = (PetscObject) MPIR_ToPointer(*(int*)(o4)); else t4 = 0;
+  if (_PLE) (*_PLE)(e,1,t1,t2,t3,t4);
+#if defined(HAVE_MPE)
+  if (UseMPE && MPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e+1,0,"");
+#endif
+}
+
+void plogflops_(int f) {
+  PLogFlops(f);
+}
+
 /*
       This bleeds memory, but no easy way to get around it
 */
@@ -135,17 +170,17 @@ double  petscgetflops_()
   return PetscGetFlops();
 }
 
-void syrandomcreate_(MPI_Comm comm,SYRandomType *type,SYRandom *r,
+void petscrandomcreate_(MPI_Comm comm,PetscRandomType *type,PetscRandom *r,
                      int *__ierr )
 {
-  SYRandom rr;
-  *__ierr = SYRandomCreate(
+  PetscRandom rr;
+  *__ierr = PetscRandomCreate(
 	(MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*type,&rr);
   *(int*)r = MPIR_FromPointer(rr);
 }
 
-void syrandomdestroy_(SYRandom *r, int *__ierr ){
-  *__ierr = SYRandomDestroy((SYRandom )MPIR_ToPointer( *(int*)(r) ));
+void petscrandomdestroy_(PetscRandom *r, int *__ierr ){
+  *__ierr = PetscRandomDestroy((PetscRandom )MPIR_ToPointer( *(int*)(r) ));
    MPIR_RmPointer(*(int*)(r)); 
 }
 
@@ -163,7 +198,7 @@ void syrandomdestroy_(SYRandom *r, int *__ierr ){
 /* ----------------------------------------------------------------*/
 /*    This code was taken from the MPICH implementation of MPI.    */
 /*
- *  $Id: ptrcvt.c,v 1.10 1995/12/21 22:02:29 gropp Exp $
+ *  $Id: zsys.c,v 1.13 1996/03/04 04:35:50 bsmith Exp bsmith $
  *
  *  (C) 1994 by Argonne National Laboratory and Mississipi State University.
  *      See COPYRIGHT in top-level directory.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.10 1996/03/04 21:30:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: zvec.c,v 1.11 1996/03/05 00:06:47 curfman Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -52,10 +52,10 @@ void vecgettype_(Vec vv,VecType *type,char *name,int *__ierr,int len)
 
 }
 
-void vecload_(Viewer bview,Vec *newvec, int *__ierr )
+void vecload_(Viewer viewer,Vec *newvec, int *__ierr )
 { 
   Vec vv;
-  *__ierr = VecLoad((Viewer)MPIR_ToPointer( *(int*)(bview) ),&vv);
+  *__ierr = VecLoad((Viewer)MPIR_ToPointer( *(int*)(viewer) ),&vv);
   *(int *) newvec = MPIR_FromPointer(vv);
 }
 
