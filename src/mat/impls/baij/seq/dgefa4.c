@@ -1,4 +1,4 @@
-/*$Id: dgefa4.c,v 1.16 2001/04/05 18:07:25 buschelm Exp bsmith $*/
+/*$Id: dgefa4.c,v 1.17 2001/04/07 15:40:47 bsmith Exp bsmith $*/
 /*
        Inverts 4 by 4 matrix using partial pivoting.
 
@@ -19,7 +19,7 @@ int Kernel_A_gets_inverse_A_4(MatScalar *a)
 {
     int        i__2,i__3,kp1,j,k,l,ll,i,ipvt[4],kb,k3;
     int        k4,j3;
-    MatScalar  *aa,*ax,*ay,work_l[16],*work = work_l-1,stmp;
+    MatScalar  *aa,*ax,*ay,work[16],stmp;
     MatReal    tmp,max;
 
 /*     gaussian elimination with partial pivoting */
@@ -125,12 +125,11 @@ int Kernel_A_gets_inverse_A_4(MatScalar *a)
         kp1 = k + 1;
         aa  = a + k3;
         for (i = kp1; i <= 4; ++i) {
-            work_l[i-1] = aa[i];
-            /* work[i] = aa[i]; Fix for -O3 error on Origin 2000 */ 
+            work[i-1] = aa[i];
             aa[i]   = 0.0;
         }
         for (j = kp1; j <= 4; ++j) {
-            stmp  = work[j];
+            stmp  = work[j-1];
             ax    = &a[4*j + 1];
             ay    = &a[k3 + 1];
             ay[0] += stmp*ax[0];
