@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.93 1996/08/15 12:46:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.94 1996/08/27 20:31:31 curfman Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -172,7 +172,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   if (PetscBeganMPI) {
     int size;
     MPI_Comm_size(MPI_COMM_WORLD,&size);
-    PLogInfo(0,"PETSc successfully started: number procs %d\n",size);
+    PLogInfo(0,"PETSc successfully started: number of processors = %d\n",size);
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (help && flg) {
