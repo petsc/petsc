@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.169 2001/08/06 21:14:47 bsmith Exp balay $*/
+/*$Id: pbvec.c,v 1.170 2001/08/07 03:02:22 balay Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -76,9 +76,9 @@ int VecSetOption_MPI(Vec v,VecOption op)
 
   PetscFunctionBegin;
   if (op == VEC_IGNORE_OFF_PROC_ENTRIES) {
-    w->donotstash = PETSC_TRUE;
+    v->stash.donotstash = PETSC_TRUE;
   } else if (op == VEC_TREAT_OFF_PROC_ENTRIES) {
-    w->donotstash = PETSC_FALSE;
+    v->stash.donotstash = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
@@ -113,7 +113,6 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecGetArray_Seq,
             VecGetSize_MPI,
             VecGetSize_Seq,
-            VecGetOwnershipRange_MPI,
             VecRestoreArray_Seq,
             VecMax_MPI,VecMin_MPI,
             VecSetRandom_Seq,
@@ -123,7 +122,6 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecView_MPI,
             VecPlaceArray_Seq,
             VecReplaceArray_Seq,
-            VecGetPetscMap_Seq,
             VecDot_Seq,
             VecTDot_Seq,
             VecNorm_Seq,
@@ -153,16 +151,15 @@ int VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap ma
 
   v->bops->publish   = VecPublish_MPI;
   PetscLogObjectMemory(v,sizeof(Vec_MPI) + (v->n+nghost+1)*sizeof(PetscScalar));
-  ierr         = PetscMalloc(sizeof(Vec_MPI),&s);CHKERRQ(ierr);
+  ierr         = PetscNew(Vec_MPI,&s);CHKERRQ(ierr);
+  ierr         = PetscMemzero(s,sizeof(Vec_MPI));CHKERRQ(ierr);
   ierr         = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   v->data      = (void*)s;
   s->nghost    = nghost;
   v->mapping   = 0;
   v->bmapping  = 0;
   v->bs        = -1;
-  s->size      = size;
-  s->rank      = rank;
-  s->browners  = 0;
+
   if (array) {
     s->array           = (PetscScalar *)array;
     s->array_allocated = 0;
@@ -176,7 +173,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap ma
   s->localrep    = 0;
   s->localupdate = 0;
 
-  s->insertmode  = NOT_SET_VALUES;
+  v->stash.insertmode  = NOT_SET_VALUES;
 
   if (!v->map) {
     if (!map) {
@@ -191,7 +188,6 @@ int VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap ma
   */
   ierr = VecStashCreate_Private(v->comm,1,&v->stash);CHKERRQ(ierr);
   ierr = VecStashCreate_Private(v->comm,1,&v->bstash);CHKERRQ(ierr); 
-  s->donotstash  = PETSC_FALSE;
                                                         
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
@@ -613,7 +609,7 @@ int VecDuplicate_MPI(Vec win,Vec *v)
   }    
 
   /* New vector should inherit stashing property of parent */
-  vw->donotstash = w->donotstash;
+  (*v)->stash.donotstash = win->stash.donotstash;
   
   ierr = PetscOListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: memc.c,v 1.67 2001/03/23 23:20:45 balay Exp bsmith $*/
+/*$Id: memc.c,v 1.68 2001/08/06 21:14:16 bsmith Exp bsmith $*/
 /*
     We define the memory operations here. The reason we just do not use 
   the standard memory routines in the PETSc code is that on some machines 
@@ -60,26 +60,28 @@ int PetscMemcpy(void *a,const void *b,int n)
   unsigned long nl = (unsigned long) n;
 
   PetscFunctionBegin;
+  if (a != b) {
 #if !defined(PETSC_HAVE_CRAY90_POINTER)
-  if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
-    SETERRQ(PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
-            or make sure your copy regions and lengths are correct");
-  }
+    if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
+      SETERRQ(PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
+              or make sure your copy regions and lengths are correct");
+    }
 #endif
 #if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
-#if defined(PETSC_HAVE_DOUBLE_ALIGN)
-  if (!(((long) a) % 8) && !(n % 8)) {
-#else
-  if (!(((long) a) % 4) && !(n % 8)) {
+#  if defined(PETSC_HAVE_DOUBLE_ALIGN)
+    if (!(((long) a) % 8) && !(n % 8)) {
+#  else
+    if (!(((long) a) % 4) && !(n % 8)) {
 #endif
-    int one = 1;
-    dcopy_(&n,(PetscScalar *)a,&one,(PetscScalar *)b,&one);
-  } else {
+      int one = 1;
+      dcopy_(&n,(PetscScalar *)a,&one,(PetscScalar *)b,&one);
+    } else {
+      memcpy((char*)(a),(char*)(b),n);
+    }
+#else
     memcpy((char*)(a),(char*)(b),n);
-  }
-#else
-  memcpy((char*)(a),(char*)(b),n);
 #endif
+  }
   PetscFunctionReturn(0);
 }
 

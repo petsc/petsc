@@ -1,13 +1,10 @@
 
-
-
-
 /*
     Provides several of the esi::Object methods used by all 
   of the esi::petsc classes
 */
 
-#include "petsc/object.h"
+#include "esi/petsc/object.h"
 
 
 esi::ErrorCode esi::petsc::Object::getRunTimeModel(const char* name, void *& comm)
@@ -52,14 +49,19 @@ esi::ErrorCode esi::petsc::Object::getInterface(const char* name, void *& iface)
 }
 
 
-void esi::petsc::Object::addReference()
+esi::ErrorCode esi::petsc::Object::addReference()
 {
+  int ierr = 0;
   this->refcnt++;
-  if (this->pobject) {int ierr = PetscObjectReference(this->pobject);}
+  if (this->pobject) ierr = PetscObjectReference(this->pobject);
+  return ierr;
 }
 
-void esi::petsc::Object::deleteReference()
+esi::ErrorCode esi::petsc::Object::deleteReference()
 {
+  int ierr;
   this->refcnt--;
-  if (this->pobject) {int ierr = PetscObjectDereference(this->pobject);}
+  if (this->pobject) ierr = PetscObjectDereference(this->pobject);
+  if (this->refcnt <= 0) delete this;
+  return ierr;
 }

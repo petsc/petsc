@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.84 2001/04/10 19:37:48 bsmith Exp balay $ */
+/* $Id: petschead.h,v 1.85 2001/08/07 03:05:29 balay Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -242,8 +242,8 @@ valid
    Sometimes object must live on same communicator to inter-operate
 */
 #define PetscCheckSameComm(a,b) \
-  {int __ierr,__flag; __ierr = MPI_Comm_compare(((PetscObject)a)->comm,((PetscObject)b)->comm,&__flag);\
-  CHKERRQ(__ierr); \
+  {int _6_ierr,__flag; _6_ierr = MPI_Comm_compare(((PetscObject)a)->comm,((PetscObject)b)->comm,&__flag);\
+  CHKERRQ(_6_ierr); \
   if (__flag != MPI_CONGRUENT && __flag != MPI_IDENT) \
   SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the two objects");}
 

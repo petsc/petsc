@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.38 2001/08/07 03:02:17 balay Exp bsmith $*/
+/*$Id: comb.c,v 1.39 2001/08/10 03:29:59 bsmith Exp bsmith $*/
 
 /*
       Split phase global vector reductions with support for combining the
@@ -84,7 +84,7 @@ EXTERN_C_BEGIN
 void PetscSplitReduction_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
-  int    i,count = *cnt;
+  int         i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_REAL) {
@@ -197,9 +197,9 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
 */
 int PetscSplitReductionExtend(PetscSplitReduction *sr)
 {
-  int    maxops = sr->maxops,*reducetype = sr->reducetype,ierr;
+  int         maxops = sr->maxops,*reducetype = sr->reducetype,ierr;
   PetscScalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
-  void   *invecs = sr->invecs;
+  void        *invecs = sr->invecs;
 
   PetscFunctionBegin;
   sr->maxops     = 2*maxops;

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.80 2000/08/23 20:56:38 balay Exp balay $ 
+# $Id: makefile,v 1.81 2001/08/22 17:58:53 balay Exp bsmith $ 
 
 ALL: lib 
 
-DIRS	  = viewer draw error dll fileio memory objects time utils plog mpiuni matlabengine f90
+DIRS	  = viewer draw error dll fileio memory objects time utils plog mpiuni matlabengine f90 esi
 LOCDIR	  = src/sys/src/
 
 include ${PETSC_DIR}/bmake/common/base

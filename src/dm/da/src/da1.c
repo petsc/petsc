@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.127 2001/03/28 19:42:42 balay Exp bsmith $*/
+/*$Id: da1.c,v 1.128 2001/06/21 21:19:09 bsmith Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -117,6 +117,8 @@ EXTERN int DAPublish_Petsc(PetscObject);
    Level: beginner
 
    Notes:
+   If you are having problems with running out of memory than run with the option -da_noao
+
    The array data itself is NOT stored in the DA, it is stored in Vec objects;
    The appropriate vector objects can be obtained with calls to DACreateGlobalVector()
    and DACreateLocalVector() and calls to VecDuplicate() if more are needed.

@@ -4,7 +4,7 @@
 // this contains the PETSc definition of (Petsc)Map
 #include "petscvec.h"
 
-#include "petsc/object.h"
+#include "esi/petsc/object.h"
 
 // The PETSc_Map supports the esi::Map and esi::MapPartition interfaces
 

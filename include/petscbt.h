@@ -1,4 +1,4 @@
-/* $Id: petscbt.h,v 1.20 2001/03/09 19:54:15 balay Exp bsmith $ */
+/* $Id: petscbt.h,v 1.21 2001/04/10 19:37:48 bsmith Exp bsmith $ */
 
 /*    
 
@@ -53,17 +53,17 @@ extern int  _BT_idx;
 #define PetscBTDestroy(array)   PetscFree(array)
 
 #define PetscBTView(m,bt,viewer) 0; {\
-  int    __i,__ierr; \
+  int    __i,_8_ierr; \
   PetscViewer __viewer = viewer; \
   if (!__viewer) __viewer = PETSC_VIEWER_STDOUT_SELF;\
   for (__i=0; __i<m; __i++) { \
-    __ierr = PetscPrintf(((PetscObject)__viewer)->comm,"%d %d\n",__i,PetscBTLookup(bt,__i));CHKERRQ(__ierr);\
+    _8_ierr = PetscPrintf(((PetscObject)__viewer)->comm,"%d %d\n",__i,PetscBTLookup(bt,__i));CHKERRQ(_8_ierr);\
   }}
 
 #define PetscBTCreate(m,array)  0; { \
-  int __ierr; \
-  __ierr = PetscMalloc(((m)/BITSPERBYTE+1)*sizeof(char),&(array));CHKERRQ(__ierr);\
-  __ierr = PetscBTMemzero(m,array);CHKERRQ(__ierr);\
+  int _9_ierr; \
+  _9_ierr = PetscMalloc(((m)/BITSPERBYTE+1)*sizeof(char),&(array));CHKERRQ(_9_ierr);\
+  _9_ierr = PetscBTMemzero(m,array);CHKERRQ(_9_ierr);\
   }
 
 #define PetscBTLookupSet(array,index)   (_BT_idx           = (index)/BITSPERBYTE, \

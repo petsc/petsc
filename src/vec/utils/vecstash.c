@@ -1,4 +1,4 @@
-/*$Id: vecstash.c,v 1.27 2001/08/06 21:14:36 bsmith Exp balay $*/
+/*$Id: vecstash.c,v 1.28 2001/08/07 03:02:17 balay Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"
 
@@ -67,6 +67,7 @@ int VecStashCreate_Private(MPI_Comm comm,int bs,VecStash *stash)
   stash->rmax        = 0;
   stash->nprocs      = 0;
   stash->nprocessed  = 0;
+  stash->donotstash  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -83,6 +84,9 @@ int VecStashDestroy_Private(VecStash *stash)
   if (stash->array) {
     ierr = PetscFree(stash->array);CHKERRQ(ierr);
     stash->array = 0;
+  }
+  if (stash->bowners) {
+    ierr = PetscFree(stash->bowners);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -209,7 +213,7 @@ int VecStashSetInitialSize_Private(VecStash *stash,int max)
 #define __FUNCT__ "VecStashExpand_Private"
 int VecStashExpand_Private(VecStash *stash,int incr)
 { 
-  int    *n_idx,newnmax,bs=stash->bs,ierr;
+  int         *n_idx,newnmax,bs=stash->bs,ierr;
   PetscScalar *n_array;
 
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.295 2001/08/10 16:08:39 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.296 2001/08/21 21:05:01 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -118,7 +118,7 @@ M*/
 .   memory - memory to free
 
    Synopsis:
-   int PetscFree(memory)
+   int PetscFree(void *memory)
 
    Level: beginner
 
@@ -512,6 +512,10 @@ EXTERN int PetscScalarView(int,PetscScalar[],PetscViewer);
 
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
 #define PETSC_USE_FORTRAN_KERNEL_MULTAIJ
+#endif
+
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
+#define PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ
 #endif
 
 #if !defined(PETSC_USE_FORTRAN_KERNEL_NORMSQR)

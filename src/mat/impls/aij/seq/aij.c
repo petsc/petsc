@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.383 2001/08/28 20:01:22 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.384 2001/08/29 16:12:22 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -174,7 +174,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertM
       else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%d,%d) in the matrix",row,col);
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
-        int    new_nz = ai[A->m] + CHUNKSIZE,len,*new_i,*new_j;
+        int         new_nz = ai[A->m] + CHUNKSIZE,len,*new_i,*new_j;
         PetscScalar *new_a;
 
         if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%d,%d) in the matrix requiring new malloc()",row,col);
@@ -415,7 +415,7 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_DENSE) {
-    int    cnt = 0,jcnt;
+    int         cnt = 0,jcnt;
     PetscScalar value;
 
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
@@ -2338,11 +2338,11 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatMatlabEnginePut_SeqAIJ"
 int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
 {
-  int        ierr,i,*ai,*aj;
-  Mat        B = (Mat)obj;
-  PetscScalar*array;
-  mxArray    *mat; 
-  Mat_SeqAIJ *aij = (Mat_SeqAIJ*)B->data;
+  int         ierr,i,*ai,*aj;
+  Mat         B = (Mat)obj;
+  PetscScalar *array;
+  mxArray     *mat; 
+  Mat_SeqAIJ  *aij = (Mat_SeqAIJ*)B->data;
 
   PetscFunctionBegin;
   mat  = mxCreateSparse(B->n,B->m,aij->nz,mxREAL);
@@ -2948,10 +2948,10 @@ EXTERN_C_END
 #define __FUNCT__ "MatSetValuesAdic_SeqAIJ"
 int MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;  
-  int        m = A->m,*ii = a->i,*jj = a->j,nz,i,*color,j,nlen;
-  PetscScalar*v = a->a,*values;
-  char       *cadvalues = (char *)advalues;
+  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;  
+  int         m = A->m,*ii = a->i,*jj = a->j,nz,i,*color,j,nlen;
+  PetscScalar *v = a->a,*values;
+  char        *cadvalues = (char *)advalues;
 
   PetscFunctionBegin;
   if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");

@@ -6,7 +6,7 @@
 //    ESI_Operator
 //    ESI_
 
-#include "petsc/vector.h"
+#include "esi/petsc/vector.h"
 
 #include "esi/Operator.h"
 #include "esi/MatrixData.h"
@@ -48,7 +48,8 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>, public virtual esi:
     virtual esi::ErrorCode matvec( esi::Vector<Scalar,Ordinal>& x, esi::Vector<Scalar,Ordinal>& y) ;
     
     //  Interface for esi::MatrixData  ---------------
-    virtual esi_int getDimensions(Ordinal& rows, Ordinal& columns);
+    virtual esi_int getGlobalSizes(Ordinal& rows, Ordinal& columns);
+    virtual esi_int getLocalSizes(Ordinal& rows, Ordinal& columns);
 
 
     //  Interface for esi::MatrixRowAccess  --------

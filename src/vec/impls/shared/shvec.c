@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.51 2001/08/06 21:14:54 bsmith Exp balay $*/
+/*$Id: shvec.c,v 1.52 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -31,7 +31,7 @@ int VecDuplicate_Shared(Vec win,Vec *v)
   vw   = (Vec_MPI *)(*v)->data;
 
   /* New vector should inherit stashing property of parent */
-  vw->donotstash = w->donotstash;
+  (*v)->stash.donotstash = win->stash.donotstash;
   
   ierr = PetscOListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);

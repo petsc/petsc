@@ -1,4 +1,5 @@
-/*$Id: vnake.c,v 1.23 2001/01/15 21:44:52 bsmith Exp balay $*/
+
+/*$Id: vnake.c,v 1.24 2001/03/23 23:21:22 balay Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
@@ -52,7 +53,7 @@ int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
   v->map             = 0;
   v->mapping         = 0;
   v->bmapping        = 0;
-  v->bs              = 0;
+  v->bs              = -1;  /* indicates not set */
   v->type_name       = 0;
 
   *V = v; 

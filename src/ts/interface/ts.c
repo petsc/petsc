@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.41 2001/06/21 21:18:58 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.42 2001/08/06 21:18:08 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNCT__  
@@ -45,16 +45,24 @@ int TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg
   if (ts->problem_type != TS_NONLINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"For TS_NONLINEAR only");
   }
-  if (!ts->rhsjacobian) PetscFunctionReturn(0);
-  ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
-  *flg = DIFFERENT_NONZERO_PATTERN;
-  PetscStackPush("TS user Jacobian function");
-  ierr = (*ts->rhsjacobian)(ts,t,X,A,B,flg,ts->jacP);CHKERRQ(ierr);
-  PetscStackPop;
-  ierr = PetscLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
-  /* make sure user returned a correct Jacobian and preconditioner */
-  PetscValidHeaderSpecific(*A,MAT_COOKIE);
-  PetscValidHeaderSpecific(*B,MAT_COOKIE);  
+  if (ts->rhsjacobian) {
+    ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
+    *flg = DIFFERENT_NONZERO_PATTERN;
+    PetscStackPush("TS user Jacobian function");
+    ierr = (*ts->rhsjacobian)(ts,t,X,A,B,flg,ts->jacP);CHKERRQ(ierr);
+    PetscStackPop;
+    ierr = PetscLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
+    /* make sure user returned a correct Jacobian and preconditioner */
+    PetscValidHeaderSpecific(*A,MAT_COOKIE);
+    PetscValidHeaderSpecific(*B,MAT_COOKIE);  
+  } else {
+    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (*A != *B) {
+      ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 

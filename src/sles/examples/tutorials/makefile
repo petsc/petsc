@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.97 2001/06/21 21:18:27 bsmith Exp balay $ 
+# $Id: makefile,v 1.98 2001/08/22 18:01:52 balay Exp bsmith $ 
 
 CFLAGS	         =
 FFLAGS	         = 
@@ -437,7 +437,7 @@ TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
                    ex10.PETSc runex10_7 runex10_8 runex10_9 \
                    runex10_5 runex10_6 runex10_8 runex10_10 ex10.rm
-TESTEXAMPLES_7   = ex5.PETSc runex5_3 runex5_4 ex5.rm
+TESTEXAMPLES_BLOCKSOLVE   = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_aij_lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
 TESTEXAMPLES_8   = ex10.PETSc runex10_13 ex10.rm

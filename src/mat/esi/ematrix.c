@@ -1,3 +1,5 @@
+
+
 /*
       Wrappers for PETSc_Matrix ESI implementation
 */
@@ -132,9 +134,14 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getDiagonal(esi::Vector<double,in
   return MatGetDiagonal(this->mat,py);
 }
 
-esi::ErrorCode esi::petsc::Matrix<double,int>::getDimensions(int& rows, int& columns)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getGlobalSizes(int& rows, int& columns)
 {
   int ierr = MatGetSize(this->mat,&rows,&columns);CHKERRQ(ierr);
+}
+
+esi::ErrorCode esi::petsc::Matrix<double,int>::getLocalSizes(int& rows, int& columns)
+{
+  int ierr = MatGetLocalSize(this->mat,&rows,&columns);CHKERRQ(ierr);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getRowNonzeros(int row,int &length)

@@ -1,4 +1,4 @@
-/* $Id: win32draw.c,v 1.13 2001/04/10 19:34:20 bsmith Exp bsmith $ */
+/* $Id: win32draw.c,v 1.14 2001/08/06 21:13:52 bsmith Exp bsmith $ */
 #include "petsc.h"
 #include "src/sys/src/draw/drawimpl.h"
 #include "win32draw.h"
@@ -781,7 +781,7 @@ static int PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   int             ierr;
   
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(PetscDraw_Win32),&pop);CHKERRQ(ierr);
+  ierr = PetscNew(PetscDraw_Win32,&pop);CHKERRQ(ierr);
   (*popdraw)->data = pop;
   
   /* the following is temporary fix for initializing a global datastructure */
@@ -798,7 +798,7 @@ static int PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   WaitForSingleObject(g_hWindowListMutex, INFINITE);
   
   draw->popup             = (*popdraw);
-  ierr                    = PetscMalloc(sizeof(struct _p_WindowNode),&newnode);CHKERRQ(ierr);
+  ierr                    = PetscNew(struct _p_WindowNode,&newnode);CHKERRQ(ierr);
   newnode->MouseListHead  = NULL;
   newnode->MouseListTail  = NULL;
   newnode->wnext          = WindowListHead;
@@ -843,7 +843,7 @@ int PetscDrawCreate_Win32(PetscDraw draw)
   int             ierr;
   WindowNode      newnode;
   
-  ierr        = PetscMalloc(sizeof(PetscDraw_Win32),&windraw);CHKERRQ(ierr);
+  ierr        = PetscNew(PetscDraw_Win32,&windraw);CHKERRQ(ierr);
   draw->data  = windraw;
   
   /* the following is temporary fix for initializing a global datastructure */
@@ -860,7 +860,7 @@ int PetscDrawCreate_Win32(PetscDraw draw)
   CloseHandle(windraw->hReadyEvent);
   WaitForSingleObject(g_hWindowListMutex,INFINITE);
   
-  ierr                    = PetscMalloc(sizeof(struct _p_WindowNode),&newnode);CHKERRQ(ierr);
+  ierr                    = PetscNew(struct _p_WindowNode,&newnode);CHKERRQ(ierr);
   newnode->MouseListHead  = NULL;
   newnode->MouseListTail  = NULL;
   newnode->wnext          = WindowListHead;
@@ -994,7 +994,7 @@ static int  MouseRecord_Win32(HWND hWnd,PetscDrawButton button)
     while (current != NULL) {   
       if(current->hWnd == hWnd) {       
         
-        ierr            = PetscMalloc(sizeof(struct _p_MouseNode),&newnode);CHKERRQ(ierr);
+        ierr            = PetscNew(struct _p_MouseNode,&newnode);CHKERRQ(ierr);
         newnode->Button = button;
         GetCursorPos(&mousepos);
         newnode->user.x = mousepos.x;

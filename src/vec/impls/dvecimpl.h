@@ -1,4 +1,4 @@
-/* $Id: dvecimpl.h,v 1.20 2001/08/06 21:14:45 bsmith Exp balay $ */
+/* $Id: dvecimpl.h,v 1.21 2001/08/07 03:02:21 balay Exp bsmith $ */
 /* 
    This should not be included in users code.
 
@@ -42,7 +42,6 @@ EXTERN int VecAXPY_Seq(const PetscScalar *,Vec,Vec);
 EXTERN int VecAXPBY_Seq(const PetscScalar *,const PetscScalar *,Vec,Vec);
 EXTERN int VecMax_Seq(Vec,int*,PetscReal *);
 EXTERN int VecDuplicate_Seq(Vec,Vec *);
-EXTERN int VecGetPetscMap_Seq(Vec,PetscMap *);
 EXTERN int VecConjugate_Seq(Vec);
 
 #endif

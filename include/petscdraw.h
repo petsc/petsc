@@ -1,4 +1,4 @@
-/* $Id: petscdraw.h,v 1.77 2001/08/06 21:13:34 bsmith Exp bsmith $ */
+/* $Id: petscdraw.h,v 1.78 2001/08/10 03:28:19 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -115,8 +115,8 @@ EXTERN int PetscDrawPointSetSize(PetscDraw,PetscReal);
 
 EXTERN int PetscDrawRectangle(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int,int);
 EXTERN int PetscDrawTriangle(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int);
-EXTERN int PetscDrawTensorContourPatch(PetscDraw,int,int,PetscReal*,PetscReal*,PetscReal,PetscReal,PetscScalar*);
-EXTERN int PetscDrawTensorContour(PetscDraw,int,int,const PetscReal[],const PetscReal[],PetscScalar *);
+EXTERN int PetscDrawTensorContourPatch(PetscDraw,int,int,PetscReal*,PetscReal*,PetscReal,PetscReal,PetscReal*);
+EXTERN int PetscDrawTensorContour(PetscDraw,int,int,const PetscReal[],const PetscReal[],PetscReal *);
 
 EXTERN int PetscDrawString(PetscDraw,PetscReal,PetscReal,int,char*);
 EXTERN int PetscDrawStringVertical(PetscDraw,PetscReal,PetscReal,int,char*);

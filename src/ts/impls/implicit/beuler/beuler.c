@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.58 2001/08/06 21:18:11 bsmith Exp balay $*/
+/*$Id: beuler.c,v 1.59 2001/08/07 03:04:22 balay Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -84,11 +84,9 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptim
         evaluate matrix function 
     */
     ierr = (*ts->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
-    if (!ts->Ashell) {
-      ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
-      ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
-    }
-    if (ts->B != ts->A && ts->Ashell != ts->B && str != SAME_PRECONDITIONER) {
+    ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
+    if (ts->B != ts->A && str != SAME_PRECONDITIONER) {
       ierr = MatScale(&mone,ts->B);CHKERRQ(ierr);
       ierr = MatShift(&mdt,ts->B);CHKERRQ(ierr);
     }
@@ -148,35 +146,11 @@ static int TSDestroy_BEuler(TS ts)
   if (beuler->update) {ierr = VecDestroy(beuler->update);CHKERRQ(ierr);}
   if (beuler->func) {ierr = VecDestroy(beuler->func);CHKERRQ(ierr);}
   if (beuler->rhs) {ierr = VecDestroy(beuler->rhs);CHKERRQ(ierr);}
-  if (ts->Ashell) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
   ierr = PetscFree(beuler);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
-/*------------------------------------------------------------*/
-/*
-    This matrix shell multiply where user provided Shell matrix
-*/
-
-#undef __FUNCT__  
-#define __FUNCT__ "TSBEulerMatMult"
-int TSBEulerMatMult(Mat mat,Vec x,Vec y)
-{
-  TS     ts;
-  PetscScalar mdt,mone = -1.0;
-  int    ierr;
-
-  PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ts);CHKERRQ(ierr);
-  mdt = 1.0/ts->time_step;
-
-  /* apply user provided function */
-  ierr = MatMult(ts->Ashell,x,y);CHKERRQ(ierr);
-  /* shift and scale by 1/dt - F */
-  ierr = VecAXPBY(&mdt,&mone,x,y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 /* 
     This defines the nonlinear equation that is to be solved with SNES
@@ -221,20 +195,15 @@ int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
   TS           ts = (TS) ctx;
   int          ierr;
   PetscScalar  mone = -1.0,mdt = 1.0/ts->time_step;
-  PetscTruth   isshell;
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
   ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
 
-  /* shift and scale Jacobian, if not matrix-free */
-  ierr = PetscTypeCompare((PetscObject)*AA,MATSHELL,&isshell);CHKERRQ(ierr);
-  if (!isshell) {
-    ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
-    ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
-  }
-  ierr = PetscTypeCompare((PetscObject)*BB,MATSHELL,&isshell);CHKERRQ(ierr);
-  if (*BB != *AA && *str != SAME_PRECONDITIONER && !isshell) {
+  /* shift and scale Jacobian */
+  ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
+  ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
+  if (*BB != *AA && *str != SAME_PRECONDITIONER) {
     ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);
   }
@@ -257,17 +226,9 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
     
   /* build linear system to be solved */
-  if (!ts->Ashell) {
-    ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
-    ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
-  } else {
-    /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSBEulerMatMult);CHKERRQ(ierr);
-  }
-  if (ts->A != ts->B && ts->Ashell != ts->B) {
+  ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
+  ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
+  if (ts->A != ts->B) {
     ierr = MatScale(&mone,ts->B);CHKERRQ(ierr);
     ierr = MatShift(&mdt,ts->B);CHKERRQ(ierr);
   }
@@ -286,12 +247,6 @@ static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
   ierr = SLESSetFromOptions(ts->sles);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
-  if (ts->Ashell) { /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSBEulerMatMult);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -307,12 +262,6 @@ static int TSSetUp_BEuler_Nonlinear(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,beuler->func,TSBEulerFunction,ts);CHKERRQ(ierr);
-  if (ts->Ashell) { /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSBEulerMatMult);CHKERRQ(ierr);
-  }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSBEulerJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -353,7 +302,6 @@ int TSCreate_BEuler(TS ts)
   TS_BEuler  *beuler;
   int        ierr;
   KSP        ksp;
-  PetscTruth isshell;
 
   PetscFunctionBegin;
   ts->destroy         = TSDestroy_BEuler;
@@ -363,17 +311,10 @@ int TSCreate_BEuler(TS ts)
     if (!ts->A) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
     }
-    ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
     if (!ts->rhsmatrix) {
-      if (isshell) {
-        ts->Ashell = ts->A;
-      }
       ts->setup  = TSSetUp_BEuler_Linear_Constant_Matrix;
       ts->step   = TSStep_BEuler_Linear_Constant_Matrix;
     } else {
-      if (isshell) {
-        ts->Ashell = ts->A;
-      }
       ts->setup  = TSSetUp_BEuler_Linear_Variable_Matrix;  
       ts->step   = TSStep_BEuler_Linear_Variable_Matrix;
     }
@@ -382,10 +323,6 @@ int TSCreate_BEuler(TS ts)
     ierr = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
-    ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
-    if (isshell) {
-      ts->Ashell = ts->A;
-    }
     ts->setup           = TSSetUp_BEuler_Nonlinear;  
     ts->step            = TSStep_BEuler_Nonlinear;
     ts->setfromoptions  = TSSetFromOptions_BEuler_Nonlinear;

@@ -1,17 +1,22 @@
-# $Id: makefile,v 1.39 2001/08/22 17:59:56 balay Exp $ 
+# $Id: makefile,v 1.1 2001/08/29 20:54:49 bsmith Exp bsmith $ 
+
+#requirespackage  'PETSC_HAVE_ESI'
+#requireslanguage  CPP
+#requiresscalar    real 
+#requiresprecision double
 
 ALL: lib
 
-CFLAGS   = ${AMS_INCLUDE}
+CFLAGS   = ${ESI_INCLUDE}
 FFLAGS   =
-SOURCEC  = bvec2.c bvec1.c dvec2.c vseqcr.c
+SOURCEC  = ebvec1.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = bvec2.o  bvec1.o dvec2.o vseqcr.o
+OBJSC    = ebvec1.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/impls/seq/
+LOCDIR   = src/vec/impls/esi/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

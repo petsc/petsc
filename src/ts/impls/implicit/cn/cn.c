@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.32 2001/08/07 03:04:23 balay Exp bsmith $*/
+/*$Id: cn.c,v 1.33 2001/08/29 03:31:25 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -126,11 +126,9 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
         evaluate matrix function 
     */
     ierr = (*ts->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
-    if (!ts->Ashell) {
-      ierr = MatScale(&neg_dt,ts->A);CHKERRQ(ierr);
-      ierr = MatShift(&two,ts->A);CHKERRQ(ierr);
-    }
-    if (ts->B != ts->A && ts->Ashell != ts->B && str != SAME_PRECONDITIONER) {
+    ierr = MatScale(&neg_dt,ts->A);CHKERRQ(ierr);
+    ierr = MatShift(&two,ts->A);CHKERRQ(ierr);
+    if (ts->B != ts->A && str != SAME_PRECONDITIONER) {
       ierr = MatScale(&neg_dt,ts->B);CHKERRQ(ierr);
       ierr = MatShift(&two,ts->B);CHKERRQ(ierr);
     }
@@ -201,33 +199,7 @@ static int TSDestroy_CN(TS ts)
   if (cn->update) {ierr = VecDestroy(cn->update);CHKERRQ(ierr);}
   if (cn->func) {ierr = VecDestroy(cn->func);CHKERRQ(ierr);}
   if (cn->rhs) {ierr = VecDestroy(cn->rhs);CHKERRQ(ierr);}
-  if (ts->Ashell) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
   ierr = PetscFree(cn);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-/*------------------------------------------------------------*/
-/*
-    This matrix shell multiply where user provided Shell matrix
-*/
-
-#undef __FUNCT__  
-#define __FUNCT__ "TSCnMatMult"
-int TSCnMatMult(Mat mat,Vec x,Vec y)
-{
-  TS          ts;
-  PetscScalar two = 2.0,neg_dt;
-  int         ierr;
-
-  PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ts);CHKERRQ(ierr);
-  neg_dt = -1.0*ts->time_step;
-
-  /* apply user-provided function */
-  ierr = MatMult(ts->Ashell,x,y);CHKERRQ(ierr);
-  /* shift and scale by 2 - dt*F */
-  ierr = VecAXPBY(&two,&neg_dt,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -274,20 +246,15 @@ int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
   TS           ts = (TS) ctx;
   int          ierr;
   PetscScalar  mone = -1.0,mdt = 1.0/ts->time_step;
-  PetscTruth   isshell;
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
   ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
 
-  /* shift and scale Jacobian, if not matrix-free */
-  ierr = PetscTypeCompare((PetscObject)*AA,MATSHELL,&isshell);CHKERRQ(ierr);
-  if (!isshell) {
-    ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
-    ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
-  }
-  ierr = PetscTypeCompare((PetscObject)*BB,MATSHELL,&isshell);CHKERRQ(ierr);
-  if (*BB != *AA && *str != SAME_PRECONDITIONER && !isshell) {
+  /* shift and scale Jacobian */
+  ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
+  ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
+  if (*BB != *AA && *str != SAME_PRECONDITIONER) {
     ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);
   }
@@ -309,17 +276,9 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&cn->rhs);CHKERRQ(ierr);  
     
   /* build linear system to be solved */
-  if (!ts->Ashell) {
-    ierr = MatScale(&neg_dt,ts->A);CHKERRQ(ierr);
-    ierr = MatShift(&two,ts->A);CHKERRQ(ierr);
-  } else {
-    /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSCnMatMult);CHKERRQ(ierr);
-  }
-  if (ts->A != ts->B && ts->Ashell != ts->B) {
+  ierr = MatScale(&neg_dt,ts->A);CHKERRQ(ierr);
+  ierr = MatShift(&two,ts->A);CHKERRQ(ierr);
+  if (ts->A != ts->B) {
     ierr = MatScale(&neg_dt,ts->B);CHKERRQ(ierr);
     ierr = MatShift(&two,ts->B);CHKERRQ(ierr);
   }
@@ -337,12 +296,6 @@ static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cn->rhs);CHKERRQ(ierr);  
-  if (ts->Ashell) { /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSCnMatMult);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -357,12 +310,6 @@ static int TSSetUp_CN_Nonlinear(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cn->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,cn->func,TSCnFunction,ts);CHKERRQ(ierr);
-  if (ts->Ashell) { /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSCnMatMult);CHKERRQ(ierr);
-  }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSCnJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -407,7 +354,6 @@ int TSCreate_CN(TS ts)
   TS_CN      *cn;
   int        ierr;
   KSP        ksp;
-  PetscTruth isshell;
 
   PetscFunctionBegin;
   ts->destroy         = TSDestroy_CN;
@@ -417,17 +363,10 @@ int TSCreate_CN(TS ts)
     if (!ts->A) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
     }
-    ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
     if (!ts->rhsmatrix) {
-      if (isshell) {
-        ts->Ashell = ts->A;
-      }
       ts->setup  = TSSetUp_CN_Linear_Constant_Matrix;
       ts->step   = TSStep_CN_Linear_Constant_Matrix;
     } else {
-      if (isshell) {
-        ts->Ashell = ts->A;
-      }
       ts->setup  = TSSetUp_CN_Linear_Variable_Matrix;  
       ts->step   = TSStep_CN_Linear_Variable_Matrix;
     }
@@ -436,10 +375,6 @@ int TSCreate_CN(TS ts)
     ierr = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
-    ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
-    if (isshell) {
-      ts->Ashell = ts->A;
-    }
     ts->setup           = TSSetUp_CN_Nonlinear;  
     ts->step            = TSStep_CN_Nonlinear;
     ts->setfromoptions  = TSSetFromOptions_CN_Nonlinear;

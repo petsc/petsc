@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.411 2001/08/07 03:02:41 balay Exp bsmith $*/
+/*$Id: matrix.c,v 1.412 2001/08/07 21:29:30 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -2080,8 +2080,8 @@ int MatSolveTranspose(Mat mat,Vec b,Vec x)
 int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 {
   PetscScalar one = 1.0;
-  int    ierr;
-  Vec    tmp;
+  int         ierr;
+  Vec         tmp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -2208,7 +2208,7 @@ int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int i
 */
 int MatCopy_Basic(Mat A,Mat B,MatStructure str)
 {
-  int    ierr,i,rstart,rend,nz,*cwork;
+  int         ierr,i,rstart,rend,nz,*cwork;
   PetscScalar *vwork;
 
   PetscFunctionBegin;
@@ -2281,7 +2281,7 @@ int MatCopy(Mat A,Mat B,MatStructure str)
 
 #include "petscsys.h"
 PetscTruth MatConvertRegisterAllCalled = PETSC_FALSE;
-PetscFList      MatConvertList              = 0;
+PetscFList MatConvertList              = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvertRegister"
@@ -2364,9 +2364,10 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
     int (*conv)(Mat,MatType,Mat*);
-    ierr = PetscStrcpy(convname,"MatConvertTo_");CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
-    ierr =  PetscFListFind(mat->comm,MatConvertList,convname,(void(**)())&conv);CHKERRQ(ierr);
+    if (!MatConvertRegisterAllCalled) {
+      ierr = MatConvertRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+    }
+    ierr = PetscFListFind(mat->comm,MatConvertList,newtype,(void(**)())&conv);CHKERRQ(ierr);
     if (conv) {
       ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
     } else {

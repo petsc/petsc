@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.48 2001/08/07 21:31:27 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.49 2001/08/10 03:34:15 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -312,10 +312,10 @@ int RHSMatrixFree(Mat mat,Vec x,Vec y)
 #define __FUNCT__ "RHSFunctionHeat"
 int RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
-  AppCtx *appctx = (AppCtx*) ctx;
-  DA     da = appctx->da;
-  Vec    local = appctx->local,localwork = appctx->localwork;
-  int    ierr,i,localsize; 
+  AppCtx      *appctx = (AppCtx*) ctx;
+  DA          da = appctx->da;
+  Vec         local = appctx->local,localwork = appctx->localwork;
+  int         ierr,i,localsize; 
   PetscScalar *copyptr,*localptr,sc;
 
   /*Extract local array */ 

@@ -1,13 +1,10 @@
 
-
-
-
 /*
       Interfaces the ESI_VEctor class to the PETSc
     Map object class.
 */
 
-#include "petsc/vector.h"
+#include "esi/petsc/vector.h"
 
 esi::petsc::Vector<double,int>::Vector( esi::MapPartition<int> *inmap)
 {
@@ -22,6 +19,7 @@ esi::petsc::Vector<double,int>::Vector( esi::MapPartition<int> *inmap)
   ierr = VecCreateMPI(*comm,n,N,&this->vec);
   this->pobject = (PetscObject)this->vec;
   this->map = (esi::MapPartition<int> *)inmap;
+  this->map->addReference();
   PetscObjectGetComm((PetscObject)this->vec,&this->comm);
 }
 
@@ -32,18 +30,20 @@ esi::petsc::Vector<double,int>::Vector( Vec pvec)
   
   this->vec     = pvec;
   this->pobject = (PetscObject)this->vec;
-  PetscObjectGetComm((PetscObject)this->vec,&this->comm);
+  ierr = PetscObjectReference((PetscObject)pvec);
+  ierr = PetscObjectGetComm((PetscObject)this->vec,&this->comm);
 
-  ierr =  VecGetSize(pvec,&N);
+  ierr = VecGetSize(pvec,&N);
   ierr = VecGetLocalSize(pvec,&n);
   this->map = (esi::MapPartition<int> *)(new esi::petsc::Map<int>(this->comm,n,N));
 }
 
 
+
 esi::petsc::Vector<double,int>::~Vector()
 {
   int ierr;
-  ierr = VecDestroy(this->vec);
+  this->map->deleteReference();
 }
 
 
@@ -88,6 +88,10 @@ esi::ErrorCode esi::petsc::Vector<double,int>::getGlobalSize( int & dim)
   return VecGetSize(this->vec,&dim);
 }
 
+esi::ErrorCode esi::petsc::Vector<double,int>::getLocalSize( int & dim) 
+{
+  return VecGetLocalSize(this->vec,&dim);
+}
 
 esi::ErrorCode esi::petsc::Vector<double,int>::clone( esi::Vector<double,int>*& outvector)  
 {
@@ -136,7 +140,7 @@ esi::ErrorCode esi::petsc::Vector<double,int>::scaleDiagonal( esi::Vector<double
   ierr = yy.getInterface("esi::petsc::Vector",static_cast<void*>(y));CHKERRQ(ierr);
   if (!y) return 1;
 
-  return VecPointwiseMult(this->vec,y->vec,this->vec);
+  return VecPointwiseMult(y->vec,this->vec,this->vec);
 }
 
 esi::ErrorCode esi::petsc::Vector<double,int>::norm1(double &scalar) 
@@ -182,7 +186,7 @@ esi::ErrorCode esi::petsc::Vector<double,int>::axpy(  esi::Vector<double,int> &y
 
   esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",static_cast<void*>(y));CHKERRQ(ierr);
   if (!y) return 1;
-  return VecAXPY(&scalar,this->vec,y->vec);
+  return VecAXPY(&scalar,y->vec,this->vec);
 }
 
 esi::ErrorCode esi::petsc::Vector<double,int>::axpby(double y1,  esi::Vector<double,int> &yy1,double y2,  esi::Vector<double,int> &yy2)
@@ -207,7 +211,7 @@ esi::ErrorCode esi::petsc::Vector<double,int>::aypx(double scalar,  esi::Vector<
   
   esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",static_cast<void*>(y));CHKERRQ(ierr);
   if (!y) return 1;
-  return VecAXPY(&scalar,this->vec,y->vec);
+  return VecAYPX(&scalar,this->vec,y->vec);
 }
 
 esi::ErrorCode esi::petsc::Vector<double,int>::getCoefPtrReadLock(double *&pointer) 

@@ -1,4 +1,4 @@
-  /* $Id: tsimpl.h,v 1.23 2001/01/15 21:48:24 bsmith Exp bsmith $ */
+  /* $Id: tsimpl.h,v 1.24 2001/08/06 21:18:07 bsmith Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -31,7 +31,6 @@ struct _p_TS {
 
   int           (*rhsmatrix)(TS,PetscReal,Mat*,Mat*,MatStructure *,void*);
   Mat           A,B;        /* user provided matrix and preconditioner */
-  Mat           Ashell;     /* if user provided a Shell matrix */
 
   int           (*rhsfunction)(TS,PetscReal,Vec,Vec,void*); 
   void          *funP;

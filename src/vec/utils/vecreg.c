@@ -1,4 +1,4 @@
-/*$Id: vecreg.c,v 1.19 2001/01/15 21:44:37 bsmith Exp balay $*/
+/*$Id: vecreg.c,v 1.20 2001/03/23 23:21:18 balay Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"  /*I "petscvec.h" I*/
 
@@ -7,6 +7,8 @@ EXTERN int VecCreate_Seq(Vec);
 EXTERN int VecCreate_MPI(Vec);
 EXTERN int VecCreate_FETI(Vec);
 EXTERN int VecCreate_Shared(Vec);
+EXTERN int VecCreate_ESI(Vec);
+EXTERN int VecCreate_PetscESI(Vec);
 EXTERN_C_END
 
 
@@ -39,6 +41,10 @@ int VecRegisterAll(const char path[])
   ierr = VecRegisterDynamic(VEC_SHARED,        path,"VecCreate_Shared",  VecCreate_Shared);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VEC_SEQ,           path,"VecCreate_Seq",     VecCreate_Seq);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VEC_FETI,          path,"VecCreate_FETI",    VecCreate_FETI);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ESI) && defined(__cplusplus)
+  ierr = VecRegisterDynamic(VEC_ESI,           path,"VecCreate_ESI",    VecCreate_ESI);CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VEC_PETSCESI,      path,"VecCreate_PetscESI",    VecCreate_PetscESI);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.134 2001/07/20 21:26:11 bsmith Exp bsmith $*/
+/*$Id: da3.c,v 1.135 2001/08/06 21:18:33 bsmith Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -189,6 +189,8 @@ EXTERN int DAPublish_Petsc(PetscObject);
    Level: beginner
 
    Notes:
+   If you are having problems with running out of memory than run with the option -da_noao
+
    The stencil type DA_STENCIL_STAR with width 1 corresponds to the 
    standard 7-pt stencil, while DA_STENCIL_BOX with width 1 denotes
    the standard 27-pt stencil.

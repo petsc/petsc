@@ -1,4 +1,4 @@
-/*$Id: stack.c,v 1.33 2001/03/23 23:20:26 balay Exp bsmith $*/
+/*$Id: stack.c,v 1.34 2001/04/10 19:34:27 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
@@ -70,7 +70,7 @@ int PetscStackCreate(void)
   PetscStack *petscstack_in;
   if (petscstack) return 0;
   
-  ierr = PetscMalloc(sizeof(PetscStack),&petscstack_in);CHKERRQ(ierr);
+  ierr = PetscNew(PetscStack,&petscstack_in);CHKERRQ(ierr);
   ierr = PetscMemzero(petscstack_in,sizeof(PetscStack));CHKERRQ(ierr);
   petscstack_in->currentsize = 0;
   petscstack = petscstack_in;

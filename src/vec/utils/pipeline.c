@@ -1,4 +1,4 @@
-/*$Id: pipeline.c,v 1.27 2001/01/15 21:44:37 bsmith Exp balay $*/
+/*$Id: pipeline.c,v 1.28 2001/03/23 23:21:18 balay Exp bsmith $*/
 
 /*
        Vector pipeline routines. These routines have all been contributed
@@ -41,9 +41,9 @@ static int VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **t
   gen_to    = (VecScatter_MPI_General*)scatter->todata;
   gen_from  = (VecScatter_MPI_General*)scatter->fromdata;
 
-  ierr = PetscMalloc(sizeof(VecScatter_MPI_General),&pipe_to);CHKERRQ(ierr);
+  ierr = PetscNew(VecScatter_MPI_General,&pipe_to);CHKERRQ(ierr);
   ierr = PetscMemzero(pipe_to,sizeof(VecScatter_MPI_General));CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(VecScatter_MPI_General),&pipe_from);CHKERRQ(ierr);
+  ierr = PetscNew(VecScatter_MPI_General,&pipe_from);CHKERRQ(ierr);
   ierr = PetscMemzero(pipe_from,sizeof(VecScatter_MPI_General));CHKERRQ(ierr);
 
   pipe_to->requests   = gen_to->requests;

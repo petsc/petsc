@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.164 2001/08/06 21:15:14 bsmith Exp balay $*/
+/*$Id: aijfact.c,v 1.165 2001/08/07 03:02:47 balay Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -718,7 +718,7 @@ int MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
     vi  = aj + diag[i] + (!shift);
     nz  = ai[i+1] - diag[i] - 1;
     s1  = tmp[i];
-    s1 *= *(v++);  /* multiply by inverse of diagonal entry */
+    s1 *= (*v++);  /* multiply by inverse of diagonal entry */
     while (nz--) {
       tmp[*vi++ + shift] -= (*v++)*s1;
     }

@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.206 2001/08/07 03:02:45 balay Exp bsmith $*/
+/*$Id: dense.c,v 1.207 2001/08/24 16:12:05 bsmith Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -367,7 +367,7 @@ int MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 #if defined(PETSC_USE_COMPLEX)
         /* cannot use BLAS dot for complex because compiler/linker is 
            not happy about returning a double complex */
-        int    _i;
+        int         _i;
         PetscScalar sum = b[i];
         for (_i=0; _i<m; _i++) {
           sum -= PetscConj(v[i+_i*m])*x[_i];
@@ -384,7 +384,7 @@ int MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 #if defined(PETSC_USE_COMPLEX)
         /* cannot use BLAS dot for complex because compiler/linker is 
            not happy about returning a double complex */
-        int    _i;
+        int         _i;
         PetscScalar sum = b[i];
         for (_i=0; _i<m; _i++) {
           sum -= PetscConj(v[i+_i*m])*x[_i];

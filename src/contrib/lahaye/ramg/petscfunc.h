@@ -1,4 +1,4 @@
-/* $Id: petscfunc.h,v 1.2 2000/11/28 17:32:36 bsmith Exp balay $ */
+/* $Id: petscfunc.h,v 1.3 2001/08/22 18:02:49 balay Exp bsmith $ */
 #ifndef PETSCFUNC_H
 #define PETSCFUNC_H
 
@@ -57,7 +57,7 @@ extern int RamgShellPCCreate(RamgShellPC **shell);
 extern int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat);
 extern int RamgShellPCApply(void *ctx, Vec r, Vec z); 
 extern int RamgShellPCDestroy(RamgShellPC *shell); 
-extern int RamgGetParam(struct RAMG_PARAM *ramg_param);
+extern int RamgGetParam(Mat A,struct RAMG_PARAM *ramg_param);
 
 /*..Structure used in the interface to SAMG..*/ 
 typedef struct{

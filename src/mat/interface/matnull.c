@@ -1,4 +1,4 @@
-/*$Id: matnull.c,v 1.38 2001/08/06 21:15:07 bsmith Exp balay $*/
+/*$Id: matnull.c,v 1.39 2001/08/07 03:02:41 balay Exp bsmith $*/
 /*
     Routines to project vectors out of null spaces.
 */
@@ -99,8 +99,8 @@ int MatNullSpaceDestroy(MatNullSpace sp)
 int MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 {
   PetscScalar sum;
-  int    j,n = sp->n,N,ierr;
-  Vec    l = vec;
+  int         j,n = sp->n,N,ierr;
+  Vec         l = vec;
 
   PetscFunctionBegin;
   if (out) {

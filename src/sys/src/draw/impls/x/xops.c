@@ -1,4 +1,4 @@
-/* $Id: xops.c,v 1.154 2001/03/23 23:20:15 balay Exp bsmith $*/
+/* $Id: xops.c,v 1.155 2001/04/10 19:34:14 bsmith Exp bsmith $*/
 
 /*
     Defines the operations for the X PetscDraw implementation.
@@ -528,7 +528,7 @@ static int PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
   (*sdraw)->popup   = draw->popup;
 
   /* actually create and open the window */
-  ierr = PetscMalloc(sizeof(PetscDraw_X),&sXwin);CHKERRQ(ierr);
+  ierr = PetscNew(PetscDraw_X,&sXwin);CHKERRQ(ierr);
   ierr = PetscMemzero(sXwin,sizeof(PetscDraw_X));CHKERRQ(ierr);
   ierr = XiQuickWindowFromWindow(sXwin,draw->display,Xwin->win);CHKERRQ(ierr);
 
@@ -685,7 +685,7 @@ int PetscDrawCreate_X(PetscDraw draw)
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   /* actually create and open the window */
-  ierr = PetscMalloc(sizeof(PetscDraw_X),&Xwin);CHKERRQ(ierr);
+  ierr = PetscNew(PetscDraw_X,&Xwin);CHKERRQ(ierr);
   PetscLogObjectMemory(draw,sizeof(PetscDraw_X)+sizeof(struct _p_PetscDraw));
   ierr = PetscMemzero(Xwin,sizeof(PetscDraw_X));CHKERRQ(ierr);
   ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);

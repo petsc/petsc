@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.162 2001/08/06 21:14:36 bsmith Exp balay $*/
+/*$Id: vpscat.c,v 1.163 2001/08/07 03:02:17 balay Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -2235,8 +2235,8 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
 {
   Vec_MPI                *y = (Vec_MPI *)yin->data;
   VecScatter_MPI_General *from,*to;
-  int                    *source,nprocslocal,*lens,rank = y->rank,*owners = yin->map->range;
-  int                    ierr,size = y->size,*lowner,*start;
+  int                    *source,nprocslocal,*lens,rank = yin->stash.rank,*owners = yin->map->range;
+  int                    ierr,size = yin->stash.size,*lowner,*start;
   int                    *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
   int                    *owner,*starts,count,tag,slen;
   int                    *rvalues,*svalues,base,imdex,nmax,*values,len;

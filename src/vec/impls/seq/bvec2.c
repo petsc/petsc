@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.198 2001/08/06 21:14:45 bsmith Exp balay $*/
+/*$Id: bvec2.c,v 1.199 2001/08/07 03:02:21 balay Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -24,7 +24,7 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     */
 #if defined(PETSC_HAVE_SLOW_NRM2)
     {
-      int i;
+      int         i;
       PetscScalar sum=0.0;
       for (i=0; i<xin->n; i++) {
         sum += (x->array[i])*(PetscConj(x->array[i]));
@@ -57,14 +57,6 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "VecGetOwnershipRange_Seq"
-int VecGetOwnershipRange_Seq(Vec xin,int *low,int *high)
-{
-  PetscFunctionBegin;
-  *low = 0; *high = xin->n;
-  PetscFunctionReturn(0);
-}
 #include "petscviewer.h"
 #include "petscsys.h"
 
@@ -392,7 +384,6 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecGetArray_Seq,
             VecGetSize_Seq,
             VecGetSize_Seq,
-            VecGetOwnershipRange_Seq,
             VecRestoreArray_Seq,
             VecMax_Seq,
             VecMin_Seq,
@@ -402,7 +393,6 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecView_Seq,
             VecPlaceArray_Seq,
             VecReplaceArray_Seq,
-            VecGetPetscMap_Seq,
             VecDot_Seq,
             VecTDot_Seq,
             VecNorm_Seq,
@@ -427,7 +417,8 @@ static int VecCreate_Seq_Private(Vec v,const PetscScalar array[])
 
   PetscFunctionBegin;
   ierr = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(Vec_Seq),&s);CHKERRQ(ierr);
+  ierr = PetscNew(Vec_Seq,&s);CHKERRQ(ierr);
+  ierr = PetscMemzero(s,sizeof(Vec_Seq));CHKERRQ(ierr);
   v->data            = (void*)s;
   v->bops->publish   = VecPublish_Seq;
   v->n               = PetscMax(v->n,v->N); 
@@ -509,15 +500,6 @@ int VecCreate_Seq(Vec V)
 }
 EXTERN_C_END
 
-
-#undef __FUNCT__  
-#define __FUNCT__ "VecGetPetscMap_Seq"
-int VecGetPetscMap_Seq(Vec win,PetscMap *m)
-{
-  PetscFunctionBegin;
-  *m = win->map;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate_Seq"

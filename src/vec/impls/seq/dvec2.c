@@ -1,5 +1,5 @@
 
-/*$Id: dvec2.c,v 1.87 2001/08/31 20:37:50 bsmith Exp bsmith $*/
+/*$Id: dvec2.c,v 1.88 2001/09/04 15:15:26 bsmith Exp bsmith $*/
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -630,6 +630,7 @@ int VecMAXPY_Seq(int nv,const PetscScalar *alpha,Vec xin,Vec *y)
     ierr = VecGetArrayFast(y[0],&yy0);CHKERRQ(ierr);
     alpha0 = *alpha++; APXY(xx,alpha0,yy0,n);
     ierr = VecRestoreArrayFast(y[0],&yy0);CHKERRQ(ierr);
+    y     +=1;
     break;
   }
   for (j=j_rem; j<nv; j+=4) {
@@ -657,15 +658,17 @@ int VecMAXPY_Seq(int nv,const PetscScalar *alpha,Vec xin,Vec *y)
 #define __FUNCT__ "VecAYPX_Seq"
 int VecAYPX_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 {
-  Vec_Seq      *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
-  int          i,n = xin->n;
-  PetscScalar  *xx = x->array,*yy = y->array,oalpha = *alpha;
+  Vec_Seq      *x = (Vec_Seq *)xin->data;
+  int          i,n = xin->n,ierr;
+  PetscScalar  *xx = x->array,*yy,oalpha = *alpha;
 
   PetscFunctionBegin;
-  PetscLogFlops(2*n);
+  ierr = VecGetArrayFast(yin,&yy);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     yy[i] = xx[i] + oalpha*yy[i];
   }
+  ierr = VecRestoreArrayFast(yin,&yy);CHKERRQ(ierr);
+  PetscLogFlops(2*n);
   PetscFunctionReturn(0);
 }
 
@@ -751,6 +754,7 @@ int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win)
   PetscFunctionBegin;
   ierr = VecGetArrayFast(yin,&yy);CHKERRQ(ierr);
   if (yin != win) {ierr = VecGetArrayFast(win,&ww);CHKERRQ(ierr);}
+  else {ww = yy;}
   for (i=0; i<n; i++) ww[i] = xx[i] / yy[i];
   ierr = VecRestoreArrayFast(yin,&yy);CHKERRQ(ierr);
   if (yin != win) {ierr = VecRestoreArrayFast(win,&ww);CHKERRQ(ierr);}

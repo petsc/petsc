@@ -1,4 +1,4 @@
-/*$Id: mmdense.c,v 1.38 2001/08/06 21:15:13 bsmith Exp balay $*/
+/*$Id: mmdense.c,v 1.39 2001/08/07 03:02:46 balay Exp bsmith $*/
 
 /*
    Support for the parallel dense matrix vector multiply
@@ -272,7 +272,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
  
   {
     PetscScalar *sbuf2_i,*v_start;
-    int    s_proc;
+    int         s_proc;
     for (i=0; i<nrqr; ++i) {
       ierr = MPI_Waitany(nrqr,r_waits1,&index,r_status1+i);CHKERRQ(ierr);
       s_proc          = r_status1[i].MPI_SOURCE; /* send processor */
@@ -323,7 +323,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   
   /* Assemble the matrices */
   {
-    int    col;
+    int         col;
     PetscScalar *imat_v,*mat_v,*imat_vi,*mat_vi;
   
     for (i=0; i<ismax; i++) {
@@ -368,7 +368,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&r_status2);CHKERRQ(ierr);
 
   {
-    int    is_max,tmp1,col,*sbuf1_i,is_sz;
+    int         is_max,tmp1,col,*sbuf1_i,is_sz;
     PetscScalar *rbuf2_i,*imat_v,*imat_vi;
   
     for (tmp1=0; tmp1<nrqs; tmp1++) { /* For each message */

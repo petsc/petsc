@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.75 2001/08/30 21:05:38 balay Exp balay $*/
+/*$Id: reg.c,v 1.76 2001/08/30 21:05:57 balay Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -569,7 +569,7 @@ int PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char n
     count++;
     if (count == 8) {ierr = PetscFPrintf(comm,fd,"\n     ");CHKERRQ(ierr);}
   }
-  ierr = PetscFPrintf(comm,fd,"%s\n",man);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd," (see manual page %s)\n",man);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

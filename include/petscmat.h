@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.226 2001/08/07 03:02:40 balay Exp bsmith $ */
+/* $Id: petscmat.h,v 1.227 2001/08/07 21:29:29 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -326,19 +326,19 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
 */
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
-  int __ierr,__tmp = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
-  __ierr = PetscMalloc(2*__tmp*sizeof(int),&dnz);CHKERRQ(__ierr);onz = dnz + __tmp;\
-  __ierr = PetscMemzero(dnz,2*__tmp*sizeof(int));CHKERRQ(__ierr);\
-  __ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(__ierr); __start = __end - __ctmp;\
-  __ierr = MPI_Scan(&__tmp,&__rstart,1,MPI_INT,MPI_SUM,comm);CHKERRQ(__ierr); __rstart = __rstart - __tmp;
+  int _4_ierr,__tmp = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
+  _4_ierr = PetscMalloc(2*__tmp*sizeof(int),&dnz);CHKERRQ(_4_ierr);onz = dnz + __tmp;\
+  _4_ierr = PetscMemzero(dnz,2*__tmp*sizeof(int));CHKERRQ(_4_ierr);\
+  _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __start = __end - __ctmp;\
+  _4_ierr = MPI_Scan(&__tmp,&__rstart,1,MPI_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __tmp;
 
 #define MatPreallocateSetLocal(map,nrows,rows,ncols,cols,dnz,onz) 0;\
 {\
   int __l;\
-  __ierr = ISLocalToGlobalMappingApply(map,nrows,rows,rows);CHKERRQ(__ierr);\
-  __ierr = ISLocalToGlobalMappingApply(map,ncols,cols,cols);CHKERRQ(__ierr);\
+  _4_ierr = ISLocalToGlobalMappingApply(map,nrows,rows,rows);CHKERRQ(_4_ierr);\
+  _4_ierr = ISLocalToGlobalMappingApply(map,ncols,cols,cols);CHKERRQ(_4_ierr);\
   for (__l=0;__l<nrows;__l++) {\
-    __ierr = MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(__ierr);\
+    _4_ierr = MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(_4_ierr);\
   }\
 }
     
@@ -350,7 +350,7 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
   dnz[row - __rstart] = nc - onz[row - __rstart];\
 }
 
-#define MatPreallocateFinalize(dnz,onz) 0;__ierr = PetscFree(dnz);CHKERRQ(__ierr);}
+#define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree(dnz);CHKERRQ(_4_ierr);}
 
 /* Routines unique to particular data structures */
 EXTERN int MatShellGetContext(Mat,void **);

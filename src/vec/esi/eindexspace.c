@@ -1,14 +1,10 @@
 
-
-
-
-
 /*
       Interfaces the ESI_Map and ESI_MapPartition classes to the PETSc
     Map object class.
 */
 
-#include "petsc/map.h"
+#include "esi/petsc/map.h"
 
 
 esi::petsc::Map<int>::Map(MPI_Comm comm, int n, int N)
@@ -48,7 +44,6 @@ esi::petsc::Map<int>::Map(PetscMap sourceMap)
 esi::petsc::Map<int>::~Map()
 {
   int ierr;
-  ierr = PetscMapDestroy(this->map);
 }
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */

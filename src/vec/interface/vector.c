@@ -1,4 +1,5 @@
-/*$Id: vector.c,v 1.234 2001/08/06 21:14:41 bsmith Exp balay $*/
+
+/*$Id: vector.c,v 1.235 2001/08/07 03:02:20 balay Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1712,7 +1713,7 @@ int VecGetArrays(const Vec x[],int n,PetscScalar **a[])
 @*/
 int VecRestoreArrays(const Vec x[],int n,PetscScalar **a[])
 {
-  int    i,ierr;
+  int         i,ierr;
   PetscScalar **q = *a;
 
   PetscFunctionBegin;
@@ -1952,15 +1953,13 @@ int VecGetLocalSize(Vec x,int *size)
 int VecGetOwnershipRange(Vec x,int *low,int *high)
 {
   int      ierr;
-  PetscMap map;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidType(x);
   if (low) PetscValidIntPointer(low);
   if (high) PetscValidIntPointer(high);
-  ierr = (*x->ops->getmap)(x,&map);CHKERRQ(ierr);
-  ierr = PetscMapGetLocalRange(map,low,high);CHKERRQ(ierr);
+  ierr = PetscMapGetLocalRange(x->map,low,high);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1987,7 +1986,7 @@ int VecGetPetscMap(Vec x,PetscMap *map)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidType(x);
-  ierr = (*x->ops->getmap)(x,map);CHKERRQ(ierr);
+  *map = x->map;
   PetscFunctionReturn(0);
 }
 
@@ -2558,7 +2557,7 @@ int VecStashView(Vec v,PetscViewer viewer)
 @*/
 int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,PetscScalar **a[])
 {
-  int    i,ierr,N;
+  int         i,ierr,N;
   PetscScalar *aa;
 
   PetscFunctionBegin;
@@ -2770,7 +2769,7 @@ int VecConjugate(Vec x)
 @*/
 int VecGetArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,PetscScalar ***a[])
 {
-  int    i,ierr,N,j;
+  int         i,ierr,N,j;
   PetscScalar *aa,**b;
 
   PetscFunctionBegin;

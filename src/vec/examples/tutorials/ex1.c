@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.71 2001/08/09 20:53:55 balay Exp balay $*/
+/*$Id: ex1.c,v 1.72 2001/08/10 18:41:06 balay Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -50,6 +50,7 @@ int main(int argc,char **argv)
      particular type of vector to be formed.
 
   */
+
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
@@ -118,7 +119,7 @@ int main(int argc,char **argv)
   ierr = VecAYPX(&two,x,y);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   v = norm-18.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecAYPX %g\n",v);CHKERRQ(ierr);
 
   ierr = VecSwap(x,y);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.69 2001/08/07 03:05:11 balay Exp bsmith $*/
+/*$Id: zvec.c,v 1.70 2001/08/07 21:32:16 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -101,7 +101,7 @@ void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,int *ierr)
 {
   *ierr = VecSetRandom(*r,*x);
 }
-void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,PetscReal *x,PetscReal *y,PetscScalar *V,int *ierr)
+void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,PetscReal *x,PetscReal *y,PetscReal *V,int *ierr)
 {
   PetscReal *xx,*yy;
   if (FORTRANNULLDOUBLE(x)) xx = PETSC_NULL; 

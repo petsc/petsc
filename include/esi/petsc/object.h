@@ -10,16 +10,11 @@
 #include "esi/Argv.h"
 #include "esi/Object.h"
 
-#include "ESI-MPI.h"
+#include "esi/ESI-MPI.h"
 
 
 #include "esi/config.h"
 #include "esi/MPI_traits.h"
-
-namespace esi {
-  typedef esi_int  ErrorCode;
-  typedef esi_msg  ErrorMsg;
-};
 
 namespace esi{namespace petsc{
 
@@ -45,8 +40,8 @@ class Object : public virtual esi::Object
     virtual esi::ErrorCode getInterface(const char* name, void*& iface);
     virtual esi::ErrorCode getInterfacesSupported(esi::Argv * list);
 
-    virtual void addReference() ;
-    virtual void deleteReference() ;
+    virtual esi::ErrorCode addReference() ;
+    virtual esi::ErrorCode deleteReference() ;
 
 
   protected:

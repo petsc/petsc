@@ -1,4 +1,4 @@
-/* $Id: dot.h,v 1.19 2000/05/10 16:38:34 bsmith Exp bsmith $ */
+/* $Id: dot.h,v 1.20 2001/08/21 21:00:52 bsmith Exp bsmith $ */
 
 #ifndef DOT
 #include "petsc.h"
@@ -43,6 +43,15 @@ EXTERN void fortrannormsqr_(void *,int *,void *);
 #define fortranmultaij_    fortranmultaij
 #endif
 EXTERN void fortranmultaij_(int *,void*,int *,int *,void *,void*);
+#endif
+
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define fortranmulttransposeaddaij_    FORTRANMULTTRANSPOSEADDAIJ
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define fortranmulttransposeaddaij_    fortranmulttransposeaddaij
+#endif
+EXTERN void fortranmulttransposeaddaij_(int *,void*,int *,int *,void *,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)

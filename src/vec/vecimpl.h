@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.86 2001/08/06 21:14:30 bsmith Exp balay $ */
+/* $Id: vecimpl.h,v 1.87 2001/08/07 03:02:14 balay Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -54,7 +54,6 @@ struct _VecOps {
        (*getarray)(Vec,PetscScalar**),            /* get data array */
        (*getsize)(Vec,int*),
        (*getlocalsize)(Vec,int*),
-       (*getownershiprange)(Vec,int*,int*),
        (*restorearray)(Vec,PetscScalar**),        /* restore data array */
        (*max)(Vec,int*,PetscReal*),      /* z = max(x); idx=index of max(x) */
        (*min)(Vec,int*,PetscReal*),      /* z = min(x); idx=index of min(x) */
@@ -65,7 +64,6 @@ struct _VecOps {
        (*view)(Vec,PetscViewer),
        (*placearray)(Vec,const PetscScalar*),     /* place data array */
        (*replacearray)(Vec,const PetscScalar*),     /* replace data array */
-       (*getmap)(Vec,PetscMap*),
        (*dot_local)(Vec,Vec,PetscScalar*),
        (*tdot_local)(Vec,Vec,PetscScalar*),
        (*norm_local)(Vec,NormType,PetscReal*),
@@ -105,6 +103,9 @@ typedef struct {
   int           rmax;                   /* maximum message length */
   int           *nprocs;                /* tmp data used both duiring scatterbegin and end */
   int           nprocessed;             /* number of messages already processed */
+  PetscTruth    donotstash;
+  InsertMode    insertmode;
+  int           *bowners;
 } VecStash;
 
 struct _p_Vec {
@@ -117,7 +118,11 @@ struct _p_Vec {
   ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
   PetscTruth             array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
+  PetscTruth             petscnative; /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
 };
+
+#define VecGetArrayFast(x,a)     ((x)->petscnative ? (*(a) = *((PetscScalar **)(x)->data),0) : VecGetArray((x),(a)))
+#define VecRestoreArrayFast(x,a) ((x)->petscnative ? 0 : VecRestoreArray((x),(a)))
 
 /*
      Common header shared by array based vectors, 

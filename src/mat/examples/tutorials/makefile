@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.19 2001/04/10 19:35:58 bsmith Exp balay $ 
+# $Id: makefile,v 1.20 2001/08/22 18:01:09 balay Exp bsmith $ 
 
 
 
@@ -27,7 +27,6 @@ TESTEXAMPLES_2  =
 TESTEXAMPLES_3  =
 TESTEXAMPLES_4  =
 TESTEXAMPLES_6  = 
-TESTEXAMPLES_7  =
 TESTEXAMPLES_9  =
 TESTEXAMPLES_13 = ex1.PETSc ex1.rm
 

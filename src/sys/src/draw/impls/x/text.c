@@ -1,4 +1,4 @@
-/*$Id: text.c,v 1.40 2001/03/23 23:20:15 balay Exp bsmith $*/
+/*$Id: text.c,v 1.41 2001/04/10 19:34:14 bsmith Exp bsmith $*/
 
 /*
    This file contains simple code to manage access to fonts, insuring that
@@ -27,7 +27,7 @@ int XiFontFixed(PetscDraw_X *XBWin,int w,int h,XiFont **outfont)
 
   PetscFunctionBegin;
   if (!curfont) { ierr = XiInitFonts(XBWin);CHKERRQ(ierr);}
-  ierr = PetscMalloc(sizeof(XiFont),&font);CHKERRQ(ierr);
+  ierr = PetscNew(XiFont,&font);CHKERRQ(ierr);
   ierr = XiMatchFontSize(font,w,h);CHKERRQ(ierr);
   ierr = XiLoadFont(XBWin,font);CHKERRQ(ierr);
   curfont = font;

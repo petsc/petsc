@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.177 2001/06/21 21:18:25 bsmith Exp balay $ 
+# $Id: makefile,v 1.178 2001/08/22 18:01:47 balay Exp bsmith $ 
 
 CFLAGS	  = 
 FFLAGS    =
@@ -352,7 +352,7 @@ TESTEXAMPLES_5  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_11 = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 \
 		  ex6.rm
-TESTEXAMPLES_7  = ex6.PETSc runex6_6 ex6.rm
+TESTEXAMPLES_BLOCKSOLVE  = ex6.PETSc runex6_6 ex6.rm
 TESTEXAMPLES_8  = ex16.PETSc ex16.rm
 TESTEXAMPLES_13 = ex18.PETSc ex18.rm ex20.PETSc ex20.rm ex5f.PETSc ex5f.rm
 

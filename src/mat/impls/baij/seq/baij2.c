@@ -1,4 +1,4 @@
-/*$Id: baij2.c,v 1.73 2001/08/06 21:15:36 bsmith Exp balay $*/
+/*$Id: baij2.c,v 1.74 2001/08/07 03:02:55 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1079,10 +1079,10 @@ int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   int             mbs=a->mbs,i,*idx,*ii,*ai=a->i,rval,bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
 
   PetscFunctionBegin;
+  if (yy != zz) { ierr = VecCopy(yy,zz);CHKERRQ(ierr); }
   ierr = VecGetArray(xx,&xg);CHKERRQ(ierr); x = xg;
   ierr = VecGetArray(zz,&zg);CHKERRQ(ierr); z = zg;
 
-  if (yy != zz) { ierr = VecCopy(yy,zz);CHKERRQ(ierr); }
 
   idx   = a->j;
   v     = a->a;

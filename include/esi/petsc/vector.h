@@ -5,7 +5,7 @@
 //    esi::Vector<Scalar,Ordinal>
 //    esi::Vector<Scalar,Ordinal>ReplaceAccess interfaces
 
-#include "petsc/map.h"
+#include "esi/petsc/map.h"
 
 #include "esi/Vector.h"
 #include "esi/VectorReplaceAccess.h"
@@ -40,6 +40,7 @@ template<class Scalar,class Ordinal>
     
     virtual esi::ErrorCode clone(esi::Vector<Scalar,Ordinal>*& x);
     virtual esi::ErrorCode getGlobalSize( Ordinal & dim) ;
+    virtual esi::ErrorCode getLocalSize( Ordinal & dim) ;
     virtual esi::ErrorCode getMapPartition(  esi::MapPartition<Ordinal>*& outmap)  ;
     virtual esi::ErrorCode copy( esi::Vector<Scalar,Ordinal>& x) ;   
     virtual esi::ErrorCode put(  Scalar scalar) ;

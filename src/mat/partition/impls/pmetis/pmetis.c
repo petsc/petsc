@@ -1,4 +1,4 @@
-/*$Id: pmetis.c,v 1.44 2001/01/16 18:18:37 balay Exp balay $*/
+/*$Id: pmetis.c,v 1.45 2001/03/23 23:22:50 balay Exp bsmith $*/
  
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 
@@ -50,7 +50,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   vtxdist = adj->rowners;
   xadj    = adj->i;
   adjncy  = adj->j;
-  ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
+  ierr    = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
   if (!(vtxdist[rank+1] - vtxdist[rank])) {
     SETERRQ(1,"Does not support any processor with no entries");
   }
@@ -159,7 +159,6 @@ int MatPartitioningDestroy_Parmetis(MatPartitioning part)
 
   PetscFunctionBegin;
   ierr = PetscFree(parmetis);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

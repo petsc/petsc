@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.69 2001/08/06 21:15:36 bsmith Exp balay $*/
+/*$Id: baijfact2.c,v 1.70 2001/08/07 03:02:55 balay Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -19,15 +19,16 @@ int MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscScalar     s1,*x,*b;
 
   PetscFunctionBegin;
+  ierr = VecCopy(bb,xx);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-
+  
   /* forward solve the U^T */
   for (i=0; i<n; i++) {
 
     v     = aa + diag[i];
     /* multiply by the inverse of the block diagonal */
-    s1    = (*v++)*b[i];
+    s1    = (*v++)*x[i];
     vi    = aj + diag[i] + 1;
     nz    = ai[i+1] - diag[i] - 1;
     while (nz--) {
@@ -63,6 +64,7 @@ int MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscScalar     *x,*b;
 
   PetscFunctionBegin;
+  ierr = VecCopy(bb,xx);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
@@ -72,7 +74,7 @@ int MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
     v     = aa + 4*diag[i];
     /* multiply by the inverse of the block diagonal */
-    x1 = b[idx];   x2 = b[1+idx];
+    x1 = x[idx];   x2 = x[1+idx];
     s1 = v[0]*x1  +  v[1]*x2;
     s2 = v[2]*x1  +  v[3]*x2;
     v += 4;
@@ -120,6 +122,7 @@ int MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscScalar     *x,*b;
 
   PetscFunctionBegin;
+  ierr = VecCopy(bb,xx);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
@@ -129,7 +132,7 @@ int MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
     v     = aa + 9*diag[i];
     /* multiply by the inverse of the block diagonal */
-    x1 = b[idx];   x2 = b[1+idx]; x3    = b[2+idx];
+    x1 = x[idx];   x2 = x[1+idx]; x3    = x[2+idx];
     s1 = v[0]*x1  +  v[1]*x2 +  v[2]*x3;
     s2 = v[3]*x1  +  v[4]*x2 +  v[5]*x3;
     s3 = v[6]*x1  +  v[7]*x2 + v[8]*x3;
@@ -180,6 +183,7 @@ int MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscScalar     *x,*b;
 
   PetscFunctionBegin;
+  ierr = VecCopy(bb,xx);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
@@ -189,7 +193,7 @@ int MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
     v     = aa + 16*diag[i];
     /* multiply by the inverse of the block diagonal */
-    x1    = b[idx];   x2 = b[1+idx]; x3    = b[2+idx]; x4 = b[3+idx];
+    x1    = x[idx];   x2 = x[1+idx]; x3    = x[2+idx]; x4 = x[3+idx];
     s1 = v[0]*x1  +  v[1]*x2 +  v[2]*x3 +  v[3]*x4;
     s2 = v[4]*x1  +  v[5]*x2 +  v[6]*x3 +  v[7]*x4;
     s3 = v[8]*x1  +  v[9]*x2 + v[10]*x3 + v[11]*x4;
@@ -243,6 +247,7 @@ int MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscScalar     *x,*b;
 
   PetscFunctionBegin;
+  ierr = VecCopy(bb,xx);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
@@ -252,7 +257,7 @@ int MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
     v     = aa + 25*diag[i];
     /* multiply by the inverse of the block diagonal */
-    x1    = b[idx];   x2 = b[1+idx]; x3    = b[2+idx]; x4 = b[3+idx]; x5 = b[4+idx];
+    x1    = x[idx];   x2 = x[1+idx]; x3    = x[2+idx]; x4 = x[3+idx]; x5 = x[4+idx];
     s1 = v[0]*x1  +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 +  v[4]*x5;
     s2 = v[5]*x1  +  v[6]*x2 +  v[7]*x3 +  v[8]*x4 +  v[9]*x5;
     s3 = v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4 + v[14]*x5;
@@ -309,6 +314,7 @@ int MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscScalar     *x,*b;
 
   PetscFunctionBegin;
+  ierr = VecCopy(bb,xx);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
@@ -318,8 +324,8 @@ int MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
     v     = aa + 36*diag[i];
     /* multiply by the inverse of the block diagonal */
-    x1    = b[idx];   x2 = b[1+idx]; x3    = b[2+idx]; x4 = b[3+idx]; x5 = b[4+idx];
-    x6    = b[5+idx]; 
+    x1    = x[idx];   x2 = x[1+idx]; x3    = x[2+idx]; x4 = x[3+idx]; x5 = x[4+idx];
+    x6    = x[5+idx]; 
     s1 = v[0]*x1  +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 +  v[4]*x5 +  v[5]*x6;
     s2 = v[6]*x1  +  v[7]*x2 +  v[8]*x3 +  v[9]*x4 + v[10]*x5 + v[11]*x6;
     s3 = v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4 + v[16]*x5 + v[17]*x6;
@@ -381,6 +387,7 @@ int MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscScalar     *x,*b;
 
   PetscFunctionBegin;
+  ierr = VecCopy(bb,xx);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
@@ -390,8 +397,8 @@ int MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
     v     = aa + 49*diag[i];
     /* multiply by the inverse of the block diagonal */
-    x1    = b[idx];   x2 = b[1+idx]; x3    = b[2+idx]; x4 = b[3+idx]; x5 = b[4+idx];
-    x6    = b[5+idx]; x7 = b[6+idx];
+    x1    = x[idx];   x2 = x[1+idx]; x3    = x[2+idx]; x4 = x[3+idx]; x5 = x[4+idx];
+    x6    = x[5+idx]; x7 = x[6+idx];
     s1 = v[0]*x1  +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 +  v[4]*x5 +  v[5]*x6 +  v[6]*x7;
     s2 = v[7]*x1  +  v[8]*x2 +  v[9]*x3 + v[10]*x4 + v[11]*x5 + v[12]*x6 + v[13]*x7;
     s3 = v[14]*x1 + v[15]*x2 + v[16]*x3 + v[17]*x4 + v[18]*x5 + v[19]*x6 + v[20]*x7;

@@ -1,4 +1,4 @@
-/*$Id: shell.c,v 1.86 2001/03/28 19:41:21 balay Exp bsmith $*/
+/*$Id: shell.c,v 1.87 2001/07/20 21:20:12 bsmith Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -10,8 +10,11 @@
 #include "src/vec/vecimpl.h"  
 
 typedef struct {
-  int  (*destroy)(Mat);
-  void *ctx;
+  int         (*destroy)(Mat);
+  int         (*mult)(Mat,Vec,Vec);
+  PetscTruth  scale,shift;
+  PetscScalar vscale,vshift;
+  void        *ctx;
 } Mat_Shell;      
 
 #undef __FUNCT__  
@@ -76,6 +79,77 @@ int MatGetOwnershipRange_Shell(Mat mat,int *rstart,int *rend)
   if (rend)   *rend   = tmp;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_Shell"
+int MatMult_Shell(Mat A,Vec x,Vec y)
+{
+  Mat_Shell   *shell = (Mat_Shell*)A->data;  
+  int         ierr;
+
+  PetscFunctionBegin;
+  ierr = (*shell->mult)(A,x,y);CHKERRQ(ierr);
+  if (shell->shift && shell->scale) {
+    ierr = VecAXPBY(&shell->vshift,&shell->vscale,x,y);CHKERRQ(ierr);
+  } else if (shell->scale) {
+    ierr = VecScale(&shell->vscale,y);CHKERRQ(ierr);
+  } else {
+    ierr = VecAXPY(&shell->vshift,x,y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatShift_Shell"
+int MatShift_Shell(PetscScalar *a,Mat Y)
+{
+  Mat_Shell *shell = (Mat_Shell*)Y->data;  
+  PetscFunctionBegin;
+  if (shell->scale || shell->shift) {
+    shell->vshift += *a;
+  } else {
+    shell->mult   = Y->ops->mult;
+    Y->ops->mult  = MatMult_Shell;
+    shell->vshift = *a;
+  }
+  shell->shift  =  PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatScale_Shell"
+int MatScale_Shell(PetscScalar *a,Mat Y)
+{
+  Mat_Shell *shell = (Mat_Shell*)Y->data;  
+  PetscFunctionBegin;
+  if (shell->scale || shell->shift) {
+    shell->vscale *= *a;
+  } else {
+    shell->mult   = Y->ops->mult;
+    Y->ops->mult  = MatMult_Shell;
+    shell->vscale = *a;
+  }
+  shell->scale  =  PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyEnd_Shell"
+int MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
+{
+  Mat_Shell *shell = (Mat_Shell*)Y->data;  
+
+  PetscFunctionBegin;
+  if ((shell->shift || shell->scale) && t == MAT_FINAL_ASSEMBLY) {
+    shell->scale  = PETSC_FALSE;
+    shell->shift  = PETSC_FALSE;
+    shell->vshift = 0.0;
+    shell->vscale = 1.0;
+    Y->ops->mult  = shell->mult;
+  }
+  PetscFunctionReturn(0);
+}
+
 extern int MatConvert_Shell(Mat,MatType,Mat*);
 
 static struct _MatOps MatOps_Values = {0,
@@ -99,7 +173,7 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
-       0,
+       MatAssemblyEnd_Shell,
        0,
        0,
        0,
@@ -126,8 +200,8 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
-       0,
-       0,
+       MatScale_Shell,
+       MatShift_Shell,
        0,
        0,
        0,
@@ -179,7 +253,12 @@ int MatCreate_Shell(Mat A)
   ierr = PetscMapCreateMPI(A->comm,A->m,A->M,&A->rmap);CHKERRQ(ierr);
   ierr = PetscMapCreateMPI(A->comm,A->n,A->N,&A->cmap);CHKERRQ(ierr);
 
-  b->ctx = 0;
+  b->ctx          = 0;
+  b->scale        = PETSC_FALSE;
+  b->shift        = PETSC_FALSE;
+  b->vshift       = 0.0;
+  b->vscale       = 1.0;
+  b->mult         = 0;
   A->assembled    = PETSC_TRUE;
   A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);

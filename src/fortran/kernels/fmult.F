@@ -1,10 +1,30 @@
 !
-!  "$Id: fmult.F,v 1.9 2000/01/11 21:04:00 bsmith Exp balay $";
+!  "$Id: fmult.F,v 1.10 2001/08/07 03:05:24 balay Exp bsmith $";
 !
 !    Fortran kernel for sparse matrix-vector product in the AIJ matrix format
 !
 #include "include/finclude/petscdef.h"
 !
+      subroutine FortranMultTransposeAddAIJ(n,x,ii,jj,a,y)
+      implicit none
+      PetscScalar      x(0:*),a(0:*),y(0:*),alpha
+      integer          n,ii(*),jj(0:*)
+
+      integer      i,j,jstart,jend
+
+      jend  = ii(1)
+      do 10,i=1,n
+        jstart = jend
+        jend   = ii(i+1)
+        alpha  = x(i-1)
+        do 20 j=jstart,jend-1
+          y(jj(j)) = y(jj(j)) + alpha*a(j)
+ 20     continue
+ 10   continue
+
+      return 
+      end
+
       subroutine FortranMultAIJ(n,x,ii,jj,a,y)
       implicit none
       PetscScalar      x(0:*),a(0:*),y(*)

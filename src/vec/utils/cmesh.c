@@ -1,4 +1,4 @@
-/*$Id: cmesh.c,v 1.73 2001/08/06 21:14:36 bsmith Exp bsmith $*/
+/*$Id: cmesh.c,v 1.74 2001/08/07 21:29:18 bsmith Exp bsmith $*/
 
 #include "petscvec.h"        /*I "petscvec.h" I*/
 
@@ -24,8 +24,8 @@
 int VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
 {
   PetscScalar *values;
-  int    ierr,n,i;
-  PetscReal scale;
+  int         ierr,n,i;
+  PetscReal   scale;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);

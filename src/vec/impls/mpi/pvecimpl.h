@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.35 2001/08/06 21:14:47 bsmith Exp balay $ */
+/* $Id: pvecimpl.h,v 1.36 2001/08/07 03:02:22 balay Exp bsmith $ */
 /* 
  */
 
@@ -10,10 +10,6 @@
 
 typedef struct {
   VECHEADER
-  int         size,rank;
-  InsertMode  insertmode;
-  PetscTruth  donotstash;               /* Flag indicates stash values should be ignored */
-  int         *browners;                /* block-row-ownership,used for assembly */
   MPI_Request *send_waits,*recv_waits;  /* for communication during VecAssembly() */
   int         nsends,nrecvs;
   PetscScalar *svalues,*rvalues;
@@ -31,7 +27,6 @@ EXTERN int VecMTDot_MPI(int,Vec,const Vec[],PetscScalar *);
 EXTERN int VecNorm_MPI(Vec,NormType,PetscReal *);
 EXTERN int VecMax_MPI(Vec,int *,PetscReal *);
 EXTERN int VecMin_MPI(Vec,int *,PetscReal *);
-EXTERN int VecGetOwnershipRange_MPI(Vec,int *,int*); 
 EXTERN int VecDestroy_MPI(Vec);
 EXTERN int VecView_MPI_File(Vec,PetscViewer);
 EXTERN int VecView_MPI_Files(Vec,PetscViewer);

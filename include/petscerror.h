@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.57 2001/06/21 21:20:02 bsmith Exp buschelm $ */
+/* $Id: petscerror.h,v 1.58 2001/07/10 04:52:49 buschelm Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -77,7 +77,7 @@
 #define CHKERRABORT(n)    if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0,0);MPI_Abort(n);}
 #define CHKERRCONTINUE(n) if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0,0);}
 
-#define CHKMEMQ {int __ierr = PetscTrValid(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(__ierr);}
+#define CHKMEMQ {int _7_ierr = PetscTrValid(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);}
 
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
 extern  int __gierr;

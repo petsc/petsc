@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.178 2001/08/21 21:04:33 bsmith Exp balay $*/
+/*$Id: da2.c,v 1.179 2001/08/22 18:02:32 balay Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -258,6 +258,8 @@ EXTERN_C_END
    Level: beginner
 
    Notes:
+   If you are having problems with running out of memory than run with the option -da_noao
+
    The stencil type DA_STENCIL_STAR with width 1 corresponds to the 
    standard 5-pt stencil, while DA_STENCIL_BOX with width 1 denotes
    the standard 9-pt stencil.

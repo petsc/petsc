@@ -1,4 +1,4 @@
-/*$Id: pvec2.c,v 1.54 2001/08/07 03:02:22 balay Exp bsmith $*/
+/*$Id: pvec2.c,v 1.55 2001/08/10 03:30:12 bsmith Exp bsmith $*/
 
 /*
      Code for some of the parallel vector primatives.
@@ -40,7 +40,7 @@ int Ethernet_Allreduce(PetscReal *in,PetscReal *out,int n,MPI_Datatype type,MPI_
 int VecMDot_MPI(int nv,Vec xin,const Vec y[],PetscScalar *z)
 {
   PetscScalar awork[128],*work = awork;
-  int    ierr;
+  int         ierr;
 
   PetscFunctionBegin;
   if (nv > 128) {
@@ -59,7 +59,7 @@ int VecMDot_MPI(int nv,Vec xin,const Vec y[],PetscScalar *z)
 int VecMTDot_MPI(int nv,Vec xin,const Vec y[],PetscScalar *z)
 {
   PetscScalar awork[128],*work = awork;
-  int    ierr;
+  int         ierr;
 
   PetscFunctionBegin;
   if (nv > 128) {
