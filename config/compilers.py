@@ -511,10 +511,10 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranTypeSizes)
       self.executeTest(self.checkFortranNameMangling)
       self.executeTest(self.checkFortranPreprocessor)
-    if self.framework.compilers is None:
-      self.logPrint('Setting framework compilers to this module', 2, 'compilers')
-      self.framework.compilers = self
     self.executeTest(self.checkFortranLibraries)
     self.executeTest(self.checkFortran90Interface)
     self.executeTest(self.output)
+    if self.framework.compilers is None:
+      self.logPrint('Setting framework compilers to this module', 2, 'compilers')
+      self.framework.compilers = self
     return
