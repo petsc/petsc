@@ -1,4 +1,4 @@
-# $Id: base,v 1.15 1998/04/24 02:31:14 balay Exp balay $ 
+# $Id: base,v 1.16 1998/04/25 20:48:21 balay Exp balay $ 
 
 #
 #   The PARCH flag below is the same for the Cray T3D and T3E, so DO NOT change
@@ -21,8 +21,6 @@ SHELL    = /bin/sh
 CLINKER  = ${CC} ${COPTFLAGS}
 FLINKER  = ${FC} ${FOPTFLAGS} -M7207
 SYS_LIB  =
-FCONF    = -DHAVE_64BITS 
-
 SHELL   = /bin/sh
 
 include ${PETSC_DIR}/bmake/common
@@ -47,16 +45,16 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 
 .F.f:
 	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
+	-${CC} -E ${CPPFLAGS} ${FFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
 .F.o:
 	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
+	-${CC} -E ${CPPFLAGS} ${FFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
 	-${FC} -c ${FOPTFLAGS} /tmp/$*.f
 	-${RM} /tmp/$*.f
 
 .F.a:
 	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
+	-${CC} -E ${CPPFLAGS} ${FFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
 	-${FC} -c ${FOPTFLAGS} /tmp/$*.f
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} /tmp/$*.f

@@ -1,12 +1,13 @@
 !
-!  $Id: petsc.h,v 1.72 1998/04/21 18:35:17 balay Exp balay $;
+!  $Id: petsc.h,v 1.73 1998/04/24 17:34:24 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
+#include "petscconf.h"
+#include "mpif.h"
+!
 #define MPI_Comm integer
 !
-#include "mpif.h"
-
 #define PetscTruth    integer
 #define PetscDataType integer 
 

@@ -1,4 +1,4 @@
-# $Id: base,v 1.21 1998/04/13 16:20:43 bsmith Exp balay $ 
+# $Id: base,v 1.22 1998/04/23 23:14:11 balay Exp balay $ 
 
 PARCH    = alpha
 CC       = cc
@@ -17,9 +17,6 @@ SHELL    = /bin/sh
 CLINKER  = cc ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 FLINKER  = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 SYS_LIB  =
-
-FCONF    = -DHAVE_64BITS 
-
 include ${PETSC_DIR}/bmake/common
 
 libc: ${OBJSC}
@@ -30,10 +27,10 @@ libf: ${OBJSF}
 #######
 
 .F.o:
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
 
 .F.a: 
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} $*.o
 

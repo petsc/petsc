@@ -1,4 +1,4 @@
-# $Id: base,v 1.29 1998/04/09 21:02:59 balay Exp balay $ 
+# $Id: base,v 1.30 1998/04/23 23:14:11 balay Exp balay $ 
 
 #
 #   If you do not have the XlC compiler then use the xlc compiler below
@@ -42,8 +42,6 @@ FLINKER = xlf ${FOPTFLAGS}
 
 SHELL   = /bin/sh
 SYS_LIB = -lisode
-
-FCONF   = -DHAVE_XLF90
 
 # AIX apparently does not remotely resemble EITHER System V or BSD 4.x.
 # By defining _POSIX_SOURCE , there is some hope that it will pretend that

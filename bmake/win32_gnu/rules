@@ -34,16 +34,16 @@ libf: ${OBJSF}
 #
 .F.f:
 	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F  > __$*.f
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} $*.F  > __$*.f
 .F.o:
 	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F  > __$*.f
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} $*.F  > __$*.f
 	-${FC} -c ${FOPTFLAGS} __$*.f -o $*.o
 	-${RM} __$*.f
 
 .F.a:
 	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F  > __$*.f
+	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} ${FFLAGS} $*.F  > __$*.f
 	-${FC} -c ${FOPTFLAGS} __$*.f -o $*.o
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} __$*.f

@@ -1,4 +1,4 @@
-# $Id: base,v 1.34 1998/04/24 02:31:43 balay Exp balay $ 
+# $Id: base,v 1.35 1998/04/25 20:48:13 balay Exp balay $ 
 
 PARCH    = t3d
 CC       = cc -h jump
@@ -18,7 +18,6 @@ CLINKER  = ${CC} ${COPTFLAGS}
 FLINKER  = ${FC} ${FOPTFLAGS} -M7207
 SYS_LIB  =
 SHELL    = /bin/sh
-FCONF    = -DHAVE_64BITS 
 
 include ${PETSC_DIR}/bmake/common
 
@@ -34,16 +33,16 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 #########
 .F.f:
 	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
+	-${CC} -E ${CPPFLAGS} ${FFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
 .F.o:
 	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
+	-${CC} -E ${CPPFLAGS} ${FFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
 	-${FC} -c ${FOPTFLAGS} /tmp/$*.f
 	-${RM} /tmp/$*.f
 
 .F.a:
 	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
+	-${CC} -E ${CPPFLAGS} ${FFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
 	-${FC} -c ${FOPTFLAGS} /tmp/$*.f
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} /tmp/$*.f
