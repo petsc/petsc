@@ -56,14 +56,14 @@ int main(int Argc, char **Args)
   if (OptionsHasName(0,"-f")) {am = MGFULL;}
   if (OptionsHasName(0,"-j")) {use_jacobi = 1;}
          
-  N = (int *) PETSCMALLOC(levels*sizeof(int)); CHKPTRQ(N);
+  N = (int *) PETSCMALLOC(levels*sizeof(int)); CHKPTRA(N);
   N[0] = x_mesh;
   for ( i=1; i<levels; i++ ) {
     N[i] = N[i-1]/2;
     if (N[i] < 1) {SETERRA(1,"Too many levels");}
   }
 
-  Create1dLaplacian(N[levels-1],&cmat);
+  ierr = Create1dLaplacian(N[levels-1],&cmat); CHKERRA(ierr);
 
   ierr = SLESCreate(MPI_COMM_WORLD,&slesmg); CHKERRA(ierr);
   ierr = SLESGetPC(slesmg,&pcmg); CHKERRA(ierr);
@@ -73,79 +73,98 @@ int main(int Argc, char **Args)
   ierr = MGSetLevels(pcmg,levels); CHKERRA(ierr);
   ierr = MGSetMethod(pcmg,am); CHKERRA(ierr);
 
-  MGGetCoarseSolve(pcmg,&csles);
-  SLESSetOperators(csles,cmat,cmat,ALLMAT_DIFFERENT_NONZERO_PATTERN);
-  SLESGetPC(csles,&pc); PCSetMethod(pc,PCLU);
-  SLESGetKSP(csles,&ksp); KSPSetMethod(ksp,KSPPREONLY);
+  ierr = MGGetCoarseSolve(pcmg,&csles); CHKERRA(ierr);
+  ierr = SLESSetOperators(csles,cmat,cmat,
+         ALLMAT_DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+  ierr = SLESGetPC(csles,&pc); CHKERRA(ierr);
+  ierr = PCSetMethod(pc,PCLU); CHKERRA(ierr);
+  ierr = SLESGetKSP(csles,&ksp); CHKERRA(ierr);
+  ierr = KSPSetMethod(ksp,KSPPREONLY); CHKERRA(ierr);
 
   /* zero is finest level */
   for ( i=0; i<levels-1; i++ ) {
-      MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);
-      MatShellCreate(MPI_COMM_WORLD,N[i],N[i+1],(void *)0,&mat[i]);
-      MatShellSetMult(mat[i],restrct);
-      MatShellSetMultTransAdd(mat[i],interpolate);
-      MGSetInterpolate(pcmg,levels - 1 - i,mat[i]);
-      MGSetRestriction(pcmg,levels - 1 - i,mat[i]);
-      MGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles);
+    ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0); CHKERRA(ierr);
+    ierr = MatShellCreate(MPI_COMM_WORLD,N[i],N[i+1],(void *)0,&mat[i]); 
+           CHKERRA(ierr);
+    ierr = MatShellSetMult(mat[i],restrct); CHKERRA(ierr);
+    ierr = MatShellSetMultTransAdd(mat[i],interpolate); CHKERRA(ierr);
+    ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]); CHKERRA(ierr);
+    ierr = MGSetRestriction(pcmg,levels - 1 - i,mat[i]); CHKERRA(ierr);
+    ierr = MGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles); CHKERRA(ierr);
 
-      /* set smoother */
-      MGGetSmoother(pcmg,levels - 1 - i,&sles[i]);
-      SLESGetPC(sles[i],&pc);
-      PCSetMethod(pc,PCSHELL);
-      /* this is a dummy! */
-      SLESSetOperators(sles[i],mat[i],mat[i],ALLMAT_DIFFERENT_NONZERO_PATTERN);
-      PCShellSetApplyRichardson(pc,gauss_seidel,(void *)0);
-      if (use_jacobi) { PCShellSetApplyRichardson(pc,jacobi,(void *)0); }
-      SLESGetKSP(sles[i],&ksp);
-      KSPSetMethod(ksp,KSPRICHARDSON);
-      KSPSetInitialGuessNonzero(ksp);
-      KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,smooths);
+    /* set smoother */
+    ierr = MGGetSmoother(pcmg,levels - 1 - i,&sles[i]); CHKERRA(ierr);
+    ierr = SLESGetPC(sles[i],&pc); CHKERRA(ierr);
+    ierr = PCSetMethod(pc,PCSHELL); CHKERRA(ierr);
+    /* this is a dummy! */
+    ierr = SLESSetOperators(sles[i],mat[i],mat[i],
+           ALLMAT_DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+    ierr = PCShellSetApplyRichardson(pc,gauss_seidel,(void *)0); CHKERRA(ierr);
+    if (use_jacobi) {
+      ierr = PCShellSetApplyRichardson(pc,jacobi,(void *)0); CHKERRA(ierr);
+    }
+    ierr = SLESGetKSP(sles[i],&ksp); CHKERRA(ierr);
+    ierr = KSPSetMethod(ksp,KSPRICHARDSON); CHKERRA(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp); CHKERRA(ierr);
+    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,
+                            PETSC_DEFAULT,smooths); CHKERRA(ierr);
 
-      VecCreateSequential(MPI_COMM_SELF,N[i],&x); X[levels - 1 - i] = x;
-      MGSetX(pcmg,levels - 1 - i,x);
-      VecCreateSequential(MPI_COMM_SELF,N[i],&x); B[levels -1 - i] = x;
-      MGSetRhs(pcmg,levels - 1 - i,x);
-      VecCreateSequential(MPI_COMM_SELF,N[i],&x); R[levels - 1 - i] = x;
-      MGSetR(pcmg,levels - 1 - i,x);
+    ierr = VecCreateSequential(MPI_COMM_SELF,N[i],&x); CHKERRA(ierr);
+    X[levels - 1 - i] = x;
+    ierr = MGSetX(pcmg,levels - 1 - i,x); CHKERRA(ierr);
+    ierr = VecCreateSequential(MPI_COMM_SELF,N[i],&x); CHKERRA(ierr);
+    B[levels -1 - i] = x;
+    ierr = MGSetRhs(pcmg,levels - 1 - i,x); CHKERRA(ierr);
+    ierr = VecCreateSequential(MPI_COMM_SELF,N[i],&x); CHKERRA(ierr);
+    R[levels - 1 - i] = x;
+    ierr = MGSetR(pcmg,levels - 1 - i,x); CHKERRA(ierr);
   } 
   /* create coarse level vectors */
-  VecCreateSequential(MPI_COMM_SELF,N[levels-1],&x);
-  MGSetX(pcmg,0,x); X[0] = x;
-  VecCreateSequential(MPI_COMM_SELF,N[levels-1],&x);
-  MGSetRhs(pcmg,0,x); B[0] = x;
-  VecCreateSequential(MPI_COMM_SELF,N[levels-1],&x); 
-  MGSetR(pcmg,0,x); R[0] = x;
+  ierr = VecCreateSequential(MPI_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
+  ierr = MGSetX(pcmg,0,x); CHKERRA(ierr); X[0] = x;
+  ierr = VecCreateSequential(MPI_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
+  ierr = MGSetRhs(pcmg,0,x); CHKERRA(ierr); B[0] = x;
+  ierr = VecCreateSequential(MPI_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
+  ierr = MGSetR(pcmg,0,x); CHKERRA(ierr); R[0] = x;
 
   /* create matrix multiply for finest level */
-  MatShellCreate(MPI_COMM_WORLD,N[0],N[0],(void *)0,&fmat);
-  MatShellSetMult(fmat,amult);
-  SLESSetOperators(slesmg,fmat,fmat,ALLMAT_DIFFERENT_NONZERO_PATTERN);
+  ierr = MatShellCreate(MPI_COMM_WORLD,N[0],N[0],(void *)0,&fmat); 
+  CHKERRA(ierr);
+  ierr = MatShellSetMult(fmat,amult); CHKERRA(ierr);
+  ierr = SLESSetOperators(slesmg,fmat,fmat,ALLMAT_DIFFERENT_NONZERO_PATTERN); 
+  CHKERRA(ierr);
 
-  CalculateSolution(N[0],&solution);
-  CalculateRhs(B[levels-1]);
-  VecSet(&zero,X[levels-1]);
+  ierr = CalculateSolution(N[0],&solution); CHKERRA(ierr);
+  ierr = CalculateRhs(B[levels-1]); CHKERRA(ierr);
+  ierr = VecSet(&zero,X[levels-1]); CHKERRA(ierr);
 
   if (MGCheck(pcmg)) {SETERRA(1,0);}
      
-  residual((void*)0,B[levels-1],X[levels-1],R[levels-1]);
-  CalculateError(solution,X[levels-1],R[levels-1],e);
+  ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]); CHKERRA(ierr);
+  ierr = CalculateError(solution,X[levels-1],R[levels-1],e); CHKERRA(ierr);
   printf("l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
 
   ierr = SLESSolve(slesmg,B[levels-1],X[levels-1],&its); CHKERRA(ierr);
-  residual((void*)0,B[levels-1],X[levels-1],R[levels-1]);
-  CalculateError(solution,X[levels-1],R[levels-1],e); 
+  ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]); CHKERRA(ierr);
+  ierr = CalculateError(solution,X[levels-1],R[levels-1],e); CHKERRA(ierr);
   printf("its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);
 
   PETSCFREE(N);
-  VecDestroy(solution);
+  ierr = VecDestroy(solution); CHKERRA(ierr);
 
   /* note we have to keep a list of all vectors allocated, this is 
      not ideal, but putting it in MGDestroy is not so good either*/
   for ( i=0; i<levels; i++ ) {
-    VecDestroy(X[i]); VecDestroy(B[i]); VecDestroy(R[i]);
+    ierr = VecDestroy(X[i]); CHKERRA(ierr);
+    ierr = VecDestroy(B[i]); CHKERRA(ierr);
+    ierr = VecDestroy(R[i]); CHKERRA(ierr);
   }
-  MatDestroy(cmat); MatDestroy(fmat);
-  SLESDestroy(slesmg);
+  for ( i=0; i<levels-1; i++ ) {
+    ierr = MatDestroy(mat[i]); CHKERRA(ierr);
+  }
+  ierr = MatDestroy(cmat); CHKERRA(ierr);
+  ierr = MatDestroy(fmat); CHKERRA(ierr);
+  ierr = SLESDestroy(slesmg); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
@@ -153,41 +172,51 @@ int main(int Argc, char **Args)
 /* --------------------------------------------------------------------- */
 int residual(Mat mat,Vec bb,Vec xx,Vec rr)
 {
-  int    i, n1;
+  int    i, n1, ierr;
   Scalar *b,*x,*r;
 
-  VecGetSize(bb,&n1);
-  VecGetArray(bb,&b); VecGetArray(xx,&x); VecGetArray(rr,&r);
+  ierr = VecGetSize(bb,&n1); CHKERRQ(ierr);
+  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(rr,&r); CHKERRQ(ierr);
   n1--;
   r[0] = b[0] + x[1] - 2.0*x[0];
   r[n1] = b[n1] + x[n1-1] - 2.0*x[n1];
   for ( i=1; i<n1; i++ ) {
     r[i] = b[i] + x[i+1] + x[i-1] - 2.0*x[i];
   }
+  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(rr,&r); CHKERRQ(ierr);
   return 0;
 }
 int amult(void *ptr,Vec xx,Vec yy)
 {
-  int    i, n1;
+  int    i, n1, ierr;
   Scalar *y,*x;
 
-  VecGetSize(xx,&n1);
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
+  ierr = VecGetSize(xx,&n1); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
   n1--;
   y[0] =  -x[1] + 2.0*x[0];
   y[n1] = -x[n1-1] + 2.0*x[n1];
   for ( i=1; i<n1; i++ ) {
     y[i] = -x[i+1] - x[i-1] + 2.0*x[i];
   }
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------------- */
 int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,int m)
 {
-  int    i, n1;
+  int    i, n1, ierr;
   Scalar *x, *b;
-  VecGetSize(bb,&n1);n1--;
-  VecGetArray(bb,&b); VecGetArray(xx,&x);
+
+  ierr = VecGetSize(bb,&n1); CHKERRQ(ierr); n1--;
+  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   while (m--) {
     x[0] =  .5*(x[1] + b[0]);
     for ( i=1; i<n1; i++ ) {
@@ -199,17 +228,20 @@ int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,int m)
     }
     x[0] =  .5*(x[1] + b[0]);
   }
+  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------------- */
 int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
 {
-  int      i, n, n1;
+  int      i, n, n1, ierr;
   Scalar   *r,*b,*x;
 
-  VecGetSize(bb,&n); n1 = n - 1;
-  VecGetArray(bb,&b); VecGetArray(xx,&x);
-  VecGetArray(w,&r);
+  ierr = VecGetSize(bb,&n); CHKERRQ(ierr); n1 = n - 1;
+  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(w,&r); CHKERRQ(ierr);
 
   while (m--) {
     r[0] = .5*(x[1] + b[0]);
@@ -219,6 +251,9 @@ int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
     r[n1] = .5*(x[n1-1] + b[n1]);
     for ( i=0; i<n; i++ ) x[i] = (2.0*r[i] + x[i])/3.0;
   }
+  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(w,&r); CHKERRQ(ierr);
   return 0;
 }
 /*
@@ -227,11 +262,12 @@ int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
 /* --------------------------------------------------------------------- */
 int interpolate(void *ptr,Vec xx,Vec yy,Vec zz)
 {
-  int    i, n, N, i2;
+  int    i, n, N, i2, ierr;
   Scalar *x,*y;
 
-  VecGetSize(yy,&N);
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
+  ierr = VecGetSize(yy,&N); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
   n = N/2;
   for ( i=0; i<n; i++ ) {
     i2 = 2*i;
@@ -239,50 +275,56 @@ int interpolate(void *ptr,Vec xx,Vec yy,Vec zz)
     y[i2+1] +=  x[i];
     y[i2+2] +=  .5*x[i];
   }
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------------- */
 int restrct(void *ptr,Vec rr,Vec bb)
 {
-  int    i, n, N, i2;
+  int    i, n, N, i2, ierr;
   Scalar *r,*b;
 
-  VecGetSize(rr,&N);
-  VecGetArray(rr,&r); VecGetArray(bb,&b);
+  ierr = VecGetSize(rr,&N); CHKERRQ(ierr);
+  ierr = VecGetArray(rr,&r); CHKERRQ(ierr);
+  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
   n = N/2;
 
   for ( i=0; i<n; i++ ) {
     i2 = 2*i;
     b[i] = ( r[i2] + 2.0*r[i2+1] + r[i2+2] );
   }
+  ierr = VecRestoreArray(rr,&r); CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
   return 0;
 }
-
+/* --------------------------------------------------------------------- */
 int Create1dLaplacian(int n,Mat *mat)
 {
   Scalar mone = -1.0, two = 2.0;
   int    ierr,i,idx;
+
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,mat); CHKERRQ(ierr);
   
   idx= n-1;
-  MatSetValues(*mat,1,&idx,1,&idx,&two,INSERTVALUES);
+  ierr = MatSetValues(*mat,1,&idx,1,&idx,&two,INSERTVALUES); CHKERRQ(ierr);
   for ( i=0; i<n-1; i++ ) {
-    MatSetValues(*mat,1,&i,1,&i,&two,INSERTVALUES);
+    ierr = MatSetValues(*mat,1,&i,1,&i,&two,INSERTVALUES); CHKERRQ(ierr);
     idx = i+1;
-    MatSetValues(*mat,1,&idx,1,&i,&mone,INSERTVALUES);
-    MatSetValues(*mat,1,&i,1,&idx,&mone,INSERTVALUES);
+    ierr = MatSetValues(*mat,1,&idx,1,&i,&mone,INSERTVALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*mat,1,&i,1,&idx,&mone,INSERTVALUES); CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
-
+/* --------------------------------------------------------------------- */
 int CalculateRhs(Vec u)
 {
   int    i,n, ierr;
   double h,x = 0.0;
   Scalar uu;
-  VecGetSize(u,&n);
+  ierr = VecGetSize(u,&n); CHKERRQ(ierr);
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {
     x += h; uu = 2.0*h*h; 
@@ -291,30 +333,30 @@ int CalculateRhs(Vec u)
 
   return 0;
 }
-
+/* --------------------------------------------------------------------- */
 int CalculateSolution(int n,Vec *solution)
 {
-  int    i,ierr;
+  int    i, ierr;
   double h,x = 0.0;
   Scalar uu;
-  VecCreateSequential(MPI_COMM_SELF,n,solution);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,solution); CHKERRQ(ierr);
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {
     x += h; uu = x*(1.-x); 
     ierr = VecSetValues(*solution,1,&i,&uu,INSERTVALUES); CHKERRQ(ierr);
   }
-
   return 0;
 }
-
+/* --------------------------------------------------------------------- */
 int CalculateError(Vec solution,Vec u,Vec r,double *e)
 {
   Scalar mone = -1.0;
+  int    ierr;
 
-  VecNorm(r,e+2);
-  VecWAXPY(&mone,u,solution,r);
-  VecNorm(r,e);
-  VecASum(r,e+1);
+  ierr = VecNorm(r,e+2); CHKERRQ(ierr);
+  ierr = VecWAXPY(&mone,u,solution,r); CHKERRQ(ierr);
+  ierr = VecNorm(r,e); CHKERRQ(ierr);
+  ierr = VecASum(r,e+1); CHKERRQ(ierr);
   return 0;
 }
 
