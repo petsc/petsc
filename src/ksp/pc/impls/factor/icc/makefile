@@ -12,7 +12,7 @@ OBJSF    =
 LIBBASE  = libpetscksp
 DIRS     = 
 MANSEC   = PC
-LOCDIR   = src/ksp/pc/impls/icc/
+LOCDIR   = src/ksp/pc/impls/factor/icc/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

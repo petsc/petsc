@@ -731,11 +731,13 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     ilu->info.diagonal_fill = (double) flg;
     ierr = PetscOptionsName("-pc_iludt_reuse_fill","Reuse fill from previous ILUdt","PCILUDTSetReuseFill",&ilu->reusefill);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_ilu_reuse_ordering","Reuse previous reordering","PCILUSetReuseOrdering",&ilu->reuseordering);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_ilu_damping","Damping added to diagonal","PCILUSetDamping",&flg);CHKERRQ(ierr);
+
+    ierr = PetscOptionsName("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCILUSetDamping(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = PCFactorSetShiftNonzero((PetscReal) PETSC_DECIDE,&ilu->info);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_ilu_damping","Damping added to diagonal","PCILUSetDamping",ilu->info.damping,&ilu->info.damping,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",ilu->info.damping,&ilu->info.damping,0);CHKERRQ(ierr);
+    
     ierr = PetscOptionsName("-pc_ilu_shift","Manteuffel shift applied to diagonal","PCILUSetShift",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscOptionsInt("-pc_ilu_shift","Manteuffel shift applied to diagonal","PCILUSetShift",(PetscInt)ilu->info.shift,&itmp,&flg); CHKERRQ(ierr);

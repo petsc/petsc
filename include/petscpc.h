@@ -227,7 +227,8 @@ EXTERN PetscErrorCode PCILUSetReuseOrdering(PC,PetscTruth);
 EXTERN PetscErrorCode PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,PetscInt);
 EXTERN PetscErrorCode PCILUDTSetReuseFill(PC,PetscTruth);
 EXTERN PetscErrorCode PCILUSetAllowDiagonalFill(PC);
-EXTERN PetscErrorCode PCILUSetDamping(PC,PetscReal);
+EXTERN PetscErrorCode PCILUSetDamping(PC,PetscReal); 
+EXTERN PetscErrorCode PCFactorSetShiftNonzero(PetscReal,MatFactorInfo*); /* to be moved to other position! */
 EXTERN PetscErrorCode PCILUSetShift(PC,PetscTruth);
 EXTERN PetscErrorCode PCILUSetPivotInBlocks(PC,PetscTruth);
 EXTERN PetscErrorCode PCILUSetZeroPivot(PC,PetscReal);

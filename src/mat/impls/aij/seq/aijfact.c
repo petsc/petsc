@@ -573,7 +573,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscLogFlops(C->n);
   if (nshift){
     if (shift_nonzero) {
-      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_nonzero tries %D, shift_ amount%g\n",nshift,shift_amount);
+      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_nonzero tries %D, shift_ amount %g\n",nshift,shift_amount);
     } else if (shift_pd) {
       b->lu_shift_fraction = shift_fraction;
       PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: diagonal shifted up by %e fraction top_value %e number shifts %D\n",shift_fraction,shift_top,nshift);
