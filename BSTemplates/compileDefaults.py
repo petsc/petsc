@@ -5,6 +5,7 @@ import link
 import nargs
 import BSTemplates.sidlDefaults as sidlDefaults
 
+import distutils.sysconfig
 import os
 
 class UsingCompiler:
@@ -150,8 +151,16 @@ class UsingPython(UsingCompiler):
     #TODO: bs.argDB.setType('PYTHON_LIB',     argtest.LibraryTester())
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
+    try:
+      import Numeric
+    except ImportError, e:
+      raise RuntimeError("BS requires Numeric Python to be installed: "+str(e))
 
   def setupIncludeDirectories(self):
+    try:
+      if not bs.argDB.has_key('PYTHON_INCLUDE'):
+        bs.argDB['PYTHON_INCLUDE'] = distutils.sysconfig.get_python_inc()
+    except: pass
     includeDir = bs.argDB['PYTHON_INCLUDE']
     if isinstance(includeDir, list):
       self.includeDirs[self.getLanguage()].extend(includeDir)
@@ -160,6 +169,11 @@ class UsingPython(UsingCompiler):
     return self.includeDirs
 
   def setupExtraLibraries(self):
+    try:
+      if not bs.argDB.has_key('PYTHON_LIB'):
+        lib = os.path.join(distutils.sysconfig.get_config_var('LIBPL'), distutils.sysconfig.get_config_var('LDLIBRARY'))
+        bs.argDB['PYTHON_LIB'] = os.path.splitext(lib)[0]+'.so'
+    except: pass
     # This is not quite right
     for package in self.usingSIDL.getPackages():
       self.extraLibraries[package].extend([bs.argDB['PYTHON_LIB'], 'libpthread.so', 'libutil.so', 'libdl.so'])
