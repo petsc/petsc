@@ -548,7 +548,7 @@ runex53:
 	$(RM) -f ex53_1.tmp
 
 runex54:
-	-@for bs in $(MATBLOCKSIZE); do \
+	-@date;for bs in $(MATBLOCKSIZE); do \
 	    for matsize in $(MATSIZE); do \
 	      for ov in $(OVERLAP); do\
 	        for nd in $(NODOMAINS); do \
@@ -565,7 +565,7 @@ runex54:
 		done;\
 	      done;\
 	    done;\
-	done
+	done; date
 
 runex56:
 	-@$(MPIRUN) -np 1  ex56 -mat_view > ex56_1.tmp 2>&1;   \
