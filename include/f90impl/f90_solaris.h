@@ -1,14 +1,14 @@
-/* $Id: f90_solaris.h,v 1.4 2000/04/09 03:11:48 bsmith Exp $ */
+/* $Id: f90_solaris.h,v 1.1 2000/07/21 00:55:59 balay Exp balay $ */
 
-#if !defined (__F90_SOLARIS_NEW_H)
-#define __F90_SOLARIS_NEW_H
+#if !defined (__F90_SOLARIS_H)
+#define __F90_SOLARIS_H
  
 #define f90_header(dim) \
 void*   addr;        /* Pointer to the data */ \
 long    extent[dim]; /* length of array */ \
 long    mult[dim];   /* stride in bytes */ \
 void*   addr_d;      /* addr -sumof(lower*mult) */ \
-long    start[dim];  
+long    lower[dim];  
 
 typedef struct {
   f90_header(1)   /* dim1 */
