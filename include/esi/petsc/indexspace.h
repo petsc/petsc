@@ -21,10 +21,10 @@ class IndexSpace : public virtual esi::IndexSpace<Ordinal>, public virtual esi::
     // constructor.
     IndexSpace(MPI_Comm comm) {};	
 
-    // Construct a map from a map.
+    // Construct an IndexSpace form an IndexSpace 
     IndexSpace(esi::IndexSpace<Ordinal>& sourceIndexSpace);
 
-    // Construct a map from a PETSc (old-style) map.
+    // Construct an IndexSpace from a PETSc (old-style) map.
     IndexSpace(PetscMap sourceIndexSpace);
 
     // Basic constructor
@@ -36,8 +36,7 @@ class IndexSpace : public virtual esi::IndexSpace<Ordinal>, public virtual esi::
     //  Interface for esi::Object  ---------------
 
     virtual esi::ErrorCode getInterface(const char* name, void*& iface);
-    virtual esi::ErrorCode getInterfacesSupported(esi::Argv * list){return 1;};
-
+    virtual esi::ErrorCode getInterfacesSupported(esi::Argv * list);
 
     //  Interface for esi::IndexSpace  ---------------
 

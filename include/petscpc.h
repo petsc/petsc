@@ -168,7 +168,7 @@ EXTERN int PCSLESSetUseTrue(PC);
 
 EXTERN int PCShellSetApply(PC,int (*)(void*,Vec,Vec),void*);
 EXTERN int PCShellSetSetUp(PC,int (*)(void*));
-EXTERN int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
+EXTERN int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void*);
 EXTERN int PCShellSetView(PC,int (*)(void*,PetscViewer));
 EXTERN int PCShellSetName(PC,char*);
 EXTERN int PCShellGetName(PC,char**);
