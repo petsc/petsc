@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.219 1998/04/04 14:32:22 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.220 1998/04/04 14:32:45 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -53,7 +53,7 @@ info:
 	-@echo "=========================================="
 
 # Builds PETSc libraries for a given BOPT and architecture
-all: info chkpetsc_dir deletelibs build_kernels build_c build_shared build_fortran build_fortran90
+all: info chkpetsc_dir deletelibs build_kernels build_c shared build_fortran build_fortran90
 
 build_c:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
