@@ -1,4 +1,4 @@
-# $Id: common_win32,v 1.11 2001/04/05 20:42:06 balay Exp balay $ 
+# $Id: common_win32,v 1.12 2001/04/05 21:05:54 balay Exp balay $ 
 #
 #  Sets the rule used to remove collections of libraries (different under NT and 95!)
 #
@@ -202,6 +202,9 @@ $*.obj
 	$(CC) /c $(COPTFLAGS) $(CFLAGS) $(CCPPFLAGS) $(MAKEDIR)\$<
 
 .F.obj:
+	$(FC) /c $(FOPTFLAGS) $(FFLAGS) $(FCPPFLAGS) $(MAKEDIR)\$<
+
+.F90.obj:
 	$(FC) /c $(FOPTFLAGS) $(FFLAGS) $(FCPPFLAGS) $(MAKEDIR)\$<
 
 .c.PETSc :
