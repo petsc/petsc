@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.86 2001/03/27 18:26:10 balay Exp balay $ 
+# $Id: builddist,v 1.87 2001/04/11 01:22:10 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -39,7 +39,8 @@ make ACTION=clean tree
 #/bin/rm -f ~/petsc
 #
 cd /home/bsmith
-/bin/tar cFFXf /home/bsmith/petsc/maint/xclude $tmpdir/petsc.tar petsc
+# /bin/tar cFFXf /home/bsmith/petsc/maint/xclude $tmpdir/petsc.tar petsc
+gnutar  --create --file $tmpdir/petsc.tar --exclude-from  /home/bsmith/petsc/maint/xclude  petsc
 #
 cd $tmpdir
 /bin/tar xf $tmpdir/petsc.tar
