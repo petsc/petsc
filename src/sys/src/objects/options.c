@@ -785,9 +785,9 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
     size_t   n;
     ierr = PetscStrlen(tmp,&n);CHKERRQ(ierr);
     /* determine the location and number of all _%d_ in the key */
-    for (i=0; i<n; i++) {
+    for (i=0; i< (PetscInt)n; i++) {
       if (tmp[i] == '_') {
-        for (j=i+1; j<n; j++) {
+        for (j=i+1; j< (PetscInt)n; j++) {
           if (tmp[j] >= '0' && tmp[j] <= '9') continue;
           if (tmp[j] == '_' && j > i+1) { /* found a number */
             locs[cnt]   = i+1;

@@ -349,7 +349,7 @@ PetscErrorCode PCFieldSplitGetSubKSP_FieldSplit(PC pc,PetscInt *n,KSP **subksp)
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PetscInt          cnt = 0;
-  PC_FieldSplitLink link;
+  PC_FieldSplitLink link = jac->head;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(jac->nsplits*sizeof(KSP*),subksp);CHKERRQ(ierr);
