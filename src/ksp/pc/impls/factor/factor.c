@@ -15,8 +15,8 @@
    Collective on PC
    
    Input Parameters:
-+  zero - all pivots smaller than this will be considered zero
--  info - options for factorization
++  pc - the preconditioner context
+-  zero - all pivots smaller than this will be considered zero
 
    Options Database Key:
 .  -pc_factor_zeropivot <zero> - Sets tolerance for what is considered a zero pivot
@@ -27,10 +27,16 @@
 
 .seealso: PCFactorSetShiftNonzero(), PCFactorSetShiftPd()
 @*/
-PetscErrorCode PCFactorSetZeroPivot(PetscReal zero,MatFactorInfo *info)
+PetscErrorCode PCFactorSetZeroPivot(PC pc,PetscReal zero)
 {
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
+
   PetscFunctionBegin;
-  info->zeropivot = zero;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetZeroPivot_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,zero);CHKERRQ(ierr);
+  } 
   PetscFunctionReturn(0);
 }
 
@@ -43,8 +49,8 @@ PetscErrorCode PCFactorSetZeroPivot(PetscReal zero,MatFactorInfo *info)
    Collective on PC
    
    Input Parameters:
-+  shift - amount of shift
--  info - options for factorization
++  pc - the preconditioner context
+-  shift - amount of shift
 
    Options Database Key:
 .  -pc_factor_shiftnonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
@@ -58,13 +64,15 @@ PetscErrorCode PCFactorSetZeroPivot(PetscReal zero,MatFactorInfo *info)
 
 .seealso: PCFactorSetZeroPivot(), PCFactorSetShiftPd()
 @*/
-PetscErrorCode PCFactorSetShiftNonzero(PetscReal shift,MatFactorInfo *info)
+PetscErrorCode PCFactorSetShiftNonzero(PC pc,PetscReal shift)
 {
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
+
   PetscFunctionBegin;
-  if (shift == (PetscReal) PETSC_DECIDE) {
-    info->shiftnz = 1.e-12;
-  } else {
-    info->shiftnz = shift;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetShiftNonzero_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,shift);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
@@ -81,8 +89,8 @@ PetscErrorCode PCFactorSetShiftNonzero(PetscReal shift,MatFactorInfo *info)
    Collective on PC
 
    Input parameters:
-+  shifting - PETSC_TRUE to set shift else PETSC_FALSE
--  info - options for factorization
++  pc - the preconditioner context
+-  shifting - PETSC_TRUE to set shift else PETSC_FALSE
 
    Options Database Key:
 .  -pc_factor_shiftpd [1/0] - Activate/Deactivate PCFactorSetShiftPd(); the value
@@ -94,9 +102,15 @@ PetscErrorCode PCFactorSetShiftNonzero(PetscReal shift,MatFactorInfo *info)
 
 .seealso: PCFactorSetZeroPivot(), PCFactorSetShiftNonzero()
 @*/
-PetscErrorCode PCFactorSetShiftPd(PetscTruth shifting,MatFactorInfo *info)
+PetscErrorCode PCFactorSetShiftPd(PC pc,PetscTruth shift)
 {
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
+
   PetscFunctionBegin;
-  info->shiftpd = shifting;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetShiftPd_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,shift);CHKERRQ(ierr);
+  } 
   PetscFunctionReturn(0);
 }

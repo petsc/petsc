@@ -7,6 +7,53 @@
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetZeroPivot_ICC"
+PetscErrorCode PCFactorSetZeroPivot_ICC(PC pc,PetscReal z)
+{
+  PC_ICC *icc;
+
+  PetscFunctionBegin;
+  icc                 = (PC_ICC*)pc->data;
+  icc->info.zeropivot = z;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftNonzero_ICC"
+PetscErrorCode PCFactorSetShiftNonzero_ICC(PC pc,PetscReal shift)
+{
+  PC_ICC *dir;
+
+  PetscFunctionBegin;
+  dir = (PC_ICC*)pc->data;
+  if (shift == (PetscReal) PETSC_DECIDE) {
+    dir->info.shiftnz = 1.e-12;
+  } else {
+    dir->info.shiftnz = shift;
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftPd_ICC"
+PetscErrorCode PCFactorSetShiftPd_ICC(PC pc,PetscTruth shift)
+{
+  PC_ICC *dir;
+ 
+  PetscFunctionBegin;
+  dir = (PC_ICC*)pc->data;
+  dir->info.shiftpd = shift;
+  if (shift) dir->info.shift_fraction = 0.0;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCICCSetMatOrdering_ICC"
 PetscErrorCode PCICCSetMatOrdering_ICC(PC pc,MatOrderingType ordering)
 {
@@ -263,14 +310,14 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     }
     ierr = PetscOptionsName("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCFactorSetShiftNonzero((PetscReal) PETSC_DECIDE,&icc->info);CHKERRQ(ierr);
+      ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",icc->info.shiftnz,&icc->info.shiftnz,0);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCICCSetShift",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCFactorSetShiftPd(PETSC_TRUE,&icc->info);CHKERRQ(ierr);
+      ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr);
     } else {
-      ierr = PCFactorSetShiftPd(PETSC_FALSE,&icc->info);CHKERRQ(ierr);
+      ierr = PCFactorSetShiftPd(pc,PETSC_FALSE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",icc->info.zeropivot,&icc->info.zeropivot,0);CHKERRQ(ierr);
  
@@ -370,6 +417,13 @@ PetscErrorCode PCCreate_ICC(PC pc)
   pc->ops->getfactoredmatrix   = PCGetFactoredMatrix_ICC;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ICC;
   pc->ops->applysymmetricright = PCApplySymmetricRight_ICC;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_ICC",
+                    PCFactorSetZeroPivot_ICC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_ICC",
+                    PCFactorSetShiftNonzero_ICC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_ICC",
+                    PCFactorSetShiftPd_ICC);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetLevels_C","PCICCSetLevels_ICC",
                     PCICCSetLevels_ICC);CHKERRQ(ierr);
