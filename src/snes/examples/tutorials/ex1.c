@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.52 1996/08/27 14:25:29 curfman Exp $";
+static char vcid[] = "$Id: ex1.c,v 1.1 1996/08/27 14:32:24 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 
 /*T
-   Concepts: SNES; solving nonlinear equations
+   Concepts: SNES (solving nonlinear equations)
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESGetSLES();
    Routines: SNESSolve(); SNESSetFromOptions(); 
    Routines: SLESGetPC(); SLESGetKSP(); KSPSetTolerances(); PCSetType();
@@ -38,10 +38,12 @@ int main( int argc, char **argv )
   KSP      ksp;          /* Krylov subspace method context */
   Vec      x, r;         /* solution, residual vectors */
   Mat      J;            /* Jacobian matrix */
-  int      ierr, its;
+  int      ierr, its, size;
   Scalar   pfive = .5;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -67,12 +69,12 @@ int main( int argc, char **argv )
   /* 
      Set function evaluation routine and vector
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,0);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,PETSC_NULL); CHKERRA(ierr);
 
   /* 
      Set Jacobian matrix data structure and Jacobian evaluation routine
   */
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,0); CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -87,7 +89,7 @@ int main( int argc, char **argv )
   ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,5); CHKERRA(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20); CHKERRA(ierr);
 
   /* 
      Set SNES/SLES/KSP/PC runtime options, e.g.,
@@ -130,18 +132,22 @@ int main( int argc, char **argv )
    Input Parameters:
 .  snes - the SNES context
 .  x - input vector
-.  ptr - optional user-defined context (not used here)
+.  dummy - optional user-defined context (not used here)
 
    Output Parameter:
 .  f - function vector
  */
-int FormFunction(SNES snes,Vec x,Vec f,void *dummy )
+int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
   int    ierr;
   Scalar *xx, *ff;
 
   /*
-     Get pointers to vector data
+     Get pointers to vector data.
+       - For default PETSc vectors, VecGetArray() returns a pointer to
+         the data array.  Otherwise, the routine is implementation dependent.
+       - You MUST call VecRestoreArray() when you no longer need access to
+         the array.
   */
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
@@ -167,7 +173,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy )
    Input Parameters:
 .  snes - the SNES context
 .  x - input vector
-.  ptr - optional user-defined context (not used here)
+.  dummy - optional user-defined context (not used here)
 
    Output Parameters:
 .  jac - Jacobian matrix
@@ -185,7 +191,9 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
 
   /*
-     Compute Jacobian entries and insert into matrix
+     Compute Jacobian entries and insert into matrix.
+      - Since this is such a small problem, we set all entries for
+        the matrix at once.
   */
   A[0] = 2.0*xx[0] + xx[1]; A[1] = xx[0];
   A[2] = xx[1]; A[3] = xx[0] + 2.0*xx[1];

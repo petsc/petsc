@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.37 1996/08/30 18:52:05 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.38 1996/08/30 19:33:13 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -11,6 +11,9 @@ This example employs a user-defined monitoring routine.\n\n";
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESSolve();
    Routines: SNESGetTolerances(); SNESSetFromOptions(); SNESSetMonitor();
    Routines: SNESGetSolution(); ViewerDrawOpenX(); PetscObjectSetName();
+   Routines: DACreate1d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
+   Routines: DAGetCorners(); DAGetGhostCorners();
+   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd();
    Processors: n
 T*/
 
