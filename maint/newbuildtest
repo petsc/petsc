@@ -30,16 +30,16 @@ else
 endif
 echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $PETSC_DIR
 
-rm -f $PETSC_DIR/build_log
-echo "Build on $MACH $PETSC_ARCH $BOPT `date` " > $PETSC_DIR/build_log
+rm -f $PETSC_DIR/build.log
+echo "Build on $MACH $PETSC_ARCH $BOPT `date` " > $PETSC_DIR/build.log
 rm -f $PETSC_DIR/buildout.tar
 
-# need to have make update that uses python code reworked from configure
-make PETSC_ARCH=linux PETSC_DIR=$PETSC_DIR pull >>& $PETSC_DIR/build_log
+
+make PETSC_ARCH=linux PETSC_DIR=$PETSC_DIR update >>& $PETSC_DIR/build.log
 
 # Run Configure
 if ("${CONFIGURE}" == "yes") then
-  cd $PETSC_DIR; ./config/${CONFIGURE_FILE}.py --enable-update=0 -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$PETSC_DIR ${CONFIGURE_ARGS} >>& build_log
+  cd $PETSC_DIR; ./config/${CONFIGURE_FILE}.py --enable-update=0 -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$PETSC_DIR ${CONFIGURE_ARGS} >>& build.log
   echo '****************************************************' >>& $PETSC_DIR/maint/build_$PETSC_ARCH.$BOPT.$MACH.log
   set EJOBS=`cat $PETSC_DIR/bmake/$PETSC_ARCH/ejobs`
   set JOBS=`cat $PETSC_DIR/bmake/$PETSC_ARCH/jobs`
@@ -49,29 +49,29 @@ else
   set EJOBS=`grep PETSC_HAVE_ $PETSC_DIR/bmake/$PETSC_ARCH/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
 endif
 
-make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR allfortranstubs >>& $PETSC_DIR/build_log
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR allfortranstubs >>& $PETSC_DIR/build.log
 
 if ("${BOPT}" == "g_complex" ||  "${BOPT}" == "O_complex") then
   set EJOBS=""
 endif
 
 
-cd $PETSC_DIR;make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR BOPT=$BOPT all >>& build_log
-echo '****************************************************' >>& build_log
-echo 'Finished Build on $MACH $PETSC_ARCH $BOPT `date`' >>& build_log
-cd $PETSC_DIR; tar rf buildoutput.tar build_log
+cd $PETSC_DIR;make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR BOPT=$BOPT all >>& build.log
+echo '****************************************************' >>& build.log
+echo 'Finished Build on $MACH $PETSC_ARCH $BOPT `date`' >>& build.log
+cd $PETSC_DIR; tar rf buildoutput.tar build.log
 #
 #
 #
 # Run examples
-rm examples_log
-echo 'Build on $MACH $PETSC_ARCH  $BOPT `date` ' > examples_log
+rm -f examples.log
+echo "Build on $MACH $PETSC_ARCH  $BOPT `date` " > examples.log
 foreach j ($JOBS $EJOBS)
-  cd $PETSC_DIR; $NICE make PETSC_PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree | grep -v 'up to date' >>& examples_log
-  echo '******************************************************' >>& $PETSC_DIR/examples_log
+  cd $PETSC_DIR; $NICE make PETSC_PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree | grep -v 'up to date' >>& examples.log
+  echo '******************************************************' >>& $PETSC_DIR/examples.log
 end
-echo 'Finished Build on $MACH $PETSC_ARCH $BOPT `date`' >>& $PETSC_DIR/examples_log
-echo 'X******************************************************X' >>& $PETSC_DIR/examples_log
-cd $PETSC_DIR; tar rf buildoutput.tar examples_log
+echo "Finished Build on $MACH $PETSC_ARCH $BOPT `date`" >>& $PETSC_DIR/examples.log
+echo 'X******************************************************X' >>& $PETSC_DIR/examples.log
+cd $PETSC_DIR; tar rf buildoutput.tar examples.log
 
 

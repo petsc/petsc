@@ -17,7 +17,6 @@ class Configure(config.base.Configure):
      
   def configureHelp(self, help):
     import nargs
-    help.addArgument('Update', '-freeform-arch',             nargs.ArgBool(None, 0, 'Allow arbitrary configure PETSC_ARCH specification'))
     help.addArgument('Update', '-with-default-arch',         nargs.ArgBool(None, 1, 'Allow using the most recently configured arch without setting PETSC_ARCH'))
     help.addArgument('Update', '-with-default-language=<c,c++,c++-complex,0(zero for no default)>', nargs.Arg(None, 'c', 'Specifiy default language of libraries'))
     help.addArgument('Update', '-with-default-optimization=<g,O,0(zero for no default)>',           nargs.Arg(None, 'g', 'Specifiy default optimization of libraries'))
@@ -70,9 +69,6 @@ class Configure(config.base.Configure):
       arch = self.host_os
     else:
       arch = self.framework.argDB['PETSC_ARCH']
-    if not arch.startswith(self.host_os):
-      if not self.framework.argDB['freeform-arch']:
-        raise RuntimeError('PETSC_ARCH ('+arch+') does not have our guess ('+self.host_os+') as a prefix!\nRun bin/petscarch --suggest and set the environment variable PETSC_ARCH to the suggested value.')
     archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', arch)
     self.framework.argDB['PETSC_ARCH']      = arch
     self.framework.argDB['PETSC_ARCH_BASE'] = archBase
