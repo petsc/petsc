@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.187 1998/05/18 20:21:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.188 1998/06/02 21:57:42 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -40,7 +40,9 @@ int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 /*@C
     PLogInfoAllow - Causes PLogInfo() messages to be printed to standard output.
 
-    Not Collective
+    Not Collective, each processor may call this seperately, but printing is only
+    turned on if the lowest processor number associated with the PetscObject associated
+    with the call to PLogInfo() has called this routine.
 
     Input Parameter:
 .   flag - PETSC_TRUE or PETSC_FALSE
@@ -940,7 +942,7 @@ int PLogDestroy(void)
     rates and object creation and should not slow programs down too much.
     This routine may be called more than once.
 
-    Not Collective
+    Collective over PETSC_COMM_WORLD
 
     Options Database Keys:
 +   -log - Prints basic log information (for code compiled with USE_PETSC_LOG)
@@ -1282,7 +1284,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PLogDouble minm,maxm,avem,totm,minr,maxr,maxml,minml,totml,aveml,totr;
   PLogDouble rp,mp,lp,rpg,mpg,lpg,totms,totmls,totrs,mps,lps,rps,lpmp;
   PLogDouble pstime,psflops1,psflops,flopr,mict,mact,rct;
-  int        size,rank,i,j,ierr;
+  int        size,rank,i,j,ierr,lEventsStageMax;
   char       arch[10],hostname[64],username[16],pname[256];
   FILE       *fd = stdout;
 
@@ -1379,12 +1381,13 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PetscFPrintf(comm,fd,"                            e.g., VecAXPY() for real vectors of length N --> 2N flops\n");
   PetscFPrintf(comm,fd,"                            and VecAXPY() for complex vectors of length N --> 8N flops\n");
 
-  if (EventsStageMax) {
+  ierr = MPI_Allreduce(&EventsStageMax,&lEventsStageMax,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  if (lEventsStageMax) {
     PLogDouble mcounts,mlens,rcounts;
 
     PetscFPrintf(comm,fd,"\nSummary of Stages:  ---- Time ------     ----- Flops -------    -- Messages -- -- Message-lengths -- Reductions --\n");
     PetscFPrintf(comm,fd,"                      Avg      %%Total        Avg       %%Total   counts   %%Total    avg      %%Total   counts  %%Total \n");
-    for ( j=0; j<=EventsStageMax; j++ ) {
+    for ( j=0; j<=lEventsStageMax; j++ ) {
       ierr = MPI_Allreduce(&EventsStageFlops[j],&sflops,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&EventsStageTime[j],&sstime,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
       if (tott > 0.) pstime = 100.0*sstime/tott; else pstime = 0.0;
