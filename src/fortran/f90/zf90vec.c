@@ -1,4 +1,4 @@
-/*$Id: zf90vec.c,v 1.8 2000/05/24 22:17:56 balay Exp bsmith $*/
+/*$Id: zf90vec.c,v 1.9 2000/05/29 07:12:28 balay Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
 #include "petscis.h"
@@ -87,7 +87,7 @@ void iscoloringrestoreisf90__(ISColoring *iscoloring,array1d *ptr,int *__ierr)
 
   *__ierr = PetscF90Get1dArrayPetscFortranAddr(ptr,&is);if (*__ierr) return;
   *__ierr = PetscF90Destroy1dArrayPetscFortranAddr(ptr);if (*__ierr) return;
-  *__ierr = ISColoringRestoreIS(*iscoloring,is);if (*__ierr) return;
+  *__ierr = ISColoringRestoreIS(*iscoloring,(IS **)is);if (*__ierr) return;
   *__ierr = PetscFree(is);
 }
 
@@ -131,7 +131,7 @@ void vecdestroyvecsf90_(array1d *ptr,int *m,int *__ierr)
 
   *__ierr = PetscF90Get1dArrayPetscFortranAddr(ptr,&vecs);if (*__ierr) return;
   for (i=0; i<*m; i++) {
-    *__ierr = VecDestroy(&vecs[i]);
+    *__ierr = VecDestroy((Vec)vecs[i]);
     if (*__ierr) return;
   }
   *__ierr = PetscF90Destroy1dArrayPetscFortranAddr(ptr);if (*__ierr) return;
