@@ -598,7 +598,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_inplace(Mat *B)
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
   int            ierr,i,j,n = a->mbs;
   unsigned short *bj = (unsigned short *)(b->j),*bjtmp,*pj;
-  unsigned short *aj = (unsigned short *)(a->j),*ajtmp,*pj;
+  unsigned short *aj = (unsigned short *)(a->j),*ajtmp;
   unsigned int   row;
   int            nz,*bi=b->i;
   int            *diag_offset = b->diag,*ai=a->i;
