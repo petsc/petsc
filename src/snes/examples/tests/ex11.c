@@ -160,20 +160,20 @@ int main( int argc, char **argv )
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
-  ierr = MGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MGSetType(pc,MGADDITIVE);CHKERRQ(ierr);
+  ierr = PCMGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCMGSetType(pc,MGADDITIVE);CHKERRQ(ierr);
 
   /* always solve the coarse problem redundantly with direct LU solver */
   ierr = PetscOptionsSetValue("-coarse_pc_type","redundant");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-coarse_redundant_pc_type","lu");CHKERRQ(ierr);
 
   /* Create coarse level */
-  ierr = MGGetCoarseSolve(pc,&user.ksp_coarse);CHKERRQ(ierr);
+  ierr = PCMGGetCoarseSolve(pc,&user.ksp_coarse);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(user.ksp_coarse,"coarse_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user.ksp_coarse);CHKERRQ(ierr);
   ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr); 
-  ierr = MGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr); 
+  ierr = PCMGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr); 
+  ierr = PCMGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr); 
   if (user.redundant_build) {
     PC  rpc;
     ierr = KSPGetPC(user.ksp_coarse,&rpc);CHKERRQ(ierr);
@@ -181,17 +181,17 @@ int main( int argc, char **argv )
   }
 
   /* Create fine level */
-  ierr = MGGetSmoother(pc,FINE_LEVEL,&user.ksp_fine);CHKERRQ(ierr);
+  ierr = PCMGGetSmoother(pc,FINE_LEVEL,&user.ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(user.ksp_fine,"fine_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user.ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOperators(user.ksp_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr); 
-  ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.fine.J);CHKERRQ(ierr);
+  ierr = PCMGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr); 
+  ierr = PCMGSetResidual(pc,FINE_LEVEL,PCMGDefaultResidual,user.fine.J);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
   ierr = FormInterpolation(&user);CHKERRQ(ierr);
-  ierr = MGSetInterpolate(pc,FINE_LEVEL,user.R);CHKERRQ(ierr);
-  ierr = MGSetRestriction(pc,FINE_LEVEL,user.R);CHKERRQ(ierr);
+  ierr = PCMGSetInterpolate(pc,FINE_LEVEL,user.R);CHKERRQ(ierr);
+  ierr = PCMGSetRestriction(pc,FINE_LEVEL,user.R);CHKERRQ(ierr);
 
   /* Set options, then solve nonlinear system */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);

@@ -170,7 +170,7 @@ int main(int argc,char **argv)
       ierr = SNESGetKSP(dmmg[i]->snes,&ksp);CHKERRQ(ierr);
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
       for (j=0; j<=i; j++) {
-	ierr = MGGetSmoother(pc,j,&ksp);CHKERRQ(ierr);
+	ierr = PCMGGetSmoother(pc,j,&ksp);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp,&mpc);CHKERRQ(ierr);
 	ierr = PCSetType(mpc,PCSHELL);CHKERRQ(ierr);
 	ierr = PCShellSetApply(mpc,(PetscErrorCode (*)(void*,Vec,Vec))myPCApply,dmmg[j]);CHKERRQ(ierr);

@@ -195,7 +195,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   if (!mg[levels-1]->r && mg[0]->am == MGADDITIVE) {
     Vec tvec;
     ierr = VecDuplicate(mg[levels-1]->b,&tvec);CHKERRQ(ierr);
-    ierr = MGSetR(pc,levels-1,tvec);CHKERRQ(ierr);
+    ierr = PCMGSetR(pc,levels-1,tvec);CHKERRQ(ierr);
     ierr = VecDestroy(tvec);CHKERRQ(ierr);
   }
   if (mg[0]->am == MGMULTIPLICATIVE) {
@@ -262,23 +262,23 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
   ierr = PetscOptionsHead("Multigrid options");CHKERRQ(ierr);
     if (!pc->data) {
       ierr = PetscOptionsInt("-pc_mg_levels","Number of Levels","MGSetLevels",levels,&levels,&flg);CHKERRQ(ierr);
-      ierr = MGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCMGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
     }
     ierr = PetscOptionsInt("-pc_mg_cycles","1 for V cycle, 2 for W-cycle","MGSetCycles",1,&m,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = MGSetCycles(pc,m);CHKERRQ(ierr);
+      ierr = PCMGSetCycles(pc,m);CHKERRQ(ierr);
     } 
     ierr = PetscOptionsName("-pc_mg_galerkin","Use Galerkin process to compute coarser operators","MGSetGalerkin",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = MGSetGalerkin(pc);CHKERRQ(ierr);
+      ierr = PCMGSetGalerkin(pc);CHKERRQ(ierr);
     } 
     ierr = PetscOptionsInt("-pc_mg_smoothup","Number of post-smoothing steps","MGSetNumberSmoothUp",1,&m,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = MGSetNumberSmoothUp(pc,m);CHKERRQ(ierr);
+      ierr = PCMGSetNumberSmoothUp(pc,m);CHKERRQ(ierr);
     }
     ierr = PetscOptionsInt("-pc_mg_smoothdown","Number of pre-smoothing steps","MGSetNumberSmoothDown",1,&m,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = MGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
+      ierr = PCMGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
     }
     ierr = PetscOptionsEList("-pc_mg_type","Multigrid type","MGSetType",type,5,type[1],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -300,7 +300,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
         mg = MGKASKADE;
         break;
       }
-      ierr = MGSetType(pc,mg);CHKERRQ(ierr);
+      ierr = PCMGSetType(pc,mg);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-pc_mg_log","Log times for each multigrid level","None",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -411,10 +411,10 @@ static PetscErrorCode PCSetUp_MG(PC pc)
     }
     for (i=1; i<n; i++) {
       if (mg[i]->restrct && !mg[i]->interpolate) {
-        ierr = MGSetInterpolate(pc,i,mg[i]->restrct);CHKERRQ(ierr);
+        ierr = PCMGSetInterpolate(pc,i,mg[i]->restrct);CHKERRQ(ierr);
       }
       if (!mg[i]->restrct && mg[i]->interpolate) {
-        ierr = MGSetRestriction(pc,i,mg[i]->interpolate);CHKERRQ(ierr);
+        ierr = PCMGSetRestriction(pc,i,mg[i]->interpolate);CHKERRQ(ierr);
       }
 #if defined(PETSC_USE_DEBUG)
       if (!mg[i]->restrct || !mg[i]->interpolate) {
@@ -425,12 +425,12 @@ static PetscErrorCode PCSetUp_MG(PC pc)
     for (i=0; i<n-1; i++) {
       if (!mg[i]->r && i) {
         ierr = VecDuplicate(mg[i]->b,&tvec);CHKERRQ(ierr);
-        ierr = MGSetR(pc,i,tvec);CHKERRQ(ierr);
+        ierr = PCMGSetR(pc,i,tvec);CHKERRQ(ierr);
         ierr = VecDestroy(tvec);CHKERRQ(ierr);
       }
       if (!mg[i]->x) {
         ierr = VecDuplicate(mg[i]->b,&tvec);CHKERRQ(ierr);
-        ierr = MGSetX(pc,i,tvec);CHKERRQ(ierr);
+        ierr = PCMGSetX(pc,i,tvec);CHKERRQ(ierr);
         ierr = VecDestroy(tvec);CHKERRQ(ierr);
       }
     }
@@ -441,7 +441,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
      the PC matrices between solves PCMG will continue to use first set provided */
   ierr = KSPGetOperators(mg[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
   if (!dA  && !dB) {
-    ierr = PetscLogInfo((pc,"PCSetUp_MG: Using outer operators to define finest grid operator \n  because MGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n"));
+    ierr = PetscLogInfo((pc,"PCSetUp_MG: Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n"));
     ierr = KSPSetOperators(mg[n-1]->smoothd,pc->mat,pc->pmat,uflag);CHKERRQ(ierr);
   }
 
@@ -556,7 +556,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
 #undef __FUNCT__  
 #define __FUNCT__ "MGSetLevels"
 /*@C
-   MGSetLevels - Sets the number of levels to use with MG.
+   PCMGSetLevels - Sets the number of levels to use with MG.
    Must be called before any other MG routine.
 
    Collective on PC
@@ -575,9 +575,9 @@ static PetscErrorCode PCSetUp_MG(PC pc)
 
 .keywords: MG, set, levels, multigrid
 
-.seealso: MGSetType(), MGGetLevels()
+.seealso: PCMGSetType(), PCMGGetLevels()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
+PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 {
   PetscErrorCode ierr;
   MG             *mg;
@@ -587,7 +587,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetLevels(PC pc,PetscInt levels,MPI_Comm *co
 
   if (pc->data) {
     SETERRQ(PETSC_ERR_ORDER,"Number levels already set for MG\n\
-    make sure that you call MGSetLevels() before KSPSetFromOptions()");
+    make sure that you call PCMGSetLevels() before KSPSetFromOptions()");
   }
   ierr                     = MGCreate_Private(pc->comm,levels,pc,comms,&mg);CHKERRQ(ierr);
   mg[0]->am                = MGMULTIPLICATIVE;
@@ -599,7 +599,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetLevels(PC pc,PetscInt levels,MPI_Comm *co
 #undef __FUNCT__  
 #define __FUNCT__ "MGGetLevels"
 /*@
-   MGGetLevels - Gets the number of levels to use with MG.
+   PCMGGetLevels - Gets the number of levels to use with MG.
 
    Not Collective
 
@@ -613,9 +613,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetLevels(PC pc,PetscInt levels,MPI_Comm *co
 
 .keywords: MG, get, levels, multigrid
 
-.seealso: MGSetLevels()
+.seealso: PCMGSetLevels()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MGGetLevels(PC pc,PetscInt *levels)
+PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetLevels(PC pc,PetscInt *levels)
 {
   MG  *mg;
 
@@ -631,7 +631,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGGetLevels(PC pc,PetscInt *levels)
 #undef __FUNCT__  
 #define __FUNCT__ "MGSetType"
 /*@
-   MGSetType - Determines the form of multigrid to use:
+   PCMGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
 
    Collective on PC
@@ -649,9 +649,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGGetLevels(PC pc,PetscInt *levels)
 
 .keywords: MG, set, method, multiplicative, additive, full, Kaskade, multigrid
 
-.seealso: MGSetLevels()
+.seealso: PCMGSetLevels()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MGSetType(PC pc,MGType form)
+PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetType(PC pc,MGType form)
 {
   MG *mg;
 
@@ -669,7 +669,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetType(PC pc,MGType form)
 #undef __FUNCT__  
 #define __FUNCT__ "MGSetCycles"
 /*@
-   MGSetCycles - Sets the type cycles to use.  Use MGSetCyclesOnLevel() for more 
+   PCMGSetCycles - Sets the type cycles to use.  Use PCMGSetCyclesOnLevel() for more 
    complicated cycling.
 
    Collective on PC
@@ -685,9 +685,9 @@ $  -pc_mg_cycles n - 1 denotes a V-cycle; 2 denotes a W-cycle.
 
 .keywords: MG, set, cycles, V-cycle, W-cycle, multigrid
 
-.seealso: MGSetCyclesOnLevel()
+.seealso: PCMGSetCyclesOnLevel()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MGSetCycles(PC pc,PetscInt n)
+PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycles(PC pc,PetscInt n)
 { 
   MG       *mg;
   PetscInt i,levels;
@@ -707,7 +707,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetCycles(PC pc,PetscInt n)
 #undef __FUNCT__  
 #define __FUNCT__ "MGSetGalerkin"
 /*@
-   MGSetGalerkin - Causes the coarser grid matrices to be computed from the
+   PCMGSetGalerkin - Causes the coarser grid matrices to be computed from the
       finest grid via the Galerkin process: A_i-1 = r_i * A_i * r_i^t
 
    Collective on PC
@@ -724,7 +724,7 @@ $  -pc_mg_galerkin
 .keywords: MG, set, Galerkin
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MGSetGalerkin(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetGalerkin(PC pc)
 { 
   MG       *mg;
   PetscInt i,levels;
@@ -742,59 +742,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetGalerkin(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MGCheck"
-/*@
-   MGCheck - Checks that all components of the MG structure have 
-   been set.
-
-   Collective on PC
-
-   Input Parameters:
-.  mg - the MG structure
-
-   Level: advanced
-
-.keywords: MG, check, set, multigrid
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT MGCheck(PC pc)
-{
-  MG       *mg;
-  PetscInt i,n,count = 0;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  mg = (MG*)pc->data;
-
-  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-
-  n = mg[0]->levels;
-
-  for (i=1; i<n; i++) {
-    if (!mg[i]->restrct) {
-      (*PetscErrorPrintf)("No restrict set level %D \n",n-i); count++;
-    }    
-    if (!mg[i]->interpolate) {
-      (*PetscErrorPrintf)("No interpolate set level %D \n",n-i); count++;
-    }
-    if (!mg[i]->r) {
-      (*PetscErrorPrintf)("No r set level %D \n",n-i); count++;
-    } 
-    if (!mg[i-1]->x) {
-      (*PetscErrorPrintf)("No x set level %D \n",n-i); count++;
-    }
-    if (!mg[i-1]->b) {
-      (*PetscErrorPrintf)("No b set level %D \n",n-i); count++;
-    }
-  }
-  PetscFunctionReturn(count);
-}
-
-
-#undef __FUNCT__  
 #define __FUNCT__ "MGSetNumberSmoothDown"
 /*@
-   MGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
-   use on all levels. Use MGGetSmootherDown() to set different 
+   PCMGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
+   use on all levels. Use PCMGGetSmootherDown() to set different 
    pre-smoothing steps on different levels.
 
    Collective on PC
@@ -810,9 +761,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGCheck(PC pc)
 
 .keywords: MG, smooth, down, pre-smoothing, steps, multigrid
 
-.seealso: MGSetNumberSmoothUp()
+.seealso: PCMGSetNumberSmoothUp()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MGSetNumberSmoothDown(PC pc,PetscInt n)
+PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothDown(PC pc,PetscInt n)
 { 
   MG             *mg;
   PetscErrorCode ierr;
@@ -826,7 +777,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetNumberSmoothDown(PC pc,PetscInt n)
 
   for (i=0; i<levels; i++) {  
     /* make sure smoother up and down are different */
-    ierr = MGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCMGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mg[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
     mg[i]->default_smoothd = n;
   }
@@ -836,8 +787,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetNumberSmoothDown(PC pc,PetscInt n)
 #undef __FUNCT__  
 #define __FUNCT__ "MGSetNumberSmoothUp"
 /*@
-   MGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
-   on all levels. Use MGGetSmootherUp() to set different numbers of 
+   PCMGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
+   on all levels. Use PCMGGetSmootherUp() to set different numbers of 
    post-smoothing steps on different levels.
 
    Collective on PC
@@ -856,9 +807,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetNumberSmoothDown(PC pc,PetscInt n)
 
 .keywords: MG, smooth, up, post-smoothing, steps, multigrid
 
-.seealso: MGSetNumberSmoothDown()
+.seealso: PCMGSetNumberSmoothDown()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT MGSetNumberSmoothUp(PC pc,PetscInt n)
+PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 { 
   MG             *mg;
   PetscErrorCode ierr;
@@ -872,7 +823,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetNumberSmoothUp(PC pc,PetscInt n)
 
   for (i=1; i<levels; i++) {  
     /* make sure smoother up and down are different */
-    ierr = MGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCMGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mg[i]->smoothu,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
     mg[i]->default_smoothu = n;
   }
@@ -903,10 +854,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetNumberSmoothUp(PC pc,PetscInt n)
    Concepts: multigrid
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType, 
-           MGSetLevels(), MGGetLevels(), MGSetType(), MPSetCycles(), MGSetNumberSmoothDown(),
-           MGSetNumberSmoothUp(), MGGetCoarseSolve(), MGSetResidual(), MGSetInterpolation(),
-           MGSetRestriction(), MGGetSmoother(), MGGetSmootherUp(), MGGetSmootherDown(),
-           MGSetCyclesOnLevel(), MGSetRhs(), MGSetX(), MGSetR()           
+           PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), MPSetCycles(), PCMGSetNumberSmoothDown(),
+           PCMGSetNumberSmoothUp(), PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
+           PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),
+           PCMGSetCyclesOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()           
 M*/
 
 EXTERN_C_BEGIN

@@ -4,7 +4,7 @@
 #include "petscmg.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define mgdefaultresidual_         MGDEFAULTRESIDUAL
+#define pcmgdefaultresidual_       PCMGDEFAULTRESIDUAL
 #define mgsetresidual_             MGSETRESIDUAL
 #define pcasmsetlocalsubdomains_   PCASMSETLOCALSUBDOMAINS
 #define pcasmsetglobalsubdomains_  PCASMSETGLOBALSUBDOMAINS
@@ -40,7 +40,7 @@
 #define pcilusetmatordering_       PCILUSETMATORDERING
 #define pclusetmatordering_        PCLUSETMATORDERING
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define mgdefaultresidual_         mgdefaultresidual
+#define pcmgdefaultresidual_       pcmgdefaultresidual
 #define mgsetresidual_             mgsetresidual
 #define pcasmsetlocalsubdomains_   pcasmsetlocalsubdomains
 #define pcasmsetglobalsubdomains_  pcasmsetglobalsubdomains
@@ -151,7 +151,7 @@ void PETSC_STDCALL pccompositegetpc_(PC *pc,PetscInt *n,PC *subpc,PetscErrorCode
 void PETSC_STDCALL mgsetlevels_(PC *pc,PetscInt *levels,MPI_Comm *comms, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(comms);
-  *ierr = MGSetLevels(*pc,*levels,comms);
+  *ierr = PCMGSetLevels(*pc,*levels,comms);
 }
 
 void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, PetscErrorCode *ierr)
@@ -209,22 +209,22 @@ void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,
 
 void PETSC_STDCALL mggetcoarsesolve_(PC *pc,KSP *ksp,PetscErrorCode *ierr)
 {
-  *ierr = MGGetCoarseSolve(*pc,ksp);
+  *ierr = PCMGGetCoarseSolve(*pc,ksp);
 }
 
 void PETSC_STDCALL mggetsmoother_(PC *pc,PetscInt *l,KSP *ksp,PetscErrorCode *ierr)
 {
-  *ierr = MGGetSmoother(*pc,*l,ksp);
+  *ierr = PCMGGetSmoother(*pc,*l,ksp);
 }
 
 void PETSC_STDCALL mggetsmootherup_(PC *pc,PetscInt *l,KSP *ksp,PetscErrorCode *ierr)
 {
-  *ierr = MGGetSmootherUp(*pc,*l,ksp);
+  *ierr = PCMGGetSmootherUp(*pc,*l,ksp);
 }
 
 void PETSC_STDCALL mggetsmootherdown_(PC *pc,PetscInt *l,KSP *ksp,PetscErrorCode *ierr)
 {
-  *ierr = MGGetSmootherDown(*pc,*l,ksp);
+  *ierr = PCMGGetSmootherDown(*pc,*l,ksp);
 }
 
 void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
@@ -374,15 +374,15 @@ void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,PetscInt *n,IS *is, PetscErro
   }
 }
 
-void mgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, PetscErrorCode *ierr)
+void pcmgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, PetscErrorCode *ierr)
 {
-  *ierr = MGDefaultResidual(*mat,*b,*x,*r);
+  *ierr = PCMGDefaultResidual(*mat,*b,*x,*r);
 }
 
 void PETSC_STDCALL mgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
 {
   MVVVV rr;
-  if ((FCNVOID)residual == (FCNVOID)mgdefaultresidual_) rr = MGDefaultResidual;
+  if ((FCNVOID)residual == (FCNVOID)pcmgdefaultresidual_) rr = PCMGDefaultResidual;
   else {
     if (!((PetscObject)*mat)->fortran_func_pointers) {
       *ierr = PetscMalloc(1*sizeof(void*),&((PetscObject)*mat)->fortran_func_pointers);
@@ -390,7 +390,7 @@ void PETSC_STDCALL mgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual)(
     ((PetscObject)*mat)->fortran_func_pointers[0] = (FCNVOID)residual;
     rr = ourresidualfunction;
   }
-  *ierr = MGSetResidual(*pc,*l,rr,*mat);
+  *ierr = PCMGSetResidual(*pc,*l,rr,*mat);
 }
 
 void PETSC_STDCALL pcilusetmatordering_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len)){

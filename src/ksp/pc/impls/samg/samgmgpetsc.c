@@ -185,20 +185,20 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
           CHKERRQ(ierr); 
    /*..Set MG preconditioner..*/
    ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
-   ierr = MGSetLevels(pc,levels, PETSC_NULL);CHKERRQ(ierr);
-   ierr = MGSetType(pc, MGMULTIPLICATIVE);CHKERRQ(ierr);
-   ierr = MGSetCycles(pc, 1);CHKERRQ(ierr);
-   ierr = MGSetNumberSmoothUp(pc,1);CHKERRQ(ierr);
-   ierr = MGSetNumberSmoothDown(pc,1);CHKERRQ(ierr);
+   ierr = PCMGSetLevels(pc,levels, PETSC_NULL);CHKERRQ(ierr);
+   ierr = PCMGSetType(pc, MGMULTIPLICATIVE);CHKERRQ(ierr);
+   ierr = PCMGSetCycles(pc, 1);CHKERRQ(ierr);
+   ierr = PCMGSetNumberSmoothUp(pc,1);CHKERRQ(ierr);
+   ierr = PCMGSetNumberSmoothDown(pc,1);CHKERRQ(ierr);
 
    /*....Set smoother, work vectors and residual calculation on each 
          level....*/ 
    for (k=1;k<=levels;k++){ 
        petsc_level = levels - k; 
        /*....Get pre-smoothing KSP context....*/ 
-       ierr = MGGetSmootherDown(pc,petsc_level,&grid[k].ksp_pre); 
+       ierr = PCMGGetSmootherDown(pc,petsc_level,&grid[k].ksp_pre); 
               CHKERRQ(ierr); 
-       ierr = MGGetSmootherUp(pc,petsc_level,&grid[k].ksp_post); 
+       ierr = PCMGGetSmootherUp(pc,petsc_level,&grid[k].ksp_post); 
 	      CHKERRQ(ierr); 
        if (k==1)
           FineLevelMatrix = A; 
@@ -234,22 +234,22 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
        ierr = PCSetType(pc_post, PCSOR);CHKERRQ(ierr);   
        ierr = PCSORSetSymmetric(pc_post,SOR_BACKWARD_SWEEP);CHKERRQ(ierr);   
 
-       ierr = MGSetX(pc,petsc_level,grid[k].x);CHKERRQ(ierr); 
-       ierr = MGSetRhs(pc,petsc_level,grid[k].b);CHKERRQ(ierr); 
-       ierr = MGSetR(pc,petsc_level,grid[k].r);CHKERRQ(ierr); 
-       ierr = MGSetResidual(pc,petsc_level,MGDefaultResidual,FineLevelMatrix); 
+       ierr = PCMGSetX(pc,petsc_level,grid[k].x);CHKERRQ(ierr); 
+       ierr = PCMGSetRhs(pc,petsc_level,grid[k].b);CHKERRQ(ierr); 
+       ierr = PCMGSetR(pc,petsc_level,grid[k].r);CHKERRQ(ierr); 
+       ierr = PCMGSetResidual(pc,petsc_level,PCMGDefaultResidual,FineLevelMatrix); 
               CHKERRQ(ierr);
    }
 
    /*....Create interpolation between the levels....*/   
    for (k=1;k<=levels-1;k++){
      petsc_level = levels - k; 
-     ierr = MGSetInterpolate(pc,petsc_level,grid[k].Interp);CHKERRQ(ierr);
-     ierr = MGSetRestriction(pc,petsc_level,grid[k].Interp);CHKERRQ(ierr);  
+     ierr = PCMGSetInterpolate(pc,petsc_level,grid[k].Interp);CHKERRQ(ierr);
+     ierr = PCMGSetRestriction(pc,petsc_level,grid[k].Interp);CHKERRQ(ierr);  
    }
 
    /*....Set coarse grid solver....*/ 
-   ierr = MGGetCoarseSolve(pc,&coarsegridksp);CHKERRQ(ierr); 
+   ierr = PCMGGetCoarseSolve(pc,&coarsegridksp);CHKERRQ(ierr); 
    ierr = KSPSetFromOptions(coarsegridksp);CHKERRQ(ierr);
    ierr = KSPSetOperators(coarsegridksp, grid[levels].A, grid[levels].A, 
                            DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);

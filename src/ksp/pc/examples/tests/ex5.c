@@ -68,10 +68,10 @@ int main(int Argc,char **Args)
   ierr = KSPGetPC(kspmg,&pcmg);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(kspmg);CHKERRQ(ierr);
   ierr = PCSetType(pcmg,PCMG);CHKERRQ(ierr);
-  ierr = MGSetLevels(pcmg,levels,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MGSetType(pcmg,am);CHKERRQ(ierr);
+  ierr = PCMGSetLevels(pcmg,levels,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCMGSetType(pcmg,am);CHKERRQ(ierr);
 
-  ierr = MGGetCoarseSolve(pcmg,&cksp);CHKERRQ(ierr);
+  ierr = PCMGGetCoarseSolve(pcmg,&cksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(cksp,cmat,cmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPGetPC(cksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
@@ -79,16 +79,16 @@ int main(int Argc,char **Args)
 
   /* zero is finest level */
   for (i=0; i<levels-1; i++) {
-    ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);CHKERRQ(ierr);
+    ierr = PCMGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);CHKERRQ(ierr);
     ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void*)0,&mat[i]);CHKERRQ(ierr);
     ierr = MatShellSetOperation(mat[i],MATOP_MULT,(void(*)(void))restrct);CHKERRQ(ierr);
     ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void(*)(void))interpolate);CHKERRQ(ierr);
-    ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
-    ierr = MGSetRestriction(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
-    ierr = MGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles);CHKERRQ(ierr);
+    ierr = PCMGSetInterpolate(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
+    ierr = PCMGSetRestriction(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
+    ierr = PCMGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles);CHKERRQ(ierr);
 
     /* set smoother */
-    ierr = MGGetSmoother(pcmg,levels - 1 - i,&ksp[i]);CHKERRQ(ierr);
+    ierr = PCMGGetSmoother(pcmg,levels - 1 - i,&ksp[i]);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp[i],&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
     ierr = PCShellSetName(pc,"user_precond");CHKERRQ(ierr);
@@ -113,24 +113,24 @@ int main(int Argc,char **Args)
     ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
     X[levels - 1 - i] = x;
     if (i > 0) {
-      ierr = MGSetX(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
+      ierr = PCMGSetX(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
     }
     ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
     B[levels -1 - i] = x;
     if (i > 0) {
-      ierr = MGSetRhs(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
+      ierr = PCMGSetRhs(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
     }
     ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
     R[levels - 1 - i] = x;
-    ierr = MGSetR(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
+    ierr = PCMGSetR(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
   } 
   /* create coarse level vectors */
   ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRQ(ierr);
-  ierr = MGSetX(pcmg,0,x);CHKERRQ(ierr); X[0] = x;
+  ierr = PCMGSetX(pcmg,0,x);CHKERRQ(ierr); X[0] = x;
   ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRQ(ierr);
-  ierr = MGSetRhs(pcmg,0,x);CHKERRQ(ierr); B[0] = x;
+  ierr = PCMGSetRhs(pcmg,0,x);CHKERRQ(ierr); B[0] = x;
   ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRQ(ierr);
-  ierr = MGSetR(pcmg,0,x);CHKERRQ(ierr); R[0] = x;
+  ierr = PCMGSetR(pcmg,0,x);CHKERRQ(ierr); R[0] = x;
 
   /* create matrix multiply for finest level */
   ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void*)0,&fmat);CHKERRQ(ierr);
@@ -141,8 +141,6 @@ int main(int Argc,char **Args)
   ierr = CalculateRhs(B[levels-1]);CHKERRQ(ierr);
   ierr = VecSet(&zero,X[levels-1]);CHKERRQ(ierr);
 
-  if (MGCheck(pcmg)) {SETERRQ(PETSC_ERR_PLIB, "MGCheck failed");}
-     
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);CHKERRQ(ierr);

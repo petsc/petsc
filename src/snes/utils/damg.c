@@ -331,24 +331,24 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
   for (i=0; i<nlevels; i++) {
     comms[i] = dmmg[i]->comm;
   }
-  ierr  = MGSetLevels(pc,nlevels,comms);CHKERRQ(ierr);
+  ierr  = PCMGSetLevels(pc,nlevels,comms);CHKERRQ(ierr);
   ierr  = PetscFree(comms);CHKERRQ(ierr); 
-  ierr =  MGSetType(pc,MGFULL);CHKERRQ(ierr);
+  ierr =  PCMGSetType(pc,MGFULL);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
 
     /* set solvers for each level */
     for (i=0; i<nlevels; i++) {
-      ierr = MGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
+      ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
       ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       if (i < nlevels-1) { /* don't set for finest level, they are set in PCApply_MG()*/
-	ierr = MGSetX(pc,i,dmmg[i]->x);CHKERRQ(ierr); 
-	ierr = MGSetRhs(pc,i,dmmg[i]->b);CHKERRQ(ierr); 
+	ierr = PCMGSetX(pc,i,dmmg[i]->x);CHKERRQ(ierr); 
+	ierr = PCMGSetRhs(pc,i,dmmg[i]->b);CHKERRQ(ierr); 
       }
       if (i > 0) {
-        ierr = MGSetR(pc,i,dmmg[i]->r);CHKERRQ(ierr); 
-        ierr = MGSetResidual(pc,i,MGDefaultResidual,dmmg[i]->J);CHKERRQ(ierr);
+        ierr = PCMGSetR(pc,i,dmmg[i]->r);CHKERRQ(ierr); 
+        ierr = PCMGSetResidual(pc,i,PCMGDefaultResidual,dmmg[i]->J);CHKERRQ(ierr);
       }
       if (monitor) {
         ierr = PetscObjectGetComm((PetscObject)lksp,&comm);CHKERRQ(ierr);
@@ -371,8 +371,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
 
     /* Set interpolation/restriction between levels */
     for (i=1; i<nlevels; i++) {
-      ierr = MGSetInterpolate(pc,i,dmmg[i]->R);CHKERRQ(ierr); 
-      ierr = MGSetRestriction(pc,i,dmmg[i]->R);CHKERRQ(ierr); 
+      ierr = PCMGSetInterpolate(pc,i,dmmg[i]->R);CHKERRQ(ierr); 
+      ierr = PCMGSetRestriction(pc,i,dmmg[i]->R);CHKERRQ(ierr); 
     }
   }
   PetscFunctionReturn(0);
@@ -564,7 +564,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cn
       ierr = KSPGetPC(dmmg[j]->ksp,&pc);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
       if (ismg) {
-        ierr = MGGetSmoother(pc,i,&iksp);CHKERRQ(ierr);
+        ierr = PCMGGetSmoother(pc,i,&iksp);CHKERRQ(ierr);
         ierr = KSPSetNullSpace(iksp, nullsp);CHKERRQ(ierr);
       }
     }
@@ -578,7 +578,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cn
     ierr = KSPGetPC(dmmg[i]->ksp,&pc);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
     if (ismg) {
-      ierr = MGGetSmoother(pc,0,&iksp);CHKERRQ(ierr);
+      ierr = PCMGGetSmoother(pc,0,&iksp);CHKERRQ(ierr);
       ierr = KSPGetPC(iksp,&ipc);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)ipc,PCREDUNDANT,&isred);CHKERRQ(ierr);
       if (isred) {

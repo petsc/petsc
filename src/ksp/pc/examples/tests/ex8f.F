@@ -1,5 +1,5 @@
 !
-!   Tests MGSetResidual
+!   Tests PCMGSetResidual
 !
 ! -----------------------------------------------------------------------
 
@@ -139,10 +139,10 @@
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCMG,ierr)
-      call MGSetLevels(pc,one,PETSC_NULL_INTEGER,ierr)
-      call MGSetResidual(pc,zero,MGDefaultResidual,A,ierr)
+      call PCMGSetLevels(pc,one,PETSC_NULL_INTEGER,ierr)
+      call PCMGSetResidual(pc,zero,PCMGDefaultResidual,A,ierr)
 
-      call MGSetResidual(pc,zero,MyResidual,A,ierr)
+      call PCMGSetResidual(pc,zero,MyResidual,A,ierr)
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
