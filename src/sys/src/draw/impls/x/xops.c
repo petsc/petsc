@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.112 1998/04/27 20:38:37 curfman Exp balay $";
+static char vcid[] = "$Id: xops.c,v 1.113 1998/06/04 21:16:50 balay Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -532,8 +532,8 @@ int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
 .  display - the X display on which to open, or null for the local machine
 .  title - the title to put in the title bar, or null for no title
 .  x, y - the screen coordinates of the upper left corner of window
-.         may use PETSC_DECIDE for these two arguments, then PETSc places the 
-.         window
+          may use PETSC_DECIDE for these two arguments, then PETSc places the 
+          window
 -  w, h - the screen width and height in pixels
 
    Output Parameters:
@@ -590,7 +590,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,Dr
   x = xywh[0]; y = xywh[1]; w = xywh[2]; h = xywh[3];
 
   if (!display) {
-    PetscGetDisplay(string,128);
+    ierr    = PetscGetDisplay(string,128);CHKERRQ(ierr);
     display = string;
   }
 
