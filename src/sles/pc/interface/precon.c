@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.165 1999/01/31 16:08:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.166 1999/01/31 21:16:17 curfman Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -1143,7 +1143,8 @@ int PCPostSolve(PC pc,KSP ksp)
 int PCView(PC pc,Viewer viewer)
 {
   PCType      cstr;
-  int         fmt, ierr, mat_exists;
+  int         fmt, ierr;
+  PetscTruth  mat_exists;
   ViewerType  vtype;
 
   PetscFunctionBegin;
@@ -1182,11 +1183,11 @@ int PCView(PC pc,Viewer viewer)
         if (mat_exists) {ierr = MatView(pc->pmat,viewer); CHKERRQ(ierr);}
         ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
-      ViewerPopFormat(viewer);
+      ierr = ViewerPopFormat(viewer);CHKERRQ(ierr);
     }
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
-    PCGetType(pc,&cstr);
-    ViewerStringSPrintf(viewer," %-7.7s",cstr);
+    ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
+    ierr = ViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
     if (pc->view) {ierr = (*pc->view)(pc,viewer);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);

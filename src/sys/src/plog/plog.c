@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.202 1999/02/03 18:39:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.203 1999/02/05 18:41:23 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -673,6 +673,8 @@ int PLogDefaultPHC(PetscObject obj)
 int PLogDefaultPHD(PetscObject obj)
 {
   PetscObject parent;
+  PetscTruth  exists;
+  int         ierr;
 
   PetscFunctionBegin;
   if (nevents >= eventsspace) {
@@ -694,8 +696,16 @@ int PLogDefaultPHD(PetscObject obj)
   events[nevents].flops   = _TotalFlops;
   PetscTrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
   events[nevents++].id3     = -1;
-  if (obj->parent) {objects[obj->id].parent   = obj->parent->id;}
-  else {objects[obj->id].parent   = -1;}
+  if (obj->parent) {
+    ierr = PetscObjectExists(parent,&exists); CHKERRQ(ierr);
+    if (exists) {
+      objects[obj->id].parent   = obj->parent->id;
+    } else {
+      objects[obj->id].parent   = -1;
+    }
+  } else {
+    objects[obj->id].parent   = -1;
+  }
   if (obj->name) { PetscStrncpy(objects[obj->id].name,obj->name,16);}
   objects[obj->id].obj      = 0;
   objects[obj->id].mem      = obj->mem;
@@ -706,8 +716,7 @@ int PLogDefaultPHD(PetscObject obj)
   */
   parent = obj->parent;
   while (parent) {
-    int exists;
-    PetscObjectExists(parent,&exists);
+    ierr = PetscObjectExists(parent,&exists);CHKERRQ(ierr);
     if (!exists) break;
     ObjectsType[EventsStage][parent->cookie - PETSC_COOKIE-1][3] += obj->mem;   
     parent = parent->parent;
