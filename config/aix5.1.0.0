@@ -1,5 +1,4 @@
 #! /bin/csh
-set CONFIGURE='yes'
 set TEST=buildexamples_
 #
 set day=`date | cut -f1 -d" "`

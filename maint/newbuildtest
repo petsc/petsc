@@ -32,8 +32,8 @@ set TEST='testexamples_'
 set MACH=`hostname`
 set BOPT=g
 # possibly overwrite the values above
-if (${#argv} >= 1 && -f ${nPETSC_DIR}/maint/buildtests/${ARCH}) then
-  source ${nPETSC_DIR}/maint/buildtests/${ARCH}
+if (${#argv} >= 1 && -f ${nPETSC_DIR}/config/${ARCH}) then
+  source ${nPETSC_DIR}/config/${ARCH}
 endif
 
 setenv PETSC_DIR $nPETSC_DIR

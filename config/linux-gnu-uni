@@ -1,5 +1,4 @@
 #! /bin/csh
-set CONFIGURE='yes'
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then

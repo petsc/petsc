@@ -1,12 +1,4 @@
 #! /bin/csh
-# $Id: buildtest,v 1.4 2001/09/07 18:59:02 bsmith Exp $ 
-#
-# Defines the configuration for maint/buildtest, this is sourced by that script
-#
-set TMP=/sandbox/petsc/petsc-test
-set MACH=ptera
-set CONFIGURE='yes'
-set TEST=testexamples_
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
