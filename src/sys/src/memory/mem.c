@@ -1,10 +1,11 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mem.c,v 1.6 1997/03/26 16:06:42 balay Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.7 1997/03/26 17:21:03 balay Exp balay $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
+#if !defined (PARCH_t3d)
 #include <sys/types.h>
 #include <sys/time.h>
 #if defined(HAVE_UNISTD_H)
@@ -18,6 +19,7 @@ extern int getrusage(int,struct rusage*);
 extern int getpagesize();
 #if defined(__cplusplus)
 }
+#endif
 #endif
 #if defined(PARCH_solaris)
 #include <sys/procfs.h>
