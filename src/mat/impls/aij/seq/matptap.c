@@ -117,7 +117,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   PetscFunctionBegin;
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
-  ierr = MatGetBrowsOfAoCols(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&prstart,&P_oth);CHKERRQ(ierr);
+  ierr = MatGetBrowsOfAocols(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&prstart,&P_oth);CHKERRQ(ierr);
   prend = prstart + m;
   /* get P_loc by taking all local rows of P */
   ierr = MatGetOwnershipRange(P,&low,PETSC_NULL);CHKERRQ(ierr); 
@@ -966,9 +966,9 @@ PetscErrorCode MatPtAPReducedPt_MPIAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscRe
   if (A->m != prend-prstart) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",A->m,prend-prstart);
   if (prend-prstart > P->m) SETERRQ2(PETSC_ERR_ARG_SIZ," prend-prstart %d cannot be larger than P->m %d",prend-prstart,P->m);
   if (!logkey_matptapreducedpt) {
-    ierr = PetscLogEventRegister(&logkey_matptapreducedpt,"MatPtAP_ReducedPt",MAT_COOKIE);
+    ierr = PetscLogEventRegister(&logkey_matptapreducedpt,"MatPtAP_ReducedPt",MAT_COOKIE);CHKERRQ(ierr);
   }
-  PetscLogEventBegin(logkey_matptapreducedpt,A,P,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(logkey_matptapreducedpt,A,P,0,0);CHKERRQ(ierr);
   
   if (scall == MAT_INITIAL_MATRIX){
     ierr = MatPtAPReducedPtSymbolic_MPIAIJ_SeqAIJ(A,P,fill,prstart,prend,C);CHKERRQ(ierr);
@@ -1002,9 +1002,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_Local(Mat A,Mat P_loc,Mat P_oth,Pets
 
   PetscFunctionBegin;
   if (!logkey_matptapnumeric_local) {
-    ierr = PetscLogEventRegister(&logkey_matptapnumeric_local,"MatPtAPNumeric_MPIAIJ_MPIAIJ_Local",MAT_COOKIE);
+    ierr = PetscLogEventRegister(&logkey_matptapnumeric_local,"MatPtAPNumeric_MPIAIJ_MPIAIJ_Local",MAT_COOKIE);CHKERRQ(ierr);
   }
-  PetscLogEventBegin(logkey_matptapnumeric_local,A,P_loc,P_oth,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(logkey_matptapnumeric_local,A,P_loc,P_oth,0);CHKERRQ(ierr);
 
   /* Allocate temporary array for storage of one row of A*P */
   ierr = PetscMalloc(cn*(sizeof(MatScalar)+2*sizeof(PetscInt)),&apa);CHKERRQ(ierr);
@@ -1093,7 +1093,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_Local(Mat A,Mat P_loc,Mat P_oth,Pets
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree(apa);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
-  PetscLogEventEnd(logkey_matptapnumeric_local,A,P_loc,P_oth,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(logkey_matptapnumeric_local,A,P_loc,P_oth,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 static PetscEvent logkey_matptapsymbolic_local = 0;
