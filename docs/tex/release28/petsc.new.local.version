@@ -1,8 +1,8 @@
-
 To: mcs@mcs.anl.gov
 cc: petsc-developers
 Subject: new local PETSc installation
 
+MCS PETSc users,
 
 We have installed a new local version of PETSc (version 2.0.28) in
 /home/petsc/petsc-2.0.28.  A list of new features and changes in PETSc
