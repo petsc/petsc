@@ -80,7 +80,7 @@ class Base (maker.Maker):
     if self.checkBootstrap():
       (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
       if scheme == 'bk':
-        path = os.path.join('/pub', 'petsc', self.getRepositoryPath(url)+'.tgz')
+        path = os.path.join('/pub', 'petsc', self.getRepositoryPath(url))
         return (1, urlparse.urlunparse(('ftp', 'ftp.mcs.anl.gov', path, parameters, query, fragment)))
     return (0, url)
 
