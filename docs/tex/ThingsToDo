@@ -1,25 +1,28 @@
 
 Additional Capabilities that PETSc Needs:
 
- - Fortran interface
+ o High priorities - should be done before the general release, June 20:
 
- - Automatic collection of information about the solution process
+   - Upgrade WWW pages, especially installation information.  Use MPICH 
+     format as a model.
 
- - More nonlinear solvers, including those for unconstrained minimization
+   - Upgrade tohtml and doc2tex
 
- - Finite difference approximations of derivatives using coloring
+   - More nonlinear solvers, including those for unconstrained minimization
 
- - ADIFOR interface
 
- - Fix tohtml and doc2tex to do a better job
+ o Lower Priority issues:
+
+   - Fortran interface
+
+   - Automatic collection of information about the solution process
+
+   - Finite difference approximations of derivatives using coloring
+
+   - ADIFOR interface
+
+
 ----------------------------------------------------------------------
-
-Changes that should be made to PETSc 
-  - massive changes that require access to all files or changes that 
-    break the structures
-
-----------------------------------------------------------------------
-
 
 Possible projects for summer students:
 
@@ -36,4 +39,11 @@ Possible projects for summer students:
  - Develop additional test problems:
     - Convert more MINPACK-2 example problems to the PETSc coding style
     - Consider CUTE test suite
+
+
+----------------------------------------------------------------------
+
+Changes that should be made to PETSc 
+  - massive changes that require access to all files or changes that 
+    break the structures
 
