@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.52 1996/09/28 17:33:53 curfman Exp curfman $";
+static char vcid[] = "$Id: adebug.c,v 1.53 1996/10/03 19:12:04 curfman Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -7,7 +7,6 @@ static char vcid[] = "$Id: adebug.c,v 1.52 1996/09/28 17:33:53 curfman Exp curfm
 
 #include <signal.h> 
 #include "petsc.h"               /*I   "petsc.h"   I*/
-#include <stdio.h>
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif 
@@ -82,7 +81,7 @@ int PetscAttachDebugger()
   }
 
   /* Swap role the parent and child. */
-#if !defined(PARCH_SOLARIS)
+#if !defined(PARCH_solaris)
   if (child) { child=0; }
   else {    child = getppid(); }
 #endif
