@@ -28,7 +28,7 @@ static int ADIntr_mode_max_depth = 10;
 
 #define ADINTR_STACK_GROWTH_INCREMENT 10
 
-enum ADIntr_Modes
+Mode
 adintr_current_mode ARG0(void)
 {
      return ADIntr_Mode;
@@ -45,7 +45,7 @@ ADIntr_die_malloc_failure ARG0(void)
 
 
 void
-adintr_mode_push ARG1(enum ADIntr_Modes, new_mode)
+adintr_mode_push ARG1(Mode, new_mode)
 {
      if (ADIntr_mode_stack == 0) 
      {

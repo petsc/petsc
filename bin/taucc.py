@@ -3,11 +3,28 @@
 
 # Usage:
 #  taucc -cc=gcc -pdt_parse=/../cxxparse -tau_instr=/.../tau_instrumentor COMPILE_OPTIONS
-#  
+#
+#  Options: 
+#           -cc         : C/C++ compiler
+#           -pdt_parse  : pdtoolkit parser for C++
+#           -tau_instr  : TAU instrumenter
+#           -v,-verbose : verbose mode - shows the exact commands invoked
+#           -leave_tmp  : do not delete temporary files
+#
+import commands
+import sys
+import os
+import string
+def runcmd(cmd,verbose):
+  if verbose == 'true':
+    print cmd
+  (status, output) = commands.getstatusoutput(cmd)
+  if status:
+    raise RuntimeError('Unable to run '+cmd+':\n'+output)
+  elif output:
+    print output
+
 def main():
-  import sys
-  import os
-  import commands
 
   sourcefiles=[]
   arglist=''
@@ -16,7 +33,8 @@ def main():
   cc='gcc'
   verbose='false'
   compile='false'
-
+  leave_tmp = 'false'
+  
   for arg in sys.argv[1:]:
     filename,ext = os.path.splitext(arg)
     argsplit =  arg.split('=')
@@ -34,7 +52,9 @@ def main():
       tau_instr = argsplit[1]
     elif arg == '-c':
         compile = 'true'
-    elif arg == '-v' or arg == '--verbose':
+    elif arg == '-leave_tmp':
+      leave_tmp = 'true'
+    elif arg == '-v' or arg == '-verbose':
         verbose  = 'true'
         arglist += ' '+arg        
     else:
@@ -58,18 +78,14 @@ def main():
     cmd2 += ' -c -rn PetscFunctionReturn -rv PetscFunctionReturnVoid\\(\\)'
     cmd3  = cc + ' -c ' + tau_file + ' -o ' + obj_file + arglist
 
-    if verbose == 'true':
-      print cmd1
-    os.system(cmd1)
-    if verbose == 'true':
-      print cmd2
-    os.system(cmd2)
-    if verbose == 'true':
-      print cmd3
-    os.system(cmd3)
-    os.remove(pdt_file)
-    os.remove(tau_file)
+    runcmd(cmd1,verbose)
+    runcmd(cmd2,verbose)
+    if leave_tmp =='false': os.remove(pdt_file)
+    runcmd(cmd3,verbose)
+    if leave_tmp =='false': os.remove(tau_file)
     
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
+  try:
     main()
-
+  except Exception, e:
+    sys.exit('ERROR: '+str(e))
