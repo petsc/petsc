@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.33 1999/11/24 21:54:06 bsmith Exp bsmith $*/
+/*$Id: mpicsr.c,v 1.34 2000/01/11 21:01:00 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -77,6 +77,7 @@ int MatDestroy_MPICSR(Mat mat)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d, NZ=%d",mat->m,mat->n,a->nz);
 #endif
   if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
+  if (a->values) {ierr = PetscFree(a->values);CHKERRQ(ierr);}
   ierr = PetscFree(a->i);CHKERRQ(ierr);
   ierr = PetscFree(a->j);CHKERRQ(ierr);
   ierr = PetscFree(a->rowners);CHKERRQ(ierr);
@@ -157,7 +158,8 @@ int MatGetOwnershipRange_MPICSR(Mat A,int *m,int *n)
 {
   Mat_MPICSR *a = (Mat_MPICSR*)A->data;
   PetscFunctionBegin;
-  *m = a->rstart; *n = a->rend;
+  if (m) *m = a->rstart;
+  if (n) *n = a->rend;
   PetscFunctionReturn(0);
 }
 
@@ -309,7 +311,7 @@ static struct _MatOps MatOps_Values = {0,
    Collective on MPI_Comm
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator
 .  m - number of local rows
 .  n - number of columns
 .  i - the indices into j for the start of each row
@@ -324,14 +326,14 @@ static struct _MatOps MatOps_Values = {0,
 
    Notes: This matrix object does not support most matrix operations, include
    MatSetValues().
-   You must NOT free the ii and jj arrays yourself. PETSc will free them
-   when the matrix is destroyed.
+   You must NOT free the ii, values and jj arrays yourself. PETSc will free them
+   when the matrix is destroyed. And you must allocate them with PetscMalloc()
 
    Possible values for MatSetOption() - MAT_STRUCTURALLY_SYMMETRIC
 
 .seealso: MatCreate(), MatCreateSeqAdj(), MatGetOrdering()
 @*/
-int MatCreateMPICSR(MPI_Comm comm,int m,int n,int *i,int *j,MatScalar *values,Mat *A)
+int MatCreateMPICSR(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
 {
   Mat        B;
   Mat_MPICSR *b;
@@ -375,6 +377,20 @@ int MatCreateMPICSR(MPI_Comm comm,int m,int n,int *i,int *j,MatScalar *values,Ma
   b->rstart = b->rowners[rank]; 
   b->rend   = b->rowners[rank+1]; 
 
+#if defined(PETSC_BOPT_g)
+  if (i[0] != 0) SETERR1(1,1,"First i[] index must be zero, instead it is %d\n",i[0]);
+  for (ii=1; ii<m; ii++) {
+    if (i[ii] < 0 || i[ii] > i[ii-1]) {
+      SETERRQ4(1,1,"i[%d] index is out of range: i[%d]",ii,i[ii],ii-1,i[ii-1]);
+    }
+  }
+  for (ii=0; ii<i[m]; ii++) {
+    if (i[ii] < 0 || i[ii] >= N) {
+      SETERRQ2(1,1,"Column index %d out of range %d\n",ii,i[ii]);
+    }
+  } 
+#endif
+
   b->j  = j;
   b->i  = i;
   b->values = values;
@@ -394,6 +410,55 @@ int MatCreateMPICSR(MPI_Comm comm,int m,int n,int *i,int *j,MatScalar *values,Ma
 
 
 
+#undef __FUNC__  
+#define __FUNC__ "MatConvert_MPICSR"
+int MatConvert_MPICSR(Mat A,MatType type,Mat *B)
+{
+  int      i,ierr,m,n,M,N,nzeros = 0,*ia,*ja,*rj,len,rstart,cnt,j,*a;
+  Scalar   *ra;
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  
+  /* count the number of nonzeros per row */
+  for (i=0; i<m; i++) {
+    ierr   = MatGetRow(A,i+rstart,&len,&rj,PETSC_NULL);CHKERRQ(ierr);
+    for (j=0; j<len; j++) {
+      if (rj[j] == i+rstart) {len--; break;}    /* don't count diagonal */
+    }
+    ierr   = MatRestoreRow(A,i+rstart,&len,&rj,PETSC_NULL);CHKERRQ(ierr);
+    nzeros += len;
+  }
+
+  /* malloc space for nonzeros */
+  a  = (int*)PetscMalloc((nzeros+1)*sizeof(int));CHKPTRQ(a);
+  ia = (int*)PetscMalloc((N+1)*sizeof(int));CHKPTRQ(ia);
+  ja = (int*)PetscMalloc((nzeros+1)*sizeof(int));CHKPTRQ(ja);
+
+  nzeros = 0;
+  ia[0]  = 0;
+  for (i=0; i<m; i++) {
+    ierr    = MatGetRow(A,i+rstart,&len,&rj,&ra);CHKERRQ(ierr);
+    cnt     = 0;
+    for (j=0; j<len; j++) {
+      if (rj[j] != i+rstart) { /* if not diagonal */
+        a[nzeros+cnt]    = (int) ra[j];
+        ja[nzeros+cnt++] = rj[j];
+      } 
+    }
+    ierr    = MatRestoreRow(A,i+rstart,&len,&rj,&ra);CHKERRQ(ierr);
+    nzeros += cnt;
+    ia[i+1] = nzeros; 
+  }
+
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MatCreateMPICSR(comm,m,N,ia,ja,a,B);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
 
 
 
