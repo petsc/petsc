@@ -1,4 +1,4 @@
-/*$Id: gs.c,v 1.3 2001/04/02 13:49:41 balay Exp balay $*/
+/*$Id: gs.c,v 1.4 2001/04/11 02:42:10 balay Exp balay $*/
 /***********************************gs.c***************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -21,17 +21,18 @@ File Description:
 
 ************************************gs.c**************************************/
 #include <stdio.h>
-#include "petsc.h"
+#include <strings.h>
+#include <math.h>
+#include <float.h>
+#include <limits.h>
+
+#include "petscconf.h"
 #if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
 #endif
 #if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif
-#include <math.h>
-#include <float.h>
-#include <limits.h>
-
 
 #if   defined NXSRC
 #ifndef DELTA
