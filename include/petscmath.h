@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.29 2001/08/10 18:39:08 bsmith Exp balay $ */
+/* $Id: petscmath.h,v 1.30 2001/08/10 18:50:00 balay Exp balay $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -168,11 +168,11 @@ extern  PetscScalar       PETSC_i;
 #if defined(PETSC_USE_SINGLE)
 #  define PETSC_MACHINE_EPSILON         1.e-7
 #  define PETSC_SQRT_MACHINE_EPSILON    3.e-4
-#  define PETSC_SMALL                   1.e-6
+#  define PETSC_SMALL                   1.e-5
 #else
 #  define PETSC_MACHINE_EPSILON         1.e-14
 #  define PETSC_SQRT_MACHINE_EPSILON    1.e-7
-#  define PETSC_SMALL                   1.e-12
+#  define PETSC_SMALL                   1.e-10
 #endif
 
 /* ----------------------------------------------------------------------------*/
