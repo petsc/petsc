@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.37 1996/05/19 15:54:17 curfman Exp balay $";
+static char vcid[] = "$Id: da1.c,v 1.38 1996/05/30 16:17:19 balay Exp balay $";
 #endif
 
 /* 
@@ -141,7 +141,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   if (flg) { /* Block Comm type Distribution */
     x = (M + rank)/m;
     
-    if (M/m==x) { xs = rank*x; }
+    if (M/m == x) { xs = rank*x; }
     else { xs = rank*(x-1) + (M+rank)%(x*m); }
   }
   else { /* Regular PETSc Distribution */
