@@ -95,6 +95,7 @@ struct _MatOps {
             (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*),
             (*setfromoptions)(Mat),
             (*multconstrained)(Mat,Vec,Vec),
+            (*multtransposeconstrained)(Mat,Vec,Vec),
 /*80*/      (*ilufactorsymbolicconstrained)(Mat,IS,IS,double,int,int,Mat *),
             (*serialize)(MPI_Comm, Mat *, PetscViewer, PetscTruth),
             (*permutesparsify)(Mat, int, double, double, IS, IS, Mat *),

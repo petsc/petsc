@@ -209,6 +209,7 @@ EXTERN int MatMultAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatMultTranspose(Mat,Vec,Vec);
 EXTERN int MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatMultConstrained(Mat,Vec,Vec);
+EXTERN int MatMultTransposeConstrained(Mat,Vec,Vec);
 
 /*E
     MatDuplicateOption - Indicates if a duplicated sparse matrix should have
@@ -763,6 +764,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_FD_COLORING_APPLY=77,
                MATOP_SET_FROM_OPTIONS=78,
                MATOP_MULT_CONSTRAINED=79,
+               MATOP_MULT_TRANSPOSE_CONSTRAINED=80,
                MATOP_ILU_FACTOR_SYMBOLIC_CONSTRAINED=80,
                MATOP_SERIALIZE=81,
                MATOP_PERMUTE_SPARSIFY=82,

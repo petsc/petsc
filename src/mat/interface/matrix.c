@@ -1094,9 +1094,11 @@ int MatMult(Mat mat,Vec x,Vec y)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (x == y) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"x and y must be different vectors");
+#if 0
   if (mat->N != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %d %d",mat->N,x->N); 
   if (mat->M != y->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %d %d",mat->M,y->N); 
   if (mat->m != y->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: local dim %d %d",mat->m,y->n); 
+#endif
 
   if (mat->nullsp) {
     ierr = MatNullSpaceRemove(mat->nullsp,x,&x);CHKERRQ(ierr);
@@ -1150,9 +1152,11 @@ int MatMultTranspose(Mat mat,Vec x,Vec y)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (x == y) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"x and y must be different vectors");
+#if 0
   if (mat->M != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %d %d",mat->M,x->N); 
   if (mat->N != y->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %d %d",mat->N,y->N);
- 
+#endif
+
   ierr = PetscLogEventBegin(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
@@ -1300,6 +1304,50 @@ int MatMultConstrained(Mat mat,Vec x,Vec y)
 
   MatLogEventBegin(MAT_MultConstrained,mat,x,y,0);
   ierr = (*mat->ops->multconstrained)(mat,x,y); CHKERRQ(ierr);
+  MatLogEventEnd(MAT_MultConstrained,mat,x,y,0);
+
+  PetscFunctionReturn(0);
+}   
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultConstrained"
+/*@
+   MatMultConstrained - The inner multiplication routine for a
+   constrained matrix P^T A^T P.
+
+   Collective on Mat and Vec
+
+   Input Parameters:
++  mat - the matrix
+-  x   - the vector to be multilplied
+
+   Output Parameters:
+.  y - the result
+
+   Notes:
+   The vectors x and y cannot be the same.  I.e., one cannot
+   call MatMult(A,y,y).
+
+   Level: beginner
+
+.keywords: matrix, multiply, matrix-vector product, constraint
+.seealso: MatMult(), MatMultTrans(), MatMultAdd(), MatMultTransAdd()
+@*/
+int MatMultTransposeConstrained(Mat mat,Vec x,Vec y)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);PetscValidHeaderSpecific(y,VEC_COOKIE); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (x == y) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"x and y must be different vectors");
+  if (mat->M != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %d %d",mat->N,x->N); 
+  if (mat->N != y->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %d %d",mat->M,y->N); 
+
+  MatLogEventBegin(MAT_MultConstrained,mat,x,y,0);
+  ierr = (*mat->ops->multtransposeconstrained)(mat,x,y); CHKERRQ(ierr);
   MatLogEventEnd(MAT_MultConstrained,mat,x,y,0);
 
   PetscFunctionReturn(0);
