@@ -240,7 +240,7 @@ EXTERN int KSPSetNormType(KSP,KSPNormType);
      src/ksp/ksp/interface/itfunc.c called convergedreasons.
      If these enums are changed you much change those.
 
-.seealso: KSPSolve(), KSPSolve(), KSPGetConvergedReason()
+.seealso: KSPSolve(), KSPGetConvergedReason()
 E*/
 typedef enum {/* converged */
               KSP_CONVERGED_RTOL               =  2,
