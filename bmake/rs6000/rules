@@ -60,6 +60,7 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 	-$(RM) $*.f __$*.c
 	-cp $*.F __$*.c
 	-$(CC) $(CFLAGS) -E  __$*.c | grep -v '^ *#' > $*.f
+	-$(RM) __$*.c
 
 .F.o:
 	-$(RM) $*.f __$*.c
