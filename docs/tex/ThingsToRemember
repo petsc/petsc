@@ -48,6 +48,17 @@ PETScView info:
 
 ------------Accounts (around the world and around the block) -----
 
+LLNL: unsecure
+
+   IBM SP2: blue.llnl.gov
+   DEC alpha cluster east.llnl.gov (named after points on the compass)
+
+   Userid: bsmith
+   Password: in Barry's office
+
+   
+---------
+
 MCS:
 1. mcs network 
     Solaris machines: caffeine,tiamat,dew
@@ -113,6 +124,7 @@ performance analysis tool (pat): use "man pat" for info
 scratch space: /usr/tmp/[bsmith]  or $TMPDIR or $BIG
 
 ---------------
+GONE!
 LLNL Cray T3D
 Machine : h4p.llnl.gov
 login:   bsmith
