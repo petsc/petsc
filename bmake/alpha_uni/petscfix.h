@@ -39,10 +39,6 @@ extern void   *memalign(int,int);
 extern int    gettimeofday(struct timeval *,struct timezone *);
 extern int    getpagesize();
 /*
-extern int    strcasecmp(const char *,const char *);
-extern void   exit(int);
-*/
-/*
    On some machines with older versions of the gnu compiler and 
    system libraries these prototypes may be needed; they are now
    prototyped in the GNU version of stdlib.h
@@ -54,10 +50,8 @@ extern void   exit(int);
    extern void   perror(const char *);
    extern double atof(const char *);
    extern void    free(void *);
-*/
-/*
-   In g++ 2.7.2 abort went from not existing to being a built in function
-   Gotta love Gnu! Older versions of g++ may need the following line
+   extern int    strcasecmp(const char *,const char *);
+   extern void   exit(int);
    extern int    abort(); 
 */
 }
