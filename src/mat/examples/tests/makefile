@@ -228,7 +228,9 @@ ex48: ex48.o chkopts
 ex50: ex50.o chkopts
 	-$(CLINKER) -o ex50 ex50.o $(PETSC_LIB)
 	$(RM) ex50.o
-
+ex51: ex51.o chkopts
+	-$(CLINKER) -o ex51 ex51.o $(PETSC_LIB)
+	$(RM) ex51.o
 NPROCS    = 1 3
 MATTYPES  = -mat_aij -mat_dense -mat_bdiag
 MATSHAPES = A B
@@ -381,23 +383,24 @@ runex39:
 	   else echo "Possible problem with ex39_1, diffs above"; fi; \
 	   $(RM) -f ex39_1.tmp
 runex40:
-	-@$(MPIRUN) -np 3 ex40 -f matrices/arco1 -nd 7 -ov 2 | \
-	   sort -n > ex40_1.tmp 2>&1; \
-	   if (diff output/ex40_1.out ex40_1.tmp) then true; \
+	-@$(MPIRUN) -np 3 ex40 -f matrices/arco1 -nd 7 -ov 2 > ex40_1.tmp 2>&1; \
+	   grep -v "flg =1" ex40_1.tmp > ex40_12.tmp; \
+	   if (diff /dev/null ex40_12.tmp) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
-	   $(RM) -f ex40_1.tmp
+	   $(RM) -f ex40_1.tmp ex40_12.tmp
 runex41:
-	-@$(MPIRUN) -np 3 ex41 -f matrices/arco1 -nd 3 -ov 1 | \
-	   sort -n > ex41_1.tmp 2>&1; \
-	   if (diff output/ex41_1.out ex41_1.tmp) then true; \
+	-@$(MPIRUN) -np 3 ex41 -f matrices/arco1 -nd 3 -ov 1 > ex41_1.tmp 2>&1; 
+	   grep -v "flg =1" ex41_1.tmp > ex41_12.tmp; \
+	   if (diff /dev/null ex41_12.tmp) then true; \
 	   else echo "Possible problem with ex41_1, diffs above"; fi; \
-	   $(RM) -f ex41_1.tmp
+	   $(RM) -f ex41_1.tmp ex41_12.tmp
 runex42:
 	-@$(MPIRUN) -np 3 ex42 -f matrices/arco1 -mat_aij_oneindex  \
-	   -nd 5 -ov 2 | sort -n > ex42_1.tmp 2>&1; \
-	   if (diff output/ex42_1.out ex42_1.tmp) then true; \
+	   -nd 5 -ov 2  > ex42_1.tmp 2>&1; \
+	   grep -v "flg =1" ex42_1.tmp > ex42_12.tmp; \
+	   if (diff /dev/null ex42_12.tmp) then true; \
 	   else echo "Possible problem with ex42_1, diffs above"; fi; \
-	   $(RM) -f ex42_1.tmp
+	   $(RM) -f ex42_1.tmp ex42_12.tmp
 runex42_2:
 	-@$(MPIRUN)  ex42 -f matrices/arco1 -mat_aij_oneindex  \
 	   -nd 5 -ov 2 | sort -n > ex42_2.tmp 2>&1; \
@@ -415,20 +418,21 @@ runex47:
 	   else echo "Possible problem with ex47_1, diffs above"; fi; \
 	   $(RM) -f ex47_1.tmp
 runex48:
-	-@$(MPIRUN)  ex48 -mat_block_size 1  > ex48_1.tmp 2>&1
-	-@$(MPIRUN)  ex48 -mat_block_size 3  >> ex48_1.tmp 2>&1
-	-@$(MPIRUN)  ex48 -mat_block_size 4  >> ex48_1.tmp 2>&1; \
-	   if (diff /dev/null ex48_1.tmp) then true; \
-	   else echo "Possible problem with ex48_1, diffs above"; fi; \
-	   $(RM) -f ex48_1.tmp
+	-@$(MPIRUN)  ex48 -mat_block_size 1  > ex48_1.tmp 2>&1; \
+	  $(MPIRUN)  ex48 -mat_block_size 3  >> ex48_1.tmp 2>&1; \
+	  $(MPIRUN)  ex48 -mat_block_size 4  >> ex48_1.tmp 2>&1; \
+	  if (diff /dev/null ex48_1.tmp) then true; \
+	  else echo "Possible problem with ex48_1, diffs above"; fi; \
+	  $(RM) -f ex48_1.tmp
 runex51:
 	-@$(MPIRUN)  ex51 -mat_block_size 1 -ov 1  > ex51_1.tmp 2>&1; \
-	-@$(MPIRUN)  ex51 -mat_block_size 2 -ov 2 >> ex51_1.tmp 2>&1; \
-	-@$(MPIRUN)  ex51 -mat_block_size 3 -ov 2 >> ex51_1.tmp 2>&1; \
-	-@$(MPIRUN)  ex51 -mat_block_size 5 -ov 3 >> ex51_1.tmp 2>&1; \
-	   if (diff output/ex51_1.out ex51_1.tmp) then true; \
-	   else echo "Possible problem with ex51_1, diffs above"; fi; \
-	   $(RM) -f ex51_1.tmp
+	  $(MPIRUN)  ex51 -mat_block_size 2 -ov 2 >> ex51_1.tmp 2>&1; \
+	  $(MPIRUN)  ex51 -mat_block_size 3 -ov 2 >> ex51_1.tmp 2>&1; \
+	  $(MPIRUN)  ex51 -mat_block_size 5 -ov 3 >> ex51_1.tmp 2>&1; \
+	  grep -v "flg =1" ex51_1.tmp > ex51_12.tmp; \
+	  if (diff /dev/null  ex51_12.tmp) then true; \
+	  else echo "Possible problem with ex51_1, diffs above"; fi; \
+	  $(RM) -f ex51_1.tmp ex51_12.tmp
 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
