@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.169 1999/03/18 01:01:06 balay Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.170 1999/03/18 02:00:28 balay Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -2152,8 +2152,7 @@ int VecLoadIntoVector(Viewer viewer,Vec vec)
 @*/
 int VecReciprocal(Vec vec)
 {
-  int    i,n,ierr;
-  Scalar *x;
+  int    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
