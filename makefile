@@ -61,11 +61,7 @@ configure_petsc: start_configure configure Makefile.in
 	@./configure $(CONFIGURE_OPTIONS) >> $(CONFIGURE_LOG_FILE)
 
 $(CONFIGURE_LOG_FILE): $(CONFIGURE_OPTIONS_FILE)
-	if test -f "${PETSC_DIR}/configure.in"; then \
-          $(MAKE) configure_petsc; \
-        else \
-          touch $(CONFIGURE_LOG_FILE); \
-        fi
+	$(MAKE) configure_petsc
 
 configure_clean:
 	-@$(RM) aclocal.m4
@@ -75,8 +71,9 @@ configure_clean:
 #
 # Basic targets to build PETSc libraries.
 # all     : builds the c, fortran, and f90 libraries
-all       : $(CONFIGURE_LOG_FILE) chk_petsc_dir info info_h chklib_dir deletelibs build shared
+all       : $(CONFIGURE_LOG_FILE) nall
 all_lt    : $(CONFIGURE_LOG_FILE) chk_petsc_dir info info_h chklib_dir deletelibs build_lt shared
+nall      : chk_petsc_dir info info_h chklib_dir deletelibs build shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
