@@ -1,4 +1,4 @@
-# $Id: base,v 1.6 1998/04/13 16:20:43 bsmith Exp balay $ 
+# $Id: base,v 1.7 1998/04/22 16:20:27 balay Exp balay $ 
 
 PARCH    = solaris
 #
@@ -33,27 +33,28 @@ libf: ${LIBNAME}(${OBJSF})
 #############
 
 #.F.o: 
-#	-${FC} -c ${FFLAGS} ${CFLAGS} ${FOPTFLAGS} $*.F
+#	${FC} -c ${FFLAGS} ${CFLAGS} ${FOPTFLAGS} $*.F
 #.F.a: 
-#	-${FC} -c ${FFLAGS} ${CFLAGS} ${FOPTFLAGS} $*.F
-#	-${AR} cr ${LIBNAME} $*.o
-#	-${RM} $*.o
+#	${FC} -c ${FFLAGS} ${CFLAGS} ${FOPTFLAGS} $*.F
+#	${AR} cr ${LIBNAME} $*.o
+#	${RM} $*.o
 .F.f:
-	-${RM} $*.f
-	-/usr/ucb/cc -E  ${CFLAGS} $*.F > $*.f
+	-${RM} __$*.f
+	-/usr/ucb/cc -E  ${CFLAGS} $*.F  > __$*.f
 
 .F.o:
-	-${RM} $*.f
-	-/usr/ucb/cc -E  ${CFLAGS} $*.F > $*.f
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
-	-${RM} $*.f 
+	-${RM} __$*.f
+	-/usr/ucb/cc -E  ${CFLAGS} $*.F  > __$*.f
+	-${FC} -c ${FFLAGS} ${FOPTFLAGS} __$*.f -o $*.o
+	-${RM} __$*.f 
+
 
 .F.a:
-	-${RM} $*.f 
-	-/usr/ucb/cc -E  ${CFLAGS} $*.F > $*.f
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+	-${RM} __$*.f
+	-/usr/ucb/cc -E  ${CFLAGS} $*.F > __$*.f
+	-${FC} -c ${FFLAGS} ${FOPTFLAGS} __$*.f $*.o
 	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.f $*.o
+	-${RM} __$*.f $*.o
 
 
 shared: chkopts_basic
