@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.212 2000/08/01 20:01:33 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.213 2000/08/14 20:33:01 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1144,8 +1144,12 @@ int VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Mapping already set for vector");
   }
 
-  x->mapping = mapping;
-  ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
+  if (x->ops->setlocaltoglobalmapping) {
+    ierr = (*x->ops->setlocaltoglobalmapping)(x,mapping);CHKERRQ(ierr);
+  } else {
+    x->mapping = mapping;
+    ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1232,12 +1236,12 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
   PetscValidIntPointer(ix);
   PetscValidScalarPointer(y);
   PetscValidType(x);
-  if (!x->mapping) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with VecSetLocalToGlobalMapping()");
-  }
 
   PLogEventBegin(VEC_SetValues,x,0,0,0);
   if (!x->ops->setvalueslocal) {
+    if (!x->mapping) {
+      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with VecSetLocalToGlobalMapping()");
+    }
     if (ni > 128) {
       lix = (int*)PetscMalloc(ni*sizeof(int));CHKPTRQ(lix);
     }
