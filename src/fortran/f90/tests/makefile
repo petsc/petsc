@@ -32,6 +32,6 @@ runex1f90:
 	   else echo "Possible problem with ex1f90_1, diffs above"; fi; \
 	   ${RM} -f ex1f90_1.tmp
 
-TESTEXAMPLES_12 = ex1f90.PETSc runex1f90 ex1f90.rm
+TESTEXAMPLES_F90 = ex1f90.PETSc runex1f90 ex1f90.rm
 
 include ${PETSC_DIR}/bmake/common/test

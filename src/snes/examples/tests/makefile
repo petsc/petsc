@@ -239,13 +239,13 @@ runex14_3:
 #  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
 # they require too many processors
 #
-TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm
-TESTEXAMPLES_2  = ex7.PETSc runex7 ex7.rm ex9.PETSc \
+TESTEXAMPLES_C  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm
+TESTEXAMPLES_C_X11  = ex7.PETSc runex7 ex7.rm ex9.PETSc \
 		  runex9 ex9.rm ex13.PETSc ex13.rm
-TESTEXAMPLES_3  = ex12f.PETSc runex12f ex12f.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
-TESTEXAMPLES_4  = ex7.PETSc ex7.rm ex9.PETSc ex9.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 
-TESTEXAMPLES_8  = 
-TESTEXAMPLES_9  = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_FORTRAN  = ex12f.PETSc runex12f ex12f.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
+TESTEXAMPLES_C_X11_MPIUNI  = ex7.PETSc ex7.rm ex9.PETSc ex9.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 
+TESTEXAMPLES_FORTRAN_NOCOMPLEX  = 
+TESTEXAMPLES_FORTRAN_MPIUNI  = ex1f.PETSc runex1f ex1f.rm
 
 
 include ${PETSC_DIR}/bmake/common/test

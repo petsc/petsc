@@ -93,14 +93,14 @@ runex10:
 	   else echo "Error in PetscMemmove."; fi; \
 	   ${RM} -f ex10_1.tmp ex10_1.tmp
 
-TESTEXAMPLES_1  = 
-TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
+TESTEXAMPLES_C  = 
+TESTEXAMPLES_C_X11  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex3.PETSc runex3 ex3.rm 
-TESTEXAMPLES_3  = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.F ex17f.rm
-TESTEXAMPLES_8  = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_10 = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_9  = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm
-TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm
+TESTEXAMPLES_FORTRAN  = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.F ex17f.rm
+TESTEXAMPLES_FORTRAN_NOCOMPLEX  = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_FORTRAN_COMPLEX = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_FORTRAN_MPIUNI  = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm
+TESTEXAMPLES_C_X11_MPIUNI  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm
 TESTEXAMPLES_13 = ex9.PETSc ex9.rm ex10.PETSc ex10.rm \
 		  ex11.PETSc ex11.rm ex12.PETSc ex12.rm ex14.PETSc ex14.rm
 

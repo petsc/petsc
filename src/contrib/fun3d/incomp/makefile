@@ -46,7 +46,7 @@ runflow4:
 runflow64:
 	-@${MPIRUN} -np 64 ./flow -options_file 1Grid/petsc.opt -mesh 1Grid/uns3d.msh -partition 1Grid/Pmetis/part_vec.part.64 
 
-TESTEXAMPLES_8	 = flow.PETSc runflow1 runflow4 flow.rm
+TESTEXAMPLES_FORTRAN_NOCOMPLEX	 = flow.PETSc runflow1 runflow4 flow.rm
 
 DATAFILESPATH    = /homes/kaushik/FUN3DGrids/BigSample
 

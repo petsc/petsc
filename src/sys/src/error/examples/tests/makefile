@@ -22,6 +22,6 @@ runex1:
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 
-#TESTEXAMPLES_1 = ex1.PETSc runex1 ex1.rm
+#TESTEXAMPLES_C = ex1.PETSc runex1 ex1.rm
 
 include ${PETSC_DIR}/bmake/common/test

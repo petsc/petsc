@@ -313,7 +313,7 @@ seealso: VecDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecDotBegin(Vec x,Vec y,PetscScalar *result) 
 {
-  PetscErrorCode ierr;
+  PetscErrorCode      ierr;
   PetscSplitReduction *sr;
   MPI_Comm            comm;
 
@@ -356,7 +356,7 @@ seealso: VecDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMD
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecDotEnd(Vec x,Vec y,PetscScalar *result) 
 {
-  PetscErrorCode ierr;
+  PetscErrorCode      ierr;
   PetscSplitReduction *sr;
   MPI_Comm            comm;
 
@@ -412,7 +412,7 @@ seealso: VecTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDo
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecTDotBegin(Vec x,Vec y,PetscScalar *result) 
 {
-  PetscErrorCode ierr;
+  PetscErrorCode      ierr;
   PetscSplitReduction *sr;
   MPI_Comm            comm;
 
@@ -486,7 +486,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecTDotEnd(Vec x,Vec y,PetscScalar *result)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecNormBegin(Vec x,NormType ntype,PetscReal *result) 
 {
-  PetscErrorCode ierr;
+  PetscErrorCode      ierr;
   PetscSplitReduction *sr;
   PetscReal           lresult[2];
   MPI_Comm            comm;

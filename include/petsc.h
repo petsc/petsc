@@ -109,17 +109,71 @@ typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif  
 
-/*
-    Allows defining simple C++ polymorphic functions that remove certain
-   optional arguments for a simplier user interface. Also allows returning
-   an out argument instead of returning the error code. Eventually we should
-   check the error code and generate an exception.
-*/
 #if !defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
+/*@M
+      PetscPolymorphicSubroutine - allows defining a C++ polymorphic version of 
+            a PETSc function that remove certain optional arguments for a simplier user interface
+
+     Not collective
+
+   Synopsis:
+   PetscPolymorphicSubroutine(Functionname,(arguments of C++ function),(arguments of C function))
+ 
+   Level: developer
+
+    Example:
+      PetscPolymorphicSubroutine(VecNorm,(Vec x,PetscReal *r),(x,NORM_2,r)) generates the new routine
+           PetscErrorCode VecNorm(Vec x,PetscReal *r) = VecNorm(x,NORM_2,r)
+
+.seealso: PetscPolymorphicFunction()
+
+@*/
 #define PetscPolymorphicSubroutine(A,B,C) PETSC_STATIC_INLINE PetscErrorCode A B {return A C;}
+
+/*@M
+      PetscPolymorphicScalar- allows defining a C++ polymorphic version of 
+            a PETSc function that replaces a PetscScalar * argument with a PetscScalar argument
+
+     Not collective
+
+   Synopsis:
+   PetscPolymorphicScalar(Functionname,(arguments of C++ function),(arguments of C function))
+ 
+   Level: developer
+
+    Example:
+      PetscPolymorphicScalar(VecAXPY,(PetscScalar _t,Vec x,Vec y),(&_T,x,y)) generates the new routine
+           PetscErrorCode VecAXPY(PetscScalar _t,Vec x,Vec y) = {PetscScalar _T = _t; return VecAXPY(&_T,x,y);}
+
+.seealso: PetscPolymorphicFunction(),PetscPolymorphicSubroutine()
+
+@*/
+#define PetscPolymorphicScalar(A,B,C) PETSC_STATIC_INLINE PetscErrorCode A B {PetscScalar _T = _t; return A C;}
+
+/*@M
+      PetscPolymorphicFunction - allows defining a C++ polymorphic version of 
+            a PETSc function that remove certain optional arguments for a simplier user interface
+            and returns the computed value (istead of an error code)
+
+     Not collective
+
+   Synopsis:
+   PetscPolymorphicFunction(Functionname,(arguments of C++ function),(arguments of C function),return type,return variable name)
+ 
+   Level: developer
+
+    Example:
+      PetscPolymorphicFunction(VecNorm,(Vec x,NormType t),(x,t,&r),PetscReal,r) generates the new routine
+         PetscReal VecNorm(Vec x,NormType t) = {PetscReal r; VecNorm(x,t,&r); return r;}
+
+.seealso: PetscPolymorphicSubroutine()
+
+@*/
 #define PetscPolymorphicFunction(A,B,C,D,E) PETSC_STATIC_INLINE D A B {D E; A C;return E;}
+
 #else
 #define PetscPolymorphicSubroutine(A,B,C)
+#define PetscPolymorphicScalar(A,B,C)
 #define PetscPolymorphicFunction(A,B,C,D,E)
 #endif
 

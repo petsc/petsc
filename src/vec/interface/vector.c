@@ -2183,7 +2183,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(PetscInt nv,Vec x,const Vec y[],PetscS
 
 .seealso: VecAXPY(), VecWAXPY(), VecAYPX()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(PetscInt nv,const PetscScalar *alpha,Vec y,Vec *x)
+PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(PetscInt nv,const PetscScalar alpha[],Vec y,Vec *x)
 {
   PetscErrorCode ierr;
 

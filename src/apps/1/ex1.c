@@ -8,7 +8,6 @@ static char help[] ="Solves a simple linear PDE on an unstructured grid\n";
 
 #include "ao.h"
 #include "mat.h"
-#include "sles.h"
 
 /*
         cell_n        - number of cells on this processor 

@@ -12,7 +12,7 @@ class Configure(config.base.Configure):
     self.argDB        = framework.argDB
     self.found        = 0
     self.compilers    = self.framework.require('config.compilers', self)
-    self.setcompilers = self.framework.require('config.setCompilers', self)    
+    self.setCompilers = self.framework.require('config.setCompilers', self)    
     self.libraries    = self.framework.require('config.libraries', self)
     self.arch         = self.framework.require('PETSc.utilities.arch', self)
     self.programs     = self.framework.require('PETSc.utilities.programs', self)
@@ -281,9 +281,9 @@ class Configure(config.base.Configure):
         cc = self.framework.argDB['CC']
         line = 'CC = '+cc+'\n'
       if line.startswith('COPTFLAGS '):
-        self.setcompilers.pushLanguage('C')
-        line = 'COPTFLAGS  = '+self.setcompilers.getCompilerFlags()+'\n'
-        self.setcompilers.popLanguage()
+        self.setCompilers.pushLanguage('C')
+        line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()+'\n'
+        self.setCompilers.popLanguage()
       if line.startswith('FC  '):
         fc = self.framework.argDB['FC']
         if fc.find('f90') >= 0:
@@ -294,17 +294,17 @@ class Configure(config.base.Configure):
             self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling BLAS/LAPACK\n')
         line = 'FC = '+fc+'\n'
       if line.startswith('FOPTFLAGS '):
-        self.setcompilers.pushLanguage('FC')
-        line = 'FOPTFLAGS  = '+self.setcompilers.getCompilerFlags()+'\n'
-        self.setcompilers.popLanguage()       
+        self.setCompilers.pushLanguage('FC')
+        line = 'FOPTFLAGS  = '+self.setCompilers.getCompilerFlags()+'\n'
+        self.setCompilers.popLanguage()       
       if line.startswith('AR  '):
-        line = 'AR      = '+self.setcompilers.AR+'\n'
+        line = 'AR      = '+self.setCompilers.AR+'\n'
       if line.startswith('AR_FLAGS  '):
-        line = 'AR_FLAGS      = '+self.setcompilers.AR_FLAGS+'\n'
+        line = 'AR_FLAGS      = '+self.setCompilers.AR_FLAGS+'\n'
       if line.startswith('LIB_SUFFIX '):
         line = 'LIB_SUFFIX = '+self.libraries.suffix+'\n'
       if line.startswith('RANLIB  '):
-        line = 'RANLIB = '+self.setcompilers.RANLIB+'\n'
+        line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
       if line.startswith('RM  '):
         line = 'RM = '+self.programs.RM+'\n'
 

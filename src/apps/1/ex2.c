@@ -74,7 +74,6 @@ int AppCtxSolve(AppCtx* appctx)
   VecScatter             gtol;
   IS                     vertex_global = grid->vertex_global;
   Mat                    A;
-  SLES                   sles;
 
   PetscFunctionBegin;
 

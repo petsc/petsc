@@ -14,15 +14,18 @@ class Configure(PETSc.package.Package):
     self.download_mpich = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpich2.tar.gz']
     self.functions      = ['MPI_Init','MPI_Comm_create']
     self.includes       = ['mpi.h']
-    self.liblist        = [[''],\
-                           ['liblammpi++.a','libmpi.a','liblam.a'],\
-                           ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],\
-                           ['libmpi.a','libmpi++.a'],['libmpi.a'],\
-                           ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],\
-                           ['liblammpio.a','libpmpi.a','liblamf77mpi.a','libmpi.a','liblam.a'],\
-                           ['liblammpio.a','libpmpi.a','liblamf90mpi.a','libmpi.a','liblam.a'],\
-                           ['liblammpio.a','libpmpi.a','libmpi.a','liblam.a'],\
-                           ['liblammpi++.a','libmpi.a','liblam.a'],\
+    self.liblist        = [[],
+                           ['liblammpi++.a','libmpi.a','liblam.a'],
+                           ['libmpich.a'],
+                           ['libmpich.a', 'libpmpich.a'],
+                           ['libfmpich.a','libmpich.a', 'libpmpich.a'],
+                           ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
+                           ['libmpi.a','libmpi++.a'],['libmpi.a'],
+                           ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
+                           ['liblammpio.a','libpmpi.a','liblamf77mpi.a','libmpi.a','liblam.a'],
+                           ['liblammpio.a','libpmpi.a','liblamf90mpi.a','libmpi.a','liblam.a'],
+                           ['liblammpio.a','libpmpi.a','libmpi.a','liblam.a'],
+                           ['liblammpi++.a','libmpi.a','liblam.a'],
                            ['libmpi.a','liblam.a']]
     # defaults to --with-mpi=yes
     self.required       = 1
@@ -43,6 +46,7 @@ class Configure(PETSc.package.Package):
   
   # search many obscure locations for MPI
   def getSearchDirectories(self):
+    import re
     yield ''
     # Try configure package directories
     dirExp = re.compile(r'mpi(ch)?(-.*)?')
@@ -86,6 +90,7 @@ class Configure(PETSc.package.Package):
     yield(os.path.join('c:','Program\\ Files','MPICH'))
     yield(os.path.join('c:','Program\\ Files','MPICH','SDK'))
     yield(os.path.join('c:','Program\\ Files','MPICH','SDK.gcc'))
+    return
 
   def checkSharedLibrary(self):
     '''Check that the libraries for MPI are shared libraries'''
@@ -197,16 +202,21 @@ class Configure(PETSc.package.Package):
     installDir = os.path.join(lamDir, self.arch.arch)
     # Configure and Build LAM
     self.framework.pushLanguage('C')
-    args = ['--prefix='+installDir, '--with-CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    args = ['--prefix='+installDir, '--with-rsh=ssh','--with-CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
     self.framework.popLanguage()
     if 'CXX' in self.framework.argDB:
       self.framework.pushLanguage('Cxx')
       args.append('--with-CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
+    else:
+      args.append('--disable-CXX')
     if 'FC' in self.framework.argDB:
       self.framework.pushLanguage('FC')
       args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
+    else:
+      args.append('--disable-F77')
+      args.append('--disable-F90')
     args = ' '.join(args)
 
     try:
@@ -237,12 +247,16 @@ class Configure(PETSc.package.Package):
       fd = file(os.path.join(installDir,'config.args'), 'w')
       fd.write(args)
       fd.close()
-
       #need to run ranlib on the libraries using the full path
       try:
-        output  = config.base.Configure.executeShellCommand(self.setcompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on LAM/MPI libraries: '+str(e))
+      # start up LAM demon; not lamboot does not close stdout, so call will ALWAYS timeout.
+      try:
+        output  = config.base.Configure.executeShellCommand('PATH=${PATH}:'+os.path.join(installDir,'bin')+' '+os.path.join(installDir,'bin','lamboot'), timeout=10, log = self.framework.log)[0]
+      except:
+        pass
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed LAM/MPI into '+installDir)
     return self.getDir()
 
@@ -326,11 +340,24 @@ class Configure(PETSc.package.Package):
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
     return self.getDir()
 
+  def addExtraLibraries(self):
+    '''Check for various auxiliary libraries we may need'''
+    extraLib = []
+    if self.executeTest(self.libraries.check, [['rt'], 'timer_create', None, extraLib]):
+      extraLib.append('librt.a')
+    if self.executeTest(self.libraries.check, [['aio'], 'aio_read', None, extraLib]):
+      extraLib.insert(0, 'libaio.a')
+    if self.executeTest(self.libraries.check, [['nsl'], 'exit', None, extraLib]):
+      extraLib.insert(0, 'libnsl.a')
+    self.extraLib.extend(extraLib)
+    return
+
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
     if not self.framework.argDB['with-mpi']:
       self.configureMPIUNI()
     else:
+      self.addExtraLibraries()
       PETSc.package.Package.configureLibrary(self)
       self.executeTest(self.configureMPIRUN)
       self.executeTest(self.configureConversion)

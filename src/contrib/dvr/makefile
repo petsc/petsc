@@ -19,6 +19,6 @@ dvr: $(DVR_OBJSF) chkopts
 	${RM} -f dvr.o
 
 
-TESTEXAMPLES_3	 = dvr.F
+TESTEXAMPLES_FORTRAN	 = dvr.F
 
 include ${PETSC_DIR}/bmake/common/test

@@ -43,8 +43,10 @@ class Configure(config.base.Configure):
     self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
 
     if self.framework.argDB['with-64-bit-ints']:
+      self.integerSize = 64
       self.addDefine('USE_64BIT_INT', 1)
     else:
+      self.integerSize = 32
       self.addDefine('USE_32BIT_INT', 1)
     return
 
