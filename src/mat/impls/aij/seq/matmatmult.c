@@ -195,7 +195,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
 {
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*b=(Mat_MPIAIJ*)B->data;
   PetscErrorCode    ierr;
-  int               *idx,i,start,end,ncols,nzA,nzB,*cmap;
+  int               start,end;
   Mat_MatMatMultMPI *mult;
  
   PetscFunctionBegin;
