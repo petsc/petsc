@@ -1,5 +1,5 @@
 !
-!  $Id: petscmat.h,v 1.70 2001/04/18 20:43:32 balay Exp buschelm $;
+!  $Id: petscmat.h,v 1.71 2001/06/21 23:41:25 buschelm Exp balay $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -99,6 +99,7 @@
       integer MAT_NEW_NONZERO_ALLOCATION_ERR,MAT_USE_HASH_TABLE
       integer MAT_KEEP_ZEROED_ROWS,MAT_IGNORE_ZERO_ENTRIES
       integer MAT_USE_INODES,MAT_DO_NOT_USE_INODES
+      integer MAT_USE_SINGLE_PRECISION_SOLVES
 
       parameter (MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2)
       parameter (MAT_ROWS_SORTED=4,MAT_COLUMNS_SORTED=8)
