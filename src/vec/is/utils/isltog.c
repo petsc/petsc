@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.50 2000/07/03 16:03:08 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.51 2000/07/07 14:41:19 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -469,7 +469,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
 
   /* determine ownership ranges of global indices */
   nprocs    = (int*)PetscMalloc((2*size+1)*sizeof(int));CHKPTRQ(nprocs);
-  ierr      = PetscMemzero(nprocs,size*sizeof(int));CHKERRQ(ierr);
+  ierr      = PetscMemzero(nprocs,2*size*sizeof(int));CHKERRQ(ierr);
 
   /* determine owners of each local node  */
   owner    = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(owner);
