@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.259 1997/09/26 02:18:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.260 1997/09/30 00:06:54 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1897,34 +1897,25 @@ int MatView_Private(Mat mat)
 
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_info",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
-    ierr = MatView(mat,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ViewerPushFormat(VIEWER_STDOUT_(mat->comm),VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+    ierr = MatView(mat,VIEWER_STDOUT_(mat->comm)); CHKERRQ(ierr);
+    ierr = ViewerPopFormat(VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_INFO_LONG,0);CHKERRQ(ierr);
-    ierr = MatView(mat,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ViewerPushFormat(VIEWER_STDOUT_(mat->comm),VIEWER_FORMAT_ASCII_INFO_LONG,0);CHKERRQ(ierr);
+    ierr = MatView(mat,VIEWER_STDOUT_(mat->comm)); CHKERRQ(ierr);
+    ierr = ViewerPopFormat(VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_view",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = MatView(mat,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = MatView(mat,VIEWER_STDOUT_(mat->comm)); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_matlab",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"M");CHKERRQ(ierr);
-    ierr = MatView(mat,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ViewerPushFormat(VIEWER_STDOUT_(mat->comm),VIEWER_FORMAT_ASCII_MATLAB,"M");CHKERRQ(ierr);
+    ierr = MatView(mat,VIEWER_STDOUT_(mat->comm)); CHKERRQ(ierr);
+    ierr = ViewerPopFormat(VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {
