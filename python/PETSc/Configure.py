@@ -10,6 +10,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
+    self.usingMPIUni  = 0
     self.missingPrototypes        = []
     self.missingPrototypesC       = []
     self.missingPrototypesCxx     = []
@@ -330,8 +331,9 @@ class Configure(config.base.Configure):
       flag = '-Wl,-rpath,'
     elif self.archBase.startswith('solaris'):
       flag = '-R'
-    if self.archBase.startswith('darwin'):
-      self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
+    #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
+    if self.archBase.startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
+      self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
     else:
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.basic')
     self.addSubstitution('CLINKER_SLFLAG', flag)
@@ -727,6 +729,7 @@ acfindx:
     self.framework.addSubstitution('MPE_LIB',     '')
     self.mpi.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.mpi.addDefine('HAVE_MPI_COMM_C2F', 1)
+    self.usingMPIUni = 1
     return
 
   def configureMissingPrototypes(self):
@@ -821,6 +824,7 @@ acfindx:
     else:
       self.framework.addSubstitution('FC_SHARED_OPT', '')
     self.executeTest(self.configureFortranCPP)
+    self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
@@ -838,7 +842,6 @@ acfindx:
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32NonCygwin)
-    self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMachineInfo)
     self.executeTest(self.configureMisc)
