@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.40 1996/09/12 16:28:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.41 1996/09/28 14:10:11 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -103,10 +103,14 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
 
   /* 
-     Set function evaluation routine and vector
+     Set function evaluation routine and vector.  Whenever the nonlinear
+     solver needs to compute the nonlinear function, it will call this
+     routine.
+      - Note that the final routine argument is the user-defined
+        context that provides application-specific data for the
+        function evaluation routine.
   */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&ctx);CHKERRA(ierr);
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -116,17 +120,13 @@ int main( int argc, char **argv )
 
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation
-     routine. User can override with:
-     -snes_fd : default finite differencing approximation of Jacobian
-     -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-                (unless user explicitly sets preconditioner) 
-     -snes_mf_operator : form preconditioning matrix as set by the user,
-                         but use matrix-free approx for Jacobian-vector
-                         products within Newton-Krylov method
+     routine.  Whenever the nonlinear solver needs to compute the
+     Jacobian matrix, it will call this routine.
+      - Note that the final routine argument is the user-defined
+        context that provides application-specific data for the
+        Jacobian evaluation routine.
   */
-
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&ctx); CHKERRA(ierr);
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
