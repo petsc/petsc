@@ -42,9 +42,9 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 
   ierr = VecScatterCtxCreate(x,is2,y,is1,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,is2,y,is1,INSERTVALUES,SCATTERALL,ctx);
+  ierr = VecScatterBegin(x,y,INSERTVALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
-  ierr = VecScatterEnd(x,is2,y,is1,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(x,y,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
   ierr = VecView(y,SYNC_STDOUT_VIEWER); CHKERRA(ierr);

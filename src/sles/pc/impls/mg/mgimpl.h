@@ -4,11 +4,15 @@
 #if !defined(__MG_IMPL)
 #define __MG_IMPL
 #include "ptscimpl.h"
+#include "pcimpl.h"
 #include "mg.h"
 #include "sles.h"
 
+typedef struct _MG* MG;
+
 struct _MG
 {
+    MGMethod am;                     /* Mult,add or full */
     int    cycles;                 /* Number cycles to run */
     int    level;                  /* level = 0 coarsest level */
     Vec    b;                      /* Right hand side */ 
@@ -21,7 +25,7 @@ struct _MG
     Mat    interpolate; 
     Mat    restrict; 
     SLES   csles;
-} _MG;
+};
 
 #endif
 

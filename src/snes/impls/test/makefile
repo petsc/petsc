@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../..  \
           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"snes/impls/test/"'
-SOURCEC  = test.c
+SOURCEC  = snestest.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = test.o
+OBJSC    = snestest.o
 OBJSF    =
 WSOURCEC = 
 WOBJS    = 

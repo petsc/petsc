@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.11 1995/04/17 19:56:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.12 1995/05/05 03:49:10 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -72,8 +72,9 @@ int PCILUSetOrdering(PC pc,MatOrdering ordering)
 
 static int PCSetFromOptions_ILU(PC pc)
 {
-  char      name[10];
-  int       ordering = ORDER_ND, levels;
+  char        name[10];
+  MatOrdering ordering = ORDER_ND;
+  int         levels;
   if (OptionsGetString(0,pc->prefix,"-pc_ilu_ordering",name,10)) {
     if (!strcmp(name,"nd")) ordering = ORDER_ND;
     else if (!strcmp(name,"natural")) ordering = ORDER_NATURAL;

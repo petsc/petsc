@@ -1,6 +1,6 @@
 
 static char help[] = "This example tests parallel vector assembly.  Input\n\
-arguments are\n
+arguments are\n\
   -n <length> : local vector length\n\n";
 
 #include "petsc.h"

@@ -34,9 +34,9 @@ int main(int argc,char **argv)
   printf("----\n");
   ierr = VecSet(&two,y); CHKERRA(ierr);
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx);
+  ierr = VecScatterBegin(x,y,INSERTVALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(x,y,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
   ierr = VecView(y,STDOUT_VIEWER); CHKERRA(ierr);

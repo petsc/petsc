@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.5 1995/05/02 16:06:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.6 1995/05/05 03:51:35 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -179,12 +179,12 @@ int SNESCreate_TR(SNES snes )
   SNES_TR *neP;
 
   snes->type 		= SNES_NTR;
-  snes->Setup		= SNESSetUp_TR;
-  snes->Solver		= SNESSolve_TR;
+  snes->setup		= SNESSetUp_TR;
+  snes->solve		= SNESSolve_TR;
   snes->destroy		= SNESDestroy_TR;
   snes->Converged	= SNESDefaultConverged;
-  snes->PrintHelp       = SNESPrintHelp_TR;
-  snes->SetFromOptions  = SNESSetFromOptions_TR;
+  snes->printhelp       = SNESPrintHelp_TR;
+  snes->setfromoptions  = SNESSetFromOptions_TR;
 
   neP			= NEW(SNES_TR); CHKPTR(neP);
   snes->data	        = (void *) neP;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.40 1995/05/03 17:50:48 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.41 1995/05/06 20:11:50 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -394,10 +394,10 @@ static int MatMult_MPIAIJ(Mat aijin,Vec xx,Vec yy)
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
   int        ierr;
   if (!aij->assembled) SETERR(1,"MatMult_MPIAIJ: must assemble matrix first");
-  ierr = VecScatterBegin(xx,0,aij->lvec,0,INSERTVALUES,SCATTERALL,aij->Mvctx);
+  ierr = VecScatterBegin(xx,aij->lvec,INSERTVALUES,SCATTERALL,aij->Mvctx);
   CHKERR(ierr);
   ierr = MatMult(aij->A,xx,yy); CHKERR(ierr);
-  ierr = VecScatterEnd(xx,0,aij->lvec,0,INSERTVALUES,SCATTERALL,aij->Mvctx);
+  ierr = VecScatterEnd(xx,aij->lvec,INSERTVALUES,SCATTERALL,aij->Mvctx);
   CHKERR(ierr);
   ierr = MatMultAdd(aij->B,aij->lvec,yy,yy); CHKERR(ierr);
   return 0;
@@ -408,10 +408,10 @@ static int MatMultAdd_MPIAIJ(Mat aijin,Vec xx,Vec yy,Vec zz)
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
   int        ierr;
   if (!aij->assembled) SETERR(1,"MatMult_MPIAIJ: must assemble matrix first");
-  ierr = VecScatterBegin(xx,0,aij->lvec,0,INSERTVALUES,SCATTERALL,aij->Mvctx);
+  ierr = VecScatterBegin(xx,aij->lvec,INSERTVALUES,SCATTERALL,aij->Mvctx);
   CHKERR(ierr);
   ierr = MatMultAdd(aij->A,xx,yy,zz); CHKERR(ierr);
-  ierr = VecScatterEnd(xx,0,aij->lvec,0,INSERTVALUES,SCATTERALL,aij->Mvctx);
+  ierr = VecScatterEnd(xx,aij->lvec,INSERTVALUES,SCATTERALL,aij->Mvctx);
   CHKERR(ierr);
   ierr = MatMultAdd(aij->B,aij->lvec,zz,zz); CHKERR(ierr);
   return 0;
@@ -427,14 +427,14 @@ static int MatMultTrans_MPIAIJ(Mat aijin,Vec xx,Vec yy)
   /* do nondiagonal part */
   ierr = MatMultTrans(aij->B,xx,aij->lvec); CHKERR(ierr);
   /* send it on its way */
-  ierr = VecScatterBegin(aij->lvec,0,yy,0,ADDVALUES,
+  ierr = VecScatterBegin(aij->lvec,yy,ADDVALUES,
            (ScatterMode)(SCATTERALL|SCATTERREVERSE),aij->Mvctx); CHKERR(ierr);
   /* do local part */
   ierr = MatMultTrans(aij->A,xx,yy); CHKERR(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
-  ierr = VecScatterEnd(aij->lvec,0,yy,0,ADDVALUES,
+  ierr = VecScatterEnd(aij->lvec,yy,ADDVALUES,
          (ScatterMode)(SCATTERALL|SCATTERREVERSE),aij->Mvctx); CHKERR(ierr);
   return 0;
 }
@@ -449,14 +449,14 @@ static int MatMultTransAdd_MPIAIJ(Mat aijin,Vec xx,Vec yy,Vec zz)
   /* do nondiagonal part */
   ierr = MatMultTrans(aij->B,xx,aij->lvec); CHKERR(ierr);
   /* send it on its way */
-  ierr = VecScatterBegin(aij->lvec,0,zz,0,ADDVALUES,
+  ierr = VecScatterBegin(aij->lvec,zz,ADDVALUES,
          (ScatterMode)(SCATTERALL|SCATTERREVERSE),aij->Mvctx); CHKERR(ierr);
   /* do local part */
   ierr = MatMultTransAdd(aij->A,xx,yy,zz); CHKERR(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
-  ierr = VecScatterEnd(aij->lvec,0,zz,0,ADDVALUES,
+  ierr = VecScatterEnd(aij->lvec,zz,ADDVALUES,
        (ScatterMode)(SCATTERALL|SCATTERREVERSE),aij->Mvctx); CHKERR(ierr);
   return 0;
 }
@@ -620,7 +620,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     scale = (2.0/omega) - 1.0;
     /*  x = (E + U)^{-1} b */
     VecSet(&zero,mat->lvec);
-    ierr = VecPipelineBegin(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEUP,
+    ierr = VecPipelineBegin(xx,mat->lvec,INSERTVALUES,PIPELINEUP,
                               mat->Mvctx); CHKERR(ierr);
     for ( i=m-1; i>-1; i-- ) {
       n    = A->i[i+1] - diag[i] - 1;
@@ -646,7 +646,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     ts = t - 1; /* shifted by one for index start of a or mat->j*/
     diag = A->diag;
     VecSet(&zero,mat->lvec);
-    ierr = VecPipelineBegin(tt,0,mat->lvec,0,INSERTVALUES,PIPELINEDOWN,
+    ierr = VecPipelineBegin(tt,mat->lvec,INSERTVALUES,PIPELINEDOWN,
                                                  mat->Mvctx); CHKERR(ierr);
     for ( i=0; i<m; i++ ) {
       n    = diag[i] - A->i[i]; 
@@ -675,14 +675,14 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
       VecSet(&zero,mat->lvec); VecSet(&zero,xx);
     }
     else {
-      ierr=VecScatterBegin(xx,0,mat->lvec,0,INSERTVALUES,SCATTERUP,mat->Mvctx);
+      ierr=VecScatterBegin(xx,mat->lvec,INSERTVALUES,SCATTERUP,mat->Mvctx);
       CHKERR(ierr);
-      ierr = VecScatterEnd(xx,0,mat->lvec,0,INSERTVALUES,SCATTERUP,mat->Mvctx);
+      ierr = VecScatterEnd(xx,mat->lvec,INSERTVALUES,SCATTERUP,mat->Mvctx);
       CHKERR(ierr);
     }
     while (its--) {
       /* go down through the rows */
-      ierr = VecPipelineBegin(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEDOWN,
+      ierr = VecPipelineBegin(xx,mat->lvec,INSERTVALUES,PIPELINEDOWN,
                               mat->Mvctx); CHKERR(ierr);
       for ( i=0; i<m; i++ ) {
         n    = A->i[i+1] - A->i[i]; 
@@ -700,7 +700,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
       ierr = VecPipelineEnd(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEDOWN,
                             mat->Mvctx); CHKERR(ierr);
       /* come up through the rows */
-      ierr = VecPipelineBegin(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEUP,
+      ierr = VecPipelineBegin(xx,mat->lvec,INSERTVALUES,PIPELINEUP,
                               mat->Mvctx); CHKERR(ierr);
       for ( i=m-1; i>-1; i-- ) {
         n    = A->i[i+1] - A->i[i]; 
@@ -722,7 +722,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   else if (flag & SOR_FORWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       VecSet(&zero,mat->lvec);
-      ierr = VecPipelineBegin(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEDOWN,
+      ierr = VecPipelineBegin(xx,mat->lvec,INSERTVALUES,PIPELINEDOWN,
                               mat->Mvctx); CHKERR(ierr);
       for ( i=0; i<m; i++ ) {
         n    = diag[i] - A->i[i]; 
@@ -742,11 +742,11 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
       its--;
     }
     while (its--) {
-      ierr=VecScatterBegin(xx,0,mat->lvec,0,INSERTVALUES,SCATTERUP,mat->Mvctx);
+      ierr=VecScatterBegin(xx,mat->lvec,INSERTVALUES,SCATTERUP,mat->Mvctx);
       CHKERR(ierr);
-      ierr = VecScatterEnd(xx,0,mat->lvec,0,INSERTVALUES,SCATTERUP,mat->Mvctx);
+      ierr = VecScatterEnd(xx,mat->lvec,INSERTVALUES,SCATTERUP,mat->Mvctx);
       CHKERR(ierr);
-      ierr = VecPipelineBegin(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEDOWN,
+      ierr = VecPipelineBegin(xx,mat->lvec,INSERTVALUES,PIPELINEDOWN,
                               mat->Mvctx); CHKERR(ierr);
       for ( i=0; i<m; i++ ) {
         n    = A->i[i+1] - A->i[i]; 
@@ -768,7 +768,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   else if (flag & SOR_BACKWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       VecSet(&zero,mat->lvec);
-      ierr = VecPipelineBegin(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEUP,
+      ierr = VecPipelineBegin(xx,mat->lvec,INSERTVALUES,PIPELINEUP,
                               mat->Mvctx); CHKERR(ierr);
       for ( i=m-1; i>-1; i-- ) {
         n    = A->i[i+1] - diag[i] - 1; 
@@ -788,11 +788,11 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
       its--;
     }
     while (its--) {
-      ierr = VecScatterBegin(xx,0,mat->lvec,0,INSERTVALUES,SCATTERDOWN,
+      ierr = VecScatterBegin(xx,mat->lvec,INSERTVALUES,SCATTERDOWN,
                             mat->Mvctx); CHKERR(ierr);
-      ierr = VecScatterEnd(xx,0,mat->lvec,0,INSERTVALUES,SCATTERDOWN,
+      ierr = VecScatterEnd(xx,mat->lvec,INSERTVALUES,SCATTERDOWN,
                             mat->Mvctx); CHKERR(ierr);
-      ierr = VecPipelineBegin(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEUP,
+      ierr = VecPipelineBegin(xx,mat->lvec,INSERTVALUES,PIPELINEUP,
                               mat->Mvctx); CHKERR(ierr);
       for ( i=m-1; i>-1; i-- ) {
         n    = A->i[i+1] - A->i[i]; 
@@ -815,9 +815,9 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       return MatRelax(mat->A,bb,omega,flag,shift,its,xx);
     }
-    ierr=VecScatterBegin(xx,0,mat->lvec,0,INSERTVALUES,SCATTERALL,mat->Mvctx);
+    ierr=VecScatterBegin(xx,mat->lvec,INSERTVALUES,SCATTERALL,mat->Mvctx);
     CHKERR(ierr);
-    ierr = VecScatterEnd(xx,0,mat->lvec,0,INSERTVALUES,SCATTERALL,mat->Mvctx);
+    ierr = VecScatterEnd(xx,mat->lvec,INSERTVALUES,SCATTERALL,mat->Mvctx);
     CHKERR(ierr);
     while (its--) {
       /* go down through the rows */
@@ -854,9 +854,9 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       return MatRelax(mat->A,bb,omega,flag,shift,its,xx);
     }
-    ierr=VecScatterBegin(xx,0,mat->lvec,0,INSERTVALUES,SCATTERALL,mat->Mvctx);
+    ierr=VecScatterBegin(xx,mat->lvec,INSERTVALUES,SCATTERALL,mat->Mvctx);
     CHKERR(ierr);
-    ierr = VecScatterEnd(xx,0,mat->lvec,0,INSERTVALUES,SCATTERALL,mat->Mvctx);
+    ierr = VecScatterEnd(xx,mat->lvec,INSERTVALUES,SCATTERALL,mat->Mvctx);
     CHKERR(ierr);
     while (its--) {
       for ( i=0; i<m; i++ ) {
@@ -878,9 +878,9 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       return MatRelax(mat->A,bb,omega,flag,shift,its,xx);
     }
-    ierr = VecScatterBegin(xx,0,mat->lvec,0,INSERTVALUES,SCATTERALL,
+    ierr = VecScatterBegin(xx,mat->lvec,INSERTVALUES,SCATTERALL,
                             mat->Mvctx); CHKERR(ierr);
-    ierr = VecScatterEnd(xx,0,mat->lvec,0,INSERTVALUES,SCATTERALL,
+    ierr = VecScatterEnd(xx,mat->lvec,INSERTVALUES,SCATTERALL,
                             mat->Mvctx); CHKERR(ierr);
     while (its--) {
       for ( i=m-1; i>-1; i-- ) {

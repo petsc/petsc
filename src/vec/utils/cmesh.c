@@ -48,9 +48,9 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
   PLogObjectParent(win,W);PLogObjectParent(win,from);PLogObjectParent(win,to);
   ierr = VecScatterCtxCreate(V,from,W,to,&ctx); CHKERR(ierr);
   PLogObjectParent(win,ctx);
-  ierr = VecScatterBegin(V,from,W,to,INSERTVALUES,SCATTERALL,ctx); 
+  ierr = VecScatterBegin(V,W,INSERTVALUES,SCATTERALL,ctx); 
   CHKERR(ierr);
-  ierr = VecScatterEnd(V,from,W,to,INSERTVALUES,SCATTERALL,ctx); CHKERR(ierr);
+  ierr = VecScatterEnd(V,W,INSERTVALUES,SCATTERALL,ctx); CHKERR(ierr);
   ISDestroy(from); ISDestroy(to); VecScatterCtxDestroy(ctx);
 
   if (mytid == 0) {

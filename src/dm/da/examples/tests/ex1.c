@@ -1,35 +1,53 @@
 
 
-static char help[] = "Tests various IS routines\n";
+static char help[] = "Tests various RA routines\n";
 
 #include "petsc.h"
-#include "is.h"
+#include "ra.h"
 #include "sys.h"
 #include "options.h"
-#include "sysio.h"
+#include <sysio.h>
+#include "draw.h"
 #include <math.h>
 
 int main(int argc,char **argv)
 {
-  int      n = 5, ierr,indices[5],mytid;
-  IS       is;
-
- 
+  int      mytid,M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr;
+  RA       ra;
+  DrawCtx  win;
+  Vec      local,global;
+  Scalar   value;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
+  ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,300,300,&win); CHKERRA(ierr);
+
+  OptionsGetInt(0,0,"-M",&M);
+  OptionsGetInt(0,0,"-N",&N);
+  OptionsGetInt(0,0,"-m",&m);
+  OptionsGetInt(0,0,"-n",&n);
+
+  ierr = RACreate2d(MPI_COMM_WORLD,M,N,m,n,1,1,&ra); CHKERRA(ierr);
+  ierr = RAGetDistributedVector(ra,&global); CHKERR(ierr);
+  ierr = RAGetLocalVector(ra,&local); CHKERR(ierr);
+
+  value = -3.0;
+  ierr = VecSet(&value,global); CHKERR(ierr);
+  ierr = RAGlobalToLocal(ra,global,INSERTVALUES,local); CHKERR(ierr);
+
+  /* ierr = VecView(local,SYNC_STDOUT_VIEWER); CHKERR(ierr); */
+
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  value = mytid+1;
+  ierr = VecScale(&value,local); CHKERR(ierr);
+  ierr = RALocalToGlobal(ra,local,ADDVALUES,global); CHKERR(ierr);
 
-  /* create an index set */
-  indices[0] = mytid + 1; 
-  indices[1] = mytid + 2; 
-  indices[2] = mytid + 3; 
-  indices[3] = mytid + 4; 
-  indices[4] = mytid + 5; 
-  ierr = ISCreateMPI(n,-1,indices,MPI_COMM_WORLD,&is); CHKERRA(ierr);
+  ierr = VecView(global,SYNC_STDOUT_VIEWER); CHKERR(ierr);
+  
 
-  ISView(is,SYNC_STDOUT_VIEWER);
-  ISDestroy(is);
+
+  RAView(ra,(Viewer) win);
+  RADestroy(ra);
   PetscFinalize();
   return 0;
 }

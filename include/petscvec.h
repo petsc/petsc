@@ -63,16 +63,16 @@ extern int VecAssemblyEnd(Vec);
 typedef enum {SCATTERREVERSE=1,SCATTERDOWN=2,SCATTERUP=4,SCATTERALL=8,
               SCATTERALLREVERSE=9} ScatterMode;
 
-extern int VecScatterBegin(Vec,IS,Vec,IS,InsertMode,ScatterMode,VecScatterCtx);
-extern int VecScatterEnd(Vec,IS,Vec,IS,InsertMode,ScatterMode,VecScatterCtx); 
+extern int VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatterCtx);
+extern int VecScatterEnd(Vec,Vec,InsertMode,ScatterMode,VecScatterCtx); 
 extern int VecScatterCtxCreate(Vec,IS,Vec,IS,VecScatterCtx *);
 extern int VecScatterCtxDestroy(VecScatterCtx);
 extern int VecScatterCtxCopy(VecScatterCtx,VecScatterCtx *);
 
 typedef enum {PIPELINEDOWN=0,PIPELINEUP=1} PipelineMode;
 
-extern int VecPipelineBegin(Vec,IS,Vec,IS,InsertMode,PipelineMode,VecScatterCtx);
-extern int VecPipelineEnd(Vec,IS,Vec,IS,InsertMode,PipelineMode,VecScatterCtx); 
+extern int VecPipelineBegin(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx);
+extern int VecPipelineEnd(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx); 
 
 extern int VecGetArray(Vec,Scalar**);
 extern int VecRestoreArray(Vec,Scalar**);

@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.6 1995/05/04 19:22:14 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.7 1995/05/05 03:51:28 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -22,7 +22,7 @@ struct _SNES {
 
   int   (*ComputeFunction)(SNES,Vec,Vec,void *);
   Vec   vec_func,vec_func_always;   /* Pointer to function or gradient */
-  void  *resP;
+  void  *funP;
   int   rsign;                      /* sign (+/-)  of residual */
 
   int   (*ComputeJacobian)(SNES,Vec,Mat*,Mat*,int*,void*);
@@ -43,18 +43,17 @@ struct _SNES {
 
   /* --- Routines and data that are unique to each particular solver --- */
 
-  int   (*Setup)(SNES);         /* Sets up the nonlinear solver */
-  int   (*Solver)(SNES,int*);        /* Actual nonlinear solver */
-  int   (*SetFromOptions)(SNES);
-  int   (*PrintHelp)(SNES);
+  int   (*setup)(SNES);         /* Sets up the nonlinear solver */
+  int   (*solve)(SNES,int*);        /* Actual nonlinear solver */
+  int   (*setfromoptions)(SNES);
+  int   (*printhelp)(SNES);
   void  *data;     
 
   /* ------------------  Parameters -------------------------------------- */
 
   int      max_its;            /* Max number of iterations */
   int      max_funcs;          /* Max number of function evals (NLM only) */
-  int      max_resids;         /* Max number of residual evaluations */
-  int      nresids;            /* Number of residual evaluations */
+  int      nfuncs;             /* Number of residual evaluations */
   int      iter;               /* Global iteration number */
   double   norm;               /* Residual norm of current iterate (NLE)
 				  or gradient norm of current iterate (NLM) */
@@ -79,7 +78,5 @@ struct _SNES {
 #define MIN(a,b)     ((a) < (b) ? (a) : (b))
 #endif
 
-extern int SNESComputeInitialGuess(SNES,Vec);
-extern int SNESComputeFunction(SNES,Vec, Vec);
 
 #endif

@@ -1,7 +1,7 @@
 
 static char help[] = "Passes sparse matrix to matlab";
 #include "sles.h"
-#include "stdio.h"
+#include <stdio.h>
 #include "options.h"
 #include "stencil.h"
 #include "grid.h"

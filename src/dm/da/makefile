@@ -6,13 +6,13 @@ CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
-SOURCEH  = isimpl.h
+SOURCEH  = raimpl.h
 OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
-DIRS     = src impls  examples
+DIRS     = src  examples
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

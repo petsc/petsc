@@ -1,35 +1,25 @@
 
 /*
-    Index sets for scatter-gather type operations in vectors
-and matrices. 
 
-   Eventually ther may be operations like union, difference etc.
-for now we define only the shell and what we absolutely need.
 */
 
-#if !defined(_INDEX)
-#define _INDEX
+#if !defined(_RAIMPL_H)
+#define _RAIMPL_H
 #include "ptscimpl.h"
-#include "is.h"
+#include "ra.h"
 
-struct _ISOps {
-  int  (*getsize)(IS,int*),(*getlocalsize)(IS,int*);
-  int  (*getindices)(IS,int**);
-  int  (*restoreindices)(IS,int**);
-  int  (*invertpermutation)(IS,IS*);
-};
-
-struct _IS {
+struct _RA {
   PETSCHEADER
-  struct        _ISOps *ops;
-  int           isperm; /* if is a permutation */
-  int           max,min; /* range of possible values */
-  void          *data;
+  int           M,N,P;             /* array dimensions */
+  int           m,n,p;             /* processor layout */
+  int           w;                 /* degrees of freedome per node */
+  int           s;                 /* stencil width */
+  int           xs,xe,ys,ye,zs,ze; /* range of local values */
+  int           Xs,Xe,Ys,Ye,Zs,Ze; /* range including ghost values*/
+  int           *idx,Nl;           /* local to global map */
+  int           base;              /* global number of 1st local node */
+  VecScatterCtx gtol,ltog;      
+  Vec           global,local;
 };
 
-
-
-#define ISGENERALSEQUENTIAL 0
-#define ISSTRIDESEQUENTIAL  2
-#define ISGENERALPARALLEL   1
 #endif

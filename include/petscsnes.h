@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.11 1995/05/09 02:47:27 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.12 1995/05/11 19:06:46 bsmith Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -48,7 +48,7 @@ extern int SNESSetAbsoluteTolerance(SNES,double);
 extern int SNESSetRelativeTolerance(SNES,double);
 extern int SNESSetTruncationTolerance(SNES,double);
 extern int SNESSetMaxIterations(SNES,int);
-extern int SNESSetMaxResidualEvaluations(SNES,int);
+extern int SNESSetMaxFunctionEvaluations(SNES,int);
 
 #if defined(__DRAW_PACKAGE)
 #define SNESLGMonitorCreate  KSPLGMonitorCreate

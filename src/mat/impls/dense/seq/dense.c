@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.36 1995/05/06 20:11:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.37 1995/05/10 00:18:28 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -280,18 +280,14 @@ static int MatInsert_Dense(Mat matin,int m,int *indexm,int n,
   if (!mat->roworiented) {
     if (addv == INSERTVALUES) {
       for ( j=0; j<n; j++ ) {
-        if (indexn[j] < 0) {*v += m; continue;}
         for ( i=0; i<m; i++ ) {
-          if (indexm[i] < 0) {*v++; continue;}
           mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
         }
       }
     }
     else {
       for ( j=0; j<n; j++ ) {
-        if (indexn[j] < 0) {*v += m; continue;}
         for ( i=0; i<m; i++ ) {
-          if (indexm[i] < 0) {*v++; continue;}
           mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
         }
       }
@@ -300,18 +296,14 @@ static int MatInsert_Dense(Mat matin,int m,int *indexm,int n,
   else {
     if (addv == INSERTVALUES) {
       for ( i=0; i<m; i++ ) {
-        if (indexm[i] < 0) {*v += n; continue;}
         for ( j=0; j<n; j++ ) {
-          if (indexn[j] < 0) {*v++; continue;}
           mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
         }
       }
     }
     else {
       for ( i=0; i<m; i++ ) {
-        if (indexm[i] < 0) {*v += n; continue;}
         for ( j=0; j<n; j++ ) {
-          if (indexn[j] < 0) {*v++; continue;}
           mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
         }
       }
@@ -418,9 +410,8 @@ static int MatEqual_Dense(Mat matin1,Mat matin2)
 static int MatGetDiagonal_Dense(Mat matin,Vec v)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
-  int    i, n;
-  Scalar *x;
-  CHKTYPE(v,SEQVECTOR);
+  int       i, n;
+  Scalar    *x;
   VecGetArray(v,&x); VecGetSize(v,&n);
   if (n != mat->m) SETERR(1,"Nonconforming matrix and vector");
   for ( i=0; i<mat->m; i++ ) {

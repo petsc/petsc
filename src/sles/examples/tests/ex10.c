@@ -10,7 +10,7 @@ diagonal data structure.\n\n";
 #include "mat.h"
 #include "sles.h"
 #include "options.h"
-#include "stdio.h"
+#include <stdio.h>
 
 /* This code is not intended as an efficient implementation, it is only
    here to produce an interesting sparse matrix quickly.  As originally

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.18 1995/05/03 04:03:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.19 1995/05/06 18:41:09 curfman Exp bsmith $";
 #endif
 
 
@@ -325,8 +325,6 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
    Input Parameters:
 .  x - vector to scatter from
 .  y - vector to scatter to
-.  ix - indices of elements in x to take
-.  iy - indices of locations in y to insert
 .  addv - either ADDVALUES or INSERTVALUES, depending whether values are
    added or set
 .  mode - the scattering mode, usually SCATTERALL.  The available modes are:
@@ -344,11 +342,10 @@ $    SCATTERREVERSE, SCATTERALLREVERSE
 
 .seealso: VecScatterCtxCreate(), VecScatterEnd()
 @*/
-int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,ScatterMode mode, 
+int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode, 
                                                    VecScatterCtx inctx)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  if (ix) VALIDHEADER(ix,IS_COOKIE); if (iy) VALIDHEADER(iy,IS_COOKIE);
   VALIDHEADER(inctx,VEC_SCATTER_COOKIE);
   return (*(inctx)->begin)(x,y,inctx,addv,mode);
 }
@@ -361,8 +358,6 @@ int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,ScatterMode mode,
    Input Parameters:
 .  x - vector to scatter from
 .  y - vector to scatter to 
-.  ix - indices of elements in x to take
-.  iy - indices of locations in y to insert 
 .  addv - either ADDVALUES or INSERTVALUES, depending whether values are
    added or set
 .  mode - the scattering mode, usually SCATTERALL.  The available modes are:
@@ -380,11 +375,10 @@ $    SCATTERREVERSE, SCATTERALLREVERSE
 
 .seealso: VecScatterBegin(), VecScatterCtxCreate()
 @*/
-int VecScatterEnd(Vec x,IS ix,Vec y,IS iy,InsertMode addv, 
+int VecScatterEnd(Vec x,Vec y,InsertMode addv, 
                   ScatterMode mode, VecScatterCtx ctx)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  if (ix) VALIDHEADER(ix,IS_COOKIE); if (iy) VALIDHEADER(iy,IS_COOKIE);
   VALIDHEADER(ctx,VEC_SCATTER_COOKIE);
   if ((ctx)->end) return (*(ctx)->end)(x,y,ctx,addv,mode);
   else return 0;
@@ -437,8 +431,6 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
    Input Parameters:
 .  x - vector to scatter from
 .  y - vector to scatter to 
-.  ix - indices of elements in x to take
-.  iy - indices of locations in y to insert 
 .  inctx - is used to coordinate communication
 .  addv - either ADDVALUES or INSERTVALUES, depending whether values are
           added or set
@@ -455,12 +447,11 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
 
 .seealso: VecPipelineEnd(), VecScatterCtxCreate()
 @*/
-int VecPipelineBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,
+int VecPipelineBegin(Vec x,Vec y,InsertMode addv,
                      PipelineMode mode,VecScatterCtx inctx)
 {
   int numtid;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  if (ix) VALIDHEADER(ix,IS_COOKIE); if (iy) VALIDHEADER(iy,IS_COOKIE);
   VALIDHEADER(inctx,VEC_SCATTER_COOKIE);
   MPI_Comm_size(inctx->comm,&numtid);
   if (numtid == 1) return 0;
@@ -476,8 +467,6 @@ int VecPipelineBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,
    Input Parameters:
 .  x - vector to scatter from
 .  y - vector to scatter to 
-.  ix - indices of elements in x to take
-.  iy - indices of locations in y to insert 
 .  inctx - is used to coordinate communication
 .  addv - either ADDVALUES or INSERTVALUES, depending whether values are
           added or set
@@ -494,12 +483,11 @@ int VecPipelineBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,
 
 .seealso: VecPipelineBegin(), VecScatterCtxCreate()
 @*/
-int VecPipelineEnd(Vec x,IS ix,Vec y,IS iy,InsertMode addv,
+int VecPipelineEnd(Vec x,Vec y,InsertMode addv,
                    PipelineMode mode,VecScatterCtx ctx)
 {
   int numtid;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  if (ix) VALIDHEADER(ix,IS_COOKIE); if (iy) VALIDHEADER(iy,IS_COOKIE);
   VALIDHEADER(ctx,VEC_SCATTER_COOKIE);
   MPI_Comm_size(ctx->comm,&numtid);
   if (numtid == 1) return 0;

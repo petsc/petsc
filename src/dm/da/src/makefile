@@ -3,13 +3,13 @@ IPETSCDIR = ../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(IPETSCDIR) \
-           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"is/src/"'
-SOURCEC  = index.c 
+           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"ra/src/"'
+SOURCEC  = ra.c 
 SOURCEF  = 
-WSOURCEC = indexf.c
+WSOURCEC = raf.c
 SOURCEH  = 
-OBJSC    = index.o 
-WOBJS    = indexf.o
+OBJSC    = ra.o 
+WOBJS    = raf.o
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
