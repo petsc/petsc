@@ -49,9 +49,9 @@ AC_ARG_ENABLE(print-tests,
 print_tests=$enableval,print_tests=no)
 
 if test "$print_tests" != "yes" ; then
-    exec 6>config.log6
-    exec 9>&1
-    exec 1>config.log1
+    exec 6>config.log
+#    exec 9>&1
+    exec 1>config.log
 fi
 
 dnl
@@ -124,9 +124,9 @@ AC_ARG_WITH(fc,[  --with-fc=Fortran_compiler - Choose the Fortran compiler],FC="
 AC_ARG_WITH(cxx,[  --with-cxx=C++_compiler - Choose the C++ compiler],CXX="$withval")
 AC_ARG_WITH(gnu,[  --with-gnu - Choose GNU compilers over native],USE_GNU=$withval,USE_GNU=yes)
 
-echo "cc is $CC"
-echo fc is $FC
-echo cxx is $CXX
+echo "cc is $CC" >> config.log
+echo fc is $FC   >> config.log
+echo cxx is $CXX >> config.log
 
 AC_ARG_ENABLE(installsite,
 [ --enable-installsite - Install bmake site files],install_sitefiles=yes,
