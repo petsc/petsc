@@ -439,14 +439,11 @@ int VecNormalize (Vec x,PetscReal *val)
   ierr = VecNorm(x,NORM_2,val); CHKERRQ(ierr);
   if (*val == 0.0) {
     PetscLogInfo(x,"Vector of zero norm can not be normalized; Returning only the zero norm");
-    PetscFunctionReturn(0);
-  }
-  else {
-    PetscScalar tmp;
-    tmp = 1.0/(*val);
+  } else {
+    PetscScalar tmp = 1.0/(*val);
     ierr = VecScale(&tmp,x);CHKERRQ(ierr);
     x->normcurrent = 1.0;
-    x->normvalid = PETSC_TRUE;
+    x->normvalid   = PETSC_TRUE;
   }
   ierr = PetscLogEventEnd(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

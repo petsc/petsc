@@ -70,6 +70,7 @@ int VecInitializePackage(char *path) {
   ierr = PetscLogEventRegister(&VEC_ReduceArithmetic,    "VecReduceArith",   VEC_COOKIE);                 CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_ReduceBarrier,       "VecReduceBarrier", VEC_COOKIE);                 CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_ReduceCommunication, "VecReduceComm",    VEC_COOKIE);                 CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&VEC_Normalize,           "VecNormalize",     VEC_COOKIE);                 CHKERRQ(ierr);
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(VEC_DotBarrier, PETSC_FALSE);                                          CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_MDotBarrier, PETSC_FALSE);                                         CHKERRQ(ierr);
