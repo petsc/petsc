@@ -83,12 +83,12 @@ class Compile (action.Action):
     object   = self.getIntermediateFileName(source)
     if (object): command += ' -o '+object
     command += ' '+source
-    output   = self.executeShellCommand(command)
+    output   = self.executeShellCommand(command, self.errorHandler)
     # Update source DB if it compiled successfully
     self.updateSourceDB(source)
     # Archive file
     command = self.archiver+' '+self.archiverFlags+' '+self.library[0]+' '+object
-    output  = self.executeShellCommand(command)
+    output  = self.executeShellCommand(command, self.errorHandler)
     os.remove(object)
     return object
 
@@ -114,8 +114,8 @@ class TagC (transform.GenericTag):
     transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
 
 class CompileC (Compile):
-  def __init__(self, library, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-c -g -Wall', archiver = 'ar', archiverFlags = 'crv'):
-    Compile.__init__(self, library, sources, tag, compiler, compilerFlags, archiver, archiverFlags)
+  def __init__(self, library, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-g -Wall', archiver = 'ar', archiverFlags = 'crv'):
+    Compile.__init__(self, library, sources, tag, compiler, '-c '+compilerFlags, archiver, archiverFlags)
     self.includeDirs.append('.')
 
 class TagCxx (transform.GenericTag):
