@@ -37,9 +37,12 @@
 
 #if (PETSC_SIZEOF_VOID_P == 8)
 #define PetscFortranAddr integer*8
+#define PetscOffset integer*8
 #elif defined (PETSC_MISSING_FORTRANSTAR)
+#define PetscOffset integer
 #define PetscFortranAddr integer
 #else
+#define PetscOffset integer*4
 #define PetscFortranAddr integer*4
 #endif
 
@@ -51,7 +54,6 @@
 #define PetscInt integer*4
 #endif
 
-#define PetscOffset PetscInt
 
 #if defined (PETSC_MISSING_FORTRANSTAR)
 #define PetscFortranFloat real

@@ -4,9 +4,9 @@
 #include "petsc.h"
 #include "petscfix.h"
 
-EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscScalar*,PetscScalar*,PetscInt,PetscInt*);
+EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscScalar*,PetscScalar*,PetscInt,size_t*);
 EXTERN PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,PetscInt,PetscInt,PetscScalar **);
-EXTERN PetscInt       PetscIntAddressToFortran(PetscInt*,PetscInt*);
+EXTERN size_t         PetscIntAddressToFortran(PetscInt*,PetscInt*);
 EXTERN PetscInt       *PetscIntAddressFromFortran(PetscInt*,PetscInt); 
 extern char   *PETSC_NULL_CHARACTER_Fortran;
 extern void   *PETSC_NULL_INTEGER_Fortran;
