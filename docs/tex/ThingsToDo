@@ -1,5 +1,5 @@
 
-  Make log summary print name of exceutable it is rujnning!!!!!!@
+
 
 Additional Capabilities that PETSc Needs:
 
@@ -12,6 +12,13 @@ Additional Capabilities that PETSc Needs:
 
    To do BEFORE the next release:
     --------------------------------
+
+  X   Make log summary print name of exceutable it is rujnning!!!!!!@
+
+  - add -mpidump option that lists all unfinished MPI operations at end
+
+  - add to documentation tips on getting parallel performance numbers, including
+    how to prevent the paging in of executable from screwing up timings. sles ex21.c
 
   X Fix -log_summary. Shows incorrect values for multiple satages
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.109 1996/07/08 01:07:11 curfman Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.110 1996/07/11 23:05:14 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -23,12 +23,6 @@ static char vcid[] = "$Id: plog.c,v 1.109 1996/07/08 01:07:11 curfman Exp balay 
 #include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
 #include "pinclude/ptime.h"
-
-  
-#if defined(PETSC_MPI_LOG)
-int irecv_ct=0,isend_ct=0,wait_ct=0,wait_any_ct=0,get_count_ct=0,wait_all_ct=0,allreduce_ct=0;
-#endif
-
 
 static int PrintInfo = 0;
 static int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -361,8 +355,18 @@ typedef struct {
   PetscObject obj;
 } Objects;
 
+/* 
+    Global counters 
+*/
+double _TotalFlops = 0;
+double irecv_ct = 0,isend_ct = 0,wait_ct = 0,wait_any_ct = 0;
+double irecv_len = 0,isend_len = 0;
+double wait_all_ct = 0,allreduce_ct = 0;
+
+/*
+    Log counters in this file only 
+*/
 static double  BaseTime;
-       double _TotalFlops = 0;
 static Events  *events = 0;
 static Objects *objects = 0;
 
@@ -377,10 +381,17 @@ static int     EventsStageStack[100];
 static char    *(EventsStageName[]) = {0,0,0,0,0,0,0,0,0,0};
 static double  EventsStageFlops[] = {0,0,0,0,0,0,0,0,0,0};
 static double  EventsStageTime[] = {0,0,0,0,0,0,0,0,0,0};
-#define COUNT 0
-#define FLOPS 1
-#define TIME  2
-static double  EventsType[10][PLOG_USER_EVENT_HIGH][3];
+static double  EventsStageMessageCounts[] = {0,0,0,0,0,0,0,0,0,0};
+static double  EventsStageMessageLengths[] = {0,0,0,0,0,0,0,0,0,0};
+static double  EventsStageReductions[] = {0,0,0,0,0,0,0,0,0,0};
+#define COUNT      0
+#define FLOPS      1
+#define TIME       2
+#define MESSAGES   3
+#define LENGTHS    4
+#define REDUCTIONS 5
+static double  EventsType[10][PLOG_USER_EVENT_HIGH][6];
+
 
 /*@C
     PLogStageRegister - Attach a charactor string name to a logging stage.
@@ -436,14 +447,20 @@ int PLogStagePush(int stage)
   /* record flops/time of previous stage */
   if (EventsStagePushed) {
     PetscTimeAdd(EventsStageTime[EventsStage]);
-    EventsStageFlops[EventsStage] += _TotalFlops;
+    EventsStageFlops[EventsStage]          += _TotalFlops;
+    EventsStageMessageCounts[EventsStage]  += irecv_ct + isend_ct;
+    EventsStageMessageLengths[EventsStage] += irecv_len + isend_len;
+    EventsStageReductions[EventsStage]     += allreduce_ct;
   }
   EventsStageStack[EventsStagePushed++] = EventsStage;
   if (EventsStagePushed++ > 99) SETERRQ(1,"PLogStagePush:Too many pushes");
   EventsStage = stage;
   if (stage > EventsStageMax) EventsStageMax = stage;
   PetscTimeSubtract(EventsStageTime[EventsStage]);
-  EventsStageFlops[EventsStage] -= _TotalFlops;
+  EventsStageFlops[EventsStage]          -= _TotalFlops;
+  EventsStageMessageCounts[EventsStage]  -= irecv_ct + isend_ct;
+  EventsStageMessageLengths[EventsStage] -= irecv_len + isend_len;
+  EventsStageReductions[EventsStage]     -= allreduce_ct;
   return 0;
 }
 
@@ -476,15 +493,23 @@ $
 int PLogStagePop()
 {
   PetscTimeAdd(EventsStageTime[EventsStage]);
-  EventsStageFlops[EventsStage] += _TotalFlops;
+  EventsStageFlops[EventsStage]          += _TotalFlops;
+  EventsStageMessageCounts[EventsStage]  += irecv_ct + isend_ct;
+  EventsStageMessageLengths[EventsStage] += irecv_len + isend_len;
+  EventsStageReductions[EventsStage]     += allreduce_ct;
   if (EventsStagePushed < 1) SETERRQ(1,"PLogStagePop:Too many pops\n");
   EventsStage = EventsStageStack[--EventsStagePushed];
   if (EventsStagePushed) {
     PetscTimeSubtract(EventsStageTime[EventsStage]);
-    EventsStageFlops[EventsStage] -= _TotalFlops;
+    EventsStageFlops[EventsStage]          -= _TotalFlops;
+    EventsStageMessageCounts[EventsStage]  -= irecv_ct + isend_ct;
+    EventsStageMessageLengths[EventsStage] -= irecv_len + isend_len;
+    EventsStageReductions[EventsStage]     -= allreduce_ct;
   }
   return 0;
 }
+
+/* --------------------------------------------------------------------------------*/
 
 int (*_PHC)(PetscObject) = 0;
 int (*_PHD)(PetscObject) = 0;
@@ -607,8 +632,11 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   events[nevents++].event= ACTIONBEGIN;
   if (t != 1) return 0;
   EventsType[EventsStage][event][COUNT]++;
-  EventsType[EventsStage][event][TIME]  -= ltime;
-  EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
+  EventsType[EventsStage][event][TIME]        -= ltime;
+  EventsType[EventsStage][event][FLOPS]       -= _TotalFlops;
+  EventsType[EventsStage][event][MESSAGES]    -= irecv_ct + isend_ct;
+  EventsType[EventsStage][event][LENGTHS]     -= irecv_len + isend_len;
+  EventsType[EventsStage][event][REDUCTIONS]  -= allreduce_ct;
   return 0;
 }
 /*
@@ -638,8 +666,11 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   PetscTrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
   events[nevents++].event= ACTIONEND;
   if (t != 1) return 0;
-  EventsType[EventsStage][event][TIME] += ltime;
-  EventsType[EventsStage][event][FLOPS] += _TotalFlops;
+  EventsType[EventsStage][event][TIME]        += ltime;
+  EventsType[EventsStage][event][FLOPS]       += _TotalFlops;
+  EventsType[EventsStage][event][MESSAGES]    += irecv_ct + isend_ct;
+  EventsType[EventsStage][event][LENGTHS]     += irecv_len + isend_len;
+  EventsType[EventsStage][event][REDUCTIONS]  += allreduce_ct;
   return 0;
 }
 /*
@@ -650,7 +681,10 @@ int plb(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
   if (t != 1) return 0;
   EventsType[EventsStage][event][COUNT]++;
   PetscTimeSubtract(EventsType[EventsStage][event][TIME]);
-  EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
+  EventsType[EventsStage][event][FLOPS]       -= _TotalFlops;
+  EventsType[EventsStage][event][MESSAGES]    -= irecv_ct + isend_ct;
+  EventsType[EventsStage][event][LENGTHS]     -= irecv_len + isend_len;
+  EventsType[EventsStage][event][REDUCTIONS]  -= allreduce_ct;
   return 0;
 }
 
@@ -661,7 +695,10 @@ int ple(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
 {
   if (t != 1) return 0;
   PetscTimeAdd(EventsType[EventsStage][event][TIME]);
-  EventsType[EventsStage][event][FLOPS] += _TotalFlops;
+  EventsType[EventsStage][event][FLOPS]       += _TotalFlops;
+  EventsType[EventsStage][event][MESSAGES]    += irecv_ct + isend_ct;
+  EventsType[EventsStage][event][LENGTHS]     += irecv_len + isend_len;
+  EventsType[EventsStage][event][REDUCTIONS]  += allreduce_ct;
   return 0;
 }
 
@@ -984,19 +1021,35 @@ $  -log_summary : Prints summary of log information (for code
 int PLogPrintSummary(MPI_Comm comm,FILE *fd)
 {
   double maxo,mino,aveo,mem,totmem,maxmem,minmem;
-  double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott;
+  double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott,ratio;
   double fmin,fmax,ftot,wdou,totts,totff,rat,sstime,sflops,ratf;
-  double ptotts,ptotff,ptotts_stime,ptotff_sflops;
+  double ptotts,ptotff,ptotts_stime,ptotff_sflops,rat1,rat2,rat3;
+  double minm,maxm,avem,totm,minr,maxr,maxml,minml,totml,aveml,totr;
+  double rp,mp,lp,rpg,mpg,lpg,totms,totmls,totrs,mps,lps,rps,lpmp;
   double pstime,psflops1,psflops;
   int    size,i,j;
-  char   arch[10];
+  char   arch[10],hostname[64],username[16];
 
   /* pop off any stages the user forgot to remove */
   while (EventsStagePushed) PLogStagePop();
 
   PetscTime(_TotalTime);  _TotalTime -= BaseTime;
-
   MPI_Comm_size(comm,&size);
+
+  PetscFPrintf(comm,fd,"************************************************************************************************************************\n");
+  PetscFPrintf(comm,fd,"***                    WIDEN YOUR WINDOW TO 120 CHARACTORS. Use enscript -r to print this document                   ***\n");
+  PetscFPrintf(comm,fd,"************************************************************************************************************************\n");
+
+  PetscFPrintf(comm,fd,"\n-----------------------------------------------PETSc Performance Summary:----------------------------------------------\n\n");
+  PetscGetArchType(arch,10);
+  PetscGetHostName(hostname,64);
+  PetscGetUserName(username,16);
+  if (size == 1)
+    PetscFPrintf(comm,fd,"%s run on a  %s with %d processor named %s, run by %s on %s",
+                 OptionsGetProgramName(),arch,size,hostname,username,PetscGetDate());
+  else
+    PetscFPrintf(comm,fd,"%s run on a %s with %d processors named %s, run by %s on %s",
+                 OptionsGetProgramName(),arch,size,hostname,username, PetscGetDate());
 
   wdou = _TotalFlops; 
   MPI_Reduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,0,comm);
@@ -1014,79 +1067,107 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   MPI_Reduce(&wdou,&tott,1,MPI_DOUBLE,MPI_SUM,0,comm);
   avet = (tott)/((double) size);
 
-  PetscFPrintf(comm,fd,
-   "\nPerformance Summary:----------------------------------------------------------\n");
-  PetscGetArchType(arch,10);
-  if (size == 1)
-    PetscFPrintf(comm,fd,"Machine: %s with %d processor, run on %s",arch,size,PetscGetDate());
-  else
-    PetscFPrintf(comm,fd,"Machine: %s with %d processors, run on %s",arch,size,PetscGetDate());
-
-  PetscFPrintf(comm,fd,"\n                Max         Min        Avg        Total \n");
-  PetscFPrintf(comm,fd,"Time (sec):  %5.3e   %5.3e   %5.3e\n",maxt,mint,avet);
-  PetscFPrintf(comm,fd,"Objects:     %5.3e   %5.3e   %5.3e\n",maxo,mino,aveo);
-  PetscFPrintf(comm,fd,"Flops:       %5.3e   %5.3e   %5.3e  %5.3e\n",
-                                                 maxf,minf,avef,totf);
+  PetscFPrintf(comm,fd,"\n                         Max         Min        Avg        Total \n");
+  if (mint) ratio = maxt/mint; else ratio = 0.0;
+  PetscFPrintf(comm,fd,"Time (sec):           %5.3e   %6.1f   %5.3e\n",maxt,ratio,avet);
+  if (mino) ratio = maxo/mino; else ratio = 0.0;
+  PetscFPrintf(comm,fd,"Objects:              %5.3e   %6.1f   %5.3e\n",maxo,ratio,aveo);
+  if (minf) ratio = maxf/minf; else ratio = 0.0;
+  PetscFPrintf(comm,fd,"Flops:                %5.3e   %6.1f   %5.3e  %5.3e\n",maxf,ratio,avef,totf);
 
   if (mint) fmin = minf/mint; else fmin = 0;
   if (maxt) fmax = maxf/maxt; else fmax = 0;
   if (maxt) ftot = totf/maxt; else ftot = 0;
-  PetscFPrintf(comm,fd,"Flops/sec:   %5.3e   %5.3e              %5.3e\n",
-                                               fmin,fmax,ftot);
+  if (fmin) ratio = fmax/fmin; else ratio = 0.0;
+  PetscFPrintf(comm,fd,"Flops/sec:            %5.3e   %6.1f              %5.3e\n",fmax,ratio,ftot);
   PetscTrSpace(PETSC_NULL,PETSC_NULL,&mem);
   if (mem > 0.0) {
     MPI_Reduce(&mem,&maxmem,1,MPI_DOUBLE,MPI_MAX,0,comm);
     MPI_Reduce(&mem,&minmem,1,MPI_DOUBLE,MPI_MIN,0,comm);
     MPI_Reduce(&mem,&totmem,1,MPI_DOUBLE,MPI_SUM,0,comm);
-    PetscFPrintf(comm,fd,"Memory:      %5.3e   %5.3e              %5.3e\n",
-                                               minmem,maxmem,totmem);
- 
+    if (minmem) ratio = maxmem/minmem; else ratio = 0.0;
+    PetscFPrintf(comm,fd,"Memory:               %5.3e   %6.1f              %5.3e\n",maxmem,ratio,totmem);
   }
+  /* test that all messages are received */
+  MPI_Reduce(&irecv_ct,&minm,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  MPI_Reduce(&isend_ct,&maxm,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  if (maxm != minm) {
+     PetscFPrintf(comm,fd,"WARNING: %g sent messages but only %g received\n",maxm,minm);
+  }
+  wdou = .5*(irecv_ct + isend_ct);
+  MPI_Reduce(&wdou,&minm,1,MPI_DOUBLE,MPI_MIN,0,comm);
+  MPI_Reduce(&wdou,&maxm,1,MPI_DOUBLE,MPI_MAX,0,comm);
+  MPI_Reduce(&wdou,&totm,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  avem = (totm)/((double) size);
+  wdou = .5*(irecv_len + isend_len);
+  MPI_Reduce(&wdou,&minml,1,MPI_DOUBLE,MPI_MIN,0,comm);
+  MPI_Reduce(&wdou,&maxml,1,MPI_DOUBLE,MPI_MAX,0,comm);
+  MPI_Reduce(&wdou,&totml,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  aveml = (totml)/((double) size);
+  if (minm) ratio = maxm/minm; else ratio = 0.0;
+  PetscFPrintf(comm,fd,"MPI Messages:         %5.3e   %6.1f   %5.3e  %5.3e\n",maxm,ratio,avem,totm);
+  if (minml) ratio = maxml/minml; else ratio = 0.0;
+  PetscFPrintf(comm,fd,"MPI Messages:         %5.3e   %6.1f   %5.3e  %5.3e (lengths)\n",maxml,ratio,aveml,totml);
+  MPI_Reduce(&allreduce_ct,&minr,1,MPI_DOUBLE,MPI_MIN,0,comm);
+  MPI_Reduce(&allreduce_ct,&maxr,1,MPI_DOUBLE,MPI_MAX,0,comm);
+  MPI_Reduce(&allreduce_ct,&totr,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  if (minr) ratio = maxr/minr; else ratio = 0.0;
+  PetscFPrintf(comm,fd,"MPI Reductions:       %5.3e   %6.1f\n",maxr,ratio);
 
 
   if (EventsStageMax) {
-    PetscFPrintf(comm,fd,"\nSummary of Stages:     Avg Time  %%Total  Avg Flops/sec  %%Total\n");
+    double mcounts,mlens,rcounts;
+
+    PetscFPrintf(comm,fd,"\nSummary of Stages:  ---- Time ------     ----- Flops -------    -- Messages -- -- Message-lengths -- Reductions --\n");
+    PetscFPrintf(comm,fd,"                      Avg      %%Total        Avg       %%Total   counts   %%Total    avg      %%Total   counts  %%Total \n");
     for ( j=0; j<=EventsStageMax; j++ ) {
       MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
       MPI_Reduce(&EventsStageTime[j],&sstime,1,MPI_DOUBLE,MPI_SUM,0,comm);
       if (tott > 0) pstime = 100.0*sstime/tott; else pstime = 0.0;
       if (tott >= 100.0 ) tott = 99.9;
       if (totf > 0) psflops = 100.*sflops/totf; else psflops = 0.0; 
-      if (totf >= 100.0 ) totf = 99.9;
       if (sstime > 0) psflops1 = (size*sflops)/sstime; else psflops1 = 0.0;
+
+      MPI_Reduce(&EventsStageMessageCounts[j],&mcounts,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      MPI_Reduce(&EventsStageMessageLengths[j],&mlens,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      MPI_Reduce(&EventsStageReductions[j],&rcounts,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      mcounts = .5*mcounts; mlens = .5*mlens; rcounts = rcounts/size;
+      if (totm)  rat1 = 100.*mcounts/totm; else rat1 = 0.0; if (rat1 >= 99.9) rat1 = 99.9;
+      if (totml) rat2 = 100.*mlens/totml; else rat2 = 0.0;  if (rat2 >= 99.9) rat2 = 99.9;
+      if (totr)  rat3 = 100.*size*rcounts/totr; else rat3 = 0.0;if (rat2 >= 100.0) rat2 = 99.9;
       if (EventsStageName[j]) {
-        PetscFPrintf(comm,fd," %d: %15s:  %7.5e   %4.1f%%    %5.3e     %4.1f%% \n",
-                     j,EventsStageName[j],sstime/size,pstime,psflops1,psflops);
+        PetscFPrintf(comm,fd," %d: %15s: %5.3e    %4.1f%%     %5.3e      %4.1f%%  %5.3e   %4.1f%%  %5.3e  %4.1f%%  %5.3e  %4.1f%% \n",
+                j,EventsStageName[j],sstime/size,pstime,psflops1,psflops,mcounts,rat1,mlens/mcounts,rat2,
+                rcounts,rat3);
       } else {
-        PetscFPrintf(comm,fd," %d:          %5.3e   %4.1f%%    %5.3e     %4.1f%% \n",
-                    j,sstime/size,pstime,psflops1,psflops);
+        PetscFPrintf(comm,fd," %d:                 %5.3e    %4.1f%%     %5.3e      %4.1f%%  %5.3e   %4.1f%%  %5.3e  %4.1f%%  %5.3e  %4.1f%% \n",
+                j,sstime/size,pstime,psflops1,psflops,mcounts,rat1,mlens,rat2,rcounts,rat3);
       }
     }
   }
 
 
   PetscFPrintf(comm,fd,  
-    "\n------------------------------------------------------------------------------\n"); 
+    "\n-------------------------------------------------------------------------------------------------------------\n"); 
   PetscFPrintf(comm,fd,"Phase summary info:\n");
   PetscFPrintf(comm,fd,"   Count: number of times phase was executed\n");
-  PetscFPrintf(comm,fd,"   Time and Flops/sec:\n");
-  PetscFPrintf(comm,fd,"      Max - maximum over all processors\n");
-  PetscFPrintf(comm,fd,"      Ratio - ratio of maximum to minimum over all processors\n");
+  PetscFPrintf(comm,fd,"   Time and Flops/sec: Max - maximum over all processors\n");
+  PetscFPrintf(comm,fd,"                       Ratio - ratio of maximum to minimum over all processors\n");
   PetscFPrintf(comm,fd,"   Global: entire computation\n");
-  PetscFPrintf(comm,fd,"   Stage: optional user-defined stages of a computation\n");
-  PetscFPrintf(comm,fd,"          Set stages with PLogStagePush() and PLogStagePop().\n");
-  PetscFPrintf(comm,fd,"      %%T - percent time in this phase\n");
-  PetscFPrintf(comm,fd,"      %%F - percent flops in this phase\n");
+  PetscFPrintf(comm,fd,"   Stage: optional user-defined stages of a computation. Set stages with PLogStagePush() and PLogStagePop().\n");
+  PetscFPrintf(comm,fd,"      %%T - percent time in this phase %%F - percent flops in this phase\n");
+  PetscFPrintf(comm,fd,"      %%M - percent messages in this phase %%L - percent message lengths in this phase\n");
+  PetscFPrintf(comm,fd,"      %%R - percent reductions in this phase\n");
   PetscFPrintf(comm,fd,
-    "------------------------------------------------------------------------------\n"); 
+    "---------------------------------------------------------------------------------------------------------------\n"); 
 
   /* loop over operations looking for interesting ones */
   PetscFPrintf(comm,fd,"Phase             Count      Time (sec)       Flops/sec\
-     Global     Stage\n");
+                           -- Global --      -- Stage --\n");
   PetscFPrintf(comm,fd,"                           Max    Ratio      Max    Ratio\
-    %%T %%F     %%T %%F\n");
+    Mess  Avg len  Reduct %%T %%F %%M %%L %%R     %%T %%F %%M %%L %%R\n");
   PetscFPrintf(comm,fd,
-    "------------------------------------------------------------------------------\n"); 
+    "---------------------------------------------------------------------------------------------------------------\n"); 
   for ( j=0; j<=EventsStageMax; j++ ) {
     MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
     MPI_Reduce(&EventsStageTime[j],&sstime,1,MPI_DOUBLE,MPI_SUM,0,comm);
@@ -1105,32 +1186,46 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
       else wdou = 0.0;
       MPI_Reduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,0,comm);
       MPI_Reduce(&wdou,&maxf,1,MPI_DOUBLE,MPI_MAX,0,comm);
-      wdou = EventsType[j][i][FLOPS];
-      MPI_Reduce(&wdou,&totff,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      wdou = EventsType[j][i][TIME];
-      MPI_Reduce(&wdou,&mint,1,MPI_DOUBLE,MPI_MIN,0,comm);
-      MPI_Reduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
-      MPI_Reduce(&wdou,&totts,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      MPI_Reduce(&EventsType[j][i][FLOPS],&totff,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      MPI_Reduce(&EventsType[j][i][TIME],&mint,1,MPI_DOUBLE,MPI_MIN,0,comm);
+      MPI_Reduce(&EventsType[j][i][TIME],&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
+      MPI_Reduce(&EventsType[j][i][TIME],&totts,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      MPI_Reduce(&EventsType[j][i][MESSAGES],&mp,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      MPI_Reduce(&EventsType[j][i][LENGTHS],&lp,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      MPI_Reduce(&EventsType[j][i][REDUCTIONS],&rp,1,MPI_DOUBLE,MPI_SUM,0,comm);
+
+      MPI_Reduce(&EventsStageMessageCounts[j],&totms,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      MPI_Reduce(&EventsStageMessageLengths[j],&totmls,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      MPI_Reduce(&EventsStageReductions[j],&totrs,1,MPI_DOUBLE,MPI_SUM,0,comm);
+
       if (EventsType[j][i][COUNT]) {
         if (mint > 0.0) rat = maxt/mint; else rat = 0.0;
         if (minf > 0.0) ratf = maxf/minf; else ratf = 0.0;
         if (tott > 0.0) ptotts = 100.*totts/tott; else ptotts = 0.0;
-        if (ptotts >= 100.0 ) ptotts = 99.9;
+        if (ptotts >= 99. ) ptotts = 99.;
         if (totf > 0.0) ptotff = 100.*totff/totf; else ptotff = 0.0;
-        if (ptotff >= 100.0 ) ptotff = 99.9;
+        if (ptotff >= 99. ) ptotff = 99.;
         if (sstime > 0.0) ptotts_stime = 100.*totts/sstime; else  ptotts_stime = 0.0;
-        if (ptotts_stime >= 100.0 ) ptotts_stime = 99.9;
+        if (ptotts_stime >= 99. ) ptotts_stime = 99.;
         if (sflops > 0.0) ptotff_sflops = 100.*totff/sflops; else ptotff_sflops = 0.0;
-        if (ptotff_sflops >= 100.0 ) ptotff_sflops = 99.9;
-        PetscFPrintf(comm,fd,"%s %6d  %4.3e %6.1f  %2.1e %6.1f  %4.1f %4.1f %4.1f %4.1f\n",
+        if (ptotff_sflops >= 99. ) ptotff_sflops = 99.;
+        if (totm) mpg = 100.*mp/totm; else mpg = 0.0; if (mpg >= 99.) mpg = 99.;
+        if (totml)  lpg = 100.*lp/totml; else lpg = 0.0; if (lpg >= 99.) lpg = 99.;
+        if (totr)  rpg = 100.*rp/totr; else rpg = 0.0;if (rpg >= 99.) rpg = 99.;
+        if (totms) mps = 100.*mp/totms; else mps = 0.0; if (mps >= 99.) mps = 99.;
+        if (totmls)  lps = 100.*lp/totmls; else lps = 0.0; if (lps >= 99.) lps = 99.;
+        if (totrs)  rps = 100.*rp/totrs; else rps = 0.0;if (rps >= 99.) rps = 99.;
+        if (mp) lpmp = lp/mp; else lpmp = 0.0;
+
+        PetscFPrintf(comm,fd,"%s %6d  %4.3e %6.1f  %2.1e %6.1f  %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f    %2.0f %2.0f %2.0f %2.0f %2.0f\n",
                     PLogEventName[i],(int)EventsType[j][i][COUNT],maxt,rat,maxf,ratf,
-                    ptotts,ptotff,ptotts_stime,ptotff_sflops);
+                    mp,lpmp,rp,ptotts,ptotff,mpg,lpg,rpg,ptotts_stime,ptotff_sflops,mps,lps,rps);
       }
     }
   }
 
   PetscFPrintf(comm,fd,
-    "------------------------------------------------------------------------------\n"); 
+    "---------------------------------------------------------------------------------------------------------------\n"); 
   PetscFPrintf(comm,fd,"\n"); 
   PetscFPrintf(comm,fd,"Memory usage is given in bytes:\n\n");
 
@@ -1146,11 +1241,6 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   }
   PetscFPrintf(comm,fd,"\n");
 
-#if defined (PETSC_MPI_LOG)
-  PetscFPrintf(comm,fd,"irecv_ct =%d isend_ct = %d wait_ct = %d wait_any_ct = %d \n",irecv_ct,isend_ct,wait_ct,wait_any_ct);
-  PetscFPrintf(comm,fd,"get_count_ct = %d wait_all_ct = %d allreduce_ct = %d \n",get_count_ct,wait_all_ct,allreduce_ct);
-  
-#endif
   return 0;
 }
 
