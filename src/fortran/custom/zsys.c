@@ -64,6 +64,13 @@
 #define petscviewerasciipushtab_      PETSCVIEWERASCIIPUSHTAB
 #define petscviewerasciipoptab_       PETSCVIEWERASCIIPOPTAB
 #define petscviewerasciiusetabs_      PETSCVIEWERASCIIUSETABS
+#define petscpusherrorhandler_        PETSCPUSHERRORHANDLER
+#define petscpoperrorhandler_         PETSCPOPERRORHANDLER
+#define petsctracebackerrorhandler_   PETSCTRACEBACKERRORHANDLER
+#define petscaborterrorhandler_       PETSCABORTERRORHANDLER
+#define petscignoreerrorhandler_      PETSCIGNOREERRORHANDLER
+#define petscemacsclienterrorhandler_ PETSCEMACSCLIENTERRORHANDLER
+#define petscattachdebuggererrorhandler_   PETSCATTACHDEBUGGERERRORHANDLER
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscfopen_                   petscfopen
 #define petscfclose_                  petscfclose
@@ -124,7 +131,13 @@
 #define petscviewerasciipushtab_ petscviewerasciipushtab
 #define petscviewerasciipoptab_ petscviewerasciipoptab
 #define petscviewerasciiusetabs_ petscviewerasciiusetabs
-
+#define petscpusherrorhandler_   petscpusherrorhandler
+#define petscpoperrorhandler_    petscpoperrorhandler
+#define petsctracebackerrorhandler_   petsctracebackerrorhandler
+#define petscaborterrorhandler_       petscaborterrorhandler
+#define petscignoreerrorhandler_      petscignoreerrorhandler
+#define petscemacsclienterrorhandler_ petscemacsclienterrorhandler
+#define petscattachdebuggererrorhandler_   petscattachdebuggererrorhandler
 #endif
 
 EXTERN_C_BEGIN
@@ -141,6 +154,70 @@ EXTERN_C_BEGIN
       call VecGetArray(y,v_y,i_y,ierr)
     endif
 */
+
+/*
+        These are not usually called from Fortran but allow Fortran users 
+   to transparently set these monitors from .F code
+   
+   functions, hence no STDCALL
+*/
+void petsctracebackerrorhandler_(int *line,char *fun,char *file,char *dir,int *n,int *p,char *mess,void *ctx,int *ierr)
+{
+  *ierr = PetscTraceBackErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
+}
+
+void petscaborterrorhandler_(int *line,char *fun,char *file,char *dir,int *n,int *p,char *mess,void *ctx,int *ierr)
+{
+  *ierr = PetscAbortErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
+}
+
+void petscattachdebuggererrorhandler_(int *line,char *fun,char *file,char *dir,int *n,int *p,char *mess,void *ctx,int *ierr)
+{
+  *ierr = PetscAttachDebuggerErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
+}
+
+void petscemacsclienterrorhandler_(int *line,char *fun,char *file,char *dir,int *n,int *p,char *mess,void *ctx,int *ierr)
+{
+  *ierr = PetscEmacsClientErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
+}
+
+void petscignoreerrorhandler_(int *line,char *fun,char *file,char *dir,int *n,int *p,char *mess,void *ctx,int *ierr)
+{
+  *ierr = PetscIgnoreErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
+}
+
+static void (PETSC_STDCALL *f2)(int*,CHAR PETSC_MIXED_LEN(),CHAR PETSC_MIXED_LEN(),CHAR PETSC_MIXED_LEN(),int*,int*,CHAR PETSC_MIXED_LEN(),void*,int* PETSC_END_LEN() PETSC_END_LEN() PETSC_END_LEN() PETSC_END_LEN());
+static int ourerrorhandler(int line,char *fun,char *file,char *dir,int n,int p,char *mess,void *ctx)
+{
+  int ierr = 0,len1,len2,len3,len4;
+  
+  PetscStrlen(fun,&len1);
+  PetscStrlen(file,&len2);
+  PetscStrlen(dir,&len3);
+  PetscStrlen(mess,&len4);
+
+#if defined(PETSC_USE_FORTRAN_MIXED_STR_ARG)
+  (*f2)(&line,fun,len1,file,len2,dir,len3,&n,&p,mess,len4,ctx,&ierr);
+#else
+  (*f2)(&line,fun,file,dir,&n,&p,mess,ctx,&ierr,len1,len2,len3,len4);
+#endif
+  return ierr;
+}
+
+void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(int*,CHAR PETSC_MIXED_LEN(),CHAR PETSC_MIXED_LEN(),CHAR PETSC_MIXED_LEN(),int*,int*,CHAR PETSC_MIXED_LEN(),void*,int* PETSC_END_LEN() PETSC_END_LEN() PETSC_END_LEN() PETSC_END_LEN()),void *ctx,int *ierr)
+{
+  if ((void(*)(void))handler == (void(*)(void))petsctracebackerrorhandler_) {
+    *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler,0);
+  } else {
+    f2    = handler;
+    *ierr = PetscPushErrorHandler(ourerrorhandler,ctx);
+  }
+}
+
+void PETSC_STDCALL petscpoperrorhandler_(int *ierr)
+{
+  *ierr = PetscPopErrorHandler();
+}
 
 void PETSC_STDCALL petscviewerasciisettab_(PetscViewer *viewer,int *tabs,int *ierr)
 {
@@ -480,7 +557,7 @@ void PETSC_STDCALL petscerror_(int *number,int *p,CHAR message PETSC_MIXED_LEN(l
 {
   char *t1;
   FIXCHAR(message,len,t1);
-  *ierr = PetscError(-1,"fortran_interface_unknown_file",0,0,*number,*p,t1);
+  *ierr = PetscError(-1,0,0,0,*number,*p,t1);
   FREECHAR(message,t1);
 }
 

@@ -203,6 +203,10 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
   char        buf[2048],*lbuf = 0;
   PetscTruth  ismain,isunknown;
 
+  if (!func)  func = "User provided function";
+  if (!file)  file = "User file";
+  if (!dir)   dir = " ";
+
   PetscFunctionBegin;
   /* Compose the message evaluating the print format */
   if (mess) {

@@ -9,7 +9,7 @@ FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
 		  ex13.c ex14.c ex15.c ex16.c
-EXAMPLESF       = ex5.F ex6.F ex7f.F ex13f.F ex17f.F
+EXAMPLESF       = ex1f.F ex5.F ex6.F ex7f.F ex13f.F ex17f.F
 MANSEC          = Sys
 
 include ${PETSC_DIR}/bmake/common/base
@@ -17,6 +17,10 @@ include ${PETSC_DIR}/bmake/common/base
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
 	${RM} -f ex1.o
+
+ex1f: ex1f.o chkopts
+	-${FLINKER} -o ex1f ex1f.o  ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
+	${RM} -f ex1f.o
 
 ex2: ex2.o chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_SYS_LIB}
@@ -87,6 +91,11 @@ runex1:
 	   if (${DIFF} output/ex1_1.out ex1_1.tmpz) then true; \
 	   else echo "This is a contrived error to test error handling."; fi; \
 	   ${RM} -f ex1_1.tmp ex1_1.tmpz
+runex1f:
+	-@${MPIRUN} -np 1 ex1f > ex1f_1.tmp 2>&1; grep -v p0 ex1f_1.tmp > ex1f_1.tmpz ;\
+	   if (${DIFF} output/ex1f_1.out ex1f_1.tmpz) then true; \
+	   else echo "This is a contrived error to test error handling."; fi; \
+	   ${RM} -f ex1f_1.tmp ex1f_1.tmpz
 runex2:
 	-@${MPIRUN} -np 1 ex2	 > ex2_1.tmp 2>&1;grep -v p0 ex2_1.tmp > ex2_1.tmpz ;\
 	   if (${DIFF} output/ex2_1.out ex2_1.tmpz) then true; \
@@ -120,7 +129,8 @@ runex13f:
 TESTEXAMPLES_1  = ex7.PETSc runex7 ex7.rm ex13.PETSc runex13 ex13.rm 
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex3.PETSc runex3 ex3.rm 
-TESTEXAMPLES_3  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm ex13f.PETSc runex13f ex13f.rm ex17f.F ex17f.rm
+TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm \
+                  ex5.PETSc ex5.rm ex6.PETSc ex6.rm ex13f.PETSc runex13f ex13f.rm ex17f.F ex17f.rm
 TESTEXAMPLES_9  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm
 TESTEXAMPLES_13 = ex7f.PETSc ex7f.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm \

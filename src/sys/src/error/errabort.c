@@ -60,10 +60,6 @@ int PetscAbortErrorHandler(int line,char *fun,char *file,char* dir,int n,int p,c
   int rank;
 
   PetscFunctionBegin;
-  if (!fun)  fun = "User provided function";
-  if (!dir)  dir = " ";
-  if (!mess) mess = " ";
-
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   (*PetscErrorPrintf)("[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
 

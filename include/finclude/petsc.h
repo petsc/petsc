@@ -142,7 +142,16 @@
       common /petscfortran5/ PETSC_NULL_DOUBLE
       common /petscfortran6/ PETSC_NULL_REAL
       common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
+!
+!     Possible arguments to PetscPushErrorHandler()
+!
+      external PETSCTRACEBACKERRORHANDLER
+      external PETSCABORTERRORHANDLER
+      external PETSCEMACSCLIENTERRORHANDLER
+      external PETSCATTACHDEBUGGERERRORHANDLER
+      external PETSCIGNOREERRORHANDLER
 
+  
 !    END COMMON-BLOCK VARIABLES
 ! ----------------------------------------------------------------------------
 
