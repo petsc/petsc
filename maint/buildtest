@@ -1,67 +1,63 @@
 #! /bin/csh
 # 
-# Runs buildall in Petsc's petsc directory
+# Compiles and tests PETSc in our nightly builds.
 #
+# Assign jobs to each account
 #
-setenv H /home/petsc/petsc
-echo $H
-cd $H/maint
-/bin/rm -f build.log examples.log ftp.log
-set day=`date | cut -f1 -d" "`
-#
-# Set up configurations for library building and testing
-
-if ($day == Sun || $day == Wed || $day == Fri) then
-    set M=(snake    merlin      )
-    set B=(O        O_complex   )
-    set A=(hpux     sun4        )
-    set J=(fortran  fortran   )
-else if ($day == Mon || $day == Sat) then
-    set M=(ptera      ryan      )
-    set B=(O_complex  O         )
-    set A=(alpha      IRIX      )
-    set J=(fortran  fortran   )
-else
-    set M=(ptera      puck)
-    set B=(O          O_complex)
-    set A=(alpha      IRIX)
-    set J=(fortran    fortran)
+if ($1 == petsc) then
+  set job = (1 2)
 endif
-
+if ($1 == bsmith) then 
+  set job = (3)
+endif
+if ($1 == curfman) then 
+  set job = (4)
+endif
+if ($1 == balay) then 
+  set job = (5)
+endif
 #
-set i=1
-foreach machine ($M)
+#
+setenv H /home/petsc/$1
+cd $H/maint
+/bin/rm -f build.log examples.log
+#
+#  load the machine names and versions to test
+#
+source /home/bsmith/petsc/maint/testmachines
+#
+#  test for each machine
+#
+foreach i ($job)
+  set mach    = $M[$i]
   set bopt    = $B[$i]
   set arch    = $A[$i]
-  echo "*******************************************************" >> build.log
-  echo "Build on $machine $bopt `date` " >> build.log
-  rsh $machine -n "cd $H ; \
-      make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt all  >>& maint/build.log"
-  echo "*******************************************************" >> build.log
-  if ($J[$i] == fortran) then
-    rsh $machine -n "cd $H; \
-        make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt fortran  >>& maint/build.log"
+  echo "****************************************************" >> build.log
+  echo "Build on $mach $bopt `date` " >> build.log
+  rsh $mach -n "cd $H ; \
+    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt all >>& maint/build.log"
+  echo "****************************************************" >> build.log
+  rsh $mach -n "cd $H; \
+    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt fortran >>& maint/build.log"
   endif
-  rsh $machine -n "cd $H; chmod -R g+w lib" >& /dev/null
-  echo "Finished Build on $machine  $arch $bopt `date`" >> build.log
+  rsh $mach -n "cd $H; chmod -R g+w lib" >& /dev/null
+  echo "Finished Build on $mach  $arch $bopt `date`" >> build.log
+  echo "****************************************************">>examples.log
+  echo "Build on $mach  $bopt `date` " >> examples.log
+  rsh $mach -n "cd $H ;  \
+    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt testexamples >>& maint/examples.log"
   echo "******************************************************" >> examples.log
-  echo "Build on $machine  $bopt `date` " >> examples.log
-  rsh $machine -n "cd $H ;  \
-       make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt  testexamples >>& maint/examples.log"
+  rsh $mach -n "cd $H ;  \
+    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_2 tree >>& maint/examples.log"
   echo "******************************************************" >> examples.log
-  rsh $machine -n "cd $H ;  \
-       make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt  ACTION=testexamples_2 tree >>& maint/examples.log"
-  echo "******************************************************" >> examples.log
-  if ($J[$i] == fortran) then
-    rsh $machine -n "cd $H ;  \
-         make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt  ACTION=testexamples_3 tree >>& maint/examples.log"
+  rsh $mach -n "cd $H ;  \
+    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_3 tree >>& maint/examples.log"
   endif
-  echo "Finished Build on $machine $arch $bopt `date`" >> examples.log
-  @ i = ($i + 1)
-  rsh $machine -n "cd $H ; \
+  echo "Finished Build on $mach $arch $bopt `date`" >> examples.log
+  rsh $mach -n "cd $H ; \
     /bin/cp lib/lib$bopt/$arch/*.a /home/bsmith/petsc/lib/lib$bopt/$arch  >>& /dev/null ;\
-    chmod g+w /home/bsmith/petsc/lib/lib$bopt/$arch ; \
-    ranlib -t /home/bsmith/petsc/lib/lib$bopt/$arch/*.a  >>& /dev/null"
+  chmod g+w /home/bsmith/petsc/lib/lib$bopt/$arch ; \
+  ranlib -t /home/bsmith/petsc/lib/lib$bopt/$arch/*.a  >>& /dev/null"
 end
 echo "Finished Build `date`" >> build.log
 echo "Finished Build `date`" >> examples.log
