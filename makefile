@@ -183,6 +183,35 @@ fortran90: chkpetsc_dir fortran
 	-@echo "Completed compiling Fortran90 interface library"
 	-@echo "========================================="
 
+# Builds noise routines (not yet publically available)
+# Note:	 libfast cannot run on .F files on certain machines, so we
+# use lib and check for errors here.
+noise: chkpetsc_dir
+	-@echo "Beginning to compile noise routines"
+	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
+	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
+	-@echo "------------------------------------------"
+	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "------------------------------------------"
+	-@echo "Using configuration flags: $(CONF)"
+	-@echo "------------------------------------------"
+	-@echo "Using include paths: $(PETSC_INCLUDE)"
+	-@echo "------------------------------------------"
+	-@echo "Using PETSc directory: $(PETSC_DIR)"
+	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+	-@echo "========================================="
+	-@cd src/snes/interface/noise; \
+	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
+	  grep -v clog trashz | grep -v "information sections" | \
+	  egrep -i '(Error|warning|Can)' >> /dev/null;\
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; $(RM) trashz
+	$(RANLIB) $(PDIR)/libpetscsnes.a
+	-@chmod g+w  $(PDIR)/libpetscsnes.a
+	-@echo "Completed compiling noise routines"
+	-@echo "========================================="
+
+
 ranlib:
 	$(RANLIB) $(PDIR)/*.a
 

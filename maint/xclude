@@ -1,6 +1,4 @@
-petsc/src/snes/interface/snesdest.F
-petsc/src/snes/interface/snesnoise.c
-petsc/src/snes/interface/snesmfj2.c
+petsc/src/snes/interface/noise
 petsc/src/mat/impls/baij/seq/dgedi.ff
 petsc/src/mat/impls/baij/seq/dgefa.ff
 petsc/src/contrib/reusememory
