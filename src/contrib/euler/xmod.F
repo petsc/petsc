@@ -354,7 +354,8 @@ c Update pressure through equation of state
 c -------------------------------------------------------------------
 c
       integer function jmonitor(xl2,cfl_new,work,xx,p,dxx,
-     &                          aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+     &                          aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+     &                          tcl,tcd,nsup)
 c
 c jmonitor - Writes miscellaneous output information.  Called by
 c            the MonitorEuler().
@@ -393,7 +394,7 @@ c      COMMON /FREQ/ IFREQ,ISGS
       cfl      = cfl_new
 
       if (no_output .ne. 0) return
-      IF (NCYC.NE.1.AND.MOD(NCYC,5).NE.0) RETURN
+c      IF (NCYC.NE.1.AND.MOD(NCYC,5).NE.0) RETURN
 c Compute and tabulate norms and the number of supersonic points in flowfield
       RTMAX=zero
       RTRMS=zero
@@ -480,9 +481,9 @@ c          DO 42 I=ITL+1,ITU
       TCL=TCL/AREAS*2./FSMACH**2
       TCD=TCD/AREAS*2./FSMACH**2
 
+      IF (NCYC.NE.1.AND.MOD(NCYC,5).NE.0) RETURN
       if (rank .eq. 0)
      &   WRITE (6,200) NCYC,RTMAX,RTRMS,ETRMS,XL2,TCL,TCD,NSUP
-
 
   200 FORMAT(I5,1P6E11.3,I5)
       RETURN

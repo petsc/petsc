@@ -31,7 +31,7 @@ c      COMMON /WING/ ITL,ITU,ILE,KTIP
       Double  CP2(D_NI,D_NK),CP21(D_NI,D_NK)
       Double  CN1(D_NK),CC1(D_NK),CN(D_NK),CC(D_NK)
       Double  AREA(D_NK),AREA1(D_NK),ZLOC(D_NK)
-      Double  dsend(3),drecv(3),S(D_NI),CL(D_NI),CD(D_NI)
+      Double  S(D_NI),CL(D_NI),CD(D_NI)
       Double  chord,pbody,tcl,tcd,areas,cls,cds
       integer i,k,pprint,ierr,btot,xcomm
 
@@ -107,9 +107,6 @@ c            DO 10 I=ITL,ITU+1
    81 FORMAT (4X,'Z = ',20F8.4,/)
    83 FORMAT(21F8.4)
 
-      TCL=zero
-      TCD=zero
-      AREAS=zero
       if (ysf1 .eq. 1) then
         DO 41 K=zsf2,KTIPP
 c        DO 41 K=2,KTIP
@@ -130,56 +127,43 @@ c            CC=CC-(PBODY-RGAM)*AJX(I,1,K)
  41     CONTINUE
 
 c  Sum over each section of mesh, using the communicator xcomm
-          call MPI_Allreduce(cn1,cn,d_nk,MPI_DOUBLE_PRECISION,
-     &                       MPI_SUM,xcomm,ierr)
-          call MPI_Allreduce(cc1,cc,d_nk,MPI_DOUBLE_PRECISION,
-     &                       MPI_SUM,xcomm,ierr)
-          call MPI_Allreduce(area1,area,d_nk,MPI_DOUBLE_PRECISION,
-     &                       MPI_SUM,xcomm,ierr)
+        call MPI_Allreduce(cn1,cn,d_nk,MPI_DOUBLE_PRECISION,
+     &                     MPI_SUM,xcomm,ierr)
+        call MPI_Allreduce(cc1,cc,d_nk,MPI_DOUBLE_PRECISION,
+     &                     MPI_SUM,xcomm,ierr)
+        call MPI_Allreduce(area1,area,d_nk,MPI_DOUBLE_PRECISION,
+     &                     MPI_SUM,xcomm,ierr)
 
-        DO 42 K=zsf2,KTIPP
-          CLS=CN(K)*COS(-BETA)-CC(K)*SIN(-BETA)
-          CDS=CN(K)*SIN(-BETA)+CC(K)*COS(-BETA)
-          CL(K) = CLS/AREA(K)
-          CD(K) = CDS/AREA(K)
-          AREAS = AREAS+AREA(K)
-          TCL=TCL+CLS
-          TCD=TCD+CDS
- 42     CONTINUE
-        if (zsf .eq. 1) then
-           dsend(1) = tcl
-           dsend(2) = tcd
-           dsend(3) = areas
-        else
-           dsend(1) = zero
-           dsend(2) = zero
-           dsend(3) = zero
+        if (rank .eq. 0) then
+          TCL=zero
+          TCD=zero
+          AREAS=zero
+          DO 42 K=2,KTIP
+            CLS=CN(K)*COS(-BETA)-CC(K)*SIN(-BETA)
+            CDS=CN(K)*SIN(-BETA)+CC(K)*COS(-BETA)
+            CL(K) = CLS/AREA(K)
+            CD(K) = CDS/AREA(K)
+            AREAS = AREAS+AREA(K)
+            TCL   = TCL+CLS
+            TCD   = TCD+CDS
+ 42       CONTINUE
+          TCL = TCL/AREAS
+          TCD = TCD/AREAS
+
+          if (pprint .eq. 1) then
+            WRITE (6,43)
+            WRITE (6,44)
+            WRITE (6,45) (ZLOC(K),CL(K),CD(K),K=2,KTIP)
+            WRITE (6,46) TCL,TCD
+          endif
         endif
-      else
-        dsend(1) = zero
-        dsend(2) = zero
-        dsend(3) = zero
       endif
 
-      call MPI_Allreduce(dsend,drecv,3,MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM,comm,ierr)
-      tcl   = drecv(1)
-      tcd   = drecv(2)
-      areas = drecv(3)
-      TCL   = TCL/AREAS
-      TCD   = TCD/AREAS
-
-      if (pprint .eq. 1 .and. rank .eq. 0) then
-      WRITE (6,43)
    43 FORMAT (/ /,20X,'SPANWISE LIFT DISTRIBUTION',/ /)
-      WRITE (6,44)
    44 FORMAT (5X,'Z',12X,'CL',12X,'CD',/)
-      WRITE (6,45) (ZLOC(K),CL(K),CD(K),K=2,KTIP)
    45 FORMAT (2X,F6.3,4X,F10.4,4X,F10.4)
-      WRITE (6,46) TCL,TCD
    46 FORMAT (/,2X,'WING LIFT COEFFICIENT =',F10.4,5X,
      1 'WING DRAG COEFFICIENT =',F10.4,/)
-      endif
 
       RETURN
       END

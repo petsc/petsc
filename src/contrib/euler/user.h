@@ -292,8 +292,8 @@ extern int printjul_(double*,double*,int*);
 extern int printgjul_(double*,double*,int*);
 extern int printbjul_(double*,double*,int*);
 extern int wingsurface_(int*);
-extern int jmonitor_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+extern int jmonitor_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*);
 extern int jpressure_(Scalar*,Scalar*);
 extern void eigenv_(Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,

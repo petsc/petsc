@@ -35,7 +35,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
   Vec      DX, X;
   Viewer   view1;
   char     filename[64];
-  int      ierr, lits;
+  int      ierr, lits, nsup = 0;
 
   PetscObjectGetComm((PetscObject)snes,&comm);
 
@@ -48,17 +48,6 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     ierr = DFVecView(app->F,view1); CHKERRQ(ierr);
     ierr = ViewerDestroy(view1); CHKERRQ(ierr);
   }
-
-  /* Calculate physical quantities of interest */
-  /* if (app->pvar && !(its%5)) { */
-  if (app->pvar) {
-    int pprint = 0;
-    ierr = pvar_(app->xx,app->p,
-       app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-       app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc,&pprint,
-       &c_lift,&c_drag); CHKERRA(ierr);
-  }
-
   app->flog[its]  = log10(fnorm);
   app->fcfl[its]  = app->cfl; 
   app->ftime[its] = PetscGetTime() - app->time_init;
@@ -76,35 +65,14 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       if (app->rank == 0) {
         app->fp = fopen("fnorm.m","w"); 
         fprintf(app->fp,"zsnes = [\n");
-	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e\n",
+	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
-                app->lin_rtol[its],c_lift,c_drag);
+                app->lin_rtol[its],c_lift,c_drag,nsup);
       }
     }
     app->sles_tot += app->lin_its[its];
   } else {
     /* For the first iteration and onward we do the following */
-
-    /* Get some statistics about the iterative solver */
-    ierr = SNESGetNumberLinearIterations(snes,&lits); CHKERRQ(ierr);
-    app->lin_its[its] = lits - app->last_its;
-    app->last_its     = lits;
-    ierr = KSPGetTolerances(app->ksp,&(app->lin_rtol[its]),PETSC_NULL,PETSC_NULL,
-           PETSC_NULL); CHKERRQ(ierr);
-    if (!app->no_output) {
-      PetscPrintf(comm,"iter = %d, Function norm %g, lin_its = %d\n",
-                  its,fnorm,app->lin_its[its]);
-      /* PetscPrintf(comm,"iter = %d, Function norm %g, lin_rtol=%g, lin_its = %d\n",
-                  its,fnorm,app->lin_rtol[its],app->lin_its[its]); */
-      if (app->rank == 0) {
-	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e\n",
-                its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
-                app->lin_rtol[its],c_lift,c_drag);
-        fflush(app->fp);
-      }
-    }
-    app->sles_tot += app->lin_its[its];
-
     /* Compute new CFL number if desired */
     /* Note: BCs change at iter 10, so we defer CFL increase until after this point */
     if (app->cfl_advance == ADVANCE && its > 11) {
@@ -160,7 +128,25 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     ierr = jmonitor_(&app->flog[its],&app->cfl,
            app->work_p,app->xx,app->p,app->dxx,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-           app->aiz,app->ajz,app->akz); CHKERRQ(ierr); 
+           app->aiz,app->ajz,app->akz,&c_lift,&c_drag,&nsup); CHKERRQ(ierr); 
+
+    /* Get some statistics about the iterative solver */
+    ierr = SNESGetNumberLinearIterations(snes,&lits); CHKERRQ(ierr);
+    app->lin_its[its] = lits - app->last_its;
+    app->last_its     = lits;
+    ierr = KSPGetTolerances(app->ksp,&(app->lin_rtol[its]),PETSC_NULL,PETSC_NULL,
+           PETSC_NULL); CHKERRQ(ierr);
+    if (!app->no_output) {
+      PetscPrintf(comm,"iter = %d, Function norm %g, lin_its = %d\n",
+                  its,fnorm,app->lin_its[its]);
+      if (app->rank == 0) {
+	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
+                its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
+                app->lin_rtol[its],c_lift,c_drag,nsup);
+        fflush(app->fp);
+      }
+    }
+    app->sles_tot += app->lin_its[its];
 
     if (!app->no_output) {
       /* Check solution */
