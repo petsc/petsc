@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.44 1996/02/05 21:05:01 balay Exp curfman $ */
+/* $Id: plog.h,v 1.45 1996/02/07 23:47:07 curfman Exp curfman $ */
 
 /*
     Defines high level logging in PETSc.
@@ -13,40 +13,40 @@
   and petsc/src/sys/src/plog.c!!
 */
 #define MAT_Mult                                0
-#define MAT_AssemblyBegin                       1
-#define MAT_AssemblyEnd                         2
-#define MAT_GetReordering                       3
-#define MAT_MultTrans                           4
-#define MAT_MultAdd                             5
-#define MAT_MultTransAdd                        6
-#define MAT_LUFactor                            7
-#define MAT_CholeskyFactor                      8
-#define MAT_LUFactorSymbolic                    9
-#define MAT_ILUFactorSymbolic                   10
-#define MAT_CholeskyFactorSymbolic              11
-#define MAT_IncompleteCholeskyFactorSymbolic    12
-#define MAT_LUFactorNumeric                     13
-#define MAT_CholeskyFactorNumeric               14
-#define MAT_Relax                               15
-#define MAT_Copy                                16
-#define MAT_Convert                             17
-#define MAT_Scale                               18
-#define MAT_ZeroEntries                         19
-#define MAT_Solve                               20
-#define MAT_SolveAdd                            21
-#define MAT_SolveTrans                          22
-#define MAT_SolveTransAdd                       23
-#define MAT_SetValues                           24
-#define MAT_ForwardSolve                        25
-#define MAT_BackwardSolve                       26
-#define MAT_Load                                27
-#define MAT_View                                28
-#define MAT_ILUFactor                           29
-#define MAT_GetSubMatrix                        30
-#define MAT_GetSubMatrices                      31
-#define MAT_GetValues                           32
-#define MAT_IncreaseOverlap                     33
-#define MAT_MatrixFreeMult                      34
+#define MAT_MatrixFreeMult                      1
+#define MAT_AssemblyBegin                       2
+#define MAT_AssemblyEnd                         3
+#define MAT_GetReordering                       4
+#define MAT_MultTrans                           5
+#define MAT_MultAdd                             6
+#define MAT_MultTransAdd                        7
+#define MAT_LUFactor                            8
+#define MAT_CholeskyFactor                      9
+#define MAT_LUFactorSymbolic                    10
+#define MAT_ILUFactorSymbolic                   11
+#define MAT_CholeskyFactorSymbolic              12
+#define MAT_IncompleteCholeskyFactorSymbolic    13
+#define MAT_LUFactorNumeric                     14
+#define MAT_CholeskyFactorNumeric               15
+#define MAT_Relax                               16
+#define MAT_Copy                                17
+#define MAT_Convert                             18
+#define MAT_Scale                               19
+#define MAT_ZeroEntries                         20
+#define MAT_Solve                               21
+#define MAT_SolveAdd                            22
+#define MAT_SolveTrans                          23
+#define MAT_SolveTransAdd                       24
+#define MAT_SetValues                           25
+#define MAT_ForwardSolve                        26
+#define MAT_BackwardSolve                       27
+#define MAT_Load                                28
+#define MAT_View                                29
+#define MAT_ILUFactor                           30
+#define MAT_GetSubMatrix                        31
+#define MAT_GetSubMatrices                      32
+#define MAT_GetValues                           33
+#define MAT_IncreaseOverlap                     34
 
 #define VEC_Dot                                 40
 #define VEC_Norm                                41
