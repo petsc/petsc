@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.180 1997/12/04 00:24:59 balay Exp bsmith $ 
+# $Id: makefile,v 1.181 1998/01/27 19:15:06 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -161,7 +161,7 @@ ex20: ex20.o chkopts
 	-$(CLINKER) -o ex20 ex20.o $(PETSC_LIB)
 	$(RM) ex20.o
 
-ex21: ex21.o_2 chkopts
+ex21: ex21.o chkopts
 	-$(CLINKER) -o ex21 ex21.o $(PETSC_LIB)
 	$(RM) ex21.o
 
