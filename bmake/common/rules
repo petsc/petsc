@@ -277,6 +277,9 @@ alltree: ${ACTION}
 getlinklibs:
 	-@echo  ${C_SH_LIB_PATH} ${PETSC_TS_LIB}
 
+getincludedirs:
+	-@echo  ${PETSC_INCLUDE}
+
 etags_sourcec:
 	-@if [ "${SOURCEC}" != "" ]; then \
 		etags -a -f ${TAGSFILE} ${SOURCEC} ; fi

@@ -20,7 +20,6 @@ extern int MatZeroRows_SeqSBAIJ(Mat,IS,PetscScalar*);
 extern int MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar *);
 extern int MatGetRowMax_MPISBAIJ(Mat,Vec);
 extern int MatRelax_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
-extern int MatUseSpooles_MPISBAIJ(Mat);
 
 /*  UGLY, ugly, ugly
    When MatScalar == PetscScalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
@@ -694,7 +693,7 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   }
 
 #if defined(PETSC_HAVE_SPOOLES) 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(mat,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSpooles_MPISBAIJ(mat);CHKERRQ(ierr); }
 #endif   
   PetscFunctionReturn(0);
@@ -1697,11 +1696,11 @@ int MatCreate_MPISBAIJ(Mat B)
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_use_hash_table",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(B->prefix,"-mat_use_hash_table",&flg);CHKERRQ(ierr);
   if (flg) { 
     PetscReal fact = 1.39;
     ierr = MatSetOption(B,MAT_USE_HASH_TABLE);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-mat_use_hash_table",&fact,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(B->prefix,"-mat_use_hash_table",&fact,PETSC_NULL);CHKERRQ(ierr);
     if (fact <= 1.0) fact = 1.39;
     ierr = MatMPIBAIJSetHashTableFactor(B,fact);CHKERRQ(ierr);
     PetscLogInfo(0,"MatCreateMPISBAIJ:Hash table Factor used %5.2f\n",fact);
@@ -1809,7 +1808,7 @@ int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o
   ierr = PetscTypeCompare((PetscObject)B,MATMPISBAIJ,&flg2);CHKERRQ(ierr);
   if (!flg2) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(B->prefix,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
 
   if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive");
   if (d_nz == PETSC_DECIDE || d_nz == PETSC_DEFAULT) d_nz = 3;
