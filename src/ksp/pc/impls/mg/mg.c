@@ -111,7 +111,9 @@ static PetscErrorCode MGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI_C
       ierr = PCSetType(ipc,PCLU);CHKERRQ(ierr);
 
     } else {
-      ierr = KSPAppendOptionsPrefix(mg[i]->smoothd,"mg_levels_");CHKERRQ(ierr);
+      char tprefix[128];
+      sprintf(tprefix,"mg_levels_%d_",i);
+      ierr = KSPAppendOptionsPrefix(mg[i]->smoothd,tprefix);CHKERRQ(ierr);
     }
     PetscLogObjectParent(pc,mg[i]->smoothd);
     mg[i]->smoothu         = mg[i]->smoothd;

@@ -321,7 +321,7 @@ PetscErrorCode PCFieldSplitSetFields_FieldSplit(PC pc,PetscInt n,PetscInt *field
   ierr          = KSPSetType(link->ksp,KSPPREONLY);CHKERRQ(ierr);
 
   if (pc->prefix) {
-    sprintf(prefix,"%s_fieldsplit_%d_",pc->prefix,jac->nsplits);
+    sprintf(prefix,"%sfieldsplit_%d_",pc->prefix,jac->nsplits);
   } else {
     sprintf(prefix,"fieldsplit_%d_",jac->nsplits);
   }
@@ -494,10 +494,10 @@ PetscErrorCode PCFieldSplitSetType(PC pc,PCCompositeType type)
    Level: intermediate
 
    Options Database Keys:
-+   -pc_splitfields_xxx_fields <a,b,..> - indicates the fields to be used in the xxx'th split
-.   -pc_splitfields_default - automatically add any fields to additional splits that have not
-                              been supplied explicitly by -pc_splitfields_xxx_fields
--   -pc_splitfields_type <additive,multiplicative>
++   -pc_splitfield_%d_fields <a,b,..> - indicates the fields to be used in the %d'th split
+.   -pc_splitfield_default - automatically add any fields to additional splits that have not
+                              been supplied explicitly by -pc_splitfield_%d_fields
+-   -pc_splitfield_type <additive,multiplicative>
 
    Concepts: physics based preconditioners
 

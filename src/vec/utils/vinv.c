@@ -665,6 +665,7 @@ PetscErrorCode VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
+  if (bs < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
 
   ierr = PetscMalloc2(bs,PetscReal*,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
   nv   = 0;
@@ -767,6 +768,7 @@ PetscErrorCode VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
+  if (bs < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
 
   ierr = PetscMalloc2(bs,PetscScalar**,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
   nv  = 0;
