@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.5 1998/08/20 14:53:18 balay Exp balay $";
+static char vcid[] = "$Id: pipeline.c,v 1.6 1998/08/21 19:21:43 balay Exp balay $";
 #endif
 
 /*
@@ -254,7 +254,7 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirec
   {
     VecScatter             scat = ctx->scatter;
     VecScatter_MPI_General *gen_to;
-    int                    nsends;
+    int                    nsends=0;
 
     if (smode & SCATTER_REVERSE ){
       gen_to   = (VecScatter_MPI_General *) scat->fromdata;
@@ -285,7 +285,7 @@ int VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirecti
 {
   VecScatter             scat = ctx->scatter;
   VecScatter_MPI_General *gen_from,*gen_to;
-  int                    nsends,nrecvs,ierr;
+  int                    nsends=0,nrecvs,ierr;
   
   if (smode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI_General *) scat->fromdata;
