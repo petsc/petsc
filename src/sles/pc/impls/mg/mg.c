@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.16 1995/05/02 16:54:57 curfman Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.17 1995/05/02 21:18:34 curfman Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -304,12 +304,13 @@ static int PCSetFromOptions_MG(PC pc)
     MGSetNumberSmoothDown(pc,m);
   }
   if (OptionsGetString(0,pc->prefix,"-pc_mg_method",buff,15)) {
-    if (!strcmp(buff,"additive")) m = MGADDITIVE;
-    else if (!strcmp(buff,"multiplicative")) m = MGMULTIPLICATIVE;
-    else if (!strcmp(buff,"full")) m = MGFULL;
-    else if (!strcmp(buff,"kaskade")) m = MGKASKADE;
+    MGMethod mg;
+    if (!strcmp(buff,"additive")) mg = MGADDITIVE;
+    else if (!strcmp(buff,"multiplicative")) mg = MGMULTIPLICATIVE;
+    else if (!strcmp(buff,"full")) mg = MGFULL;
+    else if (!strcmp(buff,"kaskade")) mg = MGKASKADE;
     else SETERR(1,"Unknown MG method");
-    MGSetMethod(pc,m);
+    MGSetMethod(pc,mg);
   }
   return 0;
 }

@@ -1,14 +1,16 @@
-/* $Id: newtr1.h,v 1.3 1995/02/22 00:52:50 curfman Exp $ */
+/* $Id: tr.h,v 1.1 1995/04/12 20:36:43 bsmith Exp bsmith $ */
 
 /*
-   Context for a Newton trust region method (NLE_NTR1) 
+   Context for a Newton trust region method (SNES_NTR) 
  */
 
-#ifndef __NLE_NTR1
-#define __NLE_NTR1
+#ifndef __TR_H
+#define __TR_H
+#include "snesimpl.h"
 
 typedef struct {
-  /* ---- Parameters used by the trust region method NLE_NTR1 ---- */
+  /* ---- Parameters used by the trust region method  ---- */
+  double deltatol;
   double mu;		/* used to compute trust region parameter */
   double eta;		/* used to compute trust region parameter */
   double delta;		/* trust region parameter */
@@ -18,17 +20,6 @@ typedef struct {
   double delta3;	/* used to compute trust region parameter */
   double sigma;		/* used to detemine termination */
   int    itflag;	/* flag for convergence testing */
-} NLENewtonTR1Ctx;
-
-/* Routines for the method NLE_NTR1 */
-void   NLENewtonTR1Create		ANSI_ARGS((NLCtx *));
-void   NLENewtonTR1SetUp		ANSI_ARGS((NLCtx *));
-int    NLENewtonTR1Solve		ANSI_ARGS((NLCtx *));
-void   NLENewtonTR1Destroy		ANSI_ARGS((NLCtx *));
-void   NLENewtonTR1SetParameter		ANSI_ARGS((NLCtx*, char*, double *));
-double NLENewtonTR1GetParameter		ANSI_ARGS((NLCtx*, char *));
-int    NLENewtonTR1DefaultConverged	ANSI_ARGS((NLCtx*, double*, double*,
-                                        double *));
-char   *NLENewtonTR1DefaultConvergedType ANSI_ARGS((NLCtx *));
+} SNES_TR;
 
 #endif

@@ -9,10 +9,6 @@
 
 typedef unsigned long PixVal;
 
-static char *(colornames[]) = { "white", "black", "red", "yellow", "green", 
-                                "cyan", "blue", "magenta", "aquamarine",
-                                "forestgreen", "orange", "violet", "brown",
-                                "pink", "coral", "gray" };
 
 typedef struct {
     GC       set;
@@ -32,7 +28,7 @@ typedef struct {
     Window   win;
     Visual   *vis;            /* Graphics visual */
     XiGC     gc;
-    XiFont   font;
+    XiFont   *font;
     int      depth;           /* Depth of visual */
     int      numcolors,       /* Number of available colors */
              maxcolors;       /* Current number in use */
@@ -41,7 +37,7 @@ typedef struct {
     PixVal   cmapping[256];
     int      x, y, w, h;      /* Size and location of window */
     Drawable drw;
-} XiWindow;
+} DrawCtx_X;
 
 #define XiDrawable(w) ((w)->drw ? (w)->drw : (w)->win)
 

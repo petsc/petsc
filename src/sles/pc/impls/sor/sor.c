@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.15 1995/04/17 16:54:46 curfman Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.16 1995/04/17 20:00:58 curfman Exp bsmith $";
 #endif
 
 /*
@@ -17,7 +17,8 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
 {
   PC_SOR *jac = (PC_SOR *) pc->data;
   int    ierr, flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
-  if ((ierr = MatRelax(pc->mat,x,jac->omega,flag,0.0,jac->its,y))) return ierr;
+  ierr = MatRelax(pc->mat,x,jac->omega,(MatSORType)flag,0.0,jac->its,y);
+  CHKERR(ierr);
   return 0;
 }
 
@@ -26,7 +27,8 @@ static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
   PC_SOR *jac = (PC_SOR *) pc->data;
   int    ierr, flag;
   flag = jac->sym;
-  if ((ierr = MatRelax(pc->mat,b,jac->omega,flag,0.0,its,y))) return ierr;
+  ierr = MatRelax(pc->mat,b,jac->omega,(MatSORType)flag,0.0,its,y);
+  CHKERR(ierr);
   return 0;
 }
 

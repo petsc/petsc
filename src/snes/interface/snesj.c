@@ -1,10 +1,11 @@
 
+
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.5 1995/05/03 04:07:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.6 1995/05/03 13:21:44 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
-#include "snesimpl.h"
+#include "snes.h"
 #include "options.h"
 
 /*@
@@ -28,25 +29,32 @@ int SNESDefaultComputeJacobian(SNES snes, Vec x1,Mat *J,Mat *B,int *flag,
 {
   Vec    j1,j2,x2;
   int    i,ierr,N,start,end,j;
-  Scalar dx, mone = -1.0,*y,scale;
-  double norm;
+  Scalar dx, mone = -1.0,*y,scale,*xx;
+  double epsilon = 1.e-8; /* assumes double precision */
 
   ierr = VecDuplicate(x1,&j1); CHKERR(ierr);
   ierr = VecDuplicate(x1,&j2); CHKERR(ierr);
   ierr = VecDuplicate(x1,&x2); CHKERR(ierr);
-  ierr = VecNorm(x1,&norm); CHKERR(ierr);
-  dx = 1.e-8*norm; /* assumes double precision */
-  scale = -1.0/dx;
 
   ierr = VecGetSize(x1,&N); CHKERR(ierr);
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERR(ierr);
+  VecGetArray(x1,&xx);
   ierr = SNESComputeFunction(snes,x1,j1); CHKERR(ierr);
+  ierr = VecCopy(x1,x2); CHKERR(ierr);
   for ( i=0; i<N; i++ ) {
-    ierr = VecCopy(x1,x2); CHKERR(ierr);
     if ( i>= start && i<end) {
+      dx = xx[i-start];
+      if (dx < 1.e-16 && dx >= 0.0) dx = 1.e-16;
+      else if (dx < 0.0 && dx > -1.e-16) dx = -1.e-16;
+      dx *= epsilon;
+      scale = -1.0/dx;
       VecSetValues(x2,1,&i,&dx,ADDVALUES); 
     } 
     ierr = SNESComputeFunction(snes,x2,j2); CHKERR(ierr);
+    if ( i>= start && i<end) {
+      dx = -dx;
+      VecSetValues(x2,1,&i,&dx,ADDVALUES); 
+    } 
     ierr = VecAXPY(&mone,j1,j2); CHKERR(ierr);
     VecScale(&scale,j2);
     VecGetArray(j2,&y);

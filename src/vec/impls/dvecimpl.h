@@ -13,7 +13,7 @@
 
 #include "vecimpl.h"
 
-typedef struct { int n; Scalar *array; } DvVector;
+typedef struct { int n; Scalar *array; } Vec_Seq;
 
 
 #endif

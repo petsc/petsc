@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.4 1995/04/19 03:01:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.5 1995/05/02 16:06:34 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: tr.c,v 1.4 1995/04/19 03:01:26 bsmith Exp bsmith $";
 
 
 /*
-      Implements Newton's Method with a simple trust region 
+      Implements Newton's Method with a very simple trust region 
     approach for solving systems of nonlinear equations. 
 
     Input parameters:
@@ -39,7 +39,7 @@ static int SNESSolve_TR(SNES snes, int *its )
   history_len	= snes->conv_hist_len;	/* convergence history length */
   maxits	= snes->max_its;	/* maximum number of iterations */
   X		= snes->vec_sol;		/* solution vector */
-  F		= snes->vec_res;		/* residual vector */
+  F		= snes->vec_func;		/* residual vector */
   Y		= snes->work[0];		/* work vectors */
   G		= snes->work[1];
   Ytmp          = snes->work[2];
@@ -105,15 +105,19 @@ static int SNESSolve_TR(SNES snes, int *its )
      fnorm = gnorm;
      snes->norm = fnorm;
      if (history && history_len > i+1) history[i+1] = fnorm;
-     TMP = F; F = G; G = TMP;
-     TMP = X; X = Y; Y = TMP;
+     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
+     TMP = X; X = Y;snes->vec_sol_always = X; Y = TMP;
      VecNorm(X, &xnorm );		/* xnorm = || X || */
      if (snes->Monitor) (*snes->Monitor)(snes,i,fnorm,snes->monP);
 
      /* Test for convergence */
      if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
        /* Verify solution is in corect location */
-       if (X != snes->vec_sol) VecCopy(X, snes->vec_sol );
+       if (X != snes->vec_sol) {
+         VecCopy(X, snes->vec_sol );
+         snes->vec_sol_always = snes->vec_sol;
+         snes->vec_func_always = snes->vec_func; 
+       }
        break;
      } 
    }

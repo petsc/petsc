@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.19 1995/04/26 18:22:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.20 1995/05/02 16:04:23 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -236,15 +236,12 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
     else {
         /* We SHOULD probably abort the gmres step
            here.  This happens when the solution is exactly reached. */
-      hapend  = 1;
+      hapend = 1;
     }
     res = GMRESUpdateHessenberg( itP, it );
     it++;
     gmresP->it = (it-1);  /* For converged */
   }
-  itP->nmatop   += it;
-  itP->nvectors += 3 + it * (3 + (it - 1));
-
   if (nres && hist_len > it + itsSoFar) nres[it + itsSoFar]   = res; 
   if (nres) 
     itP->res_act_size = (hist_len < it + itsSoFar) ? hist_len : 

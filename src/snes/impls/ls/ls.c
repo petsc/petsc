@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.11 1995/04/25 16:24:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.12 1995/05/02 16:06:31 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -37,7 +37,7 @@ int SNESSolve_LS( SNES snes, int *outits )
   history_len	= snes->conv_hist_len;	/* convergence history length */
   maxits	= snes->max_its;	/* maximum number of iterations */
   X		= snes->vec_sol;		/* solution vector */
-  F		= snes->vec_res;		/* residual vector */
+  F		= snes->vec_func;		/* residual vector */
   Y		= snes->work[0];		/* work vectors */
   G		= snes->work[1];
   W		= snes->work[2];
@@ -61,8 +61,8 @@ int SNESSolve_LS( SNES snes, int *outits )
        ierr = (*neP->LineSearch)(snes, X, F, G, Y, W, fnorm, &ynorm, &gnorm );
        CHKERR(ierr);
 
-       TMP = F; F = G; G = TMP;
-       TMP = X; X = Y; Y = TMP;
+       TMP = F; F = G; snes->vec_func_always = F; G = TMP;
+       TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
        fnorm = gnorm;
 
        snes->norm = fnorm;
@@ -72,7 +72,11 @@ int SNESSolve_LS( SNES snes, int *outits )
 
        /* Test for convergence */
        if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
-           if (X != snes->vec_sol) VecCopy( X, snes->vec_sol );
+           if (X != snes->vec_sol) {
+             VecCopy( X, snes->vec_sol );
+             snes->vec_sol_always = snes->vec_sol;
+             snes->vec_func_always = snes->vec_func;
+           }
            break;
        }
   }
@@ -121,7 +125,7 @@ int SNESDestroy_LS(PetscObject obj)
 @*/
 int SNESDefaultMonitor(SNES snes,int its, double fnorm,void *dummy)
 {
-  fprintf( stdout, "iter = %d, residual norm %g \n",its,fnorm);
+  fprintf( stdout, "iter = %d, Function norm %g \n",its,fnorm);
   return 0;
 }
 

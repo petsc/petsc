@@ -13,6 +13,7 @@ struct _Viewer {
   int         port;
 };
 
+#define DEFAULTPORT    5005
 
 /* different types of matrix which may be communicated */
 #define DENSEREAL      0
@@ -22,4 +23,8 @@ struct _Viewer {
 /* Note: DENSEREAL and DENSECHARACTER are stored exactly the same way */
 /* DENSECHARACTER simply has a flag set which tells that it should be */
 /* interpreted as a string not a numeric vector                       */
+
+extern int write_double(int,double *,int);
+extern int write_int(int,int *,int);
+extern int write_data(int,void *,int);
 

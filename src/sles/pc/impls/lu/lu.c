@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: direct.c,v 1.18 1995/04/17 19:53:06 curfman Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.19 1995/05/02 16:04:52 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -10,8 +10,9 @@ static char vcid[] = "$Id: direct.c,v 1.18 1995/04/17 19:53:06 curfman Exp bsmit
 #include "options.h"
 
 typedef struct {
-  Mat fact;
-  int ordering,inplace;
+  Mat         fact;
+  MatOrdering ordering;
+  int         inplace;
 } PC_LU;
 
 /*@
@@ -37,7 +38,7 @@ $      natural, nd, 1wd, rcm, qmd
 
 .seealso: PCSetLUUseInplace()
 @*/
-int PCLUSetOrdering(PC pc,int ordering)
+int PCLUSetOrdering(PC pc,MatOrdering ordering)
 {
   PC_LU *dir;
   VALIDHEADER(pc,PC_COOKIE);

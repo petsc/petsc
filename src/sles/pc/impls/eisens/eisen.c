@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.15 1995/04/17 16:57:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.16 1995/05/03 13:17:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -63,8 +63,8 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   }
 
   /* modify b by (L + D)^{-1} */
-  ierr =   MatRelax(jac->A,b,jac->omega,SOR_ZERO_INITIAL_GUESS | 
-                                        SOR_FORWARD_SWEEP,0.0,1,b); 
+  ierr =   MatRelax(jac->A,b,jac->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
+                                        SOR_FORWARD_SWEEP),0.0,1,b); 
   CHKERR(ierr);  
   return 0;
 }
@@ -75,8 +75,8 @@ static int PCPost_Eisenstat(PC pc,KSP ksp)
   Vec     x,b;
   int     ierr;
   KSPGetSolution(ksp,&x);
-  ierr =   MatRelax(jac->A,x,jac->omega,SOR_ZERO_INITIAL_GUESS | 
-                                 SOR_BACKWARD_SWEEP,0.0,1,x); CHKERR(ierr);
+  ierr =   MatRelax(jac->A,x,jac->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
+                                 SOR_BACKWARD_SWEEP),0.0,1,x); CHKERR(ierr);
   pc->mat = jac->A;
   /* get back true b */
   KSPGetRhs(ksp,&b);

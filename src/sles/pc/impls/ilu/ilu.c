@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.10 1995/04/17 17:00:18 curfman Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.11 1995/04/17 19:56:24 curfman Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -10,8 +10,9 @@ static char vcid[] = "$Id: ilu.c,v 1.10 1995/04/17 17:00:18 curfman Exp curfman 
 #include "options.h"
 
 typedef struct {
-  Mat fact;
-  int ordering,levels;
+  Mat         fact;
+  MatOrdering ordering;
+  int         levels;
 } PC_ILU;
 
 /*@
@@ -59,7 +60,7 @@ $     natural, nd, 1wd, rcm, qmd
 
 .seealso: PCILUSetLevels()
 @*/
-int PCILUSetOrdering(PC pc,int ordering)
+int PCILUSetOrdering(PC pc,MatOrdering ordering)
 {
   PC_ILU *dir;
   VALIDHEADER(pc,PC_COOKIE);

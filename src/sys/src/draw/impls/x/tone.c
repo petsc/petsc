@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tone.c,v 1.2 1995/04/19 03:00:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.3 1995/04/28 02:24:07 bsmith Exp bsmith $";
 #endif
 
 #include "ximpl.h"
@@ -53,12 +53,12 @@ int XiDrawInterpolatedTriangle(DrawCtx_X* win, int x1, int y1, int t1,
     /* Draw a line with the correct color from t1-t2 to t1-t3 */
     /* Left color is (y-y1)/(y2-y1) * (t2-t1) + t1 */
     lfrac = ((double)(y-y1)) * R_y2_y1; 
-    lc    = lfrac * (t2_t1) + t1;
-    lx    = lfrac * (x2_x1) + x1;
+    lc    = (int)(lfrac * (t2_t1) + t1);
+    lx    = (int)(lfrac * (x2_x1) + x1);
     /* Right color is (y-y1)/(y3-y1) * (t3-t1) + t1 */
     rfrac = ((double)(y - y1)) * R_y3_y1; 
-    rc    = rfrac * (t3_t1) + t1;
-    rx    = rfrac * (x3_x1) + x1;
+    rc    = (int)(rfrac * (t3_t1) + t1);
+    rx    = (int)(rfrac * (x3_x1) + x1);
     /* Draw the line */
     rc_lc = rc - lc; 
     rx_lx = rx - lx;
@@ -102,12 +102,12 @@ int XiDrawInterpolatedTriangle(DrawCtx_X* win, int x1, int y1, int t1,
     /* Draw a line with the correct color from t2-t3 to t1-t3 */
     /* Left color is (y-y1)/(y2-y1) * (t2-t1) + t1 */
     lfrac = ((double)(y-y2)) * R_y3_y2; 
-    lc    = lfrac * (t3_t2) + t2;
-    lx    = lfrac * (x3_x2) + x2;
+    lc    = (int)(lfrac * (t3_t2) + t2);
+    lx    = (int)(lfrac * (x3_x2) + x2);
     /* Right color is (y-y1)/(y3-y1) * (t3-t1) + t1 */
     rfrac = ((double)(y - y1)) * R_y3_y1 ; 
-    rc    = rfrac * (t3_t1) + t1;
-    rx    = rfrac * (x3_x1) + x1;
+    rc    = (int)(rfrac * (t3_t1) + t1);
+    rx    = (int)(rfrac * (x3_x1) + x1);
     /* Draw the line */
     rc_lc = rc - lc; 
     rx_lx = rx - lx;
