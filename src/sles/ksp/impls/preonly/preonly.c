@@ -1,4 +1,4 @@
-/*$Id: preonly.c,v 1.40 2001/03/22 20:31:35 bsmith Exp balay $*/
+/*$Id: preonly.c,v 1.41 2001/03/23 23:23:42 balay Exp bsmith $*/
 
 /*                       
        This implements a stub method that applies ONLY the preconditioner.
@@ -28,7 +28,7 @@ static int  KSPSolve_PREONLY(KSP ksp,int *its)
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
   if (!ksp->guess_zero) {
     SETERRQ(1,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
-               you probably want a KSP type of richardson");
+               you probably want a KSP type of Richardson");
   }
 
   ksp->its    = 0;
