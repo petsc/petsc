@@ -48,6 +48,9 @@ int KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
 
   if (ksp->ops->computeextremesingularvalues) {
     ierr = (*ksp->ops->computeextremesingularvalues)(ksp,emax,emin);CHKERRQ(ierr);
+  } else {
+    *emin = -1.0;
+    *emax = -1.0;
   }
   PetscFunctionReturn(0);
 }
@@ -112,6 +115,8 @@ int KSPComputeEigenvalues(KSP ksp,int n,PetscReal *r,PetscReal *c,int *neig)
 
   if (ksp->ops->computeeigenvalues) {
     ierr = (*ksp->ops->computeeigenvalues)(ksp,n,r,c,neig);CHKERRQ(ierr);
+  } else {
+    *neig = 0;
   }
   PetscFunctionReturn(0);
 }
