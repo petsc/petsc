@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f.F,v 1.9 1998/06/18 23:07:07 balay Exp balay $";
+!    "$Id: ex13f.F,v 1.10 1998/06/18 23:15:38 balay Exp balay $";
 !
 !
 !/*
@@ -39,15 +39,16 @@
 !    User-defined context that contains all the data structures used
 !    in the linear solution process.
 
-!   Vec    x,b;      /* solution vector, right hand side vector and work vector */
-!   Mat    A;        /* sparse matrix */
-!   SLES   sles;     /* linear solver context */
-!   int    m,n;      /* grid dimensions */
-!   Scalar hx2,hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
+!   Vec    x,b      /* solution vector, right hand side vector and work vector */
+!   Mat    A        /* sparse matrix */
+!   SLES   sles     /* linear solver context */
+!   int    m,n      /* grid dimensions */
+!   Scalar hx2,hy2  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
 
 !  Note: Any user-defined Fortran routines MUST be declared as external.
 
-      external UserInitializeLinearSolver, UserFinalizeLinearSolver
+      external UserInitializeLinearSolver
+      external UserFinalizeLinearSolver
       external UserDoLinearSolver
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,22 +65,22 @@
 !     norm     - norm of error in solution
 
 
-      Vec     x, b, u
-      Mat     A 
-      KSP     ksp
-      PC      pc
-      SLES    sles
-      Scalar  *rho, *solution, *userb, hx, hy, x, y
-      integer ierr, m, n, t, tmax, flg, i, I, j, N
-      integer userctx(6), size, rank
+      Scalar  hx, hy, x, y
+      PetscFortranAddr userctx(6)
+      integer ierr, m, n, t, tmax, flg, i, j, Ntot
+      integer size, rank
       double precision  enorm
+      Scalar,ALLOCATABLE :: userx(:,:),userb(:,:)
+      Scalar,ALLOCATABLE :: solution(:,:),rho(:,:)
+
+      double precision hx2, hy2
+      common /param/ hx2, hy2
+
 
       tmax = 2
       m = 6
       n = 7
 
-      common /param/ hx2, hy2
-      double precision hxy, hy2
 
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,13 +115,11 @@
 !  the context of a larger application these would be provided by
 !  other (non-PETSc) parts of the application code.
 
-  userx    = (Scalar *) PetscMalloc(Ntot*sizeof(Scalar)); CHKPTRA(userx);
-  userb    = (Scalar *) PetscMalloc(Ntot*sizeof(Scalar)); CHKPTRA(userb);
-  solution = (Scalar *) PetscMalloc(Ntot*sizeof(Scalar)); CHKPTRA(solution);
+      ALLOCATE (userx(m,n),userb(m,n),solution(m,n))
 
 !  Allocate an array to hold the coefficients in the elliptic operator
 
-  rho = (Scalar *) PetscMalloc(Ntot*sizeof(Scalar)); CHKERRA(ierr);
+       ALLOCATE (rho(m,n))
 
 !  Fill up the array rho[] with the function rho(x,y) = x; fill the
 !  right-hand-side b[] and the solution with a known problem for testing.
@@ -156,26 +155,25 @@
 !        standard programming practices to show how they may be mixed with 
 !        PETSc.
          enorm = 0.0
-         do 90 i=1,N
-            enorm = enorm +                                             &
-     &       PetscReal(PetscConj(solution[i]-userx[i])                  &
-     &           *(solution[i]-userx[i]))
+         do 90 j=1,n
+            do 80 i=1,m
+               enorm = enorm +                                          &
+     &             solution(i,j)-userx(i,j)*(solution(i,j)-userx(i,j))
+ 80         continue
  90      continue
          enorm = enorm * PetscReal(hx*hy);
          write(6,*) 'm, n, error norm =',m,n,enorm
-
+ 100  continue
 !  We are all finished solving linear systems, so we clean up the
 !  data structures.
 
-  PetscFree(rho);
-  PetscFree(solution);
-  PetscFree(userx);
-  PetscFree(userb);
-      ierr = UserFinalizeLinearSolver(&userctx); CHKERRA(ierr);
+      DEALLOCATE (userx,userb,solution,rho)
+      call UserFinalizeLinearSolver(userctx,ierr)
       call PetscFinalize(ierr)
       end
+
 ! ----------------------------------------------------------------
-integer function UserInitializeLinearSolver(m,n,userctx,ierr)
+      subroutine UserInitializeLinearSolver(m,n,userctx,ierr)
 
       implicit none
 
@@ -186,11 +184,18 @@ integer function UserInitializeLinearSolver(m,n,userctx,ierr)
 #include "include/finclude/pc.h"
 #include "include/finclude/sles.h"
 
-      common /param/ hx2, hy2
-      double precision hxy, hy2
+      integer          m, n,ierr
+      PetscFortranAddr userctx(*)
 
-      integer m, n, user(*)
-      integer Ntot, ierr
+      common /param/ hx2, hy2
+      double precision hx2, hy2
+
+!  Local variable declararions
+      Mat     A
+      Vec     b,x
+      SLES    sles
+      integer Ntot
+
 
 !  Here we assume use of a grid of size m x n, with all points on the
 !  interior of the domain, i.e., we do not include the points corresponding 
@@ -208,7 +213,7 @@ integer function UserInitializeLinearSolver(m,n,userctx,ierr)
 
 !  Create vectors
 
-      call VecCreateSeq(PETSC_COMM_SELF,N,b,ierr)
+      call VecCreateSeq(PETSC_COMM_SELF,Ntot,b,ierr)
       call VecDuplicate(b,x,ierr)
 
 !  Create linear solver context. This will be used repeatedly for all 
@@ -216,12 +221,12 @@ integer function UserInitializeLinearSolver(m,n,userctx,ierr)
 
       call SLESCreate(PETSC_COMM_SELF,sles,ierr)
 
-      user(1) = x
-      user(2) = b
-      user(3) = A
-      user(4) = sles
-      user(5) = m
-      user(6) = n
+      userctx(1) = x
+      userctx(2) = b
+      userctx(3) = A
+      userctx(4) = sles
+      userctx(5) = m
+      userctx(6) = n
 
       return
       end
@@ -231,17 +236,46 @@ integer function UserInitializeLinearSolver(m,n,userctx,ierr)
 !   rho is a 2-dimensional array of size m by n, stored in Fortran
 !   style by columns. userb is a standard one-dimensional array.
 
-      integer function UserDoLinearSolver(rho,userctx,                  &
-     &                                    userb,userx,ierr)
+      subroutine UserDoLinearSolver(rho,userctx,userb,userx,ierr)
 
-  Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
-  int    ierr,i,j,I,J, m = userctx->m, n = userctx->n,its;
-  Mat    A = userctx->A;
-  PC     pc;
-  Scalar v,*tmpx,*tmpb, hx2 = userctx->hx2, hy2 = userctx->hy2;
+      implicit none
+
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/ksp.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
+
+      integer ierr
+      PetscFortranAddr userctx(*)
+      Scalar rho(*),userb(*),userx(*)
+
 
       common /param/ hx2, hy2
-      double precision hxy, hy2
+      double precision hx2, hy2
+
+      PC   pc
+      SLES sles
+      Vec  b,x
+      Mat  A
+      integer m,n
+
+      integer i,j,II,JJ,its
+      Scalar  v
+
+!      Scalar tmpx(*),tmpb(*)
+      
+
+      x    = userctx(1)
+      b    = userctx(2)
+      A    = userctx(3)
+      sles = userctx(4)
+      m    = userctx(5)
+      n    = userctx(6)
+      
+      
+
 
 !  This is not the most efficient way of generating the matrix 
 !  but let's not worry about it. We should have separate code for
@@ -255,109 +289,131 @@ integer function UserInitializeLinearSolver(m,n,userctx,ierr)
 !  stencil is applied.  For a staggered grid, one would have to change
 !  things slightly.
 
-  I = 0;
-  for ( j=0; j<n; j++ ) {
-    for ( i=0; i<m; i++) {
-      if ( j>0 )   {
-        J = I - m; 
-        v = -.5*(rho[I] + rho[J])*hy2;
-        MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
-      }
-      if ( j<n-1 ) {
-        J = I + m; 
-        v = -.5*(rho[I] + rho[J])*hy2;
-        MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
-      }
-      if ( i>0 )   {
-        J = I - 1; 
-        v = -.5*(rho[I] + rho[J])*hx2;
-        MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
-      }
-      if ( i<m-1 ) {
-        J = I + 1; 
-        v = -.5*(rho[I] + rho[J])*hx2;
-        MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
-      }
-      v = 2*rho[I]*(hx2+hy2);
-      MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);     
-      I++;
-    }
-  }
+      II = 0
+      do 110 j=1,n 
+         do 100 i=1,m
+            if ( j .gt. 1 ) then
+               JJ = II - m
+               v = -0.5*(rho(II+1) + rho(JJ+1))*hy2
+               call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
+            endif
+            if ( j .lt. n ) then
+               JJ = II + m
+               v = -0.5*(rho(II+1) + rho(JJ+1))*hy2
+               call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
+            endif
+            if ( i .gt. 1 ) then
+               JJ = II - 1
+               v = -0.5*(rho(II+1) + rho(JJ+1))*hx2
+               call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
+            endif
+            if ( i .lt. m ) then
+               JJ = II + 1
+               v = -0.5*(rho(II+1) + rho(JJ+1))*hx2
+               call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
+            endif
+            v = 2*rho(II+1)*(hx2+hy2);
+            call MatSetValues(A,1,II,1,II,v,INSERT_VALUES,ierr)
+            II = II+1
+ 100     continue
+ 110  continue
+!
+!     Assemble matrix
+!
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
-  /* 
-     Assemble matrix
-  */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+!
+!     Set operators. Here the matrix that defines the linear system
+!     also serves as the preconditioning matrix. Since all the matrices
+!     will have the same nonzero pattern here, we indicate this so the
+!     linear solvers can take advantage of this.
+!
+      call SLESSetOperators(sles,A,A,SAME_NONZERO_PATTERN,ierr)
 
-  /* 
-     Set operators. Here the matrix that defines the linear system
-     also serves as the preconditioning matrix. Since all the matrices
-     will have the same nonzero pattern here, we indicate this so the
-     linear solvers can take advantage of this.
-  */
-  ierr = SLESSetOperators(userctx->sles,A,A,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
+!
+!     Set linear solver defaults for this problem (optional).
+!     - Here we set it to use direct LU factorization for the solution
+!
+      call SLESGetPC(sles,pc,ierr)
+      call PCSetType(pc,PCLU,ierr)
 
-  /* 
-     Set linear solver defaults for this problem (optional).
-     - Here we set it to use direct LU factorization for the solution
-  */
-  ierr = SLESGetPC(userctx->sles,&pc); CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCLU); CHKERRQ(ierr);
+!
+!     Set runtime options, e.g.,
+!        -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
+!     These options will override those specified above as long as
+!     SLESSetFromOptions() is called _after_ any other customization
+!     routines.
+! 
+!     Run the program with the option -help to see all the possible
+!     linear solver options.
+!
+      call SLESSetFromOptions(sles,ierr)
 
-  /* 
-     Set runtime options, e.g.,
-        -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
-     These options will override those specified above as long as
-     SLESSetFromOptions() is called _after_ any other customization
-     routines.
- 
-     Run the program with the option -help to see all the possible
-     linear solver options.
-  */
-  ierr = SLESSetFromOptions(userctx->sles); CHKERRQ(ierr);
+!
+!     This allows the PETSc linear solvers to compute the solution 
+!     directly in the user's array rather than in the PETSc vector.
+! 
+!     This is essentially a hack and not highly recommend unless you 
+!     are quite comfortable with using PETSc. In general, users should
+!     write their entire application using PETSc vectors rather than 
+!     arrays.
+!
+!      call VecGetArray(x,tmpx,xoff,ierr)
+!      call VecGetArray(b,tmpb,boff,ierr)
+      call VecPlaceArray(x,userx,ierr)
+      call VecPlaceArray(b,userb,ierr)
 
-  /*
-     This allows the PETSc linear solvers to compute the solution 
-     directly in the user's array rather than in the PETSc vector.
- 
-     This is essentially a hack and not highly recommend unless you 
-     are quite comfortable with using PETSc. In general, users should
-     write their entire application using PETSc vectors rather than 
-     arrays.
-  */
-  ierr = VecGetArray(userctx->x,&tmpx);
-  ierr = VecGetArray(userctx->b,&tmpb);
-  ierr = VecPlaceArray(userctx->x,userx); CHKERRQ(ierr);
-  ierr = VecPlaceArray(userctx->b,userb); CHKERRQ(ierr);
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                      Solve the linear system
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                      Solve the linear system
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+      call SLESSolve(sles,b,x,its,ierr)
 
-  ierr = SLESSolve(userctx->sles,userctx->b,userctx->x,&its); CHKERRQ(ierr);
+!
+!    Put back the PETSc array that belongs in the vector xuserctx->x
+!
+!      call VecPlaceArray(userctx->x,tmpx(xoff+1),ierr)
+!     call VecPlaceArray(userctx->b,tmpb(boff+1),ierr)
 
-  /*
-    Put back the PETSc array that belongs in the vector xuserctx->x
-  */
-  ierr = VecPlaceArray(userctx->x,tmpx);
-  ierr = VecPlaceArray(userctx->b,tmpb);
+      return
+      end
 
-  return 0;
-}
+! ------------------------------------------------------------------------
 
-/* ------------------------------------------------------------------------*/
-int UserFinalizeLinearSolver(UserCtx *userctx)
-{
-  int ierr;
-  /* 
-     We are all done and don't need to solve any more linear systems, so
-     we free the work space.  All PETSc objects should be destroyed when
-     they are no longer needed.
-  */
-  ierr = SLESDestroy(userctx->sles); CHKERRQ(ierr);
-  ierr = VecDestroy(userctx->x); CHKERRQ(ierr);
-  ierr = VecDestroy(userctx->b); CHKERRQ(ierr);  
-  ierr = MatDestroy(userctx->A); CHKERRQ(ierr);
-  return 0;
-}
+      subroutine UserFinalizeLinearSolver(userctx,ierr)
+
+      implicit none
+
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/ksp.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
+
+      integer ierr
+      PetscFortranAddr userctx(*)
+
+!  Local variable declararions
+
+      Vec  x,b
+      Mat  A
+      SLES sles
+!
+!     We are all done and don't need to solve any more linear systems, so
+!     we free the work space.  All PETSc objects should be destroyed when
+!     they are no longer needed.
+!
+      x    = userctx(1)
+      b    = userctx(2)
+      A    = userctx(3)
+      sles = userctx(4)
+
+      call VecDestroy(x,ierr)
+      call VecDestroy(b,ierr)
+      call MatDestroy(A,ierr)
+      call SLESDestroy(sles,ierr)
+
+      return
+      end
