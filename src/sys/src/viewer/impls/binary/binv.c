@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.78 2000/01/11 20:58:58 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.79 2000/02/10 18:12:58 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -32,7 +32,9 @@ typedef struct  {
 
     Notes:
       For writable binary viewers, the descriptor will only be valid for the 
-    first processor in the communicator that shares the viewer.
+    first processor in the communicator that shares the viewer. For readable 
+    files it will only be valid on nodes that have the file. If node 0 does not
+    have the file it generates an error even if another node does have the file.
  
     Fortran Note:
     This routine is not supported in Fortran.
@@ -141,6 +143,11 @@ $    BINARY_WRONLY - open existing file for binary output
 
     For creating files, if the file name ends with .gz it is automatically 
     compressed when closed.
+
+    For writing files it only opens the file on processor 0 in the communicator.
+    For readable files it opens the file on all nodes that have the file. If 
+    node 0 does not have the file it generates an error even if other nodes
+    do have the file.
 
 .keywords: binary, file, open, input, output, url, gzip, compression
 
