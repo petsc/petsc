@@ -48,7 +48,11 @@ add to it).
 
   General
 
-    
+   Changed these routines to return an error code.
+extern int   PetscStrchr(const char[],char,char **);
+extern int   PetscStrrchr(const char[],char,char **);
+extern int   PetscStrstr(const char[],const char[],char **);
+extern int   PetscStrtok(const char[],const char[],char **);    
 
    
 
