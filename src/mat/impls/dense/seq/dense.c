@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.157 1998/10/01 18:54:20 bsmith Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.158 1998/10/01 21:32:47 balay Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -356,6 +356,7 @@ int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
       }
     }
   } 
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 } 
@@ -404,19 +405,17 @@ int MatMult_SeqDense(Mat A,Vec xx,Vec yy)
 int MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
-  Scalar       *v = mat->v, *x, *y, *z;
+  Scalar       *v = mat->v, *x, *y;
   int          ierr,_One=1; Scalar _DOne=1.0;
 
   PetscFunctionBegin;
   if (!mat->m || !mat->n) PetscFunctionReturn(0);
+  if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y); CHKERRQ(ierr); 
-  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
-  if (zz != yy) PetscMemcpy(y,z,mat->m*sizeof(Scalar));
   LAgemv_( "N", &(mat->m), &(mat->n),&_DOne,v,&(mat->m),x,&_One,&_DOne,y,&_One);
   ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
-  ierr = VecRestoreArray(zz,&z); CHKERRQ(ierr);
   PLogFlops(2*mat->m*mat->n);
   PetscFunctionReturn(0);
 }
@@ -426,20 +425,18 @@ int MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 int MatMultTransAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
-  Scalar       *v = mat->v, *x, *y, *z;
+  Scalar       *v = mat->v, *x, *y;
   int          ierr,_One=1;
   Scalar       _DOne=1.0;
 
   PetscFunctionBegin;
   if (!mat->m || !mat->n) PetscFunctionReturn(0);
+  if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
-  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
-  if (zz != yy) PetscMemcpy(y,z,mat->n*sizeof(Scalar));
   LAgemv_( "T", &(mat->m), &(mat->n), &_DOne, v, &(mat->m),x,&_One,&_DOne,y,&_One);
   ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
-  ierr = VecRestoreArray(zz,&z); CHKERRQ(ierr);
   PLogFlops(2*mat->m*mat->n);
   PetscFunctionReturn(0);
 }
@@ -905,8 +902,8 @@ int MatGetDiagonal_SeqDense(Mat A,Vec v)
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   ierr = VecGetSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   len = PetscMin(mat->m,mat->n);
   if (n != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Nonconforming mat and vec");
   for ( i=0; i<len; i++ ) {
@@ -926,8 +923,8 @@ int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
 
   PetscFunctionBegin;
   if (ll) {
-    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
     ierr = VecGetSize(ll,&m);CHKERRQ(ierr);
+    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
     if (m != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Left scaling vec wrong size");
     for ( i=0; i<m; i++ ) {
       x = l[i];
@@ -938,8 +935,8 @@ int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
     PLogFlops(n*m);
   }
   if (rr) {
-    ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
     ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
+    ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
     if (n != mat->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Right scaling vec wrong size");
     for ( i=0; i<n; i++ ) {
       x = r[i];

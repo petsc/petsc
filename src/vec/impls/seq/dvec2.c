@@ -1,6 +1,6 @@
 
 
-/* $Id: dvec2.c,v 1.53 1998/07/10 20:12:27 bsmith Exp balay $ */
+/* $Id: dvec2.c,v 1.54 1998/07/13 18:42:27 balay Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -739,7 +739,6 @@ int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win )
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "VecGetArray_Seq"
 int VecGetArray_Seq(Vec vin,Scalar **a)
@@ -747,7 +746,43 @@ int VecGetArray_Seq(Vec vin,Scalar **a)
   Vec_Seq *v = (Vec_Seq *)vin->data;
 
   PetscFunctionBegin;
+
+  /*  {
+    int rank;
+    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    if (!rank) PetscStackView(0);
+  } */
+
+  if (vin->array_gotten) {
+    SETERRQ(1,1,"Array has already been gotten for this vector, you may\n\
+    have forgotten a call to VecRestoreArray()");
+  }
+  vin->array_gotten = PETSC_TRUE;
+
   *a =  v->array;
+  PetscAMSTakeAccess(vin)
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecRestoreArray_Seq"
+int VecRestoreArray_Seq(Vec vin,Scalar **a)
+{
+  PetscFunctionBegin;
+
+  /* {
+    int rank;
+    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    if (!rank) PetscStackView(0);
+  } */
+
+  if (!vin->array_gotten) {
+    SETERRQ(1,1,"Array has not been gotten for this vector, you may\n\
+    have forgotten a call to VecGetArray()");
+  }
+  vin->array_gotten = PETSC_FALSE;
+
+  PetscAMSGrantAccess(vin) 
   PetscFunctionReturn(0);
 }
 
