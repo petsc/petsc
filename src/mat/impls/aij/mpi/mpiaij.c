@@ -769,6 +769,7 @@ int MatDestroy_MPIAIJ(Mat mat)
 
 extern int MatMPIAIJFactorInfo_SuperLu(Mat,PetscViewer);
 extern int MatFactorInfo_Spooles(Mat,PetscViewer);
+extern int MatFactorInfo_MUMPS(Mat,PetscViewer);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIAIJ_Binary"
@@ -938,7 +939,9 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) 
       ierr = MatFactorInfo_Spooles(mat,viewer);CHKERRQ(ierr);
 #endif
-
+#if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE)
+      ierr = MatFactorInfo_MUMPS(mat,viewer);CHKERRQ(ierr);
+#endif
       PetscFunctionReturn(0);
     }
   } else if (isbinary) {
