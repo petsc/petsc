@@ -353,6 +353,26 @@ runex10_13:
 runex10_14:
 	-@${MPIRUN} -np 3 ex10 -options_left no -pc_type spai -f0 ${DATAFILESPATH}/matrices/medium; \
 	echo "ex10_14: This program tested the SPAI preconditioner."
+runex10_15:
+	-@${MPIRUN} -np 3 ex10 -options_left no -pc_type hypre -pc_hypre_type pilut -f0 ${DATAFILESPATH}/matrices/medium > ex10_15.tmp 2>&1;\
+	   if (${DIFF} output/ex10_15.out ex10_15.tmp) then true; \
+	   else echo "Possible problem with ex10_15, diffs above"; fi; \
+	   ${RM} -f ex10_15.tmp
+runex10_16:
+	-@${MPIRUN} -np 3 ex10 -options_left no -pc_type hypre -pc_hypre_type parasails -f0 ${DATAFILESPATH}/matrices/medium > ex10_16.tmp 2>&1;\
+	   if (${DIFF} output/ex10_16.out ex10_16.tmp) then true; \
+	   else echo "Possible problem with ex10_16, diffs above"; fi; \
+	   ${RM} -f ex10_16.tmp
+runex10_17:
+	-@${MPIRUN} -np 3 ex10 -options_left no -pc_type hypre -pc_hypre_type boomeramg -f0 ${DATAFILESPATH}/matrices/medium > ex10_17.tmp 2>&1;\
+	   if (${DIFF} output/ex10_17.out ex10_17.tmp) then true; \
+	   else echo "Possible problem with ex10_17, diffs above"; fi; \
+	   ${RM} -f ex10_17.tmp
+runex10_18:
+	-@${MPIRUN} -np 3 ex10 -options_left no -pc_type hypre -pc_hypre_type euclid -f0 ${DATAFILESPATH}/matrices/medium > ex10_18.tmp 2>&1;\
+	   if (${DIFF} output/ex10_18.out ex10_18.tmp) then true; \
+	   else echo "Possible problem with ex10_18, diffs above"; fi; \
+	   ${RM} -f ex10_18.tmp
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_irorthog > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
@@ -470,13 +490,14 @@ TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
 TESTEXAMPLES_BLOCKSOLVE   = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_aij_lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
-TESTEXAMPLES_8   = ex10.PETSc runex10_13 ex10.rm
-TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm
-TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm
-TESTEXAMPLES_13  = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm
-TESTEXAMPLES_MATLAB_ENGINE  = ex10.PETSc runex10_12  ex10.rm
-TESTEXAMPLES_17  = ex10.PETSc runex10_11 ex10.rm
-TESTEXAMPLES_18  = ex2.PETSc runex2_6 ex2.rm ex26.PETSc runex26 ex26.rm
-TESTEXAMPLES_SPAI  = ex10.PETSc runex10_14 ex10.rm
+TESTEXAMPLES_8             = ex10.PETSc runex10_13 ex10.rm
+TESTEXAMPLES_10            = ex11f.PETSc runex11f ex11f.rm
+TESTEXAMPLES_12            = ex13f90.PETSc runex13f90 ex13f90.rm
+TESTEXAMPLES_13            = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm
+TESTEXAMPLES_MATLAB_ENGINE = ex10.PETSc runex10_12  ex10.rm
+TESTEXAMPLES_17            = ex10.PETSc runex10_11 ex10.rm
+TESTEXAMPLES_18            = ex2.PETSc runex2_6 ex2.rm ex26.PETSc runex26 ex26.rm
+TESTEXAMPLES_SPAI          = ex10.PETSc runex10_14 ex10.rm
+TESTEXAMPLES_HYPRE         = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_18 ex10.rm
 
 include ${PETSC_DIR}/bmake/common/test
