@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.43 2001/01/20 03:35:02 bsmith Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.44 2001/01/22 23:04:39 bsmith Exp balay $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -596,11 +596,11 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   PetscTruth  r1,r2,r3;
   MatScalar   *val;
   InsertMode  addv = mat->insertmode;
-  int         rank;
+  /* int         rank;*/
 
   PetscFunctionBegin;
   /* remove 2 line below later */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+  /*ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr); */
 
   if (!baij->donotstash) { 
     while (1) {
