@@ -59,6 +59,9 @@ typedef unsigned long   u_long;
 #if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
 #endif
+#if defined(PETSC_HAVE_STRING_H)
+#include <string.h>
+#endif
 #if defined(PETSC_HAVE_WINSOCK2_H)
 #include <Winsock2.h>
 #endif
