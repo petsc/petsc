@@ -5,7 +5,7 @@ SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = Changes Machines Readme maint/addlinks maint/buildtest \
-           maint/builddist FAQ Installation\
+           maint/builddist FAQ Installation Performance\
            maint/buildlinks maint/wwwman maint/xclude maint/crontab
 OBJSC    =
 WOBJS    = 
