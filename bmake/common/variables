@@ -1,0 +1,83 @@
+# $Id: common,v 1.203.1.62 1999/01/27 18:26:04 bsmith Exp balay $ 
+#
+# LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
+# PDIR (defined from $PETSC_DIR) determines where the libraries are built.
+# LDIR and PDIR will usually be identical.
+# LIBNAME       - library name
+# SOURCE        - source files
+# SSOURCE       - single precision versions of some source code
+# OBJS          - object files
+# SOBJS         - single precision versions of some object files
+# PETSC_INCLUDE - locations of include files
+# CPPFLAGS      - preprocessor flags for *.c, *.F preprocessing
+# DOCS          - files that contain PETSc documentation, readmes etc.
+# PETSC_PARCH   - corresponds to the PARCH_arch in the source files, set in 
+#                 the file bmake/${PETSC_ARCH}/base
+#
+LDIR	      = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
+PDIR	      = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
+LIBNAME	      = ${PDIR}/${LIBBASE}.a
+SOURCE	      = ${SOURCEC} ${SOURCEF}
+OBJS	      = ${OBJSC} ${OBJSF}
+PETSC_INCLUDE = -I${PETSC_DIR} -I${PETSC_DIR}/include ${MPI_INCLUDE} ${MPE_INCLUDE} \
+                -I${PETSC_DIR}/bmake/${PETSC_ARCH} ${AMS_INCLUDE}
+CCPPFLAGS      = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${PETSC_PARCH} ${CPPFLAGS} \
+		 -D__SDIR__='"${LOCDIR}"'
+FCPPFLAGS      = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${PETSC_PARCH} ${FPPFLAGS}
+#
+# Defines all libraries needed for using linear and nonlinear solvers, 
+# and all lower level PETSc components (such as vectors and matrices).
+# The order of listing these libraries is important!
+#
+PETSC_SYS_LIB  = -L${LDIR} -lpetsc \
+                 ${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} \
+                 ${MPE_LIB} ${MPI_LIB} ${X11_LIB} ${FC_LIB} ${SYS_LIB} -lm
+
+PETSC_VEC_LIB  = -L${LDIR} -lpetscvec -lpetsc ${PETSC_SYS_LIB}
+
+PETSC_MAT_LIB  = -L${LDIR} -lpetscmat ${PETSC_VEC_LIB}
+
+PETSC_DM_LIB  = -L${LDIR} -lpetscdm ${PETSC_MAT_LIB}
+
+PETSC_SLES_LIB  = -L${LDIR} -lpetscsles ${PETSC_DM_LIB}
+
+PETSC_SNES_LIB  = -L${LDIR} -lpetscsnes ${PETSC_SLES_LIB}
+
+PETSC_TS_LIB  = -L${LDIR} -lpetscts ${PETSC_SNES_LIB}
+
+PETSC_LIB   = -L${LDIR} -lpetsc -lpetscts -lpetscsnes  -lpetscsles -lpetscdm -lpetscmat \
+		-lpetscvec -lpetsc -lpetscts -lpetscsnes  -lpetscsles -lpetscdm -lpetscmat \
+		-lpetscvec -lpetsc \
+		${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} \
+		${MPE_LIB} ${MPI_LIB} ${X11_LIB} ${FC_LIB} ${SYS_LIB} -lm
+#
+ALICE_LIB    =	-L${LDIR}  -lpetscmat  -lpetscvec -lpetscmat \
+                 -lpetscvec -lpetscsys \
+		${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB}\
+		${MPE_LIB} ${MPI_LIB} ${X11_LIB} ${FC_LIB} ${SYS_LIB} -lm
+#
+#
+#   Currently ignore this entry
+#
+PETSC_ADIC_LIB  = -L${LDIR} -lpetscsnes -lpetscsles \
+		 -lpetscmat  -lpetscvec -lpetscmat   -lpetscvec -lpetscsys  \
+                  -lpetscblas -lmpiuni  ${EXTERNAL_LIB}  ${LAPACK_LIB} \
+                  ${BLAS_LIB} ${X11_LIB} \
+		  ${FC_LIB} ${SYS_LIB} -lm
+#
+# Link if you are using the PETSc Fortran interface.
+#
+PETSC_FORTRAN_LIB = -L${LDIR} -lpetscfortran
+#
+# Link if you are using code from the contributed part of PETSc
+#
+PETSC_CONTRIB = -L${LDIR} -lpetsccontrib
+# The following include files set customized site, optimization, and version
+# options.  Do NOT remove any of these include files.  You should generally
+# need to edit only ${PETSC_DIR}/bmake/${PETSC_ARCH}/base.site to specify your
+# particular machine configuration.  See the users manual for details.
+#
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base.site
+# (This line MUST be present for certain machines (e.g., Cray T3D))
+include ${PETSC_DIR}/bmake/common.${BOPT}
+
