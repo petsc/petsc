@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.217 1997/10/19 03:25:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.218 1997/10/22 13:11:53 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1467,6 +1467,8 @@ extern int MatConvertSameType_MPIAIJ(Mat,Mat *,int);
 extern int MatIncreaseOverlap_MPIAIJ(Mat , int, IS *, int);
 extern int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
 extern int MatGetSubMatrices_MPIAIJ (Mat ,int , IS *,IS *,MatGetSubMatrixCall,Mat **);
+extern int MatGetSubMatrix_MPIAIJ (Mat ,IS,IS,MatGetSubMatrixCall,Mat *);
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,MatRestoreRow_MPIAIJ,
@@ -1491,7 +1493,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatPrintHelp_MPIAIJ,
        MatScale_MPIAIJ,0,0,0,
        MatGetBlockSize_MPIAIJ,0,0,0,0, 
-       MatFDColoringCreate_MPIAIJ,0,MatSetUnfactored_MPIAIJ};
+       MatFDColoringCreate_MPIAIJ,0,MatSetUnfactored_MPIAIJ,
+       0,0,0,MatGetSubMatrix_MPIAIJ};
 
 
 #undef __FUNC__  
@@ -1925,11 +1928,17 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
 */
 int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall call,Mat *newmat)
 {
-  int     ierr, i, m,n,rstart,row,rend,nz,*cwork;
-  Mat     *local,M;
-  Scalar  *vwork;
+  int        ierr, i, m,n,rstart,row,rend,nz,*cwork,size,rank,j;
+  Mat        *local,M;
+  Scalar     *vwork,*aa;
+  MPI_Comm   comm = mat->comm;
+  Mat_SeqAIJ *aij;
+  int        *ii, *jj,nlocal,*dlens,*olens,dlen,olen,jend;
 
   PetscFunctionBegin;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&size);
+
   ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
 
   /* 
@@ -1939,13 +1948,38 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall call,Ma
   */
   ierr = MatGetSize(*local,&m,&n);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {
+    aij = (Mat_SeqAIJ *) (*local)->data;
+    if (aij->indexshift) SETERRQ(1,1,"No support for index shifted matrix");
+    ii  = aij->i;
+    jj  = aij->j;
+
     /*
-         Note this is inefficient because we do not preallocate the matrix space
-         to do this one must loop over the local rows and determine the number of 
-         of "on" and "off" diagonal entries and use those in the call to the MatCreate()
+        Determine the number of non-zeros in the diagonal and off-diagonal 
+        portions of the matrix in order to do correct preallocation
     */
-   ierr = MatCreateMPIAIJ(mat->comm,m,PETSC_DECIDE,
-                          PETSC_DECIDE,n,0,PETSC_NULL,0,PETSC_NULL,&M); CHKERRQ(ierr);
+
+    /* first get start and end of "diagonal" columns */
+    nlocal = n/size + ((n % size) > rank);
+    MPI_Scan(&nlocal,&rend,1,MPI_INT,MPI_SUM,comm);
+    rstart = rend - nlocal;
+
+    /* next, compute all the lengths */
+    dlens = (int *) PetscMalloc( (2*m+1)*sizeof(int) );CHKPTRQ(dlens);
+    olens = dlens + m;
+    for ( i=0; i<m; i++ ) {
+      jend = ii[i+1] - ii[i];
+      olen = 0;
+      dlen = 0;
+      for ( j=0; j<jend; j++ ) {
+        if ( *jj < rstart || *jj >= rend) olen++;
+        else dlen++;
+        jj++;
+      }
+      olens[i] = olen;
+      dlens[i] = dlen;
+    }
+    ierr = MatCreateMPIAIJ(comm,m,PETSC_DECIDE,PETSC_DECIDE,n,0,dlens,0,olens,&M);CHKERRQ(ierr);
+    PetscFree(dlens);
   } else {
     int ml,nl;
 
@@ -1955,11 +1989,17 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall call,Ma
     ierr = MatZeroEntries(M);CHKERRQ(ierr);
   }
   ierr = MatGetOwnershipRange(M,&rstart,&rend); CHKERRQ(ierr);
+  aij = (Mat_SeqAIJ *) (*local)->data;
+  if (aij->indexshift) SETERRQ(1,1,"No support for index shifted matrix");
+  ii  = aij->i;
+  jj  = aij->j;
+  aa  = aij->a;
   for (i=0; i<m; i++) {
-    ierr = MatGetRow(*local,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
-    row  = rstart + i;
+    row   = rstart + i;
+    nz    = ii[i+1] - ii[i];
+    cwork = jj;     jj += nz;
+    vwork = aa;     aa += nz;
     ierr = MatSetValues(M,1,&row,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
-    ierr = MatRestoreRow(*local,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
 
   ierr = MatDestroyMatrices(1,&local);CHKERRQ(ierr);
