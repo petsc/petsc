@@ -8,11 +8,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.usingMPIUni              = 0
-    self.missingPrototypes        = []
-    self.missingPrototypesC       = []
-    self.missingPrototypesCxx     = []
-    self.missingPrototypesExternC = []
+    self.usingMPIUni  = 0
     self.defineAutoconfMacros()
     headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
@@ -355,11 +351,11 @@ class Configure(config.base.Configure):
 
   def configureGetDomainName(self):
     if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
-      self.missingPrototypesC.append('int getdomainname(char *, int);')
+      self.addPrototype('int getdomainname(char *, int);', 'C')
     if 'CXX' in self.framework.argDB:
       self.pushLanguage('C++')
       if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
-        self.missingPrototypesExternC.append('int getdomainname(char *, int);')
+        self.addPrototype('int getdomainname(char *, int);', 'extern C')
       self.popLanguage()  
     return
  
@@ -396,15 +392,15 @@ class Configure(config.base.Configure):
       self.addDefine('CANNOT_START_DEBUGGER',1)
       self.addDefine('USE_NT_TIME',1)
       if not self.checkCompile('#include <sys/types.h>\n','uid_t u;\n'):
-        self.missingPrototypes.append('typedef int uid_t;')
-        self.missingPrototypes.append('typedef int gid_t;')
+        self.addPrototype('typedef int uid_t;')
+        self.addPrototype('typedef int gid_t;')
       if not self.checkCompile('#include <sys/stat.h>\n','int a=R_OK;\n'):
-        self.missingPrototypes.append('#define R_OK 04')
-        self.missingPrototypes.append('#define W_OK 02')
-        self.missingPrototypes.append('#define X_OK 01')
+        self.addPrototype('#define R_OK 04')
+        self.addPrototype('#define W_OK 02')
+        self.addPrototype('#define X_OK 01')
       if not self.checkLink('#include <sys/stat.h>\n','int a=0;\nif (S_ISDIR(a)){}\n'):
-        self.missingPrototypes.append('#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)')
-        self.missingPrototypes.append('#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)')
+        self.addPrototype('#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)')
+        self.addPrototype('#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)')
       self.framework.argDB['LIBS'] += ' kernel32.lib user32.lib  gdi32.lib advapi32.lib'
     return
     
@@ -430,16 +426,11 @@ class Configure(config.base.Configure):
   def configureMissingPrototypes(self):
     '''Checks for missing prototypes, which it adds to petscfix.h'''
     if not 'HAVE_MPI_FINT' in self.mpi.defines:
-      self.missingPrototypes.append('typedef int MPI_Fint;')
+      self.addPrototype('typedef int MPI_Fint;')
     if not 'HAVE_MPI_COMM_F2C' in self.mpi.defines:
-      self.missingPrototypes.append('#define MPI_Comm_f2c(a) (a)')
+      self.addPrototype('#define MPI_Comm_f2c(a) (a)')
     if not 'HAVE_MPI_COMM_C2F' in self.mpi.defines:
-      self.missingPrototypes.append('#define MPI_Comm_c2f(a) (a)')
-    # We use the framework in order to remove the PETSC_ namespace
-    self.framework.addSubstitution('MISSING_PROTOTYPES',     '\n'.join(self.missingPrototypes))
-    self.framework.addSubstitution('MISSING_PROTOTYPES_C', '\n'.join(self.missingPrototypesC))
-    self.framework.addSubstitution('MISSING_PROTOTYPES_CXX', '\n'.join(self.missingPrototypesCxx))
-    self.framework.addSubstitution('MISSING_PROTOTYPES_EXTERN_C', '\n'.join(self.missingPrototypesExternC))
+      self.addPrototype('#define MPI_Comm_c2f(a) (a)')
     return
 
   def configureMachineInfo(self):
@@ -521,7 +512,7 @@ class Configure(config.base.Configure):
     f.write('  import sys\n')
     f.write('  sys.path.insert(0, '+repr(os.path.join(self.framework.argDB['PETSC_DIR'], 'config'))+')\n')
     f.write('  import configure\n')
-    f.write('  configure_options = '+repr(self.framework.clArgs)+'\n')
+    f.write('  configure_options = '+repr(filter(lambda a: not a.endswith('-configModules=PETSc.Configure') , self.framework.clArgs))+'\n')
     f.write('  configure.petsc_configure(configure_options)\n')
     f.close()
     os.chmod(scriptName, 0775)
@@ -537,11 +528,11 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    self.framework.header = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf.h'
+    self.framework.header  = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf.h'
+    self.framework.cHeader = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h'
     self.framework.addSubstitutionFile('bmake/config/packages.in',   'bmake/'+self.framework.argDB['PETSC_ARCH']+'/packages')
     self.framework.addSubstitutionFile('bmake/config/rules.in',      'bmake/'+self.framework.argDB['PETSC_ARCH']+'/rules')
     self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.argDB['PETSC_ARCH']+'/variables')
-    self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h')
     if self.framework.argDB['with-64-bit-int']:
       self.addDefine('USE_64BIT_INT', 1)
     else:
