@@ -18,7 +18,7 @@
 \def\DeFn#1{
     \parbox[t]{6.0in}{\raggedright #1 \vskip2pt}\break}
 
-
+{\footnotesize
 \noindent {\Large \bf Routine Prefixes}
 
 \vspace{.2cm}
@@ -30,7 +30,7 @@ PC&Preconditioners&IS&Index sets\\
 SNES & Nonlinear equation solvers&DA& Distributed arrays \\
 TS   & Timesteppers & Options & Options database \\
 Petsc & Miscellaneous system routines & Draw & Drawing graphics routines\\
-AO & Application & PLog & Profiling functions \\
+AO & Numberings & PLog & Profiling functions \\
 \end{tabular}
 
 \section{Vector Routines}
@@ -50,26 +50,33 @@ Norms:
 \item NORM\_1
 \item NORM\_2
 \item NORM\_INFINITY or NORM\_MAX  
+\item NORM\_1\_2 
 \end{itemize}
 InsertMode:
 \begin{itemize}
 \item INSERT\_VALUES
-\item ADD\_VALUE
+\item ADD\_VALUES
+\item MAX\_VALUES
+\end{itemize}
+VecOption:
+\begin{itemize}
+\item VEC\_IGNORE\_OFF\_PROC\_ENTRIES
 \end{itemize}
 Runtime Options:
 \begin{itemize}
-\item -vec\_mpi
+\item -vec\_type <seq,mpi,shared>
 \item -vec\_view
 \item -vec\_view\_draw
 \item -vec\_view\_draw\_lg
 \item -vec\_view\_matlab
+\item -vec\_view\_socket
 \end{itemize}
 
 \noindent {  \#include ``vec.h''}
 
-{\small
+{\footnotesize
 \noindent
-\input ../rsum/ssum1
+\input ../rsum/ssumVec
 }
 
 \section{Matrix Routines}
@@ -163,8 +170,6 @@ Runtime Options:
 \item -mat\_block\_size [size]
 \item -mat\_coloring
 \item -mat\_dense
-\item -mat\_ilu\_fill [fill]
-\item -mat\_lu\_fill [fill]
 \item -mat\_lu\_pivotthreshold [threshold]
 \item -mat\_mpiaij
 \item -mat\_mpibaij
@@ -183,6 +188,7 @@ Runtime Options:
 \item -mat\_view\_info
 \item -mat\_view\_info\_detailed
 \item -mat\_view\_matlab
+\item -mat\_view\_socket
 \item -matload\_bdiag\_diags 
 \item -matload\_block\_size [size]
 \item -matload\_ignore\_info
@@ -190,9 +196,11 @@ Runtime Options:
 
 \noindent {  \#include ``mat.h''}
 
-{\small
+{\footnotesize
 \noindent
-\input ../rsum/ssum2
+\input ../rsum/ssumMat
+\input ../rsum/ssumMatOrderings
+\input ../rsum/ssumMatFD
 }
 
 \section{Simplified Linear Solvers}
@@ -209,9 +217,9 @@ Runtime Options:
 
 \noindent {  \#include ``sles.h''}
 
-{\small
+{\footnotesize
 \noindent
-\input ../rsum/ssum3
+\input ../rsum/ssumSLES
 }
 
 \section{Preconditioners}
@@ -231,7 +239,6 @@ Available Methods:
 \item PCASM - additive overlapping Schwarz
 \item PCILU - incomplete LU
 \item PCICC - incomplete Cholesky
-\item PCBGS - block Gauss-Seidel
 \item PCMG - multigrid
 \item PCSHELL - user-defined shell preconditioner
 \item PCLU - LU (direct solver)
@@ -248,12 +255,11 @@ Runtime Options:
 \item -pc\_type [jacobi,bjacobi,sor,eisenstat,ilu,icc,asm,bgs,mg,lu,shell,none]
 \item -pc\_asm\_blocks [blocks]
 \item -pc\_asm\_overlap [overlap]
-\item -pc\_bgs\_blocks [blocks]
-\item -pc\_bgs\_symmetric
-\item -pc\_bgs\_truelocal
+\item -pc\_asm\_type <basic,restrict,interpolate,none>
+\item -pc\_asm\_inplace
 \item -pc\_bjacobi\_blocks [blocks]
 \item -pc\_bjacobi\_truelocal
-\item -pc\_eisenstat\_diagonal\_scaling
+\item -pc\_eisenstat\_no\_diagonal\_scaling
 \item -pc\_eisenstat\_omega [omega]
 \item -pc\_icc\_factorpointwise
 \item -pc\_ilu\_factorpointwise
@@ -263,6 +269,10 @@ Runtime Options:
 \item -pc\_ilu\_reuse\_fill
 \item -pc\_ilu\_reuse\_reordering
 \item -pc\_ilu\_use\_drop\_tolerance
+\item -pc\_ilu\_fill [fill]
+\item -pc\_ilu\_diagonal\_fill
+\item -pc\_ilu\_nonzeros\_along\_diagonal
+\item -pc\_lu\_fill [fill]
 \item -pc\_lu\_in\_place
 \item -pc\_mg\_cycles [cycles]
 \item -pc\_mg\_levels [levels]
@@ -280,9 +290,9 @@ Runtime Options:
 
 \noindent {  \#include ``pc.h''}
 
-{\small
+{\footnotesize
 \noindent
-\input ../rsum/ssum4
+\input ../rsum/ssumPC
 }
 
 \section{Krylov Subspace Methods}
@@ -310,7 +320,6 @@ Runtime Options:
 \begin{itemize}
 \item -ksp\_type [cg,cgs,bcgs,gmres,tcqmr,tfqmr,cr,richardson,chebyshev,lsqr,qcg,preonly]
 \item -ksp\_atol [absolute\_tolerance]
-\item -ksp\_bsmonitor
 \item -ksp\_cg\_Hermitian
 \item -ksp\_cg\_symmetric
 \item -ksp\_compute\_eigenvalues
@@ -321,6 +330,7 @@ Runtime Options:
 \item -ksp\_gmres\_preallocate
 \item -ksp\_gmres\_restart [restart\_number]
 \item -ksp\_gmres\_unmodifiedgramschmidt
+\item -ksp\_gmres\_modifiedgramschmidt
 \item -ksp\_left\_pc
 \item -ksp\_max\_it [maximum\_iterations]
 \item -ksp\_monitor
@@ -334,16 +344,16 @@ Runtime Options:
 \item -ksp\_smonitor
 \item -ksp\_symmetric\_pc
 \item -ksp\_truemonitor
-\item -ksp\_type
 \item -ksp\_xmonitor
 \item -ksp\_xtruemonitor
+\item -ksp\_vecmonitor
 \end{itemize}
 
 \noindent {\#include ``ksp.h''}
 
-{\small
+{\footnotesize
 \noindent
-\input ../rsum/ssum5
+\input ../rsum/ssumKSP
 }
 
 \section{Nonlinear Solvers}
@@ -412,13 +422,15 @@ Runtime Options:
 \item -snes\_um\_ls\_stepmin
 \item -snes\_view
 \item -snes\_xmonitor
+\item -snes\_vecmonitor
 \end{itemize}
 
 \noindent {\#include ``snes.h''}
 
-{\small
+{\footnotesize
 \noindent
-\input ../rsum/ssumn
+\input ../rsum/ssumSNES
+\input ../rsum/ssumSNESMF
 }
 
 \section{Timestepping, ODE Solvers}
@@ -452,9 +464,9 @@ Runtime Options:
 
 \noindent {\#include ``ts.h''}
 
-{\small
+{\footnotesize
 \noindent
-\input ../rsum/ssumt
+\input ../rsum/ssumTS
 }
 
 \section{Index Sets, Distributed Arrays, and Application Orderings}
@@ -491,11 +503,14 @@ Runtime Options:
 \end{itemize}
 
 \noindent {\#include ``is.h''} \\
+\noindent {\#include ``ao.h''} \\
 \noindent {\#include ``da.h''}
 
-{\small
+{\footnotesize
 \noindent
-\input ../rsum/ssum6
+\input ../rsum/ssumIS
+\input ../rsum/ssumAO
+\input ../rsum/ssumDA
 }
 
 \section{Utility and System Routines}
@@ -526,9 +541,9 @@ Runtime Options:
 \noindent {  \#include ``sys.h''} \\
 {  \#include ``options.h''} \\
 
-{\small
+{\footnotesize
 \noindent
-\input ../rsum/ssum7
+\input ../rsum/ssumSys
 }
 
 \section{Viewers}
@@ -538,11 +553,12 @@ Default Viewers:
 \begin{itemize}
 \item VIEWER\_STDOUT\_WORLD
 \item VIEWER\_STDOUT\_SELF
-\item VIEWER\_DRAWX\_WORLD
-\item VIEWER\_DRAWX\_SELF
-\item VIEWER\_MATLAB\_WORLD
+\item VIEWER\_DRAW\_WORLD
+\item VIEWER\_DRAW\_SELF
+\item VIEWER\_SOCKET\_WORLD
+\item VIEWER\_AMS\_WORLD
 \item VIEWER\_STDOUT\_()
-\item VIEWER\_DRAWX\_()
+\item VIEWER\_DRAW\_()
 \end{itemize}
 Format options:
 \begin{itemize}
@@ -558,23 +574,21 @@ Format options:
       is in. This currently works only for dense matrices.
 \end{itemize}
 
-{\small
+{\footnotesize
 \noindent
-\input ../rsum/ssumv
+\input ../rsum/ssumViewer
 }
 
 \section{Profiling}
 Runtime Options:
 \begin{itemize}
-\item -log [filename]
 \item -log\_summary
-\item -log\_all [filename]
 \item -log\_mpe [filename]
 \end{itemize}
 
-{\small
+{\footnotesize
 \noindent
-\input ../rsum/ssump
+\input ../rsum/ssumProfiling
 }
 
 \section{Graphics Routines}
@@ -591,8 +605,8 @@ Data Structures:
 
 \noindent {  \#include ``draw.h''}
 
-{\small
+{\footnotesize
 \noindent
-\input ../rsum/ssumx
+\input ../rsum/ssumDraw
 }
-
+}
