@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.262 1998/04/27 03:54:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.263 1998/05/07 21:09:30 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -173,8 +173,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
       col = in[l] - shift;
       if (roworiented) {
         value = *v++; 
-      }
-      else {
+      } else {
         value = v[k + l*m];
       }
       if (!sorted) low = 0; high = nrow;
@@ -1539,7 +1538,7 @@ int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
   PLogObjectParent(inA,a->icol);
 
   if (!a->solve_work) { /* this matrix may have been factored before */
-    a->solve_work = (Scalar *) PetscMalloc( (a->m+1)*sizeof(Scalar)); CHKPTRQ(a->solve_work);
+    a->solve_work = (Scalar *) PetscMalloc( (a->m+1)*sizeof(Scalar));CHKPTRQ(a->solve_work);
   }
 
   if (!a->diag) {
@@ -1751,6 +1750,66 @@ extern int MatUseEssl_SeqAIJ(Mat);
 extern int MatUseDXML_SeqAIJ(Mat);
 
 #undef __FUNC__  
+#define __FUNC__ "MatSeqAIJSetColumnIndices_SeqAIJ"
+int MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,int *indices)
+{
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ *)mat->data;
+  int        i,nz,n;
+
+  PetscFunctionBegin;
+  if (aij->indexshift) SETERRQ(1,1,"No support with 1 based indexing");
+
+  nz = aij->maxnz;
+  n  = aij->n;
+  for (i=0; i<nz; i++) {
+    aij->j[i] = indices[i];
+  }
+  aij->nz = nz;
+  for ( i=0; i<n; i++ ) {
+    aij->ilen[i] = aij->imax[i];
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatSeqAIJSetColumnIndices"
+/*@
+    MatSeqAIJSetColumnIndices - Set the column indices for all the rows
+       in the matrix.
+
+  Input Parameters:
++  mat - the SeqAIJ matrix
+-  indices - the column indices
+
+  Notes:
+    This can be called if you have precomputed the nonzero structure of the 
+  matrix and want to provide it to the matrix object to improve the performance
+  of the MatSetValues() operation.
+
+    You MUST have set the correct numbers of nonzeros per row in the call to 
+  MatCreateSeqAIJ().
+
+    MUST be called before any calls to MatSetValues();
+
+@*/ 
+int MatSeqAIJSetColumnIndices(Mat mat,int *indices)
+{
+  int ierr,(*f)(Mat,int *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqAIJSetColumnIndices_C",(void **)&f); 
+         CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat,indices);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Wrong type of matrix to set column indices");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "MatCreateSeqAIJ"
 /*@C
    MatCreateSeqAIJ - Creates a sparse matrix in AIJ (compressed row) format
@@ -1795,7 +1854,7 @@ extern int MatUseDXML_SeqAIJ(Mat);
         rather than 0.  Note that when calling MatSetValues(),
         the user still MUST index entries starting at 0!
 
-.seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues()
+.seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices()
 @*/
 int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
 {
@@ -1890,6 +1949,10 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   }
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) {ierr = MatPrintHelp(B); CHKERRQ(ierr); }
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJSetColumnIndices_C",
+                                     "MatSeqAIJSetColumnIndices_SeqAIJ",
+                                     (void*)MatSeqAIJSetColumnIndices_SeqAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1899,7 +1962,7 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
 {
   Mat        C;
   Mat_SeqAIJ *c,*a = (Mat_SeqAIJ *) A->data;
-  int        i,len, m = a->m,shift = a->indexshift;
+  int        i,len, m = a->m,shift = a->indexshift,ierr;
 
   PetscFunctionBegin;
   *B = 0;
@@ -1971,6 +2034,9 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   c->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
 
   *B = C;
+  ierr = PetscObjectComposeFunction((PetscObject)C,"MatSeqAIJSetColumnIndices_C",
+                                     "MatSeqAIJSetColumnIndices_SeqAIJ",
+                                     (void*)MatSeqAIJSetColumnIndices_SeqAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

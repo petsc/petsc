@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.99 1998/03/26 22:59:05 balay Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.100 1998/04/03 23:14:54 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -318,8 +318,9 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   Abops = A->bops;
   Aops  = A->ops;
   PetscMemcpy(A,C,sizeof(struct _p_Mat));
-  A->bops = Abops;
-  A->ops  = Aops;
+  A->bops  = Abops;
+  A->ops   = Aops;
+  A->qlist = 0;
 
   PetscHeaderDestroy(C);
   PetscFunctionReturn(0);
