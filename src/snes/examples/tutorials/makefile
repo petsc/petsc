@@ -5,7 +5,7 @@ CFLAGS	        = $(CPPFLAGS) -D__SDIR__='"$(LOCDIR)"'
 FFLAGS	        =	 
 SOURCEC	        = 
 SOURCEF	        =
-SOURCEH	        =
+SOURCEH	        = ex5f.h
 OBJSC	        =
 OBJSF	        =
 LIBBASE	        = libpetscsnes
