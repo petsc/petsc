@@ -61,14 +61,18 @@ class Configure:
     if not hasattr(self.framework,'linewidth'):
       try:
         import curses
-        curses.setupterm()
-        stdscr = curses.initscr()
-        (y,x) = stdscr.getmaxyx()
-        curses.endwin()
+        try:
+          curses.setupterm()
+          stdscr = curses.initscr()
+          (y,x) = stdscr.getmaxyx()
+          curses.endwin()
 
-        self.framework.linewidth = x
-        self.framework.cwd       = os.getcwd()+'/'
-      except (curses.error, ImportError):
+          self.framework.linewidth = x
+          self.framework.cwd       = os.getcwd()+'/'
+        except curses.error:
+          self.framework.linewidth = -1
+          return
+      except ImportError:
         self.framework.linewidth = -1
         return
     elif self.framework.linewidth < 0:
