@@ -318,7 +318,7 @@ int MatSetValuesBlocked_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,PetscSca
    Any a(i,j) with i>j input by user is ingored. 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetValues_MPIBAIJ"
+#define __FUNCT__ "MatSetValues_MPIBAIJ_MatScalar"
 int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
@@ -427,8 +427,8 @@ int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScala
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ"
-int MatSetValuesBlocked_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
+#define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ_MatScalar"
+int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
   MatScalar    *value,*barray=baij->barray;
