@@ -88,9 +88,6 @@ class Configure(config.base.Configure):
 
   def configureOptimization(self):
     '''Allow a default optimization level and language'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.framework.addSubstitution('CC_SHARED_OPT', '')
-
     # if BOPT is not set determines what libraries to use
     bopt = self.framework.argDB['with-default-optimization']
     if self.framework.argDB['with-default-language'] == '0' or self.framework.argDB['with-default-optimization'] == '0':
