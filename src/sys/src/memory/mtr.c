@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.75 1997/02/22 02:23:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.76 1997/03/01 15:45:33 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -470,7 +470,7 @@ int PetscTrDump( FILE *fp )
   }
   head = TRhead;
   while (head) {
-    fprintf(fp,"[%d]%d bytes %s() line %d in %s%s\n",rank,(int) head->size,
+    fprintf(fp,"[%2d]%8d bytes %s() line %d in %s%s\n",rank,(int) head->size,
             head->functionname,head->lineno,head->dirname,head->filename);
     head = head->next;
   }
