@@ -2,7 +2,7 @@
 #
 #    This should only be run ONCE! It checks for the existence of
 #  BitKeeper and then does the bk clone bk://sidl.bkbits.net/BuildSystem
-#  and then calls the installer in BuildSystem/install
+#  and then calls the installer in sidl/BuildSystem/install
 #
 import commands
 import curses
@@ -84,8 +84,9 @@ class BootstrapInstall (object):
     '''Check for BuildSystem and install it if it is not present.
        - Return True if installation succeeds'''
     # Should really check that it is functioning here
-    if not os.path.isdir('BuildSystem'):
-      (status, self.errorString) = commands.getstatusoutput(self.bkPath+'/bk clone bk://sidl.bkbits.net/BuildSystem')
+    if not os.path.isdir('sidl/BuildSystem'):
+      if not os.path.isdir('sidl'): os.makedirs('sidl')
+      (status, self.errorString) = commands.getstatusoutput(self.bkPath+'/bk clone bk://sidl.bkbits.net/BuildSystem sidl/BuildSystem')
       if status:
         # TODO: Log error
         return 0
@@ -305,8 +306,8 @@ class CursesInstall (BootstrapInstall):
   def cursesAlreadyInstalled(self, stdscr):
     stdscr.clear()
     CursesInstall.CenterAddStr(stdscr, 1, 'Looks like BuildSystem is already installed at')
-    CursesInstall.CenterAddStr(stdscr, 2, self.installPath)
-    CursesInstall.CenterAddStr(stdscr, 4, 'Use '+self.installPath+'/BuildSystem/install/gui.py')
+    CursesInstall.CenterAddStr(stdscr, 2, self.installPath+'/sidl/BuildSystem')
+    CursesInstall.CenterAddStr(stdscr, 4, 'Use '+self.installPath+'/sidl/BuildSystem/install/gui.py')
     CursesInstall.CenterAddStr(stdscr, 5, 'to install additional projects after bootstrap finishes')
     CursesInstall.CenterAddStr(stdscr, 7, 'OR')    
     CursesInstall.CenterAddStr(stdscr, 9, 'Remove all directories in '+self.installPath)
@@ -328,7 +329,7 @@ class CursesInstall (BootstrapInstall):
   def installBuildSystem(self):
     '''Check for BuildSystem and install it if it is not present.
        - Return True if installation succeeds'''
-    if os.path.isdir('BuildSystem'):
+    if os.path.isdir('sidl/BuildSystem'):
       return curses.wrapper(self.cursesAlreadyInstalled)
     if not BootstrapInstall.installBuildSystem(self):
       return curses.wrapper(self.cursesCannotClone, self.errorString)
@@ -368,7 +369,9 @@ if __name__ ==  '__main__':
   # Handoff to installer
   sys.stdout.write('Installing the BuildSystem, Runtime and Compiler (this will take a while)\n')
   sys.stdout.flush()
-  sys.path.insert(0, os.path.join(installer.installPath, 'BuildSystem'))
+  sys.path.insert(0, os.path.join(installer.installPath, 'sidl','BuildSystem'))
   import install.installer
-  install.installer.runinstaller(["-debugSections=[install]",'-debugLevel=2'])
+  args = ['-debugSections=[install]','-debugLevel=2']
+  if os.getenv('USER') == 'bsmith': args.append('-userRepositories=1')
+  install.installer.runinstaller(args)
       
