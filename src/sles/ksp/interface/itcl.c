@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.49 1996/01/09 15:12:08 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.50 1996/01/12 03:51:36 bsmith Exp balay $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -162,9 +162,52 @@ int KSPPrintHelp(KSP ctx)
 int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 {
   PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  return PetscObjectSetPrefix((PetscObject)ksp, prefix);
+/*
   ksp->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))*sizeof(char));
   CHKPTRQ(ksp->prefix);
   PetscStrcpy(ksp->prefix,prefix);
-  return 0;
+  return 0;*/
 }
+
+ 
+/*@C
+   KSPAppendOptionsPrefix - Appends to the prefix used for searching for all 
+   KSP options in the database.
+
+   Input Parameters:
+.  ksp - the Krylov context
+.  prefix - the prefix string to prepend to all KSP option requests
+
+.keywords: KSP, append, options, prefix, database
+@*/
+int KSPSeAppendOptionsPrefix(KSP ksp,char *prefix)
+{
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  return PetscObjectAppendPrefix((PetscObject)ksp, prefix);
+}
+
+ 
+
+/*@C
+   KSPGetOptionsPrefix - Gets the prefix used for searching for all 
+   KSP options in the database.
+
+   Input Parameters:
+.  ksp - the Krylov context
+
+   Output Parameters:
+.  prefix - pointer to the prefix string used is returned
+
+.keywords: KSP, set, options, prefix, database
+@*/
+int KSPGetOptionsPrefix(KSP ksp,char **prefix)
+{
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  return PetscObjectGetPrefix((PetscObject)ksp, prefix);
+}
+
+ 
+
+
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.19 1996/01/12 17:04:31 balay Exp balay $";
+static char vcid[] = "$Id: destroy.c,v 1.20 1996/01/12 17:24:53 balay Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -156,8 +156,9 @@ void PetscSleep(int s)
 int PetscObjectSetPrefix(PetscObject obj, char *prefix)
 {
   if (!obj) SETERRQ(1,"PetscObjectSetOPrefix:Null object");
-  if (obj->prefix) SETERRQ(1,"PetscObjectSetPrefix: prefix exists! Use XXXAppendOptionsPrefix instead");
-  obj->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))*sizeof(char)); CHKPTRQ(obj->prefix);
+  if (obj->prefix) PetscFree(obj->prefix);
+  obj->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))* \
+                sizeof(char)); CHKPTRQ(obj->prefix);
   PetscStrcpy(obj->prefix,prefix);
   return 0;
 }
@@ -177,8 +178,8 @@ int PetscObjectAppendPrefix(PetscObject obj, char *prefix)
   if (!obj) SETERRQ(1,"PetscObjectAppendOPrefix:Null object");
   if (!buf) return PetscObjectSetPrefix(obj, prefix);
   
-  obj->prefix = (char*)PetscMalloc((PetscStrlen(prefix)+PetscStrlen(buf))*sizeof(char)); 
-  CHKPTRQ(obj->prefix);
+  obj->prefix = (char*)PetscMalloc((1 + PetscStrlen(prefix) + PetscStrlen(buf))* \
+                sizeof(char));  CHKPTRQ(obj->prefix);
   PetscStrcpy(obj->prefix,buf);
   PetscStrcat(obj->prefix,prefix);
   PetscFree(buf);
