@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex16.c,v 1.4 1997/10/19 03:27:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex16.c,v 1.5 1997/11/28 16:20:38 bsmith Exp curfman $";
 #endif
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
@@ -116,7 +116,7 @@ int main(int argc,char **args)
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A,SAME_PRECONDITIONER); CHKERRA(ierr);
 
   /* 
     Set runtime options, e.g.,
