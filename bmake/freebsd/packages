@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.18 1998/12/04 22:09:16 balay Exp bsmith $ 
+# $Id: base.site,v 1.19 1999/02/08 22:22:33 bsmith Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -18,10 +18,12 @@ X11_INCLUDE    = -I/usr/X11R6/include
 X11_LIB        = -L/usr/X11R6/lib -lX11
 #
 # Location of MPI (Message Passing Interface) software
-MPI_LIB        = /home/petsc/mpich/lib/freebsd/ch_p4/libmpich.a
-MPI_INCLUDE    = -I/home/petsc/mpich/include -I/home/petsc/mpich/lib/freebsd/ch_p4
-MPIRUN         = /home/petsc/mpich/lib/freebsd/ch_p4/mpirun 
 #
+MPI_HOME       = /home/petsc/mpich
+MPI_BUILD_HOME = ${MPI_HOME}/build/freebsd/ch_p4
+MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
+MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
 # Unless you are using the p4 secure server you should remove the -p4ssport 1861 
 # from below. If you are using the secure server you should put in the appropriate
 # port number below instead of 1861
