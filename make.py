@@ -41,7 +41,7 @@ class PetscMake(bs.BS):
     self.filesets['sidl'] = fileset.ExtensionFileSet(self.directories['sidl'], '.sidl')
 
   def defineTargets(self):
-    if bs.argDB.has_key('babelCrap'):
+    if bs.argDB.has_key('babelCrap') and bs.argDB['babelCrap']:
       sidl = BSTemplates.babelTargets.Defaults('bs', self.filesets['sidl'])
     else:
       sidl = BSTemplates.scandalTargets.Defaults('bs', self.filesets['sidl'])
