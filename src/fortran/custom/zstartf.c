@@ -28,7 +28,7 @@ extern void petscsetcommonblock_(int*,int*,int*,int*);
 
 void PetscInitializeFortran()
 {
-  int s1,s2,s3;
+  int s1,s2,s3,s4;
   s1 = MPIR_FromPointer(VIEWER_STDOUT_SELF);
   s2 = MPIR_FromPointer(VIEWER_STDERR_SELF);
   s3 = MPIR_FromPointer(VIEWER_STDOUT_WORLD);
