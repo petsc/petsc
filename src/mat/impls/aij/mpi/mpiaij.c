@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.123 1996/02/07 23:13:36 balay Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.124 1996/02/09 14:55:00 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1390,7 +1390,6 @@ $
    In general, for PDE problems in which most nonzeros are near the diagonal,
    one expects d_nz >> o_nz.   For additional details, see the users manual
    chapter on matrices and the file $(PETSC_DIR)/Performance.
-
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
