@@ -260,102 +260,61 @@ int UserSetGridParameters(Euler *u)
  */
 int UserSetGrid(Euler *app)
 {
-  Scalar *xt, *yt, *zt;
-  int    llen, i, j ,k, gxs1, gxe01, gys1, gye01, gzs1, gze01;
+  Scalar *xin, *yin, *zin;
+  int    i, j ,k, gxs1, gxe01, gys1, gye01, gzs1, gze01;
   int    mx_l, my_l, mz_l, mx_g, my_g, mz_g, ict_g, ict_l, ierr;
-  int    mxp_l, myp_l, mzp_l, llenp, xtp, ytp, ztp, tag;
-  int    itl, itu, ile, ktip, rank = app->rank, send[6];
-  Scalar *rvalues;
-  MPI_Comm comm;
-  MPI_Request *recv_waits, *send_waits;
-  MPI_Status  recv_status,*send_status;
+  int    itl, itu, ile, ktip, llen, llenb;
 
-  /* Read entire grid on processor 0 */
-  if (!rank || app->global_grid) {
-    ierr = readmesh_(&itl,&itu,&ile,&ktip,app->xc,app->yc,app->zc); CHKERRQ(ierr);
-    if ((app->bctype == EXPLICIT 
+  /* Mesh coordinates */
+  llen  = app->ni * app->nj * app->nk;
+  llenb = llen * 3 * sizeof(Scalar);
+  xin = (Scalar *)PetscMalloc(llenb); CHKPTRQ(xin);
+  yin = xin + llen;
+  zin = yin + llen;
+
+  ierr = readmesh_(&itl,&itu,&ile,&ktip,xin,yin,zin); CHKERRQ(ierr);
+  if ((app->bctype == EXPLICIT 
           && (app->ktip+2 != ktip || app->itl+2 != itl 
              || app->itu+2 != itu || app->ile+2 != ile)) ||
       ((app->bctype == IMPLICIT || app->bctype == IMPLICIT_SIZE)
           && (app->ktip+1 != ktip || app->itl+1 != itl 
             || app->itu+1 != itu || app->ile+1 != ile)))
      SETERRQ(1,1,"Conflicting wing parameters");
-  }
-  if (app->global_grid || app->size == 1) return 0;
-  if (app->post_process) SETERRQ(1,0,"Local grid is not currently compatible with post processing");
 
-  /* Determine each processor's locally owned part of mesh */
-  gxs1 = app->gxsf1-2; gxe01 = app->gxef01;
-  gys1 = app->gysf1-2; gye01 = app->gyef01;
-  gzs1 = app->gzsf1-2; gze01 = app->gzef01;
-  send[0] = gxs1; send[1] = gxef01;
-  send[2] = gys1; send[3] = gyef01;
-  send[4] = gzs1; send[5] = gzef01;
-  recv = (int *)PetscMalloc(6*app->size*sizeof(int)); CHKPTRQ(recv);
-  ierr = MPI_Allgather(send,6,MPI_INT,recv,6,MPI_INT,app->comm); CHKERRQ(ierr);
+  /* Create local mesh and free global mesh (optional if using > 1 processor) */
+  if (!app->global_grid && app->size > 1) {
+    if (app->post_process) SETERRQ(1,0,"Local grid is not currently compatible with post processing");
+    mx_l = (app->gxef01 - app->gxsf1 + 2); mx_g = app->ni1-1;
+    my_l = (app->gyef01 - app->gysf1 + 2); my_g = app->nj1-1;
+    mz_l = (app->gzef01 - app->gzsf1 + 2); mz_g = app->nk1-1;
+    llen  = mx_l * my_l * mz_l;
+    llenb = 3*llen;
+    ierr = VecCreateSeq(MPI_COMM_SELF,llenb,&app->vcoord); CHKERRQ(ierr);
+    ierr = VecGetArray(app->vcoord,&app->xc); CHKERRQ(ierr);
+    app->yc = app->xc + llen;
+    app->zc = app->yc + llen;
 
-  /* Allocate space for local mesh */
-  mx_l = gxef01 - gxs1; mx_g = app->ni1-1;
-  my_l = gyef01 - gys1; my_g = app->nj1-1;
-  mz_l = gzef01 - gzs1; mz_g = app->nk1-1;
+    gxs1 = app->gxsf1-2; gxe01 = app->gxef01;
+    gys1 = app->gysf1-2; gye01 = app->gyef01;
+    gzs1 = app->gzsf1-2; gze01 = app->gzef01;
 
-  llen = mx_l * my_l * mz_l;
-  xt = (Scalar *)PetscMalloc(llen * 3 * sizeof(Scalar)); CHKPTRQ(xt);
-  yt = xt + llen;
-  zt = yt + llen;
-
-  /* Get tag */
-  PetscCommDup_Private(app->comm,&comm,&tag);
-
-  /* post receives:   */
-  nmax   = 1;
-  nrecvs = 1;
-  rvalues    = (Scalar *) PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(Scalar)); CHKPTRQ(rvalues);
-  recv_waits = (MPI_Request *) PetscMalloc((nrecvs+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
-  for ( i=0; i<nrecvs; i++ ) {
-    MPI_Irecv((rvalues+nmax*i),nmax,MPI_DOUBLE,MPI_ANY_SOURCE,tag,comm,recv_waits+i);
-  }
-
-  if (!rank) {
-    nsends = 1;
-    send_waits = (MPI_Request *)PetscMalloc((nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
-
-    for (p=0; p<rank; p++) {
-      gxs1p = recv[6*p+1]; gze01p = recv[6*p];
-      gys1p = recv[6*p+3]; gye01p = recv[6*p+2];
-      gzs1p = recv[6*p+5]; gze01p = recv[6*p+4];
-      mxp_l = gxef01 - gxs1;
-      myp_l = gyef01 - gys1;
-      mzp_l = gzef01 - gzs1;
-      llenp = mxp_l * myp_l * mzp_l;
-      xtp = (Scalar *)PetscMalloc(llenp * 3 * sizeof(Scalar)); CHKPTRQ(xt);
-      ytp = xtp + llenp;
-      ztp = ytp + llenp;
-      for (k=gzs1p; k<gze01p; k++) {
-        for (j=gys1p; j<gye01p; j++) {
-          for (i=gxs1p; i<gxe01p; i++) {
-            ict_l = (k-gzs1p)*mx_l*my_l + (j-gys1p)*mx_l + i-gxs1p;
-            ict_g = k*mx_g*my_g + j*mx_g + i;
-            xtp[ict_l] = app->xc[ict_g];
-            ytp[ict_l] = app->yc[ict_g];
-            ztp[ict_l] = app->zc[ict_g];
+    for (k=gzs1; k<gze01; k++) {
+      for (j=gys1; j<gye01; j++) {
+        for (i=gxs1; i<gxe01; i++) {
+          ict_l = (k-gzs1)*mx_l*my_l + (j-gys1)*mx_l + i-gxs1;
+          ict_g = k*mx_g*my_g + j*mx_g + i;
+          app->xc[ict_l] = xin[ict_g];
+          app->yc[ict_l] = yin[ict_g];
+          app->zc[ict_l] = zin[ict_g];
+        }
       }
-      MPI_Isend(xtp,p,MPI_DOUBLE,p,tag,comm,send_waits);
-      /*
-      count = 0;
-      for ( i=0; i<size; i++ ) {
-	MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,comm,send_waits+count++);
-      }
-      */
     }
+    PetscFree(xin);
+  } else {
+    app->xc = xin;
+    app->yc = yin;
+    app->zc = zin;
   }
-  PetscFree(app->xc);
-  app->xc = xt;
-  app->yc = yt;
-  app->zc = zt;
-  }
-  MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);
-
 
   MPI_Barrier(app->comm);
   return 0;
