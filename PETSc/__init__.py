@@ -1,1 +1,1 @@
-all = ['Configure']
+all = ['Configure', 'BLAS']
