@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.69 1996/07/02 18:04:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.70 1996/07/08 22:16:55 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -189,7 +189,7 @@ int KSPPrintHelp(KSP ksp)
     PetscPrintf(ksp->comm," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
     PetscPrintf(ksp->comm," %sksp_truemonitor: at each iteration print true residual norm to stdout\n",p);
     PetscPrintf(ksp->comm," %sksp_xtruemonitor [x,y,w,h]: use X graphics residual convergence monitor with true residual\n",p);
-    PetscPrintf(ksp->comm," %sksp_singmonitor: calculate singular values during linear solve\n              only for CG and GMRES",p);
+    PetscPrintf(ksp->comm," %sksp_singmonitor: calculate singular values during linear solve\n                   only for CG and GMRES\n",p);
     PetscPrintf(ksp->comm," GMRES options:\n");
     PetscPrintf(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);
     PetscPrintf(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative GMRES orthogonalization\n",p);
