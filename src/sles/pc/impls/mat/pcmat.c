@@ -37,8 +37,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_Mat"
 int PCCreate_Mat(PC pc)
 {
-  int       ierr;
-
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_Mat;
   pc->ops->applytranspose      = PCApplyTranspose_Mat;
