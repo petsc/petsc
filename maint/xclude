@@ -2,7 +2,6 @@ petsc/bmake/adicmastercontrol
 petsc/bmake/paragon
 petsc/bmake/solaris_uni
 petsc/bmake/IRIX64_uni
-petsc/bmake/nt
 petsc/bmake/alpha/base.g_pointer
 petsc/bin/petscopt
 petsc/bin/petscconf.h.in.sav
