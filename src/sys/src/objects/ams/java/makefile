@@ -1,21 +1,22 @@
-# $Id: makefile,v 1.4 2000/02/16 03:57:11 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.1 2000/02/23 03:15:55 bsmith Exp bsmith $ 
 
-#requirespackage  '-DPETSC_HAVE_AMS'
+#requirespackage  '-DPETSC_HAVE_JAVA'
 
-ALL: lib 
+lib: amsoptions
+libfast: amsoptions
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  = 
-SOURCEC	  = pams.c aoptions.c
+SOURCEC	  = 
 SOURCEF	  =
 SOURCEH	  = 
-OBJSC	  = pams.o aoptions.o
+OBJSC	  = 
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
 DIRS	  = 
-LOCDIR	  = src/sys/src/objects/ams/
+LOCDIR	  = src/sys/src/objects/ams/java/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
