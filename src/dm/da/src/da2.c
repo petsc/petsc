@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.165 2001/05/07 21:33:32 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.166 2001/05/07 21:37:39 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1197,36 +1197,114 @@ int DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
   PetscFunctionReturn(0);
 }
 
-/*MC
-       DASetLocalFunction - Caches in a DA a local function and its adiC Jacobian
+#undef __FUNCT__  
+#define __FUNCT__ "DASetLocalFunction"
+/*@C
+       DASetLocalFunction - Caches in a DA a local function
 
    Collective on DA
 
-   Synopsis:
-   int int DASetLocalFunction(DA da,DALocalFunction1 lf,DALocalFunction1 lj,DALocalFunction1 ad_lf)
-   
    Input Parameter:
 +  da - initial distributed array
-.  lf - the local function
-.  lj - the local Jacobian
--  ad_lf - the local function as computed by ADIC/ADIFOR
+-  lf - the local function
 
    Level: intermediate
 
 .keywords:  distributed array, refine
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction()
-M*/
-
-#undef __FUNCT__  
-#define __FUNCT__ "DASetLocalFunction_Private"
-int DASetLocalFunction_Private(DA da,DALocalFunction1 lf,DALocalFunction1 lj,DALocalFunction1 ad_lf)
+@*/
+int DASetLocalFunction(DA da,DALocalFunction1 lf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   da->lf    = lf;
-  da->lj    = lj;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+       DASetLocalad_Function - Caches in a DA a local function computed by ADIC/ADIFOR
+
+   Collective on DA
+
+   Synopsis:
+   int int DASetLocalad_Function(DA da,DALocalFunction1 ad_lf)
+   
+   Input Parameter:
++  da - initial distributed array
+-  ad_lf - the local function as computed by ADIC/ADIFOR
+
+   Level: intermediate
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction(),
+          DASetLocalJacobian()
+M*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "DASetLocalad_Function_Private"
+int DASetLocalad_Function_Private(DA da,DALocalFunction1 ad_lf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
   da->ad_lf = ad_lf;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+       DASetLocaladmf_Function - Caches in a DA a local function computed by ADIC/ADIFOR
+
+   Collective on DA
+
+   Synopsis:
+   int int DASetLocaladmf_Function(DA da,DALocalFunction1 ad_lf)
+   
+   Input Parameter:
++  da - initial distributed array
+-  ad_lf - the local function as computed by ADIC/ADIFOR
+
+   Level: intermediate
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction(),
+          DASetLocalJacobian()
+M*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "DASetLocaladmf_Function_Private"
+int DASetLocaladmf_Function_Private(DA da,DALocalFunction1 ad_lf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  da->admf_lf = ad_lf;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+       DASetLocalJacobian - Caches in a DA a local Jacobian
+
+   Collective on DA
+
+   
+   Input Parameter:
++  da - initial distributed array
+-  lj - the local Jacobian
+
+   Level: intermediate
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction()
+@*/
+#undef __FUNCT__  
+#define __FUNCT__ "DASetLocalJacobian"
+int DASetLocalJacobian(DA da,DALocalFunction1 lj)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  da->lj    = lj;
   PetscFunctionReturn(0);
 }
 
@@ -1241,9 +1319,7 @@ int DASetLocalFunction_Private(DA da,DALocalFunction1 lf,DALocalFunction1 lj,DAL
 .  da - initial distributed array
 
    Output Parameters:
-+  lf - the local function
-.  lj - the local Jacobian
--  ad_lf - the ADIC or ADIFOR generate local function
+.  lf - the local function
 
    Level: intermediate
 
@@ -1251,13 +1327,11 @@ int DASetLocalFunction_Private(DA da,DALocalFunction1 lf,DALocalFunction1 lj,DAL
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DASetLocalFunction()
 @*/
-int DAGetLocalFunction(DA da,DALocalFunction1 *lf,DALocalFunction1 *lj,DALocalFunction1 *ad_lf)
+int DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   if (lf)       *lf = da->lf;
-  if (lj)       *lj = da->lj;
-  if (ad_lf) *ad_lf = da->ad_lf;
   PetscFunctionReturn(0);
 }
 
@@ -1313,6 +1387,8 @@ int DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
 .    J - output matrix
 -    w - any user data
 
+   Level: advanced
+
     Notes: Does NOT do ghost updates on vu upon entry
 
 .seealso: DAFormFunction1()
@@ -1330,8 +1406,8 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
   /* get space for derivative objects.  */
-  ierr = DAGetADArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
-  ierr = DAGetADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
+  ierr = DAGetAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
+  ierr = DAGetAdicArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
   ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
   my_AD_SetValArray(((DERIV_TYPE*)ad_ustart),gtdof,ustart);
   ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
@@ -1349,8 +1425,63 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
   ierr = MatSetValuesAdic(J,(Scalar**)ad_fstart);CHKERRQ(ierr);
 
   /* return space for derivative objects.  */
-  ierr = DARestoreADArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
-  ierr = DARestoreADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
+  ierr = DARestoreAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
+  ierr = DARestoreAdicArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DAMultiplyByJacobian1WithAdic"
+/*@C
+    DAMultiplyByJacobian1WithAdic - Applies a adiC provided Jacobian function on each processor that 
+        share a DA to a vector
+
+   Input Parameters:
++    da - the DA that defines the grid
+.    vu - Jacobian is computed at this point
+.    v - product is done on this vector
+.    fu - output vector = J(vu)*v
+-    w - any user data
+
+    Notes: Does NOT do ghost updates on vu upon entry
+
+   Level: advanced
+
+.seealso: DAFormFunction1()
+
+@*/
+int DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec fu,void *w)
+{
+  int         ierr,gtdof,tdof;
+  Scalar      *u,*ustart,*vstart,*values;
+  DALocalInfo info;
+  void        *ad_u,*ad_f,*ad_ustart,*ad_fstart;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+
+  /* get space for derivative objects.  */
+  ierr = DAGetAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
+  ierr = DAGetAdicArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
+  ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&vstart);CHKERRQ(ierr);
+  my_AD_SetValArray((DERIV_TYPE*)ad_ustart,gtdof,ustart);
+  my_AD_SetIndepVector((DERIV_TYPE*)ad_ustart,gtdof,vstart);
+  ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&vstart);CHKERRQ(ierr);
+
+  my_AD_ResetIndep();
+  my_AD_IncrementTotalGradSize(1);
+  my_AD_SetIndepDone();
+
+  ierr = (*da->ad_lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
+
+  /* stick the values into the vector */
+  
+
+  /* return space for derivative objects.  */
+  ierr = DARestoreAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
+  ierr = DARestoreAdicArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1402,7 +1533,7 @@ int DAComputeJacobian1(DA da,Vec vu,Mat J,void *w)
 #undef __FUNCT__
 #define __FUNCT__ "DAComputeJacobian1WithAdifor"
 /*
-    DAComputeJacobian1WithAdifor - Evaluates a adifor provided Jacobian local function on each processor that 
+    DAComputeJacobian1WithAdifor - Evaluates a ADIFOR provided Jacobian local function on each processor that 
         share a DA
 
    Input Parameters:
@@ -1460,6 +1591,54 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DAMultiplyByJacobian1WithAdifor"
+/*@C
+    DAMultiplyByJacobian1WithAdifor - Applies a ADIFOR provided Jacobian function on each processor that 
+        share a DA to a vector
+
+   Input Parameters:
++    da - the DA that defines the grid
+.    vu - Jacobian is computed at this point
+.    v - product is done on this vector
+.    fu - output vector = J(vu)*v
+-    w - any user data
+
+    Notes: Does NOT do ghost updates on vu upon entry
+
+   Level: advanced
+
+.seealso: DAFormFunction1()
+
+@*/
+int DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec v,Vec f,void *w)
+{
+  int         ierr;
+  Scalar      *au,*av,*af,*awork;
+  Vec         work;
+  DALocalInfo info;
+  void        (*lf)(DALocalInfo*,Scalar*,Scalar*,Scalar*,Scalar*,void*,int*) = 
+              (void (*)(DALocalInfo*,Scalar*,Scalar*,Scalar*,Scalar*,void*,int*))*da->admf_lf;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+
+  ierr = DAGetGlobalVector(da,&work);CHKERRQ(ierr); 
+  ierr = VecGetArray(u,&au);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&av);CHKERRQ(ierr);
+  ierr = VecGetArray(f,&af);CHKERRQ(ierr);
+  ierr = VecGetArray(work,&awork);CHKERRQ(ierr);
+  (lf)(&info,au,av,awork,af,w,&ierr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(u,&au);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&av);CHKERRQ(ierr);
+  ierr = VecRestoreArray(f,&af);CHKERRQ(ierr);
+  ierr = VecRestoreArray(work,&awork);CHKERRQ(ierr);
+  ierr = DARestoreGlobalVector(da,&work);CHKERRQ(ierr); 
+
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "DASetInterpolationType"
 /*@C
@@ -1485,3 +1664,4 @@ int DASetInterpolationType(DA da,DAInterpolationType ctype)
   da->interptype = ctype;
   PetscFunctionReturn(0);
 }
+
