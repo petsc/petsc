@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.14 1995/05/02 23:39:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.15 1995/05/03 13:21:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve u`` + u^{2} = f\n";
@@ -21,7 +21,6 @@ typedef struct {
 int main( int argc, char **argv )
 {
   SNES         snes;
-  SLES         sles;
   SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
   Vec          x,r,F,U;
   Mat          J;
@@ -30,6 +29,7 @@ int main( int argc, char **argv )
   MonitorCtx   monP;
 
   PetscInitialize( &argc, &argv, 0,0 );
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-n",&n);
   h = 1.0/(n-1);
 
