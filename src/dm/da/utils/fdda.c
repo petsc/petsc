@@ -1,9 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.31 1998/04/27 14:50:14 curfman Exp curfman $";
+static char vcid[] = "$Id: fdda.c,v 1.32 1999/01/13 16:23:28 curfman Exp curfman $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
 #include "mat.h"    /*I      "mat.h"    I*/
+#include "src/da/daimpl.h" 
 
 extern int DAGetColoring1d(DA,ISColoring *,Mat *);
 extern int DAGetColoring2d_1(DA,ISColoring *,Mat *);
@@ -324,7 +325,11 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
   for ( j=ys; j<ys+ny; j++ ) {
     for ( i=xs; i<xs+nx; i++ ) {
       for ( k=0; k<nc; k++ ) {
-        colors[i1++] = k + nc*((i % 3) + 3*(j % 3));
+	/*        if (da->stencil_type == DA_STENCIL_STAR) {
+          colors[i1++] = k + nc*((i + 3*j)) % 5);
+        } else { */
+          colors[i1++] = k + nc*((i % 3) + 3*(j % 3));
+	  /*        } */
       }
     }
   }
