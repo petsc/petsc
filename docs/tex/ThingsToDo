@@ -7,6 +7,11 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+Also, I need a DA mesh or grid type definition (i.e. #define DAGridType
+> integer with options of DA_GRID_CELL_CENTER, DA_GRID_GRID_CENTER [yes, those
+> stink, I am sure you have better ideas.]), just like the DAPeriodicTypes in
+> the DMMG interpolation and refinement functions. 
+
   Add DAGetColoring() support for BAIJ matrices in 1 and 2d.
 
    After the SUSE rpm and Debian packages are made for 2.1.0 and
