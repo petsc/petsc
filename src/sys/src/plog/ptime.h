@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.26 1996/10/22 18:04:20 balay Exp balay $ */
+/* $Id: ptime.h,v 1.27 1996/10/31 16:02:02 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -127,7 +127,8 @@ extern UTP_readTime(struct timestruc_t *);
 /*
     Cray MPI implementation has very fast MPI_Wtime()
 */
-#elif defined(PARCH_t3d)
+#elif (defined(PARCH_t3d) || defined(PARCH_paragon))
+#include <sys/time.h>
 #define PetscTime(v)         (v)=MPI_Wtime();
 
 #define PetscTimeSubtract(v) (v)-=MPI_Wtime();
