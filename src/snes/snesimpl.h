@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.51 2000/01/11 21:02:28 bsmith Exp balay $ */
+/* $Id: snesimpl.h,v 1.52 2000/05/05 22:18:10 balay Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -73,13 +73,13 @@ struct _p_SNES {
 
   /* ------------------------- Miscellaneous Information ------------------------ */
 
-  double   *conv_hist;         /* If !0, stores function norm (or
-				 gradient norm) at each iteration */
-  int      *conv_hist_its;     /* linear iterations for each Newton step */
-  int      conv_hist_len;     /* size of convergence history array */
-  int      conv_hist_max;      /* actual amount of data in conv_history */
-  PetscTruth conv_hist_reset;  /* reset counter for each new SNES solve */
-  int      nfailures;          /* number of unsuccessful step attempts */
+  double     *conv_hist;         /* If !0, stores function norm (or
+                                    gradient norm) at each iteration */
+  int        *conv_hist_its;     /* linear iterations for each Newton step */
+  int        conv_hist_len;      /* size of convergence history array */
+  int        conv_hist_max;      /* actual amount of data in conv_history */
+  PetscTruth conv_hist_reset;    /* reset counter for each new SNES solve */
+  int        nfailures;          /* number of unsuccessful step attempts */
 
   /* ------------------  Data for unconstrained minimization  ------------------ */
   /* unconstrained minimization info ... For now we share everything else
