@@ -466,7 +466,7 @@ int PetscOptionsPrint(FILE *fd)
 
    Concepts: options database^listing
 
-.seealso: PetscOptionsAllUsed(), PetscOptionsPrintf()
+.seealso: PetscOptionsAllUsed(), PetscOptionsPrint()
 @*/
 int PetscOptionsGetAll(char *copts[])
 {

@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = fgmres.c modpcf.c
+SOURCEC  = fgmres.c fgmreig.c modpcf.c
 SOURCEH  = fgmresp.h
 SOURCEF  = 
-OBJSC    = fgmres.o modpcf.o
+OBJSC    = fgmres.o fgmreig.o modpcf.o
 OBJSF    = 
 LIBBASE  = libpetscsles
 MANSEC   = KSP
