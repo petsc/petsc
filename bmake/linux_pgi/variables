@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.4 1999/08/19 18:18:59 balay Exp bsmith $ 
+# $Id: base_variables,v 1.5 1999/09/07 17:52:11 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -11,11 +11,11 @@ SH_LD		   = pgcc
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = pgcc -fPIC
-C_FC		   = pgf90 
+C_FC		   = pgf77 
 C_CLINKER_SLFLAG   = -Wl,-rpath,
 C_FLINKER_SLFLAG   = -Wl,-rpath,
 C_CLINKER	   = pgcc
-C_FLINKER	   = pgf90
+C_FLINKER	   = pgf77
 C_CCV		   = ${C_CC} --version
 C_FCV              = unknown
 C_SYS_LIB	   = -ldl -lc -lpgftnrtl -lm
@@ -28,7 +28,7 @@ O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = pgCC -fPIC
-CXX_FC		   = pgf90 
+CXX_FC		   = pgf77 
 CXX_CLINKER_SLFLAG = -Wl,-rpath,
 CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = pgCC
