@@ -5,8 +5,8 @@
 !  multiple values at once; demonstrates VecGetArray().
 !
 !/*T
-!   Concepts: vectors^assembling
-!   Concepts: vector^arrays of vectors
+!   Concepts: vectors^assembling;
+!   Concepts: vectors^arrays of vectors;
 !   Processors: 1
 !T*/
 ! -----------------------------------------------------------------------

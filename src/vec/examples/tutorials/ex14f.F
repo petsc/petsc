@@ -4,7 +4,8 @@
 ! Description: Illustrates the use of VecCreateGhost()
 !
 !/*T
-!   Concepts: vectors^assembling vectors; ghost padding
+!   Concepts: vectors^assembling vectors;
+!   Concepts: vectors^ghost padding;
 !   Processors: n
 !
 !   Comment: Ghost padding is one way to handle local calculations that

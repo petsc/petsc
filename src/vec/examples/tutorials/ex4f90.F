@@ -7,7 +7,7 @@
 !/*T
 !   Concepts: vectors^assembling vectors;
 !   Concepts: vectors^arrays;
-!   Concepts: Fortran90;
+!   Concepts: Fortran90^assembling vectors;
 !   Processors: 1
 !T*/
 ! -----------------------------------------------------------------------
