@@ -131,7 +131,7 @@ M*/
 #define PetscPolymorphicSubroutine(A,B,C) PETSC_STATIC_INLINE PetscErrorCode A B {return A C;}
 
 /*MC
-      PetscPolymorphicScalar- allows defining a C++ polymorphic version of 
+      PetscPolymorphicScalar - allows defining a C++ polymorphic version of 
             a PETSc function that replaces a PetscScalar * argument with a PetscScalar argument
 
      Not collective
