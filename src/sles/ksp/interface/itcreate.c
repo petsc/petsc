@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.145 1999/01/13 23:39:27 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.146 1999/01/14 19:42:39 curfman Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -22,8 +22,6 @@ int KSPRegisterAllCalled = 0;
 +  ksp - the Krylov space context
 -  viewer - visualization context
 
-   Level: beginner
-
    Note:
    The available visualization contexts include
 +     VIEWER_STDOUT_SELF - standard output (default)
@@ -38,6 +36,8 @@ int KSPRegisterAllCalled = 0;
 .keywords: KSP, view
 
 .seealso: PCView(), ViewerASCIIOpen()
+
+   Level: beginner
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
@@ -83,8 +83,6 @@ FList KSPList = 0;
    Input Parameter:
 .  ksp - Krylov solver context
 
-   Level: advanced
-
    Notes: 
    One cannot use the default convergence test routines when this option is 
    set, since these are based on decreases in the residual norms.  Thus, this
@@ -95,6 +93,8 @@ FList KSPList = 0;
 .keywords: KSP, create, context, norms
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged()
+
+   Level: advanced
 @*/
 int KSPSetAvoidNorms(KSP ksp)
 {
@@ -147,8 +147,6 @@ static int KSPPublish_Petsc(PetscObject object)
    Output Parameter:
 .  ksp - location to put the KSP context
 
-   Level: developer
-
    Notes:
    The default KSP type is GMRES with a restart of 30, using modified Gram-Schmidt
    orthogonalization.
@@ -156,6 +154,8 @@ static int KSPPublish_Petsc(PetscObject object)
 .keywords: KSP, create, context
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy()
+
+   Level: developer
 @*/
 int KSPCreate(MPI_Comm comm,KSP *inksp)
 {
@@ -228,8 +228,6 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 .  -ksp_type  <method> - Sets the method; use -help for a list 
     of available methods (for instance, cg or gmres)
 
-   Level: beginner
-
    Notes:  
    See "petsc/include/ksp.h" for available methods (for instance,
    KSPCG or KSPGMRES).
@@ -244,9 +242,13 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   the choice of iterative solver changes during the execution of the
   program, and the user's application is taking responsibility for
   choosing the appropriate method.  In other words, this routine is
-  for the advanced user.
+  not for beginners.
 
 .keywords: KSP, set, method
+
+.seealso: PCSetType()
+
+   Level: intermediate
 @*/
 int KSPSetType(KSP ksp,KSPType itmethod)
 {
@@ -288,11 +290,11 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 
    Not Collective
 
-   Level: advanced
-
 .keywords: KSP, register, destroy
 
 .seealso: KSPRegister(), KSPRegisterAll()
+
+   Level: advanced
 @*/
 int KSPRegisterDestroy(void)
 {
@@ -320,9 +322,10 @@ int KSPRegisterDestroy(void)
    Output Parameter:
 .  name - name of KSP method 
 
-   Level: intermediate
-
 .keywords: KSP, get, method, name
+.seealso: KSPSetType()
+
+   Level: intermediate
 @*/
 int KSPGetType(KSP ksp,KSPType *type)
 {
@@ -345,11 +348,10 @@ int KSPGetType(KSP ksp,KSPType *type)
 +  -help - Prints KSP options
 -  -h - Prints KSP options
 
-   Level: beginner
-
 .keywords: KSP, help
-
 .seealso: KSPSetFromOptions()
+
+   Level: beginner
 @*/
 int KSPPrintHelp(KSP ksp)
 {
@@ -422,14 +424,14 @@ extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
    Input Parameters:
 .  ksp - the Krylov space context
 
-   Level: developer
-
    Notes:  To see all options, run your program with the -help option;
            or consult the users manual.
 
 .keywords: KSP, set, from, options, database
 
 .seealso: KSPPrintHelp()
+
+   Level: developer
 @*/
 int KSPSetFromOptions(KSP ksp)
 {
@@ -595,8 +597,6 @@ int KSPSetFromOptions(KSP ksp)
 .  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
-   Level: advanced
-
    Notes:
    KSPRegister() may be called multiple times to add several user-defined solvers.
 
@@ -614,9 +614,12 @@ $     KSPSetType(ksp,"my_solver")
    or at runtime via the option
 $     -ksp_type my_solver
 
+   Level: advanced
+
 .keywords: KSP, register
 
 .seealso: KSPRegisterAll(), KSPRegisterDestroy()
+
 M*/
 
 #undef __FUNC__  
