@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.210 1998/03/05 22:40:57 balay Exp bsmith $ 
+# $Id: makefile,v 1.211 1998/03/12 23:12:05 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -235,7 +235,8 @@ deletelatexpages:
 TAGS_INCLUDE_FILES  = include/*.h include/pinclude/*.h include/FINCLUDE/*.h 
 TAGS_BMAKE_FILES    = bmake/common bmake/*/base*
 TAGS_EXAMPLE_FILES  = src/*/examples/*/*.[c,h,F,f] src/*/examples/*/*/*.[c,h,F,f] \
-                      src/benchmarks/*.c src/contrib/*/examples/*/*.[c,h,F,f]
+                      src/benchmarks/*.c src/contrib/*/examples/*/*.[c,h,F,f]\
+		      src/fortran/f90/tests
 TAGS_DOC_FILES      = docs/tex/manual/routin.tex docs/tex/manual/manual.tex \
                       docs/tex/manual/manual_tex.tex docs/tex/manual/intro.tex \
                       docs/tex/manual/part1.tex docs/tex/manual/part2.tex
