@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.82 1995/12/21 22:38:23 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.83 1995/12/31 03:12:43 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -25,6 +25,8 @@ extern int MatCreateMPIRowbs(MPI_Comm,int,int,int,int*,void*,Mat*);
 extern int MatCreateSeqBDiag(MPI_Comm,int,int,int,int,int*,Scalar**,Mat*); 
 extern int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,Scalar**,Mat*); 
 
+extern int MatDestroy(Mat);
+
 extern int MatShellCreate(MPI_Comm,int,int,void *,Mat*);
 extern int MatShellGetContext(Mat,void **);
 extern int MatShellSetMult(Mat,int (*)(void*,Vec,Vec));
@@ -33,11 +35,8 @@ extern int MatShellSetMultTrans(Mat,int (*)(void*,Vec,Vec));
 extern int MatShellSetMultTransAdd(Mat,int (*)(void*,Vec,Vec,Vec));
   
 /* ------------------------------------------------------------*/
-extern int  MatValidMatrix(Mat);
-
-typedef enum {FLUSH_ASSEMBLY=1,FINAL_ASSEMBLY=0} MatAssemblyType;
-
 extern int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
+typedef enum {FLUSH_ASSEMBLY=1,FINAL_ASSEMBLY=0} MatAssemblyType;
 extern int MatAssemblyBegin(Mat,MatAssemblyType);
 extern int MatAssemblyEnd(Mat,MatAssemblyType);
 
@@ -47,7 +46,6 @@ typedef enum {ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
               STRUCTURALLY_SYMMETRIC_MATRIX,NO_NEW_DIAGONALS,
               YES_NEW_DIAGONALS,INODE_LIMIT_1,INODE_LIMIT_2,
               INODE_LIMIT_3,INODE_LIMIT_4,INODE_LIMIT_5} MatOption;
-
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*);
 extern int MatGetName(Mat,char**);
@@ -58,15 +56,54 @@ extern int MatRestoreRow(Mat,int,int *,int **,Scalar**);
 extern int MatGetCol(Mat,int,int *,int **,Scalar**);
 extern int MatRestoreCol(Mat,int,int *,int **,Scalar**);
 extern int MatGetArray(Mat,Scalar **);
+
 extern int MatMult(Mat,Vec,Vec);
 extern int MatMultAdd(Mat,Vec,Vec,Vec);
 extern int MatMultTrans(Mat,Vec,Vec);
 extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
 
+extern int MatConvert(Mat,MatType,Mat*);
+extern int MatCopy(Mat,Mat);
+extern int MatView(Mat,Viewer);
+extern int MatLoad(Viewer,MatType,Mat*);
+
+typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
+extern int MatGetInfo(Mat,MatInfoType,int*,int*,int*);
+extern int MatValidMatrix(Mat);
+extern int MatGetDiagonal(Mat,Vec);
+extern int MatTranspose(Mat,Mat*);
+extern int MatScale(Mat,Vec,Vec);
+extern int MatEqual(Mat,Mat);
+
+extern int MatNorm(Mat,NormType,double *);
+extern int MatZeroEntries(Mat);
+extern int MatZeroRows(Mat,IS,Scalar*);
+extern int MatZeroColumns(Mat,IS,Scalar*);
+
+extern int MatGetSize(Mat,int*,int*);
+extern int MatGetLocalSize(Mat,int*,int*);
+extern int MatGetOwnershipRange(Mat,int*,int*);
+
+typedef enum {MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX} MatGetSubMatrixCall;
+extern int MatGetSubMatrix(Mat,IS,IS,MatGetSubMatrixCall,Mat*);
+extern int MatGetSubMatrixInPlace(Mat,IS,IS);
+extern int MatGetSubMatrices(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
+extern int MatIncreaseOverlap(Mat,int,IS *,int);
+
+extern int MatAXPY(Scalar *,Mat,Mat);
+extern int MatCompress(Mat);
+
+/* Routines unique to particular data structures */
+extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
+
+/* 
+  These routines are not usually accessed directly, rather solving is 
+  done through the SLES, KSP and PC interfaces.
+*/
+
 typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
               ORDER_RCM=3,ORDER_QMD=4,ORDER_APPLICATION_1,
               ORDER_APPLICATION_2} MatOrdering;
-
 extern int MatGetReordering(Mat,MatOrdering,IS*,IS*);
 extern int MatGetReorderingTypeFromOptions(char *,MatOrdering*);
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
@@ -96,22 +133,7 @@ typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_LOCAL_SYMMETRIC_SWEEP=12,SOR_ZERO_INITIAL_GUESS=16,
               SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128
               } MatSORType;
-
 extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
-
-extern int MatConvert(Mat,MatType,Mat*);
-extern int MatView(Mat,Viewer);
-extern int MatLoad(Viewer,MatType,Mat*);
-
-extern int MatCopy(Mat,Mat);
-
-typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
-
-extern int MatGetInfo(Mat,MatInfoType,int*,int*,int*);
-extern int MatGetDiagonal(Mat,Vec);
-extern int MatTranspose(Mat,Mat*);
-extern int MatScale(Mat,Vec,Vec);
-extern int MatEqual(Mat,Mat);
 
 /*  Not currently supported! 
 #define MAT_SCATTER_COOKIE PETSC_COOKIE+15
@@ -122,30 +144,6 @@ extern int MatScatterEnd(Mat,Mat,InsertMode,MatScatter);
 extern int MatScatterCreate(Mat,IS,IS,Mat,IS,IS,MatScatter*);
 extern int MatScatterDestroy(MatScatter);
 */
-
-extern int MatNorm(Mat,NormType,double *);
-
-extern int MatZeroEntries(Mat);
-extern int MatZeroRows(Mat,IS,Scalar*);
-extern int MatZeroColumns(Mat,IS,Scalar*);
-
-extern int MatDestroy(Mat);
-
-extern int MatGetSize(Mat,int*,int*);
-extern int MatGetLocalSize(Mat,int*,int*);
-extern int MatGetOwnershipRange(Mat,int*,int*);
-
-typedef enum {MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX} MatGetSubMatrixCall;
-extern int MatGetSubMatrix(Mat,IS,IS,MatGetSubMatrixCall,Mat*);
-extern int MatGetSubMatrixInPlace(Mat,IS,IS);
-extern int MatGetSubMatrices(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
-extern int MatIncreaseOverlap(Mat,int,IS *,int);
-
-extern int MatAXPY(Scalar *,Mat,Mat);
-extern int MatCompress(Mat);
-
-/* Routines unique to particular data structures */
-extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 
 #endif
 
