@@ -64,8 +64,8 @@ class FileSet:
     self.cache = None
 
 class TreeFileSet (FileSet):
-  def __init__(self, roots = None, fileTest = lambda file: 1):
-    FileSet.__init__(self, func = self.walkTree)
+  def __init__(self, roots = None, fileTest = lambda file: 1, tag = None):
+    FileSet.__init__(self, func = self.walkTree, tag = tag)
     if roots:
       if type(roots) == types.StringType:
         self.roots  = FileSet([roots])
@@ -91,8 +91,8 @@ class TreeFileSet (FileSet):
       if (self.fileTest(fullPath)): defaultFiles.append(fullPath)
 
 class ExtensionFileSet (TreeFileSet):
-  def __init__(self, roots, exts):
-    TreeFileSet.__init__(self, roots, self.extTest)
+  def __init__(self, roots, exts, tag = None):
+    TreeFileSet.__init__(self, roots, self.extTest, tag = tag)
     self.exts = exts
     if not type(self.exts) == types.ListType:
       self.exts = [self.exts]
