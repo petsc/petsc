@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.24 1995/07/30 14:59:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.25 1995/08/22 19:39:26 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -53,20 +53,22 @@ int main( int argc, char **argv )
 }/* --------------------  Evaluate Function F(x) --------------------- */
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy )
 {
-   int    ierr;
-   Scalar *xx, *ff;
-   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
-   ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
-   ff[0] = xx[0]*xx[0] + xx[0]*xx[1] - 3.0;
-   ff[1] = xx[0]*xx[1] + xx[1]*xx[1] - 6.0;
-   return 0;
+  int    ierr;
+  Scalar *xx, *ff;
+  ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
+  ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
+  ff[0] = xx[0]*xx[0] + xx[0]*xx[1] - 3.0;
+  ff[1] = xx[0]*xx[1] + xx[1]*xx[1] - 6.0;
+  ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
+  ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr); 
+  return 0;
 }/* --------------------  Form initial approximation ----------------- */
 int FormInitialGuess(SNES snes,Vec x,void *dummy)
 {
-   int    ierr;
-   Scalar pfive = .50;
-   ierr = VecSet(&pfive,x); CHKERRQ(ierr);
-   return 0;
+  int    ierr;
+  Scalar pfive = .50;
+  ierr = VecSet(&pfive,x); CHKERRQ(ierr);
+  return 0;
 }/* --------------------  Evaluate Jacobian F'(x) -------------------- */
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
                  void *dummy)
@@ -78,6 +80,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   A[2] = xx[1]; A[3] = xx[0] + 2.0*xx[1];
   ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERTVALUES); CHKERRQ(ierr);
   *flag = ALLMAT_DIFFERENT_NONZERO_PATTERN;
+  ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
   return 0;
 }/* --------------------  User-defined monitor ----------------------- */
 int Monitor(SNES snes,int its,double fnorm,void *dummy)

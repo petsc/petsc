@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.15 1995/08/28 16:51:58 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.16 1995/08/28 18:37:50 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -91,26 +91,29 @@ int main( int argc, char **argv )
 }/* --------------------  Evaluate Function F(x) --------------------- */
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
-   Scalar *xx, *ff,*FF,d;
-   int    i, ierr, n;
-   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
-   ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
-   ierr = VecGetArray((Vec) dummy,&FF); CHKERRQ(ierr);
-   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
-   d = (double) (n - 1); d = d*d;
-   ff[0]   = -xx[0];
-   for ( i=1; i<n-1; i++ ) {
-     ff[i] = -d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) - xx[i]*xx[i] + FF[i];
-   }
-   ff[n-1] = -xx[n-1] + 1.0;
-   return 0;
+  Scalar *xx, *ff,*FF,d;
+  int    i, ierr, n;
+  ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
+  ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
+  ierr = VecGetArray((Vec)dummy,&FF); CHKERRQ(ierr);
+  ierr = VecGetSize(x,&n); CHKERRQ(ierr);
+  d = (double) (n - 1); d = d*d;
+  ff[0]   = -xx[0];
+  for ( i=1; i<n-1; i++ ) {
+    ff[i] = -d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) - xx[i]*xx[i] + FF[i];
+  }
+  ff[n-1] = -xx[n-1] + 1.0;
+  ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
+  ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr);
+  ierr = VecRestoreArray((Vec)dummy,&FF); CHKERRQ(ierr);
+  return 0;
 }/* --------------------  Form initial approximation ----------------- */
 int FormInitialGuess(SNES snes,Vec x,void *dummy)
 {
-   int    ierr;
-   Scalar pfive = .50;
-   ierr = VecSet(&pfive,x); CHKERRQ(ierr);
-   return 0;
+  int    ierr;
+  Scalar pfive = .50;
+  ierr = VecSet(&pfive,x); CHKERRQ(ierr);
+  return 0;
 }/* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /* This routine demonstrates the use of different matrices for the Jacobian 
    and preconditioner */
@@ -148,6 +151,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,
   ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*prejac,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
+  ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
   *flag = ALLMAT_SAME_NONZERO_PATTERN;
   return 0;
 }/* --------------------  User-defined preconditioner  -------------------- */

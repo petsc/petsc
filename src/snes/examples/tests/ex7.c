@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.5 1995/08/28 16:52:03 curfman Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.6 1995/08/28 18:37:43 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -105,6 +105,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
      ff[i] = -d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) - xx[i]*xx[i] + FF[i];
    }
    ff[n-1] = -xx[n-1] + 1.0;
+   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
+   ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr);
+   ierr = VecRestoreArray((Vec)dummy,&FF); CHKERRQ(ierr);
    return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
@@ -147,6 +150,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
 /*  *flag = MAT_SAME_NONZERO_PATTERN; */
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.28 1995/08/22 19:39:26 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.29 1995/08/24 13:37:17 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -89,7 +89,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    int    i, ierr, n;
    ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
    ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
-   ierr = VecGetArray((Vec) dummy,&FF); CHKERRQ(ierr);
+   ierr = VecGetArray((Vec)dummy,&FF); CHKERRQ(ierr);
    ierr = VecGetSize(x,&n); CHKERRQ(ierr);
    d = (double) (n - 1); d = d*d;
    ff[0]   = -xx[0];
@@ -97,6 +97,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
      ff[i] = -d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) - xx[i]*xx[i] + FF[i];
    }
    ff[n-1] = -xx[n-1] + 1.0;
+   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
+   ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr);
+   ierr = VecRestoreArray((Vec)dummy,&FF); CHKERRQ(ierr);
    return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
@@ -133,6 +136,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
 /*  *flag = MAT_SAME_NONZERO_PATTERN; */
   return 0;
 }
