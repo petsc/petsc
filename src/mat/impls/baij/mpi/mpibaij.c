@@ -1253,6 +1253,7 @@ PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIBAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIBAIJSetPreallocationCSR_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatSetHashTableFactor_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2028,6 +2029,100 @@ EXTERN_C_BEGIN
 extern int MatConvert_MPIBAIJ_MPISBAIJ(Mat,const MatType,Mat*);
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatMPIBAIJSetPreallocationCSR_MPIBAIJ"
+PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const PetscInt I[],const PetscInt J[],const PetscScalar v[])
+{
+  Mat_MPIBAIJ    *b  = (Mat_MPIBAIJ *)B->data;
+  PetscInt       m = B->m/bs,cstart = b->cstart, cend = b->cend,j,nnz,i,d; 
+  PetscInt       *d_nnz,*o_nnz,nnz_max = 0,rstart = b->rstart,ii;
+  const PetscInt *JJ;
+  PetscScalar    *values;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#if defined(PETSC_OPT_g)
+  if (I[0]) SETERRQ1(PETSC_ERR_ARG_RANGE,"I[0] must be 0 it is %D",I[0]);
+#endif
+  ierr  = PetscMalloc((2*m+1)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
+  o_nnz = d_nnz + m;
+
+  for (i=0; i<m; i++) {
+    nnz     = I[i+1]- I[i];
+    JJ      = J + I[i];
+    nnz_max = PetscMax(nnz_max,nnz);
+#if defined(PETSC_OPT_g)
+    if (nnz < 0) SETERRQ1(PETSC_ERR_ARG_RANGE,"Local row %D has a negative %D number of columns",i,nnz);
+#endif
+    for (j=0; j<nnz; j++) {
+      if (*JJ >= cstart) break;
+      JJ++;
+    }
+    d = 0;
+    for (; j<nnz; j++) {
+      if (*JJ++ >= cend) break;
+      d++;
+    }
+    d_nnz[i] = d; 
+    o_nnz[i] = nnz - d;
+  }
+  ierr = MatMPIBAIJSetPreallocation(B,bs,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
+  ierr = PetscFree(d_nnz);CHKERRQ(ierr);
+
+  if (v) values = (PetscScalar*)v;
+  else {
+    ierr = PetscMalloc(bs*bs*(nnz_max+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+    ierr = PetscMemzero(values,bs*bs*nnz_max*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+
+  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    ii   = i + rstart;
+    nnz  = I[i+1]- I[i];
+    ierr = MatSetValuesBlocked_MPIBAIJ(B,1,&ii,nnz,J+I[i],values,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_COLUMNS_UNSORTED);CHKERRQ(ierr);
+
+  if (!v) {
+    ierr = PetscFree(values);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMPIBAIJSetPreallocationCSR"
+/*@C
+   MatMPIBAIJSetPreallocationCSR - Allocates memory for a sparse parallel matrix in AIJ format
+   (the default parallel PETSc format).  
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  A - the matrix 
+.  i - the indices into j for the start of each local row (starts with zero)
+.  j - the column indices for each local row (starts with zero) these must be sorted for each row
+-  v - optional values in the matrix
+
+   Level: developer
+
+.keywords: matrix, aij, compressed row, sparse, parallel
+
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateMPIAIJ(), MPIAIJ
+@*/
+PetscErrorCode MatMPIBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
+{
+  PetscErrorCode ierr,(*f)(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIBAIJSetPreallocationCSR_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(B,bs,i,j,v);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJSetPreallocation_MPIBAIJ"
@@ -2209,6 +2304,9 @@ PetscErrorCode MatCreate_MPIBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIBAIJSetPreallocation_C",
                                      "MatMPIBAIJSetPreallocation_MPIBAIJ",
                                      MatMPIBAIJSetPreallocation_MPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIBAIJSetPreallocationCSR_C",
+				     "MatMPIBAIJSetPreallocationCSR_MPIAIJ",
+				     MatMPIBAIJSetPreallocationCSR_MPIBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDiagonalScaleLocal_C",
                                      "MatDiagonalScaleLocal_MPIBAIJ",
                                      MatDiagonalScaleLocal_MPIBAIJ);CHKERRQ(ierr);
@@ -2230,7 +2328,7 @@ EXTERN_C_END
 
   Level: beginner
 
-.seealso: MatCreateMPIBAIJ,MATSEQBAIJ,MATMPIBAIJ
+.seealso: MatCreateMPIBAIJ(),MATSEQBAIJ,MATMPIBAIJ, MatMPIBAIJSetPreallocation(), MatMPIBAIJSetPreallocationCSR()
 M*/
 
 EXTERN_C_BEGIN
@@ -2256,7 +2354,7 @@ EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBAIJSetPreallocation"
 /*@C
-   MatMPIBAIJSetPreallocation - Creates a sparse parallel matrix in block AIJ format
+   MatMPIBAIJSetPreallocation - Allocates memory for a sparse parallel matrix in block AIJ format
    (block compressed row).  For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameters 
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
@@ -2330,7 +2428,7 @@ EXTERN_C_END
 
 .keywords: matrix, block, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqBAIJ(), MatSetValues(), MatCreateMPIBAIJ()
+.seealso: MatCreate(), MatCreateSeqBAIJ(), MatSetValues(), MatCreateMPIBAIJ(), MatMPIBAIJSetPreallocationCSR()
 @*/
 PetscErrorCode MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
@@ -2434,7 +2532,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const 
 
 .keywords: matrix, block, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqBAIJ(), MatSetValues(), MatCreateMPIBAIJ()
+.seealso: MatCreate(), MatCreateSeqBAIJ(), MatSetValues(), MatCreateMPIBAIJ(), MatMPIBAIJSetPreallocation(), MatMPIBAIJSetPreallocationCSR()
 @*/
 PetscErrorCode MatCreateMPIBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {

@@ -737,6 +737,7 @@ EXTERN PetscErrorCode MatMPIBAIJSetPreallocation(Mat,PetscInt,PetscInt,const Pet
 EXTERN PetscErrorCode MatMPISBAIJSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode MatMPIAIJSetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]);
+EXTERN PetscErrorCode MatMPIBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
 EXTERN PetscErrorCode MatMPIDensePreallocation(Mat,PetscScalar[]);
 EXTERN PetscErrorCode MatMPIBDiagSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt[],PetscScalar*[]);
 EXTERN PetscErrorCode MatMPIAdjSetPreallocation(Mat,PetscInt[],PetscInt[],PetscInt[]);
