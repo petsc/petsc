@@ -35,7 +35,7 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	       -mapref../www/petsc.cit -nobottomnav
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv manual.html manual_html.html
-	cat manual_html.html | grep -v Up: | grep -v Next: | grep -v Previous: |sed 's/H1/H2/g' | sed 's/H0/H1/g' | sed 's/<pre><tt>ierr/<pre><tt>   ierr/g' > manual.html
+	cat manual_html.html | grep -v Up: | grep -v Next: | grep -v Previous: |sed 's/H1/H2/g' | sed 's/H0/H1/g' | sed 's/<pre><tt>ierr/<pre><tt>   ierr/g' | sed 's/<pre><tt>call/<pre><tt>   call/g' > manual.html
 	-mv manual.html ..
 	-@chmod g+w ../manual.html
 	rm -f  *.xbm latex.err findex.tex sindex.tex tmp.html
