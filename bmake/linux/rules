@@ -5,8 +5,8 @@ RM       = rm -f
 OMAKE    = make  --no-print-directory
 RANLIB   = ranlib
 SHELL    = /bin/sh
-CLINKER  = gcc $(COPTFLAGS)
-FLINKER  = f77 $(FOPTFLAGS)
+CLINKER  = gcc $(COPTFLAGS) -Wl,-rpath,$(LDIR):$(DYLIBPATH)
+FLINKER  = f77 $(FOPTFLAGS) -Wl,-rpath,$(LDIR):$(DYLIBPATH)
 CONF     = -DHAVE_PWD_H -DHAVE_MALLOC_H -DHAVE_STRING_H -DHAVE_X11 \
            -DHAVE_FORTRAN_UNDERSCORE  -DHAVE_GETDOMAINNAME \
            -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE  -DHAVE_DRAND48 \
@@ -36,3 +36,12 @@ libf: $(OBJSF)
 
 
 
+SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
+	libpetscsnes libpetscsys libpetscts libpetscvec
+
+shared: chkopts
+	-@echo making shared libraries in $(LDIR) ;\
+	cd $(LDIR); \
+	for LIBNAME in $(SHLIBS) ; \
+	  do $(CLINKER) -shared -Wl,--whole-archive -o $$LIBNAME.so.1.0 $$LIBNAME.a ; \
+	done
