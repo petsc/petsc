@@ -1,4 +1,4 @@
-/*$Id: bcgs.c,v 1.67 1999/11/24 21:54:50 bsmith Exp bsmith $*/
+/*$Id: bcgs.c,v 1.68 1999/12/03 19:24:49 balay Exp balay $*/
 
 /*                       
     This code implements the BiCGStab (Stabilized version of BiConjugate
@@ -74,7 +74,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   for (i=0; i<maxit; i++) {
 
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);       /*   rho <- (r,rp)      */
-    if (!rho) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown, rho = r . rp = 0");
+    if (rho != 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown, rho = r . rp = 0");
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
     ierr = VecAYPX(&beta,R,P);CHKERRQ(ierr);      /*   p <- r + p beta    */
@@ -85,7 +85,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
     ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,S,T,R);CHKERRQ(ierr);/*   t <- K s    */
     ierr = VecDot(S,T,&d1);CHKERRQ(ierr);
     ierr = VecDot(T,T,&d2);CHKERRQ(ierr);
-    if (!d2) {
+    if (d2 != 0.0) {
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
 	 may be our solution.  Give it a try? */
       ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
@@ -120,11 +120,11 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;    
   }
-  if (i == maxit) {
+  if (i+1 == maxit) {
     ksp->reason = KSP_DIVERGED_ITS;
     i--;
   }
-  *its = i;
+  *its = i+1;
 
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
   PetscFunctionReturn(0);
