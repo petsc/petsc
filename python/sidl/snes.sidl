@@ -19,6 +19,8 @@ package PETSc {
     // Customize this object using command line arguments
     void setFromOptions();
 
+    // Configure the object using the PETSc options database
+    void setFromOptions();
     // Initiate the object setup phase
     void setUp();
 

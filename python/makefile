@@ -14,3 +14,6 @@ build: ${SOURCE:.c=.so}
 
 clean:
 	rm -f ${SOURCE:.c=.o} ${SOURCE:.c=.so}
+
+tarball:
+	tar cvzf PETScPython.tgz `find PETSc -name "*.c"`
