@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.27 1996/09/14 03:34:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.28 1997/01/12 02:42:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -239,7 +239,7 @@ Scalar *PetscScalarAddressFromFortran(Scalar *base,int addr)
     PetscCObjectToFortranObject() must be called in a C/C++ routine.
     See examples petsc/src/vec/examples/ex24.c and ex24f.F
 
-.keywords: Fortran, C, object, convert
+.keywords: Fortran, C, object, convert, interlanguage
 
 .seealso: PetscFortranObjectToCObject()
 @*/
@@ -264,7 +264,7 @@ int PetscCObjectToFortranObject(void *cobj,int *fobj)
     PetscCObjectToFortranObject() must be called in a C/C++ routine.
     See examples petsc/src/vec/examples/ex24.c and ex24f.F
 
-.keywords: Fortran, C, object, convert
+.keywords: Fortran, C, object, convert, interlanguage
 
 .seealso: PetscCObjectToFortranObject()
 @*/
@@ -274,6 +274,57 @@ int PetscFortranObjectToCObject(int fobj,void *cobj)
   return 0;
 }
 
+/*@
+    MPICCommToFortranComm - Converts a MPI_Comm represented
+    in C to one appropriate to pass to a Fortran routine.
+
+    Input Parameter:
+.   cobj - the C MPI_Comm
+
+    Output Parameter:
+.   fobj - the Fortran MPI_Comm
+
+    Notes:
+    MPICCommToFortranComm() must be called in a C/C++ routine.
+    MPI 1 does not provide a standard for mapping between
+    Fortran and C MPI communicators; this routine handles the
+    mapping correctly on all machines.
+
+.keywords: Fortran, C, MPI_Comm, convert, interlanguage
+
+.seealso: MPIFortranCommToCComm()
+@*/
+int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
+{
+  *fcomm = PetscFromPointerComm(comm);
+  return 0;
+}
+
+/*@
+    MPIFortranCommToCComm - Converts a MPI_Comm represented
+    int Fortran (as an integer) to a MPI_Comm in C.
+
+    Input Parameter:
+.   fcomm - the Fortran MPI_Comm (an integer)
+
+    Output Parameter:
+.   comm - the C MPI_Comm
+
+    Notes:
+     MPIFortranCommToCComm() must be called in a C/C++ routine.
+     MPI 1 does not provide a standard for mapping between
+     Fortran and C MPI communicators; this routine handles the
+     mapping correctly on all machines.
+
+.keywords: Fortran, C, MPI_Comm, convert, interlanguage
+
+.seealso: MPICCommToFortranComm()
+@*/
+int MPIFortranCommToCComm(int fcomm,MPI_Comm *comm)
+{
+  *comm = PetscToPointerComm(fcomm);
+  return 0;
+}
 
 
 
