@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.33 1999/01/15 20:02:38 balay Exp balay $ 
+# $Id: base.site,v 1.34 1999/01/15 20:45:13 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -44,8 +44,8 @@ MPE_INCLUDE   = -I${MPI_HOME}/include
 #
 # Optional location of BlockSolve (MPI version)
 #
-#BS_INCLUDE     = -I/home/petsc/BlockSolve95/include
-#BS_LIB         =  -L/home/petsc/BlockSolve95/lib/libO/$(PETSC_ARCH) -lBS95
+BS_INCLUDE     = -I/home/petsc/BlockSolve95/include
+BS_LIB         =  -L/home/petsc/BlockSolve95/lib/libO/$(PETSC_ARCH) -lBS95
 #
 # Optional Matlab location
 #
@@ -77,7 +77,7 @@ MPE_INCLUDE   = -I${MPI_HOME}/include
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DHAVE_MPE
+PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE
 #PCONF        = -DHAVE_BLOCKSOLVE -DHAVE_MPE -DHAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
