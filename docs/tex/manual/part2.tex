@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.163 1996/10/28 16:41:20 balay Exp bsmith $ 
+% $Id: part2.tex,v 1.164 1996/11/01 23:59:13 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -379,6 +379,17 @@ processors contribute different values to the same component in a
 parallel vector, either value may end up being inserted. When {\tt
 ADD\_VALUES} is used, the correct sum is added to the correct
 location.
+
+In some cases one may wish to ``undo'' a scatter, that is perform the 
+scatter backwards switching the roles of the sender and receiver. This is 
+done by using 
+\begin{verbatim}
+   ierr = VecScatterBegin(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
+   ierr = VecScatterEnd(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
+\end{verbatim} 
+\findex{SCATTER_REVERSE}. Note that you must swap the roles of the first 
+two arguments to these routines, whenever you use the {\tt SCATTER\_REVERSE}
+option.
 
 \sindex{vector values, getting} \findex{VecGetValues()}
 There is no PETSc routine that is the opposite of {\tt VecSetValues()}

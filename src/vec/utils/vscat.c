@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.68 1996/10/29 18:32:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.69 1996/10/29 18:33:23 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -718,6 +718,8 @@ $    SCATTER_ALL, SCATTER_REVERSE
 .  y - the vector to which we scatter
 
    Notes:
+   If you use SCATTER_REVERSE the first two arguments should be reversed, from 
+   the SCATTER_ALL.
    The vectors x and y cannot be the same. y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
    This scatter is far more general than the conventional
@@ -739,14 +741,22 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
   if (inctx->inuse) SETERRQ(1,"VecScatterBegin: Scatter ctx already in use");
   if (x == y) SETERRQ(PETSC_ERR_IDN,"VecScatterBegin:y cannot be x");
 #if defined(PETSC_BOPT_g)
-  VecGetLocalSize_Fast(x,to_n);
-  VecGetLocalSize_Fast(y,from_n);
-  if (mode == SCATTER_REVERSE) {
-    if (to_n != inctx->from_n) SETERRQ(1,"VecScatterBegin:Vector wrong size for scatter");
-    if (from_n != inctx->to_n) SETERRQ(1,"VecScatterBegin:Vector wrong size for scatter");
-  } else {
-    if (to_n != inctx->to_n) SETERRQ(1,"VecScatterBegin:Vector wrong size for scatter");
-    if (from_n != inctx->from_n) SETERRQ(1,"VecScatterBegin:Vector wrong size for scatter");
+  /*
+     Error checking to make sure these vectors match the vectors used
+   to create the vector scatter context. -1 in the from_n and to_n indicate the
+   vector lengths are unknown (for example with mapped scatters) and thus 
+   no error checking is performed.
+  */
+  if (inctx->from_n >= 0 && inctx->to_n >= 0) {
+    VecGetLocalSize_Fast(x,to_n);
+    VecGetLocalSize_Fast(y,from_n);
+    if (mode == SCATTER_REVERSE) {
+      if (to_n != inctx->from_n) SETERRQ(1,"VecScatterBegin:Vector wrong size for scatter");
+      if (from_n != inctx->to_n) SETERRQ(1,"VecScatterBegin:Vector wrong size for scatter");
+    } else {
+      if (to_n != inctx->to_n) SETERRQ(1,"VecScatterBegin:Vector wrong size for scatter");
+      if (from_n != inctx->from_n) SETERRQ(1,"VecScatterBegin:Vector wrong size for scatter");
+    }
   }
 #endif
 
@@ -775,6 +785,8 @@ $    SCATTER_ALL, SCATTER_REVERSE
 .  y - the vector to which we scatter
 
    Notes:
+   If you use SCATTER_REVERSE the first two arguments should be reversed, from 
+   the SCATTER_ALL.
    The vectors x and y cannot be the same. y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
 .keywords: vector, scatter, gather, end
@@ -904,5 +916,13 @@ int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
   if (rfrom) {
     SETERRQ(1,"VecScatterRemap:Unable to remap the FROM in scatters yet");
   }
+
+  /*
+     Mark then vector lengths as unknown because we do not know the 
+   lengths of the remapped vectors
+  */
+  scat->from_n = -1;
+  scat->to_n   = -1;
+
   return 0;
 }
