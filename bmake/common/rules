@@ -389,15 +389,22 @@ adicnotignore: chkpetsc_dir
 #
 # Some macros to check if the fortran interface is up-to-date.
 #
-countfortranfunctions: chkpetsc_dir
+countfortranfunctions: 
 	-@cd $(PETSC_DIR)/src/fortran; egrep '^void' custom/*.c auto/*.c | \
-	cut -d'(' -f1 | tr -s' ' | cut -d' ' -f2 | uniq | egrep -v "(^$$|Petsc)" | \
-	sed "s/_$$//" | sort > $(PDIR)/countfortranfunctions
+	cut -d'(' -f1 | tr -s '' ' ' | cut -d' ' -f2 | uniq | egrep -v "(^$$|Petsc)" | \
+	sed "s/_$$//" | sort > /tmp/countfortranfunctions
 
-difffortranfunctions: countfortranfunctions
-	-@cd $(PETSC_DIR); $(OMAKE) -f makefile BOPT=$(BOPT) ACTION=countfunctions tree
-	-@cd $(PDIR); cat countfunctions | tr 'A-Z' 'a-z'|sort >countfunctions.small ;\
-	diff countfunctions.small countfortranfunctions
+countcfunctions:
+	-@ grep extern $(PETSC_DIR)/include/*.h *.h | grep "(" | tr -s '' ' ' | \
+	cut -d'(' -f1 | cut -d' ' -f3 | grep -v "\*" | tr -s '' '\012' |  \
+	tr 'A-Z' 'a-z' |  sort > /tmp/countcfunctions
+
+difffortranfunctions: countfortranfunctions countcfunctions
+	-@echo -------------- Functions missing in the fortran interface ---------------------
+	-@diff /tmp/countcfunctions /tmp/countfortranfunctions | grep "^<" | cut -d' ' -f2
+	-@echo ----------------- Functions missing in the C interface ------------------------
+	-@diff /tmp/countcfunctions /tmp/countfortranfunctions | grep "^>" | cut -d' ' -f2
+	-@$(RM)  /tmp/countcfunctions /tmp/countfortranfunctions
 
 # -------------------------------------------------------------------------------
 
