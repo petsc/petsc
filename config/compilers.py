@@ -33,6 +33,19 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-LDFLAGS=<string>',  nargs.Arg(None, '',   'Specify the linker options'))
     return
 
+  def isGNU(compiler):
+    '''Returns true if the compiler is a GNU compiler'''
+    try:
+      import commands
+
+      (status, output) = commands.getstatusoutput(compiler+' --help')
+      if not status and output.find('www.gnu.org') >= 0:
+        return 1
+    except Exception:
+      pass
+    return 0
+  isGNU = staticmethod(isGNU)
+
   def checkCCompiler(self):
     '''Determine the C compiler using --with-cc, then CC, then a search
     - Also determines the preprocessor from --with-cpp, then CPP, then the C compiler'''
@@ -46,17 +59,7 @@ class Configure(config.base.Configure):
     if self.getExecutables(compilers, resultName = 'CC'):
       self.framework.argDB['CC'] = self.CC
       self.addSubstitution('CC', self.CC)
-      # Check for gcc
-      self.isGCC = 0
-      if self.framework.argDB['CC'].endswith('gcc'):
-        self.isGCC = 1
-      else:
-        try:
-          import commands
-          (status, output) = commands.getstatusoutput(self.framework.argDB['CC']+' --help')
-          if not status and output.find('www.gnu.org') >= 0:
-            self.isGCC = 1
-        except Exception, e: pass
+      self.isGCC = Configure.isGNU(self.framework.argDB['CC'])
 
       if self.framework.argDB.has_key('with-cpp'):
         preprocessors = self.framework.argDB['with-cpp']

@@ -1,7 +1,7 @@
 import build.processor
 
 class Compiler (build.processor.Compiler):
-  def __init__(self, sourceDB, usingCxx, compiler = 'g++', warningFlags = None, inputTag = 'cxx'):
+  def __init__(self, sourceDB, usingCxx, compiler = None, warningFlags = None, inputTag = 'cxx'):
     build.processor.Compiler.__init__(self, sourceDB, compiler, inputTag, updateType = 'deferred')
     self.usingCxx     = usingCxx
     self.warningFlags = warningFlags
@@ -15,9 +15,12 @@ class Compiler (build.processor.Compiler):
 
   def checkCompiler(self):
     '''Checks the compatibility of the supplied compiler'''
+    import config.compilers
+
+    if self.processor is None:
+      self.processor = self.argDB['CXX']
     compiler = self.processor
-    # Should be using isGNU from configure here
-    if compiler.endswith('g++'):
+    if config.compilers.Configure.isGNU(compiler):
       import commands
       # Make sure g++ is recent enough
       (status, output) = commands.getstatusoutput(compiler+' -dumpversion')

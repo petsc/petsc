@@ -1,7 +1,7 @@
 import build.processor
 
 class Compiler (build.processor.Compiler):
-  def __init__(self, sourceDB, usingF90, compiler = 'ifc', warningFlags = None, inputTag = 'f90'):
+  def __init__(self, sourceDB, usingF90, compiler = None, warningFlags = None, inputTag = 'f90'):
     build.processor.Compiler.__init__(self, sourceDB, compiler, inputTag, updateType = 'deferred')
     self.usingF90     = usingF90
     self.warningFlags = warningFlags
@@ -15,6 +15,8 @@ class Compiler (build.processor.Compiler):
 
   def checkCompiler(self):
     '''Checks the compatibility of the supplied compiler'''
+    if self.processor is None:
+      self.processor = self.argDB['F90']
     compiler = self.processor
     if not compiler == 'ifc':
       raise RuntimeError('I only know how to deal with Intel F90 right now. Shoot me.')

@@ -1,7 +1,7 @@
 import build.processor
 
 class Compiler (build.processor.Compiler):
-  def __init__(self, sourceDB, usingC, compiler = 'gcc', warningFlags = None, inputTag = 'c'):
+  def __init__(self, sourceDB, usingC, compiler = None, warningFlags = None, inputTag = 'c'):
     build.processor.Compiler.__init__(self, sourceDB, compiler, inputTag, updateType = 'deferred')
     self.usingC       = usingC
     self.warningFlags = warningFlags
@@ -15,6 +15,8 @@ class Compiler (build.processor.Compiler):
 
   def checkCompiler(self):
     '''Checks the compatibility of the supplied compiler'''
+    if self.processor is None:
+      self.processor = self.argDB['CC']
     return
 
   def getWarningFlags(self, source = None):
