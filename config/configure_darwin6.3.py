@@ -14,7 +14,8 @@ if __name__ == '__main__':
     '-PETSC_ARCH=darwin6.3',
     '-PETSC_DIR=/Users/petsc/petsc-test',
     '--with-blas=/Users/petsc/software/fblaslapack/macx/libfblas.a',
-    '--with-lapack=/Users/petsc/software/fblaslapack/macx/libflapack.a'
+    '--with-lapack=/Users/petsc/software/fblaslapack/macx/libflapack.a',
+    '--with-ranlib=ranlib -s -c'
     ]
 
     configure.petsc_configure(configure_options)
