@@ -568,17 +568,37 @@ PetscErrorCode VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth iascii,issocket,isbinary,isdraw,ismathematica,isnetcdf,ishdf4,ismatlab;
+  PetscTruth     iascii,issocket,isbinary,isdraw;
+#if defined(PETSC_HAVE_MATHEMATICA)
+  PetscTruth     ismathematica;
+#endif
+#if defined(PETSC_HAVE_NETCDF)
+  PetscTruth     isnetcdf;
+#endif
+#if defined(PETSC_HAVE_HDF4)
+  PetscTruth     ishdf4;
+#endif
+#if defined(PETSC_HAVE_MATLAB)
+  PetscTruth     ismatlab;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATHEMATICA,&ismathematica);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_NETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_HDF4)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF4,&ishdf4);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MATLAB)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
+#endif
   if (iascii){
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
   } else if (issocket) {
@@ -594,14 +614,22 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
     } else {
       ierr = VecView_MPI_Draw(xin,viewer);CHKERRQ(ierr);
     }
+#if defined(PETSC_HAVE_MATHEMATICA)
   } else if (ismathematica) {
     ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_NETCDF)
   } else if (isnetcdf) {
     ierr = VecView_MPI_Netcdf(xin,viewer);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_HDF4)
   } else if (ishdf4) {
     ierr = VecView_MPI_HDF4(xin,viewer);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MATLAB)
   } else if (ismatlab) {
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
+#endif
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }

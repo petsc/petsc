@@ -2,6 +2,16 @@
 #include "petscvec.h"
 #include "petscpf.h"
 
+extern MPI_Op PetscSplitReduction_Op;
+extern MPI_Op VecMax_Local_Op;
+extern MPI_Op VecMin_Local_Op;
+
+EXTERN_C_BEGIN
+extern void VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecInitializePackage"
 /*@C
@@ -119,6 +129,11 @@ PetscErrorCode VecInitializePackage(char *path)
     ierr = PetscLogEventActivate(VEC_MDotBarrier);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(VEC_ReduceBarrier);CHKERRQ(ierr);
   }
+
+  /*
+         Create the special MPI reduction operation that may be used by VecNorm/DotBegin()
+  */
+  ierr = MPI_Op_create(PetscSplitReduction_Local,1,&PetscSplitReduction_Op);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

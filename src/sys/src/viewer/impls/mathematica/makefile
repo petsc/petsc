@@ -1,4 +1,7 @@
 
+#requirespackage  'PETSC_HAVE_MATHEMATICA'
+#requiresscalar real 
+
 ALL: lib 
 
 CFLAGS    = ${MATHEMATICA_INCLUDE} ${PLAPACK_INCLUDE}

@@ -40,21 +40,25 @@
 @*/
 PetscErrorCode SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  Vec         j1a,j2a,x2;
+  Vec            j1a,j2a,x2;
   PetscErrorCode ierr;
-  int         i,N,start,end,j;
-  PetscScalar dx,mone = -1.0,*y,scale,*xx,wscale;
-  PetscReal   amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
-  PetscReal   dx_min = 1.e-16,dx_par = 1.e-1;
-  MPI_Comm    comm;
+  PetscInt       i,N,start,end,j;
+  PetscScalar    dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscReal      amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
+  PetscReal      dx_min = 1.e-16,dx_par = 1.e-1;
+  MPI_Comm       comm;
   PetscErrorCode (*eval_fct)(SNES,Vec,Vec)=0;
+  PetscTruth     assembled;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetReal(snes->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
   eval_fct = SNESComputeFunction;
 
   ierr = PetscObjectGetComm((PetscObject)x1,&comm);CHKERRQ(ierr);
-  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+  ierr = MatAssembled(*B,&assembled);CHKERRQ(ierr);
+  if (assembled) {
+    ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+  }
   if (!snes->nvwork) {
     ierr = VecDuplicateVecs(x1,3,&snes->vwork);CHKERRQ(ierr);
     snes->nvwork = 3;

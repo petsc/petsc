@@ -515,7 +515,9 @@ PetscErrorCode PetscFinalize(void)
     PetscFunctionReturn(0);
   }
   /* Destroy auxiliary packages */
+#if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscViewerMathematicaFinalizePackage();CHKERRQ(ierr);
+#endif
   ierr = PetscPLAPACKFinalizePackage();CHKERRQ(ierr);
 
   /*

@@ -21,40 +21,23 @@ techniques used in PETSc. To run the actual examples requires you to have PETSc
 installed, but we do provide sample output so the exercises may still be
 valuable before you install PETSc.</p>
 <p><font size="5" color="#FF0000">0 - Setting up your environment</font></p>
-<p class="redbackground">NERSC Windows XP Users<br>
-<br>
-&nbsp;Start Exceed (X-server):<br>
-Start Menu -&gt; All Programs -&gt; Internet Tools -&gt; Hummingbird Connectivity V7.1 -&gt; 
-Exceed -&gt; Exceed<br>
-<br>
-Enable X11 Tunneling in your ssh connection:<br>
-1) Run the &quot;SSH Secure Shell Client&quot; on your desktop.<br>
-2) Enable X11 Tunneling by clicking Profiles -&gt; Tunneling<br>
-&nbsp;&nbsp;&nbsp; Check the box: &quot;Tunnel X11 Connections&quot;<br>
-3) Click &quot;OK&quot;<br>
-<br>
-Quick Connect to seaborg.nersc.gov</p>
 <p>PETSc uses two environmental variables to determine where its libraries and
 include files are.&nbsp;</p>
 <blockquote>
-  <p>PETSC_DIR indicates the directory where PETSc is installed. For example /usr/local/petsc-2.1.5<br>
+  <p>PETSC_DIR indicates the directory where PETSc is installed. For example /usr/local/petsc-2.2.0<br>
   PETSC_ARCH indicates the architecture PETSc is installed for. For example
   linux</p>
 </blockquote>
 <p>In csh or tcsh you can set these with, for example,</p>
 <blockquote>
-  <p>setenv PETSC_DIR /usr/local/petsc-2.1.5<br>
+  <p>setenv PETSC_DIR /usr/local/petsc-2.2.0<br>
   setenv PETSC_ARCH linux</p>
 </blockquote>
 <p>In sh or bash you can set them with</p>
 <blockquote>
-  <p>PETSC_DIR=/usr/local/petsc-2.1.5; export PETSC_DIR<br>
+  <p>PETSC_DIR=/usr/local/petsc-2.2.0; export PETSC_DIR<br>
   PETSC_ARCH=linux; export PETSC_ARCH</p>
-  <p class="redbackground">NERSC Users - To initialize these variables use the
-  commands&nbsp;<br>
   <br>
-  module load petsc/2.1.3<br>
-  alias mpirun mpirun.poe</p>
 </blockquote>
 <p><font size="5" color="#FF0000">1- compiling a PETSc program</font></p>
 <p>PETSc provides a completely portable make system that works with all
@@ -98,8 +81,8 @@ using DA</font></p>
 <p><font size="5" color="#FF0000">&nbsp;&nbsp;&nbsp; B - for unstructured grids</font></p>
 <p> Objective:  To demonstrate use of vector scatters (VecScatter)&nbsp;<br>
                to manage a parallel unstructured mesh computation.<br>
-   Program: ${PETSC_DIR}<a href="http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-current/src/snes/examples/tutorials/ex10/ex10.c">/src/snes/examples/tutorials/ex10d/ex10.c</a> and
-<a href="http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-current/src/snes/examples/tutorials/ex10/adj.in"> adj.in</a><br>
+   Program: ${PETSC_DIR}<a href="http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-current/src/snes/examples/tutorials/ex10d/ex10.c">/src/snes/examples/tutorials/ex10d/ex10.c</a> and
+<a href="http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-current/src/snes/examples/tutorials/ex10d/adj.in"> adj.in</a><br>
    Runtime command:&nbsp;<br>
      % mpirun -np 2 ex10 -snes_monitor<br>
 </p>
@@ -108,10 +91,10 @@ using DA</font></p>
 allows one to easily generate matrices without worrying about the details&nbsp;</p>
 <p>&nbsp;<a href="matrices">Sample usage</a></p>
 <p><font size="5" color="#FF0000">6 - linear solves</font></p>
-<p>SLES provides an easy-to-use interface to the combination of a<br>
-Krylov subspace iterative solver (KSP) and a preconditioner (PC).<br>
+<p>KSP provides an easy-to-use interface to the combination of a<br>
+Krylov subspace iterative solver and a preconditioner (PC).<br>
 <br>
-<a href="sles">Sample usage</a></p>
+<a href="ksp">Sample usage</a></p>
 <p><font size="5" color="#FF0000">7 - nonlinear solves</font></p>
 <p>SNES provides an easy-to-use interface to Newton-based methods for<br>
 solving systems of nonlinear equations.&nbsp;</p>

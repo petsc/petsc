@@ -37,9 +37,6 @@ static char starttime[256];
 
   Level: beginner
 
-  Notes:
-    This is Y2K compliant.
-
     This function DOES make a system call and thus SHOULD NOT be called
     from an error handler. Use PetscGetInitialDate() instead.
 
@@ -98,8 +95,6 @@ PetscErrorCode PetscSetInitialDate(void)
   Level: beginner
 
   Notes:
-    This is Y2K compliant.
-
     This function does not make a system call and thus may be called
     from an error handler.
 

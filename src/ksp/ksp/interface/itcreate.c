@@ -525,7 +525,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     if (flg) {
       MatNullSpace nsp;
 
-      ierr = MatNullSpaceCreate(ksp->comm,1,0,0,&nsp);CHKERRQ(ierr);
+      ierr = MatNullSpaceCreate(ksp->comm,PETSC_TRUE,0,0,&nsp);CHKERRQ(ierr);
       ierr = KSPSetNullSpace(ksp,nsp);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(nsp);CHKERRQ(ierr);
     }

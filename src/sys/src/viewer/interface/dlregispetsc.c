@@ -59,7 +59,9 @@ PetscErrorCode PetscInitializePackage(char *path)
     }
   }
   /* Setup auxiliary packages */
+#if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
   ierr = PetscPLAPACKInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

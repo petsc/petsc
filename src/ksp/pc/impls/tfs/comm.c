@@ -20,19 +20,7 @@ File Description:
 -----------------
 
 ***********************************comm.c*************************************/
-#include <stdio.h>
 #include "petsc.h"
-
-#if   defined NXSRC
-#ifndef DELTA
-#include <nx.h>
-#endif
-
-#elif defined MPISRC
-#include <mpi.h>
-
-#endif
-
 
 #include "const.h"
 #include "types.h"
@@ -132,11 +120,7 @@ giop(int *vals, int *work, int n, int *oprs)
   register int mask, edge;
   int type, dest;
   vfp fp;
-#if defined MPISRC
   MPI_Status  status;
-#elif defined NXSRC
-  int len;
-#endif
 
 
 #ifdef SAFE
@@ -176,55 +160,6 @@ giop(int *vals, int *work, int n, int *oprs)
     fp = (vfp) oprs;
   }
 
-#if  defined NXSRC
-  /* all msgs will be of the same length */
-  len = n*INT_LEN;
-
-  /* if not a hypercube must colapse partial dim */
-  if (edge_not_pow_2)
-    {
-      if (my_id >= floor_num_nodes)
-	{csend(MSGTAG0+my_id,(char *)vals,len,edge_not_pow_2,0);}
-      else 
-	{crecv(MSGTAG0+edge_not_pow_2,(char *)work,len); (*fp)(vals,work,n,oprs);}
-    }
-
-  /* implement the mesh fan in/out exchange algorithm */
-  if (my_id<floor_num_nodes)
-    {
-      for (mask=1,edge=0; edge<i_log2_num_nodes; edge++,mask<<=1)
-	{
-	  dest = my_id^mask;
-	  if (my_id > dest)
-	    {csend(MSGTAG2+my_id,(char *)vals,len,dest,0); break;}
-	  else
-	    {crecv(MSGTAG2+dest,(char *)work,len); (*fp)(vals, work, n, oprs);}
-	}
-
-      mask=floor_num_nodes>>1;
-      for (edge=0; edge<i_log2_num_nodes; edge++,mask>>=1)
-	{
-	  if (my_id%mask)
-	    {continue;}
-      
-	  dest = my_id^mask;
-	  if (my_id < dest)
-	    {csend(MSGTAG4+my_id,(char *)vals,len,dest,0);}
-	  else
-	    {crecv(MSGTAG4+dest,(char *)vals,len);}
-	}
-    }
-
-  /* if not a hypercube must expand to partial dim */
-  if (edge_not_pow_2)
-    {
-      if (my_id >= floor_num_nodes)
-	{crecv(MSGTAG5+edge_not_pow_2,(char *)vals,len);}
-      else
-	{csend(MSGTAG5+my_id,(char *)vals,len,edge_not_pow_2,0);}
-    }
-
-#elif defined MPISRC
   /* all msgs will be of the same length */
   /* if not a hypercube must colapse partial dim */
   if (edge_not_pow_2)
@@ -283,9 +218,6 @@ giop(int *vals, int *work, int n, int *oprs)
       else
 	{MPI_Send(vals,n,MPI_INT,edge_not_pow_2,MSGTAG5+my_id,MPI_COMM_WORLD);}
     }
-#else
-  return;
-#endif
 }  
 
 /***********************************comm.c*************************************
@@ -302,11 +234,7 @@ grop(REAL *vals, REAL *work, int n, int *oprs)
   register int mask, edge;
   int type, dest;
   vfp fp;
-#if defined MPISRC
   MPI_Status  status;
-#elif defined NXSRC
-  int len;
-#endif
 
 
 #ifdef SAFE
@@ -340,55 +268,6 @@ grop(REAL *vals, REAL *work, int n, int *oprs)
     fp = (vfp) oprs;
   }
 
-#if  defined NXSRC
-  /* all msgs will be of the same length */
-  len = n*REAL_LEN;
-
-  /* if not a hypercube must colapse partial dim */
-  if (edge_not_pow_2)
-    {
-      if (my_id >= floor_num_nodes)
-	{csend(MSGTAG0+my_id,(char *)vals,len,edge_not_pow_2,0);}
-      else 
-	{crecv(MSGTAG0+edge_not_pow_2,(char *)work,len); (*fp)(vals,work,n,oprs);}
-    }
-
-  /* implement the mesh fan in/out exchange algorithm */
-  if (my_id<floor_num_nodes)
-    {
-      for (mask=1,edge=0; edge<i_log2_num_nodes; edge++,mask<<=1)
-	{
-	  dest = my_id^mask;
-	  if (my_id > dest)
-	    {csend(MSGTAG2+my_id,(char *)vals,len,dest,0); break;}
-	  else
-	    {crecv(MSGTAG2+dest,(char *)work,len); (*fp)(vals, work, n, oprs);}
-	}
-
-      mask=floor_num_nodes>>1;
-      for (edge=0; edge<i_log2_num_nodes; edge++,mask>>=1)
-	{
-	  if (my_id%mask)
-	    {continue;}
-      
-	  dest = my_id^mask;
-	  if (my_id < dest)
-	    {csend(MSGTAG4+my_id,(char *)vals,len,dest,0);}
-	  else
-	    {crecv(MSGTAG4+dest,(char *)vals,len);}
-	}
-    }
-
-  /* if not a hypercube must expand to partial dim */
-  if (edge_not_pow_2)
-    {
-      if (my_id >= floor_num_nodes)
-	{crecv(MSGTAG5+edge_not_pow_2,(char *)vals,len);}
-      else
-	{csend(MSGTAG5+my_id,(char *)vals,len,edge_not_pow_2,0);}
-    }
-
-#elif defined MPISRC 
   /* all msgs will be of the same length */
   /* if not a hypercube must colapse partial dim */
   if (edge_not_pow_2)
@@ -449,9 +328,6 @@ grop(REAL *vals, REAL *work, int n, int *oprs)
 	{MPI_Send(vals,n,REAL_TYPE,edge_not_pow_2,MSGTAG5+my_id,
 		  MPI_COMM_WORLD);}
     }
-#else
-  return;
-#endif
 }  
 
 
@@ -472,12 +348,7 @@ grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim)
   register int mask, edge;
   int type, dest;
   vfp fp;
-#if defined MPISRC
   MPI_Status  status;
-#elif defined NXSRC
-  int len;
-#endif
-
 
 #ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
@@ -517,39 +388,6 @@ grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim)
     fp = (vfp) oprs;
   }
 
-#if  defined NXSRC
-  /* all msgs will be of the same length */
-  len = n*REAL_LEN;
-
-  /* implement the mesh fan in/out exchange algorithm */
-  for (mask=1,edge=0; edge<dim; edge++,mask<<=1)
-    {
-      dest = my_id^mask;
-      if (my_id > dest)
-	{csend(MSGTAG2+my_id,(char *)vals,len,dest,0); break;}
-      else
-	{crecv(MSGTAG2+dest,(char *)work,len); (*fp)(vals, work, n, oprs);}
-    }
-      
-  /* for (mask=1, edge=1; edge<dim; edge++,mask<<=1) {;} */
-  if (edge==dim)
-    {mask>>=1;}
-  else
-    {while (++edge<dim) {mask<<=1;}}
-  
-  for (edge=0; edge<dim; edge++,mask>>=1)
-    {
-      if (my_id%mask)
-	{continue;}
-      
-      dest = my_id^mask;
-      if (my_id < dest)
-	{csend(MSGTAG4+my_id,(char *)vals,len,dest,0);}
-      else
-	{crecv(MSGTAG4+dest,(char *)vals,len);}
-    }
-
-#elif defined MPISRC 
   for (mask=1,edge=0; edge<dim; edge++,mask<<=1)
     {
       dest = my_id^mask;
@@ -582,9 +420,6 @@ grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim)
 		   &status);
 	}
     }
-#else
-  return;
-#endif
 }  
 
 
@@ -596,18 +431,12 @@ Output:
 Return: 
 Description: fan-in/out version
 ***********************************comm.c*************************************/
-void
-gfop(void *vals, void *work, int n, vbfp fp, DATA_TYPE dt, int comm_type)
+void gfop(void *vals, void *work, int n, vbfp fp, DATA_TYPE dt, int comm_type)
 {
   register int mask, edge;
   int dest;
-#if defined MPISRC
   MPI_Status  status;
   MPI_Op op;
-#elif defined NXSRC
-  int len;
-#endif
-
 
 #ifdef SAFE
   /* check to make sure comm package has been initialized */
@@ -626,64 +455,6 @@ gfop(void *vals, void *work, int n, vbfp fp, DATA_TYPE dt, int comm_type)
   /* a negative number of items to send ==> fatal */
   if (n<0)
     {error_msg_fatal("gop() :: n=%d<0?",n);}
-
-#if  defined NXSRC
-  switch (dt) {
-  case REAL_TYPE:
-    len = n*REAL_LEN;
-    break;
-  case INT_TYPE:
-    len = n*INT_LEN;
-    break;
-  default:
-    error_msg_fatal("gop() :: unrecognized datatype!!!\n");
-  }
-
-  /* if not a hypercube must colapse partial dim */
-  if (edge_not_pow_2)
-    {
-      if (my_id >= floor_num_nodes)
-	{csend(MSGTAG0+my_id,(char *)vals,len,edge_not_pow_2,0);}
-      else 
-	{crecv(MSGTAG0+edge_not_pow_2,(char *)work,len); (*fp)(vals,work,n,dt);}
-    }
-
-  /* implement the mesh fan in/out exchange algorithm */
-  if (my_id<floor_num_nodes)
-    {
-      for (mask=1,edge=0; edge<i_log2_num_nodes; edge++,mask<<=1)
-	{
-	  dest = my_id^mask;
-	  if (my_id > dest)
-	    {csend(MSGTAG2+my_id,(char *)vals,len,dest,0); break;}
-	  else
-	    {crecv(MSGTAG2+dest,(char *)work,len); (*fp)(vals,work,n,dt);}
-	}
-
-      mask=floor_num_nodes>>1;
-      for (edge=0; edge<i_log2_num_nodes; edge++,mask>>=1)
-	{
-	  if (my_id%mask)
-	    {continue;}
-      
-	  dest = my_id^mask;
-	  if (my_id < dest)
-	    {csend(MSGTAG4+my_id,(char *)vals,len,dest,0);}
-	  else
-	    {crecv(MSGTAG4+dest,(char *)vals,len);}
-	}
-    }
-
-  /* if not a hypercube must expand to partial dim */
-  if (edge_not_pow_2)
-    {
-      if (my_id >= floor_num_nodes)
-	{crecv(MSGTAG5+edge_not_pow_2,(char *)vals,len);}
-      else
-	{csend(MSGTAG5+my_id,(char *)vals,len,edge_not_pow_2,0);}
-    }
-
-#elif defined MPISRC 
 
   if (comm_type==MPI)
     {
@@ -752,9 +523,6 @@ gfop(void *vals, void *work, int n, vbfp fp, DATA_TYPE dt, int comm_type)
 	{MPI_Send(vals,n,dt,edge_not_pow_2,MSGTAG5+my_id,
 		  MPI_COMM_WORLD);}
     }
-#else
-  return;
-#endif
 }  
 
 
@@ -779,10 +547,7 @@ ssgl_radd(register REAL *vals, register REAL *work, register int level,
 {
   register int edge, type, dest, mask;
   register int stage_n;
-#if defined MPISRC
   MPI_Status  status;
-#endif
-
 
 #ifdef DEBUG
   if (level > i_log2_num_nodes)
@@ -796,48 +561,6 @@ ssgl_radd(register REAL *vals, register REAL *work, register int level,
 #endif
 
 
-#if defined NXSRC
-  /* all msgs are *NOT* the same length */
-  /* implement the mesh fan in/out exchange algorithm */
-  for (mask=0, edge=0; edge<level; edge++, mask++)
-    {
-      stage_n = (segs[level] - segs[edge]);
-      if (stage_n && !(my_id & mask))
-	{
-	  dest = edge_node[edge];
-	  type = MSGTAG3 + my_id + (num_nodes*edge);
-	  if (my_id>dest)
-	    {csend(type, vals+segs[edge],stage_n*REAL_LEN,dest,0);} 
-	  else
-	    {
-	      type =  type - my_id + dest;
-	      crecv(type,work,stage_n*REAL_LEN); 
-	      rvec_add(vals+segs[edge], work, stage_n); 
-/*            daxpy(vals+segs[edge], work, stage_n); */
-	    }
-	}
-      mask <<= 1;
-    }
-  mask>>=1;
-  for (edge=0; edge<level; edge++)
-    {
-      stage_n = (segs[level] - segs[level-1-edge]);
-      if (stage_n && !(my_id & mask))
-	{
-	  dest = edge_node[level-edge-1];
-	  type = MSGTAG6 + my_id + (num_nodes*edge);
-	  if (my_id<dest)
-	    {csend(type,vals+segs[level-1-edge],stage_n*REAL_LEN,dest,0);} 
-	  else
-	    {
-	      type =  type - my_id + dest;
-	      crecv(type,vals+segs[level-1-edge],stage_n*REAL_LEN); 
-	    }
-	}
-      mask >>= 1;
-    }
-
-#elif defined MPISRC
   /* all msgs are *NOT* the same length */
   /* implement the mesh fan in/out exchange algorithm */
   for (mask=0, edge=0; edge<level; edge++, mask++)
@@ -885,9 +608,6 @@ ssgl_radd(register REAL *vals, register REAL *work, register int level,
 	}
       mask >>= 1;
     }
-#else
-  return;
-#endif
 }  
 
 
@@ -909,12 +629,7 @@ grop_hc_vvl(REAL *vals, REAL *work, int *segs, int *oprs, int dim)
   register int mask, edge, n;
   int type, dest;
   vfp fp;
-#if defined MPISRC
   MPI_Status  status;
-#elif defined NXSRC
-  int len;
-#endif
-
 
   error_msg_fatal("grop_hc_vvl() :: is not working!\n");
 
@@ -954,46 +669,6 @@ grop_hc_vvl(REAL *vals, REAL *work, int *segs, int *oprs, int dim)
     fp = (vfp) oprs;
   }
 
-#if  defined NXSRC
-  /* all msgs are *NOT* the same length */
-  /* implement the mesh fan in/out exchange algorithm */
-  for (mask=1,edge=0; edge<dim; edge++,mask<<=1)
-    {
-      n = segs[dim]-segs[edge];
-      /*
-      error_msg_warning("n=%d, segs[%d]=%d, segs[%d]=%d\n",n,dim,segs[dim],
-			edge,segs[edge]);
-      */
-      len = n*REAL_LEN;
-      dest = my_id^mask;
-      if (my_id > dest)
-	{csend(MSGTAG2+my_id,(char *)vals+segs[edge],len,dest,0); break;}
-      else
-	{crecv(MSGTAG2+dest,(char *)work,len); (*fp)(vals+segs[edge], work, n, oprs);}
-    }
-
-  if (edge==dim)
-    {mask>>=1;}
-  else
-    {while (++edge<dim) {mask<<=1;}}
-
-  for (edge=0; edge<dim; edge++,mask>>=1)
-    {
-      if (my_id%mask)
-	{continue;}
-      len = (segs[dim]-segs[dim-1-edge])*REAL_LEN;
-      /*
-      error_msg_warning("n=%d, segs[%d]=%d, segs[%d]=%d\n",n,dim,segs[dim],
-                         dim-1-edge,segs[dim-1-edge]);
-      */      
-      dest = my_id^mask;
-      if (my_id < dest)
-	{csend(MSGTAG4+my_id,(char *)vals+segs[dim-1-edge],len,dest,0);}
-      else
-	{crecv(MSGTAG4+dest,(char *)vals+segs[dim-1-edge],len);}
-    }
-
-#elif defined MPISRC 
   for (mask=1,edge=0; edge<dim; edge++,mask<<=1)
     {
       n = segs[dim]-segs[edge];
@@ -1030,9 +705,6 @@ grop_hc_vvl(REAL *vals, REAL *work, int *segs, int *oprs, int dim)
 		   MSGTAG4+dest,MPI_COMM_WORLD, &status);
 	}
     }
-#else
-  return;
-#endif
 }  
 
 
@@ -1066,54 +738,6 @@ proc_sync()
     {comm_init();}
 #endif
 
-#if  defined NXSRC
-  /* all msgs will be of zero length */
-
-  /* if not a hypercube must colapse partial dim */
-  if (edge_not_pow_2)
-    {
-      if (my_id >= floor_num_nodes)
-	{csend(MSGTAG0+my_id,(char *)vals,len,edge_not_pow_2,0);}
-      else 
-	{crecv(MSGTAG0+edge_not_pow_2,(char *)work,len); (*fp)(vals,work,n,oprs);}
-    }
-
-  /* implement the mesh fan in/out exchange algorithm */
-  if (my_id<floor_num_nodes)
-    {
-      for (mask=1,edge=0; edge<i_log2_num_nodes; edge++,mask<<=1)
-	{
-	  dest = my_id^mask;
-	  if (my_id > dest)
-	    {csend(MSGTAG2+my_id,(char *)vals,len,dest,0); break;}
-	  else
-	    {crecv(MSGTAG2+dest,(char *)work,len); (*fp)(vals, work, n, oprs);}
-	}
-
-      mask=floor_num_nodes>>1;
-      for (edge=0; edge<i_log2_num_nodes; edge++,mask>>=1)
-	{
-	  if (my_id%mask)
-	    {continue;}
-      
-	  dest = my_id^mask;
-	  if (my_id < dest)
-	    {csend(MSGTAG4+my_id,(char *)vals,len,dest,0);}
-	  else
-	    {crecv(MSGTAG4+dest,(char *)vals,len);}
-	}
-    }
-
-  /* if not a hypercube must expand to partial dim */
-  if (edge_not_pow_2)
-    {
-      if (my_id >= floor_num_nodes)
-	{crecv(MSGTAG5+edge_not_pow_2,(char *)vals,len);}
-      else
-	{csend(MSGTAG5+my_id,(char *)vals,len,edge_not_pow_2,0);}
-    }
-
-#elif defined MPISRC
   /* all msgs will be of the same length */
   /* if not a hypercube must colapse partial dim */
   if (edge_not_pow_2)
@@ -1172,9 +796,6 @@ proc_sync()
       else
 	{MPI_Send(vals,n,MPI_INT,edge_not_pow_2,MSGTAG5+my_id,MPI_COMM_WORLD);}
     }
-#else
-  return;
-#endif
 }  
 #endif
 
@@ -1228,8 +849,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static void
-sgl_iadd(int *vals, int level)
+static void sgl_iadd(int *vals, int level)
 {
   int edge, type, dest, source, len, mask = -1;
   int tmp, *work;
@@ -1252,64 +872,6 @@ sgl_iadd(int *vals, int level)
   if (level<=0)
     {return;}
 
-#if defined NXSRC
-  {
-    long msg_id;
-    /* implement the mesh fan in/out exchange algorithm */
-    if (my_id<floor_num_nodes)
-      {
-	mask = 0;
-	for (edge = 0; edge < level; edge++)
-	  {
-	    if (!(my_id & mask))
-	      {
-		source = dest = edge_node[edge];
-		type = MSGTAG1 + my_id + (num_nodes*edge);
-		if (my_id > dest)
-		  {
-		    msg_id = isend(type,vals,len,dest,0);
-		    msgwait(msg_id);
-		  }
-		else
-		  {
-		    type =  type - my_id + source;
-		    msg_id = irecv(type,work,len);
-		    msgwait(msg_id);
-		    vals[0] += work[0];
-		  }
-	      }
-	    mask <<= 1;
-	    mask += 1;
-	  }
-      }
-    
-    if (my_id<floor_num_nodes)
-      {
-	mask >>= 1;
-	for (edge = 0; edge < level; edge++)
-	  {
-	    if (!(my_id & mask))
-	      {
-		source = dest = edge_node[level-edge-1];
-		type = MSGTAG1 + my_id + (num_nodes*edge);
-		if (my_id < dest)
-		  {
-		    msg_id = isend(type,vals,len,dest,0);
-		    msgwait(msg_id);
-		  }
-		else
-		  {
-		    type =  type - my_id + source;
-		    msg_id = irecv(type,work,len);
-		    msgwait(msg_id);
-		    vals[0] = work[0];
-		  }
-	      }
-	    mask >>= 1;
-	  }
-      }
-  }
-#elif defined MPISRC
   {
     MPI_Request msg_id;
     MPI_Status status;
@@ -1380,10 +942,6 @@ sgl_iadd(int *vals, int level)
 	  }
       }
   }
-#else
-  return;
-#endif
-
 }
 
 
@@ -1396,8 +954,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-void
-staged_radd_ (double *gl_num, int *level)
+void staged_radd_ (double *gl_num, int *level)
 {
   sgl_radd(gl_num,*level);
 }
@@ -1410,13 +967,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static void
-sgl_radd(double *vals, int level)
+static void sgl_radd(double *vals, int level)
 {
-#if defined NXSRC
   int edge, type, dest, source, len, mask;
   double tmp, *work;
-#endif
 
 #ifdef SAFE
   /* check to make sure comm package has been initialized */
@@ -1425,75 +979,6 @@ sgl_radd(double *vals, int level)
 #endif
 
 
-#if defined NXSRC
-  {
-    long msg_id;
-    
-    /* all msgs will be of the same length */
-    work = &tmp;
-    len = REAL_LEN;
-    
-    if (level > i_log2_num_nodes)
-      {error_msg_fatal("sgl_add() :: level too big?");}
-    
-    if (level<=0)
-      {return;}
-    
-    /* implement the mesh fan in/out exchange algorithm */
-    if (my_id<floor_num_nodes)
-      {
-	mask = 0;
-	for (edge = 0; edge < level; edge++)
-	  {
-	    if (!(my_id & mask))
-	      {
-		source = dest = edge_node[edge];
-		type = MSGTAG3 + my_id + (num_nodes*edge);
-		if (my_id > dest)
-		  {
-		    msg_id = isend(type,vals,len,dest,0);
-		    msgwait(msg_id);
-		  }
-		else
-		  {
-		    type =  type - my_id + source;
-		    msg_id = irecv(type,work,len);
-		    msgwait(msg_id);
-		    vals[0] += work[0];
-		  }
-	      }
-	    mask <<= 1;
-	    mask += 1;
-	  }
-      }
-    
-    if (my_id<floor_num_nodes)
-      {
-	mask >>= 1;
-	for (edge = 0; edge < level; edge++)
-	  {
-	    if (!(my_id & mask))
-	      {
-		source = dest = edge_node[level-edge-1];
-		type = MSGTAG3 + my_id + (num_nodes*edge);
-		if (my_id < dest)
-		  {
-		    msg_id = isend(type,vals,len,dest,0);
-		    msgwait(msg_id);
-		  }
-		else
-		  {
-		    type =  type - my_id + source;
-		    msg_id = irecv(type,work,len);
-		    msgwait(msg_id);
-		    vals[0] = work[0];
-		  }
-	      }
-	    mask >>= 1;
-	  }
-      }
-  }
-#elif defined MRISRC
   {
     MPI_Request msg_id;
     MPI_Status status;
@@ -1574,9 +1059,6 @@ sgl_radd(double *vals, int level)
 	  }
       }
   }
-#else
-  return;
-#endif
 }  
 
 
@@ -1591,8 +1073,7 @@ Description:
  
 ii+1 entries in seg :: 0 .. ii
 ******************************************************************************/
-void 
-hmt_concat_ (REAL *vals, REAL *work, int *size)
+void hmt_concat_ (REAL *vals, REAL *work, int *size)
 {
   hmt_concat(vals, work, *size);
 }
@@ -1610,15 +1091,11 @@ Description:
 ii+1 entries in seg :: 0 .. ii
 
 ******************************************************************************/
-static void 
-hmt_concat(REAL *vals, REAL *work, int size)
+static void hmt_concat(REAL *vals, REAL *work, int size)
 {
-#if defined NXSRC  
   int  mask,stage_n;
   int edge, type, dest, source, len;
-  int offset;
   double *dptr;
-#endif
 
 #ifdef SAFE
   /* check to make sure comm package has been initialized */
@@ -1630,81 +1107,6 @@ hmt_concat(REAL *vals, REAL *work, int size)
   /* implement the mesh fan in/out exchange algorithm */
   rvec_copy(work,vals,size);
 
-#if defined NXSRC  
-  mask = 0;
-  stage_n = size;
-  {
-    long msg_id;
-    
-    dptr  = work+size;
-    for (edge = 0; edge < i_log2_num_nodes; edge++)
-      {
-	len = stage_n * REAL_LEN;
-	
-	if (!(my_id & mask))
-	  {
-	    source = dest = edge_node[edge];
-	    type = MSGTAG3 + my_id + (num_nodes*edge);
-	    if (my_id > dest)
-	      {
-		msg_id = isend(type, work, len,dest,0);
-		msgwait(msg_id);
-	      }
-	    else
-	      {
-		type =  type - my_id + source;
-		msg_id = irecv(type, dptr,len);
-		msgwait(msg_id);
-	      }
-	  }
-	
-#ifdef DEBUG_1      
-	ierror_msg_warning_n0("stage_n = ",stage_n);
-#endif
-
-	dptr += stage_n;
-	stage_n <<=1;
-	mask <<= 1;
-	mask += 1;
-      }
-    
-    size = stage_n;
-    stage_n >>=1;
-    dptr -= stage_n;
-    
-    mask >>= 1;
-    
-    for (edge = 0; edge < i_log2_num_nodes; edge++)
-      {
-	len = (size-stage_n) * REAL_LEN;
-	
-	if (!(my_id & mask) && stage_n)
-	  {
-	    source = dest = edge_node[i_log2_num_nodes-edge-1];
-	    type = MSGTAG6 + my_id + (num_nodes*edge);
-	    if (my_id < dest)
-	      {
-		msg_id = isend(type,dptr,len,dest,0);
-		msgwait(msg_id);
-	      }
-	    else
-	      {
-		type =  type - my_id + source;	
-		msg_id = irecv(type,dptr,len);
-		msgwait(msg_id);
-	      }
-	  }
-	
-#ifdef DEBUG_1      
-	ierror_msg_warning_n0("size-stage_n = ",size-stage_n);
-#endif
-	
-	stage_n >>= 1;
-	dptr -= stage_n;
-	mask >>= 1;
-      }
-  }
-#elif defined MRISRC
   {
     MPI_Request msg_id;
     MPI_Status status;
@@ -1767,8 +1169,8 @@ hmt_concat(REAL *vals, REAL *work, int size)
 			  &msg_id);
 		MPI_Wait(&msg_id,&status);		
 		/*msg_id = isend(type, work, len,dest,0);
-		msg_id = isend(type,dptr,len,dest,0); */
-		msgwait(msg_id);
+		msg_id = isend(type,dptr,len,dest,0); 
+		msgwait(msg_id); */
 	      }
 	    else
 	      {
@@ -1790,9 +1192,6 @@ hmt_concat(REAL *vals, REAL *work, int size)
 	mask >>= 1;
       }
   }
-#else
-  return;
-#endif
 }
 
 
@@ -1808,19 +1207,11 @@ Description:
 ii+1 entries in seg :: 0 .. ii
 
 ******************************************************************************/
-void 
-new_ssgl_radd(register REAL *vals, register REAL *work, register int level, 
-#if defined MPISRC
-	  register int *segs, MPI_Comm ssgl_comm)
-#else
-	  register int *segs)
-#endif
+void new_ssgl_radd(register REAL *vals, register REAL *work, register int level,register int *segs)
 {
   register int edge, type, dest, mask;
   register int stage_n;
-#if defined MPISRC
   MPI_Status  status;
-#endif
 
 
 #ifdef DEBUG
@@ -1834,49 +1225,6 @@ new_ssgl_radd(register REAL *vals, register REAL *work, register int level,
     {comm_init();}
 #endif
 
-
-#if defined NXSRC
-  /* all msgs are *NOT* the same length */
-  /* implement the mesh fan in/out exchange algorithm */
-  for (mask=0, edge=0; edge<level; edge++, mask++)
-    {
-      stage_n = (segs[level] - segs[edge]);
-      if (stage_n && !(my_id & mask))
-	{
-	  dest = edge_node[edge];
-	  type = MSGTAG3 + my_id + (num_nodes*edge);
-	  if (my_id>dest)
-	    {csend(type, vals+segs[edge],stage_n*REAL_LEN,dest,0);} 
-	  else
-	    {
-	      type =  type - my_id + dest;
-	      crecv(type,work,stage_n*REAL_LEN); 
-	      rvec_add(vals+segs[edge], work, stage_n); 
-/*            daxpy(vals+segs[edge], work, stage_n); */
-	    }
-	}
-      mask <<= 1;
-    }
-  mask>>=1;
-  for (edge=0; edge<level; edge++)
-    {
-      stage_n = (segs[level] - segs[level-1-edge]);
-      if (stage_n && !(my_id & mask))
-	{
-	  dest = edge_node[level-edge-1];
-	  type = MSGTAG6 + my_id + (num_nodes*edge);
-	  if (my_id<dest)
-	    {csend(type,vals+segs[level-1-edge],stage_n*REAL_LEN,dest,0);} 
-	  else
-	    {
-	      type =  type - my_id + dest;
-	      crecv(type,vals+segs[level-1-edge],stage_n*REAL_LEN); 
-	    }
-	}
-      mask >>= 1;
-    }
-
-#elif defined MPISRC
   /* all msgs are *NOT* the same length */
   /* implement the mesh fan in/out exchange algorithm */
   for (mask=0, edge=0; edge<level; edge++, mask++)
@@ -1889,13 +1237,13 @@ new_ssgl_radd(register REAL *vals, register REAL *work, register int level,
 	  if (my_id>dest)
 /*	    {csend(type, vals+segs[edge],stage_n*REAL_LEN,dest,0);} */
           {MPI_Send(vals+segs[edge],stage_n,REAL_TYPE,dest,type, 
-                      ssgl_comm);}
+                      MPI_COMM_WORLD);}
 	  else
 	    {
 	      type =  type - my_id + dest;
 /*	      crecv(type,work,stage_n*REAL_LEN); */
               MPI_Recv(work,stage_n,REAL_TYPE,MPI_ANY_SOURCE,type,
-                       ssgl_comm,&status);              
+                       MPI_COMM_WORLD,&status);              
 	      rvec_add(vals+segs[edge], work, stage_n); 
 /*            daxpy(vals+segs[edge], work, stage_n); */
 	    }
@@ -1913,20 +1261,17 @@ new_ssgl_radd(register REAL *vals, register REAL *work, register int level,
 	  if (my_id<dest)
 /*	    {csend(type,vals+segs[level-1-edge],stage_n*REAL_LEN,dest,0);} */
             {MPI_Send(vals+segs[level-1-edge],stage_n,REAL_TYPE,dest,type,
-                      ssgl_comm);}
+                      MPI_COMM_WORLD);}
 	  else
 	    {
 	      type =  type - my_id + dest;
 /* 	      crecv(type,vals+segs[level-1-edge],stage_n*REAL_LEN); */
               MPI_Recv(vals+segs[level-1-edge],stage_n,REAL_TYPE,
-                       MPI_ANY_SOURCE,type,ssgl_comm,&status);              
+                       MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);              
 	    }
 	}
       mask >>= 1;
     }
-#else
-  return;
-#endif
 }  
 
 
@@ -1942,18 +1287,12 @@ Description: fan-in/out version
 note good only for num_nodes=2^k!!!
 
 ***********************************comm.c*************************************/
-void
-giop_hc(int *vals, int *work, int n, int *oprs, int dim)
+void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
 {
   register int mask, edge;
   int type, dest;
   vfp fp;
-#if defined MPISRC
   MPI_Status  status;
-#elif defined NXSRC
-  int len;
-#endif
-
 
 #ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
@@ -1993,39 +1332,6 @@ giop_hc(int *vals, int *work, int n, int *oprs, int dim)
     fp = (vfp) oprs;
   }
 
-#if  defined NXSRC
-  /* all msgs will be of the same length */
-  len = n*INT_LEN;
-
-  /* implement the mesh fan in/out exchange algorithm */
-  for (mask=1,edge=0; edge<dim; edge++,mask<<=1)
-    {
-      dest = my_id^mask;
-      if (my_id > dest)
-	{csend(MSGTAG2+my_id,(char *)vals,len,dest,0); break;}
-      else
-	{crecv(MSGTAG2+dest,(char *)work,len); (*fp)(vals, work, n, oprs);}
-    }
-      
-  /* for (mask=1, edge=1; edge<dim; edge++,mask<<=1) {;} */
-  if (edge==dim)
-    {mask>>=1;}
-  else
-    {while (++edge<dim) {mask<<=1;}}
-  
-  for (edge=0; edge<dim; edge++,mask>>=1)
-    {
-      if (my_id%mask)
-	{continue;}
-      
-      dest = my_id^mask;
-      if (my_id < dest)
-	{csend(MSGTAG4+my_id,(char *)vals,len,dest,0);}
-      else
-	{crecv(MSGTAG4+dest,(char *)vals,len);}
-    }
-
-#elif defined MPISRC 
   for (mask=1,edge=0; edge<dim; edge++,mask<<=1)
     {
       dest = my_id^mask;
@@ -2058,7 +1364,4 @@ giop_hc(int *vals, int *work, int n, int *oprs, int dim)
 		   &status);
 	}
     }
-#else
-  return;
-#endif
 }  

@@ -2525,7 +2525,9 @@ PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
   const PetscScalar *vwork;
 
   PetscFunctionBegin;
-  ierr = MatZeroEntries(B);CHKERRQ(ierr);
+  if (B->assembled) {
+    ierr = MatZeroEntries(B);CHKERRQ(ierr);
+  }
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
@@ -3725,6 +3727,7 @@ PetscErrorCode MatZeroEntries(Mat mat)
   PetscValidType(mat,1);
   MatPreallocated(mat);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix"); 
   if (!mat->ops->zeroentries) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_ZeroEntries,mat,0,0,0);CHKERRQ(ierr);
@@ -5487,6 +5490,44 @@ PetscErrorCode MatIsSymmetricKnown(Mat A,PetscTruth *set,PetscTruth *flg)
   if (A->symmetric_set) {
     *set = PETSC_TRUE;
     *flg = A->symmetric;
+  } else {
+    *set = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatIsHermitianKnown"
+/*@C
+   MatIsHermitianKnown - Checks the flag on the matrix to see if it is hermitian.
+
+   Collective on Mat
+
+   Input Parameter:
+.  A - the matrix to check
+
+   Output Parameters:
++  set - if the hermitian flag is set (this tells you if the next flag is valid)
+-  flg - the result
+
+   Level: advanced
+
+   Concepts: matrix^symmetry
+
+   Note: Does not check the matrix values directly, so this may return unknown (set = PETSC_FALSE). Use MatIsHermitian()
+         if you want it explicitly checked
+
+.seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetric()
+@*/
+PetscErrorCode MatIsHermitianKnown(Mat A,PetscTruth *set,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidPointer(set,2);
+  PetscValidPointer(flg,3);
+  if (A->hermitian_set) {
+    *set = PETSC_TRUE;
+    *flg = A->hermitian;
   } else {
     *set = PETSC_FALSE;
   }
