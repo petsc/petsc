@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.102 2000/06/08 15:18:29 balay Exp bsmith $ */
+/* $Id: petscpc.h,v 1.103 2000/07/03 15:41:00 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -95,6 +95,8 @@ EXTERN int PCNullSpaceDestroy(PCNullSpace);
 EXTERN int PCNullSpaceRemove(PCNullSpace,Vec);
 EXTERN int PCNullSpaceAttach(PC,PCNullSpace);
 
+EXTERN int PCComputeExplicitOperator(PC,Mat*);
+
 /* ------------- options specific to particular preconditioners --------- */
 
 EXTERN int PCSORSetSymmetric(PC,MatSORType);
@@ -135,6 +137,7 @@ EXTERN int PCILUSetReuseOrdering(PC,PetscTruth);
 EXTERN int PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,int);
 EXTERN int PCILUSetReuseFill(PC,PetscTruth);
 EXTERN int PCILUSetAllowDiagonalFill(PC);
+EXTERN int PCILUSetDamping(PC,double);
 
 EXTERN int PCASMSetLocalSubdomains(PC,int,IS *);
 EXTERN int PCASMSetTotalSubdomains(PC,int,IS *);
