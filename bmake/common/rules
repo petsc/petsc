@@ -43,42 +43,31 @@ chkopts_basic:
 chkopts: chkopts_basic
 	@for LIBNAME in ${SHLIBS}; do \
 	if test -z "${LIBTOOL}"; then \
-	  if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.a ]; then \
-	    if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-	      flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.a -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	      if [ "$$flag" != "" ]; then \
-	        echo "Shared libs in ${INSTALL_LIB_DIR} are out of date, attempting to rebuild."; \
-	        if [ -w ${INSTALL_LIB_DIR} ]; then \
-	          ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} shared; \
-	        else \
-	          echo "*********************** ERROR ************************"; \
-		  echo "Unable to rebuild shared libraries; you do not have write permission."; \
-		  user=`ls -l ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX}  | tr -s ' ' | cut -d ' ' -f 3`; \
-		  echo "Libraries were built by user $$user; please contact him/her to have them rebuilt."; \
-	          echo "******************************************************"; \
-		  false; \
-	        fi; \
-	      fi; \
-	    fi; \
-	  fi; \
+	  library=${INSTALL_LIB_DIR}/$$LIBNAME.a; \
 	else \
-	  if [ -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.a ]; then \
-	    if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-	      flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.a -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	      if [ "$$flag" != "" ]; then \
-	        echo "Shared libs in ${INSTALL_LIB_DIR} are out of date, attempting to rebuild."; \
-	        if [ -w ${INSTALL_LIB_DIR} ]; then \
-	          ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} shared; \
-	        else \
-	          echo "*********************** ERROR ************************"; \
-		  echo "Unable to rebuild shared libraries; you do not have write permission."; \
-		  user=`ls -l ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX}  | tr -s ' ' | cut -d ' ' -f 3`; \
-		  echo "Libraries were built by user $$user; please contact him/her to have them rebuilt."; \
-	          echo "******************************************************"; \
-		  false; \
-	        fi; \
-	      fi; \
-	    fi; \
+	  library=${INSTALL_LIB_DIR}/lt_$$LIBNAME.a; \
+	fi; \
+	sharedlibrary=${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX}; \
+	flag=""; \
+	echo $$library; \
+	if [ -f $$library ]; then \
+	  if [ -f $$sharedlibrary ]; then \
+	    flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.a -newer $$sharedlibrary -print`; \
+	  else \
+	    flag="rebuild"; \
+	  fi; \
+	fi; \
+	if [ "$$flag" != "" ]; then \
+	  echo "Shared libs in ${INSTALL_LIB_DIR} are out of date, attempting to rebuild."; \
+	  if [ -w ${INSTALL_LIB_DIR} ]; then \
+	    ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} shared; \
+	  else \
+	    echo "*********************** ERROR ************************"; \
+	    echo "Unable to rebuild shared libraries; you do not have write permission."; \
+	    user=`ls -l ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX}  | tr -s ' ' | cut -d ' ' -f 3`; \
+	    echo "Libraries were built by user $$user; please contact him/her to have them rebuilt."; \
+	    echo "******************************************************"; \
+	    false; \
 	  fi; \
 	fi; \
 	done
