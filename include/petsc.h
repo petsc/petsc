@@ -491,6 +491,8 @@ typedef int  (*FCNINTVOID)(void); /* used in casts to make sure they are not ext
     int PetscObjectComposeFunctionDynamic(PetscObject obj,const char name[],const char fname[],void *ptr)
 
    Notes:
+   To remove a registered routine, pass in a PETSC_NULL rname and fnc().
+
    PetscObjectComposeFunctionDynamic() can be used with any PETSc object (such as
    Mat, Vec, KSP, SNES, etc.) or any user-provided object. 
 

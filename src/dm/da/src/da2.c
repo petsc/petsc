@@ -214,7 +214,9 @@ int DAPublish_Petsc(PetscObject obj)
 .  -da_grid_x <nx> - number of grid points in x direction, if M < 0
 .  -da_grid_y <ny> - number of grid points in y direction, if N < 0
 .  -da_processors_x <nx> - number of processors in x direction
--  -da_processors_y <ny> - number of processors in y direction
+.  -da_processors_y <ny> - number of processors in y direction
+.  -da_refine_x - refinement ratio in x direction
+-  -da_refine_y - refinement ratio in y direction
 
    Level: beginner
 
@@ -229,8 +231,8 @@ int DAPublish_Petsc(PetscObject obj)
 
 .keywords: distributed array, create, two-dimensional
 
-.seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(),
+.seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d(), DAGlobalToLocalBegin(), DAGetRefinementFactor(),
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
           DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
@@ -270,8 +272,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     }
     ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DACreate2d",m,&m,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DACreate2d",n,&n,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DACreate2d",refine_x,&refine_x,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DACreate2d",refine_y,&refine_y,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",refine_x,&refine_x,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",refine_y,&refine_y,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   M = tM; N = tN;
 
@@ -893,7 +895,70 @@ int DARefine(DA da,MPI_Comm comm,DA *daref)
     ierr = PetscMalloc((da->ofill[da->w]+da->w+1)*sizeof(int),&da2->ofill);CHKERRQ(ierr);
     ierr = PetscMemcpy(da2->ofill,da->ofill,(da->ofill[da->w]+da->w+1)*sizeof(int));CHKERRQ(ierr);
   }
+  /* copy the refine information */
+  da2->refine_x = da->refine_x;
+  da2->refine_y = da->refine_y;
+  da2->refine_z = da->refine_z;
   *daref = da2;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     DASetRefinementFactor() - Set the ratios that the DA grid is refined
+
+    Collective on DA
+
+  Input Parameters:
++    da - the DA object
+.    refine_x - ratio of fine grid to coarse in x direction (2 by default)
+.    refine_y - ratio of fine grid to coarse in y direction (2 by default)
+-    refine_z - ratio of fine grid to coarse in z direction (2 by default)
+
+  Options Database:
++  -da_refine_x - refinement ratio in x direction
+.  -da_refine_y - refinement ratio in y direction
+-  -da_refine_y - refinement ratio in z direction
+
+  Level: intermediate
+
+    Notes: Pass PETSC_IGNORE to leave a value unchanged
+
+.seealso: DARefine(), DAGetRefinementFactor()
+@*/
+int DASetRefinementFactor(DA da, int refine_x, int refine_y,int refine_z)
+{
+  PetscFunctionBegin;
+  if (refine_x > 0) da->refine_x = refine_x;
+  if (refine_y > 0) da->refine_y = refine_y;
+  if (refine_z > 0) da->refine_z = refine_z;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     DAGetRefinementFactor() - Gets the ratios that the DA grid is refined
+
+    Not Collective
+
+  Input Parameter:
+.    da - the DA object
+
+  Output Parameters:
++    refine_x - ratio of fine grid to coarse in x direction (2 by default)
+.    refine_y - ratio of fine grid to coarse in y direction (2 by default)
+-    refine_z - ratio of fine grid to coarse in z direction (2 by default)
+
+  Level: intermediate
+
+    Notes: Pass PETSC_NULL for values you do not need
+
+.seealso: DARefine(), DASetRefinementFactor()
+@*/
+int DAGetRefinementFactor(DA da, int *refine_x, int *refine_y,int *refine_z)
+{
+  PetscFunctionBegin;
+  if (refine_x) *refine_x = da->refine_x;
+  if (refine_y) *refine_y = da->refine_y;
+  if (refine_z) *refine_z = da->refine_z;
   PetscFunctionReturn(0);
 }
 

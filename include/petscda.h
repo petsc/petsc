@@ -350,6 +350,8 @@ EXTERN int DASetGetMatrix(DA,int (*)(DA,const MatType,Mat *));
 EXTERN int DAGetInterpolation(DA,DA,Mat*,Vec*);
 EXTERN int DAGetInjection(DA,DA,VecScatter*);
 EXTERN int DASetBlockFills(DA,int*,int*);
+EXTERN int DASetRefinementFactor(DA,int,int,int);
+EXTERN int DAGetRefinementFactor(DA,int*,int*,int*);
 
 EXTERN int DAGetAdicArray(DA,PetscTruth,void**,void**,int*);
 EXTERN int DARestoreAdicArray(DA,PetscTruth,void**,void**,int*);
@@ -450,7 +452,7 @@ struct _p_DMMG {
   PetscTruth galerkin;                  /* for A_c = R*A*R^T */
 
   /* KSP only */
-  KSP       ksp;             
+  KSP        ksp;             
   int        (*rhs)(DMMG,Vec);
   PetscTruth matricesset;               /* User had called DMMGSetKSP() and the matrices have been computed */
 
@@ -534,7 +536,7 @@ M*/
 #define DMMGGetComm(ctx)           (ctx)[(ctx)[0]->nlevels-1]->comm
 #define DMMGGetB(ctx)              (ctx)[(ctx)[0]->nlevels-1]->B
 #define DMMGGetFine(ctx)           (ctx)[(ctx)[0]->nlevels-1]
-#define DMMGGetKSP(ctx)           (ctx)[(ctx)[0]->nlevels-1]->ksp
+#define DMMGGetKSP(ctx)            (ctx)[(ctx)[0]->nlevels-1]->ksp
 #define DMMGGetSNES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->snes
 #define DMMGGetDA(ctx)             (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
 #define DMMGGetVecPack(ctx)        (VecPack)((ctx)[(ctx)[0]->nlevels-1]->dm)

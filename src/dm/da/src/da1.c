@@ -109,7 +109,8 @@ EXTERN int DAPublish_Petsc(PetscObject);
 
    Options Database Key:
 +  -da_view - Calls DAView() at the conclusion of DACreate1d()
--  -da_grid_x <nx> - number of grid points in x direction; can set if M < 0
+.  -da_grid_x <nx> - number of grid points in x direction; can set if M < 0
+-  -da_refine_x - refinement factor 
 
    Level: beginner
 
@@ -121,8 +122,8 @@ EXTERN int DAPublish_Petsc(PetscObject);
 
 .keywords: distributed array, create, one-dimensional
 
-.seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(),
+.seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(), DASetRefinementFactor(),
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetRefinementFactor(),
           DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
@@ -151,7 +152,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
       tM   = -M; 
       ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DACreate1d",tM,&tM,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DACreate1d",refine_x,&refine_x,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",refine_x,&refine_x,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   M = tM;
 
