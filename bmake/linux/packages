@@ -11,6 +11,9 @@
 # for information on retrieving them.
 #
 #BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/linux -lflapack -lfblas
+# For static linking use:
+#BLASLAPACK_LIB = -Wl,-Bstatic -L/home/petsc/software/mkl-52/lib/32 -lmkl_lapack -lmkl_def -lguide -lpthread
+# For dynamic linking use:
 BLASLAPACK_LIB = ${CLINKER_SLFLAG}/home/petsc/software/mkl-52/lib/32 -L/home/petsc/software/mkl-52/lib/32 -lmkl_lapack -lmkl_def -lguide
 #
 # Location of MPI (Message Passing Interface) software
