@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.86 1999/01/27 19:50:01 bsmith Exp balay $ */
+/* $Id: pc.h,v 1.87 1999/02/08 16:58:36 balay Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -127,7 +127,7 @@ extern int PCILUSetUseDropTolerance(PC,double,int);
 extern int PCILUSetReuseFill(PC,PetscTruth);
 extern int PCILUSetAllowDiagonalFill(PC);
 
-extern int PCEisenstatUseDiagonalScaling(PC);
+extern int PCEisenstatNoDiagonalScaling(PC);
 
 extern int PCASMSetLocalSubdomains(PC, int, IS *);
 extern int PCASMSetTotalSubdomains(PC, int, IS *);

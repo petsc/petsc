@@ -59,6 +59,10 @@ add to it).
 
   Removed support for block Gauss-Seidel from the distribution -pc_type bgs    
 
+  Eisenstat now uses diagonal scaling preconditioning by default and the options
+  PCEisenstatUseDiagonalScaling() and -pc_eisenstat_diagonal_scaling have been
+  replaced with PCEisenstatNoDiagonalScaling() and -pc_eisenstat_no_diagonal_scaling
+
   AO
 
     
