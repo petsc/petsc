@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.55 1996/07/08 22:19:57 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.56 1996/07/09 16:57:09 balay Exp balay $";
 #endif
 
 /*
@@ -201,10 +201,10 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
               real(a->a[bs2*k + l*bs + j]),imag(a->a[bs2*k + l*bs + j]));
           }
           else {
-            fprintf(fd," %d %g",bs*a->j[k]+l,real(a->a[bs2*k + l*bs + j]));
+            fprintf(fd," %d %g ",bs*a->j[k]+l,real(a->a[bs2*k + l*bs + j]));
           }
 #else
-            fprintf(fd," %d %g",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);
+            fprintf(fd," %d %g ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);
 #endif
           }
         }
