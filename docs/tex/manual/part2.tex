@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.270 1998/04/28 04:43:09 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.271 1998/04/29 15:10:38 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3975,29 +3975,29 @@ or use the command line option {\tt -ts\_type pvode}. \findex{TS_PVODE}
 PVODE comes with to main integrator families, Adams and BDF (backward 
 differentiation formula). One can select these with 
 \begin{verbatim}
-  ierr = TSPvodeSetType(TS ts,TSPvodeType [PVODE_ADAMS,PVODE_BDF]);
+  ierr = TSPVodeSetType(TS ts,TSPVodeType [PVODE_ADAMS,PVODE_BDF]);
 \end{verbatim}
 or the command line option {\tt -ts\_pvode\_type <adams,bdf>}. BDF is
 the default. \findex{-ts_pvode_type} \findex{TSPVodeType}
-\findex{TSPvodeSetType()} \sindex{Adams} \sindex{BDF}
+\findex{TSPVodeSetType()} \sindex{Adams} \sindex{BDF}
 
 PVODE does not use the SNES component of PETSc for its nonlinear
 solvers, so one cannot change the nonlinear solver options via
 SNES. Rather, PVODE uses the preconditioners within the PC component
 of PETSc, which can be accessed via
 \begin{verbatim}
-  ierr = TSPvodeGetPC(TS ts,PC *pc);
+  ierr = TSPVodeGetPC(TS ts,PC *pc);
 \end{verbatim}
 The user can then directly set preconditioner options; 
 alternatively, the usual runtime options can be employed
-via {\tt -pc\_xxx}. \findex{TSPvodeGetPC()}
+via {\tt -pc\_xxx}. \findex{TSPVodeGetPC()}
 
 Finally, one can set the PVODE tolerances via
 \begin{verbatim}
-  ierr = TSPvodeSetTolerance(TS ts,double abs,double rel);
+  ierr = TSPVodeSetTolerance(TS ts,double abs,double rel);
 \end{verbatim}
 where {\tt abs} denotes the absolute tolerance and {\tt rel}
-the relative tolerance. \findex{TSPvodeSetTolerance()}
+the relative tolerance. \findex{TSPVodeSetTolerance()}
 
 Other PETSc-PVode options include
 \begin{verbatim}
@@ -4586,7 +4586,7 @@ user's main program is written in Fortran; in this case, just calling
 
 In several PETSc C functions, one has the option of passing a 0 (null)
 argument (for example, the fifth argument of {\tt MatCreateSeqAIJ()}).
-From Fortran, users {\em must} pass {\tt PETSC\_NULL_XXX} to indicate a
+From Fortran, users {\em must} pass {\tt PETSC\_NULL\_XXX} to indicate a
 null argument (where XXX is {\tt INTEGER}, {\tt DOUBLE}, {\tt CHARACTER},
 or {\tt SCALAR} depending on the type of argument required); 
 \findex{PETSC_NULL_INTEGER} passing \findex{PETSC_NULL_SCALAR} 0 from 
