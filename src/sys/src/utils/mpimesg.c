@@ -1,4 +1,4 @@
-/*$Id: mpimesg.c,v 1.3 2001/02/22 22:40:06 balay Exp balay $*/
+/*$Id: mpimesg.c,v 1.4 2001/02/23 02:37:04 balay Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
@@ -11,13 +11,13 @@
   Input Parameters:
 + comm     - Communicator
 . nsends   - no of messages that are to be sent. Optionally PETSC_DETERMINE
-- iflags   - an array of integers of length sizeof(comm). A '1' in ilenghts[i] represent a 
+. iflags   - an array of integers of length sizeof(comm). A '1' in ilenghts[i] represent a 
              message from current node to ith node. Optionally PETSC_NULL
-. ilengths - Non zero ilenghts[i] represent a message to i of length ilenghts[i].
+- ilengths - Non zero ilenghts[i] represent a message to i of length ilenghts[i].
              Optionally PETSC_NULL.
 
   Output Parameters:
-+ nrecvs    - number of messages received
+. nrecvs    - number of messages received
 
   Level: developer
 
