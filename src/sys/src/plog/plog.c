@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.157 1997/06/05 12:58:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.158 1997/07/02 22:28:04 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -722,7 +722,6 @@ int PLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject 
   events[nevents].flops   = _TotalFlops;
   PetscTrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
   events[nevents++].event= ACTIONBEGIN;
-  if (t != 1) return 0;
   EventsType[EventsStage][event][COUNT]++;
   EventsType[EventsStage][event][TIME]        -= ltime;
   EventsType[EventsStage][event][FLOPS]       -= _TotalFlops;
@@ -759,7 +758,6 @@ int PLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject 
   events[nevents].flops   = _TotalFlops;
   PetscTrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
   events[nevents++].event= ACTIONEND;
-  if (t != 1) return 0;
   EventsType[EventsStage][event][TIME]        += ltime;
   EventsType[EventsStage][event][FLOPS]       += _TotalFlops;
   EventsType[EventsStage][event][MESSAGES]    += irecv_ct + isend_ct + recv_ct + send_ct;
@@ -774,7 +772,6 @@ int PLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject 
 #define __FUNC__ "PLogDefaultPLB" /* ADIC Ignore */
 int PLogDefaultPLB(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
-  if (t != 1) return 0;
   EventsType[EventsStage][event][COUNT]++;
   PetscTimeSubtract(EventsType[EventsStage][event][TIME]);
   EventsType[EventsStage][event][FLOPS]       -= _TotalFlops;
@@ -791,7 +788,6 @@ int PLogDefaultPLB(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
 #define __FUNC__ "PLogDefaultPLE" /* ADIC Ignore */
 int PLogDefaultPLE(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
-  if (t != 1) return 0;
   PetscTimeAdd(EventsType[EventsStage][event][TIME]);
   EventsType[EventsStage][event][FLOPS]       += _TotalFlops;
   EventsType[EventsStage][event][MESSAGES]    += irecv_ct + isend_ct + recv_ct + send_ct;
