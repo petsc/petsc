@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.15 1998/04/16 02:50:55 curfman Exp curfman $"
+!    "$Id: ex1f.F,v 1.16 1998/04/16 04:15:22 curfman Exp balay $"
 !
 !   Program usage:  mpirun ex1f [-help] [all PETSc options] 
 !
@@ -108,9 +108,9 @@
 
       if (rank .eq. 0) then
 #if defined(USE_PETSC_COMPLEX)
-         write(6,100) int(real(dot))
-         write(6,110) int(real(dots(1))),int(real(dots(2))),            &
-     &                int(real(dots(3)))
+         write(6,100) int(PetscReal(dot))
+         write(6,110) int(PetscReal(dots(1))),int(PetscReal(dots(2))),             &
+     &                int(PetscReal(dots(3)))
 #else
          write(6,100) int(dot)
          write(6,110) int(dots(1)),int(dots(2)),int(dots(3))
