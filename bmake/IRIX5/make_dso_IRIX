@@ -6,7 +6,7 @@
 echo  making dynamic libraries in $argv[1]
 cd $argv[1]
 foreach LIBNAME (mpiuni petsccontrib petscdraw petscksp petscmat \
-  petscsles petscsnes petscsys petscts petscvec petscfortran)
+  petscsles petscsnes petscsys petscts petscvec)
   if ( -e lib$LIBNAME.a) then 
      if ( -e lib$LIBNAME.so ) then
         find . -type f -name "lib$LIBNAME.a" -newer "lib$LIBNAME.so" -exec \
