@@ -22,7 +22,7 @@ class Configure(config.base.Configure):
                  'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
                  'uname','_snprintf']
-    libraries = [('dl', 'dlopen')]
+    libraries = [('dl', 'dlopen'),(['socket','nsl'],'socket')]
     self.compilers   = self.framework.require('config.compilers', self)
     self.types       = self.framework.require('config.types',     self)
     self.headers     = self.framework.require('config.headers',   self)
@@ -465,7 +465,12 @@ libf: ${OBJSF}
     if not self.functions.haveFunction('getpwuid'):
       self.addDefine('MISSING_GETPWUID', 1)
     if not self.functions.haveFunction('socket'):
-      self.addDefine('MISSING_SOCKETS', 1)
+      # solaris requires these two libraries for socket()
+      if self.libraries.haveLib('socket') and self.libraries.haveLib('nsl'):
+        self.addDefine('HAVE_SOCKET', 1)
+        self.framework.argDB['LIBS'] += ' -lsocket -lnsl'
+      else:
+        self.addDefine('MISSING_SOCKETS', 1)
     return
 
   def configureMissingSignals(self):
