@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.1 1998/04/15 20:22:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.3 1998/04/20 19:30:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -14,6 +14,22 @@ T*/
 /*
        This is a very basic, even crude example of managing an unstructured
     grid in parallel.
+
+    This is for a Galerkin style finite element method. 
+
+    After the calls below each processor will have 
+      1) a list of elements it "owns"; for each element it will have the global 
+         (and local) numbering of the three vertices it has
+      2) a list of vertices it "owns" plus any additional ghost vertices that 
+         are contained by a local element but not owned locally. For each owned 
+         (and ghost vertex) it will have the x and y coordinates
+
+    It will not have 
+      1) list of ghost elements (since they are not needed for traditional 
+         Galerkin style finite element methods). For various finite volume methods
+         you may need the ghost element lists, these may be generated using the 
+         element neighbor information given in the file database.
+
 */
 
 /* 
@@ -44,7 +60,7 @@ typedef struct {
 
      ia,ja - adjacency graph of elements
     
-  Variables on processor 0:
+  Variables on processor 0 during data reading from file:
      mmlocal_vert[i] - number of vertices on each processor
      tmpvert - x,y coordinates of vertices on any processor (as read in)
 
@@ -56,6 +72,7 @@ typedef struct {
 
 extern int ReadData(GridData *);
 extern int PartitionData(GridData *);
+extern int MoveData(GridData *);
 
 int main(int argc,char **args)
 {
@@ -66,14 +83,17 @@ int main(int argc,char **args)
 
   ierr = ReadData(&gdata); CHKERRA(ierr);
   ierr = PartitionData(&gdata); CHKERRA(ierr);
-
+  ierr = MoveData(&gdata); CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
 }
 
 
-
+/*
+     Reads in the grid data from a file; each processor is naively 
+  assigned a continuous chunk of vertex and element data.
+*/
 int ReadData(GridData *gdata)
 {
   int          rank,size,n_vert,*mmlocal_vert,mlocal_vert,i,*ia,*ja,cnt,j;
@@ -277,7 +297,11 @@ int ReadData(GridData *gdata)
 }
 
 
-
+/*
+         Given the grid data spread across the processors, determines a
+   new partitioning of the cells to reduce the number of cut edges between
+   cells.
+*/
 int PartitionData(GridData *gdata)
 {
   Mat          Adj;                /* adjacency matrix */
@@ -295,33 +319,46 @@ int PartitionData(GridData *gdata)
   /*
       Create the adjacency graph
   */
-  ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,mlocal_ele,n_ele,ia,ja,&Adj);CHKERRA(ierr);
+  ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,mlocal_ele,n_ele,ia,ja,&Adj);CHKERRQ(ierr);
 
   /*
       Create the partioning object
   */
-  ierr = PartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRA(ierr);
-  ierr = PartitioningSetAdjacency(part,Adj); CHKERRA(ierr);
-  ierr = PartitioningSetFromOptions(part);CHKERRA(ierr);
-  ierr = PartitioningApply(part,&isnewproc);CHKERRA(ierr);
-  ierr = PartitioningDestroy(part); CHKERRA(ierr);
+  ierr = PartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRQ(ierr);
+  ierr = PartitioningSetAdjacency(part,Adj); CHKERRQ(ierr);
+  ierr = PartitioningSetFromOptions(part);CHKERRQ(ierr);
+  ierr = PartitioningApply(part,&isnewproc);CHKERRQ(ierr);
+  ierr = PartitioningDestroy(part); CHKERRQ(ierr);
 
   /*
        isnewproc - indicates for each local element the new processor it is assigned to
   */
   PetscPrintf(PETSC_COMM_WORLD,"New processor assignment for each element");
-  ierr = ISView(isnewproc,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = ISView(isnewproc,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
       Free the adjacency graph data structures
   */
-  ierr = MatDestroy(Adj); CHKERRA(ierr);
+  ierr = MatDestroy(Adj); CHKERRQ(ierr);
 
 
   return 0;
 }
 
+/*
+      Moves the grid data to be on the correct processor for the new
+   partitioning.
+*/
+int MoveData(GridData *gdata)
+{
 
+  /* 
+      We first must move the element vertex information to the processor
+    that needs it.
+  */
+
+  return 0;
+}
 
 
 
