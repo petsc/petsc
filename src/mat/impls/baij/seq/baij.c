@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.198 2000/01/26 22:08:15 balay Exp bsmith $*/
+/*$Id: baij.c,v 1.199 2000/02/02 20:09:09 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -291,12 +291,19 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
   Mat         C;
   int         i,j,k,ierr,*aj=a->j,*ai=a->i,bs=a->bs,mbs=a->mbs,nbs=a->nbs,len,*col;
   int         *rows,*cols,bs2=a->bs2,refct;
-  MatScalar   *array = a->a;
+  Scalar      *array;
 
   PetscFunctionBegin;
   if (!B && mbs!=nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Square matrix only for in-place");
   col  = (int*)PetscMalloc((1+nbs)*sizeof(int));CHKPTRQ(col);
   ierr = PetscMemzero(col,(1+nbs)*sizeof(int));CHKERRQ(ierr);
+
+#if defined(PETSC_USE_MAT_SINGLE)
+  array = (Scalar *)PetscMalloc(a->bs2*a->nz*sizeof(Scalar));CHKPTRQ(array);
+  for (i=0; i<a->bs2*a->nz; i++) array[i] = (Scalar)a->a[i];
+#else
+  *array = a->a;
+#endif
 
   for (i=0; i<ai[mbs]; i++) col[aj[i]] += 1;
   ierr = MatCreateSeqBAIJ(A->comm,bs,a->n,a->m,PETSC_NULL,col,&C);CHKERRQ(ierr);
@@ -315,6 +322,9 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
     }
   }
   ierr = PetscFree(rows);CHKERRQ(ierr);
+#if defined(PETSC_USE_MAT_SINGLE)
+  ierr = PetscFree(array);
+#endif
   
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1840,7 +1850,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
         block     = mask[tmp] - 1;
         point     = jj[nzcountb] - bs*tmp;
         idx       = ishift + bs2*block + j + bs*point;
-        a->a[idx] = aa[nzcountb++];
+        a->a[idx] = (MatScalar)aa[nzcountb++];
       }
     }
     /* zero out the mask elements we set */
