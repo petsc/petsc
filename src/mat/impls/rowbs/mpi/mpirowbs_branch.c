@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.27 1995/05/25 05:07:17 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.28 1995/05/26 19:06:31 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -958,7 +958,9 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   bsmap->free_g2p	= 0;
 
   ierr = MatCreateMPIRowbs_local(mat,nz,nnz); PCHKERR(ierr);
-  PLogObjectParent(mat,mrow->A);
+  /* the next line is deadly. It scribbles where it is not 
+     suppose to, because mrow->A is not a PETSc object */
+  /* PLogObjectParent(mat,mrow->A);*/ 
   *newmat = mat;
   return 0;
 }
