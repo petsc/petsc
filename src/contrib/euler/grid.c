@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grid.c,v 1.13 1997/10/11 18:39:18 curfman Exp curfman $";
+static char vcid[] = "$Id: grid.c,v 1.14 1997/10/17 19:46:31 curfman Exp bsmith $";
 #endif
 
 /*
@@ -351,7 +351,7 @@ int UserSetGrid(Euler *app)
   app->zc = app->yc + llen;
 
   /* Allocate indices to define scattering */
-  MPI_Allreduce(&llenb,&llenb_max,1,MPI_DOUBLE,MPI_MAX,app->comm);
+  ierr   = MPI_Allreduce(&llenb,&llenb_max,1,MPI_DOUBLE,MPI_MAX,app->comm);CHKERRQ(ierr);
   isendp = (int *)PetscMalloc(llenb_max*sizeof(int)); CHKPTRQ(isendp);
 
   /* Create index sets for use in scatter context.  Note that we use the
