@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.56 1996/02/26 23:14:07 balay Exp bsmith $ */
+/* $Id: plog.h,v 1.57 1996/02/26 23:15:34 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in PETSc.
@@ -95,6 +95,8 @@
 #define SNES_HessianEval                        86
 
 #define TS_Step                                 90
+
+#define Petsc_Barrier                           100
 /* 
    Event numbers PLOG_USER_EVENT_LOW to PLOG_USER_EVENT_HIGH are reserved 
    for applications.  Make sure that src/sys/src/plog.c defines enough

@@ -153,9 +153,11 @@ etags:
 	etags -a -f TAGS bmake/t3d/t3d* bmake/paragon/paragon*
 	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c
 	etags -a -f TAGS src/*/examples/*.F src/fortran/custom/*.F
-	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex docs/tex/manual_tex.tex
-	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex docs/tex/part2.tex
-	etags -a -f TAGS docs/tex/intro.tex docs/makefile
+	etags -a -f TAGS docs/tex/manual/routin.tex docs/tex/manual/manual.tex
+	etags -a -f TAGS docs/tex/manual/manual_tex.tex
+	etags -a -f TAGS docs/tex/manual/intro.tex docs/tex/manual/part1.tex
+	etags -a -f TAGS docs/tex/manual/part2.tex
+	etags -a -f TAGS docs/tex/manual/intro.tex docs/makefile
 	chmod g+w TAGS
 
 # Builds the etags file that excludes the examples directories
@@ -184,8 +186,11 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES bmake/t3d/t3d* bmake/paragon/paragon*
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/auto/*.c
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/*.c src/fortran/custom/*.F
-	etags -a -f TAGS_NO_EXAMPLES docs/tex/routin.tex  docs/tex/manual.tex
-	etags -a -f TAGS_NO_EXAMPLES docs/tex/intro.tex docs/tex/part1.tex 
+	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/routin.tex 
+	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/manual.tex
+	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/intro.tex
+	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/part1.tex 
+	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/part2.tex 
 	etags -a -f TAGS_NO_EXAMPLES docs/makefile
 	chmod g+w TAGS_NO_EXAMPLES
 
