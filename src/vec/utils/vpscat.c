@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.55 1996/07/11 22:37:32 bsmith Exp balay $";
+static char vcid[] = "$Id: vpscat.c,v 1.56 1996/07/11 23:04:48 balay Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -104,7 +104,6 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
   int            rank,nrecvs, nsends,iend,jmax;
 
   MPI_Comm_rank(comm,&rank);
-  /* fprintf(stdout,"[%d]Begun scatter \n",rank);  */
 
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI *) ctx->fromdata;
@@ -134,64 +133,31 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
                  MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
 
-    /* do gather  for all the sends + unroll the loop */
-    val  = svalues + sstarts[0];
-    iend = sstarts[nsends]-sstarts[0];
-    
-      /* unroll the above loop*/
-    {
-      Scalar *vv;
-      int j_rem;
-      vv = val;
-      j = iend;
-      switch ( j_rem = iend& 0x7) {
-      case 7: vv[6] = xv[indices[6]];
-      case 6: vv[5] = xv[indices[5]];
-      case 5: vv[4] = xv[indices[4]];
-      case 4: vv[3] = xv[indices[3]];
-      case 3: vv[2] = xv[indices[2]];
-      case 2: vv[1] = xv[indices[1]];
-      case 1: vv[0] = xv[indices[0]];
-        j -= j_rem; vv += j_rem; indices += j_rem ;
-      case 0:break;
-      }
-      while (j>0) {
-        vv[0] = xv[indices[0]];
-        vv[1] = xv[indices[1]];
-        vv[2] = xv[indices[2]];
-        vv[3] = xv[indices[3]];
-        vv[4] = xv[indices[4]];
-        vv[5] = xv[indices[5]];
-        vv[6] = xv[indices[6]];
-        vv[7] = xv[indices[7]];
-        j -=8; vv +=8; indices +=8;
-      }
-    }
-    
     /* do sends:  */
     for ( i=0; i<nsends; i++ ) {
       val  = svalues + sstarts[i];
       iend = sstarts[i+1]-sstarts[i];
 
-      /* for ( j=0; j<iend; j++ ) {
+      for ( j=0; j<iend; j++ ) {
         val[j] = xv[*indices++];
-      } */
+      } 
 
       MPI_Isend(val,iend, MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
     /* take care of local scatters */
     if (gen_to->local.n && addv == INSERT_VALUES) {
-      if (0 && yv == xv && !gen_to->local_is_matching) {
+      if (yv == xv && !gen_to->local_is_matching) {
         int ierr;
         ierr = VecScatterDetermineLocalIsMatching_Private(gen_to,gen_from);
+        CHKERRQ(ierr);
       }
-      if (yv != xv || 1 /* gen_to->local_is_matching == -1 */) {
+      if (yv != xv || gen_to->local_is_matching == -1) {
         int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
         int n = gen_to->local.n;
         for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[tslots[i]];}
       } 
       /* 
-        In the other case, it is copying the values into there old 
+        In the other case, it is copying the values into their old 
         locations, thus we can skip it.
       */
     }
@@ -243,7 +209,6 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
                  MPIU_SCALAR,sprocs[i],tag,comm,swaits+i-gen_to->nbelow);
     }
   }
-  /* fprintf(stdout,"[%d]Completed scatter\n",rank);  */
   return 0;
 }
 
@@ -255,7 +220,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
   int            nrecvs, nsends,i,*indices,count,imdex,n,*rstarts,*lindices;
   int            rank,*indices_i;
   MPI_Request    *rwaits, *swaits;
-  MPI_Status     rstatus,*sstatus;
+  MPI_Status     rstatus;
 
   MPI_Comm_rank(ctx->comm,&rank);
   if (mode & SCATTER_REVERSE ){
@@ -287,82 +252,19 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
 
       lindices = indices + rstarts[imdex];
       if (addv == INSERT_VALUES) {
-        /* for ( i=0; i<n; i++ ) {
+        for ( i=0; i<n; i++ ) {
           yv[lindices[i]] = *val++;
-        } */
-        /* unroll the above loop*/
-        {
-          Scalar *vv;
-          int i_rem, *idx;
-          idx = lindices;
-          vv = val;
-          i = n;
-          switch ( i_rem = i& 0x7) {
-          case 7: yv[idx[6]] = vv[6];
-          case 6: yv[idx[5]] = vv[5];
-          case 5: yv[idx[4]] = vv[4];
-          case 4: yv[idx[3]] = vv[3];
-          case 3: yv[idx[2]] = vv[2];
-          case 2: yv[idx[1]] = vv[1];
-          case 1: yv[idx[0]] = vv[0];
-            i -= i_rem; vv += i_rem; idx += i_rem ;
-          case 0:break;
-          }
-          while (i>0) {
-            yv[idx[0]] = vv[0];
-            yv[idx[1]] = vv[1];
-            yv[idx[2]] = vv[2];
-            yv[idx[3]] = vv[3];
-            yv[idx[4]] = vv[4];
-            yv[idx[5]] = vv[5];
-            yv[idx[6]] = vv[6];
-            yv[idx[7]] = vv[7];
-            i -=8; vv +=8; idx +=8;
-          }
         }
-      }
-      else {
-        /* for ( i=0; i<n; i++ ) {
+      } else {
+        for ( i=0; i<n; i++ ) {
            yv[lindices[i]] += *val++;
-           } */
-        /* unroll the above loop*/
-        {
-          Scalar *vv;
-          int i_rem, *idx;
-          idx = lindices;
-          vv = val;
-          i = n;
-          switch ( i_rem = i& 0x7) {
-          case 7: yv[idx[6]] += vv[6];
-          case 6: yv[idx[5]] += vv[5];
-          case 5: yv[idx[4]] += vv[4];
-          case 4: yv[idx[3]] += vv[3];
-          case 3: yv[idx[2]] += vv[2];
-          case 2: yv[idx[1]] += vv[1];
-          case 1: yv[idx[0]] += vv[0];
-            i -= i_rem; vv += i_rem; idx += i_rem ;
-          case 0:break;
-          }
-          while (i>0) {
-            yv[idx[0]] += vv[0];
-            yv[idx[1]] += vv[1];
-            yv[idx[2]] += vv[2];
-            yv[idx[3]] += vv[3];
-            yv[idx[4]] += vv[4];
-            yv[idx[5]] += vv[5];
-            yv[idx[6]] += vv[6];
-            yv[idx[7]] += vv[7];
-            i -=8; vv +=8; idx +=8;
-          }
         }
       }
-    count--;
+      count--;
     }
     /* wait on sends */
     if (nsends) {
-      sstatus = (MPI_Status *)PetscMalloc(nsends*sizeof(MPI_Status));CHKPTRQ(sstatus);
-      MPI_Waitall(nsends,swaits,sstatus);
-      PetscFree(sstatus);
+      MPI_Waitall(nsends,swaits,gen_to->sstatus);
     }
   }
   else { 
@@ -390,10 +292,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
     }
     /* wait on sends */
     if (nsends - gen_to->nbelow > 0) {
-      sstatus=(MPI_Status *) PetscMalloc((nsends-gen_to->nbelow)*sizeof(MPI_Status));
-      CHKPTRQ(sstatus);
-      MPI_Waitall(nsends-gen_to->nbelow,swaits,sstatus);
-      PetscFree(sstatus);
+      MPI_Waitall(nsends-gen_to->nbelow,swaits,gen_to->sstatus);
     }
   }
   return 0;
@@ -1146,3 +1045,5 @@ int PtoPScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,VecSca
 
   return 0;
 }
+
+
