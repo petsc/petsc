@@ -15,20 +15,11 @@ try:
 except ImportError: pass
 import time
 
-
-#  These are the remote dictionaries
-class Args (UserDict.UserDict):
-  def __init__(self,name,readpw,addpw,writepw):
-    UserDict.UserDict.__init__(self)
-    self.name    = name
-    self.readpw  = readpw
-    self.addpw   = addpw
-    self.writepw = writepw
-
-#  This handles requests from the client to store or access data in
-# the remote dictionaries
 try:
+  import socket
   import SocketServer
+  #  This handles requests from the client to store or access data in
+  # the remote dictionaries
   class ProcessHandler(SocketServer.StreamRequestHandler):
     def handle(self):
       object  = cPickle.load(self.rfile)
@@ -42,7 +33,7 @@ try:
       writepw = object[6]
 
       dargs = self.server.dargs
-      dargs.logfile.write("Received "+request+" in "+str(name)+" "+" from "+self.client_address[0]+" "+time.asctime(time.localtime())+'\n')
+      dargs.logfile.write("Received "+request+" in "+str(name)+"("+key+") "+" from "+self.client_address[0]+" "+time.asctime(time.localtime())+'\n')
       dargs.logfile.flush()
       if request == "__setitem__":
         if not dargs.data.has_key(name):
@@ -134,6 +125,15 @@ def TimerSave(dargs):
   dargs.timer = 0
   dargs.save()
 
+#  These are the remote dictionaries
+class Args (UserDict.UserDict):
+  def __init__(self,name,readpw,addpw,writepw):
+    UserDict.UserDict.__init__(self)
+    self.name    = name
+    self.readpw  = readpw
+    self.addpw   = addpw
+    self.writepw = writepw
+
 #  This is the remote dictionary server
 class DArgs:
   def __init__(self, dictpw = "open"):
@@ -173,8 +173,6 @@ class DArgs:
     self.logfile.close()
 
   def loop(self):
-    import SocketServer
-
     # wish there was a better way to get a usable socket
     flag = "nosocket"
     p    = 1
@@ -311,8 +309,6 @@ class RArgs (UserDict.UserDict):
 
 
   def send(self,object):
-    import socket
-
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     try:
       s.connect(self.addr)

@@ -15,10 +15,12 @@ import re
 class Project:
   def __init__(self, name, url, root = None):
     if root is None: root = os.path.abspath(os.getcwd())
-    # Needs to be immutable
-    self.name = name
+    # Read-only variables
+    self.name = name # Needs to be immutable since it is the hash key
     self.url  = url
     self.root = root
+    # Updated variables
+    self.pythonPath = []
     return
 
   def __str__(self):
@@ -53,6 +55,17 @@ class Project:
 
   def getRoot(self):
     return self.root
+
+  def appendPythonPath(self, dir):
+    import os
+
+    d = os.path.abspath(dir)
+    if os.path.exists(d) and not d in self.pythonPath:
+      self.pythonPath.append(d)
+    return self.pythonPath
+
+  def getPythonPath(self):
+    return self.pythonPath
 
 class BS (install.base.Base):
   targets     = {}
@@ -201,9 +214,21 @@ class BS (install.base.Base):
     return self.getCompileDefaults().getCompileTarget().execute()
 
   def t_install(self):
+    sidl = self.getSIDLDefaults().usingSIDL
+    lang = 'Python'
+    if lang in sidl.clientLanguages:
+      self.project.appendPythonPath(sidl.getClientRootDir(lang, root = self.project.getRoot()))
+    if lang in sidl.serverLanguages:
+      for package in sidl.getPackages():
+        self.project.appendPythonPath(sidl.getServerRootDir(lang, package))
+
     p = self.getInstalledProject(self.project.getUrl())
     if p is None:
       argDB['installedprojects'] = argDB['installedprojects']+[self.project]
+    else:
+      projects = argDB['installedprojects']
+      projects.remove(p)
+      argDB['installedprojects'] = projects+[self.project]
     return p
 
   def t_uninstall(self):

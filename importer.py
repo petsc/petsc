@@ -1,42 +1,29 @@
-import maker
+import nargs
 
 import ihooks
 
-class Hooks(ihooks.Hooks, maker.Maker):
+class Hooks(ihooks.Hooks):
   def __init__(self):
     ihooks.Hooks.__init__(self)
-    import bs
-    import nargs
-    import BSTemplates.sidlDefaults
-
-    self.argDB     = nargs.ArgDict('ArgDict')
-    self.usingSIDL = BSTemplates.sidlDefaults.UsingSIDL(bs.Project('', ''), [], argDB = self.argDB)
+    self.argDB = nargs.ArgDict('ArgDict')
+    # Handle recursive import from argDB
+    self.lookingForProjects = 0
+    self.projects           = []
     return
 
   def getProjects(self):
-    projects = []
-    if self.argDB.has_key('installedprojects'):
-      projects = map(lambda proj: self.usingSIDL.getClientRootDir('Python', root = proj.getRoot()), self.argDB['installedprojects'])
-    return projects
-
-  def getImplementations(self):
-    dirs = []
-##    for proj in self.argDB['installedprojects']:
-##      try:
-##        maker = self.getMakeModule(proj.getRoot()).PetscMake(argDB = self.argDB)
-##        maker.main([])
-##        # Must call this after main()
-##        sidl  = maker.getSIDLDefaults().usingSIDL
-##        if 'Python' in sidl.serverLanguages:
-##          for package in sidl.getPackages():
-##            dirs.append(sidl.getServerRootDir('Python', package))
-##      except ImportError: pass
-    return dirs
+    # The call to argDB can cause a recursive import from pickle, so we must protect it
+    if not self.lookingForProjects:
+      self.lookingForProjects = 1
+      if self.argDB.has_key('installedprojects'):
+        self.projects = reduce(lambda l, proj: l+proj.getPythonPath(), self.argDB['installedprojects'], [])
+      self.lookingForProjects = 0
+    return self.projects
 
   # sys interface replacement
   def default_path(self):
     import sys
-    return sys.path+self.getProjects()+self.getImplementations()
+    return sys.path+self.getProjects()
 
 class Loader(ihooks.FancyModuleLoader):
   def find_module(self, name, path = None):
