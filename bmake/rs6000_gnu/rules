@@ -1,0 +1,76 @@
+#
+#   If you do not have the XlC compiler then use the xlc compiler below
+# we default to xlC since it generates faster code.
+#
+PARCH    = rs6000
+CC       = gcc -DPARCH_rs6000 
+FC       = xlf 
+AR       = ar
+RM       = rm -f
+RANLIB   = ranlib
+OMAKE    = make
+SHELL    = /bin/sh
+# 
+#  Some systems may require instead
+# CLINKER = xlc $(COPTFLAGS) -bI:/usr/lpp/xlf/lib/lowsys.exp 
+# CLINKER = xlc $(COPTFLAGS)
+#  Next line is a hack for IBM SPx, you should remove it if 
+# you are running on plain IBM RS6000 workstations and replace 
+# with one of the above.
+#
+CLINKER  = gcc $(COPTFLAGS) 
+#
+# Fortran programs MUST be linked statically (no shared libraries) for them
+# to run on systems that haven't licensed a Fortran runtime or compiler.
+# This used to be the default, but I've removed it since most system have
+# licensed runtimes
+#
+# FLINKER = xlf 
+#  Next line is a hack for IBM SPx, you should remove it if 
+# you are running on plain IBM RS6000 workstations and replace 
+# with the above.
+#
+FLINKER = xlf $(FOPTFLAGS)
+
+SHELL   = /bin/sh
+SYS_LIB =
+
+CONF    = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STDLIB_H \
+          -DHAVE_STRING_H -DHAVE_MALLOC_H -D_POSIX_SOURCE \
+          -DHAVE_DRAND48  -DHAVE_GETDOMAINNAME  -D_XOPEN_SOURCE \
+          -DHAVE_UNISTD_H -DHAVE_SYS_TIME_H \
+          -DHAVE_UNAME
+
+# AIX apparently does not remotely resemble EITHER System V or BSD 4.x.
+# By defining _POSIX_SOURCE , there is some hope that it will pretend that
+# it is some form of Unix.
+
+include $(PETSC_DIR)/bmake/common
+
+libc:
+	 for i in $(OBJSC); do make libmember LIBMEMBER=$$i ; done
+
+libf:
+	for i in $(OBJSF); do make libmember LIBMEMBER=$$i ; done
+
+libmember:    $(LIBNAME)($(LIBMEMBER))
+
+# This F.f rule ensures that the old *.f files are removed.
+.F.f:
+	-$(RM) $*.f
+	-xlc $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
+
+.F.o:
+	-$(RM) $*.f
+	-xlc $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+	-$(RM) $*.f
+
+.F.a:
+	-$(RM) $*.f
+	-xlc $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+	-$(AR) cr $(LIBNAME) $*.o
+	-$(RM) $*.o	$*.f
+
+shared:
