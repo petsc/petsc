@@ -20,12 +20,12 @@ RANLIB   = true
 #OMAKE    = make --no-print-directory
 OMAKE    = /bin/make
 SHELL    = /bin/sh
-CLINKER  = cc $(BASEOPT)
+CLINKER  = cc $(COPTFLAGS)
 #
 #  One must use fort77 rather then f77 because f77 has a different 
 #  meaning for the -L option!
 #
-FLINKER  = fort77 $(BASEOPTF) 
+FLINKER  = fort77 $(FOPTFLAGS) 
 SYS_LIB  =  -lV3 -lU77
 
 CONF     = -DHAVE_STDLIB_H -DHAVE_PWD_H -DHAVE_MALLOC_H \
@@ -47,25 +47,25 @@ libf:
 libmember:    $(LIBNAME)($(LIBMEMBER))
 
 .c.a: 
-	$(CC) -c $(CFLAGS) $(BASEOPT) $*.c
+	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.c
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 .c.o: 
-	$(CC) -c $(CFLAGS) $(BASEOPT) $*.c
+	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.c
 .f.o: 
-	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 
 .f.a: 
-	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
 .SUFFIXES: $(SUFFIXES) .F
 
 .F.o: 
-	$(FC) -c $(PETSC_INCLUDE) $(FFLAGS) $(BASEOPTF) $*.F
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
 
 .F.a: 
-	$(FC) -c $(PETSC_INCLUDE) $(FFLAGS) $(BASEOPTF) $*.F
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
