@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 /*
  
   This is a MATLAB Mex program which waits at a particular 
