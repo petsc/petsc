@@ -36,6 +36,8 @@
 
     SAMG is a commercial product available from Klaus Stueben.
  
+   Level: developer
+
    Contributed by Domenico Lahaye (domenico.lahaye@cs.kuleuven.ac.be)   January 2001 
                                                                           
 M*/

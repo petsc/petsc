@@ -5,6 +5,7 @@
 #include "petscmatlab.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define petscpopsignalhandler_     PETSCPOPSIGNALHANDLER
 #define petscgetcputime_           PETSCGETCPUTIME
 #define petscfopen_                PETSCFOPEN
 #define petscfclose_               PETSCFCLOSE
@@ -74,6 +75,7 @@
 #define petscemacsclienterrorhandler_ PETSCEMACSCLIENTERRORHANDLER
 #define petscattachdebuggererrorhandler_   PETSCATTACHDEBUGGERERRORHANDLER
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define petscpopsignalhandler_        petscpopsignalhandler
 #define petscfopen_                   petscfopen
 #define petscfclose_                  petscfclose
 #define petscfprintf_                 petscfprintf
@@ -231,6 +233,11 @@ void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(int*,con
     f2    = handler;
     *ierr = PetscPushErrorHandler(ourerrorhandler,ctx);
   }
+}
+
+void PETSC_STDCALL petscpopsignalhandler_(int *ierr)
+{
+  *ierr = PetscPopSignalHandler();
 }
 
 void PETSC_STDCALL petscpoperrorhandler_(int *ierr)

@@ -1033,6 +1033,8 @@ static int SNESSetFromOptions_LS(SNES snes)
 
     Notes: This is the default nonlinear solver in SNES
 
+   Level: beginner
+
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESTR, SNESSetLineSearch(), 
            SNESSetLineSearchCheck(), SNESNoLineSearch(), SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
           SNESSetLineSearch(), SNESNoLineSearchNoNorms()

@@ -193,6 +193,8 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 
    Concepts: signal handler^setting
 
+.seealso: PetscPopSignalHandler()
+
 @*/
 int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
 {
@@ -324,9 +326,24 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
   PetscFunctionReturn(0);
 }
 
-/* NO ERROR CODES RETURNED BY THIS FUNCTION */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscPopSignalHandler"
+/*@C
+   PetscPopSignalHandler - Removes the most last signal handler that was pushed.
+       If no signal handlers are left on the stack it will remove the PETSc signal handler.
+       (That is PETSc will no longer catch signals).
+
+   Not Collective
+
+  Level: developer
+
+   Note: NO ERROR CODES RETURNED BY THIS FUNCTION
+
+   Concepts: signal handler^setting
+
+.seealso: PetscPushSignalHandler()
+
+@*/
 int PetscPopSignalHandler(void)
 {
   struct SH *tmp;
