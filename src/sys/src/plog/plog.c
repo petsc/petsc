@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.128 1996/09/17 14:54:33 balay Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.129 1996/09/23 15:04:46 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -926,7 +926,8 @@ extern char *PLogEventColor[];
     MPICH), the user can employ another command line option, -log_mpe,
     to create a logfile, "mpe.log", which can be visualized
     Upshot/Nupshot. The color argument is used by this utility
-    in forming the display of this event.
+    in forming the display of this event; the standard X-windows
+    color names should be used.
 
     Example of Usage:
 $     #include "plog.h"
