@@ -30,14 +30,13 @@ tar cf ~/petsc.tar petsc
 # mv petsc petsc.good
 # tar xf petsc.tar
 # mv petsc petsc.solid
-# do chmod g+wS petsc.solid
+# do chmod g+ws petsc.solid
 # do chmod -R g+w petsc.solid
 # mv petsc.good petsc
 # Run du on petsc.solid to make sure there is no garbage
 # Test manpages and manual in petsc.solid
-# Do builds in petsc.solid
-# Remember you must set PETSC_DIR in .cshrc to 
-# point to petsc.solid
+# Do builds in petsc.solid -- Remember that you must set
+# PETSC_DIR in .cshrc to  point to petsc.solid
 #
 # For local distribution, remember to make etags in petsc.solid
 
