@@ -221,7 +221,8 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   ierr = PetscFree(gen_to->sstatus);CHKERRQ(ierr);
   ierr = PetscFree(gen_to->values);CHKERRQ(ierr);
   ierr = PetscFree(gen_from->values);CHKERRQ(ierr);
-  ierr = PetscFree2(gen_to,gen_from);CHKERRQ(ierr);
+  ierr = PetscFree(gen_from);CHKERRQ(ierr);
+  ierr = PetscFree(gen_to);CHKERRQ(ierr);
   PetscHeaderDestroy(ctx);
   PetscFunctionReturn(0);
 }
@@ -626,8 +627,8 @@ PetscErrorCode VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMo
   VecScatter_MPI_General *gen_to,*gen_from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
-  PetscInt                    *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,len;
-  PetscErrorCode ierr;
+  PetscInt               *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,len;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -1874,7 +1875,8 @@ PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
   ierr = PetscFree(gen_to->values);CHKERRQ(ierr);
   ierr = PetscFree2(gen_to->rev_requests,gen_from->rev_requests);CHKERRQ(ierr);
   ierr = PetscFree(gen_from->values);CHKERRQ(ierr);
-  ierr = PetscFree2(gen_to,gen_from);CHKERRQ(ierr);
+  ierr = PetscFree(gen_to);CHKERRQ(ierr);
+  ierr = PetscFree(gen_from);CHKERRQ(ierr);
   PetscHeaderDestroy(ctx);
   PetscFunctionReturn(0);
 }
@@ -2260,6 +2262,9 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
     }
   }
 
+  /* reset starts because it is destroyed above */
+  starts[0]  = 0; 
+  for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[2*i-2];} 
   count = 0;
   for (i=0; i<size; i++) {
     if (nprocs[2*i+1]) {

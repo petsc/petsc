@@ -162,6 +162,7 @@ PetscErrorCode VecSetSizes(Vec v, PetscInt n, PetscInt N)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_COOKIE,1); 
   if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local size %D cannot be larger than global size %D",n,N);
+  if ((v->n >= 0 || v->N >= 0) && (v->n != n || v->N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset vector sizes to %D local %D global after previously setting them to %D local %D global",n,N,v->n,v->N);
   v->n = n;
   v->N = N;
   PetscFunctionReturn(0);

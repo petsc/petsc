@@ -48,6 +48,11 @@ Error handling
    Add troubleshooting entries and error messages with web address for common errors.
 
 PC/Mat
+
+  Fix all MatPartitioners to optionally turn on edge weights from the matrix values.
+  Currently the are ignored for all partitioners except parmetis, where they are 
+  incorrectly always used.
+
   Convert the Tufo-Fischer parallel direct solver to its own PC.
 
   Manual pages for partitioners

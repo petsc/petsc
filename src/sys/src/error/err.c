@@ -177,7 +177,7 @@ static const char *PetscErrorStrings[] = {
           "Invalid pointer",
   /*69 */ "Arguments must have same type",
           "",
-  /*71 */ "Detected zero pivot in LU factorization",
+  /*71 */ "Detected zero pivot in LU factorization\nYou may want to run with -pc_ilu_shift, -pc_lu_shift, -[sub or mglevels or mgcoarse]_pc_ilu_shift or -[sub or mglevels or mgcoarse]_pc_lu_shift\nsee http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html#ZeroPivot",
   /*72 */ "Floating point exception",
   /*73 */ "Object is in wrong state",
           "Corrupted Petsc object",

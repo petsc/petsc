@@ -182,6 +182,16 @@ are usually hidden in directories like /usr/lang/SC1.0.1 or
           </font></p>
         </li>
 
+        <li><a name="LUZero"></a><font color="#ff0000"><strong>Symptom: </strong></font><font face="Terminal">Detected zero pivot in LU factorization:
+           </font>
+          <p><font color="#ff0000"><strong>Problem: </strong>
+           A zero pivot in LU or ILU sparse factorization does not always mean that the matrix is singular. You can use -pc_ilu_shift, -pc_lu_shift, -sub_pc_ilu_shift, or -sub_pc_lu_shift -mglevels_pc_ilu_shift, -mglevels_pc_lu_shift -mgcoarse_pc_ilu_shift -mgcoarse_pc_lu_shift depending on if you use LU or ILU and where the solver is called from (-sub is for a block in the bjacobi or ASM preconditioner and -mglevels and -mgcoarse are for inside multigrid smoothers or coarse grid solver). See PCLUSetShift() and PCILUSetShift().
+          </font></p>
+          <p><font color="#ff0000"><strong>Cure: </strong>
+          </font></p>
+        </li>
+
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font><font
  face="Terminal">alder&gt;make         BOPT=g <br>
 make: Warning: Can't find `../../bmake/.g': <br>
