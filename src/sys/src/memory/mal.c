@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mal.c,v 1.30 1998/04/13 17:30:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.31 1998/04/15 20:58:33 bsmith Exp balay $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -80,12 +80,15 @@ int PetscFreeAlign(void *ptr)
     Set the default malloc and free to be the usual system versions unless using complex
 */
 #if defined(USE_PETSC_COMPLEX)
-void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*)=(void*(*)(unsigned int,int,char*,char*,char*))
-                       PetscMallocAlign;
-int  (*PetscTrFree)(void *,int,char*,char *,char*)        = (int (*)(void*,int,char*,char*,char*))PetscFreeAlign;
+void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*) = 
+     (void*(*)(unsigned int,int,char*,char*,char*)) PetscMallocAlign;
+int  (*PetscTrFree)(void *,int,char*,char *,char*)         = 
+     (int (*)(void*,int,char*,char*,char*)) PetscFreeAlign;
 #else
-void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*)=(void*(*)(unsigned int,int,char*,char*,char*))malloc;
-int  (*PetscTrFree)(void *,int,char*,char *,char*)        = (int (*)(void*,int,char*,char*,char*))free;
+void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*) = 
+     (void*(*)(unsigned int,int,char*,char*,char*))malloc;
+int  (*PetscTrFree)(void *,int,char*,char *,char*)         = 
+     (int (*)(void*,int,char*,char*,char*))free;
 #endif
 
 
