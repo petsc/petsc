@@ -10,7 +10,7 @@ within PETSc.  The runtime options include:\n\
   -print_param :    print problem parameters and grid information\n\
   -print_solution : print solution to stdout\n\
   -print_output :   print misc. output to various files\n\
-  -jfreq <val>,    <val> = frequency of evaluating Jacobian (or precond)\n\
+  -mat_fd_coloring_freq <val>,    <val> = frequency of evaluating Jacobian (or precond)\n\
 \n\
 Problem parameters include:\n\
   -mx <xg>,    <xg> = number of grid p oints in the x-direction\n\
@@ -34,6 +34,10 @@ Debugging options:\n\
     main - This program controls the potential flow application code. 
 
     Useful Options Database Keys:
+      -mat_fd_coloring_freq <f>  frequency at which Jacobians are recomputed.
+      -snes_mf_operator          use a matrix free multiplication (for when using lagged Jacobians)
+      -mat_fd_coloring_draw      display coloring of matrix
+
       -help                      prints detailed message about various runtime options
       -version                   prints version of PETSc being used
       -log_info                  prints verbose info about the solvers, data structures, etc.
@@ -52,7 +56,29 @@ Debugging options:\n\
   separated from the "application" data structure to allow future expansion for
   grid sequencing.
 
- */
+*/
+
+/*
+     Note: This sample code is not great and could be enhanced in many ways;
+   so just because something is done a particular way in this code it does not 
+   mean it has to be done that way.
+*/
+
+/*
+      To test: 
+       - make BOPT=g
+       - make BOPT=g runpfull1  (tests on one processor)
+       - make BOPT=g runpfull4  (tests on four processors)
+
+      For some graphics
+      
+         mpirun -np 1 pfull -options_file in.small     -draw_pause -1 
+         mpirun -np 1 pfull -options_file in.graphics  -draw_pause -1
+
+   The -draw_pause -1 causes it to wait after each graphic until you click in
+the window with the righ most mouse button.
+
+*/
 int main( int argc, char **argv )
 {
   AppCtx     user;             /* full potential application context */
@@ -77,6 +103,7 @@ int main( int argc, char **argv )
      ------------------------------------------------------------------------*/
 
   PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = OptionsReject("-snes_mf","Use -snes_mf_operator\n");CHKERRA(ierr);
   ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL);CHKERRA(ierr);
 
   /* ----------------------------------------------------------------------
@@ -101,10 +128,7 @@ int main( int argc, char **argv )
   user.comm        = PETSC_COMM_WORLD;
   user.mach        = 0.1;
   user.Qinf        = 1.0;
-  user.jfreq       = 1;
   user.nc          = 1;
-  ierr = OptionsGetInt(PETSC_NULL,"-jfreq",&user.jfreq,&flag); CHKERRA(ierr);
-  if (user.jfreq < 1) SETERRA(1,0,"jfreq >= 1 only");
   ierr = OptionsGetDouble(PETSC_NULL,"-mach",&user.mach,&flag); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-qinf",&user.Qinf,&flag); CHKERRA(ierr);
 
@@ -114,8 +138,8 @@ int main( int argc, char **argv )
      ---------------------------------------------------------------------- */
   user.Nlevels = 1; 
 
-  mx = 4;  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flag); CHKERRA(ierr);
-  my = 4;  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flag); CHKERRA(ierr);
+  mx = 10;  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flag); CHKERRA(ierr);
+  my = 10;  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flag); CHKERRA(ierr);
   if (mx < 2 || my < 2) SETERRA(1,0,"mx, my >=2 only");
 
   grid              = &user.grids[0];
@@ -162,27 +186,30 @@ int main( int argc, char **argv )
   grid->localXbak    = grid->vec_l[3];
   grid->localFbak    = grid->vec_l[4];
 
-  ierr = VecCreateMPI(user.comm,PETSC_DECIDE,grid->mx,&grid->globalPressure); CHKERRA(ierr);
+  ierr = VecCreateMPI(user.comm,PETSC_DECIDE,user.nc*grid->mx,&grid->globalPressure);CHKERRA(ierr);
   ierr = VecSet(&zero,grid->globalPressure); CHKERRA(ierr);
   ierr = VecGetLocalSize(grid->globalX,&grid->ldim); CHKERRA(ierr);
   ierr = VecGetSize(grid->globalX,&grid->gdim); CHKERRA(ierr);
 
-  /*
+  /* -------------------------------------------------------------
        Set up coloring information needed for finite difference
        computation of sparse Jacobian
-  */
+  ----------------------------------------------------------------*/
   ierr = DAGetColoring2dBox(grid->da,&iscoloring,&grid->J); CHKERRQ(ierr);
   ierr = MatFDColoringCreate(grid->J,iscoloring,&grid->fdcoloring); CHKERRQ(ierr); 
+  ierr = MatFDColoringSetFunction(grid->fdcoloring,(int (*)(void *,Vec,Vec,void *))Function_PotentialFlow,&user);
+         CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(grid->fdcoloring); CHKERRQ(ierr); 
   ierr = ISColoringDestroy(iscoloring); CHKERRQ(ierr);
 
 
-  /* Print grid info and problem parameters */
+  /* -------------------------------------------------------------
+      Print grid info and problem parameters 
+  ----------------------------------------------------------------*/
   ierr = OptionsHasName(PETSC_NULL,"-print_param",&flag); CHKERRA(ierr);
   if (flag) {
     int rank;
     MPI_Comm_rank(user.comm,&rank);
-    PetscPrintf(user.comm,"Potential flow: compute new Jacobian every %d iteration(s), Jacobian = preconditioner matrix\n",user.jfreq);
     PetscPrintf(user.comm,"problem domain corners: xx0=%g, xx1=%g, yy0=%g, yy1=%g\n",user.xx0,user.xx1,user.yy0,user.yy1);
     PetscPrintf(user.comm,"Mach number = %g, Qinf = %g\n",user.mach,user.Qinf);
     ierr = DAView(grid->da,VIEWER_STDOUT_SELF); CHKERRA(ierr);
@@ -213,7 +240,7 @@ int main( int argc, char **argv )
   /* 
       Set the routine that evaluates the "function"
   */
-  ierr = SNESSetFunction(snes,grid->globalF,Function_PotentialFlow,(void *)&user);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,grid->globalF,Function_PotentialFlow,&user);CHKERRA(ierr);
 
   /*
       Set the routine that evaluates the "Jacobian"
