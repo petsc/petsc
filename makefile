@@ -156,7 +156,10 @@ testfortran: info chkopts
 	-@echo "machines or the way Fortran formats numbers"
 	-@echo "some of the results may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_3  tree 
+	-@if [ "${C_FC}" != "" ]; then \
+            ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_3 tree; \
+          else echo "No FORTRAN compiler available"; \
+          fi
 	-@echo "Completed compiling and running Fortran test examples"
 	-@echo "========================================="
 testexamples_uni: info chkopts
@@ -172,7 +175,10 @@ testfortran_uni: info chkopts
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_9  tree 
+	-@if [ "${C_FC}" != "" ]; then \
+            ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_9  tree; \
+          else echo "No FORTRAN compiler available"; \
+          fi
 	-@echo "Completed compiling and running uniprocessor fortran test examples"
 	-@echo "========================================="
 
