@@ -1,4 +1,4 @@
-/*$Id: mpiuopen.c,v 1.23 2000/01/11 20:59:28 bsmith Exp bsmith $*/
+/*$Id: mpiuopen.c,v 1.24 2000/02/02 20:08:17 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */
@@ -102,7 +102,11 @@ int PetscPClose(MPI_Comm comm,FILE *fd)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (!rank) fclose(fd);
+  if (!rank) {
+    char buf[1024];
+    while (fgets(buf,1024,fd)) {;} /* wait till it prints everything */
+    pclose(fd);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -139,35 +143,23 @@ int PetscPOpen(MPI_Comm comm,char *machine,char *program,const char mode[],FILE 
   int  ierr,rank;
   FILE *fd;
   char commandt[1024],command[1024];
-  char *s[] = {"${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}",0},*r[4];
 
   PetscFunctionBegin;
+
+  /* all processors have to do the string manipulation because PetscStrreplace() is a collective operation */
+  if (machine && machine[0]) {
+    ierr = PetscStrcpy(command,"rsh ");CHKERRQ(ierr);
+    ierr = PetscStrcat(command,machine);CHKERRQ(ierr);
+    ierr = PetscStrcat(command," ");CHKERRQ(ierr);
+    ierr = PetscStrcat(command,program);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrcpy(command,program);CHKERRQ(ierr);
+  }
+
+  ierr = PetscStrreplace(comm,command,commandt,1024);CHKERRQ(ierr);
+    
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-
-    if (machine && machine[0]) {
-      ierr = PetscStrcpy(command,"rsh ");CHKERRQ(ierr);
-      ierr = PetscStrcat(command,machine);CHKERRQ(ierr);
-      ierr = PetscStrcat(command," ");CHKERRQ(ierr);
-      ierr = PetscStrcat(command,program);CHKERRQ(ierr);
-    } else {
-      ierr = PetscStrcpy(command,program);CHKERRQ(ierr);
-    }
-
-    /* get values for replaced variables */
-    r[0] = (char*)PetscMalloc(256*sizeof(char));CHKERRQ(ierr);
-    r[1] = (char*)PetscMalloc(256*sizeof(char));CHKERRQ(ierr);
-    r[2] = (char*)PetscMalloc(256*sizeof(char));CHKERRQ(ierr);
-    ierr = PetscGetDisplay(r[0],256);CHKERRQ(ierr);
-    ierr = PetscGetHomeDirectory(r[1],256);CHKERRQ(ierr);
-    ierr = PetscGetWorkingDirectory(r[2],256);CHKERRQ(ierr);
-
-    ierr = PetscStrreplace(comm,command,commandt,1024,s,r);CHKERRQ(ierr);
-    
-    ierr = PetscFree(r[0]);CHKERRQ(ierr);
-    ierr = PetscFree(r[1]);CHKERRQ(ierr);
-    ierr = PetscFree(r[2]);CHKERRQ(ierr);
-    
     PLogInfo(0,"Running command :%s\n",commandt);
 
 #if defined (PARCH_win32)
