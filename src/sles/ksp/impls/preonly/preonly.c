@@ -1,4 +1,4 @@
-/*$Id: preonly.c,v 1.36 2000/04/09 04:38:04 bsmith Exp bsmith $*/
+/*$Id: preonly.c,v 1.37 2000/04/12 04:25:07 bsmith Exp bsmith $*/
 
 /*                       
        This implements a stub method that applies ONLY the preconditioner.
@@ -12,7 +12,7 @@
 static int KSPSetUp_PREONLY(KSP ksp)
 {
   PetscFunctionBegin;
- PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -23,6 +23,10 @@ static int  KSPSolve_PREONLY(KSP ksp,int *its)
   Vec X,B;
 
   PetscFunctionBegin;
+  if (!ksp->guess_zero) {
+    SETERRQ(1,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
+               you probably want a KSP type of richardson");
+  }
   ksp->its    = 0;
   X           = ksp->vec_sol;
   B           = ksp->vec_rhs;
