@@ -76,7 +76,7 @@ class Compile (action.Action):
     # Update source DB if it compiled successfully
     self.updateSourceDB(source)
     # Archive file
-    command = self.archiver+' '+self.archiverFlags+' '+self.library+' '+object
+    command = self.archiver+' '+self.archiverFlags+' '+self.library[0]+' '+object
     output  = self.executeShellCommand(command)
     os.remove(object)
     return object

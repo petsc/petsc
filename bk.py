@@ -79,10 +79,10 @@ class BKClose (action.Action):
   def addFiles(self, set):
     self.debugPrint('Putting new files under version control', 2)
     if not len(set): return ''
-    command = 'bks add '
+    command = 'bk add '
     for file in set.getFiles(): command += ' '+file
     output = self.executeShellCommand(command, self.errorHandler)
-    command = 'bks co -q '
+    command = 'bk co -q '
     for file in set.getFiles(): command += ' '+file
     output = self.executeShellCommand(command, self.errorHandler)
     return output
@@ -90,10 +90,10 @@ class BKClose (action.Action):
   def revertFiles(self, set):
     self.debugPrint('Reverting unchanged files', 2)
     if not len(set): return ''
-    command = 'bks unedit '
+    command = 'bk unedit '
     for file in set.getFiles(): command += ' '+file
     output = self.executeShellCommand(command, self.errorHandler)
-    command = 'bks co -q '
+    command = 'bk co -q '
     for file in set.getFiles(): command += ' '+file
     output = self.executeShellCommand(command, self.errorHandler)
     return output
