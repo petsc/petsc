@@ -366,7 +366,7 @@ class Configure(config.base.Configure):
   def fixSolaris(self):
     '''I hate this. MPI should report this somehow.'''
     if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
-      self.executeTest(self.check, [['rt', 'nsl', 'aio'], 'exit'])
+      self.executeTest(self.libraries.check, [['rt', 'nsl', 'aio'], 'exit'])
     return
 
   def configureLibrary(self):
