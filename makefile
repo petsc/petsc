@@ -93,7 +93,7 @@ info_h:
 	-@echo  "Using libraries: ${PETSC_LIB} \"; " >> MINFO
 	-@cat MINFO | ${SED} -e 's/\^M//g' | ${SED} -e 's/\\/\\\\/g' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> MINFO_
 	-@cat MINFO_ | ${SED} -e 's/\//g'  > /dev/null; foobar=$$?; \
-          if [ "$$foobar" == "0" ]; then \
+          if [ "$$foobar" = "0" ]; then \
 	    cat MINFO_ | ${SED} -e 's/\//g' > ${MINFO}; \
           else cat MINFO | ${SED} -e 's/\^M//g' | ${SED} -e 's/\\/\\\\/g' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> ${MINFO}; \
           fi
@@ -108,7 +108,7 @@ build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
-	@grep -i " error " make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" == 0 ]; then \
+	@grep -i " error " make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" = "0" ]; then \
            echo "Error during compile, check " make_log_${PETSC_ARCH}; \
            echo "Send it and configure.log to petsc-maint@mcs.anl.gov"; exit 1; fi
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
@@ -192,7 +192,7 @@ chk_petsc_dir:
 #
 #
 install:
-	-@if [ "${INSTALL_DIR}" == "${PETSC_DIR}" ]; then \
+	-@if [ "${INSTALL_DIR}" = "${PETSC_DIR}" ]; then \
 	  echo "Install directory is current directory; nothing needs to be done";\
         else \
 	  echo Installing PETSc at ${INSTALL_DIR};\
@@ -229,7 +229,7 @@ install:
         fi;
 
 install_src:
-	-@if [ "${INSTALL_DIR}" == "${PETSC_DIR}" ]; then \
+	-@if [ "${INSTALL_DIR}" = "${PETSC_DIR}" ]; then \
 	  echo "You did not set a directory to install to";\
         else \
 	  echo Installing PETSc source at ${INSTALL_DIR};\
@@ -243,7 +243,7 @@ install_src:
         fi;
 
 install_docs:
-	-@if [ "${INSTALL_DIR}" == "${PETSC_DIR}" ]; then \
+	-@if [ "${INSTALL_DIR}" = "${PETSC_DIR}" ]; then \
 	  echo "You did not set a directory to install to";\
         else \
 	  echo Installing PETSc documentation at ${INSTALL_DIR};\
@@ -291,7 +291,7 @@ SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint
              python/PETSc/packages/*.py python/PETSc/utilities/*.py
 
 chk_loc:
-	@if [ ${LOC}foo == foo ] ; then \
+	@if [ ${LOC}foo = foo ] ; then \
 	  echo "*********************** ERROR ************************" ; \
 	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc"; \
 	  echo "******************************************************";  false; fi

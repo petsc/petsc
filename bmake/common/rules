@@ -375,7 +375,7 @@ noshared:
 #   2.) manualpages: builds the html pages, complete with hyperlinks
 
 chk_mansec:
-	@if [ "${MANSEC}" == "" ] ; then \
+	@if [ "${MANSEC}" = "" ] ; then \
           echo "   makefile is missing MANSEC";\
         fi
 
