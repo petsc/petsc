@@ -1,5 +1,5 @@
 #ifndef lint
- static char vcid[] = "$Id: vpscat.c,v 1.81 1997/07/08 23:39:20 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.82 1997/07/09 03:10:24 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -295,6 +295,7 @@ int VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatte
 
   PLogInfo(0,"VecScatterLocalOptimizeCopy_Private:Local scatter is a copy, optimizing for it\n");
 
+PetscTrValid(0,0,0,0);
   return 0;
 }
 
@@ -1424,12 +1425,13 @@ int VecScatterDestroy_PtoP(PetscObject obj)
 */
 #undef __FUNC__  
 #define __FUNC__ "VecScatterCreate_PtoS" /* ADIC Ignore */
-int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,VecScatter ctx)
+int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,int bs,VecScatter ctx)
 {
   Vec_MPI                *x = (Vec_MPI *)xin->data;
+  Vec_Seq                *y = (Vec_Seq *) yin->data;
   VecScatter_MPI_General *from,*to;
   int                    *source,*lens,rank = x->rank, *owners = x->ownership;
-  int                    size = x->size,*lowner,*start,found;
+  int                    size = x->size,*lowner,*start,found, lengthy = y->n;
   int                    *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
   int                    *owner,*starts,count,tag = xin->tag,slen,ierr;
   int                    *rvalues,*svalues,base,imdex,nmax,*values,len,*indx,nprocslocal;
@@ -1578,6 +1580,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,Vec
   for ( i=0; i<nx; i++ ) {
     if (owner[i] != rank) {
       from->indices[start[lowner[owner[i]]]++] = inidy[i];
+      if (inidy[i] >= lengthy) SETERRQ(1,1,"Scattering past end of TO vector");
     }
   }
   PetscFree(lowner); PetscFree(owner); PetscFree(nprocs);
@@ -1603,6 +1606,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,Vec
       if (idx >= owners[rank] && idx < owners[rank+1]) {
         to->local.slots[nt]     = idx - owners[rank];        
         from->local.slots[nt++] = inidy[i];        
+        if (inidy[i] >= lengthy) SETERRQ(1,1,"Scattering past end of TO vector");
       }
     }
   }

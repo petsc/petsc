@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.92 1997/06/05 12:51:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.93 1997/07/09 03:10:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -398,7 +398,7 @@ int VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
   return 0;
 }
 
-int VecScatterCreate_PtoS(int,int *,int,int *,Vec,int,VecScatter);
+int VecScatterCreate_PtoS(int,int *,int,int *,Vec,Vec,int,VecScatter);
 int VecScatterCreate_PtoP(int,int *,int,int *,Vec,Vec,VecScatter);
 int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 
@@ -670,7 +670,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);
           ISBlockGetSize(iy,&ny); ISBlockGetIndices(iy,&idy);
           if (nx != ny) SETERRQ(1,0,"Local scatter sizes don't match");
-          ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,bsx,ctx); CHKERRQ(ierr);
+          ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,yin,bsx,ctx); CHKERRQ(ierr);
           ISBlockRestoreIndices(ix,&idx);
           ISBlockRestoreIndices(iy,&idy);
           *newctx = ctx;
@@ -690,7 +690,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           idy    = (int *) PetscMalloc( nx*sizeof(int) );CHKPTRQ(idy);
           idy[0] = ystart;
           for ( il=1; il<nx; il++ ) idy[il] = idy[il-1] + bsx; 
-          ierr = VecScatterCreate_PtoS(nx,idx,nx,idy,xin,bsx,ctx); CHKERRQ(ierr);
+          ierr = VecScatterCreate_PtoS(nx,idx,nx,idy,xin,yin,bsx,ctx); CHKERRQ(ierr);
           PetscFree(idy);
           ISBlockRestoreIndices(ix,&idx);
           *newctx = ctx;
@@ -704,7 +704,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
-      ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,1,ctx); CHKERRQ(ierr);
+      ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,yin,1,ctx); CHKERRQ(ierr);
       ISRestoreIndices(ix,&idx);
       ISRestoreIndices(iy,&idy);
       *newctx = ctx;
