@@ -1,5 +1,5 @@
 
-C "$Id: ex14.F,v 1.2 1996/08/24 04:20:23 curfman Exp curfman $";
+C "$Id: ex14.F,v 1.3 1996/08/27 01:32:36 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -12,7 +12,7 @@ C    -my <yg>, where <yg> = number of grid points in the y-direction
 C    -Nx <npx>, where <npx> = number of processors in the x-direction
 C    -Ny <npy>, where <npy> = number of processors in the y-direction
 C
-C  Concepts: SNES; DA; solving nonlinear equations; using distributed arrays
+C  Concepts: SNES (solving nonlinear equations); DA (using distributed arrays)
 C  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
 C  Routines: SNESSolve(); SNESSetFromOptions();
 C  Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
@@ -44,7 +44,8 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                    Include files
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C
-C  The following include statements are generally used in SNES Fortran programs:
+C  The following include statements are generally used in SNES Fortran
+C  programs:
 C     petsc.h  - base PETSc routines
 C     vec.h    - vectors
 C     mat.h    - matrices
@@ -118,8 +119,9 @@ C  Macros to make clearer the process of setting values in vectors and
 C  getting values from vectors.  These vectors are used in the routines
 C  FormFunction(), FormInitialGuess(), and FormJacobian().
 C
-C   - The element lx_a(ib) is element ib+1 in the vector indicated by localX
-C   - Here we use the +1 to facilitate the C/Fortran conversion
+C   - The element lx_a(ib) is element ib+1 in the vector localX
+C   - Here we add 1 to the base array index to facilitate the use of
+C     conventional Fortran 1-based array indexing.
 C
 #define lx_a(ib)     lx_v(lx_i + (ib) + 1)
 #define lf_a(ib)     lf_v(lf_i + (ib) + 1)
@@ -245,7 +247,6 @@ C  are no longer needed.
       stop
       end
 
-
 C ---------------------------------------------------------------------
 C
 C  FormInitialGuess - Forms initial approximation.
@@ -350,7 +351,7 @@ C
 C  Input Parameters:
 C  snes - the SNES context
 C  X - input vector
-C  ptr - optional user-defined context, as set by SNESSetFunction()
+C  user - optional user-defined context, as set by SNESSetFunction()
 C
 C  Output Parameter:
 C  F - function vector
@@ -361,7 +362,6 @@ C
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/da.h"
-#include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/snes.h"
 
       SNES     snes
@@ -461,7 +461,7 @@ C
 C  Input Parameters:
 C  snes - the SNES context
 C  x - input vector
-C  ptr - optional user-defined context, as set by SNESSetJacobian()
+C  user - optional user-defined context, as set by SNESSetJacobian()
 C
 C  Output Parameters:
 C  A - Jacobian matrix
@@ -485,15 +485,16 @@ C
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/snes.h"
 
-      SNES     snes
-      DA       da
-      Vec      X, localX
-      Mat      jac, B
-      integer  flag, user(*), ierr, i, j, row, mx, my
-      integer  col(5), grow, xe, ye
-      integer  nloc, xs, ys, xm, ym, gxs, gys, gxm, gym
-      Scalar   two, one, lambda, hx, hy, hxdhy, hydhx
-      Scalar   sc, v(5)
+      SNES         snes
+      DA           da
+      Vec          X, localX
+      Mat          jac, B
+      MatStructure flag
+      integer      flag, user(*), ierr, i, j, row, mx, my
+      integer      col(5), grow, xe, ye
+      integer      nloc, xs, ys, xm, ym, gxs, gys, gxm, gym
+      Scalar       two, one, lambda, hx, hy, hxdhy, hydhx
+      Scalar       sc, v(5)
 
       common /params/ lambda
 

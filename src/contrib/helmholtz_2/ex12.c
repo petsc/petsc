@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex22.c,v 1.6 1996/08/20 15:19:33 curfman Exp curfman $";
+static char vcid[] = "$Id: ex22.c,v 1.7 1996/08/23 22:21:51 curfman Exp curfman $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -18,8 +18,31 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
   -mach <mach> : free-stream Mach number\n\
   -k1 <k1> : parameter k1\n\n";
 
-#include "sles.h"
+/*T
+   Concepts: SLES (solving linear equations); DA (using distributed arrays)
+   Concepts: Helmholtz equation; Complex numbers; Preallocating matrix memory
+   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
+   Routines: SLESSetUp(); SLESSetUpOnBlocks();
+   Routines: SLESSolve(); SLESView(); SLESGetPC(); SLESGetKSP();
+   Routines: KSPSetTolerances(); PCSetModifySubMatrices();
+   Routines: MatGetTypeFromOptions(); MatCreateSeqAIJ(); MatCreateMPIAIJ();
+   Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAView();
+   Routines: DAGetCorners(); DAGetGhostCorners(); DAGetGlobalIndices();
+   Routines: ISCreateGeneral(); ISDestroy(); MatZeroRows();
+T*/
+
+/* 
+   Include "da.h" so that we can use distributed arrays (DAs).
+   Include "sles.h" so that we can use SLES solvers.  Note that this file
+   automatically includes:
+     petsc.h  - base PETSc routines   vec.h - vectors
+     sys.h    - system routines       mat.h - matrices
+     is.h     - index sets            ksp.h - Krylov subspace methods
+     viewer.h - viewers               pc.h  - preconditioners
+*/
+
 #include "da.h"
+#include "sles.h"
 #include "dfvec.h"
 #include <math.h>
 #include <stdio.h>
