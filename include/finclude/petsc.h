@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.63 1998/03/30 21:14:12 balay Exp balay $;
+!  $Id: petsc.h,v 1.64 1998/03/31 20:04:37 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -98,15 +98,6 @@
 #define SETERRA(n,p,s)   
 #define CHKERRA(n)     
 #endif
-!
-!     Prototypes for functions which return a value.
-!
-      external PetscGetTime,PetscGetCPUTime,PetscGetFlops
-      double precision PetscGetTime,PetscGetCPUTime,PetscGetFlops
-!
-!
-!
-
 !
 !
 !     End of base Fortran include file for the PETSc package
