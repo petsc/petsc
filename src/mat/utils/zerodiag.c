@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.28 1998/11/04 20:02:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.29 1998/11/04 21:10:09 bsmith Exp balay $";
 #endif
 
 /*
@@ -53,7 +53,7 @@ static char vcid[] = "$Id: zerodiag.c,v 1.28 1998/11/04 20:02:55 bsmith Exp bsmi
 @*/
 int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
 {
-  int      ierr, prow, k, nz, n, repl, *j, *col, *row, m, *irow, *icol,nnz,*jj,kk;
+  int      ierr, prow, k, nz, n, repl, *j, *col, *row, m, *icol,nnz,*jj,kk;
   Scalar   *v,*vv;
   double   repla;
   IS       icis;
