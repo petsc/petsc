@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.53 1995/06/30 03:35:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.54 1995/07/06 17:19:42 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1107,15 +1107,15 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DECIDE to have calculated 
            if n is given)
-.  d_nz - number of nonzeros per row in diagonal portion of matrix
+.  d_nz - number of nonzeros per row in diagonal portion of local submatrix
            (same for all local rows)
-.  d_nzz - number of nonzeros per row in diagonal portion of matrix or null
-           (possibly different for each row).  You must leave room for the 
-           diagonal entry even if it is zero.
-.  o_nz - number of nonzeros per row in off-diagonal portion of matrix
-           (same for all local rows)
-.  o_nzz - number of nonzeros per row in off-diagonal portion of matrix
-           or null (possibly different for each row).
+.  d_nzz - number of nonzeros per row in diagonal portion of local submatrix
+           or null (possibly different for each row).  You must leave room
+           for the diagonal entry even if it is zero.
+.  o_nz - number of nonzeros per row in off-diagonal portion of local
+           submatrix (same for all local rows).
+.  o_nzz - number of nonzeros per row in off-diagonal portion of local 
+           submatrix or null (possibly different for each row).
 
    Output Parameter:
 .  newmat - the matrix 
@@ -1124,13 +1124,16 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage), is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices begin at 
-   one, not zero.
+   one, not zero.  See the users manual for further details.
 
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
-   The user can set d_nz, d_nnz, o_nz, and o_nnz to zero for PETSc to
-   control dynamic memory allocation.
+   Specify the preallocated storage for the diagonal part of the local
+   submatrix with either d_nz or d_nnz (not both). Set both d_nz and 
+   d_nnz to zero for PETSc to control dynamic memory allocation.
+   Likewise, specify storage for the off-diagonal part of the local
+   submatrix with o_nz or o_nnz (not both).
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
