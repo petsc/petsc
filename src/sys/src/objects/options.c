@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.156 1997/12/10 18:56:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.157 1997/12/20 15:29:12 bsmith Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -1607,6 +1607,14 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
 .  string - location to copy string
 .  flg - 1 if found, else 0
 
+   Fortran Note:
+   The Fortran interface is slightly different from the C/C++
+   interface (len is not used).  Sample usage in Fortran --
+
+$      character *20 string
+$      integer   flg, ierr
+$      call OptionsGetString(PETSC_NULL_CHARACTER,'-s',string,flg,ierr)
+
 .keywords: options, database, get, string
 
 .seealso: OptionsGetInt(), OptionsGetDouble(),  
@@ -1641,10 +1649,11 @@ int OptionsGetString(char *pre,char *name,char *string,int len, int *flg)
 .  strings - location to copy strings
 .  flg - 1 if found, else 0
 
-   Notes: The user is responsible for deallocating the
-          strings which are returned.
+   Notes: 
+   The user is responsible for deallocating the strings that are
+   returned. The Fortran interface for this routine is not supported.
 
-   Contributed by: Matthew Knepley
+   Contributed by Matthew Knepley.
 
 .keywords: options, database, get, string
 
