@@ -393,11 +393,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,const c
     else       {queuebase   = queue = next;}
     queuelength++;
     string = next->string;
-    tab = ascii->tab;
+    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
+    tab = 2*ascii->tab;
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
-    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
-    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-ascii->tab,format,Argp);CHKERRQ(ierr);
+    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-2*ascii->tab,format,Argp);CHKERRQ(ierr);
     va_end(Argp);
   }
   PetscFunctionReturn(0);
@@ -719,10 +719,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer vi
     else       {queuebase   = queue = next;}
     queuelength++;
     string = next->string;
+    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
+    tab *= 2;
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
-    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
-    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-vascii->tab,format,Argp);
+    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-2*vascii->tab,format,Argp);
     va_end(Argp);
   }
   PetscFunctionReturn(0);
