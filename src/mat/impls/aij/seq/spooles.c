@@ -19,14 +19,14 @@ typedef struct {
   FrontMtx        *frontmtx ;    /* numeric L, D, U factor matrices */
   IV              *newToOldIV, *oldToNewIV ; /* permutation vectors */
   IVL             *symbfacIVL ;              /* symbolic factorization */
-  int             msglvl,pivotingflag,symmetryflag,seed;
+  int             msglvl,pivotingflag,symflag,seed;
   FILE            *msgFile ;
   SubMtxManager   *mtxmanager  ;  /* working array */
   double          cpus[10] ; 
   MatStructure    flg;
   int             *oldToNew,nz;
   double          tau;
-  int             ordering;
+  int             ordering,maxdomainsize,maxzeros,maxsize;
 } Mat_SeqAIJ_Spooles;
 
 extern int MatDestroy_SeqAIJ(Mat); 
@@ -110,9 +110,11 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   ChvManager         *chvmanager  ;
   FrontMtx           *frontmtx ; 
   Chv                *rootchv ;
-  int                stats[20],ierr,pivotingflag=1,nz,m=A->m,irow,count,
+  int                stats[20],ierr,nz,m=A->m,irow,count,
                      *ai=mat->i,*aj=mat->j;
-  PetscScalar        *av  = mat->a;
+  PetscScalar        *av=mat->a;
+  double             *dvec;
+  int                *ivec1, *ivec2, ii;
 
   PetscFunctionBegin;
   if ( lu->flg == SAME_NONZERO_PATTERN){ /* new num factorization using previously computed symbolic factor */
@@ -128,40 +130,20 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
 
     /* get new numerical values of A , then permute the matrix */ 
     InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, lu->nz, m) ; 
-    /*
-    int *rowids,i;
-    ierr = PetscMalloc(lu->nz*sizeof(int),&rowids);CHKERRQ(ierr);
+    ivec1 = InpMtx_ivec1(lu->mtxA); 
+    ivec2 = InpMtx_ivec2(lu->mtxA); 
+    dvec  = InpMtx_dvec(lu->mtxA);
     for (irow = 0; irow < m; irow++){
-      count = ai[irow+1] - ai[irow];
-      for (i =0; i<count; i++) rowids[i]=irow;
+      for (ii = ai[irow]; ii<ai[irow+1]; ii++) ivec1[ii] = irow;
     }
-    InpMtx_inputRealTriples(lu->mtxA, lu->nz, rowids, aj, av);
-    ierr = PetscFree(rowids);CHKERRQ(ierr);
-    */
-    /* run well with -num_numfac 1, but get the following error message:
-       ex10 -f0 matbinary.ex -mat_aij_spooles -pc_type lu -num_numfac 2
- Symbolic_SeqAIJ_Spooles is called ...
- Num_SeqAIJ_Spooles is called ..., lu->flg: 1
- Solve_SeqAIJ_Spooles is called ...,
- Solve_SeqAIJ_Spooles is called ...,
-Number of iterations =   1
-Residual norm < 1.e-12
- Num_SeqAIJ_Spooles is called ..., lu->flg: 0
-
- fatal error in Chv_addChevron(0x8290078,0,4,0x827c6e0,0x827c958)
- jcol 24 not found in colind[]
-    */
-    
-    for (irow = 0; irow < m; irow++){
-      count = ai[1] - ai[0];
-      InpMtx_inputRealRow(lu->mtxA, irow, count, aj, av);
-      ai++; aj += count; av += count;
-    }   
+    IVcopy(lu->nz, ivec2, aj);
+    DVcopy(lu->nz, dvec, av);
+    InpMtx_inputRealTriples(lu->mtxA, lu->nz, ivec1, ivec2, dvec); 
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ; 
 
     /* permute mtxA */
     InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ;
-    if ( lu->symmetryflag == SPOOLES_SYMMETRIC ) InpMtx_mapToUpperTriangle(lu->mtxA) ; 
+    if ( lu->symflag == SPOOLES_SYMMETRIC ) InpMtx_mapToUpperTriangle(lu->mtxA) ; 
     InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
     if ( lu->msglvl > 2 ) {
@@ -177,7 +159,7 @@ Residual norm < 1.e-12
     SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0) ;
   }
   
-  FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->symmetryflag, 
+  FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->symflag, 
                 FRONTMTX_DENSE_FRONTS, lu->pivotingflag, NO_LOCK, 0, NULL, 
                 lu->mtxmanager, lu->msglvl, lu->msgFile) ;   
 
@@ -235,7 +217,8 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   char                 buff[32];
   char                 *ordertype[] = {"BestOfNDandMS","MMD","MS","ND"}; 
   PetscTruth           flg;
-  int                  maxdomainsize=1, maxzeros=0, maxsize=1000000;
+  int                  *ivec1, *ivec2, ii;
+  double               *dvec;
 
   PetscFunctionBegin;	
   ierr = PetscNew(Mat_SeqAIJ_Spooles,&lu);CHKERRQ(ierr); 
@@ -249,17 +232,29 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   (*F)->factor                = FACTOR_LU;  
   (*F)->spptr                 = (void*)lu;
 
-  /* get input parameters */
-  lu->symmetryflag = 2; /* 0: symmetric entries, 1: Hermitian entries, 2: non-symmetric entries -- 
-                                if A is aij: non-symmetric, if A is sbaij: symmetric, other cookie: error msg */
-  lu->tau          = 100.;
-  lu->seed         = 10101;  /* random number seed, used for ordering */
-  lu->ordering     = 0;
+  /* set default input parameters */
+  lu->symflag       = SPOOLES_NONSYMMETRIC;
+  lu->pivotingflag  = SPOOLES_NO_PIVOTING;
+  lu->tau           = 100.;
+  lu->seed          = 10101;  
+  lu->ordering      = 0;
+  lu->maxdomainsize = 500;
+  lu->maxzeros      = 1000;
+  lu->maxsize       = 96;
 
+  /* get runtime input parameters */
   ierr = PetscOptionsBegin(A->comm,A->prefix,"Spooles Options","Mat");CHKERRQ(ierr); 
-    ierr = PetscOptionsInt("-mat_aij_spooles_symmetryflag","symmetryflag","None",lu->symmetryflag,&lu->symmetryflag,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-mat_aij_spooles_tau","tau (used for pivoting; all entries in L and U have magnitude no more than tau)","None",lu->tau,&lu->tau,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_aij_spooles_seed","seed","None",lu->seed,&lu->seed,PETSC_NULL);CHKERRQ(ierr);
+  /*
+    ierr = PetscOptionsInt("-mat_aij_spooles_symflag","symmetryflag: \n\
+           0: SPOOLES_SYMMETRIC, 2: SPOOLES_NONSYMMETRIC","None",lu->symflag,&lu->symflag,PETSC_NULL);CHKERRQ(ierr);
+  */
+    ierr = PetscOptionsInt("-mat_aij_spooles_pivotingflag","pivotingflag: \n\
+           0: SPOOLES_NO_PIVOTING, 1: SPOOLES_PIVOTING","None",lu->pivotingflag,&lu->pivotingflag,PETSC_NULL);CHKERRQ(ierr);
+
+    ierr = PetscOptionsReal("-mat_aij_spooles_tau","tau (used for pivoting; \n\
+           all entries in L and U have magnitude no more than tau)","None",lu->tau,&lu->tau,PETSC_NULL);CHKERRQ(ierr);
+
+    ierr = PetscOptionsInt("-mat_aij_spooles_seed","random number seed, used for ordering","None",lu->seed,&lu->seed,PETSC_NULL);CHKERRQ(ierr);
 
     if (PetscLogPrintInfo) {
       lu->msglvl = 1;
@@ -297,46 +292,36 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
       }
       SETERRQ1(1,"Unknown Spooles's ordering %s",buff);
     }
-    
-  PetscOptionsEnd();
+   
+    ierr = PetscOptionsInt("-mat_aij_spooles_maxdomainsize","maxdomainsize","None",lu->maxdomainsize,&lu->maxdomainsize,PETSC_NULL);CHKERRQ(ierr);
 
+    ierr = PetscOptionsInt("-mat_aij_spooles_maxzeros ","maxzeros","None",lu->maxzeros,&lu->maxzeros,PETSC_NULL);CHKERRQ(ierr);
+
+    ierr = PetscOptionsInt("-mat_aij_spooles_maxsize","maxsize","None",lu->maxsize,&lu->maxsize,PETSC_NULL);CHKERRQ(ierr);
+
+  PetscOptionsEnd();
+  /*
   lu->pivotingflag = SPOOLES_NO_PIVOTING; 
   if (info && info->dtcol > 0.0) {
     lu->pivotingflag = SPOOLES_PIVOTING;
     if ( lu->msglvl > 0 ) fprintf(lu->msgFile, "\n pivoting is used\n") ;
   }
+  */
 
-  /* convert A to Spooles' InpMtx object */
-  if (lu->symmetryflag == 2){
-    lu->nz=mat->nz;
-  } else {
-    SETERRQ(1,"symmetryflag should be set as non-symmetric");
-    /* 
-  } else if (lu->symmetryflag == 2){
-    nz=mat->s_nz;
-    */
-  }
+  /* copy A to Spooles' InpMtx object */
+  lu->nz=mat->nz;
   
   lu->mtxA = InpMtx_new() ;
   InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, lu->nz, m) ;
-  /* fail to work!!! */
-  /*
-  int *rowids,i;
-  ierr = PetscMalloc(lu->nz*sizeof(int),&rowids);CHKERRQ(ierr);
+  ivec1 = InpMtx_ivec1(lu->mtxA);  
+  ivec2 = InpMtx_ivec2(lu->mtxA); 
+  dvec  = InpMtx_dvec(lu->mtxA);
   for (irow = 0; irow < m; irow++){
-    count = ai[irow+1] - ai[irow];
-    for (i =0; i<count; i++) rowids[i]=irow;
+    for (ii = ai[irow]; ii<ai[irow+1]; ii++) ivec1[ii] = irow;
   }
-  InpMtx_inputRealTriples(lu->mtxA, lu->nz, rowids, aj, av);
-  ierr = PetscFree(rowids);CHKERRQ(ierr);
-  */
-  
-  for (irow = 0; irow < m; irow++){
-    count = ai[1] - ai[0];
-    InpMtx_inputRealRow(lu->mtxA, irow, count, aj, av);
-    ai++; aj += count; av += count;
-  }
-  
+  IVcopy(lu->nz, ivec2, aj);
+  DVcopy(lu->nz, dvec, av);
+  InpMtx_inputRealTriples(lu->mtxA, lu->nz, ivec1, ivec2, dvec); 
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ; 
 
   /*---------------------------------------------------
@@ -357,20 +342,16 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   switch (lu->ordering) {
   case 0:
     lu->frontETree = orderViaBestOfNDandMS(graph,
-                     maxdomainsize, maxzeros, maxsize,
-                     lu->seed, lu->msglvl, lu->msgFile); 
-    break;
+                     lu->maxdomainsize, lu->maxzeros, lu->maxsize,
+                     lu->seed, lu->msglvl, lu->msgFile); break;
   case 1:
-    lu->frontETree = orderViaMMD(graph, lu->seed, lu->msglvl, lu->msgFile) ; 
-    break;
+    lu->frontETree = orderViaMMD(graph,lu->seed,lu->msglvl,lu->msgFile); break;
   case 2:
-    lu->frontETree = orderViaMS(graph, maxdomainsize,
-                     lu->seed, lu->msglvl, lu->msgFile);
-    break;
+    lu->frontETree = orderViaMS(graph, lu->maxdomainsize,
+                     lu->seed,lu->msglvl,lu->msgFile); break;
   case 3:
-    lu->frontETree = orderViaND(graph, maxdomainsize, 
-                     lu->seed, lu->msglvl, lu->msgFile);
-    break;
+    lu->frontETree = orderViaND(graph, lu->maxdomainsize, 
+                     lu->seed,lu->msglvl,lu->msgFile); break;
   default:
     SETERRQ(1,"Unknown Spooles's ordering");
   }
@@ -390,8 +371,8 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   ETree_permuteVertices(lu->frontETree, lu->oldToNewIV) ;
 
   InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ; 
-  if ( lu->symmetryflag == SPOOLES_SYMMETRIC ) {
-    InpMtx_mapToUpperTriangle(lu->mtxA) ; /* ensures all entries of PAP' are in upper triangle */
+  if ( lu->symflag == SPOOLES_SYMMETRIC ) {
+    InpMtx_mapToUpperTriangle(lu->mtxA) ; 
   }
   InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
@@ -434,15 +415,39 @@ int MatSeqAIJFactorInfo_Spooles(Mat A,PetscViewer viewer)
 {
   Mat_SeqAIJ_Spooles      *lu = (Mat_SeqAIJ_Spooles*)A->spptr;  
   int                     ierr;
-  
+  char                    *s;
+
   PetscFunctionBegin;
   /* check if matrix is spooles type */
   if (A->ops->solve != MatSolve_SeqAIJ_Spooles) PetscFunctionReturn(0);
 
   ierr = PetscViewerASCIIPrintf(viewer,"Spooles run parameters:\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  tau: %g \n",lu->tau);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  seed %d \n",lu->seed);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  msglvl %d \n",lu->msglvl);CHKERRQ(ierr);
+
+  switch (lu->symflag) {
+  case 0: s = "SPOOLES_SYMMETRIC"; break;
+  case 2: s = "SPOOLES_NONSYMMETRIC"; break; }
+  ierr = PetscViewerASCIIPrintf(viewer,"  symflag:       %s \n",s);CHKERRQ(ierr);
+
+  switch (lu->pivotingflag) {
+  case 0: s = "SPOOLES_NO_PIVOTING"; break;
+  case 1: s = "SPOOLES_PIVOTING"; break; }
+  ierr = PetscViewerASCIIPrintf(viewer,"  pivotingflag:  %s \n",s);CHKERRQ(ierr);
+
+  ierr = PetscViewerASCIIPrintf(viewer,"  tau:           %g \n",lu->tau);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  seed:          %d \n",lu->seed);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  msglvl:        %d \n",lu->msglvl);CHKERRQ(ierr);
+
+  switch (lu->ordering) {
+  case 0: s = "BestOfNDandMS"; break;  
+  case 1: s = "MMD"; break;
+  case 2: s = "MS"; break;
+  case 3: s = "ND"; break;
+  }
+  ierr = PetscViewerASCIIPrintf(viewer,"  ordering:      %s \n",s);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxdomainsize: %d \n",lu->maxdomainsize);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxzeros:      %d \n",lu->maxzeros);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxsize:       %d \n",lu->maxsize);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

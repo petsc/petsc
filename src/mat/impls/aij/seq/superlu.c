@@ -26,6 +26,8 @@ typedef struct {
   int         relax;
   int         panel_size;
   double      pivot_threshold;
+  NCformat        *store;
+  MatStructure    flg;
 } Mat_SeqAIJ_SuperLU;
 
 
@@ -41,7 +43,7 @@ int MatDestroy_SeqAIJ_SuperLU(Mat A)
   PetscFunctionBegin;
   if (--A->refct > 0)PetscFunctionReturn(0);
   /* We have to free the global data or SuperLU crashes (sucky design)*/
-  StatFree();
+  StatFree(); 
   /* Free the SuperLU datastructures */
   Destroy_CompCol_Permuted(&lu->AC);
   Destroy_SuperNode_Matrix(&lu->L);
@@ -179,6 +181,8 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   }
 
   PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SeqAIJ_SuperLU));
+
+  lu->flg = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -188,7 +192,7 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
 {
   Mat_SeqAIJ         *aa = (Mat_SeqAIJ*)(A)->data;
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)(*F)->spptr;
-  NCformat           *store;
+  /* NCformat           *store; */
   int                *etree,i,ierr;
 
   PetscFunctionBegin;
@@ -197,19 +201,22 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
        Since SuperLU only likes column-oriented matrices,we pass it the transpose,
        and then solve A^T X = B in MatSolve().
   */
-  lu->A.Stype   = NC;
-  lu->A.Dtype   = _D;
-  lu->A.Mtype   = GE;
-  lu->A.nrow    = A->n;
-  lu->A.ncol    = A->m;
-  ierr          = PetscMalloc(sizeof(NCformat),&store);CHKERRQ(ierr);
-  store->nnz    = aa->nz;
-  store->colptr = aa->i;
-  store->rowind = aa->j;
-  store->nzval  = aa->a;
-  lu->A.Store   = store;
-  ierr          = PetscMalloc(sizeof(DNformat),&lu->B.Store);CHKERRQ(ierr);
-
+  if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numerical factorization */
+    lu->A.Stype   = NC;
+    lu->A.Dtype   = _D;
+    lu->A.Mtype   = GE;
+    lu->A.nrow    = A->n;
+    lu->A.ncol    = A->m;
+  
+    ierr = PetscMalloc(sizeof(NCformat),&lu->store);CHKERRQ(ierr); 
+    ierr = PetscMalloc(sizeof(DNformat),&lu->B.Store);CHKERRQ(ierr);
+  }
+  lu->store->nnz    = aa->nz;
+  lu->store->colptr = aa->i;
+  lu->store->rowind = aa->j;
+  lu->store->nzval  = aa->a; 
+  lu->A.Store       = lu->store; 
+  
   /* Shift indices down */
   if (aa->indexshift) {
     for(i = 0; i < A->m+1; i++) aa->i[i]--;
@@ -245,6 +252,8 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
 
   /* Cleanup */
   ierr = PetscFree(etree);CHKERRQ(ierr);
+
+  lu->flg = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
