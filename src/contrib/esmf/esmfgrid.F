@@ -1,33 +1,44 @@
+
+
 !
-!    "$Id: esmfgrid.F,v 1.2 2000/09/07 15:03:53 bsmith Exp bsmith $"
+!    "$Id: esmfgrid.F,v 1.3 2000/09/07 16:42:16 bsmith Exp bsmith $"
 !
       module esmfg
-#include "finclude/petsc.h"
+        use esmf
+#include "finclude/petscdef.h"
 #include "finclude/petscda.h"
 
 !--------------------------------------------------------------
-
+!
+!   All grids share this commom basic data
+!
       type esmfgrid
-        character*(64) typename 
-        MPI_Comm       comm
-        integer        refcount
-        integer        dimension
+        type (esmfbase)  base
+        integer          dimension
       end type esmfgrid
 
 !--------------------------------------------------------------
-
+!
+!    Representation of a simple (nonstaggered) rectangular grid
+!  in two dimensions
+!   nc - number of degrees of freedom per grid point (number of components)
+!   sw - stencil width (how many layers of ghost nodes)
+!
       type esmfgridstructuredrectangular
         type (esmfgrid) grid
+        integer         nc,sw
         integer         localranges(2,2)
         integer         ghostranges(2,2)
         integer         globalsizes(2)
         integer         localsizes(2)
         integer         ghostsizes(2)
-        integer         privateda
+        integer         da
       end type esmfgridstructuredrectangular
 
 !--------------------------------------------------------------
-
+!
+!  Representation of a simple grid of quadralaterals
+!
       type esmfgridunstructuredquads
         type (esmfgrid) grid
         integer                      nlocalcells,nghostcells
@@ -36,57 +47,62 @@
       end type esmfgridunstructuredquads
 
 !--------------------------------------------------------------
+!     Defines the polymorphic functions for grids
 !--------------------------------------------------------------
-
       interface ESMFGridView
-        module procedure ESMFGridViewBase,ESMFGridViewSR,               &
-     &                   ESMFGridViewUQ
+        module procedure ESMFGridView_Base,ESMFGridView_SR,             &
+     &                   ESMFGridView_UQ
       end interface
 
 !--------------------------------------------------------------
 
       interface ESMFGridCreate
-        module procedure ESMFGridCreateSR,ESMFGridCreateUQ
+        module procedure ESMFGridCreate_SR,ESMFGridCreate_UQ
       end interface
 
 !--------------------------------------------------------------
 
       interface ESMFGridDestroy
-        module procedure ESMFGridDestroySR,ESMFGridDestroyUQ
+        module procedure ESMFGridDestroy_SR,ESMFGridDestroy_UQ
       end interface
 
 !--------------------------------------------------------------
+!    Actual functions (methods) that act on the objects
+!  These are not called directly by the application codes
 !--------------------------------------------------------------
       contains
-      
-      function ESMFGridViewBase(grid) result (ierr)
-        type (esmfgrid), pointer :: grid(:)
+
+      function ESMFGridView_Base(grid) result (ierr)
+        implicit none
+        type (esmfgrid), pointer :: grid
         integer         ierr
 
         call CESMFGridView(grid)
         ierr = 0
-      end function ESMFGridViewBase
+      end function ESMFGridView_Base
 
 !--------------------------------------------------------------
 
-      function ESMFGridViewSR(grid) result (ierr)
-        type (esmfgridstructuredrectangular), pointer :: grid(:)
+      function ESMFGridView_SR(grid) result (ierr)
+        implicit none
+        type (esmfgridstructuredrectangular), pointer :: grid
         integer         ierr
 
         call CESMFGridView(grid)
         call CESMFGridViewSR(grid)
         ierr = 0
-      end function ESMFGridViewSR
+      end function ESMFGridView_SR
 
 !--------------------------------------------------------------
 
-      function ESMFGridViewUQ(grid) result (ierr)
-        type (esmfgridunstructuredquads), pointer :: grid(:)
+      function ESMFGridView_UQ(grid) result (ierr)
+        implicit none
+        type (esmfgridunstructuredquads), pointer :: grid
         integer         ierr
 
         call CESMFGridView(grid)
         ierr = 0
-      end function ESMFGridViewUQ
+      end function ESMFGridView_UQ
 
 !--------------------------------------------------------------
 !
@@ -94,108 +110,116 @@
 !             (1,2) = y at lower left corner
 !             (2,1) = x at upper right corner
 !             (2,2) = y at upper right corner
+!        nc - number of components per grid point
+!        sw - stencil width
+!        nx,ny - number of grid points in each direction
 !
-      function ESMFGridCreateSR(comm,nx,ny,coors,dof,sw) result (grid)
+      function ESMFGridCreate_SR(comm,nx,ny,coors,nc,sw) result (grid)
         implicit none
-        type (esmfgridstructuredrectangular), pointer :: grid(:)
+        type (esmfgridstructuredrectangular), pointer :: grid
         MPI_Comm                              comm
-        integer                               nx,ny,dof,sw
+        integer                               nx,ny,nc,sw
         double precision                      coors(2,2)
 
         integer                                          ierr
-        type (esmfgridstructuredrectangular), pointer :: g(:)
+        type (esmfgridstructuredrectangular), pointer :: g
 
-        allocate(g(1))
-        g%grid%comm        = comm
+        allocate(g)
+        g%grid%base%comm        = comm
+        g%grid%base%refcount    = 0
+        g%grid%base%typename    = 'esmfgridstructuredrectangular'
         g%grid%dimension   = 2
-        g%grid%refcount    = 0
-        g%grid%typename    = 'esmfgridstructuredrectangular'
         g%globalsizes(1)   = nx
         g%globalsizes(2)   = ny
+        g%nc               = nc
+        g%sw               = sw
 
 !
 !   create private data structure that contains the information about
 !   the distributed grid
 !        
         call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,nx,ny,        &
-     &                  PETSC_DECIDE,PETSC_DECIDE,dof,sw,                 &
+     &                  PETSC_DECIDE,PETSC_DECIDE,nc,sw,                  &
      &                  PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,            &
-     &                  g%privateda,ierr)
-        call DASetUniformCoordinates(g%privateda,coors(1,1),coors(2,1),   &
+     &                  g%da,ierr)
+        call DASetUniformCoordinates(g%da,coors(1,1),coors(2,1),          &
      &                               coors(1,2),coors(2,2),0,0,ierr)
 
         g%globalsizes(1) = nx
         g%globalsizes(2) = ny
 
-        call DAGetGhostCorners(g%privateda,g%ghostranges(1,1),            &
+        call DAGetGhostCorners(g%da,g%ghostranges(1,1),                   &
      &                         g%ghostranges(1,2),PETSC_NULL_INTEGER,     &
      &                         g%ghostsizes(1),g%ghostsizes(2),           &
      &                         PETSC_NULL_INTEGER,ierr)
-         g%ghostranges(2,1) = g%ghostranges(1,1) + g%ghostsizes(1) - 1
-         g%ghostranges(2,2) = g%ghostranges(1,2) + g%ghostsizes(2) - 1
-        call DAGetCorners(g%privateda,g%localranges(1,1),                 &
+        g%ghostranges(1,1) = g%ghostranges(1,1) + 1
+        g%ghostranges(1,2) = g%ghostranges(1,2) + 1
+
+        g%ghostranges(2,1) = g%ghostranges(1,1) + g%ghostsizes(1) - 1
+        g%ghostranges(2,2) = g%ghostranges(1,2) + g%ghostsizes(2) - 1
+        call DAGetCorners(g%da,g%localranges(1,1),                        &
      &                         g%localranges(1,2),PETSC_NULL_INTEGER,     &
      &                         g%localsizes(1),g%localsizes(2),           &
      &                         PETSC_NULL_INTEGER,ierr)
-         g%localranges(2,1) = g%localranges(1,1) + g%localsizes(1) - 1
-         g%localranges(2,2) = g%localranges(1,2) + g%localsizes(2) - 1
+ 
+        g%localranges(1,1) = g%localranges(1,1) + 1
+        g%localranges(1,2) = g%localranges(1,2) + 1
+        g%localranges(2,1) = g%localranges(1,1) + g%localsizes(1) - 1
+        g%localranges(2,2) = g%localranges(1,2) + g%localsizes(2) - 1
 
-
-!        Some f90 compilers (SGI, Solaris) require this
         grid => g
-      end function ESMFGridCreateSR
+      end function ESMFGridCreate_SR
 
 !--------------------------------------------------------------
 
-      function ESMFGridCreateUQ(comm,file) result (grid)
+      function ESMFGridCreate_UQ(comm,file) result (grid)
         implicit none
-        type (esmfgridunstructuredquads), pointer :: grid(:)
+        type (esmfgridunstructuredquads), pointer :: grid
         character*(*)                                file
         MPI_Comm                                     comm
 
-        type (esmfgridunstructuredquads), pointer :: g(:)
+        type (esmfgridunstructuredquads), pointer :: g
         integer                                      ierr
 
-        allocate(g(1))
-        g%grid%comm        = comm
+        allocate(g)
+        g%grid%base%comm        = comm
+        g%grid%base%refcount    = 0
+        g%grid%base%typename    = 'esmfgridunstructuredquads'
         g%grid%dimension   = 2
-        g%grid%refcount    = 0
-        g%grid%typename    = 'esmfgridunstructuredquads'
 
-!        Some f90 compilers (SGI, Solaris) require this
         grid => g
-      end function ESMFGridCreateUQ
+      end function ESMFGridCreate_UQ
 
 !--------------------------------------------------------------
 
-      function ESMFGridDestroySR(grid) result (ierr)
+      function ESMFGridDestroy_SR(grid) result (ierr)
         implicit none
         integer  ierr
-        type (esmfgridstructuredrectangular), pointer :: grid(:)
+        type (esmfgridstructuredrectangular), pointer :: grid
 
         ierr = 0
-        if (grid(1)%grid%refcount > 0) then
-          grid%grid%refcount = grid%grid%refcount - 1
+        if (grid%grid%base%refcount > 0) then
+          grid%grid%base%refcount = grid%grid%base%refcount - 1
           return
         endif
-        call DADestroy(grid%privateda,ierr)
+        call DADestroy(grid%da,ierr)
         deallocate(grid)
-      end function ESMFGridDestroySR
+      end function ESMFGridDestroy_SR
 
 !--------------------------------------------------------------
 
-      function ESMFGridDestroyUQ(grid) result (ierr)
+      function ESMFGridDestroy_UQ(grid) result (ierr)
         implicit none
         integer ierr
-        type (esmfgridunstructuredquads), pointer :: grid(:)
+        type (esmfgridunstructuredquads), pointer :: grid
 
         ierr = 0
-        if (grid(1)%grid%refcount > 0) then
-          grid%grid%refcount = grid%grid%refcount - 1
+        if (grid%grid%base%refcount > 0) then
+          grid%grid%base%refcount = grid%grid%base%refcount - 1
           return
         endif
         deallocate(grid)
-      end function ESMFGridDestroyUQ
+      end function ESMFGridDestroy_UQ
 
       end module esmfg
 
