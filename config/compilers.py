@@ -359,11 +359,10 @@ class Configure(config.base.Configure):
     # Append run path
     if ldRunPath: self.flibs = ldRunPath+self.flibs
 
-    # g77 shoves this in on darwin, but it is not needed and is incompatible with Apple g++
-    # using darwin7.0.0 is a bug - it could be anything depending upon the osx release and the maching g77 is compiled on
+    # on OS X, mixing g77 3.4 with gcc-3.3 requires using -lcc_dynamic
     if self.flibs.find('-L/sw/lib/gcc/powerpc-apple-darwin') >= 0:
-      self.flibs = re.sub('-L/sw/lib/gcc/powerpc-apple-darwin','-L/usr/lib -L/sw/lib/gcc/powerpc-apple-darwin',self.flibs)
-    
+      self.flibs += ' -lcc_dynamic'
+
     self.framework.log.write('Libraries needed to link against Fortran compiler'+self.flibs+'\n')
     # check that these monster libraries can be used from C
     self.framework.log.write('Check that Fortran libraries can be used from C\n')
