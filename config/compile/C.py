@@ -3,7 +3,10 @@ import config.compile.processor
 import config.framework
 import config.libraries
 
-import sets
+try:
+  import sets
+except ImportError:
+  import config.setsBackport as sets
 
 class Preprocessor(config.compile.processor.Processor):
   '''The C preprocessor'''

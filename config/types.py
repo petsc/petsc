@@ -237,7 +237,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    map(lambda type: self.executeTest(self.check, type, 'long'), ['size_t', 'pid_t', 'off_t', 'mode_t'])
+    map(lambda type: self.executeTest(self.check, [type, 'long']), ['size_t', 'pid_t', 'off_t', 'mode_t'])
     self.executeTest(self.checkUID)
     self.executeTest(self.checkSignal)
     if 'CXX' in self.framework.argDB:
