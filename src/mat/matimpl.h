@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.82 1998/03/12 23:18:01 bsmith Exp curfman $ */
+/* $Id: matimpl.h,v 1.83 1998/03/17 19:53:32 curfman Exp curfman $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -193,7 +193,7 @@ struct  _p_MatFDColoring{
   int    freq;             /* frequency at which new Jacobian is computed */
   Vec    w1,w2,w3;         /* work vectors used in computing Jacobian */
   int    (*f)(void);       /* function that defines Jacobian */
-  void   *fctx;
+  void   *fctx;            /* optional user-defined context for use by the function f */
 };
 
 #endif
