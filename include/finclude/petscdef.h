@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.21 2000/08/03 20:15:03 balay Exp balay $;
+!  $Id: petscdef.h,v 1.22 2000/09/25 17:51:38 balay Exp bsmith $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -108,12 +108,12 @@
 !     Macros for error checking
 !
 #if defined(PETSC_USE_DEBUG)
-#define SETERRA(n,p,s,ierr) call MPI_Abort(PETSC_COMM_WORLD,n,ierr)
+#define SETERRA(n,s,ierr) call MPI_Abort(PETSC_COMM_WORLD,n,ierr)
 #define CHKERRA(n) if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n,n)
 #define CHKMEMQ call chkmemfortran(__LINE__,__FILE__)
 #define CHKMEMA CHKMEMQ
 #else
-#define SETERRA(n,p,s)
+#define SETERRA(n,s)
 #define CHKERRA(n)
 #define CHKMEMQ
 #define CHKMEMA
