@@ -2342,10 +2342,8 @@ int MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal
   int            ierr;
   PetscScalar    mone=-1.0;
   Vec            lvec1,bb1;
-  MatSORType     lflg=SOR_LOCAL_SYMMETRIC_SWEEP;
  
   PetscFunctionBegin;
-
   if (mat->bs > 1)
     SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
 
@@ -2375,7 +2373,7 @@ int MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal
       ierr = VecScatterEnd(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr); 
   
       /* diagonal sweep */
-      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,(MatSORType)SOR_SYMMETRIC_SWEEP,fshift,lits,PETSC_NULL,xx);CHKERRQ(ierr); 
+      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,SOR_SYMMETRIC_SWEEP,fshift,lits,PETSC_NULL,xx);CHKERRQ(ierr); 
     }
     ierr = VecDestroy(lvec1);CHKERRQ(ierr);
     ierr = VecDestroy(bb1);CHKERRQ(ierr);
