@@ -32,7 +32,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure
   PetscInt       m1,m2,n1,n2;
 
   PetscFunctionBegin;
-  PetscValidScalarPointer(a,1);
   PetscValidHeaderSpecific(X,MAT_COOKIE,3); 
   PetscValidHeaderSpecific(Y,MAT_COOKIE,1);
 
