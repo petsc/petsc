@@ -1,4 +1,4 @@
-/* $Id: f90_hpux.h,v 1.3 2000/03/03 14:23:04 bsmith Exp bsmith $ */
+/* $Id: f90_hpux.h,v 1.4 2000/03/03 14:23:26 bsmith Exp balay $ */
 
 #if !defined (__F90_HPUX_H)
 #define __F90_HPUX_H
@@ -28,7 +28,7 @@ typedef struct {
  a      - junk - always 0. Null pointer??
  */
 
-#define f90_header() void* addr; int sd; short ndim; short cookie; int a;
+#define f90_header() void* addr; long sd; short ndim; short cookie; long a;
 
 typedef struct {
   f90_header()
