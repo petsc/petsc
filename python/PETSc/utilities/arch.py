@@ -39,7 +39,9 @@ class Configure(config.base.Configure):
         self.dir = os.getcwd()
     if self.dir[1] == ':':
       try:
-        (self.dir, error, status) = self.executeShellCommand('cygpath -au '+self.dir)
+        dir = self.dir.replace('\\','/')
+        (dir, error, status) = self.executeShellCommand('cygpath -au '+dir)
+        self.dir = dir.replace('\n','')
       except RuntimeError:
         pass
     if os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
