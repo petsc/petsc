@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.33 2000/05/01 06:03:47 kaushik Exp bsmith $";*/
+/* "$Id: flow.c,v 1.34 2000/05/01 23:13:14 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -98,10 +98,9 @@ int main(int argc,char **args)
 
   /*Set the maximum number of threads for OpenMP */
 #if defined(_OPENMP)
-  ierr = OptionsGetInt(PETSC_NULL,"-max_thr",&max_threads,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-max_threads",&max_threads,&flg);CHKERRQ(ierr);
   omp_set_num_threads(max_threads);
-  PetscPrintf(PETSC_COMM_WORLD,"Using %d threads for each MPI process\n",
-              max_threads);  
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Using %d threads for each MPI process\n",max_threads);CHKERRQ(ierr);
 #endif
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
  
@@ -133,62 +132,62 @@ int main(int argc,char **args)
 
   /* 
      Preload the executable to get accurate timings
-  */
+     */
   PreLoadBegin(PETSC_TRUE,"Time integration");
-    user.PreLoading = PreLoading;
+  user.PreLoading = PreLoading;
 
-    /* Create nonlinear solver */
-    ierr = SetPetscDS(&f_pntr,&tsCtx);CHKERRQ(ierr);
-    ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
-    ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
+  /* Create nonlinear solver */
+  ierr = SetPetscDS(&f_pntr,&tsCtx);CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
+  ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
  
-    /* Set various routines and options */
-    ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
-    if (flg) {
-      /* Use matrix-free to define Newton system; use explicit (approx) Jacobian for preconditioner */
-      ierr = MatCreateSNESMF(snes,user.grid->qnode,&Jpc);CHKERRQ(ierr);
-      ierr = SNESSetJacobian(snes,Jpc,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
-    } else {
-      /* Use explicit (approx) Jacobian to define Newton system and preconditioner */
-      ierr = SNESSetJacobian(snes,user.grid->A,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
-    }
+  /* Set various routines and options */
+  ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
+  if (flg) {
+    /* Use matrix-free to define Newton system; use explicit (approx) Jacobian for preconditioner */
+    ierr = MatCreateSNESMF(snes,user.grid->qnode,&Jpc);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,Jpc,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
+  } else {
+    /* Use explicit (approx) Jacobian to define Newton system and preconditioner */
+    ierr = SNESSetJacobian(snes,user.grid->A,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
+  }
  
-    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
  
-    /* Initialize the flowfield */
-    ierr = FormInitialGuess(snes,user.grid);CHKERRQ(ierr);
+  /* Initialize the flowfield */
+  ierr = FormInitialGuess(snes,user.grid);CHKERRQ(ierr);
 
-    /* Solve nonlinear system */
-    ierr = Update(snes,&user);CHKERRQ(ierr);
+  /* Solve nonlinear system */
+  ierr = Update(snes,&user);CHKERRQ(ierr);
 
-    /* Write restart file */
-    ierr = VecGetArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
-    /*f77WREST(&user.grid->nnodes,qnode,user.grid->turbre,user.grid->amut);*/
+  /* Write restart file */
+  ierr = VecGetArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
+  /*f77WREST(&user.grid->nnodes,qnode,user.grid->turbre,user.grid->amut);*/
 
-    /* Write Tecplot solution file */
-    /*
+  /* Write Tecplot solution file */
+  /*
     if (!rank) 
     f77TECFLO(&user.grid->nnodes, 
-             &user.grid->nnbound,&user.grid->nvbound,&user.grid->nfbound,
-             &user.grid->nnfacet,&user.grid->nvfacet,&user.grid->nffacet,
-             &user.grid->nsnode, &user.grid->nvnode, &user.grid->nfnode,  
-              c_info->title,     
-              user.grid->x,       user.grid->y,       user.grid->z,
-              qnode,
-              user.grid->nnpts,   user.grid->nntet,   user.grid->nvpts,
-              user.grid->nvtet,   user.grid->nfpts,   user.grid->nftet,   
-              user.grid->f2ntn,   user.grid->f2ntv,   user.grid->f2ntf,
-              user.grid->isnode,  user.grid->ivnode,  user.grid->ifnode,
-              &rank); 
+    &user.grid->nnbound,&user.grid->nvbound,&user.grid->nfbound,
+    &user.grid->nnfacet,&user.grid->nvfacet,&user.grid->nffacet,
+    &user.grid->nsnode, &user.grid->nvnode, &user.grid->nfnode,  
+    c_info->title,     
+    user.grid->x,       user.grid->y,       user.grid->z,
+    qnode,
+    user.grid->nnpts,   user.grid->nntet,   user.grid->nvpts,
+    user.grid->nvtet,   user.grid->nfpts,   user.grid->nftet,   
+    user.grid->f2ntn,   user.grid->f2ntv,   user.grid->f2ntf,
+    user.grid->isnode,  user.grid->ivnode,  user.grid->ifnode,
+    &rank); 
     */
 
-    /*f77FASFLO(&user.grid->nnodes,&user.grid->nsnode,&user.grid->nnfacet,
-              user.grid->isnode, user.grid->f2ntn,
-              user.grid->x,      user.grid->y,      user.grid->z,
-              qnode);*/
+  /*f77FASFLO(&user.grid->nnodes,&user.grid->nsnode,&user.grid->nnfacet,
+    user.grid->isnode, user.grid->f2ntn,
+    user.grid->x,      user.grid->y,      user.grid->z,
+    qnode);*/
 
-    /* Write residual,lift,drag,and moment history file */
+  /* Write residual,lift,drag,and moment history file */
     /*
      if (!rank) f77PLLAN(&user.grid->nnodes,&rank);
     */
