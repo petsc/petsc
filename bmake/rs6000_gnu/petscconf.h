@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.1 1998/04/09 21:00:31 balay Exp $ */
+/* $Id: petscconf.h,v 1.1 1998/04/09 21:17:51 balay Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -20,7 +20,7 @@
 #define HAVE_UNISTD_H 
 #define HAVE_SYS_TIME_H 
 #define NEED_UTYPE_TYPEDEFS 
-#define _XOPEN_SOURCE_EXTENDED
+#define _XOPEN_SOURCE_EXTENDED 1
 #define HAVE_UNAME  
 #define HAVE_BROKEN_REQUEST_FREE 
 #define NEEDS_GETTIMEOFDAY_PROTO
