@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.80 1996/03/19 21:23:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.81 1996/03/23 18:32:49 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -152,24 +152,26 @@ $      (for instance, cg or gmres)
 
 .keywords: KSP, set, method
 @*/
-int KSPSetType(KSP ctx,KSPType itmethod)
+int KSPSetType(KSP ksp,KSPType itmethod)
 {
   int ierr,(*r)(KSP);
 
-  PetscValidHeaderSpecific(ctx,KSP_COOKIE);
-  if (ctx->setupcalled) {
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  if (ksp->type == (int) itmethod) return 0;
+
+  if (ksp->setupcalled) {
     /* destroy the old private KSP context */
-    ierr = (*(ctx)->destroy)((PetscObject)ctx); CHKERRQ(ierr);
-    ctx->data = 0;
+    ierr = (*(ksp)->destroy)((PetscObject)ksp); CHKERRQ(ierr);
+    ksp->data = 0;
   }
   /* Get the function pointers for the iterative method requested */
   if (!__KSPList) {KSPRegisterAll();}
   if (!__KSPList) SETERRQ(1,"KSPSetType:Could not get list of KSP types"); 
   r =  (int (*)(KSP))NRFindRoutine( __KSPList, (int)itmethod, (char *)0 );
   if (!r) {SETERRQ(1,"KSPSetType:Unknown method");}
-  if (ctx->data) PetscFree(ctx->data);
-  ctx->data = 0;
-  return (*r)(ctx);
+  if (ksp->data) PetscFree(ksp->data);
+  ksp->data = 0;
+  return (*r)(ksp);
 }
 
 /*@C
@@ -215,7 +217,7 @@ int KSPRegisterDestroy()
    the options database.
 
    Input Parameter:
-.  ctx - the KSP context
+.  ksp - the KSP context
 
    Output Parameter:
 .  itmethod - iterative method
@@ -223,12 +225,12 @@ int KSPRegisterDestroy()
    Returns:
    Returns 1 if the method is found; 0 otherwise.
 */
-int KSPGetTypeFromOptions_Private(KSP ctx,KSPType *itmethod)
+int KSPGetTypeFromOptions_Private(KSP ksp,KSPType *itmethod)
 {
   char sbuf[50];
   int  flg,ierr;
 
-  ierr = OptionsGetString(ctx->prefix,"-ksp_type", sbuf, 50,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetString(ksp->prefix,"-ksp_type", sbuf, 50,&flg); CHKERRQ(ierr);
   if (flg) {
     if (!__KSPList) KSPRegisterAll();
     *itmethod = (KSPType)NRFindID( __KSPList, sbuf );

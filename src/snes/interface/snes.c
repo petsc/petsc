@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.69 1996/03/24 22:11:36 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.70 1996/03/26 00:10:05 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -461,6 +461,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->set_method_called = 0;
   snes->setup_called      = 0;
   snes->ksp_ewconv        = 0;
+  snes->type              = -1;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
   kctx = PetscNew(SNES_KSP_EW_ConvCtx); CHKPTRQ(kctx);
@@ -1296,6 +1297,8 @@ int SNESSetType(SNES snes,SNESType method)
 {
   int (*r)(SNES);
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  if (snes->type == (int) method) return 0;
+
   /* Get the function pointers for the iterative method requested */
   if (!__SNESList) {SNESRegisterAll();}
   if (!__SNESList) {SETERRQ(1,"SNESSetType:Could not get methods");}
