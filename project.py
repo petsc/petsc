@@ -4,12 +4,14 @@ import os
 
 class Project:
   '''This class represents a SIDL project, and is the only BuildSystem class allowed in an RDict'''
-  def __init__(self, url, root = None):
+  def __init__(self, url, root = None, web = None):
     import os
     if root is None: root = os.path.abspath(os.getcwd())
     # Read-only variables
-    self.url  = url
-    self.root = root
+    self.url          = url
+    self.root         = root
+    self.webdirectory = None
+    self.web          = web
     # Updated variables
     self.pythonPath = []
     self.packages   = []
@@ -49,6 +51,14 @@ class Project:
   def getUrl(self):
     '''Return the project URL, e.g. bk://petsc.bkbits.net/petsc-dev'''
     return self.url
+
+  def setWebDirectory(self,webdirectory):
+    '''Sets the project Website directory path petsc@terra.mcs.anl.gov://mcs/www-unix/sidl/'''
+    self.webdirectory = webdirectory
+
+  def getWebDirectory(self):
+    '''Returns the project Website directory path petsc@terra.mcs.anl.gov://mcs/www-unix/sidl/'''
+    return self.webdirectory
 
   def getRoot(self):
     '''Return the root directory of the local installation'''

@@ -491,7 +491,7 @@ class Framework(base.Base):
   def t_updateWebsite(self):
     '''Print all the SIDL dependencies as HTML and move to the website'''
     for f in self.executeTarget('printSIDL'):
-      self.executeShellCommand('scp '+f+' petsc@terra.mcs.anl.gov://mcs/www-unix/sidl/'+f)
+      self.executeShellCommand('scp '+f+' '+self.project.getWebDirectory+'/'+f)
       os.remove(f)
     return
 
