@@ -415,5 +415,4 @@ class LibraryAdder (build.transform.Transform):
     '''Put all libraries matching inputTag in linker.extraLibraries'''
     if self.inputTag is None or tag in self.inputTag:
       self.linker.extraLibraries.append(f)
-      return self.output
     return build.transform.Transform.handleFile(self, f, tag)
