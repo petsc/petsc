@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.96 2000/09/02 02:49:14 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.97 2000/09/28 21:13:24 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -22,14 +22,14 @@ int KSPSetUp_Richardson(KSP ksp)
 #define __FUNC__ /*<a name=""></a>*/"KSPSolve_Richardson"
 int  KSPSolve_Richardson(KSP ksp,int *its)
 {
-  int                i,maxit,ierr;
-  MatStructure       pflag;
-  PetscReal          rnorm = 0.0;
-  Scalar             scale,mone = -1.0;
-  Vec                x,b,r,z;
-  Mat                Amat,Pmat;
-  KSP_Richardson     *richardsonP = (KSP_Richardson*)ksp->data;
-  PetscTruth         exists,pres;
+  int             i,maxit,ierr;
+  MatStructure    pflag;
+  PetscReal       rnorm = 0.0;
+  Scalar          scale,mone = -1.0;
+  Vec             x,b,r,z;
+  Mat             Amat,Pmat;
+  KSP_Richardson  *richardsonP = (KSP_Richardson*)ksp->data;
+  PetscTruth      exists,pres;
 
   PetscFunctionBegin;
 
