@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 import bs
 import fileset
-import BSTemplates.sidlTargets
-import BSTemplates.compileTargets
 
 import os
-import os.path
 import pwd
 import sys
 import commands
@@ -14,10 +11,10 @@ import nargs
 
 class PetscMake(bs.BS):
   def __init__(self, args = None):
-    bs.BS.__init__(self, args)
+    bs.BS.__init__(self, 'bs', args)
     self.defineDirectories()
     self.defineFileSets()
-    self.defineTargets()
+    self.defineBuild()
 
   def install(self):
     if not bs.argDB.has_key('install'): return
@@ -35,27 +32,20 @@ class PetscMake(bs.BS):
     
   def defineDirectories(self):
     self.directories['sidl'] = os.path.abspath('sidl')
+    return
 
   def defineFileSets(self):
     self.filesets['sidl'] = fileset.ExtensionFileSet(self.directories['sidl'], '.sidl')
+    return
 
-  def defineTargets(self):
-    sidl = BSTemplates.sidlTargets.Defaults('bs', self.filesets['sidl'])
+  def defineBuild(self):
+    sidl = self.getSIDLDefaults()
     sidl.addServerLanguage('C++')
     sidl.addClientLanguage('C++')
     sidl.addClientLanguage('Python')
-    compile = BSTemplates.compileTargets.Defaults(sidl)
-
-    self.targets['sidl']    = sidl.getSIDLTarget()
-    self.targets['compile'] = compile.getCompileTarget()
-    self.targets['default'] = self.targets['compile']
+    return
 
 if __name__ ==  '__main__':
-#  try:
-    pm = PetscMake(sys.argv[1:])
-    pm.main()
-    pm.install()
-#  except Exception, e:
-#    print 'ERROR: '+str(e)
-#    sys.exit(1)
-    sys.exit(0)
+  pm = PetscMake(sys.argv[1:])
+  pm.main()
+  pm.install()
