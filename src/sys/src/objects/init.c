@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.43 1999/06/30 23:49:38 balay Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.44 1999/09/01 19:27:29 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -549,11 +549,11 @@ int OptionsCheckInitial_Alice(void)
   */
 #if defined(PETSC_USE_STACK)
 #if defined(PETSC_USE_BOPT_g)
-  ierr = PetscStackCreate(256);CHKERRQ(ierr);
+  ierr = PetscStackCreate();CHKERRQ(ierr);
 #else
   ierr = OptionsHasName(PETSC_NULL,"-log_stack", &flg1);CHKERRQ(ierr);
   if (flg1) {
-    ierr = PetscStackCreate(256);CHKERRQ(ierr);
+    ierr = PetscStackCreate();CHKERRQ(ierr);
   }
 #endif
 #endif
@@ -638,6 +638,7 @@ int OptionsCheckInitial_Alice(void)
          
 #undef __FUNC__  
 #define __FUNC__ "AliceInitializeNoArguments"
+/* PetscFunctionBegin; dummy to keep count correct */
 /*@C
       AliceInitializeNoArguments - Calls AliceInitialize() from C/C++ without
         the command line arguments.
