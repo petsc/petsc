@@ -50,11 +50,18 @@ projects</a></font></strong></li>
 in developing and contributing to the PETSc libraries. It is intended
 only       for people who are experienced with building, using and
 debugging PETSc.       We <b>cannot provide support</b> (debugging,
-building, etc) for people using the       development copy of PETSc. If
+building, etc) for people using the       development copy of PETSc, but we <b>will</b> provide support for the 
+automatic configuration (see below). If
 you cannot use a debugger and EMACS etags then please don't
 access these pages.<br>
-      <big><span style="font-weight: bold;"><br>
-Obtaining PETSc:</span></big><br>
+
+<p> In order to use the development version of PETSc from Fortran, make sure the <b>bfort</b> program
+from the <a href="ftp://ftp.mcs.anl.gov/pub/petsc/sowing.tar.gz">Sowing</a> package
+developed by Bill Gropp <a href="ftp://ftp.mcs.anl.gov/pub/petsc/mac-sowing.tar.gz">[Prebuilt for Mac X]</a>
+is in your PATH. If you use the automatic configuration (see below) for PETSc it will
+automatically generate the Fortran stubs, otherwise do make allfortranstubs from the PETSc directory.</p>
+
+      <big><span style="font-weight: bold;"><br>Obtaining PETSc:</span></big><br>
       <br>
 To obtain development version of PETSc,       download and install <b>BitKeeper</b>
 from <a href="http://bitkeeper.com"> bitkeeper.com</a>. This is a free
@@ -71,7 +78,11 @@ For additional help         on using BitKeeper you can use
       <ul>
         <li><font color="#800000">bk helptool</font></li>
       </ul>
-Also, we recommend creating a new PETSC_ARCH -       for example: <b>&nbsp;linux_local</b>(i.e
+We strongly recomment that all users of the development version of PETSc use
+the automatic configuration <a href="http://www.mcs.anl.gov/petsc/petsc-2/documentation/installation.html">(number 7 here)</a>
+ to install PETSc, rather than editing the bmake files manually (if you have trouble with the automatic configuration,
+please <b>do</b> contact us for help). If you 
+cannot get configure to work we recommend creating a new PETSC_ARCH -       for example: <b>&nbsp;linux_local</b>(i.e
 copy files from bmake/linux over to bmake/linux_local)       and make
 edits suitable for your configuration in this copy - this way&nbsp;    
 you don't have to edit sources in BitKeeer.<br>
@@ -110,18 +121,14 @@ in an unuseable state (with errors when building libraries or examples
 randomly crashing)</p>
       <p align="left" style="font-weight: bold;"><big>Additional Tools:</big></p>
       <p align="left"> The following additional tools are required      
-to build the fortran interface and PETSc documentation:</p>
+to build the PETSc documentation:</p>
       <ul>
         <li>
-          <p align="left"><font size="4"> <a
- href="ftp://ftp.mcs.anl.gov/pub/petsc/sowing.tar.gz">Sowing</a>:</font>&nbsp;
-A text           processing tools developed by Bill Gropp. This package
-is primarily required to       generate the <b>fortran stubs. </b>&nbsp;It
-is&nbsp; also used to generate       some of the PETSc documentation.</p>
+          <p align="left"><font size="4"> <a href="ftp://ftp.mcs.anl.gov/pub/petsc/sowing.tar.gz">Sowing</a>:</font>&nbsp;
+A text           processing tools developed by Bill Gropp. <a href="ftp://ftp.mcs.anl.gov/pub/petsc/mac-sowing.tar.gz">[Prebuilt for Mac X]</a></p>
         </li>
         <li>
-          <p align="left"><font size="4"> <a
- href="ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
+          <p align="left"><font size="4"> <a href="ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
 A a text processing package required to generate the PETSc
 documentation.</p>
         </li>
@@ -132,18 +139,15 @@ package might already be installed on most systems. It is
 required to generate the users manual (part of the PETSc documentation)</p>
         </li>
       </ul>
-      <p align="left">&nbsp;&nbsp; Once the above tools are available
-in the       PATH, the following commands can be used to build the
-fortran stubs and the documentation (should be invoked in ${PETSC_DIR}):<br>
+      <p align="left">&nbsp;&nbsp; Once doctext, mapnames (from sowing), c2html and pdflatex (from teTeX)
+are in your PATH you can build the documentation with:<br>
       </p>
       <ul>
-        <li><font color="#800000">make allfortranstubs</font> : This    
-builds the fortran stubs in src/fortran/auto dir</li>
-        <li><font color="#800000">make alldoc allhtml LOC=${PETSC_DIR} </font>:
-This builds all the documentation including the man pages, the      
-user's manual, HTML formatted source files.</li>
+        <li><font color="#800000">make alldoc allhtml LOC=${PETSC_DIR} </font>.</li>
       </ul>
       <br>
+      If these tools are already installed on your system, then the PETSc automatic configuration attempts to run them
+to generate the documentation.
       <br>
 &nbsp; </td>
     </tr>
