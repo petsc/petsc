@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.160 1998/01/14 02:39:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.161 1998/01/17 17:36:33 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -1532,7 +1532,7 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag); CHKERRQ(ierr);
   if (!flag)  {if (flg) *flg = 0; *nmax = 0; PetscFunctionReturn(0);}
-  if (!value) {if (flg) *flg = 0; *nmax = 0; PetscFunctionReturn(0);}
+  if (!value) {if (flg) *flg = 1; *nmax = 0; PetscFunctionReturn(0);}
 
   if (flg) *flg = 1;
   /* make a copy of the values, otherwise we destroy the old values */
@@ -1583,7 +1583,7 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag); CHKERRQ(ierr);
   if (!flag)  {if (flg) *flg = 0; *nmax = 0; PetscFunctionReturn(0);}
-  if (!value) {if (flg) *flg = 0; *nmax = 0; PetscFunctionReturn(0);}
+  if (!value) {if (flg) *flg = 1; *nmax = 0; PetscFunctionReturn(0);}
 
   if (flg) *flg = 1;
   /* make a copy of the values, otherwise we destroy the old values */
