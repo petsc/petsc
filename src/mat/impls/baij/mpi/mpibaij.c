@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.219 2001/03/23 23:22:14 balay Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.220 2001/04/09 15:13:50 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -1109,6 +1109,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   }
 
   if (size == 1) {
+    ierr = PetscObjectSetName((PetscObject)baij->A,mat->name);CHKERRQ(ierr);
     ierr = MatView(baij->A,viewer);CHKERRQ(ierr);
   } else {
     /* assemble the entire matrix onto first processor. */
@@ -1122,6 +1123,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     } else {
       ierr = MatCreateMPIBAIJ(mat->comm,baij->bs,0,0,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
     }
+    ierr = PetscObjectSetName((PetscObject)A,mat->name);CHKERRQ(ierr);
     PetscLogObjectParent(mat,A);
 
     /* copy over the A part */
