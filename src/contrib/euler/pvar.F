@@ -7,9 +7,9 @@ c PVAR - post-processes the solution for physical quanities of interest
 c This parallel version relies on the fact that currently each processor
 c stores the entire mesh; then certain quantities (such as surface pressure)
 c are directly computed and sent to all processors.   Only a single 
-c processor prints the output.  Obviously, this procedure is far from
-c optimal in terms of memory usage and communication.  A better variant
-c may eventually relace this.  The uniprocessor analog is pvar_uni().
+c processor prints the output.  Obviously, this procedure is suboptimal
+c in terms of memory usage and communication.  A better variant may
+c eventually replace this.  The uniprocessor analog is pvar_uni().
 c
 #include "param.h"
 #include "varbls.h"

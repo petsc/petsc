@@ -1,4 +1,5 @@
-/* Include file for app-defined SNES/SLES routines */
+
+/* Include file for 3D Euler application code */
 
 #if !defined(__APPCTX)
 #define __APPCTX
@@ -46,6 +47,7 @@ typedef struct {
     int    use_vecsetvalues;     /* flag: 1: use of VecSetValues() */
     int    post_process;         /* flag: 1: do post-processing */
     int    pvar;                 /* flag: 1: compute lift/drag data */
+    int    global_grid;          /* flag: 1: store global grid instead of just local part */
     int    iter;                 /* nonlinear iteration number */
     int    sles_tot;             /* total linear solve iterations */
     Scalar fstagnate_ratio;      /* stagnation detection */
@@ -191,81 +193,61 @@ typedef struct {
 
 /* Fortran routine declarations, needed for portablilty */
 #ifdef HAVE_FORTRAN_CAPS
-#define mdump_       MDUMP
-#define eigenv_      EIGENV
-#define rscale_      RSCALE
-#define resid_       RESID
-#define residbc_     RESIDBC
-#define bc_uni_      BC_UNI
-#define rbuild_      RBUILD
+#define eigenv_        EIGENV
+#define localfortfct_  LOCALFORTFCT
+#define resid_         RESID
+#define residbc_       RESIDBC
+#define bc_uni_        BC_UNI
+#define rbuild_        RBUILD
 #define rbuild_direct_ RBUILD_DIRECT
-#define jsetup_      JSETUP
-
-#define jstep_       JSTEP
-#define jfinish_     JFINISH
-#define jmonitor_    JMONITOR
-#define jform_       JFORM
-#define jform2_      JFORM2
-#define jformdt_     JFORMDT
-#define jformdt2_    JFORMDT2
-#define buildmat_    BUILDMAT
-#define buildbdmat_  BUILDBDMAT
-#define nzmat_       NZMAT
-#define printvec_    PRINTVEC
-#define copyvec_     COPYVEC
-#define setvec_      SETVEC
-#define scalenorm_   SCALENORM
-#define pvar_        PVAR
-#define julianne_    JULIANNE
-#define printjul_    PRINTJUL
-#define printgjul_   PRINTGJUL
-#define printbjul_   PRINTBJUL
-#define parsetup_    PARSETUP
-#define jpressure_   JPRESSURE
-#define bc_          BC
-#define bcpart_j1_   BCPART_J1
-#define readmesh_    READMESH
-#define jcfl_update_ JCFL_UPDATE
+#define jmonitor_      JMONITOR
+#define jform_         JFORM
+#define jform2_        JFORM2
+#define jformdt_       JFORMDT
+#define jformdt2_      JFORMDT2
+#define buildmat_      BUILDMAT
+#define nzmat_         NZMAT
+#define pvar_          PVAR
+#define printvec_      PRINTVEC
+#define julianne_      JULIANNE
+#define printjul_      PRINTJUL
+#define printgjul_     PRINTGJUL
+#define printbjul_     PRINTBJUL
+#define parsetup_      PARSETUP
+#define jpressure_     JPRESSURE
+#define bc_            BC
+#define bcpart_j1_     BCPART_J1
+#define readmesh_      READMESH
 
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define mdump_       mdump
-#define eigenv_      eigenv
-#define rscale_      rscale
-#define resid_       resid
-#define bc_uni_      bc_uni
-#define residbc_     residbc
-#define rbuild_      rbuild
+#define eigenv_        eigenv
+#define localfortfct_  localfortfct
+#define resid_         resid
+#define bc_uni_        bc_uni
+#define residbc_       residbc
+#define rbuild_        rbuild
 #define rbuild_direct_ rbuild_direct
-#define jsetup_      jsetup
-#define jstep_       jstep
-#define jfinish_     jfinish
-#define jmonitor_    jmonitor
-#define jform_       jform
-#define jform2_      jform2
-#define jformdt_     jformdt
-#define jformdt2_    jformdt2
-#define buildmat_    buildmat
-#define buildbdmat_  buildbdmat
-#define nzmat_       nzmat
-#define printvec_    printvec
-#define copyvec_     copyvec
-#define setvec_      setvec
-#define scalenorm_   scalenorm
-#define pvar_        pvar
-#define julianne_    julianne
-#define printjul_    printjul
-#define printgjul_   printgjul
-#define printbjul_   printbjul
-#define parsetup_    parsetup
-#define jpressure_   jpressure
-#define bc_          bc
-#define bcpart_j1_   bcpart_j1
-#define readmesh_    readmesh
-#define jcfl_update_ jcfl_update
+#define jmonitor_      jmonitor
+#define jform_         jform
+#define jform2_        jform2
+#define jformdt_       jformdt
+#define jformdt2_      jformdt2
+#define buildmat_      buildmat
+#define nzmat_         nzmat
+#define pvar_          pvar
+#define julianne_      julianne
+#define printjul_      printjul
+#define printgjul_     printgjul
+#define printbjul_     printbjul
+#define parsetup_      parsetup
+#define jpressure_     jpressure
+#define bc_            bc
+#define bcpart_j1_     bcpart_j1
+#define readmesh_      readmesh
 #endif
 
 /* Basic routines */
-int UserCreateEuler(MPI_Comm,int,Euler**);
+int UserCreateEuler(MPI_Comm,int,int,Euler**);
 int UserDestroyEuler(Euler*);
 int InitialGuess(SNES,Euler*,Vec);
 int ComputeFunction(SNES,Vec,Vec,void*);
@@ -277,13 +259,13 @@ int UserSetMatrixFreeParameters(SNES,double,double);
 int UserSetGridParameters(Euler*);
 int UserSetGrid(Euler*);
 int BoundaryConditionsImplicit(Euler*,Vec);
+int BoundaryConditionsExplicit(Euler*,Vec);
 int BCScatterSetUp(Euler*);
 
 /* Utility routines */
-int UnpackWork(Euler*,Scalar*,Vec,Vec);
+int UnpackWork(Euler*,DA,Scalar*,Vec,Vec);
 int UnpackWorkComponent(Euler*,Scalar*,Vec);
-int PackWork(Euler*,Vec,Vec,Scalar**);
-int PackWorkComponent(Euler*,Vec,Vec,Scalar*,Scalar**);
+int PackWork(Euler*,DA,Vec,Vec,Scalar**);
 int MatViewDFVec_MPIAIJ(Mat,DFVec,Viewer);
 int MatViewDFVec_MPIBAIJ(Mat,DFVec,Viewer);
 int GridTest(Euler*);
@@ -301,7 +283,6 @@ void MonitorDumpIter(int);
 
 /* Fortran routines */
 extern int readmesh_(int*,int*,int*,int*,Scalar*,Scalar*,Scalar*);
-extern int mdump_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int printvec_(double*,int*,FILE*);
 extern int printjul_(double*,double*,int*);
 extern int printgjul_(double*,double*,int*);
@@ -313,6 +294,17 @@ extern int jpressure_(Scalar*,Scalar*);
 extern void eigenv_(Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,TimeStepType*);
+extern int  localfortfct_(int*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+
 extern int  residbc_(Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
@@ -381,18 +373,15 @@ extern int bc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*);
 extern int bcpart_j1_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-extern int rscale_(Scalar*,Scalar*);
 
 extern int parsetup_(int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
+                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
 extern int buildmat_(int*,ScaleType*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*);
-extern int buildbdmat_(int*,ScaleType*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
 extern int nzmat_(MatType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
 extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,

@@ -18,7 +18,7 @@
 #   PETSC_DIR = /home/curfman/petsc
 # Argonne SPx
 #   PETSC_DIR = /sphome/curfman/petsc
-# Power Challenge - NCSA
+# Origin2000 and Power Challenge - NCSA
 #   PETSC_DIR = /u/ac/barrys/petsc
 # Cray T3E - NERSC
 #   PETSC_DIR = /u3/bsmith/petsc
@@ -36,12 +36,21 @@
 #    saves some memory for the PETSc version.  This flag is used only
 #    in the routine julianne() in xnd.F.
 #
+# ACTIVATE_PVAR - Flag to indicate that we compile the pvar() routine
+#    for computing physical data.  We can deactivate this to save a
+#    bit of memory.
+#
+# ACTIVATE_OLD_ASSEMBLY - Flag to indicate that we activate old-style
+#    matrix and vector assembly options
+#
 # CPPFLAGS - Basic compiler flags, as specified by petsc/bmake/common
 # FCONF    - Additional compiler flags for Fortran, needed here to pick
 #            up the C/Fortran interface flag 
+# CONF     - needed for handling 64-bit pointer conversion to Fortran
+#             (shouldn't be needed by most applications)
 
-# CFLAGS    = $(CPPFLAGS) $(FCONF) -DACTIVATE_JULIANNE
-  CFLAGS    = $(CPPFLAGS) $(FCONF)
+# CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_JULIANNE
+  CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_PVAR 
 
 # -----------------------------------------------------------------------
 # Define application source code
@@ -74,23 +83,25 @@ ALL: ex1
 # common blocks with lots of memory and are needed only by the original Julianne
 # solver.  This saves some memory for the PETSc version of code.
 #
-  SOURCEF_COMMON   = xnd.F xmod2.F
+  SOURCEF_COMMON   = xnd.F xmod2.F pvar.F
   SOURCEF_JULIANNE = xjul.F
-  SOURCEF_PETSC    = xmod.F implbc.F mat.F dnest.f obselete.F 
+  SOURCEF_PETSC    = xmod.F implbc.F mat.F dnest.F obselete.F 
   SOURCEF          = $(SOURCEF_COMMON) $(SOURCEF_PETSC) $(SOURCEF_JULIANNE)
 
-  OBJSF_COMMON     = xnd.o xmod2.o
+  OBJSF_COMMON     = xnd.o xmod2.o pvar.o
   OBJSF_JULIANNE   = xjul.o
-  OBJSF_PETSC      = xmod.o implbc.o mat.o dnest.o obselete.o 
+  OBJSF_PETSC      = xmod.o implbc.o mat.o dnest.o 
+#  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
   OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
-# OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #
 # Define C source code:
-#
-  OBJSC     = user1.o bc.o misc.o mfj.o regmpimat.o monitor.o vrml.o utils.o noise.o
-  SOURCEC   = user1.c bc.c misc.c mfj.c regmpimat.c monitor.c vrml.c utils.c noise.c
+  OBJSC     = user1.o grid.o bc.o misc.o mfj.o monitor.o vrml.o utils.o noise.o
+  SOURCEC   = user1.c grid.c bc.c misc.c mfj.c monitor.c vrml.c utils.c noise.c
+
+# Source no longer used.
+# SOURCE_SURPLUS = regmpimat.c matbd.F
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #
@@ -223,12 +234,8 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 #	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) -C $*.F
 ##	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) $*.F
 
-#
-# Define LAPACK here, just to test the scoop with ESSL on poseidon
-# Note: We get significantly different convergence results for 
-# matrix-free Newton-Krylov methods when using ESSL's ddot.
-#
-# DOT = /ump/hpcc/home3/mcinnes/work/blas/ddot.o
-# LAPACK_LIB = $(DOT) -lessl /ump/hpcc/home3/mcinnes/lapack/lapack.a
-## LAPACK_LIB = -lessl /ump/hpcc/home3/mcinnes/lapack/lapack.a
-
+# Compilation rule for Cray t3e
+#.F.o:
+#	-cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
+#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+##	-$(RM) $*.f 

@@ -262,7 +262,7 @@ int UserSetGrid(Euler *app)
   Scalar *xt, *yt, *zt;
   int    llen, i, j ,k, gxs1, gxe01, gys1, gye01, gzs1, gze01;
   int    mx_l, my_l, mz_l, mx_g, my_g, mz_g, ict_g, ict_l, ierr;
-  int    itl, itu, ile, ktip, flg;
+  int    itl, itu, ile, ktip;
 
   ierr = readmesh_(&itl,&itu,&ile,&ktip,app->xc,app->yc,app->zc); CHKERRQ(ierr);
   if ((app->bctype == EXPLICIT 
@@ -306,5 +306,6 @@ int UserSetGrid(Euler *app)
     app->yc = yt;
     app->zc = zt;
   }
+  MPI_Barrier(app->comm);
   return 0;
 }

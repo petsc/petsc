@@ -1,3 +1,9 @@
+c
+c  This file contains routines that are now obselete.  But since
+c  these were crucial during development stages of the parallel,
+c  fully implicit version of code, we retain them for future
+c  reference, although hopefully they won't be needed anymore.
+c
 c ***************************************************************
 c routines taken from mat.F
 
@@ -946,6 +952,120 @@ c      DO 21 I=2,NI
       return
       end
 
+
+c -------------------------------------------------------------------
+
+      integer function jform2(eps,epsi,ltog,nloc,mat,d,dt,
+     &                       xx,p,
+     &                       br,bl,be,sadai,sadaj,sadak,
+     &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+     &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+c
+c jform2 - Forms the Jacobian matrix, J(x), with direct assembly 
+c          of the matrix into the PETSc formats via calls to
+c          MatSetValues().  This version uses explicit boundary
+c          conditions.  This approach of direct matrix assembly 
+c          is recommended -- rather than the use of the intermediate
+c          Eagle format as in the routine jform().
+c
+c          This routine is called by FormJacobian().
+c
+#include "param.h"
+#include "dt.h"
+#include "varbls.h"
+#include "consts.h"
+#include "freq.h"
+#include "es.h"
+#include "sada.h"
+#include "avctrs.h"
+#include "diag.h"
+#include "fv.h"
+#include "sigma.h"
+
+c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
+c      COMMON /CONST2/ PINIT
+c      COMMON /FREQ/ IFREQ,ISGS
+      Double  qer(5),qel(5),eps,epsi,dti
+      integer nloc,ltog(0:nloc-1)
+      integer m,ierr,nd2,ijk,jk,rc(5),i,j,k
+      Mat     mat
+
+      jform2 = 0
+      do 10 m=1,5
+         qel(m)=zero
+         qer(m)=zero
+ 10   continue
+
+      do 30 m=1,5
+      qel(m)=eps
+c Form Jacobian elements in left part of matrix
+      ierr = nd2 (m,epsi,qer,qel,1,mat,ltog,nloc,d,
+     &         xx,p,
+     &         br,bl,be,sadai,sadaj,sadak,
+     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+      if (ierr .ne. 0) then
+         jform2 = -1
+         return 
+      endif
+      qel(m)=zero
+   30 continue
+
+      do 31 m=1,5
+      qer(m)=eps
+c Form Jacobian elements in right part of matrix
+      ierr = nd2 (m,epsi,qer,qel,2,mat,ltog,nloc,d,
+     &         xx,p,
+     &         br,bl,be,sadai,sadaj,sadak,
+     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+
+      if (ierr .ne. 0) then
+         jform2 = -1
+         return 
+      endif
+      qer(m)=zero
+   31 continue
+
+c Find eigendecomposition of diagonal block of Jacobian; Form DT matrix.
+c But really need to recalculate dt only when the iterates change. 
+      call eigenv(dt,xx,p,sadai,sadaj,sadak,
+     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+
+c We must specify that we are inserting matrix blocks by columns, since
+c the PETSc default is row-oriented input.
+      call MatSetOption(mat,MAT_COLUMN_ORIENTED,ierr)
+
+      do 21 k=zsf2,zef01
+      do 21 j=ysf2,yef01
+       jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
+      do 21 i=xsf2,xef01
+c      dql=B1(L,M,I,J,K)+B2(L,M,I,J,K)+B3(L,M,I,J,K)
+c      dqr=B4(L,M,I-1,J,K)+B5(L,M,I,J-1,K)+B6(L,M,I,J,K-1)
+c      D(L,M,I,J,K)=dql-dqr
+c      IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+one/DT(I,J,K)
+       ijk = ltog(nc * (i-gxsf + jk))
+       rc(1) = ijk
+       rc(2) = ijk + 1
+       rc(3) = ijk + 2
+       rc(4) = ijk + 3
+       rc(5) = ijk + 4
+       dti = one/DT(I,J,K)
+       D(1,1,I,J,K)=D(1,1,I,J,K) + dti
+       D(2,2,I,J,K)=D(2,2,I,J,K) + dti
+       D(3,3,I,J,K)=D(3,3,I,J,K) + dti
+       D(4,4,I,J,K)=D(4,4,I,J,K) + dti
+       D(5,5,I,J,K)=D(5,5,I,J,K) + dti
+       call MatSetValues(mat,nc,rc,nc,rc,d(1,1,i,j,k),
+     &                   INSERT_VALUES,ierr)
+   21 CONTINUE
+
+C  The rest of the input is row-oriented.
+      call MatSetOption(mat,MAT_ROW_ORIENTED,ierr)
+
+      return
+      end
+
 c ***************************************************************
 c routines taken from: implbc.F
 c
@@ -1094,6 +1214,35 @@ c      DO 21 I=2,NI
       D(L,M,I,J,K)=dql-dqr
       IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+one/DT(I,J,K)
    21 CONTINUE
+
+      return
+      end
+
+c -------------------------------------------------------------------
+c
+c   rscale - Scales input vector by dt.
+c
+      integer function rscale( dt, dxx )
+
+#include "param.h"
+#include "dt.h"
+#include "dvarbls.h"
+
+      integer i,j,k
+
+      rscale = 0
+      do 100 k=zsf2,zef01
+      do 100 j=ysf2,yef01
+      do 100 i=xsf2,xef01
+c      do 100 k=2,nk
+c      do 100 j=2,nj
+c      do 100 i=2,ni
+         dr(i,j,k)  = dt(i,j,k)*dr(i,j,k)
+         dru(i,j,k) = dt(i,j,k)*dru(i,j,k)
+         drv(i,j,k) = dt(i,j,k)*drv(i,j,k)
+         drw(i,j,k) = dt(i,j,k)*drw(i,j,k)
+         de(i,j,k)  = dt(i,j,k)*de(i,j,k)
+ 100  continue
 
       return
       end

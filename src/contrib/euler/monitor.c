@@ -154,7 +154,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     /* Extract solution and update vectors; convert to Julianne format */
     ierr = SNESGetSolutionUpdate(snes,&DX); CHKERRQ(ierr);
     ierr = VecScale(&negone,DX); CHKERRQ(ierr);
-    ierr = PackWork(app,DX,app->localDX,&app->dxx); CHKERRQ(ierr);
+    ierr = PackWork(app,app->da,DX,app->localDX,&app->dxx); CHKERRQ(ierr);
 
     /* Call Julianne monitoring routine and update CFL number */
     ierr = jmonitor_(&app->flog[its],&app->cfl,
@@ -202,6 +202,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
   app->iter = its+1;
   return 0;
 }
+int DFVecFormUniVec_MPIRegular_Private(Vec,Vec*);
 #undef __FUNC__
 #define __FUNC__ "MonitorDumpGeneral"
 /* --------------------------------------------------------------- */
@@ -224,7 +225,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
   /* Since we call MonitorDumpGeneral() from the routine ComputeFunction(), packing and
      computing the pressure have already been done. */
   /*
-  ierr = PackWork(app,app->X,app->localX,&app->xx); CHKERRA(ierr);
+  ierr = PackWork(app,app->da,app->X,app->localX,&app->xx); CHKERRA(ierr);
   ierr = jpressure_(app->xx,app->p); CHKERRA(ierr);
   */
 
@@ -357,7 +358,7 @@ int MonitorDumpVRML(SNES snes,Vec X,Vec F,Euler *app)
 
     /* Since we call MonitorDumpVRML() from the routine ComputeFunction(), we've already
        computed the pressure ... so there's no need for the following 2 statements.
-    ierr = PackWork(app,app->X,app->localX,&app->xx); CHKERRA(ierr);
+    ierr = PackWork(app,app->da,app->X,app->localX,&app->xx); CHKERRA(ierr);
     ierr = jpressure_(app->xx,app->p); CHKERRA(ierr);
     */
 

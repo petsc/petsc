@@ -8,7 +8,7 @@
 
 #undef __FUNC__
 #define __FUNC__ "BCScatterSetUp"
-/***************************************************************************/
+/* ----------------------------------------------------------------------- */
 /*
    BCScatterSetUp - Sets up scatter contexts for certain boundary conditions.
 
@@ -224,7 +224,7 @@ int BCScatterSetUp(Euler *app)
 }
 #undef __FUNC__
 #define __FUNC__ "BoundaryConditionsExplicit"
-/***************************************************************************/
+/* ----------------------------------------------------------------------- */
 /*
    BoundaryConditionsExplicit - Applies all boundary conditions explicitly.
    Required for parallel case, where vector scatters are used for some BC's.
@@ -288,14 +288,14 @@ int BoundaryConditionsExplicit(Euler *app,Vec X)
   ierr = VecScatterEnd(app->P,app->Pbc,INSERT_VALUES,SCATTER_FORWARD,app->Pbcscatter); CHKERRQ(ierr);
 
   /* Pack pressure work array */
-  ierr = PackWorkComponent(app,app->Pbc,app->localP,app->p_bc,&app->p_bc); CHKERRQ(ierr);
+  ierr = PackWork(app,app->da1,app->Pbc,app->localP,&app->p_bc); CHKERRQ(ierr);
 
   /* Scatter BC components of X to another work vector */
   ierr = VecScatterBegin(X,app->Xbc,INSERT_VALUES,SCATTER_FORWARD,app->Xbcscatter); CHKERRQ(ierr);
   ierr = VecScatterEnd(X,app->Xbc,INSERT_VALUES,SCATTER_FORWARD,app->Xbcscatter); CHKERRQ(ierr);
 
   /* Convert BC work vector to Julianne format work arrays */
-  ierr = PackWork(app,app->Xbc,app->localXBC,&app->xx_bc); CHKERRQ(ierr);
+  ierr = PackWork(app,app->da,app->Xbc,app->localXBC,&app->xx_bc); CHKERRQ(ierr);
 
   /* Set certain explicit boundary conditions using scattered data */
   bcpart_j1_(app->xx,app->p,app->xx_bc,app->p_bc,
@@ -308,7 +308,7 @@ int BoundaryConditionsExplicit(Euler *app,Vec X)
 
 #undef __FUNC__
 #define __FUNC__ "BoundaryConditionsImplicit"
-/***************************************************************************/
+/* ----------------------------------------------------------------------- */
 /*
    BoundaryConditionImplicit - Performs scatters needed for computing the
    nonlinear function components for certain implicit boundary conditions.
@@ -339,9 +339,10 @@ int BoundaryConditionsImplicit(Euler *app,Vec X)
   ierr = VecScatterEnd(X,app->Xbc,INSERT_VALUES,SCATTER_FORWARD,app->Xbcscatter); CHKERRQ(ierr);
 
   /* Convert BC work vector to Julianne format work arrays */
-  ierr = PackWork(app,app->Xbc,app->localXBC,&app->xx_bc); CHKERRQ(ierr);
+  ierr = PackWork(app,app->da,app->Xbc,app->localXBC,&app->xx_bc); CHKERRQ(ierr);
 
   return 0;
 }
-/***************************************************************************/
+
+
 
