@@ -10,6 +10,6 @@ PC Object:
     Shell: no name
   linear system matrix = precond matrix:
   Matrix Object:
-    type=mpiaij, rows=56, cols=56
+    type=aij, rows=56, cols=56
     total: nonzeros=250, allocated nonzeros=392
 Norm of error 5.9071E-08 iterations    15

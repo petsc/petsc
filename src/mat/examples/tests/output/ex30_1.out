@@ -1,6 +1,6 @@
 original matrix:
 Matrix Object:
-  type=seqaij, rows=25, cols=25
+  type=aij, rows=25, cols=25
   total: nonzeros=113, allocated nonzeros=125
     not using I-node routines
 row 0: (0, 4)  (1, -1)  (5, -1) 
