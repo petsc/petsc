@@ -617,10 +617,10 @@ class Configure(config.base.Configure):
             self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
             break
           self.framework.argDB['LIBS'] = oldLibs
-          os.remove('foo.'+ext)
+          os.remove('libfoo.'+ext)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         self.framework.argDB[flagsArg] = oldFlags
-      del self.LD_SHARED
+        del self.LD_SHARED
     return
 
   def checkSharedLinkerPaths(self):
@@ -676,7 +676,10 @@ class Configure(config.base.Configure):
     else:
       self.addSubstitution('FC', '')
     self.addArgumentSubstitution('LDFLAGS', 'LDFLAGS')
-    self.addSubstitution('SHARED_LIBRARY_FLAG', ' '.join(self.sharedLibraryFlags))
+    if hasattr(self,'sharedLibraryFlags'):
+      self.addSubstitution('SHARED_LIBRARY_FLAG', ' '.join(self.sharedLibraryFlags))
+    else:
+      self.addSubstitution('SHARED_LIBRARY_FLAG','')
     return
 
   def configure(self):
