@@ -10,7 +10,6 @@ esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm icomm, int n, int N)
 {
   int ierr;
   ierr = PetscMapCreateMPI(icomm,n,N,&this->map);if (ierr) return;
-  this->pobject = (PetscObject)this->map;
   ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);if (ierr) return;
 }
 
@@ -28,7 +27,6 @@ esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> &sourceIndexSpace
     ierr = amap->getLocalSize(n);if (ierr) return;
   }
   ierr = PetscMapCreateMPI(*icomm,n,N,&this->map);if (ierr) return;
-  this->pobject = (PetscObject)this->map;
   ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);if (ierr) return;
 }
 
@@ -36,14 +34,12 @@ esi::petsc::IndexSpace<int>::IndexSpace(PetscMap sourceIndexSpace)
 {
   PetscObjectReference((PetscObject) sourceIndexSpace);
   this->map = sourceIndexSpace;
-  this->pobject = (PetscObject)this->map;
   PetscObjectGetComm((PetscObject)sourceIndexSpace,&this->comm);
 }
 
 esi::petsc::IndexSpace<int>::~IndexSpace()
 {
-  int ierr;
-  if (this->map) {ierr = PetscMapDestroy(this->map); if (ierr) return;}
+  int ierr = PetscMapDestroy(this->map);
 }
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */
@@ -72,7 +68,6 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
   list->appendArg("PetscMap");
   return 0;
 }
-
 
 /* -------------- esi::IndexSpace methods --------------------------------------------*/
 ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalSize(int &globalSize)

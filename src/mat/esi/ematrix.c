@@ -23,7 +23,6 @@ esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSp
   ierr = inrmap->addReference();
   ierr = incmap->addReference();
 
-  this->pobject = (PetscObject)this->mat;
   ierr = PetscObjectGetComm((PetscObject)this->mat,&this->comm);if (ierr) return;
 }
 
@@ -34,7 +33,6 @@ esi::petsc::Matrix<double,int>::Matrix(Mat imat)
 
   this->mat  = imat;
   
-  this->pobject = (PetscObject)this->mat;
   ierr = PetscObjectGetComm((PetscObject)this->mat,&this->comm);if (ierr) return;
   ierr = MatGetLocalSize(mat,&m,&n);if (ierr) return;
   ierr = MatGetSize(mat,&M,&N);if (ierr) return;
@@ -46,7 +44,9 @@ esi::petsc::Matrix<double,int>::Matrix(Mat imat)
 esi::petsc::Matrix<double,int>::~Matrix()
 {
   int ierr;
-  ierr = MatDestroy(this->mat);if (ierr) return;
+  if (this->mat) {ierr = MatDestroy(this->mat);if (ierr) return;}
+  if (this->rmap) {ierr = this->rmap->deleteReference();if (ierr) return;}
+  if (this->cmap) {ierr = this->cmap->deleteReference();if (ierr) return;}
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getInterface(const char* name, void *& iface)

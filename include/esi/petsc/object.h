@@ -30,7 +30,7 @@ class Object : public virtual esi::Object
   public:
 
     // Constructor.
-    Object()               {comm = 0; pobject = 0; refcnt = 1;};	
+    Object()               {comm = 0; refcnt = 1;};	
 
     // Destructor.
     virtual ~Object(void) {};
@@ -56,7 +56,6 @@ class Object : public virtual esi::Object
 
   protected:
     MPI_Comm    comm;
-    PetscObject pobject;
     int         refcnt;
 };
 

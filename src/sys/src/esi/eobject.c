@@ -54,7 +54,6 @@ esi::ErrorCode esi::petsc::Object::addReference()
 {
   int ierr = 0;
   this->refcnt++;
-  if (this->pobject) ierr = PetscObjectReference(this->pobject);
   return ierr;
 }
 

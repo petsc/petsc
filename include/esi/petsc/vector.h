@@ -35,7 +35,6 @@ template<class Scalar,class Ordinal>
     virtual esi::ErrorCode getInterface(const char* name, void*& iface);
     virtual esi::ErrorCode getInterfacesSupported(esi::Argv * list);
 
-
     //  Interface for ESI_Vector  ---------------
     
     virtual esi::ErrorCode clone(esi::Vector<Scalar,Ordinal>*& x);
@@ -119,8 +118,8 @@ template<>
     virtual esi::ErrorCode setArrayPointer(double* array, int length);
 
   private:
-    Vec                      vec;
-    esi::IndexSpace<int> *map;
+    Vec                    vec;
+    ::esi::IndexSpace<int> *map;
 };
 
 }

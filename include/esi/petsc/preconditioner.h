@@ -35,7 +35,6 @@ class Preconditioner : public virtual esi::Preconditioner<Scalar,Ordinal>,
     virtual esi::ErrorCode getInterface(const char* name, void*& iface) ;
     virtual esi::ErrorCode getInterfacesSupported(esi::Argv * list);
 
-
     //  Interface for esi::Operator  ---------------
 
     virtual esi::ErrorCode setup(void);

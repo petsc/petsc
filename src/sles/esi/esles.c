@@ -13,7 +13,6 @@ esi::petsc::SolverIterative<double,int>::SolverIterative(MPI_Comm comm)
   ierr = PetscObjectSetOptionsPrefix((PetscObject)this->sles,"esi_");
   ierr = SLESSetFromOptions(this->sles);
 
-  this->pobject = (PetscObject)this->sles;
   ierr = PetscObjectGetComm((PetscObject)this->sles,&this->comm);if (ierr) return;
   this->op = 0;
 }
@@ -22,7 +21,6 @@ esi::petsc::SolverIterative<double,int>::SolverIterative(SLES isles)
 {
   int ierr;
   this->sles    = isles;
-  this->pobject = (PetscObject)this->sles;
   ierr = PetscObjectGetComm((PetscObject)this->sles,&this->comm);if (ierr) return;
   ierr = PetscObjectReference((PetscObject)isles);if (ierr) return;
 }

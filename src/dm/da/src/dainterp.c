@@ -58,7 +58,7 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
 
   /* create interpolation matrix */
   ierr = MatCreateMPIAIJ(dac->comm,m_f,m_c,mx,Mx,2,0,0,0,&mat);CHKERRQ(ierr);
-  ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  if (!DAXPeriodic(pt)){ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
@@ -129,7 +129,7 @@ int DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
 
   /* create interpolation matrix */
   ierr = MatCreateMPIAIJ(dac->comm,m_f,m_c,mx,Mx,2,0,0,0,&mat);CHKERRQ(ierr);
-  ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  if (!DAXPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
@@ -264,7 +264,7 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   }
   ierr = MatCreateMPIAIJ(daf->comm,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My,0,dnz,0,onz,&mat);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  if (!DAXPeriodic(pt) && !DAYPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (j=j_start; j<j_start+n_f; j++) {
@@ -416,7 +416,7 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   }
   ierr = MatCreateMPIAIJ(dac->comm,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz,0,dnz,0,onz,&mat);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  if (!DAXPeriodic(pt) && !DAYPeriodic(pt) && !DAZPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (l=l_start; l<l_start+p_f; l++) {

@@ -12,7 +12,6 @@ esi::petsc::Preconditioner<double,int>::Preconditioner(MPI_Comm comm)
   ierr = PetscObjectSetOptionsPrefix((PetscObject)this->pc,"esi_");
   ierr = PCSetFromOptions(this->pc);
 
-  this->pobject = (PetscObject)this->pc;
   ierr = PetscObjectGetComm((PetscObject)this->pc,&this->comm);if (ierr) return;
 }
 
@@ -20,7 +19,6 @@ esi::petsc::Preconditioner<double,int>::Preconditioner(PC ipc)
 {
   int ierr;
   this->pc      = ipc;
-  this->pobject = (PetscObject)this->pc;
   ierr = PetscObjectGetComm((PetscObject)this->pc,&this->comm);if (ierr) return;
   ierr = PetscObjectReference((PetscObject)ipc);if (ierr) return;
 }
