@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.162 1999/01/27 21:20:17 balay Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.163 1999/02/02 03:50:22 curfman Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -32,6 +32,7 @@ int VecSetBlockSize(Vec v,int bs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE); 
+  if (bs <= 0) bs = 1;
   if (v->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Vector length not divisible by blocksize %d %d",v->N,bs);
   if (v->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Local vector length not divisible by blocksize %d %d",v->n,bs);
   
