@@ -39,7 +39,6 @@ typedef struct {
   PetscScalar      *a;               /* nonzero elements */
   IS               row,col,icol;   /* index sets, used for reorderings */
   PetscScalar      *solve_work;      /* work space used in MatSolve */
-  int              indexshift;       /* zero or -one for C or Fortran indexing */
   Mat_SeqAIJ_Inode inode;            /* identical node informaton */
   int              reallocs;         /* number of mallocs done during MatSetValues() 
                                         as more values are set than were prealloced */

@@ -211,7 +211,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,Inser
   PetscScalar  *ba = b->a;
 
   int          *rp,ii,nrow,_i,rmax,N,col1,low,high,t; 
-  int          nonew = a->nonew,shift = a->indexshift; 
+  int          nonew = a->nonew,shift=0; 
   PetscScalar  *ap;
 
   PetscFunctionBegin;
@@ -900,7 +900,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ*       C = (Mat_SeqAIJ*)aij->A->data;
-  int               ierr,shift = C->indexshift,rank = aij->rank,size = aij->size;
+  int               ierr,rank = aij->rank,size = aij->size;
   PetscTruth        isdraw,isascii,flg,isbinary;
   PetscViewer       sviewer;
   PetscViewerFormat format;
@@ -980,13 +980,13 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     Aloc = (Mat_SeqAIJ*)aij->A->data;
     m = aij->A->m; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
     row = aij->rstart;
-    for (i=0; i<ai[m]+shift; i++) {aj[i] += aij->cstart + shift;}
+    for (i=0; i<ai[m]; i++) {aj[i] += aij->cstart ;}
     for (i=0; i<m; i++) {
       ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],aj,a,INSERT_VALUES);CHKERRQ(ierr);
       row++; a += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
     } 
     aj = Aloc->j;
-    for (i=0; i<ai[m]+shift; i++) {aj[i] -= aij->cstart + shift;}
+    for (i=0; i<ai[m]; i++) {aj[i] -= aij->cstart;}
 
     /* copy over the B part */
     Aloc = (Mat_SeqAIJ*)aij->B->data;
@@ -994,7 +994,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     row  = aij->rstart;
     ierr = PetscMalloc((ai[m]+1)*sizeof(int),&cols);CHKERRQ(ierr);
     ct   = cols;
-    for (i=0; i<ai[m]+shift; i++) {cols[i] = aij->garray[aj[i]+shift];}
+    for (i=0; i<ai[m]; i++) {cols[i] = aij->garray[aj[i]];}
     for (i=0; i<m; i++) {
       ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],cols,a,INSERT_VALUES);CHKERRQ(ierr);
       row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
@@ -1310,7 +1310,7 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
 {
   Mat_MPIAIJ   *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ   *amat = (Mat_SeqAIJ*)aij->A->data,*bmat = (Mat_SeqAIJ*)aij->B->data;
-  int          ierr,i,j,cstart = aij->cstart,shift = amat->indexshift;
+  int          ierr,i,j,cstart = aij->cstart;
   PetscReal    sum = 0.0;
   PetscScalar  *v;
 
@@ -1346,11 +1346,11 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
       *norm = 0.0;
       v = amat->a; jj = amat->j;
       for (j=0; j<amat->nz; j++) {
-        tmp[cstart + *jj++ + shift] += PetscAbsScalar(*v);  v++;
+        tmp[cstart + *jj++ ] += PetscAbsScalar(*v);  v++;
       }
       v = bmat->a; jj = bmat->j;
       for (j=0; j<bmat->nz; j++) {
-        tmp[garray[*jj++ + shift]] += PetscAbsScalar(*v); v++;
+        tmp[garray[*jj++]] += PetscAbsScalar(*v); v++;
       }
       ierr = MPI_Allreduce(tmp,tmp2,mat->N,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
       for (j=0; j<mat->N; j++) {
@@ -1361,12 +1361,12 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp = 0.0;
       for (j=0; j<aij->A->m; j++) {
-        v = amat->a + amat->i[j] + shift;
+        v = amat->a + amat->i[j];
         sum = 0.0;
         for (i=0; i<amat->i[j+1]-amat->i[j]; i++) {
           sum += PetscAbsScalar(*v); v++;
         }
-        v = bmat->a + bmat->i[j] + shift;
+        v = bmat->a + bmat->i[j];
         for (i=0; i<bmat->i[j+1]-bmat->i[j]; i++) {
           sum += PetscAbsScalar(*v); v++;
         }
@@ -1386,7 +1386,7 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
 { 
   Mat_MPIAIJ   *a = (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ   *Aloc = (Mat_SeqAIJ*)a->A->data;
-  int          ierr,shift = Aloc->indexshift;
+  int          ierr;
   int          M = A->M,N = A->N,m,*ai,*aj,row,*cols,i,*ct;
   Mat          B;
   PetscScalar  *array;
@@ -1402,21 +1402,21 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   Aloc = (Mat_SeqAIJ*)a->A->data;
   m = a->A->m; ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
   row = a->rstart;
-  for (i=0; i<ai[m]+shift; i++) {aj[i] += a->cstart + shift;}
+  for (i=0; i<ai[m]; i++) {aj[i] += a->cstart ;}
   for (i=0; i<m; i++) {
     ierr = MatSetValues(B,ai[i+1]-ai[i],aj,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
     row++; array += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
   } 
   aj = Aloc->j;
-  for (i=0; i<ai[m]+shift; i++) {aj[i] -= a->cstart + shift;}
+  for (i=0; i<ai[m]; i++) {aj[i] -= a->cstart ;}
 
   /* copy over the B part */
   Aloc = (Mat_SeqAIJ*)a->B->data;
   m = a->B->m;  ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
   row  = a->rstart;
-  ierr = PetscMalloc((1+ai[m]-shift)*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc((1+ai[m])*sizeof(int),&cols);CHKERRQ(ierr);
   ct   = cols;
-  for (i=0; i<ai[m]+shift; i++) {cols[i] = a->garray[aj[i]+shift];}
+  for (i=0; i<ai[m]; i++) {cols[i] = a->garray[aj[i]];}
   for (i=0; i<m; i++) {
     ierr = MatSetValues(B,ai[i+1]-ai[i],cols,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
     row++; array += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
@@ -2118,7 +2118,6 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
   ierr = MatGetSize(Mreuse,&m,&n);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {
     aij = (Mat_SeqAIJ*)(Mreuse)->data;
-    if (aij->indexshift) SETERRQ(PETSC_ERR_SUP,"No support for index shifted matrix");
     ii  = aij->i;
     jj  = aij->j;
 
@@ -2177,7 +2176,6 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
   }
   ierr = MatGetOwnershipRange(M,&rstart,&rend);CHKERRQ(ierr);
   aij = (Mat_SeqAIJ*)(Mreuse)->data;
-  if (aij->indexshift) SETERRQ(PETSC_ERR_SUP,"No support for index shifted matrix");
   ii  = aij->i;
   jj  = aij->j;
   aa  = aij->a;

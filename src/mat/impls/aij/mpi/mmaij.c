@@ -13,7 +13,6 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   Mat_MPIAIJ         *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ         *B = (Mat_SeqAIJ*)(aij->B->data);  
   int                N = mat->N,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
-  int                shift = B->indexshift;
   IS                 from,to;
   Vec                gvec;
 #if defined (PETSC_USE_CTABLE)
@@ -70,8 +69,8 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = PetscMemzero(indices,N*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<aij->B->m; i++) {
     for (j=0; j<B->ilen[i]; j++) {
-      if (!indices[aj[B->i[i] +shift + j] + shift]) ec++; 
-      indices[aj[B->i[i] + shift + j] + shift] = 1;
+      if (!indices[aj[B->i[i] + j] ]) ec++; 
+      indices[aj[B->i[i] + j] ] = 1;
     }
   }
 
@@ -84,13 +83,13 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 
   /* make indices now point into garray */
   for (i=0; i<ec; i++) {
-    indices[garray[i]] = i-shift;
+    indices[garray[i]] = i;
   }
 
   /* compact out the extra columns in B */
   for (i=0; i<aij->B->m; i++) {
     for (j=0; j<B->ilen[i]; j++) {
-      aj[B->i[i] + shift + j] = indices[aj[B->i[i] + shift + j]+shift];
+      aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
     }
   }
   aij->B->n = aij->B->N = ec;
@@ -141,7 +140,7 @@ int DisAssemble_MPIAIJ(Mat A)
   Mat          B = aij->B,Bnew;
   Mat_SeqAIJ   *Baij = (Mat_SeqAIJ*)B->data;
   int          ierr,i,j,m = B->m,n = A->N,col,ct = 0,*garray = aij->garray;
-  int          *nz,ec,shift = Baij->indexshift;
+  int          *nz,ec;
   PetscScalar  v;
 
   PetscFunctionBegin;
@@ -172,8 +171,8 @@ int DisAssemble_MPIAIJ(Mat A)
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,0,nz,&Bnew);CHKERRQ(ierr);
   ierr = PetscFree(nz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
-    for (j=Baij->i[i]+shift; j<Baij->i[i+1]+shift; j++) {
-      col  = garray[Baij->j[ct]+shift];
+    for (j=Baij->i[i]; j<Baij->i[i+1]; j++) {
+      col  = garray[Baij->j[ct]];
       v    = Baij->a[ct++];
       ierr = MatSetValues(Bnew,1,&i,1,&col,&v,B->insertmode);CHKERRQ(ierr);
     }
