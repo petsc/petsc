@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.114 1999/01/12 23:13:27 bsmith Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.115 1999/01/27 21:20:07 balay Exp bsmith $";
 #endif
 
 /*
@@ -154,12 +154,14 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
     VecCreateMPIWithArray(), VecCreate_Shared() (i.e. VecCreateShared()), VecCreateGhost(),
     VecDuplicate_MPI(), VecCreateGhostWithArray(), VecDuplicate_MPI(), and VecDuplicate_Shared()
 */
-int VecCreate_MPI_Private(Vec v,int nghost,int size,int rank,const Scalar array[],Map map)
+int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
 {
   Vec_MPI *s;
-  int     ierr;
+  int     ierr,size,rank;
 
   PetscFunctionBegin;
+  MPI_Comm_size(v->comm,&size);
+  MPI_Comm_rank(v->comm,&rank); 
 
   v->bops->publish   = VecPublish_MPI;
   PLogObjectMemory(v, sizeof(Vec_MPI) + (v->n+nghost+1)*sizeof(Scalar));
@@ -218,20 +220,11 @@ EXTERN_C_BEGIN
 #define __FUNC__ "VecCreate_MPI"
 int VecCreate_MPI(Vec vv)
 {
-  int sum, work = vv->n, size, rank,ierr;
+  int ierr;
 
   PetscFunctionBegin;
-
-  MPI_Comm_size(vv->comm,&size);
-  MPI_Comm_rank(vv->comm,&rank); 
-  if (vv->N == PETSC_DECIDE) { 
-    ierr = MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,vv->comm );CHKERRQ(ierr);
-    vv->N = sum;
-  }
-  if (vv->n == PETSC_DECIDE) { 
-    vv->n = vv->N/size + ((vv->N % size) > rank);
-  }
-  ierr = VecCreate_MPI_Private(vv,0,size,rank,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSplitOwnership(vv->comm,&vv->n,&vv->N);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(vv,0,0,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -246,8 +239,8 @@ EXTERN_C_END
 
    Input Parameters:
 +  comm  - the MPI communicator to use
-.  n     - local vector length (or PETSC_DECIDE to have calculated if N is given)
-.  N     - global vector length (or PETSC_DECIDE to have calculated if n is given)
+.  n     - local vector length, cannot be PETSC_DECIDE
+.  N     - global vector length (or PETSC_DECIDE to have calculated)
 -  array - the user provided array to store the vector values
 
    Output Parameter:
@@ -258,7 +251,7 @@ EXTERN_C_END
    same type as an existing vector.
 
    If the user-provided array is PETSC_NULL, then VecPlaceArray() can be used
-   at a later atage to SET the array for storing the vector values.
+   at a later stage to SET the array for storing the vector values.
 
    PETSc does NOT free the array when the vector is destroyed via VecDestroy().
    The user should not free the array until the vector is destroyed.
@@ -271,22 +264,15 @@ EXTERN_C_END
 @*/ 
 int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const Scalar array[],Vec *vv)
 {
-  int sum, work = n, size, rank,ierr;
+  int ierr;
 
   PetscFunctionBegin;
-  *vv = 0;
-
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank); 
-  if (N == PETSC_DECIDE) { 
-    ierr = MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );CHKERRQ(ierr);
-    N = sum;
-  }
   if (n == PETSC_DECIDE) { 
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must set local size of vector");
   }
+  ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   ierr = VecCreate(comm,n,N,vv);CHKERRQ(ierr);
-  ierr = VecCreate_MPI_Private(*vv,0,size,rank,array,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*vv,0,array,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -489,7 +475,7 @@ int VecGhostUpdateEnd(Vec g, InsertMode insertmode,ScatterMode scattermode)
 int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],
                             const Scalar array[],Vec *vv)
 {
-  int     sum, work = n, size, rank, ierr;
+  int     ierr;
   Vec_MPI *w;
   Scalar  *larray;
 
@@ -499,16 +485,10 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
   if (n == PETSC_DECIDE)      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must set local size");
   if (nghost == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must set local ghost size");
   if (nghost < 0)             SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Ghost length must be >= 0");
-
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank); 
-  if (N == PETSC_DECIDE) { 
-    ierr = MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );CHKERRQ(ierr);
-    N = sum;
-  }
+  ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   /* Create global representation */
   ierr = VecCreate(comm,n,N,vv);CHKERRQ(ierr);
-  ierr = VecCreate_MPI_Private(*vv,nghost,size,rank,array,PETSC_NULL); CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*vv,nghost,array,PETSC_NULL); CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
   ierr = VecGetArray(*vv,&larray); CHKERRQ(ierr);
@@ -581,7 +561,7 @@ int VecDuplicate_MPI( Vec win, Vec *v)
 
   PetscFunctionBegin;
   ierr = VecCreate(win->comm,w->n,w->N,v);CHKERRQ(ierr);
-  ierr = VecCreate_MPI_Private(*v,w->nghost,w->size,w->rank,0,win->map);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*v,w->nghost,0,win->map);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
 
   /* save local representation of the parallel vector (and scatter) if it exists */
