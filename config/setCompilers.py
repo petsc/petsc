@@ -466,6 +466,9 @@ class Configure(config.base.Configure):
       for testFlag in ['-PIC', '-fPIC', '-KPIC']:
         try:
           self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
+          if not self.checkLinkerFlag(testFlag):
+            self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+' because linker cannot handle it\n')
+            continue
           self.addCompilerFlag(testFlag, compilerOnly = 1)
           break
         except RuntimeError:
