@@ -48,6 +48,11 @@ class FileSet:
       self.data.append(item)
       self.cache = None
 
+  def insert(self, index, item):
+    if not item in self.data:
+      self.data.insert(index, item)
+      self.cache = None
+
   def extend(self, list):
     if isinstance(list, FileSet):
       for item in list.getFiles():

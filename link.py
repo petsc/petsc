@@ -60,7 +60,10 @@ class LinkSharedLibrary (action.Action):
     self.executeShellCommand(command)
     command = self.linker+' '+self.linkerFlags+' -o '+sharedLibrary+' *.o'
     for lib in self.extraLibraries.getFiles():
-      if lib[0] == '-':
+      if lib[0] == '-' or lib.endswith('.o'):
+        command += ' '+lib
+      # Big Intel F90 hack
+      elif lib.endswith('intrins.a'):
         command += ' '+lib
       else:
         (dir, file) = os.path.split(lib)
