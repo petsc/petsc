@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.4 2000/07/10 21:51:15 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.5 2000/07/11 21:48:04 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -202,30 +202,19 @@ int main(int argc,char **args)
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);CHKERRA(ierr);      
  
 
-#ifndef MatZeroRows
-  /* list all the rows we want on THIS processor. For symm. matrix, iscol=isrow. */
-  /*
-  ip_ptr = (int*)PetscMalloc(n*sizeof(int)); CHKERRA(ierr);
-  j = 0;
-  for (n1=0; n1<mbs; n1 += 2){ /* n1: block row */
-    for (i=0; i<bs; i++) ip_ptr[j++] = n1*bs + i;  
-  }
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"in ex75, [%d], j=%d\n",rank,j);
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD, j, ip_ptr, &isrow); CHKERRA(ierr);
-  ierr = PetscFree(ip_ptr); CHKERRA(ierr); 
-*/
+  /* Test MatZeroRows() */
+  
+  ierr = ISCreateStride(PETSC_COMM_SELF,2,i1,2,&isrow);CHKERRA(ierr); 
 
   ierr = ISGetSize(isrow,&N);CHKERRQ(ierr);
   PetscSynchronizedPrintf(PETSC_COMM_WORLD,"in ex75, [%d], N=%d\n",rank,N);
   PetscSynchronizedFlush(PETSC_COMM_WORLD);
 
-  ISView(isrow, VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ISView(isrow, VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   ierr = MatZeroRows(sA,isrow,PETSC_NULL); CHKERRA(ierr);
   MatView(sA, VIEWER_STDOUT_WORLD);
   ierr = ISDestroy(isrow);CHKERRA(ierr);
-#endif
 
   /* vectors */
   /*--------------------*/
