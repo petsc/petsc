@@ -693,7 +693,7 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   }
 
 #if defined(PETSC_HAVE_SPOOLES) 
-  ierr = PetscOptionsHasName(mat,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSpooles_MPISBAIJ(mat);CHKERRQ(ierr); }
 #endif   
   PetscFunctionReturn(0);

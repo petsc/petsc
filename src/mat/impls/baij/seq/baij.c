@@ -1019,7 +1019,7 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
 
 #if defined(PETSC_HAVE_DSCPACK)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(A->prefix,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseDSCPACK_MPIBAIJ(A);CHKERRQ(ierr); }
 #endif
 
