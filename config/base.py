@@ -40,7 +40,7 @@ Finding Executables
 Output
 ------
 
-  addDefine(), addSubstitution(), addArgumentSubtitution(), addTypedef(), addPrototype()
+  addDefine(), addSubstitution(), addArgumentSubstitution(), addTypedef(), addPrototype()
 
   The object may define a headerPrefix member, which will be appended, followed
 by an underscore, to every define which is output from it. Similarly, a substPrefix
@@ -80,6 +80,12 @@ class Configure(script.Script):
 
   #################################
   # Define and Substitution Support
+  def delDefine(self, name):
+    '''Designate that "name" should be deleted (never put in)  configuration header'''
+    self.framework.log.write('Deleting '+name+' in '+str(self.__module__)+'\n')
+    if name in self.defines: del self.defines[name]
+    return
+
   def addDefine(self, name, value):
     '''Designate that "name" should be defined to "value" in the configuration header'''
     self.framework.log.write('Defined '+name+' to '+str(value)+' in '+str(self.__module__)+'\n')
