@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.14 1999/01/21 15:17:37 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.15 1999/02/05 00:34:08 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -24,18 +24,18 @@ X11_LIB        = -lX11
 #MPI_INCLUDE    = -I/usr/local/mpi/include
 #MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 MPI_HOME       = /home/petsc/mpich-1.1.2-beta
-MPI_BUILD_HOME = ${MPI_HOME}/build/sun4/ch_p4
+MPI_BUILD_HOME = ${MPI_HOME}/build/sun4/ch_shmem
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
-MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
+MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun 
 
 #
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
 #
-MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
-MPE_INCLUDE   = -I/usr/local/mpi/include
+#MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
+#MPE_INCLUDE   = -I/usr/local/mpi/include
 MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 MPE_INCLUDE   = -I${MPI_HOME}/mpe
 #
