@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.43 1997/07/24 23:34:09 balay Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.44 1997/08/22 15:10:22 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: cmesh.c,v 1.43 1997/07/24 23:34:09 balay Exp bsmith $
 int DrawScalePopup(Draw popup,double min,double max)
 {
   double   xl = 0.0, yl = 0.0, xr = 1.0, yr = 1.0,value;
-  int      i,c = 16,rank;
+  int      i,c = DRAW_BASIC_COLORS,rank;
   char     string[32];
   MPI_Comm comm;
 
@@ -20,10 +20,10 @@ int DrawScalePopup(Draw popup,double min,double max)
 
   for ( i=0; i<10; i++ ) {
     DrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);
-    yl += .1; yr += .1; c = (int) ((double) c + (245.-16.)/9.);
+    yl += .1; yr += .1; c = (int) ((double) c + (245.-DRAW_BASIC_COLORS)/9.);
   }
   for ( i=0; i<10; i++ ) {
-    value = -min + i*(max-min)/9.0;
+    value = min + i*(max-min)/9.0;
     /* look for a value that should be zero, but is not due to round-off */
     if (PetscAbsDouble(value) < 1.e-10 && max-min > 1.e-6) value = 0.0;
     sprintf(string,"%g",value);

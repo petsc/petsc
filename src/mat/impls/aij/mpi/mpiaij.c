@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.214 1997/08/22 15:13:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.215 1997/09/11 20:39:34 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1089,7 +1089,8 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
 int MatGetSize_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
-  *m = mat->M; *n = mat->N;
+  if (m) *m = mat->M;
+  if (n) *n = mat->N;
   return 0;
 }
 
@@ -1098,7 +1099,8 @@ int MatGetSize_MPIAIJ(Mat matin,int *m,int *n)
 int MatGetLocalSize_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
-  *m = mat->m; *n = mat->N;
+  if (m) *m = mat->m;
+  if (n) *n = mat->N;
   return 0;
 }
 
@@ -1729,7 +1731,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {
     ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,(char *)header,4,BINARY_INT); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not matrix object");
   }
 
@@ -1751,7 +1753,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   offlens = ourlens + (rend-rstart);
   if (!rank) {
     rowlengths = (int*) PetscMalloc( M*sizeof(int) ); CHKPTRQ(rowlengths);
-    ierr = PetscBinaryRead(fd,rowlengths,M,BINARY_INT); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT); CHKERRQ(ierr);
     sndcounts = (int*) PetscMalloc( size*sizeof(int) ); CHKPTRQ(sndcounts);
     for ( i=0; i<size; i++ ) sndcounts[i] = rowners[i+1] - rowners[i];
     MPI_Scatterv(rowlengths,sndcounts,rowners,MPI_INT,ourlens,rend-rstart,MPI_INT,0,comm);
@@ -1782,12 +1784,12 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
     /* read in my part of the matrix column indices  */
     nz = procsnz[0];
     mycols = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(mycols);
-    ierr = PetscBinaryRead(fd,mycols,nz,BINARY_INT); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,mycols,nz,PETSC_INT); CHKERRQ(ierr);
 
     /* read in every one elses and ship off */
     for ( i=1; i<size; i++ ) {
       nz = procsnz[i];
-      ierr = PetscBinaryRead(fd,cols,nz,BINARY_INT); CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT); CHKERRQ(ierr);
       MPI_Send(cols,nz,MPI_INT,i,tag,comm);
     }
     PetscFree(cols);
@@ -1832,7 +1834,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
 
     /* read in my part of the matrix numerical values  */
     nz = procsnz[0];
-    ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR); CHKERRQ(ierr);
     
     /* insert into matrix */
     jj      = rstart;
@@ -1848,7 +1850,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
     /* read in other processors and ship out */
     for ( i=1; i<size; i++ ) {
       nz = procsnz[i];
-      ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR); CHKERRQ(ierr);
       MPI_Send(vals,nz,MPIU_SCALAR,i,A->tag,comm);
     }
     PetscFree(procsnz);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.257 1997/09/14 03:07:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.258 1997/09/24 03:30:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2236,8 +2236,6 @@ int MatZeroRowsLocal(Mat mat,IS is, Scalar *diag)
 int MatGetSize(Mat mat,int *m,int* n)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  PetscValidIntPointer(m);
-  PetscValidIntPointer(n);
   return (*mat->ops.getsize)(mat,m,n);
 }
 
@@ -2262,8 +2260,6 @@ int MatGetSize(Mat mat,int *m,int* n)
 int MatGetLocalSize(Mat mat,int *m,int* n)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  PetscValidIntPointer(m);
-  PetscValidIntPointer(n);
   return (*mat->ops.getlocalsize)(mat,m,n);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.17 1997/08/24 23:25:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.18 1997/09/11 20:38:50 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -187,6 +187,66 @@ int PetscObjectGetChild(PetscObject obj,void **child)
   PetscValidHeader(obj);
 
   *child = obj->child;
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscDataTypeToMPIDataType"
+int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
+{
+  if (ptype == PETSC_INT) {
+    *mtype = MPI_INT;
+  } else if (ptype == PETSC_DOUBLE) {
+    *mtype = MPI_DOUBLE;
+  } else if (ptype == PETSC_SCALAR) {
+    *mtype = MPIU_SCALAR;
+#if defined(PETSC_COMPLEX)
+  } else if (ptype == PETSC_DCOMPLEX) {
+    *mtype = MPIU_COMPLEX;
+#endif
+  } else {
+    SETERRQ(1,1,"Unknown PETSc datatype");
+  }
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscDataTypeGetSize"
+int PetscDataTypeGetSize(PetscDataType ptype,int *size)
+{
+  if (ptype == PETSC_INT) {
+    *size = PETSC_INT_SIZE;
+  } else if (ptype == PETSC_DOUBLE) {
+    *size = PETSC_DOUBLE_SIZE;
+  } else if (ptype == PETSC_SCALAR) {
+    *size = PETSC_SCALAR_SIZE;
+#if defined(PETSC_COMPLEX)
+  } else if (ptype == PETSC_DCOMPLEX) {
+    *size = PETSC_DCOMPLEX_SIZE;
+#endif
+  } else {
+    SETERRQ(1,1,"Unknown PETSc datatype");
+  }
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscDataTypeGetName"
+int PetscDataTypeGetName(PetscDataType ptype,char **name)
+{
+  if (ptype == PETSC_INT) {
+    *name = "int";
+  } else if (ptype == PETSC_DOUBLE) {
+    *name = "double";
+  } else if (ptype == PETSC_SCALAR) {
+    *name = "Scalar";
+#if defined(PETSC_COMPLEX)
+  } else if (ptype == PETSC_DCOMPLEX) {
+    *name = "complex";
+#endif
+  } else {
+    SETERRQ(1,1,"Unknown PETSc datatype");
+  }
   return 0;
 }
 

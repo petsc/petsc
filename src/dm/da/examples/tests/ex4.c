@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.29 1997/03/26 01:38:15 bsmith Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.30 1997/07/09 21:01:00 balay Exp bsmith $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   AO             ao;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRA(ierr);
  
   /* Read options */
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
@@ -56,7 +56,7 @@ int main(int argc,char **argv)
 
 
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(MPI_COMM_WORLD,wrap,st,M,N,m,n,w,s,lx,ly,&da); CHKERRA(ierr);
+  ierr = DACreate2d(PETSC_COMM_WORLD,wrap,st,M,N,m,n,w,s,lx,ly,&da); CHKERRA(ierr);
   if (lx) { PetscFree(lx); PetscFree(ly);}
 
   ierr = DAView(da,viewer); CHKERRA(ierr);
@@ -70,15 +70,15 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
   /* Scale local vectors according to processor rank; pass to global vector */
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   value = rank;
   ierr = VecScale(&value,local); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
   if (!testorder) { /* turn off printing when testing ordering mappings */
-    PetscPrintf (MPI_COMM_WORLD,"\nGlobal Vectors:\n");
+    PetscPrintf (PETSC_COMM_WORLD,"\nGlobal Vectors:\n");
     ierr = VecView(global,VIEWER_STDOUT_WORLD); CHKERRA(ierr); 
-    PetscPrintf (MPI_COMM_WORLD,"\n\n");
+    PetscPrintf (PETSC_COMM_WORLD,"\n\n");
   }
 
   /* Send ghost points to local vectors */
@@ -88,10 +88,10 @@ int main(int argc,char **argv)
   flg = 0;
   ierr = OptionsHasName(PETSC_NULL,"-local_print",&flg); CHKERRA(ierr);
   if (flg) {
-    PetscSequentialPhaseBegin(MPI_COMM_WORLD,1);
+    PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
     printf("\nLocal Vector: processor %d\n",rank);
     ierr = VecView(local,VIEWER_STDOUT_SELF); CHKERRA(ierr); 
-    PetscSequentialPhaseEnd(MPI_COMM_WORLD,1);
+    PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
   }
 
   /* Tests mappings betweeen application/PETSc orderings */

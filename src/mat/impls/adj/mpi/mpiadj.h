@@ -1,4 +1,4 @@
-/* $Id: adj.h,v 1.2 1997/07/02 22:25:57 bsmith Exp $ */
+/* $Id: mpiadj.h,v 1.1 1997/09/23 20:11:19 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 #include <math.h>
@@ -7,19 +7,21 @@
 #define __ADJ_H
 
 /*  
-  MATSEQADJ format - Compressed row storage for storing adjacency lists, but no 
+  MATMPIADJ format - Compressed row storage for storing adjacency lists, but no 
                      matrix values. This is for grid reorderings (to reduce bandwidth)
                      grid partitionings, etc. This is NOT currently a dynamic data-structure.
                      
 */
 
 typedef struct {
-  int              m, n;             /* rows, columns */
+  int              *rowners;         /* ranges owned by each processor */
+  int              rstart, rend;     /* start and end of local rows */
+  int              m;                /* local rows */
   int              nz;
-  int              *diag;            /* pointers to diagonal elements */
+  int              *diag;            /* pointers to diagonal elements, if they exist */
   int              *i;               /* pointer to beginning of each row */
   int              *j;               /* column values: j + i[k] - 1 is start of row k */
   PetscTruth       symmetric;        /* user indicates the nonzero structure is symmetric */
-} Mat_SeqAdj;
+} Mat_MPIAdj;
 
 #endif

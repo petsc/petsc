@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.102 1997/09/05 18:14:59 gropp Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.103 1997/09/11 20:38:17 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -184,11 +184,11 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 
   ierr  = ViewerBinaryGetDescriptor(viewer,&fdes); CHKERRQ(ierr);
   /* Write vector header */
-  ierr = PetscBinaryWrite(fdes,&xin->cookie,1,BINARY_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(fdes,&n,1,BINARY_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fdes,&xin->cookie,1,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fdes,&n,1,PETSC_INT,0); CHKERRQ(ierr);
 
   /* Write vector contents */
-  ierr = PetscBinaryWrite(fdes,x->array,n,BINARY_SCALAR,0);
+  ierr = PetscBinaryWrite(fdes,x->array,n,PETSC_SCALAR,0);
   CHKERRQ(ierr);
   return 0;
 }

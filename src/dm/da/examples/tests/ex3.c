@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.28 1997/07/09 21:01:00 balay Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.29 1997/09/01 16:36:10 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
@@ -21,8 +21,8 @@ int main(int argc,char **argv)
   int       localsize, j, i, mybase, myend, width, xbase, *localnodes = PETSC_NULL;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size); 
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size); 
 
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg); CHKERRA(ierr);
@@ -37,13 +37,13 @@ int main(int argc,char **argv)
   }
     
   /* Set up the array */ 
-  ierr = DACreate1d(MPI_COMM_WORLD,DA_XPERIODIC,M,1,1,localnodes,&da); CHKERRA(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_XPERIODIC,M,1,1,localnodes,&da); CHKERRA(ierr);
   if (localnodes) PetscFree(localnodes);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 
   /* Set up display to show combined wave graph */
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"Entire Solution",20,480,800,200,
+  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"Entire Solution",20,480,800,200,
                          &viewer);CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);

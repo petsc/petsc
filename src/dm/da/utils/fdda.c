@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.12 1997/08/13 22:26:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.13 1997/08/22 15:19:00 bsmith Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -24,8 +24,6 @@ static char vcid[] = "$Id: fdda.c,v 1.12 1997/08/13 22:26:44 bsmith Exp bsmith $
 .    coloring - matrix coloring for compute Jacobians
 .    J  - matrix with the correct nonzero structured 
             (obviously without the correct Jacobian values)
-
-.seealso: DAGetColoring2dBox()
 
 @*/
 int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)

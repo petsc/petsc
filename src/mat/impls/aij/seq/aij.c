@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.235 1997/09/17 23:14:41 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.236 1997/09/18 03:06:45 balay Exp bsmith $";
 #endif
 
 /*
@@ -293,20 +293,20 @@ extern int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
   for ( i=0; i<a->m; i++ ) {
     col_lens[4+i] = a->i[i+1] - a->i[i];
   }
-  ierr = PetscBinaryWrite(fd,col_lens,4+a->m,BINARY_INT,1); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,col_lens,4+a->m,PETSC_INT,1); CHKERRQ(ierr);
   PetscFree(col_lens);
 
   /* store column indices (zero start index) */
   if (a->indexshift) {
     for ( i=0; i<a->nz; i++ ) a->j[i]--;
   }
-  ierr = PetscBinaryWrite(fd,a->j,a->nz,BINARY_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,a->j,a->nz,PETSC_INT,0); CHKERRQ(ierr);
   if (a->indexshift) {
     for ( i=0; i<a->nz; i++ ) a->j[i]++;
   }
 
   /* store nonzero values */
-  ierr = PetscBinaryWrite(fd,a->a,a->nz,BINARY_SCALAR,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,a->a,a->nz,PETSC_SCALAR,0); CHKERRQ(ierr);
   return 0;
 }
 
@@ -1124,7 +1124,8 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
 int MatGetSize_SeqAIJ(Mat A,int *m,int *n)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  *m = a->m; *n = a->n;
+  if (m) *m = a->m; 
+  if (n) *n = a->n;
   return 0;
 }
 
@@ -1902,13 +1903,13 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
-  ierr = PetscBinaryRead(fd,header,4,BINARY_INT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,header,4,PETSC_INT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not matrix object in file");
   M = header[1]; N = header[2]; nz = header[3];
 
   /* read in row lengths */
   rowlengths = (int*) PetscMalloc( M*sizeof(int) ); CHKPTRQ(rowlengths);
-  ierr = PetscBinaryRead(fd,rowlengths,M,BINARY_INT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT); CHKERRQ(ierr);
 
   /* create our matrix */
   ierr = MatCreateSeqAIJ(comm,M,N,0,rowlengths,A); CHKERRQ(ierr);
@@ -1917,7 +1918,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   shift = a->indexshift;
 
   /* read in column indices and adjust for Fortran indexing*/
-  ierr = PetscBinaryRead(fd,a->j,nz,BINARY_INT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,a->j,nz,PETSC_INT); CHKERRQ(ierr);
   if (shift) {
     for ( i=0; i<nz; i++ ) {
       a->j[i] += 1;
@@ -1925,7 +1926,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   }
 
   /* read in nonzero values */
-  ierr = PetscBinaryRead(fd,a->a,nz,BINARY_SCALAR); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,a->a,nz,PETSC_SCALAR); CHKERRQ(ierr);
 
   /* set matrix "i" values */
   a->i[0] = -shift;

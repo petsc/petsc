@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.110 1997/08/22 15:14:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.111 1997/08/29 17:15:56 curfman Exp bsmith $";
 #endif
 
 /*
@@ -112,7 +112,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
       col_lens[4+count++] = bs*(a->i[i+1] - a->i[i]);
     }
   }
-  ierr = PetscBinaryWrite(fd,col_lens,4+a->m,BINARY_INT,1); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,col_lens,4+a->m,PETSC_INT,1); CHKERRQ(ierr);
   PetscFree(col_lens);
 
   /* store column indices (zero start index) */
@@ -127,7 +127,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
       }
     }
   }
-  ierr = PetscBinaryWrite(fd,jj,bs2*a->nz,BINARY_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,jj,bs2*a->nz,PETSC_INT,0); CHKERRQ(ierr);
   PetscFree(jj);
 
   /* store nonzero values */
@@ -142,7 +142,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
       }
     }
   }
-  ierr = PetscBinaryWrite(fd,aa,bs2*a->nz,BINARY_SCALAR,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,aa,bs2*a->nz,PETSC_SCALAR,0); CHKERRQ(ierr);
   PetscFree(aa);
   return 0;
 }
@@ -631,7 +631,8 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
 int MatGetSize_SeqBAIJ(Mat A,int *m,int *n)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  *m = a->m; *n = a->n;
+  if (m) *m = a->m; 
+  if (n) *n = a->n;
   return 0;
 }
 
@@ -2302,7 +2303,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
-  ierr = PetscBinaryRead(fd,header,4,BINARY_INT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,header,4,PETSC_INT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not Mat object");
   M = header[1]; N = header[2]; nz = header[3];
 
@@ -2322,12 +2323,12 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
 
   /* read in row lengths */
   rowlengths = (int*) PetscMalloc((M+extra_rows)*sizeof(int));CHKPTRQ(rowlengths);
-  ierr = PetscBinaryRead(fd,rowlengths,M,BINARY_INT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT); CHKERRQ(ierr);
   for ( i=0; i<extra_rows; i++ ) rowlengths[M+i] = 1;
 
   /* read in column indices */
   jj = (int*) PetscMalloc( (nz+extra_rows)*sizeof(int) ); CHKPTRQ(jj);
-  ierr = PetscBinaryRead(fd,jj,nz,BINARY_INT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,jj,nz,PETSC_INT); CHKERRQ(ierr);
   for ( i=0; i<extra_rows; i++ ) jj[nz+i] = M+i;
 
   /* loop over row lengths determining block row lengths */
@@ -2368,7 +2369,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
 
   /* read in nonzero values */
   aa = (Scalar *) PetscMalloc((nz+extra_rows)*sizeof(Scalar));CHKPTRQ(aa);
-  ierr = PetscBinaryRead(fd,aa,nz,BINARY_SCALAR); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,aa,nz,PETSC_SCALAR); CHKERRQ(ierr);
   for ( i=0; i<extra_rows; i++ ) aa[nz+i] = 1.0;
 
   /* set "a" and "j" values into matrix */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.33 1997/09/11 20:33:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.34 1997/09/18 03:24:17 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -80,12 +80,12 @@ void petscbinaryopen_(CHAR name,int *type,int *fd,int *__ierr,int len)
   *__ierr = ierr;
 }
 
-void petscbinarywrite_(int *fd,void *p,int *n,PetscBinaryType *type,int *istemp,int *__ierr)
+void petscbinarywrite_(int *fd,void *p,int *n,PetscDataType *type,int *istemp,int *__ierr)
 {
   *__ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
 }
 
-void petscbinaryread_(int *fd,void *p,int *n,PetscBinaryType *type,int *__ierr)
+void petscbinaryread_(int *fd,void *p,int *n,PetscDataType *type,int *__ierr)
 {
   *__ierr = PetscBinaryRead(*fd,p,*n,*type);
 }

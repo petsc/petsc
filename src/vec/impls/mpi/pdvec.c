@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.77 1997/08/22 15:10:40 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.78 1997/09/11 20:38:20 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -203,9 +203,9 @@ int VecView_MPI_Binary(Vec xin, Viewer viewer )
   MPI_Comm_size(xin->comm,&size);
 
   if (!rank) {
-    ierr = PetscBinaryWrite(fdes,&xin->cookie,1,BINARY_INT,0); CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fdes,&x->N,1,BINARY_INT,0); CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fdes,x->array,x->n,BINARY_SCALAR,0); 
+    ierr = PetscBinaryWrite(fdes,&xin->cookie,1,PETSC_INT,0); CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,&x->N,1,PETSC_INT,0); CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,x->array,x->n,PETSC_SCALAR,0); 
     CHKERRQ(ierr);
 
     values = (Scalar *) PetscMalloc( (len+1)*sizeof(Scalar) ); CHKPTRQ(values);
@@ -213,7 +213,7 @@ int VecView_MPI_Binary(Vec xin, Viewer viewer )
     for ( j=1; j<size; j++ ) {
       MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
       MPI_Get_count(&status,MPIU_SCALAR,&n);          
-      ierr = PetscBinaryWrite(fdes,values,n,BINARY_SCALAR,0); 
+      ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,0); 
     }
     PetscFree(values);
   }

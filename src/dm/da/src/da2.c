@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.83 1997/07/25 23:12:08 balay Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.84 1997/08/22 15:18:43 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -812,7 +812,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ierr = ISCreateGeneral(PETSC_COMM_SELF,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
     PetscFree(lidx);
 
-    ierr = AOCreateDebugIS(comm,isnatural,ispetsc,&da->ao); CHKERRQ(ierr);
+    ierr = AOCreateBasicIS(comm,isnatural,ispetsc,&da->ao); CHKERRQ(ierr);
     ierr = ISDestroy(ispetsc); CHKERRQ(ierr);
     ierr = ISDestroy(isnatural); CHKERRQ(ierr);
   }

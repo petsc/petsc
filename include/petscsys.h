@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.29 1997/09/18 03:24:30 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.30 1997/09/18 14:41:05 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -39,11 +39,8 @@ extern int PetscGetWorkingDirectory(char *, int);
 extern int PetscGetRealPath(char *,char*);
 extern int PetscGetHomeDirectory(int,char*);
 
-typedef enum { BINARY_INT, BINARY_DOUBLE, BINARY_SHORT, BINARY_FLOAT,
-               BINARY_CHAR } PetscBinaryType;
-#define BINARY_SCALAR BINARY_DOUBLE /* not correct if compiled with complex */
-extern int PetscBinaryRead(int,void*,int,PetscBinaryType);
-extern int PetscBinaryWrite(int,void*,int,PetscBinaryType,int);
+extern int PetscBinaryRead(int,void*,int,PetscDataType);
+extern int PetscBinaryWrite(int,void*,int,PetscDataType,int);
 extern int PetscBinaryOpen(char *,int,int *);
 extern int PetscBinaryClose(int);
 

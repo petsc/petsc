@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.115 1997/07/25 23:29:08 balay Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.116 1997/08/22 15:10:31 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -306,7 +306,7 @@ int VecSet(Scalar *alpha,Vec x)
 .  x  - the vector
 
    Example of Usage:
-$    PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx);
+$    PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);
 $    VecSetRandom(rctx,x);
 $    PetscRandomDestroy(rctx);
 

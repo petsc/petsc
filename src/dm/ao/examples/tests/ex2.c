@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.3 1996/07/08 22:24:28 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.4 1997/07/09 21:02:05 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests application ordering\n\n";
@@ -15,15 +15,15 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank); n = rank + 2;
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); n = rank + 2;
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
   /* create the orderings */
   ispetsc = (int *) PetscMalloc( 2*n*sizeof(int) ); CHKPTRA(ispetsc);
   isapp   = ispetsc + n;
 
-  MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
-  MPI_Allreduce(&n,&N,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
+  MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
+  MPI_Allreduce(&n,&N,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
   start -= n;
 
   for ( i=0; i<n; i++ ) {  
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   }
 
   /* create the application ordering */
-  ierr = AOCreateDebug(MPI_COMM_WORLD,n,isapp,ispetsc,&ao); CHKERRA(ierr);
+  ierr = AOCreateBasic(PETSC_COMM_WORLD,n,isapp,ispetsc,&ao); CHKERRA(ierr);
 
   ierr = AOView(ao,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 

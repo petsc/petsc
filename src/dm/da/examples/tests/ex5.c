@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.22 1997/07/09 21:01:00 balay Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.23 1997/09/01 16:36:47 balay Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -28,18 +28,18 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg); CHKERRA(ierr);
     
   /* Set up the array */ 
-  ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,w,s,PETSC_NULL,&da); CHKERRA(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,w,s,PETSC_NULL,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size); 
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size); 
 
   /* Make copy of local array for doing updates */
   ierr = VecDuplicate(local,&copy); CHKERRA(ierr);
   ierr = VecGetArray (copy,&copyptr); CHKERRA(ierr);
 
   /* Set Up Display to Show Heat Graph */
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",80,480,500,160,&viewer); CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",80,480,500,160,&viewer); CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
 

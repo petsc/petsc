@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.59 1997/07/09 20:59:17 balay Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.60 1997/08/22 15:17:34 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -42,9 +42,128 @@ int ViewerDestroy_Private()
   ViewerDestroy(VIEWER_STDOUT_SELF);
   ViewerDestroy(VIEWER_STDOUT_WORLD);
   ViewerDestroy(VIEWER_STDERR_WORLD);
+  VIEWER_STDOUT_Destroy(PETSC_COMM_WORLD);
+  VIEWER_STDERR_Destroy(PETSC_COMM_WORLD);
   return 0;
 }
 
+/* ---------------------------------------------------------------------*/
+/*
+    The variable Petsc_Viewer_Stdout_keyval is used to indicate an MPI attribute that
+  is attached to a communicator, in this case the attribute is a Viewer.
+*/
+static int Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
+
+#undef __FUNC__  
+#define __FUNC__ "VIEWER_STDOUT_" 
+/*@C
+     VIEWER_STDOUT_ - Creates a window viewer shared by all processors 
+                     in a communicator.
+
+  Input Parameters:
+.  comm - the MPI communicator to share the window viewer
+
+  Note: Unlike almost all other PETSc routines this does not return 
+   an error code. Usually used in the form
+$      XXXView(XXX object,VIEWER_STDOUT_(comm));
+
+.seealso: VIEWER_DRAWX_, ViewerFileOpenASCII(), 
+C@*/
+Viewer VIEWER_STDOUT_(MPI_Comm comm)
+{
+  int    ierr,flag;
+  Viewer viewer;
+
+  if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
+    MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stdout_keyval,0);
+  }
+  MPI_Attr_get( comm, Petsc_Viewer_Stdout_keyval, (void **)&viewer, &flag );
+  if (!flag) { /* viewer not yet created */
+    ierr = ViewerFileOpenASCII(comm,"stdout",&viewer);
+    if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    MPI_Attr_put( comm, Petsc_Viewer_Stdout_keyval, (void *) viewer );
+  } 
+  return viewer;
+}
+
+/*
+       If there is a Viewer associated with this communicator it is destroyed.
+*/
+int VIEWER_STDOUT_Destroy(MPI_Comm comm)
+{
+  int    ierr,flag;
+  Viewer viewer;
+
+  if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
+    return 0;
+  }
+  MPI_Attr_get( comm, Petsc_Viewer_Stdout_keyval, (void **)&viewer, &flag );
+  if (flag) { 
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    MPI_Attr_delete(comm,Petsc_Viewer_Stdout_keyval);
+  } 
+  return 0;
+}
+
+/* ---------------------------------------------------------------------*/
+/*
+    The variable Petsc_Viewer_Stderr_keyval is used to indicate an MPI attribute that
+  is attached to a communicator, in this case the attribute is a Viewer.
+*/
+static int Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
+
+#undef __FUNC__  
+#define __FUNC__ "VIEWER_STDERR_" 
+/*@C
+     VIEWER_STDERR_ - Creates a window viewer shared by all processors 
+                     in a communicator.
+
+  Input Parameters:
+.  comm - the MPI communicator to share the window viewer
+
+  Note: Unlike almost all other PETSc routines this does not return 
+   an error code. Usually used in the form
+$      XXXView(XXX object,VIEWER_STDERR_(comm));
+
+.seealso: VIEWER_DRAWX_, ViewerFileOpenASCII(), 
+C@*/
+Viewer VIEWER_STDERR_(MPI_Comm comm)
+{
+  int    ierr,flag;
+  Viewer viewer;
+
+  if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
+    MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stderr_keyval,0);
+  }
+  MPI_Attr_get( comm, Petsc_Viewer_Stderr_keyval, (void **)&viewer, &flag );
+  if (!flag) { /* viewer not yet created */
+    ierr = ViewerFileOpenASCII(comm,"stderr",&viewer);
+    if (ierr) {PetscError(__LINE__,"VIEWER_STDERR_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    MPI_Attr_put( comm, Petsc_Viewer_Stderr_keyval, (void *) viewer );
+  } 
+  return viewer;
+}
+
+/*
+       If there is a Viewer associated with this communicator it is destroyed.
+*/
+int VIEWER_STDERR_Destroy(MPI_Comm comm)
+{
+  int    ierr,flag;
+  Viewer viewer;
+
+  if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
+    return 0;
+  }
+  MPI_Attr_get( comm, Petsc_Viewer_Stderr_keyval, (void **)&viewer, &flag );
+  if (flag) { 
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    MPI_Attr_delete(comm,Petsc_Viewer_Stderr_keyval);
+  } 
+  return 0;
+}
+
+/* ----------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_File"
 int ViewerDestroy_File(PetscObject obj)
@@ -119,7 +238,7 @@ int ViewerGetFormat(Viewer viewer,int *format)
 .  lab - the viewer to use with the specified file
 
    Notes:
-   If a multiprocessor communicator is used (such as MPI_COMM_WORLD), 
+   If a multiprocessor communicator is used (such as PETSC_COMM_WORLD), 
    then only the first processor in the group opens the file.  All other 
    processors send their data to the first processor to print. 
 
@@ -129,7 +248,7 @@ int ViewerGetFormat(Viewer viewer,int *format)
    As shown below, ViewerFileOpenASCII() is useful in conjunction with 
    MatView() and VecView()
 $
-$    ViewerFileOpenASCII(MPI_COMM_WORLD,"mat.output",&viewer);
+$    ViewerFileOpenASCII(PETSC_COMM_WORLD,"mat.output",&viewer);
 $    MatView(matrix,viewer);
 
    This viewer can be destroyed with ViewerDestroy().

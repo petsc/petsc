@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.11 1997/08/22 15:10:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.12 1997/09/25 03:54:56 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -165,13 +165,13 @@ int ISColoringCreate(MPI_Comm comm,int n,int *colors,ISColoring *iscoloring)
 int ISPartitioningToLocalIS(ISPartitioning part,IS *is)
 {
   MPI_Comm comm = part->comm;
-  int      i,ierr,rank,size;
-  int      *ilen,*rlen,*idisp,*rdisp;
+  int      i,ierr,rank,size, *indices,trlen,tilen,nc = part->n;
+  int      *ilen,*rlen,*idisp,*rdisp,*ivalues,*rvalues;
 
   MPI_Comm_size(comm,&size);
 
-  if (part->n != size) {
-    SETERRQ(1,1,"Number of partitions must equal number of processors");
+  if (nc > size) {
+    SETERRQ(1,1,"Number of partitions must be equal or less then number of processors");
   }
 
   MPI_Comm_rank(comm,&rank);
@@ -184,21 +184,46 @@ int ISPartitioningToLocalIS(ISPartitioning part,IS *is)
      Communicate the lengths of each processors contributions to the others
      and compute the displacements into the arrays.
   */
-  for ( i=0; i<size; i++ ) {
+  for ( i=0; i<nc; i++ ) {
     ierr = ISGetSize(part->is[i],ilen+i); CHKERRQ(ierr);
   }
-  MPI_Alltoall(ilen,size,MPI_INT,rlen,1,MPI_INT,comm);
+  for ( i=size; i<nc; i++ ) {
+    ilen[i] = 0;
+  }
+  MPI_Alltoall(ilen,1,MPI_INT,rlen,1,MPI_INT,comm);
   rdisp[0] = 0;
   idisp[0] = 0;
   for ( i=1; i<size; i++ ) {
     rdisp[i] = rdisp[i-1] + rlen[i-1];
     idisp[i] = idisp[i-1] + ilen[i-1];
   }
+  tilen = idisp[size-1] + ilen[size-1];
+  trlen = rdisp[size-1] + rlen[size-1];
    
-  PetscIntView(size,ilen,0);
-  PetscIntView(size,rlen,0);
+  /* PetscIntView(size,ilen,0);
+  PetscIntView(size,rlen,0); */
 
+  /*
+    Communicate the actual indices for each color to the appropriate processor
+  */
+  ivalues = (int *) PetscMalloc((tilen+1)*sizeof(int));CHKPTRQ(ivalues);
+  for ( i=0; i<nc; i++ ) {
+    ierr = ISGetIndices(part->is[i],&indices); CHKERRQ(ierr);
+    PetscMemcpy(ivalues + idisp[i],indices,ilen[i]*sizeof(int));
+    ierr = ISRestoreIndices(part->is[i],&indices); CHKERRQ(ierr);
+  }
+  rvalues = (int *) PetscMalloc((trlen+1)*sizeof(int));CHKPTRQ(rvalues);
+  MPI_Alltoallv(ivalues,ilen,idisp,MPI_INT,rvalues,rlen,rdisp,MPI_INT,comm);
+  PetscFree(ivalues);
   PetscFree(ilen);
+
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,trlen,rvalues,is); CHKERRQ(ierr);
+  PetscFree(rvalues);
+
+  ISView(*is,VIEWER_STDOUT_WORLD);
+
+
+
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.26 1997/09/18 14:30:13 bsmith Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.27 1997/09/24 17:19:24 balay Exp bsmith $";
 #endif
 
 /* 
@@ -92,7 +92,7 @@ void PetscByteSwapScalar(Scalar *buff,int n)
    Input Parameters:
 .  fd - the file
 .  n  - the number of items to read 
-.  type - the type of items to read (BINARY_INT or BINARY_SCALAR)
+.  type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
    Output Parameters:
 .  p - the buffer
@@ -107,7 +107,7 @@ void PetscByteSwapScalar(Scalar *buff,int n)
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose()
 @*/
-int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
+int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 {
 
   int  maxblock, wsize, err, m = n;
@@ -120,7 +120,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
 
   maxblock = 65536;
 #if defined(HAVE_64BIT_INT)
-  if (type == BINARY_INT){
+  if (type == PETSC_INT){
     /* 
        integers on the Cray T#d are 64 bits so we read the 
        32 bits from the file and then extend them into 
@@ -131,10 +131,10 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
     ptmp = (void*) pp;
   }
 #else
-  if (type == BINARY_INT)         m *= sizeof(int);
+  if (type == PETSC_INT)         m *= sizeof(int);
 #endif
-  else if (type == BINARY_SCALAR) m *= sizeof(Scalar);
-  else if (type == BINARY_SHORT)  m *= sizeof(short);
+  else if (type == PETSC_SCALAR) m *= sizeof(Scalar);
+  else if (type == PETSC_SHORT)  m *= sizeof(short);
   else SETERRQ(1,0,"Unknown type");
   
   while (m) {
@@ -147,13 +147,13 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
     pp += err;
   }
 #if defined(HAVE_SWAPPED_BYTES)
-  if (type == BINARY_INT) PetscByteSwapInt((int*)ptmp,n);
-  else if (type == BINARY_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
-  else if (type == BINARY_SHORT) PetscByteSwapShort((short*)ptmp,n);
+  if (type == PETSC_INT) PetscByteSwapInt((int*)ptmp,n);
+  else if (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
+  else if (type == PETSC_SHORT) PetscByteSwapShort((short*)ptmp,n);
 #endif
 
 #if defined(HAVE_64BIT_INT)
-  if (type == BINARY_INT){
+  if (type == PETSC_INT){
     /* 
        integers on the Cray T#d are 64 bits so we read the 
        32 bits from the file and then extend them into ints
@@ -179,7 +179,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
 .  fd - the file
 .  p - the buffer
 .  n  - the number of items to read 
-.  type - the type of items to read (BINARY_INT or BINARY_SCALAR)
+.  type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
    Notes: 
    PetscBinaryWrite() uses byte swapping to work on all machines.
@@ -192,7 +192,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
 
 .seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose()
 @*/
-int PetscBinaryWrite(int fd,void *p,int n,PetscBinaryType type,int istemp)
+int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 {
   int  err, maxblock, wsize,m = n;
   char *pp = (char *) p;
@@ -205,13 +205,13 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscBinaryType type,int istemp)
   maxblock = 65536;
 
 #if defined(HAVE_SWAPPED_BYTES)
-  if (type == BINARY_INT) PetscByteSwapInt((int*)ptmp,n);
-  else if (type == BINARY_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
-  else if (type == BINARY_SHORT) PetscByteSwapShort((short*)ptmp,n);
+  if (type == PETSC_INT) PetscByteSwapInt((int*)ptmp,n);
+  else if (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
+  else if (type == PETSC_SHORT) PetscByteSwapShort((short*)ptmp,n);
 #endif
 
 #if defined(HAVE_64BIT_INT)
-  if (type == BINARY_INT){
+  if (type == PETSC_INT){
     /* 
        integers on the Cray T#d are 64 bits so we copy the big
       integers into a short array and write those out.
@@ -228,10 +228,10 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscBinaryType type,int istemp)
     }
   }
 #else
-  if (type == BINARY_INT)         m *= sizeof(int);
+  if (type == PETSC_INT)         m *= sizeof(int);
 #endif
-  else if (type == BINARY_SCALAR) m *= sizeof(Scalar);
-  else if (type == BINARY_SHORT)  m *= sizeof(short);
+  else if (type == PETSC_SCALAR) m *= sizeof(Scalar);
+  else if (type == PETSC_SHORT)  m *= sizeof(short);
   else SETERRQ(1,0,"Unknown type");
 
   while (m) {
@@ -245,14 +245,14 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscBinaryType type,int istemp)
 
 #if defined(HAVE_SWAPPED_BYTES)
   if (!istemp) {
-    if (type == BINARY_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
-    else if (type == BINARY_SHORT) PetscByteSwapShort((short*)ptmp,n);
-    else if (type == BINARY_INT) PetscByteSwapInt((int*)ptmp,n);
+    if (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
+    else if (type == PETSC_SHORT) PetscByteSwapShort((short*)ptmp,n);
+    else if (type == PETSC_INT) PetscByteSwapInt((int*)ptmp,n);
   }
 #endif
 
 #if defined(HAVE_64BIT_INT)
-  if (type == BINARY_INT){
+  if (type == PETSC_INT){
     PetscFree(ptmp);
   }
 #endif
@@ -342,7 +342,7 @@ int PetscBinaryClose(int fd)
 .  whence - if BINARY_SEEK_SET then size is an absolute location in the file
             if BINARY_SEEK_CUR then size is offset from current location
             if BINARY_SEEK_END then size is offset from end of file
-.  size - number of bytes to move. Use BINARY_INT_SIZE, BINARY_SCALAR_SIZE,
+.  size - number of bytes to move. Use PETSC_INT_SIZE, BINARY_SCALAR_SIZE,
           etc in your calculation rather then sizeof() to compute byte lengths.
 
    Notes: 

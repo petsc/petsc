@@ -1,10 +1,10 @@
 C
-C  $Id: sys.h,v 1.6 1997/07/29 14:13:54 bsmith Exp bsmith $;
+C  $Id: sys.h,v 1.7 1997/09/18 14:40:56 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the System package in PETSc
 C
 #define PetscRandom     integer
-#define PetscBinaryType integer
+#define PetscDataType   integer
 #define PetscRandomType integer
 C
 C     Random numbers
@@ -16,11 +16,6 @@ C
 C
 C
 C
-      integer BINARY_INT, BINARY_DOUBLE,BINARY_SCALAR, BINARY_SHORT,
-     *        BINARY_FLOAT,BINARY_CHAR
-      parameter (BINARY_INT=0, BINARY_DOUBLE=1,BINARY_SCALAR=1,
-     *           BINARY_SHORT=2,BINARY_FLOAT=3,BINARY_CHAR=4)
-
       integer BINARY_INT_SIZE, BINARY_FLOAT_SIZE, BINARY_CHAR_SIZE,
      *        BINARY_SHORT_SIZE, BINARY_DOUBLE_SIZE, 
      *        BINARY_SCALAR_SIZE

@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.3 1997/05/23 16:06:25 balay Exp bsmith $ */
+/* $Id: ao.h,v 1.4 1997/09/15 16:27:37 bsmith Exp bsmith $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -9,14 +9,11 @@
 #define __AO_PACKAGE
 #include "is.h"
 
-typedef enum {AO_DEBUG=0, AO_BASIC=1} AOType;
+typedef enum {AO_BASIC=0, AO_ADVANCED=1} AOType;
 
 #define AO_COOKIE PETSC_COOKIE+20
 
 typedef struct _p_AO* AO;
-
-extern int AOCreateDebug(MPI_Comm,int,int*,int*,AO*);
-extern int AOCreateDebugIS(MPI_Comm,IS,IS,AO*);
 
 extern int AOCreateBasic(MPI_Comm,int,int*,int*,AO*);
 extern int AOCreateBasicIS(MPI_Comm,IS,IS,AO*);
@@ -31,9 +28,15 @@ extern int AOView(AO,Viewer);
 
 /* ----------------------------------------------------*/
 
-typedef enum {AODATA_DEBUG=0, AODATA_BASIC=1} AODataType;
+typedef enum {AODATA_BASIC=0, AODATA_ADVANCED=1} AODataType;
 
+#define AODATA_COOKIE PETSC_COOKIE+24
 
+typedef struct _p_AOData* AOData;
+
+extern int AODataCreateBasic(MPI_Comm,int, int, int *,void *,PetscDataType,AOData*);
+extern int AODataView(AOData,Viewer);
+extern int AODataDestroy(AOData);
 
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.29 1997/03/26 01:38:15 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.30 1997/07/09 21:01:00 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests various DA routines.\n\n";
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   Scalar   value;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",300,0,300,300,&viewer); CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer); CHKERRA(ierr);
 
   /* Read options */
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
+  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
                     M,N,m,n,1,1,PETSC_NULL,PETSC_NULL,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   value = rank+1;
   ierr = VecScale(&value,local); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,ADD_VALUES,global); CHKERRA(ierr);

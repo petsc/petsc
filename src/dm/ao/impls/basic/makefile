@@ -1,17 +1,17 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $
+# $Id: makefile,v 1.8 1997/08/22 15:19:36 bsmith Exp bsmith $
 
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
-SOURCEC  = aodebug.c
+SOURCEC  = aobasic.c aodatabasic.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = aodebug.o
+OBJSC    = aobasic.o aodatabasic.o
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = 
 MANSEC   = 6
-OCDIR    = src/ao/impls/debug/
+OCDIR    = src/ao/impls/basic/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

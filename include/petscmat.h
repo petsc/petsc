@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.141 1997/08/22 15:20:23 bsmith Exp balay $ */
+/* $Id: mat.h,v 1.142 1997/08/22 15:22:24 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -38,7 +38,7 @@ extern int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,Scalar**,Mat*);
 extern int MatCreateSeqBAIJ(MPI_Comm,int,int,int,int,int*,Mat*); 
 extern int MatCreateMPIBAIJ(MPI_Comm,int,int,int,int,int,int,int*,int,int*,Mat*);
 extern int MatCreateSeqAdj(MPI_Comm,int,int,int*,int*,Mat *);
-extern int MatCreateMPIAdj(MPI_Comm,int,int,int,int*,int*,Mat*);
+extern int MatCreateMPIAdj(MPI_Comm,int,int,int*,int*,Mat*);
 
 extern int MatDestroy(Mat);
 
@@ -234,6 +234,19 @@ extern int MatFDColoringSetFrequency(MatFDColoring,int);
 extern int MatFDColoringSetFromOptions(MatFDColoring);
 extern int MatFDColoringPrintHelp(MatFDColoring);
 extern int MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
+
+/* 
+    These routines are for partitioning matrices: currently used only 
+  for adjacency matrix, MatCreateSeqAdj() or MatCreateMPIAdj().
+*/
+typedef enum {PARTITIONING_NATURAL, PARTITIONING_CURRENT, PARTITIONING_NEW} MatPartitioning;
+extern int MatGetPartitioning(Mat,MatPartitioning,int,ISPartitioning*);
+extern int MatGetPartitioningTypeFromOptions(char *,MatPartitioning*);
+extern int MatPartitioningRegister(MatPartitioning,MatPartitioning*,char*,
+                                   int(*)(Mat,MatPartitioning,int,ISPartitioning *));
+extern int MatPartitioningRegisterAll();
+extern int MatPartitioningRegisterAllCalled;
+extern int MatPartitioningRegisterDestroy();
 
 /*
     If you add entries here you must also add them to FINCLUDE/mat.h

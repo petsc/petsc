@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.139 1997/07/09 20:54:32 balay Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.140 1997/08/22 15:14:01 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1502,14 +1502,14 @@ static int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
   if (ict != a->maxnz) SETERRQ(1,0,"Error in nonzero count");
 
   /* Store lengths of each row and write (including header) to file */
-  ierr = PetscBinaryWrite(fd,col_lens,4+a->m,BINARY_INT,1); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,col_lens,4+a->m,PETSC_INT,1); CHKERRQ(ierr);
   PetscFree(col_lens);
 
   /* Store column indices (zero start index) */
-  ierr = PetscBinaryWrite(fd,cval,a->maxnz,BINARY_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,cval,a->maxnz,PETSC_INT,0); CHKERRQ(ierr);
 
   /* Store nonzero values */
-  ierr = PetscBinaryWrite(fd,anonz,a->maxnz,BINARY_SCALAR,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,anonz,a->maxnz,PETSC_SCALAR,0); CHKERRQ(ierr);
   return 0;
 }
 
@@ -2332,7 +2332,7 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
-  ierr = PetscBinaryRead(fd,header,4,BINARY_INT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,header,4,PETSC_INT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,0,"Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
   if (M != N) SETERRQ(1,0,"Can only load square matrices");
@@ -2350,7 +2350,7 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
 
   /* read row lengths */
   rowlengths = (int*) PetscMalloc((M+extra_rows)*sizeof(int));CHKPTRQ(rowlengths);
-  ierr = PetscBinaryRead(fd,rowlengths,M,BINARY_INT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT); CHKERRQ(ierr);
   for ( i=0; i<extra_rows; i++ ) rowlengths[M+i] = 1;
 
   /* load information about diagonals */
@@ -2368,9 +2368,9 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
 
   /* read column indices and nonzeros */
   cols = scols = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(cols);
-  ierr = PetscBinaryRead(fd,cols,nz,BINARY_INT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT); CHKERRQ(ierr);
   vals = svals = (Scalar *) PetscMalloc( nz*sizeof(Scalar) ); CHKPTRQ(vals);
-  ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR); CHKERRQ(ierr);
   /* insert into matrix */
 
   for ( i=0; i<M; i++ ) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.8 1997/07/09 20:50:03 balay Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.9 1997/09/22 15:16:14 balay Exp bsmith $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
@@ -35,8 +35,8 @@ int main(int argc,char **args)
   ierr = ViewerBinaryGetDescriptor(view_out,&fd); CHKERRA(ierr);
 
   /* Write binary output */
-  ierr = PetscBinaryWrite(fd,&m,1,BINARY_INT,0); CHKERRA(ierr);
-  ierr = PetscBinaryWrite(fd,array,m,BINARY_SCALAR,0); CHKERRA(ierr);
+  ierr = PetscBinaryWrite(fd,&m,1,PETSC_INT,0); CHKERRA(ierr);
+  ierr = PetscBinaryWrite(fd,array,m,PETSC_SCALAR,0); CHKERRA(ierr);
 
   /* Destroy the output viewer and work array */
   ierr = ViewerDestroy(view_out); CHKERRA(ierr);
@@ -47,7 +47,7 @@ int main(int argc,char **args)
   /* ---------------------------------------------------------------------- */
 
   /* Open input binary viewer */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,"input.dat",BINARY_RDONLY,&view_in); 
+  ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,"input.dat",PETSC_RDONLY,&view_in); 
          CHKERRA(ierr);
   ierr = ViewerBinaryGetDescriptor(view_in,&fd); CHKERRA(ierr);
 
@@ -56,11 +56,11 @@ int main(int argc,char **args)
   ierr = VecGetArray(vec,&avec); CHKERRA(ierr);
 
   /* Read data into vector */
-  ierr = PetscBinaryRead(fd,&size,1,BINARY_INT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,&size,1,PETSC_INT); CHKERRQ(ierr);
   if (size <=0) SETERRA(1,0,"Error: Must have array length > 0");
 
   printf("reading data in binary from input.dat, size =%d ...\n",size); 
-  ierr = PetscBinaryRead(fd,avec,size,BINARY_SCALAR); CHKERRA(ierr);
+  ierr = PetscBinaryRead(fd,avec,size,PETSC_SCALAR); CHKERRA(ierr);
 
   /* View vector */
   ierr = VecRestoreArray(vec,&avec); CHKERRA(ierr);

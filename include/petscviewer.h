@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.44 1997/06/18 23:55:29 curfman Exp bsmith $ */
+/* $Id: viewer.h,v 1.45 1997/07/02 22:28:35 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -57,7 +57,11 @@ extern int    ViewerStringSPrintf(Viewer,char *,...);
 extern Viewer VIEWER_STDOUT_SELF;  
 extern Viewer VIEWER_STDERR_SELF;
 extern Viewer VIEWER_STDOUT_WORLD;
+extern Viewer VIEWER_STDOUT_(MPI_Comm);
+extern int    VIEWER_STDOUT_Destroy(MPI_Comm);
 extern Viewer VIEWER_STDERR_WORLD;
+extern Viewer VIEWER_STDERR_(MPI_Comm);
+extern int    VIEWER_STDERR_Destroy(MPI_Comm);
 extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_0;
 extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_1;
 extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_2;

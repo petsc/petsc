@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.91 1997/08/13 22:25:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.92 1997/08/22 15:16:14 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -105,11 +105,22 @@ static int DrawString_X(Draw Win,double x,double  y,int c,char *chrs )
 {
   int     xx,yy;
   Draw_X* XiWin = (Draw_X*) Win->data;
+  char*   substr;
 
   xx = XTRANS(Win,XiWin,x);  yy = YTRANS(Win,XiWin,y);
   XiSetColor( XiWin, c );
+  
+  substr = PetscStrtok(chrs,"\n");
   XDrawString( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set,
-               xx, yy - XiWin->font->font_descent, chrs, PetscStrlen(chrs) );
+               xx, yy - XiWin->font->font_descent, substr, PetscStrlen(substr) );
+  substr = PetscStrtok(0,"\n");
+  while (substr) {
+    yy += 4*XiWin->font->font_descent;
+    XDrawString( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set,
+                 xx, yy - XiWin->font->font_descent, substr, PetscStrlen(substr) );
+    substr = PetscStrtok(0,"\n");
+  }
+
   return 0;
 }
 
@@ -632,6 +643,11 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
     MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);
     ierr = XiQuickWindowFromWindow( Xwin,display, win,256 ); CHKERRQ(ierr);
   }
+  /*
+      Need barrier here so processor 0 doesn't destroy the window before other 
+    processors have completed XiQuickWindow()
+  */
+  MPI_Barrier(comm);
  
   Xwin->x      = x;
   Xwin->y      = y;

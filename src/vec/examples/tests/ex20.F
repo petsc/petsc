@@ -1,5 +1,5 @@
 
-C    "$Id: ex20.F,v 1.1 1997/07/22 16:18:29 bsmith Exp bsmith $";
+C    "$Id: ex20.F,v 1.2 1997/07/29 14:07:43 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/sys.h"
@@ -27,18 +27,18 @@ C
 C   Open binary file for writing
        call PetscBinaryOpen('testfile',BINARY_CREATE,fd,ierr)
 C   Write the Vec header
-       call PetscBinaryWrite(fd,veccookie,1,BINARY_INT,0,ierr)
+       call PetscBinaryWrite(fd,veccookie,1,PETSC_INT,0,ierr)
 C   Write the array length
-       call PetscBinaryWrite(fd,n,1,BINARY_INT,0,ierr)
+       call PetscBinaryWrite(fd,n,1,PETSC_INT,0,ierr)
 C   Write the array
-       call PetscBinaryWrite(fd,array,n,BINARY_DOUBLE,0,ierr)
+       call PetscBinaryWrite(fd,array,n,PETSC_DOUBLE,0,ierr)
 C   Close the file
        call PetscBinaryClose(fd,ierr)
 
 C
 C  Open the file for reading by PETSc
 C
-       call ViewerFileOpenBinary(MPI_COMM_SELF,'testfile',BINARY_RDONLY,
+       call ViewerFileOpenBinary(PETSC_COMM_SELF,'testfile',PETSC_RDONLY,
      &                           v,ierr)
 C
 C  Load the vector

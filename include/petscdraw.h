@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.46 1997/08/06 22:13:42 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.47 1997/08/13 22:27:41 bsmith Exp bsmith $ */
 /*
   Interface to the graphics
 */
@@ -15,22 +15,46 @@
  
 typedef struct _p_Draw* Draw;
 
-#define DRAW_WHITE       0
-#define DRAW_BLACK       1
-#define DRAW_RED         2
-#define DRAW_GREEN       3
-#define DRAW_CYAN        4
-#define DRAW_BLUE        5
-#define DRAW_MAGENTA     6
-#define DRAW_AQUAMARINE  7
-#define DRAW_FORESTGREEN 8
-#define DRAW_ORANGE      9
-#define DRAW_VIOLET      10
-#define DRAW_BROWN       11
-#define DRAW_PINK        12
-#define DRAW_CORAL       13
-#define DRAW_GRAY        14
-#define DRAW_YELLOW      15
+/*
+   Number of basic colors in the draw routines, the others are used
+   for a uniform colormap.
+*/
+#define DRAW_BASIC_COLORS 32
+
+#define DRAW_WHITE            0
+#define DRAW_BLACK            1
+#define DRAW_RED              2
+#define DRAW_GREEN            3
+#define DRAW_CYAN             4
+#define DRAW_BLUE             5
+#define DRAW_MAGENTA          6
+#define DRAW_AQUAMARINE       7
+#define DRAW_FORESTGREEN      8
+#define DRAW_ORANGE           9
+#define DRAW_VIOLET          10
+#define DRAW_BROWN           11
+#define DRAW_PINK            12
+#define DRAW_CORAL           13
+#define DRAW_GRAY            14
+#define DRAW_YELLOW          15
+
+#define DRAW_GOLD            16
+#define DRAW_LIGHTPINK       17
+#define DRAW_MEDIUMTURQUOISE 18
+#define DRAW_KHAKI           19
+#define DRAW_DIMGRAY         20
+#define DRAW_YELLOWGREEN     21
+#define DRAW_SKYBLUE         22
+#define DRAW_DARKGREEN       23
+#define DRAW_NAVYBLUE        24
+#define DRAW_SANDYBROWN      25
+#define DRAW_CADETBLUE       26
+#define DRAW_POWDERBLUE      27
+#define DRAW_DEEPPINK        28
+#define DRAW_THISTLE         29
+#define DRAW_LIMEGREEN       30
+#define DRAW_LAVENDERBLUSH   31
+
 
 extern int DrawOpenX(MPI_Comm,char *,char *,int,int,int,int,Draw*);
 extern int DrawOpenVRML( MPI_Comm, char *, char *, Draw * );

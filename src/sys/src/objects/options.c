@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.139 1997/09/08 16:16:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.140 1997/09/08 21:24:18 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -1385,12 +1385,13 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue,int *flg)
 int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *flg)
 {
   char *value,*cpy;
-  int  n = 0,ierr,len;
+  int  flag,n = 0,ierr,len;
 
-  ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
-  if (!*flg)  {*nmax = 0; return 0;}
-  if (!value) {*nmax = 0; return 0;}
+  ierr = OptionsFindPair_Private(pre,name,&value,&flag); CHKERRQ(ierr);
+  if (!flag)  {if (flg) *flg = 0; *nmax = 0; return 0;}
+  if (!value) {if (flg) *flg = 0; *nmax = 0; return 0;}
 
+  if (flg) *flg = 1;
   /* make a copy of the values, otherwise we destroy the old values */
   len = PetscStrlen(value) + 1; 
   cpy = (char *) PetscMalloc(len*sizeof(char));
@@ -1434,12 +1435,13 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
 int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
 {
   char *value,*cpy;
-  int  n = 0,ierr,len;
+  int  flag,n = 0,ierr,len;
 
-  ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
-  if (!*flg) {*nmax = 0; return 0;}
-  if (!value) {*nmax = 0; return 0;}
+  ierr = OptionsFindPair_Private(pre,name,&value,&flag); CHKERRQ(ierr);
+  if (!flag)  {if (flg) *flg = 0; *nmax = 0; return 0;}
+  if (!value) {if (flg) *flg = 0; *nmax = 0; return 0;}
 
+  if (flg) *flg = 1;
   /* make a copy of the values, otherwise we destroy the old values */
   len = PetscStrlen(value) + 1; 
   cpy = (char *) PetscMalloc(len*sizeof(char));

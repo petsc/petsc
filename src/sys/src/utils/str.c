@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.14 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.15 1997/09/11 20:33:11 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
   the standard string routines in the PETSc code is that on some machines 
-  they are broken.
+  they are broken or have the wrong prototypes.
 
 */
 #include "petsc.h"        /*I  "petsc.h"   I*/

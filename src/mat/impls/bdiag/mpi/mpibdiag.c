@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.120 1997/07/29 14:09:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.121 1997/08/22 15:14:06 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -1079,7 +1079,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {
     ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,(char *)header,4,BINARY_INT); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not matrix object");
   }
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
@@ -1115,7 +1115,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
   ourlens = (int*) PetscMalloc( (rend-rstart)*sizeof(int) ); CHKPTRQ(ourlens);
   if (!rank) {
     rowlengths = (int*) PetscMalloc( (M+extra_rows)*sizeof(int) ); CHKPTRQ(rowlengths);
-    ierr = PetscBinaryRead(fd,rowlengths,M,BINARY_INT); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT); CHKERRQ(ierr);
     for ( i=0; i<extra_rows; i++ ) rowlengths[M+i] = 1;
     sndcounts = (int*) PetscMalloc( size*sizeof(int) ); CHKPTRQ(sndcounts);
     for ( i=0; i<size; i++ ) sndcounts[i] = rowners[i+1] - rowners[i];
@@ -1148,19 +1148,19 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
     nz = procsnz[0];
     mycols = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(mycols);
     if (size == 1)  nz -= extra_rows;
-    ierr = PetscBinaryRead(fd,mycols,nz,BINARY_INT); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,mycols,nz,PETSC_INT); CHKERRQ(ierr);
     if (size == 1)  for (i=0; i<extra_rows; i++) { mycols[nz+i] = M+i; }
 
     /* read in every one elses and ship off */
     for ( i=1; i<size-1; i++ ) {
       nz = procsnz[i];
-      ierr = PetscBinaryRead(fd,cols,nz,BINARY_INT); CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT); CHKERRQ(ierr);
       MPI_Send(cols,nz,MPI_INT,i,tag,comm);
     }
     /* read in the stuff for the last proc */
     if ( size != 1 ) {
       nz = procsnz[size-1] - extra_rows;  /* the extra rows are not on the disk */
-      ierr = PetscBinaryRead(fd,cols,nz,BINARY_INT); CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT); CHKERRQ(ierr);
       for ( i=0; i<extra_rows; i++ ) cols[nz+i] = M+i;
       MPI_Send(cols,nz+extra_rows,MPI_INT,size-1,tag,comm);
     }
@@ -1190,7 +1190,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
     /* read in my part of the matrix numerical values  */
     nz = procsnz[0];
     if (size == 1)  nz -= extra_rows;
-    ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR); CHKERRQ(ierr);
     if (size == 1)  for (i=0; i<extra_rows; i++) { vals[nz+i] = 1.0; }   
 
     /* insert into matrix */
@@ -1207,13 +1207,13 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
     /* read in other processors (except the last one) and ship out */
     for ( i=1; i<size-1; i++ ) {
       nz   = procsnz[i];
-      ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR); CHKERRQ(ierr);
       MPI_Send(vals,nz,MPIU_SCALAR,i,A->tag,comm);
     }
     /* the last proc */
     if ( size != 1 ){
       nz   = procsnz[i] - extra_rows;
-      ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR); CHKERRQ(ierr);
       for ( i=0; i<extra_rows; i++ ) vals[nz+i] = 1.0;
       MPI_Send(vals,nz+extra_rows,MPIU_SCALAR,size-1,A->tag,comm);
     }

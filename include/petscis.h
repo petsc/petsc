@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.36 1997/08/22 15:20:23 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.37 1997/09/24 18:53:34 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -91,9 +91,11 @@ extern int ISColoringCreate(MPI_Comm,int,int*,ISColoring*);
      ISPartitioning are sets of IS's that define a partioning
    of the underlying indices. This is the same as a ISColoring.
 */
-#define ISPartitioning ISColoring
-
-
+#define ISPartitioning        ISColoring
+#define ISPartitioningView    ISColoringView
+#define ISPartitioningCreate  ISColoringCreate
+#define ISPartitioningDestroy ISColoringDestroy
+extern int ISPartitioningToLocalIS(ISPartitioning,IS*);
 
 #endif
 

@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.231 1997/09/11 20:42:53 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.232 1997/09/12 16:47:51 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -309,9 +309,9 @@ PETSc provides certain utility routines that allow one to deal cleanly
 and efficiently with the various orderings. To define a new application ordering
 ({\tt AO}), one can call the routine 
 \begin{verbatim}
-   ierr = AOCreateDebug(MPI_Comm comm,int n,int *apordering,int *petscordering,AO *ao);
+   ierr = AOCreateBasic(MPI_Comm comm,int n,int *apordering,int *petscordering,AO *ao);
 \end{verbatim}
-The \findex{AOCreateDebug} 
+The \findex{AOCreateBasic} 
 arrays {\tt apordering} and {\tt petscordering}, respectively, contain a list of integers
 in the application ordering and their corresponding mapped values in the PETSc 
 ordering. Each processor can provide whatever subset of the ordering it 
@@ -326,11 +326,11 @@ We can write this correspondence as \{ 0, 1, 2, 3, 4 \} $ \rightarrow $ \{ 3, 2,
 The user can create the PETSc-AO mappings in a number of ways.  For example,
 if using two processors, one could call
 \begin{verbatim}
-   ierr = AOCreateDebug(PETSC_COMM_WORLD,2,{0,3},{3,4},&ao);
+   ierr = AOCreateBasic(PETSC_COMM_WORLD,2,{0,3},{3,4},&ao);
 \end{verbatim}
 on the first processor and 
 \begin{verbatim}
-   ierr = AOCreateDebug(PETSC_COMM_WORLD,3,{1,2,4},{2,1,0},&ao);
+   ierr = AOCreateBasic(PETSC_COMM_WORLD,3,{1,2,4},{2,1,0},&ao);
 \end{verbatim}
 on the other processor.
 
@@ -346,14 +346,14 @@ the mapped values.
 \findex{AOPetscToApplication()} \findex{AOApplicationToPetsc()}
 Since we, in general, employ a parallel database for the
 {\tt AO} mappings, it is crucial that all processors that
-called {\tt AOCreateDebug()} also call these routines; these
+called {\tt AOCreateBasic()} also call these routines; these
 routines {\em cannot} be called by just a subset of processors.
 
 An alternative routine to create the application ordering, {\tt AO}, is 
 \begin{verbatim}
-   ierr = AOCreateDebugIS(MPI_Comm comm,IS apordering,IS petscordering,AO *ao);
+   ierr = AOCreateBasicIS(MPI_Comm comm,IS apordering,IS petscordering,AO *ao);
 \end{verbatim}
-\findex{AOCreateDebugIS}
+\findex{AOCreateBasicIS}
 where index sets are used instead of integer arrays.  The corresponding
 mapping routines are
 \begin{verbatim}

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.128 1997/08/22 15:17:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.129 1997/09/04 22:32:16 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -1754,7 +1754,7 @@ int SNESGetType(SNES snes, SNESType *method,char **name)
    options database.
 
    Input Parameters:
-.  comm   - communicator (usually MPI_COMM_WORLD)
+.  comm   - communicator (usually PETSC_COMM_WORLD)
 .  prefix - prefix (usually "-")
 .  name   - the options database name (by default "snes_type") 
 */

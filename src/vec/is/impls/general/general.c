@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.61 1997/08/14 23:16:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.62 1997/08/22 15:09:57 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -90,7 +90,7 @@ int ISView_General(PetscObject obj, Viewer viewer)
   ViewerType  vtype;
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+  if (vtype  == ASCII_FILE_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (is->isperm) {
       fprintf(fd,"Index set is permutation\n");
@@ -100,6 +100,20 @@ int ISView_General(PetscObject obj, Viewer viewer)
       fprintf(fd,"%d %d\n",i,idx[i]);
     }
     fflush(fd);
+  } else if (vtype  == ASCII_FILES_VIEWER) {
+    MPI_Comm comm;
+    int      rank;
+    ierr = PetscObjectGetComm((PetscObject)viewer,&comm); CHKERRQ(ierr);
+    MPI_Comm_rank(comm,&rank);
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    if (is->isperm) {
+      PetscSynchronizedFPrintf(comm,fd,"[%d] Index set is permutation\n",rank);
+    }
+    PetscSynchronizedFPrintf(comm,fd,"[%d] Number of indices in set %d\n",rank,n);
+    for ( i=0; i<n; i++ ) {
+      PetscSynchronizedFPrintf(comm,fd,"[%d] %d %d\n",rank,i,idx[i]);
+    }
+    PetscSynchronizedFlush(comm);
   }
   return 0;
 }

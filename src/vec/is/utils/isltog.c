@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.13 1997/08/29 18:04:15 balay Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.14 1997/09/11 20:38:10 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -126,7 +126,7 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
    Notes: The in and out array may be identical
 
 .seealso: ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy(), 
-          ISLocalToGlobalMappingApplyIS(),AOCreateDebug(),AOApplicationToPetsc(),
+          ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc(),
           AOPetscToApplication(), ISGlobalToLocalMappingApply()
 
 .keywords: local-to-global, mapping, apply

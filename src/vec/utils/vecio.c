@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.32 1997/07/22 13:25:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.33 1997/07/29 14:07:25 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -79,14 +79,14 @@ int VecLoad(Viewer viewer,Vec *newvec)
 
   if (!rank) {
     /* Read vector header. */
-    ierr = PetscBinaryRead(fd,&type,1,BINARY_INT); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,&type,1,PETSC_INT); CHKERRQ(ierr);
     if ((VecType)type != VEC_COOKIE) SETERRQ(1,0,"Non-vector object");
-    ierr = PetscBinaryRead(fd,&rows,1,BINARY_INT); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT); CHKERRQ(ierr);
     MPI_Bcast(&rows,1,MPI_INT,0,comm);
     ierr = VecCreate(comm,rows,&vec); CHKERRQ(ierr);
     v = (Vec_MPI*) vec->data;
     ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,avec,v->n,BINARY_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,avec,v->n,PETSC_SCALAR);CHKERRQ(ierr);
     ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
 
     if (size > 1) {
@@ -101,7 +101,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
       statuses = (MPI_Status *) PetscMalloc((size-1)*sizeof(MPI_Status));CHKPTRQ(statuses);
       for ( i=1; i<size; i++ ) {
         n = v->ownership[i+1]-v->ownership[i];
-        ierr = PetscBinaryRead(fd,avec,n,BINARY_SCALAR);CHKERRQ(ierr);
+        ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
         MPI_Isend(avec,n,MPIU_SCALAR,i,vec->tag,vec->comm,requests+i-1);
       }
       MPI_Waitall(size-1,requests,statuses);

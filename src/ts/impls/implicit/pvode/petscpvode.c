@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.2 1997/08/22 15:16:47 bsmith Exp balay $";
+static char vcid[] = "$Id: petscpvode.c,v 1.3 1997/08/22 15:20:05 balay Exp bsmith $";
 #endif
 
 /*
@@ -37,7 +37,7 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
   locsize = N_VLOCLENGTH(y);
 
   /* Jac and u must be set before calling PCSetUp */
-  ierr = MatCreate(MPI_COMM_WORLD,N,N,&Jac); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,N,N,&Jac); CHKERRA(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,locsize,N,&u); CHKERRA(ierr);
   ierr = VecSet(&zero,u); CHKERRA(ierr);
 

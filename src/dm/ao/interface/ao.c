@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.11 1997/07/09 21:01:57 balay Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.12 1997/08/22 15:19:32 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -35,7 +35,7 @@ int AOView(AO ao, Viewer viewer)
 
 .keywords: destroy, application ordering
 
-.seealso: AOCreateDebug(), AOCreateBasic()
+.seealso: AOCreateBasic()
 @*/
 int AODestroy(AO ao)
 {
@@ -64,7 +64,7 @@ int AODestroy(AO ao)
 
 .keywords: application ordering, mapping
 
-.seealso: AOCreateDebug(), AOCreateBasic(), AOView(),AOApplicationToPetsc(),
+.seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
           AOApplicationToPetscIS(),AOPetscToApplication()
 @*/
 int AOPetscToApplicationIS(AO ao,IS is)
@@ -95,7 +95,7 @@ int AOPetscToApplicationIS(AO ao,IS is)
 
 .keywords: application ordering, mapping
 
-.seealso: AOCreateDebug(), AOCreateBasic(), AOView(), AOPetscToApplication(),
+.seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
 int AOApplicationToPetscIS(AO ao,IS is)
@@ -127,7 +127,7 @@ int AOApplicationToPetscIS(AO ao,IS is)
 
 .keywords: application ordering, mapping
 
-.seealso: AOCreateDebug(), AOCreateBasic(), AOView(),AOApplicationToPetsc(),
+.seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
 int AOPetscToApplication(AO ao,int n,int *ia)
@@ -154,7 +154,7 @@ int AOPetscToApplication(AO ao,int n,int *ia)
 
 .keywords: application ordering, mapping
 
-.seealso: AOCreateDebug(), AOCreateBasic(), AOView(), AOPetscToApplication(),
+.seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
 int AOApplicationToPetsc(AO ao,int n,int *ia)

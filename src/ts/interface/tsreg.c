@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.21 1997/07/09 20:58:21 balay Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.22 1997/08/22 15:16:35 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -148,7 +148,7 @@ int TSGetType(TS ts, TSType *method,char **name)
    options database.
 
    Input Parameters:
-.  comm   - The communicator (usually MPI_COMM_WORLD)
+.  comm   - The communicator (usually PETSC_COMM_WORLD)
 .  prefix - prefix (usually "-")
 .  name   - the options database name (by default "ts_type") 
 */

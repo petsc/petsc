@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.65 1997/07/09 21:00:44 balay Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.66 1997/08/22 15:18:43 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -310,7 +310,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
     
     ierr = ISCreateStride(PETSC_COMM_SELF,da->xe-da->xs,da->base,1,&is);
            CHKERRQ(ierr);
-    ierr = AOCreateDebugIS(comm,is,is,&da->ao); CHKERRQ(ierr);
+    ierr = AOCreateBasicIS(comm,is,is,&da->ao); CHKERRQ(ierr);
     ierr = ISDestroy(is); CHKERRQ(ierr);
   }
 
