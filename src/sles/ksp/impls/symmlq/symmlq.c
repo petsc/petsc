@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.3 2000/08/25 19:12:07 hzhang Exp hzhang $*/
+/*$Id: symmlq.c,v 1.4 2000/09/04 02:19:19 hzhang Exp hzhang $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -75,7 +75,6 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   dp = PetscSqrtScalar(dp); 
   beta = dp;                         /*  beta <- sqrt(r'*z)  */
   beta1 = beta;
-  /* eta  = beta; */
   s_prod = PetscAbsScalar(beta1); 
 
   ierr = VecCopy(R,V);CHKERRQ(ierr);  /* v <- r; */
