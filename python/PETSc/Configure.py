@@ -16,11 +16,12 @@ class Configure(config.base.Configure):
     self.defineAutoconfMacros()
     headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
-                                            'sys/stat', 'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib'])
+                                            'sys/stat', 'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
+                                            'sys/socket'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
-                 'uname']
+                 'uname','_snprintf','nttime']
     libraries = [('dl', 'dlopen')]
     self.compilers   = self.framework.require('config.compilers', self)
     self.types       = self.framework.require('config.types',     self)
@@ -622,6 +623,13 @@ acfindx:
       self.missingPrototypesExternC.append('int getdomainname(char *, size_t);')
     return
 
+  def configureWin32NonCygwin(self):
+    '''Win32 non-cygwin specific stuff'''
+    #if (compiler starts with win32fe):
+    #self.addDefine('PARCH_win32',1)
+    #self.addDefine('CANNOT_START_DEBUGGER',1)
+    return
+    
   def configureMPIUNI(self):
     '''If MPI was not found, setup MPIUNI, our uniprocessor version of MPI'''
     if self.framework.argDB['with-mpi']:
@@ -695,6 +703,7 @@ acfindx:
     self.executeTest(self.configureIRIX)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureMacOSX)
+    self.executeTest(self.configureWin32NonCygwin)
     self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMachineInfo)
