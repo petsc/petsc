@@ -5728,6 +5728,8 @@ PetscErrorCode MatGetVecs(Mat mat,Vec *right,Vec *left)
       else {ierr = VecSetType(*left,VECSEQ);CHKERRQ(ierr);}
     }
   }
+  if (right) {ierr = VecSetBlockSize(*right,mat->bs);CHKERRQ(ierr);}
+  if (left) {ierr = VecSetBlockSize(*left,mat->bs);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -5829,6 +5831,8 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (flg) {
     ierr = MatDestroy(P);CHKERRQ(ierr);
   }
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(*C,A->bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

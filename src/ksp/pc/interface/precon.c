@@ -13,8 +13,8 @@ PetscEvent    PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0;
 PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
 {
   PetscErrorCode ierr;
-  int size;
-  PetscTruth flg1,flg2,set,flg3;
+  PetscMPIInt    size;
+  PetscTruth     flg1,flg2,set,flg3;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ static PetscErrorCode PCPublish_Petsc(PetscObject obj)
 @*/
 PetscErrorCode PCCreate(MPI_Comm comm,PC *newpc)
 {
-  PC  pc;
+  PC             pc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -769,7 +769,7 @@ PetscErrorCode PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscRea
 PetscErrorCode PCSetUp(PC pc)
 {
   PetscErrorCode ierr;
-  const char *def;
+  const char     *def;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -993,7 +993,7 @@ PetscErrorCode PCModifySubMatrices(PC pc,int nsub,const IS row[],const IS col[],
 PetscErrorCode PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
   PetscErrorCode ierr;
-  PetscTruth isbjacobi,isrowbs;
+  PetscTruth     isbjacobi,isrowbs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -1221,8 +1221,8 @@ PetscErrorCode PCGetOptionsPrefix(PC pc,char *prefix[])
 PetscErrorCode PCPreSolve(PC pc,KSP ksp)
 {
   PetscErrorCode ierr;
-  Vec x,rhs;
-  Mat A,B;
+  Vec            x,rhs;
+  Mat            A,B;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -1278,8 +1278,8 @@ PetscErrorCode PCPreSolve(PC pc,KSP ksp)
 PetscErrorCode PCPostSolve(PC pc,KSP ksp)
 {
   PetscErrorCode ierr;
-  Vec x,rhs;
-  Mat A,B;
+  Vec            x,rhs;
+  Mat            A,B;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -1334,7 +1334,7 @@ PetscErrorCode PCPostSolve(PC pc,KSP ksp)
 PetscErrorCode PCView(PC pc,PetscViewer viewer)
 {
   PCType            cstr;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   PetscTruth        mat_exists,iascii,isstring;
   PetscViewerFormat format;
 
@@ -1406,7 +1406,7 @@ PetscErrorCode PCView(PC pc,PetscViewer viewer)
 PetscErrorCode PCRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PC))
 {
   PetscErrorCode ierr;
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
 
@@ -1443,11 +1443,12 @@ PetscErrorCode PCRegister(const char sname[],const char path[],const char name[]
 @*/
 PetscErrorCode PCComputeExplicitOperator(PC pc,Mat *mat)
 {
-  Vec      in,out;
+  Vec            in,out;
   PetscErrorCode ierr;
-  int i,M,m,size,*rows,start,end;
-  MPI_Comm comm;
-  PetscScalar   *array,zero = 0.0,one = 1.0;
+  PetscInt       i,M,m,*rows,start,end;
+  PetscMPIInt    size;
+  MPI_Comm       comm;
+  PetscScalar    *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);

@@ -232,10 +232,10 @@ PetscErrorCode MGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
      Thus we check if a different one has already been allocated, 
      if not we allocate it.
   */
-  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
   if (mg[l]->smoothu == mg[l]->smoothd) {
     ierr = PetscObjectGetComm((PetscObject)mg[l]->smoothd,&comm);CHKERRQ(ierr);
+    ierr = KSPGetOptionsPrefix(mg[l]->smoothd,&prefix);CHKERRQ(ierr);
     ierr = KSPCreate(comm,&mg[l]->smoothu);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mg[l]->smoothu,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(mg[l]->smoothu,prefix);CHKERRQ(ierr);
