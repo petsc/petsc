@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.6 1997/10/11 22:49:38 keyes Exp keyes $";
+c  "$Id: resid_fp.F,v 1.7 1997/10/12 17:23:49 keyes Exp $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -101,7 +101,16 @@ c      COMMON /FREQ/ IFREQ,ISGS
       integer i,j,k
       double precision p25 
       parameter(p25=0.25d0)
+      double precision dx, dy
+
       resid_fp = 0
+
+c set dx and dy from "interior" area metrics (assumes that dz spacing
+c is uniformly unity, and that mesh is uniform
+
+      dx = ajy(xsf2,ysf2,zsf2) 
+      dy = aix(xsf2,ysf2,zsf2)
+      print *, 'mesh spacings', dx, dy
 
 C   FLUX IN THE I DIRECTION
       do 2 k=zsf2,zef01
@@ -114,12 +123,14 @@ c
 c   Form density and contravariant velocities at FV cell edge centers (I+1/2)
 c   as functions of PHI(I,J,K) and PHI(I+1,J,K)
 c
-      xvel(i,j,k)=    (fp(i+1,j,k)-fp(i,j,k))/ajy(i,j,k)
+      xvel(i,j,k)=    (fp(i+1,j,k)-fp(i,j,k))/dx
       yvel(i,j,k)=p25*(fp(i+1,j+1,k)-fp(i+1,j-1,k)+
-     &                 fp(i,j+1,k)-fp(i,j-1,k))/aix(i,j,k)
+     &                 fp(i,j+1,k)-fp(i,j-1,k))/dy
       zvel(i,j,k)=zero
-      den (i,j,k)=( one+p5*gm1*(fsmach**2-
-     &              (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+c set density to 1.0 for debugging
+      den (i,j,k)=one
+c      den (i,j,k)=( one+p5*gm1*(fsmach**2-
+c     &              (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
 c
 c   Form i-flux at the FV cell edge centers (I+1/2)
 c
@@ -146,11 +157,13 @@ c   Form density and contravariant velocities at FV cell edge centers (J+1/2)
 c   as functions of PHI(I,J,K) and PHI(I,J+1,K)
 c
       xvel(i,j,k)=p25*(fp(i+1,j+1,k)-fp(i-1,j+1,k)+
-     &                 fp(i+1,j,k)-fp(i-1,j,k))/ajy(i,j,k)
-      yvel(i,j,k)=    (fp(i,j+1,k)-fp(i,j,k))/aix(i,j,k)
+     &                 fp(i+1,j,k)-fp(i-1,j,k))/dx
+      yvel(i,j,k)=    (fp(i,j+1,k)-fp(i,j,k))/dy
       zvel(i,j,k)=zero
-      den (i,j,k)=( one+p5*gm1*(fsmach**2-
-     &              (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+c set density to 1.0 for debugging
+      den (i,j,k)=one
+c      den (i,j,k)=( one+p5*gm1*(fsmach**2-
+c     &              (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
 c
 c   Form j-flux at the FV cell edge centers (J+1/2)
 c
@@ -239,7 +252,15 @@ c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
       parameter(pi=3.14159265,amplitude=0.1d0)
       integer i,j,k
 
+      double precision dx, dy
+
       residbc_fp = 0
+
+c set dx and dy from "interior" area metrics (assumes that dz spacing
+c is uniformly unity, and that mesh is uniform
+
+      dx = ajy(xsf2,ysf2,zsf2) 
+      dy = aix(xsf2,ysf2,zsf2)
 c
 c bottom of duct
       if (ysf1 .eq. 1) then
@@ -259,7 +280,7 @@ c p1    p2    p3           p17   p18         p33   p34         p48   p49   p50
 c
       xloc=-1.50d0+3.0d0*(dfloat(i-1)-p5)/dfloat(ni-1)
       fbcfpj1(i,k)=fp(i,1,k)-fp(i,2,k)+amplitude*
-     &             aix(i,2,k)*fsmach*sin(pi*xloc)*cos(pi*xloc)
+     &             dy*fsmach*sin(pi*xloc)*cos(pi*xloc)
       GO TO 2
     4 CONTINUE
 c
@@ -312,7 +333,7 @@ c      DO 8 J=2,NJ
 c
 c simple outflow condition
       fbcfpi2(j,k)=fp(ni1,j,k)-fp(ni,j,k)-
-     &             ajy(ni,j,k)*fsmach
+     &             dx*fsmach
     8 CONTINUE
       endif
 c

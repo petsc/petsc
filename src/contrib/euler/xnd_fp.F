@@ -1,5 +1,5 @@
 c
-c  "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp $";
+c  "$Id: xnd_fp.F,v 1.5 1997/10/11 18:39:18 curfman Exp keyes $";
 c
 c ----------------------------------------------------------------
 c  Full potential initial condition
@@ -28,6 +28,7 @@ c      COMMON /CONDI/ ORDER,PSI,LIMIT
 c      COMMON /FREQ/ IFREQ,ISGS
       double precision  conv, beta_dummy
       integer i,j,k,ifreq_dummy
+      double precision xloc
 c
 c Reading would be redundant with IC for Euler if both models are 
 c in use, but is necessary when running only the FP model.  This
@@ -87,8 +88,8 @@ c
 c      DO 2 K=1,NK1
 c      DO 2 J=1,NJ1
 c      DO 2 I=1,NI1
-          FP(I,J,K) = 
-     &    x(i,j,k)*RUINIT + y(i,j,k)*RVINIT + z(i,j,k)*RWINIT 
+          xloc=-1.50d0+3.0d0*(dfloat(i-1)-p5)/dfloat(ni-1)
+          FP(I,J,K) = xloc * RUINIT
     2 CONTINUE
       RETURN
       END

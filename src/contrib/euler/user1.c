@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.57 1997/10/12 17:21:54 curfman Exp $";
+static char vcid[] = "$Id: user1.c,v 1.58 1997/10/12 18:33:48 keyes Exp $";
 #endif
 
 /***************************************************************************
@@ -629,18 +629,18 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
           Full potential code   DAVID!DAVID!DAVID
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    fv_array[0] = 1.e-13;
+    /* fv_array[0] = 1.e-13; */
 
     /* Full potential function call */
-    /* ierr =localfortfct_fp_(&jacform,fv_array,
+    ierr =localfortfct_fp_(&jacform,fv_array,
            app->xx,app->p,app->xx_bc,app->p_bc,
            app->sadai,app->sadaj,app->sadak,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
            app->aiz,app->ajz,app->akz,app->dxx,
-           app->den_a,app->xvel_a,app->yvel_a,app->zvel_a,app->phi_te); CHKERRQ(ierr); */
+           app->den_a,app->xvel_a,app->yvel_a,app->zvel_a,app->phi_te); CHKERRQ(ierr); 
 
     /* Build Fvec(X) directly, without using VecSetValues() */
-    /* ierr = rbuild_direct_fp_(fv_array, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr); */
+    ierr = rbuild_direct_fp_(fv_array, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr); 
 
   }
 
