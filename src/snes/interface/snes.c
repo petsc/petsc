@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.80 1996/08/12 03:42:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.81 1996/08/14 00:40:09 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -569,7 +569,7 @@ int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx
    Output Parameter:
 .  y - function vector, as set by SNESSetFunction()
 
-n   Notes:
+   Notes:
    SNESComputeFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only.
    Analogous routines for SNES_UNCONSTRAINED_MINIMIZATION methods are
    SNESComputeMinimizationFunction() and SNESComputeGradient();

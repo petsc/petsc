@@ -1,5 +1,5 @@
 C
-C  $Id: plog.h,v 1.5 1996/04/16 13:16:14 balay Exp $;
+C  $Id: plog.h,v 1.2 1996/08/19 21:04:51 curfman Exp curfman $;
 C
 C  Include file for Fortran use of the Plog package in PETSc
 C
@@ -129,6 +129,8 @@ C
        parameter (SLES_SetUp = 71)
        integer    KSP_GMRESOrthogonalization
        parameter (KSP_GMRESOrthogonalization = 72)
+       integer    PC_ModifySubMatrices
+       parameter (PC_ModifySubMatrices = 74)
        integer    PC_SetUp
        parameter (PC_SetUp = 75)
        integer    PC_SetUpOnBlocks

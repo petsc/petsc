@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.95 1996/08/17 14:36:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.96 1996/08/18 20:03:32 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -100,7 +100,13 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   pc->applyrich          = 0;
   pc->view               = 0;
   pc->getfactoredmatrix  = 0;
-  *newpc                 = pc;
+  pc->nullsp             = 0;
+  pc->applysymmetricright = 0;
+  pc->applysymmetricleft  = 0;
+  pc->setuponblocks       = 0;
+  pc->modifysubmatrices   = 0;
+  pc->modifysubmatricesP  = 0;
+  *newpc                  = pc;
   /* this violates rule about seperating abstract from implementions*/
   return PCSetType(pc,initialtype);
 }
@@ -400,13 +406,8 @@ int PCSetUp(PC pc)
    the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
    methods.
 
-   Input parameters:
+   Input Parameters:
 .  pc - the preconditioner context
-
-   PCSetUpOnBlocks() is a routine that the user can optinally call for
-   more precise profiling (via -log_summary) of the setup phase for these
-   block preconditioners.  If the user does not call PCSetUpOnBlocks(),
-   it will automatically be called from within PCSetUp().
 
 .keywords: PC, setup, blocks
 
@@ -420,6 +421,34 @@ int PCSetUpOnBlocks(PC pc)
   PLogEventBegin(PC_SetUpOnBlocks,pc,0,0,0);
   ierr = (*pc->setuponblocks)(pc); CHKERRQ(ierr);
   PLogEventEnd(PC_SetUpOnBlocks,pc,0,0,0);
+  return 0;
+}
+
+/*@
+   PCSetModifySubMatrices
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+.keywords: PC, setup, blocks
+
+.seealso: PCCreate(), PCApply(), PCDestroy(), PCSetUp()
+@*/
+int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx)
+{
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  pc->modifysubmatrices  = func;
+  pc->modifysubmatricesP = ctx;
+  return 0;
+}
+
+int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
+{
+  int ierr;
+  if (!pc->modifysubmatrices) return 0;
+  PLogEventBegin(PC_ModifySubMatrices,pc,0,0,0);
+  ierr = (*pc->modifysubmatrices)(pc,nsub,row,col,submat,ctx); CHKERRQ(ierr);
+  PLogEventEnd(PC_ModifySubMatrices,pc,0,0,0);
   return 0;
 }
 
@@ -479,7 +508,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
     }
   }
   /*
-      Shell matrix (probably) cannot support an preconditioner
+      Shell matrix (probably) cannot support a preconditioner
   */
   ierr = MatGetType(Pmat,&type,PETSC_NULL); CHKERRQ(ierr);
   if (type == MATSHELL && pc->type != PCSHELL && pc->type != PCMG) {

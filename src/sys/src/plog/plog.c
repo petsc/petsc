@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.121 1996/08/08 22:29:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.122 1996/08/18 19:46:46 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -143,6 +143,12 @@ int PLogInfo(void *vobj,char *message,...)
 #if defined(PETSC_LOG)
 static int PLOG_USER_EVENT_LOW = PLOG_USER_EVENT_LOW_STATIC;
 
+/* 
+   Make sure that all events used by PETSc have the
+   corresponding flags set here: 
+     1 - activated for PETSc logging
+     0 - not activated for PETSc logging
+ */
 int PLogEventFlags[] = {      1,1,1,1,1,  /* 0 - 24*/
                         1,1,1,1,1,
                         1,1,1,1,1,
@@ -277,7 +283,8 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "SLESSolve       ",
                          "SLESSetUp       ",
                          "KSPGMRESOrthog  ",
-                         " ", " ",
+                         " ",
+                         "PCModifySubMat  ",
                          "PCSetUp         ",
                          "PCSetUpOnBlocks ",
                          "PCApply         ",
@@ -1303,6 +1310,7 @@ int PLogEventActivateClass(int cookie)
     PLogEventActivate(SLES_Solve);
     PLogEventActivate(SLES_SetUp);
     PLogEventActivate(KSP_GMRESOrthogonalization);
+    PLogEventActivate(PC_ModifySubMatrices);
     PLogEventActivate(PC_SetUp);
     PLogEventActivate(PC_SetUpOnBlocks);
     PLogEventActivate(PC_Apply);
@@ -1398,6 +1406,7 @@ int PLogEventDeactivateClass(int cookie)
     PLogEventDeactivate(SLES_Solve);
     PLogEventDeactivate(SLES_SetUp);
     PLogEventDeactivate(KSP_GMRESOrthogonalization);
+    PLogEventDeactivate(PC_ModifySubMatrices);
     PLogEventDeactivate(PC_SetUp);
     PLogEventDeactivate(PC_SetUpOnBlocks);
     PLogEventDeactivate(PC_Apply);

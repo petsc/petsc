@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plogmpe.c,v 1.9 1996/06/12 20:22:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plogmpe.c,v 1.10 1996/08/06 04:04:17 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -13,6 +13,12 @@ static char vcid[] = "$Id: plogmpe.c,v 1.9 1996/06/12 20:22:18 bsmith Exp bsmith
 #if defined(HAVE_MPE)
 #include "mpe.h"
 
+/* 
+   Make sure that all events used by PETSc have the
+   corresponding flags set here: 
+     1 - activated for MPE logging
+     0 - not activated for MPE logging
+ */
 int PLogEventMPEFlags[] = {  1,1,1,1,1,  /* 0 - 24*/
                         1,1,1,1,1,
                         1,1,1,1,1,
@@ -27,7 +33,7 @@ int PLogEventMPEFlags[] = {  1,1,1,1,1,  /* 0 - 24*/
                         1,1,1,1,1,
                         1,1,1,1,0,
                         0,0,0,0,0,
-                        1,1,1,0,0,
+                        1,1,1,0,1,
                         1,1,1,1,1, /* 75 - 99 */
                         1,1,1,1,1,
                         1,1,0,0,0,

@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.82 1996/08/06 12:58:25 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.83 1996/08/17 14:38:45 bsmith Exp curfman $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -85,6 +85,7 @@
 
 #define KSP_GMRESOrthogonalization              72
 
+#define PC_ModifySubMatrices                    74
 #define PC_SetUp                                75
 #define PC_SetUpOnBlocks                        76
 #define PC_Apply                                77

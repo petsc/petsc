@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.14 1996/03/19 21:24:53 bsmith Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.15 1996/03/19 22:25:19 bsmith Exp curfman $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -26,6 +26,8 @@ struct _PC {
   PCNullSpace  nullsp;
   int          (*applysymmetricleft)(PC,Vec,Vec),(*applysymmetricright)(PC,Vec,Vec);
   int          (*setuponblocks)(PC);
+  int          (*modifysubmatrices)(PC,int,IS*,IS*,Mat*,void*);
+  void         *modifysubmatricesP;
 };
 
 struct _PCNullSpace {
