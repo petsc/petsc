@@ -47,7 +47,7 @@ int main(int argc,char **args)
    to match the blocksize then create a new padded vector
   */
   { 
-    int    m,n,j,mvec,start,end,index;
+    int    m,n,j,mvec,start,end,indx;
     Vec    tmp;
     PetscScalar *bold;
 
@@ -59,8 +59,8 @@ int main(int argc,char **args)
     ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
     ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
     for (j=0; j<mvec; j++) {
-      index = start+j;
-      ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES);CHKERRQ(ierr);
+      indx = start+j;
+      ierr  = VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
     ierr = VecDestroy(b);CHKERRQ(ierr);
