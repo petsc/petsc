@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ghome.c,v 1.15 1997/11/13 18:59:22 balay Exp bsmith $";
+static char vcid[] = "$Id: ghome.c,v 1.16 1997/11/23 04:41:49 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -41,7 +41,10 @@ int PetscGetHomeDirectory(int maxlen,char *dir)
 #endif
   PetscFunctionReturn(0);
 }
-/*@
+
+#undef __FUNC__  
+#define __FUNC__ "PetscFixFilename"
+/*@C
     PetscFixFilename - Fixes a file name so that it is correct for both Unix and 
        Windows by using the correct / or \ to seperate directories.
 
