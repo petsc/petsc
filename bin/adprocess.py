@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.8 2001/07/17 21:19:27 bsmith Exp bsmith $ 
+# $Id: adprocess.py,v 1.9 2001/07/18 03:30:48 bsmith Exp bsmith $ 
 #
 # change python to whatever is needed on your system to invoke python
 #
@@ -44,7 +44,7 @@ def setupfunctionC(filename):
                                 reg = re.compile('^[ ]*}')
                                 fl = reg.search(line)
                                 if fl:
-	 	                	 break
+                                  break
  		                line = f.readline()
                                 struct = struct + line
 #
@@ -54,12 +54,12 @@ def setupfunctionC(filename):
                         fl = reg.search(line)
                         if fl:
                                 print "Extracting AppCtx structure"
-                                reg = re.compile('^[ ]*Scalar ')
-                                struct = reg.sub('PassiveScalar ',struct)
-                                reg = re.compile('^[ ]*double ')
-                                struct = reg.sub('PassiveDouble ',struct)
-                                reg = re.compile('^[ ]*PetscReal ')
-                                struct = reg.sub('PassiveDouble ',struct)
+                                reg = re.compile('\n[ ]*Scalar ')
+                                struct = reg.sub('\nPassiveScalar ',struct)
+                                reg = re.compile('\n[ ]*double ')
+                                struct = reg.sub('\nPassiveDouble ',struct)
+                                reg = re.compile('\n[ ]*PetscReal ')
+                                struct = reg.sub('\nPassiveDouble ',struct)
                         g.write(struct)
 		line = f.readline()
 	f.close()
@@ -73,21 +73,19 @@ def getfunctionC(g,filename,functionname):
         g.write("/* Function "+functionname+"*/\n\n")
 	line = f.readline()
 	while line:
-                for i in split('int double',' '):
-                  reg = re.compile('^[ ]*'+i+'[ ]*'+functionname+'[ ]*')
-#                  reg = re.compile("^[ ]*"+"int"+"[ ]*"+functionname+'[ ]*')
-#                  print ":"+i+":"
+                for i in split('int double PetscReal Scalar'," "):
+                  reg = re.compile('^[ ]*'+i+'[ ]*'+functionname+'[ ]*\(')
                   fl = reg.search(line)
                   if fl:
                         print 'Extracting function', functionname
 			while line:
 				g.write(line)
                                 if line[0] == "}":
-	 	                	 break
+                                  break
  		                line = f.readline()
  		        line = f.readline()
                         continue
-                  line = f.readline()
+                line = f.readline()
 	f.close()
 
 def getfunctionF(filename,functionname):
