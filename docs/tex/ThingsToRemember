@@ -1,3 +1,59 @@
+Test machines:
+
+Local:
+
+IRIX            - rock
+IRIX64          - denali
+IRIX64_uni      - denali
+IRIX_gnu        - rock
+alpha           - ptera
+alpha_gnu  
+alpha_nolog
+alpha_uni
+beos            - dreamcast (?)
+linux           - gaea
+linux_uni       - gaea
+linux_absoft    - gaea
+linux_alpha     - dactyl
+linux_alpha_dec - hux1
+linux_pgi       - chiba
+linux_gcc_pgf90 - chiba
+mac-x           - playstation
+rs6000          - tri34
+rs6000_gcc      - tri34
+rs6000_sp       - quad
+solaris         - fire,maple,lava
+solaris64
+solaris_gnu
+solaris_lam
+solaris_uni
+sun4            -
+win32           - any PC
+win32_gnu
+win32_hpvm 
+win32_mpich
+win32_wmpi
+
+External:
+IRIX64         - modi4.ncsa.uiuc.edu
+ascired        - sasn100.sandia.gov,janus.sandia.gov
+freebsd        - eris.disturbed.net
+hpux           - billie.ncsa.uiuc.edu,hp.giref.ulaval.ca
+hpux64         - hp.giref.ulaval.ca
+rs6000_64      - gseaborg.nersc.gov
+solaris+sunmpi - horus.lions.odu.edu
+t3e            - mcurie.nersc.gov
+alpha          - marathon.cpge.utexas.edu
+alpha_gnu  
+alpha_nolog
+alpha_uni
+
+Builds:
+blue.llnl.gov    rs6000*
+east.llnl.gov    alpha*
+mcurie.nersc.gov t3e
+
+----------------------------------------------------------------
 
 Cost code for library 56696-01-145
 
