@@ -438,7 +438,7 @@ class Configure(config.base.Configure):
     if not self.checkCompile('#include <sys/types.h>\n','uid_t u;\n'):
       self.addTypedef('int', 'uid_t')
       self.addTypedef('int', 'gid_t')
-    if not self.checkCompile('#include <sys/stat.h>\n#include <io.h>\n','int a=R_OK;\n'):
+    if not self.checkLink('#if defined(PETSC_HAVE_UNISTD_H)\n#include <unistd.h>\n#endif\n','int a=R_OK;\n'):
       self.framework.addDefine('R_OK', '04')
       self.framework.addDefine('W_OK', '02')
       self.framework.addDefine('X_OK', '01')
