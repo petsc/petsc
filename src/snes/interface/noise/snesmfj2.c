@@ -1,22 +1,20 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj2.c,v 1.21 1999/10/13 20:38:26 bsmith Exp bsmith $";
-#endif
+/*$Id: snesmfj2.c,v 1.21 1999/10/13 20:38:26 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
 
 extern int DiffParameterCreate_More(SNES,Vec,void**);
-extern int DiffParameterCompute_More(SNES,void*,Vec,Vec,double*,double*);
+extern int DiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
 extern int DiffParameterDestroy_More(void*);
 
 typedef struct {  /* default context for matrix-free SNES */
   SNES        snes;             /* SNES context */
   Vec         w;                /* work vector */
   PCNullSpace sp;               /* null space context */
-  double      error_rel;        /* square root of relative error in computing function */
-  double      umin;             /* minimum allowable u'a value relative to |u|_1 */
+  PetscReal   error_rel;        /* square root of relative error in computing function */
+  PetscReal   umin;             /* minimum allowable u'a value relative to |u|_1 */
   int         jorge;            /* flag indicating use of Jorge's method for determining
                                    the differencing parameter */
-  double      h;                /* differencing parameter */
+  PetscReal   h;                /* differencing parameter */
   int         need_h;           /* flag indicating whether we must compute h */
   int         need_err;         /* flag indicating whether we must currently compute error_rel */
   int         compute_err;      /* flag indicating whether we must ever compute error_rel */
@@ -26,7 +24,7 @@ typedef struct {  /* default context for matrix-free SNES */
 } MFCtx_Private;
 
 #undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeDestroy2_Private" /* ADIC Ignore */
+#define __FUNC__ /*<a name=""></a>*/"SNESMatrixFreeDestroy2_Private" /* ADIC Ignore */
 int SNESMatrixFreeDestroy2_Private(Mat mat)
 {
   int           ierr;
@@ -42,7 +40,7 @@ int SNESMatrixFreeDestroy2_Private(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeView2_Private" /* ADIC Ignore */
+#define __FUNC__ /*<a name=""></a>*/"SNESMatrixFreeView2_Private" /* ADIC Ignore */
 /*
    SNESMatrixFreeView2_Private - Views matrix-free parameters.
  */
@@ -72,11 +70,11 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeMult2_Private"
+#define __FUNC__ /*<a name=""></a>*/"SNESMatrixFreeMult2_Private"
 /*
   SNESMatrixFreeMult2_Private - Default matrix-free form for Jacobian-vector
   product, y = F'(u)*a:
-        y = ( F(u + ha) - F(u) ) /h, 
+        y = (F(u + ha) - F(u)) /h, 
   where F = nonlinear function, as set by SNESSetFunction()
         u = current iterate
         h = difference interval
@@ -85,10 +83,10 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 {
   MFCtx_Private *ctx;
   SNES          snes;
-  double        h, norm, sum, umin, noise;
-  Scalar        hs, dot, mone = -1.0;
+  PetscReal     h,norm,sum,umin,noise;
+  Scalar        hs,dot,mone = -1.0;
   Vec           w,U,F;
-  int           ierr, iter, (*eval_fct)(SNES,Vec,Vec);
+  int           ierr,iter,(*eval_fct)(SNES,Vec,Vec);
   MPI_Comm      comm;
 
   PetscFunctionBegin;
@@ -128,13 +126,11 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
     } else { 
       /* Compute error if desired */
       ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
-      if ((ctx->need_err) ||
-          ((ctx->compute_err_freq) && (ctx->compute_err_iter != iter) && (!((iter-1)%ctx->compute_err_freq)))) {
+      if ((ctx->need_err) || ((ctx->compute_err_freq) && (ctx->compute_err_iter != iter) && (!((iter-1)%ctx->compute_err_freq)))) {
         /* Use Jorge's method to compute noise */
         ierr = DiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h);CHKERRQ(ierr);
         ctx->error_rel = sqrt(noise);
-        PLogInfo(snes,"SNESMatrixFreeMult2_Private: Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",
-            noise,ctx->error_rel,h);
+        PLogInfo(snes,"SNESMatrixFreeMult2_Private: Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",noise,ctx->error_rel,h);
         ctx->compute_err_iter = iter;
         ctx->need_err = 0;
       }
@@ -150,13 +146,13 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
       /* Safeguard for step sizes too small */
       if (sum == 0.0) {dot = 1.0; norm = 1.0;}
 #if defined(PETSC_USE_COMPLEX)
-      else if (PetscAbsScalar(dot) < umin*sum && PetscReal(dot) >= 0.0) dot = umin*sum;
-      else if (PetscAbsScalar(dot) < 0.0 && PetscReal(dot) > -umin*sum) dot = -umin*sum;
+      else if (PetscAbsScalar(dot) < umin*sum && PetscRealPart(dot) >= 0.0) dot = umin*sum;
+      else if (PetscAbsScalar(dot) < 0.0 && PetscRealPart(dot) > -umin*sum) dot = -umin*sum;
 #else
       else if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
       else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
 #endif
-      h = PetscReal(ctx->error_rel*dot/(norm*norm));
+      h = PetscRealPart(ctx->error_rel*dot/(norm*norm));
     }
   } else {
     h = ctx->h;
@@ -177,7 +173,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeMatCreate2"
+#define __FUNC__ /*<a name=""></a>*/"SNESMatrixFreeMatCreate2"
 /*@C
    SNESMatrixFreeMatCreate2 - Creates a matrix-free matrix
    context for use with a SNES solver.  This matrix can be used as
@@ -224,20 +220,21 @@ $  -snes_mf_jorge
 
 .seealso: MatDestroy(), MatSNESMFSetFunctionError()
 @*/
-int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x, Mat *J)
+int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
 {
   MPI_Comm      comm;
   MFCtx_Private *mfctx;
-  int           n, nloc, ierr, flg;
+  int           n,nloc,ierr;
+  PetscTruth    flg;
   char          p[64];
 
   PetscFunctionBegin;
-  mfctx = (MFCtx_Private *) PetscMalloc(sizeof(MFCtx_Private));CHKPTRQ(mfctx);
+  mfctx = (MFCtx_Private*)PetscMalloc(sizeof(MFCtx_Private));CHKPTRQ(mfctx);
   ierr  = PetscMemzero(mfctx,sizeof(MFCtx_Private));CHKERRQ(ierr);
   PLogObjectMemory(snes,sizeof(MFCtx_Private));
   mfctx->sp   = 0;
   mfctx->snes = snes;
-  mfctx->error_rel        = 1.e-8; /* assumes double precision */
+  mfctx->error_rel        = 1.e-8; /* assumes PetscReal precision */
   mfctx->umin             = 1.e-6;
   mfctx->h                = 0.0;
   mfctx->need_h           = 1;
@@ -245,8 +242,8 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x, Mat *J)
   mfctx->compute_err      = 0;
   mfctx->compute_err_freq = 0;
   mfctx->compute_err_iter = -1;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_mf_err",&mfctx->error_rel,&flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_mf_umin",&mfctx->umin,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_mf_umin",&mfctx->umin,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsHasName(snes->prefix,"-snes_mf_jorge",&mfctx->jorge);CHKERRQ(ierr);
   ierr = OptionsHasName(snes->prefix,"-snes_mf_compute_err",&mfctx->compute_err);CHKERRQ(ierr);
   ierr = OptionsGetInt(snes->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
@@ -286,7 +283,7 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x, Mat *J)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESDefaultMatrixFreeSetParameters2"
+#define __FUNC__ /*<a name=""></a>*/"SNESDefaultMatrixFreeSetParameters2"
 /*@
    SNESDefaultMatrixFreeSetParameters2 - Sets the parameters for the approximation of
    matrix-vector products using finite differences.
@@ -314,7 +311,7 @@ $
 
 .seealso: MatCreateSNESMF()
 @*/
-int SNESDefaultMatrixFreeSetParameters2(Mat mat,double error,double umin,double h)
+int SNESDefaultMatrixFreeSetParameters2(Mat mat,PetscReal error,PetscReal umin,PetscReal h)
 {
   MFCtx_Private *ctx;
   int           ierr;
