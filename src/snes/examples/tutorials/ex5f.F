@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.59 2001/01/31 18:47:09 balay Exp bsmith $";
+! "$Id: ex5f.F,v 1.60 2001/03/22 20:32:01 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -8,10 +8,6 @@
 !  The command line options include:
 !    -par <param>, where <param> indicates the nonlinearity of the problem
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
-!    -mx <xg>, where <xg> = number of grid points in the x-direction
-!    -my <yg>, where <yg> = number of grid points in the y-direction
-!    -Nx <npx>, where <npx> = number of processors in the x-direction
-!    -Ny <npy>, where <npy> = number of processors in the y-direction
 !
 !/*T
 !  Concepts: SNES^parallel Bratu example
@@ -33,8 +29,6 @@
 !  A finite difference approximation with the usual 5-point stencil
 !  is used to discretize the boundary value problem to obtain a nonlinear 
 !  system of equations.
-!
-!  The uniprocessor version of this code is snes/examples/tutorials/ex4f.F
 !
 !  --------------------------------------------------------------------------
 
@@ -66,7 +60,7 @@
       Vec                    x,r
       Mat                    J
       ISLocalToGlobalMapping isltog
-      integer                its,Nx,Ny,matrix_free,flg,N,ierr,m
+      integer                its,matrix_free,flg,N,ierr,m
       double precision       lambda_max,lambda_min
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
@@ -87,10 +81,6 @@
       lambda_max = 6.81
       lambda_min = 0.0
       lambda     = 6.0
-      mx         = 4
-      my         = 4
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
       call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,    &
      &                           flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
@@ -112,40 +102,28 @@
 
 !  Create distributed array (DA) to manage parallel grid and vectors
 
-      Nx = PETSC_DECIDE
-      Ny = PETSC_DECIDE
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      if (Nx*Ny .ne. size .and.                                         &
-     &      (Nx .ne. PETSC_DECIDE .or. Ny .ne. PETSC_DECIDE)) then
-         if (rank .eq. 0)  then
-            write(6,*) 'Incompatible number of procs: Nx * Ny != size'
-         endif
-         SETERRQ(1,' ',ierr)
-      endif
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,mx,          &
-     &     my,Nx,Ny,1,1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
-
-!
-!   Visualize the distribution of the array across the processors
-!
-!     call DAView(da,PETSC_VIEWER_DRAW_WORLD,ierr)
+      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,-4,          &
+     &     -4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL_INTEGER,                   &
+     &     PETSC_NULL_INTEGER,da,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
 !  vectors that are the same types
 
       call DACreateGlobalVector(da,x,ierr)
-      call DACreateLocalVector(da,localX,ierr)
       call VecDuplicate(x,r,ierr)
-      call VecDuplicate(localX,localF,ierr)
 
 !  Get local grid boundaries (for 2-dimensional DA)
 
+      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,            &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
+     &               PETSC_NULL_INTEGER,ierr)
       call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,                      &
      &     PETSC_NULL_INTEGER,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,       &
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,             &
      &     PETSC_NULL_INTEGER,ierr)
 
 !  Here we shift the starting indices up by one so that we can easily
@@ -244,8 +222,6 @@
       if (matrix_free .eq. 0) call MatDestroy(J,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
-      call VecDestroy(localX,ierr)
-      call VecDestroy(localF,ierr)
       call SNESDestroy(snes,ierr)
       call DADestroy(da,ierr)
       call PetscFinalize(ierr)
@@ -281,6 +257,7 @@
 !  Declarations for use with local arrays:
       Scalar      lx_v(0:1)
       PetscOffset lx_i
+      Vec         localX
 
       ierr = 0
 
@@ -292,11 +269,12 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
 
+      call DAGetLocalVector(da,localX,ierr)
       call VecGetArray(localX,lx_v,lx_i,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
 
-      call ApplicationInitialGuess(lx_v(lx_i),ierr)
+      call InitialGuessLocal(lx_v(lx_i),ierr)
 
 !  Restore vector
 
@@ -305,13 +283,13 @@
 !  Insert values into global vector
 
       call DALocalToGlobal(da,localX,INSERT_VALUES,X,ierr)
-
+      call DARestoreLocalVector(da,localX,ierr)
       return 
       end
 
 ! ---------------------------------------------------------------------
 !
-!  ApplicationInitialGuess - Computes initial approximation, called by
+!  InitialGuessLocal - Computes initial approximation, called by
 !  the higher level routine FormInitialGuess().
 !
 !  Input Parameter:
@@ -324,7 +302,7 @@
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
-      subroutine ApplicationInitialGuess(x,ierr)
+      subroutine InitialGuessLocal(x,ierr)
       implicit none
 
 #include "ex5f.h"
@@ -379,7 +357,7 @@
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "ApplicationFunction", where the actual computations are 
+!  "FormFunctionLocal", where the actual computations are 
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely handles ghost point scatters and accesses
@@ -399,12 +377,13 @@
 !  Declarations for use with local arrays:
       Scalar      lx_v(0:1),lf_v(0:1)
       PetscOffset lx_i,lf_i 
+      Vec         localX,localF
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
 !  By placing code between these two statements, computations can
 !  be done while messages are in transition.
-
+      call DAGetLocalVector(da,localX,ierr)
       call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
       call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
 
@@ -417,21 +396,22 @@
 !      C version.  See the Fortran chapter of the users manual for details.
 
       call VecGetArray(localX,lx_v,lx_i,ierr)
-      call VecGetArray(localF,lf_v,lf_i,ierr)
+      call VecGetArray(F,lf_v,lf_i,ierr)
 
 !  Compute function over the locally owned part of the grid
 
-      call ApplicationFunction(lx_v(lx_i),lf_v(lf_i),ierr)
+      call FormFunctionLocal(lx_v(lx_i),lf_v(lf_i),ierr)
 
 !  Restore vectors
 
       call VecRestoreArray(localX,lx_v,lx_i,ierr)
-      call VecRestoreArray(localF,lf_v,lf_i,ierr)
+      call VecRestoreArray(F,lf_v,lf_i,ierr)
 
 !  Insert values into global vector
 
-      call DALocalToGlobal(da,localF,INSERT_VALUES,F,ierr)
       call PetscLogFlops(11*ym*xm,ierr)
+
+      call DARestoreLocalVector(da,localX,ierr)
 
 !      call VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr)
 !      call VecView(F,PETSC_VIEWER_STDOUT_WORLD,ierr)
@@ -441,7 +421,7 @@
 
 ! ---------------------------------------------------------------------
 !
-!  ApplicationFunction - Computes nonlinear function, called by
+!  FormFunctionLocal - Computes nonlinear function, called by
 !  the higher level routine FormFunction().
 !
 !  Input Parameter:
@@ -454,14 +434,14 @@
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
-      subroutine ApplicationFunction(x,f,ierr)
+      subroutine FormFunctionLocal(x,f,ierr)
 
       implicit none
 
 #include "ex5f.h"
 
 !  Input/output variables:
-      Scalar   x(gxs:gxe,gys:gye),f(gxs:gxe,gys:gye)
+      Scalar   x(gxs:gxe,gys:gye),f(xs:xe,ys:ye)
       integer  ierr
 
 !  Local variables:
@@ -514,7 +494,7 @@
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "ApplicationJacobian", where the actual computations are 
+!  "FormJacobianLocal", where the actual computations are 
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely accesses the local vector data via
@@ -562,12 +542,14 @@
 !  Declarations for use with local arrays:
       Scalar      lx_v(0:1)
       PetscOffset lx_i
+      Vec         localX
 
 !  Scatter ghost points to local vector,using the 2-step process
 !     DAGlobalToLocalBegin(), DAGlobalToLocalEnd()
 !  Computations can be done while messages are in transition,
 !  by placing code between these two statements.
 
+      call DAGetLocalVector(da,localX,ierr)
       call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
       call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
 
@@ -577,7 +559,7 @@
 
 !  Compute entries for the locally owned part of the Jacobian.
 
-      call ApplicationJacobian(lx_v(lx_i),jac,jac_prec,ierr)
+      call FormJacobianLocal(lx_v(lx_i),jac,jac_prec,ierr)
 
 !  Assemble matrix, using the 2-step process:
 !     MatAssemblyBegin(), MatAssemblyEnd()
@@ -609,14 +591,15 @@
 !  Tell the matrix we will never add a new nonzero location to the
 !  matrix. If we do it will generate an error.
 
-       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,ierr)
+      call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,ierr)
+      call DARestoreLocalVector(da,localX,ierr)
 
       return
       end
 
 ! ---------------------------------------------------------------------
 !
-!  ApplicationJacobian - Computes Jacobian matrix, called by
+!  FormJacobianLocal - Computes Jacobian matrix, called by
 !  the higher level routine FormJacobian().
 !
 !  Input Parameters:
@@ -654,7 +637,7 @@
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine ApplicationJacobian(x,jac,jac_prec,ierr)
+      subroutine FormJacobianLocal(x,jac,jac_prec,ierr)
       implicit none
 
 #include "ex5f.h"

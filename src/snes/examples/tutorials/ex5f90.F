@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.38 2001/03/15 19:12:30 bsmith Exp bsmith $";
+! "$Id: ex5f90.F,v 1.39 2001/03/19 21:30:56 bsmith Exp bsmith $";
 !
 !  Description: Solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -65,7 +65,7 @@
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "ApplicationFunction", where the actual computations are 
+!  "FormFunctionLocal", where the actual computations are 
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely handles ghost point scatters and accesses
@@ -89,12 +89,13 @@
 
 !  Input/output variables:
       SNES           snes
-      Vec            X,F,localX,localF
+      Vec            X,F
       integer        ierr
       type (userctx) user
 
 !  Declarations for use with local arrays:
       Scalar,pointer :: lx_v(:),lf_v(:)
+      Vec            localX,localF
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
@@ -120,7 +121,7 @@
 
 !  Compute function over the locally owned part of the grid
 
-      call ApplicationFunction(lx_v,lf_v,user,ierr)
+      call FormFunctionLocal(lx_v,lf_v,user,ierr)
 
 !  Restore vectors
 
@@ -177,7 +178,7 @@
       Vec                    x,r
       Mat                    J
       ISLocalToGlobalMapping isltog
-      integer                its,Nx,Ny,matrix_free,flg,N,ierr,m
+      integer                its,matrix_free,flg,N,ierr,m
       double precision       lambda_max,lambda_min
       integer,pointer     :: ltog_a(:)
       integer                nloc
@@ -198,15 +199,9 @@
 
 !  Initialize problem parameters
 
-      lambda_max = 6.81
-      lambda_min = 0.0
-      user%lambda     = 6.0
-      user%mx         = 4
-      user%my         = 4
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',user%mx,       &
-     &     flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',user%my,       &
-     &     flg,ierr)
+      lambda_max  = 6.81
+      lambda_min  = 0.0
+      user%lambda = 6.0
       call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',           &
      &     user%lambda,flg,ierr)
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) &
@@ -230,23 +225,18 @@
 
 !  Create distributed array (DA) to manage parallel grid and vectors
 
-      Nx = PETSC_DECIDE
-      Ny = PETSC_DECIDE
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      if (Nx*Ny .ne. user%size .and.                                    &
-     &      (Nx .ne. PETSC_DECIDE .or. Ny .ne. PETSC_DECIDE)) then
-         if (user%rank .eq. 0)  then
-            write(6,*) 'Incompatible number of procs: Nx * Ny != size'
-         endif
-         SETERRQ(1,' ',ierr)
-      endif
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
       call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,   &
-     &     user%mx,user%my,Nx,Ny,1,1,PETSC_NULL_INTEGER,                &
-     &     PETSC_NULL_INTEGER,user%da,ierr)
-
+     &     -4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,                         &
+     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,user%da,ierr)
+      call DAGetInfo(user%da,PETSC_NULL_INTEGER,user%mx,user%my,        &
+     &               PETSC_NULL_INTEGER,                                &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &               PETSC_NULL_INTEGER,ierr)
+      
 !
 !   Visualize the distribution of the array across the processors
 !
@@ -383,7 +373,7 @@
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "ApplicationInitialGuess", where the actual computations are 
+!  "InitialGuessLocal", where the actual computations are 
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely handles ghost point scatters and accesses
@@ -406,11 +396,12 @@
 
 !  Input/output variables:
       type (userctx)         user
-      Vec      X,localX
+      Vec      X
       integer  ierr
       
 !  Declarations for use with local arrays:
       Scalar,pointer :: lx_v(:)
+      Vec               localX
 
       ierr = 0
 
@@ -427,7 +418,7 @@
 
 !  Compute initial guess over the locally owned part of the grid
 
-      call ApplicationInitialGuess(user,lx_v,ierr)
+      call InitialGuessLocal(user,lx_v,ierr)
 
 !  Restore vector
 
@@ -443,7 +434,7 @@
 
 ! ---------------------------------------------------------------------
 !
-!  ApplicationInitialGuess - Computes initial approximation, called by
+!  InitialGuessLocal - Computes initial approximation, called by
 !  the higher level routine FormInitialGuess().
 !
 !  Input Parameter:
@@ -456,7 +447,7 @@
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
-      subroutine ApplicationInitialGuess(user,x,ierr)
+      subroutine InitialGuessLocal(user,x,ierr)
       use f90module
       implicit none
 
@@ -508,7 +499,7 @@
 
 ! ---------------------------------------------------------------------
 !
-!  ApplicationFunction - Computes nonlinear function, called by
+!  FormFunctionLocal - Computes nonlinear function, called by
 !  the higher level routine FormFunction().
 !
 !  Input Parameter:
@@ -521,7 +512,7 @@
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
-      subroutine ApplicationFunction(x,f,user,ierr)
+      subroutine FormFunctionLocal(x,f,user,ierr)
       use f90module
 
       implicit none
@@ -582,7 +573,7 @@
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "ApplicationJacobian", where the actual computations are 
+!  "FormJacobianLocal", where the actual computations are 
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely accesses the local vector data via
@@ -630,7 +621,7 @@
 
 !  Input/output variables:
       SNES         snes
-      Vec          X,localX
+      Vec          X
       Mat          jac,jac_prec
       MatStructure flag
       type(userctx) user
@@ -638,6 +629,7 @@
 
 !  Declarations for use with local arrays:
       Scalar,pointer :: lx_v(:)
+      Vec            localX
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DAGlobalToLocalBegin(), DAGlobalToLocalEnd()
@@ -655,7 +647,7 @@
 
 !  Compute entries for the locally owned part of the Jacobian.
 
-      call ApplicationJacobian(lx_v,jac,jac_prec,user,ierr)
+      call FormJacobianLocal(lx_v,jac,jac_prec,user,ierr)
 
 !  Assemble matrix, using the 2-step process:
 !     MatAssemblyBegin(), MatAssemblyEnd()
@@ -695,7 +687,7 @@
 
 ! ---------------------------------------------------------------------
 !
-!  ApplicationJacobian - Computes Jacobian matrix, called by
+!  FormJacobianLocal - Computes Jacobian matrix, called by
 !  the higher level routine FormJacobian().
 !
 !  Input Parameters:
@@ -733,7 +725,7 @@
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine ApplicationJacobian(x,jac,jac_prec,user,ierr)
+      subroutine FormJacobianLocal(x,jac,jac_prec,user,ierr)
       use f90module
       implicit none
 
