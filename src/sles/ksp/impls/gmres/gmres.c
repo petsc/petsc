@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.163 2001/01/31 04:22:44 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.164 2001/01/31 04:24:28 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -256,34 +256,29 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
   PetscTruth guess_zero = ksp->guess_zero;
 
   PetscFunctionBegin;
-
   if (ksp->calc_sings && !gmres->Rsvd) {
     SETERRQ(1,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   }
 
-  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
-  itcount  = 0;
-  ierr     = KSPInitialResidual(ksp,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),VEC_BINVF,VEC_RHS);CHKERRQ(ierr);
-  ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
-  itcount += its;
+  itcount     = 0;
+  ksp->reason = KSP_CONVERGED_ITERATING;
   while (!ksp->reason) {
-    ksp->guess_zero = PETSC_FALSE;
     ierr     = KSPInitialResidual(ksp,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),VEC_BINVF,VEC_RHS);CHKERRQ(ierr);
-    if (itcount >= ksp->max_it) break;
     ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
     itcount += its;  
+    if (itcount >= ksp->max_it) {
+      ksp->reason = KSP_DIVERGED_ITS;
+      break;
+    }
+    ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
-
-  /* mark lack of convergence  */
-  if (itcount >= ksp->max_it) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
-
-  *outits = itcount;  PetscFunctionReturn(0);
+  *outits         = itcount;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
