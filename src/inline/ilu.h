@@ -1,8 +1,8 @@
-/* $Id: ilu.h,v 1.6 1998/12/23 22:49:55 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.7 1998/12/24 02:52:49 bsmith Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
- the order of 6+.
+ the order of 3-6+.
 
 */
 #if !defined(__ILU_H)

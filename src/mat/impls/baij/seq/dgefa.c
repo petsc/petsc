@@ -1,10 +1,15 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa.c,v 1.10 1998/04/21 17:47:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgefa.c,v 1.11 1998/12/17 22:10:39 bsmith Exp bsmith $";
 #endif
 /*
        This routine was converted by f2c from Linpack source
              linpack. this version dated 08/14/78 
       cleve moler, university of new mexico, argonne national lab.
+
+        Does an LU factorization with partial pivoting of a dense
+     n by n matrix (used by the sparse factorization routines in 
+     src/mat/impls/baij/seq and src/mat/impls/bdiag/seq
+
 */
 #include "petsc.h"
 
