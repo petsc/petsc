@@ -669,20 +669,26 @@ PetscErrorCode VecAYPX_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
   PetscScalar    *xx = x->array,*yy;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
+  if (*alpha == 0.0) {
+    ierr = VecCopy_Seq(xin,yin);CHKERRQ(ierr);
+  } else if (*alpha == 1.0) {
+    ierr = VecAXPY_Seq(alpha,xin,yin);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
-  fortranaypx_(&n,alpha,xx,yy);
+    fortranaypx_(&n,alpha,xx,yy);
 #else
-  {
-    PetscInt i;
-    PetscScalar oalpha = *alpha;
-    for (i=0; i<n; i++) {
-      yy[i] = xx[i] + oalpha*yy[i];
+    {
+      PetscInt    i;
+      PetscScalar oalpha = *alpha;
+      for (i=0; i<n; i++) {
+	yy[i] = xx[i] + oalpha*yy[i];
+      }
     }
-  }
 #endif
-  ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
-  PetscLogFlops(2*n);
+    ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
+    PetscLogFlops(2*n);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -81,14 +81,14 @@ PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 #endif
 #if (defined(PETSC_PREFER_DCOPY_FOR_MEMCPY) || defined(PETSC_PREFER_COPY_FOR_MEMCPY) || defined(PETSC_PREFER_FORTRAN_FORMEMCPY))
    if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
-      int len = n/sizeof(PetscScalar);
+      size_t len = n/sizeof(PetscScalar);
 #if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
       PetscBLASInt blen = (PetscBLASInt) len,one = 1;
       BLAScopy_(&blen,(PetscScalar *)b,&one,(PetscScalar *)a,&one);
 #elif defined(PETSC_PREFER_FORTRAN_FORMEMCPY)
       fortrancopy_(&len,(PetscScalar*)b,(PetscScalar*)a); 
 #else
-      int         i;
+      size_t      i;
       PetscScalar *x = (PetscScalar*)b, *y = (PetscScalar*)a;
       for (i=0; i<len; i++) y[i] = x[i];
 #endif
@@ -144,9 +144,9 @@ PetscErrorCode PetscBitMemcpy(void *a,PetscInt ai,const void *b,PetscInt bi,Pets
     ierr = PetscDataTypeGetSize(dtype,&dsize);CHKERRQ(ierr);
     ierr = PetscMemcpy(aa+ai*dsize,bb+bi*dsize,bs*dsize);CHKERRQ(ierr);
   } else {
-    PetscBT at = (PetscBT) a;
-    PetscBT bt = (PetscBT) b;
-    int i;
+    PetscBT  at = (PetscBT) a;
+    PetscBT  bt = (PetscBT) b;
+    PetscInt i;
     for (i=0; i<bs; i++) {
       if (PetscBTLookup(bt,bi+i)) PetscBTSet(at,ai+i);
       else                        PetscBTClear(at,ai+i);
@@ -184,13 +184,13 @@ PetscErrorCode PetscMemzero(void *a,size_t n)
     if (!a) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to zero at a null pointer");
 #if defined(PETSC_PREFER_ZERO_FOR_MEMZERO)
     if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
-      int         i,len = n/sizeof(PetscScalar);
+      size_t      i,len = n/sizeof(PetscScalar);
       PetscScalar *x = (PetscScalar*)a;
       for (i=0; i<len; i++) x[i] = 0.0;
     } else {
 #elif defined(PETSC_PREFER_FORTRAN_FOR_MEMZERO)
     if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
-      int len = n/sizeof(PetscScalar);
+      PetscInt len = n/sizeof(PetscScalar);
       fortranzero_(&len,(PetscScalar*)a);
     } else {
 #endif
