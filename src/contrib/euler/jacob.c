@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.10 1997/10/16 22:41:03 curfman Exp curfman $";
+static char vcid[] = "$Id: jacob.c,v 1.11 1997/10/17 02:16:06 curfman Exp curfman $";
 #endif
 
 #include "user.h"
@@ -52,6 +52,7 @@ int UserSetJacobian(SNES snes,Euler *app)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = OptionsHasName(PETSC_NULL,"-jac_snes_fd",&jac_snes_fd); CHKERRQ(ierr);
+  if (app->problem >= 5) jac_snes_fd = 1;
   if (jac_snes_fd) {
      /* Set up coloring information needed for sparse finite difference
         approximation of the Jacobian */
@@ -62,7 +63,9 @@ int UserSetJacobian(SNES snes,Euler *app)
     ierr = ISColoringDestroy(iscoloring); CHKERRQ(ierr);
 
     ierr = MatFDColoringSetFunction(fdc,
-         (int (*)(void *,Vec,Vec,void *))ComputeFunctionNoWake,app); CHKERRQ(ierr);
+         (int (*)(void)) ComputeFunctionNoWake,app); CHKERRQ(ierr);
+	 /*         (int (*)(void *,Vec,Vec,void *))ComputeFunctionNoWake,app); CHKERRQ(ierr); */
+
     ierr = MatFDColoringSetParameters(fdc,app->eps_jac,PETSC_DEFAULT); CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(fdc); CHKERRQ(ierr); 
 
@@ -70,7 +73,7 @@ int UserSetJacobian(SNES snes,Euler *app)
     ierr = MatFDColoringView(fdc,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
     ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-    PetscPrintf(comm,"Jacobian for preconditioner formed via PETSc FD approx\n"); 
+    PetscPrintf(comm,"Jacobian for preconditioner formed via PETSc sparse FD approximation\n"); 
   } 
   else {
     /* Use the alternative old application-defined approach */
@@ -114,7 +117,7 @@ int UserSetJacobian(SNES snes,Euler *app)
     ndof_euler = 5;
     ierr = nzmat_(&mtype,&app->mmtype,&ndof_euler,&ndof_block,&istart,&iend,
                   app->is1,app->ltog,&app->nloc,&wkdim,nnz_d,nnz_o,
-                  &app->fort_ao); CHKERRQ(ierr);
+                  &app->fort_ao,&app->no_wake); CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                     Form Jacobian matrix data structure
@@ -154,7 +157,7 @@ int UserSetJacobian(SNES snes,Euler *app)
       SETERRQ(1,1,"Matrix format not currently supported.");
     }
     if (nnz_d) PetscFree(nnz_d);
-    PetscPrintf(comm,"Jacobian for preconditioner formed via application code FD approx\n"); 
+    PetscPrintf(comm,"Jacobian for preconditioner formed via application code FD approximation\n"); 
   }
   app->J = J;
 
@@ -162,7 +165,6 @@ int UserSetJacobian(SNES snes,Euler *app)
         Set data structures and routine for Jacobian evaluation 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&app->matrix_free); CHKERRQ(ierr);
   if (!app->matrix_free) {
     /* Use explicit (approx) Jacobian to define Newton system and preconditioner */
     if (jac_snes_fd) {
@@ -174,6 +176,8 @@ int UserSetJacobian(SNES snes,Euler *app)
   } else {
     /* Use matrix-free Jacobian to define Newton system; use finite difference
        approximation of Jacobian for preconditioner */
+
+
     if (app->bctype != IMPLICIT) SETERRQ(1,1,"Matrix-free method requires implicit BCs!");
 
     if (app->mmtype == MMFP) {
@@ -287,7 +291,7 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
      points on edges of the 3D domain, where diagonal of Jacobian is 1.
      edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.) */
 
-  if (app->mmtype != MMFP) {
+  if (app->mmtype == MMEULER || app->mmtype != MMHYBRID_E || app->mmtype != MMHYBRID_EF1) {
     ierr = PackWork(app,app->da,X,app->localX,&app->xx); CHKERRQ(ierr);
     eigenv_(app->dt,app->xx,app->p,
            app->sadai,app->sadaj,app->sadak,
@@ -295,7 +299,9 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
            app->aiz,app->ajz,app->akz,&app->ts_type);
 
     ierr = FixJacobian(app,*pjac); CHKERRQ(ierr);
-  }
+  } else if (app->mmtype == MMFP || app->mmtype != MMHYBRID_F) {
+    /* No dt computations needed here */
+  } else SETERRQ(1,0,"Unsupported model type");
 
   /* Fix points on edges of the 3D domain, where diagonal of Jacobian is 1.
      edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.) 

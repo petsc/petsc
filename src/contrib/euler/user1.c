@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.69 1997/10/19 19:50:13 curfman Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.70 1997/10/20 17:39:31 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -42,11 +42,16 @@ Runtime options include:\n\
                                5(duct flow 50x10x10), 6(98x18x18)\n\
   -mm_type <euler,fp,hybrid,hybrid_e,hybrid_f> : multi-model variant\n\
   -dim2                      : use 2D problem only\n\
-  -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
+  -angle_beta <b (degrees)>  : angle of attack (default is 3.06 degrees)\n\
   -matrix_free               : Use matrix-free Newton-Krylov method\n\
     -pc_ilu_in_place         : When using matrix-free KSP with ILU(0), do so in-place\n\
     -sub_pc_ilu_in_place     : When using matrix-free KSP with ILU(0) for subblocks, do so in-place\n\
+  -discr_order <1,2,1.5>     : Order of discretization, where 1.5 indicates 1st -> 2nd transition\n\
+  -limiter <lim>             : Limiter (used for second-order discretizations only)\n\
+        <lim> = [none,minmod,superbee,vanleer,vanalbada]\n\
+  -psi                       : Blend of discretization stencils\n\
   -post                      : Compute post-processing data\n\
+  -cfl_init <cfl>            : Initial CFL number (default is 7.5)\n\
   -cfl_advance               : Use advancing CFL number\n\
   -cfl_max_incr              : Maximum ratio for advancing CFL number at any given step\n\
   -cfl_max_decr              : Maximum ratio for decreasing CFL number at any given step\n\
@@ -57,7 +62,8 @@ Runtime options include:\n\
   -jratio                    : Set ratio of fnorm decrease for detecting when to form Jacobian\n\
   -jfreq <it>                : frequency of forming Jacobian (once every <it> iterations)\n\
   -eps_jac <eps>             : Choose differencing parameter for FD Jacobian approx\n\
-  -jac_no_wake               : Don't use wake boundary conditions in the preconditioning Jacobian\n\
+  -jac_wake                  : Use wake boundary conditions in the preconditioning Jacobian when\n\
+                               using matrix-free mult\n\
   -jac_snes_fd               : Use PETSc sparse finite difference approximation of Jacobian\n\
                                (the default for problems 5 and higher)\n\
   -no_output                 : Do not print any output during SNES solve (intended for use\n\
@@ -75,7 +81,12 @@ static char help3[] = "Options for VRML viewing:\n\
   -dump_general              : Dump various fields into files (euler.[iteration].out) for\n\
                                later processing\n\n";
 
-static char help4[] = "Options for debugging and matrix dumping:\n\
+static char help4[] = "Options for problem definition (replacing Fortran input file):\n\
+  -angle_alpha <a (degrees)> : fixed at 0 degrees for all work to date\n\
+  -angle_phi <p (degrees)>   : fixed at 0 degrees for all work to date\n\
+  -fsmach <mach>             : Free stream mach number (default is 0.840)\n\n";
+
+static char help5[] = "Options for debugging and matrix dumping:\n\
   -printg                    : Print grid information\n\
   -mat_dump -cfl_switch [cfl]: Dump linear system corresponding to this CFL in binary to file\n\
                                'euler.dat'; then exit.\n\
@@ -128,7 +139,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = MPI_COMM_WORLD;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRA(ierr);
-  if (flg) {PetscPrintf(comm,help3);PetscPrintf(comm,help4);}
+  if (flg) {PetscPrintf(comm,help3);PetscPrintf(comm,help4);PetscPrintf(comm,help5);}
 
   /* Temporarily deactivate these events */
   ierr = PLogEventDeactivate(VEC_SetValues); CHKERRA(ierr);
@@ -521,8 +532,8 @@ int UserDestroyEuler(Euler *app)
 /***************************************************************************/
 /*
    ComputeFunctionNoWake - Evaluates the nonlinear function, F(X), setting
-   wake BC components to 0 if the option -jac_no_wake is used and we are
-   doing a Jacobian evaluation.
+   wake BC components to 0 (unless the option -jac_wake is used and we are
+   doing a Jacobian evaluation).
  */
 int ComputeFunctionNoWake(SNES snes,Vec X,Vec Fvec,void *ptr)
 {
@@ -549,6 +560,11 @@ int ComputeFunctionBasic(SNES snes,Vec X,Vec Fvec,void *ptr)
    ComputeFunctionCore - Evaluates the nonlinear function, F(X).  
 
    Input Parameters:
+   jacform - flag: 1 indicates we're in the midst of approximating the
+             Jacobian for preconditioning via finite differences, so we
+             use only a first order discretization (regardless of the
+             order used for the residual for matrix-free matrix-vector
+             products and RHS evaluation).
    snes - the SNES context
    X    - input vector
    ptr  - optional user-defined context, as set by SNESSetFunction()
@@ -611,8 +627,10 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
 
     PLogEventBegin(app->event_localf,0,0,0,0);
 
-    ierr =localfortfct_euler_(&jacform,fv_array,
-           app->xx,app->p,app->xx_bc,app->p_bc,
+
+
+    ierr =localfortfct_euler_(&jacform,&app->limiter,&app->order,&app->psi,
+           fv_array,app->xx,app->p,app->xx_bc,app->p_bc,
            app->sadai,app->sadaj,app->sadak,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
            app->aiz,app->ajz,app->akz,
@@ -775,14 +793,15 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
  */
 int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler **newapp)
 {
-  Euler *app;
-  AO    ao;           /* application ordering context */
-  int   ni1;          /* x-direction grid dimension */
-  int   nj1;	      /* y-direction grid dimension */
-  int   nk1;	      /* z-direction grid dimension */
-  int   Nx, Ny, Nz;   /* number of processors in each direction */
-  int   Nlocal, ierr, flg, llen, llenb, fort_comm, problem = 1, ndof, ndof_e;
-  char  *mmname;
+  Euler  *app;
+  AO     ao;           /* application ordering context */
+  int    ni1;          /* x-direction grid dimension */
+  int    nj1;	      /* y-direction grid dimension */
+  int    nk1;	      /* z-direction grid dimension */
+  int    Nx, Ny, Nz;   /* number of processors in each direction */
+  int    Nlocal, ierr, flg, llen, llenb, fort_comm, problem = 1, ndof, ndof_e;
+  char   *mmname, lim[64];
+  Scalar order1;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                  Create user-defined application context
@@ -901,8 +920,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->sles_tot              = 0;
   app->fct_tot               = 0;
   app->fdcoloring            = 0;
-  app->cfl                   = 0;        /* Initial CFL is set within Julianne code */
-  app->cfl_init              = 0;        /* Initial CFL is set within Julianne code */
+  app->cfl_init              = 7.5;
   app->cfl_max               = 100000.0; /* maximum CFL value */
   app->cfl_switch            = 10.0;     /* CFL at which to dump binary linear system */
   app->cfl_begin_advancement = 0;        /* flag - indicates CFL advancement has begun */
@@ -926,7 +944,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->last_its              = 0;
   app->post_process          = 0;
   app->global_grid           = 0;
-  app->no_wake               = 0;
 
   /* control of forming new preconditioner matrices */
   app->jfreq                 = 10;       /* default frequency of computing Jacobian matrix */
@@ -941,6 +958,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = OptionsGetDouble(PETSC_NULL,"-ksp_rtol_min",&app->ksp_rtol_min,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max_incr",&app->cfl_max_incr,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max_decr",&app->cfl_max_decr,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-cfl_init",&app->cfl_init,&flg); CHKERRQ(ierr);
+  app->cfl = app->cfl_init;
   ierr = OptionsGetInt(PETSC_NULL,"-cfl_snes_it",&app->cfl_snes_it,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-cfl_advance",&flg); CHKERRQ(ierr);
   if (flg) {
@@ -954,7 +973,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   if (flg) app->ts_type = GLOBAL_TS;
   ierr = OptionsHasName(PETSC_NULL,"-check_solution",&app->check_solution); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-use_jratio",&app->use_jratio); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-jac_no_wake",&app->no_wake); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-jratio",&app->jratio,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_switch",&app->cfl_switch,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&app->cfl_max,&flg); CHKERRQ(ierr);
@@ -968,15 +986,58 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = OptionsGetDouble(PETSC_NULL,"-angle",&app->angle,&flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-jfreq",&app->jfreq,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-no_output",&app->no_output); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-post",&app->post_process); CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-global_grid",&app->global_grid); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-post",&app->post_process); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-global_grid",&app->global_grid); CHKERRQ(ierr);
   /* temporarily MUST use global grid! */
   app->global_grid = 1;
   /*  if (app->post_process) app->global_grid = 1; */
   if (app->global_grid) PetscPrintf(app->comm,"Using global grid (needed for post processing only)\n");
 
+  /* Set discretization order and limiters */
+  ierr = OptionsGetString(PETSC_NULL,"-limiter",lim,64,&flg); CHKERRQ(ierr);
+  app->limiter = LIM_VAN_ALBADA; PetscStrcpy(lim,"van_albada");
+  if (flg) {
+    if (!PetscStrcmp(lim,"none"))            app->limiter = LIM_NONE;
+    else if (!PetscStrcmp(lim,"minmod"))     app->limiter = LIM_MINMOD;
+    else if (!PetscStrcmp(lim,"superbee"))   app->limiter = LIM_SUPERBEE;
+    else if (!PetscStrcmp(lim,"van_leer"))   app->limiter = LIM_VAN_LEER;
+    else if (!PetscStrcmp(lim,"van_albada")) app->limiter = LIM_VAN_ALBADA;
+  }
+  app->psi = 0.0;
+  if (app->limiter == LIM_MINMOD) app->psi = -1.0;
+
+  /* Default is 2nd order discretization with no transition */
+  app->order_transition = 0;
+  order1 = 2;
+  ierr = OptionsGetDouble(PETSC_NULL,"-order",&order1,&flg); CHKERRQ(ierr);
+  if (order1 == 1) {
+    app->limiter = LIM_NONE;
+    app->order   = 1;
+  } else if (order1 == 1.5) {
+    app->order_transition = 1;
+    app->order            = 1;
+    PetscPrintf(comm,"Discretization transition (1-2): ");
+  } else if (order1 == 2) {
+    app->order = 2;
+  } else  SETERRQ(1,1,"Invalid discretization order");
+  PetscPrintf(comm,"Discretization order is %d, Limiter is %s\n",app->order,lim);
+
+  /* Are we using matrix-free approximation?  If so, then by default don't include
+     wake BCs in preconditioner because this destroys the banded sparsity structure */
+  ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&app->matrix_free); CHKERRQ(ierr);
+  app->no_wake = 0;
+  if (app->matrix_free) {
+    ierr = OptionsHasName(PETSC_NULL,"-jac_wake",&flg); CHKERRQ(ierr);
+    if (flg) {
+      PetscPrintf(comm,"Including wake BCs in Jacobian (preconditioner)\n");
+    } else {
+      PetscPrintf(comm,"No wake BCs in Jacobian (preconditioner)\n");
+      app->no_wake = 1;
+    }
+  }
+
   /* 2-dimensional variant */
-  ierr = OptionsHasName(PETSC_NULL,"-dim2",&app->dim2); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-dim2",&app->dim2); CHKERRQ(ierr);
   app->nktot = nk1;
   if (app->dim2) {
     nk1 = 3;
@@ -998,7 +1059,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
   if (app->mat_assemble_direct) PetscPrintf(comm,"Problem %d (%dx%dx%d grid), assembling PETSc matrix directly: angle of attack = %g, eps_jac = %g\n",problem,ni1,nj1,nk1,app->angle,app->eps_jac);
   else PetscPrintf(comm,"Problem %d (%dx%dx%d grid), assembling PETSc matrix via translation of Eagle format: angle of attack = %g, eps_jac = %g\n",problem,ni1,nj1,nk1,app->angle,app->eps_jac);
-  if (app->no_wake) PetscPrintf(comm,"No wake BCs in Jacobian (preconditioner)\n");
   if (app->dump_vrml) dump_angle_vrml(app->angle);
 
   app->ni1              = ni1;
@@ -1011,7 +1071,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->njm              = nj1 - 2;
   app->nkm              = nk1 - 2;
   app->nd	        = 7;
-  app->matrix_free      = 0;
   app->matrix_free_mult = 0;
   app->first_time_resid = 1;
   app->J                = 0;
