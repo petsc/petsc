@@ -28,7 +28,9 @@ typedef struct {
   PetscReal        factor_zeropivot;
 } Mat_SeqSBAIJ;
 
+EXTERN_C_BEGIN
 EXTERN PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat,PetscInt,PetscInt,PetscInt*);
+EXTERN_C_END
 EXTERN PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat,IS,MatFactorInfo*,Mat *);
 EXTERN PetscErrorCode MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat);
