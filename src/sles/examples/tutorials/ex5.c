@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.56 1996/07/08 22:20:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.57 1996/08/16 23:29:08 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
@@ -11,11 +11,10 @@ also uses multiple profiling stages.  Input arguments are\n\
 
 /*T
    Concepts: SLES, repeatedly solving linear equations, multiple profiling stages
-   Routines: SLESCreate(), SLESSetOperators(), SLESSetFromOptions()
-   Routines: SLESSetUp(), SLESSolve(), SLESView()
-   Routines: MatZeroEntries()
+   Routines: SLESCreate(), SLESSetFromOptions(), SLESSetUp(), SLESSolve()
+   Rotuines: SLESSetOperators(A,A,SAME_NONZERO_PATTERN), SLESView()
+   Routines: MatZeroEntries(), MatSetOption(A,MAT_SYMMETRIC)
    Routines: PLogStagePush(), PLogStagePop(), PLogStageRegister()
-   Miscellaneous: SAME_NONZERO_PATTERN
    Multiprocessor code
 T*/
 
@@ -34,8 +33,8 @@ int main(int argc,char **args)
 {
   Mat     C; 
   Scalar  v, none = -1.0;
-  int     I, J, ldim, ierr, low, high, iglobal, Istart,Iend;
-  int     i, j, m = 3, n = 2, rank, size, its, flg;
+  int     I, J, ldim, ierr, low, high, iglobal, flg, Istart, Iend;
+  int     i, j, m = 3, n = 2, rank, size, its, mat_nonsymmetric = 0;
   Vec     x, u, b;
   SLES    sles;
   double  norm;
@@ -45,6 +44,11 @@ int main(int argc,char **args)
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   n = 2*size;
+
+  /*
+     Set flag if we are doing a nonsymmetric problem; the default is symmetric.
+  */
+  ierr = OptionsHasName(PETSC_NULL,"-mat_nonsym",&mat_nonsymmetric); CHKERRA(ierr);
 
   /*
      Register two stages for separate profiling of the two linear solves.
@@ -94,12 +98,13 @@ int main(int argc,char **args)
   /*
      Make the matrix nonsymmetric if desired
   */
-  ierr = OptionsHasName(PETSC_NULL,"-mat_nonsym",&flg); CHKERRA(ierr);
-  if (flg) {
+  if (mat_nonsymmetric) {
     for ( I=Istart; I<Iend; I++ ) { 
       v = -1.5; i = I/n;
       if ( i>1 )   {J = I-n-1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
     }
+  } else {
+    ierr = MatSetOption(C,MAT_SYMMETRIC); CHKERRA(ierr);
   }
 
   /* 
@@ -230,8 +235,7 @@ int main(int argc,char **args)
       v = 6.0; ierr = MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
     }
   } 
-  ierr = OptionsHasName(PETSC_NULL,"-mat_nonsym",&flg); CHKERRA(ierr);
-  if (flg) {
+  if (mat_nonsymmetric) {
     for ( I=Istart; I<Iend; I++ ) { 
       v = -1.5; i = I/n;
       if ( i>1 )   {J = I-n-1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
@@ -253,12 +257,18 @@ int main(int argc,char **args)
         as during the last linear solve (although the values of
         the entries have changed). Thus, we can save some
         work in setting up the preconditioner (e.g., no need to
-        redo symbolic factorization for ILU preconditioner).
+        redo symbolic factorization for ILU/ICC preconditioners).
       - If the nonzero structure of the matrix is different during
         the second linear solve, then the flag DIFFERENT_NONZERO_PATTERN
         must be used instead.  If you are unsure whether the
         matrix structure has changed or not, use the flag
         DIFFERENT_NONZERO_PATTERN.
+      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
+        believes your assertion and does not check the structure
+        of the matrix.  If you erroneously claim that the structure
+        is the same when it actually is not, the new preconditioner
+        will not function correctly.  Thus, use this optimization
+        feature with caution!
   */
   ierr = SLESSetOperators(sles,C,C,SAME_NONZERO_PATTERN); CHKERRA(ierr);
 
