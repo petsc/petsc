@@ -1,4 +1,4 @@
-# $Id: base,v 1.37 1998/12/05 20:41:58 balay Exp balay $ 
+# $Id: base,v 1.38 1998/12/06 16:49:13 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -25,7 +25,7 @@ O_FOPTFLAGS      = -O3  -qarch=pwr2 -w
 # ########################## C++ compiler ##################################
 #
 CXX_CC           = xlC_r -+
-CXX_FC           = xlf_r
+CXX_FC           = xlf
 CXX_CLINKER      = xlC_r ${COPTFLAGS}
 CXX_FLINKER      = xlC_r ${COPTFLAGS}
 CXX_CCV          = unknown
