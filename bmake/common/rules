@@ -722,7 +722,7 @@ html:
               cat $$i | sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  \
               -e "s/ierr = //g"   | ${C2HTML} -n  | ${PETSC_DIR}/maint/fixinclude $$i $${ROOT} | \
               grep -v PetscValid | grep -v PetscFunctionBegin | grep -v PetscCheck | grep -v "int ierr;" |\
-              grep -v '#if !defined(__' | grep -v '#define __' | \
+              grep -v '#if !defined(__' | grep -v '#define __' | grep -v '#undef __' | \
               ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
 	    fi; \
          done
