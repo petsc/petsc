@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.116 1998/04/15 22:45:28 curfman Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.117 1998/04/26 02:53:45 curfman Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: bvec2.c,v 1.116 1998/04/15 22:45:28 curfman Exp curfm
 #include <math.h>
 #include "src/vec/vecimpl.h"          /*I  "vec.h"   I*/
 #include "src/vec/impls/dvecimpl.h" 
-#include "pinclude/plapack.h"
+#include "pinclude/blaslapack.h"
 #include "pinclude/pviewer.h"
 
 #undef __FUNC__  
@@ -391,7 +391,6 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
   v->bs              = 0;
   s->array           = array;
   s->array_allocated = 0;
-  PetscMemzero(s->array,n*sizeof(Scalar));
   *V = v; 
   PetscFunctionReturn(0);
 }
@@ -426,6 +425,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 
   PetscFunctionBegin;
   array              = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(array);
+  PetscMemzero(array,n*sizeof(Scalar));
   ierr               = VecCreateSeqWithArray(comm,n,array,V);CHKERRQ(ierr);
   s                  = (Vec_Seq *) (*V)->data;
   s->array_allocated = array;
