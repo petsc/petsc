@@ -41,6 +41,10 @@ allmanpages: deletemanpages deletewwwpages deletelatexpages
 	-make ACTION=latexpages tree
 	-maint/wwwman
 
+allC2f77:
+	-@$(RM) $(PETSC_DIR)/c2f77/*.c
+	-make ACTION=C2f77 tree
+
 #  To access the tags in emacs, type M-x visit-tags-table and specify
 #  the file petsc/TAGS.  Then, to move to where a PETSc function is
 #  defined, enter M-. and the function name.  To search for a string

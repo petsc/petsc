@@ -30,7 +30,7 @@ PETSC_LIB   = -L$(LDIR) -lpetscsnes  -lpetscsles -lpetscksp \
                 -lpetscmat  -lpetscvec -lpetscdraw \
                 -lpetscsys \
                 $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
-                $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
+                $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm 
 #
 # Defines all libraries needed for using linear solvers and all lower
 # level PETSc components (such as vectors and matrices).  The order
@@ -82,7 +82,9 @@ examples_1: chkopts
 	@-if [ "$(EXAMPLES_1)" != "" ] ; then \
           (for ex in $(EXAMPLES_1) foo ; do \
           $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
-          > trashz 2>&1; egrep -i '(Error|warning|Can)' trashz >> /dev/null ; \
+          > trashz 2>&1; \
+          grep -v clog trashz | grep -v "information sections" | \
+          egrep -i '(Error|warning|Can)' >> /dev/null;\
           if [ "$$?" != 1 ]; then \
           cat trashz ; fi; $(RM) trashz;\
           done;) fi
@@ -107,6 +109,24 @@ examples_2: chkopts
 runexamples_2:
 	@-if [ "$(RUNEXAMPLES_2)" != "" ] ; then \
           (for ex in $(RUNEXAMPLES_2) foo ; do \
+          $(OMAKE) -f makefile $$ex; \
+          done;) fi
+#
+#  examples_3 are Fortran examples
+#
+examples_3: chkopts
+	@-if [ "$(EXAMPLES_3)" != "" ] ; then \
+          (for ex in $(EXAMPLES_3) foo ; do \
+          $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
+          > trashz 2>&1; egrep -i '(Error|warning|Can)' trashz >> /dev/null ; \
+          if [ "$$?" != 1 ]; then \
+          cat trashz ; fi; $(RM) trashz;\
+          done;) fi
+
+# Runs examples that have already been compiled
+runexamples_3:
+	@-if [ "$(RUNEXAMPLES_3)" != "" ] ; then \
+          (for ex in $(RUNEXAMPLES_3) foo ; do \
           $(OMAKE) -f makefile $$ex; \
           done;) fi
 
@@ -140,7 +160,8 @@ libfast: chkpetsc_dir $(SOURCEC) $(SOURCEF)
 
 # Removes garbage files
 clean:
-	@-$(RM) -f *.o *~ $(CLEANFILES) $(EXAMPLES_1) $(EXAMPLES_2) $(TESTS) \
+	@-$(RM) -f *.o *~ $(CLEANFILES) $(EXAMPLES_1) $(EXAMPLES_2) \
+               $(EXAMPLES_3) $(TESTS) \
                PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
                trashz \#*\# *.mex* *.stolen *.trace Log.*
 
@@ -149,8 +170,10 @@ testexamples: testexamples_1
 examples: examples_1 examples_2
 testexamples_1: examples_1 runexamples_1 clean
 testexamples_2: examples_2 runexamples_2 clean
+testexamples_3: examples_3 runexamples_3 clean
 buildexamples_1: examples_1 clean
 buildexamples_2: examples_2 clean
+buildexamples_3: examples_3 clean
 
 # Performs the specified action throughout the directory tree
 tree: $(ACTION)
