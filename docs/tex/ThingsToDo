@@ -8,6 +8,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - DrawText(), _PC, conflict with definitions in .h files in MS Visual C++. (Satish)
+
   - Edit snes/examples/tutorials/ex5.c to use the star stencil, take
     out debugging printouts.  Fix ex5f.F to be the same w/ MatSetValuesLocal().
 
