@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.96 1996/03/18 00:39:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.97 1996/03/19 21:25:45 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -449,11 +449,23 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
     ;  /* do nothing for now */
   } 
   else {
+#if defined(PETSC_COMPLEX)
+    int allreal = 1;
+    /* determine if matrix has all real values */
+    v = a->v;
+    for ( i=0; i<a->m*a->n; i++ ) {
+      if (imag(v[i])) { allreal = 0; break ;}
+    }
+#endif
     for ( i=0; i<a->m; i++ ) {
       v = a->v + i;
       for ( j=0; j<a->n; j++ ) {
 #if defined(PETSC_COMPLEX)
-        fprintf(fd,"%6.4e + %6.4e i ",real(*v),imag(*v)); v += a->m;
+        if (allreal) {
+          fprintf(fd,"%6.4e ",real(*v)); v += a->m;
+        } else {
+          fprintf(fd,"%6.4e + %6.4e i ",real(*v),imag(*v)); v += a->m;
+        }
 #else
         fprintf(fd,"%6.4e ",*v); v += a->m;
 #endif
