@@ -155,6 +155,10 @@ ex29: ex29.o  chkopts
 	-${CLINKER} -o ex29 ex29.o  ${PETSC_KSP_LIB}
 	${RM} ex29.o
 
+ex30: ex30.o  chkopts
+	-${CLINKER} -o ex30 ex30.o  ${PETSC_KSP_LIB}
+	${RM} ex30.o
+
 ex31: ex31.o  chkopts
 	-${CLINKER} -o $@ $<  ${PETSC_KSP_LIB}
 	${RM} $<
@@ -510,6 +514,12 @@ runex29_2:
 	   if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
 	   else echo "Possible problem with ex29_2, diffs above"; fi; \
 	   ${RM} -f ex29_2.tmp
+
+runex30:
+	-@${MPIRUN} -np 1 ex30 > ex30_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex30_1.out ex30_1.tmp) then true; \
+	   else echo "Possible problem with ex30_1, diffs above"; fi; \
+	   ${RM} -f ex30_1.tmp
 
 TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
