@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.26 2001/02/13 19:00:01 bsmith Exp balay $*/
+/*$Id: cn.c,v 1.27 2001/03/23 23:24:40 balay Exp balay $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -317,7 +317,7 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSCnMatMult);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSCnMatMult);CHKERRQ(ierr);
   }
   if (ts->A != ts->B && ts->Ashell != ts->B) {
     ierr = MatScale(&neg_dt,ts->B);CHKERRQ(ierr);
@@ -341,7 +341,7 @@ static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSCnMatMult);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSCnMatMult);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -361,7 +361,7 @@ static int TSSetUp_CN_Nonlinear(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSCnMatMult);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSCnMatMult);CHKERRQ(ierr);
   }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSCnJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);

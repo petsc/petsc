@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.93 2001/02/28 16:08:57 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.94 2001/03/22 20:33:25 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -495,8 +495,8 @@ static int ourmult(Mat mat,Vec x,Vec y)
 void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,int (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,int*),int *ierr)
 {
   if (*op == MATOP_MULT) {
-    *ierr = MatShellSetOperation(*mat,*op,(void *)ourmult);
-    ((PetscObject)*mat)->fortran_func_pointers[0] = (void*)f;
+    *ierr = MatShellSetOperation(*mat,*op,(void(*)())ourmult);
+    ((PetscObject)*mat)->fortran_func_pointers[0] = (void(*)())f;
   } else {
     PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,1,0,
                "Cannot set that matrix operation");

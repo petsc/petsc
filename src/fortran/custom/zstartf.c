@@ -1,4 +1,4 @@
-/*$Id: zstartf.c,v 1.29 2000/05/04 16:27:10 bsmith Exp balay $*/
+/*$Id: zstartf.c,v 1.30 2000/05/05 22:26:47 balay Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h" 
 #include "petscsys.h"
@@ -79,7 +79,7 @@ void PETSC_STDCALL petscsetfortranbasepointers_(_fcd fnull_character,void *fnull
 #else
 void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXED_LEN(len),
                                   void *fnull_integer,void *fnull_scalar,void * fnull_double,
-                                  void *fnull_function PETSC_END_LEN(len))
+                                  void (*fnull_function)() PETSC_END_LEN(len))
 {
   PETSC_NULL_CHARACTER_Fortran  = fnull_character;
   PETSC_NULL_INTEGER_Fortran    = fnull_integer;

@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.227 2001/03/22 20:29:30 bsmith Exp balay $*/
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp balay $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -2389,7 +2389,7 @@ int VecReciprocal(Vec vec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetOperation"
-int VecSetOperation(Vec vec,VecOperation op, void *f)
+int VecSetOperation(Vec vec,VecOperation op, void (*f)())
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
@@ -2397,7 +2397,7 @@ int VecSetOperation(Vec vec,VecOperation op, void *f)
   if (op == VECOP_VIEW && !vec->ops->viewnative) {
     vec->ops->viewnative = vec->ops->view;
   }
-  (((void**)vec->ops)[(int)op]) = f;
+  (((void(**)())vec->ops)[(int)op]) = f;
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.65 2001/01/23 20:57:08 balay Exp balay $*/
+/*$Id: ex3.c,v 1.66 2001/03/23 23:24:24 balay Exp balay $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems in parallel.  This example is based on the\n\
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
     ierr = VecGetLocalSize(x,&ldim);CHKERRQ(ierr);
     ierr = MatCreateShell(PETSC_COMM_WORLD,ldim,user.ndim,user.ndim,user.ndim,
            (void*)&user,&H);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(H,MATOP_MULT,(void*)HessianProductMat);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(H,MATOP_MULT,(void(*)())HessianProductMat);CHKERRQ(ierr);
     ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user);CHKERRQ(ierr);
 
     /* Set null preconditioner.  Alternatively, set user-provided 

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.43 2001/01/23 20:57:36 balay Exp balay $*/
+/*$Id: ex1.c,v 1.44 2001/03/23 23:24:43 balay Exp balay $*/
 /*
        Formatted test for TS routines.
 
@@ -135,7 +135,7 @@ int main(int argc,char **argv)
          The user provides the RHS as a Shell matrix.
     */
     ierr = MatCreateShell(PETSC_COMM_WORLD,m,appctx.M,appctx.M,appctx.M,&appctx,&A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(A,MATOP_MULT,(void*)RHSMatrixFree);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(A,MATOP_MULT,(void(*)())RHSMatrixFree);CHKERRQ(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRQ(ierr);
   } else if (problem == linear_no_time) {
     /*
@@ -159,7 +159,7 @@ int main(int argc,char **argv)
     */
     ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx);CHKERRQ(ierr);
     ierr = MatCreateShell(PETSC_COMM_WORLD,m,appctx.M,appctx.M,appctx.M,&appctx,&A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(A,MATOP_MULT,(void*)RHSMatrixFree);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(A,MATOP_MULT,(void(*)())RHSMatrixFree);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,PETSC_NULL,&appctx);CHKERRQ(ierr);  
   } else if (problem == nonlinear) {
     /*

@@ -1,4 +1,4 @@
-/*$Id: zksp.c,v 1.49 2000/09/26 19:11:19 balay Exp bsmith $*/
+/*$Id: zksp.c,v 1.50 2001/01/15 21:49:49 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscksp.h"
@@ -170,9 +170,9 @@ static int ourtest(KSP ksp,int i,double d,KSPConvergedReason *reason,void* ctx)
 void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
       void (PETSC_STDCALL *converge)(KSP*,int*,double*,KSPConvergedReason*,void*,int*),void *cctx,int *ierr)
 {
-  if ((void *)converge == (void *)kspdefaultconverged_) {
+  if ((void(*)())converge == (void(*)())kspdefaultconverged_) {
     *ierr = KSPSetConvergenceTest(*ksp,KSPDefaultConverged,0);
-  } else if ((void *)converge == (void *)kspskipconverged_) {
+  } else if ((void(*)())converge == (void(*)())kspskipconverged_) {
     *ierr = KSPSetConvergenceTest(*ksp,KSPSkipConverged,0);
   } else {
     f2 = converge;
@@ -234,17 +234,17 @@ static int ourdestroy(void* ctx)
 void PETSC_STDCALL kspsetmonitor_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,int*,double*,void*,int*),
                     void *mctx,void (PETSC_STDCALL *monitordestroy)(void *,int *),int *ierr)
 {
-  if ((void*)monitor == (void*)kspdefaultmonitor_) {
+  if ((void(*)())monitor == (void(*)())kspdefaultmonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPDefaultMonitor,0,0);
-  } else if ((void*)monitor == (void*)ksplgmonitor_) {
+  } else if ((void(*)())monitor == (void(*)())ksplgmonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPLGMonitor,0,0);
-  } else if ((void*)monitor == (void*)ksplgtruemonitor_) {
+  } else if ((void(*)())monitor == (void(*)())ksplgtruemonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPLGTrueMonitor,0,0);
-  } else if ((void*)monitor == (void*)kspvecviewmonitor_) {
+  } else if ((void(*)())monitor == (void(*)())kspvecviewmonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPVecViewMonitor,0,0);
-  } else if ((void*)monitor == (void*)ksptruemonitor_) {
+  } else if ((void(*)())monitor == (void(*)())ksptruemonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPTrueMonitor,0,0);
-  } else if ((void*)monitor == (void*)kspsingularvaluemonitor_) {
+  } else if ((void(*)())monitor == (void(*)())kspsingularvaluemonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPSingularValueMonitor,0,0);
   } else {
     f1  = monitor;
@@ -354,9 +354,9 @@ void PETSC_STDCALL kspfgmresmodifypcsles_(KSP *ksp,int *total_its,int *loc_its,d
 
 void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (PETSC_STDCALL *fcn)(KSP*,int*,int*,double*,void*,int*),void* ctx,void (PETSC_STDCALL *d)(void*,int*),int *ierr)
 {
-  if ((void*)fcn == (void*)kspfgmresmodifypcsles_) {
+  if ((void(*)())fcn == (void(*)())kspfgmresmodifypcsles_) {
     *ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCSLES,0,0);
-  } else if ((void*)fcn == (void*)kspfgmresmodifypcnochange_) {
+  } else if ((void(*)())fcn == (void(*)())kspfgmresmodifypcnochange_) {
     *ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCNoChange,0,0);
   } else {
     f109 = fcn;

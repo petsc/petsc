@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.116 2001/03/09 20:27:38 bsmith Exp balay $*/
+/*$Id: snesmfj.c,v 1.117 2001/03/23 23:24:10 balay Exp balay $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -461,10 +461,10 @@ int MatCreateMF(Vec x,Mat *J)
   ierr = VecGetSize(mfctx->w,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(mfctx->w,&nloc);CHKERRQ(ierr);
   ierr = MatCreateShell(comm,nloc,nloc,n,n,mfctx,J);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_MULT,(void*)MatSNESMFMult_Private);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void *)MatSNESMFDestroy_Private);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_VIEW,(void *)MatSNESMFView_Private);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_ASSEMBLY_END,(void *)MatSNESMFAssemblyEnd_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)())MatSNESMFMult_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)())MatSNESMFDestroy_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)())MatSNESMFView_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_ASSEMBLY_END,(void(*)())MatSNESMFAssemblyEnd_Private);CHKERRQ(ierr);
   PetscLogObjectParent(*J,mfctx->w);
 
   mfctx->mat = *J;

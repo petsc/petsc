@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.14 2001/01/16 18:21:25 balay Exp balay $*/
+/*$Id: pack.c,v 1.15 2001/03/23 23:25:14 balay Exp balay $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -1157,10 +1157,10 @@ int VecPackGetInterpolation(VecPack coarse,VecPack fine,Mat *A,Vec *v)
   mpack->right = coarse;
   mpack->left  = fine;
   ierr  = MatCreateShell(fine->comm,m,n,M,N,mpack,A);CHKERRQ(ierr);
-  ierr  = MatShellSetOperation(*A,MATOP_MULT,(void*)MatMult_Shell_Pack);CHKERRQ(ierr);
-  ierr  = MatShellSetOperation(*A,MATOP_MULT_TRANSPOSE,(void*)MatMultTranspose_Shell_Pack);CHKERRQ(ierr);
-  ierr  = MatShellSetOperation(*A,MATOP_MULT_ADD,(void*)MatMultAdd_Shell_Pack);CHKERRQ(ierr);
-  ierr  = MatShellSetOperation(*A,MATOP_DESTROY,(void*)MatDestroy_Shell_Pack);CHKERRQ(ierr);
+  ierr  = MatShellSetOperation(*A,MATOP_MULT,(void(*)())MatMult_Shell_Pack);CHKERRQ(ierr);
+  ierr  = MatShellSetOperation(*A,MATOP_MULT_TRANSPOSE,(void(*)())MatMultTranspose_Shell_Pack);CHKERRQ(ierr);
+  ierr  = MatShellSetOperation(*A,MATOP_MULT_ADD,(void(*)())MatMultAdd_Shell_Pack);CHKERRQ(ierr);
+  ierr  = MatShellSetOperation(*A,MATOP_DESTROY,(void(*)())MatDestroy_Shell_Pack);CHKERRQ(ierr);
 
   /* loop over packed objects, handling one at at time */
   while (nextc) {

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.66 2001/01/23 20:57:08 balay Exp balay $*/
+/*$Id: ex2.c,v 1.67 2001/03/23 23:24:24 balay Exp balay $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
@@ -109,9 +109,9 @@ int main(int argc,char **argv)
   if (flg) {
     ierr = MatCreateShell(PETSC_COMM_SELF,ldim,user.ndim,user.ndim,user.ndim,(void*)&user,&H);CHKERRQ(ierr);
     if (user.problem == 1) {
-      ierr = MatShellSetOperation(H,MATOP_MULT,(void *)HessianProductMat1);CHKERRQ(ierr);
+      ierr = MatShellSetOperation(H,MATOP_MULT,(void(*)())HessianProductMat1);CHKERRQ(ierr);
     } else if (user.problem == 2) {
-      ierr = MatShellSetOperation(H,MATOP_MULT,(void*)HessianProductMat2);CHKERRQ(ierr);
+      ierr = MatShellSetOperation(H,MATOP_MULT,(void(*)())HessianProductMat2);CHKERRQ(ierr);
     }
     ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user);CHKERRQ(ierr);
 

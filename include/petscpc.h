@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.114 2001/01/29 19:25:52 bsmith Exp bsmith $ */
+/* $Id: petscpc.h,v 1.115 2001/02/15 22:23:26 bsmith Exp balay $ */
 
 /*
       Preconditioner module. 
@@ -140,7 +140,6 @@ EXTERN int PCBJacobiSetTotalBlocks(PC,int,int*);
 EXTERN int PCBJacobiSetLocalBlocks(PC,int,int*);
 
 EXTERN int PCSLESSetUseTrue(PC);
-EXTERN int PCCompositeSetUseTrue(PC);
 
 EXTERN int PCShellSetApply(PC,int (*)(void*,Vec,Vec),void*);
 EXTERN int PCShellSetSetUp(PC,int (*)(void*));
@@ -218,9 +217,11 @@ $                         alpha I + R
 .seealso: PCCompositeSetType()
 E*/
 typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SPECIAL} PCCompositeType;
+EXTERN int PCCompositeSetUseTrue(PC);
 EXTERN int PCCompositeSetType(PC,PCCompositeType);
 EXTERN int PCCompositeAddPC(PC,PCType);
 EXTERN int PCCompositeGetPC(PC pc,int n,PC *);
+EXTERN int PCCompositeSpecialSetAlpha(PC,Scalar);
 
 EXTERN int PCRedundantSetScatter(PC,VecScatter,VecScatter);
 EXTERN int PCRedundantGetOperators(PC,Mat*,Mat*);

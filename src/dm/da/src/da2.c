@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.160 2001/03/22 20:32:43 bsmith Exp balay $*/
+/*$Id: da2.c,v 1.161 2001/03/23 23:25:00 balay Exp balay $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1031,8 +1031,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)local,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
   }
 #endif
-  ierr = VecSetOperation(global,VECOP_VIEW,(void*)VecView_MPI_DA);CHKERRQ(ierr);
-  ierr = VecSetOperation(global,VECOP_LOADINTOVECTOR,(void*)VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(global,VECOP_VIEW,(void(*)())VecView_MPI_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(global,VECOP_LOADINTOVECTOR,(void(*)())VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

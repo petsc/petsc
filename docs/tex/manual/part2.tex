@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.354 2001/03/19 23:25:02 balay Exp balay $ 
+% $Id: part2.tex,v 1.355 2001/03/23 23:26:23 balay Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1674,7 +1674,7 @@ and then associate it with the matrix, \url{mat}, by using the
 command \findex{MatShellSetOperation()}
 \begin{verbatim}
    ierr = MatShellSetOperation(Mat mat,MatOperation MATOP_MULT,
-                               (void*)int (*UserMult)(Mat,Vec,Vec));
+                               (void(*)()) int (*UserMult)(Mat,Vec,Vec));
 \end{verbatim}
 Here \url{MATOP_MULT} is the name of the operation for matrix-vector
 multiplication. Within each user-defined routine (such as

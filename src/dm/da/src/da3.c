@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.130 2001/03/22 20:32:43 bsmith Exp balay $*/
+/*$Id: da3.c,v 1.131 2001/03/23 23:25:00 balay Exp balay $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -1839,8 +1839,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
-  ierr = VecSetOperation(global,VECOP_VIEW,(void*)VecView_MPI_DA);CHKERRQ(ierr);
-  ierr = VecSetOperation(global,VECOP_LOADINTOVECTOR,(void*)VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(global,VECOP_VIEW,(void(*)())VecView_MPI_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(global,VECOP_LOADINTOVECTOR,(void(*)())VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

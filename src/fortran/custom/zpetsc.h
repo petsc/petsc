@@ -1,4 +1,4 @@
-/*$Id: zpetsc.h,v 1.58 2001/01/16 18:22:02 balay Exp balay $*/
+/*$Id: zpetsc.h,v 1.59 2001/01/17 19:47:04 balay Exp balay $*/
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
@@ -13,7 +13,9 @@ extern char   *PETSC_NULL_CHARACTER_Fortran;
 extern void   *PETSC_NULL_INTEGER_Fortran;
 extern void   *PETSC_NULL_SCALAR_Fortran;
 extern void   *PETSC_NULL_DOUBLE_Fortran;
-extern void   *PETSC_NULL_FUNCTION_Fortran;
+EXTERN_C_BEGIN
+extern void   (*PETSC_NULL_FUNCTION_Fortran)();
+EXTERN_C_END
 /*  ----------------------------------------------------------------------*/
 /*
    We store each PETSc object C pointer directly as a
@@ -148,7 +150,7 @@ Fortran.
 #define FORTRANNULLOBJECT(a)   (((void*)a) == PETSC_NULL_INTEGER_Fortran)
 #define FORTRANNULLSCALAR(a)   (((void*)a) == PETSC_NULL_SCALAR_Fortran)
 #define FORTRANNULLDOUBLE(a)   (((void*)a) == PETSC_NULL_DOUBLE_Fortran)
-#define FORTRANNULLFUNCTION(a) (((void*)a) == PETSC_NULL_FUNCTION_Fortran)
+#define FORTRANNULLFUNCTION(a) (((void(*)())a) == PETSC_NULL_FUNCTION_Fortran)
 /*
     These are used to support the default viewers that are 
   created at run time, in C using the , trick.

@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.53 2001/02/13 18:59:42 bsmith Exp balay $*/
+/*$Id: beuler.c,v 1.54 2001/03/23 23:24:39 balay Exp balay $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -265,7 +265,7 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSBEulerMatMult);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSBEulerMatMult);CHKERRQ(ierr);
   }
   if (ts->A != ts->B && ts->Ashell != ts->B) {
     ierr = MatScale(&mone,ts->B);CHKERRQ(ierr);
@@ -290,7 +290,7 @@ static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSBEulerMatMult);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSBEulerMatMult);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -311,7 +311,7 @@ static int TSSetUp_BEuler_Nonlinear(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSBEulerMatMult);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSBEulerMatMult);CHKERRQ(ierr);
   }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSBEulerJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: snesmfj2.c,v 1.30 2001/01/16 18:20:08 balay Exp balay $*/
+/*$Id: snesmfj2.c,v 1.31 2001/03/23 23:24:10 balay Exp balay $*/
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
@@ -273,9 +273,9 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nloc);CHKERRQ(ierr);
   ierr = MatCreateShell(comm,nloc,n,n,n,mfctx,J);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_MULT,(void*)SNESMatrixFreeMult2_Private);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void *)SNESMatrixFreeDestroy2_Private);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_VIEW,(void *)SNESMatrixFreeView2_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)())SNESMatrixFreeMult2_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)())SNESMatrixFreeDestroy2_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)())SNESMatrixFreeView2_Private);CHKERRQ(ierr);
 
   PetscLogObjectParent(*J,mfctx->w);
   PetscLogObjectParent(snes,*J);

@@ -1,4 +1,4 @@
-/*$Id: eisen.c,v 1.109 2001/01/17 22:24:25 bsmith Exp balay $*/
+/*$Id: eisen.c,v 1.110 2001/03/23 23:23:12 balay Exp balay $*/
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 
@@ -165,7 +165,7 @@ static int PCSetUp_Eisenstat(PC pc)
     ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRQ(ierr);
     ierr = MatCreateShell(pc->comm,m,N,M,N,(void*)pc,&eis->shell);CHKERRQ(ierr);
     PetscLogObjectParent(pc,eis->shell);
-    ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void*)PCMult_Eisenstat);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void(*)())PCMult_Eisenstat);CHKERRQ(ierr);
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (!pc->setupcalled) {

@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.45 2001/02/28 18:55:33 balay Exp bsmith $*/
+/*$Id: zpc.c,v 1.46 2001/03/28 16:27:22 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -336,12 +336,12 @@ static int ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
 void PETSC_STDCALL mgsetresidual_(PC *pc,int *l,int (*residual)(Mat*,Vec*,Vec*,Vec*,int*),Mat *mat, int *ierr)
 {
   int (*rr)(Mat,Vec,Vec,Vec);
-  if ((void*)residual == (void*)mgdefaultresidual_) rr = MGDefaultResidual;
+  if ((void(*)())residual == (void(*)())mgdefaultresidual_) rr = MGDefaultResidual;
   else {
     if (!((PetscObject)*mat)->fortran_func_pointers) {
       *ierr = PetscMalloc(1*sizeof(void *),&((PetscObject)*mat)->fortran_func_pointers);
     }
-    ((PetscObject)*mat)->fortran_func_pointers[0] = (void*)residual;
+    ((PetscObject)*mat)->fortran_func_pointers[0] = (void(*)())residual;
     rr = ourresidualfunction;
   }
   *ierr = MGSetResidual(*pc,*l,rr,*mat);

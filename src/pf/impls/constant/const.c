@@ -1,4 +1,4 @@
-/*$Id: const.c,v 1.14 2001/01/16 18:21:58 balay Exp balay $*/
+/*$Id: const.c,v 1.15 2001/03/23 23:25:50 balay Exp balay $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 #undef __FUNCT__  
@@ -89,7 +89,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_Quick"
-int PFCreate_Quick(PF pf,void* function)
+int PFCreate_Quick(PF pf,void (*function)())
 {
   int  ierr;
 

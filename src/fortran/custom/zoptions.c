@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.75 2001/03/12 17:33:07 bsmith Exp balay $*/
+/*$Id: zoptions.c,v 1.76 2001/03/23 23:25:54 balay Exp balay $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -187,8 +187,9 @@ char   *PETSC_NULL_CHARACTER_Fortran;
 void   *PETSC_NULL_INTEGER_Fortran;
 void   *PETSC_NULL_SCALAR_Fortran;
 void   *PETSC_NULL_DOUBLE_Fortran;
-void   *PETSC_NULL_FUNCTION_Fortran;
-
+EXTERN_C_BEGIN
+void   (*PETSC_NULL_FUNCTION_Fortran)();
+EXTERN_C_END
 long PetscIntAddressToFortran(int *base,int *addr)
 {
   unsigned long tmp1 = (unsigned long) base,tmp2 = 0;

@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.215 2001/03/22 20:29:47 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.216 2001/03/22 21:22:07 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -696,8 +696,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_VIEW=251
              } MatOperation;
 EXTERN int MatHasOperation(Mat,MatOperation,PetscTruth*);
-EXTERN int MatShellSetOperation(Mat,MatOperation,void *);
-EXTERN int MatShellGetOperation(Mat,MatOperation,void **);
+EXTERN int MatShellSetOperation(Mat,MatOperation,void(*)());
+EXTERN int MatShellGetOperation(Mat,MatOperation,void(**)());
 EXTERN int MatShellSetContext(Mat,void*);
 
 /*

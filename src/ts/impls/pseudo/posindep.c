@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.51 2001/01/15 21:48:33 bsmith Exp balay $*/
+/*$Id: posindep.c,v 1.52 2001/03/23 23:24:42 balay Exp balay $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -296,7 +296,7 @@ static int TSSetUp_Pseudo(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void*)TSPseudoMatMult);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSPseudoMatMult);CHKERRQ(ierr);
   }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSPseudoJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);

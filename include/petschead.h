@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.81 2001/03/21 15:28:19 balay Exp bsmith $ */
+/* $Id: petschead.h,v 1.82 2001/03/22 20:33:30 bsmith Exp balay $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -74,7 +74,7 @@ typedef struct {
   char           *prefix;                                 \
   void           *cpp;                                    \
   int            amem;                                    \
-  void**         fortran_func_pointers;       
+  void           (**fortran_func_pointers)();       
 
   /*  ... */                               
 
