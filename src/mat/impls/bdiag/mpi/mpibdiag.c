@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.144 1998/07/13 20:50:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.145 1998/07/14 02:40:33 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -546,9 +546,6 @@ int MatDestroy_MPIBDiag(Mat mat)
   if (mbd->lvec) VecDestroy(mbd->lvec);
   if (mbd->Mvctx) VecScatterDestroy(mbd->Mvctx);
   PetscFree(mbd); 
-  if (mat->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
-  }
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
   PetscFunctionReturn(0);
