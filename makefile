@@ -29,7 +29,7 @@ deletelibs:
 	-$(RM) -f $(LDIR)/*.a $(LDIR)/complex/*
 
 deletemanpages:
-	$(RM) -f $(PETSCLIB)/docs/man/man*/*
+	$(RM) -f $(PETSCLIB)/Keywords $(PETSCLIB)/docs/man/man*/*
 
 deletewwwpages:
 	$(RM) -f $(PETSCLIB)/docs/www/man*/* $(PETSCLIB)/docs/www/www.cit
