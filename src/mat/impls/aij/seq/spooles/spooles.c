@@ -6,7 +6,7 @@
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) 
-#include "src/mat/impls/aij/seq/spooles.h"
+#include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 extern int MatDestroy_SeqAIJ(Mat); 
 #undef __FUNCT__  
@@ -145,7 +145,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   }
 
   /* copy A to Spooles' InpMtx object */
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJSPOOLES,&isAIJ);CHKERRQ(ierr);
   if (isAIJ){
     Mat_SeqAIJ   *mat = (Mat_SeqAIJ*)A->data;
     ai=mat->i; aj=mat->j; av=mat->a;
@@ -455,4 +455,22 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_SeqAIJ_Spooles"
+int MatCreate_SeqAIJ_Spooles(Mat A) {
+  int ierr;
+  Mat_Spooles *lu;
+
+  PetscFunctionBegin;
+  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatUseSpooles_SeqAIJ(A);CHKERRQ(ierr);
+
+  ierr               = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
+  lu->MatView        = A->ops->view;
+  lu->MatAssemblyEnd = A->ops->assemblyend;
+  A->spptr           = (void*)lu;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 #endif

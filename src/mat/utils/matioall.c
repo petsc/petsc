@@ -59,6 +59,9 @@ int MatLoadRegisterAll(char *path)
 #if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
   ierr = MatLoadRegisterDynamic(MATMPIROWBS,path,"MatLoad_MPIRowbs",MatLoad_MPIRowbs);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
+  ierr = MatLoadRegisterDynamic(MATSEQAIJSPOOLES,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }  
 

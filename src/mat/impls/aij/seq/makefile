@@ -12,7 +12,7 @@ OBJSC    = aij.o aijfact.o ij.o essl.o dxml.o aijnode.o fdaij.o unary.o ilut.o a
 	   lusol.o dsc.o superlu.o umfpack.o matmatmult.o symtranspose.o matptap.o matpapt.o
 OBJSF    = 
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     = spooles
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/
 

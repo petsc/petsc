@@ -45,6 +45,10 @@ typedef struct {
   Vec             vec_spooles;
   IS              iden,is_petsc;
   VecScatter      scat;
+  
+  /* A few function pointers for inheritance */
+  int (*MatView)(Mat,PetscViewer);
+  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
 } Mat_Spooles;
 
 EXTERN int SetSpoolesOptions(Mat, Spooles_options *);
