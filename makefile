@@ -22,7 +22,7 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 # Builds PETSc libraries for a given BOPT and architecture
 all: chkpetsc_dir
-	-$(RM) -f $(PDIR)/*.a
+	-$(RM) -f $(PDIR)/*
 	-@echo "Beginning to compile libraries in all directories"
 	-@echo "Using compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
