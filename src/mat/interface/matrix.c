@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.390 2001/01/20 03:34:36 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.391 2001/02/01 22:09:20 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -80,7 +80,7 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
   MatPreallocated(mat);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->getrow) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->getrow) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = PetscLogEventBegin(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->getrow)(mat,row,ncols,cols,vals);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
@@ -505,7 +505,7 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
     mat->assembled     = PETSC_FALSE;
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  if (!mat->ops->setvalues) SETERRQ(PETSC_ERR_SUP,"Not supported for this matrix type");
+  if (!mat->ops->setvalues) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->setvalues)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -587,7 +587,7 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
     mat->assembled     = PETSC_FALSE;
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  if (!mat->ops->setvaluesblocked) SETERRQ(PETSC_ERR_SUP,"Not supported for this matrix type");
+  if (!mat->ops->setvaluesblocked) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -665,7 +665,7 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
   PetscValidScalarPointer(v);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->getvalues) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->getvalues) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_GetValues,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->getvalues)(mat,m,idxm,n,idxn,v);CHKERRQ(ierr);
@@ -1097,7 +1097,7 @@ int MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->multtransposeadd) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->multtransposeadd) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   if (v1 == v3) SETERRQ(PETSC_ERR_ARG_IDN,"v1 and v3 must be different vectors");
   if (mat->M != v1->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v1: global dim %d %d",mat->M,v1->N);
   if (mat->N != v2->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v2: global dim %d %d",mat->N,v2->N);
@@ -1179,7 +1179,7 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
   PetscValidType(mat);
   MatPreallocated(mat);
   PetscValidPointer(info);
-  if (!mat->ops->getinfo) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->getinfo) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->getinfo)(mat,flag,info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }   
@@ -1228,7 +1228,7 @@ int MatILUDTFactor(Mat mat,MatILUInfo *info,IS row,IS col,Mat *fact)
   PetscValidPointer(fact);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->iludtfactor) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->iludtfactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->iludtfactor)(mat,info,row,col,fact);CHKERRQ(ierr);
@@ -1279,7 +1279,7 @@ int MatLUFactor(Mat mat,IS row,IS col,MatLUInfo *info)
   MatPreallocated(mat);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->lufactor) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->lufactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_LUFactor,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->lufactor)(mat,row,col,info);CHKERRQ(ierr);
@@ -1329,7 +1329,7 @@ int MatILUFactor(Mat mat,IS row,IS col,MatILUInfo *info)
   if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->ilufactor) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->ilufactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->ilufactor)(mat,row,col,info);CHKERRQ(ierr);
@@ -1381,7 +1381,7 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatLUInfo *info,Mat *fact)
   PetscValidPointer(fact);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->lufactorsymbolic) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->lufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic LU",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->lufactorsymbolic)(mat,row,col,info,fact);CHKERRQ(ierr);
@@ -1431,7 +1431,7 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
     SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat mat,Mat *fact: global dimensions are different %d should = %d %d should = %d",
             mat->M,(*fact)->M,mat->N,(*fact)->N);
   }
-  if (!(*fact)->ops->lufactornumeric) SETERRQ(PETSC_ERR_SUP,"");
+  if (!(*fact)->ops->lufactornumeric) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
   ierr = (*(*fact)->ops->lufactornumeric)(mat,fact);CHKERRQ(ierr);
@@ -1491,7 +1491,7 @@ int MatCholeskyFactor(Mat mat,IS perm,PetscReal f)
   if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->choleskyfactor) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->choleskyfactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactor,mat,perm,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->choleskyfactor)(mat,perm,f);CHKERRQ(ierr);
@@ -1543,7 +1543,7 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,Mat *fact)
   if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->choleskyfactorsymbolic) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->choleskyfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->choleskyfactorsymbolic)(mat,perm,f,fact);CHKERRQ(ierr);
@@ -1587,7 +1587,7 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
   MatPreallocated(mat);
   PetscValidPointer(fact);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (!(*fact)->ops->choleskyfactornumeric) SETERRQ(PETSC_ERR_SUP,"");
+  if (!(*fact)->ops->choleskyfactornumeric) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   if (mat->M != (*fact)->M || mat->N != (*fact)->N) {
     SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat mat,Mat *fact: global dim %d should = %d %d should = %d",
             mat->M,(*fact)->M,mat->N,(*fact)->N);
@@ -1648,7 +1648,7 @@ int MatSolve(Mat mat,Vec b,Vec x)
   if (mat->m != b->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %d %d",mat->m,b->n); 
   if (mat->M == 0 && mat->N == 0) PetscFunctionReturn(0);
 
-  if (!mat->ops->solve) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->solve) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = PetscLogEventBegin(MAT_Solve,mat,b,x,0);CHKERRQ(ierr);
   ierr = (*mat->ops->solve)(mat,b,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Solve,mat,b,x,0);CHKERRQ(ierr);
@@ -1700,7 +1700,7 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
   PetscCheckSameComm(mat,x);
   if (x == b) SETERRQ(PETSC_ERR_ARG_IDN,"x and b must be different vectors");
   if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
-  if (!mat->ops->forwardsolve) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->forwardsolve) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   if (mat->N != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %d %d",mat->N,x->N);
   if (mat->M != b->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %d %d",mat->M,b->N);
   if (mat->m != b->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %d %d",mat->m,b->n); 
@@ -1756,7 +1756,7 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
   PetscCheckSameComm(mat,x);
   if (x == b) SETERRQ(PETSC_ERR_ARG_IDN,"x and b must be different vectors");
   if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
-  if (!mat->ops->backwardsolve) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->backwardsolve) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   if (mat->N != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %d %d",mat->N,x->N);
   if (mat->M != b->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %d %d",mat->M,b->N);
   if (mat->m != b->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %d %d",mat->m,b->n); 
@@ -2034,7 +2034,7 @@ int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int i
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscCheckSameComm(mat,b);
   PetscCheckSameComm(mat,x);
-  if (!mat->ops->relax) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->relax) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (mat->N != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %d %d",mat->N,x->N);
@@ -2318,7 +2318,7 @@ int MatGetDiagonal(Mat mat,Vec v)
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   /* PetscCheckSameComm(mat,v); Could be MPI vector but Seq matrix cause of two submatrix storage */
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (!mat->ops->getdiagonal) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->getdiagonal) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = (*mat->ops->getdiagonal)(mat,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2355,7 +2355,7 @@ int MatGetRowMax(Mat mat,Vec v)
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   /* PetscCheckSameComm(mat,v); Could be MPI vector but Seq matrix cause of two submatrix storage */
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (!mat->ops->getrowmax) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->getrowmax) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = (*mat->ops->getrowmax)(mat,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2390,7 +2390,7 @@ int MatTranspose(Mat mat,Mat *B)
   MatPreallocated(mat);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->transpose) SETERRQ(PETSC_ERR_SUP,""); 
+  if (!mat->ops->transpose) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name); 
   ierr = (*mat->ops->transpose)(mat,B);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }
@@ -2430,7 +2430,7 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
   PetscValidHeaderSpecific(col,IS_COOKIE);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->permute) SETERRQ(PETSC_ERR_SUP,""); 
+  if (!mat->ops->permute) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name); 
   ierr = (*mat->ops->permute)(mat,row,col,B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2468,9 +2468,8 @@ int MatEqual(Mat A,Mat B,PetscTruth *flg)
   PetscCheckSameComm(A,B);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (A->M != B->M || A->N != B->N) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %d %d %d %d",
-                                             A->M,B->M,A->N,B->N);
-  if (!A->ops->equal) SETERRQ(PETSC_ERR_SUP,"");
+  if (A->M != B->M || A->N != B->N) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %d %d %d %d",A->M,B->M,A->N,B->N);
+  if (!A->ops->equal) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",A->type_name);
   ierr = (*A->ops->equal)(A,B,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2508,7 +2507,7 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidType(mat);
   MatPreallocated(mat);
-  if (!mat->ops->diagonalscale) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   if (l) {PetscValidHeaderSpecific(l,VEC_COOKIE);PetscCheckSameComm(mat,l);}
   if (r) {PetscValidHeaderSpecific(r,VEC_COOKIE);PetscCheckSameComm(mat,r);}
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -2549,7 +2548,7 @@ int MatScale(Scalar *a,Mat mat)
   PetscValidType(mat);
   MatPreallocated(mat);
   PetscValidScalarPointer(a);
-  if (!mat->ops->scale) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->scale) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
@@ -2590,7 +2589,7 @@ int MatNorm(Mat mat,NormType type,PetscReal *norm)
 
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->norm) SETERRQ(PETSC_ERR_SUP,"Not for this matrix type");
+  if (!mat->ops->norm) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->norm)(mat,type,norm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2976,7 +2975,7 @@ int MatZeroEntries(Mat mat)
   PetscValidType(mat);
   MatPreallocated(mat);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->zeroentries) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->zeroentries) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_ZeroEntries,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->zeroentries)(mat);CHKERRQ(ierr);
@@ -3037,7 +3036,7 @@ int MatZeroRows(Mat mat,IS is,Scalar *diag)
   if (diag) PetscValidScalarPointer(diag);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->zerorows) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->zerorows) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = (*mat->ops->zerorows)(mat,is,diag);CHKERRQ(ierr);
   ierr = MatView_Private(mat);CHKERRQ(ierr);
@@ -3194,7 +3193,7 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
   MatPreallocated(mat);
   if (m) PetscValidIntPointer(m);
   if (n) PetscValidIntPointer(n);
-  if (!mat->ops->getownershiprange) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->getownershiprange) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->getownershiprange)(mat,m,n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3250,7 +3249,7 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
   PetscValidPointer(fact);
   if (info && info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %d",info->levels);
   if (info && info->fill < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",info->fill);
-  if (!mat->ops->ilufactorsymbolic) SETERRQ(PETSC_ERR_SUP,"Only MatCreateMPIRowbs() matrices support parallel ILU");
+  if (!mat->ops->ilufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ILU",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
@@ -3305,7 +3304,7 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (fill < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Fill negative %d",fill);
   if (f < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",f);
-  if (!mat->ops->incompletecholeskyfactorsymbolic) SETERRQ(PETSC_ERR_SUP,"Currently only MatCreateMPIRowbs() matrices support ICC in parallel");
+  if (!mat->ops->incompletecholeskyfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ICC",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
 
   ierr = PetscLogEventBegin(MAT_IncompleteCholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
@@ -3368,7 +3367,7 @@ int MatGetArray(Mat mat,Scalar **v)
   PetscValidType(mat);
   MatPreallocated(mat);
   PetscValidPointer(v);
-  if (!mat->ops->getarray) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->getarray) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->getarray)(mat,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3417,7 +3416,7 @@ int MatRestoreArray(Mat mat,Scalar **v)
   PetscValidType(mat);
   MatPreallocated(mat);
   PetscValidPointer(v);
-  if (!mat->ops->restorearray) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->restorearray) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->restorearray)(mat,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3477,7 +3476,7 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **subma
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidType(mat);
   MatPreallocated(mat);
-  if (!mat->ops->getsubmatrices) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->getsubmatrices) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
 
   ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
@@ -3551,7 +3550,7 @@ int MatIncreaseOverlap(Mat mat,int n,IS *is,int ov)
   if (mat->factor)     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
   if (!ov) PetscFunctionReturn(0);
-  if (!mat->ops->increaseoverlap) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->increaseoverlap) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = PetscLogEventBegin(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->increaseoverlap)(mat,n,is,ov);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
@@ -3636,7 +3635,7 @@ int MatGetBlockSize(Mat mat,int *bs)
   PetscValidType(mat);
   MatPreallocated(mat);
   PetscValidIntPointer(bs);
-  if (!mat->ops->getblocksize) SETERRQ(PETSC_ERR_SUP,"");
+  if (!mat->ops->getblocksize) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->getblocksize)(mat,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3845,8 +3844,9 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
   MatPreallocated(mat);
   PetscValidIntPointer(colorarray);
 
-  if (!mat->ops->coloringpatch) {SETERRQ(PETSC_ERR_SUP,"");}
-  else {
+  if (!mat->ops->coloringpatch){
+    SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  } else {
     ierr  = (*mat->ops->coloringpatch)(mat,n,colorarray,iscoloring);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -4032,7 +4032,7 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
     PetscFunctionReturn(0);
   }
 
-  if (!mat->ops->getsubmatrix) SETERRQ(PETSC_ERR_SUP,"Not currently implemented");
+  if (!mat->ops->getsubmatrix) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->getsubmatrix)(mat,isrow,iscol,csize,cll,newmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4326,8 +4326,7 @@ int MatIncompleteCholeskyFactor(Mat mat,IS row,PetscReal fill,int level)
   if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->incompletecholeskyfactor) SETERRQ(PETSC_ERR_SUP,"");
-
+  if (!mat->ops->incompletecholeskyfactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->incompletecholeskyfactor)(mat,row,fill,level);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
