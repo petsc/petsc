@@ -161,7 +161,7 @@ if __name__ == "__main__":
 #  Read in mapping of names to manual pages
 #
     reg = re.compile('man:\+([a-zA-Z_0-9]*)\+\+([a-zA-Z_0-9 ]*)\+\+\+\+man\+([a-zA-Z_0-9#./:]*)')
-    fd = open("/tmp/tmpmap")
+    fd = open("htmlmap")
     lines = fd.readlines()
     n = len(lines)
     mappedstring = { }

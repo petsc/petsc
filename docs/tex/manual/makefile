@@ -10,18 +10,18 @@ GONULL    = > /dev/null 2>&1
 # Build the entire manual as well as the intro part
 
 clean:
-	rm -f  *.aux *.toc *.log *.bbl *.blg part1tmp.tex part2tmp.tex *.ilg *.idx *.ind index.tex *.out
+	rm -f  *.aux *.toc *.log *.bbl *.blg part1tmp.tex part2tmp.tex *.ilg *.idx *.ind index.tex *.out htmlmap
 
 manual.pdf:  intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex gettinginfo.tex
 # Generate a list of labels
-	-@rm -f anchors
+	-@rm -f anchors htmlmap
 	-@cat  part1.tex part2.tex | egrep '(\\label|\\chapter|\\section|\\subsection)' | ${PETSC_DIR}/maint/getpdflabels.py > anchors
-	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > /tmp/tmpmap
-	-@cat /home/MPI/www/www.index >> /tmp/tmpmap
+	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > htmlmap
+	-@cat /home/MPI/www/www.index >> htmlmap
 	-@cat anchors >> ${LOC}/docs/manualpages/manualpages.cit
 	-@${RM} part1tmp.tex part2tmp.tex
-	-@cat part1.tex | ../../../maint/mapnameslatex.py > part1tmp.tex
-	-@cat part2.tex | ../../../maint/mapnameslatex.py > part2tmp.tex
+	-@PYTHONPATH=../../../maint;cat part1.tex | ../../../maint/mapnameslatex.py > part1tmp.tex
+	-@PYTHONPATH=../../../maint;cat part2.tex | ../../../maint/mapnameslatex.py > part2tmp.tex
 	${PDFELATEX} manual  ${GONULL}
 	bibtex manual ${GONULL}
 	${PDFELATEX} manual  ${GONULL}
