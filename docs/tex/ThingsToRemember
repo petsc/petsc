@@ -58,13 +58,9 @@ help : consult@nersc.gov
 grmview shows jobs running on pes
 or tstat 
 qstat -a lists queues
-
+ps -efMP - process status for application PEs 
 ---------------
 
-afs directory at NCSA /afs/ncsa.uiuc.edu/user/barrys
-To use afs on powerchallenge/convex exemplar, log into afs using klog
-other afs commands to aremember:fs,pts
-http://www.ncsa.uiuc.edu/Pubs/UserGuides/AFSGuide/AFSv2.1Book.html
 
 NCSA Convex Exemplar account
 Machine: lena.ncsa.uiuc.edu
@@ -91,6 +87,22 @@ sun4   : space
 hpux   : sangamon
 userid : barrys
 password: petsc-password
+
+ AFS :afs directory at NCSA /afs/ncsa.uiuc.edu/user/barrys
+To use afs on powerchallenge/convex exemplar, log into afs using klog
+other afs commands to aremember:fs,pts
+http://www.ncsa.uiuc.edu/Pubs/UserGuides/AFSGuide/AFSv2.1Book.html
+
+Batch Jobs: batch jobs on SGIs ( Challange/Origin2000) can be submitted
+by using bsub command. Sample scripts for batch submission are located 
+on modi4.ncsa.uiuc.edu:~/batch-scripts/
+Other useful commands 
+bqueues: List all the queues avilable
+bjobs  : list all the batch jobs started.
+bjobs -u all : list all the batch jobs started by all users
+bkill : kill a batch job
+(and other b-commands and lsbatch commands)
+
 ---------
 
 ANL 
