@@ -1,4 +1,4 @@
-/*$Id: dsc.c,v 1.4 2001/01/16 18:17:28 balay Exp balay $*/
+/*$Id: dsc.c,v 1.5 2001/03/23 23:21:51 balay Exp bsmith $*/
 /* 
         Provides an interface to the DSCPACK-S
 */
@@ -7,8 +7,7 @@
 #if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_COMPLEX) 
 EXTERN_C_BEGIN
 #include "dscmain.h"
-extern int Initialize_A_Nonz(int,int*,int*,real_number_type*,
-                        int,int*,int*,real_number_type**);
+extern int Initialize_A_Nonz(int,int*,int*,real_number_type*,int,int*,int*,real_number_type**);
 EXTERN_C_END
 
 extern int MatDestroy_SeqAIJ(Mat);
