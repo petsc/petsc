@@ -159,6 +159,13 @@ Arg class, which wraps the usual value.'''
 
   def keys(self):
     '''Returns the list of keys in both the local and parent dictionaries'''
+    keyList = filter(lambda key: dict.__getitem__(self, key).isValueSet(), dict.keys(self))
+    if not self.parent is None:
+      keyList.extend(self.send())
+    return keyList
+
+  def types(self):
+    '''Returns the list of keys for which types are defined in both the local and parent dictionaries'''
     keyList = dict.keys(self)
     if not self.parent is None:
       keyList.extend(self.send())
@@ -179,20 +186,19 @@ Arg class, which wraps the usual value.'''
     '''Insert some text arguments into the dictionary (list and dictionaries are recognized)'''
     import UserDict
 
-    if isinstance(args, UserDict.UserDict):
-      raise RuntimeError('Get rid of UserDict')
     if isinstance(args, list):
       for arg in args:
         (key, value) = nargs.Arg.parseArgument(arg)
         self.insertArg(key, value, arg)
-    elif isinstance(args, dict):
+    # Necessary since os.environ is a UserDict
+    elif isinstance(args, dict) or isinstance(args, UserDict.UserDict):
       for key in args.keys():
         if isinstance(args[key], str):
           value = nargs.Arg.parseValue(args[key])
         else:
           value = args[key]
         self.insertArg(key, value, None)
-    else:
+    elif isinstance(args, str):
         (key, value) = nargs.Arg.parseArgument(args)
         self.insertArg(key, value, args)
     return
@@ -209,16 +215,17 @@ Arg class, which wraps the usual value.'''
         f    = open(filename, 'r')
         addr = cPickle.load(f)
         f.close()
+        # Check if server is running
+        #   This must provide the address, not the directory to prevent an infinite loop
+        if not RDict(parentAddr = addr).hasParent():
+          os.remove(filename)
+          self.startServer(filename)
         return addr
       except Exception:
         self.startServer(filename)
     raise RuntimeError('Could not get server address in '+filename)
 
   def writeServerAddr(self, server):
-    if os.path.exists(self.addrFilename):
-      # check if server is running
-      if RDict('.').hasParent():
-        raise RuntimeError('Server already running')
     f = file(self.addrFilename, 'w')
     cPickle.dump(server.server_address, f)
     f.close()
@@ -328,6 +335,10 @@ Arg class, which wraps the usual value.'''
           cPickle.dump(response, self.wfile)
           self.server.rdict.writeLogLine('SERVER: Sent response '+str(response))
         return
+
+    # check if server is running
+    if os.path.exists(self.addrFilename) and RDict(parentDirectory = '.').hasParent():
+      raise RuntimeError('Server already running')
 
     # wish there was a better way to get a usable socket
     basePort = 8000

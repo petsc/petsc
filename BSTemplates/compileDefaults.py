@@ -235,11 +235,11 @@ class UsingPython(UsingCompiler):
     try:
       if not self.argDB.has_key('PYTHON_LIB'):
         lib = os.path.join(distutils.sysconfig.get_config_var('LIBPL'), distutils.sysconfig.get_config_var('LDLIBRARY'))
-        # if .so was not built then need to strip .a off of end
-        if lib[-2:] == '.a': lib = lib[0:-2]
-        # may be stuff after .so like .0, so cannot use splitext()
-        SO  = distutils.sysconfig.get_config_var('SO')
-        lib = lib.split(SO)[0]+SO
+##        # if .so was not built then need to strip .a off of end
+##        if lib[-2:] == '.a': lib = lib[0:-2]
+##        # may be stuff after .so like .0, so cannot use splitext()
+##        SO  = distutils.sysconfig.get_config_var('SO')
+##        lib = lib.split(SO)[0]+SO
         self.argDB['PYTHON_LIB'] = lib
     except: pass
 

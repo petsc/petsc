@@ -64,6 +64,7 @@ in order to declare the type of that option.'''
       if k == key:
         return value
     return None
+  findArgument = staticmethod(findArgument)
 
   def __str__(self):
     if not self.isValueSet():

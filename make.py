@@ -5,6 +5,8 @@ import project
 class PetscMake(bs.BS):
   def __init__(self, clArgs = None, argDB = None):
     bs.BS.__init__(self, project.Project('bs', 'bk://sidl.bkbits.net/BuildSystem', self.getRoot()), clArgs, argDB)
+    if not 'installedLanguages' in self.argDB: self.argDB['installedLanguages'] = ['Python', 'C++']
+    if not 'clientLanguages'    in self.argDB: self.argDB['clientLanguages']    = []
     return
 
   def setupBuild(self):
