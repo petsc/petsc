@@ -60,7 +60,7 @@ class Configure:
   def printLine(self,msg):
     if not hasattr(self.framework,'linewidth'):
       self.framework.cwd       = os.getcwd()+'/'
-      if 'with-scroll-output' in self.framework.argDB:
+      if 'with-scroll-output' in self.framework.argDB and self.framework.argDB['with-scroll-output']:
         self.framework.linewidth = -2
       else:
         if not sys.stdout.isatty():
