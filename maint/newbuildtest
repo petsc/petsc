@@ -1,0 +1,77 @@
+#! /bin/csh
+# $Id: buildtest,v 1.2 2001/10/19 16:20:25 petsc Exp $ 
+# 
+# Compiles and tests PETSc in our nightly builds.
+# Run as buildtest ARCH where ARCH is one of the PETSc archs
+#
+# Example usage: buildtest solaris
+#
+set DATAFILESPATH=/home/petsc/datafiles
+set NICE=''
+set maintdir=`dirname $0`
+set PETSC_DIR=`dirname $maintdir`
+set TEST='testexamples_'
+set MACH=`hostname`
+set BOPT=g
+setenv PETSC_DIR $PETSC_DIR
+if (${#argv} >= 1 && -f ${PETSC_DIR}/config/${1}.py) then
+  set PETSC_ARCH=$1
+  set CONFIGURE='yes'
+  set CONFIGURE_FILE=$PETSC_ARCH
+  set CONFIGURE_ARGS="${argv[2-]}"
+else if (${#argv} == 1 && -f ${PETSC_DIR}/bmake/${1}) then
+  set CONFIGURE='no'
+  set PETSC_ARCH=$1
+else
+  set CONFIGURE='yes'
+  set CONFIGURE_FILE='configure'
+  set CONFIGURE_ARGS="${argv}"
+  set PETSC_ARCH=`${PETSC_DIR}/bin/configarch`
+endif
+echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $PETSC_DIR
+
+rm -f $PETSC_DIR/build_log
+echo "Build on $MACH $PETSC_ARCH $BOPT `date` " > $PETSC_DIR/build_log
+rm -f $PETSC_DIR/buildout.tar
+
+# need to have make update that uses python code reworked from configure
+make PETSC_ARCH=linux PETSC_DIR=$PETSC_DIR pull >>& $PETSC_DIR/build_log
+
+# Run Configure
+if ("${CONFIGURE}" == "yes") then
+  cd $PETSC_DIR; ./config/${CONFIGURE_FILE}.py --enable-update=0 -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$PETSC_DIR ${CONFIGURE_ARGS} >>& build_log
+  echo '****************************************************' >>& $PETSC_DIR/maint/build_$PETSC_ARCH.$BOPT.$MACH.log
+  set EJOBS=`cat $PETSC_DIR/bmake/$PETSC_ARCH/ejobs`
+  set JOBS=`cat $PETSC_DIR/bmake/$PETSC_ARCH/jobs`
+  cd $PETSC_DIR; tar cf buildoutput.tar configure.log bmake/$PETSC_ARCH/*
+else
+  #  Get the list of packages installed on the machine
+  set EJOBS=`grep PETSC_HAVE_ $PETSC_DIR/bmake/$PETSC_ARCH/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
+endif
+
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR allfortranstubs >>& $PETSC_DIR/build_log
+
+if ("${BOPT}" == "g_complex" ||  "${BOPT}" == "O_complex") then
+  set EJOBS=""
+endif
+
+
+cd $PETSC_DIR;make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR BOPT=$BOPT all >>& build_log
+echo '****************************************************' >>& build_log
+echo 'Finished Build on $MACH $PETSC_ARCH $BOPT `date`' >>& build_log
+cd $PETSC_DIR; tar rf buildoutput.tar build_log
+#
+#
+#
+# Run examples
+rm examples_log
+echo 'Build on $MACH $PETSC_ARCH  $BOPT `date` ' > examples_log
+foreach j ($JOBS $EJOBS)
+  cd $PETSC_DIR; $NICE make PETSC_PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree | grep -v 'up to date' >>& examples_log
+  echo '******************************************************' >>& $PETSC_DIR/examples_log
+end
+echo 'Finished Build on $MACH $PETSC_ARCH $BOPT `date`' >>& $PETSC_DIR/examples_log
+echo 'X******************************************************X' >>& $PETSC_DIR/examples_log
+cd $PETSC_DIR; tar rf buildoutput.tar examples_log
+
+
