@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mgfunc.c,v 1.24 1998/03/06 00:13:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.25 1998/04/13 17:33:58 bsmith Exp curfman $";
 #endif
 
 #include "src/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
@@ -10,15 +10,15 @@ static char vcid[] = "$Id: mgfunc.c,v 1.24 1998/03/06 00:13:43 bsmith Exp bsmith
 /*@
    MGDefaultResidual - Default routine to calculate the residual.
 
+   Collective on Mat and Vec
+
    Input Parameters:
-.  mat - the matrix
++  mat - the matrix
 .  b   - the right-hand-side
-.  x   - the approximate solution
+-  x   - the approximate solution
  
    Output Parameter:
 .  r - location to store the residual
-
-   Collective on Mat and Vec
 
 .keywords: MG, default, multigrid, residual
 
@@ -42,13 +42,13 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 /*@C
    MGGetCoarseSolve - Gets the solver context to be used on the coarse grid.
 
+   Not Collective
+
    Input Parameter:
 .  pc - the multigrid context 
 
    Output Parameter:
 .  sles - the coarse grid solver context 
-
-   Not Collective
 
 .keywords: MG, multigrid, get, coarse grid
 @*/ 
@@ -67,13 +67,13 @@ int MGGetCoarseSolve(PC pc,SLES *sles)
    MGSetResidual - Sets the function to be used to calculate the residual 
    on the lth level. 
 
+   Collective on PC and Mat
+
    Input Paramters:
-.  pc       - the multigrid context
++  pc       - the multigrid context
 .  l        - the level to supply
 .  residual - function used to form residual (usually MGDefaultResidual)
-.  mat      - matrix associated with residual
-
-   Collective on PC and Mat
+-  mat      - matrix associated with residual
 
 .keywords:  MG, set, multigrid, residual, level
 
@@ -95,12 +95,12 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
    MGSetInterpolate - Sets the function to be used to calculate the 
    interpolation on the lth level. 
 
-   Input Parameters:
-.  pc  - the multigrid context
-.  mat - the interpolation operator
-.  l   - the level to supply
-
    Collective on PC and Mat
+
+   Input Parameters:
++  pc  - the multigrid context
+.  mat - the interpolation operator
+-  l   - the level to supply
 
 .keywords:  multigrid, set, interpolate, level
 
@@ -118,15 +118,15 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
 #undef __FUNC__  
 #define __FUNC__ "MGSetRestriction"
 /*@
-    MGSetRestriction - Sets the function to be used to restrict vector
-    from level l to l-1. 
-
-   Input Parameters:
-.  pc - the multigrid context 
-.  mat - the restriction matrix
-.  l - the level to supply
+   MGSetRestriction - Sets the function to be used to restrict vector
+   from level l to l-1. 
 
    Collective on PC and Mat
+
+   Input Parameters:
++  pc - the multigrid context 
+.  mat - the restriction matrix
+-  l - the level to supply
 
 .keywords: MG, set, multigrid, restriction, level
 
@@ -149,14 +149,14 @@ int MGSetRestriction(PC pc,int l,Mat mat)
    MGGetSmootherDown() to use different functions for pre- and 
    post-smoothing.
 
+   Not Collective, SLES returned is parallel if PC is 
+
    Input Parameters:
-.  pc - the multigrid context 
-.  l - the level to supply
++  pc - the multigrid context 
+-  l - the level to supply
 
    Ouput Parameters:
 .  sles - the smoother
-
-   Not Collective, SLES returned is parallel if PC is 
 
 .keywords: MG, get, multigrid, level, smoother, pre-smoother, post-smoother
 
@@ -177,14 +177,14 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
    MGGetSmootherUp - Gets the SLES context to be used as smoother after 
    coarse grid correction (post-smoother). 
 
+   Not Collective, SLES returned is parallel if PC is
+
    Input Parameters:
-.  pc - the multigrid context 
-.  l  - the level to supply
++  pc - the multigrid context 
+-  l  - the level to supply
 
    Ouput Parameters:
 .  sles - the smoother
-
-   Not Collective, SLES returned is parallel if PC is
 
 .keywords: MG, multigrid, get, smoother, up, post-smoother, level
 
@@ -219,14 +219,14 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
    MGGetSmootherDown - Gets the SLES context to be used as smoother before 
    coarse grid correction (pre-smoother). 
 
+   Not Collective, SLES returned is parallel if PC is
+
    Input Parameters:
-.  pc - the multigrid context 
-.  l  - the level to supply
++  pc - the multigrid context 
+-  l  - the level to supply
 
    Ouput Parameters:
 .  sles - the smoother
-
-   Not Collective, SLES returned is parallel if PC is
 
 .keywords: MG, multigrid, get, smoother, down, pre-smoother, level
 
@@ -246,12 +246,12 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
 /*@
    MGSetCyclesOnLevel - Sets the number of cycles to run on this level. 
 
-   Input Parameters:
-.  pc - the multigrid context 
-.  l  - the level this is to be used for
-.  n  - the number of cycles
-
    Collective on PC
+
+   Input Parameters:
++  pc - the multigrid context 
+.  l  - the level this is to be used for
+-  n  - the number of cycles
 
 .keywords: MG, multigrid, set, cycles, V-cycle, W-cycle, level
 
@@ -273,12 +273,12 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
    on a particular level.  The user should free this space at the conclusion 
    of multigrid use. 
 
-   Input Parameters:
-.  pc - the multigrid context 
-.  l  - the level this is to be used for
-.  c  - the space
+   Collective on PC and Vec
 
-  Collective on PC and Vec
+   Input Parameters:
++  pc - the multigrid context 
+.  l  - the level this is to be used for
+-  c  - the space
 
 .keywords: MG, multigrid, set, right-hand-side, rhs, level
 
@@ -300,12 +300,12 @@ int MGSetRhs(PC pc,int l,Vec c)
    particular level.  The user should free this space at the conclusion 
    of multigrid use.
 
-   Input Parameters:
-.  pc - the multigrid context 
-.  l - the level this is to be used for
-.  c - the space
+   Collective on PC and Vec
 
-  Collective on PC and Vec
+   Input Parameters:
++  pc - the multigrid context 
+.  l - the level this is to be used for
+-  c - the space
 
 .keywords: MG, multigrid, set, solution, level
 
@@ -327,12 +327,12 @@ int MGSetX(PC pc,int l,Vec c)
    particular level.  The user should free this space at the conclusion of
    multigrid use.
 
-   Input Parameters:
-.  pc - the multigrid context 
-.  l - the level this is to be used for
-.  c - the space
+   Collective on PC and Vec
 
-  Collective on PC and Vec
+   Input Parameters:
++  pc - the multigrid context 
+.  l - the level this is to be used for
+-  c - the space
 
 .keywords: MG, multigrid, set, residual, level
 @*/
