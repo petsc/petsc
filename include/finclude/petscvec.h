@@ -1,5 +1,5 @@
 !
-!  $Id: vec.h,v 1.27 1999/03/24 18:11:56 balay Exp balay $;
+!  $Id: vec.h,v 1.28 1999/04/01 19:23:26 balay Exp balay $;
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
@@ -59,10 +59,10 @@
 !  PipelineType
 !
       integer PIPELINE_NONE,PIPELINE_SEQUENTIAL,PIPELINE_REDBLACK
-      integer PIPELINE_MULTICOLOUR
+      integer PIPELINE_MULTICOLOR
 
       parameter (PIPELINE_NONE=1,PIPELINE_SEQUENTIAL=2)
-      parameter (PIPELINE_REDBLACK=3,PIPELINE_MULTICOLOUR=4)
+      parameter (PIPELINE_REDBLACK=3,PIPELINE_MULTICOLOR=4)
 !
 !  VecOption
 !

@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.91 1999/03/17 23:25:44 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.92 1999/03/18 15:38:02 bsmith Exp balay $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -113,7 +113,7 @@ extern int VecScatterRemap(VecScatter,int *,int*);
 
 typedef enum {PIPELINE_DOWN=0,PIPELINE_UP=1} PipelineDirection;
 typedef enum {PIPELINE_NONE=1, PIPELINE_SEQUENTIAL=2,
-	      PIPELINE_REDBLACK=3, PIPELINE_MULTICOLOUR=4} PipelineType;
+	      PIPELINE_REDBLACK=3, PIPELINE_MULTICOLOR=4} PipelineType;
 
 typedef struct _p_VecPipeline*  VecPipeline;
 

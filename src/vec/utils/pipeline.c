@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.9 1998/11/06 23:23:22 balay Exp bsmith $";
+static char vcid[] = "$Id: pipeline.c,v 1.10 1998/12/03 03:56:41 bsmith Exp balay $";
 #endif
 
 /*
@@ -179,11 +179,11 @@ int VecPipelineSetup(VecPipeline ctx)
 extern int ProcYes(int proc,PetscObject pipe_info);
 extern int ProcUp(int proc,PetscObject pipe_info);
 extern int ProcDown(int proc,PetscObject pipe_info);
-extern int ProcColourUp(int proc,PetscObject pipe_info);
-extern int ProcColourDown(int proc,PetscObject pipe_info);
+extern int ProcColorUp(int proc,PetscObject pipe_info);
+extern int ProcColorDown(int proc,PetscObject pipe_info);
 extern int PipelineSequentialSetup(VecPipeline,PetscObject,PetscObject*);
 extern int PipelineRedblackSetup(VecPipeline,PetscObject,PetscObject*);
-extern int PipelineMulticolourSetup(VecPipeline,PetscObject,PetscObject*);
+extern int PipelineMulticolorSetup(VecPipeline,PetscObject,PetscObject*);
 
 int ProcNo(int proc,PetscObject pipe_info);
 
@@ -206,10 +206,10 @@ int ProcNo(int proc,PetscObject pipe_info);
    order of MPI rank
    -- PIPELINE_RED_BLACK even numbered processors only send; odd numbered
    processors only receive
-   -- PIPELINE_MULTICOLOUR processors are given a colour and send/receive
-   according to ascending colour
-+  x - auxiliary data; for PIPELINE_MULTICOLOUR this should be
-   <(PetscObject) pmat> where pmat is the matrix on which the colouring
+   -- PIPELINE_MULTICOLOR processors are given a color and send/receive
+   according to ascending color
++  x - auxiliary data; for PIPELINE_MULTICOLOR this should be
+   <(PetscObject) pmat> where pmat is the matrix on which the coloring
    is to be based.
 
 .seealso: VecPipelineCreate(), VecPipelineBegin(), VecPipelineEnd().
@@ -227,13 +227,13 @@ int VecPipelineSetType(VecPipeline ctx,PipelineType type,PetscObject x)
     ctx->dnfn = &ProcDown;
     ctx->setup = &PipelineSequentialSetup;
   } else if (type == PIPELINE_REDBLACK) {
-    ctx->upfn = &ProcColourUp;
-    ctx->dnfn = &ProcColourDown;
+    ctx->upfn = &ProcColorUp;
+    ctx->dnfn = &ProcColorDown;
     ctx->setup = &PipelineRedblackSetup;
-  } else if (type == PIPELINE_MULTICOLOUR) {
-    ctx->upfn = &ProcColourUp;
-    ctx->dnfn = &ProcColourDown;
-    ctx->setup = &PipelineMulticolourSetup;
+  } else if (type == PIPELINE_MULTICOLOR) {
+    ctx->upfn = &ProcColorUp;
+    ctx->dnfn = &ProcColorDown;
+    ctx->setup = &PipelineMulticolorSetup;
   } else {
     SETERRQ(1,(int)type,"VecPipelineSetType: unknown or not implemented type\n");
   }
@@ -456,29 +456,29 @@ int PipelineSequentialSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
   return 0;
 }
 
-/* >>>> Routines for multicolour ordering of processors <<<< */
+/* >>>> Routines for multicolor ordering of processors <<<< */
 
 typedef struct {
-  int rank,size,*proc_colours;
-} Pipeline_coloured_info;
+  int rank,size,*proc_colors;
+} Pipeline_colored_info;
 
-int ProcColourUp(int proc,PetscObject pipe_info)
+int ProcColorUp(int proc,PetscObject pipe_info)
 {
-  Pipeline_coloured_info* comm_info = (Pipeline_coloured_info *) pipe_info;
+  Pipeline_colored_info* comm_info = (Pipeline_colored_info *) pipe_info;
   int                     rank = comm_info->rank;
 
-  if (comm_info->proc_colours[rank]<comm_info->proc_colours[proc]) {
+  if (comm_info->proc_colors[rank]<comm_info->proc_colors[proc]) {
     return 1;
   } else {
     return 0;
   }
 }
-int ProcColourDown(int proc,PetscObject pipe_info)
+int ProcColorDown(int proc,PetscObject pipe_info)
 { 
-  Pipeline_coloured_info* comm_info = (Pipeline_coloured_info *) pipe_info;
+  Pipeline_colored_info* comm_info = (Pipeline_colored_info *) pipe_info;
   int rank = comm_info->rank;
 
-  if (comm_info->proc_colours[rank]>comm_info->proc_colours[proc]) {
+  if (comm_info->proc_colors[rank]>comm_info->proc_colors[proc]) {
     return 1;
   } else {
     return 0;
@@ -489,40 +489,40 @@ int ProcColourDown(int proc,PetscObject pipe_info)
 #define __FUNC__ "PipelineRedblackSetup"
 int PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
-  Pipeline_coloured_info *info;
+  Pipeline_colored_info *info;
   int                    size,i;
 
-  info = PetscNew(Pipeline_coloured_info);
+  info = PetscNew(Pipeline_colored_info);
   MPI_Comm_rank(vs->scatter->comm,&(info->rank));
   MPI_Comm_size(vs->scatter->comm,&size);
-  info->proc_colours = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(info->proc_colours);
-  for (i=0; i<size; i++) {info->proc_colours[i] = i%2;}
+  info->proc_colors = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(info->proc_colors);
+  for (i=0; i<size; i++) {info->proc_colors[i] = i%2;}
   *obj = (PetscObject) info;
 
   return 0;
 }
 
 #undef __FUNC__
-#define __FUNC__ "PipelineMulticolourSetup"
-int PipelineMulticolourSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
+#define __FUNC__ "PipelineMulticolorSetup"
+int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
-  Pipeline_coloured_info *info;
+  Pipeline_colored_info *info;
   Mat                    mat = (Mat) x;
   int                    size;
 
-  info = PetscNew(Pipeline_coloured_info);
+  info = PetscNew(Pipeline_colored_info);
   MPI_Comm_rank(mat->comm,&(info->rank));
   MPI_Comm_size(mat->comm,&size);
-  info->proc_colours = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(info->proc_colours);
-  PetscMemzero(info->proc_colours,size*sizeof(int));
+  info->proc_colors = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(info->proc_colors);
+  PetscMemzero(info->proc_colors,size*sizeof(int));
 
-  /* colouring */
+  /* coloring */
   {
     Mat_MPIAIJ  *Aij = (Mat_MPIAIJ *) mat->data;
     int *owners = Aij->rowners, *touch = Aij->garray;
     int ntouch = ((Mat_SeqAIJ *)Aij->B->data)->n;
     int *conn,*colr;
-    int *colours = info->proc_colours, base = info->rank*size;
+    int *colors = info->proc_colors, base = info->rank*size;
     int p,e;
 
     /* allocate connectivity matrix */
@@ -553,16 +553,16 @@ int PipelineMulticolourSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
     MPI_Allgather(conn+base,size,MPI_INT,conn,size,MPI_INT,mat->comm);
 
     base = size;
-    /*PetscPrintf(mat->comm,"Colouring: 0->0");*/
+    /*PetscPrintf(mat->comm,"Coloring: 0->0");*/
     for (p=1; p<size; p++) {
       int q,hi=-1,nc=0;
       PetscMemzero(colr,size*sizeof(int));
-      for (q=0; q<p; q++) { /* inspect colours of all connect previous procs */
+      for (q=0; q<p; q++) { /* inspect colors of all connect previous procs */
 	if (conn[base+q] /* should be tranposed! */) {
-	  if (!colr[colours[q]]) {
+	  if (!colr[colors[q]]) {
 	    nc++;
-	    colr[colours[q]] = 1;
-	    if (colours[q]>hi) hi = colours[q];
+	    colr[colors[q]] = 1;
+	    if (colors[q]>hi) hi = colors[q];
 	  }
 	}
       } 
@@ -570,8 +570,8 @@ int PipelineMulticolourSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 	nc = 0;
 	while (colr[nc]) nc++;
       }
-      colours[p] = nc;
-      /*PetscPrintf(mat->comm,", %d->%d",p,colours[p]);*/
+      colors[p] = nc;
+      /*PetscPrintf(mat->comm,", %d->%d",p,colors[p]);*/
       base = base+size;
     }
     /*PetscPrintf(mat->comm,"\n");*/
