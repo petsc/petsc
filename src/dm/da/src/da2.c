@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.45 1996/04/14 02:53:01 curfman Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.46 1996/04/17 16:38:03 curfman Exp curfman $";
 #endif
  
 #include "daimpl.h"    /*I   "da.h"   I*/
@@ -139,7 +139,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
   int           xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count,flg;
   int           s_x,s_y; /* s proportionalized to w */
-  int           *gA,*gB,*gAall,*gBall,ict,x_base,ldim,gdim;
+  int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim;
   DA            da;
   Vec           local,global;
   VecScatter    ltog,gtol;
@@ -172,7 +172,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (M < m) SETERRQ(1,"DACreate2d:Partition in x direction is too fine!");
   if (N < n) SETERRQ(1,"DACreate2d:Partition in y direction is too fine!");
 
-  /* determine local owned region */
+  /* determine locally owned region */
   x = M/m + ((M % m) > (rank % m));
   y = N/n + ((N % n) > (rank/m));
 
@@ -205,7 +205,6 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   }
 
   /* Resize all X parameters to reflect w */
-  x_base = x;
   x   *= w;
   xs  *= w;
   xe  *= w;
@@ -634,7 +633,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   for (j=ys; j<ye; j++) {
     for (i=xs; i<xe; i++) {
       /* gA = global number for 1 proc; gB = current global number */
-      gA[ict] = i+j*x_base;
+      gA[ict] = i + j*M*w;
       gB[ict] = start + ict;
       ict++;
     }
@@ -642,7 +641,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   /* Broadcast the orderings */
   MPI_Allgatherv(gA,ldim,MPI_INT,gAall,ldims,bases,MPI_INT,comm);
   MPI_Allgatherv(gB,ldim,MPI_INT,gBall,ldims,bases,MPI_INT,comm);
-  for (i=0; i<gdim; i++) da->gtog1[gAall[i]] = gBall[i];
+  for (i=0; i<gdim; i++) da->gtog1[gBall[i]] = gAall[i];
   PetscFree(gA); PetscFree(bases);
 
   /* Create discrete function shell and associate with vectors in DA */
