@@ -112,6 +112,9 @@
 #define matsetvaluesstencil_             matsetvaluesstencil
 #endif
 
+/* The following variables have to be declared outsize EXTERN_C stuff - otherwise MS compilers are unhappy */
+extern int *uglyrmapd,*uglyrmapo;
+
 EXTERN_C_BEGIN
 
 void PETSC_STDCALL matsettype_(Mat *x,CHAR type_name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
@@ -621,8 +624,6 @@ void PETSC_STDCALL matzerorowslocal_(Mat *mat,IS *is,PetscScalar *diag,int *ierr
 #define matmpibaijdiagonalscalelocal_    matmpibaijdiagonalscalelocal
 #define matdiagonalscalelocal_           matdiagonalscalelocal
 #endif
-
-extern int *uglyrmapd,*uglyrmapo;
 
 void matmpibaijdiagonalscalelocal_(Mat *A,Vec *scale,int *ierr)
 {
