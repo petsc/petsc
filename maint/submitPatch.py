@@ -2,76 +2,14 @@
 import os
 import sys
 
-class Help:
-  def __init__(self, argDB):
-    '''Creates a dictionary "sections" whose keys are section names, and values are a tuple of (ordinal, nameList)'''
-    self.argDB    = argDB
-    self.sections = {}
-    self.title    = 'Help'
-    return
-
-  #def setTitle(self, title): self.__title = title
-  #def getTitle(self, title): return self.__title
-  #def delTitle(self, title): del self.__title
-  #title = property(title, getTitle, setTitle, delTitle, 'Title of the Help Menu')
-
-  def getArgName(self, name):
-    #return name.split('=')[0].strip('-')
-    argName = name.split('=')[0]
-    while argName[0] == '-': argName = argName[1:]
-    return argName
-
-  def addOption(self, section, name, type):
-    if section in self.sections:
-      if name in self.sections[section][1]:
-        raise RuntimeError('Duplicate configure option '+name+' in section '+section)
-    else:
-      self.sections[section] = (len(self.sections), [])
-    self.sections[section][1].append(name)
-    self.argDB.setType(self.getArgName(name), type, forceLocal = 1)
-    return
-
-  def printBanner(self):
-    import sys
-
-    print self.title
-    for i in range(len(self.title)): sys.stdout.write('-')
-    print
-    return
-
-  def getTextSizes(self):
-    '''Returns the maximum name and description lengths'''
-    nameLen = 1
-    descLen = 1
-    for section in self.sections:
-      nameLen = max([nameLen, max(map(len, self.sections[section][1]))+1])
-      descLen = max([descLen, max(map(lambda a: len(self.argDB.getType(self.getArgName(a)).help), self.sections[section][1]))+1])
-    return (nameLen, descLen)
-
-  def output(self):
-    self.printBanner()
-    (nameLen, descLen) = self.getTextSizes()
-    format    = '  -%-'+str(nameLen)+'s: %s'
-    formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  current: %s'
-    items = self.sections.items()
-    items.sort(lambda a, b: a[1][0].__cmp__(b[1][0]))
-    for item in items:
-      print item[0]+':'
-      for name in item[1][1]:
-        argName = self.getArgName(name)
-        type    = self.argDB.getType(argName)
-        if argName in self.argDB:
-          print formatDef % (name, type.help, str(self.argDB[argName]))
-        else:
-          print format % (name, type.help)
-    return
-
 class Patch (object):
   def __init__(self, clArgs = None, argDB = None):
+    import help
+
     self.argDB      = self.setupArgDB(clArgs, argDB)
     self.root       = os.getcwd()
     self.logFile    = sys.stdout
-    self.help       = Help(self.argDB)
+    self.help       = help.Help(self.argDB)
     self.help.title = 'Patch Submission Help'
     self.checkPetscRoot(self.root)
     self.setupArguments(self.clArgs)
@@ -89,21 +27,21 @@ class Patch (object):
   def setupArguments(self, clArgs = None):
     import nargs
 
-    self.help.addOption('Main', 'help', nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
-    self.help.addOption('Main', 'h',    nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
-    self.help.addOption('Actions', 'updateVersion',   nargs.ArgBool(None, 1, 'Update petscversion.h'))
-    self.help.addOption('Actions', 'pushChange',      nargs.ArgBool(None, 1, 'Push changes'))
-    self.help.addOption('Actions', 'makePatch',       nargs.ArgBool(None, 1, 'Construct the patch for Petsc'))
-    self.help.addOption('Actions', 'makeMasterPatch', nargs.ArgBool(None, 1, 'Construct the master patch for Petsc'))
-    self.help.addOption('Actions', 'integratePatch',  nargs.ArgBool(None, 1, 'Integrate changes into the Petsc development repository'))
-    self.help.addOption('Actions', 'updateWeb',       nargs.ArgBool(None, 1, 'Update the patches web page'))
+    self.help.addArgument('Main', 'help', nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
+    self.help.addArgument('Main', 'h',    nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
+    self.help.addArgument('Actions', 'updateVersion',   nargs.ArgBool(None, 1, 'Update petscversion.h'))
+    self.help.addArgument('Actions', 'pushChange',      nargs.ArgBool(None, 1, 'Push changes'))
+    self.help.addArgument('Actions', 'makePatch',       nargs.ArgBool(None, 1, 'Construct the patch for Petsc'))
+    self.help.addArgument('Actions', 'makeMasterPatch', nargs.ArgBool(None, 1, 'Construct the master patch for Petsc'))
+    self.help.addArgument('Actions', 'integratePatch',  nargs.ArgBool(None, 1, 'Integrate changes into the Petsc development repository'))
+    self.help.addArgument('Actions', 'updateWeb',       nargs.ArgBool(None, 1, 'Update the patches web page'))
     patchDir = os.path.join('/mcs', 'ftp', 'pub', 'petsc', 'patches')
     if not os.path.isdir(patchDir): patchDir = None
-    self.help.addOption('Variables', 'patchDir=<dir>', nargs.ArgDir(None, patchDir, 'The directory containing both the patch and master patch files'))
+    self.help.addArgument('Variables', 'patchDir=<dir>', nargs.ArgDir(None, patchDir, 'The directory containing both the patch and master patch files'))
     # Variables necessary when some actions are excluded
-    self.help.addOption('Variables for missing actions', 'version=<num>',         nargs.Arg(None, None, 'The version number being patched (defined in updateVersion), e.g. 2.1.0', isTemporary = 1))
-    self.help.addOption('Variables for missing actions', 'patchNum=<num>',        nargs.ArgInt(None, None, 'The patch number (defined in updateVersion), e.g. 1', min = 1, isTemporary = 1))
-    self.help.addOption('Variables for missing actions', 'changeSets=[<num>...]', nargs.Arg(None, None, 'The ChangeSets which were pushed (defined in pushChange), e.g. 1.1052', isTemporary = 1))
+    self.help.addArgument('Variables for missing actions', 'version=<num>',         nargs.Arg(None, None, 'The version number being patched (defined in updateVersion), e.g. 2.1.0', isTemporary = 1))
+    self.help.addArgument('Variables for missing actions', 'patchNum=<num>',        nargs.ArgInt(None, None, 'The patch number (defined in updateVersion), e.g. 1', min = 1, isTemporary = 1))
+    self.help.addArgument('Variables for missing actions', 'changeSets=[<num>...]', nargs.Arg(None, None, 'The ChangeSets which were pushed (defined in pushChange), e.g. 1.1052', isTemporary = 1))
 
     self.argDB.insertArgs(clArgs)
     return

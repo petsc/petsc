@@ -16,11 +16,12 @@ class Configure(config.base.Configure):
     return
 
   def configureHelp(self, help):
-    help.addOption('MPI', '-with-mpi', 'Use MPI')
-    help.addOption('MPI', '-with-mpi-dir=<root dir>', 'Specify the root directory of the MPI installation')
-    help.addOption('MPI', '-with-mpi-include=<dir>', 'The directory containing mpi.h')
-    help.addOption('MPI', '-with-mpi-lib=<lib>', 'The MPI library or list of libraries')
-    help.addOption('MPI', '-with-mpirun=<prog>', 'The utility used to launch MPI jobs')
+    import nargs
+    help.addArgument('MPI', '-with-mpi',                nargs.Arg(None, None, 'Use MPI'))
+    help.addArgument('MPI', '-with-mpi-dir=<root dir>', nargs.Arg(None, None, 'Specify the root directory of the MPI installation'))
+    help.addArgument('MPI', '-with-mpi-include=<dir>',  nargs.Arg(None, None, 'The directory containing mpi.h'))
+    help.addArgument('MPI', '-with-mpi-lib=<lib>',      nargs.Arg(None, None, 'The MPI library or list of libraries'))
+    help.addArgument('MPI', '-with-mpirun=<prog>',      nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     return
 
   def checkLib(self, fullLib):

@@ -63,49 +63,31 @@ class Configure(config.base.Configure):
   def configureHelp(self, help):
     import nargs
 
-    help.addOption('PETSc', 'PETSC_DIR', 'The root directory of the PETSc installation')
-    help.addOption('PETSc', 'PETSC_ARCH', 'The machine architecture')
-    help.addOption('PETSc', '-enable-debug', 'Activate debugging code in PETSc', nargs.ArgBool)
-    help.addOption('PETSc', '-enable-log', 'Activate logging code in PETSc', nargs.ArgBool)
-    help.addOption('PETSc', '-enable-stack', 'Activate manual stack tracing code in PETSc', nargs.ArgBool)
-    help.addOption('PETSc', '-enable-dynamic', 'Build dynamic libraries for PETSc', nargs.ArgBool)
-    help.addOption('PETSc', '-enable-fortran-kernels', 'Use Fortran for linear algebra kernels', nargs.ArgBool)
-    help.addOption('PETSc', 'optionsModule=<module name>', 'The Python module used to determine compiler options and versions')
-    help.addOption('PETSc', 'C_VERSION', 'The version of the C compiler')
-    help.addOption('PETSc', 'CFLAGS_g', 'Flags for the C compiler with BOPT=g')
-    help.addOption('PETSc', 'CFLAGS_O', 'Flags for the C compiler with BOPT=O')
-    help.addOption('PETSc', 'CXX_VERSION', 'The version of the C++ compiler')
-    help.addOption('PETSc', 'CXXFLAGS_g', 'Flags for the C++ compiler with BOPT=g')
-    help.addOption('PETSc', 'CXXFLAGS_O', 'Flags for the C++ compiler with BOPT=O')
-    help.addOption('PETSc', 'F_VERSION', 'The version of the Fortran compiler')
-    help.addOption('PETSc', 'FFLAGS_g', 'Flags for the Fortran compiler with BOPT=g')
-    help.addOption('PETSc', 'FFLAGS_O', 'Flags for the Fortran compiler with BOPT=O')
-    help.addOption('PETSc', '-with-libtool', 'Specify that libtool should be used for compiling and linking', nargs.ArgBool)
-    help.addOption('PETSc', '-with-make', 'Specify make')
-    help.addOption('PETSc', '-with-ranlib', 'Specify ranlib')
+    help.addArgument('PETSc', 'PETSC_DIR',                   nargs.Arg(None, None, 'The root directory of the PETSc installation'))
+    help.addArgument('PETSc', 'PETSC_ARCH',                  nargs.Arg(None, None, 'The machine architecture'))
+    help.addArgument('PETSc', '-enable-debug',               nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
+    help.addArgument('PETSc', '-enable-log',                 nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
+    help.addArgument('PETSc', '-enable-stack',               nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
+    help.addArgument('PETSc', '-enable-dynamic',             nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
+    help.addArgument('PETSc', '-enable-fortran-kernels',     nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
+    help.addArgument('PETSc', 'optionsModule=<module name>', nargs.Arg(None, None, 'The Python module used to determine compiler options and versions'))
+    help.addArgument('PETSc', 'C_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the C compiler'))
+    help.addArgument('PETSc', 'CFLAGS_g',                    nargs.Arg(None, '-g',      'Flags for the C compiler with BOPT=g'))
+    help.addArgument('PETSc', 'CFLAGS_O',                    nargs.Arg(None, '-O',      'Flags for the C compiler with BOPT=O'))
+    help.addArgument('PETSc', 'CXX_VERSION',                 nargs.Arg(None, 'Unknown', 'The version of the C++ compiler'))
+    help.addArgument('PETSc', 'CXXFLAGS_g',                  nargs.Arg(None, '-g',      'Flags for the C++ compiler with BOPT=g'))
+    help.addArgument('PETSc', 'CXXFLAGS_O',                  nargs.Arg(None, '-O',      'Flags for the C++ compiler with BOPT=O'))
+    help.addArgument('PETSc', 'F_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the Fortran compiler'))
+    help.addArgument('PETSc', 'FFLAGS_g',                    nargs.Arg(None, '-g',      'Flags for the Fortran compiler with BOPT=g'))
+    help.addArgument('PETSc', 'FFLAGS_O',                    nargs.Arg(None, '-O',      'Flags for the Fortran compiler with BOPT=O'))
+    help.addArgument('PETSc', '-with-libtool',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
+    help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make',   'Specify make'))
+    help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, 'ranlib', 'Specify ranlib'))
 
-    self.framework.argDB['enable-debug']           = 1
-    self.framework.argDB['enable-log']             = 1
-    self.framework.argDB['enable-stack']           = 1
-    self.framework.argDB['enable-dynamic']         = 1
-    self.framework.argDB['enable-fortran-kernels'] = 0
-    self.framework.argDB['C_VERSION']              = 'Unknown'
-    self.framework.argDB['CFLAGS_g']               = '-g'
-    self.framework.argDB['CFLAGS_O']               = '-O'
-    self.framework.argDB['CXX_VERSION']            = 'Unknown'
-    self.framework.argDB['CXXFLAGS_g']             = '-g'
-    self.framework.argDB['CXXFLAGS_O']             = '-O'
-    self.framework.argDB['F_VERSION']              = 'Unknown'
-    self.framework.argDB['FFLAGS_g']               = '-g'
-    self.framework.argDB['FFLAGS_O']               = '-O'
-    self.framework.argDB['PETSCFLAGS']             = ''
-    self.framework.argDB['COPTFLAGS']              = ''
-    self.framework.argDB['FOPTFLAGS']              = ''
-    self.framework.argDB['with-libtool']           = 0
-    self.framework.argDB['with-make']              = 'make'
-    self.framework.argDB['with-ranlib']            = 'ranlib'
-
-    self.framework.argDB['BOPT'] = 'O'
+    self.framework.argDB['PETSCFLAGS'] = ''
+    self.framework.argDB['COPTFLAGS']  = ''
+    self.framework.argDB['FOPTFLAGS']  = ''
+    self.framework.argDB['BOPT']       = 'O'
     return
 
   def defineAutoconfMacros(self):
