@@ -23,7 +23,7 @@ class Configure(config.base.Configure):
       if not self.getLinker() == self.getCompiler(): desc.append('  C++ Linker:         '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
     if 'FC' in self.framework.argDB:
-      self.pushLanguage('F77')
+      self.pushLanguage('FC')
       desc.append('  Fortran Compiler:   '+self.getCompiler()+' '+self.getCompilerFlags())
       if not self.getLinker() == self.getCompiler(): desc.append('  Fortran Linker:     '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
@@ -425,13 +425,13 @@ class Configure(config.base.Configure):
       try:
         if self.getExecutable(compiler, resultName = 'FC'):
           self.framework.argDB['FC'] = self.FC
-          self.checkCompiler('F77')
+          self.checkCompiler('FC')
           if self.framework.argDB['with-64-bit-pointers']:
             if Configure.isGNU(self.CC):
               raise RuntimeError('Cannot handle 64 bit with gnu compilers yet')
             else:
               if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
-                self.pushLanguage('F77')
+                self.pushLanguage('FC')
                 self.addCompilerFlag('-xarch=v9')
                 self.popLanguage()
           break
@@ -468,7 +468,7 @@ class Configure(config.base.Configure):
     if 'CXX' in self.framework.argDB:
       languages.append('C++')
     if 'FC' in self.framework.argDB:
-      languages.append('F77')
+      languages.append('FC')
     for language in languages:
       flag = None
       self.pushLanguage(language)
@@ -506,8 +506,8 @@ class Configure(config.base.Configure):
     if 'FC' in self.framework.argDB:
       self.addArgumentSubstitution('FC', 'FC')
       self.addArgumentSubstitution('FFLAGS', 'FFLAGS')
-      if not self.F77SharedLinkerFlag is None:
-        self.addMakeMacro('F77_LINKER_SLFLAG', self.F77SharedLinkerFlag)
+      if not self.FCSharedLinkerFlag is None:
+        self.addMakeMacro('FC_LINKER_SLFLAG', self.FCSharedLinkerFlag)
     else:
       self.addSubstitution('FC', '')
     self.addArgumentSubstitution('LDFLAGS', 'LDFLAGS')

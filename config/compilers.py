@@ -90,7 +90,7 @@ class Configure(config.base.Configure):
 
   def checkFortranTypeSizes(self):
     '''Check whether real*8 is supported and suggest flags which will allow support'''
-    self.pushLanguage('F77')
+    self.pushLanguage('FC')
     # Check whether the compiler (ifc) bitches about real*8, if so try using -w90 -w to eliminate bitch
     (output, error, returnCode) = self.outputCompile('', '      real*8 variable', 1)
     if (output+error).find('Type size specifiers are an extension to standard Fortran 95') >= 0:
@@ -141,8 +141,8 @@ class Configure(config.base.Configure):
       os.rename(self.compilerObj,cobj)
       self.popLanguage()
 
-      # Link each test object against F77 driver.  If successful, then mangling found.
-      self.pushLanguage('F77')
+      # Link each test object against Fortran driver.  If successful, then mangling found.
+      self.pushLanguage('FC')
       self.framework.argDB['LIBS'] += ' '+cobj
       if self.checkLink(None,'       call d1chk()\n'):
         self.fortranMangling = mangler
@@ -173,7 +173,7 @@ class Configure(config.base.Configure):
     self.popLanguage()
 
     #   Test against driver
-    self.pushLanguage('F77')
+    self.pushLanguage('FC')
     if self.checkLink(None,'       call d1_chk()\n'):
       self.fortranManglingDoubleUnderscore = 1
       self.logPrint('Fortran has funny g77 name mangling with double underscores', 4, 'compilers')
@@ -188,7 +188,7 @@ class Configure(config.base.Configure):
 
   def checkFortranPreprocessor(self):
     '''Determine if Fortran handles preprocessing properly'''
-    self.pushLanguage('F77')
+    self.pushLanguage('FC')
     # Does Fortran compiler need special flag for using CPP
     for flag in ['', '-cpp', '-xpp=cpp', '-F', '-Cpp', '-fpp', '-fpp:-m']:
       try:
@@ -235,7 +235,7 @@ class Configure(config.base.Configure):
       return
     oldFlags = self.framework.argDB['LDFLAGS']
     self.framework.argDB['LDFLAGS'] += ' -v'
-    self.pushLanguage('F77')
+    self.pushLanguage('FC')
     (output, returnCode) = self.outputLink('', '')
     self.framework.argDB['LDFLAGS'] = oldFlags
     self.popLanguage()
@@ -361,8 +361,8 @@ class Configure(config.base.Configure):
     # Change to string
     self.flibs = ''
     for lib in flibs:
-      if 'F77_LINKER_SLFLAG' in self.framework.argDB and lib.startswith('-L'):
-        self.flibs += ' '+self.framework.argDB['F77_LINKER_SLFLAG']+lib[2:]
+      if 'FC_LINKER_SLFLAG' in self.framework.argDB and lib.startswith('-L'):
+        self.flibs += ' '+self.framework.argDB['FC_LINKER_SLFLAG']+lib[2:]
       self.flibs += ' '+lib
     # Append run path
     if ldRunPath: self.flibs = ldRunPath+self.flibs
@@ -451,7 +451,7 @@ class Configure(config.base.Configure):
     if 'CXX' in self.framework.argDB:
       languages.append('C++')
     if 'FC' in self.framework.argDB:
-      languages.append('F77')
+      languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
       for testFlag in ['-PIC', '-fPIC', '-KPIC']:
@@ -492,7 +492,7 @@ class Configure(config.base.Configure):
       if self.cxxNamespace:
         self.addDefine('HAVE_CXX_NAMESPACE', 1)
     if 'FC' in self.framework.argDB:
-      self.pushLanguage('F77')
+      self.pushLanguage('FC')
       setattr(self, 'FC', self.argDB['FC'])
       setattr(self, self.getCompilerFlagsArg(), self.argDB[self.getCompilerFlagsArg()])
       setattr(self, self.getLinkerFlagsArg(), self.argDB[self.getLinkerFlagsArg()])

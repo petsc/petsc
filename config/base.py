@@ -253,7 +253,7 @@ class Configure(script.Script):
         if codeEnd is None:
           codeEnd   = ';\n  return 0;\n}\n'
         codeStr += codeBegin+body+codeEnd
-    elif language == 'F77':
+    elif language == 'FC':
       if not includes is None:
         codeStr = includes
       else:
@@ -343,7 +343,7 @@ class Configure(script.Script):
         flagsArg = 'CXX_CXXFLAGS'
       else:
         flagsArg = 'CXXFLAGS'
-    elif language == 'F77':
+    elif language == 'FC':
       flagsArg = 'FFLAGS'
     else:
       raise RuntimeError('Unknown language: '+language)
@@ -418,7 +418,7 @@ class Configure(script.Script):
       flagsArg = 'LDFLAGS'
     elif language in ['C++', 'Cxx']:
       flagsArg = 'LDFLAGS'
-    elif language == 'F77':
+    elif language == 'FC':
       flagsArg = 'LDFLAGS'
     else:
       raise RuntimeError('Unknown language: '+language)

@@ -93,7 +93,7 @@ class Configure(config.base.Configure):
 
   def checkFortranStar(self):
     '''Checks whether integer*4, etc. is handled in Fortran, and if not defines MISSING_FORTRANSTAR'''
-    self.pushLanguage('F77')
+    self.pushLanguage('FC')
     body = '        integer*4 i\n        real*8 d\n'
     if not self.checkCompile('', body):
       self.addDefine('MISSING_FORTRANSTAR', 1)
@@ -102,7 +102,7 @@ class Configure(config.base.Configure):
 
   def checkFortranDReal(self):
     '''Checks whether dreal is provided in Fortran, and if not defines MISSING_DREAL'''
-    self.pushLanguage('F77')
+    self.pushLanguage('FC')
     if not self.checkLink('', 'double precision d d = dreal(3.0)'):
       self.addDefine('MISSING_DREAL', 1)
     self.popLanguage()
