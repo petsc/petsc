@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.44 1995/09/04 21:55:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.45 1995/09/06 03:05:43 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -626,7 +626,7 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
         diag = mat->diag[d];
         len  = mat->bdlen[d];
         if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
-          for (i=0; i<len; j++) {
+          for (i=0; i<len; i++) {
 #if defined(PETSC_COMPLEX)
             tmp[i] += abs(dv[i]); 
 #else
@@ -634,7 +634,7 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
 #endif
           }
         } else {	/* upper triangle: row = loc, col = loc-diag */
-          for (i=0; i<len; j++) {
+          for (i=0; i<len; i++) {
 #if defined(PETSC_COMPLEX)
             tmp[i-diag] += abs(dv[i]); 
 #else
@@ -692,7 +692,7 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
         diag = mat->diag[d];
         len  = mat->bdlen[d];
         if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
-          for (i=0; i<len; j++) {
+          for (i=0; i<len; i++) {
 #if defined(PETSC_COMPLEX)
             tmp[i+diag] += abs(dv[i]); 
 #else
@@ -700,7 +700,7 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
 #endif
           }
         } else {	/* upper triangle: row = loc, col = loc-diag */
-          for (i=0; i<len; j++) {
+          for (i=0; i<len; i++) {
 #if defined(PETSC_COMPLEX)
             tmp[i] += abs(dv[i]); 
 #else

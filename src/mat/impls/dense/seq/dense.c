@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.53 1995/09/04 17:24:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.54 1995/09/06 03:05:24 bsmith Exp curfman $";
 #endif
 
 /*
@@ -415,24 +415,38 @@ static int MatDestroy_Dense(PetscObject obj)
 static int MatTranspose_Dense(Mat matin,Mat *matout)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
-  int    k,j;
-  Scalar *v = mat->v, tmp;
+  int       k, j, m, n;
+  Scalar    *v, tmp;
 
+  v = mat->v; m = mat->m; n = mat->n;
   if (!matout) { /* in place transpose */
-    if (mat->m != mat->n) {
-      SETERRQ(1,"MatTranspose_Dense:Cannot transpose rectangular matrix");
-    }
-    for ( j=0; j<mat->m; j++ ) {
+    if (m != n) SETERRQ(1,
+      "MatTranspose_Dense: Cannot transpose rectangular matrix in place");
+    for ( j=0; j<m; j++ ) {
       for ( k=0; k<j; k++ ) {
-        tmp = v[j + k*mat->n]; 
-        v[j + k*mat->n] = v[k + j*mat->n];
-        v[k + j*mat->n] = tmp;
+        tmp = v[j + k*n]; 
+        v[j + k*n] = v[k + j*n];
+        v[k + j*n] = tmp;
       }
     }
   }
-  else {
-    SETERRQ(1,"MatTranspose_Dense:not out of place transpose yet");
-  }
+  else { /* out-of-place transpose */
+    int ierr;
+    Mat tmat;
+    Mat_Dense *tmatd;
+    Scalar *v2;
+    ierr = MatCreateSequentialDense(matin->comm,mat->n,mat->m,&tmat); CHKERRQ(ierr);
+    tmatd = (Mat_Dense *) tmat->data;
+    v = mat->v; v2 = tmatd->v; m = tmatd->m; n = tmatd->n;
+    for ( j=0; j<n; j++ ) {
+      for ( k=0; k<m; k++ ) {
+        v2[j + k*n] = v[k + j*m];
+      }
+    }
+    ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    *matout = tmat;
+  } 
   return 0;
 }
 
@@ -550,7 +564,7 @@ static int MatSetOption_Dense(Mat aijin,MatOption op)
   return 0;
 }
 
-static int MatZero_Dense(Mat A)
+static int MatZeroEntries_Dense(Mat A)
 {
   Mat_Dense *l = (Mat_Dense *) A->data;
   PETSCMEMSET(l->v,0,l->m*l->n*sizeof(Scalar));
@@ -582,6 +596,13 @@ static int MatGetSize_Dense(Mat matin,int *m,int *n)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   *m = mat->m; *n = mat->n;
+  return 0;
+}
+
+static int MatGetOwnershipRange_Dense(Mat matin,int *m,int *n)
+{
+  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  *m = 0; *n = mat->m;
   return 0;
 }
 
@@ -656,10 +677,10 @@ static struct _MatOps MatOps = {MatInsert_Dense,
        MatGetInfo_Dense,MatEqual_Dense,
        MatGetDiagonal_Dense,MatScale_Dense,MatNorm_Dense,
        0,0,
-       0, MatSetOption_Dense,MatZero_Dense,MatZeroRows_Dense,0,
+       0, MatSetOption_Dense,MatZeroEntries_Dense,MatZeroRows_Dense,0,
        MatLUFactorSymbolic_Dense,MatLUFactorNumeric_Dense,
        MatCholeskyFactorSymbolic_Dense,MatCholeskyFactorNumeric_Dense,
-       MatGetSize_Dense,MatGetSize_Dense,0,
+       MatGetSize_Dense,MatGetSize_Dense,MatGetOwnershipRange_Dense,
        0,0,MatGetArray_Dense,0,0,
        MatGetSubMatrix_Dense,MatGetSubMatrixInPlace_Dense,
        MatCopyPrivate_Dense};
