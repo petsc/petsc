@@ -1,15 +1,16 @@
 #! /bin/csh
 
-set TMP=/sandbox/petsc/petsc-dev
 set MACH=blaze
-set ARCH=solaris_gnu
+set USR=petsc
+set LOC=/sandbox/petsc/petsc-dev
+set CONF=solaris_gnu
 #
 set day=`date | cut -f1 -d" "`
 
 if ($day == Sun || $day == Wed $day == Sat) then
-  set ARCH=solaris_uni
+  set CONF=solaris_uni
 else if ($day == Thu || $day == Fri) then
-  set ARCH=solaris64
+  set CONF=solaris64
 endif
 
 

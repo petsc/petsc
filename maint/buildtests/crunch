@@ -1,5 +1,0 @@
-#! /bin/csh
-
-set TMP=/sandbox/petsc/petsc-dev
-set MACH=crunch
-set ARCH=linux-gnu

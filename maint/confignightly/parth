@@ -1,0 +1,18 @@
+#! /bin/csh
+
+set MACH=parth
+set USR=balay
+set LOC=/home/balay/petsc-dev
+set CONF=win32_gnu
+
+set day=`date | cut -f1 -d" "`
+
+if ($day == Tue || $day == Thu) then
+  set CONF=win32_borland
+endif
+
+
+
+
+
+

@@ -1,0 +1,6 @@
+#! /bin/csh
+#
+set MACH=spark
+set USR=petsc
+set LOC=/sandbox/petsc/petsc-dev
+set CONF=solaris2.9

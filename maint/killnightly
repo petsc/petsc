@@ -4,15 +4,13 @@
 # Example usage: killnightly solaris
 #
 #
-set DATAFILESPATH=/home/petsc/datafiles
-set NICE=''
-set APPEND='>>&'
-set RSH='ssh -1'
-set RCP='scp -q -B -oProtocol=1'
-set CONFIGURE='no'
-set ARCH=$1
 set dir=`dirname $0`
-source $dir/buildtests/$1
 
-$RSH $MACH -n "zapall"
+foreach CONF ($*)
+  set SSH=ssh
+  source $dir/confignightly/$1
+
+  $SSH $USR@$MACH -n "zapall" &
+end
+wait
 
