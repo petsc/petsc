@@ -133,6 +133,10 @@ ex15: ex15.o  chkopts
 	-$(CLINKER) -o ex15 ex15.o  $(PETSC_LIB)
 	$(RM) ex15.o
 
+ex15f: ex15f.o  chkopts
+	-$(FLINKER) -o ex15f ex15f.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex15f.o
+
 ex16: ex16.o  chkopts
 	-$(CLINKER) -o ex16 ex16.o  $(PETSC_LIB)
 	$(RM) ex16.o
@@ -311,6 +315,12 @@ runex15:
 	   if (diff output/ex15_1.out ex15_1.tmp) then true; \
 	   else echo "Possible problem with ex15_1, diffs above"; fi; \
 	   $(RM) -f ex15_1.tmp
+
+runex15f:
+	-@$(MPIRUN) -np 2 ex15f -sles_view -user_defined_pc > ex15f_1.tmp 2>&1; \
+	   if (diff output/ex15f_1.out ex15f_1.tmp) then true; \
+	   else echo "Possible problem with ex15f_1, diffs above"; fi; \
+	   $(RM) -f ex15f_1.tmp
 
 runex16:
 	-@$(MPIRUN) -np 2 ex16 -ntimes 4 > ex16_1.tmp 2>&1; \
