@@ -13,7 +13,7 @@ Additional Capabilities that PETSc Needs:
   * Make configure fully functional in PETSc 2.0
       - document usage somewhere
       - needs to handle:  set PETSCFLAGS
-         - complex numbers: DUSES_TEMPLATED_COMPLEX
+         - complex numbers: -DUSES_TEMPLATED_COMPLEX
          - etc.
 
   - Finish users manual:
