@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcnull.c,v 1.1 1995/12/15 21:03:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcnull.c,v 1.2 1995/12/21 18:30:54 bsmith Exp bsmith $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -81,9 +81,6 @@ int PCNullSpaceRemove(PCNullSpace sp,Vec vec)
     ierr = VecGetSize(vec,&N); CHKERRQ(ierr);
     sum  = -sum/N;
     ierr = VecShift(&sum,vec); CHKERRQ(ierr);
-VecSum(vec,&sum);
-printf("sume of elemnts %g\n",sum);
-
   }
 
   for ( j=0; j<n; j++ ) {
