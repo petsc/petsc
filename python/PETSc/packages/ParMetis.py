@@ -168,11 +168,15 @@ class Configure(config.base.Configure):
 
       packages = self.framework.argDB['with-external-packages-dir']
       if hasattr(self.sourceControl, 'bk'):
+        self.logPrint('=================================================================================', debugSection='screen')
         self.logPrint("Retrieving ParMetis; this may take several minutes\n", debugSection='screen')
+        self.logPrint('=================================================================================', debugSection='screen')        
         config.base.Configure.executeShellCommand('bk clone bk://parmetis.bkbits.net/ParMetis-dev '+os.path.join(packages,'ParMetis'), log = self.framework.log, timeout= 600.0)
       else:
         try:
+          self.logPrint('=================================================================================', debugSection='screen')
           self.logPrint("Retrieving ParMetis; this may take several minutes\n", debugSection='screen')
+          self.logPrint('=================================================================================', debugSection='screen')
           urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/parmetis.tar.gz', os.path.join(packages, 'parmetis.tar.gz'))
         except Exception, e:
           raise RuntimeError('Error downloading ParMetis: '+str(e))
@@ -212,7 +216,9 @@ class Configure(config.base.Configure):
       oldArgsStr = ''
     if not oldArgsStr == argsStr:
       self.framework.log.write('Have to rebuild ParMetis oldargs = '+oldArgsStr+' new args '+argsStr+'\n')
+      self.logPrint('=================================================================================', debugSection='screen')
       self.logPrint("Configuring and compiling ParMetis; this may take several minutes\n", debugSection='screen')
+      self.logPrint('=================================================================================', debugSection='screen')
       try:
         import logging
         import sys
