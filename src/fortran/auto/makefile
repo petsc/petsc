@@ -11,8 +11,9 @@ SOURCEC  = vectorf.c indexf.c da2f.c drawf.c \
            signalf.c fpf.c trf.c archf.c \
            comsortf.c destroyf.c  \
            cgeigf.c chebyf.c gmresf.c richf.c \
-           axisf.c lgf.c axpyf.c zerodiagf.c\
-           vinvf.c vscatf.c  cmeshf.c iluf.c
+           axisf.c lgf.c axpyf.c zerodiagf.c \
+           vinvf.c vscatf.c  cmeshf.c iluf.c \
+           bjacobif.c luf.c sorf.c 
 SOURCEF  =
 SOURCEH  = 
 OBJSC    = vectorf.o indexf.o da2f.o drawf.o \
@@ -22,8 +23,9 @@ OBJSC    = vectorf.o indexf.o da2f.o drawf.o \
            signalf.o fpf.o trf.o archf.o \
            comsortf.o destroyf.o \
            cgeigf.o chebyf.o gmresf.o richf.o \
-           axisf.o lgf.o axpyf.o zerodiagf.o\
-           vinvf.o vscatf.o  cmeshf.o iluf.o
+           axisf.o lgf.o axpyf.o zerodiagf.o \
+           vinvf.o vscatf.o  cmeshf.o iluf.o \
+           bjacobif.o luf.o sorf.o 
 OBJSF    =
 LIBBASE  = libpetscfortran
 MANSEC   = 1
