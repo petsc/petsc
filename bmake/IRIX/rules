@@ -1,19 +1,14 @@
-# $Id: base,v 1.29 1997/09/17 04:31:45 bsmith Exp $ 
+# $Id: base,v 1.1 1997/09/17 17:37:14 balay Exp balay $ 
 
 PARCH    = IRIX
-CC       = cc -32 -DPARCH_IRIX
-#
-# For IRIX version 5.* please use the following
-#
-#CC       = cc -32 -DPARCH_IRIX -DPARCH_IRIX5
-#
+CC       = cc -n32 -DPARCH_IRIX
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
 #
 CCV      = unknown
 #
-FC       = f77 -32
+FC       = f77 -n32
 AR       = ar
 RM       = rm -f
 #
@@ -26,8 +21,6 @@ SHELL    = /bin/sh
 #
 # -rpath is required to specify the location of any dynamic libraries
 # which are not found in the standard locations (/lib:/usr/lib:) etc
-#
-# On IRIX 5.3 remove the flags '-Wl,-woff,84,-woff,85'
 #
 CLINKER  = cc  -32 $(COPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
 FLINKER  = f77 -32 $(FOPTFLAGS) -Wl,-woff,84,-woff,85  -rpath $(LDIR):$(DYLIBPATH)
