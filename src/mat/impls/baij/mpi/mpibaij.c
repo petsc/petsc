@@ -1058,6 +1058,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIBAIJ(mat);CHKERRQ(ierr);
   }
+  b->compressedrow.use = PETSC_TRUE;
   ierr = MatAssemblyBegin(baij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode);CHKERRQ(ierr);
   

@@ -596,6 +596,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   PetscInt       fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax;
   PetscInt       m = A->m,*ip,N,*ailen = a->ilen,rmax = 0;
   PetscScalar    *aa = a->a,*ap;
+  PetscReal      ratio=0.9;
 
   PetscFunctionBegin;  
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -639,12 +640,19 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   A->info.nz_unneeded  = (double)fshift;
   a->rmax              = rmax;
 
-  /* check out for identical nodes. If found, use inode functions */
-  ierr = Mat_AIJ_CheckInode(A,(PetscTruth)(!fshift));CHKERRQ(ierr);
+  /* check for identical nodes. If found, use inode functions */
+  if (!a->inode.checked){ 
+    ierr = Mat_AIJ_CheckInode(A,(PetscTruth)(!fshift));CHKERRQ(ierr);
+  }
 
-  /* check out for zero rows. If found, use CompressedRow functions */
-  ierr = Mat_AIJ_CheckCompressedRow(A,(PetscTruth)(!fshift));CHKERRQ(ierr);
-
+  /* check for zero rows. If found a large number of nonzero rows, use CompressedRow functions */
+  if (!a->inode.use && !a->compressedrow.checked && a->compressedrow.use && fshift){ /* fshift=!samestructure??? */ 
+    ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr); 
+    if (a->compressedrow.use){
+      A->ops->mult    = MatMult_SeqAIJ_CompressedRow;
+      A->ops->multadd = MatMultAdd_SeqAIJ_CompressedRow; 
+    }
+  } 
   PetscFunctionReturn(0);
 }
 
@@ -927,6 +935,37 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqAIJ_CompressedRow"
+PetscErrorCode MatMult_SeqAIJ_CompressedRow(Mat A,Vec xx,Vec yy)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar    *x,*y,*aa,sum;
+  PetscInt       m,*rindex,nz,i,j,*aj,*ai;
+
+  PetscFunctionBegin;  
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+
+  m      = a->compressedrow.nrows;
+  ai     = a->compressedrow.i;
+  rindex = a->compressedrow.rindex;
+  for (i=0; i<m; i++){
+    nz  = ai[i+1] - ai[i]; 
+    aj  = a->j + ai[i];
+    aa  = a->a + ai[i];
+    sum = 0.0;
+    for (j=0; j<nz; j++) sum += (*aa++)*x[*aj++]; 
+    y[*rindex++] = sum;
+  }
+
+  PetscLogFlops(2*a->nz - m);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqAIJ"
 PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
@@ -965,6 +1004,45 @@ PetscScalar      sum;
   }
 #endif
   PetscLogFlops(2*a->nz);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  if (zz != yy) {
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Almost same code as the MatMult_SeqAij_CompressedRow() */
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_SeqAIJ_CompressedRow"
+PetscErrorCode MatMultAdd_SeqAIJ_CompressedRow(Mat A,Vec xx,Vec zz,Vec yy)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar    *x,*y,*z,*aa,sum;
+  PetscInt       m,*rindex,nz,i,j,*aj,*ai;
+
+  PetscFunctionBegin;  
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  if (zz != yy) {
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+  } else {
+    z = y;
+  }
+
+  m      = a->compressedrow.nrows;
+  ai     = a->compressedrow.i;
+  rindex = a->compressedrow.rindex;
+  for (i=0; i<m; i++){
+    nz  = ai[i+1] - ai[i]; 
+    aj  = a->j + ai[i];
+    aa  = a->a + ai[i];
+    sum = y[*rindex];
+    for (j=0; j<nz; j++) sum += (*aa++)*x[*aj++]; 
+    z[*rindex++] = sum;
+  }
+  PetscLogFlops(2*a->nz - m);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
@@ -1867,7 +1945,7 @@ PetscErrorCode MatPrintHelp_SeqAIJ(Mat A)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_no_inode: Do not use inodes\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_inode_limit <limit>: Set inode limit (max limit=5)\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_no_compressedrow: Do not use compressedrow\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_no_compressedrow: Do not use compressedrow\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2694,10 +2772,10 @@ PetscErrorCode MatCreate_SeqAIJ(Mat B)
   b->keepzeroedrows    = PETSC_FALSE;
   b->xtoy              = 0;
   b->XtoY              = 0;
-  b->compressedrow.use = PETSC_TRUE;
-  b->compressedrow.nrows = B->m;
-  b->compressedrow.i   = PETSC_NULL;
-  b->compressedrow.rindex = PETSC_NULL;
+  b->compressedrow.use     = PETSC_FALSE;
+  b->compressedrow.nrows   = B->m;
+  b->compressedrow.i       = PETSC_NULL;
+  b->compressedrow.rindex  = PETSC_NULL;
   b->compressedrow.checked = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);

@@ -43,7 +43,8 @@
   PetscInt         *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */      \
   Mat              XtoY;             /* used by MatAXPY() */                                         \
   PetscScalar      *idiag;           /* inverse of block diagonal  */                                \
-  PetscTruth       idiagvalid;       /* if above has correct/current values */
+  PetscTruth       idiagvalid;       /* if above has correct/current values */                       \
+  Mat_CompressedRow compressedrow;   /* use compressed row format */
 
 typedef struct {
   SEQBAIJHEADER

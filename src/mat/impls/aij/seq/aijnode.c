@@ -831,6 +831,7 @@ PetscErrorCode Mat_AIJ_CheckInode(Mat A,PetscTruth samestructure)
     A->ops->coloringpatch   = 0;
     a->inode.node_count     = 0;
     a->inode.size           = 0;
+    a->inode.use            = PETSC_FALSE;
     PetscLogInfo(A,"Mat_AIJ_CheckInode: Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);
   } else {
     A->ops->mult            = MatMult_SeqAIJ_Inode;
