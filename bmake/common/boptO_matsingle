@@ -1,4 +1,4 @@
-# $Id: common_O_matsingle,v 1.7 1999/08/19 18:02:25 balay Exp balay $ 
+# $Id: common_O_matsingle,v 1.8 1999/09/14 18:29:56 balay Exp balay $ 
 
 CC	       = ${C_CC}
 FC	       = ${C_FC}
@@ -8,6 +8,6 @@ CLINKER	       = ${C_CLINKER} ${COPTFLAGS} ${C_SH_LIB_PATH}
 FLINKER	       = ${C_FLINKER} ${FOPTFLAGS} ${F_SH_LIB_PATH}
 SYS_LIB	       = ${C_SYS_LIB}
 
-PETSCFLAGS     = ${O_PETSCFLAGS}  -DUSE_MAT_SINGLE
+PETSCFLAGS     = ${O_PETSCFLAGS}  -DPETSC_USE_MAT_SINGLE
 COPTFLAGS      = ${O_COPTFLAGS}
 FOPTFLAGS      = ${O_FOPTFLAGS}
