@@ -1,7 +1,7 @@
-# $Id: base,v 1.45 1998/04/28 20:21:19 balay Exp balay $ 
+# $Id: base,v 1.46 1998/10/05 19:11:17 balay Exp balay $ 
 
 PARCH    = freebsd
-CC       = /usr/local/gcc-2.7.2/bin/gcc
+CC       = gcc -fPIC
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then leave this blank.
@@ -12,7 +12,7 @@ CCV      = ${CC} --version
 # We use the f77 f2c that comes with freebsd, the -Nn1000 is required for
 # large Fortran files, you can increase the 1000 if need be.
 # 
-FC       = f77 -Nn1000
+FC       = f77 -Nn1000 -fPIC
 AR       = ar
 RM       = rm -f
 #
@@ -24,8 +24,8 @@ RM       = rm -f
 OMAKE    = make
 RANLIB   = ranlib
 SHELL    = /bin/sh
-CLINKER  = /usr/local/gcc-2.7.2/bin/gcc ${COPTFLAGS}
-FLINKER  = f77 ${FOPTFLAGS}
+CLINKER  = gcc ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+FLINKER  = f77 ${FOPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
 
 SYS_LIB  = 
 
@@ -41,59 +41,36 @@ libf: ${LIBNAME}(${OBJSF})
 #
 .F.f:
 	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
+	-${CC} -E -traditional-cpp -x c ${FCPPFLAGS} $*.F  > __$*.f
 .F.o:
 	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
+	-${CC} -E -traditional-cpp -x c ${FCPPFLAGS} $*.F  > __$*.f
 	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
 	-${RM} __$*.f
 
 .F.a:
 	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
+	-${CC} -E -traditional-cpp -x c ${FCPPFLAGS} $*.F  > __$*.f
 	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} __$*.f
 
-# SHARED LIBRARIES
-# To create PETSc libraires as shared libraries do the following:
-# 1. modify base, base.g_c++, base.O_c++, base.g_complex base.O_complex 
-# and add "-fPIC" flag for "gcc", "g++" as where CC is defined.
-# CC       = gcc -fPIC
-#
-# 2. Add the following target to "base"
-#SLSUFFIX = so.1.0
-#shared: chkopts_basic
-#	-@echo making shared libraries in ${LDIR} ;\
-#	cd ${LDIR}; \
-#	for LIBNAME in ${SHLIBS} ; \
-#	do  \
-#	  flag=""; \
-#	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-#              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-#	  else \
-#	      flag="true"; \
-#	  fi; \
-#	  if [ "$$flag" != "" ]; then \
-#	    echo "building $$LIBNAME.${SLSUFFIX}"; \
-#	    ${LD} -Bshareable -Bforcearchive -o $$LIBNAME.${SLSUFFIX} $$LIBNAME.a  > /dev/null 2>&1; \
-#	  fi; \
-#	done
-#
-#3. To make shared libs do in PETSC_DIR:
-#   make BOPT=g all fortran shared
-#   If the regular libraries are already built, you have to rebuild them.
-#
-#4. To build an example uisng petsc shared library do:
-#   cd petsc/src/sles/tutorials
-#   make BOPT=g ex5
-#
-#6. To run this example do:
-#   setenv LD_LIBRARY_PATH /*****/petsc/lib/libg/freebsd
-#   mpirun ex5
-#
-#  It is because of 6 that we don't automatically use shared libraries
-# under freebsd. Since that path has be changed depending on what 
-# version of the libraries, g, O, g_c++ etc you are using.
+SLSUFFIX = so.1.0
+shared: chkopts_basic
+	-@echo making shared libraries in ${LDIR} ;\
+	cd ${LDIR}; \
+	for LIBNAME in ${SHLIBS} ; \
+	do  \
+	  flag=""; \
+	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	  else \
+	      flag="true"; \
+	  fi; \
+	  if [ "$$flag" != "" ]; then \
+	    echo "building $$LIBNAME.${SLSUFFIX}"; \
+	    ${LD} -Bshareable -Bforcearchive -o $$LIBNAME.${SLSUFFIX} $$LIBNAME.a  > /dev/null 2>&1; \
+	  fi; \
+	done
 
 shared:
