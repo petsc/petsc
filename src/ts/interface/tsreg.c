@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.34 1998/04/03 23:16:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.35 1998/04/13 17:50:17 bsmith Exp curfman $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -15,35 +15,34 @@ int TSRegisterAllCalled = 0;
 /*@C
    TSSetType - Sets the method for the timestepping solver.  
 
-   Input Parameters:
-.  ts - the TS context
-.  method - a known method
-
    Collective on TS
 
-  Options Database Command:
-$ -ts_type  <method>
-$    Use -help for a list of available methods
-$    (for instance, euler)
+   Input Parameters:
++  ts - the TS context
+-  method - a known method
+
+   Options Database Command:
+.  -ts_type <method> - Sets the method; use -help for a list
+   of available methods (for instance, euler)
 
    Notes:
    See "petsc/include/ts.h" for available methods (for instance)
-$   TS_EULER
-$   TS_PVODE
-$   TS_BEULER
-$   TS_PSEUDO
+.  TS_EULER - Euler
+.  TS_PVODE - PVODE interface
+.  TS_BEULER - Backward Euler
+.  TS_PSEUDO - Pseudo-timestepping
 
-  Normally, it is best to use the TSSetFromOptions() command and
-  then set the TS type from the options database rather than by using
-  this routine.  Using the options database provides the user with
-  maximum flexibility in evaluating the many different solvers.
-  The TSSetType() routine is provided for those situations where it
-  is necessary to set the timestepping solver independently of the
-  command line or options database.  This might be the case, for example,
-  when the choice of solver changes during the execution of the
-  program, and the user's application is taking responsibility for
-  choosing the appropriate method.  In other words, this routine is
-  for the advanced user.
+   Normally, it is best to use the TSSetFromOptions() command and
+   then set the TS type from the options database rather than by using
+   this routine.  Using the options database provides the user with
+   maximum flexibility in evaluating the many different solvers.
+   The TSSetType() routine is provided for those situations where it
+   is necessary to set the timestepping solver independently of the
+   command line or options database.  This might be the case, for example,
+   when the choice of solver changes during the execution of the
+   program, and the user's application is taking responsibility for
+   choosing the appropriate method.  In other words, this routine is
+   for the advanced user.
 
 .keywords: TS, set, type
 @*/
@@ -105,13 +104,13 @@ int TSRegisterDestroy(void)
 /*@C
    TSGetType - Gets the TS method type (as a string).
 
+   Not Collective
+
    Input Parameter:
 .  ts - timestepper solver context
 
    Output Parameter:
 .  type - name of TS method
-
-   Not Collective
 
 .keywords: TS, timestepper, get, type, name
 @*/
@@ -130,13 +129,14 @@ int TSGetType(TS ts, TSType *type)
 /*@
    TSPrintHelp - Prints all options for the TS (timestepping) component.
 
+   Collective on TS
+
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
    Options Database Keys:
-$  -help, -h
-
-   Collective on TS
++  -help - Prints KSP options
+-  -h - Prints KSP options
 
 .keywords: TS, timestep, print, help
 
@@ -166,10 +166,10 @@ int TSPrintHelp(TS ts)
 /*@
    TSSetFromOptions - Sets various TS parameters from user options.
 
+   Collective on TS
+
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
-
-   Collective on TS
 
 .keywords: TS, timestep, set, options, database
 

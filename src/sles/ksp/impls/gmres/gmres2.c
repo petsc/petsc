@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres2.c,v 1.9 1998/04/03 23:13:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres2.c,v 1.10 1998/04/13 17:29:07 bsmith Exp curfman $";
 #endif
 #include <math.h>
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
@@ -10,14 +10,14 @@ static char vcid[] = "$Id: gmres2.c,v 1.9 1998/04/03 23:13:32 bsmith Exp bsmith 
     KSPGMRESSetRestart - Sets the number of search directions 
     for GMRES before restart.
 
-    Input Parameters:
-.   ksp - the iterative context
-.   max_k - the number of directions
-
     Collective on KSP
 
+    Input Parameters:
++   ksp - the iterative context
+-   max_k - the number of directions
+
     Options Database Key:
-$   -ksp_gmres_restart <max_k>
+.   -ksp_gmres_restart <max_k> - Sets max_k
 
     Note:
     The default value of max_k = 30.
@@ -43,30 +43,31 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
 #undef __FUNC__  
 #define __FUNC__ "KSPGMRESSetOrthogonalization" 
 /*@C
-  KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES.
-
-  Input Parameters:
-.   ksp   - iterative context obtained from KSPCreate
-.   fcn   - Orthogonalization function
+   KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES.
 
    Collective on KSP
 
-  Notes:
-  Several orthogonalization routines are predefined.
-$    KSPGMRESModifiedGramSchmidtOrthogonalization() - default.
+   Input Parameters:
++  ksp - iterative context obtained from KSPCreate
+-  fcn - Orthogonalization function
 
-$    KSPGMRESUnmodifiedGramSchmidtOrthogonalization() - 
+   Notes:
+   Several orthogonalization routines are predefined.
+
+   KSPGMRESModifiedGramSchmidtOrthogonalization() - default.
+
+   KSPGMRESUnmodifiedGramSchmidtOrthogonalization() - 
        NOT recommended; however, for some problems, particularly
        when using parallel distributed vectors, this may be
        significantly faster.
 
-$    KSPGMRESIROrthogonalization() - interative refinement
+   KSPGMRESIROrthogonalization() - iterative refinement
        version of KSPGMRESUnmodifiedGramSchmidtOrthogonalization(),
        which may be more numerically stable.
 
-  Options Database Keys:
-$  -ksp_gmres_unmodifiedgramschmidt
-$  -ksp_gmres_irorthog
+   Options Database Keys:
+.  -ksp_gmres_unmodifiedgramschmidt - Activates KSPGMRESUnmodifiedGramSchmidtOrthogonalization()
+.  -ksp_gmres_irorthog - Activates KSPGMRESIROrthogonalization()
 
 .keywords: GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.56 1998/04/09 04:10:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.57 1998/04/13 17:29:31 bsmith Exp curfman $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -41,11 +41,11 @@ int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,double emax,double emin)
    KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
    of the preconditioned problem.
 
-   Input Parameters:
-.  ksp - the Krylov space context
-.  emax, emin - the eigenvalue estimates
-
    Collective on KSP
+
+   Input Parameters:
++  ksp - the Krylov space context
+-  emax, emin - the eigenvalue estimates
 
 .keywords: KSP, Chebyshev, set, eigenvalues
 @*/

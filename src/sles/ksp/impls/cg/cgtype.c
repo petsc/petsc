@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgtype.c,v 1.9 1998/04/03 23:13:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgtype.c,v 1.10 1998/04/13 17:28:49 bsmith Exp curfman $";
 #endif
 
 #include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
@@ -11,17 +11,19 @@ static char vcid[] = "$Id: cgtype.c,v 1.9 1998/04/03 23:13:29 bsmith Exp bsmith 
     use for solving a linear system with a complex coefficient matrix.
     This option is irrelevant when solving a real system.
 
-    Input Parameters:
-.   ksp - the iterative context
-.   type - the variant of CG to use, one of
-$     KSP_CG_HERMITIAN - complex, Hermitian matrix (default)
-$     KSP_CG_SYMMETRIC - complex, symmetric matrix
-
     Collective on KSP
 
+    Input Parameters:
++   ksp - the iterative context
+-   type - the variant of CG to use, one of
+.vb
+      KSP_CG_HERMITIAN - complex, Hermitian matrix (default)
+      KSP_CG_SYMMETRIC - complex, symmetric matrix
+.ve
+
     Options Database Keys:
-$   -ksp_cg_Hermitian
-$   -ksp_cg_symmetric
++   -ksp_cg_Hermitian - Indicates Hermitian matrix
+-   -ksp_cg_symmetric - Indicates symmetric matrix
 
     Note:
     By default, the matrix is assumed to be complex, Hermitian.

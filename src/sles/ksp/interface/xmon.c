@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.30 1998/04/24 02:14:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: xmon.c,v 1.31 1998/04/24 22:10:20 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -27,7 +27,7 @@ static char vcid[] = "$Id: xmon.c,v 1.30 1998/04/24 02:14:25 bsmith Exp curfman 
 .  draw - the drawing context
 
    Options Database Key:
-.  -ksp_xmonitor - automatically sets line graph monitor
+.  -ksp_xmonitor - Sets line graph monitor
 
    Notes: 
    Use KSPLGMonitorDestroy() to destroy this line graph, not DrawLGDestroy().

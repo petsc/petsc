@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.68 1998/04/13 17:28:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.69 1998/04/24 22:10:36 curfman Exp curfman $";
 #endif
 
 /*
@@ -232,8 +232,7 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 .     dtol = divergence tolerance,
 -     rnorm_0 = initial residual norm
 
-   Use KSPSetTolerances() to alter the defaults for 
-   rtol, atol, dtol.
+   Use KSPSetTolerances() to alter the defaults for rtol, atol, dtol.
 
 .keywords: KSP, default, convergence, residual
 
