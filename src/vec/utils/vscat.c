@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.148 1999/11/05 14:44:46 bsmith Exp bsmith $*/
+/*$Id: vscat.c,v 1.149 1999/11/10 03:18:36 bsmith Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -8,6 +8,23 @@
 
 #include "src/vec/is/isimpl.h"
 #include "src/vec/vecimpl.h"                     /*I "vec.h" I*/
+
+/*
+     Checks if any indices are less than zero and generates an error
+*/
+#undef __FUNC__  
+#define __FUNC__ "VecScatterCheckIndicates_Private"
+static int VecScatterCheckIndices_Private(int nmax,int n,int *idx)
+{
+  int i;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; i++) {
+    if (idx[i] < 0)     SETERRQ2(1,1,"Negative index %d at %d location",idx[i],i);
+    if (idx[i] >= nmax) SETERRQ3(1,1,"Index %d at %d location greater than max %d",idx[i],i,nmax);
+  }
+  PetscFunctionReturn(0);
+}
 
 /*
       This is special scatter code for when the entire parallel vector is 
@@ -808,10 +825,12 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PLogObjectMemory(ctx,2*len);
       to->slots         = (int *) (to + 1); 
       to->n             = nx; 
+      ierr = VecScatterCheckIndices_Private(ctx->from_n,ny,idy);CHKERRQ(ierr);
       ierr = PetscMemcpy(to->slots,idy,nx*sizeof(int));CHKERRQ(ierr);
       from              = (VecScatter_Seq_General *) PetscMalloc(len);CHKPTRQ(from);
       from->slots       = (int *) (from + 1);
       from->n           = nx; 
+      ierr = VecScatterCheckIndices_Private(ctx->to_n,nx,idx);CHKERRQ(ierr);
       ierr =  PetscMemcpy(from->slots,idx,nx*sizeof(int));CHKERRQ(ierr);
       to->type          = VEC_SCATTER_SEQ_GENERAL; 
       from->type        = VEC_SCATTER_SEQ_GENERAL; 
@@ -872,6 +891,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PLogObjectMemory(ctx,len + sizeof(VecScatter_Seq_Stride));
       from9->slots   = (int *) (from9 + 1); 
       from9->n       = nx; 
+      ierr           = VecScatterCheckIndices_Private(ctx->to_n,nx,idx);CHKERRQ(ierr);
       ierr           = PetscMemcpy(from9->slots,idx,nx*sizeof(int));CHKERRQ(ierr);
       ctx->todata    = (void *) to9; ctx->fromdata = (void *) from9;
       ctx->postrecvs = 0;
@@ -903,6 +923,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PLogObjectMemory(ctx,len + sizeof(VecScatter_Seq_Stride));
       to10->slots       = (int *) (to10 + 1); 
       to10->n           = nx; 
+      ierr = VecScatterCheckIndices_Private(ctx->to_n,nx,idx);CHKERRQ(ierr);
       ierr = PetscMemcpy(to10->slots,idx,nx*sizeof(int));CHKERRQ(ierr);
       ctx->todata     = (void *) to10; 
       ctx->fromdata   = (void *) from10;
@@ -958,10 +979,12 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PLogObjectMemory(ctx,2*len);
       to11->slots       = (int *) (to11 + 1); 
       to11->n           = nx; 
+      ierr = VecScatterCheckIndices_Private(ctx->from_n,ny,idy);CHKERRQ(ierr);
       ierr =  PetscMemcpy(to11->slots,idy,nx*sizeof(int));CHKERRQ(ierr);
       from11            = (VecScatter_Seq_General *) PetscMalloc(len);CHKPTRQ(from11);
       from11->slots     = (int *) (from11 + 1);
       from11->n         = nx; 
+      ierr = VecScatterCheckIndices_Private(ctx->to_n,nx,idx);CHKERRQ(ierr);
       ierr = PetscMemcpy(from11->slots,idx,nx*sizeof(int));CHKERRQ(ierr);
       to11->type        = VEC_SCATTER_SEQ_GENERAL; 
       from11->type      = VEC_SCATTER_SEQ_GENERAL; 
@@ -1097,8 +1120,8 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           totalv = 1; 
         } else totalv = 0;
       } else {
-        if (nx == 0) totalv = 1;
-        else         totalv = 0;
+        if (!nx) totalv = 1;
+        else     totalv = 0;
       }
       ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
 
