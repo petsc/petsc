@@ -21,6 +21,10 @@ Doctext notes:
 
 ----------------------------------------------------------------
 
+Printing poster on printer downstairs from PowerPoint
+properties->advanced->size ARCH E
+                      scale 260 for example
+
 PETSc tutorial material:
    /home/gropp/petsc_work/byoc
 
