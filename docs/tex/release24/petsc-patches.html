@@ -8,26 +8,52 @@
 <H3>
 Patches for PETSc (Release 2.0.24)</H3>
 
-<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.4.tar.gz">petsc-patches-2.0.24.4.tar.gz</A>
+<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.1.tar.gz">petsc-patches-2.0.24.1.tar.gz</A>
 and extracting it with
-<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches.tar.gz | tar xf -</PRE>
+<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.24.1.tar.gz | tar xf -</PRE>
 Make sure you are in the PETSc directory (for example /home/bsmith/petsc-2.0.24)
 before you run the tar command.
-<BR>
+<BR><BR>
+For Windows NT/95/98 download the patches file <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.1.exe">petsc-patches-2.0.24.1.exe</A>
 <HR>
-<BR>The patch file fixes the following:
-<LI>
-2.0.24.4 (Apr 8) - updated install.html with Windows NT instructions.</LI>
+<BR>The patch file fixes the following:<BR><BR>
 
-<LI>
-2.0.24.3 (Apr 8) - incomplete SNES MG example</LI>
+<H3> 2.0.24.1 (Apr 8)</H3>
+<LI> Bug in include files for VecSetOperation() </LI>
+<pre>
+<!##>include/vec.h
+<!##>include/finclude/vec.h
+<!##>include/foldinclude/vec.h
+</pre>
 
-<LI>
-2.0.24.2 (Apr 8) - bug in CG when using KSPSetAvoidNorms()</LI>
+<LI> updated Windows NT installation instructions.</LI>
+<pre>
+<!##>docs/installation.html
+</pre>
 
-<LI>
-2.0.24.1 (Apr 8) - error in handling user-set options prefixes on the solvers
+<LI> incomplete SNES MG example</LI>
+<pre>
+<!##>src/snes/examples/tests/ex11.c
+<!##>src/snes/examples/tests/ex11options
+</pre>
+
+<LI> bug in CG when using KSPSetAvoidNorms()</LI>
+<pre>
+<!##>src/sles/ksp/impls/cg/cg.c
+</pre>
+
+<LI> error in handling user-set options prefixes on the solvers
 for each level of multilevel algorithms.</LI>
+<pre>
+<!##>src/sles/pc/impls/mg/mg.c
+<!##>src/sles/pc/impls/mg/mgfunc.c
+</pre>
+
+<LI> updated version file </LI>
+<pre>
+<!##>include/petscversion.h
+</pre>
+
 
 <BR>
 <HR>
