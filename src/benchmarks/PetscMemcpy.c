@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: PetscMemcpy.c,v 1.2 1996/03/06 17:42:07 balay Exp balay $";
+static char vcid[] = "$Id: PetscMemcpy.c,v 1.3 1996/03/07 23:17:49 balay Exp balay $";
 #endif
 
 #include "stdio.h"
@@ -45,7 +45,7 @@ int main( int argc, char **argv)
 
   fprintf(stderr,"%s : \n","PetscMemcpy");
   fprintf(stderr,"    %-11s : %e sec\n","Latency",(z-y)/10.0);
-  fprintf(stderr,"    %-11s : %e sec\n","Per byte",(2*y-x-z)/100000.0);
+  fprintf(stderr,"    %-11s : %e sec\n","Per byte",(2*y-x-z)/(sizeof(int)*100000.0));
 
   PetscFinalize();
   return 0;
