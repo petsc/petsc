@@ -86,6 +86,7 @@ typedef struct _PetscObject* PetscObject;
 typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 
 #include "viewer.h"
+#include "options.h"
 
 /* useful Petsc routines (used often) */
 extern int  PetscInitialize(int*,char***,char*,char*);
