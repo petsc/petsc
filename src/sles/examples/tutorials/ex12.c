@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.1 1998/04/27 18:10:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.2 1998/04/27 19:17:00 bsmith Exp curfman $";
 #endif
 
-/* Program usage:  mpirun -np <procs> ex6 [-help] [all PETSc options] */
+/* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\
 Input parameters include:\n\
@@ -20,20 +20,20 @@ Input parameters include:\n\
 T*/
 
 /*
-      Demonstrates registering a new preconditioner PC type.
+   Demonstrates registering a new preconditioner (PC) type.
 
-   To register a PC type whose code is linked into the executable
+   To register a PC type whose code is linked into the executable,
    put the line below in your code BEFORE any PETSc include files. 
    #undef USE_DYNAMIC_LIBRARIES
 
    Also provide the prototype for your PCCreate_XXX() function. In 
-   this example we use the PETSc Jacobi, PCCreate_Jacobi() just as 
-   an example.
+   this example we use the PETSc implementation of the Jacobi method,
+   PCCreate_Jacobi() just as an example.
 
    See the file src/pc/impls/jacobi/jacobi.c for details on how to 
    write a new PC component.
 
-   See the line below withn PCRegister() for how to register the method
+   See the manual page PCRegister() for details on how to register a method.
 */
 #undef USE_DYNAMIC_LIBRARIES
 
@@ -144,17 +144,15 @@ int main(int argc,char **args)
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
 
   /*
-       First register a new PC type with the command
+       First register a new PC type with the command PCRegister()
   */
-  ierr = PCRegister("ourjacobi",0,"PCCreate_Jacobi",PCCreate_Jacobi);
-
+  ierr = PCRegister("ourjacobi",0,"PCCreate_Jacobi",PCCreate_Jacobi); CHKERRA(ierr);
   
   /* 
-     Set the PC type
+     Set the PC type to be the new method
   */  
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,"ourjacobi");
-
 
   /* 
     Set runtime options, e.g.,
