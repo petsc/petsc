@@ -1,36 +1,31 @@
-#! /bin/csh
-# $Id: buildtest,v 1.185 2001/02/06 16:12:26 balay Exp $ 
+#! /bin/sh
+# $Id: fixinclude,v 1.1 2001/03/22 16:47:32 bsmith Exp bsmith $ 
 # 
-# Compiles and tests PETSc in our nightly builds.
+# Used by bmake/common rule html to replace #includes in the source files with links when possible
 #
-# Run as buildtest ARCH where ARCH is one of the PETSc arcs
 #
-source /home/bsmith/petsc/bmake/$1/buildtest
-#
-rsh $MACH -n /home/bsmith/petsc/maint/buildlinks $TMP >& /dev/null
-rsh $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
-rsh $MACH -n "cd $TMP/maint;rm -f build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
-rsh $MACH -n "cd $TMP/maint;touch build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
+filename=$1
+ROOT=$2
+PETSC_DIR=$3
+while [ 1 -ne 0 ]; do
+  read line 
+  if [ $? -ne 0 ] ; then break; fi
 
-rsh $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH $BOPT `date` ' >> maint/build_$ARCH.$BOPT.$MACH.log"
-rsh $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all >>& maint/build_$ARCH.$BOPT.$MACH.log"
-
-rsh $MACH -n "cd $TMP;echo '****************************************************' >> maint/build_$ARCH.$BOPT.$MACH.log"
-rsh $MACH -n "cd $TMP;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/build_$ARCH.$BOPT.$MACH.log"
-rsh $MACH -n "cd $TMP;/bin/cp maint/build_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs;chmod g+rw /home/bsmith/petsc/maint/nightlylogs/build_$ARCH.$BOPT.$MACH.log"
-rsh $MACH -n "cd $TMP;chmod -R g+w lib" >& /dev/null
-#
-#  Now run the test examples
-#
-rsh $MACH -n "cd $TMP ;echo 'Build on $MACH $ARCH  $BOPT `date` ' >> maint/examples_$ARCH.$BOPT.$MACH.log"
-foreach j ($JOBS)
-  rsh $MACH -n "cd $TMP; $NICE make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT ACTION=$TEST$j tree | grep -v 'up to date' >>& maint/examples_$ARCH.$BOPT.$MACH.log"
-  rsh $MACH -n "cd $TMP;echo '******************************************************' >> maint/examples_$ARCH.$BOPT.$MACH.log"
-end
-rsh $MACH -n "cd $TMP ;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/examples_$ARCH.$BOPT.$MACH.log"
-rsh $MACH -n "cd $TMP ;echo 'X******************************************************X' >> maint/examples_$ARCH.$BOPT.$MACH.log"
-
-rsh $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs;chmod g+rw /home/bsmith/petsc/maint/nightlylogs/examples_$ARCH.$BOPT.$MACH.log"
-
-
+  r=`echo $line | egrep include`
+  if [ "$?" = 0 ]; then \
+    includename=`echo $line | sed -e 's?#include [ ]*</font><font color=\"#666666\">\"\([a-z./]*\)\"</font>?\1?g' -e 's?<a name="line[0-9]*">[ 0-9]*: </a><font color="#A020F0">??g' -e 's?<font color="#A020F0">[ ]*</font><font color="#B22222">[/*a-z.I "]*</font><font color="#A020F0"></font>??g' -e 's?<font color="#A020F0">[ ]*</font>??g'` 
+    linenumber=`echo $line | sed 's?\(<a name="line[0-9]*">[ 0-9]*: </a>\)[.# =0-9><"a-z/A-Z:*]*?\1?g'` 
+    if [ -f "$includename" ] ; then
+      echo "${linenumber} #include <A href=\"${includename}.html\">${includename}</A>"  
+    elif [ -f "${ROOT}/include/${includename}" ] ; then
+      echo "${linenumber} #include <A href=\"${ROOT}/include/${includename}.html\">${includename}</A>" h2 ${ROOT}
+    elif [ -f "${ROOT}/${includename}" ] ; then
+      echo "${linenumber} #include <A href=\"${ROOT}/${includename}.html\">${includename}</A>"
+    else
+      echo "$line"
+    fi
+  else
+    echo "$line"
+  fi
+done
 
