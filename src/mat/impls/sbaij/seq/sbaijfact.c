@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.3 2000/06/25 17:01:16 balay Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.4 2000/07/24 20:00:19 hzhang Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -15,7 +15,7 @@ See page 85, "Iterative Methods ..." by Saad. */
 int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,MatLUInfo *info,Mat *B)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
-  IS          isicol;
+  IS          isicol,isrow;
   int         *rip,*riip,ierr,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
   int         *jutmp,bs = a->bs,bs2=a->bs2;
   int         m,nzi,realloc = 0;
@@ -2397,8 +2397,9 @@ int MatCholeskyFactor_SeqSBAIJ(Mat A,IS col,MatLUInfo *info)
   MatOps   Aops;
 
   PetscFunctionBegin;
-  ierr = MatCholeskyFactorSymbolic(A,col,info,&C);CHKERRQ(ierr);
-  ierr = MatFCholeskyactorNumeric(A,&C);CHKERRQ(ierr);
+  /* info.fill is tempararily set as 1.0. Fix it later! */
+  ierr = MatCholeskyFactorSymbolic(A,col,1.0,&C);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(A,&C);CHKERRQ(ierr);
 
   /* free all the data structures from mat */
   ierr = PetscFree(mat->a);CHKERRQ(ierr);
@@ -2426,7 +2427,7 @@ int MatCholeskyFactor_SeqSBAIJ(Mat A,IS col,MatLUInfo *info)
   Aops  = A->ops;
   refct = A->refct;
   ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-  mat   = (Mat_SeqBAIJ*)A->data;
+  mat   = (Mat_SeqSBAIJ*)A->data;
   PLogObjectParent(A,mat->icol); 
 
   A->bops  = Abops;
