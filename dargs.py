@@ -11,6 +11,7 @@ import UserDict
 import SocketServer
 import socket
 import time
+from nargs import *
 
 class Args (UserDict.UserDict):
   def __init__(self,name,readpw,addpw,writepw):
@@ -34,7 +35,7 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
 
     
     dargs = self.server.dargs
-    dargs.logfile.write("Received "+request+" in "+name+" "+" from "+self.client_address[0]+" "+time.asctime(time.localtime())+'\n')
+    dargs.logfile.write("Received "+request+" in "+str(name)+" "+" from "+self.client_address[0]+" "+time.asctime(time.localtime())+'\n')
     dargs.logfile.flush()
     if request == "__setitem__":
       if not dargs.data.has_key(name):
@@ -42,6 +43,7 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
           dargs.data[name] = Args(name,readpw,addpw,writepw)
         else:
           dargs.logfile.write("Rejected, wrong dictpw\n");
+          dargs.logfile.flush()
           cPickle.dump((0,None),self.wfile)
           return
               
@@ -54,6 +56,7 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
         cPickle.dump((1,dargs.data[name].data[key]),self.wfile)
       else:
         dargs.logfile.write("Rejected, missing dictionary, key or wrong readpw\n");
+        dargs.logfile.flush()
         cPickle.dump((0,None),self.wfile)
 
     elif request == "has_key":
@@ -61,6 +64,7 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
         cPickle.dump((1,None),self.wfile)
       else:
         dargs.logfile.write("Rejected, missing dictionary, key or wrong readpw\n");
+        dargs.logfile.flush()
         cPickle.dump((0,None),self.wfile)
 
     elif request == "__len__":
@@ -68,6 +72,7 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
         cPickle.dump((len(dargs.data[name].data),None),self.wfile)
       else:
         dargs.logfile.write("Rejected, missing dictionary, or wrong readpw\n");
+        dargs.logfile.flush()
         cPickle.dump((0,None),self.wfile)
 
     elif request == "keys":
@@ -75,6 +80,7 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
         cPickle.dump((1,dargs.data[name].data.keys()),self.wfile)
       else:
         dargs.logfile.write("Rejected, missing dictionary, or wrong readpw\n");
+        dargs.logfile.flush()
         cPickle.dump((0,None),self.wfile)
 
     elif request == "dicts":
@@ -89,6 +95,7 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
         dargs.data[name].data.clear()
       else:
         dargs.logfile.write("Rejected, missing dictionary, wrong writepw\n");
+        dargs.logfile.flush()
       cPickle.dump((0,None),self.wfile)
 
     elif request == "__delitem__":
@@ -98,10 +105,13 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
             del dargs.data[name].data[key]
           except:
             dargs.logfile.write("Rejected, missing key\n");
+            dargs.logfile.flush()
         else:
           dargs.logfile.write("Rejected, wrong writepw\n");
+          dargs.logfile.flush()
       else:
         dargs.logfile.write("Rejected, missing dictionary\n");
+        dargs.logfile.flush()
       cPickle.dump((0,None),self.wfile)
 
 class DArgs:
@@ -125,6 +135,9 @@ class DArgs:
     dbFile.close()
     try: os.unlink('DArgs.loc')
     except: pass
+    self.logfile.write("Shutting down\n")
+    self.logfile.flush()
+    self.logfile.close()
 
   def loop(self):
     # wish there was a better way to get a usable socket

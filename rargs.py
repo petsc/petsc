@@ -38,13 +38,13 @@ class RArgs (UserDict.UserDict):
     try:
       self.send(("__setitem__",self.name,key,self.readpw,self.dictpw,self.addpw,self.writepw,value))
     except:
-      pass
+      raise RuntimeError
     
   def __getitem__(self, key):
     try:
       obj = self.send(("__getitem__",self.name,key,self.readpw,self.dictpw,self.addpw,self.writepw))
     except:
-      pass
+      raise RuntimeError
     if obj[0] == 1:
       return obj[1]
     else:
@@ -54,13 +54,13 @@ class RArgs (UserDict.UserDict):
     try:
       obj = self.send(("__delitem__",self.name,key,self.readpw,self.dictpw,self.addpw,self.writepw))
     except:
-      pass
+      raise RuntimeError
 
   def has_key(self, key):
     try:
       obj = self.send(("has_key",self.name,key,self.readpw,self.dictpw,self.addpw,self.writepw))
     except:
-      pass
+      raise RuntimeError
     if obj[0] == 1:
       return 1
     else:
@@ -70,27 +70,27 @@ class RArgs (UserDict.UserDict):
     try:
       obj = self.send(("clear",self.name,"dummykey",self.readpw,self.dictpw,self.addpw,self.writepw))
     except:
-      pass
+      raise RuntimeError
 
   def keys(self):
     try:
       obj = self.send(("keys",self.name,"dummykey",self.readpw,self.dictpw,self.addpw,self.writepw))
     except:
-      pass
+      raise RuntimeError
     return obj[1]
 
   def dicts(self):
     try:
       obj = self.send(("dicts",self.name,"dummykey",self.readpw,self.dictpw,self.addpw,self.writepw))
     except:
-      pass
+      raise RuntimeError
     return obj[1]
 
   def __len__(self):
     try:
       obj = self.send(("__len__",self.name,"dummykey",self.readpw,self.dictpw,self.addpw,self.writepw))
     except:
-      pass
+      raise RuntimeError
     return obj[0]
 
 
@@ -106,13 +106,16 @@ class RArgs (UserDict.UserDict):
       except:
         raise RuntimeError,"Cannot connect to server"
               
-    f = s.makefile("w")
-    cPickle.dump(object,f)
-    f.close()
-    f = s.makefile("r")
-    object = cPickle.load(f)
-    f.close()
-    s.close()
+    try:
+      f = s.makefile("w")
+      cPickle.dump(object,f)
+      f.close()
+      f = s.makefile("r")
+      object = cPickle.load(f)
+      f.close()
+      s.close()
+    except:
+      raise RuntimeError,"Unable to get results from server"
     return object
     
 if __name__ ==  '__main__':
