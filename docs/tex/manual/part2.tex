@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.351 2001/01/19 23:23:04 balay Exp bsmith $ 
+% $Id: part2.tex,v 1.352 2001/02/22 15:47:56 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2513,7 +2513,7 @@ When repeatedly solving linear systems with the same SLES
 context, one can reuse some information  computed
 during the first linear solve.
 In particular, \url{PCILUSetReuseOrdering()} causes the ordering  (for example, set with 
-\url{-mat_order order}) computed in the first factorization to be reused
+\url{-pc_ilu_ordering_type order}) computed in the first factorization to be reused
 for later factorizations. \sindex{orderings} 
 The \url{ PCILUDTSetReuseFill()} causes the 
 fill computed during the first drop tolerance factorization to be reused
@@ -2683,9 +2683,9 @@ causes the factorization to be performed in-place and hence
 destroys the original matrix.  The options database variant of
 this command is \url{-pc_lu_in_place}. \findex{-pc_lu_in_place}
 Another direct preconditioner option is selecting the ordering
-of equations with the command \findex{-mat_order} \sindex{orderings}
+of equations with the command \findex{-pc_lu_ordering_type} \sindex{orderings}
 \begin{verbatim}
-   -mat_order <ordering>
+   -pc_lu_ordering_type <ordering>
 \end{verbatim}
 The possible orderings are
 \begin{itemize}
@@ -2698,10 +2698,10 @@ The possible orderings are
 \findex{MATORDERING_NATURAL} \findex{MATORDERING_ND} \findex{MATORDERING_1WD}
 \findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
-\sindex{quotient minimum degree} \findex{-mat_ordering_type}
+\sindex{quotient minimum degree} \findex{-pc_lu_ordering_type}
 These orderings can also be set through the options database by specifying 
-one of the following:  \url{-mat_ordering_type natural, -mat_ordering_type nd, 
--mat_ordering_type 1wd, -mat_ordering_type rcm, -mat_ordering_type qmd}.
+one of the following:  \url{-pc_lu_ordering_type natural, -pc_lu_ordering_type nd, 
+-pc_lu_ordering_type 1wd, -pc_lu_ordering_type rcm, -pc_lu_ordering_type qmd}.
 In addition, see 
 \break \url{MatGetOrdering()}, discussed in Section~\ref{sec:matfactor}.
 
@@ -6695,13 +6695,13 @@ The currently available alternatives for the ordering \url{type} are
 \item \url{MATORDERING_QMD} - Quotient Minimum Degree
 \end{itemize}
 These orderings can also be set through the options database by specifying 
-one of the following:  \url{-mat_ordering_type} \url{natural}, \url{-mat_ordering_type} \url{nd}, 
-\url{-mat_ordering_type} \url{1wd}, \url{-mat_ordering_type} \url{rcm}, \url{-mat_ordering_type}
+one of the following:  \url{-pc_lu_ordering_type} \url{natural}, \url{-pc_lu_ordering_type} \url{nd}, 
+\url{-pc_lu_ordering_type} \url{1wd}, \url{-pc_lu_ordering_type} \url{rcm}, \url{-pc_lu_ordering_type}
 \url{ qmd}.
 \findex{MATORDERING_NATURAL} \findex{MATORDERING_ND} \findex{MATORDERING_1WD}
 \findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
-\sindex{quotient minimum degree} \findex{-mat_ordering_type}
+\sindex{quotient minimum degree} \findex{-pc_lu_ordering_type}
 Certain matrix formats may support only a subset of these; more options may 
 be added. Check the manual pages for up-to-date information. All of these orderings are 
 symmetric at the moment; ordering routines that are 
@@ -6731,7 +6731,7 @@ directory for examples on how the reordering routines may be written.
 
 Once the reordering routine has been registered,
 it can be selected for use at runtime with the
-command line option \url{-mat_ordering_type sname}.  If reordering directly,
+command line option \url{-pc_lu_ordering_type sname}.  If reordering directly,
 the user should provide the \url{name} as the second input argument of
 \url{MatGetOrdering()}.
 

@@ -12,7 +12,10 @@ Meta priorities:
 
   win32_intel - #4028
 
-  Remove references to  -mat_order and -mat_ordering_type from manual
+    Get Dinesh to help changing manual to be in .pdf instead of .ps and later
+   add support for search and links
+
+X  Remove references to  -mat_order and -mat_ordering_type from manual
 
 X  Remove reference to PETSC_VIEWER_ASCII_INFO_LONG, PETSC_VIEWER_ASCII_INFO from VecView?
 
