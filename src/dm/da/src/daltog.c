@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daltog.c,v 1.12 1998/04/27 15:58:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: daltog.c,v 1.13 1999/01/31 16:11:27 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -23,6 +23,8 @@ static char vcid[] = "$Id: daltog.c,v 1.12 1998/04/27 15:58:33 curfman Exp bsmit
 
    Output Parameter:
 .  g - the global vector
+
+   Level: beginner
 
    Note:
    The global and local vectors used here need not be the same as those

@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.88 1999/03/10 17:15:33 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.89 1999/03/11 16:24:44 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -69,6 +69,7 @@ extern int PCRegister_Private(char*,char*,char*,int(*)(PC));
 
 extern int PCDestroy(PC);
 extern int PCSetFromOptions(PC);
+extern int PCSetTypeFromOptions(PC);
 extern int PCGetType(PC,PCType*);
 
 extern int PCGetFactoredMatrix(PC,Mat*);

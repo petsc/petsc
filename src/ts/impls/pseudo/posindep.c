@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.30 1998/10/19 22:19:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.31 1998/12/03 04:04:06 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -33,13 +33,15 @@ typedef struct {
     TSPseudoComputeTimeStep - Computes the next timestep for a currently running
     pseudo-timestepping process.
 
+    Collective on TS
+
     Input Parameter:
 .   ts - timestep context
 
     Output Parameter:
 .   dt - newly computed timestep
 
-   Collective on TS
+    Level: advanced
 
     Notes:
     The routine to be called here to compute the timestep should be
@@ -68,16 +70,18 @@ int TSPseudoComputeTimeStep(TS ts,double *dt)
 /*@C
    TSPseudoDefaultVerifyTimeStep - Default code to verify the quality of the last timestep.
 
+   Collective on TS
+
    Input Parameters:
-.  ts - the timestep context
++  ts - the timestep context
 .  dtctx - unused timestep context
-.  update - latest solution vector
+-  update - latest solution vector
 
    Output Parameters:
-.  newdt - the timestep to use for the next step
-.  flag - flag indicating whether the last time step was acceptable
++  newdt - the timestep to use for the next step
+-  flag - flag indicating whether the last time step was acceptable
 
-   Collective on TS
+   Level: advanced
 
    Note:
    This routine always returns a flag of 1, indicating an acceptable 
@@ -100,15 +104,17 @@ int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,double *newdt,int
 /*@
     TSPseudoVerifyTimeStep - Verifies whether the last timestep was acceptable.
 
+    Collective on TS
+
     Input Parameters:
-.   ts - timestep context
-.   update - latest solution vector
++   ts - timestep context
+-   update - latest solution vector
 
     Output Parameters:
-.   dt - newly computed timestep (if it had to shrink)
-.   flag - indicates if current timestep was ok
++   dt - newly computed timestep (if it had to shrink)
+-   flag - indicates if current timestep was ok
 
-   Collective on TS
+    Level: advanced
 
     Notes:
     The routine to be called here to compute the timestep should be
@@ -364,13 +370,15 @@ static int TSView_Pseudo(TS ts,Viewer viewer)
    TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the 
    last timestep.
 
+   Collective on TS
+
    Input Parameters:
-.  ts - timestep context
++  ts - timestep context
 .  dt - user-defined function to verify timestep
-.  ctx - [optional] user-defined context for private data
+-  ctx - [optional] user-defined context for private data
          for the timestep verification routine (may be PETSC_NULL)
 
-   Collective on TS
+   Level: advanced
 
    Calling sequence of func:
 .  func (TS ts,Vec update,void *ctx,double *newdt,int *flag);
@@ -408,14 +416,16 @@ int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* c
     TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to 
     dt when using the TSPseudoDefaultTimeStep() routine.
 
-    Input Parameters:
-.   ts - the timestep context
-.   inc - the scaling factor >= 1.0
-
    Collective on TS
+
+    Input Parameters:
++   ts - the timestep context
+-   inc - the scaling factor >= 1.0
 
     Options Database Key:
 $    -ts_pseudo_increment <increment>
+
+    Level: advanced
 
 .keywords: timestep, pseudo, set, increment
 
@@ -444,13 +454,15 @@ $         dt = initial_dt*initial_fnorm/current_fnorm
       rather than the default update,
 $         dt = current_dt*previous_fnorm/current_fnorm.
 
+   Collective on TS
+
     Input Parameter:
 .   ts - the timestep context
 
-   Collective on TS
-
     Options Database Key:
 $    -ts_pseudo_increment_dt_from_initial_dt
+
+    Level: advanced
 
 .keywords: timestep, pseudo, set, increment
 
@@ -477,13 +489,15 @@ int TSPseudoIncrementDtFromInitialDt(TS ts)
    TSPseudoSetTimeStep - Sets the user-defined routine to be
    called at each pseudo-timestep to update the timestep.
 
+   Collective on TS
+
    Input Parameters:
-.  ts - timestep context
++  ts - timestep context
 .  dt - function to compute timestep
-.  ctx - [optional] user-defined context for private data
+-  ctx - [optional] user-defined context for private data
          required by the function (may be PETSC_NULL)
 
-   Collective on TS
+   Level: intermediate
 
    Calling sequence of func:
 .  func (TS ts,double *newdt,void *ctx);
@@ -637,14 +651,16 @@ EXTERN_C_END
    TSPseudoDefaultTimeStep - Default code to compute pseudo-timestepping.
    Use with TSPseudoSetTimeStep().
 
+   Collective on TS
+
    Input Parameters:
 .  ts - the timestep context
 .  dtctx - unused timestep context
 
-   Collective on TS
-
    Output Parameter:
 .  newdt - the timestep to use for the next step
+
+   Level: advanced
 
 .keywords: timestep, pseudo, default
 

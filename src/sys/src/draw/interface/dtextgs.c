@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtextgs.c,v 1.18 1999/01/12 23:16:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtextgs.c,v 1.19 1999/01/31 16:04:52 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -20,7 +20,12 @@ static char vcid[] = "$Id: dtextgs.c,v 1.18 1999/01/12 23:16:28 bsmith Exp bsmit
 .  width - the width in user coordinates
 -  height - the charactor height
 
+   Level: advanced
+
 .keywords: draw, text, get, size
+
+.seealso: DrawString(), DrawStringVertical(), DrawStringSetSize()
+
 @*/
 int DrawStringGetSize(Draw draw,double *width,double *height)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.55 1999/02/01 03:18:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.56 1999/03/07 17:29:23 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -132,6 +132,9 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
 
    Options Database Key:
 $  -snes_fd - Activates SNESDefaultComputeHessian()
+
+
+   Level: intermediate
 
    Notes:
    This routine is slow and expensive, and is not currently optimized

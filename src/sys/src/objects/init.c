@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.34 1999/03/09 21:17:23 balay Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.35 1999/03/12 23:13:34 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -143,6 +143,8 @@ double PetscCompareTolerance = 1.e-10;
    Options Database Key:
 .  -compare - Activates PetscCompareDouble(), PetscCompareInt(), and PetscCompareScalar()
 
+   Level: advanced
+
 .seealso: PetscCompareDouble(), PetscCompareScalar()
 @*/
 int PetscCompareInt(int d)
@@ -170,6 +172,8 @@ int PetscCompareInt(int d)
 
    Options Database Key:
 .  -compare - Activates PetscCompareDouble(), PetscCompareInt(), and PetscCompareScalar()
+
+   Level: advanced
 
 .seealso: PetscCompareInt(), PetscComparseScalar()
 @*/
@@ -201,6 +205,8 @@ int PetscCompareDouble(double d)
 
    Options Database Key:
 .  -compare - Activates PetscCompareDouble(), PetscCompareInt(), and PetscCompareScalar()
+
+   Level: advanced
 
 .seealso: PetscCompareInt(), PetscComparseDouble()
 @*/
@@ -620,6 +626,10 @@ int OptionsCheckInitial_Alice(void)
       AliceInitializeNoArguments - Calls AliceInitialize() from C/C++ without
         the command line arguments.
 
+   Collective 
+
+   Level: intermediate
+
 .seealso: AliceInitialize(), AliceInitializeFortran()
 @*/
 int AliceInitializeNoArguments(void)
@@ -668,6 +678,8 @@ int AliceInitializeNoArguments(void)
         hangs without running in the debugger).  See PLogTraceBegin().
 .  -log_info <optional filename> - Prints verbose information to the screen
 -  -log_info_exclude <null,vec,mat,sles,snes,ts> - Excludes some of the verbose messages
+
+   Level: beginner
 
    Notes:
    If for some reason you must call MPI_Init() separately, call
@@ -811,6 +823,8 @@ int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
         and norms
 -  -log_mpe [filename] - Creates a logfile viewable by the 
       utility Upshot/Nupshot (in MPICH distribution)
+
+   Level: beginner
 
    Note:
    See AliceInitialize() for more general runtime options.

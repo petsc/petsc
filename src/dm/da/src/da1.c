@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.93 1999/03/11 16:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.94 1999/03/17 01:03:16 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -14,10 +14,6 @@ EXTERN_C_BEGIN
 extern int AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
 EXTERN_C_END
 #endif
-
-EXTERN_C_BEGIN
-extern int VecView_MPI_Draw_DA1d(Vec,Viewer);
-EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "DAView_1d"
@@ -148,7 +144,6 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   Vec        local,global;
   VecScatter ltog,gtol;
   IS         to,from;
-  DF         df_local;
 
   PetscFunctionBegin;
   *inra = 0;
@@ -359,14 +354,6 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   PLogObjectMemory(da,gdim*sizeof(int));
   for (i=0; i<gdim; i++) da->gtog1[i] = i;
 
-  /* Create discrete function shell and associate with vectors in DA */
-  /* Eventually will pass in optional labels for each component */
-  ierr = DFShellCreateDA_Private(comm,PETSC_NULL,da,&da->dfshell); CHKERRQ(ierr);
-  PLogObjectParent(da,da->dfshell);
-  ierr = DFShellGetLocalDFShell(da->dfshell,&df_local);
-  ierr = DFVecShellAssociate(da->dfshell,global); CHKERRQ(ierr);
-  ierr = DFVecShellAssociate(df_local,local); CHKERRQ(ierr);
-
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-da_view_draw",&flg1); CHKERRQ(ierr);
@@ -384,10 +371,6 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_MPI_Draw_C",
-         "VecView_MPI_Draw_DA1d",(void *)VecView_MPI_Draw_DA1d);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_MPI_Binary_C",
-         "VecView_MPI_Binary_DA",(void *)VecView_MPI_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.1 1999/03/05 21:00:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.2 1999/03/11 16:23:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests saving DA vectors to files\n\n";
@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToNaturalBegin(da,global,INSERT_VALUES,natural); CHKERRA(ierr);
   ierr = DAGlobalToNaturalEnd(da,global,INSERT_VALUES,natural); CHKERRA(ierr);
 
-  ierr = VecView(global,VIEWER_DRAW_WORLD); CHKERRA(ierr);
+  ierr = VecView(global,VIEWER_DRAW_WORLD); CHKERRA(ierr); 
 
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",BINARY_CREATE,&bviewer);CHKERRA(ierr);
   ierr = DAView(da,bviewer);CHKERRA(ierr);

@@ -1,16 +1,16 @@
-# $Id: makefile,v 1.35 1999/02/02 21:24:52 balay Exp $ 
+# $Id: makefile,v 1.1 1999/03/15 22:27:28 bsmith Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = matrix.c mhas.c fdmatrix.c matcnv.c mgtype.c
+SOURCEC  = fdmatrix.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = matrix.o mhas.o fdmatrix.o matcnv.o mgtype.o
+OBJSC    = fdmatrix.o
 OBJSF    =
 LIBBASE  = libpetscmat
-MANSEC   = Mat
-LOCDIR   = src/mat/interface/
+MANSEC   = MatFD
+LOCDIR   = src/mat/matfd/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fhost.c,v 1.28 1998/10/09 19:20:56 bsmith Exp balay $";
+static char vcid[] = "$Id: fhost.c,v 1.29 1998/12/17 21:56:27 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -43,6 +43,8 @@ static char vcid[] = "$Id: fhost.c,v 1.28 1998/10/09 19:20:56 bsmith Exp balay $
     Output Parameter:
 .   name - contains host name.  Must be long enough to hold the name
            This is the fully qualified name, including the domain.
+
+    Level: developer
 
 .keywords: system, get, host, name
 

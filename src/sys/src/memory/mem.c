@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.35 1998/12/17 21:56:50 balay Exp bsmith $";
+static char vcid[] = "$Id: mem.c,v 1.36 1999/03/12 23:12:05 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -63,6 +63,8 @@ static char vcid[] = "$Id: mem.c,v 1.35 1998/12/17 21:56:50 balay Exp bsmith $";
    Options Database Key:
 .  -get_resident_set_size - Print memory usage at end of run
 .  -trmalloc_log - Activate logging of memory usage
+
+   Level: intermediate
 
    Notes:
    The memory usage reported here includes all Fortran arrays 

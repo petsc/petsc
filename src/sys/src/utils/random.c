@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.43 1998/12/17 22:09:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.44 1999/01/04 21:48:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -41,6 +41,8 @@ struct _p_PetscRandom {
    Intput Parameter:
 .  r  - the random number generator context
 
+   Level: intermediate
+
 .keywords: random, destroy
 
 .seealso: PetscRandomGetValue(), PetscRandomCreate(), VecSetRandom()
@@ -75,6 +77,8 @@ int PetscRandomDestroy(PetscRandom r)
       PetscRandomGetValue(r,&value2);
       PetscRandomDestroy(r);
 .ve
+
+   Level: intermediate
 
 .keywords: random, set, interval
 
@@ -121,6 +125,8 @@ EXTERN_C_END
 
    Output Parameter:
 .  r  - the random number generator context
+
+   Level: intermediate
 
    Notes:
    By default, we generate random numbers via srand48()/drand48() that
@@ -180,6 +186,11 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 
    Intput Parameter:
 .  r  - the random number generator context
+
+   Output Parameter:
+.  val - the value
+
+   Level: intermediate
 
    Notes:
    Use VecSetRandom() to set the elements of a vector to random numbers.

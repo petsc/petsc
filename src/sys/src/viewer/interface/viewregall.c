@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewregall.c,v 1.5 1999/01/31 16:04:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewregall.c,v 1.6 1999/02/03 04:29:01 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -19,6 +19,8 @@ EXTERN_C_END
   ViewerRegisterAll - Registers all of the graphics methods in the Viewer package.
 
   Not Collective
+
+   Level: developer
 
 .keywords: Viewer, register, all
 

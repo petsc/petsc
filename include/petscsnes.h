@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.81 1999/03/07 17:30:35 bsmith Exp curfman $ */
+/* $Id: snes.h,v 1.82 1999/03/14 22:14:50 curfman Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -53,6 +53,7 @@ extern int SNESSetOptionsPrefix(SNES,char*);
 extern int SNESAppendOptionsPrefix(SNES,char*);
 extern int SNESGetOptionsPrefix(SNES,char**);
 extern int SNESSetFromOptions(SNES);
+extern int SNESSetTypeFromOptions(SNES);
 extern int SNESAddOptionsChecker(int (*)(SNES));
 
 extern int MatCreateSNESFDMF(SNES,Vec x,Mat*);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.35 1999/01/12 01:46:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.36 1999/03/07 17:28:59 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -531,6 +531,8 @@ EXTERN_C_END
 +   nonlin - number of nonlinear iterations
 -   lin    - number of linear iterations
 
+   Level: advanced
+
 .keywords: non-linear iterations, linear iterations
 
 .seealso: TSPVodeSetType(), TSPVodeSetGMRESRestart(),
@@ -565,6 +567,8 @@ int TSPVodeGetIterations(TS ts, int *nonlin,int *lin )
 
     Contributed by: Liyang Xu
 
+   Level: intermediate
+
 .keywords: Adams, backward differentiation formula
 
 .seealso: TSPVodeGetIterations(),  TSPVodeSetGMRESRestart(),
@@ -597,6 +601,8 @@ int TSPVodeSetType(TS ts, TSPVodeType type)
    Input parameters:
 +    ts      - the time-step context
 -    restart - number of direction vectors (the restart size).
+
+   Level: advanced
 
 .keywords: GMRES, restart
 
@@ -633,6 +639,7 @@ int TSPVodeSetGMRESRestart(TS ts, int restart)
 -    tol    - the factor by which the tolerance on the nonlinear solver is
              multiplied to get the tolerance on the linear solver, .05 by default.
 
+   Level: advanced
 
 .keywords: GMRES, linear convergence tolerance, PVODE
 
@@ -666,6 +673,8 @@ int TSPVodeSetLinearTolerance(TS ts, double tol)
    Input parameters:
 +    ts  - the time-step context
 -    type - either PVODE_MODIFIED_GS or PVODE_CLASSICAL_GS
+
+   Level: advanced
 
 .keywords: PVode, orthogonalization
 
@@ -703,6 +712,8 @@ int TSPVodeSetGramSchmidtType(TS ts, TSPVodeGramSchmidtType type)
 
     Contributed by: Liyang Xu
 
+   Level: intermediate
+
 .keywords: PVode, tolerance
 
 .seealso: TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
@@ -734,6 +745,8 @@ int TSPVodeSetTolerance(TS ts, double aabs, double rel)
 
    Output Parameter:
 .    pc - the preconditioner context
+
+   Level: advanced
 
     Contributed by: Liyang Xu
 
@@ -767,6 +780,8 @@ int TSPVodeGetPC(TS ts, PC *pc)
    Input Parameter:
 +   ts - the time-step context
 -   ft - PETSC_TRUE if interpolates, else PETSC_FALSE
+
+   Level: beginner
 
 .seealso:TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
           TSPVodeSetLinearTolerance(), TSPVodeSetGramSchmidtType(), TSPVodeSetTolerance(),

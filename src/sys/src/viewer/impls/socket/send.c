@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.85 1999/02/04 20:34:00 balay Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.86 1999/02/04 23:46:40 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -177,6 +177,8 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
    Output Parameter:
 .  lab - a context to use when communicating with the server
 
+   Level: intermediate
+
    Notes:
    Most users should employ the following commands to access the 
    Matlab viewers
@@ -267,7 +269,7 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
 
   MPI_Comm_rank(v->comm,&rank);
   if (!rank) {
-    PLogInfo(0,"Connecting to socket process on port %d machine %s\n",port,mach);
+    PLogInfo(0,"ViewerSocketSetConnection:Connecting to socket process on port %d machine %s\n",port,mach);
     ierr          = SOCKCall_Private(mach,port,&vmatlab->port);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -323,6 +325,8 @@ static int Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
      Input Parameter:
 .    comm - the MPI communicator to share the window viewer
+
+     Level: intermediate
 
      Notes:
      Unlike almost all other PETSc routines, VIEWER_SOCKET_ does not return 

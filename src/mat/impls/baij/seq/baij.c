@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.165 1999/02/18 17:13:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.166 1999/03/04 22:35:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1084,6 +1084,7 @@ extern int MatSolve_SeqBAIJ_2(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_3(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_4(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_5(Mat,Vec,Vec);
+extern int MatSolve_SeqBAIJ_6(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_7(Mat,Vec,Vec);
 
 extern int MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat*);
@@ -1092,12 +1093,14 @@ extern int MatLUFactorNumeric_SeqBAIJ_2(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_3(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_5(Mat,Mat*);
+extern int MatLUFactorNumeric_SeqBAIJ_6(Mat,Mat*);
 
 extern int MatMult_SeqBAIJ_1(Mat,Vec,Vec);
 extern int MatMult_SeqBAIJ_2(Mat,Vec,Vec);
 extern int MatMult_SeqBAIJ_3(Mat,Vec,Vec);
 extern int MatMult_SeqBAIJ_4(Mat,Vec,Vec);
 extern int MatMult_SeqBAIJ_5(Mat,Vec,Vec);
+extern int MatMult_SeqBAIJ_6(Mat,Vec,Vec);
 extern int MatMult_SeqBAIJ_7(Mat,Vec,Vec);
 extern int MatMult_SeqBAIJ_N(Mat,Vec,Vec);
 
@@ -1106,6 +1109,7 @@ extern int MatMultAdd_SeqBAIJ_2(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBAIJ_3(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBAIJ_4(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBAIJ_5(Mat,Vec,Vec,Vec);
+extern int MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 
@@ -1144,17 +1148,40 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
     ierr = MatMarkDiag_SeqBAIJ(inA); CHKERRQ(ierr);
   }
   /*
-      Blocksize 4 and 5 have a special faster factorization/solver for ILU(0) factorization 
-    with natural ordering 
+      Blocksize 2, 3, 4, 5, 6 and 7 have a special faster factorization/solver 
+      for ILU(0) factorization with natural ordering
   */
-  if (a->bs == 4) {
+  switch (a->bs) {
+    case 2:
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering;
+    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
+    break;
+  case 3:
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqBAIJ_3_NaturalOrdering;
+    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=3\n");
+    break; 
+  case 4:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
-    PLogInfo(inA,"Using special in-place natural ordering factor and solve BS=4\n"); 
-  } else if (a->bs == 5) {
+    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
+    break;
+  case 5:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_5_NaturalOrdering;
-    PLogInfo(inA,"Using special in-place natural ordering factor and solve BS=5\n"); 
+    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
+    break;
+  case 6: 
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqBAIJ_6_NaturalOrdering;
+    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
+    break; 
+  case 7:
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqBAIJ_7_NaturalOrdering;
+    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
+    break; 
   }
 
   ierr = MatLUFactorNumeric(inA,&outA); CHKERRQ(ierr);
@@ -1208,6 +1235,8 @@ EXTERN_C_END
   Input Parameters:
 +  mat - the SeqBAIJ matrix
 -  indices - the column indices
+
+  Level: advanced
 
   Notes:
     This can be called if you have precomputed the nonzero structure of the 
@@ -1332,6 +1361,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                      block calculations (much slower)
 .    -mat_block_size - size of the blocks to use
 
+   Level: intermediate
+
    Notes:
    The block AIJ format is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
@@ -1341,8 +1372,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
    allocation.  For additional details, see the users manual chapter on
    matrices.
-
-   Level: intermediate
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/
@@ -1400,6 +1429,12 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
       B->ops->solve           = MatSolve_SeqBAIJ_5; 
       B->ops->mult            = MatMult_SeqBAIJ_5;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_5;
+      break;
+    case 6:
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6;  
+      B->ops->solve           = MatSolve_SeqBAIJ_6; 
+      B->ops->mult            = MatMult_SeqBAIJ_6;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_6;
       break;
     case 7:
       B->ops->mult            = MatMult_SeqBAIJ_7; 

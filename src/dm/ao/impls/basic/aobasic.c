@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.40 1998/12/21 01:05:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.41 1999/01/31 16:11:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -110,6 +110,8 @@ static struct _AOOps myops = {AOPetscToApplication_Basic,
 /*@C
    AOCreateBasic - Creates a basic application ordering using two integer arrays.
 
+   Collective on MPI_Comm
+
    Input Parameters:
 +  comm - MPI communicator that is to share AO
 .  napp - size of integer arrays
@@ -120,10 +122,10 @@ static struct _AOOps myops = {AOPetscToApplication_Basic,
    Output Parameter:
 .  aoout - the new application ordering
 
-   Collective on MPI_Comm
-
    Options Database Key:
 .   -ao_view - call AOView() at the conclusion of AOCreateBasic()
+
+   Level: beginner
 
 .keywords: AO, create
 
@@ -213,6 +215,8 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 /*@C
    AOCreateBasicIS - Creates a basic application ordering using two index sets.
 
+   Collective on IS
+
    Input Parameters:
 +  isapp - index set that defines an ordering
 -  ispetsc - index set that defines another ordering (may be PETSC_NULL to use the
@@ -221,10 +225,10 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
    Output Parameter:
 .  aoout - the new application ordering
 
-   Collective on IS
-
    Options Database Key:
 -   -ao_view - call AOView() at the conclusion of AOCreateBasicIS()
+
+   Level: beginner
 
 .keywords: AO, create
 

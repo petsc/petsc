@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.41 1999/03/07 17:26:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.42 1999/03/11 16:16:07 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: iscoloring.c,v 1.41 1999/03/07 17:26:10 bsmith Exp bs
 
    Input Parameter:
 .  iscoloring - the coloring context
+
+   Level: advanced
 
 .seealso: ISColoringView(), MatGetColoring()
 @*/
@@ -44,6 +46,8 @@ int ISColoringDestroy(ISColoring iscoloring)
    Input Parameters:
 +  iscoloring - the coloring context
 -  viewer - the viewer
+
+   Level: advanced
 
 .seealso: ISColoringDestroy(), ISColoringGetIS(), MatGetColoring()
 @*/
@@ -87,6 +91,8 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
 +  n - number of index sets in the coloring context
 -  is - array of index sets
 
+   Level: advanced
+
 .seealso: ISColoringView()
 @*/
 int ISColoringGetIS(ISColoring iscoloring,int *n,IS *is[])
@@ -119,6 +125,8 @@ int ISColoringGetIS(ISColoring iscoloring,int *n,IS *is[])
 
     Options Database Key:
 .   -is_coloring_view - Activates ISColoringView()
+
+   Level: advanced
 
 .seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy()
 @*/
@@ -211,6 +219,8 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
          (in the new numbering) for all the nodes currently (before the partitioning) 
          on that processor
 
+   Level: advanced
+
 .seealso: MatPartitioningCreate(), AOCreateBasic()
 
 @*/
@@ -287,6 +297,8 @@ int ISPartitioningToNumbering(IS part,IS *is)
     Output Parameter:
 .   count - array of length size of communicator associated with IS, contains 
            the number of elements assigned to each processor
+
+   Level: advanced
 
 .seealso: MatPartitioningCreate(), AOCreateBasic(), ISPartitioningToNumbering()
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vcreatea.c,v 1.3 1999/01/14 15:17:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: vcreatea.c,v 1.4 1999/01/31 16:04:38 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -64,6 +64,8 @@ static int Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
    Input Parameter:
 .  comm - the MPI communicator to share the window viewer
+
+   Level: beginner
 
    Notes: 
    Unlike almost all other PETSc routines, this does not return 
@@ -132,6 +134,8 @@ static int Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
    Input Parameter:
 .  comm - the MPI communicator to share the window viewer
 
+   Level: beginner
+
    Note: 
    Unlike almost all other PETSc routines, this does not return 
    an error code. Usually used in the form
@@ -193,6 +197,8 @@ int VIEWER_STDERR_Destroy(MPI_Comm comm)
 
    Output Parameter:
 .  lab - the viewer to use with the specified file
+
+   Level: beginner
 
    Notes:
    This viewer can be destroyed with ViewerDestroy().

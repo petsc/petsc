@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.84 1999/02/01 15:37:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.85 1999/02/01 15:38:31 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -49,6 +49,8 @@ int ViewerFlush_ASCII(Viewer v)
 +   viewer - viewer context, obtained from ViewerASCIIOpen()
 -   fd - file pointer
 
+    Level: intermediate
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -83,6 +85,8 @@ extern FILE *petsc_history;
     Input Parameters:
 .    viewer - optained with ViewerASCIIOpen()
 
+    Level: developer
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -111,6 +115,8 @@ int ViewerASCIIPushTab(Viewer viewer)
 
     Input Parameters:
 .    viewer - optained with ViewerASCIIOpen()
+
+    Level: developer
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -142,6 +148,8 @@ int ViewerASCIIPopTab(Viewer viewer)
     Input Parameters:
 +    viewer - optained with ViewerASCIIOpen()
 -    format - the usual printf() format string 
+
+    Level: developer
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -197,6 +205,8 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
   Input Parameters:
 +  viewer - the viewer; either ASCII or binary
 -  name - the name of the file it should use
+
+    Level: advanced
 
 .seealso: ViewerCreate(), ViewerSetType(), ViewerASCIIOpen(), ViewerBinaryOpen()
 

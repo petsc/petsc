@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbarrier.c,v 1.2 1998/05/20 23:04:53 balay Exp bsmith $";
+static char vcid[] = "$Id: pbarrier.c,v 1.3 1998/05/24 20:07:12 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"              /*I "petsc.h" I*/
@@ -13,8 +13,7 @@ static char vcid[] = "$Id: pbarrier.c,v 1.2 1998/05/20 23:04:53 balay Exp bsmith
 .  A - PETSc object  ( Mat, Vec, IS, SNES etc...)
         Must be caste with a (PetscObject)
 
-   Synopsis:
-   void PetscBarrier(PetscObject obj)
+  Level: intermediate
 
   Notes: 
   This routine calls MPI_Barrier with the communicator of the PETSc Object "A". 

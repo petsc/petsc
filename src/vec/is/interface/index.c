@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.61 1999/01/31 16:03:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: index.c,v 1.62 1999/02/01 22:08:37 curfman Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -305,6 +305,8 @@ int ISRestoreIndices(IS is,int *ptr[])
    Input Parameters:
 +  is - the index set
 -  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
+
+   Level: intermediate
 
 .keywords: IS, index set, indices
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpitr.c,v 1.14 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpitr.c,v 1.15 1998/07/23 22:47:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -24,6 +24,8 @@ static char vcid[] = "$Id: mpitr.c,v 1.14 1998/04/27 19:48:45 curfman Exp bsmith
 
    Options Database Key:
 .  -mpidump - Dumps MPI incompleteness during call to PetscFinalize()
+
+    Level: developer
 
 .keywords: MPI errors
 

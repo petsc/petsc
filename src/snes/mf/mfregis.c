@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mfregis.c,v 1.1 1998/11/05 22:13:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mfregis.c,v 1.2 1998/11/12 03:43:23 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
@@ -15,6 +15,8 @@ EXTERN_C_END
   MatSNESFDMFRegisterAll - Registers all of the compute-h in the MatSNESFDMF package.
 
   Not Collective
+
+  Level: developer
 
 .keywords: MatSNESFDMF, register, all
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadist.c,v 1.19 1999/02/24 22:55:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dadist.c,v 1.20 1999/03/07 17:30:00 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -34,7 +34,7 @@ int DAGetGlobalToGlobal1_Private(DA da,int **gtog1)
    Output Parameter:
 .  g - the distributed global vector
 
-   Level: basic
+   Level: beginner
 
    Note:
    The output parameter, g, is a regular PETSc vector that should be destroyed
@@ -44,7 +44,7 @@ int DAGetGlobalToGlobal1_Private(DA da,int **gtog1)
 
 .seealso: DACreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
           DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal()
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateNaturalVector()
 @*/
 int DACreateGlobalVector(DA da,Vec* g)
 {

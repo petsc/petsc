@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.54 1999/03/07 17:27:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.55 1999/03/11 16:19:19 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -119,15 +119,17 @@ int MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
    MatOrderingRegister - Adds a new sparse matrix Ordering to the 
    matrix package. 
 
+   Not Collective
+
    Input Parameters:
-.  name - name of ordering (if built-in) else ORDER_NEW
++  name - name of ordering (if built-in) else ORDER_NEW
 .  sname -  corresponding string for name
-.  order - routine that does Ordering
+-  order - routine that does Ordering
 
    Output Parameters:
 .  out - number associated with the ordering 
 
-   Not Collective
+   Level: developer
 
 .keywords: matrix, reordering, register
 
@@ -156,9 +158,10 @@ int  MatOrderingRegister(MatOrderingType name,MatOrderingType *out,char *sname,i
 /*@C
    MatOrderingRegisterDestroy - Frees the list of ordering routines.
 
-   Notes:
-   This routine is NOT collective.
+   Not collective
 
+   Level: developer
+   
 .keywords: matrix, register, destroy
 
 .seealso: MatOrderingRegister(), MatOrderingRegisterAll()
@@ -180,6 +183,8 @@ int MatOrderingRegisterDestroy(void)
    MatGetOrderingTypeFromOptions - Gets matrix ordering method from the
    options database.
 
+   Not collective
+
    Input Parameter:
 .  prefix - optional database prefix
 
@@ -192,8 +197,7 @@ int MatOrderingRegisterDestroy(void)
 $    -mat_order natural, -mat_order nd, -mat_order 1wd, 
 $    -mat_order rcm, -mat_order qmd
 
-   Notes:
-   This routine is NOT collective.
+   Level: intermediate
 
 .keywords: matrix, set, ordering, factorization, direct, ILU, LU,
            fill, reordering, natural, Nested Dissection,
@@ -221,13 +225,15 @@ int MatGetOrderingTypeFromOptions(char *prefix,MatOrderingType *type)
 /*@C
    MatOrderingGetName - Gets the name associated with a reordering.
 
+   Not Collective
+
    Input Parameter:
 .  ordering - integer name of reordering
 
    Output Parameter:
 .  name - name of reordering
 
-   Not Collective
+   Level: beginner
 
 .keywords: PC, get, method, name, type
 @*/
@@ -250,9 +256,11 @@ extern int MatAdjustForInodes(Mat,IS *,IS *);
    MatGetOrdering - Gets a reordering for a matrix to reduce fill or to
    improve numerical stability of LU factorization.
 
+   Collective on Mat
+
    Input Parameters:
-.  mat - the matrix
-.  type - type of reordering, one of the following:
++  mat - the matrix
+-  type - type of reordering, one of the following:
 $      ORDER_NATURAL - Natural
 $      ORDER_ND - Nested Dissection
 $      ORDER_1WD - One-way Dissection
@@ -260,16 +268,16 @@ $      ORDER_RCM - Reverse Cuthill-McKee
 $      ORDER_QMD - Quotient Minimum Degree
 
    Output Parameters:
-.  rperm - row permutation indices
-.  cperm - column permutation indices
-
-   Collective on Mat
++  rperm - row permutation indices
+-  cperm - column permutation indices
 
    Options Database Keys:
    To specify the ordering through the options database, use one of
    the following 
 $    -mat_order natural, -mat_order nd, -mat_order 1wd, 
 $    -mat_order rcm, -mat_order qmd
+
+   Level: intermediate
 
    The user can define additional orderings; see MatOrderingRegister().
 

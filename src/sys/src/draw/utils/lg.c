@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.55 1998/12/17 22:11:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.56 1999/01/12 23:16:56 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -37,6 +37,8 @@ struct _p_DrawLG {
 
     Output Parameters:
 .   outctx - the line graph context
+
+    Level: intermediate
 
 .keywords:  draw, line, graph, create
 
@@ -87,6 +89,8 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 +  lg - the line graph context.
 -  dim - the number of curves.
 
+   Level: intermediate
+
 .keywords:  draw, line, graph, reset
 @*/
 int DrawLGSetDimension(DrawLG lg,int dim)
@@ -115,6 +119,8 @@ int DrawLGSetDimension(DrawLG lg,int dim)
    Input Parameter:
 .  lg - the line graph context.
 
+   Level: intermediate
+
 .keywords:  draw, line, graph, reset
 @*/
 int DrawLGReset(DrawLG lg)
@@ -140,6 +146,8 @@ int DrawLGReset(DrawLG lg)
 
    Input Parameter:
 .  lg - the line graph context
+
+   Level: intermediate
 
 .keywords:  draw, line, graph, destroy
 
@@ -178,6 +186,8 @@ int DrawLGDestroy(DrawLG lg)
 +  lg - the LineGraph data structure
 -  x, y - the points to two vectors containing the new x and y 
           point for each curve.
+
+   Level: intermediate
 
 .keywords:  draw, line, graph, add, point
 
@@ -225,6 +235,8 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
    Input Parameters:
 .  lg - the linegraph context
 
+   Level: intermediate
+
 .keywords:  draw, line, graph, indicate, data, points
 @*/
 int DrawLGIndicateDataPoints(DrawLG lg)
@@ -249,6 +261,8 @@ int DrawLGIndicateDataPoints(DrawLG lg)
 .  xx,yy - points to two arrays of pointers that point to arrays 
            containing the new x and y points for each curve.
 -  n - number of points being added
+
+   Level: intermediate
 
 .keywords:  draw, line, graph, add, points
 
@@ -304,6 +318,8 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
    Input Parameter:
 .  lg - the line graph context
 
+   Level: intermediate
+
 .keywords:  draw, line, graph
 @*/
 int DrawLGDraw(DrawLG lg)
@@ -352,6 +368,8 @@ int DrawLGDraw(DrawLG lg)
 +  xlg - the line graph context
 -  x_min,x_max,y_min,y_max - the limits
 
+   Level: intermediate
+
 .keywords:  draw, line, graph, set limits
 @*/
 int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
@@ -383,6 +401,8 @@ int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
    Output Parameter:
 .  axis - the axis context
 
+   Level: advanced
+
 .keywords: draw, line, graph, get, axis
 @*/
 int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
@@ -409,6 +429,8 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 
    Output Parameter:
 .  win - the draw context
+
+   Level: intermediate
 
 .keywords: draw, line, graph, get, context
 @*/

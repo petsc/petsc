@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: errtrace.c,v 1.2 1998/07/02 14:34:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: errtrace.c,v 1.3 1999/01/04 21:48:30 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -21,6 +21,8 @@ static char vcid[] = "$Id: errtrace.c,v 1.2 1998/07/02 14:34:14 bsmith Exp bsmit
 .  n - the generic error number
 .  p - specific error number
 -  ctx - error handler context
+
+   Level: developer
 
    Notes:
    Most users need not directly employ this routine and the other error 

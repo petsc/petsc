@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.12 1999/03/03 20:53:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pinit.c,v 1.13 1999/03/12 23:12:55 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -113,6 +113,10 @@ int OptionsCheckInitial_Components(void)
       PetscInitializeNoArguments - Calls PetscInitialize() from C/C++ without
         the command line arguments.
 
+   Collective
+  
+   Level: advanced
+
 .seealso: PetscInitialize(), PetscInitializeFortran()
 @*/
 int PetscInitializeNoArguments(void)
@@ -162,6 +166,8 @@ int PetscInitializeNoArguments(void)
         hangs without running in the debugger).  See PLogTraceBegin().
 .  -log_info <optional filename> - Prints verbose information to the screen
 -  -log_info_exclude <null,vec,mat,sles,snes,ts> - Excludes some of the verbose messages
+
+   Level: beginner
 
    Notes:
    If for some reason you must call MPI_Init() separately, call
@@ -232,6 +238,8 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
         and norms
 -  -log_mpe [filename] - Creates a logfile viewable by the 
       utility Upshot/Nupshot (in MPICH distribution)
+
+   Level: beginner
 
    Note:
    See PetscInitialize() for more general runtime options.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.46 1999/02/08 17:38:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.47 1999/02/26 04:16:19 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
@@ -88,6 +88,8 @@ int PetscHeaderDestroy_Private(PetscObject h)
 .  obj - the PETSc object. This must be cast with (PetscObject), for example, 
          PetscObjectReference((PetscObject) mat);
 
+   Level: advanced
+
 .seealso: PetscObjectCompose(), PetscObjectDereference()
 @*/
 int PetscObjectReference(PetscObject obj)
@@ -113,6 +115,8 @@ int PetscObjectReference(PetscObject obj)
    Output Parameter:
 .  cnt - the reference count
 
+   Level: advanced
+
 .seealso: PetscObjectCompose(), PetscObjectDereference(), PetscObjectReference()
 @*/
 int PetscObjectGetReference(PetscObject obj,int *cnt)
@@ -135,6 +139,8 @@ int PetscObjectGetReference(PetscObject obj,int *cnt)
    Input Parameter:
 .  obj - the PETSc object; this must be cast with (PetscObject), for example, 
          PetscObjectDereference((PetscObject) mat);
+
+   Level: advanced
 
 .seealso: PetscObjectCompose(), PetscObjectReference()
 @*/
@@ -267,6 +273,8 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void **ptr)
 -  ptr - the other PETSc object to associate with the PETSc object; this must also be 
          cast with (PetscObject)
 
+   Level: advanced
+
    Notes:
    The second object's reference count is automatically increased by one when it is
    composed.
@@ -309,6 +317,8 @@ int PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
 -  ptr - the other PETSc object associated with the PETSc object, this must also be 
          cast with (PetscObject)
 
+   Level: advanced
+
 .keywords: object, composition
 
 .seealso: PetscObjectQuery()
@@ -338,6 +348,8 @@ int PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
    Output Parameter:
 .  ptr - the language specific interface
 
+   Level: developer
+
 .keywords: language, object wrappers
 
 .seealso: PetscObjectQuery()
@@ -364,6 +376,8 @@ int PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void **ptr)
          PetscObjectCompose((PetscObject) mat,...);
 .  lang - one of PETSC_LANGUAGE_C, PETSC_LANGUAGE_F77, PETSC_LANGUAGE_CPP
 -  ptr - the language specific interface
+
+   Level: developer
 
 .keywords: language, object wrappers
 
@@ -405,6 +419,8 @@ int PetscObjectComposeFunction_Private(PetscObject obj,const char name[],
 
    Output Parameter:
 .  ptr - function pointer
+
+   Level: advanced
 
 .keywords: object, composition
 
@@ -514,6 +530,8 @@ struct _p_PetscObjectContainer {
    Output Parameter:
 .  ptr - the pointer value
 
+   Level: advanced
+
 .seealso: PetscObjectContainerCreate(), PetscObjectContainerDestroy(), 
           PetscObjectContainerSetPointer()
 @*/
@@ -536,6 +554,8 @@ int PetscObjectContainerGetPointer(PetscObjectContainer obj,void **ptr)
 +  obj - the object created with PetscObjectContainerCreate()
 -  ptr - the pointer value
 
+   Level: advanced
+
 .seealso: PetscObjectContainerCreate(), PetscObjectContainerDestroy(), 
           PetscObjectContainerGetPointer()
 @*/
@@ -555,6 +575,8 @@ int PetscObjectContainerSetPointer(PetscObjectContainer obj,void *ptr)
 
    Input Parameter:
 .  obj - an object that was created with PetscObjectContainerCreate()
+
+   Level: advanced
 
 .seealso: PetscObjectContainerCreate()
 @*/
@@ -577,6 +599,8 @@ int PetscObjectContainerDestroy(PetscObjectContainer obj)
 
    Input Parameters:
 .  comm - MPI communicator that shares the object
+
+   Level: advanced
 
 .seealso: PetscObjectContainerDestroy()
 @*/
@@ -603,6 +627,11 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
 .  name - name associated with the child function
 .  fname - name of the function
 -  ptr - function pointer (or PETSC_NULL if using dynamic libraries)
+
+   Level: advanced
+
+    Synopsis:
+    PetscObjectComposeFunction(PetscObject obj,char *name,char *fname,void *ptr)
 
    Notes:
    PetscObjectComposeFunction() can be used with any PETSc object (such as

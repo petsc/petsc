@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.166 1999/03/10 03:54:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.167 1999/03/10 04:01:27 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -450,7 +450,7 @@ int VecSet(const Scalar *alpha,Vec x)
      PetscRandomDestroy(rctx);
 .ve
 
-   Level: beginner
+   Level: intermediate
 
 .keywords: vector, set, random
 
@@ -797,7 +797,7 @@ int VecDestroy(Vec v)
    requires one to pass in V a Vec (integer) array of size at least m.
    See the Fortran chapter of the users manual and petsc/src/vec/examples for details.
 
-   Level: beginner
+   Level: intermediate
 
 .keywords: vector, duplicate
 
@@ -830,7 +830,7 @@ int VecDuplicateVecs(Vec v,int m,Vec *V[])
    See the Fortran chapter of the users manual and 
    petsc/src/vec/examples for details.
 
-   Level: beginner
+   Level: intermediate
 
 .keywords: vector, destroy
 
@@ -1074,6 +1074,8 @@ int VecSetLocalToGlobalMappingBlocked(Vec x, ISLocalToGlobalMapping mapping)
    ADD_VALUES adds values to any existing entries, and
    INSERT_VALUES replaces existing entries with new values
 
+   Level: intermediate
+
    Notes: 
    VecSetValuesLocal() sets x[ix[i]] = y[i], for i=0,...,ni-1.
 
@@ -1085,8 +1087,6 @@ int VecSetLocalToGlobalMappingBlocked(Vec x, ISLocalToGlobalMapping mapping)
    MUST be called after all calls to VecSetValuesLocal() have been completed.
 
    VecSetValuesLocal() uses 0-based indices in Fortran as well as in C.
-
-   Level: intermediate
 
 .keywords: vector, set, values, local ordering
 
@@ -1135,6 +1135,8 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
    ADD_VALUES adds values to any existing entries, and
    INSERT_VALUES replaces existing entries with new values
 
+   Level: intermediate
+
    Notes: 
    VecSetValuesBlockedLocal() sets x[bs*ix[i]+j] = y[bs*i+j], 
    for j=0,..bs-1, for i=0,...,ni-1, where bs has been set with VecSetBlockSize().
@@ -1148,7 +1150,6 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
 
    VecSetValuesBlockedLocal() uses 0-based indices in Fortran as well as in C.
 
-   Level: intermediate
 
 .keywords: vector, set, values, blocked, local ordering
 
@@ -1485,7 +1486,7 @@ int VecGetArray(Vec x,Scalar *a[])
    Fortran Note:
    This routine is not supported in Fortran.
 
-   Level: beginner
+   Level: intermediate
 
 .keywords: vector, get, arrays
 
@@ -1530,7 +1531,7 @@ int VecGetArrays(const Vec x[],int n,Scalar **a[])
    Fortran Note:
    This routine is not supported in Fortran.
 
-   Level: beginner
+   Level: intermediate
 
 .keywords: vector, restore, arrays
 
@@ -1562,6 +1563,8 @@ int VecRestoreArrays(const Vec x[],int n,Scalar **a[])
    Input Parameters:
 +  x - the vector
 -  a - location of pointer to array obtained from VecGetArray()
+
+   Level: beginner
 
    Notes:
    For regular PETSc vectors this routine does not involve any copies. For
@@ -2068,3 +2071,76 @@ M*/
 
 .keywords:  vector, array, f90
 M*/
+
+#undef __FUNC__  
+#define __FUNC__ "VecLoadIntoVector"
+/*@C 
+  VecLoadIntoVector - Loads a vector that has been stored in binary format
+  with VecView().
+
+  Collective on Viewer 
+
+  Input Parameters:
++ viewer - binary file viewer, obtained from ViewerBinaryOpen()
+- vec - vector to contain files values (must be of correct length)
+
+  Level: intermediate
+
+  Notes:
+  The input file must contain the full global vector, as
+  written by the routine VecView().
+
+  Use VecLoad() to create the vector as the values are read in
+
+  Notes for advanced users:
+  Most users should not need to know the details of the binary storage
+  format, since VecLoad() and VecView() completely hide these details.
+  But for anyone who's interested, the standard binary matrix storage
+  format is
+.vb
+     int    VEC_COOKIE
+     int    number of rows
+     Scalar *values of all nonzeros
+.ve
+
+   Note for Cray users, the int's stored in the binary file are 32 bit
+integers; not 64 as they are represented in the memory, so if you
+write your own routines to read/write these binary files from the Cray
+you need to adjust the integer sizes that you read in, see
+PetscReadBinary() and PetscWriteBinary() to see how this may be
+done.
+
+   In addition, PETSc automatically does the byte swapping for
+machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
+linux, nt and the paragon; thus if you write your own binary
+read/write routines you have to swap the bytes; see PetscReadBinary()
+and PetscWriteBinary() to see how this may be done.
+
+.keywords: vector, load, binary, input
+
+.seealso: ViewerBinaryOpen(), VecView(), MatLoad(), VecLoad() 
+@*/  
+int VecLoadIntoVector(Viewer viewer,Vec vec)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  if (!vec->ops->loadintovector) {
+    SETERRQ(1,1,"Vector does not support load");
+  }
+  ierr = (*vec->ops->loadintovector)(viewer,vec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecSetOperation"
+int VecSetOperation(Vec vec,VecOperation op, void *f)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  (((void**)vec->ops)[(int)op]) = f;
+  PetscFunctionReturn(0);
+}
+

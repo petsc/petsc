@@ -1,11 +1,11 @@
-# $Id: makefile,v 1.43 1998/12/03 04:07:00 bsmith Exp balay $ 
+# $Id: makefile,v 1.44 1999/02/02 21:37:05 balay Exp bsmith $ 
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \
-           vec.h sles.h mg.h viewer.h snes.h dfvec.h  ec.h ao.h\
+           vec.h sles.h mg.h viewer.h snes.h  ec.h ao.h\
            da.h petsclog.h petschead.h petscerror.h ts.h \
 	   petscmath.h bitarray.h
 OBJSC    =

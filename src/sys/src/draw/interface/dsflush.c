@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dsflush.c,v 1.18 1999/01/12 23:16:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dsflush.c,v 1.19 1999/01/31 16:04:52 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -18,7 +18,11 @@ static char vcid[] = "$Id: dsflush.c,v 1.18 1999/01/12 23:16:28 bsmith Exp bsmit
    Input Parameters:
 .  draw - the drawing context
 
+   Level: beginner
+
 .keywords: draw, sync, flush
+
+.seealso: DrawFlush()
 
 @*/
 int DrawSynchronizedFlush(Draw draw)

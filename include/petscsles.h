@@ -1,4 +1,4 @@
-/* $Id: sles.h,v 1.25 1998/10/16 03:20:10 bsmith Exp bsmith $ */
+/* $Id: sles.h,v 1.26 1999/01/19 22:11:45 bsmith Exp bsmith $ */
 /*
    Defines PETSc interface to the linear solvers.
 */
@@ -20,6 +20,7 @@ extern int SLESSetOperators(SLES,Mat,Mat,MatStructure);
 extern int SLESSolve(SLES,Vec,Vec,int*);
 extern int SLESSolveTrans(SLES,Vec,Vec,int*);
 extern int SLESSetFromOptions(SLES);
+extern int SLESSetTypesFromOptions(SLES);
 extern int SLESPrintHelp(SLES);
 extern int SLESView(SLES,Viewer);
 extern int SLESSetUp(SLES,Vec,Vec);

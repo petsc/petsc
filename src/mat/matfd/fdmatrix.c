@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.41 1999/01/13 21:40:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.42 1999/03/02 22:28:38 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -80,6 +80,8 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 +  c - the coloring context
 -  viewer - visualization context
 
+   Level: intermediate
+
    Notes:
    The available visualization contexts include
 +     VIEWER_STDOUT_SELF - standard output (default)
@@ -154,6 +156,8 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
 .  error_rel - relative error
 -  umin - minimum allowable u-value magnitude
 
+   Level: advanced
+
 .keywords: Mat, finite differences, coloring, set, parameters
 
 .seealso: MatFDColoringCreate()
@@ -180,14 +184,16 @@ int MatFDColoringSetParameters(MatFDColoring matfd,double error,double umin)
 +  coloring - the coloring context
 -  freq - frequency (default is 1)
 
+   Options Database Keys:
+.  -mat_fd_coloring_freq <freq>  - Sets coloring frequency
+
+   Level: advanced
+
    Notes:
    Using a modified Newton strategy, where the Jacobian remains fixed for several
    iterations, can be cost effective in terms of overall nonlinear solution 
    efficiency.  This parameter indicates that a new Jacobian will be computed every
    <freq> nonlinear iterations.  
-
-   Options Database Keys:
-.  -mat_fd_coloring_freq <freq>  - Sets coloring frequency
 
 .keywords: Mat, finite differences, coloring, set, frequency
 
@@ -216,14 +222,16 @@ int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
    Output Parameters:
 .  freq - frequency (default is 1)
 
+   Options Database Keys:
+.  -mat_fd_coloring_freq <freq> - Sets coloring frequency
+
+   Level: advanced
+
    Notes:
    Using a modified Newton strategy, where the Jacobian remains fixed for several
    iterations, can be cost effective in terms of overall nonlinear solution 
    efficiency.  This parameter indicates that a new Jacobian will be computed every
    <freq> nonlinear iterations.  
-
-   Options Database Keys:
-.  -mat_fd_coloring_freq <freq> - Sets coloring frequency
 
 .keywords: Mat, finite differences, coloring, get, frequency
 
@@ -249,6 +257,8 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 +  coloring - the coloring context
 .  f - the function
 -  fctx - the optional user-defined function context
+
+   Level: intermediate
 
    Notes:
     In Fortran you must call MatFDColoringSetFunctionSNES() for a coloring object to 
@@ -296,6 +306,8 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 .  -mat_fd_coloring_view_info - Activates viewing info
 -  -mat_fd_coloring_view_draw - Activates drawing
 
+    Level: intermediate
+
 .keywords: Mat, finite differences, parameters
 @*/
 int MatFDColoringSetFromOptions(MatFDColoring matfd)
@@ -328,6 +340,8 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
 
     Input Parameter:
 .   fdcoloring - the MatFDColoring context
+
+    Level: intermediate
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringSetFromOptions()
 @*/
@@ -388,6 +402,8 @@ int MatFDColoringView_Private(MatFDColoring fd)
 .    -mat_fd_coloring_view_draw - Activates drawing of coloring
 -    -mat_fd_coloring_view_info - Activates viewing of coloring info
 
+    Level: intermediate
+
 .seealso: MatFDColoringDestroy()
 @*/
 int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
@@ -432,6 +448,8 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 
     Input Parameter:
 .   c - coloring context
+
+    Level: intermediate
 
 .seealso: MatFDColoringCreate()
 @*/
@@ -482,6 +500,8 @@ int MatFDColoringDestroy(MatFDColoring c)
 
    Options Database Keys:
 .  -mat_fd_coloring_freq <freq> - Sets coloring frequency
+
+   Level: intermediate
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView()
 
@@ -600,6 +620,8 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 
    Options Database Keys:
 .  -mat_fd_coloring_freq <freq> - Sets coloring frequency
+
+   Level: intermediate
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView()
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cholbs.c,v 1.50 1999/01/31 16:06:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.51 1999/03/01 04:54:00 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -38,7 +38,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
     BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo); CHKERRBS(0);
-    PLogInfo(mat,"BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
+    PLogInfo(mat,"MatCholeskyFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
                                  mbs->failures,mbs->ierr,mbs->alpha); 
   }
 #if defined(USE_PETSC_LOG)
@@ -74,7 +74,7 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
     BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo); CHKERRBS(0);
-    PLogInfo(mat,"BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
+    PLogInfo(mat,"MatLUFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
                                        mbs->failures,mbs->ierr,mbs->alpha); 
   }
   mbs->factor = FACTOR_LU;

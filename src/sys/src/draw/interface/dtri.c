@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.26 1999/03/08 19:50:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtri.c,v 1.27 1999/03/10 19:26:55 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -17,6 +17,8 @@ static char vcid[] = "$Id: dtri.c,v 1.26 1999/03/08 19:50:45 bsmith Exp bsmith $
 +  draw - the drawing context
 .  x1,y1,x2,y2,x3,y3 - the coordinates of the vertices
 -  c1,c2,c3 - the colors of the corners in counter clockwise order
+
+   Level: beginner
 
 .keywords: draw, triangle
 @*/
@@ -43,6 +45,8 @@ int DrawTriangle(Draw draw,double x1,double y_1,double x2,double y2,
 +    popup - the window (often a window obtained via DrawGetPopup()
 .    min - minimum value being plotted
 -    max - maximum value being plotted
+
+  Level: intermediate
 
   Notes:
      All processors that share the draw MUST call this routine
@@ -122,6 +126,8 @@ static int DrawTensorContour_Zoom(Draw win,void *dctx)
    Options Database Keys:
 +  -draw_x_shared_colormap - Indicates use of private colormap
 -  -draw_contour_grid - Draws grid contour
+
+   Level: intermediate
 
 .keywords: Draw, tensor, contour, vector
 
@@ -212,6 +218,8 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],S
 
    Options Database Keys:
 .  -draw_x_shared_colormap - Activates private colormap
+
+   Level: advanced
 
    Note: 
    This is a lower level support routine, usually the user will call

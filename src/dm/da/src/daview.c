@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.29 1999/03/07 17:30:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.30 1999/03/11 16:23:45 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -54,6 +54,8 @@ static char vcid[] = "$Id: daview.c,v 1.29 1999/03/07 17:30:00 bsmith Exp bsmith
 .  -da_view - Calls DAView() at the conclusion of DACreate1d(),
               DACreate2d(), and DACreate3d()
 
+   Level: beginner
+
    Notes:
    Use DAGetCorners() and DAGetGhostCorners() to get the starting
    and ending grid points (ghost points) in each direction.
@@ -92,6 +94,8 @@ int DAView(DA da, Viewer v)
 .  wrap    - type of periodicity, on of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, 
              DA_XYPERIODIC, DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC
 -  st      - stencil type, either DA_STENCIL_STAR or DA_STENCIL_BOX
+
+   Level: beginner
   
    Note:
    Use PETSC_NULL in place of any output parameter that is not of interest.

@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.89 1999/03/10 04:06:24 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.90 1999/03/11 18:34:18 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -159,7 +159,14 @@ extern int VecSetOption(Vec,VecOption);
 
 extern int VecContourScale(Vec,double,double);
 
-extern int VecSetOperation(Vec,int,void*);
+/*
+    These numbers need to match the entries in 
+  the function table in src/vec/vecimpl.h
+*/
+typedef enum { VEC_VIEW = 32,
+               VECOP_LOADINTOVECTOR = 40
+             } VecOperation;
+extern int VecSetOperation(Vec,VecOperation,void*);
 
 /*
      Routines for dealing with ghosted vectors:

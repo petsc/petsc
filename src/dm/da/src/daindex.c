@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daindex.c,v 1.21 1998/06/15 20:10:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: daindex.c,v 1.22 1999/01/31 16:11:27 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -22,6 +22,8 @@ static char vcid[] = "$Id: daindex.c,v 1.21 1998/06/15 20:10:15 curfman Exp bsmi
    Output Parameters:
 +  n - the number of local elements, including ghost nodes (or PETSC_NULL)
 -  idx - the global indices
+
+   Level: intermediate
 
    Note: 
    For DA_STENCIL_STAR stencils the inactive corner ghost nodes are also included
@@ -70,6 +72,8 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
    Output Parameters:
 .  ao - the application ordering context for DAs
 
+   Level: intermediate
+
    Notes:
    In this case, the AO maps to the natural grid ordering that would be used
    for the DA if only 1 processor were employed (ordering most rapidly in the
@@ -105,6 +109,8 @@ int DAGetAO(DA da, AO *ao)
 +   n - the number of local elements, including ghost nodes (or PETSC_NULL)
 .   idx - the Fortran90 pointer to the global indices
 -   ierr - error code
+
+    Level: intermediate
 
     Notes:
      Not yet supported for all F90 compilers

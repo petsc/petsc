@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.63 1999/03/02 16:37:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.64 1999/03/07 17:25:11 bsmith Exp bsmith $";
 #endif
 
 #include "vec.h"        /*I "vec.h" I*/
@@ -17,6 +17,10 @@ static char vcid[] = "$Id: cmesh.c,v 1.63 1999/03/02 16:37:52 bsmith Exp bsmith 
 +   v - the vector of values
 .   vmin - minimum value (for lowest color)
 -   vmax - maximum value (for highest color)
+
+   Level: intermediate
+
+.seealso: DrawTensorContour(), DrawTensorContourPatch()
 
 @*/
 int VecContourScale(Vec v,double vmin,double vmax)

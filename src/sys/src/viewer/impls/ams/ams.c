@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.13 1999/01/19 16:27:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.14 1999/01/31 16:04:44 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -121,6 +121,8 @@ int ViewerAMSSetCommName(Viewer v,const char name[])
     Output Parameter:
 .   ams_comm - the AMS communicator
 
+    Level: developer
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -172,6 +174,8 @@ static int Petsc_Viewer_Ams_keyval = MPI_KEYVAL_INVALID;
 
      Input Parameters:
 .    comm - the MPI communicator to share the viewer
+
+     Level: developer
 
      Notes:
      Unlike almost all other PETSc routines, VIEWER_AMS_ does not return 

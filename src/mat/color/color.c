@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.33 1999/01/04 21:51:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.34 1999/02/28 20:06:44 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -219,6 +219,8 @@ int MatColoringRegisterAllCalled = 0;
    Output Parameters:
 .  oname - number associated with the coloring (for example COLORING_SL)
 
+   Level: developer
+
    Not Collective
 
 .keywords: matrix, coloring, register
@@ -248,6 +250,8 @@ int MatColoringRegister(MatColoringType name,MatColoringType *oname,char *sname,
 
    Not Collective
 
+   Level: developer
+
 .keywords: matrix, register, destroy
 
 .seealso: MatColoringRegister(), MatColoringRegisterAll()
@@ -269,17 +273,19 @@ int MatColoringRegisterDestroy(void)
    MatGetColoringTypeFromOptions - Gets matrix coloring method from the
    options database.
 
+   Not Collective
+
    Input Parameter:
 .  prefix - optional database prefix
 
    Output Parameter:
 .  type - coloring method
 
-   Not Collective
-
    Options Database Keys:
 $    -mat_coloring natural, -mat_coloring sl, -mat_coloring id, 
 $    -mat_coloring lf
+
+   Level: intermediate
 
 .keywords: matrix, coloring, 
 
@@ -304,13 +310,15 @@ int MatGetColoringTypeFromOptions(char *prefix,MatColoringType *type)
 /*@C
    MatColoringGetName - Gets the name associated with a coloring.
 
+   Not Collective
+
    Input Parameter:
 .  coloringing - integer name of coloring
 
    Output Parameter:
 .  name - name of coloring
 
-   Not Collective
+   Level: advanced
 
 .keywords: matrix, get, coloring, name
 @*/
@@ -332,6 +340,8 @@ extern int MatAdjustForInodes(Mat,IS *,IS *);
    MatGetColoring - Gets a coloring for a matrix to reduce fill or to
    improve numerical stability of LU factorization.
 
+   Collective on Mat
+
    Input Parameters:
 .  mat - the matrix
 .  type - type of coloring, one of the following:
@@ -343,8 +353,6 @@ $      COLORING_ID - incidence-degree
    Output Parameters:
 .   iscoloring - the coloring
 
-   Collective on Mat
-
    Options Database Keys:
    To specify the coloring through the options database, use one of
    the following 
@@ -352,6 +360,8 @@ $    -mat_coloring natural, -mat_coloring sl, -mat_coloring lf,
 $    -mat_coloring id
    To see the coloring use
 $    -mat_coloring_view
+
+   Level: intermediate
 
    The user can define additional colorings; see MatColoringRegister().
 

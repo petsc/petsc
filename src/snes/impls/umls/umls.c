@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.77 1999/02/09 23:30:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.78 1999/03/01 04:57:23 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
@@ -250,6 +250,9 @@ static int SNESView_UM_LS(SNES snes,Viewer viewer)
 .  max_func - maximum number of function evaluations,
               set with SNESSetTolerances()
 -  nfunc    - number of function evaluations
+
+   Level: intermediate
+
 @*/
 int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,void *dummy)
 {

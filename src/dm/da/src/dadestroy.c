@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.24 1999/03/04 00:53:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dadestroy.c,v 1.25 1999/03/05 04:03:30 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -17,6 +17,8 @@ static char vcid[] = "$Id: dadestroy.c,v 1.24 1999/03/04 00:53:31 bsmith Exp bsm
 
    Input Parameter:
 .  da - the distributed array to destroy 
+
+   Level: beginner
 
 .keywords: distributed array, destroy
 
@@ -68,7 +70,6 @@ int DADestroy(DA da)
 
   if (da->coordinates) ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);
   if (da->gtog1) PetscFree(da->gtog1);
-  if (da->dfshell) {ierr = DFShellDestroy(da->dfshell);CHKERRQ(ierr);}
   PetscHeaderDestroy(da);
   PetscFunctionReturn(0);
 }
@@ -81,14 +82,21 @@ int DADestroy(DA da)
    Not Collective
 
    Input Parameter:
-.  da - the distributed array to destroy 
+.  da - the distributed array to get the mapping from
 
    Output Parameter:
 .  ltog - the mapping
 
+   Level: intermediate
+
+   Notes:
+     This mapping can them be used by VecSetLocalToGlobalMapping() or 
+   MatSetLocalToGlobalMapping()
+
 .keywords: distributed array, destroy
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), VecSetLocalToGlobalMapping(),
+     MatSetLocalToGlobalMapping()
 @*/
 int DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawregall.c,v 1.4 1999/01/31 16:04:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawregall.c,v 1.5 1999/02/03 04:27:57 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -17,6 +17,8 @@ EXTERN_C_END
   DrawRegisterAll - Registers all of the graphics methods in the Draw package.
 
   Not Collective
+
+  Level: developer
 
 .keywords: Draw, register, all
 

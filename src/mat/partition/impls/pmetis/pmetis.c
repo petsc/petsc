@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.14 1998/12/17 22:10:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.15 1999/03/11 16:19:48 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -96,10 +96,12 @@ int MatPartitioningView_Parmetis(MatPartitioning part,Viewer viewer)
      MatPartitioningParmetisSetCoarseSequential - Use the sequential code to 
          do the partitioning of the coarse grid.
 
+  Collective on MatPartitioning
+
   Input Parameter:
 .  part - the partitioning context
 
-  Collective on MatPartitioning
+   Level: advanced
 
 @*/
 int MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)

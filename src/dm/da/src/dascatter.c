@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dascatter.c,v 1.14 1998/04/27 15:58:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: dascatter.c,v 1.15 1999/01/31 16:11:27 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -23,6 +23,8 @@ static char vcid[] = "$Id: dascatter.c,v 1.14 1998/04/27 15:58:33 curfman Exp bs
 +  ltog - local-to-global scatter context (may be PETSC_NULL)
 .  gtol - global-to-local scatter context (may be PETSC_NULL) 
 -  ltol - local-to-local scatter context (may be PETSC_NULL)
+
+   Level: developer
 
    Notes:
    The output contexts are valid only as long as the input da is valid.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.23 1999/03/09 21:21:07 balay Exp balay $";
+static char vcid[] = "$Id: mprint.c,v 1.24 1999/03/10 16:10:00 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -40,6 +40,8 @@ static FILE        *queuefile  = PETSC_NULL;
     Input Parameters:
 +   comm - the communicator
 -   format - the usual printf() format string 
+
+   Level: intermediate
 
     Notes:
     Usage of PetscSynchronizedPrintf() with different MPI communicators
@@ -109,6 +111,8 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 +   comm - the communicator
 .   fd - the file pointer
 -   format - the usual printf() format string 
+
+    Level: intermediate
 
     Notes:
     Usage of PetscSynchronizedFPrintf() with different MPI communicators
@@ -180,6 +184,8 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
     Input Parameters:
 .   comm - the communicator
 
+    Level: intermediate
+
     Notes:
     Usage of PetscSynchronizedPrintf() and PetscSynchronizedFPrintf() with
     different MPI communicators REQUIRES an intervening call to PetscSynchronizedFlush().
@@ -248,6 +254,8 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 .   fd - the file pointer
 -   format - the usual printf() format string 
 
+    Level: intermediate
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -294,6 +302,8 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
     Input Parameters:
 +   comm - the communicator
 -   format - the usual printf() format string 
+
+   Level: intermediate
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -344,6 +354,8 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
 +   comm - the communicator
 -   format - the usual printf() format string 
 
+   Level: developer
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -390,6 +402,8 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 
     Input Parameters:
 .   format - the usual printf() format string 
+
+   Level: developer
 
     Fortran Note:
     This routine is not supported in Fortran.

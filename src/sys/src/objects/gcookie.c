@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcookie.c,v 1.15 1999/02/17 16:38:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcookie.c,v 1.16 1999/02/17 16:49:55 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -20,6 +20,8 @@ static char vcid[] = "$Id: gcookie.c,v 1.15 1999/02/17 16:38:17 bsmith Exp bsmit
 
    Output Parameter:
 .  cookie - the cookie
+
+   Level: developer
 
 .keywords: object, get, cookie
 @*/
@@ -45,6 +47,8 @@ int PetscObjectGetCookie(PetscObject obj,int *cookie)
 
    Output Parameter:
 .  exists - PETSC_FALSE if object does not exist; PETSC_TRUE if object does exist.
+
+   Level: developer
 
 .keywords: object, exists
 @*/

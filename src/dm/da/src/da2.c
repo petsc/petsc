@@ -1,12 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.117 1999/03/11 16:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.118 1999/03/17 01:02:24 bsmith Exp bsmith $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
-
-EXTERN_C_BEGIN
-extern int VecView_MPI_Draw_DA2d(Vec,Viewer);
-EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "DAGetOwnershipRange"
@@ -256,7 +252,6 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   Vec           local,global;
   VecScatter    ltog,gtol;
   IS            to,from;
-  DF            df_local;
 
   PetscFunctionBegin;
   *inra = 0;
@@ -974,14 +969,6 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   for (i=0; i<gdim; i++) da->gtog1[gBall[i]] = gAall[i];
   PetscFree(gA); PetscFree(bases);
 
-  /* Create discrete function shell and associate with vectors in DA */
-  /* Eventually will pass in optional labels for each component */
-  ierr = DFShellCreateDA_Private(comm,PETSC_NULL,da,&da->dfshell); CHKERRQ(ierr);
-  PLogObjectParent(da,da->dfshell);
-  ierr = DFShellGetLocalDFShell(da->dfshell,&df_local);
-  ierr = DFVecShellAssociate(da->dfshell,global); CHKERRQ(ierr);
-  ierr = DFVecShellAssociate(df_local,local); CHKERRQ(ierr);
-
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-da_view_draw",&flg1); CHKERRQ(ierr);
@@ -999,11 +986,6 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_MPI_Draw_C",
-         "VecView_MPI_Draw_DA2d",(void *)VecView_MPI_Draw_DA2d);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_MPI_Binary_C",
-         "VecView_MPI_Binary_DA",(void *)VecView_MPI_Binary_DA);CHKERRQ(ierr);
-  ierr = VecSetOperation(global,VECOP_LOADINTOVECTOR,(void *) VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

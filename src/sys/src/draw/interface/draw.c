@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.54 1999/01/31 16:04:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.55 1999/02/19 23:39:41 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -20,6 +20,7 @@ static char vcid[] = "$Id: draw.c,v 1.54 1999/01/31 16:04:52 bsmith Exp bsmith $
 
    Level: intermediate
 
+.seealso: DrawCheckResizedWindow()
 @*/
 int DrawResizeWindow(Draw draw,int w,int h)
 {
@@ -42,6 +43,8 @@ int DrawResizeWindow(Draw draw,int w,int h)
 .  draw - the window
 
    Level: advanced
+
+.seealso: DrawResizeWindow()
 
 @*/
 int DrawCheckResizedWindow(Draw draw)
@@ -69,6 +72,7 @@ int DrawCheckResizedWindow(Draw draw)
 
    Level: intermediate
 
+.seealso: DrawSetTitle()
 @*/
 int DrawGetTitle(Draw draw,char **title)
 {
@@ -94,6 +98,8 @@ int DrawGetTitle(Draw draw,char **title)
    Note:
    A copy of the string is made, so you may destroy the 
    title string after calling this routine.
+
+.seealso: DrawGetTitle(), DrawAppendTitle()
 @*/
 int DrawSetTitle(Draw draw,char *title)
 {
@@ -132,6 +138,7 @@ int DrawSetTitle(Draw draw,char *title)
 
    Level: advanced
 
+.seealso: DrawSetTitle(), DrawGetTitle()
 @*/
 int DrawAppendTitle(Draw draw,char *title)
 {
@@ -174,6 +181,9 @@ int DrawAppendTitle(Draw draw,char *title)
    Level: beginner
 
 .keywords: draw, destroy
+
+.seealso: DrawCreate()
+
 @*/
 int DrawDestroy(Draw draw)
 {

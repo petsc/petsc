@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.4 1999/01/31 16:04:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewreg.c,v 1.5 1999/02/01 23:19:33 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -9,7 +9,7 @@ FList ViewerList              = 0;
 #undef __FUNC__  
 #define __FUNC__ "ViewerCreate"
 /*@C
-   ViewerCreate - Creates a graphics context.
+   ViewerCreate - Creates a viewing context
 
    Collective on MPI_Comm
 
@@ -18,6 +18,8 @@ FList ViewerList              = 0;
 
    Output Parameter:
 .  inviewer - location to put the Viewer context
+
+   Level: advanced
 
 .keywords: Viewer, create, context
 
@@ -51,6 +53,8 @@ int ViewerCreate(MPI_Comm comm,Viewer *inviewer)
    Options Database Command:
 .  -draw_type  <type> - Sets the type; use -help for a list 
     of available methods (for instance, ascii)
+
+   Level: advanced
 
    Notes:  
    See "petsc/include/viewer.h" for available methods (for instance,
@@ -99,6 +103,8 @@ int ViewerSetType(Viewer viewer,ViewerType type)
 
    Not Collective
 
+   Level: developer
+
 .keywords: Viewer, register, destroy
 
 .seealso: ViewerRegister(), ViewerRegisterAll()
@@ -128,6 +134,8 @@ int ViewerRegisterDestroy(void)
 .  path - path (either absolute or relative) the library containing this solver
 .  name_create - name of routine to create method context
 -  routine_create - routine to create method context
+
+   Level: developer
 
    Notes:
    ViewerRegister() may be called multiple times to add several user-defined solvers.
@@ -174,6 +182,8 @@ int ViewerRegister_Private(char *sname,char *path,char *name,int (*function)(Vie
 
    Input Parameter:
 .     viewer - the graphics context
+
+   Level: intermediate
 
    Notes: 
     Must be called after ViewerCreate() before the Viewertor is used.

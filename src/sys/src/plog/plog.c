@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.207 1999/03/09 21:03:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.208 1999/03/11 16:18:25 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -52,7 +52,7 @@ FILE *PLogInfoFile;
     Options Database Key:
 .   -log_info - Activates PLogInfoAllow()
 
-    Level: developer
+    Level: advanced
 
 .keywords: allow, information, printing, monitoring
 
@@ -354,10 +354,10 @@ char *(PLogEventName[]) = {"MatMult         ",
                          " ",
                          " ",
                          " ",
-                         "DFVecRefineVecto",
-                         "DFVec_AssembleFu",
-                         "DFVec_GetCompone",
-                         "DFVec_DrawContou",
+                         "                ",
+                         "                ",
+                         "                ",
+                         "                ",
                          " "," "," "," "," ",
                          " "," "," "," "," ",
                          " "," "," "," "," ",
@@ -913,6 +913,8 @@ int PLogObjectState(PetscObject obj,const char format[],...)
    Input Parameters:
 +  b - function called at beginning of event
 -  e - function called at end of event
+
+   Level: developer
 
 .seealso: PLogDump(), PLogBegin(), PLogAllBegin(), PLogTraceBegin()
 

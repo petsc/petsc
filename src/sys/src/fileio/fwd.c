@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fwd.c,v 1.20 1998/08/26 22:01:40 balay Exp balay $";
+static char vcid[] = "$Id: fwd.c,v 1.21 1998/12/17 21:57:10 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -48,6 +48,7 @@ static char vcid[] = "$Id: fwd.c,v 1.20 1998/08/26 22:01:40 balay Exp balay $";
 .  path - use to hold the result value. The string should be long enough
           to hold the path.
 
+   Level: developer
 
 .keywords, system, get, current, working, directory
 @*/

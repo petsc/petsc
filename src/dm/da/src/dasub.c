@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dasub.c,v 1.19 1998/04/27 15:58:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: dasub.c,v 1.20 1999/01/31 16:11:27 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -24,6 +24,8 @@ static char vcid[] = "$Id: dasub.c,v 1.19 1998/04/27 15:58:33 curfman Exp bsmith
 
    Output Parameters:
 .  comm - new communicator
+
+   Level: advanced
 
    Notes:
    This routine is particularly useful to compute boundary conditions

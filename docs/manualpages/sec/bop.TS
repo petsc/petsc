@@ -1,12 +1,13 @@
 <HTML>
 <HEAD>
-<TITLE>PC Manual Pages</TITLE>
+<TITLE>TS Manual Pages</TITLE>
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> Vec Manual Pages 
-[<A HREF="../../manual.html#Node15"> Chapter 2 of Users Manual</A>]
+<H2> TS Manual Pages 
+[<A HREF="../../manual.html#Node15"> Chapter 6 of Users Manual</A>]
 </H2>
 
-  PETSc vectors (Vec objects) are used to store all the field variables 
-in a PDE (or other) simulation. See <A HREF="../../../src/vec/examples/tutorials/ex1.c">src/vec/examples/tutorials/ex1.c</A> for sample usage.
+  The time-stepping component of PETSc provides ODE integrators and pseudo-timestepping.
+It (except for the PVODE functions) uses the <A HREF="../SNES/index.html">SNES</A> solvers 
+to solve the nonlinear problems at each time-step.

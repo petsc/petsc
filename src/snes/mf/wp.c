@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.4 1998/12/03 04:05:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: wp.c,v 1.5 1998/12/17 22:12:27 bsmith Exp bsmith $";
 #endif
 /*
       Implements an alternative approach for computing the h
@@ -230,6 +230,8 @@ EXTERN_C_END
 +   A - the matrix created with MatCreateSNESFDMF()
 -   flag - PETSC_TRUE causes it to compute ||a||, PETSC_FALSE assumes it is 1.
 
+  Level: advanced
+
   Notes:
    See the manual page for MatCreateSNESFDMF() for a complete description of the
    algorithm used to compute h.
@@ -281,6 +283,8 @@ EXTERN_C_END
   Input Parameters:
 +   A - the matrix created with MatCreateSNESFDMF()
 -   flag - PETSC_TRUE causes it to compute ||U||, PETSC_FALSE uses the previous value
+
+  Level: advanced
 
   Notes:
    See the manual page for MatCreateSNESFDMF() for a complete description of the

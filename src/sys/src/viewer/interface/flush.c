@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: flush.c,v 1.17 1998/12/03 04:05:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: flush.c,v 1.18 1999/01/31 16:04:48 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "viewer.h" I*/
@@ -14,6 +14,8 @@ static char vcid[] = "$Id: flush.c,v 1.17 1998/12/03 04:05:16 bsmith Exp bsmith 
 
    Input Parameters:
 .  viewer - the viewer to be flushed
+
+   Level: intermediate
 
 .keywords: Viewer, flush
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: hists.c,v 1.9 1998/12/17 22:11:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: hists.c,v 1.10 1999/01/12 23:16:56 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -40,6 +40,8 @@ struct _p_DrawHist {
 
    Output Parameters:
 .  hist - The histogram context
+
+   Level: intermediate
 
    Contributed by: Matthew Knepley
 
@@ -92,6 +94,8 @@ int DrawHistCreate(Draw win, int bins, DrawHist *hist)
 +  hist - The histogram context.
 -  dim  - The number of curves.
 
+   Level: intermediate
+
   Contributed by: Matthew Knepley
 
 .keywords:  draw, histogram, graph, create
@@ -124,6 +128,8 @@ int DrawHistSetNumberBins(DrawHist hist, int bins)
   Input Parameter:
 . hist - The histogram context.
 
+   Level: intermediate
+
   Contributed by: Matthew Knepley
 
 .keywords:  draw, histogram, graph, reset
@@ -150,6 +156,8 @@ int DrawHistReset(DrawHist hist)
 
   Input Parameter:
 . hist - The histogram context
+
+   Level: intermediate
 
   Contributed by: Matthew Knepley
 
@@ -190,6 +198,8 @@ int DrawHistDestroy(DrawHist hist)
   Input Parameters:
 + hist  - The histogram
 - value - The value 
+
+   Level: intermediate
 
   Contributed by: Matthew Knepley
 
@@ -250,6 +260,8 @@ int DrawHistAddValue(DrawHist hist, double value)
 
   Input Parameter:
 . hist - The histogram context
+
+   Level: intermediate
 
   Contributed by: Matthew Knepley
 
@@ -325,6 +337,8 @@ int DrawHistDraw(DrawHist hist)
 - color - one of the colors defined in draw.h or DRAW_ROTATE to make each bar a 
           different color
 
+  Level: intermediate
+
 .keywords:  draw, histogram, graph, color
 
 @*/
@@ -349,6 +363,8 @@ int DrawHistSetColor(DrawHist hist, int color)
   Input Parameters:
 + hist - The histogram context
 - x_min,x_max,y_min,y_max - The limits
+
+  Level: intermediate
 
   Contributed by: Matthew Knepley
 
@@ -383,6 +399,8 @@ int DrawHistSetLimits(DrawHist hist, double x_min, double x_max, int y_min, int 
   Output Parameter:
 . axis - The axis context
 
+  Level: intermediate
+
   Contributed by: Matthew Knepley
 
 .keywords: draw, histogram, graph, get, axis
@@ -412,6 +430,8 @@ int DrawHistGetAxis(DrawHist hist, DrawAxis *axis)
 
   Output Parameter:
 . win  - The draw context
+
+  Level: intermediate
 
   Contributed by: Matthew Knepley
 

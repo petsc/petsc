@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.27 1999/03/07 17:29:59 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.28 1999/03/11 16:23:44 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -7,7 +7,6 @@
 #if !defined(_DAIMPL_H)
 #define _DAIMPL_H
 #include "da.h"
-#include "dfvec.h"
 
 struct _p_DA {
   PETSCHEADER(int)
@@ -25,7 +24,7 @@ struct _p_DA {
   int            base;                  /* global number of 1st local node */
   DAPeriodicType wrap;                  /* indicates type of periodic boundaries */
   VecScatter     gtol, ltog, ltol;      /* scatters, see below for details */
-  DFVec          global, local;         /* vectors that are discrete functions */
+  Vec            global, local;         /* vectors that are discrete functions */
   PetscTruth     globalused, localused; /* indicates if global and local have been 
                                            passed back to user via DACreateXXXVector */
   DAStencilType  stencil_type;          /* stencil, either box or star */
@@ -33,7 +32,6 @@ struct _p_DA {
   int            *gtog1;                /* mapping from global ordering to
                                             ordering that would be used for 1
                                             proc; intended for internal use only */
-  DF             dfshell;               /* discrete function shell */
   AO             ao;                    /* application ordering context */
 
   ISLocalToGlobalMapping ltogmap;       /* local to global mapping for associated vectors */
@@ -60,12 +58,10 @@ struct _p_DA {
             nearest neighbor timestepping.
 */
 
-EXTERN_C_BEGIN
-extern int VecView_MPI_Binary_DA(Vec,Viewer);
-EXTERN_C_END
 extern int DAView_Binary(DA,Viewer);
+extern int VecLoadIntoVector_Binary_DA(Viewer,Vec);
+extern int VecView_MPI_DA(Vec,Viewer);
 
-extern int DFShellCreateDA_Private(MPI_Comm,char**,DA,DF*);
 extern int DAGetGlobalToGlobal1_Private(DA,int**);
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cookie.c,v 1.16 1998/04/13 17:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: cookie.c,v 1.17 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"  /*I "petsc.h" I*/
@@ -18,6 +18,8 @@ int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_PREDEFINED;
 
     Output Parameter:
 .   cookie - the cookie you have been assigned
+
+    Level: developer
 
     Note:
     The initial cookie variable MUST be set to zero on the

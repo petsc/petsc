@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.8 1999/02/21 03:09:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: comb.c,v 1.9 1999/02/21 16:01:00 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -237,7 +237,7 @@ int Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
   int ierr;
 
   PetscFunctionBegin;
-  PLogInfo(0,"Deleting reduction data in an MPI_Comm %d\n",(int) comm);
+  PLogInfo(0,"Petsc_DelReduction:Deleting reduction data in an MPI_Comm %d\n",(int) comm);
   ierr = VecSplitReductionDestroy((VecSplitReduction *)attr_val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -274,7 +274,7 @@ int VecSplitReductionGet(Vec x,VecSplitReduction **sr)
   if (!flag) {  /* doesn't exist yet so create it and put it in */
     ierr = VecSplitReductionCreate(comm,sr);CHKERRQ(ierr);
     ierr = MPI_Attr_put(comm,Petsc_Reduction_keyval,*sr);CHKERRQ(ierr);
-    PLogInfo(0,"Putting reduction data in an MPI_Comm %d\n",(int) comm);
+    PLogInfo(0,"VecSplitReductionGet:Putting reduction data in an MPI_Comm %d\n",(int) comm);
   }
 
   PetscFunctionReturn(0);

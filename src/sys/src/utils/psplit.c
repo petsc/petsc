@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: psplit.c,v 1.1 1999/02/04 22:01:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: psplit.c,v 1.2 1999/03/01 04:53:19 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I    "petsc.h" I*/
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: psplit.c,v 1.1 1999/02/04 22:01:46 bsmith Exp bsmith 
 +    comm - MPI communicator that shares the object being divided
 .    n - local length (or PETSC_DECIDE to have it set)
 -    N - global length (or PETSC_DECIDE)
+
+  Level: developer
 
    Notes:
      n and N cannot be both PETSC_DECIDE

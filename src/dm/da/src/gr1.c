@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.6 1999/02/27 16:17:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr1.c,v 1.7 1999/02/28 23:18:49 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -55,7 +55,6 @@ int DACreateUniformCoordinates(DA da,double xmin,double xmax,double ymin,double 
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "VecView_MPI_Draw_DA1d"
 int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
@@ -199,4 +198,4 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
   ierr = VecRestoreArray(xin,&array); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

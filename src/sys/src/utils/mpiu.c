@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.85 1998/04/28 15:19:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.86 1998/05/18 19:28:43 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        
@@ -72,6 +72,8 @@ static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 -  ng   - Number in processor group.  This many processes are allowed to execute
    at the same time (usually 1)
 
+   Level: intermediate
+
    Notes:
    PetscSequentialPhaseBegin() and PetscSequentialPhaseEnd() provide a
    way to force a section of code to be executed by the processes in
@@ -126,6 +128,8 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 +  comm - Communicator to sequentialize.  
 -  ng   - Number in processor group.  This many processes are allowed to execute
    at the same time (usually 1)
+
+   Level: intermediate
 
    Notes:
    See PetscSequentialPhaseBegin() for more details.

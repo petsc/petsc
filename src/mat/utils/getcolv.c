@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: getcolv.c,v 1.4 1998/04/24 02:16:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: getcolv.c,v 1.5 1999/01/04 21:51:52 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -16,9 +16,13 @@ static char vcid[] = "$Id: getcolv.c,v 1.4 1998/04/24 02:16:14 bsmith Exp bsmith
 .  v - the vector
 -  c - the column requested
 
+   Level: advanced
+
    Contributed by: Denis Vanderstraeten
 
 .keywords: matrix, column, get 
+
+.seealso: MatGetRow(), MatGetDiagonal()
 
 @*/
 int MatGetColumnVector(Mat A, Vec yy, int col)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dclear.c,v 1.21 1999/01/31 16:04:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dclear.c,v 1.22 1999/03/15 23:04:17 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -44,6 +44,8 @@ int DrawClear(Draw draw)
    Input Parameter:
 .  draw - the drawing context
 
+   Level: advanced
+
 .keywords: draw, page, frame
 
 .seealso: DrawEOP(), DrawClear()
@@ -68,6 +70,8 @@ int DrawBOP( Draw draw )
 
    Input Parameter:
 .  draw - the drawing context
+
+   Level: advanced
 
 .keywords: draw, page, frame
 

@@ -1,5 +1,5 @@
 !
-!  $Id: petsclog.h,v 1.9 1998/03/24 16:11:25 balay Exp bsmith $;
+!  $Id: petsclog.h,v 1.10 1999/03/11 16:24:57 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the Plog package in PETSc
 !
@@ -188,14 +188,6 @@
        integer    EC_Solve
        parameter (EC_Solve = 106)
 
-       integer    DFVec_RefineVector
-       parameter (DFVec_RefineVector = 110)
-       integer    DFVec_AssembleFullVector
-       parameter (DFVec_AssembleFullVector = 111)
-       integer    DFVec_GetComponentVectors
-       parameter (DFVec_GetComponentVectors = 112)
-       integer    DFVec_DrawContours
-       parameter (DFVec_DrawContours = 113)
 
 
 

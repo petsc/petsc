@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.78 1999/02/05 19:15:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.79 1999/03/07 17:29:26 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -19,6 +19,8 @@ int   MatSNESFDMFRegisterAllCalled = 0;
    Input Parameters:
 +     mat - the matrix free matrix created via MatCreateSNESFDMF()
 -     ftype - the type requested
+
+   Level: advanced
 
 .seealso: MatCreateSNESFDMF(), MatSNESFDMFRegister()
 @*/
@@ -65,6 +67,8 @@ int MatSNESFDMFSetType(Mat mat,char *ftype)
 .  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
+   Level: developer
+
    Notes:
    MatSNESFDMFRegister() may be called multiple times to add several user-defined solvers.
 
@@ -108,6 +112,8 @@ int MatSNESFDMFRegister_Private(char *sname,char *path,char *name,int (*function
    registered by MatSNESFDMFRegister().
 
    Not Collective
+
+   Level: developer
 
 .keywords: MatSNESFDMF, register, destroy
 
@@ -283,6 +289,8 @@ int MatSNESFDMFMult_Private(Mat mat,Vec a,Vec y)
    Output Parameter:
 .  J - the matrix-free matrix
 
+   Level: advanced
+
    Notes:
    The matrix-free matrix context merely contains the function pointers
    and work space for performing finite difference approximations of
@@ -379,6 +387,8 @@ int MatCreateSNESFDMF(SNES snes,Vec x, Mat *J)
    Input Parameters:
 .   mat - the matrix obtained with MatCreateSNESFDMF()
 
+   Level: advanced
+
 .keywords: SNES, matrix-free, parameters
 
 .seealso: MatCreateSNESFDMF(),MatSNESFDMFSetHHistory(), 
@@ -430,6 +440,8 @@ int MatSNESFDMFSetFromOptions(Mat mat)
 
    Output Paramter:
 .  h - the differencing step size
+
+   Level: advanced
 
 .keywords: SNES, matrix-free, parameters
 
@@ -501,6 +513,11 @@ int MatSNESFDMFKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
 -  error_rel - relative error (should be set to the square root of
                the relative error in the function evaluations)
 
+   Options Database Keys:
++  -snes_mf_err <error_rel> - Sets error_rel
+
+   Level: advanced
+
    Notes:
    The default matrix-free matrix-vector product routine computes
 .vb
@@ -509,8 +526,6 @@ int MatSNESFDMFKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
        = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   else
 .ve
 
-   Options Database Keys:
-+  -snes_mf_err <error_rel> - Sets error_rel
 
 .keywords: SNES, matrix-free, parameters
 
@@ -548,6 +563,8 @@ int MatSNESFDMFSetFunctionError(Mat mat,double error)
 -  vecs - the vectors that span the null space (excluding the constant vector);
           these vectors must be orthonormal
 
+   Level: advanced
+
 .keywords: SNES, matrix-free, null space
 
 .seealso: MatSNESFDMFGetH(), MatCreateSNESFDMF(),
@@ -584,6 +601,8 @@ int MatSNESFDMFAddNullSpace(Mat J,int has_cnst,int n,Vec *vecs)
 .  histroy - space to hold the h history
 -  nhistory - number of entries in history, if more h are generated than
               nhistory the later ones are discarded
+
+   Level: advanced
 
    Notes:
     Use MatSNESFDMFResetHHistory() to reset the history counter
@@ -623,6 +642,8 @@ int MatSNESFDMFSetHHistory(Mat J,Scalar *history,int nhistory)
 
    Input Parameters:
 .  J - the matrix-free matrix context
+
+   Level: advanced
 
    Notes:
     Use MatSNESFDMFSetHHistory() to create the original history counter

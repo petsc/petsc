@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.50 1998/12/17 22:11:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.51 1999/01/12 23:16:56 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -53,6 +53,8 @@ static double PetscRint(double x )
    Ouput Parameters:
 .  axis - the axis datastructure
 
+   Level: advanced
+
 @*/
 int DrawAxisCreate(Draw win,DrawAxis *ctx)
 {
@@ -94,6 +96,8 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
     Input Parameters:
 .   axis - the axis context
  
+    Level: advanced
+
 @*/
 int DrawAxisDestroy(DrawAxis ad)
 {
@@ -120,6 +124,8 @@ int DrawAxisDestroy(DrawAxis ad)
 .   tc - the color of the tick marks
 -   cc - the color of the text strings
 
+    Level: advanced
+
 @*/
 int DrawAxisSetColors(DrawAxis ad,int ac,int tc,int cc)
 {
@@ -140,6 +146,8 @@ int DrawAxisSetColors(DrawAxis ad,int ac,int tc,int cc)
 +   axis - the axis
 .   top - the label at the top of the image
 -   xlabel,ylabel - the labes for the x and y axis
+
+    Level: advanced
 
 @*/
 int DrawAxisSetLabels(DrawAxis ad,char* top,char *xlabel,char *ylabel)
@@ -164,6 +172,8 @@ int DrawAxisSetLabels(DrawAxis ad,char* top,char *xlabel,char *ylabel)
 .   xmin,xmax - limits in x
 -   ymin,ymax - limits in y
 
+    Level: advanced
+
 @*/
 int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double ymax)
 {
@@ -185,6 +195,8 @@ int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double yma
 
     Input Parameter:
 .   ad - Axis structure
+
+    Level: advanced
 
     Note:
     This draws the actual axis.  The limits etc have already been set.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawopenx.c,v 1.3 1999/01/31 16:05:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawopenx.c,v 1.4 1999/02/26 04:40:58 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -41,6 +41,8 @@ static char vcid[] = "$Id: drawopenx.c,v 1.3 1999/01/31 16:05:02 bsmith Exp bsmi
 .  -draw_fast - does not create colormap for countour plots
 .  -draw_double_buffer - Uses double buffering for smooth animation.
 -  -geometry - Indicates location and size of window
+
+   Level: beginner
 
    Note:
    When finished with the drawing context, it should be destroyed

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.201 1998/11/25 20:14:59 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.202 1999/01/04 21:48:44 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -53,6 +53,8 @@ int OptionsAtoi(char name[])
 
     Output Parameter:
 .   name - the name of the running program
+
+   Level: advanced
 
     Notes:
     The name of the program is copied into the user-provided character
@@ -255,6 +257,8 @@ int OptionsInsert(int *argc,char ***args,const char file[])
    Options Database Key:
 .  -optionstable - Activates OptionsPrint() within PetscFinalize()
 
+   Level: advanced
+
 .keywords: options, database, print, table
 
 .seealso: OptionsAllUsed()
@@ -285,6 +289,8 @@ int OptionsPrint(FILE *fd)
 
    Output Parameter:
 .  copts - pointer where string pointer is stored
+
+   Level: advanced
 
 .keywords: options, database, print, table
 
@@ -364,6 +370,8 @@ int OptionsDestroy(void)
    Input Parameters:
 +  name - name of option, this SHOULD have the - prepended
 -  value - the option value (not used for all options)
+
+   Level: intermediate
 
    Note:
    Only some options have values associated with them, such as
@@ -445,6 +453,8 @@ int OptionsSetValue(const char name[],const char value[])
 
    Input Parameter:
 .  name - name of option, this SHOULD have the - prepended
+
+   Level: intermediate
 
 .keywords: options, database, set, value, clear
 
@@ -553,6 +563,8 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
 +  name - the option one is seeking 
 -  mess - error message 
 
+   Level: advanced
+
 .keywords: options, database, has, name
 
 .seealso: OptionsGetInt(), OptionsGetDouble(),OptionsHasName(),
@@ -584,6 +596,8 @@ int OptionsReject(const char name[],const char mess[])
    Output Parameters:
 .  flg - 1 if found else 0.
 
+   Level: beginner
+
 .keywords: options, database, has, name
 
 .seealso: OptionsGetInt(), OptionsGetDouble(),
@@ -613,6 +627,8 @@ int OptionsHasName(const char pre[],const char name[],int *flg)
    Output Parameter:
 +  ivalue - the integer value to return
 -  flg - 1 if found, else 0
+
+   Level: beginner
 
 .keywords: options, database, get, int
 
@@ -650,6 +666,8 @@ int OptionsGetInt(const char pre[],const char name[],int *ivalue,int *flg)
    Output Parameter:
 +  ivalue - the logical value to return
 -  flg - 1 if found, else 0
+
+   Level: beginner
 
    Notes:
        TRUE, true, YES, yes, nostring, and 1 all translate to PETSC_TRUE
@@ -703,6 +721,8 @@ int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,int 
 +  dvalue - the double value to return
 -  flg - 1 if found, 0 if not found
 
+   Level: beginner
+
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
@@ -739,6 +759,8 @@ int OptionsGetDouble(const char pre[],const char name[],double *dvalue,int *flg)
    Output Parameter:
 +  dvalue - the double value to return
 -  flg - 1 if found, else 0
+
+   Level: beginner
 
    Usage:
    A complex number 2+3i can be specified as 2,3 at the command line.
@@ -803,6 +825,8 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,int *flg)
 .  nmax - actual number of values retreived
 -  flg - 1 if found, else 0
 
+   Level: beginner
+
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
@@ -856,6 +880,8 @@ int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[], in
 .  nmax - actual number of values retreived
 -  flg - 1 if found, else 0
 
+   Level: beginner
+
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsHasName(), 
@@ -907,6 +933,8 @@ int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax
 +  string - location to copy string
 -  flg - 1 if found, else 0
 
+   Level: beginner
+
    Fortran Note:
    The Fortran interface is slightly different from the C/C++
    interface (len is not used).  Sample usage in Fortran follows
@@ -951,6 +979,8 @@ int OptionsGetString(const char pre[],const char name[],char string[],int len, i
    Output Parameter:
 +  strings - location to copy strings
 -  flg - 1 if found, else 0
+
+   Level: beginner
 
    Notes: 
    The user should pass in an array of pointers to char, to hold all the
@@ -1012,6 +1042,8 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
    Options Database Key:
 .  -optionsleft - Activates OptionsAllUsed() within PetscFinalize()
 
+   Level: advanced
+
 .keywords: options, database, missed, unused, all, used
 
 .seealso: OptionsPrint()
@@ -1029,6 +1061,10 @@ int OptionsAllUsed(void)
 
 /*@
     OptionsLeft - Prints to screen any options that were set and never used.
+
+  Not collective
+
+  Level: advanced
 
 .seealso: OptionsAllUsed()
 @*/

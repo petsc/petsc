@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.23 1998/07/15 15:16:07 balay Exp balay $";
+static char vcid[] = "$Id: cputime.c,v 1.24 1998/12/17 21:56:44 balay Exp bsmith $";
 #endif
 
 /*
@@ -95,9 +95,11 @@ int PetscGetCPUTime(PLogDouble *t)
     printf( "Code took %f CPU seconds\n", t2-t1);
 .ve
 
+    Level: intermediate
+
     Notes:
     One should use PetscGetTime() or the -log_summary option of 
-    PETSc for profiling. The CPU time is not a realistic number to
+    PETSc for profiling. The CPU time is NOT a realistic number to
     use since it does not include the time for message passing etc.
     Also on many systems the accuracy is only on the order of microseconds.
 @*/

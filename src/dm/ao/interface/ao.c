@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.23 1998/12/03 04:06:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.24 1999/01/31 16:11:10 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: ao.c,v 1.23 1998/12/03 04:06:44 bsmith Exp bsmith $";
    Input Parameters:
 +  ao - the application ordering context
 -  viewer - viewer used for display
+
+   Level: intermediate
 
    Note:
    The available visualization contexts include
@@ -52,6 +54,8 @@ int AOView(AO ao, Viewer viewer)
    Input Parameters:
 .  ao - the application ordering context
 
+   Level: beginner
+
 .keywords: destroy, application ordering
 
 .seealso: AOCreateBasic()
@@ -81,6 +85,8 @@ int AODestroy(AO ao)
    Input Parameters:
 +  ao - the application ordering context
 -  is - the index set
+
+   Level: intermediate
 
    Notes:
    The index set cannot be of type stride or block
@@ -128,6 +134,8 @@ int AOPetscToApplicationIS(AO ao,IS is)
 +  ao - the application ordering context
 -  is - the index set
 
+   Level: beginner
+
    Note:
    The index set cannot be of type stride or block
    
@@ -174,6 +182,8 @@ int AOApplicationToPetscIS(AO ao,IS is)
 .  n - the number of integers
 -  ia - the integers
 
+   Level: beginner
+
    Note:
    Any integers in ia[] that are negative are left unchanged. This 
    allows one to convert, for example, neighbor lists that use negative
@@ -206,6 +216,8 @@ int AOPetscToApplication(AO ao,int n,int *ia)
 +  ao - the application ordering context
 .  n - the number of integers
 -  ia - the integers
+
+   Level: beginner
 
    Note:
    Any integers in ia[] that are negative are left unchanged. This 

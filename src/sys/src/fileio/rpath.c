@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rpath.c,v 1.17 1998/08/26 22:01:40 balay Exp balay $";
+static char vcid[] = "$Id: rpath.c,v 1.18 1998/12/17 21:56:57 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -44,6 +44,8 @@ static char vcid[] = "$Id: rpath.c,v 1.17 1998/08/26 22:01:40 balay Exp balay $"
 +  fullpath  - full pathname
 .  path      - pointer to buffer to hold relative pathname
 -  flen     - size of path
+
+   Level: developer
 
 .keywords: system, get, relative, path
 

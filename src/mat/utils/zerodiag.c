@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.30 1998/11/06 22:40:58 balay Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.31 1999/03/11 16:20:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -25,6 +25,8 @@ static char vcid[] = "$Id: zerodiag.c,v 1.30 1998/11/06 22:40:58 balay Exp bsmit
 +   mat  - matrix to reorder
 -   rmap,cmap - row and column permutations.  Usually obtained from 
                MatGetOrdering().
+
+    Level: intermediate
 
     Notes:
     This is not intended as a replacement for pivoting for matrices that

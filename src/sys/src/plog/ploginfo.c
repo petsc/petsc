@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ploginfo.c,v 1.8 1998/12/03 03:58:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ploginfo.c,v 1.9 1998/12/03 16:50:22 bsmith Exp bsmith $";
 #endif
 /*
       PLogInfo() is contained in a different file from the other profiling to 
@@ -42,6 +42,8 @@ extern FILE *petsc_history;
 
     Options Database Key:
 $    -log_info : activates printing of PLogInfo() messages 
+
+    Level: intermediate
 
     Fortran Note:
     This routine is not supported in Fortran.

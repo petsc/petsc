@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spartition.c,v 1.9 1998/10/19 22:18:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spartition.c,v 1.10 1999/03/11 16:19:48 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -16,6 +16,8 @@ EXTERN_C_END
   MatPartitioningRegisterAll - Registers all of the matrix Partitioning routines in PETSc.
 
   Not Collective
+
+  Level: developer
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and 

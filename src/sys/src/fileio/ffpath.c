@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.18 1998/07/15 15:15:23 balay Exp balay $";
+static char vcid[] = "$Id: ffpath.c,v 1.19 1998/12/17 21:57:20 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -56,6 +56,8 @@ static char vcid[] = "$Id: ffpath.c,v 1.18 1998/07/15 15:15:23 balay Exp balay $
 
    Output Parameter:
 .  fname - qualified file name
+
+   Level: developer
 
 .keywords: system, get, file, from, path
 

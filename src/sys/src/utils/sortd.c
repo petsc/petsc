@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortd.c,v 1.17 1998/05/18 19:19:54 bsmith Exp balay $";
+static char vcid[] = "$Id: sortd.c,v 1.18 1998/08/26 22:01:52 balay Exp bsmith $";
 #endif
 
 /*
@@ -54,6 +54,8 @@ static int PetsciDqsort(double *v,int right)
    Input Parameters:
 +  n  - number of values
 -  v  - array of doubles
+
+   Level: intermediate
 
 .keywords: sort, double
 

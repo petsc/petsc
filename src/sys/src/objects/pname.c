@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.19 1998/12/14 21:08:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pname.c,v 1.20 1999/03/01 04:53:08 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: pname.c,v 1.19 1998/12/14 21:08:11 bsmith Exp bsmith 
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectSetName((PetscObject) mat,name);
 -  name - the name to give obj
+
+   Level: advanced
 
 .keywords: object, set, name
 
@@ -45,6 +47,8 @@ int PetscObjectSetName(PetscObject obj,const char name[])
 +  obj - the Petsc variable
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectSetName((PetscObject) mat,name);
+
+   Level: advanced
 
 .keywords: object, monitoring, publishing
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fpath.c,v 1.21 1998/09/22 15:16:29 balay Exp balay $";
+static char vcid[] = "$Id: fpath.c,v 1.22 1998/12/17 21:57:17 balay Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -52,6 +52,8 @@ static char vcid[] = "$Id: fpath.c,v 1.21 1998/09/22 15:16:29 balay Exp balay $"
 +  path     - pathname to qualify
 .  fullpath - pointer to buffer to hold full pathname
 -  flen     - size of fullpath
+
+   Level: developer
 
 .keywords: system, get, full, path
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: strgen.c,v 1.2 1998/06/11 19:54:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: strgen.c,v 1.3 1999/01/31 16:03:26 bsmith Exp bsmith $";
 #endif
 
 #include "src/vec/is/impls/general/general.h" /*I  "is.h"  I*/
@@ -34,6 +34,8 @@ static struct _ISOps myops = { ISGetSize_General,
 
    Input Parameters:
 .    is - the index set
+
+   Level: advanced
 
 .keywords: IS, general, index set, create, convert, stride
 

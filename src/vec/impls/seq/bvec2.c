@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.152 1999/03/07 14:08:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.153 1999/03/10 04:04:15 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -410,7 +410,8 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecGetMap_Seq,
             VecDot_Seq,
             VecTDot_Seq,
-            VecNorm_Seq};
+            VecNorm_Seq,
+            VecLoadIntoVector_Default};
 
 /*
       This is called by VecCreate_Seq() (i.e. VecCreateSeq()) and VecCreateSeqWithArray()

@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.33 1998/07/28 15:18:03 balay Exp bsmith $ */
+/* $Id: ts.h,v 1.34 1999/03/07 17:30:35 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -33,6 +33,7 @@ extern int TSSetOptionsPrefix(TS, char *);
 extern int TSAppendOptionsPrefix(TS, char *);
 extern int TSGetOptionsPrefix(TS, char **);
 extern int TSSetFromOptions(TS);
+extern int TSSetTypeFromOptions(TS);
 extern int TSSetUp(TS);
 
 extern int TSSetSolution(TS,Vec);

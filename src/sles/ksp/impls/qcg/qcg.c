@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.55 1999/02/09 22:53:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.56 1999/03/01 04:56:06 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -174,8 +174,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
        if (i == 0) {
          PLogInfo(ksp,"KSPSolve_QCG: negative curvature: delta=%g\n",pcgP->delta);
        } else {
-         PLogInfo(ksp,
-           "KSPSolve_QCG: negative curvature: step1=%g, step2=%g, delta=%g\n",step1,step2,pcgP->delta);
+         PLogInfo(ksp,"KSPSolve_QCG: negative curvature: step1=%g, step2=%g, delta=%g\n",step1,step2,pcgP->delta);
        }
          
     } else {

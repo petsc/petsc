@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.53 1998/12/03 03:53:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.54 1999/02/03 15:31:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -304,7 +304,7 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
                          ((double) tmp3)/sizeof(Scalar),((double) tmp1)/sizeof(Scalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
-    PLogInfo((void *)obj,"Efficiency warning, copying array in XXXGetArray() due\n\
+    PLogInfo((void *)obj,"PetscScalarAddressToFortran:Efficiency warning, copying array in XXXGetArray() due\n\
     to alignment differences between C and Fortran\n");
   }
   *res = itmp2;
@@ -354,6 +354,8 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
     Output Parameter:
 .   fobj - the Fortran MPI_Comm
 
+    Level: advanced
+
     Notes:
     MPICCommToFortranComm() must be called in a C/C++ routine.
     MPI 1 does not provide a standard for mapping between
@@ -381,6 +383,8 @@ int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 
     Output Parameter:
 .   comm - the C MPI_Comm
+
+    Level: advanced
 
     Notes:
     MPIFortranCommToCComm() must be called in a C/C++ routine.

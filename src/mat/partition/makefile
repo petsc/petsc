@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 1998/06/15 15:58:42 balay Exp balay $ 
+# $Id: makefile,v 1.8 1999/02/02 21:27:16 balay Exp bsmith $ 
 #
 ALL: lib
 
@@ -11,7 +11,7 @@ OBJSC    = partition.o spartition.o pmetis.o
 DOCS     = 
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/impls/partition/
-MANSEC   = Mat
+MANSEC   = MatOrderings
 
 runexamples:
 

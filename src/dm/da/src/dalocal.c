@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dalocal.c,v 1.18 1999/01/31 16:11:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dalocal.c,v 1.19 1999/02/24 22:55:32 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -21,6 +21,8 @@ static char vcid[] = "$Id: dalocal.c,v 1.18 1999/01/31 16:11:27 bsmith Exp bsmit
 
    Output Parameter:
 .  g - the local vector
+
+   Level: beginner
 
    Note:
    The output parameter, g, is a regular PETSc vector that should be destroyed

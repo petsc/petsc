@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gtype.c,v 1.14 1998/04/13 17:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: gtype.c,v 1.15 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -20,6 +20,8 @@ static char vcid[] = "$Id: gtype.c,v 1.14 1998/04/13 17:30:26 bsmith Exp curfman
 
    Output Parameter:
 .  type - the object type
+
+   Level: advanced
 
 .keywords: object, get, type
 @*/

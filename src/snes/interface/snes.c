@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.175 1999/03/15 01:42:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.176 1999/03/15 02:45:30 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -123,6 +123,51 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 }
 
 #undef __FUNC__  
+#define __FUNC__ "SNESSetTypeFromOptions"
+/*@
+   SNESSetTypeFromOptions - Sets the SNES solver type from the options database,
+        or sets a default if none is give.
+
+   Collective on SNES
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Options Database Keys:
+.  -snes_type <type> - SNES_EQ_LS, SNES_EQ_TR, SNES_UM_TR, SNES_UM_LS etc
+
+   Level: beginner
+
+.keywords: SNES, nonlinear, set, options, database
+
+.seealso: SNESPrintHelp(), SNESSetOptionsPrefix(), SNESSetFromOptions()
+@*/
+int SNESSetTypeFromOptions(SNES snes)
+{
+  char     method[256];
+  int      ierr, flg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  if (snes->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to SNESSetUp()");
+  ierr = OptionsGetString(snes->prefix,"-snes_type",method,256,&flg);
+  if (flg) {
+    ierr = SNESSetType(snes,(SNESType) method); CHKERRQ(ierr);
+  }
+  /*
+      If SNES type has not yet been set, set it now
+  */
+  if (!snes->type_name) {
+    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+      ierr = SNESSetType(snes,SNES_EQ_LS); CHKERRQ(ierr);
+    } else {
+      ierr = SNESSetType(snes,SNES_UM_TR); CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "SNESSetFromOptions"
 /*@
    SNESSetFromOptions - Sets various SNES and SLES parameters from user options.
@@ -168,11 +213,10 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 
 .keywords: SNES, nonlinear, set, options, database
 
-.seealso: SNESPrintHelp(), SNESSetOptionsPrefix()
+.seealso: SNESPrintHelp(), SNESSetOptionsPrefix(), SNESSetTypeFromOptions()
 @*/
 int SNESSetFromOptions(SNES snes)
 {
-  char     method[256];
   double   tmp;
   SLES     sles;
   int      ierr, flg,i,loc[4],nmax = 4;
@@ -185,27 +229,10 @@ int SNESSetFromOptions(SNES snes)
   double   threshold = PETSC_DEFAULT;
 
   PetscFunctionBegin;
-  loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
-
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to SNESSetUp()");
+  ierr = SNESSetTypeFromOptions(snes);CHKERRQ(ierr);
 
-  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = OptionsGetString(snes->prefix,"-snes_type",method,256,&flg);
-  if (flg) {
-    ierr = SNESSetType(snes,(SNESType) method); CHKERRQ(ierr);
-  }
-  /*
-      If SNES type has not yet been set, set it now
-  */
-  if (!snes->type_name) {
-    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      ierr = SNESSetType(snes,SNES_EQ_LS); CHKERRQ(ierr);
-    } else {
-      ierr = SNESSetType(snes,SNES_UM_TR); CHKERRQ(ierr);
-    }
-  }
-
+  loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
   ierr = OptionsGetDouble(snes->prefix,"-snes_stol",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,tmp,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);

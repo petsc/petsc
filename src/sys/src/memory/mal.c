@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mal.c,v 1.39 1998/10/19 22:17:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.40 1999/02/18 15:51:12 bsmith Exp bsmith $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -100,6 +100,8 @@ static int petscsetmallocvisited = 0;
 +  malloc - the malloc routine
 -  free - the free routine
 
+   Level: developer
+
 .keywords: Petsc, set, malloc, free, memory allocation
 @*/
 int PetscSetMalloc(void *(*imalloc)(int,int,char*,char*,char*),
@@ -120,6 +122,8 @@ int PetscSetMalloc(void *(*imalloc)(int,int,char*,char*,char*),
         defaults.
 
    Not Collective
+
+   Level: developer
 
    Notes:
     In general one should never run a PETSc program with different malloc() and 

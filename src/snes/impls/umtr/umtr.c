@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.79 1999/02/09 23:31:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.80 1999/03/01 04:57:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -249,6 +249,9 @@ static int SNESDestroy_UM_TR(SNES snes )
 .    pred     - predicted reduction
 -    rtol     - relative function tolerance, 
                 set with SNESSetTolerances()
+
+   Level: intermediate
+
 @*/
 int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,void *dummy)
 {

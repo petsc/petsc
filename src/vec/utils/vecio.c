@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.50 1999/03/07 00:02:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.51 1999/03/11 16:16:10 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -25,6 +25,8 @@ static char vcid[] = "$Id: vecio.c,v 1.50 1999/03/07 00:02:19 bsmith Exp bsmith 
 
   Output Parameter:
 . newvec - the newly loaded vector
+
+   Level: intermediate
 
   Notes:
   The input file must contain the full global vector, as
@@ -133,56 +135,8 @@ int VecLoad(Viewer viewer,Vec *newvec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecLoadIntoVector_new"
-
-#undef __FUNC__  
-#define __FUNC__ "VecLoadIntoVector"
-/*@C 
-  VecLoadIntoVector - Loads a vector that has been stored in binary format
-  with VecView().
-
-  Collective on Viewer 
-
-  Input Parameters:
-+ viewer - binary file viewer, obtained from ViewerBinaryOpen()
-- vec - vector to contain files values (must be of correct length)
-
-
-  Notes:
-  The input file must contain the full global vector, as
-  written by the routine VecView().
-
-  Use VecLoad() to create the vector as the values are read in
-
-  Notes for advanced users:
-  Most users should not need to know the details of the binary storage
-  format, since VecLoad() and VecView() completely hide these details.
-  But for anyone who's interested, the standard binary matrix storage
-  format is
-.vb
-     int    VEC_COOKIE
-     int    number of rows
-     Scalar *values of all nonzeros
-.ve
-
-   Note for Cray users, the int's stored in the binary file are 32 bit
-integers; not 64 as they are represented in the memory, so if you
-write your own routines to read/write these binary files from the Cray
-you need to adjust the integer sizes that you read in, see
-PetscReadBinary() and PetscWriteBinary() to see how this may be
-done.
-
-   In addition, PETSc automatically does the byte swapping for
-machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
-linux, nt and the paragon; thus if you write your own binary
-read/write routines you have to swap the bytes; see PetscReadBinary()
-and PetscWriteBinary() to see how this may be done.
-
-.keywords: vector, load, binary, input
-
-.seealso: ViewerBinaryOpen(), VecView(), MatLoad(), VecLoad() 
-@*/  
-int VecLoadIntoVector(Viewer viewer,Vec vec)
+#define __FUNC__ "VecLoadIntoVector_Default"
+int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
 {
   int         i, rows, ierr, type, fd,rank,size,n,*range,tag,bs,flag;
   Scalar      *avec;
@@ -193,7 +147,7 @@ int VecLoadIntoVector(Viewer viewer,Vec vec)
   Map         map;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscStrcmp(vtype,BINARY_VIEWER)) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
   PLogEventBegin(VEC_Load,viewer,vec,0,0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.46 1999/02/24 20:00:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: vinv.c,v 1.47 1999/03/07 14:27:59 curfman Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -186,6 +186,8 @@ int VecStrideMax(Vec v,int start,int *index,double *norm)
    Output Parameter:
 +  index - the location where the minimum occurred (not supported, pass PETSC_NULL)
 -  norm - the min
+
+   Level: intermediate
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
@@ -416,6 +418,8 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
    Output Parameter:
 .  v - the vector reciprocal
 
+   Level: intermediate
+
 .keywords: vector, reciprocal
 @*/
 int VecReciprocal(Vec v)
@@ -446,6 +450,8 @@ int VecReciprocal(Vec v)
 
    Output Parameter:
 .  sum - the result
+
+   Level: beginner
 
 .keywords: vector, sum
 
@@ -487,6 +493,8 @@ int VecSum(Vec v,Scalar *sum)
    Output Parameter:
 .  v - the shifted vector 
 
+   Level: intermediate
+
 .keywords: vector, shift
 @*/
 int VecShift(const Scalar *shift,Vec v)
@@ -514,6 +522,8 @@ int VecShift(const Scalar *shift,Vec v)
 
    Input Parameters:
 .  v - the vector 
+
+   Level: intermediate
 
 .keywords: vector,absolute value
 @*/
@@ -547,6 +557,8 @@ int VecAbs(Vec v)
 
    Output Parameter:
 .  flg - PETSC_TRUE if the vectors are equal; PETSC_FALSE otherwise.
+
+   Level: intermediate
 
 .keywords: vec, equal, equivalent
 @*/

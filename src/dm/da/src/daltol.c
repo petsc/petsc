@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daltol.c,v 1.13 1998/04/27 15:58:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: daltol.c,v 1.14 1999/01/31 16:11:27 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -24,6 +24,8 @@ static char vcid[] = "$Id: daltol.c,v 1.13 1998/04/27 15:58:33 curfman Exp bsmit
 
    Output Parameter:
 .  l  - the local vector with correct ghost values
+
+   Level: intermediate
 
    Notes:
    The local vectors used here need not be the same as those
@@ -62,6 +64,8 @@ int DALocalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 
    Output Parameter:
 .  l  - the local vector with correct ghost values
+
+   Level: intermediate
 
    Note:
    The local vectors used here need not be the same as those

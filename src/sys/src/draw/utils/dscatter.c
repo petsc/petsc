@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.20 1998/12/17 22:11:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dscatter.c,v 1.21 1999/01/12 23:16:56 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -35,6 +35,8 @@ struct _p_DrawSP {
 
     Output Parameters:
 .   outctx - the scatter plot context
+
+   Level: intermediate
 
 .keywords:  draw, scatter plot, graph, create
 
@@ -84,6 +86,8 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
 +  sp - the line graph context.
 -  dim - the number of curves.
 
+   Level: intermediate
+
 .keywords:  draw, line, graph, reset
 @*/
 int DrawSPSetDimension(DrawSP sp,int dim)
@@ -112,6 +116,8 @@ int DrawSPSetDimension(DrawSP sp,int dim)
    Input Parameter:
 .  sp - the line graph context.
 
+   Level: intermediate
+
 .keywords:  draw, line, graph, reset
 @*/
 int DrawSPReset(DrawSP sp)
@@ -137,6 +143,8 @@ int DrawSPReset(DrawSP sp)
 
    Input Parameter:
 .  sp - the line graph context
+
+   Level: intermediate
 
 .keywords:  draw, line, graph, destroy
 
@@ -174,6 +182,8 @@ int DrawSPDestroy(DrawSP sp)
 +  sp - the scatter plot data structure
 -  x, y - the points to two vectors containing the new x and y 
           point for each curve.
+
+   Level: intermediate
 
 .keywords:  draw, line, graph, add, point
 
@@ -224,6 +234,8 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
 .  xx,yy - points to two arrays of pointers that point to arrays 
            containing the new x and y points for each curve.
 -  n - number of points being added
+
+   Level: intermediate
 
 .keywords:  draw, line, graph, add, points
 
@@ -279,6 +291,8 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
    Input Parameter:
 .  sp - the line graph context
 
+   Level: intermediate
+
 .keywords:  draw, line, graph
 @*/
 int DrawSPDraw(DrawSP sp)
@@ -322,6 +336,8 @@ int DrawSPDraw(DrawSP sp)
 +  xsp - the line graph context
 -  x_min,x_max,y_min,y_max - the limits
 
+   Level: intermediate
+
 .keywords:  draw, line, graph, set limits
 @*/
 int DrawSPSetLimits( DrawSP sp,double x_min,double x_max,double y_min,
@@ -353,6 +369,8 @@ int DrawSPSetLimits( DrawSP sp,double x_min,double x_max,double y_min,
    Output Parameter:
 .  axis - the axis context
 
+   Level: intermediate
+
 .keywords: draw, line, graph, get, axis
 @*/
 int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
@@ -379,6 +397,8 @@ int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
 
    Output Parameter:
 .  win - the draw context
+
+   Level: intermediate
 
 .keywords: draw, line, graph, get, context
 @*/

@@ -146,7 +146,7 @@ int Kernel_A_gets_inverse_A_7(MatScalar *a)
 	l = ipvt[k];
 	if (l != k) {
             ax = &a[k3 + 1]; 
-            ay = &a[6*l + 1];
+            ay = &a[7*l + 1];
             stmp = ax[0]; ax[0] = ay[0]; ay[0] = stmp;
             stmp = ax[1]; ax[1] = ay[1]; ay[1] = stmp;
             stmp = ax[2]; ax[2] = ay[2]; ay[2] = stmp;

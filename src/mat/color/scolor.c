@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: scolor.c,v 1.12 1998/03/23 21:21:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: scolor.c,v 1.13 1998/04/13 17:40:46 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -17,6 +17,8 @@ extern int MatFDColoringID_Minpack(Mat,MatColoringType,ISColoring*);
   MatColoringRegisterAll - Registers all of the matrix coloring routines in PETSc.
 
   Not Collective
+
+  Level: developer
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and 

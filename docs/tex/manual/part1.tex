@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.122 1999/01/12 23:18:32 bsmith Exp balay $ 
+% $Id: part1.tex,v 1.123 1999/02/03 00:18:36 balay Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -111,27 +111,22 @@ before one understands all of the material presented here.
 
 \medskip \medskip
 
+Within the PETSc distribution, the directory
+{\tt \$\{PETSC\_DIR\}/docs} contains all documentation.
 Manual pages for all PETSc functions can be
 accessed on line at
 \begin{verbatim}
-  ${PETSC_DIR}/docs/manualpages/index.html %$
+  ${PETSC_DIR}/docs/manualpages/index.html
 \end{verbatim}
 The manual pages
 provide hyperlinked indices (organized by
 both concepts and routine names) to the tutorial examples and enable
 easy movement among related topics.  
 
-Within the PETSc distribution, the directory
-{\tt \$\{PETSC\_DIR\}/docs} contains all documentation, including this
-manual and the manual pages in PostScript and HTML
-formats. 
-
 Emacs users may find the
 {\em etags} option to be extremely useful for exploring the PETSc
 source code.  Details of this feature are provided in
-Section~\ref{sec:emacs}. Similarly, {\em vi} users may find the
-{\em ctags} option to be useful. Details of this 
-feature are provided in Section~\ref{sec:vi}.
+Section~\ref{sec:emacs}. 
 
 The file {\tt manual.ps} contains the PostScript form of
 the {\em PETSc 2.0 Users Manual} in its entirety, while {\tt intro.ps} 
@@ -150,12 +145,12 @@ troubleshooting guide, and a FAQ list for frequently asked questions.
 {\bf Note to Fortran Programmers}: In most of the  
 manual, the examples and calling sequences are given for the C/C++
 family of programming languages.  We follow this convention because we
-highly recommend that PETSc applications be coded in C or C++.
-However, pure Fortran77 programmers can use most of the
+recommend that PETSc applications be coded in C or C++.
+However, pure Fortran programmers can use most of the
 functionality of PETSc from Fortran, with only minor differences in
 the user interface.  Chapter \ref{ch:fortran} provides a discussion of the
 differences between using PETSc from Fortran and C, as well as several
-complete Fortran77 examples.  This chapter also introduces some
+complete Fortran examples.  This chapter also introduces some
 routines that support direct use of Fortran90 pointers.
 
 %-----------------------------------------------------------------------------
@@ -248,7 +243,7 @@ communicator, given by {\tt PETSC\_COMM\_WORLD}, to {\tt MPI\_COMM\_WORLD}.
 
 For those not familar with MPI, a {\em communicator} is a way of
 indicating a collection of processors that will be involved together
-in a calculation or communication. Communicators has the variable type
+in a calculation or communication. Communicators have the variable type
 {\tt MPI\_Comm}. In most cases users can employ the communicator {\tt
 PETSC\_COMM\_WORLD} to indicate all processes in a given run and {\tt
 PETSC\_COMM\_SELF} to indicate a single process. MPI provides routines
@@ -648,9 +643,7 @@ users examine programs in the directories
 where {\tt <component>}
 denotes any of the PETSc components (listed in the following
 section), such as {\tt snes} or {\tt sles}.  
-Currently some components have examples only in
-{\tt \$\{PETSC\_DIR\}/src/<component>/examples/tests}; more tutorial examples
-will be forthcoming.  The HTML version of the manual pages located at
+The HTML version of the manual pages located at
 \begin{verbatim}
    ${PETSC_DIR}/docs/manualpages/index.html or 
    http://www.mcs.anl.gov/petsc/docs/manualpages/index.html
@@ -713,7 +706,7 @@ the root directory of PETSc contains the following directories:
                    and {\tt manual.html} contain the users manual in
                    PostScript and HTML formats, respectively. Includes
                    the subdirectory
- \subitem - {\tt manual pages} (on-line manual pages).
+ \subitem - {\tt manualpages} (on-line manual pages).
 \item {\tt bin} - Utilities and short scripts for use with PETSc, including
  \begin{itemize}
  \item {\tt petsarch} (utility for setting {\tt PETSC\_ARCH} environmental variable),
@@ -735,19 +728,28 @@ the root directory of PETSc contains the following directories:
 \item {\tt src} - The source code for all PETSc components, which
                   currently includes
  \begin{itemize}
- \item {\tt is} - index sets,
  \item {\tt vec} - vectors,
- \item {\tt da} - distributed arrays,
+   \begin{itemize}
+     \item {\tt is} - index sets,
+   \end{itemize}
  \item {\tt mat} - matrices,
- \item {\tt ksp} - Krylov subspace accelerators,
- \item {\tt pc} - preconditioners,
+ \item {\tt dm}
+   \begin{itemize}
+    \item {\tt da} - distributed arrays,
+    \item {\tt ao} - application orderings,
+   \end{itemize}
  \item {\tt sles} - complete linear equations solvers,
+ \begin{itemize}
+   \item {\tt ksp} - Krylov subspace accelerators,
+   \item {\tt pc} - preconditioners,
+ \end{itemize}
  \item {\tt snes} - nonlinear solvers and unconstrained minimization,
  \item {\tt ts} - ODE solvers and timestepping,
  \item {\tt sys} - general system-related routines,
- \item {\tt plog} - PETSc logging and profiling routines,
- \item {\tt draw} - simple graphics,
- \item {\tt ao} - application orderings,
+ \begin{itemize}
+   \item {\tt plog} - PETSc logging and profiling routines,
+   \item {\tt draw} - simple graphics,
+ \end{itemize}
  \item {\tt fortran} - Fortran interface stubs,
  \item {\tt contrib} - contributed modules that use PETSc but are not
     part of the official PETSc package.  We encourage users who have

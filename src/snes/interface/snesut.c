@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.43 1999/01/13 21:46:21 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesut.c,v 1.44 1999/02/01 03:22:39 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
@@ -163,25 +163,20 @@ int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *d
     PetscFunctionReturn(-3);
   }
   if (fnorm <= snes->ttol) {
-    PLogInfo(snes,
-    "SNESConverged_EQ_LS:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
+    PLogInfo(snes,"SNESConverged_EQ_LS:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
     PetscFunctionReturn(4);
   }
 
   if (fnorm < snes->atol) {
-    PLogInfo(snes,
-      "SNESConverged_EQ_LS: Converged due to function norm %g < %g\n",fnorm,snes->atol);
+    PLogInfo(snes,"SNESConverged_EQ_LS:Converged due to function norm %g < %g\n",fnorm,snes->atol);
     PetscFunctionReturn(2);
   }
   if (pnorm < snes->xtol*(xnorm)) {
-    PLogInfo(snes,
-      "SNESConverged_EQ_LS: Converged due to small update length: %g < %g * %g\n",
-       pnorm,snes->xtol,xnorm);
+    PLogInfo(snes,"SNESConverged_EQ_LS:Converged due to small update length: %g < %g * %g\n",pnorm,snes->xtol,xnorm);
     PetscFunctionReturn(3);
   }
   if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo(snes,"SNESConverged_EQ_LS: Exceeded maximum number of function evaluations: %d > %d\n",
-      snes->nfuncs, snes->max_funcs );
+    PLogInfo(snes,"SNESConverged_EQ_LS:Exceeded maximum number of function evaluations: %d > %d\n",snes->nfuncs, snes->max_funcs);
     PetscFunctionReturn(-2);
   }  
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.23 1998/12/17 22:09:29 bsmith Exp balay $";
+static char vcid[] = "$Id: str.c,v 1.24 1998/12/17 22:49:03 balay Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -23,6 +23,8 @@ static char vcid[] = "$Id: str.c,v 1.23 1998/12/17 22:09:29 bsmith Exp balay $";
    Input Parameter:
 +    type1 - first type
 -    type2 - second type
+
+   Level: intermediate
 
    Synopsis:
    int PetscTypeCompare(type1,type2)

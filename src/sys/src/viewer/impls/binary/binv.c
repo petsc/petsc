@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.60 1999/02/01 15:38:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.61 1999/03/07 17:26:40 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -28,6 +28,8 @@ typedef struct  {
 +   viewer - viewer context, obtained from ViewerBinaryOpen()
 -   fdes - file descriptor
 
+    Level: advanced
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -54,6 +56,8 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 
 +   viewer - viewer context, obtained from ViewerBinaryOpen()
 -   file - file pointer
+
+    Level: advanced
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -104,6 +108,8 @@ $    BINARY_WRONLY - open existing file for binary output
    Output Parameter:
 .  binv - viewer for binary input/output to use with the specified file
 
+   Level: beginner
+
    Note:
    This viewer can be destroyed with ViewerDestroy().
 
@@ -138,6 +144,8 @@ int ViewerBinaryOpen(MPI_Comm comm,const char name[],ViewerBinaryType type,Viewe
 $    BINARY_CREATE - create new file for binary output
 $    BINARY_RDONLY - open existing file for binary input
 $    BINARY_WRONLY - open existing file for binary output
+
+  Level: advanced
 
 .seealso: ViewerCreate(), ViewerSetType(), ViewerBinaryOpen()
 

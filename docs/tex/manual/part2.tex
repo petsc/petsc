@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.312 1999/03/11 16:25:05 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.313 1999/03/14 22:13:41 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -18,15 +18,15 @@ objects.  Vectors are used to store discrete PDE solutions, right-hand
 sides for linear systems, etc. This chapter is organized as follows:
 
 \begin{itemize}
-\item Sections~\ref{sec:veccreate} and \ref{sec:vecbasic} - basic usage of vectors
+\item (Vec) Sections~\ref{sec:veccreate} and \ref{sec:vecbasic} - basic usage of vectors
 \item Section \ref{sec:indexingandordering} - management of the various numberings of
                degrees of freedom, vertices, cells, etc.
   \begin{itemize} 
-  \item Mapping between different global numberings
-  \item Mapping between local and global numberings
+  \item (AO) Mapping between different global numberings
+  \item (ISLocalToGlobalMapping) Mapping between local and global numberings
   \end{itemize}
-\item Section \ref{sec:struct} - management of structured grids
-\item Section \ref{sec:unstruct} - management of unstructured grids
+\item (DA) Section \ref{sec:struct} - management of structured grids
+\item (IS, VecScatter) Section \ref{sec:unstruct} - management of unstructured grids
 \end{itemize}
 
 % --------------------------------------------------------------------------------------
@@ -286,14 +286,14 @@ In addition to {\tt VecDot()} and {\tt VecMDot()} and {\tt VecNorm()} PETSc prov
 split phase versions of these that allow several independent inner products and/or norms
 to share the same communication (thus improving parallel efficiency). For example,
 one may have code such as 
-begin{verbatim}
+\begin{verbatim}
   ierr = VecDot(Vec x,Vec y,Scalar *dot);
   ierr = VecNorm(Vec x,NormType NORM_2,double *norm2);
   ierr = VecNorm(Vec x,NormType NORM_1,double *norm1);
 \end{verbatim}
 This code works fine, the problem is that it performs three seperate parallel communication
 operations. Instead one can write 
-begin{verbatim}
+\begin{verbatim}
   ierr = VecDotBegin(Vec x,Vec y,Scalar *dot);
   ierr = VecNormBegin(Vec x,NormType NORM_2,double *norm2);
   ierr = VecNormBegin(Vec x,NormType NORM_1,double *norm1);
@@ -308,7 +308,7 @@ calls to the {\tt VecxxxEnd()} are performed in the same order as the calls to t
 {\tt VecxxxBegin()}; however if you mistakenly make the calls in the wrong order PETSc
 will generate an error,
 informing you of this. There are two additional routines {\tt VecTDotBegin()} and 
-{\tt VecTDotEnd()}. \findex{VecTDotBegin()} \findex{VecTDotEnd()
+{\tt VecTDotEnd()}. \findex{VecTDotBegin()} \findex{VecTDotEnd()}
 These routines where suggested by Victor Eijkhout.
 
 Note: these routines use only MPI 1 functionality; so they do not allow you to overlap 
@@ -2129,7 +2129,7 @@ slightly better speed performance. One can also use
 modifed Gram-Schmidt, 
 \findex{KSPGMRESModifiedGramSchmidtOrthogonalization} by setting the orthogonalization routine,
 {\tt KSPGMRESModifiedGramSchmidtOrthogonalization()}, by using the command line option 
-{\tt -ksp\_gmres\__modifiedgramschmidt}. \findex{-ksp_gmres_modifiedgramschmidt}
+{\tt -ksp\_gmres\_modifiedgramschmidt}. \findex{-ksp_gmres_modifiedgramschmidt}
 
 For the conjugate gradient method with complex numbers, there are two
 slightly different algorithms depending on whether the matrix is 
@@ -3386,7 +3386,7 @@ Other line search methods provided by PETSc are
 \findex{SNESNoLineSearch()} \findex{SNESNoLineSearchNoNorms()}
 \findex{SNESQuadraticLineSearch()}
 which can be set with the option
-{\tt -snes\_eq\_ls [cubic,quadratic,basic,basicnonorms]}. \findex{-snes_eq_ls}
+{\tt -snes\_eq\_ls [cubic, quadratic, basic, basicnonorms]}. \findex{-snes_eq_ls}
 The line search routines involve several parameters, which are set
 to defaults that are reasonable for many applications.  The user
 can override the defaults by using the options
@@ -3730,7 +3730,7 @@ via the routines
    MatSNESFDMFGetH(Mat,Scalar *);
    MatSNESFDMFKSPMonitor(KSP,int,double,void *);
 \end{verbatim}
-and the runtime option  {\tt -snes\_mf\_ksp\_monitor} {\findex{snes_mf_ksp_monitor}
+and the runtime option  {\tt -snes\_mf\_ksp\_monitor} \findex{snes_mf_ksp_monitor}
 
 We include an example in Figure~\ref{fig:snesexample2} that explicitly
 uses a matrix-free approach.  Note that by using the option 
@@ -4402,7 +4402,7 @@ commands \findex{DrawAxisSetColors()} \findex{DrawAxisSetLabels()}
 
 \begin{figure}[H]
 {\small
-\fileinclude{../../../src/draw/examples/tests/ex3.c}
+\fileinclude{../../../src/sys/src/draw/examples/tests/ex3.c}
 }
 \caption{Example of Drawing Plots}
 \label{fig:plot}
@@ -4696,7 +4696,7 @@ PETSc provides two macros (defined in C/C++) to help write
 portable code that mixes C/C++ and Fortran. They are 
 {\tt HAVE\_FORTRAN\_UNDERSCORE} and {\tt HAVE\_FORTRAN\_CAPS}
 \findex{HAVE_FORTRAN_UNDERSCORE} \findex{HAVE_FORTRAN_CAPS},
-which are defined in the file {\tt \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base.site}.
+which are defined in the file {\tt \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/petscconf.h}.
 The macros are used, for example, as follows:
 \begin{verbatim}
    #if defined(HAVE_FORTRAN_CAPS)
@@ -4882,7 +4882,7 @@ since PETSc usage within the two languages differs only slightly.
 
 \begin{figure}[H]
 {\small
-\fileinclude{../../../src/draw/examples/tests/ex5.F}
+\fileinclude{../../../src/sys/src/draw/examples/tests/ex5.F}
 }
 \caption{Sample Fortran Program:  Using PETSc Draw Routines}
 \label{fig:draw-Fortran}
@@ -4930,23 +4930,13 @@ activated at runtime.  Note that the flag {\tt -DPETSC\_LOG} can be
 specified for an installation of PETSc in the file {\tt
 \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base.\$\{BOPT\}}, as discussed in
 Section~\ref{sec:makeflags}.  The profiling options include the following:
-\findex{-log_all} \findex{-log_summary} \findex{-log} \findex{-log_info}
+\findex{-log_summary} \findex{-log_info}
 \findex{-log_trace}
 \begin{itemize}
 \item {\tt -log\_summary} - Prints an ASCII version of performance data
      at program's conclusion. These statistics are comprehensive and concise
      and require little overhead; thus, {\tt -log\_summary} is intended as
      the primary means of monitoring the performance of PETSc codes.
-\item {\tt -log [logfile]} - Generates a log file of basic data for examination
-     with PETScView, a GUI utility described in Chapter~\ref{ch:petsc_gui}
-     that provides a high-level view of the interrelationships
-     among various code modules.  Since the overhead for this monitoring is minor,
-     it can be used for production runs.  
-\item {\tt -log\_all [logfile]} - Generates a log file with extensive data
-     for examination with PETScView.  This option is thus intended to
-     provide an overview of the computations within a program.  Since the
-     detailed event logging can significantly slow program execution, 
-     {\tt -log\_all} is not recommended for production runs.
 \item {\tt -log\_info} - Prints verbose information about code to the screen. 
      This option provides details about algorithms, data structures, etc.
      Since the overhead of printing such output slows a code, this
@@ -4956,11 +4946,7 @@ Section~\ref{sec:makeflags}.  The profiling options include the following:
      {\tt -log\_info}, is useful to see where a program is hanging
      without running in the debugger.  
 \end{itemize}
-For the options {\tt -log} and {\tt -log\_file}, the file {\tt
-logfile} stores profiling information for later interpretation with
-PETScView; if {\tt logfile} is not given, the file {\tt
-Log.processor\_rank} is used, where {\tt processor\_rank} is 0 for the
-first processor, etc.  As discussed in Section~\ref{sec:mpelogs},
+ As discussed in Section~\ref{sec:mpelogs},
 additional profilng can be done with MPE.
 
 \subsection{Interpreting -log\_summary Output: The Basics}
@@ -5034,11 +5020,7 @@ The summaries printed via {\tt -log\_summary} reflect this
 routine hierarchy. For example, the performance summaries for a
 particular high-level routine such as {\tt SLESSolve} include all of
 the operations accumulated in the lower-level components that
-make up the routine.  Using the GUI utility PETScView
-(described in Chapter~\ref{ch:petsc_gui}) for a small example problem can
-help to provide the user with an understanding of the operations
-within an application code, thus making this hierarchy more aparrent
-for a particular application.
+make up the routine.  
 
 Admittedly, we do not currently present the output with {\tt
 -log\_summary} so that the hierarchy of PETSc operations is completely
@@ -5127,13 +5109,6 @@ suggestions about achieving good performance with PETSc codes.
 
 \subsection{Using -log and -log\_all with PETScView}
 \findex{-log} \findex{-log_all}
-
-The PETSc utility {\tt \$\{PETSC\_DIR\}/bin/petscview [logfile]}
-\findex{petscview} can be used to examine the profile data generated by
-{\tt -log} and {\tt -log\_all}.  Chapter \ref{ch:petsc_gui} provides
-details regarding this Tk/Tcl tool, which provides a high-level view of
-the interrelationships among various code modules. Also,
-Section~\ref{sec:deactivate} gives information on restricting event logging.
 
 \subsection{Using -log\_mpe with Upshot/Nupshot}
 \label{sec:mpelogs}
@@ -6242,21 +6217,6 @@ is defined.  Any string in any of the PETSc files can be found with the
 command ``{\tt M-x tags-search}''. To find repeated occurrences, 
 one can simply use ``{\tt M-,}'' to find the next occurrence.
 
-\section{VI Users} \sindex{VI} \label{sec:vi}
-
-\sindex{VI} \sindex{ctags, in VI}
-If users develop 
-application codes on UNIX machines using VI, the {\tt ctags} feature 
-can be used to browse PETSc files quickly and efficiently.  To use 
-this feature, one should first check if the file, {\tt \$\{PETSC\_DIR\}/vitags} 
-exists.  If this file is not present, it should be generated by running 
-{\tt make vitags} from the PETSc home directory. Once the file exists, 
-from VI, the user should issue the command ``{\tt :set tags=\$\{PETSC\_DIR\}/vitags}'' 
-or the user should add to
-his ``{\tt \~/.exrc }'' file the line ``{\tt set tags=\$\{PETSC\_DIR\}/vitags}''.
-Then the command ``{\tt :tag FunctionName}'' will cause VI 
-to find the file and line number where a desired PETSc function 
-is defined. 
 
 \section{Parallel Communication}
 
@@ -6322,7 +6282,7 @@ not needed by users.
       all files in the directory. 
 \item {\tt fortranstubs} - Generates the Fortran wrapper routines.  
 \item {\tt latexpages} - Updates the LaTeX version of the manual pages.
-\item {\tt wwwpages} - Updates the HTML version of the manual pages.
+\item {\tt manualpages} - Updates the HTML version of the manual pages.
 \end{itemize}
 
 The {\tt tree} command enables the user to execute a particular action
@@ -6332,7 +6292,7 @@ listed above. For example, if the command
 \begin{verbatim}
    make BOPT=g ACTION=lib tree
 \end{verbatim}
-were executed from the directory {\tt \$\{PETSC\_DIR\}/src/ksp},
+were executed from the directory {\tt \$\{PETSC\_DIR\}/src/sles/ksp},
 the debugging library for all Krylov subspace solvers would be built.
 
 \subsection{Customized Makefiles}
@@ -6343,24 +6303,13 @@ architecture that contains machine-specific information, enabling the
 portability of our makefile system.
 For instance, for Sun SPARCstations running OS 4.1.3, the 
 directory is called {\tt sun4}.  Each architecture directory contains
-several base makefiles:
+two base makefiles:
 \begin{itemize}
 \item {\tt base.site} - locations of all needed include
       and library files for a particular site. This file (discussed
       below) is usually the only one that the user needs to alter.
 \item {\tt base} - definitions of the compilers,
       linkers, etc.
-\item {\tt base.g} - debugging options for C version.
-\item {\tt base.O} - optimization options for C version.
-\item {\tt base.Opg} - optimized options for C version, with gprof profiling.
-\item {\tt base.g\_complex} - debugging options for complex version.
-\item {\tt base.O\_complex} - optimization options for complex version.
-\item {\tt base.Opg\_complex} - optimization options for complex version, with 
-                              gprof profiling.
-\item {\tt base.g\_c++} - debugging options for C++ version.
-\item {\tt base.O\_c++} - optimization options for C++ version.
-\item {\tt base.Opg\_c++} - optimization options for C++ version, with gprof
-                            profiling.
 \end{itemize}
 Each architecture base file, denoted by
 {\tt \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base},
@@ -6578,433 +6527,6 @@ the following:
 \item Each makefile can maintain at most one archive library.
 \end{itemize}
 
-
-%--------------------------------------------------------------------------
-
-\chapter{PETSc GUI Utilities}
-\label{ch:petsc_gui}
-
-\sindex{GUI utilities}
-PETSc includes two GUI utilities, PETScView and PETScOpts, that
-facilitate library use and interpretation of computational results.
-We acknowledge the contributions of Matt Hille (Washington State
-University), who focused on the design and documentation of these
-tools while a participant in Argonne's Summer Student Research
-Participation Program, 1995.
-
-As discussed in Chapter \ref{ch:profiling}, PETSc incorporates uniform
-event logging throughout the library in the form of statistics
-regarding object creation and destruction, floating-point operations,
-execution time, and memory usage.  The utility PETScView provides an
-abstract interpretation of the profile data for a high-level view of
-the interrelationships among various code modules.  PETScView assists
-in debugging, analysis, and performance enhancement and is especially
-useful for complex simulations that employ a combination of numerical
-methods and modeling techniques.
-
-An additional GUI tool is PETScOpts, which provides a simple interface to
-the full range of PETSc options database commands.  As discussed in Section
-\ref{sec:options}, these options enable the user to set particular
-solvers, data structures, profiling options, etc. at runtime, thereby
-facilitating the customization and comparison of various algorithms
-and storage schemes.
-
-\section{Getting Started}
-
-PETScView and PETScOpts use the Tcl and the Tk Toolkit
-\cite{tcl-tk-web-page}.  Therefore, in order to use the PETSc utility
-programs, the Tcl and Tk packages must be installed on the user's
-local system.  See the following WWW site for information about
-Tcl/Tk: {\tt http://www.sunlabs.com/research/tcl/}.
-
-In order for PETScView and PETScOptions to work properly, a
-slight modification of the source code is required.  Using any text
-editor, the user should load the file {\tt \$\{PETSC\_DIR\}/bin/petscview} (or 
-\break {\tt \$\{PETSC\_DIR\}/bin/petscopts}) and change the
-first line in the source code to point to the proper location of where
-{\tt wish} can be found.  For example, if {\tt wish} is located at
-{\tt /usr/bin/wish}, the first line for each program should be changed
-to
-\begin{verbatim}
-   #! /usr/local/wish -f
-\end{verbatim}
-After this modification, PETScView and PETScOpts are ready to run.
-
-\medskip \medskip
-Since Tcl/Tk are constantly changing (even faster than PETSc :-)),
-it is difficult to keep PetscView and PetscOpts compatible with the
-latest release of Tcl/Tk, while still working with earlier releases.
-Thus, the user may have to modify the PetscView and PetscOpts script slightly
-to get them working with a particular version of Tcl/Tk.
- 
-\section{Using PETScView}
-\label{sec:petscview}
-
-\sindex{visualizing program activity} \findex{petscview}
-\findex{-log} \findex{-log_all}
-Whenever a PETSc program is executed with the {\tt -log\_all} or {\tt
--log} option, a log file is produced that can then be interpreted by
-PETScView.  PETScView generates a dynamic tree-shaped hierarchy whose
-nodes contain icons that uniquely identify PETSc objects (such as
-linear solvers, matrices, and distributed arrays).  The objects are
-color coded to denote the various states of activity, so that
-PETScView illustrates the changing relationships among objects during
-program execution.  A sample PETScView object tree is shown in 
-Figure~\ref{example_tree} for a parallel linear solver.
-
-A number of built-in commands enable the application programmer to
-navigate easily through the simulation.  In addition, PETScView can
-display performance statistics for particular objects and their
-children, thus enabling users to focus performance tuning efforts.
-This section provides introductory information regarding PETScView.
-Additional details are available via the ``help'' feature of the
-utility.
-
-\begin{figure}
-\hspace{0.8in}\psfig{file=treep.ps,height=5.0in,width=5.0in}
-\caption{A Sample PETScView Object Tree}
-\label{example_tree}
-\end{figure}
-
-\subsection{Running PETScView}
-
-Due to fundamental limitations of Tcl/Tk, PETScView can only be run with 
-      relatively small log files (at most a couple thousand events). If the user
-generates a very large log file, Tcl/Tk will hang and often swamp 
-the machine. 
-
-To begin PETScView, the user should type {\tt petscview} from the UNIX shell prompt.
-To load a PETSc log file, one runs PETScView, giving the log 
-file name as a command line argument:
-\begin{verbatim}
-   petscview Log.0
-\end{verbatim}
-This command invokes PETScView and automatically loads and
-interprets the profiling data contained in the file {\tt Log.0}.
-PETScView can also be run without a log file given as a command
-line argument.  In this case, the user must load the log file from
-within PETScView.  To do this, the user selects the ``Open File''
-command from the file menu.  PETScView will automatically
-present the user with another window from which the file can be
-selected.
-
-PETScView supports several additional command line arguments, as
-listed in Table \ref{PETScView_command_line_options}.  Note that the
-command line options override the default values within the user's
-{\tt .petscviewrc} file, which is discussed further in
-the following section. \findex{.petscviewrc}
-
-\begin{table}
-\begin{center}
-\begin{tabular}{ll}
-{\bf Argument}                  & {\bf Purpose} \\
-\hline
-{\tt -def\_file filename}       & The location of the definitions file \\
-{\tt -time}                    & Show the time \\
-{\tt -notime}                  & Do not show the time \\
-{\tt -stepsize N}              & Set the stepsize to N \\
-{\tt -delay N}                 & Set the delay to N milliseconds \\
-{\tt -printer\_dest DESTINATION}& Set the destination (File or Printer) \\
-{\tt -print\_command COMMAND}   & Set the postscript print command \\
-{\tt -printer PRINTER}         & Specify the printer \\
-{\tt -print\_orientation 1 or 0} $\:\:\:$ & 1 = landscape , 0 = portrait \\
-{\tt -print\_color}             & Specify color mode (color, gray, mono) \\
-\hline
-\end{tabular}
-\end{center}
-\caption{PETScView Command Line Options}
-\label{PETScView_command_line_options}
-\end{table}
-
-\subsection{Loading a Configuration File}
-
-PETSc configuration files contain information that
-determines the graphical representation of PETSc objects within PETScView.
-Whenever PETScView is invoked, a configuration file
-is automatically read.  The location of this file is specified in
-{\tt .petscviewrc}, which is stored in the user's home directory.  By
-default, {\tt .petscviewrc} points to the configuration file,
-({\tt \$\{PETSC\_DIR\}/bin/petscview.cfg}); however, this can be
-changed to point to a configuration file created by the application
-programmer.  Section \ref{sec:petscview_advanced} gives
-more information about changing the {\tt .petscviewrc} file.
-
-Even though PETScView loads a definitions file whenever it is
-initially run, a file of new definitions can be loaded from within
-PETScView at any time.  This command is found in the file menu.
-Loading a new definitions file will automatically update all PETSc
-objects.
-
-\subsection{Printing a PETScView Object Tree}
-
-The ``print'' command of the file menu displays a dialog box from
-which the user can change the printing options.  The default values
-are loaded from {\tt .petscviewrc} when PETScView is first run.  When
-the proper options are set for printing, one clicks on the ``print''
-button or presses ``return''.  If the user is printing to a file,
-another dialog box will appear from which the user may specify the
-output filename.
-
-{\em Note}:  Currently, PETScView  prints trees of size less
-than 1024x768 (measured in pixels).  If the scrollbars are needed to
-view any parts of a tree, it is very unlikely that the whole tree will
-be printed.  This situation presents no problem, however, when the tree is
-printed to a file.
-
-\subsection{Exiting PETScView}
-
-To exit PETScView, one selects the ``Exit'' option of the file
-menu.  When this action is confirmed, PETScView will terminate
-and return the user to the calling shell.
-
-\subsection{The PETScView Simulation}
-
-\subsubsection{Navigation}
-
-Once a file has been loaded by PETScView, the user can navigate
-through the simulation by using PETScView's play bar.  The play
-bar is located at the bottom of the window and contains buttons whose
-appearances and functioning resemble the buttons on a tape player.
-From left to right, these buttons have the following functions:
-\begin{itemize}
-\item Rewind - Rewinds the simulation to the zeroth step.
-\item Step Backward - Steps backward through the simulation.
-\item Play Backward - Plays the simulation in reverse with an appropriate delay between steps.  
-\item Stop - Brings the simulation to a halt.
-\item Play Forward - Plays forward through the simulation with an appropriate delay between steps.
-\item Step Forward - Steps forward through the simulation
-\item Finish - Immediately jumps to the last step of the simulation.
-\end{itemize}
-
-In addition to the play bar buttons, the scale directly below these
-buttons enables the user to navigate to an arbitrary position in the
-simulation.  To use the scale, one clicks the left mouse button at
-the desired position on the scale.  (The scale ranges from the zeroth
-step to the last step of the simulation.)  The scale is scaled and
-labeled appropriately.
-
-All of the above functions can also be accessed through the ``player''
-menu.  Selecting the player menu lists the commands in addition to
-their accelerator keys.  The player menu also contains two additional
-commands that allow the user to jump to an arbitrary step in the
-simulation or to an arbitrary time during the simulation.  When one of
-these commands is invoked, the user is prompted for the proper target
-jump value.
-
-\subsubsection{The View Menu}
-
-The View menu contains several additional commands that can be useful
-in the profiling of a PETSc program.  These commands enable the user
-to view the raw profiling data as well as various statistics about
-program performance.
-
-\subsubsection{Changing Viewer Options}
-
-The ``options'' menu allows the user to change certain options that
-are set by default whenever PETScView is initially invoked.
-(The default values are defined in {\tt .petscviewrc}.) These options
-include the step size when stepping through the simulation, the delay
-between events when playing through the simulation, and the colors
-chosen to denote the internal states of the PETSc objects.
-
-The simulation's step size can be changed at any time during the
-simulation by selecting the ``Step size'' command of the ``Options''
-menu.  Whenever the user clicks on this selection, a dialog box
-appears prompting the user for the desired step size.  Valid step
-sizes range from $1$ to the total number of events in the simulation.
-
-To change the delay, one selects the ``delay'' command of the options
-menu.  A cascading menu presents the user with a few built-in delays,
-which include none, real-time, and second delay.  (The real-time
-delay option causes delays between events in the simulation to be
-proportionate to the delays in the actual execution of the PETSc
-program.)  To specify a user-defined delay, the user clicks on
-the ``after delay'' selection.  Then the user will be
-presented with a dialog box in which the user can specify the desired
-delay in milliseconds.  Only values ranging from $1$ to $2000$ are
-valid.
-
-The final selection on the ``Options'' menu presents the user with a
-cascading menu with entries that allow the user to change PETScView's
-object color-coding scheme.  Selecting any one of the
-entries presents the user with another window from which the color may
-be chosen.  (The colors are taken from {\tt /usr/lib/X11/rgb.txt}.)
-
-\subsection{Advanced Features}
-\label{sec:petscview_advanced}
-
-PETScView allows the user to define/redefine the graphical
-representation of PETSc objects.  To do so, the user creates a
-configuration file, a Tcl script file, which includes specific
-definitions for group shapes, group labels, object icons, object
-labels, and action strings.  Whenever PETScView is invoked, a
-configuration file is read from the location specified in the {\tt
-.petscviewrc} file.  By default, it is set to point to the
-configuration file included with the PETSc package ({\tt
-\$\{PETSC\_DIR\}/bin/petscview.cfg}).  Allowing the application programmer
-to create a customized configuration file enables PETScView to
-interpret the profiling data even when new PETSc objects have been
-created.
-
-\subsubsection{Group Definitions}
-
-\begin{table}
-\begin{center}
-\begin{tabular}{||l||l||} \hline
-{\bf Group}                              & {\bf Object\_cookie} \\
-\hline
-Viewers                            &  0 \\
-Index Sets                         &  1 \\
-Vectors                            &  2 \\
-Vector Scattering                  &  3 \\
-Matrices                           &  4 \\
-Draw (simple graphics)             &  5 \\
-Line Graphs                        &  6 \\
-Krylov Subspace Solvers            &  7 \\
-Preconditioners                    &  8 \\
-Simplified Linear Equations Solvers     &  9 \\
-Grids                              & 10 \\
-Stencils                           & 11 \\
-Simplified Nonlinear Solvers       & 12 \\
-Distributed Arrays                 & 13 \\
-Matrix Scattering                  & 14 \\
-\hline
-\end{tabular}
-\end{center}
-\caption{PETSc Object Group Definitions}
-\label{PETSc_object_definitions}
-\end{table}
-
-Each PETSc object group is identified by its integer-valued object
-cookie.  Table \ref{PETSc_object_definitions} lists the
-currently available object groups and their associated object cookies.
-For each group of objects, the PETScView requires the following
-definitions:
-\begin{verbatim}
-   set GroupShape(OBJECT_COOKIE) SHAPE 
-   set GroupDesc(OBJECT_COOKIE) "GROUP DESCRIPTION"
-\end{verbatim}
-where {\tt OBJECT\_COOKIE} is the integer used to identify the group
-of objects and {\tt SHAPE} is one of the predefined shapes used by
-PETScView.  These shapes include
-\begin{verbatim}
-   Square                Wide_Rectangle       Down_Triangle
-   Thin_RectangleV       Tall_Oval            Octagon
-   Thin_RectangleH       Wide_Oval            Circle
-   Rectangle             Up_Triangle
-\end{verbatim}
-
-{\tt GROUP DESCRIPTION} is a line of text enclosed by quotes to describe the object group.  For example, vectors have the following group descriptions:
-\begin{verbatim}
-   set GroupShape(2) Thin_RectangeV 
-   set GroupDesc(2)  Vectors
-\end{verbatim}
-
-\subsubsection{Object Definitions}
-
-Within each group, the object is identified with the use of a second integer ({\tt OBJECT\_TYPE}).  This specifies the type of object within the object group.  PETScView requires both a name and an icon to be defined for every object.  These definitions have the following syntax:
-\begin{verbatim}
-   set Icon(OBJECT_COOKIE,OBJECT_TYPE) "-text TEXT" or 
-   set Icon(OBJECT_COOKIE,OBJECT_TYPE) "-bitmap @BITMAP_LOC"
-   set Name(OBJECT_COOKIE,OBJECT_TYPE) "OBJECT DESCRIPTION"
-\end{verbatim}
-where {\tt TEXT} is a short description of the object (used if a bitmap is inappropriate) and {\tt BITMAP\_LOC} is the location of the bitmap graphic.  The {\tt OBJECT DESCRIPTION} is a line of text used to describe the object.  As an example, we give the following definitions:
-\begin{verbatim}
-   set Icon(2,0) "-bitmap @$env(PETSC_DIR)/bitmaps/vector.bit" 
-   set Name(2,0) "Sequential Vector" 
-   set Icon(2,1) "-bitmap @$env(PETSC_DIR)/bitmaps/vectorp.bit" 
-   set Name(2,1) "Parallel Vector"
-\end{verbatim}
-Notice the syntax that Tcl requires for the location of the bitmap.
-The bitmap location must be preceded by a $@$ in order for PETScView
-the work properly.  {\tt \$env(\$\{PETSC\_DIR\})} is used to access the
-value of the environmental variable {\tt PETSC\_DIR}.  To use the
-value of any other environmental variables in specifying a file
-location, one must use in the expression the following syntax:
-\begin{verbatim}
-   $env(ENVIRONMENTAL_VARIABLE)
-\end{verbatim}
-
-To create one's own bitmap picture to represent an
-object, the user creates the bitmap using a program such as {\tt bitmap.}
-Once this is done, PETScView must know the location of the
-bitmap.  The user must specify the precise location in
-the file system where the bitmap graphic can be found.  For example,
-suppose that one creates a new bitmap to symbolize a parallel vector.
-Since the bitmap is located in the user's home directory, the
-following definition will {\em not} create an error:
-\begin{verbatim}
-   set Icon(2,1) "-bitmap $env(HOME)/vectorp.bit"
-\end{verbatim}
-
-More examples on defining additional PETSc objects and informat
-about how PETSc defines the object types, are given in 
-{\tt \$\{PETSC\_DIR\}/bin/petscview.cfg}.
-
-\subsubsection{Action Strings}
-
-When certain actions occur during the execution of a PETSc program,
-these actions are also recorded in the profiling data.  Once again,
-PETSc uses an integer to specify the type of action that is being
-performed.  PETScView interprets the actions using the
-definitions contained in {\tt action()} string definitions.  These
-definitions are also located in the configuration file.  An action
-definition has the following syntax:
-\begin{verbatim}
-   set Action(ACTION_ID) "ACTION"
-\end{verbatim}
-where {\tt ACTION\_ID} is an integer that encodes the action and {\tt
-ACTION} is a descriptive string.  Currently, PETScView uses the action
-definitions as defined in {\tt petscview.cfg}.
-
-\section{Using PETScOpts}
-\label{sec:petscopts}
-
-PETScOpts is a PETSc utility program that enables the application
-programmer to modify his or her personal {\tt .petscrc} file.  As
-described in Section \ref{sec:options}, the {\tt .petscrc} file
-contains a list of options that will be passed to a PETSc program
-whenever it is executed.  This file has the following format:
-\begin{verbatim}
-   -optionname possible_value
-   -anotheroptionname possible_value
-\end{verbatim}
-Even though this file can be manually modified by the application
-programmer with any text editor, PETScOpts greatly simplifies this
-task.
-
-\subsection{Running PETScOpts}
-
-The command {\tt petscopts} will invoke PETScOpts from the UNIX
-shell prompt.  Any entries contained in the {\tt .petscrc} file of the
-user's home directory will automatically be interpreted by PETScOpts.
-Once inside PETScOpts, a number of entry boxes, check
-buttons, radio buttons, and other widgets allow the application
-programmer to specify the options that should be saved in the {\tt
-.petscrc} file for future use.
-
-PETScOpts can also write the PETSc command line options to a file
-other than the default {\tt .petscrc} file. To do so, run PETScOpts
-with the file name as a command line argument:
-\begin{verbatim}
-   petscopts file_name
-\end{verbatim}
-From within PETScOpts, a different file can be loaded at any time
-by selecting the ``Open file'' option of the file menu.
-
-\subsection{Getting Help}
-
-Even though many of PETSc's command line options are self-explanatory,
-a single descriptive line of text is displayed at the bottom of the
-window whenever the pointer is positioned over any check button, radio
-button, or entry that specifies an option.
-
-\subsection{Exiting PETScOpts}
-
-The user can exit PETScOpts at any time by selecting the exit
-button from the file menu.  If a {\tt .petscrc} file was loaded when
-PETScOpts was initiated, the user is asked whether the current or
-original settings (or neither) should be saved in {\tt .petscrc}.
 
 %------------------------------------------------------------------
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.122 1999/03/16 22:32:04 bsmith Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.123 1999/03/17 19:13:47 balay Exp bsmith $";
 #endif
 
 /*
@@ -639,6 +639,13 @@ int VecDuplicate_MPI( Vec win, Vec *v)
     ierr = (*f)((AMS_Memory)(*v)->amem,"values",*v);CHKERRQ(ierr);
   }
 #endif
+
+  /* copy over functions in function table*/
+  /* these two are rest in the DACreateXXX() from the default */
+  /* Question: should we copy all of them? */
+  (*v)->ops->view           = win->ops->view;
+  (*v)->ops->loadintovector = win->ops->loadintovector;
+
   PetscFunctionReturn(0);
 }
 

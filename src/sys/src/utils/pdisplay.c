@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pdisplay.c,v 1.4 1998/10/09 19:20:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pdisplay.c,v 1.5 1998/10/31 15:38:06 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        
@@ -26,6 +26,8 @@ static char vcid[] = "$Id: pdisplay.c,v 1.4 1998/10/09 19:20:56 bsmith Exp bsmit
    Output Parameters:
 +    flag - if not PETSC_NULL tells if variable found or not
 -    env - value of variable
+
+  Level: advanced
 
    Notes:
     If comm does not contain the 0th process in the MPIRUN it is likely on

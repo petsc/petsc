@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.94 1999/01/05 18:07:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.95 1999/01/12 23:14:09 bsmith Exp bsmith $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -44,6 +44,8 @@ $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess
 .  mess - an error text string, usually just printed to the screen
 -  ctx - the error handler context
 
+   Level: intermediate
+
    Fortran Note:
    This routine is not supported in Fortran.
 
@@ -69,6 +71,8 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
    pushed with PetscPushErrorHandler().
 
    Not Collective
+
+   Level: intermediate
 
    Fortran Note:
    This routine is not supported in Fortran.
@@ -106,6 +110,8 @@ int PetscPopErrorHandler(void)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
 -  p - the specific error number
+
+  Level: intermediate
 
    Notes:
    Most users need not directly use this routine and the error handlers, but
@@ -152,6 +158,8 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
 +   N - number of integers in array
 .   idx - array of integers
 -   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
+
+  Level: intermediate
 
 .seealso: PetscDoubleView() 
 @*/
@@ -234,6 +242,8 @@ int PetscIntView(int N,int idx[],Viewer viewer)
 .   idx - array of doubles
 -   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
 
+  Level: intermediate
+
 .seealso: PetscIntView() 
 @*/
 int PetscDoubleView(int N,double idx[],Viewer viewer)
@@ -314,6 +324,8 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
 +   N - number of scalars in array
 .   idx - array of scalars
 -   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
+
+  Level: intermediate
 
 .seealso: PetscIntView(), PetscDoubleView()
 @*/

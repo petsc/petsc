@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.6 1998/12/17 21:57:15 balay Exp bsmith $";
+static char vcid[] = "$Id: fretrieve.c,v 1.7 1999/01/04 21:48:37 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -53,6 +53,8 @@ extern int Petsc_DelTag(MPI_Comm,int,void*,void*);
 
    Output Parameters:
 .  shared - PETSC_TRUE or PETSC_FALSE
+
+   Level: developer
 
    Notes:
    Stores the status as a MPI attribute so it does not have
@@ -161,6 +163,8 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 +   llibname - name of local copy of library
 -   found - if found and retrieve the file
 
+    Level: developer
+
 @*/
 int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,PetscTruth *found)
 {
@@ -214,7 +218,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
       }
     }
     if (!PetscStrncmp(buf,"Error",5) ||!PetscStrncmp(buf,"Traceback",9)) {
-      PLogInfo(0,"Did not find file %s",libname);
+      PLogInfo(0,"PetscFileRetrieve:Did not find file %s",libname);
     } else {
       *found = PETSC_TRUE;
     }

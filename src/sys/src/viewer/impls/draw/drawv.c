@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.32 1999/01/18 21:01:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.33 1999/01/31 16:04:45 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -52,6 +52,8 @@ int ViewerFlush_Draw(Viewer v)
     Ouput Parameter:
 .   draw - the draw object
 
+    Level: intermediate
+
 .keywords: viewer, draw, get
 
 .seealso: ViewerDrawGetLG(), ViewerDrawGetAxis()
@@ -95,6 +97,8 @@ int ViewerDrawGetDraw(Viewer v, int windownumber, Draw *draw)
 
     Ouput Parameter:
 .   draw - the draw line graph object
+
+    Level: intermediate
 
 .keywords: viewer, draw, get, line graph
 
@@ -141,6 +145,8 @@ int ViewerDrawGetDrawLG(Viewer v, int windownumber,DrawLG *drawlg)
 
     Ouput Parameter:
 .   drawaxis - the draw axis object
+
+    Level: advanced
 
 .keywords: viewer, draw, get, line graph
 
@@ -227,6 +233,8 @@ int ViewerDrawSetInfo(Viewer v,const char display[],const char title[],int x,int
      program pauses after DrawPause() has been called
      (0 is default, -1 implies until user input).
 
+   Level: beginner
+
    Note for Fortran Programmers:
    Whenever indicating null character data in a Fortran code,
    PETSC_NULL_CHARACTER must be employed; using PETSC_NULL is not
@@ -287,6 +295,9 @@ EXTERN_C_END
 
     Input Parameter:
 .   viewer - the viewer 
+
+    Level: intermediate
+
 
 @*/
 int ViewerDrawClear(Viewer viewer)
@@ -418,6 +429,8 @@ static int Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
 
      Input Parameter:
 .    comm - the MPI communicator to share the window viewer
+
+     Level: intermediate
 
      Notes:
      Unlike almost all other PETSc routines, VIEWER_DRAW_ does not return 

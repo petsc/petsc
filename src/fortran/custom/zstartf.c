@@ -27,6 +27,10 @@ EXTERN_C_END
    the call to PetscInitialize() if one is using a C main program
    that calls Fortran routines that in turn call PETSc routines.
 
+   Collective on PETSC_COMM_WORLD
+
+   Level: beginner
+
    Notes:
    PetscInitializeFortran() initializes some of the default viewers,
    communicators, etc. for use in the Fortran if a user's main program is

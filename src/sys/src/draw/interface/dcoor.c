@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dcoor.c,v 1.15 1999/01/12 23:16:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dcoor.c,v 1.16 1999/01/31 16:04:52 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -19,9 +19,12 @@ static char vcid[] = "$Id: dcoor.c,v 1.15 1999/01/12 23:16:28 bsmith Exp bsmith 
 -  xl,yl,xr,yr - the coordinates of the lower left corner and upper
                  right corner of the drawing region.
 
+   Level: advanced
+
 .keywords:  draw, set, coordinates
 
-.seealso: DrawSetCoordinatesInParallel()
+.seealso: DrawGetCoordinates()
+
 @*/
 int DrawSetCoordinates(Draw draw,double xl,double yl,double xr, double yr)
 {

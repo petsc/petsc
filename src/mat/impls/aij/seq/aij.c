@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.311 1999/03/10 18:55:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.312 1999/03/10 18:56:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1901,6 +1901,7 @@ extern int MatUseDXML_SeqAIJ(Mat);
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "MatSeqAIJSetColumnIndices_SeqAIJ"
+
 int MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,int *indices)
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)mat->data;
@@ -1932,6 +1933,8 @@ EXTERN_C_END
   Input Parameters:
 +  mat - the SeqAIJ matrix
 -  indices - the column indices
+
+  Level: advanced
 
   Notes:
     This can be called if you have precomputed the nonzero structure of the 
@@ -1997,6 +2000,8 @@ EXTERN_C_END
 
   Input Parameters:
 .  mat - the matrix (currently on AIJ matrices support this option)
+
+  Level: advanced
 
   Common Usage, with SNESSolve():
 $    Create Jacobian matrix
@@ -2082,6 +2087,8 @@ EXTERN_C_END
 
   Input Parameters:
 .  mat - the matrix (currently on AIJ matrices support this option)
+
+  Level: advanced
 
 .seealso: MatStoreValues()
 

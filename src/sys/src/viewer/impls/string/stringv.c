@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.27 1999/01/13 21:46:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.28 1999/01/31 16:04:43 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
@@ -34,6 +34,8 @@ static int ViewerDestroy_String(Viewer viewer)
     Input Parameters:
 +   v - a string viewer, formed by ViewerStringOpen()
 -   format - the format of the input
+
+    Level: developer
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -88,6 +90,8 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 
     Output Parameter:
 .   lab - the viewer
+
+    Level: advanced
 
     Fortran Note:
     This routine is not supported in Fortran.

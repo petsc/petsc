@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.96 1999/01/11 01:22:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.97 1999/03/11 16:18:58 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1592,6 +1592,8 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 +  node_count - no of inodes present in the matrix.
 .  sizes      - an array of size node_count, with sizes of each inode.
 -  limit      - the max size used to generate the inodes.
+
+   Level: advanced
 
    Notes: This routine returns some internal storage information
    of the matrix, it is intended to be used by advanced users.

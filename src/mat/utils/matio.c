@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.55 1998/12/13 19:47:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.56 1999/03/07 17:28:00 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -25,7 +25,9 @@ static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*
 +   type - the type of matrix (defined in include/mat.h), for example, MATSEQAIJ.
 -   loader - the function that reads the matrix from the binary file.
 
-.seealso: MatLoadRegisterAll()
+  Level: developer
+
+.seealso: MatLoadRegisterAll(), MatLoad()
 
 @*/
 int MatLoadRegister(MatType type,int (*loader)(Viewer,MatType,Mat*))
@@ -99,6 +101,8 @@ static int MatLoadPrintHelp_Private(Mat A)
 
    Used to specify block diagonal numbers for MATSEQBDIAG and MATMPIBDIAG formats
 .    -matload_bdiag_diags <s1,s2,s3,...>
+
+   Level: beginner
 
    Notes:
    MatLoad() automatically loads into the options database any options

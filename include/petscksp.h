@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.76 1999/03/01 04:59:18 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.77 1999/03/03 22:38:00 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -96,6 +96,7 @@ extern int KSPGMRESIROrthogonalization(KSP,int);
 extern int KSPGMRESPrestartSet(KSP,int);
 
 extern int KSPSetFromOptions(KSP);
+extern int KSPSetTypeFromOptions(KSP);
 extern int KSPAddOptionsChecker(int (*)(KSP));
 
 extern int KSPSingularValueMonitor(KSP,int,double, void * );

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.31 1999/01/31 16:11:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.32 1999/02/07 15:59:10 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -19,6 +19,8 @@ static char vcid[] = "$Id: aodata.c,v 1.31 1999/01/31 16:11:10 bsmith Exp bsmith
     Output Parameters:
 +   nkeys - the number of keys
 -   keys - the names of the keys (or PETSC_NULL)
+
+   Level: advanced
 
 .keywords: application ordering
 
@@ -58,6 +60,8 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 +  flag - 1 if found, 0 if not found
 -  key - the associated key
 
+   Level: advanced
+
 */
 int AODataKeyFind_Private(AOData aodata,char *keyname, int *flag,AODataKey **key)
 {
@@ -92,6 +96,8 @@ int AODataKeyFind_Private(AOData aodata,char *keyname, int *flag,AODataKey **key
    Output Parameter:
 .  flag - PETSC_TRUE if found, otherwise PETSC_FALSE
 
+   Level: advanced
+
 @*/
 int AODataKeyExists(AOData aodata,char *keyname, PetscTruth *flag)
 {
@@ -123,6 +129,8 @@ int AODataKeyExists(AOData aodata,char *keyname, PetscTruth *flag)
 +  flag - 1 if found, 0 if key but no segment, -1 if no key no segment
 .  key - integer of keyname
 -  segment - integer of segment
+
+   Level: advanced
 
 */
 int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, int *flag,AODataKey **key,
@@ -167,6 +175,8 @@ int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, int *f
    Output Parameter:
 .  flag - PETSC_TRUE if found, else PETSC_FALSE
 
+   Level: advanced
+
 @*/
 int AODataSegmentExists(AOData aodata,char *keyname, char *segname,PetscTruth *flag)
 {
@@ -202,6 +212,8 @@ int AODataSegmentExists(AOData aodata,char *keyname, char *segname,PetscTruth *f
    Output Parameters:
 .  IS - the list of key indices
 
+   Level: advanced
+
 .keywords: database transactions
 
 .seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
@@ -234,6 +246,8 @@ int AODataKeyGetActive(AOData aodata,char *name,char *segment,int n,int *keys,in
 
    Output Parameters:
 .  IS - the list of key indices
+
+   Level: advanced
 
 .keywords: database transactions
 
@@ -271,6 +285,8 @@ int AODataKeyGetActiveIS(AOData aodata,char *name,char *segname,IS in,int wl,IS 
    Output Parameters:
 .  IS - the list of key indices
 
+   Level: advanced
+
 .keywords: database transactions
 
 .seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
@@ -303,6 +319,8 @@ int AODataKeyGetActiveLocal(AOData aodata,char *name,char *segment,int n,int *ke
 
    Output Parameters:
 .  IS - the list of key indices
+
+   Level: advanced
 
 .keywords: database transactions
 
@@ -341,6 +359,8 @@ int AODataKeyGetActiveLocalIS(AOData aodata,char *name,char *segname,IS in,int w
    Output Parameters:
 .  data - the actual data
 
+   Level: advanced
+
 .keywords: database transactions
 
 .seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
@@ -374,6 +394,8 @@ int AODataSegmentGet(AOData aodata,char *name,char *segment,int n,int *keys,void
    Output Parameters:
 .  data - the actual data
 
+   Level: advanced
+
 .keywords: database transactions
 
 .seealso: AODataSegmentRestoreIS()
@@ -403,6 +425,8 @@ int AODataSegmentRestore(AOData aodata,char *name,char *segment,int n,int *keys,
 
    Output Parameters:
 .  data - the actual data
+
+   Level: advanced
 
 .keywords: database transactions
 
@@ -437,6 +461,8 @@ int AODataSegmentGetIS(AOData aodata,char *name,char *segment,IS is,void **data)
 
    Output Parameters:
 .  data - the actual data
+
+   Level: advanced
 
 .keywords: database transactions
 
@@ -473,6 +499,8 @@ int AODataSegmentRestoreIS(AOData aodata,char *name,char *segment,IS is,void **d
    Output Parameters:
 .  data - the actual data
 
+   Level: advanced
+
 .keywords: database transactions
 
 .seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
@@ -506,6 +534,8 @@ int AODataSegmentGetLocal(AOData aodata,char *name,char *segment,int n,int *keys
    Output Parameters:
 .  data - the actual data
 
+   Level: advanced
+
 .keywords: database transactions
 
 @*/
@@ -535,6 +565,8 @@ int AODataSegmentRestoreLocal(AOData aodata,char *name,char *segment,int n,int *
 
    Output Parameters:
 .  data - the actual data
+
+   Level: advanced
 
 .keywords: database transactions
 
@@ -571,6 +603,8 @@ int AODataSegmentGetLocalIS(AOData aodata,char *name,char *segment,IS is,void **
    Output Parameters:
 .  data - the actual data
 
+   Level: advanced
+
 .keywords: database transactions
 
 .seealso: AODataSegmentGetLocalIS()
@@ -603,6 +637,8 @@ int AODataSegmentRestoreLocalIS(AOData aodata,char *name,char *segment,IS is,voi
 
    Output Parameters:
 .  is - the indices retrieved
+
+   Level: advanced
 
 .keywords: database transactions
 
@@ -647,6 +683,8 @@ int AODataKeyGetNeighbors(AOData aodata,char *name,int n,int *keys,IS *is)
    Output Parameters:
 .  is - the indices retrieved
 
+   Level: advanced
+
 .keywords: database transactions
 
 .seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
@@ -688,6 +726,8 @@ int AODataKeyGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
    Output Parameters:
 .  is - the indices retrieved
 
+   Level: advanced
+
    Example:
 .vb
                       keys    ->      0  1  2  3  4   5  6  7
@@ -727,6 +767,8 @@ int AODataSegmentGetReduced(AOData aodata,char *name,char *segment,int n,int *ke
 +  vmax - the maximum values (user must provide enough space)
 -  vmin - the minimum values (user must provide enough space)
 
+   Level: advanced
+
 .keywords: database transactions
 
 .seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
@@ -759,6 +801,8 @@ int AODataSegmentGetExtrema(AOData aodata,char *name,char *segment,void *vmax,vo
 
    Output Parameters:
 .  isout - the indices retreived
+
+   Level: advanced
 
    Example:
 .vb
@@ -801,6 +845,8 @@ int AODataSegmentGetReducedIS(AOData aodata,char *name,char *segment,IS is,IS *i
 .   name - the name of the key
 -  map - local to global mapping
 
+   Level: advanced
+
 .keywords: database additions
 
 .seealso:
@@ -837,6 +883,8 @@ int AODataKeySetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
    Output Parameters:
 .  map - local to global mapping
 
+   Level: advanced
+
 .keywords: database additions
 
 .seealso:
@@ -867,6 +915,8 @@ int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 +  aodata - the database
 -  name - the name of the key
 
+   Level: advanced
+
 .keywords: database removal
 
 .seealso:
@@ -892,6 +942,8 @@ int AODataKeyRemove(AOData aodata,char *name)
 +  aodata - the database
 .  name - the name of the key
 -  segname - name of the segment
+
+   Level: advanced
 
 .keywords: database removal
 
@@ -919,6 +971,8 @@ int AODataSegmentRemove(AOData aodata,char *name,char *segname)
 .  name - the name of the key
 .  N - the number of indices in the key
 -  nlocal - number of indices to be associated with this processor
+
+   Level: advanced
 
 .keywords: database additions
 
@@ -986,6 +1040,8 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
 .  data    - the actual data
 -  dtype   - the data type (one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR, etc.)
 
+   Level: advanced
+
 .keywords: database additions
 
 .seealso: AODataSegmentAddIS()
@@ -1031,6 +1087,8 @@ int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *ke
 .  data - the actual data
 -  dtype - the data type, one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR, etc.
 
+   Level: advanced
+
 .keywords: database additions
 
 .seealso: AODataSegmentAdd()
@@ -1065,6 +1123,8 @@ int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void 
    Output Parameters:
 +  rstart - first key owned locally
 -  rend - last key owned locally
+
+   Level: advanced
 
 .keywords: database accessing
 
@@ -1103,6 +1163,8 @@ int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
 .  nlocal - local number of keys
 .  nsegments - number of segments associated with key
 -  segnames - names of the segments or PETSC_NULL
+
+   Level: advanced
 
 .keywords: database accessing
 
@@ -1152,6 +1214,8 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
 +  bs - the blocksize
 -  dtype - the datatype
 
+   Level: advanced
+
 .keywords: database accessing
 
 .seealso:  AODataGetInfo()
@@ -1185,6 +1249,8 @@ int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs, Pets
 +  aodata - the database
 -  viewer - viewer used for display
 
+   Level: intermediate
+
    The available visualization contexts include
 +     VIEWER_STDOUT_SELF - standard output (default)
 -     VIEWER_STDOUT_WORLD - synchronized standard
@@ -1194,6 +1260,7 @@ int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs, Pets
 
    The user can open an alternative visualization context with
    ViewerASCIIOpen() - output to a specified file.
+
 
 .keywords: database viewing
 
@@ -1218,6 +1285,8 @@ int AODataView(AOData aodata, Viewer viewer)
 
    Input Parameters:
 .  aodata - the database
+
+   Level: intermediate
 
 .keywords: destroy, database
 
@@ -1250,6 +1319,8 @@ int AODataDestroy(AOData aodata)
 .  key  - the key to remap
 -  ao - the old to new ordering
 
+   Level: advanced
+
 .keywords: database remapping
 
 .seealso: AODataKeyGetAdjacency()
@@ -1279,6 +1350,8 @@ int AODataKeyRemap(AOData aodata, char *key,AO ao)
    Output Parameter:
 .  adj - the adjacency graph
 
+   Level: advanced
+
 .keywords: database, adjacency graph
 
 .seealso: AODataKeyRemap()
@@ -1306,6 +1379,8 @@ int AODataKeyGetAdjacency(AOData aodata, char *key,Mat *adj)
     Input Parameters:
 +   aodata - the database
 -   key - the key to be partitioned and renumbered
+
+   Level: advanced
 
 .seealso: AODataKeyPartition()
 @*/

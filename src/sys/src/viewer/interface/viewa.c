@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewa.c,v 1.2 1999/01/13 21:46:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewa.c,v 1.3 1999/01/31 16:04:48 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: viewa.c,v 1.2 1999/01/13 21:46:16 bsmith Exp bsmith $
 +  v - the viewer
 .  format - the format
 -  char - optional object name
+
+   Level: intermediate
 
    Notes:
    Available formats include
@@ -70,6 +72,8 @@ int ViewerSetFormat(Viewer v,int format,char *name)
 .  format - the format
 -  char - optional object name
 
+   Level: intermediate
+
    Notes:
    Available formats include
 +    VIEWER_FORMAT_ASCII_DEFAULT - default format
@@ -121,6 +125,8 @@ int ViewerPushFormat(Viewer v,int format,char *name)
 
    Input Parameters:
 .  v - the viewer
+
+   Level: intermediate
 
 .keywords: Viewer, file, set, format, push, pop
 

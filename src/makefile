@@ -1,6 +1,6 @@
-# $Id: makefile,v 1.49 1999/01/29 19:47:47 balay Exp balay $ 
+# $Id: makefile,v 1.50 1999/03/16 19:51:53 balay Exp bsmith $ 
 
-DIRS     = inline sys vec mat sles snes ts dfvec \
+DIRS     = inline sys vec mat sles snes ts \
            dm contrib benchmarks fortran
 LOCDIR   = src/
 

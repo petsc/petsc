@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.7 1999/02/02 16:18:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawreg.c,v 1.8 1999/02/04 20:57:00 bsmith Exp bsmith $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -24,6 +24,8 @@ FList DrawList              = 0;
 
    Output Parameter:
 .  draw - location to put the Draw context
+
+   Level: beginner
 
 .keywords: Draw, create, context
 
@@ -78,6 +80,8 @@ int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y
 .  -draw_type  <type> - Sets the type; use -help for a list 
     of available methods (for instance, x)
 
+   Level: intermediate
+
    Notes:  
    See "petsc/include/draw.h" for available methods (for instance,
    DRAW_X)
@@ -130,6 +134,8 @@ int DrawSetType(Draw draw,DrawType type)
 
    Not Collective
 
+   Level: developer
+
 .keywords: Draw, register, destroy
 
 .seealso: DrawRegister(), DrawRegisterAll()
@@ -159,6 +165,8 @@ int DrawRegisterDestroy(void)
    Output Parameters:
 .  name - name of Draw method 
 
+   Level: advanced
+
 .keywords: Draw, get, method, name
 @*/
 int DrawGetType(Draw draw,DrawType *type)
@@ -181,6 +189,8 @@ int DrawGetType(Draw draw,DrawType *type)
 .  path - path (either absolute or relative) the library containing this solver
 .  name_create - name of routine to create method context
 -  routine_create - routine to create method context
+
+   Level: developer
 
    Notes:
    DrawRegister() may be called multiple times to add several user-defined solvers.
@@ -227,6 +237,8 @@ int DrawRegister_Private(char *sname,char *path,char *name,int (*function)(Draw)
 
    Input Parameter:
 .     draw - the graphics context
+
+   Level: intermediate
 
    Notes: 
     Must be called after DrawCreate() before the Drawtor is used.

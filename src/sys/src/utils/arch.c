@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: arch.c,v 1.31 1998/10/18 17:53:09 bsmith Exp balay $";
+static char vcid[] = "$Id: arch.c,v 1.32 1998/12/17 21:56:12 balay Exp bsmith $";
 #endif
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
@@ -18,6 +18,8 @@ static char vcid[] = "$Id: arch.c,v 1.31 1998/10/18 17:53:09 bsmith Exp balay $"
      Output Parameter:
 .    str - string area to contain architecture name, should be at least 
            10 characters long. Name is truncated if string is not long enough.
+
+     Level: developer
 
 .keywords: architecture, machine     
 @*/

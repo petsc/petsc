@@ -290,7 +290,7 @@ int MatLUFactorNumeric_SeqBAIJ_7(Mat A,Mat *B)
       x[18] = x[19] = x[20] = x[21] = x[22] = x[23] = x[24] = x[25] = 0.0 ;
       x[26] = x[27] = x[28] = x[29] = x[30] = x[31] = x[32] = x[33] = 0.0 ;
       x[34] = x[35] = x[36] = x[37] = x[38] = x[39] = x[40] = x[41] = 0.0 ;
-      x[42] = x[43] = x[44] = x[45] = x[46] = x[47] = x[48] = x[49] = 0.0 ;
+      x[42] = x[43] = x[44] = x[45] = x[46] = x[47] = x[48] = 0.0 ;
     }
     /* load in initial (unfactored row) */
     idx      = r[i];
@@ -510,7 +510,7 @@ int MatLUFactorNumeric_SeqBAIJ_7(Mat A,Mat *B)
       pv[36] = x[36]; pv[37] = x[37]; pv[38] = x[38]; pv[39] = x[39]; 
       pv[40] = x[40]; pv[41] = x[41]; pv[42] = x[42]; pv[43] = x[43]; 
       pv[44] = x[44]; pv[45] = x[45]; pv[46] = x[46]; pv[47] = x[47]; 
-      pv[48] = v[48];  
+      pv[48] = x[48];  
       pv   += 49;
     }
     /* invert diagonal block */
@@ -526,6 +526,7 @@ int MatLUFactorNumeric_SeqBAIJ_7(Mat A,Mat *B)
   PLogFlops(1.3333*343*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
+
 /*
       Version for when blocks are 7 by 7 Using natural ordering
 */
@@ -566,7 +567,7 @@ int MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat A,Mat *B)
       x[18] = x[19] = x[20] = x[21] = x[22] = x[23] = x[24] = x[25] = 0.0 ;
       x[26] = x[27] = x[28] = x[29] = x[30] = x[31] = x[32] = x[33] = 0.0 ;
       x[34] = x[35] = x[36] = x[37] = x[38] = x[39] = x[40] = x[41] = 0.0 ;
-      x[42] = x[43] = x[44] = x[45] = x[46] = x[47] = x[48] = x[49] = 0.0 ;
+      x[42] = x[43] = x[44] = x[45] = x[46] = x[47] = x[48] = 0.0 ;
     }
     /* load in initial (unfactored row) */
     nz       = ai[i+1] - ai[i];
@@ -586,7 +587,7 @@ int MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat A,Mat *B)
       x[36] = v[36]; x[37] = v[37]; x[38] = v[38]; x[39] = v[39]; 
       x[40] = v[40]; x[41] = v[41]; x[42] = v[42]; x[43] = v[43]; 
       x[44] = v[44]; x[45] = v[45]; x[46] = v[46]; x[47] = v[47]; 
-      x[48] = v[48];  
+      x[48] = v[48];
       v    += 49;
     }
     row = *ajtmp++;
@@ -618,7 +619,7 @@ int MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat A,Mat *B)
           p41 != 0.0 || p42 != 0.0 || p43 != 0.0 || p44 != 0.0 ||
           p45 != 0.0 || p46 != 0.0 || p47 != 0.0 || p48 != 0.0 ||
           p49 != 0.0) { 
-        pv = ba + 36*diag_offset[row];
+        pv = ba + 49*diag_offset[row];
         pj = bj + diag_offset[row] + 1;
 	x1  = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
 	x5  = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];
@@ -632,7 +633,7 @@ int MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat A,Mat *B)
 	x37 = pv[36]; x38 = pv[37]; x39 = pv[38]; x40 = pv[39];
 	x41 = pv[40]; x42 = pv[41]; x43 = pv[42]; x44 = pv[43];
 	x45 = pv[44]; x46 = pv[45]; x47 = pv[46]; x48 = pv[47];
-	x49 = pv[48];
+        x49 = pv[48];
         pc[0]  = m1  = p1*x1  + p8*x2   + p15*x3  + p22*x4  + p29*x5  + p36*x6 + p43*x7;
         pc[1]  = m2  = p2*x1  + p9*x2   + p16*x3  + p23*x4  + p30*x5  + p37*x6 + p44*x7;
         pc[2]  = m3  = p3*x1  + p10*x2  + p17*x3  + p24*x4  + p31*x5  + p38*x6 + p45*x7;
@@ -785,7 +786,7 @@ int MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat A,Mat *B)
       pv[36] = x[36]; pv[37] = x[37]; pv[38] = x[38]; pv[39] = x[39]; 
       pv[40] = x[40]; pv[41] = x[41]; pv[42] = x[42]; pv[43] = x[43]; 
       pv[44] = x[44]; pv[45] = x[45]; pv[46] = x[46]; pv[47] = x[47]; 
-      pv[48] = v[48];  
+      pv[48] = x[48];  
       pv   += 49;
     }
     /* invert diagonal block */

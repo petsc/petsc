@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.94 1999/02/10 23:11:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.95 1999/03/01 04:57:17 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
@@ -313,6 +313,8 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
             set with SNESSetTolerances()
 -    xtol - relative function norm tolerance,
             set with SNESSetTolerances()
+
+   Level: intermediate
 
 .keywords: SNES, nonlinear, default, converged, convergence
 

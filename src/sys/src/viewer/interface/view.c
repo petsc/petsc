@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.28 1999/01/12 23:17:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.29 1999/01/31 16:04:48 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -13,6 +13,8 @@ static char vcid[] = "$Id: view.c,v 1.28 1999/01/12 23:17:36 bsmith Exp bsmith $
 
    Input Parameters:
 .  viewer - the viewer to be destroyed.
+
+   Level: beginner
 
 .seealso: ViewerSocketOpen(), ViewerASCIIOpen()
 
@@ -52,6 +54,8 @@ int ViewerDestroy(Viewer v)
 .  BINARY_VIEWER - binary file viewer
 .  STRING_VIEWER - string viewer
 .  DRAW_VIEWER - drawing viewer
+
+   Level: intermediate
 
    Note:
    See petsc/include/viewer.h for a complete list of viewers.

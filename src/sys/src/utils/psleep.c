@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: psleep.c,v 1.17 1998/06/01 19:32:16 balay Exp balay $";
+static char vcid[] = "$Id: psleep.c,v 1.18 1998/12/17 21:56:08 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"                 /*I   "petsc.h"    I*/
@@ -21,6 +21,8 @@ static char vcid[] = "$Id: psleep.c,v 1.17 1998/06/01 19:32:16 balay Exp balay $
 
    Input Parameters:
 .  s - number of seconds to sleep
+
+   Level: intermediate
 
 .keywords: sleep, wait
 @*/

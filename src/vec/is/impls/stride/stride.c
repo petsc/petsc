@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.78 1999/01/31 16:03:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: stride.c,v 1.79 1999/02/01 21:47:43 curfman Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -55,6 +55,8 @@ int ISInvertPermutation_Stride(IS is, IS *perm)
    ISStrideGetInfo - Returns the first index in a stride index set and 
    the stride width.
 
+   Not Collective
+
    Input Parameter:
 .  is - the index set
 
@@ -62,7 +64,7 @@ int ISInvertPermutation_Stride(IS is, IS *perm)
 .  first - the first index
 .  step - the stride width
 
-   Not Collective
+   Level: intermediate
 
    Notes:
    Returns info on stride index set. This is a pseudo-public function that
@@ -93,13 +95,15 @@ int ISStrideGetInfo(IS is,int *first,int *step)
 /*@C
    ISStride - Determines if an IS is based on a stride.
 
+   Not Collective
+
    Input Parameter:
 .  is - the index set
 
    Output Parameters:
 .  flag - either PETSC_TRUE or PETSC_FALSE
 
-   Not Collective
+   Level: intermediate
 
 .keywords: IS, index set, stride, get, information
 

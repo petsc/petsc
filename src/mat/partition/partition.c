@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.19 1998/12/21 01:01:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.20 1999/03/11 16:19:48 bsmith Exp bsmith $";
 #endif
  
 
@@ -57,6 +57,8 @@ int MatPartitioningRegisterAllCalled = 0;
    MatPartitioningRegister - Adds a new sparse matrix partitioning to the 
    matrix package. 
 
+   Not Collective
+
    Input Parameters:
 .  name - name of partitioning (for example MATPARTITIONING_CURRENT) or MATPARTITIONING_NEW
 .  sname -  corresponding string for name
@@ -65,7 +67,7 @@ int MatPartitioningRegisterAllCalled = 0;
    Output Parameters:
 .  oname - number associated with the partitioning (for example MATPARTITIONING_CURRENT)
 
-   Not Collective
+   Level: developer
 
 .keywords: matrix, partitioning, register
 
@@ -96,6 +98,8 @@ int MatPartitioningRegister(MatPartitioningType name,MatPartitioningType *oname,
 
   Not Collective
 
+  Level: developer
+
 .keywords: matrix, register, destroy
 
 .seealso: MatPartitioningRegister(), MatPartitioningRegisterAll()
@@ -124,6 +128,8 @@ int MatPartitioningRegisterDestroy(void)
 .  meth - partitioner type (or use PETSC_NULL)
 .  name - name of partitioner (or use PETSC_NULL)
 
+   Level: intermediate
+
    Not Collective
 
 .keywords: Partitioning, get, method, name, type
@@ -144,6 +150,8 @@ int MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *met
 /*@C
    MatPartitioningApply - Gets a partitioning for a matrix.
 
+   Collective on Mat
+
    Input Parameters:
 .  matp - the matrix partitioning object
 
@@ -151,14 +159,14 @@ int MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *met
 .   partitioning - the partitioning. For each local node this tells the processor
                    number that that node is assigned to.
 
-   Collective on Mat
-
    Options Database Keys:
    To specify the partitioning through the options database, use one of
    the following 
 $    -mat_partitioning_type parmetis, -mat_partitioning current
    To see the partitioning result
 $    -mat_partitioning_view
+
+   Level: beginner
 
    The user can define additional partitionings; see MatPartitioningRegister().
 
@@ -193,11 +201,13 @@ int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
    MatPartitioningSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
       partitioned.
 
-   Input Parameters:
-.  part - the partitioning context
-.  adj - the adjacency matrix
-
    Collective on MatPartitioning and Mat
+
+   Input Parameters:
++  part - the partitioning context
+-  adj - the adjacency matrix
+
+   Level: beginner
 
 .keywords: Partitioning, adjacency
 
@@ -217,10 +227,12 @@ int MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
 /*@C
    MatPartitioningDestroy - Destroys the partitioning context.
 
+   Collective on Partitioning
+
    Input Parameters:
 .  part - the partitioning context
 
-   Collective on Partitioning
+   Level: beginner
 
 .keywords: Partitioning, destroy, context
 
@@ -247,13 +259,15 @@ int MatPartitioningDestroy(MatPartitioning part)
 /*@C
    MatPartitioningCreate - Creates a partitioning context.
 
+   Collective on MPI_Comm
+
    Input Parameter:
 .   comm - MPI communicator 
 
    Output Parameter:
 .  newp - location to put the context
 
-   Collective on MPI_Comm
+   Level: beginner
 
 .keywords: Partitioning, create, context
 
@@ -287,11 +301,13 @@ int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 /*@ 
    MatPartitioningView - Prints the partitioning data structure.
 
+   Collective on MatPartitioning unless Viewer is VIEWER_STDOUT_SELF
+
    Input Parameters:
 .  part - the partitioning context
 .  viewer - optional visualization context
 
-   Collective on MatPartitioning unless Viewer is VIEWER_STDOUT_SELF
+   Level: intermediate
 
    Note:
    The available visualization contexts include
@@ -341,10 +357,12 @@ int MatPartitioningView(MatPartitioning  part,Viewer viewer)
 /*@ 
    MatPartitioningPrintHelp - Prints all options to the partitioning object.
 
+   Collective on MatPartitioning
+
    Input Parameters:
 .  part - the partitioning context
 
-   Collective on Partitioning
+   Level: intermediate
 
 .keywords: Partitioning, help
 
@@ -373,18 +391,23 @@ int MatPartitioningPrintHelp(MatPartitioning  part)
 /*@
    MatPartitioningSetType - Sets the type of partitioner to use
 
+   Collective on MatPartitioning
+
    Input Parameter:
 .  part - the partitioning context.
 .  type - a known method
-
-   Collective on MatPartitioning
 
    Options Database Command:
 $  -mat_partitioning_type  <type>
 $      Use -help for a list of available methods
 $      (for instance, parmetis)
 
+   Level: intermediate
+
 .keywords: partitioning, set, method, type
+
+.seealso: MatPartitioningCreate(), MatPartitioningApply()
+
 @*/
 int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
 {
@@ -418,15 +441,17 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
    MatPartitioningSetFromOptions - Sets various partitioing options from the 
         options database.
 
+   Collective on MatPartitioning
+
    Input Parameter:
 .  part - the partitioning context.
-
-   Collective on MatPartitioning
 
    Options Database Command:
 $  -mat_partitioning_type  <type>
 $      Use -help for a list of available methods
 $      (for instance, parmetis)
+
+   Level: beginner
 
 .keywords: partitioning, set, method, type
 @*/

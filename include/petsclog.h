@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.126 1999/03/01 04:59:18 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.127 1999/03/11 16:24:44 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -121,11 +121,6 @@
 
 #define EC_SetUp                                105
 #define EC_Solve                                106
-
-#define DFVec_RefineVector                      110
-#define DFVec_AssembleFullVector                111
-#define DFVec_GetComponentVectors               112
-#define DFVec_DrawContours                      113
 
 /* 
    Event numbers PLOG_USER_EVENT_LOW to PLOG_USER_EVENT_HIGH are reserved 

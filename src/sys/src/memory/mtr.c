@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.121 1999/02/17 00:28:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.122 1999/02/18 15:51:18 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -372,7 +372,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
   else TRhead = head->next;
 
   if (head->next) head->next->prev = head->prev;
-  PetscFreeAlign(a);
+  ierr = PetscFreeAlign(a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -387,6 +387,8 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
 +   space - number of bytes currently allocated
 .   frags - number of blocks currently allocated
 -   maxs - maximum number of bytes ever allocated
+
+    Level: intermediate
 
 .keywords: memory, allocation, tracing, space, statistics
 
@@ -417,6 +419,8 @@ int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
 
    Options Database Key:
 .  -trdump - Dumps unfreed memory during call to PetscFinalize()
+
+   Level: intermediate
 
    Fortran Note:
    The calling sequence in Fortran is PetscTrDump(integer ierr)
@@ -456,6 +460,8 @@ int PetscTrDump( FILE *fp )
     Options Database Key:
 .  -trmalloc_log - Activates PetscTrLog() and PetscTrLogDump()
 
+    Level: advanced
+
 .seealso: PetscTrLogDump()
 @*/
 int PetscTrLog(void)
@@ -479,6 +485,8 @@ int PetscTrLog(void)
 
     Options Database Key:
 .  -trmalloc_log - Activates PetscTrLog() and PetscTrLogDump()
+
+    Level: advanced
 
    Fortran Note:
    The calling sequence in Fortran is PetscTrLogDump(integer ierr)

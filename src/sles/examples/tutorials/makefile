@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.58 1999/02/01 19:21:26 bsmith Exp balay $ 
+# $Id: makefile,v 1.59 1999/02/01 21:28:21 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -167,46 +167,39 @@ runex1:
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
-
 runex1_2:
 	-@${MPIRUN} -np 1 ex1 -pc_type sor -pc_sor_symmetric -ksp_smonitor >\
 	   ex1_2.tmp 2>&1;   \
 	   if (diff output/ex1_2.out ex1_2.tmp) then true; \
 	   else echo "Possible problem with ex1_2, diffs above"; fi; \
 	   ${RM} -f ex1_2.tmp
-
 runex1_3:
 	-@${MPIRUN} -np 1 ex1 -pc_type eisenstat -ksp_smonitor >\
 	   ex1_3.tmp 2>&1;   \
 	   if (diff output/ex1_3.out ex1_3.tmp) then true; \
 	   else echo "Possible problem with ex1_3, diffs above"; fi; \
 	   ${RM} -f ex1_3.tmp
-
 runex1f:
 	-@${MPIRUN} -np 1 ex1f -ksp_smonitor > ex1f_1.tmp 2>&1;	  \
 	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
-
 runex2:
 	-@${MPIRUN} -np 1 ex2 -ksp_smonitor -m 5 -n 5 > ex2_1.tmp 2>&1; \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
-
 runex2_2:
 	-@${MPIRUN} -np 2 ex2 -ksp_smonitor -m 5 -n 5 > ex2_2.tmp 2>&1; \
 	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   ${RM} -f ex2_2.tmp
-
 runex2_3:
 	-@${MPIRUN} -np 1 ex2 -pc_type sor -pc_sor_symmetric -ksp_smonitor > \
 	    ex2_3.tmp 2>&1;   \
 	   if (diff output/ex2_3.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi; \
 	   ${RM} -f ex2_3.tmp
-
 runex2_4:
 	-@${MPIRUN} -np 1 ex2 -pc_type eisenstat -ksp_smonitor >\
 	    ex2_4.tmp 2>&1;   \
@@ -223,19 +216,16 @@ runex2f:
 	   if (diff output/ex2f_1.out ex2f_1.tmp) then true; \
 	   else echo "Possible problem with ex2f_1, diffs above"; fi; \
 	   ${RM} -f ex2f_1.tmp
-
 runex4:
 	-@${MPIRUN} -np 3  ex4 -ksp_smonitor > ex4_1.tmp 2>&1; \
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   ${RM} -f ex4_1.tmp
-
 runex5:
 	-@${MPIRUN} -np 1 ex5 -pc_type jacobi -ksp_smonitor > ex5_1.tmp 2>&1; \
 	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp
-
 runex5_2:
 	-@${MPIRUN} -np 2 ex5 -pc_type jacobi -ksp_smonitor \
 	   -ksp_rtol .000001 > ex5_2.tmp 2>&1;   \
@@ -249,30 +239,25 @@ runex5_2:
 runex5_3:
 	-@${MPIRUN} -np 2 ex5 -pc_type icc -ksp_type cg -mat_mpirowbs -ksp_rtol .000001;\
 	echo "ex5_3: This program tested the ICC preconditioner in BlockSolve95."
-
 runex5_4:
 	-@${MPIRUN} -np 2 ex5 -pc_type ilu -mat_nonsym -mat_mpirowbs \
 	   -ksp_rtol .000001;\
 	echo "ex5_4: This program tested the ILU preconditioner in BlockSolve95."
-
 runex5_5:
 	-@${MPIRUN} -np 2 ex5 -mat_bdiag -mat_block_size 2 > ex5_5.tmp 2>&1; \
 	   if (diff output/ex5_5.out ex5_5.tmp) then true; \
 	   else echo "Possible problem with ex5_5, diffs above"; fi; \
 	   ${RM} -f ex5_5.tmp
-
 runex6f:
 	-@${MPIRUN} -np 1 ex6f -pc_type jacobi -mat_view -ksp_smonitor > ex6f_1.tmp 2>&1; \
 	   if (diff output/ex6f_1.out ex6f_1.tmp) then true; \
 	   else echo "Possible problem with ex6f_1, diffs above"; fi; \
 	   ${RM} -f ex6f_1.tmp
-
 runex7:
 	-@${MPIRUN} -np 2 ex7 -ksp_smonitor -noslesview> ex7_1.tmp 2>&1; \
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi; \
 	   ${RM} -f ex7_1.tmp
-
 runex9:
 	-@${MPIRUN} -np 1 ex9 -t 2 -pc_type jacobi -ksp_smonitor -ksp_type gmres \
 	   -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_smonitor \
@@ -280,34 +265,29 @@ runex9:
 	   if (diff output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
 	   ${RM} -f ex9_1.tmp
-
 runex10:
 	-@${MPIRUN} -np 2 ex10 -f0 ../../../mat/examples/matbinary.cplx.ex > ex10_1.tmp 2>&1; \
 	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
-
 runex10_2:
 	-@${MPIRUN} -np 2 ex10 -optionsleft_off -ksp_type bicg \
 	   -f0 ../../../mat/examples/matrices/medium > ex10_2.tmp 2>&1; \
 	   if (diff output/ex10_2.out ex10_2.tmp) then true; \
 	   else echo "Possible problem with ex10_2, diffs above"; fi; \
 	   ${RM} -f ex10_2.tmp
-
 runex10_3:
 	-@${MPIRUN} -np 2 ex10 -optionsleft_off -ksp_type bicg -pc_type asm \
 	   -f0 ../../../mat/examples/matrices/medium > ex10_3.tmp 2>&1; \
 	   if (diff output/ex10_3.out ex10_3.tmp) then true; \
 	   else echo "Possible problem with ex10_3, diffs above"; fi; \
 	   ${RM} -f ex10_3.tmp
-
 runex10_4:
 	-@${MPIRUN} -np 1 ex10 -optionsleft_off -ksp_type bicg -pc_type lu \
 	   -f0 ../../../mat/examples/matrices/medium > ex10_4.tmp 2>&1; \
 	   if (diff output/ex10_4.out ex10_4.tmp) then true; \
 	   else echo "Possible problem with ex10_4, diffs above"; fi; \
 	   ${RM} -f ex10_4.tmp
-
 runex10_5:
 	-@${MPIRUN} -np 1 ex10 -optionsleft_off -ksp_type bicg \
 	   -f0 ../../../mat/examples/matrices/medium > ex10_5.tmp 2>&1; \
@@ -320,25 +300,41 @@ runex10_6:
 	   if (diff output/ex10_6.out ex10_6.tmp) then true; \
 	   else echo "Possible problem with ex10_6, diffs above"; fi; \
 	   ${RM} -f ex10_6.tmp
-
+BS = 2 3 4 5 6 7 8
+runex10_7:
+	-@echo > ex10_7.tmp
+	-@for bs in ${BS}; do \
+	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
+                    -mat_seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
+                    1.0e-15 -ksp_smonitor >> ex10_7.tmp 2>&1 ; \
+	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
+                    -mat_seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
+                    1.0e-15 -ksp_smonitor -mat_order nd >> ex10_7.tmp 2>&1 ; \
+	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
+                    -mat_seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
+                    1.0e-15 -ksp_smonitor -pc_ilu_levels 1 >> ex10_7.tmp 2>&1 ; \
+	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
+                    -mat_seqbaij -matload_block_size $$bs -ksp_type preonly \
+                    -ksp_smonitor -pc_type lu  >> ex10_7.tmp 2>&1 ; \
+         done;
+	-@if (diff output/ex10_7.out ex10_7.tmp) then true; \
+	   else echo "Possible problem with ex10_7, diffs above"; fi;
+	-@${RM} -f ex10_7.tmp
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor > ex11_1.tmp 2>&1; \
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   ${RM} -f ex11_1.tmp
-
 runex11f:
 	-@${MPIRUN} -np 1 ex11f -n 6 -norandom -pc_type none -ksp_smonitor > ex11f_1.tmp 2>&1; \
 	   if (diff output/ex11f_1.out ex11f_1.tmp) then true; \
 	   else echo "Possible problem with ex11f_1, diffs above"; fi; \
 	   ${RM} -f ex11f_1.tmp
-
 runex12:
 	-@${MPIRUN} -np 1 ex12  > ex12_1.tmp 2>&1; \
 	   if (diff output/ex12_1.out ex12_1.tmp) then true; \
 	   else echo "Possible problem with ex12_1, diffs above"; fi; \
 	   ${RM} -f ex12_1.tmp
-
 runex13:
 	-@${MPIRUN} -np 1 ex13 -m 19 -n 20 > ex13_1.tmp 2>&1; \
 	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
@@ -349,31 +345,26 @@ runex13f90:
 	   if (diff output/ex13f90_1.out ex13f90_1.tmp) then true; \
 	   else echo "Possible problem with ex13f90_1, diffs above"; fi; \
 	   ${RM} -f ex13f90_1.tmp
-
 runex14:
 	-@${MPIRUN} -np 1 ex14 -no_output > ex14_1.tmp 2>&1; \
 	   if (diff output/ex14_1.out ex14_1.tmp) then true; \
 	   else echo "Possible problem with ex14_1, diffs above"; fi; \
 	   ${RM} -f ex14_1.tmp
-
 runex14_2:
 	-@${MPIRUN} -np 1 ex14 -no_output > ex14_2.tmp 2>&1; \
 	   if (diff output/ex14_2.out ex14_2.tmp) then true; \
 	   else echo "Possible problem with ex14_2, diffs above"; fi; \
 	   ${RM} -f ex14_2.tmp
-
 runex15:
 	-@${MPIRUN} -np 2 ex15 -sles_view -user_defined_pc > ex15_1.tmp 2>&1; \
 	   if (diff output/ex15_1.out ex15_1.tmp) then true; \
 	   else echo "Possible problem with ex15_1, diffs above"; fi; \
 	   ${RM} -f ex15_1.tmp
-
 runex15f:
 	-@${MPIRUN} -np 2 ex15f -sles_view -user_defined_pc > ex15f_1.tmp 2>&1; \
 	   if (diff output/ex15f_1.out ex15f_1.tmp) then true; \
 	   else echo "Possible problem with ex15f_1, diffs above"; fi; \
 	   ${RM} -f ex15f_1.tmp
-
 runex16:
 	-@${MPIRUN} -np 2 ex16 -ntimes 4 > ex16_1.tmp 2>&1; \
 	   if (diff output/ex16_1.out ex16_1.tmp) then true; \

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.82 1999/01/04 21:48:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.83 1999/03/03 20:50:14 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -39,6 +39,8 @@ static int   Xterm     = 1;
             in initial window (the option 0 makes no sense when using more
             than one processor.)
 
+   Level: developer
+
    Fortran Note:
    This routine is not supported in Fortran.
 
@@ -63,6 +65,8 @@ int PetscSetDebugger(const char debugger[], int xterm)
    PetscAttachDebugger - Attaches the debugger to the running process.
 
    Not Collective
+
+   Level: advanced
 
 .keywords: attach, debugger
 
@@ -303,6 +307,8 @@ int PetscAttachDebugger(void)
 .  -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] - Activates
    debugger attachment
 
+   Level: developer
+
    Notes:
    By default the GNU debugger, gdb, is used.  Alternatives are dbx and
    xxgdb,xldb (on IBM rs6000), xdb (on HP-UX).
@@ -353,6 +359,8 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
          debugger to attach.
 
    Not Collective
+
+   Level: advanced
 
 .keywords: attach, debugger
 

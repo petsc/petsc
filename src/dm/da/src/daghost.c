@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daghost.c,v 1.15 1998/04/27 15:58:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: daghost.c,v 1.16 1999/01/31 16:11:27 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -25,6 +25,8 @@ static char vcid[] = "$Id: daghost.c,v 1.15 1998/04/27 15:58:33 curfman Exp bsmi
 -  m,n,p - widths in the corresponding directions (where n and p are optional;
            these are used for 2D and 3D problems)
 
+   Level: beginner
+
    Note:
    The corner information is independent of the number of degrees of 
    freedom per node set with the DACreateXX() routine. Thus the x, y, z, and
@@ -34,7 +36,8 @@ static char vcid[] = "$Id: daghost.c,v 1.15 1998/04/27 15:58:33 curfman Exp bsmi
 
 .keywords: distributed array, get, ghost, corners, nodes, local indices
 
-.seealso: DAGetCorners()
+.seealso: DAGetCorners(), DACreate1d(), DACreate2d(), DACreate3d()
+
 @*/
 int DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
 {

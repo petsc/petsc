@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: amsopen.c,v 1.2 1999/01/19 16:28:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: amsopen.c,v 1.3 1999/01/31 16:04:44 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  */
@@ -21,6 +21,8 @@ static char vcid[] = "$Id: amsopen.c,v 1.2 1999/01/19 16:28:27 bsmith Exp bsmith
 
     Options Database Key:
 .   -ams_port <port number>
+
+    Level: advanced
 
     Fortran Note:
     This routine is not supported in Fortran.

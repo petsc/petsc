@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.40 1999/01/04 21:52:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: tsreg.c,v 1.41 1999/02/01 03:41:50 curfman Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -168,6 +168,44 @@ int TSPrintHelp(TS ts)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "TSSetTypeFromOptions"
+/*@
+   TSSetTypeFromOptions - Sets the TS type from the options database; sets 
+     a default if none is given.
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Options Database Keys:
+.  -ts_type <type> - TS_EULER, TS_BEULER, TS_PVODE, TS_PSEUDO, TS_CRANK_NICHOLSON
+
+   Level: beginner
+
+.keywords: TS, timestep, set, options, database, TS type
+
+.seealso: TSPrintHelp(), TSSetFromOptions()
+@*/
+int TSSetTypeFromOptions(TS ts)
+{
+  int  ierr,flg;
+  char type[256];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  if (ts->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to TSSetUp()");
+  ierr = OptionsGetString(ts->prefix,"-ts_type",(char *) type,256,&flg);
+  if (flg) {
+    ierr = TSSetType(ts,type); CHKERRQ(ierr);
+  }
+  if (!ts->type_name) {
+    ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "TSSetFromOptions"
 /*@
    TSSetFromOptions - Sets various TS parameters from user options.
@@ -177,27 +215,28 @@ int TSPrintHelp(TS ts)
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
+   Options Database Keys:
++  -ts_type <type> - TS_EULER, TS_BEULER, TS_PVODE, TS_PSEUDO, TS_CRANK_NICHOLSON
+.  -ts_max_steps maxsteps - maximum number of time-steps to take
+.  -ts_max_time time - maximum time to compute to
+.  -ts_monitor - print information at each timestep
+-  -ts_xmonitor - plot information at each timestep
+
    Level: beginner
 
 .keywords: TS, timestep, set, options, database
 
-.seealso: TSPrintHelp()
+.seealso: TSPrintHelp(), TSSetTypeFromOptions()
 @*/
 int TSSetFromOptions(TS ts)
 {
   int    ierr,flg,loc[4],nmax;
-  char   type[256];
 
   PetscFunctionBegin;
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
 
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to TSSetUp()");
-  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = OptionsGetString(ts->prefix,"-ts_type",(char *) type,256,&flg);
-  if (flg) {
-    ierr = TSSetType(ts,type); CHKERRQ(ierr);
-  }
+  ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
 
   ierr = OptionsGetInt(ts->prefix,"-ts_max_steps",&ts->max_steps,&flg);CHKERRQ(ierr);
   ierr = OptionsGetDouble(ts->prefix,"-ts_max_time",&ts->max_time,&flg);CHKERRQ(ierr);
@@ -216,9 +255,6 @@ int TSSetFromOptions(TS ts)
       PLogObjectParent(ts,(PetscObject) lg);
       ierr = TSSetMonitor(ts,TSLGMonitor,(void *)lg);CHKERRQ(ierr);
     }
-  }
-  if (!ts->type_name) {
-    ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (flg)  {ierr = TSPrintHelp(ts);CHKERRQ(ierr);}

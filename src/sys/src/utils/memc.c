@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.48 1998/08/26 22:01:52 balay Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.49 1998/10/26 16:20:13 bsmith Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -40,6 +40,8 @@ static char vcid[] = "$Id: memc.c,v 1.48 1998/08/26 22:01:52 balay Exp bsmith $"
 
    Output Parameter:
 .  a - pointer to copy space
+
+   Level: intermediate
 
    Note:
    This routine is analogous to memcpy().
@@ -82,6 +84,8 @@ int PetscMemcpy(void *a,const void *b,int n)
 +  a - pointer to result memory space
 -  ai - offset of result memory space (in elementary chunk sizes)
 
+   Level: intermediate
+
    Note:
    This routine is analogous to PetscMemcpy(), except when the data type is 
    PETSC_LOGICAL.
@@ -122,6 +126,8 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
 +  a - pointer to beginning memory location
 -  n - length (in bytes) of memory to initialize
 
+   Level: intermediate
+
 .keywords: Petsc, zero, initialize, memory
 
 .seealso: PetscMemcpy()
@@ -155,6 +161,8 @@ int PetscMemzero(void *a,int n)
    greater than 0, according to whether str11 is 
    less than, equal to, or greater than str2.
 
+   Level: intermediate
+
    Note: 
    This routine is anologous to memcmp()
 @*/
@@ -182,6 +190,8 @@ int PetscMemcmp(const void *str1,const void *str2, int len)
 
    Output Parameter:
 .  a - pointer to copy space
+
+   Level: intermediate
 
    Note:
    This routine is analogous to memmove().

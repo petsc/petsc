@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.131 1999/01/31 16:03:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.132 1999/03/07 17:26:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -703,7 +703,9 @@ extern int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 .  -vecscatter_sendfirst - Posts sends before receives (may offer better performance with MPICH)
 -  -vecscatter_rr - user ready receiver mode for MPI sends in scatters (rarely used)
 
-   Notes:
+    Level: intermediate
+
+  Notes:
    In calls to VecScatter() you can use different vectors than the xin and 
    yin you used above; BUT they must have the same parallel data layout, for example,
    they could be obtained from VecDuplicate().
@@ -751,7 +753,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ctx->beginandendtogether = 0;
   ierr = OptionsHasName(PETSC_NULL,"-vecscatter_merge",&ctx->beginandendtogether);CHKERRQ(ierr);
   if (ctx->beginandendtogether) {
-    PLogInfo(ctx,"Using combined (merged) vector scatter begin and end\n");
+    PLogInfo(ctx,"VecScatterCreate:Using combined (merged) vector scatter begin and end\n");
   }
 
   ierr = VecGetLocalSize(xin,&ctx->to_n);CHKERRQ(ierr);
@@ -802,7 +804,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->destroy      = VecScatterDestroy_SGtoSG;
       ctx->copy         = VecScatterCopy_SGToSG;
       *newctx           = ctx;
-      PLogInfo(xin,"Special case: sequential vector general scatter\n");
+      PLogInfo(xin,"VecScatterCreate:Special case: sequential vector general scatter\n");
       goto functionend;
     } else if (ix->type == IS_STRIDE &&  iy->type == IS_STRIDE){
       int                    nx,ny,to_first,to_step,from_first,from_step;
@@ -830,7 +832,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->destroy      = VecScatterDestroy_SGtoSG;
       ctx->copy         = 0;
       *newctx           = ctx;
-      PLogInfo(xin,"Special case: sequential vector stride to stride\n");
+      PLogInfo(xin,"VecScatterCreate:Special case: sequential vector stride to stride\n");
       goto functionend; 
     } else if (ix->type == IS_GENERAL && iy->type == IS_STRIDE){
       int                    nx,ny,*idx,first,step;
@@ -860,7 +862,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       to9->type        = VEC_SCATTER_SEQ_STRIDE; 
       from9->type      = VEC_SCATTER_SEQ_GENERAL;
       *newctx         = ctx;
-      PLogInfo(xin,"Special case: sequential vector general to stride\n");
+      PLogInfo(xin,"VecScatterCreate:Special case: sequential vector general to stride\n");
       goto functionend;
     } else if (ix->type == IS_STRIDE && iy->type == IS_GENERAL){
       int                    nx,ny,*idx,first,step;
@@ -891,7 +893,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       to10->type        = VEC_SCATTER_SEQ_GENERAL; 
       from10->type      = VEC_SCATTER_SEQ_STRIDE; 
       *newctx         = ctx;
-      PLogInfo(xin,"Special case: sequential vector stride to general\n");
+      PLogInfo(xin,"VecScatterCreate:Special case: sequential vector stride to general\n");
       goto functionend;
     } else {
       int                    nx,ny,*idx,*idy;
@@ -924,7 +926,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISRestoreIndices(ix,&idx); CHKERRQ(ierr);
       ierr = ISRestoreIndices(iy,&idy); CHKERRQ(ierr);
       *newctx           = ctx;
-      PLogInfo(xin,"Sequential vector scatter with block indices\n");
+      PLogInfo(xin,"VecScatterCreate:Sequential vector scatter with block indices\n");
       goto functionend;
     }
   }
@@ -964,7 +966,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->destroy      = VecScatterDestroy_SGtoSG;
         ctx->copy         = VecScatterCopy_PStoSS;
         *newctx           = ctx;
-        PLogInfo(xin,"Special case: processors only getting local values\n");
+        PLogInfo(xin,"VecScatterCreate:Special case: processors only getting local values\n");
         goto functionend;
       }
     } else {
@@ -1013,7 +1015,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->destroy      = VecScatterDestroy_MPI_ToAll;
         ctx->copy         = VecScatterCopy_MPI_ToAll;
         *newctx           = ctx;
-        PLogInfo(xin,"Special case: all processors get entire parallel vector\n");
+        PLogInfo(xin,"VecScatterCreate:Special case: all processors get entire parallel vector\n");
         goto functionend;
       }
     } else {
@@ -1069,7 +1071,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->destroy      = VecScatterDestroy_MPI_ToAll;
         ctx->copy         = VecScatterCopy_MPI_ToAll;
         *newctx           = ctx;
-        PLogInfo(xin,"Special case: processor zero gets entire parallel vector, rest get none\n");
+        PLogInfo(xin,"VecScatterCreate:Special case: processor zero gets entire parallel vector, rest get none\n");
         goto functionend;
       }
     } else {
@@ -1093,7 +1095,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           ISBlockRestoreIndices(ix,&idx);
           ISBlockRestoreIndices(iy,&idy);
           *newctx = ctx;
-          PLogInfo(xin,"Special case: blocked indices\n");
+          PLogInfo(xin,"VecScatterCreate:Special case: blocked indices\n");
           goto functionend;
         }
       } else if (iystride) {
@@ -1114,7 +1116,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           PetscFree(idy);
           ISBlockRestoreIndices(ix,&idx);
           *newctx = ctx;
-          PLogInfo(xin,"Special case: blocked indices to stride\n");
+          PLogInfo(xin,"VecScatterCreate:Special case: blocked indices to stride\n");
           goto functionend;
         }
       }
@@ -1229,6 +1231,8 @@ $    SCATTER_FORWARD, SCATTER_REVERSE
    Output Parameter:
 .  y - the vector to which we scatter
 
+   Level: advanced
+
    Notes:
    If you use SCATTER_REVERSE the first two arguments should be reversed, from 
    the SCATTER_FORWARD.
@@ -1278,6 +1282,8 @@ $    SCATTER_FORWARD, SCATTER_REVERSE
 
    Output Parameter:
 .  y - the vector to which we scatter
+
+   Level: intermediate
 
    Notes:
    The vectors x and y need not be the same vectors used in the call 
@@ -1375,6 +1381,8 @@ $    SCATTER_FORWARD, SCATTER_REVERSE
    Output Parameter:
 .  y - the vector to which we scatter
 
+   Level: intermediate
+
    Notes:
    If you use SCATTER_REVERSE the first two arguments should be reversed, from 
    the SCATTER_FORWARD.
@@ -1412,6 +1420,8 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
    Input Parameter:
 .  ctx - the scatter context
 
+   Level: intermediate
+
 .keywords: vector, scatter, context, destroy
 
 .seealso: VecScatterCreate(), VecScatterCopy()
@@ -1440,6 +1450,8 @@ int VecScatterDestroy( VecScatter ctx )
 
    Output Parameter:
 .  ctx - the context copy
+
+   Level: advanced
 
 .keywords: vector, scatter, copy, context
 
@@ -1475,6 +1487,8 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
 +  ctx - the scatter context
 -  viewer - the viewer for displaying the context
 
+   Level: intermediate
+
 .keywords: vector, scatter, view
 @*/
 int VecScatterView(VecScatter ctx, Viewer viewer)
@@ -1503,6 +1517,8 @@ int VecScatterView(VecScatter ctx, Viewer viewer)
 +  scat - vector scatter context
 .  from - remapping for "from" indices (may be PETSC_NULL)
 -  to   - remapping for "to" indices (may be PETSC_NULL)
+
+   Level: developer
 
    Notes: In the parallel case the todata is actually the indices
           from which the data is TAKEN! The from stuff is where the 

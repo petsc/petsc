@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.15 1999/03/11 16:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.16 1999/03/14 02:17:26 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -63,7 +63,6 @@ int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "VecView_MPI_Draw_DA2d"
 int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
@@ -218,29 +217,41 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   ierr = VecRestoreArray(xlocal,&zctx.v); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
+extern int VecView_MPI_Draw_DA1d(Vec,Viewer);
 
-EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Binary_DA"
-int VecView_MPI_Binary_DA(Vec xin,Viewer viewer)
+#define __FUNC__ "VecView_MPI_DA"
+int VecView_MPI_DA(Vec xin,Viewer viewer)
 {
   DA             da;
-  int            ierr;
+  int            ierr,dim;
   Vec            natural;
+  ViewerType     vtype;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*) &da);CHKERRQ(ierr);
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
-  ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
-  ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
-  ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
-  ierr = VecView(natural,viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(natural);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
+  if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
+    ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+    if (dim == 1) {
+      ierr = VecView_MPI_Draw_DA1d(xin,viewer);CHKERRQ(ierr);
+    } else if (dim == 2) {
+      ierr = VecView_MPI_Draw_DA2d(xin,viewer);CHKERRQ(ierr);
+    } else {
+      SETERRQ1(1,1,"Cannot graphically view vector associated with this dimensional DA %d",dim);
+    }
+  } else {
+    /* call viewer on natural ordering */
+    ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
+    ierr = VecView(natural,viewer);CHKERRQ(ierr);
+    ierr = VecDestroy(natural);
+  }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "VecLoadIntoVector_Binary_DA"
@@ -255,9 +266,11 @@ int VecLoadIntoVector_Binary_DA(Viewer viewer,Vec xin)
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
   ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
   ierr = VecLoadIntoVector(viewer,natural);CHKERRQ(ierr);
+  ierr = VecView(natural,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = DANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = VecDestroy(natural);CHKERRQ(ierr);
   PLogInfo(xin,"VecLoadIntoVector_Binary_DA:Loading vector from natural ordering into DA\n");
   PetscFunctionReturn(0);
 }
+

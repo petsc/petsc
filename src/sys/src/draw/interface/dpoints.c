@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dpoints.c,v 1.21 1999/01/12 23:16:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dpoints.c,v 1.22 1999/01/31 16:04:52 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -19,10 +19,14 @@ static char vcid[] = "$Id: dpoints.c,v 1.21 1999/01/12 23:16:28 bsmith Exp bsmit
 +  draw - the drawing context
 -  width - the width in user coordinates
 
+   Level: advanced
+
    Note: 
    Even a size of zero insures that a single pixel is colored.
 
 .keywords: draw, point, set, size
+
+.seealso: DrawPoint()
 @*/
 int DrawPointSetSize(Draw draw,double width)
 {

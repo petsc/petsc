@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: errabort.c,v 1.1 1998/07/02 02:28:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: errabort.c,v 1.2 1998/07/02 14:34:04 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -35,6 +35,8 @@ static char vcid[] = "$Id: errabort.c,v 1.1 1998/07/02 02:28:02 bsmith Exp bsmit
 -  -start_in_debugger [noxterm,dbx,xxgdb]  [-display name] - Starts all
     processes in the debugger and uses PetscAbortErrorHandler().  By default the 
     debugger is gdb; alternatives are dbx and xxgdb.
+
+   Level: developer
 
    Notes:
    Most users need not directly employ this routine and the other error 

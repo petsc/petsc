@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dagtol.c,v 1.15 1999/03/05 04:17:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dagtol.c,v 1.16 1999/03/07 17:30:00 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -24,6 +24,8 @@ static char vcid[] = "$Id: dagtol.c,v 1.15 1999/03/05 04:17:57 bsmith Exp bsmith
 
    Output Parameter:
 .  l  - the local values
+
+   Level: beginner
 
    Notes:
    The global and local vectors used here need not be the same as those
@@ -63,6 +65,8 @@ int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 
    Output Parameter:
 .  l  - the local values
+
+   Level: beginner
 
    Notes:
    The global and local vectors used here need not be the same as those
@@ -155,6 +159,8 @@ int DAGlobalToNaturalBegin(DA da,Vec g, InsertMode mode,Vec l)
    Output Parameter:
 .  l  - the global values in the natural ordering
 
+   Level: advanced
+
    Notes:
    The global and local vectors used here need not be the same as those
    obtained from DACreateGlobalVector() and DACreateNaturalVector(), BUT they
@@ -246,6 +252,8 @@ int DANaturalToGlobalBegin(DA da,Vec g, InsertMode mode,Vec l)
 
    Output Parameter:
 .  l  - the global values in the PETSc DA ordering
+
+   Level: intermediate
 
    Notes:
    The global and local vectors used here need not be the same as those

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.19 1998/12/17 22:10:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.20 1999/03/11 16:19:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -316,6 +316,8 @@ static struct _MatOps MatOps_Values = {0,
 
    Output Parameter:
 .  A - the matrix 
+
+   Level: intermediate
 
    Notes: This matrix object does not support most matrix operations, include
    MatSetValues().

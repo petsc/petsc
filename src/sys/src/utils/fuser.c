@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fuser.c,v 1.19 1998/08/26 22:01:52 balay Exp balay $";
+static char vcid[] = "$Id: fuser.c,v 1.20 1998/12/17 21:56:10 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -58,6 +58,8 @@ int PetscGetUserName( char name[], int nlen )
 
     Output Parameter:
 .   name - contains user name.  Must be long enough to hold the name
+
+    Level: developer
 
 .keywords: system, get, user, name
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tagm.c,v 1.6 1999/02/28 20:00:43 bsmith Exp balay $";
+static char vcid[] = "$Id: tagm.c,v 1.7 1999/03/05 23:02:50 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites
@@ -39,7 +39,7 @@ static int Petsc_Tag_keyval = MPI_KEYVAL_INVALID;
 int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
 {
   PetscFunctionBegin;
-  PLogInfo(0,"Deleting tag data in an MPI_Comm %d\n",(int) comm);
+  PLogInfo(0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %d\n",(int) comm);
   PetscFree( attr_val );
   PetscFunctionReturn(MPI_SUCCESS);
 }
@@ -60,6 +60,8 @@ int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
 
     Output Parameter:
 .   tag - the new tag
+
+    Level: developer
 
 .keywords: object, get, new, tag
 
@@ -96,6 +98,8 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 
     Output Parameter:
 .   tag - the new tag
+
+    Level: developer
 
 .keywords: object, restore, new, tag
 
@@ -134,6 +138,8 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
     Output Parameter:
 .   tag - the new tag
 
+    Level: developer
+
 .keywords: comm, get, new, tag
 
 .seealso: PetscCommRestoreNewTag(),PetscObjectGetNewTag(),PetscObjectRestoreNewTag()
@@ -167,6 +173,8 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
 
     Output Parameter:
 .   tag - the new tag
+
+    Level: developer
 
 .keywords: comm, restore, new, tag
 
@@ -231,7 +239,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval, tagvalp);CHKERRQ(ierr);
-    PLogInfo(0,"Duplicating a communicator %d %d max tags = %d\n",(int) comm_in,(int)*comm_out,*maxval);
+    PLogInfo(0,"PetscCommDuplicate_Private: Duplicating a communicator %d %d max tags = %d\n",(int) comm_in,(int)*comm_out,*maxval);
   } else {
     *comm_out = comm_in;
   }
@@ -271,7 +279,7 @@ int PetscCommDestroy_Private(MPI_Comm *comm)
   }
   tagvalp[1]--;
   if (!tagvalp[1]) {
-    PLogInfo(0,"Deleting MPI_Comm %d\n",(int) *comm);
+    PLogInfo(0,"PetscCommDestroy_Private:Deleting MPI_Comm %d\n",(int) *comm);
     ierr = MPI_Comm_free(comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

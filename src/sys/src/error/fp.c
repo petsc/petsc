@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.51 1998/05/13 18:28:32 balay Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.52 1998/10/19 22:17:02 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -69,6 +69,8 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
 
    Options Database Keys:
 .  -fp_trap - Activates floating point trapping
+
+   Level: advanced
 
    Description:
    On systems that support it, this routine causes floating point
