@@ -4,19 +4,23 @@
 import atexit
 import os
 import re
-import string
-import sys
-import types
-import UserDict
 import readline
+import sys
 
 import RDict
 
 #===============================================================================
 def parseArg(arg):
   if arg and arg[0] == '[' and arg[-1] == ']':
-    if len(arg) > 2: arg = string.split(arg[1:-1], ',')
+    if len(arg) > 2: arg = arg[1:-1].split(',')
     else:            arg = []
+  if arg and arg[0] == '{' and arg[-1] == '}':
+    d = {}
+    if len(arg) > 2:
+      for item in arg[1:-1].split(','):
+        entry = item.split(':')
+        d[entry[0]] = entry[1]
+    arg = d
   return arg
 
     
@@ -150,11 +154,11 @@ class ArgDict (RDict.RArgs):
     # sets properties of the option that will be requested later
     if not self.local.has_key(key): self.local[key] = arg
 
-  def insertArgList(self,argList):
-    if not type(argList) == types.ListType: return
+  def insertArgList(self, argList):
+    if not isinstance(argList, list): return
     for arg in argList:
       if arg[0] == '-':
-        (key, val) = string.split(arg[1:], '=')
+        (key, val) = arg[1:].split('=')
         self[key]  = parseArg(val)
       else:
         if not self.target == ['default']:
