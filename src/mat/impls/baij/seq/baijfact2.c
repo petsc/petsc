@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.61 2001/07/12 23:39:38 buschelm Exp buschelm $*/
+/*$Id: baijfact2.c,v 1.62 2001/07/13 15:08:04 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2875,6 +2875,8 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
   int         ierr;
 
   PetscFunctionBegin;
+  inA->ops->solve             = MatSolve_SeqBAIJ_Update;
+  inA->ops->solvetranspose    = MatSolveTranspose_SeqBAIJ_Update;
   switch (a->bs) {
   case 1:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;
