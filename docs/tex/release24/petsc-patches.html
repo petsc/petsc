@@ -1,13 +1,29 @@
 <HTML>
 <HEAD>
    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="GENERATOR" CONTENT="Mozilla/4.03 [en] (X11; U; SunOS 5.5.1 sun4u) [Netscape]">
+   <META NAME="GENERATOR" CONTENT="Mozilla/4.03 [en] (X11; U; SunOS 5.6 sun4u) [Netscape]">
 </HEAD>
 <BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000FF" VLINK="#FF0000" ALINK="#FF0000">
 
 <H3>
 Patches for PETSc (Release 2.0.24)</H3>
 
-Currently no patches.
+<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.1.tar.gz">petsc-patches-2.0.24.1.tar.gz</A>
+and extracting it with
+<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches.tar.gz | tar xf -</PRE>
+Make sure you are in the PETSc directory (for example /home/bsmith/petsc-2.0.24)
+before you run the tar command.
+<BR>
+<HR>
+<BR>The patch file fixes the following:
+<LI>
+&nbsp;Apr&nbsp; 8 1999 - 2.0.24.1&nbsp;<BR>
+Reasons: fixes error in handling user-set options prefixes on the solvers
+for each level of multilevel algorithms.<BR>
+Effects: only users of the MG type of PC</LI>
+
+<BR>
+<HR>
+<BR></item>
 </BODY>
 </HTML>
