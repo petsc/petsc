@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.95 1995/10/10 14:45:51 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.96 1995/10/11 15:19:32 bsmith Exp curfman $";
 #endif
 
 #include "aij.h"
@@ -326,13 +326,17 @@ static int MatSetOption_SeqAIJ(Mat A,MatOption op)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   if      (op == ROW_ORIENTED)              a->roworiented = 1;
-  else if (op == COLUMN_ORIENTED)           a->roworiented = 0;
   else if (op == COLUMNS_SORTED)            a->sorted      = 1;
-  /* doesn't care about sorted rows */
   else if (op == NO_NEW_NONZERO_LOCATIONS)  a->nonew       = 1;
   else if (op == YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
-
-  if (op == COLUMN_ORIENTED) SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:Column input not supported");
+  else if (op == ROWS_SORTED || op == SYMMETRIC_MATRIX ||
+           op == STRUCTURALLY_SYMMETRIC_MATRIX || op == YES_NEW_DIAGONALS)
+    PLogInfo((PetscObject)A,"Info:MatSetOption_SeqAIJ:Option ignored\n");
+  else if (op == COLUMN_ORIENTED)
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:Column-oriented input not supported");}
+  else if (op == NO_NEW_DIAGONALS)
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:NO_NEW_DIAGONALS not supported");}
+  else {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:Option not supported");}
   return 0;
 }
 
