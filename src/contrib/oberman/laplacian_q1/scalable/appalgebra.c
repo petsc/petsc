@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.6 2000/01/16 03:29:05 bsmith Exp $*/
+/*$Id: appalgebra.c,v 1.2 2000/08/24 22:43:40 bsmith Exp bsmith $*/
 #include "appctx.h"
 #include "math.h"
 
@@ -147,14 +147,9 @@ int AppCtxCreateRhsAndMatrix (AppCtx *appctx)
     ierr = VecSetFromOptions(algebra->b);CHKERRQ(ierr);
   }
   /* Create the structure for the stiffness matrix */
-  ierr = OptionsHasName(PETSC_NULL,"-mat_type",&flg);CHKERRQ(ierr);
-  if (!flg) {
-    /* use very rough estimate for nonzeros on and off the diagonal */
-    ierr = MatCreateMPIAIJ(comm,part->m,part->m,PETSC_DETERMINE,PETSC_DETERMINE,9,0,3,0,&algebra->A);CHKERRQ(ierr);
-  } else {
-    ierr = MATCreate(comm,part->m,part->m,PETSC_DETERMINE,PETSC_DETERMINE,&algebra->A);CHKERRQ(ierr);
-    ierr = MatSetTypeFromOptions(algebra->A);CHKERRQ(ierr);
-  }
+  ierr = MatCreate(comm,part->m,part->m,PETSC_DETERMINE,PETSC_DETERMINE,&algebra->A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(algebra->A);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(algebra->A,9,0,3,0);CHKERRQ(ierr);
 
   /* This allows one to set entries into the vector and matrix using the LOCAL numbering */
   {
