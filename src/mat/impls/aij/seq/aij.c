@@ -1020,6 +1020,8 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
 
   PetscFunctionBegin;
   its = its*lits;
+  if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
+
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   if (xx != bb) {
     ierr = VecGetArray(bb,&b);CHKERRQ(ierr);

@@ -897,6 +897,7 @@ int MatRelax_SeqBDiag_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal s
 
   PetscFunctionBegin;
   its = its*lits;
+  if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
 
   /* Currently this code doesn't use wavefront orderings, although
      we should eventually incorporate that option, whatever wavefront
@@ -1066,6 +1067,7 @@ int MatRelax_SeqBDiag_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal s
 
   PetscFunctionBegin;
   its = its*lits;
+  if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
   /* Currently this code doesn't use wavefront orderings,although
      we should eventually incorporate that option, whatever wavefront
      ordering maybe :-) */

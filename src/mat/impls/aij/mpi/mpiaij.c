@@ -848,6 +848,7 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal f
   PetscScalar  mone=-1.0;
 
   PetscFunctionBegin;
+  if (its <= 0 || lits <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
 
   ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
 
