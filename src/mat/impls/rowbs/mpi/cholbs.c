@@ -1,10 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.1 1995/04/05 20:39:51 curfman Exp curfman $";
+static char vcid[] = "$Id: cholbs.c,v 1.2 1995/04/16 15:32:51 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
 #include "src/mat/matimpl.h"
 #include "mpirowbs.h"
+#include "BSsparse.h"
+#include "BSprivate.h"
+
+extern int MatCreateShellMPIRowbs(MPI_Comm,int,int,int,int*,Mat*);
 
 int MatIncompleteCholeskyFactorSymbolic_MPIRowbs( Mat mat,IS perm,
                                                 int fill,Mat *newfact )
@@ -49,7 +53,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 {
   Mat           fact = *factp;
   Mat_MPIRowbs  *mbs = (Mat_MPIRowbs *) mat->data;
-  int           i, ierr, ldim, loc;
+  int           i, ierr, ldim;
   Scalar        *da;
 
   VALIDHEADER(mat,MAT_COOKIE); VALIDHEADER(fact,MAT_COOKIE);
@@ -57,7 +61,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   if (fact->factor == FACTOR_CHOLESKY) {
     /* Repermute the matrix */
     BSmain_reperm(mbs->procinfo,mbs->A,mbs->pA); CHKERRBS(0);
-    /* Symmetrically scale the matrix by the diagonal
+    /* Symmetrically scale the matrix by the diagonal */
     BSscale_diag(mbs->pA,mbs->pA->diag,mbs->procinfo); CHKERRBS(0);
     /* Copy only the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
@@ -72,7 +76,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     ierr = VecEndAssembly( mbs->diag ); CHKERR(ierr);
   }
   /* Form incomplete Cholesky factor */
-  while ( mbs->ierr = BSfactor( mbs->fpA, mbs->comm_fpA, mbs->procinfo ) ) {
+  while ((mbs->ierr = BSfactor( mbs->fpA, mbs->comm_fpA, mbs->procinfo))) {
     CHKERRBS(0);	mbs->failures++;
     /* Copy only the nonzeros */
     BScopy_nz( mbs->pA, mbs->fpA );			CHKERRBS(0);

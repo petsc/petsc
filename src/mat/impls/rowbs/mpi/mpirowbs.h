@@ -53,6 +53,14 @@ typedef struct {
   int        failures;          /* number of BS factorization failures */
 } Mat_MPIRowbs;
 
+/* Add routine declarations that for some strange reason are absent
+  in the BS include files */
+  void BSforward1();
+  void BSbackward1();
+  void BSiperm_dvec();
+  void BSfor_solve1();
+  void BSback_solve1();
+
 #endif
 #endif
 
