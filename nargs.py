@@ -128,7 +128,11 @@ class ArgBool(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     try:
-      value = int(value)
+      if   value == 'no':    value = 0
+      elif value == 'yes':   value = 1
+      elif value == 'true':  value = 1
+      elif value == 'false': value = 0
+      else:                  value = int(value)
     except:
       raise TypeError('Invalid boolean value: '+str(value))
     self.value = value
