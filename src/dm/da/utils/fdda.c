@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.29 1998/04/21 00:02:03 balay Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.30 1998/04/21 13:23:18 bsmith Exp curfman $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -13,18 +13,18 @@ extern int DAGetColoring3d(DA,ISColoring *,Mat *);
 #undef __FUNC__  
 #define __FUNC__ "DAGetColoring" 
 /*@C
-      DAGetColoring - Gets the coloring required for computing the Jacobian via
-      finite differences on a function defined using a stencil on the DA.
+    DAGetColoring - Gets the coloring required for computing the Jacobian via
+    finite differences on a function defined using a stencil on the DA.
 
-     Input Parameter:
-.    da - the distributed array
+    Collective on DA
 
-     Output Parameters:
-.    coloring - matrix coloring for compute Jacobians
-.    J  - matrix with the correct nonzero structured 
-            (obviously without the correct Jacobian values)
+    Input Parameter:
+.   da - the distributed array
 
-     Collective on DA
+    Output Parameters:
++   coloring - matrix coloring for compute Jacobians
+-   J  - matrix with the correct nonzero structured 
+      (obviously without the correct Jacobian values)
 
 @*/
 int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
