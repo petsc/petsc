@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ij.c,v 1.28 1997/10/19 03:25:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.29 1999/03/11 16:18:58 bsmith Exp curfman $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -27,10 +27,10 @@ static char vcid[] = "$Id: ij.c,v 1.28 1997/10/19 03:25:18 bsmith Exp bsmith $";
 .   ja     - ja part (column indices)
 
     Notes:
-$    Both ia and ja may be freed with PetscFree();
-$    This routine is provided for ordering routines that require a 
-$    symmetric structure.  It is required since those routines call 
-$    SparsePak routines that expect a symmetric  matrix.
+    Both ia and ja may be freed with PetscFree();
+    This routine is provided for ordering routines that require a 
+    symmetric structure.  It is required since those routines call 
+    SparsePak routines that expect a symmetric  matrix.
 */
 int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin, int shiftout,
                             int **iia, int **jja )
