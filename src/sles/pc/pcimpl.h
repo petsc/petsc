@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.23 1999/01/27 19:46:43 bsmith Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.24 1999/04/21 18:17:08 bsmith Exp curfman $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -41,6 +41,9 @@ struct _p_PC {
   void         *data;
 };
 
+/*
+   Null space context for preconditioner
+*/
 struct _p_PCNullSpace {
   PETSCHEADER(int)
   int         has_cnst;
