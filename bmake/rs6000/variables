@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.1 1999/02/08 23:48:11 balay Exp balay $ 
+# $Id: base_variables,v 1.2 1999/02/08 23:48:57 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -20,8 +20,8 @@ C_SYS_LIB        = -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a
 G_COPTFLAGS      = -g  -qfullpath
 G_FOPTFLAGS      = -g  -qfullpath
 # ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS      = -O3 -qarch=pwr2  -qmaxmem=4000 -w
-O_FOPTFLAGS      = -O3  -qarch=pwr2 -w
+O_COPTFLAGS      = -O3 -qmaxmem=4000 -w
+O_FOPTFLAGS      = -O3 -w
 # ########################## C++ compiler ##################################
 #
 CXX_CC           = xlC_r -+
