@@ -1,11 +1,23 @@
 
+To: petsc-users@mcs.anl.gov
+Subject: new PETSc release
+Date: Fri, 04 Oct 1996 16:53:19 -0500
+From: Lois Curfman McInnes <curfman@mcs.anl.gov>
+
+
 PETSc Users,
 
 We have just released a new version of PETSc (2.0.15) with a variety
 of extensions and enhancements to the software.  A list of new
-features and changes in PETSc is provided in the "Changes" file at
-ftp://info.mcs.anl.gov/pub/petsc or
-http://www.mcs.anl.gov/petsc/petsc.html.
+features and changes in PETSc is provided in the "Changes" file
+available at
+     ftp://info.mcs.anl.gov/pub/petsc
+or
+     http://www.mcs.anl.gov/petsc/petsc.html
+Also, before installing a new version PETSc, please see the list
+of patches at
+     http://www.mcs.anl.gov/petsc/petsc-patches.html
+to determine if any are required for you machine(s) of interest.
 
 Highlights of new features added since the last public release of
 PETSc (version 2.0.13) include:
@@ -29,11 +41,14 @@ PETSc (version 2.0.13) include:
 As always, please send bug reports, questions, and requests for new 
 features to petsc-maint@mcs.anl.gov.
 
-A reminder about our upcoming "Bring Your Own Code" Workshops:
+A reminder of our upcoming "Bring Your Own Code" Workshops:
 Information is available via: http://www.mcs.anl.gov/petsc/petsc-byoc.html.
 
 Thanks for your support.
 
 The PETSc developers,
-Barry, Satish, Lois, and Bill
+Barry, Satish, Bill, and Lois
+
+
+
 
