@@ -5,8 +5,9 @@
 # 
   set host     [lindex $argv 0]
   set user     [lindex $argv 1]
-  set file_in  [lindex $argv 2]
-  set file_out [lindex $argv 3]
+  set action   [lindex $argv 2]
+  set file_in  [lindex $argv 3]
+  set file_out [lindex $argv 4]
 
      spawn ftp
      expect {ftp>*}
@@ -23,7 +24,7 @@
      set timeout 2000
      send "binary \r"
      expect {*ftp>*}
-     send "put $file_in $file_out\r"
+     send "$action $file_in $file_out\r"
      expect {*ftp>*}
      send "quit\r"
 
