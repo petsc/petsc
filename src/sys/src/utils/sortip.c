@@ -1,12 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortip.c,v 1.21 1998/04/13 17:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: sortip.c,v 1.22 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 
 /*
-   This file contains routines for sorting "common" objects.
-   So far, this includes integers and reals.  Values are sorted in place.
-   These are provided because the general sort routines incur a great deal
-   of overhead in calling the comparision routines.
+   This file contains routines for sorting integers and doubles with a permutation array.
 
    The word "register"  in this code is used to identify data that is not
    aliased.  For some compilers, this can cause the compiler to fail to
@@ -78,8 +75,7 @@ int PetscSortIntWithPermutation(int n, int *i, int *idx )
 	}
       }
     }
-  }
-  else {
+  } else {
     PetsciIqsortPerm(i,idx,n-1);
   }
   PetscFunctionReturn(0);
@@ -149,8 +145,7 @@ int PetscSortDoubleWithPermutation(int n, double *i, int *idx )
 	}
       }
     }
-  }
-  else {
+  } else {
     PetsciDqsortPerm(i,idx,n-1);
   }
   PetscFunctionReturn(0);

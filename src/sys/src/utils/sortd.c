@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortd.c,v 1.15 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: sortd.c,v 1.16 1998/05/18 19:18:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -75,8 +75,7 @@ int PetscSortDouble(int n,double *v)
 	}
       }
     }
-  }
-  else {
+  } else {
     PetsciDqsort( v, n-1 );
   }
   PetscFunctionReturn(0);
