@@ -152,7 +152,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
   } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- r'*r       */
   } else if (ksp->normtype == KSP_NATURAL_NORM) {
-    dp = PetscAbsScalar(beta);
+    dp = sqrt(PetscAbsScalar(beta));
   } else dp = 0.0;
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
   if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
@@ -194,7 +194,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
      } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- r'*r       */
      } else if (ksp->normtype == KSP_NATURAL_NORM) {
-       dp = PetscAbsScalar(beta);
+       dp = sqrt(PetscAbsScalar(beta));
      } else {
        dp = 0.0;
      }

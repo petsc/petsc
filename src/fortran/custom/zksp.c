@@ -38,6 +38,7 @@
 #define kspgetoptionsprefix_       KSPGETOPTIONSPREFIX
 #define kspview_                   KSPVIEW
 #define kspgmressetrestart_        KSPGMRESSETRESTART
+#define kspsetnormtype_            KSPSETNORMTYPE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspgetconvergedreason_     kspgetconvergedreason
 #define kspfgmressetmodifypc_      kspfgmressetmodifypc
@@ -73,6 +74,7 @@
 #define kspview_                   kspview
 #define kspgetresidualnorm_        kspgetresidualnorm
 #define kspgmressetrestart_        kspgmressetrestart
+#define kspsetnormtype_            kspsetnormtype
 #endif
 
 EXTERN_C_BEGIN
@@ -381,6 +383,16 @@ void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (PETSC_STDCALL *fcn)(KSP*
       *ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,ctx,ourmoddestroy);
     }
   }
+}
+
+void PETSC_STDCALL kspsetnormtype_(KSP *ksp,CHAR type PETSC_MIXED_LEN(len),int *i
+err PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = KSPSetNormType(*ksp,t);
+  FREECHAR(type,t);
 }
 
 EXTERN_C_END
