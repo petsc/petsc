@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.9 1995/04/27 22:11:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.10 1995/05/14 16:34:12 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -11,7 +11,6 @@ static char vcid[] = "$Id: lg.c,v 1.9 1995/04/27 22:11:02 bsmith Exp bsmith $";
 #include "petsc.h"
 #include "ptscimpl.h"
 #include "draw.h"
-
 
 struct _DrawLGCtx {
   PETSCHEADER 
@@ -42,7 +41,6 @@ int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) {
      return DrawOpenNull(vobj->comm,(DrawCtx*)outctx);
   }
-
   lg = (DrawLGCtx) MALLOC(sizeof(struct _DrawLGCtx));CHKPTR(lg);
   lg->cookie  = LG_COOKIE;
   lg->view    = 0;
@@ -67,6 +65,8 @@ int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
 /*@
     DrawLGReset - Clears line graph to allow for reuse with new data.
 
+  Input Parameter:
+.   lg - the line graph context.
 @*/
 int DrawLGReset(DrawLGCtx lg)
 {
@@ -83,6 +83,9 @@ int DrawLGReset(DrawLGCtx lg)
 /*@
     DrawLGDestroy - Frees all space taken up by LineGraph 
                          data structure.
+
+  Input Parameter:
+.  lg - the line graph context
 @*/
 int DrawLGDestroy(DrawLGCtx lg)
 {
@@ -185,6 +188,9 @@ int DrawLGAddPoints(DrawLGCtx lg,int n,double **xx,double **yy)
 
 /*@
    DrawLG - Redraws a line graph
+
+  Input Parameter:
+.  lg - the line graph context
 @*/
 int DrawLG(DrawLGCtx lg)
 {
@@ -208,7 +214,6 @@ int DrawLG(DrawLGCtx lg)
   return 0;
 } 
  
-
 /*@
      DrawLGSetLimits - Sets the axis limits for a line graph. If 
                             more points are added after this call the
@@ -259,7 +264,6 @@ int DrawLGGetAxisCtx(DrawLGCtx lg,DrawAxisCtx *axis)
 
   Output Parameter:
 .  win - the draw context
-
 @*/
 int DrawLGGetDrawCtx(DrawLGCtx lg,DrawCtx *win)
 {

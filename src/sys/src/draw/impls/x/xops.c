@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.17 1995/05/18 22:46:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.18 1995/05/25 22:48:17 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "ximpl.h"
@@ -35,8 +35,7 @@ static int DrawPoint_X(DrawCtx Win,double x,double  y,int c)
   DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
   xx = XTRANS(Win,XiWin,x);  yy = YTRANS(Win,XiWin,y);
   XiSetColor( XiWin, c );
-  XDrawPoint( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set,
-               xx, yy);
+  XDrawPoint( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set,xx, yy);
   return 0;
 }
 

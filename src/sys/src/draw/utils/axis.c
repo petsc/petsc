@@ -1,11 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.7 1995/04/27 22:00:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.8 1995/05/13 00:52:07 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
-   Given an XiWindow, it returns an XiWindow to be used by any 
-   drawing routine.
- */
+*/
 
 #include "petsc.h"
 #include "ptscimpl.h"
@@ -13,15 +11,15 @@ static char vcid[] = "$Id: axis.c,v 1.7 1995/04/27 22:00:18 bsmith Exp bsmith $"
 #include <math.h>
 
 struct _DrawAxisCtx {
-    double  xlow, ylow, xhigh, yhigh;   /* User - coord limits */
+    double  xlow, ylow, xhigh, yhigh;     /* User - coord limits */
     char    *(*ylabelstr)(double,double), /* routines to generate labels */ 
             *(*xlabelstr)(double,double);
-    int     (*xlabels)(), (*ylabels)(), /* location of labels */
+    int     (*xlabels)(), (*ylabels)()  , /* location of labels */
             (*xticks)(double,double,int,int*,double*,int),
             (*yticks)(double,double,int,int*,double*,int);  
-                                        /* location and size of ticks */
+                                          /* location and size of ticks */
     DrawCtx win;
-    int     ac,tc,cc;                   /* axis, tick, charactor color */
+    int     ac,tc,cc;                     /* axis, tick, charactor color */
     char    *xlabel,*ylabel,*toplabel;
 };
 
@@ -32,7 +30,7 @@ static char   *XiADefLabel(double,double);
 static double XiAGetNice(double,double,int );
 static int    XiAGetBase(double,double,int,double*,int*);
 
-#if defined(cray) || defined(HPUX)
+#if defined(PARCH_cray) || defined(PARCH_hpux)
 static double rint( x )
 double x;
 {
@@ -58,7 +56,6 @@ int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) {
      return DrawOpenNull(vobj->comm,(DrawCtx*)ctx);
   }
-
   ad            = (DrawAxisCtx) MALLOC(sizeof(struct _DrawAxisCtx)); 
   CHKPTR(ad);
   ad->xticks    = XiADefTicks;
@@ -310,8 +307,7 @@ static char *XiADefLabel(double val,double sep )
 	   tends to print with an excessive numer of digits.  In this
 	   case, we should look at the next/previous values and 
 	   use those widths */
-	if (w > 0) 
-	    sprintf( fmat, "%%%d.%dlf", w + 1, d );  /* Allow 1 for decimal */
+	if (w > 0) sprintf( fmat, "%%%d.%dlf", w + 1, d );
 	else strcpy( fmat, "%lf" );
 	sprintf( buf, fmat, val );
     }

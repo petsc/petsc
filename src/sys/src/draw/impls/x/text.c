@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: text.c,v 1.5 1995/03/06 04:30:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.6 1995/03/25 01:27:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -17,10 +17,6 @@ int XiLoadFont(DrawCtx_X*,XiFont*);
 
     Warning: these fonts are never freeded because they can possibly 
   be shared by several windows 
-
-    Input Parameters:
-.   XBWin - window
-.   w,h   - requested width and height of a character
 */
 int XiFontFixed( DrawCtx_X *XBWin,int w, int h,XiFont **outfont )
 {
@@ -40,21 +36,6 @@ int XiFontFixed( DrawCtx_X *XBWin,int w, int h,XiFont **outfont )
   return 0;
 }
 
-/*
-   This file contains routines to manage fonts.  There are two separate
-   approaches here:
-
-   A set of default, fixed-width fonts is provided.
-
-   The approach is:
-
-   XiInitFonts( XBWin ) - acquires info on (some of) the available fixed
-                          width fonts.
-   XiMatchFontSize( font, w, h ) - find a font that matches the width and
-                                   height
-   XiLoadFont( XBWin, font ) - loads a particular font
- */
-
 /* this is set by XListFonts at startup */
 #define NFONTS 20
 static struct {
@@ -63,9 +44,9 @@ static struct {
 static int act_nfonts = 0;
 
 /*
- * These routines determine the font to be used based on the requested size,
- * and load it if necessary
- */
+  These routines determine the font to be used based on the requested size,
+  and load it if necessary
+*/
 
 int XiLoadFont( DrawCtx_X *XBWin, XiFont *font )
 {
@@ -74,16 +55,12 @@ int XiLoadFont( DrawCtx_X *XBWin, XiFont *font )
   XGCValues   values ;
 
   (void) sprintf(font_name, "%dx%d", font->font_w, font->font_h );
-  /* printf( "font num is %d in loadfont\n", fnum ); */
-  /* printf( "font names is %s\n", font_name ); */
   font->fnt  = XLoadFont( XBWin->disp, font_name );
 
   /* The font->descent may not have been set correctly; get it now that
       the font has been loaded */
   FontInfo   = XQueryFont( XBWin->disp, font->fnt );
   font->font_descent   = FontInfo->descent;
-
-  /* For variable width, also get the max width and height */
 
   /* Storage leak; should probably just free FontInfo? */
   /* XFreeFontInfo( FontInfo ); */
@@ -105,12 +82,10 @@ int XiInitFonts( DrawCtx_X *XBWin )
   names   = XListFontsWithInfo( XBWin->disp, "?x??", NFONTS, &cnt, &info );
   j       = 0;
   for (i=0; i < cnt; i++) {
-    /*printf( "in XBInitFonts - found font %s\n", names[i] ); */
     names[i][1]         = '\0';
     nfonts[j].w         = info[i].max_bounds.width ;
     nfonts[j].h         = info[i].ascent + info[i].descent;
     nfonts[j].descent   = info[i].descent;
-    /* printf( "w = %d, h = %d\n", nfonts[j].w, nfonts[j].h ); */
     if (nfonts[j].w <= 0 || nfonts[j].h <= 0) continue;
     j++;
     if (j >= NFONTS) break;
@@ -118,12 +93,6 @@ int XiInitFonts( DrawCtx_X *XBWin )
   act_nfonts    = j;
   if (cnt > 0)  {
     XFreeFontInfo( names, info, cnt );
-#ifdef FOO
-    /* Most recent documentation says that FreeFontNames is a SUBSET of
-       FreeFontInfo */
-    /* This causes IRIX and rs6000 to barf */
-    XFreeFontNames( names );
-#endif
   }
   /* If the above fails, try this: */
   if (act_nfonts == 0) {
@@ -132,23 +101,18 @@ int XiInitFonts( DrawCtx_X *XBWin )
     j       = 0;
     for (i=0; i < cnt; i++) {
         if (strlen(names[i]) != 2) continue;
-        /* printf( "found font %s\n", names[i] ); */
         names[i][1]         = '\0';
 	nfonts[j].w         = info[i].max_bounds.width ;
         /* nfonts[j].w         = info[i].max_bounds.lbearing +
                                     info[i].max_bounds.rbearing; */
         nfonts[j].h         = info[i].ascent + info[i].descent;
         nfonts[j].descent   = info[i].descent;
-        /* printf( "w = %d, h = %d\n", nfonts[j].w, nfonts[j].h ); */
         if (nfonts[j].w <= 0 || nfonts[j].h <= 0) continue;
         j++;
 	if (j >= NFONTS) break;
     }
     act_nfonts    = j;
     XFreeFontInfo( names, info, cnt );
-#ifdef FOO
-    XFreeFontNames( names );
-#endif
   }
   return 0;
 }
@@ -176,16 +140,9 @@ int XiMatchFontSize( XiFont *font, int w, int h )
     if (tmp < max) {max = tmp; imax = i;}
   }
 
-/*
-  fprintf(stderr,"Warning could not match to font of %d fonts\n",act_nfonts);
-  fprintf(stderr,"Wanted Size %d %d Using %d %d \n",w,h, nfonts[imax].w,
-                                                         nfonts[imax].h);
-*/
-
   /* should use font with closest match */
   font->font_w        = nfonts[imax].w;
   font->font_h        = nfonts[imax].h;
   font->font_descent  = nfonts[imax].descent;
   return 0;
 }
-

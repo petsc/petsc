@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.6 1995/03/06 04:29:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.7 1995/03/25 01:27:20 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "ximpl.h"
@@ -22,10 +22,6 @@ extern int XiFontFixed(DrawCtx_X*,int,int,XiFont** );
 
 /*
   XiOpenDisplay - Open a display
-  
-  Input Parameters:
-  XiWin        - pointer to base window structure
-  display_name - either null ("") or of the form "host:0"
 */
 int XiOpenDisplay(DrawCtx_X* XiWin,char *display_name )
 {
@@ -37,11 +33,7 @@ int XiOpenDisplay(DrawCtx_X* XiWin,char *display_name )
 
 /*  
     XiSetVisual - set the visual class for a window and colormap
-
-    Input Parameters:
-.   nc - number of colors.  Use the maximum of the visual if
-    nc == 0.  Use nc = 2 for black and white displays.
-  */
+*/
 int XiSetVisual(DrawCtx_X* XiWin,int q_default_visual,Colormap cmap,int nc )
 {
   if (q_default_visual) {
@@ -83,7 +75,7 @@ int XiSetVisual(DrawCtx_X* XiWin,int q_default_visual,Colormap cmap,int nc )
 
 /* 
    XiSetGC - set the GC structure in the base window
-  */
+*/
 int XiSetGC(DrawCtx_X* XiWin,PixVal fg )
 {
   XGCValues       gcvalues;       /* window graphics context values */
@@ -102,7 +94,7 @@ int XiSetGC(DrawCtx_X* XiWin,PixVal fg )
     Actually display a window at [x,y] with sizes (w,h)
     If w and/or h are 0, use the sizes in the fields of XiWin
     (which may have been set by, for example, XiSetWindowSize)
- */
+*/
 int XiDisplayWindow( DrawCtx_X* XiWin, char *label, int x, int y,
                      int w,int h,PixVal backgnd_pixel )
 {
@@ -233,7 +225,7 @@ int XiQuickWindow(DrawCtx_X* mywindow,char* host,char* name,int x,int y,
 }
 
 /* 
-   And a version from an already defined window
+   A version from an already defined window
  */
 int XiQuickWindowFromWindow(DrawCtx_X* mywindow,char *host,Window win,int nc)
 {
@@ -246,8 +238,7 @@ int XiQuickWindowFromWindow(DrawCtx_X* mywindow,char *host,Window win,int nc)
   }
 
   mywindow->win = win;
-  XGetGeometry( mywindow->disp, mywindow->win, &root, 
-              &d, &d, 
+  XGetGeometry( mywindow->disp, mywindow->win, &root, &d, &d, 
 	      (unsigned int *)&mywindow->w, (unsigned int *)&mywindow->h,
               &ud, &ud );
   mywindow->x = mywindow->y = 0;
@@ -262,10 +253,6 @@ int XiQuickWindowFromWindow(DrawCtx_X* mywindow,char *host,Window win,int nc)
 
 /*
       XiSetWindowLabel - Sets new label in open window.
-
-  Input Parameters:
-.  window - Window to set label for
-.  label  - Label to give window
 */
 int XiSetWindowLabel(DrawCtx_X* Xiwin, char *label )
 {

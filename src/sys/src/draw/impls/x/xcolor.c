@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.7 1995/03/25 01:27:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.8 1995/05/14 16:34:03 bsmith Exp bsmith $";
 #endif
 #include "ximpl.h"
 
@@ -17,15 +17,10 @@ Colormap XiCreateColormap(Display*,int,Visual *);
 /*
     This file contains routines to provide color support where available.
     This is made difficult by the wide variety of color implementations
-    that X11 supports, and the failure of the X consortium to recognize
-    until very recently that window managers must have a minimum,
-    standardized interface that includes color (and window mapping,
-    mouse control, ...  )
- */
-/* for some reason, this isn't included by the X11 includes */
+    that X11 supports.
+*/
 #include <X11/Xatom.h>
 
-/* cmap is ignored for now? */
 int XiInitColors(DrawCtx_X* XiWin,Colormap cmap,int nc )
 {
   PixVal   white_pixel, black_pixel;
@@ -138,14 +133,12 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
 	    err = 1;
 	XiWin->cmapping[i]   = colordef.pixel;
     }
-    /* printf( "pixel value for %d is %d\n\r", i, XiWin->cmap[i] ); */
   }
 
   /* make sure that there are 2 different colors */
   pix             = XiWin->cmapping[0];
   for (i=1; i<mapsize; i++)  if (pix != XiWin->cmapping[i]) break;
   if (i >= mapsize) {
-    /* no different colors */
     if (XiWin->cmapping[0] != black_pixel) XiWin->cmapping[0] = black_pixel;
     else	XiWin->cmapping[0]   = white_pixel;
   }
@@ -153,9 +146,6 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
   /*
     The window needs to be told the new background pixel so that things
     like XClearArea will work
-
-    Note that this should not be called until the window is actually
-    created.
   */
   if (XiWin->win)
     XSetWindowBackground( XiWin->disp, XiWin->win, XiWin->cmapping[0] );
@@ -166,10 +156,6 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
    Further, several colors may have been mapped to the same display color.
    We could detect this only by seeing if there are any duplications
    among the XiWin->cmap values.
-  */
-
-  /* 
-   Remaining bug: foreground and background not set.
   */
   return err;
 }
@@ -184,7 +170,7 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
     Rather than fight with that, we will use the default colormap.
     This usually does not have many (any?) sharable color entries,
     so we just try to match with the existing entries.
- */
+*/
 
 /*
     This routine gets the visual class (PseudoColor, etc) and returns
@@ -225,7 +211,6 @@ int XiGetVisualClass(DrawCtx_X* XiWin )
 #endif
 }
 
-/* Should pass this an XiWin */
 Colormap XiCreateColormap(Display* display,int screen,Visual *visual )
 {
   Colormap Cmap;
@@ -238,13 +223,11 @@ Colormap XiCreateColormap(Display* display,int screen,Visual *visual )
   return Cmap;
 }
 
-
 int XiSetColormap(DrawCtx_X* XiWin )
 {
   XSetWindowColormap( XiWin->disp, XiWin->win, XiWin->cmap );
   return 0;
 }
-
 
 int XiAllocBW(DrawCtx_X* XiWin,PixVal* white,PixVal* black )
 {
@@ -263,7 +246,6 @@ int XiAllocBW(DrawCtx_X* XiWin,PixVal* white,PixVal* black )
   *white = wcolor.pixel;
   return 0;
 }
-
 
 int XiGetBaseColor(DrawCtx_X* XiWin,PixVal* white_pix,PixVal* black_pix )
 {
@@ -357,7 +339,6 @@ int XiHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,
   return 0;
 }
 
-
 /*
     This routine returns the pixel value for the specified color
     Returns 0 on failure, <>0 otherwise.
@@ -370,8 +351,7 @@ int XiFindColor( DrawCtx_X *XiWin, char *name, PixVal *pixval )
   st = XParseColor( XiWin->disp, XiWin->cmap, name, &colordef );
   if (st) {
     st  = XAllocColor( XiWin->disp, XiWin->cmap, &colordef );
-    if (st)
-	*pixval = colordef.pixel;
+    if (st)  *pixval = colordef.pixel;
   }
   else    printf( "did not find color %s\n", name );
   return st;
@@ -412,12 +392,9 @@ int XiAddCmap( unsigned char *red, unsigned char *green, unsigned char *blue,
     if (!XAllocColor( XiWin->disp, XiWin->cmap, &colordef ))
 	err = 1;
     XiWin->cmapping[cmap_start+i]    = colordef.pixel;
-    /* printf( "pixel value for %d is %d\n\r", i, XiWin->cmapping[i] ); */
   }
-
   return err;
 }
-
 
 /*
     Another real need is to assign "colors" that make sense for
@@ -474,15 +451,9 @@ PixVal XiSimColor(DrawCtx_X *XiWin,PixVal pixel, int intensity, int is_fore)
   return  colorsdef.pixel;
 }
 
-
 /*
   XiUniformHues - Set the colormap to a uniform distribution
 
-  Input parameters:
-. Xiwin - window to set colors for
-. ncolors - number of colors
-
-  Note:
   This routine sets the colors in the current colormap, if the default
   colormap is used.  The Pixel values chosen are in the cmapping 
   structure; this is used by routines such as the Xi contour plotter.
@@ -504,15 +475,6 @@ int XiUniformHues( DrawCtx_X *Xiwin, int ncolors )
 /*
   XiSetCmapLight - Create rgb values from a single color by adding white
   
-  Input Parameters:
-. mapsize - number of values
-
-  Output Parameters:
-. red - red values
-. green - green values
-. blue - blue values
-
-  Note:
   The initial color is (red[0],green[0],blue[0]).
 */
 int XiSetCmapLight(unsigned char *red, unsigned char *green,
