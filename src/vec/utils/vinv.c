@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.51 1999/05/04 20:30:27 balay Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.52 1999/05/12 03:28:02 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -136,7 +136,7 @@ int VecStrideMax(Vec v,int start,int *index,double *norm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   if (index) {
-    SETERRQ(1,1,"No support yet for returning index");
+    SETERRQ(1,1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -214,7 +214,7 @@ int VecStrideMin(Vec v,int start,int *index,double *norm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   if (index) {
-    SETERRQ(1,1,"No support yet for returning index");
+    SETERRQ(1,1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);

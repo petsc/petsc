@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pvec2.c,v 1.39 1999/05/12 03:28:25 bsmith Exp balay $"
+static char vcid[] = "$Id: pvec2.c,v 1.40 1999/06/30 23:50:31 balay Exp bsmith $"
 #endif
 
 /*
@@ -170,6 +170,54 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
   PetscFunctionReturn(0);
 }
 
+/*
+       These two functions are the MPI reduction operation used for max and min with index
+   The call below to MPI_Op_create() converts the function Vec[Max,Min]_Local() to the 
+   MPI operator Vec[Max,Min]_Local_Op.
+*/
+MPI_Op VecMax_Local_Op = 0;
+MPI_Op VecMin_Local_Op = 0;
+
+EXTERN_C_BEGIN
+#undef __FUNC__
+#define __FUNC__ "VecMax_Local"
+void VecMax_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype)
+{
+  double *xin = (double *)in, *xout = (double *) out;
+  int    i, count = *cnt;
+
+  if (*datatype != MPI_DOUBLE) {
+    (*PetscErrorPrintf)("Can only handle MPI_DOUBLE data types");
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+  if (xin[0] > xout[0]) {
+    xout[0] = xin[0];
+    xout[1] = xin[1];
+  }
+  return;
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNC__
+#define __FUNC__ "VecMin_Local"
+void VecMin_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype)
+{
+  double *xin = (double *)in, *xout = (double *) out;
+  int    i, count = *cnt;
+
+  if (*datatype != MPI_DOUBLE) {
+    (*PetscErrorPrintf)("Can only handle MPI_DOUBLE data types");
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+  if (xin[0] < xout[0]) {
+    xout[0] = xin[0];
+    xout[1] = xin[1];
+  }
+  return;
+}
+EXTERN_C_END
+
 #undef __FUNC__  
 #define __FUNC__ "VecMax_MPI"
 int VecMax_MPI( Vec xin, int *idx, double *z )
@@ -187,8 +235,22 @@ int VecMax_MPI( Vec xin, int *idx, double *z )
     ierr = MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );CHKERRQ(ierr);
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else {
-    /* Need to use special linked max */
-    SETERRQ( 1,0, "Parallel max with index not supported" );
+    double work2[2],z2[2];
+    int    rstart;
+
+    if (!VecMax_Local_Op) {
+      ierr = MPI_Op_create(VecMax_Local,1,&VecMax_Local_Op);CHKERRQ(ierr);
+    }
+     
+    ierr = VecGetOwnershipRange(xin,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    work2[0] = work;
+    work2[1] = *idx + rstart;
+    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
+    ierr = MPI_Allreduce(work2,z2,2,MPI_DOUBLE,VecMax_Local_Op,xin->comm );CHKERRQ(ierr);
+    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
+    *z   = z2[0];
+    *idx = (int) z2[1];
+
   }
   PetscFunctionReturn(0);
 }
@@ -210,8 +272,22 @@ int VecMin_MPI( Vec xin, int *idx, double *z )
     ierr = MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MIN,xin->comm );CHKERRQ(ierr);
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else {
-    /* Need to use special linked Min */
-    SETERRQ( 1,0, "Parallel Min with index not supported" );
+    double work2[2],z2[2];
+    int    rstart;
+
+    if (!VecMin_Local_Op) {
+      ierr = MPI_Op_create(VecMin_Local,1,&VecMin_Local_Op);CHKERRQ(ierr);
+    }
+     
+    ierr = VecGetOwnershipRange(xin,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    work2[0] = work;
+    work2[1] = *idx + rstart;
+    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
+    ierr = MPI_Allreduce(work2,z2,2,MPI_DOUBLE,VecMin_Local_Op,xin->comm );CHKERRQ(ierr);
+    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
+    *z   = z2[0];
+    *idx = (int) z2[1];
+
   }
   PetscFunctionReturn(0);
 }
