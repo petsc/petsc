@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.35 1996/03/23 18:34:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.36 1996/03/26 15:07:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -39,15 +39,47 @@ int main(int argc,char **args)
 
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
+  if (!flg) SETERRA(1,"Must indicate binary file with the -f option");
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
   ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 
-  /* Set up solution */
+  /* 
+     If the load matrix is larger then the vector, due to being padded 
+     to match the blocksize then create a new padded vector
+  */
+  { 
+    int m,n,mvec;
+    ierr = MatGetSize(A,&m,&n); CHKERRA(ierr);
+    ierr = VecGetSize(b,&mvec); CHKERRA(ierr);
+    if (m > mvec) {
+      Vec    tmp;
+      Scalar *bold,*bnew;
+      /* create a new vector b by padding the old one */
+      ierr = VecCreate(MPI_COMM_WORLD,m,&tmp); CHKERRA(ierr);
+      ierr = VecGetArray(tmp,&bnew); CHKERRA(ierr);
+      ierr = VecGetArray(b,&bold); CHKERRA(ierr);
+      PetscMemcpy(bnew,bold,mvec*sizeof(Scalar)); CHKERRA(ierr);
+      VecDestroy(b);
+      b = tmp;
+    }
+  }
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
+
+  /* Do solve once to bring in all instruction pages */
+  /*
+  ierr = VecSet(&zero,x); CHKERRA(ierr);
+  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
+  ierr = SLESSetUpOnBlocks(sles); CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
+  */
+
   ierr = VecSet(&zero,x); CHKERRA(ierr);
   PetscBarrier(A);
 
