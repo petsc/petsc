@@ -1,5 +1,5 @@
 #!/usr/local/bin/tcsh
-# $Id: addlinks,v 1.15 1998/11/12 16:25:00 balay Exp bsmith $ 
+# $Id: addlinks,v 1.16 1999/12/22 07:00:23 bsmith Exp bsmith $ 
 #
 # Add the individual links for the PETSc shadow directory.  This script
 # should be called from buildlinks.
@@ -25,7 +25,7 @@ foreach file ($allfiles)
 
   set short=`echo $file | sed s%$petscdir/%$shadowdir/%` 
   if (! -e $short && -f $file ) then
-    set dummy=`echo $file |egrep '(\.a$|\.o$|^PI|\.ln|l\.outa|mputil.mp_|core|\.map|\.log|gmon\.out|trashz|\.tmp|\.b$|\~|\#|\.so$|^so_locations)'`
+    set dummy=`echo $file |egrep '(\.a$|\.o$|^PI|\.ln|\.class|l\.outa|mputil.mp_|core|\.map|\.log|gmon\.out|trashz|\.tmp|\.b$|\~|\#|\.so$|^so_locations)'`
     if ($dummy != $file) then
 #       echo "ln -s $file $short"
        ln -s $file $short
