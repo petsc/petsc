@@ -14,17 +14,20 @@ extern int DiffParameterDestroy_More(void**);
 
 /* Application-defined context for matrix-free SNES */
 typedef struct {
-  SNES        snes;      /* SNES context */
-  Vec         w;         /* work vector */
-  double      error_rel; /* square root of relative error in computing function */
-  double      umin;      /* minimum allowable u value */
-  Euler       *user;     /* user-defined application context */
-  int         jorge;     /* flag indicating use of Jorge's method for determining
-                            the differencing parameter */
-  Scalar      h;         /* differencing parameter */
-  int         need_h;    /* flag indicating whether we must compute h */
-  int         need_err;  /* flag indicating whether we must compute error_rel */
-  void        *data;     /* implementation-specific data */
+  Euler       *user;            /* user-defined application context */
+  SNES        snes;             /* SNES context */
+  Vec         w;                /* work vector */
+  double      error_rel;        /* square root of relative error in computing function */
+  double      umin;             /* minimum allowable u'a value relative to |u|_1 */
+  int         jorge;            /* flag indicating use of Jorge's method for determining
+                                   the differencing parameter */
+  Scalar      h;                /* differencing parameter */
+  int         need_h;           /* flag indicating whether we must compute h */
+  int         need_err;         /* flag indicating whether we must currently compute error_rel */
+  int         compute_err;      /* flag indicating whether we must ever compute error_rel */
+  int         compute_err_iter; /* last iter where we've computer error_rel */
+  int         compute_err_freq; /* frequency of computing error_rel */
+  void        *data;            /* implementation-specific data */
 } MFCtxEuler_Private;
 
 #undef __FUNC__
@@ -37,7 +40,7 @@ int UserMatrixFreeDestroy(PetscObject obj)
 
   ierr = MatShellGetContext(mat,(void **)&ctx);
   ierr = VecDestroy(ctx->w); CHKERRQ(ierr);
-  if (ctx->jorge || ctx->need_err) {ierr = DiffParameterDestroy_More(ctx->data); CHKERRQ(ierr);}
+  if (ctx->jorge || ctx->compute_err) {ierr = DiffParameterDestroy_More(ctx->data); CHKERRQ(ierr);}
   PetscFree(ctx);
   return 0;
 }
@@ -93,11 +96,13 @@ int UserMatrixFreeView(Mat J,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
-     PetscFPrintf(comm,fd,"  user-defined SNES matrix-free approximation:\n");
+     PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");
      if (ctx->jorge)
        PetscFPrintf(comm,fd,"    using Jorge's method of determining differencing parameter\n");
      PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);
      PetscFPrintf(comm,fd,"    umin=%g (minimum iterate parameter)\n",ctx->umin);
+     if (ctx->compute_err)
+       PetscFPrintf(comm,fd,"    freq_err=%d (frequency for computing err)\n",ctx->compute_err_freq);
   }
   return 0;
 }
@@ -126,7 +131,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
   Scalar        h, dot, mone = -1.0, *ya, *aa, *dt, one = 1.0, dti;
   Vec           w,U,F;
   int           ierr, i, j, k, ijkv, ijkx, nc, jkx, dim, ikx;
-  int           xsi, xei, ysi, yei, zsi, zei, mx, my, mz;
+  int           xsi, xei, ysi, yei, zsi, zei, mx, my, mz, iter;
   int           xm, ym, zm, xs, ys, zs, xe, ye, ze, ijx;
   Euler         *user;
   MPI_Comm      comm;
@@ -169,12 +174,16 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
 
     /* Use the Brown/Saad method to compute h */
     } else { 
-      if (ctx->need_err) {
+      /* Compute error if desired */
+      ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
+      if ((ctx->need_err) ||
+          ((ctx->compute_err_freq) && (ctx->compute_err_iter != iter) && (!((iter-1)%ctx->compute_err_freq)))) {
         /* Use Jorge's method to compute noise */
         ierr = DiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h); CHKERRQ(ierr);
         ctx->error_rel = sqrt(noise);
         PLogInfo(snes,"UserMatrixFreeMult: Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",
             noise,ctx->error_rel,h);
+        ctx->compute_err_iter = iter;
         ctx->need_err = 0;
       }
 
@@ -359,16 +368,25 @@ int UserMatrixFreeMatCreate(SNES snes,Euler *user,Vec x,Mat *J)
   PLogObjectMemory(snes,sizeof(MFCtxEuler_Private));
   mfctx->snes = snes;
   mfctx->user = user;
-  mfctx->error_rel = 1.e-8; /* assumes double precision */
-  mfctx->umin      = 1.e-8;
-  mfctx->h         = 0.0;
-  mfctx->need_h    = 1;
-  mfctx->need_err  = 0;
+  mfctx->error_rel        = 1.e-8; /* assumes double precision */
+  mfctx->umin             = 1.e-6;
+  mfctx->h                = 0.0;
+  mfctx->need_h           = 1;
+  mfctx->need_err         = 0;
+  mfctx->compute_err      = 0;
+  mfctx->compute_err_freq = 0;
+  mfctx->compute_err_iter = -1;
   ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_err",&mfctx->error_rel,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_umin",&mfctx->umin,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf_jorge",&mfctx->jorge); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-snes_mf_compute_err",&mfctx->need_err); CHKERRQ(ierr);
-  if (mfctx->jorge || mfctx->need_err) {
+  ierr = OptionsHasName(PETSC_NULL,"-snes_mf_compute_err",&mfctx->compute_err); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg); CHKERRQ(ierr);
+  if (flg) {
+    if (mfctx->compute_err_freq < 0) mfctx->compute_err_freq = 0;
+    mfctx->compute_err = 1; 
+  }
+  if (mfctx->compute_err == 1) mfctx->need_err = 1;
+  if (mfctx->jorge || mfctx->compute_err) {
     ierr = DiffParameterCreate_More(snes,x,&mfctx->data); CHKERRQ(ierr);
   } else mfctx->data = 0;
 
