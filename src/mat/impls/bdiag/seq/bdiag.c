@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.109 1996/08/06 04:02:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.110 1996/08/06 19:37:29 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1979,6 +1979,8 @@ static int MatConvertSameType_SeqBDiag(Mat,Mat *,int);
 extern int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,Mat*);
 extern int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,int,Mat*);
 extern int MatILUFactor_SeqBDiag(Mat,IS,IS,double,int);
+extern int MatLUFactorNumeric_SeqBDiag_N(Mat,Mat*);
+extern int MatLUFactorNumeric_SeqBDiag_1(Mat,Mat*);
 extern int MatSolve_SeqBDiag_1(Mat,Vec,Vec);
 extern int MatSolve_SeqBDiag_2(Mat,Vec,Vec);
 extern int MatSolve_SeqBDiag_3(Mat,Vec,Vec);
