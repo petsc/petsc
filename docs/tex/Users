@@ -21,6 +21,7 @@ dstevens - Deb Stevens, needs Fortran interface to SLES
 canfield - Tom Canfield, needs parallel, symmetric linear solvers
 taylor (taylor@nile.eecs.nwu.edu) - Valerie Taylor, working with Tom Canfield
 jichen (jchen@nasser.eecs.nwu.edu) - student working with Valerie
+       (meena@nile.eecs.nwu.edu) - student working with Valerie
 maa (maayj@eden.eecs.nwu.edu) - Yann Maa, needs nonlinear solvers
 freitag - Lori, needs makefile and system infrastructure
 diachin - Darin, working with Lori, makefiles and system stuff in C++
