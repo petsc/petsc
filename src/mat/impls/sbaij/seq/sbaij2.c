@@ -600,8 +600,9 @@ int MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
-    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);    
+    /* ierr = VecCopy(yy,zz);CHKERRQ(ierr); */
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
   } else {
     z = y;
   }
@@ -650,8 +651,9 @@ int MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
-    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);    
+    /* ierr = VecCopy(yy,zz);CHKERRQ(ierr); */
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
   } else {
     z = y;
   }
@@ -707,8 +709,9 @@ int MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+    /* ierr = VecCopy(yy,zz);CHKERRQ(ierr); */
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
   } else {
     z = y;
   }     
@@ -767,8 +770,9 @@ int MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+    /* ierr = VecCopy(yy,zz);CHKERRQ(ierr); */
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
   } else {
     z = y;
   }   
@@ -830,8 +834,9 @@ int MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+    /* ierr = VecCopy(yy,zz);CHKERRQ(ierr); */
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
   } else {
     z = y;
   } 
@@ -895,8 +900,9 @@ int MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+    /* ierr = VecCopy(yy,zz);CHKERRQ(ierr); */
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
   } else {
     z = y;
   }      
@@ -964,8 +970,9 @@ int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+    /* ierr = VecCopy(yy,zz);CHKERRQ(ierr); */
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
   } else {
     z = y;
   }  
@@ -1037,8 +1044,9 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+    /* ierr = VecCopy(yy,zz);CHKERRQ(ierr); */
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr); z_ptr=z;
+    ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
   } else {
     z = y;
   } 

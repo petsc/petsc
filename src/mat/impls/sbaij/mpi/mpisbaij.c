@@ -863,6 +863,51 @@ int MatDestroy_MPISBAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMult_MPISBAIJ"
+int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
+{
+  Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
+  int         ierr,i,nt,mbs=a->mbs,bs=a->bs;
+  PetscScalar *x,*from,zero=0.0;
+ 
+  PetscFunctionBegin;
+  /*
+  PetscSynchronizedPrintf(PETSC_COMM_WORLD," _1comm is called ...\n");
+  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  */
+  ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
+  if (nt != A->n) {
+    SETERRQ(PETSC_ERR_ARG_SIZ,"Incompatible partition of A and xx");
+  }
+  ierr = VecGetLocalSize(yy,&nt);CHKERRQ(ierr);
+  if (nt != A->m) {
+    SETERRQ(PETSC_ERR_ARG_SIZ,"Incompatible parition of A and yy");
+  }
+
+  /* diagonal part */
+  ierr = (*a->A->ops->mult)(a->A,xx,a->slvec1a);CHKERRQ(ierr); 
+  ierr = VecSet(&zero,a->slvec1b);CHKERRQ(ierr); 
+
+  /* subdiagonal part */  
+  ierr = (*a->B->ops->multtranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
+
+  /* copy x into the vec slvec0 */
+  ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);  
+  
+  ierr = VecScatterBegin(a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD,a->sMvctx);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecScatterEnd(a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD,a->sMvctx);CHKERRQ(ierr); 
+  
+  /* supperdiagonal part */
+  ierr = (*a->B->ops->multadd)(a->B,a->slvec1b,a->slvec1a,yy);CHKERRQ(ierr); 
+  
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_MPISBAIJ_2comm"
 int MatMult_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy)
@@ -894,9 +939,45 @@ int MatMult_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_MPISBAIJ"
 int MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
+  int          ierr,mbs=a->mbs,bs=a->bs;
+  PetscScalar  *x,*from,zero=0.0;
+ 
+  PetscFunctionBegin;
+  /*
+  PetscSynchronizedPrintf(PETSC_COMM_WORLD," MatMultAdd is called ...\n");
+  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  */
+  /* diagonal part */
+  ierr = (*a->A->ops->multadd)(a->A,xx,yy,a->slvec1a);CHKERRQ(ierr); 
+  ierr = VecSet(&zero,a->slvec1b);CHKERRQ(ierr); 
+
+  /* subdiagonal part */  
+  ierr = (*a->B->ops->multtranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
+
+  /* copy x into the vec slvec0 */
+  ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);  
+  
+  ierr = VecScatterBegin(a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD,a->sMvctx);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecScatterEnd(a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD,a->sMvctx);CHKERRQ(ierr); 
+  
+  /* supperdiagonal part */
+  ierr = (*a->B->ops->multadd)(a->B,a->slvec1b,a->slvec1a,zz);CHKERRQ(ierr); 
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_MPISBAIJ_2comm"
+int MatMultAdd_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
   int        ierr;
@@ -1452,7 +1533,7 @@ static struct _MatOps MatOps_Values = {
   MatSetValues_MPISBAIJ,
   MatGetRow_MPISBAIJ,
   MatRestoreRow_MPISBAIJ,
-  MatMult_MPISBAIJ_2comm,
+  MatMult_MPISBAIJ,
   MatMultAdd_MPISBAIJ,
   MatMultTranspose_MPISBAIJ,
   MatMultTransposeAdd_MPISBAIJ,
