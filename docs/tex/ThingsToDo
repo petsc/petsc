@@ -10,6 +10,11 @@ Additional Capabilities that PETSc Needs:
 Meta priorities: 
 
 
+  - Fix GMRESCycle() so that test for "happy breakdown" is actually
+    used.  See petsc-maint message #282 from David. NOT SO EASY BUT IMPORTANT!
+
+  - TS functions to retrieve RHS matrix/Jacobian
+
   - Change All Fortran interface routines that take function pointer 
     arguments to work like MatCreateShell() now works keeping the Fortran
     function pointers in the field fortran_func_pointers.
@@ -247,9 +252,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
   * Finish "Performance" chapter: section "System Related Problems"
 
   - Fix binary I/O for complex numbers.
-
-  - Fix GMRESCycle() so that test for "happy breakdown" is actually
-    used.  See petsc-maint message #282 from David.
 
   * Have all preconditioners (including LU) support null space, see 
             tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
