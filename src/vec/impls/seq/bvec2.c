@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.132 1998/06/24 13:21:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.133 1998/06/24 13:24:53 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -331,6 +331,7 @@ int VecDestroy_Seq(Vec v)
 
 #if defined(HAVE_AMS)
 #include "alicemem.h"
+extern int ViewerAMSGetAliceComm(Viewer,ALICE_Comm *);
 #endif
 
 #undef __FUNC__  
@@ -352,7 +353,11 @@ static int VecPublish_Seq(PetscObject object)
     ALICE_Comm   acomm;
 
     ierr = ViewerAMSGetAliceComm(VIEWER_AMS_(v->comm),&acomm);CHKERRQ(ierr);
-    sprintf(name,"Vector_%d",counter++);
+    if (v->name) {
+      PetscStrcpy(name,v->name);
+    } else {
+      sprintf(name,"SeqVector_%d",counter++);
+    }
     ierr = ALICE_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
     ierr = ALICE_Memory_take_access(amem);CHKERRQ(ierr); 
     ierr = ALICE_Memory_add_field(amem,"values",s->array,v->n,ALICE_DOUBLE,ALICE_READ,
