@@ -1,5 +1,5 @@
 !
-!    "$Id: ex12.F,v 1.54 2000/01/11 21:02:41 bsmith Exp balay $";
+!    "$Id: ex12.F,v 1.55 2000/05/05 22:18:29 balay Exp balay $";
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
 !  
@@ -184,11 +184,9 @@
       endif
 
       do 10 i=1,n-2
-       ff(i-s+1) = d*(xx(i) -                                           &
-     &                 2.d0*xx(i+1) +                                   &
-     &                 xx(i+2))                                         &
-     &                 + xx(i+1)*xx(i+1) -                              &
-     &                 F2(i-s+1)
+       ff(i-s+1) = d*(xx(i) - 2.d0*xx(i+1)                              &
+     &      + xx(i+2)) + xx(i+1)*xx(i+1)                                &
+     &      - F2(i-s+1)
  10   continue
 
       if (rank .eq. size-1) then
