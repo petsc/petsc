@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.37 1995/11/15 13:46:41 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.38 1995/11/20 04:47:01 bsmith Exp curfman $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -46,7 +46,8 @@ struct _MatOps {
             (*incompletecholeskyfactor)(Mat,IS,double),
             (*axpy)(Scalar *,Mat,Mat),
             (*getsubmatrices)(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **),
-            (*increaseoverlap)(Mat,int,IS *,int);
+            (*increaseoverlap)(Mat,int,IS *,int),
+            (*getvalues)(Mat,int,int*,int,int*,Scalar**);
 };
 
 #define FACTOR_LU       1
