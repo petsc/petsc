@@ -68,6 +68,7 @@ int main(int argc,char **args)
     info.diagonal_fill = 0;
     info.damping       = 0;
     info.damp          = 0;
+    info.zeropivot     = 0.0;
     ierr = MatILUFactorSymbolic(C,row,col,&info,&A);CHKERRQ(ierr);
   }
   ierr = MatLUFactorNumeric(C,&A);CHKERRQ(ierr);
