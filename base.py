@@ -18,11 +18,17 @@ class Base(logging.Logger):
     self.getRoot()
     return
 
+  def __getstate__(self):
+    '''We do not want to pickle the default RDict'''
+    d = self.__dict__.copy()
+    if 'argDB' in d and d['argDB'] is Base.defaultDB:
+      del d['argDB']
+    return d
+
   def __setstate__(self, d):
-    '''Assume that we do not want to unpickle custom RDict objects'''
-    # Should put in some swtich like self.saveArgDB
-    if 'argDB' in d: del d['argDB']
-    self.argDB = self.createArgDB(None)
+    '''We must create the default RDict'''
+    if not 'argDB' in d:
+      self.argDB = self.createArgDB(None)
     self.__dict__.update(d)
     return
 

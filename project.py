@@ -96,7 +96,7 @@ a ValueError is raised.'''
 
   def __getstate__(self):
     '''Remove the cached project root directory before pickling'''
-    d = self.__dict__.copy()
+    d = base.Base.__getstate__(self)
     if '_projectRoot' in d: del d['_projectRoot']
     return d
 
