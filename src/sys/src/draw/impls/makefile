@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscdraw
-DIRS     = x 
+DIRS     = x vrml
 LOCDIR   = src/draw/impls/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
