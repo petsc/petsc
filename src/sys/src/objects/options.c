@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.181 1998/04/14 20:38:22 balay Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.182 1998/04/15 22:52:30 curfman Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -142,10 +142,7 @@ double PetscCompareTolerance = 1.e-10;
    Collective on PETSC_COMM_WORLD
 
    Options Database Key:
-$   -compare
-
-   Note:
-   This routine is activated with the -compare option.
+.   -compare - Activate PetscCompareDouble(), PetscCompareInt(), PetscCompareScalar(),
 
 .seealso: PetscCompareDouble(), PetscCompareScalar()
 @*/
@@ -173,10 +170,7 @@ int PetscCompareInt(int d)
    Collective on PETSC_COMM_WORLD
 
    Options Database Key:
-$   -compare
-
-   Note:
-   This routine is activated with the -compare option.
+.   -compare - Activate PetscCompareDouble(), PetscCompareInt(), PetscCompareScalar(),
 
 .seealso: PetscCompareInt(), PetscComparseScalar()
 @*/
@@ -207,10 +201,7 @@ int PetscCompareDouble(double d)
    Collective on PETSC_COMM_WORLD
 
    Options Database Key:
-$   -compare
-
-   Note:
-   This routine is activated with the -compare option.
+.   -compare - Activate PetscCompareDouble(), PetscCompareInt(), PetscCompareScalar(),
 
 .seealso: PetscCompareInt(), PetscComparseDouble()
 @*/
@@ -365,24 +356,22 @@ $       call PetscInitialize(file,ierr)
    in the C version.  See the users manual for details.
 
    Options Database Keys:
-$  -start_in_debugger [noxterm,dbx,xdb,...]
-$  -debugger_nodes [node1,node2,...] : Nodes to start in debugger
-$  -debugger_pause [sleeptime] (in seconds) : Pause debugger
-$  -trmalloc : Use PETSc error-checking malloc
-$  -trmalloc_off : Don't use error-checking malloc
-$  -no_signal_handler : Do not trap error signals
-$  -fp_trap : Stop on floating point exceptions
-$      Note: On the IBM RS6000 this slows code by
-$            at least a factor of 10.
+.  -start_in_debugger [noxterm,dbx,xdb,...] - start program in debugger
+.  -debugger_nodes [node1,node2,...] - nodes to start in debugger
+.  -debugger_pause [sleeptime] (in seconds) - pause debugger
+.  -trmalloc - use PETSc error-checking malloc
+.  -trmalloc_off - don't use error-checking malloc
+.  -no_signal_handler - do not trap error signals
+.  -fp_trap - stop on floating point exceptions (Note that on the
+              IBM RS6000 this slows code by at least a factor of 10.)
 
    Options Database Keys for Profiling:
-   See the 'Profiling' chapter of the users manual for
-   details.
-$  -log_trace [filename] : Print traces of all PETSc calls
-$      to the screen (useful to determine where a program
-$      hangs without running in the debugger).  See
-$      PLogTraceBegin().
-$  -log_info : Print verbose information to the screen.
+   See the 'Profiling' chapter of the users manual for details.
+.  -log_trace [filename] - print traces of all PETSc calls
+        to the screen (useful to determine where a program
+        hangs without running in the debugger).  See
+        PLogTraceBegin().
+.  -log_info - print verbose information to the screen.
 
 .keywords: initialize, options, database, startup
 
@@ -480,32 +469,31 @@ extern int DLRegisterDestroyAll();
    Collective on PETSC_COMM_WORLD
 
    Options Database Keys:
-$  -optionstable : Calls OptionsPrint()
-$  -optionsleft : Prints unused options that remain in 
-$     the database
-$  -mpidump : Calls PetscMPIDump()
-$  -trdump : Calls PetscTrDump()
-$  -trinfo : Prints total memory usage
-$  -trmalloc_log: Prints summary of memory usage
-$  -trdebug : Calls malloc_debug(2) to activate memory
-$      allocation diagnostics (used by PETSC_ARCH=sun4, 
-$      BOPT=[g,g_c++,g_complex] only!)
+.  -optionstable - Calls OptionsPrint()
+.  -optionsleft - Prints unused options that remain in the database
+.  -mpidump - Calls PetscMPIDump()
+.  -trdump - Calls PetscTrDump()
+.  -trinfo - Prints total memory usage
+.  -trmalloc_log - Prints summary of memory usage
+.  -trdebug - Calls malloc_debug(2) to activate memory
+        allocation diagnostics (used by PETSC_ARCH=sun4, 
+        BOPT=[g,g_c++,g_complex] only!)
 
    Options Database Keys for Profiling:
    See the 'Profiling' chapter of the users manual for
    details.
-$  -log_summary [filename] : Prints summary of flop and timing
-$      information to screen. If the filename is specified the
-$      summary is written to the file. (for code compiled with 
-$      USE_PETSC_LOG).  See PLogPrintSummary().
-$  -log_all [filename]: Logs extensive profiling information
-$      (for code compiled with USE_PETSC_LOG). See PLogDump(). 
-$  -log [filename]: Logs basic profiline information (for
-$      code compiled with USE_PETSC_LOG).  See PLogDump().
-$  -log_sync: Log the synchronization in scatters, inner products
-$             and norms
-$  -log_mpe [filename]: Creates a logfile viewable by the 
-$      utility Upshot/Nupshot (in MPICH distribution)
+.  -log_summary [filename] - Prints summary of flop and timing
+        information to screen. If the filename is specified the
+        summary is written to the file. (for code compiled with 
+        USE_PETSC_LOG).  See PLogPrintSummary().
+.  -log_all [filename] - Logs extensive profiling information
+        (for code compiled with USE_PETSC_LOG). See PLogDump(). 
+.  -log [filename] - Logs basic profiline information (for
+        code compiled with USE_PETSC_LOG).  See PLogDump().
+.  -log_sync - Log the synchronization in scatters, inner products
+        and norms
+.  -log_mpe [filename] - Creates a logfile viewable by the 
+      utility Upshot/Nupshot (in MPICH distribution)
 
    Note:
    See PetscInitialize() for more general runtime options.
@@ -1215,7 +1203,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
    Collective on PETSC_COMM_WORLD
 
    Options Database Key:
-$  -optionstable : checked within PetscFinalize()
+.  -optionstable - Activates OptionsPrint() within PetscFinalize()
 
 .keywords: options, database, print, table
 
@@ -1758,8 +1746,7 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
 
    Fortran Note:
    The Fortran interface is slightly different from the C/C++
-   interface (len is not used).  Sample usage in Fortran --
-
+   interface (len is not used).  Sample usage in Fortran follows
 $      character *20 string
 $      integer   flg, ierr
 $      call OptionsGetString(PETSC_NULL_CHARACTER,'-s',string,flg,ierr)
@@ -1855,7 +1842,7 @@ int OptionsGetStringArray(char *pre, char *name, char **strings, int *nmax, int 
    Not Collective
 
    Options Database Key:
-$  -optionsleft : checked within PetscFinalize()
+.  -optionsleft - Activates OptionsAllUsed() within PetscFinalize()
 
 .keywords: options, database, missed, unused, all, used
 
