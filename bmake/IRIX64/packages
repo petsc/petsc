@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.33 1998/07/01 22:17:05 bsmith Exp balay $ 
+# $Id: base.site,v 1.34 1998/08/06 23:26:31 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -10,7 +10,7 @@
 # FORTRAN code (such as I/O or special Fortran runtimes).  
 # Note: -lfortran is a f90 library, and toalview has problems processing it.
 #
-FC_LIB         =  -lfortran -lftn
+FC_LIB         =  -lfortran -lftn -lfastm
 # For IRIX Release less than,6.2 the above should probably be replaced by
 # FC_LIB         = -lsun -lF77 -lU77 -lI77 -lisam
 # FC_LIB         = -lF77 -lU77 -lI77 -lisam
