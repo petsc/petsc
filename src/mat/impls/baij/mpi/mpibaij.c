@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.74 1997/07/28 16:13:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.75 1997/07/29 14:10:02 bsmith Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -589,7 +589,69 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
 
   return 0;
 }
+#include <math.h>
+#define HASH_KEY 0.6180339887
+#define HASH1(size,key) ((int)((size)*fmod(((key)*HASH_KEY),1))+1)
 
+int CreateHashTable(Mat mat)
+{
+  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
+  Mat         A = baij->A, B=baij->B;
+  Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data, *b=(Mat_SeqBAIJ *)B->data;
+  int         i,j,k,nz=a->nz+b->nz,h1,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
+  int         size=1.5*nz,ct=0,max=0;
+  Scalar      *aa=a->a,*ba=b->a;
+  double      key;
+  static double *HT;
+  static      int flag=1;
+
+  
+  /* Allocate Memory for Hash Table */
+  if (flag) {
+    HT = (double*)PetscMalloc(size*sizeof(double));
+    flag = 0;
+  }
+  PetscMemzero(HT,size*sizeof(double));
+
+  /* Loop Over A */
+  for ( i=0; i<a->n; i++ ) {
+    for ( j=ai[i]; j<ai[i+1]; j++ ) {
+      key = i*baij->n+aj[j]+1;
+      h1  = HASH1(size,key);
+
+      for ( k=1; k<size; k++ ){
+        if (HT[(h1*k)%size] == 0.0) {
+          HT[(h1*k)%size] = key;
+          break;
+        } else ct++;
+      }
+      if (k> max) max =k;
+    }
+  }
+   printf("***max1 = %d\n",max);
+  /* Loop Over B */
+  for ( i=0; i<b->n; i++ ) {
+    for ( j=bi[i]; j<bi[i+1]; j++ ) {
+      key = i*b->n+bj[j]+1;
+      h1  = HASH1(size,key);
+      for ( k=1; k<size; k++ ){
+        if (HT[(h1*k)%size] == 0.0) {
+          HT[(h1*k)%size] = key;
+          break;
+        } else ct++;
+      }
+      if (k> max) max =k;
+    }
+  }
+
+  printf("***max2 = %d\n",max);
+  /* Print Summary */
+  for ( i=0,key=0.0,j=0; i<size; i++) 
+    if (HT[i]) {j++;}
+
+  printf("Size %d Average Buckets %d no of Keys %d\n",size,ct,j);
+  return 0;
+}
 
 #undef __FUNC__  
 #define __FUNC__ "MatAssemblyEnd_MPIBAIJ"
@@ -598,7 +660,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   MPI_Status  *send_status,recv_status;
   int         imdex,nrecvs = baij->nrecvs, count = nrecvs, i, n, ierr;
-  int         bs=baij->bs,row,col,other_disassembled;
+  int         bs=baij->bs,row,col,other_disassembled,flg;
   Scalar      *values,val;
   InsertMode  addv = mat->insertmode;
 
@@ -660,6 +722,8 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(baij->B,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode); CHKERRQ(ierr);
 
+  ierr = OptionsHasName(PETSC_NULL,"-use_hash",&flg); CHKERRQ(ierr);
+  if (flg) CreateHashTable(mat);
   if (baij->rowvalues) {PetscFree(baij->rowvalues); baij->rowvalues = 0;}
   return 0;
 }
