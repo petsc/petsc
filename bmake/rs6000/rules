@@ -11,13 +11,13 @@ OMAKE    = make
 SHELL    = /bin/sh
 # 
 #  Some systems may require instead
-# CLINKER = xlc $(BASEOPT) -bI:/usr/lpp/xlf/lib/lowsys.exp 
-# CLINKER = xlc $(BASEOPT)
+# CLINKER = xlc $(COPTFLAGS) -bI:/usr/lpp/xlf/lib/lowsys.exp 
+# CLINKER = xlc $(COPTFLAGS)
 #  Next line is a hack for IBM SPx, you should remove it if 
 # you are running on plain IBM RS6000 workstations and replace 
 # with one of the above.
 #
-CLINKER  = xlc $(BASEOPT) 
+CLINKER  = xlc $(COPTFLAGS) 
 #
 # Fortran programs MUST be linked statically (no shared libraries) for them
 # to run on systems that haven't licensed a Fortran runtime or compiler.
@@ -29,7 +29,7 @@ CLINKER  = xlc $(BASEOPT)
 # you are running on plain IBM RS6000 workstations and replace 
 # with the above.
 #
-FLINKER = xlf $(BASEOPTF)
+FLINKER = xlf $(FOPTFLAGS)
 
 SHELL   = /bin/sh
 SYS_LIB =
@@ -54,21 +54,21 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 # By defining _POSIX_SOURCE , there is some hope that it will pretend that
 # it is some form of Unix.
 .c.a: 
-	-$(CC) -c $(CFLAGS) $(BASEOPT) $*.c
+	-$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.c
 	-$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 .c.o: 
-	$(CC) -c $(CFLAGS) $(BASEOPT) $*.c
+	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.c
 .C.a: 
-	-$(CC) -c $(CFLAGS) $(BASEOPT) $*.C
+	-$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.C
 	-$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 .C.o: 
-	-$(CC) -c $(CFLAGS) $(BASEOPT) $*.C
+	-$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.C
 .f.o: 
-	-$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 .f.a: 
-	-$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	-$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
@@ -84,13 +84,13 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 .F.o:
 	-$(RM) $*.f
 	-$(CC) $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
-	-$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	-$(RM) $*.f
 
 .F.a:
 	-$(RM) $*.f
 	-$(CC) $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
-	-$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	-$(AR) cr $(LIBNAME) $*.o
 	-$(RM) $*.o	$*.f
 
