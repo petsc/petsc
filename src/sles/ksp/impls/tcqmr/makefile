@@ -6,6 +6,7 @@ CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) \
 SOURCEC  = tcqmr.c
 SOURCEF  =
 WSOURCEC = 
+SOURCEH  = tcqmrp.h
 OBJSC    = tcqmr.o
 OBJSF    = 
 WOBJS    = 

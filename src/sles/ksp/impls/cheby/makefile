@@ -5,6 +5,7 @@ CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS)  \
            -I$(IPETSCDIR)/pinclude -I../../ -D__DIR__='"ksp/impls/cheby/"'
 SOURCEC  = cheby.c 
 SOURCEF  =
+SOURCEH  = chebctx.h
 WSOURCEC = chebyf.c
 OBJSC    = cheby.o 
 OBJSF    =

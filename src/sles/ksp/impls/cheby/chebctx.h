@@ -7,6 +7,6 @@
 
 typedef struct {
   double emin,emax;            
-} ChebychevCntx;
+} KSP_Chebychev;
 
 #endif

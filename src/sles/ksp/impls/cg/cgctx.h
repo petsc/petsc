@@ -6,8 +6,8 @@
 #define __CG
 
 typedef struct {
-  double emin,emax;
-  double *e,*d,*ee,*dd;       /* work space for running Lanczo algorithm*/
-} CGCntx;
+  Scalar emin,emax;
+  Scalar *e,*d,*ee,*dd;       /* work space for running Lanczo algorithm*/
+} KSP_CG;
 
 #endif
