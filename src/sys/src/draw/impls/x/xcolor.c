@@ -1,6 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.32 1997/11/28 16:20:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.33 1997/12/03 04:37:03 bsmith Exp bsmith $";
 #endif
+
 
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -51,7 +52,7 @@ static char *(colornames[DRAW_BASIC_COLORS]) = { "white",
 extern int      XiInitCmap( Draw_X* );
 extern int      XiGetVisualClass( Draw_X * );
 extern int      XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned char*);
-extern Colormap XiCreateColormap(Draw_X*,Display*,int,Visual *);
+extern int      XiUniformHues( Draw_X *, int);
 
 #undef __FUNC__  
 #define __FUNC__ "XiInitColors" 
@@ -66,7 +67,6 @@ int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
   if (nc > 0)   XiWin->numcolors = nc;
   else          XiWin->numcolors = 1 << DefaultDepth( XiWin->disp, XiWin->screen );
 
-  /* Use the default colormap of the visual */
   if (!XiWin->cmap) {
     XiWin->cmap = XCreateColormap(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),
                                   XiWin->vis,AllocAll);CHKPTRQ(XiWin->cmap);

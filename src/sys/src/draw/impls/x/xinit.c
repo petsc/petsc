@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.36 1997/11/09 03:59:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.37 1997/12/01 01:55:47 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -260,7 +260,7 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
   XiSetPixVal(w, w->background );
 
   /* this is very slow */
-  ierr = XiUniformHues(w,nc-DRAW_BASIC_COLORS); CHKERRQ(ierr);
+  ierr = XiUniformHues(w,nc-DRAW_BASIC_COLORS); CHKERRQ(ierr); 
 
   ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
   XFillRectangle(w->disp,w->win,w->gc.set,0,0,nx,ny);
