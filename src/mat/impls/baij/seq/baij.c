@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.122 1998/01/06 20:10:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.123 1998/01/14 02:41:43 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1006,7 +1006,7 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
 extern int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,double,Mat*);
 extern int MatLUFactor_SeqBAIJ(Mat,IS,IS,double);
 extern int MatIncreaseOverlap_SeqBAIJ(Mat,int,IS*,int);
-extern int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,MatGetSubMatrixCall,Mat*);
+extern int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,int,MatGetSubMatrixCall,Mat*);
 extern int MatGetSubMatrices_SeqBAIJ(Mat,int,IS*,IS*,MatGetSubMatrixCall,Mat**);
 extern int MatMultTrans_SeqBAIJ(Mat,Vec,Vec);
 extern int MatMultTransAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
@@ -1132,7 +1132,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetRowIJ_SeqBAIJ,
        MatRestoreRowIJ_SeqBAIJ,
        0,0,0,0,0,0,
-       MatSetValuesBlocked_SeqBAIJ};
+       MatSetValuesBlocked_SeqBAIJ,
+       MatGetSubMatrix_SeqBAIJ};
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqBAIJ"
