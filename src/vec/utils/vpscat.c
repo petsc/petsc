@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.133 2000/04/22 04:57:32 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.134 2000/04/23 04:11:32 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -2506,7 +2506,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
     start = count;
   }
   if (duplicate) {
-    PLogInfo(ctx,"VecScatterCreate_PtoP:Duplicate to from indices passed in VecScatterCreate(), they are ignored\n");
+    PLogInfo(0,"VecScatterCreate_PtoP:Duplicate to from indices passed in VecScatterCreate(), they are ignored\n");
   }
   ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,yin,ctx);CHKERRQ(ierr);
   ierr = PetscFree(local_inidx);CHKERRQ(ierr);
