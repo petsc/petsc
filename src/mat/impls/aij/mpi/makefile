@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   = ${SUPERLUDIST_INCLUDE}
 FFLAGS   =
 SOURCEC	 = mpiaij.c mmaij.c mpiaijpc.c mpiov.c fdmpiaij.c pxxt.c superlu_dist.c
 SOURCEF	 =

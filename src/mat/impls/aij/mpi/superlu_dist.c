@@ -24,11 +24,10 @@
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-#define PETSC_HAVE_SUPERLU_DIST
-#if defined(PETSC_HAVE_SUPERLU_DIST) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
 
 EXTERN_C_BEGIN
-#include "/home/petsc/software/SuperLU_DIST/SRC/superlu_ddefs.h"
+#include "superlu_ddefs.h"
 EXTERN_C_END
 
 
