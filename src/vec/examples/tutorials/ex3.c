@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.35 1999/01/12 23:13:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.36 1999/03/19 19:46:51 bsmith Exp balay $";
 #endif
 
 static char help[] = "Displays a vector visually.\n\n";
@@ -78,7 +78,7 @@ int main(int argc,char **argv)
   */
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,
                          &viewer); CHKERRA(ierr);
-
+  ierr = ViewerPushFormat(viewer,VIEWER_FORMAT_DRAW_LG,"Line graph Plot");CHKERRA(ierr);
   /*
      View the vector
   */
