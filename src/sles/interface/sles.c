@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.116 1999/04/05 18:24:12 balay Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.117 1999/04/19 22:13:51 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -303,6 +303,8 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   PLogObjectParent(sles,sles->ksp);
   PLogObjectParent(sles,sles->pc);
   sles->setupcalled = 0;
+  sles->dscale      = PETSC_FALSE;
+  sles->diagonal    = PETSC_NULL;
   *outsles = sles;
   PetscPublishAll(sles);
   PetscFunctionReturn(0);
@@ -334,6 +336,7 @@ int SLESDestroy(SLES sles)
 
   ierr = KSPDestroy(sles->ksp); CHKERRQ(ierr);
   ierr = PCDestroy(sles->pc); CHKERRQ(ierr);
+  if (sles->diagonal) {ierr = VecDestroy(sles->diagonal);CHKERRQ(ierr);}
   PLogObjectDestroy(sles);
   PetscHeaderDestroy(sles);
   PetscFunctionReturn(0);
@@ -370,6 +373,7 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   int ierr;
   KSP ksp;
   PC  pc;
+  Mat mat,pmat;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
@@ -378,15 +382,19 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   ksp = sles->ksp; pc = sles->pc;
   ierr = KSPSetRhs(ksp,b); CHKERRQ(ierr);
   ierr = KSPSetSolution(ksp,x); CHKERRQ(ierr);
-  ierr = KSPSetPC(ksp,pc); CHKERRQ(ierr);
   if (!sles->setupcalled) {
     PLogEventBegin(SLES_SetUp,sles,b,x,0);
+    ierr = KSPSetPC(ksp,pc); CHKERRQ(ierr);
     ierr = PCSetVector(pc,b); CHKERRQ(ierr);
     ierr = KSPSetUp(sles->ksp); CHKERRQ(ierr);
     ierr = PCSetUp(sles->pc); CHKERRQ(ierr);
     sles->setupcalled = 1;
+
+    /* scale the matrix if requested */
+    ierr = PCGetOperators(pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
+
     PLogEventEnd(SLES_SetUp,sles,b,x,0);
-  }
+  } 
   PetscFunctionReturn(0);
 }
 
@@ -473,9 +481,17 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   }
   ierr = PCSetUpOnBlocks(pc); CHKERRQ(ierr);
   if (!slesdoublecount) {PLogEventBegin(SLES_Solve,sles,b,x,0);} slesdoublecount++;
+  /* diagonal scale RHS if called for */
+  if (sles->dscale) {
+    ierr = VecPointwiseMult(sles->diagonal,b,b);CHKERRQ(ierr);
+  }
   ierr = PCPreSolve(pc,ksp); CHKERRQ(ierr);
   ierr = KSPSolve(ksp,its); CHKERRQ(ierr);
   ierr = PCPostSolve(pc,ksp); CHKERRQ(ierr);
+  /* diagonal scale solution if called for */
+  if (sles->dscale) {
+    ierr = VecPointwiseMult(sles->diagonal,x,x);CHKERRQ(ierr);
+  }
   if (slesdoublecount == 1) {PLogEventEnd(SLES_Solve,sles,b,x,0);} slesdoublecount--;
   ierr = OptionsHasName(sles->prefix,"-sles_view", &flg); CHKERRQ(ierr); 
   if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRQ(ierr); }
@@ -724,10 +740,79 @@ int SLESSetUpOnBlocks(SLES sles)
   PC  pc;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sles,SLES_COOKIE);
   ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
   ierr = PCSetUpOnBlocks(pc); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "SLESSetDiagonalScale"
+/*@C
+   SLESSetDiagonalScale - Tells SLES to diagonally scale the system
+     before solving. This actually CHANGES the matrix (and right hand side).
 
+   Collective on SLES
+
+   Input Parameter:
++  sles - the SLES context
+-  scale - PETSC_TRUE or PETSC_FALSE
+
+   Notes:
+    BE CAREFUL with this routine: it actually scales the matrix and right 
+    hand side that define the system. After the system is solved the matrix
+    and right hand side remain scaled.
+
+    This routine is only used if the matrix and preconditioner matrix are
+    the same thing.
+
+   Level: intermediate
+
+.keywords: SLES, set, options, prefix, database
+
+.seealso: SLESGetDiagonalScale()
+@*/
+int SLESSetDiagonalScale(SLES sles,PetscTruth scale)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  sles->dscale = scale;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SLESGetDiagonalScale"
+/*@C
+   SLESGetDiagonalScale - Checks if SLES solver scales the matrix and
+                          right hand side
+
+   Not Collective
+
+   Input Parameter:
+.  sles - the SLES context
+
+   Output Parameter:
+.  scale - PETSC_TRUE or PETSC_FALSE
+
+   Notes:
+    BE CAREFUL with this routine: it actually scales the matrix and right 
+    hand side that define the system. After the system is solved the matrix
+    and right hand side remain scaled.
+
+    This routine is only used if the matrix and preconditioner matrix are
+    the same thing.
+
+   Level: intermediate
+
+.keywords: SLES, set, options, prefix, database
+
+.seealso: SLESSetDiagonalScale()
+@*/
+int SLESGetDiagonalScale(SLES sles,PetscTruth *scale)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  *scale = sles->dscale;
+  PetscFunctionReturn(0);
+}
 
