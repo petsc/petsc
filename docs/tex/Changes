@@ -8,28 +8,15 @@ add to it).
 
   VEC
 
-Added VecGetArray2d() and VecRestoreArray2d()     
-
-     
 
   MAT
-
-  
-  Another MatSetOption, MAT_IGNORE_ZERO_ENTRIES for AIJ matrices with ADD_VALUES.
-
-added matrix option MAT_KEEP_ZEROED_ROWS causes MatZeroRows() to keep the original nonzero 
-data structure and just put 0.0 into the elements that are to be zeroed. Without this option
-it removes the locations from the nonzero structure    
-
   
 
   KSP
 
-    
 
   SLES
  
-
 
   PC
 
@@ -41,27 +28,14 @@ it removes the locations from the nonzero structure
 
   IS
 
-   Added second arguement to ISInvertPermutation() that indicates how many indices are to be 
-  stored on that processor; ignored for one processor code. If you use ISInvertPermutation() 
-  simply add a second argument of PETSC_DECIDE.
-    
-  Draw
-
   
 
-   
+  Draw
+  
+
   General
 
-   When doing string substitutions in library directory paths etc one must use ${PETSC_DIR} ${BOPT} etc now
-instead of $PETSC_DIR etc. Also you can put anything in {anything} as long as it is an environmental variable or
-passed in the options database with  -anything
 
-  Added PetscEmacsclientErrorHandler() -on_error_emacs [machinename] to allow emacs to jump to error; can be used
-with any other error handler.
-
-  So long as you have defined the macro __FUNC__ "main" before your main C/C++ subroutine you can
-use SETERRQ() and CHKERRQ() instead of SETERRA(), CHKERRA().
- 
   Viewers
 
 
