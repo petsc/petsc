@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.103 1998/02/18 17:03:51 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.104 1998/02/18 20:37:17 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1716,16 +1716,17 @@ extern int MatPrintHelp_SeqBAIJ(Mat);
 int MatPrintHelp_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ *a   = (Mat_MPIBAIJ*) A->data;
+  MPI_Comm    comm = A->comm;
   static int  called = 0; 
   int         ierr;
 
   PetscFunctionBegin;
   if (!a->rank) {
-    if (called) {PetscFunctionReturn(0);} else called = 1;
     ierr = MatPrintHelp_SeqBAIJ(a->A);CHKERRQ(ierr);
-    (*PetscHelpPrintf)(comm," Options for MATMPIBAIJ matrix format (the defaults):\n");
-    (*PetscHelpPrintf)(comm,"  -mat_use_hash_table <factor>: Use hashtable for efficient matrix assembly\n");
   }
+  if (called) {PetscFunctionReturn(0);} else called = 1;
+  (*PetscHelpPrintf)(comm," Options for MATMPIBAIJ matrix format (the defaults):\n");
+  (*PetscHelpPrintf)(comm,"  -mat_use_hash_table <factor>: Use hashtable for efficient matrix assembly\n");
   PetscFunctionReturn(0);
 }
 
@@ -1976,6 +1977,7 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   b->hd           = 0;
   b->ht_size      = 0;
   b->ht_flag      = 0;
+  b->ht_fact      = 0;
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
 
@@ -2039,6 +2041,7 @@ static int MatConvertSameType_MPIBAIJ(Mat matin,Mat *newmat,int cpvalues)
   a->hd           = 0;
   a->ht_size      = 0;
   a->ht_flag      = oldmat->ht_flag;
+  a->ht_fact      = oldmat->ht_fact;
   a->ht_total_ct  = 0;
   a->ht_insert_ct = 0;
 
@@ -2327,11 +2330,11 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
 int MatMPIBAIJSetHashTableFactor(Mat mat,double fact)
 {
   int         ierr;
-  Mat_MPIBAIJ baij;
+  Mat_MPIBAIJ *baij;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->type != MPIBAIJ) {
+  if (mat->type != MATMPIBAIJ) {
       SETERRQ(PETSC_ERR_ARG_WRONG,1,"Incorrect matrix type. Use MPIBAIJ only.");
   }
   baij = (Mat_MPIBAIJ*) mat->data;
