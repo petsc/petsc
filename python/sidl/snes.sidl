@@ -1,0 +1,122 @@
+package PETSc {
+  interface PetscObject {
+    // Get the implementation type
+    string getType();
+    // Set the implementation type
+    void setType(in string typeName);
+
+    // Get the prefix appended to options directed to this object
+    string getOptionsPrefix();
+    // Set the prefix appended to options directed to this object
+    void setOptionsPrefix(in string prefix);
+    // Enlarge the prefix appended to options directed to this object
+    void appendOptionsPrefix(in string prefix);
+    // Customize this object using command line arguments
+    void setFromOptions();
+
+    // Initiate the object setup phase
+    void setUp();
+
+    // Output a representation of the object using 
+    void view(in PETSc.PetscViewer viewer);
+  }
+
+  class Base implements ASE.ProjectState {
+  }
+
+  class PetscViewer implements PetscObject {
+  }
+
+  class Vec implements PetscObject {
+  }
+
+  class Mat implements PetscObject {
+  }
+
+  enum MatStructure {SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, SAME_PRECONDITIONER, SUBSET_NONZERO_PATTERN};
+
+  //   enum ConvergedReason {KSP_CONVERGED_ITERATING = 0,
+  //               KSP_CONVERGED_ATOL               =  3,
+  //               KSP_CONVERGED_RTOL               =  2,
+  //               KSP_CONVERGED_ITS                =  4,
+  //               KSP_CONVERGED_QCG_NEG_CURVE      =  5,
+  //               KSP_CONVERGED_QCG_CONSTRAINED    =  6,
+  //               KSP_CONVERGED_STEP_LENGTH        =  7,
+  //               KSP_DIVERGED_NULL                = -2,
+  //               KSP_DIVERGED_ITS                 = -3,
+  //               KSP_DIVERGED_DTOL                = -4,
+  //               KSP_DIVERGED_BREAKDOWN           = -5,
+  //               KSP_DIVERGED_BREAKDOWN_BICG      = -6,
+  //               KSP_DIVERGED_NONSYMMETRIC        = -7,
+  //               KSP_DIVERGED_INDEFINITE_PC       = -8,
+  //               KSP_DIVERGED_NAN                 = -9,
+  //               KSP_DIVERGED_INDEFINITE_MAT      = -10};
+  class KSP implements PetscObject {
+  }
+
+  class PC implements PetscObject {
+  }
+
+  // Convergence
+  //   SNES_CONVERGED_ITERATING      still iterating
+  //   SNES_CONVERGED_FNORM_ABS      F < F_minabs
+  //   SNES_CONVERGED_FNORM_RELATIVE F < F_mintol*F_initial
+  //   SNES_CONVERGED_PNORM_RELATIVE step size small
+  //   SNES_CONVERGED_TR_DELTA       trust region tol???
+  // Divergence
+  //   SNES_DIVERGED_FUNCTION_COUNT  too many function evaluations
+  //   SNES_DIVERGED_FNORM_NAN       encountered NaN in residual
+  //   SNES_DIVERGED_MAX_IT          too many iterations
+  //   SNES_DIVERGED_LS_FAILURE      line search did not produce descent
+  //   SNES_DIVERGED_LOCAL_MIN       || J^T b || is small, implies converged to local minimum of F()
+  enum SNESConvergedReason {SNES_CONVERGED_ITERATING = 0, SNES_CONVERGED_FNORM_ABS = 2, SNES_CONVERGED_FNORM_RELATIVE = 3,
+                            SNES_CONVERGED_PNORM_RELATIVE = 4, SNES_CONVERGED_TR_DELTA = 7,
+                            SNES_DIVERGED_FUNCTION_COUNT = -2, SNES_DIVERGED_FNORM_NAN = -4, SNES_DIVERGED_MAX_IT = -5,
+                            SNES_DIVERGED_LS_FAILURE = -6, SNES_DIVERGED_LOCAL_MIN = -8};
+
+
+  class SNES implements PetscObject {
+    // Retrieve the linear solver
+    PETSc.KSP getKSP();
+
+    // Get the function which calculates the residual F
+    void getFunction(out PETSc.Vec f, out function func);
+    // Set the function which calculates the residual F
+    void setFunction(in PETSc.Vec f, in function func);
+    // Get the function which calculates the Jacobian J
+    void getJacobian(out PETSc.Mat J, out PETSc.Mat M, out function func);
+    // Set the function which calculates the jacobian J
+    void setJacobian(in PETSc.Mat J, in PETSc.Mat M, in function jacobian);
+
+    // Compute the residual F(x)
+    void computeFunction(in PETSc.Vec x, in PETSc.Vec f);
+    // Compute the jacobian J(x)
+    void computeJacobian(in PETSc.Vec x, out PETSc.Mat J, out PETSc.Mat M, out PETSc.MatStructure flag);
+
+    // Get the solver tolerances:
+    //   absolute residual tolerance
+    //   relative residual tolerance
+    //   absolute solution update tolerance
+    //   maximum iteration count
+    //   maximum function evaluation count
+    void getTolerances(out double abstol, out double rtol, out double stol, out int maxit, out int maxf);
+    // Set the solver tolerances:
+    //   absolute residual tolerance
+    //   relative residual tolerance
+    //   absolute solution update tolerance
+    //   maximum iteration count
+    //   maximum function evaluation count
+    void setTolerances(in double abstol, in double rtol, in double stol, in int maxit, in int maxf);
+
+    // Solve the system of nonlinear algebraic equations
+    void solve(in PETSc.Vec x);
+    // Get the solution vector
+    PETSc.Vec getSolution();
+    // Get the reason for termination of the solver
+    SNESConvergedReason getConvergedReason();
+    // Get the number of solver iterates
+    int getIterationNumber();
+    // Get the residual norm
+    double getFunctionNorm();
+  }
+}
