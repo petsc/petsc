@@ -451,7 +451,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
     PetscInt *aai = a->i,*ddiag = a->diag;
     shift_top = 0;
     for (i=0; i<n; i++) {
-      d = PetscAbsScalar((a->a)[ddiag[i]]);
+      d = PetscRealPart((a->a)[ddiag[i]]); 
       /* calculate amt of shift needed for this row */
       if (d<=0) {
         row_shift = 0; 
@@ -464,14 +464,15 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
 	row_shift += PetscAbsScalar(v[j]);
       if (row_shift>shift_top) shift_top = row_shift;
     }
+    if (shift_top == 0.0) shift_top += 1.e-12;
+    sctx.shift_top    = shift_top;
+    sctx.nshift_max   = 5;
+    sctx.shift_lo     = 0.;
+    sctx.shift_hi     = 1.;
   }
 
   sctx.shift_amount = 0;
-  sctx.shift_top    = shift_top;
   sctx.nshift       = 0;
-  sctx.nshift_max   = 5;
-  sctx.shift_lo     = 0.;
-  sctx.shift_hi     = 1.;
   do {
     sctx.lushift = PETSC_FALSE;
     for (i=0; i<n; i++){
@@ -529,10 +530,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
        */
-      sctx.shift_hi       = info->shift_fraction;
+      sctx.shift_hi        = info->shift_fraction;
       info->shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
-      sctx.shift_amount   = info->shift_fraction * sctx.shift_top;
-      sctx.lushift        = PETSC_TRUE;
+      sctx.shift_amount    = info->shift_fraction * sctx.shift_top;
+      sctx.lushift         = PETSC_TRUE;
       sctx.nshift++;
     }
   } while (sctx.lushift);
@@ -554,7 +555,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_nz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
     } else if (shift_pd) {
       b->lu_shift_fraction = info->shift_fraction;
-      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: diagonal shifted up by %e fraction top_value %e number shifts %D\n",info->shift_fraction,shift_top,sctx.nshift);
+      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_pd tries %D, shift_amount %g, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,shift_top);
     }
   }
   PetscFunctionReturn(0);
@@ -1046,7 +1047,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   (*fact)->info.fill_ratio_given  = f;
   (*fact)->info.fill_ratio_needed = ((PetscReal)bi[n])/((PetscReal)ai[n]);
 
-  ierr = MatILUFactorSymbolic_Inode(A,info,isrow,iscol,fact);CHKERRQ(ierr);
+  ierr = MatILUFactorSymbolic_Inode(A,info,isrow,iscol,fact);CHKERRQ(ierr); 
   (*fact)->ops->lufactornumeric =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
 
   PetscFunctionReturn(0); 
