@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.2 1995/06/09 21:26:28 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.3 1995/06/14 17:25:18 bsmith Exp curfman $ */
 
 #if !defined(__PTIME_PACKAGE)
 #define __PTIME_PACKAGE
@@ -7,17 +7,82 @@
 #include <sys/time.h>
 
 /*
-     Macros for timing. In the future some of these may be 
+    Macros for timing. In the future some of these may be 
     machine dependent versions
 */
 
+/*M
+   PetscTime - Returns the current time of day in seconds.  
 
+   Output Parameter:
+.  v - time counter
+
+   Synopsis:
+   PetscTime(double v)
+
+   Notes:
+   Since the PETSc libraries incorporate timing of phases and operations, 
+   PetscTime() is intended only for timing of application codes.  
+   The options database commands -log, -log_summary, and -log_all activate
+   PETSc library timing.  See the users manual for further details.
+
+.seealso:  PetscTimeSubtract(), PetscTimeAdd()
+
+.keywords:  Petsc, time
+M*/
 #define PetscTime(v)         {struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
                              (v)=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+
+/*M
+   PetscTimeSubtract - Subtracts the current time of day (in seconds) from
+   the value v.  
+
+   Input Parameter:
+.  v - time counter
+
+   Output Parameter:
+.  v - time counter (v = v - current time)
+
+   Synopsis:
+   PetscTimeSubtract(double v)
+
+   Notes:
+   Since the PETSc libraries incorporate timing of phases and operations, 
+   PetscTimeSubtract() is intended only for timing of application codes.  
+   The options database commands -log, -log_summary, and -log_all activate
+   PETSc library timing.  See the users manual for further details.
+
+.seealso:  PetscTime(), PetscTimeAdd()
+
+.keywords:  Petsc, time, subtract
+M*/
+
 #define PetscTimeSubtract(v) {struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
                              (v)-=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+/*M
+   PetscTimeAdd - Adds the current time of day (in seconds) to the value v.  
+
+   Input Parameter:
+.  v - time counter
+
+   Output Parameter:
+.  v - time counter (v = v + current time)
+
+   Synopsis:
+   PetscTimeAdd(double v)
+
+   Notes:
+   Since the PETSc libraries incorporate timing of phases and operations, 
+   PetscTimeAdd() is intended only for timing of application codes.  
+   The options database commands -log, -log_summary, and -log_all activate
+   PETSc library timing.  See the users manual for further details.
+
+.seealso:  PetscTime(), PetscTimeSubtract()
+
+.keywords:  Petsc, time, add
+M*/
 #define PetscTimeAdd(v)      {struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
                              (v)+=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
