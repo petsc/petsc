@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: examplesindex.tcl,v 1.31 1998/04/27 21:32:36 curfman Exp balay $ 
+# $Id: examplesindex.tcl,v 1.32 1998/05/22 18:01:12 balay Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -510,7 +510,7 @@ proc main { }  {
     foreach routine $routines {
         set n [ llength $RoutinesFile($routine)  ]
         set i 0
-        set buf {<H2>Examples</H2>}
+
         set temp [ string first "(" $routine ]
         if { $temp  != -1 } {
             set routine_name [string range  $routine 0 [expr $temp -1 ] ]
@@ -533,14 +533,28 @@ proc main { }  {
         set routines_fileid [ open $routines_file  r ]
         set routine_file_buff [ read $routines_fileid ]
         close $routines_fileid        
+        set buf ""
         while { $i < $n } {
             set filename [ join [ lindex $RoutinesFile($routine) $i ] " " ]
             set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR_www_man $filename $filename ]
             set buf [format "%s%s%s\n" $buf $temp "<BR>"]
             set i [ expr $i + 1 ]
         }
+
+
+        # The following code is a bit of a hack, because It is hard
+        # to do this properly in tcl ( couldn't figure out an easy
+        # way to do sort | uniq with tcl. Here we first check if
+        # the Section Examples is already added to the manualpage,
+        # and if it is not, then it is added.
+
+        set temp [regexp "<H2>Examples</H2>" $routine_file_buff]
+        if { $temp == 0 } {
+            # New Section entry for Examples
+            set buf [format "%s%s" "<H2>Examples</H2>" $buf]
+        }
         set buf [format "%s%s" $buf "<P><B>Location: </B>" ]
-        #puts $buf
+
 # This string must match what's in docs/tex/doctext/html.def
         set temp [regsub  "<B>Location: </B>" $routine_file_buff $buf routine_file_buff]
         if { $temp == 0 } { 
