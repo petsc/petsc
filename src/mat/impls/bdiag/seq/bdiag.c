@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.129 1997/03/26 01:36:03 bsmith Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.130 1997/04/03 17:07:23 balay Exp balay $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1337,7 +1337,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
     *norm = sqrt(sum);
   }
   else if (type == NORM_1) { /* max column norm */
-    tmp = (double *) PetscMalloc( a->n*sizeof(double) ); CHKPTRQ(tmp);
+    tmp = (double *) PetscMalloc( (a->n+1)*sizeof(double) ); CHKPTRQ(tmp);
     ierr = MatNorm_SeqBDiag_Columns(A,tmp,a->n); CHKERRQ(ierr);
     *norm = 0.0;
     for ( j=0; j<a->n; j++ ) {
@@ -2235,7 +2235,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,
 
   b->diag   = (int *)PetscMalloc(2*nda*sizeof(int)); CHKPTRQ(b->diag);
   b->bdlen  = b->diag + nda;
-  b->colloc = (int *)PetscMalloc(n*sizeof(int)); CHKPTRQ(b->colloc);
+  b->colloc = (int *)PetscMalloc((n+1)*sizeof(int)); CHKPTRQ(b->colloc);
   b->diagv  = (Scalar**)PetscMalloc(nda*sizeof(Scalar*)); CHKPTRQ(b->diagv);
   sizetot   = 0;
 
@@ -2256,7 +2256,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,
   }
   sizetot   *= bs*bs;
   b->maxnz  =  sizetot;
-  b->dvalue = (Scalar *) PetscMalloc(n*sizeof(Scalar)); CHKPTRQ(b->dvalue);
+  b->dvalue = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar)); CHKPTRQ(b->dvalue);
   PLogObjectMemory(B,(nda*(bs+2))*sizeof(int) + bs*nda*sizeof(Scalar)
                     + nda*sizeof(Scalar*) + sizeof(Mat_SeqBDiag)
                     + sizeof(struct _Mat) + sizetot*sizeof(Scalar));
