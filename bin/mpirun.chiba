@@ -139,7 +139,7 @@ if [ $USE_MYRINET = "yes" ] ; then
 #PBS -l nodes=$num
 #PBS -l walltime=0:${max_minutes}:00
 #ctrans nfs_in $rundir
-#ctrans nfs_out $rundir/output
+#ctrans nfs_out output
 PATH=$PATH
 export PATH
 pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
@@ -169,7 +169,7 @@ else
 #PBS -l nodes=$num
 #PBS -l walltime=0:${max_minutes}:00
 #ctrans nfs_in $rundir
-#ctrans nfs_out $rundir/output
+#ctrans nfs_out output
 #
 PATH=$PATH
 export PATH
@@ -195,7 +195,6 @@ trap "qdel $pbs_job_id ; echo Killing job; exit" 2
 echo -n "PBS Job $pbs_job_id Submitted to queue " 
 date
 
-#rm -f ./.mpirun$$
 # Spin until qstat returns a non-zero return code
 #
 status="Q"
@@ -257,4 +256,5 @@ fi
 if [ "$keep_output" != "yes" ] ; then
     rm -rf .mpirun$$* 
     rm -f .pbsnodefile.${pbs_job_num}.cc*
+    rm -rf $rundir
 fi
