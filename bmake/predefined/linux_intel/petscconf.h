@@ -54,4 +54,11 @@
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_intel.c"
 
 #define PETSC_USE_DYNAMIC_LIBRARIES 1
+
+#define PETSC_DIR_SEPARATOR '/'
+#define PETSC_PATH_SEPARATOR ':'
+#define PETSC_REPLACE_DIR_SEPARATOR '\\'
+#define PETSC_HAVE_SOCKET
+#define PETSC_HAVE_FORK
+#define PETSC_USE_32BIT_INT
 #endif

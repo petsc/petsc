@@ -54,5 +54,11 @@
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_hpux.c"
 #define PETSC_HAVE_CXX_NAMESPACE
 
+#define PETSC_DIR_SEPARATOR '/'
+#define PETSC_PATH_SEPARATOR ':'
+#define PETSC_REPLACE_DIR_SEPARATOR '\\'
+#define PETSC_HAVE_SOCKET
+#define PETSC_HAVE_FORK
+#define PETSC_USE_32BIT_INT
 #endif
 
