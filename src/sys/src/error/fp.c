@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.20 1995/10/06 22:23:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.21 1995/10/11 15:18:56 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -102,6 +102,14 @@ int PetscSetFPTrap(int flag)
 }
 
 /* ------------------------ IRIX --------------------------------------*/
+/*
+   64 bit machine does not have fp handling!!!!
+*/
+#elif defined(PARCH_IRIX) & defined(HAVE_64BITS)
+int PetscSetFPTrap(int flag)
+{
+  return 0;
+}
 #elif defined(PARCH_IRIX)
 #include <sigfpe.h>
 struct { int code_no; char *name; } error_codes[] = {

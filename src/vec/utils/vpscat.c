@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.36 1995/11/01 23:14:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.37 1995/11/02 04:09:28 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -497,11 +497,11 @@ static int PtoPScatterDestroy(PetscObject obj)
   VecScatter_MPI *gen_to   = (VecScatter_MPI *) ctx->todata;
   VecScatter_MPI *gen_from = (VecScatter_MPI *) ctx->fromdata;
 
-  PetscFree(gen_to->values); PetscFree(gen_to);
-  PetscFree(gen_from->values); PetscFree(gen_from);
   if (gen_to->local.slots) PetscFree(gen_to->local.slots);
   if (gen_from->local.slots) PetscFree(gen_from->local.slots);
   PetscFree(gen_to->sstatus);
+  PetscFree(gen_to->values); PetscFree(gen_to);
+  PetscFree(gen_from->values); PetscFree(gen_from);
   PLogObjectDestroy(ctx);
   PetscHeaderDestroy(ctx);
   return 0;

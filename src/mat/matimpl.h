@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.35 1995/11/01 19:09:54 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.36 1995/11/02 04:16:56 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -76,6 +76,7 @@ extern int StashValues_Private(Stash*,int,int,int*,Scalar*,InsertMode);
 extern int StashInitialize_Private(Stash*);
 extern int StashBuild_Private(Stash*);
 extern int StashDestroy_Private(Stash*);
+extern int StashInfo_Private(Stash*);
 
 /*
    Does reorderings for sequential IJ format. By default uses 

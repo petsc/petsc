@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.74 1995/11/01 19:10:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.75 1995/11/01 23:18:46 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -389,13 +389,15 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIRowbs  *a = (Mat_MPIRowbs *) mat->data;
   MPI_Comm      comm = mat->comm;
-  int           size = a->size, *owners = a->rowners;
+  int           size = a->size, *owners = a->rowners,st;
   int           rank = a->rank;
   MPI_Request   *send_waits,*recv_waits;
   int           *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
-  int           tag = mat->tag, *owner,*starts,count,ierr;
+  int           tag = mat->tag, *owner,*starts,count,ierr,sn;
   InsertMode    addv;
   Scalar        *rvalues,*svalues;
+
+  StashInfo_Private(&a->stash);
 
   if ((a->assembled) && (!a->reassemble_begun)) {
     /* Symmetrically unscale the matrix by the diagonal */
@@ -465,10 +467,12 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   starts = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
   for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
-  for ( i=0; i<a->stash.n; i++ ) {
-    svalues[3*starts[owner[i]]]       = (Scalar)  a->stash.idx[i];
-    svalues[3*starts[owner[i]]+1]     = (Scalar)  a->stash.idy[i];
-    svalues[3*(starts[owner[i]]++)+2] =  a->stash.array[i];
+  sn = a->stash.n;
+  for ( i=0; i<sn; i++ ) {
+    st            = 3*starts[owner[i]]++;
+    svalues[st++] = (Scalar)  a->stash.idx[i];
+    svalues[st++] = (Scalar)  a->stash.idy[i];
+    svalues[st]   =  a->stash.array[i];
   }
   PetscFree(owner);
   starts[0] = 0;
