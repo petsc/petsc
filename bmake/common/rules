@@ -489,7 +489,7 @@ fortranstubs:
           echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
 	  cat trashz ; fi; ${RM} trashz;
 
-# Actions taken by Linux to rebuild an out-of-date shared library
+# Actions to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
 
 # configure generated targets:
@@ -507,26 +507,18 @@ shared_linux_intel:
 shared_irix:
 	-@${C_CC} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
 
-# Actions taken by Linux to rebuild an out-of-date shared library
-#   The library basename is given by LIBNAME
 shared_alpha:
 	-@${LD} -shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX} >/dev/null 2>&1
 
-# Actions taken by Linux to rebuild an out-of-date shared library
-#   The library basename is given by LIBNAME
 shared_freebsd:
 	-@${LD} -Bshareable --whole-archive ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
 
-# Actions taken by Linux to rebuild an out-of-date shared library
-#   The library basename is given by LIBNAME
 shared_hpux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
 	${LD} -b *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}; \
 	${RM} -f *
 
-# Actions taken by Linux to rebuild an out-of-date shared library
-#   The library basename is given by LIBNAME
 #${CLINKER} -fPIC -shared *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX};
 shared_linux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
@@ -534,8 +526,6 @@ shared_linux:
 	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SLSUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}; \
 	${RM} -f *
 
-# Actions taken by Linux to rebuild an out-of-date shared library
-#   The library basename is given by LIBNAME
 shared_solaris:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
