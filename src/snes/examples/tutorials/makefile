@@ -268,7 +268,8 @@ testex5f: ex5f.PETSc
 	   else echo "Error running Fortran example src/snes/examples/tutorials/ex5f on 1 processor"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
            cat ex5f_1.tmp; fi; fi; 
-	-@${RM} -f ex5f_1.tmp ex5f ex5f.o
+	-@${RM} -f ex5f_1.tmp
+	-@${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex5f.rm
 runex5f90:
 	-@${MPIRUN} -np 4 ./ex5f90 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_smonitor -ksp_gmres_cgs_refinement_type always > ex5f90_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.out ex5f90_1.tmp) then true; \
@@ -347,7 +348,8 @@ testex19: ex19.PETSc
 	   else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex19 on 1 processor"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; fi; fi
-	-@${RM} -f ex19_1.tmp ex19 ex19.o tmpfile
+	-@${RM} -f ex19_1.tmp
+	-@${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm
 runex21:
 	-@${MPIRUN} -np 4 ./ex21  -snes_mf -snes_smonitor -nox > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
