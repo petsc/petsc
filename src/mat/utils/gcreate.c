@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.34 1995/08/03 01:14:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.35 1995/08/28 21:56:04 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -25,7 +25,7 @@ $               and MatCreateMPIAIJ()
 $  -mat_dense : dense type, uses MatCreateSequentialDense()
 $  -mat_row   : row type, uses MatCreateSequentialRow()
 $               and MatCreateMPIRow()
-$  -mat_rowbs : rowbs type (for parallel symmetric matrices only),
+$  -mat_rowbs : rowbs type.
 $               uses MatCreateMPIRowbs()
 $  -mat_bdiag : block diagonal type, uses 
 $               MatCreateSequentialBDiag() and
