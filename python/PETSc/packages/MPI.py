@@ -285,11 +285,10 @@ class Configure(PETSc.package.Package):
       self.framework.pushLanguage('FC')      
       fc = self.framework.getCompiler()
       args.append('--disable-f90')      
-      if fc.find('f90') >= 0:
-        import commands
-        output  = commands.getoutput(fc+' -v')
+      if self.compilers.fortranIsF90:
+        output, error, status = self.executeShellCommand(fc+' -v')
         if output.find('IBM') >= 0:
-          fc = os.path.join(os.path.dirname(fc),'xlf')
+          fc = os.path.join(os.path.dirname(fc), 'xlf')
           self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling MPICH\n')      
       envs += ' FC="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"'
       self.framework.popLanguage()
@@ -349,9 +348,8 @@ class Configure(PETSc.package.Package):
           os.chmod(os.path.join(os.getenv('HOME'),'.mpd.conf'),S_IRWXU)
 
         # start up MPICH's demon
-        import commands
         self.framework.logPrint('Starting up MPICH mpd demon needed for mpirun')
-        commands.getstatusoutput('cd '+installDir+'; bin/mpdboot')
+        self.executeShellCommand('cd '+installDir+'; bin/mpdboot')
         self.framework.logPrint('Started up MPICH mpd demon needed for mpirun')
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
     return self.getDir()
