@@ -43,10 +43,8 @@ SLES_LIB    =   -L$(LDIR) -lpetscsles -lpetscksp \
 # $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site for your particular
 # machine configuration.  See the users manual for details.
 #
-include $(IPETSCDIR)/bmake/common.$(PETSC_VERSION) 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(BOPT)
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(PETSC_VERSION)
 
 # Next line cause trouble with gnumake when OBJS is empty
 #$(LIBNAME)($(OBJS)): $(LINCLUDE)
@@ -97,7 +95,7 @@ foo:
 lib: chkpetsc_dir $(SOURCE)
 	@-if [ "$(SOURCEC)" != "" ] ; then \
            $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) \
-                               PETSC_VERSION=$(PETSC_VERSION) libc; fi
+                                libc; fi
 	@-if [ "$(SOURCEF)" != "" ] ; then \
                 $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) libf; fi
 	@-if [ "$(OBJS)" != " " ] ; then \
@@ -146,7 +144,7 @@ tree: $(ACTION)
         for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
         (cd $$dir ; echo $(ACTION) in: `pwd`  ; \
         $(OMAKE) -f makefile tree ACTION=$(ACTION) BOPT=$(BOPT) \
-        PETSC_ARCH=$(PETSC_ARCH) PETSC_VERSION=$(PETSC_VERSION) ) ;fi; \
+        PETSC_ARCH=$(PETSC_ARCH)  ) ;fi; \
         done ; fi
 
 # --------------------------------------------------------------------
