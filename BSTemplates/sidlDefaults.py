@@ -69,7 +69,7 @@ class UsingSIDL:
     if repositoryDir:
       self.repositoryDir = repositoryDir
     else:
-      self.repositoryDir = os.path.abspath('xml')
+      self.repositoryDir = os.getcwd()
     # The base path for generated server source
     if serverBaseDir:
       self.serverBaseDir = serverBaseDir
