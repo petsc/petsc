@@ -1,0 +1,15 @@
+PetscBag Object:  MyBag Contains parameters for my physics
+  rho = 3; Some bogus real parameter
+  W = 5; Some other bogus real parameter
+  I = 2; Some other bogus int parameter
+  T = False; Some bogus logical parameter
+PetscBag Object:  MyBag Contains parameters for my physics
+  rho = 3; Some bogus real parameter
+  W = 5; Some other bogus real parameter
+  I = 2; Some other bogus int parameter
+  T = False; Some bogus logical parameter
+PetscBag Object:  MyBag Contains parameters for my physics
+  rho = 44; Some bogus real parameter
+  W = 5; Some other bogus real parameter
+  I = 2; Some other bogus int parameter
+  T = True; Some bogus logical parameter

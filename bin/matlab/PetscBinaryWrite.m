@@ -16,8 +16,12 @@ for l=1:nargin-1
         A(i,i) = majic;
       end
     end
-
-    n_nz = full(sum(A' ~= 0));
+    if min(size(A)) == 1     %a one-rank matrix will be compressed to a
+                             %scalar instead of a vectory by sum
+      n_nz = full(A' ~= 0);
+    else
+      n_nz = full(sum(A' ~= 0));
+    end
     nz   = sum(n_nz);
     header = fwrite(fd,[1211216,m,n,nz],'int32');
 

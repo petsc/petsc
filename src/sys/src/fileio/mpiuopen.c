@@ -170,7 +170,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPClose(MPI_Comm comm,FILE *fd)
 PetscErrorCode PETSC_DLLEXPORT PetscPOpen(MPI_Comm comm,const char machine[],const char program[],const char mode[],FILE **fp)
 {
   PetscErrorCode ierr;
-  int            rank;
+  PetscMPIInt    rank;
   size_t         i,len,cnt;
   char           commandt[PETSC_MAX_PATH_LEN],command[PETSC_MAX_PATH_LEN];
 #if defined(PETSC_HAVE_POPEN)

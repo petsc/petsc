@@ -4,9 +4,15 @@
 #include "petsc.h"
 PETSC_EXTERN_CXX_BEGIN
 
+#define PETSC_BAG_NAME_LENGTH 64
+#define PETSC_BAG_HELP_LENGTH 128
+#define PETSC_BAG_FILE_COOKIE 1211219
 
+typedef struct _p_PetscBagItem *PetscBagItem;
+struct _p_PetscBagItem {PetscDataType dtype;PetscInt offset;char name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH];PetscBagItem next;};
 /*S
      PetscBag - PETSc object that manages a collection of user data including parameters.
+           A bag is essentially a C struct with serialization (you can save it and load it from files).
 
    Level: beginner
 
@@ -22,33 +28,93 @@ $      MyParameters *params;
 $      
 $      ierr = PetscBagCreate(MyParameters,&params);
 $      ierr = PetscBagSetName(params,"MyParameters");
-$      ierr = PetscBagRegisterInt(params,22,"height","Height of the water tower");
+$      ierr = PetscBagRegisterInt(params,&params.height,22,"height","Height of the water tower");
 $       
 $       
 $       
 $       
 $       
 
-.seealso:  PetscBagSetName(), PetscBagGetName(), PetscBagSetSize(), PetscBagView(), PetscBagLoad()
+.seealso:  PetscBagSetName(), PetscBagGetName(), PetscBagView(), PetscBagLoad()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions()
+           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy()
 S*/
 typedef struct {
-  size_t bagsize;
-  char*  bagname;
+  MPI_Comm     bagcomm;
+  size_t       bagsize;
+  PetscInt     count;
+  char         bagname[PETSC_BAG_NAME_LENGTH];
+  char         baghelp[PETSC_BAG_HELP_LENGTH];
+  PetscBagItem bagitems;
 } PetscBag;
 
-#define PetscBagCreate(A,B)  PetscNew(A,B) || (*(B)->bagsize = sizeof(A),0)
+/*MC
+    PetscBagCreate - Create a bag of values
+
+  Collective on MPI_Comm
+
+  Synopsis:
+     PetscErrorCode PetscBagCreate(MPI_Comm comm,C struct name,PetscBag **bag);
+
+  Input Parameters:
++  comm - communicator to share bag
+-  C struct name - name of the C structure holding the values
+
+  Output Parameter:
+.   bag - the bag of values
+
+.seealso: PetscBag, PetscBagGetName(), PetscBagView(), PetscBagLoad()
+           PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
+           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy()
+M*/ 
+#define PetscBagCreate(C,A,B)  PetscNew(A,B) || ((*(B))->bagsize = sizeof(A),(*(B))->bagcomm = C,0)
+
 extern PetscErrorCode PetscBagDestroy(PetscBag*);
 
-extern PetscErrorCode PetscBagSetName(PetscBag*,char*);
-extern PetscErrorCode PetscBagGetName(PetscBag*,char**);
-extern PetscErrorCode PetscBagSetSize(PetscBag*,size_t);
+/*MC
+    PetscBagSetName - Sets the name of a bag of values
 
-extern PetscErrorCode PetscBagRegisterReal(PetscBag*,PetscReal, char*, char*);
-extern PetscErrorCode PetscBagRegisterScalar(PetscBag*,PetscScalar, char*, char*);
-extern PetscErrorCode PetscBagRegisterInt(PetscBag*,PetscInt, char*, char*);
-extern PetscErrorCode PetscBagRegisterTruth(PetscBag*,PetscTruth, char*, char*);
+  Not Collective
+
+  Synopsis:
+     PetscErrorCode PetscBagSetName(PetscBag *bag,const char *name, const char *help);
+
+  Input Parameters:
++   bag - the bag of values
+.   name - the name assigned to the bag
+-   help - help message for bag
+
+.seealso: PetscBag, PetscBagGetName(), PetscBagView(), PetscBagLoad()
+           PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
+           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy()
+M*/ 
+#define PetscBagSetName(A,B,C) (PetscStrncpy((A)->bagname,B,PETSC_BAG_NAME_LENGTH-1) || PetscStrncpy((A)->baghelp,C,PETSC_BAG_HELP_LENGTH-1))
+
+/*MC
+    PetscBagGetName - Gets the name of a bag of values
+
+  Not Collective
+
+  Synopsis:
+     PetscErrorCode PetscBagGetName(PetscBag *bag,char **name);
+
+  Input Parameter:
+.   bag - the bag of values
+
+  Output Parameter:
+.   name - the name assigned to the bag
+
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad()
+           PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
+           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy()
+M*/ 
+#define PetscBagGetName(A,B) (*(B) = A->bagname,0)
+
+extern PetscErrorCode PetscBagRegisterReal(PetscBag*,void*,PetscReal, const char*, const char*);
+extern PetscErrorCode PetscBagRegisterScalar(PetscBag*,void*,PetscScalar,const  char*,const  char*);
+extern PetscErrorCode PetscBagRegisterInt(PetscBag*,void*,PetscInt,const  char*,const  char*);
+extern PetscErrorCode PetscBagRegisterTruth(PetscBag*,void*,PetscTruth,const  char*,const  char*);
+extern PetscErrorCode PetscBagRegisterVec(PetscBag*,void*,const char*,const  char*);
 
 extern PetscErrorCode PetscBagSetFromOptions(PetscBag*);
 

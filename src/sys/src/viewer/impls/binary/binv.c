@@ -10,12 +10,12 @@
 #endif
 
 typedef struct  {
-  int                   fdes;            /* file descriptor */
+  int                 fdes;            /* file descriptor */
   PetscViewerFileType btype;           /* read or write? */
-  FILE                  *fdes_info;      /* optional file containing info on binary file*/
-  PetscTruth            storecompressed; /* gzip the write binary file when closing it*/
-  char                  *filename;
-  PetscTruth            skipinfo;        /* Don't create info file for writing */
+  FILE                *fdes_info;      /* optional file containing info on binary file*/
+  PetscTruth          storecompressed; /* gzip the write binary file when closing it*/
+  char                *filename;
+  PetscTruth          skipinfo;        /* Don't create info file for writing */
 } PetscViewer_Binary;
 
 #undef __FUNCT__  
@@ -226,7 +226,7 @@ $    PETSC_FILE_WRONLY - open existing file for binary output
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
-          PetscViewerBinaryGetInfoPointer(), PetscViewerFileType, PetscViewer
+          PetscViewerBinaryGetInfoPointer(), PetscViewerFileType, PetscViewer, PetscBinaryViewerRead()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscViewerFileType type,PetscViewer *binv)
 {
@@ -237,6 +237,67 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm comm,const char na
   ierr = PetscViewerSetType(*binv,PETSC_VIEWER_BINARY);CHKERRQ(ierr);
   ierr = PetscViewerSetFileType(*binv,type);CHKERRQ(ierr);
   ierr = PetscViewerSetFilename(*binv,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryRead" 
+/*@C
+   PetscViewerBinaryRead - Reads from a binary file, all processors get the same result
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  viewer - the binary viewer
+.  data - location to write the data
+.  count - number of items of data to read
+-  datatype - type of data to read
+
+   Level: beginner
+
+   Concepts: binary files
+
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
+          VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
+          PetscViewerBinaryGetInfoPointer(), PetscViewerFileType, PetscViewer, PetscBinaryViewerRead()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype)
+{
+  PetscErrorCode     ierr;
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  ierr = PetscSynchronizedBinaryRead(viewer->comm,vbinary->fdes,data,count,dtype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryWrite" 
+/*@C
+   PetscViewerBinaryWrites - writes to a binary file, only from the first process
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  viewer - the binary viewer
+.  data - location of data
+.  count - number of items of data to read
+.  istemp - data may be overwritten
+-  datatype - type of data to read
+
+   Level: beginner
+
+   Concepts: binary files
+
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
+          VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
+          PetscViewerBinaryGetInfoPointer(), PetscViewerFileType, PetscViewer, PetscBinaryViewerRead()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscTruth istemp)
+{
+  PetscErrorCode     ierr;
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  ierr = PetscSynchronizedBinaryWrite(viewer->comm,vbinary->fdes,data,count,dtype,istemp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

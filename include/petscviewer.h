@@ -230,6 +230,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIUseTabs(PetscViewer,PetscT
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISetTab(PetscViewer,PetscInt);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetDescriptor(PetscViewer,int*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryRead(PetscViewer,void*,PetscInt,PetscDataType);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWrite(PetscViewer,void*,PetscInt,PetscDataType,PetscTruth);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFileType(PetscViewer,PetscViewerFileType);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerStringSPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerStringSetString(PetscViewer,char[],PetscInt);

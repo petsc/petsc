@@ -54,6 +54,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTestFile(const char[],char,PetscTruth
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTestDirectory(const char[],char,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int,void*,PetscInt,PetscDataType);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryRead(MPI_Comm,int,void*,PetscInt,PetscDataType);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryWrite(MPI_Comm,int,void*,PetscInt,PetscDataType,PetscTruth);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int,void*,PetscInt,PetscDataType,PetscTruth);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinaryOpen(const char[],int,int *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinaryClose(int);

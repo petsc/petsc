@@ -538,6 +538,49 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscSynchronizedBinaryWrite"
+/*@C
+   PetscSynchronizedBinaryWrite - writes to a binary file.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - the MPI communicator 
+.  fd - the file
+.  n  - the number of items to write
+.  p - the buffer
+.  istemp - the buffer may be changed
+-  type - the type of items to write (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
+
+   Level: developer
+
+   Notes: 
+   Process 0 does a PetscBinaryWrite()
+
+   PetscSynchronizedBinaryWrite() uses byte swapping to work on all machines.
+   Integers are stored on the file as 32 long, regardless of whether
+   they are stored in the machine as 32 or 64, this means the same
+   binary file may be read on any machine.
+
+   Concepts: files^synchronized writing of binary files
+   Concepts: binary files^reading, synchronized
+
+.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryWrite(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    rank;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscBinaryWrite(fd,p,n,type,istemp);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscSynchronizedBinarySeek" 
 /*@C
    PetscSynchronizedBinarySeek - Moves the file pointer on a PETSc binary file.

@@ -567,7 +567,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,siz
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
-  /* First processor prints immediately to fp */
   if (!rank) {
     fgets(string,len,fp);
   }
