@@ -29,7 +29,7 @@ C_SYS_LIB	   = -ldl -lfrtbegin -lg2c -lc -lm
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -O -Wall -Wshadow  -fomit-frame-pointer
+O_COPTFLAGS	   = -O -Wall -fomit-frame-pointer
 O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
 #
