@@ -1,5 +1,5 @@
 
-C      "$Id: ex16.F,v 1.5 1996/02/08 18:27:31 bsmith Exp bsmith $";
+C      "$Id: ex16.F,v 1.6 1996/02/13 23:30:12 bsmith Exp curfman $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -10,17 +10,16 @@ C      "$Id: ex16.F,v 1.5 1996/02/08 18:27:31 bsmith Exp bsmith $";
 #include "include/FINCLUDE/is.h"
 C
 C  This example is a modified Fortran version of ex6.c.  It tests the use of
-C  options prefix in Petsc. Two linear problems are solved in this program. The first 
-C  problem is read from a file. The second problem is constructed from the
-C  first, by eliminating some of the entries of the linear matrix 'A'.
+C  options prefixes in PETSc. Two linear problems are solved in this program.
+C  The first problem is read from a file. The second problem is constructed
+C  from the first, by eliminating some of the entries of the linear matrix 'A'.
 
 C  Each solve is distinguished by a unique prefix - 'a' for the first, 'b' 
-C  for the second. Using the prefix, the user can distinguish between the 
-C  options (command line, from .petscrc etc) for each of the solvers.
+C  for the second.  With the prefix the user can distinguish between the various
+C  options (command line, from .petscrc file, etc.) for each of the solvers.
 C  Input arguments are:
-C        -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
-C                          use the file petsc/src/mat/examples/mat.ex.binary
-C
+C     -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
+C                       use the file petsc/src/mat/examples/mat.ex.binary
 
       integer          ierr, its, flg
       Scalar           time, norm,none, five
@@ -71,9 +70,11 @@ C Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
-      print*, 'Number of iterations = ',its
-      print*, 'Residual norm = ',norm
+
 C      print*, 'Time for solve = ',time
+
+      write(6,100) norm, its
+  100 format('Residual norm ',e10.4,' iterations ',i5)
 
 C Create system 2 by striping off some rows of the matrix
       call ISCreateStrideSeq(MPI_COMM_SELF,5,0,1,isrow, ierr)
@@ -94,13 +95,10 @@ C Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
-      print*, 'Number of iterations = ',its
-      print*, 'Residual norm = ',norm
 C      print*, 'Time for solve = ',time
+      write(6,100) norm, its
 
-
-
-C   /*   Cleanup   */
+C Cleanup
       call SLESDestroy(sles1,ierr)
       call SLESDestroy(sles2,ierr)
       call VecDestroy(b,ierr)
