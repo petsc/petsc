@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.13 1996/03/04 05:15:17 bsmith Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.14 1996/03/19 21:24:53 bsmith Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -35,7 +35,5 @@ struct _PCNullSpace {
   Vec*        vecs;
 };
 
-#define USE_PRECONDITIONER_MATRIX 0
-#define USE_TRUE_MATRIX           1
 
 #endif
