@@ -6231,7 +6231,7 @@ created by PetscViewerASCIIOpen() by calling
 \findex{PETSC_VIEWER_ASCII_IMPL} \findex{PetscViewerSetFormat()}
 Possible formats include 
 \trl{PETSC_VIEWER_ASCII_DEFAULT}, \trl{PETSC_VIEWER_ASCII_MATLAB}, and
-\break \trl{PETSC_VIEWER_ASCII_IMPL}.  The implementation-specific format, 
+\trl{PETSC_VIEWER_ASCII_IMPL}.  The implementation-specific format, 
 \trl{PETSC_VIEWER_ASCII_IMPL}, displays the object in the most natural way
 for a particular implementation.  For example, when viewing a block 
 diagonal matrix that has been created with MatCreateSeqBDiag(),
@@ -6458,7 +6458,7 @@ execute the command
 \end{tabbing}
 Note that the same runtime options must be used for the two programs.
 The first time an inner product or norm detects an inconsistency larger
-than \trl{<tolerance\trl{>}}, PETSc will generate an error. The usual runtime
+than \trl{<tolerance>}, PETSc will generate an error. The usual runtime
 options \trl{-start_in_debugger} and \trl{-on_error_attach_debugger} may 
 be used. \findex{-compare}  The user can also place the commands 
 \begin{tabbing}
@@ -6477,13 +6477,14 @@ PETSc supports the use of complex numbers in application programs
 written in C, C++, and Fortran.  To do so, we employ C++ versions of
 the PETSc libraries in which the basic ``scalar'' datatype, given in
 PETSc codes by \trl{PetscScalar}, is defined as \trl{complex} (or \trl{
-complex\trl{<}double\trl{>}} for machines using templated complex class
+complex<double>} for machines using templated complex class
 libraries).  To work with complex numbers,
 the user should compile the PETSc libraries (including the Fortran
 interface library) and the application code with
 \trl{BOPT=[g_complex,O_complex]} for debugging, optimized,
 and profiling versions, respectively.  The file \trl{${PETSC_DIR}/docs/installation/index.htm}
 provides detailed instructions for installing PETSc.
+
 
 We recommend using optimized Fortran kernels for some key numerical
 routines with complex numbers (such as matrix-vector products, vector
@@ -6495,10 +6496,14 @@ interface.  For example, on rs6000 machines, the base single-node
 performance when using the Fortran kernels is 4-5 times faster than
 the default C++ code.
 
+
 Recall that each variant of the PETSc libraries is stored in a
 different directory, given by
-\break \trl{${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}}, according to the
-architecture and \trl{BOPT} optimization variable.  Thus, the libraries for complex
+\begin{tabbing}
+  \trl{${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}},
+\end{tabbing}
+according to the architecture and \trl{BOPT} optimization variable. Thus, the
+libraries for complex
 numbers are maintained separately from those for real
 numbers.  When using any of the complex numbers versions of PETSc,
 {\em all} vector and matrix elements are treated as complex,
