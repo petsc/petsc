@@ -18,7 +18,7 @@ autoftp joshua.math.ucla.edu bsmith put ~/petsc.tar.Z petsc.tar.Z >>& nightlylog
 autoftp h4p.llnl.gov bsmith put ~/petsc.tar.Z petsc.tar.Z >>& nightlylogs/ftp.log
 autoftp ursula.cs.msstate.edu curfman put ~/petsc.tar.Z petsc.tar.Z >>& nightlylogs/ftp.log
 #
-#  Wait six hours then retrieve the results
+#  Wait 7.5 hours then retrieve the results
 #
 sleep 27000
 autoftp joshua.math.ucla.edu bsmith get buildtest.log /home/bsmith/petsc/maint/nightlylogs/solaris.log >>& nightlylogs/ftp.log
