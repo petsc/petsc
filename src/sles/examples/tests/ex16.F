@@ -1,5 +1,5 @@
 
-C      "$Id: ex16.F,v 1.11 1997/01/01 03:39:04 bsmith Exp bsmith $";
+C      "$Id: ex16.F,v 1.12 1997/04/10 00:04:20 bsmith Exp balay $";
 
        implicit none
 
@@ -110,6 +110,5 @@ C Cleanup
       call ISDestroy(isrow,ierr)
 
       call PetscFinalize(ierr)
-      stop
       end
 

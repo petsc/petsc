@@ -1,5 +1,5 @@
 
-C    "$Id: ex2f.F,v 1.39 1996/12/10 21:27:21 curfman Exp curfman $";
+C    "$Id: ex2f.F,v 1.40 1996/12/10 23:36:41 curfman Exp balay $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -308,7 +308,6 @@ C      options are chosen (e.g., -log_summary).  See PetscFinalize()
 C      manpage for more information.
 
       call PetscFinalize(ierr)
-      stop
       end
 C --------------------------------------------------------------
 C

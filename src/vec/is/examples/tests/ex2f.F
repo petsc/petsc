@@ -1,5 +1,5 @@
 C
-C  "$Id: ex2f.F,v 1.7 1997/01/01 03:35:13 bsmith Exp bsmith $"
+C  "$Id: ex2f.F,v 1.8 1997/04/10 00:00:00 bsmith Exp balay $"
 C
 C  Formatted Test for IS stride routines
 C
@@ -49,7 +49,6 @@ C     Test ISGetIndices()
       call ISDestroy(is,ierr)
 
       call PetscFinalize(ierr)
-      stop 
       end
  
 

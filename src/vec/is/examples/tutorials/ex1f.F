@@ -1,5 +1,5 @@
 
-C  "$Id: ex1f.F,v 1.9 1997/04/04 16:27:21 curfman Exp bsmith $";
+C  "$Id: ex1f.F,v 1.10 1997/04/10 00:00:03 bsmith Exp balay $";
 C
 C/*T
 C    Concepts: Index sets^Manipulating a general index set;
@@ -64,7 +64,6 @@ C   no longer needed
 
       call ISDestroy(is,ierr)
       call PetscFinalize(ierr)
-      stop
       end
 
  

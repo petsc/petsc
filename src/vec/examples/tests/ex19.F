@@ -1,5 +1,5 @@
 
-C    "$Id: ex19.F,v 1.24 1996/07/21 22:20:55 bsmith Exp curfman $";
+C    "$Id: ex19.F,v 1.25 1996/08/27 20:24:13 curfman Exp balay $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -52,7 +52,6 @@ C Create a vector, then duplicate it
        call VecDestroy(y,ierr)
        call VecDestroy(w,ierr)
        call PetscFinalize(ierr)
-       stop 
        end
 
  

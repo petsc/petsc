@@ -1,5 +1,5 @@
 
-C "$Id: ex1f.F,v 1.10 1997/01/01 03:41:24 bsmith Exp bsmith $";
+C "$Id: ex1f.F,v 1.11 1997/04/10 00:06:49 bsmith Exp balay $";
 C
 C/*T
 C  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -173,8 +173,6 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call MatDestroy(J,ierr)
       call SNESDestroy(snes,ierr)
       call PetscFinalize(ierr)
-
-      stop
       end
 C ---------------------------------------------------------------------
 C

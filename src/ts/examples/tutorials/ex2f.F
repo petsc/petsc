@@ -1,5 +1,5 @@
 C
-C "$Id: ex2f.F,v 1.6 1997/04/19 18:12:21 curfman Exp curfman $";
+C "$Id: ex2f.F,v 1.7 1997/06/09 03:36:31 curfman Exp balay $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -217,8 +217,6 @@ C    - provides summary and diagnostic information if certain runtime
 C      options are chosen (e.g., -log_summary).
 
       call PetscFinalize(ierr)
-
-      stop
       end
 
 C  ------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 C
-C static char vcid[] = "$Id: ex1f.F,v 1.5 1996/11/07 15:07:18 bsmith Exp bsmith $"
+C static char vcid[] = "$Id: ex1f.F,v 1.6 1997/04/10 00:00:00 bsmith Exp balay $"
 C
 C  Formatted test for IS general routines
 C
@@ -145,7 +145,6 @@ C     Inverting permutation
       call ISDestroy(is,ierr) 
             CHKERRA(ierr)
       call PetscFinalize(ierr)
-      stop
       end
  
 

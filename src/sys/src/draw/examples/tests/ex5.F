@@ -1,5 +1,5 @@
 
-C    "$Id: ex5.F,v 1.15 1996/09/12 16:27:09 bsmith Exp bsmith $";
+C    "$Id: ex5.F,v 1.16 1997/04/10 00:05:05 bsmith Exp balay $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/draw.h"
@@ -48,6 +48,5 @@ C
       call DrawLGDestroy(lg,ierr)
       call DrawDestroy(draw,ierr)
       call PetscFinalize(ierr)
-      stop 
       end
  

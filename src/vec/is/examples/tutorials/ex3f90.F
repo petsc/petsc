@@ -1,5 +1,5 @@
 C
-C      "$Id: ex3f90.F,v 1.3 1997/04/04 16:29:39 curfman Exp bsmith $"; */
+C      "$Id: ex3f90.F,v 1.4 1997/04/10 00:00:03 bsmith Exp balay $"; */
 C
 C
 C/*T
@@ -90,7 +90,6 @@ C
 
       call ISDestroy(set,ierr) 
       call PetscFinalize(ierr)
-      stop 
       end
 
 

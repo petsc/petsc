@@ -1,5 +1,5 @@
 C
-C    "$Id: ex14f.F,v 1.3 1997/04/25 01:55:22 curfman Exp curfman $";
+C    "$Id: ex14f.F,v 1.4 1997/04/25 02:35:47 curfman Exp balay $";
 C
 C  Solves a nonlinear system in parallel with a user-defined
 C  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -240,7 +240,6 @@ C  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        call SLESDestroy(sles,ierr)
        call DADestroy(user(5),ierr)
        call PetscFinalize(ierr)
-       stop 
        end
 
 C ------------------------------------------------------------------- 

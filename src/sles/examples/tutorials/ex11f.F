@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.9 1997/01/31 23:33:28 balay Exp curfman $";
+C    "$Id: ex11f.F,v 1.10 1997/02/10 21:41:09 curfman Exp balay $";
 C
 C/*T
 C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -250,5 +250,4 @@ C  are no longer needed.
 
  200  continue
       call PetscFinalize(ierr)
-      stop
       end

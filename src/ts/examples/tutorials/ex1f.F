@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.8 1997/04/10 00:05:28 bsmith Exp bsmith $"
+C "$Id: ex1f.F,v 1.9 1997/06/15 14:06:16 bsmith Exp balay $"
 C
 C   Solves the time dependent Bratu problem using pseudo-timestepping
 C
@@ -187,7 +187,6 @@ C
       call MatDestroy(J,ierr) 
       call TSDestroy(ts,ierr) 
       call PetscFinalize(ierr)
-      stop
       end
 
 C

@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.39 1997/02/04 21:26:30 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.40 1997/02/05 22:04:27 bsmith Exp balay $";
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  
@@ -108,7 +108,6 @@ C  are no longer needed.
       call SNESDestroy(snes,ierr)
       call DADestroy(ctx(1),ierr)
       call PetscFinalize(ierr)
-      stop
       end
 
 

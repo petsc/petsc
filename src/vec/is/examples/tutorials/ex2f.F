@@ -1,5 +1,5 @@
 
-C      "$Id: ex2f.F,v 1.7 1996/11/08 21:13:09 balay Exp bsmith $";
+C      "$Id: ex2f.F,v 1.8 1997/04/10 00:00:03 bsmith Exp balay $";
 C
 C/*T
 C    Concepts: Index sets^Manipulating a stride index set;
@@ -57,7 +57,5 @@ C  Determine information on stride
 
       call ISDestroy(set,ierr)
       call PetscFinalize(ierr)
-
-      stop
       end
 

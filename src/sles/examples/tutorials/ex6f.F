@@ -1,5 +1,5 @@
 
-C    "$Id: ex6f.F,v 1.19 1996/09/30 22:54:52 balay Exp curfman $";
+C    "$Id: ex6f.F,v 1.20 1996/10/24 15:30:08 curfman Exp balay $";
 C
 C  Description: This example demonstrates repeated linear solves as
 C  well as the use of different preconditioner and linear system
@@ -139,7 +139,6 @@ C  are no longer needed.
       call SLESDestroy(sles,ierr)
 
       call PetscFinalize(ierr)
-      stop
       end
 
 C -----------------------------------------------------------------------

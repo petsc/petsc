@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.7 1997/02/04 21:25:45 bsmith Exp bsmith $";
+C "$Id: ex1f.F,v 1.8 1997/02/05 22:03:21 bsmith Exp balay $";
 C
 C       Formatted test for TS routines.
 C
@@ -237,7 +237,6 @@ C
       endif
 
       call PetscFinalize(ierr)
-      stop
       end
 
 C  -------------------------------------------------------------------

@@ -1,5 +1,5 @@
 C
-C "$Id: ex7f.F,v 1.2 1996/09/30 22:57:59 bsmith Exp bsmith $";
+C "$Id: ex7f.F,v 1.3 1997/04/10 00:01:45 bsmith Exp balay $";
 C
 C
 C     Formatted test for PetscSetCommWorld()
@@ -20,5 +20,4 @@ C
 
       call PetscFinalize(ierr)
       call MPI_Finalize(ierr)
-      stop
       end
