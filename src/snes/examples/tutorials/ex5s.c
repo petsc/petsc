@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.21 2001/01/16 18:20:24 balay Exp bsmith $*/
+/*$Id: ex5s.c,v 1.22 2001/01/17 22:26:26 bsmith Exp balay $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -266,7 +266,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(r);CHKERRQ(ierr);      
   ierr = SNESDestroy(snes);CHKERRQ(ierr); 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }

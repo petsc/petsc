@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.18 2001/01/16 18:17:11 balay Exp bsmith $*/
+/*$Id: ex8.c,v 1.19 2001/01/17 22:21:32 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
 a parallel vector.\n\n";
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/*$Id: PetscMalloc.c,v 1.23 2001/01/16 18:21:52 balay Exp bsmith $*/
+/*$Id: PetscMalloc.c,v 1.24 2001/01/17 22:28:38 bsmith Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -56,6 +56,6 @@ int main(int argc,char **argv)
   fprintf(stdout,"\n"); 
   
   ierr = PetscRandomDestroy(r);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

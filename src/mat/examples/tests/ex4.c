@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.17 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.18 2001/01/19 23:20:49 balay Exp balay $*/
 
 static char help[] = "Creates a matrix, inserts some values, and tests\n\
 MatGetSubMatrices and MatZeroEntries.\n\n";
@@ -54,7 +54,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(ickeep);CHKERRQ(ierr);
   ierr = MatDestroy(submat);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

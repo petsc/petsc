@@ -1,4 +1,4 @@
-/*$Id: ex31.c,v 1.22 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex31.c,v 1.23 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = 
 "Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
@@ -71,7 +71,7 @@ int main(int argc,char **args)
   /* Free data structures */
   ierr = MatDestroy(C);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

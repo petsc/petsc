@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.44 2001/01/15 21:48:01 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.45 2001/01/17 22:26:15 bsmith Exp balay $*/
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\
@@ -107,7 +107,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);
   ierr = MatDestroy(J);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }/* --------------------  Form initial approximation ----------------- */
 #undef __FUNC__

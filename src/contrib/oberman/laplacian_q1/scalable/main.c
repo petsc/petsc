@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.4 2001/01/17 22:28:15 bsmith Exp balay $*/
+/*$Id: main.c,v 1.5 2001/01/19 23:22:35 balay Exp balay $*/
 static char help[] =
 "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
@@ -65,7 +65,7 @@ int main(int argc,char **argv)
   ierr = AppCtxDestroy(appctx);CHKERRQ(ierr);
 
   /* Close down PETSc and stop the program */
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   if (!rank) { printf("\nFinal residual norm: %e\n",norm); }
   if (!rank) { printf("\nNumber of Iterations: %d\n\n",its); }

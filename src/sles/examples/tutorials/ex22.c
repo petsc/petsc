@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.11 2001/01/15 21:47:36 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.12 2001/01/17 22:25:35 bsmith Exp balay $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",norm);CHKERRQ(ierr);
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }

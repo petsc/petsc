@@ -1,4 +1,4 @@
-/*$Id: ex1e.c,v 1.7 2001/01/17 22:21:32 bsmith Exp bsmith $*/
+/*$Id: ex1e.c,v 1.8 2001/01/22 23:03:27 bsmith Exp balay $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -177,7 +177,7 @@ _ VecDestroy(x);___
 _ VecDestroy(y);___
 _ VecDestroy(w);___
 _ VecDestroyVecs(z,3);___
-  PetscFinalize();
+_ PetscFinalize();___
   return 0;
 }
  

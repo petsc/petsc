@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.86 2001/01/15 21:47:36 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.87 2001/01/17 22:25:35 bsmith Exp balay $*/
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
@@ -293,7 +293,7 @@ int main(int argc,char **args)
   */
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

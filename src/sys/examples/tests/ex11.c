@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.5 1999/10/24 14:01:38 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.6 2001/01/17 22:20:33 bsmith Exp balay $*/
 
 static char help[] = "Tests PetscSynchronizedPrintf() and PetscSynchronizedFPrintf().\n\n";
 
@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stderr,"Greetings again from %d\n",rank);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
  
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

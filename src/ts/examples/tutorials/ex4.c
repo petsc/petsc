@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.22 2001/01/17 22:27:13 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.23 2001/01/22 23:07:45 bsmith Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
 
@@ -260,7 +260,7 @@ int main(int argc,char **argv)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_summary). 
   */
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------------- */

@@ -1,4 +1,4 @@
-/*$Id: ex28.c,v 1.17 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex28.c,v 1.18 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
 
@@ -62,7 +62,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.12 2001/01/15 21:47:06 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.13 2001/01/17 22:24:44 bsmith Exp balay $*/
 
 static char help[] = "Creates a matrix using 9 pt stensil, and uses it to \n\
 test  MatIncreaseOverlap (needed for aditive schwarts preconditioner \n\
@@ -86,7 +86,7 @@ int main(int argc,char **args)
     ierr = PetscFree(is2);CHKERRQ(ierr);
   }
     ierr = MatDestroy(C);CHKERRQ(ierr);  
-    PetscFinalize();
+    ierr = PetscFinalize();CHKERRQ(ierr);
 return 0;
 }
 

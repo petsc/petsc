@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.21 2001/01/15 21:47:31 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.22 2001/01/17 22:25:27 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
 
@@ -178,6 +178,6 @@ int slesex(int argc,char **args)
   ierr = SLESDestroy(sles);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);  ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);  ierr = MatDestroy(A);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

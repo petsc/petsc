@@ -1,4 +1,4 @@
-/*$Id: ex46.c,v 1.13 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex46.c,v 1.14 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests generating a nonsymmetric BlockSolve95 (MATMPIROWBS) matrix.\n\n";
 
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   ierr = MatConvert(C,MATMPIAIJ,&A);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.19 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.20 2001/01/19 23:20:49 balay Exp balay $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
@@ -88,6 +88,6 @@ int main(int argc,char **args)
      nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
 
   ierr = MatDestroy(C);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

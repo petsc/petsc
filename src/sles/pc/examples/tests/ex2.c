@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.48 2000/05/05 22:17:23 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.49 2001/01/17 22:24:44 bsmith Exp balay $*/
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
 users should employ the SLES interface instead of using PC directly.\n\n";
@@ -83,7 +83,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(mat);CHKERRQ(ierr);
   ierr = PCDestroy(pc);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
     

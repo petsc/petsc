@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.4 2001/01/17 22:27:51 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.5 2001/01/22 23:08:13 bsmith Exp balay $*/
 
 static char help[] = "Tests DA interpolation for coarse DA on a subset of processors\n\n";
 
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   ierr = DADestroy(da_c);CHKERRQ(ierr);
   ierr = VecDestroy(v_f);CHKERRQ(ierr);
   ierr = DADestroy(da_f);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

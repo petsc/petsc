@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.15 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.16 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests matrix factorization.  Note that most users should\n\
 employ the SLES interface to the linear solvers instead of using the factorization\n\
@@ -71,6 +71,6 @@ int main(int argc,char **args)
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = MatDestroy(LU);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.16 2001/01/17 22:27:34 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.17 2001/01/19 23:22:21 balay Exp balay $*/
 
 static char help[] = 
 "Reads an AODatabase and displays the key and segment names. Runtime options include:\n\
@@ -125,7 +125,7 @@ int main(int argc,char **argv)
   ierr = AODataDestroy(aodata);CHKERRQ(ierr);
 
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

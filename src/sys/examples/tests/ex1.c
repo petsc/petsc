@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.20 2000/04/09 03:09:21 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.21 2000/09/28 21:09:43 bsmith Exp balay $*/
 
 /* 
    Demonstrates PETSc error handlers.
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error is a contrived error to test error handling\n");CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = CreateError(5);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.17 2000/10/24 20:26:04 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.18 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
 
@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

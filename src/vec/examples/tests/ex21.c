@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.7 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex21.c,v 1.8 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[] = "Tests VecMax() with index\
   -n <length> : vector length\n\n";
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
 
   ierr = VecDestroy(x);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.14 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex23.c,v 1.15 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector\n\
   using a blocked send and a strided receive.\n\n";
@@ -64,7 +64,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(is1);CHKERRQ(ierr);
   ierr = ISDestroy(is2);CHKERRQ(ierr);
 
-  PetscFinalize(); 
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.50 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.51 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
   -n <length> : vector length\n\n";
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

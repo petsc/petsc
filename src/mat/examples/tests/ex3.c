@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.13 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.14 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests relaxation for dense matrices.\n\n"; 
 
@@ -54,7 +54,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(e);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

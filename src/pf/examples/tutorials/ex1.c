@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.6 2001/01/17 22:28:48 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.7 2001/01/22 23:09:02 bsmith Exp balay $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   */
   ierr = PFDestroy(pf);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.13 2000/10/24 20:26:51 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.14 2001/01/17 22:25:27 bsmith Exp balay $*/
 
 static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
 
@@ -51,6 +51,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.31 2001/01/17 22:19:35 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.32 2001/01/22 23:01:52 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates us of color map\n";
 
@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscSleep(2);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

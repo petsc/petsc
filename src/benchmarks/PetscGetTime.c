@@ -1,4 +1,4 @@
-/*$Id: PetscGetTime.c,v 1.14 2001/01/15 21:49:39 bsmith Exp bsmith $*/
+/*$Id: PetscGetTime.c,v 1.15 2001/01/17 22:28:38 bsmith Exp balay $*/
 
 #include "petsc.h"
 
@@ -29,6 +29,6 @@ int main(int argc,char **argv)
     fprintf(stdout,"%-15s : %e sec\n","PetscGetTime",(y-x)/10.0);
   }
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.35 2001/01/23 18:44:44 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.36 2001/01/23 19:09:36 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -158,7 +158,7 @@ int main(int argc,char **args)
   ierr = PetscLogEventEnd(MOVE_VERTEX_EVENT,0,0,0,0);CHKERRQ(ierr);
   ierr = DataDestroy(&gdata);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

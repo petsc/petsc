@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.33 2000/05/05 22:17:23 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.34 2001/01/17 22:24:44 bsmith Exp balay $*/
 
 static char help[] = "Tests the creation of a PC context.\n\n";
 
@@ -27,7 +27,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(u);	CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
   ierr = PCDestroy(pc);	CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
     

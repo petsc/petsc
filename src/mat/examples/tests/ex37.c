@@ -1,4 +1,4 @@
-/*$Id: ex37.c,v 1.18 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex37.c,v 1.19 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n"; 
 
@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

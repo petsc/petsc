@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.48 2001/01/15 21:47:06 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.49 2001/01/17 22:24:44 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
 also tests the MatRelax() routines.  Input parameters are:\n\
@@ -79,7 +79,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
   ierr = PCDestroy(pc);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
     

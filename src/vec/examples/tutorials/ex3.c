@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.50 2001/01/22 23:03:27 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.51 2001/01/23 18:45:52 balay Exp balay $*/
 
 static char help[] = "Parallel vector layout.\n\n";
 
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

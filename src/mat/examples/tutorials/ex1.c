@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.24 2001/01/15 21:46:24 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.25 2001/01/17 22:23:31 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and reorders it.\n\
@@ -98,7 +98,7 @@ int main(int argc,char **args)
     ierr = ISDestroy(iscol);CHKERRQ(ierr);
   PreLoadEnd();
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

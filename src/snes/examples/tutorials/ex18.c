@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.10 2001/01/15 21:48:06 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.11 2001/01/17 22:26:26 bsmith Exp balay $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -127,7 +127,7 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n",litspit);CHKERRQ(ierr);
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
 
   return 0;

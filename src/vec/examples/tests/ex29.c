@@ -1,4 +1,4 @@
-/*$Id: ex29.c,v 1.14 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex29.c,v 1.15 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors\n\
 where atleast a couple of mallocs will occur in the stash code.\n\n";
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
 
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = PetscFree(vals);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.44 2001/01/15 21:45:20 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.45 2001/01/17 22:21:32 bsmith Exp balay $*/
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
 user-defined event logging.\n\n";
@@ -68,7 +68,7 @@ int main(int argc,char **args)
 
   /* Free data structures */
   ierr = VecDestroy(u);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

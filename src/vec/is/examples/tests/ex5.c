@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.3 2000/09/28 21:10:00 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.4 2001/01/22 23:02:58 bsmith Exp balay $*/
 
 static char help[] = "Tests ISLocalToGlobalMappingGetInto()\n\n";
 
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   ierr = ISLocalToGlobalMappingGetInfo(mapping,&nneigh,&neigh,&numneigh,&ineigh);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingRestoreInfo(mapping,&nneigh,&neigh,&numneigh,&ineigh);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(mapping);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

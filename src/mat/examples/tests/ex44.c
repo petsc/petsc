@@ -1,4 +1,4 @@
-/*$Id: ex44.c,v 1.11 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex44.c,v 1.12 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = 
 "Loads matrix dumped by ex43.\n\n";
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

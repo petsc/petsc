@@ -1,4 +1,4 @@
-/*$Id: ex77.c,v 1.5 2001/01/17 22:23:09 bsmith Exp bsmith $*/
+/*$Id: ex77.c,v 1.6 2001/01/19 21:15:16 bsmith Exp balay $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format. Same as ex74.c except diagonal entries of the matrices are zeros.\n";
 
@@ -308,6 +308,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

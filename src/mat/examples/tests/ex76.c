@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.12 2001/01/16 18:18:12 balay Exp bsmith $*/
+/*$Id: ex76.c,v 1.13 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests matrix permutation for factorization and solve on matrix with MatSBAIJ format. Modified from ex74.c\n";
 
@@ -196,6 +196,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex40.c,v 1.20 2001/01/16 18:18:12 balay Exp bsmith $*/
+/*$Id: ex40.c,v 1.21 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
@@ -77,7 +77,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = MatDestroy(B);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 #endif
   return 0;
 }

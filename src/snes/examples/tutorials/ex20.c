@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.7 2001/01/15 21:48:06 bsmith Exp bsmith $ */
+/* $Id: ex20.c,v 1.8 2001/01/17 22:26:26 bsmith Exp balay $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -232,7 +232,7 @@ int main(int argc,char **argv)
 
   /* free nonlinear solver object */
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
 
   return 0;

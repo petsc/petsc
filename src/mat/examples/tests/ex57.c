@@ -1,4 +1,4 @@
-/*$Id: ex57.c,v 1.19 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex57.c,v 1.20 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
  binary file.\n\
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = PetscFree(B);CHKERRQ(ierr);
   ierr = ISDestroy(iscol);CHKERRQ(ierr);
   ierr = ISDestroy(isrow);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

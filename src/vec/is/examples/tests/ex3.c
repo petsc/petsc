@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.14 2001/01/17 22:20:50 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.15 2001/01/22 23:02:58 bsmith Exp balay $*/
 /*
        Tests ISAllGather()
 */
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
 
   ierr = ISDestroy(newis);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/*$Id: ex30.c,v 1.22 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex30.c,v 1.23 2001/01/19 23:20:49 balay Exp balay $*/
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
 of matrix sparsity structure with MatView().  Input parameters are:\n\
@@ -86,6 +86,6 @@ int main(int argc,char **args)
   ierr = ISDestroy(col);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer2);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.6 2001/01/15 21:49:15 bsmith Exp bsmith $ */
+/* $Id: input.c,v 1.7 2001/01/17 22:28:03 bsmith Exp balay $ */
 static char help[] ="Allows inputing a 2d  grid into a AO database.\n";
 
 /*
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 
   ierr = AOData2dGridDestroy(agrid);CHKERRQ(ierr); 
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.15 1999/10/24 14:01:38 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.16 2001/01/17 22:20:33 bsmith Exp balay $*/
 
 /*
       Tests the signal handler.
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error below is contrived to test the code!\n");CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = CreateError(5);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

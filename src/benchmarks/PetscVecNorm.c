@@ -1,4 +1,4 @@
-/*$Id: PetscVecNorm.c,v 1.12 2001/01/15 21:49:39 bsmith Exp bsmith $*/
+/*$Id: PetscVecNorm.c,v 1.13 2001/01/17 22:28:38 bsmith Exp balay $*/
 
 #include "petscvec.h"
 
@@ -37,6 +37,6 @@ int main(int argc,char **argv)
   fprintf(stderr,"%s : \n","PetscMemcpy");
   fprintf(stderr," Time %g\n",t2-t1);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

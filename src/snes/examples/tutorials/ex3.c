@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.72 2001/01/15 21:48:06 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.73 2001/01/17 22:26:26 bsmith Exp balay $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -264,7 +264,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(J);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
   ierr = DADestroy(ctx.da);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }

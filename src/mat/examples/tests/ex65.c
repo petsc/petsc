@@ -1,4 +1,4 @@
-/*$Id: ex65.c,v 1.9 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex65.c,v 1.10 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Saves a rectangular sparse matrix to disk\n\n";
 
@@ -39,7 +39,7 @@ int main(int argc,char **args)
 
   ierr = MatDestroy(A);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

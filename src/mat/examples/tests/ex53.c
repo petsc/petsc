@@ -1,4 +1,4 @@
-/*$Id: ex53.c,v 1.18 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex53.c,v 1.19 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 
@@ -183,7 +183,7 @@ s1norm,s2norm,bs);CHKERRQ(ierr);
   ierr = VecDestroy(s1);CHKERRQ(ierr);
   ierr = VecDestroy(s2);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 #endif
   return 0;
 }

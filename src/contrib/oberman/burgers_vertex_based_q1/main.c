@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.8 2001/01/17 22:28:17 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.9 2001/01/20 03:37:07 bsmith Exp balay $*/
 static char help[] ="Solves the 2d burgers equation.   u*du/dx + v*du/dy - c(lap(u)) = f.  u*dv/dv + v*dv/dy - c(lap(v)) =g.  This has exact solution, see fletcher.";
 
 
@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   /*      Destroy all datastructures  */
   ierr = AppCtxDestroy(appctx);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

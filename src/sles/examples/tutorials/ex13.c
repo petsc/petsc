@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.23 2001/01/16 18:19:55 balay Exp bsmith $*/
+/*$Id: ex13.c,v 1.24 2001/01/17 22:25:35 bsmith Exp balay $*/
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
 
@@ -133,7 +133,7 @@ int main(int argc,char **args)
   ierr = PetscFree(userx);CHKERRQ(ierr);
   ierr = PetscFree(userb);CHKERRQ(ierr);
   ierr = UserFinalizeLinearSolver(&userctx);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.10 2001/01/16 18:16:21 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.11 2001/01/17 22:20:33 bsmith Exp balay $*/
 
 /* 
    Tests PetscMemmove()
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   PetscIntView(20,a,0);
   ierr = PetscFree(a);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

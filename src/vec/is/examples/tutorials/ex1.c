@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.24 2001/01/17 22:20:52 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.25 2001/01/22 23:03:00 bsmith Exp balay $*/
 
 static char help[] = "Creating a general index set.\n\n";
 
@@ -75,7 +75,7 @@ int main(int argc,char **argv)
     done with it.
   */
   ierr = ISDestroy(is);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

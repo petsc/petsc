@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.8 2001/01/15 21:48:06 bsmith Exp balay $*/
+/*$Id: ex24.c,v 1.9 2001/01/19 23:22:01 balay Exp balay $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
 
@@ -110,7 +110,7 @@ int main(int argc,char **argv)
   }
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

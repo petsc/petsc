@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.19 2001/01/15 21:47:36 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.20 2001/01/17 22:25:35 bsmith Exp balay $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.  Also\n\
 illustrates setting a user-defined shell preconditioner and using the\n\
@@ -215,7 +215,7 @@ int main(int argc,char **args)
     ierr = SampleShellPCDestroy(shell);CHKERRQ(ierr);
   }
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 
 }

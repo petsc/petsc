@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.11 2001/01/17 22:27:51 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.12 2001/01/22 23:08:13 bsmith Exp balay $*/
 
 static char help[] = "Tests loading DA vector from file\n\n";
 
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   /* Free memory */
   ierr = VecDestroy(global);CHKERRQ(ierr); 
   ierr = DADestroy(da);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

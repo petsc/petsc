@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.1 2000/04/20 04:08:41 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.2 2000/04/24 04:04:01 bsmith Exp balay $*/
 
 /* 
    Demonstrates PetscPopUpSelect()
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   ierr = PetscPopUpSelect(PETSC_COMM_WORLD,PETSC_NULL,"Select one of ",2,choices,&choice);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"You selected %s\n",choices[choice]);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

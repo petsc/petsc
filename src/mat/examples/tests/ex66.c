@@ -1,4 +1,4 @@
-/*$Id: ex66.c,v 1.10 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex66.c,v 1.11 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads in rectangular matrix from disk, stored from ex65.c\n\n";
@@ -23,7 +23,7 @@ int main(int argc,char **args)
   /* Free data structures */
   ierr = MatDestroy(A);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

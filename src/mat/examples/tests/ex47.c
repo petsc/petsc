@@ -1,4 +1,4 @@
-/*$Id: ex47.c,v 1.18 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex47.c,v 1.19 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = 
 "Tests the various routines in MatBAIJ format.\n\
@@ -104,7 +104,7 @@ int main(int argc,char **args)
   VecDestroy(x);
   VecDestroy(y);
   PetscRandomDestroy(r);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 #endif
   return 0;
 }

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 2000/08/17 19:56:43 balay Exp bsmith $
+# $Id: makefile,v 1.5 2001/01/15 21:43:32 bsmith Exp balay $
 
 ALL: lib 
 
@@ -10,7 +10,7 @@ SOURCEF   =
 SOURCEH   = psimpl.h
 OBJSC     = pops.o
 OBJSF     =
-MANSEC    = PetscDraw
+MANSEC    = Draw
 LIBBASE   = libpetsc
 DIRS      = 
 LOCDIR    = src/sys/src/draw/impls/ps/

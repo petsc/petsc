@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.13 2001/01/17 22:28:07 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.14 2001/01/22 23:08:25 bsmith Exp balay $*/
 
 static char help[] = "Tests SDALocalToLocal().\n\n";
 
@@ -120,6 +120,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(local_copy);CHKERRQ(ierr);
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

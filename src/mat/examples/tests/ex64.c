@@ -1,4 +1,4 @@
-/*$Id: ex64.c,v 1.11 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex64.c,v 1.12 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Saves 4by4 block matrix.\n\n";
 
@@ -56,6 +56,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(x);CHKERRQ(ierr);
 
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

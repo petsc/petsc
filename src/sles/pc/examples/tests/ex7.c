@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.9 2001/01/15 21:47:06 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.10 2001/01/17 22:24:44 bsmith Exp balay $*/
 
 static char help[] = "Tests MatILUFactorSymbolic() on matrix with missing diagonal.\n\n"; 
 
@@ -48,7 +48,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(C);CHKERRQ(ierr);
 
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

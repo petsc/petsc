@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.37 2000/08/17 19:56:33 balay Exp bsmith $ 
+# $Id: makefile,v 1.38 2001/01/15 21:43:22 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -16,7 +16,7 @@ OBJSC    = draw.o dline.o dlinew.o dlinegw.o dtext.o dtextv.o dtexts.o \
            dsclear.o drect.o dtri.o dmouse.o drawreg.o drawregall.o
 OBJSF    =
 LIBBASE  = libpetsc
-MANSEC   = PetscDraw
+MANSEC   = Draw
 LOCDIR   = src/sys/src/draw/interface/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

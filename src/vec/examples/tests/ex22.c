@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.18 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.19 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a parallel vector.\n\n";
 
@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(is1);CHKERRQ(ierr);
   ierr = ISDestroy(is2);CHKERRQ(ierr);
 
-  PetscFinalize(); 
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

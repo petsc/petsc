@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.46 2000/08/17 04:50:18 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.47 2001/01/15 21:43:07 bsmith Exp balay $ 
 
 #
 #
@@ -12,7 +12,7 @@ SOURCEF   =
 SOURCEH   = socket.h 
 OBJSC     = senddense.o send.o  sendsparse.o
 OBJSF     =
-MANSEC    = PetscViewer
+MANSEC    = Viewer
 LIBBASE   = libpetsc
 DIRS      = matlab
 LOCDIR    = src/sys/src/viewer/impls/socket/

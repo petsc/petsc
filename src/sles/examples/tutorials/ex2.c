@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.89 2001/01/15 21:47:36 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.90 2001/01/17 22:25:35 bsmith Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
 
@@ -225,6 +225,6 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_summary). 
   */
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

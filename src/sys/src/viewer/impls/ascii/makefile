@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.35 2000/08/17 19:54:39 balay Exp bsmith $ 
+# $Id: makefile,v 1.36 2001/01/15 21:43:11 bsmith Exp balay $ 
 
 ALL: lib 
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  =
 OBJSC    = filev.o vcreatea.o
 OBJSF    =
-MANSEC   = PetscViewer
+MANSEC   = Viewer
 LIBBASE  = libpetsc
 DIRS     = 
 LOCDIR   = src/sys/src/viewer/impls/ascii/

@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.7 2000/08/24 22:43:38 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.8 2001/01/17 22:28:12 bsmith Exp balay $*/
 static char help[] =
 "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   ierr = AppCtxDestroy(appctx);CHKERRQ(ierr);
 
   /* Close down PETSc and stop the program */
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   if (!rank) { printf("\n\nNumber of Iterations: %d\n\n",its); }
 

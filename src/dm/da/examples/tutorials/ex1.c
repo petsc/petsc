@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.11 2001/01/17 22:27:58 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.12 2001/01/22 23:08:18 bsmith Exp balay $*/
 
 static char help[] = "Tests VecView() contour plotting for 2d DAs.\n\n";
 
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

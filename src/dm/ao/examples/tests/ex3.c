@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.23 2001/01/17 22:27:31 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.24 2001/01/22 23:07:58 bsmith Exp balay $*/
 
 static char help[] = "Tests AOData \n\n";
 
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
  
   ierr = AODataDestroy(aodata);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

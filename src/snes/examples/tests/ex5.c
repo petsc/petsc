@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.23 2001/01/15 21:48:01 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.24 2001/01/17 22:26:15 bsmith Exp balay $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the modified Bratu problem in a 2D rectangular domain,\n\
@@ -218,7 +218,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(user.localX);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(user.localF);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);      
   ierr = SNESDestroy(snes);CHKERRQ(ierr);  ierr = DADestroy(user.da);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }

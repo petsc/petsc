@@ -1,4 +1,4 @@
-/*$Id: ex42.c,v 1.20 2001/01/16 18:18:12 balay Exp bsmith $*/
+/*$Id: ex42.c,v 1.21 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = 
 "Tests MatIncreaseOverlap() and MatGetSubmatrices() for the parallel case.\n\
@@ -103,7 +103,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(B);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 #endif
   return 0;
 }

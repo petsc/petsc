@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.27 2001/01/16 18:17:11 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.28 2001/01/17 22:21:32 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
   ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRQ(ierr); 
   ierr = VecDestroy(gx);CHKERRQ(ierr);
   if (flg) {ierr = PetscFree(tarray);CHKERRQ(ierr);}
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

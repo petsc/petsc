@@ -1,4 +1,4 @@
-/*$Id: Index.c,v 1.28 2001/01/16 18:21:52 balay Exp bsmith $*/
+/*$Id: Index.c,v 1.29 2001/01/17 22:28:38 bsmith Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   ierr = test1();CHKERRQ(ierr);
   ierr = test2();CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

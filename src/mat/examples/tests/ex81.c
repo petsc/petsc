@@ -1,4 +1,4 @@
-/*$Id: ex81.c,v 1.4 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex81.c,v 1.5 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing format\n\
   -fout <output_file> : file to load.\n\
@@ -92,6 +92,6 @@ int main(int argc,char **args)
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

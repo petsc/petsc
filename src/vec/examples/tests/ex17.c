@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.32 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.33 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
 this case each local vector is as long as the entire parallel vector.\n\n";
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(is1);CHKERRQ(ierr);
   ierr = ISDestroy(is2);CHKERRQ(ierr);
 
-  PetscFinalize(); 
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

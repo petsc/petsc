@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.15 2001/01/17 22:27:51 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.16 2001/01/22 23:08:13 bsmith Exp balay $*/
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 
@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(mat);CHKERRQ(ierr); 
   ierr = ISColoringDestroy(coloring);CHKERRQ(ierr); 
   ierr = DADestroy(da);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
   

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.20 2001/01/19 23:20:49 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.21 2001/01/22 23:04:43 bsmith Exp balay $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(tmat);CHKERRQ(ierr);
   if (mat) {ierr = MatDestroy(mat);CHKERRQ(ierr);}
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.31 2001/01/15 21:47:36 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.32 2001/01/17 22:25:35 bsmith Exp balay $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
@@ -206,6 +206,6 @@ int main(int argc,char **args)
   if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);}
   ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr); ierr = MatDestroy(A);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.39 2001/01/16 18:18:12 balay Exp bsmith $*/
+/*$Id: ex74.c,v 1.40 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format.\n";
 
@@ -327,6 +327,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

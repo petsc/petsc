@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.49 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.50 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
   -n <length> : local vector length\n\n";
@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

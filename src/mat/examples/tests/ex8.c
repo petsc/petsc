@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.14 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.15 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests automatic allocation of matrix storage space.\n\n";
 
@@ -39,6 +39,6 @@ int main(int argc,char **args)
     (int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
 
   ierr = MatDestroy(C);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

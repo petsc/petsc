@@ -1,4 +1,4 @@
-/*$Id: ex31.c,v 1.3 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex31.c,v 1.4 2001/01/15 21:45:13 bsmith Exp balay $*/
 
 /* 
    Demonstrates PetscMatlabEngineXXX()
@@ -36,7 +36,7 @@ int main(int argc,char **argv)
 
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.24 2001/01/15 21:48:36 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.25 2001/01/17 22:27:13 bsmith Exp balay $*/
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
 
@@ -171,7 +171,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(r);CHKERRQ(ierr);
   ierr = MatDestroy(J);CHKERRQ(ierr);
   ierr = TSDestroy(ts);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }

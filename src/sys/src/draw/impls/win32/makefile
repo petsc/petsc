@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 2000/10/24 20:24:25 bsmith Exp bsmith $
+# $Id: makefile,v 1.5 2001/01/15 21:43:33 bsmith Exp balay $
 
 #requirespackage 'PETSC_HAVE_WIN32'
 
@@ -12,7 +12,7 @@ SOURCEF   =
 SOURCEH   = win32draw.h
 OBJSC     = win32draw.o
 OBJSF     =
-MANSEC    = PetscDraw
+MANSEC    = Draw
 LIBBASE   = libpetsc
 DIRS      = 
 LOCDIR    = src/sys/src/draw/impls/win32/

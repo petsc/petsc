@@ -1,5 +1,5 @@
 
-/*      "$Id: ex4.c,v 1.10 2001/01/17 22:20:52 bsmith Exp bsmith $"; */
+/*      "$Id: ex4.c,v 1.11 2001/01/22 23:03:00 bsmith Exp balay $"; */
 
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   ierr = ISLocalToGlobalMappingDestroy(mapping);CHKERRQ(ierr);
 
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.48 2001/01/15 21:47:36 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.49 2001/01/17 22:25:35 bsmith Exp balay $*/
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
 linear system matrix in the SLES solvers.  Note that different storage formats\n\
@@ -186,6 +186,6 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_summary). 
   */
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

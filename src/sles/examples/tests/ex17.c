@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.37 2001/01/15 21:47:31 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.38 2001/01/17 22:25:27 bsmith Exp balay $*/
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
@@ -80,7 +80,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRQ(ierr); ierr = MatDestroy(A);CHKERRQ(ierr);
   if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);}
   ierr = SLESDestroy(sles);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

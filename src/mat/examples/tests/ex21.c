@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.17 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex21.c,v 1.18 2001/01/19 23:20:49 balay Exp balay $*/
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the\n\
 parallel Row format. This also tests MatGetRow() and MatRestoreRow()\n\
@@ -65,6 +65,6 @@ int main(int argc,char **args)
 
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

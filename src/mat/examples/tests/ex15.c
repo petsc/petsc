@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.17 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.18 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd().\n\n";
 
@@ -84,6 +84,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/* "$Id: ex19.c,v 1.6 2001/01/15 21:47:31 bsmith Exp bsmith $" */
+/* "$Id: ex19.c,v 1.7 2001/01/17 22:25:27 bsmith Exp balay $" */
 
 static char help[] ="\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
@@ -168,7 +168,7 @@ int main(int argc,char **argv)
 
   ierr = SLESDestroy(sles);CHKERRQ(ierr);
   ierr = MatDestroy(user.I);CHKERRQ(ierr); 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }

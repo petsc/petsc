@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 2000/10/24 20:24:14 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.10 2001/01/15 21:43:08 bsmith Exp balay $ 
 
 #
 #requirespackage  'PETSC_HAVE_MATLAB'
@@ -22,7 +22,7 @@ SOURCEH   = closeport.c openport.c receivedense.c launch.c receive.c  bread.c \
             receivesparse.c closeport.m launch.m openport.m receive.m readinvecs.c
 OBJSC     = 
 OBJSF     =
-MANSEC    = PetscViewer
+MANSEC    = Viewer
 LIBBASE   = libpetsc
 DIRS      = 
 LOCDIR    = src/sys/src/viewer/impls/socket/matlab

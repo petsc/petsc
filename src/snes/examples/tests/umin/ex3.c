@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.63 2001/01/15 21:48:04 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.64 2001/01/17 22:26:24 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems in parallel.  This example is based on the\n\
@@ -134,7 +134,7 @@ int main(int argc,char **argv)
   ierr = SNESDestroy(snes);CHKERRQ(ierr); 
   ierr = DADestroy(user.da);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 /* -------------------------------------------------------------------- */

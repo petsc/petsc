@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.11 2000/09/28 21:09:43 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.12 2001/01/17 22:20:33 bsmith Exp balay $*/
 
 /*
      Formatted test for PetscSetCommWorld()
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(1,"main:Error from PetscSetCommWorld()");
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   MPI_Finalize();
   return 0;
 }

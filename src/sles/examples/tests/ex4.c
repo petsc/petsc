@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.57 2001/01/16 18:19:49 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.58 2001/01/17 22:25:27 bsmith Exp balay $*/
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\
@@ -136,6 +136,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

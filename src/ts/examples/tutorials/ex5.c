@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.18 2001/01/17 22:27:13 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.19 2001/01/22 23:07:45 bsmith Exp balay $*/
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
 
@@ -235,7 +235,7 @@ int main(int argc,char **argv)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_summary). 
   */
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------------- */

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.41 2001/01/17 22:27:09 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.42 2001/01/22 23:07:42 bsmith Exp balay $*/
 /*
        Formatted test for TS routines.
 
@@ -213,7 +213,7 @@ int main(int argc,char **argv)
   ierr = DADestroy(appctx.da);CHKERRQ(ierr);
   if (A) {ierr= MatDestroy(A);CHKERRQ(ierr);}
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

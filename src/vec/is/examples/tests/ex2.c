@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.17 2001/01/17 22:20:50 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.18 2001/01/22 23:02:58 bsmith Exp balay $*/
 
 /*
        Formatted test for ISStride routines.
@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = ISRestoreIndices(is,&ii);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

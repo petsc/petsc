@@ -1,4 +1,4 @@
-/*$Id: ex28.c,v 1.13 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex28.c,v 1.14 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd()\n\n";
 
@@ -142,7 +142,7 @@ int main(int argc,char **argv)
     ierr = VecDestroy(vecs[i]);CHKERRQ(ierr);
   }
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

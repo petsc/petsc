@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.45 2001/01/15 21:47:36 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.46 2001/01/17 22:25:35 bsmith Exp balay $*/
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
@@ -354,7 +354,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(C1);CHKERRQ(ierr);     ierr = MatDestroy(C2);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 #undef __FUNC__

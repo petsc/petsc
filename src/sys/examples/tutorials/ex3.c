@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.36 2001/01/15 21:44:21 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.37 2001/01/17 22:20:38 bsmith Exp balay $*/
 
 static char help[] = "Augmenting PETSc profiling by add events.\n\
 Run this program with one of the\n\
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   ierr = PetscSleep(1);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

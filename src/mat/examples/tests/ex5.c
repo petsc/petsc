@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.21 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.22 2001/01/19 23:20:49 balay Exp balay $*/
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose(),\n\
 MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
@@ -139,6 +139,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(y);CHKERRQ(ierr); ierr = VecDestroy(z);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.27 2001/01/16 18:17:11 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.28 2001/01/17 22:21:32 bsmith Exp balay $*/
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
 a file, then forms a vector.\n\n";
@@ -69,7 +69,7 @@ int main(int argc,char **args)
   /* Free data structures */
   ierr = VecDestroy(vec);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(view_in);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

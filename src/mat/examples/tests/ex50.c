@@ -1,4 +1,4 @@
-/*$Id: ex50.c,v 1.22 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex50.c,v 1.23 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII format and writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
@@ -66,7 +66,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

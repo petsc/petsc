@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.42 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.43 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

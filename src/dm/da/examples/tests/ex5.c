@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.38 2001/01/17 22:27:51 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.39 2001/01/22 23:08:13 bsmith Exp balay $*/
 
 /* This file created by Peter Mell   6/30/95 */ 
 
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.66 2001/01/16 18:21:45 balay Exp bsmith $";*/
+/* "$Id: flow.c,v 1.67 2001/01/17 22:28:26 bsmith Exp balay $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -406,7 +406,7 @@ int main(int argc,char **args)
 
   ierr = PetscPrintf(comm,"Time taken in gradient calculation %g sec.\n",grad_time);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

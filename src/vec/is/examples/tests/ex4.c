@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.10 2001/01/17 22:20:50 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.11 2001/01/22 23:02:58 bsmith Exp balay $*/
 
 static char help[] = "Tests ISStrideToGeneral()\n\n";
 
@@ -20,7 +20,7 @@ int main(int argc,char **argv)
 
   ierr = ISDestroy(is);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.26 2001/01/15 21:48:01 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.27 2001/01/17 22:26:15 bsmith Exp balay $*/
 
 static char help[] =
 "This program is a replica of ex6.c except that it does 2 solves to avoid paging\n\
@@ -121,7 +121,7 @@ int main(int argc,char **argv)
     ierr = SNESDestroy(snes);CHKERRQ(ierr);
     ierr = DADestroy(user.da);CHKERRQ(ierr);
   }
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }/* --------------------  Form initial approximation ----------------- */

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.52 2001/01/16 18:19:55 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.53 2001/01/17 22:25:35 bsmith Exp balay $*/
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
 solving a linear system in parallel with SLES.  The code indicates the\n\
@@ -231,6 +231,6 @@ int main(int argc,char **args)
   ierr = SLESDestroy(sles);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);  ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);  ierr = MatDestroy(A);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

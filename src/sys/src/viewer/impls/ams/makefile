@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.10 2000/10/24 20:24:17 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.11 2001/01/15 21:43:14 bsmith Exp balay $ 
 
 #requirespackage  'PETSC_HAVE_AMS'
 
@@ -11,7 +11,7 @@ SOURCEF  =
 SOURCEH  =
 OBJSC    = ams.o amsopen.o
 OBJSF    =
-MANSEC   = PetscViewer
+MANSEC   = Viewer
 LIBBASE  = libpetsc
 DIRS     = 
 LOCDIR   = src/sys/src/viewer/impls/ams/

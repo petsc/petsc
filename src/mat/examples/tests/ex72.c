@@ -1,4 +1,4 @@
-/*$Id: ex72.c,v 1.13 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex72.c,v 1.14 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -68,7 +68,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(r);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 #else

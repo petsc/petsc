@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.24 2001/01/16 18:18:12 balay Exp bsmith $*/
+/*$Id: ex19.c,v 1.25 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
 To test the parallel matrix assembly, this example intentionally lays out\n\
@@ -124,7 +124,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

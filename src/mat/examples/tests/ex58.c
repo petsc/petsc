@@ -1,4 +1,4 @@
-/*$Id: ex58.c,v 1.13 2001/01/19 23:20:49 balay Exp bsmith $*/
+/*$Id: ex58.c,v 1.14 2001/01/22 23:04:43 bsmith Exp balay $*/
 
 static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n\n";
 
@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(B);CHKERRQ(ierr);
 
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

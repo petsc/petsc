@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.2 2000/05/04 16:24:58 bsmith Exp bsmith $*/
+/*$Id: ex16.c,v 1.3 2000/05/10 16:39:42 bsmith Exp balay $*/
 
 /* 
    Demonstrates PetscMatlabEngineXXX()
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
     ierr = PetscSynchronizedFGets(PETSC_COMM_WORLD,stdin,256,user);CHKERRQ(ierr);
     ierr = PetscStrncmp(user,"exit",4,&userhappy);CHKERRQ(ierr);
   }
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.6 2001/01/17 22:19:13 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.7 2001/01/22 23:01:30 bsmith Exp balay $*/
 
 static char help[] = "Tests dynamic loading of viewer.\n\n";
 
@@ -18,7 +18,7 @@ int main(int argc,char **args)
 
   ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"stdout",&viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
     

@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.5 2001/01/15 21:48:06 bsmith Exp bsmith $*/
+/*$Id: ex21.c,v 1.6 2001/01/22 23:07:10 bsmith Exp balay $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(user.lambda_viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(user.fu_viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(user.flambda_viewer);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

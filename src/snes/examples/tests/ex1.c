@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.78 2001/01/15 21:48:06 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.79 2001/01/17 22:26:26 bsmith Exp balay $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -258,7 +258,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(r);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }

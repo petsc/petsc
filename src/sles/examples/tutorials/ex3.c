@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.25 2001/01/16 18:19:55 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.26 2001/01/17 22:25:35 bsmith Exp balay $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
@@ -190,7 +190,7 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_summary).
   */
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.9 2000/11/28 17:28:08 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.10 2001/01/17 22:20:33 bsmith Exp balay $*/
 
 /*
      Tests PetscSetCommWorld()
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   printf("rank = %3d\n",rank);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   MPI_Finalize();
   return 0;

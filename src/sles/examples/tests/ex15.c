@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.23 2001/01/15 21:47:31 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.24 2001/01/17 22:25:27 bsmith Exp balay $*/
 
 static char help[] = "SLES on an operator with a null space.\n\n";
 
@@ -73,6 +73,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(x);CHKERRQ(ierr);ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = SLESDestroy(sles);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

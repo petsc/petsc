@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.34 2001/01/17 22:27:13 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.35 2001/01/22 23:07:45 bsmith Exp balay $*/
 static char help[] ="Solves a time-dependent nonlinear PDE. Uses implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
@@ -212,7 +212,7 @@ int main(int argc,char **argv)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_summary). 
   */
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------------- */

@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.35 2001/01/17 22:27:51 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.36 2001/01/22 23:08:13 bsmith Exp balay $*/
 
 /*
    Simple example to show how PETSc programs can be run from Matlab. 
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

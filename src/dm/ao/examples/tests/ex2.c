@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.17 2001/01/17 22:27:31 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.18 2001/01/22 23:07:58 bsmith Exp balay $*/
 
 static char help[] = "Tests application ordering\n\n";
 
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   ierr = PetscFree(ispetsc);CHKERRQ(ierr);
 
   ierr = AODestroy(ao);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

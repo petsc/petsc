@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.21 2001/01/15 21:48:06 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.22 2001/01/17 22:26:26 bsmith Exp balay $*/
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 
@@ -141,7 +141,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);
   ierr = MatDestroy(J);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */

@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.11 2000/09/22 20:43:24 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.12 2001/01/17 22:21:32 bsmith Exp balay $*/
 
 static char help[] = "Tests PetscObjectPublish().\n\n";
 
@@ -68,7 +68,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(xlocal);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

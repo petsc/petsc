@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.13 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex16.c,v 1.14 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests MatGetArray().\n\n";
 
@@ -55,6 +55,6 @@ int main(int argc,char **args)
       Free the space used by the matrix
   */
   ierr = MatDestroy(A);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex51.c,v 1.15 2001/01/16 18:18:12 balay Exp bsmith $*/
+/*$Id: ex51.c,v 1.16 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = 
 "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAIJ format.\n";
@@ -157,6 +157,6 @@ int main(int argc,char **args)
   ierr = PetscFree(submatA);CHKERRQ(ierr);
   ierr = PetscFree(submatB);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex43.c,v 1.14 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex43.c,v 1.15 2001/01/19 23:20:49 balay Exp balay $*/
 
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 
@@ -36,7 +36,7 @@ int main(int argc,char **args)
   ierr = MatView(C,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

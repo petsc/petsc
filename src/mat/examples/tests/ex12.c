@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.24 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.25 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\
 This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ matrices";
@@ -73,7 +73,7 @@ int main(int argc,char **args)
 
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr); 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

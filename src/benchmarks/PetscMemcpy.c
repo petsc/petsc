@@ -1,4 +1,4 @@
-/*$Id: PetscMemcpy.c,v 1.18 2001/01/16 18:21:52 balay Exp bsmith $*/
+/*$Id: PetscMemcpy.c,v 1.19 2001/01/17 22:28:38 bsmith Exp balay $*/
 
 #include "petsc.h"
 
@@ -60,6 +60,6 @@ int main(int argc,char **argv)
   fprintf(stdout,"    %-11s : %e sec\n","Latency",(z-y)/10.0);
   fprintf(stdout,"    %-11s : %e sec\n","Per Scalar",(2*y-x-z)/8000000.0);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

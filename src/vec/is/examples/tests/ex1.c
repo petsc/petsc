@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.37 2001/01/17 22:20:50 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.38 2001/01/22 23:02:58 bsmith Exp balay $*/
 /*
        Formatted test for ISGeneral routines.
 */
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
   ierr = ISRestoreIndices(newis,&ii);CHKERRQ(ierr);
   ierr = ISDestroy(newis);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

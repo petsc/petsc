@@ -1,4 +1,4 @@
-/*$Id: ex78.c,v 1.7 2001/01/17 19:45:37 bsmith Exp bsmith $*/
+/*$Id: ex78.c,v 1.8 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] =
 "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format, then writes them using the PETSc sparse format.\n\
@@ -140,7 +140,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

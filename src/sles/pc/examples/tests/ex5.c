@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.69 2001/01/16 18:19:19 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.70 2001/01/17 22:24:44 bsmith Exp balay $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -171,7 +171,7 @@ int main(int Argc,char **Args)
   ierr = MatDestroy(cmat);CHKERRQ(ierr);
   ierr = MatDestroy(fmat);CHKERRQ(ierr);
   ierr = SLESDestroy(slesmg);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.14 2001/01/16 18:16:21 balay Exp bsmith $*/
+/*$Id: ex12.c,v 1.15 2001/01/17 22:20:33 bsmith Exp balay $*/
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
 
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

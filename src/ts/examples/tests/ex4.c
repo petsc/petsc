@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.7 2001/01/19 23:22:13 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.8 2001/01/22 23:07:42 bsmith Exp balay $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:
@@ -169,7 +169,7 @@ int main(int argc,char **argv)
   ierr = TSDestroy(ts);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   if (A) {ierr= MatDestroy(A);CHKERRQ(ierr);}
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.15 2001/01/17 22:27:51 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.16 2001/01/22 23:08:13 bsmith Exp balay $*/
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
@@ -68,7 +68,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(locala);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

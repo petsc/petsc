@@ -1,4 +1,4 @@
-/*$Id: ex25.c,v 1.11 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex25.c,v 1.12 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
 this case processor zero is as long as the entire parallel vector; rest are zero length.\n\n";
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(is1);CHKERRQ(ierr);
   ierr = ISDestroy(is2);CHKERRQ(ierr);
 
-  PetscFinalize(); 
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

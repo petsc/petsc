@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.25 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex18.c,v 1.26 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 /* np = 1 */
 
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

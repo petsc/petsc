@@ -1,5 +1,5 @@
 
-/*      "$Id: ex3.c,v 1.18 2001/01/17 22:20:52 bsmith Exp bsmith $"; */
+/*      "$Id: ex3.c,v 1.19 2001/01/22 23:03:00 bsmith Exp balay $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   if (n != 4) SETERRQ(1,"Number of blocks not 4!");
 
   ierr = ISDestroy(set);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.53 2001/01/15 21:48:01 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.54 2001/01/17 22:26:15 bsmith Exp balay $*/
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
@@ -92,7 +92,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(J);CHKERRQ(ierr);  ierr = MatDestroy(B);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(monP.viewer);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }

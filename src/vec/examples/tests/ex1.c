@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.8 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.9 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[] = "Tests repeated VecSetType()\n\n";
 
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

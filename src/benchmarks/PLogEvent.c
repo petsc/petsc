@@ -1,4 +1,4 @@
-/*$Id: PLogEvent.c,v 1.20 2001/01/15 21:49:39 bsmith Exp bsmith $*/
+/*$Id: PLogEvent.c,v 1.21 2001/01/17 22:28:38 bsmith Exp balay $*/
 
 #include "petsc.h"
 
@@ -50,6 +50,6 @@ int main(int argc,char **argv)
   
   fprintf(stdout,"\n");
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

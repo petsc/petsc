@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.7 2001/01/15 21:47:31 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.8 2001/01/17 22:25:27 bsmith Exp balay $*/
 
 static char help[] = 
 "Tests CG, MINRES and SYMMLQ on symmetric matrices with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
@@ -126,7 +126,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(u_tmp);CHKERRQ(ierr);  
   ierr = MatDestroy(C);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

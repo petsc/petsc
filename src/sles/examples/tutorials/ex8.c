@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.45 2001/01/15 21:47:36 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.46 2001/01/17 22:25:35 bsmith Exp balay $*/
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
 Schwarz Method) for solving a linear system in parallel with SLES.  The\n\
@@ -256,6 +256,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

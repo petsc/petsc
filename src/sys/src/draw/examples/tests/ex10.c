@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.12 2001/01/17 22:19:35 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.13 2001/01/22 23:01:52 bsmith Exp balay $*/
 static char help[] = "Tests repeatedly setting a window type\n";
 
 #include "petsc.h"
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscSleep(2);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

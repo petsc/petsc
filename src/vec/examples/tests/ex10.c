@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.14 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.15 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
 uses block index sets\n\n";
@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
 
-  PetscFinalize(); 
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

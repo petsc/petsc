@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.67 2001/01/15 21:47:31 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.68 2001/01/17 22:25:27 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -116,7 +116,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
 #endif
   return 0;
 }

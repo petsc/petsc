@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.6 2001/01/16 18:21:19 balay Exp bsmith $*/
+/*$Id: ex16.c,v 1.7 2001/01/22 23:08:13 bsmith Exp balay $*/
 
 static char help[] = "Tests VecPack routines.\n\n";
 
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   ierr = VecPackDestroy(packer);CHKERRQ(ierr);
   ierr = PetscFree(redundant1);CHKERRQ(ierr);
   ierr = PetscFree(redundant2);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

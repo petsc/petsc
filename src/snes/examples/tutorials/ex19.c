@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.8 2001/01/15 21:48:06 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.9 2001/01/17 22:26:26 bsmith Exp balay $*/
 
 static char help[] = "Solves nonlinear driven cavity with multigrid.\n\
   \n\
@@ -169,7 +169,7 @@ int main(int argc,char **argv)
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

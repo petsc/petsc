@@ -1,4 +1,4 @@
-/*$Id: ex33.c,v 1.16 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex33.c,v 1.17 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = 
 "Writes a matrix using the PETSc sparse format. Input arguments are:\n\
@@ -60,7 +60,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 

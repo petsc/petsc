@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.47 2001/01/17 22:21:24 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.48 2001/01/22 23:03:19 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 This does case when we are merely selecting the local part of the\n\
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(is1);CHKERRQ(ierr);
   ierr = ISDestroy(is2);CHKERRQ(ierr);
 
-  PetscFinalize(); 
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

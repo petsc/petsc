@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.14 2001/01/15 21:49:29 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.15 2001/01/17 22:28:20 bsmith Exp balay $*/
 static char help[] ="Solves the 2d Burgers equation. \n  u*du/dx + v*du/dy - c(lap(u)) = f. \n  u*dv/dx + v*dv/dy - c(lap(v)) = g.  This has exact solution, see Fletcher.\n  This version has new indexing of Degrees of Freedom";
 
 #include "appctx.h"
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   /*      Destroy all datastructures  */
   ierr = AppCtxDestroy(appctx);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.14 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.15 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests reordering a matrix.\n\n";
 
@@ -40,6 +40,6 @@ int main(int argc,char **args)
   ierr = ISDestroy(perm);CHKERRQ(ierr);
   ierr = ISDestroy(iperm);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.12 2001/01/17 22:27:51 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.13 2001/01/22 23:08:13 bsmith Exp balay $*/
 
 static char help[] = "Tests saving DA vectors to files\n\n";
 
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = VecDestroy(natural);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.89 2001/01/17 22:25:27 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.90 2001/01/19 23:21:41 balay Exp balay $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
@@ -81,7 +81,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
 
-  PetscFinalize();
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 /* -------------------------------------------------------------------- */
