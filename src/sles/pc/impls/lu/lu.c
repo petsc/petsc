@@ -52,7 +52,7 @@ static int PCSetFromOptions_LU(PC pc)
 {
   PC_LU      *lu = (PC_LU*)pc->data;
   int        ierr;
-  PetscTruth flg;
+  PetscTruth flg,set;
   char       tname[256];
   PetscFList ordlist;
   PetscReal  tol;
@@ -90,6 +90,12 @@ static int PCSetFromOptions_LU(PC pc)
     ierr = PetscOptionsReal("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,&tol,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-pc_lu_pivoting","Pivoting tolerance (used only for some factorization)","PCLUSetPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
+
+    flg = lu->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
+    ierr = PetscOptionsLogical("-pc_lu_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCLUSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
+    if (set) {
+      ierr = PCLUSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
+    }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -310,6 +316,19 @@ int PCLUSetPivoting_LU(PC pc,PetscReal dtcol)
   PetscFunctionBegin;
   if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(1,"Column pivot tolerance is %g must be between 0 and 1",dtcol);
   dir->info.dtcol = dtcol;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetPivotInBlocks_LU"
+int PCLUSetPivotInBlocks_LU(PC pc,PetscTruth pivot)
+{
+  PC_LU *dir = (PC_LU*)pc->data;
+
+  PetscFunctionBegin;
+  dir->info.pivotinblocks = pivot ? 1.0 : 0.0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -556,7 +575,7 @@ int PCLUSetMatOrdering(PC pc,MatOrderingType ordering)
 
     Level: intermediate
 
-.seealso: PCILUSetMatOrdering()
+.seealso: PCILUSetMatOrdering(), PCLUSetPivotInBlocks()
 @*/
 int PCLUSetPivoting(PC pc,PetscReal dtcol)
 {
@@ -566,6 +585,37 @@ int PCLUSetPivoting(PC pc,PetscReal dtcol)
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetPivoting_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,dtcol);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetPivotInBlocks"
+/*@
+    PCLUSetPivotInBlocks - Determines if pivoting is done while factoring each block
+      with BAIJ or SBAIJ matrices
+
+    Collective on PC
+
+    Input Parameters:
++   pc - the preconditioner context
+-   pivot - PETSC_TRUE or PETSC_FALSE
+
+    Options Database Key:
+.   -pc_lu_pivot_in_blocks <true,false>
+
+    Level: intermediate
+
+.seealso: PCILUSetMatOrdering(), PCLUSetPivoting()
+@*/
+int PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
+{
+  int ierr,(*f)(PC,PetscTruth);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetPivotInBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,pivot);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
@@ -584,15 +634,16 @@ int PCCreate_LU(PC pc)
   ierr = PetscNew(PC_LU,&dir);CHKERRQ(ierr);
   PetscLogObjectMemory(pc,sizeof(PC_LU));
 
-  dir->fact             = 0;
-  dir->inplace          = 0;
-  dir->info.fill        = 5.0;
-  dir->info.dtcol       = 0.0; /* default to no pivoting; this is only thing PETSc LU supports */
-  dir->info.damping     = 0.0;
-  dir->info.damp        = 0.0;
-  dir->info.zeropivot   = 1.e-12;
-  dir->col              = 0;
-  dir->row              = 0;
+  dir->fact               = 0;
+  dir->inplace            = 0;
+  dir->info.fill          = 5.0;
+  dir->info.dtcol         = 0.0; /* default to no pivoting; this is only thing PETSc LU supports */
+  dir->info.damping       = 0.0;
+  dir->info.damp          = 0.0;
+  dir->info.zeropivot     = 1.e-12;
+  dir->info.pivotinblocks = 1.0;
+  dir->col                = 0;
+  dir->row                = 0;
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
@@ -626,6 +677,8 @@ int PCCreate_LU(PC pc)
                     PCLUSetReuseFill_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetPivoting_C","PCLUSetPivoting_LU",
                     PCLUSetPivoting_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetPivotInBlocks_C","PCLUSetPivotInBlocks_LU",
+                    PCLUSetPivotInBlocks_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

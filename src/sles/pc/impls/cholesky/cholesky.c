@@ -528,13 +528,14 @@ int PCCreate_Cholesky(PC pc)
   ierr = PetscNew(PC_Cholesky,&dir);CHKERRQ(ierr);
   PetscLogObjectMemory(pc,sizeof(PC_Cholesky));
 
-  dir->fact             = 0;
-  dir->inplace          = 0;
-  dir->info.fill        = 5.0;
-  dir->info.damping     = 0.0;
-  dir->info.damp        = 0.0;
-  dir->col              = 0;
-  dir->row              = 0;
+  dir->fact               = 0;
+  dir->inplace            = 0;
+  dir->info.fill          = 5.0;
+  dir->info.damping       = 0.0;
+  dir->info.damp          = 0.0;
+  dir->info.pivotinblocks = 1.0;
+  dir->col                = 0;
+  dir->row                = 0;
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&dir->ordering);CHKERRQ(ierr);
   dir->reusefill        = PETSC_FALSE;
   dir->reuseordering    = PETSC_FALSE;

@@ -513,14 +513,58 @@ int PCILUSetUseInPlace(PC pc)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCILUSetPivotInBlocks"
+/*@
+    PCILUSetPivotInBlocks - Determines if pivoting is done while factoring each block
+      with BAIJ or SBAIJ matrices
+
+    Collective on PC
+
+    Input Parameters:
++   pc - the preconditioner context
+-   pivot - PETSC_TRUE or PETSC_FALSE
+
+    Options Database Key:
+.   -pc_ilu_pivot_in_blocks <true,false>
+
+    Level: intermediate
+
+.seealso: PCIILUSetMatOrdering(), PCILUSetPivoting()
+@*/
+int PCILUSetPivotInBlocks(PC pc,PetscTruth pivot)
+{
+  int ierr,(*f)(PC,PetscTruth);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetPivotInBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,pivot);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 /* ------------------------------------------------------------------------------------------*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCILUSetPivotInBlocks_ILU"
+int PCILUSetPivotInBlocks_ILU(PC pc,PetscTruth pivot)
+{
+  PC_ILU *dir = (PC_ILU*)pc->data;
+
+  PetscFunctionBegin;
+  dir->info.pivotinblocks = pivot ? 1.0 : 0.0;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_ILU"
 static int PCSetFromOptions_ILU(PC pc)
 {
   int        ierr,dtmax = 3,itmp;
-  PetscTruth flg,single_prec;
+  PetscTruth flg,single_prec,set;
   PetscReal  dt[3];
   char       tname[256];
   PC_ILU     *ilu = (PC_ILU*)pc->data;
@@ -562,6 +606,11 @@ static int PCSetFromOptions_ILU(PC pc)
     ierr = PetscOptionsList("-pc_ilu_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCILUSetMatOrdering",ordlist,ilu->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCILUSetMatOrdering(pc,tname);CHKERRQ(ierr);
+    }
+    flg = ilu->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
+    ierr = PetscOptionsLogical("-pc_ilu_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCILUSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
+    if (set) {
+      ierr = PCILUSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -784,6 +833,7 @@ int PCCreate_ILU(PC pc)
   ilu->info.damp               = 0.0;
   ilu->info.damping            = 0.0;
   ilu->info.zeropivot          = 1.e-12;
+  ilu->info.pivotinblocks      = 1.0;
   ilu->reusefill               = PETSC_FALSE;
   ilu->info.diagonal_fill      = 0;
   ilu->single_precision_solve  = PETSC_FALSE;
@@ -819,7 +869,8 @@ int PCCreate_ILU(PC pc)
                     PCILUSetUseInPlace_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetAllowDiagonalFill_C","PCILUSetAllowDiagonalFill_ILU",
                     PCILUSetAllowDiagonalFill_ILU);CHKERRQ(ierr);
-
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetPivotInBlocks_C","PCILUSetPivotInBlocks_ILU",
+                    PCILUSetPivotInBlocks_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

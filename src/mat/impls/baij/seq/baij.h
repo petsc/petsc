@@ -41,6 +41,7 @@ typedef struct {
   MatScalar        *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied
                                       before calling MatSetValuesXXX_SeqBAIJ_MatScalar() */
 #endif
+  PetscTruth       pivotinblocks;  /* pivot inside factorization of each diagonal block */
 } Mat_SeqBAIJ;
 
 EXTERN int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatILUInfo*,Mat *);

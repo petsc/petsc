@@ -164,6 +164,7 @@ EXTERN int PCLUSetUseInPlace(PC);
 EXTERN int PCLUSetFill(PC,PetscReal);
 EXTERN int PCLUSetDamping(PC,PetscReal);
 EXTERN int PCLUSetPivoting(PC,PetscReal);
+EXTERN int PCLUSetPivotInBlocks(PC,PetscTruth);
 
 EXTERN int PCCholeskySetMatOrdering(PC,MatOrderingType);
 EXTERN int PCCholeskySetReuseOrdering(PC,PetscTruth);
@@ -171,6 +172,7 @@ EXTERN int PCCholeskySetReuseFill(PC,PetscTruth);
 EXTERN int PCCholeskySetUseInPlace(PC);
 EXTERN int PCCholeskySetFill(PC,PetscReal);
 EXTERN int PCCholeskySetDamping(PC,PetscReal);
+EXTERN int PCCholeskySetPivotInBlocks(PC,PetscTruth);
 
 EXTERN int PCILUSetMatOrdering(PC,MatOrderingType);
 EXTERN int PCILUSetUseInPlace(PC);
@@ -182,10 +184,12 @@ EXTERN int PCILUDTSetReuseFill(PC,PetscTruth);
 EXTERN int PCILUSetAllowDiagonalFill(PC);
 EXTERN int PCILUSetDamping(PC,PetscReal);
 EXTERN int PCILUSetSinglePrecisionSolves(PC,PetscTruth);
+EXTERN int PCILUSetPivotInBlocks(PC,PetscTruth);
 
 EXTERN int PCICCSetMatOrdering(PC,MatOrderingType);
 EXTERN int PCICCSetFill(PC,PetscReal);
 EXTERN int PCICCSetLevels(PC,int);
+EXTERN int PCICCSetPivotInBlocks(PC,PetscTruth);
 
 EXTERN int PCASMSetLocalSubdomains(PC,int,IS *);
 EXTERN int PCASMSetTotalSubdomains(PC,int,IS *);
