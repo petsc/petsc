@@ -362,7 +362,24 @@ Arg class, which wraps the usual value.'''
       interpreter = 'python'
     os.chdir(os.path.dirname(addrFilename))
     self.writeLogLine('CLIENT: Executing '+interpreter+' '+source+' server"')
-    os.spawnvp(os.P_NOWAIT, interpreter, [interpreter, source, 'server'])
+    try:
+      os.spawnvp(os.P_NOWAIT, interpreter, [interpreter, source, 'server'])
+    except:
+      self.writeLogLine('CLIENT: os.spawnvp failed.\n \
+      This is a typical problem on CYGWIN systems.  If you are using CYGWIN,\n \
+      you can fix this problem by running /bin/rebaseall.  If you do not have\n \
+      this program, you can install it with the CYGWIN installer in the package\n \
+      Rebase, under the category System.  You must run /bin/rebaseall after\n \
+      turning off all cygwin services -- in particular sshd, if any such services\n \
+      are running.  For more information about rebase, go to http://www.cygwin.com')
+      print '\n \
+      This is a typical problem on CYGWIN systems.  If you are using CYGWIN,\n \
+      you can fix this problem by running /bin/rebaseall.  If you do not have\n \
+      this program, you can install it with the CYGWIN installer in the package\n \
+      Rebase, under the category System.  You must run /bin/rebaseall after\n \
+      turning off all cygwin services -- in particular sshd, if any such services\n \
+      are running.  For more information about rebase, go to http://www.cygwin.com\n'
+      raise
     os.chdir(oldDir)
     timeout = 1
     for i in range(10):
