@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.333 1999/04/30 13:30:29 balay Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.334 1999/04/30 13:31:03 balay Exp bsmith $";
 #endif
 
 /*
@@ -2423,8 +2423,6 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 @*/
 int MatAssembled(Mat mat,PetscTruth *assembled)
 {
-  int ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   *assembled = mat->assembled;
