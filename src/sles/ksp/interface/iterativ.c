@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.15 1995/04/16 00:50:07 curfman Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.16 1995/05/03 15:30:29 curfman Exp bsmith $";
 #endif
 
 /*
@@ -144,10 +144,11 @@ int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
 @*/
 int KSPDefaultBuildResidual(KSP itP,Vec t,Vec v,Vec *V)
 {
-  int    ierr, pflag;
-  Vec    T;
-  Scalar mone = -1.0;
-  Mat    Amat, Pmat;
+  int          ierr;
+  MatStructure pflag;
+  Vec          T;
+  Scalar       mone = -1.0;
+  Mat          Amat, Pmat;
 
   PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
   ierr = KSPBuildSolution(itP,t,&T); CHKERR(ierr);

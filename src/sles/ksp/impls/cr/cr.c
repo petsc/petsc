@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.10 1995/04/12 23:51:24 curfman Exp curfman $";
+static char vcid[] = "$Id: cr.c,v 1.11 1995/05/06 17:54:25 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -23,12 +23,13 @@ static int KSPSetUp_CR(KSP itP)
 
 static int  KSPSolve_CR(KSP itP,int *its)
 {
-  int       i = 0, pflag,maxit,pres, hist_len, cerr;
-  double    *history, dp;
-  Scalar    lambda, alpha0, alpha1; 
-  Scalar    btop, bbot, bbotold, tmp, zero = 0.0, mone = -1.0;
-  Vec       X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T, Tmp;
-  Mat       Amat, Pmat;
+  int          i = 0, maxit,pres, hist_len, cerr;
+  MatStructure pflag;
+  double       *history, dp;
+  Scalar       lambda, alpha0, alpha1; 
+  Scalar       btop, bbot, bbotold, tmp, zero = 0.0, mone = -1.0;
+  Vec          X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T, Tmp;
+  Mat          Amat, Pmat;
 
   pres    = itP->use_pres;
   maxit   = itP->max_it;

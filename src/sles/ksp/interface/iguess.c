@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.5 1995/03/30 21:17:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: iguess.c,v 1.6 1995/04/12 23:51:06 curfman Exp bsmith $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
@@ -70,10 +70,11 @@ int KSPGuessFormX( KSP itctx, KSPIGUESS *itg, Vec x )
 
 int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
 {
-  double normax, norm;
-  Scalar tmp;
-  int    pflag, curl = itg->curl, i;
-  Mat    Amat, Pmat;
+  double       normax, norm;
+  Scalar       tmp;
+  MatStructure pflag;
+  int          curl = itg->curl, i;
+  Mat          Amat, Pmat;
 
   VALIDHEADER(itctx,KSP_COOKIE);
   PCGetOperators(itctx->B,&Amat,&Pmat,&pflag);

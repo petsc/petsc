@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.14 1995/04/12 23:51:13 curfman Exp curfman $";
+static char vcid[] = "$Id: cg.c,v 1.15 1995/05/06 17:54:34 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -40,12 +40,13 @@ int KSPSetUp_CG(KSP itP)
 
 int  KSPSolve_CG(KSP itP,int *its)
 {
-  int       ierr, pflag, i = 0,maxit,eigs,pres, hist_len, cerr;
-  Scalar    dpi, a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0, mone = -1.0, ma; 
-  double    *history, dp;
-  Vec       X,B,Z,R,P;
-  KSP_CG    *cgP;
-  Mat       Amat, Pmat;
+  int          ierr, i = 0,maxit,eigs,pres, hist_len, cerr;
+  Scalar       dpi, a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0, mone = -1.0, ma; 
+  double       *history, dp;
+  Vec          X,B,Z,R,P;
+  KSP_CG       *cgP;
+  Mat          Amat, Pmat;
+  MatStructure pflag;
   cgP = (KSP_CG *) itP->MethodPrivate;
 
   eigs    = itP->calc_eigs;

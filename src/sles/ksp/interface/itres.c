@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.9 1995/04/16 00:49:57 curfman Exp curfman $";
+static char vcid[] = "$Id: itres.c,v 1.10 1995/05/06 17:54:38 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -26,9 +26,9 @@ $     M u = f
 @*/
 int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 {
-  Scalar one = -1.0;
-  int    pflag;
-  Mat    Amat, Pmat;
+  Scalar        one = -1.0;
+  MatStructure  pflag;
+  Mat           Amat, Pmat;
 
   VALIDHEADER(itP,KSP_COOKIE);
   PCGetOperators(itP->B,&Amat,&Pmat,&pflag);

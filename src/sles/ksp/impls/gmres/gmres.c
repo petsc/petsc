@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.20 1995/05/02 16:04:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.21 1995/05/05 03:48:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -122,10 +122,10 @@ static int KSPSetUp_GMRES(KSP itP )
  */
 static int GMRESResidual(  KSP itP,int restart )
 {
-  KSP_GMRES *gmresP = (KSP_GMRES *)(itP->MethodPrivate);
-  Scalar    mone = -1.0;
-  Mat       Amat, Pmat;
-  int       pflag;
+  KSP_GMRES    *gmresP = (KSP_GMRES *)(itP->MethodPrivate);
+  Scalar       mone = -1.0;
+  Mat          Amat, Pmat;
+  MatStructure pflag;
 
   PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
   /* compute initial residual: f - M*x */

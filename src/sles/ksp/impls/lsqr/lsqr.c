@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.9 1995/03/30 21:17:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: lsqr.c,v 1.10 1995/04/12 23:50:23 curfman Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -27,12 +27,13 @@ static int KSPSetUp_LSQR(KSP itP)
 
 static int KSPSolve_LSQR(KSP itP,int *its)
 {
-int       i = 0, maxit, hist_len, cerr, pflag;
-Scalar    rho, rhobar, phi, phibar, theta, c, s;
-double    beta, alpha, rnorm, *history;
-Scalar    tmp, zero = 0.0;
-Vec       X,B,V,V1,U,U1,TMP,W,BINVF;
-Mat       Amat, Pmat;
+int          i = 0, maxit, hist_len, cerr;
+Scalar       rho, rhobar, phi, phibar, theta, c, s;
+double       beta, alpha, rnorm, *history;
+Scalar       tmp, zero = 0.0;
+Vec          X,B,V,V1,U,U1,TMP,W,BINVF;
+Mat          Amat, Pmat;
+MatStructure pflag;
 
 PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
 maxit   = itP->max_it;

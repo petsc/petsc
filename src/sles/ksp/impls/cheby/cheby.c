@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.12 1995/04/12 23:50:40 curfman Exp curfman $";
+static char vcid[] = "$Id: cheby.c,v 1.13 1995/05/06 17:54:29 curfman Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -42,7 +42,7 @@ int KSPChebychevSetEigenvalues(KSP itP,double emax,double emin)
 int  KSPSolve_Chebychev(KSP itP,int *its)
 {
   int              k,kp1,km1,maxit,ktmp,i = 0,pres,brokeout = 0;
-  int              pflag,hist_len,cerr;
+  int              hist_len,cerr;
   Scalar           alpha,omegaprod;
   Scalar           mu,omega,Gamma,c[3],scale;
   double           rnorm,*history;
@@ -50,6 +50,7 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
   KSP_Chebychev    *chebychevP = (KSP_Chebychev *) itP->MethodPrivate;
   Scalar           mone = -1.0, tmp;
   Mat              Amat, Pmat;
+  MatStructure     pflag;
 
   PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
   history = itP->residual_history;
