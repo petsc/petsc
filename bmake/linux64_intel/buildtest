@@ -5,7 +5,7 @@
 #
 set DATAFILESPATH=/u/ac/balay/datafiles
 set TMP=/u/ac/balay/petsc-test
-set MACH=balay@user02.ncsa.uiuc.edu # titan.ncsa.uiuc.edu
+set MACH=balay@user01.ncsa.uiuc.edu # titan.ncsa.uiuc.edu
 set ARCH=linux64_intel
 set TEST=testexamples_
 set RSH=ssh
