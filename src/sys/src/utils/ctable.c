@@ -243,7 +243,7 @@ int PetscTableGetHeadPosition(PetscTable ta,PetscTablePosition *ppos)
  */
 int PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,int *pkey,int *data)
 {
-  int                index; 
+  int                idex; 
   PetscTablePosition pos;
 
   PetscFunctionBegin;
@@ -251,21 +251,21 @@ int PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,int *pkey,int 
   if (!pos) SETERRQ(1,"PetscTable error: PetscTable null position"); 
   *data = *pos; 
   if (!*data) SETERRQ(1,"PetscTable error"); 
-  index = pos - ta->table;
-  *pkey = ta->keytable[index]; 
+  idex = pos - ta->table;
+  *pkey = ta->keytable[idex]; 
   if (!*pkey) SETERRQ(1,"PetscTable error");  
 
   /* get next */
   do {
-    pos++;  index++;
-    if (index >= ta->tablesize) {
+    pos++;  idex++;
+    if (idex >= ta->tablesize) {
       pos = 0; /* end of list */
       break;
-    } else if (ta->keytable[index]) {
-      pos = ta->table + index;
+    } else if (ta->keytable[idex]) {
+      pos = ta->table + idex;
       break;
     }
-  } while (index < ta->tablesize);
+  } while (idex < ta->tablesize);
 
   *rPosition = pos;
 

@@ -1280,7 +1280,7 @@ int MatTranspose_MPISBAIJ(Mat A,Mat *B)
 {
   int ierr;
   PetscFunctionBegin;
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,B);
+  ierr = MatDuplicate(A,MAT_COPY_VALUES,B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

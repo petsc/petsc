@@ -7,7 +7,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKnumsrt" 
-int MINPACKnumsrt(int *n,int *nmax,int *num,int *mode,int *index,int *last,int *next)
+int MINPACKnumsrt(int *n,int *nmax,int *num,int *mode,int *idex,int *last,int *next)
 {
     /* System generated locals */
     int i__1, i__2;
@@ -61,7 +61,7 @@ int MINPACKnumsrt(int *n,int *nmax,int *num,int *mode,int *index,int *last,int *
     /* Parameter adjustments */
     PetscFunctionBegin;
     --next;
-    --index;
+    --idex;
     --num;
 
     i__1 = *nmax;
@@ -98,7 +98,7 @@ L30:
 	if (k == 0) {
 	    goto L40;
 	}
-	index[i] = k;
+	idex[i] = k;
 	++i;
 	k = next[k];
 	goto L30;

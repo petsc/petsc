@@ -70,7 +70,7 @@ int AOPetscToApplication_Mapping(AO ao, int n, int *ia)
   int        *perm  = aomap->petscPerm;
   int         N     = aomap->N;
   int         low, high, mid;
-  int         index;
+  int         idex;
   int         i;
 
   /* It would be possible to use a single bisection search, which
@@ -80,22 +80,22 @@ int AOPetscToApplication_Mapping(AO ao, int n, int *ia)
   */
   PetscFunctionBegin;
   for(i = 0; i < n; i++) {
-    index = ia[i];
-    if (index < 0) continue;
+    idex = ia[i];
+    if (idex < 0) continue;
     /* Use bisection since the array is sorted */
     low  = 0;
     high = N - 1;
     while (low <= high) {
       mid = (low + high)/2;
-      if (index == petsc[mid]) {
+      if (idex == petsc[mid]) {
         break;
-      } else if (index < petsc[mid]) {
+      } else if (idex < petsc[mid]) {
         high = mid - 1;
       } else {
         low  = mid + 1;
       }
     }
-    if (low > high) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %d", index);
+    if (low > high) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %d", idex);
     ia[i] = app[perm[mid]];
   }
   PetscFunctionReturn(0);
@@ -111,7 +111,7 @@ int AOApplicationToPetsc_Mapping(AO ao, int n, int *ia)
   int        *perm  = aomap->appPerm;
   int         N     = aomap->N;
   int         low, high, mid;
-  int         index;
+  int         idex;
   int         i;
 
   /* It would be possible to use a single bisection search, which
@@ -121,22 +121,22 @@ int AOApplicationToPetsc_Mapping(AO ao, int n, int *ia)
   */
   PetscFunctionBegin;
   for(i = 0; i < n; i++) {
-    index = ia[i];
-    if (index < 0) continue;
+    idex = ia[i];
+    if (idex < 0) continue;
     /* Use bisection since the array is sorted */
     low  = 0;
     high = N - 1;
     while (low <= high) {
       mid = (low + high)/2;
-      if (index == app[mid]) {
+      if (idex == app[mid]) {
         break;
-      } else if (index < app[mid]) {
+      } else if (idex < app[mid]) {
         high = mid - 1;
       } else {
         low  = mid + 1;
       }
     }
-    if (low > high) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %d", index);
+    if (low > high) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %d", idex);
     ia[i] = petsc[perm[mid]];
   }
   PetscFunctionReturn(0);
@@ -217,7 +217,7 @@ EXTERN_C_END
 .keywords: AO, index
 .seealso: AOMappingHasPetscIndex(), AOCreateMapping()
 @*/
-int AOMappingHasApplicationIndex(AO ao, int index, PetscTruth *hasIndex)
+int AOMappingHasApplicationIndex(AO ao, int idex, PetscTruth *hasIndex)
 {
   AO_Mapping *aomap;
   int        *app;
@@ -233,9 +233,9 @@ int AOMappingHasApplicationIndex(AO ao, int index, PetscTruth *hasIndex)
   high = aomap->N - 1;
   while (low <= high) {
     mid = (low + high)/2;
-    if (index == app[mid]) {
+    if (idex == app[mid]) {
       break;
-    } else if (index < app[mid]) {
+    } else if (idex < app[mid]) {
       high = mid - 1;
     } else {
       low  = mid + 1;
@@ -266,7 +266,7 @@ int AOMappingHasApplicationIndex(AO ao, int index, PetscTruth *hasIndex)
 .keywords: AO, index
 .seealso: AOMappingHasApplicationIndex(), AOCreateMapping()
 @*/
-int AOMappingHasPetscIndex(AO ao, int index, PetscTruth *hasIndex)
+int AOMappingHasPetscIndex(AO ao, int idex, PetscTruth *hasIndex)
 {
   AO_Mapping *aomap;
   int        *petsc;
@@ -282,9 +282,9 @@ int AOMappingHasPetscIndex(AO ao, int index, PetscTruth *hasIndex)
   high = aomap->N - 1;
   while (low <= high) {
     mid = (low + high)/2;
-    if (index == petsc[mid]) {
+    if (idex == petsc[mid]) {
       break;
-    } else if (index < petsc[mid]) {
+    } else if (idex < petsc[mid]) {
       high = mid - 1;
     } else {
       low  = mid + 1;

@@ -83,7 +83,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   int           N = C->N,rstart = c->rstart,count;
   int           **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,*rtable,start,end,size;
   int           **sbuf1,rank,m,i,j,k,l,ct1,ierr,**rbuf1,row,proc;
-  int           nrqs,msz,**ptr,index,*ctr,*pa,*tmp,bsz,nrqr;
+  int           nrqs,msz,**ptr,idex,*ctr,*pa,*tmp,bsz,nrqr;
   int           is_no,jmax,*irow_i,**rmap,*rmap_i;
   int           len,ctr_j,*sbuf1_j,*rbuf1_i;
   int           tag0,tag1;
@@ -274,16 +274,16 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
     PetscScalar *sbuf2_i,*v_start;
     int         s_proc;
     for (i=0; i<nrqr; ++i) {
-      ierr = MPI_Waitany(nrqr,r_waits1,&index,r_status1+i);CHKERRQ(ierr);
+      ierr = MPI_Waitany(nrqr,r_waits1,&idex,r_status1+i);CHKERRQ(ierr);
       s_proc          = r_status1[i].MPI_SOURCE; /* send processor */
-      rbuf1_i         = rbuf1[index]; /* Actual message from s_proc */
-      /* no of rows = end - start; since start is array index[], 0index, whel end
-         is length of the buffer - which is 1index */
+      rbuf1_i         = rbuf1[idex]; /* Actual message from s_proc */
+      /* no of rows = end - start; since start is array idex[], 0idex, whel end
+         is length of the buffer - which is 1idex */
       start           = 2*rbuf1_i[0] + 1;
       ierr            = MPI_Get_count(r_status1+i,MPI_INT,&end);CHKERRQ(ierr);
       /* allocate memory sufficinet to hold all the row values */
-      ierr = PetscMalloc((end-start)*N*sizeof(PetscScalar),&sbuf2[index]);CHKERRQ(ierr);
-      sbuf2_i      = sbuf2[index];
+      ierr = PetscMalloc((end-start)*N*sizeof(PetscScalar),&sbuf2[idex]);CHKERRQ(ierr);
+      sbuf2_i      = sbuf2[idex];
       /* Now pack the data */
       for (j=start; j<end; j++) {
         row = rbuf1_i[j] - rstart;
@@ -294,7 +294,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
         }
       }
       /* Now send off the data */
-      ierr = MPI_Isend(sbuf2[index],(end-start)*N,MPIU_SCALAR,s_proc,tag1,comm,s_waits2+i);CHKERRQ(ierr);
+      ierr = MPI_Isend(sbuf2[idex],(end-start)*N,MPIU_SCALAR,s_proc,tag1,comm,s_waits2+i);CHKERRQ(ierr);
     }
   }
   /* End Send-Recv of IS + row_numbers */
