@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.41 1996/07/08 22:20:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.42 1996/08/15 12:48:52 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
@@ -77,7 +77,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(b); CHKERRA(ierr);
 
   /* modify matrix and rhs for Dirichlet boundary conditions */
-  rows = (int *) PetscMalloc( 4*m*sizeof(int) ); CHKPTRQ(rows);
+  rows = (int *) PetscMalloc( (4*m+1)*sizeof(int) ); CHKPTRQ(rows);
   for ( i=0; i<m+1; i++ ) {
     rows[i] = i; /* bottom */
     rows[3*m - 1 +i] = m*(m+1) + i; /* top */

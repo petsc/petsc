@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.20 1996/09/28 14:09:36 curfman Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.21 1996/10/14 14:39:51 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
@@ -21,13 +21,9 @@ codes.  Note that the code must be compiled with the flag -DPETSC_LOG\n\
 T*/
 
 /* 
-  Include "plog.h" so that we can use PETSc profiling routines.  Note 
-  that this file automatically includes:
-     petsc.h  - base PETSc routines
-  Also, note that vec.h automatically includes plog.h, so generally
-  plog.h need not be explicitly specified in the user's program.
+  Include "petsc.h" so that we can use PETSc profiling routines.
 */
-#include "plog.h"
+#include "petsc.h"
 #include <stdio.h>
 
 int main(int argc,char **argv)

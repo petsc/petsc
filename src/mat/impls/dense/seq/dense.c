@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.114 1996/11/19 16:30:47 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.115 1996/11/29 22:20:34 curfman Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -63,12 +63,12 @@ static int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
   int          info;
 
   if (!mat->pivots) {
-    mat->pivots = (int *) PetscMalloc(mat->m*sizeof(int));CHKPTRQ(mat->pivots);
+    mat->pivots = (int *) PetscMalloc((mat->m+1)*sizeof(int));CHKPTRQ(mat->pivots);
     PLogObjectMemory(A,mat->m*sizeof(int));
   }
   LAgetrf_(&mat->m,&mat->n,mat->v,&mat->m,mat->pivots,&info);
   if (info<0) SETERRQ(1,"MatLUFactor_SeqDense:Bad argument to LU factorization");
-  if (info>0) SETERRQ(1,"MatLUFactor_SeqDense:Bad LU factorization");
+  if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"MatLUFactor_SeqDense:Bad LU factorization");
   A->factor = FACTOR_LU;
   PLogFlops((2*mat->n*mat->n*mat->n)/3);
   return 0;
@@ -120,7 +120,7 @@ static int MatCholeskyFactor_SeqDense(Mat A,IS perm,double f)
     mat->pivots = 0;
   }
   LApotrf_("L",&mat->n,mat->v,&mat->m,&info);
-  if (info) SETERRQ(1,"MatCholeskyFactor_SeqDense:Bad factorization");
+  if (info) SETERRQ(PETSC_ERR_MAT_CH_ZRPVT,"MatCholeskyFactor_SeqDense:Bad factorization");
   A->factor = FACTOR_CHOLESKY;
   PLogFlops((mat->n*mat->n*mat->n)/3);
   return 0;
@@ -331,11 +331,11 @@ static int MatGetRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
   
   *ncols = mat->n;
   if (cols) {
-    *cols = (int *) PetscMalloc(mat->n*sizeof(int)); CHKPTRQ(*cols);
+    *cols = (int *) PetscMalloc((mat->n+1)*sizeof(int)); CHKPTRQ(*cols);
     for ( i=0; i<mat->n; i++ ) (*cols)[i] = i;
   }
   if (vals) {
-    *vals = (Scalar *) PetscMalloc(mat->n*sizeof(Scalar)); CHKPTRQ(*vals);
+    *vals = (Scalar *) PetscMalloc((mat->n+1)*sizeof(Scalar)); CHKPTRQ(*vals);
     v = mat->v + row;
     for ( i=0; i<mat->n; i++ ) {(*vals)[i] = *v; v += mat->m;}
   }
@@ -437,7 +437,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
     ierr = MatTranspose(B,PETSC_NULL); CHKERRQ(ierr);
   } else {
     /* read row lengths */
-    rowlengths = (int*) PetscMalloc( M*sizeof(int) ); CHKPTRQ(rowlengths);
+    rowlengths = (int*) PetscMalloc( (M+1)*sizeof(int) ); CHKPTRQ(rowlengths);
     ierr = PetscBinaryRead(fd,rowlengths,M,BINARY_INT); CHKERRQ(ierr);
 
     /* create our matrix */
@@ -447,9 +447,9 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
     v = a->v;
 
     /* read column indices and nonzeros */
-    cols = scols = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(cols);
+    cols = scols = (int *) PetscMalloc( (nz+1)*sizeof(int) ); CHKPTRQ(cols);
     ierr = PetscBinaryRead(fd,cols,nz,BINARY_INT); CHKERRQ(ierr);
-    vals = svals = (Scalar *) PetscMalloc( nz*sizeof(Scalar) ); CHKPTRQ(vals);
+    vals = svals = (Scalar *) PetscMalloc( (nz+1)*sizeof(Scalar) ); CHKPTRQ(vals);
     ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
 
     /* insert into matrix */  
@@ -550,7 +550,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
     PetscFree(col_lens);
 
     /* write out matrix, by rows */
-    vals = (Scalar *) PetscMalloc(m*n*sizeof(Scalar)); CHKPTRQ(vals);
+    vals = (Scalar *) PetscMalloc((m*n+1)*sizeof(Scalar)); CHKPTRQ(vals);
     v    = a->v;
     for ( i=0; i<m; i++ ) {
       for ( j=0; j<n; j++ ) {
@@ -580,7 +580,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
     PetscFree(col_lens);
 
     /* store nonzero values */
-    anonz = (Scalar *) PetscMalloc((nz)*sizeof(Scalar)); CHKPTRQ(anonz);
+    anonz = (Scalar *) PetscMalloc((nz+1)*sizeof(Scalar)); CHKPTRQ(anonz);
     ict = 0;
     for ( i=0; i<m; i++ ) {
       v = a->v + i;
@@ -643,7 +643,7 @@ static int MatTranspose_SeqDense(Mat A,Mat *matout)
 
   v = mat->v; m = mat->m; n = mat->n;
   if (matout == PETSC_NULL) { /* in place transpose */
-    if (m != n) SETERRQ(1,"MatTranspose_SeqDense:Supports square matrix only in-place");
+    if (m != n) SETERRQ(PETSC_ERR_SUP,"MatTranspose_SeqDense:Supports square matrix only in-place");
     for ( j=0; j<m; j++ ) {
       for ( k=0; k<j; k++ ) {
         tmp = v[j + k*n]; 
@@ -677,7 +677,7 @@ static int MatEqual_SeqDense(Mat A1,Mat A2, PetscTruth *flg)
   int          i;
   Scalar       *v1 = mat1->v, *v2 = mat2->v;
 
-  if (A2->type != MATSEQDENSE) SETERRQ(1,"MatEqual_SeqDense:Both matrices should be of type  MATSEQDENSE");
+  if (A2->type != MATSEQDENSE) SETERRQ(PETSC_ERR_SUP,"MatEqual_SeqDense:Both matrices should be of type  MATSEQDENSE");
   if (mat1->m != mat2->m) {*flg = PETSC_FALSE; return 0;}
   if (mat1->n != mat2->n) {*flg = PETSC_FALSE; return 0;}
   for ( i=0; i<mat1->m*mat1->n; i++ ) {
@@ -697,7 +697,7 @@ static int MatGetDiagonal_SeqDense(Mat A,Vec v)
   VecSet(&zero,v);
   VecGetArray(v,&x); VecGetSize(v,&n);
   len = PetscMin(mat->m,mat->n);
-  if (n != mat->m) SETERRQ(1,"MatGetDiagonal_SeqDense:Nonconforming mat and vec");
+  if (n != mat->m) SETERRQ(PETSC_ERR_SIZ,"MatGetDiagonal_SeqDense:Nonconforming mat and vec");
   for ( i=0; i<len; i++ ) {
     x[i] = mat->v[i*mat->m + i];
   }
@@ -712,7 +712,7 @@ static int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
 
   if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&m);
-    if (m != mat->m) SETERRQ(1,"MatDiagonalScale_SeqDense:Left scaling vec wrong size");
+    if (m != mat->m) SETERRQ(PETSC_ERR_SIZ,"MatDiagonalScale_SeqDense:Left scaling vec wrong size");
     for ( i=0; i<m; i++ ) {
       x = l[i];
       v = mat->v + i;
@@ -722,7 +722,7 @@ static int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
   }
   if (rr) {
     VecGetArray(rr,&r); VecGetSize(rr,&n);
-    if (n != mat->n) SETERRQ(1,"MatDiagonalScale_SeqDense:Right scaling vec wrong size");
+    if (n != mat->n) SETERRQ(PETSC_ERR_SIZ,"MatDiagonalScale_SeqDense:Right scaling vec wrong size");
     for ( i=0; i<n; i++ ) {
       x = r[i];
       v = mat->v + i*m;
@@ -775,7 +775,7 @@ static int MatNorm_SeqDense(Mat A,NormType type,double *norm)
     PLogFlops(mat->n*mat->m);
   }
   else {
-    SETERRQ(1,"MatNorm_SeqDense:No two norm");
+    SETERRQ(PETSC_ERR_SUP,"MatNorm_SeqDense:No two norm");
   }
   return 0;
 }
@@ -928,7 +928,7 @@ static int MatCopy_SeqDense(Mat A, Mat B)
 {
   Mat_SeqDense *a = (Mat_SeqDense *) A->data, *b = (Mat_SeqDense *)B->data;
   if (B->type != MATSEQDENSE) return MatCopy_Basic(A,B);
-  if (a->m != b->m || a->n != b->n) SETERRQ(1,"MatCopy_SeqDense:size(B) != size(A)");
+  if (a->m != b->m || a->n != b->n) SETERRQ(PETSC_ERR_SIZ,"MatCopy_SeqDense:size(B) != size(A)");
   PetscMemcpy(b->v,a->v,a->m*a->n*sizeof(Scalar));
   return 0;
 }

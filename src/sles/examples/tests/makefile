@@ -10,7 +10,8 @@ OBJSC	        =
 OBJSF	        =
 LIBBASE	        = libpetscsles
 LOCDIR          = src/sles/examples/tests/
-TESTEXAMPLES_1  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
+TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
+                  ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
 		  runex4 runex4_3 runex4_5 ex4.rm clean
 TESTEXAMPLES_2  = ex10.PETSc ex10.rm ex15.PETSc ex15.rm clean
 TESTEXAMPLES_3  = ex12.PETSc ex12.rm clean
@@ -33,7 +34,7 @@ BUILDEXAMPLES_7 = ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_8 = ex16.PETSc ex16.rm clean
 BUILDEXAMPLES_9 = ex12.PETSc ex12.rm clean
 
-EXAMPLESC       = ex2.c ex3.c ex4.c ex6.c ex9.c ex10.c \
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex9.c ex10.c \
 		  ex15.c ex17.c
 EXAMPLESF       = ex12.F ex16.F
 

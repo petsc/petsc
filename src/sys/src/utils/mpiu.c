@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.59 1996/10/03 18:52:14 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiu.c,v 1.60 1996/10/03 19:53:36 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -19,6 +19,131 @@ static char vcid[] = "$Id: mpiu.c,v 1.59 1996/10/03 18:52:14 bsmith Exp balay $"
    if the appropriate (usually .petschistory) file.
 */
 extern FILE *petsc_history;
+
+/* ----------------------------------------------------------------------- */
+
+typedef struct _PrintfQueue *PrintfQueue;
+struct _PrintfQueue {
+  char        string[256];
+  PrintfQueue next;
+};
+static PrintfQueue queue       = 0,queuebase = 0;
+static int         queuelength = 0;
+
+/*@
+    PetscSynchronizedPrintf - Prints output from several processors that
+        is synchronized so that printed by first processor is followed by 
+        second etc.
+
+    Input Parameters:
+.   comm - the communicator
+.   format - the usual printf() format string 
+
+    Notes:
+     You cannot mix usage with more then one MPI communicator without an 
+     intervening call to PetscSynchronizedFlush().
+     The length of the formatted message cannot be more then 256 charactors.
+
+.seealso: PetscSynchronizedFlush(), PetscFPrintf(), PetscPrintf()
+@*/
+int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
+{
+  int rank;
+  MPI_Comm_rank(comm,&rank);
+  
+  /* First processor prints immediately to stdout */
+  if (!rank) {
+    va_list Argp;
+    va_start( Argp, format );
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+    vfprintf(stdout,format,(char*)Argp);
+#else
+    vfprintf(stdout,format,Argp);
+#endif
+    fflush(stdout);
+    if (petsc_history) {
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+      vfprintf(petsc_history,format,(char *)Argp);
+#else
+      vfprintf(petsc_history,format,Argp);
+#endif
+      fflush(petsc_history);
+    }
+    va_end( Argp );
+  } else { /* other processors add to local queue */
+    int         len;
+    va_list     Argp;
+    PrintfQueue next = PetscNew(struct _PrintfQueue); CHKPTRQ(next);
+    if (queue) {queue->next = next; queue = next;}
+    else       {queuebase   = queue = next;}
+    queuelength++;
+    va_start( Argp, format );
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+    vsprintf(next->string,format,(char *)Argp);
+#else
+    vsprintf(next->string,format,Argp);
+#endif
+    va_end( Argp );
+    len = PetscStrlen(next->string);
+    if (len > 256) SETERRQ(1,"PetscSynchronizedPrintf:Formated string longer then 256 bytes");
+  }
+    
+  return 0;
+}
+ 
+/*@
+    PetscSynchronizedFlush - Flushes to the screen output from all processors 
+        involved in previous PetscSynchronizedPrintf() calls.
+
+    Input Parameters:
+.   comm - the communicator
+
+    Notes:
+     You cannot mix usage with more then one MPI communicator without an 
+     intervening call to PetscSynchronizedFlush().
+
+.seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf()
+@*/
+int PetscSynchronizedFlush(MPI_Comm comm)
+{
+  int        rank,size,i,j,n, tag = 12341;
+  char       message[256];
+  MPI_Status status;
+
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&size);
+  
+  /* First processor waits for messages from all other processors */
+  if (!rank) {
+    for ( i=1; i<size; i++ ) {
+      MPI_Recv(&n,1,MPI_INT,i,tag,comm,&status);
+      for ( j=0; j<n; j++ ) {
+        MPI_Recv(message,256,MPI_CHAR,i,tag,comm,&status);
+        printf("%s",message);
+        if (petsc_history) {
+          fprintf(petsc_history,"%s",message);
+        }
+      }
+    }
+    fflush(stdout);
+    if (petsc_history) fflush(petsc_history);
+  } else { /* other processors send queue to processor 0 */
+    PrintfQueue next = queuebase,previous;
+
+    MPI_Send(&queuelength,1,MPI_INT,0,tag,comm);
+    for ( i=0; i<queuelength; i++ ) {
+      MPI_Send(next->string,256,MPI_CHAR,0,tag,comm);
+      previous = next; 
+      next     = next->next;
+      PetscFree(previous);
+    }
+    queue       = 0;
+    queuelength = 0;
+  }
+  return 0;
+}
+
+/* ---------------------------------------------------------------------------------------*/
 
 /*@C
     PetscFPrintf - Prints to a file, only from the first
@@ -160,10 +285,10 @@ int PetscGetDisplay(char *display,int n)
 
 /* ---------------------------------------------------------------------*/
 /*
-    The variable MPIU_Seq_keyval is used to indicate an MPI attribute that
+    The variable Petsc_Seq_keyval is used to indicate an MPI attribute that
   is attached to a communicator that manages the sequential phase code below.
 */
-static int MPIU_Seq_keyval = MPI_KEYVAL_INVALID;
+static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
 /*@C
    PetscSequentialPhaseBegin - Begins a sequential section of code.  
@@ -199,17 +324,17 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
   MPI_Status status;
 
   /* Get the private communicator for the sequential operations */
-  if (MPIU_Seq_keyval == MPI_KEYVAL_INVALID) {
-    MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&MPIU_Seq_keyval,0);
+  if (Petsc_Seq_keyval == MPI_KEYVAL_INVALID) {
+    MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Seq_keyval,0);
   }
-  MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
+  MPI_Attr_get( comm, Petsc_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) {
     MPI_Comm_dup( comm, &local_comm );
     /*
-      This expects a communicator to be a pointer. On the Cray T3d and IBM Sp
-      a MPI_Comm is an integer, thus we must cast it below.
+      This expects a communicator to be a pointer. On some implementations of 
+      MPI (including Cray, IBM, and SGI) a MPI_Comm is an integer, thus we must cast it below.
     */
-    MPI_Attr_put( comm, MPIU_Seq_keyval, (void *) local_comm );
+    MPI_Attr_put( comm, Petsc_Seq_keyval, (void *) local_comm );
   }
   MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
@@ -249,7 +374,7 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
   MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
   if (np == 1) return 0;
-  MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
+  MPI_Attr_get( comm, Petsc_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
   /* Send to the first process in the next group */
   if ((lidx % ng) == ng - 1 || lidx == np - 1) {
@@ -273,7 +398,7 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
    many "copies" of the communicator there are used in destroying.
 */
 
-static int MPIU_Tag_keyval = MPI_KEYVAL_INVALID;
+static int Petsc_Tag_keyval = MPI_KEYVAL_INVALID;
 
 /*
    Private routine to delete internal storage when a communicator is freed.
@@ -282,7 +407,7 @@ static int MPIU_Tag_keyval = MPI_KEYVAL_INVALID;
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.  
 */
-static int MPIU_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
+static int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
 {
   PetscFree( attr_val );
   return MPI_SUCCESS;
@@ -311,7 +436,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
   PetscValidHeader(obj);
   PetscValidIntPointer(tag);
 
-  ierr = MPI_Attr_get(obj->comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(1,"PetscObjectRestoreNewTag:Bad comm in PETSc object");
 
   if (*tagvalp < 1) SETERRQ(1,"PetscCommDup_Private:Out of tags for object");
@@ -341,7 +466,7 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
   PetscValidHeader(obj);
   PetscValidIntPointer(tag);
 
-  ierr = MPI_Attr_get(obj->comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(1,"PetscObjectRestoreNewTag:Bad comm in PETSc object");
 
   if (*tagvalp == *tag - 1) {
@@ -361,18 +486,15 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 . comm_out - Output communicator.  May be 'comm_in'.
 . first_tag - First tag available
 
-  Returns:
-  MPI_SUCCESS on success, MPI error class on failure.
-
   Notes:
   This routine returns one tag number.
-  Call MPIU_Comm_free() when finished with the communicator.
+  Call Petsc_Comm_free() when finished with the communicator.
 */
 int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 {
   int ierr = MPI_SUCCESS, *tagvalp, *maxval, flag;
 
-  if (MPIU_Tag_keyval == MPI_KEYVAL_INVALID) {
+  if (Petsc_Tag_keyval == MPI_KEYVAL_INVALID) {
     /* 
        The calling sequence of the 2nd argument to this function changed
        between MPI Standard 1.0 and the revisions 1.1 Here we match the 
@@ -380,10 +502,10 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
        the older version you will get a warning message about the next line;
        it is only a warning message and should do no harm.
     */
-    MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,(void*)0);
+    MPI_Keyval_create(MPI_NULL_COPY_FN, Petsc_DelTag,&Petsc_Tag_keyval,(void*)0);
   }
 
-  ierr = MPI_Attr_get(comm_in,MPIU_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm_in,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
 
   if (!flag) {
     /* This communicator is not yet known to this system, so we dup it and set its value */
@@ -392,7 +514,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     tagvalp    = (int *) PetscMalloc( 2*sizeof(int) ); CHKPTRQ(tagvalp);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
-    MPI_Attr_put(*comm_out,MPIU_Tag_keyval, tagvalp);
+    MPI_Attr_put(*comm_out,Petsc_Tag_keyval, tagvalp);
   }
   else {
     *comm_out = comm_in;
@@ -425,7 +547,7 @@ int PetscCommFree_Private(MPI_Comm *comm)
 {
   int ierr,*tagvalp,flag;
 
-  ierr = MPI_Attr_get(*comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(*comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
   if (!flag) {
     SETERRQ(1,"PetscCommFree_Private: Error freeing PETSc object, problem with corrupted memory");
   }

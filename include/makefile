@@ -5,7 +5,7 @@ SOURCEC  =
 SOURCEF  =
 SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \
            vec.h sles.h mg.h viewer.h snes.h \
-           da.h plog.h phead.h ts.h
+           da.h petsclog.h petschead.h petscerror.h ts.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec

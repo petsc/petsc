@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.142 1996/10/29 18:26:31 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.143 1996/10/29 18:26:41 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -90,43 +90,6 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define PETSC_DEFAULT        -2
 
 /*
-   Defines the directory where the compiled source is located; used
-   in print error messages. __DIR__ is usually defined in the makefile.
-*/
-#if !defined(__DIR__)
-#define __DIR__ 0
-#endif
-
-/*
-     Error codes (incomplete)
-*/
-#define PETSC_ERR_MEM 55   /* unable to allocate requested memory */
-#define PETSC_ERR_SUP 56   /* no support yet for this operation */
-#define PETSC_ERR_ARG 57   /* bad input argument */
-#define PETSC_ERR_OBJ 58   /* null or corrupt PETSc object */
-#define PETSC_ERR_SIG 59   /* signal received */
-#define PETSC_ERR_SIZ 60   /* nonconforming object sizes */
-#define PETSC_ERR_IDN 61   /* two arguments not allowed to be the same */
-
-#if defined(PETSC_DEBUG)
-#define SETERRQ(n,s)   {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}
-#define SETERRA(n,s)   {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,n,s);\
-                          MPI_Abort(PETSC_COMM_WORLD,_ierr);}
-#define CHKERRQ(n)     {if (n) SETERRQ(n,(char *)0);}
-#define CHKERRA(n)     {if (n) SETERRA(n,(char *)0);}
-#define CHKPTRQ(p)     if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
-#define CHKPTRA(p)     if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
-#else
-#define SETERRQ(n,s)   {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}
-#define SETERRA(n,s)   {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,n,s);\
-                          MPI_Abort(PETSC_COMM_WORLD,_ierr);}
-#define CHKERRQ(n)     {if (n) SETERRQ(n,(char *)0);}
-#define CHKERRA(n)     {if (n) SETERRA(n,(char *)0);}
-#define CHKPTRQ(p)     if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
-#define CHKPTRA(p)     if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
-#endif
-
-/*
     Each PETSc object class has it's own cookie (internal integer in the 
   data structure used for error checking). These are all defined by an offset 
   from the lowest one, PETSC_COOKIE. If you increase these you must 
@@ -164,23 +127,9 @@ extern int PetscObjectReference(PetscObject);
 extern int PetscObjectGetNewTag(PetscObject,int *);
 extern int PetscObjectRestoreNewTag(PetscObject,int *);
 
-extern int PetscTraceBackErrorHandler(int,char*,char*,int,char*,void*);
-extern int PetscStopErrorHandler(int,char*,char*,int,char*,void*);
-extern int PetscAbortErrorHandler(int,char*,char*,int,char*,void* );
-extern int PetscAttachDebuggerErrorHandler(int,char*,char*,int,char*,void*); 
-extern int PetscError(int,char*,char*,int,char*);
-extern int PetscPushErrorHandler(int (*handler)(int,char*,char*,int,char*,void*),void*);
-extern int PetscPopErrorHandler();
-
-extern int PetscDefaultSignalHandler(int,void*);
-extern int PetscPushSignalHandler(int (*)(int,void *),void*);
-extern int PetscPopSignalHandler();
-#define PETSC_FP_TRAP_OFF    0
-#define PETSC_FP_TRAP_ON     1
-extern int PetscSetFPTrap(int);
-
-#include "phead.h"
-#include "plog.h"
+#include "petscerror.h"
+#include "petschead.h"
+#include "petsclog.h"
 
 extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
 extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
@@ -224,6 +173,9 @@ extern FILE *PetscFOpen(MPI_Comm,char *,char *);
 extern int  PetscFClose(MPI_Comm,FILE*);
 extern int  PetscFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscPrintf(MPI_Comm,char *,...);
+
+extern int  PetscSynchronizedPrintf(MPI_Comm,char *,...);
+extern int  PetscSynchronizedFlush(MPI_Comm);
 
 /*
    For incremental debugging

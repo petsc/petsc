@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.47 1996/10/04 14:28:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.48 1996/11/07 15:08:22 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -313,28 +313,39 @@ int PetscError(int line,char *dir,char *file,int number,char *message)
   Input Parameters:
 .   N - number of integers in array
 .   idx - array of integers
-.   viewer - location to print array,  0 or VIEWER_STDOUT_SELF
+.   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
+
+  Notes:
+    If using a viewer with more then one processor you must call PetscSynchronizedFlush()
+   after this call to get all processors to print to the screen.
 
 .seealso: PetscDoubleView() 
 @*/
 int PetscIntView(int N,int* idx,Viewer viewer)
 {
-  int j,i,n = N/20, p = N % 20;
+  int      j,i,n = N/20, p = N % 20,ierr;
+  MPI_Comm comm;
 
   if (viewer) PetscValidHeader(viewer);
   PetscValidIntPointer(idx);
 
+  if (viewer) {
+    ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
+  } else {
+    comm = MPI_COMM_SELF;
+  }
+
   for ( i=0; i<n; i++ ) {
-    PetscPrintf(MPI_COMM_SELF,"%d:",20*i);
+    PetscSynchronizedPrintf(comm,"%d:",20*i);
     for ( j=0; j<20; j++ ) {
-       PetscPrintf(MPI_COMM_SELF," %d",idx[i*20+j]);
+       PetscSynchronizedPrintf(comm," %d",idx[i*20+j]);
     }
-    PetscPrintf(MPI_COMM_SELF,"\n");
+    PetscSynchronizedPrintf(comm,"\n");
   }
   if (p) {
-    PetscPrintf(MPI_COMM_SELF,"%d:",20*n);
-    for ( i=0; i<p; i++ ) { PetscPrintf(MPI_COMM_SELF," %d",idx[20*n+i]);}
-    PetscPrintf(MPI_COMM_SELF,"\n");
+    PetscSynchronizedPrintf(comm,"%d:",20*n);
+    for ( i=0; i<p; i++ ) { PetscSynchronizedPrintf(comm," %d",idx[20*n+i]);}
+    PetscSynchronizedPrintf(comm,"\n");
   }
   return 0;
 }
@@ -345,28 +356,38 @@ int PetscIntView(int N,int* idx,Viewer viewer)
   Input Parameters:
 .   N - number of doubles in array
 .   idx - array of doubles
-.   viewer - location to print array,  0 or VIEWER_STDOUT_SELF
+.   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
+
+  Notes:
+    If using a viewer with more then one processor you must call PetscSynchronizedFlush()
+   after this call to get all processors to print to the screen.
 
 .seealso: PetscIntView() 
 @*/
 int PetscDoubleView(int N,double* idx,Viewer viewer)
 {
-  int j,i,n = N/5, p = N % 5;
+  int      j,i,n = N/5, p = N % 5,ierr;
+  MPI_Comm comm;
 
   if (viewer) PetscValidHeader(viewer);
   PetscValidScalarPointer(idx);
 
+  if (viewer) {
+    ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
+  } else {
+    comm = MPI_COMM_SELF;
+  }
+
   for ( i=0; i<n; i++ ) {
-    /* PetscPrintf(MPI_COMM_SELF,"%d:",5*i); */
     for ( j=0; j<5; j++ ) {
-       PetscPrintf(MPI_COMM_SELF," %6.4e",idx[i*5+j]);
+       PetscSynchronizedPrintf(comm," %6.4e",idx[i*5+j]);
     }
-    PetscPrintf(MPI_COMM_SELF,"\n");
+    PetscSynchronizedPrintf(comm,"\n");
   }
   if (p) {
-    PetscPrintf(MPI_COMM_SELF,"%d:",5*n);
-    for ( i=0; i<p; i++ ) { PetscPrintf(MPI_COMM_SELF," %6.4e",idx[5*n+i]);}
-    PetscPrintf(MPI_COMM_SELF,"\n");
+    PetscSynchronizedPrintf(comm,"%d:",5*n);
+    for ( i=0; i<p; i++ ) { PetscSynchronizedPrintf(comm," %6.4e",idx[5*n+i]);}
+    PetscSynchronizedPrintf(comm,"\n");
   }
   return 0;
 }
