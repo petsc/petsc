@@ -9,7 +9,16 @@ petsc/bmake/sun4_f90
 petsc/bmake/sun4_nodebug
 petsc/src/contrib/fun3d
 petsc/src/contrib/fun3d/RCS
-petsc/src/contrib/oberman
+petsc/src/contrib/oberman/laplacian_q1/RCS
+petsc/src/contrib/oberman/ns_q1q0/RCS
+petsc/src/contrib/oberman/ns_q1q1/RCS
+petsc/src/contrib/oberman/tns_q2q1/RCS
+petsc/src/contrib/oberman/burgers_vertex_based_q1/RCS
+petsc/src/contrib/oberman/burgers_df_based_q1/RCS
+petsc/src/contrib/oberman/ns_q2q1/RCS
+petsc/src/contrib/oberman/ns_q1q0_penalty/RCS
+petsc/src/contrib/oberman/oldstuff
+petsc/src/contrib/oberman/quasigeo_q1
 petsc/src/contrib/keyes
 petsc/src/contrib/src
 petsc/src/contrib/java
