@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.64 1996/01/22 01:53:57 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.65 1996/01/22 03:05:39 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -756,7 +756,7 @@ $    ViewerMatlabOpen() - output vector to Matlab viewer
 .keywords: Vec, view, visualize, output, print, write, draw
 
 .seealso: ViewerFileOpenASCII(), DrawOpenX(), DrawLGCreate(),
-          ViewerMatlabOpen(), VecLoad()
+          ViewerMatlabOpen(), ViewerFileOpenBinary(), VecLoad()
 @*/
 int VecView(Vec v,Viewer ptr)
 {

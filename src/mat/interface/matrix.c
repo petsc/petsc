@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.132 1996/01/24 20:29:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.133 1996/01/26 04:33:32 bsmith Exp curfman $";
 #endif
 
 /*
@@ -154,7 +154,7 @@ $      matrix structure
 .keywords: matrix, view, visualize, output, print, write, draw
 
 .seealso: ViewerFileSetFormat(), ViewerFileOpenASCII(), DrawOpenX(), 
-          ViewerMatlabOpen(), MatLoad()
+          ViewerMatlabOpen(), ViewerFileOpenBinary(), MatLoad()
 @*/
 int MatView(Mat mat,Viewer ptr)
 {
