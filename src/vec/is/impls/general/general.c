@@ -313,7 +313,7 @@ PetscErrorCode ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS 
   ierr           = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
   ierr           = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
   sub->n         = n;
-  sub->allocated = 1;
+  sub->allocated = PETSC_TRUE;
   Nindex->data   = (void*)sub;
 
   *is = Nindex;
@@ -372,7 +372,7 @@ PetscErrorCode ISCreateGeneralWithArray(MPI_Comm comm,PetscInt n,PetscInt idx[],
   PetscLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(PetscInt)+sizeof(struct _p_IS));
   sub->idx       = idx;
   sub->n         = n;
-  sub->allocated = 0;
+  sub->allocated = PETSC_FALSE;
   Nindex->data   = (void*)sub;
 
   *is = Nindex;
