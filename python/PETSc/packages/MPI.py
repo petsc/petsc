@@ -145,22 +145,22 @@ class Configure(config.base.Configure):
 
   def configureMPE(self):
     '''Checking for MPE'''
-    self.addSubstitution('MPE_INCLUDE', '', 'The MPE include flags')
-    self.addSubstitution('MPE_LIB',     '', 'The MPE library flags')
+    self.addSubstitution('MPE_INCLUDE', '')
+    self.addSubstitution('MPE_LIB',     '')
     return
 
   def setOutput(self):
     if self.foundLib and self.foundInclude:
       self.addDefine('HAVE_MPI', 1)
       if self.include:
-        self.addSubstitution('MPI_INCLUDE', '-I'+self.include, 'The MPI include flags')
+        self.addSubstitution('MPI_INCLUDE', '-I'+self.include)
       else:
-        self.addSubstitution('MPI_INCLUDE', '', 'The MPI include flags')
-      self.addSubstitution('MPI_LIB_DIR', self.dir, 'The MPI library directory')
+        self.addSubstitution('MPI_INCLUDE', '')
+      self.addSubstitution('MPI_LIB_DIR', self.dir)
       libFlag = ''
       if self.dir: libFlag = '-L'+self.dir+' '
       libFlag += '-l'+self.lib
-      self.addSubstitution('MPI_LIB',     libFlag, 'The MPI library flags')
+      self.addSubstitution('MPI_LIB', libFlag)
     return
 
   def configure(self):

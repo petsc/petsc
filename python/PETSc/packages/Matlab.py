@@ -9,9 +9,9 @@ class Configure(config.base.Configure):
 
   def setOutput(self):
     #self.addDefine('HAVE_MATLAB', 0)
-    self.addSubstitution('CMEX', '', 'The Matlab MEX compiler')
-    self.addSubstitution('MCC', '', 'The Matlab C compiler')
-    self.addSubstitution('MATLABCOMMAND', '', 'The Matlab executable')
+    self.addSubstitution('CMEX', '')
+    self.addSubstitution('MCC', '')
+    self.addSubstitution('MATLABCOMMAND', '')
     return
 
   def configure(self):

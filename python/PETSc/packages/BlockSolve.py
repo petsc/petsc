@@ -9,8 +9,8 @@ class Configure(config.base.Configure):
 
   def setOutput(self):
     #self.addDefine('HAVE_BLOCKSOLVE', 0)
-    self.addSubstitution('BLOCKSOLVE_INCLUDE', '', 'The BlockSolve include flags')
-    self.addSubstitution('BLOCKSOLVE_LIB', '', 'The BlockSolve library flags')
+    self.addSubstitution('BLOCKSOLVE_INCLUDE', '')
+    self.addSubstitution('BLOCKSOLVE_LIB', '')
     return
 
   def configure(self):

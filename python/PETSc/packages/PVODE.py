@@ -9,8 +9,8 @@ class Configure(config.base.Configure):
 
   def setOutput(self):
     #self.addDefine('HAVE_PVODE', 0)
-    self.addSubstitution('PVODE_INCLUDE', '', 'The PVODE include flags')
-    self.addSubstitution('PVODE_LIB', '', 'The PVODE library flags')
+    self.addSubstitution('PVODE_INCLUDE', '')
+    self.addSubstitution('PVODE_LIB', '')
     return
 
   def configure(self):

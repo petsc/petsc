@@ -9,8 +9,8 @@ class Configure(config.base.Configure):
 
   def setOutput(self):
     #self.addDefine('HAVE_MATHEMATICA', 0)
-    self.addSubstitution('MATHEMATICA_INCLUDE', '', 'The Mathematica include flags')
-    self.addSubstitution('MATHEMATICA_LIB', '', 'The Mathematica library flags')
+    self.addSubstitution('MATHEMATICA_INCLUDE', '')
+    self.addSubstitution('MATHEMATICA_LIB', '')
     return
 
   def configure(self):
