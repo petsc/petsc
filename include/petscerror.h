@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.29 1998/12/10 22:51:34 balay Exp balay $ */
+/* $Id: petscerror.h,v 1.30 1998/12/10 22:58:04 balay Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -86,6 +86,10 @@
 #define CHKPTRA(p)     if (!p) SETERRA(PETSC_ERR_MEM,0,(char*)0);
 #else
 #define SETERRQ(n,p,s) ;
+#define SETERRQ1(n,p,s,a1) ;
+#define SETERRQ2(n,p,s,a1,a2) ;
+#define SETERRQ3(n,p,s,a1,a2,a3) ;
+#define SETERRQ4(n,p,s,a1,a2,a3,a4) ;
 #define SETERRA(n,p,s) ;
 #define CHKERRQ(n)     ;
 #define CHKERRA(n)     ;
