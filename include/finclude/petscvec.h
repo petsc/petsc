@@ -1,5 +1,5 @@
 C
-C  $Id: vec.h,v 1.14 1996/11/27 22:58:23 bsmith Exp balay $;
+C  $Id: vec.h,v 1.15 1997/11/13 20:02:04 balay Exp balay $;
 C
 C  Include file for Fortran use of the Vec package in PETSc
 C
@@ -9,6 +9,7 @@ C
 #define InsertMode   integer
 #define ScatterMode  integer 
 #define VecType      integer
+#define VecOption    integer
 C
 C  VecType
 C     
@@ -34,6 +35,11 @@ C
       parameter (SCATTER_FORWARD=0,SCATTER_REVERSE=1,
      *           SCATTER_FORWARD_LOCAL=2,SCATTER_REVERSE_LOCAL=3,
      *           SCATTER_LOCAL=2)
+C
+C  VecOption
+C
+      integer VEC_IGNORE_OFF_PROCESSOR_ENTRIES
+      parameter (VEC_IGNORE_OFF_PROCESSOR_ENTRIES=0)
 C
 C  End of Fortran include file for the Vec package in PETSc
 
