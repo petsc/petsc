@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.86 1997/07/11 21:49:53 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.87 1997/07/23 20:26:10 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -1671,9 +1671,9 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
     comm     = ctx->comm;
 
     /* allocate additional wait variables for the "reverse" scatter */
-    rev_rwaits = (MPI_Request *) PetscMalloc((nsends+1)*sizeof(MPI_Request)); CHKPTRQ(rev_rwaits);
+    rev_rwaits = (MPI_Request *) PetscMalloc((nrecvs+1)*sizeof(MPI_Request)); CHKPTRQ(rev_rwaits);
     to->rev_requests = rev_rwaits;
-    rev_swaits = (MPI_Request *) PetscMalloc((nrecvs+1)*sizeof(MPI_Request)); CHKPTRQ(rev_swaits);
+    rev_swaits = (MPI_Request *) PetscMalloc((nsends+1)*sizeof(MPI_Request)); CHKPTRQ(rev_swaits);
     from->rev_requests   = rev_swaits;
     PLogObjectMemory(ctx,(nsends+nrecvs+2)*sizeof(MPI_Request));
 
