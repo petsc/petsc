@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.52 1998/03/23 21:18:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.53 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -79,11 +79,11 @@ static void PetscSignalHandler( int sig )
 /*@
    PetscDefaultSignalHandler - Default signal handler.
 
-   Input Parameters:
-.  sig - signal value
-.  ptr - unused pointer
-
    Not Collective
+
+   Input Parameters:
++  sig - signal value
+-  ptr - unused pointer
 
 .keywords: default, signal, handler
 @*/
@@ -125,11 +125,11 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
    PetscPushSignalHandler - Catches the usual fatal errors and 
    calls a user-provided routine.
 
-   Input Parameter:
-.  routine - routine to call when a signal is received
-.  ctx - optional context needed by the routine
-
    Not Collective
+
+   Input Parameter:
++  routine - routine to call when a signal is received
+-  ctx - optional context needed by the routine
 
 .keywords: push, signal, handler
 @*/

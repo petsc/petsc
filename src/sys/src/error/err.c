@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.77 1998/04/27 03:13:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.78 1998/04/27 03:14:12 bsmith Exp curfman $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -28,24 +28,23 @@ static struct EH* eh = 0;
    This routine is very useful when running in the debugger, because the 
    user can look directly at the stack frames and the variables.
 
+   Not Collective
+
    Input Parameters:
-.  line - the line number of the error (indicated by __LINE__)
++  line - the line number of the error (indicated by __LINE__)
 .  func - function where error occured (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
 .  p - specific error number
-.  ctx - error handler context
-
-   Not Collective
+-  ctx - error handler context
 
    Options Database Keys:
-$   -on_error_abort
-$   -start_in_debugger [noxterm,dbx,xxgdb]  [-display name]
-$       Starts all processes in the debugger and uses 
-$       PetscAbortErrorHandler().  By default the 
-$       debugger is gdb; alternatives are dbx and xxgdb.
++  -on_error_abort - Activates aborting when an error is encountered
+-  -start_in_debugger [noxterm,dbx,xxgdb]  [-display name] - Starts all
+    processes in the debugger and uses PetscAbortErrorHandler().  By default the 
+    debugger is gdb; alternatives are dbx and xxgdb.
 
    Notes:
    Most users need not directly employ this routine and the other error 
@@ -55,10 +54,8 @@ $     SETERRQ(number,p,mess)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
-   currently available PETSc error handlers are
-$    PetscTraceBackErrorHandler()
-$    PetscAttachDebuggerErrorHandler()
-$    PetscAbortErrorHandler()
+   currently available PETSc error handlers include PetscTraceBackErrorHandler(),
+   PetscAttachDebuggerErrorHandler(), and PetscAbortErrorHandler().
 
 .keywords: abort, error, handler
 
@@ -79,17 +76,17 @@ int PetscAbortErrorHandler(int line,char *func,char *file,char* dir,int n,int p,
    PetscTraceBackErrorHandler - Default error handler routine that generates
    a traceback on error detection.
 
+   Not Collective
+
    Input Parameters:
-.  line - the line number of the error (indicated by __LINE__)
++  line - the line number of the error (indicated by __LINE__)
 .  func - the function where error is detected (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
 .  p - specific error number
-.  ctx - error handler context
-
-   Not Collective
+-  ctx - error handler context
 
    Notes:
    Most users need not directly employ this routine and the other error 
@@ -99,11 +96,8 @@ $     SETERRQ(number,p,mess)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
-   currently available PETSc error handlers are
-$    PetscTraceBackErrorHandler()
-$    PetscAttachDebuggerErrorHandler()
-$    PetscAbortErrorHandler()
-$    PetscStopErrorHandler()
+   currently available PETSc error handlers include PetscTraceBackErrorHandler(),
+   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscStopErrorHandler()
 
 .keywords: default, error, handler, traceback
 
@@ -243,17 +237,17 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
 /*@C
    PetscStopErrorHandler - Calls MPI_abort() and exists.
 
+   Not Collective
+
    Input Parameters:
-.  line - the line number of the error (indicated by __LINE__)
++  line - the line number of the error (indicated by __LINE__)
 .  fun - the function where the error occurred (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
 .  p - the specific error number
-.  ctx - error handler context
-
-   Not Collective
+-  ctx - error handler context
 
    Notes:
    Most users need not directly employ this routine and the other error 
@@ -263,11 +257,8 @@ $     SETERRQ(n,p,mess)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
-   currently available PETSc error handlers are
-$    PetscTraceBackErrorHandler()
-$    PetscStopErrorHandler()
-$    PetscAttachDebuggerErrorHandler()
-$    PetscAbortErrorHandler()
+   currently available PETSc error handlers include PetscTraceBackErrorHandler(),
+   PetscStopErrorHandler(), PetscAttachDebuggerErrorHandler(), and PetscAbortErrorHandler().
 
 .keywords: default, error, handler, traceback
 
@@ -388,16 +379,16 @@ int PetscPopErrorHandler(void)
    PetscError - Routine that is called when an error has been detected, 
    usually called through the macro SETERRQ().
 
+   Not Collective
+
    Input Parameters:
-.  line - the line number of the error (indicated by __LINE__)
++  line - the line number of the error (indicated by __LINE__)
 .  func - the function where the error occured (indicated by __FUNC__)
 .  dir - the directory of file (indicated by __SDIR__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
-.  p - the specific error number
-
-   Not Collective
+-  p - the specific error number
 
    Notes:
    Most users need not directly use this routine and the error handlers, but
@@ -426,12 +417,12 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
 /*@C
     PetscIntView - Prints an array of integers; useful for debugging.
 
-    Input Parameters:
-.   N - number of integers in array
-.   idx - array of integers
-.   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
+    Collective on Viewer
 
-   Collective on Viewer
+    Input Parameters:
++   N - number of integers in array
+.   idx - array of integers
+-   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
 
     Notes:
     If using a viewer with more than one processor, you must call PetscSynchronizedFlush()
@@ -513,16 +504,16 @@ int PetscIntView(int N,int* idx,Viewer viewer)
 /*@C
     PetscDoubleView - Prints an array of doubles; useful for debugging.
 
+    Collective on Viewer
+
     Input Parameters:
-.   N - number of doubles in array
++   N - number of doubles in array
 .   idx - array of doubles
-.   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
+-   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
 
-   Collective on Viewer
-
-   Notes:
-   If using a viewer with more than one processor, you must call PetscSynchronizedFlush()
-   after this call to get all processors to print to the screen.
+    Notes:
+    If using a viewer with more than one processor, you must call PetscSynchronizedFlush()
+    after this call to get all processors to print to the screen.
 
 .seealso: PetscIntView() 
 @*/

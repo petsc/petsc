@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rpath.c,v 1.11 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rpath.c,v 1.12 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
       Code for manipulating files.
@@ -13,12 +13,12 @@ static char vcid[] = "$Id: rpath.c,v 1.11 1997/10/19 03:23:45 bsmith Exp bsmith 
    PetscGetRelativePath - Given a filename, returns the relative path (removes
    all directory specifiers).
 
-   Input parameters:
-.  fullpath  - full pathname
-.  path      - pointer to buffer to hold relative pathname
-.  flen     - size of path
-
    Not Collective
+
+   Input parameters:
++  fullpath  - full pathname
+.  path      - pointer to buffer to hold relative pathname
+-  flen     - size of path
 
 .keywords: system, get, relative, path
 

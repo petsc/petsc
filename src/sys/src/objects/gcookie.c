@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcookie.c,v 1.12 1998/03/20 22:47:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcookie.c,v 1.13 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -11,6 +11,8 @@ static char vcid[] = "$Id: gcookie.c,v 1.12 1998/03/20 22:47:23 bsmith Exp bsmit
 /*@C
    PetscObjectGetCookie - Gets the cookie for any PetscObject, 
 
+   Not Collective
+   
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
          Thus must be cast with a (PetscObject), for example, 
@@ -19,8 +21,6 @@ static char vcid[] = "$Id: gcookie.c,v 1.12 1998/03/20 22:47:23 bsmith Exp bsmit
    Output Parameter:
 .  cookie - the cookie
 
-   Not Collective
-   
 .keywords: object, get, cookie
 @*/
 int PetscObjectGetCookie(PetscObject obj,int *cookie)
@@ -36,6 +36,8 @@ int PetscObjectGetCookie(PetscObject obj,int *cookie)
 /*@
    PetscObjectExists - Determines whether a PETSc object has been destroyed.
 
+   Not Collective
+
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
          Thus must be cast with a (PetscObject), for example, 
@@ -43,8 +45,6 @@ int PetscObjectGetCookie(PetscObject obj,int *cookie)
 
    Output Parameter:
 .  exists - 0 if object does not exist; 1 if object does exist.
-
-   Not Collective
 
 .keywords: object, exists
 @*/

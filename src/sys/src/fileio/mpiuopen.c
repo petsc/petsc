@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiuopen.c,v 1.13 1997/11/28 16:19:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiuopen.c,v 1.14 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability to MPI.
@@ -17,12 +17,12 @@ static char vcid[] = "$Id: mpiuopen.c,v 1.13 1997/11/28 16:19:03 bsmith Exp bsmi
     PetscFOpen - Has the first process in the communicator open a file;
     all others do nothing.
 
-    Input Parameters:
-.   comm - the communicator
-.   name - the filename
-.   mode - the mode for fopen(), usually "w"
-
     Collective on MPI_Comm
+
+    Input Parameters:
++   comm - the communicator
+.   name - the filename
+-   mode - the mode for fopen(), usually "w"
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -52,11 +52,11 @@ FILE *PetscFOpen(MPI_Comm comm,char *name,char *mode)
     PetscFClose - Has the first processor in the communicator close a 
     file; all others do nothing.
 
-    Input Parameters:
-.   comm - the communicator
-.   fd - the file, opened with PetscFOpen()
-
     Collective on MPI_Comm
+
+    Input Parameters:
++   comm - the communicator
+-   fd - the file, opened with PetscFOpen()
 
     Fortran Note:
     This routine is not supported in Fortran.

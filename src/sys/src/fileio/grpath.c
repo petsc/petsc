@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grpath.c,v 1.14 1998/04/13 17:30:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: grpath.c,v 1.15 1998/04/26 03:06:07 bsmith Exp curfman $";
 #endif
 /*
       Code for manipulating files.
@@ -10,16 +10,15 @@ static char vcid[] = "$Id: grpath.c,v 1.14 1998/04/13 17:30:26 bsmith Exp bsmith
 #undef __FUNC__  
 #define __FUNC__ "PetscGetRealPath"
 /*@C
-   PetscGetRealPath - Get the path without symbolic links etc. and in absolute
-   form.
+   PetscGetRealPath - Get the path without symbolic links etc. and in absolute form.
+
+   Not Collective
 
    Input Parameter:
 .  path - path to resolve
 
    Output Parameter:
 .  rpath - resolved path
-
-   Not Collective
 
    Notes: 
    rpath is assumed to be of length MAXPATHLEN.

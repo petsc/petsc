@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fhost.c,v 1.19 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.20 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
       Code for manipulating files.
@@ -12,14 +12,14 @@ static char vcid[] = "$Id: fhost.c,v 1.19 1997/10/19 03:23:45 bsmith Exp bsmith 
     return the entire Internet name. It may not return the same name
     as MPI_Get_processor_name().
 
+    Not Collective
+
     Input Parameter:
-    nlen - length of name
+.   nlen - length of name
 
     Output Parameter:
 .   name - contains host name.  Must be long enough to hold the name
            This is the fully qualified name, including the domain.
-
-   Not Collective
 
 .keywords: system, get, host, name
 

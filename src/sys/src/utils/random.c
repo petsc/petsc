@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.37 1998/04/16 16:21:14 balay Exp balay $";
+static char vcid[] = "$Id: random.c,v 1.38 1998/04/16 18:53:26 balay Exp curfman $";
 #endif
 
 /*
@@ -36,10 +36,10 @@ struct _p_PetscRandom {
    PetscRandomDestroy - Destroys a context that has been formed by 
    PetscRandomCreate().
 
+   Collective on PetscRandom
+
    Intput Parameter:
 .  r  - the random number generator context
-
-   Collective on PetscRandom
 
 .keywords: random, destroy
 
@@ -62,17 +62,19 @@ int PetscRandomDestroy(PetscRandom r)
    PetscRandomSetInterval - Sets the interval over which the random numbers
    will be randomly distributed.  By default, this interval is [0,1).
 
+   Collective on PetscRandom
+
    Input Parameters:
 .  r  - the random number generator context
 
-   Collective on PetscRandom
-
    Example of Usage:
-$    PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
-$    PetscRandomSetInterval(RANDOM_DEFAULT,&r);
-$    PetscRandomGetValue(r,&value1);
-$    PetscRandomGetValue(r,&value2);
-$    PetscRandomDestroy(r);
+.vb
+      PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
+      PetscRandomSetInterval(RANDOM_DEFAULT,&r);
+      PetscRandomGetValue(r,&value1);
+      PetscRandomGetValue(r,&value2);
+      PetscRandomDestroy(r);
+.ve
 
 .keywords: random, set, interval
 
@@ -116,15 +118,14 @@ extern void   srand48(long);
    PetscRandomCreate - Creates a context for generating random numbers,
    and initializes the random-number generator.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - MPI communicator
-.  type - the type of random numbers to be generated, usually
-          RANDOM_DEFAULT
++  comm - MPI communicator
+-  type - the type of random numbers to be generated, usually RANDOM_DEFAULT
 
    Output Parameter:
 .  r  - the random number generator context
-
-   Collective on MPI_Comm
 
    Notes:
    By default, we generate random numbers via srand48()/drand48() that
@@ -133,19 +134,20 @@ extern void   srand48(long);
   
    Currently three types of random numbers are supported. These types
    are equivalent when working with real numbers.
-$     RANDOM_DEFAULT - both real and imaginary components are random
-$     RANDOM_DEFAULT_REAL - real component is random; imaginary component is 0
-$     RANDOM_DEFAULT_IMAGINARY - imaginary component is random; real 
-$                                component is 0
+.     RANDOM_DEFAULT - both real and imaginary components are random
+.     RANDOM_DEFAULT_REAL - real component is random; imaginary component is 0
+.     RANDOM_DEFAULT_IMAGINARY - imaginary component is random; real component is 0
 
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
    Example of Usage:
-$    PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);
-$    PetscRandomGetValue(r,&value1);
-$    PetscRandomGetValue(r,&value2);
-$    PetscRandomGetValue(r,&value3);
-$    PetscRandomDestroy(r);
+.vb
+      PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);
+      PetscRandomGetValue(r,&value1);
+      PetscRandomGetValue(r,&value2);
+      PetscRandomGetValue(r,&value3);
+      PetscRandomDestroy(r);
+.ve
 
 .keywords: random, create
 
@@ -179,21 +181,23 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
    PetscRandomGetValue - Generates a random number.  Call this after first calling
    PetscRandomCreate().
 
+   Not Collective
+
    Intput Parameter:
 .  r  - the random number generator context
-
-   Not Collective
 
    Notes:
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
    Example of Usage:
-$    PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
-$    PetscRandomGetValue(r,&value1);
-$    PetscRandomGetValue(r,&value2);
-$    PetscRandomGetValue(r,&value3);
-$    PetscRandomDestroy(r);
-<
+.vb
+      PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
+      PetscRandomGetValue(r,&value1);
+      PetscRandomGetValue(r,&value2);
+      PetscRandomGetValue(r,&value3);
+      PetscRandomDestroy(r);
+.ve
+
 .keywords: random, get, value
 
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()

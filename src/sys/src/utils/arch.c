@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: arch.c,v 1.26 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: arch.c,v 1.27 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
@@ -10,14 +10,14 @@ static char vcid[] = "$Id: arch.c,v 1.26 1997/10/19 03:23:45 bsmith Exp bsmith $
      PetscGetArchType - Returns a standardized architecture type for the machine
      that is executing this routine. 
 
+     Not Collective
+
      Input Parameter:
 .    slen - length of string buffer
 
      Output Parameter:
 .    str - string area to contain architecture name, should be at least 
            10 characters long.
-
-     Not Collective
 
 .keywords: architecture, machine     
 @*/

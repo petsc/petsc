@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.19 1998/04/19 02:18:41 balay Exp balay $";
+static char vcid[] = "$Id: cputime.c,v 1.20 1998/04/20 15:43:23 balay Exp curfman $";
 #endif
 
 /*
@@ -59,27 +59,29 @@ int PetscGetCPUTime(PLogDouble *t)
 
 /*@
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.
-         One should use PetscGetTime() or the -log_summary option of 
-         PETSc for profiling. The CPU time is not a realistic number to
-         use since it does not include the time for message passing etc.
-         Also on many systems the accuracy is only on the order of 
-         microseconds.
+
+    Not Collective
 
     Output Parameter:
 .   t - Time in seconds charged to the process.
 
-     Not Collective
-
     Example:
-$   #include "petsc.h"
-$   ...
-$   PLogDouble t1, t2;
-$
-$   ierr = PetscGetCPUTime(&t1); CHKERRA(ierr);
-$   ... code to time ...
-$   ierr = PetscGetCPUTime(&t2); CHKERRA(ierr);
-$   printf( "Code took %f CPU seconds\n", t2-t1);
-$
+.vb
+    #include "petsc.h"
+    ...
+    PLogDouble t1, t2;
+ 
+    ierr = PetscGetCPUTime(&t1); CHKERRA(ierr);
+    ... code to time ...
+    ierr = PetscGetCPUTime(&t2); CHKERRA(ierr);
+    printf( "Code took %f CPU seconds\n", t2-t1);
+.ve
+
+    Notes:
+    One should use PetscGetTime() or the -log_summary option of 
+    PETSc for profiling. The CPU time is not a realistic number to
+    use since it does not include the time for message passing etc.
+    Also on many systems the accuracy is only on the order of microseconds.
 @*/
 int PetscGetCPUTime(PLogDouble *t)
 {

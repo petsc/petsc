@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpitr.c,v 1.12 1997/11/03 04:43:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpitr.c,v 1.13 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 
 /*
@@ -17,13 +17,13 @@ static char vcid[] = "$Id: mpitr.c,v 1.12 1997/11/03 04:43:55 bsmith Exp bsmith 
    PetscMPIDump - Dumps a listing of incomplete MPI operations, such as sends that
    have never been received, etc.
 
-   Input Parameter:
-.  fp  - file pointer.  If fp is NULL, stderr is assumed.
-
    Collective on PETSC_COMM_WORLD
 
+   Input Parameter:
+.  fp - file pointer.  If fp is NULL, stderr is assumed.
+
    Options Database Key:
-$  -mpidump : dumps MPI incompleteness during call to PetscFinalize()
+.  -mpidump - Dumps MPI incompleteness during call to PetscFinalize()
 
 .keywords: MPI errors
 

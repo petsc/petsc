@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: psleep.c,v 1.13 1997/12/06 05:39:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: psleep.c,v 1.14 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -23,10 +23,10 @@ extern void sleep(int);
 /*@
    PetscSleep - Sleeps some number of seconds.
 
+   Not Collective
+
    Input Parameters:
 .  s - number of seconds to sleep
-
-   Not Collective
 
 .keywords: sleep, wait
 @*/

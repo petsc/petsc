@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.13 1998/01/06 20:09:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ffpath.c,v 1.14 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
       Code for manipulating files.
@@ -12,27 +12,23 @@ static char vcid[] = "$Id: ffpath.c,v 1.13 1998/01/06 20:09:29 bsmith Exp bsmith
    PetscGetFileFromPath - Finds a file from a name and a path string.  A 
    default can be provided.
 
+   Not Collective
+
    Input Parameters:
-.  path - A string containing "directory:directory:..." (without the
++  path - A string containing "directory:directory:..." (without the
 	  quotes, of course).
 	  As a special case, if the name is a single FILE, that file is
 	  used.
 .  defname - default name
 .  name - file name to use with the directories from env
-.  mode - file mode desired (usually 'r' for readable; 'w' for writable and
-          'e' for executable are also supported)
+-  mode - file mode desired (usually 'r' for readable, 'w' for writable, or 'e' for
+          executable)
 
    Output Parameter:
 .  fname - qualified file name
 
-   Not Collective
-
-   Returns:
-   1 on success, 0 on failure.
-
 .keywords: system, get, file, from, path
 
-.seealso:
 @*/
 int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char mode)
 {

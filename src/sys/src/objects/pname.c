@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.12 1998/03/20 22:47:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pname.c,v 1.13 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -9,13 +9,13 @@ static char vcid[] = "$Id: pname.c,v 1.12 1998/03/20 22:47:23 bsmith Exp bsmith 
 /*@C 
    PetscObjectSetName - Sets a string name associated with a PETSc object.
 
+   Not Collective
+
    Input Parameters:
-.  obj - the Petsc variable
++  obj - the Petsc variable
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectSetName((PetscObject) mat,name);
-.  name - the name to give obj
-
-   Not Collective
+-  name - the name to give obj
 
 .keywords: object, set, name
 

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.9 1998/04/13 17:30:26 bsmith Exp balay $";
+static char vcid[] = "$Id: mprint.c,v 1.10 1998/04/14 20:36:59 balay Exp curfman $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -15,7 +15,7 @@ static char vcid[] = "$Id: mprint.c,v 1.9 1998/04/13 17:30:26 bsmith Exp balay $
 #include "pinclude/petscfix.h"
 
 /*
-   If petsc_history is on then all Petsc*Printf() results are saved
+   If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.
 */
 extern FILE *petsc_history;
@@ -34,20 +34,19 @@ static FILE        *queuefile  = PETSC_NULL;
 #undef __FUNC__  
 #define __FUNC__ "PetscSynchronizedPrintf" 
 /*@C
-    PetscSynchronizedPrintf - Prints output from several processors that
-        is synchronized so that printed by first processor is followed by 
-        second etc.
-
-    Input Parameters:
-.   comm - the communicator
-.   format - the usual printf() format string 
+    PetscSynchronizedPrintf - Prints synchronized output from several processors.
+    Output of the first processor is followed by that of the second, etc.
 
     Not Collective
 
+    Input Parameters:
++   comm - the communicator
+-   format - the usual printf() format string 
+
     Notes:
-     You cannot mix usage with more then one MPI communicator without an 
-     intervening call to PetscSynchronizedFlush().
-     The length of the formatted message cannot be more then 256 charactors.
+    Usage of PetscSynchronizedPrintf() with different MPI communicators
+    REQUIRES an intervening call to PetscSynchronizedFlush().
+    The length of the formatted message cannot exceed 256 charactors.
 
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
           PetscPrintf()
@@ -93,7 +92,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
 #endif
     va_end( Argp );
     len = PetscStrlen(next->string);
-    if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formated string longer then 256 bytes");
+    if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formated string longer than 256 bytes");
   }
     
   PetscFunctionReturn(0);
@@ -102,21 +101,21 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
 #undef __FUNC__  
 #define __FUNC__ "PetscSynchronizedFPrintf" 
 /*@C
-    PetscSynchronizedFPrintf - Prints output from several processors that
-        is synchronized so that printed by first processor is followed by 
-        second etc, to the specified file.
-
-    Input Parameters:
-.   comm - the communicator
-.   fd - the file pointer
-.   format - the usual printf() format string 
+    PetscSynchronizedFPrintf - Prints synchronized output to the specified file from
+    several processors.  Output of the first processor is followed by that of the 
+    second, etc.
 
     Not Collective
 
+    Input Parameters:
++   comm - the communicator
+.   fd - the file pointer
+-   format - the usual printf() format string 
+
     Notes:
-     You cannot mix usage with more then one MPI communicator or with different
-     files without an intervening call to PetscSynchronizedFlush().
-     The length of the formatted message cannot be more then 256 charactors.
+    Usage of PetscSynchronizedFPrintf() with different MPI communicators
+    REQUIRES an intervening call to PetscSynchronizedFlush().
+    The length of the formatted message cannot exceed 256 charactors.
 
     Contributed by: Matthew Knepley
 
@@ -176,16 +175,16 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,char *format,...)
 #define __FUNC__ "PetscSynchronizedFlush" 
 /*@C
     PetscSynchronizedFlush - Flushes to the screen output from all processors 
-        involved in previous PetscSynchronizedPrintf() calls.
+    involved in previous PetscSynchronizedPrintf() calls.
+
+    Collective on MPI_Comm
 
     Input Parameters:
 .   comm - the communicator
 
-    Collective on MPI_Comm
-
     Notes:
-     You cannot mix usage with more then one MPI communicator without an 
-     intervening call to PetscSynchronizedFlush().
+    Usage of PetscSynchronizedPrintf() and PetscSynchronizedFPrintf() with
+    different MPI communicators REQUIRES an intervening call to PetscSynchronizedFlush().
 
 .seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf()
 @*/
@@ -244,12 +243,12 @@ int PetscSynchronizedFlush(MPI_Comm comm)
     PetscFPrintf - Prints to a file, only from the first
     processor in the communicator.
 
-    Input Parameters:
-.   comm - the communicator
-.   fd - the file pointer
-.   format - the usual printf() format string 
-
     Not Collective
+
+    Input Parameters:
++   comm - the communicator
+.   fd - the file pointer
+-   format - the usual printf() format string 
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -292,11 +291,11 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
     PetscPrintf - Prints to standard out, only from the first
     processor in the communicator.
 
-   Input Parameters:
-.  comm - the communicator
-.  format - the usual printf() format string 
-
     Not Collective
+
+    Input Parameters:
++   comm - the communicator
+-   format - the usual printf() format string 
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -341,11 +340,11 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
     PetscHelpPrintfDefault - Prints to standard out, only from the first
     processor in the communicator.
 
-   Input Parameters:
-.  comm - the communicator
-.  format - the usual printf() format string 
+    Not Collective
 
-   Not Collective
+    Input Parameters:
++   comm - the communicator
+-   format - the usual printf() format string 
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -389,10 +388,10 @@ int PetscHelpPrintfDefault(MPI_Comm comm,char *format,...)
 /*@C
     PetscErrorPrintfDefault - Prints error messages.
 
-   Input Parameters:
-.  format - the usual printf() format string 
+    Not Collective
 
-   Not Collective
+    Input Parameters:
+.   format - the usual printf() format string 
 
     Fortran Note:
     This routine is not supported in Fortran.

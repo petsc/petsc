@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fpath.c,v 1.14 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fpath.c,v 1.15 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
       Code for opening and closing files.
@@ -13,12 +13,12 @@ static char vcid[] = "$Id: fpath.c,v 1.14 1997/10/19 03:23:45 bsmith Exp bsmith 
 /*@C
    PetscGetFullPath - Given a filename, returns the fully qualified file name.
 
-   Input Parameters:
-.  path     - pathname to qualify
-.  fullpath - pointer to buffer to hold full pathname
-.  flen     - size of fullpath
-
    Not Collective
+
+   Input Parameters:
++  path     - pathname to qualify
+.  fullpath - pointer to buffer to hold full pathname
+-  flen     - size of fullpath
 
 .keywords: system, get, full, path
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcomm.c,v 1.12 1998/03/20 22:47:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcomm.c,v 1.13 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -12,6 +12,8 @@ static char vcid[] = "$Id: gcomm.c,v 1.12 1998/03/20 22:47:23 bsmith Exp bsmith 
    PetscObjectGetComm - Gets the MPI communicator for any PetscObject, 
    regardless of the type.
 
+   Not Collective
+
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. Thus must be
          cast with a (PetscObject), for example, 
@@ -19,8 +21,6 @@ static char vcid[] = "$Id: gcomm.c,v 1.12 1998/03/20 22:47:23 bsmith Exp bsmith 
 
    Output Parameter:
 .  comm - the MPI communicator
-
-   Not Collective
 
 .keywords: object, get, communicator, MPI
 @*/

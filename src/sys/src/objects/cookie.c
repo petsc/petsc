@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cookie.c,v 1.15 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cookie.c,v 1.16 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"  /*I "petsc.h" I*/
@@ -14,10 +14,10 @@ int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_PREDEFINED;
     Repeated calls to this routine with the same variable will 
     not change the cookie. 
 
+    Not Collective
+
     Output Parameter:
 .   cookie - the cookie you have been assigned
-
-     Not Collective
 
     Note:
     The initial cookie variable MUST be set to zero on the

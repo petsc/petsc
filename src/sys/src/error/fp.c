@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.48 1998/04/26 03:01:29 bsmith Exp balay $";
+static char vcid[] = "$Id: fp.c,v 1.49 1998/04/27 18:52:22 balay Exp curfman $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -64,13 +64,13 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
    PetscSetFPTrap - Enables traps/exceptions on common floating point errors.
                     This option may not work on certain machines.
 
+   Not Collective
+
    Input Parameters:
 .  flag - PETSC_FP_TRAP_ON, PETSC_FP_TRAP_OFF.
 
-   Not Collective
-
    Options Database Keys:
-$  -fp_trap - turns on floating point trapping
+.  -fp_trap - Activates floating point trapping
 
    Description:
    On systems that support it, this routine causes floating point
@@ -79,8 +79,7 @@ $  -fp_trap - turns on floating point trapping
 
    Caution:
    On certain machines, in particular the IBM rs6000, floating point 
-   trapping is VERY slow.
-
+   trapping is VERY slow!
 
 .keywords: floating point trap, overflow, divide-by-zero, invalid-operand
 @*/

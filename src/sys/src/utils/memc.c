@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.43 1997/12/12 19:37:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.44 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -31,14 +31,14 @@ static char vcid[] = "$Id: memc.c,v 1.43 1997/12/12 19:37:06 bsmith Exp bsmith $
    beginning at location a. The two memory regions CANNOT overlap, use
    PetscMemmove() in that case.
 
+   Not Collective
+
    Input Parameters:
-.  b - pointer to initial memory space
-.  n - length (in bytes) of space to copy
++  b - pointer to initial memory space
+-  n - length (in bytes) of space to copy
 
    Output Parameter:
 .  a - pointer to copy space
-
-   Not Collective
 
    Note:
    This routine is analogous to memcpy().
@@ -67,16 +67,17 @@ int PetscMemcpy(void *a,void *b,int n)
 /*@C
    PetscBitMemcpy - Copies an amount of data. This can include bit data.
 
+   Not Collective
+
    Input Parameters:
-.  b - pointer to initial memory space
++  b - pointer to initial memory space
 .  bi - offset of initial memory space (in elementary chunk sizes)
 .  bs - length (in elementary chunk sizes) of space to copy
-.  dtype - datatype, for example, PETSC_INT, PETSC_DOUBLE, PETSC_LOGICAL
+-  dtype - datatype, for example, PETSC_INT, PETSC_DOUBLE, PETSC_LOGICAL
 
-.  a - pointer to result memory space
-.  ai - offset of result memory space (in elementary chunk sizes)
-
-   Not Collective
+   Output Parameters:
++  a - pointer to result memory space
+-  ai - offset of result memory space (in elementary chunk sizes)
 
    Note:
    This routine is analogous to PetscMemcpy(), except when the data type is 
@@ -114,11 +115,11 @@ int PetscBitMemcpy(void *a,int ai,void *b,int bi,int bs,PetscDataType dtype)
 /*@C
    PetscMemzero - Zeros the specified memory.
 
-   Input Parameters:
-.  a - pointer to beginning memory location
-.  n - length (in bytes) of memory to initialize
-
    Not Collective
+
+   Input Parameters:
++  a - pointer to beginning memory location
+-  n - length (in bytes) of memory to initialize
 
 .keywords: Petsc, zero, initialize, memory
 
@@ -140,18 +141,18 @@ int PetscMemzero(void *a,int n)
 /*@C
    PetscMemcmp - Compares two byte streams in memory.
 
+   Not Collective
+
    Input Parameters:
-.  str1 - Pointer to the first byte stream
++  str1 - Pointer to the first byte stream
 .  str2 - Pointer to the second byte stream
-.  len  - The length of the byte stream
+-  len  - The length of the byte stream
          (both str1 and str2 are assumed to be of length 'len')
 
    Output Parameters:
 .  returns integer less than, equal to, or 
    greater than 0, according to whether str11 is 
    less than, equal to, or greater than str2.
-
-   Not Collective
 
    Note: 
    This routine is anologous to memcmp()
@@ -172,14 +173,14 @@ int PetscMemcmp(void * str1, void *str2, int len)
    beginning at location a. Copying  between regions that overlap will
    take place correctly.
 
+   Not Collective
+
    Input Parameters:
-.  b - pointer to initial memory space
-.  n - length (in bytes) of space to copy
++  b - pointer to initial memory space
+-  n - length (in bytes) of space to copy
 
    Output Parameter:
 .  a - pointer to copy space
-
-   Not Collective
 
    Note:
    This routine is analogous to memmove().

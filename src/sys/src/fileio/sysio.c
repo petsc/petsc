@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.36 1998/01/27 13:58:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.37 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -122,15 +122,15 @@ int PetscByteSwapDouble(double *buff,int n)
 /*@C
    PetscBinaryRead - Reads from a binary file.
 
+   Not Collective
+
    Input Parameters:
-.  fd - the file
++  fd - the file
 .  n  - the number of items to read 
-.  type - the type of items to read (PETSC_INT or PETSC_SCALAR)
+-  type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
    Output Parameters:
 .  p - the buffer
-
-   Not Collective
 
    Notes: 
    PetscBinaryRead() uses byte swapping to work on all machines.
@@ -214,13 +214,13 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 /*@C
    PetscBinaryWrite - Writes to a binary file.
 
+   Not Collective
+
    Input Parameters:
-.  fd   - the file
++  fd   - the file
 .  p    - the buffer
 .  n    - the number of items to write
-.  type - the type of items to read (PETSC_INT or PETSC_SCALAR)
-
-   Not Collective
+-  type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
    Notes: 
    PetscBinaryWrite() uses byte swapping to work on all machines.
@@ -310,14 +310,14 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 /*@C
    PetscBinaryOpen - Opens a PETSc binary file.
 
+   Not Collective
+
    Input Parameters:
-.  name - filename
-.  type - type of binary file, on of BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE
++  name - filename
+-  type - type of binary file, on of BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE
 
    Output Parameter:
 .  fd - the file
-
-   Not Collective
 
 .keywords: binary, output, write
 
@@ -363,10 +363,10 @@ int PetscBinaryOpen(char *name,int type,int *fd)
 /*@C
    PetscBinaryClose - Closes a PETSc binary file.
 
+   Not Collective
+
    Output Parameter:
 .  fd - the file
-
-   Not Collective
 
 .keywords: binary, output, write
 
@@ -385,15 +385,15 @@ int PetscBinaryClose(int fd)
 /*@C
    PetscBinarySeek - Moves the file pointer on a PETSc binary file.
 
+   Not Collective
+
    Output Parameter:
-.  fd - the file
++  fd - the file
 .  whence - if BINARY_SEEK_SET then size is an absolute location in the file
             if BINARY_SEEK_CUR then size is offset from current location
             if BINARY_SEEK_END then size is offset from end of file
-.  size - number of bytes to move. Use PETSC_INT_SIZE, BINARY_SCALAR_SIZE,
-          etc in your calculation rather then sizeof() to compute byte lengths.
-
-   Not Collective
+-  size - number of bytes to move. Use PETSC_INT_SIZE, BINARY_SCALAR_SIZE,
+            etc. in your calculation rather than sizeof() to compute byte lengths.
 
    Notes: 
    Integers are stored on the file as 32 long, regardless of whether

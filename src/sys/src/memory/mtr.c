@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.105 1998/04/21 15:08:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.106 1998/04/27 18:51:22 bsmith Exp curfman $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -388,12 +388,12 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
 /*@
     PetscTrSpace - Returns space statistics.
    
-    Output Parameters:
-.   space - number of bytes currently allocated
-.   frags - number of blocks currently allocated
-.   maxs - maximum number of bytes ever allocated
-
     Not Collective
+
+    Output Parameters:
++   space - number of bytes currently allocated
+.   frags - number of blocks currently allocated
+-   maxs - maximum number of bytes ever allocated
 
 .keywords: memory, allocation, tracing, space, statistics
 
@@ -425,7 +425,8 @@ int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
    Options Database Key:
 .  -trdump - Dumps unfreed memory during call to PetscFinalize()
 
-   Notes: The calling sequence in Fortran is PetscTrDump(integer ierr)
+   Fortran Note:
+   The calling sequence in Fortran is PetscTrDump(integer ierr)
 
 .keywords: memory, allocation, tracing, space, statistics
 
@@ -477,10 +478,10 @@ int PetscTrLog(void)
     PetscTrLogDump - Dumps the log of all calls to malloc; also calls 
     PetscGetResidentSetSize().
 
-    Input Parameters:
-.   fp - file pointer; or PETSC_NULL
-
     Collective on PETSC_COMM_WORLD
+
+    Input Parameter:
+.   fp - file pointer; or PETSC_NULL
 
     Options Database Key:
 .  -trmalloc_log - Activates PetscTrLog() and PetscTrLogDump()
@@ -589,11 +590,11 @@ typedef union { long l[2]; double d; } NANDouble;
 /*@
    PetscInitializeNans - Intialize certain memory locations with NANs.
 
-   Input parameters:
-.  p   - pointer to data
-.  n   - length of data (in Scalars)
-
    Not Collective
+
+   Input parameters:
++  p   - pointer to data
+-  n   - length of data (in Scalars)
 
    Options Database Key:
 .  -trmalloc_nan - Activates PetscInitializeLargeInts() and PetscInitializeNans()
@@ -640,11 +641,11 @@ int PetscInitializeNans(Scalar *p,int n )
    PetscInitializeLargeInts - Intializes an array of integers
    with very large values.
 
-   Input Parameters:
-.  p   - pointer to data
-.  n   - length of data (in ints)
-
    Not Collective
+
+   Input Parameters:
++  p   - pointer to data
+-  n   - length of data (in ints)
 
    Options Database Key:
 .  -trmalloc_nan - Activates PetscInitializeLargeInts() and PetscInitializeNans()

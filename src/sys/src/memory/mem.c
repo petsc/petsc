@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.28 1998/04/26 03:14:59 bsmith Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.29 1998/04/26 21:27:33 balay Exp curfman $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -19,13 +19,13 @@ static char vcid[] = "$Id: mem.c,v 1.28 1998/04/26 03:14:59 bsmith Exp balay $";
    PetscGetResidentSetSize - Returns the maximum resident set size (memory used)
    for the program.
 
+   Not Collective
+
    Output Parameter:
    mem - memory usage in bytes
 
-   Not Collective
-
    Options Database Key:
-.    -trmalloc_log
+.  -trmalloc_log - Activate logging of memory usage
 
    Notes:
    The memory usage reported here includes all Fortran arrays 

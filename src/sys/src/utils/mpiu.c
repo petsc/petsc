@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.82 1998/03/23 21:18:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.83 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
       Some PETSc utilites
@@ -126,21 +126,23 @@ static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 /*@C
    PetscSequentialPhaseBegin - Begins a sequential section of code.  
 
-   Input Parameters:
-.  comm - Communicator to sequentialize.  
-.  ng   - Number in processor group.  This many processes are allowed to execute
-   at the same time (usually 1)
-
    Collective on MPI_Comm
+
+   Input Parameters:
++  comm - Communicator to sequentialize.  
+-  ng   - Number in processor group.  This many processes are allowed to execute
+   at the same time (usually 1)
 
    Notes:
    PetscSequentialPhaseBegin() and PetscSequentialPhaseEnd() provide a
    way to force a section of code to be executed by the processes in
    rank order.  Typically, this is done with
-$  PetscSequentialPhaseBegin( comm, 1 );
-$  <code to be executed sequentially>
-$  PetscSequentialPhaseEnd( comm, 1 );
-$
+.vb
+      PetscSequentialPhaseBegin( comm, 1 );
+      <code to be executed sequentially>
+      PetscSequentialPhaseEnd( comm, 1 );
+.ve
+
    Often, the sequential code contains output statements (e.g., printf) to
    be executed.  Note that you may need to flush the I/O buffers before
    calling PetscSequentialPhaseEnd().  Also, note that some systems do
@@ -179,12 +181,12 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 /*@C
    PetscSequentialPhaseEnd - Ends a sequential section of code.
 
-   Input Parameters:
-.  comm - Communicator to sequentialize.  
-.  ng   - Number in processor group.  This many processes are allowed to execute
-   at the same time (usually 1)
-
    Collective on MPI_Comm
+
+   Input Parameters:
++  comm - Communicator to sequentialize.  
+-  ng   - Number in processor group.  This many processes are allowed to execute
+   at the same time (usually 1)
 
    Notes:
    See PetscSequentialPhaseBegin() for more details.
@@ -253,15 +255,14 @@ int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
     number of times.  This tag should only be used with the current object's
     communicator; do NOT use it with any other MPI communicator.
 
+    Collective on PetscObject
+
     Input Parameter:
-.   obj - the PETSc object
-         Thus must be cast with a (PetscObject), for example, 
+.   obj - the PETSc object; this must be cast with a (PetscObject), for example, 
          PetscObjectGetNewTag((PetscObject) mat,&tag);
 
     Output Parameter:
 .   tag - the new tag
-
-    Collective on PetscObject
 
 .keywords: object, get, new, tag
 
@@ -290,15 +291,14 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
     processors that share the object MUST call this routine EXACTLY the same
     number of times. 
 
+    Collective on PetscObject
+
     Input Parameter:
-.   obj - the PETSc object
-         Thus must be cast with a (PetscObject), for example, 
-         PetscObjectRestoreNewTag((PetscObject) mat,&tag);
+.   obj - the PETSc object; this must be cast with a (PetscObject), for example, 
+          PetscObjectRestoreNewTag((PetscObject) mat,&tag);
 
     Output Parameter:
 .   tag - the new tag
-
-    Collective on PetscObject
 
 .keywords: object, restore, new, tag
 

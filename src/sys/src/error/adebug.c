@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.75 1998/04/13 17:30:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.76 1998/04/26 01:01:57 bsmith Exp curfman $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -24,21 +24,21 @@ static int   Xterm     = 1;
 /*@C
    PetscSetDebugger - Sets options associated with the debugger.
 
+   Not Collective
+
    Input Parameters:
-.  debugger - name of debugger, which should be in your path,
++  debugger - name of debugger, which should be in your path,
               usually "dbx", "gdb", or "xxgdb".  Also, HP-UX
               supports "xdb", and IBM rs6000 supports "xldb".
 
-.   xterm - flag to indicate debugger window, set to one of:
-$     1 to indicate debugger should be started in a new xterm
-$     0 to start debugger in initial window (zero makes no 
-.           sense when using more than one processor.)
-.   display - name of display for opening xterm, or null.
+.  xterm - flag to indicate debugger window, set to either 1 (to indicate
+            debugger should be started in a new xterm) or 0 (to start debugger
+            in initial window (the option 0 makes no sense when using more
+            than one processor.)
+-  display - name of display for opening xterm, or null.
 
-    Not Collective
-
-    Fortran Note:
-    This routine is not supported in Fortran.
+   Fortran Note:
+   This routine is not supported in Fortran.
 
 .keywords: Set, debugger, options
 
@@ -286,21 +286,21 @@ int PetscAttachDebugger(void)
    a debugger to a running process when an error is detected.
    This routine is useful for examining variables, etc. 
 
+   Not Collective
+
    Input Parameters:
-.  line - the line number of the error (indicated by __LINE__)
++  line - the line number of the error (indicated by __LINE__)
 .  fun - function where error occured (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
 .  message - an error text string, usually just printed to the screen
 .  number - the generic error number
 .  p - the specific error number
-.  ctx - error handler context
-
-   Not Collective
+-  ctx - error handler context
 
    Options Database Keys:
-$   -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb]
-$       [-display name]
+.  -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name] - Activates
+   debugger attachment
 
    Notes:
    By default the GNU debugger, gdb, is used.  Alternatives are dbx and

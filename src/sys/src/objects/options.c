@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.186 1998/04/22 14:24:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.187 1998/04/26 03:31:15 bsmith Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -136,10 +136,10 @@ double PetscCompareTolerance = 1.e-10;
    PetscCompareInt - Compares integers while running with PETSc's incremental
    debugger.
 
+   Collective on PETSC_COMM_WORLD
+
    Input Parameter:
 .  d - integer to compare
-
-   Collective on PETSC_COMM_WORLD
 
    Options Database Key:
 .  -compare - Activates PetscCompareDouble(), PetscCompareInt(), and PetscCompareScalar()
@@ -164,10 +164,10 @@ int PetscCompareInt(int d)
    PetscCompareDouble - Compares doubles while running with PETSc's incremental
    debugger.
 
+   Collective on PETSC_COMM_WORLD
+
    Input Parameter:
 .  d - double precision number to compare
-
-   Collective on PETSC_COMM_WORLD
 
    Options Database Key:
 .  -compare - Activates PetscCompareDouble(), PetscCompareInt(), and PetscCompareScalar()
@@ -195,10 +195,10 @@ int PetscCompareDouble(double d)
    PetscCompareScalar - Compares scalars while running with PETSc's incremental
    debugger.
 
+   Collective on PETSC_COMM_WORLD
+
    Input Parameter:
 .  d - scalar to compare
-
-   Collective on PETSC_COMM_WORLD
 
    Options Database Key:
 .  -compare - Activates PetscCompareDouble(), PetscCompareInt(), and PetscCompareScalar()
@@ -326,18 +326,35 @@ int PetscInitializeNoArguments(void)
 #define __FUNC__ "PetscInitialize"
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI. 
-   PetscInitialize calls MPI_Init() if that has yet to be called,
+   PetscInitialize() calls MPI_Init() if that has yet to be called,
    so this routine should always be called near the beginning of 
    your program -- usually the very first line! 
 
+   Collective on MPI_COMM_WORLD or PETSC_COMM_WORLD if it has been set
+
    Input Parameters:
-.  argc - count of number of command line arguments
++  argc - count of number of command line arguments
 .  args - the command line arguments
 .  file - [optional] PETSc database file, defaults to ~username/.petscrc
           (use PETSC_NULL for default)
-.  help - [optional] Help message to print, use PETSC_NULL for no message
+-  help - [optional] Help message to print, use PETSC_NULL for no message
 
-   Collective on MPI_COMM_WORLD or PETSC_COMM_WORLD if it has been set
+   Options Database Keys:
++  -start_in_debugger [noxterm,dbx,xdb,...] - Starts program in debugger
+.  -debugger_nodes [node1,node2,...] - Indicates nodes to start in debugger
+.  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
+.  -trmalloc - Indicates use of PETSc error-checking malloc
+.  -trmalloc_off - Indicates not to use error-checking malloc
+.  -fp_trap - Stops on floating point exceptions (Note that on the
+              IBM RS6000 this slows code by at least a factor of 10.)
+-  -no_signal_handler - Indicates not to trap error signals
+
+   Options Database Keys for Profiling:
+   See the 'Profiling' chapter of the users manual for details.
+.  -log_trace [filename] - Print traces of all PETSc calls
+        to the screen (useful to determine where a program
+        hangs without running in the debugger).  See PLogTraceBegin().
+.  -log_info - Prints verbose information to the screen
 
    Notes:
    If for some reason you must call MPI_Init() separately, call
@@ -347,8 +364,8 @@ int PetscInitializeNoArguments(void)
    In Fortran this routine has the format
 $       call PetscInitialize(file,ierr)
 
-.   ierr - error return code
-.   file - [optional] PETSc database file name, defaults to 
++   ierr - error return code
+-   file - [optional] PETSc database file name, defaults to 
            ~username/.petscrc (use PETSC_NULL_CHARACTER for default)
            
    Important Fortran Note:
@@ -356,27 +373,10 @@ $       call PetscInitialize(file,ierr)
    null character string; you CANNOT just use PETSC_NULL as 
    in the C version.  See the users manual for details.
 
-   Options Database Keys:
-.  -start_in_debugger [noxterm,dbx,xdb,...] - start program in debugger
-.  -debugger_nodes [node1,node2,...] - nodes to start in debugger
-.  -debugger_pause [sleeptime] (in seconds) - pause debugger
-.  -trmalloc - use PETSc error-checking malloc
-.  -trmalloc_off - don't use error-checking malloc
-.  -no_signal_handler - do not trap error signals
-.  -fp_trap - stop on floating point exceptions (Note that on the
-              IBM RS6000 this slows code by at least a factor of 10.)
-
-   Options Database Keys for Profiling:
-   See the 'Profiling' chapter of the users manual for details.
-.  -log_trace [filename] - print traces of all PETSc calls
-        to the screen (useful to determine where a program
-        hangs without running in the debugger).  See
-        PLogTraceBegin().
-.  -log_info - print verbose information to the screen.
 
 .keywords: initialize, options, database, startup
 
-.seealso: PetscFinalize()
+.seealso: PetscFinalize(), PetscInitializeFortran()
 @*/
 int PetscInitialize(int *argc,char ***args,char *file,char *help)
 {
@@ -470,20 +470,19 @@ extern int DLRegisterDestroyAll();
    Collective on PETSC_COMM_WORLD
 
    Options Database Keys:
-.  -optionstable - Calls OptionsPrint()
++  -optionstable - Calls OptionsPrint()
 .  -optionsleft - Prints unused options that remain in the database
 .  -mpidump - Calls PetscMPIDump()
 .  -trdump - Calls PetscTrDump()
 .  -trinfo - Prints total memory usage
-.  -trmalloc_log - Prints summary of memory usage
 .  -trdebug - Calls malloc_debug(2) to activate memory
         allocation diagnostics (used by PETSC_ARCH=sun4, 
         BOPT=[g,g_c++,g_complex] only!)
+-  -trmalloc_log - Prints summary of memory usage
 
    Options Database Keys for Profiling:
-   See the 'Profiling' chapter of the users manual for
-   details.
-.  -log_summary [filename] - Prints summary of flop and timing
+   See the 'Profiling' chapter of the users manual for details.
++  -log_summary [filename] - Prints summary of flop and timing
         information to screen. If the filename is specified the
         summary is written to the file. (for code compiled with 
         USE_PETSC_LOG).  See PLogPrintSummary().
@@ -493,7 +492,7 @@ extern int DLRegisterDestroyAll();
         code compiled with USE_PETSC_LOG).  See PLogDump().
 .  -log_sync - Log the synchronization in scatters, inner products
         and norms
-.  -log_mpe [filename] - Creates a logfile viewable by the 
+-  -log_mpe [filename] - Creates a logfile viewable by the 
       utility Upshot/Nupshot (in MPICH distribution)
 
    Note:
@@ -1002,13 +1001,13 @@ int OptionsCheckInitial_Private(void)
 /*@C
     PetscGetProgramName - Gets the name of the running program. 
 
+    Not Collective
+
     Input Parameter:
 .   len - length of the string name
 
     Output Parameter:
 .   name - the name of the running program
-
-    Not Collective
 
     Notes:
     The name of the program is copied into the user-provided character
@@ -1185,12 +1184,12 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
 #define __FUNC__ "OptionsPrint"
 /*@C
    OptionsPrint - Prints the options that have been loaded. This is
-        useful for debugging purposes.
+   useful for debugging purposes.
+
+   Collective on PETSC_COMM_WORLD
 
    Input Parameter:
 .  FILE fd - location to print options (usually stdout or stderr)
-
-   Collective on PETSC_COMM_WORLD
 
    Options Database Key:
 .  -optionstable - Activates OptionsPrint() within PetscFinalize()
@@ -1254,12 +1253,12 @@ static int OptionsDestroy_Private(void)
    OptionsSetValue - Sets an option name-value pair in the options 
    database, overriding whatever is already present.
 
+   Not collective, but setting values on certain processors could cause problems
+   for parallel objects looking for options.
+
    Input Parameters:
 .  name - name of option, this SHOULD have the - prepended
 .  value - the option value (not used for all options)
-
-   Not Collective, but setting values on certain processors could cause problems
-     for parallel objects looking for options.
 
    Note:
    Only some options have values associated with them, such as
@@ -1339,11 +1338,11 @@ int OptionsSetValue(char *name,char *value)
    OptionsClearValue - Clears an option name-value pair in the options 
    database, overriding whatever is already present.
 
-   Input Parameters:
-.  name - name of option, this SHOULD have the - prepended
-
    Not Collective, but setting values on certain processors could cause problems
-     for parallel objects looking for options.
+   for parallel objects looking for options.
+
+   Input Parameter:
+.  name - name of option, this SHOULD have the - prepended
 
 .keywords: options, database, set, value, clear
 
@@ -1443,12 +1442,12 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
 /*@C
    OptionsReject - Generates an error if a certain option is given.
 
-   Input Parameters:
-.  name - the option one is seeking 
-.  mess - error message 
-
    Not Collective, but setting values on certain processors could cause problems
-     for parallel objects looking for options.
+   for parallel objects looking for options.
+
+   Input Parameters:
++  name - the option one is seeking 
+-  mess - error message 
 
 .keywords: options, database, has, name
 
@@ -1474,15 +1473,14 @@ int OptionsReject(char* name,char *mess)
 /*@C
    OptionsHasName - Determines whether a certain option is given in the database.
 
-   Input Parameters:
-.  name - the option one is seeking 
-.  pre - string to prepend to the name or PETSC_NULL
-
-   Output Parameters:
-.   flg - 1 if found else 0.
-
    Not Collective
 
+   Input Parameters:
++  name - the option one is seeking 
+-  pre - string to prepend to the name or PETSC_NULL
+
+   Output Parameters:
+.  flg - 1 if found else 0.
 
 .keywords: options, database, has, name
 
@@ -1502,18 +1500,17 @@ int OptionsHasName(char* pre,char *name,int *flg)
 #undef __FUNC__  
 #define __FUNC__ "OptionsGetInt"
 /*@C
-   OptionsGetInt - Gets the integer value for a particular option in the 
-                   database.
-
-   Input Parameters:
-.  name - the option one is seeking
-.  pre - the string to prepend to the name or PETSC_NULL
-
-   Output Parameter:
-.  ivalue - the integer value to return
-.  flg - 1 if found, else 0
+   OptionsGetInt - Gets the integer value for a particular option in the database.
 
    Not Collective
+
+   Input Parameters:
++  name - the option one is seeking
+-  pre - the string to prepend to the name or PETSC_NULL
+
+   Output Parameter:
++  ivalue - the integer value to return
+-  flg - 1 if found, else 0
 
 .keywords: options, database, get, int
 
@@ -1542,15 +1539,15 @@ int OptionsGetInt(char*pre,char *name,int *ivalue,int *flg)
    OptionsGetDouble - Gets the double precision value for a particular 
    option in the database.
 
+   Not Collective
+
    Input Parameters:
-.  name - the option one is seeking
-.  pre - string to prepend to each name or PETSC_NULL
++  name - the option one is seeking
+-  pre - string to prepend to each name or PETSC_NULL
 
    Output Parameter:
-.  dvalue - the double value to return
-.  flg - 1 if found, 0 if not found
-
-   Not Collective
++  dvalue - the double value to return
+-  flg - 1 if found, 0 if not found
 
 .keywords: options, database, get, double
 
@@ -1580,15 +1577,15 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue,int *flg)
    option in the database. At the moment can get only a Scalar with 
    0 imaginary part.
 
+   Not Collective
+
    Input Parameters:
-.  name - the option one is seeking
-.  pre - string to prepend to each name or PETSC_NULL
++  name - the option one is seeking
+-  pre - string to prepend to each name or PETSC_NULL
 
    Output Parameter:
-.  dvalue - the double value to return
-.  flg - 1 if found, else 0
-
-   Not Collective
++  dvalue - the double value to return
+-  flg - 1 if found, else 0
 
 .keywords: options, database, get, double
 
@@ -1618,17 +1615,17 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue,int *flg)
    particular option in the database.  The values must be separated with 
    commas with no intervening spaces.
 
+   Not Collective
+
    Input Parameters:
-.  name - the option one is seeking
++  name - the option one is seeking
 .  pre - string to prepend to each name or PETSC_NULL
-.  nmax - maximum number of values to retrieve
+-  nmax - maximum number of values to retrieve
 
    Output Parameters:
-.  dvalue - the double value to return
++  dvalue - the double value to return
 .  nmax - actual number of values retreived
-.  flg - 1 if found, else 0
-
-   Not Collective
+-  flg - 1 if found, else 0
 
 .keywords: options, database, get, double
 
@@ -1671,17 +1668,17 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
    option in the database.  The values must be separated with commas with 
    no intervening spaces. 
 
+   Not Collective
+
    Input Parameters:
-.  name - the option one is seeking
++  name - the option one is seeking
 .  pre - string to prepend to each name or PETSC_NULL
-.  nmax - maximum number of values to retrieve
+-  nmax - maximum number of values to retrieve
 
    Output Parameter:
-.  dvalue - the integer values to return
++  dvalue - the integer values to return
 .  nmax - actual number of values retreived
-.  flg - 1 if found, else 0
-
-   Not Collective
+-  flg - 1 if found, else 0
 
 .keywords: options, database, get, double
 
@@ -1723,23 +1720,25 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
    OptionsGetString - Gets the string value for a particular option in
    the database.
 
-   Input Parameters:
-.  name - the option one is seeking
-.  len - maximum string length
-.  pre - string to prepend to name or PETSC_NULL
-
-   Output Parameter:
-.  string - location to copy string
-.  flg - 1 if found, else 0
-
    Not Collective
+
+   Input Parameters:
++  name - the option one is seeking
+.  len - maximum string length
+-  pre - string to prepend to name or PETSC_NULL
+
+   Output Parameters:
++  string - location to copy string
+-  flg - 1 if found, else 0
 
    Fortran Note:
    The Fortran interface is slightly different from the C/C++
    interface (len is not used).  Sample usage in Fortran follows
-$      character *20 string
-$      integer   flg, ierr
-$      call OptionsGetString(PETSC_NULL_CHARACTER,'-s',string,flg,ierr)
+.vb
+      character *20 string
+      integer   flg, ierr
+      call OptionsGetString(PETSC_NULL_CHARACTER,'-s',string,flg,ierr)
+.ve
 
 .keywords: options, database, get, string
 
@@ -1766,16 +1765,16 @@ int OptionsGetString(char *pre,char *name,char *string,int len, int *flg)
    option in the database. The values must be separated with commas with 
    no intervening spaces. 
 
+   Not Collective
+
    Input Parameters:
-.  name - the option one is seeking
++  name - the option one is seeking
 .  pre - string to prepend to name or PETSC_NULL
-.  nmax - maximum number of strings
+-  nmax - maximum number of strings
 
    Output Parameter:
-.  strings - location to copy strings
-.  flg - 1 if found, else 0
-
-   Not Collective
++  strings - location to copy strings
+-  flg - 1 if found, else 0
 
    Notes: 
    The user is responsible for deallocating the strings that are

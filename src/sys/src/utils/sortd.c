@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortd.c,v 1.13 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sortd.c,v 1.14 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 
 /*
@@ -50,11 +50,11 @@ static int PetsciDqsort(double *v,int right)
 /*@
    PetscSortDouble - Sorts an array of doubles in place in increasing order.
 
-   Input Parameters:
-.  n  - number of values
-.  v  - array of doubles
-
    Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  v  - array of doubles
 
 .keywords: sort, double
 

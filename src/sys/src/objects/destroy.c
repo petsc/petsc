@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: destroy.c,v 1.39 1998/04/03 23:13:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: destroy.c,v 1.40 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -11,12 +11,12 @@ static char vcid[] = "$Id: destroy.c,v 1.39 1998/04/03 23:13:50 bsmith Exp bsmit
 /*@C
    PetscObjectDestroy - Destroys any PetscObject, regardless of the type. 
 
-   Input Parameters:
+   Collective on PetscObject
+
+   Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectDestroy((PetscObject) mat);
-
-   Collective on PetscObject
 
 .keywords: object, destroy
 @*/
@@ -40,13 +40,13 @@ int PetscObjectDestroy(PetscObject obj)
 /*@C
    PetscObjectView - Views any PetscObject, regardless of the type. 
 
+   Collective on PetscObject, unless Viewer is sequential (e.g., VIEWER_STDOUT_SELF)
+
    Input Parameters:
-.  obj - any PETSc object, for example a Vec, Mat or KSP.
++  obj - any PETSc object, for example a Vec, Mat or KSP.
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectView((PetscObject) mat,viewer);
-.  viewer - any PETSc viewer
-
-   Collective on PetscObject, unless Viewer is VIEWER_STDOUT_SELF
+-  viewer - any PETSc viewer
 
 .keywords: object, view
 @*/

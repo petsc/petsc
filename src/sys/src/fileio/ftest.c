@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ftest.c,v 1.12 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ftest.c,v 1.13 1998/01/06 20:09:29 bsmith Exp curfman $";
 #endif
 /*
       Code for manipulating files.
@@ -12,11 +12,11 @@ static char vcid[] = "$Id: ftest.c,v 1.12 1997/10/19 03:23:45 bsmith Exp bsmith 
   PetscTestFile - Test for a file existing with a specified mode.
 
   Input Parameters:
-. fname - name of file
-. mode  - mode.  One of 'r', 'w', 'x'
++ fname - name of file
+- mode  - mode.  One of 'r', 'w', 'x'
 
-  Returns:
-  1 if file exists with given mode, 0 otherwise.
+  Output Parameter:
+  flag - PETSC_TRUE if file exists with given mode, PETSC_FALSE otherwise.
 +*/
 #if defined (PARCH_nt)
 int PetscTestFile( char *fname, char mode,PetscTruth *flag)

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorti.c,v 1.13 1998/03/12 23:16:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorti.c,v 1.14 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 
 /*
@@ -221,11 +221,11 @@ static int PetsciIqsort(int *v,int right)
 /*@
    PetscSortInt - Sorts an array of integers in place in increasing order.
 
-   Input Parameters:
-.  n  - number of values
-.  i  - array of integers
-
    Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  i  - array of integers
 
 .keywords: sort, integer
 

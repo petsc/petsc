@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortip.c,v 1.20 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sortip.c,v 1.21 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 
 /*
@@ -49,12 +49,12 @@ static int PetsciIqsortPerm(int *v,int *vdx,int right)
    PetscSortIntWithPermutation - Computes the permutation of values that gives 
    a sorted sequence.
 
-   Input Parameters:
-.  n  - number of values to sort
-.  i  - values to sort
-.  idx - permutation array.  Must be initialized to 0:n-1 on input.
-
    Not Collective
+
+   Input Parameters:
++  n  - number of values to sort
+.  i  - values to sort
+-  idx - permutation array.  Must be initialized to 0:n-1 on input.
 
    Notes: 
    i is unchanged on output.
@@ -119,12 +119,12 @@ static int PetsciDqsortPerm(double *v,int *vdx,int right)
    PetscSortDoubleWithPermutation - Computes the permutation of values that gives 
    a sorted sequence.
 
-   Input Parameters:
-.  n  - number of values to sort
-.  i  - values to sort
-.  idx - permutation array.  Must be initialized to 0:n-1 on input.
-
    Not Collective
+
+   Input Parameters:
++  n  - number of values to sort
+.  i  - values to sort
+-  idx - permutation array.  Must be initialized to 0:n-1 on input.
 
    Notes: 
    i is unchanged on output.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcomm.c,v 1.11 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcomm.c,v 1.12 1998/04/13 17:30:26 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -10,10 +10,10 @@ static char vcid[] = "$Id: pcomm.c,v 1.11 1997/12/01 01:53:22 bsmith Exp bsmith 
    PetscSetCommWorld - Sets a communicator to be PETSc's world communicator
    (default is MPI_COMM_WORLD).  Must call BEFORE PetscInitialize().
 
+   Collective on MPI_Comm
+
    Input Parameter:
 .  comm - the communicator
-
-   Collective on MPI_Comm
 
    Note:
    This routine is intended for users who need to initialize PETSc on a
