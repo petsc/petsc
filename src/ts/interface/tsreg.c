@@ -198,6 +198,18 @@ int TSSetFromOptions(TS ts)
       ierr = (*ts->ops->setfromoptions)(ts);CHKERRQ(ierr);
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  /* Handle subobject options */
+  switch(ts->problem_type) {
+  case TS_LINEAR:
+    ierr = SLESSetFromOptions(ts->sles);                                                                  CHKERRQ(ierr);
+    break;
+  case TS_NONLINEAR:
+    ierr = SNESSetFromOptions(ts->snes);                                                                 CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid problem type: %d", ts->problem_type);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -1197,11 +1197,11 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
        We can removed this requirement if necessary by having a global stage numbering and indirection on the stage ID.
        This seems best accomplished by assoicating a communicator with each stage.
   */
+  ierr = MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm);                      CHKERRQ(ierr);
   ierr = PetscMalloc(numStages * sizeof(PetscTruth), &localStageUsed);                                    CHKERRQ(ierr);
   ierr = PetscMalloc(numStages * sizeof(PetscTruth), &stageUsed);                                         CHKERRQ(ierr);
   ierr = PetscMalloc(numStages * sizeof(PetscTruth), &localStageVisible);                                 CHKERRQ(ierr);
   ierr = PetscMalloc(numStages * sizeof(PetscTruth), &stageVisible);                                      CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm);                      CHKERRQ(ierr);
   if (numStages > 0) {
     stageInfo = stageLog->stageInfo;
     for(stage = 0; stage < numStages; stage++) {
