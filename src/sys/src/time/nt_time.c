@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: nt_gnu_time.c,v 1.2 1997/02/21 17:52:23 balay Exp balay $";
+static char vcid[] = "$Id: nt_gnu_time.c,v 1.3 1997/02/21 18:01:05 balay Exp balay $";
 #endif
 
 #include <petsc.h>
@@ -15,7 +15,7 @@ double nt_gnu_time()
   static int    flag = 1;
   int           ierr;
 
-  LARGE_INTEGER StartTime,PerfFreq,CurTime; 
+  static LARGE_INTEGER StartTime,PerfFreq,CurTime; 
   static double SecInTick=0.0;
   
   DWORD dwStartHigh, dwCurHigh;
