@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.30 1995/05/28 17:26:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.31 1995/05/29 13:40:24 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -719,7 +719,7 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
         ierr = MatFreeRowbs_Private(mat,vs->length,vs->col,vs->nz); PCHKERR(ierr);
       }
       /* Note: A->map = mrow->bsmap is freed above */
-      PETSCFREE(A->rows);
+      PFREE(A->rows);
       PFREE(A);
     }
     if (mrow->procinfo) {BSfree_ctx(mrow->procinfo); CHKERRBS(0);}

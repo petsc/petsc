@@ -10,7 +10,6 @@
 /* temporary redefinitions to avoid problems with BlockSolve */
 #define PMALLOC(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
 #define PFREE(a)         (*PetscFree)(a,__LINE__,__FILE__)
-#define PETSCFREE(a)     PFREE(a)
 #define PNEW(a)          (a *) PMALLOC(sizeof(a))
 #define PMEMCPY(a,b,n)   memcpy((char*)(a),(char*)(b),n)
 #define PMEMSET(a,b,n)   memset((char*)(a),(int)(b),n)
