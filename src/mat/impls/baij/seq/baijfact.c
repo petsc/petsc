@@ -12,16 +12,16 @@
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
 {
-  Mat                C = *B;
-  Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
-  IS                 isrow = b->row,isicol = b->icol;
+  Mat            C = *B;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
-  int                *r,*ic,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
-  int                *ajtmpold,*ajtmp,nz,row;
-  int                *diag_offset=b->diag,idx,*ai=a->i,*aj=a->j,*pj;
-  MatScalar          *pv,*v,*rtmp,m1,m2,m3,m4,*pc,*w,*x,x1,x2,x3,x4;
-  MatScalar          p1,p2,p3,p4;
-  MatScalar          *ba = b->a,*aa = a->a;
+  PetscInt       *r,*ic,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
+  PetscInt       *ajtmpold,*ajtmp,nz,row;
+  PetscInt       *diag_offset=b->diag,idx,*ai=a->i,*aj=a->j,*pj;
+  MatScalar      *pv,*v,*rtmp,m1,m2,m3,m4,*pc,*w,*x,x1,x2,x3,x4;
+  MatScalar      p1,p2,p3,p4;
+  MatScalar      *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -100,15 +100,15 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 {
-  Mat                C = *B;
-  Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  Mat            C = *B;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
   PetscErrorCode ierr;
-  int  i,j,n = a->mbs,*bi = b->i,*bj = b->j;
-  int                *ajtmpold,*ajtmp,nz,row;
-  int                *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
-  MatScalar          *pv,*v,*rtmp,*pc,*w,*x;
-  MatScalar          p1,p2,p3,p4,m1,m2,m3,m4,x1,x2,x3,x4;
-  MatScalar          *ba = b->a,*aa = a->a;
+  PetscInt       i,j,n = a->mbs,*bi = b->i,*bj = b->j;
+  PetscInt       *ajtmpold,*ajtmp,nz,row;
+  PetscInt       *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
+  MatScalar      *pv,*v,*rtmp,*pc,*w,*x;
+  MatScalar      p1,p2,p3,p4,m1,m2,m3,m4,x1,x2,x3,x4;
+  MatScalar      *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(4*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
@@ -186,15 +186,15 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_1"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 {
-  Mat                C = *B;
-  Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
-  IS                 isrow = b->row,isicol = b->icol;
+  Mat            C = *B;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
-  int                *r,*ic,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
-  int                *ajtmpold,*ajtmp,nz,row,*ai = a->i,*aj = a->j;
-  int                *diag_offset = b->diag,diag,*pj;
-  MatScalar          *pv,*v,*rtmp,multiplier,*pc;
-  MatScalar          *ba = b->a,*aa = a->a;
+  PetscInt       *r,*ic,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
+  PetscInt       *ajtmpold,*ajtmp,nz,row,*ai = a->i,*aj = a->j;
+  PetscInt       *diag_offset = b->diag,diag,*pj;
+  MatScalar      *pv,*v,*rtmp,multiplier,*pc;
+  MatScalar      *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -255,7 +255,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
-  Mat         C;
+  Mat            C;
 
   PetscFunctionBegin;
   ierr = MatLUFactorSymbolic(A,row,col,info,&C);CHKERRQ(ierr);

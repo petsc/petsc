@@ -9,14 +9,14 @@
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_N"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
 {
-  Mat                C = *B;
-  Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
-  IS                 isrow = b->row,isicol = b->icol;
+  Mat            C = *B;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
-  int                *r,*ic,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
-  int                *ajtmpold,*ajtmp,nz,row,bslog,*ai=a->i,*aj=a->j,k,flg;
-  int                *diag_offset=b->diag,diag,bs=a->bs,bs2 = a->bs2,*v_pivots,*pj;
-  MatScalar          *ba = b->a,*aa = a->a,*pv,*v,*rtmp,*multiplier,*v_work,*pc,*w;
+  PetscInt       *r,*ic,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
+  PetscInt       *ajtmpold,*ajtmp,nz,row,bslog,*ai=a->i,*aj=a->j,k,flg;
+  PetscInt       *diag_offset=b->diag,diag,bs=a->bs,bs2 = a->bs2,*v_pivots,*pj;
+  MatScalar      *ba = b->a,*aa = a->a,*pv,*v,*rtmp,*multiplier,*v_work,*pc,*w;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -24,9 +24,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   ierr = PetscMalloc(bs2*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*(n+1)*sizeof(MatScalar));CHKERRQ(ierr);
   /* generate work space needed by dense LU factorization */
-  ierr       = PetscMalloc(bs*sizeof(int) + (bs+bs2)*sizeof(MatScalar),&v_work);CHKERRQ(ierr);
+  ierr       = PetscMalloc(bs*sizeof(PetscInt) + (bs+bs2)*sizeof(MatScalar),&v_work);CHKERRQ(ierr);
   multiplier = v_work + bs;
-  v_pivots   = (int*)(multiplier + bs2);
+  v_pivots   = (PetscInt*)(multiplier + bs2);
 
   /* flops in while loop */
   bslog = 2*bs*bs2;
