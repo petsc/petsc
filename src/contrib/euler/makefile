@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.21 1997/10/16 03:30:38 curfman Exp keyes $ 
+# $Id: makefile,v 1.22 1997/11/17 17:05:03 curfman Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -13,7 +13,7 @@
 # -----------------------------------------------------------------------
 
 # Argonne Quad machine
-  PETSC_DIR = /home/petsc/petsc-2.0.20
+  PETSC_DIR = /home/petsc/petsc-2.0.21
 #   PETSC_DIR = /ccsthome/petsc/petsc
 # Argonne tmp directories
 #   PETSC_DIR = /tmp/petsc
@@ -122,8 +122,8 @@ ALL: ex1
 # SOURCEH   - all application include files
 #
   SOURCEH_C = user.h 
-  SOURCEH_F = matrixb.h diag.h dt.h varbls.h dvarbls.h param.h ang.h \
-              avctrs.h condi.h consts.h coord.h bc.h es.h freq.h fv.h \
+  SOURCEH_F = matrixb.h diag.h dt.h varbls.h dvarbls.h param.h \
+              ang.h avctrs.h consts.h coord.h bc.h es.h fv.h \
               gs.h init.h sada.h sigma.h wing.h bcimpl.h ibcwork.h \
               aux_fp.h
   SOURCEH   = $(SOURCEH_C) $(SOURCEH_F)
@@ -146,27 +146,15 @@ ex1_alpha: chkopts $(OBJSC) $(OBJSF) $(SOURCEH)
 # -----------------------------------------------------------------------
 
 runex1:
-	-@$(MPIRUN) ex1 -mat_seqbaij -mat_view_info_detailed -pc_type ilu -snes_max_it 14 > ex1_1.tmp 2>&1;	  \
-	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
-	   else echo "Possible problem with ex1_1, diffs above"; fi; \
-	   $(RM) -f ex1_1.tmp
+	-@$(MPIRUN) ex1 -optionsleft > log.3d.me.p1 2>&1;	  \
+	   if (diff output/order2/log.3d.me.p1 log.3d.me.p1) then true; \
+	   else echo "Output differences as above"; 
 
 runex1_2:
-	-@$(MPIRUN) ex1 -pc_type none -snes_max_it 5 -ksp_monitor > ex1_2.tmp 2>&1;	  \
-	   if (diff output/ex1_2.out ex1_2.tmp) then true; \
-	   else echo "Possible problem with ex1_2, diffs above"; fi; \
-	   $(RM) -f ex1_2.tmp
-
-runex1_3:
-	-@$(MPIRUN) ex1 -mat_mpirowbs -mat_view_info_detailed -pc_type ilu -snes_max_it 14 > ex1_1.tmp 2>&1;	  \
-	   if (diff output/ex1_3.out ex1_3.tmp) then true; \
-	   else echo "Possible problem with ex1_3, diffs above"; fi; \
-	   $(RM) -f ex1_3.tmp
-
-runex1_4:
-	   if (diff output/ex1_4.out ex1_4.tmp) then true; \
-	   else echo "Possible problem with ex1_4, diffs above"; fi; \
-	   $(RM) -f ex1_4.tmp
+	-@$(MPIRUN)  ex1 -optionsleft \
+	   -matrix_free -cfl_advance > log.3d.mf.p1 2>&1;	  \
+	   if (diff output/order2/log.3d.mf.p1 log.3d.me.p1) then true; \
+	   else echo "Output differences as above"; 
 
 # original solver (uniprocessor only!)
 # output in file nd.out.5
