@@ -17,7 +17,7 @@
 
 /* -------------------------Sun Sparc Adjustments  ----------------------*/
 #if defined(PARCH_sun4)
-
+#include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
 extern char   *mktemp(char *);
@@ -74,7 +74,7 @@ extern double atof(const char*);
 
 /* ----------------------IBM RS6000 ----------------------------------------*/
 #if defined(PARCH_rs6000)
-
+#include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
 extern char   *mktemp(char *);
@@ -94,7 +94,6 @@ extern int    getrusage(int,struct rusage*);
 }
 
 #else
-extern int    getrusage(int,struct rusage*);
 extern char *mktemp(char *);
 /* strcasecmp() is not in AIX 3.X but is in 4.2 */
 extern int  strcasecmp(const char *, const char *);
@@ -104,7 +103,7 @@ extern int    getrusage(int,struct rusage*);
 
 /* -----------------------freeBSD ------------------------------------------*/
 #if defined(PARCH_freebsd)
-
+#include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
 extern char   *mktemp(char *);
@@ -146,7 +145,7 @@ extern int    atoi(char*);
 
 /* -----------------------SGI IRIX -----------------------------------------*/
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)
-
+#include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
 
@@ -177,7 +176,7 @@ extern int    getrusage(int,struct rusage*);
 /* -----------------------DEC alpha ----------------------------------------*/
 
 #if defined(PARCH_alpha)
-
+#include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
 extern char   *mktemp(char *);

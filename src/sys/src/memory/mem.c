@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.23 1998/04/13 19:44:51 balay Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.24 1998/04/17 20:58:40 balay Exp balay $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
 #include "src/sys/src/files.h"
 
 #if !defined (PARCH_t3d) && !defined(PARCH_nt)
-#include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
 #endif
