@@ -10,7 +10,6 @@ with a user-provided preconditioner.  Input arguments are:\n\
 
 #include "draw.h"
 #include "snes.h"
-#include "petsc.h"
 #include <math.h>
 
 int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
@@ -84,8 +83,7 @@ int main( int argc, char **argv )
   PetscFinalize();
 
   return 0;
-}
-/* --------------------  Evaluate Function F(x) --------------------- */
+}/* --------------------  Evaluate Function F(x) --------------------- */
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
    Scalar *xx, *ff,*FF,d;
@@ -101,16 +99,14 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    }
    ff[n-1] = -xx[n-1] + 1.0;
    return 0;
-}
-/* --------------------  Form initial approximation ----------------- */
+}/* --------------------  Form initial approximation ----------------- */
 int FormInitialGuess(SNES snes,Vec x,void *dummy)
 {
    int    ierr;
    Scalar pfive = .50;
    ierr = VecSet(&pfive,x); CHKERRQ(ierr);
    return 0;
-}
-/* --------------------  Evaluate Jacobian F'(x) -------------------- */
+}/* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /* This routine demonstrates the use of different matrices for the Jacobian 
    and preconditioner */
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,
@@ -149,8 +145,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,
 
   *flag = ALLMAT_SAME_NONZERO_PATTERN;
   return 0;
-}
-/* --------------------  User-defined preconditioner  -------------------- */
+}/* --------------------  User-defined preconditioner  -------------------- */
 /* This routine demonstrates the use of a user-provided preconditioner and
    is intended as a template for customized versions.  This code implements
    just the null preconditioner, which of course is not recommended for

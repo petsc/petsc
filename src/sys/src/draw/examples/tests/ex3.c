@@ -1,7 +1,6 @@
 
 static char help[] = "Plots a simple line graph\n";
 
-#include "petsc.h"
 #include "draw.h"
 #include <math.h>
 
@@ -18,8 +17,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,"-help")) fprintf(stderr,help);
-  OptionsGetInt(0,"-width",&width);
-  OptionsGetInt(0,"-height",&height);
+  OptionsGetInt(0,"-width",&width); OptionsGetInt(0,"-height",&height);
   OptionsGetInt(0,"-n",&n);
   if (OptionsHasName(0,"-nolabels")) {
     xlabel = (char *)0; toplabel = (char *)0;
