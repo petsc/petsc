@@ -201,7 +201,8 @@ typedef char* MPI_Errhandler;
 #define MPI_Keyval_create(copy_fn, delete_fn, keyval,  extra_state) \
        MPI_SUCCESS
 #define MPI_Keyval_free(keyval) MPI_SUCCESS
-#define MPI_Attr_put(comm, keyval,  attribute_val) MPI_SUCCESS
+#define MPI_Attr_put(comm, keyval,  attribute_val) \ 
+        MPID_DUMMY =attribute_val, MPI_SUCCESS
 
 #define MPI_Attr_get(comm, keyval, attribute_val, flag) \
     (*(attribute_val) = &MPID_DUMMY, *(flag) = MPI_SUCCESS ,MPI_SUCCESS)
