@@ -33,6 +33,9 @@ int PetscPLAPACKInitializePackage(char *path) {
     ierr = PLA_Init(comm);                                                                                CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
+#else
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 #endif
 }
 
@@ -53,6 +56,9 @@ int PetscPLAPACKFinalizePackage() {
 
   PetscFunctionBegin;
   ierr = PLA_Finalize();                                                                                  CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#else
+  PetscFunctionBegin;
   PetscFunctionReturn(0);
 #endif
 }
