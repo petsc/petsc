@@ -123,11 +123,19 @@ class Configure(config.base.Configure):
       - Find dlfcn.h and libdl
     Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
-    if not self.framework.archBase.startswith('aix') or self.framework.archBase.startswith('darwin') or  (self.usingMPIUni and not self.framework.argDB.has_key('FC')):
+    if not (self.framework.archBase.startswith('aix') or (self.framework.archBase.startswith('darwin') and not (self.usingMPIUni and not self.framework.argDB.has_key('FC')))):
       useDynamic = self.framework.argDB['enable-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
       self.addDefine('USE_DYNAMIC_LIBRARIES', useDynamic)
       if useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
+
+    #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
+    if self.framework.archBase.startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
+      if self.framework.sharedBlasLapack: bls = 'BLASLAPACK_LIB_SHARED=${BLASLAPACK_LIB}\n'
+      else:                               bls = ''
+      self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', bls+'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
+    else:
+      self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.basic')
 
     # This is really bad
     flag = '-L'
@@ -141,13 +149,6 @@ class Configure(config.base.Configure):
       flag = '-Wl,-R,'
     elif self.framework.archBase.startswith('solaris'):
       flag = '-R'
-    #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
-    if self.framework.archBase.startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
-      if self.framework.sharedBlasLapack: bls = 'BLASLAPACK_LIB_SHARED=${BLASLAPACK_LIB}\n'
-      else:                               bls = ''
-      self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', bls+'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
-    else:
-      self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.basic')
     self.addSubstitution('CLINKER_SLFLAG', flag)
     self.addSubstitution('FLINKER_SLFLAG', flag)
     return
