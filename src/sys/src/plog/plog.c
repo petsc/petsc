@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.198 1998/12/04 23:25:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.199 1999/01/04 21:49:03 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -52,6 +52,8 @@ FILE *PLogInfoFile;
     Options Database Key:
 .   -log_info - Activates PLogInfoAllow()
 
+    Level: developer
+
 .keywords: allow, information, printing, monitoring
 
 .seealso: PLogInfo()
@@ -87,8 +89,11 @@ int PLogInfoAllow(PetscTruth flag,char *filename)
     Input Parameter:
 .   objclass - object class,  e.g., MAT_COOKIE, SNES_COOKIE, etc.
 
-    Notes: One can pass PETSC_NULL to deactive all messages that are not associated
-           with an object.
+    Notes:
+    One can pass PETSC_NULL to deactive all messages that are not associated
+    with an object.
+
+    Level: developer
 
 .seealso: PLogInfoActivateClass(), PLogInfo(), PLogInfoAllow()
 @*/
@@ -119,6 +124,8 @@ int PLogInfoDeactivateClass(int objclass)
 
     Input Parameter:
 .   objclass - object class, e.g., MAT_COOKIE, SNES_COOKIE, etc.
+
+    Level: developer
 
 .seealso: PLogInfoDeactivateClass(), PLogInfo(), PLogInfoAllow()
 @*/
@@ -454,6 +461,8 @@ static PLogDouble  EventsType[10][PLOG_USER_EVENT_HIGH][6];
     The string information (for stage names) is not copied, so the user
     should NOT change any strings specified here.
 
+    Level: intermediate
+
 .seealso: PLogStagePush(), PLogStagePop()
 @*/
 int PLogStageRegister(int stage, const char sname[])
@@ -501,6 +510,8 @@ int PLogStageRegister(int stage, const char sname[])
  
    Notes:  
    Use PLogStageRegister() to register a stage.
+
+   Level: intermediate
 
 .keywords: log, push, stage
 
@@ -555,6 +566,8 @@ int PLogStagePush(int stage)
 
    Notes:  
    Use PLogStageRegister() to register a stage.
+
+   Level: intermediate
 
 .keywords: log, pop, stage
 
@@ -929,6 +942,8 @@ int PLogSet(int (*b)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
    intended for production runs since it logs only flop rates and object
    creation (and shouldn't significantly slow the programs).
 
+   Level: advanced
+
 .keywords: log, all, begin
 
 .seealso: PLogDump(), PLogBegin(), PLogTraceBegin()
@@ -961,6 +976,8 @@ int PLogAllBegin(void)
    Notes:
    This routine should not usually be used by programmers. Instead employ 
    PLogStagePush() and PLogStagePop().
+
+   Level: developer
 
 .keywords: log, destroy
 
@@ -1008,6 +1025,8 @@ int PLogDestroy(void)
       PetscFinalize();
 .ve
 
+    Level: advanced
+
 .keywords: log, begin
 
 .seealso: PLogDump(), PLogAllBegin(), PLogPrintSummary(), PLogTraceBegin()
@@ -1051,6 +1070,8 @@ int PLogBegin(void)
     to determine where a program is hanging without running in the 
     debugger.  Can be used in conjunction with the -log_info option. 
 
+    Level: intermediate
+
 .seealso: PLogDump(), PLogAllBegin(), PLogPrintSummary(), PLogBegin()
 @*/
 int PLogTraceBegin(FILE *file)
@@ -1092,6 +1113,8 @@ int PLogTraceBegin(FILE *file)
 $      Log.<rank>
    where <rank> is the processor number. If no name is specified, 
    this file will be used.
+
+   Level: advanced
 
 .keywords: log, dump
 
@@ -1191,6 +1214,8 @@ extern int  PLogEventColorMalloced[];
     in forming the display of this event; the standard X-windows
     color names should be used.
 
+    Level: intermediate
+
 .keywords: log, event, register
 
 .seealso: PLogEventBegin(), PLogEventEnd(), PLogFlops(),
@@ -1256,8 +1281,7 @@ int PLogEventRegisterDestroy_Private(void)
 #define __FUNC__ "PLogEventDeactivate"
 /*@
    PLogEventDeactivate - Indicates that a particular event should not be
-   logged. Note: the event may be either a pre-defined PETSc event (found
-   in include/petsclog.h) or an event number obtained with PLogEventRegister().
+   logged. 
 
    Not Collective
 
@@ -1274,6 +1298,12 @@ int PLogEventRegisterDestroy_Private(void)
       .......
       PetscFinalize();
 .ve 
+
+    Note: 
+    The event may be either a pre-defined PETSc event (found in
+    include/petsclog.h) or an event number obtained with PLogEventRegister()).
+
+    Level: advanced
 
 .seealso: PLogEventMPEDeactivate(),PLogEventMPEActivate(),PlogEventActivate()
 @*/
@@ -1306,6 +1336,8 @@ int PLogEventDeactivate(int event)
      .......
      PetscFinalize();
 .ve 
+
+    Level: advanced
 
 .seealso: PLogEventMPEDeactivate(),PLogEventMPEActivate(),PlogEventDeactivate()
 @*/
@@ -1346,6 +1378,8 @@ int PLogEventActivate(int event)
    More extensive examination of the log information can be done with 
    PLogDump(), which is activated by the option -log or -log_all, in 
    combination with petsc/bin/petscview.
+
+   Level: beginner
    
 .keywords: log, dump, print
 
@@ -1657,6 +1691,8 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
    intended for logging user flops to supplement this PETSc
    information.
 
+   Level: intermediate
+
 .keywords: log, flops, floating point operations
 
 .seealso: PetscGetTime(), PLogFlops()
@@ -1679,6 +1715,8 @@ int PetscGetFlops(PLogDouble *flops)
 
    Input Parameter:
 .  cookie - for example MAT_COOKIE, SNES_COOKIE,
+
+   Level: developer
 
 .seealso: PLogInfoActivate(),PLogInfo(),PLogInfoAllow(),PLogEventDeactivateClass(),
           PLogEventActivate(),PLogEventDeactivate()
@@ -1779,6 +1817,8 @@ int PLogEventActivateClass(int cookie)
 
    Input Parameter:
 .  cookie - for example MAT_COOKIE, SNES_COOKIE,
+
+   Level: developer
 
 .seealso: PLogInfoActivate(),PLogInfo(),PLogInfoAllow(),PLogEventActivateClass(),
           PLogEventActivate(),PLogEventDeactivate()
@@ -1911,6 +1951,8 @@ int PLogObjectState(PetscObject obj,const char format[],...)
    The options database commands -log, -log_summary, and -log_all activate
    PETSc library timing.  See the users manual for further details.
 
+   Level: intermediate
+
 .seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(),  PLogStagePush(), 
           PLogStagePop(), PLogStageRegister(), PetscGetFlops()
 
@@ -1953,6 +1995,8 @@ int PetscGetTime(PLogDouble *t)
    intended for logging user flops to supplement this PETSc
    information.
 
+   Level: intermediate
+
 .seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(), PetscGetFlops()
 
 .keywords: log, flops, floating point operations
@@ -1963,8 +2007,8 @@ M*/
    PLogEventBegin - Logs the beginning of a user event. 
 
    Input Parameters:
-.  e - integer associated with the event obtained from PLogEventRegister()
-.  o1,o2,o3,o4 - objects associated with the event, or 0
++  e - integer associated with the event obtained from PLogEventRegister()
+-  o1,o2,o3,o4 - objects associated with the event, or 0
 
    Synopsis:
    void PLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
@@ -1975,10 +2019,10 @@ M*/
      int USER_EVENT;
      int user_event_flops;
      PLogEventRegister(&USER_EVENT,"User event","Color:");
-     PLogEventBegin(&USER_EVENT,0,0,0,0);
+     PLogEventBegin(USER_EVENT,0,0,0,0);
         [code segment to monitor]
         PLogFlops(user_event_flops);
-     PLogEventEnd(&USER_EVENT,0,0,0,0);
+     PLogEventEnd(USER_EVENT,0,0,0,0);
 .ve
 
    Notes:
@@ -1991,6 +2035,8 @@ M*/
    specified.  PLogEventBegin() is intended for logging user events
    to supplement this PETSc information.
 
+   Level: intermediate
+
 .seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops()
 
 .keywords: log, event, begin
@@ -2000,8 +2046,8 @@ M*/
    PLogEventEnd - Log the end of a user event.
 
    Input Parameters:
-.  e - integer associated with the event obtained with PLogEventRegister()
-.  o1,o2,o3,o4 - objects associated with the event, or 0
++  e - integer associated with the event obtained with PLogEventRegister()
+-  o1,o2,o3,o4 - objects associated with the event, or 0
 
    Synopsis:
    void PLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
@@ -2027,6 +2073,8 @@ M*/
    compiled with -DUSE_PETSC_LOG, and -log, -log_summary, or -log_all are
    specified.  PLogEventEnd() is intended for logging user events
    to supplement this PETSc information.
+
+   Level: intermediate
 
 .seealso: PLogEventRegister(), PLogEventBegin(), PLogFlops()
 
@@ -2060,6 +2108,8 @@ M*/
    Synchronization events always come in pairs; for example, VEC_NormBarrier and 
    VEC_NormComm = VEC_NormBarrier + 1
 
+   Level: advanced
+
 .seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops(), PLogEventBegin(),
           PLogEventBarrierEnd()
 
@@ -2092,6 +2142,8 @@ M*/
    Additional Notes:
    Synchronization events always come in pairs; for example, VEC_NormBarrier and 
    VEC_NormComm = VEC_NormBarrier + 1
+
+   Level: advanced
 
 .seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops(), PLogEventBegin(),
           PLogEventBarrierBegin()
