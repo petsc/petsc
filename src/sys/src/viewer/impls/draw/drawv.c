@@ -64,7 +64,7 @@ int PetscViewerFlush_Draw(PetscViewer v)
 @*/
 int PetscViewerDrawGetDraw(PetscViewer viewer,int windownumber,PetscDraw *draw)
 {
-  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;;
+  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
   int              ierr;
   PetscTruth       isdraw;
   char             *title;
