@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.4 1998/04/07 18:44:52 balay Exp balay $ 
+# $Id: base.site,v 1.5 1998/04/28 17:46:37 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -40,7 +40,7 @@ X11_LIB        = -lX11
 #
 MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
 MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
-MPIRUN         = ${PETSC_DIR}/src/mpiuni/mpirun
+MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # The following lines can be used with MPICH
 #
