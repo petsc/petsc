@@ -1,4 +1,4 @@
-/*$Id: itres.c,v 1.48 2001/01/15 21:47:10 bsmith Exp bsmith $*/
+/*$Id: itres.c,v 1.49 2001/01/29 00:35:58 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
@@ -31,7 +31,7 @@ $     CA x = Cf (left preconditioning).
 @*/
 int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec vb)
 {
-  Scalar        one = -1.0;
+  Scalar        mone = -1.0;
   MatStructure  pflag;
   Mat           Amat,Pmat;
   int           ierr;
@@ -40,8 +40,7 @@ int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
   if (ksp->pc_side == PC_RIGHT) {
-    if (vbinvf) {ierr = VecCopy(vb,vbinvf);CHKERRQ(ierr);}
-    vbinvf = vb;
+    ierr = VecCopy(vb,vbinvf);CHKERRQ(ierr);
   } else if (ksp->pc_side == PC_LEFT) {
     ierr = KSP_PCApply(ksp,ksp->B,vb,vbinvf);CHKERRQ(ierr);
   } else {
@@ -55,7 +54,7 @@ int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec
     }
     /* This is an extra copy for the right-inverse case */
     ierr = VecCopy(vbinvf,vres);CHKERRQ(ierr);
-    ierr = VecAXPY(&one,vt1,vres);CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,vt1,vres);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(vbinvf,vres);CHKERRQ(ierr);
   }
