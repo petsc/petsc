@@ -2,17 +2,17 @@
 
 ALL: lib
 
-CFLAGS   = ${MATLAB_INCLUDE}
+CFLAGS   =
 FFLAGS   =
-SOURCEC  = aij.c aijfact.c ij.c aijnode.c fdaij.c unary.c ilut.c aijmatlab.c \
+SOURCEC  = aij.c aijfact.c ij.c aijnode.c fdaij.c unary.c ilut.c \
 	   matmatmult.c symtranspose.c matptap.c matpapt.c
 SOURCEF  = 
 SOURCEH  = aij.h
-OBJSC    = aij.o aijfact.o ij.o aijnode.o fdaij.o unary.o ilut.o aijmatlab.o \
+OBJSC    = aij.o aijfact.o ij.o aijnode.o fdaij.o unary.o ilut.o \
 	   matmatmult.o symtranspose.o matptap.o matpapt.o
 OBJSF    = 
 LIBBASE  = libpetscmat
-DIRS     = spooles superlu umfpack essl lusol
+DIRS     = spooles superlu umfpack essl lusol matlab
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/
 

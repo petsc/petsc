@@ -67,6 +67,7 @@ E*/
 #define MATAIJMUMPS        "aijmumps"
 #define MATSBAIJMUMPS      "sbaijmumps"
 #define MATDSCPACK         "dscpack"
+#define MATMATLAB          "matlab"
 #define MatType char*
 
 /* Logging support */

@@ -5,7 +5,7 @@
 
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = ${MATLAB_INCLUDE}
 FFLAGS   =
 SOURCEC  = aijmatlab.c
 SOURCEF  = 

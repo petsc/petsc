@@ -55,6 +55,9 @@ EXTERN int MatCreate_SBAIJMUMPS(Mat);
 #if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
 EXTERN int MatCreate_DSCPACK(Mat);
 #endif
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+EXTERN int MatCreate_Matlab(Mat);
+#endif
 EXTERN_C_END
   
 /*
@@ -146,6 +149,9 @@ int MatRegisterAll(const char path[])
 #endif
 #if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
   ierr = MatRegisterDynamic(MATDSCPACK,path,"MatCreate_DSCPACK",MatCreate_DSCPACK);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+  ierr = MatRegisterDynamic(MATMATLAB,path,"MatCreate_Matlab",MatCreate_Matlab);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
