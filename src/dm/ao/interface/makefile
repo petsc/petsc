@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ao.c aoreg.c aoregall.c aoserialize.c aodata.c aodataalias.c dlregis.c
+SOURCEC  = ao.c aodata.c aodataalias.c dlregis.c
 SOURCEF  = 
 SOURCEH  = 
 OBJSC    = ${SOURCEC:.c=.o}
