@@ -10,6 +10,9 @@ import curses.textpad
 import os
 import sys
 
+if not hasattr(sys, 'version_info'):
+  raise RuntimeError('You must have Python version 2.2 or higher to run the bootstrap')
+
 class BootstrapInstall (object):
   '''A BootstrapInstall assembles the minimum set of components necessary to begin the build and install process'''
   def __init__(self):
