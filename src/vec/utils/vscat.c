@@ -1,6 +1,7 @@
 
+
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.89 1997/05/27 19:58:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.90 1997/05/28 01:42:04 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -658,7 +659,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         int nx, ny, *idx, *idy, bsx, bsy;
         ierr = ISBlockGetBlockSize(iy,&bsy); CHKERRQ(ierr);
         ierr = ISBlockGetBlockSize(ix,&bsx); CHKERRQ(ierr);
-        if (0 && bsx == bsy && (bsx == 12 || bsx == 5 || bsx == 4 || bsx == 3 || bsx == 2)) {
+        if (bsx == bsy && (bsx == 12 || bsx == 5 || bsx == 4 || bsx == 3 || bsx == 2)) {
           ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);
           ISBlockGetSize(iy,&ny); ISBlockGetIndices(iy,&idy);
           if (nx != ny) SETERRQ(1,0,"Local scatter sizes don't match");
@@ -674,7 +675,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ierr = ISGetSize(iy,&ysize); CHKERRQ(ierr);
         ierr = ISBlockGetBlockSize(ix,&bsx); CHKERRQ(ierr);
         /* see if stride index set is equivalent to block index set */
-        if (0 && ((bsx == 2) || (bsx == 3) || (bsx == 4) || (bsx == 5) || (bsx == 12)) && 
+        if (((bsx == 2) || (bsx == 3) || (bsx == 4) || (bsx == 5) || (bsx == 12)) && 
             ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
           int nx, *idx, *idy,il;
           ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);
