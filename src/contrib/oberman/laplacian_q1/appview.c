@@ -51,10 +51,12 @@ int AppCtxGraphics(AppCtx *appctx)
        drawlocal - shows each subgrid (one for each processor)
      ------------------------------------------------------------------------*/
   if (appctx->view.show_grid) {
-    ierr = DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,DRAW_HALF_SIZE,DRAW_HALF_SIZE,
+    ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,DRAW_HALF_SIZE,DRAW_HALF_SIZE,
                      &appctx->view.drawglobal); CHKERRQ(ierr);
-    ierr = DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,DRAW_HALF_SIZE,DRAW_HALF_SIZE,
+    ierr = DrawSetFromOptions(appctx->view.drawglobal);CHKERRA(ierr);
+    ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,DRAW_HALF_SIZE,DRAW_HALF_SIZE,
                      &appctx->view.drawlocal);CHKERRQ(ierr);
+    ierr = DrawSetFromOptions(appctx->view.drawlocal);CHKERRA(ierr);
     ierr = DrawSplitViewPort((appctx)->view.drawlocal);CHKERRQ(ierr);
 
     /*
