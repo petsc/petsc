@@ -26,7 +26,7 @@ endif
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
-  set M =(snake     eagle     violet    oban      doc       ptera     merlin    )
+  set M =(snake     eagle     ryan      oban      doc       ptera     merlin    )
   set B =(O         O_complex g         g_c++     O_c++     g_complex O_complex )
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1         1         1         1         1         3         )
@@ -50,7 +50,7 @@ if ($day == Tue) then
   set J3=(0         3         3         3         3         3         5         )
 endif
 if ($day == Wed) then
-  set M =(snake     eagle     violet    oban      doc       ptera     merlin    )
+  set M =(snake     eagle     ryan      oban      doc       ptera     merlin    )
   set B =(g         g_c++     O         O_complex g_complex O_c++     g_c++     )
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(3         1         1         1         1         1         3         )
@@ -74,7 +74,7 @@ if ($day == Fri) then
   set J3=(0         3         3         3         3         3         5         )
 endif
 if ($day == Sat) then
-  set M =(snake     eagle     violet    oban      doc       ptera     merlin    )
+  set M =(snake     eagle     ryan      oban      doc       ptera     merlin    )
   set B =(O         g_complex O         O_complex g_complex O         g_complex )
   set A =(hpux      sun4      IRIX  freebsd_nolog rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1         1         1         1         1         3         )
