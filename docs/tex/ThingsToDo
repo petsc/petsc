@@ -10,90 +10,87 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
-  - MatSetValuesBlocked()
+  - Support DA users setting own partition
 
-  - Perhaps include a PETSC_MIN_FP_VALUE for use with Tolerances
-    for KSP, SNES etc and support also for OptionGetDouble()
+Barry  - Cai's versions of ASM
+
+  - investigate Said's ILUDT
+
+Satish  - MatSetValuesBlocked()
 
   - Split files into many files with one routine per file. Try to 
     reduce the amount of irrelevent stuff that is linked into the 
     executable.
 
-  - Get a complete list of MPI routines used in PETSc
-
-  - add info about help message printout to section 12.1 (version 2.0.15)
+Lois  - add info about help message printout to section 12.1 (version 2.0.15)
     of users manual.
 
-  - Consider adding test for NaNs to convegence tests.
+Barry  - Consider adding test for NaNs to convegence tests.
 
-  - Make a variant of SNES-TR method that doesn't use KSPBuildSolution() in
-    the convergence test.  Talk to Jorge about the importance of this test.
-
-  - Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from SC96
+Satish/Lois  - Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from SC96
     that are in XXX.  What do we really want here? Nothing that takes much space.
-
-  - Add VecCreateWithData() and VecCreateXXXWithData().
 
   - Test routine PetscInitializeNans() to work on all machine types.
 
-  - Add to MatCreateXXX() man pages clear indicattion of optional 
-    preallocation arguments.
+  - Spruce up manpages
 
   - Provide support for user defining a class of their events and
     turning them all off???? Maybe not. Currently PETsc itself does
     this by turning off events one at a time for its own classes.
 
-  * Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
-    A prototype is on poseidon:~mcinnes/mpibaij.bak
+Satish  * Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
+           A prototype is on poseidon:~mcinnes/mpibaij.bak
 
-  * Finite difference approximations of derivatives using coloring
+Barry  * Finite difference approximations of derivatives using coloring
 
-  - Add routine SNESWillNeedJacobian(SNES,SNESJacobianNeeded yes,no,maybe);
-
-  - Use MPI topology routines for DA codes.
-
- - Fix DrawTensorMapMesh(): 
-     Currently the mesh viewer does not display the final edge of
-     the mesh (i=ni, n=nj, k=nk). In my old version of code, I
-     overcame this with a hack to draw enclosed polygons for all
-     sections of the mesh, but really this would be needed just for
-     the final edge.
-
+Lois  - Add routine SNESWillNeedJacobian(SNES,SNESJacobianNeeded yes,no,maybe);
     
-  - Add a searchable index for the man pages (Jeff Scroggs Complaint)
+Satish  - Add a searchable index for the man pages (Jeff Scroggs Complaint)
 
-  - Check out the performance of VecOps (noticed them to be extremely bad (Satish))
-
-  - fix PetscView so that with scrolling in horizontal direction and click on icon
+Satish  - fix PetscView so that with scrolling in horizontal direction and click on icon
     it pops up detailed information in correct location.
 
-  - Aim for more exhaustive PETSc testing.  Use tconv Unix utilities
- 
-  - Maybe, like, say, test one or two BDiag routines before making a release?
+Satish  - Aim for more exhaustive PETSc testing.  Use tconv Unix utilities
+       Maybe, like, say, test one or two BDiag routines before making a release?
+       More test cases that involve, zero size vectors, matrices, IS's etc.
 
-  - Purge RCS files of very old stuff to save disk space???
-
-  - Add Victor EIJKhout's matrix codes
-
-  * get SPAI  http://lovelace.nas.nasa.gov/NAS/SPAI/download.html
+Barry  * get SPAI  http://lovelace.nas.nasa.gov/NAS/SPAI/download.html
 
   - compile with PETSC_DEBUG turned off and fix all places in code that 
     generate warning messages.
 
-  - Thorougly test PetscRandomSetInterval().
+Lois  - Thorougly test PetscRandomSetInterval().
 
-  - change KSP to not return -it on error but instead use error handling.
-
-  * Try using Isaac's trick for VecGetArray(), ISGetIndices(), etc:
-      common /xxx/ v(1),i(1)
-
-  - Try debugger on HP (unset the EDITOR environmental variable)
-
-  - Features wanted by Isaac: Add option to set multiple values at once to different
-    matrices.
+Satish  - Try debugger on HP (unset the EDITOR environmental variable)
 
   - Add table to PETSc home page with great flop rates from Euler code,
     take numbers from Scitools96 paper.
+
+  - write SLESCompareTypes() that for a given sles runs all possible PC, KSP, options etc.
+    builds giant table.
+
+Lois - Update figure of PETSc directory structure (add BAIJ (MPI)), etc.
+
+Satish - Subdivide html manpage sections, e.g. elementary, advanced and developer.
+
+  - Finish converting examples to tutorials/tests formats
+
+  - Suggestion by Carl - provide SNES example showing user computing most
+    of Jacobian in function eval routine.
+
+Lois  - Add SLES example showing multiple linear solves with same matrices but
+    difference RHS.
+
+  - Write an example of using MatCreateShell().
+
+  - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
+
+-----------------------------------------------------------------------
+  To do sometime soon:
+-----------------------------------------------------------------------
+
+ - Fix VRML vector viewer interface; add documentation about VRML.
+
 
   - Write preprocessor that zips through all of PETSc finding SETERRQ()
     setting unique error code number and save to big file: error code,
@@ -103,36 +100,24 @@ Additional Capabilities that PETSc Needs:
 
   - AVS viewer via MPI, new Matlab viewer via MPI without sockets Matlab viewer
 
-  - write SLESCompareTypes() that for a given sles runs all possible PC, KSP, options etc.
-    builds giant table.
+  - Features wanted by Isaac: Add option to set multiple values at once to different
+    matrices.
 
-  - Have two types of error tests, one assert type and one real error type????
+  - change KSP to not return -it on error but instead use error handling.
 
- - Update figure of PETSc directory structure (add BAIJ (MPI)), etc.
+ - Fix DrawTensorMapMesh(): 
+     Currently the mesh viewer does not display the final edge of
+     the mesh (i=ni, n=nj, k=nk). In my old version of code, I
+     overcame this with a hack to draw enclosed polygons for all
+     sections of the mesh, but really this would be needed just for
+     the final edge.
 
- - Subdivide html manpage sections, e.g. elementary, advanced and developer.
+  - Use MPI topology routines for DA codes.
 
- - Fix VRML vector viewer interface; add documentation about VRML.
+  - Add VecCreateWithData() and VecCreateXXXWithData().
 
- - Add feature to SNESDefatulComputeJacobian() for user to set differencing
-   parameter (similar to matrix-free stuff) as is already supported for coloring version?
-
-  - Finish converting examples to tutorials/tests formats
-
-  - Suggestion by Carl - provide SNES example showing user computing most
-    of Jacobian in function eval routine.
-
-  - Add SLES example showing multiple linear solves with same matrices but
-    difference RHS.
-
-  - Write an example of using MatCreateShell().
-
-  - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
-
-
------------------------------------------------------------------------
-  To do sometime soon:
------------------------------------------------------------------------
+  - Make a variant of SNES-TR method that doesn't use KSPBuildSolution() in
+    the convergence test.  Talk to Jorge about the importance of this test.
 
   - Add support for stashing ghostvalues at end of local values in array???
     How to do this reasonably? Or is it even possible reasonably or desirable?
@@ -146,8 +131,6 @@ Additional Capabilities that PETSc Needs:
     for preallocating matrix space for parallel matrices.  Create an empty
     matrix; pass once through a series of MatSetValues() calls; instead of
     adding elements, just get nonzero info.  Then allocate space.
-
-  - More test cases that involve, zero size vectors, matrices, IS's etc.
 
   * Make configure fully functional in PETSc 2.0
       - document usage somewhere
@@ -184,9 +167,6 @@ Additional Capabilities that PETSc Needs:
     the number of loads required? Add otehr optimization that sorts by 
     row length, then loops over rows of each length doing rows unrolled.
 
-  - Provide easy means to use SOR as stand-alone method with convergence testing
-    rather than just as preconditioner with a fixed number of iterations.
-
   - Chapter in users manual on how PETSc would be used with 
     different types of grid problems. Or different document.
 
@@ -204,10 +184,6 @@ Additional Capabilities that PETSc Needs:
 
   - Augment some KSP methods to support symmetric preconditioning; fix relevant
      KSP support routines.
-
-  ? Make jacobi and SOR be seperate for each matrix type. So then 
-    have default use natural block size and support option 
-    -pc_jacobi_pointwise etc.
 
   - Add routine for forming big matrix from a bunch of smaller ones, something 
        like:
@@ -235,8 +211,6 @@ Additional Capabilities that PETSc Needs:
 
    - MatExpand() and VecExpand() talk to Paul about how this is done in SUMMA.
 
-   - Make PLogFlops() also log loads and stores.
-
    * Add functionality to bjacobi to support block Gauss-Seidel
      including  support for coloring in parallel.
 
@@ -260,8 +234,6 @@ Additional Capabilities that PETSc Needs:
    - Incorporate SPARSKIT strategy of Saad for managing AIJ data structure.
      (requested by Xiao Chuan Cai; this is supposedly much faster than
      our current code).
-
-   * Improve history (-log_history) logging.
 
    * stride with multicomponent chunks in index sets, also two dimensional
      and three dimensional chunks
