@@ -1,0 +1,32 @@
+#! /bin/csh
+#
+#  Tests many of the 3-dimensional DA variants
+#
+#  w = degress of freedom per node
+#  s = stencil width
+#  M,N,P = global dimension in each direction of array
+#  m,n,p = number of processors in each dimension
+#  np = number of processors
+#
+
+  foreach m (1 2 3)
+   foreach n (1 2 3)
+    foreach p (1 2 3)
+     foreach M (16 17)
+      foreach N (14 15)
+       foreach P (13 12)
+        foreach w (1 2 3)
+         foreach s (1 2)
+         set np = `expr $m \* $n \* $p`
+         echo 'mpirun -np' $np' ex6 -testorder -nox -w' $w '-s' $s '-M' $M '-N' $N '-P' $P '-m' $m '-n' $n '-p' $p
+         mpirun -np $np ex6 -testorder -nox -w $w -s $s -M $M -N $N -P $P -m $m -n $n -p $p
+         end
+        end
+       end
+      end
+     end
+    end
+   end
+  end
+
+
