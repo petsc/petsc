@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.41 1995/08/17 01:20:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.42 1995/08/22 16:28:47 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -411,7 +411,7 @@ int VecDuplicate(Vec v,Vec *newv)
   PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
   return   (*v->ops->duplicate)(v,newv);
 }
-/*@
+/*@C
    VecDestroy - Destroys a vector created with VecDuplicate().
 
    Input Parameters:
@@ -726,24 +726,21 @@ int VecRestoreArray(Vec x,Scalar **a)
 
    Notes:
    The available visualization contexts include
-$     STDOUT_VIEWER - standard output (the default)
-$     SYNC_STDOUT_VIEWER - synchronized standard
-$        output, where only the first processor opens
-$        the file.  All other processors send their 
-$        data to the first processor to print. 
+$     STDOUT_VIEWER_SELF - standard output (default)
+$     STDOUT_VIEWER_COMM - synchronized standard
+$       output where only the first processor opens
+$       the file.  All other processors send their 
+$       data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
-$    ViewerFileOpen() - output to a specified file
-$    ViewerFileOpenSync() - synchronized output to a 
-$         specified file
+$    ViewerFileOpen() - output vector to a specified file
 $    DrawOpenX() - output vector to an X window display
 $    DrawLGCreate() - output vector as a line graph to an X window display
 $    ViewerMatlabOpen() - output vector to Matlab viewer
 
 .keywords: Vec, view, visualize
 
-.seealso: ViewerFileOpen(), ViewerFileOpenSync(), DrawOpenX(), 
-          DrawLGCreate(), ViewerMatlabOpen()
+.seealso: ViewerFileOpen(), DrawOpenX(), DrawLGCreate(), ViewerMatlabOpen()
 @*/
 int VecView(Vec v,Viewer ptr)
 {

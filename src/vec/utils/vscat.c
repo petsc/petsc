@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.31 1995/08/07 18:50:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.32 1995/08/22 16:28:38 bsmith Exp curfman $";
 #endif
 
 /*
@@ -405,8 +405,7 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,
   else return 0;
 }
 
-
-/*@
+/*@C
    VecScatterCtxDestroy - Destroys a scatter context created by 
    VecScatterCtxCreate().
 
