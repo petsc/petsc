@@ -1,3 +1,4 @@
+import user
 import importer
 import base
 import sourceDatabase
@@ -233,6 +234,8 @@ class Framework(base.Base):
       try:
         framework.configure()
       except Exception, e:
+        import traceback
+
         msg = 'CONFIGURATION FAILURE:\n'+str(e)+'\n'
         print msg
         framework.log.write(msg)
@@ -654,6 +657,8 @@ class Framework(base.Base):
     try:
       return self.mainBuild(target)
     except Exception, e:
+      import traceback
+
       msg = 'BUILD FAILURE:\n'+str(e)+'\n'
       print msg
       self.log.write(msg)
