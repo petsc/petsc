@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.44 1995/11/01 23:17:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.45 1995/11/02 04:27:24 bsmith Exp balay $";
 #endif
 
 #include "aij.h"
@@ -137,6 +137,8 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   return 0; 
 }
 /* ----------------------------------------------------------- */
+int Mat_AIJ_CheckInode(Mat);
+
 int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 {
   Mat        C = *B;
@@ -204,6 +206,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
   ierr = ISDestroy(isicol); CHKERRQ(ierr);
   C->factor      = FACTOR_LU;
+  ierr = Mat_AIJ_CheckInode(C); CHKERRQ(ierr);
   b->assembled = 1;
   PLogFlops(b->n);
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.111 1995/11/06 19:49:26 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.112 1995/11/06 21:07:08 balay Exp balay $";
 #endif
 
 /*
@@ -351,11 +351,11 @@ static int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
   }
   return 0;
 }
-
+int Mat_AIJ_CheckInode(Mat);
 static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        fshift = 0,i,j,*ai = a->i, *aj = a->j, *imax = a->imax;
+  int        fshift = 0,i,j,*ai = a->i, *aj = a->j, *imax = a->imax,ierr;
   int        m = a->m, *ip, N, *ailen = a->ilen,shift = a->indexshift;
   Scalar     *aa = a->a, *ap;
 
@@ -391,7 +391,7 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
     a->diag = 0;
   } 
   /* check out for identical nodes. If found,use inode functions*/
-  ierr = Mat_SeqAIJ_CheckInode(A); CHKERRQ(ierr);
+  ierr = Mat_AIJ_CheckInode(A); CHKERRQ(ierr);
   a->assembled = 1;
   return 0;
 }
@@ -1247,7 +1247,7 @@ int MatCopyPrivate_SeqAIJ(Mat A,Mat *B,int cpvalues)
   PetscHeaderCreate(C,_Mat,MAT_COOKIE,MATSEQAIJ,A->comm);
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqAIJ)); CHKPTRQ(c);
-  PetscMemcpy(&C->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(&C->ops,&A->ops,sizeof(struct _MatOps));
   C->destroy    = MatDestroy_SeqAIJ;
   C->view       = MatView_SeqAIJ;
   C->factor     = A->factor;
@@ -1305,8 +1305,6 @@ int MatCopyPrivate_SeqAIJ(Mat A,Mat *B,int cpvalues)
   c->maxnz            = a->maxnz;
   c->solve_work       = 0;
   c->spptr            = 0;      /* Dangerous -I'm throwing away a->spptr */
-  b->inode.node_count = 0;
-  b->inode.size       = 0;
 
   *B = C;
   return 0;

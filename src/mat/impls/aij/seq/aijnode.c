@@ -1,40 +1,24 @@
 #include "aij.h"                
-#include "mat.h"
-#include "ptime.h"
 
-typedef struct {
-  int node_count;
-  int *size;
-} Mat_SeqAIJ_Node;
-
-int Mat_SeqAIJ_Create_Node(Mat, int);
-int PetscBcmp(char* str1, char* str2, int len);
-int MatSolve_SeqAIJ_Node(Mat ,Vec , Vec );
+int Mat_AIJ_CheckInode(Mat);
+int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
 
 /* ----------------------------------------------------------- */
 
-static int MatMult_SeqAIJ_Node(Mat A,Vec xx,Vec yy)
+static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ *) A->data; 
-  Mat_SeqAIJ_Node *nst;
-  Scalar          *x, *y;
-  register Scalar sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
-  register Scalar *v1, *v2, *v3, *v4, *v5;
-  register int    *idx, i1, i2;
-  int             node_max, *ns, *ii ;
-  int             nsz, n, sz;
-  int             row, i, ierr;
-  int             m = a->m, shift = a->indexshift;
+  Mat_SeqAIJ       *a = (Mat_SeqAIJ *) A->data; 
+  Scalar           *x, *y;
+  register Scalar  sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
+  register Scalar  *v1, *v2, *v3, *v4, *v5;
+  register int     *idx, i1, i2, n, i, row;
+  int              node_max, *ns, *ii, nsz, sz;
+  int              m = a->m, shift = a->indexshift;
   
-  
-  if (!a->assembled) SETERRQ(1,"MatMult_SeqAIJ:Not for unassembled matrix");
-  if (!a->spptr){
-    ierr = Mat_SeqAIJ_Create_Node(A,5); CHKERRQ(ierr);
-  }
-  
-  nst      = (Mat_SeqAIJ_Node *)a->spptr; /* Node Structure */
-  node_max = nst->node_count;                
-  ns       = nst->size;         /* Node Size array */
+  if (!a->assembled) SETERRQ(1,"MatMult_SeqAIJ_Inode: Not for unassembled matrix");
+  if (!a->inode.size)SETERRQ(1,"MatMult_SeqAIJ_Inode: Missing Inode Structure");
+  node_max = a->inode.node_count;                
+  ns       = a->inode.size;     /* Node Size array */
   
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   x    = x + shift;             /* shift for Fortran start by 1 indexing */
@@ -194,7 +178,7 @@ static int MatMult_SeqAIJ_Node(Mat A,Vec xx,Vec yy)
       idx    +=4*sz;
       break;
     default :
-      SETERRQ(1,"MatMult_SeqAIJNode:Node size not yet supported");
+      SETERRQ(1,"MatMult_SeqAIJ_Inode:Node size not yet supported");
     }
   }
   
@@ -203,21 +187,22 @@ static int MatMult_SeqAIJ_Node(Mat A,Vec xx,Vec yy)
 }
 /* ----------------------------------------------------------- */
 
-int Mat_SeqAIJ_Create_Node(Mat A, int limit)
+int Mat_AIJ_CheckInode(Mat A)
 {
 
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ *) A->data;
-  Mat_SeqAIJ_Node *nst;
-  int             i, j, m, nzx, nzy, *idx, *idy ;
-  int             * ns,*ii, node_count, blk_size;
- 
-  if (a->spptr) SETERRQ(1,"Mat_SeqAIJ_Create_Node: a->spptr not Null");
-  m         = a->m;             /* Size of the matrix */
-  nst       = (Mat_SeqAIJ_Node*)PETSCMALLOC(sizeof(Mat_SeqAIJ_Node));CHKPTRQ(nst);
-  ns        = (int *)PETSCMALLOC(m*sizeof(int));  CHKPTRQ(ns);  
-  nst->size = ns;
-  a->spptr  = (void *)nst;
-  
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  int        i, j, m, nzx, nzy, *idx, *idy;
+  int        * ns,*ii, node_count, blk_size, limit;
+
+  limit      = 5;               /* Mult/Solve Can't Handle more than 5 */
+  OptionsGetInt(0, "-mat_aij_inode_limit", &limit);
+  if(limit >5 ) limit = 5;
+  m = a->m;        
+  if(!a->inode.size){
+    ns = (int *)PetscMalloc(m*sizeof(int));  CHKPTRQ(ns);
+  }
+  else return 0;                /* Use the Already formed Inode info */
+
   i          = 0;
   node_count = 0; 
   idx        = a->j;
@@ -226,58 +211,45 @@ int Mat_SeqAIJ_Create_Node(Mat A, int limit)
     nzx = ii[i+1] - ii[i];      /* No of non zeros*/
     /*Limits the no of elements in a node to 'limit'*/
     for(j=i+1, idy= idx, blk_size=1; j<m && blk_size <limit ;++j,++blk_size){
-      nzy = ii[j+1] - ii[j];     /* same no of nonzeros */
+      nzy     = ii[j+1] - ii[j]; /* same no of nonzeros */
       if(nzy != nzx) break;
-      idy += nzx;               /* Same nonzero pattern */
-      if(PetscBcmp((char *)idx,(char *)idy,nzx*sizeof(int))) break;
+      idy    += nzx;            /* Same nonzero pattern */
+      if(PetscMemcmp((char *)idx,(char *)idy,nzx*sizeof(int))) break;
     }
     ns[node_count++] = blk_size;
-    idx += blk_size*nzx;
+    idx +=blk_size*nzx;
     i    = j;
   }
-  nst->node_count = node_count;
+  if( node_count < 1.1 * m){   /* .90 is chosen arbitarily. */
+    A->ops.mult         = MatMult_SeqAIJ_Inode;
+    A->ops.solve        = MatSolve_SeqAIJ_Inode;
+    a->inode.node_count = node_count;
+    a->inode.size       = ns;
+    PLogInfo((PetscObject)A, "Found %d nodes. Limit used : %d. Using Inode_Routines\n", node_count, limit);
+  } else {
+    PetscFree (ns);
+    a->inode.node_count=0;
+    PLogInfo((PetscObject)A, "Found %d nodes.Limit used : %d. Not using Inode_routines\n",node_count, limit);
+  }
   return 0;
 }
 
 /* ----------------------------------------------------------- */
-
-int MatUseInode_SeqAIJ(Mat A)
-{
-  PETSCVALIDHEADERSPECIFIC(A,MAT_COOKIE);  
-  if (A->type != MATSEQAIJ) return 0;
-  
-  A->ops.mult  = MatMult_SeqAIJ_Node;
-  A->ops.solve = MatSolve_SeqAIJ_Node;
-  return 0;
-}
-
-/* ----------------------------------------------------------- */
-
-int PetscBcmp(char* str1, char* str2, int len)
-{
-  return bcmp(str1, str2, len);
-}
-
-/* ----------------------------------------------------------- */
-int MatSolve_SeqAIJ_Node(Mat A,Vec bb, Vec xx)
+int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ *) A->data;
-  Mat_SeqAIJ_Node *nst;
   IS              iscol = a->col, isrow = a->row;
   int             *r,*c, ierr, i, j, n = a->m, *ai = a->i;
   int             nz,shift = a->indexshift, *a_j = a->j;
   Scalar          *x,*b, *a_a = a->a;
   register int    node_max, *ns,row, nsz, aii,*vi,*ad, *aj, i0, i1;
-  register Scalar *tmp, *tmps, *aa;
-  register Scalar sum1, sum2, sum3, sum4, sum5,*v1, *v2, *v3,*v4, *v5, tmp0, tmp1;
+  register Scalar *tmp, *tmps, *aa, tmp0, tmp1;
+  register Scalar sum1, sum2, sum3, sum4, sum5,*v1, *v2, *v3,*v4, *v5;
   
-  if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolve_SeqAIJ:Not for unfactored matrix");
-  if (!a->spptr) {
-    ierr = Mat_SeqAIJ_Create_Node(A, 5); CHKERRQ(ierr);
-  }                                                             
-  nst      = (Mat_SeqAIJ_Node *)a->spptr; /* Node Structure */  
-  node_max = nst->node_count;   
-  ns       = nst->size;         /* Node Size array */
+  if (A->factor!=FACTOR_LU) SETERRQ(1,"MatSolve_SeqAIJ_Inode: Not for unfactored matrix");
+  if (!a->inode.size)SETERRQ(1,"MatSolve_SeqAIJ_Inode: Missing Inode Structure");
+  node_max = a->inode.node_count;   
+  ns       = a->inode.size;     /* Node Size array */
 
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
