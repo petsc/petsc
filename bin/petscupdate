@@ -1,369 +1,120 @@
 #! /bin/sh
 #
-# Default values
-np=1
-maxtime=30
-infiles=""
-outfiles=""
-verbose="no"
-shared="no"
-nolocal=""
-local="no"
-showtimes="yes"
-ctransin="parin"
-ctransout="parout"
-showoutput="no"
-keeptmp="no"
+#  Locate the PETSc directory
 #
-# Process arguments
-while [ $# -gt 0 ] ; do
-    arg=$1
-    shift
-    case $arg in 
-    -np) 
-    np=$1
-    shift
-    ;;
-    -keeptmp) 
-    keeptmp="yes"
-    ;;
-    -local) 
-    local="yes"
-    ;;
-    -shared) 
-    shared="yes"
-    nolocal="-nolocal"
-    ;;
-    -maxtime)
-    maxtime=$1
-    shift
-    ;;
-    -showtimesoff)
-    showtimes="no"
-    ;;
-    -showoutput)
-    showoutput="yes"
-    ;;
-    -infile)
-    infiles="$infiles $1"
-    shift
-    ;;
-    -outfile)
-    shift
-    outfiles="$outfiles $1"
-    shift
-    ;;
-    -stdin)
-	# Name of a file to use for standard input.
-	stdinfile="$1"
-	shift
-	;;
-    -stdout)
-        # Name of a file to use for standard output.
-        stdoutfile="$1"
-        shift
-        ;;
-    -stderr)
-        # Name of a file to use for standard error.
-        stderrfile="$1"
-        shift
-        ;;
-    -echo)
-    set -x
-    ;;
-    -u|-usage|-help)
-    echo "$0       [-np n] [-maxtime min] [-showoutput ] "
-    echo "         [-showtimesoff] [-shared] prog [ progs args ]"
-    exit 0;
-    ;;
-    *)
-    if [ -x $arg ] ; then
-        programname=$arg
-        progargs=$@
-    else
-        echo "Unrecognized option $arg"
-	exit 1
+if [ "$PETSC_DIR" != "" ]; then
+  if [ -d $PETSC_DIR ]; then
+    if [ ! -f $PETSC_DIR/include/petscversion.h ]; then
+      echo "Though the directory " $PETSC_DIR " indicated by the"
+      echo "PETSC_DIR environmental variable exists it does not"
+      echo "have the include/petscversion.h file" 
+      exit
     fi
-    break
-    esac
-done
-if [ $np -gt 32 ] ; then
-  shared="no"
-fi
-#
-# Now process program options looking for possible input files
-# stage the file directly into the rundir directory so we need to generate new
-# command line arguments that strip the path form the filename
-#
-newprogargs=""
-shortinfiles=""
-while [ $# -gt 0 ] ; do
-    arg=$1
-    shift
-    case $arg in 
-    -start_in_debugger|-on_error_attach_debugger) 
-      shared="no"
-      nolocal=""
-      local="yes"
-      newprogargs="$newprogargs $arg"
-    ;;
-    -f|-f0|-f1|-options_file) 
-      infiles="$infiles $1"
-      shortinfiles="$shortinfiles `basename $1`"
-      newprogargs="$newprogargs $arg `basename $1`"
-      if [ -e "$1.info" ] ; then
-        infiles="$infiles $1.info"
-      fi
-      shift
-    ;;
-    *)
-      if [ -e $arg ] ; then 
-        infiles="$infiles $arg"
-        shortinfiles="$shortinfiles `basename $arg`"
-        newprogargs="$newprogargs `basename $arg`"
-        if [ -e "$arg.info" ] ; then
-          infiles="$infiles $arg.info"
-        fi
-      else 
-        newprogargs="$newprogargs $arg"
-      fi
-    ;; 
-  esac
-done
-if [ $local = "no" ] ; then
-  if [ $showtimes = "yes" ] ; then
-    if [ "$infiles" != "" ] ; then echo "Staging files: $infiles" ; fi
+  else
+    echo "The environmental variable PETSC_DIR points to a nonexistent"
+    echo "directory: " $PETSC_DIR
+    exit
   fi
-fi
-#
-jobdir=$HOME/myjobs
-if [ ! -d $jobdir ] ; then mkdir $jobdir ; fi
-rundir=$jobdir/$$
-mkdir $rundir
-#
-# copy program, scripts etc into run directory
-#
-cp $programname $rundir
-if [ "$infiles" != "" ] ; then cp $infiles $rundir; fi
-cp ${PETSC_DIR}/bin/urlget.py $rundir
-cp ${PETSC_DIR}/bin/parseargs.py $rundir
-#
-# Check if this should be a myrinet job:
-#
-hasgm="`nm $programname | egrep 'T gm_init$'`"
-if [ -n "$hasgm" ] ; then
-  usemyrinet="yes"
-  shared="no"
-  local="no"
 else
-  usemyrinet="no"
-fi
-#
-# strip path from program name
-#
-programbase=`basename $programname`
-#
-#
-# Create the PBS script
-#
-    cat >./.mpirun$$ <<EOF
-#! /bin/bash
-#PBS -S /bin/sh
-#PBS -l nodes=$np
-#PBS -l walltime=0:${maxtime}:00
-##ctrans $ctransout $rundir
-#
-if [ $local = "no" ] ; then
-  if [ $showtimes = "yes" ] ; then
-    echo -n "Staging files to nodes " 
-    date
+  if [ -f include/petscversion.h ]; then
+    PETSC_DIR=`pwd`
+  else
+    echo "Cannot determine the PETSc installation directory"
+    echo "Either run petscupdate from the PETSc installation directory"
+    echo "or set the environmental variable PETSC_DIR and run petscupdate again"
+    exit
   fi
-  /my/bin/ctrans -t $ctransin -s $rundir -d $rundir -nf \$PBS_NODEFILE 
-fi
-if [ $showtimes = "yes" ] ; then
-  echo -n "Starting mpi program "
-  date
-fi
-
-PATH=$PATH
-export PATH
-DISPLAY=$DISPLAY
-export DISPLAY
-cd $rundir
-if [ $showoutput = "yes" ] ; then
-  pbs_job_num=\`expr \$PBS_JOBID : '\([0-9]*\).*'\`
-  fileo=/var/spool/pbs/spool/\$pbs_job_num.ccsche.OU
-  xterm -e tail -f \$fileo  &
-fi
-
-if [ $usemyrinet = "yes" ] ; then
-  pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
-  /soft/apps/packages/mpich-gmpg-1.2..4pre3.1/bin/mpirun.ch_gm -np $np --gm-f \${pbsfile} $programbase -display $DISPLAY $newprogargs
-  cat \${pbsfile} | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase parseargs.py urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
-else
-  /soft/apps/packages/mpich-1.2.1/bin/mpirun -np $np $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
-  cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase parseargs.py urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
-fi
-
-if [ $showtimes = "yes" ] ; then
-  echo -n "Bringing data files back "
-  date
-fi
-/my/bin/ctrans -t $ctransout -s $rundir -d $rundir -nf \$PBS_NODEFILE
-if [ $showtimes = "yes" ] ; then
-  echo -n "Done "
-  date
 fi
 #
-exit 0;
-EOF
+#  Get installed PETSc version
 #
-#  Don't use batch system, just run script directly
-# 
-if [ $shared = "yes" ] ; then
-  head -$np ${PETSC_DIR}/bin/hostnames.chiba > ./.pbsnodefile.$$
-  PBS_NODEFILE=`pwd`/.pbsnodefile.$$
-  export PBS_NODEFILE
-  chmod u+x ./.mpirun$$
-  ./.mpirun$$
+VERSION_MAJOR=`grep PETSC_VERSION_MAJOR $PETSC_DIR/include/petscversion.h | sed -e "s/#define PETSC_VERSION_MAJOR[ ]*//g"`
+VERSION_MINOR=`grep PETSC_VERSION_MINOR $PETSC_DIR/include/petscversion.h | sed -e "s/#define PETSC_VERSION_MINOR[ ]*//g"`
+VERSION_SUBMINOR=`grep PETSC_VERSION_SUBMINOR $PETSC_DIR/include/petscversion.h | sed -e "s/#define PETSC_VERSION_SUBMINOR[ ]*//g"`
+PATCH_LEVEL=`grep PETSC_PATCH_LEVEL $PETSC_DIR/include/petscversion.h | sed -e "s/#define PETSC_PATCH_LEVEL[ ]*//g"`
+VERSION=$VERSION_MAJOR.$VERSION_MINOR.$VERSION_SUBMINOR
 #
-#  Run directly on the frontend
+#  Check if urlget.py works
 #
-elif [ $local = "yes" ] ; then
-  echo "localhost" > ./.pbsnodefile.$$
-  echo "localhost" >> ./.pbsnodefile.$$
-  echo "localhost" >> ./.pbsnodefile.$$
-  echo "localhost" >> ./.pbsnodefile.$$
-  PBS_NODEFILE=`pwd`/.pbsnodefile.$$
-  export PBS_NODEFILE
-  chmod u+x ./.mpirun$$
-  ./.mpirun$$
-else 
+$PETSC_DIR/bin/urlget.py -v > /dev/null 2>&1
+if [ $? -ne 0 ]; then
 #
-#  submit to batch system
+#   Find Python
 #
-  pbs_job_id=`qsub ./.mpirun$$`
-  pbs_job_num=`expr $pbs_job_id : '\([0-9]*\).*'`
-#
-#
-#  Handle control c from user
-#
-  trap "qdel $pbs_job_id ; echo Killing job; exit" 2
-#
-  if [ $showtimes = "yes" ] ; then
-    echo -n "PBS Job $pbs_job_id Submitted to queue " 
-    date
-  fi
-
-#  Spin until qstat returns a non-zero return code
-#
-  status="Q"
-  while [ "$status" = "Q" ] ; do
-    sleep 5
-    lstatus=`qstat $pbs_job_id 2> /dev/null`
-    status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
-    if [ $showtimes = "yes" ] ; then
-      echo -n "."
+  for i in python python1.5 python2 /usr/local/bin/python
+  do
+    $i -help  > /dev/null 2>&1
+    if [ $? -ne 127 ]; then
+      PYTHON=$i
+      break
     fi
   done
-  if [ $showtimes = "yes" ] ; then
-    echo " "
-  fi
-# 
-  if [ $showtimes = "yes" ] ; then
-    echo -n "PBS Job $pbs_job_id Running "
-    date
+  if [ "$PYTHON" = "" ]; then
+    echo "Unable to locate a python installed on your machine"
+    exit
   fi
 #
+#   Patch urlget.py to use correct python
 #
-  status="R"
-  while [ "$status" = "R" ] ; do
-    sleep 2
-    lstatus=`qstat $pbs_job_id 2> /dev/null`
-    status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
-    if [ $showtimes = "yes" ] ; then
-      echo -n "."
-    fi
+
+#
+#   Check if urlget.py works
+#
+  $PETSC_DIR/bin/urlget.py -v > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    echo "Could not get python to work with urlget.py on your machine"
+    exit
+  fi
+fi
+#
+#  Get the current release PETSc version
+#
+file=`$PETSC_DIR/bin/urlget.py http://www-unix.mcs.anl.gov/petsc/petsc-current/include/petscversion.h`
+_MAJOR=`grep PETSC_VERSION_MAJOR $file | sed -e "s/#define PETSC_VERSION_MAJOR[ ]*//g"`
+_MINOR=`grep PETSC_VERSION_MINOR $file | sed -e "s/#define PETSC_VERSION_MINOR[ ]*//g"`
+_SUBMINOR=`grep PETSC_VERSION_SUBMINOR $file | sed -e "s/#define PETSC_VERSION_SUBMINOR[ ]*//g"`
+rm -f $file
+if [ $VERSION_MAJOR -lt $_MAJOR -o $VERSION_MINOR -lt $_MINOR -o $VERSION_SUBMINOR -lt $_SUBMINOR ]; then
+  echo "*********************************************************************"
+  echo "    There is a newer release of PETSc then your installation       "
+  echo "          $_MAJOR.$_MINOR.$_SUBMINOR  vs  $VERSION "
+  echo "        We recommend upgrading to the latest version "
+  echo "*********************************************************************"
+fi
+#
+#  Get the current PETSc patch level for the users PETSc version
+#
+file=`$PETSC_DIR/bin/urlget.py http://www-unix.mcs.anl.gov/petsc/petsc-patches.html`
+PATCH=`grep "petsc-patches-$VERSION." $file | head -1 | sed -e "s?[-:/ A-Za-z0-9<>\"=.]*petsc-patches-$VERSION.\([0-9]*\).tar.gz[-:/ A-Za-z0-9<>\"=.]*?\1?g"`
+rm -f $file
+if [ $PATCH -eq $PATCH_LEVEL ]; then
+  echo "Your patch level $PATCH_LEVEL of PETSc version $VERSION is up to date"
+  exit
+fi
+
+echo "Updating PETSc directory $PETSC_DIR, PETSc version $VERSION to patch $PATCH from $PATCH_LEVEL" 
+
+#
+#  Bring over the patch tar file
+#
+file=`$PETSC_DIR/bin/urlget.py ftp://info.mcs.anl.gov/pub/petsc/patches/petsc-patches-$VERSION.$PATCH.tar.gz`
+cd $PETSC_DIR
+echo tar xf $file
+echo "Updated PETSc source and documentation files"
+rm -f $file
+#
+#  Check if the libraries are already built
+#
+arch=`$PETSC_DIR/bin/petscarch`
+archs=`ls lib/lib*/$arch*/libpetsc.a | sed -e "s?lib/lib[gO_c+omplex]*/\([_a-zA-Z0-9]*\)/libpetsc.a?\1?g" | uniq`
+for arch in $archs
+do
+  opts=`ls lib/lib*/$arch/libpetsc.a | sed -e "s?lib/lib\([gO_c+omplex]*\)/$arch/libpetsc.a?\1?g"`
+  for opt in $opts
+  do
+    echo "Update $arch $opt library?"
   done
-  if [ $showtimes = "yes" ] ; then
-    echo " "
-  fi
-#
-  if [ $showtimes = "yes" ] ; then
-    echo -n "PBS Job $pbs_job_id Job no longer running "
-    date
-  fi
-
-#
-  outstat=""
-  while [ "$outstat" != "Unknown Job" ] ; do
-    sleep 2
-    outstat=`qstat $pbs_job_id 2>&1 | sed -e 's/^.*Unknown Job.*$/Unknown Job/'`
-    if [ $showtimes = "yes" ] ; then
-      echo -n "."
-    fi
-  done
-  if [ $showtimes = "yes" ] ; then
-    echo " "
-  fi
-#
-  if [ $showtimes = "yes" ] ; then
-    echo -n "PBS Job $pbs_job_id No longer existing "
-    date
-  fi
-#
-#  Move the output to the stdout/err of the process running this script
-#
-  if [ -s .mpirun$$.o$pbs_job_num ] ; then
-    if [ -n "$stdoutfile" ] ; then
-      cat .mpirun$$.o$pbs_job_num > $stdoutfile
-    else
-      cat .mpirun$$.o$pbs_job_num 
-    fi
-  fi
-  if [ -s .mpirun$$.e$pbs_job_num ] ; then
-    if [ -n "$stderrfile" ] ; then
-        cat .mpirun$$.e$pbs_job_num >$stderrfile
-    else
-        cat .mpirun$$.e$pbs_job_num >&2
-    fi
-  fi
-
-fi
-#
-# decide if we should make an output directory (was there output?)
-#
-if [ $local = "no" ] ; then
-  pushd $rundir > /dev/null
-  rm -rf $programbase $shortinfiles parseargs.py urlget.py
-  rm -rf [0-9]*
-  popd > /dev/null
-  if [ "`ls $rundir/*`" != "" ] ; then
-    cp -rf $rundir ./output.$$ 
-    cd output.$$
-    mv */*.[0-9]* . > /dev/null 2>&1
-    if [ "`ls ./ccn[0-9]*/* 2> /dev/null`" = "" ] ; then
-      rm -rf ccn[0-9]*
-    fi
-    cd ..
-    if [ "`ls ./output.$$/* 2> /dev/null`" = "" ] ; then
-      rm -rf output.$$
-    else 
-      if [ $showtimes = "yes" ] ; then
-        echo "Output files placed into " output.$$
-      fi
-    fi
-  fi
-fi
-
-#
-#  Remove all files mpirun.chiba has created
-#
-if [ $keeptmp != "yes" ] ; then
-#  rm -rf .mpirun$$* 
-  rm -f .pbsnodefile*
-  rm -rf $rundir
-fi
+done
 
 
 
