@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.41 1996/01/09 03:30:02 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.42 1996/01/09 15:05:49 curfman Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -115,7 +115,7 @@ int KSPSetPreconditionerSide(KSP itP,PCSide side)
   return 0;
 }
 
-/*@
+/*@C
     KSPGetPreconditionerSide - Gets the preconditioning side.
 
     Input Parameter:
