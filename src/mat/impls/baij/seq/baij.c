@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.157 1999/02/03 03:18:57 curfman Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.158 1999/02/12 23:34:52 balay Exp balay $";
 #endif
 
 /*
@@ -896,7 +896,6 @@ static int MatZeroRows_SeqBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[], 
 int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
 {
   Mat_SeqBAIJ *baij=(Mat_SeqBAIJ*)A->data;
-  IS          is_local;
   int         ierr,i,j,k,count,m=baij->m,is_n,*is_idx,*rows;
   int         bs=baij->bs,bs2=baij->bs2,*sizes,row,bs_max;
   Scalar      zero = 0.0;
@@ -915,6 +914,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
   for (i=0; i<is_n; i++) { rows[i] = is_idx[i]; }
   ierr = PetscSortInt(is_n,rows); CHKERRQ(ierr);
   ierr = MatZeroRows_SeqBAIJ_Check_Blocks(rows,is_n,bs,sizes,&bs_max); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&is_idx); CHKERRQ(ierr);
 
   for ( i=0,j=0; i<bs_max; j+=sizes[i],i++ ) {
     row   = rows[j];
@@ -949,7 +949,6 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
   }
 
   PetscFree(rows);
-  ierr = ISRestoreIndices(is,&is_idx); CHKERRQ(ierr);
   ierr = MatAssemblyEnd_SeqBAIJ(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
