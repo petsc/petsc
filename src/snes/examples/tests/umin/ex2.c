@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.2 1995/09/02 20:19:23 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.1 1995/09/02 21:18:27 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -279,11 +279,11 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   Scalar *x;
 
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-  for (j=1; j<=ny; j++) {
-    temp = PETSCMIN(j,ny-j+1)*hy;
-    for (i=1; i<=nx; i++) {
-      k = nx*(j-1) + i-1;
-      x[k] = PETSCMIN((PETSCMIN(i,nx-i+1))*hx,temp);
+  for (j=0; j<ny; j++) {
+    temp = PETSCMIN(j+1,ny-j)*hy;
+    for (i=0; i<nx; i++) {
+      k = nx*j + i;
+      x[k] = PETSCMIN((PETSCMIN(i+1,nx-i))*hx,temp);
     }
   }
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
@@ -308,15 +308,15 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   }
 
   /* Compute function and gradient over the lower triangular elements */
-  for (j=0; j<ny1; j++) {
-    for (i=0; i<nx1; i++) {
-      k = nx*(j-1) + i-1;
+  for (j=-1; j<ny; j++) {
+    for (i=-1; i<nx; i++) {
+      k = nx*j + i;
       v = zero;
       vr = zero;
       vt = zero;
-      if (i >= 1 && j >= 1) v = x[k];
-      if (i < nx && j > 0) vr = x[k+1];
-      if (i > 0 && j < ny) vt = x[k+nx];
+      if (i >= 0 && j >= 0) v = x[k];
+      if (i < nx-1 && j > -1) vr = x[k+1];
+      if (i > -1 && j < ny-1) vt = x[k+nx];
       dvdx = (vr-v)/hx;
       dvdy = (vt-v)/hy;
       if (fg & FunctionEval) {
@@ -324,15 +324,15 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
         flin -= cdiv3*(v+vr+vt);
       }
       if (fg & GradientEval) {
-        if (i != 0 && j != 0) {
+        if (i != -1 && j != -1) {
           ind = k; val = - dvdx/hx - dvdy/hy - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
-        if (i != nx && j != 0) {
+        if (i != nx-1 && j != -1) {
           ind = k+1; val =  dvdx/hx - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
-        if (i != 0 && j != ny) {
+        if (i != -1 && j != ny-1) {
           ind = k+nx; val = dvdy/hy - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
@@ -341,30 +341,30 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   }
 
   /* Compute function and gradient over the upper triangular elements */
-  for (j=1; j<=ny1; j++) {
-    for (i=1; i<=nx1; i++) {
-      k = nx*(j-1) + i-1;
+  for (j=0; j<=ny; j++) {
+    for (i=0; i<=nx; i++) {
+      k = nx*j + i;
       vb = zero;
       vl = zero;
       v = zero;
-      if (i <= nx && j > 1) vb = x[k-nx];
-      if (i > 1 && j <= ny) vl = x[k-1];
-      if (i <= nx && j <= ny) v = x[k];
+      if (i < nx && j > 0) vb = x[k-nx];
+      if (i > 0 && j < ny) vl = x[k-1];
+      if (i < nx && j < ny) v = x[k];
       dvdx = (v-vl)/hx;
       dvdy = (v-vb)/hy;
       if (fg & FunctionEval) {
         fquad = fquad + dvdx*dvdx + dvdy*dvdy;
         flin = flin - cdiv3*(vb+vl+v);
       } if (fg & GradientEval) {
-        if (i != nx1 && j != 1) {
+        if (i != nx && j != 0) {
           ind = k-nx; val = - dvdy/hy - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
-        if (i != 1 && j != ny1) {
+        if (i != 0 && j != ny) {
           ind = k-1; val =  - dvdx/hx - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
-        if (i != nx1 && j != ny1) {
+        if (i != nx && j != ny) {
           ind = k; val =  dvdx/hx + dvdy/hy - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
@@ -403,24 +403,24 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
   ierr = VecSet((Scalar*)&zero,y); CHKERRQ(ierr);
 
   /* Compute f''(x)*s over the lower triangular elements */
-  for (j=0; j<ny1; j++) {
-    for (i=0; i<nx1; i++) {
-       k = nx*(j-1) + i-1;
+  for (j=-1; j<ny; j++) {
+    for (i=-1; i<nx; i++) {
+       k = nx*j + i;
        v = zero;
        vr = zero;
        vt = zero;
-       if (i != 0 && j != 0) v = s[k];
-       if (i != nx && j != 0) {
+       if (i != -1 && j != -1) v = s[k];
+       if (i != nx-1 && j != -1) {
          vr = s[k+1];
          ind = k+1; val = hxhx*(vr-v);
          ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
        }
-       if (i != 0 && j != ny) {
+       if (i != -1 && j != ny-1) {
          vt = s[k+nx];
          ind = k+nx; val = hyhy*(vt-v);
          ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
        }
-       if (i != 0 && j != 0) {
+       if (i != -1 && j != -1) {
          ind = k; val = hxhx*(v-vr) + hyhy*(v-vt);
          ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
        }
@@ -428,24 +428,24 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
    }
 
   /* Compute f''(x)*s over the upper triangular elements */
-  for (j=1; j<=ny1; j++) {
-    for (i=1; i<=nx1; i++) {
-       k = nx*(j-1) + i-1;
+  for (j=0; j<=ny; j++) {
+    for (i=0; i<=nx; i++) {
+       k = nx*j + i;
        v = zero;
        vl = zero;
        vb = zero;
-       if (i != nx1 && j != ny1) v = s[k];
-       if (i != nx1 && j != 1) {
+       if (i != nx && j != ny) v = s[k];
+       if (i != nx && j != 0) {
          vb = s[k-nx];
          ind = k-nx; val = hyhy*(vb-v);
          ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
        }
-       if (i != 1 && j != ny1) {
+       if (i != 0 && j != ny) {
          vl = s[k-1];
          ind = k-1; val = hxhx*(vl-v);
          ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
        }
-       if (i != nx1 && j != ny1) {
+       if (i != nx && j != ny) {
          ind = k; val = hxhx*(v-vl) + hyhy*(v-vb);
          ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
        }
@@ -485,13 +485,13 @@ int FormInitialGuess2(SNES snes,Vec X,void *ptr)
   /* Compute the boundary values once only */
   ierr = BoundaryValues(user); CHKERRQ(ierr);
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-  for (j=1; j<=ny; j++) {
-    alphaj = j*hy;
-    for (i=1; i<=nx; i++) {
-      betai = i*hx;
-      yline = alphaj*top[i] + (one-alphaj)*bottom[i];
-      xline = betai*right[j] + (one-betai)*left[j];
-      k = nx*(j-1) + i-1;
+  for (j=0; j<ny; j++) {
+    alphaj = (j+1)*hy;
+    for (i=0; i<nx; i++) {
+      betai = (i+1)*hx;
+      yline = alphaj*top[i+1] + (one-alphaj)*bottom[i+1];
+      xline = betai*right[j+1] + (one-betai)*left[j+1];
+      k = nx*j + i;
       x[k] = (yline+xline)*p5;
     }
   }
@@ -525,26 +525,26 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   }
 
   /* Compute function and gradient over the lower triangular elements */
-  for (j=0; j<ny1; j++) {
-    for (i=0; i<nx1; i++) {
-      k = nx*(j-1) + i-1;
-      if (i >= 1 && j >= 1) {
+  for (j=-1; j<ny; j++) {
+    for (i=-1; i<nx; i++) {
+      k = nx*j + i;
+      if (i >= 0 && j >= 0) {
         v = x[k];
       } else {
-        if (j == 0) v = bottom[i];
-        if (i == 0) v = left[j];
+        if (j == -1) v = bottom[i+1];
+        if (i == -1) v = left[j+1];
       }
-      if (i<nx && j>0) {
+      if (i<nx-1 && j>-1) {
         vr = x[k+1];
       } else {
-        if (i == nx) vr = right[j];
-        if (j == 0)  vr = bottom[i+1];
+        if (i == nx-1) vr = right[j+1];
+        if (j == -1)  vr = bottom[i+2];
       }
-      if (i>0 && j<ny) {
+      if (i>-1 && j<ny-1) {
          vt = x[k+nx];
       } else {
-         if (i == 0)  vt = left[j+1];
-         if (j == ny) vt = top[i];
+         if (i == -1)  vt = left[j+2];
+         if (j == ny-1) vt = top[i+1];
       }
       dvdx = (vr-v)/hx;
       dvdy = (vt-v)/hy;
@@ -553,15 +553,15 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
         *f += fl;
       }
       if (fg & GradientEval) {
-        if (i>=1 && j>=1) {
+        if (i>-1 && j>-1) {
           ind = k; val = -(dvdx/hx+dvdy/hy)/fl;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
-        if (i<nx && j>0) {
+        if (i<nx-1 && j>-1) {
           ind = k+1; val = (dvdx/hx)/fl;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
-        if (i>0 && j<ny) {
+        if (i>-1 && j<ny-1) {
           ind = k+nx; val = (dvdy/hy)/fl;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
@@ -570,26 +570,26 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   }
 
   /* Compute function and gradient over the upper triangular elements */
-  for (j=1; j<=ny1; j++) {
-    for (i=1; i<=nx1; i++) {
-      k = nx*(j-1) + i-1;
-      if (i<=nx && j>1) {
+  for (j=0; j<=ny; j++) {
+    for (i=0; i<=nx; i++) {
+      k = nx*j + i;
+      if (i<nx && j>0) {
         vb = x[k-nx];
       } else {
-        if (j == 1)    vb = bottom[i];
-        if (i == nx+1) vb = right[j-1];
+        if (j == 0)    vb = bottom[i+1];
+        if (i == nx) vb = right[j];
       }
-      if (i>1 && j<=ny) {
+      if (i>0 && j<ny) {
          vl = x[k-1];
       } else {
-         if (j == ny+1) vl = top[i-1];
-         if (i == 1)    vl = left[j];
+         if (j == ny) vl = top[i];
+         if (i == 0)    vl = left[j+1];
       }
-      if (i<=nx && j<=ny) {
+      if (i<nx && j<ny) {
          v = x[k];
       } else {
-         if (i == nx+1) v = right[j];
-         if (j == ny+1) v = top[i];
+         if (i == nx) v = right[j+1];
+         if (j == ny) v = top[i+1];
       }
       dvdx = (v-vl)/hx;
       dvdy = (v-vb)/hy;
@@ -597,15 +597,15 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       if (fg & FunctionEval) {
         *f += fu;
       } if (fg & GradientEval) {
-        if (i<= nx && j>1) {
+        if (i<nx && j>0) {
           ind = k-nx; val = -(dvdy/hy)/fu;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
-        if (i>1 && j<=ny) {
+        if (i>0 && j<ny) {
           ind = k-1; val = -(dvdx/hx)/fu;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
-        if (i<=nx && j<=ny) {
+        if (i<nx && j<ny) {
           ind = k; val = (dvdx/hx+dvdy/hy)/fu;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
@@ -649,31 +649,31 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
   ierr = VecSet(&zero,y); CHKERRQ(ierr);
 
   /* Compute f''(x)*s over the lower triangular elements */
-  for (j=0; j<ny1; j++) {
-    for (i=0; i<nx1; i++) {
-       k = nx*(j-1) + i-1;
-       if (i != 0 && j != 0) {
+  for (j=-1; j<ny; j++) {
+    for (i=-1; i<nx; i++) {
+       k = nx*j + i;
+       if (i != -1 && j != -1) {
          v = x[k];
          z = s[k];
        } else {
-         if (j == 0) v = bottom[i];
-         if (i == 0) v = left[j];
+         if (j == -1) v = bottom[i+1];
+         if (i == -1) v = left[j+1];
          z = zerod;
        }
-       if (i != nx && j != 0) {
+       if (i != nx-1 && j != -1) {
          vr = x[k+1];
          zr = s[k+1];
        } else {
-         if (i == nx) vr = right[j];
-         if (j == 0)  vr = bottom[i+1];
+         if (i == nx-1) vr = right[j+1];
+         if (j == -1)  vr = bottom[i+2];
          zr = zerod;
        }
-       if (i != 0 && j != ny) {
+       if (i != -1 && j != ny-1) {
           vt = x[k+nx];
           zt = s[k+nx];
        } else {
-         if (i == 0)  vt = left[j+1];
-         if (j == ny) vt = top[i];
+         if (i == -1)  vt = left[j+2];
+         if (j == ny-1) vt = top[i+1];
          zt = zerod;
        }
        dvdx = (vr-v)/hx;
@@ -687,17 +687,17 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
        tl = one + dvdx*dvdx + dvdy*dvdy;
        fl = sqrt(tl);
        fl3 = fl*tl;
-       if (i != 0 && j != 0) {
+       if (i != -1 && j != -1) {
          ind = k;
          val = (dvdx*dzdx+dvdy*dzdy)*(dvdxhx+dvdyhy)/fl3 - (dzdxhx+dzdyhy)/fl;
          ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
        }
-       if (i != nx && j != 0) {
+       if (i != nx-1 && j != -1) {
          ind = k+1;
          val = dzdxhx/fl - (dvdx*dzdx+dvdy*dzdy)*dvdxhx/fl3;
          ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
        }
-       if (i != 0 && j != ny) {
+       if (i != -1 && j != ny-1) {
          ind = k+nx;
          val = dzdyhy/fl - (dvdx*dzdx+dvdy*dzdy)*dvdyhy/fl3;
          ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
@@ -706,31 +706,31 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
    }
 
   /* Compute f''(x)*s over the upper triangular elements */
-  for (j=1; j<=ny1; j++) {
-    for (i=1; i<=nx1; i++) {
-       k = nx*(j-1) + i-1;
-       if (i != nx+1 && j != 1) {
+  for (j=0; j<=ny; j++) {
+    for (i=0; i<=nx; i++) {
+       k = nx*j + i;
+       if (i != nx && j != 0) {
          vb = x[k-nx];
          zb = s[k-nx];
        } else {
-         if (j == 1) vb = bottom[i];
-         if (i == nx+1) vb = right[j-1];
+         if (j == 0) vb = bottom[i+1];
+         if (i == nx) vb = right[j];
          zb = zerod;
        }
-       if (i != 1 && j != ny+1) {
+       if (i != 0 && j != ny) {
          vl = x[k-1];
          zl = s[k-1];
        } else {
-         if (j == ny+1) vl = top[i-1];
-         if (i == 1)    vl = left[j];
+         if (j == ny) vl = top[i];
+         if (i == 0)    vl = left[j+1];
          zl = zerod;
        }
-       if (i != nx+1 && j != ny+1) {
+       if (i != nx && j != ny) {
          v = x[k];
          z = s[k];
        } else {
-         if (i == nx+1) v = right[j];
-         if (j == ny+1) v = top[i];
+         if (i == nx) v = right[j+1];
+         if (j == ny) v = top[i+1];
          z = zerod;
        }
        dvdx = (v-vl)/hx;
@@ -744,17 +744,17 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
        tu = one + dvdx*dvdx + dvdy*dvdy;
        fu = sqrt(tu);
        fu3 = fu*tu;
-       if (i != nx+1 && j != ny+1) {
+       if (i != nx && j != ny) {
          ind = k;
          val = (dzdxhx+dzdyhy)/fu - (dvdx*dzdx+dvdy*dzdy)*(dvdxhx+dvdyhy)/fu3;
          ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
        }
-       if (i != 1 && j != ny+1) {
+       if (i != 0 && j != ny) {
          ind = k-1;
          val = (dvdx*dzdx+dvdy*dzdy)*dvdxhx/fu3 - dzdxhx/fu;
          ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
        }
-       if (i != nx+1 && j != 1) {
+       if (i != nx && j != 0) {
          ind = k-nx;
          val = (dvdx*dzdx+dvdy*dzdy)*dvdyhy/fu3 - dzdyhy/fu;
          ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
