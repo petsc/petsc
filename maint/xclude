@@ -11,6 +11,10 @@ petsc/src/contrib/vgrid/src/RCS
 petsc/src/contrib/vgrid/src/seq/RCS
 petsc/src/contrib/vgrid/src/mpi/RCS
 petsc/src/contrib/vgrid/examples/RCS
+petsc/src/contrib/vgrid/examples/ex4.c
+petsc/src/contrib/vgrid/examples/ex6.c
+petsc/src/contrib/vgrid/examples/ex20.c
+petsc/src/contrib/vgrid/examples/pdgl2fg.f
 petsc/mis
 petsc/bmake/sun4_umpi
 petsc/bmake/rs6000_impi
