@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.39 1996/07/08 22:23:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.40 1996/09/05 17:52:21 curfman Exp curfman $";
 #endif
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
@@ -62,7 +62,7 @@ int main( int argc, char **argv )
   Mat      J;                    /* Jacobian matrix */
   AppCtx   user;                 /* user-defined application context */
   Draw     draw;                 /* drawing context */
-  int      ierr, its, N, nfails,flg; 
+  int      ierr, its, N, nfails,flg,cavity; 
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -70,12 +70,13 @@ int main( int argc, char **argv )
 
   user.mx    = 4;
   user.my    = 4;
-  user.param = 6.0;
   ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-cavity",&cavity); CHKERRA(ierr);
+  if (cavity) user.param = 100.0;
+  else        user.param = 6.0;
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-cavity",&flg); CHKERRA(ierr);
-  if (!flg && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
+  if (!cavity && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
     SETERRA(1,"Lambda is out of range");
   }
   N = user.mx*user.my;
