@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.20 2000/09/18 17:28:52 hzhang Exp curfman $*/
+/*$Id: mpisbaij.c,v 1.21 2000/09/25 19:53:24 curfman Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -1264,7 +1264,7 @@ int MatDiagonalScale_MPISBAIJ(Mat mat,Vec ll,Vec rr)
 #define __FUNC__ /*<a name=""></a>*/"MatZeroRows_MPISBAIJ"
 int MatZeroRows_MPISBAIJ(Mat A,IS is,Scalar *diag)
 {
-  Mat_MPISBAIJ    *l = (Mat_MPISBAIJ*)A->data;
+  Mat_MPISBAIJ   *l = (Mat_MPISBAIJ*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
   int            *procs,*nprocs,j,found,idx,nsends,*work,row;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
@@ -1378,7 +1378,7 @@ int MatZeroRows_MPISBAIJ(Mat A,IS is,Scalar *diag)
        Contributed by: Mathew Knepley
   */
   /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
-  ierr = MatZeroRows_SeqSBAIJ(l->B,istmp,0);CHKERRQ(ierr); 
+  ierr = MatZeroRows_SeqBAIJ(l->B,istmp,0);CHKERRQ(ierr); 
   if (diag && (l->A->M == l->A->N)) {
     ierr = MatZeroRows_SeqSBAIJ(l->A,istmp,diag);CHKERRQ(ierr);
   } else if (diag) {
