@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.47 1998/12/17 22:08:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.48 1999/01/12 23:13:10 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -60,7 +60,7 @@ and PetscWriteBinary() to see how this may be done.
 @*/  
 int VecLoad(Viewer viewer,Vec *newvec)
 {
-  int         i, rows, ierr, type, fd,rank,size,n,*range,tag;
+  int         i, rows, ierr, type, fd,rank,size,n,*range,tag,bs,flag;
   Vec         vec;
   Scalar      *avec;
   MPI_Comm    comm;
@@ -75,7 +75,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   if (PetscStrcmp(vtype,BINARY_VIEWER)) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
   PLogEventBegin(VEC_Load,viewer,0,0,0);
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
-  PetscObjectGetComm((PetscObject)viewer,&comm);
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   MPI_Comm_rank(comm,&rank);
   MPI_Comm_size(comm,&size);
 
@@ -86,6 +86,10 @@ int VecLoad(Viewer viewer,Vec *newvec)
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT); CHKERRQ(ierr);
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,PETSC_DECIDE,rows,&vec); CHKERRQ(ierr);
+    ierr = OptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
+    }
     ierr = VecSetFromOptions(vec); CHKERRQ(ierr);
     ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
     ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
