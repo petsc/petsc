@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.348 2000/05/09 03:22:41 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.349 2000/05/10 16:40:36 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -591,6 +591,9 @@ int MatView_SeqAIJ(Mat A,Viewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (issocket) {
+    if (a->indexshift) {
+      SETERRQ(1,1,"Can only socket send sparse matrix with 0 based indexing");
+    }
     ierr = ViewerSocketPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j);CHKERRQ(ierr);
   } else if (isascii) {
     ierr = MatView_SeqAIJ_ASCII(A,viewer);CHKERRQ(ierr);
@@ -2176,7 +2179,7 @@ int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
 
 
   PetscFunctionBegin;
-  mat  = mxCreateSparse(B->n,B->m,aij->nz,(mxComplexity)0);
+  mat  = mxCreateSparse(B->n,B->m,aij->nz,mxREAL);
   ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(Scalar));CHKERRQ(ierr);
   /* Matlab stores by column, not row so we pass in the transpose of the matrix */
   ai   = mxGetJc(mat);
@@ -2184,13 +2187,13 @@ int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
   ierr = PetscMemcpy(aj,aij->j,aij->nz*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemcpy(ai,aij->i,(B->m+1)*sizeof(int));CHKERRQ(ierr);
 
-  /* Matlab indices always start at 1 */
-  if (!aij->indexshift) {
-    for (i=0; i<aij->m+1; i++) {
-      ai[i]++;
+  /* Matlab indices start at 0 for sparse (what a surprise) */
+  if (aij->indexshift) {
+    for (i=0; i<B->m+1; i++) {
+      ai[i]--;
     }
     for (i=0; i<aij->nz; i++) {
-      aj[i]++;
+      aj[i]--;
     }
   }
   ierr = PetscObjectName(obj);CHKERRQ(ierr);

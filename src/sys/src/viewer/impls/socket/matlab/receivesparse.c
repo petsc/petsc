@@ -1,4 +1,4 @@
-/*$Id: receivesparse.c,v 1.12 2000/05/05 22:13:07 balay Exp bsmith $*/
+/*$Id: receivesparse.c,v 1.13 2000/05/10 16:38:39 bsmith Exp bsmith $*/
 /*
     Part of the MatlabSockettool Package. Receive a sparse matrix
   at a socket address, called by the receive.mex4 Matlab program.
@@ -34,6 +34,7 @@ int ReceiveSparseMatrix(Matrix *plhs[],int t)
   r = mxGetIr(plhs[0]);
   c = mxGetJc(plhs[0]);
   v = mxGetPr(plhs[0]);
+  /* Matlab sparse matrix pointers start at 0 not 1 */
   if (!compx) {
     if (PetscBinaryRead(t,v,nnz,PETSC_DOUBLE)) ERROR("reading values");
   } else {
@@ -45,9 +46,6 @@ int ReceiveSparseMatrix(Matrix *plhs[],int t)
   }
   if (PetscBinaryRead(t,c,m+1,PETSC_INT)) ERROR("reading column pointers");
   if (PetscBinaryRead(t,r,nnz,PETSC_INT)) ERROR("reading row pointers");
-  /* pointers start at 0 not 1 */
-  for (i=0; i<m+1; i++) {c[i]--;}
-  for (i=0; i<nnz; i++) {r[i]--;}
   return 0;
 }
 
