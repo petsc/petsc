@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.45 1996/03/18 00:39:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.46 1996/03/19 21:25:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -41,10 +41,12 @@ int PCEisenstatUseDiagonalScaling(PC pc)
   return 0;
 }
 
-static int PCMult_Eisenstat(void *ptr,Vec b,Vec x)
+static int PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 {
-  PC      pc = (PC) ptr;
-  PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
+  PC           pc;
+  PC_Eisenstat *eis;
+  MatShellGetContext(mat,(void **)&pc);
+  eis = (PC_Eisenstat *) pc->data;
   return MatRelax(eis->A,b,eis->omega,SOR_EISENSTAT,0.0,1,x);
 }
 
@@ -201,7 +203,7 @@ int PCCreate_Eisenstat(PC pc)
   eis->usediag      = 0;
   ierr = MatCreateShell(pc->comm,0,0,(void*) pc,&eis->shell); CHKERRQ(ierr);
   PLogObjectParent(pc,eis->shell);
-  ierr = MatShellSetMult(eis->shell, PCMult_Eisenstat); CHKERRQ(ierr);
+  ierr = MatShellSetOperation(eis->shell, MAT_MULT,PCMult_Eisenstat); CHKERRQ(ierr);
   return 0;
 }
 

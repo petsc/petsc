@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.26 1996/01/24 05:46:12 bsmith Exp curfman $ */
+/* $Id: mpirowbs.h,v 1.27 1996/03/06 22:30:27 curfman Exp bsmith $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -56,7 +56,12 @@ typedef struct {
   int        failures;          /* number of BS factorization failures */
 
   int        mat_is_structurally_symmetric; 
+
+  int        blocksolveassembly;/* Indicates the matrix has been assembled 
+                                   for block solve */
 } Mat_MPIRowbs;
+
+extern int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat);
 
 #define CHKERRBS(a) {if (__BSERROR_STATUS) {fprintf(stderr, \
         "BlockSolve95 Error Code %d\n",__BSERROR_STATUS); CHKERRQ(1);}}

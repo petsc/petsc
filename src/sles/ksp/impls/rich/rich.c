@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.37 1996/03/19 21:24:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.38 1996/03/23 18:33:11 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -93,7 +93,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
           ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- z'*z     */
         }
         if (history && hist_len > i) history[i] = rnorm;
-        KSPMonitor(ksp,rnorm,i);
+        KSPMonitor(ksp,i,rnorm);
         cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
         if (cerr) {brokeout = 1; break;}
      }
@@ -111,7 +111,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
       ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- z'*z     */
     }
     if (history && hist_len > i) history[i] = rnorm;
-    KSPMonitor(ksp,rnorm,i);
+    KSPMonitor(ksp,i,rnorm);
   }
   if (history) ksp->res_act_size = (hist_len < i) ? hist_len : i;
 

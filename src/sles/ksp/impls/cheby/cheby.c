@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.36 1996/03/19 21:23:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.37 1996/03/23 18:33:09 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -102,7 +102,7 @@ int  KSPSolve_Chebychev(KSP ksp,int *its)
       else {ierr = VecNorm(p[kp1],NORM_2,&rnorm); CHKERRQ(ierr);}
       if (history && hist_len > i) history[i] = rnorm;
       ksp->vec_sol = p[k]; 
-      KSPMonitor(ksp,rnorm,i);
+      KSPMonitor(ksp,i,rnorm);
       cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
       if (cerr) break;
     }
@@ -128,7 +128,7 @@ int  KSPSolve_Chebychev(KSP ksp,int *its)
     }
     if (history && hist_len > i) history[i] = rnorm;
     ksp->vec_sol = p[k]; 
-    KSPMonitor(ksp,rnorm,i);
+    KSPMonitor(ksp,i,rnorm);
   }
   if (history) ksp->res_act_size = (hist_len < i) ? hist_len : i;
 

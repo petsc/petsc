@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.18 1996/03/19 21:23:30 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.19 1996/03/23 18:32:48 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -68,7 +68,7 @@ struct _KSP {
   DrawLG xmonitor;  /* location for stashing default xmonitor context */
 };
 
-#define KSPMonitor(ksp,rnorm,it) \
+#define KSPMonitor(ksp,it,rnorm) \
         if (ksp->monitor) { \
           int _ierr; \
           _ierr = (*ksp->monitor)(ksp,it,rnorm,ksp->monP); \

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.2 1996/01/31 03:49:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.3 1996/03/23 18:34:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -31,6 +31,7 @@ typedef struct {
 
 int Monitor(TS, int, Scalar , Vec, void *);
 int RHSFunctionHeat(TS,Scalar,Vec,Vec,void*);
+int RHSMatrixFree(Mat,Vec,Vec);
 int Initial(Vec, void*);
 int RHSMatrixHeat(TS,Scalar,Mat *,Mat *, MatStructure *,void *);
 int RHSJacobianHeat(TS,Scalar,Vec,Mat*,Mat*,MatStructure *,void*);
@@ -43,7 +44,7 @@ int RHSJacobianHeat(TS,Scalar,Vec,Mat*,Mat*,MatStructure *,void*);
 
 int main(int argc,char **argv)
 {
-  int           M = 60, ierr,  time_steps = 100,steps,flg, problem;
+  int           M = 60, ierr,  time_steps = 100,steps,flg, problem,size;
   AppCtx        appctx;
   Vec           local, global;
   Scalar        h, dt,ftime;
@@ -57,6 +58,7 @@ int main(int argc,char **argv)
   char          tsinfo[120];
  
   PetscInitialize(&argc,&argv,(char*)0,help);
+  MPI_Comm_rank(MPI_COMM_WORLD,&size);
 
   OptionsGetInt(PETSC_NULL,"-M",&M,&flg); appctx.M = M;
   OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);
@@ -130,33 +132,45 @@ int main(int argc,char **argv)
   if (flg) dt = h*h;
   else     dt = h*h/2.01;
 
-  if (problem == linear_no_matrix || problem == nonlinear_no_jacobian) {
+  if (problem == linear_no_matrix) {
     /*
-         In this version the user provides the RHS as a function.
+         The user provides the RHS as a Shell matrix.
+    */
+    ierr = MatCreateShell(MPI_COMM_WORLD,M,M,&appctx,&A);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(A,MAT_MULT,RHSMatrixFree);CHKERRQ(ierr);
+    ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);
+  } else if (problem == linear_no_time) {
+    /*
+         The user provides the RHS as a matrix
+    */
+    ierr = MatCreate(MPI_COMM_WORLD,M,M,&A); CHKERRQ(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);  CHKERRA(ierr);
+    ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);
+  } else if (problem == linear) {
+    /*
+         The user provides the RHS as a time dependent matrix
+    */
+    ierr = MatCreate(MPI_COMM_WORLD,M,M,&A); CHKERRQ(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);  CHKERRA(ierr);
+    ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx); CHKERRA(ierr);
+  } else if (problem == nonlinear_no_jacobian) {
+    /*
+         The user provides the RHS and a Shell Jacobian
     */
     ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx); CHKERRA(ierr);
+    ierr = MatCreateShell(MPI_COMM_WORLD,M,M,&appctx,&A);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(A,MAT_MULT,RHSMatrixFree);CHKERRQ(ierr);
+    ierr = TSSetRHSJacobian(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);  
   } else if (problem == nonlinear) {
     /*
-         In this version the user provides the RHS and Jacobian
+         The user provides the RHS and Jacobian
     */
     ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx); CHKERRA(ierr);
     ierr = MatCreate(MPI_COMM_WORLD,M,M,&A); CHKERRQ(ierr);
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);  CHKERRA(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,&appctx); CHKERRA(ierr);  
-  } else { 
-    /*
-        In this version the user provides the RHS as a matrix
-    */
-    ierr = MatCreate(MPI_COMM_WORLD,M,M,&A); CHKERRQ(ierr);
-    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);  CHKERRA(ierr);
-
-    if (problem == linear_no_time) {
-      ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);
-
-    } else {
-      ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx); CHKERRA(ierr);
-    }
   }
+
   ierr = TSSetFromOptions(ts);CHKERRA(ierr);
   ierr = TSGetType(ts,&type,PETSC_NULL); CHKERRA(ierr);
 
@@ -170,8 +184,8 @@ int main(int argc,char **argv)
   ViewerStringOpen(MPI_COMM_WORLD,tsinfo,120,&viewer);
   TSView(ts,viewer);
 
-  PetscPrintf(MPI_COMM_WORLD,"Final (sum) 2 norm %g max norm %g %s\n",
-              appctx.norm_2/steps,appctx.norm_max/steps,tsinfo);
+  PetscPrintf(MPI_COMM_WORLD,"%d Procs Final (sum) 2 norm %g max norm %g %s\n",
+              size,appctx.norm_2/steps,appctx.norm_max/steps,tsinfo);
 
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = TSDestroy(ts); CHKERRA(ierr);
@@ -187,6 +201,8 @@ int main(int argc,char **argv)
   PetscFinalize();
   return 0;
 }
+
+/* -------------------------------------------------------------------*/
  
 int Initial(Vec global, void *ctx)
 {
@@ -243,7 +259,7 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   norm_2 = sqrt(appctx->h)*norm_2;
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max); CHKERRQ(ierr);
 
-  if (!appctx->nox || step == 1) {
+  if (!appctx->nox) {
     PetscPrintf(comm,"Time-step %d time %g norm of error %g %g\n",step,time,
                      norm_2,norm_max);
   }
@@ -253,6 +269,16 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
 
   ierr = VecView(appctx->solution,appctx->viewer2); CHKERRQ(ierr);
 
+  return 0;
+}
+
+/* -----------------------------------------------------------------------*/
+int RHSMatrixFree(Mat mat,Vec x,Vec y)
+{
+  int  ierr;
+  void *ctx;
+  MatShellGetContext(mat,(void **)&ctx);
+  ierr = RHSFunctionHeat(0,0.0,x,y,ctx); CHKERRQ(ierr);
   return 0;
 }
 
@@ -274,14 +300,15 @@ int RHSFunctionHeat(TS ts, Scalar t,Vec globalin, Vec globalout, void *ctx)
   ierr = VecGetArray(localwork,&copyptr); CHKERRQ(ierr);
 
   /* Update Locally - Make array of new values */
-  /* Note: I don't do anything for the first and last entry */
+  /* Note: For the first and last entry I copy the value */
+  /* if this is an interior node it is irrelevant */
   sc = 1.0/(appctx->h*appctx->h);
   ierr = VecGetLocalSize(local,&localsize); CHKERRQ(ierr);
-  copyptr[0] = 0.0;
+  copyptr[0] = localptr[0];
   for (i=1; i<localsize-1; i++) {
     copyptr[i] = sc * (localptr[i+1] + localptr[i-1] - 2.0*localptr[i]);
   }
-  copyptr[localsize-1] = 0.0;
+  copyptr[localsize-1] = localptr[localsize-1];
   ierr = VecRestoreArray(localwork,&copyptr); CHKERRQ(ierr);
 
   /* Local to Global */
@@ -303,8 +330,16 @@ int RHSMatrixHeat(TS ts,Scalar t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
   MPI_Comm_size(MPI_COMM_WORLD,&size);
 
   ierr = MatGetOwnershipRange(A,&mstart,&mend); CHKERRQ(ierr);
-  if (mstart == 0) mstart++;
-  if (mend == appctx->M) mend--;
+  if (mstart == 0) {
+    v[0] = 1.0;
+    ierr = MatSetValues(A,1,&mstart,1,&mstart,v,INSERT_VALUES); CHKERRQ(ierr);
+    mstart++;
+  }
+  if (mend == appctx->M) {
+    mend--;
+    v[0] = 1.0;
+    ierr = MatSetValues(A,1,&mend,1,&mend,v,INSERT_VALUES); CHKERRQ(ierr);
+  }
 
   /*
      Construct matrice one row at a time

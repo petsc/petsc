@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.25 1996/03/21 22:03:55 curfman Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.26 1996/03/23 18:33:03 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -52,7 +52,7 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; return 0;}
-  KSPMonitor(ksp,dp,0);
+  KSPMonitor(ksp,0,dp);
   if (history) history[0] = dp;
 
   /* Make the initial Rp == R */
@@ -76,7 +76,7 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
 
     if (history && hist_len > i + 1) history[i+1] = dp;
-    KSPMonitor(ksp,dp,i+1);
+    KSPMonitor(ksp,i+1,dp);
     cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
     if (cerr) break;
 

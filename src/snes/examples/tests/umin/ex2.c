@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.29 1996/03/20 06:04:51 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.30 1996/03/25 23:41:58 curfman Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -41,12 +41,14 @@ int FormMinimizationFunction(SNES,Vec,double*,void*);
 int FormGradient(SNES,Vec,Vec,void*);
 
 /* For Elastic-Plastic Torsion test problem */
-int HessianProduct1(void*,Vec,Vec);
+int HessianProduct1(void *,Vec,Vec);
+int HessianProductMat1(Mat,Vec,Vec);
 int FormInitialGuess1(AppCtx*,Vec);
 int EvalFunctionGradient1(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 
 /* For Minimal Surface Area test problem */
-int HessianProduct2(void*,Vec,Vec);
+int HessianProduct2(void *,Vec,Vec);
+int HessianProductMat2(Mat,Vec,Vec);
 int FormInitialGuess2(AppCtx*,Vec);
 int EvalFunctionGradient2(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 int BoundaryValues(AppCtx*);
@@ -108,9 +110,9 @@ int main(int argc,char **argv)
   if (flg) {
     ierr = MatCreateShell(MPI_COMM_SELF,user.ndim,user.ndim,(void*)&user,&H);CHKERRA(ierr);
     if (user.problem == 1) {
-      ierr = MatShellSetMult(H,HessianProduct1); CHKERRA(ierr);
+      ierr = MatShellSetOperation(H,MAT_MULT,HessianProductMat1);CHKERRA(ierr);
     } else if (user.problem == 2) {
-      ierr = MatShellSetMult(H,HessianProduct2); CHKERRA(ierr);
+      ierr = MatShellSetOperation(H,MAT_MULT,HessianProductMat2);CHKERRA(ierr);
     }
     ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); CHKERRA(ierr);
 
@@ -385,17 +387,31 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   }
   return 0;
 }
+
+int HessianProductMat1(Mat mat,Vec svec,Vec y)
+{
+  void *ptr;
+  MatShellGetContext(mat,&ptr);
+  HessianProduct1(ptr,svec,y);
+  return 0;
+}
+  
 /* --------------------------------------------------------------------- */
 /* 
    HessianProduct - Computes the matrix-vector product: y = f''(x)*s
  */
 int HessianProduct1(void *ptr,Vec svec,Vec y)
 {
-  AppCtx *user = (AppCtx *) ptr;
-  int    nx = user->mx, ny = user->my, i, j, k, ierr, ind;
-  Scalar p5 = 0.5, one = 1.0, hx = user->hx, hy = user->hy;
+  AppCtx *user = (AppCtx *)ptr;
+  int    nx, ny, i, j, k, ierr, ind;
+  Scalar p5 = 0.5, one = 1.0, hx, hy;
   Scalar v, vb, vl, vr, vt, hxhx, hyhy, zero = 0.0;
   Scalar val, area, *x, *s, szero = 0.0;
+
+  nx = user->mx;
+  ny = user->my;
+  hx = user->hx;
+  hy = user->hy;
 
   hxhx = one/(hx*hx);
   hyhy = one/(hy*hy);
@@ -635,19 +651,32 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   return 0;
 }
 /* --------------------------------------------------------------------- */
+int HessianProductMat2(Mat mat,Vec svec,Vec y)
+{
+  void *ptr;
+  MatShellGetContext(mat,&ptr);
+  HessianProduct2(ptr,svec,y);
+  return 0;
+}
+
 /* 
    HessianProduct2 - Computes the matrix-vector product: y = f''(x)*s
  */
 int HessianProduct2(void *ptr,Vec svec,Vec y)
 {
   AppCtx *user = (AppCtx *) ptr;
-  int    nx = user->mx, ny = user->my, i, j, k, ierr, ind;
-  Scalar one = 1.0, p5 = 0.5, hx = user->hx, hy = user->hy;
+  int    nx, ny, i, j, k, ierr, ind;
+  Scalar one = 1.0, p5 = 0.5, hx, hy;
   Scalar dzdy, dzdyhy, fl, fl3, fu, fu3, tl, tu, z, zb, zl, zr, zt;
   Scalar *bottom, *top, *left, *right;
   Scalar dvdx, dvdxhx, dvdy, dvdyhy, dzdx, dzdxhx;
   Scalar v=0.0, vb=0.0, vl=0.0, vr=0.0, vt=0.0, zerod = 0.0;
   Scalar val, area, zero = 0.0, *s, *x;
+
+  nx = user->mx;
+  ny = user->my;
+  hx = user->hx;
+  hy = user->hy;
 
   bottom = user->work;
   top    = &user->work[nx+2];

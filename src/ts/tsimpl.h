@@ -1,4 +1,4 @@
-/* $Id: tsimpl.h,v 1.2 1996/01/31 03:59:23 bsmith Exp bsmith $ */
+/* $Id: tsimpl.h,v 1.3 1996/03/23 18:34:43 bsmith Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -24,8 +24,8 @@ struct _TS {
   void          *monP;		            /* monitor routine context */
 
   int           (*rhsmatrix)(TS,double,Mat*,Mat*,MatStructure *,void*);
-  Mat           A,B;           /* user provided matrix and preconditioner */
-  PetscTruth    Ashell;       /* indicates A is a Shell matrix */
+  Mat           A,B;        /* user provided matrix and preconditioner */
+  Mat           Ashell;     /* if user provided a Shell matrix */
 
   int           (*rhsfunction)(TS,double,Vec,Vec,void*); 
   void          *funP;

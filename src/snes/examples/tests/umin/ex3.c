@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.30 1996/03/19 21:29:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.31 1996/03/25 23:42:03 curfman Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -38,7 +38,8 @@ int FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int MatrixFreeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int FormMinimizationFunction(SNES,Vec,double*,void*);
 int FormGradient(SNES,Vec,Vec,void*);
-int HessianProduct(void*,Vec,Vec);
+int HessianProduct(void *,Vec,Vec);
+int HessianProductMat(Mat,Vec,Vec);
 int FormInitialGuess(AppCtx*,Vec);
 int EvalFunctionGradient(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 
@@ -96,7 +97,7 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg); CHKERRA(ierr);
   if (flg) {
     ierr = MatCreateShell(MPI_COMM_WORLD,user.ndim,user.ndim,(void*)&user,&H); CHKERRA(ierr);
-    ierr = MatShellSetMult(H,HessianProduct); CHKERRA(ierr);
+    ierr = MatShellSetOperation(H,MAT_MULT,HessianProductMat); CHKERRA(ierr);
     ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); CHKERRA(ierr);
 
     /* Set null preconditioner.  Alternatively, set user-provided 
@@ -386,17 +387,31 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   return 0;
 }
 /* --------------------------------------------------------------------- */
+int HessianProductMat(Mat mat,Vec svec,Vec y)
+{
+  void *ptr;
+  MatShellGetContext(mat,&ptr);
+  HessianProduct(ptr,svec,y);
+  return 0;
+}
 /* 
    HessianProduct - Computes the matrix-vector product: y = f''(x)*s
  */
 int HessianProduct(void *ptr,Vec svec,Vec y)
 {
   AppCtx *user = (AppCtx *) ptr;
-  Scalar p5 = 0.5, one = 1.0, zero = 0.0, hx = user->hx, hy = user->hy;
+  Scalar p5 = 0.5, one = 1.0, zero = 0.0, hx, hy;
   Scalar val, area, *x, *s, szero = 0.0, v, vb, vl, vr, vt, hxhx, hyhy;
-  Vec    localX = user->localX, localS = user->localS;
+  Vec    localX, localS;
   int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye, xsm, ysm, xep, yep;
-  int    nx = user->mx, ny = user->my, i, j, k, ierr, ind, nloc, *ltog;
+  int    nx, ny, i, j, k, ierr, ind, nloc, *ltog;
+
+  hx = user->hx;
+  hy = user->hy;
+  localX = user->localX;
+  localS = user->localS;
+  nx = user->mx;
+  ny = user->my;
 
   hxhx = one/(hx*hx);
   hyhy = one/(hy*hy);

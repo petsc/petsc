@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.25 1996/01/26 04:33:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.26 1996/03/19 21:26:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -14,10 +14,7 @@ static char vcid[] = "$Id: shell.c,v 1.25 1996/01/26 04:33:58 bsmith Exp bsmith 
 
 typedef struct {
   int  m, n;                       /* rows, columns */
-  int  (*mult)(void*,Vec,Vec);
-  int  (*multtransadd)(void*,Vec,Vec,Vec);
   int  (*destroy)(void*);
-  int  (*getsize)(void*,int*,int*);
   void *ctx;
 } Mat_Shell;      
 
@@ -47,20 +44,6 @@ static int MatGetSize_Shell(Mat mat,int *m,int *n)
   return 0;
 }
 
-static int MatMult_Shell(Mat mat,Vec x,Vec y)
-{
-  Mat_Shell *shell = (Mat_Shell *) mat->data;
-  if (!shell->mult) SETERRQ(1,"MatMult_Shell:You have not provided a multiply for\
- your shell matrix");
-  return (*shell->mult)(shell->ctx,x,y);
-}
-
-static int MatMultTransAdd_Shell(Mat mat,Vec x,Vec y,Vec z)
-{
-  Mat_Shell *shell = (Mat_Shell *) mat->data;
-  return (*shell->multtransadd)(shell->ctx,x,y,z);
-}
-
 static int MatDestroy_Shell(PetscObject obj)
 {
   int       ierr;
@@ -77,7 +60,7 @@ static int MatDestroy_Shell(PetscObject obj)
   
 static struct _MatOps MatOps = {0,0,
        0, 
-       MatMult_Shell,0,0,MatMultTransAdd_Shell,
+       0,0,0,0,
        0,0,0,0,
        0,0,
        0,
@@ -100,7 +83,7 @@ static struct _MatOps MatOps = {0,0,
 .  comm - MPI communicator
 .  m - number of rows
 .  n - number of columns
-.  ctx - pointer to data needed by matrix-vector multiplication routine(s)
+.  ctx - pointer to data needed by the matrix routines
 
    Output Parameter:
 .  mat - the matrix
@@ -112,11 +95,11 @@ static struct _MatOps MatOps = {0,0,
 
   Usage:
 $   MatCreateShell(m,n,ctx,&mat);
-$   MatShellSetMult(mat,mult);
+$   MatSetOperation(mat,MAT_MULT,mult);
 
 .keywords: matrix, shell, create
 
-.seealso: MatShellSetMult(), MatShellSetMultTransAdd()
+.seealso: MatSetOperation(), MatHasOperation(), MatShellGetContext()
 @*/
 int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 {
@@ -134,89 +117,35 @@ int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
   shell          = PetscNew(Mat_Shell); CHKPTRQ(shell);
   PetscMemzero(shell,sizeof(Mat_Shell));
   newmat->data   = (void *) shell;
-  shell->mult    = 0;
   shell->m       = m;
   shell->n       = n;
   shell->ctx     = ctx;
   return 0;
 }
 
-/*@C
-   MatShellSetMult - Sets the routine for computing the matrix-vector product.
+/*@
+    MatShellSetOperation - Allows use to set a matrix operation for a shell matrix.
 
-   Input Parameters:
-.  mat - the matrix associated with this operation, created 
-         with MatCreateShell()
-.  mult - the user-defined routine
+  Input Parameters:
+.   mat - the shell matrix
+.   op - the name of the operation
+.   f - the function that provides the operation.
 
-   Calling sequence of mult:
-   int mult (void *ptr,Vec xin,Vec xout)
-.  ptr - the application context for matrix data
-.  xin - input vector
-.  xout - output vector
+  Usage:
+   extern int mult(Mat,Vec,Vec);
+   ierr = MatCreateShell(comm,m,m,ctx,&A);
+   ierr = MatSetOperation(A,MAT_MULT,mult);
 
-.keywords: matrix, multiply, shell, set
-
-.seealso: MatCreateShell(), MatShellSetMultTransAdd()
+   In the user provided function, use MatShellGetContext() to obtain the 
+context passed into MatCreateShell().
 @*/
-int MatShellSetMult(Mat mat,int (*mult)(void*,Vec,Vec))
+int MatShellSetOperation(Mat mat,MatOperation op, void *f)
 {
-  Mat_Shell *shell;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  shell = (Mat_Shell *) mat->data;
-  shell->mult = mult;
+
+  if (op == MAT_DESTROY)   mat->destroy              = (int (*)(PetscObject)) f;
+  else if (op == MAT_VIEW) mat->view                 = (int (*)(PetscObject,Viewer)) f;
+  else                     (((void **)&mat->ops)[op])= f;
   return 0;
 }
-/*@C
-   MatShellSetMultTransAdd - Sets the routine for computing v3 = v2 + A' * v1.
-
-   Input Parameters:
-.  mat - the matrix associated with this operation, created 
-         with MatCreateShell()
-.  mult - the user-defined routine
-
-   Calling sequence of mult:
-   int mult (void *ptr,Vec v1,Vec v2,Vec v3)
-.  ptr - the application context for matrix data
-.  v1, v2 - the input vectors
-.  v3 - the result
-
-.keywords: matrix, multiply, transpose
-
-.seealso: MatCreateShell(), MatShellSetMult()
-@*/
-int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
-{
-  Mat_Shell *shell;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  shell               = (Mat_Shell *) mat->data;
-  shell->multtransadd = mult;
-  return 0;
-}
-/*@C
-   MatShellSetDestroy - Set the routine to use to destroy the 
-        private contents of your MatShell.
-
-   Input Parameters:
-.  mat - the matrix associated with this operation, created 
-         with MatCreateShell()
-.  destroy - the user-defined routine
-
-   Calling sequence of mult:
-   int destroy (void *ptr)
-.  ptr - the application context for matrix data
-
-.keywords: matrix, destroy, shell, set
-
-.seealso: MatCreateShell()
-@*/
-int MatShellSetDestroy(Mat mat,int (*destroy)(void*))
-{
-  Mat_Shell *shell;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  shell = (Mat_Shell *) mat->data;
-  shell->destroy = destroy;
-  return 0;
-}
-
 

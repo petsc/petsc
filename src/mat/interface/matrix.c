@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.155 1996/03/23 18:33:52 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.156 1996/03/25 18:47:57 balay Exp bsmith $";
 #endif
 
 /*
@@ -269,13 +269,10 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
     mat->assembled     = PETSC_FALSE;
-    mat->same_nonzero  = PETSC_TRUE;
-  } 
-
+  }
   PLogEventBegin(MAT_SetValues,mat,0,0,0);
   ierr = (*mat->ops.setvalues)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   PLogEventEnd(MAT_SetValues,mat,0,0,0);  

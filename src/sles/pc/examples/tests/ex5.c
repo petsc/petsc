@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.40 1996/02/08 18:26:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.41 1996/03/19 21:25:29 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -25,13 +25,13 @@ This example also demonstrates matrix-free methods\n\n";
 int  residual(Mat,Vec,Vec,Vec);
 int  gauss_seidel(void *,Vec,Vec,Vec,int);
 int  jacobi(void *,Vec,Vec,Vec,int);
-int  interpolate(void *,Vec,Vec,Vec);
-int  restrct(void *,Vec,Vec);
+int  interpolate(Mat,Vec,Vec,Vec);
+int  restrct(Mat,Vec,Vec);
 int  Create1dLaplacian(int,Mat*);
 int  CalculateRhs(Vec);
 int  CalculateError(Vec,Vec,Vec,double*);
 int  CalculateSolution(int,Vec*);
-int  amult(void*,Vec,Vec);
+int  amult(Mat,Vec,Vec);
 
 int main(int Argc, char **Args)
 {
@@ -91,8 +91,8 @@ int main(int Argc, char **Args)
   for ( i=0; i<levels-1; i++ ) {
     ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0); CHKERRA(ierr);
     ierr = MatCreateShell(MPI_COMM_WORLD,N[i],N[i+1],(void *)0,&mat[i]);CHKERRA(ierr);
-    ierr = MatShellSetMult(mat[i],restrct); CHKERRA(ierr);
-    ierr = MatShellSetMultTransAdd(mat[i],interpolate); CHKERRA(ierr);
+    ierr = MatShellSetOperation(mat[i],MAT_MULT,restrct); CHKERRA(ierr);
+    ierr = MatShellSetOperation(mat[i],MAT_MULT_TRANS_ADD,interpolate);CHKERRA(ierr);
     ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]); CHKERRA(ierr);
     ierr = MGSetRestriction(pcmg,levels - 1 - i,mat[i]); CHKERRA(ierr);
     ierr = MGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles); CHKERRA(ierr);
@@ -138,7 +138,7 @@ int main(int Argc, char **Args)
 
   /* create matrix multiply for finest level */
   ierr = MatCreateShell(MPI_COMM_WORLD,N[0],N[0],(void *)0,&fmat);CHKERRA(ierr);
-  ierr = MatShellSetMult(fmat,amult); CHKERRA(ierr);
+  ierr = MatShellSetOperation(fmat,MAT_MULT,amult); CHKERRA(ierr);
   ierr = SLESSetOperators(slesmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN); 
   CHKERRA(ierr);
 
@@ -198,7 +198,7 @@ int residual(Mat mat,Vec bb,Vec xx,Vec rr)
   ierr = VecRestoreArray(rr,&r); CHKERRQ(ierr);
   return 0;
 }
-int amult(void *ptr,Vec xx,Vec yy)
+int amult(Mat mat,Vec xx,Vec yy)
 {
   int    i, n1, ierr;
   Scalar *y,*x;
@@ -268,7 +268,7 @@ int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
    We know for this application that yy  and zz are the same
 */
 /* --------------------------------------------------------------------- */
-int interpolate(void *ptr,Vec xx,Vec yy,Vec zz)
+int interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   int    i, n, N, i2, ierr;
   Scalar *x,*y;
@@ -288,7 +288,7 @@ int interpolate(void *ptr,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-int restrct(void *ptr,Vec rr,Vec bb)
+int restrct(Mat mat,Vec rr,Vec bb)
 {
   int    i, n, N, i2, ierr;
   Scalar *r,*b;

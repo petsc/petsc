@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.52 1996/03/11 23:58:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.53 1996/03/19 21:27:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
@@ -46,14 +46,10 @@ int main(int argc,char **args)
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_nonsym",&flg); CHKERRA(ierr);
   if (flg) {
-    ierr = MatSetOption(C,STRUCTURALLY_SYMMETRIC_MATRIX); CHKERRA(ierr);
     for ( I=Istart; I<Iend; I++ ) { 
       v = -1.5; i = I/n;
       if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
     }
-  }
-  else {
-    ierr = MatSetOption(C,SYMMETRIC_MATRIX); CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
@@ -72,9 +68,6 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);
   ierr = VecAssemblyEnd(u); CHKERRA(ierr);
   
-  /* Compute right-hand-side */
-  ierr = MatMult(C,u,b); CHKERRA(ierr);
-
   /* Create SLES context; set operators and options; solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,C,C,SAME_NONZERO_PATTERN); CHKERRA(ierr);
@@ -95,6 +88,11 @@ int main(int argc,char **args)
   }
 }
 #endif
+  ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
+
+  /* Compute right-hand-side */
+  ierr = MatMult(C,u,b); CHKERRA(ierr);
+
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
  
   /* Check error */
@@ -118,19 +116,15 @@ int main(int argc,char **args)
       if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
       if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
       if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      v = 6.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
+      v = 6.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   } 
   ierr = OptionsHasName(PETSC_NULL,"-mat_nonsym",&flg); CHKERRA(ierr);
   if (flg) {
-    ierr = MatSetOption(C,STRUCTURALLY_SYMMETRIC_MATRIX); CHKERRA(ierr);
     for ( I=Istart; I<Iend; I++ ) { 
       v = -1.5; i = I/n;
-      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
+      if (i > 0)   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
     }
-  }
-  else {
-    ierr = MatSetOption(C,SYMMETRIC_MATRIX); CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr); 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.27 1996/03/19 21:26:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.28 1996/03/23 20:42:42 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -20,8 +20,13 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS perm,
 {
   /* Note:  f is not currently used in BlockSolve */
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
+  int          ierr;
 
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (!mbs->blocksolveassembly) {
+    MatSetOption(mat,SYMMETRIC_MATRIX);
+    ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat); CHKERRQ(ierr);
+  }
+
   if (!mbs->mat_is_symmetric) 
     SETERRQ(1,"MatIncompleteCholeskySymbolic_MPIRowbs:To use incomplete Cholesky \n\
         preconditioning with MatCreateMPIRowbs() matrix you must declare it to be \n\
@@ -47,8 +52,12 @@ int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS perm,IS cperm,
 {
   /* Note:  f is not currently used in BlockSolve */
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
+  int          ierr;
 
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (!mbs->blocksolveassembly) {
+    ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat); CHKERRQ(ierr);
+  }
+ 
   if (mbs->mat_is_symmetric) 
     SETERRQ(1,"MatILUFactorSymbolic_MPIRowbs:To use ILU preconditioner with \n\
         MatCreateMPIRowbs() matrix you CANNOT declare it to be a symmetric matrix\n\
@@ -68,6 +77,7 @@ int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS perm,IS cperm,
   *newfact = mat; 
   return 0; 
 }
+
 int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
@@ -81,9 +91,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (mat->factor == FACTOR_CHOLESKY) {
-    if (!mbs->nonew) SETERRQ(1,"MatCholeskyFactorNumeric_MPIRowbs:\
-      Must call MatSetOption(mat,NO_NEW_NONZERO_LOCATIONS) for re-solve.");
-    /* Copy only the nonzeros */
+    /* Copy the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
   }
   /* Form incomplete Cholesky factor */
@@ -105,6 +113,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   mat->factor = FACTOR_CHOLESKY;
   return 0;
 }
+
 int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
@@ -115,9 +124,7 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (mat->factor == FACTOR_LU) {
-    if (!mbs->nonew) SETERRQ(1,"MatCholeskyFactorNumeric_MPIRowbs:\
-      Must call MatSetOption(mat,NO_NEW_NONZERO_LOCATIONS) for re-solve.");
-    /* Copy only the nonzeros */
+    /* Copy the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
   }
   /* Form incomplete Cholesky factor */
@@ -183,6 +190,7 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 #endif
   return 0;
 }
+
 /* ------------------------------------------------------------------- */
 int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
@@ -219,6 +227,7 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 
   return 0;
 }
+
 /* ------------------------------------------------------------------- */
 int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
@@ -257,3 +266,4 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 int MatNullMPIRowbs()
 {return 0;}
 #endif
+

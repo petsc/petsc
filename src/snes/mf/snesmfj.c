@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.26 1996/02/08 16:54:00 curfman Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.27 1996/03/20 06:05:43 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -12,27 +12,34 @@ typedef struct {  /* default context for matrix-free SNES */
   PCNullSpace sp;
 } MFCtx_Private;
 
-int SNESMatrixFreeDestroy_Private(void *ptr)
+int SNESMatrixFreeDestroy_Private(PetscObject obj)
 {
   int           ierr;
-  MFCtx_Private *ctx = (MFCtx_Private* ) ptr;
+  Mat           mat = (Mat) obj;
+  MFCtx_Private *ctx;
+
+  ierr = MatShellGetContext(mat,(void **)&ctx);
   ierr = VecDestroy(ctx->w); CHKERRQ(ierr);
   if (ctx->sp) {ierr = PCNullSpaceDestroy(ctx->sp); CHKERRQ(ierr);}
-  PetscFree(ptr);
+  PetscFree(ctx);
   return 0;
 }
 
 /*
   SNESMatrixFreeMult_Private - Default matrix-free form of A*u.
 */
-int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
+int SNESMatrixFreeMult_Private(Mat mat,Vec dx,Vec y)
 {
-  MFCtx_Private *ctx = (MFCtx_Private* ) ptr;
-  SNES          snes = ctx->snes;
+  MFCtx_Private *ctx;
+  SNES          snes;
   double        norm, sum, epsilon = 1.e-8; /* assumes double precision */
   Scalar        h, dot, mone = -1.0;
-  Vec           w = ctx->w,U,F;
+  Vec           w,U,F;
   int           ierr, (*eval_fct)(SNES,Vec,Vec);
+
+  MatShellGetContext(mat,(void **)&ctx);
+  snes = ctx->snes;
+  w = ctx->w;
 
   /* We log matrix-free matrix-vector products separately, so that we can
      separate the performance monitoring from the cases that use conventional
@@ -114,8 +121,8 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);
   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
   ierr = MatCreateShell(comm,n,n,(void*)mfctx,J); CHKERRQ(ierr);
-  ierr = MatShellSetMult(*J,SNESMatrixFreeMult_Private); CHKERRQ(ierr);
-  ierr = MatShellSetDestroy(*J,SNESMatrixFreeDestroy_Private); CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MAT_MULT,SNESMatrixFreeMult_Private); CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MAT_DESTROY,SNESMatrixFreeDestroy_Private);CHKERRQ(ierr);
   PLogObjectParent(*J,mfctx->w);
   PLogObjectParent(snes,*J);
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.99 1996/03/18 00:43:55 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.100 1996/03/19 21:30:28 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -144,8 +144,66 @@ typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               } MatSORType;
 extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
 
-typedef enum { MAT_GET_DIAGONAL=17 } MatOperation;
+typedef enum { MAT_SET_VALUES=0,
+               MAT_GET_ROW=1,
+               MAT_RESTORE_ROW=2,
+               MAT_MULT=3,
+               MAT_MULT_ADD=4,
+               MAT_MULT_TRANS=5,
+               MAT_MULT_TRANS_ADD=6,
+               MAT_SOLVE=7,
+               MAT_SOLVE_ADD=8,
+               MAT_SOLVE_TRANS=9,
+               MAT_SOLVE_TRANS_ADD=10,
+               MAT_LUFACTOR=11,
+               MAT_CHOLESKYFACTOR=12,
+               MAT_RELAX=13,
+               MAT_TRANSPOSE=14,
+               MAT_GETINFO=15,
+               MAT_EQUAL=16,
+               MAT_GET_DIAGONAL=17, 
+               MAT_DIAGONAL_SCALE=18,
+               MAT_NORM=19,
+               MAT_ASSEMBLY_BEGIN=20,
+               MAT_ASSEMBLY_END=21,
+               MAT_COMPRESS=22,
+               MAT_SET_OPTION=23,
+               MAT_ZERO_ENTRIES=24,
+               MAT_ZERO_ROWS=25,
+               MAT_GET_REORDERING=26,
+               MAT_LUFACTOR_SYMBOLIC=27,
+               MAT_LUFACTOR_NUMERIC=28,
+               MAT_CHOLESKY_FACTOR_SYMBOLIC=29,
+               MAT_CHOLESKY_FACTOR_NUMERIC=30,
+               MAT_GET_SIZE=31,
+               MAT_GET_LOCAL_SIZE=32,
+               MAT_GET_OWNERSHIP_RANGE=33,
+               MAT_ILUFACTOR_SYMBOLIC=34,
+               MAT_INCOMPLETECHOLESKYFACTOR_SYMBOLIC=35,
+               MAT_GET_ARRAY=36,
+               MAT_RESTORE_ARRAY=37,
+               MAT_CONVERT=38,
+               MAT_GET_SUBMATRIX=39,
+               MAT_GET_SUBMATRIX_INPLACE=40,
+               MAT_CONVERT_SAME_TYPE=41,
+               MAT_FORWARD_SOLVE=42,
+               MAT_BACKWARD_SOLVE=43,
+               MAT_ILUFACTOR=44,
+               MAT_INCOMPLETECHOLEKSYFACTOR=45,
+               MAT_AXPY=46,
+               MAT_GET_SUBMATRICES=47,
+               MAT_INCREASE_OVERLAP=48,
+               MAT_GET_VALUES=49,
+               MAT_COPY=50,
+               MAT_PRINT_HELP=51,
+               MAT_SCALE=52,
+               MAT_SHIFT=53,
+               MAT_DIAGONAL_SHIFT=54,
+               MAT_DESTROY=250,
+               MAT_VIEW=251
+             } MatOperation;
 extern int MatHasOperation(Mat,MatOperation,PetscTruth*);
+extern int MatShellSetOperation(Mat,MatOperation,void *);
 
 /*  Not currently supported! 
 #define MAT_SCATTER_COOKIE PETSC_COOKIE+15

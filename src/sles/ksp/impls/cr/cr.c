@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.24 1996/03/10 17:27:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.25 1996/03/23 18:32:55 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -68,7 +68,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- r'*r       */
   }
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; return 0;}
-  KSPMonitor(ksp,dp,0);
+  KSPMonitor(ksp,0,dp);
   if (history) history[0] = dp;
   ierr = MatMult(Amat,P,Q); CHKERRQ(ierr);      /*    q <- A p          */
 
@@ -82,7 +82,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     ierr   = VecAXPY(&tmp,Q,R); CHKERRQ(ierr);     /*   r <- r - lambda q  */
     ierr   = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*   dp <- r'*r         */
     if (history && hist_len > i + 1) history[i+1] = dp;
-    KSPMonitor(ksp,dp,i+1);
+    KSPMonitor(ksp,i+1,dp);
     cerr   = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
     if (cerr) break;
     ierr   = MatMult(Amat,S,T); CHKERRQ(ierr);    /*   T <-   As          */
