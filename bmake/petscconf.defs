@@ -1,6 +1,6 @@
 
-   This file contains a complete list of the configure variables that 
-are used in the installation of PETSc. 
+   This file contains a complete list of the variables that are defined
+in bmake/${PETSC_ARCH}/petscconf.h
 
 HAVE_BROKEN_RECURSIVE_MACRO
 CPP processes recursive use of macros incorrectly
