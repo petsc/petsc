@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.14 1995/07/07 17:16:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.15 1995/07/28 04:23:37 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -24,7 +24,7 @@ struct _DrawLGCtx {
 #define CHUNCKSIZE 100
 
 /*@
-     DrawLGCreate - Creates a Line Graph data structure
+     DrawLGCreate - Creates a line graph data structure
 
   Input Parameters:
 .   win - the window where the graph will be made.
@@ -83,7 +83,7 @@ int DrawLGReset(DrawLGCtx lg)
 }
 
 /*@
-    DrawLGDestroy - Frees all space taken up by LineGraph 
+    DrawLGDestroy - Frees all space taken up by line graph 
                          data structure.
 
   Input Parameter:
@@ -233,7 +233,7 @@ int DrawLG(DrawLGCtx lg)
  
 /*@
      DrawLGSetLimits - Sets the axis limits for a line graph. If 
-                            more points are added after this call the
+                            more points are added after this call, the
                             limits will be adjusted to include those 
                             additional points.
 

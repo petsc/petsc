@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.14 1995/07/17 20:42:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.15 1995/07/28 17:49:13 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -91,7 +91,7 @@ int DrawAxisDestroy(DrawAxisCtx axis)
 
 /*@
     DrawAxisSetColors -  Sets the colors to be used for the axis,       
-                         tickmarks and text.
+                         tickmarks, and text.
 
    Input Parameters:
 .   axis - the axis
