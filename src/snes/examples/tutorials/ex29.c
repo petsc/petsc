@@ -8,13 +8,13 @@
 /* turning this on causes instability?!? */
 #undef UPWINDING 
 
-static char help[] = "Hall MHD with in two dimensions with \
-                      time stepping and multigrid.\n\n\
+static char help[] = "Hall MHD with in two dimensions with time stepping and multigrid.\n\n\
 -da_grid_x 5 -da_grid_y 5 -dmmg_nlevels 3\n\
--mg_coarse_pc_type lu mg_coarse_pc_lu_damping\n\
+-mg_coarse_pc_lu_damping\n\
 -mg_levels_pc_type sor -mg_levels_pc_sor_symmetric\n\
 -mg_levels_ksp_type richardson\n\
--ksp_type fgmres -ksp_right_pc\n\
+-snes_atol 1.e-10\n\
+-ksp_atol 1.e-10\n\
 -max_st 5\n\
 -viscosity <nu>\n\
 -skin_depth <d_e>\n\
@@ -79,6 +79,7 @@ typedef struct {
   int            ires,itstep;
   int            max_steps,print_freq;
   PassiveScalar  t;
+  PetscTruth     ts_monitor;           /* print information about each time step */
 } TstepCtx;
 
 typedef struct {
@@ -156,10 +157,10 @@ int main(int argc,char **argv)
     ierr = DADestroy(da);CHKERRQ(ierr);
 
     /* default physical parameters */
-    param.eta = 1e-3;
-    param.nu = 0;
+    param.nu    = 0;
+    param.eta   = 1e-3;
+    param.d_e   = 0.2;
     param.rho_s = 0;
-    param.d_e = 0.2;
 
     ierr = PetscOptionsGetReal(PETSC_NULL, "-viscosity", &param.nu,
                                PETSC_NULL);
@@ -204,6 +205,7 @@ int main(int argc,char **argv)
     tsCtx.t           = 0;
     tsCtx.dt_out      = 10;
     tsCtx.print_freq  = tsCtx.max_steps; 
+    tsCtx.ts_monitor  = PETSC_FALSE;
 
     ierr = PetscOptionsGetInt(PETSC_NULL, "-max_st", &tsCtx.max_steps,
                               PETSC_NULL);
@@ -219,6 +221,9 @@ int main(int argc,char **argv)
 
     ierr = PetscOptionsGetScalar(PETSC_NULL, "-deltat", &tsCtx.dt,
                                  PETSC_NULL);
+    CHKERRQ(ierr);
+
+    ierr = PetscOptionsHasName(PETSC_NULL, "-ts_monitor", &tsCtx.ts_monitor);
     CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -264,14 +269,16 @@ int main(int argc,char **argv)
         }
       }
     }
+    
+    if (PreLoading) {
+      ierr = PetscPrintf(comm, "# viscosity = %g, resistivity = %g, "
+			 "skin_depth # = %g, larmor_radius # = %g\n",
+			 param.nu, param.eta, param.d_e, param.rho_s);
+      CHKERRQ(ierr);
+      ierr = DAGetInfo(DMMGGetDA(dmmg),0,&m,&n,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"Problem size %d by %d\n",m,n);CHKERRQ(ierr);
+    }
 
-    ierr = PetscPrintf(comm, "# viscosity = %g, resistivity = %g, "
-		       "skin_depth # = %g, larmor_radius # = %g\n",
-		       param.nu, param.eta, param.d_e, param.rho_s);
-    CHKERRQ(ierr);
-
-    ierr = DAGetInfo(DMMGGetDA(dmmg),0,&m,&n,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Problem size %d by %d\n",m,n);CHKERRQ(ierr);
     
     
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -406,7 +413,7 @@ int Initialize(DMMG *dmmg)
   ierr = DAVecGetArray(da,localX,(void**)&localx);CHKERRQ(ierr);
 
   /*
-     Compute initial guess over the locally owned part of the grid
+     Compute initial solution over the locally owned part of the grid
   */
   {
     PetscReal eps = lx/ly;
@@ -562,8 +569,8 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
        * convective coefficients for upwinding
        */
 
-      vx = - D_y(x,phi,i,j);
-      vy =   D_x(x,phi,i,j);
+      vx  = - D_y(x,phi,i,j);
+      vy  =   D_x(x,phi,i,j);
       avx = PetscAbsScalar(vx); vxp = p5*(vx+avx); vxm = p5*(vx-avx);
       avy = PetscAbsScalar(vy); vyp = p5*(vy+avy); vym = p5*(vy-avy);
 #ifndef UPWINDING
@@ -571,8 +578,8 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
       vyp = vym = p5*vy;
 #endif
 
-      Bx =   D_y(x,psi,i,j);
-      By = - D_x(x,psi,i,j) + By_eq;
+      Bx  =   D_y(x,psi,i,j);
+      By  = - D_x(x,psi,i,j) + By_eq;
       aBx = PetscAbsScalar(Bx); Bxp = p5*(Bx+aBx); Bxm = p5*(Bx-aBx);
       aBy = PetscAbsScalar(By); Byp = p5*(By+aBy); Bym = p5*(By-aBy);
 #ifndef UPWINDING
@@ -629,15 +636,11 @@ int Update(DMMG *dmmg)
   SNES           snes;
   int            ierr,its,lits,i;
   int            max_steps;
-  PetscTruth     print_flag = PETSC_FALSE;
   int            nfailsCum = 0,nfails = 0;
   static int     ic_out;
-  PetscLogDouble start, stop, elapsed;
+  PetscTruth     ts_monitor = tsCtx->ts_monitor && !user->param->PreLoading;
 
   PetscFunctionBegin;
-
-  ierr = PetscOptionsHasName(PETSC_NULL, "-print", &print_flag);
-  CHKERRQ(ierr);
 
   if (user->param->PreLoading) 
     max_steps = 1;
@@ -645,9 +648,6 @@ int Update(DMMG *dmmg)
     max_steps = tsCtx->max_steps;
   
   ierr = Initialize(dmmg);
-  CHKERRQ(ierr);
-
-  ierr = PetscGetTime(&start);
   CHKERRQ(ierr);
 
   for (tsCtx->itstep = 0; tsCtx->itstep < max_steps; tsCtx->itstep++) {
@@ -701,46 +701,16 @@ int Update(DMMG *dmmg)
 
 #endif
 
-    ierr = SNESGetIterationNumber(snes,&its);
-    CHKERRQ(ierr);
-    ierr = SNESGetNumberLinearIterations(snes,&lits);
-    CHKERRQ(ierr);
-
-    if (print_flag) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,
-                         "Number of Newton iterations = %d / lin = %d\n",
-                         its, lits);
-      CHKERRQ(ierr);
-    }
-
-    ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);
-    CHKERRQ(ierr);
-
-    if (print_flag) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of unsuccessful = %d\n",
-                         nfails);
-      CHKERRQ(ierr);
-    }
-
-    nfailsCum += nfails;
-    nfails = 0;
-
-    if (nfailsCum >= 2)
-      SETERRQ(1,"Unable to find a Newton Step");
-
-    ierr = SNESComputeFunction(snes, dmmg[param->mglevels-1]->x,
-                               ((AppCtx*)dmmg[param->mglevels-1]->user)->func);
-    CHKERRQ(ierr);
-
-    ierr = VecNorm(user->func, NORM_2, &tsCtx->fnorm);
-    CHKERRQ(ierr);
-    
-    tsCtx->t += tsCtx->dt;
-
-    if (print_flag) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,
-                         "After Time Step %d and fnorm = %g\n",
-			 tsCtx->itstep, tsCtx->fnorm);
+    if (ts_monitor) {
+      ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+      ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRQ(ierr);
+      ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
+      ierr = SNESGetFunctionNorm(snes,&tsCtx->fnorm);CHKERRQ(ierr);
+      nfailsCum += nfails;
+      if (nfailsCum >= 2) SETERRQ(1,"Unable to find a Newton Step");
+      tsCtx->t += tsCtx->dt;
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Time Step %d time = %g Newton steps %d linear steps %d fnorm %g\n",
+			 tsCtx->itstep, tsCtx->t, its, lits, tsCtx->fnorm);
       CHKERRQ(ierr);
     }
 
@@ -750,7 +720,7 @@ int Update(DMMG *dmmg)
         CHKERRQ(ierr);
       }
 
-      if (print_flag) {
+      if (0 && ts_monitor) {
 	/* compute maxima */
 	ComputeMaxima((DA) dmmg[param->mglevels-1]->dm,
                       dmmg[param->mglevels-1]->x,
@@ -774,17 +744,13 @@ int Update(DMMG *dmmg)
       }
     }
   } /* End of time step loop */
-  
-  ierr = PetscGetTime(&stop); CHKERRQ(ierr);
-
-  elapsed = stop - start;
-
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "elapsed time = %g\n", elapsed);
-  CHKERRQ(ierr);
-  
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "timesteps %d fnorm = %g\n",
-                     tsCtx->itstep, tsCtx->fnorm);
-  CHKERRQ(ierr);
+ 
+  if (!user->param->PreLoading){ 
+    ierr = SNESGetFunctionNorm(snes,&tsCtx->fnorm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "timesteps %d fnorm = %g\n",
+		       tsCtx->itstep, tsCtx->fnorm);
+    CHKERRQ(ierr);
+  }
 
   if (user->param->PreLoading) {
     tsCtx->fnorm_ini = 0.0;

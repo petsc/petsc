@@ -58,6 +58,7 @@ void ad_grad_axpy_n(int arity, void* ddz, ...)
       z[i] += alpha*gradv[i];
     }
   }   
+  PetscLogFlops(2*ad_grad_size_dynamic*(arity-.5));
 }
 
 EXTERN_C_END
