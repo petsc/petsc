@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daview.c,v 1.7 1996/03/10 17:29:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.8 1996/03/19 21:29:33 bsmith Exp curfman $";
 #endif
  
 /*
@@ -58,7 +58,7 @@ int DAView(DA da, Viewer v)
 .  da - the distributed array
 
    Output Parameters:
-.  dim - size of the distributed array
+.  dim - dimension of the distributed array (1, 2, or 3)
 .  M, N, P - global dimension in each direction of the array
 .  m, n, p - corresponding number of procs in each dimension
 .  w - number of degrees of freedom per node
