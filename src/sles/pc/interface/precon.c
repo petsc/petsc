@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.99 1996/08/20 03:57:54 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.100 1996/08/20 17:07:29 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -564,7 +564,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   if (type == MATMPIROWBS) {
     if (pc->type == PCBJACOBI) {
       ierr = PCSetType(pc,PCILU); CHKERRQ(ierr);
-      PLogInfo(pc,"PCSetOperators:Switching to PCILU since BS95 doesn't support BJacobi");
+      PLogInfo(pc,"PCSetOperators:Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");
     }
   }
   /*
@@ -573,7 +573,8 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   ierr = MatGetType(Pmat,&type,PETSC_NULL); CHKERRQ(ierr);
   if (type == MATSHELL && pc->type != PCSHELL && pc->type != PCMG) {
     ierr = PCSetType(pc,PCNONE); CHKERRQ(ierr);
-    PLogInfo(pc,"PCSetOperators:Setting PCNONE since MATSHELL doesn't support pcs");
+    PLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
+    preconditioners (unless defined by the user)\n");
   }
 
   pc->mat  = Amat;
