@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.24 1995/12/21 17:46:02 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.25 1995/12/21 19:58:53 bsmith Exp curfman $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -318,7 +318,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       y[row++]=sum3;
       y[row++]=sum4;
       y[row++]=sum5;
-      v1      =v5;              /* Since the next block to be processed starts there*/
+      v1      =v5;       /* Since the next block to be processed starts there */
       idx    +=4*sz;
       break;
     default :
@@ -335,10 +335,9 @@ int Mat_AIJ_CheckInode(Mat A)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        i, j, m, nzx, nzy, *idx, *idy, *ns,*ii, node_count, blk_size;
 
-  /* Notes: We set a->inode.limit=5 in MatCreateSeqAIJ().  For now, help 
-     message is in MatCreate() only.  This should change eventually. */
-  if (OptionsHasName(PETSC_NULL, "-mat_aij_no_inode")) return 0;
-  OptionsGetInt(PETSC_NULL, "-mat_aij_inode_limit",&a->inode.limit);
+  /* Notes: We set a->inode.limit=5 in MatCreateSeqAIJ(). */
+  if (OptionsHasName(PETSC_NULL,"-mat_aij_no_inode")) return 0;
+  OptionsGetInt(PETSC_NULL,"-mat_aij_inode_limit",&a->inode.limit);
   if (a->inode.limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
   m = a->m;        
   if (!a->inode.size && m){
