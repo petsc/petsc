@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.3 1999/03/31 18:38:56 bsmith Exp bsmith $ 
+# $Id: base_variables,v 1.4 1999/05/12 03:24:58 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -11,8 +11,10 @@ SHELL            = /bin/sh
 #
 C_CC             = cc    -KPIC -dalign -xtarget=native
 C_FC             = f90 -xpp=cpp
-C_CLINKER        = cc    ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
-C_FLINKER        = f90   ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
+C_CC_SLFLAG      = -R
+C_FC_SLFLAG      = -R
+C_CLINKER        = cc
+C_FLINKER        = f90
 C_CCV            = cc    -V -c
 C_SYS_LIB        = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl 
 # ---------------------------- BOPT=g options ----------------------------
@@ -25,8 +27,10 @@ O_FOPTFLAGS      = -fast
 #
 CXX_CC           = CC    -KPIC
 CXX_FC           = f90   -xpp=cpp
-CXX_CLINKER      = CC    ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = CC    ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
+CXX_CC_SLFLAG    = -R
+CXX_FC_SLFLAG    = -R
+CXX_CLINKER      = CC
+CXX_FLINKER      = CC
 CXX_CCV          = CC    -V -c
 CXX_SYS_LIB      = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -lcomplex -ldl
 # ------------------------- BOPT=g_c++ options ------------------------------
