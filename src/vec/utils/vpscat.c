@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.129 2000/04/09 04:35:20 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.130 2000/04/12 04:22:10 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -48,9 +48,9 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
       ierr = ViewerASCIIPrintf(viewer,"  Total data sent %d\n",alldata*to->bs*sizeof(Scalar));CHKERRQ(ierr);
 
     } else { 
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Number sends %d self %d\n",rank,to->n,to->local.n);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Number sends = %d; Number to self = %d\n",rank,to->n,to->local.n);CHKERRQ(ierr);
       for (i=0; i<to->n; i++){
-        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]   %d length %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]   %d length = %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);CHKERRQ(ierr);
       }
 
       ierr = ViewerASCIISynchronizedPrintf(viewer,"Now the indices\n");CHKERRQ(ierr);
@@ -58,8 +58,9 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
         ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]%d \n",rank,to->indices[i]);CHKERRQ(ierr);
       }
 
-      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]Number receives %d self %d\n",rank,from->n,from->local.n);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]Number receives = %d; Number from self = %d\n",rank,from->n,from->local.n);CHKERRQ(ierr);
       for (i=0; i<from->n; i++){
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"Now the indices\n");CHKERRQ(ierr);
         ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] %d length %d from whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);CHKERRQ(ierr);
       }
 
