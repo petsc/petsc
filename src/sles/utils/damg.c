@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.7 2000/07/13 03:53:43 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.8 2000/07/13 15:37:38 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -74,6 +74,8 @@ int DAMGDestroy(DAMG *damg)
   int     ierr,i,nlevels = damg[0]->nlevels;
 
   PetscFunctionBegin;
+  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
+
   for (i=1; i<nlevels; i++) {
     if (damg[i]->R) {ierr = MatDestroy(damg[i]->R);CHKERRA(ierr);}
   }
@@ -127,6 +129,8 @@ int DAMGSetCoarseDA(DAMG *damg,DA da)
   DAStencilType  st;
   char           *name;
 
+  PetscFunctionBegin;
+  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
   PetscValidHeaderSpecific(da,DA_COOKIE);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_compare(comm,damg[0]->comm,&flag);CHKERRQ(ierr);
@@ -202,6 +206,8 @@ int DAMGSetSLES(DAMG *damg,SLES sles,int (*func)(DAMG,Mat))
   Vec        xyz,txyz;
   PetscTruth flg,ismg;
 
+  PetscFunctionBegin;
+  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   ierr = PetscObjectGetComm((PetscObject)sles,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_compare(comm,damg[0]->comm,&flag);CHKERRQ(ierr);
@@ -303,6 +309,8 @@ int DAMGView(DAMG *damg,Viewer viewer)
   MPI_Comm       comm;
   PetscTruth     isascii;
 
+  PetscFunctionBegin;
+  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_compare(comm,damg[0]->comm,&flag);CHKERRQ(ierr);
