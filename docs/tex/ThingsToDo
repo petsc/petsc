@@ -10,6 +10,9 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+ - Subdivide html manpage sections, e.g. elementary, advanced and developer.
+
+ - Remove Unix man pages from next PETSc release. 
 
 
 
