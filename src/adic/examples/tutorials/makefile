@@ -28,6 +28,8 @@ BUILDEXAMPLES_9 =
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c
 EXAMPLESF       =
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1.ad:  chkopts 
 	$(ADIC_CC) -h $(CFLAGS) ex1.c
 	$(CC) $(ADIC_INCLUDE) $(CFLAGS) $(COPTFLAGS) -c ex1.ad.c
@@ -65,7 +67,5 @@ ex5:  chkopts ex5.o ex5func.o
 	$(CC) $(ADIC_INCLUDE) $(CFLAGS) $(COPTFLAGS) -c ex5func.ad.c 
 	-$(CLINKER)  -o ex5 ex5.o ex5func.o ex5func.ad.o $(PETSC_ADIC_LIB) $(ADIC_LIB)
 	$(RM) ex5.o ex5func.o ex5func.ad.o
-
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 

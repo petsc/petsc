@@ -30,6 +30,8 @@ EXAMPLESF       =
 
 SPAI_LIB        = /home/bsmith/spai_1.1/lib/$(PETSC_ARCH)/libspai.a
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_CONTRIB)  $(SPAI_LIB) $(PETSC_LIB) 
 	$(RM) ex1.o
@@ -38,6 +40,5 @@ ex2: ex2.o  chkopts
 	-$(CLINKER)  -o ex2 ex2.o $(PETSC_CONTRIB)  $(SPAI_LIB) $(PETSC_LIB) 
 	$(RM) ex2.o
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 

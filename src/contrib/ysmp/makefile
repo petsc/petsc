@@ -15,6 +15,8 @@ EXAMPLES  = ex1
 EXAMPLESC = ex1.c
 LINCLUDE  = $(SOURCEH)
 
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 ex1: ex1.o $(PETSC_ARCH)$(BOPT)ysmp.a
 	-$(CLINKER) -o ex1 ex1.o $(LIBNAME) $(PETSC_LIB) $(PETSC_ARCH)$(BOPT)ysmp.a
 	$(RM) ex1.o
@@ -49,4 +51,4 @@ $(PETSC_ARCH)$(BOPT)ysmp.a  : $(SRC)
 	rm -f  $(OBJ)
 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
