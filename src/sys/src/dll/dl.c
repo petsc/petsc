@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.71 2001/04/10 19:34:28 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.72 2001/09/19 16:07:01 bsmith Exp balay $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -444,7 +444,6 @@ int PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char li
   int                ierr,len;
   PetscTruth         match,dir;
   char               program[1024],buf[8*1024],*found,*libname1,suffix[16],*s;
-  FILE               *fp;
   PetscToken         *token;
 
   PetscFunctionBegin;
@@ -540,7 +539,6 @@ int PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibraryList *outlist,const char l
   int                ierr,len;
   PetscTruth         match,dir;
   char               program[1024],buf[8*1024],*found,*libname1,suffix[16],*s;
-  FILE               *fp;
   PetscToken         *token;
 
   PetscFunctionBegin;
@@ -661,10 +659,8 @@ int PetscDLLibraryClose(PetscDLLibraryList next)
 @*/
 int PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char dirname[])
 {
-  PetscDLLibraryList list,prev;
-  void*              handle;
-  int                ierr,len,l;
-  PetscTruth         match,dir;
+  int                ierr,l;
+  PetscTruth         dir;
   char               program[1024],buf[8*1024],*libname1,fbuf[1024],*found,suffix[16],*f2;
   char               *func,*funcname,libname[1024],*lib;
   FILE               *fp;

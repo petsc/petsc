@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.52 2001/09/19 16:07:12 bsmith Exp balay $*/
+/*$Id: str.c,v 1.53 2001/09/21 18:06:19 balay Exp balay $*/
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 
@@ -447,7 +447,6 @@ int PetscStrtolower(char a[])
 @*/
 int PetscTokenFind(PetscToken *a,char **result)
 {
-  int  i,ierr,len;
   char *ptr = a->current;
 
   PetscFunctionBegin;
