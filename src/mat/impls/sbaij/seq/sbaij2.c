@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.17 2000/10/06 18:24:41 hzhang Exp hzhang $*/
+/*$Id: sbaij2.c,v 1.18 2000/10/06 21:02:57 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -528,9 +528,9 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*x_ptr,*z,*z_ptr,*xb,*zb,*work,*workt,zero=0.0;
-  MatScalar       *v,*vtmp;
+  MatScalar       *v;
   int             ierr,mbs=a->mbs,i,*idx,*aj,*ii,bs=a->bs,j,n,bs2=a->bs2;
-  int             ncols,k,n1;
+  int             ncols,k;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
