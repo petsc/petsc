@@ -100,18 +100,18 @@ def updatePatches():
     (status1,output1) = commands.getstatusoutput(patch+' -Np1 < '+patches1)
   except:
     raise RuntimeError('Unable to apply patch from '+patches1+' with '+patch) 
-  if output1.find('FAILED') >= 0:
-    log.write(output1+'\n')
+  log.write(output1+'\n')
+  if status1 or output1.find('FAILED') >= 0:
     raise RuntimeError('Error applying '+patches1+' update.\n')
   if patches1 == 'patches1':
     os.unlink(patches1)
     
   try:
-    (status1,output1) = commands.getstatusoutput('cd python/BuildSystem; '+patch+' -Np1 < '+'../../'+patches2)
+    (status1,output1) = commands.getstatusoutput('cd python/BuildSystem; '+patch+' -Np1 < '+os.path.join('..','..',patches2))
   except:
     raise RuntimeError('Unable to apply patch from '+patches2+' with '+patch) 
-  if output1.find('FAILED') >= 0:
-    log.write(output1+'\n')
+  log.write(output1+'\n')
+  if status1 or output1.find('FAILED') >= 0:
     raise RuntimeError('Error applying '+patches2+' update.\n')
   if patches2 == 'patches2':
     os.unlink(patches2)
