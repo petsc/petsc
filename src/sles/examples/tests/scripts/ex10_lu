@@ -12,7 +12,7 @@ foreach matrix (medium arco1)
 
         echo "mpirun ex6 -f /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type lu $shift -mat_order $order $mode"
 
-        mpirun ex6 -f /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type lu $shift -mat_order $order -ksp_monitor $mode
+        mpirun ex10 -f0 /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type lu $shift -mat_order $order -ksp_monitor $mode
 
       end
 
