@@ -10,6 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - MatSetValuesBlocked()
+
   - Perhaps include a PETSC_MIN_FP_VALUE for use with Tolerances
     for KSP, SNES etc and support also for OptionGetDouble()
 
@@ -41,13 +43,12 @@ Additional Capabilities that PETSc Needs:
     turning them all off???? Maybe not. Currently PETsc itself does
     this by turning off events one at a time for its own classes.
 
-  X Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
+  * Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
     A prototype is on poseidon:~mcinnes/mpibaij.bak
 
-   * Finite difference approximations of derivatives using coloring
+  * Finite difference approximations of derivatives using coloring
 
   - Add routine SNESWillNeedJacobian(SNES,SNESJacobianNeeded yes,no,maybe);
-
 
   - Use MPI topology routines for DA codes.
 
@@ -58,17 +59,6 @@ Additional Capabilities that PETSc Needs:
      sections of the mesh, but really this would be needed just for
      the final edge.
 
-  - Clarify documentation for MatReorderForNonzeroDiagonal().
-    Comment from Jean Utke:
-    > It is still not clear to 
-    > me whether I can apply the routine for the in place and/or out of place
-    > factorization and when I have to call it (before or after the 
-    > factorization). 
-    > In general I would like to have the manual and the man pages a bit 
-    > more specific about whether parameters get changed inside the 
-    > routine or not. The routine in question for instance has all 
-    > parameter calls by value and not by reference which raises the 
-    > question what gets changed at all ... 
     
   - Add a searchable index for the man pages (Jeff Scroggs Complaint)
 
@@ -77,13 +67,15 @@ Additional Capabilities that PETSc Needs:
   - fix PetscView so that with scrolling in horizontal direction and click on icon
     it pops up detailed information in correct location.
 
+  - Aim for more exhaustive PETSc testing.  Use tconv Unix utilities
+ 
   - Maybe, like, say, test one or two BDiag routines before making a release?
 
   - Purge RCS files of very old stuff to save disk space???
 
   - Add Victor EIJKhout's matrix codes
 
-   get SPAI  http://lovelace.nas.nasa.gov/NAS/SPAI/download.html
+  * get SPAI  http://lovelace.nas.nasa.gov/NAS/SPAI/download.html
 
   - compile with PETSC_DEBUG turned off and fix all places in code that 
     generate warning messages.
@@ -109,7 +101,7 @@ Additional Capabilities that PETSc Needs:
 
   - Support y = alpha *y + beta *A *x
 
-  - AVS viewer via MPI, new Matlab viewer via MPI through out sockets Matlab viewer
+  - AVS viewer via MPI, new Matlab viewer via MPI without sockets Matlab viewer
 
   - write SLESCompareTypes() that for a given sles runs all possible PC, KSP, options etc.
     builds giant table.
@@ -120,22 +112,20 @@ Additional Capabilities that PETSc Needs:
 
  - Subdivide html manpage sections, e.g. elementary, advanced and developer.
 
- - Aim for more exhaustive PETSc testing.  Use tconv Unix utilities
-
  - Fix VRML vector viewer interface; add documentation about VRML.
 
  - Add feature to SNESDefatulComputeJacobian() for user to set differencing
    parameter (similar to matrix-free stuff) as is already supported for coloring version?
 
- - Finish converting examples to tutorials/tests formats
+  - Finish converting examples to tutorials/tests formats
 
-    - Suggestion by Carl - provide SNES example showing user computing most
-      of Jacobian in function eval routine.
+  - Suggestion by Carl - provide SNES example showing user computing most
+    of Jacobian in function eval routine.
 
-    - Add SLES example showing multiple linear solves with same matrices but
-      difference RHS.
+  - Add SLES example showing multiple linear solves with same matrices but
+    difference RHS.
 
-    - Write an example of using MatCreateShell().
+  - Write an example of using MatCreateShell().
 
   - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
 
@@ -210,8 +200,6 @@ Additional Capabilities that PETSc Needs:
 
   - interface to Tom Coleman's post-docs Cholesky code
 
-  - MatSetBlockValues()
-
   - Right and left preconditioning for all KSP types.
 
   - Augment some KSP methods to support symmetric preconditioning; fix relevant
@@ -233,9 +221,6 @@ Additional Capabilities that PETSc Needs:
 
    - Add viewer for matrix graph - possibly interface to external software?
      (requested by Andreas) 
-
-   - Allow one to view a reordered matrix, perhaps 
-       by providing a MatReOrder(Mat,IS,IS,Mat*)?
 
    - Maybe add a routine VecCreateVecs()?  Seems useful to me instead of having
      to create a base vector, then duplicate it.
@@ -724,3 +709,17 @@ Additional Capabilities that PETSc Needs:
     MatReorderingRegister) to replace the lame procedure described in,
     e.g., PCRegisterAll.  
 
+  X Clarify documentation for MatReorderForNonzeroDiagonal().
+    Comment from Jean Utke:
+    > It is still not clear to 
+    > me whether I can apply the routine for the in place and/or out of place
+    > factorization and when I have to call it (before or after the 
+    > factorization). 
+    > In general I would like to have the manual and the man pages a bit 
+    > more specific about whether parameters get changed inside the 
+    > routine or not. The routine in question for instance has all 
+    > parameter calls by value and not by reference which raises the 
+    > question what gets changed at all ... 
+
+  X Allow one to view a reordered matrix, perhaps 
+     by providing a MatReOrder(Mat,IS,IS,Mat*)?
