@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.61 1999/03/18 02:00:23 balay Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.62 1999/03/18 15:32:47 bsmith Exp balay $ */
 
 /* 
    This private file should not be included in users' code.
@@ -250,14 +250,14 @@ extern int VecStashScatterGetMesg_Private(VecStash*,int*,int**,Scalar**,int*);
 */
 #define VecStashValuesBlocked_Private(stash,row,values) \
 { \
-  int    j,bs=(stash)->bs; \
+  int    jj,stash_bs=(stash)->bs; \
   Scalar *array; \
   if (((stash)->n+1) > (stash)->nmax) { \
     ierr = VecStashExpand_Private(stash,1); CHKERRQ(ierr); \
   } \
-  array = (stash)->array + bs*(stash)->n; \
+  array = (stash)->array + stash_bs*(stash)->n; \
   (stash)->idx[(stash)->n]   = row; \
-  for ( j=0; j<bs; j++ ) { array[j] = values[j];} \
+  for ( jj=0; jj<stash_bs; jj++ ) { array[jj] = values[jj];} \
   (stash)->n++; \
 }
 
