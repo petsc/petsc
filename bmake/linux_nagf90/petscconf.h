@@ -10,6 +10,7 @@
 #define PETSC_ARCH_NAME "linux"
 
 #define PETSC_USE_FORTRAN_KERNELS
+#define PETSC_MISSING_FORTRANSTAR                                                                                                            
 
 #define PETSC_HAVE_POPEN
 #define PETSC_HAVE_LIMITS_H

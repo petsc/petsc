@@ -16,14 +16,14 @@ DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
 C_CC               = gcc -fPIC                                                                                              
-C_FC               = /homes/naumann/tmp/NGF95-020726/NAGWare_f95/bin/f95 -Qpath /homes/naumann/tmp/NGF95-020726/NAGWare_f95/lib                                                                             
+C_FC               = /home/petsc/soft/linux-rh73-nag/NGF95-030203/NAGWare_f95/bin/f95 -Qpath /home/petsc/soft/linux-rh73-nag/NGF95-030203/NAGWare_f95/lib                                                                             
 C_CLINKER_SLFLAG   = -Wl,-rpath,
 C_FLINKER_SLFLAG   = -Wl,-rpath,
 C_CLINKER          = gcc                                                                                                 
 C_FLINKER          = gcc                                                                                              
 C_CCV              = ${C_CC} --version                                                                           
 C_FCV              =                                                                                                        
-C_SYS_LIB          = ${CLINKER_SLFLAG}/homes/naumann/tmp/NGF95-020726/NAGWare_f95/lib /homes/naumann/tmp/NGF95-020726/NAGWare_f95/lib/libf96.so /homes/naumann/tmp/NGF95-020726/NAGWare_f95/lib/libf96.a /homes/naumann/tmp/NGF95-020726/NAGWare_f95/lib/quickfit.o /usr/lib/gcc-lib/i586-mandrake-linux/2.95.3/libg2c.a -lc -lm /usr/lib/libc.a
+C_SYS_LIB          = ${CLINKER_SLFLAG}/home/petsc/soft/linux-rh73-nag/NGF95-030203/NAGWare_f95/lib /home/petsc/soft/linux-rh73-nag/NGF95-030203/NAGWare_f95/lib/libf96.so /home/petsc/soft/linux-rh73-nag/NGF95-030203/NAGWare_f95/lib/libf96.a /home/petsc/soft/linux-rh73-nag/NGF95-030203/NAGWare_f95/lib/quickfit.o -lg2c -lc -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g
@@ -33,15 +33,13 @@ O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = g++ -fPIC
-CXX_FC		   = g77 -Wno-globals
+CXX_FC		   = /home/petsc/soft/linux-rh73-nag/NGF95-030203/NAGWare_f95/bin/f95 -Qpath /home/petsc/soft/linux-rh73-nag/NGF95-030203/NAGWare_f95/lib
 CXX_CLINKER_SLFLAG = -Wl,-rpath,
 CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = g++
 CXX_FLINKER	   = g++
 CXX_CCV		   = ${CXX_CC} --version
-#CXX_SYS_LIB	   = -ldl -lc -lf2c -lm
-CXX_SYS_LIB	   = -ldl -lstdc++ -lc -lg2c  -lm
-#CXX_SYS_LIB	   = -ldl -lc /usr/lib/libf2c.a -lm
+CXX_SYS_LIB	   = ${CLINKER_SLFLAG}/home/petsc/soft/linux-rh73-nag/NGF95-030203/NAGWare_f95/lib /home/petsc/soft/linux-rh73-nag/NGF95-030203/NAGWare_f95/lib/libf96.so /home/petsc/soft/linux-rh73-nag/NGF95-030203/NAGWare_f95/lib/libf96.a /home/petsc/soft/linux-rh73-nag/NGF95-030203/NAGWare_f95/lib/quickfit.o -lg2c -lc -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g

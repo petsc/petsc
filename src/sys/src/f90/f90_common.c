@@ -10,6 +10,10 @@
 #error "Both PETSC_HAVE_F90_H and PETSC_HAVE_F90_C flags have to be specified in petscconf.h"
 #endif
 
+/* Nag uses char * instead of void* ??? */
+#if !defined(__F90_NAG_H)
+#define Pointer void*
+#endif
 /*-------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array1dAccess"
@@ -28,7 +32,7 @@ int F90Array1dDestroy(F90Array1d *ptr)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr);
-  ptr->addr = (void *)0;
+  ptr->addr = (Pointer)0;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
@@ -60,7 +64,7 @@ int F90Array2dDestroy(F90Array2d *ptr)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr);
-  ptr->addr = (void *)0;
+  ptr->addr = (Pointer)0;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  

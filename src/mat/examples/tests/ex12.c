@@ -5,8 +5,8 @@ This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ ma
 
 #include "petscmat.h"
 
-EXTERN int TestMatZeroRows_Basic(Mat,IS,PetscScalar *);
-EXTERN int TestMatZeroRows_with_no_allocation(Mat,IS,PetscScalar *);
+EXTERN int TestMatZeroRows_Basic(Mat,IS,const PetscScalar[] );
+EXTERN int TestMatZeroRows_with_no_allocation(Mat,IS,const PetscScalar[]);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -79,7 +79,7 @@ int main(int argc,char **args)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestMatZeroRows_Basic"
-int TestMatZeroRows_Basic(Mat A,IS is,const PetscScalar *diag)
+int TestMatZeroRows_Basic(Mat A,IS is,const PetscScalar diag[])
 {
   Mat        B;
   int        ierr;
@@ -101,7 +101,7 @@ int TestMatZeroRows_Basic(Mat A,IS is,const PetscScalar *diag)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestMatZeroRows_with_no_allocation"
-int TestMatZeroRows_with_no_allocation(Mat A,IS is,const PetscScalar *diag)
+int TestMatZeroRows_with_no_allocation(Mat A,IS is,const PetscScalar diag[])
 {
   Mat         B;
   int         ierr;
