@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.69 1999/05/04 20:38:08 balay Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.70 1999/05/12 03:34:35 bsmith Exp kaushik $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -318,6 +318,12 @@ void matcreate_(MPI_Comm *comm,int *m,int *n,int *M,int *N,Mat *V, int *__ierr )
 void matcreateseqaij_(MPI_Comm *comm,int *m,int *n,int *nz,
                            int *nnz,Mat *newmat, int *__ierr )
 {
+  if (FORTRANNULLSCALAR(nnz)) {
+    PetscError(__LINE__,"MatCreateSeqAIJ_Fortran",__FILE__,__SDIR__,1,0,
+               "Cannot pass PETSC_NULL_SCALAR, use PETSC_NULL_INT");
+    *__ierr = 1;
+    return;
+  }
   if (FORTRANNULLINTEGER(nnz)) nnz = PETSC_NULL;
   *__ierr = MatCreateSeqAIJ((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*nz,nnz,newmat);
 }
@@ -325,6 +331,12 @@ void matcreateseqaij_(MPI_Comm *comm,int *m,int *n,int *nz,
 void matcreateseqbaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *nz,
                            int *nnz,Mat *newmat, int *__ierr )
 {
+  if (FORTRANNULLSCALAR(nnz)) {
+    PetscError(__LINE__,"MatCreateSeqBAIJ_Fortran",__FILE__,__SDIR__,1,0,
+               "Cannot pass PETSC_NULL_SCALAR, use PETSC_NULL_INT");
+    *__ierr = 1;
+    return;
+  }
   if (FORTRANNULLINTEGER(nnz)) nnz = PETSC_NULL;
   *__ierr = MatCreateSeqBAIJ((MPI_Comm)PetscToPointerComm(*comm),*bs,*m,*n,*nz,nnz,newmat);
 }
@@ -342,6 +354,12 @@ void matdestroy_(Mat *mat, int *__ierr )
 void matcreatempiaij_(MPI_Comm *comm,int *m,int *n,int *M,int *N,
          int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat, int *__ierr )
 {
+  if (FORTRANNULLSCALAR(d_nnz) || FORTRANNULLSCALAR(o_nnz)) {
+    PetscError(__LINE__,"MatCreateMPIAIJ_Fortran",__FILE__,__SDIR__,1,0,
+               "Cannot pass PETSC_NULL_SCALAR, use PETSC_NULL_INT");
+    *__ierr = 1;
+    return;
+  }
   if (FORTRANNULLINTEGER(d_nnz)) d_nnz = PETSC_NULL;
   if (FORTRANNULLINTEGER(o_nnz)) o_nnz = PETSC_NULL;
   *__ierr = MatCreateMPIAIJ((MPI_Comm)PetscToPointerComm(*comm),
@@ -350,6 +368,12 @@ void matcreatempiaij_(MPI_Comm *comm,int *m,int *n,int *M,int *N,
 void matcreatempibaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *M,int *N,
          int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat, int *__ierr )
 {
+  if (FORTRANNULLSCALAR(d_nnz) || FORTRANNULLSCALAR(o_nnz)) {
+    PetscError(__LINE__,"MatCreateMPIBAIJ_Fortran",__FILE__,__SDIR__,1,0,
+               "Cannot pass PETSC_NULL_SCALAR, use PETSC_NULL_INT");
+    *__ierr = 1;
+    return;
+  }
   if (FORTRANNULLINTEGER(d_nnz)) d_nnz = PETSC_NULL;
   if (FORTRANNULLINTEGER(o_nnz)) o_nnz = PETSC_NULL;
   *__ierr = MatCreateMPIBAIJ((MPI_Comm)PetscToPointerComm(*comm),
@@ -384,7 +408,7 @@ void matshellsetoperation_(Mat *mat,MatOperation *op,int (*f)(Mat*,Vec*,Vec*,int
   } else {
     PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,1,0,
                "Cannot set that matrix operation");
-    *__ierr = 0;
+    *__ierr = 1;
   }
 }
 
