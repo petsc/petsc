@@ -539,15 +539,16 @@ int PetscLogEventBeginComplete(PetscEvent event, int t, PetscObject o1, PetscObj
   ierr = StageLogGetEventPerfLog(stageLog, stage, &eventPerfLog);                                         CHKERRQ(ierr);
   PetscTime(curTime);
   if (actions != PETSC_NULL) {
-    actions[numActions].time     = curTime - BaseTime;
-    actions[numActions++].action = ACTIONBEGIN;
-    actions[numActions].event    = event;
-    actions[numActions].cookie   = eventRegLog->eventInfo[event].cookie;
+    actions[numActions].time   = curTime - BaseTime;
+    actions[numActions].action = ACTIONBEGIN;
+    actions[numActions].event  = event;
+    actions[numActions].cookie = eventRegLog->eventInfo[event].cookie;
     if (o1) actions[numActions].id1 = o1->id; else actions[numActions].id1 = -1;
     if (o2) actions[numActions].id2 = o2->id; else actions[numActions].id2 = -1;
     if (o3) actions[numActions].id3 = o3->id; else actions[numActions].id3 = -1;
     actions[numActions].flops    = _TotalFlops;
     ierr = PetscTrSpace(&actions[numActions].mem, PETSC_NULL, &actions[numActions].maxmem);               CHKERRQ(ierr);
+    numActions++;
   }
   /* Check for double counting */
   eventPerfLog->eventInfo[event].depth++;
@@ -593,15 +594,16 @@ int PetscLogEventEndComplete(PetscEvent event, int t, PetscObject o1, PetscObjec
   ierr = StageLogGetEventPerfLog(stageLog, stage, &eventPerfLog);                                         CHKERRQ(ierr);
   PetscTime(curTime);
   if (actions != PETSC_NULL) {
-    actions[numActions].time     = curTime - BaseTime;
-    actions[numActions++].action = ACTIONEND;
-    actions[numActions].event    = event;
-    actions[numActions].cookie   = eventRegLog->eventInfo[event].cookie;
+    actions[numActions].time   = curTime - BaseTime;
+    actions[numActions].action = ACTIONEND;
+    actions[numActions].event  = event;
+    actions[numActions].cookie = eventRegLog->eventInfo[event].cookie;
     if (o1) actions[numActions].id1 = o1->id; else actions[numActions].id1 = -1;
     if (o2) actions[numActions].id2 = o2->id; else actions[numActions].id2 = -1;
     if (o3) actions[numActions].id3 = o3->id; else actions[numActions].id3 = -1;
     actions[numActions].flops    = _TotalFlops;
     ierr = PetscTrSpace(&actions[numActions].mem, PETSC_NULL, &actions[numActions].maxmem);               CHKERRQ(ierr);
+    numActions++;
   }
   /* Check for double counting */
   eventPerfLog->eventInfo[event].depth--;
