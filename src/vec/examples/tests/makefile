@@ -22,7 +22,7 @@ TESTEXAMPLES_1  = ex2.PETSc runex2 ex2.rm \
 		  ex17.PETSc runex17 ex17.rm clean
 TESTEXAMPLES_2  = ex22.PETSc ex22.rm clean
 TESTEXAMPLES_3  = ex19.PETSc runex19 ex19.rm clean
-TESTEXAMPLES_9  = ex19.PETSc runex19 ex19.rm ex21.PETSc runex21 ex21.rm
+TESTEXAMPLES_9  = ex19.PETSc runex19 ex19.rm 
 TESTEXAMPLES_4  = ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		  ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm \
                   ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm clean
