@@ -6,13 +6,13 @@
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 #undef __FUNCT__
-#define __FUNCT__ "MatView_SeqAIJ_Spooles"
-int MatView_SeqAIJ_Spooles(Mat A,PetscViewer viewer)
+#define __FUNCT__ "MatView_SeqAIJSpooles"
+int MatView_SeqAIJSpooles(Mat A,PetscViewer viewer)
 {
-  int                   ierr;
-  PetscTruth            isascii;
-  PetscViewerFormat     format;
-  Mat_Spooles           *lu=(Mat_Spooles*)(A->spptr);
+  int               ierr;
+  PetscTruth        isascii;
+  PetscViewerFormat format;
+  Mat_Spooles       *lu=(Mat_Spooles*)(A->spptr);
 
   PetscFunctionBegin;
   ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
@@ -28,8 +28,8 @@ int MatView_SeqAIJ_Spooles(Mat A,PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJ_Spooles"
-int MatAssemblyEnd_SeqAIJ_Spooles(Mat A,MatAssemblyType mode) {
+#define __FUNCT__ "MatAssemblyEnd_SeqAIJSpooles"
+int MatAssemblyEnd_SeqAIJSpooles(Mat A,MatAssemblyType mode) {
   int         ierr;
   Mat_Spooles *lu=(Mat_Spooles *)(A->spptr);
 
@@ -39,18 +39,18 @@ int MatAssemblyEnd_SeqAIJ_Spooles(Mat A,MatAssemblyType mode) {
   lu->MatLUFactorSymbolic          = A->ops->lufactorsymbolic;
   lu->MatCholeskyFactorSymbolic    = A->ops->choleskyfactorsymbolic;
   if (lu->useQR){
-    A->ops->lufactorsymbolic       = MatQRFactorSymbolic_SeqAIJ_Spooles;  
+    A->ops->lufactorsymbolic       = MatQRFactorSymbolic_SeqAIJSpooles;  
   } else {
-    A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ_Spooles;
-    A->ops->lufactorsymbolic       = MatLUFactorSymbolic_SeqAIJ_Spooles; 
+    A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJSpooles;
+    A->ops->lufactorsymbolic       = MatLUFactorSymbolic_SeqAIJSpooles; 
   }
   PetscFunctionReturn(0);
 }
 
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Spooles"
-int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJSpooles"
+int MatLUFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat          B;
   Mat_Spooles  *lu;
@@ -62,7 +62,7 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   ierr = MatSetType(B,MATSEQAIJSPOOLES);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
+  B->ops->lufactornumeric  = MatFactorNumeric_SeqAIJSpooles;
   B->factor                = FACTOR_LU;  
 
   lu                        = (Mat_Spooles*)(B->spptr);
@@ -80,8 +80,8 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
 
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
-#define __FUNCT__ "MatQRFactorSymbolic_SeqAIJ_Spooles"
-int MatQRFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatQRFactorSymbolic_SeqAIJSpooles"
+int MatQRFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat          B;
   Mat_Spooles  *lu;   
@@ -94,7 +94,7 @@ int MatQRFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   ierr = MatSetType(B,MATSEQAIJSPOOLES);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
+  B->ops->lufactornumeric  = MatFactorNumeric_SeqAIJSpooles;
   B->factor                = FACTOR_LU;  
 
   lu                        = (Mat_Spooles*)(B->spptr);
@@ -109,8 +109,8 @@ int MatQRFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
 
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSAIJ_Spooles"
-int MatCholeskyFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSAIJSpooles"
+int MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
 { 
   Mat         B;
   Mat_Spooles *lu;   
@@ -122,8 +122,8 @@ int MatCholeskyFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Mat 
   ierr = MatSetType(B,MATSEQAIJSPOOLES);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
-  B->ops->getinertia             = MatGetInertia_SeqSBAIJ_Spooles;
+  B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqAIJSpooles;
+  B->ops->getinertia             = MatGetInertia_SeqSBAIJSpooles;
   B->factor                      = FACTOR_CHOLESKY;  
 
   lu                        = (Mat_Spooles*)(B->spptr);
