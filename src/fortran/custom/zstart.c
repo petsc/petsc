@@ -47,6 +47,11 @@ extern PetscTruth PetscBeganMPI;
 #undef getarg_
 #define iargc_  NARGS
 #define getarg_ GETARG
+#elif defined (PETSC_HAVE_PXFGETARG_NEW) /* cray x1 */
+#undef iargc_
+#undef getarg_
+#define iargc_  ipxfargc_
+#define getarg_ pxfgetarg_
 #endif
 #if defined(PETSC_HAVE_FORTRAN_IARGC_UNDERSCORE) /* HPUX + no underscore */
 #undef iargc_
@@ -73,6 +78,10 @@ extern void PETSC_STDCALL mpi_init_(int*);
 #if defined(PETSC_USE_NARGS)
 extern short __stdcall NARGS();
 extern void  __stdcall GETARG(short*,char*,int,short *);
+
+#elif defined (PETSC_HAVE_PXFGETARG_NEW)
+extern int  iargc_();
+extern void getarg_(int*,char*,int*,int*,int);
 
 #else
 extern int  iargc_();
@@ -143,6 +152,12 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
        PXFGETARG(&i,_cptofcd(tmp,warg),&ilen,&ierr);CHKERRQ(ierr);
        tmp[ilen] = 0;
       } 
+#elif defined (PETSC_HAVE_PXFGETARG_NEW)
+      {char *tmp = (*argv)[i];
+      int  ierr,ilen;
+      getarg_(&i,tmp,&ilen,&ierr,warg);CHKERRQ(ierr);
+      tmp[ilen] = 0;
+      }
 #elif defined (PETSC_USE_NARGS)
       GETARG(&i,(*argv)[i],warg,&flg);
 #else
@@ -198,6 +213,12 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
     PXFGETARG(&i,_cptofcd(name,256),&ilen,ierr); 
     if (*ierr) return;
     name[ilen] = 0;
+  }
+#elif defined (PETSC_HAVE_PXFGETARG_NEW)
+  { int ilen;
+  getarg_(&i,name,&ilen,ierr,256);
+  if (*ierr) return;
+  name[ilen] = 0;
   }
 #elif defined (PETSC_USE_NARGS)
   GETARG(&i,name,256,&flg);
