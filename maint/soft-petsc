@@ -1,0 +1,1373 @@
+# soft.db
+# The main database for the SoftEnv system. 
+#                    
+# ===========================================================================
+# INSTRUCTIONS FOR EDITING THIS FILE.
+#
+#  1. Read 'man softenv-admin'.  Do it!  It describes the format of this file
+#
+#  2. Read 'man softenv-policy'.  Do it!  It describes what you should do
+#
+#  3. Read the comments above each section.
+#
+#  4. Think carefully about what you add:
+#     - New macros are probably dangerous.
+#     - It's better to add an application keyword and then put that keyword
+#       into existing macros than to add a keyword and tell people to use
+#       that keyword.
+#  5. After editing this file, check it for syntax errors by running:
+#      soft-msd -n
+#  6. Test the resulting environment by running:
+#      softcheck
+#     This will give you an environment based on your edited soft.db.
+#     Note that you will need to make sure your changes are being used
+#     in your .soft file.
+#  7. Then build the new database:
+#      soft-msd
+#
+# ===========================================================================
+#
+# Flags:
+#   power  - Handy for the "power" users, who want to build their own paths out
+#            of the various pieces.
+#   useful - A "useful" macro or keyword, but one that is not in the path.
+#   hide   - "Hide" this macro so that it's not in the 'softenv' command 
+#            output.
+#   auto   - A keyword that was found in an automated scan of the software
+#            tree, usually only found in soft-auto.db
+# ===========================================================================
+
+
+# ===========================================================================
+# Setting up the database defaults
+# ===========================================================================
+#
+# (%accumulate)
+#   This tells the soft system that these environment variables should be
+#   appended to as new values are found for them.   The alternative is to
+#   replace their value with the new value.
+#
+#   Typically this will be done for any PATH-like variable, but may be
+#   useful for other things.
+#
+#   Uniquify can be a 'y' or an 'n' (without quotes).  The 'y' means
+#   that new components to be added to a path will first be checked to
+#   see if they exist before being added.  You typically want this for
+#   PATH-like variables, so that, for example, they only have one instance
+#   of "/usr/bin" in the variable.
+#
+#   Separator can be any string, or no string.  It is the string used to
+#   separate individual components of the variable.  For PATH-like 
+#   variables, this will usually be a ':'.
+# 
+#
+(%accumulate) {
+  # varname           uniquify    separator
+  PATH                { y           :         }
+  MANPATH             { y           :         }
+  LD_LIBRARY_PATH     { y           :         }
+  LD_LIBRARYN32_PATH  { y           :         }
+  LD_LIBRARYN64_PATH  { y           :         }
+  LM_LICENSE_FILE     { y           :         }
+  IDL_PATH            { y           :         }
+}
+
+# A list of other database files to read.
+#
+# These databases are for convenience for keeping this file sane and
+# easy to manage.
+# 
+# These other databases don't cause the user's environment to be rebuilt
+# if they change; that only happens if _this_ file is touched
+#
+(%databases) {
+  soft-auto.db
+}
+
+# Variables to initialize at the beginning of the user's .cache file.
+#
+# These should be translated into the first lines of the .cache file.  
+#   PATH is set here ONLY for these commands, like sed, uname, whatami
+#     It will be erased right after this section.
+#   WHATAMI is used below in the +home definition.
+#   ARCH must be defined, as the sh and csh output created by soft-msc
+#     relies on it being set for switch statements.
+#
+#   IRIX_ARCH is used below in order to differentiate 32 bit and 64
+#     versions of IRIX.
+#   SOLARIS_ARCH is used to differentiate different solaris architectures
+#   SOLARIS_VERSION is used to differentiate between versions of solaris
+(%initialize) {
+
+  [] {
+    PATH              /bin:/sbin:/usr/local/bin
+    WHATAMI           `/bin/whatami`
+    ARCH              $WHATAMI
+  }
+  [solaris-2] {
+    SOLARIS_ARCH      "`uname -m`"
+    SOLARIS_VERSION   "`uname -r`"
+  }
+  [irix-6] {
+    IRIX_ARCH         "`uname`"
+  }
+}
+
+
+# ===========================================================================
+# Definining the environment
+# ===========================================================================
+
+
+(@default) 
+{
+  {desc: "The recommended and complete path settings."}
+
+  @system-paths
+  @default-applications
+  +mcs
+  +soft
+  +home
+  +dot 
+  +default-environment
+}
+
+
+# ===========================================================================
+# Paths to various places in the system, independent of applications
+# ===========================================================================
+
+# Note that the MCS-specfic paths are put in _after_ the OS paths, so
+# that we don't have any surprising conflicts.  (Gnu 'ls' instead of
+# Solaris 'ls', and so on.)  If we override something, then we'll nuke
+# the OS version.  If we do this a lot, we'll make a new directory
+# called /software/override or something that we can drop in the front
+# of this macro.
+
+(@system-paths) 
+{ 
+  {desc: "The operating system environment and paths."}
+  {flags: power}
+
+  +system
+  +ucb
+  +sys5
+}
+
+# ---------------------------------------------------------------------------
+# MCS paths
+# ---------------------------------------------------------------------------
+
+(+mcs)
+{
+  {desc:  "MCS Local Programs"}
+  {flags: power}
+
+  [] {	PATH    /mcs/bin:/usr/local/bin
+	MANPATH /mcs/man:/usr/local/man
+  }
+}
+
+(+soft) 
+{
+  {desc: "The /software paths"}
+  {flags: power}
+  
+  []{	PATH	/software/common/bin:/soft/apps/bin:/soft/gnu/bin:/soft/com/bin:/soft/adm/bin
+	MANPATH	/software/common/man:/soft/apps/man:/soft/gnu/man:/soft/com/man:/soft/adm/man
+  }	
+}
+
+
+# ---------------------------------------------------------------------------
+# OS paths
+# ---------------------------------------------------------------------------
+(+system)
+{
+  {desc: "Default system paths, as recommended by the vendor"}
+  {flags: power}
+
+  [] {	
+	PATH    /usr/bin:/usr/sbin:/bin:/sbin
+	MANPATH /usr/man
+  }
+
+  [aix-4] {
+        PATH    /usr/bin:/etc/:/usr/sbin:/usr/ucb:/usr/bin/X11:/sbin:/usr/lpp/ssp/bin:/usr/lpp/LoadL/nfs/bin
+        MANPATH /usr/man:/usr/lpp/LoadL/nfs/man:/usr/lpp/piofs/man
+  }
+
+  [sun4]{
+	PATH        /usr/ucb:/bin:/usr/bin:/etc:/usr/etc:/usr/sbin:/sbin
+	MANPATH     /usr/man
+	OPENWINHOME /usr/openwin
+  }	
+
+  [solaris-2]{
+        PATH     /bin:/usr/openwin/bin:/usr/sbin:/etc:/opt/SUNWspro/bin
+        MANPATH  /usr/man:/usr/openwin/man:/opt/SUNWspro/man
+        OPENWINHOME /usr/openwin
+        LD_LIBRARY_PATH /usr/openwin/lib
+  }
+	
+  [irix-5|irix-6]{
+        PATH    /usr/sbin:/usr/bsd:/sbin:/usr/bin:/etc:/usr/etc:/usr/bin/X11
+        MANPATH /usr/catman:/usr/man:/usr/share/catman:/usr/share/man
+	LD_LIBRARYN32_PATH /usr/lib32
+	LD_LIBRARYN64_PATH /usr/lib64
+	NLSPATH /usr/lib/locale/C/LC_MESSAGES/%N.cat
+        LM_LICENSE_FILE /var/flexlm/license_glacier.dat:/var/flexlm/license.dat
+  }
+
+  [freebsd]{
+	PATH /sbin:/usr/sbin:/bin:/usr/bin
+  }
+
+  [linux]{
+	PATH /bin:/usr/sbin:/etc:/usr/X11R6/bin:/usr/bin:/sbin
+        MANPATH /usr/man:/mcs/man
+  }
+}
+
+(+ucb) 
+{
+  {desc: "UC Berkeley-Style commands" }
+  {flags: power}
+
+  [sun4|solaris-2] {
+	PATH /usr/ucb
+  }
+
+  [irix-6] {
+	PATH /usr/bsd
+  }
+}
+
+
+(+sys5) 
+ {
+  {desc: "System V-Style commands"}
+  {flags: power}
+
+  [sun4|solaris-2] {
+	PATH /usr/5bin
+  }
+}
+
+
+# ---------------------------------------------------------------------------
+# User paths
+# ---------------------------------------------------------------------------
+
+(+home)
+{
+  {desc: $HOME/bin} 
+  {flags: power}
+
+  [] {  PATH	$HOME/bin/$WHATAMI:$HOME/bin
+	MANPATH	$HOME/man
+  }
+}
+
+(+dot)
+{
+  {desc:  The current directory.}
+  {flags:  power}
+
+  [] {	PATH	.
+  }	
+}
+
+
+# ---------------------------------------------------------------------------
+# Optional system paths.
+# ---------------------------------------------------------------------------
+
+
+(+gnu) 
+{
+  {desc: "GNU Utilities, some of which replace default commands" }
+  {flags: power}
+
+  [] { 	
+	PATH /soft/gnu/bin
+ 	MANPATH /soft/gnu/man
+  }
+}
+
+
+# Note that +soft-pub is intentionally NOT in the system default paths.
+# People will need to explicitly add this.
+#
+(+soft-pub)
+{
+  {desc: "The /soft/pub paths"}
+  {flags: useful}
+  []{
+	PATH	/soft/pub/bin
+	MANPATH	/soft/pub/man
+  }
+}
+
+# ===========================================================================
+# System-wide environment variables
+# ===========================================================================
+(+default-environment) {
+  {desc: "Environment variables for the default environment."}
+  {flags: hide}
+
+  [] {
+     NNTPSERVER milo.mcs.anl.gov
+  }
+}
+
+
+
+# ---------------------------------------------------------------------------
+# Paths for specific groups of users
+# ---------------------------------------------------------------------------
+
+(+adm) 
+{
+  {desc:  "System administration utilities" }
+  {flags: useful}
+  [] { 
+	PATH /soft/adm/bin:/software/common/adm/bin:/mcs/adm/bin:/usr/local/adm/bin
+	MANPATH /soft/adm/man:/software/common/adm/man:/mcs/adm/man
+  }
+}
+
+(+adifor)  
+{
+  {desc: "ADIFOR key, see Paul Hovland"}
+  {flags: useful}
+
+  [] {
+        PATH	/home/derivs/ADIFOR2.0D/bin
+        AD_HOME /home/derivs/ADIFOR2.0D
+        AD_LIB 	/home/derivs/ADIFOR2.0D.lib
+  }
+  [sun4] {
+        PATH 	/home/derivs/ADIFOR2.0D/bin
+        AD_OS 	SunOS-4.x
+  }
+  [aix-4] {
+        PATH /home/derivs/ADIFOR2.0D/bin
+        AD_OS AIX
+  }
+  [irix-5|irix-6] {
+        PATH	/home/derivs/ADIFOR2.0D/bin
+        AD_OS IRIX
+  }
+  [linux] {
+        PATH	/home/derivs/ADIFOR2.0D/bin
+        AD_OS Linux86
+  }
+  [solaris-2] {
+        PATH	/home/derivs/ADIFOR2.0D/bin
+        AD_OS SunOS-5.x
+  }
+}
+
+(+mml) 
+{
+  {desc: "Futures Lab Directories"}
+  {flags: useful}
+  [] {
+	PATH    /home/mmlab1/share/bin:/mmlarch/bin
+	MANPATH /home/mmlab1/man
+  }
+}
+
+
+
+# ===========================================================================
+# Applications.
+# ===========================================================================
+
+# List every application that should be available to more than one or two
+# folks here, so that they can be accessible to everyone in one macro.
+
+(@default-applications) 
+{
+  {desc:  "All 3rd-party apps not otherwise in the system paths."}
+  {flags: power}
+
+  +ssh
+  +adsm
+  +x-windows
+  +cave
+  +communicator-4.7
+  +explorer
+  +insure++
+  +maple-5.1
+  +mathematica-4.0
+  +mh
+  +pc_file_viewer-1.0.1
+  +tex-7.2
+  +viz-1.10.1
+  +matlab
+  +totalview
+  +workshop
+  +pbs
+  @sun4-legacy-apps
+}
+
+
+# ===========================================================================
+# Sun4 Applications that can be removed when sun4 is nonexistant
+# ===========================================================================
+
+(@sun4-legacy-apps) {
+  {desc: "Old sun4 applications"}
+
+  +sun4-legacy-dirs
+  +sun4-legacy-variables
+}
+
+(+sun4-legacy-dirs) {
+  [sun4] {
+    PATH /usr/local/legacy/bin:/usr/local/neos/bin:/usr/local/graphics/bin:/usr/local/mcsdoc/bin:/usr/local/pbm/bin
+    MANPATH /usr/local/legacy/man:/usr/local/neos/man:/usr/local/graphics/man:/usr/local/mcsdoc/man:/usr/local/pbm/man
+  }
+}
+ 
+(+sun4-legacy-variables) {
+  [sun4] {
+    NCARG_ROOT      /usr/local/NCAR
+    XKEYSYMDB       /usr/local/netscape-v2.02/XKeysymDB
+    XNLSPATH        /usr/local/netscape-v2.02/nls
+  }
+}
+
+
+# ===========================================================================
+# Application specific paths
+# ===========================================================================
+#
+# These applications are listed here because, for one reason or another,
+# they require a slightly different path than the basic system path on
+# some architecture, or because they need to update some other 
+# environment variable.
+#
+# As much as possible, applications should be installed into a directory 
+# _already in the path_ rather than being given their own custom directory.  
+# The /software system is set up to make this relatively easy.
+#
+# Also - these keys should NOT include some path that is otherwise
+# included in the path, such as /usr/local/bin or something. 
+#
+# Please keep these keys in alphabetical order.
+
+(+absoft) {
+  [linux] {
+    PATH       /soft/com/packages/absoft-1.0/bin
+    MANPATH    /soft/com/packages/absoft-1.0/man
+    ABSOFT     /soft/com/packages/absoft-1.0
+  }
+}
+
+(+adsm) {
+  {desc:  "ADSM tools"}
+
+  [] {
+       PATH /usr/adsm
+  }
+  [aix-4] {
+       PATH /usr/lpp/adsm/bin
+  }
+}
+
+(+cave) {
+  {desc: "CAVE Programs" }
+
+  [irix-6] {
+	PATH /usr/local/CAVE/bin
+  }
+}
+
+
+(+communicator-4.7) {
+  {desc: "Netscape Communicator v4.7 - Current Version - 11/29/1999 "}
+
+  [solaris-2] {
+     PATH     /soft/com/packages/communicator-4.7
+     MOZILLA_HOME /soft/com/packages/communicator-4.7
+     CLASSPATH /soft/com/packages/communicator-4.7/java40.jar:/soft/com/packages/communicator-4.7/ifc11.jar:/soft/com/packages/communicator-4.7/iiop10.jar:/soft/com/packages/communicator-4.7/jae40.jar:/soft/com/packages/communicator-4.7/jio40.jar:/soft/co
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+m/packages/communicator-4.7/jio40.jar:/soft/com/packages/communicator-4.7/joptio40.jar:/soft/com/packages/communicator-4.7/jsd10.jar:/soft/com/packages/communicator-4.7/jsd10.jar:/soft/com/packages/communicator-4.7/ldap30.jar:/soft/com/packages/communicat
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+or-4.7/resource.jar:/soft/com/packages/communicator-4.7/scd10.jar
+  }
+  [irix-6] {
+     PATH            /soft/com/packages/communicator-4.7
+     MOZILLA_HOME /soft/com/packages/communicator-4.7
+     CLASSPATH /soft/com/packages/communicator-4.7/java40.jar:/soft/com/packages/communicator-4.7/ifc11.jar:/soft/com/packages/communicator-4.7/iiop10.jar:/soft/com/packages/communicator-4.7/jae40.jar:/soft/com/packages/communicator-4.7/jio40.jar:/soft/co
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+m/packages/communicator-4.7/jio40.jar:/soft/com/packages/communicator-4.7/joptio40.jar:/soft/com/packages/communicator-4.7/jsd10.jar:/soft/com/packages/communicator-4.7/jsd10.jar:/soft/com/packages/communicator-4.7/ldap30.jar:/soft/com/packages/communicat
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+or-4.7/resource.jar:/soft/com/packages/communicator-4.7/scd10.jar
+  }
+}
+
+
+(+condor) {
+  {desc: "Condor High Throughput Computing Utilities"}
+
+  [solaris-2|sun4] {
+     PATH        /soft/daemons/packages/condor-5.62pl4/bin
+     MANPATH     /soft/daemons/packages/condor-5.62pl4/man
+  }
+  [irix-6] {
+     PATH        /soft/daemons/packages/condor-5.62pl7/bin
+     MANPATH     /soft/daemons/packages/condor-5.62pl7/man
+  }
+}
+
+
+
+(+demos) {
+  {desc:  "Base OS demos"}
+  {flags: useful}
+
+  [irix-6] {
+	PATH /usr/demos:/usr/demos/bin
+  }
+}
+
+
+(+ecce)  {
+  {desc: "ECCE v1.5: registered users only"}
+  {flags: power}
+
+  [solaris-2] {
+        PATH /opt/ECCE/ecce-v1.5/pnnl/scripts
+        ECCE_HOME /opt/ECCE/ecce-v1.5/pnnl
+        OIVHOME /opt/ECCE/pkgs-v1.5/solaris_27/OpenInventor
+        ECCE_SUPPORT bittner@mcs.anl.gov
+        ECCE_USAGE bittner@mcs.anl.gov
+  }
+}
+
+
+(+explorer)  {
+  {desc: "Iris Explorer"}
+  {flags: power}
+
+  [irix-6] {
+	PATH /usr/explorer/bin
+  }
+}
+
+(+hdf5-1.0.1) {
+  {desc: "HDF 5-1.0.1"}
+  {flags: power}
+
+  [irix-6 (IRIX_ARCH=IRIX64)] {
+    PATH /software/irix-6/apps/packages/HDF5-1.0.1/64bit/bin
+  }
+  [irix-6] {
+    PATH /software/irix-6/apps/packages/HDF5-1.0.1/32bit/bin
+  }
+  [solaris-2] {
+    PATH /software/solaris-2/apps/packages/hdf5-1.0.1/bin
+  }
+}
+
+(+hdf-4.1r2) {
+  {desc: "HDF 4.1r2"}
+  {flags: power}
+
+  [irix-6 (IRIX_ARCH=IRIX64)] {
+    PATH /software/irix-6/apps/packages/HDF4.1r2/64bit/bin
+    MANPATH /software/irix-6/apps/packages/HDF4.1r2/64bit/man
+  }
+  [irix-6] {
+    PATH /software/irix-6/apps/packages/HDF4.1r2/32bit/bin
+    MANPATH /software/irix-6/apps/packages/HDF4.1r2/32bit/man
+  }
+  [solaris-2] {
+    PATH /software/solaris-2/apps/packages/hdf-4.1r2/bin
+    MANPATH /software/solaris-2/apps/packages/hdf-4.1r2/man
+  }
+}
+
+(+idl) {
+  {desc:  "IDL Visualization Package"}
+  {flags: power}
+
+  [irix-6|solaris-2] {
+    pointer +idl-5.2
+  }
+}
+
+
+(+idl-5.2) {
+  [irix-6] {
+    PATH             /software/irix-6/com/packages/idl-5.2/idl_5.2/bin
+    LM_LICENSE_FILE  1700@ice.mcs.anl.gov
+    RSI_DIR          /software/irix-6/com/packages/idl-5.2
+    IDL_DIR          /software/irix-6/com/packages/idl-5.2/idl_5.2
+    IDL_PATH /software/irix-6/com/packages/idl-5.2/lib:/software/irix-6/com/packages/idl-5.2/examples
+    command          "alias idl idlde"
+  }
+  [solaris-2] {
+    PATH             /software/solaris-2/com/packages/idl-5.2/idl_5.2/bin
+    LM_LICENSE_FILE  1700@ice.mcs.anl.gov
+    RSI_DIR          /software/solaris-2/com/packages/idl-5.2
+    IDL_DIR          /software/solaris-2/com/packages/idl-5.2/idl_5.2
+    IDL_PATH         /software/solaris-2/com/packages/idl-5.2/lib:/software/solaris-2/com/packages/idl-5.2/examples
+    command          "alias idl idlde"
+  }
+}
+
+# (+idl)    {
+#  {desc:  "IDL Visualization Package"}
+#  {flags: power}
+#
+#  [irix-6] {
+#    PATH   /soft/com/bin    
+#    IDL_DIR     /soft/com/packages/rsi/idl_5 
+#    IDL_PATH /soft/com/packages/rsi/idl_5/lib:/soft/com/packages/rsi/idl_5 
+#    IDL_DEVICE    X
+#    LM_LICENSE_FILE /mcs/lib/licenses/antares.mcs.anl.gov
+#  }
+#}
+
+(+idl-5.03) {
+  {desc:  "IDL Visualization Package v5.03"}
+  {flags: power}
+  [irix-6] {
+	PATH	/soft/com/packages/rsi/idl_5.0.3/bin
+	IDL_DIR 	/soft/com/packages/rsi/idl_5.0.3
+	IDL_PATH 	/soft/com/packages/rsi/idl_5.0.3/lib:/soft/com/packages/rsi/idl_5.0.3
+	IDL_DEVICE	X
+  }
+}
+
+# Version 4.1
+#(+insure++) {
+#  {desc: "Insure ++ - Current Version "}
+#
+#  [solaris-2] {
+#     PATH     /soft/com/packages/insure++-4.1/bin.solaris
+#     MANPATH   /soft/com/packages/insure++-4.1/man
+#     LD_LIBRARY_PATH /software/solaris-2/com/packages/insure++-4.1/lib.solaris
+#  }
+#  [irix-6 (IRIX_ARCH=IRIX64)] {
+#     PATH      /soft/com/packages/insure++-4.1-64bit/bin.sgi6_64
+#     MANPATH   /soft/com/packages/insure++-4.1-64bit/man
+#     LD_LIBRARY_PATH /software/irix-6/com/packages/insure++-4.1-64bit/lib.sgi6_64
+#  }
+#  [irix-6] {
+#     PATH            /soft/com/packages/insure++-4.1-32bit/bin.sgi6
+#     MANPATH         /soft/com/packages/insure++-4.1-32bit/man
+#     LD_LIBRARY_PATH /software/irix-6/com/packages/insure++-4.1-32bit/lib.sgi6
+#  }
+#}
+
+(+insure++) {
+  {desc: "Insure ++ - Current Version "}
+
+  [solaris-2] {
+     PATH     /soft/com/packages/insure++-5.1/bin.solaris
+     MANPATH   /soft/com/packages/insure++-5.1/man
+     LD_LIBRARY_PATH /software/solaris-2/com/packages/insure++-5.1/lib.solaris
+  }
+  [irix-6 (IRIX_ARCH=IRIX64)] {
+     PATH      /soft/com/packages/insure++-5.1-64/bin.sgi6_64
+     MANPATH   /soft/com/packages/insure++-5.1-64/man
+     LD_LIBRARY_PATH /software/irix-6/com/packages/insure++-5.1-64/lib.sgi6_64
+  }
+  [irix-6] {
+     PATH            /soft/com/packages/insure++-5.1/bin.sgi6
+     MANPATH         /soft/com/packages/insure++-5.1/man
+     LD_LIBRARY_PATH /software/irix-6/com/packages/insure++-5.1/lib.sgi6
+  }
+}
+
+
+
+# Ok, we hate Java.
+#
+# Java is very host specific and version specific.  It is a headache.
+# Our rules for Java:
+#  A different key for each version.
+#  None of them are in the default environment.
+#  Users are told: "use this key, login to this machine".
+#  If you have more than one of these keys in your environment,
+#     you're probably in trouble, so don't do that.
+#  Java may conflict with Netscape, so people doing Java work will
+#    have to dig their own way out of the CLASSPATH black hole.
+# All of this should be documented where people see it, btw.
+
+(+jdk-1.1.5) {
+  {desc: "Java JDK 1.1.5" }
+  {flags: power}
+
+  [solaris-2] {
+    PATH /soft/com/packages/jdk-1.1.5/usr/bin/
+    LD_LIBRARY_PATH /soft/com/packages/jdk-1.1.5/usr/java1.1/lib
+  }
+}
+
+(+jdk-1.1.6) {
+  {desc: "Java JDK 1.1.6"}
+  {flags: power}
+
+  [linux] {
+    PATH /soft/apps/packages/jdk-1.1.6/bin
+    CLASSPATH /soft/apps/packages/jdk-1.1.6/lib:/soft/apps/packages/jdk-1.1.6/lib/classes.zip
+  }
+}
+
+(+jdk-1.2.2) {
+  {desc: "Java JDK 1.2.2 RC3"}
+  {flags: power}
+
+  [linux] {
+    PATH /soft/apps/packages/jdk-1.2.2/bin
+    CLASSPATH /soft/apps/packages/jdk-1.2.2/lib:/soft/apps/packages/jdk-1.2.2/lib/classes.zip
+  }
+}
+
+
+(+maple-5.1) { 
+   {desc: "Maple v5.1"}
+   [solaris-2] {
+      PATH  /software/solaris-2/com/packages/maple-5.1/bin
+      MANPATH /software/solaris-2/com/packages/maple-5.2/man
+   }
+}
+
+(+mathematica-4.0) {
+  {desc: "Mathematica v4.0 - only works on Sun Workstation w/sun fonts "}
+
+  [solaris-2] {
+	PATH   /soft/com/packages/mathematica-4.0/bin
+#        command "xset fp+ /soft/com/packages/mathematica-4.0/SystemFiles/Fonts/Type1"
+#        command "xset fp+ /soft/com/packages/mathematica-4.0/SystemFiles/Fonts/X"
+#        command "xset fp+ /soft/com/packages/mathematica-4.0/SystemFiles/Fonts/PCF"
+#        command "xset fp rehash"
+  }
+}
+
+
+(+matlab) {
+  {desc:  "The stable, default version of matlab."}
+  {flags: power}
+
+  [solaris-2|irix-6|linux|aix-4] {
+    pointer +matlab-r11.1
+  }
+  [irix-6 (IRIX_ARCH=IRIX64)] {
+    pointer +matlab-r11.1
+  }
+}
+
+(+matlab-beta) {
+  {desc:  "The beta, not yet stable, not default version of matlab"}
+  {flags: power}
+
+}
+
+(+matlab-r11.1) {
+ {desc: "Matlab vr11 (Also known as Matlab v5.3.1)"}
+
+ [solaris-2] {
+	PATH /software/solaris-2/com/packages/matlab-r11.1/bin
+	MANPATH /software/solaris-2/com/packages/matlab-r11.1/man
+ 	LM_LICENSE_FILE .:1711@ice.mcs.anl.gov 
+ } 
+ [irix-6] {
+	PATH /software/irix-6/com/packages/matlab-r11.1/bin
+	MANPATH /software/irix-6/com/packages/matlab-r11.1/man
+ 	LM_LICENSE_FILE .:1711@ice.mcs.anl.gov 
+ }
+ [irix-6 (IRIX_ARCH=IRIX64)] {
+	PATH /software/irix-6/com/packages/matlab-r11.1-64/bin
+	MANPATH /software/irix-6/com/packages/matlab-r11.1-64/man
+ 	LM_LICENSE_FILE .:1711@ice.mcs.anl.gov 
+ } 
+ [linux] {
+	PATH /software/linux/com/packages/matlab-r11.1/bin
+	MANPATH /software/linux/com/packages/matlab-r11.1/man
+ 	LM_LICENSE_FILE .:1711@ice.mcs.anl.gov 
+ }
+ [aix-4] {
+	PATH /software/aix-4/com/packages/matlab-r11.1/bin
+	MANPATH /software/aix-4/com/packages/matlab-r11.1/man
+ 	LM_LICENSE_FILE .:1711@ice.mcs.anl.gov 
+ }
+}
+
+
+(+mh) {
+  {desc: "mh paths and manpaths"}
+
+  [sun4] {
+    PATH /usr/local/mh/bin
+    MANPATH /usr/local/mh/man
+  }
+  [solaris-2|irix-6] {
+    PATH /soft/apps/packages/mh-6.8.3/bin:/soft/apps/packages/mh-6.8.3/etc
+    MANPATH /soft/apps/packages/mh-6.8.3/man
+  }
+  [linux] {
+    PATH /usr/bin/mh:/usr/lib/mh
+    MANPATH /usr/man
+  }
+}
+
+
+(+mpich-ab)
+{
+  {desc: "mpich compiled to use the absoft f77/f90 compilers"}
+  
+  [linux] {
+    PATH /soft/apps/packages/mpich-ab-1.2.0/bin
+    MANPATH /soft/apps/packages/mpich-ab-1.2.0/man
+  }
+}
+
+(+mpich-pg)
+{
+  {desc: "mpich compiled to use the PGI f77/f90/cc/CC compilers"}
+  
+  [linux] {
+    PATH /soft/apps/packages/mpich-pg-1.2.0/bin
+    MANPATH /soft/apps/packages/mpich-pg-1.2.0/man
+  }
+}
+
+(+mpich-gcc-pg)
+{
+  {desc: "mpich compiled to use the PGI f77/f90 compilers and the GNU cc/CC compilers"}
+  
+  [linux] {
+    PATH /soft/apps/packages/mpich-gnucc-pgf-1.2.0/bin
+    MANPATH /soft/apps/packages/mpich-gnucc-pgf-1.2.0/man
+  }
+}
+
+(+mpich-myri)
+{
+  {desc: "mpich compiled to use the GNU cc/CC compilers and run over Myrinet GM"}
+  
+  [linux] {
+    PATH /soft/apps/packages/mpich-gm-1.1.2-12/bin
+    MANPATH /soft/apps/packages/mpich-gm-1.1.2-12/man
+  }
+}
+
+(+mpich-myri-pg)
+{
+  {desc: "mpich compiled to use the PGI cc/CC/f77/f90 compilers and run over Myrinet GM"}
+  
+  [linux] {
+    PATH /soft/apps/packages/mpich-gmpg-1.1.2-11/bin
+    MANPATH /soft/apps/packages/mpich-gmpg-1.1.2-11/man
+  }
+}
+
+(+mysql)
+{
+  {desc: "mysql tools, must notify systems before using"}
+  {flags: power}
+
+  [linux] {
+        pointer +mysql-3.22.32
+  }  
+  [solaris-2] {
+        pointer +mysql-3.22.25
+  }  
+  [irix-6] {
+        PATH    /soft/apps/packages/mysql-3.22.26a-sgi-irix6.3-mips/bin
+        MANPATH /soft/apps/packages/mysql-3.22.26a-sgi-irix6.3-mips/man
+        LD_LIBRARYN32_PATH /soft/apps/packages/mysql-3.22.26a-sgi-irix6.3-mips/lib
+  }
+}
+
+
+(+mysql-3.22.32)
+{
+  {desc: "mysql tools, must notify systems before using"}
+  {flags: power}
+
+  [linux] {
+        PATH    /soft/apps/packages/mysql-3.22.32/bin
+        MANPATH /soft/apps/packages/mysql-3.22.32/man
+        PGLIB /soft/apps/packages/mysql-3.22.32/lib
+  }  
+}
+
+
+(+mysql-3.22.25)
+{
+  {desc: "mysql tools, must notify systems before using"}
+  {flags: power}
+
+  [solaris-2] {
+        PATH    /soft/apps/packages/mysql-3.22.25/bin
+        MANPATH /soft/apps/packages/mysql-3.22.25/man
+        PGLIB /soft/apps/packages/mysql-3.22.25/lib
+  }  
+}
+
+
+(+ncar)  {
+  {desc:  "NCAR Graphics Package"}
+  {flags: power}
+
+  [irix-6] {
+     PATH /usr/local/ncarg/bin
+     MANPATH /usr/local/ncarg/man
+     NCARG_ROOT /usr/local/ncarg
+  }
+  [aix-4] {
+     PATH /usr/local/ncarg/bin
+     MANPATH /usr/local/ncarg/man
+     NCARG_ROOT /usr/local/ncarg
+  }
+}
+
+
+(+oracle)
+{
+  {desc: "Oracle tools, must notify systems before using"}
+  {flags: power}
+
+  [linux] {
+    pointer +oracle-8.0.5
+  }  
+  [aix-4] {
+    pointer +oracle-8.0.3
+  }
+}
+
+
+(+oracle-8.0.3)
+{
+  {desc: "Oracle tools, must notify systems before using"}
+  {flags: power}
+
+  [aix-4] {
+        PATH        /soft/apps/packages/oracle/product/8.0.3/bin
+        ORACLE_HOME /soft/apps/packages/oracle/product/8.0.3
+        TNS_ADMIN   /soft/apps/packages/oracle/product/8.0.3/network/admin
+        ORACLE_SID  db01.mcs.anl.gov
+
+  }
+}
+
+
+(+oracle-8.0.5)
+{
+  {desc: "Oracle tools, must notify systems before using"}
+  {flags: power}
+
+  [linux] {
+        PATH        /soft/apps/packages/oracle/product/8.0.5/bin
+        ORACLE_HOME /soft/apps/packages/oracle/product/8.0.5
+        TNS_ADMIN   /soft/apps/packages/oracle/product/8.0.5/network/admin
+        ORACLE_SID  db01.mcs.anl.gov
+  }  
+}
+
+
+
+(+pc_file_viewer-1.0.1) { 
+   {desc: "View PC Microsoft Files under Solaris CDE - local package install"}
+
+   [solaris-2] {
+      PATH  /software/solaris-2/com/packages/pc_file_viewer-1.0.1
+   }
+}
+
+
+(+pgi) {
+  {desc: "PGI"}
+  {flags: power}
+
+  [linux] {
+    PATH            /my/packages/pgi-3.1/linux86/bin
+    MANPATH         /my/packages/pgi-3.1/man
+    PGI             /my/packages/pgi-3.1   
+  }
+}
+
+
+(+postgresql)
+{
+  {desc: "postgresql tools"}
+  {flags: power}
+
+  [linux (HOSTNAME=voyager)] {
+    pointer +postgresql-6.5.2-my
+  }  
+  [linux (HOSTNAME=yeah)] {
+    pointer +postgresql-6.5.2-my
+  }  
+  [linux] {
+    pointer +postgresql-6.4.2
+  }  
+  [irix-6] {
+    pointer +postgresql-6.5.1
+  }
+}
+
+(+postgresql-6.4.2) {
+  [linux] {
+        PATH    /soft/apps/packages/postgresql-6.4.2/bin
+        MANPATH /soft/apps/packages/postgresql-6.4.2/man
+        PGLIB /soft/apps/packages/postgresql-6.4.2/lib
+        PGDATA /pgdsk00/data
+  }
+}
+
+
+(+postgresql-6.5.1) {
+  [irix-6] {
+        PATH    /soft/apps/packages/postgresql-6.5.1/bin
+        MANPATH /soft/apps/packages/postgresql-6.5.1/man
+        LD_LIBRARYN32_PATH /soft/apps/packages/postgresql-6.5.1/lib
+  }
+}
+
+(+postgresql-6.5.2-my) {
+  [linux (HOSTNAME=voyager)] {
+        PATH    /my/packages/pgsql-6.5.2/bin
+        MANPATH /my/packages/pgsql-6.5.2/man
+        PGLIB   /my/packages/pgsql-6.5.2/lib
+        PGDATA  /my/database/pgsql/data
+        LD_LIBRARY_PATH /my/packages/pgsql-6.5.2/lib
+  }
+  [linux (HOSTNAME=yeah)] {
+        PATH    /my/packages/pgsql-6.5.2/bin
+        MANPATH /my/packages/pgsql-6.5.2/man
+        PGLIB   /my/packages/pgsql-6.5.2/lib
+        PGDATA  /my/database/pgsql/data
+        LD_LIBRARY_PATH /my/packages/pgsql-6.5.2/lib
+  }
+}
+
+(+postgresql-6.5.3-my) {
+  [linux (HOSTNAME=voyager)] {
+        PATH    /my/packages/pgsql-6.5.3/bin
+        MANPATH /my/packages/pgsql-6.5.3/man
+        PGLIB   /my/packages/pgsql-6.5.3/lib
+        PGDATA  /my/database/pgsql2/data
+        LD_LIBRARY_PATH /my/packages/pgsql-6.5.3/lib
+  }
+  [linux (HOSTNAME=yeah)] {
+        PATH    /my/packages/pgsql-6.5.3/bin
+        MANPATH /my/packages/pgsql-6.5.3/man
+        PGLIB   /my/packages/pgsql-6.5.3/lib
+        PGDATA  /my/database/pgsql2/data
+        LD_LIBRARY_PATH /my/packages/pgsql-6.5.3/lib
+  }
+}
+
+
+(+pvm) {
+  [] {
+    PATH         /software/common/apps/packages/pvm3/
+    MANPATH      /software/common/apps/packages/pvm3/man
+    PVM_ROOT     /software/common/apps/packages/pvm3
+    XPVM_ROOT    /software/common/apps/packages/xpvm-1.2.5
+  }
+  [sun4] {
+    PATH         /software/common/apps/packages/pvm3/bin/SUN4
+  }
+  [linux] {
+    PATH         /software/common/apps/packages/pvm3/bin/LINUX
+  }
+  [solaris-2] {
+    PATH         /software/common/apps/packages/pvm3/bin/SUN4SOL2
+  }
+}
+
+
+(+pbs) {
+  {desc: "Portable Batch System (PBS)"}
+  {flags: power}
+  [linux] {
+    pointer +pbs-2.2p7
+  }
+}
+  
+(+pbs-2.2p7) {
+  {desc: "Portable Batch System (PBS)"}
+  {flags: power}
+    
+  [linux] {
+    PATH            /soft/apps/packages/pbs-2.2p7/bin
+    MANPATH         /soft/apps/packages/pbs-2.2p7/man
+  }
+} 
+
+# We can't put SSH 1.2.27 in /usr/local/bin on Solaris because it
+# core dumps on Solaris 5.  Dur.
+
+(+ssh) {
+  {desc: "SSH - Current Version"}
+
+  [solaris-2 (SOLARIS_VERSION=5.7)] {
+     PATH      /soft/apps/packages/ssh-1.2.27/bin
+     MANPATH   /soft/apps/packages/ssh-1.2.27/man
+  }
+}
+
+
+(+tex-7.2) {
+  {desc: "The TeX Formatting System"}
+  {flags: power}
+
+  [sun4] {
+    TEXMF		/software/common/apps/share/texmf/
+    TEXFORMATS    /software/common/apps/share/texmf/web2c/
+    TEXINPUTS    /software/common/apps/share/texmf/tex//:.:/usr/local/lib/tex/inputs//:/mcs/lib/tex/inputs//
+    TEXPOOL        /software/common/apps/share/texmf/web2c/
+    BIBINPUTS    /software/common/apps/share/texmf/bibtex//:.:/usr/local/lib/tex/bin:/mcs/lib/tex/bib//
+  }
+  [irix-6] {
+    TEXMF /software/common/apps/packages/web2c-7.2/texmf
+    TEXFORMATS /software/common/apps/packages/web2c-7.2/texmf/web2c/
+    TEXINPUTS /software/common/apps/packages/web2c-7.2/texmf/tex//:.:/usr/local/lib/tex/inputs//:/mcs/lib/tex/inputs//
+    BIBINPUTS /software/common/apps/packages/web2c-7.2/texmf/bibtex//:.:/usr/local/lib/tex/bin:/mcs/lib/tex/bib//
+    TEXPOOL /software/common/apps/packages/web2c-7.2/texmf/web2c/
+    TETEXDIR /software/common/apps/packages/web2c-7.2/
+  }
+  [solaris-2|linux] {
+    PATH       /soft/apps/packages/web2c-7.2/bin
+    MANPATH    /soft/apps/packages/web2c-7.2/man
+    TEXMF /software/common/apps/packages/web2c-7.2/texmf
+    TEXFORMATS /software/common/apps/packages/web2c-7.2/texmf/web2c/
+    TEXINPUTS /software/common/apps/packages/web2c-7.2/texmf/tex//:.:/usr/local/lib/tex/inputs//:/mcs/lib/tex/inputs//
+    BIBINPUTS /software/common/apps/packages/web2c-7.2/texmf/bibtex//:.:/usr/local/lib/tex/bin:/mcs/lib/tex/bib//
+    TEXPOOL /software/common/apps/packages/web2c-7.2/texmf/web2c/
+    TETEXDIR /software/common/apps/packages/web2c-7.2/
+  }
+}
+
+
+(+totalview) {
+  {desc:  "The stable, default version of totalview"}  
+  {flags: power}
+    
+  [irix-6|aix-4] {
+    pointer +totalview-3.8.1
+  }
+  [sun4] {
+    pointer +totalview-s4
+  }
+  [solaris-2] {
+    pointer +totalview-3.9.0
+  }
+}
+
+
+(+totalview-beta) {
+  {desc:  "The beta, not yet stable, not default version of totalview"}
+  {flags: power}
+
+  [solaris-2|irix-6|aix-4|linux] {
+    pointer +totalview-4X
+  }
+}
+
+
+(+totalview-s4) {
+  [sun4] {
+    PATH    /usr/local/totalview/bin
+    MANPATH /usr/local/totalview/man
+    LD_LIBRARY_PATH    /usr/local/totalview/lib
+  }
+}
+
+
+(+totalview-3.9.0) {
+  [solaris-2] {
+    PATH /software/solaris-2/com/packages/totalview-3.9.0/totalview.3.9.0-1/sun5/bin
+    MANPATH /software/solaris-2/com/packages/totalview-3.9.0/totalview.3.9.0-1/sun5/man
+    TVROOT /software/solaris-2/com/packages/totalview-3.9.0/totalview.3.9.0-1/sun5
+    LM_LICENSE_FILE /software/solaris-2/com/packages/totalview-3.9.0/flexlm-5.0/license.client-ice
+  }
+}
+
+
+(+totalview-3.8.1) {
+  [irix-6]  {
+    PATH /software/irix-6/com/packages/totalview-3.8.1/totalview.3.8.1/irix6-mips/bin
+    MANPATH /software/irix-6/com/packages/totalview-3.8.1/totalview.3.8.1/irix6-mips/man
+    TVROOT /software/irix-6/com/packages/totalview-3.8.1/totalview.3.8.1/irix6-mips
+    LM_LICENSE_FILE /software/irix-6/com/packages/totalview-3.8.1/flexlm-5.0/license.client-ice
+  }
+  [aix-4] {
+    PATH /software/aix-4/com/packages/totalview-3.8.1/totalview.3.8.1/rs6000/bin
+    MANPATH /software/aix-4/com/packages/totalview-3.8.1/totalview.3.8.1/rs6000/man
+    TVROOT /software/aix-4/com/packages/totalview-3.8.1/totalview.3.8.1/rs6000
+    LM_LICENSE_FILE /software/aix-4/com/packages/totalview-3.8.1/flexlm-5.0/license.client-ice
+  }
+}
+
+
+(+totalview-4X)  {
+  [solaris-2] {
+     PATH /soft/com/packages/totalview-4X.0.0-5/totalview.4X.0.0-5/sun5/bin
+     MANPATH /soft/com/packages/totalview-4X.0.0-5/totalview.4X.0.0-5/sun5/man  
+     TVROOT /soft/com/packages/totalview-4X.0.0-5/totalview.4X.0.0-5/sun5
+     LM_LICENSE_FILE 1720@ice.mcs.anl.gov
+   }
+  [irix-6] {
+     PATH /soft/com/packages/totalview-4X.0.0-5/totalview.4X.0.0-5/irix6-mips/bin
+     MANPATH /soft/com/packages/totalview-4X.0.0-5/totalview.4X.0.0-5/irix6-mips/man  
+     TVROOT /soft/com/packages/totalview-4X.0.0-5/totalview.4X.0.0-5/irix6-mips
+     LM_LICENSE_FILE 1720@ice.mcs.anl.gov
+  }
+  [linux] {
+     PATH /soft/com/packages/totalview-4X.0.0-5/totalview.4X.0.0-5/linux-x86/bin
+     MANPATH /soft/com/packages/totalview-4X.0.0-5/totalview.4X.0.0-5/linux-x86/man
+     TVROOT /soft/com/packages/totalview-4X.0.0-5/totalview.4X.0.0-5/linux-x86
+     LM_LICENSE_FILE 1720@ice.mcs.anl.gov 
+  }
+  [aix-4] {
+     PATH /soft/com/packages/totalview-4X.0.0-5/totalview.4X.0.0-5/rs6000/bin
+     MANPATH /soft/com/packages/totalview-4X.0.0-5/totalview.4X.0.0-5/rs6000/man  
+     TVROOT /soft/com/packages/totalview-4X.0.0-5/totalview.4X.0.0-5/rs6000
+     LM_LICENSE_FILE 1720@ice.mcs.anl.gov
+  }
+}
+
+
+
+(+viz-1.10.1) {
+  [irix-6] {
+    PATH	/soft/apps/packages/viz-1.10.1/bin
+    MANPATH	/soft/apps/packages/viz-1.10.1/man
+    LD_LIBRARYN32_PATH /soft/apps/packages/viz-1.10.1/lib
+  }
+}
+
+
+(+workshop) {
+  {desc:  "The stable, default version of workshop."}
+  {flags: power}
+
+  [solaris-2] {
+    pointer +workshop-5.0
+  }
+}
+
+(+workshop-beta) {
+  {desc:  "The beta, not yet stable, not default version of workshop"}
+  {flags: power}
+
+}
+
+
+(+workshop-5.0) {
+  {desc:  "Workshop 5.0 for Solaris"}
+
+  [solaris-2] {
+    PATH    /opt/SUNWspro/bin:/usr/ccs/bin
+    MANPATH /opt/SUNWspro/man
+    LM_LICENSE_FILE 1729@ice.mcs.anl.gov
+  }
+}
+
+(+workshop-6.0) {
+  {desc:  "Workshop 6.0 for Solaris"}
+
+#  Sandra to fix this...
+#
+#  [solaris-2] {
+#    PATH    /soft/com/packages/workshop/SUNWspro/bin:/usr/ccs/bin
+#    MANPATH /soft/com/packages/workshop/SUNWspro/man
+#    LM_LICENSE_FILE 1729@ice.mcs.anl.gov
+#  }
+}
+
+
+(+x-windows) {
+  {desc: "X Windows"}
+
+  [aix-4] {
+    PATH	/usr/bin/X11
+  }
+  [solaris-2] {
+    PATH /usr/openwin/bin:/usr/dt/man
+    MANPATH /usr/openwin/man:/usr/dt/man
+    XFILESEARCHPATH /usr/openwin/lib/app-defaults/%N:/usr/dt/app-defaults/C/%N
+  }
+  [linux] {
+    PATH /usr/bin/X11
+    MANPATH /usr/X11R6/man
+  }
+}
+
+
