@@ -1,4 +1,4 @@
-# $Id: packages,v 1.61 2001/09/07 18:59:02 bsmith Exp bsmith $ 
+# $Id: packages,v 1.62 2001/09/26 15:25:04 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,6 +13,8 @@
 #BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/linux -lflapack -lblas_INTEL
 BLASLAPACK_LIB = /home/petsc/software/LAPACK/lapack_linux.a  \
   -L/home/petsc/software/blaslapack/linux -lblas_INTEL
+#BLASLAPACK_LIB = -L/home/petsc/software/mkl_linux/LIB -lmkl32_lapack -lmkl32_def
+#PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
 
 #
 # Location of MPI (Message Passing Interface) software
