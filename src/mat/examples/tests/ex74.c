@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.16 2000/07/24 16:36:53 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.17 2000/07/24 20:34:28 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -22,9 +22,8 @@ int main(int argc,char **args)
 
   PetscTruth       reorder=PETSC_FALSE,getrow=PETSC_FALSE;
   MatInfo          minfo1,minfo2;
-  MatILUInfo       info;
   
-  int      lf; /* level of fill for ilu */
+  int      fill,lf; /* fill and level of fill for icc */
   Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
   int      *cols1,*cols2,mbs=16;
   double   norm1,norm2,tol=1.e-10;
@@ -292,20 +291,18 @@ int main(int argc,char **args)
     /* ierr = ISView(ip, VIEWER_STDOUT_SELF); CHKERRA(ierr); 
        ierr = MatView(sA,VIEWER_DRAW_SELF); CHKERRA(ierr); */
   }
-#ifdef LUFactor
+
   if (bs == 1) {
     for (lf=-1; lf<10; lf++){   
-      if (lf==-1) {  /* LU */
-        ierr = MatLUFactorSymbolic(sA,ip,ip,PETSC_NULL,&sC);CHKERRA(ierr);
+      if (lf==-1) {  /* Cholesky factor */
+        fill = 5.0;
+        ierr = MatCholeskyFactorSymbolic(sA,ip,fill,&sC);CHKERRA(ierr);
         norm1 = tol;
-      } else {       /* ILU */
-        info.levels        = lf;
-        info.fill          = 2.0;
-        info.diagonal_fill = 0;
-        /* ierr = OptionsHasName(PETSC_NULL,"-lf",&flg);CHKERRA(ierr);*/
-        ierr = MatILUFactorSymbolic(sA,ip,ip,&info,&sC);CHKERRA(ierr);
+      } else {       /* incomplete Cholesky factor */
+        fill          = 2.0;
+        ierr = MatIncompleteCholeskyFactorSymbolic(sA,ip,fill,lf,&sC);CHKERRA(ierr);
       }
-      ierr = MatLUFactorNumeric(sA,&sC);CHKERRA(ierr);
+      ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRA(ierr);
       /* MatView(sC, VIEWER_DRAW_WORLD); */
       
       ierr = MatMult(sA,x,b);CHKERRA(ierr);
@@ -314,13 +311,13 @@ int main(int argc,char **args)
       /* Check the error */
       ierr = VecAXPY(&neg_one,x,y);CHKERRA(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRA(ierr);
-      if (norm1 < norm2 && lf){
+      if (norm1 < norm2 && lf){ 
         ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, %d, Norm of error=%g, %g\n",lf-1,lf,norm1,norm2);CHKERRA(ierr); 
-      }
+      } 
       norm1 = norm2;
     } 
   }
-#endif  
+
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(sA);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);

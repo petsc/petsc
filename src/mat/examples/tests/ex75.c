@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.11 2000/07/19 20:57:50 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.12 2000/07/20 16:37:02 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -15,10 +15,10 @@ int main(int argc,char **args)
   Mat         A,sA;     
   PetscRandom rctx;         
   double      r1,r2,tol=1.e-10;
-  int         i,j,i1,i2,j1,j2,I,J,Istart,Iend,ierr,its,m;
-  Scalar      v, one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*diag,*vr;
+  int         i,j,i1,i2,j1,j2,I,J,ierr;
+  Scalar      one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*vr;
   int         n,rank,size,col[3],n1,block,row;
-  int         ncols,*cols,*ip_ptr,rstart,rend;
+  int         ncols,*cols,rstart,rend;
   IS          isrow;
 
   PetscInitialize(&argc,&args,(char *)0,help);
