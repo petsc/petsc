@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.23 1996/01/26 04:35:39 bsmith Exp curfman $";
+static char vcid[] = "$Id: da3.c,v 1.24 1996/02/15 22:13:59 curfman Exp curfman $";
 #endif
 
 /*
@@ -169,6 +169,9 @@ $      DA_YZPERIODIC
    Output Parameter:
 .  inra - the resulting array object
 
+   Options Database Key:
+$  -da_view : call DAView() at the conclusion of DACreate3d()
+
 .keywords: distributed array, create, three-dimensional
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate2d()
@@ -176,7 +179,7 @@ $      DA_YZPERIODIC
 int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type, 
              int M, int N, int P, int m, int n, int p, int w, int s, DA *inra)
 {
-  int           rank, size,ierr,start,end,pm;
+  int           rank,size,ierr,start,end,pm,flg;
   int           xs,xe,ys,ye,zs,ze,x,y,z,Xs,Xe,Ys,Ye,Zs,Ze;
   int           left,up,down,bottom,top,i,j,k,*idx,nn;
   int           n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
@@ -1369,6 +1372,8 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   }
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
   PetscFree(idx);
+  ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg); CHKERRQ(ierr);
+  if (flg) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
 
   return 0;
 }

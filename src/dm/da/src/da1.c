@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.26 1996/02/15 22:13:54 curfman Exp curfman $";
+static char vcid[] = "$Id: da1.c,v 1.27 1996/02/16 01:11:06 curfman Exp curfman $";
 #endif
 
 /* 
@@ -107,6 +107,9 @@ $         DA_NONPERIODIC, DA_XPERIODIC
    Output Parameter:
 .  inra - the resulting array object
 
+   Options Database Key:
+$  -da_view : call DAView() at the conclusion of DACreate1d()
+
 .keywords: distributed array, create, one-dimensional
 
 .seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d()
@@ -114,7 +117,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 {
   int           rank, size,xs,xe,x,Xs,Xe,ierr,start,end,m;
-  int           i,*idx,nn,j,count,left;
+  int           i,*idx,nn,j,count,left,flg;
   DA            da;
   Vec           local,global;
   VecScatter    ltog,gtol;
@@ -215,10 +218,10 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   PLogObjectParent(da,gtol);
   ISDestroy(to); ISDestroy(from);
 
-  da->M      = M;  da->N  = 1;  da->m  = m; da->n = 1;
-  da->xs     = xs; da->xe = xe; da->ys = 0; da->ye = 0;
-  da->Xs     = Xs; da->Xe = Xe; da->Ys = 0; da->Ye = 0;
-  da->P      = 1;  da->p  = 1; da->w = w; da->s = s/w;
+  da->M  = M;  da->N  = 1;  da->m  = m; da->n = 1;
+  da->xs = xs; da->xe = xe; da->ys = 0; da->ye = 0; da->zs = 0; da->ze = 0;
+  da->Xs = Xs; da->Xe = Xe; da->Ys = 0; da->Ye = 0; da->Zs = 0; da->Ze = 0;
+  da->P  = 1;  da->p  = 1;  da->w = w; da->s = s/w;
 
   PLogObjectParent(da,global);
   PLogObjectParent(da,local);
@@ -249,6 +252,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   }  
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
   PetscFree(idx);
+  ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg); CHKERRQ(ierr);
+  if (flg) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
 
   *inra = da;
   return 0;

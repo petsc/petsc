@@ -1,12 +1,7 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.35 1996/02/16 01:11:12 curfman Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.36 1996/02/16 21:24:28 curfman Exp curfman $";
 #endif
  
-/*
-  Code for manipulating distributed regular arrays in parallel.
-  Peter Mell changed this file on 7/10/95.
-*/
-
 #include "daimpl.h"    /*I   "da.h"   I*/
 #include "pinclude/pviewer.h"
 #include "draw.h"
@@ -130,6 +125,9 @@ $         DA_YPERIODIC, DA_XYPERIODIC
    Output Parameter:
 .  inra - the resulting array object
 
+   Options Database Key:
+$  -da_view : call DAView() at the conclusion of DACreate2d()
+
    Notes:
    The stencil type DA_STENCIL_STAR with width 1 corresponds to the 
    standard 5-pt stencil, while DA_STENCIL_BOX with width 1 denotes
@@ -144,7 +142,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 {
   int           rank, size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
-  int           xbase,*bases,j,x_t,y_t,s_t,base,count;
+  int           xbase,*bases,j,x_t,y_t,s_t,base,count,flg;
   int           s_x,s_y; /* s proportionalized to w */
   DA            da;
   Vec           local,global;
@@ -442,9 +440,9 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PLogObjectParent(da,gtol);
   ISDestroy(to); ISDestroy(from);
 
-  da->M  = M;  da->N  = N;  da->m  = m;  da->n  = n; da->w = w; da->s = s;
-  da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye;
-  da->Xs = Xs; da->Xe = Xe; da->Ys = Ys; da->Ye = Ye;
+  da->M  = M;  da->N  = N;  da->m  = m;  da->n  = n;  da->w = w;  da->s = s;
+  da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye; da->zs = 0; da->ze = 0;
+  da->Xs = Xs; da->Xe = Xe; da->Ys = Ys; da->Ye = Ye; da->Zs = 0; da->Ze = 0;
   da->P  = 1;  da->p  = 1;
 
   PLogObjectParent(da,global);
@@ -613,6 +611,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
   PetscFree(idx);
 
+  ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg); CHKERRQ(ierr);
+  if (flg) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
   return 0;
 }
 
@@ -627,8 +627,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 .  daref - refined distributed array
 
    Note:
-   Currently, refinement consists of just doubling the number of grid spaces in
-   each dimentsion of the DA.
+   Currently, refinement consists of just doubling the number of grid spaces
+   in each dimentsion of the DA.
 
 .keywords:  distributed array, refine
 
@@ -641,19 +641,14 @@ int DARefine(DA da, DA *daref)
 
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
 
+  M = 2*da->M - 1; N = 2*da->N - 1; P = 2*da->P - 1;
   if (da->dim == 1) {
-    M = 2*da->M - 1;
     ierr = DACreate1d(da->comm,da->wrap,M,da->w,da->s,&da2); CHKERRQ(ierr);
   }
   else if (da->dim == 2) {
-    M = 2*da->M - 1;
-    N = 2*da->N - 1;
     ierr = DACreate2d(da->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,&da2); CHKERRQ(ierr);
   }
   else if (da->dim == 3) {
-    M = 2*da->M - 1;
-    N = 2*da->N - 1;
-    P = 2*da->P - 1;
     ierr = DACreate3d(da->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,
            da->w,da->s,&da2); CHKERRQ(ierr);
   }
