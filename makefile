@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.274 1999/03/19 14:11:44 balay Exp bsmith $ 
+# $Id: makefile,v 1.275 1999/03/19 16:29:06 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -13,14 +13,7 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 #
 # Basic targets to build PETSc libraries.
 # all     : builds the c, fortran,f90 libraries
-# fortran : builds the fortran libary
-# f90     : builds the fortran and the f90 libraries.
-#
-all       : info chkpetsc_dir deletelibs build_c build_fortrankernels \
-	    build_fortran shared
-fortran   : info chkpetsc_dir build_fortran
-fortran90 : fortran build_fortran90
-
+all       : info chkpetsc_dir deletelibs build_c build_fortran shared
 #
 #  Prints information about the system and PETSc being compiled
 #
@@ -70,16 +63,16 @@ build_c:
 #
 # Builds PETSc Fortran source
 # Note:	 libfast cannot run on .F files on certain machines, so we
-# use lib and check for errors here.
+# use libf to compile the fortran source files.
 
 build_fortran:
 	-@echo "BEGINNING TO COMPILE FORTRAN SOURCE"
 	-@echo "========================================="
 	-@cd src/fortran/custom; \
 	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} libf clean 
-	${RANLIB} ${PDIR}/libpetscfortran.a
 	-@cd src/fortran/kernels; \
 	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} libf clean
+	${RANLIB} ${PDIR}/libpetscfortran.a
 	${RANLIB} ${PDIR}/libpetsc.a
 	-@chmod g+w  ${PDIR}/*.a
 	-@echo "Completed compiling Fortran source"
