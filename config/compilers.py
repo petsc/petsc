@@ -305,7 +305,7 @@ class Configure(config.base.Configure):
             flibs.append(arg)
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt0.o|c|gcc)$', arg)
+        m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crtbegin.o|c|gcc)$', arg)
         if m: continue
         # Check for canonical library argument
         m = re.match(r'^-[lLR]$', arg)
@@ -325,7 +325,6 @@ class Configure(config.base.Configure):
               pass
             else:
               lflags.append(arg)
-            lib = arg+' '+argIter.next()
             #print 'Found special library: '+arg
             flibs.append(arg)
           continue
