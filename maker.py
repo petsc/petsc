@@ -4,7 +4,7 @@ import os
 
 class Make(script.Script):
   '''Template for individual project makefiles. All project makes start with a local RDict.'''
-  def __init__(self, builder = None):
+  def __init__(self, builder = None, Args = []):
     import RDict
     import project
     import sys
@@ -14,7 +14,7 @@ class Make(script.Script):
       import sourceDatabase
       import config.framework
 
-      self.framework  = config.framework.Framework(self.clArgs+['-noOutput'], self.argDB)
+      self.framework  = config.framework.Framework(self.clArgs+Args+['-noOutput'], self.argDB)
       self.builder    = __import__('builder').Builder(self.framework, sourceDatabase.SourceDB(self.root))
     else:
       self.builder    = builder
