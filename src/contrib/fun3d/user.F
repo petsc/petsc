@@ -1,17 +1,17 @@
-c  $Id: user.F,v 1.26 2000/09/06 22:19:11 balay Exp kaushik $
-c---------------------------------------------------------------
-c The following subroutines are from node2t.f in the original
-c code - D. K. Kaushik (1/17/97)
-c---------------------------------------------------------------
-c
-c
-c 2-D Navier Stokes on Unstructured Grids
+!  $Id: user.F,v 1.27 2000/09/15 20:08:31 kaushik Exp bsmith $
+!---------------------------------------------------------------
+! The following subroutines are from node2t.f in the original
+! code - D. K. Kaushik (1/17/97)
+!---------------------------------------------------------------
+!
+!
+! 2-D Navier Stokes on Unstructured Grids
 
-c============================== FORLINK ==============================72
-c
-c  FORLINK establishes links between FORTRAN common blocks and C
-c
-c=====================================================================72
+!============================== FORLINK ==============================72
+!
+!  FORLINK establishes links between FORTRAN common blocks and C
+!
+!=====================================================================72
 #undef __FUNC__
 #define __FUNC__ "FORLINK"
       subroutine FORLINK()
@@ -21,27 +21,27 @@ c=====================================================================72
       Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar  cfl1,cfl2
-      integer nsmoth,iflim,itran,nbtran,jupdate,
+      integer nsmoth,iflim,itran,nbtran,jupdate,                        &
      &        nstage,ncyct,iramp,nitfo
       Scalar  gtol
       integer icycle,nsrch,ilu0,ifcn
-      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
-     1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
+      common/info/title,beta,alpha,Re,dt,tot,res0,resc,                 &
+     &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,         &
      &             nstage,ncyct,iramp,nitfo
       common/gmcom/gtol,icycle,nsrch,ilu0,ifcn
 
       call CLINK(title,cfl1,gtol)
-c
-c End of subroutine FORLINK
-c
+!
+! End of subroutine FORLINK
+!
       return
       end
-c============================== Block_Initialization  ======== =======72
-c
-c Initializes the common blocks members for turbulence model
-c
-c=====================================================================72
+!============================== Block_Initialization  ======== =======72
+!
+! Initializes the common blocks members for turbulence model
+!
+!=====================================================================72
       block data Block_Initialization
       implicit none
 #include "include/finclude/petscdef.h"
@@ -52,19 +52,19 @@ c=====================================================================72
       data vkar,cmu,ce1,ce2/0.41,0.09,1.2,2.0 /
       data aplus1,aplus2,turbinf/26.0,10.0,0.1 /
       data cb1,sig,cb2,cw2,cw3/0.1355,0.66667,0.622,0.3,2.0/
-c
-c Comment out old coefficients
-c      data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.1,2.0/
-c
+!
+! Comment out old coefficients
+!      data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.1,2.0/
+!
        data cv1,ct1,ct2,ct3,ct4/7.1d0,1.0d0,2.0d0,1.2d0,0.5d0/
 
       end
 
-c================================== INIT =============================72
-c
-c Initializes the flow field
-c
-c=====================================================================72
+!================================== INIT =============================72
+!
+! Initializes the flow field
+!
+!=====================================================================72
 #undef __FUNC__
 #define __FUNC__ "INIT"
       subroutine INIT(nnodes, qvec, turbre, amut,nvnode, ivnode,irank)
@@ -79,15 +79,15 @@ c=====================================================================72
       Scalar  vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
       Scalar  cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
       Scalar  cfl1,cfl2
-      integer nsmoth,iflim,itran,nbtran,jupdate,
+      integer nsmoth,iflim,itran,nbtran,jupdate,                          &
      &        nstage,ncyct,iramp,nitfo
-      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
+      common/info/title,beta,alpha,Re,dt,tot,res0,resc,                   &
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
       common/turb/vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
       common/spalrt/cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
-      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
+      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,           &
      &             nstage,ncyct,iramp,nitfo
       Scalar  pi,conv,rmu,chi,fv1
       Integer i,k,n
@@ -98,17 +98,17 @@ c=====================================================================72
        Scalar qvec(nnodes,4)
 #define qnode(i,j) qvec(j,i)
 #endif
-c
+!
       cw1 = cb1/vkar/vkar + (1.0d0 + cb2)/sig
       if(ivisc.gt.4d0)turbinf = 1.341946d0
-c      if(ivisc.gt.4)turbinf = 0.5
+!      if(ivisc.gt.4)turbinf = 0.5
       if(ivisc.gt.4.and.itran.eq.1)turbinf = 0.1d0
-c
-c Note that for Spalarts model, I use turbinf as the freestream value of
-c the dependent variable just as in the Baldwin-Barth model.
-c The constant is set so that in the freestream, nu_t=0.009 (1.341946)
-c 
-c     print *, "I am in INIT"
+!
+! Note that for Spalarts model, I use turbinf as the freestream value of
+! the dependent variable just as in the Baldwin-Barth model.
+! The constant is set so that in the freestream, nu_t=0.009 (1.341946)
+! 
+!     print *, "I am in INIT"
       res0 = 1.0d0
       resc = 1.0d0
 
@@ -143,23 +143,23 @@ c     print *, "I am in INIT"
          amut(n)    = 0.0d0
        enddo
       endif
-c
-c If viscous, zero out the velocity on the surface
-c
-c     print *, "Just Before Viscous"
+!
+! If viscous, zero out the velocity on the surface
+!
+!     print *, "Just Before Viscous"
 
       do 9010 i = 1,nvnode
-c
-c Compute the velocity normal to the surface
-c
+!
+! Compute the velocity normal to the surface
+!
         k       = ivnode(i)
         qnode(2,k) = 0.0d0
         qnode(3,k) = 0.0d0
         qnode(4,k) = 0.0d0
  9010 continue
-c
-c If turbulent, initialize turbre
-c
+!
+! If turbulent, initialize turbre
+!
       if (ivisc.eq.3.or.ivisc.eq.4) then
          if (irank .eq. 0) write(10,110)
          if (irank .eq. 0) write(10,120)vkar,cmu,ce1,ce2
@@ -183,7 +183,7 @@ c
             amut(n)   = fv1*turbinf
  1020    continue
       end if
-c     print *, "I am out of INIT"
+!     print *, "I am out of INIT"
  
       return
   110 format(1h ,'Parameters for turbulence model')
@@ -192,18 +192,18 @@ c     print *, "I am out of INIT"
   140 format(1h ,'k=',f10.5,' cb1=',f10.5,' sig=',f10.5,'cb2=',f10.5)
   150 format(1h ,'cw1=',f10.5,' cw2=',f10.5,' cw3=',f10.5,' cv1=',f10.5)
   160 format(1h ,'ct1=',f10.5,' ct2=',f10.5,' ct3=',f10.5,' ct4=',f10.5)
-c
-c End of subroutine INIT
-c
+!
+! End of subroutine INIT
+!
       
       end
 
 
-c================================ READR1 ====================================
-c
-c  Reads input parameters
-c
-c============================================================================
+!================================ READR1 ====================================
+!
+!  Reads input parameters
+!
+!============================================================================
 #undef __FUNC__
 #define __FUNC__ "READR1"
       subroutine READR1(ileast, irank)
@@ -213,13 +213,13 @@ c============================================================================
       Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar  cfl1,cfl2
-      integer nsmoth,iflim,itran,nbtran,jupdate,
+      integer nsmoth,iflim,itran,nbtran,jupdate,                                &
      &        nstage,ncyct,iramp,nitfo
       Scalar  gtol
       integer icycle,nsrch,ilu0,ifcn
-      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
+      common/info/title,beta,alpha,Re,dt,tot,res0,resc,                         &
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
+      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,                 &
      &             nstage,ncyct,iramp,nitfo
       common/gmcom/gtol,icycle,nsrch,ilu0,ifcn
       integer ileast, irank
@@ -264,22 +264,22 @@ c============================================================================
 
 
 
-c================================ TECFLO =============================72
-c
-c  Writes a formatted file that contains an input file for TECPLOT
-c
-c=====================================================================72
+!================================ TECFLO =============================72
+!
+!  Writes a formatted file that contains an input file for TECPLOT
+!
+!=====================================================================72
 #undef __FUNC__
 #define __FUNC__ "TECFLO"
-      subroutine TECFLO(nnodes,
-     &                  nnbound,nvbound,nfbound,
-     3                  nnfacet,nvfacet,nffacet,
-     &                  nsnode,nvnode,nfnode,
-     4                  title,x,y,z,q,
-     5                  nnpts,nntet,nvpts,nvtet,nfpts,nftet,
-     6                  f2ntn,f2ntv,f2ntf,isnode,ivnode,ifnode,
-     7                  irank)
-c
+      subroutine TECFLO(nnodes,                                            &
+     &                  nnbound,nvbound,nfbound,                           &
+     &                  nnfacet,nvfacet,nffacet,                           &
+     &                  nsnode,nvnode,nfnode,                              &
+     &                  title,x,y,z,q,                                     &
+     &                  nnpts,nntet,nvpts,nvtet,nfpts,nftet,               &
+     &                  f2ntn,f2ntv,f2ntf,isnode,ivnode,ifnode,            &
+     &                  irank)
+!
       implicit none      
 #include "include/finclude/petscdef.h"
       Scalar pinf
@@ -287,8 +287,8 @@ c
       Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      integer nnodes,nnbound,nvbound,nfbound,
-     &        nnfacet,nvfacet,nffacet,
+      integer nnodes,nnbound,nvbound,nfbound,                              &
+     &        nnfacet,nvfacet,nffacet,                                     &
      &        nsnode,nvnode,nfnode,irank
       integer nntet(1),nnpts(1)
       integer nvtet(1),nvpts(1)
@@ -302,16 +302,16 @@ c
       character c4*4,title*20
 
       pinf = p0
-c
-c   + write tecplot header
-c
+!
+!   + write tecplot header
+!
       write(13,'(a)') 'TITLE="' // title // '"'
-      write(13,'(a)') 'VARIABLES="X     ","Y     ","Z     ","RHO   ",    
-     1     "U     ","V     ","W     ","P/Pinf"'  
-c
-c   + do a zone-title, so we can keep track of things
-c   + start with solid-wall boundary surfaces
-c  
+      write(13,'(a)') 'VARIABLES="X     ","Y     ","Z     ","RHO   ",     &
+     &     "U     ","V     ","W     ","P/Pinf"'  
+!
+!   + do a zone-title, so we can keep track of things
+!   + start with solid-wall boundary surfaces
+!  
       isp   = 1
       ist   = 1
       do 10 i=1,nnbound
@@ -344,9 +344,9 @@ c
         ist = ist + nntet(i)
  
    10 continue
-c
-c   + start with viscous boundary surfaces
-c 
+!
+!   + start with viscous boundary surfaces
+! 
       isp   = 1
       ist   = 1
       do 70 i=1,nvbound
@@ -379,9 +379,9 @@ c
         ist = ist + nvtet(i)
  
    70 continue
-c
-c   + do the far-field boundary surfaces
-c  
+!
+!   + do the far-field boundary surfaces
+!  
       isp   = 1
       ist   = 1
       do 40 i=1,nfbound
@@ -415,9 +415,9 @@ c
  
    40  continue
 
-c
-c      End of subroutine TECFLO
-c
+!
+!      End of subroutine TECFLO
+!
  1000  format('ZONE T="',a,'", Z=0, I=',i6,', J=',i6,', F=FEBLOCK')
  1010  format(1P10E13.5)
  1020  format(4I10)
@@ -425,20 +425,20 @@ c
        return
        end
 
-c================================ FORCE  =============================72
-c
-c  Calculates the forces
-c  Modified - D. K. Kaushik (1/15/97)
-c  Added new parameters - clift, cdrag, cmom, irank, nvertices
-c  
-c=====================================================================72
+!================================ FORCE  =============================72
+!
+!  Calculates the forces
+!  Modified - D. K. Kaushik (1/15/97)
+!  Added new parameters - clift, cdrag, cmom, irank, nvertices
+!  
+!=====================================================================72
 #undef __FUNC__
 #define __FUNC__ "FORCE"
-      subroutine FORCE(nnodes,nedge,
-     &                 isnode,ivnode,
-     &                 nnfacet,f2ntn,nnbound,
-     &                 nvfacet,f2ntv,nvbound,
-     &                 evec,qvec,xyz,sface_bit,vface_bit,
+      subroutine FORCE(nnodes,nedge,                                    &
+     &                 isnode,ivnode,                                   &
+     &                 nnfacet,f2ntn,nnbound,                           &
+     &                 nvfacet,f2ntv,nvbound,                           &
+     &                 evec,qvec,xyz,sface_bit,vface_bit,               &
      &                 clift, cdrag, cmom,irank,nvertices)
       implicit none      
 #include "include/finclude/petsc.h"
@@ -446,16 +446,16 @@ c=====================================================================72
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
       Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      Scalar rms(1001),clw(1001),cdw(1001),
+      Scalar rms(1001),clw(1001),cdw(1001),                             &
      &       cmw(1001),xres(1001)
-      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
-     1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      common/info/title,beta,alpha,Re,dt,tot,res0,resc,                 &
+     &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
       common/history/rms,clw,cdw,cmw,xres
 
-      integer nnodes,nedge,nnfacet,nvfacet,
-     &        nnbound,nvbound,
+      integer nnodes,nedge,nnfacet,nvfacet,                             &
+     &        nnbound,nvbound,                                          &
      &        irank,nvertices
       integer isnode(1),ivnode(1)
       integer f2ntn(nnfacet,4)
@@ -466,12 +466,12 @@ c=====================================================================72
       Scalar clloc,cdloc,cmloc,clglo,cdglo,cmglo
       Scalar cl_ghost, cd_ghost, cm_ghost
       Scalar coef_loc(3), coef_glo(3)
-      Scalar pi,conv,csa,sna,xr,yr,zr,
-     &       x1,y1,z1,x2,y2,z2,x3,y3,z3,xmid,ymid,zmid,
-     &       p1,p2,p3,u1,u2,u3,v1,v2,v3,
-     &       w1,w2,w3,
-     &       ax,ay,az,bx,by,bz,
-     &       xnorm,ynorm,znorm,
+      Scalar pi,conv,csa,sna,xr,yr,zr,                                  &
+     &       x1,y1,z1,x2,y2,z2,x3,y3,z3,xmid,ymid,zmid,                 &
+     &       p1,p2,p3,u1,u2,u3,v1,v2,v3,                                &
+     &       w1,w2,w3,                                                  &
+     &       ax,ay,az,bx,by,bz,                                         &
+     &       xnorm,ynorm,znorm,                                         &
      &       dcx,dcy,dcz,cp,press
       integer icount,n,node1,node2,node3,ierr
       
@@ -494,14 +494,14 @@ c=====================================================================72
 #define z(i) xyz(i,3)
 #define eptr(i,j) evec(i,j)
 #endif
-c
+!
       pi = 4.d0*atan(1.d0)
       conv = 180.d0/pi
       csa=cos(alpha/conv)
       sna=sin(alpha/conv)
-c
-c  initialize forces to zero  
-c
+!
+!  initialize forces to zero  
+!
       clw(ntt) = 0.0d0
       cdw(ntt) = 0.0d0
       cmw(ntt) = 0.0d0
@@ -546,10 +546,10 @@ c
                bx = x3 - x1
                by = y3 - y1
                bz = z3 - z1
-c
-c  norm points outward, away from grid interior.
-c  norm magnitude is area of surface triangle.
-c
+!
+!  norm points outward, away from grid interior.
+!  norm magnitude is area of surface triangle.
+!
                xnorm =-0.5d0*(ay*bz - az*by)
                ynorm = 0.5d0*(ax*bz - az*bx)
                znorm =-0.5d0*(ax*by - ay*bx)
@@ -571,7 +571,7 @@ c
  
                press = (p1 + p2 + p3)/3.0d0
                cp    = 2.d0*(press - 1.0d0)        
-c
+!
                dcx = cp*xnorm
                dcy = cp*ynorm
                dcz = cp*znorm
@@ -585,21 +585,21 @@ c
 
                 clloc = clloc - dcx*sna     + dcz*csa
                 cdloc = cdloc + dcx*csa + dcz*sna
-                cmloc = cmloc
+                cmloc = cmloc                                           &
      &                     + (xmid - xr)*dcy - (ymid - yr)*dcx
 
 #else
                 clloc = clloc - dcx*sna + dcy*csa
                 cdloc = cdloc + dcx*csa + dcy*sna
-                cmloc = cmloc
+                cmloc = cmloc                                           &
      &                     + (xmid - xr)*dcy - (ymid - yr)*dcx
 #endif
                endif
 
  30    continue
-c
-c Viscous boundary
-c
+!
+! Viscous boundary
+!
        do 60 n = 1, nvfacet
                node1 = ivnode(f2ntv(n,1))
                node2 = ivnode(f2ntv(n,2))
@@ -624,10 +624,10 @@ c
                bx = x3 - x1
                by = y3 - y1
                bz = z3 - z1
-c
-c  norm points outward, away from grid interior.
-c  norm magnitude is area of surface triangle.
-c
+!
+!  norm points outward, away from grid interior.
+!  norm magnitude is area of surface triangle.
+!
                xnorm =-0.5d0*(ay*bz - az*by)
                ynorm = 0.5d0*(ax*bz - az*bx)
                znorm =-0.5d0*(ax*by - ay*bx)
@@ -661,66 +661,64 @@ c
                if (vface_bit(n) .eq. 1) then
                 clloc = clloc - dcx*sna + dcy*csa
                 cdloc = cdloc + dcx*csa + dcy*sna
-                cmloc = cmloc
-     &                     + (xmid - xr)*dcy - (ymid - yr)*dcx
+                cmloc = cmloc                                            &
+     &                     + (xmid - xr)*dcy - (ymid - yr)*dcx        
                endif
 
  60   continue
-c
+!
       icount = 3
       coef_loc(1) = clloc
       coef_loc(2) = cdloc
       coef_loc(3) = cmloc
-      call MPI_ALLREDUCE(coef_loc,coef_glo,icount,
-     >                   MPIU_SCALAR, MPI_SUM,
-     >                   MPI_COMM_WORLD,ierr)
-c     call MPI_ALLREDUCE(cdloc,cdglo,icount,
-c    >                   MPI_DOUBLE_PRECISION, MPI_SUM,
-c    >                   MPI_COMM_WORLD,ierr)
-c     call MPI_ALLREDUCE(cmloc,cmglo,icount,
-c    >                   MPI_DOUBLE_PRECISION, MPI_SUM,
-c    >                   MPI_COMM_WORLD,ierr)
-c
+      call MPI_ALLREDUCE(coef_loc,coef_glo,icount,                       &
+     &                   MPIU_SCALAR, MPI_SUM,                           &
+     &                   MPI_COMM_WORLD,ierr)
+!     call MPI_ALLREDUCE(cdloc,cdglo,icount,
+!    &                   MPI_DOUBLE_PRECISION, MPI_SUM,
+!    &                   MPI_COMM_WORLD,ierr)
+!     call MPI_ALLREDUCE(cmloc,cmglo,icount,
+!    &                   MPI_DOUBLE_PRECISION, MPI_SUM,
+!    &                   MPI_COMM_WORLD,ierr)
+!
        clw(ntt) = coef_glo(1)
        cdw(ntt) = coef_glo(2)
        cmw(ntt) = coef_glo(3)
        clift = clw(ntt)
        cdrag = cdw(ntt)
        cmom = cmw(ntt)
-c
-c Update the timing information - Added by D. K. Kaushik (1/17/97)
+!
+! Update the timing information - Added by D. K. Kaushik (1/17/97)
       xres(ntt) = tot
-c End of subroutine FORCE
-c
+! End of subroutine FORCE
+!
       return
       end
 
 
-c================================ DELTAT2 ============================72
-c
-c Calculate a time step for each cell
-c Note that this routine assumes conservative variables
-c
-c=====================================================================72
+!================================ DELTAT2 ============================72
+!
+! Calculate a time step for each cell
+! Note that this routine assumes conservative variables
+!
+!=====================================================================72
 #undef __FUNC__
 #define __FUNC__ "DELTA2"
-      subroutine DELTAT2(nnodes,nedge,qvec,cdt,
-     &                  xyz,vol,xyzn,evec,
-     &                  sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
-     &                  nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
+      subroutine DELTAT2(nnodes,nedge,qvec,cdt,                          &
+     &                  xyz,vol,xyzn,evec,                               &
+     &                  sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,             &
+     &                  nsnode,nvnode,nfnode,isnode,ivnode,ifnode,       &
      &                  LocalTS,irank,nvertices)
-c
+!
       implicit none      
 #include "include/finclude/petscdef.h"
       Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
-      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
-     1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      common/info/title,beta,alpha,Re,dt,tot,res0,resc,                  &
+     &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
-      integer nnodes,nedge,
-     &        nsnode,nvnode,nfnode,
-     &        LocalTS,irank,nvertices
+      integer nnodes,nedge,nsnode,nvnode,nfnode,LocalTS,irank,nvertices
       Scalar  vol(1)
       Scalar  sxn(1),syn(1),szn(1)
       Scalar  vxn(1),vyn(1),vzn(1)
@@ -729,9 +727,8 @@ c
       integer isnode(1),ivnode(1),ifnode(1)
       integer n,i,node1,node2,inode
       integer flops,ierr
-      Scalar xnorm,ynorm,znorm,area,
-     &       u1,v1,w1,u2,v2,w2,u,v,c,w,
-     &       ubar,Vn,term
+      Scalar xnorm,ynorm,znorm,area,u1,v1,w1,u2,v2,w2,u,v,c,w
+      Scalar ubar,Vn,term
 #if defined(INTERLACING)
       Scalar qvec(4,nvertices)
       Scalar xyz(3,nvertices)
@@ -762,37 +759,37 @@ c
 #define eptr(i,j) evec(i,j)
 #endif
 
-c  If local time steping, loop over faces
-c  and calculate time step as cdt = V/(sum(|u.n| +c.area)
-c  This is time step for cfl=1. We will multiply by cfl number later
-c
-c First loop over nodes and zero out cdt
-c
+!  If local time steping, loop over faces
+!  and calculate time step as cdt = V/(sum(|u.n| +c.area)
+!  This is time step for cfl=1. We will multiply by cfl number later
+!
+! First loop over nodes and zero out cdt
+!
       flops = 0
       if (LocalTS .gt. 0) then
          do 1000 i = 1,nvertices
             cdt(i) = 0.0d0
  1000    continue
-c
+!
          do 1020 n = 1, nedge
                node1 = eptr(n,1)
                node2 = eptr(n,2)
-c
-c Get normal to face
-c
+!
+! Get normal to face
+!
                xnorm = xn(n)
                ynorm = yn(n)
                znorm = zn(n)
                area  = rl(n)
-c
+!
                xnorm = xnorm*area
                ynorm = ynorm*area
                znorm = znorm*area
-c /*'
-c xnorm = x-normal x area of face  
-c ynorm = y-normal x area of face  
-c znorm = z-normal x area of face  
-c '*/
+!/*
+! xnorm = xnormal * area of face  
+! ynorm = ynormal * area of face  
+! znorm = znormal * area of face  
+!*/
                u1   = qnode(2,node1)
                v1   = qnode(3,node1)
                w1   = qnode(4,node1)
@@ -800,9 +797,9 @@ c '*/
                u2   = qnode(2,node2)
                v2   = qnode(3,node2)
                w2   = qnode(4,node2)
-c
-c Get average values on face 
-c
+!
+! Get average values on face 
+!
                u    = 0.5d0*(u1 + u2)
                v    = 0.5d0*(v1 + v2)
                w    = 0.5d0*(w1 + w2)
@@ -812,17 +809,17 @@ c
                term = abs(u*xnorm + v*ynorm + w*znorm) + c*area
                cdt(node1) = cdt(node1) + term
                cdt(node2) = cdt(node2) + term
-c
+!
  1020    continue
          flops = flops + 27*nedge
-c 
-c Now loop over boundaries and close the contours
-c
+! 
+! Now loop over boundaries and close the contours
+!
          do 1030 i = 1,nsnode
             inode = isnode(i)
-c
-c Get the normal
-c
+!
+! Get the normal
+!
             xnorm = sxn(i)
             ynorm = syn(i)
             znorm = szn(i)
@@ -833,44 +830,44 @@ c
             w   = qnode(4,inode)
             ubar= (u*xnorm + v*ynorm + w*znorm)/area
             c   = sqrt(ubar*ubar + beta)
-c
+!
             Vn = abs(xnorm*u + ynorm*v + znorm*w) + c*area
             cdt(inode) = cdt(inode) + Vn
-c
+!
  1030    continue
          flops = flops + 24*nsnode
 
-c
-c Now viscous faces
-c
-c
+!
+! Now viscous faces
+!
+!
          do 1040 i = 1,nvnode
             inode = ivnode(i)
-c
-c Get the normal
-c
+!
+! Get the normal
+!
             xnorm = vxn(i)
             ynorm = vyn(i)
             znorm = vzn(i)
             area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
-c
-c Because velocities are zero, c is just sqrt(beta)
-c
+!
+! Because velocities are zero, c is just sqrt(beta)
+!
             c  = sqrt(beta)
             Vn = c*area 
 
             cdt(inode) = cdt(inode) + Vn
-c
+!
  1040    continue
          flops = flops + 9*nvnode
-c
-c Now far field
-c
+!
+! Now far field
+!
          do 1050 i = 1,nfnode
             inode = ifnode(i)
-c
-c Get the normal
-c
+!
+! Get the normal
+!
             xnorm = fxn(i)
             ynorm = fyn(i)
             znorm = fzn(i)
@@ -892,42 +889,42 @@ c
  1060    continue
          flops = flops + nvertices
       else
-c
-c If not doing local time stepping just set cdt=1
-c
+!
+! If not doing local time stepping just set cdt=1
+!
          do 1070 n = 1,nvertices
             cdt(n) = 1.0d0
  1070    continue
       end if
       call PLogFlops(flops,ierr)
-c
-c End of subroutine DELTAT2
-c
+!
+! End of subroutine DELTAT2
+!
       return
       end
 
 
-c================================= FLUX ======================================
-c
-c Calculates the fluxes on the face and performs the flux balance
-c
-c=============================================================================
+!================================= FLUX ======================================
+!
+! Calculates the fluxes on the face and performs the flux balance
+!
+!=============================================================================
 #undef __FUNC__
 #define __FUNC__ "FLUX"
-      subroutine FLUX(nnodes, ncell, nedge,
-     &                nsface, nvface, nfface, isface, ivface, ifface,
-     &                nsnode, nvnode, nfnode, isnode, ivnode, ifnode,
-     &                nnfacet,f2ntn,nnbound,
-     &                nvfacet,f2ntv,nvbound,
-     &                nffacet,f2ntf,nfbound,
-     &                grad,evec,qvec,xyz,resvec,xyzn,
-     &                sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,
+      subroutine FLUX(nnodes, ncell, nedge,                                     &
+     &                nsface, nvface, nfface, isface, ivface, ifface,           &
+     &                nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
+     &                nnfacet,f2ntn,nnbound,                                    &
+     &                nvfacet,f2ntv,nvbound,                                    &
+     &                nffacet,f2ntf,nfbound,                                    &
+     &                grad,evec,qvec,xyz,resvec,xyzn,                           &
+     &                sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
 #if defined(_OPENMP) 
-     &                max_threads,
+     &                max_threads,                                              &
 #if defined(HAVE_REDUNDANT_WORK)     
-     &                resd,       
+     &                resd,                                                     &
 #else
-     &                nedgeAllThr,part_thr,nedge_thr,edge_thr,xyzn_thr,
+     &                nedgeAllThr,part_thr,nedge_thr,edge_thr,xyzn_thr,         &
 #endif
 #endif  
      &                irank,nvertices)
@@ -937,23 +934,23 @@ c=============================================================================
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
       Scalar  p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      Scalar  rms(1001),clw(1001),cdw(1001),
+      Scalar  rms(1001),clw(1001),cdw(1001),                                    &
      &        cmw(1001),xres(1001)
       Scalar  cfl1,cfl2
-      integer nsmoth,iflim,itran,nbtran,jupdate,
+      integer nsmoth,iflim,itran,nbtran,jupdate,                                &
      &        nstage,ncyct,iramp,nitfo
-      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
-     1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      common/info/title,beta,alpha,Re,dt,tot,res0,resc,                         &
+     &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
       common/history/rms,clw,cdw,cmw,xres
-      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
+      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,                 &
      &             nstage,ncyct,iramp,nitfo
-      integer nnodes, ncell, nedge,
-     &        nsface, nvface, nfface,
-     &        nsnode, nvnode, nfnode,
-     &        nnfacet,nvfacet,nffacet,
-     &        nnbound,nvbound,nfbound,
+      integer nnodes, ncell, nedge,                                             &
+     &        nsface, nvface, nfface,                                           &
+     &        nsnode, nvnode, nfnode,                                           &
+     &        nnfacet,nvfacet,nffacet,                                          &
+     &        nnbound,nvbound,nfbound,                                          &
      &        irank,nvertices
       Scalar  sxn(1),syn(1),szn(1)
       Scalar  vxn(1),vyn(1),vzn(1)
@@ -966,27 +963,27 @@ c=============================================================================
       integer f2ntf(nffacet,4)
       integer i,n,node1,node2,node3,inode      
       integer flops,ierr,first_edge,last_edge
-      Scalar  xmean,ymean,zmean,xnorm,ynorm,znorm,
-     &        rlen,area,dot,size,
-     &        X1,Y1,Z1,X2,Y2,Z2,X3,Y3,Z3,p1,p2,p3,
-     &        rx,ry,rz,pL,uL,wL,vL,pR,uR,vR,wR,
-     &        ubarL,ubarR,ubar,p,u,v,w,c,c2,c20,
-     &        ubar0,pi,ui,vi,wi,unorm,
-     &        phi1,phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9,
-     &        eig1,eig2,eig3,eig4,dp,du,dv,dw,
-     &        ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4
-      Scalar  r11,r21,r31,r41,r12,r22,r32,r42,
-     &        r13,r23,r33,r43,r14,r24,r34,r44,
-     &        t1,t2,t3,t4,
-     &        t11,t21,t31,t41,t12,t22,t32,t42,
-     &        t13,t23,t33,t43,t14,t24,t34,t44,
-     &        fluxp1,fluxp2,fluxp3,fluxp4, 
-     &        fluxm1,fluxm2,fluxm3,fluxm4
-      Scalar  res1,res2,res3,res4,
-     &        rhs1,rhs2,rhs3,rhs4,   
-     &        c68,c18,second,
-     &        ax,ay,az,bx,by,bz,
-     &        pa,pb,pc,ub,vb,wb       
+      Scalar  xmean,ymean,zmean,xnorm,ynorm,znorm
+      Scalar  rlen,area,dot,size
+      Scalar  X1,Y1,Z1,X2,Y2,Z2,X3,Y3,Z3,p1,p2,p3
+      Scalar  rx,ry,rz,pL,uL,wL,vL,pR,uR,vR,wR
+      Scalar  ubarL,ubarR,ubar,p,u,v,w,c,c2,c20
+      Scalar  ubar0,pi,ui,vi,wi,unorm
+      Scalar  phi1,phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9
+      Scalar  eig1,eig2,eig3,eig4,dp,du,dv,dw
+      Scalar  ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4
+      Scalar  r11,r21,r31,r41,r12,r22,r32,r42
+      Scalar  r13,r23,r33,r43,r14,r24,r34,r44
+      Scalar  t1,t2,t3,t4
+      Scalar  t11,t21,t31,t41,t12,t22,t32,t42
+      Scalar  t13,t23,t33,t43,t14,t24,t34,t44
+      Scalar  fluxp1,fluxp2,fluxp3,fluxp4
+      Scalar  fluxm1,fluxm2,fluxm3,fluxm4
+      Scalar  res1,res2,res3,res4
+      Scalar  rhs1,rhs2,rhs3,rhs4   
+      Scalar  c68,c18,second
+      Scalar  ax,ay,az,bx,by,bz
+      Scalar  pa,pb,pc,ub,vb,wb       
 #if defined(INTERLACING)
       Scalar qvec(4,nvertices) 
       Scalar grad(3,4,nvertices) 
@@ -1030,16 +1027,16 @@ c=============================================================================
 #define eptr(i,j) evec(i,j)
 #endif
 #if defined(_OPENMP)
-       integer my_thread_id,omp_get_thread_num,ierr,
-     1         max_threads,omp_get_num_threads,
-     2         first_node,last_node,chunk
+       integer my_thread_id,omp_get_thread_num,ierr,                        &
+     &         max_threads,omp_get_num_threads,                             &
+     &         first_node,last_node,chunk
 #if defined(HAVE_REDUNDANT_WORK)
        Scalar resd(4,nnodes)
 #undef res(a,b)
 #define res(a,b) resd(a,b)
 #else
-       integer nedgeAllThr,part_thr(nnodes),nedge_thr(max_threads),
-     1     edge_thr(2,nedgeAllThr),xyzn_thr(4,nedgeAllThr)
+       integer nedgeAllThr,part_thr(nnodes),nedge_thr(max_threads),         &
+     &     edge_thr(2,nedgeAllThr),xyzn_thr(4,nedgeAllThr)
 #undef eptr(a,b)
 #define eptr(a,b) edge_thr(b,a)
 #undef xn(i)
@@ -1058,10 +1055,10 @@ c=============================================================================
 #endif
        flops = 0
        second = 1.0d0
-c      if(ntt.le.nitfo)second = 0.0
-c      print *, 'Second is' , second
-c Loop over all the faces and calculate flux 
-c
+!      if(ntt.le.nitfo)second = 0.0
+!      print *, 'Second is' , second
+! Loop over all the faces and calculate flux 
+!
 !$omp  parallel default(shared) private(n,node1,node2,xmean,ymean,
 !$omp1 zmean,xnorm,ynorm,znorm,rlen,dot,x1,y1,z1,size,x2,y2,z2,rx,
 !$omp2 ry,rz,pL,uL,vL,wL,ubarL,pR,uR,vR,wR,ubarR,p,u,v,w,ubar,phi1,
@@ -1078,35 +1075,35 @@ c
 !$omp9 firstprivate(resd)
 #endif
 !$omp2 reduction(+:flops)
-c!$omp1 shared(evec,qvec,resvec,xyz,xyzn,grad,nedge,nnodes,second,flops,
-c!$omp2 title,beta,alpha,Re,dt,tot,res0,resc,ntt,mseq,ivisc,irest,icyc,
-c!$omp3 ihane,ntturb,gamma,gm1,gp1,gm1g,gp1g,ggm1,p0,rho0,c0,u0,v0,w0,
-c!$omp4 et0,h0,pt0,rms,clw,cdw,cmw,xres,cfl1,cfl2,nsmoth,iflim,
-c!$omp5 itran,nbtran,jupdate,nstage,ncyct,iramp,nitfo)
-c!$      my_thread_id = omp_get_thread_num()
-c!$omp   critical
-c!$      print *, 'My thread id on processor ',irank,' is ',my_thread_id
-c!$omp   end critical
+!$omp1 shared(evec,qvec,resvec,xyz,xyzn,grad,nedge,nnodes,second,flops,
+!$omp2 title,beta,alpha,Re,dt,tot,res0,resc,ntt,mseq,ivisc,irest,icyc,
+!$omp3 ihane,ntturb,gamma,gm1,gp1,gm1g,gp1g,ggm1,p0,rho0,c0,u0,v0,w0,
+!$omp4 et0,h0,pt0,rms,clw,cdw,cmw,xres,cfl1,cfl2,nsmoth,iflim,
+!$omp5 itran,nbtran,jupdate,nstage,ncyct,iramp,nitfo)
+!$      my_thread_id = omp_get_thread_num()
+!$omp   critical
+!$      print *, 'My thread id on processor ',irank,' is ',my_thread_id
+!$omp   end critical
        first_edge = 1
        last_edge = nedge
 #if defined(_OPENMP)
 #if defined(HAVE_REDUNDANT_WORK)
 !$omp  do 
 #else
-c     tot_threads = omp_get_num_threads()
-c     my_thread_id = omp_get_thread_num()
-c     chunk = nnodes/tot_threads
-c     first_node = my_thread_id*chunk+1
-c     if (my_thread_id .eq. (size-1)) then
-c        last_node = nnodes
-c     else
-c        last_node = (my_thread_id+1)*chunk
-c     endif
+!     tot_threads = omp_get_num_threads()
+!     my_thread_id = omp_get_thread_num()
+!     chunk = nnodes/tot_threads
+!     first_node = my_thread_id*chunk+1
+!     if (my_thread_id .eq. (size-1)) then
+!        last_node = nnodes
+!     else
+!        last_node = (my_thread_id+1)*chunk
+!     endif
       first_edge = nedge_thr(my_thread_id)
       last_edge = nedge_thr(my_thread_id)-1
 
-c     print *, 'On thread ', my_thread_id,', first node = ',first_node,
-c    1         ', last_node = ',last_node, ' chunk = ',chunk
+!     print *, 'On thread ', my_thread_id,', first node = ',first_node,
+!    &         ', last_node = ',last_node, ' chunk = ',chunk
 #endif
 #else
 #endif       
@@ -1114,12 +1111,12 @@ c    1         ', last_node = ',last_node, ' chunk = ',chunk
         node1 = eptr(n,1)
         node2 = eptr(n,2)
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-        if ((part_thr(node1) .eq. my_thread_id)
-     1       .or.(part_thr(node2) .eq. my_thread_id)) then
+        if ((part_thr(node1) .eq. my_thread_id)                                 &
+     &       .or.(part_thr(node2) .eq. my_thread_id)) then
 #endif
-c
-c Calculate unit normal to face and length of face
-c
+!
+! Calculate unit normal to face and length of face
+!
           xmean = .5d0*(x(node1) + x(node2))
           ymean = .5d0*(y(node1) + y(node2))
           zmean = .5d0*(z(node1) + z(node2))
@@ -1127,12 +1124,12 @@ c
           ynorm  = yn(n)
           znorm  = zn(n)
           rlen   = ra(n)
-c
-c Now lets get our other 2 vectors
-c For first vector, use {1,0,0} and subtract off the component
-c in the direction of the face normal. If the inner product of
-c {1,0,0} is close to unity, use {0,1,0}
-c
+!
+! Now lets get our other 2 vectors
+! For first vector, use {1,0,0} and subtract off the component
+! in the direction of the face normal. If the inner product of
+! {1,0,0} is close to unity, use {0,1,0}
+!
          dot = xnorm
          if(abs(dot).lt.0.95d0)then
           X1 = 1. - dot*xnorm
@@ -1144,63 +1141,63 @@ c
           Y1 = 1.0d0 - dot*ynorm
           Z1 =    - dot*znorm
          end if
-c
-c Normalize the first vector
-c
+!
+! Normalize the first vector
+!
          size = sqrt(X1*X1 + Y1*Y1 + Z1*Z1)
          X1 = X1/size
          Y1 = Y1/size
          Z1 = Z1/size
-c
-c Take cross-product of normal and V1 to get V2
-c
+!
+! Take cross-product of normal and V1 to get V2
+!
          X2 = ynorm*Z1 - znorm*Y1
          Y2 = znorm*X1 - xnorm*Z1
          Z2 = xnorm*Y1 - ynorm*X1
-c
-c Get variables on "left" and "right" side of face
-c
+!
+! Get variables on "left" and "right" side of face
+!
          rx     = second*(xmean - x(node1))
          ry     = second*(ymean - y(node1))
          rz     = second*(zmean - z(node1))
-         pL = qnode(1,node1) + gradx(1,node1)*rx 
-     1                       + grady(1,node1)*ry
-     1                       + gradz(1,node1)*rz
-         uL = qnode(2,node1) + gradx(2,node1)*rx 
-     1                       + grady(2,node1)*ry 
-     1                       + gradz(2,node1)*rz 
-         vL = qnode(3,node1) + gradx(3,node1)*rx 
-     1                       + grady(3,node1)*ry 
-     1                       + gradz(3,node1)*rz 
-         wL = qnode(4,node1) + gradx(4,node1)*rx 
-     1                       + grady(4,node1)*ry 
-     1                       + gradz(4,node1)*rz 
+         pL = qnode(1,node1) + gradx(1,node1)*rx                           &
+     &                       + grady(1,node1)*ry                           &
+     &                       + gradz(1,node1)*rz
+         uL = qnode(2,node1) + gradx(2,node1)*rx                           &
+     &                       + grady(2,node1)*ry                           &
+     &                       + gradz(2,node1)*rz 
+         vL = qnode(3,node1) + gradx(3,node1)*rx                           &
+     &                       + grady(3,node1)*ry                           &
+     &                       + gradz(3,node1)*rz 
+         wL = qnode(4,node1) + gradx(4,node1)*rx                           &
+     &                       + grady(4,node1)*ry                           &
+     &                       + gradz(4,node1)*rz 
 
          ubarL  = xnorm*uL + ynorm*vL + znorm*wL
-c        c2L = ubarl*ubarL + beta
-c        cL  = sqrt(c2L)
-c
+!        c2L = ubarl*ubarL + beta
+!        cL  = sqrt(c2L)
+!
          rx     = second*(xmean - x(node2))
          ry     = second*(ymean - y(node2))
          rz     = second*(zmean - z(node2))
-         pR   = qnode(1,node2) + gradx(1,node2)*rx 
-     1                         + grady(1,node2)*ry
-     1                         + gradz(1,node2)*rz
-         uR   = qnode(2,node2) + gradx(2,node2)*rx 
-     1                         + grady(2,node2)*ry 
-     1                         + gradz(2,node2)*rz 
-         vR   = qnode(3,node2) + gradx(3,node2)*rx 
-     1                         + grady(3,node2)*ry 
-     1                         + gradz(3,node2)*rz 
-         wR   = qnode(4,node2) + gradx(4,node2)*rx 
-     1                         + grady(4,node2)*ry 
-     1                         + gradz(4,node2)*rz 
+         pR   = qnode(1,node2) + gradx(1,node2)*rx                         &
+     &                         + grady(1,node2)*ry                         &
+     &                         + gradz(1,node2)*rz
+         uR   = qnode(2,node2) + gradx(2,node2)*rx                         &
+     &                         + grady(2,node2)*ry                         &
+     &                         + gradz(2,node2)*rz 
+         vR   = qnode(3,node2) + gradx(3,node2)*rx                         &
+     &                         + grady(3,node2)*ry                         &
+     &                         + gradz(3,node2)*rz 
+         wR   = qnode(4,node2) + gradx(4,node2)*rx                         &
+     &                         + grady(4,node2)*ry                         &
+     &                         + gradz(4,node2)*rz 
          ubarR  = xnorm*uR + ynorm*vR + znorm*wR
-c        c2R = ubarR*ubarR + beta
-c        cR  = sqrt(c2R)
-c
-c Compute averages
-c
+!        c2R = ubarR*ubarR + beta
+!        cR  = sqrt(c2R)
+!
+! Compute averages
+!
           p = .5d0*(pL + pR)
           u = .5d0*(uL + uR)
           v = .5d0*(vL + vR)
@@ -1218,33 +1215,33 @@ c
           phi9  = Y1*phi1 - X1*phi2
           c2    = ubar*ubar + beta
           c     = sqrt(c2)
-c
-c Now compute eigenvalues, eigenvectors, and strengths
-c
+!
+! Now compute eigenvalues, eigenvectors, and strengths
+!
           eig1 = abs(ubar)
           eig2 = abs(ubar)
           eig3 = abs(ubar + c)
           eig4 = abs(ubar - c)
-c
+!
           dp = pr - pl
           du = ur - ul
           dv = vr - vl
           dw = wr - wl
-c
-c Components of T(inverse) (I will divide by c2 later)
-c
+!
+! Components of T(inverse) (I will divide by c2 later)
+!
           ti11 = -(u*phi4 + v*phi5 + w*phi6)/beta
           ti21 = -(u*phi7 + v*phi8 + w*phi9)/beta
           ti31 =  .5d0*(c-ubar)/beta
           ti41 = -.5d0*(c+ubar)/beta
-c jumps (T(inverse)*dq) 
+! jumps (T(inverse)*dq) 
           dv1 = (ti11*dp + phi4*du + phi5*dv + phi6*dw)/c2
           dv2 = (ti21*dp + phi7*du + phi8*dv + phi9*dw)/c2
           dv3 = .5d0*(2.d0*ti31*dp + xnorm*du + ynorm*dv + znorm*dw)/c2
           dv4 = .5d0*(2.d0*ti41*dp + xnorm*du + ynorm*dv + znorm*dw)/c2
-c
-c Now get elements of T (call it r for now)
-c
+!
+! Now get elements of T (call it r for now)
+!
           r11 = 0.0d0
           r21 = X1
           r31 = Y1
@@ -1259,57 +1256,57 @@ c
           r23 = xnorm*beta + u*(ubar + c)
           r33 = ynorm*beta + v*(ubar + c)
           r43 = znorm*beta + w*(ubar + c)
-c
+!
           r14 = -c*beta
           r24 = xnorm*beta + u*(ubar - c)
           r34 = ynorm*beta + v*(ubar - c)
           r44 = znorm*beta + w*(ubar - c)
-c
-c Calculate T* |lambda| *T(inverse)
-c
+!
+! Calculate T* |lambda| *T(inverse)
+!
           t1 = eig1*r11*dv1 + eig2*r12*dv2 + eig3*r13*dv3 + eig4*r14*dv4
           t2 = eig1*r21*dv1 + eig2*r22*dv2 + eig3*r23*dv3 + eig4*r24*dv4
           t3 = eig1*r31*dv1 + eig2*r32*dv2 + eig3*r33*dv3 + eig4*r34*dv4
           t4 = eig1*r41*dv1 + eig2*r42*dv2 + eig3*r43*dv3 + eig4*r44*dv4
-c
-c Modify to calculate .5(fl +fr) from nodes
-c instead of extrapolated ones
-c
-c         pL    = qnode(1,node1) 
-c         uL    = qnode(2,node1) 
-c         vL    = qnode(3,node1) 
-c         wL    = qnode(4,node1) 
-c         ubarL = xnorm*uL + ynorm*vL + znorm*wL
-c
+!
+! Modify to calculate .5(fl +fr) from nodes
+! instead of extrapolated ones
+!
+!         pL    = qnode(1,node1) 
+!         uL    = qnode(2,node1) 
+!         vL    = qnode(3,node1) 
+!         wL    = qnode(4,node1) 
+!         ubarL = xnorm*uL + ynorm*vL + znorm*wL
+!
           fluxp1 = rlen*beta*ubarL
           fluxp2 = rlen*(uL*ubarL + xnorm*pL)
           fluxp3 = rlen*(vL*ubarL + ynorm*pL)
           fluxp4 = rlen*(wL*ubarL + znorm*pL)
-c
-c Now the right side
-c
-c         pR    = qnode(1,node2) 
-c         uR    = qnode(2,node2) 
-c         vR    = qnode(3,node2) 
-c         wR    = qnode(4,node2) 
-c         ubarR = xnorm*uR + ynorm*vR + znorm*wR
-c
+!
+! Now the right side
+!
+!         pR    = qnode(1,node2) 
+!         uR    = qnode(2,node2) 
+!         vR    = qnode(3,node2) 
+!         wR    = qnode(4,node2) 
+!         ubarR = xnorm*uR + ynorm*vR + znorm*wR
+!
           fluxm1 = rlen*beta*ubarR
           fluxm2 = rlen*(uR*ubarR + xnorm*pR)
           fluxm3 = rlen*(vR*ubarR + ynorm*pR)
           fluxm4 = rlen*(wR*ubarR + znorm*pR)
-c
+!
           res1 = 0.5d0*(fluxp1 + fluxm1 - rlen*t1)
           res2 = 0.5d0*(fluxp2 + fluxm2 - rlen*t2)
           res3 = 0.5d0*(fluxp3 + fluxm3 - rlen*t3)
           res4 = 0.5d0*(fluxp4 + fluxm4 - rlen*t4)
-c
+!
 	  flops = flops + 318
 
-c
+!
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node1).eq.my_thread_id)
-     1        .and.(node1.le.nnodes)) then
+          if ((part_thr(node1).eq.my_thread_id)                                 &
+     &        .and.(node1.le.nnodes)) then
 #else         
           if (node1.le.nnodes) then
 #endif
@@ -1319,10 +1316,10 @@ c
            res(4,node1) = res(4,node1) + res4
            flops = flops + 4
           endif
-c
+!
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node2).eq.my_thread_id)
-     1        .and.(node2.le.nnodes)) then
+          if ((part_thr(node2).eq.my_thread_id)                                 &
+     &        .and.(node2.le.nnodes)) then
 #else         
           if (node2.le.nnodes) then
 #endif
@@ -1335,20 +1332,20 @@ c
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
          endif
 #endif
-c
+!
       enddo
 #if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp enddo
 #endif
   
-c     c68 = 6./8.
-c     c18 = 1./8.
+!     c68 = 6./8.
+!     c18 = 1./8.
       c68 = 0.75d0
       c18 = 0.125d0
-c
-c Close contour over the boundaries 
-c First do inviscid faces
-c
+!
+! Close contour over the boundaries 
+! First do inviscid faces
+!
 #if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp do
 #endif
@@ -1379,10 +1376,10 @@ c
                bx = x3 - x1
                by = y3 - y1
                bz = z3 - z1
-c
-c Normal points away from grid interior.
-c Magnitude is 1/3 area of surface triangle.
-c
+!
+! Normal points away from grid interior.
+! Magnitude is 1/3 area of surface triangle.
+!
                xnorm =-0.5d0*(ay*bz - az*by)/3.d0
                ynorm = 0.5d0*(ax*bz - az*bx)/3.d0
                znorm =-0.5d0*(ax*by - ay*bx)/3.d0
@@ -1390,11 +1387,11 @@ c
                pa = c68*p1 + c18*(p2 + p3)
                pb = c68*p2 + c18*(p3 + p1)
                pc = c68*p3 + c18*(p1 + p2)
-c
+!
                flops = flops + 35
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node1).eq.my_thread_id)
-     1        .and.(node1.le.nnodes)) then
+          if ((part_thr(node1).eq.my_thread_id)                          &
+     &        .and.(node1.le.nnodes)) then
 #else         
           if (node1.le.nnodes) then
 #endif
@@ -1405,8 +1402,8 @@ c
           endif
 
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node2).eq.my_thread_id)
-     1        .and.(node2.le.nnodes)) then
+          if ((part_thr(node2).eq.my_thread_id)                          &
+     &        .and.(node2.le.nnodes)) then
 #else         
           if (node2.le.nnodes) then
 #endif
@@ -1417,8 +1414,8 @@ c
           endif
 
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node3).eq.my_thread_id)
-     1        .and.(node3.le.nnodes)) then
+          if ((part_thr(node3).eq.my_thread_id)                          &
+     &        .and.(node3.le.nnodes)) then
 #else         
           if (node3.le.nnodes) then
 #endif
@@ -1432,9 +1429,9 @@ c
 #if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp enddo
 #endif
-c
-c Now viscous faces
-c
+!
+! Now viscous faces
+!
 #if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp do
 #endif
@@ -1465,10 +1462,10 @@ c
                bx = x3 - x1
                by = y3 - y1
                bz = z3 - z1
-c
-c norm point away from grid interior.
-c norm magnitude is 1/3 area of surface triangle.
-c
+!
+! norm point away from grid interior.
+! norm magnitude is 1/3 area of surface triangle.
+!
                xnorm =-0.5d0*(ay*bz - az*by)/3.d0
                ynorm = 0.5d0*(ax*bz - az*bx)/3.d0
                znorm =-0.5d0*(ax*by - ay*bx)/3.d0
@@ -1476,12 +1473,12 @@ c
                pa = c68*p1 + c18*(p2 + p3)
                pb = c68*p2 + c18*(p3 + p1)
                pc = c68*p3 + c18*(p1 + p2)
-c
+!
 	       flops = flops + 35
-c
+!
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node1).eq.my_thread_id)
-     1        .and.(node1.le.nnodes)) then
+          if ((part_thr(node1).eq.my_thread_id)                              &
+     &        .and.(node1.le.nnodes)) then
 #else         
           if (node1.le.nnodes) then
 #endif
@@ -1493,8 +1490,8 @@ c
           endif
 
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node2).eq.my_thread_id)
-     1        .and.(node2.le.nnodes)) then
+          if ((part_thr(node2).eq.my_thread_id)                              &
+     &        .and.(node2.le.nnodes)) then
 #else         
           if (node2.le.nnodes) then
 #endif
@@ -1505,8 +1502,8 @@ c
           endif
 
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node3).eq.my_thread_id)
-     1        .and.(node3.le.nnodes)) then
+          if ((part_thr(node3).eq.my_thread_id)                              &
+     &        .and.(node3.le.nnodes)) then
 #else         
           if (node3.le.nnodes) then
 #endif
@@ -1520,66 +1517,66 @@ c
 #if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp enddo
 #endif
-c
-c The next section of code is for when you dont care about
-c preserving linear data on boundary. Also, doing this 
-c matches the left hand side when not doing Newton-Krylov
-c Usually just go around unless you are just experimenting
-c
+!
+! The next section of code is for when you dont care about
+! preserving linear data on boundary. Also, doing this 
+! matches the left hand side when not doing Newton-Krylov
+! Usually just go around unless you are just experimenting
+!
       goto 1025
-c
-c Loop over the boundaries
-c First do inviscid nodes
-c
-c     do 1020 i = 1,nsnode
-c       inode = isnode(i)
-c
-c       xnorm = sxn(i)
-c       ynorm = syn(i)
-c       znorm = szn(i)
-c
-c       p = qnode(1,inode)
-c
-c       if (inode .le. nnodes) then
-c        res(2,inode) = res(2,inode) + xnorm*p
-c        res(3,inode) = res(3,inode) + ynorm*p
-c        res(4,inode) = res(4,inode) + znorm*p
-c       endif
-c
-c1020 continue
-c
-c Now viscous nodes
-c
-c     do 1030 i = 1,nvnode
-c       inode = ivnode(i)
-c
-c       xnorm = vxn(i)
-c       ynorm = vyn(i)
-c       znorm = vzn(i)
-c
-c       p = qnode(1,inode)
-c
-c       if (inode .le. nnodes) then
-c        res(2,inode) = res(2,inode) + xnorm*p
-c        res(3,inode) = res(3,inode) + ynorm*p
-c        res(4,inode) = res(4,inode) + znorm*p
-c       endif
-c
-c1030 continue
-c
+!
+! Loop over the boundaries
+! First do inviscid nodes
+!
+!     do 1020 i = 1,nsnode
+!       inode = isnode(i)
+!
+!       xnorm = sxn(i)
+!       ynorm = syn(i)
+!       znorm = szn(i)
+!
+!       p = qnode(1,inode)
+!
+!       if (inode .le. nnodes) then
+!        res(2,inode) = res(2,inode) + xnorm*p
+!        res(3,inode) = res(3,inode) + ynorm*p
+!        res(4,inode) = res(4,inode) + znorm*p
+!       endif
+!
+!1020 continue
+!
+! Now viscous nodes
+!
+!     do 1030 i = 1,nvnode
+!       inode = ivnode(i)
+!
+!       xnorm = vxn(i)
+!       ynorm = vyn(i)
+!       znorm = vzn(i)
+!
+!       p = qnode(1,inode)
+!
+!       if (inode .le. nnodes) then
+!        res(2,inode) = res(2,inode) + xnorm*p
+!        res(3,inode) = res(3,inode) + ynorm*p
+!        res(4,inode) = res(4,inode) + znorm*p
+!       endif
+!
+!1030 continue
+!
  1025 continue
-c
-c Now do far-field
-c
+!
+! Now do far-field
+!
 #if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp do
 #endif
        do i = 1,nfnode
          inode   = ifnode(i)
-c
-c Get normal and "other" 2 vectors. Remember that fxn,fyn and fzn 
-c has the magnitude of the face contained in it.
-c
+!/*
+! Get normal and "other" 2 vectors. Remember that fxn,fyn and fzn 
+! has the magnitude of the face contained in it.
+!*/
          xnorm   = fxn(i)
          ynorm   = fyn(i)
          znorm   = fzn(i)
@@ -1587,12 +1584,12 @@ c
          xnorm   = xnorm/area
          ynorm   = ynorm/area
          znorm   = znorm/area
-c
-c Now lets get our other 2 vectors
-c For first vector, use {1,0,0} and subtract off the component
-c in the direction of the face normal. If the inner product of
-c {1,0,0} is close to unity, use {0,1,0}
-c
+!
+! Now lets get our other 2 vectors
+! For first vector, use {1,0,0} and subtract off the component
+! in the direction of the face normal. If the inner product of
+! {1,0,0} is close to unity, use {0,1,0}
+!
          dot = xnorm
          if(abs(dot).lt.0.95d0)then
           X1 = 1.d0 - dot*xnorm
@@ -1604,23 +1601,23 @@ c
           Y1 = 1.d0 - dot*ynorm
           Z1 =    - dot*znorm
          end if
-c
-c Normalize the first vector (V1)
-c
+!
+! Normalize the first vector (V1)
+!
          size = sqrt(X1*X1 + Y1*Y1 + Z1*Z1)
          X1 = X1/size
          Y1 = Y1/size
          Z1 = Z1/size
-c
-c Take cross-product of normal with V1 to get V2
-c
+!
+! Take cross-product of normal with V1 to get V2
+!
          X2 = ynorm*Z1 - znorm*Y1
          Y2 = znorm*X1 - xnorm*Z1
          Z2 = xnorm*Y1 - ynorm*X1
 
-c
-c Calculate elements of T and T(inverse) evaluated at freestream
-c
+!
+! Calculate elements of T and T(inverse) evaluated at freestream
+!
          ubar0 = xnorm*u0 + ynorm*v0 + znorm*w0
          c20   = ubar0*ubar0 + beta
          c0    = sqrt(c20)
@@ -1658,18 +1655,18 @@ c
          ti21 = -(u0*phi7 + v0*phi8 + w0*phi9)/beta
          ti31 =  .5d0*(c0 - ubar0)/beta
          ti41 = -.5d0*(c0 + ubar0)/beta
-c
-c Now, get the variables on the "inside"
-c
+!
+! Now, get the variables on the "inside"
+!
          pi      = qnode(1,inode)
          ui      = qnode(2,inode)
          vi      = qnode(3,inode)
          wi      = qnode(4,inode)
          unorm   = xnorm*ui + ynorm*vi + znorm*wi
-c
-c If ubar is negative, take the reference condition from outside
-c
-c
+!
+! If ubar is negative, take the reference condition from outside
+!
+!
          if(unorm.gt.0.0d0)then
           pr = pi
           ur = ui
@@ -1681,16 +1678,16 @@ c
           vr = v0
           wr = w0
          end if
-c
-c Set rhs
-c
+!
+! Set rhs
+!
          rhs1 = (ti11*pr + phi4*ur + phi5*vr + phi6*wr)/c20
          rhs2 = (ti21*pr + phi7*ur + phi8*vr + phi9*wr)/c20
          rhs3 = .5d0*(2.d0*ti31*pi + xnorm*ui + ynorm*vi + znorm*wi)/c20
          rhs4 = .5d0*(2.d0*ti41*p0 + xnorm*u0 + ynorm*v0 + znorm*w0)/c20
-c
-c Now do matrix multiplication to get values on boundary
-c
+!
+! Now do matrix multiplication to get values on boundary
+!
          pb =                       t13*rhs3 + t14*rhs4
          ub = t21*rhs1 + t22*rhs2 + t23*rhs3 + t24*rhs4
          vb = t31*rhs1 + t32*rhs2 + t33*rhs3 + t34*rhs4
@@ -1698,10 +1695,10 @@ c
 
          ubar = xnorm*ub + ynorm*vb + znorm*wb
          flops = flops + 180
-c
+!
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(inode).eq.my_thread_id)
-     1        .and.(inode.le.nnodes)) then
+          if ((part_thr(inode).eq.my_thread_id)                               &
+     &        .and.(inode.le.nnodes)) then
 #else         
         if (inode.le.nnodes) then
 #endif
@@ -1711,7 +1708,7 @@ c
           res(4,inode) = res(4,inode)+area*(wb*ubar + znorm*pb)
           flops = flops + 18
         endif
-c
+!
        enddo
 #if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp enddo
@@ -1723,32 +1720,30 @@ c
           resvec(4,n)=resvec(4,n)+res(4,n)
        enddo
        flops = flops + 4*nnodes
-c      print *, 'For thread ', omp_get_thread_num(),', n is',n
+!      print *, 'For thread ', omp_get_thread_num(),', n is',n
 !$omp end critical (residual_update)
 #endif
 !$omp end parallel  
        call PLogFlops(flops,ierr)
-c
-c End of subroutine FLUX
-c
+!
+! End of subroutine FLUX
+!
       return
       end
 
-c---------------------------------------------------------------
-c The following subroutines are from node3t.f in the original
-c code - D. K. Kaushik (1/17/97)
-c---------------------------------------------------------------
-c
-c=============================== SUMGS ===============================72
-c 
-c Gets the weights for calculating gradients using least squares
-c
-c=====================================================================72
+!---------------------------------------------------------------
+! The following subroutines are from node3t.f in the original
+! code - D. K. Kaushik (1/17/97)
+!---------------------------------------------------------------
+!
+!=============================== SUMGS ===============================72
+! 
+! Gets the weights for calculating gradients using least squares
+!
+!=====================================================================72
 #undef __FUNC__
 #define __FUNC__ "SUMGS"
-      subroutine SUMGS(nnodes,nedge,evec,xyz,
-     1                 rxy,
-     2                 irank,nvertices)
+      subroutine SUMGS(nnodes,nedge,evec,xyz,rxy,irank,nvertices)
 
       implicit none      
 #include "include/finclude/petscdef.h"
@@ -1786,177 +1781,176 @@ c=====================================================================72
 #define eptr(i,j) evec(i,j)
 #endif
       integer i,n,node1,node2,ierr
-      Scalar x1,y1,z1,x2,y2,z2,dx,dy,dz,dist,
-     &       weight,w2,w11,w22,w33,
-     &       r12r11,r13r11,r23r22,rmess
+      Scalar x1,y1,z1,x2,y2,z2,dx,dy,dz,dist,weight,w2,w11,w22,w33
+      Scalar r12r11,r13r11,r23r22,rmess
 
-c
-c Initialize all the rij to 0.0 
-c
-c     do 1000 i = 1,nnodes
-c        r11(i) = 0.0
-c        r12(i) = 0.0
-c        r13(i) = 0.0
-c        r22(i) = 0.0
-c        r23(i) = 0.0
-c        r33(i) = 0.0
-c        r44(i) = 0.0
-c1000 continue
+!
+! Initialize all the rij to 0.0 
+!
+!     do 1000 i = 1,nnodes
+!        r11(i) = 0.0
+!        r12(i) = 0.0
+!        r13(i) = 0.0
+!        r22(i) = 0.0
+!        r23(i) = 0.0
+!        r33(i) = 0.0
+!        r44(i) = 0.0
+!1000 continue
       call PetscMemzero(rxy,8*7*nnodes,ierr)
       
-c
-c Now loop over the edges and accumulate the r's 
-c
+!
+! Now loop over the edges and accumulate the r 
+!
       do 1020 n = 1, nedge
-c
+!
           node1 = eptr(n,1)
           node2 = eptr(n,2)
-c
+!
           x1 = x(node1)
           y1 = y(node1)
           z1 = z(node1)
           x2 = x(node2)
           y2 = y(node2)
           z2 = z(node2)
-c
+!
           dx = x2 - x1
           dy = y2 - y1
           dz = z2 - z1
           dist = sqrt(dx*dx + dy*dy + dz*dz)
-c         weight = 1.0d0/dist
+!         weight = 1.0d0/dist
           weight = 1.0d0
           w2 = weight*weight
-c
+!
           if (node1 .le. nnodes) then
            r11(node1) = r11(node1) + (x2 - x1)*(x2 - x1)*w2
            r12(node1) = r12(node1) + (x2 - x1)*(y2 - y1)*w2
            r13(node1) = r13(node1) + (x2 - x1)*(z2 - z1)*w2
           endif
-c
+!
           if (node2 .le. nnodes) then
            r11(node2) = r11(node2) + (x1 - x2)*(x1 - x2)*w2
            r12(node2) = r12(node2) + (x1 - x2)*(y1 - y2)*w2
            r13(node2) = r13(node2) + (x1 - x2)*(z1 - z2)*w2
           endif
  1020 continue
-c /*
-c Now calculate ||x|| = r11 by taking the square root
-c Also divide r12 and r13 by ||x||
-c */
+!/*
+! Now calculate ||x(:)|| = r11 by taking the square root
+! Also divide r12 and r13 by ||x(:)||
+!*/
       do 1030 i = 1,nnodes
         r11(i) = sqrt(r11(i))
         r12(i) = r12(i)/r11(i)
         r13(i) = r13(i)/r11(i)
  1030 continue
-c /*
-c Now calculate r22 and r23
-c */
+!/*
+! Now calculate r22 and r23
+!*/
       do 1050 n = 1, nedge
-c
+!
           node1 = eptr(n,1)
           node2 = eptr(n,2)
-c
+!
           x1 = x(node1)
           y1 = y(node1)
           z1 = z(node1)
           x2 = x(node2)
           y2 = y(node2)
           z2 = z(node2)
-c
+!
           dx = x2 - x1
           dy = y2 - y1
           dz = z2 - z1
           dist = sqrt(dx*dx + dy*dy + dz*dz)
-c         weight = 1.0/dist
+!         weight = 1.0/dist
           weight = 1.0d0
           dx = weight*dx
           dy = weight*dy
           dz = weight*dz
           w2 = weight*weight
-c
+!
           if (node1 .le. nnodes) then
-           r22(node1) = r22(node1) +
-     1                  (dy-dx*r12(node1)/r11(node1))**2
-           r23(node1) = r23(node1) + dz*
-     1                  (dy-dx*r12(node1)/r11(node1))
+           r22(node1) = r22(node1) +                                         &
+     &                  (dy-dx*r12(node1)/r11(node1))**2
+           r23(node1) = r23(node1) + dz*                                     &
+     &                  (dy-dx*r12(node1)/r11(node1))
           endif
-c
+!
           if (node2 .le. nnodes) then
-           r22(node2) = r22(node2) + 
-     1                  (-dy + dx*r12(node2)/r11(node2))**2
-           r23(node2) = r23(node2) - dz*
-     1                  (-dy+dx*r12(node2)/r11(node2))
+           r22(node2) = r22(node2) +                                         &
+     &                  (-dy + dx*r12(node2)/r11(node2))**2
+           r23(node2) = r23(node2) - dz*                                     &
+     &                  (-dy+dx*r12(node2)/r11(node2))
           endif
  1050 continue
-c /*
-c Now finish getting r22 and r23
-c */
+!/*
+! Now finish getting r22 and r23
+!*/
       do 1060 i = 1,nnodes
         r22(i) = sqrt(r22(i))
         r23(i) = r23(i)/r22(i)
  1060 continue
-c /*
-c Now all we have to do is get r33
-c */
+!/*
+! Now all we have to do is get r33
+!*/
       do 1080 n = 1, nedge
-c
+!
           node1 = eptr(n,1)
           node2 = eptr(n,2)
-c
+!
           x1 = x(node1)
           y1 = y(node1)
           z1 = z(node1)
           x2 = x(node2)
           y2 = y(node2)
           z2 = z(node2)
-c
+!
           dx = x2 - x1
           dy = y2 - y1
           dz = z2 - z1
           dist = sqrt(dx*dx + dy*dy + dz*dz)
-c         weight = 1.0/dist
+!         weight = 1.0/dist
           weight = 1.0d0
           dx = weight*dx
           dy = weight*dy
           dz = weight*dz
           w2 = weight*weight
-c
+!
           if (node1 .le. nnodes) then
-           r33(node1) = r33(node1) + 
-     1                  (dz-dx*r13(node1)/r11(node1)-
-     2                  r23(node1)/r22(node1)*
-     3                  (dy - dx*r12(node1)/
-     4                   r11(node1)))**2
+           r33(node1) = r33(node1) +                                        &
+     &                  (dz-dx*r13(node1)/r11(node1)-                       &
+     &                  r23(node1)/r22(node1)*                              &
+     &                  (dy - dx*r12(node1)/                                &
+     &                   r11(node1)))**2
           endif
-c
+!
           if (node2 .le. nnodes) then
-           r33(node2) = r33(node2) + 
-     1                  (-dz+dx*r13(node2)/r11(node2)-
-     2                  r23(node2)/r22(node2)*
-     3                  (-dy + dx*r12(node2)/
-     4                  r11(node2)))**2
+           r33(node2) = r33(node2) +                                        &
+     &                  (-dz+dx*r13(node2)/r11(node2)-                      &
+     &                  r23(node2)/r22(node2)*                              &
+     &                  (-dy + dx*r12(node2)/                               &
+     &                  r11(node2)))**2
           endif
-c
+!
  1080 continue
-c /*
-c Now just get the magnitude of r33
-c */
+!/*
+! Now just get the magnitude of r33
+!*/
       do 1090 i = 1,nnodes
         r33(i) = sqrt(r33(i))
  1090 continue
-c
-c Added by Dinesh Kaushik (6/27/97)
-c /*The following addition changes the meaning of r11 .. r33. r44
-c is the new parameter introduced by me. The new definitions
-c are taken from LSTGS (where these parameters 
-c are used finally).
-c r11->w11
-c r22->w22
-c r33->w33
-c r12->r12r11
-c r13->r13r11
-c r23->r23r22
-c r44->rmess */
+!/*
+! Added by Dinesh Kaushik (6/27/97)
+! The following addition changes the meaning of r11 .. r33. r44
+! is the new parameter introduced by me. The new definitions
+! are taken from LSTGS (where these parameters 
+! are used finally).
+! r11->w11
+! r22->w22
+! r33->w33
+! r12->r12r11
+! r13->r13r11
+! r23->r23r22
+! r44->rmess */
 
       do i = 1,nnodes
            w11 = 1.d0/(r11(i)*r11(i))
@@ -1965,10 +1959,10 @@ c r44->rmess */
            r12r11 = r12(i)/r11(i)
            r13r11 = r13(i)/r11(i)
            r23r22 = r23(i)/r22(i)
-           rmess=(r12(i)*r23(i)-
-     1            r13(i)*r22(i))/
-     2           (r11(i)*r22(i)*
-     3            r33(i)*r33(i))
+           rmess=(r12(i)*r23(i)-                                             &
+     &            r13(i)*r22(i))/                                            &
+     &           (r11(i)*r22(i)*                                             &
+     &            r33(i)*r33(i))
 
            r11(i) = w11
            r22(i) = w22
@@ -1978,28 +1972,28 @@ c r44->rmess */
            r23(i) = r23r22
            r44(i) = rmess
       enddo
-c Finished with SUMGS
-c
+! Finished with SUMGS
+!
       return
       end
 
 
-c================================= LSTGS =============================72
-c
-c Calculates the Gradients at the nodes using weighted least squares
-c This subroutine solves using Gram-Schmidt
-c
-c=====================================================================72
+!================================= LSTGS =============================72
+!
+! Calculates the Gradients at the nodes using weighted least squares
+! This subroutine solves using Gram-Schmidt
+!
+!=====================================================================72
 #undef __FUNC__
 #define __FUNC__ "LSTGS"
-      subroutine LSTGS(nnodes,nedge,evec,
-     1                 qvec,grad,xyz,
-     2                 rxy,irank,nvertices)
-c
+      subroutine LSTGS(nnodes,nedge,evec,                                &
+     &                 qvec,grad,xyz,                                    &
+     &                 rxy,irank,nvertices)
+!
       implicit none      
 #include "include/finclude/petscdef.h"
       integer nnodes,nedge,irank,nvertices
-c
+!
 #if defined(INTERLACING)
       Scalar qvec(4,nvertices)
       Scalar xyz(3,nvertices)
@@ -2046,114 +2040,114 @@ c
       Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar  cfl1,cfl2
-      integer nsmoth,iflim,itran,nbtran,jupdate,
+      integer nsmoth,iflim,itran,nbtran,jupdate,                          &
      &        nstage,ncyct,iramp,nitfo
-      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
-     1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
+      common/info/title,beta,alpha,Re,dt,tot,res0,resc,                   &
+     &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,           &
      &             nstage,ncyct,iramp,nitfo
       integer n,node1,node2,ierr
       integer flops
-      Scalar  dx1,dy1,dz1,dx2,dy2,dz2,
-     &        dq1,dq2,dq3,dq4,
-     &        weight,w11,r12r11,r13r11,w22,r23r22,w33,rmess,
+      Scalar  dx1,dy1,dz1,dx2,dy2,dz2,                                    &
+     &        dq1,dq2,dq3,dq4,                                            &
+     &        weight,w11,r12r11,r13r11,w22,r23r22,w33,rmess,              &
      &        coef1,coef2,termx,termy,termz
-c     logging variables
-c     integer flag
-c     integer grad_event,node1_event,node2_event
-c     character * 16 grad_label, node1_label, node2_label
-c     data flag/-1/,grad_label/'GRAD            '/
-c     data node1_label/'NODE1           '/
-c     data node2_label/'NODE2           '/
-c     save grad_event, grad_label, flag
-c     save node1_event,node2_event,node1_label, node2_label
+!     logging variables
+!     integer flag
+!     integer grad_event,node1_event,node2_event
+!     character * 16 grad_label, node1_label, node2_label
+!     data flag/-1/,grad_label/'GRAD            '/
+!     data node1_label/'NODE1           '/
+!     data node2_label/'NODE2           '/
+!     save grad_event, grad_label, flag
+!     save node1_event,node2_event,node1_label, node2_label
 
-c     if (flag .eq. -1) then
-c        call PLogEventRegister(grad_event,grad_label,'blue:',ierr)
-c        call PLogEventRegister(node1_event,node1_label,'red:',ierr)
-c        call PLogEventRegister(node2_event,node2_label,'green:',ierr)
-c        flag = 1
-c     endif
-c     call PLogEventBegin(grad_event,0,0,0,0,ierr)
+!     if (flag .eq. -1) then
+!        call PLogEventRegister(grad_event,grad_label,'blue:',ierr)
+!        call PLogEventRegister(node1_event,node1_label,'red:',ierr)
+!        call PLogEventRegister(node2_event,node2_label,'green:',ierr)
+!        flag = 1
+!     endif
+!     call PLogEventBegin(grad_event,0,0,0,0,ierr)
 
       flops = 0
-c For checking out the code input a linear distribution
-c
-c     write(6,700)nnodes,nedge
-c 700 format(1h ,'nnodes=',i5,' nedge=',i5)
-c     do 1001 i = 1,nnodes
-c     write(6,800)i,x(i),y(i),z(i)
-c 800 format(1h ,'i x y z=',i5,3(f10.5,1x))
-c       qnode(1,i) = 1.0*x(i) +  2.0*y(i) + 3.0*z(i)
-c       qnode(2,i) = 3.0*x(i) +  4.0*y(i) + 6.0*z(i)
-c       qnode(3,i) = 5.0*x(i) +  6.0*y(i) + 9.0*z(i)
-c       qnode(4,i) = 7.0*x(i) +  8.0*y(i) + 12.0*z(i)
-c       qnode(i,5) = 9.0*x(i) + 10.0*y(i) + 15.0*z(i)
-c1001 continue
-c
-c Zero out the gradients
-c
-c     do 1000 i = 1,nnodes
-c
-c       gradx(1,i) = 0.0
-c       grady(1,i) = 0.0
-c       gradz(1,i) = 0.0
-c
-c       gradx(2,i) = 0.0
-c       grady(2,i) = 0.0
-c       gradz(2,i) = 0.0
-c
-c       gradx(3,i) = 0.0
-c       grady(3,i) = 0.0
-c       gradz(3,i) = 0.0
-c
-c       gradx(4,i) = 0.0
-c       grady(4,i) = 0.0
-c       gradz(4,i) = 0.0
-c
-c1000  continue
+! For checking out the code input a linear distribution
+!
+!     write(6,700)nnodes,nedge
+! 700 format(1h ,'nnodes=',i5,' nedge=',i5)
+!     do 1001 i = 1,nnodes
+!     write(6,800)i,x(i),y(i),z(i)
+! 800 format(1h ,'i x y z=',i5,3(f10.5,1x))
+!       qnode(1,i) = 1.0*x(i) +  2.0*y(i) + 3.0*z(i)
+!       qnode(2,i) = 3.0*x(i) +  4.0*y(i) + 6.0*z(i)
+!       qnode(3,i) = 5.0*x(i) +  6.0*y(i) + 9.0*z(i)
+!       qnode(4,i) = 7.0*x(i) +  8.0*y(i) + 12.0*z(i)
+!       qnode(i,5) = 9.0*x(i) + 10.0*y(i) + 15.0*z(i)
+!1001 continue
+!
+! Zero out the gradients
+!
+!     do 1000 i = 1,nnodes
+!
+!       gradx(1,i) = 0.0
+!       grady(1,i) = 0.0
+!       gradz(1,i) = 0.0
+!
+!       gradx(2,i) = 0.0
+!       grady(2,i) = 0.0
+!       gradz(2,i) = 0.0
+!
+!       gradx(3,i) = 0.0
+!       grady(3,i) = 0.0
+!       gradz(3,i) = 0.0
+!
+!       gradx(4,i) = 0.0
+!       grady(4,i) = 0.0
+!       gradz(4,i) = 0.0
+!
+!1000  continue
       call PetscMemzero(grad,12*8*nnodes,ierr)
-c
-c If second order, loop over all the faces accumulate sums
-c
-c     nitfo = 0
-c     if(ntt.gt.nitfo.or.ivisc.gt.0)then
-c     if (1 .gt. 0) then
+!
+! If second order, loop over all the faces accumulate sums
+!
+!     nitfo = 0
+!     if(ntt.gt.nitfo.or.ivisc.gt.0)then
+!     if (1 .gt. 0) then
        do 1020 n = 1, nedge
          node1 = eptr(n,1)
          node2 = eptr(n,2)
-c        if ((node1 .le. nnodes).or.(node2 .le. nnodes)) then
+!        if ((node1 .le. nnodes).or.(node2 .le. nnodes)) then
            dx1 = x(node2) - x(node1)
            dy1 = y(node2) - y(node1)
            dz1 = z(node2) - z(node1)
-c
-c          dist = sqrt(dx1*dx1 + dy1*dy1 + dz1*dz1)
-c          weight = 1.0/dist
+!
+!          dist = sqrt(dx1*dx1 + dy1*dy1 + dz1*dz1)
+!          weight = 1.0/dist
            weight = 1.0d0
-c          w2 = weight*weight
-c
+!          w2 = weight*weight
+!
            dx1 = weight*dx1
            dy1 = weight*dy1
            dz1 = weight*dz1
 
            flops = flops + 6
-c
-c         call PLogEventBegin(node1_event,0,0,0,0,ierr)
+!
+!         call PLogEventBegin(node1_event,0,0,0,0,ierr)
           if (node1 .le. nnodes) then
            dq1 = weight*(qnode(1,node2) - qnode(1,node1))
            dq2 = weight*(qnode(2,node2) - qnode(2,node1))
            dq3 = weight*(qnode(3,node2) - qnode(3,node1))
            dq4 = weight*(qnode(4,node2) - qnode(4,node1))
-c
-c          w11 = 1./(r11(node1)*r11(node1))
-c          w22 = 1./(r22(node1)*r22(node1))
-c          w33 = 1./(r33(node1)*r33(node1))
-c          r12r11 = r12(node1)/r11(node1)
-c          r13r11 = r13(node1)/r11(node1)
-c          r23r22 = r23(node1)/r22(node1)
-c          rmess  = (r12(node1)*r23(node1) - r13(node1)*r22(node1))/
-c    1              (r11(node1)*r22(node1)*r33(node1)*r33(node1))
-c
+!
+!          w11 = 1./(r11(node1)*r11(node1))
+!          w22 = 1./(r22(node1)*r22(node1))
+!          w33 = 1./(r33(node1)*r33(node1))
+!          r12r11 = r12(node1)/r11(node1)
+!          r13r11 = r13(node1)/r11(node1)
+!          r23r22 = r23(node1)/r22(node1)
+!          rmess  = (r12(node1)*r23(node1) - r13(node1)*r22(node1))/
+!    1              (r11(node1)*r22(node1)*r33(node1)*r33(node1))
+!
            w11 = r11(node1)
            r12r11 = r12(node1)
            r13r11 = r13(node1)
@@ -2161,54 +2155,54 @@ c
            r23r22 = r23(node1)
            w33 = r33(node1)
            rmess  = r44(node1)
-c
+!
            coef1  = dy1 - dx1*r12r11
            coef2  = dz1 - dx1*r13r11 - r23r22*coef1
            termx = dx1*w11 - w22*r12r11*coef1 + rmess*coef2
            termy = w22*coef1 - r23r22*w33*coef2
            termz = w33*coef2
-c
+!
            gradx(1,node1) = gradx(1,node1) + termx*dq1
            grady(1,node1) = grady(1,node1) + termy*dq1
            gradz(1,node1) = gradz(1,node1) + termz*dq1
-c
+!
            gradx(2,node1) = gradx(2,node1) + termx*dq2
            grady(2,node1) = grady(2,node1) + termy*dq2
            gradz(2,node1) = gradz(2,node1) + termz*dq2
-c
+!
            gradx(3,node1) = gradx(3,node1) + termx*dq3
            grady(3,node1) = grady(3,node1) + termy*dq3
            gradz(3,node1) = gradz(3,node1) + termz*dq3
-c
+!
            gradx(4,node1) = gradx(4,node1) + termx*dq4
            grady(4,node1) = grady(4,node1) + termy*dq4
            gradz(4,node1) = gradz(4,node1) + termz*dq4
-c
+!
            flops = flops + 49
           endif
-c         call PLogEventEnd(node1_event,0,0,0,0,ierr)
-c
-c Now do the other node
-c
-c         call PLogEventBegin(node2_event,0,0,0,0,ierr)
+!         call PLogEventEnd(node1_event,0,0,0,0,ierr)
+!
+! Now do the other node
+!
+!         call PLogEventBegin(node2_event,0,0,0,0,ierr)
           if (node2 .le. nnodes) then
            dx2 = -dx1
            dy2 = -dy1
            dz2 = -dz1
-c
+!
            dq1 = weight*(qnode(1,node1) - qnode(1,node2))
            dq2 = weight*(qnode(2,node1) - qnode(2,node2))
            dq3 = weight*(qnode(3,node1) - qnode(3,node2))
            dq4 = weight*(qnode(4,node1) - qnode(4,node2))
-c
-c          w11 = 1./(r11(node2)*r11(node2))
-c          w22 = 1./(r22(node2)*r22(node2))
-c          w33 = 1./(r33(node2)*r33(node2))
-c          r12r11 = r12(node2)/r11(node2)
-c          r13r11 = r13(node2)/r11(node2)
-c          r23r22 = r23(node2)/r22(node2)
-c          rmess  = (r12(node2)*r23(node2) - r13(node2)*r22(node2))/
-c    1              (r11(node2)*r22(node2)*r33(node2)*r33(node2))
+!
+!          w11 = 1./(r11(node2)*r11(node2))
+!          w22 = 1./(r22(node2)*r22(node2))
+!          w33 = 1./(r33(node2)*r33(node2))
+!          r12r11 = r12(node2)/r11(node2)
+!          r13r11 = r13(node2)/r11(node2)
+!          r23r22 = r23(node2)/r22(node2)
+!          rmess  = (r12(node2)*r23(node2) - r13(node2)*r22(node2))/
+!    &              (r11(node2)*r22(node2)*r33(node2)*r33(node2))
 
            w11 = r11(node2)
            r12r11 = r12(node2)
@@ -2217,84 +2211,84 @@ c    1              (r11(node2)*r22(node2)*r33(node2)*r33(node2))
            r23r22 = r23(node2)
            w33 = r33(node2)
            rmess  = r44(node2)
-c
+!
            coef1  = dy2 - dx2*r12r11
            coef2  = dz2 - dx2*r13r11 - r23r22*coef1
            termx = dx2*w11 - w22*r12r11*coef1 + rmess*coef2
            termy = w22*coef1 - r23r22*w33*coef2
            termz = w33*coef2
-c
+!
            gradx(1,node2) = gradx(1,node2) + termx*dq1
            grady(1,node2) = grady(1,node2) + termy*dq1
            gradz(1,node2) = gradz(1,node2) + termz*dq1
-c
+!
            gradx(2,node2) = gradx(2,node2) + termx*dq2
            grady(2,node2) = grady(2,node2) + termy*dq2
            gradz(2,node2) = gradz(2,node2) + termz*dq2
-c
+!
            gradx(3,node2) = gradx(3,node2) + termx*dq3
            grady(3,node2) = grady(3,node2) + termy*dq3
            gradz(3,node2) = gradz(3,node2) + termz*dq3
-c
+!
            gradx(4,node2) = gradx(4,node2) + termx*dq4
            grady(4,node2) = grady(4,node2) + termy*dq4
            gradz(4,node2) = gradz(4,node2) + termz*dq4
-c
+!
            flops = flops + 52
           endif
-c         call PLogEventEnd(node2_event,0,0,0,0,ierr)
-c       endif
-c
+!         call PLogEventEnd(node2_event,0,0,0,0,ierr)
+!       endif
+!
  1020  continue
-c     end if
+!     end if
       call PLogFlops(flops,ierr)
-c     call PLogEventEnd(grad_event,0,0,0,0,ierr)
-c
-c End of LSTGS
-c
+!     call PLogEventEnd(grad_event,0,0,0,0,ierr)
+!
+! End of LSTGS
+!
       return
       end
 
 
-c=================================== GETRES ==========================72
-c
-c Calculates the residual 
-c Last Modified - D. K. Kaushik 1/23/97
-c I have eliminated the input variables which were not needed - 
-c dq, A, B, iupdate
-c
-c=====================================================================72
+!=================================== GETRES ==========================72
+!
+! Calculates the residual 
+! Last Modified - D. K. Kaushik 1/23/97
+! I have eliminated the input variables which were not needed - 
+! dq, A, B, iupdate
+!
+!=====================================================================72
 #undef __FUNC__
 #define __FUNC__ "GETRES"
-      subroutine GETRES(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,
-     1                  nsnode,nvnode,nfnode,isface,ivface,ifface,
-     2                  ileast,isnode,ivnode,ifnode,
-     3                  nnfacet,f2ntn,nnbound,
-     4                  nvfacet,f2ntv,nvbound,
-     5                  nffacet,f2ntf,nfbound,
-     6                  evec,sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
-     7                  xyzn,qvec,cdt,xyz,area,grad,resvec,turbre,
-     8                  slen,c2n,c2e,us,vs,as,phi,amut,ires,
+      subroutine GETRES(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,     &
+     &                  nsnode,nvnode,nfnode,isface,ivface,ifface,          &
+     &                  ileast,isnode,ivnode,ifnode,                        &
+     &                  nnfacet,f2ntn,nnbound,                              &
+     &                  nvfacet,f2ntv,nvbound,                              &
+     &                  nffacet,f2ntf,nfbound,                              &
+     &                  evec,sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,           &
+     &                  xyzn,qvec,cdt,xyz,area,grad,resvec,turbre,          &
+     &                  slen,c2n,c2e,us,vs,as,phi,amut,ires,                &
 #if defined(_OPENMP) 
-     &                  max_threads,
+     &                  max_threads,                                        &
 #if defined(HAVE_REDUNDANT_WORK)     
-     &                  resd,       
+     &                  resd,                                               &
 #else
-     &                  nedgeAllThr,part_thr,nedge_thr,
-     &                  edge_thr,xyzn_thr,
+     &                  nedgeAllThr,part_thr,nedge_thr,                     &
+     &                  edge_thr,xyzn_thr,                                  &
 #endif
 #endif  
      &                  LocalTS,irank, nvertices)
-c
+!
       implicit none      
 #include "include/finclude/petscdef.h"
-c
-      integer nnodes, ncell, nedge,
-     &        nbface,ileast,ires,
-     &        nsface, nvface, nfface,
-     &        nsnode, nvnode, nfnode,
-     &        nnfacet,nvfacet,nffacet,
-     &        nnbound,nvbound,nfbound,
+!
+      integer nnodes, ncell, nedge,                                         &
+     &        nbface,ileast,ires,                                           &
+     &        nsface, nvface, nfface,                                       &
+     &        nsnode, nvnode, nfnode,                                       &
+     &        nnfacet,nvfacet,nffacet,                                      &
+     &        nnbound,nvbound,nfbound,                                      &
      &        LocalTS,irank,nvertices
       integer evec(nedge,2)
       integer isface(1),ivface(1),ifface(1)
@@ -2303,7 +2297,7 @@ c
       integer f2ntn(nnfacet,4)
       integer f2ntv(nvfacet,4)
       integer f2ntf(nffacet,4)
-c
+!
       Scalar us(nbface,3,4),vs(nbface,3,4),as(nbface,3,4)
       Scalar sxn(1),syn(1),szn(1)
       Scalar vxn(1),vyn(1),vzn(1)
@@ -2315,33 +2309,33 @@ c
       Scalar phi(nvertices,4)
       Scalar cdt(nvertices)
       Scalar grad(3,4,nvertices)
-c     real dq(nnodes,4)
-c     real r11(nvertices),r12(nvertices),r13(nvertices)
-c     real r22(nvertices),r23(nvertices),r33(nvertices)
+!     real dq(nnodes,4)
+!     real r11(nvertices),r12(nvertices),r13(nvertices)
+!     real r22(nvertices),r23(nvertices),r33(nvertices)
       Scalar amut(nnodes)
-c
+!
       integer i
       Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar  cfl1,cfl2
-      integer nsmoth,iflim,itran,nbtran,jupdate,
+      integer nsmoth,iflim,itran,nbtran,jupdate,                             &
      &        nstage,ncyct,iramp,nitfo
       Scalar  gtol
       integer icycle,nsrch,ilu0,ifcn
-      Scalar  rms(1001),clw(1001),cdw(1001),
+      Scalar  rms(1001),clw(1001),cdw(1001),                                 &
      &        cmw(1001),xres(1001)
-      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
-     1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
+      common/info/title,beta,alpha,Re,dt,tot,res0,resc,                      &
+     &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,              &
      &             nstage,ncyct,iramp,nitfo
       common/gmcom/gtol,icycle,nsrch,ilu0,ifcn
       common/history/rms,clw,cdw,cmw,xres
-C     logging variables
-c     integer flux_event, delta2_event, flag
-c     character * 16 flux_label, delta2_label
-c     data flag/-1/,flux_label/'FLUX            '/
-c     data delta2_label/'DELTA2          '/
-c     save flux_event,delta2_event,flag, flux_label,delta2_label
+!     logging variables
+!     integer flux_event, delta2_event, flag
+!     character * 16 flux_label, delta2_label
+!     data flag/-1/,flux_label/'FLUX            '/
+!     data delta2_label/'DELTA2          '/
+!     save flux_event,delta2_event,flag, flux_label,delta2_label
 #if defined(INTERLACING)
        Scalar resvec(4,nnodes)
 #undef res(a,b)
@@ -2355,49 +2349,49 @@ c     save flux_event,delta2_event,flag, flux_label,delta2_label
 #if defined(HAVE_REDUNDANT_WORK)     
        Scalar resd(4,nnodes)       
 #else
-       integer nedgeAllThr,part_thr(nnodes),nedge_thr(max_threads),
-     1         edge_thr(2,nedgeAllThr),xyzn_thr(4,nedgeAllThr)
+       integer nedgeAllThr,part_thr(nnodes),nedge_thr(max_threads),         &
+     &         edge_thr(2,nedgeAllThr),xyzn_thr(4,nedgeAllThr)
 #endif
 #endif  
-c
+!
 
-c     if (flag .eq. -1) then
-c        call PLogEventRegister(delta2_event,delta2_label,'red:',ierr)
-c        call PLogEventRegister(flux_event,flux_label,'blue:',ierr)         
-c        flag = 1
-c     endif
-c
-c Calculate the time step
-c
+!     if (flag .eq. -1) then
+!        call PLogEventRegister(delta2_event,delta2_label,'red:',ierr)
+!        call PLogEventRegister(flux_event,flux_label,'blue:',ierr)         
+!        flag = 1
+!     endif
+!
+! Calculate the time step
+!
       if(ires.eq.1) goto 888
-c     call PLogEventBegin(delta2_event,0,0,0,0,ierr)
-      call DELTAT2(nnodes,nedge,qvec,cdt,
-     &             xyz,area,xyzn,evec,
-     &             sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
-     &             nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
+!     call PLogEventBegin(delta2_event,0,0,0,0,ierr)
+      call DELTAT2(nnodes,nedge,qvec,cdt,                                   &
+     &             xyz,area,xyzn,evec,                                      &
+     &             sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,                     &
+     &             nsnode,nvnode,nfnode,isnode,ivnode,ifnode,               &
      &             LocalTS,irank,nvertices)
-c     call PLogEventEnd(delta2_event,0,0,0,0,ierr)
+!     call PLogEventEnd(delta2_event,0,0,0,0,ierr)
   888 continue
-c /*'
-c   Calculate the gradients 
-c   ----Kyle seems to recommend only LSTGS for gradients,
-c   so I have commented the GETGRAD call - DKK (1/17/97)
-c
-c     if (ileast.eq.0) then
-c        call GETGRAD(nnodes,ncell,nedge,nsface,nvface,nfface,
-c    &                isface,ivface,ifface,eptr,ncolor,ncount,
-c    &                qnode,gradx,grady,x,y,
-c    &                area,wx,wy,xn,yn,rl)
-c
-c     else if (ileast.eq.4) then
-c     if (ileast.eq.4) then
-c        call LSTGS(nnodes,nedge,eptr,
-c    1              qnode,gradx,grady,gradz,xyz,
-c    2              r11,r12,r13,r22,r23,r33,irank,nvertices)
-c     end if
-c
-c zero out residuals (viscous residuals are zeroed in vfluxnew)
-c '*/
+!/*
+!   Calculate the gradients 
+!   ----Kyle seems to recommend only LSTGS for gradients,
+!   so I have commented the GETGRAD call - DKK (1/17/97)
+!
+!     if (ileast.eq.0) then
+!        call GETGRAD(nnodes,ncell,nedge,nsface,nvface,nfface,
+!    &                isface,ivface,ifface,eptr,ncolor,ncount,
+!    &                qnode,gradx,grady,x,y,
+!    &                area,wx,wy,xn,yn,rl)
+!
+!     else if (ileast.eq.4) then
+!     if (ileast.eq.4) then
+!        call LSTGS(nnodes,nedge,eptr,
+!    &              qnode,gradx,grady,gradz,xyz,
+!    &              r11,r12,r13,r22,r23,r33,irank,nvertices)
+!     end if
+!
+! zero out residuals (viscous residuals are zeroed in vfluxnew)
+!*/
       do 1002 i = 1,nnodes
           res(1,i)=0.0d0
           res(2,i)=0.0d0
@@ -2409,127 +2403,127 @@ c '*/
           phi(i,3)=1.0d0
           phi(i,4)=1.0d0
  1002   continue
-c
-c /*'
-c If not doing Newton-Krylov and iflim=1 call the Flux Limiter
-c
-c     if(iflim.eq.1.and.ifcn.ne.1)then
-c      call TIMLIM(nnodes,nedge,qnode,res,dq,phi,ncolor,ncount,
-c    &             gradx,grady,gradz,x,y,z,eptr)
-c '*/
-c If we used the limiter we need to zero out the residual again
-c since we used it for scratch space
-c
-c     do 1003 i = 1,nnodes
-c         res(1,i)=0.0
-c         res(2,i)=0.0
-c         res(3,i)=0.0
-c         res(4,i)=0.0
-c1003   continue
-c
-c     end if
-c
-c   Split the fluxes and perform the flux balance
-c
-c       call PLogEventBegin(flux_event,0,0,0,0,ierr)
+!/*
+!
+! If not doing Newton-Krylov and iflim=1 call the Flux Limiter
+!
+!     if(iflim.eq.1.and.ifcn.ne.1)then
+!      call TIMLIM(nnodes,nedge,qnode,res,dq,phi,ncolor,ncount,
+!    &             gradx,grady,gradz,x,y,z,eptr)
+!
+! If we used the limiter we need to zero out the residual again
+! since we used it for scratch space
+!
+!     do 1003 i = 1,nnodes
+!         res(1,i)=0.0
+!         res(2,i)=0.0
+!         res(3,i)=0.0
+!         res(4,i)=0.0
+!1003   continue
+!
+!     end if
+!*/
+!   Split the fluxes and perform the flux balance
+!
+!       call PLogEventBegin(flux_event,0,0,0,0,ierr)
 
-         call FLUX(nnodes,ncell,nedge,
-     &            nsface,nvface,nfface,isface,ivface,ifface,
-     &            nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
-     &            nnfacet,f2ntn,nnbound,
-     &            nvfacet,f2ntv,nvbound,
-     &            nffacet,f2ntf,nfbound,
-     &            grad,evec,qvec,xyz,resvec,xyzn,
-     &            sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,
+         call FLUX(nnodes,ncell,nedge,                                         &
+     &            nsface,nvface,nfface,isface,ivface,ifface,                   &
+     &            nsnode,nvnode,nfnode,isnode,ivnode,ifnode,                   &
+     &            nnfacet,f2ntn,nnbound,                                       &
+     &            nvfacet,f2ntv,nvbound,                                       &
+     &            nffacet,f2ntf,nfbound,                                       &
+     &            grad,evec,qvec,xyz,resvec,xyzn,                              &
+     &            sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                     &
 #if defined(_OPENMP) 
-     &            max_threads,
+     &            max_threads,                                                 &
 #if defined(HAVE_REDUNDANT_WORK)     
-     &            resd,       
+     &            resd,                                                        &
 #else
-     &            nedgeAllThr,part_thr,nedge_thr,edge_thr,xyzn_thr,
+     &            nedgeAllThr,part_thr,nedge_thr,edge_thr,xyzn_thr,            &
 #endif
 #endif  
      &            irank,nvertices)
-c        call PLogEventEnd(flux_event,0,0,0,0,ierr)
-c /*'
-c calculate viscous fluxes
-c
-c     if (ivisc.gt.0) then
-c           call VISRHS (nnodes,ncell,nedge,
-c           call EDGEVIS(nnodes,ncell,nedge,
-c    &                  nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
-c    &                  nsface,nvface,nfface,isface,ivface,ifface,
-c    &                  nnfacet,f2ntn,nnbound,ncolorn,countn,
-c    &                  nvfacet,f2ntv,nvbound,ncolorv,countv,
-c    &                  nffacet,f2ntf,nfbound,ncolorf,countf,
-c    &                  nccolor,nccount,
-c    &                  eptr,c2n,c2e,
-c    &                  sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
-c    &                  x,y,z,gradx,grady,gradz,
-c    &                  qnode,amut,res,phi)
-c     end if
-c '*/
-c End of subroutine GETRES
-c
+!/*        call PLogEventEnd(flux_event,0,0,0,0,ierr)
+!
+! calculate viscous fluxes
+!
+!     if (ivisc.gt.0) then
+!           call VISRHS (nnodes,ncell,nedge,
+!           call EDGEVIS(nnodes,ncell,nedge,
+!    &                  nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
+!    &                  nsface,nvface,nfface,isface,ivface,ifface,
+!    &                  nnfacet,f2ntn,nnbound,ncolorn,countn,
+!    &                  nvfacet,f2ntv,nvbound,ncolorv,countv,
+!    &                  nffacet,f2ntf,nfbound,ncolorf,countf,
+!    &                  nccolor,nccount,
+!    &                  eptr,c2n,c2e,
+!    &                  sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
+!    &                  x,y,z,gradx,grady,gradz,
+!    &                  qnode,amut,res,phi)
+!     end if
+!*/
+! End of subroutine GETRES
+!
       return
       end
 
-c---------------------------------------------------------------
-c The following subroutine is from node4t.f in the original
-c code - D. K. Kaushik (1/17/97)
-c---------------------------------------------------------------
-c
-c=============================================================================
-c
-c  Opens files for I/O
-c
-c=============================================================================
+!---------------------------------------------------------------
+! The following subroutine is from node4t.f in the original
+! code - D. K. Kaushik (1/17/97)
+!---------------------------------------------------------------
+!
+!=============================================================================
+!
+!  Opens files for I/O
+!
+!=============================================================================
 #undef __FUNC__
 #define __FUNC__ "OPENM"
       SUBROUTINE OPENM(irank)
-c
-c  TAPE7  -- input:  mach number, angle of attack etc.. 
-c  TAPE9  -- input:  reads restart file
-c  TAPE10 -- output: residual history
-c  TAPE11 -- output: writes restart file
-c  TAPE12 -- output: writes residual and lift for plotting
-c  TAPE13 -- output: writes flowfield for contour plotting
-c
+!
+!  TAPE7  -- input:  mach number, angle of attack etc.. 
+!  TAPE9  -- input:  reads restart file
+!  TAPE10 -- output: residual history
+!  TAPE11 -- output: writes restart file
+!  TAPE12 -- output: writes residual and lift for plotting
+!  TAPE13 -- output: writes flowfield for contour plotting
+!
       implicit none
       integer  irank
-      OPEN(UNIT= 7,FILE='testgrid/ginput.faces',
-     +form='formatted',STATUS='OLD')
+      OPEN(UNIT= 7,FILE='testgrid/ginput.faces',                                  &
+     &form='formatted',STATUS='OLD')
  
-c     OPEN(UNIT=9,FILE='framer.bin',
-c    +form='unformatted',STATUS='old')
+!     OPEN(UNIT=9,FILE='framer.bin',
+!    &form='unformatted',STATUS='old')
  
-      if (irank .eq. 0) OPEN(UNIT= 10,FILE='frame.out3',
-     +form='formatted',STATUS='unknown')
+      if (irank .eq. 0) OPEN(UNIT= 10,FILE='frame.out3',                          &
+     &form='formatted',STATUS='unknown')
  
-c     OPEN(UNIT= 11,FILE='frame.bin',
-c    +form='unformatted',STATUS='unknown')
+!     OPEN(UNIT= 11,FILE='frame.bin',
+!    +form='unformatted',STATUS='unknown')
  
-c     OPEN(UNIT= 12,FILE='frame.plt',
-c    +form='formatted',STATUS='unknown')
+!     OPEN(UNIT= 12,FILE='frame.plt',
+!    +form='formatted',STATUS='unknown')
  
-c     OPEN(UNIT= 13,FILE='frame.tec',
-c    +form='formatted',STATUS='unknown')
+!     OPEN(UNIT= 13,FILE='frame.tec',
+!    +form='formatted',STATUS='unknown')
  
-c     OPEN(UNIT= 14,FILE='frame.fast.g',
-c    +form='unformatted',STATUS='unknown')
+!     OPEN(UNIT= 14,FILE='frame.fast.g',
+!    +form='unformatted',STATUS='unknown')
  
-c     OPEN(UNIT= 15,FILE='frame.fast.q',
-c    +form='unformatted',STATUS='unknown')
+!     OPEN(UNIT= 15,FILE='frame.fast.q',
+!    +form='unformatted',STATUS='unknown')
 
       return
       end
-c
-c
-c===================================================================
-c
-c Get the IA, JA, and IAU arrays
-c
-c===================================================================
+!
+!
+!===================================================================
+!
+! Get the IA, JA, and IAU arrays
+!
+!===================================================================
 #undef __FUNC__
 #define __FUNC__ "GETIA"
       subroutine GETIA(nnodes,nedge,evec,ia,ideg,irank)
@@ -2545,36 +2539,36 @@ c===================================================================
 #define eptr(i,j) evec(i,j)
 #endif
        integer i,node1,node2
-c
-c First get the degree of each node using ideg as a dummy array
-c
+!
+! First get the degree of each node using ideg as a dummy array
+!
       do 1000 i = 1,nnodes
         ideg(i) = 0
  1000 continue
-c
+!
       do 1010 i = 1,nedge
         node1 = eptr(i,1)
         node2 = eptr(i,2)
         if (node1 .le. nnodes) ideg(node1) = ideg(node1) + 1
         if (node2 .le. nnodes) ideg(node2) = ideg(node2) + 1
  1010 continue
-c
-c Now we can fill the ia array fairly easily
-c
+!
+! Now we can fill the ia array fairly easily
+!
       ia(1) = 1
       do 1020 i = 1,nnodes
         ia(i+1) = ia(i) + ideg(i) + 1
-c       write(9,100)i,ideg(i)
-c 100   format(1h ,'deg(',i6,')=',i6)
+!       write(9,100)i,ideg(i)
+! 100   format(1h ,'deg(',i6,')=',i6)
  1020 continue
-c
+!
       return
       end
-c===================================================================
-c
-c Get the IA, JA, and IAU arrays
-c
-c===================================================================
+!===================================================================
+!
+! Get the IA, JA, and IAU arrays
+!
+!===================================================================
 #undef __FUNC__
 #define __FUNC__ "GETJA"
       subroutine GETJA(nnodes,nedge,evec,ia,ja,iwork,irank)
@@ -2589,23 +2583,23 @@ c===================================================================
        integer evec(nedge,2)
 #define eptr(i,j) evec(i,j)
 #endif
-       integer i,index,node1,node2,index1,index2,
+       integer i,index,node1,node2,index1,index2,                          &
      &         istart,iend
-c     open(unit=90,file='map.out',status='UNKNOWN')
-c
-c Now we need to get the JA array
-c First fill the diagonal places
-c
+!     open(unit=90,file='map.out',status='UNKNOWN')
+!
+! Now we need to get the JA array
+! First fill the diagonal places
+!
       do 1040 i = 1,nnodes
         index = ia(i)
         ja(index) = i
         iwork(i) = 1
  1040 continue
-c
+!
       do 1030 i = 1,nedge
         node1 = eptr(i,1)
         node2 = eptr(i,2)
-c
+!
         if (node1 .le. nnodes) then
           index1 = ia(node1) + iwork(node1) 
           iwork(node1) = iwork(node1) + 1
@@ -2617,74 +2611,74 @@ c
           ja(index2) = node1
         endif
  1030 continue
-c
-c Now lets sort all our "bins" and get the correct one on the diagonal
-c
+!
+! Now lets sort all our "bins" and get the correct one on the diagonal
+!
       do 1050 i = 1,nnodes
         istart = ia(i)
         iend   = ia(i+1) - 1
-c       write(9,200)i,istart,iend
-c 200   format(1h ,'Sorting ',i6,' istart iend = ',i6,1x,i6)
+!       write(9,200)i,istart,iend
+! 200   format(1h ,'Sorting ',i6,' istart iend = ',i6,1x,i6)
         call SORTER(istart,iend,ja,i)
  1050 continue
-c
-c Now get the "fhelp" array which will assist in assembling
-c the flux Jacobians into the correct location in the alu array
-c
-c     write(90,*) 'fhelp array'
-c     do 1060 i = 1,nedge
-c       node1 = eptr(i,1)
-c       node2 = eptr(i,2)
-c
-c First take care of node1
-c
-c       idiag = iau(node1)
-c
-c If the offdiagonal term is ordered later in the ja array 
-c
-c       if(node2.gt.node1)then
-c        jstart = idiag + 1
-c        jend   = ia(node1+1) - 1
-c       else
-c        jstart = ia(node1)
-c        jend   = idiag -1
-c       end if
-c
-c        do 1070 j = jstart,jend
-c          if(ja(j).eq.node2)fhelp(i,1) = j
-c1070    continue
-c
-c
-c Now take care of node2
-c
-c       idiag = iau(node2)
-c
-c If the offdiagonal term is ordered later in the ja array 
-c
-c       if(node1.gt.node2)then
-c        jstart = idiag + 1
-c        jend   = ia(node2+1) - 1
-c       else
-c        jstart = ia(node2)
-c        jend   = idiag -1
-c       end if
-c
-c       do 1080 j = jstart,jend
-c         if(ja(j).eq.node1)fhelp(i,2) = j
-c1080   continue
-c       write(90,*) i,fhelp(i,1),fhelp(i,2)
-c1060 continue
-c      close(90)
-c
+!
+! Now get the "fhelp" array which will assist in assembling
+! the flux Jacobians into the correct location in the alu array
+!
+!     write(90,*) 'fhelp array'
+!     do 1060 i = 1,nedge
+!       node1 = eptr(i,1)
+!       node2 = eptr(i,2)
+!
+! First take care of node1
+!
+!       idiag = iau(node1)
+!
+! If the offdiagonal term is ordered later in the ja array 
+!
+!       if(node2.gt.node1)then
+!        jstart = idiag + 1
+!        jend   = ia(node1+1) - 1
+!       else
+!        jstart = ia(node1)
+!        jend   = idiag -1
+!       end if
+!
+!        do 1070 j = jstart,jend
+!          if(ja(j).eq.node2)fhelp(i,1) = j
+!1070    continue
+!
+!
+! Now take care of node2
+!
+!       idiag = iau(node2)
+!
+! If the offdiagonal term is ordered later in the ja array 
+!
+!       if(node1.gt.node2)then
+!        jstart = idiag + 1
+!        jend   = ia(node2+1) - 1
+!       else
+!        jstart = ia(node2)
+!        jend   = idiag -1
+!       end if
+!
+!       do 1080 j = jstart,jend
+!         if(ja(j).eq.node1)fhelp(i,2) = j
+!1080   continue
+!       write(90,*) i,fhelp(i,1),fhelp(i,2)
+!1060 continue
+!      close(90)
+!
       return
       end
-c
-c
-c===================================================================
-c
-c Sort each of our bins
-c
-c===================================================================
+!
+!
+!===================================================================
+!
+! Sort each of our bins
+!
+!===================================================================
 #undef __FUNC__
 #define __FUNC__ "SORTER"
       subroutine SORTER(istart,iend,ja,inode)
@@ -2692,7 +2686,7 @@ c===================================================================
 #include "include/finclude/petscdef.h"
       integer istart,iend,inode
       integer ja(1)
-c
+!
       integer min,minsave,jsave,i,j
       do 1000 i = istart,iend
         min = ja(i)
@@ -2706,9 +2700,9 @@ c
  1010   continue
         ja(i) = min
         ja(jsave) = minsave
-c       if(ja(i).eq.inode)iau(inode) = i
+!       if(ja(i).eq.inode)iau(inode) = i
  1000 continue
-c
+!
       return
       end
 
