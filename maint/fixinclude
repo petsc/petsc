@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: fixinclude,v 1.4 2001/04/11 03:33:59 bsmith Exp bsmith $ 
+# $Id: fixinclude,v 1.5 2001/04/11 03:34:58 bsmith Exp balay $ 
 # 
 # Used by bmake/common rule html to replace #includes in the source files with links when possible
 #
@@ -19,7 +19,7 @@ while [ 1 -ne 0 ]; do
 #
 #  To slightly reduce size of .html file change line# labels to l#
 #
-  line=`echo $line | sed -e 's?name="line\([0-9]*\)"?name="l\1"?g'`
+#  line=`echo $line | sed -e 's?name="line\([0-9]*\)"?name="l\1"?g'`
 #
 #  look for include and replace them 
 #

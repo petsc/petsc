@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
+/*$Id: bss_malloc.c,v 1.2 2001/04/10 19:37:38 bsmith Exp bsmith $*/
 /********************************bss_malloc.c**********************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -22,6 +22,7 @@ File Description:
 *********************************bss_malloc.c*********************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include "petsc.h"
 
 #if   defined NXSRC
 #ifndef DELTA
@@ -68,8 +69,9 @@ static int my_id=0;
 #endif
 
 
-void *malloc(size_t size);
-
+EXTERN_C_BEGIN
+extern void *malloc(size_t);
+EXTERN_C_END
 
 /* malloc stats and space for bss and perm flavors */
 static int    perm_req       = 0;
