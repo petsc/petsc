@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.25 1998/04/07 18:44:39 balay Exp balay $ 
+# $Id: base.site,v 1.26 1998/04/08 14:22:49 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -49,8 +49,8 @@ MPIRUN         = /usr/bin/nice -20 /bin/mpirun
 # The following lines can be used with MPIUNI
 #
 #MPI_LIB         =${LDIR}/libmpiuni.a
-#MPI_INCLUDE     = -I${PETSC_DIR}/src/mpiuni -DUSES_INT_MPI_COMM
-#MPIRUN          = ${PETSC_DIR}/src/mpiuni/mpirun
+#MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
+#MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
