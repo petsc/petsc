@@ -66,9 +66,10 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
         ierr = ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, N, 0, 1, &iscol);CHKERRQ(ierr);
         ierr = MatGetSubMatrices(mat, 1, &isrow, &iscol, MAT_INITIAL_MATRIX, &A);CHKERRQ(ierr);
+        matSeq = *A; 
+        ierr = PetscFree(A);CHKERRQ(ierr);
         ierr = ISDestroy(isrow);CHKERRQ(ierr);
         ierr = ISDestroy(iscol);CHKERRQ(ierr);
-        matSeq = *A;
     } else
         matSeq = mat;
 
@@ -615,7 +616,6 @@ PetscErrorCode MatPartitioningSetFromOptions_Scotch(MatPartitioning part)
     PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningDestroy_Scotch"
 PetscErrorCode MatPartitioningDestroy_Scotch(MatPartitioning part)
@@ -632,6 +632,34 @@ PetscErrorCode MatPartitioningDestroy_Scotch(MatPartitioning part)
 
     PetscFunctionReturn(0);
 }
+
+/*MC
+   MAT_PARTITIONING_SCOTCH - Creates a partitioning context via the external package SCOTCH.
+
+   Collective on MPI_Comm
+
+   Input Parameter:
+.  part - the partitioning context
+
+   Options Database Keys:
++  -mat_partitioning_scotch_global <greedy> (one of) greedy gps gr_gps
+.  -mat_partitioning_scotch_local <kernighan-lin> (one of) kernighan-lin none
+.  -mat_partitioning_scotch_mapping: Use mapping (MatPartitioningScotchSetMapping)
+.  -mat_partitioning_scotch_arch <archgraph.src>: architecture file in scotch format (MatPartitioningScotchSetArch)
+.  -mat_partitioning_scotch_hosts <host_list>: host list filename (MatPartitioningScotchSetHostList)
+.  -mat_partitioning_scotch_coarse_level <0>: coarse level (MatPartitioningScotchSetCoarseLevel)
+.  -mat_partitioning_scotch_mul: Use coarse level (MatPartitioningScotchSetMultilevel)
+-  -mat_partitioning_scotch_strategy <>: Scotch strategy string (MatPartitioningScotchSetStrategy)
+
+   Level: beginner
+
+   Notes: See http://www.labri.fr/Perso/~pelegrin/scotch/
+
+.keywords: Partitioning, create, context
+
+.seealso: MatPartitioningSetType(), MatPartitioningType
+
+@*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

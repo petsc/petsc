@@ -12,7 +12,10 @@ T*/
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            
-     petscviewer.h - viewers               
+     petscviewer.h - viewers    
+
+  Example of usage:  
+    mpirun -np 3 ex73 -f <matfile> -mat_partitioning_type parmetis/scotch -load_ignore_info -nox
 */
 #include "petscksp.h"
 
