@@ -572,6 +572,8 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v,InsertMo
    MatSetValuesStencil() uses 0-based row and column numbers in Fortran 
    as well as in C.
 
+   For setting/accessing vector values via array coordinates you can use the DAVecGetArray() routine
+
    In order to use this routine you must either obtain the matrix with DAGetMatrix()
    or call MatSetLocalToGlobalMapping() and MatSetStencil() first.
 
@@ -601,7 +603,7 @@ $    idxm(MatStencil_c,1) = c
    Concepts: matrices^putting entries in
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
-          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DAGetMatrix()
+          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray()
 @*/
 int MatSetValuesStencil(Mat mat,int m,MatStencil *idxm,int n,MatStencil *idxn,PetscScalar *v,InsertMode addv)
 {
@@ -645,13 +647,13 @@ int MatSetValuesStencil(Mat mat,int m,MatStencil *idxm,int n,MatStencil *idxn,Pe
 #define __FUNCT__ "MatSetStencil"
 /*@ 
    MatSetStencil - Sets the grid information for setting values into a matrix via
-        MatSetStencil()
+        MatSetValuesStencil()
 
    Not Collective
 
    Input Parameters:
 +  mat - the matrix
-.  dim - dimension of the grid 1,2, or 3
+.  dim - dimension of the grid 1, 2, or 3
 .  dims - number of grid points in x, y, and z direction, including ghost points on your processor
 .  starts - starting point of ghost nodes on your processor in x, y, and z direction 
 -  dof - number of degrees of freedom per node
@@ -660,6 +662,9 @@ int MatSetValuesStencil(Mat mat,int m,MatStencil *idxm,int n,MatStencil *idxn,Pe
    Inspired by the structured grid interface to the HYPRE package
    (www.llnl.gov/CASC/hyper)
 
+   For matrices generated with DAGetMatrix() this routine is automatically called and so not needed by the
+   user.
+   
    Level: beginner
 
    Concepts: matrices^putting entries in
