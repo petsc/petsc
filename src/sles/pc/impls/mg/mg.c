@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.28 1995/07/20 17:48:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.29 1995/07/20 23:43:16 bsmith Exp curfman $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -303,6 +303,7 @@ static int PCPrintHelp_MG(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
+  MPIU_printf(pc->comm," Options for PCMG preconditioner:\n");
   MPIU_fprintf(pc->comm,stdout," %spc_mg_method [additive,multiplicative,fullmultigrid,kaskade\
                   : type of multigrid method\n",p);
   MPIU_fprintf(pc->comm,stdout," %spc_mg_smoothdown m: number of pre-smooths\n",p);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.14 1995/07/10 04:51:13 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.15 1995/07/20 04:25:30 bsmith Exp curfman $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -63,6 +63,7 @@ static int PCPrintHelp_ICC(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
+  MPIU_printf(pc->comm," Options for PCICC preconditioner:\n");
   MPIU_printf(pc->comm,"%pc_icc_bsiter:  use BlockSolve iterative solver instead\
                   of KSP routines\n",p);
   return 0;
@@ -98,6 +99,7 @@ int PCCreate_ICC(PC pc)
   pc->destroy	   = PCDestroy_ICC;
   pc->setfrom      = PCSetFromOptions_ICC;
   pc->printhelp    = PCPrintHelp_ICC;
+  pc->view         = 0;
   pc->getfactmat   = PCGetFactoredMatrix_ICC;
   pc->type	   = PCICC;
   pc->data	   = (void *) icc;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: none.c,v 1.3 1995/03/06 04:13:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: none.c,v 1.4 1995/03/25 01:26:20 bsmith Exp curfman $";
 #endif
 /*
 
@@ -17,5 +17,6 @@ int PCCreate_None(PC pc)
   pc->destroy = 0;
   pc->setup   = 0;
   pc->data    = 0;
+  pc->view    = 0;
   return 0;
 }

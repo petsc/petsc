@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.29 1995/07/20 04:25:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.30 1995/07/20 23:43:13 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -77,11 +77,44 @@ int PCBJacobiSetUseTrueLocal(PC pc)
   jac->usetruelocal = 1;
   return 0;
 }
+/*@
+   PCBJacobiGetSubSLES - Gets the local SLES contexts for all blocks on
+   this processor.
+   
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
+.  n_local - the number of blocks on this processor
+.  first_local - the global number of the first block on this processor
+.  sles - the array of SLES contexts
+
+   Note:  
+   Currently only 1 block per processor is supported.
+   
+   You must call SLESSetup() befor caling PCBJacobiGetSubSLES().
+
+.keywords:  block, Jacobi, get, sub, SLES, context
+
+.seealso: PCBJacobiGetSubSLES()
+@*/
+int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
+{
+  PC_BJacobi   *jac;
+  VALIDHEADER(pc,PC_COOKIE);
+  if (pc->type != PCBJACOBI) return 0;
+  jac = (PC_BJacobi *) pc->data;
+  *n_local = jac->n_local;
+  *first_local = jac->first_local;
+  *sles = jac->sles;
+  return 0;
+}
   
 static int PCPrintHelp_BJacobi(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
+  MPIU_printf(pc->comm," Options for PCBJACOBI preconditioner:\n");
   MPIU_printf(pc->comm," %spc_bjacobi_blocks blks: blocks in preconditioner\n",p);
   MPIU_printf(pc->comm, " %spc_bjacobi_truelocal: use blocks from the local linear\
  system matrix \n      instead of the preconditioning matrix\n",p);
@@ -91,24 +124,51 @@ static int PCPrintHelp_BJacobi(PC pc)
   return 0;
 }
 
+static int PCView_BJacobi(PetscObject obj,Viewer viewer)
+{
+  PC               pc = (PC)obj;
+  FILE             *fd = ViewerFileGetPointer_Private(viewer);
+  PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
+  int              mytid;
+  if (jac->usetruelocal) 
+    MPIU_fprintf(pc->comm,fd,
+       "    Block Jacobi: using true local matrix, number of blocks = %d\n",
+       jac->n);
+  MPIU_fprintf(pc->comm,fd,"    Block Jacobi: number of blocks = %d\n",jac->n);
+  MPIU_fprintf(pc->comm,fd,
+     "     Local solve info for each block in next KSP and PC objects:\n");
+  MPI_Comm_rank(pc->comm,&mytid);
+  MPIU_Seq_begin(pc->comm,1);
+  fprintf(fd,"Proc %d: number of local blocks = %d, first local block = %d\n",
+    mytid,jac->n_local,jac->first_local);
+  SLESView(jac->sles[0],viewer); /* currently only 1 block per processor */
+  fflush(fd);
+  MPIU_Seq_end(pc->comm,1);
+  return 0;
+}
 
 int PCCreate_BJacobi(PC pc)
 {
+  int          mytid;
   PC_BJacobi   *jac = PETSCNEW(PC_BJacobi); CHKPTRQ(jac);
+  MPI_Comm_rank(pc->comm,&mytid);
   pc->apply         = 0;
   pc->setup         = PCSetUp_BJacobi;
   pc->destroy       = PCDestroy_BJacobi;
   pc->setfrom       = PCSetFromOptions_BJacobi;
   pc->printhelp     = PCPrintHelp_BJacobi;
+  pc->view          = PCView_BJacobi;
   pc->type          = PCBJACOBI;
   pc->data          = (void *) jac;
-  pc->view          = 0;
+  pc->view          = PCView_BJacobi;
   jac->n            = 0;
   jac->n_local      = 1;
+  jac->first_local  = mytid;
   jac->sles         = 0;
   jac->usetruelocal = 0;
   return 0;
 }
+
 /*@
    PCBJacobiSetBlocks - Sets the number of blocks for the block Jacobi
    preconditioner.
