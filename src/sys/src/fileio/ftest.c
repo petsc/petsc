@@ -82,17 +82,24 @@ int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
 int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
 {
   struct stat statbuf;
-  int         err,stmode,rbit,wbit,ebit;
+  int         err,stmode,rbit,wbit,ebit,numGroups;
   uid_t       uid;
-  gid_t       gid;
+  gid_t      *gid;
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
 
+  /* Get the number of supplementary group IDs */
+  numGroups = getgroups(0, gid); if (numGroups < 0) {SETERRQ(numGroups, "Unable to count supplementary group IDs");}
+  err = PetscMalloc((numGroups+1) * sizeof(gid_t), &gid); CHKERRQ(err);
+
   /* Get the (effective) user and group of the caller */
-  uid = geteuid();
-  gid = getegid();
+  uid    = geteuid();
+  gid[0] = getegid();
+
+  /* Get supplementary group IDs */
+  err = getgroups(numGroups, gid+1); if (err < 0) {SETERRQ(err, "Unable to obtain supplementary group IDs");}
 
 #if defined(PETSC_HAVE_STAT_NO_CONST)
   err = stat((char*)fname,&statbuf);
@@ -113,15 +120,25 @@ int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
     rbit = S_IRUSR;
     wbit = S_IWUSR;
     ebit = S_IXUSR;
-  } else if (statbuf.st_gid == gid) {
-    rbit = S_IRGRP;
-    wbit = S_IWGRP;
-    ebit = S_IXGRP;
   } else {
-    rbit = S_IROTH;
-    wbit = S_IWOTH;
-    ebit = S_IXOTH;
+    int g;
+
+    for(g = 0; g <= numGroups; g++) {
+      if (statbuf.st_gid == gid[g]) {
+        rbit = S_IRGRP;
+        wbit = S_IWGRP;
+        ebit = S_IXGRP;
+        break;
+      }
+    }
+    if (g >= numGroups) {
+      rbit = S_IROTH;
+      wbit = S_IWOTH;
+      ebit = S_IXOTH;
+    }
   }
+  err = PetscFree(gid); CHKERRQ(err);
+
   if (mode == 'r') {
     if ((stmode & rbit))   *flg = PETSC_TRUE;
   } else if (mode == 'w') {
