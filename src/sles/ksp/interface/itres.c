@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: itres.c,v 1.5 1995/03/06 04:19:24 bsmith Exp curfman $";
 #endif
 
 
@@ -26,7 +26,11 @@ $            M u = f
 int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 {
   Scalar one = -1.0;
+  int    pflag;
+  Mat    Amat, Pmat;
+
   VALIDHEADER(itP,KSP_COOKIE);
+  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
   if (itP->right_pre) {
     if (vbinvf) VecCopy(vb,vbinvf);
     vbinvf = vb;
@@ -41,7 +45,7 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
     if (itP->right_pre) {
         /* we want a * binv * b * x, or just a * x for the first step */
         /* a*x into temp */
-        MatMult(PCGetMat(itP->B), vsoln, vt1 );
+        MatMult(Amat, vsoln, vt1 );
 	itP->namult++;
     }
     else {

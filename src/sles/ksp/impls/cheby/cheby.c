@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.10 1995/03/25 01:25:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.11 1995/03/30 21:17:38 bsmith Exp curfman $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -41,14 +41,17 @@ int KSPChebychevSetEigenvalues(KSP itP,double emax,double emin)
 
 int  KSPSolve_Chebychev(KSP itP,int *its)
 {
-  int              k,kp1,km1,maxit,ktmp,i = 0,pres,brokeout = 0, hist_len,cerr;
+  int              k,kp1,km1,maxit,ktmp,i = 0,pres,brokeout = 0;
+  int              pflag,hist_len,cerr;
   Scalar           alpha,omegaprod;
   Scalar           mu,omega,Gamma,c[3],scale;
   double           rnorm,*history;
   Vec              x,b,p[3],r;
   KSP_Chebychev    *chebychevP = (KSP_Chebychev *) itP->MethodPrivate;
   Scalar           mone = -1.0, tmp;
+  Mat              Amat, Pmat;
 
+  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
   history = itP->residual_history;
   hist_len= itP->res_hist_size;
   maxit   = itP->max_it;
@@ -78,7 +81,7 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
   c[k] = mu;
 
   if (!itP->guess_zero) {
-    MatMult(PCGetMat(itP->B),x,r);                 /*  r = b - Ax     */
+    MatMult(Amat,x,r);                       /*  r = b - Ax     */
     VecAYPX(&mone,b,r);       
   }
   else VecCopy(b,r);
@@ -90,9 +93,9 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 
-    MatMult(PCGetMat(itP->B),p[k],r);             /*  r = b - Ap[k]    */
+    MatMult(Amat,p[k],r);        /*  r = b - Ap[k]    */
     VecAYPX(&mone,b,r);                        
-    PCApply(itP->B,r,p[kp1]);                   /*  p[kp1] = B^{-1}z  */
+    PCApply(itP->B,r,p[kp1]);                /*  p[kp1] = B^{-1}z  */
 
     /* calculate residual norm if requested */
     if (itP->calc_res) {
@@ -116,7 +119,7 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
     kp1  = ktmp;
   }
   if (!brokeout && itP->calc_res) {
-    MatMult(PCGetMat(itP->B),p[k],r);              /*  r = b - Ap[k]    */
+    MatMult(Amat,p[k],r);              /*  r = b - Ap[k]    */
     VecAYPX(&mone,b,r);                        
     if (!pres) VecNorm(r,&rnorm);
     else {

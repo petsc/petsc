@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.4 1995/03/04 16:54:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.5 1995/03/30 21:17:22 bsmith Exp curfman $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
@@ -72,17 +72,20 @@ int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
 {
   double normax, norm;
   Scalar tmp;
-  int    curl = itg->curl, i;
+  int    pflag, curl = itg->curl, i;
+  Mat    Amat, Pmat;
+
   VALIDHEADER(itctx,KSP_COOKIE);
+  PCGetOperators(itctx->B,&Amat,&Pmat,&pflag);
   if (curl == itg->maxl) {
-    MatMult(PCGetMat(itctx->B),x,itg->btilde[0] );
+    MatMult(Amat,x,itg->btilde[0] );
     VecNorm(itg->btilde[0],&normax);
     tmp = 1.0/normax; VecScale(&tmp,itg->btilde[0]);
     /* VCOPY(itctx->vc,x,itg->xtilde[0]); */
     VecScale(&tmp,itg->xtilde[0]);
   }
   else {
-    MatMult( PCGetMat(itctx->B), itg->xtilde[curl], itg->btilde[curl] );
+    MatMult( Amat, itg->xtilde[curl], itg->btilde[curl] );
     for (i=1; i<=curl; i++) 
       VecDot(itg->btilde[curl],itg->btilde[i-1],itg->alpha+i-1);
     for (i=1; i<=curl; i++) {

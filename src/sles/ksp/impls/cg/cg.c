@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.12 1995/03/26 04:42:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.13 1995/03/30 21:17:30 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -40,11 +40,12 @@ int KSPSetUp_CG(KSP itP)
 
 int  KSPSolve_CG(KSP itP,int *its)
 {
-  int       ierr, i = 0,maxit,eigs,pres, hist_len, cerr;
+  int       ierr, pflag, i = 0,maxit,eigs,pres, hist_len, cerr;
   Scalar    dpi, a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0, mone = -1.0, ma; 
-  double   *history, dp;
+  double    *history, dp;
   Vec       X,B,Z,R,P;
   KSP_CG    *cgP;
+  Mat       Amat, Pmat;
   cgP = (KSP_CG *) itP->MethodPrivate;
 
   eigs    = itP->calc_eigs;
@@ -59,9 +60,10 @@ int  KSPSolve_CG(KSP itP,int *its)
   P       = itP->work[2];
 
   if (eigs) {e = cgP->e; d = cgP->d; e[0] = 0.0; b = 0.0; }
+  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
 
   if (!itP->guess_zero) {
-    MatMult(PCGetMat(itP->B),X,R);              /*   r <- b - Ax      */
+    MatMult(Amat,X,R);              /*   r <- b - Ax      */
     ierr = VecAYPX(&mone,B,R); CHKERR(ierr);
   }
   else { 
@@ -94,10 +96,10 @@ int  KSPSolve_CG(KSP itP,int *its)
 #endif
            e[i] = sqrt(b)/a;  
          }
-         ierr = VecAYPX(&b,Z,P); CHKERR(ierr)    /*     p <- z + b* p   */
+         ierr = VecAYPX(&b,Z,P); CHKERR(ierr) /*     p <- z + b* p   */
      }
      betaold = beta;
-     MatMult(PCGetMat(itP->B),P,Z);              /*     z <- Kp         */
+     MatMult(Amat,P,Z);                        /*     z <- Kp         */
      VecDot(P,Z,&dpi);
      a = beta/dpi;                             /*     a = beta/p'z    */
      if (eigs) {
@@ -106,11 +108,11 @@ int  KSPSolve_CG(KSP itP,int *its)
 #endif
        d[i] = sqrt(b)*e[i] + 1.0/a;
      }
-     VecAXPY(&a,P,X);                           /*     x <- x + ap     */
-     ma = -a; VecAXPY(&ma,Z,R);                 /*     r <- r - az     */
+     VecAXPY(&a,P,X);                          /*     x <- x + ap     */
+     ma = -a; VecAXPY(&ma,Z,R);                /*     r <- r - az     */
      if (pres) {
-       MatMult(PCGetMat(itP->B),R,Z);          /*     z <- Br         */
-       VecNorm(Z,&dp);                        /*    dp <- z'*z       */
+       MatMult(Amat,R,Z);                      /*     z <- Br         */
+       VecNorm(Z,&dp);                         /*    dp <- z'*z       */
      }
      else {
        VecNorm(R,&dp);                         /*    dp <- r'*r       */       
@@ -118,7 +120,7 @@ int  KSPSolve_CG(KSP itP,int *its)
      if (history && hist_len > i + 1) history[i+1] = dp;
      MONITOR(itP,dp,i+1);
      if (CONVERGED(itP,dp,i+1)) break;
-     if (!pres) PCApply(itP->B,R,Z);              /*     z <- Br         */
+     if (!pres) PCApply(itP->B,R,Z);           /*     z <- Br         */
   }
   if (i == maxit) i--;
   if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.10 1995/03/21 23:18:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.11 1995/03/30 21:17:22 bsmith Exp curfman $";
 #endif
 
 /*
@@ -127,11 +127,14 @@ int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
  @*/
 int KSPDefaultBuildResidual(KSP itP,Vec t,Vec v,Vec *V)
 {
-  int    ierr;
+  int    ierr, pflag;
   Vec    T;
   Scalar mone = -1.0;
+  Mat    Amat, Pmat;
+
+  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
   ierr = KSPBuildSolution(itP,t,&T); CHKERR(ierr);
-  ierr = MatMult(PCGetMat(itP->B), t, v ); CHKERR(ierr);
+  ierr = MatMult(Amat, t, v ); CHKERR(ierr);
   ierr = VecAYPX(&mone, itP->vec_rhs, v ); CHKERR(ierr);
   *V = v; return 0;
 }

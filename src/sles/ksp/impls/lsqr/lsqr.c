@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.8 1995/03/25 01:25:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.9 1995/03/30 21:17:41 bsmith Exp curfman $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -27,12 +27,14 @@ static int KSPSetUp_LSQR(KSP itP)
 
 static int KSPSolve_LSQR(KSP itP,int *its)
 {
-int       i = 0, maxit, hist_len, cerr;
+int       i = 0, maxit, hist_len, cerr, pflag;
 Scalar    rho, rhobar, phi, phibar, theta, c, s;
 double    beta, alpha, rnorm, *history;
 Scalar    tmp, zero = 0.0;
 Vec       X,B,V,V1,U,U1,TMP,W,BINVF;
+Mat       Amat, Pmat;
 
+PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
 maxit   = itP->max_it;
 history = itP->residual_history;
 hist_len= itP->res_hist_size;
@@ -57,7 +59,7 @@ if (history) history[0] = rnorm;
 VecCopy(B,U);
 VecNorm(U,&beta);
 tmp = 1.0/beta; VecScale( &tmp, U );
-MatMultTrans(PCGetMat(itP->B),  U, V );
+MatMultTrans(Amat, U, V );
 VecNorm(V,&alpha);
 tmp = 1.0/alpha; VecScale(&tmp, V );
 
@@ -67,12 +69,12 @@ VecSet(&zero,X);
 phibar = beta;
 rhobar = alpha;
 for (i=0; i<maxit; i++) {
-    MatMult(PCGetMat(itP->B),V,U1);
+    MatMult(Amat,V,U1);
     tmp = -alpha; VecAXPY(&tmp,U,U1);
     VecNorm(U1,&beta);
     tmp = 1.0/beta; VecScale(&tmp, U1 );
 
-    MatMultTrans(PCGetMat(itP->B),U1,V1);
+    MatMultTrans(Amat,U1,V1);
     tmp = -beta; VecAXPY(&tmp,V,V1);
     VecNorm(V1,&alpha);
     tmp = 1.0 / alpha; VecScale(&tmp , V1 );

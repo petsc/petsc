@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.15 1995/03/30 21:17:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres.c,v 1.16 1995/04/12 16:55:02 curfman Exp curfman $";
 #endif
 
 /*
@@ -123,14 +123,17 @@ static int KSPSetUp_GMRES(KSP itP )
 static int GMRESResidual(  KSP itP,int restart )
 {
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->MethodPrivate);
-  Scalar        mone = -1.0;
+  Scalar    mone = -1.0;
+  Mat       Amat, Pmat;
+  int       pflag;
 
+  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
   /* compute initial residual: f - M*x */
   /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
   if (itP->right_pre) {
     /* we want a * binv * b * x, or just a * x for the first step */
     /* a*x into temp */
-    MatMult(PCGetMat(itP->B), VEC_SOLN, VEC_TEMP );
+    MatMult(Amat, VEC_SOLN, VEC_TEMP );
   }
   else {
     /* else we do binv * a * x */

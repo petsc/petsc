@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.8 1995/03/25 01:25:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.9 1995/03/30 21:17:27 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -23,11 +23,12 @@ static int KSPSetUp_CR(KSP itP)
 
 static int  KSPSolve_CR(KSP itP,int *its)
 {
-  int       i = 0,maxit,pres, hist_len, cerr;
+  int       i = 0, pflag,maxit,pres, hist_len, cerr;
   double    *history, dp;
   Scalar    lambda, alpha0, alpha1; 
   Scalar    btop, bbot, bbotold, tmp, zero = 0.0, mone = -1.0;
   Vec       X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T, Tmp;
+  Mat       Amat, Pmat;
 
   pres    = itP->use_pres;
   maxit   = itP->max_it;
@@ -45,33 +46,34 @@ static int  KSPSolve_CR(KSP itP,int *its)
   Sm1     = itP->work[7];
   S       = itP->work[8];
 
+  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);  
   bbotold = 1.0; /* a hack */
   if (!itP->guess_zero) {
-    MatMult(PCGetMat(itP->B),X,R);                 /*   r <- b - Ax      */
+    MatMult(Amat,X,R);                        /*   r <- b - Ax      */
     VecAYPX(&mone,B,R);
   }
   else { 
-    VecCopy(B,R);                              /*     r <- b (x is 0)*/
+    VecCopy(B,R);                             /*    r <- b (x is 0)  */
   }
-  VecSet(&zero,Pm1);                           /*    pm1 <- 0   */
-  VecSet(&zero,Sm1);                           /*    sm1 <- 0   */
-  VecSet(&zero,Qm1);                           /*    Qm1 <- 0   */
-  PCApply(itP->B,R,P);                          /*     p <- Br        */
+  VecSet(&zero,Pm1);                          /*    pm1 <- 0         */
+  VecSet(&zero,Sm1);                          /*    sm1 <- 0         */
+  VecSet(&zero,Qm1);                          /*    Qm1 <- 0         */
+  PCApply(itP->B,R,P);                        /*     p <- Br         */
   if (pres) {
-      VecNorm(P,&dp);                          /*    dp <- z'*z       */
+      VecNorm(P,&dp);                         /*    dp <- z'*z       */
       }
   else {
-      VecNorm(R,&dp);                          /*    dp <- r'*r       */       
+      VecNorm(R,&dp);                         /*    dp <- r'*r       */       
       }
   if (CONVERGED(itP,dp,0)) {*its = 0; return 0;}
   MONITOR(itP,dp,0);
   if (history) history[0] = dp;
-  MatMult(PCGetMat(itP->B),P,Q);                   /*    q <- A p      */
+  MatMult(Amat,P,Q);                          /*    q <- A p         */
 
   for ( i=0; i<maxit; i++) {
-     PCApply(itP->B,Q,S);                       /*     s <- Bq        */
+     PCApply(itP->B,Q,S);                      /*     s <- Bq        */
      VecDot(R,S,&btop);                        /*                    */
-     VecDot(Q,S,&bbot);                        /*     lambda =     */
+     VecDot(Q,S,&bbot);                        /*     lambda =       */
      lambda = btop/bbot;
      VecAXPY(&lambda,P,X);                     /*     x <- x + lambda p     */
      tmp = -lambda; VecAXPY(&tmp,Q,R);         /*     r <- r - lambda q     */
@@ -79,10 +81,10 @@ static int  KSPSolve_CR(KSP itP,int *its)
      if (history && hist_len > i + 1) history[i+1] = dp;
      MONITOR(itP,dp,i+1);
      if (CONVERGED(itP,dp,i+1)) break;
-     MatMult(PCGetMat(itP->B),S,T);                   /* T <-   As */
-     VecDot(T,S,&btop);                          /*                    */
+     MatMult(Amat,S,T);                        /* T <-   As           */
+     VecDot(T,S,&btop);
      alpha0 = btop/bbot;
-     VecDot(T,Sm1,&btop);                          /*                    */
+     VecDot(T,Sm1,&btop);                    
      alpha1 = btop/bbotold; 
 
      tmp = -alpha0; VecWAXPY(&tmp,P,S,Pp1);

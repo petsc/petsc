@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.10 1995/03/25 01:25:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.11 1995/03/30 21:17:40 bsmith Exp curfman $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -46,13 +46,15 @@ int KSPRichardsonSetScale(KSP itP,double scale)
 
 int  KSPSolve_Richardson(KSP itP,int *its)
 {
-  int                i = 0,maxit,pres, brokeout = 0, hist_len, cerr;
+  int                i = 0,maxit,pres, brokeout = 0, hist_len, cerr, pflag;
   double             rnorm,*history;
   Scalar             scale, mone = -1.0;
   Vec                x,b,r,z;
-  KSP_Richardson  *richardsonP;
+  Mat                Amat, Pmat;
+  KSP_Richardson     *richardsonP;
   richardsonP = (KSP_Richardson *) itP->MethodPrivate;
 
+  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
   x       = itP->vec_sol;
   b       = itP->vec_rhs;
   r       = itP->work[0];
@@ -71,7 +73,7 @@ int  KSPSolve_Richardson(KSP itP,int *its)
   pres    = itP->use_pres;
 
   if (!itP->guess_zero) {                       /*   r <- b - A x     */
-    MatMult(PCGetMat(itP->B),x,r);
+    MatMult(Amat,x,r);
     VecAYPX(&mone,b,r);
   }
   else VecCopy(b,r);
@@ -87,7 +89,7 @@ int  KSPSolve_Richardson(KSP itP,int *its)
      }
    
      VecAXPY(&scale,z,x);                     /*   x  <- x + scale z */
-     MatMult(PCGetMat(itP->B),x,r);           /*   r  <- b - Ax      */
+     MatMult(Amat,x,r);           /*   r  <- b - Ax      */
      VecAYPX(&mone,b,r);
   }
   if (itP->calc_res && !brokeout) {
