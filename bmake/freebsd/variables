@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.7 1999/08/04 20:25:44 balay Exp balay $ 
+# $Id: base_variables,v 1.8 1999/08/19 18:16:22 balay Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -16,6 +16,7 @@ C_FLINKER_SLFLAG   = -Wl,-R,
 C_CLINKER	   = gcc
 C_FLINKER	   = f77
 C_CCV		   = gcc --version
+C_FCV		   = unknown
 C_SYS_LIB	   = -lf2c -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g -Wall -Wshadow  -fomit-frame-pointer  
