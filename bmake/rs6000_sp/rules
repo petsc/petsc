@@ -1,11 +1,11 @@
-# $Id: base,v 1.18 1998/05/26 16:56:29 bsmith Exp balay $ 
+# $Id: base,v 1.19 1998/06/15 15:22:45 balay Exp bsmith $ 
 
 #
 #   If you do not have the XlC compiler then use the xlc compiler below
 # we default to xlC since it generates faster code.
 #
 PARCH    = rs6000
-CC       = xlC
+CC       = cc_r
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
@@ -30,7 +30,7 @@ SHELL    = /bin/sh
 #   The IBM linker only allows memory usage up to 256 meg by default,
 # the flag -bmaxdata:0x70000000 is used to allow larger memory usage.
 #
-CLINKER  = mpcc ${COPTFLAGS} -bmaxdata:0x70000000
+CLINKER  = mpcc_r ${COPTFLAGS} -bmaxdata:0x70000000
 #
 # Fortran programs MUST be linked statically (no shared libraries) for them
 # to run on systems that haven't licensed a Fortran runtime or compiler.
