@@ -81,6 +81,11 @@ PETScView info:
 
 
 ------------Accounts (around the world and around the block) -----
+Power3:
+        Machine: temp4.msi.umn.edu
+        userid:  petsc
+        passwd:  petsc64
+
 UofC: 
    IRIX machines :europium.uchicago.edu,dysprosium,terbium,gadolinium,lanthanum,neodymium
     Userid: bsmith
