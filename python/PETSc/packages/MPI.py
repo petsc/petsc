@@ -361,11 +361,27 @@ class Configure(config.base.Configure):
         self.logPrint("Running configure on MPICH; this may take several minutes\n", debugSection='screen')
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
+        if self.arch.hostOsBase.startswith('cygwin'):
+          raise RuntimeError('Error running configure on MPICH. \n \
+  On Microsoft Windows systems, please obtain and install the binary distribution from \n \
+    http://www.mcs.anl.gov/mpi/mpich/mpich-nt \n \
+  then rerun PETSc\'s configure.  \n \
+  If you choose to install MPICH to a location other than the default, use \n \
+    --with-mpi-dir=<directory> \n \
+  to specify the location of the installation when you rerun configure.')
         raise RuntimeError('Error running configure on MPICH: '+str(e))
       try:
         self.logPrint("Running make on MPICH; this may take several minutes\n", debugSection='screen')
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
+        if self.arch.hostOsBase.startswith('cygwin'):
+          raise RuntimeError('Error running make; make install on MPICH. \n \
+  On Microsoft Windows systems, please obtain and install the binary distribution from \n \
+    http://www.mcs.anl.gov/mpi/mpich/mpich-nt \n \
+  then rerun PETSc\'s configure.  \n \
+  If you choose to install MPICH to a location other than the default, use \n \
+    --with-mpi-dir=<directory> \n \
+  to specify the location of the installation when you rerun configure.')
         raise RuntimeError('Error running make; make install on MPICH: '+str(e))
 
       # put the list of machines in 

@@ -6,10 +6,11 @@ a real generalized symmetric-definite eigenproblem \n\
 Input parameters include\n\
   -f0 <input_file> : first file to load (small system)\n\
   -fA <input_file> -fB <input_file>: second files to load (larger system) \n\
-e.g. exeig -f0 $D/small -fA ../dftb_bin/diamond_xxs_A -fB ../dftb_bin/diamond_xxs_B \n\n";
+e.g. ex99 -f0 $D/small -fA diamond_xxs_A -fB diamond_xxs_B \n\n";
 
 #include "petscmat.h"
 #include "petscblaslapack.h"
+#include "src/mat/impls/sbaij/seq/sbaij.h"
 
 extern PetscErrorCode CkEigenSolutions(PetscInt*,Mat*,PetscReal*,Vec*,PetscInt*,PetscInt*,PetscReal*);
 
@@ -17,20 +18,25 @@ extern PetscErrorCode CkEigenSolutions(PetscInt*,Mat*,PetscReal*,Vec*,PetscInt*,
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
-  Mat            A,B,A_aij,B_aij,mats[2];    
+  Mat            A,B,A_dense,B_dense,mats[2],A_sp;    
   Vec            *evecs;
   PetscViewer    fd;                /* viewer */
   char           file[3][PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscTruth     flg,flgA=PETSC_FALSE,flgB=PETSC_FALSE,TestSYGVX=PETSC_TRUE;
+  PetscTruth     flg,flgA=PETSC_FALSE,flgB=PETSC_FALSE,TestSYGVX=PETSC_TRUE; 
   PetscErrorCode ierr;
   PetscTruth     preload=PETSC_TRUE,isSymmetric;
   PetscScalar    sigma,one=1.0,*arrayA,*arrayB,*evecs_array,*work,*evals;
   PetscMPIInt    size;
-  PetscInt       m,n,i,nevs,il,iu,stages[2];
+  PetscInt       m,n,i,j,nevs,il,iu,stages[2];
   PetscReal      vl,vu,abstol=1.e-8; 
   PetscBLASInt   *iwork,*ifail,lone=1,lwork,lierr,bn;
   PetscInt       ievbd_loc[2],offset=0,cklvl=2;
   PetscReal      tols[2];
+  Mat_SeqSBAIJ   *sbaij;
+  PetscScalar    *aa;
+  PetscInt       *ai,*aj;
+  PetscInt       nzeros[2],nz;
+  PetscReal      ratio;
   
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -63,6 +69,7 @@ PetscInt main(PetscInt argc,char **args)
       ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
     } else { /* create B=I */
       ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&B);CHKERRQ(ierr);
+      ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
       ierr = MatSetFromOptions(B);CHKERRQ(ierr);
       for (i=0; i<m; i++) {
         ierr = MatSetValues(B,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
@@ -93,31 +100,63 @@ PetscInt main(PetscInt argc,char **args)
       }
     }
 
-    /* Save A and B as seqaij matrices, because LAPACK would overwrite A and B */
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&A_aij);CHKERRQ(ierr);
-    ierr = MatDuplicate(B,MAT_COPY_VALUES,&B_aij);CHKERRQ(ierr);
+    /* View small entries of A */
+    ierr = PetscOptionsHasName(PETSC_NULL, "-Asp_view", &flg);CHKERRQ(ierr);
+    if (flg){
+      ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m,n,&A_sp);CHKERRQ(ierr);
+      ierr = MatSetType(A_sp,MATSEQSBAIJ);CHKERRQ(ierr);
+
+      tols[0] = 1.e-6, tols[1] = 1.e-9;
+      sbaij = (Mat_SeqSBAIJ*)A->data;
+      ai    = sbaij->i; 
+      aj    = sbaij->j;
+      aa    = sbaij->a;
+      nzeros[0] = nzeros[1] = 0; 
+      for (i=0; i<m; i++) {
+        nz = ai[i+1] - ai[i];
+        for (j=0; j<nz; j++){
+          if (PetscAbsScalar(*aa)<tols[0]) {
+            ierr = MatSetValues(A_sp,1,&i,1,aj,aa,INSERT_VALUES);CHKERRQ(ierr);
+            nzeros[0]++;
+          }
+          if (PetscAbsScalar(*aa)<tols[1]) nzeros[1]++;
+          aa++; aj++;
+        }
+      }
+      ierr = MatAssemblyBegin(A_sp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(A_sp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
+
+      ierr = MatDestroy(A_sp);CHKERRQ(ierr);
+
+      ratio = (PetscReal)nzeros[0]/sbaij->nz;
+      ierr = PetscPrintf(PETSC_COMM_SELF," %d matrix entries < %e, ratio %g of %d nonzeros\n",nzeros[0],tols[0],ratio,sbaij->nz);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF," %d matrix entries < %e\n",nzeros[1],tols[1]);CHKERRQ(ierr);
+    }
 
     /* Convert aij matrix to MatSeqDense for LAPACK */
     ierr = PetscTypeCompare((PetscObject)A,MATSEQDENSE,&flg); CHKERRQ(ierr);
-    if (!flg) {ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);}
+    if (!flg) {
+      ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A_dense);CHKERRQ(ierr); 
+    }
     ierr = PetscTypeCompare((PetscObject)B,MATSEQDENSE,&flg); CHKERRQ(ierr);
-    if (!flg) {ierr = MatConvert(B,MATSEQDENSE,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);}
- 
+    if (!flg) {ierr = MatConvert(B,MATSEQDENSE,MAT_INITIAL_MATRIX,&B_dense);CHKERRQ(ierr);}
+
     /* Solve eigenvalue problem: A*x = lambda*B*x */
     /*============================================*/
     lwork = 8*n;
     bn    = (PetscBLASInt)n;
     ierr = PetscMalloc(n*sizeof(PetscScalar),&evals);CHKERRQ(ierr);
     ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
-    ierr = MatGetArray(A,&arrayA);CHKERRQ(ierr);
-    ierr = MatGetArray(B,&arrayB);CHKERRQ(ierr);
+    ierr = MatGetArray(A_dense,&arrayA);CHKERRQ(ierr);
+    ierr = MatGetArray(B_dense,&arrayB);CHKERRQ(ierr);
 
     if (!TestSYGVX){ /* test sygv()  */
       evecs_array = arrayA;
       LAPACKsygv_(&lone,"V","U",&bn,arrayA,&bn,arrayB,&bn,evals,work,&lwork,&lierr); 
       nevs = m;
+      il=1; 
     } else { /* test sygvx()  */
-      il=1; iu=(PetscBLASInt)(.6*m); /* Fortran style index */
+      il = 1; iu=(PetscBLASInt)(.6*m); /* request 1 to 60%m evalues */
       ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
       ierr = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
       ifail = iwork + 5*n;
@@ -130,6 +169,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatRestoreArray(A,&arrayA);CHKERRQ(ierr);
     ierr = MatRestoreArray(B,&arrayB);CHKERRQ(ierr);
 
+    if (nevs <= 0 ) SETERRQ1(PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
     /* View evals */
     ierr = PetscOptionsHasName(PETSC_NULL, "-eig_view", &flg);CHKERRQ(ierr);
     if (flg){
@@ -139,7 +179,7 @@ PetscInt main(PetscInt argc,char **args)
 
     /* Check residuals and orthogonality */
     if(PreLoadIt){
-      mats[0] = A_aij; mats[1] = B_aij;
+      mats[0] = A; mats[1] = B;
       one = (PetscInt)one;
       ierr = PetscMalloc((nevs+1)*sizeof(Vec),&evecs);CHKERRQ(ierr);
       for (i=0; i<nevs; i++){
@@ -164,10 +204,10 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscFree(evals);CHKERRQ(ierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
 
+    ierr = MatDestroy(A_dense);CHKERRQ(ierr); 
+    ierr = MatDestroy(B_dense);CHKERRQ(ierr); 
     ierr = MatDestroy(B);CHKERRQ(ierr);
     ierr = MatDestroy(A);CHKERRQ(ierr);
-    ierr = MatDestroy(A_aij);CHKERRQ(ierr); 
-    ierr = MatDestroy(B_aij);CHKERRQ(ierr); 
 
   PreLoadEnd();
   ierr = PetscFinalize();CHKERRQ(ierr);

@@ -649,7 +649,7 @@ PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,Mat *newmat)
 { 
   struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata *)mlmat->data;
   PetscErrorCode  ierr;
-  PetscInt        m=mlmat->outvec_leng,n=mlmat->invec_leng,nnz[m],nz_max;
+  PetscInt        m=mlmat->outvec_leng,n=mlmat->invec_leng,*nnz,nz_max;
   PetscInt        *ml_cols=matdata->columns,*aj,i,j,k; 
   PetscScalar     *ml_vals=matdata->values,*aa;
   
@@ -663,7 +663,8 @@ PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,Mat *newmat)
   /* ML Amat is in MSR format. Copy its data into SeqAIJ matrix */
   ierr = MatCreate(PETSC_COMM_SELF,m,n,PETSC_DECIDE,PETSC_DECIDE,newmat);CHKERRQ(ierr);
   ierr = MatSetType(*newmat,MATSEQAIJ);CHKERRQ(ierr);
- 
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nnz);
+
   nz_max = 0;
   for (i=0; i<m; i++) {
     nnz[i] = ml_cols[i+1] - ml_cols[i] + 1;
@@ -691,6 +692,7 @@ PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,Mat *newmat)
   ierr = MatAssemblyBegin(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree(aj);CHKERRQ(ierr);
+  ierr = PetscFree(nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -712,8 +714,8 @@ PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,Mat *newmat)
     MLcomm = mlmat->comm;
     ierr = PetscNew(Mat_MLShell,&shellctx);CHKERRQ(ierr);
     ierr = MatCreateShell(MLcomm->USR_comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,shellctx,newmat);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(*newmat,MATOP_MULT,(void *)MatMult_ML);CHKERRQ(ierr); 
-    ierr = MatShellSetOperation(*newmat,MATOP_MULT_ADD,(void *)MatMultAdd_ML);CHKERRQ(ierr); 
+    ierr = MatShellSetOperation(*newmat,MATOP_MULT,(void(*)(void))MatMult_ML);CHKERRQ(ierr); 
+    ierr = MatShellSetOperation(*newmat,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_ML);CHKERRQ(ierr); 
     shellctx->A         = *newmat;
     shellctx->mlmat     = mlmat;
     ierr = VecCreate(PETSC_COMM_WORLD,&shellctx->y);CHKERRQ(ierr);
@@ -733,7 +735,7 @@ PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
   PetscScalar     *ml_vals=matdata->values,*aa;
   PetscErrorCode  ierr;
   PetscInt        i,j,k,*gordering;
-  PetscInt        m=mlmat->outvec_leng,n,nnzA[m],nnzB[m],nnz[m],nz_max,row; 
+  PetscInt        m=mlmat->outvec_leng,n,*nnzA,*nnzB,*nnz,nz_max,row; 
   Mat             A;
 
   PetscFunctionBegin;
@@ -743,6 +745,8 @@ PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
 
   ierr = MatCreate(mlmat->comm->USR_comm,m,n,PETSC_DECIDE,PETSC_DECIDE,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = PetscMalloc3(m,PetscInt,&nnzA,m,PetscInt,&nnzB,m,PetscInt,&nnz);CHKERRQ(ierr);
+  
   nz_max = 0;
   for (i=0; i<m; i++){
     nnz[i] = ml_cols[i+1] - ml_cols[i] + 1;
@@ -775,6 +779,7 @@ PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *newmat = A;
 
+  ierr = PetscFree3(nnzA,nnzB,nnz);
   ierr = PetscFree(aj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

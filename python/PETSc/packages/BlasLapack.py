@@ -142,7 +142,7 @@ class Configure(config.base.Configure):
       if 'FC' in self.framework.argDB:
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
-      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libblas.a'), os.path.join(libdir,'liblapack.a'), 0)
+      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libf2cblas.a'), os.path.join(libdir,'libf2clapack.a'), 0)
       raise RuntimeError('Could not use downloaded c-blas-lapack?')
     if self.framework.argDB['download-f-blas-lapack'] == 1:
       if not 'FC' in self.framework.argDB:
@@ -235,7 +235,7 @@ class Configure(config.base.Configure):
       if 'FC' in self.framework.argDB:
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
-      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libblas.a'), os.path.join(libdir,'liblapack.a'), 0)
+      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libf2cblas.a'), os.path.join(libdir,'libf2clapack.a'), 0)
     if self.framework.argDB['download-f-blas-lapack'] == 2:
       if not 'FC' in self.framework.argDB:
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
@@ -272,15 +272,18 @@ class Configure(config.base.Configure):
       self.framework.log.write('Found '+l+'blaslapack, do not need to download\n')
     if not os.path.isdir(libdir):
       os.mkdir(libdir)
-    # C Blas/Lapack does not compile at this stage (kind of a BUG) but PETSc make will compile it
-    if f2c == 'f2c':
-      self.functionalBlasLapack.append((f2c+'blaslapack', os.path.join(libdir,'lib'+f2c+'blas.a'), os.path.join(libdir,'lib'+f2c+'lapack.a')))
-      return libdir
     blasDir = os.path.join(packages,f2c+'blaslapack')
     g = open(os.path.join(blasDir,'tmpmakefile'),'w')
     f = open(os.path.join(blasDir,'makefile'),'r')    
     line = f.readline()
     while line:
+      if line.startswith('CC  '):
+        cc = self.framework.argDB['CC']
+        line = 'CC = '+cc+'\n'
+      if line.startswith('COPTFLAGS '):
+        self.setcompilers.pushLanguage('C')
+        line = 'COPTFLAGS  = '+self.setcompilers.getCompilerFlags()+'\n'
+        self.setcompilers.popLanguage()
       if line.startswith('FC  '):
         fc = self.framework.argDB['FC']
         if fc.find('f90') >= 0:
@@ -293,7 +296,7 @@ class Configure(config.base.Configure):
       if line.startswith('FOPTFLAGS '):
         self.setcompilers.pushLanguage('FC')
         line = 'FOPTFLAGS  = '+self.setcompilers.getCompilerFlags()+'\n'
-        self.setcompilers.popLanguage()
+        self.setcompilers.popLanguage()       
       if line.startswith('AR  '):
         line = 'AR      = '+self.setcompilers.AR+'\n'
       if line.startswith('AR_FLAGS  '):
@@ -315,14 +318,14 @@ class Configure(config.base.Configure):
       self.framework.log.write('Do not need to compile '+l+'blaslapack, already compiled\n')
       return libdir
     try:
-      self.logPrint("Running make on FBLASLAPACK; this may take several minutes\n", debugSection='screen')
+      self.logPrint("Running make on "+l.upper()+"BLASLAPACK; this may take several minutes\n", debugSection='screen')
       output  = config.base.Configure.executeShellCommand('cd '+blasDir+';make -f tmpmakefile', timeout=800, log = self.framework.log)[0]
     except RuntimeError, e:
-      raise RuntimeError('Error running make on fblaslapack: '+str(e))
+      raise RuntimeError('Error running make on '+l+'blaslapack: '+str(e))
     try:
-      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f libfblas.'+self.libraries.suffix+' libflapack.'+self.libraries.suffix+' '+self.arch.arch, timeout=30, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f lib'+f2c+'blas.'+self.libraries.suffix+' lib'+f2c+'lapack.'+self.libraries.suffix+' '+self.arch.arch, timeout=30, log = self.framework.log)[0]
     except RuntimeError, e:
-      raise RuntimeError('Error moving fblaslapack libraries: '+str(e))
+      raise RuntimeError('Error moving '+l+'blaslapack libraries: '+str(e))
     try:
       output  = config.base.Configure.executeShellCommand('cd '+blasDir+';cp -f tmpmakefile '+self.arch.arch, timeout=30, log = self.framework.log)[0]
     except RuntimeError, e:

@@ -5,8 +5,6 @@
 
 */
 #include "src/mat/impls/aij/mpi/mpiaij.h"
-
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #include "src/ksp/pc/impls/tfs/tfs.h"
 
 typedef struct {
@@ -276,18 +274,4 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatFactorInfo *inf
   }
   PetscFunctionReturn(0);
 }
-
-#else
-
-#undef __FUNCT__  
-#define __FUNCT__ "dummy83"
-PetscErrorCode dummy83(int a)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#endif
-
-
 

@@ -162,7 +162,8 @@ class Configure(config.base.Configure):
     self.addMakeMacro('SL_LINKER',self.setCompilers.getLinker())
     self.addMakeMacro('SL_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
-    # '' for Unix, .exe for Windows
+    # One of 'a', 'so', 'lib', 'dll', 'dylib' (perhaps others also?) depending on the library generator and architecture
+    # Note: . is not included in this macro, consistent with AR_LIB_SUFFIX
     self.addMakeMacro('SL_LINKER_SUFFIX',self.setCompilers.sharedLibraryExt)
     self.addMakeMacro('SL_LINKER_LIBS',self.framework.argDB['LIBS']+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
 #-----------------------------------------------------------------------------------------------------

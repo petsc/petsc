@@ -5,7 +5,6 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
 /*  Modified from ~src/ksp/examples/tests/ex19.c. Used for testing ML 3.0 interface.
-    (set PETSC_ARCH=linux-gnu-ml!)
 
     This problem is modeled by
     the partial differential equation
@@ -20,7 +19,7 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
     is used to discretize the boundary value problem to obtain a nonlinear 
     system of equations.
 
-    Usage: ex19 -ksp_smonitor 
+    Usage: ex26 -ksp_smonitor -pc_type ml
            -mg_coarse_ksp_max_it 10 -mg_levels_3_ksp_max_it 10 -mg_levels_2_ksp_max_it 10 
            -mg_levels_1_ksp_max_it 10 -mg_fine_ksp_max_it 10
 */
@@ -53,7 +52,7 @@ int main(int argc,char **argv)
   Mat            A; 
   GridCtx        fine_ctx; 
   KSP            ksp; 
-  PetscTruth     flg,useML=PETSC_FALSE;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   /* set up discretization matrix for fine grid */
@@ -69,8 +68,6 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(0,"-use_pcml",&useML);CHKERRQ(ierr);
-
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,fine_ctx.mx,
                     fine_ctx.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&fine_ctx.da);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
@@ -83,12 +80,6 @@ int main(int argc,char **argv)
 
   /* create linear solver */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  if (useML){
-    ierr = PCSetType(pc,PCML);CHKERRQ(ierr); /* calls PCCreate_ML() */
-  } else {
-    ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
-  }
 
   /* set values for rhs vector */
   ierr = VecSet(&one,fine_ctx.b);CHKERRQ(ierr);
@@ -100,7 +91,7 @@ int main(int argc,char **argv)
   }
 
   /* set options, then solve system */
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr); /* calls PCSetFromOptions_ML */
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr); /* calls PCSetFromOptions_ML if 'pc_type=ml' */
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
   ierr = KSPSolve(ksp,fine_ctx.b,fine_ctx.x);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);

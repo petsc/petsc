@@ -3,10 +3,6 @@ import os
 import re
 
 class compilerOptions(config.base.Configure):
-  def __init__(self, framework):
-    config.base.Configure.__init__(self, framework)
-    return
-
   def getCFlags(self, compiler, bopt):
     import config.setCompilers
 
@@ -285,3 +281,25 @@ class compilerOptions(config.base.Configure):
     except RuntimeError, e:
       self.framework.log.write('Could not determine compiler version: '+str(e))
     return version
+
+class compilerOptionsFromArgDB(compilerOptions):
+  def getCFlags(self, compiler, bopt):
+    if 'COPTFLAGS' in self.framework.argDB:
+      if bopt == '':
+        return self.framework.argDB['COPTFLAGS'].split()
+      return []
+    return compilerOptions.getCFlags(self, compiler, bopt)
+
+  def getCxxFlags(self, compiler, bopt):
+    if 'CXXOPTFLAGS' in self.framework.argDB:
+      if bopt == '':
+        return self.framework.argDB['CXXOPTFLAGS'].split()
+      return []
+    return compilerOptions.getCxxFlags(self, compiler, bopt)
+
+  def getFortranFlags(self, compiler, bopt):
+    if 'FOPTFLAGS' in self.framework.argDB:
+      if bopt == '':
+        return self.framework.argDB['FOPTFLAGS'].split()
+      return []
+    return compilerOptions.getFortranFlags(self, compiler, bopt)
