@@ -6,6 +6,7 @@ Additional Capabilities that PETSc Needs:
 
 -----------------------------------------------------------------------
 Meta priorities: 
+  Add Matt's new routines for SNESGetLineSearchParams()/Set (petsc-maint #2602)
 
   Add -ams_publish_notify to attempt to attach to server when starting up
 
