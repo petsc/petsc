@@ -5,16 +5,11 @@ import sys
 import nargs
 
 class Installer(install.urlMapping.UrlMapping):
-  def __init__(self, clArgs = None, argDB = None, stamp = None, debugWriter = None):
+  def __init__(self, clArgs = None, argDB = None, stamp = None):
     import install.build
     import install.retrieval
 
     install.urlMapping.UrlMapping.__init__(self, clArgs, argDB, stamp)
-
-    if debugWriter:
-      self.argDB.setType('debugWriter', nargs.Arg(None, '', 'ugly hack'), forceLocal = 1)
-      self.argDB['debugWriter'] = debugWriter
-      
     self.retriever = install.retrieval.Retriever(stamp)
     self.builder   = install.build.Builder(stamp)
     self.force     = self.argDB['forceInstall']

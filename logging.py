@@ -7,7 +7,8 @@ class defaultWriter:
     import sys
     sys.stdout.write(mess)
     
-    
+dW = defaultWriter()
+
 class Logger(object):
   debugLevel    = None
   debugSections = None
@@ -22,8 +23,6 @@ class Logger(object):
     self.debugSections     = Logger.debugSections
     self.debugIndent       = Logger.debugIndent
     self.log               = log
-    if argDB.has_key('debugWriter'): self.writer = argDB['debugWriter']
-    else:                            self.writer = defaultWriter()
     return
 
   def setWriter(self,writer):
@@ -54,6 +53,7 @@ class Logger(object):
     raise RuntimeError('Invalid fileset '+str(set))
 
   def debugPrint(self, msg, level = 1, section = None):
+    global dW
     import traceback
     import sys
 
@@ -66,8 +66,7 @@ class Logger(object):
       self.log.write('\n')
     if self.debugLevel >= level:
       if (not section) or (not self.debugSections) or (section in self.debugSections):
-        if hasattr(self,'writer'):
           for i in range(indentLevel):
-            self.writer.write(self.debugIndent)
-          self.writer.write(msg)
-          self.writer.write('\n')
+            dW.write(self.debugIndent)
+          dW.write(msg)
+          dW.write('\n')

@@ -149,7 +149,40 @@ class BootstrapInstall (object):
         os.remove(configureLogFile)
     return 1
 
+  def runInstaller(self,args):
+    import install.installer
+    sys.stdout.write('Installing the BuildSystem, Runtime and Compiler (this will take a while)\n')
+    sys.stdout.flush()
+    install.installer.runinstaller(args)
+
 # ---------------------------------------------------------------------------------------------------------------------
+class ScrollingWindow:
+  def __init__(self,stdscr,y,x,h,w):
+    ''' Create subwindow with box around it'''
+    curses.textpad.rectangle(stdscr,y,x,y+h,x+w)
+    self.stdscr = stdscr
+    self.stdscr.refresh()
+    self.xmin = x+1
+    self.ymin = y+1
+    self.xmax = x+w-1
+    self.ymax = y+h-1
+    self.write('hellow')
+
+  def write(self,mess):
+    self.stdscr.addstr(self.ymin,self.xmin,mess)
+    self.stdscr.refresh()
+       
+class cursesWriter:
+  def __init__(self,stdscr,y,x,h,w):
+    global SW
+    SW = ScrollingWindow(stdscr,y,x,h,w)
+
+  def write(self,mess):
+    global SW
+    SW.write(mess)
+
+#-----------------------------------------------------------------------------------------------------------------------
+    
 class CursesInstall (BootstrapInstall):
   def __init__(self):
     self.bkPath      = None
@@ -454,18 +487,20 @@ class CursesInstall (BootstrapInstall):
     pipe = os.popen(self.browser+' '+url)
     return 0
 
+  def cursesRunInstaller(self,stdscr,args):
+    import install.installer
+    global dW
+    dW = cursesWriter(stdscr,3,3,21,83)
+    install.installer.runinstaller(args)
 
-class defaultWriter:
-  def __init__(self):
-    pass
 
-  def write(self,mess):
-    import sys
-    sys.stdout.write(mess)
+  def runInstaller(self,args):
+    '''Display nice message while running installer'''
+    return curses.wrapper(self.cursesRunInstaller,args)
 
+#-------------------------------------------------------------------------------------
 if __name__ ==  '__main__':
   try:
-    args = ['-debugSections=[install]','-debugLevel=2','-installedprojects=[]']
 
     if len(sys.argv) > 1 and sys.argv[1] == '-batch':
       installer = BootstrapInstall()
@@ -480,12 +515,12 @@ if __name__ ==  '__main__':
     installer.cleanup()
     if not installer.installBuildSystem():
       sys.exit('Could not install BuildSystem')
-    # Handoff to installer
-    sys.stdout.write('Installing the BuildSystem, Runtime and Compiler (this will take a while)\n')
-    sys.stdout.flush()
+
     sys.path.insert(0, os.path.join(installer.installPath, 'sidl','BuildSystem'))
-    import install.installer
-    install.installer.runinstaller(args,debugWriter = defaultWriter() )
+
+    args = ['-debugSections=[install,compile,bk]','-debugLevel=4','-installedprojects=[]']
+    installer.runInstaller(args)
+
   except Exception, e:
     import traceback
 
