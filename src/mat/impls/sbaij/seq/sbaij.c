@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.35 2000/10/12 14:03:03 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.36 2000/10/12 18:19:32 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -808,7 +808,7 @@ int MatSetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode
 
       if (brow <= bcol){
         ridx = row % bs; cidx = col % bs; /*row and col index inside the block */
-        /* if ((brow==bcol && ridx<=cidx) || (brow<bcol)){ */     
+        if ((brow==bcol && ridx<=cidx) || (brow<bcol)){    
           /* element value a(k,l) */
           if (roworiented) {
             value = v[l + k*n];             
@@ -830,6 +830,12 @@ int MatSetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode
               bap  = ap +  bs2*i + bs*cidx + ridx;
               if (is == ADD_VALUES) *bap += value;  
               else                  *bap  = value; 
+              /* for diag block, add/insert its symmetric element a(cidx,ridx) */
+              if (brow == bcol && ridx < cidx){
+                bap  = ap +  bs2*i + bs*ridx + cidx;
+                if (is == ADD_VALUES) *bap += value;  
+                else                  *bap  = value; 
+              }
               goto noinsert1;
             }
           }      
@@ -889,7 +895,8 @@ int MatSetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode
       noinsert1:;
       low = i;      
       /* } */
-    } /* end of if .. if..  */
+        }
+      } /* end of if .. if..  */
     }                     /* end of loop over added columns */
     ailen[brow] = nrow; 
   }                       /* end of loop over added rows */
@@ -1247,6 +1254,7 @@ int MatRetrieveValues_SeqSBAIJ(Mat mat)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "MatCreate_SeqSBAIJ"
 int MatCreate_SeqSBAIJ(Mat B)
@@ -1302,6 +1310,7 @@ int MatCreate_SeqSBAIJ(Mat B)
                                      (void*)MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "MatSeqSBAIJSetNonzeroStructure"
@@ -1595,6 +1604,7 @@ int MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "MatLoad_SeqSBAIJ"
 int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
@@ -1745,7 +1755,7 @@ int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
   ierr = MatView_Private(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 
