@@ -1,10 +1,10 @@
-# $Id: base.g_complex,v 1.9 1997/09/17 04:31:45 bsmith Exp curfman $ 
+# $Id: base.g_complex,v 1.10 1997/10/08 15:24:11 curfman Exp curfman $ 
 
 CLINKER    = g++ $(COPTFLAGS)
 FLINKER    = g++ $(COPTFLAGS)
 CC         = g++ -DPARCH_sun4  -fPIC
 #
-# This version of PETSCFLAGS specified the use of Fortran kernels (via
+# This version of PETSCFLAGS specifies the use of Fortran kernels (via
 # -DUSE_FORTRAN_KERNELS) for several low-level computational kernels for
 # complex numbers rather than using the potentially slower C++ versions.
 #
