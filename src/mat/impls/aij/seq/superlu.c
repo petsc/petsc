@@ -1,16 +1,18 @@
-/*$Id: superlu.c,v 1.3 2001/06/21 19:43:16 bsmith Exp bsmith $*/
+/*$Id: superlu.c,v 1.4 2001/06/21 21:16:21 bsmith Exp balay $*/
 
 /* 
         Provides an interface to the SuperLU sparse solver
           Modified for SuperLU 2.0 by Matthew Knepley
 
 */
+
 #include "src/mat/impls/aij/seq/aij.h"
+
+#if defined(PETSC_HAVE_SUPERLU)
 EXTERN_C_BEGIN
 #include "dsp_defs.h"
 EXTERN_C_END
 
-#if defined(PETSC_HAVE_SUPERLU)
 
 typedef struct {
   SuperMatrix A;
