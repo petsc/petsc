@@ -104,7 +104,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
   SIGNAME[SIGILL]  = "Illegal instruction";
 #endif
 #if !defined(PETSC_MISSING_SIGINT)
-  SIGNAME[SIGINT]  = "Interrupt";
+  /*  SIGNAME[SIGINT]  = "Interrupt"; */
 #endif
 #if !defined(PETSC_MISSING_SIGKILL)
   SIGNAME[SIGKILL] = "Kill";
@@ -221,7 +221,7 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
     signal(SIGILL,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
 #if !defined(PETSC_MISSING_SIGINT)
-    signal(SIGINT, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    /* signal(SIGINT, PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
 #endif
 #if !defined(PETSC_MISSING_SIGPIPE)
     signal(SIGPIPE, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
@@ -278,7 +278,7 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
     signal(SIGILL,  0);
 #endif
 #if !defined(PETSC_MISSING_SIGINT)
-    signal(SIGINT,  0);
+    /* signal(SIGINT,  0); */
 #endif
 #if !defined(PETSC_MISSING_SIGPIPE)
     signal(SIGPIPE, 0);
@@ -356,7 +356,7 @@ int PetscPopSignalHandler(void)
     signal(SIGILL,  0);
 #endif
 #if !defined(PETSC_MISSING_SIGINT)
-    signal(SIGINT,  0);
+    /* signal(SIGINT,  0); */
 #endif
 #if !defined(PETSC_MISSING_SIGPIPE)
     signal(SIGPIPE, 0);
