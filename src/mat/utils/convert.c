@@ -1,4 +1,4 @@
-/*$Id: convert.c,v 1.70 2000/10/24 20:26:14 bsmith Exp bsmith $*/
+/*$Id: convert.c,v 1.71 2001/01/15 21:46:25 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"
 
@@ -13,13 +13,13 @@
 int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
 {
   Scalar     *vwork;
-  int        ierr,i,nz,m,n,*cwork,rstart,rend,lm,ln;
+  int        ierr,i,nz,m,n,*cwork,rstart,rend,lm;
 
   PetscFunctionBegin;
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(mat,&lm,&ln);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&lm,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = MatCreate(mat->comm,lm,ln,m,n,M);CHKERRQ(ierr);
+  ierr = MatCreate(mat->comm,lm,PETSC_DECIDE,m,n,M);CHKERRQ(ierr);
   ierr = MatSetType(*M,newtype);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
