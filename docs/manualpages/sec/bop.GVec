@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> Linear Algebra Objects on Grids - GVec: <A HREF="PETSC_DIRsrc/gvec/examples/tutorials">Examples</A></H2>
+<H2> Linear Algebra Objects on Grids - GVec: <A HREF="PETSC_DIRsrc/gvec/examples/tutorials/index.html">Examples</A></H2>
 
 The grid vector and matrix (GVec) component provides an
 interface for manipulation of discretized functions and

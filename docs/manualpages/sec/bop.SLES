@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2>Linear Solvers - SLES: <A HREF="PETSC_DIRsrc/sles/examples/tutorials">Examples</A></H2>
+<H2>Linear Solvers - SLES: <A HREF="PETSC_DIRsrc/sles/examples/tutorials/index.html">Examples</A></H2>
 
 The Scalable Linear Equations Solvers (SLES)
 component provides an easy-to-use interface to the combination of

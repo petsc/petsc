@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> Nonlinear solvers - SNES: <A HREF="PETSC_DIRsrc/snes/examples/tutorials">Examples</A></H2>
+<H2> Nonlinear solvers - SNES: <A HREF="PETSC_DIRsrc/snes/examples/tutorials/index.html">Examples</A></H2>
 
 The Scalable Nonlinear Equations Solvers (SNES) component provides an
 easy-to-use interface to Newton-based methods for solving systems of

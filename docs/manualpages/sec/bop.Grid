@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> Computational Grids - Grid: <A HREF="PETSC_DIRsrc/grid/examples/tutorials">Examples</A></H2>
+<H2> Computational Grids - Grid: <A HREF="PETSC_DIRsrc/grid/examples/tutorials/index.html">Examples</A></H2>
 
 The computational grid (Grid) component provides an
 interface for discretization of fields and construction of various operators

@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> Field Discretization - Discretization: <A HREF="PETSC_DIRsrc/grid/discretization/examples/tutorials">Examples</A></H2>
+<H2> Field Discretization - Discretization: <A HREF="PETSC_DIRsrc/grid/discretization/examples/tutorials/index.html">Examples</A></H2>
 
 The Discretization component provides an interface for discretization of fields over a Mesh.
 <P>
