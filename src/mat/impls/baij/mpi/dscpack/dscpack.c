@@ -6,8 +6,6 @@
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/mat/impls/baij/mpi/mpibaij.h"
 
-#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-
 EXTERN_C_BEGIN
 #include "dscmain.h"
 EXTERN_C_END
@@ -581,17 +579,3 @@ int MatMPIBAIJFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"  distributed phase BLAS level: %s \n",s);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#else
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseDSCPACK_MPIBAIJ"
-int MatUseDSCPACK_MPIBAIJ(Mat A)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#endif
-
-

@@ -2,15 +2,15 @@
 
 ALL: lib
 
-CFLAGS   = ${DSCPACK_INCLUDE} -DF_NEEDS_UNDSC -DDBL_R_NUM
+CFLAGS   = 
 FFLAGS   =
-SOURCEC	 = mpibaij.c mmbaij.c baijov.c dscpack.c
+SOURCEC	 = mpibaij.c mmbaij.c baijov.c
 SOURCEF	 =
 SOURCEH	 = mpibaij.h
-OBJSC	 = mpibaij.o mmbaij.o baijov.o dscpack.o
+OBJSC	 = mpibaij.o mmbaij.o baijov.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
-DIRS	 = 
+DIRS	 = dscpack
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/baij/mpi/
 
