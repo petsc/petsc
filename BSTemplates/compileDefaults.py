@@ -156,7 +156,7 @@ class UsingPython(UsingCompiler):
     try:
       import Numeric
     except ImportError, e:
-      raise RuntimeError("BS requires Numeric Python to be installed: "+str(e))
+      raise RuntimeError("BS requires Numeric Python (http://www.pfdubois.com/numpy) to be installed: "+str(e))
     if not hasattr(sys,"version_info") or float(sys.version_info[0]) < 2 or float(sys.version_info[1]) < 2:
       raise RuntimeError("Requires Python version 2.2 or higher. Get Python at python.org")
 
