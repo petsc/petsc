@@ -23,7 +23,7 @@
 # This build is a second build on maverick and so is 
 # started a bit late...
 #
-1  4 * * * /home/bsmith/petsc/maint/buildtest 7
+30  4 * * * /home/bsmith/petsc/maint/buildtest 7
 #
 #  Checks if all the nightly builds are complete and 
 # sends mail to PETSc developers if there are hanging jobs

@@ -556,7 +556,7 @@ runex54:
 		    $(MPIRUN) -np $$np ex54 -mat_block_size $$bs -ov $$ov \
                        -mat_size $$matsize -nd $$nd > ex54_1.tmp 2>&1; \
 	  	    grep -v "flg =1" ex54_1.tmp > ex54_12.tmp; \
-	 	    if (diff ex54_12.tmp /dev/null) then true; \
+	 	    if (diff output/ex55_1.out ex54_12.tmp ) then true; \
 		      else echo "Possible problem with ex54_1, diffs above"; \
 	  	      echo np $$np bs $$bs matsize $$matsize ov $$ov nd $$nd; fi; \
 		    $(RM) -f ex54_1.tmp ex54_12.tmp;\
