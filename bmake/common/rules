@@ -4,9 +4,9 @@
 # Checks that PETSC_DIR variable is set and creates library directory
 # if it does not exist
 chkpetsc_dir:
-	-@pushd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; popd 2>&1 >/dev/null; \
-        mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}++g"`;\
-        if [ $${mypwd} == $${newpwd} ]; then \
+	@pushd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; popd 2>&1 >/dev/null; \
+        mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
+        if [ $${mypwd} = $${newpwd} ]; then \
           echo "Your PETSC_DIR does not match the directory you are in";\
         fi
 	
