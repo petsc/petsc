@@ -1,8 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.57 1996/10/24 15:36:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.58 1996/10/29 19:12:09 bsmith Exp curfman $";
 #endif
 
-static char help[] = "Solves a linear system in parallel with SLES.\n\n";
+/* Usage:  mpirun ex2 [-help] [all PETSc options] */
+
+static char help[] = "Solves a linear system in parallel with SLES.\n\
+Input parameters include:\n\
+  -random_sol : use a random solution vector\n\
+  -m <mesh_x> : number of mesh points in x-direction\n\
+  -n <mesh_n> : number of mesh points in y-direction\n\n";
 
 /*T
    Concepts: SLES^Solving a system of linear equations (basic parallel example);
@@ -27,14 +33,17 @@ T*/
 
 int main(int argc,char **args)
 {
-  Vec     x, b, u;      /* approx solution, RHS, exact solution */
-  Mat     A;            /* linear system matrix */
-  SLES    sles;         /* linear solver context */
-  PC      pc;           /* preconditioner context */
-  KSP     ksp;          /* Krylov subspace method context */
-  double  norm;         /* norm of solution error */
-  int     i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
-  Scalar  v, one = 1.0, none = -1.0;
+  Vec         x, b, u;  /* approx solution, RHS, exact solution */
+  Mat         A;        /* linear system matrix */
+  SLES        sles;     /* linear solver context */
+  PetscRandom rctx;     /* random number generator context */
+  double      norm;         /* norm of solution error */
+  int         i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
+  Scalar      v, one = 1.0, neg_one = -1.0;
+
+  /* These variables are currently unused */
+  /* PC          pc; */      /* preconditioner context */
+  /* KSP         ksp; */      /* Krylov subspace method context */
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
@@ -68,10 +77,10 @@ int main(int argc,char **args)
    */
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+    if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);}
+    if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);}
+    if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);}
+    if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);}
     v = 4.0; MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);
   }
 
@@ -88,6 +97,10 @@ int main(int argc,char **args)
      Create parallel vectors.
       - When using VecCreate(), we specify only the vector's global
         dimension; the parallel partitioning is determined at runtime. 
+      - When solving a linear system, the vectors and matrices MUST
+        be partitioned accordingly.  PETSc automatically generates
+        appropriately partitioned matrices and vectors when MatCreate()
+        and VecCreate() are used with the same communicator. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
   ierr = VecCreate(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);
@@ -96,8 +109,18 @@ int main(int argc,char **args)
 
   /* 
      Set exact solution; then compute right-hand-side vector.
+     By default we use an exact solution of a vector with all
+     elements of 1.0;  Alternatively, using the runtime option
+     -random_sol forms a solution vector with random components.
   */
-  ierr = VecSet(&one,u); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-random_sol",&flg); CHKERRA(ierr);
+  if (flg) {
+    ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
+    ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
+    ierr = PetscRandomDestroy(rctx); CHKERRA(ierr);
+  } else {
+    ierr = VecSet(&one,u); CHKERRA(ierr);
+  }
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -122,13 +145,19 @@ int main(int argc,char **args)
        to set various options.
      - The following four statements are optional; all of these
        parameters could alternatively be specified at runtime via
-       SLESSetFromOptions();
+       SLESSetFromOptions().  All of these defaults can be
+       overridden at runtime, as indicated below.
   */
-  ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
-  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-  ierr = PCSetType(pc,PCJACOBI); CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
-         PETSC_DEFAULT); CHKERRA(ierr);
+  /* 
+     We comment out this section of code since the Jacobi
+     preconditioner is not a good general default.
+
+     ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
+     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+     ierr = PCSetType(pc,PCJACOBI); CHKERRA(ierr);
+     ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
+            PETSC_DEFAULT); CHKERRA(ierr);
+  */
 
   /* 
     Set runtime options, e.g.,
@@ -152,8 +181,13 @@ int main(int argc,char **args)
   /* 
      Check the error
   */
-  ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
+  ierr = VecAXPY(&neg_one,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+
+  /*
+     Print convergence information.  PetscPrintf() produces a single 
+     print statement from all processes that share a communicator.
+  */
   if (norm > 1.e-12)
     PetscPrintf(MPI_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
   else 
@@ -166,6 +200,14 @@ int main(int argc,char **args)
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);  ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr);  ierr = MatDestroy(A); CHKERRA(ierr);
+
+  /*
+     Always call PetscFinalize() before exiting a program.  This routine
+       - finalizes the PETSc libraries as well as MPI
+       - provides summary and diagnostic information if certain runtime
+         options are chosen (e.g., -log_summary).  See PetscFinalize()
+     manpage for more information.
+  */
   PetscFinalize();
   return 0;
 }
