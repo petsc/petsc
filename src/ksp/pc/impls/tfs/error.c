@@ -1,6 +1,5 @@
 
 /**********************************error.c*************************************
-SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
 Author: Henry M. Tufo III
 
@@ -44,7 +43,7 @@ void error_msg_fatal(const char msg[], ...)
   const char *p;
   char       *sval, cval;
   int        ival;
-  REAL       dval;
+  PetscScalar       dval;
 
 
   /* print error message along w/node identifier */
@@ -67,15 +66,15 @@ void error_msg_fatal(const char msg[], ...)
 	printf("%d",ival);
 	break;
       case 'e':
-	dval = va_arg(ap,REAL);
+	dval = va_arg(ap,PetscScalar);
 	printf("%e",dval);
 	break;
       case 'f':
-	dval = va_arg(ap,REAL);
+	dval = va_arg(ap,PetscScalar);
 	printf("%f",dval);
 	break;
       case 'g':
-	dval = va_arg(ap,REAL);
+	dval = va_arg(ap,PetscScalar);
 	printf("%g",dval);
 	break;
       case 's':
@@ -90,13 +89,7 @@ void error_msg_fatal(const char msg[], ...)
   /* printf("\n"); */
   va_end(ap);
 
-#ifdef DELTA  
   fflush(stdout);
-#else
-  fflush(stdout);
-  /*  fflush(NULL); */
-#endif
-
 
   /* Try with MPI_Finalize() as well _only_ if all procs call this routine */
   /* Choose a more meaningful error code than -12 */
@@ -121,7 +114,7 @@ error_msg_warning(const char msg[], ...)
   va_list ap;
   char *p, *sval, cval;
   int ival;
-  REAL dval;
+  PetscScalar dval;
 
   va_start(ap,msg);
   if (!my_id)
@@ -144,15 +137,15 @@ error_msg_warning(const char msg[], ...)
 	    printf("%d",ival);
 	    break;
 	  case 'e':
-	    dval = va_arg(ap,REAL);
+	    dval = va_arg(ap,PetscScalar);
 	    printf("%e",dval);
 	    break;
 	  case 'f':
-	    dval = va_arg(ap,REAL);
+	    dval = va_arg(ap,PetscScalar);
 	    printf("%f",dval);
 	    break;
 	  case 'g':
-	    dval = va_arg(ap,REAL);
+	    dval = va_arg(ap,PetscScalar);
 	    printf("%g",dval);
 	    break;
 	  case 's':
@@ -173,7 +166,7 @@ error_msg_warning(const char msg[], ...)
   va_list ap;
   char *p, *sval, cval;
   int ival;
-  REAL dval;
+  PetscScalar dval;
   va_start(ap,msg);
   if (my_id>=0)
     {
@@ -195,15 +188,15 @@ error_msg_warning(const char msg[], ...)
 	    printf("%d",ival);
 	    break;
 	  case 'e':
-	    dval = va_arg(ap,REAL);
+	    dval = va_arg(ap,PetscScalar);
 	    printf("%e",dval);
 	    break;
 	  case 'f':
-	    dval = va_arg(ap,REAL);
+	    dval = va_arg(ap,PetscScalar);
 	    printf("%f",dval);
 	    break;
 	  case 'g':
-	    dval = va_arg(ap,REAL);
+	    dval = va_arg(ap,PetscScalar);
 	    printf("%g",dval);
 	    break;
 	  case 's':

@@ -108,7 +108,7 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
 
   /*
   PetscTruth     issymmetric;
-  PetscReal tol = 0.0;
+  Petsc Real tol = 0.0;
   */
 
   PetscFunctionBegin;
