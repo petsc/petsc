@@ -215,7 +215,7 @@ wwwpages:
 
 
 .PRECIOUS: $(PRECIOUS) $(LIBNAME)
-.SUFFIXES: .F $(SUFFIXES) .PETSc .C .cc .cpp .r .rm
+.SUFFIXES: .F $(SUFFIXES) .PETSc .C .cc .cpp .r .rm .so
 
 .c.a: 
 	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
