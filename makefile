@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.229 1998/04/15 17:59:21 balay Exp bsmith $ 
+# $Id: makefile,v 1.230 1998/04/16 21:51:14 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -218,7 +218,8 @@ deletelibs: chkopts_basic
 #     use M-x tags-search and the string.
 #     To locate later occurrences, use M-,
 
-TAGS_INCLUDE_FILES  = include/*.h include/pinclude/*.h include/finclude/*.h 
+TAGS_INCLUDE_FILES  = include/*.h include/pinclude/*.h bmake/*/petscconf.h \
+                      include/finclude/*.h 
 TAGS_BMAKE_FILES    = bmake/common bmake/*/base*
 TAGS_EXAMPLE_FILES  = src/*/examples/*/*.[c,h,F,f] src/*/examples/*/*/*.[c,h,F,f] \
                       src/benchmarks/*.c src/contrib/*/examples/*/*.[c,h,F,f]\
