@@ -104,9 +104,9 @@ int CalcRhs(MRC mrc, Vec B, Vec X, Vec Rhs, PetscReal *cfl)
 	ierr = DAGlobalToLocalBegin(da, B, INSERT_VALUES, Blocal); CE;
 	ierr = DAGlobalToLocalEnd  (da, B, INSERT_VALUES, Blocal); CE;
 
-	ierr = DAVecGetArray(da, Xlocal, (void **) &p); CE;
-	ierr = DAVecGetArray(da, Blocal, (void **) &f); CE;
-	ierr = DAVecGetArray(da, Rhs   , (void **) &rhs); CE;
+	ierr = DAVecGetArray(da, Xlocal, &p); CE;
+	ierr = DAVecGetArray(da, Blocal, &f); CE;
+	ierr = DAVecGetArray(da, Rhs   , &rhs); CE;
 
 	DA_for_each_point(da, i, j) {
 #ifdef EQ
@@ -135,9 +135,9 @@ int CalcRhs(MRC mrc, Vec B, Vec X, Vec Rhs, PetscReal *cfl)
 		  *cfl = PetscMax(*cfl, PetscAbs(by*dt/Hy));
 	}
 
-	ierr = DAVecRestoreArray(da, Xlocal, (void **)&p); CE;
-	ierr = DAVecRestoreArray(da, Blocal, (void **)&f); CE;
-	ierr = DAVecRestoreArray(da, Rhs   , (void **)&rhs); CE;
+	ierr = DAVecRestoreArray(da, Xlocal, &p); CE;
+	ierr = DAVecRestoreArray(da, Blocal, &f); CE;
+	ierr = DAVecRestoreArray(da, Rhs   , &rhs); CE;
 
 	ierr = DARestoreLocalVector(da, &Xlocal); CE;
 	ierr = DARestoreLocalVector(da, &Blocal); CE;
@@ -217,15 +217,15 @@ int PoiCalcRhs(Poi poi, Vec X, Vec B)
 	ierr = DAGlobalToLocalBegin(da, X, INSERT_VALUES, Xlocal); CE;
 	ierr = DAGlobalToLocalEnd  (da, X, INSERT_VALUES, Xlocal); CE;
 
-	ierr = DAVecGetArray(da, Xlocal, (void *) &x); CE;
-	ierr = DAVecGetArray(da, B,      (void *) &b); CE;
+	ierr = DAVecGetArray(da, Xlocal, &x); CE;
+	ierr = DAVecGetArray(da, B     , &b); CE;
 
 	DA_for_each_point(da, i, j) {
 		b[j][i].U = D_2(x, phi);
 		b[j][i].F = x[j][i].psi - de2 * D_2(x, psi);
 	}
-	ierr = DAVecRestoreArray(da, Xlocal, (void *) &x); CE;
-	ierr = DAVecRestoreArray(da, B,      (void *) &b); CE;
+	ierr = DAVecRestoreArray(da, Xlocal, &x); CE;
+	ierr = DAVecRestoreArray(da, B     , &b); CE;
 
 	ierr = DARestoreLocalVector(da, &Xlocal); CE;
 
@@ -269,8 +269,8 @@ int PoiSolve(Poi poi, Vec B, Vec X)
 	ierr = PetscMalloc(sizeof(*w) * 
 			   (4*(MY+1) + (13+(int)(log2(MY+1)))*(MX+1)), &w); CE;
 
-	ierr = DAVecGetArray(da, B, (void *) &b); CE;
-	ierr = DAVecGetArray(da, X, (void *) &x); CE;
+	ierr = DAVecGetArray(da, B, &b); CE;
+	ierr = DAVecGetArray(da, X, &x); CE;
 
 	// U / phi
 
@@ -312,8 +312,8 @@ int PoiSolve(Poi poi, Vec B, Vec X)
 		x[j][i].psi = f[i + j * MXS];
 	}
 
-	ierr = DAVecRestoreArray(da, B, (void *) &b); CE;
-	ierr = DAVecRestoreArray(da, X, (void *) &x); CE;
+	ierr = DAVecRestoreArray(da, B, &b); CE;
+	ierr = DAVecRestoreArray(da, X, &x); CE;
 
 	ierr = PetscFree(f); CE;
 	ierr = PetscFree(w); CE;
@@ -553,7 +553,7 @@ int IniPorcelli(MRC mrc)
 	ierr = DAGetInfo(da, 0, &mx ,&my, 0, 0, 0, 0, 0, 0, 0, 0); CE;
 
 	ierr = DAGetGlobalVector(da, &X); CE;
-	ierr = DAVecGetArray(da, X, (void **)&v); CE;
+	ierr = DAVecGetArray(da, X, &v); CE;
 	DA_for_each_point(da, i, j) {
 		x = mrc->Sx + mrc->Lx*i/mx;
 		y = mrc->Sy + mrc->Ly*j/my;
@@ -573,7 +573,7 @@ int IniPorcelli(MRC mrc)
 		v[j][i].psi = cos(x);
 #endif
 	}
-	ierr = DAVecRestoreArray(da, X, (void **)&v); CE;
+	ierr = DAVecRestoreArray(da, X, &v); CE;
 
 	ierr = PoiCalcRhs(mrc->poi, X, mrc->b); CE;
 	ierr = VecSet(&zero, X);
@@ -702,12 +702,12 @@ int MRCSpo1Output(MRC mrc, Vec X, FILE *spo)
 	ierr = DAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0); CE;
 	if (i >= xs && i < xs + xm &&
 	    j >= ys && j < ys + ym) {
-		ierr = DAVecGetArray(da, X, (void **)&p); CE;
+		ierr = DAVecGetArray(da, X, &p); CE;
 		values[0] = D_x2(p, psi);
 		values[1] = D_y2(p, psi);
 		values[2] = D_xy(p, phi);
 		values[3] = p[j][i].psi;
-		ierr = DAVecRestoreArray(da, X, (void **)&p); CE;
+		ierr = DAVecRestoreArray(da, X, &p); CE;
 		if (rank != 0) {
 			ierr = MPI_Send(values, 4, MPIU_REAL, 0, tag, da->comm); CE;
 		}
