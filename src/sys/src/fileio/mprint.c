@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.60 2001/04/05 21:06:46 balay Exp balay $*/
+/*$Id: mprint.c,v 1.61 2001/04/18 20:48:29 balay Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -368,26 +368,6 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
 /* ---------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscHelpPrintfDefault" 
-/*@C
-    PetscHelpPrintfDefault - Prints to standard out, only from the first
-    processor in the communicator.
-
-    Not Collective
-
-    Input Parameters:
-+   comm - the communicator
--   format - the usual printf() format string 
-
-   Level: developer
-
-    Fortran Note:
-    This routine is not supported in Fortran.
-
-    Concepts: help messages^printing
-    Concepts: printing^help messages
-
-.seealso: PetscFPrintf(), PetscSynchronizedPrintf()
-@*/
 int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 {
   int rank,ierr;
@@ -418,12 +398,13 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 }
 
 /* ---------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "PetscErrorPrintfDefault" 
-/*@C
-    PetscErrorPrintfDefault - Prints error messages.
+/*MC
+    PetscErrorPrintf - Prints error messages.
 
     Not Collective
+
+   Synopsis:
+     int (*PetscErrorPrintf)(const char format[],...);
 
     Input Parameters:
 .   format - the usual printf() format string 
@@ -436,8 +417,33 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
     Concepts: error messages^printing
     Concepts: printing^error messages
 
-.seealso: PetscFPrintf(), PetscSynchronizedPrintf()
-@*/
+.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf()
+M*/
+
+/*MC
+    PetscHelpPrintf - Prints help messages.
+
+    Not Collective
+
+   Synopsis:
+     int (*PetscHelpPrintf)(const char format[],...);
+
+    Input Parameters:
+.   format - the usual printf() format string 
+
+   Level: developer
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+    Concepts: help messages^printing
+    Concepts: printing^help messages
+
+.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscErrorPrintf()
+M*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscErrorPrintfDefault" 
 int PetscErrorPrintfDefault(const char format[],...)
 {
   va_list            Argp;
