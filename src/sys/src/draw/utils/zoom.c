@@ -24,7 +24,7 @@
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,void *),void *ctx)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   int             dpause;
   PetscDrawButton button;
   PetscReal       xc,yc,scale = 1.0,w,h,xr,xl,yr,yl,xmin,xmax,ymin,ymax;
@@ -68,9 +68,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawZoom(PetscDraw draw,PetscErrorCode (*fun
       ierr = PetscDrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
     }
   }
-
   ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
