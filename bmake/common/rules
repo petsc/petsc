@@ -1,4 +1,4 @@
-# $Id: common,v 1.196 1997/10/08 00:27:10 balay Exp balay $ 
+# $Id: common,v 1.197 1997/10/08 01:15:54 balay Exp bsmith $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -15,7 +15,7 @@
 #                 the file bmake/$(PETSC_ARCH)/base
 #
 BOPT          = none
-KERNEL_LIB    = none
+KERNEL_LIB    = 
 
 LDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 PDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
