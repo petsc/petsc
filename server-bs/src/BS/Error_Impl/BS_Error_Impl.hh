@@ -21,12 +21,8 @@
 // 
 // Includes for all method dependencies.
 // 
-#ifndef included_BS_Error_hh
 #include "src/BS/Error/BS_Error.hh"
-#endif
-#ifndef included_SIDL_BaseInterface_hh
 #include "src/SIDL/BaseInterface/SIDL_BaseInterface.hh"
-#endif
 
 
 // DO-NOT-DELETE splicer.begin(BS.Error._includes)
