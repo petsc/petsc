@@ -76,6 +76,7 @@ class Configure(config.base.Configure):
     help.addOption('PETSc', 'F_VERSION', 'The version of the Fortran compiler')
     help.addOption('PETSc', 'FFLAGS_g', 'Flags for the Fortran compiler with BOPT=g')
     help.addOption('PETSc', 'FFLAGS_O', 'Flags for the Fortran compiler with BOPT=O')
+    help.addOption('PETSc', '-with-libtool', 'Specify that libtool should be used for compiling and linking', nargs.ArgBool)
 
     self.framework.argDB['enable-debug']           = 1
     self.framework.argDB['enable-log']             = 1
@@ -94,6 +95,7 @@ class Configure(config.base.Configure):
     self.framework.argDB['PETSCFLAGS']             = ''
     self.framework.argDB['COPTFLAGS']              = ''
     self.framework.argDB['FOPTFLAGS']              = ''
+    self.framework.argDB['with-libtool']           = 0
 
     self.framework.argDB['BOPT'] = 'O'
     return
@@ -242,6 +244,13 @@ class Configure(config.base.Configure):
     self.framework.addSubstitution('FC_SHARED_OPT', option)
     return
 
+  def configureFortranStubs(self):
+    '''Determine whether the Fortran stubs exist or not'''
+    stubDir = os.path.join(self.framework.argDB['PETSC_DIR'], 'src', 'fortran', 'auto')
+    if not os.path.exists(os.path.join(stubDir, 'makefile.src')):
+      print '  WARNING: Fortran stubs have not been generated in '+stubDir
+    return
+
   def configureDynamicLibraries(self):
     '''Checks for --enable-dynamic, and defines PETSC_USE_DYNAMIC_LIBRARIES if it is given
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
@@ -324,7 +333,10 @@ class Configure(config.base.Configure):
     self.framework.addSubstitution('AR_FLAGS', 'cr')
     self.framework.getExecutable('ranlib')
     self.framework.addSubstitution('SET_MAKE', '')
-    self.framework.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
+    if self.framework.argDB['with-libtool']:
+      self.framework.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
+    else:
+      self.framework.addSubstitution('LIBTOOL', '')
     self.framework.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
@@ -434,6 +446,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureCompilerFlags)
     self.executeTest(self.configureFortranPIC)
+    self.executeTest(self.configureFortranStubs)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configureDebuggers)
     self.executeTest(self.configurePrograms)

@@ -36,14 +36,11 @@ info:
 	-@echo Machine characteristics: `uname -a`
 	-@echo "-----------------------------------------"
 	-@echo "Using C compiler: ${C_CC} ${COPTFLAGS} ${CCPPFLAGS}"
-	-@if [ -n "${C_CCV}" -a "${C_CCV}" != "unknown" ]; then \
-        echo "C Compiler version: " `${C_CCV}`; fi
+	-@echo "C Compiler version: " `${C_CCV}`
 	-@echo "Using C++ compiler: ${CXX_CC} ${COPTFLAGS} ${CCPPFLAGS}"
-	-@if [ -n "${CXX_CCV}" -a "${CXX_CCV}" != "unknown" ]; then \
-        echo "C++ Compiler version: " `${CXX_CCV}`; fi
+	-@echo "C++ Compiler version: " `${CXX_CCV}`
 	-@echo "Using Fortran compiler: ${C_FC} ${FOPTFLAGS} ${FCPPFLAGS}"
-	-@if [ -n "${C_FCV}" -a "${C_FCV}" != "unknown" ]; then \
-	  echo "Fortran Compiler version: " `${C_FCV}`; fi
+	-@echo "Fortran Compiler version: " `${C_FCV}`
 	-@echo "-----------------------------------------"
 	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//"
 	-@echo "-----------------------------------------"
@@ -76,13 +73,10 @@ info_h:
 	-@echo  "-----------------------------------------\"; " >> MINFO
 	-@echo  "static char *petsccompilerinfo = \"  " >> MINFO
 	-@echo  "Using C compiler: ${C_CC} ${COPTFLAGS} ${CCPPFLAGS} " >> MINFO
-	-@if [  "${C_CCV}" -a "${C_CCV}" != "unknown" ] ; then \
-	  echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1; fi ; true
-	-@if [  "${CXX_CCV}" -a "${CXX_CCV}" != "unknown" ] ; then \
-	  echo  "C++ Compiler version:"  >> MINFO; ${CXX_CCV} >> MINFO 2>&1 ; fi ; true
+	-@echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1 ; true
+	-@echo  "C++ Compiler version:"  >> MINFO; ${CXX_CCV} >> MINFO 2>&1 ; true
 	-@echo  "Using Fortran compiler: ${C_FC} ${FOPTFLAGS} ${FCPPFLAGS}" >> MINFO
-	-@if [  "${C_FCV}" -a "${C_FCV}" != "unknown" ] ; then \
-	  echo  "Fortran Compiler version:" >> MINFO ; ${C_FCV} >> MINFO 2>&1 ; fi ; true
+	-@echo  "Fortran Compiler version:" >> MINFO ; ${C_FCV} >> MINFO 2>&1 ; true
 	-@echo  "-----------------------------------------\"; " >> MINFO
 	-@echo  "static char *petsccompilerflagsinfo = \"  " >> MINFO
 	-@echo  "Using PETSc flags: ${PETSCFLAGS} ${PCONF}" >> MINFO
