@@ -87,8 +87,12 @@ class Configure(config.base.Configure):
       compilers = self.framework.argDB['with-cc']
     elif self.framework.argDB.has_key('CC'):
       compilers = self.framework.argDB['CC']
+    elif self.framework.argDB.has_key('with-mpi-dir'):
+      compilers = [os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpicc')]
     else:
       compilers = []
+      if self.framework.argDB['with-mpi']:
+        compilers.append('mpicc')
       if self.framework.argDB['with-gnu-compilers']:
         compilers.append('gcc')
       vendor = self.framework.argDB['with-vendor-compilers']
@@ -169,8 +173,14 @@ class Configure(config.base.Configure):
       compilers = self.framework.argDB['with-cxx']
     elif self.framework.argDB.has_key('CXX'):
       compilers = self.framework.argDB['CXX']
+    elif self.framework.argDB.has_key('with-mpi-dir'):
+      compilers = [os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpicxx')]
+      compilers.append(os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpiCC'))
     else:
       compilers = []
+      if self.framework.argDB['with-mpi']:
+        compilers.append('mpicxx')
+        compilers.append('mpiCC')
       if self.framework.argDB['with-gnu-compilers']:
         compilers.append('g++')
       vendor = self.framework.argDB['with-vendor-compilers']
@@ -239,8 +249,14 @@ class Configure(config.base.Configure):
       compilers = self.framework.argDB['with-fc']
     elif self.framework.argDB.has_key('FC'):
       compilers = self.framework.argDB['FC']
+    elif self.framework.argDB.has_key('with-mpi-dir'):
+      compilers = [os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpif90')]
+      compilers.append(os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpif77'))
     else:
       compilers = []
+      if self.framework.argDB['with-mpi']:
+        compilers.append('mpif90')
+        compilers.append('mpif77')
       if self.framework.argDB['with-gnu-compilers']:
         compilers.append('g77')
       vendor = self.framework.argDB['with-vendor-compilers']
