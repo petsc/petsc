@@ -2,6 +2,20 @@ try:
   import readline
 except ImportError: pass
 
+def getInteractive():
+  return isInteractive
+
+def setInteractive(interactive):
+  global isInteractive
+  isInteractive = interactive
+  return
+
+def checkInteractive(key):
+  if not isInteractive:
+    raise ValueError('Value not set for key '+str(key))
+  return
+setInteractive(1)
+
 class Arg(object):
   '''This is the base class for all objects contained in RDict. Access to the raw argument values is
 provided by getValue() and setValue(). These objects can be thought of as type objects for the
@@ -100,6 +114,7 @@ in order to declare the type of that option.'''
   def getValue(self):
     '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
     if not self.isValueSet():
+      checkInteractive(self.key)
       if self.help: print self.help
       while 1:
         try:
@@ -219,6 +234,7 @@ class ArgDir(Arg):
   def getValue(self):
     '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
     if not self.isValueSet():
+      checkInteractive(self.key)
       try:
         import GUI.FileBrowser
         import SIDL.Loader
@@ -253,6 +269,7 @@ class ArgDirList(Arg):
   def getValue(self):
     '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
     if not self.isValueSet():
+      checkInteractive(self.key)
       try:
         import GUI.FileBrowser
         import SIDL.Loader
@@ -290,6 +307,7 @@ class ArgLibrary(Arg):
   def getValue(self):
     '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
     if not self.isValueSet():
+      checkInteractive(self.key)
       try:
         import GUI.FileBrowser
         import SIDL.Loader
@@ -324,6 +342,7 @@ class ArgExecutable(Arg):
   def getValue(self):
     '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
     if not self.isValueSet():
+      checkInteractive(self.key)
       try:
         import GUI.FileBrowser
         import SIDL.Loader
