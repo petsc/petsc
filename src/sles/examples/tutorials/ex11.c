@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.4 1996/09/26 03:22:16 curfman Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.5 1996/09/28 14:11:42 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -49,8 +49,8 @@ int main(int argc,char **args)
   Mat         A;            /* linear system matrix */
   SLES        sles;         /* linear solver context */
   double      norm;         /* norm of solution error */
-  int         dim, i, j, I, J, Istart, Iend, ierr, n = 6, its, flg;
-  Scalar      v, none = -1.0, sigma2;
+  int         dim, i, j, I, J, Istart, Iend, ierr, n = 6, its, flg, use_random;
+  Scalar      v, none = -1.0, sigma2, pfive = 0.5;
   PetscRandom rctx;
   double      h2, sigma1 = 100.0;
 
@@ -84,24 +84,32 @@ int main(int argc,char **args)
         locally (but any non-local elements will be sent to the
         appropriate processor during matrix assembly). 
       - Always specify global rows and columns of matrix entries.
-   */
-    ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx); CHKERRQ(ierr);
-    h2 = 1.0/((n+1)*(n+1));
-    for ( I=Istart; I<Iend; I++ ) { 
-      v = -1.0; i = I/n; j = I - i*n;  
-      if ( i>0 ) {
-        J = I-n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES); CHKERRQ(ierr);}
-      if ( i<n-1 ) {
-        J = I+n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES); CHKERRQ(ierr);}
-      if ( j>0 ) {
-        J = I-1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES); CHKERRQ(ierr);}
-      if ( j<n-1 ) {
-        J = I+1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES); CHKERRQ(ierr);}
-      ierr = PetscRandomGetValue(rctx,&sigma2); CHKERRQ(ierr);
-      v = 4.0 - sigma1*h2 + sigma2*h2;
-      ierr = MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES); CHKERRQ(ierr);
-    }
-    ierr = PetscRandomDestroy(rctx); CHKERRQ(ierr);
+  */
+
+  ierr = OptionsHasName(PETSC_NULL,"-norandom",&flg); CHKERRA(ierr);
+  if (flg) use_random = 0;
+  else     use_random = 1;
+  if (use_random) {
+    ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx); CHKERRA(ierr);
+  } else {
+    sigma2 = 10.0*PETSC_i;
+  }
+  h2 = 1.0/((n+1)*(n+1));
+  for ( I=Istart; I<Iend; I++ ) { 
+    v = -1.0; i = I/n; j = I - i*n;  
+    if ( i>0 ) {
+      J = I-n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES); CHKERRA(ierr);}
+    if ( i<n-1 ) {
+      J = I+n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES); CHKERRA(ierr);}
+    if ( j>0 ) {
+      J = I-1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES); CHKERRA(ierr);}
+    if ( j<n-1 ) {
+      J = I+1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES); CHKERRA(ierr);}
+    if (use_random) {ierr = PetscRandomGetValue(rctx,&sigma2); CHKERRA(ierr);}
+    v = 4.0 - sigma1*h2 + sigma2*h2;
+    ierr = MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES); CHKERRA(ierr);
+  }
+  if (use_random) {ierr = PetscRandomDestroy(rctx); CHKERRA(ierr);}
 
   /* 
      Assemble matrix, using the 2-step process:
@@ -125,8 +133,13 @@ int main(int argc,char **args)
   /* 
      Set exact solution; then compute right-hand-side vector.
   */
-  ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
-  ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
+  
+  if (use_random) {
+    ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
+    ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
+  } else {
+    ierr = VecSet(&pfive,u); CHKERRA(ierr);
+  }
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -175,7 +188,7 @@ int main(int argc,char **args)
      are no longer needed.
   */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
-  ierr = PetscRandomDestroy(rctx); CHKERRA(ierr);
+  if (use_random) {ierr = PetscRandomDestroy(rctx); CHKERRA(ierr);}
   ierr = VecDestroy(u); CHKERRA(ierr); ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr); ierr = MatDestroy(A); CHKERRA(ierr);
   PetscFinalize();

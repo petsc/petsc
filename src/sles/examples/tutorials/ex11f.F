@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.5 1996/09/26 03:22:12 curfman Exp curfman $";
+C    "$Id: ex11f.F,v 1.6 1996/09/28 14:11:51 curfman Exp curfman $";
 C
 C/*T
 C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -70,17 +70,21 @@ C     its      - iterations for convergence
 C     norm     - norm of error in solution
 C     rctx     - random number context
 C
-C  Note:  "Double" -> "double precision" except for machines such
-C          as the Cray T3d, where "Double" -> "real"
+C  Notes:
+C   "Double" -> "double precision" except for machines such
+C                as the Cray T3d, where "Double" -> "real"
+C   "DoubleComplex" -> "double complex" except for machines such
+C                as the Cray T3d, where "DoubleComplex" -> "complex"
 
-      SLES        sles
-      Mat         A 
-      Vec         x, b, u
-      PetscRandom rctx
-      Double      norm, h2, sigma1
-      integer     dim, flg, its, ierr, n, rank
-      integer     Istart, Iend, i, j, II, JJ
-      Scalar      none, sigma2, v
+      SLES          sles
+      Mat           A 
+      Vec           x, b, u
+      PetscRandom   rctx
+      Double        norm, h2, sigma1
+      Scalar        none, sigma2, v, pfive
+      integer       dim, flg, its, ierr, n, rank
+      integer       Istart, Iend, i, j, II, JJ
+      logical       use_random
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                 Beginning of program
@@ -120,8 +124,15 @@ C     locally (but any non-local elements will be sent to the
 C     appropriate processor during matrix assembly). 
 C   - Always specify global rows and columns of matrix entries.
 
-      call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,
-     *                       rctx,ierr)
+      call OptionsHasName(PETSC_NULL_CHARACTER,"-norandom",flg,ierr)
+      if (flg .eq. 1) then
+         use_random = .false.
+         sigma2 = 10.0*PETSC_i
+      else
+         use_random = .true.
+         call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,
+     *                          rctx,ierr)
+      endif
       h2 = 1.0/((n+1)*(n+1))
 
       do 10, II=Istart,Iend-1
@@ -144,12 +155,11 @@ C   - Always specify global rows and columns of matrix entries.
           JJ = II + 1
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
-        call PetscRandomGetValue(rctx,sigma2,ierr)
+        if (use_random) call PetscRandomGetValue(rctx,sigma2,ierr)
         v = 4.0 - sigma1*h2 + sigma2*h2
         call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
  10   continue
-
-      call PetscRandomDestroy(rctx,ierr)
+      if (use_random) call PetscRandomDestroy(rctx,ierr)
 
 C  Assemble matrix, using the 2-step process:
 C       MatAssemblyBegin(), MatAssemblyEnd()
@@ -171,8 +181,13 @@ C   - Note: We form 1 vector from scratch and then duplicate as needed.
 
 C  Set exact solution; then compute right-hand-side vector.
 
-      call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,rctx,ierr)
-      call VecSetRandom(rctx,u,ierr)
+      if (use_random) then
+         call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,rctx,ierr)
+         call VecSetRandom(rctx,u,ierr)
+      else
+         pfive = 0.5
+         call VecSet(pfive,u,ierr)
+      endif
       call MatMult(A,u,b,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -215,13 +230,13 @@ C  Check the error
            write(6,110) its
         endif
       endif
-  100 format('Norm of error ',e10.4,' iterations ',i5)
+  100 format('Norm of error ',e10.4,', iterations ',i5)
   110 format('Norm of error < 1.e-12, iterations ',i5)
 
 C  Free work space.  All PETSc objects should be destroyed when they
 C  are no longer needed.
 
-      call PetscRandomDestroy(rctx,ierr)
+      if (use_random) call PetscRandomDestroy(rctx,ierr)
       call SLESDestroy(sles,ierr)
       call VecDestroy(u,ierr)
       call VecDestroy(x,ierr)
