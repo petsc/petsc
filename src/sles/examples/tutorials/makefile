@@ -13,7 +13,8 @@ LOCDIR           = src/sles/examples/tutorials/
 TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
 		   ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 \
-		   runex5_2 ex5.rm ex9.PETSc runex9 ex9.rm clean
+		   runex5_2 ex5.rm ex9.PETSc runex9 ex9.rm \
+                   ex13.PETSc runex13 ex13.rm clean
 TESTEXAMPLES_2   = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc clean
 TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
@@ -71,6 +72,10 @@ ex5: ex5.o  chkopts
 	-$(CLINKER) -o ex5 ex5.o  $(PETSC_LIB)
 	$(RM) ex5.o
 
+ex6: ex6.o  chkopts
+	-$(CLINKER) -o ex6 ex6.o  $(PETSC_LIB)
+	$(RM) ex6.o
+
 ex6f: ex6f.o  chkopts
 	-$(FLINKER) -o ex6f ex6f.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex6f.o
@@ -102,6 +107,10 @@ ex11f: ex11f.o  chkopts
 ex12: ex12.o  chkopts
 	-$(CLINKER) -o ex12 ex12.o  $(PETSC_LIB)
 	$(RM) ex12.o
+
+ex13: ex13.o  chkopts
+	-$(CLINKER) -o ex13 ex13.o  $(PETSC_LIB)
+	$(RM) ex13.o
 
 
 runex1:
@@ -244,5 +253,11 @@ runex12_3:
 	   if (diff output/ex12_3.out ex12_3.tmp) then true; \
 	   else echo "Possible problem with ex12_3, diffs above"; fi; \
 	   $(RM) -f ex12_3.tmp
+
+runex13:
+	-@$(MPIRUN) ex13 -m 19 -n 20 > ex13_1.tmp 2>&1; \
+	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
+	   else echo "Possible problem with ex13_1, diffs above"; fi; \
+	   $(RM) -f ex13_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

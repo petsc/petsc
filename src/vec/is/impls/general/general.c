@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.49 1996/08/15 13:12:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.50 1996/09/12 16:24:36 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -79,6 +79,7 @@ static int ISView_General(PetscObject obj, Viewer viewer)
     for ( i=0; i<n; i++ ) {
       fprintf(fd,"%d %d\n",i,idx[i]);
     }
+    fflush(fd);
   }
   return 0;
 }
@@ -125,13 +126,13 @@ static struct _ISOps myops = { ISGetSize_General,
 @*/
 int ISCreateGeneral(MPI_Comm comm,int n,int *idx,IS *is)
 {
-  int        i, sorted = 1, min, max;
+  int        i, sorted = 1, min, max, flg, ierr;
   IS         Nindex;
   IS_General *sub;
 
   PetscValidPointer(is);
-  PetscValidIntPointer(idx);
   if (n < 0) SETERRQ(1,"ISCreateGeneral: length < 0");
+  if (n) {PetscValidIntPointer(idx);}
 
   *is = 0;
   PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_GENERAL,comm); 
@@ -157,6 +158,13 @@ int ISCreateGeneral(MPI_Comm comm,int n,int *idx,IS *is)
   Nindex->destroy = ISDestroy_General;
   Nindex->view    = ISView_General;
   Nindex->isperm  = 0;
+  ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Viewer viewer;
+    ierr = ViewerFileOpenASCII(comm,"stdout",&viewer);CHKERRQ(ierr);
+    ierr = ISView(Nindex,viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+  }
   *is = Nindex; return 0;
 }
 

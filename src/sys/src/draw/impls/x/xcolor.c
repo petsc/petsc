@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.17 1995/12/13 04:11:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.18 1996/08/08 14:45:12 bsmith Exp bsmith $";
 #endif
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -118,7 +118,7 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
  */
   XiAllocBW( XiWin, &white_pix, &black_pix );
   err = 0;
-  for (i=16; i<mapsize+16; i++) {
+  for (i=16; i<mapsize; i++) {
     if (red[i] == 0 && green[i] == 0 && blue[i] == 0)
 	XiWin->cmapping[i]   = black_pix;
     else if (red[i] == 255 && green[i] == 255 && blue[i] == 255)

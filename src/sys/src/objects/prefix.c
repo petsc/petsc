@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: prefix.c,v 1.2 1996/02/08 18:26:06 bsmith Exp balay $";
+static char vcid[] = "$Id: prefix.c,v 1.3 1996/03/25 17:00:29 balay Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -7,8 +7,9 @@ static char vcid[] = "$Id: prefix.c,v 1.2 1996/02/08 18:26:06 bsmith Exp balay $
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
 /*
-   PetscObjectSetPrefix - Sets the prefix used for searching for all 
-   options of PetscObjectType in the database.
+   PetscObjectSetOptionsPrefix - Sets the prefix used for searching for all 
+   options of PetscObjectType in the database. You must NOT include the - at the beginning of 
+   the prefix name.
 
    Input Parameters:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
@@ -16,7 +17,7 @@ static char vcid[] = "$Id: prefix.c,v 1.2 1996/02/08 18:26:06 bsmith Exp balay $
 
 .keywords: object, set, options, prefix, database
 */
-int PetscObjectSetPrefix(PetscObject obj, char *prefix)
+int PetscObjectSetOptionsPrefix(PetscObject obj, char *prefix)
 {
   if (obj->prefix) PetscFree(obj->prefix);
   if (prefix == PETSC_NULL) {obj->prefix = PETSC_NULL; return 0;}
@@ -27,8 +28,9 @@ int PetscObjectSetPrefix(PetscObject obj, char *prefix)
 }
 
 /*
-   PetscObjectAppendPrefix - Sets the prefix used for searching for all 
-   options of PetscObjectType in the database.
+   PetscObjectAppendOptionsPrefix - Sets the prefix used for searching for all 
+   options of PetscObjectType in the database. You must NOT include the - at the beginning of 
+   the prefix name.
 
    Input Parameters:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
@@ -36,11 +38,11 @@ int PetscObjectSetPrefix(PetscObject obj, char *prefix)
 
 .keywords: object, append, options, prefix, database
 */
-int PetscObjectAppendPrefix(PetscObject obj, char *prefix)
+int PetscObjectAppendOptionsPrefix(PetscObject obj, char *prefix)
 {
   char *buf = obj->prefix ;
   if (!prefix) {return 0;}
-  if (!buf) return PetscObjectSetPrefix(obj, prefix);
+  if (!buf) return PetscObjectSetOptionsPrefix(obj, prefix);
   obj->prefix = (char*)PetscMalloc((1 + PetscStrlen(prefix) + PetscStrlen(buf))*
                 sizeof(char));  CHKPTRQ(obj->prefix);
   PetscStrcpy(obj->prefix,buf);
@@ -50,7 +52,7 @@ int PetscObjectAppendPrefix(PetscObject obj, char *prefix)
 }
 
 /*
-   PetscObjectGetPrefix - Gets the prefix of the PetscObject.
+   PetscObjectGetOptionsPrefix - Gets the prefix of the PetscObject.
 
    Input Parameters:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
@@ -60,7 +62,7 @@ int PetscObjectAppendPrefix(PetscObject obj, char *prefix)
 
 .keywords: object, get, options, prefix, database
 */
-int PetscObjectGetPrefix(PetscObject obj ,char** prefix)
+int PetscObjectGetOptionsPrefix(PetscObject obj ,char** prefix)
 {
   *prefix = obj->prefix;
   return 0;

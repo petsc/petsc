@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.30 1996/08/15 12:47:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.31 1996/09/19 20:21:32 bsmith Exp bsmith $";
 #endif
 
 
@@ -47,7 +47,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
       aj[B->i[i] + shift + j] = indices[aj[B->i[i] + shift + j]+shift];
     }
   }
-  B->n = ec;
+  B->n = aij->B->n = aij->B->N = ec;
   PetscFree(indices);
   
   /* create local vector that is used to scatter into */
@@ -92,7 +92,7 @@ int DisAssemble_MPIAIJ(Mat A)
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) A->data;
   Mat        B = aij->B,Bnew;
   Mat_SeqAIJ *Baij = (Mat_SeqAIJ*)B->data;
-  int        ierr,i,j,m=Baij->m,n = aij->N,col,ct = 0,*garray = aij->garray;
+  int        ierr,i,j,m = Baij->m,n = aij->N,col,ct = 0,*garray = aij->garray;
   int        *nz,ec,shift = Baij->indexshift;
   Scalar     v;
 
@@ -110,9 +110,9 @@ int DisAssemble_MPIAIJ(Mat A)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* invent new B and copy stuff over */
-  nz = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(nz);
+  nz = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(nz);
   for ( i=0; i<m; i++ ) {
-    nz[i] = Baij->i[i+1]-Baij->i[i];
+    nz[i] = Baij->i[i+1] - Baij->i[i];
   }
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m,n,0,nz,&Bnew); CHKERRQ(ierr);
   PetscFree(nz);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.46 1996/09/14 03:39:08 curfman Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.47 1996/10/04 14:28:57 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -370,9 +370,6 @@ int PetscDoubleView(int N,double* idx,Viewer viewer)
   }
   return 0;
 }
-
-
-
 
 
 

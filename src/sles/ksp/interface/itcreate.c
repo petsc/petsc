@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.87 1996/08/08 14:40:48 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.88 1996/09/14 03:37:03 curfman Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -107,7 +107,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->residual_history    = 0;
   ctx->res_hist_size       = 0;
   ctx->res_act_size        = 0;
-  ctx->monitor             = 0;
+  ctx->numbermonitors      = 0;
   ctx->adjust_work_vectors = 0;
   ctx->converged           = KSPDefaultConverged;
   ctx->buildsolution       = KSPDefaultBuildSolution;
@@ -126,7 +126,6 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->nwork         = 0;
   ctx->work          = 0;
 
-  ctx->monP          = 0;
   ctx->cnvP          = 0;
 
   ctx->setupcalled   = 0;
@@ -274,12 +273,16 @@ int KSPGetType(KSP ksp,KSPType *type,char **name)
 int KSPPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
 {
   FuncList *entry;
+  int      count = 0;
+
   if (!__KSPList) {KSPRegisterAll();}
   entry = __KSPList->head;
   PetscPrintf(comm," %s%s (one of)",prefix,name);
   while (entry) {
     PetscPrintf(comm," %s",entry->name);
     entry = entry->next;
+    count++;
+    if (count == 8) PetscPrintf(comm,"\n    ");
   }
   PetscPrintf(comm,"\n");
   return 1;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daghost.c,v 1.4 1996/03/19 21:29:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daghost.c,v 1.5 1996/08/08 14:47:19 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -36,10 +36,9 @@ int DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
   /* since the xs, xe ... have all been multiplied by the number of degrees 
      of freedom per cell, w = da->w, we divide that out before returning.*/
   w = da->w;  
-  *x = da->Xs/w; *m = (da->Xe - da->Xs)/w;
-
-  if (y) *y = da->Ys; if (n) *n = (da->Ye - da->Ys);
-  if (z) *z = da->Zs; if (p) *p = (da->Ze - da->Zs); 
+  if (x) *x = da->Xs/w; if (m) *m = (da->Xe - da->Xs)/w;
+  if (y) *y = da->Ys;   if (n) *n = (da->Ye - da->Ys);
+  if (z) *z = da->Zs;   if (p) *p = (da->Ze - da->Zs); 
   return 0;
 }
 

@@ -3,10 +3,10 @@
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
-SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c
+SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c snesj2.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = snesregi.o snes.o snesj.o snesmfj.o snesut.o
+OBJSC    = snesregi.o snes.o snesj.o snesmfj.o snesut.o snesj2.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = n

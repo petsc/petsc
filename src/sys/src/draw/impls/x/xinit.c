@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.18 1996/08/08 14:45:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.19 1996/09/12 16:27:01 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -30,7 +30,7 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name )
 {
   XiWin->disp = XOpenDisplay( display_name );
   if (!XiWin->disp) {
-    fprintf(stderr,"Unable to on window on %s\n",display_name);
+    fprintf(stderr,"Unable to open display on %s\n",display_name);
     return 1;
   }
   XiWin->screen = DefaultScreen( XiWin->disp );
@@ -167,8 +167,10 @@ int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
     XClassHint    class_hints;
     XTextProperty windowname,iconname;
     
-    XStringListToTextProperty(&label,1,&windowname);
-    XStringListToTextProperty(&label,1,&iconname);
+    if (label) { XStringListToTextProperty(&label,1,&windowname);}
+    else       { XStringListToTextProperty(&label,0,&windowname);}
+    if (label) { XStringListToTextProperty(&label,1,&iconname);}
+    else       { XStringListToTextProperty(&label,0,&iconname);}
     
     wm_hints.initial_state  = NormalState;
     wm_hints.input          = True;

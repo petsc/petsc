@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: inherit.c,v 1.7 1996/07/02 18:05:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.8 1996/07/08 22:17:44 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -52,8 +52,7 @@ int PetscObjectReference(PetscObject obj)
 
 /*@C
    PetscObjectInherit - Associate another object with a given PETSc object. 
-   This is to provide a limited support for inheritence when using 
-   PETSc from C++.
+                        This is to provide a limited support for inheritence.
 
    Input Parameters:
 .  obj - the PETSc object
@@ -77,10 +76,10 @@ int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),
   if (obj->child) 
     SETERRQ(1,"PetscObjectInherit:Child already set;object can have only 1 child");
 */
-  obj->child = ptr;
-  if (copy == PETSC_NULL) copy = PetscObjectInherit_DefaultCopy;
-  obj->childcopy    = copy;
+  if (copy == PETSC_NULL)    copy = PetscObjectInherit_DefaultCopy;
   if (destroy == PETSC_NULL) destroy = PetscObjectInherit_DefaultDestroy;
+  obj->child        = ptr;
+  obj->childcopy    = copy;
   obj->childdestroy = destroy;
   return 0;
 }

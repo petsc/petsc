@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.54 1996/07/10 01:48:54 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.55 1996/09/12 16:25:01 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -42,7 +42,7 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
   PetscSequentialPhaseBegin(xin->comm,1);
 
   ierr = ViewerGetFormat(ptr,&format); CHKERRQ(ierr);
-  if (format != ASCII_FORMAT_COMMON) fprintf(fd,"Processor [%d] \n",rank);
+  if (format != VIEWER_FORMAT_ASCII_COMMON) fprintf(fd,"Processor [%d] \n",rank);
   for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
     if (imag(x->array[i]) != 0.0) {
@@ -78,11 +78,11 @@ static int VecView_MPI_Files(Vec xin, Viewer viewer )
   if (!rank) {
     values = (Scalar *) PetscMalloc( len*sizeof(Scalar) ); CHKPTRQ(values);
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
-    if (format == ASCII_FORMAT_MATLAB) {
+    if (format == VIEWER_FORMAT_ASCII_MATLAB) {
       ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
       fprintf(fd,"%s = [\n",outputname);
     } else {
-      if (format != ASCII_FORMAT_COMMON) fprintf(fd,"Processor [%d]\n",rank);
+      if (format != VIEWER_FORMAT_ASCII_COMMON) fprintf(fd,"Processor [%d]\n",rank);
     }
     for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
@@ -101,7 +101,7 @@ static int VecView_MPI_Files(Vec xin, Viewer viewer )
     for ( j=1; j<size; j++ ) {
       MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
       MPI_Get_count(&status,MPIU_SCALAR,&n);          
-      if (format != ASCII_FORMAT_MATLAB && format != ASCII_FORMAT_COMMON) {
+      if (format != VIEWER_FORMAT_ASCII_MATLAB && format != VIEWER_FORMAT_ASCII_COMMON) {
         fprintf(fd,"Processor [%d]\n",j);
       }
       for ( i=0; i<n; i++ ) {
@@ -118,7 +118,7 @@ static int VecView_MPI_Files(Vec xin, Viewer viewer )
       }          
     }
     PetscFree(values);
-    if (format == ASCII_FORMAT_MATLAB) {
+    if (format == VIEWER_FORMAT_ASCII_MATLAB) {
       fprintf(fd,"];\n");
     }
     fflush(fd);
@@ -249,11 +249,15 @@ static int VecView_MPI_Draw(Vec xin, Viewer v )
   for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
     if (real(x->array[i]) < xmin) xmin = real(x->array[i]);
-    else if (real(x->array[i]) > xmax) xmax = real(x->array[i]);
+    if (real(x->array[i]) > xmax) xmax = real(x->array[i]);
 #else
     if (x->array[i] < xmin) xmin = x->array[i];
-    else if (x->array[i] > xmax) xmax = x->array[i];
+    if (x->array[i] > xmax) xmax = x->array[i];
 #endif
+  }
+  if (xmin + 1.e-10 > xmax) {
+    xmin -= 1.e-5;
+    xmax += 1.e-5;
   }
   MPI_Reduce(&xmin,&ymin,1,MPI_DOUBLE,MPI_MIN,0,xin->comm);
   MPI_Reduce(&xmax,&ymax,1,MPI_DOUBLE,MPI_MAX,0,xin->comm);

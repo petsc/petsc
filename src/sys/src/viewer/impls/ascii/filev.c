@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.46 1996/09/14 12:47:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.47 1996/09/14 13:40:36 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -131,7 +131,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
     v->fd        = fopen(name,"w"); 
     if (!v->fd) SETERRQ(1,"ViewerFileOpenASCII:Cannot open file");
   }
-  v->format        = ASCII_FORMAT_DEFAULT;
+  v->format        = VIEWER_FORMAT_ASCII_DEFAULT;
   v->iformat       = 0;
   v->outputname    = 0;
 #if defined(PETSC_LOG)
@@ -151,16 +151,16 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 
    Notes:
    Available formats include
-$    ASCII_FORMAT_DEFAULT - default
-$    ASCII_FORMAT_MATLAB - Matlab format
-$    ASCII_FORMAT_IMPL - implementation-specific format
+$    VIEWER_FORMAT_ASCII_DEFAULT - default
+$    VIEWER_FORMAT_ASCII_MATLAB - Matlab format
+$    VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
 $      (which is in many cases the same as the default)
-$    ASCII_FORMAT_INFO - basic information about object
-$    ASCII_FORMAT_INFO_DETAILED - more detailed info
+$    VIEWER_FORMAT_ASCII_INFO - basic information about object
+$    VIEWER_FORMAT_ASCII_INFO_LONG - more detailed info
 $       about object
-$    ASCII_FORMAT_COMMON - identical output format for
+$    VIEWER_FORMAT_ASCII_COMMON - identical output format for
 $       all objects of a particular type
-$    BINARY_FORMAT_NATIVE - store the object to the binary
+$    VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
 $      file in its native format (for example, dense
 $       matrices are stored as dense)
 
@@ -194,16 +194,16 @@ int ViewerSetFormat(Viewer v,int format,char *name)
 
    Notes:
    Available formats include
-$    ASCII_FORMAT_DEFAULT - default
-$    ASCII_FORMAT_MATLAB - Matlab format
-$    ASCII_FORMAT_IMPL - implementation-specific format
+$    VIEWER_FORMAT_ASCII_DEFAULT - default
+$    VIEWER_FORMAT_ASCII_MATLAB - Matlab format
+$    VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
 $      (which is in many cases the same as the default)
-$    ASCII_FORMAT_INFO - basic information about object
-$    ASCII_FORMAT_INFO_DETAILED - more detailed info
+$    VIEWER_FORMAT_ASCII_INFO - basic information about object
+$    VIEWER_FORMAT_ASCII_INFO_LONG - more detailed info
 $       about object
-$    ASCII_FORMAT_COMMON - identical output format for
+$    VIEWER_FORMAT_ASCII_COMMON - identical output format for
 $       all objects of a particular type
-$    BINARY_FORMAT_NATIVE - store the object to the binary
+$    VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
 $      file in its native format (for example, dense
 $       matrices are stored as dense)
 

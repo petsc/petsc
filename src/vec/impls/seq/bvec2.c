@@ -1,7 +1,8 @@
 
 
+
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.75 1996/08/04 23:11:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.76 1996/08/08 14:40:21 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -68,7 +69,7 @@ static int VecView_Seq_File(Vec xin,Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
 
   ierr = ViewerGetFormat(viewer,&format);
-  if (format == ASCII_FORMAT_MATLAB) {
+  if (format == VIEWER_FORMAT_ASCII_MATLAB) {
     ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
     fprintf(fd,"%s = [\n",outputname);
     for (i=0; i<n; i++ ) {
@@ -300,7 +301,7 @@ static int VecDuplicate_Seq(Vec win,Vec *V)
 {
   int     ierr;
   Vec_Seq *w = (Vec_Seq *)win->data;
-  ierr = VecCreateSeq(win->comm,w->n,V);
+  ierr = VecCreateSeq(win->comm,w->n,V); CHKERRQ(ierr);
   (*V)->childcopy    = win->childcopy;
   (*V)->childdestroy = win->childdestroy;
   if (win->child) return (*win->childcopy)(win->child,&(*V)->child);

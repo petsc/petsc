@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.28 1996/09/23 21:42:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.29 1996/10/06 00:00:38 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -200,6 +200,7 @@ int MatReorderingGetName(MatReordering meth,char **name)
 
 extern int MatAdjustForInodes(Mat,IS *,IS *);
 
+#include "src/mat/impls/aij/mpi/mpiaij.h"
 /*@C
    MatGetReordering - Gets a reordering for a matrix to reduce fill or to
    improve numerical stability of LU factorization.
@@ -271,6 +272,15 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
   ierr = ISSetPermutation(*cperm); CHKERRQ(ierr);
 
   ierr = MatAdjustForInodes(mat,rperm,cperm); CHKERRQ(ierr);
+  {
+    int size;
+    MPI_Comm_size(mat->comm,&size);
+    if (mat->type == MATMPIAIJ && size == 1) {
+      Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *) mat->data;
+      ierr = MatAdjustForInodes(mpiaij->A,rperm,cperm); CHKERRQ(ierr);
+    }
+  }
+
   PLogEventEnd(MAT_GetReordering,mat,0,0,0);
   return 0;
 }

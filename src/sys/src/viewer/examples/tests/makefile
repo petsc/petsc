@@ -1,4 +1,4 @@
-#PETSC_DIR = ../../..
+#PETSC_DIR = ../../../..
 ALL: ex1
 
 CFLAGS	        =  $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
@@ -8,7 +8,7 @@ SOURCEF	        =
 SOURCEH	        =
 OBJSC	        =
 OBJSF	        =
-LOCDIR          = src/viewer/examples/
+LOCDIR          = src/viewer/examples/tests
 LIBBASE	        = libpetscvec
 TESTEXAMPLES_2  = 
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean

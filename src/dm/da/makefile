@@ -9,7 +9,7 @@ SOURCEH  = daimpl.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = src  examples
+DIRS     = src  examples utils
 LOCDIR   = src/da/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

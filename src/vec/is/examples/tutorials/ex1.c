@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.4 1996/08/22 20:13:58 balay Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.5 1996/09/28 14:09:54 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates creating a general index set.\n\n";
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   IS       is;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   /*
      Create an index set with 5 entries. Each processor creates

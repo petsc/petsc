@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.62 1996/08/22 20:07:54 curfman Exp bsmith $ */
+/* $Id: matimpl.h,v 1.63 1996/09/12 16:26:10 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -70,7 +70,9 @@ struct _MatOps {
             (*getrowij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
             (*restorerowij)(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *),
             (*getcolumnij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
-            (*restorecolumnij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
+            (*restorecolumnij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
+            (*fdcoloringcreate)(Mat,ISColoring,MatFDColoring),
+            (*coloringpatch)(Mat,int,int *,ISColoring*);
 };
 
 #define FACTOR_LU       1
@@ -95,8 +97,11 @@ struct _Mat {
 #define DO_NOT_COPY_VALUES 0
 #define COPY_VALUES        1
 
-/* Since most (all?) of the parallel matrix assemblies use this stashing,
-   we move it to a common place. Perhaps it ultimately belongs elsewhere. */
+/* 
+    The stash is used to temporarily store inserted matrix values that 
+  belong to another processor. During the assembly phase the stashed 
+  values are moved to the correct processor and 
+*/
 
 typedef struct {
   int    nmax;            /* maximum stash size */
@@ -112,15 +117,54 @@ extern int StashBuild_Private(Stash*);
 extern int StashDestroy_Private(Stash*);
 extern int StashInfo_Private(Stash*);
 
-/*
-  Reorderings for sequential IJ format. By default uses SparsePak and Minpack routines.
-*/
-extern int MatGetReordering_IJ(int,int*,int*,MatReordering,IS *,IS*);
-extern int MatGetColoring_IJ(int,int*,int*,MatReordering,int*,IS **);
-
-
 extern int MatConvert_Basic(Mat,MatType,Mat*);
 extern int MatCopy_Basic(Mat,Mat);
+
+
+/*
+    MatFDColoring is used to compute Jacobian matrices efficiently
+  via coloring. The data structure is explained below in an example
+
+   Color =   0    1     0    2   |   2      3       0 
+   -------------------------------------------------
+            00   01              |          05
+            10   11              |   14     15               Processor  0
+                       22    23  |          25
+                       32    33  | 
+   ================================================
+                                 |   44     45     46
+            50                   |          55               Processor 1
+                                 |   64            66
+   ------------------------------------------------
+
+    ncolors = 4;
+
+    ncolumns      = {2,1,1,0}
+    columns       = {{0,2},{1},{3},{}}
+    nrows         = {4,2,3,3}
+    rows          = {{0,1,2,3},{0,1},{1,2,3},{1,2,3}}
+    columnfromrow = {{0,0,2,2},{1,1},{4,3,3},{5,5,5}}
+
+    ncolumns      = {2,0,2,2}
+    columns       = {{6},{},{4},{5}}
+    nrows         = {3,0,2,2}
+    rows          = {{4,5,6},{},{4,6},{4,5}}
+    columnfromrow = {{6,0,6},{},{4,4},{5,5}}
+
+*/
+
+struct  _MatFDColoring{
+  PETSCHEADER
+  int    ncolors;          
+  int    *ncolumns;        /* number of local columns for a color */ 
+  int    **columns;        /* lists the local columns of each color */
+  int    *nrows;           /* number of local rows for each color */
+  int    **rows;           /* lists the rows for each color */
+  int    **columnsforrow;  /* lists the corresponding columns for those rows */ 
+  Scalar *scale,*wscale;   /* workspace using to hold FD scalings */
+  double      error_rel;   /* square root of relative error in computing function */
+  double      umin;        /* minimum allowable u'dx value */
+};
 
 #endif
 

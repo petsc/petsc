@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.67 1996/08/22 19:51:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.68 1996/09/14 03:08:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -150,13 +150,13 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
-  if (format == ASCII_FORMAT_INFO || format == ASCII_FORMAT_INFO_DETAILED) {
+  if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     fprintf(fd,"  block size is %d\n",bs);
   } 
-  else if (format == ASCII_FORMAT_MATLAB) {
+  else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
     SETERRQ(1,"MatView_SeqBAIJ_ASCII:Matlab format not supported");
   } 
-  else if (format == ASCII_FORMAT_COMMON) {
+  else if (format == VIEWER_FORMAT_ASCII_COMMON) {
     for ( i=0; i<a->mbs; i++ ) {
       for ( j=0; j<bs; j++ ) {
         fprintf(fd,"row %d:",i*bs+j);
@@ -355,7 +355,7 @@ static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
 #define CHUNKSIZE  10
 
 /* This version has row oriented v  */
-static int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
+int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
@@ -2051,7 +2051,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   if (flg) {
     Viewer tviewer;
     ierr = ViewerFileOpenASCII(B->comm,"stdout",&tviewer);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(tviewer,ASCII_FORMAT_INFO,0);CHKERRQ(ierr);
+    ierr = ViewerSetFormat(tviewer,VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
     ierr = MatView(B,tviewer); CHKERRQ(ierr);
     ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
   }
@@ -2059,7 +2059,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   if (flg) {
     Viewer tviewer;
     ierr = ViewerFileOpenASCII(B->comm,"stdout",&tviewer);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(tviewer,ASCII_FORMAT_INFO_DETAILED,0);CHKERRQ(ierr);
+    ierr = ViewerSetFormat(tviewer,VIEWER_FORMAT_ASCII_INFO_LONG,0);CHKERRQ(ierr);
     ierr = MatView(B,tviewer); CHKERRQ(ierr);
     ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
   }
@@ -2074,7 +2074,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   if (flg) {
     Viewer tviewer;
     ierr = ViewerFileOpenASCII(B->comm,"stdout",&tviewer);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(tviewer,ASCII_FORMAT_MATLAB,"M");CHKERRQ(ierr);
+    ierr = ViewerSetFormat(tviewer,VIEWER_FORMAT_ASCII_MATLAB,"M");CHKERRQ(ierr);
     ierr = MatView(B,tviewer); CHKERRQ(ierr);
     ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
   }

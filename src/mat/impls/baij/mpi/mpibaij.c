@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.26 1996/09/19 20:51:42 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.27 1996/09/24 20:24:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -63,6 +63,7 @@ static int MatRestoreRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n
   return 0;
 }
 
+extern int MatSetValues_SeqBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
 static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
@@ -81,18 +82,22 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   cstart_orig = cstart*bs;
   cend_orig   = cend*bs;
   for ( i=0; i<m; i++ ) {
+#if defined(PETSC_BOPT_g)
     if (im[i] < 0) SETERRQ(1,"MatSetValues_MPIBAIJ:Negative row");
     if (im[i] >= baij->M) SETERRQ(1,"MatSetValues_MPIBAIJ:Row too large");
+#endif
     if (im[i] >= rstart_orig && im[i] < rend_orig) {
       row = im[i] - rstart_orig;
       for ( j=0; j<n; j++ ) {
-        if (in[j] < 0) SETERRQ(1,"MatSetValues_MPIBAIJ:Negative column");
-        if (in[j] >= baij->N) SETERRQ(1,"MatSetValues_MPIBAIJ:Col too large");
         if (in[j] >= cstart_orig && in[j] < cend_orig){
           col = in[j] - cstart_orig;
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          ierr = MatSetValues(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
+          ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
         }
+#if defined(PETSC_BOPT_g)
+        else if (in[j] < 0) {SETERRQ(1,"MatSetValues_MPIBAIJ:Negative column");}
+        else if (in[j] >= baij->N) {SETERRQ(1,"MatSetValues_MPIBAIJ:Col too large");}
+#endif
         else {
           if (mat->was_assembled) {
             if (!baij->colmap) {
@@ -106,7 +111,7 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
           }
           else col = in[j];
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          ierr = MatSetValues(baij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
+          ierr = MatSetValues_SeqBAIJ(baij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
         }
       }
     } 
@@ -394,7 +399,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILES_VIEWER || vtype == ASCII_FILE_VIEWER) { 
     ierr = ViewerGetFormat(viewer,&format);
-    if (format == ASCII_FORMAT_INFO_DETAILED) {
+    if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
       MPI_Comm_rank(mat->comm,&rank);
       ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -412,7 +417,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       ierr = VecScatterView(baij->Mvctx,viewer); CHKERRQ(ierr);
       return 0; 
     }
-    else if (format == ASCII_FORMAT_INFO) {
+    else if (format == VIEWER_FORMAT_ASCII_INFO) {
       return 0;
     }
   }
@@ -591,8 +596,7 @@ static int MatMultTrans_MPIBAIJ(Mat A,Vec xx,Vec yy)
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
-  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,
-                  (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   return 0;
 }
 

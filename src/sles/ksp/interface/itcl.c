@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.77 1996/10/24 21:22:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.78 1996/11/01 23:39:53 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -18,7 +18,7 @@ extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
 */
 #define MAXSETFROMOPTIONS 5
 static int numberofsetfromoptions;
-static int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP ksp);
+static int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 
 /*@
     KSPAddOptionsChecker - Adds an additional function to check for KSP options.
@@ -122,6 +122,7 @@ int KSPSetFromOptions(KSP ksp)
   /*
      Graphically plots preconditioned residual norm
   */
+  nmax = 4;
   ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xmonitor",loc,&nmax,&flg); CHKERRQ(ierr);
   if (flg) {
     int    rank = 0;
@@ -137,6 +138,7 @@ int KSPSetFromOptions(KSP ksp)
   /*
      Graphically plots preconditioned and true residual norm
   */
+  nmax = 4;
   ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xtruemonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg){
     int    rank = 0;

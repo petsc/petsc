@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.54 1996/09/28 16:08:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.55 1996/10/24 21:23:46 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -46,11 +46,14 @@ int MGMCycle_Private(MG *mglevels)
 */
 static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 {
-  MG  *mg;
-  int i,ierr;
+  MG   *mg;
+  int  i,ierr;
+  char *prefix;
 
   mg = (MG *) PetscMalloc( levels*sizeof(MG) ); CHKPTRQ(mg);
   PLogObjectMemory(pc,levels*(sizeof(MG)+sizeof(struct _MG)));
+
+  ierr = PCGetOptionsPrefix(pc,&prefix); CHKERRQ(ierr);
 
   for ( i=0; i<levels; i++ ) {
     mg[i]         = (MG) PetscMalloc( sizeof(struct _MG) ); CHKPTRQ(mg[i]);
@@ -59,6 +62,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
     mg[i]->levels = levels;
     mg[i]->cycles = 1;
     ierr = SLESCreate(comm,&mg[i]->smoothd); CHKERRQ(ierr);
+    ierr = SLESSetOptionsPrefix(mg[i]->smoothd,prefix); CHKERRQ(ierr);
     PLogObjectParent(pc,mg[i]->smoothd);
     mg[i]->smoothu = mg[i]->smoothd;
   }
@@ -380,21 +384,21 @@ static int PCSetUp_MG(PC pc)
 
   for ( i=0; i<n; i++ ) {
     if (mg[i]->smoothd) {
-      ierr = SLESSetOptionsPrefix(mg[i]->smoothd,"mg_levels_"); CHKERRQ(ierr);
+      ierr = SLESAppendOptionsPrefix(mg[i]->smoothd,"mg_levels_"); CHKERRQ(ierr);
       ierr = SLESSetFromOptions(mg[i]->smoothd); CHKERRQ(ierr);
       ierr = SLESGetKSP(mg[i]->smoothd,&ksp); CHKERRQ(ierr);
       if (i != 0) {ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);}
       if (i != 0) {ierr = SLESSetUp(mg[i]->smoothd,mg[i]->b,mg[i]->x); CHKERRQ(ierr);}
     }
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
-      ierr = SLESSetOptionsPrefix(mg[i]->smoothu,"mg_levels_"); CHKERRQ(ierr);
+      ierr = SLESAppendOptionsPrefix(mg[i]->smoothu,"mg_levels_"); CHKERRQ(ierr);
       ierr = SLESSetFromOptions(mg[i]->smoothu); CHKERRQ(ierr);
       ierr = SLESGetKSP(mg[i]->smoothu,&ksp); CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
       ierr = SLESSetUp(mg[i]->smoothu,mg[i]->b,mg[i]->x); CHKERRQ(ierr);
     }
   }
-  ierr = SLESSetOptionsPrefix(mg[0]->smoothd,"mg_coarse_"); CHKERRQ(ierr);
+  ierr = SLESAppendOptionsPrefix(mg[0]->smoothd,"mg_coarse_"); CHKERRQ(ierr);
   ierr = SLESSetFromOptions(mg[0]->smoothd); CHKERRQ(ierr);
   ierr = SLESSetUp(mg[0]->smoothd,mg[0]->b,mg[0]->x); CHKERRQ(ierr);
   return 0;
@@ -424,7 +428,7 @@ int PCCreate_MG(PC pc)
 
 .keywords: MG, set, levels, multigrid
 
-.seealso: MGSetType()
+.seealso: MGSetType(), MGGetLevels()
 @*/
 int MGSetLevels(PC pc,int levels)
 {
@@ -437,6 +441,30 @@ int MGSetLevels(PC pc,int levels)
   mg[0]->am     = MGMULTIPLICATIVE;
   pc->data      = (void *) mg;
   pc->applyrich = MGCycleRichardson;
+  return 0;
+}
+
+/*@
+   MGGetLevels - Gets the number of levels to use with MG.
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output parameter:
+.  levels - the number of levels
+
+.keywords: MG, get, levels, multigrid
+
+.seealso: MGSetLevels()
+@*/
+int MGGetLevels(PC pc,int *levels)
+{
+  MG  *mg;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (pc->type != PCMG) return 0;
+
+  mg      = (MG*) pc->data;
+  *levels = mg[0]->levels;
   return 0;
 }
 

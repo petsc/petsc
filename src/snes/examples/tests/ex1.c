@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.43 1996/10/01 02:41:30 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.44 1996/10/02 02:24:37 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
@@ -71,13 +71,14 @@ int FormInitialGuess(AppCtx*,Vec);
 
 int main( int argc, char **argv )
 {
-  SNES     snes;                 /* SNES context */
-  Vec      x, r;                 /* solution, residual vectors */
-  Mat      J;                    /* Jacobian matrix */
-  AppCtx   user;                 /* user-defined application context */
-  Draw     draw;                 /* drawing context */
-  int      ierr, its, N, flg, matrix_free, size; 
-  double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  SNES           snes;                 /* nonlinear solver context */
+  Vec            x, r;                 /* solution, residual vectors */
+  Mat            J;                    /* Jacobian matrix */
+  AppCtx         user;                 /* user-defined application context */
+  Draw           draw;                 /* drawing context */
+  int            ierr, its, N, flg, matrix_free, size,fd_coloring; 
+  double         bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  MatFDColoring  fdcoloring;           
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   MPI_Comm_size(MPI_COMM_WORLD,&size);
@@ -132,11 +133,45 @@ int main( int argc, char **argv )
     ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,5,PETSC_NULL,&J); CHKERRA(ierr);
   }
 
+  /*
+     This option will cause the Jacobian to be computed via finite differences
+    efficiently using a coloring of the columns of the matrix.
+  */
+  ierr = OptionsHasName(PETSC_NULL,"-snes_fd_coloring",&fd_coloring); CHKERRA(ierr);
+  if (fd_coloring) {
+    ISColoring   iscoloring;
+    MatStructure str;
+
+    /* 
+      This initializes the nonzero structure of the Jacobian. This is artificial
+      because clearly if we had a routine to compute the Jacobian we won't need
+      to use finite differences.
+    */
+    ierr = FormJacobian(snes,x,&J,&J,&str,&user); CHKERRA(ierr);
+
+    /*
+       Color the matrix, i.e. determine groups of columns that share no common 
+      rows. These columns in the Jacobian can all be computed simulataneously.
+    */
+    ierr = MatGetColoring(J,COLORING_NATURAL,&iscoloring); CHKERRA(ierr);
+    /*
+       Create the data structure that SNESDefaultComputeJacobianWithColoring() uses
+       to compute the actual Jacobians via finite differences.
+    */
+    ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); CHKERRA(ierr);
+    ierr = MatFDColoringSetFromOptions(fdcoloring); CHKERRA(ierr);
+    /*
+        Tell SNES to use the routine SNESDefaultComputeJacobianWithColoring()
+      to compute Jacobians.
+    */
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianWithColoring,fdcoloring);CHKERRA(ierr);  
+    ierr = ISColoringDestroy(iscoloring); CHKERRA(ierr);
+  }
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation
      routine.  Whenever the nonlinear solver needs to compute the
      Jacobian matrix, it will call this routine.
-      - Note that the final routine argument is the user-defined
+      - Note that the final routineVIEWER_FORMAT_ASCII_INFO argument is the user-defined
         context that provides application-specific data for the
         Jacobian evaluation routine.
       - The user can override with:
@@ -147,7 +182,7 @@ int main( int argc, char **argv )
                              but use matrix-free approx for Jacobian-vector
                              products within Newton-Krylov method
   */
-  if (!matrix_free) {
+  else if (!matrix_free) {
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user); CHKERRA(ierr);
   }
 
@@ -188,6 +223,9 @@ int main( int argc, char **argv )
 
   if (!matrix_free) {
     ierr = MatDestroy(J); CHKERRA(ierr);
+  }
+  if (fd_coloring) {
+    ierr = MatFDColoringDestroy(fdcoloring); CHKERRA(ierr);
   }
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(r); CHKERRA(ierr);

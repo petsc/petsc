@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.93 1996/10/15 18:47:40 balay Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.94 1996/10/15 21:58:38 balay Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -86,6 +86,32 @@ int SNESView(SNES snes,Viewer viewer)
   return 0;
 }
 
+/*
+       We retain a list of functions that also take SNES command 
+    line options. These are called at the end SNESSetFromOptions()
+*/
+#define MAXSETFROMOPTIONS 5
+static int numberofsetfromoptions;
+static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
+
+/*@
+    SNESAddOptionsChecker - Adds an additional function to check for SNES options.
+
+  Input Parameter:
+.   snescheck - function that checks for options
+
+.seealso: SNESSetFromOptions()
+@*/
+int SNESAddOptionsChecker(int (*snescheck)(SNES) )
+{
+  if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
+    SETERRQ(1,"SNESAddOptionsChecker:Too many options checkers, only 5 allowed");
+  }
+
+  othersetfromoptions[numberofsetfromoptions++] = snescheck;
+  return 0;
+}
+
 /*@
    SNESSetFromOptions - Sets various SNES and SLES parameters from user options.
 
@@ -101,7 +127,7 @@ int SNESSetFromOptions(SNES snes)
   SNESType method;
   double   tmp;
   SLES     sles;
-  int      ierr, flg, mset = 0;
+  int      ierr, flg,i;
   int      version   = PETSC_DEFAULT;
   double   rtol_0    = PETSC_DEFAULT;
   double   rtol_max  = PETSC_DEFAULT;
@@ -151,17 +177,15 @@ int SNESSetFromOptions(SNES snes)
   ierr = SNES_KSP_SetParametersEW(snes,version,rtol_0,rtol_max,gamma2,alpha,
                                   alpha2,threshold); CHKERRQ(ierr);
   ierr = OptionsHasName(snes->prefix,"-snes_monitor",&flg); CHKERRQ(ierr);
-  if (flg) {SNESSetMonitor(snes,SNESDefaultMonitor,0); mset = 1;}
+  if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0);CHKERRQ(ierr);}
   ierr = OptionsHasName(snes->prefix,"-snes_smonitor",&flg); CHKERRQ(ierr);
   if (flg) {
-   if (mset) SETERRQ(1,"SNESSetFromOptions:Monitor for SNES is already set");
-   SNESSetMonitor(snes,SNESDefaultSMonitor,0); mset = 1;
+   ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,0);  CHKERRQ(ierr);
   }
   ierr = OptionsHasName(snes->prefix,"-snes_xmonitor",&flg); CHKERRQ(ierr);
   if (flg) {
     int    rank = 0;
     DrawLG lg;
-    if (mset) SETERRQ(1,"SNESSetFromOptions:Monitor for SNES is already set");
     MPI_Initialized(&rank);
     if (rank) MPI_Comm_rank(snes->comm,&rank);
     if (!rank) {
@@ -170,7 +194,6 @@ int SNESSetFromOptions(SNES snes)
       snes->xmonitor = lg;
       PLogObjectParent(snes,lg);
     }
-    mset = 1;
   }
   ierr = OptionsHasName(snes->prefix,"-snes_fd", &flg);  CHKERRQ(ierr);
   if (flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
@@ -185,6 +208,11 @@ int SNESSetFromOptions(SNES snes)
     PLogInfo(snes,
       "SNESSetFromOptions: Setting default finite difference Hessian matrix\n");
   }
+
+  for ( i=0; i<numberofsetfromoptions; i++ ) {
+    ierr = (*othersetfromoptions[i])(snes); CHKERRQ(ierr);
+  }
+
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
   if (!snes->setfromoptions) return 0;
@@ -484,7 +512,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->trunctol	  = 1.e-12; /* no longer used */
   snes->nfuncs            = 0;
   snes->nfailures         = 0;
-  snes->monitor           = 0;
+  snes->numbermonitors    = 0;
   snes->data              = 0;
   snes->view              = 0;
   snes->computeumfunction = 0;
@@ -1236,14 +1264,25 @@ $
 $ SNES_UNCONSTRAINED_MINIMIZATION methods:
 $    norm - 2-norm gradient value (may be estimated)
 
+   Notes: 
+   Several different monitor routines may be set and all will be called.
+
 .keywords: SNES, nonlinear, set, monitor
 
 .seealso: SNESDefaultMonitor()
 @*/
 int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx )
 {
-  snes->monitor = func;
-  snes->monP    = mctx;
+  if (!func) {
+    snes->numbermonitors = 0;
+    return 0;
+  }
+  if (snes->numbermonitors >= MAXSNESMONITORS) {
+    SETERRQ(1,"SNESSetMonitor:Too many monitors set");
+  }
+
+  snes->monitor[snes->numbermonitors]           = func;
+  snes->monitorcontext[snes->numbermonitors++]  = (void*)mctx;
   return 0;
 }
 
@@ -1649,7 +1688,8 @@ int SNESGetMinimizationFunction(SNES snes,double *r)
 
 /*@C
    SNESSetOptionsPrefix - Sets the prefix used for searching for all 
-   SNES options in the database.
+   SNES options in the database. You must NOT include the - at the beginning of 
+   the prefix name.
 
    Input Parameter:
 .  snes - the SNES context
@@ -1664,14 +1704,15 @@ int SNESSetOptionsPrefix(SNES snes,char *prefix)
   int ierr;
 
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  ierr = PetscObjectSetPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
   ierr = SLESSetOptionsPrefix(snes->sles,prefix);CHKERRQ(ierr);
   return 0;
 }
 
 /*@C
    SNESAppendOptionsPrefix - Appends to the prefix used for searching for all 
-   SNES options in the database.
+   SNES options in the database. You must NOT include the - at the beginning of 
+   the prefix name.
 
    Input Parameter:
 .  snes - the SNES context
@@ -1686,7 +1727,7 @@ int SNESAppendOptionsPrefix(SNES snes,char *prefix)
   int ierr;
   
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  ierr = PetscObjectAppendPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
   ierr = SLESAppendOptionsPrefix(snes->sles,prefix);CHKERRQ(ierr);
   return 0;
 }
@@ -1710,7 +1751,7 @@ int SNESGetOptionsPrefix(SNES snes,char **prefix)
   int ierr;
 
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  ierr = PetscObjectGetPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.12 1996/09/28 23:11:55 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.13 1996/09/30 20:18:50 curfman Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -77,12 +77,14 @@ int main(int argc,char **argv)
   ierr = DAGetLocalVector(appctx.da,&local); CHKERRA(ierr);
 
   /* Set up display to show wave graph */
+
   ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(appctx.viewer1,&draw); CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
+  ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);   
   ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2); CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(appctx.viewer2,&draw); CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
+  ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);   
+
 
   /* make work array for evaluating right hand side function */
   ierr = VecDuplicate(local,&appctx.localwork); CHKERRA(ierr);
@@ -202,13 +204,13 @@ int main(int argc,char **argv)
 
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = TSDestroy(ts); CHKERRA(ierr);
-  ierr = DADestroy(appctx.da); CHKERRA(ierr);
   ierr = ViewerDestroy(appctx.viewer1); CHKERRA(ierr);
   ierr = ViewerDestroy(appctx.viewer2); CHKERRA(ierr);
   ierr = VecDestroy(appctx.localwork); CHKERRA(ierr);
   ierr = VecDestroy(appctx.solution); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);
+  ierr = DADestroy(appctx.da); CHKERRA(ierr);
   if (A) {ierr= MatDestroy(A); CHKERRA(ierr);}
 
   PetscFinalize();
@@ -267,7 +269,7 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
 
   ierr = PetscObjectGetComm((PetscObject)ts,&comm); CHKERRQ(ierr);
 
-  ierr = VecView(global,appctx->viewer1); CHKERRQ(ierr);
+  ierr = VecView(global,appctx->viewer2); CHKERRQ(ierr);
 
   ierr = Solution(time,appctx->solution, ctx); CHKERRQ(ierr);
   ierr = VecAXPY(&mone,global,appctx->solution); CHKERRQ(ierr);
@@ -282,7 +284,7 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
-  ierr = VecView(appctx->solution,appctx->viewer2); CHKERRQ(ierr);
+    ierr = VecView(appctx->solution,appctx->viewer1); CHKERRQ(ierr);
 
   return 0;
 }

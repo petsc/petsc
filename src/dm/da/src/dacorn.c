@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dacorn.c,v 1.4 1996/03/19 21:29:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dacorn.c,v 1.5 1996/08/08 14:47:19 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -36,10 +36,10 @@ int DAGetCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
   /* since the xs, xe ... have all been multiplied by the number of degrees 
      of freedom per cell, w = da->w, we divide that out before returning.*/
   w = da->w;  
-  *x = da->xs/w; *m = (da->xe - da->xs)/w;
+  if (x) *x = da->xs/w; if(m) *m = (da->xe - da->xs)/w;
   /* the y and z have NOT been multiplied by w */
-  if (y) *y = da->ys; if (n) *n = (da->ye - da->ys);
-  if (z) *z = da->zs; if (p) *p = (da->ze - da->zs); 
+  if (y) *y = da->ys;   if (n) *n = (da->ye - da->ys);
+  if (z) *z = da->zs;   if (p) *p = (da->ze - da->zs); 
   return 0;
 } 
 

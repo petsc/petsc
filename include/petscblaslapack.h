@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.22 1996/07/02 18:09:32 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.23 1996/09/12 16:28:52 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -233,9 +233,9 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,p) ZGESVD(_cptofcd((a),1), \
                                             _cptofcd((a),1),(c),(d),(e),\
                                         (f),(g),(h),(i),(j),(k),(l),(m),(n),(p))
-#define LAgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m) ZGEEV(_cptofcd((a),1), \
+#define LAgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m,n) ZGEEV(_cptofcd((a),1), \
                                             _cptofcd((a),1),(c),(d),(e),\
-                                        (f),(g),(h),(i),(j),(k),(l),(m))
+                                        (f),(g),(h),(i),(j),(k),(l),(m),(n))
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
 #elif defined(HAVE_FORTRAN_CAPS)

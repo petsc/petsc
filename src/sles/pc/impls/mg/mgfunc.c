@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.14 1996/08/08 14:42:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: mgfunc.c,v 1.15 1996/09/28 16:08:13 curfman Exp bsmith $";
 #endif
 
 #include "src/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: mgfunc.c,v 1.14 1996/08/08 14:42:12 bsmith Exp curfma
 int MGGetCoarseSolve(PC pc,SLES *sles)  
 { 
   MG *mg = (MG*) pc->data;
-  *sles =  mg[mg[0]->level]->csles;  
+  *sles =  mg[0]->smoothd;
   return 0;
 }
 
@@ -64,8 +64,8 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
 {
   MG *mg = (MG*) pc->data;
-  mg[mg[0]->level - l]->residual = residual;  
-  mg[mg[0]->level - l]->A        = mat;
+  mg[l]->residual = residual;  
+  mg[l]->A        = mat;
   return 0;
 }
 
@@ -85,7 +85,7 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 int MGSetInterpolate(PC pc,int l,Mat mat)
 { 
   MG *mg = (MG*) pc->data;
-  mg[mg[0]->level - l]->interpolate = mat;  
+  mg[l]->interpolate = mat;  
   return 0;
 }
 
@@ -105,7 +105,7 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
 int MGSetRestriction(PC pc,int l,Mat mat)  
 {
   MG *mg = (MG*) pc->data;
-  mg[mg[0]->level - l]->restrct  = mat;  
+  mg[l]->restrct  = mat;  
   return 0;
 }
 
@@ -129,7 +129,7 @@ int MGSetRestriction(PC pc,int l,Mat mat)
 int MGGetSmoother(PC pc,int l,SLES *sles)
 {
   MG *mg = (MG*) pc->data;
-  *sles = mg[mg[0]->level - l]->smoothu;  
+  *sles = mg[l]->smoothu;  
   return 0;
 }
 
@@ -151,7 +151,7 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
 int MGGetSmootherUp(PC pc,int l,SLES *sles)
 {
   MG *mg = (MG*) pc->data;
-  *sles = mg[mg[0]->level - l]->smoothu;  
+  *sles = mg[l]->smoothu;  
   return 0;
 }
 
@@ -172,18 +172,23 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
 @*/
 int MGGetSmootherDown(PC pc,int l,SLES *sles)
 {
-  MG *mg = (MG*) pc->data;
-  int ierr;
+  MG   *mg = (MG*) pc->data;
+  int  ierr;
+  char *prefix;
+
   /*
      This is called only if user wants a different pre-smoother from post.
      Thus we check if a different one has already been allocated, 
      if not we allocate it.
   */
-  if (mg[mg[0]->level - 1]->smoothd == mg[mg[0]->level -1]->smoothu) {
-    ierr = SLESCreate(pc->comm,&mg[mg[0]->level - 1]->smoothd); CHKERRQ(ierr);
-    PLogObjectParent(pc,mg[mg[0]->level - 1]->smoothd);
+  ierr = PCGetOptionsPrefix(pc,&prefix); CHKERRQ(ierr);
+
+  if (mg[l]->smoothd == mg[l]->smoothu) {
+    ierr = SLESCreate(pc->comm,&mg[l]->smoothd); CHKERRQ(ierr);
+    ierr = SLESSetOptionsPrefix( mg[l]->smoothd,prefix); CHKERRQ(ierr);
+    PLogObjectParent(pc,mg[l]->smoothd);
   }
-  *sles = mg[mg[0]->level - l]->smoothd;
+  *sles = mg[l]->smoothd;
   return 0;
 }
 
@@ -202,7 +207,7 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
 int MGSetCyclesOnLevel(PC pc,int l,int c) 
 {
   MG *mg = (MG*) pc->data;
-  mg[mg[0]->level - l]->cycles  = c;
+  mg[l]->cycles  = c;
   return 0;
 }
 
@@ -223,7 +228,7 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
 int MGSetRhs(PC pc,int l,Vec c)  
 { 
   MG *mg = (MG*) pc->data;
-  mg[mg[0]->level - l]->b  = c;
+  mg[l]->b  = c;
   return 0;
 }
 
@@ -244,7 +249,7 @@ int MGSetRhs(PC pc,int l,Vec c)
 int MGSetX(PC pc,int l,Vec c)  
 { 
   MG *mg = (MG*) pc->data;
-  mg[mg[0]->level - l]->x  = c;
+  mg[l]->x  = c;
   return 0;
 }
 
@@ -263,8 +268,12 @@ int MGSetX(PC pc,int l,Vec c)
 int MGSetR(PC pc,int l,Vec c)
 { 
   MG *mg = (MG*) pc->data;
-  mg[mg[0]->level - l]->r  = c;
+  mg[l]->r  = c;
   return 0;
 }
+
+
+
+
 
 

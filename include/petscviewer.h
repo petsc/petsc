@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.35 1996/09/14 12:46:52 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.36 1996/09/14 13:00:18 bsmith Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -25,14 +25,14 @@ extern int ViewerASCIIGetPointer(Viewer,FILE**);
 extern int ViewerBinaryGetDescriptor(Viewer,int*);
 extern int ViewerBinaryGetInfoPointer(Viewer,FILE **);
 
-#define ASCII_FORMAT_DEFAULT       0
-#define ASCII_FORMAT_MATLAB        1
-#define ASCII_FORMAT_IMPL          2
-#define ASCII_FORMAT_INFO          3
-#define ASCII_FORMAT_INFO_DETAILED 4
-#define ASCII_FORMAT_COMMON        5
-#define BINARY_FORMAT_DEFAULT      0
-#define BINARY_FORMAT_NATIVE       1
+#define VIEWER_FORMAT_ASCII_DEFAULT       0
+#define VIEWER_FORMAT_ASCII_MATLAB        1
+#define VIEWER_FORMAT_ASCII_IMPL          2
+#define VIEWER_FORMAT_ASCII_INFO          3
+#define VIEWER_FORMAT_ASCII_INFO_LONG 4
+#define VIEWER_FORMAT_ASCII_COMMON        5
+#define VIEWER_FORMAT_BINARY_DEFAULT      0
+#define VIEWER_FORMAT_BINARY_NATIVE       1
 #define VIEWER_FORMAT_DRAW_BASIC   0
 #define VIEWER_FORMAT_DRAW_LG      1
 
@@ -47,19 +47,28 @@ extern int    ViewerStringSPrintf(Viewer,char *,...);
 extern Viewer VIEWER_STDOUT_SELF;  
 extern Viewer VIEWER_STDERR_SELF;
 extern Viewer VIEWER_STDOUT_WORLD;
-extern Viewer VIEWER_DRAWX_WORLD_PRIVATE;
+extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_0;
+extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_1;
+extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_2;
 extern Viewer VIEWER_DRAWX_SELF_PRIVATE; 
 extern Viewer VIEWER_MATLAB_WORLD_PRIVATE;
 extern Viewer VIEWER_MATLAB_SELF_PRIVATE;  /* not yet used */
 
-extern int    ViewerInitializeDrawXWorld_Private();
+extern int    ViewerInitializeDrawXWorld_Private_0();
+extern int    ViewerInitializeDrawXWorld_Private_1();
+extern int    ViewerInitializeDrawXWorld_Private_2();
 extern int    ViewerInitializeDrawXSelf_Private();
 
-#define VIEWER_DRAWX_WORLD \
-              (ViewerInitializeDrawXWorld_Private(),VIEWER_DRAWX_WORLD_PRIVATE) 
+#define VIEWER_DRAWX_WORLD_0 \
+              (ViewerInitializeDrawXWorld_Private_0(),VIEWER_DRAWX_WORLD_PRIVATE_0) 
+#define VIEWER_DRAWX_WORLD_1 \
+              (ViewerInitializeDrawXWorld_Private_1(),VIEWER_DRAWX_WORLD_PRIVATE_1) 
+#define VIEWER_DRAWX_WORLD_2 \
+              (ViewerInitializeDrawXWorld_Private_2(),VIEWER_DRAWX_WORLD_PRIVATE_2) 
+
 #define VIEWER_DRAWX_SELF \
               (ViewerInitializeDrawXSelf_Private(),VIEWER_DRAWX_SELF_PRIVATE) 
-
+#define VIEWER_DRAWX_WORLD VIEWER_DRAWX_WORLD_0
 #define VIEWER_MATLAB_WORLD \
         (ViewerInitializeMatlabWorld_Private(),VIEWER_MATLAB_WORLD_PRIVATE) 
 

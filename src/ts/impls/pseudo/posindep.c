@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: posindep.c,v 1.4 1996/10/01 15:03:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: posindep.c,v 1.5 1996/10/01 15:48:03 curfman Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -129,7 +129,7 @@ int TSPseudoComputeTimeStep(TS ts,double *dt)
 
 /* ------------------------------------------------------------------------------*/
 /*@C
-   TSPseudoDefaultVerifyTimeStep - Default code to verify the quality of the last ttimestep.
+   TSPseudoDefaultVerifyTimeStep - Default code to verify the quality of the last timestep.
 
    Input Parameters:
 .  ts - the timestep context

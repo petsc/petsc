@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.111 1996/09/23 18:21:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.112 1996/10/01 03:34:42 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -474,7 +474,7 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
-  if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_DETAILED) {
+  if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     return 0;  /* do nothing for now */
   } 
   else if (format == VIEWER_FORMAT_ASCII_COMMON) {

@@ -1,7 +1,7 @@
 C
-C  "$Id: ex2f.F,v 1.4 1996/09/12 16:24:47 bsmith Exp bsmith $"
+C  "$Id: ex2f.F,v 1.5 1996/09/23 23:14:02 bsmith Exp bsmith $"
 C
-C  Formated Test for IS stride routines
+C  Formatted Test for IS stride routines
 C
       implicit none
 #include "FINCLUDE/petsc.h"

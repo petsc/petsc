@@ -1,4 +1,4 @@
-/* $Id: tsimpl.h,v 1.7 1996/04/20 04:20:55 bsmith Exp curfman $ */
+/* $Id: tsimpl.h,v 1.8 1996/09/30 20:29:36 curfman Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -21,7 +21,7 @@ struct _TS {
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   int           (*monitor)(TS,int,double,Vec,void*); /* monitor routine */
-  void          *monP;		            /* monitor routine context */
+  void          *monitorcontext;	            /* monitor routine context */
 
   int           (*rhsmatrix)(TS,double,Mat*,Mat*,MatStructure *,void*);
   Mat           A,B;        /* user provided matrix and preconditioner */

@@ -1,10 +1,15 @@
-/* $Id: kspimpl.h,v 1.23 1996/04/09 23:07:51 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.24 1996/09/12 16:25:08 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
 
 #include "ksp.h"
 #include "draw.h"
+
+/*
+     Maximum number of monitors you can run with a single KSP
+*/
+#define MAXKSPMONITORS 5 
 
 /*
    Defines the KSP data structure.
@@ -36,9 +41,9 @@ struct _KSP {
 				      */
 
   /* --------User (or default) routines (most return -1 on error) --------*/
-  int  (*monitor)(KSP,int,double,void*); /* returns control to user after */
-  void *monP;                            /* residual calculation, allows user */
-                              /* to, for instance, print residual norm, etc. */
+  int  (*monitor[MAXKSPMONITORS])(KSP,int,double,void*); /* returns control to user after */
+  void *monitorcontext[MAXKSPMONITORS];            /* residual calculation, allows user */
+  int  numbermonitors;                   /* to, for instance, print residual norm, etc. */
   int (*converged)(KSP,int,double,void*);
   void *cnvP; 
   int (*buildsolution)(KSP,Vec,Vec*);  /* Returns a pointer to the solution, or
@@ -71,11 +76,12 @@ struct _KSP {
 };
 
 #define KSPMonitor(ksp,it,rnorm) \
-        if (ksp->monitor) { \
-          int _ierr; \
-          _ierr = (*ksp->monitor)(ksp,it,rnorm,ksp->monP); \
-          CHKERRQ(_ierr); \
-        }
+        { int _ierr,_i,_im = ksp->numbermonitors; \
+          for ( _i=0; _i<_im; _i++ ) {\
+            _ierr = (*ksp->monitor[_i])(ksp,it,rnorm,ksp->monitorcontext[_i]); \
+            CHKERRQ(_ierr); \
+	  } \
+	}
 
 extern int KSPCreate_Richardson(KSP);
 extern int KSPCreate_Chebychev(KSP);

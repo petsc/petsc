@@ -1,13 +1,15 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.27 1996/09/21 23:00:10 bsmith Exp $";
+static char vcid[] = "$Id: scolor.c,v 1.2 1996/09/23 02:17:30 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
 #include "mat.h"
 #include "src/mat/impls/color/color.h"
 
-extern int MatColoring_Natural(Mat,MatColoring,int*,IS**);
-extern int MatFDColoringSL_Minpack(Mat,MatColoring,int *,IS **);
+extern int MatColoring_Natural(Mat,MatColoring,ISColoring*);
+extern int MatFDColoringSL_Minpack(Mat,MatColoring,ISColoring*);
+extern int MatFDColoringLF_Minpack(Mat,MatColoring,ISColoring*);
+extern int MatFDColoringID_Minpack(Mat,MatColoring,ISColoring*);
 
 /*@C
   MatColoringRegisterAll - Registers all of the matrix coloring routines in PETSc.
@@ -40,6 +42,8 @@ int MatColoringRegisterAll()
   */
   ierr = MatColoringRegister(&name,"natural",MatColoring_Natural);CHKERRQ(ierr);
   ierr = MatColoringRegister(&name,"sl",MatFDColoringSL_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(&name,"lf",MatFDColoringLF_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(&name,"id",MatFDColoringID_Minpack);CHKERRQ(ierr);
 
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.35 1996/03/24 06:07:55 curfman Exp curfman $ */
+/* $Id: snesimpl.h,v 1.36 1996/04/04 19:19:59 curfman Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -8,6 +8,7 @@
 /*
    Nonlinear solver context
  */
+#define MAXSNESMONITORS 5
 
 struct _SNES {
   PETSCHEADER
@@ -33,8 +34,9 @@ struct _SNES {
   void  *scaP;                             /* scaling context */
 
   /* ---------------- Petsc (or user) Provided stuff ---------------------*/
-  int   (*monitor)(SNES,int,double,void*); /* monitor routine */
-  void  *monP;		                   /* monitor routine context */
+  int   (*monitor[MAXSNESMONITORS])(SNES,int,double,void*); /* monitor routine */
+  void  *monitorcontext[MAXSNESMONITORS];		   /* monitor routine context */
+  int   numbermonitors;
   int   (*converged)(SNES,double,double,double,void*); /* converg. routine */
   void  *cnvP;		                   /* convergence context */
 
@@ -114,11 +116,12 @@ typedef struct {
 } SNES_KSP_EW_ConvCtx;
 
 #define SNESMonitor(snes,it,rnorm) \
-        if (snes->monitor) { \
-          int _ierr; \
-          _ierr = (*snes->monitor)(snes,it,rnorm,snes->monP); \
-          CHKERRQ(_ierr); \
-        }
+        { int _ierr,_i,_im = snes->numbermonitors; \
+          for ( _i=0; _i<_im; _i++ ) {\
+            _ierr = (*snes->monitor[_i])(snes,it,rnorm,snes->monitorcontext[_i]); \
+            CHKERRQ(_ierr); \
+	  } \
+	}
 
 int SNES_KSP_EW_Converged_Private(KSP,int,double,void*);
 int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES,KSP);

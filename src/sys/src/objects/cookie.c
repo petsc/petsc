@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: cookie.c,v 1.4 1996/02/15 02:17:32 curfman Exp balay $";
+static char vcid[] = "$Id: cookie.c,v 1.5 1996/04/03 17:59:04 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"  /*I "petsc.h" I*/
-int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_STATIC;
+int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_PREDEFINED;
 
 /*@
     PetscRegisterCookie - Registers a new cookie for use with a
@@ -23,6 +23,9 @@ int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_STATIC;
 @*/
 int PetscRegisterCookie(int *cookie)
 {
+  if (LARGEST_PETSC_COOKIE >= LARGEST_PETSC_COOKIE_ALLOWED) { 
+    SETERRQ(1,"PetscRegisterCookie:You have used too many PETSc cookies");
+  }
   if (!*cookie) *cookie = LARGEST_PETSC_COOKIE++;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.19 1996/08/05 22:55:04 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.20 1996/08/08 14:42:52 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -91,13 +91,16 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
 
   /* set default direct solver with no Krylov method */
   if (!pc->setupcalled) {
+    char *prefix;
     ierr = SLESCreate(MPI_COMM_SELF,&sles); CHKERRQ(ierr);
     PLogObjectParent(pc,sles);
     ierr = SLESGetKSP(sles,&subksp); CHKERRQ(ierr);
     ierr = KSPSetType(subksp,KSPPREONLY); CHKERRQ(ierr);
     ierr = SLESGetPC(sles,&subpc); CHKERRQ(ierr);
     ierr = PCSetType(subpc,PCILU); CHKERRQ(ierr);
-    ierr = SLESSetOptionsPrefix(sles,"sub_"); CHKERRQ(ierr);
+    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+    ierr = SLESSetOptionsPrefix(sles,prefix); CHKERRQ(ierr);
+    ierr = SLESAppendOptionsPrefix(sles,"sub_"); CHKERRQ(ierr);
     ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
 /*
    This is not so good. The only reason we need to generate this vector

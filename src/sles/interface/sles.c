@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.69 1996/09/30 17:54:23 curfman Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.70 1996/10/10 19:49:35 curfman Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -36,6 +36,8 @@ int SLESView(SLES sles,Viewer viewer)
   PC          pc;
   int         ierr;
 
+  if (!viewer) {viewer = VIEWER_STDOUT_SELF;}
+
   SLESGetPC(sles,&pc);
   SLESGetKSP(sles,&ksp);
   ierr = KSPView(ksp,viewer); CHKERRQ(ierr);
@@ -67,7 +69,8 @@ int SLESPrintHelp(SLES sles)
 
 /*@C
    SLESSetOptionsPrefix - Sets the prefix used for searching for all 
-   SLES options in the database.
+   SLES options in the database. You must include the - at the beginning of 
+   the prefix name.
 
    Input Parameter:
 .  sles - the SLES context
@@ -84,14 +87,16 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
 {
   int ierr;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = PetscObjectSetPrefix((PetscObject)sles, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)sles, prefix); CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(sles->ksp,prefix);CHKERRQ(ierr);
   ierr = PCSetOptionsPrefix(sles->pc,prefix); CHKERRQ(ierr);
   return 0;
 }
+
 /*@C
    SLESAppendOptionsPrefix - Appends to the prefix used for searching for all 
-   SLES options in the database.
+   SLES options in the database. You must include the - at the beginning of 
+   the prefix name.
 
    Input Parameter:
 .  sles - the SLES context
@@ -108,7 +113,7 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
 {
   int ierr;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = PetscObjectAppendPrefix((PetscObject)sles, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)sles, prefix); CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(sles->ksp,prefix);CHKERRQ(ierr);
   ierr = PCAppendOptionsPrefix(sles->pc,prefix); CHKERRQ(ierr);
   return 0;
@@ -133,7 +138,7 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
 int SLESGetOptionsPrefix(SLES sles,char **prefix)
 {
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  return PetscObjectGetPrefix((PetscObject)sles, prefix); 
+  return PetscObjectGetOptionsPrefix((PetscObject)sles, prefix); 
 }
 
 /*@
@@ -152,6 +157,7 @@ int SLESSetFromOptions(SLES sles)
   int ierr;
 
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  ierr = KSPSetPC(sles->ksp,sles->pc);  CHKERRQ(ierr);
   ierr = KSPSetFromOptions(sles->ksp); CHKERRQ(ierr);
   ierr = PCSetFromOptions(sles->pc); CHKERRQ(ierr);
   return 0;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.61 1996/08/29 14:15:43 balay Exp curfman $";
+static char vcid[] = "$Id: mtr.c,v 1.62 1996/09/14 03:34:50 curfman Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -8,9 +8,6 @@ static char vcid[] = "$Id: mtr.c,v 1.61 1996/08/29 14:15:43 balay Exp curfman $"
 */
 #include <stdio.h>
 #include "petsc.h"           /*I "petsc.h" I*/
-#if defined(HAVE_SEARCH_H)
-#include <search.h>
-#endif
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -106,6 +103,31 @@ extern "C" {
 #endif
 
 /*
+    These are for MPICH version 1.0.13 only.
+
+struct MPIR_OP {
+  void              (*op)();
+  unsigned long     cookie;
+  int               commute;
+  int               permanent;
+};
+
+int MPI_Corrupted()
+{
+  if ((MPI_SUM)->cookie != (unsigned long) 0xca01beaf) {
+    SETERRQ(1,"MPI_SUM corrupted");
+  }
+  if ((MPI_MIN)->cookie != (unsigned long) 0xca01beaf) {
+    SETERRQ(1,"MPI_MIN corrupted");
+  }
+  if ((MPI_MAX)->cookie != (unsigned long) 0xca01beaf) {
+    SETERRQ(1,"MPI_MAX corrupted");
+  }
+  return 0;
+}
+*/
+
+/*
    PetscTrValid - Test the allocated blocks for validity.  This can be used to
    check for memory overwrites.
 
@@ -167,6 +189,13 @@ int PetscTrValid(int line,char *file )
 #if defined(PARCH_sun4) && defined(PETSC_BOPT_g)
   malloc_verify();
 #endif
+
+  /*
+  {
+    int ierr;
+    ierr = MPI_Corrupted(); CHKERRQ(ierr);
+  }
+  */
 
   return 0;
 }
@@ -384,103 +413,6 @@ int PetscTrDump( FILE *fp )
   return 0;
 }
 
-#if defined(HAVE_SEARCH_H)
-
-typedef struct { int id, size, lineno; char *fname; } TRINFO;
-static FILE *TRFP;
-
-static int PetscTrIntCompare( TRINFO *a, TRINFO * b )
-{
-  return a->id - b->id;
-}
-
-static int  PetscTrPrintSum(TRINFO ** a, VISIT order, int level )
-{ 
-  if (order == postorder || order == leaf) 
-    fprintf(TRFP,"[%d]%s[%d] has %d\n",(*a)->id,(*a)->fname,(*a)->lineno,(*a)->size);
-  return 0;
-}
-
-/*@C
-  PetscTrSummary - Summarize the allocate memory blocks by id.
-
-  Input Parameter:
-.  fp  - file pointer
-
-  Note:
-  This routine is the same as PetscTrDump() on those systems that do not 
-  include /usr/include/search.h .
-
-.keywords: memory, allocation, tracing, space, statistics
-
-.seealso: PetscTrDump()
- @*/
-int PetscTrSummary( FILE *fp )
-{
-  TRSPACE *head;
-  TRINFO  *root, *key, **fnd,nspace[1000];
-
-  root = 0;
-  head = TRhead;
-  key  = nspace;
-  while (head) {
-    key->id     = head->id;
-    key->size   = 0;
-    key->lineno = head->lineno;
-    key->fname  = head->fname;
-#if defined(USES_V_V_CNST_V_CNST_V_TSEARCH)
-    fnd=(TRINFO **)tsearch((void *)key,(void **)&root, 
-                          (int (*)(const void*,const void*))PetscTrIntCompare);
-#elif defined(USES_V_V_V_V_TSEARCH)
-/*
-    On the IBM rs6000 runing OS 4.1 the prototype for the third argument
-  of tsearch is changed to (int (*)(const void*,const void*)) so change it 
-  below if it is not compiling correctly on your machine.
-*/
-    fnd=(TRINFO **)tsearch((void *)key,(void **)&root,
-                          (int (*)(void*,void*))PetscTrIntCompare);
-#else
-    fnd=(TRINFO **)tsearch((char *)key,(char **)&root,
-                          (int (*)(void*,void*))PetscTrIntCompare);
-#endif
-    if (*fnd == key) {
-	key->size = 0;
-	key++;
-    }
-    (*fnd)->size += head->size;
-    head = head->next;
-  }
-
-  /* Print the data */
-  TRFP = fp;
-/*
-    On the IBM rs6000 runing OS 4.1 the prototype for the second argument
-  of twalk is changed to (void (*)(const void*,VISIT,int)) so change
-  "#if defined(PARCH_solaris)"  below to 
-  "#if defined(PARCH_solaris) || defined (PARCH_rs6000)"
-*/
-/*
-    On the Sun Solaris 5.3 (maybe 5.4) the twalk() prototype is 
-  void twalk(char *, void (*)( void *, VISIT, int));
-  so put a (char *) cast in the first argument below and change the 
-  second cast by removing the const, i.e.
-*/
-#if defined(PARCH_solaris)
-  twalk(root, (void (*)(const void*,VISIT,int))PetscTrPrintSum );
-#else
-  twalk((char *)root, (void (*)(void*,VISIT,int))PetscTrPrintSum );
-#endif
-  fprintf(fp,"Maximum space allocated %lx bytes [%lx]\n",TRMaxMem,TRMaxMemId);
-  return 0;
-}
-#else
-int PetscTrSummary(FILE* fp )
-{
-  fprintf(fp,"Maximum space allocated %ld bytes [%ld]\n",TRMaxMem,TRMaxMemId);
-  return 0;
-}	
-#endif
-
 /*
     PetscTrDebugLevel - Set the level of debugging for the space management 
                    routines.
@@ -495,6 +427,7 @@ int  PetscTrDebugLevel(int level )
   return 0;
 }
 
+
 #define TR_MAX_DUMP 100
 /*
    The following routine attempts to give useful information about the
@@ -505,7 +438,7 @@ int  PetscTrDebugLevel(int level )
    file line number-of-blocks total-number-of-blocks
 
    We have to do a sort-in-place for this
- */
+*/
 
 /*
   Sort by file/line number.  Do this without calling a system routine or
@@ -513,7 +446,7 @@ int  PetscTrDebugLevel(int level )
 
   We do this by first recursively sorting halves of the list and then
   merging them.  
- */
+*/
 
 /* Merge two lists, returning the head of the merged list */
 TRSPACE *PetscTrImerge(TRSPACE * l1,TRSPACE * l2 )

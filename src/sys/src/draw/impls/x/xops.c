@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.63 1996/10/28 22:35:17 curfman Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.64 1996/10/28 22:43:31 curfman Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -369,6 +369,19 @@ int DrawDestroy_X(PetscObject obj)
 extern int XiQuickWindow(Draw_X*,char*,char*,int,int,int,int,int);
 extern int XiQuickWindowFromWindow(Draw_X*,char*,Window,int);
 
+int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
+{
+  Display *display;
+  display = XOpenDisplay( name );
+  if (!display) { *width = 0; *height = 0; return 1;}
+
+  *width  = DisplayWidth(display,0);
+  *height = DisplayHeight(display,0);
+
+  XCloseDisplay(display);
+  return 0;
+}
+
 /*@C
    DrawOpenX - Opens an X-window for use with the Draw routines.
 
@@ -377,6 +390,8 @@ extern int XiQuickWindowFromWindow(Draw_X*,char*,Window,int);
 .  display - the X display on which to open, or null for the local machine
 .  title - the title to put in the title bar, or null for no title
 .  x, y - the screen coordinates of the upper left corner of window
+.         may use PETSC_DECIDE for these two arguments, then PETSc places the 
+.         window
 .  w, h - the screen width and height in pixels
 
    Output Parameters:
@@ -408,14 +423,63 @@ $     the correct colors.
 int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
               Draw* inctx)
 {
-  Draw   ctx;
-  Draw_X *Xwin;
-  int    ierr,size,rank,flg;
-  char   string[128];
+  Draw       ctx;
+  Draw_X     *Xwin;
+  int        ierr,size,rank,flg;
+  char       string[128];
+  static int xavailable = 0,yavailable = 0,xmax = 0,ymax = 0, ybottom = 0;
 
   ierr = OptionsHasName(PETSC_NULL,"-nox",&flg); CHKERRQ(ierr);
   if (flg) {
     return DrawOpenNull(comm,inctx);
+  }
+
+  if (!display) {
+    PetscGetDisplay(string,128);
+    display = string;
+  }
+
+  /*
+      Initialize the display size
+  */
+  if (xmax == 0) {
+    ierr = DrawXGetDisplaySize_Private(display,&xmax,&ymax); CHKERRQ(ierr);
+  }
+
+  if (x == PETSC_DECIDE || y == PETSC_DECIDE) {
+    /*
+       PETSc tries to place windows starting in the upper left corner and 
+       moving accross to the right. 
+    
+              --------------------------------------------
+              |  Region used so far +xavailable,yavailable |
+              |                     +                      |
+              |                     +                      |
+              |++++++++++++++++++++++ybottom               |
+              |                                            |
+              |                                            |
+              |--------------------------------------------|
+    */
+    /*  First: can we add it to the right? */
+    if (xavailable+w+10 <= xmax) {
+      x       = xavailable;
+      y       = yavailable;
+      ybottom = PetscMax(ybottom,y + h + 30);
+    } else {
+      /* No, so add it below on the left */
+      xavailable = 0;
+      x          = 0;
+      yavailable = ybottom;    
+      y          = ybottom;
+      ybottom    = ybottom + h + 30;
+    }
+  }
+  /* update available region */
+  xavailable = PetscMax(xavailable,x + w + 10);
+  if (xavailable >= xmax) {
+    xavailable = 0;
+    yavailable = yavailable + h + 30;
+    ybottom    = yavailable;
   }
 
   *inctx = 0;
@@ -448,10 +512,6 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
 
-  if (!display) {
-    PetscGetDisplay(string,128);
-    display = string;
-  }
   if (rank == 0) {
     if (x < 0 || y < 0) SETERRQ(1,"DrawOpenX:Negative corner of window");
     if (w <= 0 || h <= 0) SETERRQ(1,"DrawOpenX:Negative window width or height");
@@ -560,14 +620,15 @@ int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
      Default X window viewers, may be used at any time.
 */
 
-Viewer VIEWER_DRAWX_SELF_PRIVATE = 0, VIEWER_DRAWX_WORLD_PRIVATE = 0;
+Viewer VIEWER_DRAWX_SELF_PRIVATE = 0, VIEWER_DRAWX_WORLD_PRIVATE_0 = 0,
+       VIEWER_DRAWX_WORLD_PRIVATE_1 = 0, VIEWER_DRAWX_WORLD_PRIVATE_2 = 0;
 
 int ViewerInitializeDrawXSelf_Private()
 {
   int ierr,xywh[4],size = 4,flg;
 
   if (VIEWER_DRAWX_SELF_PRIVATE) return 0;
-  xywh[0] = 300; xywh[1] = 0; xywh[2] = 300; xywh[3] = 300;
+  xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
   ierr = OptionsGetIntArray(PETSC_NULL,"-draw_self_geometry",xywh,&size,&flg);
          CHKERRQ(ierr);
   ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
@@ -575,16 +636,42 @@ int ViewerInitializeDrawXSelf_Private()
   return 0;
 }
 
-int ViewerInitializeDrawXWorld_Private()
+int ViewerInitializeDrawXWorld_Private_0()
 {
   int ierr,xywh[4],size = 4,flg;
 
-  if (VIEWER_DRAWX_WORLD_PRIVATE) return 0;
-  xywh[0] = 0; xywh[1] = 0; xywh[2] = 300; xywh[3] = 300;
+  if (VIEWER_DRAWX_WORLD_PRIVATE_0) return 0;
+  xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
   ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);
          CHKERRQ(ierr);
   ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAWX_WORLD_PRIVATE); CHKERRQ(ierr);
+                         &VIEWER_DRAWX_WORLD_PRIVATE_0); CHKERRQ(ierr);
+  return 0;
+}
+
+int ViewerInitializeDrawXWorld_Private_1()
+{
+  int ierr,xywh[4],size = 4,flg;
+
+  if (VIEWER_DRAWX_WORLD_PRIVATE_1) return 0;
+  xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
+  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);
+         CHKERRQ(ierr);
+  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
+                         &VIEWER_DRAWX_WORLD_PRIVATE_1); CHKERRQ(ierr);
+  return 0;
+}
+
+int ViewerInitializeDrawXWorld_Private_2()
+{
+  int ierr,xywh[4],size = 4,flg;
+
+  if (VIEWER_DRAWX_WORLD_PRIVATE_2) return 0;
+  xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
+  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);
+         CHKERRQ(ierr);
+  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
+                         &VIEWER_DRAWX_WORLD_PRIVATE_2); CHKERRQ(ierr);
   return 0;
 }
 
@@ -592,8 +679,14 @@ int ViewerDestroyDrawX_Private()
 {
   int ierr;
 
-  if (VIEWER_DRAWX_WORLD_PRIVATE) {
-    ierr = ViewerDestroy(VIEWER_DRAWX_WORLD_PRIVATE); CHKERRQ(ierr);
+  if (VIEWER_DRAWX_WORLD_PRIVATE_0) {
+    ierr = ViewerDestroy(VIEWER_DRAWX_WORLD_PRIVATE_0); CHKERRQ(ierr);
+  }
+  if (VIEWER_DRAWX_WORLD_PRIVATE_1) {
+    ierr = ViewerDestroy(VIEWER_DRAWX_WORLD_PRIVATE_1); CHKERRQ(ierr);
+  }
+  if (VIEWER_DRAWX_WORLD_PRIVATE_2) {
+    ierr = ViewerDestroy(VIEWER_DRAWX_WORLD_PRIVATE_2); CHKERRQ(ierr);
   }
   if (VIEWER_DRAWX_SELF_PRIVATE) {
     ierr = ViewerDestroy(VIEWER_DRAWX_SELF_PRIVATE); CHKERRQ(ierr);

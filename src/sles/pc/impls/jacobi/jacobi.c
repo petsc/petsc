@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.25 1996/08/08 14:42:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.26 1996/08/15 12:46:41 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -80,6 +80,7 @@ int PCCreate_Jacobi(PC pc)
   pc->type           = PCJACOBI;
   pc->data           = (void *) jac;
   pc->view           = 0;
+  pc->applyrich      = 0;
   pc->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
   pc->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
   return 0;

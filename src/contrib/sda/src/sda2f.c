@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: sda2f.c,v 1.2 1996/03/23 18:35:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2f.c,v 1.3 1996/08/08 14:47:41 bsmith Exp bsmith $";
 #endif
 /*
      Fortran interface for SDA routines.
@@ -31,19 +31,19 @@ extern "C" {
 
 void sdadestroy_(SDA *sda, int *__ierr )
 {
-  *__ierr = SDADestroy((SDA)MPIR_ToPointer(*(int*) sda));
-  MPIR_RmPointer(*(int*)(sda));
+  *__ierr = SDADestroy((SDA)PetscToPointer(*(int*) sda));
+  PetscRmPointer(*(int*)(sda));
 }
 
 void sdalocaltolocalbegin_(SDA *sda,Scalar *g,InsertMode *mode,Scalar *l,
                            int *__ierr )
 {
-  *__ierr = SDALocalToLocalBegin((SDA)MPIR_ToPointer(*(int*)sda),g,*mode,l);
+  *__ierr = SDALocalToLocalBegin((SDA)PetscToPointer(*(int*)sda),g,*mode,l);
 }
 
 void sdalocaltolocalend_(SDA *sda,Scalar *g,InsertMode *mode,Scalar *l, 
                          int *__ierr ){
-  *__ierr = SDALocalToLocalEnd((SDA)MPIR_ToPointer(*(int*)sda),g,*mode,l);
+  *__ierr = SDALocalToLocalEnd((SDA)PetscToPointer(*(int*)sda),g,*mode,l);
 }
 
 void sdacreate2d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
@@ -52,9 +52,9 @@ void sdacreate2d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
 {
   SDA da;
   *__ierr = SDACreate2d(
-	    (MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*wrap,
+	    (MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*wrap,
             *stencil_type,*M,*N,*m,*n,*w,*s,&da);
-  *(int*) inra = MPIR_FromPointer(da);
+  *(int*) inra = PetscFromPointer(da);
 }
 
 void sdacreate1d_(MPI_Comm comm,DAPeriodicType *wrap,int *M,int *w,int *s,
@@ -62,8 +62,8 @@ void sdacreate1d_(MPI_Comm comm,DAPeriodicType *wrap,int *M,int *w,int *s,
 {
   SDA da;
   *__ierr = SDACreate1d(
-	   (MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*wrap,*M,*w,*s,&da);
-  *(int*) inra = MPIR_FromPointer(da);
+	   (MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*wrap,*M,*w,*s,&da);
+  *(int*) inra = PetscFromPointer(da);
 }
 
 void sdacreate3d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType 
@@ -72,9 +72,9 @@ void sdacreate3d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
 {
   SDA da;
   *__ierr = SDACreate3d(
-	   (MPI_Comm)MPIR_ToPointer_Comm(*(int*)(comm)),*wrap,*stencil_type,
+	   (MPI_Comm)PetscToPointerComm(*(int*)(comm)),*wrap,*stencil_type,
            *M,*N,*P,*m,*n,*p,*w,*s,&da);
-  *(int*) inra = MPIR_FromPointer(da);
+  *(int*) inra = PetscFromPointer(da);
 }
 
 #if defined(__cplusplus)

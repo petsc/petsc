@@ -2,7 +2,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.63 1996/08/15 12:45:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.64 1996/08/17 14:35:39 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -58,9 +58,9 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 }  
 
 /*
-    The next routine determines what part of  the local part of the scatter is an
-exact copy of values into their current location. We check this here and
-then know that we need not perform that portion of the scatter.
+      The next routine determines what part of  the local part of the scatter is an
+  exact copy of values into their current location. We check this here and
+  then know that we need not perform that portion of the scatter.
 */
 static int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,
                                            VecScatter_Seq_General *gen_from)
@@ -80,12 +80,12 @@ static int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,
     gen_to->nonmatching_computed = -1;
     PLogInfo(0,"VecScatterLocalOptimize_Private:All values non-matching\n");
   } else {
-    gen_to->nonmatching_computed = 1;
-    gen_to->n_nonmatching        = gen_from->n_nonmatching = n_nonmatching;
-    nto_slots                    = (int *) PetscMalloc(n_nonmatching*sizeof(int));CHKPTRQ(nto_slots);
-    gen_to->slots_nonmatching    = nto_slots;
-    nfrom_slots                  = (int *) PetscMalloc(n_nonmatching*sizeof(int));CHKPTRQ(nfrom_slots);
-    gen_from->slots_nonmatching  = nfrom_slots;
+    gen_to->nonmatching_computed= 1;
+    gen_to->n_nonmatching       = gen_from->n_nonmatching = n_nonmatching;
+    nto_slots                   = (int *) PetscMalloc(n_nonmatching*sizeof(int));CHKPTRQ(nto_slots);
+    gen_to->slots_nonmatching   = nto_slots;
+    nfrom_slots                 = (int *) PetscMalloc(n_nonmatching*sizeof(int));CHKPTRQ(nfrom_slots);
+    gen_from->slots_nonmatching = nfrom_slots;
     for ( i=0; i<n; i++ ) {
       if (to_slots[i] != from_slots[i]) {
         nto_slots[j]   = to_slots[i];
@@ -103,11 +103,6 @@ static int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,
      Even though the next routines are written with parallel 
   vectors, either xin or yin (but not both) may be Seq
   vectors, one for each processor.
-
-     Note: since nsends, nrecvs and nx may be zero but they are used
-  in mallocs, we always malloc the quantity plus one. This is not 
-  an ideal solution, but it insures that we never try to malloc and 
-  then free a zero size location.
   
      gen_from indices indicate where arriving stuff is stashed
      gen_to   indices indicate where departing stuff came from. 
@@ -146,7 +141,7 @@ static int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,int mode,VecScat
   
   /* post receives:   */
   for ( i=0; i<nrecvs; i++ ) {
-    MPI_Irecv(rvalues+rstarts[i],rstarts[i+1] - rstarts[i],MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
+    MPI_Irecv(rvalues+rstarts[i],rstarts[i+1]-rstarts[i],MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
   }
 
   /* do sends:  */
@@ -225,11 +220,10 @@ static int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,int mode,VecScatte
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {
         yv[lindices[i]] = *val++;
-	/*    printf("[%d] recving idx %d val %g\n",PetscGlobalRank,indices[i],val[-1]); */
       }
     } else {
       for ( i=0; i<n; i++ ) {
-       yv[lindices[i]] += *val++;
+        yv[lindices[i]] += *val++;
       }
     }
     count--;
@@ -325,7 +319,6 @@ static int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,int mode,VecSc
         yv[il+4] += xv[ir+4];
     }
   }
-
   return 0;
 }
 
@@ -366,7 +359,6 @@ static int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,int mode,VecScat
         yv[idx+2] = val[2];
         yv[idx+3] = val[3];
         yv[idx+4] = val[4];
-	/*     printf("[%d]recving %d %g \n",PetscGlobalRank,idx,val[0]); */
         val      += 5;
       }
     } else {
@@ -377,7 +369,7 @@ static int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,int mode,VecScat
         yv[idx+2] += val[2];
         yv[idx+3] += val[3];
         yv[idx+4] += val[4];
-        val      += 5;
+        val       += 5;
       }
     }
     count--;

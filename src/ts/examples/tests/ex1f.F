@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.3 1996/09/29 14:40:10 bsmith Exp curfman $";
+C "$Id: ex1f.F,v 1.4 1996/09/30 20:29:42 curfman Exp bsmith $";
 C
 C       Formatted test for TS routines.
 C
@@ -9,6 +9,8 @@ C       using several different schemes.
 C
 C23456789012345678901234567890123456789012345678901234567890123456789012
 
+      program main
+      implicit none
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/vec.h"
 #include "FINCLUDE/mat.h"
@@ -28,7 +30,7 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 
       integer         ierr,  time_steps, steps, flg, size, problem
       Vec             local, global
-      Double          dt,ftime
+      Double          dt,ftime,zero,tmax
       TS              ts
       TSType          type
       Mat             A
@@ -52,6 +54,7 @@ C
       external Monitor, RHSFunctionHeat, RHSMatrixFree, Initial
       external RHSMatrixHeat, RHSJacobianHeat
 
+      zero       = 0.0
       time_steps = 100
       problem    = linear_no_matrix
       A          = 0
@@ -161,14 +164,14 @@ C
 C         The user provides the RHS as a matrix
 C    
         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
-        call RHSMatrixHeat(ts,0.d0,A,A,A_structure,PETSC_NULL,ierr)  
+        call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL,ierr)  
         call TSSetRHSMatrix(ts,A,A,PETSC_NULL,PETSC_NULL,ierr) 
       else if (problem .eq. linear) then
 C    
 C         The user provides the RHS as a time dependent matrix
 C    
         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
-        call RHSMatrixHeat(ts,0.d0,A,A,A_structure,PETSC_NULL,ierr)  
+        call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL,ierr)  
         call TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,PETSC_NULL,ierr) 
       else if (problem .eq. nonlinear_no_jacobian) then
 C    
@@ -176,7 +179,7 @@ C         The user provides the RHS and a Shell Jacobian
 C    
         call TSSetRHSFunction(ts,RHSFunctionHeat,PETSC_NULL,ierr) 
         call MatCreateShell(PETSC_COMM_WORLD,m,M,M,M,PETSC_NULL,A,ierr)
-        call MatShellSetOperation(A,MAT_MULT,RHSMatrixFree,ierr)
+        call MatShellSetOperation(A,MATOP_MULT,RHSMatrixFree,ierr)
         call TSSetRHSJacobian(ts,A,A,PETSC_NULL,PETSC_NULL,ierr)   
       else if (problem .eq. nonlinear) then
 C    
@@ -184,15 +187,16 @@ C         The user provides the RHS and Jacobian
 C    
         call TSSetRHSFunction(ts,RHSFunctionHeat,PETSC_NULL,ierr) 
         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
-        call RHSMatrixHeat(ts,0.d0,A,A,A_structure,PETSC_NULL,ierr)  
+        call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL,ierr)  
         call TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,PETSC_NULL,ierr)   
       endif
 
       call TSSetFromOptions(ts,ierr)
       call TSGetType(ts,type,PETSC_NULL_CHARACTER,ierr) 
 
-      call TSSetInitialTimeStep(ts,0.d0,dt,ierr) 
-      call TSSetDuration(ts,time_steps,100.,ierr) 
+      call TSSetInitialTimeStep(ts,zero,dt,ierr) 
+      tmax = 100.0
+      call TSSetDuration(ts,time_steps,tmax,ierr) 
       call TSSetSolution(ts,global,ierr) 
 
       call TSSetUp(ts,ierr) 
@@ -220,13 +224,13 @@ C
 
       call ViewerDestroy(viewer,ierr) 
       call TSDestroy(ts,ierr) 
-      call DADestroy(da,ierr) 
       call ViewerDestroy(viewer1,ierr) 
       call ViewerDestroy(viewer2,ierr) 
       call VecDestroy(localwork,ierr) 
       call VecDestroy(csolution,ierr)
       call VecDestroy(local,ierr) 
       call VecDestroy(global,ierr) 
+      call DADestroy(da,ierr) 
       if (A .ne. 0) then
         call MatDestroy(A,ierr) 
       endif
@@ -237,7 +241,7 @@ C
 
 C  -------------------------------------------------------------------
  
-      subroutine Initial(global,ctx)
+      subroutine Initial(global,ctx,ierr)
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/vec.h"
 #include "FINCLUDE/mat.h"
@@ -338,7 +342,7 @@ C   determine starting point of each processor
 
 C -----------------------------------------------------------------------------------
 
-      subroutine Monitor(ts,step,time,global,ctx)
+      subroutine Monitor(ts,step,time,global,ctx,ierr)
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/vec.h"
 #include "FINCLUDE/mat.h"
@@ -384,7 +388,6 @@ C
 
       nrm_2   = nrm_2 + lnrm_2
       nrm_max = nrm_max +  lnrm_max
-
       call VecView(csolution,viewer2,ierr) 
 
       return   
@@ -406,8 +409,11 @@ C  -----------------------------------------------------------------------
       Mat     mat
       Vec     x,y
       integer ierr
+      Double  zero
 
-      call RHSFunctionHeat(0,0.0,x,y,0,ierr) 
+      zero = 0.0
+
+      call RHSFunctionHeat(0,zero,x,y,0,ierr) 
       return
       end
 

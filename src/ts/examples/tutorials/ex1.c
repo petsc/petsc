@@ -1,12 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.3 1996/09/30 20:00:28 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.4 1996/09/30 20:24:02 curfman Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
 
 /*
-   Concepts: Pseudo-timestepping
-   Routines: TSCreate()
+   Concepts: TS,Pseudo-timestepping,nonlinear problems
+   Routines: TSCreate(),TSSetSolution(),TSSetRHSFunction(),TSSetRHSJacobian()
+   Routines: TSSetType(), TS_PSEUDO, TSSetInitialTimeStep(),TSSetDuration()
+   Routines: TSPseudoSetTimeStep(),TSSetFromOptions(),TSStep(),TSDestroy()
    Processors: 1
 
 */
@@ -16,6 +18,10 @@ static char help[] ="Solves the time dependent Bratu problem using pseudo-timest
    with pseudo timestepping. In this simple example, the pseudo-time
    step is the same for all grid points, i.e. this is equivalent to 
    a backward Euler with variable timestep.
+
+     Note: this example does not require pseudo-timestepping since it
+   is an easy nonlinear problem; but it is included to demonstrate how
+   the pseudo-timestepping may be done.
 
      See snes/examples/tutorials/ex4.c[ex4f.F] and 
    snes/examples/tutorials/ex5.c[ex5f.F] where the problem is described
@@ -28,7 +34,6 @@ static char help[] ="Solves the time dependent Bratu problem using pseudo-timest
     file automatically includes: "petsc.h" and other lower level PETSc include files
 */
 #include "ts.h"
-#include "options.h"
 #include <math.h>
 
 /*
@@ -41,11 +46,6 @@ typedef struct {
   int         mx;           /* Discretization in x-direction */
   int         my;           /* Discretization in y-direction */
 } AppCtx;
-
-typedef struct {
-  SNES snes;
-  Vec  w;
-} MFCtx_Private;
 
 /* 
    User-defined routines
@@ -162,7 +162,7 @@ int main( int argc, char **argv )
   */
   ierr = TSStep(ts,&its,&ftime); CHKERRA(ierr);
   
-  printf( "Number of pseudo timesteps = %d final time %g\n", its,ftime );
+  printf( "Number of pseudo timesteps = %d final time %4.2e\n", its,ftime );
 
   /* 
      Free the data structures constructed above

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.68 1996/10/15 21:05:57 balay Exp balay $";
+static char vcid[] = "$Id: itfunc.c,v 1.69 1996/10/15 21:06:39 balay Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -588,12 +588,13 @@ int KSPGetPC(KSP ksp, PC *B)
 }
 
 /*@C
-   KSPSetMonitor - Sets the function to be used at every
-   iteration of the iterative solution. 
+   KSPSetMonitor - Sets the function to be called at every iteration to monitor 
+       the residual/error etc.
+      
 
    Input Parameters:
 .  ksp - iterative context obtained from KSPCreate()
-.  monitor - pointer to int function
+.  monitor - pointer to function (if this is PETSC_NULL, it turns off monitoring
 .  mctx    - [optional] context for private data for the
              monitor routine (use PETSC_NULL if no context
              is desired)
@@ -623,7 +624,8 @@ $                        residual norms
    The default is to do nothing.  To print the residual, or preconditioned 
    residual if KSPSetUsePreconditionedResidual() was called, use 
    KSPDefaultMonitor() as the monitor routine, with a null monitoring 
-   context.
+   context. Several different monitor routines may be set and all will 
+   be called.
 
 .keywords: KSP, set, monitor
 
@@ -632,7 +634,17 @@ $                        residual norms
 int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->monitor = monitor;ksp->monP = (void*)mctx;
+
+  if (!monitor) {
+    ksp->numbermonitors = 0;
+    return 0;
+  }
+  if (ksp->numbermonitors >= MAXKSPMONITORS) {
+    SETERRQ(1,"KSPSetMonitor:Too many monitors set");
+  }
+
+  ksp->monitor[ksp->numbermonitors]           = monitor;
+  ksp->monitorcontext[ksp->numbermonitors++]  = (void*)mctx;
   return 0;
 }
 
@@ -653,7 +665,7 @@ int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
 int KSPGetMonitorContext(KSP ksp, void **ctx)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  *ctx =      (ksp->monP);
+  *ctx =      (ksp->monitorcontext[0]);
   return 0;
 }
 

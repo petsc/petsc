@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.27 1996/09/27 22:09:16 balay Exp curfman $;
+C  $Id: mat.h,v 1.28 1996/09/28 22:22:06 curfman Exp bsmith $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -186,6 +186,12 @@ C
       integer MATOP_ILUDT_FACTOR
       integer MATOP_GET_BLOCK_SIZE
 
+      integer MATOP_GET_ROW_IJ
+      integer MATOP_RESTORE_ROW_IJ
+      integer MATOP_GET_COLUMN_IJ
+      integer MATOP_RESTORE_COLUMN_IJ
+      integer MATOP_FDCOLORING_CREATE
+
       integer MATOP_DESTROY
       integer MATOP_VIEW
 
@@ -244,6 +250,13 @@ C
       parameter(MATOP_DIAGONAL_SHIFT=53)
       parameter(MATOP_ILUDT_FACTOR=54)
       parameter(MATOP_GET_BLOCK_SIZE=55)
+
+      parameter(MATOP_GET_ROW_IJ=56)
+      parameter(MATOP_RESTORE_ROW_IJ=57)
+      parameter(MATOP_GET_COLUMN_IJ=58)
+      parameter(MATOP_RESTORE_COLUMN_IJ=59)
+      parameter(MATOP_FDCOLORING_CREATE=60)
+
       parameter(MATOP_DESTROY=250)
       parameter(MATOP_VIEW=251)
 C

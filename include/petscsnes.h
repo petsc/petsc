@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.52 1996/08/09 23:32:39 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.53 1996/08/20 16:04:48 curfman Exp bsmith $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -40,6 +40,7 @@ extern int SNESSetOptionsPrefix(SNES,char*);
 extern int SNESAppendOptionsPrefix(SNES,char*);
 extern int SNESGetOptionsPrefix(SNES,char**);
 extern int SNESSetFromOptions(SNES);
+extern int SNESAddOptionsChecker(int (*)(SNES) );
 
 extern int SNESDefaultMatrixFreeMatCreate(SNES,Vec x,Mat*);
 extern int SNESSetMatrixFreeParameters(SNES,double,double);
@@ -71,6 +72,7 @@ extern int SNESComputeFunction(SNES,Vec,Vec);
 extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESGetJacobian(SNES,Mat*,Mat*,void **);
 extern int SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int SNESDefaultComputeJacobianWithColoring(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int SNESConverged_EQ_LS(SNES,double,double,double,void*);
 extern int SNESConverged_EQ_TR(SNES,double,double,double,void*);
 extern int SNESNoLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);

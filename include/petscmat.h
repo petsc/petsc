@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.115 1996/09/27 21:55:04 balay Exp curfman $ */
+/* $Id: mat.h,v 1.116 1996/09/28 23:11:27 curfman Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -10,6 +10,9 @@
 
 typedef struct _Mat*           Mat;
 
+/*
+   The default matrix data storage formats and routines to create them.
+*/
 typedef enum { MATSAME=-1, MATSEQDENSE, MATSEQAIJ, MATMPIAIJ, MATSHELL, 
                MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG,
                MATMPIDENSE, MATSEQBAIJ, MATMPIBAIJ} MatType;
@@ -136,14 +139,6 @@ extern int MatReorderingRegisterAll();
 extern int MatReorderingRegisterDestroy();
 extern int MatReorderingGetName(MatReordering,char **);
 
-typedef enum {COLORING_NATURAL, COLORING_SL, COLORING_LD, COLORING_IF,
-              COLORING_APPLICATION_1,COLORING_APPLICATION_2} MatColoring;
-extern int MatGetColoring(Mat,MatColoring,int *,IS**);
-extern int MatGetColoringTypeFromOptions(char *,MatColoring*);
-extern int MatColoringRegister(MatColoring *,char*,int (*)(Mat,MatColoring,int*,IS**));
-extern int MatColoringRegisterAll();
-extern int MatColoringRegisterDestroy();
-
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
 
 extern int MatCholeskyFactor(Mat,IS,double);
@@ -172,6 +167,29 @@ typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128
               } MatSORType;
 extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
+
+/* 
+    These routines are for efficiently computing Jacobians via finite differences.
+*/
+typedef enum {COLORING_NATURAL, COLORING_SL, COLORING_LF, COLORING_ID,
+              COLORING_APPLICATION_1,COLORING_APPLICATION_2} MatColoring;
+extern int MatGetColoring(Mat,MatColoring,ISColoring*);
+extern int MatGetColoringTypeFromOptions(char *,MatColoring*);
+extern int MatColoringRegister(MatColoring *,char*,int (*)(Mat,MatColoring,ISColoring *));
+extern int MatColoringRegisterAll();
+extern int MatColoringRegisterDestroy();
+extern int MatColoringPatch(Mat,int,int *,ISColoring*);
+
+#define MAT_FDCOLORING_COOKIE PETSC_COOKIE + 22
+
+typedef struct _MatFDColoring *MatFDColoring;
+
+extern int MatFDColoringCreate(Mat,ISColoring,MatFDColoring *);
+extern int MatFDColoringDestroy(MatFDColoring);
+extern int MatFDColoringView(MatFDColoring,Viewer);
+extern int MatFDColoringSetParameters(MatFDColoring,double,double);
+extern int MatFDColoringSetFromOptions(MatFDColoring);
+extern int MatFDColoringPrintHelp(MatFDColoring);
 
 /*
     If you add entries here you must also add them to FINCLUDE/mat.h
@@ -231,6 +249,11 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_DIAGONAL_SHIFT=53,
                MATOP_ILUDT_FACTOR=54,
                MATOP_GET_BLOCK_SIZE=55,
+               MATOP_GET_ROW_IJ=56,
+               MATOP_RESTORE_ROW_IJ=57,
+               MATOP_GET_COLUMN_IJ=58,
+               MATOP_RESTORE_COLUMN_IJ=59,
+               MATOP_FDCOLORING_CREATE=60,
                MATOP_DESTROY=250,
                MATOP_VIEW=251
              } MatOperation;
@@ -240,7 +263,7 @@ extern int MatShellSetOperation(Mat,MatOperation,void *);
 /*
    Codes for matrices stored on disk. By default they are
  stored in a universal format. By changing the format with 
- ViewerSetFormat(viewer,BINARY_FORMAT_NATIVE); the matrices will
+ ViewerSetFormat(viewer,VIEWER_FORMAT_BINARY_NATIVE); the matrices will
  be stored in a way natural for the matrix, for example dense matrices
  would be stored as dense. Matrices stored this way may only be
  read into matrices of the same time.

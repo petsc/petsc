@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.131 1996/09/26 02:15:28 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.132 1996/09/26 02:16:36 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -204,18 +204,50 @@ static char *(oname[]) = {"Viewer           ",
                           "Vector           ",
                           "Vector Scatter   ",
                           "Matrix           ",
-                          "Graphic          ",
+                          "Draw             ",
                           "Line graph       ",
                           "Krylov Solver    ",
                           "Preconditioner   ",
-                          "SLES             ",
-                          "Grid             ",
-                          "Stencil          ",
+                          "SLES             ",  /* 10 */
+                          "                 ",
+                          "                 ",
                           "SNES             ",
                           "Distributed array",
-                          "Matrix scatter   ",
+                          "DF               ", /* 15 */
+                          "Axis             ", /* 16 */
+                          "Null Space       ",
+                          "TS               ",
+                          "Random           ",
+                          "AO               ", /* 20 */
+                          "DC               ",
+                          "FD Coloring      ",
+                          "Grid             ", /* 23 */
                           "                 ",
                           "                 ",
+                          "                 ",
+                          "Draw SP          ", /* 27 */                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
+                          "                 ",                          
 			  "                 "};
 
 char *(PLogEventName[]) = {"MatMult         ",
@@ -308,8 +340,8 @@ char *(PLogEventName[]) = {"MatMult         ",
                          " ",
                          " ",
                          " ",
-                         "TS_Step         ",
-                         " ",
+                         "TSStep          ",
+                         "TSPseudoCmptTStp",
                          " ",
                          " ",
                          " ",
@@ -388,7 +420,8 @@ static Objects *objects = 0;
 
 static int     nobjects = 0, nevents = 0, objectsspace = CHUNCK;
 static int     ObjectsDestroyed = 0, eventsspace = CHUNCK;
-static double  ObjectsType[20][4];
+/* make sure the 50 below is larger then any cookie - PETSC_COOKIE */
+static double  ObjectsType[50][4];
 
 static int     EventsStage = 0;    /* which log sessions are we using */
 static int     EventsStageMax = 0; /* highest event log used */ 
@@ -1259,7 +1292,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
 
   /* loop over objects looking for interesting ones */
   PetscFPrintf(comm,fd,"Object Type      Creations   Destructions   Memory  Descendants' Mem.\n");
-  for ( i=0; i<18; i++ ) {
+  for ( i=0; i<50; i++ ) {
     if (ObjectsType[i][0]) {
       PetscFPrintf(comm,fd,"%s %5d          %5d  %9d     %g\n",oname[i],(int) 
           ObjectsType[i][0],(int)ObjectsType[i][1],(int)ObjectsType[i][2],

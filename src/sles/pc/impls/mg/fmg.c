@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fmg.c,v 1.5 1996/05/11 04:04:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fmg.c,v 1.6 1996/08/08 14:42:12 bsmith Exp bsmith $";
 #endif
 /*
      Full multigrid using either additive or multiplicative V or W cycle
@@ -23,24 +23,24 @@ extern int MGMCycle_Private(MG *);
 */
 int MGFCycle_Private(MG *mg)
 {
-  int    i, l = mg[0]->level;
+  int    i, l = mg[0]->levels,ierr;
   Scalar zero = 0.0;
 
   /* restrict the RHS through all levels to coarsest. */
-  for ( i=0; i<l; i++ ){
-    MatMult(mg[i]->restrct,  mg[i]->b, mg[i+1]->b ); 
+  for ( i=l-1; i>0; i-- ){
+    ierr = MatMult(mg[i]->restrct, mg[i]->b, mg[i-1]->b ); CHKERRQ(ierr);
   }
   
   /* work our way up through the levels */
-  for ( i=l; i>0; i-- ) {
-    MGMCycle_Private(&mg[i]); 
-    VecSet(&zero, mg[i-1]->x ); 
-    MatMultTransAdd(mg[i-1]->interpolate,mg[i]->x,mg[i-1]->x,mg[i-1]->x); 
+  ierr = VecSet(&zero, mg[0]->x );  CHKERRQ(ierr);
+  for ( i=0; i<l-1; i++ ) {
+    ierr = MGMCycle_Private(&mg[i]);  CHKERRQ(ierr);
+    ierr = VecSet(&zero, mg[i+1]->x ); CHKERRQ(ierr); 
+    ierr = MatMultTransAdd(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x,mg[i+1]->x);CHKERRQ(ierr); 
   }
-  MGMCycle_Private(mg); 
+  ierr = MGMCycle_Private(&mg[l-1]);  CHKERRQ(ierr);
   return 0;
 }
-
 
 /*
        MGKCycle_Private - Given an MG structure created with MGCreate() runs 
@@ -53,20 +53,24 @@ int MGFCycle_Private(MG *mg)
 */
 int MGKCycle_Private(MG *mg)
 {
-  int    i, l = mg[0]->level,its,ierr;
+  int    i, l = mg[0]->levels,its,ierr;
   Scalar zero = 0.0;
 
   /* restrict the RHS through all levels to coarsest. */
-  for ( i=0; i<l; i++ ){
-    MatMult(mg[i]->restrct,  mg[i]->b, mg[i+1]->b ); 
+  for ( i=l-1; i>0; i-- ){
+    ierr = MatMult(mg[i]->restrct,mg[i]->b, mg[i-1]->b); CHKERRQ(ierr); 
   }
   
   /* work our way up through the levels */
-  for ( i=l; i>0; i-- ) {
+  ierr = VecSet(&zero, mg[0]->x ); 
+  for ( i=0; i<l-1; i++ ) {
     ierr = SLESSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x,&its); CHKERRQ(ierr);
-    VecSet(&zero, mg[i-1]->x ); 
-    MatMultTransAdd(mg[i-1]->interpolate,mg[i]->x,mg[i-1]->x,mg[i-1]->x); 
+    ierr = VecSet(&zero, mg[i+1]->x );  CHKERRQ(ierr);
+    ierr = MatMultTransAdd(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x,mg[i+1]->x);CHKERRQ(ierr);
   }
-  ierr = SLESSolve(mg[0]->smoothd,mg[0]->b,mg[0]->x,&its); CHKERRQ(ierr);
+  ierr = SLESSolve(mg[l-1]->smoothd,mg[l-1]->b,mg[l-1]->x,&its); CHKERRQ(ierr);
+
   return 0;
 }
+
+

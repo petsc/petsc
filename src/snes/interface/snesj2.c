@@ -1,14 +1,10 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj2.c,v 1.3 1996/08/27 18:38:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj2.c,v 1.1 1996/10/09 19:38:25 bsmith Exp bsmith $";
 #endif
 
-#include "snesimpl.h"    /*I  "snes.h"  I*/
-
-#include "src/mat/impls/aij/seq/aij.h"
-
-
-/* ---------------------------------------------------------------------------------*/
+#include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
+#include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
 
 
 /*@C
@@ -31,14 +27,13 @@ static char vcid[] = "$Id: snesj2.c,v 1.3 1996/08/27 18:38:51 bsmith Exp bsmith 
 int SNESDefaultComputeJacobianWithColoring(SNES snes,Vec x1,Mat *JJ,Mat *B,MatStructure *flag,void *ctx)
 {
   MatFDColoring color = (MatFDColoring) ctx;
-  Mat           J = *JJ;
+  Mat           J = *B;
   Vec           jj1,jj2,x2;
-  int           k, ierr,N,start,end,l,row,col;
+  int           k, ierr,N,start,end,l,row,col,srow;
   Scalar        dx, mone = -1.0,*y,*scale = color->scale,*xx,*wscale = color->wscale;
-  double        epsilon = 1.e-8; /* assumes double precision */
+  double        epsilon = color->error_rel, umin = color->umin; 
   MPI_Comm      comm = color->comm;
 
-  PetscTrValid(0,0);
   ierr = MatZeroEntries(J); CHKERRQ(ierr);
   if (!snes->nvwork) {
     ierr = VecDuplicateVecs(x1,3,&snes->vwork); CHKERRQ(ierr);
@@ -56,6 +51,7 @@ int SNESDefaultComputeJacobianWithColoring(SNES snes,Vec x1,Mat *JJ,Mat *B,MatSt
   /*
       Loop over each color
   */
+
   for (k=0; k<color->ncolors; k++) { 
     ierr = VecCopy(x1,x2); CHKERRQ(ierr);
     /*
@@ -66,11 +62,11 @@ int SNESDefaultComputeJacobianWithColoring(SNES snes,Vec x1,Mat *JJ,Mat *B,MatSt
       col = color->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col-start];
 #if !defined(PETSC_COMPLEX)
-      if (dx < 1.e-16 && dx >= 0.0) dx = 1.e-1;
-      else if (dx < 0.0 && dx > -1.e-16) dx = -1.e-1;
+      if (dx < umin && dx >= 0.0) dx = .1;
+      else if (dx < 0.0 && dx > -umin) dx = -.1;
 #else
-      if (abs(dx) < 1.e-16 && real(dx) >= 0.0) dx = 1.e-1;
-      else if (real(dx) < 0.0 && abs(dx) < 1.e-16) dx = -1.e-1;
+      if (abs(dx) < umin && real(dx) >= 0.0) dx = .1;
+      else if (real(dx) < 0.0 && abs(dx) < umin) dx = -.1;
 #endif
       dx          *= epsilon;
       wscale[col] = 1.0/dx;
@@ -82,23 +78,22 @@ int SNESDefaultComputeJacobianWithColoring(SNES snes,Vec x1,Mat *JJ,Mat *B,MatSt
     */
     ierr = SNESComputeFunction(snes,x2,jj2); CHKERRQ(ierr);
     ierr = VecAXPY(&mone,jj1,jj2); CHKERRQ(ierr);
-
     /* Communicate scale to all processors */
 #if !defined(PETSC_COMPLEX)
     MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);
 #else
     MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);
 #endif
-
     /*
        Loop over rows of vector putting results into Jacobian matrix
     */
     VecGetArray(jj2,&y);
     for (l=0; l<color->nrows[k]; l++) {
-      row           = color->rows[k][l];
-      col           = color->columnsforrow[k][l];
-      y[row-start] *= scale[col];
-      ierr = MatSetValues(J,1,&row,1,&col,y+row-start,INSERT_VALUES);CHKERRQ(ierr);
+      row    = color->rows[k][l];
+      col    = color->columnsforrow[k][l];
+      y[row] *= scale[col];
+      srow   = row + start;
+      ierr   = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
     }
     VecRestoreArray(jj2,&y);
   }

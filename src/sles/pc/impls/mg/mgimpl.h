@@ -1,4 +1,4 @@
-/* $Id: mgimpl.h,v 1.7 1996/01/02 20:15:25 bsmith Exp bsmith $ */
+/* $Id: mgimpl.h,v 1.8 1996/08/08 14:42:12 bsmith Exp bsmith $ */
 
 /*
       Data structure used for Multigrid preconditioner.
@@ -11,11 +11,18 @@
 
 typedef struct _MG* MG;
 
+/*
+     Structure for abstract multigrid solver. 
+
+     Level (0) is always the coarsest level and Level (levels-1) is the finest.
+*/
 struct _MG
 {
     MGType   am;                     /* Multiplicative, additive or full */
     int      cycles;                 /* Number cycles to run */
     int      level;                  /* level = 0 coarsest level */
+    int      levels;                 /* number of active levels used */
+    int      maxlevels;              /* total number of levels allocated */
     Vec      b;                      /* Right hand side */ 
     Vec      x;                      /* Solution */
     Vec      r;                      /* Residual */
@@ -25,7 +32,6 @@ struct _MG
     SLES     smoothu;                /* post smoother */
     Mat      interpolate; 
     Mat      restrct;  /* restrict is a reserved word on the Cray!!!*/ 
-    SLES     csles;                  /* coarse grid solve */
 };
 
 #endif

@@ -8,16 +8,12 @@ SOURCEF	        =
 SOURCEH	        =
 OBJSC	        =
 OBJSF	        =
-LOCDIR          = src/viewer/examples/tests
+LOCDIR          = src/viewer/examples/tutorials
 LIBBASE	        = libpetscvec
 TESTEXAMPLES_2  = 
-TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
-BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
-
-EXAMPLESC       = ex1.c ex2.c ex1.m
-
-runex2:
-	@echo "There are no externally runable examples in this directory"
+TESTEXAMPLES_4  = 
+BUILDEXAMPLES_4 = 
+EXAMPLESC       = 
 
 ex1: ex1.o   chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)

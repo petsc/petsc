@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.36 1996/09/28 16:24:48 curfman Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.37 1996/09/28 23:11:46 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -12,7 +12,7 @@ typedef struct {  /* default context for matrix-free SNES */
   Vec         w;         /* work vector */
   PCNullSpace sp;        /* null space context */
   double      error_rel; /* square root of relative error in computing function */
-  double      umin;      /* minimum allowable u value */
+  double      umin;      /* minimum allowable u'a value relative to |u|_1 */
 } MFCtx_Private;
 
 int SNESMatrixFreeDestroy_Private(PetscObject obj)
@@ -153,9 +153,14 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   mfctx->sp   = 0;
   mfctx->snes = snes;
   mfctx->error_rel = 1.e-8; /* assumes double precision */
-  mfctx->umin      = 1.e-8;
+  mfctx->umin      = 1.e-6;
   ierr = OptionsGetDouble(snes->prefix,"-snes_mf_err",&mfctx->error_rel,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(snes->prefix,"-snes_mf_umin",&mfctx->umin,&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
+  if (flg) {
+    PetscPrintf(snes->comm,"-snes_mf_err <err> set sqrt rel tol in function. Default 1.e-8\n");
+    PetscPrintf(snes->comm,"-snes_mf_umin <umin> see users manual. Default 1.e-8\n");
+  }
   ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);
   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
@@ -173,6 +178,10 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
    SNESSetMatrixFreeParameters - Sets the parameters for the approximation of
    matrix-vector products using finite differences.
 
+$       J(u)*a = [J(u+h*a) - J(u)]/h where
+$        h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
+$          = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   else
+$
    Input Parameters:
 .  snes - the SNES context
 .  error_rel - relative error
