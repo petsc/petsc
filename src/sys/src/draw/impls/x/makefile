@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.37 1999/11/05 14:43:58 bsmith Exp bsmith $
+# $Id: makefile,v 1.38 2000/08/17 04:50:31 bsmith Exp balay $
 
 #requirespackage '-DPETSC_HAVE_X11'
 

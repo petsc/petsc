@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 2000/06/07 17:44:52 balay Exp bsmith $
+# $Id: makefile,v 1.2 2000/08/17 04:50:34 bsmith Exp balay $
 
 #requirespackage '-DPETSC_HAVE_WIN32'
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 1998/06/13 05:25:32 balay Exp bsmith $ 
+# $Id: makefile,v 1.8 1999/01/12 23:18:09 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -24,3 +24,4 @@ ex2: ex2.o  chkopts
                     ${PETSC_LIB}
 	${RM} -f ex2.o
 
+include ${PETSC_DIR}/bmake/common_test

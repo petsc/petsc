@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.14 1998/12/17 22:13:00 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.15 1999/01/12 23:18:07 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -24,6 +24,8 @@ ex2: ex2.o  chkopts
                     ${PETSC_LIB}
 	${RM} -f ex2.o
 
+#---------------------------------------------------------------------------------
+
 runex1:
 	-@for d in -1d -2d -3d; do \
             for np in 1 2 3 4; do \
@@ -40,3 +42,4 @@ runex1:
             done; \
           done;
 
+include ${PETSC_DIR}/bmake/common_test
