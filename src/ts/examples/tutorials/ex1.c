@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.5 1996/11/07 15:10:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.6 1997/01/01 03:40:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
@@ -62,7 +62,7 @@ int main( int argc, char **argv )
   AppCtx user;               /* user-defined work context */
   int    its;                /* iterations for convergence */
   int    ierr, N, flg; 
-  double param_max = 6.81, param_min = 0., dt = 1.e-6;
+  double param_max = 6.81, param_min = 0., dt;
   double ftime;
 
   PetscInitialize( &argc, &argv, PETSC_NULL,help );
@@ -79,7 +79,8 @@ int main( int argc, char **argv )
   if (user.param >= param_max || user.param <= param_min) {
     SETERRQ(1,0,"Parameter is out of range");
   }
-  OptionsGetDouble(0,"-dt",&dt,&flg);
+  dt = .5/PetscMax(user.mx,user.my);
+  ierr = OptionsGetDouble(0,"-dt",&dt,&flg); CHKERRA(ierr);
   N          = user.mx*user.my;
   
   /* 

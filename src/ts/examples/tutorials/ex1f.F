@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.4 1996/10/28 15:06:49 bsmith Exp balay $"
+C "$Id: ex1f.F,v 1.5 1996/11/25 23:40:31 balay Exp bsmith $"
 C
 C    Solves the time dependent Bratu problem using pseudo-timestepping
 C
@@ -62,7 +62,6 @@ C
 
       param_max = 6.81
       param_min = 0
-      dt = 1.e-6
 
       call PetscInitialize( PETSC_NULL_CHARACTER ,ierr)
       user(lmx)        = 4
@@ -80,6 +79,11 @@ C
       if (user(param) .ge. param_max .or. 
      &                                user(param) .le. param_min) then
         print*,'Parameter is out of range'
+      endif
+      if (user(lmx) .gt. user(lmy)) then
+        dt = .5/user(lmx)
+      else
+        dt = .5/user(lmy)
       endif
       call OptionsGetDouble(PETSC_NULL_CHARACTER,'-dt',dt,flg,ierr)
       N          = user(lmx)*user(lmy)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.17 1997/01/06 20:42:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: beuler.c,v 1.18 1997/01/14 22:56:35 curfman Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -329,7 +329,7 @@ static int TSSetFromOptions_BEuler_Nonlinear(TS ts)
 
 #undef __FUNC__  
 #define __FUNC__ "TSPrintHelp_BEuler"
-static int TSPrintHelp_BEuler(TS ts)
+static int TSPrintHelp_BEuler(TS ts,char *p)
 {
 
   return 0;

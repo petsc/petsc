@@ -1,4 +1,4 @@
-/* $Id: tsimpl.h,v 1.10 1997/01/06 20:41:51 bsmith Exp curfman $ */
+/* $Id: tsimpl.h,v 1.11 1997/01/14 22:58:07 curfman Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -48,7 +48,7 @@ struct _TS {
   int           setup_called;            /* true if setup has been called */
   int           (*step)(TS,int*,double*); /* stepping routine */      
   int           (*setfromoptions)(TS);    /* sets options from database */
-  int           (*printhelp)(TS);         /* prints help info */
+  int           (*printhelp)(TS,char*);   /* prints help info */
   void          *data;                    /* implementationspecific data */
 
   void          *user;                    /* user context */
@@ -58,6 +58,7 @@ struct _TS {
   int           max_steps;          /* max number of steps */
   double        max_time;
   double        time_step;
+  double        initial_time_step;
   int           steps;              /* steps taken so far */
   double        ptime;              /* time taken so far */
   int           linear_its;         /* total number of linear solver iterations */

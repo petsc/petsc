@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: euler.c,v 1.6 1996/12/18 17:46:07 balay Exp bsmith $";
+static char vcid[] = "$Id: euler.c,v 1.7 1997/01/06 20:41:58 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with explicit Euler.
@@ -74,7 +74,7 @@ static int TSSetFromOptions_Euler(TS ts)
 
 #undef __FUNC__  
 #define __FUNC__ "TSPrintHelp_Euler"
-static int TSPrintHelp_Euler(TS ts)
+static int TSPrintHelp_Euler(TS ts,char *p)
 {
 
   return 0;

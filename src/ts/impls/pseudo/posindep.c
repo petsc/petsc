@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: posindep.c,v 1.10 1997/01/06 20:42:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: posindep.c,v 1.11 1997/01/14 22:57:13 curfman Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -22,8 +22,10 @@ typedef struct {
   void   *verifyctx;     
 
   double initial_fnorm,fnorm;                  /* original and current norm of F(u) */
+  double fnorm_previous;
 
-  double dt_increment;        /* scaling that dt is incremented each time-step */
+  double dt_increment;                  /* scaling that dt is incremented each time-step */
+  int    increment_dt_from_initial_dt;  
 } TS_Pseudo;
 
 /* ------------------------------------------------------------------------------*/
@@ -47,7 +49,7 @@ typedef struct {
 int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
-  double    inc = pseudo->dt_increment;
+  double    inc = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;
   int       ierr;
 
   ierr = TSComputeRHSFunction(ts,ts->ptime,ts->vec_sol,pseudo->func);CHKERRQ(ierr);  
@@ -55,9 +57,17 @@ int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
   if (pseudo->initial_fnorm == 0.0) {
     /* first time through so compute initial function norm */
     pseudo->initial_fnorm = pseudo->fnorm;
+    fnorm_previous        = pseudo->fnorm;
   }
-  if (pseudo->fnorm == 0.0) *newdt = 1.e12*inc*ts->time_step; 
-  else                      *newdt = inc*ts->time_step*pseudo->initial_fnorm/pseudo->fnorm;
+  if (pseudo->fnorm == 0.0) {
+    *newdt = 1.e12*inc*ts->time_step; 
+  }
+  else if (pseudo->increment_dt_from_initial_dt) {
+    *newdt = inc*ts->initial_time_step*pseudo->initial_fnorm/pseudo->fnorm;
+  } else {
+    *newdt = inc*ts->time_step*fnorm_previous/pseudo->fnorm;
+  }
+  pseudo->fnorm_previous = pseudo->fnorm;
   return 0;
 }
 
@@ -424,13 +434,22 @@ static int TSSetFromOptions_Pseudo(TS ts)
   if (flg) {
     ierr = TSPseudoSetTimeStepIncrement(ts,inc);  CHKERRQ(ierr);
   }
+  ierr = OptionsHasName(ts->prefix,"-ts_pseudo_increment_dt_from_initial_dt",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = TSPseudoIncrementDtFromInitialDt(ts); CHKERRQ(ierr);
+  }
   return 0;
 }
 
 #undef __FUNC__  
 #define __FUNC__ "TSPrintHelp_Pseudo"
-static int TSPrintHelp_Pseudo(TS ts)
+static int TSPrintHelp_Pseudo(TS ts,char *p)
 {
+  PetscPrintf(ts->comm," Options for TS Pseudo timestepper:\n");
+  PetscPrintf(ts->comm," %sts_pseudo_increment <value> : default 1.1\n",p);
+  PetscPrintf(ts->comm," %sts_pseudo_increment_dt_from_initial_dt : use initial_dt *\n",p); 
+  PetscPrintf(ts->comm,"     initial fnorm/current fnorm to determine new timestep\n");
+  PetscPrintf(ts->comm,"     default is current_dt * previous fnorm/current fnorm\n"); 
   return 0;
 }
 
@@ -476,8 +495,9 @@ int TSCreate_Pseudo(TS ts )
   PetscMemzero(pseudo,sizeof(TS_Pseudo));
   ts->data = (void *) pseudo;
 
-  pseudo->dt_increment = 1.1;
-  pseudo->dt           = TSPseudoDefaultTimeStep;
+  pseudo->dt_increment                 = 1.1;
+  pseudo->increment_dt_from_initial_dt = 0;
+  pseudo->dt                           = TSPseudoDefaultTimeStep;
   return 0;
 }
 
@@ -511,5 +531,33 @@ int TSPseudoSetTimeStepIncrement(TS ts,double inc)
   return 0;
 }
 
+#undef __FUNC__  
+#define __FUNC__ "TSPseudoIncrementDtFromInitialDt"
+/*@
+    TSPseudoIncrementDtFromInitialDt - Indicates that 
+      a new timestep is computed via initial_dt*initial_fnorm/current_fnorm 
+      rather then the default  current_dt*previous_fnorm/current_fnorm.
+
+    Input Parameters:
+.   ts - the timestep context
+
+    Options Database Key:
+$    -ts_pseudo_increment_dt_from_initial_dt
+
+.keywords: timestep, pseudo, set, increment
+
+.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
+@*/
+int TSPseudoIncrementDtFromInitialDt(TS ts)
+{
+  TS_Pseudo *pseudo;
+
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  if (ts->type != TS_PSEUDO) return 0;
+
+  pseudo                               = (TS_Pseudo*) ts->data;
+  pseudo->increment_dt_from_initial_dt = 1;
+  return 0;
+}
 
 
