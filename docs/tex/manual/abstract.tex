@@ -12,7 +12,7 @@ blocks for the implementation of large-scale application codes on parallel
 message-passing communication.
 
 PETSc includes an expanding suite of parallel linear and nonlinear
-equation solvers that are easily used in application codes written in
+equation solvers that may be  used in application codes written in
 Fortran, C, and C++.  PETSc provides many of the mechanisms needed
 within parallel application codes, such as simple parallel matrix and
 vector assembly routines that allow the overlap of communication and
@@ -24,10 +24,16 @@ of object oriented programming, PETSc provides enormous flexibility
 for users.
 
 PETSc is a sophisticated set of software tools; as such, for some
-users this may mean it initially has a steeper learning curve than a
-simple subroutine library. However, the power of the PETSc design and
+users this means it initially has a much steeper learning curve than a
+simple subroutine library. In particular, for those without some
+computer science background, or a lot of experience in programming C,
+Pascal or C++ it will require a large amount of time to begin to use
+the software efficiently.  However, the power of the PETSc design and
 the algorithms it incorporates make the efficient implementation of
 many application codes much simpler than ``rolling them'' yourself.
+For many simple (or even relatively complicated) tasks a package like
+Matlab is often the best tool; PETSc is not intended for those class
+of problems where effective Matlab code can be written.
 
 PETSc is still under development, so that small changes in usage and
 calling sequences of PETSc routines will continue to occur.  Although
