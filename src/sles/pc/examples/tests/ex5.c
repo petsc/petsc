@@ -97,7 +97,7 @@ int main(int Argc, char **Args)
       SLESGetKSP(sles[i],&ksp);
       KSPSetMethod(ksp,KSPRICHARDSON);
       KSPSetInitialGuessNonzero(ksp);
-      KSPSetIterations(ksp,smooths);
+      KSPSetMaxIterations(ksp,smooths);
 
       VecCreateSequential(MPI_COMM_SELF,N[i],&x); X[levels - 1 - i] = x;
       MGSetX(pcmg,levels - 1 - i,x);
