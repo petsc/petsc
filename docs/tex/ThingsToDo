@@ -10,6 +10,11 @@ Additional Capabilities that PETSc Needs:
 
    To do BEFORE the next release:
   --------------------------------
+  - Make a SNESMonitor() like the KSPMonitor() in kspimpl.h and 
+    insure that it is sued everywhere instead of calls to (*snes->monitor)
+
+  - Make -snes_xmonitor stash the DrawLG in SNES and then have it 
+    destroyed in SNESDestroy(), like as is doen for KSP.
 
   - Make sure all Fortran examples run for complex on all machines, note
     this means the bmake files must insure that -DPETSC_COMPLEX is 
