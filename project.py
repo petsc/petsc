@@ -4,11 +4,10 @@ import os
 
 class Project:
   '''This class represents a SIDL project, and is the only BuildSystem class allowed in an RDict'''
-  def __init__(self, name, url, root = None):
+  def __init__(self, url, root = None):
     import os
     if root is None: root = os.path.abspath(os.getcwd())
     # Read-only variables
-    self.name = name # Needs to be immutable since it is the hash key
     self.url  = url
     self.root = root
     # Updated variables
@@ -17,32 +16,35 @@ class Project:
     return
 
   def __str__(self):
-    return self.name
+    return self.url
 
   def __hash__(self):
-    return self.name.__hash__()
+    return self.url.__hash__()
 
   def __lt__(self, other):
-    return self.name.__lt__(other.getName())
+    return self.url.__lt__(other.getUrl())
 
   def __le__(self, other):
-    return self.name.__le__(other.getName())
+    return self.url.__le__(other.getUrl())
 
   def __eq__(self, other):
-    return self.name.__eq__(other.getName())
+    return self.url.__eq__(other.getUrl())
 
   def __ne__(self, other):
-    return self.name.__ne__(other.getName())
+    return self.url.__ne__(other.getUrl())
 
   def __gt__(self, other):
-    return self.name.__gt__(other.getName())
+    return self.url.__gt__(other.getUrl())
 
   def __ge__(self, other):
-    return self.name.__ge__(other.getName())
+    return self.url.__ge__(other.getUrl())
 
   def getName(self):
-    '''Return the project name, e.g. PETSc'''
-    return self.name
+    import urlparse
+    # Fix parsing for nonstandard schemes
+    urlparse.uses_netloc.extend(['bk', 'ssh'])
+    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(self.getUrl())
+    return path.lower().replace('/', '-')
 
   def getUrl(self):
     '''Return the project URL, e.g. bk://petsc.bkbits.net/petsc-dev'''

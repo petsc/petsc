@@ -19,7 +19,7 @@ class Machine (object):
 
 class RemoteBuild (base.Base):
   def __init__(self, machine, clArgs = None, argDB = None):
-    base.Base.__init__(self, machine, clArgs, argDB)
+    base.Base.__init__(self, clArgs, argDB)
     self.machine = machine
     self.host    = machine.host
     self.dir     = machine.dir

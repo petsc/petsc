@@ -65,7 +65,7 @@ class UrlMapping (base.Base):
   def getInstallRoot(self, url, isBackup = 0):
     '''Guess the install root from the project URL. Note this method automatically remaps the URL.'''
     url  = self.getMappedUrl(url)
-    root = self.getRepositoryName(url)
+    root = self.getRepositoryPath(url)
     if isBackup:
       root = os.path.join('backup', root)
     return os.path.abspath(root)
