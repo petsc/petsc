@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.3 1996/02/19 03:51:17 bsmith Exp balay $ */
+/* $Id: baij.h,v 1.4 1996/03/25 23:11:18 balay Exp balay $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -31,6 +31,7 @@ typedef struct {
   IS               row, col;     /* index sets, used for reorderings */
   Scalar           *solve_work;  /* work space used in MatSolve */
   void             *spptr;       /* pointer for special library like SuperLU */
+  int              indexshift;   /* zero or -one for C or Fortran indexing */
   int              reallocs;     /* number of mallocs done during MatSetValues() 
                                   as more values are set then were prealloced for */
   Scalar           *mult_work;   /* work array for matrix vector product*/
