@@ -679,6 +679,13 @@ acfindx:
       self.addDefine('USE_KBYTES_FOR_SIZE', 1)
     return
 
+  def configureSolaris(self):
+    '''Solaris specific stuff'''
+    if self.archBase.startswith('solaris'):
+      if os.path.isdir(os.path.join('usr',ucblib')):
+        self.framework.argDB['LIBS'] += ' ${CLINKER_SLFLAG}/usr/ucblib'
+    return
+
   def configureLinux(self):
     '''Linux specific stuff'''
     if self.archBase == 'linux':
@@ -833,6 +840,7 @@ acfindx:
     self.executeTest(self.configureLibrarySuffix)
     self.executeTest(self.configureAlpha)
     self.executeTest(self.configureIRIX)
+    self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureMacOSX)
     self.executeTest(self.configureWin32NonCygwin)
