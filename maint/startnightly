@@ -14,5 +14,6 @@ foreach CONF ($*)
 
   echo "start build at `date`:$SSH $USR@$MACH $DASHN $LOC/maint/buildtest $CONF" 
   $SSH $USR@$MACH $DASHN "$LOC/maint/buildtest $CONF" &
+  sleep 300 # perhaps ease the load on petsc.bkbits.net by spacing the builds
 end
 wait

@@ -21,17 +21,16 @@ gunzip -c $fulldistfile | tar -xf -
 
 /bin/rm -rf $tmpdir/petsc-lite/petsc*/docs
 
-# Update readme.html
 cd $tmpdir/petsc-lite/petsc*
-cat readme.html | sed s@href=\"docs@href=\"http://www.mcs.anl.gov/petsc/docs@g | \
-    sed s@petscversion.h.html@petscversion.h@g > readme.bak
+# Update readme.html
+#cat readme.html | sed s@href=\"docs@href=\"http://www.mcs.anl.gov/petsc/docs@g | sed s@petscversion.h.html@petscversion.h@g > readme.bak
 
 # remove all the .html files
 find $tmpdir/petsc-lite -type f -name "*.html" -exec rm {} \;
 
 # Complete updating readme.html
-cd $tmpdir/petsc-lite/petsc*
-/bin/mv readme.bak readme.html
+#cd $tmpdir/petsc-lite/petsc*
+#/bin/mv readme.bak readme.html
 
 # Tar up the remaning files to create the 'lite' distribution
 cd $tmpdir/petsc-lite
