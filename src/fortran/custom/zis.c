@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zis.c,v 1.20 1998/01/14 02:34:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zis.c,v 1.21 1998/03/12 23:11:54 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -24,8 +24,11 @@ static char vcid[] = "$Id: zis.c,v 1.20 1998/01/14 02:34:51 bsmith Exp bsmith $"
 #define iscoloringcreate_      ISCOLORINGCREATE
 #define islocaltoglobalmappingcreate_ ISLOCALTOGLOBALMAPPINGCREATE
 #define isallgather_                  ISALLGATHER
-
+#define iscoloringdestroy_            ISCOLORINGDESTROY
+#define iscoloringview_               ISCOLORINGVIEW
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define iscoloringview_        iscoloringview
+#define iscoloringdestroy_     iscoloringdestroy
 #define isview_                isview
 #define isinvertpermutation_   isinvertpermutation
 #define isdestroy_             isdestroy
@@ -50,6 +53,18 @@ static char vcid[] = "$Id: zis.c,v 1.20 1998/01/14 02:34:51 bsmith Exp bsmith $"
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void iscoloringdestroy_(ISColoring *iscoloring, int *__ierr )
+{
+  *__ierr = ISColoringDestroy((ISColoring)PetscToPointer( *(int*)(iscoloring)));
+  PetscRmPointer(*(int*)(iscoloring) );
+}
+
+void iscoloringview_(ISColoring *iscoloring,Viewer viewer, int *__ierr )
+{
+  *__ierr = ISColoringView((ISColoring)PetscToPointer( *(int*)(iscoloring)),
+	                   (Viewer)PetscToPointer( *(int*)(viewer) ));
+}
 
 void isview_(IS is,Viewer viewer, int *__ierr )
 {

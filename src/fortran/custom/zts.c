@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zts.c,v 1.6 1997/10/19 03:18:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zts.c,v 1.7 1998/03/06 00:06:09 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -18,7 +18,9 @@ static char vcid[] = "$Id: zts.c,v 1.6 1997/10/19 03:18:54 bsmith Exp bsmith $";
 #define tssetmonitor_                        TSSETMONITOR
 #define tssetrhsjacobiandefault_             TSSETRHSJACOBIANDEFAULT
 #define tssettype_                           TSSETTYPE
+#define tspvodegetiterations_                TSPVODEGETITERATIONS
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define tspvodegetiterations_                 tspvodegetiterations
 #define tssetrhsfunction_                     tssetrhsfunction
 #define tssetrhsmatrix_                       tssetrhsmatrix
 #define tssetrhsjacobian_                     tssetrhsjacobian
@@ -175,6 +177,13 @@ void tsgettype_(TS ts,CHAR name,int *__ierr,int len)
 #else
   PetscStrncpy(name,tname,len);
 #endif
+}
+
+void tspvodegetiterations_(TS ts,int *nonlin, int *lin, int *__ierr)
+{
+  if (FORTRANNULL(nonlin)) nonlin = PETSC_NULL;
+  if (FORTRANNULL(lin))    lin    = PETSC_NULL;
+  *__ierr = TSPVodeGetIterations((TS)PetscToPointer( *(int*)(ts) ),nonlin,lin);
 }
 
 void tsdestroy_(TS ts, int *__ierr ){

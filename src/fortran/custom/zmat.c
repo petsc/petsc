@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.42 1998/01/06 16:17:49 balay Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.43 1998/03/12 23:11:54 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -390,6 +390,9 @@ static int ourmult(Mat mat, Vec x, Vec y)
   s2 = PetscFromPointer(x);
   s3 = PetscFromPointer(y);
   (*(int (*)(int *,int*,int*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&s1,&s2,&s3,&ierr);
+  PetscRmPointer(s3);
+  PetscRmPointer(s2);
+  PetscRmPointer(s1);
   return ierr;
 }
 
@@ -426,6 +429,11 @@ static int ourmatfdcoloringfunctionts(TS ts,double t,Vec x,Vec y, void *ctx)
   s3 = PetscFromPointer(y);
   
   (*f7)(&s1,&t,&s2,&s3,ctx,&ierr);
+
+  PetscRmPointer(s3);
+  PetscRmPointer(s2);
+  PetscRmPointer(s1);
+
   return ierr;
 }
 

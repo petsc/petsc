@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.43 1998/03/06 00:06:09 bsmith Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.44 1998/03/24 21:12:57 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -344,7 +344,6 @@ PETSC ERROR:or a misspelled user variable for an PETSc object (e.g., \n\
 PETSC ERROR:com instead of comm).\n",rank );
     MPI_Abort(PETSC_COMM_WORLD,1);
   }
-  if (idx == 0) return (void *)0;
   return PtrArray[idx].ptr;
 }
 
