@@ -37,8 +37,11 @@
 -    PETSC_VIEWER_DRAW_CONTOUR - views the vector with a contour plot
 
    These formats are most often used for viewing matrices and vectors.
-   Currently, the object name is used only in the Matlab format.
 
+   If a format (for example PETSC_VIEWER_DRAW_CONTOUR) was applied to a viewer
+  where it didn't apply (PETSC_VIEWER_STDOUT_WORLD) it cause the default behavior
+  for that viewer to be used.
+ 
    Concepts: PetscViewer^setting format
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),

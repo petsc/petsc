@@ -109,9 +109,6 @@ $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess
 
    Level: intermediate
 
-   Fortran Note:
-   This routine is not supported in Fortran.
-
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
 
 @*/
@@ -139,9 +136,6 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
    Not Collective
 
    Level: intermediate
-
-   Fortran Note:
-   This routine is not supported in Fortran.
 
    Concepts: error handler^setting
 
@@ -202,6 +196,10 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
   int         ierr;
   char        buf[2048],*lbuf = 0;
   PetscTruth  ismain,isunknown;
+
+  if (!func)  func = "User provided function";
+  if (!file)  file = "User file";
+  if (!dir)   dir = " ";
 
   PetscFunctionBegin;
   /* Compose the message evaluating the print format */

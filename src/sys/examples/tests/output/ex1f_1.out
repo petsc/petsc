@@ -1,0 +1,17 @@
+--------------------------------------------------------------------------
+Petsc Version 2.1.5, Patch 8, Released May 03, 2003
+       The PETSc Team
+    petsc-maint@mcs.anl.gov
+ http://www.mcs.anl.gov/petsc/
+
+See docs/changes/index.html for recent updates.
+See docs/troubleshooting.html for hints about trouble shooting.
+See docs/index.html for manual pages.
+-----------------------------------------------------------------------
+ex1f on a linux named harley.mcs.anl.gov by bsmith Thu Jun 19 21:47:44 2003
+Libraries linked from /sandbox/bsmith/petsc/lib/libg_c++/linux
+-----------------------------------------------------------------------
+[0]PETSC ERROR: User provided function() line -1 in  User file
+[0]PETSC ERROR:   Error message!
+ My error handler Error message
+[0]PETSC ERROR: User provided function() line -1 in  User file Error message
