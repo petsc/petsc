@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.47 1995/07/30 14:56:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.48 1995/08/07 18:51:04 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -15,9 +15,15 @@ static char vcid[] = "$Id: itcreate.c,v 1.47 1995/07/30 14:56:59 bsmith Exp bsmi
 
    Input Parameters:
 .  ksp - the Krylov space context
-.  viewer - the location to display context (usually 0)
+.  viewer - optional visualization context
+
+   Note:
+   Most users should employ the viewer STDOUT_VIEWER (or SYNC_STDOUT_VIEWER 
+   for the parallel case).
 
 .keywords: KSP, view
+
+.seealso: KSPView(), ViewerFileOpen(), ViewerFileOpenSync()
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
@@ -25,7 +31,7 @@ int KSPView(KSP ksp,Viewer viewer)
   FILE *fd;
   char *method;
   if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
-                                        vobj->type == FILES_VIEWER)){
+                                        vobj->type == FILES_VIEWER)) {
     fd = ViewerFileGetPointer_Private(viewer);
     MPIU_fprintf(ksp->comm,fd,"KSP Object:\n");
     KSPGetMethodName((KSPMethod)ksp->type,&method);
