@@ -6,8 +6,8 @@ import re
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.headerPrefix = ''
-    self.substPrefix  = ''
+    self.headerPrefix = 'PETSC'
+    self.substPrefix  = 'PETSC'
     self.updated  = 0
     self.strmsg   = ''
     return
