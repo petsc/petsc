@@ -1,6 +1,7 @@
 # $Id: makefile,v 1.5 2001/08/22 18:02:49 balay Exp $ 
 
 #requirespackage 'PETSC_HAVE_RAMG'
+#requiresprecision double
 #requiresscalar real 
 
 ALL: lib
