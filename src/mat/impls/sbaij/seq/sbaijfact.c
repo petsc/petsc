@@ -1,7 +1,7 @@
+/*$Id: sbaijfact.c,v 1.56 2001/01/31 19:06:52 balay Exp bsmith $*/
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.55 2001/01/17 22:22:55 bsmith Exp balay $*/
 /*
     Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
 */
