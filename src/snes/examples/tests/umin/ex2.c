@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.13 1995/08/28 18:58:26 curfman Exp $";
+static char vcid[] = "$Id: ex2.c,v 1.1 1995/08/29 19:53:36 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -38,7 +38,7 @@ int FormGradient(SNES,Vec,Vec,void*);
 int FormInitialGuess(SNES,Vec,void*);
 int FunctionGradient(SNES,Vec,Scalar*,Vec,FctGradFlag,AppCtx*);
 int BoundaryValues(AppCtx*);
-int HessProduct(AppCtx*,Scalar*,Scalar*,Scalar*);
+int HessProduct(AppCtx*,Scalar*,Scalar*,Vec);
 
 int main(int argc,char **argv)
 {
@@ -306,20 +306,20 @@ int FormHessian(SNES snes,Vec xvec,Mat *H,Mat *PrecH,MatStructure *flag,
   ndim = user->ndim;
   ierr = VecSet(&zero,user->s); CHKERRQ(ierr);
   ierr = VecGetArray(user->s,&s); CHKERRQ(ierr);
-  ierr = VecGetArray(user->y,&y); CHKERRQ(ierr);
   ierr = VecGetArray(xvec,&x); CHKERRQ(ierr);
   for (j=0; j<ndim; j++) {   /* loop over columns */
     s[j] = one;
-    ierr = HessProduct(user,x,s,y); CHKERRQ(ierr);
+    ierr = HessProduct(user,x,s,user->y); CHKERRQ(ierr);
+    ierr = VecGetArray(user->y,&y); CHKERRQ(ierr);
     s[j] = zero;
     for (i=0; i<ndim; i++) {
       if (y[i] != zero) {
         ierr = MatSetValues(*H,1,&i,1,&j,&y[i],INSERTVALUES); CHKERRQ(ierr);
       }
     }
+    ierr = VecRestoreArray(user->y,&y); CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(user->s,&s); CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->y,&y); CHKERRQ(ierr);
   ierr = VecRestoreArray(xvec,&x); CHKERRQ(ierr);
 
   /* Modify diagonal if necessary */
@@ -340,14 +340,14 @@ int FormHessian(SNES snes,Vec xvec,Mat *H,Mat *PrecH,MatStructure *flag,
 /* 
    HessProduct - Computes y = f''(x)*s
  */
-int HessProduct(AppCtx *user,Scalar *x,Scalar *y,Scalar *s)
+int HessProduct(AppCtx *user,Scalar *x,Scalar *s,Vec y)
 {
-  int nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1, i, j, k, ierr;
+  int nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1, i, j, k, ierr, ind;
   double area, dvdx, dvdxhx, dvdy, dvdyhy, dzdx, dzdxhx;
   double one = 1.0, p5 = 0.5, zero = 0.0;
   double dzdy, dzdyhy, fl, fl3, fu, fu3, tl, tu;
   double v, vb, vl, vr, vt, z, zb, zl, zr, zt, hx = user->hx, hy = user->hy;
-  Scalar *bottom, *top, *left, *right;
+  Scalar *bottom, *top, *left, *right, val;
 
   bottom = user->work;
   top    = &user->work[nx+2];
@@ -355,7 +355,7 @@ int HessProduct(AppCtx *user,Scalar *x,Scalar *y,Scalar *s)
   right  = &user->work[2*nx+ny+6];
 
   ierr = BoundaryValues(user); CHKERRQ(ierr);
-  for (i=0; i<user->ndim; i++) y[i] = zero;
+  ierr = VecSet(&zero,y); CHKERRQ(ierr);
 
   /* Compute f''(x)*s over the lower triangular elements */
   for (j=0; j<ny1; j++) {
@@ -396,12 +396,21 @@ int HessProduct(AppCtx *user,Scalar *x,Scalar *y,Scalar *s)
        tl = one + dvdx*dvdx + dvdy*dvdy;
        fl = sqrt(tl);
        fl3 = fl*tl;
-       if (i != 0 && j != 0) 
-         y[k] += (dvdx*dzdx+dvdy*dzdy)*(dvdxhx+dvdyhy)/fl3 - (dzdxhx+dzdyhy)/fl;
-       if (i != nx && j != 0)
-         y[k+1] += dzdxhx/fl - (dvdx*dzdx+dvdy*dzdy)*dvdxhx/fl3;
-       if (i != 0 && j != ny) 
-         y[k+nx] += dzdyhy/fl - (dvdx*dzdx+dvdy*dzdy)*dvdyhy/fl3;
+       if (i != 0 && j != 0) {
+         ind = k;
+         val = (dvdx*dzdx+dvdy*dzdy)*(dvdxhx+dvdyhy)/fl3 - (dzdxhx+dzdyhy)/fl;
+         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+       }
+       if (i != nx && j != 0) {
+         ind = k+1;
+         val = dzdxhx/fl - (dvdx*dzdx+dvdy*dzdy)*dvdxhx/fl3;
+         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+       }
+       if (i != 0 && j != ny) {
+         ind = k+nx;
+         val = dzdyhy/fl - (dvdx*dzdx+dvdy*dzdy)*dvdyhy/fl3;
+         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+       }
      }
    }
 
@@ -444,18 +453,29 @@ int HessProduct(AppCtx *user,Scalar *x,Scalar *y,Scalar *s)
        tu = one + dvdx*dvdx + dvdy*dvdy;
        fu = sqrt(tu);
        fu3 = fu*tu;
-       if (i != nx+1 && j != ny+1) 
-         y[k] += (dzdxhx+dzdyhy)/fu - (dvdx*dzdx+dvdy*dzdy)*(dvdxhx+dvdyhy)/fu3;
-       if (i != 1 && j != ny+1) 
-         y[k-1] += (dvdx*dzdx+dvdy*dzdy)*dvdxhx/fu3 - dzdxhx/fu;
-       if (i != nx+1 && j != 1)
-         y[k-nx] += (dvdx*dzdx+dvdy*dzdy)*dvdyhy/fu3 - dzdyhy/fu;
+       if (i != nx+1 && j != ny+1) {
+         ind = k;
+         val = (dzdxhx+dzdyhy)/fu - (dvdx*dzdx+dvdy*dzdy)*(dvdxhx+dvdyhy)/fu3;
+         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+       }
+       if (i != 1 && j != ny+1) {
+         ind = k-1;
+         val = (dvdx*dzdx+dvdy*dzdy)*dvdxhx/fu3 - dzdxhx/fu;
+         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+       }
+       if (i != nx+1 && j != 1) {
+         ind = k-nx;
+         val = (dvdx*dzdx+dvdy*dzdy)*dvdyhy/fu3 - dzdyhy/fu;
+         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+       }
     }
   }
 
   /* Scale result by area */
+  ierr = VecAssemblyBegin(y); CHKERRQ(ierr);
   area = p5*hx*hy;
-  for (i=0; i<user->ndim; i++) y[i] *= area;
+  ierr = VecAssemblyEnd(y); CHKERRQ(ierr);
+  ierr = VecScale(&area,y); CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
