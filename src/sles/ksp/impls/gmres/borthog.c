@@ -1,17 +1,17 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.16 1996/03/10 17:27:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: borthog.c,v 1.17 1996/03/22 00:44:47 curfman Exp curfman $";
 #endif
 /*
-       Routines used for the orthogonalization of the Hessenberg matrix.
+    Routines used for the orthogonalization of the Hessenberg matrix.
+
+    Note that for the complex numbers version, the VecDot() and
+    VecMDot() arguments within the code MUST remain in the order
+    given for correct computation of inner products.
 */
 #include "gmresp.h"
 
 /*
     This is the basic orthogonalization routine using modified Gram-Schmidt.
-
-    Note that for the complex numbers version, the VecDot() arguments
-    within the code MUST remain in the order given for correct computation
-    of inner products.
  */
 int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
 {
