@@ -1,11 +1,15 @@
+import sys
 
 class defaultWriter:
   def __init__(self):
     pass
 
   def write(self,mess):
-    import sys
     sys.stdout.write(mess)
+
+  def tab(self,tab):
+    for i in range(0,tab-1):
+      sys.stdout.write(' ')
     
 dW = defaultWriter()
 
@@ -66,7 +70,6 @@ class Logger(object):
       self.log.write('\n')
     if self.debugLevel >= level:
       if (not section) or (not self.debugSections) or (section in self.debugSections):
-          for i in range(indentLevel):
-            dW.write(self.debugIndent)
-          dW.write(msg)
-          dW.write('\n')
+        dW.tab(self.debugIndent)
+        dW.write(msg+'\n')
+
