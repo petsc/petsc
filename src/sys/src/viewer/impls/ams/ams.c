@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.5 1998/10/06 16:04:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.6 1998/10/09 19:25:31 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -42,17 +42,11 @@ static int ViewerDestroy_AMS(Viewer viewer)
   PetscFunctionBegin;
   PLogObjectDestroy((PetscObject)viewer);
 
-  /* currently only first processor publishes */  
-  ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
-  MPI_Comm_rank(comm,&rank);
-  if (!rank) {
-    ierr = AMS_Comm_destroy(viewer->ams_comm);
-    if (ierr) {
-      char *err;
-      AMS_Explain_error(ierr,&err);
-      printf("%s\n",err);
-      SETERRQ(ierr,0," ");
-    }
+  ierr = AMS_Comm_destroy(viewer->ams_comm);
+  if (ierr) {
+    char *err;
+    AMS_Explain_error(ierr,&err);
+    SETERRQ(ierr,0,err);
   }
   PetscHeaderDestroy((PetscObject)viewer);
   PetscFunctionReturn(0);
@@ -228,6 +222,9 @@ int ViewerDestroyAMS_Private(void)
   int ierr;
 
   PetscFunctionBegin;
+  if (VIEWER_AMS_WORLD_PRIVATE) {
+    ierr = ViewerDestroy(VIEWER_AMS_WORLD_PRIVATE);CHKERRQ(ierr);
+  }
   ierr = VIEWER_AMS_Destroy(PETSC_COMM_SELF);CHKERRQ(ierr);
   ierr = VIEWER_AMS_Destroy(PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
