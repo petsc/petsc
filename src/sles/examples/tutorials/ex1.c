@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.29 1995/08/22 19:36:59 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.30 1995/08/23 17:17:49 curfman Exp curfman $";
 #endif
 
 static char help[] = "This example solves a tridiagonal linear system with SLES.\n\n";
@@ -9,21 +9,23 @@ static char help[] = "This example solves a tridiagonal linear system with SLES.
 
 int main(int argc,char **args)
 {
+  Vec     x, b, u;      /* approx solution, RHS, exact solution */
+  Mat     A;            /* linear system matrix */
+  SLES    sles;         /* SLES context */
   int     ierr, i, n = 10, col[3], its;
   Scalar  none = -1.0, one = 1.0, value[3];
-  Vec     x, b, u;
-  Mat     A;
-  SLES    sles;
   double  norm;
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
   OptionsGetInt(0,"-n",&n);
 
+  /* Create vectors */
   ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&b); CHKERRA(ierr);
   ierr = VecDuplicate(x,&u); CHKERRA(ierr);
   ierr = VecSet(&one,u); CHKERRA(ierr);
 
+  /* Create and assemble matrix */
   ierr = MatCreate(MPI_COMM_WORLD,n,n,&A); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
@@ -38,6 +40,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
+  /* Create SLES context; set operators and options; solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN);
   CHKERRA(ierr);
@@ -45,13 +48,15 @@ int main(int argc,char **args)
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
   ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
-  ierr = VecAXPY(&none,u,x); CHKERRA(ierr);   /* check error */
+  /* Check error */
+  ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr  = VecNorm(x,&norm); CHKERRA(ierr);
   if (norm > 1.e-12) 
     MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
     MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
+  /* Free work space */
   ierr = VecDestroy(x); CHKERRA(ierr);ierr = VecDestroy(u); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr);ierr = MatDestroy(A); CHKERRA(ierr);
   ierr = SLESDestroy(sles); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.6 1995/08/28 18:37:43 curfman Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.7 1995/08/29 13:18:05 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -8,7 +8,6 @@ static char help[] =
 
 #include "draw.h"
 #include "snes.h"
-#include "petsc.h"
 #include <math.h>
 
 int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),

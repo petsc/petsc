@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.16 1995/07/28 04:25:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.17 1995/08/02 04:19:12 bsmith Exp curfman $";
 #endif
 
 static char help[] =
@@ -35,7 +35,6 @@ is solved.  The command line options are:\n\
     nonlinear equations. 
 */
 
-#include "petsc.h"
 #include "draw.h"
 #include "snes.h"
 #include <math.h>
