@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.79 2000/11/28 17:28:11 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.80 2000/12/01 19:55:53 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -74,7 +74,8 @@ struct _VecOps {
        (*viewnative)(Vec,Viewer),
        (*conjugate)(Vec),
        (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping),
-       (*setvalueslocal)(Vec,int,const int *,const Scalar *,InsertMode);
+       (*setvalueslocal)(Vec,int,const int *,const Scalar *,InsertMode),
+       (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
 };
 
 /* 
