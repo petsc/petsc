@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.33 1997/03/04 20:55:00 curfman Exp balay $ */
+/* $Id: da.h,v 1.34 1997/05/23 16:17:52 balay Exp curfman $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -49,6 +49,7 @@ extern int   DAGetAO(DA,AO*);
 
 #if defined(__MAT_PACKAGE)
 extern int   DAGetColoring2dBox(DA,ISColoring *,Mat *);
+extern int   DAGetColoring3dBox(DA,ISColoring *,Mat *);
 #endif
 
 #endif
