@@ -89,7 +89,6 @@ class Configure(config.base.Configure):
         self.framework.log.write(message)
         raise RuntimeError('You have a Fortran compiler but the PETSc Fortran stubs are not built and cannot be built.\n'+message+'or run with with --with-fc=0 to turn off the Fortran compiler')
     else:
-      self.framework.log.write('Fortran stubs do exist in '+stubDir+'\n')
       # check if the SOWING directory exists and has bfort
       sowingDir = None
       for dir in os.listdir(self.framework.argDB['PETSC_DIR']):
