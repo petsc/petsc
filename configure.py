@@ -27,18 +27,28 @@ class Configure:
     return
 
   def addDefine(self, name, value, comment = ''):
+    '''Designate that "name" should be defined to "value" in the configuration header'''
     self.defines[name] = value
-    if comment: self.help[name] = comment
+    if comment: self.addHelp(name, comment)
     return
 
-  def addSubstitution(self, name, value):
+  def addSubstitution(self, name, value, comment = ''):
+    '''Designate that "@name@" should be replaced by "value" in all files which experience substitution'''
     self.subst[name] = value
+    if comment: self.addHelp(name, comment)
+    return
+
+  def addHelp(self, name, comment):
+    '''Associate a help string with the variable "name"'''
+    self.help[name] = comment
     return
 
   def getDefaultMacros(self):
+    '''Macros that seems necessary to run any given Autoconf macro'''
     return 'AC_INIT_BINSH\nAC_CONFIG_AUX_DIR(config)\n'
 
   def getMacroVersion(self, macro):
+    '''This is the version of Autoconf required by the macro'''
     m = re.search(r'^dnl\s+Version:\s+(?P<version>\d+\.\d+)', macro, re.M)
     if m:
       return m.group('version')
@@ -46,15 +56,18 @@ class Configure:
       return ''
 
   def getMacroVariables(self, macro):
+    '''These are the variables output by the macro'''
     varRE = re.compile(r'^dnl\s+Variable:\s+(?P<variable>\w+)', re.M)
     return varRE.findall(macro)
 
   def replaceDefaultDescriptors(self, codeStr):
+    '''Autoconf defines several default file descriptors, which we must assign'''
     newCode = re.sub('AC_FD_MSG', self.acMsgFD, codeStr)
     newCode = re.sub('AC_FD_CC',  self.acCCFD,  newCode)
     return newCode
 
   def findUndefinedMacros(self, codeStr):
+    '''This finds Auotconf macros which have not been expanded because no definitions have been found'''
     matches = re.findall(r'AC_\w+', codeStr)
     if len(matches):
       msg = 'Undefined macros:\n'
@@ -63,6 +76,7 @@ class Configure:
     return
 
   def macroToShell(self, macro):
+    '''This takes the text of an Autoconf macro and returns a tuple of the corresponding shell code and output variable names'''
     self.getMacroVersion(macro)
     command = self.m4
     if self.acMacroDir:
@@ -83,9 +97,11 @@ class Configure:
     return (shellCode, self.getMacroVariables(macro))
 
   def getDefaultVariables(self):
+    '''These shell variables are set by Autoconf, and seem to be necessary to run any given macro'''
     return 'host=NONE\nnonopt=NONE\nCONFIG_SHELL='+self.shell+'\n'
 
   def parseShellOutput(self, output):
+    '''This retrieves the output variable values from macro shell code'''
     results = {}
     varRE   = re.compile(r'(?P<name>\w+)\s+=\s+(?P<value>.*)')
     for line in output.split('\n'):
@@ -95,6 +111,7 @@ class Configure:
     return results
 
   def executeShellCode(self, code):
+    '''This executes the shell code for an Autoconf macro, appending code which causes the output variables to be printed'''
     codeStr  = self.getDefaultVariables()
     codeStr += code[0]
     for var in code[1]:
@@ -119,6 +136,11 @@ class Framework(Configure):
     return
 
   def addSubstitutionFile(self, inName, outName = ''):
+    '''Designate that file should experience substitution
+      - If outName is given, inName --> outName
+      - If inName == foo.in, foo.in --> foo
+      - If inName == foo,    foo.in --> foo
+    '''
     if outName:
       if inName == outName:
         raise RuntimeError('Input and output substitution files identical: '+inName)
@@ -135,6 +157,7 @@ class Framework(Configure):
     return
 
   def getPrefix(self, child):
+    '''Get the default prefix for a given child Configure'''
     mod = child.__class__.__module__
     if not mod == '__main__':
       prefix = mod.replace('.', '_')
@@ -143,6 +166,7 @@ class Framework(Configure):
     return prefix
 
   def getHeaderPrefix(self, child):
+    '''Get the prefix for variables in the configuration header for a given child'''
     if hasattr(child, 'headerPrefix'):
       prefix = child.headerPrefix
     else:
@@ -150,6 +174,7 @@ class Framework(Configure):
     return prefix
 
   def getSubstitutionPrefix(self, child):
+    '''Get the prefix for variables during substitution for a given child'''
     if hasattr(child, 'substPrefix'):
       prefix = child.substPrefix
     else:
@@ -157,6 +182,7 @@ class Framework(Configure):
     return prefix
 
   def substituteName(self, match, prefix = None):
+    '''Return the substitution value for a given name, or return "@name_UNKNOWN@"'''
     name = match.group('name')
     if self.subst.has_key(name):
       return self.subst[name]
@@ -167,9 +193,10 @@ class Framework(Configure):
         if prefix:         prefix = prefix+'_'
         if name.startswith(prefix) and child.subst.has_key(name.replace(prefix, '', 1)):
           return child.subst[name.replace(prefix, '', 1)]
-    return ''
+    return '@'+name+'_UNKNOWN@'
 
   def substituteFile(self, inName, outName):
+    '''Carry out substitution on the file "inName", creating "outName"'''
     inFile  = file(inName)
     outFile = file(outName, 'w')
     for line in inFile.xreadlines():
@@ -178,11 +205,13 @@ class Framework(Configure):
     inFile.close()
 
   def substitute(self):
+    '''Preform all substitution'''
     for pair in self.substFiles.items():
       self.substituteFile(pair[0], pair[1])
     return
 
   def outputDefine(self, f, name, value = None, comment = ''):
+    '''Define "name" to "value" in the configuration header'''
     name = name.upper()
     if comment:
       for line in comment.split('\n'):
@@ -218,6 +247,7 @@ class Framework(Configure):
     return
 
   def outputHeader(self, name):
+    '''Write the configuration header'''
     f = file(name, 'w')
     self.outputDefines(f, self)
     for child in self.children:
@@ -226,6 +256,7 @@ class Framework(Configure):
     return
 
   def configure(self):
+    '''Configure the system'''
     for child in self.children:
       child.configure()
     self.substitute()
