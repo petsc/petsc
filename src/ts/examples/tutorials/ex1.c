@@ -264,10 +264,18 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
+/*
+   Calculate the Jacobian matrix J(X,t).
+
+   Note: We put the Jacobian in the preconditioner storage B instead of J. This
+   way we can give the -snes_mf_operator flag to check our work. This replaces
+   J with a finite difference approximation, using our analytic Jacobian B for
+   the preconditioner.
+*/
 PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
-  Mat            jac = *J;
+  Mat            jac = *B;
   PetscInt       i,j,row,mx,my,col[5];
   PetscErrorCode ierr;
   PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;
