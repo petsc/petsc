@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.51 1995/08/18 18:48:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.52 1995/08/21 18:11:07 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -184,7 +184,7 @@ int  KSPRegister(KSPMethod name, char *sname, int  (*create)(KSP))
   return NRRegister( __ITList, (int) name, sname, dummy );
 }
 
-/*@
+/*@C
    KSPRegisterDestroy - Frees the list of iterative solvers that were
    registered by KSPRegister().
 

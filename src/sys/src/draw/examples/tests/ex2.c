@@ -24,7 +24,7 @@ int main(int argc,char **argv)
     ierr = DrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i);
   }
   ierr = DrawFlush(draw); CHKERRA(ierr);
-  sleep(2);
+  PetscSleep(2);
   PetscFinalize();
   return 0;
 }

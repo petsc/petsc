@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.40 1995/08/07 18:50:37 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.41 1995/08/17 01:20:09 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -386,7 +386,7 @@ int VecPDiv(Vec x,Vec y,Vec w)
   CHKSAME(x,y); CHKSAME(y,w);
   return (*x->ops->pdiv)(x,y,w);
 }
-/*@
+/*@C
    VecDuplicate - Creates a new vector of the same type as an existing vector.
 
    Input Parameters:

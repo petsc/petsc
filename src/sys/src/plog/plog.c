@@ -1,9 +1,9 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.31 1995/08/16 19:57:44 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.32 1995/08/21 18:11:41 bsmith Exp bsmith $";
 #endif
 
-#include "petsc.h"        /I*    "plog.h"   I*/
+#include "petsc.h"        /*I    "petsc.h"   I*/
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -285,7 +285,7 @@ int PLogObjectState(PetscObject obj,char *format,...)
   return 0;
 }
 
-/*@
+/*@C
    PLogAllBegin - Turns on extensive logging of objects and events. Logs 
    all events. This creates large log files and slows the program down.
 
@@ -316,7 +316,7 @@ int PLogAllBegin()
   return 0;
 }
 
-/*@
+/*@C
    PLogDestroy - Destroys the object and event logging data and resets the 
    global counters. 
 
@@ -359,7 +359,7 @@ int PLogDestroy()
   return 0;
 }
 
-/*@
+/*@C
     PLogBegin - Turns on logging of objects and events. This logs flop
     rates and object creation and should not slow programs down too much.
     This routine may be called more than once.

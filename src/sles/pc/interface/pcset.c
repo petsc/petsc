@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.21 1995/07/20 03:58:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.22 1995/08/07 18:51:52 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -71,7 +71,7 @@ int  PCRegister(PCMethod name,char *sname,int (*create)(PC))
   return NRRegister( __PCList, (int) name, sname, (int (*)(void*)) create );
 }
 
-/*@
+/*@C
    PCRegisterDestroy - Frees the list of preconditioners that were
    registered by PCRegister().
 

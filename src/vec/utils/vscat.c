@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.30 1995/08/04 14:12:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.31 1995/08/07 18:50:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -119,7 +119,7 @@ static int SGtoSGDestroy(PetscObject obj)
 int PtoSScatterCtxCreate(int,int *,int,int *,Vec,VecScatterCtx);
 int StoPScatterCtxCreate(int,int *,int,int *,Vec,VecScatterCtx);
 /* --------------------------------------------------------------*/
-/*@
+/*@C
    VecScatterCtxCreate - Creates a vector scatter context. This routine
    should be called when you need to create a vector scatter context. 
    You cannot use a VecScatterCtx in two or more simultaneous scatters. 
@@ -422,7 +422,7 @@ int VecScatterCtxDestroy( VecScatterCtx ctx )
   return (*ctx->destroy)((PetscObject)ctx);
 }
 
-/*@
+/*@C
    VecScatterCtxCopy - Makes a copy of a scatter context.
 
    Input Parameter:

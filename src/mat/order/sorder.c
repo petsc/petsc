@@ -5,6 +5,8 @@
 
 static NRList *__MatReorderingList = 0;
 
+
+
 int MatGetReorder_IJ(int n,int *ia,int* ja,MatOrdering type,
                             IS *rperm, IS *cperm)
 {
@@ -68,6 +70,27 @@ int MatReorderingRegisterDestroy()
   if (__MatReorderingList) {
     NRDestroy( __MatReorderingList );
     __MatReorderingList = 0;
+  }
+  return 0;
+}
+
+/*
+   MatGetReorderingMethodFromOptions_Private - Gets reorder method 
+     from the options database.
+
+   Output Parameter:
+.  method - reordering method
+
+   Returns:
+   Returns 1 if the method is found; 0 otherwise.
+*/
+int MatGetReorderingMethodFromOptions_Private(MatOrdering *type)
+{
+  char sbuf[50];
+  if (OptionsGetString(0,"-mat_order", sbuf, 50 )) {
+    if (!__MatReorderingList) MatReorderingRegisterAll();
+    *type = (MatOrdering)NRFindID( __MatReorderingList, sbuf );
+    return 1;
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.19 1995/08/07 22:00:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.20 1995/08/15 20:29:06 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -41,8 +41,7 @@ int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) {
      return DrawOpenNull(vobj->comm,(DrawCtx*)outctx);
   }
-  lg = (DrawLGCtx) PETSCMALLOC(sizeof(struct _DrawLGCtx));CHKPTRQ(lg);
-  lg->cookie  = LG_COOKIE;
+  PETSCHEADERCREATE(lg,_DrawLGCtx,LG_COOKIE,0,vobj->comm);
   lg->view    = 0;
   lg->destroy = 0;
   lg->nopts   = 0;
@@ -97,7 +96,8 @@ int DrawLGDestroy(DrawLGCtx lg)
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
   DrawAxisDestroy(lg->axis);
   PETSCFREE(lg->x);
-  PETSCFREE(lg);
+  PLogObjectDestroy(lg);
+  PETSCHEADERDESTROY(lg);
   return 0;
 }
 

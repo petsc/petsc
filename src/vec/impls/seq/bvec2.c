@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.38 1995/08/15 20:26:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.39 1995/08/17 15:13:14 curfman Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -155,7 +155,7 @@ static struct _VeOps DvOps = {VecDuplicate_Blas,
             VecGetArray_Seq, VecGetSize_Seq,VecGetSize_Seq ,
             VecGetOwnershipRange_Seq,0,VecMax_Seq,VecMin_Seq};
 
-/*@
+/*@C
    VecCreateSequential - Creates a standard, array-style vector.
 
    Input Parameter:

@@ -105,7 +105,6 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 .keywords: distributed array, create
 .seealso: DADestroy(), DAView()
 @*/
-
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 {
   int           mytid, numtid,xs,xe,x,Xs,Xe,ierr,start,end,m;

@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.15 1995/07/27 02:18:38 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.16 1995/08/21 18:14:36 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -50,11 +50,8 @@ extern int DrawFlush(DrawCtx);
 extern int DrawSyncFlush(DrawCtx);
 extern int DrawClear(DrawCtx);
 
-/* routines related to drawing Axis and line graphs */
-
 typedef struct _DrawAxisCtx* DrawAxisCtx;
-typedef struct _DrawLGCtx*   DrawLGCtx;
-
+#define AXIS_COOKIE PETSC_COOKIE+16
 extern int DrawAxisCreate(DrawCtx,DrawAxisCtx *);
 extern int DrawAxisDestroy(DrawAxisCtx);
 extern int DrawAxis(DrawAxisCtx);
@@ -62,6 +59,7 @@ extern int DrawAxisSetLimits(DrawAxisCtx,double,double,double,double);
 extern int DrawAxisSetColors(DrawAxisCtx,int,int,int);
 extern int DrawAxisSetLabels(DrawAxisCtx,char*,char*,char*);
 
+typedef struct _DrawLGCtx*   DrawLGCtx;
 #define LG_COOKIE PETSC_COOKIE+7
 extern int DrawLGCreate(DrawCtx,int,DrawLGCtx *);
 extern int DrawLGDestroy(DrawLGCtx);

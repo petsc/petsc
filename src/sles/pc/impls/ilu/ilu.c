@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.28 1995/08/07 18:52:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.29 1995/08/21 18:12:17 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -14,7 +14,6 @@ static char vcid[] = "$Id: ilu.c,v 1.28 1995/08/07 18:52:11 bsmith Exp bsmith $"
 
 typedef struct {
   Mat         fact;
-  MatOrdering ordering;
   int         levels;
 } PC_ILU;
 
@@ -30,7 +29,6 @@ $  -pc_ilu_levels  levels
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 
-.seealso: PCILUSetOrdering()
 @*/
 int PCILUSetLevels(PC pc,int levels)
 {
@@ -44,50 +42,11 @@ int PCILUSetLevels(PC pc,int levels)
   return 0;
 }
 
-/*@
-   PCILUSetOrdering - Sets the ordering to use for a direct factorization.
-
-  Input Parameters:
-.   pc - the preconditioner context
-.   ordering - the type of ordering to use, one of:
-$     ORDER_NATURAL - Natural 
-$     ORDER_ND - Nested Dissection
-$     ORDER_1WD - One-way Dissection
-$     ORDER_RCM - Reverse Cuthill-McGee
-$     ORDER_QMD - Quotient Minimum Degree
-
-  Options Database Key:
-$ -pc_ilu_ordering  <name>, where <name> is one of the following:
-$     natural, nd, 1wd, rcm, qmd
-
-.keywords: PC, ordering, reordering, factorization, incomplete, ILU, fill
-
-.seealso: PCILUSetLevels()
-@*/
-int PCILUSetOrdering(PC pc,MatOrdering ordering)
-{
-  PC_ILU *dir;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  dir = (PC_ILU *) pc->data;
-  if (pc->type != PCILU) return 0;
-  dir->ordering = ordering;
-  return 0;
-}
 
 static int PCSetFromOptions_ILU(PC pc)
 {
   char        name[10];
-  MatOrdering ordering = ORDER_ND;
   int         levels;
-  if (OptionsGetString(pc->prefix,"-pc_ilu_ordering",name,10)) {
-    if (!strcmp(name,"nd")) ordering = ORDER_ND;
-    else if (!strcmp(name,"natural")) ordering = ORDER_NATURAL;
-    else if (!strcmp(name,"1wd")) ordering = ORDER_1WD;
-    else if (!strcmp(name,"rcm")) ordering = ORDER_RCM;
-    else if (!strcmp(name,"qmd")) ordering = ORDER_QMD;
-    else fprintf(stderr,"Unknown order: %s\n",name);
-    PCILUSetOrdering(pc,ordering);
-  }
   if (OptionsGetInt(pc->prefix,"-pc_ilu_levels",&levels)) {
     PCILUSetLevels(pc,levels);
   }
@@ -99,7 +58,7 @@ static int PCPrintHelp_ILU(PC pc)
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm," Options for PCILU preconditioner:\n");
-  MPIU_printf(pc->comm," %spc_ilu_ordering name: ordering to reduce fill",p);
+  MPIU_printf(pc->comm," mat_order name: ordering to reduce fill",p);
   MPIU_printf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
   MPIU_printf(pc->comm," %spc_ilu_levels levels: levels of fill\n",p);
   return 0;
@@ -111,18 +70,12 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
   FILE   *fd = ViewerFileGetPointer_Private(viewer);
   PC_ILU *lu = (PC_ILU *) pc->data;
   char  *cstring;
-  if (lu->ordering == ORDER_ND) cstring = "nested dissection";
-  else if (lu->ordering == ORDER_NATURAL) cstring = "natural";
-  else if (lu->ordering == ORDER_1WD) cstring = "1-way dissection";
-  else if (lu->ordering == ORDER_RCM) cstring = "Reverse Cuthill-McGee";
-  else if (lu->ordering == ORDER_QMD) cstring = "quotient minimum degree";
-  else cstring = "unknown";
   if (lu->levels == 1)
-    MPIU_fprintf(pc->comm,fd,"    ILU: %d level of fill, ordering is %s\n",
-    lu->levels,cstring);
+    MPIU_fprintf(pc->comm,fd,"    ILU: %d level of fill\n",
+    lu->levels);
   else
-    MPIU_fprintf(pc->comm,fd,"    ILU: %d levels of fill, ordering is %s\n",
-    lu->levels,cstring);
+    MPIU_fprintf(pc->comm,fd,"    ILU: %d levels of fill\n",
+    lu->levels);
   return 0;
 }
 
@@ -133,7 +86,7 @@ static int PCSetUp_ILU(PC pc)
   double f;
 
   PC_ILU *dir = (PC_ILU *) pc->data;
-  ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERRQ(ierr);
+  ierr = MatGetReordering(pc->pmat,ORDER_NATURAL,&row,&col); CHKERRQ(ierr);
   if (!pc->setupcalled) {
     /* this is a heuristic guess for how much fill there will be */
     f = 1.0 + .5*dir->levels;
@@ -177,7 +130,6 @@ int PCCreate_ILU(PC pc)
 {
   PC_ILU *dir = PETSCNEW(PC_ILU); CHKPTRQ(dir);
   dir->fact      = 0;
-  dir->ordering  = ORDER_ND;
   dir->levels    = 0;
   pc->destroy    = PCDestroy_ILU;
   pc->apply      = PCApply_ILU;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.9 1995/08/07 18:51:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: destroy.c,v 1.10 1995/08/07 21:58:31 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
@@ -56,3 +56,24 @@ int PetscObjectExists(PetscObject obj,int *exists)
   if (obj->cookie != PETSCFREEDHEADER) *exists = 1;
   return 0;
 }
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+extern void sleep(int);
+#if defined(__cplusplus)
+};
+#endif
+
+/*@
+     PetscSleep - Sleeps some number of seconds.
+
+  Input Parameters:
+.   s - number of seconds to sleep
+
+@*/
+void PetscSleep(int s)
+{
+  sleep(s);
+}
+

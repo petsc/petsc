@@ -7,7 +7,7 @@ extern int MatOrder1WD(int*,int*,int*,int*,int*);
 extern int MatOrderQMD(int*,int*,int*,int*,int*);
 extern int MatOrderRCM(int*,int*,int*,int*,int*);
 
-/*@
+/*@C
   MatReorderingRegisterAll - Registers all of the sequential matrix 
                           reordering routines in PETSc.
 

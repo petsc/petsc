@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.22 1995/08/15 20:27:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.23 1995/08/21 18:11:41 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: adebug.c,v 1.22 1995/08/15 20:27:08 bsmith Exp bsmith
 
 static char  *Debugger = "gdb", *Display = 0;
 static int   Xterm     = 1;
-/*@
+/*@C
    PetscSetDebugger - Sets options associated with the debugger.
 
    Input Parameters:
@@ -49,7 +49,7 @@ int PetscSetDebugger(char *debugger, int xterm,char *display)
 extern char *OptionsGetProgramName();
  
 
-/*@
+/*@C
    PetscAttachDebugger - Attaches the debugger to the running process.
 
 .keywords: attach, debugger

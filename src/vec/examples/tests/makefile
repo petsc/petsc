@@ -14,10 +14,10 @@ EXAMPLES_1    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
 RUNEXAMPLES_1 = runex1 runex1_2 runex2 runex3 runex4 runex5 runex6 runex7 \
                 runex8 runex9 runex10 runex11 runex12 runex13 runex14 runex16\
                 runex17 runex20 runex20_2
-EXAMPLES_2    = ex15 ex19
+EXAMPLES_2    = ex15
 RUNEXAMPLES_2 = runex15
 EXAMPLES_3    = ex19
-RUNEXAMPLES_3 = 
+RUNEXAMPLES_3 = runex19
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
                 ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c 
 EXAMPLESF     = ex19.F
@@ -193,6 +193,11 @@ runex17:
            if (diff output/ex17_1.out ex17_1.tmp) then true; \
            else echo "Possible problem with ex17_1, diffs above"; fi;\
            $(RM) -f ex17_1.tmp
+runex19:
+	-@$(MPIRUN) ex19 -n 25 > ex19_1.tmp 2>&1;\
+           if (diff output/ex19_1.out ex19_1.tmp) then true; \
+           else echo "Possible problem with ex19_1, diffs above"; fi;\
+           $(RM) -f ex19_1.tmp
 runex20:
 	-@$(MPIRUN) ex20 > ex20_1.tmp 2>&1;\
            if (diff output/ex20_1.out ex20_1.tmp) then true; \

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.6 1995/07/17 20:41:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.7 1995/08/07 18:53:19 bsmith Exp bsmith $";
 #endif
 
 #include "matimpl.h"  /*I   "mat.h"  I*/
@@ -13,7 +13,6 @@ static char vcid[] = "$Id: axpy.c,v 1.6 1995/07/17 20:41:50 bsmith Exp bsmith $"
 
 .keywods: Mat, add
  @*/
-
 int MatAXPY(Scalar *a,Mat X,Mat Y)
 {
   int    m1,m2,n1,n2,i,*row,start,end,j,ncols,ierr;

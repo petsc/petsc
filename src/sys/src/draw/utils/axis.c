@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.17 1995/08/02 00:23:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.18 1995/08/07 22:00:49 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -21,6 +21,7 @@ extern double   rint(double);
 
 
 struct _DrawAxisCtx {
+    PETSCHEADER
     double  xlow, ylow, xhigh, yhigh;     /* User - coord limits */
     char    *(*ylabelstr)(double,double), /* routines to generate labels */ 
             *(*xlabelstr)(double,double);
@@ -65,8 +66,9 @@ int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) {
      return DrawOpenNull(vobj->comm,(DrawCtx*)ctx);
   }
-  ad            = (DrawAxisCtx) PETSCMALLOC(sizeof(struct _DrawAxisCtx)); 
-  CHKPTRQ(ad);
+  PETSCHEADERCREATE(ad,_DrawAxisCtx,AXIS_COOKIE,0,vobj->comm);
+  PLogObjectCreate(ad);
+  PLogObjectParent(win,ad);
   ad->xticks    = XiADefTicks;
   ad->yticks    = XiADefTicks;
   ad->xlabelstr = XiADefLabel;
@@ -91,7 +93,8 @@ int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
 @*/
 int DrawAxisDestroy(DrawAxisCtx axis)
 {
-  PETSCFREE(axis);
+  PLogObjectDestroy(axis);
+  PETSCHEADERDESTROY(axis);
   return 0;
 }
 

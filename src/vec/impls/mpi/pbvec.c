@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.36 1995/08/07 21:57:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.37 1995/08/15 20:26:37 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -105,7 +105,7 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,
   return 0;
 }
 
-/*@
+/*@C
    VecCreateMPI - Creates a parallel vector.
 
    Input Parameters:

@@ -10,7 +10,7 @@ SOURCEH  = Changes Machines Readme maint/addlinks maint/buildtest \
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = src include pinclude finclude docs c2f77
+DIRS     = src include pinclude finclude docs 
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
@@ -20,6 +20,13 @@ all: chkpetsc_dir
            ACTION=libfast  tree 
 	$(RANLIB) $(PDIR)/*.a
 
+fortran: chkpetsc_dir
+	-@cd fortran/custom; \
+          $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=libfast
+	-@cd fortran/auto; \
+          $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=libfast   
+	$(RANLIB) $(PDIR)/libpetscfortran.a
+    
 ranlib:
 	$(RANLIB) $(PDIR)/*.a
 
@@ -41,9 +48,9 @@ allmanpages: deletemanpages deletewwwpages deletelatexpages
 	-make ACTION=latexpages tree
 	-maint/wwwman
 
-allC2f77:
-	-@$(RM) $(PETSC_DIR)/c2f77/*.c
-	-make ACTION=C2f77 tree
+allfortranstubs:
+	-@$(RM) $(PETSC_DIR)/fortran/auto/*.c
+	-make ACTION=fortranstubs tree
 
 #  To access the tags in emacs, type M-x visit-tags-table and specify
 #  the file petsc/TAGS.  Then, to move to where a PETSc function is

@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   }
   ierr = DrawLGIndicateDataPoints(lg); CHKERRA(ierr);
   ierr = DrawLG(lg); CHKERRA(ierr);
-  ierr = DrawFlush(draw); CHKERRA(ierr); sleep(2);
+  ierr = DrawFlush(draw); CHKERRA(ierr); PetscSleep(2);
 
   ierr = DrawLGDestroy(lg); CHKERRA(ierr);
   PetscFinalize();

@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.22 1995/08/14 16:49:17 curfman Exp bsmith $ */
+/* $Id: ksp.h,v 1.23 1995/08/21 18:14:36 bsmith Exp bsmith $ */
 
 #ifndef __KSP_PACKAGE
 #define __KSP_PACKAGE
@@ -55,7 +55,7 @@ extern int KSPBuildResidual(KSP, Vec, Vec,Vec *);
 
 extern int KSPRichardsonSetScale(KSP , double);
 extern int KSPChebychevSetEigenvalues(KSP , double, double);
-extern int KSPCGGetEigenvalues(KSP, int n,double*,double*);
+extern int KSPCGGetEigenvalues(KSP, int n,Scalar*,Scalar*);
 extern int KSPGMRESSetRestart(KSP, int);
 extern int KSPGMRESSetUseUnmodifiedGramSchmidt(KSP);
 extern int KSPSetFromOptions(KSP);

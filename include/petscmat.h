@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.51 1995/08/18 22:24:57 curfman Exp bsmith $ */
+/* $Id: mat.h,v 1.52 1995/08/21 18:14:36 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -59,7 +59,7 @@ extern int MatMultAdd(Mat,Vec,Vec,Vec);
 extern int MatMultTrans(Mat,Vec,Vec);
 extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
 
-typedef enum {ORDER_DATABASE=-1,ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
+typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
               ORDER_RCM=3,ORDER_QMD=4,ORDER_APPLICATION_1,
               ORDER_APPLICATION_2} MatOrdering;
 

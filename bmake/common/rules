@@ -45,7 +45,7 @@ SLES_LIB    =   -L$(LDIR) -lpetscsles -lpetscksp \
 #
 #  Link if you are programming in Fortran 
 #
-PETSC_FORTRAN_LIB = -L$(LDIR) -lpetscf77
+PETSC_FORTRAN_LIB = -L$(LDIR) -lpetscfortran
 #
 # These include files set customized site, optimization, and version options.
 # Do NOT remove any of these include files.  You should have to edit only
@@ -211,10 +211,10 @@ lint:
            $(RM) -f *.ln ; fi
 
 # Builds Fortran-77 wrappers - not yet available
-# cannot use -ferr option!
-C2f77:
-	@-/home/bsmith/bin/sun4/bfort -dir /home/bsmith/petsc/c2f77 \
-          -mnative -ansi -nomsgs -anyname -mapptr -mpi  $(SOURCEC)
+fortranstubs:
+	@-/home/bsmith/bin/sun4/bfort -dir /home/bsmith/petsc/fortran/auto \
+          -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr -ptrprefix MPIR_\
+          -ptr64 HAVE_64BITS $(SOURCEC)
 
 
 # Builds man pages (xman version)

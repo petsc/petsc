@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: itregis.c,v 1.9 1995/07/07 17:15:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: itregis.c,v 1.10 1995/07/23 18:14:01 curfman Exp bsmith $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
 
-/*@
+/*@C
   KSPRegisterAll - Registers all of the iterative methods in the KSP package.
 
   Adding new methods:
