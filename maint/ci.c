@@ -40,14 +40,9 @@ int main(int argc, char **argv)
   strcat(command,"; /usr/local/bin/ci ");
 
   for (i=1; i< argc-1; i++) {
-    /* if -m option is entered, the subsequent string should be in quotes */
-    if (!strncmp( argv[i], "-m", 2)) {
-      strcat(command, argv[i]);
-      strcat (command, "\"");
-      strcat(command, argv[i+1]);
-      strcat (command, "\" "); 
-      i++;
-    }
+    /* if -m option is entered, take it away, and also the string
+       associated with it */
+    if (!strncmp( argv[i], "-m", 2)) { i++; }
     else {
       strcat(command, argv[i]);
       strcat (command, " ");
