@@ -2032,7 +2032,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
 #include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqAIJ"
-int MatAXPY_SeqAIJ(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
+int MatAXPY_SeqAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str)
 {
   int        ierr,one=1,i;
   Mat_SeqAIJ *x  = (Mat_SeqAIJ *)X->data,*y = (Mat_SeqAIJ *)Y->data;

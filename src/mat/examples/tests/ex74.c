@@ -292,6 +292,10 @@ int main(int argc,char **args)
   ierr = ISDestroy(iscol);CHKERRQ(ierr);
   norm1 = tol;  
   inc   = bs;
+
+  /* initialize factinfo */
+  ierr = PetscMemzero(&factinfo,sizeof(MatFactorInfo));CHKERRQ(ierr);
+
   for (lf=-1; lf<10; lf += inc){   
     if (lf==-1) {  /* Cholesky factor */
       factinfo.fill = 5.0;   

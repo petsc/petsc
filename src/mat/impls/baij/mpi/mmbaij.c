@@ -6,7 +6,7 @@
 #include "src/mat/impls/baij/mpi/mpibaij.h"
 #include "src/vec/vecimpl.h"
 
-EXTERN int MatSetValuesBlocked_SeqBAIJ(Mat,int,const int*,int,const int*,const PetscScalar*,InsertMode);
+EXTERN int MatSetValuesBlocked_SeqBAIJ(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPIBAIJ"
