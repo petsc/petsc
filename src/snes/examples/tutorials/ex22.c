@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.7 2000/12/15 17:07:53 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.8 2000/12/18 17:31:24 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -58,6 +58,16 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
+  /* Hardwire several options; can be changed at command line */
+  ierr = OptionsSetValue("-dmmg_grid_sequence",PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsSetValue("-ksp_type","fgmres");CHKERRQ(ierr);
+  ierr = OptionsSetValue("-ksp_max_it","5");CHKERRQ(ierr);
+  ierr = OptionsSetValue("-pc_mg_type","full");CHKERRQ(ierr);
+  ierr = OptionsSetValue("-mg_coarse_ksp_type","cr");CHKERRQ(ierr);
+  ierr = OptionsSetValue("-mg_levels_ksp_type","cr");CHKERRQ(ierr);
+  ierr = OptionsSetValue("-mg_coarse_ksp_max_it","6");CHKERRQ(ierr);
+  ierr = OptionsSetValue("-mg_levels_ksp_max_it","6");CHKERRQ(ierr);
+
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   ierr = VecPackAddArray(packer,1);CHKERRQ(ierr);
@@ -74,7 +84,7 @@ int main(int argc,char **argv)
   ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
   for (i=0; i<DMMGGetLevels(dmmg); i++) {
-    ierr = SNESSetMonitor(dmmg[i]->snes,Monitor,dmmg[i],0);CHKERRQ(ierr);
+    /*    ierr = SNESSetMonitor(dmmg[i]->snes,Monitor,dmmg[i],0);CHKERRQ(ierr); */ ;
   }
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
