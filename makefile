@@ -15,18 +15,18 @@ DIRS     = src include pinclude
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
 all: chkpetsc_dir
-	-@if [ ! -d $(LDIR) ]; then \
-          echo $(LDIR) ; mkdir -p $(LDIR) ; fi
-	-$(RM) -f $(LDIR)/*.a
+	-@if [ ! -d $(PDIR) ]; then \
+          echo $(PDIR) ; mkdir -p $(PDIR) ; fi
+	-$(RM) -f $(PDIR)/*.a
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
            PETSC_VERSION=$(PETSC_VERSION) ACTION=libfast  tree 
-	$(RANLIB) $(LDIR)/*.a
+	$(RANLIB) $(PDIR)/*.a
 
 ranlib:
-	$(RANLIB) $(LDIR)/*.a
+	$(RANLIB) $(PDIR)/*.a
 
 deletelibs:
-	-$(RM) -f $(LDIR)/*.a $(LDIR)/complex/* $(LDIR)/c++/*
+	-$(RM) -f $(PDIR)/*.a $(PDIR)/complex/* $(PDIR)/c++/*
 
 deletemanpages:
 	$(RM) -f $(PETSC_DIR)/Keywords $(PETSC_DIR)/docs/man/man*/*
