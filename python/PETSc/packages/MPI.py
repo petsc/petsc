@@ -283,16 +283,17 @@ class Configure(PETSc.package.Package):
     if 'FC' in self.framework.argDB:
       self.framework.pushLanguage('FC')      
       fc = self.framework.getCompiler()
+      args.append('--disable-f90')      
       if fc.find('f90') >= 0:
         import commands
         output  = commands.getoutput(fc+' -v')
         if output.find('IBM') >= 0:
           fc = os.path.join(os.path.dirname(fc),'xlf')
           self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling MPICH\n')      
-      envs += ' FC="'+fc+' '+self.framework.getCompilerFlags()+'"'
+      envs += ' FC="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"'
       self.framework.popLanguage()
     else:
-      args.append('--disable-f77 --disable-f90')
+      args.append('--disable-f77')
     args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
     args = ' '.join(args)

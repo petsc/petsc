@@ -295,7 +295,7 @@ class Configure(config.base.Configure):
         line = 'FC = '+fc+'\n'
       if line.startswith('FOPTFLAGS '):
         self.setCompilers.pushLanguage('FC')
-        line = 'FOPTFLAGS  = '+self.setCompilers.getCompilerFlags()+'\n'
+        line = 'FOPTFLAGS  = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n'
         self.setCompilers.popLanguage()       
       if line.startswith('AR  '):
         line = 'AR      = '+self.setCompilers.AR+'\n'
