@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.86 1997/02/22 02:28:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.87 1997/03/20 18:51:55 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -329,7 +329,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
     if (*gnorm <= fnorm + alpha*initslope) {      /* is reduction enough */
       ierr = VecCopy(w,y); CHKERRQ(ierr);
       PLogInfo(snes,"SNESCubicLineSearch: Cubically determined step, lambda=%g\n",lambda);
-      *flag = -1; break;
+      goto theend1;
     }
     count++;
   }
