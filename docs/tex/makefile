@@ -19,7 +19,7 @@ manual.ps:
 	mv manual.ps ..
 	-@chmod g+w ../manual.ps
 
-manual.html: manual.tex
+manual.html: manual.tex part1.tex
 	tohtml -mapman ../www/www.cit manual.tex -notopnames \
 	       -mapref../www/petsc.cit
 	tohtml -mapman ../www/www.cit manual.tex -notopnames \
@@ -27,6 +27,17 @@ manual.html: manual.tex
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv *.html ..
 	rm -f *.gif *.xbm latex.err findex.tex sindex.tex
+
+intro.dvi: intro.tex part1.tex
+	latex intro
+	bibtex intro
+	latex intro
+	-@chmod g+w intro.dvi intro.aux intro.bbl intro.blg intro.log
+
+intro.ps: 
+	dvips intro
+	mv intro.ps ..
+	-@chmod g+w ../intro.ps
 
 onepager.ps: onepager.tex
 	latex onepager
