@@ -1,4 +1,4 @@
-/*$Id: ex77.c,v 1.7 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex77.c,v 1.8 2001/03/23 23:22:29 balay Exp bsmith $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format. Same as ex74.c except diagonal entries of the matrices are zeros.\n";
 
@@ -194,7 +194,7 @@ int main(int argc,char **args)
     ierr = VecCreateSeq(PETSC_COMM_SELF,j,&x);CHKERRQ(ierr);
  
     for (i=j-1; i>-1; i--){
-      VecSetValue(x,i,*vr2_wk - *vr1_wk, INSERT_VALUES);
+      ierr = VecSetValue(x,i,*vr2_wk - *vr1_wk,INSERT_VALUES);CHKERRQ(ierr);
       vr2_wk--; vr1_wk--;
     }  
     ierr = VecNorm(x,NORM_1,&norm2);CHKERRQ(ierr);
