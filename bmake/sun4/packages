@@ -31,38 +31,40 @@ X11_LIB        = -lX11
 #
 MPI_LIB        = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lmpi -lpmpi
 MPI_INCLUDE    = -I/usr/local/mpi/include
-#MPIRUN         = /usr/local/mpi/bin/mpirun
+#MPIRUN        = /usr/local/mpi/bin/mpirun
 MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 #
-# Optional location of BlockSolve (MPI version), if you do not have
-# BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
-# below if it is there and comment out the BS_INCLUDE and BS_LIB lines.
+# ----------------------------------------------------------------------------------------  
+# PCONF - indicates which OPTIONAL external packages are available at your site
 #
-#  Note: you cannot use BlockSolve with complex
+# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# the locations are appropriately indicated. If you do not have the package then
+# comment out the locations indicated for that package.
+#
+# Make sure that -DHAVE_MPE is listed only if you have installed MPICH with the MPE option.
+#
+PCONF         = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_CVODE
+#
+# Optional location of BlockSolve (MPI version)
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
 BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
-# Optional Matlab location, remove if not needed.
+# Optional Matlab location
 #
 MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
 MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
 CMEX           = /usr/local/bin/cmex 
-#  
-# PCONF - indicates which external packages are available at your site
-#  Make sure that -DHAVE_BLOCKSOLVE is not listed below unless you have
-#  installed it. Make sure that _DHAVE_MPE is listed only if you have 
-#  installed MPICH with the MPE option.
 #
-#PCONF         = -DHAVE_BLOCKSOLVE -DHAVE_MPE
-PCONF         = -DHAVE_BLOCKSOLVE  -DHAVE_MPE
-#
+# Option location where adiC is installed
 #
 ADIC_INCLUDE = -I$(ADIC)/run-lib/include -I$(ADIC)/gradient -I$(ADIC)/include -Dad_GRAD_MAX=10
 ADIC_LIB     = -L$(ADIC)/lib -L$(ADIC)/run-lib/lib -L$(ADIC)/gradient -lADIntrinsics-C -laif_grad
-
 ADIC_CC      = adiC -aeud gradient -i $(PETSC_DIR)/bmake/adicmastercontrol
-
-
+#
+# Optional location of CVODE; Alan Hindmarsh's ODE solver
+# 
+CVODE_INCLUDE = -I/home/bsmith/CVODE/include
+CVODE_LIB     = /home/bsmith/CVODE/lib/libcvode.a
 
 
