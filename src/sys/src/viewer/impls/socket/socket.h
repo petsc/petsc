@@ -1,4 +1,4 @@
-/* $Id: matlab.h,v 1.3 1995/06/07 17:35:10 bsmith Exp bsmith $ */
+/* $Id: matlab.h,v 1.4 1995/07/20 04:00:08 bsmith Exp bsmith $ */
 /* 
      This is the include file, it contains definitions 
   needed by different components of the package.
@@ -7,7 +7,6 @@
 */
 
 #include "petsc.h"
-#include "ptscimpl.h"
 
 struct _Viewer {
   PETSCHEADER

@@ -1,11 +1,10 @@
-/* $Id: vecimpl.h,v 1.12 1995/07/11 03:01:37 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.13 1995/07/17 03:53:25 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 */
 
 #ifndef __VECIMPL 
 #define __VECIMPL
-#include "ptscimpl.h"
 #include "vec.h"
 
 struct _VeOps {

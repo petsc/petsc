@@ -1,9 +1,8 @@
-/* $Id: pcimpl.h,v 1.6 1995/07/08 18:05:22 bsmith Exp curfman $ */
+/* $Id: pcimpl.h,v 1.7 1995/07/09 20:48:21 curfman Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
 
-#include "ptscimpl.h"
 #include "vec.h"
 #include "mat.h"
 #include "ksp.h"

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.53 1995/08/03 21:53:38 curfman Exp bsmith $ */
+/* $Id: petsc.h,v 1.54 1995/08/07 18:54:55 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -123,50 +123,7 @@ extern int PetscSetFPTrap(int);
 #define FORTRANUNDERSCORE
 #endif
 
-/* Global flop counter */
-extern double _TotalFlops;
-#if defined(PETSC_LOG)
-#define PLogFlops(n) {_TotalFlops += n;}
-#else
-#define PLogFlops(n)
-#endif 
-
-/*M
-   PLogFlops - Adds floating point operations to the global counter.
-
-   Input Parameter:
-.  f - flop counter
-
-   Synopsis:
-   PLogFlops(int f)
-
-   Notes:
-   A global counter logs all PETSc flop counts.  The user can use
-   PLogFlops() to increment this counter to include flops for the 
-   application code.  
-
-   PETSc automatically logs library events if the code has been
-   compiled with -DPETSC_LOG (which is the default), and -log,
-   -log_summary, or -log_all are specified.  PLogFlops() is
-   intended for logging user flops to supplement this PETSc
-   information.
-
-    Example of Usage:
-$     #define USER_EVENT 75
-$     PLogEventRegister(USER_EVENT,"User event");
-$     PLogEventBegin(USER_EVENT,0,0,0,0);
-$     [code segment to monitor]
-$     PLogFlops(user_flops)
-$     PLogEventEnd(USER_EVENT,0,0,0,0);
-
-.seealso:  PLogEventRegister(), PLogEventBegin(), PLogEventEnd()
-
-.keywords:  Petsc, log, flops, floating point operations
-M*/
-
-extern int PLogPrint(MPI_Comm,FILE *);
-extern int PLogBegin();
-extern int PLogAllBegin();
-extern int PLogDump(char*);
+#include "phead.h"
+#include "plog.h"
 
 #endif

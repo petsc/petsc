@@ -1,13 +1,13 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.44 1995/07/13 14:51:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.45 1995/07/17 20:40:50 bsmith Exp bsmith $";
 #endif
 
 /*
     Standard Fortran style matrices
 */
-#include "ptscimpl.h"
+#include "petsc.h"
 #include "plapack.h"
 #include "matimpl.h"
 #include "math.h"

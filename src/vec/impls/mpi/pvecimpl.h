@@ -1,11 +1,10 @@
-/* $Id: dvec2.c,v 1.11 1995/06/07 17:27:28 bsmith Exp $ */
+/* $Id: pvecimpl.h,v 1.4 1995/06/07 17:29:29 bsmith Exp bsmith $ */
 /* 
  */
 
 #ifndef __PVECIMPL
 #define __PVECIMPL
 
-#include "ptscimpl.h"
 #include "vecimpl.h"
 #include "dvecimpl.h"
 

@@ -1,8 +1,7 @@
-/* $Id: matimpl.h,v 1.23 1995/07/13 15:16:05 curfman Exp curfman $ */
+/* $Id: matimpl.h,v 1.24 1995/07/14 21:39:48 curfman Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
-#include "ptscimpl.h"
 #include "mat.h"
 
 struct _MatOps {

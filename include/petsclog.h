@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.9 1995/08/04 15:03:07 curfman Exp curfman $ */
+/* $Id: plog.h,v 1.10 1995/08/06 20:01:05 curfman Exp bsmith $ */
 
 /*
     Defines high level logging in Petsc.
@@ -76,6 +76,52 @@
 
 /* event numbers 70 to 89 are reserved for applications */
 
+/* Global flop counter */
+extern double _TotalFlops;
+#if defined(PETSC_LOG)
+#define PLogFlops(n) {_TotalFlops += n;}
+#else
+#define PLogFlops(n)
+#endif 
+
+/*M
+   PLogFlops - Adds floating point operations to the global counter.
+
+   Input Parameter:
+.  f - flop counter
+
+   Synopsis:
+   PLogFlops(int f)
+
+   Notes:
+   A global counter logs all PETSc flop counts.  The user can use
+   PLogFlops() to increment this counter to include flops for the 
+   application code.  
+
+   PETSc automatically logs library events if the code has been
+   compiled with -DPETSC_LOG (which is the default), and -log,
+   -log_summary, or -log_all are specified.  PLogFlops() is
+   intended for logging user flops to supplement this PETSc
+   information.
+
+    Example of Usage:
+$     #define USER_EVENT 75
+$     PLogEventRegister(USER_EVENT,"User event");
+$     PLogEventBegin(USER_EVENT,0,0,0,0);
+$     [code segment to monitor]
+$     PLogFlops(user_flops)
+$     PLogEventEnd(USER_EVENT,0,0,0,0);
+
+.seealso:  PLogEventRegister(), PLogEventBegin(), PLogEventEnd()
+
+.keywords:  Petsc, log, flops, floating point operations
+M*/
+
+extern int PLogPrint(MPI_Comm,FILE *);
+extern int PLogBegin();
+extern int PLogAllBegin();
+extern int PLogDump(char*);
+
 #if defined(PETSC_LOG)
 
 extern int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
@@ -85,9 +131,7 @@ extern int (*_PHD)(PetscObject);
 extern int PLogEventRegister(int,char*);
 
 /*M   
-   PLogEventBegin - Logs the beginning of a user event.  Note that
-   petsc/include/plog.h MUST be included in the user's code to employ 
-   this function.
+   PLogEventBegin - Logs the beginning of a user event. 
 
    Input Parameters:
 .  e - integer associated with the event (69 < e < 89) 
@@ -125,9 +169,7 @@ M*/
            (PetscObject)o2,(PetscObject)o3,(PetscObject)o4);};
 
 /*M   
-   PLogEventEnd - Log the end of a user event.  Note that
-   petsc/include/plog.h MUST be included in the user's code to employ 
-   this function.
+   PLogEventEnd - Log the end of a user event.
 
    Input Parameters:
 .  e - integer associated with the event (69 < e < 89) 

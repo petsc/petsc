@@ -1,12 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.16 1995/07/28 17:49:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: axis.c,v 1.17 1995/08/02 00:23:17 curfman Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
 */
 
 #include "petsc.h"
-#include "ptscimpl.h"
 #include "draw.h"              /*I "draw.h" I*/
 #include <math.h>
 #if defined(HAVE_STRING_H)

@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.5 1995/07/20 04:00:46 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.6 1995/08/02 04:19:19 bsmith Exp bsmith $ */
 
 /*
 
@@ -6,7 +6,6 @@
 
 #if !defined(_DAIMPL_H)
 #define _DAIMPL_H
-#include "ptscimpl.h"
 #include "da.h"
 
 struct _DA {

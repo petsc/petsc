@@ -9,7 +9,6 @@ codes.  Note that the code must be compiled with the flag -DPETSC_LOG\n\
 (the default) to activate logging.\n\n";
 
 #include "petsc.h"
-#include "plog.h"
 #include <stdio.h>
 
 #define USER_EVENT 75

@@ -1,13 +1,12 @@
-/* $Id: ptscimpl.h,v 1.14 1995/08/02 04:19:43 bsmith Exp bsmith $ */
+/* $Id: ptscimpl.h,v 1.15 1995/08/07 18:55:04 bsmith Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
 */
 
-#if !defined(_PETSCIMPL)
-#define _PETSCIMPL
+#if !defined(_PHEAD_H)
+#define _PHEAD_H
 #include "petsc.h"  
-#include "plog.h"
 #include <stdio.h>
 
 
@@ -101,8 +100,6 @@ extern void *PetscLow,*PetscHigh;
 
 #define CHKSAME(a,b) \
   if ((a)->type != (b)->type) SETERRQ(3,"Objects not of same type");
-
-#define CHKTYPE(a,b) (((a)->type & (b)) ? 1 : 0)
 
 struct _PetscObject {
   PETSCHEADER

@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.6 1995/07/07 17:17:35 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.7 1995/07/17 20:43:22 bsmith Exp bsmith $ */
 /*
    This is to provide some name space protection from Lapack and Blas 
 allow the appropriate single or double precision version to be used.
@@ -12,7 +12,7 @@ Cray T3D. Yet another reason to hate ...
 #if !defined(_PLAPACK_H)
 #define _PLAPACK_H
 
-#include "ptscimpl.h"
+#include "petsc.h"
 
 #if defined(PARCH_t3d)
 #include "fortran.h"

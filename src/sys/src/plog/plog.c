@@ -1,9 +1,9 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.28 1995/08/06 17:40:41 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.29 1995/08/06 17:41:23 curfman Exp bsmith $";
 #endif
 
-#include "ptscimpl.h"    /*I "petsc.h"  I*/
+#include "petsc.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -538,8 +538,7 @@ static char *(name[]) = {"MatMult         ",
 
 /*@
     PLogEventRegister - Registers an event name for logging operations in 
-    an application code.  Note that petsc/include/plog.h MUST be included
-    in the user's code to employ this function.
+    an application code. 
 
     Input Parameters:
 .   e - integer associated with the event (69 < e < 89) 

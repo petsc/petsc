@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: view.c,v 1.2 1995/06/23 12:41:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: view.c,v 1.3 1995/08/05 20:05:26 curfman Exp bsmith $";
 #endif
 
-#include "ptscimpl.h"
+#include "petsc.h"
 
 /*@
    ViewerDestroy - Destroys a viewer.

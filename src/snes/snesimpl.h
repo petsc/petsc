@@ -1,10 +1,8 @@
-/* $Id: snesimpl.h,v 1.21 1995/07/30 15:21:03 curfman Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.22 1995/08/03 17:38:34 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
 #include "snes.h"
-#include "ptscimpl.h"
-
 
 /*
    Nonlinear solver context

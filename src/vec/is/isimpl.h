@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: isimpl.h,v 1.4 1995/06/07 16:35:31 bsmith Exp bsmith $ */
 
 /*
     Index sets for scatter-gather type operations in vectors
@@ -10,7 +10,6 @@ for now we define only the shell and what we absolutely need.
 
 #if !defined(_INDEX)
 #define _INDEX
-#include "ptscimpl.h"
 #include "is.h"
 
 struct _ISOps {

@@ -1,9 +1,8 @@
-/* $Id: drawimpl.h,v 1.3 1995/06/07 16:36:14 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.4 1995/07/07 17:16:34 bsmith Exp bsmith $ */
 
 #if !defined(_DRAWIMPL_H)
 #define _DRAWIMPL_H
 
-#include "ptscimpl.h"
 #include "draw.h"
 
 struct _DrawOps {

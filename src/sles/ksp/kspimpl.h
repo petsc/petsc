@@ -1,9 +1,8 @@
-/* $Id: kspimpl.h,v 1.9 1995/07/21 17:46:04 curfman Exp curfman $ */
+/* $Id: kspimpl.h,v 1.10 1995/07/27 21:14:17 curfman Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
 
-#include "ptscimpl.h"
 #include "ksp.h"
 
 /*

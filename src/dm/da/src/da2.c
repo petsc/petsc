@@ -10,7 +10,6 @@
 #include "pviewer.h"
 #include "draw.h"
 #include <math.h>
-#include "plog.h"
 
 static int DAView_2d(PetscObject dain,Viewer ptr)
 {

@@ -3,7 +3,6 @@
 */
 #if !defined(__MG_IMPL)
 #define __MG_IMPL
-#include "ptscimpl.h"
 #include "pcimpl.h"
 #include "mg.h"
 #include "sles.h"

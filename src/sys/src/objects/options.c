@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.30 1995/07/30 14:57:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.31 1995/08/04 01:51:30 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -9,9 +9,9 @@ static char vcid[] = "$Id: options.c,v 1.30 1995/07/30 14:57:20 bsmith Exp bsmit
   what malloc is being used until it has already processed the input.
 
 */
+#include "petsc.h"
 #include <stdio.h>
 #include <math.h>
-#include "ptscimpl.h"            /*I "petsc.h"  I*/
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif

@@ -1,7 +1,7 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.8 1995/07/30 14:57:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: destroy.c,v 1.9 1995/08/07 18:51:40 bsmith Exp bsmith $";
 #endif
-#include "ptscimpl.h"  /*I   "petsc.h"    I*/
+#include "petsc.h"  /*I   "petsc.h"    I*/
 
 /*@
    PetscObjectDestroy - Destroys any PetscObject, regardless of the type. 
