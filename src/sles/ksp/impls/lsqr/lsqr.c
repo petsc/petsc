@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.47 1999/01/31 16:09:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.48 1999/02/09 22:51:44 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -147,7 +147,9 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     rnorm = phibar;
 #endif
 
+    PetscAMSTakeAccess(ksp);
     ksp->rnorm = rnorm;
+    PetscAMSGrantAccess(ksp);
     if (history && hist_len > i + 1) history[i+1] = rnorm;
     KSPMonitor(ksp,i+1,rnorm);
     cerr = (*ksp->converged)(ksp,i+1,rnorm,ksp->cnvP);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.52 1998/12/03 03:58:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.53 1999/01/31 16:09:05 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -101,7 +101,9 @@ int KSPSolve_QCG(KSP ksp,int *its)
 
   ierr = VecNorm(BS,NORM_2,&bsnrm); CHKERRQ(ierr);
   KSPMonitor(ksp,0,bsnrm);
+  PetscAMSTakeAccess(ksp);
   ksp->rnorm              = bsnrm;
+  PetscAMSGrantAccess(ksp);
   if (history) history[0] = bsnrm;
   cerr = (*ksp->converged)(ksp,0,bsnrm,ksp->cnvP);
   if (cerr) {*its =  0; PetscFunctionReturn(0);}
