@@ -17,6 +17,9 @@ in PETSc can be used and turn them off if they cannot.
 Better to add a new flag like PETSC_USE_MPI_MACROS
 
 
+  If initial guess is given for KSP and KSPDiagonalScale has been used then scale
+initial guess by diagonal.
+
   If shared libraries is turned on, need configure test that each external package
   can go into shared library. Trouble on Mac
 

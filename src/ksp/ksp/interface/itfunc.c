@@ -274,12 +274,12 @@ static const char *convergedreasons[] = {"matrix is indefinite or negative defin
    Options Database Keys:
 +  -ksp_compute_eigenvalues - compute preconditioned operators eigenvalues
 .  -ksp_plot_eigenvalues - plot the computed eigenvalues in an X-window
-.  -ksp_compute_eigenvalues_explicitly - compute the eigenvalues by forming the 
-      dense operator and useing LAPACK
+.  -ksp_compute_eigenvalues_explicitly - compute the eigenvalues by forming the dense operator and useing LAPACK
 .  -ksp_plot_eigenvalues_explicitly - plot the explicitly computing eigenvalues
-.  -ksp_view_binary - save matrix and right hand side that define linear system to the 
-                      default binary viewer (can be
-       read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
+.  -ksp_view_binary - save matrix and right hand side that define linear system to the default binary viewer (can be
+                                read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
+.  -ksp_converged_reason - print reason for converged or diverged
+.  -ksp_final_residual - print 2-norm of true linear system residual at the end of the solution process
 -  -ksp_view - print the ksp data structure at the end of the system solution
 
    Notes:
@@ -357,6 +357,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
 
       ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
+    }
+
+    /*  scale initial guess */
+    if (!ksp->guess_zero) {
+      if (!ksp->truediagonal) {
+        ierr = VecDuplicate(ksp->diagonal,&ksp->truediagonal);CHKERRQ(ierr);
+        ierr = VecCopy(ksp->diagonal,ksp->truediagonal);CHKERRQ(ierr);
+        ierr = VecReciprocal(ksp->truediagonal);CHKERRQ(ierr);
+      }
+      ierr = VecPointwiseMult(ksp->truediagonal,ksp->vec_sol,ksp->vec_sol);CHKERRQ(ierr);
     }
   }
   ierr = PCPreSolve(ksp->pc,ksp);CHKERRQ(ierr);
@@ -506,6 +516,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
       ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
     }
   }
+  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_final_residual",&flg);CHKERRQ(ierr);
+  if (flg) {
+    Mat         A;
+    Vec         t;
+    PetscScalar mone = -1.0,norm;
+    if (ksp->dscale && !ksp->dscalefix) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot compute final scale with -ksp_diagonal_scale except also with -ksp_diagonal_scale_fix");
+    ierr = PCGetOperators(ksp->pc,&A,0,0);CHKERRQ(ierr);
+    ierr = VecDuplicate(ksp->vec_sol,&t);CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,A,ksp->vec_sol,t);CHKERRQ(ierr);
+    ierr = VecWAXPY(&mone,t,ksp->vec_rhs,t);CHKERRQ(ierr);
+    ierr = VecNorm(t,NORM_2,&norm);CHKERRQ(ierr);
+    ierr = VecDestroy(t);CHKERRQ(ierr);
+    ierr = PetscPrintf(ksp->comm,"KSP final norm of residual %g\n",norm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -590,6 +614,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
   }
   ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
+  if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
   if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
