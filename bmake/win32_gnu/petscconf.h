@@ -53,7 +53,7 @@
 
 #ifdef PETSC_USE_MAT_SINGLE
 #  define PETSC_MEMALIGN 16
-#  define PETSC_HAVE_SSE "gccsse.h"
+#  define PETSC_HAVE_SSE "src/inline/gccsse.h"
 #endif
 
 #define PETSC_PRINTF_FORMAT_CHECK(a,b) __attribute__ ((format (printf, a,b)))

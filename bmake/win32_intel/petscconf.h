@@ -65,7 +65,7 @@
 
 #ifdef PETSC_USE_MAT_SINGLE
 #  define PETSC_MEMALIGN 16
-#  define PETSC_HAVE_SSE "iclsse.h"
+#  define PETSC_HAVE_SSE "src/inline/iclsse.h"
 #endif
 #define PETSC_HAVE_CXX_NAMESPACE
 
