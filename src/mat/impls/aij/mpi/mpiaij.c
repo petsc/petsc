@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.99 1995/11/09 22:28:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.100 1995/11/25 23:49:23 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -595,13 +595,14 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       Scalar      *a;
 
       if (!rank) {
-        ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,0,0,0,0,&A);CHKERRQ(ierr);
+        ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,0,PetscNull,0,PetscNull,&A);
+               CHKERRQ(ierr);
       }
       else {
-        ierr = MatCreateMPIAIJ(mat->comm,0,0,M,N,0,0,0,0,&A);CHKERRQ(ierr);
+        ierr = MatCreateMPIAIJ(mat->comm,0,0,M,N,0,PetscNull,0,PetscNull,&A);
+               CHKERRQ(ierr);
       }
       PLogObjectParent(mat,A);
-      
 
       /* copy over the A part */
       Aloc = (Mat_SeqAIJ*) aij->A->data;
@@ -1219,8 +1220,8 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   Scalar     *array;
 
   if (!matout && M != N) SETERRQ(1,"MatTranspose_MPIAIJ:Square only in-place");
-  ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,0,0,0,0,&B);
-  CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,0,PetscNull,0,
+         PetscNull,&B); CHKERRQ(ierr);
 
   /* copy over the A part */
   Aloc = (Mat_SeqAIJ*) a->A->data;
@@ -1332,17 +1333,25 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    local matrix (a rectangular submatrix). 
 
    The user can specify preallocated storage for the diagonal part of
-   the local submatrix with either d_nz or d_nnz (not both). Set both
-   d_nz and d_nnz to zero for PETSc to control dynamic memory allocation.  
+   the local submatrix with either d_nz or d_nnz (not both).  Set d_nz=0
+   and d_nnz=PetscNull for PETSc to control dynamic memory allocation.  
    Likewise, specify preallocated storage for the off-diagonal part of 
    the local submatrix with o_nz or o_nnz (not both).
+
+   By default, this format uses inodes (identical nodes) when possible.
+   We search for consecutive rows with the same nonzero structure, thereby
+   reusing matrix information to achieve increased efficiency.
+
+   Options Database Keys:
+$    -mat_aij_no_inode  - Do not use inodes
+$    -mat_aij_inode_limit <limit> - Set inode limit (max limit=5)
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues()
 @*/
 int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
-                    int d_nz,int *d_nnz, int o_nz,int *o_nnz,Mat *newmat)
+                    int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *newmat)
 {
   Mat          mat;
   Mat_MPIAIJ   *a;
@@ -1361,7 +1370,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   MPI_Comm_rank(comm,&a->rank);
   MPI_Comm_size(comm,&a->size);
 
-  if (m == PETSC_DECIDE && (d_nnz || o_nnz)) 
+  if (m == PETSC_DECIDE && (d_nnz != PetscNull || o_nnz != PetscNull)) 
     SETERRQ(1,"MatCreateMPIAIJ:Cannot have PETSc decide rows but set d_nnz or o_nnz");
 
   if (M == PETSC_DECIDE || N == PETSC_DECIDE) {
