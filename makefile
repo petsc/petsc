@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.194 1997/10/08 00:15:57 balay Exp bsmith $ 
+# $Id: makefile,v 1.195 1997/10/08 03:34:47 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -193,7 +193,7 @@ petscblas: info chkpetsc_dir
 
 # If fortrankernels are used, build them.
 build_kernels:
-	-@if [ $(KERNEL_LIB) != ""  ] ; then \
+	-@if [ "$(KERNEL_LIB)" != ""  ] ; then \
 	$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) fortrankernels; fi
 
 # Ranlib on the libraries
