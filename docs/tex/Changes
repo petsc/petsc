@@ -14,6 +14,9 @@ add to it).
 
   MAT
 
+  MatSolveTrans() and MatSolveTransAdd() are now MatSolveTransposeXXX()
+  MatMultTrans() and MatMultTransAdd() are now MatMultTransposeXXX()
+
 
 added matrix option MAT_KEEP_ZEROED_ROWS causes MatZeroRows() to keep the original nonzero 
 data structure and just put 0.0 into the elements that are to be zeroed. Without this option
@@ -21,15 +24,16 @@ it removes the locations from the nonzero structure
 
   KSP
 
-    
+    KSPSolvetrans() is now KSPSolveTranspose()
     
   SLES
  
+SLESSolveTrans() is now SLESSolveTranspose()
    
 
   PC
 
-  
+  PCApplyTrans() is now PCApplyTranspose()
   
 
  
