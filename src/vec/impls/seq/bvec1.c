@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec1.c,v 1.29 1999/05/12 03:28:22 bsmith Exp bsmith $"
+static char vcid[] = "$Id: bvec1.c,v 1.30 1999/10/04 18:50:28 bsmith Exp bsmith $"
 #endif
 
 /*
@@ -83,10 +83,10 @@ int VecScale_Seq(const Scalar *alpha,Vec xin )
 int VecCopy_Seq(Vec xin, Vec yin )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
-  int     one = 1;
+  int     ierr;
 
   PetscFunctionBegin;
-  BLcopy_( &xin->n, x->array, &one, y->array, &one );
+  ierr = PetscMemcpy(y->array,x->array,xin->n*sizeof(Scalar));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
