@@ -40,7 +40,7 @@ shared: chkopts
 	for LIBNAME in $(SHLIBS) ; \
 	  do \
 	    $(AR) x ../$$LIBNAME.a ;\
-	    $(CLINKER) -shared  *.o  -o ../$$LIBNAME.so.1.0 ; \
+	    gcc -shared  *.o  -o ../$$LIBNAME.so.1.0 ; \
 	    $(RM) -f * ; \
 	done ;\
 	cd ../ ; \
