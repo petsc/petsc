@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.217 1997/05/15 22:01:45 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.218 1997/05/15 22:02:18 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -905,7 +905,7 @@ zero {\em regardless of the storage format employed}.   The array
 {\tt values} is logically two-dimensional, containing the values that are 
 to be inserted.   
 By default the values are given in row major order, which is the opposite 
-of the Fortran77 convention. To allow the insertion of values in column 
+of the Fortran convention. To allow the insertion of values in column 
 major order, one can call the command \findex{MatSetOption()}
 \begin{verbatim}
    ierr = MatSetOption(Mat A,MAT_COLUMN_ORIENTED);
@@ -1033,7 +1033,7 @@ keys are {\tt -mat\_aij\_no\_inode} (do not use inodes) and {\tt
 -mat\_aij\_inode\_limit <limit>} (set inode limit (max limit=5)).
 
 By default the internal data representation for the AIJ formats employs
-zero-based indexing.  For compatibility with standard Fortran77 storage,
+zero-based indexing.  For compatibility with standard Fortran storage,
 thus enabling use of external Fortran software packages such as
 SPARSKIT, \sindex{SPARSKIT} the option {\tt -mat\_aij\_oneindex}
 \findex{-mat_aij_oneindex} enables one-based indexing, where the stored
@@ -1288,7 +1288,7 @@ one should organize the code in such a way that {\em most} values are generated 
 
 PETSc provides both sequential and parallel dense matrix formats,
 where each processor stores its entries in a column-major array in the
-usual Fortran77 style.  To create a sequential, dense PETSc matrix,
+usual Fortran style.  To create a sequential, dense PETSc matrix,
 {\tt A} of dimensions {\tt m} by {\tt n}, the user should
 call \findex{MatCreateSeqDense()}
 \begin{verbatim}
@@ -1350,7 +1350,7 @@ to another vector: \findex{MatMultAdd()} \findex{MatMultTransAdd()}
 \end{verbatim}
 These routines, respectively, produce $ w = A*x + y $ and $ w = A^{T}*x + y$ . 
 In C it is legal for the vectors {\tt y} and {\tt w} to be identical.
-In Fortran77, this situation is forbidden by the language standard, 
+In Fortran, this situation is forbidden by the language standard, 
 but we allow it anyway.
 
 One can print a matrix (sequential or parallel) to the screen with the 
@@ -4077,12 +4077,12 @@ is available for the adventurous.  Stay tuned for future developments.
 \label{ch:fortran}
 
 Most of the functionality of PETSc can be obtained by people who
-program purely in Fortran.  Note, however, that we recommend the
+program purely in Fortran 77 or Fortran 90.  Note, however, that we recommend the
 use of C and/or C++ because these languages contain several extremely powerful
 concepts that the Fortran77/90 family does not. 
 
-Since Fortran77 does not provide type checking of routine input/output
-parameters, we find that many errors encountered within PETSc Fortran77
+Since Fortran does not provide type checking of routine input/output
+parameters, we find that many errors encountered within PETSc Fortran
 programs result from accidentally using incorrect calling sequences.
 Such mistakes are immediately detected during compilation when using
 C/C++.  Thus, using a mixture of C/C++ and Fortran often works well
