@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.164 1999/02/03 03:18:16 curfman Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.165 1999/02/15 21:58:46 balay Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1106,6 +1106,7 @@ int MatGetArray_SeqDense(Mat A,Scalar **array)
 int MatRestoreArray_SeqDense(Mat A,Scalar **array)
 {
   PetscFunctionBegin;
+  *array = 0; /* user cannot accidently use the array later */
   PetscFunctionReturn(0);
 }
 
