@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.337 2000/04/18 03:37:59 bsmith Exp balay $ 
+% $Id: part2.tex,v 1.338 2000/05/08 15:10:06 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4439,6 +4439,52 @@ To disable all x-window-based graphics, edit the file
 the PETSc libraries.
 
 %------------------------------------------------------------------
+\chapter{Using Matlab with PETSc}
+\label{ch:matlab}\sindex{Matlab}
+
+There are three basic ways to use Matlab with PETSc: (1) dumping files to 
+be read into Matlab, (2) automatically sending data from a running PETSc program
+to a Matlab process where you may interactively type Matlab commands (or run
+scripts) and (3) automatically sending data back and forth between PETSc and 
+Matlab where Matlab commands are issued not interactively but from a script or
+the PETSc program.
+
+\section{Dumping Data for Matlab}
+One can dump PETSc matrices and vectors to the screen (and thus save in a file via
+> filename.m) in a format that Matlab can read in directly. This is done with the
+command line options -vec\_view\_matlab -mat\_view\_matlab. This causes the PETSc program
+to print the vectors and matrices every time a VecAssemblyXXX() and MatAssemblyXXX()
+is called. \findex{-vec_view_matlab} \findex{-mat_view_matlab} To provide finer control
+over when and what vectors and matrices are dumped one can use the VecView() and 
+MatView() functions with a viewer type of ASCII (see ViewerASCIIOpen(), 
+VIEWER\_STDOUT\_WORLD, VIEWER\_STDOUT\_SELF, or VIEWER\_STDOUT\_(MPI_Comm)). Before calling
+the viewer set the output type with ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,char *name) or
+ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,char *name). \findex{VIEWER_FORMAT_ASCII_MATLAB}
+\begin{verbatim}
+  ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_MATLAB,''VecA'');
+  VecView(A,VIEWER_STDOUT_WORLD);
+  ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_MATLAB,''MatB'');
+  MatView(B,VIEWER_STDOUT_WORLD);
+\end{verbatim}
+
+\section{Sending Data to Running Matlab}
+
+One creates a viewer to Matlab via {\tt ViewerSocketOpen(MPI_Comm,char *machine,int port,Viewer *v)}
+(port is usally set to PETSC\_DEFAULT) and then sends matrices or vectors via
+\begin{verbatim}
+  VecView(Vec A,v);
+  MatView(Mat B,v);
+\end{verbatim}
+One can also send arrays or integer arrays via
+\begin{verbatim}
+  ViewerSocketPutScalar(v,int m,int n,Scalar *array);
+  ViewerSocketPutReal(v,int m,int n,double *array);
+  ViewerSocketPutInt(v,int m,int *array);
+\end{verbatim}
+
+
+
+%------------------------------------------------------------------
 \chapter{PETSc Fortran Users}
 \label{ch:fortran}
 
@@ -5109,9 +5155,6 @@ These statistics can aid in optimizing performance, since they indicate the sect
 could benefit from various kinds of tuning.  Chapter~\ref{ch:performance} gives
 suggestions about achieving good performance with PETSc codes.
 
-\subsection{Using -log and -log\_all with PETScView}
-\findex{-log} \findex{-log_all}
-
 \subsection{Using -log\_mpe with Upshot/Nupshot}
 \label{sec:mpelogs}
 
@@ -5420,7 +5463,7 @@ the profiled code of interest (solving the linear system for the larger problem)
 occurs within event stages 4 and 5.  Section~\ref{sec:parperformance} provides
 details about interpreting such profiling data.
 
-In particular the macros {\tt PreLoadBegin(PetscTruth,char* stagename)}, {\tt
+In particular, the macros {\tt PreLoadBegin(PetscTruth,char* stagename)}, {\tt
 PreLoadStage(char *stagename)}, and {\tt PreLoadEnd()} can be used to easily 
 convert a regular PETSc program to one that uses preloading. The command line options
 {\tt -preload true} and {\tt -preload false} may be used to turn on and off
@@ -6629,11 +6672,11 @@ The following routines perform complete, in-place, symbolic, and numerical
 factorizations for symmetric and nonsymmetric matrices, respectively:
 \begin{verbatim}
    ierr = MatCholeskyFactor(Mat matrix,IS permutation,double pf);
-   ierr = MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,double pf); 
+   ierr = MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,MatLUInfo *info); 
 \end{verbatim}
-The argument {\tt pf $ \ge $ 1} is the predicted fill
+The argument {\tt info->fill $ \ge $ 1} is the predicted fill
 expected in the factored matrix, as a ratio of the original fill. 
-For example, {\tt pf=2.0} would indicate that one expects the factored
+For example, {\tt info->fill=2.0} would indicate that one expects the factored
 matrix to have twice as many nonzeros as the original.
 \findex{MatCholeskyFactor()} \findex{MatLUFactor()}
 
@@ -6650,7 +6693,7 @@ stages \findex{MatCholeskyFactorNumeric()} \findex{MatLUFactorNumeric()}
 can also be performed separately, by using the out-of-place mode:
 \begin{verbatim}
    ierr = MatCholeskyFactorSymbolic(Mat matrix,IS perm, double pf,Mat *result);
-   ierr = MatLUFactorSymbolic(Mat matrix,IS rowperm,IS colperm,double pf,Mat *result);
+   ierr = MatLUFactorSymbolic(Mat matrix,IS rowperm,IS colperm,MatLUInfo *info,Mat *result);
    ierr = MatCholeskyFactorNumeric(Mat matrix,Mat *result);
    ierr = MatLUFactorNumeric(Mat matrix, Mat *result);
 \end{verbatim}
