@@ -11,7 +11,7 @@ typedef struct _SLES* SLES;
 extern int SLESCreate(MPI_Comm,SLES*);
 extern int SLESGetPC(SLES,PC*);
 extern int SLESGetKSP(SLES,KSP*);
-extern int SLESSetOperators(SLES,Mat,Mat,int);
+extern int SLESSetOperators(SLES,Mat,Mat,MatStructure);
 extern int SLESSolve(SLES,Vec,Vec,int*);
 extern int SLESSetFromOptions(SLES);
 extern int SLESDestroy(SLES);

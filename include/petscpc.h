@@ -31,9 +31,11 @@ extern int    PCGetMethodFromContext(PC,PCMethod*);
 extern int    PCGetMethodName(PCMethod,char **);
 
 /* Flags for PCSetOperators */
-#define MAT_SAME_NONZERO_PATTERN 1
+typedef enum {ALLMAT_DIFFERENT_NONZERO_PATTERN=0,MAT_SAME_NONZERO_PATTERN=1, 
+              PMAT_SAME_NONZERO_PATTERN=2,ALLMAT_SAME_NONZERO_PATTERN=3}
+              MatStructure;
 
-extern int PCSetOperators(PC,Mat,Mat,int);
+extern int PCSetOperators(PC,Mat,Mat,MatStructure);
 extern int PCBJacobiSetUseTrueLocal(PC);
 extern int PCSetVector(PC,Vec);
 extern int PCPrintHelp(PC);
