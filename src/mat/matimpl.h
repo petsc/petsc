@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.44 1995/12/23 04:43:06 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.45 1995/12/23 04:45:26 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -88,7 +88,10 @@ extern int StashInfo_Private(Stash*);
   Reorderings for sequential IJ format. By default uses SparsePak routines.
 */
 extern int MatGetReordering_IJ(int,int*,int*,MatOrdering,IS *,IS*);
+
+
 extern int MatConvert_Basic(Mat,MatType,Mat*);
+extern int MatCopy_Basic(Mat,Mat);
 
 #endif
 

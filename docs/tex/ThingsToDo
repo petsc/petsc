@@ -66,7 +66,7 @@ Additional Capabilities that PETSc Needs:
      in SUMMA.
 
    - Have all preconditioners (including LU) support null space, see 
-     tools.n/solvers/nullsp.c
+     tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
 
    - Make PLogFlops() also log loads and stores.
 

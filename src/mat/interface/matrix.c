@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.119 1995/12/21 18:31:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.120 1995/12/23 05:00:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -868,7 +868,7 @@ int MatRelax(Mat mat,Vec b,double omega,MatSORType flag,double shift,
 /*
       Default matrix copy routine.
 */
-static int MatCopy_Basic(Mat A,Mat B)
+int MatCopy_Basic(Mat A,Mat B)
 {
   int    ierr,i,rstart,rend,nz,*cwork;
   Scalar *vwork;
