@@ -74,7 +74,7 @@ int DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
 @*/
 int DMMGSetUseGalerkinCoarse(DMMG* dmmg)
 {
-  int     ierr,i,nlevels = dmmg[0]->nlevels;
+  int  i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");

@@ -487,22 +487,6 @@ checkbadfortranstubs:
 	grep "$$OBJ \*" *.c | tr -s ' ' | tr -s ':' ' ' | \
 	cut -d'(' -f1 | cut -d' ' -f1,3; \
 	done 
-# Builds noise routines (not yet publically available)
-# Note:	 libfast cannot run on .F files on certain machines, so we
-# use lib and check for errors here.
-noise: info chklib_dir
-	-@echo "Beginning to compile noise routines"
-	-@echo "========================================="
-	-@cd src/snes/interface/noise; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} lib > trashz 2>&1; \
-	  grep -v clog trashz | grep -v "information sections" | \
-	  egrep -i '(Error|warning|Can)' >> /dev/null;\
-	  if [ "$$?" != 1 ]; then \
-	  cat trashz ; fi; ${RM} trashz
-	${RANLIB} ${INSTALL_LIB_DIR}/libpetscsnes.${LIB_SUFFIX}
-	-@echo "Completed compiling noise routines"
-	-@echo "========================================="
-
 #
 # Automatically generates PETSc exercises in html from the tutorial examples.
 #

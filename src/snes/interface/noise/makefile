@@ -3,6 +3,7 @@
 ALL: lib
 
 #requiresscalar real 
+#requiresprecision double
 
 CFLAGS   =
 FFLAGS   =

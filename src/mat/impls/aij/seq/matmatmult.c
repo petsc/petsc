@@ -455,7 +455,7 @@ CHKMEMQ;
       pjj  = pj + pi[prow];
       paj  = pa + pi[prow];
       for (k=0;k<pnzj;k++) {
-        if (!apa[pjj[k]]) {
+        if (apa[pjj[k]] != 0.0) {
 CHKMEMQ;
           apj[apnzj++]=pjj[k];
 CHKMEMQ;
