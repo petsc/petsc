@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.24 1995/04/02 16:35:07 curfman Exp $";
+static char vcid[] = "$Id: mpiaij.c,v 1.24 1995/04/03 01:20:02 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -120,7 +120,7 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
     either case.
 */
 
-static int MatBeginAssemble_MPIAIJ(Mat mat)
+static int MatBeginAssembly_MPIAIJ(Mat mat)
 { 
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   MPI_Comm    comm = mat->comm;
@@ -223,7 +223,7 @@ static int MatBeginAssemble_MPIAIJ(Mat mat)
 }
 extern int MatSetUpMultiply_MPIAIJ(Mat);
 
-static int MatEndAssemble_MPIAIJ(Mat mat)
+static int MatEndAssembly_MPIAIJ(Mat mat)
 { 
   int        ierr;
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -1079,7 +1079,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatGetInfo_MPIAIJ,0,
        MatCopy_MPIAIJ,
        MatGetDiagonal_MPIAIJ,0,0,
-       MatBeginAssemble_MPIAIJ,MatEndAssemble_MPIAIJ,
+       MatBeginAssembly_MPIAIJ,MatEndAssembly_MPIAIJ,
        0,
        MatSetOption_MPIAIJ,MatZeroEntries_MPIAIJ,MatZeroRows_MPIAIJ,0,
        0,0,0,0,
