@@ -318,7 +318,7 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   B->assembled            = PETSC_TRUE;  /* required by -sles_view */
   
   lu = (Mat_SuperLU*)(B->spptr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",
                                     (void(*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
 
   /* Allocate the work arrays required by SuperLU (notice sizes are for the transpose) */
