@@ -134,9 +134,10 @@ int SamgGetCoarseMat(int level, int ia_shift, int ja_shift,
    for (I=0;I<nnu_k;I++)
        nnz_per_row[I] = ia_k[I+1] - ia_k[I]; 
 
-   /*..Allocate (create) matrix  for use within PETSc..*/
-   ierr =  MatCreateSeqAIJ(PETSC_COMM_WORLD,nnu_k,nnu_k,PETSC_NULL,
-           nnz_per_row,coarsemat); CHKERRQ(ierr);
+   /*..Allocate (create) SeqAIJ matrix  for use within PETSc..*/
+   ierr = MatCreate(PETSC_COMM_WORLD,nnu_k,nnu_k,nnu_k,nnu_k,coarsemat);CHKERRQ(ierr);
+   ierr = MatSetType(*coarsemat,MATSEQAIJ);CHKERRQ(ierr);
+   ierr = MatSeqAIJSetPreallocation(*coarsemat,0,nnz_per_row);CHKERRQ(ierr);
 
    /*..Store coarse grid matrix in Petsc Mat object..*/
    for (I=0;I<nnu_k;I++){
@@ -223,9 +224,10 @@ int SamgGetInterpolation(int level, int iw_shift, int jw_shift,
    for (I=0;I<rows_weights;I++)
        nnz_per_row[I] = iweights[I+1] - iweights[I]; 
 
-   /*..Allocate (create) matrix  for use within PETSc..*/
-   ierr =  MatCreateSeqAIJ(PETSC_COMM_WORLD,rows_weights,cols_weights, 
-           PETSC_NULL, nnz_per_row,interpolation); CHKERRQ(ierr);
+   /*..Allocate (create) SeqAIJ matrix  for use within PETSc..*/
+   ierr = MatCreate(PETSC_COMM_WORLD,rows_weights,cols_weights,rows_weights,cols_weights,interpolation);CHKERRQ(ierr);
+   ierr = MatSetType(*interpolation,MATSEQAIJ);CHKERRQ(ierr);
+   ierr = MatSeqAIJSetPreallocation(*interpolation,0,nnz_per_row);CHKERRQ(ierr);
 
    /*..Store coarse grid matrix in Petsc Mat object..*/
    for (I=0;I<rows_weights;I++){
@@ -404,9 +406,10 @@ int MatSubstract(Mat Term1, Mat Term2, Mat* Diff)
       SETERRQ(1,"Error in MatMatMult: cols1 <> rows1 or cols1 <> rows1"); 
    }
 
-   /*..Create difference matrix..*/ 
-   ierr =  MatCreateSeqAIJ(PETSC_COMM_WORLD,rows1,cols1,PETSC_NULL,
-           PETSC_NULL,Diff); CHKERRQ(ierr);
+   /*..Create difference of 2 SeqAIJ matrices..*/ 
+   ierr = MatCreate(PETSC_COMM_WORLD,rows1,cols1,rows1,cols1,Diff);CHKERRQ(ierr);
+   ierr = MatSetType(*Diff,MATSEQAIJ);CHKERRQ(ierr);
+   ierr = MatSeqAIJSetPreallocation(*Diff,0,PETSC_NULL);CHKERRQ(ierr);
 
    /*..Create vectors..*/ 
    ierr = VecCreate(MPI_COMM_WORLD,&col_vec1); CHKERRQ(ierr);

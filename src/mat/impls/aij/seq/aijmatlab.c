@@ -63,7 +63,9 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr                       = MatCreateSeqAIJ(A->comm,A->m,A->n,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr                       = MatCreate(A->comm,A->m,A->n,A->m,A->n,F);CHKERRQ(ierr);
+  ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
+  ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab;
   (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Matlab;
   (*F)->factor               = FACTOR_LU;
@@ -123,7 +125,9 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info,Mat
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr                       = MatCreateSeqAIJ(A->comm,A->m,A->n,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr                       = MatCreate(A->comm,A->m,A->n,A->m,A->n,F);CHKERRQ(ierr);
+  ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
+  ierr                       = MatSeqAIJSetPreallocation(*f,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab_QR;
   (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Matlab_QR;
   (*F)->factor               = FACTOR_LU;
@@ -144,7 +148,9 @@ int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat
   if (info->dt == PETSC_DEFAULT)      info->dt      = .005;
   if (info->dtcol == PETSC_DEFAULT)   info->dtcol   = .01;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr                       = MatCreateSeqAIJ(A->comm,A->m,A->n,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr                       = MatCreate(A->comm,A->m,A->n,A->m,A->n,F);CHKERRQ(ierr);
+  ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
+  ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab;
   (*F)->factor               = FACTOR_LU;
   ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(A->comm),(PetscObject)A);CHKERRQ(ierr);

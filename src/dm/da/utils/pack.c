@@ -1163,7 +1163,9 @@ int VecPackGetInterpolation(VecPack coarse,VecPack fine,Mat *A,Vec *v)
   ierr         = PetscNew(struct MatPack,&mpack);CHKERRQ(ierr);
   mpack->right = coarse;
   mpack->left  = fine;
-  ierr  = MatCreateShell(fine->comm,m,n,M,N,mpack,A);CHKERRQ(ierr);
+  ierr  = MatCreate(fine->comm,m,n,M,N,A);CHKERRQ(ierr);
+  ierr  = MatSetType(*A,MATSHELL);CHKERRQ(ierr);
+  ierr  = MatShellSetContext(*A,mpack);CHKERRQ(ierr);
   ierr  = MatShellSetOperation(*A,MATOP_MULT,(void(*)(void))MatMult_Shell_Pack);CHKERRQ(ierr);
   ierr  = MatShellSetOperation(*A,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMultTranspose_Shell_Pack);CHKERRQ(ierr);
   ierr  = MatShellSetOperation(*A,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_Shell_Pack);CHKERRQ(ierr);

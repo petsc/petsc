@@ -20,7 +20,9 @@ int MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat) {
       rowlengths[i*bs+j] = bs*(ai[i+1] - ai[i]);
     }
   }
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,A->m,A->n,0,rowlengths,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
@@ -74,7 +76,9 @@ int MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat) {
   for (i=0; i<m; i++) {
     rowlengths[i] = ai[i+1] - ai[i];
   }
-  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,1,m,n,0,rowlengths,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,m,n,m,n,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(B,1,0,rowlengths);CHKERRQ(ierr);
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
 
   ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);

@@ -824,11 +824,14 @@ static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     int         M = mat->M,N = mat->N,*ai,*aj,col,i,j,k,*rvals,mbs = baij->mbs;
     MatScalar   *a;
 
+    /* Should this be the same type as mat? */
     if (!rank) {
-      ierr = MatCreateMPISBAIJ(mat->comm,baij->bs,M,N,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreate(mat->comm,M,N,M,N,&A);CHKERRQ(ierr);
     } else {
-      ierr = MatCreateMPISBAIJ(mat->comm,baij->bs,0,0,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
     }
+    ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
+    ierr = MatMPISBAIJSetPreallocation(A,baij->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
     PetscLogObjectParent(mat,A);
 
     /* copy over the A part */

@@ -1818,7 +1818,9 @@ int MatLoad_MPIRowbs(PetscViewer viewer,const MatType type,Mat *newmat)
   }
 
   /* create our matrix */
-  ierr = MatCreateMPIRowbs(comm,m,M,0,ourlens,newmat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,m,m,M,M,newmat);CHKERRQ(ierr);
+  ierr = MatSetType(*newmat,type);CHKERRQ(ierr);
+  ierr = MatMPIRowbsSetPreallocation(*newmat,0,ourlens);CHKERRQ(ierr);
   mat = *newmat;
   ierr = PetscFree(ourlens);CHKERRQ(ierr);
 
@@ -3217,7 +3219,9 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
   ierr = PetscFree(s_waits3);CHKERRQ(ierr);
 
   if (scall ==  MAT_INITIAL_MATRIX) {
-    ierr = MatCreateMPIAIJ(comm,nrow,nlocal,PETSC_DECIDE,ncol,0,d_nz,0,o_nz,submat);CHKERRQ(ierr);
+    ierr = MatCreate(comm,nrow,nlocal,PETSC_DECIDE,ncol,submat);CHKERRQ(ierr);
+    ierr = MatSetType(*submat,C->type_name);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*submat,0,d_nz,0,o_nz);CHKERRQ(ierr);
     mat=(Mat_MPIAIJ *)((*submat)->data);
     matA=(Mat_SeqAIJ *)(mat->A->data);
     matB=(Mat_SeqAIJ *)(mat->B->data);

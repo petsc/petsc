@@ -548,7 +548,9 @@ int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *newmat) {
   }
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MatCreateMPIAdj(comm,m,N,ia,ja,a,&B);CHKERRQ(ierr);
+  ierr = MatCreate(comm,m,N,PETSC_DETERMINE,N,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,type);CHKERRQ(ierr);
+  ierr = MatMPIAdjSetPreallocation(B,ia,ja,a);CHKERRQ(ierr);
 
   /* Fake support for "inplace" convert. */
   if (*newmat == A) {

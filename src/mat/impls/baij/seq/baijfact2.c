@@ -3205,7 +3205,9 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat
     }
 
     /* put together the new matrix */
-    ierr = MatCreateSeqBAIJ(A->comm,bs,bs*n,bs*n,0,PETSC_NULL,fact);CHKERRQ(ierr);
+    ierr = MatCreate(A->comm,bs*n,bs*n,bs*n,bs*n,fact);CHKERRQ(ierr);
+    ierr = MatSetType(*fact,A->type_name);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocation(*fact,bs,0,PETSC_NULL);CHKERRQ(ierr);
     PetscLogObjectParent(*fact,isicol);
     b = (Mat_SeqBAIJ*)(*fact)->data;
     ierr = PetscFree(b->imax);CHKERRQ(ierr);

@@ -701,7 +701,9 @@ int AODataKeyGetAdjacency_Basic(AOData aodata,const char keyname[],Mat *adj)
     ii[i+1] = cnt;
   }
 
-  ierr = MatCreateMPIAdj(aodata->comm,nlocal,n,ii,jj,PETSC_NULL,adj);CHKERRQ(ierr);
+  ierr = MatCreate(aodata->comm,nlocal,n,PETSC_DETERMINE,n,adj);CHKERRQ(ierr);
+  ierr = MatSetType(*adj,MATMPIADJ);CHKERRQ(ierr);
+  ierr = MatMPIAdjSetPreallocation(*adj,ii,jj,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

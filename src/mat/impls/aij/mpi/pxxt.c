@@ -90,7 +90,9 @@ int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,A->M,A->N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,F);CHKERRQ(ierr);
+  ierr = MatSetType(*F,A->type_name);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*F,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   B                       = *F;
   B->ops->solve           = MatSolve_MPIAIJ_XXT;
   B->ops->destroy         = MatDestroy_MPIAIJ_XXT;
@@ -214,7 +216,9 @@ int MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,A->M,A->N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,F);CHKERRQ(ierr);
+  ierr = MatSetType(*F,A->type_name);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*F,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   B                       = *F;
   B->ops->solve           = MatSolve_MPIAIJ_XYT;
   B->ops->destroy         = MatDestroy_MPIAIJ_XYT;

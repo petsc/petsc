@@ -1373,7 +1373,9 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
   ierr = PetscMemzero(col,(1+A->n)*sizeof(int));CHKERRQ(ierr);
   
   for (i=0; i<ai[m]; i++) col[aj[i]] += 1;
-  ierr = MatCreateSeqAIJ(A->comm,A->n,m,0,col,&C);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,A->n,m,A->n,m,&C);CHKERRQ(ierr);
+  ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(C,0,col);CHKERRQ(ierr);
   ierr = PetscFree(col);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     len    = ai[i+1]-ai[i];
@@ -1797,7 +1799,9 @@ int MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
   for (i=0; i<m; i++) {
     lens[row[i]] = a->i[i+1] - a->i[i];
   }
-  ierr = MatCreateSeqAIJ(A->comm,m,n,0,lens,B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,m,n,m,n,B);CHKERRQ(ierr);
+  ierr = MatSetType(*B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*B,0,lens);CHKERRQ(ierr);
   ierr = PetscFree(lens);CHKERRQ(ierr);
 
   ierr = PetscMalloc(n*sizeof(int),&cnew);CHKERRQ(ierr);
@@ -2946,7 +2950,9 @@ int MatCreateSeqAIJWithArrays(MPI_Comm comm,int m,int n,int* i,int*j,PetscScalar
   Mat_SeqAIJ *aij;
 
   PetscFunctionBegin;
-  ierr = MatCreateSeqAIJ(comm,m,n,SKIP_ALLOCATION,0,mat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,m,n,m,n,mat);CHKERRQ(ierr);
+  ierr = MatSetType(*mat,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*mat,SKIP_ALLOCATION,0);CHKERRQ(ierr);
   aij  = (Mat_SeqAIJ*)(*mat)->data;
 
   if (i[0] != 0) {

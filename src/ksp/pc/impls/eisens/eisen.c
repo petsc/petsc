@@ -163,7 +163,9 @@ static int PCSetUp_Eisenstat(PC pc)
   if (!pc->setupcalled) {
     ierr = MatGetSize(pc->mat,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRQ(ierr);
-    ierr = MatCreateShell(pc->comm,m,N,M,N,(void*)pc,&eis->shell);CHKERRQ(ierr);
+    ierr = MatCreate(pc->comm,m,N,M,N,&eis->shell);CHKERRQ(ierr);
+    ierr = MatSetType(eis->shell,MATSHELL);CHKERRQ(ierr);
+    ierr = MatShellSetContext(eis->shell,(void*)pc);CHKERRQ(ierr);
     PetscLogObjectParent(pc,eis->shell);
     ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void(*)(void))PCMult_Eisenstat);CHKERRQ(ierr);
   }

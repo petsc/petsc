@@ -69,9 +69,10 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
    for (I=0;I<numnodes;I++)
        nnz_per_row[I] = ia[I+1] - ia[I]; 
 
-   /*..Allocate (create) matrix  for use within PETSc..*/
-   ierr =  MatCreateSeqAIJ(PETSC_COMM_WORLD,numnodes,numnodes,PETSC_NULL,
-           nnz_per_row,&A); CHKERRQ(ierr);
+   /*..Allocate (create) SeqAIJ matrix  for use within PETSc..*/
+   ierr = MatCreate(PETSC_COMM_WORLD,numnodes,numnodes,numnodes,numnodes,&A);
+   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+   ierr = MatSeqAIJSetPreallocation(A,0,nnz_per_row);CHKERRQ(ierr);
 
   /*..Assemble matrix  for use within PETSc..*/
    for (I=0;I<numnodes;I++){

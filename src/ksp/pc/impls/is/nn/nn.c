@@ -336,8 +336,11 @@ int PCNNCreateCoarseMatrix (PC pc)
     /* Create the global coarse vectors (rhs and solution). */
     ierr = VecCreateMPI(pc->comm,1,size,&(pcnn->coarse_b));CHKERRQ(ierr);
     ierr = VecDuplicate(pcnn->coarse_b,&(pcnn->coarse_x));CHKERRQ(ierr);
-    /* Create and set the global coarse matrix. */
-    ierr = MatCreateMPIAIJ(pc->comm,1,1,size,size,1,PETSC_NULL,n_neigh_m1,PETSC_NULL,&(pcnn->coarse_mat));CHKERRQ(ierr);
+    /* Create and set the global coarse AIJ matrix. */
+    ierr = MatCreate(pc->comm,1,1,size,size,&(pcnn->coarse_mat));CHKERRQ(ierr);
+    ierr = MatSetType(pcnn->coarse_mat,MATAIJ);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(pcnn->coarse_mat,1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(pcnn->coarse_mat,1,PETSC_NULL,1,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatSetValues(pcnn->coarse_mat,n_neigh,neigh,n_neigh,neigh,mat,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(pcnn->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd  (pcnn->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

@@ -266,7 +266,9 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nloc);CHKERRQ(ierr);
-  ierr = MatCreateShell(comm,nloc,n,n,n,mfctx,J);CHKERRQ(ierr);
+  ierr = MatCreate(comm,nloc,n,n,n,J);CHKERRQ(ierr);
+  ierr = MatSetType(*J,MATSHELL);CHKERRQ(ierr);
+  ierr = MatShellSetContext(*J,mfctx);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)(void))SNESMatrixFreeMult2_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)(void))SNESMatrixFreeDestroy2_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)(void))SNESMatrixFreeView2_Private);CHKERRQ(ierr);

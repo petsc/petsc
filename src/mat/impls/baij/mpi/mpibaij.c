@@ -1121,11 +1121,15 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     int         M = mat->M,N = mat->N,*ai,*aj,col,i,j,k,*rvals,mbs = baij->mbs;
     MatScalar   *a;
 
+    /* Here we are creating a temporary matrix, so will assume MPIBAIJ is acceptable */
+    /* Perhaps this should be the type of mat? */
     if (!rank) {
-      ierr = MatCreateMPIBAIJ(mat->comm,baij->bs,M,N,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreate(mat->comm,M,N,M,N,&A);CHKERRQ(ierr);
     } else {
-      ierr = MatCreateMPIBAIJ(mat->comm,baij->bs,0,0,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
     }
+    ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
+    ierr = MatMPIBAIJSetPreallocation(A,baij->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
     PetscLogObjectParent(mat,A);
 
     /* copy over the A part */
@@ -1580,7 +1584,9 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   
   PetscFunctionBegin;
   if (!matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
-  ierr = MatCreateMPIBAIJ(A->comm,baij->bs,A->n,A->m,N,M,0,PETSC_NULL,0,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,A->n,A->m,N,M,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(B,baij->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   
   /* copy over the A part */
   Aloc = (Mat_SeqBAIJ*)baij->A->data;

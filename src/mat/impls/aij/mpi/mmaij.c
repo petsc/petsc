@@ -167,7 +167,9 @@ int DisAssemble_MPIAIJ(Mat A)
   for (i=0; i<m; i++) {
     nz[i] = Baij->i[i+1] - Baij->i[i];
   }
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,0,nz,&Bnew);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,m,n,m,n,&Bnew);CHKERRQ(ierr);
+  ierr = MatSetType(Bnew,B->type_name);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Bnew,0,nz);CHKERRQ(ierr);
   ierr = PetscFree(nz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=Baij->i[i]; j<Baij->i[i+1]; j++) {

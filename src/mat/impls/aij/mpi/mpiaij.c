@@ -930,10 +930,13 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     PetscScalar *a;
 
     if (!rank) {
-      ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreate(mat->comm,M,N,M,N,&A);CHKERRQ(ierr);
     } else {
-      ierr = MatCreateMPIAIJ(mat->comm,0,0,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
     }
+    /* This is just a temporary matrix, so explicitly using MATMPIAIJ is probably best */
+    ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(A,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
     PetscLogObjectParent(mat,A);
 
     /* copy over the A part */
@@ -1365,7 +1368,9 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
     SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
   }
 
-  ierr = MatCreateMPIAIJ(A->comm,A->n,A->m,N,M,0,PETSC_NULL,0,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,A->n,A->m,N,M,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
   /* copy over the A part */
   Aloc = (Mat_SeqAIJ*)a->A->data;
@@ -2710,7 +2715,10 @@ int MatMerge(MPI_Comm comm,Mat inmat, Mat *outmat)
     ierr = MatPreallocateSet(i+rstart,nnz,indx,dnz,onz);CHKERRQ(ierr);
     ierr = MatRestoreRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
   }
-  ierr = MatCreateMPIAIJ(comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,0,dnz,0,onz,outmat);CHKERRQ(ierr);
+  /* This routine will ONLY return MPIAIJ type matrix */
+  ierr = MatCreate(comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,outmat);CHKERRQ(ierr);
+  ierr = MatSetType(*outmat,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*outmat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
   for (i=0;i<m;i++) {
@@ -2740,7 +2748,10 @@ int MatFileSplit(Mat A,char *outfile)
   
   ierr = MatGetLocalSize(A,&m,0);CHKERRQ(ierr);
   ierr = MatGetSize(A,0,&N);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,N,0,0,&B);CHKERRQ(ierr);
+  /* Should this be the type of the diagonal block of A? */ 
+  ierr = MatCreate(PETSC_COMM_SELF,m,N,m,N,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,0);CHKERRQ(ierr);
   for (i=0;i<m;i++) {
     ierr = MatGetRow(A,i+rstart,&nnz,&indx,&values);CHKERRQ(ierr);

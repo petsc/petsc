@@ -218,7 +218,9 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *fact)
 
   /*----- put together the new matrix -----*/
 
-  ierr = MatCreateSeqAIJ(A->comm,n,n,0,PETSC_NULL,fact);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,n,n,n,n,fact);CHKERRQ(ierr);
+  ierr = MatSetType(*fact,A->type_name);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*fact,0,PETSC_NULL);CHKERRQ(ierr);
   (*fact)->factor    = FACTOR_LU;
   (*fact)->assembled = PETSC_TRUE;
 
@@ -376,7 +378,9 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *
   ierr = PetscFree(fill);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatCreateSeqAIJ(A->comm,n,n,0,PETSC_NULL,B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,n,n,n,n,B);CHKERRQ(ierr);
+  ierr = MatSetType(*B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*B,0,PETSC_NULL);CHKERRQ(ierr);
   PetscLogObjectParent(*B,isicol); 
   b = (Mat_SeqAIJ*)(*B)->data;
   ierr = PetscFree(b->imax);CHKERRQ(ierr);
@@ -1045,7 +1049,9 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat 
   }
 
   /* put together the new matrix */
-  ierr = MatCreateSeqAIJ(A->comm,n,n,0,PETSC_NULL,fact);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,n,n,n,n,fact);CHKERRQ(ierr);
+  ierr = MatSetType(*fact,A->type_name);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*fact,0,PETSC_NULL);CHKERRQ(ierr);
   PetscLogObjectParent(*fact,isicol);
   b = (Mat_SeqAIJ*)(*fact)->data;
   ierr = PetscFree(b->imax);CHKERRQ(ierr);

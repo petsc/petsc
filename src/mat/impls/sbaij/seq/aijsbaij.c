@@ -41,7 +41,9 @@ int MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat)
     /* printf(" rowlengths[%d]: %d\n",i, rowlengths[i]); */
   }
   
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,0,rowlengths,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,m,n,m,n,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
@@ -128,7 +130,9 @@ int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat) {
   for (i=0; i<m; i++) {
     rowlengths[i] = ai[i+1] - a->diag[i];
   }
-  ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,1,m,n,0,rowlengths,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,m,n,m,n,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(B,1,0,rowlengths);CHKERRQ(ierr);
 
   ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
@@ -193,7 +197,9 @@ int MatConvert_SeqSBAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat)
     browlengths[i] += nz;   /* no. of upper triangular blocks */
   }
   
-  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m,n,0,browlengths,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,m,n,m,n,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
@@ -274,7 +280,9 @@ int MatConvert_SeqBAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat)
     browlengths[i] = ai[i+1] - a->diag[i];
   }
 
-  ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,m,n,PETSC_NULL,browlengths,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,m,n,m,n,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);

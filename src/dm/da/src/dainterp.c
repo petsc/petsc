@@ -57,7 +57,10 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = MatCreateMPIAIJ(dac->comm,m_f,m_c,mx,Mx,2,0,0,0,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(dac->comm,m_f,m_c,mx,Mx,&mat);CHKERRQ(ierr);
+  ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   if (!DAXPeriodic(pt)){ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   /* loop over local fine grid nodes setting interpolation for those*/
@@ -128,7 +131,10 @@ int DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = MatCreateMPIAIJ(dac->comm,m_f,m_c,mx,Mx,2,0,0,0,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(dac->comm,m_f,m_c,mx,Mx,&mat);CHKERRQ(ierr);
+  ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   if (!DAXPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   /* loop over local fine grid nodes setting interpolation for those*/
@@ -262,7 +268,10 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
       ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
-  ierr = MatCreateMPIAIJ(daf->comm,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My,0,dnz,0,onz,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(daf->comm,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My,&mat);CHKERRQ(ierr);
+  ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   if (!DAXPeriodic(pt) && !DAYPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
@@ -414,7 +423,10 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
       }
     }
   }
-  ierr = MatCreateMPIAIJ(dac->comm,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz,0,dnz,0,onz,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(dac->comm,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz,&mat);CHKERRQ(ierr);
+  ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   if (!DAXPeriodic(pt) && !DAYPeriodic(pt) && !DAZPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 

@@ -967,7 +967,9 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
 #endif
 
   for (i=0; i<ai[mbs]; i++) col[aj[i]] += 1;
-  ierr = MatCreateSeqBAIJ(A->comm,bs,A->n,A->m,PETSC_NULL,col,&C);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,A->n,A->m,A->n,A->m,&C);CHKERRQ(ierr);
+  ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(C,bs,PETSC_NULL,col);CHKERRQ(ierr);
   ierr = PetscFree(col);CHKERRQ(ierr);
   ierr = PetscMalloc(2*bs*sizeof(int),&rows);CHKERRQ(ierr);
   cols = rows + bs;

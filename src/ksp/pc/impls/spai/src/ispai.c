@@ -901,7 +901,11 @@ int ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
   }
 
   M = N = B->n;
-  ierr = MatCreateMPIAIJ(comm,m,n,M,N,d_nz,d_nnz,o_nz,o_nnz,PB);CHKERRQ(ierr);
+  /* Here we only know how to create AIJ format */
+  ierr = MatCreate(comm,m,n,M,N,PB);CHKERRQ(ierr);
+  ierr = MatSetType(*PB,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*PM,d_nz,d_nnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*PM,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
 
   for (i=0; i<B->mnls[rank]; i++) {
     global_row = B->start_indices[rank]+i;

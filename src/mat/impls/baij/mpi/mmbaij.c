@@ -195,7 +195,9 @@ int DisAssemble_MPIBAIJ(Mat A)
   for (i=0; i<mbs; i++) {
     nz[i] = Bbaij->i[i+1]-Bbaij->i[i];
   }
-  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,baij->bs,m,n,0,nz,&Bnew);CHKERRQ(ierr);
+  ierr = MatCreate(B->comm,m,n,m,n,&Bnew);CHKERRQ(ierr);
+  ierr = MatSetType(Bnew,B->type_name);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(Bnew,baij->bs,0,nz);CHKERRQ(ierr);
   ierr = MatSetOption(Bnew,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_MAT_SINGLE)
