@@ -719,7 +719,7 @@ class Configure(config.base.Configure):
     if 'FC' in self.framework.argDB:
       languages.append('FC')
     for language in languages:
-      flag = None
+      flag = '-L'
       self.pushLanguage(language)
       for testFlag in ['-Wl,-rpath,', '-rpath ', '-R', '-Wl,-R,']:
         self.framework.logPrint('Trying '+language+' linker flag '+testFlag)
@@ -753,8 +753,7 @@ class Configure(config.base.Configure):
     if 'CC' in self.framework.argDB:
       self.addArgumentSubstitution('CC', 'CC')
       self.addArgumentSubstitution('CFLAGS', 'CFLAGS')
-      if not self.CSharedLinkerFlag is None:
-        self.addMakeMacro('CC_LINKER_SLFLAG', self.CSharedLinkerFlag)
+      self.addMakeMacro('CC_LINKER_SLFLAG', self.CSharedLinkerFlag)
     if 'CPP' in self.framework.argDB:
       self.addArgumentSubstitution('CPP', 'CPP')
       self.addArgumentSubstitution('CPPFLAGS', 'CPPFLAGS')
@@ -762,8 +761,7 @@ class Configure(config.base.Configure):
       self.addArgumentSubstitution('CXX', 'CXX')
       self.addArgumentSubstitution('CXX_CXXFLAGS', 'CXX_CXXFLAGS')
       self.addArgumentSubstitution('CXXFLAGS', 'CXXFLAGS')
-      if not self.CxxSharedLinkerFlag is None:
-        self.addSubstitution('CXX_LINKER_SLFLAG', self.CxxSharedLinkerFlag)
+      self.addSubstitution('CXX_LINKER_SLFLAG', self.CxxSharedLinkerFlag)
     else:
       self.addSubstitution('CXX', '')
     if 'CXXCPP' in self.framework.argDB:
@@ -771,8 +769,7 @@ class Configure(config.base.Configure):
     if 'FC' in self.framework.argDB:
       self.addArgumentSubstitution('FC', 'FC')
       self.addArgumentSubstitution('FFLAGS', 'FFLAGS')
-      if not self.FCSharedLinkerFlag is None:
-        self.addMakeMacro('FC_LINKER_SLFLAG', self.FCSharedLinkerFlag)
+      self.addMakeMacro('FC_LINKER_SLFLAG', self.FCSharedLinkerFlag)
     else:
       self.addSubstitution('FC', '')
     self.addArgumentSubstitution('LDFLAGS', 'LDFLAGS')
