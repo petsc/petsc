@@ -548,7 +548,7 @@ runex53:
 	$(RM) -f ex53_1.tmp
 
 runex54:
-	-@date;for bs in $(MATBLOCKSIZE); do \
+	-@for bs in $(MATBLOCKSIZE); do \
 	    for matsize in $(MATSIZE); do \
 	      for ov in $(OVERLAP); do\
 	        for nd in $(NODOMAINS); do \
@@ -560,12 +560,11 @@ runex54:
 		      else echo "Possible problem with ex54_1, diffs above"; \
 	  	      echo np $$np bs $$bs matsize $$matsize ov $$ov nd $$nd; fi; \
 		    $(RM) -f ex54_1.tmp ex54_12.tmp;\
-		    sleep 1; \
 		  done;\
 		done;\
 	      done;\
 	    done;\
-	done; date
+	done;
 
 runex56:
 	-@$(MPIRUN) -np 1  ex56 -mat_view > ex56_1.tmp 2>&1;   \
