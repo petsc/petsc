@@ -33,7 +33,7 @@ int MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
 -  row - the row to get
 
    Output Parameters:
-+  ncols -  the number of nonzeros in the row
++  ncols -  if not NULL, the number of nonzeros in the row
 .  cols - if not NULL, the column numbers
 -  vals - if not NULL, the values
 
@@ -83,18 +83,18 @@ int MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
 @*/
 int MatGetRow(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
 {
-  int   ierr;
+  int   incols,ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  PetscValidIntPointer(ncols);
   PetscValidType(mat);
   MatPreallocated(mat);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->getrow) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = PetscLogEventBegin(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getrow)(mat,row,ncols,cols,vals);CHKERRQ(ierr);
+  ierr = (*mat->ops->getrow)(mat,row,&incols,cols,vals);CHKERRQ(ierr);
+  if (ncols) *ncols = incols;
   ierr = PetscLogEventEnd(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
