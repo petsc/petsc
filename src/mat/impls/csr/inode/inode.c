@@ -4,10 +4,6 @@
 */
 #include "src/mat/impls/csr/inode/inode.h"                
 
-EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
-EXTERN PetscErrorCode MatSolve_Inode(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatLUFactorNumeric_Inode(Mat,MatFactorInfo*,Mat*);
-
 #undef __FUNCT__  
 #define __FUNCT__ "Mat_CreateColInode"
 static PetscErrorCode Mat_CreateColInode(Mat A,PetscInt* size,PetscInt ** ns)
@@ -757,90 +753,6 @@ static PetscErrorCode MatMultAdd_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* ----------------------------------------------------------- */
-EXTERN PetscErrorCode MatColoringPatch_Inode(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring *);
-
-/*
-    samestructure indicates that the matrix has not changed its nonzero structure so we 
-    do not need to recompute the inodes 
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "Mat_CheckInode"
-PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
-{
-  Mat_inode      *a = (Mat_inode*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       i,j,m,nzx,nzy,*idx,*idy,*ns,*ii,node_count,blk_size;
-  PetscTruth     flag,flg;
-
-  PetscFunctionBegin;
-  if (a->inode.checked) PetscFunctionReturn(0);
-  if (samestructure) PetscFunctionReturn(0);
-
-  a->inode.checked = PETSC_TRUE;
-
-  /* Notes: We set a->inode.limit=5 in MatCreate_Inode(). */
-  if (!a->inode.use) {PetscLogInfo(A,"Mat_CheckInode: Not using Inode routines due to MatSetOption(MAT_DO_NOT_USE_INODES\n"); PetscFunctionReturn(0);}
-  ierr = PetscOptionsHasName(A->prefix,"-mat_no_inode",&flg);CHKERRQ(ierr);
-  if (flg) {PetscLogInfo(A,"Mat_CheckInode: Not using Inode routines due to -mat_no_inode\n");PetscFunctionReturn(0);}
-  ierr = PetscOptionsHasName(A->prefix,"-mat_no_unroll",&flg);CHKERRQ(ierr);
-  if (flg) {PetscLogInfo(A,"Mat_CheckInode: Not using Inode routines due to -mat_no_unroll\n");PetscFunctionReturn(0);}
-  ierr = PetscOptionsGetInt(A->prefix,"-mat_inode_limit",&a->inode.limit,PETSC_NULL);CHKERRQ(ierr);
-  if (a->inode.limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
-  m = A->m;    
-  if (a->inode.size) {ns = a->inode.size;}
-  else {ierr = PetscMalloc((m+1)*sizeof(PetscInt),&ns);CHKERRQ(ierr);}
-
-  i          = 0;
-  node_count = 0; 
-  idx        = a->j;
-  ii         = a->i;
-  while (i < m){                /* For each row */
-    nzx = ii[i+1] - ii[i];       /* Number of nonzeros */
-    /* Limits the number of elements in a node to 'a->inode.limit' */
-    for (j=i+1,idy=idx,blk_size=1; j<m && blk_size <a->inode.limit; ++j,++blk_size) {
-      nzy     = ii[j+1] - ii[j]; /* Same number of nonzeros */
-      if (nzy != nzx) break;
-      idy  += nzx;             /* Same nonzero pattern */
-      ierr = PetscMemcmp(idx,idy,nzx*sizeof(PetscInt),&flag);CHKERRQ(ierr);
-      if (!flag) break;
-    }
-    ns[node_count++] = blk_size;
-    idx += blk_size*nzx;
-    i    = j;
-  }
-  /* If not enough inodes found,, do not use inode version of the routines */
-  if (!a->inode.size && m && node_count > 0.9*m) {
-    ierr = PetscFree(ns);CHKERRQ(ierr);
-/*     A->ops->mult            = MatMult_SeqAIJ; */
-/*     A->ops->multadd         = MatMultAdd_SeqAIJ; */
-/*     A->ops->solve           = MatSolve_SeqAIJ; */
-/*     A->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ; */
-/*     A->ops->getrowij        = MatGetRowIJ_SeqAIJ; */
-/*     A->ops->restorerowij    = MatRestoreRowIJ_SeqAIJ; */
-/*     A->ops->getcolumnij     = MatGetColumnIJ_SeqAIJ; */
-/*     A->ops->restorecolumnij = MatRestoreColumnIJ_SeqAIJ; */
-/*     A->ops->coloringpatch   = 0; */
-    a->inode.node_count     = 0;
-    a->inode.size           = PETSC_NULL;
-    a->inode.use            = PETSC_FALSE;
-    PetscLogInfo(A,"Mat_CheckInode: Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);
-  } else {
-    A->ops->mult            = MatMult_Inode;
-    A->ops->multadd         = MatMultAdd_Inode;
-    A->ops->solve           = MatSolve_Inode;
-    A->ops->lufactornumeric = MatLUFactorNumeric_Inode;
-    A->ops->getrowij        = MatGetRowIJ_Inode;
-    A->ops->restorerowij    = MatRestoreRowIJ_Inode;
-    A->ops->getcolumnij     = MatGetColumnIJ_Inode;
-    A->ops->restorecolumnij = MatRestoreColumnIJ_Inode;
-    A->ops->coloringpatch   = MatColoringPatch_Inode;
-    a->inode.node_count     = node_count;
-    a->inode.size           = ns;
-    PetscLogInfo(A,"Mat_CheckInode: Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);
-  }
-  PetscFunctionReturn(0);
-}
 
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
@@ -1220,7 +1132,6 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2*a->nz - A->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_Inode"
@@ -1625,6 +1536,131 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 }
 
 /*
+     Makes a longer coloring[] array and calls the usual code with that
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatColoringPatch_Inode"
+PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt nin,PetscInt ncolors,ISColoringValue coloring[],ISColoring *iscoloring)
+{
+  Mat_inode       *a = (Mat_inode*)mat->data;
+  PetscErrorCode  ierr;
+  PetscInt        n = mat->n,m = a->inode.node_count,j,*ns = a->inode.size,row;
+  PetscInt        *colorused,i;
+  ISColoringValue *newcolor;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&newcolor);CHKERRQ(ierr);
+  /* loop over inodes, marking a color for each column*/
+  row = 0;
+  for (i=0; i<m; i++){
+    for (j=0; j<ns[i]; j++) {
+      newcolor[row++] = coloring[i] + j*ncolors;
+    }
+  }
+
+  /* eliminate unneeded colors */
+  ierr = PetscMalloc(5*ncolors*sizeof(PetscInt),&colorused);CHKERRQ(ierr);
+  ierr = PetscMemzero(colorused,5*ncolors*sizeof(PetscInt));CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    colorused[newcolor[i]] = 1;
+  }
+
+  for (i=1; i<5*ncolors; i++) {
+    colorused[i] += colorused[i-1];
+  }
+  ncolors = colorused[5*ncolors-1];
+  for (i=0; i<n; i++) {
+    newcolor[i] = colorused[newcolor[i]];
+  }
+  ierr = PetscFree(colorused);CHKERRQ(ierr);
+  ierr = ISColoringCreate(mat->comm,n,newcolor,iscoloring);CHKERRQ(ierr);
+  ierr = PetscFree(coloring);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+    samestructure indicates that the matrix has not changed its nonzero structure so we 
+    do not need to recompute the inodes 
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "Mat_CheckInode"
+PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
+{
+  Mat_inode      *a = (Mat_inode*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j,m,nzx,nzy,*idx,*idy,*ns,*ii,node_count,blk_size;
+  PetscTruth     flag,flg;
+
+  PetscFunctionBegin;
+  if (a->inode.checked) PetscFunctionReturn(0);
+  if (samestructure) PetscFunctionReturn(0);
+
+  a->inode.checked = PETSC_TRUE;
+
+  /* Notes: We set a->inode.limit=5 in MatCreate_Inode(). */
+  if (!a->inode.use) {PetscLogInfo(A,"Mat_CheckInode: Not using Inode routines due to MatSetOption(MAT_DO_NOT_USE_INODES\n"); PetscFunctionReturn(0);}
+  ierr = PetscOptionsHasName(A->prefix,"-mat_no_inode",&flg);CHKERRQ(ierr);
+  if (flg) {PetscLogInfo(A,"Mat_CheckInode: Not using Inode routines due to -mat_no_inode\n");PetscFunctionReturn(0);}
+  ierr = PetscOptionsHasName(A->prefix,"-mat_no_unroll",&flg);CHKERRQ(ierr);
+  if (flg) {PetscLogInfo(A,"Mat_CheckInode: Not using Inode routines due to -mat_no_unroll\n");PetscFunctionReturn(0);}
+  ierr = PetscOptionsGetInt(A->prefix,"-mat_inode_limit",&a->inode.limit,PETSC_NULL);CHKERRQ(ierr);
+  if (a->inode.limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
+  m = A->m;    
+  if (a->inode.size) {ns = a->inode.size;}
+  else {ierr = PetscMalloc((m+1)*sizeof(PetscInt),&ns);CHKERRQ(ierr);}
+
+  i          = 0;
+  node_count = 0; 
+  idx        = a->j;
+  ii         = a->i;
+  while (i < m){                /* For each row */
+    nzx = ii[i+1] - ii[i];       /* Number of nonzeros */
+    /* Limits the number of elements in a node to 'a->inode.limit' */
+    for (j=i+1,idy=idx,blk_size=1; j<m && blk_size <a->inode.limit; ++j,++blk_size) {
+      nzy     = ii[j+1] - ii[j]; /* Same number of nonzeros */
+      if (nzy != nzx) break;
+      idy  += nzx;             /* Same nonzero pattern */
+      ierr = PetscMemcmp(idx,idy,nzx*sizeof(PetscInt),&flag);CHKERRQ(ierr);
+      if (!flag) break;
+    }
+    ns[node_count++] = blk_size;
+    idx += blk_size*nzx;
+    i    = j;
+  }
+  /* If not enough inodes found,, do not use inode version of the routines */
+  if (!a->inode.size && m && node_count > 0.9*m) {
+    ierr = PetscFree(ns);CHKERRQ(ierr);
+/*     A->ops->mult            = MatMult_SeqAIJ; */
+/*     A->ops->multadd         = MatMultAdd_SeqAIJ; */
+/*     A->ops->solve           = MatSolve_SeqAIJ; */
+/*     A->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ; */
+/*     A->ops->getrowij        = MatGetRowIJ_SeqAIJ; */
+/*     A->ops->restorerowij    = MatRestoreRowIJ_SeqAIJ; */
+/*     A->ops->getcolumnij     = MatGetColumnIJ_SeqAIJ; */
+/*     A->ops->restorecolumnij = MatRestoreColumnIJ_SeqAIJ; */
+/*     A->ops->coloringpatch   = 0; */
+    a->inode.node_count     = 0;
+    a->inode.size           = PETSC_NULL;
+    a->inode.use            = PETSC_FALSE;
+    PetscLogInfo(A,"Mat_CheckInode: Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);
+  } else {
+    A->ops->mult            = MatMult_Inode;
+    A->ops->multadd         = MatMultAdd_Inode;
+    A->ops->solve           = MatSolve_Inode;
+    A->ops->lufactornumeric = MatLUFactorNumeric_Inode;
+    A->ops->getrowij        = MatGetRowIJ_Inode;
+    A->ops->restorerowij    = MatRestoreRowIJ_Inode;
+    A->ops->getcolumnij     = MatGetColumnIJ_Inode;
+    A->ops->restorecolumnij = MatRestoreColumnIJ_Inode;
+    A->ops->coloringpatch   = MatColoringPatch_Inode;
+    a->inode.node_count     = node_count;
+    a->inode.size           = ns;
+    PetscLogInfo(A,"Mat_CheckInode: Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
      This is really ugly. if inodes are used this replaces the 
   permutations with ones that correspond to rows/cols of the matrix
   rather then inode blocks
@@ -1727,6 +1763,7 @@ EXTERN_C_END
    of the matrix, it is intended to be used by advanced users.
    It should be called after the matrix is assembled.
    The contents of the sizes[] array should not be changed.
+   PETSC_NULL may be passed for information not requested.
 
 .keywords: matrix, seqaij, get, inode
 
@@ -1737,6 +1774,7 @@ PetscErrorCode MatInodeGetInodeSizes(Mat A,PetscInt *node_count,PetscInt *sizes[
   PetscErrorCode ierr,(*f)(Mat,PetscInt*,PetscInt*[],PetscInt*);
 
   PetscFunctionBegin;
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatInodeGetInodeSizes_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,node_count,sizes,limit);CHKERRQ(ierr);
@@ -1752,53 +1790,9 @@ PetscErrorCode MatInodeGetInodeSizes_Inode(Mat A,PetscInt *node_count,PetscInt *
   Mat_inode *a = (Mat_inode*)A->data;
 
   PetscFunctionBegin;  
-  *node_count = a->inode.node_count;
-  *sizes      = a->inode.size;
-  *limit      = a->inode.limit;
+  if (node_count) *node_count = a->inode.node_count;
+  if (sizes)      *sizes      = a->inode.size;
+  if (limit)      *limit      = a->inode.limit;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-/*
-     Makes a longer coloring[] array and calls the usual code with that
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "MatColoringPatch_Inode"
-PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt nin,PetscInt ncolors,ISColoringValue coloring[],ISColoring *iscoloring)
-{
-  Mat_inode       *a = (Mat_inode*)mat->data;
-  PetscErrorCode  ierr;
-  PetscInt        n = mat->n,m = a->inode.node_count,j,*ns = a->inode.size,row;
-  PetscInt        *colorused,i;
-  ISColoringValue *newcolor;
-
-  PetscFunctionBegin;
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&newcolor);CHKERRQ(ierr);
-  /* loop over inodes, marking a color for each column*/
-  row = 0;
-  for (i=0; i<m; i++){
-    for (j=0; j<ns[i]; j++) {
-      newcolor[row++] = coloring[i] + j*ncolors;
-    }
-  }
-
-  /* eliminate unneeded colors */
-  ierr = PetscMalloc(5*ncolors*sizeof(PetscInt),&colorused);CHKERRQ(ierr);
-  ierr = PetscMemzero(colorused,5*ncolors*sizeof(PetscInt));CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    colorused[newcolor[i]] = 1;
-  }
-
-  for (i=1; i<5*ncolors; i++) {
-    colorused[i] += colorused[i-1];
-  }
-  ncolors = colorused[5*ncolors-1];
-  for (i=0; i<n; i++) {
-    newcolor[i] = colorused[newcolor[i]];
-  }
-  ierr = PetscFree(colorused);CHKERRQ(ierr);
-  ierr = ISColoringCreate(mat->comm,n,newcolor,iscoloring);CHKERRQ(ierr);
-  ierr = PetscFree(coloring);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-

@@ -734,6 +734,7 @@ EXTERN PetscErrorCode MatShellGetContext(Mat,void **);
 EXTERN PetscErrorCode MatBDiagGetData(Mat,PetscInt*,PetscInt*,PetscInt*[],PetscInt*[],PetscScalar***);
 
 EXTERN PetscErrorCode MatInodeAdjustForInodes(Mat,IS*,IS*);
+EXTERN PetscErrorCode MatInodeGetInodeSizes(Mat,PetscInt *,PetscInt *[],PetscInt *);
 
 EXTERN PetscErrorCode MatSeqAIJSetColumnIndices(Mat,PetscInt[]);
 EXTERN PetscErrorCode MatSeqBAIJSetColumnIndices(Mat,PetscInt[]);
@@ -1281,7 +1282,6 @@ EXTERN PetscErrorCode MatShellSetContext(Mat,void*);
 #define MATRIX_BINARY_FORMAT_DENSE -1
 
 EXTERN PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
-EXTERN PetscErrorCode MatSeqAIJGetInodeSizes(Mat,PetscInt *,PetscInt *[],PetscInt *);
 EXTERN PetscErrorCode MatMPIRowbsGetColor(Mat,ISColoring *);
 
 EXTERN PetscErrorCode MatISGetLocalMat(Mat,Mat*);

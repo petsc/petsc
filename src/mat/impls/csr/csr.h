@@ -12,7 +12,7 @@
   PetscInt    *diag;          /* pointers to diagonal elements */                  \
   PetscScalar *a;             /* nonzero elements */                               \
   PetscScalar *solve_work;    /* work space used in MatSolve */                    \
-  IS          row, col, icol; /* index sets, used for reorderings */               
+  IS          row, col, icol  /* index sets, used for reorderings */               
 
 typedef struct {
   MAT_CSR_HEADER;
