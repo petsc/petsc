@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.40 1997/02/22 02:26:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.41 1997/06/10 04:05:53 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -122,61 +122,61 @@ $    Scalar *values of all nonzeros
 .seealso: ViewerFileOpenBinary(), MatView(), VecLoad(), MatLoadRegister(),
           MatLoadRegisterAll()
  @*/  
-/* int MatLoad(Viewer viewer,MatType outtype,Mat *newmat) */
-/* { */
-/*   int         ierr,set,flg; */
-/*   MatType     type; */
-/*   ViewerType  vtype; */
-/*   MPI_Comm    comm; */
+int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
+{
+  int         ierr,set,flg;
+  MatType     type;
+  ViewerType  vtype;
+  MPI_Comm    comm;
 
-/*   if (outtype > MAX_MATRIX_TYPES || outtype < 0) { */
-/*     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Not a valid matrix type"); */
-/*   } */
-/*   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE); */
-/*   *newmat  = 0; */
+  if (outtype > MAX_MATRIX_TYPES || outtype < 0) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Not a valid matrix type");
+  }
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  *newmat  = 0;
 
-/*   if (!MatLoadersSet) { */
-/*     ierr = MatLoadRegisterAll(); CHKERRQ(ierr); */
-/*   } */
+  if (!MatLoadersSet) {
+    ierr = MatLoadRegisterAll(); CHKERRQ(ierr);
+  }
 
-/*   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr); */
-/*   if (vtype != BINARY_FILE_VIEWER) */
-/*    SETERRQ(1,0,"Invalid viewer; open viewer with ViewerFileOpenBinary()"); */
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype != BINARY_FILE_VIEWER)
+  SETERRQ(1,0,"Invalid viewer; open viewer with ViewerFileOpenBinary()");
 
-/*   PetscObjectGetComm((PetscObject)viewer,&comm); */
-/*   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr); */
-/*   if (!set) type = outtype; */
+  PetscObjectGetComm((PetscObject)viewer,&comm);
+  ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
+  if (!set) type = outtype;
 
-/*   ierr = MatLoadGetInfo_Private(viewer); CHKERRQ(ierr); */
+  ierr = MatLoadGetInfo_Private(viewer); CHKERRQ(ierr);
 
-/*   PLogEventBegin(MAT_Load,viewer,0,0,0); */
+  PLogEventBegin(MAT_Load,viewer,0,0,0);
 
-/*   if (!MatLoaders[outtype]) { */
-/*     SETERRQ(PETSC_ERR_ARG_WRONG,1,"Invalid matrix type, or matrix load not registered"); */
-/*   } */
+  if (!MatLoaders[outtype]) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,1,"Invalid matrix type, or matrix load not registered");
+  }
 
-/*   ierr = (*MatLoaders[outtype])(viewer,type,newmat); CHKERRQ(ierr); */
+  ierr = (*MatLoaders[outtype])(viewer,type,newmat); CHKERRQ(ierr);
 
-/*   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr); */
-/*   if (flg) {ierr = MatLoadPrintHelp_Private(*newmat); CHKERRQ(ierr); } */
-/*   PLogEventEnd(MAT_Load,viewer,0,0,0); */
-/*   return 0; */
-/* } */
+  ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
+  if (flg) {ierr = MatLoadPrintHelp_Private(*newmat); CHKERRQ(ierr); }
+  PLogEventEnd(MAT_Load,viewer,0,0,0);
+  return 0;
+}
 
-/* #undef __FUNC__   */
-/* #define __FUNC__ "MatLoadGetInfo_Private" /* ADIC Ignore */ */
-/* /* */
-/*     MatLoadGetInfo_Private - Loads the matrix options from the name.info file */
-/*   if it exists. */
+#undef __FUNC__  
+#define __FUNC__ "MatLoadGetInfo_Private" /* ADIC Ignore */
 
-/* */ */
-/* int MatLoadGetInfo_Private(Viewer viewer) */
-/* { */
-/*   FILE *file; */
-/*   char string[128],*first,*second,*final; */
-/*   int  len,ierr,flg; */
+/*
+    MatLoadGetInfo_Private - Loads the matrix options from the name.info file
+    if it exists.
+ */
+int MatLoadGetInfo_Private(Viewer viewer)
+{
+  FILE *file;
+  char string[128],*first,*second,*final;
+  int  len,ierr,flg;
 
-/*   ierr = OptionsHasName(PETSC_NULL,"-matload_ignore */_info",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-matload_ignore */_info",&flg);CHKERRQ(ierr);
   if (flg) return 0;
 
   ierr = ViewerBinaryGetInfoPointer(viewer,&file); CHKERRQ(ierr);
