@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.145 2000/09/06 20:48:45 bsmith Exp balay $ */
+/* $Id: petsclog.h,v 1.146 2000/09/06 22:20:52 balay Exp balay $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -191,19 +191,19 @@ extern int PLogEventDepth[];
 
 #if defined(PETSC_HAVE_MPE)
 #define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  0; { \
-    if (_PLogPLB && PLogEventFlags[e]) {                           \
-      PLogEventBegin((e),o1,o2,o3,o4);                                   \
-      if (UseMPE && PLogEventMPEFlags[(e)]) \
-        MPE_Log_event(MPEBEGIN+2*(e),0,""); \
-      MPI_Barrier(cm);                                             \
-      PLogEventEnd((e),o1,o2,o3,o4);                                     \
-      if (UseMPE && PLogEventMPEFlags[(e)]) \
-        MPE_Log_event(MPEBEGIN+2*((e)+1),0,""); \
-    }                                                                \
-    PLogEventBegin(e+1,o1,o2,o3,o4);                                   \
-    if (UseMPE && PLogEventMPEFlags[(e)+1])\
-      MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");\
+  0; { int __ierr; \
+    if (_PLogPLB && PLogEventFlags[e]) {                         \
+      __ierr = PLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(__ierr);  \
+      if (UseMPE && PLogEventMPEFlags[(e)])                      \
+        MPE_Log_event(MPEBEGIN+2*(e),0,"");                      \
+      __ierr = MPI_Barrier(cm);CHKERRQ(__ierr);                  \
+      __ierr = PLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(__ierr);    \
+      if (UseMPE && PLogEventMPEFlags[(e)])                      \
+        MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");                  \
+    }                                                            \
+    __ierr = PLogEventBegin(e+1,o1,o2,o3,o4);CHKERRQ(__ierr);    \
+    if (UseMPE && PLogEventMPEFlags[(e)+1])                      \
+      MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");                    \
   }
 #define PLogEventBegin(e,o1,o2,o3,o4)  \
   0; {  \
@@ -214,13 +214,13 @@ extern int PLogEventDepth[];
   }
 #else
 #define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  0; { \
-    if (_PLogPLB && PLogEventFlags[(e)]) {                           \
-      PLogEventBegin((e),o1,o2,o3,o4);                                   \
-      MPI_Barrier(cm);                                             \
-      PLogEventEnd((e),o1,o2,o3,o4);                                     \
-    }                                                                \
-    PLogEventBegin((e)+1,o1,o2,o3,o4);                                   \
+  0; { int __ierr;\
+    if (_PLogPLB && PLogEventFlags[(e)]) {                         \
+      __ierr = PLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(__ierr);    \
+      __ierr = MPI_Barrier(cm);CHKERRQ(__ierr);                    \
+      __ierr = PLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(__ierr);      \
+    }                                                              \
+    __ierr = PLogEventBegin((e)+1,o1,o2,o3,o4);CHKERRQ(__ierr);    \
   }
 #define PLogEventBegin(e,o1,o2,o3,o4)  \
   0; {  \
@@ -230,8 +230,7 @@ extern int PLogEventDepth[];
 #endif
 
 #if defined(PETSC_HAVE_MPE)
-#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) \
-   0; {PLogEventEnd(e+1,o1,o2,o3,o4);}
+#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PLogEventEnd(e+1,o1,o2,o3,o4)
 #define PLogEventEnd(e,o1,o2,o3,o4) \
   0; {\
   if (_PLogPLE && PLogEventFlags[(e)] && !--PLogEventDepth[e]) {\
@@ -240,8 +239,7 @@ extern int PLogEventDepth[];
      MPE_Log_event(MPEBEGIN+2*(e)+1,0,"");\
   }  
 #else
-#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) \
-   0; {PLogEventEnd(e+1,o1,o2,o3,o4);}
+#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PLogEventEnd(e+1,o1,o2,o3,o4)
 #define PLogEventEnd(e,o1,o2,o3,o4) \
   0; {\
   if (_PLogPLE && PLogEventFlags[(e)] && !--PLogEventDepth[e]) {\

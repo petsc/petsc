@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.243 2000/08/16 16:53:43 balay Exp balay $*/
+/*$Id: plog.c,v 1.244 2000/09/06 22:20:45 balay Exp balay $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -165,7 +165,7 @@ PetscTruth PLogEventFlags[] = {PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE, /* 50 - 74 */
-                        PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,PETSC_TRUE,
+                        PETSC_FALSE,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,PETSC_TRUE,
                         PETSC_FALSE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,
                         PETSC_TRUE,PETSC_FALSE,PETSC_TRUE,PETSC_FALSE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
@@ -287,8 +287,8 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "VecReduceArith. ",
                          "MatFDColoringApp",
                          "VecView         ",
-                         "MatFDColoringCre",
                          "                ",
+                         "MatFDColoringCre",
                          "VecMax          ",
                          "VecMin          ",
                          "VecTDot         ",
