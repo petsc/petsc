@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.36 1997/07/29 14:11:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.37 1997/08/22 15:17:36 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -96,7 +96,7 @@ $    BINARY_WRONLY - open existing file for binary output
 
 .keywords: binary, file, open, input, output
 
-.seealso: ViewerFileOpenASCII(), ViewerFileSetFormat(), ViewerDestroy(),
+.seealso: ViewerFileOpenASCII(), ViewerSetFormat(), ViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), ViewerBinaryGetDescriptor()
 @*/
 int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *binv)
