@@ -280,6 +280,7 @@ if __name__ ==  '__main__':
       sys.exit()
 
   print 'Installing the BuildSystem, Runtime and Compiler (this will take a while)'
+  sys.stdout.flush()
   sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem','install'))
   import installer
   installer.runinstaller(["-debugSections=[install]",'-debugLevel=2'])
