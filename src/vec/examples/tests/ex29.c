@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex29.c,v 1.1 1999/02/25 19:32:04 balay Exp balay $";
+static char vcid[] = "$Id: ex29.c,v 1.2 1999/03/17 19:13:16 balay Exp balay $";
 #endif
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors\n\
@@ -20,6 +20,7 @@ int main(int argc,char **argv)
 
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n*bs,&x); CHKERRA(ierr);
+  ierr = VecSetBlockSize(x,bs); CHKERRA(ierr);
 
   for ( i=0; i<n*bs; i++ ) {
     val  = i*1.0;
@@ -32,7 +33,6 @@ int main(int argc,char **argv)
 
   /* Now do the blocksetvalues */
   ierr = VecSet(&zero,x); CHKERRQ(ierr);
-  ierr = VecSetBlockSize(x,bs); CHKERRA(ierr);
   vals = (Scalar *)PetscMalloc(bs*sizeof(Scalar)); CHKPTRA(vals);
   for ( i=0; i<n; i++ ) {
     for ( j=0; j<bs; j++ ) {
@@ -40,6 +40,9 @@ int main(int argc,char **argv)
     }
     ierr = VecSetValuesBlocked(x,1,&i,vals,INSERT_VALUES); CHKERRA(ierr);
   }
+
+  ierr = VecAssemblyBegin(x); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 
   ierr = VecView(x,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
