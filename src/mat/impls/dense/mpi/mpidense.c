@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.118 1999/07/26 01:16:26 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.119 1999/07/26 02:52:49 curfman Exp curfman $";
 #endif
 
 /*
@@ -92,28 +92,29 @@ static int MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
 {
   Mat_MPIDense *mat = (Mat_MPIDense *) A->data, *newmatd;
   Mat_SeqDense *lmat = (Mat_SeqDense *) mat->A->data;
-  int          i, j, ierr, *irow, *icol, nrows, ncols, nlrows, nlcols;
+  int          i, j, ierr, *irow, *icol, n_lrows, n_lcols;
+  int          rstart, rend, nrows, ncols, nlrows, nlcols, rank, ncols_all;
   Scalar       *av, *bv, *v = lmat->v;
   Mat          newmat;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
   ierr = ISGetSize(iscol,&ncols);CHKERRQ(ierr);
 
   /* No parallel redistribution currently supported! Should really check each index set
-     to comfirm that it is OK ... temporarily just support retaining all rows on each proc. */
+     to comfirm that it is OK.  ... Currently supports only submatrix same partitioning as
+     original matrix! */
 
   ierr = MatGetLocalSize(A,&nlrows,&nlcols);CHKERRQ(ierr);
-  if (nlrows != nrows) SETERRQ(PETSC_ERR_ARG_SIZ,0,
-    "Currently supports only submatrix with ALL rows of additional matrix (same partitioning)");
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   
   /* Check submatrix call */
   if (scall == MAT_REUSE_MATRIX) {
-    int n_cols,n_rows;
-    ierr = MatGetSize(*B,&n_rows,&n_cols);CHKERRQ(ierr);
-    if (n_rows != nrows || n_cols != ncols) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Reused submatrix wrong size");
+    /* SETERRQ(PETSC_ERR_ARG_SIZ,0,"Reused submatrix wrong size"); */
+    /* Really need to test rows and column sizes! */
     newmat = *B;
   } else {
     /* Create and fill new matrix */
@@ -127,7 +128,7 @@ static int MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
   for ( i=0; i<ncols; i++ ) {
     av = v + nlrows*icol[i];
     for (j=0; j<nrows; j++ ) {
-      *bv++ = av[irow[j]];
+      *bv++ = av[irow[j] - rstart];
     }
   }
 
