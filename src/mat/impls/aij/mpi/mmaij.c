@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.8 1995/03/23 22:59:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.9 1995/04/15 03:28:13 bsmith Exp bsmith $";
 #endif
 
 
@@ -30,7 +30,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   }
 
   /* form array of columns we need */
-  garray = (int *) MALLOC( ec*sizeof(int) ); CHKPTR(garray);
+  garray = (int *) MALLOC( (ec+1)*sizeof(int) ); CHKPTR(garray);
   ec = 0;
   for ( i=0; i<N; i++ ) {
     if (indices[i]) garray[ec++] = i;
