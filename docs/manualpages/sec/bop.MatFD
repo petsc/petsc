@@ -1,0 +1,12 @@
+<HTML>
+<HEAD>
+<TITLE>PC Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> Vec Manual Pages 
+[<A HREF="../../manual.html#Node15"> Chapter 2 of Users Manual</A>]
+</H2>
+
+  PETSc vectors (Vec objects) are used to store all the field variables 
+in a PDE (or other) simulation. See <A HREF="../../../src/vec/examples/tutorials/ex1.c">src/vec/examples/tutorials/ex1.c</A> for sample usage.
