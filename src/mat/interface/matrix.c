@@ -234,7 +234,7 @@ int MatView(Mat mat,PetscViewer viewer)
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(mat->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(mat,1,viewer,2);
-  if (!mat->assembled) SETERRQ(1,"Must call MatAssemblyBegin/End() before viewing matrix");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ORDER,"Must call MatAssemblyBegin/End() before viewing matrix");
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
@@ -2931,7 +2931,7 @@ int MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscTruth *flg)
     if (f==g) {
       ierr = (*f)(A,B,tol,flg);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Matrices do not have the same comparator for symmetry test");
+      SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Matrices do not have the same comparator for symmetry test");
     }
   }
   PetscFunctionReturn(0);
@@ -4812,8 +4812,6 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
   PetscValidType(mat,1);
   MatPreallocated(mat);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (mat->N != mat->M) SETERRQ(PETSC_ERR_SUP,"Only works for square matrices");
-
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
 
   /* if original matrix is on just one processor then use submatrix generated */
@@ -5170,7 +5168,7 @@ int MatSetValuesAdic(Mat mat,void *v)
   PetscValidPointer(mat,2);
 
   if (!mat->assembled) {
-    SETERRQ(1,"Matrix must be already assembled");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be already assembled");
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   if (!mat->ops->setvaluesadic) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
@@ -5208,7 +5206,7 @@ int MatSetColoring(Mat mat,ISColoring coloring)
   PetscValidPointer(coloring,2);
 
   if (!mat->assembled) {
-    SETERRQ(1,"Matrix must be already assembled");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be already assembled");
   }
   if (!mat->ops->setcoloring) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->setcoloring)(mat,coloring);CHKERRQ(ierr);
@@ -5246,7 +5244,7 @@ int MatSetValuesAdifor(Mat mat,int nl,void *v)
   PetscValidPointer(v,3);
 
   if (!mat->assembled) {
-    SETERRQ(1,"Matrix must be already assembled");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be already assembled");
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   if (!mat->ops->setvaluesadifor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
@@ -5287,7 +5285,7 @@ int MatDiagonalScaleLocal(Mat mat,Vec diag)
   PetscValidType(mat,1);
 
   if (!mat->assembled) {
-    SETERRQ(1,"Matrix must be already assembled");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be already assembled");
   }
   ierr = PetscLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
@@ -5298,7 +5296,7 @@ int MatDiagonalScaleLocal(Mat mat,Vec diag)
     if (m == n) {
       ierr = MatDiagonalScale(mat,0,diag);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Only supported for sequential matrices when no ghost points/periodic conditions");
+      SETERRQ(PETSC_ERR_SUP,"Only supported for sequential matrices when no ghost points/periodic conditions");
     }
   } else {
     int (*f)(Mat,Vec);
@@ -5306,7 +5304,7 @@ int MatDiagonalScaleLocal(Mat mat,Vec diag)
     if (f) {
       ierr = (*f)(mat,diag);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Only supported for MPIAIJ and MPIBAIJ parallel matrices");
+      SETERRQ(PETSC_ERR_SUP,"Only supported for MPIAIJ and MPIBAIJ parallel matrices");
     }
   }
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
@@ -5507,7 +5505,7 @@ int MatIsStructurallySymmetric(Mat A,PetscTruth *flg)
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
   PetscValidPointer(flg,2);
   if (!A->structurally_symmetric_set) {
-    if (!A->ops->isstructurallysymmetric) SETERRQ(1,"Matrix does not support checking for structural symmetric");
+    if (!A->ops->isstructurallysymmetric) SETERRQ(PETSC_ERR_SUP,"Matrix does not support checking for structural symmetric");
     ierr = (*A->ops->isstructurallysymmetric)(A,&A->structurally_symmetric);CHKERRQ(ierr);
     A->structurally_symmetric_set = PETSC_TRUE;
   }
@@ -5542,7 +5540,7 @@ int MatIsHermitian(Mat A,PetscTruth *flg)
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
   PetscValidPointer(flg,2);
   if (!A->hermitian_set) {
-    if (!A->ops->ishermitian) SETERRQ(1,"Matrix does not support checking for being Hermitian");
+    if (!A->ops->ishermitian) SETERRQ(PETSC_ERR_SUP,"Matrix does not support checking for being Hermitian");
     ierr = (*A->ops->ishermitian)(A,&A->hermitian);CHKERRQ(ierr);
     A->hermitian_set = PETSC_TRUE;
     if (A->hermitian) {

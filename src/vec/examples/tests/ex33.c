@@ -50,7 +50,9 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(x,z,INSERT_VALUES,SCATTER_FORWARD,tozero);CHKERRQ(ierr);
   ierr = VecScatterEnd(x,z,INSERT_VALUES,SCATTER_FORWARD,tozero);CHKERRQ(ierr);
   ierr = VecScatterDestroy(tozero);CHKERRQ(ierr);
-  ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = VecView(z,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  }
 
 
   ierr = VecDestroy(x);CHKERRQ(ierr);
