@@ -9,6 +9,6 @@ SOURCEH  =
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscsles
-DIRS     = jacobi none sor lu shell bjacobi mg eisens ilu icc spai
+DIRS     = jacobi none sor lu shell bjacobi mg eisens ilu icc
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
