@@ -1,13 +1,11 @@
-/* "$Id: flow.c,v 1.24 2000/04/18 01:17:33 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.25 2000/04/23 19:04:40 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
-and ported into PETSc framework by D. K. Kaushik, ODU and ICASE.\n\n";
+and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 
 #include "snes.h"
-#include "draw.h"
 #include "ao.h"
-#include "is.h"
 #include "user.h"
 
 #define ICALLOC(size,y) *(y) = (int*)PetscMalloc((PetscMax(size,1))*sizeof(int));CHKPTRQ(*(y))
@@ -77,10 +75,11 @@ int main(int argc,char **args)
   PetscTruth    flg;
   
   ierr = PetscInitialize(&argc,&args,"testgrid/petsc.opt",help);CHKERRQ(ierr);
+  ierr = PetscInitializeFortran();CHKERRQ(ierr);
+
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  ierr = PetscInitializeFortran();CHKERRQ(ierr);
   
   /*======================================================================*/
   /* Initilize stuff related to time stepping */
@@ -127,6 +126,7 @@ int main(int argc,char **args)
   */
   PreLoadBegin(PETSC_TRUE,"Time integration");
     user.PreLoading = PreLoading;
+
     /* Create nonlinear solver */
     ierr = SetPetscDS(&f_pntr, &tsCtx);CHKERRQ(ierr);
     ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
@@ -151,7 +151,6 @@ int main(int argc,char **args)
 
     /* Solve nonlinear system */
     ierr = Update(snes,&user);CHKERRQ(ierr);
-
 
     /* Write restart file */
     ierr = VecGetArray(user.grid->qnode, &qnode);CHKERRQ(ierr);
@@ -209,7 +208,7 @@ int main(int argc,char **args)
     }
   PreLoadEnd();
 
-  ierr = PetscPrintf(MPI_COMM_WORLD, "Time taken in gradient calculation is %g sec.\n",grad_time);CHKERRQ(ierr);
+  ierr = PetscPrintf(MPI_COMM_WORLD, "Time taken in gradient calculation %g sec.\n",grad_time);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;
@@ -222,17 +221,13 @@ int main(int argc,char **args)
 int FormInitialGuess(SNES snes, GRID *grid)
 /*---------------------------------------------------------------------*/
 {
-   int    ierr;
-   Scalar *qnode;
+  int    ierr;
+  Scalar *qnode;
 
-   PetscFunctionBegin;
-   ierr = VecGetArray(grid->qnode,&qnode);CHKERRQ(ierr);
-
-   f77INIT(&grid->nnodesLoc, qnode, grid->turbre,
-            grid->amut, &grid->nvnodeLoc, grid->ivnode, &rank);
-
-   ierr = VecRestoreArray(grid->qnode,&qnode);CHKERRQ(ierr);
-
+  PetscFunctionBegin;
+  ierr = VecGetArray(grid->qnode,&qnode);CHKERRQ(ierr);
+  f77INIT(&grid->nnodesLoc,qnode,grid->turbre,grid->amut,&grid->nvnodeLoc,grid->ivnode,&rank);
+  ierr = VecRestoreArray(grid->qnode,&qnode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
  
@@ -258,26 +253,25 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    Scalar	time_ini, time_fin;
  
    PetscFunctionBegin;
+   /* Get X into the local work vector */
    ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
    ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-   ires = tsCtx->ires;
+   
+   /* access the local work f, grad, and input */
    ierr = VecGetArray(f,&res);CHKERRQ(ierr);
    ierr = VecGetArray(grid->grad,&grad);CHKERRQ(ierr);
    ierr = VecGetArray(localX,&qnode);CHKERRQ(ierr);
+   ires = tsCtx->ires;
 
    ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
-   f77LSTGS(&grid->nnodesLoc,&grid->nedgeLoc,grid->eptr,
-             qnode,grad,grid->xyz,
-             grid->rxy,
+   f77LSTGS(&grid->nnodesLoc,&grid->nedgeLoc,grid->eptr,qnode,grad,grid->xyz,grid->rxy,
             &rank,&grid->nvertices);
    ierr = PetscGetTime(&time_fin);CHKERRQ(ierr);
    grad_time += time_fin - time_ini;
    ierr = VecRestoreArray(grid->grad,&grad);CHKERRQ(ierr);
 
-   ierr = VecScatterBegin(grid->grad,localGrad,INSERT_VALUES,
-                          SCATTER_FORWARD,gradScatter);CHKERRQ(ierr);
-   ierr = VecScatterEnd(grid->grad,localGrad,INSERT_VALUES,
-                          SCATTER_FORWARD,gradScatter);CHKERRQ(ierr);
+   ierr = VecScatterBegin(grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD,gradScatter);CHKERRQ(ierr);
+   ierr = VecScatterEnd(grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD,gradScatter);CHKERRQ(ierr);
 
    ierr = VecGetArray(localGrad,&grad);CHKERRQ(ierr);
    nbface = grid->nsface + grid->nvface + grid->nfface;
@@ -304,33 +298,32 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
               grid->us,      grid->vs,       grid->as,
               grid->phi,
               grid->amut,    &ires, &rank, &grid->nvertices);
+
 /* Add the contribution due to time stepping */
-   if (ires == 1) {
+  if (ires == 1) {
     ierr = VecGetArray(tsCtx->qold,&qold);CHKERRQ(ierr);
 #if defined(INTERLACING)
     for (i = 0; i < grid->nnodesLoc; i++) {
      temp = grid->area[i]/(tsCtx->cfl*grid->cdt[i]);
      for (j = 0; j < 4; j++) {
-      in = 4*i + j;
+      in       = 4*i + j;
       res[in] += temp*(qnode[in] - qold[in]);
      }
     }
 #else
     for (j = 0; j < 4; j++) {
      for (i = 0; i < grid->nnodesLoc; i++) {
-      temp = grid->area[i]/(tsCtx->cfl*grid->cdt[i]);
-      in = grid->nnodesLoc*j + i;
+      temp     = grid->area[i]/(tsCtx->cfl*grid->cdt[i]);
+      in       = grid->nnodesLoc*j + i;
       res[in] += temp*(qnode[in] - qold[in]);
      }
     }
 #endif
     ierr = VecRestoreArray(tsCtx->qold,&qold);CHKERRQ(ierr);
-   }
-
-   ierr = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
-   /*ierr = VecRestoreArray(grid->dq,&dq);CHKERRQ(ierr);*/
-   ierr = VecRestoreArray(f,&res);CHKERRQ(ierr);
-   ierr = VecRestoreArray(localGrad,&grad);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
+  ierr = VecRestoreArray(f,&res);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localGrad,&grad);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1885,8 +1878,9 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
    ierr = PetscFree(val_offd);CHKERRQ(ierr);
 
 #else
-   if (size > 1) 
+   if (size > 1) {
      SETERRQ(1,1,"Parallel case not supported in non-interlaced case\n");
+   }
    ICALLOC(nnodes*4, &val_diag);
    ICALLOC(nnodes*4, &val_offd);
    for (j = 0; j < 4; j++) {
