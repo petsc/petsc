@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.31 1998/03/12 23:11:54 bsmith Exp balay $";
+static char vcid[] = "$Id: zvec.c,v 1.32 1998/03/30 22:23:23 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -102,9 +102,20 @@ void vecgetarray_(Vec x,Scalar *fa,long *ia,int *__ierr)
 {
   Vec    xin = (Vec)PetscToPointer(x);
   Scalar *lx;
+  int    shift;
 
   *__ierr = VecGetArray(xin,&lx); if (*__ierr) return;
-  *ia      = PetscScalarAddressToFortran(fa,lx);
+  PetscScalarAddressToFortran(fa,lx,ia,&shift);
+  if (shift) {
+    unsigned long tmp1 = (unsigned long) lx;
+    unsigned long tmp2 = (unsigned long) fa;
+    /* Address conversion is messed up */
+    (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
+    (*PetscErrorPrintf)("not commonly aligned.\n");
+    (*PetscErrorPrintf)("Locations/sizeof(Scalar): C %f Fortran %f\n",
+                          ((double) tmp1)/sizeof(Scalar),((double) tmp2)/sizeof(Scalar));
+    MPI_Abort(PETSC_COMM_WORLD,1);
+  }
 }
 
 void vecscatterdestroy_(VecScatter ctx, int *__ierr )
