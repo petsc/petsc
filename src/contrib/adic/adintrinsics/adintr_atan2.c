@@ -41,6 +41,11 @@ adintr_atan2 (int deriv_order, int file_number, int line_number,
      }
 
      /* Here is where exceptional partials should be set. */
+     *fx = ADIntr_Partials[ADINTR_ATAN2][ADINTR_FX];
+     *fy = ADIntr_Partials[ADINTR_ATAN2][ADINTR_FY];
+     *fxx = ADIntr_Partials[ADINTR_ATAN2][ADINTR_FXX];
+     *fxy = ADIntr_Partials[ADINTR_ATAN2][ADINTR_FXY];
+     *fyy = ADIntr_Partials[ADINTR_ATAN2][ADINTR_FYY];
 
 
      /* Here is where we perform the action appropriate to the current mode. */

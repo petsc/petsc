@@ -37,7 +37,8 @@ adintr_fabs (int deriv_order, int file_number, int line_number,
      }
 
      /* Here is where exceptional partials should be set. */
-*fx = ADIntr_Partials[ADINTR_FABS][ADINTR_FX];
+     *fx = ADIntr_Partials[ADINTR_FABS][ADINTR_FX];
+     *fxx = ADIntr_Partials[ADINTR_FABS][ADINTR_FXX];
 
 
      /* Here is where we perform the action appropriate to the current mode. */

@@ -42,7 +42,10 @@ adintr_fmod (int deriv_order, int file_number, int line_number,
      }
 
      /* Here is where exceptional partials should be set. */
-*fy = ADIntr_Partials[ADINTR_FMOD][ADINTR_FY];
+     *fy = ADIntr_Partials[ADINTR_FMOD][ADINTR_FY];
+     *fxx = ADIntr_Partials[ADINTR_FMOD][ADINTR_FXX];
+     *fxy = ADIntr_Partials[ADINTR_FMOD][ADINTR_FXY];
+     *fyy = ADIntr_Partials[ADINTR_FMOD][ADINTR_FYY];
 
 
      /* Here is where we perform the action appropriate to the current mode. */

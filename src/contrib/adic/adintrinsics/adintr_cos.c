@@ -36,10 +36,10 @@ adintr_cos (int deriv_order, int file_number, int line_number,
      }
 
      /* Here is where exceptional partials should be set. */
+     *fx = ADIntr_Partials[ADINTR_COS][ADINTR_FX];
+     *fxx = ADIntr_Partials[ADINTR_COS][ADINTR_FXX];
 
-
-     /* Here is where we perform the action appropriate to the current mode. */
-     if (ADIntr_Mode == ADINTR_REPORTONCE)
+    if (ADIntr_Mode == ADINTR_REPORTONCE)
      {
 	  reportonce_accumulate(file_number, line_number, exception);
      }

@@ -30,7 +30,7 @@ static void *xmalloc _P((size_t));
 static void *xcalloc _P((size_t, size_t));
 static void *xrealloc _P((void *, size_t));
 typedef struct exception_info {
-     unsigned int line;
+     int line;
      int exception_type;
      unsigned long int count;
 

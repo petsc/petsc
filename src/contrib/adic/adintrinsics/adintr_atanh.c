@@ -36,6 +36,7 @@ adintr_atanh (int deriv_order, int file_number, int line_number,
      }
 
      /* Here is where exceptional partials should be set. */
+     *fxx = ADIntr_Partials[ADINTR_ATANH][ADINTR_FXX];
 
 
      /* Here is where we perform the action appropriate to the current mode. */

@@ -36,6 +36,8 @@ adintr_log (int deriv_order, int file_number, int line_number,
      }
 
      /* Here is where exceptional partials should be set. */
+     *fx = ADIntr_Partials[ADINTR_LOG][ADINTR_FX];
+     *fxx = ADIntr_Partials[ADINTR_LOG][ADINTR_FXX];
 
 
      /* Here is where we perform the action appropriate to the current mode. */

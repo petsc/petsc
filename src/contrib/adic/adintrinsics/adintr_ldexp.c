@@ -41,7 +41,11 @@ adintr_ldexp (int deriv_order, int file_number, int line_number,
      }
 
      /* Here is where exceptional partials should be set. */
-
+     *fx = ADIntr_Partials[ADINTR_LDEXP][ADINTR_FX];
+     *fy = ADIntr_Partials[ADINTR_LDEXP][ADINTR_FY];
+     *fxx = ADIntr_Partials[ADINTR_LDEXP][ADINTR_FXX];
+     *fxy = ADIntr_Partials[ADINTR_LDEXP][ADINTR_FXY];
+     *fyy = ADIntr_Partials[ADINTR_LDEXP][ADINTR_FYY];
 
      /* Here is where we perform the action appropriate to the current mode. */
      if (ADIntr_Mode == ADINTR_REPORTONCE)

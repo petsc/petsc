@@ -45,6 +45,9 @@ adintr_max (int deriv_order, int file_number, int line_number,
      /* Here is where exceptional partials should be set. */
 *fx = ADIntr_Partials[ADINTR_MAX][ADINTR_FX];
 *fy = ADIntr_Partials[ADINTR_MAX][ADINTR_FY];
+ *fxx = ADIntr_Partials[ADINTR_MAX][ADINTR_FXX];
+ *fxy = ADIntr_Partials[ADINTR_MAX][ADINTR_FXY];
+ *fyy = ADIntr_Partials[ADINTR_MAX][ADINTR_FYY];
 
 
      /* Here is where we perform the action appropriate to the current mode. */
