@@ -703,12 +703,12 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
 #define __FUNCT__ "ConvertMatrixToMat"
 int ConvertMatrixToMat(matrix *B,Mat *PB)
 {
-  int    size,rank;
-  int    ierr;
-  int    m,n,M,N;
-  int    d_nz,o_nz;
-  int    *d_nnz,*o_nnz;
-  int    i,k,global_row,global_col,first_diag_col,last_diag_col;
+  int         size,rank;
+  int         ierr;
+  int         m,n,M,N;
+  int         d_nz,o_nz;
+  int         *d_nnz,*o_nnz;
+  int         i,k,global_row,global_col,first_diag_col,last_diag_col;
   PetscScalar val;
 
   PetscFunctionBegin;

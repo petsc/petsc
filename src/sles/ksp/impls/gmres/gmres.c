@@ -253,8 +253,8 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_GMRES" 
-int KSPDestroy_GMRES(KSP ksp)
+#define __FUNCT__ "KSPDestroy_GMRES_Internal" 
+int KSPDestroy_GMRES_Internal(KSP ksp)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
   int       i,ierr;
@@ -276,8 +276,20 @@ int KSPDestroy_GMRES(KSP ksp)
   if (gmres->sol_temp) {ierr = VecDestroy(gmres->sol_temp);CHKERRQ(ierr);}
   if (gmres->Rsvd) {ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);}
   if (gmres->Dsvd) {ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);}
-  ierr = PetscFree(gmres);CHKERRQ(ierr);
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy_GMRES" 
+int KSPDestroy_GMRES(KSP ksp)
+{
+  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
+  int       ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPDestroy_GMRES_Internal(ksp);CHKERRQ(ierr);
+  ierr = PetscFree(gmres);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*
@@ -583,10 +595,20 @@ EXTERN_C_BEGIN
 int KSPGMRESSetRestart_GMRES(KSP ksp,int max_k)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
+  int       ierr;
 
   PetscFunctionBegin;
   if (max_k < 1) SETERRQ(1,"Restart must be positive");
-  gmres->max_k = max_k;
+  if (!ksp->setupcalled) {
+    gmres->max_k = max_k;
+  } else if (gmres->max_k != max_k) {
+     gmres->max_k = max_k;
+     ksp->setupcalled = 0;
+     /* free the data structures, then create them again */
+     ierr = KSPDestroy_GMRES_Internal(ksp);CHKERRQ(ierr);
+     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
