@@ -11,6 +11,6 @@ foreach i (*.h *.h90)
   grep -v "define" $i | grep -v "else" | grep -v "endif" | grep -v "real " | grep -v "include" | sed " s/PetscDoubleExp(-2.0,0)/-2.0d0/" |sed "s/DoubleComplex/double complex/g" | sed "s/Double/double precision/"  |  sed "s/MPI_Comm/integer/g" > ../finclude/$i
 end
 cd /home/bsmith/petsc/include/finclude
-echo "C   You will have to adjust this line for your site" >> petsc.h
+echo "!   You will have to adjust this line for your site" >> petsc.h
 echo "      include 'mpif.h'" >> petsc.h
 chmod g+w *.h *.h90
