@@ -29,11 +29,20 @@ class Maker:
       else:
         raise RuntimeError('Please set the TMPDIR variable')
 
+  def forceRemove(self, file):
+    if (os.path.exists(file)):
+      if (os.path.isdir(file)):
+        for f in os.listdir(file):
+          self.forceRemove(os.path.join(file, f))
+        os.rmdir(file)
+      else:
+        os.remove(file)
+    
   def cleanupTmpDir(self):
     if not os.path.exists(self.tmpDir): os.makedirs(self.tmpDir)
     oldDir = os.getcwd()
     os.chdir(self.tmpDir)
-    map(os.remove, os.listdir(self.tmpDir))
+    map(self.forceRemove, os.listdir(self.tmpDir))
     os.chdir(oldDir)
 
   def defaultCheckCommand(self, command, status, output):
@@ -126,10 +135,11 @@ class ExtensionFileGroup (TreeFileGroup):
 
 class Transform (Maker):
   "Transforms map one FileGroup into another. By default, this map is the identity"
-  def __init__(self, sources = FileGroup()):
+  def __init__(self, sources = FileGroup(), fileFilter = lambda file: 1):
     Maker.__init__(self)
-    self.sources  = sources
-    self.products = self.sources
+    self.sources    = sources
+    self.products   = self.sources
+    self.fileFilter = fileFilter
 
   def checkChecksum(self, command, status, output):
     if (status):
@@ -151,15 +161,15 @@ class Transform (Maker):
     return os.path.join(self.tmpDir, string.replace(dir, '/', '_')+'_'+base+'_'+str(checksum)+'.o')
 
   def updateSourceDB(self, source):
-    sourceDB[source] = (self.getChecksum(source), os.path.getmtime(), time());
+    sourceDB[source] = (self.getChecksum(source), os.path.getmtime(source), time.time());
 
   def execute(self):
     return self.products
 
 class FileCompare (Transform):
   "This class maps sources into the set of files for which self.compare(target, source) returns true"
-  def __init__(self, targets, sources = FileGroup(), returnAll = 0):
-    Transform.__init__(self, sources)
+  def __init__(self, targets, sources = FileGroup(), fileFilter = lambda file: 1, returnAll = 0):
+    Transform.__init__(self, sources, fileFilter)
     self.targets   = targets
     self.returnAll = returnAll
 
@@ -194,8 +204,8 @@ class FileCompare (Transform):
 
 class OlderThan (FileCompare):
   "This class maps sources into the set of files which are older than target"
-  def __init__(self, targets, sources = FileGroup(), returnAll = 0):
-    FileCompare.__init__(self, targets, sources, returnAll)
+  def __init__(self, targets, sources = FileGroup(), fileFilter = lambda file: 1, returnAll = 0):
+    FileCompare.__init__(self, targets, sources, fileFilter, returnAll)
 
   def compare(self, target, source):
     self.debugPrint('Checking if '+source+' is older than '+target, 3)
@@ -209,8 +219,8 @@ class OlderThan (FileCompare):
 
 class NewerThan (FileCompare):
   "This class maps sources into the set of files which are newer than target"
-  def __init__(self, targets, sources = FileGroup(), returnAll = 0):
-    FileCompare.__init__(self, targets, sources, returnAll)
+  def __init__(self, targets, sources = FileGroup(), fileFilter = lambda file: 1, returnAll = 0):
+    FileCompare.__init__(self, targets, sources, fileFilter, returnAll)
 
   def compare(self, target, source):
     self.debugPrint('Checking if '+source+' is newer than '+target, 3)
@@ -224,8 +234,8 @@ class NewerThan (FileCompare):
 
 class NewerThanLibraryObject (FileCompare):
   "This class maps sources into the set of files which are newer than the corresponding object in the target library"
-  def __init__(self, targets, sources = FileGroup(), returnAll = 0):
-    FileCompare.__init__(self, targets, sources, returnAll)
+  def __init__(self, targets, sources = FileGroup(), fileFilter = lambda file: 1, returnAll = 0):
+    FileCompare.__init__(self, targets, sources, fileFilter, returnAll)
 
   def getObjectTimestamp(self, object, library):
     output = self.executeShellCommand('ar tv '+library+' '+object)
@@ -249,10 +259,9 @@ class NewerThanLibraryObject (FileCompare):
 
 class Action (Transform):
   def __init__(self, program, sources = FileGroup(), flags = '', fileFilter = lambda file: 1, allAtOnce = 0, errorHandler = None):
-    Transform.__init__(self, sources)
+    Transform.__init__(self, sources, fileFilter)
     self.program      = program
     self.flags        = flags
-    self.fileFilter   = fileFilter
     self.allAtOnce    = allAtOnce
     self.errorHandler = errorHandler
 
@@ -293,9 +302,6 @@ class Action (Transform):
 class RemoveFiles (Action):
   def __init__(self, sources = FileGroup()):
     Action.__init__(self, self.forceRemove, sources)
-
-  def forceRemove(self, file):
-    if (os.path.exists(file)): os.remove(file)
 
 class ArchiveObjects (Action):
   def __init__(self, library, objects, archiver = 'ar', archiverFlags = 'cvf'):
@@ -385,7 +391,6 @@ class CompileFiles (Action):
       command += ' -o '+object
     command += ' '+source
     self.executeShellCommand(command)
-    self.updateSourceDB(source)
     return object
 
   def archive(self, object):
@@ -400,10 +405,12 @@ class CompileFiles (Action):
       if (not files): return
       sources = ''
       for file in files:
+        self.updateSourceDB(file)
         sources += ' '+file
       if (not sources): return
       self.compile(sources)
     else:
+      self.updateSourceDB(source)
       object = self.compile(source)
       self.archive(object)
 
@@ -535,13 +542,15 @@ class Target (Transform):
   def execute(self):
     return self.executeTransform(self.sources, self.transforms)
 
+sourceDBFilename = 'bsSource.db'
 def saveSourceDB():
-  dbFile   = open('bsSource.db', 'w')
+  dbFile = open(sourceDBFilename, 'w')
   cPickle.dump(sourceDB, dbFile)
-  dbFile.close
+  dbFile.close()
 
 def main():
-  dbFile   = open('bsSource.db', 'r')
-  sourceDB = cPickle.load(dbFile)
-  dbFile.close()
+  if os.path.exists(sourceDBFilename):
+    dbFile   = open(sourceDBFilename, 'r')
+    sourceDB = cPickle.load(dbFile)
+    dbFile.close()
   atexit.register(saveSourceDB)
