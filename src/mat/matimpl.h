@@ -101,7 +101,10 @@ struct _MatOps {
             (*mults)(Mat, Vecs, Vecs),
             (*solves)(Mat, Vecs, Vecs),
             (*getinertia)(Mat,int*,int*,int*),
-/*85*/      (*load)(PetscViewer,MatType,Mat*);
+/*85*/      (*load)(PetscViewer,MatType,Mat*),
+            (*issymmetric)(Mat,PetscTruth*),
+            (*ishermitian)(Mat,PetscTruth*),
+            (*isstructurallysymmetric)(Mat,PetscTruth*);
 };
 
 /*
@@ -186,7 +189,8 @@ struct _p_Mat {
   MatNullSpace           nullsp;
   PetscTruth             preallocated;
   MatStencilInfo         stencil;          /* information for structured grid */
-  PetscTruth             symmetric,structurally_symmetric;
+  PetscTruth             symmetric,hermitian,structurally_symmetric;
+  PetscTruth             symmetric_set,hermitian_set,structurally_symmetric_set; /* if true, then corresponding flag is correct*/
   void                   *spptr;          /* pointer for special library like SuperLU */
   void                   *esimat;
 };

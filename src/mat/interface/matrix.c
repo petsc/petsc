@@ -3329,7 +3329,11 @@ int MatCompress(Mat mat)
 
    Options Describing Matrix Structure:
 +    MAT_SYMMETRIC - symmetric in terms of both structure and value
--    MAT_STRUCTURALLY_SYMMETRIC - symmetric nonzero structure
+.    MAT_HERMITIAN - transpose is the complex conjugation
+.    MAT_STRUCTURALLY_SYMMETRIC - symmetric nonzero structure
+.    MAT_NOT_SYMMETRIC - not symmetric in value
+.    MAT_NOT_HERMITIAN - transpose is not the complex conjugation
+-    MAT_NOT_STRUCTURALLY_SYMMETRIC - not symmetric nonzero structure
 
    Options For Use with MatSetValues():
    Insert a logically dense subblock, which can be
@@ -3425,11 +3429,32 @@ int MatSetOption(Mat mat,MatOption op)
   MatPreallocated(mat);
   switch (op) {
   case MAT_SYMMETRIC:
-    mat->symmetric              = PETSC_TRUE;
-    mat->structurally_symmetric = PETSC_TRUE;
+    mat->symmetric                  = PETSC_TRUE;
+    mat->structurally_symmetric     = PETSC_TRUE;
+    mat->symmetric_set              = PETSC_TRUE;
+    mat->structurally_symmetric_set = PETSC_TRUE;
+    break;
+  case MAT_HERMITIAN:
+    mat->hermitian                  = PETSC_TRUE;
+    mat->structurally_symmetric     = PETSC_TRUE;
+    mat->hermitian_set              = PETSC_TRUE;
+    mat->structurally_symmetric_set = PETSC_TRUE;
     break;
   case MAT_STRUCTURALLY_SYMMETRIC:
-    mat->structurally_symmetric = PETSC_TRUE;
+    mat->structurally_symmetric     = PETSC_TRUE;
+    mat->structurally_symmetric_set = PETSC_TRUE;
+    break;
+  case MAT_NOT_SYMMETRIC:
+    mat->symmetric                  = PETSC_FALSE;
+    mat->symmetric_set              = PETSC_TRUE;
+    break;
+  case MAT_NOT_HERMITIAN:
+    mat->hermitian                  = PETSC_FALSE;
+    mat->hermitian_set              = PETSC_TRUE;
+    break;
+  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
+    mat->structurally_symmetric     = PETSC_FALSE;
+    mat->structurally_symmetric_set = PETSC_TRUE;
     break;
   default:
     break;
@@ -5083,5 +5108,115 @@ int MatSolves(Mat mat,Vecs b,Vecs x)
   ierr = PetscLogEventBegin(MAT_Solves,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->solves)(mat,b,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Solves,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatIsSymmetric"
+/*@C
+   MatIsSymmetric - Test whether a matrix is symmetric
+
+   Collective on Mat
+
+   Input Parameter:
+.  A - the matrix to test
+
+   Output Parameters:
+.  flg - the result
+
+   Level: intermediate
+
+   Concepts: matrix^symmetry
+
+.seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption()
+@*/
+int MatIsSymmetric(Mat A,PetscTruth *flg)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  if (!A->symmetric_set) {
+    if (!A->ops->issymmetric) SETERRQ(1,"Matrix does not support checking for symmetric");
+    ierr = (*A->ops->issymmetric)(A,&A->symmetric);CHKERRQ(ierr);
+    A->symmetric_set = PETSC_TRUE;
+    if (A->symmetric) {
+      A->structurally_symmetric_set = PETSC_TRUE;
+      A->structurally_symmetric     = PETSC_TRUE;
+    }
+  }
+  *flg = A->symmetric;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatIsStructurallySymmetric"
+/*@C
+   MatIsStructurallySymmetric - Test whether a matrix is structurally symmetric
+
+   Collective on Mat
+
+   Input Parameter:
+.  A - the matrix to test
+
+   Output Parameters:
+.  flg - the result
+
+   Level: intermediate
+
+   Concepts: matrix^symmetry
+
+.seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsSymmetric(), MatSetOption()
+@*/
+int MatIsStructurallySymmetric(Mat A,PetscTruth *flg)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  if (!A->structurally_symmetric_set) {
+    if (!A->ops->isstructurallysymmetric) SETERRQ(1,"Matrix does not support checking for structural symmetric");
+    ierr = (*A->ops->isstructurallysymmetric)(A,&A->structurally_symmetric);CHKERRQ(ierr);
+    A->structurally_symmetric_set = PETSC_TRUE;
+  }
+  *flg = A->structurally_symmetric;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatIsHermitian"
+/*@C
+   MatIsHermitian - Test whether a matrix is Hermitian, i.e. it is the complex conjugate of its transpose.
+
+   Collective on Mat
+
+   Input Parameter:
+.  A - the matrix to test
+
+   Output Parameters:
+.  flg - the result
+
+   Level: intermediate
+
+   Concepts: matrix^symmetry
+
+.seealso: MatTranspose(), MatIsTranspose(), MatIsSymmetric(), MatIsStructurallySymmetric(), MatSetOption()
+@*/
+int MatIsHermitian(Mat A,PetscTruth *flg)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  if (!A->hermitian_set) {
+    if (!A->ops->ishermitian) SETERRQ(1,"Matrix does not support checking for being Hermitian");
+    ierr = (*A->ops->ishermitian)(A,&A->hermitian);CHKERRQ(ierr);
+    A->hermitian_set = PETSC_TRUE;
+    if (A->symmetric) {
+      A->structurally_symmetric_set = PETSC_TRUE;
+      A->structurally_symmetric     = PETSC_TRUE;
+    }
+  }
+  *flg = A->hermitian;
   PetscFunctionReturn(0);
 }

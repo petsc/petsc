@@ -1294,6 +1294,33 @@ int MatAXPY_SeqSBAIJ(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatIsSymmetric_SeqSBAIJ"
+int MatIsSymmetric_SeqSBAIJ(Mat A,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  *flg = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatIsStructurallySymmetric_SeqSBAIJ"
+int MatIsStructurallySymmetric_SeqSBAIJ(Mat A,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  *flg = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatIsHermitian_SeqSBAIJ"
+int MatIsHermitian_SeqSBAIJ(Mat A,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatGetRow_SeqSBAIJ,
@@ -1384,7 +1411,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
 #else
        0,
 #endif
-/*85*/ MatLoad_SeqSBAIJ
+/*85*/ MatLoad_SeqSBAIJ,
+       MatIsSymmetric_SeqSBAIJ,
+       MatIsStructurallySymmetric_SeqSBAIJ,
+       MatIsHermitian_SeqSBAIJ
 };
 
 EXTERN_C_BEGIN
