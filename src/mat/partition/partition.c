@@ -503,7 +503,7 @@ $      (for instance, parmetis)
 
 .keywords: partitioning, set, method, type
 
-.seealso: MatPartitioningCreate(), MatPartitioningApply()
+.seealso: MatPartitioningCreate(), MatPartitioningApply(), MatPartitioningType
 
 @*/
 PetscErrorCode MatPartitioningSetType(MatPartitioning part,const MatPartitioningType type)

@@ -1033,6 +1033,7 @@ typedef struct _p_MatPartitioning *MatPartitioning;
 E*/
 #define MatPartitioningType char*
 #define MAT_PARTITIONING_CURRENT  "current"
+#define MAT_PARTITIONING_SQUARE   "square"
 #define MAT_PARTITIONING_PARMETIS "parmetis"
 #define MAT_PARTITIONING_CHACO    "chaco"
 #define MAT_PARTITIONING_JOSTLE   "jostle"

@@ -186,6 +186,24 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningCreate_Parmetis" 
+/*@C
+   MatPartitioningCreate_Parmetis - Creates a partitioning context via the external package PARMETIS.
+
+   Collective on MPI_Comm
+
+   Input Parameter:
+.  part - the partitioning context
+
+   Options Database Keys:
++  -mat_partitioning_parmetis_coarse_sequential - use sequential PARMETIS coarse partitioner
+
+   Level: beginner
+
+.keywords: Partitioning, create, context
+
+.seealso: MatPartitioningSetType(), MatPartitioningType
+
+@*/
 PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
 {
   PetscErrorCode ierr;
