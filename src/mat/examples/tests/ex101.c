@@ -26,11 +26,9 @@ int main(int argc,char **argv) {
   ierr = MatAssemblyEnd(pA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(pA,3,&P);CHKERRQ(ierr);
   ierr = MatDestroy(pA);
-/*   ierr = MatView(P,PETSC_VIEWER_STDOUT_SELF); */
 
   /* Create AIJ equivalent matrix, aijP, for comparison testing */
   ierr = MatConvert(P,MATSEQAIJ,&aijP);
-/*   ierr = MatView(aijP,PETSC_VIEWER_STDOUT_SELF); */
 
   /* Create AIJ matrix, A */
   ierr = MatCreate(PETSC_COMM_SELF,9,9,9,9,&A);CHKERRQ(ierr);
@@ -46,7 +44,6 @@ int main(int argc,char **argv) {
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-/*   ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF); */
   
   /* Perform SeqAIJ_SeqMAIJ PtAP -- this will use the interface once dispatch mechanism is figured out */
   ierr = MatPtAPSymbolic_SeqAIJ_SeqMAIJ(A,P,1.,&mC);CHKERRQ(ierr);
