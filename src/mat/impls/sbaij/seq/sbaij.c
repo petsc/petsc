@@ -1573,7 +1573,6 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op)
    B->ops->destroy     = MatDestroy_SeqSBAIJ;
    B->ops->view        = MatView_SeqSBAIJ;
    B->factor           = 0;
-   B->lupivotthreshold = 1.0;
    B->mapping          = 0;
    b->row              = 0;
    b->icol             = 0;

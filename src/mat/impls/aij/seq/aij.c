@@ -2688,15 +2688,11 @@ PetscErrorCode MatCreate_SeqAIJ(Mat B)
   B->data             = (void*)b;
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor           = 0;
-  B->lupivotthreshold = 1.0;
   B->mapping          = 0;
-  ierr = PetscOptionsGetReal(B->prefix,"-mat_lu_pivotthreshold",&B->lupivotthreshold,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(B->prefix,"-pc_ilu_preserve_row_sums",&b->ilu_preserve_row_sums);CHKERRQ(ierr);
   b->row              = 0;
   b->col              = 0;
   b->icol             = 0;
   b->reallocs         = 0;
-  b->lu_shift         = PETSC_FALSE;
  
   ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
   ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
@@ -2773,13 +2769,11 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c = (Mat_SeqAIJ*)C->data;
 
   C->factor           = A->factor;
-  C->lupivotthreshold = A->lupivotthreshold;
 
   c->row            = 0;
   c->col            = 0;
   c->icol           = 0;
   c->reallocs       = 0;
-  c->lu_shift       = PETSC_FALSE;
 
   C->assembled      = PETSC_TRUE;
  
@@ -2821,7 +2815,6 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->solve_work         = 0;
   c->saved_values          = 0;
   c->idiag                 = 0;
-  c->ilu_preserve_row_sums = a->ilu_preserve_row_sums;
   c->ssor                  = 0;
   c->keepzeroedrows        = a->keepzeroedrows;
   c->freedata              = PETSC_TRUE;

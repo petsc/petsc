@@ -15,8 +15,7 @@
   PetscInt      *rowners_bs;            /* rowners*bs */                                       \
   PetscInt      rstart,rend;           /* starting and ending owned rows */                    \
   PetscInt      cstart,cend;           /* starting and ending owned columns */                 \
-  Mat           A,B;                   /* local submatrices: A (diag part),                    \
-                                           B (off-diag part) */                                \
+  Mat           A,B;                   /* local submatrices: A (diag part), B (off-diag part) */ \
   PetscMPIInt   size;                   /* size of communicator */                             \
   PetscMPIInt   rank;                   /* rank of proc in communicator */                     \
   PetscInt      bs2;                    /* block size, bs2 = bs*bs */                           \
@@ -61,11 +60,11 @@
   double        ht_fact;                  /* Factor to determine the HT size */                \
                                                                                                \
   PetscInt      setvalueslen;    /* only used for single precision computations */             \
-  MatScalar     *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied\
-                                      before calling MatSetValuesXXX_MPIBAIJ_MatScalar() */
+  MatScalar     *setvaluescopy /* area double precision values in MatSetValuesXXX() are copied*/ \
+                                   /*   before calling MatSetValuesXXX_MPIBAIJ_MatScalar() */
 
 typedef struct {
-  MPIBAIJHEADER
+  MPIBAIJHEADER;
 } Mat_MPIBAIJ;
 
 EXTERN PetscErrorCode MatLoad_MPIBAIJ(PetscViewer,const MatType,Mat*);

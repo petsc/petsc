@@ -15,8 +15,6 @@ typedef struct {
 
 #define MAT_INODE_HEADER   \
   MAT_CSR_HEADER;          \
-  PetscReal  lu_damping;   \
-  PetscReal  lu_zeropivot; \
   Mat_Inode  inode
 
 typedef struct {
