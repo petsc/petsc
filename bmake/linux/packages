@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.20 1998/05/12 18:49:54 bsmith Exp balay $ 
+# $Id: base.site,v 1.21 1998/07/06 17:56:02 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -16,7 +16,7 @@ FC_LIB         =  /soft/gnu/packages/egcs-1.0.2/lib/libf2c.a -lm
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_linux.a
+BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_INTEL_linux.a
 LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_linux.a
 #
 #
