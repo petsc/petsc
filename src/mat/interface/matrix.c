@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.92 1995/10/06 20:07:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.93 1995/10/07 20:47:53 curfman Exp curfman $";
 #endif
 
 /*
@@ -51,7 +51,6 @@ $    -mat_order rcm, -mat_order qmd
 int MatGetReordering(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
 {
   int         ierr;
-  MatOrdering newtype;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!mat->ops.getreordering) {*rperm = 0; *cperm = 0; return 0;}
   PLogEventBegin(MAT_GetReordering,mat,0,0,0);
