@@ -60,6 +60,12 @@ DMMG
 
    Add manual pages for DMMGGet....
 
+Testing
+
+   We should compare L_2 error estimates when solving PDEs
+
+   We should have performance benchmarking to make sure code performance is not decreased by changes
+
 General
 
   replace 1 in calls to SETERRQ**() with appropriate error code
