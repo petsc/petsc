@@ -1,17 +1,15 @@
-# $Id: makefile,v 1.13 2001/01/29 20:53:27 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.14 2001/02/14 17:15:41 bsmith Exp bsmith $ 
 
 #requirespackage  'PETSC_HAVE_JAVA'
 
-lib:
-libfast:
-all:      PETScRun PETScView PETScOptions PETScRund
+SPECIALLIB = yes
+speciallib:      PETScRun PETScView PETScOptions PETScRund
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  = 
 SOURCEC	  = 
-SOURCEJ   = PETScRun.java PETScOptions.java PETScRund.java PETScView.java PutAMSACC.java \
-            Pumpstream.java
+SOURCEJ   = PETScRun.java PETScOptions.java PETScRund.java PETScView.java PumpStream.java PETScViewKSP.java
 SOURCEF	  =
 SOURCEH	  = 
 OBJSC	  = 
@@ -25,7 +23,7 @@ DOCS      =
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 include ${PETSC_DIR}/bmake/common_test
 
-TCLASSPATH  = ".:${AMS_HOME}/java/src:${AMS_HOME}/java/client/AMSBean.jar:${CLASSPATH}"
+TCLASSPATH  = ".:${AMS_HOME}/java/src:./AMSBean:${CLASSPATH}"
 
 PETScRun:
 	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScRun.java
@@ -37,8 +35,8 @@ PETScRun:
 	-@chmod g+w /mcs/www-unix/petsc/bin/PETScRun.*
 
 PETScView:
-	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScView.java PutAMSACC.java
-	-@mv PETScView*.class PutAMSACC*.class AMSBean
+	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScView*.java 
+	-@mv PETScView*.class AMSBean
 	-@cd AMSBean; ${JAR} cf PETScView.jar *
 	-@rm -f /mcs/www-unix/petsc/bin/PETScView.*
 	-@mv -f AMSBean/PETScView.jar /mcs/www-unix/petsc/bin
@@ -47,8 +45,8 @@ PETScView:
 	-@chmod g+w /mcs/www-unix/petsc/bin/PETScView.*
 
 PETScOptions:
-	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScOptions.java  PutAMSACC.java
-	-@mv PETScOptions*.class PutAMSACC*.class AMSBean
+	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScOptions.java 
+	-@mv PETScOptions*.class AMSBean
 	-@cd AMSBean; ${JAR} cf PETScOptions.jar *
 	-@rm -f /mcs/www-unix/petsc/bin/PETScOptions.*
 	-@mv -f AMSBean/PETScOptions.jar /mcs/www-unix/petsc/bin
