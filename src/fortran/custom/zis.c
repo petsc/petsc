@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zis.c,v 1.16 1997/09/03 22:33:08 bsmith Exp balay $";
+static char vcid[] = "$Id: zis.c,v 1.17 1997/11/03 16:03:33 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -86,8 +86,14 @@ void isblockgetindices_(IS x,int *fa,int *ia,int *__ierr)
   IS    xin = (IS)PetscToPointer( *(int*)(x) );
   int   *lx;
 
+#if defined(PARCH_IRIX64)
+  fprintf(stderr,"PETSC ERROR: Cannot use ISBlockGetIndices() from Fortran under IRIX\n");
+  fprintf(stderr,"PETSC ERROR: Refer to troubleshooting.html for more details\n");
+  MPI_Abort(PETSC_COMM_WORLD,1);
+#else
   *__ierr = ISGetIndices(xin,&lx); if (*__ierr) return;
   *ia      = PetscIntAddressToFortran(fa,lx);
+#endif
 }
 
 void isblockrestoreindices_(IS x,int *fa,int *ia,int *__ierr)
@@ -108,8 +114,14 @@ void isgetindices_(IS x,int *fa,int *ia,int *__ierr)
   IS    xin = (IS)PetscToPointer( *(int*)(x) );
   int   *lx;
 
+#if defined(PARCH_IRIX64)
+  fprintf(stderr,"PETSC ERROR: Cannot use ISGetIndices() from Fortran under IRIX\n");
+  fprintf(stderr,"PETSC ERROR: Refer to troubleshooting.html for more details\n");
+  MPI_Abort(PETSC_COMM_WORLD,1);
+#else
   *__ierr = ISGetIndices(xin,&lx); if (*__ierr) return;
   *ia      = PetscIntAddressToFortran(fa,lx);
+#endif
 }
 
 void isrestoreindices_(IS x,int *fa,int *ia,int *__ierr)

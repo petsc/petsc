@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.36 1997/10/19 03:18:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.37 1997/11/03 04:39:36 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -187,8 +187,15 @@ void matgettypefromoptions_(MPI_Comm *comm,CHAR prefix,MatType *type,
 void matgetarray_(Mat mat,Scalar *fa,int *ia, int *__ierr)
 {
   Scalar *mm;
+
+#if defined(PARCH_IRIX64)
+  fprintf(stderr,"PETSC ERROR: Cannot use MatGetArray() from Fortran under IRIX\n");
+  fprintf(stderr,"PETSC ERROR: Refer to troubleshooting.html for more details\n");
+  MPI_Abort(PETSC_COMM_WORLD,1);
+#else
   *__ierr = MatGetArray((Mat)PetscToPointer( *(int*)(mat) ),&mm);
   *ia = PetscScalarAddressToFortran(fa,mm);
+#endif
 }
 
 void matrestorearray_(Mat mat,Scalar *fa,int *ia,int *__ierr)
