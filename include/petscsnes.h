@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.22 1995/06/15 00:40:27 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.23 1995/06/28 18:29:08 curfman Exp curfman $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -40,6 +40,7 @@ extern int SNESGetSolutionUpdate(SNES,Vec*);
 extern int SNESGetFunction(SNES,Vec*);
 
 extern int SNESPrintHelp(SNES);
+extern int SNESView(SNES,Viewer);
 extern int SNESSetFromOptions(SNES);
 extern int SNESGetMethodName(SNESMethod,char **);
 extern int SNESDefaultMonitor(SNES,int,double,void *);
