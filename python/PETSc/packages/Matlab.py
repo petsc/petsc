@@ -38,6 +38,7 @@ class Configure(config.base.Configure):
       if status:
         self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
         self.framework.log.write(output)
+        self.framework.log.write('        Run with --with-matlab-dir=Matlabrootdir if you know where it is\n')
         matlab = None
       else:
         import re
@@ -45,24 +46,34 @@ class Configure(config.base.Configure):
         r = float(r)
         if r < 6.0:
           self.framework.log.write('WARNING:Matlab version must be at least 6; yours is '+str(r)+'\n')
+          self.framework.log.write('        Run with --with-matlab-dir=Matlabrootdir if you know where it is\n')
           matlab = None
         else:
-          # hope there is always only one arch installation in the location
-          self.foundMatlab = 1
-          self.matlab      = matlab
-          matlab_arch = os.listdir(os.path.join(matlab,'extern','lib'))[0]
 
-          self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+'\n')
-          self.addDefine('HAVE_MATLAB', 1)
-          self.addSubstitution('MATLAB_MEX', os.path.join(matlab,'bin','mex'))
-          self.addSubstitution('MATLAB_CC', '${C_CC}')
-          self.addSubstitution('MATLAB_COMMAND', os.path.join(matlab,'bin','matlab'))
-          self.addSubstitution('MATLAB_INCLUDE', '-I'+os.path.join(matlab,'extern','include'))
-          if matlab_arch == 'mac':
-            matlab_dl = ' -L'+os.path.join(matlab,'sys','os','mac')+' -ldl'
+          # make sure this is true root of Matlab
+          if not os.path.isdir(os.path.join(matlab,'extern','lib')):
+            self.framework.log.write('WARNING:'+matlab+' is not the root directory for Matlab\n')
+            self.framework.log.write('        Run with --with-matlab-dir=Matlabrootdir if you know where it is\n')
+            matlab = None
           else:
-            matlab_dl = ''
-          self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
+            matlab_arch = os.listdir(os.path.join(matlab,'extern','lib'))[0]
+
+            # hope there is always only one arch installation in the location
+            self.foundMatlab = 1
+            self.matlab      = matlab
+            matlab_arch = os.listdir(os.path.join(matlab,'extern','lib'))[0]
+
+            self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+'\n')
+            self.addDefine('HAVE_MATLAB', 1)
+            self.addSubstitution('MATLAB_MEX', os.path.join(matlab,'bin','mex'))
+            self.addSubstitution('MATLAB_CC', '${C_CC}')
+            self.addSubstitution('MATLAB_COMMAND', os.path.join(matlab,'bin','matlab'))
+            self.addSubstitution('MATLAB_INCLUDE', '-I'+os.path.join(matlab,'extern','include'))
+            if matlab_arch == 'mac':
+              matlab_dl = ' -L'+os.path.join(matlab,'sys','os','mac')+' -ldl'
+            else:
+              matlab_dl = ''
+            self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
 
     if not self.foundMatlab:
       self.emptySubstitutions()
