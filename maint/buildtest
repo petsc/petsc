@@ -100,7 +100,6 @@ endif
 #
 #  test for each machine
 #
-/bin/rm /home/bsmith/petsc/maint/nightlylogs/*.log
 
 foreach job ($*)
   set mach    = $M[$job]
