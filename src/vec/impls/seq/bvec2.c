@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.161 1999/06/30 22:50:00 bsmith Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.162 1999/06/30 23:50:29 balay Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -316,6 +316,7 @@ int VecSetValuesBlocked_Seq(Vec xin, int ni,const int ix[],const Scalar yin[],In
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNC__  
 #define __FUNC__ "VecDestroy_Seq"
 int VecDestroy_Seq(Vec v)
@@ -325,19 +326,14 @@ int VecDestroy_Seq(Vec v)
 
   PetscFunctionBegin;
 
+  /* if memory was published with AMS then destroy it */
+  ierr = PetscAMSDestroy(v);CHKERRQ(ierr);
+
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)v,"Length=%d",((Vec_Seq *)v->data)->n);
 #endif
   if (vs->array_allocated) {ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);}
   ierr = PetscFree(vs);CHKERRQ(ierr);
-
-  /* if memory was published with AMS then destroy it */
-#if defined(PETSC_HAVE_AMS)
-  if (v->amem >= 0) {
-    int     ierr;
-    ierr = AMS_Memory_destroy(v->amem);CHKERRQ(ierr);
-  }
-#endif
 
   PetscFunctionReturn(0);
 }
@@ -443,8 +439,7 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
   if (!v->map) {
     ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
   }
-  v->type_name       = (char *) PetscMalloc((1+PetscStrlen(VEC_SEQ))*sizeof(char));CHKPTRQ(v->type_name);
-  ierr = PetscStrcpy(v->type_name,VEC_SEQ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_MPI);CHKERRQ(ierr);
   PetscPublishAll(v);
   PetscFunctionReturn(0);
 }
