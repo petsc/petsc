@@ -7,6 +7,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Add C_FCV to all base_variables files; see solaris
+
    Add DrawZoom fortran to PETSC
 
   Add Tony Coaola's ILUDT stuff to PETSc, see src/contrib/tonycoaloailu
