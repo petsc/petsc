@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.57 1998/06/12 19:53:37 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.58 1998/06/13 20:45:25 curfman Exp curfman $";
 #endif
 
 /*
@@ -477,6 +477,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
   if (app->size != 1) {
     ierr = VecDestroy(P_uni); CHKERRQ(ierr);
     ierr = VecDestroy(X_uni); CHKERRQ(ierr);
+    ierr = VecDestroy(F_uni); CHKERRQ(ierr);
   }
   return 0;
 }
