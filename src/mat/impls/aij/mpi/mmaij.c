@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.25 1996/01/26 04:33:52 bsmith Exp balay $";
+static char vcid[] = "$Id: mmaij.c,v 1.26 1996/04/26 00:03:57 balay Exp curfman $";
 #endif
 
 
@@ -64,7 +64,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
      2) have another way of generating a scatter context without a vector.*/
   ierr = VecCreateMPI(mat->comm,aij->n,aij->N,&gvec); CHKERRQ(ierr);
 
-  /* gnerate the scatter context */
+  /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx); CHKERRQ(ierr);
   PLogObjectParent(mat,aij->Mvctx);
   PLogObjectParent(mat,aij->lvec);
