@@ -58,6 +58,22 @@ ADIC_CC      = @ADIC_CC@
 PVODE_INCLUDE = @PVODE_INCLUDE@
 PVODE_LIB     = @PVODE_LIB@
 #
+#
+# Optional location of ParMetis
+#
+PARMETIS_INCLUDE = 
+PARMETIS_LIB     = 
+#
+#  Optional location for ALICE Memory Snooper
+#
+AMS_DIR     = 
+AMS_INCLUDE = 
+AMS_LIB     =  
+#
+# Optional location of SPAI;
+#
+SPAI_INCLUDE = 
+SPAI_LIB     = 
 # ---------------------------------------------------------------------------------------
 #
 # PCONF - indicates which OPTIONAL external packages are available at your site
@@ -69,3 +85,10 @@ PVODE_LIB     = @PVODE_LIB@
 PCONF         = @PCONF@
 EXTERNAL_LIB  = ${BS_LIB} ${PVODE_LIB} ${MPE_LIB} ${ADIC_LIB}
 
+#
+# ---------------------------------------------------------------------------------------
+#
+# If you are using shared version of any external libraries you must make this
+# point to the directories where all your shared libraries are stored.
+#
+DYLIBPATH     = 

@@ -6,7 +6,6 @@ include $(PETSC_DIR)/bmake/${PETSC_ARCH}/base_variables
 include $(PETSC_DIR)/bmake/common
 
 libc: $(LIBNAME)($(OBJSC) $(SOBJSC))
-libadic: $(LIBNAME)($(OBJSADIC))
 libf: $(LIBNAME)($(OBJSF))
 
 #############
@@ -42,6 +41,9 @@ libf: $(LIBNAME)($(OBJSF))
 
 
 SLSUFFIX = so.1.0 
+# This is old code.  See the bmake/<arch>/base files for current information
+# on creating shared libraries.  Eventually, we should use libtool or a 
+# similar approach.
 shared: chkopts_basic
 	-@ echo making shared libraries in $(LDIR) ;\
 	cd $(LDIR); \

@@ -12,11 +12,32 @@ PARCH            = @PETSC_ARCH@
 #
 C_CC       = @CC@ -DPARCH_@PETSC_ARCH@ @CC_SHARED_OPT@
 C_FC       = @FC@ @FC_SHARED_OPT@
+# SLFLAG=? (-R on solaris)
+C_CLINKER_SLFLAG   = 
+C_FLINKER_SLFLAG   = 
 C_CLINKER  = @CC@
 C_FLINKER  = @FC@
-# What is CCV? Solaris base is cc -V -c
+# What is CCV? Solaris base is cc -V -c | head -1
 C_CCV      = @CC@ -c
+C_FCV	   = @FC@
 C_SYS_LIB  = @LIBS@ @FC_LIB@
+# ########################## FIXES FOR BROKEN DEFINITIONS IN COMMON_x ######
+# The definitions of CLINKER and FLINKER in the PETSc bmake/common_xxx 
+# contain an explicit : character for an option that we are not using nor
+# need.  This causes the configure-based builds to fail.
+# The following was an attempt to override the bogus definitions.
+CLINKER	       = ${C_CLINKER} ${COPTFLAGS} 
+FLINKER	       = ${C_FLINKER} ${FOPTFLAGS} 
+# Regrettably, this file loses in the war of battling definitions.
+# Fixing this requires changing common_xxx.
+# I belive that these should in fact be
+#CLINKER = ${C_CLINKER} ${COPTFLAGS} ${C_CLINKER_SL_PATH}
+#FLINKER = ${C_FLINKER} ${FOPTFLAGS} ${C_FLINKER_SL_PATH}
+# where C_CLINKER_SL_PATH is defined in the architecture-specific base files.
+# A typical definition might be
+# C_CLINKER_SL_PATH = ${CLINKER_SLFLAG}${LDIR}:${DYLIBPATH}
+# but might also be
+# C_CLINKER_SL_PATH = 
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -g
 G_FOPTFLAGS      = -g
@@ -27,8 +48,11 @@ O_FOPTFLAGS      = -O
 #
 CXX_CC           = @CCC@
 CXX_FC           = @FC@   -xpp=cpp
+CXX_CLINKER_SLFLAG =
+CXX_FLINKER_SLFLAG =
 CXX_CLINKER      = @CCC@
 CXX_FLINKER      = @CCC@
+# What is CXX_CCV?
 CXX_CCV          = @CCC@  -c
 CXX_SYS_LIB      = @LIBS@ @FC_LIB@
 # ------------------------- BOPT=g_c++ options ------------------------------
