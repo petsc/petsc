@@ -1,28 +1,26 @@
 #ifndef __PETSc_Matrix_h__
 #define __PETSc_Matrix_h__
 
-// The PETSc_Vector supports the 
-//    ESI_Matrix
-//    ESI_Operator
-//    ESI_
+// this contains the PETSc definition of Matrix
+#include "petscmat.h"
 
 #include "esi/petsc/vector.h"
 
+// The PETSc_Vector supports the 
 #include "esi/Operator.h"
 #include "esi/MatrixData.h"
 #include "esi/MatrixRowReadAccess.h"
 #include "esi/MatrixRowWriteAccess.h"
 
-// this contains the PETSc definition of Matrix
-#include "petscmat.h"
-
 namespace esi{namespace petsc{
 
 /**=========================================================================**/
 template<class Scalar,class Ordinal>
-class Matrix : public virtual esi::Operator<Scalar,Ordinal>, public virtual esi::MatrixData<Ordinal>,
+class Matrix : public virtual esi::Operator<Scalar,Ordinal>, 
+               public virtual esi::MatrixData<Ordinal>,
                public virtual esi::MatrixRowReadAccess<Scalar,Ordinal>,
-               public virtual esi::MatrixRowWriteAccess<Scalar,Ordinal>, public virtual esi::petsc::Object
+               public virtual esi::MatrixRowWriteAccess<Scalar,Ordinal>, 
+               public virtual esi::petsc::Object
 {
   public:
 
@@ -43,14 +41,9 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>, public virtual esi:
     virtual esi::ErrorCode setup();
     virtual esi::ErrorCode apply( esi::Vector<Scalar,Ordinal>& x, esi::Vector<Scalar,Ordinal>& y);
 
-    //  Interface for esi::Matrix  ---------------
-
-    virtual esi::ErrorCode matvec( esi::Vector<Scalar,Ordinal>& x, esi::Vector<Scalar,Ordinal>& y) ;
-    
     //  Interface for esi::MatrixData  ---------------
     virtual esi_int getGlobalSizes(Ordinal& rows, Ordinal& columns);
     virtual esi_int getLocalSizes(Ordinal& rows, Ordinal& columns);
-
 
     //  Interface for esi::MatrixRowAccess  --------
 
