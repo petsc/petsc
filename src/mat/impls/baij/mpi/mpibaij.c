@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.214 2001/03/07 19:16:00 balay Exp balay $*/
+/*$Id: mpibaij.c,v 1.215 2001/03/07 19:19:15 balay Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -2661,11 +2661,12 @@ int MatMPIBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 
 #undef __FUNC__  
 #define __FUNC__ "MatMPIBAIJGetSeqBAIJ"
-int MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao)
+int MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,int *colmap)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)A->data;
   PetscFunctionBegin;
-  *Ad = a->A;
-  *Ao = a->B;
+  *Ad     = a->A;
+  *Ao     = a->B;
+  *colmap = a->garray;
   PetscFunctionReturn(0);
 }  

@@ -1,4 +1,4 @@
-/*$Id: zerodiag.c,v 1.39 2000/05/05 22:16:35 balay Exp bsmith $*/
+/*$Id: zerodiag.c,v 1.40 2001/01/15 21:46:25 bsmith Exp bsmith $*/
 
 /*
     This file contains routines to reorder a matrix so that the diagonal
@@ -73,7 +73,6 @@ int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
     for (k=0; k<nz; k++) {if (icol[j[k]] == prow) break;}
     if (k >= nz || PetscAbsScalar(v[k]) <= atol) {
       /* Element too small or zero; find the best candidate */
-      repl  = prow;
       repla = (k >= nz) ? 0.0 : PetscAbsScalar(v[k]);
       /*
           Look for a later column we can swap with this one
@@ -100,7 +99,6 @@ int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
           ierr = MatGetRow(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
           for (kk=0; kk<nnz; kk++) {
             if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > atol) {
-	      repla = PetscAbsScalar(v[k]);
               ierr = MatRestoreRow(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
               SWAP(icol[col[prow]],icol[col[repl]]); 
               SWAP(col[prow],col[repl]); 

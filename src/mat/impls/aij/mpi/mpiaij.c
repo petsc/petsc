@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.326 2001/01/19 23:20:32 balay Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.327 2001/01/20 03:34:45 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -2336,3 +2336,15 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "MatMPIAIJGetSeqAIJ"
+int MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,int **colmap)
+{
+  Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
+  PetscFunctionBegin;
+  *Ad     = a->A;
+  *Ao     = a->B;
+  *colmap = a->garray;
+  PetscFunctionReturn(0);
+}  
