@@ -54,15 +54,15 @@ int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
   PetscFunctionBegin;
   /* Deallocate SuperLU_DIST storage */
   if (lu->MatInputMode == GLOBAL) { 
-#if defined(PETSC_USE_COMPLEX)
     Destroy_CompCol_Matrix_dist(&lu->A_sup);
-#else
-    Destroy_CompCol_Matrix_dist(&lu->A_sup);
-#endif
   } else {     
     Destroy_CompRowLoc_Matrix_dist(&lu->A_sup);  
     if ( lu->options.SolveInitialized ) {
+#if defined(PETSC_USE_COMPLEX)
+      zSolveFinalize(&lu->options, &lu->SOLVEstruct);
+#else
       dSolveFinalize(&lu->options, &lu->SOLVEstruct);
+#endif
     }
   }
   Destroy_LU(A->N, &lu->grid, &lu->LUstruct);
@@ -137,8 +137,15 @@ int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
                    &lu->grid, &lu->LUstruct, berr, &stat, &info);
 #endif 
   } else { /* distributed mat input */
+#if defined(PETSC_USE_COMPLEX)
+    pzgssvx(&options, &lu->A_sup, &lu->ScalePermstruct, (doublecomplex*)bptr, A->M, nrhs, &lu->grid,
+	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
+    if (info) SETERRQ1(1,"pzgssvx fails, info: %d\n",info);
+#else
     pdgssvx(&options, &lu->A_sup, &lu->ScalePermstruct, bptr, A->M, nrhs, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
+    if (info) SETERRQ1(1,"pdgssvx fails, info: %d\n",info);
+#endif
   }
   if (lu->StatPrint) {
     ierr = PetscGetTime(&time);CHKERRQ(ierr);  /* to be removed */
@@ -184,7 +191,11 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   double                  *berr=0;
   IS                      isrow;
   PetscLogDouble          time0[2],time[2],time_min[2],time_max[2]; 
-  PetscScalar             *av, *bv; 
+#if defined(PETSC_USE_COMPLEX)
+  doublecomplex           *av, *bv; 
+#else
+  double                  *av, *bv; 
+#endif
 
   PetscFunctionBegin;
   if (lu->StatPrint) {
@@ -227,15 +238,26 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
     mat =  (Mat_MPIAIJ*)A->data;  
     aa=(Mat_SeqAIJ*)(mat->A)->data;
     bb=(Mat_SeqAIJ*)(mat->B)->data;
-    ai=aa->i; aj=aa->j; av=aa->a;   
-    bi=bb->i; bj=bb->j; bv=bb->a;
+    ai=aa->i; aj=aa->j; 
+    bi=bb->i; bj=bb->j; 
+#if defined(PETSC_USE_COMPLEX)
+    av=(doublecomplex*)aa->a;   
+    bv=(doublecomplex*)bb->a;
+#else
+    av=aa->a;
+    bv=bb->a;
+#endif
     rstart = mat->rstart;
     nz     = aa->nz + bb->nz;
     garray = mat->garray;
     rstart = mat->rstart;
 
     if (lu->flg == DIFFERENT_NONZERO_PATTERN) /* first numeric factorization */ 
+#if defined(PETSC_USE_COMPLEX)
+      zallocateA_dist(m, nz, &lu->val, &lu->col, &lu->row);
+#else
       dallocateA_dist(m, nz, &lu->val, &lu->col, &lu->row);
+#endif
   
     nz = 0; jB = 0; irow = mat->rstart;   
     for ( i=0; i<m; i++ ) {
@@ -271,9 +293,13 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
       }
     } 
     lu->row[m] = nz;
-
+#if defined(PETSC_USE_COMPLEX)
+    zCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,
+				   lu->val, lu->col, lu->row, SLU_NR_loc, SLU_D, SLU_GE);
+#else
     dCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,
 				   lu->val, lu->col, lu->row, SLU_NR_loc, SLU_D, SLU_GE);
+#endif
   }
   if (lu->StatPrint) {
     ierr = PetscGetTime(&time[0]);CHKERRQ(ierr);  
@@ -297,8 +323,15 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
                    &lu->grid, &lu->LUstruct, berr, &stat, &info);
 #endif 
   } else { /* distributed mat input */
+#if defined(PETSC_USE_COMPLEX)
+    pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, &lu->grid,
+	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
+    if (info) SETERRQ1(1,"pzgssvx fails, info: %d\n",info);
+#else
     pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
+    if (info) SETERRQ1(1,"pdgssvx fails, info: %d\n",info);
+#endif
   }
   if (lu->StatPrint) {
     ierr = PetscGetTime(&time[1]);CHKERRQ(ierr);  /* to be removed */

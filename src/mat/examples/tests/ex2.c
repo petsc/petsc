@@ -9,7 +9,6 @@ static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY()
 #define  TestMatNorm_tmat
 #define  TestMatAXPY
 #undef   TestMatAXPY2
-#undef   TestMatAXPY3
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -18,7 +17,7 @@ int main(int argc,char **argv)
   Mat          mat,tmat = 0;
   int          m = 7,n,i,j,ierr,size,rank,rstart,rend,rect = 0;
   PetscTruth   flg;
-  PetscScalar  v;
+  PetscScalar  v, alpha;
   PetscReal    normf,normi,norm1;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -83,22 +82,23 @@ int main(int argc,char **argv)
   /* ----------------- Test MatAXPY()  ----------------- */
 #ifdef TestMatAXPY
   if (mat && !rect) {
-    PetscScalar alpha = 1.0;
+    alpha = 1.0;
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");CHKERRQ(ierr);
     ierr = MatAXPY(&alpha,mat,tmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
     ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+  }
+  ierr = MatDestroy(tmat);CHKERRQ(ierr);
+#endif 
 #ifdef TestMatAXPY2
-    Mat B;
+    Mat matB;
+    alpha = 1.0;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
     ierr = MatDuplicate(mat,MAT_COPY_VALUES,&matB);CHKERRQ(ierr);
     ierr = MatAXPY(&alpha,mat,matB,SAME_NONZERO_PATTERN);CHKERRQ(ierr); 
     ierr = MatView(matB,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
     ierr = MatDestroy(matB);CHKERRQ(ierr);
-#endif
-#ifdef TestMatAXPY3
-    Mat B;
+
     /* get matB that has nonzeros of mat in all even numbers of row and col */
     ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&matB);CHKERRQ(ierr);
     ierr = MatSetFromOptions(matB);CHKERRQ(ierr);
@@ -125,14 +125,14 @@ int main(int argc,char **argv)
     
     ierr = MatDestroy(matB);CHKERRQ(ierr);  
 #endif 
-  }
-#endif
+  
 
   /* Free data structures */  
-  ierr = MatDestroy(tmat);CHKERRQ(ierr);
   if (mat)  {ierr = MatDestroy(mat);CHKERRQ(ierr);}
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  
+
+

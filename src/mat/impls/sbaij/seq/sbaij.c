@@ -1287,7 +1287,7 @@ int MatAXPY_SeqSBAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
     for (i=0; i<x->s_nz; i++) {
       j = 0;
       while (j < bs2){
-        y->a[bs2*y->xtoy[i]+j] += (*a)*(bs2*x->a[i]+j); 
+        y->a[bs2*y->xtoy[i]+j] += (*a)*(x->a[bs2*i+j]); 
         j++; 
       }
     }

@@ -1449,7 +1449,7 @@ int MatRestoreArray_SeqBAIJ(Mat A,PetscScalar **array)
 int MatAXPY_SeqBAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
   Mat_SeqBAIJ  *x  = (Mat_SeqBAIJ *)X->data,*y = (Mat_SeqBAIJ *)Y->data;
-  int          ierr,one=1,i,bs=y->bs,bs2,j;
+  int          ierr,one=1,i,bs=y->bs,j,bs2;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {   
@@ -1467,7 +1467,7 @@ int MatAXPY_SeqBAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
     for (i=0; i<x->nz; i++) {
       j = 0;
       while (j < bs2){
-        y->a[bs2*y->xtoy[i]+j] += (*a)*(bs2*x->a[i]+j); 
+        y->a[bs2*y->xtoy[i]+j] += (*a)*(x->a[bs2*i+j]); 
         j++; 
       }
     }
