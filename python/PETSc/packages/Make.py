@@ -15,7 +15,7 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
-    help.addArgument('Make', '-with-make', nargs.Arg(None, None, 'Specify the make executable'))
+    help.addArgument('Make', '-with-make', nargs.Arg(None, 'make', 'Specify the make executable'))
     return
 
   def configureMake(self):
