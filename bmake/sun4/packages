@@ -59,6 +59,8 @@ PCONF         = -DHAVE_BLOCKSOLVE  -DHAVE_MPE
 ADIC_INCLUDE = -I$(ADIC)/run-lib/include -I$(ADIC)/gradient -I$(ADIC)/include -Dad_GRAD_MAX=10
 ADIC_LIB     = -L$(ADIC)/lib -L$(ADIC)/run-lib/lib -L$(ADIC)/gradient -lADIntrinsics-C -laif_grad
 
-ADIC_CC      = adiC.new -akud gradient.new -i $(PETSC_DIR)/bmake/adicmastercontrol
+ADIC_CC      = adiC -aeud gradient -i $(PETSC_DIR)/bmake/adicmastercontrol
+
+
 
 
