@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.16 2000/09/18 21:06:20 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.17 2000/09/19 20:15:07 hzhang Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -16,7 +16,6 @@ See page 85, "Iterative Methods ..." by Saad. */
 int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
-  IS          iperm;
   int         *rip,ierr,i,mbs = a->mbs,*ai,*aj;
   int         *jutmp,bs = a->bs,bs2=a->bs2;
   int         m,nzi,realloc = 0;
@@ -157,6 +156,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
 
   /* put together the new matrix */
   ierr = MatCreateSeqSBAIJ(A->comm,bs,bs*mbs,bs*mbs,0,PETSC_NULL,B);CHKERRQ(ierr);
+  /* PLogObjectParent(*B,iperm); */
   b = (Mat_SeqSBAIJ*)(*B)->data;
   ierr = PetscFree(b->imax);CHKERRQ(ierr);
   b->singlemalloc = PETSC_FALSE;
