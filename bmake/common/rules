@@ -49,12 +49,9 @@ chkopts: chkopts_basic
 	fi; \
 	sharedlibrary=${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX}; \
 	flag=""; \
-	echo $$library; \
 	if [ -f $$library ]; then \
 	  if [ -f $$sharedlibrary ]; then \
 	    flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.a -newer $$sharedlibrary -print`; \
-	  else \
-	    flag="rebuild"; \
 	  fi; \
 	fi; \
 	if [ "$$flag" != "" ]; then \
@@ -565,6 +562,7 @@ shared: chkopts_basic
 	      flag="build"; \
 	    fi; \
 	    if [ "$$flag" != "" ]; then \
+            echo "building $$LIBNAME.${SLSUFFIX}"; \
 	      ${OMAKE} BOPT=${BOPT} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp shared_arch; \
 	    fi; \
 	  fi; \
