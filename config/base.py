@@ -106,16 +106,18 @@ class Configure:
     thread.start()
     thread.join(timeout)
     if thread.isAlive():
-      self.framework.log.write('Runaway process exceeded time limit of '+str(timeout)+'s\n')
+      error  = 'Runaway process exceeded time limit of '+str(timeout)+'s\n'
+      status = -1
+      self.framework.log.write(error)
     else:
       if len(output) < 200:
         self.framework.log.write('sh: '+output+'\n')
       else:
         self.framework.log.write('sh: '+output[:200]+'...\n')
-      if checkCommand:
-        checkCommand(command, status, output, error)
-      else:
-        self.defaultCheckCommand(command, status, output, error)
+    if checkCommand:
+      checkCommand(command, status, output, error)
+    else:
+      self.defaultCheckCommand(command, status, output, error)
     return (output, error, status)
 
   def executeTest(self, test, args = []):
