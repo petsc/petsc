@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.2 1995/04/16 15:32:51 curfman Exp curfman $";
+static char vcid[] = "$Id: cholbs.c,v 1.3 1995/04/16 17:23:06 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -37,6 +37,7 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs( Mat mat,IS perm,
   fbs->comm_pA  = mbs->comm_pA;
   fbs->comm_fpA = mbs->comm_fpA;
   fbs->diag     = mbs->diag;
+  fbs->xwork    = mbs->xwork;
 
   *newfact = fact;
   return 0;
@@ -76,6 +77,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     ierr = VecEndAssembly( mbs->diag ); CHKERR(ierr);
   }
   /* Form incomplete Cholesky factor */
+  mbs->ierr = 0; mbs->failures = 0; mbs->alpha = 1.0;
   while ((mbs->ierr = BSfactor( mbs->fpA, mbs->comm_fpA, mbs->procinfo))) {
     CHKERRBS(0);	mbs->failures++;
     /* Copy only the nonzeros */
@@ -141,6 +143,13 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 
   /* Apply diagonal scaling to vector, where D^{-1/2} is stored */
   ierr = VecPMult( y, mbs->diag, y );  CHKERR(ierr);
+
+  if (!mbs->vecs_permuted) {
+    BSiperm_dvec(xa,xworka,mbs->pA->perm); CHKERRBS(0);
+    ierr = VecCopy(mbs->xwork,x); CHKERR(ierr);
+    BSiperm_dvec(ya,xworka,mbs->pA->perm); CHKERRBS(0);
+    ierr = VecCopy(mbs->xwork,y); CHKERR(ierr);
+  }
 
   return 0;
 }
