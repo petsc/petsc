@@ -1,9 +1,45 @@
-/*$Id: pf.c,v 1.1 2000/01/22 23:00:14 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.2 2000/01/24 04:08:15 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
 #include "src/pf/pfimpl.h"            /*I "pf.h" I*/
 
+FList PFList = 0; /* list of all registered PD functions */
+
+#undef __FUNC__  
+#define __FUNC__ "PFSet"
+/*@C
+   PFSet - Sets the C/C++/Fortran functions to be used by the PF function
+
+   Collective on PF
+
+   Input Parameter:
++  pf - the function context
+.  apply - function to apply to an array
+.  applyvec - function to apply to a Vec
+.  view - function that prints information about the PF
+.  destroy - function to free the private function context
+-  ctx - private function context
+
+   Level: beginner
+
+.keywords: PF, setting
+
+.seealso: PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec()
+@*/
+int PFSet(PF pf,int(*apply)(void*,int,Scalar*,Scalar*),int(*applyvec)(void*,Vec,Vec),int(*view)(void*,Viewer),int(*destroy)(void*),void*ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pf,PF_COOKIE);
+  pf->data             = ctx;
+
+  pf->ops->destroy     = destroy;
+  pf->ops->apply       = apply;
+  pf->ops->applyvec    = applyvec;
+  pf->ops->view        = view;
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "PFDestroy"
@@ -13,13 +49,13 @@
    Collective on PF
 
    Input Parameter:
-.  pf - the preconditioner context
+.  pf - the function context
 
-   Level: developer
+   Level: beginner
 
 .keywords: PF, destroy
 
-.seealso: PFCreate(), PFSetUp()
+.seealso: PFCreate(), PFSet(), PFSetType()
 @*/
 int PFDestroy(PF pf)
 {
@@ -33,7 +69,6 @@ int PFDestroy(PF pf)
   ierr = PetscObjectDepublish(pf);CHKERRQ(ierr);
 
   if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf);CHKERRQ(ierr);}
-  if (pf->nullsp) {ierr = PFNullSpaceDestroy(pf->nullsp);CHKERRQ(ierr);}
   PLogObjectDestroy(pf);
   PetscHeaderDestroy(pf);
   PetscFunctionReturn(0);
@@ -64,19 +99,18 @@ static int PFPublish_Petsc(PetscObject obj)
 #undef __FUNC__  
 #define __FUNC__ "PFCreate"
 /*@C
-   PFCreate - Creates a preconditioner context.
+   PFCreate - Creates a mathematical function context.
 
    Collective on MPI_Comm
 
    Input Parameter:
-.  comm - MPI communicator 
++  comm - MPI communicator 
+.  dimin - dimension of the space you are mapping from
+-  dimout - dimension of the space you are mapping to
 
    Output Parameter:
-.  pf - location to put the preconditioner context
+.  pf - the function context
 
-   Notes:
-   The default preconditioner on one processor is PFILU with 0 fill on more 
-   then one it is PFBJACOBI with ILU() on each processor.
 
    Level: developer
 
@@ -84,37 +118,26 @@ static int PFPublish_Petsc(PetscObject obj)
 
 .seealso: PFSetUp(), PFApply(), PFDestroy()
 @*/
-int PFCreate(MPI_Comm comm,PF *newpf)
+int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
 {
-  PF     pf;
+  PF     newpf;
 
   PetscFunctionBegin;
-  *newpf          = 0;
+  *pf          = 0;
 
-  PetscHeaderCreate(pf,_p_PF,struct _PFOps,PF_COOKIE,-1,"PF",comm,PFDestroy,PFView);
-  PLogObjectCreate(pf);
-  pf->bops->publish      = PFPublish_Petsc;
-  pf->vec                = 0;
-  pf->mat                = 0;
-  pf->setupfalled        = 0;
-  pf->nullsp             = 0;
-  pf->data               = 0;
+  PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_COOKIE,-1,"PF",comm,PFDestroy,PFView);
+  PLogObjectCreate(newpf);
+  newpf->bops->publish    = PFPublish_Petsc;
+  newpf->data             = 0;
 
-  pf->ops->destroy             = 0;
-  pf->ops->apply               = 0;
-  pf->ops->applytranspose      = 0;
-  pf->ops->applyBA             = 0;
-  pf->ops->applyBAtranspose    = 0;
-  pf->ops->applyrichardson     = 0;
-  pf->ops->view                = 0;
-  pf->ops->getfactoredmatrix   = 0;
-  pf->ops->applysymmetricright = 0;
-  pf->ops->applysymmetricleft  = 0;
-  pf->ops->setuponblocks       = 0;
+  newpf->ops->destroy     = 0;
+  newpf->ops->apply       = 0;
+  newpf->ops->applyvec    = 0;
+  newpf->ops->view        = 0;
+  newpf->dimin            = dimin;
+  newpf->dimout           = dimout;
 
-  pf->modifysubmatrices   = 0;
-  pf->modifysubmatricesP  = 0;
-  *newpf                  = pf;
+  *pf                     = newpf;
   PetscPublishAll(pf);
   PetscFunctionReturn(0);
 
@@ -123,11 +146,11 @@ int PFCreate(MPI_Comm comm,PF *newpf)
 /* -------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "PFApply"
+#define __FUNC__ "PFApplyVec"
 /*@
-   PFApply - Applies the preconditioner to a vector.
+   PFApplyVec - Applies the mathematical function to a vector
 
-   Collective on PF and Vec
+   Collective on PF
 
    Input Parameters:
 +  pf - the preconditioner context
@@ -136,13 +159,13 @@ int PFCreate(MPI_Comm comm,PF *newpf)
    Output Parameter:
 .  y - output vector
 
-   Level: developer
+   Level: beginner
 
 .keywords: PF, apply
 
-.seealso: PFApplyTranspose(), PFApplyBAorAB()
+.seealso: PFApply(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-int PFApply(PF pf,Vec x,Vec y)
+int PFApplyVec(PF pf,Vec x,Vec y)
 {
   int        ierr;
 
@@ -152,26 +175,60 @@ int PFApply(PF pf,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
 
-  if (pf->setupfalled < 2) {
-    ierr = PFSetUp(pf);CHKERRQ(ierr);
-  }
+  if (pf->ops->applyvec) {
+    ierr = (*pf->ops->applyvec)(pf->data,x,y);CHKERRQ(ierr);
+  } else {
+    Scalar *xx,*yy;
+    int    n;
 
-  PLogEventBegin(PF_Apply,pf,x,y,0);
-  ierr = (*pf->ops->apply)(pf,x,y);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+    n    = n/pf->dimin;
+    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    ierr = (*pf->ops->apply)(pf->data,n,xx,yy);CHKERRQ(ierr);
+    ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
 
-  /* Remove null space from preconditioned vector y */
-  if (pf->nullsp) {
-    ierr = PFNullSpaceRemove(pf->nullsp,y);CHKERRQ(ierr);
-  }
+#undef __FUNC__  
+#define __FUNC__ "PFApply"
+/*@
+   PFApply - Applies the mathematical function to an array of values.
 
-  PLogEventEnd(PF_Apply,pf,x,y,0);
+   Collective on PF
+
+   Input Parameters:
++  pf - the preconditioner context
+.  n - number of entries in input array
+-  x - input array
+
+   Output Parameter:
+.  y - output array
+
+   Level: beginner
+
+.keywords: PF, apply
+
+.seealso: PFApplyVec(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
+@*/
+int PFApply(PF pf,int n,Scalar* x,Scalar* y)
+{
+  int        ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pf,PF_COOKIE);
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different arrays");
+
+  ierr = (*pf->ops->apply)(pf->data,n,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PFView"
 /*@ 
-   PFView - Prints the PF data structure.
+   PFView - Prints information about a mathematical function
 
    Collective on PF unless Viewer is VIEWER_STDOUT_SELF  
 
@@ -200,7 +257,7 @@ int PFView(PF pf,Viewer viewer)
 {
   PFType      cstr;
   int         fmt,ierr;
-  PetscTruth  mat_exists,isascii,isstring;
+  PetscTruth  isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE);
@@ -209,7 +266,6 @@ int PFView(PF pf,Viewer viewer)
   PetscCheckSameComm(pf,viewer);
 
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"PF Object:\n");CHKERRQ(ierr);
@@ -221,35 +277,9 @@ int PFView(PF pf,Viewer viewer)
     }
     if (pf->ops->view) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = (*pf->ops->view)(pf,viewer);CHKERRQ(ierr);
+      ierr = (*pf->ops->view)(pf->data,viewer);CHKERRQ(ierr);
       ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscObjectExists((PetscObject)pf->mat,&mat_exists);CHKERRQ(ierr);
-    if (mat_exists) {
-      ierr = ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
-      if (pf->pmat == pf->mat) {
-        ierr = ViewerASCIIPrintf(viewer,"  linear system matrix = precond matrix:\n");CHKERRQ(ierr);
-        ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = MatView(pf->mat,viewer);CHKERRQ(ierr);
-        ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      } else {
-        ierr = PetscObjectExists((PetscObject)pf->pmat,&mat_exists);CHKERRQ(ierr);
-        if (mat_exists) {
-          ierr = ViewerASCIIPrintf(viewer,"  linear system matrix followed by preconditioner matrix:\n");CHKERRQ(ierr);
-        } else {
-          ierr = ViewerASCIIPrintf(viewer,"  linear system matrix:\n");CHKERRQ(ierr);
-        }
-        ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = MatView(pf->mat,viewer);CHKERRQ(ierr);
-        if (mat_exists) {ierr = MatView(pf->pmat,viewer);CHKERRQ(ierr);}
-        ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      }
-      ierr = ViewerPopFormat(viewer);CHKERRQ(ierr);
-    }
-  } else if (isstring) {
-    ierr = PFGetType(pf,&cstr);CHKERRQ(ierr);
-    ierr = ViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
-    if (pf->ops->view) {ierr = (*pf->ops->view)(pf,viewer);CHKERRQ(ierr);}
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported by PF",((PetscObject)viewer)->type_name);
   }
@@ -257,7 +287,7 @@ int PFView(PF pf,Viewer viewer)
 }
 
 /*MC
-   PFRegisterDynamic - Adds a method to the preconditioner package.
+   PFRegisterDynamic - Adds a method to the mathematical function package.
 
    Synopsis:
    PFRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PF))
@@ -271,21 +301,21 @@ int PFView(PF pf,Viewer viewer)
 -  routine_create - routine to create method context
 
    Notes:
-   PFRegisterDynamic() may be called multiple times to add several user-defined preconditioners.
+   PFRegisterDynamic() may be called multiple times to add several user-defined functions
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
    Sample usage:
 .vb
-   PFRegisterDynamic("my_solver","/home/username/my_lib/lib/libO/solaris/mylib",
-              "MySolverCreate",MySolverCreate);
+   PFRegisterDynamic("my_function","/home/username/my_lib/lib/libO/solaris/mylib",
+              "MyFunctionCreate",MyFunctionSetCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     PFSetType(pf,"my_solver")
+$     PFSetType(pf,"my_function")
    or at runtime via the option
-$     -pf_type my_solver
+$     -pf_type my_function
 
    Level: advanced
 
@@ -308,5 +338,35 @@ int PFRegister(char *sname,char *path,char *name,int (*function)(PF))
 
   ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = FListAdd(&PFList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PFGetType"
+/*@C
+   PFGetType - Gets the PF method type and name (as a string) from the PF
+   context.
+
+   Not Collective
+
+   Input Parameter:
+.  pf - the preconditioner context
+
+   Output Parameter:
+.  name - name of preconditioner 
+
+   Level: intermediate
+
+.keywords: PF, get, method, name, type
+
+.seealso: PFSetType()
+
+@*/
+int PFGetType(PF pf,PFType *meth)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  *meth = (PFType) pf->type_name;
   PetscFunctionReturn(0);
 }
