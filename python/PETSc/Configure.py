@@ -687,7 +687,7 @@ acfindx:
   def configureSolaris(self):
     '''Solaris specific stuff'''
     if self.archBase.startswith('solaris'):
-      if os.path.isdir(os.path.join('usr',ucblib')):
+      if os.path.isdir(os.path.join('/usr','ucblib')):
         self.framework.argDB['LIBS'] += ' ${CLINKER_SLFLAG}/usr/ucblib'
     return
 

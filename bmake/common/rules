@@ -497,7 +497,7 @@ shared_linux:
 shared_solaris:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
-	${LD} -G -h ${LIBNAME}.${SLSUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}  ${SYS_LIB} ${PETSC_EXTERNAL_LIB_BASIC} ${SYS_LIB}; \
+	${LD}  -G -h ${LIBNAME}.${SLSUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX} ${SYS_LIB} ${PETSC_EXTERNAL_LIB_BASIC}; \
 	${RM} -f *
 
 # Actions taken by libtool to rebuild an out-of-date shared library
