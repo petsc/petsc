@@ -1,4 +1,4 @@
-/*$Id: bicg.c,v 1.19 2000/04/12 04:25:10 bsmith Exp bsmith $*/
+/*$Id: bicg.c,v 1.20 2000/04/15 03:53:50 bsmith Exp buschelm $*/
 
 /*                       
     This code implements the BiCG (BiConjugate Gradient) method
@@ -62,7 +62,10 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   }
   ierr = VecCopy(Rr,Rl);CHKERRQ(ierr);
   ierr = KSP_PCApply(ksp,ksp->B,Rr,Zr);CHKERRQ(ierr);     /*     z <- Br         */
+  ierr = VecConjugate(Rl);CHKERRQ(ierr);
   ierr = KSP_PCApplyTranspose(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
+  ierr = VecConjugate(Rl);CHKERRQ(ierr);
+  ierr = VecConjugate(Zl);CHKERRQ(ierr);
   if (pres) {
       ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
   } else {
@@ -90,19 +93,28 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
      } else {
        b = beta/betaold;
        ierr = VecAYPX(&b,Zr,Pr);CHKERRQ(ierr);  /*     p <- z + b* p   */
+       b = PetscConj(b);
        ierr = VecAYPX(&b,Zl,Pl);CHKERRQ(ierr);
      }
      betaold = beta;
      ierr = KSP_MatMult(ksp,Amat,Pr,Zr);CHKERRQ(ierr);    /*     z <- Kp         */
+     ierr = VecConjugate(Pl);CHKERRQ(ierr);
      ierr = KSP_MatMultTranspose(ksp,Amat,Pl,Zl);CHKERRQ(ierr);
-     ierr = VecDot(Pl,Zr,&dpi);CHKERRQ(ierr);               /*     dpi <- z'p      */
+     ierr = VecConjugate(Pl);CHKERRQ(ierr);
+     ierr = VecConjugate(Zl);CHKERRQ(ierr);
+     ierr = VecDot(Zr,Pl,&dpi);CHKERRQ(ierr);               /*     dpi <- z'p      */
      a = beta/dpi;                                 /*     a = beta/p'z    */
      ierr = VecAXPY(&a,Pr,X);CHKERRQ(ierr);       /*     x <- x + ap     */
-     ma = -a; VecAXPY(&ma,Zr,Rr);                  /*     r <- r - az     */
+     ma = -a;
+     ierr = VecAXPY(&ma,Zr,Rr);CHKERRQ(ierr)
+     ma = PetscConj(ma);
      ierr = VecAXPY(&ma,Zl,Rl);CHKERRQ(ierr);
      if (pres) {
        ierr = KSP_PCApply(ksp,ksp->B,Rr,Zr);CHKERRQ(ierr);  /*     z <- Br         */
+       ierr = VecConjugate(Rl);CHKERRQ(ierr);
        ierr = KSP_PCApplyTranspose(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
+       ierr = VecConjugate(Rl);CHKERRQ(ierr);
+       ierr = VecConjugate(Zl);CHKERRQ(ierr);
        ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
      } else {
        ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
@@ -117,7 +129,10 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
      if (ksp->reason) break;
      if (!pres) {
        ierr = KSP_PCApply(ksp,ksp->B,Rr,Zr);CHKERRQ(ierr);  /* z <- Br  */
+       ierr = VecConjugate(Rl);CHKERRQ(ierr);
        ierr = KSP_PCApplyTranspose(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
+       ierr = VecConjugate(Rl);CHKERRQ(ierr);
+       ierr = VecConjugate(Zl);CHKERRQ(ierr);
      }
   }
   if (i == maxit) {i--; ksp->its--;ksp->reason = KSP_DIVERGED_ITS;}
