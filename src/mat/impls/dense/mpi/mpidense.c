@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.120 1999/07/27 22:18:47 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.121 1999/08/02 21:57:54 curfman Exp curfman $";
 #endif
 
 /*
@@ -92,8 +92,7 @@ static int MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
 {
   Mat_MPIDense *mat = (Mat_MPIDense *) A->data, *newmatd;
   Mat_SeqDense *lmat = (Mat_SeqDense *) mat->A->data;
-  int          i, j, ierr, *irow, *icol, n_lrows, n_lcols;
-  int          rstart, rend, nrows, ncols, nlrows, nlcols, rank, ncols_all;
+  int          i, j, ierr, *irow, *icol, rstart, rend, nrows, ncols, nlrows, nlcols, rank;
   Scalar       *av, *bv, *v = lmat->v;
   Mat          newmat;
 
@@ -737,13 +736,14 @@ int MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
   Mat_MPIDense *mdn = (Mat_MPIDense *) A->data;
   Mat_SeqDense *mat = (Mat_SeqDense*) mdn->A->data;
   Scalar       *l,*r,x,*v;
-  int          ierr,i,j,m = mat->m, n = mat->n;
+  int          ierr,i,j,s2a,s3a,s2,s3,m=mat->m,n=mat->n;
 
   PetscFunctionBegin;
+  ierr = MatGetLocalSize(A,&s2,&s3);CHKERRQ(ierr);
   if (ll) {
-    ierr = VecGetSize(ll,&m);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ll,&s2a);CHKERRQ(ierr);
+    if (s2a != s2) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Left scaling vector non-conforming local size");
     ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
-    if (m != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Left scaling vec wrong size");
     for ( i=0; i<m; i++ ) {
       x = l[i];
       v = mat->v + i;
@@ -753,8 +753,8 @@ int MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
     PLogFlops(n*m);
   }
   if (rr) {
-    ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
-    if (n != mat->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Right scaling vec wrong size");
+    ierr = VecGetSize(rr,&s3a);CHKERRQ(ierr);
+    if (s3a != s3) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Right scaling vec non-conforming local size");
     ierr = VecScatterBegin(rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
     ierr = VecScatterEnd(rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
     ierr = VecGetArray(mdn->lvec,&r);CHKERRQ(ierr);
@@ -763,7 +763,7 @@ int MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
       v = mat->v + i*m;
       for ( j=0; j<m; j++ ) { (*v++) *= x;} 
     }
-    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
+    ierr = VecRestoreArray(mdn->lvec,&r);CHKERRQ(ierr);
     PLogFlops(n*m);
   }
   PetscFunctionReturn(0);
