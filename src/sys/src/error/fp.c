@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.33 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: fp.c,v 1.34 1997/03/12 15:54:57 balay Exp curfman $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -357,7 +357,7 @@ int PetscSetFPTrap(int on)
 /* -------------------------Default -----------------------------------*/
 #else 
 struct { int code_no; char *name; } error_codes[] = {
-	   { 0		, "unknown error\0" } 
+	   { 0		, "unknown error" } 
 } ;
 #undef __FUNC__  
 #define __FUNC__ "SYsample_handler" /* ADIC Ignore */
