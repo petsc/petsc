@@ -19,6 +19,7 @@ EXTERN int KSPCreate_BiCG(KSP);
 EXTERN int KSPCreate_FGMRES(KSP);
 EXTERN int KSPCreate_MINRES(KSP);
 EXTERN int KSPCreate_SYMMLQ(KSP);
+EXTERN int KSPCreate_LGMRES(KSP);
 EXTERN_C_END
   
 /*
@@ -64,5 +65,7 @@ int KSPRegisterAll(char *path)
   ierr = KSPRegisterDynamic(KSPFGMRES,     path,"KSPCreate_FGMRES",    KSPCreate_FGMRES);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPMINRES,     path,"KSPCreate_MINRES",    KSPCreate_MINRES);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPSYMMLQ,     path,"KSPCreate_SYMMLQ",    KSPCreate_SYMMLQ);CHKERRQ(ierr);
+  /* These solvers are optional */
+  ierr = KSPRegisterDynamic("lgmres", "${PETSC_LIB_DIR}/liblgmres", "KSPCreate_LGMRES", KSPCreate_LGMRES);
   PetscFunctionReturn(0);
 }
