@@ -7,11 +7,11 @@
 # OBJS - object files
 # PETSC_INCLUDE - locations of include files
 #
-LDIR        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
-PDIR        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
-LIBNAME     = $(PDIR)/$(LIBBASE).a
-SOURCE      = $(SOURCEC) $(SOURCEF)
-OBJS        = $(OBJSC) $(OBJSF)
+LDIR          = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
+PDIR          = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
+LIBNAME       = $(PDIR)/$(LIBBASE).a
+SOURCE        = $(SOURCEC) $(SOURCEF)
+OBJS          = $(OBJSC) $(OBJSF)
 PETSC_INCLUDE = -I$(PETSC_DIR) -I$(PETSC_DIR)/include $(MPI_INCLUDE) \
                -I$(PETSC_DIR)/src
 #
