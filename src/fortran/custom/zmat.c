@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.20 1996/03/06 14:00:12 curfman Exp balay $";
+static char vcid[] = "$Id: zmat.c,v 1.21 1996/03/07 00:17:50 balay Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -33,6 +33,7 @@ static char vcid[] = "$Id: zmat.c,v 1.20 1996/03/06 14:00:12 curfman Exp balay $
 #define matload_                         MATLOAD
 #define mattranspose_                    MATTRANSPOSE
 #define matgetarray_                     MATGETARRAY
+#define matrestorearray_                 MATRESTOREARRAY
 #define matgettype_                      MATGETTYPE
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define matgettype_                      matgettype
@@ -59,6 +60,7 @@ static char vcid[] = "$Id: zmat.c,v 1.20 1996/03/06 14:00:12 curfman Exp balay $
 #define matload_                         matload
 #define mattranspose_                    mattranspose
 #define matgetarray_                     matgetarray
+#define matrestorearray_                 matrestorearray
 #endif
 
 #if defined(__cplusplus)
