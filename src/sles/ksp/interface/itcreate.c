@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.129 1998/05/13 16:58:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.130 1998/05/13 17:04:03 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -77,7 +77,7 @@ DLList KSPList = 0;
 /*@C
    KSPSetAvoidNorms - Sets the KSP solver to avoid computing the residual norm
      when possible. This, for example, reduces the number of collective operations
-     when using CG as a smoother.
+     when using the Krylov method as a smoother.
 
    Collective on KSP
 
@@ -86,9 +86,10 @@ DLList KSPList = 0;
 
    Notes: 
      One cannot use the default convergence test routines when this is set, since they
-     are based on decreases in the residual norms.
+     are based on decreases in the residual norms, thus this automatically switches
+     to use the KSPSkipConverged() test function.
 
-     Currently only works with the CG, Richardson, Bi-CG-stab, and CGS methods.
+     Currently only works with the CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 
 .keywords: KSP, create, context, norms
 

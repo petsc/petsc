@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cr.c,v 1.37 1998/03/06 00:10:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.38 1998/03/20 22:47:01 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -65,10 +65,12 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   ierr = VecSet(&zero,Sm1); CHKERRQ(ierr);      /*    sm1 <- 0         */
   ierr = VecSet(&zero,Qm1); CHKERRQ(ierr);      /*    Qm1 <- 0         */
   ierr = PCApply(ksp->B,R,P); CHKERRQ(ierr);    /*     p <- Br         */
-  if (pres) {
-    ierr = VecNorm(P,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- z'*z       */
-  } else {
-    ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- r'*r       */
+  if (!ksp->avoidnorms) {
+    if (pres) {
+      ierr = VecNorm(P,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- z'*z       */
+    } else {
+      ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- r'*r       */
+    }
   }
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,dp);
@@ -86,7 +88,9 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     ierr   = VecAXPY(&lambda,P,X); CHKERRQ(ierr); /*   x <- x + lambda p  */
     tmp    = -lambda; 
     ierr   = VecAXPY(&tmp,Q,R); CHKERRQ(ierr);     /*   r <- r - lambda q  */
-    ierr   = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*   dp <- r'*r         */
+    if (!ksp->avoidnorms) {
+      ierr   = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*   dp <- r'*r         */
+    } else { dp = 0.0; }
     ksp->rnorm = dp;
     if (history && hist_len > i + 1) history[i+1] = dp;
     KSPMonitor(ksp,i+1,dp);

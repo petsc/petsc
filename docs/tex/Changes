@@ -23,3 +23,12 @@ add to it).
    If the option MAT_NO_NEW_NONZERO_LOCATIONS is used, one less collective
    call will be made in the MatAssemblyEnd routines for MPIAIJ and MPIBAIJ.
 
+  KSP
+
+    Added the function KSPSetAvoidNorms() and option -ksp_avoid_norms. For the 
+    methods CG, Richardson, Bi-CG-stab, CR, and CGS this eliminates the computation
+    of the residual norm at each iteration (which is an expensive, collective 
+    operation). Then the convergence criteria depends only on the maximum number
+    of iterations you set with KSPSetTolerances(). This is useful when using the 
+    Krylov method as a smoother with a fixed, say 3, iterations.
+
