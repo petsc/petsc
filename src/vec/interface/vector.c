@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.204 2000/05/05 22:14:59 balay Exp bsmith $*/
+/*$Id: vector.c,v 1.205 2000/06/05 17:31:51 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -2412,6 +2412,8 @@ int VecSetStashInitialSize(Vec vec,int size,int bsize)
    Input Parameters:
 +  vec   - the vector
 -  viewer - the viewer
+
+   Level: advanced
 
 .keywords: vector, stash, assembly
 
