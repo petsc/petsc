@@ -12,6 +12,7 @@ PetscErrorCode MatAXPY_SeqDense(const PetscScalar *alpha,Mat X,Mat Y,MatStructur
   Mat_SeqDense *x = (Mat_SeqDense*)X->data,*y = (Mat_SeqDense*)Y->data;
   PetscInt     j;
   PetscBLASInt N = (PetscBLASInt)X->m*X->n,m=(PetscBLASInt)X->m,ldax = x->lda,lday=y->lda,one = 1;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (X->m != Y->m || X->n != Y->n) SETERRQ(PETSC_ERR_ARG_SIZ,"size(B) != size(A)");
@@ -22,7 +23,7 @@ PetscErrorCode MatAXPY_SeqDense(const PetscScalar *alpha,Mat X,Mat Y,MatStructur
   } else {
     BLASaxpy_(&N,(PetscScalar*)alpha,x->v,&one,y->v,&one);
   }
-  PetscLogFlops(2*N-1);
+  ierr = PetscLogFlops(2*N-1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -61,6 +62,7 @@ PetscErrorCode MatScale_SeqDense(const PetscScalar *alpha,Mat A)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
   PetscBLASInt one = 1,lda = a->lda,j,nz;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (lda>A->m) {
@@ -72,7 +74,7 @@ PetscErrorCode MatScale_SeqDense(const PetscScalar *alpha,Mat A)
     nz = (PetscBLASInt)A->m*A->n;
     BLASscal_(&nz,(PetscScalar*)alpha,a->v,&one);
   }
-  PetscLogFlops(nz);
+  ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
   
@@ -101,7 +103,7 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
   LAPACKgetrf_(&m,&n,mat->v,&mat->lda,mat->pivots,&info);
   if (info<0) SETERRQ(PETSC_ERR_LIB,"Bad argument to LU factorization");
   if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
-  PetscLogFlops((2*A->n*A->n*A->n)/3);
+  ierr = PetscLogFlops((2*A->n*A->n*A->n)/3);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -202,7 +204,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
   LAPACKpotrf_("L",&n,mat->v,&mat->lda,&info);
   if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %D",(PetscInt)info-1);
   A->factor = FACTOR_CHOLESKY;
-  PetscLogFlops((A->n*A->n*A->n)/3);
+  ierr = PetscLogFlops((A->n*A->n*A->n)/3);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -252,7 +254,7 @@ PetscErrorCode MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
   else SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PetscLogFlops(2*A->n*A->n - A->n);
+  ierr = PetscLogFlops(2*A->n*A->n - A->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -288,7 +290,7 @@ PetscErrorCode MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PetscLogFlops(2*A->n*A->n - A->n);
+  ierr = PetscLogFlops(2*A->n*A->n - A->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -332,7 +334,7 @@ PetscErrorCode MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   else     {ierr = VecAXPY(&sone,zz,yy);CHKERRQ(ierr);}
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PetscLogFlops(2*A->n*A->n);
+  ierr = PetscLogFlops(2*A->n*A->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -380,7 +382,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PetscLogFlops(2*A->n*A->n);
+  ierr = PetscLogFlops(2*A->n*A->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------*/
@@ -464,7 +466,7 @@ PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   BLASgemv_("T",&m,&n,&_DOne,v,&mat->lda,x,&_One,&_DZero,y,&_One);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PetscLogFlops(2*A->m*A->n - A->n);
+  ierr = PetscLogFlops(2*A->m*A->n - A->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -484,7 +486,7 @@ PetscErrorCode MatMult_SeqDense(Mat A,Vec xx,Vec yy)
   BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DZero,y,&_One);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PetscLogFlops(2*A->m*A->n - A->m);
+  ierr = PetscLogFlops(2*A->m*A->n - A->m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -505,7 +507,7 @@ PetscErrorCode MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PetscLogFlops(2*A->m*A->n);
+  ierr = PetscLogFlops(2*A->m*A->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -527,7 +529,7 @@ PetscErrorCode MatMultTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   BLASgemv_("T",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PetscLogFlops(2*A->m*A->n);
+  ierr = PetscLogFlops(2*A->m*A->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1142,7 +1144,7 @@ PetscErrorCode MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
       for (j=0; j<n; j++) { (*v) *= x; v+= m;} 
     }
     ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
-    PetscLogFlops(n*m);
+    ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
   }
   if (rr) {
     ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
@@ -1154,7 +1156,7 @@ PetscErrorCode MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
       for (j=0; j<m; j++) { (*v++) *= x;} 
     }
     ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
-    PetscLogFlops(n*m);
+    ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1167,6 +1169,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
   PetscScalar  *v = mat->v;
   PetscReal    sum = 0.0;
   PetscInt     lda=mat->lda,m=A->m,i,j;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
@@ -1191,7 +1194,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
       }
     }
     *nrm = sqrt(sum);
-    PetscLogFlops(2*A->n*A->m);
+    ierr = PetscLogFlops(2*A->n*A->m);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     *nrm = 0.0;
     for (j=0; j<A->n; j++) {
@@ -1202,7 +1205,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
       }
       if (sum > *nrm) *nrm = sum;
     }
-    PetscLogFlops(A->n*A->m);
+    ierr = PetscLogFlops(A->n*A->m);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
     *nrm = 0.0;
     for (j=0; j<A->m; j++) {
@@ -1213,7 +1216,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
       }
       if (sum > *nrm) *nrm = sum;
     }
-    PetscLogFlops(A->n*A->m);
+    ierr = PetscLogFlops(A->n*A->m);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,"No two norm");
   }

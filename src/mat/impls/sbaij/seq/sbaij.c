@@ -1998,7 +1998,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         nz = ai[i+1] - ai[i] - 1;       
         x[i] = omega*t[i]/d;
         while (nz--) t[*vj++] -= x[i]*(*v++); /* update rhs */
-        PetscLogFlops(2*nz-1);
+        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
       }
     } 
 
@@ -2011,7 +2011,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
         while (nz--) t[*vj++] -= x[i]*(*v++);
-        PetscLogFlops(2*nz-1);
+        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
       }
       for (i=m-1; i>=0; i--){
         d  = *(aa + ai[i]);  
@@ -2020,7 +2020,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         nz = ai[i+1] - ai[i] - 1;
         sum = t[i];
         while (nz--) sum -= x[*vj++]*(*v++);
-        PetscLogFlops(2*nz-1);
+        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
         x[i] =   (1-omega)*x[i] + omega*sum/d;        
       }
     }
@@ -2049,7 +2049,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         while (nz1--) sum -= (*v1++)*x[*vj1++]; 
         x[i] = (1-omega)*x[i] + omega*sum/d;
         while (nz--) t[*vj++] -= x[i]*(*v++); 
-        PetscLogFlops(4*nz-2);
+        ierr = PetscLogFlops(4*nz-2);CHKERRQ(ierr);
       }
     }
   
@@ -2069,7 +2069,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
         while (nz--) t[*vj++] -= x[i]*(*v++);
-        PetscLogFlops(2*nz-1);
+        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
       }
       for (i=m-1; i>=0; i--){
         d  = *(aa + ai[i]);  
@@ -2078,7 +2078,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         nz = ai[i+1] - ai[i] - 1;
         sum = t[i];
         while (nz--) sum -= x[*vj++]*(*v++);
-        PetscLogFlops(2*nz-1);
+        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
         x[i] =   (1-omega)*x[i] + omega*sum/d;        
       }
     }

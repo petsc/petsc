@@ -216,7 +216,7 @@ PetscErrorCode PDEFormFunctionLocal(DALocalInfo *info,PetscScalar *u,PetscScalar
     else                fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h) + h*u[i]*u[i];
   } 
 
-  PetscLogFlops(9*mx);
+  ierr = PetscLogFlops(9*mx);CHKERRQ(ierr);
   return 0;
 }
 
@@ -320,7 +320,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = VecPackRestoreAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
   ierr = VecPackRestoreAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
 
-  PetscLogFlops(9*N);
+  ierr = PetscLogFlops(9*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -148,8 +148,8 @@ PetscErrorCode PetscBitMemcpy(void *a,PetscInt ai,const void *b,PetscInt bi,Pets
     PetscBT  bt = (PetscBT) b;
     PetscInt i;
     for (i=0; i<bs; i++) {
-      if (PetscBTLookup(bt,bi+i)) PetscBTSet(at,ai+i);
-      else                        PetscBTClear(at,ai+i);
+      if (PetscBTLookup(bt,bi+i)) {ierr = PetscBTSet(at,ai+i);CHKERRQ(ierr);}
+      else                        {ierr = PetscBTClear(at,ai+i);CHKERRQ(ierr);}
     }
   }
   PetscFunctionReturn(0);

@@ -502,7 +502,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
           *pc        = multiplier;
           nz         = bi[row+1] - diag_offset[row] - 1;
           for (j=0; j<nz; j++) rtmps[pj[j]] -= multiplier * pv[j];
-          PetscLogFlops(2*nz);
+          ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
         }
         row = *bjtmp++;
       }
@@ -552,7 +552,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   C->factor = FACTOR_LU;
   (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   C->assembled = PETSC_TRUE;
-  PetscLogFlops(C->n);
+  ierr = PetscLogFlops(C->n);CHKERRQ(ierr);
   if (sctx.nshift){
     if (shift_nz) {
       PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_nz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
@@ -638,7 +638,7 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PetscLogFlops(2*a->nz - A->n);
+  ierr = PetscLogFlops(2*a->nz - A->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -688,7 +688,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[i]    = sum*aa[adiag_i];
   }
 #endif
-  PetscLogFlops(2*a->nz - A->n);
+  ierr = PetscLogFlops(2*a->nz - A->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -741,7 +741,7 @@ PetscErrorCode MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PetscLogFlops(2*a->nz);
+  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -800,7 +800,7 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
 
-  PetscLogFlops(2*a->nz-A->n);
+  ierr = PetscLogFlops(2*a->nz-A->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -857,7 +857,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
 
-  PetscLogFlops(2*a->nz);
+  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
@@ -1173,7 +1173,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   C->factor       = FACTOR_CHOLESKY; 
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
-  PetscLogFlops(C->m);
+  ierr = PetscLogFlops(C->m);CHKERRQ(ierr);
   if (sctx.nshift){
     if (shiftnz) {
       PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqAIJ: number of shiftnz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);

@@ -111,7 +111,7 @@ int InputGrid (AOData *aodata)
           *(p++) = y_min + j * del_y;
         }
       }
-      for (j=0; j<=n_y; j++) { PetscBTSet(boundary,j); }
+      for (j=0; j<=n_y; j++) { ierr = PetscBTSet(boundary,j);CHKERRQ(ierr); }
     }
     ierr = AODataSegmentAdd(*aodata,"vertex","values"  ,2,n_vertices,indices,coords  ,PETSC_DOUBLE);CHKERRQ(ierr);
     ierr = AODataSegmentAdd(*aodata,"vertex","boundary",1,n_vertices,indices,boundary,PETSC_LOGICAL);CHKERRQ(ierr);

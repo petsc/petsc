@@ -75,7 +75,7 @@ EXTERN PetscErrorCode (*_PetscLogPHD)(PetscObject);
 #define PetscLogObjectParent(p,c) \
   ((c && p) ? ((PetscObject)(c))->parent = (PetscObject)(p),((PetscObject)(c))->parentid = ((PetscObject)p)->id : 0, 0)
 
-#define PetscLogObjectParents(p,n,d) {int _i; for (_i=0; _i<n; _i++) PetscLogObjectParent(p,(d)[_i]);}
+#define PetscLogObjectParents(p,n,d)  0;{int _i; for (_i=0; _i<n; _i++) {ierr = PetscLogObjectParent(p,(d)[_i]);CHKERRQ(ierr);}}
 #define PetscLogObjectCreate(h)      ((_PetscLogPHC) ? (*_PetscLogPHC)((PetscObject)h) : 0)
 #define PetscLogObjectDestroy(h)     ((_PetscLogPHD) ? (*_PetscLogPHD)((PetscObject)h) : 0)
 #define PetscLogObjectMemory(p,m)    (((PetscObject)(p))->mem += (m),0)
@@ -347,7 +347,7 @@ EXTERN PetscErrorCode StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) 0
 #define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm)   0
 #define PetscLogObjectParent(p,c)           0
-#define PetscLogObjectParents(p,n,c)
+#define PetscLogObjectParents(p,n,c)        0
 #define PetscLogObjectCreate(h)             0
 #define PetscLogObjectDestroy(h)            0
 #define PetscLogObjectMemory(p,m)           0

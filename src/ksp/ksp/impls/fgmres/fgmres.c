@@ -93,14 +93,14 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 
   /* space for work vectors */
   ierr = KSPGetVecs(ksp,fgmres->vv_allocated,&fgmres->user_work[0]);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->user_work[0]);
+  ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->user_work[0]);CHKERRQ(ierr);
   for (k=0; k < fgmres->vv_allocated; k++) {
     fgmres->vecs[k] = fgmres->user_work[0][k];
   } 
 
   /* space for preconditioned vectors */
   ierr = KSPGetVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);
+  ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
   for (k=0; k < fgmres->vv_allocated; k++) {
     fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
   } 
@@ -606,7 +606,7 @@ static PetscErrorCode FGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   /* work vectors */
   ierr = KSPGetVecs(ksp,nalloc,&fgmres->user_work[nwork]);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,nalloc,fgmres->user_work[nwork]);
+  ierr = PetscLogObjectParents(ksp,nalloc,fgmres->user_work[nwork]);CHKERRQ(ierr);
   for (k=0; k < nalloc; k++) {
     fgmres->vecs[it+VEC_OFFSET+k] = fgmres->user_work[nwork][k];
   }
@@ -615,7 +615,7 @@ static PetscErrorCode FGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   /* preconditioned vectors */
   ierr = KSPGetVecs(ksp,nalloc,&fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,nalloc,fgmres->prevecs_user_work[nwork]);
+  ierr = PetscLogObjectParents(ksp,nalloc,fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
   for (k=0; k < nalloc; k++) {
     fgmres->prevecs[it+VEC_OFFSET+k] = fgmres->prevecs_user_work[nwork][k];
   } 

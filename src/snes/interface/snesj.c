@@ -62,7 +62,7 @@ PetscErrorCode SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStru
   if (!snes->nvwork) {
     ierr = VecDuplicateVecs(x1,3,&snes->vwork);CHKERRQ(ierr);
     snes->nvwork = 3;
-    PetscLogObjectParents(snes,3,snes->vwork);
+    ierr = PetscLogObjectParents(snes,3,snes->vwork);CHKERRQ(ierr);
   }
   j1a = snes->vwork[0]; j2a = snes->vwork[1]; x2 = snes->vwork[2];
 

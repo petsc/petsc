@@ -324,6 +324,7 @@ PetscErrorCode MatScale_SeqBDiag(const PetscScalar *alpha,Mat inA)
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)inA->data;
   PetscInt          i,bs = inA->bs;
   PetscBLASInt one = 1,len;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0; i<a->nd; i++) {
@@ -334,7 +335,7 @@ PetscErrorCode MatScale_SeqBDiag(const PetscScalar *alpha,Mat inA)
       BLASscal_(&len,(PetscScalar*)alpha,a->diagv[i],&one);
     }
   }
-  PetscLogFlops(a->nz);
+  ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -362,7 +363,7 @@ PetscErrorCode MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
         else          for (j=0; j<len; j++) dv[j]      *= l[j];
       }
       ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr); 
-      PetscLogFlops(a->nz);
+      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     } else SETERRQ(PETSC_ERR_SUP,"Not yet done for bs>1");
   }
   if (rr) {
@@ -378,7 +379,7 @@ PetscErrorCode MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
         else          for (j=0; j<len; j++) dv[j]      *= r[j-diag];
       }
       ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);  
-      PetscLogFlops(a->nz);
+      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     } else SETERRQ(PETSC_ERR_SUP,"Not yet done for bs>1");
   }
   PetscFunctionReturn(0);

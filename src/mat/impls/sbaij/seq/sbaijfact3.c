@@ -186,6 +186,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat A,MatFactorInfo *info,Mat
   C->factor    = FACTOR_CHOLESKY;
   C->assembled = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
-  PetscLogFlops(1.3333*27*b->mbs); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.3333*27*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }

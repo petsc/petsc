@@ -58,7 +58,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat *B)
         for (j=0; j<nz; j++) {
           Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
         }
-        PetscLogFlops(bslog*(nz+1)-bs);
+        ierr = PetscLogFlops(bslog*(nz+1)-bs);CHKERRQ(ierr);
       } 
         row = *ajtmp++;
     }
@@ -81,6 +81,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat *B)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PetscLogFlops(1.3333*bs*bs2*b->mbs); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.3333*bs*bs2*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }

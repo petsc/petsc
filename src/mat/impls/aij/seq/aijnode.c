@@ -571,7 +571,7 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PetscLogFlops(2*a->nz - A->m);
+  ierr = PetscLogFlops(2*a->nz - A->m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
@@ -763,7 +763,7 @@ static PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   if (zz != yy) {
     ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
-  PetscLogFlops(2*a->nz);
+  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
@@ -1225,7 +1225,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PetscLogFlops(2*a->nz - A->n);
+  ierr = PetscLogFlops(2*a->nz - A->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1337,7 +1337,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,MatFactorInfo *info,Mat *B)
             mul1 = *pc1 * *pv++;
             *pc1 = mul1;
             nz   = bi[prow+1] - bd[prow] - 1;
-            PetscLogFlops(2*nz);
+            ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
             for (j=0; j<nz; j++) {
               tmp = pv[j];
               idx = pj[j];
@@ -1405,7 +1405,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,MatFactorInfo *info,Mat *B)
             *pc2 = mul2;
           
             nz   = bi[prow+1] - bd[prow] - 1;
-            PetscLogFlops(2*2*nz);
+            ierr = PetscLogFlops(2*2*nz);CHKERRQ(ierr);
             for (j=0; j<nz; j++) {
               tmp = pv[j];
               idx = pj[j];
@@ -1433,7 +1433,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,MatFactorInfo *info,Mat *B)
           mul2 = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
           *pc2 = mul2;
           nz   = bi[prow+1] - bd[prow] - 1;
-          PetscLogFlops(2*nz);
+          ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
           for (j=0; j<nz; j++) {
             idx = pj[j] ;
             tmp = rtmp1[idx];
@@ -1513,7 +1513,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,MatFactorInfo *info,Mat *B)
             *pc3 = mul3;
           
             nz   = bi[prow+1] - bd[prow] - 1;
-            PetscLogFlops(3*2*nz);
+            ierr = PetscLogFlops(3*2*nz);CHKERRQ(ierr);
             /* update this row based on pivot row */
             for (j=0; j<nz; j++) {
               tmp = pv[j];
@@ -1546,7 +1546,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,MatFactorInfo *info,Mat *B)
           *pc2 = mul2;
           *pc3 = mul3;
           nz   = bi[prow+1] - bd[prow] - 1;
-          PetscLogFlops(2*2*nz);
+          ierr = PetscLogFlops(2*2*nz);CHKERRQ(ierr);
           for (j=0; j<nz; j++) {
             idx = pj[j] ;
             tmp = rtmp1[idx];
@@ -1573,7 +1573,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,MatFactorInfo *info,Mat *B)
           mul3 = (*pc3)/(*pc2);
           *pc3 = mul3;
           nz   = bi[prow+1] - bd[prow] - 1;
-          PetscLogFlops(2*2*nz);
+          ierr = PetscLogFlops(2*2*nz);CHKERRQ(ierr);
           for (j=0; j<nz; j++) {
             idx = pj[j] ;
             tmp = rtmp2[idx];
@@ -1628,7 +1628,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,MatFactorInfo *info,Mat *B)
   if (ndamp || b->lu_damping) {
     PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ_Inode: number of damping tries %D damping value %g\n",ndamp,damping);
   }
-  PetscLogFlops(C->n);
+  ierr = PetscLogFlops(C->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

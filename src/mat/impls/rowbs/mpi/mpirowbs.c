@@ -58,7 +58,7 @@ PetscErrorCode MatScale_MPIRowbs(const PetscScalar *alphain,Mat inA)
       ap[j] *= alpha;
     }
   }
-  PetscLogFlops(a->nz);
+  ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1227,7 +1227,7 @@ PetscErrorCode MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
     ierr = VecRestoreArray(bsif->xwork,&xworka);CHKERRQ(ierr);
     ierr = VecRestoreArray(yy,&yya);CHKERRQ(ierr);
   }
-  PetscLogFlops(2*bsif->nz - mat->m);
+  ierr = PetscLogFlops(2*bsif->nz - mat->m);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

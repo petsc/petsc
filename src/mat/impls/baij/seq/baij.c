@@ -129,7 +129,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag
         i2      += 2;
       }
       /* for logging purposes assume number of nonzero in lower half is 1/2 of total */
-      PetscLogFlops(4*(a->nz));
+      ierr = PetscLogFlops(4*(a->nz));CHKERRQ(ierr);
     }
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
@@ -142,7 +142,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag
         mdiag  += 4;
         i2     += 2;
       }
-      PetscLogFlops(6*m);
+      ierr = PetscLogFlops(6*m);CHKERRQ(ierr);
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       ierr = PetscMemcpy(x,b,A->m*sizeof(PetscScalar));CHKERRQ(ierr);
     }
@@ -171,7 +171,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag
         idiag   -= 4;
         i2      -= 2;
       }
-      PetscLogFlops(4*(a->nz));
+      ierr = PetscLogFlops(4*(a->nz));CHKERRQ(ierr);
     }
   } else {
     SETERRQ(PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
@@ -234,7 +234,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag
         i2      += 3;
       }
       /* for logging purposes assume number of nonzero in lower half is 1/2 of total */
-      PetscLogFlops(9*(a->nz));
+      ierr = PetscLogFlops(9*(a->nz));CHKERRQ(ierr);
     }
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
@@ -248,7 +248,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag
         mdiag  += 9;
         i2     += 3;
       }
-      PetscLogFlops(15*m);
+      ierr = PetscLogFlops(15*m);CHKERRQ(ierr);
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       ierr = PetscMemcpy(x,b,A->m*sizeof(PetscScalar));CHKERRQ(ierr);
     }
@@ -280,7 +280,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag
         idiag   -= 9;
         i2      -= 3;
       }
-      PetscLogFlops(9*(a->nz));
+      ierr = PetscLogFlops(9*(a->nz));CHKERRQ(ierr);
     }
   } else {
     SETERRQ(PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
@@ -346,7 +346,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag
         i2      += 4;
       }
       /* for logging purposes assume number of nonzero in lower half is 1/2 of total */
-      PetscLogFlops(16*(a->nz));
+      ierr = PetscLogFlops(16*(a->nz));CHKERRQ(ierr);
     }
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
@@ -361,7 +361,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag
         mdiag  += 16;
         i2     += 4;
       }
-      PetscLogFlops(28*m);
+      ierr = PetscLogFlops(28*m);CHKERRQ(ierr);
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       ierr = PetscMemcpy(x,b,A->m*sizeof(PetscScalar));CHKERRQ(ierr);
     }
@@ -396,7 +396,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag
         idiag   -= 16;
         i2      -= 4;
       }
-      PetscLogFlops(16*(a->nz));
+      ierr = PetscLogFlops(16*(a->nz));CHKERRQ(ierr);
     }
   } else {
     SETERRQ(PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
@@ -465,7 +465,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag
         i2      += 5;
       }
       /* for logging purposes assume number of nonzero in lower half is 1/2 of total */
-      PetscLogFlops(25*(a->nz));
+      ierr = PetscLogFlops(25*(a->nz));CHKERRQ(ierr);
     }
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
@@ -481,7 +481,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag
         mdiag  += 25;
         i2     += 5;
       }
-      PetscLogFlops(45*m);
+      ierr = PetscLogFlops(45*m);CHKERRQ(ierr);
     } else if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       ierr = PetscMemcpy(x,b,A->m*sizeof(PetscScalar));CHKERRQ(ierr);
     }
@@ -519,7 +519,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag
         idiag   -= 25;
         i2      -= 5;
       }
-      PetscLogFlops(25*(a->nz));
+      ierr = PetscLogFlops(25*(a->nz));CHKERRQ(ierr);
     }
   } else {
     SETERRQ(PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");

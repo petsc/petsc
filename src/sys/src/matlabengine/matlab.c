@@ -140,7 +140,7 @@ PetscErrorCode PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char st
     if (mengine->buffer[len] == '\t') break;
   }
   sscanf(mengine->buffer+len," %d\n",&flops);
-  PetscLogFlops(flops);
+  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   /* strip out of engine->buffer the end part about flops */
   if (len < 14) SETERRQ1(PETSC_ERR_LIB,"Error from Matlab %s",mengine->buffer);
   len -= 14;

@@ -244,7 +244,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7(Mat A,MatFactorInfo *info,Mat *B)
 	  x[48] -= m7*x43 + m14*x44 + m21*x45 + m28*x46 + m35*x47 + m42*x48 + m49*x49;
           pv   += 49;
         }
-        PetscLogFlops(686*nz+637);
+        ierr = PetscLogFlops(686*nz+637);CHKERRQ(ierr);
       } 
       row = *ajtmp++;
     }
@@ -279,6 +279,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7(Mat A,MatFactorInfo *info,Mat *B)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PetscLogFlops(1.3333*343*b->mbs); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.3333*343*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }

@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   bs   = 1;
   ierr = PetscBTCreate(n,ld);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    if (i % 2) PetscBTSet(ld,i);
+    if (i % 2) {ierr = PetscBTSet(ld,i);CHKERRQ(ierr);}
   }
   ierr = AODataSegmentAdd(aodata,"key1","seg3",bs,n,keys,ld,PETSC_LOGICAL);CHKERRQ(ierr); 
   ierr = PetscBTDestroy(ld);CHKERRQ(ierr);

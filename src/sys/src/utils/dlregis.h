@@ -21,7 +21,7 @@ PetscErrorCode PetscDLLibraryInfo(char *path,char *type,const char *mess[])
   ierr = PetscStrcmp(type,"Version",&isver);CHKERRQ(ierr);
   if (iscon)      *mess = contents;
   else if (isaut) *mess = authors;
-  else if (isver) {PetscGetVersion(&version);*mess=version;}
+  else if (isver) {ierr = PetscGetVersion(&version);CHKERRQ(ierr);*mess=version;}
   else            *mess = 0;
 
   PetscFunctionReturn(0);
