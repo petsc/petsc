@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.22 2000/05/05 22:18:34 balay Exp bsmith $"
+! "$Id: ex5f90.F,v 1.23 2000/07/19 20:10:10 bsmith Exp balay $"
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -57,15 +57,6 @@
         integer mx,my,rank,size
         double precision lambda
       end type userctx
-      Interface
-        Subroutine SNESSetFunction(snes,vec,func,user,ierr)
-          SNES snes
-          Vec vec
-          integer ierr
-          integer user
-          external func          
-        End Subroutine
-      End Interface
       end module f90sucks
 #undef PETSC_AVOID_DECLARATIONS
 #undef PETSC_AVOID_MPIF_H
