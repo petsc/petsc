@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.144 2001/01/15 21:45:04 bsmith Exp balay $*/
+/* $Id: pdvec.c,v 1.145 2001/01/19 23:20:14 balay Exp bsmith $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -48,12 +48,12 @@ int VecDestroy_MPI(Vec v)
 #define __FUNC__ "VecView_MPI_ASCII"
 int VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 {
-  Vec_MPI     *x = (Vec_MPI*)xin->data;
-  int         i,rank,len,work = xin->n,n,j,size,ierr,cnt,tag = ((PetscObject)viewer)->tag;
-  MPI_Status  status;
-  Scalar      *values;
-  char        *name;
-  PetscViewerFormatType  format;
+  Vec_MPI           *x = (Vec_MPI*)xin->data;
+  int               i,rank,len,work = xin->n,n,j,size,ierr,cnt,tag = ((PetscObject)viewer)->tag;
+  MPI_Status        status;
+  Scalar            *values;
+  char              *name;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   /* determine maximum message to arrive */
@@ -407,7 +407,7 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (isbinary) {
     ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
   } else if (isdraw) {
-  PetscViewerFormatType  format;
+  PetscViewerFormat format;
 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_DRAW_LG) {

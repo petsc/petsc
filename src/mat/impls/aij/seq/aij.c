@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.361 2001/01/19 21:04:59 bsmith Exp balay $*/
+/*$Id: aij.c,v 1.362 2001/01/19 23:20:29 balay Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -305,10 +305,10 @@ int MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
 #define __FUNC__ "MatView_SeqAIJ_ASCII"
 int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
 {
-  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
-  int         ierr,i,j,m = A->m,shift = a->indexshift;
-  char        *name;
-  PetscViewerFormatType  format;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  int               ierr,i,j,m = A->m,shift = a->indexshift;
+  char              *name;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;  
   ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
@@ -466,12 +466,12 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
 #define __FUNC__ "MatView_SeqAIJ_Draw_Zoom"
 int MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
 {
-  Mat         A = (Mat) Aa;
-  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
-  int         ierr,i,j,m = A->m,shift = a->indexshift,color;
-  PetscReal   xl,yl,xr,yr,x_l,x_r,y_l,y_r,maxv = 0.0;
-  PetscViewer      viewer;
-  PetscViewerFormatType  format;
+  Mat               A = (Mat) Aa;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  int               ierr,i,j,m = A->m,shift = a->indexshift,color;
+  PetscReal         xl,yl,xr,yr,x_l,x_r,y_l,y_r,maxv = 0.0;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
 
   PetscFunctionBegin; 
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*)&viewer);CHKERRQ(ierr); 

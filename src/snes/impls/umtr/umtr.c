@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.100 2000/09/28 21:14:18 bsmith Exp bsmith $*/
+/*$Id: umtr.c,v 1.101 2001/01/15 21:47:58 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -178,7 +178,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   /* Verify solution is in corect location */
   if (X != snes->vec_sol) {
     ierr = VecCopy(X,snes->vec_sol);CHKERRQ(ierr);
-    snes->vec_sol_always = snes->vec_sol;
+    snes->vec_sol_always  = snes->vec_sol;
     snes->vec_func_always = snes->vec_func; 
   }
   if (i == maxits) {
@@ -197,13 +197,34 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
 #define __FUNC__ "SNESSetUp_UM_TR"
 static int SNESSetUp_UM_TR(SNES snes)
 {
-  int ierr;
+  int        ierr;
+  PetscTruth ilu,bjacobi;
+  SLES       sles,*subsles;
+  PC         pc,subpc;
 
   PetscFunctionBegin;
   snes->nwork = 4;
   ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
   PetscLogObjectParents(snes,snes->nwork,snes->work);
   snes->vec_sol_update_always = snes->work[3];
+
+  /* 
+       If PC was set by default to ILU then change it to Jacobi
+  */
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,PCILU,&ilu);CHKERRQ(ierr);
+  if (ilu) {
+    ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
+  } else {
+    ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&bjacobi);CHKERRQ(ierr);
+    ierr = PCBJacobiGetSubSLES(pc,0,0,&subsles);CHKERRQ(ierr);
+    ierr = SLESGetPC(*subsles,&subpc);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)subpc,PCILU,&ilu);CHKERRQ(ierr);
+    if (ilu) {
+      ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -308,6 +329,10 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
 {
   SNES_UM_TR *ctx = (SNES_UM_TR *)snes->data;
   int        ierr;
+  SLES       sles;
+  PC         pc;
+  PetscTruth ismatshell,nopcset;
+  Mat        pmat;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES trust region options for minimization");CHKERRQ(ierr);
@@ -319,6 +344,25 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
     ierr = PetscOptionsDouble("-snes_um_delta0","delta0","None",ctx->delta,&ctx->delta,0);CHKERRQ(ierr);
     ierr = PetscOptionsDouble("-snes_um_factor1","factor1","None",ctx->factor1,&ctx->factor1,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+
+  /* if preconditioner has not been set yet, and not using a matrix shell then
+     set preconditioner to Jacobi. This is to prevent PCSetFromOptions() from 
+     setting a default of ILU or block Jacobi-ILU which won't work since TR 
+     requires a symmetric preconditioner
+  */
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,0,&nopcset);CHKERRQ(ierr);
+  if (nopcset) {
+    ierr = PCGetOperators(pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
+    if (pmat) {
+      ierr = PetscTypeCompare((PetscObject)pmat,MATSHELL,&ismatshell);CHKERRQ(ierr);
+      if (!ismatshell) {
+        ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
+      }
+    }
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -348,8 +392,6 @@ EXTERN_C_BEGIN
 int SNESCreate_UM_TR(SNES snes)
 {
   SNES_UM_TR *neP;
-  SLES       sles;
-  PC         pc;
   int        ierr;
 
   PetscFunctionBegin;
@@ -380,12 +422,6 @@ int SNESCreate_UM_TR(SNES snes)
   neP->success		= 0;
   neP->sflag		= 0;
  
-  /* Set default preconditioner to be Jacobi, to override SLES default. */
-  /* This implementation currently requires a symmetric preconditioner. */
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

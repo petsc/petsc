@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.148 2001/01/16 18:17:25 balay Exp balay $*/
+/*$Id: mpidense.c,v 1.149 2001/01/19 23:20:28 balay Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -516,12 +516,12 @@ static int MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
 #define __FUNC__ "MatView_MPIDense_ASCIIorDraworSocket"
 static int MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
-  Mat_MPIDense           *mdn = (Mat_MPIDense*)mat->data;
-  int                    ierr,size = mdn->size,rank = mdn->rank; 
-  PetscViewerType        vtype;
-  PetscTruth             isascii,isdraw;
-  PetscViewer            sviewer;
-  PetscViewerFormatType  format;
+  Mat_MPIDense      *mdn = (Mat_MPIDense*)mat->data;
+  int               ierr,size = mdn->size,rank = mdn->rank; 
+  PetscViewerType   vtype;
+  PetscTruth        isascii,isdraw;
+  PetscViewer       sviewer;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.46 2001/01/16 18:18:03 balay Exp balay $*/
+/*$Id: sbaij.c,v 1.47 2001/01/19 23:20:46 balay Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -335,10 +335,10 @@ static int MatView_SeqSBAIJ_Binary(Mat A,PetscViewer viewer)
 #define __FUNC__ "MatView_SeqSBAIJ_ASCII"
 static int MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int         ierr,i,j,bs = a->bs,k,l,bs2=a->bs2;
-  char        *name;
-  PetscViewerFormatType  format;
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  int               ierr,i,j,bs = a->bs,k,l,bs2=a->bs2;
+  char              *name;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);

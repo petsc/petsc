@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.221 2001/01/17 19:44:15 bsmith Exp balay $*/
+/*$Id: vector.c,v 1.222 2001/01/19 23:20:11 balay Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1837,8 +1837,8 @@ int VecRestoreArray(Vec x,Scalar *a[])
 @*/
 int VecView(Vec vec,PetscViewer viewer)
 {
-  int ierr;
-  PetscViewerFormatType format;
+  int               ierr;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);

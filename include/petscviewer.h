@@ -1,4 +1,4 @@
-/* $Id: petscviewer.h,v 1.80 2001/01/19 20:43:48 bsmith Exp balay $ */
+/* $Id: petscviewer.h,v 1.81 2001/01/19 23:19:27 balay Exp bsmith $ */
 /*
      PetscViewers are objects where other objects can be looked at or stored.
 */
@@ -54,19 +54,30 @@ EXTERN int PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
 
 
 typedef enum { 
-  PETSC_VIEWER_ASCII_DEFAULT, PETSC_VIEWER_ASCII_MATLAB, PETSC_VIEWER_ASCII_IMPL,
-  PETSC_VIEWER_ASCII_INFO, PETSC_VIEWER_ASCII_INFO_LONG, PETSC_VIEWER_ASCII_COMMON,
-  PETSC_VIEWER_ASCII_SYMMODU, PETSC_VIEWER_ASCII_INDEX, PETSC_VIEWER_ASCII_DENSE,
-  PETSC_VIEWER_BINARY_DEFAULT, PETSC_VIEWER_BINARY_NATIVE, PETSC_VIEWER_DRAW_BASIC,
-  PETSC_VIEWER_DRAW_LG, PETSC_VIEWER_DRAW_CONTOUR, PETSC_VIEWER_DRAW_PORTS,
-  PETSC_VIEWER_NATIVE} PetscViewerFormatType;
+  PETSC_VIEWER_ASCII_DEFAULT,
+  PETSC_VIEWER_ASCII_MATLAB, 
+  PETSC_VIEWER_ASCII_IMPL,
+  PETSC_VIEWER_ASCII_INFO,
+  PETSC_VIEWER_ASCII_INFO_LONG,
+  PETSC_VIEWER_ASCII_COMMON,
+  PETSC_VIEWER_ASCII_SYMMODU,
+  PETSC_VIEWER_ASCII_INDEX,
+  PETSC_VIEWER_ASCII_DENSE,
+  PETSC_VIEWER_BINARY_DEFAULT,
+  PETSC_VIEWER_BINARY_NATIVE,
+  PETSC_VIEWER_DRAW_BASIC,
+  PETSC_VIEWER_DRAW_LG,
+  PETSC_VIEWER_DRAW_CONTOUR, 
+  PETSC_VIEWER_DRAW_PORTS,
+  PETSC_VIEWER_NATIVE,
+  PETSC_VIEWER_NOFORMAT} PetscViewerFormat;
 
 
 
-EXTERN int PetscViewerSetFormat(PetscViewer,PetscViewerFormatType);
-EXTERN int PetscViewerPushFormat(PetscViewer,PetscViewerFormatType);
+EXTERN int PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
+EXTERN int PetscViewerPushFormat(PetscViewer,PetscViewerFormat);
 EXTERN int PetscViewerPopFormat(PetscViewer);
-EXTERN int PetscViewerGetFormat(PetscViewer,PetscViewerFormatType*);
+EXTERN int PetscViewerGetFormat(PetscViewer,PetscViewerFormat*);
 EXTERN int PetscViewerFlush(PetscViewer);
 
 /*

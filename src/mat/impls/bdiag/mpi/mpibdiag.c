@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.194 2001/01/15 21:45:48 bsmith Exp balay $*/
+/*$Id: mpibdiag.c,v 1.195 2001/01/19 23:20:38 balay Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -467,12 +467,12 @@ static int MatView_MPIBDiag_Binary(Mat mat,PetscViewer viewer)
 #define __FUNC__ "MatView_MPIBDiag_ASCIIorDraw"
 static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
 {
-  Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
-  Mat_SeqBDiag *dmat = (Mat_SeqBDiag*)mbd->A->data;
-  int          ierr,i,size = mbd->size,rank = mbd->rank;
-  PetscTruth   isascii,isdraw;
+  Mat_MPIBDiag      *mbd = (Mat_MPIBDiag*)mat->data;
+  Mat_SeqBDiag      *dmat = (Mat_SeqBDiag*)mbd->A->data;
+  int               ierr,i,size = mbd->size,rank = mbd->rank;
+  PetscTruth        isascii,isdraw;
   PetscViewer       sviewer;
-  PetscViewerFormatType  format;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.42 2001/01/15 21:48:51 bsmith Exp balay $*/
+/*$Id: gr2.c,v 1.43 2001/01/19 23:22:22 balay Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -71,18 +71,18 @@ int VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 #define __FUNC__ "VecView_MPI_Draw_DA2d"
 int VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
-  DA             da,dac,dag;
-  int            rank,ierr,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
-  double         coors[4],ymin,ymax,xmin,xmax;
-  PetscDraw           draw,popup;
-  PetscTruth     isnull,useports;
-  MPI_Comm       comm;
-  Vec            xlocal,xcoor,xcoorl;
-  DAPeriodicType periodic;
-  DAStencilType  st;
-  ZoomCtx        zctx;
-  PetscDrawViewPorts  *ports;
-  PetscViewerFormatType  format;
+  DA                 da,dac,dag;
+  int                rank,ierr,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
+  double             coors[4],ymin,ymax,xmin,xmax;
+  PetscDraw          draw,popup;
+  PetscTruth         isnull,useports;
+  MPI_Comm           comm;
+  Vec                xlocal,xcoor,xcoorl;
+  DAPeriodicType     periodic;
+  DAStencilType      st;
+  ZoomCtx            zctx;
+  PetscDrawViewPorts *ports;
+  PetscViewerFormat  format;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);

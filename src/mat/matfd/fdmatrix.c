@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.80 2001/01/15 21:46:28 bsmith Exp balay $*/
+/*$Id: fdmatrix.c,v 1.81 2001/01/19 23:20:59 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -85,9 +85,9 @@ static int MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 @*/
 int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
 {
-  int        i,j,ierr;
-  PetscTruth isdraw,isascii;
-  PetscViewerFormatType  format;
+  int               i,j,ierr;
+  PetscTruth        isdraw,isascii;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE);
@@ -95,7 +95,7 @@ int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE); 
   PetscCheckSameComm(c,viewer);
 
-  ierr  = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isdraw) { 
     ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);

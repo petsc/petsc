@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.210 2001/01/17 22:22:44 bsmith Exp balay $*/
+/*$Id: mpibaij.c,v 1.211 2001/01/19 23:20:42 balay Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -1070,11 +1070,11 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
 #define __FUNC__ "MatView_MPIBAIJ_ASCIIorDraworSocket"
 static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
-  Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ*)mat->data;
-  int          ierr,bs = baij->bs,size = baij->size,rank = baij->rank;
-  PetscTruth   isascii,isdraw;
+  Mat_MPIBAIJ       *baij = (Mat_MPIBAIJ*)mat->data;
+  int               ierr,bs = baij->bs,size = baij->size,rank = baij->rank;
+  PetscTruth        isascii,isdraw;
   PetscViewer       sviewer;
-  PetscViewerFormatType  format;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);

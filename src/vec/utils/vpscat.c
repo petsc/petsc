@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.154 2001/01/16 18:16:44 balay Exp balay $*/
+/*$Id: vpscat.c,v 1.155 2001/01/19 23:20:08 balay Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -16,7 +16,7 @@ int VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
   VecScatter_MPI_General *to=(VecScatter_MPI_General*)ctx->todata;
   VecScatter_MPI_General *from=(VecScatter_MPI_General*)ctx->fromdata;
   int                    i,rank,ierr;
-  PetscViewerFormatType  format;
+  PetscViewerFormat  format;
   PetscTruth             isascii;
 
   PetscFunctionBegin;

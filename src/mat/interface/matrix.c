@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.388 2001/01/15 21:45:27 bsmith Exp balay $*/
+/*$Id: matrix.c,v 1.389 2001/01/19 23:20:24 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -191,10 +191,10 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 @*/
 int MatView(Mat mat,PetscViewer viewer)
 {
-  int        ierr,rows,cols;
-  PetscTruth isascii;
-  char       *cstr;
-  PetscViewerFormatType  format;
+  int               ierr,rows,cols;
+  PetscTruth        isascii;
+  char              *cstr;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);

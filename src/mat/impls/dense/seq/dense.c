@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.192 2001/01/15 21:45:30 bsmith Exp balay $*/
+/*$Id: dense.c,v 1.193 2001/01/19 23:20:27 balay Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -647,11 +647,11 @@ EXTERN_C_END
 #define __FUNC__ "MatView_SeqDense_ASCII"
 static int MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
 {
-  Mat_SeqDense *a = (Mat_SeqDense*)A->data;
-  int          ierr,i,j;
-  char         *name;
-  Scalar       *v;
-  PetscViewerFormatType  format;
+  Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
+  int               ierr,i,j;
+  char              *name;
+  Scalar            *v;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
@@ -725,10 +725,10 @@ static int MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
 #define __FUNC__ "MatView_SeqDense_Binary"
 static int MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
 {
-  Mat_SeqDense *a = (Mat_SeqDense*)A->data;
-  int          ict,j,n = A->n,m = A->m,i,fd,*col_lens,ierr,nz = m*n;
-  Scalar       *v,*anonz,*vals;
-  PetscViewerFormatType  format;
+  Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
+  int               ict,j,n = A->n,m = A->m,i,fd,*col_lens,ierr,nz = m*n;
+  Scalar            *v,*anonz,*vals;
+  PetscViewerFormat format;
   
   PetscFunctionBegin;
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
@@ -793,14 +793,14 @@ static int MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
 #define __FUNC__ "MatView_SeqDense_Draw_Zoom"
 int MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
 {
-  Mat           A = (Mat) Aa;
-  Mat_SeqDense  *a = (Mat_SeqDense*)A->data;
-  int           m = A->m,n = A->n,color,i,j,ierr;
-  Scalar        *v = a->v;
-  PetscViewer        viewer;
-  PetscDraw          popup;
-  PetscReal          xl,yl,xr,yr,x_l,x_r,y_l,y_r,scale,maxv = 0.0;
-  PetscViewerFormatType  format;
+  Mat               A = (Mat) Aa;
+  Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
+  int               m = A->m,n = A->n,color,i,j,ierr;
+  Scalar            *v = a->v;
+  PetscViewer       viewer;
+  PetscDraw         popup;
+  PetscReal         xl,yl,xr,yr,x_l,x_r,y_l,y_r,scale,maxv = 0.0;
+  PetscViewerFormat format;
 
   PetscFunctionBegin; 
 

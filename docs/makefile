@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.41 1999/02/08 20:41:10 balay Exp bsmith $ 
+# $Id: makefile,v 1.42 2000/08/17 04:53:53 bsmith Exp bsmith $ 
 
 CFLAGS   =
 FFLAGS   =
@@ -20,6 +20,11 @@ LOCDIR   = docs/
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 include ${PETSC_DIR}/bmake/common_test
 
+bibtex2html:
+	/home/petsc/software/bibtex2html-1.44-linux/bibtex2html -nokeys -rawurl tex/petscapps.bib
 
+bib2html:
+	${RM} petscapps.html
+	/home/gropp/public_html/bib2html tex/petscapps.bib > petscapps.html
 
 

@@ -1,4 +1,4 @@
-/* $Id: viewerimpl.h,v 1.4 2001/01/15 21:43:05 bsmith Exp balay $ */
+/* $Id: viewerimpl.h,v 1.5 2001/01/19 23:19:27 balay Exp bsmith $ */
 
 #ifndef _VIEWERIMPL
 #define _VIEWERIMPL
@@ -19,9 +19,9 @@ struct _PetscViewerOps {
 */
 struct _p_PetscViewer {
   PETSCHEADER(struct _PetscViewerOps)
-  PetscViewerFormatType format,formats[10];
-  int                   iformat;
-  void                  *data;
+  PetscViewerFormat format,formats[10];
+  int               iformat;
+  void              *data;
 };
 
 

@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.190 2001/01/15 21:45:02 bsmith Exp balay $*/
+/*$Id: bvec2.c,v 1.191 2001/01/19 23:20:13 balay Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -72,10 +72,10 @@ int VecGetOwnershipRange_Seq(Vec xin,int *low,int *high)
 #define __FUNC__ "VecView_Seq_File"
 int VecView_Seq_File(Vec xin,PetscViewer viewer)
 {
-  Vec_Seq  *x = (Vec_Seq *)xin->data;
-  int      i,n = xin->n,ierr;
-  char     *name;
-  PetscViewerFormatType format;
+  Vec_Seq           *x = (Vec_Seq *)xin->data;
+  int               i,n = xin->n,ierr;
+  char              *name;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -168,10 +168,10 @@ static int VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 #define __FUNC__ "VecView_Seq_Draw"
 static int VecView_Seq_Draw(Vec xin,PetscViewer v)
 {
-  int                    ierr;
-  PetscDraw              draw;
-  PetscTruth             isnull;
-  PetscViewerFormatType  format;
+  int               ierr;
+  PetscDraw         draw;
+  PetscTruth        isnull;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);

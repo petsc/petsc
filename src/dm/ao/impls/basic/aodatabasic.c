@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.59 2001/01/16 18:21:03 balay Exp balay $*/
+/*$Id: aodatabasic.c,v 1.60 2001/01/19 23:22:18 balay Exp bsmith $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.
@@ -112,12 +112,12 @@ int AODataView_Basic_Binary(AOData ao,PetscViewer viewer)
 #define __FUNC__ "AODataView_Basic_ASCII"
 int AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
 {
-  int             ierr,j,k,l,rank,size,nkeys,nsegs,i,N,bs,zero = 0;
-  char            *dt,**keynames,**segnames,*stype,*segvalue;
-  AODataSegment   *segment;
-  AODataKey       *key = ao->keys;
-  PetscDataType   dtype;
-  PetscViewerFormatType  format;
+  int               ierr,j,k,l,rank,size,nkeys,nsegs,i,N,bs,zero = 0;
+  char              *dt,**keynames,**segnames,*stype,*segvalue;
+  AODataSegment     *segment;
+  AODataKey         *key = ao->keys;
+  PetscDataType     dtype;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(ao->comm,&rank);CHKERRQ(ierr);

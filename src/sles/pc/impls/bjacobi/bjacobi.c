@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.150 2001/01/15 21:46:51 bsmith Exp balay $*/
+/*$Id: bjacobi.c,v 1.151 2001/01/16 18:19:01 balay Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -429,8 +429,6 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  PetscValidIntPointer(n_local);
-  PetscValidIntPointer(first_local);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetSubSLES_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n_local,first_local,sles);CHKERRQ(ierr);

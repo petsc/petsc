@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.223 2000/10/03 03:13:21 curfman Exp bsmith $*/
+/*$Id: snes.c,v 1.224 2001/01/15 21:47:49 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -1286,13 +1286,7 @@ int SNESSetUp(SNES snes,Vec x)
     PetscLogObjectParent(snes,J);
     snes->mfshell  = J;
     snes->jacobian = J;
-    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free operator Jacobian routines\n");
-    } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-      PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free operator Hessian routines\n");
-    } else {
-      SETERRQ(PETSC_ERR_SUP,"Method class doesn't support matrix-free operator option");
-    }
+    PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free operator routines\n");
     ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf",&flg);CHKERRQ(ierr); 
@@ -1301,21 +1295,28 @@ int SNESSetUp(SNES snes,Vec x)
       provided preconditioner matrix with the default matrix free version.
    */
   if (flg) {
-    Mat J;
+    Mat  J;
+    SLES sles;
+    PC   pc;
+
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     PetscLogObjectParent(snes,J);
     snes->mfshell = J;
+    PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free perator and preconditioner routines\n");
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
       ierr = SNESSetJacobian(snes,J,J,MatSNESMFFormJacobian,snes->funP);CHKERRQ(ierr);
-      PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free Jacobian routines\n");
     } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
       ierr = SNESSetHessian(snes,J,J,MatSNESMFFormJacobian,snes->funP);CHKERRQ(ierr);
-      PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free Hessian routines\n");
     } else {
       SETERRQ(PETSC_ERR_SUP,"Method class doesn't support matrix-free option");
     }
     ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
+    /* force no preconditioner */
+    ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+    ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+    ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
+
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
     PetscTruth iseqtr;
 

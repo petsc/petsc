@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.18 2001/01/15 21:49:42 bsmith Exp balay $*/
+/*$Id: pf.c,v 1.19 2001/01/19 23:22:48 balay Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -281,10 +281,10 @@ int PFApply(PF pf,int n,Scalar* x,Scalar* y)
 @*/
 int PFView(PF pf,PetscViewer viewer)
 {
-  PFType      cstr;
-  int         ierr;
-  PetscTruth  isascii;
-  PetscViewerFormatType  format;
+  PFType            cstr;
+  int               ierr;
+  PetscTruth        isascii;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE);

@@ -1,4 +1,4 @@
-/*$Id: zviewer.c,v 1.29 2001/01/19 23:22:53 balay Exp balay $*/
+/*$Id: zviewer.c,v 1.30 2001/01/19 23:25:08 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petsc.h"
@@ -102,14 +102,14 @@ void PETSC_STDCALL viewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL viewersetformat_(PetscViewer *vin,PetscViewerFormatType *format,int *ierr)
+void PETSC_STDCALL viewersetformat_(PetscViewer *vin,PetscViewerFormat *format,int *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = PetscViewerSetFormat(v,*format);
 }
 
-void PETSC_STDCALL viewerpushformat_(PetscViewer *vin,PetscViewerFormatType *format,int *ierr)
+void PETSC_STDCALL viewerpushformat_(PetscViewer *vin,PetscViewerFormat *format,int *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);

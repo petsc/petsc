@@ -1,5 +1,5 @@
 !
-!  $Id: petscviewer.h,v 1.27 2001/01/15 21:50:11 bsmith Exp balay $;
+!  $Id: petscviewer.h,v 1.28 2001/01/19 23:22:59 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the PetscViewer package in PETSc
 !
@@ -9,6 +9,7 @@
 #define PetscViewer PetscFortranAddr
 #define PetscViewerBinaryType integer
 #define PetscViewerType character*(80)
+#define PetscViewerFormat integer
 
 #define PETSC_VIEWER_SOCKET 'socket'
 #define PETSC_VIEWER_ASCII 'ascii'
@@ -71,6 +72,8 @@
 
       integer PETSC_VIEWER_NATIVE
       parameter (PETSC_VIEWER_NATIVE = 15)
+      integer PETSC_VIEWER_NOFORMAT
+      parameter (PETSC_VIEWER_NOFORMAT = 16)
 !
 !  End of Fortran include file for the PetscViewer package in PETSc
 

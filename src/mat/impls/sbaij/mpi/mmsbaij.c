@@ -1,4 +1,4 @@
-/*$Id: mmsbaij.c,v 1.4 2001/01/15 21:46:06 bsmith Exp balay $*/
+/*$Id: mmsbaij.c,v 1.5 2001/01/16 18:18:09 balay Exp bsmith $*/
 
 /*
    Support for the parallel SBAIJ matrix vector multiply
@@ -81,6 +81,12 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   /* form array of columns we need */
   ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
   ierr = PetscMalloc((ec*bs+1)*sizeof(int),&tmp);CHKERRQ(ierr);
+  ec = 0;
+  for (i=0; i<Nbs; i++) {
+    if (indices[i]) {
+      garray[ec++] = i;
+    }
+  }
 
   /* make indices now point into garray */
   for (i=0; i<ec; i++) {

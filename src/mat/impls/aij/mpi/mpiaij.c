@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.325 2001/01/17 19:45:00 balay Exp balay $*/
+/*$Id: mpiaij.c,v 1.326 2001/01/19 23:20:32 balay Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -709,12 +709,12 @@ int MatDestroy_MPIAIJ(Mat mat)
 #define __FUNC__ "MatView_MPIAIJ_ASCIIorDraworSocket"
 int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
-  Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)mat->data;
-  Mat_SeqAIJ* C = (Mat_SeqAIJ*)aij->A->data;
-  int         ierr,shift = C->indexshift,rank = aij->rank,size = aij->size;
-  PetscTruth  isdraw,isascii,flg;
-  PetscViewer      sviewer;
-  PetscViewerFormatType  format;
+  Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)mat->data;
+  Mat_SeqAIJ*       C = (Mat_SeqAIJ*)aij->A->data;
+  int               ierr,shift = C->indexshift,rank = aij->rank,size = aij->size;
+  PetscTruth        isdraw,isascii,flg;
+  PetscViewer       sviewer;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr  = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);

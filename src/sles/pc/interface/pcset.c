@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.110 2001/01/06 03:42:13 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.111 2001/01/15 21:46:45 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -188,20 +188,18 @@ int PCSetFromOptions(PC pc)
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsBegin(pc->comm,pc->prefix,"Preconditioner (PC) Options","PC");CHKERRQ(ierr);
     if (!pc->type_name) {
-      PetscTruth ismg,isshell,ismatshell;
+      PetscTruth ismatshell;
       int        size;
       /*
         Shell matrix (probably) cannot support Bjacobi and ILU
       */
       ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&isshell);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
       if (pc->pmat) {
         ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSHELL,&ismatshell);CHKERRQ(ierr);
       } else {
-        ismatshell = PETSC_FALSE;
+        ismatshell = PETSC_FALSE; /* matrix is not yet set, so guess that it will not be MATSHELL */
       }
-      if (ismatshell && !isshell && !ismg) {
+      if (ismatshell) {
         def = PCNONE;
         PetscLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
     preconditioners (unless defined by the user)\n");

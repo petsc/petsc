@@ -1,4 +1,4 @@
-/*$Id: appalgebra.c,v 1.15 2001/01/15 21:49:23 bsmith Exp balay $*/
+/*$Id: appalgebra.c,v 1.16 2001/01/19 21:02:58 balay Exp bsmith $*/
 #include "appctx.h"
 #include "math.h"
 
@@ -103,10 +103,10 @@ int AppCtxSolve(AppCtx* appctx, int *its)
       PetscTruth flg;
       ierr = PetscOptionsHasName(PETSC_NULL,"-save_global_preconditioner",&flg);CHKERRQ(ierr);
       if (flg) {
-	PC pc;
-	KSP ksp;
-	Mat mat,mat2;
-	Viewer viewer;
+	PC          pc;
+	KSP         ksp;
+	Mat         mat,mat2;
+	PetscViewer viewer;
 	ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
 	ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
 	ierr = PCComputeExplicitOperator(pc,&mat);CHKERRQ(ierr);

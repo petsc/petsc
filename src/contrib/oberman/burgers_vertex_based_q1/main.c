@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.7 2001/01/16 18:21:39 balay Exp bsmith $*/
+/*$Id: main.c,v 1.8 2001/01/17 22:28:17 bsmith Exp bsmith $*/
 static char help[] ="Solves the 2d burgers equation.   u*du/dx + v*du/dy - c(lap(u)) = f.  u*dv/dv + v*dv/dy - c(lap(v)) =g.  This has exact solution, see fletcher.";
 
 
@@ -173,7 +173,7 @@ const int two = 2;
   /*  Create vector to contain load, nonlinear function, and initial guess  */
   ierr = VecCreateMPI(comm,two*vertex_local_n,PETSC_DECIDE,&b);CHKERRQ(ierr);
   ierr = VecSetBlockSize(b,two);  CHKERRQ(ierr);
-  ierr = VecSetLocalToGlobalMappingBlocked(b,ltog);CHKERRQ(ierr);
+  ierr = VecSetLocalToGlobalMappingBlock(b,ltog);CHKERRQ(ierr);
  
   /* duplicated vectors inherit the blocking */
   ierr = VecDuplicate(b,&f);CHKERRQ(ierr);/*  the nonlinear function */

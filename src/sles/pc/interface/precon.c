@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.205 2001/01/19 21:05:38 bsmith Exp balay $*/
+/*$Id: precon.c,v 1.206 2001/01/19 23:21:07 balay Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -1185,10 +1185,10 @@ int PCPostSolve(PC pc,KSP ksp)
 @*/
 int PCView(PC pc,PetscViewer viewer)
 {
-  PCType      cstr;
-  int         ierr;
-  PetscTruth  mat_exists,isascii,isstring;
-  PetscViewerFormatType  format;
+  PCType            cstr;
+  int               ierr;
+  PetscTruth        mat_exists,isascii,isstring;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);

@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.26 2001/01/15 21:45:45 bsmith Exp balay $*/
+/*$Id: bdiag3.c,v 1.27 2001/01/19 23:20:37 balay Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -477,11 +477,11 @@ int MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
 #define __FUNC__ "MatView_SeqBDiag_ASCII"
 int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  char         *name;
-  int          ierr,*col,i,j,len,diag,nr = A->m,bs = a->bs,iprint,nz;
-  Scalar       *val,*dv,zero = 0.0;
-  PetscViewerFormatType  format;
+  Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
+  char              *name;
+  int               ierr,*col,i,j,len,diag,nr = A->m,bs = a->bs,iprint,nz;
+  Scalar            *val,*dv,zero = 0.0;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);

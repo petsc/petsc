@@ -1,4 +1,4 @@
-/*$Id: viewa.c,v 1.18 2001/01/19 21:32:46 balay Exp balay $*/
+/*$Id: viewa.c,v 1.19 2001/01/19 23:19:35 balay Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -45,7 +45,7 @@
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
           PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpenX(),PetscViewerSocketOpen()
 @*/
-int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormatType format)
+int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
@@ -96,7 +96,7 @@ int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormatType format)
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
           PetscViewerSetFormat(), PetscViewerPopFormat()
 @*/
-int PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormatType format)
+int PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
@@ -137,7 +137,7 @@ int PetscViewerPopFormat(PetscViewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscViewerGetFormat" 
-int PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormatType *format)
+int PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
 {
   PetscFunctionBegin;
   *format =  viewer->format;
