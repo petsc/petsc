@@ -7,8 +7,8 @@
 !
       subroutine FortranNormSqr(x,n,sum1)
       implicit none
-      PetscScalar      x(*)
-      double precision sum1
+      PetscScalar x(*)
+      PetscReal   sum1
       integer n
 
       integer i
@@ -23,8 +23,8 @@
 
       subroutine FortranNormSqrUnroll(x,n,sum1)
       implicit none
-      PetscScalar      x(*)
-      double precision sum1
+      PetscScalar x(*)
+      PetscReal   sum1
       integer n
 
       integer i
