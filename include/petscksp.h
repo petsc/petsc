@@ -3,6 +3,8 @@
 #define __KSP_PACKAGE
 #include "petsc.h"
 #include "vec.h"
+#include "mat.h"
+#include "pc.h"
 
 typedef struct _KSP*     KSP;
 
@@ -37,21 +39,18 @@ extern int KSPSetDivergenceTolerance(KSP,double);
 extern int KSPSetCalculateResidual(KSP);
 extern int KSPSetDoNotCalculateResidual(KSP);
 extern int KSPSetUsePreconditionedResidual(KSP);
-extern int KSPSetInitialGuessZero(KSP);
+extern int KSPSetInitialGuessNonZero(KSP);
 extern int KSPSetCalculateEigenvalues(KSP);
 extern int KSPSetRhs(KSP,Vec);
 extern int KSPGetRhs(KSP,Vec *);
 extern int KSPSetSolution(KSP,Vec);
 extern int KSPGetSolution(KSP,Vec *);
-extern int KSPSetAmult(KSP,int (*)(void *,Vec,Vec),void *);
 
-extern int KSPGetAmultContext(KSP,void **);
-extern int KSPSetAmultTranspose(KSP,int (*)(void *,Vec,Vec));
-extern int KSPSetBinv(KSP,int(*)(void *,Vec,Vec),void *);
-extern int KSPGetBinvContext(KSP,void **);
-extern int KSPSetBinvTranspose(KSP,int (*)(void *,Vec,Vec));
-extern int KSPSetMatop(KSP,int (*)(void *,void *,Vec,Vec));
-extern int KSPSetMatopTranspose(KSP,int (*)(void *,void *,Vec,Vec));
+extern int KSPSetAmult(KSP,Mat);
+extern int KSPGetAmult(KSP,Mat *);
+extern int KSPSetBinv(KSP,PC);
+extern int KSPGetBinv(KSP,PC*);
+
 extern int KSPSetMonitor(KSP,int (*)(KSP,int,double, void*), void *);
 extern int KSPGetMonitorContext(KSP,void **);
 extern int KSPSetResidualHistory(KSP, double *,int);
@@ -74,8 +73,6 @@ extern int KSPLineGraphMonitor(KSP,int,double, void *);
 extern int KSPDefaultConverged(KSP,int,double, void *);
 
 extern int KSPPrintHelp(KSP);
-
-extern int KSPRichardsonSetFast(KSP,int (*)(void*,Vec,Vec,Vec,int),void*);
 
 extern int KSPView(KSP,Viewer);
 #endif

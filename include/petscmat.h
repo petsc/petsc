@@ -10,7 +10,12 @@ typedef struct _MatScatterCtx* MatScatterCtx;
 
 
 extern int MatCreateSequentialDense(int,int,Mat*);
-extern int MatCreateSequentialAIJ(int,int,int,Mat*);
+extern int MatCreateSequentialAIJ(int,int,int,int *,Mat*);
+
+extern int MatShellCreate(int,int,void *,Mat*);
+extern int MatShellSetMult(Mat,int (*)(void*,Vec,Vec));
+extern int MatShellSetMultTrans(Mat,int (*)(void*,Vec,Vec));
+
   
 /* ------------------------------------------------------------*/
 extern int  MatValidMatrix(Mat);
@@ -74,8 +79,10 @@ extern int MatTranspose(Mat);
 extern int MatScale(Mat,Vec,Vec);
 extern int MatShrink(Mat,int,int*,int,int*);
 extern int  MatEqual(Mat,Mat);
-extern int  MatGetSubMatrix(Mat,IS,IS);
-extern int MatSetSubMatrix(Mat,Mat,IS,IS);
+extern int  MatScatterBegin(Mat,IS,IS,Mat,IS,IS,MatScatterCtx*);
+extern int  MatScatterEnd(Mat,IS,IS,Mat,IS,IS,MatScatterCtx*);
+extern int  MatScatterAddBegin(Mat,IS,IS,Mat,IS,IS,MatScatterCtx*);
+extern int  MatScatterAddEnd(Mat,IS,IS,Mat,IS,IS,MatScatterCtx*);
 extern int MatReOrder(Mat,IS,IS);
 
 #define NORM_1         1

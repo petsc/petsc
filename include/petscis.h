@@ -7,20 +7,27 @@
 #include "petsc.h"
 
 typedef struct _IS* IS;
+typedef struct _ISScatterCtx* ISScatterCtx;
 
-int    ISCreateSequential(int,int *,IS *);
-int    ISCreateSequentialPermutation(int,int *,IS *);
-int    ISCreateStrideSequential(int,int,int,IS *);
-int    ISCreateRangeSequential(int,int,int,IS *);
+extern int    ISCreateSequential(int,int *,IS *);
+#if defined(USING_MPI)
+extern int    ISCreateParallel(int,int,int *,MPI_Comm,IS *);
+#endif
+extern int    ISCreateStrideSequential(int,int,int,IS *);
+extern int    ISCreateRangeSequential(int,int,int,IS *);
 
-int   ISGetIndices(IS,int **);
-int   ISRestoreIndices(IS,int **);
-int   ISGetSize(IS,int *);
-int   ISGetLocalSize(IS,int *);
-int   ISGetPosition(IS,int,int *);
-int   ISDestroy(IS);
-int   ISIsPermutation(IS); 
-int   ISInvertPermutation(IS,IS*);
-int   ISView(IS,Viewer);
+extern int   ISSetPermutation(IS);
+extern int   ISIsPermutation(IS); 
+extern int   ISGetIndices(IS,int **);
+extern int   ISRestoreIndices(IS,int **);
+extern int   ISGetSize(IS,int *);
+extern int   ISGetLocalSize(IS,int *);
+extern int   ISDestroy(IS);
+extern int   ISInvertPermutation(IS,IS*);
+extern int   ISView(IS,Viewer);
+
+extern int   ISSetUpScatterBegin(IS,IS,ISScatterCtx*);
+extern int   ISSetUpScatterEnd(IS,IS,ISScatterCtx*);
+extern int   ISFreeScatterCtx(ISScatterCtx);
 
 #endif
