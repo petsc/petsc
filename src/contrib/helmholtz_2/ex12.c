@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex22.c,v 1.1 1996/07/25 05:12:17 curfman Exp curfman $";
+static char vcid[] = "$Id: ex22.c,v 1.2 1996/07/25 16:51:27 curfman Exp balay $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -469,7 +469,7 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
   double  k1Dbeta_sq = user->k1Dbeta_sq, ampDbeta = user->ampDbeta, rh_xi;
   double  rh_eta_sq = user->rh_eta_sq, rh_xi_sq = user->rh_xi_sq, one = 1.0, two = 2.0;
   Scalar  zero = 0.0, val, c2, c1, c, v[5];
-  complex imag = complex(0.0,1.0);
+  Scalar  imag_part(0.0,1.0);
 
   rh_xi = 1.0/h_xi;
 
@@ -535,7 +535,7 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
       col[0] = grow;
       col[1] = te;
       v[0]   = -one;
-      v[1]   = exp(imag * k1Dbeta_sq * (cosh(pi*j*h_xi) - one));
+      v[1]   = exp(imag_part * k1Dbeta_sq * (cosh(pi*j*h_xi) - one));
       ierr   = MatSetValues(A,1,&grow,2,col,v,INSERT_VALUES); CHKERRQ(ierr);
       ierr   = VecSetValues(b,1,&grow,&zero,INSERT_VALUES); CHKERRQ(ierr);
     }
@@ -562,7 +562,7 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
       v[0]   = -rh_xi;
       v[1]   = rh_xi;
       val    = -pi*ampDbeta * sin(pi*i*h_eta) *
-                exp(imag * k1Dbeta_sq * cos(pi*i*h_eta));
+                exp(imag_part * k1Dbeta_sq * cos(pi*i*h_eta));
       ierr   = MatSetValues(A,1,&grow,2,col,v,INSERT_VALUES); CHKERRQ(ierr);
       ierr   = VecSetValues(b,1,&grow,&val,INSERT_VALUES); CHKERRQ(ierr);
     }
@@ -581,9 +581,9 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
       col[1] = ltog[row - Xm];
       col[2] = ltog[row];
       v[0]   = c2;
-      v[1]   = -2.0*c2 + imag * c1;
-      v[2]   = c2 - imag * c1 - sqr(k1Dbeta_sq)*mach;
-      /* v[2]   = c2 - imag * c1 - sqr(k1Dbeta_sq*mach); */
+      v[1]   = -2.0*c2 + imag_part * c1;
+      v[2]   = c2 - imag_part * c1 - sqr(k1Dbeta_sq)*mach;
+      /* v[2]   = c2 - imag_part * c1 - sqr(k1Dbeta_sq*mach); */
       ierr   = MatSetValues(A,1,&grow,3,col,v,INSERT_VALUES); CHKERRQ(ierr);
       ierr   = VecSetValues(b,1,&grow,&zero,INSERT_VALUES); CHKERRQ(ierr);
     }

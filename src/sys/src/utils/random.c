@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.16 1996/04/13 20:47:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.17 1996/07/08 22:17:44 bsmith Exp balay $";
 #endif
 
 /*
@@ -138,11 +138,13 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
 #if defined(PETSC_COMPLEX)
   double zero = 0.0;
+  Scalar rand_val(0.0,0.0);
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
-  if (r->type == RANDOM_DEFAULT) *val = complex(drand48(),drand48());
-  else if (r->type == RANDOM_DEFAULT_REAL) *val = complex(drand48(),zero);
-  else if (r->type == RANDOM_DEFAULT_IMAGINARY) *val = complex(zero,drand48());
+  if (r->type == RANDOM_DEFAULT) rand_val = (drand48(),drand48());
+  else if (r->type == RANDOM_DEFAULT_REAL) rand_val = (drand48(),zero);
+  else if (r->type == RANDOM_DEFAULT_IMAGINARY) rand_val= (zero,drand48());
   else SETERRQ(1,"PetscRandomGetValue:Invalid random number type");
+  *val = rand_val;
 #else
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
   *val = drand48();
