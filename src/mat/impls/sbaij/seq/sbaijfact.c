@@ -419,8 +419,8 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
   }
 
   ierr = ISRestoreIndices(perm,&perm_ptr);CHKERRQ(ierr);
-  C->factor    = FACTOR_CHOLESKY;
-  C->assembled = PETSC_TRUE;
+  C->factor       = FACTOR_CHOLESKY;
+  C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   PetscLogFlops(1.3333*bs*bs2*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
