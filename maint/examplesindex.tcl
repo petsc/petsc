@@ -245,7 +245,7 @@ proc write_concepts_file { } {
     global sub
 
     set PETSC_DIR ../..
-    
+    exec /bin/rm -f docs/www/concepts.html
     set concepts_file [ open docs/www/concepts.html w ]
 
     # Put some  HTML Header 
@@ -328,7 +328,7 @@ proc write_routines_file { } {
     global Processors Comment PETSC_DIR files html
     
     set PETSC_DIR ../..
-    
+    exec /bin/rm -f docs/www/routines.html
     set routines_file [ open docs/www/routines.html w ]
 
     # Put some  HTML Header 
@@ -541,6 +541,7 @@ proc main { }  {
                 return  0
             }
         }
+        exec /bin/rm -f $routines_file
         set routines_fileid [ open $routines_file w ]
         #puts "Writing to $routines_file"
         puts  $routines_fileid $routine_file_buff
