@@ -13,7 +13,6 @@ class CompileSIDL (compile.Process):
       compile.Process.__init__(self, generatedSources, 'sidl', sources, compiler, compilerFlags, 1, 'deferred')
     else:
       compile.Process.__init__(self, generatedSources, 'sidl', sources, compiler, compilerFlags, 0, 'deferred')
-    self.outputDir      = 'generated'
     self.repositoryDirs = []
     self.errorHandler   = self.handleBabelErrors
 
@@ -38,7 +37,6 @@ class CompileSIDL (compile.Process):
     return baseFlags
 
   def constructFlags(self, source, baseFlags):
-    baseFlags = ''+baseFlags
     baseFlags = self.constructAction(source, baseFlags)
     baseFlags = self.constructOutputDir(source, baseFlags)
     baseFlags = self.constructIncludes(source, baseFlags)
@@ -56,6 +54,12 @@ class CompileSIDLServer (CompileSIDL):
     CompileSIDL.__init__(self, generatedSources, sources, compiler, compilerFlags, 0)
     self.language = 'C++'
 
+  def constructOutputDir(self, source, baseFlags):
+    if self.outputDir:
+      (base, ext) = os.path.splitext(os.path.basename(source))
+      return baseFlags+' -serverDirs={'+self.language+':'+self.outputDir+'-'+base+'}'
+    return baseFlags
+
   def constructAction(self, source, baseFlags):
     if self.language:
       baseFlags += ' -server='+self.language
@@ -67,6 +71,11 @@ class CompileSIDLClient (CompileSIDL):
   def __init__(self, generatedSources = None, sources = None, compiler = 'scandal.py', compilerFlags = ''):
     CompileSIDL.__init__(self, generatedSources, sources, compiler, compilerFlags, 1)
     self.language = 'Python'
+
+  def constructOutputDir(self, source, baseFlags):
+    if self.outputDir:
+      return baseFlags+' -clientDirs={'+self.language+':'+self.outputDir+'}'
+    return baseFlags
 
   def constructAction(self, source, baseFlags):
     if self.language:
