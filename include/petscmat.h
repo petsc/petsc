@@ -411,7 +411,7 @@ EXTERN int MatGetSubMatrix(Mat,IS,IS,int,MatReuse,Mat *);
 EXTERN int MatIncreaseOverlap(Mat,int,IS[],int);
 
 EXTERN int MatMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
-EXTERN int MatMatMultSymbolic(Mat,Mat,Mat*);
+EXTERN int MatMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
 EXTERN int MatMatMultNumeric(Mat,Mat,Mat);
 
 EXTERN int MatAXPY(const PetscScalar *,Mat,Mat,MatStructure);
@@ -610,8 +610,10 @@ M*/
 +  nrows - the number of rows indicated
 .  rows - the indices of the rows 
 .  ncols - the number of columns in the matrix
-.  cols - the columns indicated
-.  dnz - the array that will be passed to the matrix preallocation routines
+-  cols - the columns indicated
+
+   Output Parameters:
++  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
 
 

@@ -1,5 +1,5 @@
 /*
-  Defines matrix-matrix product routines for pairs of SeqAIJ matrices
+  Defines matrix-matrix product routines for pairs of AIJ matrices
           C = A * B
 */
 
@@ -7,47 +7,69 @@
 #include "src/mat/utils/freespace.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-/*
-  Add a index set into a sorted linked list
-  input:
-    nidx      - number of input indices
-    indices   - interger array
-    idx_head  - the header of the list
-    idx_unset - the value indicating the entry in the list is not set yet
-    lnk       - linked list(an integer array) that is created
-  output:
-    nlnk      - number of newly added indices
-    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
- */
-#undef __FUNCT__
-#define __FUNCT__ "LnklistAdd"
-int LnklistAdd(int nidx,int *indices,int idx_head,int idx_unset,int *nlnk,int *lnk)
-{
-  int i,idx,lidx,entry,n;
-
-  PetscFunctionBegin;
-  n    = 0;
-  lidx = idx_head;
-  i    = nidx;
-  while (i){
-    /* assume indices are almost in increasing order, starting from its end saves computation */
-    entry = indices[--i];
-    if (lnk[entry] == idx_unset) { /* new entry */   
-      do { 
-        idx = lidx;
-        lidx  = lnk[idx];
-      } while (entry > lidx);           
-      lnk[idx] = entry;
-      lnk[entry] = lidx;
-      n++;
-    }
-  }
-  *nlnk = n;
-  PetscFunctionReturn(0);
+/* 
+  Initialize a linked list 
+  Input Parameters:
+    lnk_init  - the initial index value indicating the entry in the list is not set yet
+    nlnk      - max length of the list
+    lnk       - linked list(an integer array) that is allocated
+  output Parameters:
+    lnk       - the linked list with all values set as lnk_int
+*/
+#define LNKLISTINITIALIZE(lnk_init,nlnk,lnk){\
+  int _i;\
+  for (_i=0; _i<nlnk; _i++) lnk[_i] = lnk_init;\
 }
 
+/*
+  Add a index set into a sorted linked list
+  Input Parameters:
+    nidx      - number of input indices
+    indices   - interger array
+    lnk_head  - the header of the list
+    lnk_init  - the initial index value indicating the entry in the list is not set yet
+    lnk       - linked list(an integer array) that is created
+  output Parameters:
+    nlnk      - number of newly added indices
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+*/
+#define LNKLISTADD(nidx,indices,lnk_head,lnk_init,nlnk,lnk){\
+  int _k,_entry,_lidx=lnk_head,_idx;\
+  nlnk = 0;\
+  _k=nidx;\
+  while (_k){/* assume indices are almost in increasing order, starting from its end saves computation */\
+    _entry = indices[--_k];\
+    if (lnk[_entry] == lnk_init) { /* new col */\
+      do {\
+        _idx = _lidx;\
+        _lidx  = lnk[_idx];\
+      } while (_entry > _lidx);\
+      lnk[_idx] = _entry;\
+      lnk[_entry] = _lidx;\
+      nlnk++;\
+    }\
+  }\
+}
+/*
+  Copy data on the list into an array, then initialize the list 
+  Input Parameters:
+    lnk_head  - the header of the list
+    lnk_init  - the initial index value indicating the entry in the list is not set yet
+    nlnk      - number of data on the list to be copied
+    lnk       - linked list
+  output Parameters:
+    indices   - array that contains the copied data
+*/
+#define LNKLISTCLEAR(lnk_head,lnk_init,nlnk,lnk,indices){\
+  int _j,_idx=lnk_head,_idx0;\
+  for (_j=0; _j<nlnk; _j++){\
+    _idx0 = _idx; _idx = lnk[_idx0];\
+    *(indices+_j) = _idx;\
+    lnk[_idx0] = lnk_init;\
+  }\
+  lnk[_idx] = lnk_init;\
+}
 
-static int logkey_matmatmult          = 0;
 static int logkey_matmatmult_symbolic = 0;
 static int logkey_matmatmult_numeric  = 0;
 
@@ -62,7 +84,7 @@ static int logkey_matmatmult_numeric  = 0;
 +  A - the left matrix
 .  B - the right matrix
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--  fill - expected fill as ratio of nonzeros in product matrix/nonzeros in original matrix
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B))
 
    Output Parameters:
 .  C - the product matrix
@@ -87,16 +109,15 @@ int MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   MatPreallocated(A);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-
   PetscValidHeaderSpecific(B,MAT_COOKIE,2);
   PetscValidType(B,2);
   MatPreallocated(B);
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-
   PetscValidPointer(C,3);
-
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
+
+  if (fill <=0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%d must be > 0",fill);
 
   ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr); 
   ierr = (*A->ops->matmult)(A,B,scall,fill,C);CHKERRQ(ierr);
@@ -109,11 +130,9 @@ int MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 #define __FUNCT__ "MatMatMult_MPIAIJ_MPIAIJ"
 int MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C) 
 {
-  Mat           *aseq,*bseq,A_seq=PETSC_NULL,B_seq=PETSC_NULL,C_seq,C_mpi;
+  Mat           *aseq,*bseq,A_seq=PETSC_NULL,B_seq=PETSC_NULL,*cseq,C_seq;
   Mat_MPIAIJ    *a = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ    *c;
-  MatScalar     *ca;
-  int           ierr,*idx,i,start,end,ncols,imark,nzA,nzB,*cmap,*ci,*cj,grow,*d_nnz,*o_nnz;
+  int           ierr,*idx,i,start,end,ncols,imark,nzA,nzB,*cmap;
   IS            isrow,iscol;
  
   PetscFunctionBegin;
@@ -134,20 +153,20 @@ int MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&isrow);CHKERRQ(ierr); /* isrow of B = iscol of A! */
   ierr = PetscFree(idx);CHKERRQ(ierr); 
   ierr = ISCreateStride(PETSC_COMM_SELF,B->N,0,1,&iscol);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(B,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&bseq);CHKERRQ(ierr);/* reuse */
+  ierr = MatGetSubMatrices(B,1,&isrow,&iscol,scall,&bseq);CHKERRQ(ierr);
   ierr = ISDestroy(iscol);CHKERRQ(ierr);
   B_seq = bseq[0];
  
   /*  create a seq matrix A_seq = submatrix of A by taking all local rows of A */
   start = a->rstart; end = a->rend;
   ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&iscol);CHKERRQ(ierr); /* isrow of A = iscol */
-  ierr = MatGetSubMatrices(A,1,&iscol,&isrow,MAT_INITIAL_MATRIX,&aseq);CHKERRQ(ierr); /* reuse */
+  ierr = MatGetSubMatrices(A,1,&iscol,&isrow,scall,&aseq);CHKERRQ(ierr); 
   ierr = ISDestroy(isrow);CHKERRQ(ierr);
   ierr = ISDestroy(iscol);CHKERRQ(ierr);
   A_seq = aseq[0];
 
   /* compute C_seq = A_seq * B_seq */
-  ierr = MatMatMult_SeqAIJ_SeqAIJ(A_seq, B_seq, scall, fill,&C_seq);CHKERRQ(ierr);
+  ierr = MatMatMult_SeqAIJ_SeqAIJ(A_seq,B_seq,scall,fill,&C_seq);CHKERRQ(ierr);
   /*
   int rank;
   ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
@@ -156,35 +175,9 @@ int MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C)
   ierr = MatDestroyMatrices(1,&aseq);CHKERRQ(ierr); 
   ierr = MatDestroyMatrices(1,&bseq);CHKERRQ(ierr); 
 
-  /* create a mpi matrix C_mpi that has C_seq as its local entries */
-  ierr = MatCreate(A->comm,C_seq->m,PETSC_DECIDE,PETSC_DECIDE,C_seq->N,&C_mpi);CHKERRQ(ierr); 
-  ierr = MatSetType(C_mpi,MATMPIAIJ);CHKERRQ(ierr);
+  /* create mpi matrix C by concatinating C_seq */
+  ierr = MatMerge(A->comm,C_seq,C);CHKERRQ(ierr);                       
 
-  c  = (Mat_SeqAIJ*)C_seq->data;
-  ci = c->i; cj = c->j; ca = c->a;
-  ierr = PetscMalloc((2*C_seq->m+1)*sizeof(int),&d_nnz);CHKERRQ(ierr);
-  o_nnz = d_nnz + C_seq->m;
-  nzA   = end-start;    /* max nonezero cols of the local diagonal part of C_mpi */
-  nzB   = C_seq->n-nzA; /* max nonezero cols of the local off-diagonal part of C_mpi */
-  for (i=0; i< C_seq->m; i++){ 
-    ncols = ci[i+1] - ci[i];
-    d_nnz[i] = PetscMin(ncols,nzA);
-    o_nnz[i] = PetscMin(ncols,nzB);
-  }
-  ierr = MatMPIAIJSetPreallocation(C_mpi,PETSC_DECIDE,d_nnz,PETSC_DECIDE,o_nnz);CHKERRQ(ierr); 
-  ierr = PetscFree(d_nnz);CHKERRQ(ierr);
-
-  /* set row values of C_mpi */
-  for (i=0; i< C_seq->m; i++){
-    grow  = start + i;
-    ncols = ci[i+1] - ci[i];
-    ierr = MatSetValues_MPIAIJ(C_mpi,1,&grow,ncols,cj+ci[i],ca+ci[i],INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(C_mpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C_mpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatDestroy(C_seq);CHKERRQ(ierr);
-
-  *C = C_mpi;
   PetscFunctionReturn(0);
 }
 
@@ -193,7 +186,7 @@ int MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C)
 int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
   int ierr;
   char symfunct[80],numfunct[80];
-  int (*symbolic)(Mat,Mat,Mat*),(*numeric)(Mat,Mat,Mat);
+  int (*symbolic)(Mat,Mat,PetscReal,Mat*),(*numeric)(Mat,Mat,Mat);
 
   PetscFunctionBegin;
   /* Currently only _seqaijseqaij is implemented, so just query for it in A and B. */
@@ -210,10 +203,8 @@ int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
   ierr = PetscObjectQueryFunction((PetscObject)B,numfunct,(PetscVoidFunction)&numeric);CHKERRQ(ierr);
   if (!numeric) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
 
-  ierr = PetscLogEventBegin(logkey_matmatmult,A,B,0,0);CHKERRQ(ierr);
-  ierr = (*symbolic)(A,B,C);CHKERRQ(ierr);
+  ierr = (*symbolic)(A,B,fill,C);CHKERRQ(ierr);
   ierr = (*numeric)(A,B,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(logkey_matmatmult,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -227,7 +218,8 @@ int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
 
    Input Parameters:
 +  A - the left matrix
--  B - the right matrix
+.  B - the right matrix
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B))
 
    Output Parameters:
 .  C - the matrix containing the ij structure of product matrix
@@ -241,13 +233,13 @@ int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
 
 .seealso: MatMatMult(),MatMatMultNumeric()
 @*/
-int MatMatMultSymbolic(Mat A,Mat B,Mat *C) {
+int MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) {
   /* Perhaps this "interface" routine should be moved into the interface directory.*/
   /* To facilitate implementations with varying types, QueryFunction is used.*/
   /* It is assumed that implementations will be composed as "MatMatMultSymbolic_<type of A><type of B>". */
   int  ierr;
   char symfunct[80];
-  int  (*symbolic)(Mat,Mat,Mat *);
+  int  (*symbolic)(Mat,Mat,PetscReal,Mat *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -263,8 +255,8 @@ int MatMatMultSymbolic(Mat A,Mat B,Mat *C) {
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
 
-
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
+  if (fill <=0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%d must be > 0",fill);
 
   /* Currently only _seqaijseqaij is implemented, so just query for it in A and B. */
   /* When other implementations exist, attack the multiple dispatch problem. */
@@ -273,14 +265,14 @@ int MatMatMultSymbolic(Mat A,Mat B,Mat *C) {
   if (!symbolic) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
   ierr = PetscObjectQueryFunction((PetscObject)A,symfunct,(PetscVoidFunction)&symbolic);CHKERRQ(ierr);
   if (!symbolic) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s",A->type_name);
-  ierr = (*symbolic)(A,B,C);CHKERRQ(ierr);
+  ierr = (*symbolic)(A,B,fill,C);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMult_Symbolic_SeqAIJ_SeqAIJ"
-int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
+int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   int            ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
@@ -288,7 +280,7 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
   int            *ci,*cj,*lnk,idx0,idx;
   int            am=A->M,bn=B->N,bm=B->M;
-  int            i,j,anzi,brow,bnzj,cnzi,nlnk;
+  int            i,j,anzi,brow,bnzj,cnzi,nlnk,lnk_init=-1,nspacedouble=0;
   MatScalar      *ca;
 
   PetscFunctionBegin;
@@ -301,10 +293,10 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   ci[0] = 0;
   
   ierr = PetscMalloc((bn+1)*sizeof(int),&lnk);CHKERRQ(ierr);
-  for (i=0; i<bn; i++) lnk[i] = -1;
+  LNKLISTINITIALIZE(lnk_init,bn,lnk);
 
-  /* Initial FreeSpace size is nnz(B)=4*bi[bm] */
-  ierr = GetMoreSpace(4*bi[bm],&free_space);CHKERRQ(ierr);
+  /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
+  ierr = GetMoreSpace(fill*(ai[am]+bi[bm]),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* Determine symbolic info for each row of the product: */
@@ -320,26 +312,21 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
       bnzj = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       /* add non-zero cols of B into the sorted linked list lnk */
-      ierr = LnklistAdd(bnzj,bjj,bn,-1,&nlnk,lnk);CHKERRQ(ierr);
+      LNKLISTADD(bnzj,bjj,bn,lnk_init,nlnk,lnk);
       cnzi += nlnk;
     }
 
     /* If free space is not available, make more free space */
     /* Double the amount of total space in the list */
     if (current_space->local_remaining<cnzi) {
-      printf("MatMatMult_Symbolic_SeqAIJ_SeqAIJ()...%d -th row, double space ...\n",i);
+      /* printf("MatMatMult_Symbolic_SeqAIJ_SeqAIJ()...%d -th row, double space ...\n",i);*/
       ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      nspacedouble++;
     }
 
-    /* Copy data into free space, and zero out denserow and lnk */
-    idx = bn;
-    for (j=0; j<cnzi; j++){
-      idx0 = idx;
-      idx  = lnk[idx0];     
-      *current_space->array++ = idx; 
-      lnk[idx0] = -1;
-    }
-    lnk[idx] = -1;
+    /* Copy data into free space, then initialize lnk */
+    LNKLISTCLEAR(bn,lnk_init,cnzi,lnk,current_space->array);
+    current_space->array += cnzi;
 
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;
@@ -368,6 +355,7 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   c->nonew    = 0;
 
   ierr = PetscLogEventEnd(logkey_matmatmult_symbolic,A,B,0,0);CHKERRQ(ierr);
+  PetscLogInfo((PetscObject)(*C),"Number of calls to GetMoreSpace(): %d\n",nspacedouble);
   PetscFunctionReturn(0);
 }
 
@@ -502,11 +490,6 @@ int RegisterMatMatMultRoutines_Private(Mat A) {
   int ierr;
 
   PetscFunctionBegin;
-#ifndef OLD
-  if (!logkey_matmatmult) {
-    ierr = PetscLogEventRegister(&logkey_matmatmult,"MatMatMult",MAT_COOKIE);CHKERRQ(ierr);
-  }
-#endif
   if (!logkey_matmatmult_symbolic) {
     ierr = PetscLogEventRegister(&logkey_matmatmult_symbolic,"MatMatMult_Symbolic",MAT_COOKIE);CHKERRQ(ierr);
   }
