@@ -388,6 +388,14 @@ support@nas.nasa.gov user id bfsmith
 password initially 2faWquno
 
 ----------------------------------------------------------------------
+ASCI Blue Mountain at LANL:
+  machine:  bluemoutain.acl.lanl.gov
+  account:  lmcinnes
+  password: senmento   (we only a restricted list of password choices)
+  info:     http://www.lanl.gov/projects/asci/bluemtn/bluemtn.html
+
+----------------------------------------------------------------------
+
 Remote Nightly builds:
   On Cray t3d it is at h4p.nersc.gov       username bsmith
      For the t3d we are not allowed to use cron so buildtest 
