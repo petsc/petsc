@@ -172,6 +172,19 @@ int PetscViewerSetFilename_Matlab(PetscViewer viewer,const char name[])
 }
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDestroy_Matlab"
+int PetscViewerDestroy_Matlab(PetscViewer v)
+{
+  int                ierr;
+  PetscViewer_Matlab *vf = (PetscViewer_Matlab*)v->data; 
+
+  PetscFunctionBegin;
+  if (vf->ep) matClose(vf->ep);
+  ierr = PetscFree(vf);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Matlab"
@@ -191,19 +204,7 @@ int PetscViewerCreate_Matlab(PetscViewer viewer)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerSetFileType_C",
                                     "PetscViewerSetFileType_Matlab",
                                      PetscViewerSetFileType_Matlab);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy_Matlab"
-int PetscViewerDestroy_Matlab(PetscViewer v)
-{
-  int                ierr;
-  PetscViewer_Matlab *vf = (PetscViewer_Matlab*)v->data; 
-
-  PetscFunctionBegin;
-  if (vf->ep) matClose(vf->ep);
-  ierr = PetscFree(vf);CHKERRQ(ierr);
+  viewer->ops->destroy = PetscViewerDestroy_Matlab;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

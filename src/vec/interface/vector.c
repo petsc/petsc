@@ -490,10 +490,14 @@ int VecNormalize (Vec x,PetscReal *val)
   /* in general we consider this object touched */
   ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
   /* however, norms can be simply updated */
-  scale = 1./sqrt(*val);
+  if (*val) scale = 1./sqrt(*val); else scale = 0.0;
   /* 2 */
   ierr = VecNormComposedDataID(NORM_2,&type_id); CHKERRQ(ierr);
-  ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,1.0);CHKERRQ(ierr);
+  if (*val) {
+    ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,1.0);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,0.0);CHKERRQ(ierr);
+  }
   /* 1 */
   ierr = VecNormComposedDataID(NORM_1,&type_id); CHKERRQ(ierr);
   ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
