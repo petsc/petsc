@@ -2,7 +2,8 @@ ITOOLSDIR = ../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I$(ITOOLSDIR) $(CONFXS)
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude \
+           -I..   $(CONF)
 SOURCEC  = matrix.c 
 SOURCEF  =
 WSOURCEC = matrixf.c
@@ -12,7 +13,6 @@ WOBJS    = matrixf.o
 OBJSF    =
 LIBBASE  = libpetscmat
 LINCLUDE = $(SOURCEH)
+MANSEC   = 2
 
-include $(ITOOLSDIR)/bmake/$(ARCH).site
-include $(ITOOLSDIR)/bmake/$(ARCH).$(BOPT)
-include $(ITOOLSDIR)/bmake/$(ARCH)
+include $(ITOOLSDIR)/bmake/$(PARCH)

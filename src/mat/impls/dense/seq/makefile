@@ -2,13 +2,13 @@ ITOOLSDIR = ../../../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../.. \
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../..  \
            -I$(ITOOLSDIR)/pinclude $(CONF)
-SOURCEC  = ij.c aij.c aijfact.c
+SOURCEC  = dense.c 
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = 
-OBJSC    = ij.o aij.o aijfact.o
+OBJSC    = dense.o 
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscmat

@@ -13,7 +13,7 @@ int main(int argc,char **args)
   ierr = PCCreate(&pc); CHKERR(ierr);
 
   ierr = PCSetMethod(pc,PCNONE); CHKERR(ierr);
-  ierr = PCSetUp(pc); CHKPTR(ierr);
+  ierr = PCSetUp(pc); CHKERR(ierr);
   ierr = PCDestroy(pc); CHKERR(ierr);
   return 0;
 }

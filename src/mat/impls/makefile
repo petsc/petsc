@@ -1,4 +1,4 @@
-ITOOLSDIR = ../
+ITOOLSDIR = ../../
 
 ALL: lib
 
@@ -12,6 +12,6 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
-DIRS     = src impls tests examples
+DIRS     = dense aij
 
 include $(ITOOLSDIR)/bmake/$(PARCH)

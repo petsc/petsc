@@ -8,23 +8,22 @@
 #include "mat.h"
 #include "ksp.h"
 #include "pc.h"
-#include "stdio.h"
+#include <stdio.h>
+#include "options.h"
 
-
-int main(argc,args)
-int  argc;
-char **args;
+int main(int argc,char **args)
 {
   Mat       mat;
   Vec       b,ustar,u;
   PC        pc;
   KSP       ksp;
   int       ierr, n = 10, i, its, col[3];
-  double    value[3], one = 1.0, zero = 0.0;
+  Scalar    value[3], one = 1.0, zero = 0.0;
   KSPMETHOD kspmethod;
   PCMETHOD  pcmethod;
   char      *kspname, *pcname;
 
+  OptionsCreate(argc,args,0,0);
   ierr = VecCreateSequential(n,&b);     CHKERR(ierr);
   ierr = VecCreateSequential(n,&ustar); CHKERR(ierr);
   ierr = VecCreateSequential(n,&u);     CHKERR(ierr);
@@ -49,14 +48,14 @@ char **args;
 
   ierr = PCCreate(&pc); CHKERR(ierr);
   ierr = PCSetMethod(pc,PCNONE); CHKERR(ierr);
-  PCSetFromCommandLine(pc,&argc,args);
+  PCSetFromOptions(pc);
   ierr = PCSetMatrix(pc,mat); CHKERR(ierr);
   ierr = PCSetVector(pc,u);   CHKERR(ierr);
   ierr = PCSetUp(pc); CHKERR(ierr);
 
   ierr = KSPCreate(&ksp); CHKERR(ierr);
   ierr = KSPSetMethod(ksp,KSPRICHARDSON); CHKERR(ierr);
-  KSPSetFromCommandLine(ksp,&argc,args);
+  KSPSetFromOptions(ksp);
   ierr = KSPSetSolution(ksp,u); CHKERR(ierr);
   ierr = KSPSetRhs(ksp,b); CHKERR(ierr);
   ierr = KSPSetAmult(ksp,MatMult,(void *)mat); CHKERR(ierr);

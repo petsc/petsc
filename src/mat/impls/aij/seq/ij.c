@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.1 1994/03/18 00:27:00 gropp Exp $";
+static char vcid[] = "$Id: ij.c,v 1.1 1994/11/09 22:57:53 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -47,7 +47,7 @@ int SpToSymmetricIJ( Matiaij *Matrix, int **iia, int **jja )
     nz = Matrix->i[row+1] - Matrix->i[row];
     j  = Matrix->j + Matrix->i[row] - 1;
     while (nz--) {
-       col = *j++;
+       col = *j++ - 1;
        if ( col > row ) {
           break;
        }
@@ -72,7 +72,7 @@ int SpToSymmetricIJ( Matiaij *Matrix, int **iia, int **jja )
     nz = Matrix->i[row+1] - Matrix->i[row];
     j  = Matrix->j + Matrix->i[row] - 1;
     while (nz--) {
-       col = *j++;
+       col = *j++ - 1;
        if ( col > row ) {
           break;
        }
@@ -81,8 +81,9 @@ int SpToSymmetricIJ( Matiaij *Matrix, int **iia, int **jja )
        wr = work[row]; work[row] = wr + 1;
        ja[wr] = col + 1;
     }
- }
- FREE(work);
+
+  }
+  FREE(work);
   return 0;
 }
 

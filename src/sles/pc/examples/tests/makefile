@@ -14,7 +14,7 @@ EXAMPLES = ex1 ex2 ex3
 EXAMPLESC= ex1.c ex2.c ex3.c
 SYSLIB   = $(LDIR)/libpetscpc.a $(LDIR)/libpetscksp.a $(LDIR)/libpetscmat.a \
            $(LDIR)/libpetscvec.a \
-           $(LDIR)/libpetscsys.a $(BLAS) $(SLIB) -lm 
+           $(LDIR)/libpetscsys.a $(LAPACK) $(BLAS) $(SLIB) -lm 
 LINCLUDE = $(SOURCEH)
 
 ex1: ex1.o 
@@ -28,5 +28,9 @@ ex2: ex2.o
 ex3: ex3.o 
 	-$(CLINKER) -o ex3 ex3.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex3.o
+
+ex4: ex4.o 
+	-$(CLINKER) -o ex4 ex4.o $(LIBNAME) $(SYSLIB)
+	$(RM) ex4.o
 
 include $(ITOOLSDIR)/bmake/$(PARCH)
