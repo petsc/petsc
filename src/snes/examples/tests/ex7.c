@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.3 1995/07/23 18:20:31 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -28,7 +28,7 @@ int main( int argc, char **argv )
   Mat          J;                  /* Jacobian matrix-free for */
   Mat          B;                  /* explicit preconditioner matrix*/
   int          ierr, its, n = 5,i;
-  double       h,xp = 0.0,v;
+  Scalar       h,xp = 0.0,v;
   MonitorCtx   monP;               /* monitoring context */
 
   PetscInitialize( &argc, &argv, 0,0 );
