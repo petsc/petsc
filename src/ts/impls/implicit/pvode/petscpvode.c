@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.4 1997/09/26 02:20:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.5 1997/10/13 03:58:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -29,7 +29,7 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
   int          ierr, i, locsize, low, high, loc;
 
   Mat          Jac;
-  Vec          u, tmpy;
+  Vec          tmpy;
   Scalar       zero = 0.0, one = 1.0, gm, tmp;
   MatStructure str = SAME_NONZERO_PATTERN;
 
@@ -37,17 +37,15 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
   locsize = N_VLOCLENGTH(y);
 
   /* Jac and u must be set before calling PCSetUp */
-  ierr = MatCreate(PETSC_COMM_WORLD,N,N,&Jac); CHKERRA(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,locsize,N,&u); CHKERRA(ierr);
-  ierr = VecSet(&zero,u); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,N,N,&Jac); CHKERRQ(ierr);
 
   if (!cvode->pmat) {
-    ierr = MatCreate(MPI_COMM_WORLD,N,N,&cvode->pmat); CHKERRA(ierr);
+    ierr = MatCreate(MPI_COMM_WORLD,N,N,&cvode->pmat); CHKERRQ(ierr);
   }
 
   if (jok) {
     /* jok=TRUE: copy the Jacobian to Pcond */
-    ierr = MatCopy(cvode->pmat,Jac); CHKERRA(ierr);
+    ierr = MatCopy(cvode->pmat,Jac); CHKERRQ(ierr);
 
     *jcurPtr = FALSE;
   }
@@ -55,39 +53,40 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
     /* jok = FALSE: generate the Jacobian and then copy it to Pcond */
     /* convert N_Vector y to petsc Vec tmpy */
     /* we are only working on the local part */
-    ierr = VecCreateMPI(PETSC_COMM_WORLD,locsize,N,&tmpy); CHKERRA(ierr);
-    ierr = VecGetOwnershipRange(tmpy,&low,&high); CHKERRA(ierr);
+    ierr = VecCreateMPI(PETSC_COMM_WORLD,locsize,N,&tmpy); CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(tmpy,&low,&high); CHKERRQ(ierr);
     for(i=0;i<locsize;i++) {
       loc = low+i;	 /* get the global position */
       tmp = Ith(y,i+1);  /* the local component */
-      ierr = VecSetValues(tmpy,1,&loc,&tmp,INSERT_VALUES); CHKERRA(ierr);
+      ierr = VecSetValues(tmpy,1,&loc,&tmp,INSERT_VALUES); CHKERRQ(ierr);
     }
-    ierr = VecAssemblyBegin(tmpy); CHKERRA(ierr);
-    ierr = VecAssemblyEnd(tmpy); CHKERRA(ierr);
+    ierr = VecAssemblyBegin(tmpy); CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(tmpy); CHKERRQ(ierr);
 
     /* recompute the Jacobian */
     ierr = (*ts->rhsjacobian)(ts,ts->ptime,tmpy,&Jac,&Jac,&str,ts->jacP);
-    CHKERRA(ierr);
+    CHKERRQ(ierr);
 
     /* copy the Jacobian matrix */
-    ierr = MatCopy(Jac, cvode->pmat); CHKERRA(ierr);
+    ierr = MatCopy(Jac, cvode->pmat); CHKERRQ(ierr);
 
     /* set the flag */
     *jcurPtr = TRUE;
 
     /* destroy vector tmpy */
-    ierr = VecDestroy(tmpy); CHKERRA(ierr);
+    ierr = VecDestroy(tmpy); CHKERRQ(ierr);
   }
 
   /* construct I-gamma*Jac  */
   gm = -_gamma;
-  ierr = MatScale(&gm,Jac); CHKERRA(ierr);
-  ierr = MatShift(&one,Jac); CHKERRA(ierr);
+  ierr = MatScale(&gm,Jac); CHKERRQ(ierr);
+  ierr = MatShift(&one,Jac); CHKERRQ(ierr);
   
   /* setup the preconditioner contex */
-  ierr = PCSetOperators(pc,Jac,Jac,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = PCSetVector(pc,u);   CHKERRA(ierr);
-  ierr = PCSetUp(pc); CHKERRA(ierr);
+  ierr = PCSetOperators(pc,Jac,Jac,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = PCSetVector(pc,ts->vec_solu);   CHKERRQ(ierr);
+
+  ierr = PCSetUp(pc); CHKERRQ(ierr);
 
   return(0);
 }
@@ -115,36 +114,36 @@ static int TSPSolve_PVode(integer N, real tn, N_Vector y,
 
   /* create vector rr */
   locsize = N_VLOCLENGTH(y);
-  ierr = VecCreateMPI(MPI_COMM_WORLD, locsize, N, &rr); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD, locsize, N, &rr); CHKERRQ(ierr);
 
   /* copy r to a petsc Vec rr */
-  ierr = VecGetOwnershipRange(rr,&low,&high); CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(rr,&low,&high); CHKERRQ(ierr);
   for(i=0; i<locsize; i++) {
     loc = low+i;
     tmp = Ith(r, i+1);
-    ierr = VecSetValues(rr,1,&loc,&tmp,INSERT_VALUES); CHKERRA(ierr);
+    ierr = VecSetValues(rr,1,&loc,&tmp,INSERT_VALUES); CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(rr); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(rr); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(rr); CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(rr); CHKERRQ(ierr);
 
   /* create vector xx */
   locsize = N_VLOCLENGTH(z);
-  ierr = VecCreateMPI(MPI_COMM_WORLD, locsize, N, &xx); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD, locsize, N, &xx); CHKERRQ(ierr);
 
   /* solve the Px=r and put the result in xx */
-  ierr = PCApply(pc,rr,xx); CHKERRA(ierr);
+  ierr = PCApply(pc,rr,xx); CHKERRQ(ierr);
 
   /* copy xx to N_Vector z as th output */
-  ierr = VecGetArray(xx, &tmpary); CHKERRA(ierr);
+  ierr = VecGetArray(xx, &tmpary); CHKERRQ(ierr);
   for(i=0; i<locsize; i++) {
     loc = i;
     Ith(z,i+1)=tmpary[loc];
   }
-  ierr = VecRestoreArray(xx,&tmpary); CHKERRA(ierr);
+  ierr = VecRestoreArray(xx,&tmpary); CHKERRQ(ierr);
 
   /* destroy the vectors */
-  ierr = VecDestroy(xx); CHKERRA(ierr);
-  ierr = VecDestroy(rr); CHKERRA(ierr);
+  ierr = VecDestroy(xx); CHKERRQ(ierr);
+  ierr = VecDestroy(rr); CHKERRQ(ierr);
 
   return 0;
 }
@@ -269,7 +268,7 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
     ierr = TSMonitor(ts,ts->steps,t,sol); CHKERRQ(ierr);
   }
 
-  /* count on the number of interations, notice CVDEnse uses Newtons method 
+  /* count the number of interations, notice CVDEnse uses Newtons method 
   */
   ts->nonlinear_its = cvode->iopt[NNI];
   ts->linear_its    = 0;
@@ -293,7 +292,9 @@ static int TSDestroy_PVode(PetscObject obj )
   ierr = PCDestroy(cvode->pc); CHKERRQ(ierr);
   ierr = VecDestroy(cvode->update); CHKERRQ(ierr);
   if (cvode->func) {ierr = VecDestroy(cvode->func);CHKERRQ(ierr);}
-  if (cvode->rhs) {ierr = VecDestroy(cvode->rhs);CHKERRQ(ierr);}
+  if (cvode->rhs)  {ierr = VecDestroy(cvode->rhs);CHKERRQ(ierr);}
+  if (cvode->w1)   {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
+  if (cvode->w2)   {ierr = VecDestroy(cvode->w2);CHKERRQ(ierr);}
   PetscFree(cvode);
   return 0;
 }
@@ -340,6 +341,14 @@ static int TSSetUp_PVode_Nonlinear(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&cvode->update); CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cvode->func); CHKERRQ(ierr);  
 
+  /* 
+      Create work vectors for the TSPSolve_PVode() routine. Note these are
+    allocated with zero space arrays because the actual array space is provided 
+    by PVode and set using VecPlaceArray().
+  */
+  ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
+
   return 0;
 }
 
@@ -351,7 +360,7 @@ static int TSPVodePCSetUp_PVode(TS ts)
   TS_PVode *cvode = (TS_PVode*) ts->data;
   int      ierr;
 
-  ierr = PCSetFromOptions(cvode->pc); CHKERRA(ierr);
+  ierr = PCSetFromOptions(cvode->pc); CHKERRQ(ierr);
 
   return 0;
 }
@@ -445,6 +454,7 @@ int TSCreate_PVode(TS ts )
   cvode    = PetscNew(TS_PVode); CHKPTRQ(cvode);
   PetscMemzero(cvode,sizeof(TS_PVode));
   ierr     = PCCreate(ts->comm, &cvode->pc); CHKERRQ(ierr);
+  PLogObjectParent(ts,cvode->pc);
   ts->data = (void *) cvode;
 
   return 0;
@@ -496,9 +506,9 @@ int TSPVodeSetPCType(TS ts, PCType type)
   if (ts->type != TS_PVODE) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"TS must be of PVode type to set the PC type");
 
   /* Create a PETSc preconditioner context */
-  ierr = PCCreate(comm,&cvode->pc); CHKERRA(ierr);
-  ierr = PCSetType(cvode->pc,type); CHKERRA(ierr);
-  ierr = PCSetFromOptions(cvode->pc); CHKERRA(ierr);
+  ierr = PCCreate(comm,&cvode->pc); CHKERRQ(ierr);
+  ierr = PCSetType(cvode->pc,type); CHKERRQ(ierr);
+  ierr = PCSetFromOptions(cvode->pc); CHKERRQ(ierr);
 
   return 0;
 }
@@ -548,28 +558,28 @@ int TSPVodeSetRHSJacobian(TS ts,double t,Vec y,Mat* A,Mat* B,MatStructure *flag,
 
   if (snes->jacobian->assembled) {
     /* set the jacobian structure */
-    ierr = MatZeroEntries(J); CHKERRA(ierr);
-    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-    ierr = MatCopy(snes->jacobian,J); CHKERRA(ierr);
+    ierr = MatZeroEntries(J); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatCopy(snes->jacobian,J); CHKERRQ(ierr);
   }
   else {
     /* compute the jacobian by the user provid function */
-    ierr = (*snes->computejacobian)(snes,y,&J,&J,flag,snes->funP); CHKERRA(ierr);
+    ierr = (*snes->computejacobian)(snes,y,&J,&J,flag,snes->funP); CHKERRQ(ierr);
   }
-  ierr = MatGetColoring(J,COLORING_NATURAL,&iscoloring); CHKERRA(ierr);
-  ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); CHKERRA(ierr);
-  ierr = MatFDColoringSetFromOptions(fdcoloring); CHKERRA(ierr);
+  ierr = MatGetColoring(J,COLORING_NATURAL,&iscoloring); CHKERRQ(ierr);
+  ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); CHKERRQ(ierr);
+  ierr = MatFDColoringSetFromOptions(fdcoloring); CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianWithColoring,
-         fdcoloring);CHKERRA(ierr);
+         fdcoloring);CHKERRQ(ierr);
 
   /* Compute the jacobian */
   ierr = SNESDefaultComputeJacobianWithColoring
          (snes,y,&J,&J,flag,
-         fdcoloring);CHKERRA(ierr);
+         fdcoloring);CHKERRQ(ierr);
   /*
   This line causes error message, don't know why.
-  ierr = ISColoringDestroy(iscoloring); CHKERRA(ierr);
+  ierr = ISColoringDestroy(iscoloring); CHKERRQ(ierr);
   */
 
   *flag = SAME_NONZERO_PATTERN;
@@ -606,7 +616,7 @@ int TSComputeRHSJacobianForPVODE(TS ts, double t, Vec y, Mat* A,
  
   /* compute the Jacobian */
   ierr = (*ts->rhsjacobian)(ts,t,y,A,B,flag,ctx);
-  CHKERRA(ierr);
+  CHKERRQ(ierr);
 
   return 0;
 }
@@ -643,7 +653,7 @@ int TSPVodeGetUserData(TS ts, void *funP)
 #else
 
 /* 
-     A dummy function for compilers that dislike empyt files.
+     A dummy function for compilers that dislike empy files.
 */
 int adummyfunction()
 {
