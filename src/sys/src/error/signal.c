@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.41 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.42 1997/08/22 15:11:48 bsmith Exp balay $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -109,9 +109,11 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
     signal( SIGSEGV, (void (*)(int)) PetscSignalHandler );
     signal( SIGSYS,  (void (*)(int)) PetscSignalHandler );
 #elif defined(PARCH_nt)
+    /*
     signal( SIGILL,  PetscSignalHandler );
     signal( SIGFPE,  PetscSignalHandler );
     signal( SIGSEGV, PetscSignalHandler );
+    */
 #elif defined(PARCH_nt_gnu) || defined (PARCH_linux) 
     signal( SIGILL,  PetscSignalHandler );
     signal( SIGFPE,  PetscSignalHandler );
