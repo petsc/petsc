@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.21 1998/06/09 22:17:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.22 1998/06/11 19:55:34 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -23,7 +23,6 @@ static char vcid[] = "$Id: dl.c,v 1.21 1998/06/09 22:17:04 bsmith Exp bsmith $";
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_nt)
-#include <sys/param.h>
 #include <sys/utsname.h>
 #endif
 #if defined(PARCH_nt)
@@ -309,7 +308,7 @@ int DLLibraryOpen(MPI_Comm comm,char *libname,void **handle)
     SETERRQ(1,1,"Unable to open dynamic library");
   }
 
-  /* run the function DLRegister() if it is in the library */
+  /* run the function FListAdd() if it is in the library */
   func  = (int (*)(char *)) dlsym(*handle,"DLLibraryRegister");
   if (func) {
     ierr = (*func)(libname);CHKERRQ(ierr);
