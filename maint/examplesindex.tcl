@@ -5,7 +5,7 @@
 # i.e. *.c, *.f, *.F and reads the formated    #
 # comments in these examples, and writes the   #
 # contents into files readable by MS-ACCESS    #
-# It assumes that PETSC_DIR=/home/bsmith/petsc #
+# It takes PETSC_DIR from env variables        #
 # and the example dirs are src/*/examples      #
 # and src/*/examples/tutorials                 #
 #                                              #
@@ -401,9 +401,9 @@ proc main { }  {
     global  concepts ConceptsFile Concepts 
     global routines Routines RoutinesFile 
     global Processors Comment PETSC_DIR files html
-    global sub argc argv
+    global sub argc argv env
 
-    set PETSC_HOME /home/bsmith/petsc
+    set PETSC_HOME $env(PETSC_DIR)
     cd $PETSC_HOME
 
     # Process the command line arguments
