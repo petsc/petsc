@@ -22,8 +22,17 @@
 #define dmmggetda_               DMMGGETDA
 #define dmmgsetsles_             DMMGSETSLES
 #define dmmggetx_                DMMGGETX
+#define dmmggetj_                DMMGGETJ
+#define dmmggetb_                DMMGGETB
+#define dmmggetsles_             DMMGGETSLES
+#define dmmggetlevels_           DMMGGETLEVELS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmggetx_                dmmggetx
+#define dmmggetj_                dmmggetj
+#define dmmggetb_                dmmggetb
+#define dmmggetsles_             dmmggetsles
+#define dmmggetda_               dmmggetda
+#define dmmggetlevels_           dmmggetlevels
 #define dmmgsetsles_             dmmgsetsles
 #define dmmgdestroy_             dmmgdestroy
 #define dmmgcreate_              dmmgcreate
@@ -37,7 +46,6 @@
 #define slesgetoptionsprefix_    slesgetoptionsprefix
 #define slesview_                slesview
 #define dmmgsetdm_               dmmgsetdm
-#define dmmggetda_               dmmggetda
 #define dmmgview_                dmmgview
 #define dmmgsolve_               dmmgsolve
 #endif
@@ -50,6 +58,29 @@ void PETSC_STDCALL dmmggetx_(DMMG **dmmg,Vec *x,int *ierr)
   *x    = DMMGGetx(*dmmg);
 }
 
+void PETSC_STDCALL dmmggetj_(DMMG **dmmg,Mat *x,int *ierr)
+{
+  *ierr = 0;
+  *x    = DMMGGetJ(*dmmg);
+}
+
+void PETSC_STDCALL dmmggetB_(DMMG **dmmg,Mat *x,int *ierr)
+{
+  *ierr = 0;
+  *x    = DMMGGetB(*dmmg);
+}
+
+void PETSC_STDCALL dmmggetsles_(DMMG **dmmg,SLES *x,int *ierr)
+{
+  *ierr = 0;
+  *x    = DMMGGetSLES(*dmmg);
+}
+
+void PETSC_STDCALL dmmggetlevels_(DMMG **dmmg,int *x,int *ierr)
+{
+  *ierr = 0;
+  *x    = DMMGGetLevels(*dmmg);
+}
 
 /* ----------------------------------------------------------------------------------------------------------*/
 static int ourrhs(DMMG dmmg,Vec vec)

@@ -12,6 +12,7 @@
 #endif
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define dmmgsetsnes_                 DMMGSETSNES
 #define matcreatedaad_                   MATCREATEDAAD
 #define matregisterdaad_                   MATREGISTERDAAD
 #define matdaadsetsnes_                  MATDAADSETSNES
@@ -67,6 +68,7 @@
 #define snesnolinesearchnonorms_         SNESNOLINESEARCHNONORMS
 #define snesview_                        SNESVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define dmmgsetsnes_                     dmmgsetsnes
 #define matcreatedaad_                   matcreatedaad
 #define matregisterdaad_                   matregisterdaad
 #define matdaadsetsnes_                  matdaadsetsnes
@@ -124,6 +126,38 @@
 #endif
 
 EXTERN_C_BEGIN
+
+#if defined(notused)
+static int ourrhs(SNES snes,Vec vec,Vec vec2,void*ctx)
+{
+  int              ierr = 0;
+  DMMG *dmmg = (DMMG*)ctx;
+  (*(int (PETSC_STDCALL *)(SNES*,Vec*,Vec*,int*))(((PetscObject)dmmg->dm)->fortran_func_pointers[0]))(&snes,&vec,&vec2,&ierr);
+  return ierr;
+}
+
+static int ourmat(DMMG dmmg,Mat mat)
+{
+  int              ierr = 0;
+  (*(int (PETSC_STDCALL *)(DMMG*,Vec*,int*))(((PetscObject)dmmg->dm)->fortran_func_pointers[1]))(&dmmg,&vec,&ierr);
+  return ierr;
+}
+
+void PETSC_STDCALL dmmgsetsnes_(DMMG **dmmg,int (PETSC_STDCALL *rhs)(SNES*,Vec*,Vec*,int*),int (PETSC_STDCALL *mat)(DMMG*,Mat*,int*),int *ierr)
+{
+  int i;
+  theirmat = mat;
+  *ierr = DMMGSetSNES(*dmmg,ourrhs,ourmat,*dmmg);
+  /*
+    Save the fortran rhs function in the DM on each level; ourrhs() pulls it out when needed
+  */
+  for (i=0; i<(**dmmg)->nlevels; i++) {
+    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[0] = (void (*)(void))rhs;
+    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[1] = (void (*)(void))mat;
+  }
+}
+
+#endif
 
 #if defined (PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
 void PETSC_STDCALL matregisterdaad_(int *ierr)
