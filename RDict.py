@@ -48,6 +48,10 @@
       - insert <parent> <key> <value>
         Creates a dictionary in the current directory with a parent, and inserts
         the key-value pair. If "parent" is "None", no parent is assigned.
+
+      - remove <parent> <key>
+        Creates a dictionary in the current directory with a parent, and removes
+        the given key. If "parent" is "None", no parent is assigned.
 '''
 import project          # This is necessary for us to create Project objects on load
 import build.buildGraph # This is necessary for us to create BuildGraph objects on load

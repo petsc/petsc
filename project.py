@@ -122,7 +122,7 @@ a ValueError is raised.'''
     return path
 
   def setPath(self, path):
-    if not self.projectUrl is None and path and path[0] == '/':
+    if not self.projectUrl is None and path and os.path.isabs(path):
       root = self.projectRoot
       if not path.startswith(root+os.sep):
         raise ValueError('Absolute path '+path+' conflicts with project root '+root)

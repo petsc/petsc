@@ -134,7 +134,7 @@ class RootedFileSet(FileSet, base.Base):
   def checkFile(self, filename, root = None):
     if root is None:
       root = self.projectRoot
-    if filename[0] == '/':
+    if os.path.isabs(filename):
       filename = FileSet.checkFile(self, filename)
       if not filename.startswith(root+os.sep):
         raise ValueError('Absolute path '+filename+' conflicts with project root '+root)
