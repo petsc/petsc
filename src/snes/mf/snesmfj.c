@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.59 1997/12/01 01:56:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.60 1998/01/14 02:44:45 bsmith Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -73,11 +73,14 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
 {
   MFCtx_Private *ctx;
   SNES          snes;
-  double        ovalues[3],values[3],norm, sum, umin;
+  double        ovalues[3],norm, sum, umin;
   Scalar        h, dot, mone = -1.0;
   Vec           w,U,F;
   int           ierr, (*eval_fct)(SNES,Vec,Vec);
   MPI_Comm      comm;
+#if !defined(USE_PETSC_COMPLEX)
+  double        values[3];
+#endif
 
   PetscFunctionBegin;
   PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
