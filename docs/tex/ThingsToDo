@@ -10,8 +10,7 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
-  - Fix VRML viewer interface so that basic vectors can be displayed.
-    Add documentation about VRML.
+  - Fix VRML vector viewer interface; add documentation about VRML.
 
   - Aim for more exhaustive PETSc testing.  From 
     /home/MPI/mpich/examples/test/rlist.srt:
