@@ -1087,10 +1087,13 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data,*b=(Mat_SeqSBAIJ *)C->data;
   IS             ip=b->row;
   PetscErrorCode ierr;
-  PetscInt       *rip,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscInt       *rip,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j,*bcol;
   PetscInt       *ai,*aj,*a2anew;
-  PetscInt       k,jmin,jmax,*jl,*il,vj,nexti,ili,nz;
-  MatScalar      *rtmp,*ba,*aa,dk,uikdi;
+  PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
+  MatScalar      *rtmp,*ba=b->a,*bval,*aa,dk,uikdi;
+  PetscReal      damping=b->factor_damping,zeropivot=b->factor_zeropivot,shift_amount;
+  PetscTruth     damp,chshift;
+  PetscInt       nshift=0,ndamp=0;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
@@ -1101,9 +1104,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
     nz = ai[mbs];
     ierr = PetscMalloc(nz*sizeof(MatScalar),&aa);CHKERRQ(ierr); 
     a2anew = a->a2anew;
-    ba     = a->a;
+    bval   = a->a;
     for (j=0; j<nz; j++){
-      aa[a2anew[j]] = *(ba++); 
+      aa[a2anew[j]] = *(bval++); 
     }
   }
   
@@ -1116,72 +1119,119 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
             jl(i) = mbs indicates the end of a list                        
      il(i): points to the first nonzero element in columns k,...,mbs-1 of 
             row i of U */
-  ierr = PetscMalloc(mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*mbs*sizeof(PetscInt),&il);CHKERRQ(ierr);
+  nz   = (2*mbs+1)*sizeof(PetscInt)+mbs*sizeof(MatScalar);
+  ierr = PetscMalloc(nz,&il);CHKERRQ(ierr);
   jl   = il + mbs;
-  for (i=0; i<mbs; i++) {
-    rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
-  }
-  ba = b->a;
-  for (k = 0; k<mbs; k++){
-    /*initialize k-th row with elements nonzero in row perm(k) of A */
-    jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
-    for (j = jmin; j < jmax; j++){
-      vj = rip[aj[j]];
-      rtmp[vj] = aa[j];
+  rtmp = (MatScalar*)(jl + mbs);
+
+  shift_amount = 0;
+  do {
+    damp = PETSC_FALSE;
+    chshift = PETSC_FALSE;
+    for (i=0; i<mbs; i++) {
+      rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
     } 
+ 
+    for (k = 0; k<mbs; k++){
+      /*initialize k-th row by the perm[k]-th row of A */
+      jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
+      PetscScalar *baval = ba + bi[k];
+      for (j = jmin; j < jmax; j++){
+        col = rip[aj[j]];
+        rtmp[col] = aa[j];
+        *baval++  = 0.0; /* for in-place factorization */
+      } 
+      /* damp the diagonal of the matrix */
+      if (ndamp||nshift) rtmp[k] += damping+shift_amount; 
 
-    /* modify k-th row by adding in those rows i with U(i,k)!=0 */
-    dk = rtmp[k];
-    i = jl[k]; /* first row to be added to k_th row  */  
+      /* modify k-th row by adding in those rows i with U(i,k)!=0 */
+      dk = rtmp[k];
+      i = jl[k]; /* first row to be added to k_th row  */  
 
-    while (i < k){
-      nexti = jl[i]; /* next row to be added to k_th row */
+      while (i < k){
+        nexti = jl[i]; /* next row to be added to k_th row */
 
-      /* compute multiplier, update diag(k) and U(i,k) */
-      ili = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
-      uikdi = - ba[ili]*ba[bi[i]];  /* diagonal(k) */ /* uikdi = - ba[ili]*ba[i]; */
-      dk += uikdi*ba[ili];
-      ba[ili] = uikdi; /* -U(i,k) */
+        /* compute multiplier, update diag(k) and U(i,k) */
+        ili = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
+        uikdi = - ba[ili]*ba[bi[i]];  /* diagonal(k) */ 
+        dk += uikdi*ba[ili];
+        ba[ili] = uikdi; /* -U(i,k) */
 
-      /* add multiple of row i to k-th row ... */
-      jmin = ili + 1; jmax = bi[i+1];
-      if (jmin < jmax){
-        for (j=jmin; j<jmax; j++) rtmp[bj[j]] += uikdi*ba[j];         
-        /* update il and jl for row i */
-        il[i] = jmin;             
-        j = bj[jmin]; jl[i] = jl[j]; jl[j] = i; 
-      }      
-      i = nexti;         
-    }
+        /* add multiple of row i to k-th row */
+        jmin = ili + 1; jmax = bi[i+1];
+        if (jmin < jmax){
+          for (j=jmin; j<jmax; j++) rtmp[bj[j]] += uikdi*ba[j];         
+          /* update il and jl for row i */
+          il[i] = jmin;             
+          j = bj[jmin]; jl[i] = jl[j]; jl[j] = i; 
+        }      
+        i = nexti;         
+      }
 
-    /* check for zero pivot and save diagoanl element */
-    if (dk == 0.0){
-      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");    
-    }                                               
+      if (PetscRealPart(dk) < zeropivot && b->factor_shift){
+	/* calculate a shift that would make this row diagonally dominant */
+	PetscReal rs = PetscAbs(PetscRealPart(dk));
+	jmin      = bi[k]+1; 
+	nz        = bi[k+1] - jmin; 
+	if (nz){
+	  bcol = bj + jmin;
+	  bval = ba + jmin;
+	  while (nz--){
+	    rs += PetscAbsScalar(rtmp[*bcol++]);
+	  }
+	}
+	/* if this shift is less than the previous, just up the previous
+	   one by a bit */
+	shift_amount = PetscMax(rs,1.1*shift_amount);
+	chshift  = PETSC_TRUE;
+	/* Unlike in the ILU case there is no exit condition on nshift:
+	   we increase the shift until it converges. There is no guarantee that
+	   this algorithm converges faster or slower, or is better or worse
+	   than the ILU algorithm. */
+	nshift++;
+	break;
+      }
+      if (PetscRealPart(dk) < zeropivot){
+        if (damping == (PetscReal) PETSC_DECIDE) damping = -PetscRealPart(dk)/(k+1);
+        if (damping > 0.0) {      
+          if (ndamp) damping *= 2.0;    
+          damp = PETSC_TRUE;
+          ndamp++;
+          break; 
+        } else if (PetscAbsScalar(dk) < zeropivot){
+          SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",k,PetscRealPart(dk),zeropivot);  
+        } else {
+          PetscLogInfo((PetscObject)A,"Negative pivot %g in row %D of Cholesky factorization\n",PetscRealPart(dk),k);
+        }
+      }
 
-    /* copy data ino U(k,:) */
-    ba[bi[k]] = 1.0/dk; /* U(k,k) */
-    jmin = bi[k]+1; jmax = bi[k+1];
-    if (jmin < jmax) {
-      for (j=jmin; j<jmax; j++){
-         vj = bj[j]; ba[j] = rtmp[vj]; rtmp[vj] = 0.0;
-      }       
-      /* add the k-th row into il and jl */
-      il[k] = jmin;
-      i = bj[jmin]; jl[k] = jl[i]; jl[i] = k;
-    }        
-  } 
-  
-  ierr = PetscFree(rtmp);CHKERRQ(ierr);
+      /* copy data into U(k,:) */
+      ba[bi[k]] = 1.0/dk; /* U(k,k) */
+      jmin = bi[k]+1; jmax = bi[k+1];
+      if (jmin < jmax) {
+        for (j=jmin; j<jmax; j++){
+          col = bj[j]; ba[j] = rtmp[col]; rtmp[col] = 0.0;
+        }       
+        /* add the k-th row into il and jl */
+        il[k] = jmin;
+        i = bj[jmin]; jl[k] = jl[i]; jl[i] = k;
+      }        
+    } 
+  } while (damp||chshift);
   ierr = PetscFree(il);CHKERRQ(ierr);
   if (a->permute){ierr = PetscFree(aa);CHKERRQ(ierr);}
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
-  C->factor    = FACTOR_CHOLESKY; 
-  C->assembled = PETSC_TRUE; 
+  C->factor       = FACTOR_CHOLESKY; 
+  C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
   PetscLogFlops(C->m);
+  if (ndamp) {
+    PetscLogInfo(0,"MatCholeskyFactorNumerical_SeqSBAIJ_1: number of damping tries %D damping value %g\n",ndamp,damping);
+  }
+  if (nshift) {
+    PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqSBAIJ_1 diagonal shifted %D shifts\n",nshift);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1225,7 +1275,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
       rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
     }
 
-    for (k = 0; k<mbs; k++){ /* row k */
+    for (k = 0; k<mbs; k++){ 
     /*initialize k-th row with elements nonzero in row perm(k) of A */
       nz   = ai[k+1] - ai[k];
       acol = aj + ai[k];
@@ -1238,13 +1288,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
       /* damp the diagonal of the matrix */
       if (ndamp||nshift) rtmp[k] += damping+shift_amount; 
     
-      /* modify k-th row by adding in those rows i with U(i,k) != 0 */
+      /* modify k-th row by adding in those rows i with U(i,k)!=0 */
       dk = rtmp[k];
       i  = jl[k]; /* first row to be added to k_th row  */  
 
       while (i < k){
         nexti = jl[i]; /* next row to be added to k_th row */
-        
         /* compute multiplier, update D(k) and U(i,k) */
         ili   = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
         uikdi = - ba[ili]*ba[bi[i]];  
@@ -1258,10 +1307,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
           bcol = bj + jmin;
           bval = ba + jmin; 
           while (nz --) rtmp[*bcol++] += uikdi*(*bval++);
-          /* ... add i to row list for next nonzero entry */
-          il[i] = jmin;             /* update il(i) in column k+1, ... mbs-1 */
-          j     = bj[jmin];
-          jl[i] = jl[j]; jl[j] = i; /* update jl */
+          /* update il and jl for i-th row */
+          il[i] = jmin;            
+          j = bj[jmin]; jl[i] = jl[j]; jl[j] = i; 
         }      
         i = nexti;         
       }
@@ -1303,8 +1351,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
         }
       }
       
-      /* save nonzero entries in k-th row of U ... */
-      /* printf("%D, dk: %g, 1/dk: %g\n",k,dk,1/dk); */
+      /* copy data into U(k,:) */
       ba[bi[k]] = 1.0/dk;
       jmin      = bi[k]+1; 
       nz        = bi[k+1] - jmin; 
@@ -1315,10 +1362,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
           *bval++       = rtmp[*bcol]; 
           rtmp[*bcol++] = 0.0; 
         }       
-        /* ... add k to row list for first nonzero entry in k-th row */
+        /* add k-th row into il and jl */
         il[k] = jmin;
-        i     = bj[jmin];
-        jl[k] = jl[i]; jl[i] = k;
+        i = bj[jmin]; jl[k] = jl[i]; jl[i] = k;
       }        
     } /* end of for (k = 0; k<mbs; k++) */
   } while (damp||chshift);
@@ -1328,11 +1374,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
   C->factor       = FACTOR_CHOLESKY; 
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
-  PetscLogFlops(b->mbs);
+  PetscLogFlops(C->m);
   if (ndamp) {
     PetscLogInfo(0,"MatCholeskyFactorNumerical_SeqSBAIJ_1_NaturalOrdering: number of damping tries %D damping value %g\n",ndamp,damping);
   }
- if (nshift) {
+  if (nshift) {
     PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering diagonal shifted %D shifts\n",nshift);
   }
  
