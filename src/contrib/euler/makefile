@@ -76,12 +76,12 @@ ALL: ex1
 #
   SOURCEF_COMMON   = xnd.F xmod2.F
   SOURCEF_JULIANNE = xjul.F
-  SOURCEF_PETSC    = xmod.F implbc.F mat.F
+  SOURCEF_PETSC    = xmod.F implbc.F mat.F 
   SOURCEF          = $(SOURCEF_COMMON) $(SOURCEF_PETSC) $(SOURCEF_JULIANNE)
 
   OBJSF_COMMON     = xnd.o xmod2.o
   OBJSF_JULIANNE   = xjul.o
-  OBJSF_PETSC      = xmod.o implbc.o mat.o
+  OBJSF_PETSC      = xmod.o implbc.o mat.o dnest.o 
   OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
 # OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
 
@@ -89,7 +89,7 @@ ALL: ex1
 #
 # Define C source code:
 #
-  OBJSC     = user1.o bc.o misc.o mfj.o regmpimat.o monitor.o vrml.o da3.o
+  OBJSC     = user1.o bc.o misc.o mfj.o regmpimat.o monitor.o vrml.o da3.o utils.o noise.o
   SOURCEC   = user1.c bc.c misc.c mfj.c regmpimat.c monitor.c vrml.c da3.c
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -231,3 +231,4 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 # DOT = /ump/hpcc/home3/mcinnes/work/blas/ddot.o
 # LAPACK_LIB = $(DOT) -lessl /ump/hpcc/home3/mcinnes/lapack/lapack.a
 ## LAPACK_LIB = -lessl /ump/hpcc/home3/mcinnes/lapack/lapack.a
+

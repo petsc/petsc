@@ -34,9 +34,9 @@ c   The following are the test problem dimensions:
 c     needed for m6c
 c       PARAMETER(D_NI=49,D_NJ=9,D_NK=9)
 c     needed for m6f
-        PARAMETER(D_NI=97,D_NJ=17,D_NK=17)
+c        PARAMETER(D_NI=97,D_NJ=17,D_NK=17)
 c     needed for m6n
-c        PARAMETER(D_NI=193,D_NJ=33,D_NK=33)
+        PARAMETER(D_NI=193,D_NJ=33,D_NK=33)
         PARAMETER(D_NI1=D_NI+1,D_NJ1=D_NJ+1,D_NK1=D_NK+1)
 c
 c ------------------------------------------------------------

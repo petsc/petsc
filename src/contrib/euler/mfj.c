@@ -7,6 +7,8 @@
 #include "snes.h"
 #include "user.h"
 
+extern int ComputeDiffParameterMore(SNES,Vec,Vec,double*,double*);
+
 /* Application-defined context for matrix-free SNES */
 typedef struct {
   SNES        snes;      /* SNES context */
@@ -14,6 +16,11 @@ typedef struct {
   double      error_rel; /* square root of relative error in computing function */
   double      umin;      /* minimum allowable u value */
   Euler       *user;     /* user-defined application context */
+  int         jorge;     /* flag indicating use of Jorge's method for determining
+                            the differencing parameter */
+  Scalar      h;         /* differencing parameter */
+  int         need_h;    /* flag indicating whether we must compute h */
+  int         need_err;  /* flag indicating whether we must compute error_rel */
 } MFCtxEuler_Private;
 
 #undef __FUNC__
@@ -82,6 +89,8 @@ int UserMatrixFreeView(Mat J,Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
      PetscFPrintf(comm,fd,"  user-defined SNES matrix-free approximation:\n");
+     if (ctx->jorge)
+       PetscFPrintf(comm,fd,"    using Jorge's method of determining differencing parameter\n");
      PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);
      PetscFPrintf(comm,fd,"    umin=%g (minimum iterate parameter)\n",ctx->umin);
   }
@@ -104,7 +113,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
 {
   MFCtxEuler_Private *ctx;
   SNES          snes;
-  double        norm, sum, umin;
+  double        norm, sum, umin, noise, sqrtnoise;
   Scalar        h, dot, mone = -1.0, *ya, *aa, *dt, one = 1.0, dti;
   Vec           w,U,F;
   int           ierr, i, j, k, ijkv, ijkx, nc, jkx, dim, ikx;
@@ -147,21 +156,45 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
   ierr = SNESGetFunction(snes,&F); CHKERRQ(ierr);
   /* F = user->F_low; */  /* use lower order function */
 
-  /* Determine a "good" step size */
-  ierr = VecDot(U,a,&dot); CHKERRQ(ierr);
-  ierr = VecNorm(a,NORM_1,&sum); CHKERRQ(ierr);
-  ierr = VecNorm(a,NORM_2,&norm); CHKERRQ(ierr);
+  if (ctx->need_h) {
 
-  /* Safeguard for step sizes too small */
-  if (sum == 0.0) {dot = 1.0; norm = 1.0;}
+    /* Use Jorge's method to compute h */
+    if (ctx->jorge) {
+      ierr = ComputeDiffParameterMore(snes,U,a,&noise,&h); CHKERRQ(ierr);
+      sqrtnoise = sqrt(noise);
+      PLogInfo(snes,"UserMatrixFreeMult: noise=%g, sqrt(noise)=%g, h_more=%g\n",
+          noise,sqrtnoise,h);
+
+    /* Use the Brown/Saad method to compute h */
+    } else { 
+      if (ctx->need_err) {
+        /* Use Jorge's method to compute noise */
+        ierr = ComputeDiffParameterMore(snes,U,a,&noise,&h); CHKERRQ(ierr);
+        sqrtnoise = sqrt(noise);
+        PLogInfo(snes,"UserMatrixFreeMult: noise=%g, sqrt(noise)=%g, h_more=%g\n",
+            noise,sqrtnoise,h);
+        ctx->error_rel = sqrtnoise;
+        ctx->need_err = 0;
+      }
+      ierr = VecDot(U,a,&dot); CHKERRQ(ierr);
+      ierr = VecNorm(a,NORM_1,&sum); CHKERRQ(ierr);
+      ierr = VecNorm(a,NORM_2,&norm); CHKERRQ(ierr);
+
+      /* Safeguard for step sizes too small */
+      if (sum == 0.0) {dot = 1.0; norm = 1.0;}
 #if defined(PETSC_COMPLEX)
-  else if (abs(dot) < umin*sum && real(dot) >= 0.0) dot = umin*sum;
-  else if (abs(dot) < 0.0 && real(dot) > -umin*sum) dot = -umin*sum;
+      else if (abs(dot) < umin*sum && real(dot) >= 0.0) dot = umin*sum;
+      else if (abs(dot) < 0.0 && real(dot) > -umin*sum) dot = -umin*sum;
 #else
-  else if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
-  else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
+      else if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
+      else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
 #endif
-  h = ctx->error_rel*dot/(norm*norm);
+      h = ctx->error_rel*dot/(norm*norm);
+    }
+  } else {
+    h = ctx->h;
+  }
+  PLogInfo(snes,"UserMatrixFreeMult: h = %g\n",h);
 
   /* Evaluate function at F(u + ha) */ 
   ierr = VecWAXPY(&h,a,U,w); CHKERRQ(ierr);
@@ -300,8 +333,13 @@ int UserMatrixFreeMatCreate(SNES snes,Euler *user,Vec x,Mat *J)
   mfctx->user = user;
   mfctx->error_rel = 1.e-8; /* assumes double precision */
   mfctx->umin      = 1.e-8;
+  mfctx->h         = 0.0;
+  mfctx->need_h    = 1;
+  mfctx->need_err  = 0;
   ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_err",&mfctx->error_rel,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_umin",&mfctx->umin,&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-matrix_free_jorge",&mfctx->jorge); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-compute_err",&mfctx->need_err); CHKERRQ(ierr);
   ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);
   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
