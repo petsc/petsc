@@ -45,10 +45,10 @@ readable disk, in ASCII, MS-DOS, WordPerfect, or Mac format.
      ALPHA RELEASE (MM/YY):        01/95
      BETA RELEASE (MM/YY):         03/95
      GENERAL RELEASE (MM/YY):      04/95
-
      DEVELOPMENT CONTINUING (Y/N): Yes
      MAINTENANCE SUPPORTED (Y/N):  Yes
      ESTSC OR NESC SUBMITTAL (Y/N): Yes
+
 
 4.   BRIEF DESCRIPTION:  Briefly describe the purposes of the computer program, state the
      problem being solved, and summarize the program functions and capabilities.  This will
@@ -179,19 +179,19 @@ readable disk, in ASCII, MS-DOS, WordPerfect, or Mac format.
 17.       FUNDING INFORMATION:
 
      a.   Responsible program office or agency: Office of Scientific Computing. 
-          Name and phone number of cognizant program officer:
+          Name and phone number of cognizant program officer: Fred Howes,(301) 903-5800
 
-     b.   B & R code: ____________
+     b.   B & R code: KC-07-01-01
 
      c.   Type (FWP, WFO, LDRD, HTSCPC, or OTHER):
 
-          Account Number:                     
+          Account Number:  FWP, 56696                   
      
      d.   Were LDRD, ERF, or PDF funds used in any prior R&D work
-          which contributed to this technology (Y/N)?
+          which contributed to this technology (Y/N)? No
 
      e.   Was the software developed under any agreement (WFO, CRADA, Pilot Center,
-          Cost-shared, etc.) with an outside nonfederal sponsor (Y/N)?
+          Cost-shared, etc.) with an outside nonfederal sponsor (Y/N)? No
           
           Identify Agreement:                                   Contract #                      
           
