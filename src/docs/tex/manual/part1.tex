@@ -187,12 +187,12 @@ MPICH implementation of MPI \cite{mpich-web-page} and many others, the following
 command initiates a program that uses eight processors:
 \findex{mpirun} \sindex{running PETSc programs} 
 \begin{tabbing}
-   mpirun -np 8 petsc\_program\_name petsc\_options
+   mpirun -np 8 ./petsc\_program\_name petsc\_options
 \end{tabbing}
 
 PETSc also comes with a script 
 \begin{tabbing}
-   \${PETSC\_DIR}/bin/petscmpirun -np 8 petsc\_program\_name petsc\_options
+   \${PETSC\_DIR}/bin/petscmpirun -np 8 ./petsc\_program\_name petsc\_options
 \end{tabbing}
 that uses the information set in \trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/packages} to 
 automatically use the correct \trl{mpirun} for your configuration.
@@ -462,7 +462,7 @@ details regarding error checking when using the PETSc Fortran interface.
 
 \begin{figure}[H]
 \begin{tabbing}
-   eagle:mpirun -np 1 ex3 -m 10000\\
+   eagle:mpirun -np 1 ./ex3 -m 10000\\
    PETSC ERROR: MatCreateSeqAIJ() line 1673 in src/mat/impls/aij/seq/aij.c\\
    PETSC ERROR:   Out of memory. This could be due to allocating\\
    PETSC ERROR:   too large an object or bleeding by not properly\\
@@ -565,10 +565,10 @@ given in the file \trllink{troubleshooting.html}{${PETSC_DIR}/docs/troubleshooti
       /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o  \\
       /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a -lm\\
    rm -f ex1.o\\
-   eagle: mpirun -np 1 ex2\\
+   eagle: mpirun -np 1 ./ex2\\
    Norm of error 3.6618e-05 iterations 7\\
    eagle:\\
-   eagle: mpirun -np 2 ex2\\
+   eagle: mpirun -np 2 ./ex2\\
    Norm of error 5.34462e-05 iterations 9
 \end{tabbing}
 }
@@ -591,7 +591,7 @@ demonstrate the ease of extracting performance information.
 \begin{figure}[H]
 {\footnotesize
 \begin{verbatim}
-eagle> mpirun -np 1 ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -log_summary
+eagle> mpirun -np 1 ./ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -log_summary
 -------------------------------- PETSc Performance Summary: --------------------------------------
 
 ex1 on a sun4 named merlin.mcs.anl.gov with 1 processor, by curfman Wed Aug  7 17:24:27 1996

@@ -31,21 +31,21 @@ ex5: ex5.o   chkopts
 	${RM} -f ex5.o
 #-----------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 2 ex1
+	-@${MPIRUN} -np 2 ./ex1
 runex2:
-	-@${MPIRUN} -np 3 ex2
+	-@${MPIRUN} -np 3 ./ex2
 runex3:
-	-@${MPIRUN} -np 3 ex3 -mat_view  > ex3_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 3 ./ex3 -mat_view  > ex3_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   ${RM} -f ex3_1.tmp
 runex3_2:
-	-@${MPIRUN} -np 3 ex3 -mat_view -dim 2 > ex3_2.tmp 2>&1;   \
+	-@${MPIRUN} -np 3 ./ex3 -mat_view -dim 2 > ex3_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \
 	   ${RM} -f ex3_2.tmp
 runex3_3:
-	-@${MPIRUN} -np 3 ex3 -mat_view -dim 3 > ex3_3.tmp 2>&1;   \
+	-@${MPIRUN} -np 3 ./ex3 -mat_view -dim 3 > ex3_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_3.out ex3_3.tmp) then true; \
 	   else echo "Possible problem with ex3_3, diffs above"; fi; \
 	   ${RM} -f ex3_3.tmp

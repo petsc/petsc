@@ -283,7 +283,7 @@ static PetscErrorCode PCSetFromOptions_MG(PC pc)
       for (i=0; i<levels; i++) {  
         sprintf(eventname,"MSetup Level %d",(int)i);
         ierr = PetscLogEventRegister(&mg[i]->eventsetup,eventname,pc->cookie);CHKERRQ(ierr);
-        sprintf(eventname,"MGSolve Level %d",(int)i);
+        sprintf(eventname,"MGSolve Level %d to 0",(int)i);
         ierr = PetscLogEventRegister(&mg[i]->eventsolve,eventname,pc->cookie);CHKERRQ(ierr);
       }
     }
