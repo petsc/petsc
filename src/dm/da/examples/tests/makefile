@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.61 2000/08/17 04:53:22 bsmith Exp balay $ 
+# $Id: makefile,v 1.62 2000/08/17 20:01:44 balay Exp bsmith $ 
 
 CFLAGS	        = 
 FFLAGS	        = 
@@ -6,7 +6,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/da/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
-                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c
+                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c
 EXAMPLESF       = 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -78,6 +78,10 @@ ex16: ex16.o   chkopts
 ex17: ex17.o   chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_DM_LIB}
 	${RM} -f ex17.o
+
+ex18: ex18.o   chkopts
+	-${CLINKER} -o ex18 ex18.o  ${PETSC_DM_LIB}
+	${RM} -f ex18.o
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 2 ex1 -nox > ex1_1.tmp 2>&1;	  \
@@ -101,7 +105,7 @@ runex5:
 runex6:
 	-@${MPIRUN} -np 6 ex6 -test_order
 runex12:
-	-@echo "path([getenv('PETSC_DIR') '/src/sys/src/viewer/impls/socket/matlab'],path); ex12(2) ; exit" | ${MATLABCOMMAND} -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (diff output/ex12_1.out ex12_1.tmp2) then true; \
+	-@echo "path([getenv('PETSC_DIR') '/bin/matlab'],path); ex12(2) ; exit" | ${MATLABCOMMAND} -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (diff output/ex12_1.out ex12_1.tmp2) then true; \
 	   else echo "Possible problem with PETSC SOCKET MATLAB INTERFACE ex12_1, diffs above"; fi; \
 	   ${RM} -f ex12_1.tmp ex12_1.tmp2
 
