@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.34 1996/03/18 00:39:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.35 1996/03/19 21:25:49 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -622,7 +622,7 @@ static int MatSetOption_MPIDense(Mat A,MatOption op)
            op == SYMMETRIC_MATRIX ||
            op == STRUCTURALLY_SYMMETRIC_MATRIX ||
            op == YES_NEW_DIAGONALS)
-    PLogInfo((PetscObject)A,"Info:MatSetOption_MPIDense:Option ignored\n");
+    PLogInfo(A,"Info:MatSetOption_MPIDense:Option ignored\n");
   else if (op == COLUMN_ORIENTED)
     { a->roworiented = 0; MatSetOption(a->A,op);} 
   else if (op == NO_NEW_DIAGONALS)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.7 1996/03/04 05:16:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.8 1996/03/19 21:27:07 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -104,7 +104,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
     idnew[i] = ainew[i] + nzi;
   }
 
-  PLogInfo((PetscObject)A,
+  PLogInfo(A,
     "Info:MatLUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
                              realloc,f,((double)ainew[n])/((double)ai[i]));
 
@@ -1275,7 +1275,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   ierr = ISDestroy(isicol); CHKERRQ(ierr);
   PetscFree(fill); PetscFree(im);
 
-  PLogInfo((PetscObject)A,
+  PLogInfo(A,
     "Info:MatILUFactorSymbolic_SeqBAIJ:Realloc %d Fill ratio:given %g needed %g\n",
                              realloc,f,((double)ainew[n])/((double)ai[prow]));
 

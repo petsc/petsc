@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.26 1996/03/11 20:38:09 balay Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.27 1996/03/19 21:26:17 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -95,9 +95,8 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
     BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo); CHKERRBS(0);
-    PLogInfo((PetscObject)mat,
-                     "BlockSolve: %d failed factors, err=%d, alpha=%g\n",
-                                       mbs->failures,mbs->ierr,mbs->alpha); 
+    PLogInfo(mat,"BlockSolve: %d failed factors, err=%d, alpha=%g\n",
+                                 mbs->failures,mbs->ierr,mbs->alpha); 
   }
 #if defined(PETSC_LOG)
   PLogFlops((int)(BSlocal_flops()-flop1));
@@ -130,7 +129,7 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
     BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo); CHKERRBS(0);
-    PLogInfo((PetscObject)mat,"BlockSolve: %d failed factors, err=%d, alpha=%g\n",
+    PLogInfo(mat,"BlockSolve: %d failed factors, err=%d, alpha=%g\n",
                                        mbs->failures,mbs->ierr,mbs->alpha); 
   }
   mat->factor = FACTOR_LU;

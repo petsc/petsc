@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.22 1995/11/01 19:10:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.23 1995/11/01 23:18:56 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -48,9 +48,9 @@ int MatLUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,Mat *B)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
 
   if (a->m != a->n) SETERRQ(1,"MatLUFactorSymbolic_SeqBDiag:Matrix must be square");
-  if (isrow || iscol) PLogInfo((PetscObject)A,
+  if (isrow || iscol) PLogInfo(A,
     "MatLUFactorSymbolic_SeqBDiag: row and col permutations not supported.\n");
-  PLogInfo((PetscObject)A,"MatLUFactorSymbolic_SeqBDiag: Currently no fill.\n");
+  PLogInfo(A,"MatLUFactorSymbolic_SeqBDiag: Currently no fill.\n");
   return MatConvert(A,MATSAME,B);
 }
 
@@ -60,10 +60,10 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
 
   if (a->m != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Matrix must be square");
-  if (isrow || iscol) PLogInfo((PetscObject)A,
+  if (isrow || iscol) PLogInfo(A,
     "MatILUFactorSymbolic_SeqBDiag: row and col permutations not supported.\n");
   if (levels != 0)
-    PLogInfo((PetscObject)A,"MatLUFactorSymbolic_SeqBDiag:Only ILU(0) is supported.\n");
+    PLogInfo(A,"MatLUFactorSymbolic_SeqBDiag:Only ILU(0) is supported.\n");
   return MatConvert(A,MATSAME,B);
 }
 
@@ -167,9 +167,9 @@ int MatLUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,double f)
   /* For now, no fill is allocated in symbolic factorization phase, so we
      directly use the input matrix for numeric factorization. */
   if (a->m != a->n) SETERRQ(1,"MatLUFactor_SeqBDiag:Matrix must be square");
-  if (isrow || iscol) PLogInfo((PetscObject)A,
+  if (isrow || iscol) PLogInfo(A,
     "MatLUFactor_SeqBDiag: row and col permutations not supported\n");
-  PLogInfo((PetscObject)A,"MatLUFactor_SeqBDiag:Only ILU(0) is supported\n");
+  PLogInfo(A,"MatLUFactor_SeqBDiag:Only ILU(0) is supported\n");
   return MatLUFactorNumeric_SeqBDiag(A,&A);
 }
 
@@ -180,10 +180,10 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,double f,int level)
   /* For now, no fill is allocated in symbolic factorization phase, so we
      directly use the input matrix for numeric factorization. */
   if (a->m != a->n) SETERRQ(1,"MatILUFactor_SeqBDiag:Matrix must be square");
-  if (isrow || iscol) PLogInfo((PetscObject)A,
+  if (isrow || iscol) PLogInfo(A,
     "MatILUFactor_SeqBDiag: row and col permutations not supported\n");
   if (level != 0)
-    PLogInfo((PetscObject)A,"MatILUFactor_SeqBDiag:Only ILU(0) is supported\n");
+    PLogInfo(A,"MatILUFactor_SeqBDiag:Only ILU(0) is supported\n");
   return MatLUFactorNumeric_SeqBDiag(A,&A);
 }
 

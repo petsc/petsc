@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.46 1996/03/19 21:29:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.47 1996/03/23 19:29:01 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -26,7 +26,7 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   }
   convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
   if (convinfo) {
-    PLogInfo((PetscObject)snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
+    PLogInfo(snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
     return convinfo;
   }
 
@@ -34,8 +34,8 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   ierr = KSPBuildSolution(ksp,0,&x); CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRQ(ierr);
   if (norm >= neP->delta) {
-    PLogInfo((PetscObject)snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
-    PLogInfo((PetscObject)snes,
+    PLogInfo(snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
+    PLogInfo(snes,
       "SNES: Ending linear iteration early, delta %g length %g\n",neP->delta,norm);
     return 1; 
   }
@@ -81,7 +81,7 @@ static int SNESSolve_TR(SNES snes,int *its)
   if (history && history_len > 0) history[0] = fnorm;
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
-  if (snes->monitor) {ierr = (*snes->monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
+  SNESMonitor(snes,0,fnorm);
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -105,13 +105,13 @@ static int SNESSolve_TR(SNES snes,int *its)
         norm = delta/norm;
         gpnorm = (1.0 - norm)*fnorm;
         cnorm = norm;
-        PLogInfo((PetscObject)snes, "Scaling direction by %g \n",norm );
+        PLogInfo(snes, "Scaling direction by %g \n",norm );
         ierr = VecScale(&cnorm,Y); CHKERRQ(ierr);
         norm = gpnorm;
         ynorm = delta;
       } else {
         gpnorm = 0.0;
-        PLogInfo((PetscObject)snes,"Direction is in Trust Region \n" );
+        PLogInfo(snes,"Direction is in Trust Region \n" );
         ynorm = norm;
       }
       ierr = VecAYPX(&mone,X,Y); CHKERRQ(ierr);             /* Y <- X + Y */
@@ -125,13 +125,13 @@ static int SNESSolve_TR(SNES snes,int *its)
       if      (rho < neP->mu)  delta *= neP->delta1;
       else if (rho < neP->eta) delta *= neP->delta2;
       else                     delta *= neP->delta3;
-      PLogInfo((PetscObject)snes,"%d:  f_norm=%g, g_norm=%g, ynorm=%g\n",
+      PLogInfo(snes,"%d:  f_norm=%g, g_norm=%g, ynorm=%g\n",
                                              i, fnorm, gnorm, ynorm );
-      PLogInfo((PetscObject)snes,"gpred=%g, rho=%g, delta=%g,iters=%d\n", 
+      PLogInfo(snes,"gpred=%g, rho=%g, delta=%g,iters=%d\n", 
                                                gpnorm, rho, delta, lits);
       neP->delta = delta;
       if (rho > neP->sigma) break;
-      PLogInfo((PetscObject)snes,"Trying again in smaller region\n");
+      PLogInfo(snes,"Trying again in smaller region\n");
       /* check to see if progress is hopeless */
       neP->itflag = 0;
       if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
@@ -150,7 +150,7 @@ static int SNESSolve_TR(SNES snes,int *its)
     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
     TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
     VecNorm(X, NORM_2,&xnorm );		/* xnorm = || X || */
-    if (snes->monitor) {ierr = (*snes->monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
+    SNESMonitor(snes,i+1,fnorm);
 
     /* Test for convergence */
     neP->itflag = 1;
@@ -165,7 +165,7 @@ static int SNESSolve_TR(SNES snes,int *its)
     } 
   }
   if (i == maxits) {
-    PLogInfo((PetscObject)snes,"Maximum number of iterations has been reached: %d\n",maxits);
+    PLogInfo(snes,"Maximum number of iterations has been reached: %d\n",maxits);
     i--;
   }
   *its = i+1;
@@ -296,7 +296,7 @@ int SNESTrustRegionDefaultConverged(SNES snes,double xnorm,double pnorm,
     SETERRQ(1,"SNESDefaultConverged:For SNES_NONLINEAR_EQUATIONS only");
 
   if (neP->delta < xnorm * snes->deltatol) {
-    PLogInfo((PetscObject)snes,
+    PLogInfo(snes,
       "SNES:Converged due to trust region param %g<%g*%g\n",neP->delta,xnorm,snes->deltatol);
     return 1;
   }
@@ -305,7 +305,7 @@ int SNESTrustRegionDefaultConverged(SNES snes,double xnorm,double pnorm,
     if (info) return info;
   } 
   if (neP->delta < xnorm * epsmch) {
-    PLogInfo((PetscObject)snes,
+    PLogInfo(snes,
       "SNES: Converged due to trust region param %g < %g * %g\n",neP->delta,xnorm, epsmch);
     return -1;
   }

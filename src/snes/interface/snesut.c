@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.13 1996/03/23 19:23:41 curfman Exp curfman $";
+static char vcid[] = "$Id: snesut.c,v 1.14 1996/03/23 19:29:06 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -106,24 +106,24 @@ int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,void *
   /* Note:  Reserve return code 1, -1 for compatibility with 
   SNESTrustRegionDefaultConverged */
   if (fnorm <= snes->ttol) {
-    PLogInfo((PetscObject)snes,
+    PLogInfo(snes,
     "SNES:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
     return 4;
   }
 
   if (fnorm < snes->atol) {
-    PLogInfo((PetscObject)snes,
+    PLogInfo(snes,
       "SNES: Converged due to function norm %g < %g\n",fnorm,snes->atol);
     return 2;
   }
   if (pnorm < snes->xtol*(xnorm)) {
-    PLogInfo((PetscObject)snes,
+    PLogInfo(snes,
       "SNES: Converged due to small update length: %g < %g * %g\n",
        pnorm,snes->xtol,xnorm);
     return 3;
   }
   if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo((PetscObject)snes,
+    PLogInfo(snes,
       "SNES: Exceeded maximum number of function evaluations: %d > %d\n",
       snes->nfuncs, snes->max_funcs );
     return -2;
@@ -242,7 +242,7 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
   }
   rtol = PetscMin(rtol,kctx->rtol_max);
   kctx->rtol_last = rtol;
-  PLogInfo((PetscObject)snes,
+  PLogInfo(snes,
     "SNES: iter %d, Eisenstat-Walker (version %d) KSP rtol = %g\n",
      snes->iter,kctx->version,rtol);
   ierr = KSPSetTolerances(ksp,rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
@@ -262,7 +262,7 @@ int SNES_KSP_EW_Converged_Private(KSP ksp,int n,double rnorm,void *ctx)
   convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
   kctx->lresid_last = rnorm;
   if (convinfo) 
-    PLogInfo((PetscObject)snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
+    PLogInfo(snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
   return convinfo;
 }
 

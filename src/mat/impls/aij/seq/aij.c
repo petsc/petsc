@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.159 1996/03/19 21:25:53 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.160 1996/03/21 00:10:43 balay Exp bsmith $";
 #endif
 
 /*
@@ -471,9 +471,9 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
     PLogObjectMemory(A,-(m+1)*sizeof(int));
     a->diag = 0;
   } 
-  PLogInfo((PetscObject)A,"MatAssemblyEnd_SeqAIJ:Unneeded storage space %d used %d rows %d\n",
+  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Unneeded storage space %d used %d rows %d\n",
            fshift,a->nz,m);
-  PLogInfo((PetscObject)A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues %d\n",
+  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues %d\n",
            a->reallocs);
   /* check out for identical nodes. If found, use inode functions */
   ierr = Mat_AIJ_CheckInode(A); CHKERRQ(ierr);
@@ -525,7 +525,7 @@ static int MatSetOption_SeqAIJ(Mat A,MatOption op)
            op == SYMMETRIC_MATRIX ||
            op == STRUCTURALLY_SYMMETRIC_MATRIX ||
            op == YES_NEW_DIAGONALS)
-    PLogInfo((PetscObject)A,"Info:MatSetOption_SeqAIJ:Option ignored\n");
+    PLogInfo(A,"Info:MatSetOption_SeqAIJ:Option ignored\n");
   else if (op == NO_NEW_DIAGONALS)
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:NO_NEW_DIAGONALS");}
   else if (op == INODE_LIMIT_1)            a->inode.limit  = 1;

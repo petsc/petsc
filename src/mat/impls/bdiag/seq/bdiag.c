@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.94 1996/03/18 00:40:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.95 1996/03/19 21:26:30 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -50,11 +50,11 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
 #else
             if (a->user_alloc && real(value) || imag(value)) {
 #endif
-              PLogInfo((PetscObject)A,
+              PLogInfo(A,
                 "MatSetValues_SeqBDiag: Nonzero in diagonal %d that user did not allocate\n",ldiag);
             }
           } else {
-            PLogInfo((PetscObject)A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
+            PLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
             /* free old bdiag storage info and reallocate */
             diag_new = (int *)PetscMalloc(2*(a->nd+1)*sizeof(int)); CHKPTRQ(diag_new);
             bdlen_new = diag_new + a->nd + 1;
@@ -134,11 +134,11 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
 #else
             if (a->user_alloc && real(value) || imag(value)) {
 #endif
-              PLogInfo((PetscObject)A,
+              PLogInfo(A,
                 "MatSetValues_SeqBDiag:Nonzero in diagonal %d that user did not allocate\n",ldiag);
             }
           } else {
-            PLogInfo((PetscObject)A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
+            PLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
             /* free old bdiag storage info and reallocate */
             diag_new = (int *)PetscMalloc(2*(a->nd+1)*sizeof(int)); CHKPTRQ(diag_new);
             bdlen_new = diag_new + a->nd + 1;
@@ -1271,7 +1271,7 @@ static int MatSetOption_SeqBDiag(Mat A,MatOption op)
            op == COLUMNS_SORTED || 
            op == SYMMETRIC_MATRIX ||
            op == STRUCTURALLY_SYMMETRIC_MATRIX)
-    PLogInfo((PetscObject)A,"Info:MatSetOption_SeqBDiag:Option ignored\n");
+    PLogInfo(A,"Info:MatSetOption_SeqBDiag:Option ignored\n");
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBDiag:unknown option");}
   return 0;

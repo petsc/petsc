@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.31 1996/03/19 21:43:21 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.32 1996/03/23 19:29:15 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -44,7 +44,7 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
   ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);     /* G(X) <- gradient */
   ierr = VecNorm(G,NORM_2,gnorm);   CHKERRQ(ierr);         /* gnorm = || G || */
   if (history && history_len > 0) history[0] = *gnorm;
-  if (snes->monitor){(*snes->monitor)(snes,0,*gnorm,snes->monP); CHKERRQ(ierr);}
+  SNESMonitor(snes,0,*gnorm);
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
@@ -80,8 +80,8 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
     CHKERRQ(ierr);
 
     if (history && history_len > i+1) history[i+1] = *gnorm;
-    if (snes->monitor) {ierr = (*snes->monitor)(snes,i+1,*gnorm,snes->monP); CHKERRQ(ierr);}
-    PLogInfo((PetscObject)snes,"%d:  f=%g, gnorm=%g, snorm=%g, step=%g, KSP iters=%d\n",
+    SNESMonitor(snes,i+1,*gnorm);
+    PLogInfo(snes,"%d:  f=%g, gnorm=%g, snorm=%g, step=%g, KSP iters=%d\n",
              snes->iter, *f, *gnorm, snorm, neP->step, iters );
 
     /* Test for convergence */
@@ -95,7 +95,7 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
     snes->vec_func_always = snes->vec_func;
   }
   if (i == maxits) {
-    PLogInfo((PetscObject)snes,"SNES: Maximum number of iterations reached: %d\n",maxits);
+    PLogInfo(snes,"SNES: Maximum number of iterations reached: %d\n",maxits);
     i--;
   }
   *outits = i+1;
@@ -214,27 +214,27 @@ int SNESConverged_UMLS(SNES snes,double xnorm,double gnorm,double f,
 
   /* Test for successful convergence */
   if (f < snes->fmin) {
-    PLogInfo((PetscObject)snes,
+    PLogInfo(snes,
       "SNES: Converged due to function value %g < minimum function value %g\n",f,snes->fmin);
     return 1;
   }
   if (gnorm < snes->atol) {
-    PLogInfo((PetscObject)snes,"SNES: Converged due to gradient norm %g < %g\n",gnorm,snes->atol);
+    PLogInfo(snes,"SNES: Converged due to gradient norm %g < %g\n",gnorm,snes->atol);
     return 2;
   }
   /* Test for termination and stringent tolerances. (failure and stop) */
  if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo((PetscObject)snes,
+    PLogInfo(snes,
              "SNES: Exceeded maximum number of function evaluations: %d > %d\n",
              snes->nfuncs,snes->max_funcs );
     return -1;
   } 
   if (gnorm < epsmch) {
-    PLogInfo((PetscObject)snes,"SNES: Gradient norm %g < minimum tolerance %g\n",gnorm,epsmch);
+    PLogInfo(snes,"SNES: Gradient norm %g < minimum tolerance %g\n",gnorm,epsmch);
     return -2;
   }
   if (neP->line != 1) {
-    PLogInfo((PetscObject)snes,"SNES: Line search failed for above reason\n");
+    PLogInfo(snes,"SNES: Line search failed for above reason\n");
     return -3;
   }
   return 0;
@@ -313,26 +313,26 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
   /* Check input parameters for errors */
   if (*step < zero) {
-    PLogInfo((PetscObject)snes,"Line search error: step (%g) < 0\n",*step);
+    PLogInfo(snes,"Line search error: step (%g) < 0\n",*step);
     *info = -1; return 0;
   } else if (neP->ftol < zero) {
-    PLogInfo((PetscObject)snes,"Line search error: ftol (%g) < 0\n,neP->ftol");
+    PLogInfo(snes,"Line search error: ftol (%g) < 0\n,neP->ftol");
     *info = -2; return 0;
   } else if (neP->rtol < zero) {
-    PLogInfo((PetscObject)snes,"Line search error: rtol (%g) < 0\n",neP->rtol);
+    PLogInfo(snes,"Line search error: rtol (%g) < 0\n",neP->rtol);
     *info = -3; return 0;
   } else if (neP->gtol < zero) {
-    PLogInfo((PetscObject)snes,"Line search error: gtol (%g) < 0\n",neP->gtol);
+    PLogInfo(snes,"Line search error: gtol (%g) < 0\n",neP->gtol);
     *info = -4; return 0;
   } else if (neP->stepmin < zero) {
-    PLogInfo((PetscObject)snes,"Line search error: stepmin (%g) < 0\n,neP->stepmin");
+    PLogInfo(snes,"Line search error: stepmin (%g) < 0\n,neP->stepmin");
     *info = -5; return 0;
   } else if (neP->stepmax < neP->stepmin) {
-    PLogInfo((PetscObject)snes,"Line search error: stepmax (%g) < stepmin (%g)\n",
+    PLogInfo(snes,"Line search error: stepmax (%g) < stepmin (%g)\n",
        neP->stepmax,neP->stepmin);
     *info = -6; return 0;
   } else if (neP->maxfev < zero) {
-    PLogInfo((PetscObject)snes,"Line search error: maxfev (%d) < 0\n",neP->maxfev);
+    PLogInfo(snes,"Line search error: maxfev (%d) < 0\n",neP->maxfev);
     *info = -7; return 0;
   }
 
@@ -343,7 +343,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   ierr = VecDot(G,S,&dginit); CHKERRQ(ierr);  /* dginit = G^T S */
 #endif
   if (dginit >= zero) {
-    PLogInfo((PetscObject)snes,"Line search error:Search direction not a descent direction\n");
+    PLogInfo(snes,"Line search error:Search direction not a descent direction\n");
     *info = 7; return 0;
   }
 
@@ -410,31 +410,31 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
     /* Convergence testing */
     if (((neP->bracket) && (*step <= neP->stepmin||*step >= neP->stepmax)) || (!neP->infoc)) {
       *info = 6;
-      PLogInfo((PetscObject)snes,
+      PLogInfo(snes,
         "Rounding errors may prevent further progress.  May not be a step satisfying\n");
-      PLogInfo((PetscObject)snes,
+      PLogInfo(snes,
         "sufficient decrease and curvature conditions. Tolerances may be too small.\n");
     }
     if ((*step == neP->stepmax) && (*f <= ftest1) && (dg <= dgtest)) {
-      PLogInfo((PetscObject)snes,"Step is at the upper bound, stepmax (%g)\n",neP->stepmax);
+      PLogInfo(snes,"Step is at the upper bound, stepmax (%g)\n",neP->stepmax);
       *info = 5;
     }
     if ((*step == neP->stepmin) && (*f >= ftest1) && (dg >= dgtest)) {
-      PLogInfo((PetscObject)snes,"Step is at the lower bound, stepmin (%g)\n",neP->stepmin);
+      PLogInfo(snes,"Step is at the lower bound, stepmin (%g)\n",neP->stepmin);
       *info = 4;
     }
     if (neP->nfev >= neP->maxfev) {
-      PLogInfo((PetscObject)snes,
+      PLogInfo(snes,
         "Number of line search function evals (%d) > maximum (%d)\n",neP->nfev,neP->maxfev);
       *info = 3;
     }
     if ((neP->bracket) && (neP->stepmax - neP->stepmin <= neP->rtol*neP->stepmax)){
-      PLogInfo((PetscObject)snes,
+      PLogInfo(snes,
         "Relative width of interval of uncertainty is at most rtol (%g)\n",neP->rtol);
       *info = 2;
     }
     if ((*f <= ftest1) && (PetscAbsScalar(dg) <= neP->gtol*(-dginit))) {
-      PLogInfo((PetscObject)snes,
+      PLogInfo(snes,
         "Line search success: Sufficient decrease and directional deriv conditions hold\n");
       *info = 1;
     }
@@ -481,7 +481,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
    }
 
   /* Finish computations */
-  PLogInfo((PetscObject)snes,"%d function evals in line search, step = %10.4f\n", 
+  PLogInfo(snes,"%d function evals in line search, step = %10.4f\n", 
            neP->nfev,neP->step);
   ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);
   return 0;

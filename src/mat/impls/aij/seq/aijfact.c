@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.58 1996/02/14 14:06:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.59 1996/03/19 21:25:53 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -99,7 +99,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
     idnew[i] = ainew[i] + nzi;
   }
 
-  PLogInfo((PetscObject)A,
+  PLogInfo(A,
     "Info:MatLUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
                              realloc,f,((double)ainew[n])/((double)ai[i]));
 
@@ -620,7 +620,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
   ierr = ISDestroy(isicol); CHKERRQ(ierr);
   PetscFree(fill); PetscFree(im);
 
-  PLogInfo((PetscObject)A,
+  PLogInfo(A,
     "Info:MatILUFactorSymbolic_SeqAIJ:Realloc %d Fill ratio:given %g needed %g\n",
                              realloc,f,((double)ainew[n])/((double)ai[prow]));
 

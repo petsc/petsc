@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.14 1996/03/18 00:40:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.15 1996/03/19 21:27:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -262,7 +262,7 @@ static int MatSetOption_SeqBAIJ(Mat A,MatOption op)
            op == SYMMETRIC_MATRIX ||
            op == STRUCTURALLY_SYMMETRIC_MATRIX ||
            op == YES_NEW_DIAGONALS)
-    PLogInfo((PetscObject)A,"Info:MatSetOption_SeqBAIJ:Option ignored\n");
+    PLogInfo(A,"Info:MatSetOption_SeqBAIJ:Option ignored\n");
   else if (op == NO_NEW_DIAGONALS)
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBAIJ:NO_NEW_DIAGONALS");}
   else 

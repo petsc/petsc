@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.77 1996/03/19 21:26:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.78 1996/03/22 22:36:23 curfman Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -640,7 +640,7 @@ static int MatSetOption_MPIBDiag(Mat A,MatOption op)
            op == SYMMETRIC_MATRIX ||
            op == STRUCTURALLY_SYMMETRIC_MATRIX ||
            op == YES_NEW_DIAGONALS)
-    PLogInfo((PetscObject)A,"Info:MatSetOption_MPIBDiag:Option ignored\n");
+    PLogInfo(A,"Info:MatSetOption_MPIBDiag:Option ignored\n");
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIBDiag:unknown option");}
   return 0;

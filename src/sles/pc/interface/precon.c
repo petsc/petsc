@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.79 1996/03/20 03:36:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.80 1996/03/23 18:33:30 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -342,16 +342,16 @@ int PCSetUp(PC pc)
 {
   int ierr;
   if (pc->setupcalled > 1) {
-    PLogInfo((PetscObject)pc,"Setting PC with identical preconditioner\n");
+    PLogInfo(pc,"Setting PC with identical preconditioner\n");
   }
   else if (pc->setupcalled == 0) {
-    PLogInfo((PetscObject)pc,"Setting up new PC\n");
+    PLogInfo(pc,"Setting up new PC\n");
   }
   else if (pc->flag == SAME_NONZERO_PATTERN) {
-    PLogInfo((PetscObject)pc,"Setting up PC with same nonzero pattern\n");
+    PLogInfo(pc,"Setting up PC with same nonzero pattern\n");
   }
   else {
-    PLogInfo((PetscObject)pc,"Setting up PC with different nonzero pattern\n");
+    PLogInfo(pc,"Setting up PC with different nonzero pattern\n");
   }
   if (pc->setupcalled > 1) return 0;
   PLogEventBegin(PC_SetUp,pc,0,0,0);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.89 1996/03/23 17:15:47 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.90 1996/03/23 19:22:48 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -44,11 +44,13 @@ int PLogAllowInfo(PetscTruth flag)
 
 extern FILE *petsc_history;
 
-/* This is a temporary shell until we devise a complete version */
-int PLogInfo(PetscObject obj,char *format,...)
+int PLogInfo(void *vobj,char *format,...)
 {
-  va_list Argp;
-  int     rank;
+  va_list     Argp;
+  int         rank;
+  PetscObject obj = (PetscObject) vobj;
+
+  if (obj) PetscValidHeader(obj);
   if (!PrintInfo) return 0;
   if (!obj) rank = 0;
   else      {MPI_Comm_rank(obj->comm,&rank);} 

@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.65 1996/03/23 17:15:12 curfman Exp curfman $ */
+/* $Id: plog.h,v 1.66 1996/03/23 19:22:34 curfman Exp bsmith $ */
 
 /*
     Defines high level logging in PETSc.
@@ -114,7 +114,7 @@ extern double _TotalFlops;
 #endif 
 
 /* General logging of information; different from event logging */
-extern int PLogInfo(PetscObject,char*,...);
+extern int PLogInfo(void*,char*,...);
 
 #if defined (HAVE_MPE)
 #include "mpe.h"

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.22 1996/03/21 22:37:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.23 1996/03/23 18:33:19 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -167,9 +167,9 @@ int KSPSolve_QCG(KSP ksp,int *its)
        pcgP->ltsnrm = pcgP->delta;    /* convergence in direction of */
        pcgP->info = 1;	        /* negative curvature */
        if (i == 0) {
-         PLogInfo((PetscObject)ksp,"KSPSolve_QCG: negative curvature: delta=%g\n",pcgP->delta);
+         PLogInfo(ksp,"KSPSolve_QCG: negative curvature: delta=%g\n",pcgP->delta);
        } else {
-         PLogInfo((PetscObject)ksp,
+         PLogInfo(ksp,
            "KSPSolve_QCG: negative curvature: step1=%g, step2=%g, delta=%g\n",step1,step2,pcgP->delta);
        }
          
@@ -206,10 +206,10 @@ int KSPSolve_QCG(KSP ksp,int *its)
          pcgP->ltsnrm = pcgP->delta;
          pcgP->info = 2;	/* convergence along constrained step */
          if (i == 0) {
-           PLogInfo((PetscObject)ksp,
+           PLogInfo(ksp,
              "KSPSolve_QCG: constrained step: delta=%g\n",pcgP->delta);
          } else {
-           PLogInfo((PetscObject)ksp,
+           PLogInfo(ksp,
              "KSPSolve_QCG: constrained step: step1=%g, step2=%g, delta=%g\n",
               step1,step2,pcgP->delta);
          }
@@ -229,10 +229,10 @@ int KSPSolve_QCG(KSP ksp,int *its)
          if (cerr) {                 /* convergence for */
            pcgP->info = 3;          /* truncated step */
 #if defined(PETSC_COMPLEX)               
-           PLogInfo((PetscObject)ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n", 
+           PLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n", 
               real(step),rnrm,pcgP->delta);
 #else
-           PLogInfo((PetscObject)ksp,
+           PLogInfo(ksp,
                "KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",step,rnrm,pcgP->delta);
 #endif
          }

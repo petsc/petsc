@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.134 1996/03/18 00:40:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.135 1996/03/19 21:26:00 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1060,7 +1060,7 @@ static int MatSetOption_MPIAIJ(Mat A,MatOption op)
            op == SYMMETRIC_MATRIX ||
            op == STRUCTURALLY_SYMMETRIC_MATRIX ||
            op == YES_NEW_DIAGONALS)
-    PLogInfo((PetscObject)A,"Info:MatSetOption_MPIAIJ:Option ignored\n");
+    PLogInfo(A,"Info:MatSetOption_MPIAIJ:Option ignored\n");
   else if (op == COLUMN_ORIENTED) {
     a->roworiented = 0;
     MatSetOption(a->A,op);
