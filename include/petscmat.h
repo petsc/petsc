@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.208 2000/10/24 20:28:06 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.209 2000/11/19 00:41:25 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -346,6 +346,9 @@ typedef char* MatOrderingType;
 #define MATORDERING_RCM       "rcm"
 #define MATORDERING_QMD       "qmd"
 #define MATORDERING_ROWLENGTH "rowlength"
+#define MATORDERING_DSC_ND    "dsc_nd"
+#define MATORDERING_DSC_MMD   "dsc_mmd"
+#define MATORDERING_DSC_MDF   "dsc_mdf"
 
 EXTERN int MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
 EXTERN int MatOrderingRegister(char*,char*,char*,int(*)(Mat,MatOrderingType,IS*,IS*));
@@ -502,6 +505,7 @@ EXTERN int MatFDColoringGetFrequency(MatFDColoring,int*);
 EXTERN int MatFDColoringSetFromOptions(MatFDColoring);
 EXTERN int MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
 EXTERN int MatFDColoringApplyTS(Mat,MatFDColoring,double,Vec,MatStructure*,void *);
+EXTERN int MatFDColoringSetRecompute(MatFDColoring);
 
 /* 
     These routines are for partitioning matrices: currently used only 
