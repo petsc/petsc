@@ -8,7 +8,7 @@
 
 static char help[] = "XXXXX with multigrid and timestepping in 2 dimensions.\n\
   \n\
--da_grid_x 5 -da_grid_y 5 -dmmg_nlevels 3 lu -mg_coarse_pc_lu_damping -mg_levels_pc_ilu_damping \n\
+-da_grid_x 5 -da_grid_y 5 -dmmg_nlevels 3 lu -mg_coarse_pc_lu_damping -mg_levels_pc_type sor -mg_levels_pc_sor_symmetric -max_st 5 -ksp_type gmres -mg_levels_ksp_type richardson -ksp_left_pc \n\
   -viscosity <nu>\n\
   -skin_depth <d_e>\n\
   -larmor_radius <rho_s>\n\
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   AppCtx     *user;                /* user-defined work context (one for each level) */
   TstepCtx   tsCtx;                /* time-step parameters (one total) */
   Parameter  param;                /* physical parameters (one total) */
-  int        i,ierr;
+  int        i,ierr,m,n;
   MPI_Comm   comm;
   DA         da;
   PetscTruth defaultnonzerostructure = PETSC_FALSE;
@@ -214,6 +214,8 @@ int main(int argc,char **argv)
 
     ierr = PetscPrintf(comm,"# viscosity = %g, skin_depth # = %g, larmor_radius # = %g\n",
 		       param.nu,param.d_e,param.rho_s);CHKERRQ(ierr);
+    ierr = DAGetInfo(DMMGGetDA(dmmg),0,&m,&n,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Problem size %d by %d\n",m,n);CHKERRQ(ierr);
     
     
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

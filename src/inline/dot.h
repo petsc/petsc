@@ -156,7 +156,7 @@ while (n>0) {sum += x[0]*x[0]+x[1]*x[1]+x[2]*x[2]+x[3]*x[3];x+=4;\
 n -= 4;}}
 
 #elif defined(PETSC_USE_WHILE_KERNELS)
-#define DOT(sum,x,y,n) {
+#define DOT(sum,x,y,n) {\
 while(n--) sum+= *x++ * *y++;}
 #define DOT2(sum1,sum2,x,y1,y2,n) {\
 while(n--){sum1+= *x**y1++;sum2+=*x++**y2++;}}
