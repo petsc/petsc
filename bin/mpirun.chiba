@@ -170,7 +170,7 @@ if [ ! -s \${pbsfile} ] ; then
 fi
 DISPLAY=$DISPLAY
 export DISPLAY
-mpirun.ch_gm -np $num --gm-f \${pbsfile} $rundir/$programbase $newprogargs
+mpirun.ch_gm -np $num --gm-f \${pbsfile} $rundir/$programbase -display $DISPLAY $newprogargs
 #
 exit 0;
 EOF
