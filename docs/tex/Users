@@ -14,6 +14,7 @@ mday@opus.nersc.gov - Marcus Day, sequential nonlinear solvers
 
 Local Users:
 
+leaf - Gary Leaf, needs sda (simplified distributed arrays) - also students?
 dstevens - Deb Stevens, needs Fortran interface to SLES
 bouarich - Ali Bouaricha, needs nonlinear solvers
 canfield - Tom Canfield, needs parallel, symmetric linear solvers
