@@ -1,9 +1,10 @@
-# $Id: makefile,v 1.215 1998/03/24 20:39:23 balay Exp balay $ 
+# $Id: makefile,v 1.216 1998/03/25 17:36:25 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
 # See also bmake/common for additional commands.
 #
+ALL: all
 
 CFLAGS	 =
 SOURCEC	 =
@@ -20,7 +21,6 @@ DIRS	 = src include docs
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
-ALL: all
 
 #
 #  Prints information about the system and PETSc being compiled
@@ -359,6 +359,7 @@ allfortranstubs:
 	-@include/finclude/generateincludes
 	-@${RM} -f src/fortran/auto/*.c
 	-make ACTION=fortranstubs tree
+	-@cd src/fortran/auto; ${OMAKE} -f makefile fixfortran
 	chmod g+w src/fortran/auto/*.c
 
 allci: 
