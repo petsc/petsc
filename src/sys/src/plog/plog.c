@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.166 1997/08/22 15:19:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.167 1997/09/09 15:18:11 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1423,17 +1423,17 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 
 #if defined(PETSC_BOPT_g)
   PetscFPrintf(comm,fd,"\n\n");
-  PetscFPrintf(comm,fd,"      ########################################\n");
-  PetscFPrintf(comm,fd,"      #                                      #\n");
-  PetscFPrintf(comm,fd,"      #                WARNING!!!            #\n");
-  PetscFPrintf(comm,fd,"      #                                      #\n");
-  PetscFPrintf(comm,fd,"      #   This code was compiled with the    #\n");
-  PetscFPrintf(comm,fd,"      #   BOPT=g option. To get timing       #\n");
-  PetscFPrintf(comm,fd,"      #   results ALWAYS compile your code   #\n");
-  PetscFPrintf(comm,fd,"      #   with BOPT=O. The performance will  #\n");
-  PetscFPrintf(comm,fd,"      #   be two or three times faster.      #\n");
-  PetscFPrintf(comm,fd,"      #                                      #\n");
-  PetscFPrintf(comm,fd,"      ########################################\n\n\n");
+  PetscFPrintf(comm,fd,"      ##########################################################\n");
+  PetscFPrintf(comm,fd,"      #                                                        #\n");
+  PetscFPrintf(comm,fd,"      #                          WARNING!!!                    #\n");
+  PetscFPrintf(comm,fd,"      #                                                        #\n");
+  PetscFPrintf(comm,fd,"      #   This code was compiled with a debugging option,      #\n");
+  PetscFPrintf(comm,fd,"      #   BOPT=<g,g_c++,g_complex>.   To get timing results    #\n");
+  PetscFPrintf(comm,fd,"      #   ALWAYS compile your code with an optimized version,  #\n");
+  PetscFPrintf(comm,fd,"      #   BOPT=<O,O_c++,O_complex>;  the performance wil       #\n");
+  PetscFPrintf(comm,fd,"      #   be generally two or three times faster.              #\n");
+  PetscFPrintf(comm,fd,"      #                                                        #\n");
+  PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");
 #endif
 
   /* loop over operations looking for interesting ones */
