@@ -488,15 +488,3 @@ exercises:
         allhtml allcleanhtml allfortranstubs allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
         start_configure configure_petsc configure_clean
 
-citool:
-	-@bk citool
-	-@cd python/BuildSystem; bk citool
-
-pull:
-	-@bk pull
-	-@cd python/BuildSystem; bk pull
-
-push:
-	-@bk push
-	-@cd python/BuildSystem; bk push
-

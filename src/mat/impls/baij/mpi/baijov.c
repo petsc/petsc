@@ -746,7 +746,7 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,const IS isrow[],const IS iscol[],
   if (!nmax) nmax = 1;
   nstages_local = ismax/nmax + ((ismax % nmax)?1:0);
   
-  /* Make sure every porcessor loops through the nstages */
+  /* Make sure every processor loops through the nstages */
   ierr = MPI_Allreduce(&nstages_local,&nstages,1,MPI_INT,MPI_MAX,C->comm);CHKERRQ(ierr);
   for (i=0,pos=0; i<nstages; i++) {
     if (pos+nmax <= ismax) max_no = nmax;
@@ -1547,7 +1547,6 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],cons
   }
   ierr = PetscFree(colmaps);CHKERRQ(ierr);
   ierr = PetscFree(rowmaps);CHKERRQ(ierr);
-  /* Mark Adams */
 #else
   ierr = PetscFree(rmap);CHKERRQ(ierr);
   ierr = PetscFree(cmap);CHKERRQ(ierr);

@@ -103,7 +103,7 @@ EXTERN_C_END
 */
 #undef __FUNCT__  
 #define __FUNCT__ "CreateColmap_MPIBAIJ_Private"
-static int CreateColmap_MPIBAIJ_Private(Mat mat)
+int CreateColmap_MPIBAIJ_Private(Mat mat)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
   Mat_SeqBAIJ *B = (Mat_SeqBAIJ*)baij->B->data;

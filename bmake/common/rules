@@ -822,6 +822,19 @@ fixfortran:
 	  fi; \
 	done
 
+citool:
+	-@bk citool
+	-@cd ${PETSC_DIR}/python/BuildSystem; bk citool
+
+pull:
+	-@bk pull
+	-@cd ${PETSC_DIR}/python/BuildSystem; bk pull
+
+push:
+	-@bk push
+	-@cd ${PETSC_DIR}/python/BuildSystem; bk push
+
+
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/rules
 

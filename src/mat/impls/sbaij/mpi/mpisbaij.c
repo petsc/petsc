@@ -72,20 +72,6 @@ int MatRetrieveValues_MPISBAIJ(Mat mat)
 }
 EXTERN_C_END
 
-/* 
-     Local utility routine that creates a mapping from the global column 
-   number to the local number in the off-diagonal part of the local 
-   storage of the matrix.  This is done in a non scable way since the 
-   length of colmap equals the global matrix length. 
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "CreateColmap_MPISBAIJ_Private"
-static int CreateColmap_MPISBAIJ_Private(Mat mat)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not yet written for SBAIJ format");
-  /* PetscFunctionReturn(0); */
-}
 
 #define CHUNKSIZE  10
 
@@ -380,7 +366,7 @@ int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,const int im[],int n,const int
         else {  /* off-diag entry (B) */
           if (mat->was_assembled) {
             if (!baij->colmap) {
-              ierr = CreateColmap_MPISBAIJ_Private(mat);CHKERRQ(ierr);
+              ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 #if defined (PETSC_USE_CTABLE)
             ierr = PetscTableFind(baij->colmap,in[j]/bs + 1,&col);CHKERRQ(ierr);
@@ -489,7 +475,7 @@ int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,const int im[],int n,co
         else {
           if (mat->was_assembled) {
             if (!baij->colmap) {
-              ierr = CreateColmap_MPISBAIJ_Private(mat);CHKERRQ(ierr);
+              ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 
 #if defined(PETSC_USE_BOPT_g)
@@ -574,7 +560,7 @@ int MatGetValues_MPISBAIJ(Mat mat,int m,const int idxm[],int n,const int idxn[],
           ierr = MatGetValues_SeqSBAIJ(baij->A,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
         } else {
           if (!baij->colmap) {
-            ierr = CreateColmap_MPISBAIJ_Private(mat);CHKERRQ(ierr);
+            ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
           } 
 #if defined (PETSC_USE_CTABLE)
           ierr = PetscTableFind(baij->colmap,idxn[j]/bs+1,&data);CHKERRQ(ierr);
