@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.53 1999/01/12 23:16:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.54 1999/01/31 16:04:52 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -17,6 +17,8 @@ static char vcid[] = "$Id: draw.c,v 1.53 1999/01/12 23:16:28 bsmith Exp bsmith $
    Input Parameter:
 +  draw - the window
 -  w,h - the new width and height of the window
+
+   Level: intermediate
 
 @*/
 int DrawResizeWindow(Draw draw,int w,int h)
@@ -38,6 +40,8 @@ int DrawResizeWindow(Draw draw,int w,int h)
 
    Input Parameter:
 .  draw - the window
+
+   Level: advanced
 
 @*/
 int DrawCheckResizedWindow(Draw draw)
@@ -63,6 +67,8 @@ int DrawCheckResizedWindow(Draw draw)
    Output Parameter:
 .  title - the title
 
+   Level: intermediate
+
 @*/
 int DrawGetTitle(Draw draw,char **title)
 {
@@ -82,6 +88,8 @@ int DrawGetTitle(Draw draw,char **title)
    Input Parameters:
 +  draw - the graphics context
 -  title - the title
+
+   Level: intermediate
 
    Note:
    A copy of the string is made, so you may destroy the 
@@ -121,6 +129,9 @@ int DrawSetTitle(Draw draw,char *title)
    Note:
    A copy of the string is made, so you may destroy the 
    title string after calling this routine.
+
+   Level: advanced
+
 @*/
 int DrawAppendTitle(Draw draw,char *title)
 {
@@ -160,6 +171,8 @@ int DrawAppendTitle(Draw draw,char *title)
    Input Parameters:
 .  draw - the drawing context
 
+   Level: beginner
+
 .keywords: draw, destroy
 @*/
 int DrawDestroy(Draw draw)
@@ -190,6 +203,8 @@ int DrawDestroy(Draw draw)
 
    Output Parameter:
 .  popup - the new popup window
+
+   Level: advanced
 
 @*/
 int DrawGetPopup(Draw draw,Draw *popup)
@@ -222,6 +237,9 @@ int DrawDestroy_Null(Draw draw)
 
   Output Parameter:
 . win - the drawing context
+
+   Level: advanced
+
 */
 int DrawOpenNull(MPI_Comm comm,Draw *win)
 {
