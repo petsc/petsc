@@ -5,8 +5,8 @@ dnl
 dnl Here is a typical configure usage
 dnl setenv PETSC_ARCH solarisconfig
 dnl ./bin/configure --enable-installsite --enable-opt=-O --enable-optname=O \
-dnl                --with-blas=/home/petsc/software/blaslapack/blas.a \
-dnl                --with-lapack=/home/petsc/software/blaslapack/lapack.a
+dnl                --with-blas=/home/petsc/software/blaslapack/blas_solaris.a \
+dnl                --with-lapack=/home/petsc/software/blaslapack/lapack_solaris.a
 dnl
 dnl To build a new version of configure, execute the following:
 dnl    autoheader
