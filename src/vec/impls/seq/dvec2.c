@@ -1,5 +1,5 @@
 
-/*$Id: dvec2.c,v 1.88 2001/09/04 15:15:26 bsmith Exp bsmith $*/
+/*$Id: dvec2.c,v 1.89 2001/09/07 20:08:59 bsmith Exp bsmith $*/
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -575,12 +575,13 @@ int VecSet_Seq(const PetscScalar* alpha,Vec xin)
 #define __FUNCT__ "VecSetRandom_Seq"
 int VecSetRandom_Seq(PetscRandom r,Vec xin)
 {
-  Vec_Seq      *x = (Vec_Seq *)xin->data;
   int          n = xin->n,i,ierr;
-  PetscScalar  *xx = x->array;
+  PetscScalar  *xx;
 
   PetscFunctionBegin;
+  ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
   for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
