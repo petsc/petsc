@@ -1787,7 +1787,7 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
   int          nz,nz1,*vj,*vj1,i;
 
   PetscFunctionBegin;
-
+  
   if (bs > 1)
     SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
 
@@ -1801,7 +1801,7 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
   ierr = PetscMalloc(m*sizeof(PetscScalar),&t);CHKERRQ(ierr);
  
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    if (flag & SOR_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){ 
       for (i=0; i<m; i++)
         t[i] = b[i];
 
@@ -1814,9 +1814,9 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
         while (nz--) t[*vj++] -= x[i]*(*v++); /* update rhs */
         PetscLogFlops(2*nz-1);
       }
-    }
+    } 
 
-    if (flag & SOR_BACKWARD_SWEEP){
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){ 
       for (i=0; i<m; i++)
         t[i] = b[i];
   
@@ -1839,7 +1839,7 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
       }
     }
     its--;
-  }
+  } 
 
   while (its--) {
     /* 
@@ -1850,7 +1850,7 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
          b      = b - x[i]*U^T(i,:);
          
     */ 
-    if (flag & SOR_FORWARD_SWEEP ){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){ 
       for (i=0; i<m; i++)
         t[i] = b[i];
 
@@ -1867,7 +1867,7 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
       }
     }
   
-    if (flag & SOR_BACKWARD_SWEEP){
+  if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){ 
       /* 
        backward sweep:
        b = b - x[i]*U^T(i,:), i=0,...,n-2
@@ -1896,13 +1896,14 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
         x[i] =   (1-omega)*x[i] + omega*sum/d;        
       }
     }
-  }
+  } 
 
   ierr = PetscFree(t); CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   if (bb != xx) { 
     ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   } 
+
   PetscFunctionReturn(0);
 } 
 

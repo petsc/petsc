@@ -849,23 +849,28 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal f
   PetscFunctionBegin;
   if (!A->diag) {ierr = MatMarkDiagonal_SeqAIJ(AA);CHKERRQ(ierr);}
   diag = A->diag;
+
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
-      ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,its,xx);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
+      ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,1,xx);CHKERRQ(ierr);
+      its--; 
     }
-    ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
-    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
-    ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
-    if (xx != bb) {
-      ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-    } else {
-      b = x;
-    }
-    ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
-    xs = x + shift; /* shift by one for index start of 1 */
-    ls = ls + shift;
-    while (its--) {
+    
+    while (its--) { 
+      ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
+      ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
+  
+      ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+      if (xx != bb) {
+        ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+      } else {
+        b = x;
+      }  
+      ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
+     
+      xs = x + shift;
+      ls = ls + shift; /* shift by one for index start of 1 */
+
       /* go down through the rows */
       for (i=0; i<m; i++) {
         n    = A->i[i+1] - A->i[i]; 
@@ -896,27 +901,29 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal f
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
         x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
       }
-    }    
-    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-    if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); }
-    ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
+    
+      ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+      if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); }
+      ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
+    }
   } else if (flag & SOR_LOCAL_FORWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,its,xx);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
+      its--;
     }
-    ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
-    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
-    ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
-    if (xx != bb) {
-      ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-    } else {
-      b = x;
-    }
-    ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
-    xs = x + shift; /* shift by one for index start of 1 */
-    ls = ls + shift;
     while (its--) {
+      ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
+      ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
+      ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+      if (xx != bb) {
+        ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+      } else {
+        b = x;
+      }
+      ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
+      xs = x + shift; /* shift by one for index start of 1 */
+      ls = ls + shift;
+    
       for (i=0; i<m; i++) {
         n    = A->i[i+1] - A->i[i]; 
 	PetscLogFlops(4*n+3);
@@ -930,28 +937,29 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal f
         v    = B->a + B->i[i] + shift;
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
         x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
-      }
-    } 
-    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-    if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); }
-    ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
+      }    
+      ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+      if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); }
+      ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
+    }
   } else if (flag & SOR_LOCAL_BACKWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,its,xx);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
+      its--;
     }
-    ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
-    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
-    ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
-    if (xx != bb) {
-      ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-    } else {
-      b = x;
-    }
-    ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
-    xs = x + shift; /* shift by one for index start of 1 */
-    ls = ls + shift;
     while (its--) {
+      ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
+      ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
+      ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+      if (xx != bb) {
+        ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+      } else {
+        b = x;
+      }
+      ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
+      xs = x + shift; /* shift by one for index start of 1 */
+      ls = ls + shift;
+
       for (i=m-1; i>-1; i--) {
         n    = A->i[i+1] - A->i[i]; 
 	PetscLogFlops(4*n+3);
@@ -966,10 +974,11 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal f
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
         x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
       }
-    } 
+    
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
     if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); }
     ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
+    }
   } else {
     SETERRQ(PETSC_ERR_SUP,"Parallel SOR not supported");
   }
