@@ -6,5 +6,5 @@ petsc/docs/manual.html
 petsc/docs/tex/rsum
 petsc/src/mat/examples/matrices
 petsc/src/contrib/vrmltest
-petsc/include/finclude
+petsc/include/foldinclude
 petsc/maint/nightlylogs

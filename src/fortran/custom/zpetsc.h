@@ -151,7 +151,7 @@ extern int   MPIR_FromPointer(void*);
     These are used to support the default viewers that are 
   created at run time, in C using the , trick.
 
-    The numbers here must match the numbers in include/FINCLUDE/petsc.h
+    The numbers here must match the numbers in include/finclude/petsc.h
 */
 #define VIEWER_DRAWX_WORLD_0_FORTRAN  -4
 #define VIEWER_DRAWX_WORLD_1_FORTRAN  -5

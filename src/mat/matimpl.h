@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.84 1998/03/17 19:57:52 curfman Exp bsmith $ */
+/* $Id: matimpl.h,v 1.85 1998/04/03 23:14:40 bsmith Exp balay $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -11,7 +11,7 @@
 
 /*
     If you add entries here also add them to the MATOP enum
-    in include/mat.h and include/FINCLUDE/mat.h
+    in include/mat.h and include/finclude/mat.h
 */
 struct _MatOps {
   int       (*setvalues)(Mat,int,int *,int,int *,Scalar *,InsertMode),
