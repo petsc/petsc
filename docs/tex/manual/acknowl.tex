@@ -2,50 +2,53 @@
 
 \noindent {\bf Acknowledgments:}
 
-\medskip \medskip 
-We thank Victor Eijkhout, David Keyes, and Mathew Knepley for their valuable comments on the 
+\medskip \medskip \noindent
+We thank Victor Eijkhout, David Keyes, and Matthew Knepley for their valuable comments on the 
 source code, functionality, and documentation  for PETSc 2.0.  
 In addition, we thank all PETSc users for
 their suggestions, bug reports, support, and encouragement.
 
 \vspace{.3in}
+\noindent
 Some of the source code and utilities in PETSc (or software used by PETSc)
-has been written by 
+have been written by 
 \begin{itemize}
-  \item Cameron Cooper, Fall 1995, (Portions of the VecScatter routines), 
-  \item Matt Hille, Summer 1995, (PetscView and PetscOpts), 
-  \item Mathew Knepley, Summer 1997, (Too much to mention),
-  \item Peter Mell, Summer 1995, (Portions of the DA-distributed array routines),
-  \item Wing-Lok Wan, Summer 1995, (the ILU portion of BlockSolve95)
-  \item Liyang Xu, Summer 1997, (the interface to PVODE).
+  \item Cameron Cooper, Fall 1995 (Portions of the VecScatter routines), 
+  \item Matt Hille, Summer 1995 (PetscView and PetscOpts), 
+  \item Matthew Knepley, Summer 1997 (Too much to mention),
+  \item Peter Mell, Summer 1995 (Portions of the DA-distributed array routines),
+  \item Wing-Lok Wan, Summer 1995 (the ILU portion of BlockSolve95), and
+  \item Liyang Xu, Summer 1997 (the interface to PVODE)
 \end{itemize}
 while visiting Argonne National Laboratory or working with us.
 
 \vspace{.3in}
+\noindent
 PETSc uses routines from 
 \begin{itemize}
-  \item BLAS, 
-  \item LAPACK,
-  \item LINPACK,      (matrix factorization and solve; converted to C using f2c and then 
+  \item BLAS
+  \item LAPACK
+  \item LINPACK      (matrix factorization and solve; converted to C using {\tt f2c} and then 
                       hand-optimized for small matrix sizes, for block matrix data structures),
-  \item MINPACK,      (sequential matrix coloring routines for finite difference Jacobian
-                       evaluations; converted to C using f2c),
-  \item SPARSPAK,     (matrix reordering routines, converted to C using f2c),
-to provide a small subset of its low-level functionality.
+  \item MINPACK      (sequential matrix coloring routines for finite difference Jacobian
+                       evaluations; converted to C using {\tt f2c}),
+  \item SPARSPAK     (matrix reordering routines, converted to C using {\tt f2c}),
 \end{itemize}
+to provide a small subset of its low-level functionality.
 
 \vspace{.3in}
-PETSc interfaces to the following external software
+\noindent
+PETSc interfaces to the following external software:
 \begin{itemize}
-  \item BlockSolve95, (for parallel ICC(0) and ILU(0) preconditioning),
-  \item SPAI,         (for parallel sparse approximate inverse preconditiong),
-  \item ESSL,         (IBM's math library for fast sparse direct LU factorization),
-  \item Matlab,       (through a socket interface for graphics and numerical post processing 
-                       of data),
-  \item PVODE,        (Alan Hindmarsh's parallel ODE integrator),
-  \item VRML,         (for simple three dimensional visualization post-processing),
-  \item ParMeTiS      (George Karypis' parallel graph partitioner).
+  \item BlockSolve95 (for parallel ICC(0) and ILU(0) preconditioning)
+  \item ESSL         (IBM's math library for fast sparse direct LU factorization)
+  \item Matlab       (through a socket interface for graphics and numerical post processing 
+                      of data)
+  \item ParMeTiS      (parallel graph partitioner)
+  \item PVODE        (parallel ODE integrator)
+  \item SPAI         (for parallel sparse approximate inverse preconditiong)
+  \item VRML         (for simple three-dimensional visualization post-processing)
 \end{itemize}
-These are optional packages and do not need to be installed to use PETSc.
+These are all optional packages and do not need to be installed to use PETSc.
 
 
