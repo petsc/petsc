@@ -1,5 +1,7 @@
 
 #include "petsc.h"
+#include "petscis.h"
+
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -8,7 +10,7 @@ EXTERN_C_BEGIN
 
 #include "ad_deriv.h"
 
-void PetscADSetValueAndColor(DERIV_TYPE *vars,int n,int *colors,double *values)
+void PetscADSetValueAndColor(DERIV_TYPE *vars,int n,ISColoringValue *colors,double *values)
 {
   int         i,j;
   PetscScalar *d;

@@ -628,7 +628,7 @@ EXTERN int MatColoringRegister(char*,char*,char*,int(*)(Mat,MatColoringType,ISCo
 EXTERN int        MatColoringRegisterAll(char *);
 extern PetscTruth MatColoringRegisterAllCalled;
 EXTERN int        MatColoringRegisterDestroy(void);
-EXTERN int        MatColoringPatch(Mat,int,int,int *,ISColoring*);
+EXTERN int        MatColoringPatch(Mat,int,int,ISColoringValue *,ISColoring*);
 
 /*S
      MatFDColoring - Object for computing a sparse Jacobian via finite differences

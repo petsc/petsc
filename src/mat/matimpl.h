@@ -72,7 +72,7 @@ struct _MatOps {
             (*getcolumnij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
             (*restorecolumnij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
 /*55*/      (*fdcoloringcreate)(Mat,ISColoring,MatFDColoring),
-            (*coloringpatch)(Mat,int,int,int *,ISColoring*),
+            (*coloringpatch)(Mat,int,int,ISColoringValue *,ISColoring*),
             (*setunfactored)(Mat),
             (*permute)(Mat,IS,IS,Mat*),
             (*setvaluesblocked)(Mat,int,int *,int,int *,PetscScalar *,InsertMode),

@@ -1,0 +1,72 @@
+Notes for LGMRES PETSc code
+--------------------------------
+
+Developed and tested with Petsc 2.1.3 on solaris.
+
+Files:
+
+ lgmres.h (header included by user code)
+ lgmres.c (main file)
+ lgmresp.h (private header file for lgmres)
+ makefile (lgmres library makefile)
+
+To use:
+
+- Register the lgmres method in your code, for example: 
+ 
+    ierr = KSPRegisterDynamic("lgmres", "/home/saros/allisonb/petsc/mywork/lib/libO/solaris/liballison.a", "KSPCreate_LGMRES", KSPCreate_LGMRES); CHKERRQ(ierr); 
+
+  This is done automatically by Petsc 2.1.5
+
+Options:
+
+- Uses the same options as gmres, plus two additional specifications
+
+-ksp_gmres_restart: for lgmres, this indicates the maximum size of the
+  approximation space (krylov space size + error approximations)
+
+-ksp_lgmres_augment : number of error approximations to include in the 
+  approximation space (default is 2).  If this is set to zero, then
+  this method is equivalent to gmres with a restart parameter defined 
+  by -ksp_gmres_restart.
+
+
+-ksp_lgmres_constant: keep the approximation space a constant size for 
+  every restart cycle. This only affects the first couple of restart
+  cycles when the total number of desired error approximations may not
+  be available.  (For example, no error approximations are available for
+  the first restart cycle.  If this flag is set then the krylov space
+ size = approx. space size for the first cycle.)
+
+
+Example:
+
+For the arco3 matrix in the petsc test collection, I use the
+following options::
+
+-ksp_gmres_modifiedgramschmidt 
+-ksp_type lgmres 
+-pc_type ilu
+-ksp_gmres_restart 30 
+-ksp_lgmres_augment 2
+-ksp_lgmres_constant
+-ksp_rtol 1e-9
+-ksp_max_it 15000
+
+
+More info:
+
+- The technical report describing the LGMRES method can be downloaded
+from my website (CU-CS-945-03):
+
+  http://amath.colorado.edu/student/allisonb/research.html
+
+- Augmenting with 1,2, or 3 approximations is generally optimal.  I
+usually use 2.  
+
+- This method is an accelerator for gmres - it is not useful for
+problems that stall.  When gmres(m) stalls then lgmres with a size m
+approx space will also generally stall.
+
+- If gmres(m) converges in a small number of restart cycles, then lgmres
+also tends not to be very helpful.

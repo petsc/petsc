@@ -113,9 +113,9 @@ int ISColoringGetIS(ISColoring iscoloring,int *nn,IS *isis[])
   if (nn)  *nn  = iscoloring->n;
   if (isis) {
     if (!iscoloring->is) {
-      int *mcolors,**ii,nc = iscoloring->n,i,base, n = iscoloring->N;
-      int *colors = iscoloring->colors;
-      IS  *is;
+      int             *mcolors,**ii,nc = iscoloring->n,i,base, n = iscoloring->N;
+      ISColoringValue *colors = iscoloring->colors;
+      IS              *is;
       
       /* generate the lists of nodes for each color */
       ierr = PetscMalloc((nc+1)*sizeof(int),&mcolors);CHKERRQ(ierr);
@@ -206,7 +206,7 @@ int ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 .seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy(), ISColoringSetType()
 
 @*/
-int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscoloring)
+int ISColoringCreate(MPI_Comm comm,int n,const ISColoringValue colors[],ISColoring *iscoloring)
 {
   int        ierr,size,rank,base,top,tag,nc,ncwork,i;
   PetscTruth flg;
@@ -236,16 +236,13 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
   /* compute the total number of colors */
   ncwork = 0;
   for (i=0; i<n; i++) {
-#if defined(PETSC_USE_BOPT_g)
-    if (colors[i] < 0) SETERRQ2(1,"Colors must be 0 or greater, you have given %d at %d",colors[i],i);
-#endif    
     if (ncwork < colors[i]) ncwork = colors[i];
   }
   ncwork++;
   ierr = MPI_Allreduce(&ncwork,&nc,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   (*iscoloring)->n      = nc;
   (*iscoloring)->is     = 0;
-  (*iscoloring)->colors = (int *)colors;
+  (*iscoloring)->colors = (ISColoringValue *)colors;
   (*iscoloring)->N      = n;
   (*iscoloring)->refct  = 1;
   (*iscoloring)->ctype  = IS_COLORING_LOCAL;
@@ -511,4 +508,57 @@ int ISAllGatherIndices(MPI_Comm comm,int n,int *lindices,int *outN,int **outindi
 }
 
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISAllGatherColors"
+/*@C
+    ISAllGatherColors - Given a a set of colors on each processor, generates a large 
+    set (same on each processor) by concatenating together each processors colors
+
+    Collective on MPI_Comm
+
+    Input Parameter:
++   comm - communicator to share the indices
+.   n - local size of set
+-   lindices - local colors
+
+    Output Parameter:
++   outN - total number of indices
+-   outindices - all of the colors
+
+    Notes: 
+    ISAllGatherColors() is clearly not scalable for large index sets.
+
+
+    Level: intermediate
+
+    Concepts: gather^index sets
+    Concepts: index sets^gathering to all processors
+    Concepts: IS^gathering to all processors
+
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISAllGatherIndices()
+@*/
+int ISAllGatherColors(MPI_Comm comm,int n,ISColoringValue *lindices,int *outN,ISColoringValue **outindices)
+{
+  ISColoringValue *indices;
+  int             *sizes,size,*offsets,i,N,ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*size*sizeof(int),&sizes);CHKERRQ(ierr);
+  offsets = sizes + size;
+  
+  ierr = MPI_Allgather(&n,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
+  offsets[0] = 0;
+  for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
+  N    = offsets[size-1] + sizes[size-1];
+  ierr = PetscFree(sizes);CHKERRQ(ierr);
+
+  ierr = PetscMalloc((N+1)*sizeof(ISColoringValue),&indices);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv(lindices,n,MPIU_COLORING_VALUE,indices,sizes,offsets,MPIU_COLORING_VALUE,comm);CHKERRQ(ierr); 
+
+  *outindices = indices;
+  if (outN) *outN = N;
+  PetscFunctionReturn(0);
+}
 
