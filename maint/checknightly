@@ -1,0 +1,61 @@
+#! /usr/local/tcl/bin/tclsh
+#
+# Crontab job that checks if the nightly runs have finished by 7:30 am,
+# Checks if the remote jobs are done in the past 2days, and 
+# recreates the etags
+#
+
+cd /home/bsmith/petsc/maint/nightlylogs
+set tmpfileid [ open tmpfile w ]
+set files [ glob examples_*]
+set machines {snake eagle ryan elvis doc ptera maverick}
+foreach machine $machines {
+    if { [ string first $machine $files ] < 0 } { #file dos'nt exist
+        set mesg "No build on: $machine"
+        puts $tmpfileid $mesg
+    }
+}
+
+
+# check the logfiles of remote builds:
+
+set day(Sun) Sat
+set day(Mon) Sun
+set day(Tue) Mon
+set day(Wed) Tue
+set day(Thu) Wed
+set day(Fri) Thu
+set day(Sat) Fri
+set today [exec date +%a ]
+
+set files {solaris.log linux.log t3d.log}
+foreach file $files {
+    if { [file exists $file ] == 0 } {
+        set mesg "$file: File does not exist"
+        puts $tmpfileid  $mesg
+        continue
+    }
+    set fileid [ open $file r ]
+    if { [gets $fileid line ]< 0 } {
+        set mesg "$file: File does not exist"
+        puts $tmpfileid $mesg
+        close $fileid
+        continue
+    }
+    close $fileid
+    if { [ string first $today $line] < 0  && [ string first $day($today) $line ] < 0 } {
+        set mesg "**out of date logfile: $file **"
+        puts $tmpfileid $mesg
+        puts $tmpfileid $line
+    }
+}
+close $tmpfileid
+if { [ file size tmpfile] > 0} {
+    exec /usr/local/elm/bin/elm -s "NIGHTLY BUILD PROBLEM" bsmith curfman balay < tmpfile
+}
+exec /bin/rm -f tmpfile
+
+
+# Build the TAGS files 
+cd /home/bsmith/petsc
+exec /bin/make alletags >>& /dev/null
