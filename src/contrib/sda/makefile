@@ -1,15 +1,7 @@
-# $Id: makefile,v 1.9 1998/06/12 21:54:37 balay Exp balay $ 
+# $Id: makefile,v 1.10 1998/06/15 16:29:06 balay Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  = 
-SOURCEF  =
-SOURCEH  =
-OBJSC    = 
-OBJSF    =
-LIBBASE  = libpetsccontrib
 DIRS     = examples src
 LOCDIR   = src/contrib/sda/
 NOADIC   = true
