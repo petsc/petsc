@@ -13,6 +13,7 @@ class Configure(config.base.Configure):
     self.found        = 0
     # Assume that these libraries are Fortran if we have a Fortran compiler
     self.compilers    = self.framework.require('config.compilers',            self)
+    self.setcompilers = self.framework.require('config.setCompilers',            self)    
     self.libraries    = self.framework.require('config.libraries',            self)
     self.framework.require('PETSc.packages.Sowing', self)
     return
@@ -279,6 +280,18 @@ class Configure(config.base.Configure):
         raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')
       if not self.foundLapack:
         raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')
+
+    # check if Mac OS BLAS/LAPACK and IBM Fortran compiler?
+    # if yes, then force IBM Fortran to add _ for subroutine names
+    # so cab access BLAS/LAPACK from Fortran
+    if name.find('MacOSX') >= 0 and 'FC' in self.framework.argDB:
+      self.setcompilers.pushLanguage('F77')
+      if self.setcompilers.getCompiler().find('xlf') or self.setcompilers.getCompiler().find('xlF'):
+        self.compilers.fortranMangling == 'underscore'
+#        flags = self.framework.getCompilerObject(self.language[-1]).getFlags()+' -qextname'
+        self.framework.argDB['FFLAGS'] = self.framework.argDB['FFLAGS'] + ' -qextname'
+#        self.framework.getCompilerObject(self.language[-1]).setFlags(flags)
+      self.setcompilers.popLanguage()
     return
 
   def configureESSL(self):
