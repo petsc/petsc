@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.8 1997/10/16 04:57:19 curfman Exp curfman $";
+static char vcid[] = "$Id: jacob.c,v 1.9 1997/10/16 15:12:50 curfman Exp curfman $";
 #endif
 
 #include "user.h"
@@ -287,8 +287,8 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
   /* Fix points on edges of the 3D domain, where diagonal of Jacobian is 1.
      edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.) */
 
-  /*  if ((app->mmtype != MMFP) && */
-    if ((app->problem == 1 || app->problem == 2 || app->problem == 3 || app->problem == 5)) {
+  if ((app->mmtype != MMFP) &&
+      (app->problem == 1 || app->problem == 2 || app->problem == 3 || app->problem == 5)) {
     ierr = FixJacobianEdges(app,*pjac); CHKERRQ(ierr);
   }
 
