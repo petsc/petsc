@@ -77,6 +77,10 @@ extern void PETSC_STDCALL mpi_init_(int*);
 extern short __stdcall NARGS();
 extern void  __stdcall GETARG(short*,char*,int,short *);
 
+#elif defined(PETSC_HAVE_FORTRAN_STDCALL)
+extern int  PETSC_STDCALL IARGC();
+extern void PETSC_STDCALL GETARG(int *,char *,int);
+
 #elif defined (PETSC_HAVE_PXFGETARG_NEW)
 extern int  iargc_();
 extern void getarg_(int*,char*,int*,int*,int);

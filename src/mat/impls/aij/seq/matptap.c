@@ -543,29 +543,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   *C = B_mpi;
   
   PetscFunctionReturn(0);
-
-#ifdef TOBEREMOVED
-  PetscErrorCode       ierr;
-  Mat                  C_seq;
-  Mat_MatMatMultMPI    *ptap;
-  PetscObjectContainer container;
-
-  PetscFunctionBegin;
- 
-  ierr = PetscObjectQuery((PetscObject)P,"MatPtAPMPI",(PetscObject *)&container);CHKERRQ(ierr);
-  if (container) { 
-    ierr  = PetscObjectContainerGetPointer(container,(void **)&ptap);CHKERRQ(ierr); 
-  } else {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
-  } 
-  /* compute C_seq = P_loc^T * A_loc * P_seq */
-  ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_Local(A,ptap->B_loc,ptap->B_oth,ptap->brstart,fill,&C_seq);CHKERRQ(ierr);
-  
-  /* add C_seq into mpi C */
-  ierr = MatMerge_SeqsToMPISymbolic(A->comm,C_seq,P->n,P->n,C);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-#endif /* TOBEREMOVED */
 }
 
 #undef __FUNCT__  
@@ -709,7 +686,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   }
 
   ierr = PetscFree(apa);CHKERRQ(ierr);
-  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -792,6 +768,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       } 
     }
     ierr = MatSetValues(C,1,&cseqrow,bnzi,bj_i,ba_i,INSERT_VALUES);CHKERRQ(ierr);
+    flops += 2*bnzi;
   } 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
@@ -800,6 +777,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree(ba_i);CHKERRQ(ierr);
   ierr = PetscFree(buf_ri_k);CHKERRQ(ierr);
+  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
  
   PetscFunctionReturn(0);
 }
@@ -1460,7 +1438,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     ierr = MPI_Isend(cseqa+cseqi[i],len_s[proc],MPIU_MATSCALAR,proc,taga,comm,s_waits+k);CHKERRQ(ierr);
     k++;
   } 
-  ierr   = PetscMalloc(size*sizeof(MPI_Status),&status);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(MPI_Status),&status);CHKERRQ(ierr);
   ierr = MPI_Waitall(merge->nrecv,r_waits,status);CHKERRQ(ierr);
   ierr = MPI_Waitall(merge->nsend,s_waits,status);CHKERRQ(ierr);
   ierr = PetscFree(status);CHKERRQ(ierr);
