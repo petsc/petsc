@@ -230,7 +230,14 @@ class Framework(base.Base):
     # Run configuration only if the log file was absent or it is forced (must setup logging early to check)
     framework.setupLogging()
     if not framework.logExists or self.argDB['forceConfigure']:
-      framework.configure()
+      try:
+        framework.configure()
+      except Exception, e:
+        msg = 'CONFIGURATION FAILURE:\n'+str(e)+'\n'
+        print msg
+        framework.log.write(msg)
+        traceback.print_tb(sys.exc_info()[2], file = framework.log)
+        raise e
       framework.storeSubstitutions(self.argDB)
     return
 
@@ -647,8 +654,9 @@ class Framework(base.Base):
     try:
       return self.mainBuild(target)
     except Exception, e:
-      print str(e)
+      msg = 'BUILD FAILURE:\n'+str(e)+'\n'
+      print msg
+      self.log.write(msg)
+      traceback.print_tb(sys.exc_info()[2], file = self.log)
       if not self.argDB['noStackTrace']:
-        import traceback
-        self.debugPrint(str(traceback.print_tb(sys.exc_info()[2])), 1, 'build')
-        print traceback.print_tb(sys.exc_info()[2])
+        traceback.print_tb(sys.exc_info()[2])

@@ -409,23 +409,33 @@ class CursesInstall (BootstrapInstall):
     return 0
 
 if __name__ ==  '__main__':
-  if len(sys.argv) > 1 and sys.argv[1] == '-batch':
-    installer = BootstrapInstall()
-  else:
-    installer = CursesInstall()
-  installer.welcome()
-  if not installer.installBitkeeper():
-    sys.exit('Could not locate Bitkeeper')
-  if not installer.createInstallDirectory():
-    sys.exit('Could not create installation directory '+installer.installPath)
-  installer.cleanup()
-  if not installer.installBuildSystem():
-    sys.exit('Could not install BuildSystem')
-  # Handoff to installer
-  sys.stdout.write('Installing the BuildSystem, Runtime and Compiler (this will take a while)\n')
-  sys.stdout.flush()
-  sys.path.insert(0, os.path.join(installer.installPath, 'sidl','BuildSystem'))
-  import install.installer
-  args = ['-debugSections=[install]','-debugLevel=2','-installedprojects=[]']
-  install.installer.runinstaller(args)
-      
+  try:
+    if len(sys.argv) > 1 and sys.argv[1] == '-batch':
+      installer = BootstrapInstall()
+    else:
+      installer = CursesInstall()
+    installer.welcome()
+    if not installer.installBitkeeper():
+      sys.exit('Could not locate Bitkeeper')
+    if not installer.createInstallDirectory():
+      sys.exit('Could not create installation directory '+installer.installPath)
+    installer.cleanup()
+    if not installer.installBuildSystem():
+      sys.exit('Could not install BuildSystem')
+    # Handoff to installer
+    sys.stdout.write('Installing the BuildSystem, Runtime and Compiler (this will take a while)\n')
+    sys.stdout.flush()
+    sys.path.insert(0, os.path.join(installer.installPath, 'sidl','BuildSystem'))
+    import install.installer
+    args = ['-debugSections=[install]','-debugLevel=2','-installedprojects=[]']
+    install.installer.runinstaller(args)
+  except Exception, e:
+    import traceback
+
+    print str(e)
+    log = file('installer_err.log', 'w')
+    log.write(str(e)+'\n')
+    traceback.print_tb(sys.exc_info()[2], file = log)
+    log.close()
+    sys.exit(1)
+
