@@ -581,7 +581,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscInt       flops=0;
   Mat_MPIAIJ     *a=(Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ     *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
-  Mat            C_seq;
   Mat_SeqAIJ     *p_loc,*p_oth; 
   PetscInt       *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,*apj,*apjdense,cstart=a->cstart,cend=a->cend,col;
   PetscInt       *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pJ,*pjj;
@@ -601,7 +600,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   MPI_Request          *s_waits,*r_waits; 
   MPI_Status           *status;
   MatScalar            **abuf_r,*ba_i;
-  Mat_SeqAIJ           *cseq;
   PetscInt             *cseqi,*cseqj;
   PetscInt             *cseqj_tmp;
   MatScalar            *cseqa_tmp;

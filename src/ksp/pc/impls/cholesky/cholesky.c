@@ -638,7 +638,7 @@ PetscErrorCode PCCreate_Cholesky(PC pc)
   PetscLogObjectMemory(pc,sizeof(PC_Cholesky));
 
   dir->fact                   = 0;
-  dir->inplace                = 0;
+  dir->inplace                = PETSC_FALSE;
   ierr = MatFactorInfoInitialize(&dir->info);CHKERRQ(ierr);
   dir->info.fill              = 5.0;
   dir->info.damping           = 0.0;
