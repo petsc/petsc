@@ -1,14 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: zsnes.c,v 1.6 1996/01/15 22:08:48 balay Exp balay $";
+static char vcid[] = "$Id: zsnes.c,v 1.7 1996/01/15 22:36:53 balay Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "draw.h"
 #include "snes.h"
 
-#ifdef FORTRANCAPS
+#ifdef HAVE_FORTRAN_CAPS
 #define snesregisterdestroy_         SNESREGISTERDESTROY
-#define snessetsolution_             SNESSETSOLUTION
 #define snesregisterall_             SNESREGISTERALL
 #define snessetjacobian_             SNESSETJACOBIAN
 #define snescreate_                  SNESCREATE
@@ -29,9 +28,8 @@ static char vcid[] = "$Id: zsnes.c,v 1.6 1996/01/15 22:08:48 balay Exp balay $";
 #define snessetoptionsprefix_        SNESSETOPTIONSPREFIX 
 #define snesappendoptionsprefix_     SNESAPPENDOPTIONSPREFIX 
 #define snesdefaultmatrixfreematcreate_ SNESDEFAULTMATRIXFREEMATCREATE
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define snesregisterdestroy_         snesregisterdestroy
-#define snessetsolution_             snessetsolution
 #define snesregisterall_             snesregisterall
 #define snessetjacobian_             snessetjacobian
 #define snescreate_                  snescreate
@@ -52,6 +50,10 @@ static char vcid[] = "$Id: zsnes.c,v 1.6 1996/01/15 22:08:48 balay Exp balay $";
 #define snessetoptionsprefix_        snessetoptionsprefix 
 #define snesappendoptionsprefix_     snesappendoptionsprefix
 #define snesdefaultmatrixfreematcreate_ snesdefaultmatrixfreematcreate
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
 void snessetoptionsprefix_(SNES snes,char *prefix, int *__ierr,int len ){
@@ -269,25 +271,7 @@ void snessetjacobian_(SNES snes,Mat A,Mat B,int (*func)(int*,int*,int*,int*,
 }
 
 /* -------------------------------------------------------------*/
-static int (*f1)(int*,int *,void*,int*);
-static int oursnessolution(SNES snes,Vec x,void* ctx)
-{
-  int ierr = 0, s1, s2;
-  s1 = MPIR_FromPointer(snes);
-  s2 = MPIR_FromPointer(x);
-  (*f1)(&s1,&s2,ctx,&ierr); CHKERRQ(ierr);
-  MPIR_RmPointer(s1);
-  MPIR_RmPointer(s2);
-  return 0;
-}
-void snessetsolution_(SNES snes,Vec x,int (*func)(int*,int*,void*,int*),
-                      void *ctx, int *__ierr )
-{
-  f1 = func;
-  *__ierr = SNESSetSolution((SNES)MPIR_ToPointer( *(int*)(snes) ),
-	   (Vec)MPIR_ToPointer( *(int*)(x) ),oursnessolution,ctx);
-}
-/* ----------------------------------------------------------------*/
+
 void snesregisterdestroy_(int *__ierr)
 {
   *__ierr = SNESRegisterDestroy();
@@ -305,3 +289,7 @@ void snesgettype_(SNES snes,SNESType *type,char *name,int *__ierr,int len)
   *__ierr = SNESGetType((SNES)MPIR_ToPointer(*(int*)snes),type,&tname);
   if (name != PETSC_NULL_Fortran) PetscStrncpy(name,tname,len);
 }
+
+#if defined(__cplusplus)
+}
+#endif
