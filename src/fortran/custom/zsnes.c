@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsnes.c,v 1.4 1996/01/09 15:50:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.5 1996/01/15 21:58:14 bsmith Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -26,6 +26,8 @@ static char vcid[] = "$Id: zsnes.c,v 1.4 1996/01/09 15:50:46 curfman Exp bsmith 
 #define snesgetgradient_             SNESGETGRADIENT
 #define snesdestroy_                 SNESDESTROY
 #define snesgettype_                 SNESGETTYPE
+#define snessetoptionsprefix_        SNESSETOPTIONSPREFIX 
+#define snesappendoptionsprefix_     SNESAPPENDOPTIONSPREFIX 
 #define snesdefaultmatrixfreematcreate_ SNESDEFAULTMATRIXFREEMATCREATE
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define snesregisterdestroy_         snesregisterdestroy
@@ -47,9 +49,33 @@ static char vcid[] = "$Id: zsnes.c,v 1.4 1996/01/09 15:50:46 curfman Exp bsmith 
 #define snesgetfunction_             snesgetfunction
 #define snesgetgradient_             snesgetgradient
 #define snesgettype_                 snesgettype
+#define snessetoptionsprefix_        snessetoptionsprefix 
+#define snesappendoptionsprefix_     snesappendoptionsprefix
 #define snesdefaultmatrixfreematcreate_ snesdefaultmatrixfreematcreate
 #endif
 
+void snessetoptionsprefix_(SNES snes,char *prefix, int *flg, int *__ierr,int len ){
+  char *t=0;
+  if (prefix[len] != 0) {
+    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
+    PetscStrncpy(t,prefix,len);
+    t[len] = 0;
+  }
+  else t = prefix;
+  *__ierr = SNESSetOptionsPrefix((SNES)MPIR_ToPointer( *(int*)(snes) ),t, flg);
+  if( t != prefix) PetscFree(t);
+}
+void snesappendoptionsprefix_(SNES snes,char *prefix, int *flg, int *__ierr,int len ){
+  char *t=0;
+  if (prefix[len] != 0) {
+    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
+    PetscStrncpy(t,prefix,len);
+    t[len] = 0;
+  }
+  else t = prefix;
+  *__ierr = SNESAppendOptionsPrefix((SNES)MPIR_ToPointer( *(int*)(snes) ),t, flg);
+  if( t != prefix) PetscFree(t);
+}
 void snesdefaultmatrixfreematcreate_(SNES snes,Vec x,Mat *J, int *__ierr ){
   Mat mm;
   *__ierr = SNESDefaultMatrixFreeMatCreate(
