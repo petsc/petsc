@@ -1,16 +1,20 @@
-# $Id: makefile,v 1.11 1998/04/23 22:46:29 balay Exp bsmith $ 
+# $Id: makefile,v 1.12 1998/11/24 04:15:13 bsmith Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	        = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
-LOCDIR          = src/ec/examples/tests/
-TESTEXAMPLES_1  = 
-TESTEXAMPLES_2  = 
-TESTEXAMPLES_4  = 
-BUILDEXAMPLES_1 = 
-BUILDEXAMPLES_2 = 
-BUILDEXAMPLES_4 = 
-EXAMPLESC       = 
+CFLAGS		 = 
+FFLAGS		 = 
+CPPFLAGS         =
+FPPFLAGS         =
+LOCDIR           = src/ec/examples/tests/
+
+TESTEXAMPLES_1   = 
+TESTEXAMPLES_2   = 
+TESTEXAMPLES_4   = 
+BUILDEXAMPLES_1  = 
+BUILDEXAMPLES_2  = 
+BUILDEXAMPLES_4  = 
+EXAMPLESC        = 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
