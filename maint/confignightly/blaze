@@ -3,7 +3,7 @@
 set MACH=blaze
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
-set CONF=solaris_gnu
+set CONF=solaris-gnu
 #
 set day=`date | cut -f1 -d" "`
 
