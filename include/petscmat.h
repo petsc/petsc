@@ -855,6 +855,9 @@ EXTERN int MatESISetFromOptions(Mat);
 EXTERN int MatMPIBAIJDiagonalScaleLocalSetUp(Mat,Vec);
 EXTERN int MatMPIBAIJDiagonalScaleLocal(Mat,Vec);
 
+EXTERN int PetscViewerMathematicaPutMatrix(PetscViewer, int, int, PetscReal *);
+EXTERN int PetscViewerMathematicaPutCSRMatrix(PetscViewer, int, int, int *, int *, PetscReal *);
+
 #endif
 
 

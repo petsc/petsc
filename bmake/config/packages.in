@@ -92,6 +92,11 @@ PERL               = @PERL@
 #
 PYTHON             = @PYTHON@
 #
+# Location of Mathematica (www.wolfram.com)
+#
+MATHEMATICA_INCLUDE = @MATHEMATICA_INCLUDE@
+MATHEMATICA_LIB     = @MATHEMATICA_LIB@
+#
 # ---------------------------------------------------------------------------------------
 #
 # Location of the shared libraries for all the external packages

@@ -342,6 +342,9 @@ EXTERN int VecConvertMPIToMPIZero(Vec vin,Vec *vout);
 EXTERN int VecESISetType(Vec,char*);
 EXTERN int VecESISetFromOptions(Vec);
 
+EXTERN int PetscViewerMathematicaGetVector(PetscViewer, Vec);
+EXTERN int PetscViewerMathematicaPutVector(PetscViewer, Vec);
+
 #endif
 
 

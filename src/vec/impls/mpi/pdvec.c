@@ -390,13 +390,14 @@ int VecView_MPI_Socket(Vec xin,PetscViewer viewer)
 int VecView_MPI(Vec xin,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth isascii,issocket,isbinary,isdraw;
+  PetscTruth isascii,issocket,isbinary,isdraw,ismathematica;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATHEMATICA,&ismathematica);CHKERRQ(ierr);
   if (isascii){
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
   } else if (issocket) {
@@ -404,7 +405,7 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (isbinary) {
     ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
   } else if (isdraw) {
-  PetscViewerFormat format;
+    PetscViewerFormat format;
 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_DRAW_LG) {
@@ -412,6 +413,8 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
     } else {
       ierr = VecView_MPI_Draw(xin,viewer);CHKERRQ(ierr);
     }
+  } else if (ismathematica) {
+    ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
