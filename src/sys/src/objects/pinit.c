@@ -88,7 +88,7 @@ extern PetscTruth PetscBeganMPI;
 
 /*
        This function is the MPI reduction operation used to compute the sum of the 
-   first half of the entries and the max of the second half.
+   first half of the datatype and the max of the second half.
 */
 MPI_Op PetscMaxSum_Op = 0;
 
@@ -100,27 +100,40 @@ void PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
   int *xin = (int *)in,*xout = (int*)out,i,count = *cnt;
 
   PetscFunctionBegin;
-  if (*datatype != MPI_INT) {
-    (*PetscErrorPrintf)("Can only handle MPI_INT data types");
-    MPI_Abort(MPI_COMM_WORLD,1);
-  }
-  if (count % 2) {
-    (*PetscErrorPrintf)("Count must be divisible by 2");
+  if (*datatype != MPI_2INT) {
+    (*PetscErrorPrintf)("Can only handle MPI_2INT data types");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
 
-  count = count/2; 
   for (i=0; i<count; i++) {
-    xout[i] = PetscMax(xout[i],xin[i]); 
+    xout[2*i]    = PetscMax(xout[2*i],xin[2*i]); 
+    xout[2*i+1] += xin[2*i+1]; 
   }
-  for (i=count; i<2*count; i++) {
-    xout[i] += xin[i]; 
-  }
-
   PetscStackPop;
   return;
 }
 EXTERN_C_END
+
+/*
+    Returns the max of the first entry owned by this processor and the
+sum of the second entry.
+*/
+#undef __FUNCT__
+#define __FUNCT__ "PetscMaxSum"
+int PetscMaxSum(MPI_Comm comm,const int nprocs[],int *max,int *sum)
+{
+  int size,rank,ierr,*work;
+  
+  PetscFunctionBegin;
+  ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr   = PetscMalloc(2*size*sizeof(int),&work);CHKERRQ(ierr);
+  ierr   = MPI_Allreduce((void*)nprocs,work,size,MPI_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+  *max   = work[2*rank];
+  *sum   = work[2*rank+1]; 
+  ierr   = PetscFree(work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* ----------------------------------------------------------------------------*/
 MPI_Op PetscADMax_Op = 0;

@@ -499,7 +499,7 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMa
 int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int **procs,int **numprocs,int ***indices)
 {
   int         i,n = mapping->n,ierr,Ng,ng,max = 0,*lindices = mapping->indices;
-  int         size,rank,*nprocs,*owner,nsends,*sends,j,*starts,*work,nmax,nrecvs,*recvs,proc;
+  int         size,rank,*nprocs,*owner,nsends,*sends,j,*starts,nmax,nrecvs,*recvs,proc;
   int         tag1,tag2,tag3,cnt,*len,*source,imdex,scale,*ownedsenders,*nownedsenders,rstart,nowned;
   int         node,nownedm,nt,*sends2,nsends2,*starts2,*lens2,*dest,nrecvs2,*starts3,*recvs2,k,*bprocs,*tmp;
   int         first_procs,first_numprocs,*first_indices;
@@ -559,20 +559,16 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   /* determine owners of each local node  */
   ierr = PetscMalloc((n+1)*sizeof(int),&owner);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    proc              = lindices[i]/scale; /* processor that globally owns this index */
-    nprocs[size+proc] = 1;                 /* processor globally owns at least one of ours */
-    owner[i]          = proc;              
-    nprocs[proc]++;                        /* count of how many that processor globally owns of ours */
+    proc             = lindices[i]/scale; /* processor that globally owns this index */
+    nprocs[2*proc+1] = 1;                 /* processor globally owns at least one of ours */
+    owner[i]         = proc;              
+    nprocs[2*proc]++;                     /* count of how many that processor globally owns of ours */
   }
-  nsends = 0; for (i=0; i<size; i++) nsends += nprocs[size + i];
+  nsends = 0; for (i=0; i<size; i++) nsends += nprocs[2*i+1];
   PetscLogInfo(0,"ISLocalToGlobalMappingGetInfo: Number of global owners for my local data %d\n",nsends);
 
   /* inform other processors of number of messages and max length*/
-  ierr = PetscMalloc(2*size*sizeof(int),&work);CHKERRQ(ierr);
-  ierr   = MPI_Allreduce(nprocs,work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
-  nmax   = work[rank];
-  nrecvs = work[size+rank]; 
-  ierr   = PetscFree(work);CHKERRQ(ierr);
+  ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
   PetscLogInfo(0,"ISLocalToGlobalMappingGetInfo: Number of local owners for my global data %d\n",nrecvs);
 
   /* post receives for owned rows */
@@ -586,22 +582,22 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   ierr       = PetscMalloc((2*n+1)*sizeof(int),&sends);CHKERRQ(ierr);
   ierr       = PetscMalloc((size+1)*sizeof(int),&starts);CHKERRQ(ierr);
   starts[0]  = 0; 
-  for (i=1; i<size; i++) { starts[i] = starts[i-1] + 2*nprocs[i-1];} 
+  for (i=1; i<size; i++) { starts[i] = starts[i-1] + 2*nprocs[2*i-2];} 
   for (i=0; i<n; i++) {
     sends[starts[owner[i]]++] = lindices[i];
     sends[starts[owner[i]]++] = i;
   }
   ierr = PetscFree(owner);CHKERRQ(ierr);
   starts[0]  = 0; 
-  for (i=1; i<size; i++) { starts[i] = starts[i-1] + 2*nprocs[i-1];} 
+  for (i=1; i<size; i++) { starts[i] = starts[i-1] + 2*nprocs[2*i-2];} 
 
   /* send the messages */
   ierr = PetscMalloc((nsends+1)*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
   ierr = PetscMalloc((nsends+1)*sizeof(int),&dest);CHKERRQ(ierr);
   cnt = 0;
   for (i=0; i<size; i++) {
-    if (nprocs[i]) {
-      ierr      = MPI_Isend(sends+starts[i],2*nprocs[i],MPI_INT,i,tag1,comm,send_waits+cnt);CHKERRQ(ierr);
+    if (nprocs[2*i]) {
+      ierr      = MPI_Isend(sends+starts[i],2*nprocs[2*i],MPI_INT,i,tag1,comm,send_waits+cnt);CHKERRQ(ierr);
       dest[cnt] = i;
       cnt++;
     }
