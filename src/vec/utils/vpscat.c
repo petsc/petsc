@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.14 1995/05/02 23:37:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.15 1995/05/03 04:03:28 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -512,7 +512,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERR(1,"Imdex out of range");
+    if (!found) SETERR(1,"Index out of range");
   }
   nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
 
@@ -535,7 +535,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   }
 
   /* do sends:
-      1) starts[i] gives the starting imdex in svalues for stuff going to 
+      1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
   svalues = (int *) MALLOC( (nx+1)*sizeof(int) ); CHKPTR(svalues);
@@ -694,7 +694,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERR(1,"Imdex out of range");
+    if (!found) SETERR(1,"Index out of range");
   }
   nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
 
@@ -717,7 +717,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
   }
 
   /* do sends:
-      1) starts[i] gives the starting imdex in svalues for stuff going to 
+      1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
   svalues = (int *) MALLOC( (nx+1)*sizeof(int) ); CHKPTR(svalues);
