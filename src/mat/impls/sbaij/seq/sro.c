@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.12 2000/09/13 15:43:06 hzhang Exp hzhang $*/
+/*$Id: sro.c,v 1.13 2000/09/18 19:15:35 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -38,10 +38,8 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
   Mat_SeqSBAIJ     *a=(Mat_SeqSBAIJ *)A->data;
   int             *r,ierr,i,mbs=a->mbs,*rip,*riip;
-  int             *ai=a->inew,*aj=a->jnew;
-  /* MatScalar       *aa=a->a; */
-  /* Scalar          ak;       */
-  int             *nzr,nz,jmin,jmax,j,k,ajk;
+  int             *ai,*aj;
+  int             *nzr,nz,jmin,jmax,j,k,ajk,len;
   IS              iperm;  /* inverse of perm */
 
   PetscFunctionBegin;
@@ -56,8 +54,14 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = ISRestoreIndices(iperm,&riip);CHKERRA(ierr);
   ierr = ISDestroy(iperm);CHKERRA(ierr);
   
+  len = (mbs+1 + 2*(a->i[mbs]))*sizeof(int);
+  ai  = (int*)PetscMalloc(len); CHKPTRQ(ai);
+  aj  = ai + mbs+1;
+  
+  /*
   ai = (int*)PetscMalloc((mbs+1)*sizeof(int));CHKPTRQ(ai);
   aj = (int*)PetscMalloc((a->i[mbs])*sizeof(int));CHKPTRQ(aj);
+  */
   ierr  = PetscMemcpy(ai,a->i,(mbs+1)*sizeof(int));CHKERRQ(ierr);
   ierr  = PetscMemcpy(aj,a->j,(a->i[mbs])*sizeof(int));CHKERRQ(ierr);
   /*
@@ -72,7 +76,7 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   */
 
   nzr = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(nzr); 
-  r   = (int*)PetscMalloc(ai[mbs]*sizeof(int));CHKPTRQ(r);
+  r   = (int*)PetscMalloc(ai[mbs]*sizeof(int));CHKPTRQ(r); 
   for (i=0; i<mbs; i++) nzr[i] = 0;
   for (i=0; i<ai[mbs]; i++) r[i] = 0; 
                                                               
@@ -118,7 +122,10 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
     }
     j--;
   }         
-                                                
+  /* a->a2anew = (int*)PetscMalloc(ai[mbs]*sizeof(int));CHKPTRQ(a->a2anew); */
+  a->a2anew = aj + ai[mbs];
+  ierr  = PetscMemcpy(a->a2anew,r,ai[mbs]*sizeof(int));CHKERRQ(ierr);
+                                         
   /* Phase 3: permute (aj,a) to upper triangular form (wrt new ordering) */
   for (j=jmin; j<jmax; j++){
     while (r[j] != j){ 
@@ -128,6 +135,9 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
     }
   }
 
+  a->inew = ai;
+  a->jnew = aj;
+
   a->row  = perm;
   a->icol = perm;
   ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
@@ -136,9 +146,9 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr= ISRestoreIndices(perm,&rip);CHKERRA(ierr);
 
   ierr = PetscFree(nzr);CHKERRA(ierr); 
-  /* ierr = PetscFree(r);CHKERRA(ierr); */
-  a->a2anew = r;
+  ierr = PetscFree(r);CHKERRA(ierr); 
   
   PetscFunctionReturn(0);
 }
+
 
