@@ -7,10 +7,10 @@
 #define __FUNCT__ "KSPComputeExtremeSingularValues_GMRES"
 int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
-  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
-  int       n = gmres->it + 1,N = gmres->max_k + 2,ierr,lwork = 5*N,idummy = N,i;
-  PetscScalar    *R = gmres->Rsvd,*work = R + N*N,sdummy;
-  PetscReal *realpart = gmres->Dsvd;
+  KSP_GMRES   *gmres = (KSP_GMRES*)ksp->data;
+  int         n = gmres->it + 1,N = gmres->max_k + 2,ierr,lwork = 5*N,idummy = N,i;
+  PetscScalar *R = gmres->Rsvd,*work = R + N*N,sdummy;
+  PetscReal   *realpart = gmres->Dsvd;
 
   PetscFunctionBegin;
   if (!n) {
@@ -53,12 +53,12 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emi
 #define __FUNCT__ "KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
-  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
-  int       n = gmres->it + 1,N = gmres->max_k + 1,ierr,lwork = 5*N;
-  int       idummy = N,i,*perm,clen,zero;
-  PetscScalar    *R = gmres->Rsvd;
-  PetscScalar    *cwork = R + N*N,sdummy;
-  PetscReal *work,*realpart = gmres->Dsvd,*imagpart = realpart + N ;
+  KSP_GMRES   *gmres = (KSP_GMRES*)ksp->data;
+  int         n = gmres->it + 1,N = gmres->max_k + 1,ierr,lwork = 5*N;
+  int         idummy = N,i,*perm,clen,zero;
+  PetscScalar *R = gmres->Rsvd;
+  PetscScalar *cwork = R + N*N,sdummy;
+  PetscReal   *work,*realpart = gmres->Dsvd,*imagpart = realpart + N ;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
