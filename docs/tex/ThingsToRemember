@@ -87,8 +87,8 @@ UT account:
   password: petsc-password
  
 brahma.ticam.utexas.edu 
-  id: bsmith passwd:petsc-password 
-  id: sbalay passwd:petsc-password 
+  login id: bsmith,sbalay
+  passwd  : petsc-password 
 ---------
 
 SGI Power Challenge (IRIX64): 
