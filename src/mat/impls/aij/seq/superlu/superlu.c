@@ -545,6 +545,7 @@ int MatConvert_SeqAIJ_SuperLU(Mat A,const MatType type,Mat *newmat) {
   B->ops->view             = MatView_SuperLU;
   B->ops->assemblyend      = MatAssemblyEnd_SuperLU;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU;
+  B->ops->choleskyfactorsymbolic = 0;
   B->ops->destroy          = MatDestroy_SuperLU;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_superlu_C",

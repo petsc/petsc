@@ -105,7 +105,7 @@ typedef struct {int MPI_TAG,MPI_SOURCE,MPI_ERROR;} MPI_Status;
 typedef char   *MPI_Errhandler;
 typedef int    MPI_Fint;
 
-extern int MPIUNI_Memcpy(void*,void*,int);
+extern int MPIUNI_Memcpy(void*,const void*,int);
 
 /* In order to handle datatypes, we make them into "sizeof(raw-type)";
     this allows us to do the MPIUNI_Memcpy's easily */

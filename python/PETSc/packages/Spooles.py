@@ -13,6 +13,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     self.compilers    = self.framework.require('config.compilers',self)
     self.libraries    = self.framework.require('config.libraries',self)
+    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.found        = 0
     self.lib          = []
     self.include      = []
@@ -57,6 +58,10 @@ class Configure(config.base.Configure):
     oldFlags = self.framework.argDB['CPPFLAGS']
     for inc in incl:
       self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    mpiincl = ''
+    if not self.mpi.include is '':
+      mpiincl += ' -I' + ' -I'.join(self.mpi.include)
+    self.framework.argDB['CPPFLAGS'] += mpiincl
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:
