@@ -10,6 +10,8 @@ method but different matrices (having the same nonzero structure).\n";
 #include  <stdio.h>
 #include "sles.h"
 
+extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
+
 int main(int argc,char **args)
 {
   Mat    C; 
@@ -18,6 +20,7 @@ int main(int argc,char **args)
   int    i, j, m = 3, n = 2, mytid, numtids, its;
   Vec    x, u, b;
   SLES   sles;
+  KSP    ksp;
   double norm;
 
   PetscInitialize(&argc,&args,0,0);
@@ -50,12 +53,6 @@ int main(int argc,char **args)
       v = 4.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
     }
   }
-  /* Modify matrix slightly to make things more interesting */
-  MatSetValues(C,1,&I,1,&J,&v,InsertValues);
-  I = 3; J = 4; v = -2.0;
-  MatSetValues(C,1,&I,1,&J,&v,InsertValues);
-  I = 4; J = 3; v = -2.0;
-  MatSetValues(C,1,&I,1,&J,&v,InsertValues);
   ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatEndAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
 
@@ -81,6 +78,14 @@ int main(int argc,char **args)
   if ((ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN)))
     SETERRA(ierr,0);
   if ((ierr = SLESSetFromOptions(sles))) SETERRA(ierr,0);
+
+#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
+  if (OptionsHasName(0,0,"-rowbs_mat")) {
+    ierr = SLESGetKSP(sles,&ksp); CHKERR(ierr);
+    ierr = KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)C); CHKERR(ierr);
+  }
+#endif
+
   if ((ierr = SLESSolve(sles,b,x,&its))) SETERRA(ierr,0);
  
   /* Check error */
@@ -99,7 +104,7 @@ int main(int argc,char **args)
       if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
       if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
       if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
-      v = 4.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
+      v = 6.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
     }
   } 
   ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
