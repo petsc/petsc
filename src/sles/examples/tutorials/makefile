@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.67 1999/11/10 03:21:05 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.68 1999/11/24 21:55:05 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -15,7 +15,8 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
                    ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                    ex14.PETSc runex14 runex14_2 ex14.rm \
                    ex15.PETSc runex15 ex15.rm \
-                   ex16.PETSc runex16 ex16.rm ex18.PETSc runex18 ex18.rm clean	
+                   ex16.PETSc runex16 ex16.rm ex18.PETSc runex18 ex18.rm \
+                   ex20.PETSc runex20 runex20_2 ex20.rm clean	
 TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
 	           runex5_5 ex5.rm ex8.rm clean 
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
@@ -410,5 +411,15 @@ runex18:
 	   if (diff output/ex18_1.out ex18_1.tmp) then true; \
 	   else echo "Possible problem with ex18_1, diffs above"; fi; \
 	   ${RM} -f ex18_1.tmp
+runex20:
+	-@${MPIRUN} ex20 -options_file ex20options -ksp_smonitor > ex20_1.tmp 2>&1; \
+	   if (diff output/ex20_1.out ex20_1.tmp) then true; \
+	   else echo "Possible problem with ex20_1, diffs above"; fi; \
+	   ${RM} -f ex20_1.tmp
+runex20_2:
+	-@${MPIRUN} -np 4 ex20 -options_file ex20options -ksp_smonitor > ex20_2.tmp 2>&1; \
+	   if (diff output/ex20_2.out ex20_2.tmp) then true; \
+	   else echo "Possible problem with ex20_2, diffs above"; fi; \
+	   ${RM} -f ex20_2.tmp
 
 
