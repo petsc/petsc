@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.37 1997/01/10 23:54:46 balay Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.38 1997/01/15 16:52:46 balay Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -157,8 +157,8 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data,*b = (Mat_SeqBAIJ *)C->data;
   IS              iscol = b->col, isrow = b->row, isicol;
   int             *r,*ic, ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
-  int             *ajtmpold, *ajtmp, nz, row, bslog,*ai=a->i,*aj=a->j;
-  int             *diag_offset=b->diag,diag,bs=a->bs,bs2 = bs*bs,*v_pivots;
+  int             *ajtmpold, *ajtmp, nz, row, bslog,*ai=a->i,*aj=a->j,k,flg;
+  int             *diag_offset=b->diag,diag,bs=a->bs,bs2 = a->bs2,*v_pivots;
   Scalar          *ba = b->a,*aa = a->a;
   register Scalar *pv,*v,*rtmp,*multiplier,*v_work,*pc,*w;
   register int    *pj;
@@ -195,6 +195,8 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
     while (row < i) {
       pc = rtmp + bs2*row;
 /*      if (*pc) { */
+      for ( flg=0,k=0; k<bs2; k++ ) { if (pc[k]) { flg =1; break; }}
+      if (flg) {
         pv = ba + bs2*diag_offset[row];
         pj = bj + diag_offset[row] + 1;
         Kernel_A_gets_A_times_B(bs,pc,pv,multiplier); 
@@ -204,7 +206,7 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
           Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
         }
         PLogFlops(bslog*(nz+1)-bs);
-/*      } */ 
+      } 
         row = *ajtmp++;
     }
     /* finished row so stick it into b->a */
@@ -912,6 +914,104 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   VecRestoreArray_Fast(bb,b); 
   VecRestoreArray_Fast(xx,x); 
   PLogFlops(2*(a->bs2)*(a->nz) - a->n);
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBAIJ_7"
+int MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
+  IS              iscol=a->col,isrow=a->row;
+  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
+  Scalar          *aa=a->a,sum1,sum2,sum3,sum4,sum5,sum6,sum7,x1,x2,x3,x4,x5,x6,x7;
+  register Scalar *x,*b,*tmp,*v;
+
+  VecGetArray_Fast(bb,b); 
+  VecGetArray_Fast(xx,x); 
+  tmp  = a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout + (n-1);
+
+  /* forward solve the lower triangular */
+  idx    = 7*(*r++); 
+  tmp[0] = b[idx];   tmp[1] = b[1+idx]; 
+  tmp[2] = b[2+idx]; tmp[3] = b[3+idx]; tmp[4] = b[4+idx];
+  tmp[5] = b[5+idx]; tmp[6] = b[6+idx]; 
+
+  for ( i=1; i<n; i++ ) {
+    v     = aa + 49*ai[i];
+    vi    = aj + ai[i];
+    nz    = a->diag[i] - ai[i];
+    idx   = 7*(*r++); 
+    sum1  = b[idx];sum2 = b[1+idx];sum3 = b[2+idx];sum4 = b[3+idx];
+    sum5  = b[4+idx];sum6 = b[5+idx];sum7 = b[6+idx];
+    while (nz--) {
+      idx   = 7*(*vi++);
+      x1    = tmp[idx];  x2 = tmp[1+idx];x3 = tmp[2+idx];
+      x4    = tmp[3+idx];x5 = tmp[4+idx];
+      x6    = tmp[5+idx];x7 = tmp[6+idx];
+      sum1 -= v[0]*x1 + v[7]*x2  + v[14]*x3 + v[21]*x4 + v[28]*x5 + v[35]*x6 + v[42]*x7;
+      sum2 -= v[1]*x1 + v[8]*x2  + v[15]*x3 + v[22]*x4 + v[29]*x5 + v[36]*x6 + v[43]*x7;
+      sum3 -= v[2]*x1 + v[9]*x2  + v[16]*x3 + v[23]*x4 + v[30]*x5 + v[37]*x6 + v[44]*x7;
+      sum4 -= v[3]*x1 + v[10]*x2 + v[17]*x3 + v[24]*x4 + v[31]*x5 + v[38]*x6 + v[45]*x7;
+      sum5 -= v[4]*x1 + v[11]*x2 + v[18]*x3 + v[25]*x4 + v[32]*x5 + v[39]*x6 + v[46]*x7;
+      sum6 -= v[5]*x1 + v[12]*x2 + v[19]*x3 + v[26]*x4 + v[33]*x5 + v[40]*x6 + v[47]*x7;
+      sum7 -= v[6]*x1 + v[13]*x2 + v[20]*x3 + v[27]*x4 + v[34]*x5 + v[41]*x6 + v[48]*x7;
+      v += 49;
+    }
+    idx = 7*i;
+    tmp[idx]   = sum1;tmp[1+idx] = sum2;
+    tmp[2+idx] = sum3;tmp[3+idx] = sum4; tmp[4+idx] = sum5;
+    tmp[5+idx] = sum6;tmp[6+idx] = sum7;
+  }
+  /* backward solve the upper triangular */
+  for ( i=n-1; i>=0; i-- ){
+    v    = aa + 49*a->diag[i] + 49;
+    vi   = aj + a->diag[i] + 1;
+    nz   = ai[i+1] - a->diag[i] - 1;
+    idt  = 7*i;
+    sum1 = tmp[idt];  sum2 = tmp[1+idt]; 
+    sum3 = tmp[2+idt];sum4 = tmp[3+idt]; sum5 = tmp[4+idt];
+    sum6 = tmp[5+idt];sum7 = tmp[6+idt]; 
+    while (nz--) {
+      idx   = 7*(*vi++);
+      x1    = tmp[idx];   x2 = tmp[1+idx];
+      x3    = tmp[2+idx]; x4 = tmp[3+idx]; x5 = tmp[4+idx];
+      x6    = tmp[5+idx]; x7 = tmp[6+idx];
+      sum1 -= v[0]*x1 + v[7]*x2  + v[14]*x3 + v[21]*x4 + v[28]*x5 + v[35]*x6 + v[42]*x7;
+      sum2 -= v[1]*x1 + v[8]*x2  + v[15]*x3 + v[22]*x4 + v[29]*x5 + v[36]*x6 + v[43]*x7;
+      sum3 -= v[2]*x1 + v[9]*x2  + v[16]*x3 + v[23]*x4 + v[30]*x5 + v[37]*x6 + v[44]*x7;
+      sum4 -= v[3]*x1 + v[10]*x2 + v[17]*x3 + v[24]*x4 + v[31]*x5 + v[38]*x6 + v[45]*x7;
+      sum5 -= v[4]*x1 + v[11]*x2 + v[18]*x3 + v[25]*x4 + v[32]*x5 + v[39]*x6 + v[46]*x7;
+      sum6 -= v[5]*x1 + v[12]*x2 + v[19]*x3 + v[26]*x4 + v[33]*x5 + v[40]*x6 + v[47]*x7;
+      sum7 -= v[6]*x1 + v[13]*x2 + v[20]*x3 + v[27]*x4 + v[34]*x5 + v[41]*x6 + v[48]*x7;
+      v += 49;
+    }
+    idc = 7*(*c--);
+    v   = aa + 49*a->diag[i];
+    x[idc]   = tmp[idt]   = v[0]*sum1+v[7]*sum2+v[14]*sum3+
+                                 v[21]*sum4+v[28]*sum5+v[35]*sum6+v[42]*sum7;
+    x[1+idc] = tmp[1+idt] = v[1]*sum1+v[8]*sum2+v[15]*sum3+
+                                 v[22]*sum4+v[29]*sum5+v[36]*sum6+v[43]*sum7;
+    x[2+idc] = tmp[2+idt] = v[2]*sum1+v[9]*sum2+v[16]*sum3+
+                                 v[23]*sum4+v[30]*sum5+v[37]*sum6+v[44]*sum7;
+    x[3+idc] = tmp[3+idt] = v[3]*sum1+v[10]*sum2+v[17]*sum3+
+                                 v[24]*sum4+v[31]*sum5+v[38]*sum6+v[45]*sum7;
+    x[4+idc] = tmp[4+idt] = v[4]*sum1+v[11]*sum2+v[18]*sum3+
+                                 v[25]*sum4+v[32]*sum5+v[39]*sum6+v[46]*sum7;
+    x[5+idc] = tmp[5+idt] = v[5]*sum1+v[12]*sum2+v[19]*sum3+
+                                 v[26]*sum4+v[33]*sum5+v[40]*sum6+v[47]*sum7;
+    x[6+idc] = tmp[6+idt] = v[6]*sum1+v[13]*sum2+v[20]*sum3+
+                                 v[27]*sum4+v[34]*sum5+v[41]*sum6+v[48]*sum7;
+  }
+
+  ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
+  VecRestoreArray_Fast(bb,b); 
+  VecRestoreArray_Fast(xx,x); 
+  PLogFlops(2*49*(a->nz) - a->n);
   return 0;
 }
 
