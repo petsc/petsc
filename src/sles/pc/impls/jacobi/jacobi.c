@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.50 1998/04/25 15:02:07 bsmith Exp balay $";
+static char vcid[] = "$Id: jacobi.c,v 1.51 1998/04/27 20:02:22 balay Exp curfman $";
 #endif
 
 /*  -------------------------------------------------------------------- 
@@ -99,17 +99,18 @@ static int PCSetUp_Jacobi(PC pc)
     PLogObjectParent(pc,jac->diag);
   }
 
-    But for this preconditioner we want to support both diagonal or square root
-    of diagonal (for symmetric application of the preconditioner); hence we do
-    not allocate the space here, since we don't know which one is needed a priori,
-    diag or diagsqrt, until the user applies the preconditioner. But we don't want to 
-    allocate BOTH unless we need them both.  Thus, the diag or diagsqrt are allocated 
-    in PCSetUp_Jacobi_NonSymmetric() and PCSetUp_Jacobi_Symmetric()
+    But for this preconditioner we want to support use of both the matrix' diagonal
+    elements (for left or right preconditioning) and square root of diagonal elements
+    (for symmetric preconditioning).  Hence we do not allocate space here, since we
+    don't know at this point which will be needed (diag and/or diagsqrt) until the user
+    applies the preconditioner, and we don't want to allocate BOTH unless we need
+    them both.  Thus, the diag and diagsqrt are allocated in PCSetUp_Jacobi_NonSymmetric()
+    and PCSetUp_Jacobi_Symmetric(), respectively.
   */
 
   /*
-    Here we set up the preconditioner; that is get the values from the matrix
-    and put them into a format to make them quick to apply as a preconditioner.
+    Here we set up the preconditioner; that is, we copy the diagonal values from
+    the matrix and put them into a format to make them quick to apply as a preconditioner.
   */
   diag     = jac->diag;
   diagsqrt = jac->diagsqrt;
@@ -149,7 +150,8 @@ static int PCSetUp_Jacobi(PC pc)
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_Jacobi_Symmetric - Allocates the vector needed to store the
-                              inverse of the diagonal entries in the matrix.
+   inverse of the square root of the diagonal entries of the matrix.  This
+   is used for symmetric application of the Jacobi preconditioner.
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -171,7 +173,8 @@ static int PCSetUp_Jacobi_Symmetric(PC pc)
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_Jacobi_NonSymmetric - Allocates the vector needed to store the
-   inverse of the square root of the diagonal entries in the matrix.
+   inverse of the diagonal entries of the matrix.  This is used for left of
+   right application of the Jacobi preconditioner.
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -292,29 +295,31 @@ int PCCreate_Jacobi(PC pc)
   PetscFunctionBegin;
 
   /*
-     Create the private data structure for this preconditioner and
+     Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
   jac       = PetscNew(PC_Jacobi); CHKPTRQ(jac);
   pc->data  = (void *) jac;
 
   /*
-     Log the memory usage; this is not needed but allows PETSc to 
-     monitor how much memory is being used for various purposes
+     Logs the memory usage; this is not needed but allows PETSc to 
+     monitor how much memory is being used for various purposes.
   */
   PLogObjectMemory(pc,sizeof(PC_Jacobi));
 
   /*
-     Initialize the pointers to vectors to contain the diagonal to ZERO
+     Initialize the pointers to vectors to ZERO; these will be used to store
+     diagonal entries of the matrix for fast preconditioner application.
   */
   jac->diag          = 0;
   jac->diagsqrt      = 0;
 
   /*
       Set the pointers for the functions that are provided above.
-      Now when the user-level routines are called, they will automatically call
-      these functions. Note we choose not to provide a couple of these functions
-      since they are not needed.
+      Now when the user-level routines (such as PCApply(), PCDestroy(), etc.)
+      are called, they will automatically call these functions.  Note we
+      choose not to provide a couple of these functions since they are
+      not needed.
   */
   pc->apply               = PCApply_Jacobi;
   pc->setup               = PCSetUp_Jacobi;
