@@ -8,11 +8,11 @@
 #  The timing between these runs IS important.
 #
 40 0 * * * /home/bsmith/petsc/maint/buildremotetest
-55 0 * * * /home/bsmith/petsc/maint/buildtest bsmith
-55 0 * * * /home/bsmith/petsc/maint/buildtest petsc
-55 0 * * * /home/bsmith/petsc/maint/buildtest_curfman
-55 0 * * * /home/bsmith/petsc/maint/buildtest_balay
-55 0 * * * rsh clyde -n /sphome/curfman/petsc/maint/buildtest_spcurfman
+15 1 * * * /home/bsmith/petsc/maint/buildtest bsmith
+15 1 * * * /home/bsmith/petsc/maint/buildtest petsc
+15 1 * * * /home/bsmith/petsc/maint/buildtest curfman
+15 1 * * * /home/bsmith/petsc/maint/buildtest balay
+15 1 * * * rsh clyde -n /sphome/curfman/petsc/maint/buildtest_spcurfman
 #
 # Makes the shadow directories.  Must be done before the library builds.
 #
