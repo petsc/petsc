@@ -1,3 +1,5 @@
+petsc/src/mat/impls/aij/seq/LUSOL.f
+petsc/src/mat/impls/aij/seq/LUSOL_BLAS.f
 petsc/src/contrib/esmf
 petsc/src/contrib/esmf/RCS
 petsc/docs/exercises/RCS
