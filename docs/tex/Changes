@@ -21,7 +21,12 @@ add to it).
 
   KSP
 
+    Added additional final argument to KSPSetMonitor() an optional destroy routine for the 
+    monitor context.
     
+    Added -ksp_gmres_krylov_monitor and KSPGMRESKrylovMonitor() to allow one to view the vectors
+    in the Krylov space.
+     
     
   PC
 
@@ -65,6 +70,8 @@ add to it).
 
   Added SNESVecViewMonitorUpdate() and -snes_vecmonitor_update to display the Newton update at each iteration.    
 
+  Added additional final argument to SNESSetMonitor() an optional destroy routine for the 
+    monitor context.
     
 
   DA
