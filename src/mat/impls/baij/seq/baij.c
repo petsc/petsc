@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.40 1996/04/30 17:25:58 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.41 1996/04/30 19:14:56 balay Exp balay $";
 #endif
 
 /*
@@ -911,7 +911,7 @@ static int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
 
 extern int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,double,Mat*);
 extern int MatLUFactor_SeqBAIJ(Mat,IS,IS,double);
-extern int MAtIncreaseOverlap_SeqBAIJ(Mat,int,IS,int);
+extern int MatIncreaseOverlap_SeqBAIJ(Mat,int,IS*,int);
 
 extern int MatSolve_SeqBAIJ_N(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_1(Mat,Vec,Vec);
