@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.47 1999/02/24 19:46:03 balay Exp balay $ 
+# $Id: base.site,v 1.48 1999/03/24 19:18:12 balay Exp bsmith $ 
 #
 #
 #  This file contains site-specific information.  The definitions below
@@ -77,11 +77,6 @@ CMEX           = /usr/local/bin/cmex
 PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
 PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/sun4/libpvode.a
 #
-# Optional location of SPAI;
-#
-SPAI_INCLUDE = -I/home/bsmith/libraries/spai_1.1
-SPAI_LIB     = /home/bsmith/libraries/spai_1.1/lib/${PETSC_ARCH}/libspai.a
-#
 # Optional location of ParMetis
 #
 PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
@@ -97,5 +92,5 @@ PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a
 #
 #PCONF         = -DHAVE_MPE -DHAVE_PVODE -DHAVE_SPAI -DHAVE_PARMETIS -DHAVE_BLOCKSOLVE
 PCONF         = -DHAVE_MPE -DHAVE_PVODE -DHAVE_SPAI -DHAVE_PARMETIS
-EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${SPAI_LIB} ${PARMETIS_LIB}
+EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB}
 
