@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.20 1997/10/13 02:12:04 curfman Exp curfman $ 
+# $Id: makefile,v 1.21 1997/10/16 03:30:38 curfman Exp keyes $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -88,9 +88,9 @@ ALL: ex1
 # common blocks with lots of memory and are needed only by the original Julianne
 # solver.  This saves some memory for the PETSc version of code.
 #
-  SOURCEF_COMMON   = xnd.F resid.F jac.F pvar.F
+  SOURCEF_COMMON   = xnd.F resid.F jac.F pvar.F resid_duct.F
   SOURCEF_JULIANNE = xjul.F
-  SOURCEF_PETSC    = xmod.F mat.F obselete.F resid_duct.F
+  SOURCEF_PETSC    = xmod.F mat.F obselete.F 
   SOURCEF_FP       = resid_fp.F xnd_fp.F rbuild_fp.F
   SOURCEF          = $(SOURCEF_COMMON) $(SOURCEF_PETSC) $(SOURCEF_FP) $(SOURCEF_JULIANNE)
 
@@ -216,7 +216,7 @@ tar_euler:
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 # redefine PETSc lib location to use tmp space
- LDIR = /tmp/curfman/petsc-2.0.20/libg/
+# LDIR = /tmp/curfman/petsc-2.0.20/libg/
 
 # needed for freebsd
 # FOPTFLAGS = -g -dalign -Nn802
