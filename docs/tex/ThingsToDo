@@ -48,10 +48,6 @@ Additional Capabilities that PETSc Needs:
 
   - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
 
-  - Fix MPIRowbs so factorization routiens return NEW matrix, NOT the 
-    original matrix. Then fix MatMult() etc to make sure one does not
-    multiply a factored matrix!!!!!!!!!!!!
-
   * Have all preconditioners (including LU) support null space, see 
             tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
 
@@ -238,6 +234,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
                 Accomplishments!  :) :)
 -----------------------------------------------------------------------
+
+  X Fix MPIRowbs so factorization routiens return NEW matrix, NOT the 
+    original matrix. Then fix MatMult() etc to make sure one does not
+    multiply a factored matrix!!!!!!!!!!!!
 
   X Add provision so that all -info printouts indicate the associated
     processor.  In particular, storage allocation of submatrices for MATMPIAIJ:
