@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.42 1999/01/15 19:53:45 balay Exp balay $ 
+# $Id: base.site,v 1.43 1999/01/15 20:45:39 balay Exp bsmith $ 
 #
 #
 #  This file contains site-specific information.  The definitions below
@@ -31,7 +31,7 @@ X11_LIB        = -lX11
 #MPI_LIB        = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpi
 #MPI_INCLUDE    = -I/usr/local/mpi/include
 #MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
-MPI_HOME       = /home/MPI/releases/mpich-1.1.2
+MPI_HOME       = /home/petsc/mpich-1.1.2-beta
 MPI_BUILD_HOME = ${MPI_HOME}/build/sun4/ch_p4
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
@@ -46,12 +46,17 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/ma
 # Optional location of MPE
 #
 MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
-MPE_INCLUDE   = -I${MPI_HOME}/include 
+MPE_INCLUDE   = -I${MPI_HOME}/mpe 
 #
 # Optional location of BlockSolve (MPI version)
+# Note: using BlockSolve is incompatible with building PETSc with dynamic
+# libraries on Sun4, this is because the shared library version of BlockSolve
+# (which is required when BlockSolve is linked with dynamic libraries)
+# does not build correctly because BlockSolve uses file names that get
+# truncated with ar.
 #
-BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
+#BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+#BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional Matlab location
 #
@@ -88,6 +93,7 @@ PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
+#PCONF         = -DHAVE_MPE -DHAVE_PVODE -DHAVE_SPAI -DHAVE_PARMETIS
 PCONF         = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE -DHAVE_SPAI -DHAVE_PARMETIS
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${SPAI_LIB} ${PARMETIS_LIB}
 

@@ -1,4 +1,4 @@
-# $Id: base,v 1.13 1998/12/10 16:37:23 balay Exp bsmith $ 
+# $Id: base,v 1.14 1999/01/25 22:01:06 bsmith Exp bsmith $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -46,7 +46,7 @@ OCOMP_COPTFLAGS  = -O -Wall -Wshadow -fomit-frame-pointer
 OCOMP_FOPTFLAGS  = -O
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
-                   -DUSE_PETSC_STACK -DUSE_DYNAMIC_LIBRARIES  
+                   -DUSE_PETSC_STACK
 O_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
 GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
                    -DUSE_PETSC_STACK
