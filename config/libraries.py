@@ -103,7 +103,7 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return found
 
-  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = []):
+  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int'):
     '''Determine whether a library is shared
        - initFunction(int *argc, char *argv[]) is called to initialize some static data
        - checkFunction(int *check) is called to verify that the static data wer set properly
@@ -112,6 +112,7 @@ class Configure(config.base.Configure):
     isShared = 0
     if checkLink is None: checkLink = self.checkLink
 
+    # Fix these flags
     oldFlags                         = self.framework.argDB['LDFLAGS']
     self.framework.argDB['LDFLAGS'] += ' -shared'
     for lib in libraries:
@@ -125,12 +126,12 @@ extern "C"
 int init(int argc,  char *argv[]) {
 '''
     body      = '''
-  int isInitialized;
+  %s isInitialized;
 
-  %s(&argc, &argv);
+  %s(%s);
   %s(&isInitialized);
-  return isInitialized;
-''' % (initFunction, checkFunction)
+  return (int) isInitialized;
+''' % (boolType, initFunction, initArgs, checkFunction)
     codeEnd   = '\n}\n'
     if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd):
       if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
@@ -147,11 +148,11 @@ extern "C"
 int checkInit(void) {
 '''
     body      = '''
-  int isInitialized;
+  %s isInitialized;
 
   %s(&isInitialized);
-  return isInitialized;
-''' % checkFunction
+  return (int) isInitialized;
+''' % (boolType, checkFunction)
     codeEnd   = '\n}\n'
     if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd):
       if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
@@ -168,7 +169,7 @@ int checkInit(void) {
     guard = self.headers.getDefineName('dlfcn.h')
     if self.headers.headerPrefix:
       guard = self.headers.headerPrefix+'_'+guard
-    includes = '''
+    defaultIncludes = '''
 #include <stdio.h>
 #include <stdlib.h>
 #ifdef %s
@@ -214,7 +215,7 @@ int checkInit(void) {
     oldLibs = self.framework.argDB['LIBS']
     if self.haveLib('dl'):
       self.framework.argDB['LIBS'] += ' -ldl'
-    if self.checkRun(includes, body):
+    if self.checkRun(defaultIncludes, body):
       isShared = 1
     self.framework.argDB['LIBS'] = oldLibs
     if os.path.isfile('lib1.so'): os.remove('lib1.so')
