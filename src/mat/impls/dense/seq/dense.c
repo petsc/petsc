@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.30 1995/05/02 16:05:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.31 1995/05/02 17:59:51 bsmith Exp curfman $";
 #endif
 
 /*
@@ -10,6 +10,7 @@ static char vcid[] = "$Id: dense.c,v 1.30 1995/05/02 16:05:08 bsmith Exp bsmith 
 #include "matimpl.h"
 #include "math.h"
 #include "vec/vecimpl.h"
+#include "pviewer.h"
 
 typedef struct {
   Scalar *v;
@@ -19,7 +20,8 @@ typedef struct {
 } Mat_Dense;
 
 
-static int MatGetInfo_Dense(Mat matin,int flag,int *nz,int *nzalloc,int *mem)
+static int MatGetInfo_Dense(Mat matin,MatInfoType flag,int *nz,
+                            int *nzalloc,int *mem)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    i,N = mat->m*mat->n,count = 0;
@@ -167,8 +169,8 @@ static int MatSolveTransAdd_Dense(Mat matin,Vec xx,Vec zz, Vec yy)
   return 0;
 }
 /* ------------------------------------------------------------------*/
-static int MatRelax_Dense(Mat matin,Vec bb,double omega,int flag,double shift,
-                       int its,Vec xx)
+static int MatRelax_Dense(Mat matin,Vec bb,double omega,MatSORType flag,
+                          double shift,int its,Vec xx)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   Scalar *x, *b, *v = mat->v, zero = 0.0, xt;
@@ -506,7 +508,7 @@ static int MatNorm_Dense(Mat matin,int type,double *norm)
   return 0;
 }
 
-static int MatSetOption_Dense(Mat aijin,int op)
+static int MatSetOption_Dense(Mat aijin,MatOption op)
 {
   Mat_Dense *aij = (Mat_Dense *) aijin->data;
   if (op == ROW_ORIENTED)            aij->roworiented = 1;
