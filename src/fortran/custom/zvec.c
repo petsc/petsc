@@ -1,38 +1,38 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.45 1998/10/05 20:43:26 balay Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.46 1998/10/19 22:15:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "vec.h"
 #ifdef HAVE_FORTRAN_CAPS
-#define vecsetvalue_           VECSETVALUE
-#define vecmaxpy_              VECMAXPY
-#define vecmdot_               VECMDOT
-#define veccreateseq_          VECCREATESEQ
-#define veccreateseqwitharray_ VECCREATESEQWITHARRAY
-#define veccreatempiwitharray_ VECCREATEMPIWITHARRAY
-#define veccreate_             VECCREATE
-#define vecduplicate_          VECDUPLICATE
-#define veccreatempi_          VECCREATEMPI
-#define veccreateshared_       VECCREATESHARED
-#define vecscattercreate_      VECSCATTERCREATE
-#define vecscattercopy_        VECSCATTERCOPY
-#define vecdestroy_            VECDESTROY
-#define vecdestroyvecs_        VECDESTROYVECS
-#define vecscatterdestroy_     VECSCATTERDESTROY
-#define vecrestorearray_       VECRESTOREARRAY
-#define vecgetarray_           VECGETARRAY
-#define vecload_               VECLOAD
-#define vecgettype_            VECGETTYPE
-#define vecduplicatevecs_      VECDUPLICATEVECS
-#define vecview_               VECVIEW
-#define mapgetlocalsize_       MAPGETLOCALSIZE
-#define mapgetglobalsize_      MAPGETGLOBALSIZE
-#define mapgetlocalrange_      MAPGETLOCALRANGE
-#define mapgetglobalrange_     MAPGETGLOBALRANGE
-#define mapdestroy_            MAPDESTROY
-#define mapcreatempi_          MAPCREATEMPI
-#define vecgetmap_             VECGETMAP
+#define vecsetvalue_              VECSETVALUE
+#define vecmaxpy_                 VECMAXPY
+#define vecmdot_                  VECMDOT
+#define veccreateseq_             VECCREATESEQ
+#define veccreateseqwitharray_    VECCREATESEQWITHARRAY
+#define veccreatempiwitharray_    VECCREATEMPIWITHARRAY
+#define veccreate_                VECCREATE
+#define vecduplicate_             VECDUPLICATE
+#define veccreatempi_             VECCREATEMPI
+#define veccreateshared_          VECCREATESHARED
+#define vecscattercreate_         VECSCATTERCREATE
+#define vecscattercopy_           VECSCATTERCOPY
+#define vecdestroy_               VECDESTROY
+#define vecdestroyvecs_           VECDESTROYVECS
+#define vecscatterdestroy_        VECSCATTERDESTROY
+#define vecrestorearray_          VECRESTOREARRAY
+#define vecgetarray_              VECGETARRAY
+#define vecload_                  VECLOAD
+#define vecgettype_               VECGETTYPE
+#define vecduplicatevecs_         VECDUPLICATEVECS
+#define vecview_                  VECVIEW
+#define mapgetlocalsize_          MAPGETLOCALSIZE
+#define mapgetglobalsize_         MAPGETGLOBALSIZE
+#define mapgetlocalrange_         MAPGETLOCALRANGE
+#define mapgetglobalrange_        MAPGETGLOBALRANGE
+#define mapdestroy_               MAPDESTROY
+#define mapcreatempi_             MAPCREATEMPI
+#define vecgetmap_                VECGETMAP
 #define vecghostgetlocalform_     VECGHOSTGETLOCALFORM
 #define vecghostrestorelocalform_ VECGHOSTRESTORELOCALFORM
 #define veccreateghostwitharray_  VECCREATEGHOSTWITHARRAY
@@ -43,37 +43,37 @@ static char vcid[] = "$Id: zvec.c,v 1.45 1998/10/05 20:43:26 balay Exp bsmith $"
 #define vecstridenorm_            vecstridenorm
 #define vecghostrestorelocalform_ vecghostrestorelocalform
 #define vecghostgetlocalform_     vecghostgetlocalform
-#define veccreateghostwitharray_            veccreateghostwitharray
-#define veccreateghost_                     veccreateghost
-#define vecgetmap_             vecgetmap
-#define mapcreatempi_          mapcreatempi
-#define mapgetglobalrange_     mapgetglobalrange
-#define mapgetglobalsize_      mapgetglobalsize
-#define mapgetlocalsize_       mapgetlocalsize
-#define mapgetlocalrange_      mapgetlocalrange
-#define mapdestroy_            mapdestroy
-#define vecsetvalue_           vecsetvalue
-#define vecview_               vecview
-#define vecmaxpy_              vecmaxpy
-#define vecmdot_               vecmdot
-#define veccreateseq_          veccreateseq
-#define veccreateseqwitharray_ veccreateseqwitharray
-#define veccreatempiwitharray_ veccreatempiwitharray
-#define veccreate_             veccreate
-#define vecduplicate_          vecduplicate
-#define veccreatempi_          veccreatempi
-#define veccreateshared_       veccreateshared
-#define vecscattercreate_      vecscattercreate
-#define vecscattercopy_        vecscattercopy
-#define vecdestroy_            vecdestroy
-#define vecdestroyvecs_        vecdestroyvecs
-#define vecscatterdestroy_     vecscatterdestroy
-#define vecrestorearray_       vecrestorearray
-#define vecgetarray_           vecgetarray
-#define vecload_               vecload
-#define vecgettype_            vecgettype
-#define vecduplicatevecs_      vecduplicatevecs
-#define vecmax_                vecmax
+#define veccreateghostwitharray_  veccreateghostwitharray
+#define veccreateghost_           veccreateghost
+#define vecgetmap_                vecgetmap
+#define mapcreatempi_             mapcreatempi
+#define mapgetglobalrange_        mapgetglobalrange
+#define mapgetglobalsize_         mapgetglobalsize
+#define mapgetlocalsize_          mapgetlocalsize
+#define mapgetlocalrange_         mapgetlocalrange
+#define mapdestroy_               mapdestroy
+#define vecsetvalue_              vecsetvalue
+#define vecview_                  vecview
+#define vecmaxpy_                 vecmaxpy
+#define vecmdot_                  vecmdot
+#define veccreateseq_             veccreateseq
+#define veccreateseqwitharray_    veccreateseqwitharray
+#define veccreatempiwitharray_    veccreatempiwitharray
+#define veccreate_                veccreate
+#define vecduplicate_             vecduplicate
+#define veccreatempi_             veccreatempi
+#define veccreateshared_          veccreateshared
+#define vecscattercreate_         vecscattercreate
+#define vecscattercopy_           vecscattercopy
+#define vecdestroy_               vecdestroy
+#define vecdestroyvecs_           vecdestroyvecs
+#define vecscatterdestroy_        vecscatterdestroy
+#define vecrestorearray_          vecrestorearray
+#define vecgetarray_              vecgetarray
+#define vecload_                  vecload
+#define vecgettype_               vecgettype
+#define vecduplicatevecs_         vecduplicatevecs
+#define vecmax_                   vecmax
 #endif
 
 EXTERN_C_BEGIN
