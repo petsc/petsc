@@ -19,7 +19,7 @@
    General notes:
   ----------------
    Vector scatters such as these are an efficient way to handle communication
-   of parallel data.  In particular, they enable the app to precompute
+   of parallel data.  In particular, they enable the application to precompute
    communication patterns and then reuse this information repeatedly in
    during an application.
      
