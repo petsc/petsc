@@ -136,7 +136,7 @@ PETSC_ADIC_LIB  = -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC} -lpetscblas -lmpiuni  ${
 #
 # Some variables used to build shared libraries
 SHLIBS   = libpetsccontrib libpetsc libpetscmat libpetscsles libpetscsnes libpetscts libpetscvec libpetscdm \
-           libpetscmesh libpetscgrid libpetscgsolver libpetscfortran
+           libpetscmesh libpetscgrid libpetscgsolver
 SLSUFFIX = so
 #
 # The following include files set customized site, optimization, and version
