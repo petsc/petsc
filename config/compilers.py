@@ -33,14 +33,18 @@ class Configure(config.base.Configure):
     for kw in ['restrict', ' __restrict__', '__restrict']:
       if self.checkCompile('', 'float * '+kw+' x;'):
         self.restrictKeyword = kw
+        self.logPrint('Set C restrict keyword to '+self.restrictKeyword, 4, 'compilers')
         break
     self.popLanguage()
+    if not self.restrictKeyword:
+      self.logPrint('No C restrict keyword', 4, 'compilers')
     return
 
   def checkCFormatting(self):
     '''Activate format string checking if using the GNU compilers'''
     if self.isGCC:
       self.gccFormatChecking = ('PRINTF_FORMAT_CHECK(A,B)', '__attribute__((format (printf, A, B)))')
+      self.logPrint('Added gcc printf format checking', 4, 'compilers')
     else:
       self.gccFormatChecking = None
     return
@@ -78,6 +82,10 @@ class Configure(config.base.Configure):
       if self.checkCompile('template <class dummy> struct a {};\nnamespace trouble{\ntemplate <class dummy> struct a : public ::a<dummy> {};\n}\ntrouble::a<int> uugh;\n'):
         self.cxxNamespace = 1
     self.popLanguage()
+    if self.cxxNamespace:
+      self.logPrint('C++ has namespaces', 4, 'compilers')
+    else:
+      self.logPrint('C++ does not have namespaces', 4, 'compilers')
     return
 
   def checkFortranTypeSizes(self):
@@ -92,7 +100,7 @@ class Configure(config.base.Configure):
       if returnCode or (output+error).find('Type size specifiers are an extension to standard Fortran 95') >= 0:
         self.framework.argDB['FFLAGS'] = oldFlags
       else:
-        self.framework.log.write('Looks like ifc compiler, adding -w90 -w flags to avoid warnings about real*8 etc')
+        self.logPrint('Looks like ifc compiler, adding -w90 -w flags to avoid warnings about real*8 etc', 4, 'compilers')
     self.popLanguage()
     return
 
@@ -125,10 +133,10 @@ class Configure(config.base.Configure):
       # Compile each of the C test objects
       self.pushLanguage('C')
       if not self.checkCompile(cfunc,None,cleanup = 0):
-        self.framework.log.write('Cannot compile C function: '+cfunc)
+        self.logPrint('Cannot compile C function: '+cfunc, 3, 'compilers')
         continue
       if not os.path.isfile(self.compilerObj):
-        self.framework.log.write('Cannot locate object file: '+os.path.abspath(self.compilerObj))
+        self.logPrint('Cannot locate object file: '+os.path.abspath(self.compilerObj), 3, 'compilers')
         continue
       os.rename(self.compilerObj,cobj)
       self.popLanguage()
@@ -146,6 +154,7 @@ class Configure(config.base.Configure):
         break
     else:
       raise RuntimeError('Unknown Fortran name mangling')
+    self.logPrint('Fortran name mangling is '+self.fortranMangling, 4, 'compilers')
 
     # Clean up C test objects
     for cobj in cobjs:
@@ -167,6 +176,7 @@ class Configure(config.base.Configure):
     self.pushLanguage('F77')
     if self.checkLink(None,'       call d1_chk()\n'):
       self.fortranManglingDoubleUnderscore = 1
+      self.logPrint('Fortran has funny g77 name mangling with double underscores', 4, 'compilers')
     else:
       self.fortranManglingDoubleUnderscore = 0
 
@@ -189,13 +199,13 @@ class Configure(config.base.Configure):
         self.framework.argDB[flagsArg] = oldFlags + ' ' + flag
         self.fortranPreprocess = 1
         self.popLanguage()
-        self.framework.log.write('Fortran uses CPP preprocessor\n')
+        self.logPrint('Fortran uses CPP preprocessor', 3, 'compilers')
         return
       except RuntimeError:
         self.framework.argDB[flagsArg] = oldFlags
     self.popLanguage()
     self.fortranPreprocess = 0
-    self.framework.log.write('Fortran does NOT use CPP preprocessor')
+    self.logPrint('Fortran does NOT use CPP preprocessor', 3, 'compilers')
     return
 
   def checkFortranLibraries(self):
@@ -233,7 +243,7 @@ class Configure(config.base.Configure):
     # replace \CR that ifc puts in each line of output
     output = output.replace('\\\n', '')
 
-    if output.find('absoft') >= 0:
+    if output.lower().find('absoft') >= 0:
       loc = output.find(' -lf90math')
       if loc == -1: loc = output.find(' -lf77math')
       if loc >= -1:
@@ -270,13 +280,13 @@ class Configure(config.base.Configure):
     try:
       while 1:
         arg = argIter.next()
-        self.framework.log.write( 'Checking arg '+arg+'\n')
+        self.logPrint( 'Checking arg '+arg, 4, 'compilers')
         # Check for full library name
         m = re.match(r'^/.*\.a$', arg)
         if m:
           if not arg in lflags:
             lflags.append(arg)
-            self.framework.log.write( 'Found full library spec: '+arg+'\n')
+            self.logPrint('Found full library spec: '+arg, 4, 'compilers')
             flibs.append(arg)
           continue
         # Check for ???
@@ -286,7 +296,7 @@ class Configure(config.base.Configure):
             if self.isGCC:
               lflags.append('-Xlinker')
             lflags.append(arg)
-            self.framework.log.write( 'Found binary include: '+arg+'\n')
+            self.logPrint('Found binary include: '+arg, 4, 'compilers')
             flibs.append(arg)
           continue
         # Check for system libraries
@@ -296,7 +306,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-[lLR]$', arg)
         if m:
           lib = arg+argIter.next()
-          self.framework.log.write( 'Found canonical library: '+lib+'\n')
+          self.logPrint('Found canonical library: '+lib, 4, 'compilers')
           flibs.append(lib)
           continue
         # Check for special library arguments
@@ -315,12 +325,12 @@ class Configure(config.base.Configure):
               pass
             else:
               lflags.append(arg)
-            self.framework.log.write( 'Found special library: '+arg+'\n')
+            self.logPrint('Found special library: '+arg, 4, 'compilers')
             flibs.append(arg)
           continue
         if arg == '-rpath':
           lib = argIter.next()
-          self.framework.log.write( 'Found -rpath library: '+lib+'\n')
+          self.logPrint('Found -rpath library: '+lib, 4, 'compilers')
           flibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
         # Check for ???
@@ -331,7 +341,7 @@ class Configure(config.base.Configure):
           for lib in argIter.next().split(':'):
             #solaris gnu g77 has this extra P, here, not sure why it means
             if lib.startswith('P,'):lib = lib[2:]
-            self.framework.log.write( 'Handling -Y option: '+lib+'\n')
+            self.logPrint('Handling -Y option: '+lib, 4, 'compilers')
             flibs.append('-L'+lib)
           continue
         # HPUX lists a bunch of library directories seperated by :
@@ -340,11 +350,11 @@ class Configure(config.base.Configure):
           for l in arg.split(':'):
             if os.path.isdir(l):
               flibs.append('-L'+l)
-              self.framework.log.write( 'Handling HPUX list of directories: '+l+'\n')
+              self.logPrint('Handling HPUX list of directories: '+l, 4, 'compilers')
               founddir = 1
           if founddir:
             continue
-        self.framework.log.write( 'Unknown arg '+arg+'\n')
+        self.logPrint('Unknown arg '+arg, 4, 'compilers')
     except StopIteration:
       pass
 
@@ -361,54 +371,54 @@ class Configure(config.base.Configure):
     if self.flibs.find('-L/sw/lib/gcc/powerpc-apple-darwin') >= 0:
       self.flibs += ' -lcc_dynamic'
 
-    self.framework.log.write('Libraries needed to link against Fortran compiler'+self.flibs+'\n')
+    self.logPrint('Libraries needed to link against Fortran compiler'+self.flibs, 3, 'compilers')
     # check that these monster libraries can be used from C
-    self.framework.log.write('Check that Fortran libraries can be used from C\n')
+    self.logPrint('Check that Fortran libraries can be used from C', 4, 'compilers')
     oldLibs = self.framework.argDB['LIBS']
     self.framework.argDB['LIBS'] += ' '+self.flibs
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError, e:
-      self.framework.log.write('Fortran libraries cannot directly be used from C, try without -lcrt2.o\n')
-      self.framework.log.write('Error message from compiling {'+str(e)+'}\n')
+      self.logPrint('Fortran libraries cannot directly be used from C, try without -lcrt2.o', 4, 'compilers')
+      self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
       # try removing this one
       self.flibs = re.sub('-lcrt2.o','',self.flibs)
       self.framework.argDB['LIBS'] = oldLibs+self.flibs
       try:
         self.setCompilers.checkCompiler('C')
       except RuntimeError, e:
-        self.framework.log.write(str(e)+'\n')
+        self.logPrint(str(e), 4, 'compilers')
         raise RuntimeError('Fortran libraries cannot be used with C compiler')
 
     # check if Intel library exists (that is not linked by default but has iargc_ in it :-(
-    self.framework.log.write('Check for Intel PEPCF90 library\n')
+    self.logPrint('Check for Intel PEPCF90 library', 4, 'compilers')
     self.framework.argDB['LIBS'] = oldLibs+' -lPEPCF90 '+self.flibs
     try:
       self.setCompilers.checkCompiler('C')
       self.flibs = ' -lPEPCF90 '+self.flibs
-      self.framework.log.write('Intel PEPCF90 library does exist\n')
+      self.logPrint('Intel PEPCF90 library exists', 4, 'compilers')
     except RuntimeError, e:
-      self.framework.log.write('Intel PEPCF90 library does not exist\n')
+      self.logPrint('Intel PEPCF90 library does not exist', 4, 'compilers')
       self.framework.argDB['LIBS'] = oldLibs+' '+self.flibs
 
     # check these monster libraries work from C++
     if 'CXX' in self.framework.argDB:
-      self.framework.log.write('Check that Fortran libraries can be used from C++\n')
+      self.logPrint('Check that Fortran libraries can be used from C++', 4, 'compilers')
       self.framework.argDB['LIBS'] = oldLibs+self.flibs
       try:
         self.setCompilers.checkCompiler('C++')
-        self.framework.log.write('Fortran libraries can be used from C++\n')
+        self.logPrint('Fortran libraries can be used from C++', 4, 'compilers')
       except RuntimeError, e:
-        self.framework.log.write(str(e)+'\n')
+        self.logPrint(str(e), 4, 'compilers')
         # try removing this one causes grief with gnu g++ and Intel Fortran
         self.flibs = re.sub('-lintrins','',self.flibs)
         self.framework.argDB['LIBS'] = oldLibs+self.flibs
         try:
           self.setCompilers.checkCompiler('C++')
         except RuntimeError, e:
-          self.framework.log.write(str(e)+'\n')
+          self.logPrint(str(e), 4, 'compilers')
           if str(e).find('INTELf90_dclock') >= 0:
-            self.framework.log.write('Intel 7.1 Fortran compiler cannot be used with g++ 3.2!\n')
+            self.logPrint('Intel 7.1 Fortran compiler cannot be used with g++ 3.2!', 2, 'compilers')
           raise RuntimeError('Fortran libraries cannot be used with C++ compiler.\n Run with --with-fc=0 or --with-cxx=0')
 
     self.framework.argDB['LIBS'] = oldLibs
