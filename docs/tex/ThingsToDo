@@ -15,16 +15,14 @@ Additional Capabilities that PETSc Needs:
 
   - Fix -log_summary. Shows incorrect values for multiple satages
 
-  - Fix number used in MatReorderingRegister (at least providing
-    variables to specify valie range instead of hardwired 10 and 20).
-    maybe better to have PETSc generate the registration number?
-    It already sort of does this, what version of PETSc were you looking
-    at 1.22?
-    would be good provide a better registration mechanism for
-    other modules as well (besides the lame procedure described in,
-    e.g., PCRegisterAll).  
+  - Provide better registration mechanism for PC, KSP, etc (based on
+    MatReroderingRegister) to replace the lame procedure described in,
+    e.g., PCRegisterAll.  
 
   - Fix PETSc components picture (add new matrices, pcs, etc)
+
+  - Replace -log_summary data in Part 1 of users manual (to correspond
+    with profiling chapter info (ILU/GMRES on 1 proc).
 
   - Provide a VecGetArray_Quick() for the matrix computational kernels
     and VecRestoreArray_Quick() <- Null macro. This is to save eight function 
