@@ -1,5 +1,7 @@
-# $Id: matrix.c,v 1.378 2000/08/17 04:51:22 bsmith Exp $
+# $Id: makefile,v 1.2 2000/08/24 22:42:38 bsmith Exp balay $
 
+CFLAGS   =
+FFLAGS   =
 LIBBASE  = libpetscsles
 DIRS     = nn
 LOCDIR   = src/sles/pc/impls/is/

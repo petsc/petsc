@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.73 2000/08/04 14:11:13 balay Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.74 2000/08/24 22:42:11 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -303,7 +303,6 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 int MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
   int        ierr;
-  PetscTruth flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);

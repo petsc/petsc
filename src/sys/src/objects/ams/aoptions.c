@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.15 2000/08/23 18:01:27 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.16 2000/08/24 22:41:09 bsmith Exp balay $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -325,7 +325,10 @@ int OptionsName(char *opt,char *text,char *man,PetscTruth *flg)
 int OptionsList(char *opt,char *ltext,char *man,FList list,char *defaultv,char *value,int len,PetscTruth *set)
 {
   int   ierr;
+
+#if defined(PETSC_HAVE_AMS)
   FList next = list;
+#endif
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)

@@ -1,4 +1,4 @@
-/*$Id: const.c,v 1.8 2000/08/01 20:58:28 bsmith Exp bsmith $*/
+/*$Id: const.c,v 1.9 2000/08/24 22:43:48 bsmith Exp balay $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 #undef __FUNC__  
@@ -58,7 +58,6 @@ int PFDestroy_Constant(void *value)
 int PFSetFromOptions_Constant(PF pf)
 {
   int        ierr;
-  PetscTruth flag;
   Scalar     *value = (Scalar *)pf->data;
 
   PetscFunctionBegin;

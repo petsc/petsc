@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.34 2000/08/04 15:56:24 balay Exp bsmith $*/
+/*$Id: drawreg.c,v 1.35 2000/08/24 22:40:56 bsmith Exp balay $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -272,8 +272,11 @@ int DrawRegister(char *sname,char *path,char *name,int (*function)(Draw))
 int DrawSetFromOptions(Draw draw)
 {
   int        ierr;
-  PetscTruth flg,nox,warn;
+  PetscTruth flg,nox;
   char       vtype[256],*def;
+#if !defined(PARCH_Win32) && !defined(PETSC_HAVE_X11)
+  PetscTruth warn;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
