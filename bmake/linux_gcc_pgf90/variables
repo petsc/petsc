@@ -50,7 +50,7 @@ OCXX_FOPTFLAGS	   = -fast -tp p6 -Mnoframe
 GCOMP_COPTFLAGS	   = -g
 GCOMP_FOPTFLAGS	   = -g
 # --------------------------- BOPT - O_complex options -------------------------
-OCOMP_COPTFLAGS	   = -O6 -Wall -Wshadow  -fomit-frame-pointer -funroll-all-loops 
+OCOMP_COPTFLAGS	   = -O6 -Wall -fomit-frame-pointer -funroll-all-loops 
 OCOMP_FOPTFLAGS	   = -fast -tp p6 -Mnoframe
 # ########################### PETSc install options ###########################
 #
