@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.117 1998/04/02 16:40:19 balay Exp balay $ 
+# $Id: crontab,v 1.118 1998/04/06 15:12:07 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -31,7 +31,7 @@
 #
 # Zap unfinished processes on eagle
 #
-45 9 * * * /usr/ucb/rsh eagle zap tcsh petsc
+45 9 * * * /usr/ucb/rsh eagle "zap tcsh petsc >& /home/bsmith/petsc/maint/nightlylogs/zap.log"
 #
 # Copy over www access log files for the past 24 hours
 #
