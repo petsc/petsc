@@ -1,14 +1,13 @@
-
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.5 1995/11/23 04:15:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.6 1995/11/23 13:47:06 bsmith Exp curfman $";
 #endif
+
 /*
-    Fortran stub for PetscInitialize and Options routines. 
-  These are not done automatically since they require passing 
-  strings between Fortran and C.
-
-
+  This file contatins Fortran stubs for PetscInitialize and Options routines. 
+  These are not generated automatically since they require passing strings
+  between Fortran and C.
 */
+
 #include "zpetsc.h"
 #include "petsc.h"
 #include <stdio.h>
@@ -18,7 +17,6 @@ extern int          PetscBeganMPI;
 #if defined(PETSC_COMPLEX)
 extern MPI_Datatype  MPIU_COMPLEX;
 #endif
-
 
 #ifdef FORTRANCAPS
 #define optionsgetintarray_           OPTIONSGETINTARRAY
@@ -43,7 +41,6 @@ extern MPI_Datatype  MPIU_COMPLEX;
 #define optionsgetstring_             optionsgetstring
 #define optionsgetintarray_           optionsgetintarray
 #endif
-
 
 int OptionsCheckInitial_Private(),
     OptionsCreate_Private(int*,char***,char*,char*),
