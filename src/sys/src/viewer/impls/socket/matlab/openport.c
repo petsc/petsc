@@ -159,10 +159,10 @@ PetscErrorCode establish(u_short portnum)
 
   /* Note we do not use gethostname since that is not POSIX */
 #if defined(PETSC_HAVE_GETCOMPUTERNAME)
-  GetComputerName((LPTSTR)name,(LPDWORD)&namelen);
+  GetComputerName((LPTSTR)myname,(LPDWORD)&namelen);
 #elif defined(PETSC_HAVE_UNAME)
   uname(&utname);
-  strncpy(name,utname.nodename,MAXHOSTNAME);
+  strncpy(myname,utname.nodename,MAXHOSTNAME);
 #endif
 #if defined(PETSC_HAVE_BZERO)
   bzero(&sa,sizeof(struct sockaddr_in));
