@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.338 2000/01/26 22:08:18 balay Exp bsmith $*/
+/*$Id: aij.c,v 1.339 2000/02/02 20:08:56 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -2532,7 +2532,7 @@ int MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
    Level: intermediate
 
    Notes:
-       The i, j, and a arrays are not copied by this routine, the user must free these routines
+       The i, j, and a arrays are not copied by this routine, the user must free these arrays
     once the matrix is destroyed
 
        You cannot set new nonzero locations into this matrix, that will generate an error.
