@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.39 1996/03/24 16:05:57 curfman Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.40 1996/03/26 00:11:20 curfman Exp balay $";
 #endif
 
 #include <math.h>
@@ -90,7 +90,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
           PLogInfo(snes,"Initial delta computed without matrix norm info");
         } else {
           CHKERRQ(ierr);
-          if (PetscAbsScalar(max_val)<1.e-14)SETERRQ(1,"SNESSolve_UM_TR:Hessian norm is too small");
+          if (fabs(max_val)<1.e-14)SETERRQ(1,"SNESSolve_UM_TR:Hessian norm is too small");
           delta = PetscMax(delta,*gnorm/max_val);
         }
       } else { 
@@ -250,9 +250,9 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,
              delta,snes->deltatol,xnorm);  
     return 3;
   }
-  if ((PetscAbsScalar(ared) <= PetscAbsScalar(f) * rtol) && (pred) <= rtol*PetscAbsScalar(f)) {
+  if ((fabs(ared) <= fabs(f) * rtol) && (pred) <= rtol*fabs(f)) {
     PLogInfo(snes,"SNES:Actual (%g) and predicted (%g) reductions<%g*%g\n",
-             PetscAbsScalar(ared),pred,rtol,PetscAbsScalar(f));
+             fabs(ared),pred,rtol,fabs(f));
     return 2;
   }
   if (f < snes->fmin) {
@@ -260,9 +260,9 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,
     return 1;
   }
   /* Test for termination and stringent tolerances. (failure and stop) */
-  if ( (PetscAbsScalar(ared) <= epsmch) && pred <= epsmch ) {
+  if ( (fabs(ared) <= epsmch) && pred <= epsmch ) {
     PLogInfo(snes,"SNES:Actual (%g) and predicted (%g) reductions<epsmch (%g)\n",
-             PetscAbsScalar(ared),pred,epsmch);
+             fabs(ared),pred,epsmch);
     return -2;
   }
   if (snes->nfuncs > snes->max_funcs) {
