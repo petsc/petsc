@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.173 1997/09/08 15:05:04 gropp Exp bsmith $ */
+/* $Id: petsc.h,v 1.174 1997/09/08 19:38:45 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -165,6 +165,7 @@ extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
 extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **),int (*)(void*));
 extern int PetscObjectReference(PetscObject);
+extern int PetscObjectDereference(PetscObject);
 extern int PetscObjectGetNewTag(PetscObject,int *);
 extern int PetscObjectRestoreNewTag(PetscObject,int *);
 extern int PetscObjectView(PetscObject,Viewer);
