@@ -91,6 +91,23 @@ else # maybe use a case statement instead of if test for the entire script?
     esac
 fi
 
+if [ $# -gt 0 ]; then
+  if [ "${PETSC_DIR}" == "" ]; then
+      echo 'You must indicate the path of PETSc with the environmental variable PETSC_DIR to get suggestions'
+      exit 0
+  fi
+  
+  # try to get configure arch
+  ${PETSC_DIR}/bin/configarch > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+     echo 'Automatic configuration of PETSc use the following PETSC_ARCH' 
+     echo '  ' `${PETSC_DIR}/bin/configarch`
+  fi
+  echo 'Manual configuration of PETSc select one of the following PETSC_ARCH choices'
+  ls -d ${PETSC_DIR}/bmake/${LARCH}* | sed -e "s?${PETSC_DIR}/bmake/\([_a-zA-Z0-9]*\)?   \1?g"
+  exit 0
+fi
+
 # Now check if there is an installed set of libraries
 
 if [ "${PETSC_DIR}" != "" ]; then
@@ -104,7 +121,7 @@ if [ "${PETSC_DIR}" != "" ]; then
            TARCH=`${PETSC_DIR}/bin/configarch`
            ls ${PETSC_DIR}/lib/libg/${TARCH}*/libpetscdm*.a > /dev/null 2>&1
            if [ $? -eq 0 ]; then
-	       LARCH=`ls -t ${PETSC_DIR}/lib/libg/${TARCH}*/libpetscdm*.a | head -1 | sed -e "s?${PETSC_DIR}/lib/lib[gO_c+omplex]*/\([_a-zA-Z0-9]*\)/libpetscdm.a?\1?g"`
+	       LARCH=`ls -t ${PETSC_DIR}/lib/libg/${TARCH}*/libpetscdm*.a | head -1 | sed -e "s?${PETSC_DIR}/lib/lib[gO_c+omplex]*/\([-_a-zA-Z0-9]*\)/libpetscdm.a?\1?g"`
            fi
         fi
     fi
