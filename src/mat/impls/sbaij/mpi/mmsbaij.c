@@ -11,6 +11,196 @@ extern int MatSetValues_SeqSBAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
 #define __FUNCT__ "MatSetUpMultiply_MPISBAIJ"
 int MatSetUpMultiply_MPISBAIJ(Mat mat)
 {
+  Mat_MPISBAIJ       *sbaij = (Mat_MPISBAIJ*)mat->data;
+  Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(sbaij->B->data);  
+  int                Nbs = sbaij->Nbs,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray,*sgarray;
+  int                bs = sbaij->bs,*stmp,mbs=sbaij->mbs, vec_size,nt;
+  IS                 from,to;
+  Vec                gvec;
+  int                rank=sbaij->rank,lsize,size=sbaij->size; 
+  int                *owners=sbaij->rowners,*sowners,*ec_owner,prank=100,k; 
+  PetscMap           vecmap;
+  PetscScalar        *ptr;
+
+  PetscFunctionBegin;
+  /*
+  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], MatSetUpMultiply_MPISBAIJ is called ...\n",rank);
+  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  */
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-prank",&prank,PETSC_NULL);CHKERRQ(ierr);
+  if (sbaij->lvec) {
+    ierr = VecDestroy(sbaij->lvec);CHKERRQ(ierr);
+    sbaij->lvec = 0;
+  }
+  if (sbaij->Mvctx) {
+    ierr = VecScatterDestroy(sbaij->Mvctx);CHKERRQ(ierr);
+    sbaij->Mvctx = 0;
+  }
+
+  /* For the first stab we make an array as long as the number of columns */
+  /* mark those columns that are in sbaij->B */
+  ierr = PetscMalloc((Nbs+1)*sizeof(int),&indices);CHKERRQ(ierr);
+  ierr = PetscMemzero(indices,Nbs*sizeof(int));CHKERRQ(ierr);
+  for (i=0; i<mbs; i++) {
+    for (j=0; j<B->ilen[i]; j++) {
+      if (!indices[aj[B->i[i] + j]]) ec++; 
+      indices[aj[B->i[i] + j] ] = 1;
+    }
+  }
+
+  /* form arrays of columns we need */
+  ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc((3*ec+1)*sizeof(int),&sgarray);CHKERRQ(ierr);
+  ec_owner = sgarray + 2*ec;
+  
+  ec = 0;
+  for (j=0; j<size; j++){
+    for (i=owners[j]; i<owners[j+1]; i++){
+      if (indices[i]) {
+        garray[ec]   = i;
+        ec_owner[ec] = j;
+        ec++;
+      }
+    }
+  }
+
+  if (rank == prank){
+    printf("proc[%d]: \n",rank);
+    for (i=0; i<ec;i++)  printf("[%d]: garray = %d, ec_owner = %d\n", i,garray[i], ec_owner[i]); 
+  }
+
+  /* make indices now point into garray */
+  for (i=0; i<ec; i++) {
+    indices[garray[i]] = i;
+  }
+
+  /* compact out the extra columns in B */
+  for (i=0; i<mbs; i++) {
+    for (j=0; j<B->ilen[i]; j++) aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
+  }
+  B->nbs       = ec;
+  sbaij->B->n   = ec*B->bs;
+  ierr = PetscFree(indices);CHKERRQ(ierr);
+
+  /* create local vector that is used to scatter into */
+  ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&sbaij->lvec);CHKERRQ(ierr);
+
+  /* create two temporary index sets for building scatter-gather */
+  ierr = PetscMalloc((2*ec+1)*sizeof(int),&stmp);CHKERRQ(ierr);
+  for (i=0; i<ec; i++) stmp[i] = bs*garray[i];  
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&from);CHKERRQ(ierr);   
+  
+  for (i=0; i<ec; i++) { stmp[i] = bs*i; } 
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
+
+  if (rank == prank){
+    ierr = PetscPrintf(PETSC_COMM_SELF," from: ");CHKERRQ(ierr);
+    ierr = ISView(from,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF," to:");CHKERRQ(ierr);
+    ierr = ISView(to,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
+  }
+
+  /* generate the scatter context */
+  ierr = VecCreateMPI(mat->comm,mat->n,mat->N,&gvec);CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,from,sbaij->lvec,to,&sbaij->Mvctx);CHKERRQ(ierr); 
+  ierr = VecScatterPostRecvs(gvec,sbaij->lvec,INSERT_VALUES,SCATTER_FORWARD,sbaij->Mvctx);CHKERRQ(ierr); 
+
+  sbaij->garray = garray;
+  PetscLogObjectParent(mat,sbaij->Mvctx);
+  PetscLogObjectParent(mat,sbaij->lvec);
+  PetscLogObjectParent(mat,from);
+  PetscLogObjectParent(mat,to);
+
+  ierr = ISDestroy(from);CHKERRQ(ierr);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
+
+  /* create parallel vector that is used by SBAIJ matrix to scatter from/into */
+  lsize = (mbs + ec)*bs;
+  ierr = VecCreateMPI(mat->comm,lsize,PETSC_DETERMINE,&sbaij->slvec0);CHKERRQ(ierr);
+  ierr = VecDuplicate(sbaij->slvec0,&sbaij->slvec1);CHKERRQ(ierr);
+  ierr = VecGetSize(sbaij->slvec0,&vec_size);CHKERRQ(ierr);
+
+  ierr = VecGetPetscMap(sbaij->slvec0,&vecmap);CHKERRQ(ierr);   
+  ierr = PetscMapGetGlobalRange(vecmap,&sowners);CHKERRQ(ierr); 
+  /* for (i=0; i<=size;i++) sowners[i] /= bs; */
+ 
+  if (rank==prank){
+    printf("length of slvec0: \n", vec_size); 
+    for (i=0; i<=size;i++)  printf("[%d]: owners = %d, sowners/bs = %d\n", i,owners[i], sowners[i]/bs); 
+  }
+
+  /* x index in the IS sfrom */
+  for (i=0; i<ec; i++) { 
+    j = ec_owner[i];
+    sgarray[i]  = garray[i] + (sowners[j]/bs - owners[j]);  
+  } 
+  /* b index in the IS sfrom */
+  k = sowners[rank]/bs + mbs;
+  for (i=ec,j=0; i< 2*ec; i++,j++) sgarray[i] = k + j;
+  
+  for (i=0; i<2*ec; i++) stmp[i] = bs*sgarray[i];  
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,stmp,&from);CHKERRQ(ierr);   
+ 
+  /* x index in the IS sto */
+  k = sowners[rank]/bs + mbs;
+  for (i=0; i<ec; i++) stmp[i] = bs*(k + i);  
+  /* b index in the IS sto */
+  for (i=ec; i<2*ec; i++) stmp[i] = bs*sgarray[i-ec]; 
+
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,stmp,&to);CHKERRQ(ierr);
+
+  if (rank == prank){
+    ierr = PetscPrintf(PETSC_COMM_SELF," sfrom: ");CHKERRQ(ierr);
+    ierr = ISView(from,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
+    ierr = PetscPrintf(PETSC_COMM_SELF," sto:");CHKERRQ(ierr);
+    ierr = ISView(to,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
+  } 
+
+  /* gnerate the SBAIJ scatter context */
+  ierr = VecScatterCreate(sbaij->slvec0,from,sbaij->slvec1,to,&sbaij->sMvctx);CHKERRQ(ierr);  
+ 
+   /*
+      Post the receives for the first matrix vector product. We sync-chronize after
+    this on the chance that the user immediately calls MatMult() after assemblying 
+    the matrix.
+  */
+  ierr = VecScatterPostRecvs(sbaij->slvec0,sbaij->slvec1,INSERT_VALUES,SCATTER_FORWARD,sbaij->sMvctx);CHKERRQ(ierr); 
+
+  ierr = VecGetLocalSize(sbaij->slvec1,&nt);CHKERRQ(ierr);
+  ierr = VecGetArray(sbaij->slvec1,&ptr);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs*mbs,ptr,&sbaij->slvec1a);CHKERRQ(ierr); 
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,nt-bs*mbs,ptr+bs*mbs,&sbaij->slvec1b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(sbaij->slvec1,&ptr);CHKERRQ(ierr);
+
+  ierr = VecGetArray(sbaij->slvec0,&ptr);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,nt-bs*mbs,ptr+bs*mbs,&sbaij->slvec0b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(sbaij->slvec0,&ptr);CHKERRQ(ierr); 
+
+  ierr = PetscFree(stmp);CHKERRQ(ierr);
+  ierr = MPI_Barrier(mat->comm);CHKERRQ(ierr);
+  
+  PetscLogObjectParent(mat,sbaij->sMvctx); 
+  PetscLogObjectParent(mat,sbaij->slvec0);
+  PetscLogObjectParent(mat,sbaij->slvec1);
+  PetscLogObjectParent(mat,sbaij->slvec0b);
+  PetscLogObjectParent(mat,sbaij->slvec1a);
+  PetscLogObjectParent(mat,sbaij->slvec1b);
+  PetscLogObjectParent(mat,from);
+  PetscLogObjectParent(mat,to); 
+  
+  PetscLogObjectMemory(mat,(ec+1)*sizeof(int)); 
+  ierr = ISDestroy(from);CHKERRQ(ierr);  
+  ierr = ISDestroy(to);CHKERRQ(ierr);
+  ierr = VecDestroy(gvec);CHKERRQ(ierr);
+  ierr = PetscFree(sgarray);CHKERRQ(ierr); 
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetUpMultiply_MPISBAIJ_2comm"
+int MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
+{
   Mat_MPISBAIJ       *baij = (Mat_MPISBAIJ*)mat->data;
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(baij->B->data);  
   int                Nbs = baij->Nbs,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
