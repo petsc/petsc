@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.130 1999/09/27 21:31:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.131 1999/10/13 20:38:06 bsmith Exp balay $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -496,7 +496,7 @@ int KSPGetTolerances(KSP ksp,double *rtol,double *atol,double *dtol,int *maxits)
 .  atol - the absolute convergence tolerance 
    (absolute size of the residual norm)
 .  dtol - the divergence tolerance
-   (amount residual can increase before KSPDefaultConverged
+   (amount residual can increase before KSPDefaultConverged()
    concludes that the method is diverging)
 -  maxits - maximum number of iterations to use
 
