@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.44 1996/08/08 14:39:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.45 1996/08/15 12:44:57 bsmith Exp curfman $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -161,11 +161,11 @@ static struct _ISOps myops = { ISGetSize_Stride,
 .  step - the change to the next index
 
    Output Parameter:
-.  is - the location to stash the index set
+.  is - the new index set
 
-.keywords: IS, index set, create, stride, sequential
+.keywords: IS, index set, create, stride
 
-.seealso: ISCreateGeneral()
+.seealso: ISCreateGeneral(), ISCreateBlock()
 @*/
 int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
 {

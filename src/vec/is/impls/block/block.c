@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: block.c,v 1.4 1996/08/14 19:50:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.5 1996/08/15 12:44:59 bsmith Exp curfman $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -130,9 +130,8 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISSort_Block,
                                ISSorted_Block };
 /*@C
-   ISCreateBlock - Creates a data structure for an index set 
-      containing a list of integers. The indices are relative to entries
-      not blocks. 
+   ISCreateBlock - Creates a data structure for an index set containing
+   a list of integers. The indices are relative to entries, not blocks. 
 
    Input Parameters:
 .  n - the length of the index set
@@ -144,10 +143,10 @@ static struct _ISOps myops = { ISGetSize_Block,
 .  is - the new index set
 
    Example:
-$       You wish to index 0,1,4,5 then use
+$   If you wish to index {0,1,4,5} then use
 $   a block size of 2 and idx of 0,4.
 
-.keywords: IS, sequential, index set, create, blocks
+.keywords: IS, index set, create, block
 
 .seealso: ISCreateStride(), ISCreateGeneral()
 @*/
@@ -187,13 +186,15 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
 
 
 /*@
-     ISBlockGetIndices - Gets the indices associated with each block.
+   ISBlockGetIndices - Gets the indices associated with each block.
 
-  Input Parameter:
+   Input Parameter:
 .  is - the index set
 
-  Output Parameter:
-. idx - the integer indices
+   Output Parameter:
+.  idx - the integer indices
+
+.keywords: IS, index set, block, get, indices
 
 .seealso: ISGetIndices(), ISBlockRestoreIndices()
 @*/
@@ -210,13 +211,15 @@ int ISBlockGetIndices(IS in,int **idx)
 }
 
 /*@
-     ISBlockRestoreIndices - Restores the indices associated with each block.
+   ISBlockRestoreIndices - Restores the indices associated with each block.
 
-  Input Parameter:
+   Input Parameter:
 .  is - the index set
 
-  Output Parameter:
-. idx - the integer indices
+   Output Parameter:
+.  idx - the integer indices
+
+.keywords: IS, index set, block, restore, indices
 
 .seealso: ISRestoreIndices(), ISBlockGetIndices()
 @*/
@@ -229,13 +232,15 @@ int ISBlockRestoreIndices(IS is,int **idx)
 }
 
 /*@
-     ISBlockGetBlockSize - Returns the number of elements in a block.
+   ISBlockGetBlockSize - Returns the number of elements in a block.
 
-  Input Parameter:
+   Input Parameter:
 .  is - the index set
 
-  Output Parameter:
-. size - the number of elements in a block
+   Output Parameter:
+.  size - the number of elements in a block
+
+.keywords: IS, index set, block, get, size
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISBlock(), ISCreateBlock()
 @*/
@@ -252,13 +257,15 @@ int ISBlockGetBlockSize(IS is,int *size)
 }
 
 /*@
-     ISBlock - Checks if an index set is blocked.
+   ISBlock - Checks if an index set is blocked.
 
-  Input Parameter:
+   Input Parameter:
 .  is - the index set
 
-  Output Parameter:
-. flag - PETSC_TRUE if a block index set, else PETSC_FALSE
+   Output Parameter:
+.  flag - PETSC_TRUE if a block index set, else PETSC_FALSE
+
+.keywords: IS, index set, block
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISBlockGetBlockSize(), ISCreateBlock()
 @*/
@@ -272,13 +279,15 @@ int ISBlock(IS is,PetscTruth *flag)
 }
 
 /*@
-     ISBlockGetSize - Returns the number of blocks in the index set.
+   ISBlockGetSize - Returns the number of blocks in the index set.
 
-  Input Parameter:
+   Input Parameter:
 .  is - the index set
 
-  Output Parameter:
-. size - the number of blocks
+   Output Parameter:
+.  size - the number of blocks
+
+.keywords: IS, index set, block, get, size
 
 .seealso: ISBlockGetBlockSize(), ISGetSize(), ISBlock(), ISCreateBlock()
 @*/

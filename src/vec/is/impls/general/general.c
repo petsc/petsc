@@ -1,6 +1,5 @@
-
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.47 1996/08/08 14:39:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.48 1996/08/15 12:44:56 bsmith Exp curfman $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -111,9 +110,9 @@ static struct _ISOps myops = { ISGetSize_General,
    Output Parameter:
 .  is - the new index set
 
-.keywords: IS, sequential, index set, create
+.keywords: IS, general, index set, create
 
-.seealso: ISCreateStride()
+.seealso: ISCreateStride(), ISCreateBlock()
 @*/
 int ISCreateGeneral(MPI_Comm comm,int n,int *idx,IS *is)
 {
