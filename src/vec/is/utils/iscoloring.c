@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.28 1998/04/27 17:14:05 curfman Exp curfman $";
+static char vcid[] = "$Id: iscoloring.c,v 1.29 1998/06/06 15:24:22 curfman Exp curfman $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -74,6 +74,37 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
   for ( i=0; i<iscoloring->n; i++ ) {
     ierr = ISView(iscoloring->is[i],viewer); CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "ISColoringGetIS"
+/*@C
+   ISColoringGetIS - Extracts index sets from the coloring context
+
+   Collective on ISColoring 
+
+   Input Parameter:
+.  iscoloring - the coloring context
+
+   Output Parameters:
++  n - number of index sets in the coloring context
+-  is - array of index sets
+
+.seealso: ISColoringView()
+@*/
+int ISColoringGetIS(ISColoring iscoloring,int *n,IS **is)
+{
+  int        i,ierr;
+  ViewerType vtype;
+  FILE       *fd;
+
+  PetscFunctionBegin;
+  PetscValidPointer(iscoloring);
+
+  *n  = iscoloring->n;
+  *is = iscoloring->is;
+
   PetscFunctionReturn(0);
 }
 
