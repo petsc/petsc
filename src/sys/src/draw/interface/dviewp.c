@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dviewp.c,v 1.17 1998/03/12 23:20:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dviewp.c,v 1.18 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -13,13 +13,13 @@ static char vcid[] = "$Id: dviewp.c,v 1.17 1998/03/12 23:20:42 bsmith Exp bsmith
    DrawSetViewPort - Sets the portion of the window (page) to which draw
    routines will write.
 
+   Collective on Draw
+
    Input Parameters:
-.  xl,yl,xr,yr - upper right and lower left corners of subwindow
++  xl,yl,xr,yr - upper right and lower left corners of subwindow
                  These numbers must always be between 0.0 and 1.0.
                  Lower left corner is (0,0).
-.  draw - the drawing context
-
-   Collective on Draw
+-  draw - the drawing context
 
 .keywords:  draw, set, view, port
 @*/
@@ -44,12 +44,12 @@ int DrawSetViewPort(Draw draw,double xl,double yl,double xr,double yr)
 #define __FUNC__ "DrawSplitViewPort" 
 /*@
    DrawSplitViewPort - Splits a window shared by several processes into smaller
-        view ports. One for each process. 
-
-   Input Parameters:
-.  draw - the drawing context
+   view ports. One for each process. 
 
    Collective on Draw
+
+   Input Parameter:
+.  draw - the drawing context
 
 .keywords:  draw, set, view, port, split
 @*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dsflush.c,v 1.15 1998/03/12 23:20:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dsflush.c,v 1.16 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -13,10 +13,10 @@ static char vcid[] = "$Id: dsflush.c,v 1.15 1998/03/12 23:20:42 bsmith Exp bsmit
    processors have arrived and flushed, then does a global flush.
    This is usually done to change the frame for double buffered graphics.
 
-  Input Parameters:
-.  draw - the drawing context
+   Collective on Draw
 
-  Collective on Draw
+   Input Parameters:
+.  draw - the drawing context
 
 .keywords: draw, sync, flush
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.49 1998/04/03 23:16:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.50 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -11,11 +11,11 @@ static char vcid[] = "$Id: draw.c,v 1.49 1998/04/03 23:16:21 bsmith Exp bsmith $
 /*@
    DrawResizeWindow - Allows one to resize a window from a program.
 
-  Input Parameter:
-.  draw - the window
-.  w,h - the new width and height of the window
+   Collective on Draw
 
-  Collective on Draw
+   Input Parameter:
++  draw - the window
+-  w,h - the new width and height of the window
 
 @*/
 int DrawResizeWindow(Draw draw,int w,int h)
@@ -33,10 +33,10 @@ int DrawResizeWindow(Draw draw,int w,int h)
 /*@
    DrawCheckResizedWindow - Checks if the user has resized the window.
 
-  Input Parameter:
-.  draw - the window
+   Collective on Draw
 
-  Collective on Draw
+   Input Parameter:
+.  draw - the window
 
 @*/
 int DrawCheckResizedWindow(Draw draw)
@@ -54,13 +54,13 @@ int DrawCheckResizedWindow(Draw draw)
 /*@C
    DrawGetTitle - Gets pointer to title of a Draw context.
 
+   Not collective
+
    Input Parameter:
-.    draw - the graphics context
+.  draw - the graphics context
 
    Output Parameter:
-.    title - the title
-
-   Not collective
+.  title - the title
 
 @*/
 int DrawGetTitle(Draw draw,char **title)
@@ -76,14 +76,15 @@ int DrawGetTitle(Draw draw,char **title)
 /*@C
    DrawSetTitle - Sets the title of a Draw context.
 
-   Input Parameters:
-.    draw - the graphics context
-.    title - the title
-
    Not collective (any processor or all may call this)
 
-   Note: A copy of the string is made, so you may destroy the 
-         title string after calling this routine.
+   Input Parameters:
++  draw - the graphics context
+-  title - the title
+
+   Note:
+   A copy of the string is made, so you may destroy the 
+   title string after calling this routine.
 @*/
 int DrawSetTitle(Draw draw,char *title)
 {
@@ -110,14 +111,15 @@ int DrawSetTitle(Draw draw,char *title)
 /*@C
    DrawAppendTitle - Appends to the title of a Draw context.
 
-   Input Parameters:
-.    draw - the graphics context
-.    title - the title
-
    Not collective (any processor or all can call this)
 
-   Note: A copy of the string is made, so you may destroy the 
-         title string after calling this routine.
+   Input Parameters:
++  draw - the graphics context
+-  title - the title
+
+   Note:
+   A copy of the string is made, so you may destroy the 
+   title string after calling this routine.
 @*/
 int DrawAppendTitle(Draw draw,char *title)
 {
@@ -152,10 +154,10 @@ int DrawAppendTitle(Draw draw,char *title)
 /*@C
    DrawDestroy - Deletes a draw context.
 
+   Collective on Draw
+
    Input Parameters:
 .  draw - the drawing context
-
-   Collective on Draw
 
 .keywords: draw, destroy
 @*/
@@ -174,16 +176,15 @@ int DrawDestroy(Draw draw)
 #undef __FUNC__  
 #define __FUNC__ "DrawGetPopup" 
 /*@C
-   DrawGetPopup - Creates a popup window associated with 
-      a Draw window.
+   DrawGetPopup - Creates a popup window associated with a Draw window.
 
-  Input Parameter:
+   Collective on Draw
+
+   Input Parameter:
 .  draw - the original window
 
-  Output Parameter:
+   Output Parameter:
 .  popup - the new popup window
-
-  Collective on Draw
 
 @*/
 int DrawGetPopup(Draw draw,Draw *popup)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dsclear.c,v 1.14 1998/03/12 23:20:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dsclear.c,v 1.15 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -10,12 +10,12 @@ static char vcid[] = "$Id: dsclear.c,v 1.14 1998/03/12 23:20:42 bsmith Exp bsmit
 #define __FUNC__ "DrawSynchronizedClear" 
 /*@
    DrawSynchronizedClear - Clears graphical output. All processors must call this routine.
-       Does not return until the drawable is clear.
+   Does not return until the draw in context is clear.
+
+   Collective on Draw
 
    Input Parameters:
 .  draw - the drawing context
-
-   Collective on Draw
 
 .keywords: draw, clear
 @*/

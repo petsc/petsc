@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dline.c,v 1.14 1998/03/12 23:20:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dline.c,v 1.15 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -11,12 +11,12 @@ static char vcid[] = "$Id: dline.c,v 1.14 1998/03/12 23:20:42 bsmith Exp bsmith 
 /*@
    DrawLine - Draws a line onto a drawable.
 
-   Input Parameters:
-.   draw - the drawing context
-.   xl,yl,xr,yr - the coordinates of the line endpoints
-.   cl - the colors of the endpoints
-
    Not collective
+
+   Input Parameters:
++  draw - the drawing context
+.  xl,yl,xr,yr - the coordinates of the line endpoints
+-  cl - the colors of the endpoints
 
 .keywords:  draw, line
 @*/
@@ -33,15 +33,15 @@ int DrawLine(Draw draw,double xl,double yl,double xr,double yr,int cl)
 #undef __FUNC__  
 #define __FUNC__ "DrawIsNull" 
 /*@
-    DrawIsNull - Returns PETSC_TRUE if draw is a null draw object.
+   DrawIsNull - Returns PETSC_TRUE if draw is a null draw object.
 
-  Input Parameter:
-    draw - the draw context
+   Not collective
 
-  Output Parameter:
-    yes - PETSC_TRUE if it is a null draw object, else PETSC_FALSE
+   Input Parameter:
+.  draw - the draw context
 
-  Not collective
+   Output Parameter:
+.  yes - PETSC_TRUE if it is a null draw object; otherwise PETSC_FALSE
 
 @*/
 int DrawIsNull(Draw draw,PetscTruth *yes)

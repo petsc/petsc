@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dflush.c,v 1.13 1998/03/12 23:20:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dflush.c,v 1.14 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -11,10 +11,10 @@ static char vcid[] = "$Id: dflush.c,v 1.13 1998/03/12 23:20:42 bsmith Exp bsmith
 /*@
    DrawFlush - Flushs graphical output.
 
+   Not collective (Use DrawSynchronizedFlush() for collective)
+
    Input Parameters:
 .  draw - the drawing context
-
-   Not collective (Use DrawSynchronizedFlush() for collective)
 
 .keywords:  draw, flush
 @*/

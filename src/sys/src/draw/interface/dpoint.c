@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dpoint.c,v 1.13 1998/03/12 23:20:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dpoint.c,v 1.14 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -11,12 +11,12 @@ static char vcid[] = "$Id: dpoint.c,v 1.13 1998/03/12 23:20:42 bsmith Exp bsmith
 /*@
    DrawPoint - Draws a point onto a drawable.
 
-   Input Parameters:
-.  draw - the drawing context
-.  xl,yl - the coordinates of the point
-.  cl - the color of the point
-
    Not collective
+
+   Input Parameters:
++  draw - the drawing context
+.  xl,yl - the coordinates of the point
+-  cl - the color of the point
 
 .keywords:  draw, point
 @*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dbuff.c,v 1.13 1998/03/12 23:20:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dbuff.c,v 1.14 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -11,10 +11,10 @@ static char vcid[] = "$Id: dbuff.c,v 1.13 1998/03/12 23:20:42 bsmith Exp bsmith 
 /*@
    DrawSetDoubleBuffer - Sets a window to be double buffered. 
 
+   Collective on Draw
+
    Input Parameter:
 .  draw - the drawing context
-
-   Collective on Draw
 
 .keywords:  draw, set, double, buffer
 @*/

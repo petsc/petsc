@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drect.c,v 1.13 1998/03/12 23:20:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drect.c,v 1.14 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -11,12 +11,12 @@ static char vcid[] = "$Id: drect.c,v 1.13 1998/03/12 23:20:42 bsmith Exp bsmith 
 /*@
    DrawRectangle - Draws a rectangle  onto a drawable.
 
-   Input Parameters:
-.  draw - the drawing context
-.  xl,yl,xr,yr - the coordinates of the lower left, upper right corners
-.  c1,c2,c3,c4 - the colors of the four corners in counter clockwise order
-
    Not Collective
+
+   Input Parameters:
++  draw - the drawing context
+.  xl,yl,xr,yr - the coordinates of the lower left, upper right corners
+-  c1,c2,c3,c4 - the colors of the four corners in counter clockwise order
 
 .keywords: draw, rectangle
 @*/

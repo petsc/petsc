@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dpause.c,v 1.13 1997/11/09 03:59:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dpause.c,v 1.14 1998/03/12 23:20:42 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -12,10 +12,10 @@ static char vcid[] = "$Id: dpause.c,v 1.13 1997/11/09 03:59:15 bsmith Exp bsmith
    DrawPause - Waits n seconds or until user input, depending on input 
                to DrawSetPause().
 
+   Collective operation on Draw object.
+
    Input Parameter:
 .  draw - the drawing context
-
-   Collective operation on Draw object.
 
 .keywords: draw, pause
 

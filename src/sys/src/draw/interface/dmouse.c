@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dmouse.c,v 1.15 1998/03/12 23:20:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dmouse.c,v 1.16 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -9,20 +9,20 @@ static char vcid[] = "$Id: dmouse.c,v 1.15 1998/03/12 23:20:42 bsmith Exp bsmith
 #undef __FUNC__  
 #define __FUNC__ "DrawGetMouseButton" 
 /*@
-       DrawGetMouseButton - Returns location of mouse and which button was
-            pressed. Waits for button to be pressed.
+    DrawGetMouseButton - Returns location of mouse and which button was
+    pressed. Waits for button to be pressed.
 
-  Input Parameter:
+    Not collective (Use DrawSynchronizedGetMouseButton() for collective)
+
+    Input Parameter:
 .   draw - the window to be used
 
-  Output Parameters:
-.   button - one of BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT
+    Output Parameters:
++   button - one of BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT
 .   x_user, y_user - user coordinates of location (user may pass in 0).
-.   x_phys, y_phys - window coordinates (user may pass in 0).
+-   x_phys, y_phys - window coordinates (user may pass in 0).
 
-     Not collective (Use DrawSynchronizedGetMouseButton() for collective)
-
-  Notes:
+    Notes:
     Only processor 0 of the communicator used to create the Draw may call this routine.
 
 .seealso: DrawSynchronizedGetMouseButton()
@@ -43,18 +43,18 @@ int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_use
 #undef __FUNC__  
 #define __FUNC__ "DrawSynchronizedGetMouseButton"
 /*@
-       DrawSynchronizedGetMouseButton - Returns location of mouse and which button was
-            pressed. Waits for button to be pressed.
+    DrawSynchronizedGetMouseButton - Returns location of mouse and which button was
+    pressed. Waits for button to be pressed.
 
-  Input Parameter:
+    Collective over Draw
+
+    Input Parameter:
 .   draw - the window to be used
 
-  Output Parameters:
-.   button - one of BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT
+    Output Parameters:
++   button - one of BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT
 .   x_user, y_user - user coordinates of location (user may pass in 0).
-.   x_phys, y_phys - window coordinates (user may pass in 0).
-
-  Collective over Draw
+-   x_phys, y_phys - window coordinates (user may pass in 0).
 
 .seealso: DrawGetMouseButton()
 @*/

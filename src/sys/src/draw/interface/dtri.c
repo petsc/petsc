@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.20 1998/04/13 17:46:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtri.c,v 1.21 1998/04/24 02:16:35 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -11,12 +11,12 @@ static char vcid[] = "$Id: dtri.c,v 1.20 1998/04/13 17:46:34 bsmith Exp bsmith $
 /*@
    DrawTriangle - Draws a triangle  onto a drawable.
 
-   Input Parameters:
-.  draw - the drawing context
-.  x1,y1,x2,y2,x3,y3 - the coordinates of the vertices
-.  c1,c2,c3 - the colors of the corners in counter clockwise order
+   Not Collective
 
-  Not Collective
+   Input Parameters:
++  draw - the drawing context
+.  x1,y1,x2,y2,x3,y3 - the coordinates of the vertices
+-  c1,c2,c3 - the colors of the corners in counter clockwise order
 
 .keywords: draw, triangle
 @*/
@@ -36,23 +36,23 @@ int DrawTriangle(Draw draw,double x1,double y_1,double x2,double y2,
 #define __FUNC__ "DrawTensorContourPatch" 
 /*@
    DrawTensorContourPatch - Draws a rectangular patch of a contour plot 
-      for a two-dimensional array.
+   for a two-dimensional array.
+
+   Not Collective
 
    Input Parameters:
-.   win - the window to draw in
-.   m,n - the number of local mesh points in the x and y direction
-.   x,y - the locations of the local mesh points
-.   max,min - the maximum and minimum value in the entire contour
-.   v - the data
-
-  Not Collective
++  win - the window to draw in
+.  m,n - the number of local mesh points in the x and y direction
+.  x,y - the locations of the local mesh points
+.  max,min - the maximum and minimum value in the entire contour
+-  v - the data
 
    Options Database Keys:
-$  -draw_x_private_colormap
+.  -draw_x_private_colormap - Activates private colormap
 
-    Note: 
-    This is a lower level support routine, usually the user will call
-    DrawTensorContour(). 
+   Note: 
+   This is a lower level support routine, usually the user will call
+   DrawTensorContour(). 
 
 .keywords: Draw, tensor, contour, vector
 
