@@ -114,9 +114,8 @@ class BS (maker.Maker):
       sourceDB = sourceDatabase.SourceDB()
     atexit.register(self.cleanup)
     sourceDB.setFromArgs(argDB)
-    if not int(argDB['restart']):
-      for source in sourceDB:
-        sourceDB.clearUpdateFlag(source)
+    for source in sourceDB:
+      sourceDB.clearUpdateFlag(source)
     return
 
   def getSIDLDefaults(self):
