@@ -1,5 +1,5 @@
 C
-C  "$Id: snesdnest.F,v 1.3 1997/07/05 16:30:11 curfman Exp curfman $";
+C  "$Id: snesdnest.F,v 1.4 1997/07/05 17:18:05 curfman Exp curfman $";
 C
 C  Noise estimation routine, written by Jorge More'.  Details are below.
 C
@@ -7,22 +7,10 @@ C
       subroutine dnest(nf,fval,h,fnoise,fder2,hopt,info,eps)
       implicit none
 
-#include "../../../../include/FINCLUDE/petsc.h"
-
       integer nf, info
-      Double h, fnoise, fder2, hopt
-      Double fval(nf), eps(nf)
+      double precision h, fnoise, fder2, hopt
+      double precision fval(nf), eps(nf)
 c     **********
-c
-c     Changes made by Lois:
-c
-c     Modified the code so that it can run on machines using single precision
-c     (e.g., the Cray t3e).  Introduced the include file petsc.h, and
-c        - changed "double precision" -> "Double"
-c        - changed constants of the form 0.0d0 -> PetscDoubleExp(0.0,0)
-c    
-c     **********
-c
 c
 c     Subroutine dnest
 c
@@ -100,27 +88,18 @@ c     Argonne National Laboratory.
 c     Jorge J. More'.
 c
 c     **********
-      Double zero
-      parameter(zero=PetscDoubleExp(0.0,0))
+      double precision zero
+      parameter(zero=0.0d0)
 
       integer i, j, mh
       logical dnoise
       logical cancel(6), dsgn(6)
-      Double err2, est1, est2, est3, est4
-      Double emin, emax, fmax, fmin, scale, stdv
-      Double const(15)
-      data const/PetscDoubleExp(0.71,0), PetscDoubleExp(0.41,0), 
-     +           PetscDoubleExp(0.23,0), PetscDoubleExp(0.12,0),
-     +           PetscDoubleExp(0.63,-1), PetscDoubleExp(0.33,-1),
-     +           PetscDoubleExp(0.18,-1), PetscDoubleExp(0.89,-2),
-     +           PetscDoubleExp(0.46,-2), PetscDoubleExp(0.24,-2),
-     +           PetscDoubleExp(0.12,-2), PetscDoubleExp(0.61,-3),
-     +           PetscDoubleExp(0.31,-3), PetscDoubleExp(0.16,-3),
-     +           PetscDoubleExp(0.80,-4)/
-
-c      data const/0.71d0, 0.41d0, 0.23d0, 0.12d0, 0.63d-1, 0.33d-1,
-c     +     0.18d-1, 0.89d-2, 0.46d-2, 0.24d-2, 0.12d-2, 0.61d-3,
-c     +     0.31d-3, 0.16d-3, 0.80d-4/
+      double precision err2, est1, est2, est3, est4
+      double precision emin, emax, fmax, fmin, scale, stdv
+      double precision const(15)
+      data const/0.71d0, 0.41d0, 0.23d0, 0.12d0, 0.63d-1, 0.33d-1,
+     +     0.18d-1, 0.89d-2, 0.46d-2, 0.24d-2, 0.12d-2, 0.61d-3,
+     +     0.31d-3, 0.16d-3, 0.80d-4/
 
       fnoise = zero
       fder2 = zero
