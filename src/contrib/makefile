@@ -7,7 +7,7 @@ SOURCEH  =
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = sda dfunc
+DIRS     = sda
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
