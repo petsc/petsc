@@ -1,0 +1,99 @@
+# $Id: base,v 1.46 1999/01/25 22:18:22 bsmith Exp $ 
+#
+#     See the file .... for a complete explanation of all these fields
+#
+#     For SGI 64 bit machines use the PETSC_ARCH IRIX64
+#
+LD               = ld -32
+AR               = ar
+RM               = rm -f
+SHELL            = /bin/sh
+RANLIB	         = true
+OMAKE            = make
+SHELL            = /bin/sh
+
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = cc -32 -woff 3262,3666
+C_FC             = f77 -32
+C_CLINKER        = cc  -32 ${COPTFLAGS} -rpath ${LDIR}:${DYLIBPATH}
+C_FLINKER        = f77 -32 ${FOPTFLAGS} -rpath ${LDIR}:${DYLIBPATH}
+C_CCV            = unknown
+C_SYS_LIB        = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g
+G_FOPTFLAGS      = -g
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O2 -Olimit 6000 
+O_FOPTFLAGS      = -O2
+# ########################## C++ compiler ##################################
+#
+CXX_CC               = CC -32
+CXX_CLINKER          = CC -32 ${COPTFLAGS} -rpath ${LDIR}:${DYLIBPATH}  
+CXX_FLINKER          = CC -32 ${COPTFLAGS} -rpath ${LDIR}:${DYLIBPATH}
+CXX_SYS_LIB          = -lcomplex -lfpe -lsun -lF77 -lU77 -lI77 -lisam
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g 
+GCXX_FOPTFLAGS   = -g
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O -Olimit 6000
+OCXX_FOPTFLAGS   = -O
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g
+GCOMP_FOPTFLAGS  = -g
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O -Olimit 6000 
+OCOMP_FOPTFLAGS  = -O
+# ########################### PETSc install options ###########################
+#
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_O  -DUSE_PETSC_LOG 
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK  
+OCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O  
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK -DUSE_PETSC_COMPLEX -DUSE_FORTRAN_KERNELS \
+	           -D_NON_TEMPLATE_COMPLEX 
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX -DUSE_FORTRAN_KERNELS -D_NON_TEMPLATE_COMPLEX 
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
+
+PARCH    = IRIX5
+
+include ${PETSC_DIR}/bmake/common
+
+libc:
+	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
+
+libf:
+	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
+
+libmember:    ${LIBNAME}(${LIBMEMBER})
+
+############
+
+shared: chkopts_basic
+	-@echo making shared libraries in ${LDIR} ;\
+	cd ${LDIR}; \
+	for LIBNAME in ${SHLIBS} ; \
+	do \
+          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
+	    flag=""; \
+	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	    else \
+	      flag="true"; \
+	    fi; \
+            if [ "$$flag" != "" ]; then \
+	      echo "building $$LIBNAME.${SLSUFFIX}"; \
+	      ${LD} -elf -no_library_replacement -shared -rdata_shared \
+	            -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
+	    fi; \
+	  fi; \
+	done
