@@ -3,7 +3,7 @@
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
 */
 
-#include "src/ksp/pc/impls/icc/icc.h"   /*I "petscpc.h" I*/
+#include "src/ksp/pc/impls/factor/icc/icc.h"   /*I "petscpc.h" I*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
