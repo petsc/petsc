@@ -35,7 +35,9 @@
 #define dagetfieldname_              DAGETFIELDNAME
 #define darefine_                    DAREFINE
 #define dagetao_                     DAGETAO
+#define darestoreglobalvector_       DARESTOREGLOBALVECTOR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define darestoreglobalvector_       darestoreglobalvector
 #define dasetblockfills_             dasetblockfills
 #define dagetlocalinfo_              dagetlocalinfo
 #define dagetlocalvector_            dagetlocalvector
@@ -282,6 +284,11 @@ void PETSC_STDCALL dagetlocalvector_(DA *da,Vec* l,PetscErrorCode *ierr)
 void PETSC_STDCALL dagetglobalvector_(DA *da,Vec* l,PetscErrorCode *ierr)
 {
   *ierr = DAGetGlobalVector(*da,l);
+}
+
+void PETSC_STDCALL darestoreglobalvector_(DA *da,Vec* l,PetscErrorCode *ierr)
+{
+  *ierr = DARestoreGlobalVector(*da,l);
 }
 
 void PETSC_STDCALL darestorelocalvector_(DA *da,Vec* l,PetscErrorCode *ierr)
