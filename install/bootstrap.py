@@ -236,6 +236,7 @@ class CursesInstall (BootstrapInstall):
   SelectFromList = staticmethod(SelectFromList)
 
   def getBrowser(self, stdscr):
+    'Not currently used; would allow user to select browser for html output'
     list = ['No browser (select this also for Internet Explorer and Safari)']
     list.append('A different browser or one on a different machine (you will be prompted)')
     for l in ['netscape','lynx','opera','mozilla','galeon']:
@@ -305,7 +306,7 @@ class CursesInstall (BootstrapInstall):
     c = stdscr.getch()
 #    curses.nocbreak()
     stdscr.clear()
-    self.getBrowser(stdscr)
+#    self.getBrowser(stdscr)
     return
 
   def welcome(self):
@@ -385,6 +386,17 @@ class CursesInstall (BootstrapInstall):
     '''Ask the user for the installation directory'''
     return curses.wrapper(installer.cursesInstallDirectory)
 
+  def cursesCleanup(self,stdscr):
+    '''Display nice message while running cleanup'''
+    stdscr.clear()
+    CursesInstall.CenterAddStr(stdscr, 3, 'Removing any previous ASE demons')
+    stdscr.refresh()
+    BootstrapInstall.cleanup(self)
+    
+  def cleanup(self):
+    '''Display nice message while running cleanup'''
+    return curses.wrapper(installer.cursesCleanup)
+                          
   def cursesAlreadyInstalled(self, stdscr):
     stdscr.clear()
     CursesInstall.CenterAddStr(stdscr, 1, 'Looks like BuildSystem is already installed at')
@@ -408,12 +420,18 @@ class CursesInstall (BootstrapInstall):
     c = stdscr.getkey()
     return 0
 
+  def cursesInstallBuildSystem(self,stdscr):
+    stdscr.clear()
+    CursesInstall.CenterAddStr(stdscr, 3, 'Download ASE software')
+    stdscr.refresh()
+    return BootstrapInstall.installBuildSystem(self)
+      
   def installBuildSystem(self):
     '''Check for BuildSystem and install it if it is not present.
        - Return True if installation succeeds'''
     if os.path.isdir('sidl/BuildSystem'):
       return curses.wrapper(self.cursesAlreadyInstalled)
-    if not BootstrapInstall.installBuildSystem(self):
+    if not curses.wrapper(self.cursesInstallBuildSystem):
       return curses.wrapper(self.cursesCannotClone, self.errorString)
     return 1      
 
