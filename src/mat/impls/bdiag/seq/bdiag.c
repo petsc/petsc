@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.35 1995/08/03 01:41:46 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.36 1995/08/17 01:20:45 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -450,7 +450,7 @@ static int MatGetInfo_BDiag(Mat matin,MatInfoType flag,int *nz,int *nzalloc,
   Mat_BDiag *mat = (Mat_BDiag *) matin->data;
   *nz      = mat->nz;
   *nzalloc = mat->maxnz;
-  *mem     = matin->mem;
+  *mem     = (int)matin->mem;
   return 0;
 }
 

@@ -67,7 +67,8 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     double *sty,double *fy,double *dy,double *stp,double *fp,double *dp)
 {
   SNES_UMLS *neP = (SNES_UMLS *) snes->data;
-  double    gamma1, p, q, r, s, sgnd, stpc, stpf, stpq, theta, zero = 0.0;
+  double    gamma1, p, q, r, s, sgnd, stpc, stpf, stpq, theta;
+  double    two = 2.0, zero = 0.0;
   int       bound;
 
   /* Check the input parameters for errors */
@@ -94,7 +95,7 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     theta = 3 * (*fx - *fp) / (*stp - *stx) + *dx + *dp;
     s = PETSCMAX(PETSCABS(theta),PETSCABS(*dx));
     s = PETSCMAX(s,PETSCABS(*dp));
-    gamma1 = s*sqrt(pow(theta/s,2) - (*dx/s)*(*dp/s));
+    gamma1 = s*sqrt(pow(theta/s,two) - (*dx/s)*(*dp/s));
     if (*stp < *stx) gamma1 = -gamma1;
     p = (gamma1 - *dx) + theta;
     q = ((gamma1 - *dx) + gamma1) + *dp;
@@ -120,7 +121,7 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     theta = 3*(*fx - *fp)/(*stp - *stx) + *dx + *dp;
     s = PETSCMAX(PETSCABS(theta),PETSCABS(*dx));
     s = PETSCMAX(s,PETSCABS(*dp));
-    gamma1 = s*sqrt(pow(theta/s,2) - (*dx/s)*(*dp/s));
+    gamma1 = s*sqrt(pow(theta/s,two) - (*dx/s)*(*dp/s));
     if (*stp > *stx) gamma1 = -gamma1;
     p = (gamma1 - *dp) + theta;
     q = ((gamma1 - *dp) + gamma1) + *dx;
@@ -151,7 +152,7 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
 
     /* The case gamma1 = 0 only arises if the cubic does not tend
        to infinity in the direction of the step. */
-    gamma1 = s*sqrt(PETSCMAX(zero,pow(theta/s,2) - (*dx/s)*(*dp/s)));
+    gamma1 = s*sqrt(PETSCMAX(zero,pow(theta/s,two) - (*dx/s)*(*dp/s)));
     if (*stp > *stx) gamma1 = -gamma1;
     p = (gamma1 - *dp) + theta;
     q = (gamma1 + (*dx - *dp)) + gamma1;
@@ -182,7 +183,7 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
       theta = 3*(*fp - *fy)/(*sty - *stp) + *dy + *dp;
       s = PETSCMAX(PETSCABS(theta),PETSCABS(*dy));
       s = PETSCMAX(s,PETSCABS(*dp));
-      gamma1 = s*sqrt(pow(theta/s,2) - (*dy/s)*(*dp/s));
+      gamma1 = s*sqrt(pow(theta/s,two) - (*dy/s)*(*dp/s));
       if (*stp > *sty) gamma1 = -gamma1;
       p = (gamma1 - *dp) + theta;
       q = ((gamma1 - *dp) + gamma1) + *dy;
