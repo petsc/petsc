@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.60 1996/03/11 23:27:59 balay Exp bsmith $ */
+/* $Id: plog.h,v 1.61 1996/03/19 21:30:28 bsmith Exp gropp $ */
 
 /*
     Defines high level logging in PETSc.
@@ -206,7 +206,7 @@ extern int PLogStageRegister(int,char*);
 .  f - flop counter
 
    Synopsis:
-   PLogFlops(int f)
+   void PLogFlops(int f)
 
    Notes:
    A global counter logs all PETSc flop counts.  The user can use
@@ -241,7 +241,7 @@ M*/
 .  o1,o2,o3,o4 - objects associated with the event, or 0
 
    Synopsis:
-   PLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+   void PLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                   PetscObject o4)
 
    Notes:
@@ -276,7 +276,7 @@ M*/
 .  o1,o2,o3,o4 - objects associated with the event, or 0
 
    Synopsis:
-   PLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+   void PLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                 PetscObject o4)
 
    Notes:
