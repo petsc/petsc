@@ -1,22 +1,24 @@
 <HTML>
-<HEAD>
-   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="GENERATOR" CONTENT="Mozilla/4.03 [en] (X11; U; SunOS 5.6 sun4u) [Netscape]">
-</HEAD>
 <BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000FF" VLINK="#FF0000" ALINK="#FF0000">
 
 <H3>
 Patches for PETSc (Release 2.0.24)</H3>
 
-<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.11.tar.gz">petsc-patches-2.0.24.11.tar.gz</A>
+<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.12.tar.gz">petsc-patches-2.0.24.12.tar.gz</A>
 and extracting it with
-<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.24.11.tar.gz | tar xf -</PRE>
+<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.24.12.tar.gz | tar xf -</PRE>
 Make sure you are in the PETSc directory (for example /home/bsmith/petsc-2.0.24)
 before you run the tar command.
 <BR><BR>
-For Windows NT/95/98 download the patches file <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.11.exe">petsc-patches-2.0.24.11.exe</A> and rebuild the libraries.
+For Windows NT/95/98 download the patches file <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.12.exe">petsc-patches-2.0.24.12.exe</A> and rebuild the libraries.
 <HR>
 <BR>The patch file fixes the following:<BR><BR>
+
+<H3> 2.0.24.11 (Aug 10)</H3>
+<LI>Error in MatGetDiagonal_MPIDense() </LI>
+<pre>
+<!##>src/mat/impls/dense/mpi/mpidense.c
+</pre>
 
 <H3> 2.0.24.11 (Jul 28)</H3>
 <LI>Error in testexamples with src/snes/examples/tutorials/ex3.c on solaris (using CTABLE) </LI>
