@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+import atexit
 import commands
+import cPickle
 import os.path
 import string
 import sys
@@ -7,12 +9,14 @@ import time
 import traceback
 import types
 
-echo = 1
+debugLevel = 1
+
+sourceDB = {}
 
 class Maker:
   def __init__(self):
     self.setupTmpDir()
-    self.debugLevel       = echo
+    self.debugLevel       = debugLevel
     self.debugIndentLevel = 0
     self.debugIndent      = '  '
 
@@ -127,10 +131,27 @@ class Transform (Maker):
     self.sources  = sources
     self.products = self.sources
 
+  def checkChecksum(self, command, status, output):
+    if (status):
+      self.checksumError = 1
+    else:
+      self.checksumError = 0
+
+  def getChecksum(self, source):
+    output = self.executeShellCommand('bk checksum -s8 '+source, self.checkChecksum)
+    if self.checksumError:
+      return 0
+    else:
+      return string.split(output)[1]
+
   def getObjectName(self, source):
     (dir, file) = os.path.split(source)
     (base, ext) = os.path.splitext(file)
-    return os.path.join(self.tmpDir, string.replace(dir, '/', '_')+'_'+base+'.o')
+    checksum    = self.getChecksum(source)
+    return os.path.join(self.tmpDir, string.replace(dir, '/', '_')+'_'+base+'_'+str(checksum)+'.o')
+
+  def updateSourceDB(self, source):
+    sourceDB[source] = (self.getChecksum(source), os.path.getmtime(), time());
 
   def execute(self):
     return self.products
@@ -250,7 +271,9 @@ class Action (Transform):
       files   = self.sources.getFiles()
       if (not files): return ''
       for file in files:
-        if (self.fileFilter(file)): command += ' '+file
+        if (self.fileFilter(file)):
+          command += ' '+file
+      if (command == commandBase): return ''
       return self.executeShellCommand(command, self.errorHandler)
     else:
       output = ''
@@ -362,6 +385,7 @@ class CompileFiles (Action):
       command += ' -o '+object
     command += ' '+source
     self.executeShellCommand(command)
+    self.updateSourceDB(source)
     return object
 
   def archive(self, object):
@@ -511,3 +535,13 @@ class Target (Transform):
   def execute(self):
     return self.executeTransform(self.sources, self.transforms)
 
+def saveSourceDB():
+  dbFile   = open('bsSource.db', 'w')
+  cPickle.dump(sourceDB, dbFile)
+  dbFile.close
+
+def main():
+  dbFile   = open('bsSource.db', 'r')
+  sourceDB = cPickle.load(dbFile)
+  dbFile.close()
+  atexit.register(saveSourceDB)
