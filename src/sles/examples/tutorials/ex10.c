@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.16 1997/07/02 22:26:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.17 1997/07/09 20:57:17 balay Exp curfman $";
 #endif
 
 static char help[] = 
@@ -55,10 +54,6 @@ int main(int argc,char **args)
 
   ierr = OptionsHasName(PETSC_NULL,"-table",&flg);
   if (flg) table = PETSC_TRUE;
-
-#if defined(PETSC_COMPLEX)
-  SETERRA(1,0,"This example does not work with complex numbers");
-#else
 
   /* 
      Determine files from which we read the two linear systems
@@ -263,7 +258,6 @@ int main(int argc,char **args)
      ----------------------------------------------------------- */
 
   PetscFinalize();
-#endif
   return 0;
 }
 
