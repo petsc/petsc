@@ -1,10 +1,10 @@
 /* $Id: mpibaij.h,v 1.30 2001/08/07 03:02:58 balay Exp $ */
 
-#include "src/mat/impls/baij/seq/baij.h"
-#include "src/sys/ctable.h"
 
 #if !defined(__MPIBAIJ_H)
 #define __MPIBAIJ_H
+#include "src/mat/impls/baij/seq/baij.h"
+#include "src/sys/ctable.h"
 
 #if defined (PETSC_USE_CTABLE)
 #define PETSCTABLE PetscTable;
