@@ -699,10 +699,10 @@ static int PCSetFromOptions_HYPRE(PC pc)
 
    Input Parameters:
 +     pc - the preconditioner context
--     name - either  pilut, parasails, boomerAMG, euclid
+-     name - either  pilut, parasails, boomeramg, euclid
 
    Options Database Keys:
-   -pc_hypre_type - One of pilut, parasails, boomerAMG, euclid
+   -pc_hypre_type - One of pilut, parasails, boomeramg, euclid
  
    Level: intermediate
 
