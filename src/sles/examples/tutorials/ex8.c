@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.16 1996/08/27 18:16:40 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.17 1996/08/28 19:48:44 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -21,8 +21,7 @@ parameters include:\n\
 */
 
 /*T
-   Concepts: SLES (solving linear equations)
-   Concepts: Additive Schwarz Method (ASM) with user-defined subdomains
+   Concepts: SLES^Using the Additive Schwarz Method (ASM) with user-defined subdomains
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions(); SLESSolve();
    Routines: PCSetType(); PCASMCreateSubdomains2D(); PCASMSetLocalSubdomains();
    Routines: PCASMSetOverlap(); PCASMGetSubSLES();
