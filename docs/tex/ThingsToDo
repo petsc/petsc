@@ -9,6 +9,7 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
+  - DAGetGlobalIndicesF90, MatGetArrayF90, VecDuplicateVecsF90() and restores.
 
   - Change MatConvert() so that all matrix formats are not always loaded.
 

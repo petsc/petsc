@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.99 1997/01/06 20:39:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.100 1997/01/12 04:32:41 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -569,9 +569,9 @@ int VecDestroy(Vec v)
    vector.
 
    Fortran Note:
-   The Fortran interface is slightly different from that given below.
-   See the Fortran chapter of the users manual and 
-   petsc/src/vec/examples for details.
+   The Fortran interface is slightly different from that given below, it 
+   requires one to pass in V a Vec (integer) array of size at least m.
+   See the Fortran chapter of the users manual and petsc/src/vec/examples for details.
 
 .keywords: vector, get 
 
