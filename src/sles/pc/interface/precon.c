@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.194 2000/05/13 20:52:57 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.195 2000/07/06 19:54:05 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -1302,6 +1302,82 @@ int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
 
   ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = FListAdd(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCComputeExplicitOperator"
+/*@
+    PCComputeExplicitOperator - Computes the explicit preconditioned operator.  
+
+    Collective on PC
+
+    Input Parameter:
+.   pc - the preconditioner object
+
+    Output Parameter:
+.   mat - the explict preconditioned operator
+
+    Notes:
+    This computation is done by applying the operators to columns of the 
+    identity matrix.
+
+    Currently, this routine uses a dense matrix format when 1 processor
+    is used and a sparse format otherwise.  This routine is costly in general,
+    and is recommended for use only with relatively small systems.
+
+    Level: advanced
+   
+.keywords: PC, compute, explicit, operator
+
+@*/
+int PCComputeExplicitOperator(PC pc,Mat *mat)
+{
+  Vec      in,out;
+  int      ierr,i,M,m,size,*rows,start,end;
+  MPI_Comm comm;
+  Scalar   *array,zero = 0.0,one = 1.0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidPointer(mat);
+
+  comm = pc->comm;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  ierr = PCGetVector(pc,&in);CHKERRQ(ierr);
+  ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
+  ierr = VecGetSize(in,&M);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
+  rows = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(rows);
+  for (i=0; i<m; i++) {rows[i] = start + i;}
+
+  if (size == 1) {
+    ierr = MatCreateSeqDense(comm,M,M,PETSC_NULL,mat);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateMPIAIJ(comm,m,m,M,M,0,0,0,0,mat);CHKERRQ(ierr);
+  }
+
+  for (i=0; i<M; i++) {
+
+    ierr = VecSet(&zero,in);CHKERRQ(ierr);
+    ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
+
+    ierr = PCApply(pc,out,in);CHKERRQ(ierr);
+    
+    ierr = VecGetArray(in,&array);CHKERRQ(ierr);
+    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 
+    ierr = VecRestoreArray(in,&array);CHKERRQ(ierr);
+
+  }
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = VecDestroy(in);CHKERRQ(ierr);
+  ierr = VecDestroy(out);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
