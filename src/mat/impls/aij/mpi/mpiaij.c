@@ -837,7 +837,7 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal f
   Mat_MPIAIJ   *mat = (Mat_MPIAIJ*)matin->data;
   int          ierr; 
   Vec          bb1;
-  PetscReal    mone=-1.0;
+  PetscScalar  mone=-1.0;
 
   PetscFunctionBegin;
 
