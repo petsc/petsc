@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.32 1997/01/01 03:36:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.33 1997/01/06 20:40:21 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -20,10 +20,11 @@ static struct SH* sh        = 0;
 static int        SignalSet = 0;
 
 static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
-                           "TRAP",    "ABRT", "EMT",  "FPE floating point exception"
-                          ,  "KILL", 
-                           "BUS error",  
-                           "SEGV segmentation violation", 
+                           "TRAP",    "ABRT", "EMT",  
+                           "FPE: Floating Point Exception, probably divide by zero",
+                           "KILL", 
+                           "BUS: Bus Error",  
+                           "SEGV: Segmentation Violation, probably memory corruption", 
                            "SYS",  "PIPE", "ALRM",
                            "TERM",    "URG",  "STOP", "TSTP", "CONT", 
                            "CHLD" }; 
