@@ -30,7 +30,7 @@ class Configure(config.base.Configure):
   
   def setupHelp(self,help):
     import nargs
-    help.addArgument('BLOCKSOLVE95','-with-blocksolve95=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for BlockSolve95'))
+    help.addArgument('BLOCKSOLVE95','-with-blocksolve95=<bool>',nargs.ArgBool(None,0,'Indicate if you wish to test for BlockSolve95'))
     help.addArgument('BLOCKSOLVE95','-with-blocksolve95-lib=<lib>',nargs.Arg(None,None,'Indicate the library containing BlockSolve95'))
     help.addArgument('BLOCKSOLVE95','-with-blocksolve95-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory for BlockSolve95 header files'))
     help.addArgument('BLOCKSOLVE95','-with-blocksolve95-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root of the BlockSolve95 installation'))
@@ -107,21 +107,20 @@ class Configure(config.base.Configure):
           break
     else:
       self.framework.log.write('Could not find a functional BlockSolve95\n')
-      self.setEmptyOutput()
+      raise RuntimeError('Could not find a functional BlockSolve95\n')
     return
 
   def setFoundOutput(self):
     self.addDefine('HAVE_BLOCKSOLVE',1)
     self.framework.packages.append(self)
     
-  def setEmptyOutput(self):
-    return
-
   def configure(self):
-    if not 'with-blocksolve95' in self.framework.argDB or self.framework.argDB['with-64-bit-ints']:
-      self.setEmptyOutput()
-      return
-    self.executeTest(self.configureLibrary)
+    if self.framework.argDB['with-blocksolve95']:
+      if self.mpi.usingMPIUni:
+        raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
+      if self.framework.argDB['with-64-bit-ints']:
+        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')   
+      self.executeTest(self.configureLibrary)
     return
 
 if __name__ == '__main__':

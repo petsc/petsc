@@ -31,7 +31,7 @@ class Configure(config.base.Configure):
   
   def setupHelp(self,help):
     import nargs
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for '+self.name))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,0,'Indicate if you wish to test for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Download LLNL hypre preconditioners'))
     return
@@ -282,9 +282,12 @@ class Configure(config.base.Configure):
   def configure(self):
     if 'download-'+self.package in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
-    if not 'with-'+self.package in self.framework.argDB or not self.mpi.foundMPI or self.framework.argDB['with-64-bit-ints']:
-      return
-    self.executeTest(self.configureLibrary)
+    if self.framework.argDB['with-'+self.package]:
+      if self.mpi.usingMPIUni:
+        raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
+      if self.framework.argDB['with-64-bit-ints']:
+        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')    
+      self.executeTest(self.configureLibrary)
     return
 
 if __name__ == '__main__':

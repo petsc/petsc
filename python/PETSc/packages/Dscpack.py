@@ -114,14 +114,13 @@ class Configure(config.base.Configure):
     self.addDefine('HAVE_'+self.PACKAGE,1)
     self.framework.packages.append(self)
     
-  def setEmptyOutput(self):
-    return
-
   def configure(self):
-    if self.framework.argDB['with-'+self.package] and self.mpi.foundMPI and self.framework.argDB['with-external-packages']:
+    if self.framework.argDB['with-'+self.package]:
+      if self.mpi.usingMPIUni:
+        raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
+      if self.framework.argDB['with-64-bit-ints']:
+        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
       self.executeTest(self.configureLibrary)
-    else:
-      self.setEmptyOutput()
     return
 
 if __name__ == '__main__':
