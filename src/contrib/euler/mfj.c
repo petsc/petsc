@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mfj.c,v 1.17 1997/10/17 02:29:48 curfman Exp curfman $";
+static char vcid[] = "$Id: mfj.c,v 1.18 1997/10/17 03:31:21 curfman Exp curfman $";
 #endif
 
 /* 
@@ -522,8 +522,7 @@ int FixJacobian(Euler *user,Mat mat)
           }
         }
       }
-    }
-    else if (user->problem == 5 || user->problem == 6 {
+    } else if (user->problem == 5 || user->problem == 6) {
       /* No modifications needed for wake BC */
     } 
     else SETERRQ(1,0,"Unsupported problem");

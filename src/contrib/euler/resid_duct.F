@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_duct.F,v 1.4 1997/10/16 22:01:20 curfman Exp keyes $";
+c  "$Id: resid_duct.F,v 1.5 1997/10/16 23:29:59 keyes Exp curfman $";
 c
       integer function residbc_duct(jacform,xx,fff,p,xx_bc,p_bc,
      &                sadai,sadaj,sadak,
@@ -207,15 +207,17 @@ c
       QDA=RU(I,J,NK_BOUNDARY)*AKX(I,J,NK_BOUNDARY)
      *   +RV(I,J,NK_BOUNDARY)*AKY(I,J,NK_BOUNDARY)
      *   +RW(I,J,NK_BOUNDARY)*AKZ(I,J,NK_BOUNDARY)
-      fbcrk2(i,j)=R(I,J,NK1)-R(I,J,NK_BOUNDARY)
-      fbcek2(i,j)=E(I,J,NK1)-E(I,J,NK_BOUNDARY)
+      fbcrk2(i,j)=R(I,J,NK1_BOUNDARY)
+     *   -R(I,J,NK_BOUNDARY)
+      fbcek2(i,j)=E(I,J,NK1_BOUNDARY)
+     *   -E(I,J,NK_BOUNDARY)
       PIJNK1=P(I,J,NK_BOUNDARY)
       FF=two*QDA/ADA
-      fbcruk2(i,j)=RU(I,J,NK1)-
+      fbcruk2(i,j)=RU(I,J,NK1_BOUNDARY)-
      *  RU(I,J,NK_BOUNDARY)+FF*AKX(I,J,NK_BOUNDARY)
-      fbcrvk2(i,j)=RV(I,J,NK1)-
+      fbcrvk2(i,j)=RV(I,J,NK1_BOUNDARY)-
      *  RV(I,J,NK_BOUNDARY)+FF*AKY(I,J,NK_BOUNDARY)
-      fbcrwk2(i,j)=RW(I,J,NK1)-
+      fbcrwk2(i,j)=RW(I,J,NK1_BOUNDARY)-
      *  RW(I,J,NK_BOUNDARY)+FF*AKZ(I,J,NK_BOUNDARY)
     7 CONTINUE
       endif
