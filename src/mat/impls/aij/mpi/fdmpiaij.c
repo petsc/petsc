@@ -2,21 +2,22 @@
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
 EXTERN PetscErrorCode CreateColmap_MPIAIJ_Private(Mat);
-EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
-EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
+EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*);
+EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_MPIAIJ"
 PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
+  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
   PetscErrorCode ierr;
-  int        i,*is,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
-  int        nis = iscoloring->n,*ncolsonproc,size,nctot,*cols,*disp,*B_ci,*B_cj;
-  int        *rowhit,M = mat->m,cstart = aij->cstart,cend = aij->cend,colb;
-  int        *columnsforrow,l;
-  IS         *isa;
-  PetscTruth done,flg;
+  PetscMPIInt    size,*ncolsonproc,*disp,nn;
+  PetscInt       i,*is,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
+  PetscInt       nis = iscoloring->n,nctot,*cols,*B_ci,*B_cj;
+  PetscInt       *rowhit,M = mat->m,cstart = aij->cstart,cend = aij->cend,colb;
+  PetscInt       *columnsforrow,l;
+  IS             *isa;
+  PetscTruth     done,flg;
 
   PetscFunctionBegin;
   if (!mat->assembled) {
@@ -30,12 +31,12 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   c->rstart        = aij->rstart;
 
   c->ncolors       = nis;
-  ierr             = PetscMalloc(nis*sizeof(int),&c->ncolumns);CHKERRQ(ierr);
-  ierr             = PetscMalloc(nis*sizeof(int*),&c->columns);CHKERRQ(ierr); 
-  ierr             = PetscMalloc(nis*sizeof(int),&c->nrows);CHKERRQ(ierr);
-  ierr             = PetscMalloc(nis*sizeof(int*),&c->rows);CHKERRQ(ierr);
-  ierr             = PetscMalloc(nis*sizeof(int*),&c->columnsforrow);CHKERRQ(ierr);
-  PetscLogObjectMemory(c,5*nis*sizeof(int));
+  ierr             = PetscMalloc(nis*sizeof(PetscInt),&c->ncolumns);CHKERRQ(ierr);
+  ierr             = PetscMalloc(nis*sizeof(PetscInt*),&c->columns);CHKERRQ(ierr); 
+  ierr             = PetscMalloc(nis*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr);
+  ierr             = PetscMalloc(nis*sizeof(PetscInt*),&c->rows);CHKERRQ(ierr);
+  ierr             = PetscMalloc(nis*sizeof(PetscInt*),&c->columnsforrow);CHKERRQ(ierr);
+  PetscLogObjectMemory(c,5*nis*sizeof(PetscInt));
 
   /* Allow access to data structures of local part of matrix */
   if (!aij->colmap) {
@@ -49,11 +50,11 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
 
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr); 
-  ierr = PetscMalloc(2*size*sizeof(int*),&ncolsonproc);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*size*sizeof(PetscInt*),&ncolsonproc);CHKERRQ(ierr);
   disp = ncolsonproc + size;
 
-  ierr = PetscMalloc((M+1)*sizeof(int),&rowhit);CHKERRQ(ierr);
-  ierr = PetscMalloc((M+1)*sizeof(int),&columnsforrow);CHKERRQ(ierr);
+  ierr = PetscMalloc((M+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr);
+  ierr = PetscMalloc((M+1)*sizeof(PetscInt),&columnsforrow);CHKERRQ(ierr);
 
   /*
      Temporary option to allow for debugging/testing
@@ -66,15 +67,16 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     c->ncolumns[i] = n;
     c->ncolumns[i] = n;
     if (n) {
-      ierr = PetscMalloc(n*sizeof(int),&c->columns[i]);CHKERRQ(ierr);
-      PetscLogObjectMemory(c,n*sizeof(int));
-      ierr = PetscMemcpy(c->columns[i],is,n*sizeof(int));CHKERRQ(ierr);
+      ierr = PetscMalloc(n*sizeof(PetscInt),&c->columns[i]);CHKERRQ(ierr);
+      PetscLogObjectMemory(c,n*sizeof(PetscInt));
+      ierr = PetscMemcpy(c->columns[i],is,n*sizeof(PetscInt));CHKERRQ(ierr);
     } else {
       c->columns[i]  = 0;
     }
 
     /* Determine the total (parallel) number of columns of this color */
-    ierr = MPI_Allgather(&n,1,MPI_INT,ncolsonproc,1,MPI_INT,mat->comm);CHKERRQ(ierr);
+    nn   = (PetscMPIInt)n;
+    ierr = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,mat->comm);CHKERRQ(ierr);
     nctot = 0; for (j=0; j<size; j++) {nctot += ncolsonproc[j];}
     if (!nctot) {
       PetscLogInfo((PetscObject)mat,"MatFDColoringCreate_MPIAIJ: Coloring of matrix has some unneeded colors with no corresponding rows\n");
@@ -86,15 +88,15 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     }
     
     /* Get complete list of columns for color on each processor */
-    ierr = PetscMalloc((nctot+1)*sizeof(int),&cols);CHKERRQ(ierr);
-    ierr = MPI_Allgatherv(is,n,MPI_INT,cols,ncolsonproc,disp,MPI_INT,mat->comm);CHKERRQ(ierr);
+    ierr = PetscMalloc((nctot+1)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
+    ierr = MPI_Allgatherv(is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,mat->comm);CHKERRQ(ierr);
 
     /*
        Mark all rows affect by these columns
     */
     if (!flg) {/*-----------------------------------------------------------------------------*/
       /* crude, fast version */
-      ierr = PetscMemzero(rowhit,M*sizeof(int));CHKERRQ(ierr);
+      ierr = PetscMemzero(rowhit,M*sizeof(PetscInt));CHKERRQ(ierr);
       /* loop over columns*/
       for (j=0; j<nctot; j++) {
         col  = cols[j];
@@ -128,9 +130,9 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
         if (rowhit[j]) nrows++;
       }
       c->nrows[i]         = nrows;
-      ierr                = PetscMalloc((nrows+1)*sizeof(int),&c->rows[i]);CHKERRQ(ierr);
-      ierr                = PetscMalloc((nrows+1)*sizeof(int),&c->columnsforrow[i]);CHKERRQ(ierr);
-      PetscLogObjectMemory(c,2*(nrows+1)*sizeof(int));
+      ierr                = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->rows[i]);CHKERRQ(ierr);
+      ierr                = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->columnsforrow[i]);CHKERRQ(ierr);
+      PetscLogObjectMemory(c,2*(nrows+1)*sizeof(PetscInt));
       nrows = 0;
       for (j=0; j<M; j++) {
         if (rowhit[j]) {
@@ -141,7 +143,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       }
     } else {/*-------------------------------------------------------------------------------*/
       /* slow version, using rowhit as a linked list */
-      int currentcol,fm,mfm;
+      PetscInt currentcol,fm,mfm;
       rowhit[M] = M;
       nrows     = 0;
       /* loop over columns*/
@@ -189,9 +191,9 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
         }
       }
       c->nrows[i]         = nrows;
-      ierr = PetscMalloc((nrows+1)*sizeof(int),&c->rows[i]);CHKERRQ(ierr);
-      ierr = PetscMalloc((nrows+1)*sizeof(int),&c->columnsforrow[i]);CHKERRQ(ierr);
-      PetscLogObjectMemory(c,(nrows+1)*sizeof(int));
+      ierr = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->rows[i]);CHKERRQ(ierr);
+      ierr = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->columnsforrow[i]);CHKERRQ(ierr);
+      PetscLogObjectMemory(c,(nrows+1)*sizeof(PetscInt));
       /* now store the linked list of rows into c->rows[i] */
       nrows = 0;
       fm    = rowhit[M];
@@ -209,9 +211,9 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
        vscale will contain the "diagonal" on processor scalings followed by the off processor
   */
   ierr = VecCreateGhost(mat->comm,aij->A->m,PETSC_DETERMINE,aij->B->n,aij->garray,&c->vscale);CHKERRQ(ierr)
-  ierr = PetscMalloc(c->ncolors*sizeof(int*),&c->vscaleforrow);CHKERRQ(ierr);
+  ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
   for (k=0; k<c->ncolors; k++) { 
-    ierr = PetscMalloc((c->nrows[k]+1)*sizeof(int),&c->vscaleforrow[k]);CHKERRQ(ierr);
+    ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);
     for (l=0; l<c->nrows[k]; l++) {
       col = c->columnsforrow[k][l];
       if (col >= cstart && col < cend) {

@@ -245,28 +245,28 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Petsc
  */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscPostIrecvInt"
-PetscErrorCode PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrecvs,PetscMPIInt *onodes,PetscMPIInt *olengths,PetscMPIInt ***rbuf,MPI_Request **r_waits)
+PetscErrorCode PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrecvs,PetscMPIInt *onodes,PetscMPIInt *olengths,PetscInt ***rbuf,MPI_Request **r_waits)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    len=0,**rbuf_t,i;
+  PetscInt       len=0,**rbuf_t,i;
   MPI_Request    *r_waits_t;
 
   PetscFunctionBegin;
 
   /* compute memory required for recv buffers */
   for (i=0; i<nrecvs; i++) len += olengths[i];  /* each message length */
-  len *= sizeof(PetscMPIInt);
+  len *= sizeof(PetscInt);
   len += (nrecvs+1)*sizeof(PetscMPIInt*); /* Array of pointers for each message */
 
   /* allocate memory for recv buffers */
   ierr    = PetscMalloc(len,&rbuf_t);CHKERRQ(ierr);
-  rbuf_t[0] = (PetscMPIInt*)(rbuf_t + nrecvs);
+  rbuf_t[0] = (PetscInt*)(rbuf_t + nrecvs);
   for (i=1; i<nrecvs; ++i) rbuf_t[i] = rbuf_t[i-1] + olengths[i-1];
 
   /* Post the receives */
   ierr = PetscMalloc((nrecvs+1)*sizeof(MPI_Request),&r_waits_t);CHKERRQ(ierr);
   for (i=0; i<nrecvs; ++i) {
-    ierr = MPI_Irecv(rbuf_t[i],olengths[i],MPI_INT,onodes[i],tag,comm,r_waits_t+i);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rbuf_t[i],olengths[i],MPIU_INT,onodes[i],tag,comm,r_waits_t+i);CHKERRQ(ierr);
   }
 
   *rbuf    = rbuf_t;

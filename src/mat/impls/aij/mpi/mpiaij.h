@@ -37,7 +37,7 @@ typedef struct {
 
   /* The following variables are for MatGetRow() */
 
-  PetscMPIInt   *rowindices;       /* column indices for row */
+  PetscInt      *rowindices;       /* column indices for row */
   PetscScalar   *rowvalues;        /* nonzero values in row */
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
 
@@ -51,11 +51,10 @@ typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ for reusing symbolic mat pr
 } Mat_MatMatMultMPI;
 
 typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
-  PetscMap  rowmap;
-  int       nrecv,nsend,*id_r,*bi,*bj,**buf_ri,**buf_rj;
-  int       *len_s,*len_r; /* array of length of comm->size, 
-                              store send/recv matrix values */
-  Mat       C_seq;  
+  PetscMap     rowmap;
+  PetscInt     nsend,*bi,*bj,**buf_ri,**buf_rj;
+  PetscMPIInt  *len_s,*len_r,*id_r,nrecv; /* array of length of comm->size, store send/recv matrix values */
+  Mat          C_seq;  
 } Mat_Merge_SeqsToMPI; 
 
 EXTERN PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
