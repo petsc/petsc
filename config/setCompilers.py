@@ -321,7 +321,6 @@ class Configure(config.base.Configure):
 
           if os.path.basename(self.framework.argDB['CXX']) in ['mpicxx', 'mpiCC']:
             self.framework.logPrint('  MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
-          self.popLanguage()
           del self.framework.argDB['CXX']
       if 'CXX' in self.framework.argDB:
         break
@@ -454,7 +453,6 @@ class Configure(config.base.Configure):
 
         if os.path.basename(self.framework.argDB['FC']) in ['mpif90', 'mpif77']:
          self.framework.logPrint(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
-        self.popLanguage()
         del self.framework.argDB['FC']
     return
 
