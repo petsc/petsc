@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.7 1995/12/07 21:18:33 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.8 1996/01/15 23:50:26 balay Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -17,7 +17,11 @@ static char vcid[] = "$Id: zsys.c,v 1.7 1995/12/07 21:18:33 balay Exp balay $";
 #define petscobjectgetname_   PETSCOBJECTGETNAME
 #define plogdump_             PLOGDUMP
 #define plogeventregister_    PLOGEVENTREGISTER
+#define plogstagepop_         PLOGSTAGEPOP
+#define petscgettime_         PETSCGETTIME
+#define petscgetflops_        PETSCGETFLOPS
 #define petscerror_           PETSCERROR
+plogstagepop
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define petscattachdebugger_  petscattachdebugger
 #define plogallbegin_         plogallbegin
@@ -29,6 +33,9 @@ static char vcid[] = "$Id: zsys.c,v 1.7 1995/12/07 21:18:33 balay Exp balay $";
 #define petscobjectgetname_   petscobjectgetname
 #define plogeventregister_    plogeventregister
 #define plogdump_             plogdump
+#define plogstagepop_         plogstagepop  
+#define petscgettime_         petscgettime  
+#define petscgetflops_        petscgetflops 
 #define petscerror_           petscerror
 #endif
 
@@ -118,4 +125,14 @@ void petscerror_(int *number,char *message,int *__ierr,int len)
   else t1 = message;
   *__ierr = PetscError(-1,0,"fortran_interface_unknown_file",*number,t1);
 }
+
+void plogstagepop_(int *__ierr )
+{
+  *__ierr = PLogStagePop();
+}
+double petscgettime_()
+{ return PetscGetTime();}
+
+double  petscgetflops_()
+{  return PetscGetFlops();}
 
