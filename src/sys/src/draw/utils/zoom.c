@@ -1,4 +1,4 @@
-/*$Id: zoom.c,v 1.8 1999/08/31 19:38:30 bsmith Exp bsmith $*/
+/*$Id: zoom.c,v 1.9 1999/10/24 14:01:20 bsmith Exp bsmith $*/
 
 #include "draw.h"     /*I "draw.h"  I*/
 
@@ -10,7 +10,7 @@
     Collective on Draw
 
     Input Parameters:
-+   win - the window where the graph will be made.
++   draw - the window where the graph will be made.
 .   func - users function that draws the graphic
 -   ctx - pointer to any user required data
 
