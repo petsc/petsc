@@ -17,6 +17,7 @@ add to it).
   MatSolveTrans() and MatSolveTransAdd() are now MatSolveTransposeXXX()
   MatMultTrans() and MatMultTransAdd() are now MatMultTransposeXXX()
 
+  Another MatSetOption, MAT_IGNORE_ZERO_ENTRIES for AIJ matrices with ADD_VALUES.
 
 added matrix option MAT_KEEP_ZEROED_ROWS causes MatZeroRows() to keep the original nonzero 
 data structure and just put 0.0 into the elements that are to be zeroed. Without this option
