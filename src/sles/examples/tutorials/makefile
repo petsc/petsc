@@ -192,7 +192,7 @@ runex2_5:
 runex2_6:
 	-@${MPIRUN} -np 2 ex2 -pc_type none -vec_type esi -vec_esi_type esi::petsc::Vector \
                -mat_type esi -mat_esi_type esi::petsc::Operator -is_esi_type esi::petsc::IndexSpace   > ex2_6.tmp 2>&1; \
-	   if (${DIFF} output/ex2_2.out ex2_6.tmp) then true; \
+	   if (${DIFF} output/ex2_6.out ex2_6.tmp) then true; \
 	   else echo "Possible problem with ex2_6, diffs above"; fi; \
 	   ${RM} -f ex2_6.tmp
 runex2f:

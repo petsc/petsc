@@ -92,14 +92,19 @@ int MatESISetType(Mat V,char *name)
 {
   int                                ierr;
   ::esi::Operator<double,int>        *ve;
-  ::esi::OperatorFactory<double,int> *f,*(*r)(void);
+  ::esi::OperatorFactory<double,int> *f;
+#if defined(PETSC_HAVE_CCA)
+  ::gov::cca::Component              *(*r)(void);   
+#else
+  ::esi::OperatorFactory<double,int> *(*r)(void);
+#endif
   ::esi::IndexSpace<int>             *rmap,*cmap;
 
   PetscFunctionBegin;
   ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unable to load esi::OperatorFactory constructor %s",name);
 #if defined(PETSC_HAVE_CCA)
-  gov::cca::Component *component = (gov::cca::Component *)(*r)();
+  gov::cca::Component *component = (*r)();
   gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
   f    = dynamic_cast<esi::OperatorFactory<double,int>*>(port);
 #else

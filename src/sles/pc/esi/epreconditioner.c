@@ -1,5 +1,3 @@
-
-
 /*
       Wrappers for PETSc PC ESI implementation
 */
