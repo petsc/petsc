@@ -341,11 +341,11 @@ int PetscLogMPEBegin(void)
 #endif
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
-    for (i=0; i < PETSC_LOG_USER_EVENT_HIGH; i++) {
+    /*    for (i=0; i < PETSC_LOG_USER_EVENT_HIGH; i++) {
       if (PetscLogEventMPEFlags[i]) {
         MPE_Describe_state(MPEBEGIN+2*i,MPEBEGIN+2*i+1,PetscLogEventName[i],PetscLogEventColor[i]);
       }
-    }
+      } */
   }
   UseMPE = PETSC_TRUE;
   PetscFunctionReturn(0);

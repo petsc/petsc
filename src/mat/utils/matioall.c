@@ -16,6 +16,7 @@ EXTERN int MatLoad_MPIBAIJ(PetscViewer,MatType,Mat*);
 EXTERN int MatLoad_SeqSBAIJ(PetscViewer,MatType,Mat*);
 EXTERN int MatLoad_MPISBAIJ(PetscViewer,MatType,Mat*);
 EXTERN int MatLoad_MPIRowbs(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_ESI(PetscViewer,MatType,Mat*);
 EXTERN_C_END
 extern PetscTruth MatLoadRegisterAllCalled;
 
@@ -51,6 +52,9 @@ int MatLoadRegisterAll(char *path)
   ierr = MatLoadRegisterDynamic(MATMPIBAIJ,path,"MatLoad_MPIBAIJ",MatLoad_MPIBAIJ);CHKERRQ(ierr);
   ierr = MatLoadRegisterDynamic(MATSEQSBAIJ,path,"MatLoad_SeqSBAIJ",MatLoad_SeqSBAIJ);CHKERRQ(ierr);
   ierr = MatLoadRegisterDynamic(MATMPISBAIJ,path,"MatLoad_MPISBAIJ",MatLoad_MPISBAIJ);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ESI) && defined(__cplusplus) && !defined(PETSC_USE_COMPLEX)
+  ierr = MatLoadRegisterDynamic(MATESI,path,"MatLoad_ESI",MatLoad_ESI);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   ierr = MatLoadRegisterDynamic(MATMPIROWBS,path,"MatLoad_MPIRowbs",MatLoad_MPIRowbs);CHKERRQ(ierr);
 #endif
