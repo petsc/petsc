@@ -2,26 +2,24 @@ PETSC_DIR = ../../../..
 ALL: ex1
 
 # Note that we need CONF to pick up the Fortran format info
-CFLAGS        = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
-FFLAGS        = 
-SOURCEC       = 
-SOURCEF       =
-SOURCEH       =
-OBJSC         =
-OBJSF         =
-LIBBASE       = libpetscsnes
-LOCDIR        = src/snes/examples/umin/
-EXAMPLES_1    = ex2 ex3
-RUNEXAMPLES_1 = runex2 runex2_2 runex2_3 runex3
-EXAMPLES_2    = ex3
-RUNEXAMPLES_2 = runex3_2
-EXAMPLES_3    = ex1
-RUNEXAMPLES_3 = runex1 runex1_2
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
-EXAMPLESF     = deptfg.f dgl1fg.f dgl2fg.f dmsafg.f dodcfg.f dpjbfg.f dsscfg.f \
-                dgl1hs.f dgl2hs.f dmsahs.f dodchs.f dpjbhs.f dsschs.f \
-                dmsabc.f dodcps.f dgl2co.f mpinter.f pdgl2fg.f
-DIRS          = 
+CFLAGS         = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
+FFLAGS         = 
+SOURCEC        = 
+SOURCEF        =
+SOURCEH        =
+OBJSC          =
+OBJSF          =
+LIBBASE        = libpetscsnes
+LOCDIR         = src/snes/examples/umin/
+TESTEXAMPLES_1 = ex2.PETSc runex2 runex2_2 runex2_3 clean ex3.PETSc\
+		 runex3 clean
+TESTEXAMPLES_2 = ex3.PETSc runex3_2 clean
+TESTEXAMPLES_3 = ex1.PETSc  runex1 runex1_2 clean
+EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c
+EXAMPLESF      = deptfg.f dgl1fg.f dgl2fg.f dmsafg.f dodcfg.f dpjbfg.f \
+		dsscfg.f dgl1hs.f dgl2hs.f dmsahs.f dodchs.f dpjbhs.f \
+		dsschs.f dmsabc.f dodcps.f dgl2co.f mpinter.f pdgl2fg.f
+DIRS           = 
 
 FOBJ1 = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
         depths.o dgl1hs.o dgl2hs.o dmsahs.o dodchs.o dpjbhs.o dsschs.o \

@@ -24,7 +24,7 @@ TESTEXAMPLES_2 = ex2.PETSc runex2 clean ex4.PETSc runex4 clean ex7.PETSc \
 		clean ex35.PETSc runex35 clean ex37.PETSc ex38.PETSc \
 		ex40.PETSc runex40 clean ex41.PETSc ex42 runex42.PETSc clean\
 		ex43.PETSc ex46.PETSc runex46 clean ex48.PETSc runex48 clean\
-		ex49.PETScf ex50.PETSc ex51.PETSc clean
+		ex49.PETSc ex50.PETSc ex51.PETSc clean
 TESTEXAMPLES_3 = ex36.PETSc runex36 clean
 TESTEXAMPLES_4 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean ex4.PETSc\
 		runex4 clean ex5 runex5.PETSc clean ex6.PETSc runex6 clean\
