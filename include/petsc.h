@@ -678,7 +678,7 @@ EXTERN PetscErrorCode   PetscGetResidentSetSize(PetscLogDouble *);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
-              PETSC_LONG =3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
+              PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
               PETSC_CHAR = 6,PETSC_LOGICAL = 7} PetscDataType;
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX

@@ -262,7 +262,7 @@ runex19f:
 	   ${RM} -f ex19_1.tmp
 runex20f:
 	-@${MPIRUN} -np 1 ex20f > ex20_1.tmp 2>&1;\
-	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
+	   if (${DIFF} output/ex20f_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi;\
 	   ${RM} -f ex20_1.tmp vector.dat
 runex21:

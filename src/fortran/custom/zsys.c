@@ -432,7 +432,7 @@ void PETSC_STDCALL petscfixfilename_(CHAR filein PETSC_MIXED_LEN(len1),CHAR file
   out[i] = 0;
 }
 
-void PETSC_STDCALL petscbinaryopen_(CHAR name PETSC_MIXED_LEN(len),PetscInt *type,int *fd,
+void PETSC_STDCALL petscbinaryopen_(CHAR name PETSC_MIXED_LEN(len),PetscViewerFileType *type,int *fd,
                                     PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
