@@ -8,7 +8,7 @@ class Hooks(ihooks.Hooks):
     import sys
 
     ihooks.Hooks.__init__(self)
-    self.argDB = RDict.RDict(parentDirectory = os.path.dirname(sys.modules['RDict'].__file__))
+    self.argDB = RDict.RDict(parentDirectory = os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)))
     # Handle recursive import from argDB
     self.lookingForProjects = 0
     self.projects           = []
