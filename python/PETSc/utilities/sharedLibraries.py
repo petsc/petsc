@@ -17,8 +17,6 @@ class Configure(config.base.Configure):
     return ''
     
   def setupHelp(self, help):
-    import nargs
-    help.addArgument('PETSc', '-with-shared=<bool>',           nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
     return
 
   def configureSharedLibraries(self):
