@@ -134,6 +134,18 @@ class Compiler(Processor):
     self.defines     = []
     return
 
+  def includeDirsIter(self):
+    '''Return an iterator for the include directories'''
+    for dir in self.includeDirs:
+      try:
+        dir = str(dir)
+      except TypeError:
+        for d in dir.getPath():
+          yield d
+      else:
+        yield dir
+    return
+
   def checkIncludeDirectory(self, dirname):
     '''Check that the include directory exists
        - Arguments preceeded by dashes are ignored'''
@@ -144,7 +156,7 @@ class Compiler(Processor):
   def getIncludeFlags(self, source = None):
     '''Return a list of the compiler flags specifying include directories'''
     flags = []
-    for dirname in map(str, self.includeDirs):
+    for dirname in self.includeDirsIter():
       try:
         self.checkIncludeDirectory(dirname)
         if dirname[0] == '-':
