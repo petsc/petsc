@@ -5,7 +5,7 @@ if __name__ == '__main__':
 
     configure_options = [
         '--with-mpi-dir=/home/petsc/soft/linux-rh73-mpich2/mpich2-snap-20040517',
-        '--with-mpirun=mpiexec.valgrind'
+        '--with-mpirun=/sandbox/petsc/petsc-dev/bin/mpiexec.valgrind'
         ]
 
     configure.petsc_configure(configure_options)
