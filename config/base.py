@@ -94,9 +94,9 @@ class Configure:
           setattr(self, resultName, os.path.abspath(prog)+options)
         else:
           setattr(self, resultName, name+options)
-        self.addSubstitution(resultName.upper(), getattr(self, resultName))
         found = 1
         self.framework.log.write('found\n')
+        self.addSubstitution(resultName.upper(), getattr(self, resultName))
         break
       self.framework.log.write('not found\n')
     return found
