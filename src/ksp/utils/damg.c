@@ -67,6 +67,9 @@ int DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
     Input Parameter:
 .    - the context
 
+    Options Database Keys:
+.    -dmmg_galerkin
+
     Level: advanced
 
 .seealso DMMGCreate()
