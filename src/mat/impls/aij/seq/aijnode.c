@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.106 1999/11/05 14:45:18 bsmith Exp bsmith $*/
+/*$Id: aijnode.c,v 1.107 2000/01/11 21:00:37 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -807,8 +807,8 @@ int Mat_AIJ_CheckInode(Mat A)
     A->ops->getcolumnij     = MatGetColumnIJ_SeqAIJ_Inode;
     A->ops->restorecolumnij = MatRestoreColumnIJ_SeqAIJ_Inode;
     A->ops->coloringpatch   = MatColoringPatch_SeqAIJ_Inode;
-    a->inode.node_count    = node_count;
-    a->inode.size          = ns;
+    a->inode.node_count     = node_count;
+    a->inode.size           = ns;
     PLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes of %d. Limit used: %d. Using Inode routines\n",node_count,m,a->inode.limit);
   }
   PetscFunctionReturn(0);
