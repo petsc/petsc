@@ -1,7 +1,6 @@
 
-
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.91 1997/05/28 20:29:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.92 1997/06/05 12:51:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -40,8 +39,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
          vectors have the same values
       */
       PetscMemcpy(yv,xv+yy->ownership[yy->rank],yy->n*sizeof(Scalar));
-    }
-    else {
+    } else {
       if (scat->work1) xvt = scat->work1; 
       else {
         scat->work1 = xvt = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt);
@@ -779,7 +777,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     *newctx = ctx;
     return 0;
   }
-  /* One othe above 4 cases is true, and the next istruction should never be executed */
+  /* One of the above 4 cases is true, and the next istruction should never be executed */
   return 0;
 }
 
@@ -887,7 +885,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
       if (to_n != inctx->from_n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Vector wrong size for scatter");
       if (from_n != inctx->to_n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Vector wrong size for scatter");
     } else {
-      if (to_n != inctx->to_n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Vector wrong size for scatter");
+      if (to_n != inctx->to_n)     SETERRQ(PETSC_ERR_ARG_SIZ,0,"Vector wrong size for scatter");
       if (from_n != inctx->from_n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Vector wrong size for scatter");
     }
   }
