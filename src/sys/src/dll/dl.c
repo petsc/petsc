@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.17 1998/04/26 00:49:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: dl.c,v 1.18 1998/04/27 14:06:17 curfman Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -9,7 +9,42 @@ static char vcid[] = "$Id: dl.c,v 1.17 1998/04/26 00:49:12 bsmith Exp curfman $"
 
 #include "petsc.h"
 #include "sys.h"
-#include "src/sys/src/files.h"
+#include "pinclude/ptime.h"
+#if defined(HAVE_PWD_H)
+#include <pwd.h>
+#endif
+#include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#if defined(HAVE_UNISTD_H)
+#include <unistd.h>
+#endif
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#if !defined(PARCH_nt)
+#include <sys/param.h>
+#include <sys/utsname.h>
+#endif
+#if defined(PARCH_nt)
+#include <windows.h>
+#include <io.h>
+#include <direct.h>
+#endif
+#if defined (PARCH_nt_gnu)
+#include <windows.h>
+#endif
+#include <fcntl.h>
+#include <time.h>  
+#if defined(HAVE_SYS_SYSTEMINFO_H)
+#include <sys/systeminfo.h>
+#endif
+#include "pinclude/petscfix.h"
+
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 1024
+#endif
+
 
 /* ------------------------------------------------------------------------------*/
 /*
