@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.10 1996/09/28 14:11:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.11 1996/10/24 15:29:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -20,6 +20,7 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
 
 /*T
    Concepts: SLES^Solving a Helmholtz equation (advanced parallel example);
+   Concepts: Helmholtz equation
    Concepts: DA^Using distributed arrays;
    Concepts: Complex numbers; 
    Concepts: Matrices^Preallocating matrix memory

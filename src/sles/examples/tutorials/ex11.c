@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.8 1996/10/03 14:36:51 curfman Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.9 1996/10/24 15:30:57 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -7,6 +7,7 @@ static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 /*T
    Concepts: SLES^Solving a Helmholtz equation (basic parallel example);
    Concepts: Complex numbers;
+   Concepts: Helmholtz equation
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSolve(); PetscRandomCreate(); PetscRandomGetValue();
    Routines: PetscRandomDestroy();

@@ -1,11 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.56 1996/09/27 19:44:03 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.57 1996/10/24 15:36:48 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
 /*T
    Concepts: SLES^Solving a system of linear equations (basic parallel example);
+   Concepts: SLES^Laplacian, 2d
+   Concepts: Laplacian, 2d
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSolve(); SLESGetKSP(); SLESGetPC();
    Routines: KSPSetTolerances(); PCSetType();
