@@ -21,16 +21,124 @@ package PETSc {
     void view(in PETSc.PetscViewer viewer);
   }
 
-  class Base implements PetscObject, ASE.ProjectState {
+  class Base implements PetscObject {
+    // Initialize PETSc
+    static void Initialize();
+    // Finalize PETSc
+    static void Finalize();
+
+    // Check whether PETSc has been initialized
+    static bool Initialized();
+    // Check whether PETSc has been finalized
+    static bool Finalized();
   }
 
   class PetscViewer implements PetscObject {
   }
 
+  class PetscMap implements PetscObject {
+    // Get the size of the locally-owned portion
+    void getLocalSize(out int localSize);
+    // Set the size of the locally-owned portion
+    void setLocalSize(in int localSize);
+    // Get the total size
+    void getSize(out int size);
+    // Set the total size
+    void setSize(in int size);
+    // Get the half-open interval of local indices
+    void getLocalRange(out int start, out int end);
+    // Get the ranges for all processors (range[rank] <= local index < range[rank+1])
+    void getGlobalRange(out array<int> range);
+  }
+
+  enum NormType {NORM_1, NORM_2, NORM_FROBENIUS, NORM_INFINITY, NORM_1_AND_2};
+
+  enum InsertMode {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES};
+
   class Vec implements PetscObject {
+    // Set the local and global storage sizes
+    void setSizes(in int n, in int N);
+    // result = y^H self
+    void dot(in Vec y, out double result);
+    // result = y^T self
+    void tDot(in Vec y, out double result);
+    // result = ||self||
+    void norm(in NormType normType, out double result);
+    // result = ||self|| and vector is normalized
+    void normalize(out double result);
+    // result = \sum_i self_i
+    void sum(out double result);
+    // Returns the maximum "value", which is found at index "position"
+    void max(out int position, out double value);
+    // Returns the minimum "value", which is found at index "position"
+    void min(out int position, out double value);
+    // self_i = self_i * value
+    void scale(in double value);
+    // Copy self into y
+    void copy(in Vec y);
+    // self_i = value
+    // ERROR: NOT CHANGED IN PETSc YET
+    void set(in double value);
+    // Swap the values in self and y
+    void swap(in Vec y);
+    // self_i = a * x_i + self_i
+    // ERROR: NOT CHANGED IN PETSc YET
+    void AXPY(in double a, in Vec x);  
+    // self_i = x_i + a * self_i
+    void AYPX(in double a, in Vec x);
+    // self_i = a * x_i + b * self_i
+    void AXPBY(in double a, in double b, in Vec x);
+    // self_i = \sum_i a_i x_i + self_i
+    void MAXPY(in array<double> a, in array<Vec> x);
+    // self_i = a x_i + y_i
+    void WAXPY(in double a, in Vec x, in Vec y);
+    // self_i = max(x_i, y_i)
+    void pointwiseMax(in Vec x, in Vec y);
+    // self_i = max(|x_i|, |y_i|)
+    void pointwiseMaxAbs(in Vec x, in Vec y);
+    // self_i = min(x_i, y_i)
+    void pointwiseMin(in Vec x, in Vec y);
+    // self_i = x_i y_i
+    void pointwiseMult(in Vec x, in Vec y);
+    // self_i = x_i / y_i
+    void pointwiseDivide(in Vec x, in Vec y);
+    // result = max_i |x_i / y_i|
+    void maxPointwiseDivide(in Vec y, out double result);
+    // self_i = self_i + value
+    void shift(in double value);
+    // self_i = 1 / self_i
+    void reciprocal();
+    // self_i = \sqrt{self_i}
+    void sqrt();
+    // self_i = |self_i|
+    void abs();
+    // Duplicates the vector (does not copy values)
+    void duplicate(out Vec dup);          
+    // Return the layout of the vector
+    void getPetscMap(out PetscMap map);
+    // Set values into the vector
+    void setValues(in array<int> indices, in array<double> values, in InsertMode mode);
+    // Start parallel assembly
+    void assemblyBegin();
+    // Finish parallel assembly
+    void assemblyEnd();
+    // Get the block size
+    void getBlockSize(out int size);
+    // Set the block size
+    void setBlockSize(in int size);
+    // Set values into the vector
+    void setValuesBlocked(in array<int> indices, in array<double> values, in InsertMode mode);
+    // Get the local storage
+    void getArray(out array<double> values);
+    // Return the local storage
+    void restoreArray(inout array<double> values);
+    // result = (self == y)
+    void equal(in Vec y, out bool result);
   }
 
   class Mat implements PetscObject {
+    // Set the local and global number of rows and columns
+    void setSizes(in int m, in int n, in int M, in int N);
   }
 
   enum MatStructure {SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, SAME_PRECONDITIONER, SUBSET_NONZERO_PATTERN};
@@ -109,7 +217,7 @@ package PETSc {
     void setTolerances(in double abstol, in double rtol, in double stol, in int maxit, in int maxf);
 
     // Solve the system of nonlinear algebraic equations
-    void solve(in PETSc.Vec x);
+    void solve(in PETSc.Vec b, in PETSc.Vec x);
     // Get the solution vector
     PETSc.Vec getSolution();
     // Get the reason for termination of the solver
