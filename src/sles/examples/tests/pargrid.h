@@ -1,9 +1,13 @@
 #include<stdio.h>
 #include<math.h>
 #include <limits.h>
+#include "mpi.h"
 
-/* get the structure and function definitions for iccg */
-#include "BSsparse.h"
+MPI_Status __STATUS;
+extern int __NUMNODES, __MYPROCID, __MPILEN, __FLAG;
+
+/* BlockSolve interface stuff */
+#include "bsinterf.h"
 
 /* set up max stencil sizes, etc */
 #define MAX_LEN 27
@@ -32,13 +36,6 @@ typedef struct __par_grid {
 	int	offset;
 	point	***points;
 } par_grid;
-
-/* subroutine types */
-void	worker();
-BSspmat *get_mat();
-
-#define TRUE 1
-#define FALSE 0
 
 /* error defns */
 #define ARG_ERR -100
@@ -74,45 +71,51 @@ BSspmat *get_mat();
 + Mypos(grid,procinfo)*grid->worker_x \
 + Mxpos(grid,procinfo))
 
+ /*	SENDSYNCNOMEM(msg_type,msg,count99*sizeof(point),to,MSG_INT); */
+/* #define SENDSYNCNOMEM(type,buffer,length,to,datatype) \
+       MPI_Send( buffer, length, MPI_BYTE, to, type, MPI_COMM_WORLD );\ */
+
+        /* RECVSYNCNOMEM(intype,in_msg99,in_msg_size99,MSG_INT); */
+/* #define RECVSYNCNOMEM(type,buffer,length,datatype) {\
+        MPI_Recv( buffer, length, MPI_BYTE, MPI_ANY_SOURCE, type, \
+                  MPI_COMM_WORLD, &__STATUS );}\ */
+
 #define Msend_border_msg(points,msg,msg_type,to,x1,x2,y1,y2,z1,z2) \
 { \
-	int	count99, i99, j99, k99; \
-	count99 = 0; \
-	for (i99=x1;i99<=x2;i99++) { \
-		for (j99=y1;j99<=y2;j99++) { \
-			for (k99=z1;k99<=z2;k99++) { \
-				msg[count99].num = points[i99][j99][k99].num; \
-				msg[count99].type = points[i99][j99][k99].type; \
-				count99++; \
-			} \
-		} \
-	} \
-	SENDSYNCNOMEM(msg_type,msg,count99*sizeof(point),to,MSG_INT); \
+  int	count99, i99, j99, k99; \
+  count99 = 0; \
+  for (i99=x1;i99<=x2;i99++) { \
+    for (j99=y1;j99<=y2;j99++) { \
+      for (k99=z1;k99<=z2;k99++) { \
+	msg[count99].num = points[i99][j99][k99].num; \
+	msg[count99].type = points[i99][j99][k99].type; \
+	count99++; \
+      } \
+    } \
+  } \
+  MPI_Send( msg, count99*sizeof(point), MPI_BYTE, to, msg_type,\
+                 MPI_COMM_WORLD );\
 }
 
 #define Mrecv_border_msg(points,intype,x1,x2,y1,y2,z1,z2) \
 { \
-	int	count99, i99, j99, k99, in_msg_size99; \
-	point	*in_msg99; \
-	in_msg_size99 = sizeof(point)*((x2)-(x1)+1)* \
+  int	count99, i99, j99, k99, in_msg_size99; \
+  point	*in_msg99; \
+  in_msg_size99 = sizeof(point)*((x2)-(x1)+1)* \
 		((y2)-(y1)+1)*((z2)-(z1)+1); \
-	in_msg99 = (point *) MALLOC(in_msg_size99); \
-	RECVSYNCNOMEM(intype,in_msg99,in_msg_size99,MSG_INT); \
-	count99 = 0; \
-	for (i99=x1;i99<=x2;i99++) { \
-		for (j99=y1;j99<=y2;j99++) { \
-			for (k99=z1;k99<=z2;k99++) { \
-				points[i99][j99][k99].num = in_msg99[count99].num; \
-				points[i99][j99][k99].type = in_msg99[count99].type; \
-				count99++; \
-			} \
-		} \
-	} \
-	FREE(in_msg99); \
+  in_msg99 = (point *) MALLOC(in_msg_size99); \
+  MPI_Recv( in_msg99, in_msg_size99, MPI_BYTE, MPI_ANY_SOURCE, intype, \
+                  MPI_COMM_WORLD, &__STATUS );\
+  count99 = 0; \
+  for (i99=x1;i99<=x2;i99++) { \
+    for (j99=y1;j99<=y2;j99++) { \
+      for (k99=z1;k99<=z2;k99++) { \
+	points[i99][j99][k99].num = in_msg99[count99].num; \
+	points[i99][j99][k99].type = in_msg99[count99].type; \
+	count99++; \
+      } \
+    } \
+  } \
+  FREE(in_msg99); \
 }
 
-void ex3_freel2g();
-void ex3_loc2glob();
-void ex3_glob2proc();
-void ex3_freeg2l();
-void ex3_glob2loc();
