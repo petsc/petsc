@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.5 1996/03/23 18:35:47 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.6 1996/04/20 04:22:06 bsmith Exp bsmith $ */
 /*
     User interface for the time-stepping package. This is package
   is for use in solving time dependent PDES.
@@ -10,8 +10,7 @@
 typedef struct _TS* TS;
 #define TS_COOKIE PETSC_COOKIE+18
 
-typedef enum { TS_EULER, TS_BEULER, TS_PSEUDO_POSITION_INDEPENDENT_TIMESTEP,
-               TS_PSEUDO_POSITION_DEPENDENT_TIMESTEP} TSType;
+typedef enum { TS_EULER, TS_BEULER, TS_PSEUDO} TSType;
 typedef enum { TS_LINEAR, TS_NONLINEAR} TSProblemType;
 
 extern int TSCreate(MPI_Comm,TSProblemType,TS*);
@@ -42,9 +41,13 @@ extern int TSSetRHSFunction(TS,int (*)(TS,double,Vec,Vec,void*),void*);
 extern int TSSetRHSMatrix(TS,Mat,Mat,int (*)(TS,double,Mat*,Mat*,MatStructure*,void*),void*);
 extern int TSSetRHSJacobian(TS,Mat,Mat,int(*)(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 
-extern int TSPseudoSetPositionIndependentTimeStep(TS,int(*)(TS,double*,void*),void*);
-extern int TSPseudoSetPositionDependentTimeStep(TS,int(*)(TS,Vec,void*),void*);
-extern int TSPseudoDefaultPositionIndependentTimeStep(TS,double*,void* );
+extern int TSPseudoSetTimeStep(TS,int(*)(TS,double*,void*),void*);
+extern int TSPseudoDefaultTimeStep(TS,double*,void* );
+extern int TSPseudoComputeTimeStep(TS,double *);
+
+extern int TSPseudoSetVerifyTimeStep(TS,int(*)(TS,Vec,void*,double*,int*),void*);
+extern int TSPseudoDefaultVerifyTimeStep(TS,Vec,void*,double*,int*);
+extern int TSPseudoVerifyTimeStep(TS,Vec,double*,int*);
 
 extern int TSComputeRHSFunction(TS,double,Vec,Vec);
 
