@@ -20,7 +20,7 @@ CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS)
 # and all lower level PETSc components (such as vectors and matrices).
 # The order of listing these libraries is important!
 #
-PETSC_LIB   = -L$(LDIR) -lpetscsnes  -lpetscsles -lpetscksp \
+PETSC_LIB   = -L$(LDIR) -lpetscts -lpetscsnes  -lpetscsles -lpetscksp \
 		-lpetscmat  -lpetscvec \
 		-lpetscsys $(X11_LIB) \
 		$(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
