@@ -248,6 +248,7 @@ class CursesInstall (BootstrapInstall):
         c = stdscr.getkey()
         return 0
       else:
+        if os.path.isfile(self.bkPath): self.bkPath = os.path.dirname(self.bkPath)
         if not os.path.isdir(self.bkPath):
           CursesInstall.CenterAddStr(stdscr, 8, 'Directory does not exist. Enter a valid directory or nothing', curses.A_BLINK)
           self.bkPath = CursesInstall.CenterGetStr(stdscr, 5, text = self.bkPath)
