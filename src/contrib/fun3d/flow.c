@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.39 2000/07/03 18:58:23 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.40 2000/07/03 19:14:39 bsmith Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -57,6 +57,17 @@ long long counter0,counter1;
 int  ntran[max_nbtran];        /* transition stuff put here to make global */
 REAL dxtran[max_nbtran];
 
+#ifdef PETSC_HAVE_AMS
+AMS_Comm ams;
+AMS_Memory memid;
+int ams_err;
+char *msg;
+char *vtk = "vtk", *grid_type = "Unstructured Grid", *cell_type = "VTK_TETRA";
+int point_dims[2], cell_dims[2];
+int p_start_ind[2], p_end_ind[2];
+int c_start_ind[2], c_end_ind[2];
+int s_start_ind[2], s_end_ind[2];
+#endif
  
 /* ======================== MAIN ROUTINE =================================== */
 /*                                                                           */
@@ -130,12 +141,111 @@ int main(int argc,char **args)
   user.grid  = &f_pntr;
   user.tsCtx = &tsCtx;
 
-  /* 
+    /* AMS Stuff */
+#ifdef PETSC_HAVE_AMS
+    /* Create and publish the Communicator */
+    ams_err = AMS_Comm_publish("FUN3D", &ams, MPI_TYPE);
+    AMS_Check_error(ams_err, &msg);
+  
+    /* Create a Memory */
+    ams_err = AMS_Memory_create(ams, "FUN3D-MEM", &memid);
+    AMS_Check_error(ams_err, &msg);
+
+    /* Add vtk fields to the memory */
+    ams_err =  AMS_Memory_add_field(memid, "vtk", &vtk, 1, AMS_STRING,
+                               AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err, &msg);
+
+    /* Add type field */
+    ams_err =  AMS_Memory_add_field(memid, "type", &grid_type, 1, AMS_STRING,
+                               AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err, &msg);
+
+    /* Add point dimensions field */
+    point_dims[0] = user.grid->nnodes;
+    point_dims[1] = 3;
+
+    ams_err =  AMS_Memory_add_field(memid, "point dims", point_dims, 2, AMS_INT,
+                               AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err, &msg);
+
+    /* Add cell dimensions field */
+    
+    cell_dims[0] = user.grid->ncell;
+    cell_dims[1] = 3;
+
+    ams_err =  AMS_Memory_add_field(memid, "cell dims", cell_dims, 2, AMS_INT,
+                               AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err, &msg);
+
+    /* Add cell type field */
+    ams_err =  AMS_Memory_add_field(memid, "cell type", &cell_type, 1, AMS_STRING,
+                               AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err, &msg);
+
+    /* Add points field */
+    ams_err =  AMS_Memory_add_field(memid, "points", user.grid->xyz, 3*user.grid->nnodesLoc,
+                          AMS_DOUBLE, AMS_READ, AMS_DISTRIBUTED, AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err, &msg);
+
+    /* Set Field Dimensions */
+    p_start_ind[0] = rstart;   /* Starting index in the first dimension */
+    p_end_ind[0] = rstart+user.grid->nnodesLoc-1;    /* Ending index in the first dimension */
+
+    p_start_ind[1] = 0;   /* Starting index in the second dimension */
+    p_end_ind[1] = 2;    /* Ending index in the second dimension */
+
+    /*
+     * This would be an array of user.grid->nnodesLoc rows and 3 columns
+     */ 
+    err = AMS_Memory_set_field_block(memid, "points", 2, p_start_ind, p_end_ind);
+    AMS_Check_error(err, &msg);
+
+    /* Add cells field */
+    ams_err =  AMS_Memory_add_field(memid, "cells", user.grid->nntet, 4*user.grid->ncellLoc,
+                          AMS_INT, AMS_READ, AMS_DISTRIBUTED, AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err, &msg);
+
+    /* Set Field Dimensions */
+    c_start_ind[0] = rstart;   /* Starting index in the first dimension */
+    c_end_ind[0] = rstart+user.grid->ncellLoc-1;    /* Ending index in the first dimension */
+
+    c_start_ind[1] = 0;   /* Starting index in the second dimension */
+    c_end_ind[1] = 3;    /* Ending index in the second dimension */
+
+    /*
+     * This would be an array of user.grid->nnodesLoc rows and 3 columns
+     */ 
+    err = AMS_Memory_set_field_block(memid, "cells", 2, c_start_ind, c_end_ind);
+    AMS_Check_error(err, &msg);
+
+
+    /* Add points field */
+    ams_err =  AMS_Memory_add_field(memid, "scalars", user.grid->qnode, 4*user.grid->nnodesLoc,
+                          AMS_DOUBLE, AMS_READ, AMS_DISTRIBUTED, AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err, &msg);
+
+    /* Set Field Dimensions */
+    s_start_ind[0] = rstart;   /* Starting index in the first dimension */
+    s_end_ind[0] = rstart+user.grid->nnodesLoc-1;    /* Ending index in the first dimension */
+
+    s_start_ind[1] = 0;   /* Starting index in the second dimension */
+    s_end_ind[1] = 3;    /* Ending index in the second dimension */
+
+    /*
+     * This would be an array of ??? rows and 4 columns
+     */ 
+    err = AMS_Memory_set_field_block(memid, "scalars", 2, s_start_ind, s_end_ind);
+    AMS_Check_error(err, &msg);
+
+#endif
+
+    /* 
      Preload the executable to get accurate timings. This runs the following chunk of 
-    code twice, first to get the executable pages into memory and the second time for
-    accurate timings.
-  */
-  PreLoadBegin(PETSC_TRUE,"Time integration");
+     code twice, first to get the executable pages into memory and the second time for
+     accurate timings.
+    */
+    PreLoadBegin(PETSC_TRUE,"Time integration");
     user.PreLoading = PreLoading;
 
     /* Create nonlinear solver */
