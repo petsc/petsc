@@ -1,8 +1,8 @@
-#!/usr/bin/env python1.5
-#!/bin/env python1.5
-# $Id: adprocess.py,v 1.2 2001/05/02 21:11:01 bsmith Exp bsmith $ 
+#!/usr/bin/env python
+#!/bin/env python
+# $Id: adprocess.py,v 1.3 2001/05/03 03:28:27 bsmith Exp bsmith $ 
 #
-# change python1.5 to whatever is needed on your system to invoke python
+# change python to whatever is needed on your system to invoke python
 #
 #  Processes .c or .f files looking for a particular function.
 #  Copies that function as well as an struct definitions 
@@ -15,14 +15,15 @@ import urllib
 import os
 import ftplib
 import httplib
+import re
 from exceptions import *
 from sys import *
 from string import *
 
 #
-#  Copies functionname from first filename to filename.tmp
+#  Copies structs from filename to filename.tmp
     
-def getfunctionC(filename,functionname):
+def setupfunctionC(filename):
 	newfile = filename + ".tmp"
 	f = open(filename)
 	g = open(newfile,"w")
@@ -30,22 +31,61 @@ def getfunctionC(filename,functionname):
 	line = f.readline()
 	while line:
                 line = lstrip(line)+" "
-                if line[0:14] == "typedef struct":
+                if len(line) >= 14:
+                  reg = re.compile('typedef [ ]*struct')
+#                  if line[0:14] == "typedef struct":
+                  fl = reg.search(line)
+                  if fl:
+                        struct = line
 			while line:
-				g.write(line)
                                 if line[0] == "}":
 	 	                	 break
  		                line = f.readline()
-                if len(line) >= 4 + len(functionname): 
-                   if line[0:4+len(functionname)] == "int "+functionname:
-			while line:
-				g.write(line)
-                                if line[0] == "}":
-	 	                	 break
- 		                line = f.readline()
+                                struct = struct + line
+#
+#        if this is the AppCtx then replace double and Scalar with passive
+#
+                        if line[0:9] == "} AppCtx;":
+                                print "found it"
+                                reg = re.compile('Scalar ')
+                                struct = reg.sub('PassiveScalar ',struct)
+                                reg = re.compile('double ')
+                                struct = reg.sub('PassiveDouble ',struct)
+                        g.write(struct)
 		line = f.readline()
 	f.close()
-        g.close()
+        return g
+
+#
+#  Appends function functionname from filename to filename.tmp
+
+def getfunctionC(g,filename,functionname):
+	f = open(filename)
+        g.write("/* Function "+functionname+"*/\n\n")
+	line = f.readline()
+	while line:
+                if len(line) >= 5 + len(functionname): 
+                   if line[0:5+len(functionname)] == "int "+functionname+"(":
+                        print 'Extracting ', functionname
+			while line:
+				g.write(line)
+                                if line[0] == "}":
+	 	                	 break
+ 		                line = f.readline()
+ 		        line = f.readline()
+                        continue
+                if len(line) >= 8 + len(functionname): 
+                   if line[0:8+len(functionname)] == "double "+functionname+"(":
+                        print 'Extracting ', functionname
+   		        while line:
+			        g.write(line)
+                                if line[0] == "}":
+	 	               	   break
+ 		                line = f.readline()
+ 		        line = f.readline()
+                        continue
+                line = f.readline()
+	f.close()
 
 def getfunctionF(filename,functionname):
         functionname = lower(functionname)
@@ -83,7 +123,10 @@ def main():
 
     ext = split(argv[1],'.')[-1]
     if ext == "c":
-      getfunctionC(argv[1],argv[2])
+      g = setupfunctionC(argv[1])
+      for i in range(2,arg_len):
+        getfunctionC(g,argv[1],argv[i])
+      g.close()
     else:
       getfunctionF(argv[1],argv[2])
 
