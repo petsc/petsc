@@ -68,41 +68,13 @@ class Configure(config.base.Configure):
     import nargs
 
     help.addArgument('PETSc', '-prefix=<path>',                nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
-    help.addArgument('PETSc', '-with-external-packages=<bool>',nargs.ArgBool(None, 1, 'Allow external packages like Spooles, ParMetis, etc'))        
     return
 
   def defineAutoconfMacros(self):
     self.hostMacro = 'dnl Version: 2.13\ndnl Variable: host_cpu\ndnl Variable: host_vendor\ndnl Variable: host_os\nAC_CANONICAL_HOST'
     return
-
-
-
-  def configurePIC(self):
-    '''Determine the PIC option for each compiler
-       - There needs to be a test that checks that the functionality is actually working'''
-    if not self.dynamic.useDynamic:
-      return
-    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('hpux') and not config.setCompilers.Configure.isGNU(self.framework.argDB['CC']):
-      return
-    languages = ['C']
-    if 'CXX' in self.framework.argDB:
-      languages.append('C++')
-    if 'FC' in self.framework.argDB:
-      languages.append('F77')
-    for language in languages:
-      self.pushLanguage(language)
-      for testFlag in ['-PIC', '-fPIC', '-KPIC']:
-        try:
-          self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
-          self.addCompilerFlag(testFlag)
-          break
-        except RuntimeError:
-          self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
-      self.popLanguage()
-    return
-
     
-  def configureBmake(self):
+  def Dump(self):
     ''' Actually put the values into the bmake files '''
     # eventually this will be gone
     
@@ -169,177 +141,8 @@ class Configure(config.base.Configure):
     self.addMakeMacro('INSTALL_DIR',self.installdir)
     self.addMakeMacro('top_builddir',self.installdir)                
 
-      
-  def configureDebuggers(self):
-    '''Find a default debugger and determine its arguments'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.framework.getExecutable('gdb', getFullPath = 1)
-    self.framework.getExecutable('dbx', getFullPath = 1)
-    self.framework.getExecutable('xdb', getFullPath = 1)
-    if hasattr(self, 'gdb'):
-      self.addDefine('USE_GDB_DEBUGGER', 1)
-    elif hasattr(self, 'dbx'):
-      self.addDefine('USE_DBX_DEBUGGER', 1)
-      f = file('conftest', 'w')
-      f.write('quit\n')
-      f.close()
-      foundOption = 0
-      if not foundOption:
-        try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -p '+os.getpid(), log = self.framework.log)
-          if not status:
-            for line in output:
-              if re.match(r'Process '+os.getpid()):
-                self.addDefine('USE_P_FOR_DEBUGGER', 1)
-                foundOption = 1
-                break
-        except RuntimeError: pass
-      if not foundOption:
-        try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -a '+os.getpid(), log = self.framework.log)
-          if not status:
-            for line in output:
-              if re.match(r'Process '+os.getpid()):
-                self.addDefine('USE_A_FOR_DEBUGGER', 1)
-                foundOption = 1
-                break
-        except RuntimeError: pass
-      if not foundOption:
-        try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -pid '+os.getpid(), log = self.framework.log)
-          if not status:
-            for line in output:
-              if re.match(r'Process '+os.getpid()):
-                self.addDefine('USE_PID_FOR_DEBUGGER', 1)
-                foundOption = 1
-                break
-        except RuntimeError: pass
-      os.remove('conftest')
-    elif hasattr(self, 'xdb'):
-      self.addDefine('USE_XDB_DEBUGGER', 1)
-      self.addDefine('USE_LARGEP_FOR_DEBUGGER', 1)
-    return
+#-----------------------------------------------------------------------------------------------------
 
-  def configureMkdir(self):
-    '''Make sure we can have mkdir automatically make intermediate directories'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.framework.getExecutable('mkdir', getFullPath = 1)
-    if hasattr(self.framework, 'mkdir'):
-      self.mkdir = self.framework.mkdir
-      if os.path.exists('.conftest'): os.rmdir('.conftest')
-      try:
-        (output, error, status) = config.base.Configure.executeShellCommand(self.mkdir+' -p .conftest/.tmp', log = self.framework.log)
-        if not status and os.path.isdir('.conftest/.tmp'):
-          self.mkdir = self.mkdir+' -p'
-      except RuntimeError: pass
-      if os.path.exists('.conftest'): os.removedirs('.conftest/.tmp')
-    return
-
-  def configurePrograms(self):
-    '''Check for the programs needed to build and run PETSc'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.framework.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
-    self.framework.getExecutable('sed',  getFullPath = 1)
-    self.framework.getExecutable('mv',   getFullPath = 1)
-    self.framework.getExecutable('diff', getFullPath = 1)
-    self.framework.getExecutable('rm -f',getFullPath = 1)
-    # check if diff supports -w option for ignoring whitespace
-    f = file('diff1', 'w')
-    f.write('diff\n')
-    f.close()
-    f = file('diff2', 'w')
-    f.write('diff  \n')
-    f.close()
-    (out,err,status) = Configure.executeShellCommand(getattr(self.framework, 'diff')+' -w diff1 diff2')
-    os.unlink('diff1')
-    os.unlink('diff2')
-    if not status:    
-      self.framework.diff = self.framework.diff + ' -w'
-      
-    self.framework.getExecutable('ps',   path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
-    if hasattr(self.framework, 'UCBPS'):
-      self.addDefine('HAVE_UCBPS', 1)
-    self.framework.getExecutable('gzip',getFullPath=1, resultName = 'GZIP')
-    if hasattr(self.framework, 'GZIP'):
-      self.addDefine('HAVE_GZIP',1)
-    return
-
-  def configureMissingDefines(self):
-    '''Checks for limits'''
-    if not self.checkCompile('#ifdef PETSC_HAVE_LIMITS_H\n  #include <limits.h>\n#endif\n', 'int i=INT_MAX;\n\nif (i);\n'):
-      self.addDefine('INT_MIN', '(-INT_MAX - 1)')
-      self.addDefine('INT_MAX', 2147483647)
-    if not self.checkCompile('#ifdef PETSC_HAVE_FLOAT_H\n  #include <float.h>\n#endif\n', 'double d=DBL_MAX;\n\nif (d);\n'):
-      self.addDefine('DBL_MIN', 2.2250738585072014e-308)
-      self.addDefine('DBL_MAX', 1.7976931348623157e+308)
-    return
-
-  def configureMissingFunctions(self):
-    '''Checks for SOCKETS'''
-    if not self.functions.haveFunction('socket'):
-      # solaris requires these two libraries for socket()
-      if self.libraries.haveLib('socket') and self.libraries.haveLib('nsl'):
-        self.addDefine('HAVE_SOCKET', 1)
-        self.framework.argDB['LIBS'] += ' -lsocket -lnsl'
-      # Windows requires Ws2_32.lib for socket(), uses stdcall, and declspec prototype decoration
-      if self.libraries.check('Ws2_32.lib','socket',prototype='#include <Winsock2.h>',call='socket(0,0,0);'):
-        self.addDefine('HAVE_WINSOCK2_H',1)
-        self.addDefine('HAVE_SOCKET', 1)
-        if self.checkLink('#include <Winsock2.h>','closesocket(0)'):
-          self.addDefine('HAVE_CLOSESOCKET',1)
-        if self.checkLink('#include <Winsock2.h>','WSAGetLastError()'):
-          self.addDefine('HAVE_WSAGETLASTERROR',1)
-    return
-
-  def configureMissingSignals(self):
-    '''Check for missing signals, and define MISSING_<signal name> if necessary'''
-    for signal in ['ABRT', 'ALRM', 'BUS',  'CHLD', 'CONT', 'FPE',  'HUP',  'ILL', 'INT',  'KILL', 'PIPE', 'QUIT', 'SEGV',
-                   'STOP', 'SYS',  'TERM', 'TRAP', 'TSTP', 'URG',  'USR1', 'USR2']:
-      if not self.checkCompile('#include <signal.h>\n', 'int i=SIG'+signal+';\n\nif (i);\n'):
-        self.addDefine('MISSING_SIG'+signal, 1)
-    return
-
-
-  def configureMissingErrnos(self):
-    '''Check for missing errno values, and define MISSING_<errno value> if necessary'''
-    for errnoval in ['EINTR']:
-      if not self.checkCompile('#include <errno.h>','int i='+errnoval+';\n\nif (i);\n'):
-        self.addDefine('MISSING_ERRNO_'+errnoval, 1)
-    return
-  
-  def configureFPTrap(self):
-    '''Checking the handling of floating point traps'''
-    if self.headers.check('sigfpe.h'):
-      if self.functions.check('handle_sigfpes', libraries = 'fpe'):
-        self.addDefine('HAVE_IRIX_STYLE_FPTRAP', 1)
-    elif self.headers.check('fpxcp.h') and self.headers.check('fptrap.h'):
-      if reduce(lambda x,y: x and y, map(self.functions.check, ['fp_sh_trap_info', 'fp_trap', 'fp_enable', 'fp_disable'])):
-        self.addDefine('HAVE_RS6000_STYLE_FPTRAP', 1)
-    elif self.headers.check('floatingpoint.h'):
-      if self.functions.check('ieee_flags') and self.functions.check('ieee_handler'):
-        if self.headers.check('sunmath.h'):
-          self.addDefine('HAVE_SOLARIS_STYLE_FPTRAP', 1)
-        else:
-          self.addDefine('HAVE_SUN4_STYLE_FPTRAP', 1)
-    return
-
-  def checkPrototype(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
-    (output, error, status) = self.outputCompile(includes, body, cleanup, codeBegin, codeEnd)
-    output += error
-    if output.find('implicit') >= 0 or output.find('Implicit') >= 0:
-      return 0
-    return 1
-
-  def configureGetDomainName(self):
-    if not self.checkPrototype('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
-      self.addPrototype('int getdomainname(char *, int);', 'C')
-    if 'CXX' in self.framework.argDB:
-      self.pushLanguage('C++')
-      if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
-        self.addPrototype('int getdomainname(char *, int);', 'extern C')
-      self.popLanguage()  
-    return
- 
   def configureSolaris(self):
     '''Solaris specific stuff'''
     if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
@@ -419,15 +222,8 @@ class Configure(config.base.Configure):
       self.addDefine('REPLACE_DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('DIR_SEPARATOR','\'/\'')
     return
-    
 
-
-  def configureMachineInfo(self):
-    '''Define a string incorporating all configuration data needed for a bug report'''
-    #self.addDefine('MACHINE_INFO', '"Libraries compiled on `date` on `hostname`\\nMachine characteristics: `uname -a`\\n-----------------------------------------\\nUsing C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}\\nC Compiler version: ${C_VERSION}\\nUsing C compiler: ${CXX} ${CXXOPTFLAGS} ${CXXCPPFLAGS}\\nC++ Compiler version: ${CXX_VERSION}\\nUsing Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}\\nFortran Compiler version: ${F_VERSION}\\n-----------------------------------------\\nUsing PETSc flags: ${PETSCFLAGS} ${PCONF}\\n-----------------------------------------\\nUsing include paths: ${PETSC_INCLUDE}\\n-----------------------------------------\\nUsing PETSc directory: ${PETSC_DIR}\\nUsing PETSc arch: ${PETSC_ARCH}"\\n')
-    return
-
-
+#-----------------------------------------------------------------------------------------------------
 
   def configureScript(self):
     '''Output a script in the bmake directory which will reproduce the configuration'''
@@ -463,22 +259,12 @@ class Configure(config.base.Configure):
     self.framework.cHeader         = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h'
     self.framework.makeMacroHeader = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf'
     self.framework.makeRuleHeader  = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscrules'        
-    self.executeTest(self.configurePIC)
-    self.executeTest(self.configureDebuggers)
-    self.executeTest(self.configureMkdir)
-    self.executeTest(self.configurePrograms)
-    self.executeTest(self.configureMissingDefines)
-    self.executeTest(self.configureMissingFunctions)
-    self.executeTest(self.configureMissingSignals)
-    self.executeTest(self.configureFPTrap)
-    self.executeTest(self.configureGetDomainName)
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)
-    self.executeTest(self.configureMachineInfo)
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
-    self.executeTest(self.configureBmake)    
+    self.Dump()
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return
