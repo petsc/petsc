@@ -187,14 +187,14 @@ class Framework(config.base.Configure):
       substPrefix = self.getSubstitutionPrefix(child)
       for pair in child.subst.items():
         if substPrefix:
-          print substPrefix+'_'+pair[0]+'  --->  '+pair[1]
+          print substPrefix+'_'+pair[0]+'  --->  '+str(pair[1])
         else:
-          print pair[0]+'  --->  '+pair[1]
+          print pair[0]+'  --->  '+str(pair[1])
       for pair in child.argSubst.items():
         if substPrefix:
-          print substPrefix+'_'+pair[0]+'  --->  '+self.argDB[pair[1]]
+          print substPrefix+'_'+pair[0]+'  --->  '+str(self.argDB[pair[1]])
         else:
-          print pair[0]+'  --->  '+self.argDB[pair[1]]
+          print pair[0]+'  --->  '+str(self.argDB[pair[1]])
     return
 
   def storeSubstitutions(self, argDB):
