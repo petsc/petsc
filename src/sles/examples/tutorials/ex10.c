@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex21.c,v 1.2 1996/07/23 20:12:23 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex21.c,v 1.3 1996/08/08 22:47:19 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -31,7 +31,7 @@ int main(int argc,char **args)
   char       file[2][128];
   Viewer     fd;
   PetscTruth table = PETSC_FALSE;
-  char       stagename[6][18];
+  char       stagename[6][16];
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
