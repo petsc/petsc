@@ -46,10 +46,7 @@ class Transform (bs.Maker):
     if type(self.products) == types.ListType and len(self.products) == 1:
       self.products = self.products[0]
     return self.products
-
-  def updateSourceDB(self, source):
-    bs.sourceDB[source] = (self.getChecksum(source), os.path.getmtime(source), time.time())
-
+      
   def getIntermediateFileName(self, source, ext = '.o'):
     (dir, file) = os.path.split(source)
     (base, dum) = os.path.splitext(file)
@@ -98,28 +95,41 @@ class FileChanged (Transform):
     self.products  = [self.changed, self.unchanged]
 
   def compare(self, source, sourceEntry):
-    self.debugPrint('Checking for '+source+' in the source database', 3)
-    if sourceEntry[0] == self.getChecksum(source):
+    self.debugPrint('Checking for '+source+' in the source database', 3, 'sourceDB')
+    checksum = self.getChecksum(source)
+    if sourceEntry[0] == checksum:
       return 0
     else:
-      self.debugPrint(source+' has changed relative to the source database', 3)
+      self.debugPrint(source+' has changed relative to the source database: '+str(sourceEntry[0])+' <> '+str(checksum), 3, 'sourceDB')
       return 1
 
   def fileExecute(self, source):
     try:
       if not os.path.exists(source):
-        self.debugPrint(source+' does not exist', 3)
-        self.changed.append(source)
-      elif self.compare(source, bs.sourceDB[source]):
+        self.debugPrint(source+' does not exist', 3, 'sourceDB')
         self.changed.append(source)
       else:
-        self.unchanged.append(source)
+        changed = 0
+        if self.compare(source, bs.sourceDB[source]):
+          changed = 1
+        else:
+          for dep in bs.sourceDB[source][3]:
+            try:
+              if self.compare(dep, bs.sourceDB[dep]):
+                changed = 1
+                break
+            except KeyError:
+              pass
+        if changed:
+          self.changed.append(source)
+        else:
+          self.unchanged.append(source)
     except KeyError:
-      self.debugPrint(source+' does not exist in source database', 3)
+      self.debugPrint(source+' does not exist in source database', 3, 'sourceDB')
       self.changed.append(source)
 
   def execute(self):
-    self.debugPrint('Checking for changes to sources '+self.debugFileSetStr(self.sources), 2)
+    self.debugPrint('Checking for changes to sources '+self.debugFileSetStr(self.sources), 2, 'sourceDB')
     return Transform.execute(self)
 
 class GenericTag (FileChanged):
@@ -142,7 +152,7 @@ class GenericTag (FileChanged):
     if ext in self.ext:
       FileChanged.fileExecute(self, source)
     elif ext in self.extraExt:
-      self.updateSourceDB(source)
+      self.deferredUpdates.append(source)
     else:
       self.currentSet.append(source)
 
@@ -152,3 +162,10 @@ class GenericTag (FileChanged):
       self.fileExecute(file)
     if len(self.currentSet): self.products.append(self.currentSet)
     return self.products
+
+  def execute(self):
+    self.deferredUpdates = []
+    products = FileChanged.execute(self)
+    for source in self.deferredUpdates:
+      self.updateSourceDB(source)
+    return products

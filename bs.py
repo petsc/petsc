@@ -6,8 +6,10 @@ import cPickle
 import commands
 import os
 import os.path
+import re
 import string
 import sys
+import time
 import traceback
 import types
 
@@ -87,7 +89,17 @@ class Maker:
       self.defaultCheckCommand(command, status, output)
     return output
 
+  def updateSourceDB(self, source):
+    dependencies = ()
+    try:
+      (checksum, mtime, timestamp, dependencies) = sourceDB[source]
+    except KeyError:
+      pass
+    sourceDB[source] = (self.getChecksum(source), os.path.getmtime(source), time.time(), dependencies)
+
 class BS (Maker):
+  includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
+
   def __init__(self, args = None):
     self.targets = {}
     if args: self.processArgs(args)
@@ -95,7 +107,7 @@ class BS (Maker):
     self.sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
     self.setupSourceDB()
     for key in self.args.keys():
-      self.debugPrint('Set '+key+' to '+self.args[key])
+      self.debugPrint('Set '+key+' to '+str(self.args[key]))
 
   def parseArgs(self, argList):
     args = {}
@@ -104,7 +116,9 @@ class BS (Maker):
       if not arg[0] == '-':
         args['target'] = arg
       else:
+        # Could try just using eval() on val, but we would need to quote lots of stuff
         (key, val) = string.split(arg[1:], '=')
+        if val[0] == '[' and val[-1] == ']': val = string.split(val[1:-1], ',')
         args[key]  = val
     return args
 
@@ -119,7 +133,7 @@ class BS (Maker):
     # variables, and look them up in args[]
     try:
       debugLevel    = int(args['debugLevel'])
-      debugSections = string.split(args['debugSections'])
+      debugSections = args['debugSections']
     except KeyError: pass
     self.args = args
 
@@ -141,9 +155,28 @@ class BS (Maker):
       sourceDB = {}
     atexit.register(self.saveSourceDB)
 
+  def calculateDependencies(self):
+    for source in sourceDB.keys():
+      (checksum, mtime, timestamp, dependencies) = sourceDB[source]
+      newDep = []
+      file   = open(source, 'r')
+      for line in file.readlines():
+        m = self.includeRE.match(line)
+        if m:
+          filename = m.group('includeFile')
+          for s in sourceDB.keys():
+            if string.find(s, filename) >= 0:
+              filename = s
+              break
+          newDep.append(filename)
+      # Grep for #include, then put these files in a tuple, we can be recursive later in a fixpoint algorithm
+      sourceDB[source] = (checksum, mtime, timestamp, tuple(newDep))
+
   def main(self):
     if self.targets.has_key(self.args['target']):
       self.targets[self.args['target']].execute()
+    elif self.args['target'] == 'recalc':
+      self.calculateDependencies()
     else:
       print 'Invalid target: '+self.args['target']
     self.cleanupDir(self.tmpDir)
