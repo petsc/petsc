@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.88 2000/04/09 04:38:01 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.89 2000/04/12 04:25:05 bsmith Exp balay $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -197,7 +197,7 @@ int KSPCreate_Richardson(KSP ksp)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPRichardsonSetScale_C",
                                     "KSPRichardsonSetScale_Richardson",
-                                    (void*)KSPRichardsonSetScale_Richardson);CHKERRQ(ierr);
+                                    KSPRichardsonSetScale_Richardson);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

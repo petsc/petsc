@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.142 2000/04/12 04:25:01 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.143 2000/04/27 03:52:23 bsmith Exp balay $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -721,13 +721,13 @@ int KSPCreate_GMRES(KSP ksp)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",
-                                     (void*)KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
+                                     KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",
                                     "KSPGMRESSetOrthogonalization_GMRES",
-                                     (void*)KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
+                                     KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C",
-                                     "KSPGMRESSetRestart_GMRES",
-                                    (void*)KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
+                                    "KSPGMRESSetRestart_GMRES",
+                                     KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
 
   gmres->haptol              = 1.0e-8;
   gmres->epsabs              = 1.0e-8;

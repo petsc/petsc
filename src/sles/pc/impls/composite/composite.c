@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.33 2000/04/09 04:37:37 bsmith Exp bsmith $*/
+/*$Id: composite.c,v 1.34 2000/04/12 04:24:46 bsmith Exp balay $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -466,13 +466,13 @@ int PCCreate_Composite(PC pc)
   jac->head              = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCompositeSetType_C","PCCompositeSetType_Composite",
-                    (void*)PCCompositeSetType_Composite);CHKERRQ(ierr);
+                    PCCompositeSetType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCompositeAddPC_C","PCCompositeAddPC_Composite",
-                    (void*)PCCompositeAddPC_Composite);CHKERRQ(ierr);
+                    PCCompositeAddPC_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCompositeGetPC_C","PCCompositeGetPC_Composite",
-                    (void*)PCCompositeGetPC_Composite);CHKERRQ(ierr);
+                    PCCompositeGetPC_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCompositeSetUseTrue_C","PCCompositeSetUseTrue_Composite",
-                    (void*)PCCompositeSetUseTrue_Composite);CHKERRQ(ierr);
+                    PCCompositeSetUseTrue_Composite);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

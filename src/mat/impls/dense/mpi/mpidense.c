@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.136 2000/04/09 04:35:58 bsmith Exp bsmith $*/
+/*$Id: mpidense.c,v 1.137 2000/04/12 04:22:59 bsmith Exp balay $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -1111,7 +1111,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetDiagonalBlock_C",
                                      "MatGetDiagonalBlock_MPIDense",
-                                     (void*)MatGetDiagonalBlock_MPIDense);CHKERRQ(ierr);
+                                     MatGetDiagonalBlock_MPIDense);CHKERRQ(ierr);
 
   *A = mat;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);

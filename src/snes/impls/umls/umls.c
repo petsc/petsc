@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.93 2000/04/09 04:38:48 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.94 2000/04/12 04:25:37 bsmith Exp balay $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
 
@@ -595,7 +595,7 @@ int SNESCreate_UM_LS(SNES snes)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchGetDampingParameter_C",
                                     "SNESLineSearchGetDampingParameter_UM_LS",
-                                    (void*)SNESLineSearchGetDampingParameter_UM_LS);CHKERRQ(ierr);
+                                     SNESLineSearchGetDampingParameter_UM_LS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

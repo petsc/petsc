@@ -1,4 +1,4 @@
-/*$Id: cheby.c,v 1.84 2000/04/09 04:37:58 bsmith Exp bsmith $*/
+/*$Id: cheby.c,v 1.85 2000/04/12 04:25:04 bsmith Exp balay $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -220,7 +220,7 @@ int KSPCreate_Chebychev(KSP ksp)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",
                                     "KSPChebychevSetEigenvalues_Chebychev",
-                                    (void*)KSPChebychevSetEigenvalues_Chebychev);CHKERRQ(ierr);
+                                    KSPChebychevSetEigenvalues_Chebychev);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

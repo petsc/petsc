@@ -1,4 +1,4 @@
-/*$Id: eisen.c,v 1.102 2000/04/09 04:37:30 bsmith Exp bsmith $*/
+/*$Id: eisen.c,v 1.103 2000/04/12 04:24:41 bsmith Exp balay $*/
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 
@@ -333,10 +333,10 @@ int PCCreate_Eisenstat(PC pc)
   eis->usediag       = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCEisenstatSetOmega_C","PCEisenstatSetOmega_Eisenstat",
-                    (void*)PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
+                    PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C",
                     "PCEisenstatNoDiagonalScaling_Eisenstat",
-                    (void*)PCEisenstatNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
+                    PCEisenstatNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
  PetscFunctionReturn(0);
 }
 EXTERN_C_END

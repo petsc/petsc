@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.17 2000/04/09 04:37:38 bsmith Exp bsmith $*/
+/*$Id: redundant.c,v 1.18 2000/04/12 04:24:47 bsmith Exp balay $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -276,7 +276,7 @@ int PCCreate_Redundant(PC pc)
   pc->data              = (void*)red;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",
-                    (void*)PCRedundantSetScatter_Redundant);CHKERRQ(ierr);
+                    PCRedundantSetScatter_Redundant);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

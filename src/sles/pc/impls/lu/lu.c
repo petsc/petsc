@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.128 2000/04/09 04:37:25 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.129 2000/04/12 04:24:36 bsmith Exp balay $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -508,15 +508,15 @@ int PCCreate_LU(PC pc)
   pc->ops->getfactoredmatrix = PCGetFactoredMatrix_LU;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetFill_C","PCLUSetFill_LU",
-                    (void*)PCLUSetFill_LU);CHKERRQ(ierr);
+                    PCLUSetFill_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetUseInPlace_C","PCLUSetUseInPlace_LU",
-                    (void*)PCLUSetUseInPlace_LU);CHKERRQ(ierr);
+                    PCLUSetUseInPlace_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetMatOrdering_C","PCLUSetMatOrdering_LU",
-                    (void*)PCLUSetMatOrdering_LU);CHKERRQ(ierr);
+                    PCLUSetMatOrdering_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetReuseOrdering_C","PCLUSetReuseOrdering_LU",
-                    (void*)PCLUSetReuseOrdering_LU);CHKERRQ(ierr);
+                    PCLUSetReuseOrdering_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetReuseFill_C","PCLUSetReuseFill_LU",
-                    (void*)PCLUSetReuseFill_LU);CHKERRQ(ierr);
+                    PCLUSetReuseFill_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

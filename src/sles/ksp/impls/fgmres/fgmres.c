@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.13 2000/04/09 04:38:08 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.14 2000/04/12 04:25:11 bsmith Exp balay $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -799,16 +799,16 @@ int KSPCreate_FGMRES(KSP ksp)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",
-                                     (void*)KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
+                                     KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",
                                     "KSPGMRESSetOrthogonalization_GMRES",
-                                     (void*)KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
+                                     KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C",
-                                     "KSPGMRESSetRestart_GMRES",
-                                    (void*)KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
+                                    "KSPGMRESSetRestart_GMRES",
+                                     KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",
                                     "KSPFGMRESSetModifyPC_FGMRES",
-                                   (void*)KSPFGMRESSetModifyPC_FGMRES);CHKERRQ(ierr);
+                                     KSPFGMRESSetModifyPC_FGMRES);CHKERRQ(ierr);
 
 
   fgmres->haptol              = 1.0e-8;

@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.56 2000/04/09 04:39:14 bsmith Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.57 2000/04/12 04:26:02 bsmith Exp balay $*/
 
 #include "petsc.h"
 /*
@@ -841,24 +841,28 @@ int TSCreate_PVode(TS ts)
   cvode->reltol = 1e-6;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetType_C","TSPVodeSetType_PVode",
-                    (void*)TSPVodeSetType_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetGMRESRestart_C","TSPVodeSetGMRESRestart_PVode",
-                    (void*)TSPVodeSetGMRESRestart_PVode);CHKERRQ(ierr);
+                    TSPVodeSetType_PVode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetGMRESRestart_C",
+                    "TSPVodeSetGMRESRestart_PVode",
+                    TSPVodeSetGMRESRestart_PVode);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetLinearTolerance_C",
                     "TSPVodeSetLinearTolerance_PVode",
-                    (void*)TSPVodeSetLinearTolerance_PVode);CHKERRQ(ierr);
+                     TSPVodeSetLinearTolerance_PVode);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetGramSchmidtType_C",
                     "TSPVodeSetGramSchmidtType_PVode",
-                    (void*)TSPVodeSetGramSchmidtType_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetTolerance_C","TSPVodeSetTolerance_PVode",
-                    (void*)TSPVodeSetTolerance_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeGetPC_C","TSPVodeGetPC_PVode",
-                    (void*)TSPVodeGetPC_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeGetIterations_C","TSPVodeGetIterations_PVode",
-                    (void*)TSPVodeGetIterations_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetExactFinalTime_C","TSPVodeSetExactFinalTime_PVode",
-                    (void*)TSPVodeSetExactFinalTime_PVode);CHKERRQ(ierr);
-
+                     TSPVodeSetGramSchmidtType_PVode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetTolerance_C",
+                    "TSPVodeSetTolerance_PVode",
+                     TSPVodeSetTolerance_PVode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeGetPC_C",
+                    "TSPVodeGetPC_PVode",
+                     TSPVodeGetPC_PVode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeGetIterations_C",
+                    "TSPVodeGetIterations_PVode",
+                     TSPVodeGetIterations_PVode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPVodeSetExactFinalTime_C",
+                    "TSPVodeSetExactFinalTime_PVode",
+                     TSPVodeSetExactFinalTime_PVode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

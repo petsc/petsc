@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.153 2000/04/12 04:25:33 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.154 2000/04/18 23:03:49 bsmith Exp balay $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -982,9 +982,9 @@ int SNESCreate_EQ_LS(SNES snes)
   neP->checkP           = PETSC_NULL;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESSetLineSearch_C","SNESSetLineSearch_LS",
-                    (void*)SNESSetLineSearch_LS);CHKERRQ(ierr);
+                    SNESSetLineSearch_LS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESSetLineSearchCheck_C","SNESSetLineSearchCheck_LS",
-                    (void*)SNESSetLineSearchCheck_LS);CHKERRQ(ierr);
+                    SNESSetLineSearchCheck_LS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

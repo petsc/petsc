@@ -1,4 +1,4 @@
-/*$Id: sor.c,v 1.93 2000/04/09 04:37:23 bsmith Exp bsmith $*/
+/*$Id: sor.c,v 1.94 2000/04/12 04:24:35 bsmith Exp balay $*/
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
@@ -313,11 +313,11 @@ int PCCreate_SOR(PC pc)
   jac->its           = 1;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetSymmetric_C","PCSORSetSymmetric_SOR",
-                    (void*)PCSORSetSymmetric_SOR);CHKERRQ(ierr);
+                    PCSORSetSymmetric_SOR);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetOmega_C","PCSORSetOmega_SOR",
-                    (void*)PCSORSetOmega_SOR);CHKERRQ(ierr);
+                    PCSORSetOmega_SOR);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetIterations_C","PCSORSetIterations_SOR",
-                    (void*)PCSORSetIterations_SOR);CHKERRQ(ierr);
+                    PCSORSetIterations_SOR);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

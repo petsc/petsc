@@ -1,4 +1,4 @@
-/*$Id: shellpc.c,v 1.67 2000/04/09 04:37:26 bsmith Exp bsmith $*/
+/*$Id: shellpc.c,v 1.68 2000/04/12 04:24:37 bsmith Exp balay $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -470,19 +470,19 @@ int PCCreate_Shell(PC pc)
   shell->setup          = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetSetUp_C","PCShellSetSetUp_Shell",
-                    (void*)PCShellSetSetUp_Shell);CHKERRQ(ierr);
+                    PCShellSetSetUp_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApply_C","PCShellSetApply_Shell",
-                    (void*)PCShellSetApply_Shell);CHKERRQ(ierr);
+                    PCShellSetApply_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApplyTranspose_C",
                     "PCShellSetApplyTranspose_Shell",
-                    (void*)PCShellSetApplyTranspose_Shell);CHKERRQ(ierr);
+                    PCShellSetApplyTranspose_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetName_C","PCShellSetName_Shell",
-                    (void*)PCShellSetName_Shell);CHKERRQ(ierr);
+                    PCShellSetName_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellGetName_C","PCShellGetName_Shell",
-                    (void*)PCShellGetName_Shell);CHKERRQ(ierr);
+                    PCShellGetName_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApplyRichardson_C",
                     "PCShellSetApplyRichardson_Shell",
-                    (void*)PCShellSetApplyRichardson_Shell);CHKERRQ(ierr);
+                    PCShellSetApplyRichardson_Shell);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

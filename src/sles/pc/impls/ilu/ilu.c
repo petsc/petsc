@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.145 2000/04/09 04:37:32 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.146 2000/04/12 04:24:42 bsmith Exp balay $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -711,21 +711,21 @@ int PCCreate_ILU(PC pc)
   pc->ops->applyrichardson   = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetUseDropTolerance_C","PCILUSetUseDropTolerance_ILU",
-                    (void*)PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
+                    PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetFill_C","PCILUSetFill_ILU",
-                    (void*)PCILUSetFill_ILU);CHKERRQ(ierr);
+                    PCILUSetFill_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetMatOrdering_C","PCILUSetMatOrdering_ILU",
-                    (void*)PCILUSetMatOrdering_ILU);CHKERRQ(ierr);
+                    PCILUSetMatOrdering_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetReuseOrdering_C","PCILUSetReuseOrdering_ILU",
-                    (void*)PCILUSetReuseOrdering_ILU);CHKERRQ(ierr);
+                    PCILUSetReuseOrdering_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetReuseFill_C","PCILUSetReuseFill_ILU",
-                    (void*)PCILUSetReuseFill_ILU);CHKERRQ(ierr);
+                    PCILUSetReuseFill_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetLevels_C","PCILUSetLevels_ILU",
-                    (void*)PCILUSetLevels_ILU);CHKERRQ(ierr);
+                    PCILUSetLevels_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetUseInPlace_C","PCILUSetUseInPlace_ILU",
-                    (void*)PCILUSetUseInPlace_ILU);CHKERRQ(ierr);
+                    PCILUSetUseInPlace_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetAllowDiagonalFill_C","PCILUSetAllowDiagonalFill_ILU",
-                    (void*)PCILUSetAllowDiagonalFill_ILU);CHKERRQ(ierr);
+                    PCILUSetAllowDiagonalFill_ILU);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.101 2000/04/09 04:37:53 bsmith Exp bsmith $*/
+/*$Id: cg.c,v 1.102 2000/04/12 04:24:58 bsmith Exp balay $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -373,7 +373,7 @@ int KSPCreate_CG(KSP ksp)
       it. (Sort of like a dynamic member function that can be added at run time
   */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CG",
-                                     (void*)KSPCGSetType_CG);CHKERRQ(ierr);
+                                     KSPCGSetType_CG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

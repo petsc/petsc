@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.81 2000/04/09 04:33:54 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.82 2000/04/12 04:20:53 bsmith Exp balay $*/
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -422,10 +422,10 @@ int ViewerCreate_Binary(Viewer v)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"ViewerSetFilename_C",
                                     "ViewerSetFilename_Binary",
-                                     (void*)ViewerSetFilename_Binary);CHKERRQ(ierr);
+                                     ViewerSetFilename_Binary);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"ViewerBinarySetType_C",
                                     "ViewerBinarySetType_Binary",
-                                     (void*)ViewerBinarySetType_Binary);CHKERRQ(ierr);
+                                     ViewerBinarySetType_Binary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

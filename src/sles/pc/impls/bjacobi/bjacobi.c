@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.141 2000/04/09 04:37:26 bsmith Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.142 2000/04/12 04:24:38 bsmith Exp balay $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -566,13 +566,13 @@ int PCCreate_BJacobi(PC pc)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C",
                     "PCBJacobiSetUseTrueLocal_BJacobi",
-                    (void*)PCBJacobiSetUseTrueLocal_BJacobi);CHKERRQ(ierr);
+                    PCBJacobiSetUseTrueLocal_BJacobi);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiGetSubSLES_C","PCBJacobiGetSubSLES_BJacobi",
-                    (void*)PCBJacobiGetSubSLES_BJacobi);CHKERRQ(ierr);
+                    PCBJacobiGetSubSLES_BJacobi);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiSetTotalBlocks_C","PCBJacobiSetTotalBlocks_BJacobi",
-                    (void*)PCBJacobiSetTotalBlocks_BJacobi);CHKERRQ(ierr);
+                    PCBJacobiSetTotalBlocks_BJacobi);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiSetLocalBlocks_C","PCBJacobiSetLocalBlocks_BJacobi",
-                    (void*)PCBJacobiSetLocalBlocks_BJacobi);CHKERRQ(ierr);
+                    PCBJacobiSetLocalBlocks_BJacobi);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

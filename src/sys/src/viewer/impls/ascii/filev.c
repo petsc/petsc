@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.104 2000/04/09 04:33:53 bsmith Exp bsmith $ */
+/* $Id: filev.c,v 1.105 2000/04/12 04:20:52 bsmith Exp balay $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -544,9 +544,9 @@ int ViewerCreate_ASCII(Viewer viewer)
   vascii->filename       = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"ViewerSetFilename_C","ViewerSetFilename_ASCII",
-                                     (void*)ViewerSetFilename_ASCII);CHKERRQ(ierr);
+                                     ViewerSetFilename_ASCII);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"ViewerGetFilename_C","ViewerGetFilename_ASCII",
-                                     (void*)ViewerGetFilename_ASCII);CHKERRQ(ierr);
+                                     ViewerGetFilename_ASCII);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

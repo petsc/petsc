@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.11 2000/04/09 04:40:17 bsmith Exp bsmith $*/
+/* $Id: ispai.c,v 1.12 2000/04/12 04:26:41 bsmith Exp balay $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -514,28 +514,28 @@ int PCCreate_SPAI(PC pc)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetEpsilon_C",
                     "PCSPAISetEpsilon_SPAI",
-                    (void*)PCSPAISetEpsilon_SPAI);CHKERRQ(ierr);
+                     PCSPAISetEpsilon_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetNBSteps_C",
                     "PCSPAISetNBSteps_SPAI",
-                    (void*)PCSPAISetNBSteps_SPAI);CHKERRQ(ierr);
+                     PCSPAISetNBSteps_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetMax_C",
                     "PCSPAISetMax_SPAI",
-                    (void*)PCSPAISetMax_SPAI);CHKERRQ(ierr);
+                     PCSPAISetMax_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetMaxNew_CC",
                     "PCSPAISetMaxNew_SPAI",
-                    (void*)PCSPAISetMaxNew_SPAI);CHKERRQ(ierr);
+                     PCSPAISetMaxNew_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetBlockSize_C",
                     "PCSPAISetBlockSize_SPAI",
-                    (void*)PCSPAISetBlockSize_SPAI);CHKERRQ(ierr);
+                     PCSPAISetBlockSize_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetCacheSize_C",
                     "PCSPAISetCacheSize_SPAI",
-                    (void*)PCSPAISetCacheSize_SPAI);CHKERRQ(ierr);
+                     PCSPAISetCacheSize_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetVerbose_C",
                     "PCSPAISetVerbose_SPAI",
-                    (void*)PCSPAISetVerbose_SPAI);CHKERRQ(ierr);
+                     PCSPAISetVerbose_SPAI);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetSp_C",
                     "PCSPAISetSp_SPAI",
-                    (void*)PCSPAISetSp_SPAI);CHKERRQ(ierr);
+                     PCSPAISetSp_SPAI);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

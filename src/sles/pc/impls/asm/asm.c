@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.110 2000/04/09 04:37:34 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.111 2000/04/12 04:24:44 bsmith Exp balay $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -840,17 +840,17 @@ int PCCreate_ASM(PC pc)
   pc->ops->applyrichardson   = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetLocalSubdomains_C","PCASMSetLocalSubdomains_ASM",
-                    (void*)PCASMSetLocalSubdomains_ASM);CHKERRQ(ierr);
+                    PCASMSetLocalSubdomains_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetTotalSubdomains_C","PCASMSetTotalSubdomains_ASM",
-                    (void*)PCASMSetTotalSubdomains_ASM);CHKERRQ(ierr);
+                    PCASMSetTotalSubdomains_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetOverlap_C","PCASMSetOverlap_ASM",
-                    (void*)PCASMSetOverlap_ASM);CHKERRQ(ierr);
+                    PCASMSetOverlap_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetType_C","PCASMSetType_ASM",
-                    (void*)PCASMSetType_ASM);CHKERRQ(ierr);
+                    PCASMSetType_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMGetSubSLES_C","PCASMGetSubSLES_ASM",
-                    (void*)PCASMGetSubSLES_ASM);CHKERRQ(ierr);
+                    PCASMGetSubSLES_ASM);CHKERRQ(ierr);
 ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetUseInPlace_C","PCASMSetUseInPlace_ASM",
-                    (void*)PCASMSetUseInPlace_ASM);CHKERRQ(ierr);
+                    PCASMSetUseInPlace_ASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

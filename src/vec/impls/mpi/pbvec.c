@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.150 2000/04/30 21:41:46 bsmith Exp bsmith $*/
+/*$Id: pbvec.c,v 1.151 2000/05/02 03:40:46 bsmith Exp balay $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -194,7 +194,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
                                                         
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"VecView_MPI_Draw_C","VecView_MPI_Draw",
-                                     (void *)VecView_MPI_Draw);CHKERRQ(ierr);
+                                     VecView_MPI_Draw);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_MPI);CHKERRQ(ierr);
   PetscPublishAll(v);
   PetscFunctionReturn(0);

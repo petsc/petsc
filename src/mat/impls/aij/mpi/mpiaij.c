@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.313 2000/04/12 04:23:11 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.314 2000/04/30 22:29:06 bsmith Exp balay $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1873,13 +1873,13 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIAIJ",
-                                     (void*)MatStoreValues_MPIAIJ);CHKERRQ(ierr);
+                                     MatStoreValues_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_MPIAIJ",
-                                     (void*)MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
+                                     MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
                                      "MatGetDiagonalBlock_MPIAIJ",
-                                     (void*)MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
+                                     MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
   *A = B;
   PetscFunctionReturn(0);
 }

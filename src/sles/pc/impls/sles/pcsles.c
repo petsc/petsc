@@ -1,4 +1,4 @@
-/*$Id: pcsles.c,v 1.29 2000/04/09 04:37:35 bsmith Exp bsmith $*/
+/*$Id: pcsles.c,v 1.30 2000/04/12 04:24:45 bsmith Exp balay $*/
 /*
       Defines a preconditioner that can consist of any SLES solver.
     This allows embedding a Krylov method inside a preconditioner.
@@ -263,9 +263,9 @@ int PCCreate_SLES(PC pc)
   jac->its             = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSLESSetUseTrue_C","PCSLESSetUseTrue_SLES",
-                    (void*)PCSLESSetUseTrue_SLES);CHKERRQ(ierr);
+                    PCSLESSetUseTrue_SLES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSLESGetSLES_C","PCSLESGetSLES_SLES",
-                    (void*)PCSLESGetSLES_SLES);CHKERRQ(ierr);
+                    PCSLESGetSLES_SLES);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
