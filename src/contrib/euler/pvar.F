@@ -130,9 +130,8 @@ c            CN=CN-(PBODY-RGAM)*AJY(I,1,K)
 c            CC=CC-(PBODY-RGAM)*AJX(I,1,K)
  42       CONTINUE
 
-c
 c  Sum over each section of mesh, using the communicator xcomm
-c
+
           call MPI_Allreduce(cn1,cn,d_nk,MPI_DOUBLE_PRECISION,
      &                       MPI_SUM,xcomm,ierr)
           call MPI_Allreduce(cc1,cc,d_nk,MPI_DOUBLE_PRECISION,
@@ -143,8 +142,6 @@ c
           CDS=CN(K)*SIN(-BETA)+CC(K)*COS(-BETA)
           CL(K) = CLS/AREA(K)
           CD(K) = CDS/AREA(K)
-          write(6,*) 'rank,k,cl,cd,area = ',
-     &                rank,k,cn(k),cc(k),area(k)
           AREAS = AREAS+AREA(K)
           TCL=TCL+CLS
           TCD=TCD+CDS
@@ -163,21 +160,14 @@ c
         dsend(2) = zero
         dsend(3) = zero
       endif
-        write(6,*) 'rank, tcl, tcd, areas = ',rank,tcl,tcd,areas
 
       call MPI_Allreduce(dsend,drecv,3,MPI_DOUBLE_PRECISION,
      &                   MPI_SUM,comm,ierr)
       tcl   = drecv(1)
       tcd   = drecv(2)
       areas = drecv(3)
-      if (rank .eq. 0)
-     & write(6,*) 'TOTAL: tcl, tcd, areas = ',tcl,tcd,areas
-
-      TCL       = TCL/AREAS
-      TCD       = TCD/AREAS
-
-      if (rank .eq. 0)
-     & write(6,*) 'TOTAL B: tcl, tcd, areas = ',tcl,tcd,areas
+      TCL   = TCL/AREAS
+      TCD   = TCD/AREAS
 
       if (pprint .eq. 1 .and. rank .eq. 0) then
       WRITE (6,43)

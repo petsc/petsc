@@ -232,6 +232,7 @@ int main(int argc,char **argv)
          app->f1,app->g1,app->h1,
          app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
          &app->angle,&app->jfreq); CHKERRA(ierr);
+  ierr = GetXCommunicator(app,&app->fort_xcomm); CHKERRQ(ierr);
   PLogEventEnd(init2,0,0,0,0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -361,7 +362,7 @@ int main(int argc,char **argv)
     ierr = pvar_(app->xx,app->p,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
            app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc,&pprint,
-           &c_lift,&c_drag); CHKERRA(ierr);
+           &c_lift,&c_drag,&app->fort_xcomm); CHKERRA(ierr);
 
     /* Dump all fields for general viewing */
     ierr = MonitorDumpGeneral(snes,app->X,app); CHKERRA(ierr);
@@ -1098,11 +1099,11 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
 int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler **newapp)
 {
   Euler *app;
-  AO    ao;              /* application ordering context */
-  int   ni1;    	 /* x-direction grid dimension */
-  int   nj1;	         /* y-direction grid dimension */
-  int   nk1;	         /* z-direction grid dimension */
-  int   Nx, Ny, Nz;   /* number of procs in each direction */
+  AO    ao;           /* application ordering context */
+  int   ni1;          /* x-direction grid dimension */
+  int   nj1;	      /* y-direction grid dimension */
+  int   nk1;	      /* z-direction grid dimension */
+  int   Nx, Ny, Nz;   /* number of processors in each direction */
   int   Nlocal, ierr, flg, llen, llenb, fort_comm, problem = 1, nc;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1633,36 +1634,35 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
 /***************************************************************************/
 
-int GetXCommunicator(Euler *app,int* fcomm)
+int GetXCommunicator(Euler *app,int* fxcomm)
 {
   MPI_Group group_all, group_x;
-  int fort_comm_x, ierr, ict, i, *ranks_x, *recv, send[2];
-  MPI_Comm comm_x;
+  MPI_Comm  comm_x;
+  int       ierr, ict, i, *ranks_x, *recv, send[2];
 
   /* Create communicator with processor subset (defined by those having the
      same region of grid in x-direction, y=0 boundary only) */
 
-  if (app->ys == 0) {
-    ranks_x = (int *)PetscMalloc(3*app->size*sizeof(int)); CHKPTRQ(ranks_x);
-    PetscMemzero(ranks_x,3*app->size*sizeof(int));
-    recv = (int *) ranks_x + app->size;
-    send[0] = app->xs; send[1] = app->rank;
-    ierr = MPI_Allgather(send,2,MPI_INT,recv,2,MPI_INT,app->comm); CHKERRQ(ierr);
-    ict = 0;
-    for (i=0; i<app->size; i++) {
-      if (recv[2*i] == app->xs) ranks_x[ict++] = recv[2*i+1];
-    }
-    for (i=0; i<ict; i++) {
-       printf("[%d] xs=%d, ict=%d, i=%d, member=%d\n",app->rank,app->xs,ict,i,ranks_x[i]);
-    }
-    ierr = MPI_Comm_group(app->comm,&group_all); CHKERRQ(ierr);
-    ierr = MPI_Group_incl(group_all,ict,ranks_x,&group_x); CHKERRQ(ierr);
-    ierr = MPI_Comm_create(app->comm,group_x,&comm_x); CHKERRQ(ierr);
-    PetscFree(ranks_x);
-    *(int*) (&fort_comm_x) = PetscFromPointerComm(comm_x);
-  } else {
-    fort_comm_x = 0;
+  ranks_x = (int *)PetscMalloc(3*app->size*sizeof(int)); CHKPTRQ(ranks_x);
+  PetscMemzero(ranks_x,3*app->size*sizeof(int));
+  recv = (int *) ranks_x + app->size;
+  ierr = wingsurface_(&send[0]); CHKERRQ(ierr);
+  send[1] = app->rank;
+  ierr = MPI_Allgather(send,2,MPI_INT,recv,2,MPI_INT,app->comm); CHKERRQ(ierr);
+  ict = 0;
+  for (i=0; i<app->size; i++) {
+    if (recv[2*i]) ranks_x[ict++] = recv[2*i+1];
   }
-  *fcomm = fort_comm_x;
+  printf("Getting communicator for j=1: rank =%d, xs=%d, ict=%d\n",app->rank,app->xs,ict);
+  for (i=0; i<ict; i++) {
+    printf("[%d] xs=%d, ict=%d, i=%d, member=%d\n",app->rank,app->xs,ict,i,ranks_x[i]);
+  }
+  fflush(stdout);
+  ierr = MPI_Comm_group(app->comm,&group_all); CHKERRQ(ierr);
+  ierr = MPI_Group_incl(group_all,ict,ranks_x,&group_x); CHKERRQ(ierr);
+  ierr = MPI_Comm_create(app->comm,group_x,&comm_x); CHKERRQ(ierr);
+  PetscFree(ranks_x);
+  *(int*)fxcomm = PetscFromPointerComm(comm_x);
+
   return 0;
 }
