@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.65 1999/04/01 17:09:15 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.66 1999/07/08 14:06:26 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -38,12 +38,12 @@ runex2:
            else echo "Possible problem with ex2_1, diffs above"; fi; \
            ${RM} -f ex2_1.tmp
 runex2_2:
-	-@${MPIRUN} -np 1 ex2 -p 1 -snes_smonitor -snes_type umls > ex2_2.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex2 -p 1 -snes_smonitor -snes_type umls -ksp_gmres_irorthog > ex2_2.tmp 2>&1;\
            if (diff output/ex2_2.out ex2_2.tmp) then true; \
            else echo "Possible problem with ex2_2, diffs above"; fi; \
            ${RM} -f ex2_2.tmp
 runex2_3:
-	-@${MPIRUN} -np 1 ex2 -p 1 -snes_smonitor -snes_type umls -snes_mf > ex2_3.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex2 -p 1 -snes_smonitor -snes_type umls -snes_mf -ksp_gmres_irorthog > ex2_3.tmp 2>&1;\
            if (diff output/ex2_3.out ex2_3.tmp) then true; \
            else echo "Possible problem with ex2_3, diffs above"; fi; \
            ${RM} -f ex2_3.tmp
