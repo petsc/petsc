@@ -12,11 +12,20 @@ typedef struct {
 } PC_ESI;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCESISetOperator"
+#define __FUNCT__ "PCESISetPreconditioner"
 /*@C
-     PCESISetOperator - Takes a PETSc matrix sets it to type ESI and 
-       provides the ESI operator that it wraps to look like a PETSc matrix.
+  PCESISetPreconditioner - Takes a PETSc PC sets it to type ESI and 
+  provides the ESI preconditioner that it wraps to look like a PETSc PC.
 
+  Input Parameter:
+. xin - The Petsc PC
+
+  Output Parameter:
+. v   - The ESI preconditioner
+
+  Level: advanced
+
+.keywords: PC, ESI
 @*/
 int PCESISetPreconditioner(PC xin,esi::Preconditioner<double,int> *v)
 {
