@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: urlget.py,v 1.20 1999/01/14 23:38:48 balay Exp balay $ 
+# $Id: urlget.py,v 1.21 1999/08/11 20:59:06 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
@@ -24,7 +24,7 @@ def basename(filename):
 def uncompress(filename):
     ext = extension(filename)
     if ext == 'gz':
-        err = os.system('zgunzip ' + filename)
+        err = os.system('gunzip ' + filename)
         if err != 0:
             print 'Error unable to invoke gunzip on ' + filename
             exit()
