@@ -304,7 +304,8 @@ PetscErrorCode PCILUSetDamping(PC pc,PetscReal damping)
 -  shifting - PETSC_TRUE to set shift else PETSC_FALSE
 
    Options Database Key:
-.  -pc_ilu_shift - Activate PCILUSetShift()
+.  -pc_ilu_shift [1/0] - Activate/Deactivate PCILUSetShift(); the value
+   is optional with 1 being the default
 
    Level: intermediate
 
@@ -694,7 +695,12 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     ierr = PetscOptionsReal("-pc_ilu_damping","Damping added to diagonal","PCILUSetDamping",ilu->info.damping,&ilu->info.damping,0);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_ilu_shift","Manteuffel shift applied to diagonal","PCILUSetShift",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCILUSetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-pc_ilu_shift","Manteuffel shift applied to diagonal","PCILUSetShift",(PetscInt)ilu->info.shift,&itmp,&flg); CHKERRQ(ierr);
+      if (flg && !itmp) {
+	ierr = PCILUSetShift(pc,PETSC_FALSE);CHKERRQ(ierr);
+      } else {
+	ierr = PCILUSetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
+      }
     }
     ierr = PetscOptionsReal("-pc_ilu_zeropivot","Pivot is considered zero if less than","PCILUSetSetZeroPivot",ilu->info.zeropivot,&ilu->info.zeropivot,0);CHKERRQ(ierr);
 
