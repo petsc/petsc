@@ -6,11 +6,10 @@
 \noindent {\bf Acknowledgments:}
 
 \medskip \medskip \noindent
-We especially thank Victor Eijkhout, David Keyes, and Matthew Knepley for their valuable 
-comments on the 
-source code, functionality, and documentation  for PETSc 2.0.  
-In addition, we thank all PETSc users for
-their many suggestions, bug reports, and encouragement.
+We thank all PETSc users for their many suggestions, bug reports, and
+encouragement.  We especially thank Victor Eijkhout, David Keyes, and
+Matthew Knepley for their valuable comments on the source code,
+functionality, and documentation for PETSc 2.0.
 
 
 \vspace{.3in}
@@ -21,15 +20,14 @@ have been written by
   \item Mark Adams, 1996-98 (scalability features of MPIBAIJ matrices),
   \item Cameron Cooper, Fall 1995 (portions of the VecScatter routines), 
   \item Victor Eijkhout, Summer 1998 (KSP type BICG, VecPipeline() and VecXXXBegin()/End() routines), 
-  \item Matt Hille, Summer 1995 (PetscView and PetscOpts), 
+  \item Matt Hille, Summer 1995,
   \item Matthew Knepley, Summer 1997 (too much to mention),
   \item Peter Mell, Summer 1995 (portions of the DA routines),
-  \item Wing-Lok Wan, Summer 1995 (the ILU portion of BlockSolve95), and
+  \item Wing-Lok Wan, Summer 1995 (the ILU portion of BlockSolve95),
   \item Liyang Xu, Summer 1997 (the interface to PVODE)
   \item Allison Baker, Summer 1999 (the flexible GMRES code)
-  \item Tony Caola, (the SPARSEKIT2 ilutp() interface)
+  \item Tony Caola, (the SPARSEKIT2 ilutp() interface).
 \end{itemize}
-while visiting Argonne National Laboratory or working with us.
 
 \vspace{.3in}
 \noindent
@@ -43,7 +41,7 @@ PETSc uses routines from
                        evaluations; converted to C using {\tt f2c}),
   \item SPARSPAK     (matrix reordering routines, converted to C using {\tt f2c}),
   \item SPARSEKIT2 (written by Yousef Saad) (iludtp(), converted to C using {\tt f2c}). These routines 
-                     are copyrighted by Saad under the GNU copyright, see \$(PETSC\_DIR)/src/mat/impls/aij/seq/gnu.
+                     are copyrighted by Saad under the GNU copyright, see \$(PETSC\_DIR)/src/mat\-/impls/aij/seq/gnu.
 \end{itemize}
 
 
@@ -53,8 +51,7 @@ PETSc interfaces to the following external software:
 \begin{itemize}
   \item BlockSolve95 (for parallel ICC(0) and ILU(0) preconditioning)
   \item ESSL         (IBM's math library for fast sparse direct LU factorization)
-  \item Matlab       (through a socket interface for graphics and numerical post processing 
-                      of data)
+  \item Matlab       
   \item ParMeTiS      (parallel graph partitioner)
   \item PVODE        (parallel ODE integrator)
   \item SPAI         (for parallel sparse approximate inverse preconditiong)
