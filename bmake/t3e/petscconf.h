@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.16 1999/02/08 22:22:33 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.17 1999/03/24 15:12:23 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -12,7 +12,6 @@
 #define HAVE_STRING_H 
 #define HAVE_MALLOC_H 
 #define HAVE_DRAND48 
-#define USES_CPTOFCD  
 #define HAVE_UNISTD_H
 #define HAVE_STDLIB_H
 #define HAVE_SYS_TIME_H 
@@ -20,6 +19,7 @@
 #define HAVE_X11
 
 #define HAVE_FORTRAN_CAPS 
+#define USES_CPTOFCD  
 #define USES_FORTRAN_SINGLE
 
 #define HAVE_READLINK
@@ -46,4 +46,6 @@
 #define WORDS_BIGENDIAN 1
 
 #define CAN_SLEEP_AFTER_ERROR
+#define USE_CTABLE
+
 #endif
