@@ -98,34 +98,49 @@ PetscErrorCode MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
   Mat_Spooles    *lu = (Mat_Spooles*)A->spptr; 
   PetscErrorCode ierr;
   int            size;
-  char           *s="";
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   
   ierr = PetscViewerASCIIPrintf(viewer,"Spooles run parameters:\n");CHKERRQ(ierr);
   switch (lu->options.symflag) {
-  case 0: s = "SPOOLES_SYMMETRIC"; break;
-  case 1: s = "SPOOLES_HERMITIAN"; break;
-  case 2: s = "SPOOLES_NONSYMMETRIC"; break; }
-  ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:   %s \n",s);CHKERRQ(ierr);
+  case 0: 
+    ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:   SPOOLES_SYMMETRIC");CHKERRQ(ierr);
+    break;
+  case 1: 
+    ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:    SPOOLES_HERMITIAN\n");CHKERRQ(ierr);
+    break;
+  case 2: 
+    ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:    SPOOLES_NONSYMMETRIC\n");CHKERRQ(ierr);
+    break; 
+  }
 
   switch (lu->options.pivotingflag) {
-  case 0: s = "SPOOLES_NO_PIVOTING"; break;
-  case 1: s = "SPOOLES_PIVOTING"; break; }
-  ierr = PetscViewerASCIIPrintf(viewer,"  pivotingflag:   %s \n",s);CHKERRQ(ierr);
-
+  case 0: 
+    ierr = PetscViewerASCIIPrintf(viewer,"  pivotingflag:   SPOOLES_NO_PIVOTING\n");CHKERRQ(ierr);
+    break;
+  case 1: 
+    ierr = PetscViewerASCIIPrintf(viewer,"  pivotingflag:   SPOOLES_PIVOTING\n");CHKERRQ(ierr);
+    break; 
+  }
   ierr = PetscViewerASCIIPrintf(viewer,"  tau:            %g \n",lu->options.tau);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  seed:           %D \n",lu->options.seed);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  msglvl:         %D \n",lu->options.msglvl);CHKERRQ(ierr);
 
   switch (lu->options.ordering) {
-  case 0: s = "BestOfNDandMS"; break;  
-  case 1: s = "MMD"; break;
-  case 2: s = "MS"; break;
-  case 3: s = "ND"; break;
+  case 0: 
+    ierr = PetscViewerASCIIPrintf(viewer,"  ordering:       BestOfNDandMS\n");CHKERRQ(ierr);
+    break;  
+  case 1: 
+    ierr = PetscViewerASCIIPrintf(viewer,"  ordering:       MMD\n");CHKERRQ(ierr);
+    break;
+  case 2: 
+    ierr = PetscViewerASCIIPrintf(viewer,"  ordering:       MS\n");CHKERRQ(ierr);
+    break;
+  case 3: 
+    ierr = PetscViewerASCIIPrintf(viewer,"  ordering:       ND\n");CHKERRQ(ierr);
+    break;
   }
-  ierr = PetscViewerASCIIPrintf(viewer,"  ordering:       %s \n",s);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  maxdomainsize:  %D \n",lu->options.maxdomainsize);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  maxzeros:       %D \n",lu->options.maxzeros);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  maxsize:        %D \n",lu->options.maxsize);CHKERRQ(ierr);
