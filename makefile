@@ -160,7 +160,7 @@ testfortran: chkopts
 # Note:	 libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
 # Note: F90 interface currently only supported in NAG F90 compiler
-fortran90: chkpetsc_dir
+fortran90: chkpetsc_dir fortran
 	-@echo "Beginning to compile Fortran90 interface library"
 	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
