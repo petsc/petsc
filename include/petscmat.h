@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.140 1997/08/13 22:27:41 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.141 1997/08/22 15:20:23 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -143,6 +143,7 @@ extern int MatDestroyMatrices(int, Mat **);
 extern int MatIncreaseOverlap(Mat,int,IS *,int);
 
 extern int MatAXPY(Scalar *,Mat,Mat);
+extern int MatAYPX(Scalar *,Mat,Mat);
 extern int MatCompress(Mat);
 
 extern int MatScale(Scalar *,Mat);
