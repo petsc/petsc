@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.201 2000/08/01 20:58:40 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.202 2000/08/03 15:10:22 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -499,7 +499,7 @@ EXTERN int MatCreateSeqCSNIndices(MPI_Comm,MatAIJIndices,int,Mat *);
 EXTERN int MatCreateSeqCSNIndices_Single(MPI_Comm,MatAIJIndices,int,Mat *);
 EXTERN int MatCreateSeqCSNIndicesWithPrecision(MPI_Comm,MatAIJIndices,int,ScalarPrecision,Mat *);
 
-EXTERN int MatMPIBAIJSetHashTableFactor(Mat,double);
+EXTERN int MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
 EXTERN int MatSeqAIJGetInodeSizes(Mat,int *,int *[],int *);
 EXTERN int MatMPIRowbsGetColor(Mat,ISColoring *);
 
@@ -528,6 +528,8 @@ EXTERN int MatMAIJRedimension(Mat,int,Mat*);
 EXTERN int MatMAIJGetAIJ(Mat,Mat*);
 
 EXTERN int MatReorderingSeqSBAIJ(Mat A,IS isp);
+EXTERN int MatMPISBAIJSetHashTableFactor(Mat,PetscReal);
+EXTERN int MatSeqSBAIJSetColumnIndices(Mat,int *);
 
 #define MATSEQMAIJ "seqmaij"
 #define MATMPIMAIJ "mpimaij"
