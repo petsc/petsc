@@ -277,15 +277,13 @@
       integer MATOP_LUFACTOR_NUMERIC
       integer MATOP_CHOLESKY_FACTOR_SYMBOLIC
       integer MATOP_CHOLESKY_FACTOR_NUMERIC
-      integer MATOP_GET_SIZE
-      integer MATOP_GET_LOCAL_SIZE
-      integer MATOP_GET_OWNERSHIP_RANGE
+      integer MATOP_SETUP_PREALLOCATION
       integer MATOP_ILUFACTOR_SYMBOLIC
       integer MATOP_ICCFACTOR_SYMBOLIC
       integer MATOP_GET_ARRAY
       integer MATOP_RESTORE_ARRAY
 
-      integer MATOP_CONVERT_SAME_TYPE
+      integer MATOP_DUPLICATE
       integer MATOP_FORWARD_SOLVE
       integer MATOP_BACKWARD_SOLVE
       integer MATOP_ILUFACTOR
@@ -311,7 +309,7 @@
       integer MATOP_SET_UNFACTORED
       integer MATOP_PERMUTE
       integer MATOP_SET_VALUES_BLOCKED
-
+      integer MATOP_GET_SUBMATRIX
       integer MATOP_DESTROY
       integer MATOP_VIEW
       integer MATOP_GET_MAPS
