@@ -26,7 +26,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
   MatStructure   flg;
 
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(1,"Passing null as user context which should contain DMMG");
+  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as user context which should contain DMMG");
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
   /* compute Jacobian on finest grid */
@@ -537,7 +537,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  if (!dmmg)     SETERRQ(1,"Passing null as DMMG");
+  if (!dmmg)     SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
   if (!jacobian) jacobian = DMMGComputeJacobianWithFD;
 
   ierr = PetscOptionsBegin(dmmg[0]->comm,PETSC_NULL,"DMMG Options","SNES");CHKERRQ(ierr);

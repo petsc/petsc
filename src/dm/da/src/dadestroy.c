@@ -47,9 +47,9 @@ PetscErrorCode DADestroy(DA da)
   da->refct = 0;
 
   for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
-    if (da->localout[i]) SETERRQ(1,"Destroying a DA that has a local vector obtained with DAGetLocalVector()");
+    if (da->localout[i]) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Destroying a DA that has a local vector obtained with DAGetLocalVector()");
     if (da->localin[i]) {ierr = VecDestroy(da->localin[i]);CHKERRQ(ierr);}
-    if (da->globalout[i]) SETERRQ(1,"Destroying a DA that has a global vector obtained with DAGetGlobalVector()");
+    if (da->globalout[i]) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Destroying a DA that has a global vector obtained with DAGetGlobalVector()");
     if (da->globalin[i]) {ierr = VecDestroy(da->globalin[i]);CHKERRQ(ierr);}
   }
 

@@ -136,11 +136,11 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   ierr = PetscTypeCompare((PetscObject)pc->pmat,MATMPIBAIJ,&mpibaij);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)pc->pmat,MATBAIJ,&baij);CHKERRQ(ierr);
   if (!seqbaij && !mpibaij && !baij) {
-    SETERRQ(1,"Currently only supports BAIJ matrices");
+    SETERRQ(PETSC_ERR_SUP,"Currently only supports BAIJ matrices");
   }
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   if (mpibaij || (baij && (size > 1))) A = ((Mat_MPIBAIJ*)A->data)->A;
-  if (A->m != A->n) SETERRQ(1,"Supported only for square matrices and square storage");
+  if (A->m != A->n) SETERRQ(PETSC_ERR_SUP,"Supported only for square matrices and square storage");
 
   ierr        =  MatInvertBlockDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
   a           = (Mat_SeqBAIJ*)A->data;

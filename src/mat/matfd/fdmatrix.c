@@ -656,7 +656,7 @@ PetscErrorCode MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructu
 	else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
 	dx            *= epsilon;
-	if (!PetscAbsScalar(dx)) SETERRQ(1,"Computed 0 differencing parameter");
+	if (!PetscAbsScalar(dx)) SETERRQ(PETSC_ERR_PLIB,"Computed 0 differencing parameter");
 	w3_array[col] += dx;
       } 
       w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);

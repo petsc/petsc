@@ -1490,7 +1490,7 @@ PetscErrorCode DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
 PetscErrorCode DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 {
   PetscFunctionBegin;
-  SETERRQ(1,"Must compile with bmake/PETSC_ARCH/packages flag PETSC_HAVE_ADIC for this routine");
+  SETERRQ(PETSC_ERR_SUP_SYS,"Must compile with bmake/PETSC_ARCH/packages flag PETSC_HAVE_ADIC for this routine");
 }
 
 #undef __FUNCT__
@@ -1498,7 +1498,7 @@ PetscErrorCode DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 PetscErrorCode DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
 {
   PetscFunctionBegin;
-  SETERRQ(1,"Must compile with bmake/PETSC_ARCH/packages flag PETSC_HAVE_ADIC for this routine");
+  SETERRQ(PETSC_ERR_SUP_SYS,"Must compile with bmake/PETSC_ARCH/packages flag PETSC_HAVE_ADIC for this routine");
 }
 
 #endif
@@ -1634,12 +1634,12 @@ PetscErrorCode DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,Vec f,void *w)
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
     ierr = DAMultiplyByJacobian1WithAdic(da,u,v,f,w);CHKERRQ(ierr);
 #else
-    SETERRQ(1,"Requires ADIC to be installed and cannot use complex numbers");
+    SETERRQ(PETSC_ERR_SUP_SYS,"Requires ADIC to be installed and cannot use complex numbers");
 #endif
   } else if (da->adiformf_lf) {
     ierr = DAMultiplyByJacobian1WithAdifor(da,u,v,f,w);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Must call DASetLocalAdiforMFFunction() or DASetLocalAdicMFFunction() before using");
+    SETERRQ(PETSC_ERR_ORDER,"Must call DASetLocalAdiforMFFunction() or DASetLocalAdicMFFunction() before using");
   }
   PetscFunctionReturn(0);
 }

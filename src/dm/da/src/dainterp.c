@@ -10,8 +10,8 @@
 PetscErrorCode DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 {
   PetscErrorCode ierr;
-  Vec    fine;
-  PetscScalar one = 1.0;
+  Vec            fine;
+  PetscScalar    one = 1.0;
 
   PetscFunctionBegin;
   ierr = DMCreateGlobalVector(daf,&fine);CHKERRQ(ierr);
@@ -28,10 +28,10 @@ PetscErrorCode DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
 {
   PetscErrorCode ierr;
-  int i,i_start,m_f,Mx,*idx_f;
-  int            m_ghost,*idx_c,m_ghost_c;
-  int            row,col,i_start_ghost,mx,m_c,nc,ratio;
-  int            i_c,i_start_c,i_start_ghost_c,cols[2],dof;
+  PetscInt       i,i_start,m_f,Mx,*idx_f;
+  PetscInt       m_ghost,*idx_c,m_ghost_c;
+  PetscInt       row,col,i_start_ghost,mx,m_c,nc,ratio;
+  PetscInt       i_c,i_start_c,i_start_ghost_c,cols[2],dof;
   PetscScalar    v[2],x,*coors = 0,*ccoors;
   Mat            mat;
   DAPeriodicType pt;
@@ -121,10 +121,10 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
 PetscErrorCode DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
 {
   PetscErrorCode ierr;
-  int i,i_start,m_f,Mx,*idx_f;
-  int            m_ghost,*idx_c,m_ghost_c;
-  int            row,col,i_start_ghost,mx,m_c,nc,ratio;
-  int            i_c,i_start_c,i_start_ghost_c,cols[2],dof;
+  PetscInt       i,i_start,m_f,Mx,*idx_f;
+  PetscInt       m_ghost,*idx_c,m_ghost_c;
+  PetscInt       row,col,i_start_ghost,mx,m_c,nc,ratio;
+  PetscInt       i_c,i_start_c,i_start_ghost_c,cols[2],dof;
   PetscScalar    v[2],x;
   Mat            mat;
   DAPeriodicType pt;
@@ -194,11 +194,11 @@ PetscErrorCode DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
 PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
 {
   PetscErrorCode ierr;
-  int i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
-  int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
-  int            row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratioi,ratioj;
-  int            i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
-  int            size_c,size_f,rank_f,col_shift,col_scale;
+  PetscInt       i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
+  PetscInt       m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
+  PetscInt       row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratioi,ratioj;
+  PetscInt       i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
+  PetscInt       size_c,size_f,rank_f,col_shift,col_scale;
   PetscScalar    v[4],x,y;
   Mat            mat;
   DAPeriodicType pt;
@@ -206,7 +206,6 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   Vec            vcoors,cvcoors;
 
   PetscFunctionBegin;
-
   ierr = DAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   if (DAXPeriodic(pt)){
@@ -369,12 +368,12 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
 PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
 {
   PetscErrorCode ierr;
-  int i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,l;
-  int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,Mz,mz;
-  int            row,col,i_start_ghost,j_start_ghost,cols[8],mx,m_c,my,nc,ratioi,ratioj,ratiok;
-  int            i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
-  int            l_start,p_f,l_start_ghost,p_ghost,l_start_c,p_c;
-  int            l_start_ghost_c,p_ghost_c,l_c,*dnz,*onz;
+  PetscInt       i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,l;
+  PetscInt       m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,Mz,mz;
+  PetscInt       row,col,i_start_ghost,j_start_ghost,cols[8],mx,m_c,my,nc,ratioi,ratioj,ratiok;
+  PetscInt       i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
+  PetscInt       l_start,p_f,l_start_ghost,p_ghost,l_start_c,p_c;
+  PetscInt       l_start_ghost_c,p_ghost_c,l_c,*dnz,*onz;
   PetscScalar    v[8],x,y,z;
   Mat            mat;
   DAPeriodicType pt;
@@ -600,7 +599,7 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
 PetscErrorCode DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
 {
   PetscErrorCode ierr;
-  int dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
+  PetscInt       dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DAPeriodicType wrapc,wrapf;
   DAStencilType  stc,stf;
 
@@ -612,17 +611,17 @@ PetscErrorCode DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
 
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(1,"Dimensions of DA do not match %d %d",dimc,dimf);CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %d %d",dimc,dimf);CHKERRQ(ierr);
   /* if (mc != mf) SETERRQ2(1,"Processor dimensions of DA in X %d %d do not match",mc,mf);CHKERRQ(ierr);
      if (nc != nf) SETERRQ2(1,"Processor dimensions of DA in Y %d %d do not match",nc,nf);CHKERRQ(ierr);
      if (pc != pf) SETERRQ2(1,"Processor dimensions of DA in Z %d %d do not match",pc,pf);CHKERRQ(ierr); */
-  if (dofc != doff) SETERRQ2(1,"DOF of DA do not match %d %d",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(1,"Stencil width of DA do not match %d %d",sc,sf);CHKERRQ(ierr);
-  if (wrapc != wrapf) SETERRQ(1,"Periodic type different in two DAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(1,"Stencil type different in two DAs");CHKERRQ(ierr);
-  if (Mc < 2 && Mf > 1) SETERRQ(1,"Coarse grid requires at least 2 points in x direction");
-  if (dimc > 1 && Nc < 2 && Nf > 1) SETERRQ(1,"Coarse grid requires at least 2 points in y direction");
-  if (dimc > 2 && Pc < 2 && Pf > 1) SETERRQ(1,"Coarse grid requires at least 2 points in z direction");
+  if (dofc != doff) SETERRQ2(PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %d %d",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %d %d",sc,sf);CHKERRQ(ierr);
+  if (wrapc != wrapf) SETERRQ(PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
+  if (Mc < 2 && Mf > 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
+  if (dimc > 1 && Nc < 2 && Nf > 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
+  if (dimc > 2 && Pc < 2 && Pf > 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
   if (dac->interptype == DA_Q1){
     if (dimc == 1){
@@ -652,11 +651,11 @@ PetscErrorCode DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
 PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
 {
   PetscErrorCode ierr;
-  int i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
-  int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c;
-  int            row,i_start_ghost,j_start_ghost,mx,m_c,my,nc,ratioi,ratioj;
-  int            i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
-  int            *cols;
+  PetscInt       i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
+  PetscInt       m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c;
+  PetscInt       row,i_start_ghost,j_start_ghost,mx,m_c,my,nc,ratioi,ratioj;
+  PetscInt       i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
+  PetscInt       *cols;
   DAPeriodicType pt;
   Vec            vecf,vecc;
   IS             isf;
@@ -742,7 +741,7 @@ PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
 PetscErrorCode DAGetInjection(DA dac,DA daf,VecScatter *inject)
 {
   PetscErrorCode ierr;
-  int dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
+  PetscInt       dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DAPeriodicType wrapc,wrapf;
   DAStencilType  stc,stf;
 
@@ -753,17 +752,17 @@ PetscErrorCode DAGetInjection(DA dac,DA daf,VecScatter *inject)
 
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(1,"Dimensions of DA do not match %d %d",dimc,dimf);CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %d %d",dimc,dimf);CHKERRQ(ierr);
   /* if (mc != mf) SETERRQ2(1,"Processor dimensions of DA in X %d %d do not match",mc,mf);CHKERRQ(ierr);
      if (nc != nf) SETERRQ2(1,"Processor dimensions of DA in Y %d %d do not match",nc,nf);CHKERRQ(ierr);
      if (pc != pf) SETERRQ2(1,"Processor dimensions of DA in Z %d %d do not match",pc,pf);CHKERRQ(ierr); */
-  if (dofc != doff) SETERRQ2(1,"DOF of DA do not match %d %d",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(1,"Stencil width of DA do not match %d %d",sc,sf);CHKERRQ(ierr);
-  if (wrapc != wrapf) SETERRQ(1,"Periodic type different in two DAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(1,"Stencil type different in two DAs");CHKERRQ(ierr);
-  if (Mc < 2) SETERRQ(1,"Coarse grid requires at least 2 points in x direction");
-  if (dimc > 1 && Nc < 2) SETERRQ(1,"Coarse grid requires at least 2 points in y direction");
-  if (dimc > 2 && Pc < 2) SETERRQ(1,"Coarse grid requires at least 2 points in z direction");
+  if (dofc != doff) SETERRQ2(PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %d %d",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %d %d",sc,sf);CHKERRQ(ierr);
+  if (wrapc != wrapf) SETERRQ(PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
+  if (Mc < 2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
+  if (dimc > 1 && Nc < 2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
+  if (dimc > 2 && Pc < 2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
   if (dimc == 2){
     ierr = DAGetInjection_2D(dac,daf,inject);CHKERRQ(ierr);

@@ -213,7 +213,7 @@ PetscErrorCode DAGetGhostedCoordinates(DA da,Vec *c)
  
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidPointer(c,2);
-  if (!da->coordinates) SETERRQ(1,"You must call DASetCoordinates() before this call");
+  if (!da->coordinates) SETERRQ(PETSC_ERR_ORDER,"You must call DASetCoordinates() before this call");
   if (!da->ghosted_coordinates) {
     DA  dac;
     PetscErrorCode ierr;

@@ -80,7 +80,7 @@ PetscErrorCode DMMGSetUseGalerkinCoarse(DMMG* dmmg)
   PetscInt  i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(1,"Passing null as DMMG");
+  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   for (i=0; i<nlevels; i++) {
     dmmg[i]->galerkin = PETSC_TRUE;
@@ -109,7 +109,7 @@ PetscErrorCode DMMGDestroy(DMMG *dmmg)
   PetscInt       i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(1,"Passing null as DMMG");
+  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   for (i=1; i<nlevels; i++) {
     if (dmmg[i]->R) {ierr = MatDestroy(dmmg[i]->R);CHKERRQ(ierr);}
@@ -158,7 +158,7 @@ PetscErrorCode DMMGSetDM(DMMG *dmmg,DM dm)
   PetscInt       i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(1,"Passing null as DMMG");
+  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   /* Create DA data structure for all the levels */
   dmmg[0]->dm = dm;
@@ -312,7 +312,7 @@ PetscErrorCode DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
   PetscViewer    ascii;
 
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(1,"Passing null as DMMG");
+  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_ksp_monitor",&monitor);CHKERRQ(ierr);
   if (monitor) {
@@ -402,7 +402,7 @@ PetscErrorCode DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorC
   PetscTruth     galerkin;
 
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(1,"Passing null as DMMG");
+  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
   galerkin = dmmg[0]->galerkin;  
 
   if (galerkin) {
@@ -542,7 +542,7 @@ PetscErrorCode DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscE
   PetscTruth     ismg,isred;
 
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(1,"Passing null as DMMG");
+  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
   if (!dmmg[0]->ksp) SETERRQ(PETSC_ERR_ORDER,"Must call AFTER DMMGSetKSP() or DMMGSetSNES()");
   if ((n && !func) || (!n && func)) SETERRQ(PETSC_ERR_ARG_INCOMP,"Both n and func() must be set together");
   if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Cannot have negative number of vectors in null space n = %d",n)

@@ -43,6 +43,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_PLIB             77   /* PETSc library generated inconsistent data */
 #define PETSC_ERR_MEMC             78   /* memory corruption */
 #define PETSC_ERR_CONV_FAILED      82   /* iterative method (KSP or SNES) failed */
+#define PETSC_ERR_USER             83   /* user has not provided needed function */
 
 #define PETSC_ERR_ARG_SIZ          60   /* nonconforming object sizes used in operation */
 #define PETSC_ERR_ARG_IDN          61   /* two arguments not allowed to be the same */
@@ -55,7 +56,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_ARG_WRONGSTATE   73   /* object in argument is in wrong state, e.g. unassembled mat */
 #define PETSC_ERR_ARG_INCOMP       75   /* two arguments are incompatible */
 #define PETSC_ERR_ARG_NULL         85   /* argument is null that should not be */
-#define PETSC_ERR_ARG_UNKNOWN_TYPE 86  /* type name doesn't match any registered type */
+#define PETSC_ERR_ARG_UNKNOWN_TYPE 86   /* type name doesn't match any registered type */
 
 #define PETSC_ERR_FILE_OPEN        65   /* unable to open file */
 #define PETSC_ERR_FILE_READ        66   /* unable to read from file */

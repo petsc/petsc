@@ -273,7 +273,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
     }
 
     if (ierr)
-        SETERRQ(1, scotch->mesg_log);
+        SETERRQ(PETSC_ERR_LIB, scotch->mesg_log);
 
     /* Creation of the index set */
 

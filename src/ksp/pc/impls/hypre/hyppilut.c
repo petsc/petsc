@@ -375,7 +375,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
         jac->gridrelaxpoints[0][0] = 1; jac->gridrelaxpoints[0][1] = -1;
       }
     } else if (jac->gridsweeps[0] > 2) { 
-      SETERRQ(1,"Grid sweeps can only be 0, 1, or 2");
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Grid sweeps can only be 0, 1, or 2");
     }
     
     if(jac->gridsweeps[1] == 1) jac->gridrelaxpoints[1][0] = 0;
@@ -386,7 +386,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
         jac->gridrelaxpoints[1][0] = 1; jac->gridrelaxpoints[1][1] = -1;
       }
     } else if (jac->gridsweeps[1] > 2) { 
-      SETERRQ(1,"Grid sweeps can only be 0, 1, or 2");
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Grid sweeps can only be 0, 1, or 2");
     }
 
     if(jac->gridsweeps[2] == 1) jac->gridrelaxpoints[2][0] = 0;
@@ -397,7 +397,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
         jac->gridrelaxpoints[2][0] = -1; jac->gridrelaxpoints[2][1] = 1;
       }
     } else if (jac->gridsweeps[2] > 2) { 
-      SETERRQ(1,"Grid sweeps can only be 0, 1, or 2");
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Grid sweeps can only be 0, 1, or 2");
     }
 
     for (i=0; i<jac->gridsweeps[3]; i++) {
@@ -561,7 +561,7 @@ static PetscErrorCode PCHYPRESetType_HYPRE(PC pc,const char name[])
 
   PetscFunctionBegin;
   if (pc->ops->setup) {
-    SETERRQ(1,"Cannot set the HYPRE preconditioner type once it has been set");
+    SETERRQ(PETSC_ERR_ORDER,"Cannot set the HYPRE preconditioner type once it has been set");
   }
 
   pc->ops->setup          = PCSetUp_HYPRE;

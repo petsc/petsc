@@ -155,7 +155,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
          b = beta/betaold;
          if (eigs) {
 	   if (ksp->max_it != stored_max_it) {
-	     SETERRQ(1,"Can not change maxit AND calculate eigenvalues");
+	     SETERRQ(PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
 	   }
            e[i] = sqrt(PetscAbsScalar(b))/a;  
          }

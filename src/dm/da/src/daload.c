@@ -38,10 +38,10 @@ PetscErrorCode DALoad(PetscViewer viewer,int M,int N,int P,DA *da)
 
   ierr = PetscOptionsGetIntArray(PETSC_NULL,"-daload_info",info,&nmax,&flag);CHKERRQ(ierr);
   if (!flag) {
-    SETERRQ(1,"No DA information in file");
+    SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"No DA information in file");
   }
   if (nmax != 8) {
-    SETERRQ1(1,"Wrong number of items in DA information in file: %d",nmax);
+    SETERRQ1(PETSC_ERR_FILE_UNEXPECTED,"Wrong number of items in DA information in file: %d",nmax);
   }
   if (info[0] == 1) {
     ierr = DACreate1d(comm,(DAPeriodicType) info[7],info[1],info[4],info[5],0,da);CHKERRQ(ierr);
