@@ -245,3 +245,20 @@ class ArgLibrary(Arg):
       raise TypeError('Invalid library: '+str(value))
     self.value = value
     return
+
+class ArgString(Arg):
+  '''Arguments that represent strings satisfying a given regular expression'''
+  def __init__(self, key, value = None, help = '', regExp = None, isTemporary = 0):
+    self.regExp = regExp
+    if self.regExp:
+      import re
+      self.re = re.compile(self.regExp)
+    Arg.__init__(self, key, value, help, isTemporary)
+    return
+
+  def setValue(self, value):
+    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    if self.regExp and not self.re.match(value):
+      raise TypeError('Invalid string '+str(value)+'. You must give a string satisfying "'+str(self.regExp)+'".')
+    self.value = value
+    return
