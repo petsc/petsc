@@ -1,11 +1,12 @@
-/*$Id: mmbaij.c,v 1.44 2001/09/22 05:49:31 balay Exp balay $*/
+/*$Id: mmbaij.c,v 1.45 2001/09/22 05:54:21 balay Exp balay $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
 */
 #include "src/mat/impls/baij/mpi/mpibaij.h"
 #include "src/vec/vecimpl.h"
-EXTERN int MatSetValues_SeqBAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
+
+EXTERN int MatSetValuesBlocked_SeqBAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPIBAIJ"
@@ -148,7 +149,6 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
-
 /*
      Takes the local part of an already assembled MPIBAIJ matrix
    and disassembles it. This is to allow new nonzeros into the matrix
@@ -166,7 +166,7 @@ int DisAssemble_MPIBAIJ(Mat A)
   Mat          B = baij->B,Bnew;
   Mat_SeqBAIJ  *Bbaij = (Mat_SeqBAIJ*)B->data;
   int          ierr,i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
-  int          k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m = A->m;
+  int          bs2=baij->bs2,*nz,ec,m = A->m;
   MatScalar    *a = Bbaij->a;
   PetscScalar  *atmp;
 

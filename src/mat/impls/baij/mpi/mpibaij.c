@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.231 2001/09/20 20:57:47 bsmith Exp balay $*/
+/*$Id: mpibaij.c,v 1.232 2001/09/22 05:18:57 balay Exp balay $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -437,8 +437,8 @@ int MatSetValues_MPIBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar
             }
           } else col = in[j] + in[j]%bs;
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-	  //          MatSetValues_SeqBAIJ_B_Private(row,col,value,addv);
-           ierr = MatSetValues_SeqBAIJ(baij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr); 
+          MatSetValues_SeqBAIJ_B_Private(row,col,value,addv);
+          /* ierr = MatSetValues_SeqBAIJ(baij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
       }
     } else {
