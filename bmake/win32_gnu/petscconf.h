@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.8 1998/04/27 23:19:41 balay Exp balay $"
+"$Id: petscconf.h,v 1.9 1998/04/28 17:36:00 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -29,7 +29,7 @@
 #define HAVE_MEMMOVE
 #define HAVE_RAND
 #define HAVE_DOUBLE_ALIGN_MALLOC
-
+#define HAVE_MEMALIGN
 
 #define CANNOT_START_DEBUGGER
 
