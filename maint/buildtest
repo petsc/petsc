@@ -73,7 +73,7 @@ cat build.log examples.log \
 if ($status == 0) then
   echo "Errors generated in $H" > trash
   cat trashz >> trash
-  /bin/mail curfman bsmith balay < trash
+  /bin/mail curfman balay < trash
 else
   echo "No errors generated in $H -- hard to believe" > trash
   /bin/mail curfman < trash
