@@ -50,7 +50,7 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
             | sed 's/&amp;gt;/   /g' \
             | sed 's/bullet://g' \
             | sed 's/$$ //g' \
-            | sed 's?<H2>PETSc 2.0 Users Manual</H2>?<center><H2>PETSc 2.0 Users Manual</H2>?g' \
+            | sed 's?<H2>PETSc 2.0 Users Manual</H2>?<center><H2>PETSc 2.0 Users Manual</H2></center>?g' \
             | sed 's?Argonne National Laboratory<BR><BR></b><P>?Argonne National Laboratory<BR><BR></b><P></center>?g' \
             | sed 's/<pre><tt>   #ifndef/<pre><tt>#ifndef/g' \
             | sed 's?<b>Figure 1: </b><A NAME="Figure1">Organization of the PETSc Library</a><P>?<P> <center><IMG WIDTH=452 HEIGHT=392 ALIGN=BOTTOM SRC="petsc.gif"></center><BR><P><center><b>Figure 1: </b><A NAME="Figure1">Organization of the PETSc Library</a><P></center>?g' \
