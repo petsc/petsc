@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.185 2000/04/12 04:22:56 bsmith Exp balay $*/
+/*$Id: dense.c,v 1.186 2000/05/05 22:15:33 balay Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -67,7 +67,7 @@ int MatScale_SeqDense(Scalar *alpha,Mat inA)
    rather than put it in the Mat->row slot.*/
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLUFactor_SeqDense"
-int MatLUFactor_SeqDense(Mat A,IS row,IS col,PetscReal f)
+int MatLUFactor_SeqDense(Mat A,IS row,IS col,MatLUInfo *minfo)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   int          info;
@@ -107,7 +107,7 @@ int MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLUFactorSymbolic_SeqDense"
-int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,PetscReal f,Mat *fact)
+int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,MatLUInfo *info,Mat *fact)
 {
   int ierr;
 
@@ -127,7 +127,7 @@ int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
   /* copy the numerical values */
   ierr = PetscMemcpy(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));CHKERRQ(ierr);
   (*fact)->factor = 0;
-  ierr = MatLUFactor(*fact,0,0,1.0);CHKERRQ(ierr);
+  ierr = MatLUFactor(*fact,0,0,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -884,7 +884,7 @@ int MatView_SeqDense(Mat A,Viewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
 
   if (issocket) {
-    ierr = ViewerSocketPutScalar_Private(viewer,a->m,a->n,a->v);CHKERRQ(ierr);
+    ierr = ViewerSocketPutScalar(viewer,a->m,a->n,a->v);CHKERRQ(ierr);
   } else if (isascii) {
     ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
@@ -1159,7 +1159,7 @@ int MatZeroRows_SeqDense(Mat A,IS is,Scalar *diag)
   Scalar       *slot;
 
   PetscFunctionBegin;
-  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     slot = l->v + rows[i];
@@ -1231,8 +1231,8 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
-  ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
-  ierr = ISGetSize(iscol,&ncols);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
   
   /* Check submatrixcall */
   if (scall == MAT_REUSE_MATRIX) {
@@ -1364,8 +1364,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
        0,
-       0,
-       0,
+       MatDestroy_SeqDense,
+       MatView_SeqDense,
        MatGetMaps_Petsc};
 
 #undef __FUNC__  
@@ -1415,8 +1415,6 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   b               = (Mat_SeqDense*)PetscMalloc(sizeof(Mat_SeqDense));CHKPTRQ(b);
   ierr            = PetscMemzero(b,sizeof(Mat_SeqDense));CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->ops->destroy = MatDestroy_SeqDense;
-  B->ops->view    = MatView_SeqDense;
   B->factor       = 0;
   B->mapping      = 0;
   PLogObjectMemory(B,sizeof(struct _p_Mat));

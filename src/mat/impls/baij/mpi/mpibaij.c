@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.199 2000/05/10 16:40:56 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.200 2000/06/30 18:55:36 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -2348,7 +2348,7 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   ierr =  MatDuplicate(oldmat->B,cpvalues,&a->B);CHKERRQ(ierr);
   PLogObjectParent(mat,a->B);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr); 
-  ierr = FListDuplicate(mat->qlist,&matin->qlist);CHKERRQ(ierr);
+  ierr = FListDuplicate(matin->qlist,&mat->qlist);CHKERRQ(ierr);
   if (flg) {
     ierr = MatPrintHelp(mat);CHKERRQ(ierr);
   }
