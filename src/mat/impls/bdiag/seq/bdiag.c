@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.3 1995/04/24 21:08:05 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.4 1995/04/28 03:19:42 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -250,9 +250,9 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
       *v   = dmat->dvalue;
       k    = 0;
       for (j=0; j<nd; j++) {
-        pcol = row - diag[j];		/* computed column */
+        pcol = row - diag[j];
         if (pcol > -1 && pcol < nc) {
-	  if (diag[j] > 0) 		/* lower triangle */
+	  if (diag[j] > 0)
 	    loc = row - diag[j];
 	  else
 	    loc = row;
@@ -265,11 +265,11 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
       k     = 0;
       *v    = dmat->dvalue;
       *col  = dmat->colloc;
-      shift = (row/nb)*nb*nb + row%nb;  /* integer arithmetic */
+      shift = (row/nb)*nb*nb + row%nb;
       for (j=0; j<nd; j++) {
-        pcol = nb * (row/nb - diag[j]);	/* computed base column */
+        pcol = nb * (row/nb - diag[j]);
         if (pcol > -1 && pcol < nc) {
-          if (diag[j] > 0) 		/* lower triangle */
+          if (diag[j] > 0)
 	    loc = shift - diag[j]*nb*nb;
 	  else 
 	    loc = shift;
@@ -282,7 +282,8 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
       }
       *nz = k;
     }
-  } else {
+  }
+  else {
     if (nb == 1) { 
       if (nz) {
         k = 0;
@@ -308,15 +309,16 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
         for (j=0; j<nd; j++) {
           pcol = row - diag[j];
           if (pcol > -1 && pcol < nc) {
-	    if (diag[j] > 0) 		/* lower triangle */
+	    if (diag[j] > 0)
 	      loc = row - diag[j];
 	    else
 	      loc = row;
-	    (*v)[k] = (dmat->diagv[j])[loc];	k++;
+	    (*v)[k] = (dmat->diagv[j])[loc]; k++;
           }
         }
       }
-    } else {
+    } 
+    else {
       if (nz) {
         k = 0;
         for (j=0; j<nd; j++) {
@@ -328,7 +330,6 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
       if (col) {
         *col = dmat->colloc;
         k = 0;
-        while (j > -1) {
         for (j=0; j<nd; j++) {
           pcol = nb * (row/nb - diag[j]);
           if (pcol > -1 && pcol < nc) {
@@ -340,13 +341,13 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
         }
       }
       if (v) {
-        int shift = (row/nb)*nb*nb + row%nb;  /* integer arithmetic */
+        int shift = (row/nb)*nb*nb + row%nb;
         *v = dmat->dvalue;
         k = 0;
         for (j=0; j<nd; j++) {
 	  pcol = nb * (row/nb - diag[j]);
 	  if (pcol > -1 && pcol < nc) {
-	    if (diag[j] > 0) 		/* lower triangle */
+	    if (diag[j] > 0)
 	      loc = shift - diag[j]*nb*nb;
 	    else 
 	      loc = shift;
@@ -527,22 +528,33 @@ static int MatDestroy_BDiag(PetscObject obj)
 static int MatEndAssembly_BDiag(Mat matin,int mode)
 {
   Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  int i;
   if (mode == FLUSH_ASSEMBLY) return 0;
+  for (i=0; i<mat->nd; i++) {
+    if (mat->diag[i] == 0) {mat->mainbd = i; break;}
+  }
+  if (mat->mainbd = -1) 
+    SETERR(1,"No main diagonal.  Must set main diagonal, even if empty.")
   mat->assembled = 1;
   return 0;
 }
 
-static int MatGetDiag_BDiag(Mat matin,Vec v)
+static int MatGetDiagonal_BDiag(Mat matin,Vec v)
 {
   Mat_BDiag *mat = (Mat_BDiag *) matin->data;
-  int    i, n;
-  Scalar *x;
+  int    i, n, ibase, nb = mat->nb, iloc;
+  Scalar *x, *dvmain;
   CHKTYPE(v,SEQVECTOR);
   VecGetArray(v,&x); VecGetSize(v,&n);
   if (n != mat->m) SETERR(1,"Nonconforming matrix and vector");
-/*  for ( i=0; i<mat->m; i++ ) {
-    x[i] = mat->v[i*mat->m + i];
-  } */
+  dvmain = mat->diagv[mat->mainbd];
+  if (mat->nb == 1) {
+    for (i=0; i<mat->m; i++) x[i] = dvmain[i];
+  } else {
+    for (i=0; i<mat->mblock; i++) {
+      ibase = i*nb*nb;  iloc = i*nb;
+    }
+  }
   return 0;
 }
 
@@ -575,7 +587,7 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        0, 0, 0, 0,
        0, 0, 0, 0,
        MatGetInfo_BDiag, 0, MatCopy_BDiag,
-       MatGetDiag_BDiag, 0, 0,
+       MatGetDiagonal_BDiag, 0, 0,
        0,MatEndAssembly_BDiag,
        0, 0, MatZero_BDiag,MatZeroRows_BDiag,0,
        0, 0, 0, 0,
@@ -593,6 +605,7 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
 .  nb     - each element of a diagonal is an nb x nb dense matrix
 .  diag   - array of block diagonal numbers, values of (row-col)/nb
             NOTE:  currently, diagonals MUST be listed in descending order!
+            You must store the main diagonal, even if it has zero values.
 .  diagv  - pointer to actual diagonals (in same order as diag array), 
             if allocated by user.
             Otherwise, set diagv=0 on input for PETSc to control memory 
@@ -637,9 +650,12 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
 
   mat->m      = m;
   mat->n      = n;
+  mat->mblock = m/nb;
+  mat->nblock = n/nb;
   mat->nd     = nd;
   mat->nb     = nb;
   mat->ndim   = 0;
+  mat->mainbd = -1;
 
   mat->diag   = (int *)MALLOC( nd * sizeof(int) ); CHKPTR(mat->diag);
   for (i=0; i<nd; i++) mat->diag[i] = diag[i];
