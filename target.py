@@ -39,7 +39,11 @@ class Target (transform.Transform):
   def executeTransformFan(self, sources, tuple):
     products = []
     for transform in tuple:
-      products.append(self.executeTransform(sources, transform))
+      p = self.executeTransform(sources, transform)
+      if type(p) == types.ListType:
+        products.extend(p)
+      else:
+        products.append(p)
     return products
 
   def executeTransform(self, sources, t):
