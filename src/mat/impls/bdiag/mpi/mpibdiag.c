@@ -1,6 +1,5 @@
-
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.102 1996/12/01 17:51:11 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.103 1996/12/01 17:55:41 curfman Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -10,6 +9,8 @@ static char vcid[] = "$Id: mpibdiag.c,v 1.102 1996/12/01 17:51:11 curfman Exp cu
 #include "src/mat/impls/bdiag/mpi/mpibdiag.h"
 #include "src/vec/vecimpl.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSetValues_MPIBDiag"
 static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode addv)
 {
@@ -51,6 +52,8 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetValues_MPIBDiag"
 static int MatGetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -74,6 +77,8 @@ static int MatGetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,Scalar 
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatAssemblyBegin_MPIBDiag"
 static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -174,6 +179,8 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 }
 extern int MatSetUpMultiply_MPIBDiag(Mat);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatAssemblyEnd_MPIBDiag"
 static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -246,6 +253,8 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetBlockSize_MPIBDiag"
 static int MatGetBlockSize_MPIBDiag(Mat mat,int *bs)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -254,6 +263,8 @@ static int MatGetBlockSize_MPIBDiag(Mat mat,int *bs)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatZeroEntries_MPIBDiag"
 static int MatZeroEntries_MPIBDiag(Mat A)
 {
   Mat_MPIBDiag *l = (Mat_MPIBDiag *) A->data;
@@ -271,6 +282,8 @@ static int MatZeroEntries_MPIBDiag(Mat A)
    routine. 
 */
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatZeroRows_MPIBDiag"
 static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIBDiag   *l = (Mat_MPIBDiag *) A->data;
@@ -394,6 +407,8 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMult_MPIBDiag"
 static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -405,6 +420,8 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultAdd_MPIBDiag"
 static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -416,6 +433,8 @@ static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultTrans_MPIBDiag"
 static int MatMultTrans_MPIBDiag(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag *) A->data;
@@ -429,6 +448,8 @@ static int MatMultTrans_MPIBDiag(Mat A,Vec xx,Vec yy)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultTransAdd_MPIBDiag"
 static int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag *) A->data;
@@ -441,6 +462,8 @@ static int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetInfo_MPIBDiag"
 static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
@@ -480,12 +503,16 @@ static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetDiagonal_MPIBDiag"
 static int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 {
   Mat_MPIBDiag *A = (Mat_MPIBDiag *) mat->data;
   return MatGetDiagonal(A->A,v);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatDestroy_MPIBDiag"
 static int MatDestroy_MPIBDiag(PetscObject obj)
 {
   Mat          mat = (Mat) obj;
@@ -514,6 +541,8 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
 #include "draw.h"
 #include "pinclude/pviewer.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatView_MPIBDiag_Binary"
 static int MatView_MPIBDiag_Binary(Mat mat,Viewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -526,6 +555,8 @@ static int MatView_MPIBDiag_Binary(Mat mat,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatView_MPIBDiag_ASCIIorDraw"
 static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -623,6 +654,8 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatView_MPIBDiag"
 static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
@@ -640,6 +673,8 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSetOption_MPIBDiag"
 static int MatSetOption_MPIBDiag(Mat A,MatOption op)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) A->data;
@@ -671,6 +706,8 @@ static int MatSetOption_MPIBDiag(Mat A,MatOption op)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetSize_MPIBDiag"
 static int MatGetSize_MPIBDiag(Mat mat,int *m,int *n)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -678,6 +715,8 @@ static int MatGetSize_MPIBDiag(Mat mat,int *m,int *n)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetLocalSize_MPIBDiag"
 static int MatGetLocalSize_MPIBDiag(Mat mat,int *m,int *n)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -685,6 +724,8 @@ static int MatGetLocalSize_MPIBDiag(Mat mat,int *m,int *n)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetOwnershipRange_MPIBDiag"
 static int MatGetOwnershipRange_MPIBDiag(Mat matin,int *m,int *n)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
@@ -692,6 +733,8 @@ static int MatGetOwnershipRange_MPIBDiag(Mat matin,int *m,int *n)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetRow_MPIBDiag"
 static int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
@@ -702,6 +745,8 @@ static int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
   return MatGetRow(mat->A,lrow,nz,idx,v);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatRestoreRow_MPIBDiag"
 static int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
                                   Scalar **v)
 {
@@ -712,6 +757,8 @@ static int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatNorm_MPIBDiag"
 static int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) A->data;
@@ -758,6 +805,8 @@ static int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
 }
 
 extern int MatPrintHelp_SeqBDiag(Mat);
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatPrintHelp_MPIBDiag"
 static int MatPrintHelp_MPIBDiag(Mat A)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag*) A->data;
@@ -766,6 +815,8 @@ static int MatPrintHelp_MPIBDiag(Mat A)
 }
 
 extern int MatScale_SeqBDiag(Scalar*,Mat);
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatScale_MPIBDiag"
 static int MatScale_MPIBDiag(Scalar *alpha,Mat A)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag*) A->data;
@@ -797,6 +848,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
        MatPrintHelp_MPIBDiag,MatScale_MPIBDiag,
        0,0,0,MatGetBlockSize_MPIBDiag};
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatCreateMPIBDiag"
 /*@C
    MatCreateMPIBDiag - Creates a sparse parallel matrix in MPIBDiag format.
 
@@ -963,6 +1016,8 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatBDiagGetData"
 /*@C
    MatBDiagGetData - Gets the data for the block diagonal matrix format.
    For the parallel case, this returns information for the local submatrix.
@@ -1011,6 +1066,8 @@ int MatBDiagGetData(Mat mat,int *nd,int *bs,int **diag,int **bdlen,Scalar ***dia
 
 #include "sys.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatLoad_MPIBDiag"
 int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;

@@ -1,6 +1,5 @@
-
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.22 1996/08/13 02:41:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.23 1996/08/15 12:47:50 bsmith Exp balay $";
 #endif
 
 /*
@@ -9,6 +8,8 @@ static char vcid[] = "$Id: mmbdiag.c,v 1.22 1996/08/13 02:41:06 bsmith Exp bsmit
 #include "src/mat/impls/bdiag/mpi/mpibdiag.h"
 #include "src/vec/vecimpl.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSetUpMultiply_MPIBDiag"
 int MatSetUpMultiply_MPIBDiag(Mat mat)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;

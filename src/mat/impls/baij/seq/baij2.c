@@ -1,11 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: baij2.c,v 1.7 1996/08/08 14:43:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.8 1996/08/15 12:48:03 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "petsc.h"
 #include "src/inline/bitarray.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatIncreaseOverlap_SeqBAIJ"
 int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -67,6 +69,9 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
   PetscFree(nidx2);
   return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetSubMatrix_SeqBAIJ_Private"
 int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat *B)
 {
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ *) A->data,*c;
@@ -147,6 +152,8 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetSubMatrix_SeqBAIJ"
 int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat *B)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -191,6 +198,8 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Ma
   
 extern int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,MatGetSubMatrixCall,Mat*);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetSubMatrices_SeqBAIJ"
 int MatGetSubMatrices_SeqBAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
                                     Mat **B)
 {

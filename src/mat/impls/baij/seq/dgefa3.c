@@ -1,11 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: dgefa3.c,v 1.3 1996/04/28 02:44:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgefa3.c,v 1.4 1996/04/28 03:07:33 bsmith Exp balay $";
 #endif
 /*
     Inverts 3 by 3 matrix using partial pivoting.
 */
 #include "petsc.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "Kernel_A_gets_inverse_A_3"
 int Kernel_A_gets_inverse_A_3(Scalar *a)
 {
     int     i__2, i__3, kp1, j, k, l,ll,i,ipvt_l[3],*ipvt = ipvt_l-1,kb,k3;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.77 1996/12/02 20:13:16 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.78 1996/12/02 21:31:10 bsmith Exp balay $";
 #endif
 
 /*
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: baij.c,v 1.77 1996/12/02 20:13:16 balay Exp bsmith $"
      Adds diagonal pointers to sparse matrix structure.
 */
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMarkDiag_SeqBAIJ"
 int MatMarkDiag_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data; 
@@ -41,6 +43,8 @@ int MatMarkDiag_SeqBAIJ(Mat A)
 
 extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetRowIJ_SeqBAIJ"
 static int MatGetRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,
                             PetscTruth *done)
 {
@@ -64,6 +68,8 @@ static int MatGetRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int
   return 0; 
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatRestoreRowIJ_SeqBAIJ"
 static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,
                                 PetscTruth *done)
 {
@@ -83,6 +89,8 @@ static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatView_SeqBAIJ_Binary"
 static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -139,6 +147,8 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatView_SeqBAIJ_ASCII"
 static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -204,6 +214,8 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatView_SeqBAIJ_Draw"
 static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ  *a=(Mat_SeqBAIJ *) A->data;
@@ -329,6 +341,8 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatView_SeqBAIJ"
 static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
@@ -353,6 +367,8 @@ static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
 
 #define CHUNKSIZE  10
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSetValues_SeqBAIJ"
 int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -454,6 +470,8 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
   return 0;
 } 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetSize_SeqBAIJ"
 static int MatGetSize_SeqBAIJ(Mat A,int *m,int *n)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -461,6 +479,8 @@ static int MatGetSize_SeqBAIJ(Mat A,int *m,int *n)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetOwnershipRange_SeqBAIJ"
 static int MatGetOwnershipRange_SeqBAIJ(Mat A,int *m,int *n)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -468,6 +488,8 @@ static int MatGetOwnershipRange_SeqBAIJ(Mat A,int *m,int *n)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetRow_SeqBAIJ"
 int MatGetRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -513,6 +535,8 @@ int MatGetRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatRestoreRow_SeqBAIJ"
 int MatRestoreRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   if (idx) {if (*idx) PetscFree(*idx);}
@@ -520,6 +544,8 @@ int MatRestoreRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatTranspose_SeqBAIJ"
 static int MatTranspose_SeqBAIJ(Mat A,Mat *B)
 { 
   Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data;
@@ -572,6 +598,8 @@ static int MatTranspose_SeqBAIJ(Mat A,Mat *B)
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatAssemblyEnd_SeqBAIJ"
 static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -621,6 +649,8 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatZeroEntries_SeqBAIJ"
 static int MatZeroEntries_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data; 
@@ -628,6 +658,8 @@ static int MatZeroEntries_SeqBAIJ(Mat A)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatDestroy_SeqBAIJ"
 int MatDestroy_SeqBAIJ(PetscObject obj)
 {
   Mat         A  = (Mat) obj;
@@ -653,6 +685,8 @@ int MatDestroy_SeqBAIJ(PetscObject obj)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSetOption_SeqBAIJ"
 static int MatSetOption_SeqBAIJ(Mat A,MatOption op)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -682,6 +716,8 @@ static int MatSetOption_SeqBAIJ(Mat A,MatOption op)
 /* -------------------------------------------------------*/
 #include "pinclude/plapack.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMult_SeqBAIJ_1"
 static int MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -707,6 +743,8 @@ static int MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMult_SeqBAIJ_2"
 static int MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -740,6 +778,8 @@ static int MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMult_SeqBAIJ_3"
 static int MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -772,6 +812,8 @@ static int MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMult_SeqBAIJ_4"
 static int MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -808,6 +850,8 @@ static int MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMult_SeqBAIJ_5"
 static int MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -844,6 +888,8 @@ static int MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMult_SeqBAIJ_N"
 static int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -884,6 +930,8 @@ static int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultAdd_SeqBAIJ_1"
 static int MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -911,6 +959,8 @@ static int MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultAdd_SeqBAIJ_2"
 static int MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -946,6 +996,8 @@ static int MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultAdd_SeqBAIJ_3"
 static int MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -980,6 +1032,8 @@ static int MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultAdd_SeqBAIJ_4"
 static int MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -1018,6 +1072,8 @@ static int MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultAdd_SeqBAIJ_5"
 static int MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -1056,6 +1112,8 @@ static int MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultAdd_SeqBAIJ_N"
 static int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -1097,6 +1155,8 @@ static int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultTrans_SeqBAIJ"
 static int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -1215,6 +1275,9 @@ static int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
   PLogFlops(2*a->nz*a->bs2 - a->n);
   return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatMultTransAdd_SeqBAIJ"
 static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
@@ -1338,6 +1401,8 @@ static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetInfo_SeqBAIJ"
 static int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -1367,6 +1432,8 @@ static int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatEqual_SeqBAIJ"
 static int MatEqual_SeqBAIJ(Mat A,Mat B, PetscTruth* flg)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)B->data;
@@ -1398,6 +1465,8 @@ static int MatEqual_SeqBAIJ(Mat A,Mat B, PetscTruth* flg)
   
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetDiagonal_SeqBAIJ"
 static int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -1427,6 +1496,8 @@ static int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatDiagonalScale_SeqBAIJ"
 static int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -1495,6 +1566,8 @@ extern int MatLUFactorNumeric_SeqBAIJ_3(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_5(Mat,Mat*);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatNorm_SeqBAIJ"
 static int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -1522,6 +1595,8 @@ static int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
      note: This can only work for identity for row and col. It would 
    be good to check this and otherwise generate an error.
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatILUFactor_SeqBAIJ"
 static int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) inA->data;
@@ -1544,6 +1619,8 @@ static int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatScale_SeqBAIJ"
 static int MatScale_SeqBAIJ(Scalar *alpha,Mat inA)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) inA->data;
@@ -1553,6 +1630,8 @@ static int MatScale_SeqBAIJ(Scalar *alpha,Mat inA)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetValues_SeqBAIJ"
 static int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -1595,6 +1674,8 @@ static int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
   return 0;
 } 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatGetBlockSize_SeqBAIJ"
 static int MatGetBlockSize_SeqBAIJ(Mat mat, int *bs)
 {
   Mat_SeqBAIJ *baij = (Mat_SeqBAIJ *) mat->data;
@@ -1603,6 +1684,8 @@ static int MatGetBlockSize_SeqBAIJ(Mat mat, int *bs)
 }
 
 /* idx should be of length atlease bs */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatZeroRows_SeqBAIJ_Check_Block"
 static int MatZeroRows_SeqBAIJ_Check_Block(int *idx, int bs, PetscTruth *flg)
 {
   int i,row;
@@ -1616,6 +1699,8 @@ static int MatZeroRows_SeqBAIJ_Check_Block(int *idx, int bs, PetscTruth *flg)
   return 0;
 }
   
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatZeroRows_SeqBAIJ"
 static int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
 {
   Mat_SeqBAIJ *baij=(Mat_SeqBAIJ*)A->data;
@@ -1661,6 +1746,9 @@ static int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
 
   return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatPrintHelp_SeqBAIJ"
 int MatPrintHelp_SeqBAIJ(Mat A)
 {
   static int called = 0; 
@@ -1700,6 +1788,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetRowIJ_SeqBAIJ,
        MatRestoreRowIJ_SeqBAIJ};
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatCreateSeqBAIJ"
 /*@C
    MatCreateSeqBAIJ - Creates a sparse matrix in block AIJ (block
    compressed row) format.  For good matrix assembly performance the
@@ -1848,6 +1938,8 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatConvertSameType_SeqBAIJ"
 int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
 {
   Mat         C;
@@ -1921,6 +2013,8 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatLoad_SeqBAIJ"
 int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
 {
   Mat_SeqBAIJ  *a;
