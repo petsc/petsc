@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.45 1995/10/19 22:24:24 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.46 1995/10/20 03:00:36 curfman Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -406,7 +406,7 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
   PETSCFREE(mbd->gdiag);
   ierr = MatDestroy(mbd->A); CHKERRQ(ierr);
   if (mbd->lvec) VecDestroy(mbd->lvec);
-  if (mbd->Mvctx) VecScatterCtxDestroy(mbd->Mvctx);
+  if (mbd->Mvctx) VecScatterDestroy(mbd->Mvctx);
   PETSCFREE(mbd); 
   PLogObjectDestroy(mat);
   PETSCHEADERDESTROY(mat);

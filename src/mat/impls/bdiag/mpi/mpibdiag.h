@@ -1,4 +1,4 @@
-/* $Id: mpibdiag.h,v 1.5 1995/06/21 05:29:05 curfman Exp curfman $ */
+/* $Id: mpibdiag.h,v 1.6 1995/10/19 22:24:24 curfman Exp bsmith $ */
 
 #include "bdiag.h"
 
@@ -31,6 +31,6 @@ typedef struct {
   int           *garray;
 /*  Used in Matrix-vector product */
   Vec           lvec;
-  VecScatterCtx Mvctx;
+  VecScatter    Mvctx;
 } Mat_MPIBDiag;
 
