@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.7 2000/07/24 20:06:06 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.8 2000/07/24 21:19:12 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1141,8 +1141,8 @@ int MatSetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode
   PetscFunctionReturn(0);
 } 
 
-extern int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,IS,MatLUInfo*,Mat*);
-extern int MatCholeskyFactor_SeqSBAIJ(Mat,IS,IS,MatLUInfo*);
+extern int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,PetscReal,Mat*);
+extern int MatCholeskyFactor_SeqSBAIJ(Mat,IS,PetscReal);
 extern int MatIncreaseOverlap_SeqSBAIJ(Mat,int,IS*,int);
 extern int MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
 extern int MatGetSubMatrices_SeqSBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);
