@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.47 1996/04/17 22:01:28 curfman Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.48 1996/06/08 16:53:57 curfman Exp bsmith $";
 #endif
 
 /*
@@ -134,7 +134,7 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 
 int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 {
-  if (fnorm > 1.e-9 || fnorm == 0.0) {
+  if (fnorm > 1.e-9) {
     PetscPrintf(ksp->comm, "iter = %d, Residual norm %g \n",its,fnorm);
   }
   else if (fnorm > 1.e-11){

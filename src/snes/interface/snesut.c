@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.16 1996/03/23 23:15:25 curfman Exp curfman $";
+static char vcid[] = "$Id: snesut.c,v 1.17 1996/03/26 00:11:59 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -39,7 +39,7 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
 {
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-    if (fgnorm > 1.e-9 || fgnorm == 0.0) {
+    if (fgnorm > 1.e-9) {
       PetscPrintf(snes->comm, "iter = %d, Function norm %g \n",its,fgnorm);
     }
     else if (fgnorm > 1.e-11){
@@ -49,7 +49,7 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
       PetscPrintf(snes->comm, "iter = %d, Function norm < 1.e-11\n",its);
     }
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-    if (fgnorm > 1.e-9 || fgnorm == 0.0) {
+    if (fgnorm > 1.e-9) {
       PetscPrintf(snes->comm,
        "iter = %d, Function value %g, Gradient norm %g \n",
        its,snes->fc,fgnorm);
