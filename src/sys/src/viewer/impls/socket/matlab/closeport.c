@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: closeport.c,v 1.5 1996/12/18 17:00:13 balay Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: closeport.c,v 1.6 1996/12/18 17:01:00 balay Exp bsmith $";
 #endif
 /* This is part of the MatlabSockettool package. 
  
@@ -33,8 +33,8 @@ typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "mexFunction"
+#undef __FUNC__  
+#define __FUNC__ "mexFunction"
 void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 {
   int t = 0;
