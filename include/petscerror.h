@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.10 1997/03/01 16:00:14 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.11 1997/03/09 18:01:27 bsmith Exp curfman $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -24,12 +24,12 @@
 #endif
 
 /* 
-       These are the generic error codes. The same error code is used in
+     These are the generic error codes. The same error code is used in
      many different places in the code.
 
-       In addition, each specific error in the code has an error
-     message: an a unique specific eroror code.  (The specific error
-     code is not yet in use, those will be generated automatically and
+     In addition, each specific error in the code has an error
+     message: a specific, unique error code.  (The specific error
+     code is not yet in use; these will be generated automatically and
      embed an integer into the PetscError() calls. For non-English
      error messages that integer will be extracted and used to look up the
      appropriate error message in the local language from a file.)
