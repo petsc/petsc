@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.191 2000/08/23 16:14:43 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.192 2000/08/23 17:24:02 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -347,77 +347,6 @@ int KSPGetType(KSP ksp,KSPType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPPrintHelp"
-/*@ 
-   KSPPrintHelp - Prints all options for the KSP component.
-
-   Collective on KSP
-
-   Input Parameter:
-.  ksp - the KSP context
-
-   Options Database Keys:
-+  -help - Prints KSP options
--  -h - Prints KSP options
-
-   Level: developer
-
-.keywords: KSP, help
-
-.seealso: KSPSetFromOptions()
-@*/
-int KSPPrintHelp(KSP ksp)
-{
-  char p[64];
-  int  ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
-  if (ksp->prefix)  {ierr = PetscStrcat(p,ksp->prefix);CHKERRQ(ierr);}
-
-  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = (*PetscHelpPrintf)(ksp->comm,"KSP options -------------------------------------------------\n");CHKERRQ(ierr);
-  ierr = FListPrintTypes(ksp->comm,stdout,ksp->prefix,"ksp_type",KSPList);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_rtol <tol>: relative tolerance, defaults to %g\n",
-                   p,ksp->rtol);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_atol <tol>: absolute tolerance, defaults to %g\n",
-                   p,ksp->atol);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_divtol <tol>: divergence tolerance, defaults to %g\n",
-                     p,ksp->divtol);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_max_it <maxit>: maximum iterations, defaults to %d\n",
-                     p,ksp->max_it);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_preres: use preconditioned residual norm in convergence test\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_avoid_norms: do not compute residual norms (CG and Bi-CG-stab)\n",p);CHKERRQ(ierr);
-
-  ierr = (*PetscHelpPrintf)(ksp->comm," KSP Monitoring Options: Choose any of the following\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_cancelmonitors: cancel all monitors hardwired in code\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_monitor: at each iteration print (usually preconditioned) \n\
-  residual norm to stdout\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_smonitor: same as the above, but prints fewer digits of the\n\
-    residual norm for small residual norms. This is useful to conceal\n\
-    meaningless digits that may be different on different machines.\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_xmonitor: use X graphics monitor of (usually \n\
-    preconditioned) residual norm\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_truemonitor: at each iteration print true and preconditioned\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"                      residual norms to stdout\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_xtruemonitor: use X graphics monitor of true\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"                                 residual norm\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_singmonitor: calculate singular values during linear solve\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"       (only for CG and GMRES)\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues_explicitly\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_compute_eigenvalues\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_compute_singularvalues\n",p);CHKERRQ(ierr);
-
-  if (ksp->ops->printhelp) {
-    ierr = (*ksp->ops->printhelp)(ksp,p);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 #define MAXSETFROMOPTIONS 5
 extern int numberofsetfromoptions;
 EXTERN int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
@@ -437,8 +366,8 @@ EXTERN int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 
 .keywords: KSP, set, from, options, database
 
-.seealso: KSPPrintHelp(), KSPSetFromOptions(), SLESSetFromOptions(),
-          SLESSetTypeFromOptions()
+.seealso: KSPSetFromOptions(), SLESSetFromOptions()
+
 @*/
 int KSPSetTypeFromOptions(KSP ksp)
 {
@@ -498,12 +427,12 @@ int KSPSetTypeFromOptions(KSP ksp)
 
 .keywords: KSP, set, from, options, database
 
-.seealso: KSPPrintHelp()
+.seealso: 
 @*/
 int KSPSetFromOptions(KSP ksp)
 {
-  int        ierr,i,ntypes;
-  char       **types,type[256];
+  int        ierr,i;
+  char       type[256];
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -511,9 +440,7 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsBegin(ksp->comm,ksp->prefix,"Krylov Method (KSP) Options");CHKERRQ(ierr);
 
     if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr = FListGet(KSPList,&types,&ntypes);CHKERRQ(ierr);
-    ierr = OptionsList("-ksp_type","Krylov method",types,ntypes,ksp->type_name ? ksp->type_name : KSPGMRES,type,256,&flg);CHKERRQ(ierr);
-    ierr = PetscFree(types);CHKERRQ(ierr);   
+    ierr = OptionsList("-ksp_type","Krylov method","KSPSetType",KSPList,ksp->type_name?ksp->type_name:KSPGMRES,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetType(ksp,type);CHKERRQ(ierr);
     }
@@ -524,17 +451,17 @@ int KSPSetFromOptions(KSP ksp)
       ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
     }
 
-    ierr = OptionsInt("-ksp_max_it","Maximum number of iterations",ksp->max_it,&ksp->max_it,PETSC_NULL);CHKERRQ(ierr);
-    ierr = OptionsDouble("-ksp_rtol","Relative decrease in residual norm",ksp->rtol,&ksp->rtol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = OptionsDouble("-ksp_atol","Absolute value of residual norm",ksp->atol,&ksp->atol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = OptionsDouble("-ksp_divtol","Residual norm increase cause divergence",ksp->divtol,&ksp->divtol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = OptionsInt("-ksp_max_it","Maximum number of iterations","KSPSetTolerances",ksp->max_it,&ksp->max_it,PETSC_NULL);CHKERRQ(ierr);
+    ierr = OptionsDouble("-ksp_rtol","Relative decrease in residual norm","KSPSetTolerances",ksp->rtol,&ksp->rtol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = OptionsDouble("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->atol,&ksp->atol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = OptionsDouble("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = OptionsName("-ksp_avoid_norms","Do not compute norms for convergence tests",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_avoid_norms","Do not compute norms for convergence tests","KSPSetAvoidNorms",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetAvoidNorms(ksp);CHKERRQ(ierr);
     }
 
-    ierr = OptionsName("-ksp_cancelmonitors","Remove any hardwired monitor routines",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_cancelmonitors","Remove any hardwired monitor routines","KSPClearMonitor",&flg);CHKERRQ(ierr);
     /* -----------------------------------------------------------------------*/
     /*
       Cancels all monitors hardwired into code before call to KSPSetFromOptions()
@@ -542,80 +469,73 @@ int KSPSetFromOptions(KSP ksp)
     if (flg) {
       ierr = KSPClearMonitor(ksp);CHKERRQ(ierr);
     }
-
     /*
       Prints preconditioned residual norm at each iteration
     */
-    ierr = OptionsName("-ksp_monitor","Monitor preconditioned residual norm",&flg);CHKERRQ(ierr); 
+    ierr = OptionsName("-ksp_monitor","Monitor preconditioned residual norm","KSPSetMonitor",&flg);CHKERRQ(ierr); 
     if (flg) {
       ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-
     /*
       Plots the vector solution 
     */
-    ierr = OptionsName("-ksp_vecmonitor","Monitor solution graphically",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_vecmonitor","Monitor solution graphically","KSPSetMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetMonitor(ksp,KSPVecViewMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-
     /*
       Prints preconditioned and true residual norm at each iteration
     */
-    ierr = OptionsName("-ksp_truemonitor","Monitor true (unpreconditioned) residual norm",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_truemonitor","Monitor true (unpreconditioned) residual norm","KSPSetMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetMonitor(ksp,KSPTrueMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-
     /*
       Prints extreme eigenvalue estimates at each iteration
     */
-    ierr = OptionsName("-ksp_singmonitor","Monitor singular values",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_singmonitor","Monitor singular values","KSPSetMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr);
       ierr = KSPSetMonitor(ksp,KSPSingularValueMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
     }
-
     /*
       Prints preconditioned residual norm with fewer digits
     */
-    ierr = OptionsName("-ksp_smonitor","Monitor preconditioned residual norm with fewer digitis",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_smonitor","Monitor preconditioned residual norm with fewer digitis","KSPSetMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetMonitor(ksp,KSPDefaultSMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-
     /*
       Graphically plots preconditioned residual norm
     */
-    ierr = OptionsName("-ksp_xmonitor","Monitor graphically preconditioned residual norm",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_xmonitor","Monitor graphically preconditioned residual norm","KSPSetMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetMonitor(ksp,KSPLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-
     /*
       Graphically plots preconditioned and true residual norm
     */
-    ierr = OptionsName("-ksp_xtruemonitor","Monitor graphically true residual norm",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_xtruemonitor","Monitor graphically true residual norm","KSPSetMonitor",&flg);CHKERRQ(ierr);
     if (flg){
       ierr = KSPSetMonitor(ksp,KSPLGTrueMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
 
     /* -----------------------------------------------------------------------*/
-    ierr = OptionsName("-ksp_preres","Use preconditioner residual norm in convergence tests",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_preres","Use preconditioner residual norm in convergence tests","KSPSetUsePreconditionedResidual",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPSetUsePreconditionedResidual(ksp);CHKERRQ(ierr);}
 
-    ierr = OptionsName("-ksp_left_pc","Use left preconditioning",&flg);CHKERRQ(ierr);
+    ierr = OptionsLogicalGroupBegin("-ksp_left_pc","Use left preconditioning","KSPSetPreconditionerSide",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_LEFT);CHKERRQ(ierr); }
-    ierr = OptionsName("-ksp_right_pc","Use right preconditioning",&flg);CHKERRQ(ierr);
+    ierr = OptionsLogicalGroup("-ksp_right_pc","Use right preconditioning","KSPSetPreconditionerSide",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_RIGHT);CHKERRQ(ierr);}
-    ierr = OptionsName("-ksp_symmetric_pc","Use symmetric (factorized) preconditioning",&flg);CHKERRQ(ierr);
+    ierr = OptionsLogicalGroupEnd("-ksp_symmetric_pc","Use symmetric (factorized) preconditioning","KSPSetPreconditionerSide",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_SYMMETRIC);CHKERRQ(ierr);}
 
-    ierr = OptionsName("-ksp_compute_singularvalues","Compute singular values of preconditioned operator",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_compute_singularvalues","Compute singular values of preconditioned operator","KSPSetComputeSingularValues",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr); }
-    ierr = OptionsName("-ksp_compute_eigenvalues","Compute eigenvalues of preconditioned operator",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_compute_eigenvalues","Compute eigenvalues of preconditioned operator","KSPSetComputeSingularValues",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr); }
-    ierr = OptionsName("-ksp_plot_eigenvalues","Scatter plot extreme eigenvalues",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_plot_eigenvalues","Scatter plot extreme eigenvalues","KSPSetComputeSingularValues",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr); }
 
   ierr = OptionsEnd();CHKERRQ(ierr);
