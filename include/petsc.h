@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.82 1996/01/08 20:54:02 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.83 1996/01/11 20:07:16 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -103,7 +103,6 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define CHKPTRA(p)       if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
 #endif
 
-typedef struct _PetscObject* PetscObject;
 #define PETSC_COOKIE         1211211
 #define PETSC_DECIDE         -1
 #define PETSC_DEFAULT        -2
@@ -117,6 +116,7 @@ extern void PetscSleep(int);
 extern int PetscInitialize(int*,char***,char*,char*,char*);
 extern int PetscFinalize();
 
+typedef struct _PetscObject* PetscObject;
 extern int PetscObjectDestroy(PetscObject);
 extern int PetscObjectExists(PetscObject,int*);
 extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);
