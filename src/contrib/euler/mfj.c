@@ -196,7 +196,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
       ierr = VecNorm_Seq(a,NORM_1,ovalues+1); CHKERRQ(ierr);
       ierr = VecNorm_Seq(a,NORM_2,ovalues+2); CHKERRQ(ierr);
       ovalues[2] = ovalues[2]*ovalues[2];
-        MPI_Allreduce(ovalues,values,3,MPI_DOUBLE,MPI_SUM,comm);
+      MPI_Allreduce(ovalues,values,3,MPI_DOUBLE,MPI_SUM,comm);
       dot = values[0]; sum = values[1]; norm = sqrt(values[2]);
       PLogEventEnd(VEC_Norm,a,0,0,0);
 
