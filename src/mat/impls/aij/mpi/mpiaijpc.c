@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaijpc.c,v 1.37 1998/07/28 03:28:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.38 1998/10/09 19:22:12 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the SeqAIJ/MPIAIJ format.
@@ -138,13 +138,16 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
     ierr = SLESSetOptionsPrefix(sles,prefix); CHKERRQ(ierr);
     ierr = SLESAppendOptionsPrefix(sles,"sub_"); CHKERRQ(ierr);
     ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
-/*
-   This is not so good. The only reason we need to generate this vector
-  is so KSP may generate seq vectors for the local solves
-*/
+    /*
+      The reason we need to generate these vectors is to serve 
+      as the right-hand side and solution vector for the solve on the 
+      block. We do not need to allocate space for the vectors since
+      that is provided via VecPlaceArray() just before the call to 
+      SLESSolve() on the block.
+    */
     ierr = MatGetSize(pmatin->A,&m,&m); CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x); CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,m,&y); CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,m,PETSC_NULL,&x); CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,m,PETSC_NULL,&y); CHKERRQ(ierr);
     PLogObjectParent(pc,x);
     PLogObjectParent(pc,y);
 
@@ -206,13 +209,16 @@ int PCSetUp_BJacobi_SeqAIJ(PC pc)
     ierr = SLESSetOptionsPrefix(sles,prefix); CHKERRQ(ierr);
     ierr = SLESAppendOptionsPrefix(sles,"sub_"); CHKERRQ(ierr);
     ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
-/*
-   This is not so good. The only reason we need to generate this vector
-  is so KSP may generate seq vectors for the local solves
-*/
+    /*
+      The reason we need to generate these vectors is to serve 
+      as the right-hand side and solution vector for the solve on the 
+      block. We do not need to allocate space for the vectors since
+      that is provided via VecPlaceArray() just before the call to 
+      SLESSolve() on the block.
+    */
     ierr = MatGetSize(pmat,&m,&m); CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x); CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,m,&y); CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,m,PETSC_NULL,&x); CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,m,PETSC_NULL,&y); CHKERRQ(ierr);
     PLogObjectParent(pc,x);
     PLogObjectParent(pc,y);
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.261 1998/09/25 03:14:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.262 1998/10/09 19:22:12 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1957,7 +1957,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   int          i, nz, ierr, j,rstart, rend, fd;
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
   int          *ourlens,*sndcounts = 0,*procsnz = 0, *offlens,jj,*mycols,*smycols;
-  int          tag = ((PetscObject)viewer)->tag;
+  int          tag = ((PetscObject)viewer)->tag,cend,cstart,n;
 
   PetscFunctionBegin;
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
@@ -2041,12 +2041,22 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
     if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"something is wrong with file");
   }
 
+  /* determine column ownership if matrix is not square */
+  if (N != M) {
+    n      = N/size + ((N % size) > rank);
+    ierr   = MPI_Scan(&n,&cend,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    cstart = cend - n;
+  } else {
+    cstart = rstart;
+    cend   = rend;
+  }
+
   /* loop over local rows, determining number of off diagonal entries */
   PetscMemzero(offlens,m*sizeof(int));
   jj = 0;
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<ourlens[i]; j++ ) {
-      if (mycols[jj] < rstart || mycols[jj] >= rend) offlens[i]++;
+      if (mycols[jj] < cstart || mycols[jj] >= cend) offlens[i]++;
       jj++;
     }
   }
@@ -2055,7 +2065,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   for ( i=0; i<m; i++ ) {
     ourlens[i] -= offlens[i];
   }
-  ierr = MatCreateMPIAIJ(comm,m,PETSC_DECIDE,M,N,0,ourlens,0,offlens,newmat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(comm,m,n,M,N,0,ourlens,0,offlens,newmat);CHKERRQ(ierr);
   A = *newmat;
   MatSetOption(A,MAT_COLUMNS_SORTED); 
   for ( i=0; i<m; i++ ) {
