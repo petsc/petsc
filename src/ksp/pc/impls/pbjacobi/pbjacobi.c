@@ -117,15 +117,15 @@ static int PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
+extern int MatInvertBlockDiagonal_SeqBAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_PBJacobi"
 static int PCSetUp_PBJacobi(PC pc)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
-  int         ierr,i,*diag_offset,bs2,size;
+  int         ierr,size;
   PetscTruth  seqbaij,mpibaij,baij;
   Mat         A = pc->pmat;
-  PetscScalar *diag,*odiag,*v;
   Mat_SeqBAIJ *a;
 
   PetscFunctionBegin;
@@ -138,55 +138,23 @@ static int PCSetUp_PBJacobi(PC pc)
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   if (mpibaij || (baij && (size > 1))) A = ((Mat_MPIBAIJ*)A->data)->A;
   if (A->m != A->n) SETERRQ(1,"Supported only for square matrices and square storage");
-  ierr        = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
+
+  ierr        =  MatInvertBlockDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
   a           = (Mat_SeqBAIJ*)A->data;
-  bs2         = a->bs*a->bs;
-  diag_offset = a->diag;
-  v           = a->a;
-  ierr        = PetscMalloc((bs2*a->mbs+1)*sizeof(PetscScalar),&diag);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,bs2*a->mbs*sizeof(PetscScalar));
-  jac->diag   = diag;
+  jac->diag   = a->idiag;
   jac->bs     = a->bs;
   jac->mbs    = a->mbs;
-
-  /* factor and invert each block */
   switch (a->bs){
     case 2:
-      for (i=0; i<a->mbs; i++) {
-        odiag   = v + 4*diag_offset[i];
-        diag[0] = odiag[0]; diag[1] = odiag[1]; diag[2] = odiag[2]; diag[3] = odiag[3];
-	ierr    = Kernel_A_gets_inverse_A_2(diag);CHKERRQ(ierr);
-	diag   += 4;
-      }
       pc->ops->apply = PCApply_PBJacobi_2;
       break;
     case 3:
-      for (i=0; i<a->mbs; i++) {
-        odiag   = v + 9*diag_offset[i];
-        diag[0] = odiag[0]; diag[1] = odiag[1]; diag[2] = odiag[2]; diag[3] = odiag[3];
-        diag[4] = odiag[4]; diag[5] = odiag[5]; diag[6] = odiag[6]; diag[7] = odiag[7];
-        diag[8] = odiag[8]; diag[9] = odiag[9]; 
-	ierr    = Kernel_A_gets_inverse_A_3(diag);CHKERRQ(ierr);
-	diag   += 9;
-      }
       pc->ops->apply = PCApply_PBJacobi_3;
       break;
     case 4:
-      for (i=0; i<a->mbs; i++) {
-        odiag = v + 16*diag_offset[i];
-        ierr  = PetscMemcpy(diag,odiag,16*sizeof(PetscScalar));CHKERRQ(ierr);
-	ierr  = Kernel_A_gets_inverse_A_4(diag);CHKERRQ(ierr);
-	diag += 16;
-      }
       pc->ops->apply = PCApply_PBJacobi_4;
       break;
     case 5:
-      for (i=0; i<a->mbs; i++) {
-        odiag = v + 25*diag_offset[i];
-        ierr  = PetscMemcpy(diag,odiag,25*sizeof(PetscScalar));CHKERRQ(ierr);
-	ierr  = Kernel_A_gets_inverse_A_5(diag);CHKERRQ(ierr);
-	diag += 25;
-      }
       pc->ops->apply = PCApply_PBJacobi_5;
       break;
     default: 
@@ -204,8 +172,6 @@ static int PCDestroy_PBJacobi(PC pc)
   int         ierr;
 
   PetscFunctionBegin;
-  if (jac->diag)     {ierr = PetscFree(jac->diag);CHKERRQ(ierr);}
-
   /*
       Free the private data structure that was hanging off the PC
   */

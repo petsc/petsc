@@ -6,7 +6,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/da/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
-                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c ex20.c ex22.c
+                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c ex20.c ex22.c ex23.c
 EXAMPLESF       = ex21f.F
 MANSEC          = DA
 
@@ -100,6 +100,10 @@ ex22: ex22.o   chkopts
 	-${CLINKER} -o ex22 ex22.o  ${PETSC_DM_LIB}
 	${RM} -f ex22.o
 
+ex23: ex23.o   chkopts
+	-${CLINKER} -o ex23 ex23.o  ${PETSC_DM_LIB}
+	${RM} -f ex23.o
+
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 2 ex1 -nox > ex1_1.tmp 2>&1;	  \
@@ -152,10 +156,21 @@ runex20_2:
             done; \
           done;
 
+runex23:
+	-@for d in -1d -2d -3d; do \
+            for np in 1 2 3 4; do \
+              for dof in 1 2 3; do \
+                for stencil_type in 0 1; do \
+                  ${MPIRUN} -np $$np ex23 $$d -dof $$dof -stencil_type $$stencil_type ;\
+                done; \
+              done; \
+            done; \
+          done;
+
 TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc\
 		  runex5 ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc ex7.rm  ex20.PETSc runex20 runex20_2 ex20.rm \
-                  ex14.PETSc runex14 ex14.rm ex13.PETSc runex13 ex13.rm
+                  ex14.PETSc runex14 ex14.rm ex13.PETSc runex13 ex13.rm ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_3  = ex21f.PETSc ex21f.rm
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
 		  ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
