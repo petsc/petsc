@@ -2297,7 +2297,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
 
       while (nz--) {
         PREFETCH_NTA(&v[16]);
-        jdx = 4*(*vi++);
+        jdx = *vi++;
         
         /* 4x4 Matrix-Vector product with negative accumulation: */
         SSE_INLINE_BEGIN_2(&t[jdx],v)
@@ -2351,7 +2351,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
 
       while (nz--) {
         PREFETCH_NTA(&v[16]);
-        idx = 4*(*vi++);
+        idx = *vi++;
 
         /* 4x4 Matrix-Vector Product with negative accumulation: */
         SSE_INLINE_BEGIN_2(&t[idx],v)
@@ -3082,6 +3082,11 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
       ierr = PetscSSEIsEnabled(inA->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
       if (sse_enabled_local) {
 #  if defined(PETSC_HAVE_SSE)
+        /* Scale the column indices for easier indexing in MatSolve. */
+        int i,*aj=a->j,nz=a->nz;
+        for (i=0;i<nz;i++) {
+          aj[i] *= 4;
+        }
         inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
         PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n");
 #  else

@@ -182,7 +182,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
     /* zero out one register */ 
     XOR_PS(XMM7,XMM7);
     for  (j=0; j<nz; j++) {
-      x = rtmp+16*ajtmp[j];
+      x = rtmp+4*ajtmp[j];
       SSE_INLINE_BEGIN_1(x)
         /* Copy zero register to memory locations */
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
@@ -232,7 +232,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
 
       v += 16;
     }
-    row = *ajtmp++;
+    row = (*ajtmp++)/4;
     while (row < i) {
       pc  = rtmp + 16*row;
       SSE_INLINE_BEGIN_1(pc)
@@ -397,7 +397,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
         pv += 16;
         for (j=0; j<nz; j++) {
           PREFETCH_L1(&pv[16]);
-          x = rtmp + 16*pj[j];
+          x = rtmp + 4*pj[j];
 
           /* X:=X-M*PV, One column at a time */
           /* Note: M is already loaded columnwise into registers XMM0-XMM3 */
@@ -529,7 +529,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
 
     /* Copy x block back into pv block */
     for (j=0; j<nz; j++) {
-      x  = rtmp+16*pj[j];
+      x  = rtmp+4*pj[j];
 
       SSE_INLINE_BEGIN_2(x,pv)
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
