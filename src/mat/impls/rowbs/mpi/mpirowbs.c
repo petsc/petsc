@@ -2094,7 +2094,7 @@ int MatMPIRowbsGetColor(Mat mat,ISColoring *coloring)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidPointer(coloring);
+  PetscValidPointer(coloring,2);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   ierr = ISColoringCreate(mat->comm,mat->m,0,coloring);CHKERRQ(ierr);
 
