@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.25 1998/10/19 22:15:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.26 1999/02/27 04:46:51 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -9,7 +9,6 @@ static char vcid[] = "$Id: zksp.c,v 1.25 1998/10/19 22:15:08 bsmith Exp bsmith $
 
 #ifdef HAVE_FORTRAN_CAPS
 #define kspregisterdestroy_       KSPREGISTERDESTROY
-#define kspregisterall_           KSPREGISTERALL
 #define kspdestroy_               KSPDESTROY
 #define ksplgmonitordestroy_      KSPLGMONITORDESTROY
 #define ksplgmonitorcreate_       KSPLGMONITORCREATE
@@ -30,7 +29,6 @@ static char vcid[] = "$Id: zksp.c,v 1.25 1998/10/19 22:15:08 bsmith Exp bsmith $
 #define kspgetresidualhistory_    kspgetresidualhistory
 #define kspsettype_               kspsettype
 #define kspregisterdestroy_       kspregisterdestroy
-#define kspregisterall_           kspregisterall
 #define kspdestroy_               kspdestroy
 #define ksplgmonitordestroy_      ksplgmonitordestroy
 #define ksplgmonitorcreate_       ksplgmonitorcreate
