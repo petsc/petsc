@@ -170,16 +170,15 @@ class Configure:
 
   ################
   # Program Checks
-  def checkExecutable(dir, name):
+  def checkExecutable(self, dir, name):
     prog  = os.path.join(dir, name)
     found = 0
     self.framework.log.write('Checking for program '+prog+'...')
     if os.path.isfile(prog) and os.access(prog, os.X_OK):
       found = 1
       self.framework.log.write('found\n')
-      self.addSubstitution(resultName.upper(), getattr(self, resultName))
-      break
-    self.framework.log.write('not found\n')
+    else:
+      self.framework.log.write('not found\n')
     return found
 
   def getExecutable(self, name, path = [], getFullPath = 0, usedefaultPath = 0, resultName = ''):
@@ -201,19 +200,20 @@ class Configure:
         found       = 1
         getFullPath = 1
         break
-    if useDefaultPath:
+    if useDefaultPath and not found:
       for dir in os.environ['PATH'].split(':'):
         if self.checkExecutable(dir, name):
           found     = 1
           break
-    for dir in self.framework.argDB['search-dirs']:
-      if self.checkExecutable(dir, name):
-        found       = 1
-        getFullPath = 1
-        break
+    if not found:
+      for dir in self.framework.argDB['search-dirs']:
+        if self.checkExecutable(dir, name):
+          found       = 1
+          getFullPath = 1
+          break
     if found:
       if getFullPath:
-        setattr(self, resultName, os.path.abspath(prog)+options)
+        setattr(self, resultName, os.path.abspath(os.path.join(dir, name))+options)
       else:
         setattr(self, resultName, name+options)
       self.addSubstitution(resultName.upper(), getattr(self, resultName))

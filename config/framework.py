@@ -326,7 +326,8 @@ class Framework(config.base.Configure):
     help.addArgument('Framework', 'ignoreLinkOutput',    nargs.ArgBool(None, 1, 'Ignore linker output'))
     help.addArgument('Framework', 'ignoreWarnings',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
     help.addArgument('Framework', 'with-alternatives',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
-    help.addArgument('Framework', 'search-dirs',         nargs.ArgList(None, [], 'A list of directories to search for executables'))
+    help.addArgument('Framework', 'search-dirs',         nargs.Arg(None, [], 'A list of directories used to search for executables'))
+    help.addArgument('Framework', 'package-dirs',        nargs.Arg(None, [], 'A list of directories used to search for packages'))
     return
 
   def configure(self, out = None):
