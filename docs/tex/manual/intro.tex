@@ -1,0 +1,113 @@
+% $Id: intro.tex,v 1.20 1996/04/18 16:28:41 curfman Exp curfman $ 
+%
+%  Introduction to PETSc 2.0
+%
+%
+% Note that we use a modified version of report.sty, so that tables and
+% figures are numbered consecutively throughout the document (not by
+% chapters).  
+%
+\documentstyle[psfig,../sty/verbatim,../sty/here,../sty/anlhelper]{../sty/report_petsc}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0.0in}
+\setlength{\evensidemargin}{0.0in}
+\setlength{\textheight}{9.2in}
+\setlength{\topmargin}{-.8in}
+
+\newcommand{\findex}[1]{\index{FUNCTION #1}}
+\newcommand{\sindex}[1]{\index{#1}}
+ 
+% Defines the environment where design issues are discussed. In the manual
+% version of this report, these regions are ignored.
+\def\design{\medskip \noindent Design Issue:\begin{em}}
+\def\enddesign{\end{em} \medskip}
+% Manual version:
+% \def\design{\comment}
+% \def\enddesign{\endcomment}
+
+% Print DRAFT in large letters across every page
+% \special{!userdict begin /bop-hook{gsave 200 70 translate
+% 65 rotate /Times-Roman findfont 216 scalefont setfont
+% 0 0 moveto 0.95 setgray (DRAFT) show grestore}def end}
+
+% Defines that we're doing the short intro part, not the whole manual,
+% used in part1.tex.
+\def\shortintro{*}
+\renewcommand{\cite}[1]{}
+\def\thesection {$\!\!\!\!$}
+
+\begin{document}
+
+\begin{center}
+$\!$
+\vspace{1.0cm}
+\thispagestyle{empty}
+
+{\huge \bf Introduction to PETSc 2.0}\\ 
+\vspace{0.5cm}
+{\LARGE (Part I of the PETSc 2.0 Users Manual)} \\
+\vspace{1.5cm}
+{\large \em Satish Balay\\William Gropp\\Lois Curfman McInnes\\Barry Smith\\
+\medskip \medskip
+Mathematics and Computer Science Division\\
+Argonne National Laboratory\\
+9700 South Cass Avenue\\
+Argonne, IL 60439\\
+\medskip
+October, 1996}
+\end{center}
+
+\vspace{1.0cm}
+
+\begin{center} {\bf Abstract} \end{center}
+
+This document provides a brief introduction to
+the use of PETSc 2.0 for the numerical solution
+of partial differential equations on high-performance computers.  The
+Portable, Extensible, Toolkit for Scientific computation (PETSc), is a
+suite of data structures and routines that provide the building
+blocks for the solution of large-scale application codes on parallel
+(and serial) computers.  PETSc 2.0 uses the MPI standard for all
+message passing communication.
+
+PETSc includes an expanding suite of parallel linear and nonlinear
+equation solvers that are easily used in application codes written in
+Fortran, C, and C++.  PETSc provides many of the mechanisms needed
+within parallel application codes, such as simple parallel matrix and
+vector assembly routines that allow the overlap of communication and
+computation.  In addition, PETSc includes simple support for
+distributed arrays.  The library is organized
+hierarchically, enabling users to employ the level of abstraction that
+is most appropriate for a particular problem. By using techniques 
+of object oriented programming, PETSc provides enormous flexibility 
+for users.
+
+PETSc is a sophisticated set of software tools; as such, for some
+users this may mean it initially has a steeper learning curve than a
+simple subroutine library. However, the power of the PETSc design and
+the algorithms it incorporates make the efficient implementation of
+many application codes much simpler than ``rolling them'' yourself.
+
+This document serves as the first section of the {\em PETSc 2.0 Users
+Manual}, which elaborates on the use and design of PETSc 2.0. The
+manual and is available in its entirety via the World Wide Web at
+the PETSc home page, {\tt http://www.mcs.anl.gov/petsc/petsc.html}.
+It is also available
+by anonymous ftp at {\tt ftp:/info.mcs.anl.gov/pub/petsc/manual.ps}.
+
+
+\vspace{1.2cm}
+
+\noindent {\bf Note:} This introduction is intended for use with
+PETSc 2.0.15. When referencing PETSc 2.0, please do 
+not refer to this document. Instead reference the following: Satish
+Balay, William Gropp, Lois Curfman McInnes, and Barry Smith.  {\em
+PETSc 2.0 Users Manual}, Technical Report ANL-95/11 - Revision 2.0.15,
+Argonne National Laboratory, October 1996.
+
+\newpage
+% Include only Part 1 of users manual 
+\section{Introduction}
+\input{part1.tex}
+
+\end{document}

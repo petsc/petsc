@@ -4,7 +4,7 @@
 #
 echo "------- Have you done ALL of the following?? -----------------------------"
 echo "(1) Built manpages, wwwpages, latexpages by running make allmanpages?"
-echo "(2) Set the version number in manual_tex.tex and manual.tex?"
+echo "(2) Set the version number in manual_tex.tex, manual.tex, and intro.tex?"
 echo "(3) Built the users manual (and intro) in .ps and .html?"
 echo "(4) Set the version number and release date in petsc.h?"
 echo "(5) Removed the option -u from BASEOPTF in bmake/sun4/base.g?"
