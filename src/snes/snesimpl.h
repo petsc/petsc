@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.34 1996/03/23 18:36:55 bsmith Exp curfman $ */
+/* $Id: snesimpl.h,v 1.35 1996/03/24 06:07:55 curfman Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -94,7 +94,9 @@ struct _SNES {
 
   double   ttol;              /* used by default convergence test routine */
 
-  DrawLG   xmonitor;     /* Where -snes_xmonitor context is stashed */
+  DrawLG   xmonitor;          /* Where -snes_xmonitor context is stashed */
+  Vec      *vwork;            /* more work vectors for Jacobian/Hessian approx */
+  int      nvwork;
 };
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */

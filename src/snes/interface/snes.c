@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.70 1996/03/26 00:10:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.71 1996/04/01 21:10:58 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -462,6 +462,9 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->setup_called      = 0;
   snes->ksp_ewconv        = 0;
   snes->type              = -1;
+  snes->xmonitor          = 0;
+  snes->vwork             = 0;
+  snes->nwork             = 0;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
   kctx = PetscNew(SNES_KSP_EW_ConvCtx); CHKPTRQ(kctx);
@@ -1025,6 +1028,7 @@ int SNESDestroy(SNES snes)
   if (snes->mfshell) MatDestroy(snes->mfshell);
   ierr = SLESDestroy(snes->sles); CHKERRQ(ierr);
   if (snes->xmonitor) SNESLGMonitorDestroy(snes->xmonitor);
+  if (snes->vwork) VecDestroyVecs(snes->vwork,snes->nvwork);
   PLogObjectDestroy((PetscObject)snes);
   PetscHeaderDestroy((PetscObject)snes);
   return 0;

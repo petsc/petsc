@@ -11,7 +11,7 @@ OBJSF	      =
 LIBBASE	      = libpetscsnes
 EXAMPLES_1    = ex3 ex4 ex5 ex6
 RUNEXAMPLES_1 = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6 \
-		runex6_2 runex6_3
+		runex6_2 runex6_3 runex6_4 runex6_5 runex6_6
 EXAMPLES_2    = ex1 ex2 ex7 ex8 ex9
 RUNEXAMPLES_2 = runex1 runex2 runex7 runex8 runex8_2 runex9 
 EXAMPLES_3    = ex12
