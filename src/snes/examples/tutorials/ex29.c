@@ -217,12 +217,15 @@ int main(int argc,char **argv)
 
     tsCtx.socketviewer = 0;
 #if defined(PETSC_USE_SOCKET_VIEWER)
-    ierr = PetscOptionsHasName(PETSC_NULL, "-socket_viewer", &flg);CHKERRQ(ierr);
-    if (flg && !PreLoading) {
-      tsCtx.ts_monitor = PETSC_TRUE;
-      ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,0,PETSC_DECIDE,&tsCtx.socketviewer);CHKERRQ(ierr);
+    {
+      PetscTruth flg;
+      ierr = PetscOptionsHasName(PETSC_NULL, "-socket_viewer", &flg);CHKERRQ(ierr);
+      if (flg && !PreLoading) {
+        tsCtx.ts_monitor = PETSC_TRUE;
+        ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,0,PETSC_DECIDE,&tsCtx.socketviewer);CHKERRQ(ierr);
+      }
     }
- #endif
+#endif
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create user context, set problem data, create vector data structures.

@@ -198,8 +198,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
   ierr = MPI_Attr_get(comm_in,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
 
   if (!flg) {
+    void *ptr;
     /* check if this communicator has a PETSc communicator imbedded in it */
-    ierr = MPI_Attr_get(comm_in,Petsc_InnerComm_keyval,(void**)comm_out,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(comm_in,Petsc_InnerComm_keyval,&ptr,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    *comm_out = (MPI_Comm) ptr;
     if (!flg) {
       /* This communicator is not yet known to this system, so we duplicate it and set its value */
       ierr       = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
@@ -214,8 +216,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
       ierr = PetscLogInfo((0,"PetscCommDuplicate: Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval));CHKERRQ(ierr);
 
       /* save PETSc communicator inside user communicator, so we can get it next time */
-      ierr       = MPI_Attr_put(comm_in,Petsc_InnerComm_keyval,(void*)*comm_out);CHKERRQ(ierr);
-      ierr       = MPI_Attr_put(*comm_out,Petsc_OuterComm_keyval,(void*)comm_in);CHKERRQ(ierr);
+      ptr = (void*)*comm_out;
+      ierr       = MPI_Attr_put(comm_in,Petsc_InnerComm_keyval,ptr);CHKERRQ(ierr);
+      ptr = (void*)comm_in;
+      ierr       = MPI_Attr_put(*comm_out,Petsc_OuterComm_keyval,ptr);CHKERRQ(ierr);
     } else {
       ierr = MPI_Attr_get(*comm_out,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
       if (!flg) {
@@ -271,6 +275,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm *comm)
   PetscMPIInt    *tagvalp;
   PetscTruth     flg;
   MPI_Comm       icomm = *comm,ocomm;
+  void           *ptr;
 
   PetscFunctionBegin;
   if (Petsc_Tag_keyval == MPI_KEYVAL_INVALID) {
@@ -280,7 +285,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm *comm)
   }
   ierr = MPI_Attr_get(icomm,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = MPI_Attr_get(icomm,Petsc_InnerComm_keyval,(void**)&icomm,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    ierr  = MPI_Attr_get(icomm,Petsc_InnerComm_keyval,&ptr,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    icomm = (MPI_Comm) ptr;
     if (!flg) {
       PetscFunctionReturn(0);
     }
@@ -292,7 +298,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm *comm)
   tagvalp[1]--;
   if (!tagvalp[1]) {
 
-    ierr = MPI_Attr_get(icomm,Petsc_OuterComm_keyval,&ocomm,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    ierr  = MPI_Attr_get(icomm,Petsc_OuterComm_keyval,&ptr,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    ocomm = (MPI_Comm) ptr;
+
     if (flg) {
       ierr = MPI_Attr_delete(ocomm,Petsc_InnerComm_keyval);CHKERRQ(ierr);
     }

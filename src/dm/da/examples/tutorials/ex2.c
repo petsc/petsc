@@ -19,6 +19,8 @@ int main(int argc,char **argv)
   DAPeriodicType ptype = DA_NONPERIODIC;
   DAStencilType  stype = DA_STENCIL_BOX;
   VecScatter     tolocalall,fromlocalall;
+  PetscInt       start,end;
+  
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
@@ -38,9 +40,11 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(PETSC_COMM_SELF,M*N,&localall);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  value = 5.0*rank;
-  ierr = VecSet(&value,global);CHKERRQ(ierr);
-
+  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
+  for (i=start; i<end; i++) {
+    value = 5.0*rank;
+    ierr  = VecSetValues(global,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+  }
   ierr = VecView(global,viewer);CHKERRQ(ierr);
 
   /*

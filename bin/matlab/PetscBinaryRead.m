@@ -5,27 +5,23 @@ function [varargout] = PetscBinaryRead(filename)
 %
 fd = fopen(filename,'r','ieee-be');
 for l=1:nargout
-  header = fread(fd,2,'int32');
+  header = fread(fd,1,'int32');
   if isempty(header)
     disp('File does not have that many items')
     return
   end
 
-  if header(1) == 1211216
-
-    m      = header(2);
-    header = fread(fd,2,'int32');
-    n      = header(1);
-    nz     = header(2);
-
+  if header == 1211216 % Petsc Mat Object 
+    header = fread(fd,3,'int32');
+    m      = header(1);
+    n      = header(2);
+    nz     = header(3);
     nnz = fread(fd,m,'int32');  %nonzeros per row
-
     sum_nz = sum(nnz);
     if(sum_nz ~=nz)
       str = sprintf('No-Nonzeros sum-rowlengths do not match %d %d',nz,sum_nz);
       error(str);
     end
-
     j   = fread(fd,nz,'int32') + 1;
     s   = fread(fd,nz,'double');
     i   = ones(nz,1);
@@ -38,15 +34,16 @@ for l=1:nargout
     A = sparse(i,j,s,m,n,nz);
     varargout(l) = {A};
   end
-  if  header(1) == 1211214
-    m = header(2);
+  
+  if  header == 1211214 % Petsc Vec Object
+    m = fread(fd,1,'int32');
     v = fread(fd,m,'double');
     varargout(l) = {v};
   end
 
-  if header(1) == 1211219
-     str = sprintf('No support for loading PetscBags');
-     error(str);
+  if header == 1211219 % Petsc Bag Object
+     b = PetscBagRead(fd);
+     varargout(l) = {b};
   end
 end
 fclose(fd);

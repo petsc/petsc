@@ -22,7 +22,11 @@ class Configure(config.base.Configure):
   def configureFortranCommandLine(self):
     '''Check for the mechanism to retrieve command line arguments in Fortran'''
     self.pushLanguage('C')
-    if self.functions.check('ipxfargc_', libraries = self.compilers.flibs):
+    if self.functions.check('_gfortran_iargc', libraries = self.compilers.flibs):
+      self.addDefine('HAVE_GFORTRAN_IARGC',1)
+      # this needs to be removed later - as gfortran fixed this to confirm with g77 in CVS
+      self.addDefine('HAVE_IARG_COUNT_PROGNAME',1)
+    elif self.functions.check('ipxfargc_', libraries = self.compilers.flibs):
       self.addDefine('HAVE_PXFGETARG_NEW',1)
     elif self.functions.check('f90_unix_MP_iargc', libraries = self.compilers.flibs):
       self.addDefine('HAVE_NAGF90',1)

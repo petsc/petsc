@@ -27,7 +27,7 @@ test_IRIX: test_IRIX.o test_IRIXf90.o
 #
 
 runex1f90:
-	-@ex1f90 > ex1f90_1.tmp 2>&1;	  \
+	-@./ex1f90 > ex1f90_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1f90_1.out ex1f90_1.tmp) then true; \
 	   else echo "Possible problem with ex1f90_1, diffs above"; fi; \
 	   ${RM} -f ex1f90_1.tmp
