@@ -23,9 +23,6 @@ Additional Capabilities that PETSc Needs:
 
    - Allow mpirowbs matrix to insert values even when not symmetric.
 
-   * don't require user to set diagonal entries in mpirowbs, that is insane.
-     Half done, see MatAssemblyEnd_MPIRowbs_local. 
-
    * Design better ILU/ICC interface for mpirowbs format (so that PC 
      selection is correct and symmetric matrix can use ILU). Cannot do.
 
@@ -41,8 +38,12 @@ Additional Capabilities that PETSc Needs:
 
    - Complex versions of the Krylov subspace solvers
 
+   - Complex version work from Fortran
+
    * Test PETSc with LAM.
     
+   X don't require user to set diagonal entries in mpirowbs, that is insane.
+
    X Allow column and row oriented input for MatSetValues() for all matrix types,
 
    X Increase user-definable events (needed by Tom Canfield).  Maybe now's
@@ -65,6 +66,9 @@ Additional Capabilities that PETSc Needs:
 
    To do sometime soon:
   ----------------------
+
+   - Make VecScatterCopy_  for the different types of scatters and use 
+     a uniform naming scheme.
 
    - MatExpand() and VecExpand() talk to Paul about how this is done in SUMMA.
 
