@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.32 1996/10/23 22:13:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.33 1996/10/25 15:03:29 curfman Exp curfman $";
 #endif
 
 static char help[] = "Demonstrates various vector routines\n\n";
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
 {
   Vec      x, y, w;               /* vectors */
   Vec      *z;                    /* array of vectors */
-  double   norm, v;
+  double   norm, v, v1, v2;
   int      n = 20, ierr, flg;
   Scalar   one = 1.0, two = 2.0, three = 3.0, dots[3], dot;
 
@@ -136,6 +136,19 @@ int main(int argc,char **argv)
   ierr = VecNorm(w,NORM_2,&norm); CHKERRA(ierr);
   v = norm-9.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
   PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",v);
+
+  dots[0] = one;
+  dots[1] = three;
+  dots[2] = two;
+  ierr = VecSet(&one,x); CHKERRA(ierr);
+  ierr = VecMAXPY(3,dots,x,z); CHKERRA(ierr);
+  ierr = VecNorm(z[0],NORM_2,&norm); CHKERRA(ierr);
+  v = norm-sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  ierr = VecNorm(z[1],NORM_2,&norm); CHKERRA(ierr);
+  v1 = norm-2.0*sqrt((double) n); if (v1 > -1.e-10 && v1 < 1.e-10) v1 = 0.0; 
+  ierr = VecNorm(z[2],NORM_2,&norm); CHKERRA(ierr);
+  v2 = norm-3.0*sqrt((double) n); if (v2 > -1.e-10 && v2 < 1.e-10) v2 = 0.0; 
+  PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %g %g %g \n",v,v1,v2);
 
   /* 
      Test whether vector has been corrupted (just to demonstrate this
