@@ -1,6 +1,7 @@
-c------------------------------------------------------------------------
+
+c  "$Id: resid.F,v 1.4 1997/10/12 17:21:17 curfman Exp curfman $";
 c
-      integer function residbc(jacform,xx,fff,p,xx_bc,p_bc,
+      integer function residbc_duct(jacform,xx,fff,p,xx_bc,p_bc,
      &                sadai,sadaj,sadak,
      &                aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 
@@ -56,15 +57,15 @@ c      COMMON /AVCTRS/ AIZ(NI,NJ,NK),AJZ(NI,NJ,NK),AKZ(NI,NJ,NK)
 c      COMMON /SADA/ SADAI(NI,NJ,NK),SADAJ(NI,NJ,NK),SADAK(NI,NJ,NK)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
-      double precision  ada,qda,ff,p0,r0,c0,pi1k,pb,u,v,w,rqdq
-      double precision  u2,v2,w2,ub,con,r0c0,rb,vb,wb,pinj1k,rinj1k,pij1
-      double precision  pijnk1,rni1jk,r1jk
+      double precision  ada,qda,ff,p0,r0,c0,pi1k,pb,u,v,w,rqdq,ri1k,p1jk
+      double precision  u2,v2,w2,ub,con,r0c0,rb,vb,wb,pinj1k,pij1
+      double precision  pijnk1,rni1jk,r1jk,ruimpo,rvimpo,rwimpo,xloc
 
       integer i,j,k,jacform
 
 c     jacform - if 1, we are in the midst of forming the Jacobian via FD approx
 
-      residbc = 0
+      residbc_duct = 0
 c
 c subsonic inflow (transpiration)
 c
