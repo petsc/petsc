@@ -1,4 +1,4 @@
-/*$Id: daview.c,v 1.47 2001/01/15 21:48:51 bsmith Exp balay $*/
+/*$Id: daview.c,v 1.48 2001/03/23 23:25:00 balay Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -124,7 +124,7 @@ int DAView(DA da,PetscViewer viewer)
 
 .keywords: distributed array, get, information
 
-.seealso: DAView()
+.seealso: DAView(), DAGetCorners(), DAGetLocalInfo()
 @*/
 int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,int *s,DAPeriodicType *wrap,DAStencilType *st)
 {
@@ -143,6 +143,55 @@ int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,
   if (st)   *st   = da->stencil_type;
   PetscFunctionReturn(0);
 }  
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetLocalInfo"
+/*@C
+   DAGetLocalInfo - Gets information about a given distributed array and this processors location in it
+
+   Not Collective
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameters:
+.  dainfo - structure containing the information
+
+   Level: beginner
+  
+.keywords: distributed array, get, information
+
+.seealso: DAGetInfo(), DAGetCorners()
+@*/
+int DAGetLocalInfo(DA da,DALocalInfo *info)
+{
+  int w;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  info->dim  = da->dim;
+  info->mx   = da->M;
+  info->my   = da->N;
+  info->mz   = da->P;
+  info->dof  = da->w;
+  info->sw   = da->s;
+  info->pt   = da->wrap;
+  info->st   = da->stencil_type;
+
+  /* since the xs, xe ... have all been multiplied by the number of degrees 
+     of freedom per cell, w = da->w, we divide that out before returning.*/
+  w = da->w;  
+  info->xs = da->xs/w; 
+  info->xm = (da->xe - da->xs)/w;
+  /* the y and z have NOT been multiplied by w */
+  info->ys = da->ys;
+  info->ym = (da->ye - da->ys);
+  info->zs = da->zs;
+  info->zm = (da->ze - da->zs); 
+
+  PetscFunctionReturn(0);
+}  
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAView_Binary"
