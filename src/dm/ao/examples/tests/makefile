@@ -87,13 +87,11 @@ runex7:
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true ;  \
 	   else echo "Possible problem with ex7_1, diffs above"; fi ;\
 	   ${RM} -f ex7_1.tmp
-TESTEXAMPLES_C  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm \
-                  ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm \
-                  ex3.PETSc runex3 ex3.rm \
-                  ex5.PETSc runex5 ex5.rm ex7.PETSc runex7 ex7.rm
-TESTEXAMPLES_C_X11  = 
-TESTEXAMPLES_FORTRAN  = 
-TESTEXAMPLES_C_X11_MPIUNI  = 
-TESTEXAMPLES_C3 = ex4.PETSc ex4.rm ex6.PETSc ex6.rm
+TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm \
+                            ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 ex5.rm ex7.PETSc runex7 ex7.rm
+TESTEXAMPLES_C_X11	  = 
+TESTEXAMPLES_FORTRAN	  = 
+TESTEXAMPLES_C_X11_MPIUNI = 
+TESTEXAMPLES_C3		  = ex4.PETSc ex4.rm ex6.PETSc ex6.rm
 
 include ${PETSC_DIR}/bmake/common/test

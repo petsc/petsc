@@ -346,21 +346,18 @@ runex26_2:
 	   else echo "Possible problem with ex26_2, diffs above"; fi; \
 	   ${RM} -f ex26_2.tmp
 
-TESTEXAMPLES_C  = ex1.PETSc ex1.rm \
-                  ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
-		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
-                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm
-TESTEXAMPLES_C_X11  = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
-TESTEXAMPLES_FORTRAN  = ex5f.PETSc runex5f ex5f.rm
-TESTEXAMPLES_FORTRAN_MPIUNI  = ex12f.PETSc ex12f.rm
-TESTEXAMPLES_C_X11_MPIUNI  = ex3.PETSc runex3 ex3.rm ex4.PETSc \
-		  runex4 ex4.rm
-TESTEXAMPLES_C_COMPLEX  = ex17.PETSc runex17 ex17.rm
-TESTEXAMPLES_C_COMPLEX_MPIUNI = ex17.PETSc runex17 ex17.rm
-TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 \
-		  ex6.rm
-TESTEXAMPLES_BLOCKSOLVE  = ex6.PETSc runex6_6 ex6.rm
-TESTEXAMPLES_FORTRAN_NOCOMPLEX  = ex16f.PETSc runex16f ex16f.rm  ex12f.PETSc runex12f ex12f.rm 
-TESTEXAMPLES_13 = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
+TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
+                                 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
+                                 ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm
+TESTEXAMPLES_C_X11	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
+TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm
+TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm
+TESTEXAMPLES_C_X11_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
+TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
+TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
+TESTEXAMPLES_C_NOCOMPLEX       = ex6.PETSc runex6 runex6_2 runex6_3 ex6.rm
+TESTEXAMPLES_BLOCKSOLVE	       = ex6.PETSc runex6_6 ex6.rm
+TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex16f.PETSc runex16f ex16f.rm  ex12f.PETSc runex12f ex12f.rm 
+TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 
 include ${PETSC_DIR}/bmake/common/test

@@ -25,7 +25,7 @@ TESTEXAMPLES_C_X11_MPIUNI   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETS
 		   ex4.PETSc ex4.rm ex9.PETSc runex9 ex9.rm clean
 TESTEXAMPLES_C_COMPLEX   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 \
 		   runex12_2 runex12_3 ex12.rm clean
-TESTEXAMPLES_6   = 
+TESTEXAMPLES_C_NOCOMPLEX   = 
 TESTEXAMPLES_FORTRAN_NOCOMPLEX   = 
 TESTEXAMPLES_FORTRAN_COMPLEX  = ex11f.PETSc runex11f ex11f.rm clean
 

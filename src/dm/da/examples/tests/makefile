@@ -214,17 +214,16 @@ runex25:
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1 6 processes, diffs above"; fi; ${RM} -f ex25_1.tmp
 
-TESTEXAMPLES_C  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex24.PETSc runex24 ex24.rm ex25.PETSc runex25 ex25.rm
-TESTEXAMPLES_C_X11  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc\
-		  runex5 ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc ex7.rm  ex20.PETSc runex20 runex20_2 ex20.rm \
-                  ex14.PETSc runex14 ex14.rm ex13.PETSc runex13 ex13.rm ex23.PETSc runex23 ex23.rm
-TESTEXAMPLES_FORTRAN  = ex21f.PETSc ex21f.rm
-TESTEXAMPLES_C_X11_MPIUNI  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
-		  ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
-		  ex6.PETSc ex6.rm ex12.PETSc ex12.rm
-TESTEXAMPLES_C_COMPLEX  =
-TESTEXAMPLES_13 = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm \
-		  ex11.PETSc ex11.rm
-TESTEXAMPLES_MATLAB = ex12.PETSc runex12 ex12.rm
+TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
+                            runex25 ex25.rm
+TESTEXAMPLES_C_X11	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 \
+                            ex6.rm ex7.PETSc ex7.rm  ex20.PETSc runex20 runex20_2 ex20.rm ex14.PETSc runex14 ex14.rm \
+                            ex13.PETSc runex13 ex13.rm ex23.PETSc runex23 ex23.rm
+TESTEXAMPLES_FORTRAN	  = ex21f.PETSc ex21f.rm
+TESTEXAMPLES_C_X11_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
+                            ex6.PETSc ex6.rm ex12.PETSc ex12.rm
+TESTEXAMPLES_C_COMPLEX	  = 
+TESTEXAMPLES_13		  = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc ex11.rm
+TESTEXAMPLES_MATLAB	  = ex12.PETSc runex12 ex12.rm
 
 include ${PETSC_DIR}/bmake/common/test

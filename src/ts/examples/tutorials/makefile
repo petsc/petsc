@@ -87,11 +87,11 @@ runex7_3:
 	   ${RM} -f ex7_3.tmp
 
 
-TESTEXAMPLES_C  = ex1.PETSc runex1 ex1.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm
-TESTEXAMPLES_C_X11  = 
-TESTEXAMPLES_FORTRAN  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
-TESTEXAMPLES_C_X11_MPIUNI  =  
-TESTEXAMPLES_13 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
-		  ex5.PETSc ex5.rm
+TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm
+TESTEXAMPLES_C_X11	  = 
+TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
+TESTEXAMPLES_C_X11_MPIUNI = 
+TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
+                            ex5.PETSc ex5.rm
 
 include ${PETSC_DIR}/bmake/common/test

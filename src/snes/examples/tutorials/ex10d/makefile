@@ -20,7 +20,7 @@ runex10:
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
 
-TESTEXAMPLES_6	 = ex10.PETSc runex10 ex10.rm
+TESTEXAMPLES_C_NOCOMPLEX	 = ex10.PETSc runex10 ex10.rm
 
 include ${PETSC_DIR}/bmake/common/test
 

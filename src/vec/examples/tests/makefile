@@ -338,24 +338,19 @@ runex35:
 	   else echo "Possible problem with ex35_1, diffs above"; fi;\
 	   ${RM} -f ex35_1.tmp
 
-TESTEXAMPLES_C  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
-		  ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc\
-		  ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm\
-		  ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm\
-		  ex11.PETSc runex11 ex11.rm ex12.PETSc runex12\
-		  ex12.rm ex13.PETSc runex13 ex13.rm ex14.PETSc runex14 ex14.rm\
-		  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
-                  ex17.PETSc runex17 ex17.rm ex21.PETSc runex21 runex21_2 ex21.rm ex25.PETSc runex25 ex25.rm \
-                  ex29.PETSc runex29 ex29.rm \
-                  ex34.PETSc runex34 ex34.rm
-TESTEXAMPLES_C_X11  = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm \
-		  ex23.PETSc runex23 ex23.rm ex24.PETSc runex24 ex24.rm \
-		  ex28.PETSc runex28 ex28.rm ex33.PETSc runex33 ex33.rm
-TESTEXAMPLES_FORTRAN  = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc ex19f.rm \
-	          ex20f.PETSc ex20f.rm ex30f.PETSc runex30f ex30f.rm ex32f.PETSc runex32f ex32f.rm
-TESTEXAMPLES_FORTRAN_MPIUNI  = ex19f.PETSc runex19f ex19f.rm 
-TESTEXAMPLES_C_X11_MPIUNI  = ex2.PETSc runex2 ex2.rm ex4.PETSc\
-		  ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm \
-                  ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm 
+TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
+                              ex4.PETSc runex4 ex4.rm ex5.PETSc ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc \
+                              runex7 ex7.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex11.PETSc runex11 \
+                              ex11.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm ex14.PETSc runex14 \
+                              ex14.rm ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex17.PETSc runex17 \
+                              ex17.rm ex21.PETSc runex21 runex21_2 ex21.rm ex25.PETSc runex25 ex25.rm ex29.PETSc \
+                              runex29 ex29.rm ex34.PETSc runex34 ex34.rm
+TESTEXAMPLES_C_X11	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \
+                              ex24.PETSc runex24 ex24.rm ex28.PETSc runex28 ex28.rm ex33.PETSc runex33 ex33.rm
+TESTEXAMPLES_FORTRAN	    = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc ex19f.rm ex20f.PETSc ex20f.rm ex30f.PETSc \
+                              runex30f ex30f.rm ex32f.PETSc runex32f ex32f.rm
+TESTEXAMPLES_FORTRAN_MPIUNI = ex19f.PETSc runex19f ex19f.rm 
+TESTEXAMPLES_C_X11_MPIUNI   = ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 \
+                              ex7.rm ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm 
 
 include ${PETSC_DIR}/bmake/common/test

@@ -87,10 +87,10 @@ runex1f:
 	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_variable_matrix 
 	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_jacobian 
 
-TESTEXAMPLES_C  = ex1.PETSc  runex1  ex1.rm 
-TESTEXAMPLES_C_X11  = 
-TESTEXAMPLES_FORTRAN  = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_C_X11_MPIUNI  = 
-TESTEXAMPLES_13 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm 
+TESTEXAMPLES_C		  = ex1.PETSc  runex1  ex1.rm 
+TESTEXAMPLES_C_X11	  = 
+TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_C_X11_MPIUNI = 
+TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex4.PETSc ex4.rm 
 
 include ${PETSC_DIR}/bmake/common/test

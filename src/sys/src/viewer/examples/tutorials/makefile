@@ -9,8 +9,8 @@ MANSEC          = Viewer
 
 include ${PETSC_DIR}/bmake/common/base
 
-TESTEXAMPLES_C_X11  = 
-TESTEXAMPLES_C_X11_MPIUNI  = 
+TESTEXAMPLES_C_X11	  = 
+TESTEXAMPLES_C_X11_MPIUNI = 
 
 include ${PETSC_DIR}/bmake/common/test
 

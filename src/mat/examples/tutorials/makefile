@@ -44,13 +44,13 @@ runex5:
 	-@${MPIRUN} -np 2 ./ex5 -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 
 #-------------------------------------------------------------
-TESTEXAMPLES_C  = ex4.PETSc ex4.rm ex5.PETSc ex5.rm
-TESTEXAMPLES_C_X11  = ex2.PETSc ex2.rm
-TESTEXAMPLES_FORTRAN  = 
-TESTEXAMPLES_C_X11_MPIUNI  =
-TESTEXAMPLES_6  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm
-TESTEXAMPLES_FORTRAN_MPIUNI  =
-TESTEXAMPLES_13 = ex1.PETSc ex1.rm
+TESTEXAMPLES_C		    = ex4.PETSc ex4.rm ex5.PETSc ex5.rm
+TESTEXAMPLES_C_X11	    = ex2.PETSc ex2.rm
+TESTEXAMPLES_FORTRAN	    = 
+TESTEXAMPLES_C_X11_MPIUNI   = 
+TESTEXAMPLES_C_NOCOMPLEX    = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm
+TESTEXAMPLES_FORTRAN_MPIUNI = 
+TESTEXAMPLES_13		    = ex1.PETSc ex1.rm
 
 
 include ${PETSC_DIR}/bmake/common/test
