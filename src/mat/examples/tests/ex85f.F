@@ -10,23 +10,27 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscviewer.h"
 
-      integer ierr,i
+      PetscErrorCode ierr
+      PetscInt i,one,twelve
       Vec     v
       Mat     m
       double precision value
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call MatCreate(PETSC_COMM_SELF,12,12,12,12,m,ierr)
+      twelve = 12
+      call MatCreate(PETSC_COMM_SELF,twelve,twelve,twelve,                 &
+     &               twelve,m,ierr)
       call MatSetFromOptions(m,ierr)
 
       value = 3.0
       i     = 4
-      call MatSetValues(m,1,i,1,i,value,INSERT_VALUES,ierr)
+      one   = 1
+      call MatSetValues(m,one,i,one,i,value,INSERT_VALUES,ierr)
       call MatAssemblyBegin(m,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(m,MAT_FINAL_ASSEMBLY,ierr)
 
-      call VecCreateSeq(PETSC_COMM_SELF,12,v,ierr)
+      call VecCreateSeq(PETSC_COMM_SELF,twelve,v,ierr)
       call MatGetDiagonal(m,v,ierr)
       call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr)
 

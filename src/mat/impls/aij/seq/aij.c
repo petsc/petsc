@@ -634,7 +634,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   } 
   PetscLogInfo(A,"MatAssemblyEnd_SeqAIJ:Matrix size: %D X %D; storage space: %D unneeded,%D used\n",m,A->n,fshift,a->nz);
   PetscLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues() is %D\n",a->reallocs);
-  PetscLogInfo(A,"MatAssemblyEnd_SeqAIJ:Most nonzeros in any row is %D\n",rmax);
+  PetscLogInfo(A,"MatAssemblyEnd_SeqAIJ:Maximum nonzeros in any row is %D\n",rmax);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (double)fshift;
   a->rmax              = rmax;

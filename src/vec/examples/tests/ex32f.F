@@ -9,7 +9,9 @@
 #include "include/finclude/petscis.h"
 #include "include/finclude/petscvec.h"
 
-      integer ierr, n, size
+      PetscErrorCode ierr
+      PetscInt  n
+      PetscMPIInt size
 
       PetscScalar  v_v1(1),v_v2(1)
       Vec     v

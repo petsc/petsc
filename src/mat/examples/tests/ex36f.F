@@ -6,9 +6,9 @@
 
 #include "include/finclude/petsc.h"
 
-      integer err
+      PetscErrorCode ierr
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,err)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
 !  Demo of PETSc-allocated dense matrix storage
       call Demo1()
@@ -16,7 +16,7 @@
 !  Demo of user-allocated dense matrix storage
       call Demo2()
 
-      call PetscFinalize(err)
+      call PetscFinalize(ierr)
       end
 
 ! -----------------------------------------------------------------
@@ -38,7 +38,8 @@
 #include "include/finclude/petscviewer.h"
 
       Mat         A
-      integer     n,m,err
+      PetscInt   n,m
+      PetscErrorCode ierr
       PetscScalar aa(1)
       PetscOffset ia
 
@@ -47,26 +48,26 @@
 
 !  Create matrix
       call MatCreateSeqDense(PETSC_COMM_SELF,m,n,PETSC_NULL_SCALAR,     &
-     &     A,err)
-!      call MatCreateMPIDense(PETSC_COMM_WORLD,m,n,m,n,PETSC_NULL_SCALAR,A,err)
+     &     A,ierr)
+!      call MatCreateMPIDense(PETSC_COMM_WORLD,m,n,m,n,PETSC_NULL_SCALAR,A,ierr)
 
 !  Access array storage
-      call MatGetArray(A,aa,ia,err)
+      call MatGetArray(A,aa,ia,ierr)
 
 !  Set matrix values directly
       call FillUpMatrix(m,n,aa(ia+1))
 
-      call MatRestoreArray(A,aa,ia,err)
+      call MatRestoreArray(A,aa,ia,ierr)
 
 !  Finalize matrix assembly
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,err)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,err)
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
 !  View matrix
-      call MatView(A,PETSC_VIEWER_STDOUT_SELF,err)
+      call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
 
 !  Clean up
-      call MatDestroy(A,err)     
+      call MatDestroy(A,ierr)     
       return 
       end
 
@@ -81,33 +82,34 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscviewer.h"
 
-      integer   n,m,err
+      PetscInt   n,m
+      PetscErrorCode ierr
       parameter (m=5,n=4)
       Mat       A
       PetscScalar    aa(m,n)
 
 !  Create matrix
-      call MatCreateSeqDense(PETSC_COMM_SELF,m,n,aa,A,err)
+      call MatCreateSeqDense(PETSC_COMM_SELF,m,n,aa,A,ierr)
 
 !  Set matrix values directly
       call FillUpMatrix(m,n,aa)
 
 !  Finalize matrix assembly
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,err)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,err)
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
 !  View matrix
-      call MatView(A,PETSC_VIEWER_STDOUT_SELF,err)
+      call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
 
 !  Clean up
-      call MatDestroy(A,err)     
+      call MatDestroy(A,ierr)     
       return 
       end
 
 ! -----------------------------------------------------------------
 
       subroutine FillUpMatrix(m,n,X)
-      integer          m,n,i,j
+      PetscInt          m,n,i,j
       PetscScalar      X(m,n)
 
       do 10, j=1,n
