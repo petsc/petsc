@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.74 1998/08/06 13:32:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.75 1998/10/09 19:19:57 bsmith Exp curfman $";
 #endif
 
 /*
@@ -33,16 +33,18 @@ int KSPDefaultFreeWork( KSP ksp )
 #undef __FUNC__  
 #define __FUNC__ "KSPGetResidualNorm"
 /*@C
-    KSPGetResidualNorm - Gets the last (approximate preconditioned)
-    residual norm that has been computed.
+   KSPGetResidualNorm - Gets the last (approximate preconditioned)
+   residual norm that has been computed.
  
-    Not Collective
+   Not Collective
 
-    Input Parameters:
-.   ksp - the iterative context
+   Input Parameters:
+.  ksp - the iterative context
 
-    Output Parameters:
-.   rnorm - residual norm
+   Output Parameters:
+.  rnorm - residual norm
+
+   Level: intermediate
 
 .keywords: KSP, get, residual norm
 
@@ -69,6 +71,8 @@ int KSPGetResidualNorm(KSP ksp,double *rnorm)
 +   ksp - the iterative context
 .   n  - the iteration
 -   rnorm - the two norm of the residual
+
+    Level: intermediate
 
     Options Database Key:
 .   -ksp_singmonitor - Activates KSPSingularValueMonitor()
@@ -113,6 +117,8 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
 -  dummy - unused monitor context 
 
+   Level: intermediate
+
 .keywords: KSP, default, monitor, residual
 
 .seealso: KSPSetMonitor(), KSPTrueMonitor(), KSPLGMonitorCreate()
@@ -138,6 +144,8 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
 -  dummy - unused monitor context 
 
+   Level: intermediate
+
    Options Database Key:
 .  -ksp_truemonitor - Activates KSPTrueMonitor()
 
@@ -162,7 +170,6 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
   Vec          resid,work;
   double       scnorm;
   
-
   PetscFunctionBegin;
   ierr = VecDuplicate(ksp->vec_rhs,&work); CHKERRQ(ierr);
   ierr = KSPBuildResidual(ksp,0,work,&resid); CHKERRQ(ierr);
@@ -175,7 +182,7 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 #undef __FUNC__  
 #define __FUNC__ "KSPDefaultSMonitor"
 /*
-     Default (short) KSP Monitor, same as KSPDefaultMonitor() except
+  Default (short) KSP Monitor, same as KSPDefaultMonitor() except
   it prints fewer digits of the residual as the residual gets smaller.
   This is because the later digits are meaningless and are often 
   different on different machines; by using this routine different 
@@ -208,13 +215,15 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 -  dummy - unused convergence context 
 
    Returns:
-.   0 - otherwise.
+.  0 - always
+
+   Level: advanced
 
    Notes:
-     This is used with the KSPSetAvoidNorms() as the convergence test when 
-    norms of the residual are not computed. Convergence is then declared after
-    a fixed number of iterations is used. Useful when one is using CG or 
-    Bi-CG-stab as a smoother.
+   This is used as the convergence test with the option KSPSetAvoidNorms(),
+   since norms of the residual are not computed. Convergence is then declared 
+   after a fixed number of iterations have been used. Useful when one is 
+   using CG or Bi-CG-stab as a smoother.
 
 .keywords: KSP, default, convergence, residual
 
@@ -246,6 +255,8 @@ int KSPSkipConverged(KSP ksp,int n,double rnorm,void *dummy)
 +   1 - if the iteration has converged;
 .  -1 - if residual norm exceeds divergence threshold;
 -   0 - otherwise.
+
+   Level: intermediate
 
    Notes:
    KSPDefaultConverged() reaches convergence when
@@ -289,6 +300,8 @@ int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
 
    Output Parameter:
 .  V - pointer to a vector containing the solution
+
+   Level: advanced
 
 .keywords:  KSP, build, solution, default
 
@@ -337,6 +350,8 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 
    Output Parameter:
 .  V - pointer to a vector containing the residual
+
+   Level: advanced
 
 .keywords:  KSP, build, residual, default
 
@@ -388,7 +403,7 @@ int  KSPDefaultGetWork( KSP ksp, int nw )
   KSPDefaultDestroy - Destroys a iterative context variable for methods with
   no separate context.  Preferred calling sequence KSPDestroy().
 
-  Input Parameters: 
+  Input Parameter: 
 . ksp - the iterative context
 */
 int KSPDefaultDestroy(KSP ksp)
