@@ -165,6 +165,10 @@ EXTERN int KSPGMRESSetPreAllocateVectors(KSP);
 EXTERN int KSPGMRESSetOrthogonalization(KSP,int (*)(KSP,int));
 EXTERN int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,int);
 EXTERN int KSPGMRESClassicalGramSchmidtOrthogonalization(KSP,int);
+
+EXTERN int KSPLGMRESSetAugDim(KSP,int);
+EXTERN int KSPLGMRESSetConstant(KSP);
+
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
 

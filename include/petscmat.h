@@ -204,6 +204,9 @@ EXTERN int MatAssemblyBegin(Mat,MatAssemblyType);
 EXTERN int MatAssemblyEnd(Mat,MatAssemblyType);
 EXTERN int MatAssembled(Mat,PetscTruth*);
 
+extern int         MatSetValue_Row, MatSetValue_Column;
+extern PetscScalar MatSetValue_Value;
+
 /*MC
    MatSetValue - Set a single entry into a matrix.
 
@@ -223,27 +226,21 @@ EXTERN int MatAssembled(Mat,PetscTruth*);
    For efficiency one should use MatSetValues() and set several or many
    values simultaneously if possible.
 
-   Note that MatSetValue() does NOT return an error code (since this
-   is checked internally).
-
    Level: beginner
 
 .seealso: MatSetValues(), MatSetValueLocal()
 M*/
 #define MatSetValue(v,i,j,va,mode) \
-0; {int _ierr,_row = i,_col = j; PetscScalar _va = va; \
-  _ierr = MatSetValues(v,1,&_row,1,&_col,&_va,mode);CHKERRQ(_ierr); \
-}
+  (MatSetValue_Row = i,MatSetValue_Column = j,MatSetValue_Value = va, \
+   MatSetValues(v,1,&MatSetValue_Row,1,&MatSetValue_Column,&MatSetValue_Value,mode))
 
 #define MatGetValue(v,i,j,va) \
-0; {int _ierr,_row = i,_col = j; \
-  _ierr = MatGetValues(v,1,&_row,1,&_col,&va);CHKERRQ(_ierr); \
-}
+  (MatSetValue_Row = i,MatSetValue_Column = j,\
+   MatGetValues(v,1,&MatSetValue_Row,1,&MatSetValue_Column,&va))
 
 #define MatSetValueLocal(v,i,j,va,mode) \
-0; {int _ierr,_row = i,_col = j; PetscScalar _va = va; \
-  _ierr = MatSetValuesLocal(v,1,&_row,1,&_col,&_va,mode);CHKERRQ(_ierr); \
-}
+  (MatSetValue_Row = i,MatSetValue_Column = j,MatSetValue_Value = va, \
+   MatSetValuesLocal(v,1,&MatSetValue_Row,1,&MatSetValue_Column,&MatSetValue_Value,mode))
 
 /*E
     MatOption - Options that may be set for a matrix and its behavior or storage
@@ -454,7 +451,7 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
    Notes:
    See the chapter in the users manual on performance for more details
 
-   Do not malloc or free dnz and onz that is handled internally by these routines
+   Do not malloc or free dnz and onz, that is handled internally by these routines
 
    Use MatPreallocateInitializeSymmetric() for symmetric matrices (MPISBAIJ matrices)
 
@@ -495,7 +492,7 @@ M*/
    Notes:
    See the chapter in the users manual on performance for more details
 
-   Do not malloc or free dnz and onz that is handled internally by these routines
+   Do not malloc or free dnz and onz, that is handled internally by these routines
 
   Concepts: preallocation^Matrix
 
@@ -522,7 +519,7 @@ M*/
    Input Parameters:
 +  map - the mapping between local numbering and global numbering
 .  nrows - the number of rows indicated
-.  rows - the indices of the rows (these will be mapped in the 
+.  rows - the indices of the rows 
 .  ncols - the number of columns in the matrix
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
@@ -534,7 +531,7 @@ M*/
    Notes:
    See the chapter in the users manual on performance for more details
 
-   Do not malloc or free dnz and onz that is handled internally by these routines
+   Do not malloc or free dnz and onz, that is handled internally by these routines
 
   Concepts: preallocation^Matrix
 
@@ -563,7 +560,7 @@ M*/
    Input Parameters:
 +  map - the mapping between local numbering and global numbering
 .  nrows - the number of rows indicated
-.  rows - the indices of the rows (these will be mapped in the 
+.  rows - the indices of the rows 
 .  ncols - the number of columns in the matrix
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
@@ -603,7 +600,7 @@ M*/
 
    Input Parameters:
 +  nrows - the number of rows indicated
-.  rows - the indices of the rows (these will be mapped in the 
+.  rows - the indices of the rows 
 .  ncols - the number of columns in the matrix
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
@@ -641,7 +638,7 @@ M*/
 
    Input Parameters:
 +  nrows - the number of rows indicated
-.  rows - the indices of the rows (these will be mapped in the 
+.  rows - the indices of the rows 
 .  ncols - the number of columns in the matrix
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines

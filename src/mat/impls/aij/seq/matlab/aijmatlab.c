@@ -396,7 +396,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Matlab"
-int MarCreate_Matlab(Mat A) {
+int MatCreate_Matlab(Mat A) {
   int ierr;
 
   PetscFunctionBegin;

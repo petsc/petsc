@@ -239,7 +239,7 @@ EXTERN int VecStashScatterGetMesg_Private(VecStash*,int*,int**,PetscScalar**,int
 */
 
 /*
-  VecStashValue_Private - inserts a single values into the stash.
+  VecStashValue_Private - inserts a single value into the stash.
 
   Input Parameters:
   stash  - the stash

@@ -187,6 +187,8 @@ EXTERN int VecAssemblyEnd(Vec);
 EXTERN int VecSetStashInitialSize(Vec,int,int);
 EXTERN int VecStashView(Vec,PetscViewer);
 
+extern int         VecSetValue_Row;
+extern PetscScalar VecSetValue_Value;
 /*MC
    VecSetValue - Set a single entry into a vector.
 
@@ -205,8 +207,34 @@ EXTERN int VecStashView(Vec,PetscViewer);
    For efficiency one should use VecSetValues() and set several or 
    many values simultaneously if possible.
 
-   Note that VecSetValue() does NOT return an error code (since this
-   is checked internally).
+   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
+   MUST be called after all calls to VecSetValues() have been completed.
+
+   VecSetValues() uses 0-based indices in Fortran as well as in C.
+
+   Level: beginner
+
+.seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValueLocal()
+M*/
+#define VecSetValue(v,i,va,mode) (VecSetValue_Row = i, VecSetValue_Value = va, VecSetValues(v,1,&VecSetValue_Row,&VecSetValue_Value,mode))
+
+/*MC
+   VecSetValueLocal - Set a single entry into a vector using the local numbering
+
+   Synopsis:
+   int VecSetValueLocal(Vec v,int row,PetscScalar value, InsertMode mode);
+
+   Not Collective
+
+   Input Parameters:
++  v - the vector
+.  row - the row location of the entry
+.  value - the value to insert
+-  mode - either INSERT_VALUES or ADD_VALUES
+
+   Notes:
+   For efficiency one should use VecSetValues() and set several or 
+   many values simultaneously if possible.
 
    These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
    MUST be called after all calls to VecSetValues() have been completed.
@@ -215,12 +243,9 @@ EXTERN int VecStashView(Vec,PetscViewer);
 
    Level: beginner
 
-.seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal()
+.seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValue()
 M*/
-#define VecSetValue(v,i,va,mode) 0;\
-{int _ierr,_row = i; PetscScalar _va = va; \
-  _ierr = VecSetValues(v,1,&_row,&_va,mode);CHKERRQ(_ierr); \
-}
+#define VecSetValueLocal(v,i,va,mode) (VecSetValue_Row = i,VecSetValue_Value = va,VecSetValuesLocal(v,1,&VecSetValue_Row,&VecSetValue_Value,mode))
 
 EXTERN int VecSetBlockSize(Vec,int);
 EXTERN int VecGetBlockSize(Vec,int*);

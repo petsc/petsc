@@ -12,6 +12,10 @@ int VEC_Norm = 0, VEC_Normalize = 0, VEC_Scale = 0, VEC_Copy = 0, VEC_Set = 0, V
 int VEC_AssemblyEnd = 0, VEC_PointwiseMult = 0, VEC_SetValues = 0, VEC_Load = 0, VEC_ScatterBarrier = 0, VEC_ScatterBegin = 0, VEC_ScatterEnd = 0;
 int VEC_SetRandom = 0, VEC_ReduceArithmetic = 0, VEC_ReduceBarrier = 0, VEC_ReduceCommunication = 0;
 
+/* ugly globals for VecSetValue() and VecSetValueLocal() */
+int         VecSetValue_Row = 0;
+PetscScalar VecSetValue_Value = 0.0;
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetTypeFromOptions_Private"
 /*
@@ -1426,6 +1430,7 @@ int VecDestroyVecs(const Vec vv[],int m)
   ierr = (*(*vv)->ops->destroyvecs)(vv,m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetValues"

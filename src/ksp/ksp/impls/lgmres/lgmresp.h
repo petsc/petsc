@@ -6,7 +6,6 @@
 #if !defined(__LGMRES)
 #define __LGMRES
 
-#include "lgmres.h"
 #include "src/ksp/ksp/kspimpl.h" /*includes petscksp.h */
 
   typedef struct {

@@ -8,6 +8,28 @@ static int    LGMRESGetNewVectors(KSP,int);
 static int    LGMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal *);
 static int    BuildLgmresSoln(PetscScalar*,Vec,Vec,KSP,int);
 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPLGMRESSetAugDim"
+int KSPLGMRESSetAugDim(KSP ksp, int dim) 
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod((ksp),KSPLGMRESSetAugDim_C,(KSP,int),(ksp,dim));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPLGMRESSetConstant"
+int KSPLGMRESSetConstant(KSP ksp)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod((ksp),KSPLGMRESSetConstant_C,(KSP),(ksp));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
     KSPSetUp_LGMRES - Sets up the workspace needed by lgmres.
 
