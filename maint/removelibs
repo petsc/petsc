@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: removelibs,v 1.41 2000/11/15 20:19:04 balay Exp balay $ 
+# $Id: removelibs,v 1.42 2000/12/14 02:53:51 balay Exp balay $ 
 
 # 
 #  Removes PETSc libraries on some nightly build machines
@@ -7,4 +7,4 @@
 rsh rock     -n /bin/rm -f "/tmp/petsc/petsc/lib/lib*/IRIX/*"
 #rsh ptera    -n /bin/rm -f "/tmp/petsc/petsc/lib/lib*/alpha*/*"
 rsh fire     -n /bin/rm -f "/sandbox/balay/petsc/lib/lib*/solaris*/*"
-rsh gaea     -n /bin/rm -f "/sandbox/petsc/petsc/lib/lib*/linux/*.so*"
+rsh shakey     -n /bin/rm -f "/sandbox/petsc/petsc/lib/lib*/linux/*.so*"
