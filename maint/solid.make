@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.10 1998/06/02 22:17:36 bsmith Exp balay $ 
+# $Id: solid.make,v 1.11 1998/06/02 22:52:27 balay Exp curfman $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.22"
@@ -16,8 +16,8 @@ for arg in "$@" ; do
 
         -help | -h)
         echo "Description: "
-        echo " This program is used to build petsc.solid libraries on the variety."
-        echo " of platforms it is built on."
+        echo " This program is used to build petsc.solid libraries on the variety"
+        echo " of platforms on which it is built."
         echo " "
         echo "Options:"
         echo "  PETSC_DIR=petsc_dir : the current installation of petsc"
