@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.252 1998/03/13 21:43:00 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.253 1998/03/16 18:43:04 bsmith Exp balay $";
 #endif
 
 /*
@@ -850,7 +850,10 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *v, sum;
-  int        m = a->m, n, i, *idx, shift = a->indexshift,*ii,jrow,j;
+  int        m = a->m, *idx, shift = a->indexshift,*ii;
+#if !defined(USE_FORTRAN_KERNELS)
+  int        n, i, jrow,j;
+#endif
 
   PetscFunctionBegin;
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
@@ -883,7 +886,10 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *z, *v, sum;
-  int        m = a->m, n, i, *idx, shift = a->indexshift,*ii,jrow,j;
+  int        m = a->m, *idx, shift = a->indexshift,*ii;
+#if !defined(USE_FORTRAN_KERNELS)
+  int        n,i,jrow,j;
+#endif
 
   PetscFunctionBegin;
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y); VecGetArray_Fast(zz,z); 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.148 1998/03/12 23:18:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.149 1998/03/16 18:55:29 bsmith Exp balay $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1663,7 +1663,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
                   iprint = 1;
 #if defined(USE_PETSC_COMPLEX)
                   if (imag(dv[kshift + j*bs + i]))
-                    fprintf(fd,"A[%d,%d]=%5.2e + 5.2e i  ", k*bs+i,(k-diag)*bs+j,
+                    fprintf(fd,"A[%d,%d]=%5.2e + %5.2e i  ", k*bs+i,(k-diag)*bs+j,
                        real(dv[kshift + j*bs + i]),imag(dv[kshift + j*bs + i]));
                   else
                     fprintf(fd,"A[%d,%d]=%5.2e   ", k*bs+i,(k-diag)*bs+j,
