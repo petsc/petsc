@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.281 1998/08/20 15:37:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.282 1998/09/25 03:14:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -684,6 +684,7 @@ int MatDestroy_SeqAIJ(Mat A)
   if (a->solve_work) PetscFree(a->solve_work);
   if (a->inode.size) PetscFree(a->inode.size);
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
+  if (a->saved_values) PetscFree(a->saved_values);
   PetscFree(a); 
 
   PLogObjectDestroy(A);
@@ -1698,20 +1699,19 @@ extern int MatColoringPatch_SeqAIJ(Mat,int,int *,ISColoring *);
 #define __FUNC__ "MatCopy_SeqAIJ"
 int MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
 {
-  int    ierr,i,rstart,rend,nz,*cwork;
-  Scalar *vwork;
+  int    ierr;
 
   PetscFunctionBegin;
-  if (str == SAME_NONZERO_PATTERN) {
-    ierr = MatZeroEntries(B); CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(A,&rstart,&rend); CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++) {
-      ierr = MatGetRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
-      ierr = MatSetValues(B,1,&i,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
-      ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+  if (str == SAME_NONZERO_PATTERN && B->type == MATSEQAIJ) {
+    Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
+    Mat_SeqAIJ *b = (Mat_SeqAIJ *) B->data; 
+
+    if (a->nonew != 1) SETERRQ(1,1,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    if (b->nonew != 1) SETERRQ(1,1,"Must call MatSetOption(B,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    if (a->i[a->m]+a->indexshift != b->i[b->m]+a->indexshift) {
+      SETERRQ(1,1,"Number of nonzeros in two matrices are different");
     }
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    PetscMemcpy(b->a,a->a,(a->i[a->m]+a->indexshift)*sizeof(Scalar));
   } else {
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
   }
@@ -1756,7 +1756,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        0,
        0,
-       MatConvertSameType_SeqAIJ,
+       MatDuplicate_SeqAIJ,
        0,
        0,
        MatILUFactor_SeqAIJ,
@@ -1850,6 +1850,148 @@ int MatSeqAIJSetColumnIndices(Mat mat,int *indices)
   PetscFunctionReturn(0);
 }
 
+/* ----------------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "MatStoreValues_SeqAIJ"
+int MatStoreValues_SeqAIJ(Mat mat)
+{
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ *)mat->data;
+  int        nz = aij->i[aij->m]+aij->indexshift;
+
+  PetscFunctionBegin;
+  if (aij->nonew != 1) {
+    SETERRQ(1,1,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+  }
+
+  /* allocate space for values if not already there */
+  if (!aij->saved_values) {
+    aij->saved_values = (Scalar *) PetscMalloc(nz*sizeof(Scalar));CHKPTRQ(aij->saved_values);
+  }
+
+  /* copy values over */
+  PetscMemcpy(aij->saved_values,aij->a,nz*sizeof(Scalar));
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatStoreValues"
+/*@
+    MatStoreValues - Stashes a copy of the matrix values; this allows, for 
+       example, reuse of the linear part of a Jacobian, while recomputing the 
+       nonlinear portion.
+
+   Collect on Mat
+
+  Input Parameters:
+.  mat - the matrix (currently on AIJ matrices support this option)
+
+  Common Usage, with SNESSolve():
+$    Create Jacobian matrix
+$    Set linear terms into matrix
+$    Apply boundary conditions to matrix, at this time matrix must have 
+$      final nonzero structure (i.e. setting the nonlinear terms and applying 
+$      boundary conditions again will not change the nonzero structure
+$    ierr = MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS);
+$    ierr = MatStoreValues(mat);
+$    Call SNESSetJacobian() with matrix
+$    In your Jacobian routine
+$      ierr = MatRetrieveValues(mat);
+$      Set nonlinear terms in matrix
+ 
+  Common Usage without SNESSolve(), i.e. when you handle nonlinear solve yourself:
+$    // build linear portion of Jacobian 
+$    ierr = MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS);
+$    ierr = MatStoreValues(mat);
+$    loop over nonlinear iterations
+$       ierr = MatRetrieveValues(mat);
+$       // call MatSetValues(mat,...) to set nonliner portion of Jacobian 
+$       // call MatAssemblyBegin/End() on matrix
+$       Solve linear system with Jacobian
+$    endloop 
+
+  Notes:
+    Matrix must already be assemblied before calling this routine
+    Must set the matrix option MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS); before 
+    calling this routine.
+
+.seealso: MatRetrieveValues()
+
+@*/ 
+int MatStoreValues(Mat mat)
+{
+  int ierr,(*f)(Mat);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatStoreValues_C",(void **)&f); 
+         CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Wrong type of matrix to store values");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatRetrieveValues_SeqAIJ"
+int MatRetrieveValues_SeqAIJ(Mat mat)
+{
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ *)mat->data;
+  int        nz = aij->i[aij->m]+aij->indexshift;
+
+  PetscFunctionBegin;
+  if (aij->nonew != 1) {
+    SETERRQ(1,1,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+  }
+  if (!aij->saved_values) {
+    SETERRQ(1,1,"Must call MatStoreValues(A);first");
+  }
+
+  /* copy values over */
+  PetscMemcpy(aij->a, aij->saved_values,nz*sizeof(Scalar));
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatRetrieveValues"
+/*@
+    MatRetrieveValues - Retrieves the copy of the matrix values; this allows, for 
+       example, reuse of the linear part of a Jacobian, while recomputing the 
+       nonlinear portion.
+
+   Collect on Mat
+
+  Input Parameters:
+.  mat - the matrix (currently on AIJ matrices support this option)
+
+.seealso: MatStoreValues()
+
+@*/ 
+int MatRetrieveValues(Mat mat)
+{
+  int ierr,(*f)(Mat);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatRetrieveValues_C",(void **)&f); 
+         CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Wrong type of matrix to retrieve values");
+  }
+  PetscFunctionReturn(0);
+}
+
+/* --------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqAIJ"
@@ -1977,6 +2119,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->inode.size       = 0;
   b->inode.limit      = 5;
   b->inode.max_limit  = 5;
+  b->saved_values     = 0;
   B->info.nz_unneeded = (double)b->maxnz;
 
   *A = B;
@@ -1999,12 +2142,18 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJSetColumnIndices_C",
                                      "MatSeqAIJSetColumnIndices_SeqAIJ",
                                      (void*)MatSeqAIJSetColumnIndices_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",
+                                     "MatStoreValues_SeqAIJ",
+                                     (void*)MatStoreValues_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",
+                                     "MatRetrieveValues_SeqAIJ",
+                                     (void*)MatRetrieveValues_SeqAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatConvertSameType_SeqAIJ"
-int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
+#define __FUNC__ "MatDuplicate_SeqAIJ"
+int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
   Mat        C;
   Mat_SeqAIJ *c,*a = (Mat_SeqAIJ *) A->data;
@@ -2046,8 +2195,10 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   PetscMemcpy(c->i,a->i,(m+1)*sizeof(int));
   if (m > 0) {
     PetscMemcpy(c->j,a->j,(a->i[m]+shift)*sizeof(int));
-    if (cpvalues == COPY_VALUES) {
+    if (cpvalues == MAT_COPY_VALUES) {
       PetscMemcpy(c->a,a->a,(a->i[m]+shift)*sizeof(Scalar));
+    } else {
+      PetscMemzero(c->a,(a->i[m]+shift)*sizeof(Scalar));
     }
   }
 
@@ -2056,6 +2207,7 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;
   c->ilu_preserve_row_sums = a->ilu_preserve_row_sums;
+  c->saved_values = 0;
 
   if (a->diag) {
     c->diag = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(c->diag);
