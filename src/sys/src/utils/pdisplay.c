@@ -37,12 +37,12 @@
     put it in a universal location like a .chsrc file
 
 @*/
-PetscErrorCode PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],int len,PetscTruth *flag)
+PetscErrorCode PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],size_t len,PetscTruth *flag)
 {
   PetscErrorCode ierr;
-  int        rank;
-  char       *str,work[256];
-  PetscTruth flg = PETSC_FALSE,spetsc;
+  PetscMPIInt    rank;
+  char           *str,work[256];
+  PetscTruth     flg = PETSC_FALSE,spetsc;
    
   PetscFunctionBegin;
 

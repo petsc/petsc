@@ -7,14 +7,14 @@
 PETSC_EXTERN_CXX_BEGIN
 
 EXTERN PetscErrorCode  PetscOptionsHasName(const char[],const char[],PetscTruth*);
-EXTERN PetscErrorCode  PetscOptionsGetInt(const char[],const char [],int *,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetInt(const char[],const char [],PetscInt *,PetscTruth*);
 EXTERN PetscErrorCode  PetscOptionsGetLogical(const char[],const char [],PetscTruth *,PetscTruth*);
 EXTERN PetscErrorCode  PetscOptionsGetReal(const char[],const char[],PetscReal *,PetscTruth*);
 EXTERN PetscErrorCode  PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscTruth*);
-EXTERN PetscErrorCode  PetscOptionsGetIntArray(const char[],const char[],int[],int *,PetscTruth*);
-EXTERN PetscErrorCode  PetscOptionsGetRealArray(const char[],const char[],PetscReal[],int *,PetscTruth*);
-EXTERN PetscErrorCode  PetscOptionsGetString(const char[],const char[],char[],int,PetscTruth*);
-EXTERN PetscErrorCode  PetscOptionsGetStringArray(const char[],const char[],char*[],int*,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetIntArray(const char[],const char[],PetscInt[],PetscInt *,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetRealArray(const char[],const char[],PetscReal[],PetscInt *,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetString(const char[],const char[],char[],size_t,PetscTruth*);
+EXTERN PetscErrorCode  PetscOptionsGetStringArray(const char[],const char[],char*[],PetscInt*,PetscTruth*);
 
 EXTERN PetscErrorCode  PetscOptionsSetAlias(const char[],const char[]);
 EXTERN PetscErrorCode  PetscOptionsSetValue(const char[],const char[]);
@@ -33,8 +33,8 @@ EXTERN PetscErrorCode  PetscOptionsDestroy(void);
 EXTERN PetscErrorCode  PetscOptionsReject(const char[],const char[]);
 EXTERN PetscErrorCode  PetscOptionsGetAll(char*[]);
 
-EXTERN PetscErrorCode  PetscOptionsGetenv(MPI_Comm,const char[],char[],int,PetscTruth *);
-EXTERN PetscErrorCode  PetscOptionsAtoi(const char[],int*);
+EXTERN PetscErrorCode  PetscOptionsGetenv(MPI_Comm,const char[],char[],size_t,PetscTruth *);
+EXTERN PetscErrorCode  PetscOptionsAtoi(const char[],PetscInt*);
 EXTERN PetscErrorCode  PetscOptionsAtod(const char[],PetscReal*);
 
 extern PetscTruth PetscOptionsPublish;
