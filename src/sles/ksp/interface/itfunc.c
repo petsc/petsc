@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.70 1996/11/07 15:08:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.71 1996/11/13 15:42:24 bsmith Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -648,9 +648,12 @@ $                        residual norms
    Notes:  
    The default is to do nothing.  To print the residual, or preconditioned 
    residual if KSPSetUsePreconditionedResidual() was called, use 
-   KSPDefaultMonitor() as the monitor routine, with a null monitoring 
-   context. Several different monitor routines may be set and all will 
-   be called.
+   KSPDefaultMonitor() as the monitoring routine, with a null monitoring 
+   context. 
+
+   Several different monitoring routines may be set by calling
+   KSPSetMonitor() multiple times; all will be called in the 
+   order in which they were set.
 
 .keywords: KSP, set, monitor
 
