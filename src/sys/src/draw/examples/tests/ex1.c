@@ -27,12 +27,12 @@ int main(int argc,char **argv)
   ierr = DrawTextSetSize(draw,.5,.5); CHKERRA(ierr);
   ierr = DrawText(draw,.2,.2,DRAW_BLUE,"Some Text"); CHKERRA(ierr);
   ierr = DrawFlush(draw); CHKERRA(ierr);
-  sleep(2);
+  PetscSleep(2);
   ierr = DrawClear(draw); CHKERRA(ierr); ierr = DrawFlush(draw); CHKERRA(ierr);
-  sleep(2);
+  PetscSleep(2);
   ierr = DrawLine(draw,0.0,1.0,1.0,0.0,DRAW_BLUE);
   ierr = DrawFlush(draw); CHKERRA(ierr);
-  sleep(2);
+  PetscSleep(2);
   PetscFinalize();
   return 0;
 }

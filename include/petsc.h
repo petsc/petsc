@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.54 1995/08/07 18:54:55 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.55 1995/08/07 22:01:52 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -125,5 +125,7 @@ extern int PetscSetFPTrap(int);
 
 #include "phead.h"
 #include "plog.h"
+
+extern void PetscSleep(int);
 
 #endif
