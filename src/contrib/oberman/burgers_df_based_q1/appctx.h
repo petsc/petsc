@@ -46,7 +46,7 @@ typedef struct {
   double *bvc;  /* array of boundary vertex coordinates */
   double *cell_coords;   /* coords of the vertices corresponding to each cell */ 
  /* sizes of local df (including ghosted), df on this proc, cells, vertices, ghosted vertices */
-  int df_count, vertex_boundary_count, df_local_count, cell_n, vertex_n, vertex_n_ghosted; 
+  int df_n_ghosted, vertex_boundary_count, df_local_count, cell_n, vertex_n, vertex_n_ghosted; 
 
   int *vertex_df;   /* info on DF associated to vertices */
   int  *cell_df, *cell_vertex, *cell_cell; /* info on df, vertices, neighbours, indexed by cells */

@@ -72,7 +72,7 @@ Main Output of AppCCxSetLocal:
     - ltog mappings: ltog for vertices (not needed?), dfltog for DF
     - local indices: cell_vertex, cell_DF, cell_cell
     - info associated with vertices: vertex_values, vertex_Df
-    - sizes: cell_n, vertex_n_ghosted, df_count, vertex_n
+    - sizes: cell_n, vertex_n_ghosted, df_n_ghosted, vertex_n
     - boundary info: 
           vertex_boundary, (vertices on boundary)
           boundary_df (df associated with boundary)                     
@@ -115,11 +115,14 @@ int AppCtxSetLocal(AppCtx *appctx)
 
  /*       Get the list of Degrees of Freedom associated with those cells  (global numbering) */
  ierr = AODataSegmentGetReducedIS(ao,"cell","df",grid->cell_global,&grid->df_global);CHKERRQ(ierr);
+ 
  if(appctx->view.show_griddata){  
+   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n [%d], vertex_global \n",rank);CHKERRQ(ierr);  
+   ISView(grid->vertex_global, VIEWER_STDOUT_WORLD);
    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n [%d], df_global \n",rank);CHKERRQ(ierr);  
    ISView(grid->df_global, VIEWER_STDOUT_WORLD);
  }
-
+ 
  /*    Get the coords corresponding to each cell */
  ierr = AODataSegmentGetIS(ao, "cell", "coords", grid->cell_global , (void **)&grid->cell_coords);CHKERRQ(ierr);
 
@@ -128,10 +131,12 @@ int AppCtxSetLocal(AppCtx *appctx)
   ierr = ISLocalToGlobalMappingCreateIS(grid->cell_global,&cell_ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(grid->vertex_global,&grid->ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(grid->df_global,&grid->dfltog);CHKERRQ(ierr);
+  /*
   if(appctx->view.show_griddata){ 
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], grid->dfltog, the local to global mapping \n", rank);CHKERRQ(ierr);  
     ierr = ISLocalToGlobalMappingView(grid->dfltog, VIEWER_STDOUT_SELF);
   }
+  */
 
   /* Attach the ltog to the database */
   ierr = AODataKeySetLocalToGlobalMapping(ao,"cell",cell_ltog);CHKERRQ(ierr);
@@ -148,25 +153,30 @@ int AppCtxSetLocal(AppCtx *appctx)
  /*      Get the size of local objects   */
   ierr = ISGetSize(grid->cell_global,&grid->cell_n); CHKERRQ(ierr);
   ierr = ISGetSize(grid->vertex_global,&grid->vertex_n_ghosted); CHKERRQ(ierr);
-  ierr = ISGetSize(grid->df_global, &grid->df_count); CHKERRQ(ierr);
-  if(appctx->view.show_griddata){ 
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], the number of cells on this processor is %d\n ", rank, grid->cell_n);CHKERRQ(ierr);
-   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], grid->cell_df\n",rank);CHKERRQ(ierr);   
-   PetscIntView(grid->cell_n*8, grid->cell_df, VIEWER_STDOUT_SELF);
- }
-  /*       Get the numerical values/coords of all vertices for local vertices  */
+  ierr = ISGetSize(grid->df_global, &grid->df_n_ghosted); CHKERRQ(ierr);
+  
+  /*     Get the numerical values/coords of all vertices for local vertices  */
   ierr = AODataSegmentGetIS(ao,"vertex","values",grid->vertex_global,(void **)&grid->vertex_value);CHKERRQ(ierr);
   /* Get Df's corresponding to the vertices */
  ierr = AODataSegmentGetIS(ao,"vertex","df",grid->vertex_global,(void **)&grid->vertex_df);CHKERRQ(ierr);
- 
+
+  if(appctx->view.show_griddata){ 
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], cell_n= %d, vertex_n_ghosted=%d, df_n_ghosted=%d,\n", rank, grid->cell_n, grid->vertex_n_ghosted, grid->df_n_ghosted);CHKERRQ(ierr);
+    /* 
+       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], grid->cell_df:\n", rank);CHKERRQ(ierr); 
+       PetscIntView(grid->cell_n*8, grid->cell_df, VIEWER_STDOUT_SELF); 
+       */
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], grid->vertex_df:\n"); CHKERRQ(ierr);
+    ierr = PetscIntView(2*grid->vertex_n_ghosted,grid->vertex_df,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+ } 
+
   /* Get  the number of local vertices (rather than the number of ghosted vertices) */
   ierr = AODataKeyGetInfo(ao,"vertex",PETSC_NULL,&grid->vertex_n,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   /* get the number of local dfs */
  ierr = AODataKeyGetInfo(ao,"df",PETSC_NULL,&grid->df_local_count,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
  if(appctx->view.show_griddata){ 
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], vertex_n=%d, df_local_count=%d,\n grid->vertex_df\n",rank,grid->vertex_n, grid->df_local_count );CHKERRQ(ierr);
-    ierr = PetscIntView(2*grid->vertex_n,grid->vertex_df,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], vertex_n (num. of unique vertices)=%d, df_local_count=%d,\n ",rank,grid->vertex_n, grid->df_local_count );CHKERRQ(ierr);
  }
 
   /************************************************************/
