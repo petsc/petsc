@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.12 2000/02/02 20:07:23 bsmith Exp bsmith $ 
+# $Id: common_variables,v 1.13 2000/04/09 03:08:30 bsmith Exp bsmith $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -23,8 +23,8 @@ PDIR	       = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
 LIBNAME	       = ${PDIR}/${LIBBASE}.a
 SOURCE	       = ${SOURCEC} ${SOURCEF}
 OBJS	       = ${OBJSC} ${OBJSF}
-PETSC_INCLUDE  = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include ${MPI_INCLUDE} ${MPE_INCLUDE} \
-                ${AMS_INCLUDE}
+PETSC_INCLUDE  = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include \
+                 ${MPI_INCLUDE} ${MPE_INCLUDE} ${AMS_INCLUDE}
 CCPPFLAGS      = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${PETSC_PARCH} ${CPPFLAGS} \
 		 -D__SDIR__='"${LOCDIR}"'
 FCPPFLAGS      = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${PETSC_PARCH} ${FPPFLAGS}
@@ -37,7 +37,7 @@ F_SH_LIB_PATH  = ${FLINKER_SLFLAG}${LDIR} ${F_DYLIBPATH}
 #
 PETSC_SYS_LIB  = -L${LDIR} -lpetsc \
                  ${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} \
-                 ${MPE_LIB} ${MPI_LIB} ${X11_LIB} ${FC_LIB} ${SYS_LIB} -lm
+                 ${MPI_LIB} ${FC_LIB} ${SYS_LIB} -lm
 
 PETSC_VEC_LIB  = -L${LDIR} -lpetscvec ${PETSC_SYS_LIB}
 
@@ -52,20 +52,22 @@ PETSC_SNES_LIB  = -L${LDIR} -lpetscsnes ${PETSC_SLES_LIB}
 PETSC_TS_LIB  = -L${LDIR} -lpetscts ${PETSC_SNES_LIB}
 
 PETSC_LIB   = -L${LDIR} -lpetscts -lpetscsnes  -lpetscsles -lpetscdm -lpetscmat \
-		-lpetscvec -lpetsc \
-		${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} \
-		${MPE_LIB} ${MPI_LIB} ${X11_LIB} ${FC_LIB} ${SYS_LIB} -lm
+		-lpetscvec ${PETSC_SYS_LIB}
 #
 # ---------------------------------------------------------------------------------------
 #
-# PCONF - indicates which OPTIONAL external packages are available at your site
+# PCONF - indicates which OPTIONAL external packages are available at your site; appropriate
+#         ones are defined in bmake/${PETSC_ARCH}/base.site (as are the library locations).
+#         Ones that are not defined are ignored. You only need to edit this to add a new 
+#         package that PETSc has never seen before. Never remove any of these, rather remove
+#         them from the appropriate bmake/${PETSC_ARCH}/base.site
 #
 #
 PCONF         = ${PETSC_HAVE_MPE}  ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVODE} ${PETSC_HAVE_PARMETIS} \
                 ${PETSC_HAVE_AMS}  ${PETSC_HAVE_SPAI}       ${PETSC_HAVE_X11}   ${PETSC_HAVE_MATLAB} \
                 ${PETSC_HAVE_ADIC} ${PETSC_HAVE_JAVA}
 EXTERNAL_LIB  = ${MPE_LIB}        ${BLOCKSOLVE_LIB}        ${PVODE_LIB}        ${PARMETIS_LIB} \
-                ${AMS_LIB}        ${SPAI_LIB}                                                  \
+                ${AMS_LIB}        ${SPAI_LIB}              ${X11_LIB}          ${MATLAB_LIB}   \
                 ${ADIC_LIB} 
 #
 # ----------------------------------------------------------------------------------------
