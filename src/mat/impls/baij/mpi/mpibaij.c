@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.51 1997/01/14 20:35:51 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.52 1997/01/27 18:17:11 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -78,7 +78,13 @@ static int MatRestoreRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n
     rmax = imax[brow]; nrow = ailen[brow]; \
       bcol = col/bs; \
       ridx = row % bs; cidx = col % bs; \
-      for ( _i=0; _i<nrow; _i++ ) { \
+      low = 0; high = nrow; \
+      while (high-low > 3) { \
+        t = (low+high)/2; \
+        if (rp[t] > bcol) high = t; \
+        else              low  = t; \
+      } \
+      for ( _i=low; _i<high; _i++ ) { \
         if (rp[_i] > bcol) break; \
         if (rp[_i] == bcol) { \
           bap  = ap +  bs2*_i + bs*cidx + ridx; \
@@ -154,7 +160,7 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   int         *rp,ii,nrow,_i,rmax,N; 
   int         *imax=a->imax,*ai=a->i,*ailen=a->ilen; 
   int         *aj=a->j,brow,bcol; 
-  int         ridx,cidx,bs2=a->bs2; 
+  int         low,high,t,ridx,cidx,bs2=a->bs2; 
   Scalar      *ap,*aa=a->a,*bap;
 
 #if defined(PETSC_BOPT_g)
@@ -212,6 +218,111 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
       }
     }
   }
+  return 0;
+}
+
+extern int MatSetValuesBlocked_SeqBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
+#undef __FUNC__  
+#define __FUNC__ "MatSetValuesBlocked_MPIBAIJ"
+static int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
+{
+  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
+  Scalar      *value,*tmp;
+  int         ierr,i,j,ii,jj,row,col;
+  int         roworiented = baij->roworiented,rstart=baij->rstart ;
+  int         rend=baij->rend,cstart=baij->cstart,stepval;
+  int         cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
+
+#if defined(PETSC_BOPT_g)
+  if (baij->insertmode != NOT_SET_VALUES && baij->insertmode != addv) {
+    SETERRQ(1,0,"Cannot mix inserts and adds");
+  }
+#endif
+  /* Should be stashed somewhere to avoid multiple mallocs */
+  tmp = (Scalar*) PetscMalloc(bs2*sizeof(Scalar)); CHKPTRQ(tmp);
+  if (roworiented) { 
+    stepval = (n-1)*bs;
+  } else {
+    stepval = (m-1)*bs;
+  }
+  value = (Scalar *)PetscMalloc(bs2*sizeof(Scalar)); CHKPTRQ(value);
+  baij->insertmode = addv;
+  for ( i=0; i<m; i++ ) {
+#if defined(PETSC_BOPT_g)
+    if (im[i] < 0) SETERRQ(1,0,"Negative row");
+    if (im[i] >= baij->Mbs) SETERRQ(1,0,"Row too large");
+#endif
+    if (im[i] >= rstart && im[i] < rend) {
+      row = im[i] - rstart;
+      for ( j=0; j<n; j++ ) {
+        if (in[j] >= cstart && in[j] < cend){
+          col = in[j] - cstart;
+          if (roworiented) { 
+            value = v + i*(stepval+bs)*bs + j*bs;
+            for ( ii=0; ii<bs; ii++,value+=stepval )
+              for (jj=ii; jj<bs2; jj+=bs )
+                tmp[jj] = *value++; 
+          } else {
+            value = v + j*(stepval+bs)*bs + i*bs;
+            for ( ii=0; ii<bs; ii++,value+=stepval )
+              for (jj=0; jj<bs; jj++ )
+                *tmp++  = *value++; 
+            tmp -=bs2;
+          }
+          ierr = MatSetValuesBlocked_SeqBAIJ(baij->A,1,&row,1,&col,tmp,addv);CHKERRQ(ierr);
+        }
+#if defined(PETSC_BOPT_g)
+        else if (in[j] < 0) {SETERRQ(1,0,"Negative column");}
+        else if (in[j] >= baij->Nbs) {SETERRQ(1,0,"Col too large");}
+#endif
+        else {
+          if (mat->was_assembled) {
+            if (!baij->colmap) {
+              ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
+            }
+            col = baij->colmap[in[j]] - 1;
+            if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
+              ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr); 
+              col =  in[j];              
+            }
+          }
+          else col = in[j];
+          if (roworiented) { 
+            value = v + i*(stepval+bs)*bs + j*bs;
+            for ( ii=0; ii<bs; ii++,value+=stepval )
+              for (jj=ii; jj<bs2; jj+=bs )
+                tmp[jj] = *value++; 
+          } else {
+            value = v + j*(stepval+bs)*bs + i*bs;
+            for ( ii=0; ii<bs; ii++,value+=stepval )
+              for (jj=0; jj<bs; jj++ )
+                *tmp++  = *value++; 
+            tmp -=bs2;
+          }
+          ierr = MatSetValuesBlocked_SeqBAIJ(baij->B,1,&row,1,&col,tmp,addv);CHKERRQ(ierr);
+        }
+      }
+    } 
+    else {
+      if (!baij->donotstash) {
+        row = im[i]*bs;
+        if (roworiented ) {
+          for ( ii=0; ii<bs; i++,row++ ) {
+            for ( jj=0; jj<bs; jj++ ) {
+              ierr = StashValues_Private(&baij->stash,im[i],n,in,v+i*n,addv);CHKERRQ(ierr);
+            }
+          }
+        }
+        else {
+          row = im[i];
+	  for ( j=0; j<n; j++ ) {
+	    ierr = StashValues_Private(&baij->stash,row,1,in+j,v+i+j*m,addv);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+  }
+  PetscFree(tmp);
   return 0;
 }
 
@@ -665,7 +776,7 @@ static int MatMult_MPIBAIJ(Mat A,Vec xx,Vec yy)
 
   VecGetLocalSize_Fast(xx,nt);
   if (nt != a->n) {
-    SETERRQ(1,0,"Incompatible parition of A and xx");
+    SETERRQ(1,0,"Incompatible partition of A and xx");
   }
   VecGetLocalSize_Fast(yy,nt);
   if (nt != a->m) {
@@ -1239,7 +1350,7 @@ static struct _MatOps MatOps = {
   0,0,0,MatGetSubMatrices_MPIBAIJ,
   MatIncreaseOverlap_MPIBAIJ,MatGetValues_MPIBAIJ,0,MatPrintHelp_MPIBAIJ,
   MatScale_MPIBAIJ,0,0,0,MatGetBlockSize_MPIBAIJ,
-  0,0,0,0,0,0,MatSetUnfactored_MPIBAIJ};
+  0,0,0,0,0,0,MatSetUnfactored_MPIBAIJ,0,MatSetValuesBlocked_MPIBAIJ};
                                 
 
 #undef __FUNC__  
