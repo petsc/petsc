@@ -100,9 +100,10 @@ types MATSEQAIJSPOOLES, MATMPIAIJSPOOLES, MATSEQSBAIJSPOOLES,
 MATMPISBAIJSPOOLES, MATSUPERLU, MATSUPERLU_DIST, MATUMFPACK,MATESSL,
 MATLUSOL, MATAIJMUMPS, MATSBAIJMUMPS, MATDSCPACK<br>
         </li>
-        <li>Added new convenience matrix types which automatically switch between Seq and MPI
-implementations depending on the size of the communicator used during creation: MATAIJ, MATBAIJ,
-MATSBAIJ, MATMAIJ, MATDENSE, MATBDIAG</li>
+        <li>Added new convenience matrix types which automatically
+switch between Seq and MPI implementations depending on the size of the
+communicator used during creation: MATAIJ, MATBAIJ, MATSBAIJ, MATMAIJ,
+MATDENSE, MATBDIAG</li>
         <li>Changed default matrix-free compute h to use WP since it
 uses fewer reductions</li>
         <li>Replace the datatypes MatLUInfo and MatILUInfo by
@@ -162,10 +163,9 @@ initial construction<br>
       <ul>
         <li>Allow user preallocation of jacobian using DASetGetMatrix()<br>
         </li>
-        <li>DAGetMatrix now correctly returns the requested type.
-        </li>
-        <li>-mat_type typename overloads the requested type for DAGetMatrix
-        </li>
+        <li>DAGetMatrix now correctly returns the requested type.      </li>
+        <li>-mat_type typename overloads the requested type for
+DAGetMatrix </li>
       </ul>
       <p><span style="font-weight: bold; text-decoration: underline;">SYS:</span></p>
       <ul>
@@ -196,6 +196,12 @@ mat_type&nbsp; MATAIJMUMPS, MATSBAIJMUMPS)</li>
         <li>Added Spooles cholesky for SeqAIJ</li>
         <li>ADIC: ad_GRAD_MAX is now set in the application and
 compiled into code when compiling appplication</li>
+        <li>The following variable names - in the buildsystem are
+changed - that correspond with SuperLU_DIST<br>
+&nbsp; SUPERLUDIST_INCLUDE &nbsp;-&gt; &nbsp;SUPERLU_DIST_INCLUDE<br>
+&nbsp; SUPERLUDIST_LIB&nbsp; -&gt; &nbsp;SUPERLU_DIST_LIB<br>
+&nbsp; PETSCHAVE_SUPERLU &nbsp;-&gt; &nbsp;PETSC_HAVE_SUPERLU<br>
+        </li>
       </ul>
       <ul>
       </ul>
