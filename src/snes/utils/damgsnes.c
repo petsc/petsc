@@ -189,6 +189,7 @@ PetscErrorCode DMMGComputeJacobianWithMF(SNES snes,Vec x1,Mat *J,Mat *B,MatStruc
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_ADIC)
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobianWithAdic"
 /*
@@ -217,6 +218,7 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
   *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobian"
@@ -247,6 +249,7 @@ PetscErrorCode DMMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *f
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_ADIC)
 #undef __FUNCT__
 #define __FUNCT__ "SNESDAComputeJacobianWithAdic"
 /*@
@@ -290,6 +293,7 @@ PetscErrorCode SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatSt
   *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESDAComputeJacobianWithAdifor"
