@@ -11,8 +11,8 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
   --------------------------------
 
- (Lois)  - Remove default stuff from MatCreate() into each matrix type, including
-           processing command line options.
+  X - Remove default stuff from MatCreate() into each matrix type, including
+      processing command line options.
 
  (Barry)  - But in jump links for WWW manpages seealso.
 
@@ -20,7 +20,6 @@ Additional Capabilities that PETSc Needs:
             tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
 
  (Bill)   - Make configure fully functional in PETSc 2.0
-
 
    - Fix documentation for matrices in manual (also AIJ man pages).  
      Fix help info for matrices. MatPrintHelp().
@@ -42,6 +41,9 @@ Additional Capabilities that PETSc Needs:
    X Test PETSc with LAM.
     
    X don't require user to set diagonal entries in mpirowbs, that is insane.
+  
+   X don't require user to set diagonal entries in mpirowbs, that is insane - says Barry.
+   - But BlockSolve _requires_ a diagonal entry for each row, even if it is zero - says Lois.
 
    X Allow column and row oriented input for MatSetValues() for all matrix types,
 
@@ -66,8 +68,6 @@ Additional Capabilities that PETSc Needs:
    Features for TOHTML
    ------------------
 
-   - Fix table of vector operations and matrices in html version of users manual.
-
    * Fix fact that first line of verbatim in html files have all leading blanks
      removed. (Note our makefile puts in three blanks before ierr which fixes
      90 percent of the problems for manual.html)
@@ -77,6 +77,8 @@ Additional Capabilities that PETSc Needs:
      by simply putting a \n after the outputed <pre><tt>)
 
    - allow inputed example files to have PETSc routine names mapped to manpages.
+
+    doesn't handle \& correctly as a & in regular text.
 
     tothml doesn't handle \cite{} with -mapref../www/petsc.cit
     when the \cite is within an included file. 
@@ -95,6 +97,9 @@ Additional Capabilities that PETSc Needs:
    handling large documents (such as the ever expanding PETSc users
    manual), is the optional addition of buttons for "Contents" and
    "Index" with the usual "up", "next", "previous" buttons.  
+
+   Make \begin{tabular} environments look better. 
+
 
 
    To do sometime soon:
