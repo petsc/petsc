@@ -5,7 +5,7 @@ C
 C
 #include "mpif.h"
 
-C  Various flags
+C  Flags
       integer   PETSC_TRUE, PETSC_FALSE, PETSC_DECIDE, PETSC_DEFAULT
       integer   FP_TRAP_OFF, FP_TRAP_ON, FP_TRAP_ALWAYS
 
