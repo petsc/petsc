@@ -1,3 +1,4 @@
+petsc/src/fortran/custom/zgvec.c
 petsc/include/gvec.h
 petsc/src/gvec
 petsc/bmake/adicmastercontrol
