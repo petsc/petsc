@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.1 1994/10/01 20:02:39 bsmith Exp $";
+static char vcid[] = "$Id: iterativ.c,v 1.2 1994/10/31 16:14:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -174,8 +174,9 @@ no separate context.  Preferred calling sequence KSPDestroy().
 Input Parameters: 
 .   itP - the iterative context
 */
-int KSPiDefaultDestroy(KSP itP)
+int KSPiDefaultDestroy(PetscObject obj)
 {
+  KSP itP = (KSP) obj;
   VALIDHEADER(itP,KSP_COOKIE);
   if (itP->MethodPrivate) FREE(itP->MethodPrivate);
 

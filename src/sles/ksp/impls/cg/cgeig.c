@@ -354,4 +354,12 @@ L20:
     return ret_val;
 } /* cgpthy_ */
 
+#else
+
+int KSPCGGetEigenvalues(KSP itP,int n,double *emax,double *emin)
+{
+  fprintf(stderr,"No eigenvalues for complex case \n");
+  return 0;
+}
+
 #endif

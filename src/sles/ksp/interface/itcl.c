@@ -5,7 +5,6 @@
 #include "petsc.h"
 #include "kspimpl.h"
 #include "sys.h"
-
 /*@
     KSPSetFromCommandLine - sets KSP options from the command line.
                             This must be called before KSPSetUp()

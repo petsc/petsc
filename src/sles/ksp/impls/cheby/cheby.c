@@ -26,7 +26,7 @@ int KSPiChebychevSetUp(KSP itP)
 .  itP - the Krylov space context
 .  emax, emin - the eigenvalue estimates
 @*/
-int KSPChebychevSetEigenvalues(KSP itP,Scalar emax,Scalar emin)
+int KSPChebychevSetEigenvalues(KSP itP,double emax,double emin)
 {
   ChebychevCntx *chebychevP = (ChebychevCntx *) itP->MethodPrivate;
   VALIDHEADER(itP,KSP_COOKIE);

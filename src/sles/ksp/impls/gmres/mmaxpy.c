@@ -17,7 +17,7 @@
         p1    - array of multipliers
         dv    - destination for result.
  */
-int BasicMultiMaxpy(  Vec *v1,int nv,double *p1, Vec dv )
+int BasicMultiMaxpy(  Vec *v1,int nv,Scalar *p1, Vec dv )
 {
   int j;
   for (j=0; j<=nv; j++) VecAXPY( p1++, *v1++, dv );

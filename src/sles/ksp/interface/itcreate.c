@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.1 1994/10/01 20:02:38 bsmith Exp $";
+static char vcid[] = "$Id: itcreate.c,v 1.2 1994/10/31 16:14:27 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -122,10 +122,11 @@ int KSPSetMethod(KSP ctx,KSPMETHOD itmethod)
 .      sname -  corresponding string for name
 .      create - routine to create method context
 @*/
-int  KSPRegister(KSPMETHOD name, char *sname, int  (*create)())
+int  KSPRegister(KSPMETHOD name, char *sname, int  (*create)(KSP))
 {
+  int (*dummy)() = (int (*)()) create;
   if (!__ITList) __ITList = NRCreate();
-  return NRRegister( __ITList, (int) name, sname, create );
+  return NRRegister( __ITList, (int) name, sname, dummy );
 }
 
 /*@

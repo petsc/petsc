@@ -9,7 +9,7 @@ int GMRESBasicOrthog( KSP itP,int it )
 {
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
   int    j;
-  double *hh, *hes, tmp;
+  Scalar *hh, *hes, tmp;
 
   /* update hessenberg matrix and do Gram-Schmidt */
   hh  = HH(0,it);
@@ -35,7 +35,7 @@ int GMRESUnmodifiedOrthog(KSP  itP,int it )
 {
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
   int    j;
-  double *hh, *hes, tmp;
+  Scalar *hh, *hes, tmp;
 
   /* update hessenberg matrix and do unmodified Gram-Schmidt */
   hh  = HH(0,it);

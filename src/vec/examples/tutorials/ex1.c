@@ -33,16 +33,19 @@ int worker(int argc,char **argv)
   ierr = VecSet(&three,z[2]);CHKERR(ierr);
   
   ierr = VecDot(x,x,&dot); CHKERR(ierr);
-  fprintf(fd,"Vector length %d\n",(int) real(dot));
   ierr = VecMDot(3,x,z,dots); CHKERR(ierr);
-  fprintf(fd,"Vector length %d %d %d\n",
-                          (int)real(dots[0]),
-                          (int)real(dots[1]),
+#if defined(PETSC_COMPLEX)
+  fprintf(fd,"Vector length %d\n",(int) real(dot));
+  fprintf(fd,"Vector length %d %d %d\n",(int)real(dots[0]),(int)real(dots[1]),
                           (int)real(dots[2]));
+#else
+  fprintf(fd,"Vector length %d\n",(int) dot);
+  fprintf(fd,"Vector length %d %d %d\n",(int)dots[0],(int)dots[1],
+                          (int)dots[2]);
+#endif
 
   fprintf(fd,"All other values should be near zero\n");
   ierr = VecScale(&two,x);CHKERR(ierr);
-VecView(x,0);
   ierr = VecNorm(x,&norm); CHKERR(ierr);
   fprintf(fd,"VecScale %g\n",norm-2.0*sqrt((double) n));
 

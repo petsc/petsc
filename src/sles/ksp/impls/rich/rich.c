@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.2 1994/10/29 02:41:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.3 1994/10/31 16:14:46 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -34,7 +34,7 @@ int KSPiRichardsonSetUp(KSP itP)
 .   itP - the iterative context
 .   scale - the relaxation factor
 @*/
-int KSPRichardsonSetScale(KSP itP,Scalar scale)
+int KSPRichardsonSetScale(KSP itP,double scale)
 {
   KSPRichardsonCntx *richardsonP;
   VALIDHEADER(itP,KSP_COOKIE);

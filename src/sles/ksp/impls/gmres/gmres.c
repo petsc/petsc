@@ -56,10 +56,10 @@
 #include "gmresp.h"
 #define GMRES_DELTA_DIRECTIONS 5
 #define GMRES_DEFAULT_MAXK 10
-int  BasicMultiMaxpy( Vec *,int,double *,Vec);
+int  BasicMultiMaxpy( Vec *,int,Scalar *,Vec);
 static int GMRESGetNewVectors( KSP ,int );
 static double GMRESUpdateHessenberg( KSP , int );
-static int BuildGmresSoln(double* ,Vec,Vec ,KSP, int);
+static int BuildGmresSoln(Scalar* ,Vec,Vec ,KSP, int);
 static int KSPiGMRESSetUp(KSP itP )
 {
   unsigned int size, hh, hes, rs, cc;
@@ -72,9 +72,9 @@ static int KSPiGMRESSetUp(KSP itP )
   hes           = (max_k + 1) * (max_k + 1);
   rs            = (max_k + 2);
   cc            = (max_k + 1);
-  size          = (hh + hes + rs + 2*cc) * sizeof(double);
+  size          = (hh + hes + rs + 2*cc) * sizeof(Scalar);
 
-  gmresP->hh_origin  = (double *) MALLOC( size );
+  gmresP->hh_origin  = (Scalar *) MALLOC( size );
   CHKPTR(gmresP->hh_origin);
   gmresP->hes_origin = gmresP->hh_origin + hh;
   gmresP->rs_origin  = gmresP->hes_origin + hes;
@@ -117,7 +117,7 @@ static int KSPiGMRESSetUp(KSP itP )
 static int GMRESResidual(  KSP itP,int restart )
 {
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
-  double        mone = -1.0;
+  Scalar        mone = -1.0;
 
   /* compute initial residual: f - M*x */
   /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
@@ -158,8 +158,10 @@ static int GMRESResidual(  KSP itP,int restart )
  */
 int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 {
-  double  res_norm, res, rtol, tt, hapbnd, hist_len= itP->res_hist_size, cerr;
-  double  *nres = itP->residual_history, tmp;
+  double  res_norm, res, rtol;
+  Scalar   tmp;
+  int     hist_len= itP->res_hist_size, cerr;
+  double  hapbnd,*nres = itP->residual_history,tt;
   /* Note that hapend is ignored in the code */
   int     it, hapend, converged;
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
@@ -213,7 +215,11 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
     *HES(it+1,it)   = tt;
 
     /* check for the happy breakdown */
+#if defined(PETSC_COMPLEX)
+    hapbnd  = gmresP->epsabs * abs( *HH(it,it) / *RS(it) );
+#else
     hapbnd  = gmresP->epsabs * fabs( *HH(it,it) / *RS(it) );
+#endif
     if (hapbnd > gmresP->haptol) hapbnd = gmresP->haptol;
     if (tt > hapbnd) {
         tmp = 1.0/tt; VecScale( &tmp , VEC_VV(it+1) );
@@ -340,9 +346,9 @@ static int KSPiGMRESDestroy(PetscObject obj)
 
      This is an internal routine that knows about the GMRES internals.
  */
-static int BuildGmresSoln(double* nrs,Vec vs,Vec vdest,KSP itP, int it )
+static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
 {
-  double  tt, zero = 0.0, one = 1.0;
+  Scalar  tt, zero = 0.0, one = 1.0;
   int     ii, k, j;
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
 
@@ -395,7 +401,7 @@ static int BuildGmresSoln(double* nrs,Vec vs,Vec vdest,KSP itP, int it )
  */
 static double GMRESUpdateHessenberg( KSP itP, int it )
 {
-  register double *hh, *cc, *ss, tt;
+  register Scalar *hh, *cc, *ss, tt;
   register int    j;
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)(itP->MethodPrivate);
 
@@ -424,7 +430,11 @@ static double GMRESUpdateHessenberg( KSP itP, int it )
   *RS(it+1) = - ( *ss * *RS(it) );
   *RS(it)   = *cc * *RS(it);
   *hh       = *cc * *hh + *ss * *(hh+1);
+#if defined(PETSC_COMPLEX)
+  return abs( *RS(it+1) );
+#else
   return fabs( *RS(it+1) );
+#endif
 }
 /*
    This routine allocates more work vectors, starting from VEC_VV(it).
@@ -494,8 +504,8 @@ static int GMRESBuildSolution(KSP itP,Vec  ptr,Vec *result )
   }
   if (!gmresP->nrs) {
     /* allocate the work area */
-    gmresP->nrs = (double *)
-	               MALLOC( (unsigned)(gmresP->max_k * sizeof(double) ) );
+    gmresP->nrs = (Scalar *)
+	               MALLOC( (unsigned)(gmresP->max_k * sizeof(Scalar) ) );
   }
 
   BuildGmresSoln(  gmresP->nrs, VEC_SOLN, ptr, itP, gmresP->it );
