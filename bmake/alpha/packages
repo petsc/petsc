@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.31 1998/04/16 15:11:20 balay Exp balay $ 
+# $Id: base.site,v 1.32 1998/04/28 17:47:20 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -45,7 +45,7 @@ MPIRUN         = /home/petsc/mpich/lib/alpha/ch_p4/mpirun
 #
 #MPI_LIB         = ${LDIR}/libmpiuni.a
 #MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
-#MPIRUN          = ${PETSC_DIR}/src/mpiuni/mpirun
+#MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 

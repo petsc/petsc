@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.8 1998/04/07 18:45:04 balay Exp balay $ 
+# $Id: base.site,v 1.9 1998/04/28 17:46:55 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -41,7 +41,7 @@ X11_LIB        = -lX11
 #
 MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
 MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
-MPIRUN         = ${PETSC_DIR}/src/mpiuni/mpirun
+MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # PCONF - indicates which external packages are available at your site
 #    Make sure that -DHAVE_BLOCKSOLVE is not listed below

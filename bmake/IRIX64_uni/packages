@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.5 1998/04/28 17:46:37 balay Exp balay $ 
+# $Id: base.site,v 1.6 1998/04/28 17:48:51 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -47,12 +47,6 @@ MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #MPI_LIB        = -L/home/petsc/mpich/lib/IRIX64/ch_p4 -lmpi
 #MPI_INCLUDE    = -DUSES_INT_MPI_COMM -I/home/petsc/mpich/include
 #MPIRUN         =  /home/petsc/mpich/lib/IRIX64/ch_p4/mpirun
-#
-# The following lines can be used with MPIUNI
-#
-#MPI_LIB         =${LDIR}/libmpiuni.a
-#MPI_INCLUDE     = -I${PETSC_DIR}/src/mpiuni -DUSES_INT_MPI_COMM
-#MPIRUN          = ${PETSC_DIR}/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 

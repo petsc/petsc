@@ -32,8 +32,8 @@ X11_LIB 	= -L/usr/X11r6.3/bin -lX11
 # Location of MPI (Message Passing Interface) software  
 #
 MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-MPI_INCLUDE    = -I${PETSC_DIR}/src/mpiuni
-MPIRUN         = ${PETSC_DIR}/src/mpiuni/mpirun
+MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
+MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 
 # Optional location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
