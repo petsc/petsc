@@ -605,8 +605,9 @@ M*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPRegister"
 /*@C
-      KSPRegister - See KSPRegisterDynamic()
+  KSPRegister - See KSPRegisterDynamic()
 
+  Level: advanced
 @*/
 int KSPRegister(char *sname,char *path,char *name,int (*function)(KSP))
 {

@@ -250,8 +250,9 @@ M*/
 #undef __FUNCT__  
 #define __FUNCT__ "TSRegister"
 /*@C
-      TSRegister - See TSRegisterDynamic()
+  TSRegister - See TSRegisterDynamic()
 
+  Level: advanced
 @*/
 int TSRegister(const char sname[], const char path[], const char name[], int (*function)(TS))
 {

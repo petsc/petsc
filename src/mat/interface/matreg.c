@@ -175,8 +175,9 @@ M*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatRegister"
 /*@C
-      MatRegister - See MatRegisterDynamic()
+  MatRegister - See MatRegisterDynamic()
 
+  Level: advanced
 @*/
 int MatRegister(char *sname,char *path,char *name,int (*function)(Mat))
 {

@@ -1521,8 +1521,9 @@ M*/
 #undef __FUNCT__  
 #define __FUNCT__ "PCRegister"
 /*@C
-      PCRegister - See PCRegisterDynamic()
+  PCRegister - See PCRegisterDynamic()
 
+  Level: advanced
 @*/
 int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
 {

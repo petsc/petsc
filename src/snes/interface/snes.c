@@ -2070,8 +2070,9 @@ M*/
 #undef __FUNCT__  
 #define __FUNCT__ "SNESRegister"
 /*@C
-      SNESRegister - See SNESRegisterDynamic()
+  SNESRegister - See SNESRegisterDynamic()
 
+  Level: advanced
 @*/
 int SNESRegister(char *sname,char *path,char *name,int (*function)(SNES))
 {
