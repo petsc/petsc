@@ -456,7 +456,7 @@ class Configure(config.base.Configure):
       self.pushLanguage(language)
       for testFlag in ['-Wl,-rpath,', '-rpath ', '-R', '-Wl,-R,']:
         self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
-        if self.checkCompilerFlag(testFlag+os.path.abspath(os.getcwd())):
+        if self.checkLinkerFlag(testFlag+os.path.abspath(os.getcwd())):
           flag = testFlag
           break
         else:
