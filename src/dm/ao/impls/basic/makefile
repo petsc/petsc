@@ -10,7 +10,8 @@ OBJSC    = aodebug.o
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = 
-LOCDIR   = src/ao/impls/debug/
+LMANSEC  = 6
+OCDIR    = src/ao/impls/debug/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
