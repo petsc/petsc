@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.120 1999/01/21 01:29:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.121 1999/01/25 19:03:39 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -17,9 +17,8 @@ static int PCSetUp_BJacobi(PC pc)
 {
   PC_BJacobi      *jac = (PC_BJacobi *) pc->data;
   Mat             mat = pc->mat, pmat = pc->pmat;
-  int             ierr, n_local, N, M, start, i, rank, size, sum, end;
+  int             ierr, N, M, start, i, rank, size,sum, end;
   int             bs, i_start=-1, i_end=-1;
-  char            *prefix;
 
   PetscFunctionBegin;
   MPI_Comm_rank(pc->comm,&rank);
@@ -655,13 +654,12 @@ int PCApplyTrans_BJacobi_Singleblock(PC pc,Vec x, Vec y)
 static int PCSetUp_BJacobi_Singleblock(PC pc, Mat mat, Mat pmat)
 {
   PC_BJacobi             *jac = (PC_BJacobi *) pc->data;
-  int                    ierr, m, size;
+  int                    ierr, m;
   SLES                   sles;
   Vec                    x,y;
   PC_BJacobi_Singleblock *bjac;
   KSP                    subksp;
   PC                     subpc;
-  MatType                type;
 
   PetscFunctionBegin;
 
@@ -856,8 +854,7 @@ int PCApplyTrans_BJacobi_Multiblock(PC pc,Vec x, Vec y)
 int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 {
   PC_BJacobi             *jac = (PC_BJacobi *) pc->data;
-  int                    ierr, m, n_local, N, M, start, i,  sum, end;
-  int                    i_start=-1,i_end=-1, ct1, ct2;
+  int                    ierr, m, n_local, N, M, start, i;
   char                   *prefix;
   SLES                   sles;
   Vec                    x,y;
