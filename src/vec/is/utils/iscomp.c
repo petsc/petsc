@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: iscomp.c,v 1.1 1996/01/18 23:32:04 balay Exp balay $";
+static char vcid[] = "$Id: iscomp.c,v 1.2 1996/01/30 20:42:30 balay Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
 
 /*@
-  ISCompareIndices  - Compares if two index sets have the
-                      same set of indices.
+  ISEqual  - Compares if two index sets have the
+             same set of indices.
 
   Input Parameters:
 .  is1, is2 - The index sets being compared
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: iscomp.c,v 1.1 1996/01/18 23:32:04 balay Exp balay $"
    This routine sorts the contents of the index sets before
    the comparision is made, so the order of the indices is immaterial
 @*/
-int ISCompareIndices(IS is1, IS is2, int *flg)
+int ISEqual(IS is1, IS is2, int *flg)
 {
 
   int sz, sz1, sz2, ierr, *ptr1, *ptr2, *a1, *a2;
