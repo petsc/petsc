@@ -388,8 +388,6 @@ class Configure:
     if out or ret:
       self.framework.log.write('ERR (compiler): '+out)
       self.framework.log.write('ret = '+str(ret)+'\n')
-      self.framework.log.write('Header:\n')
-      self.framework.outputHeader(self.framework.log)
       self.framework.log.write('Source:\n'+self.getCode(includes, body))
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
@@ -444,8 +442,6 @@ class Configure:
       self.framework.log.write('ERR (linker): '+out)
       self.framework.log.write('ret = '+str(ret)+'\n')
       self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
-      self.framework.log.write('Header:\n')
-      self.framework.outputHeader(self.framework.log)
       self.framework.log.write('Source:\n'+self.getCode(includes, body))
     if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
       self.linkerObj = self.linkerObj+'.exe'
