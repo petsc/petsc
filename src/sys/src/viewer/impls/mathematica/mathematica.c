@@ -18,7 +18,9 @@ static char vcid[] = "$Id: mathematica.c,v 1.9 2000/01/26 15:46:22 baggag Exp $"
 #include "mathematica.h"
 
 PetscViewer  VIEWER_MATHEMATICA_WORLD_PRIVATE = PETSC_NULL;
+#ifdef PETSC_HAVE_MATHEMATICA
 static void *mathematicaEnv                   = PETSC_NULL;
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerMathematicaInitializePackage"
@@ -43,8 +45,6 @@ int PetscViewerMathematicaInitializePackage(char *path) {
   initialized = PETSC_TRUE;
 #ifdef PETSC_HAVE_MATHEMATICA
   mathematicaEnv = (void *) MLInitialize(0);
-#else
-  mathematicaEnv = PETSC_NULL;
 #endif
   PetscFunctionReturn(0);
 }

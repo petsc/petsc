@@ -155,3 +155,49 @@ void *create_esi_petsc_indexspacefactory(void)
 #endif
 EXTERN_C_END
 
+#if defined(PETSC_HAVE_TRILINOS)
+#define PETRA_MPI /* used by Ptera to indicate MPI code */
+#include "Petra_ESI_IndexSpace.h"
+
+template<class Ordinal> class Petra_ESI_IndexSpaceFactory : public virtual ::esi::IndexSpaceFactory<Ordinal>
+{
+  public:
+
+    // Destructor.
+  virtual ~Petra_ESI_IndexSpaceFactory(void){};
+
+    // Interface for gov::cca::Component
+#if defined(PETSC_HAVE_CCA)
+    virtual void setServices(gov::cca::Services *svc)
+    {
+      svc->addProvidesPort(this,svc->createPortInfo("getIndexSpace", "esi::IndexSpaceFactory", 0));
+    };
+#endif
+
+    // Construct a IndexSpace
+    virtual ::esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,::esi::IndexSpace<Ordinal>*&v)
+    {
+      PetscTruth ismpi;
+      int ierr = PetscStrcmp(name,"MPI",&ismpi);CHKERRQ(ierr);
+      if (!ismpi) SETERRQ1(1,"%s not supported, only MPI supported as RunTimeModel",name);
+      Petra_Comm *pcomm = new Petra_Comm(*(MPI_Comm*)comm);
+      v = new Petra_ESI_IndexSpace<Ordinal>(-1,m,0,*pcomm); 
+      if (!v) SETERRQ(1,"Unable to create Petra_ESI_IndexSpace");
+      return 0;
+    };
+
+};
+EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_CCA)
+gov::cca::Component *create_petra_esi_indexspacefactory(void)
+{
+  return dynamic_cast<gov::cca::Component *>(new Petra_ESI_IndexSpaceFactory<int>);
+}
+#else
+void *create_petra_esi_indexspacefactory(void)
+{
+  return (void *)(new Petra_ESI_IndexSpaceFactory<int>);
+}
+#endif
+EXTERN_C_END
+#endif

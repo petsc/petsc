@@ -65,7 +65,7 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     virtual esi::ErrorCode restoreRow(Ordinal row, Ordinal& length, Scalar*& coefs, Ordinal*& colIndices) ;
     virtual esi::ErrorCode restoreRowCoefs(Ordinal row, Ordinal& length, Scalar*& coefs) ;
     virtual esi::ErrorCode restoreRowIndices(Ordinal row, Ordinal& length, Ordinal*& colIndices) ;
-    virtual esi::ErrorCode copyInRow(Ordinal row,  Scalar* coefs, Ordinal* colIndices, Ordinal length);
+    virtual esi::ErrorCode copyIntoRow(Ordinal row,  Scalar* coefs, Ordinal* colIndices, Ordinal length);
     virtual esi::ErrorCode sumIntoRow(Ordinal row,  Scalar* coefs, Ordinal* colIndices, Ordinal length);
     virtual esi::ErrorCode rowMax(Ordinal row, Scalar& result) ;
     virtual esi::ErrorCode rowMin(Ordinal row, Scalar& result) ;

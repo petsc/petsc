@@ -203,7 +203,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRowIndices(int row, int& l
   return MatRestoreRow(this->mat,row,&length,&colIndices,PETSC_NULL);
 }
 
-esi::ErrorCode esi::petsc::Matrix<double,int>::copyInRow(int row,double* coefs, int* colIndices, int length)
+esi::ErrorCode esi::petsc::Matrix<double,int>::copyIntoRow(int row,double* coefs, int* colIndices, int length)
 {
   return MatSetValues(this->mat,1,&row,length,colIndices,coefs,INSERT_VALUES);  
 }
@@ -305,6 +305,85 @@ void *create_esi_petsc_operatorfactory(void)
 }
 #endif
 EXTERN_C_END
+
+
+#if defined(PETSC_HAVE_TRILINOS)
+#include "esi/petsc/matrix.h"
+#define PETRA_MPI /* used by Ptera to indicate MPI code */
+#include "Petra_ESI_CRS_Matrix.h"
+
+/*
+         This class is the same as the Petra_ESI_CRS_Matrix class except it puts values into the Petra_CRS_Grap()
+*/
+template<class Scalar,class Ordinal> class MyPetra_ESI_CRS_Matrix : public virtual Petra_ESI_CRS_Matrix<Scalar,Ordinal>
+{
+  public:
+
+  MyPetra_ESI_CRS_Matrix(Petra_DataAccess CV,const Petra_CRS_Graph& graph) :  Petra_ESI_Object(), Petra_RDP_CRS_Matrix(CV, graph), Petra_ESI_CRS_Matrix<Scalar,Ordinal>(CV, graph){graph_ = (Petra_CRS_Graph*)&graph;SetStaticGraph(false);};
+
+  virtual ~MyPetra_ESI_CRS_Matrix() { };
+
+  virtual esi::ErrorCode copyIntoRow(Ordinal row, Scalar* coefs, Ordinal* colIndices, Ordinal length)
+    { int ierr;
+      ierr = graph_->InsertGlobalIndices(row, length, colIndices);CHKERRQ(((ierr == 1) ? 0 : ierr));
+      ierr = Petra_ESI_CRS_Matrix<Scalar,Ordinal>::copyIntoRow(row,coefs,colIndices,length);CHKERRQ(ierr); 
+      //  ierr = this->setup();CHKERRQ(ierr);
+      return 0;
+     }
+
+  Petra_CRS_Graph *graph_; 
+};
+
+
+template<class Scalar,class Ordinal> class Petra_ESI_CRS_OperatorFactory : public virtual ::esi::OperatorFactory<Scalar,Ordinal>
+{
+  public:
+
+    // constructor
+    Petra_ESI_CRS_OperatorFactory(void){};
+  
+    // Destructor.
+    virtual ~Petra_ESI_CRS_OperatorFactory(void){};
+
+    // Interface for gov::cca::Component
+#if defined(PETSC_HAVE_CCA)
+    virtual void setServices(gov::cca::Services *svc)
+    {
+      svc->addProvidesPort(this,svc->createPortInfo("getOperator", "esi::OperatorFactory", 0));
+    };
+#endif
+
+    // Construct a Operator
+    virtual ::esi::ErrorCode getOperator(::esi::IndexSpace<Ordinal>&rmap,::esi::IndexSpace<Ordinal>&cmap,::esi::Operator<Scalar,Ordinal>*&v)
+    {
+      int       ierr;
+      Petra_Map *rowmap,*colmap;
+      ierr = rmap.getInterface("Petra_Map",static_cast<void *>(rowmap));CHKERRQ(ierr);
+      if (!rowmap) SETERRQ(1,"Petra requires all IndexSpaces be Petra_ESI_IndexSpaces");
+      ierr = cmap.getInterface("Petra_Map",static_cast<void *>(colmap));CHKERRQ(ierr);
+      if (!colmap) SETERRQ(1,"Petra requires all IndexSpaces be Petra_ESI_IndexSpaces");
+      Petra_CRS_Graph  *graph = new Petra_CRS_Graph(Copy,*(Petra_BlockMap*)rowmap,*(Petra_BlockMap*)colmap,200);
+      ierr = rmap.addReference();CHKERRQ(ierr);
+      ierr = cmap.addReference();CHKERRQ(ierr);
+      v = new MyPetra_ESI_CRS_Matrix<Scalar,Ordinal>(Copy,*graph);
+      return 0;
+    };
+};
+
+EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_CCA)
+gov::cca::Component *create_petra_esi_operatorfactory(void)
+{
+  return dynamic_cast<gov::cca::Component *>(new Petra_ESI_CRS_OperatorFactory<double,int>);
+}
+#else
+void *create_petra_esi_operatorfactory(void)
+{
+  return (void *)(new Petra_ESI_CRS_OperatorFactory<double,int>);
+}
+#endif
+EXTERN_C_END
+#endif
 
 
 
