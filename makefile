@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.336 2001/03/06 17:31:48 bsmith Exp balay $ 
+# $Id: makefile,v 1.337 2001/03/06 17:52:19 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -280,19 +280,19 @@ alldoc: allmanualpages
 
 # Deletes man pages (HTML version)
 deletemanualpages:
-	${RM} -f ${PETSC_DIR}/docs/manualpages/*/*.html \
-                 ${PETSC_DIR}/docs/manualpages/manualpages.cit 
+	${RM} -f ${LOC}/docs/manualpages/*/*.html \
+                 ${LOC}/docs/manualpages/manualpages.cit 
 
 # Builds all versions of the man pages
 allmanualpages: deletemanualpages
-	-${OMAKE} ACTION=manualpages_buildcite tree_basic
-	-${OMAKE} ACTION=manualpages tree_basic
-	-maint/wwwindex.py ${PETSC_DIR}
-	-${OMAKE} ACTION=manexamples tree
-	-${OMAKE} manconcepts
+	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
+	-${OMAKE} ACTION=manualpages tree_basic  LOC=${LOC}
+	-maint/wwwindex.py ${LOC_DIR}
+	-${OMAKE} ACTION=manexamples tree  LOC=${LOC}
+	-${OMAKE} manconcepts  LOC=${LOC}
 	-${OMAKE} ACTION=exampleconcepts tree
 	-maint/helpindex.py
-	-@chmod g+w docs/manualpages/*/*.html
+	-@chmod g+w ${LOC}/docs/manualpages/*/*.html
 
 # Builds Fortran stub files
 allfortranstubs:
