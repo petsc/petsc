@@ -574,7 +574,7 @@ int DumpField(Euler *app,Draw Win,Scalar *field)
   }
   (*huedestroy)( hue_ctx );
   ierr = DrawMeshDestroy(&mesh); CHKERRQ(ierr);
-  ierr = DrawSynchronizedFlush(Win); CHKERRQ(ierr);
+  ierr = DrawSyncFlush(Win); CHKERRQ(ierr);
 
   return 0;
 }
