@@ -25,6 +25,9 @@ File Description:
 #include "petsc.h"
 #include <limits.h>
 #include <float.h>
+#if defined(PETSC_HAVE_MALLOC_H)
+#include <malloc.h>
+#endif
 
 #define X          0
 #define Y          1
