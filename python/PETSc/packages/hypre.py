@@ -278,7 +278,7 @@ class Configure(config.base.Configure):
     self.framework.packages.append(self)
     
   def configure(self):
-    if 'download-'+self.package in self.framework.argDB:
+    if self.framework.argDB['download-'+self.package]:
       self.framework.argDB['with-'+self.package] = 1
     if self.framework.argDB['with-'+self.package]:
       if self.mpi.usingMPIUni:
