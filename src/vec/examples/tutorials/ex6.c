@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.12 1997/10/19 03:22:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.13 1997/11/28 16:18:34 bsmith Exp balay $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
@@ -10,12 +10,15 @@ a file, then forms a vector.\n\n";
 
 int main(int argc,char **args)
 {
-  int     i, ierr, m = 10, flg, fd, size;
+  int     i, ierr, m = 10, flg, fd, size,sz;
   Scalar  *avec, *array;
   Vec     vec;
   Viewer  view_out, view_in;
 
   PetscInitialize(&argc,&args,(char *)0,help);
+  MPI_Comm_size(PETSC_COMM_WORLD,&sz);
+  if (sz != 1) SETERRA(1,0,"This is a uniprocessor example only!");
+  
   OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
 
   /* ---------------------------------------------------------------------- */
@@ -29,7 +32,7 @@ int main(int argc,char **args)
   }
 
   /* Open viewer for binary output */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"input.dat",BINARY_CREATE,&view_out);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,"input.dat",BINARY_CREATE,&view_out);
          CHKERRA(ierr);
   ierr = ViewerBinaryGetDescriptor(view_out,&fd); CHKERRA(ierr);
 
