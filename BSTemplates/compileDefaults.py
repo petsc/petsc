@@ -222,6 +222,8 @@ class UsingPython(UsingCompiler):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
     stubDir = self.usingSIDL.getStubDir(self.getLanguage(), package)
     library = self.getServerLibrary(project, self.getLanguage(), package)
+    # Server Filter
+    serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['c', 'old c'])
     # IOR and server compile are both C
     compiler = compile.CompileC(library)
     compiler.defines.extend(self.getDefines())
@@ -231,7 +233,7 @@ class UsingPython(UsingCompiler):
     compiler.includeDirs.append(stubDir)
     compiler.includeDirs.extend(self.includeDirs[package])
     compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
-    return [compile.TagC(root = rootDir), compiler]
+    return [compile.TagC(root = rootDir), serverFilter, compiler]
 
   def getExecutableCompileTarget(self, project, sources, executable):
     raise RuntimeError('No executable compilation in '+self.getLanguage())
