@@ -1,4 +1,4 @@
-# $Id: base,v 1.25 1999/01/25 22:20:13 bsmith Exp $ 
+# $Id: base_variables,v 1.1 1999/02/08 23:36:03 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -71,47 +71,4 @@ OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O  \
 
 PARCH    = IRIX
 
-include ${PETSC_DIR}/bmake/common
-
-libc:
-	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
-
-libf:
-	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
-
-libmember:    ${LIBNAME}(${LIBMEMBER})
-
-############
-
-shared: chkopts_basic
-	-@echo making shared libraries in ${LDIR} ;\
-	cd ${LDIR}; \
-	for LIBNAME in ${SHLIBS} ; \
-	do \
-          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
-	    flag=""; \
-	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	    else \
-	      flag="true"; \
-	    fi; \
-	    if [ "$$flag" != "" ]; then \
-	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${LD} -elf -no_library_replacement -shared -rdata_shared \
-	            -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
-	    fi; \
-	  fi; \
-	done
-
-#
-# Notes:
-#
-# This version of PETSCFLAGS specifies the use of Fortran kernels (via
-# -DUSE_FORTRAN_KERNELS) for several low-level computational kernels for
-# complex numbers rather than using the potentially slower C++ versions.
-# To instead use the C++ routines, remove -DUSE_FORTRAN_KERNELS from this
-# list.
-#
-# For IRIX Release less than,6.2 the above should probably be replaced by
-# FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
-#
+include ${PETSC_DIR}/bmake/common_variables
