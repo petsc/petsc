@@ -54,7 +54,6 @@ E*/
 #define PCCOMPOSITE  "composite"
 #define PCREDUNDANT  "redundant"
 #define PCSPAI       "spai"
-#define PCMILU       "milu"
 #define PCNN         "nn"
 #define PCCHOLESKY   "cholesky"
 #define PCRAMG       "ramg"
