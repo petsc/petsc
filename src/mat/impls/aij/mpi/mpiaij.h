@@ -24,7 +24,6 @@ typedef struct {
   Vec           lvec;
   VecScatterCtx Mvctx;
   void          *bsinterf;
-  int           flag;     /* flag for BS */
 } Mat_MPIAIJ;
 
 
