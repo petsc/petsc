@@ -203,6 +203,8 @@ class Configure(config.base.Configure):
     if 'with-mpi-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-mpi-dir']
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
+      yield ('User specified installation root for cygwin', self.libraryGuesses(dir),[[os.path.join(dir,'SDK.gcc','include')]])
+      yield ('User specified installation root for MS Windows', self.libraryGuesses(dir),[[os.path.join(dir,'SDK','include')]])
       raise RuntimeError('You set a value for --with-mpi-dir, but '+self.framework.argDB['with-mpi-dir']+' cannot be used.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
     # May not need to list anything
     yield ('Default compiler locations', [''], [[]])
