@@ -276,7 +276,7 @@ int main(int argc,char **argv)
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create nonlinear solver context
        
-       Process adiC(20):  AddTSTermLocal FormFunctionLocal
+       Process adiC(20):  AddTSTermLocal AddTSTermLocal2 FormFunctionLocal
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, 0,
                             ad_FormFunctionLocal, admf_FormFunctionLocal);
