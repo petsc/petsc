@@ -8,9 +8,9 @@
 #include "vec.h"
 
 struct _VeOps {
-  int  (*create_vector)(Vec,Vec*),       /*  Get single vector */
-       (*obtain_vectors)(Vec,int,Vec**), /*  Get array of vectors */
-       (*release_vectors)(Vec*,int),     /* Free array of vectors */
+  int  (*create)(Vec,Vec*),       /*  Get single vector */
+       (*getvecs)(Vec,int,Vec**), /*  Get array of vectors */
+       (*freevecs)(Vec*,int),     /* Free array of vectors */
        (*dot)(Vec,Vec,Scalar*),          /* z = x^H * y */
        (*mdot)(int,Vec,Vec*,Scalar*),    /*   z[j] = x dot y[j] */
        (*norm)(Vec,double*),             /* z = sqrt(x^H * x) */
@@ -18,7 +18,7 @@ struct _VeOps {
        (*asum)(Vec,double*),             /*  z = sum |x| */
        (*tdot)(Vec,Vec,Scalar*),         /* x'*y */
        (*mtdot)(int,Vec,Vec*,Scalar*),   /*   z[j] = x dot y[j] */
-       (*scal)(Scalar*,Vec),             /*  x = alpha * x   */
+       (*scale)(Scalar*,Vec),            /*  x = alpha * x   */
        (*copy)(Vec,Vec),                 /*  y = x */
        (*set)(Scalar*,Vec),              /*  y = alpha  */
        (*swap)(Vec,Vec),                 /* exchange x and y */
@@ -28,12 +28,12 @@ struct _VeOps {
        (*waxpy)(Scalar*,Vec,Vec,Vec),    /*  w = y + alpha * x */
        (*pmult)(Vec,Vec,Vec),            /*  w = x .* y */
        (*pdiv)(Vec,Vec,Vec),             /*  w = x ./ y */
-       (*insertvalues)(Vec,int,int*,Scalar*,InsertMode),
-       (*beginassm)(Vec),
-       (*endassm)(Vec),
+       (*setvalues)(Vec,int,int*,Scalar*,InsertMode),
+       (*assemblybegin)(Vec),
+       (*assemblyend)(Vec),
        (*getarray)(Vec,Scalar**),
-       (*getsize)(Vec,int*),(*localsize)(Vec,int*),
-       (*getrange)(Vec,int*,int*),
+       (*getsize)(Vec,int*),(*getlocalsize)(Vec,int*),
+       (*getownershiprange)(Vec,int*,int*),
        (*restorearray)(Vec,Scalar**),
        (*max)(Vec,int*,double*),
        (*min)(Vec,int*,double*);  /* z = min(x); idx = index of min(x) */
