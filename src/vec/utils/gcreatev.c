@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.39 1998/01/14 02:38:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.40 1998/04/13 17:26:10 bsmith Exp bsmith $";
 #endif
 
 
@@ -26,8 +26,8 @@ static char vcid[] = "$Id: gcreatev.c,v 1.39 1998/01/14 02:38:06 bsmith Exp bsmi
     Collective on MPI_Comm
 
     Options Database Key:
-$   -vec_mpi : use MPI vectors, even for the uniprocessor case
-$   -vec_shared : used shared memory parallel vectors
+$   -vec_mpi - use MPI vectors, even for the uniprocessor case
+$   -vec_shared - used shared memory parallel vectors
 
     Notes:
     Use VecDuplicate() or VecDuplicateVecs() to form additional vectors
