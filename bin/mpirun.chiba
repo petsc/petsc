@@ -97,6 +97,9 @@ while [ $# -gt 0 ] ; do
     break
     esac
 done
+if [ $num -gt 32 ] ; then
+  shared=no
+fi
 #
 # Now process program options looking for possible input files
 # stage the file directly into the rundir directory so we need to generate new
