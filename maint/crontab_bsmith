@@ -1,0 +1,16 @@
+#
+#  Crontab for eagle /tmp PETSc 2.0
+#
+# This file is run every morning at 7:00 am.
+# Run "crontab crontab_bsmith" to install the nightly build;
+# use "crontab -r" to remove it.
+#
+#  The timing between these runs IS important.
+#
+#
+# Makes the shadow directory.
+#
+#15 0 * * * /home/bsmith/petsc/maint/buildlinks /tmp/bsmith/petsc > /dev/null
+15 0 * * * rsh lava /home/bsmith/petsc/maint/buildlinks /tmp/bsmith/petsc > /dev/null
+15 0 * * * rsh maple /home/bsmith/petsc/maint/buildlinks /tmp/bsmith/petsc > /dev/null
+15 0 * * * /home/bsmith/petsc/maint/buildlinks /ccsthome/bsmith/petsc > /dev/null
