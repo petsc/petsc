@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.6 1995/11/01 23:20:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.7 1996/01/23 00:19:51 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -82,6 +82,7 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
    Returns:
 $  2  if  ( fnorm < atol ),
 $  3  if  ( pnorm < xtol*xnorm ),
+$  4  if  ( fnorm < rtol*fnorm0 ),
 $ -2  if  ( nfct > maxf ),
 $  0  otherwise,
 
@@ -98,13 +99,23 @@ $           set with SNESSetRelativeTolerance()
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,
-                         void *dummy)
+int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
 {
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
     "SNESDefaultConverged:For SNES_NONLINEAR_EQUATIONS only");
   /* Note:  Reserve return code 1, -1 for compatibility with 
   SNESTrustRegionDefaultConverged */
+  if (snes->iter == 1) { /* first iteration so set ttol */
+    snes->ttol = fnorm*snes->rtol;
+  }
+  else {
+    if (fnorm <= snes->ttol) {
+      PLogInfo((PetscObject)snes,
+      "SNES:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
+      return 4;
+    }
+  }
+
   if (fnorm < snes->atol) {
     PLogInfo((PetscObject)snes,
       "SNES: Converged due to function norm %g < %g\n",fnorm,snes->atol);
