@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.12 1999/01/12 23:17:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.13 1999/03/19 21:23:37 bsmith Exp balay $";
 #endif
 /*
        Formatted test for TS routines.
@@ -134,7 +134,7 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   ierr = VecGetSize(global, &n); CHKERRQ(ierr);
 
   /* Set the index sets */
-  idx=(int *) calloc(n,sizeof(int));
+  idx=(int *) PetscMalloc(n*sizeof(int));
   for(i=0; i<n; i++) idx[i]=i;
  
   /* Create local sequential vectors */
@@ -155,6 +155,7 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
     time,tmp[0]-solx(time),tmp[1]-soly(time),tmp[2]-solz(time));
   ierr = VecRestoreArray(tmp_vec,&tmp);
+  PetscFree(idx);
   return 0;
 }
 
@@ -174,7 +175,7 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   ierr = VecGetSize(globalin, &n); CHKERRQ(ierr);
 
   /* Set the index sets */
-  idx=(int *) calloc(n,sizeof(int));
+  idx=(int *) PetscMalloc(n*sizeof(int));
   for(i=0; i<n; i++) idx[i]=i;
   
   /* Create local sequential vectors */
@@ -213,7 +214,7 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   ierr = ISDestroy(from); CHKERRQ(ierr);
   ierr = ISDestroy(to); CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
-
+  PetscFree(idx);
   return 0;
 }
 
