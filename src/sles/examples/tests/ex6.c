@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.41 1996/08/04 23:13:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.42 1996/09/23 20:23:06 curfman Exp balay $";
 #endif
 
 static char help[] = 
@@ -12,7 +12,7 @@ Input arguments are:\n\
 #include "draw.h"
 #include "mat.h"
 #include "sles.h"
-#include "plog.h"
+#include "petsclog.h"
 #include <stdio.h>
 
 int main(int argc,char **args)

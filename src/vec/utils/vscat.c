@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.75 1996/12/08 23:51:59 bsmith Exp balay $";
+static char vcid[] = "$Id: vscat.c,v 1.76 1996/12/09 15:47:45 balay Exp balay $";
 #endif
 
 /*
@@ -705,6 +705,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     *newctx = ctx;
     return 0;
   }
+  /* One othe above 4 cases is true, and the next istruction should never be executed */
   return 0;
 }
 

@@ -1,6 +1,6 @@
 
 
-C    "$Id: ex1f.F,v 1.1 1996/10/10 23:58:02 balay Exp balay $";
+C    "$Id: ex1f.F,v 1.2 1996/10/13 14:55:25 balay Exp balay $";
 C
 C   Description: Demonstrates how users can augment the PETSc profiling by
 C                nserting their own event logging.
@@ -26,7 +26,7 @@ C
 C  The following include statements are required for using PLog Routines
 C
 #include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/plog.h"
+#include "include/FINCLUDE/petsclog.h"
 C
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                   Variable declarations
