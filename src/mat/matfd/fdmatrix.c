@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.19 1997/10/01 22:45:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.20 1997/10/10 04:03:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -366,20 +366,10 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 @*/
 int MatFDColoringDestroy(MatFDColoring c)
 {
-  int i,ierr,flag;
+  int i,ierr;
 
   if (--c->refct > 0) return 0;
 
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flag);
-  if (flag) {
-    ierr = MatFDColoringView(c,VIEWER_STDOUT_(c->comm));CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_info",&flag);
-  if (flag) {
-    ierr = ViewerPushFormat(VIEWER_STDOUT_(c->comm),VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatFDColoringView(c,VIEWER_STDOUT_(c->comm));CHKERRQ(ierr);
-    ierr = ViewerPopFormat(VIEWER_STDOUT_(c->comm));
-  }
 
   for ( i=0; i<c->ncolors; i++ ) {
     if (c->columns[i])       PetscFree(c->columns[i]);
