@@ -4,6 +4,7 @@
       This provides a few of the MPI-uni functions that cannot be implemented
     with C macros
 */
+#include "petscconf.h"
 #include "mpi.h"
 
 #if defined (MPIUNI_USE_STDCALL)
