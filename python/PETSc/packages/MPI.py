@@ -1,3 +1,4 @@
+from __future__ import generators
 import config.base
 
 import os
@@ -12,132 +13,322 @@ class Configure(config.base.Configure):
     self.foundInclude   = 0
     self.compilers      = self.framework.require('config.compilers', self)
     self.types          = self.framework.require('config.types',     self)
+    self.headers        = self.framework.require('config.headers',   self)
     self.libraries      = self.framework.require('config.libraries', self)
+    self.headers.headers.append('dlfcn.h')
+    self.libraries.libraries.append(('dl', 'dlopen'))
     return
 
   def configureHelp(self, help):
     import nargs
-    help.addArgument('MPI', '-with-mpi',                nargs.Arg(None, None, 'Use MPI'))
-    help.addArgument('MPI', '-with-mpi-dir=<root dir>', nargs.Arg(None, None, 'Specify the root directory of the MPI installation'))
-    help.addArgument('MPI', '-with-mpi-include=<dir>',  nargs.Arg(None, None, 'The directory containing mpi.h'))
+    help.addArgument('MPI', '-with-mpi-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the MPI installation'))
+    help.addArgument('MPI', '-with-mpi-include=<dir>',  nargs.ArgDir(None, None, 'The directory containing mpi.h'))
     help.addArgument('MPI', '-with-mpi-lib=<lib>',      nargs.Arg(None, None, 'The MPI library or list of libraries'))
     help.addArgument('MPI', '-with-mpirun=<prog>',      nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     return
 
-  def checkLib(self, fullLib):
-    '''Checks for MPI_Init in fullLib, which can be a list of libraries'''
-    if not isinstance(fullLib, list): fullLib = [fullLib]
-    oldLibs  = self.framework.argDB['LIBS']
-    self.dir = []
-    self.lib = []
-    for lib in fullLib:
-      (dir, base) = os.path.split(lib)
-      if dir and not dir in self.dir:
-        self.dir.append(dir)
-      if base[:3] == 'lib': base = base[3:]
-      self.lib.append(os.path.splitext(base)[0])
-    otherLibs = self.compilers.flibs
-    if self.libraries.check(self.lib, 'MPI_Init', libDir = self.dir, otherLibs = otherLibs):
-      self.foundLib = 1
+  def checkLib(self, libraries):
+    '''Check for MPI_Init in libraries, which can be a list of libraries or a single library'''
+    if not isinstance(libraries, list): libraries = [libraries]
+    oldLibs = self.framework.argDB['LIBS']
+    found   = self.libraries.check(libraries, 'MPI_Init', otherLibs = self.compilers.flibs)
     self.framework.argDB['LIBS'] = oldLibs
-    return self.foundLib
+    return found
 
-  def checkInclude(self):
+  def checkInclude(self, includeDir):
+    '''Check that mpi.h is present'''
     oldFlags = self.framework.argDB['CPPFLAGS']
-    if self.include: self.framework.argDB['CPPFLAGS'] += ' -I'+self.include
-    if self.checkPreprocess('#include <mpi.h>\n'):
-      self.foundInclude = 1
+    for inc in includeDir:
+      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    found = self.checkPreprocess('#include <mpi.h>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
-    return self.foundInclude
+    return found
 
-  def checkMPILink(self, includes, body):
+  def checkMPILink(self, includes, body, cleanup = 1):
+    '''Analogous to checkLink(), but the MPI includes and libraries are automatically provided'''
     success  = 0
     oldFlags = self.framework.argDB['CPPFLAGS']
-    if self.include: self.framework.argDB['CPPFLAGS'] += ' -I'+self.include
     oldLibs  = self.framework.argDB['LIBS']
-    for dir in self.dir:
-      self.framework.argDB['LIBS'] += ' -L'+dir
+    for inc in self.include:
+      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
     for lib in self.lib:
       self.framework.argDB['LIBS'] += ' '+self.libraries.getLibArgument(lib)
     self.framework.argDB['LIBS'] += ' '+self.compilers.flibs
-    if self.checkLink(includes, body):
+    if self.checkLink(includes, body, cleanup):
       success = 1
     self.framework.argDB['CPPFLAGS'] = oldFlags
     self.framework.argDB['LIBS']     = oldLibs
     return success
 
-  def configureLibrary(self):
-    '''Checking for the MPI library'''
-    # Try specified library or default
-    self.include = None
-    if self.framework.argDB.has_key('with-mpi-lib'):
-      fullLib = self.framework.argDB['with-mpi-lib']
-      if not isinstance(fullLib, list):
-        fullLib = [fullLib]
-      if os.path.dirname(fullLib[0]):
-        self.include = os.path.join(os.path.dirname(os.path.dirname(fullLib[0])), 'include')
-    else:
-      fullLib = ''
-    if self.checkLib(fullLib): return 1
-    fullLib = 'libmpich.a'
-    if self.checkLib(fullLib): return 1
-    fullLib = 'libmpi.a'
-    if self.checkLib(fullLib): return 1
-
-    # Try library from MPI_DIR/lib
-    if self.framework.argDB.has_key('with-mpi-dir'):
-      self.baseDir = self.framework.argDB['with-mpi-dir']
-    elif self.argDB.has_key('MPI_DIR'):
-      self.baseDir = self.argDB['MPI_DIR']
-    else:
-      self.baseDir = ''
-    if self.baseDir:
-      mpiLibPath   = os.path.join(self.baseDir, 'lib')
-      fullLib      = os.path.join(mpiLibPath, 'libmpich.a')
-      self.include = os.path.join(self.baseDir, 'include')
-      if self.checkLib(fullLib): return 1
-      fullLib = os.path.join(mpiLibPath, 'libmpi.a')
-      if self.checkLib(fullLib): return 1
-
-    # Obsolete support for MPICH env variables
-    if self.argDB.has_key('MPILIBPATH'):
-      mpiLibPath = self.argDB['MPILIBPATH']
-      fullLib    = os.path.join(mpiLibPath, 'libmpich.a')
-      if self.argDB.has_key('MPIINCLUDEPATH'):
-        self.include = self.argDB['MPIINCLUDEPATH']
-      else:
-        self.include = None
-      if self.checkLib(fullLib): return 1
-      fullLib = os.path.join(mpiLibPath, 'libmpi.a')
-      if self.checkLib(fullLib): return 1
-    return 0
-
-  def configureInclude(self):
-    '''Checking for the MPI include file'''
-    if self.framework.argDB.has_key('with-mpi-include'):
-      self.include = self.framework.argDB['with-mpi-include']
-    elif self.include is None:
-      self.include = ''
-    if self.checkInclude(): return 1
-    raise RuntimeError('Could not find MPI header mpi.h in '+self.include+'!')
-
-  def configureTypes(self):
-    '''Checking for MPI types'''
+  def outputMPIRun(self, includes, body, cleanup = 1):
+    '''Analogous to outputRun(), but the MPI includes and libraries are automatically provided'''
     oldFlags = self.framework.argDB['CPPFLAGS']
-    if self.include: self.framework.argDB['CPPFLAGS'] += ' -I'+self.include
-    self.types.checkSizeof('MPI_Comm', 'mpi.h')
-    self.types.checkSizeof('MPI_Fint', 'mpi.h')
+    oldLibs  = self.framework.argDB['LIBS']
+    for inc in self.include:
+      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    for lib in self.lib:
+      self.framework.argDB['LIBS'] += ' '+self.libraries.getLibArgument(lib)
+    self.framework.argDB['LIBS'] += ' '+self.compilers.flibs
+    output, status = self.outputRun(includes, body, cleanup)
     self.framework.argDB['CPPFLAGS'] = oldFlags
-    return
+    self.framework.argDB['LIBS']     = oldLibs
+    return (output, status)
 
   def checkWorkingLink(self):
     '''Checking that we can link an MPI executable'''
     if self.checkMPILink('#include <mpi.h>\n', 'MPI_Comm comm = MPI_COMM_WORLD;\nint size;\n\nMPI_Comm_size(comm, &size);\n'):
       return 1
-    raise RuntimeError('MPI cannot link, which indicates a mismatch between the header ('+os.path.join(self.include, 'mpi.h')+
-                       ') and library ('+str(self.lib)+').')
+    self.framework.log.write('MPI cannot link, which indicates a mismatch between the header ('+os.path.join(self.include[0], 'mpi.h')+') and library ('+str(self.lib)+').\n')
+    return 0
+
+  def checkSharedLibrary(self):
+    '''Check that the libraries for MPI are shared libraries'''
+    isShared                         = 0
+    oldFlags                         = self.framework.argDB['LDFLAGS']
+    self.framework.argDB['LDFLAGS'] += ' -shared'
+    for lib in self.lib:
+      self.framework.argDB['LDFLAGS'] += ' -Wl,-rpath,'+os.path.dirname(lib)
+
+    # Make a library which calls MPI_Init
+    self.codeBegin = '''
+#ifdef __cplusplus
+extern "C"
+#endif
+int init(int argc,  char *argv[]) {
+'''
+    self.codeEnd   = '\n}\n'
+    body           = '''
+  int isInitialized;
+
+  MPI_Init(&argc, &argv);
+  MPI_Initialized(&isInitialized);
+  return isInitialized;
+'''
+    if not self.checkMPILink('#include <mpi.h>\n', body, cleanup = 0):
+      if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+      self.framework.argDB['LDFLAGS'] = oldFlags
+      self.framework.log.write('Could not complete shared library check\n')
+      return 0
+    if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+    os.rename(self.linkerObj, 'lib1.so')
+
+    # Make a library which calls MPI_Initialized
+    self.codeBegin = '''
+#ifdef __cplusplus
+extern "C"
+#endif
+int checkInit(void) {
+'''
+    self.codeEnd   = '\n}\n'
+    body           = '''
+  int isInitialized;
+
+  MPI_Initialized(&isInitialized);
+  return isInitialized;
+'''
+    if not self.checkMPILink('#include <mpi.h>\n', body, cleanup = 0):
+      if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+      self.framework.argDB['LDFLAGS'] = oldFlags
+      self.framework.log.write('Could not complete shared library check\n')
+      return 0
+    if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+    os.rename(self.linkerObj, 'lib2.so')
+
+    self.codeBegin = ''
+    self.codeEnd   = ''
+    self.framework.argDB['LDFLAGS'] = oldFlags
+
+    guard = self.headers.getDefineName('dlfcn.h')
+    if self.headers.headerPrefix:
+      guard = self.headers.headerPrefix+'_'+guard
+    includes = '''
+#include <stdio.h>
+#include <stdlib.h>
+#ifdef %s
+  #include <dlfcn.h>
+#endif
+    ''' % guard
+    body = '''
+  int   argc    = 1;
+  char *argv[1] = {"conftest"};
+  void *lib;
+  int (*init)(int, char **);
+  int (*checkInit)(void);
+
+  lib = dlopen("./lib1.so", RTLD_LAZY);
+  if (!lib) {
+    fprintf(stderr, "Could not open lib1.so: %s\\n", dlerror());
+    exit(1);
+  }
+  init = (int (*)(int, char **)) dlsym(lib, "init");
+  if (!init) {
+    fprintf(stderr, "Could not find initialization function\\n");
+    exit(1);
+  }
+  if (!(*init)(argc, argv)) {
+    fprintf(stderr, "Could not initialize MPI\\n");
+    exit(1);
+  }
+  lib = dlopen("./lib2.so", RTLD_LAZY);
+  if (!lib) {
+    fprintf(stderr, "Could not open lib2.so: %s\\n", dlerror());
+    exit(1);
+  }
+  checkInit = (int (*)(void)) dlsym(lib, "checkInit");
+  if (!checkInit) {
+    fprintf(stderr, "Could not find initialization check function\\n");
+    exit(1);
+  }
+  if (!(*checkInit)()) {
+    fprintf(stderr, "Did not link with shared library\\n");
+    exit(2);
+  }
+    '''
+    oldLibs = self.framework.argDB['LIBS']
+    if self.libraries.haveLib('dl'):
+      self.framework.argDB['LIBS'] += ' -ldl'
+    if self.checkRun(includes, body):
+      isShared = 1
+    self.framework.argDB['LIBS'] = oldLibs
+    if os.path.isfile('lib1.so'): os.remove('lib1.so')
+    if os.path.isfile('lib2.so'): os.remove('lib2.so')
+    if not isShared:
+      self.framework.log.write('MPI library was not shared\n')
+    return isShared
+
+  def configureVersion(self):
+    '''Determine the MPI version'''
+    output, status = self.outputMPIRun('#include <stdio.h>\n#include <mpi.h>\n', 'int ver, subver;\n if (MPI_Get_version(&ver, &subver));\nprintf("%d.%d\\n", ver, subver)\n')
+    if not status:
+      return output
+    return 'Unknown'
+
+  def includeGuesses(self, path):
+    '''Return all include directories present in path or its ancestors'''
+    while path:
+      dir = os.path.join(path, 'include')
+      if os.path.isdir(dir):
+        yield dir
+      path = os.path.dirname(path)
+    return
+
+  def libraryGuesses(self, root = None):
+    '''Return standard library name guesses for a given installation root'''
+    if root:
+      yield [os.path.join(root, 'lib', 'shared', 'libmpich.a')]
+      yield [os.path.join(root, 'lib', 'shared', 'libmpi.a')]
+      yield [os.path.join(root, 'lib', 'shared', 'libmpich.a'), os.path.join(root, 'lib', 'shared', 'libpmpich.a')]
+      yield [os.path.join(root, 'lib', 'libmpich.a')]
+      yield [os.path.join(root, 'lib', 'libmpi.a')]
+      yield [os.path.join(root, 'lib', 'libmpich.a'), os.path.join(root, 'lib', 'libpmpich.a')]
+    else:
+      yield ['']
+      yield ['mpich']
+      yield ['mpi']
+      yield ['mpich', 'pmpich']
+    return
+
+  def generateGuesses(self):
+    # Try specified library and include
+    if 'with-mpi-lib' in self.framework.argDB:
+      libs = self.framework.argDB['with-mpi-lib']
+      if not isinstance(libs, list): libs = [libs]
+      if 'with-mpi-include' in self.framework.argDB:
+        includes = [self.framework.argDB['with-mpi-include']]
+      else:
+        includes = self.includeGuesses(map(lambda inc: os.path.dirname(os.path.dirname(inc)), libs))
+      yield ('User specified library and includes', libs, includes)
+    # Try specified installation root
+    if 'with-mpi-dir' in self.framework.argDB:
+      dir = self.framework.argDB['with-mpi-dir']
+      yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
+    # Try compiler defaults
+    yield ('Default compiler locations', self.libraryGuesses(), [['']])
+    # Try SUSE location
+    dir = os.path.abspath(os.path.join('/opt', 'mpich'))
+    yield ('Default SUSE location', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
+    # Try /usr/local
+    dir = os.path.abspath(os.path.join('/usr', 'local'))
+    yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [os.path.join(dir, 'include')])
+    # Try PETSc location
+    PETSC_DIR  = None
+    PETSC_ARCH = None
+    if 'PETSC_DIR' in self.framework.argDB and 'PETSC_ARCH' in self.framework.argDB:
+      PETSC_DIR  = self.framework.argDB['PETSC_DIR']
+      PETSC_ARCH = self.framework.argDB['PETSC_ARCH']
+    elif os.getenv('PETSC_DIR') and os.getenv('PETSC_ARCH'):
+      PETSC_DIR  = os.getenv('PETSC_DIR')
+      PETSC_ARCH = os.getenv('PETSC_ARCH')
+
+    if PETSC_ARCH and PETSC_DIR:
+        import base
+        ss      = base.Base()
+        try:
+          libArgs = ss.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpilinklibs')
+          incArgs = ss.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpiincludedirs')
+          runArgs = ss.executeShellCommand('cd '+PETSC_DIR+'; make getmpirun')
+
+          libArgs = self.splitLibs(libArgs)
+          incArgs = self.splitIncludes(incArgs)
+          if runArgs and not 'with-mpirun' in self.framework.argDB:
+            self.framework.argDB['with-mpirun'] = runArgs
+          if libArgs and incArgs:
+            yield ('PETSc location', [libArgs], [incArgs])
+        except RuntimeError:
+          # This happens with older Petsc versions which are missing those targets
+          pass
+    return
+
+  def configureLibrary(self):
+    '''Find all working MPI libraries and then choose one'''
+    self.foundMPI = 0
+    functionalMPI = []
+    nonsharedMPI  = []
+    for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
+      self.framework.log.write('================================================================================\n')
+      self.framework.log.write('Checking for a functional MPI in '+name+'\n')
+      self.lib     = None
+      self.include = None
+      for libraries in libraryGuesses:
+        if self.checkLib(libraries):
+          self.lib = libraries
+          break
+      if not self.lib: continue
+      for includeDir in includeGuesses:
+        if self.checkInclude(includeDir):
+          self.include = includeDir
+          break
+      if not self.include: continue
+      if not self.executeTest(self.checkWorkingLink): continue
+      version = self.executeTest(self.configureVersion)
+      if not self.executeTest(self.checkSharedLibrary):
+        nonsharedMPI.append((name, self.lib, self.include, version))
+        continue
+      self.foundMPI = 1
+      functionalMPI.append((name, self.lib, self.include, version))
+    # User chooses one or take first (sort by version)
+    if self.foundMPI:
+      name, self.lib, self.include, version = functionalMPI[0]
+      self.framework.log.write('Choose MPI '+version+' in '+name+'\n')
+    elif len(nonsharedMPI):
+      raise RuntimeError('Could not locate any MPI with shared libraries')
+    else:
+      raise RuntimeError('Could not locate any functional MPI')
+    return
+
+  def configureTypes(self):
+    '''Checking for MPI types'''
+    oldFlags = self.framework.argDB['CPPFLAGS']
+    for inc in self.include: self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    self.types.checkSizeof('MPI_Comm', 'mpi.h')
+    self.types.checkSizeof('MPI_Fint', 'mpi.h')
+    self.framework.argDB['CPPFLAGS'] = oldFlags
+    return
 
   def configureConversion(self):
+    '''Check for the functions which convert communicators between C and Fortran
+       - Define HAVE_MPI_COMM_F2C and HAVE_MPI_COMM_C2F if they are present
+       - Some older MPI 1 implementations are missing these'''
     if self.checkMPILink('#include <mpi.h>\n', 'if (MPI_Comm_f2c(MPI_COMM_WORLD));\n'):
       self.addDefine('HAVE_MPI_COMM_F2C', 1)
     if self.checkMPILink('#include <mpi.h>\n', 'if (MPI_Comm_c2f(MPI_COMM_WORLD));\n'):
@@ -146,52 +337,46 @@ class Configure(config.base.Configure):
 
   def configureMPIRUN(self):
     '''Checking for mpirun'''
-    if self.framework.argDB.has_key('with-mpirun'):
+    if 'with-mpirun' in self.framework.argDB:
       self.mpirun = self.framework.argDB['with-mpirun']
     else:
       self.mpirun = 'mpirun'
-    path = os.path.dirname(self.mpirun)
-    for dir in self.dir:
-      path += ':'+os.path.join(os.path.dirname(dir), 'bin')
-    if path:
-      if path[0]      == ':': path = path[1:]
-      if not path[-1] == ':': path += ':'
-    self.getExecutable('mpirun', path = path, getFullPath = 1)
-    self.addSubstitution('MPIRUN', self.mpirun)
-    return
-
-  def configureMPE(self):
-    '''Checking for MPE'''
-    self.addSubstitution('MPE_INCLUDE', '')
-    self.addSubstitution('MPE_LIB',     '')
+    path = []
+    if os.path.dirname(self.mpirun):
+      path.append(os.path.dirname(self.mpirun))
+    if 'with-mpi-dir' in self.framework.argDB:
+      path.append(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin'))
+    for inc in self.include:
+      path.append(os.path.join(os.path.dirname(inc), 'bin'))
+    for lib in self.lib:
+      path.append(os.path.join(os.path.dirname(os.path.dirname(lib)), 'bin'))
+    path.append('')
+    self.getExecutable('mpirun', path = ':'.join(path), getFullPath = 1)
     return
 
   def setOutput(self):
-    if self.foundLib and self.foundInclude:
+    '''Add defines and substitutions
+       - HAVE_MPI is defined if a working MPI is found
+       - MPI_INCLUDE and MPI_LIB are command line arguments for the compile and link
+       - MPI_INCLUDE_DIR is the directory containing mpi.h
+       - MPI_LIBRARY is the list of MPI libraries'''
+    if self.foundMPI:
       self.addDefine('HAVE_MPI', 1)
       if self.include:
-        self.addSubstitution('MPI_INCLUDE', '-I'+self.include)
+        self.addSubstitution('MPI_INCLUDE',     ' '.join(['-I'+inc for inc in self.include]))
+        self.addSubstitution('MPI_INCLUDE_DIR', self.include[0])
       else:
-        self.addSubstitution('MPI_INCLUDE', '')
-      self.addSubstitution('MPI_LIB_DIR', self.dir and self.dir[0])
-      libFlag = ''
-      for dir in self.dir:
-        libFlag = '-L'+dir+' '
-      for lib in self.lib:
-        libFlag += ' '+self.libraries.getLibArgument(lib)
-      self.addSubstitution('MPI_LIB', libFlag)
+        self.addSubstitution('MPI_INCLUDE',     '')
+        self.addSubstitution('MPI_INCLUDE_DIR', '')
+      self.addSubstitution('MPI_LIB',     ' '.join(map(self.libraries.getLibArgument, self.lib)))
+      self.addSubstitution('MPI_LIBRARY', self.lib)
     return
 
   def configure(self):
-    if not self.framework.argDB.has_key('with-mpi') or not int(self.framework.argDB['with-mpi']): return
     self.executeTest(self.configureLibrary)
-    if self.foundLib:
-      self.executeTest(self.configureInclude)
-    if self.foundLib and self.foundInclude:
+    if self.foundMPI:
       self.executeTest(self.configureTypes)
-      self.executeTest(self.checkWorkingLink)
       self.executeTest(self.configureConversion)
       self.executeTest(self.configureMPIRUN)
-      self.executeTest(self.configureMPE)
     self.setOutput()
     return
