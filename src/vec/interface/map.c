@@ -290,20 +290,19 @@ int PetscMapGetSize(PetscMap m,int *N)
 .  m - the map object
 
    Output Parameter:
-+  rstart - the first local index
--  rend   - the last local index + 1
++  rstart - the first local index, pass in PETSC_NULL if not interested 
+-  rend   - the last local index + 1, pass in PETSC_NULL if not interested
 
    Level: developer
 
 .seealso: PetscMapGetLocalSize(), PetscMapGetGlobalRange()
-
 @*/
 int PetscMapGetLocalRange(PetscMap m,int *rstart,int *rend)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE); 
-  PetscValidIntPointer(rstart);
-  PetscValidIntPointer(rend);
+  if (rstart)  PetscValidIntPointer(rstart);
+  if (rend) PetscValidIntPointer(rend);
   if (rstart) *rstart = m->rstart;
   if (rend)   *rend   = m->rend;
   PetscFunctionReturn(0);
