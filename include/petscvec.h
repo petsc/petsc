@@ -138,6 +138,61 @@ E*/
 typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4,NORM_1_AND_2=5} NormType;
 #define NORM_MAX NORM_INFINITY
 
+/*MC
+     NORM_1 - the one norm, ||v|| = sum_i | v_i |. ||A|| = max_j || v_*j ||, maximum column sum
+
+   Level: beginner
+
+.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_2, NORM_FROBENIUS, 
+           NORM_INFINITY, NORM_1_AND_2
+
+M*/
+
+/*MC
+     NORM_2 - the two norm, ||v|| = sqrt(sum_i (v_i)^2) (vectors only)
+
+   Level: beginner
+
+.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_FROBENIUS, 
+           NORM_INFINITY, NORM_1_AND_2
+
+M*/
+
+/*MC
+     NORM_FROBENIUS - ||A|| = sqrt(sum_ij (A_ij)^2), same as NORM_2 for vectors
+
+   Level: beginner
+
+.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2, 
+           NORM_INFINITY, NORM_1_AND_2
+
+M*/
+
+/*MC
+     NORM_INFINITY - ||v|| = max_i |v_i|. ||A|| = max_i || v_i* ||, maximum row sum
+
+   Level: beginner
+
+.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2, 
+           NORM_FROBINIUS, NORM_1_AND_2
+
+M*/
+
+/*MC
+     NORM_1_AND_2 - computes both the 1 and 2 norm of a vector
+
+   Level: beginner
+
+.seealso:  NormType, MatNorm(), VecNorm(), VecNormBegin(), VecNormEnd(), NORM_1, NORM_2, 
+           NORM_FROBINIUS, NORM_INFINITY
+
+M*/
+
+/*MC
+     NORM_MAX - see NORM_INFINITY
+
+M*/
+
 EXTERN int VecNorm(Vec,NormType,PetscReal *);
 EXTERN int VecNormComposedDataID(NormType,int*);
 EXTERN int VecNormalize(Vec,PetscReal *);

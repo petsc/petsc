@@ -8,9 +8,24 @@
 */
 #include "src/ksp/ksp/impls/gmres/gmresp.h"
 
-/*
-    This is the basic orthogonalization routine using modified Gram-Schmidt.
- */
+/*@C
+     KSPGMRESModifiedGramSchmidtOrthogonalization -  This is the basic orthogonalization routine 
+                using modified Gram-Schmidt.
+
+     Collective on KSP
+
+  Input Parameters:
++   ksp - KSP object, must be associated with GMRES, FGMRES, or LGMRES Krylov method
+-   its - one less then the current GMRES restart iteration, i.e. the size of the Krylov space
+
+   Options Database Keys:
+.  -ksp_gmres_modifiedgramschmidt - Activates KSPGMRESModifiedGramSchmidtOrthogonalization()
+
+   Level: intermediate
+
+.seealso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization()
+
+@*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESModifiedGramSchmidtOrthogonalization"
 int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,int it)
