@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.20 1999/03/01 04:53:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pname.c,v 1.21 1999/03/17 23:21:46 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -52,7 +52,8 @@ int PetscObjectSetName(PetscObject obj,const char name[])
 
 .keywords: object, monitoring, publishing
 
-.seealso: PetscObjectSetName()
+.seealso: PetscObjectSetName(), ViewerAMSOpen()
+
 @*/
 int PetscObjectPublish(PetscObject obj)
 {
