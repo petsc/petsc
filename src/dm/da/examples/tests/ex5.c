@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.3 1995/08/22 02:39:44 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.4 1995/08/22 02:45:32 curfman Exp curfman $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -95,6 +95,10 @@ int main(int argc,char **argv)
 
   }
 
+  ierr = ViewerDestroy((Viewer)win); CHKERRA(ierr);
+  ierr = VecDestroy(copy); CHKERRA(ierr);
+  ierr = VecDestroy(local); CHKERRA(ierr);
+  ierr = VecDestroy(global); CHKERRA(ierr);
   ierr = DADestroy(da); CHKERRA(ierr);
   PetscFinalize();
   return 0;

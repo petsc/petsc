@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.12 1995/08/22 19:39:56 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.13 1995/08/23 17:21:07 curfman Exp curfman $";
 #endif
 
 static char help[] = "This example tests various DA routines.\n\n";
@@ -13,10 +13,10 @@ static char help[] = "This example tests various DA routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  int      mytid,M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr;
+  int      mytid, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr;
   DA       da;
   DrawCtx  win;
-  Vec      local,global;
+  Vec      local, global;
   Scalar   value;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
@@ -45,6 +45,10 @@ int main(int argc,char **argv)
 
   ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   ierr = DAView(da,(Viewer) win); CHKERRA(ierr);
+
+  ierr = ViewerDestroy((Viewer)win); CHKERRA(ierr);
+  ierr = VecDestroy(local); CHKERRA(ierr);
+  ierr = VecDestroy(global); CHKERRA(ierr);
   ierr = DADestroy(da); CHKERRA(ierr);
   PetscFinalize();
   return 0;
