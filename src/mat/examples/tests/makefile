@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.222 1999/11/22 03:04:17 bsmith Exp balay $ 
+# $Id: makefile,v 1.223 1999/11/22 16:43:45 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -57,7 +57,7 @@ BUILDEXAMPLES_2	 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex7.PETSc ex7.rm ex12.PETSc
 		   ex28.PETSc ex28.rm ex30.PETSc ex30.rm ex31.PETSc\
 		   ex31.rm ex32.PETSc ex32.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm \
 		   ex35.PETSc ex35.rm ex37.PETSc ex37.rm ex38.PETSc ex38.rm \
-		   ex43.PETSc ex43.rm ex46.PETSc ex46.rm ex48.PETSc ex48.rm  \
+		   ex43.PETSc ex43.rm ex48.PETSc ex48.rm  \
 		   ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm \
 		   ex53.PETSc ex53.rm clean
 BUILDEXAMPLES_3	 = ex36.PETSc ex36.rm ex63.PETSc ex63.rm ex67f.PETSc ex67f.rm clean
