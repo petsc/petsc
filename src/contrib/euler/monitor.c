@@ -504,11 +504,14 @@ int DumpField(Euler *app,Draw Win,Scalar *field)
   int            coord_slice;             /* current coordinate plane slice */
   int            flg, ierr, j, k, wing;
   int            ni = app->ni, nj = app->nj, nk = app->nk;
+  int            wxs, wxe, wzs, wze;      /* wing boundaries */
   Scalar         *x = app->xc, *y = app->yc, *z = app->zc;
 
   ierr = OptionsHasName(PETSC_NULL,"-wing",&wing); CHKERRQ(ierr);
   if (wing) {
-    ierr = DrawMeshCreate( &mesh, x, y, z, ni, nj, nk, 9, 39, 0, 1, 0, 5, 1, 1, 1, 1, field, 32 ); CHKERRQ(ierr);
+    wxs = app->itl; wxe = app->itu; wzs = 0; wze = app->ktip;
+    ierr = DrawMeshCreate( &mesh, x, y, z, ni, nj, nk, wxs, wxe, 0, 1, wzs, wze, 1, 1, 1, 1, field, 32 ); CHKERRQ(ierr);
+    /*    ierr = DrawMeshCreate( &mesh, x, y, z, ni, nj, nk, 9, 39, 0, 1, 0, 5, 1, 1, 1, 1, field, 32 ); CHKERRQ(ierr); */
   } else {
     ierr = DrawMeshCreateSimple( &mesh, x, y, z, ni, nj, nk, 1, field, 32 ); CHKERRQ(ierr);
   }
