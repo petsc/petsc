@@ -15,7 +15,7 @@ int main(int argc,char **args)
   Vec               xx,yy,s1,s2;
   PetscReal         s1norm,s2norm,rnorm,tol = 1.e-10;
   PetscInt          rstart,rend,rows[2],cols[2],m,n,i,j,M,N,ct,row,ncols1,ncols2,bs;
-  PetscMPIInt       rank;
+  PetscMPIInt       rank,size;
   PetscErrorCode    ierr;
   const PetscInt    *cols1,*cols2;
   PetscScalar       vals1[4],vals2[4],v,mone = -1.0;
@@ -24,6 +24,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(1,"This example does not work with complex numbers");
@@ -33,8 +34,13 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,"Input file not specified");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
-  ierr = MatLoad(fd,MATBAIJ,&A);CHKERRQ(ierr);
-  ierr = MatConvert(A,MATAIJ,&B);CHKERRQ(ierr);
+  if (size == 1){
+    ierr = MatLoad(fd,MATSEQBAIJ,&A);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATSEQAIJ,&B);CHKERRQ(ierr);
+  } else {
+    ierr = MatLoad(fd,MATMPIBAIJ,&A);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATMPIAIJ,&B);CHKERRQ(ierr);
+  }
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
  
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
