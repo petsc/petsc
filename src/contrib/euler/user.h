@@ -122,7 +122,9 @@ typedef struct {
     int      *is1;                          /* mapping from application to PETSc ordering */
     Scalar   fnorm0, fnorm_last, cfl, cfl_switch, f_reduction, cfl_max;
     int      cfl_advance;                   /* flag - 1 indicates advancing CFL number */
-    Scalar   epsbc;   
+    Scalar   epsbc;
+    Scalar   f_avg;
+    int      fstagnate;                     /* counter for stagnation detection */
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
@@ -297,7 +299,7 @@ extern int buildmat_(int*,ScaleType*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*);
 extern int buildbdmat_(int*,ScaleType*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
-extern int nzmat_(MatType*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
+extern int nzmat_(MatType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
 extern int jpressure_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int bc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,

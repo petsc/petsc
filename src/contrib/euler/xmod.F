@@ -210,7 +210,9 @@ c  in param.h: Common block, pgrid, for local grid data:
      & i4,': gysfw,gysf1w,gysf2w,gyefw:',4(i4))
  190  format('Fort ghosts (interior): rank ',
      & i4,': gzsfw,gzsf1w,gzsf2w,gzefw:',4(i4))
-#if !defined(PARCH_rs6000)
+#ifdef PARCH_rs6000
+      call FLUSH_(6)
+#else
       call flush(6)
 #endif
       call PetscSequentialPhaseEnd(comm,1,ierr)
@@ -246,8 +248,8 @@ c
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
 c      COMMON /FREQ/ IFREQ,ISGS
-      Double qer(5),qel(5),eps,dql,dqr
-      integer          ISKIP,i,j,k,l,m
+      Double  qer(5),qel(5),eps,dql,dqr
+      integer ISKIP,i,j,k,l,m
 
       jform = 0
       ISKIP = 0
@@ -258,11 +260,11 @@ c      COMMON /FREQ/ IFREQ,ISGS
       ENDIF
 
       do 10 m=1,5
-         qel(m)=0.
-         qer(m)=0.
+         qel(m)=zero
+         qer(m)=zero
  10   continue
 
-      eps=1.0e-07
+      eps = PetscDoubleExp(1.0,-7)
       do 30 m=1,5
       qel(m)=eps
 c Form Jacobian elements in left part of matrix
@@ -271,7 +273,7 @@ c Form Jacobian elements in left part of matrix
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 
-      qel(m)=0.
+      qel(m)=zero
    30 continue
       do 31 m=1,5
       qer(m)=eps
@@ -281,7 +283,7 @@ c Form Jacobian elements in right part of matrix
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-      qer(m)=0.
+      qer(m)=zero
    31 continue
 c Find eigendecomposition of diagonal block of Jacobian; Form DT matrix.
 c But really need to recalculate dt only when the iterates change. 
@@ -331,10 +333,10 @@ c
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
 c      COMMON /FREQ/ IFREQ,ISGS
-      Double qer(5),qel(5),eps,dti
-      integer          ltog(0:nloc-1),nloc
-      integer          ISKIP,m,ierr,nd2,ijk,jk,rc(5),nc,i,j,k
-      Mat              mat
+      Double  qer(5),qel(5),eps,dti
+      integer nloc,ltog(0:nloc-1)
+      integer ISKIP,m,ierr,nd2,ijk,jk,rc(5),nc,i,j,k
+      Mat     mat
 
       jform2 = 0
       ISKIP = 0
@@ -346,11 +348,11 @@ c      COMMON /FREQ/ IFREQ,ISGS
       nc = 5
 
       do 10 m=1,5
-         qel(m)=0.
-         qer(m)=0.
+         qel(m)=zero
+         qer(m)=zero
  10   continue
 
-      eps=1.0e-07
+      eps = PetscDoubleExp(1.0,-7)
       do 30 m=1,5
       qel(m)=eps
 c Form Jacobian elements in left part of matrix
@@ -363,7 +365,7 @@ c Form Jacobian elements in left part of matrix
          jform2 = -1
          return 
       endif
-      qel(m)=0.
+      qel(m)=zero
    30 continue
 
       do 31 m=1,5
@@ -378,7 +380,7 @@ c Form Jacobian elements in right part of matrix
          jform2 = -1
          return 
       endif
-      qer(m)=0.
+      qer(m)=zero
    31 continue
 
 c Find eigendecomposition of diagonal block of Jacobian; Form DT matrix.
@@ -434,8 +436,8 @@ c
 
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
-      Double rqdq
-      integer          i,j,k
+      Double  rqdq
+      integer i,j,k
 
       jpressure = 0
       do 15 k=gzsf1,gzefp1
@@ -489,24 +491,30 @@ c      COMMON /FREQ/ IFREQ,ISGS
 
       common /junkvar/ rtrmsr, etrmsr
 
-      Double drecv(3),dsend(3),fnorm,rtmax,rtrms,etmax,etrms
-      Double dsup,con,rt,et,rtrmsr,etrmsr,tcl,tcd,areas,cn,cc
-      Double area,pbody,cls,cds,xl2,one,work(*),cfl_new
-      integer          i,j,k,ierr,nsup
+      Double  drecv(3),dsend(3),fnorm,rtmax,rtrms,etmax,etrms
+      Double  dsup,con,rt,et,rtrmsr,etrmsr,tcl,tcd,areas,cn,cc
+      Double  area,pbody,cls,cds,xl2,work(*),cfl_new
+      integer i,j,k,ierr,nsup
 
       jmonitor = 0
       cfl = cfl_new
       xl2=log10(fnorm)
-      if (no_output .eq. 0) write(29,*) ncyc, xl2
+      if (no_output .eq. 0) then
+         write(29,*) ncyc, xl2
+#ifdef PARCH_rs6000
+         call FLUSH_(29)
+#else
+         call flush(29)
+#endif
+      endif
       IF (NCYC.NE.1.AND.MOD(NCYC,5).NE.0) RETURN
 c Compute and tabulate norms and the number of supersonic points in flowfield
-      RTMAX=0.
-      RTRMS=0.
-      ETMAX=0.
-      ETRMS=0.
+      RTMAX=zero
+      RTRMS=zero
+      ETMAX=zero
+      ETRMS=zero
       NSUP=0
-      dsup=0.
-      one=1.0
+      dsup=zero
       CON=GS2+RGM1
       do 20 k=zsf2,zef01
       do 20 j=ysf2,yef01
@@ -549,16 +557,16 @@ c      DO 20 I=2,NI
       ETRMS=SQRT(ETRMS/ETRMSR)
       RTRMS=LOG10(RTRMS)
       ETRMS=LOG10(ETRMS)
-      TCL=0.
-      TCD=0.
-      AREAS=0.
+      TCL=zero
+      TCD=zero
+      AREAS=zero
 
       if (ysf1 .eq. 1) then
         DO 41 K=zsf2,KTIPP
 c        DO 41 K=2,KTIP
-          CN=0.
-          CC=0.
-          AREA=0.
+          CN=zero
+          CC=zero
+          AREA=zero
           DO 42 I=ITLP1,ITUP
 c          DO 42 I=ITL+1,ITU
             AREA=AREA+ABS(AJY(I,1,K))*.5
@@ -574,9 +582,9 @@ c          DO 42 I=ITL+1,ITU
         dsend(2) = tcd
         dsend(3) = areas
       else
-        dsend(1) = 0.0
-        dsend(2) = 0.0
-        dsend(3) = 0.0
+        dsend(1) = zero
+        dsend(2) = zero
+        dsend(3) = zero
       endif
       call MPI_Allreduce(dsend,drecv,3,MPI_DOUBLE_PRECISION,
      &                   MPI_SUM,comm,ierr)
@@ -616,9 +624,12 @@ c
      &            rv(i,j,k),rw(i,j,k),e(i,j,k),p(i,j,k)
    20    continue
   100 format(i4,i3,i3,6e14.6)
-#if !defined(PARCH_rs6000)
+#ifdef PARCH_rs6000
+      call FLUSH_(unit)
+#else
       call flush(unit)
 #endif
+
       return
       end
 
@@ -644,9 +655,12 @@ c
      &            rv(i,j,k),rw(i,j,k),e(i,j,k),p(i,j,k)
    20    continue
   100 format(i4,i3,i3,6e14.6)
-#if !defined(PARCH_rs6000)
+#ifdef PARCH_rs6000
+      call FLUSH_(unit)
+#else
       call flush(unit)
 #endif
+
       return
       end
 
@@ -674,9 +688,12 @@ c
      &            rv(i,j,k),rw(i,j,k),e(i,j,k),p(i,j,k)
    20    continue
   100 format(i4,i3,i3,6e14.6)
-#if !defined(PARCH_rs6000)
+#ifdef PARCH_rs6000
+      call FLUSH_(unit)
+#else
       call flush(unit)
 #endif
+
       return
       end
 
@@ -723,8 +740,8 @@ c
 #include "param.h"
 #include "wing.h"
 
-      Double X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
-      integer          itlA, ituA, ileA, ktipA
+      Double  X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
+      integer itlA, ituA, ileA, ktipA
 
       readmesh = 0
       READ (2,200) ITLA,ITUA,ILEA,KTIPA

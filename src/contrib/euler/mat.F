@@ -43,12 +43,12 @@ c
 #include "wing.h"
 #include "bcimpl.h"
 
-      Double one,val,scale,zero,negone
-      integer          row,nc,km,jm,im,is1(0:*),id,ijkid,iter
-      integer          b1c,b2c,b3c,b4c,b5c,b6c,IV,i,j,k,l,m
-      integer          col,ierr,sctype,ijkn,ik,ict,ictmark
-      integer          ltog(0:nloc-1),nloc,rstart,rend,jk,ijk
-      Mat              mat
+      Double  val,scale,negone
+      integer row,nc,km,jm,im,is1(0:*),id,ijkid,iter
+      integer b1c,b2c,b3c,b4c,b5c,b6c,IV,i,j,k,l,m
+      integer col,ierr,sctype,ijkn,ik,ict,ictmark
+      integer nloc,ltog(0:nloc-1),rstart,rend,jk,ijk
+      Mat     mat
 
       buildmat = 0
 c     IV corresponds to INSERT_VALUES mode for MatSetValues()
@@ -67,9 +67,7 @@ c
         return
       endif
 
-      one    = 1.0
-      negone = -1.0
-      zero   = 0.0
+      negone = -one
       row    = -1
       nc     = 5
 
@@ -102,7 +100,7 @@ c
          if (sctype .eq. DT_MULT) then
             scale = dt(i,j,k)
          else
-            scale = 1.0
+            scale = one
          endif
          do 301 l=1,nc
             row = ltog(ijk + l)
@@ -139,9 +137,9 @@ c implicit bc code of Driss.
      &                          b6(l,m,i,j,km) )*scale
             if (l .eq. m) then
                if (sctype .eq. DT_MULT) then
-                  val = 1.0 + val
+                  val = one + val
                else
-                  val = 1.0/dt(i,j,k) + val
+                  val = one/dt(i,j,k) + val
                endif
             endif
 c Instead, for sctype == DR_DIV, can directly use array d(), as computed in jform().
@@ -172,7 +170,6 @@ c ----------------------------------------------------------------------
 
 c Temporarily initialize diagonal to one
       if (iter .eq. 1) then
-         one = 1.0
          call MatGetOwnershipRange(mat,rstart,rend,ierr)
          do 10 i=rstart,rend-1
             call MatSetValues( mat, 1, i, 1, i, one, IV, ierr )
@@ -357,7 +354,7 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          if (sctype .eq. DT_MULT) then
             scale = dt(i,j,k)
          else
-            scale = 1.0
+            scale = one
          endif
          do 402 l=1,nc
             row = ltog(ijk + l)
@@ -405,9 +402,9 @@ c implicit bc code of Driss.
      &                          b6(l,m,i,j,km) )*scale
             if (l .eq. m) then
                if (sctype .eq. DT_MULT) then
-                  val = 1.0 + val
+                  val = one + val
                else
-                  val = 1.0/dt(i,j,k) + val
+                  val = one/dt(i,j,k) + val
                endif
             endif
 c Instead, for sctype == DR_DIV, can directly use array d(), as computed in jform().
@@ -608,10 +605,10 @@ c     uniprocessor grid!
 #include "ibcwork.h"
 
 
-      Double zero,val(5)
-      integer          nc,i,j,k,jk,sctype,ijkx,ierr,ik
-      integer          ltog(0:nloc-1), nloc, pos(5)
-      Vec              Fvec
+      Double  val(5)
+      integer nc,i,j,k,jk,sctype,ijkx,ierr,ik
+      integer nloc,ltog(0:nloc-1),pos(5)
+      Vec     Fvec
 
       rbuild = 0
       if ((bctype .ne. EXPLICIT) .and. (bctype .ne. IMPLICIT)) then
@@ -628,7 +625,6 @@ c     uniprocessor grid!
       endif
 
       nc = 5
-      zero = 0.0
 
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c  Implicit boundary conditions for i=1, j=1, k=1
@@ -878,7 +874,7 @@ c  so no message-pasing is performed during these phases.
 
 c -------------------------------------------------------------------
 
-      integer function nzmat(format,nc,istart,iend,is1,
+      integer function nzmat(format,nc,nc_block,istart,iend,is1,
      &                       ltog,nloc,wkdim,nnz_d,nnz_o)
 c
 c  nnzmat - Determines nonzero structure of the (parallel) Jacobian
@@ -890,7 +886,8 @@ c           about the use of these arrays for matrix memory preallocation.
 c
 c  Input Parameters:
 c    format   - PETSc matrix format
-c    nc       - block size
+c    nc       - Dof per node
+c    nc_block - block size (nc, except when experimenting with block size = 1)
 c    is1      - index set with PETSc ordering numbers for certain
 c               boundary nodes
 c    bctype   - type of boundary condition formulation
@@ -922,9 +919,9 @@ c
 #include "wing.h"
 
       integer ijk,ijkn,nc,istart,iend,format,ijk_noghosts
-      integer b1c,b2c,b3c,b4c,b5c,b6c,i,j,k,l,wkdim,nloc
+      integer b1c,b2c,b3c,b4c,b5c,b6c,i,j,k,l,wkdim,nc_block
       integer col,ict,chunk,row,id,ijkid,is1(0:*)
-      integer ltog(0:nloc-1),nnz_d(0:wkdim-1),nnz_o(0:wkdim-1)
+      integer nloc,ltog(0:nloc-1),nnz_d(0:wkdim-1),nnz_o(0:wkdim-1)
 
       nzmat = 0
 
@@ -934,7 +931,15 @@ c  through the chunk variable.
      &         .or. format .eq. MATMPIROWBS) then
         chunk = nc
       else if (format .eq. MATMPIBAIJ .or. format .eq. MATSEQBAIJ) then
-        chunk = 1
+        if (nc_block .eq. nc) then
+           chunk = 1
+        else if (nc_block .eq. 1) then
+           chunk = nc
+        else
+           if (rank .eq. 0) write(6,*) 'nzmat: unsupported block size!'
+           nzmat = -1
+           return
+        endif
       else
         if (rank .eq. 0) write(6,*) 'nzmat: unsupported matrix format!'
         nzmat = -1

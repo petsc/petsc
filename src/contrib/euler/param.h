@@ -10,6 +10,11 @@ c
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/vec.h"
 
+c   Parameters
+        Double one, two, zero
+        parameter(zero=PetscDoubleExp(0.0,0),
+     &             one=PetscDoubleExp(1.0,0),
+     &             two=PetscDoubleExp(2.0,0))
 
 c   Type of system
         integer EXPLICIT, IMPLICIT_SIZE, IMPLICIT

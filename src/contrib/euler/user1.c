@@ -338,11 +338,13 @@ int main(int argc,char **argv)
 int UserSetJacobian(SNES snes,Euler *app)
 {
   MatType  mtype = MATSEQAIJ;      /* matrix format */
-  MPI_Comm comm = app->comm;      /* comunicator */
+  MPI_Comm comm = app->comm;       /* comunicator */
   Mat      J;                      /* Jacobian matrix context */
   int      ldim = app->ldim;	   /* local dimension of vectors and matrix */
   int      gdim = app->gdim;	   /* global dimension of vectors and matrix */
-  int      nc = app->nc;	   /* size of matrix blocks (DoF per node) */
+  int      nc = app->nc;	   /* DoF per node */
+  int      nc_block;               /* size of matrix blocks (nc, except when
+                                      experimenting with block size = 1) */
   int      istart, iend;           /* range of locally owned matrix rows */
   int      *nnz_d = 0, *nnz_o = 0; /* arrays for preallocating matrix memory */
   int      wkdim;                  /* dimension of nnz_d and nnz_o */
@@ -354,12 +356,17 @@ int UserSetJacobian(SNES snes,Euler *app)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = MatGetTypeFromOptions(comm,PETSC_NULL,&mtype,&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_block_size_1",&flg); CHKERRQ(ierr);
+  if (flg) nc_block = 1;
+  else     nc_block = nc;
 
   /* Row-based matrix formats */
-  if (mtype == MATSEQAIJ || mtype == MATMPIAIJ || mtype == MATMPIROWBS)
+  if (mtype == MATSEQAIJ || mtype == MATMPIAIJ || mtype == MATMPIROWBS) {
     wkdim = app->ldim;
-  else if (mtype == MATSEQBAIJ || mtype == MATMPIBAIJ) /* block row formats */
-    wkdim = app->lbkdim;
+  } else if (mtype == MATSEQBAIJ || mtype == MATMPIBAIJ) { /* block row formats */
+    if (nc_block == nc) wkdim = app->lbkdim;
+    else                wkdim = app->ldim;
+  }
   else SETERRQ(1,1,"UserSetJacobian:Matrix format not currently supported.");
 
   /* Allocate work arrays */
@@ -372,7 +379,8 @@ int UserSetJacobian(SNES snes,Euler *app)
 
   /* We mimic the matrix assembly code to determine precise locations 
      of nonzero matrix entries */
-  ierr = nzmat_(&mtype,&nc,&istart,&iend,app->is1,app->ltog,&app->nloc,
+
+  ierr = nzmat_(&mtype,&nc,&nc_block,&istart,&iend,app->is1,app->ltog,&app->nloc,
                 &wkdim,nnz_d,nnz_o); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -403,11 +411,11 @@ int UserSetJacobian(SNES snes,Euler *app)
   }
   else if (mtype == MATSEQBAIJ) {
     /* Rough estimate of block nonzeros per row is:  # of diagonals, nd */
-    /* ierr = MatCreateSeqBAIJ(comm,nc,gdim,gdim,nd,PETSC_NULL,&J); CHKERRQ(ierr); */
-    ierr = MatCreateSeqBAIJ(comm,nc,gdim,gdim,PETSC_NULL,nnz_d,&J); CHKERRQ(ierr);
+    /* ierr = MatCreateSeqBAIJ(comm,nc_block,gdim,gdim,nd,PETSC_NULL,&J); CHKERRQ(ierr); */
+    ierr = MatCreateSeqBAIJ(comm,nc_block,gdim,gdim,PETSC_NULL,nnz_d,&J); CHKERRQ(ierr);
   } 
   else if (mtype == MATMPIBAIJ) {
-    ierr = MatCreateMPIBAIJ(comm,nc,ldim,ldim,
+    ierr = MatCreateMPIBAIJ(comm,nc_block,ldim,ldim,
            gdim,gdim,PETSC_NULL,nnz_d,PETSC_NULL,nnz_o,&J); CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"UserSetJacobian:Matrix format not currently supported.");
@@ -636,8 +644,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
   *flag = SAME_NONZERO_PATTERN;
 
   /* View matrix (for debugging only) */
-  if (app->print_debug) {
-    /*
+  if (app->print_vecs) {
     char filename[64]; Viewer view; MatType mtype;
     ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
     sprintf(filename,"mat.%d.out",iter);
@@ -647,7 +654,6 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
     if (mtype == MATMPIAIJ) {ierr = MatViewDFVec_MPIAIJ(*pjac,X,view); CHKERRQ(ierr);}
     else                    {ierr = MatView(*pjac,view); CHKERRQ(ierr);}
     ierr = ViewerDestroy(view); CHKERRQ(ierr);
-    */
     /*    PetscFinalize(); exit(0); */
   }
 
@@ -996,19 +1002,19 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
        in C of Fortran points in input (shifted by -2 for explicit formulation) 
        from m6c: Fortran: itl=10, itu=40, ile=25, ktip=6 */
       app->ktip = 4; app->itl = 8; app->itu = 38; app->ile = 23;   
-      app->epsbc = 1.e-7;
+      app->epsbc = 1.0e-7;
       break;
     case 2:
       /* from m6f: Fortran: itl=19, itu=79, ile=49, ktip=11 */
       ni1 = 98; nj1 = 18; nk1 = 18;
       app->ktip = 9; app->itl = 17; app->itu = 77; app->ile = 47;   
-      app->epsbc = 1.e-7;
+      app->epsbc = 1.0e-7;
       break;
     case 3:
       /* from m6n: Fortran: itl=37, itu=157, ile=97, ktip=21 */
       ni1 = 194; nj1 = 34; nk1 = 34;
       app->ktip = 19; app->itl = 35; app->itu = 155; app->ile = 95;   
-      app->epsbc = 1.e-7;
+      app->epsbc = 1.0e-7;
       break;
     case 4:
       /* test case for PETSc grid manipulations only! */
@@ -1032,6 +1038,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->mat_assemble_direct = 1;        /* by default, we assemble Jacobian directly */
   app->jfreq               = 10;       /* default frequency of computing Jacobian matrix */
   app->no_output           = 0;        /* flag - by default print some output as program runs */
+  app->fstagnate           = 0;        /* counter for stagnation detection */
 
   /* Override default with runtime options */
   ierr = OptionsHasName(PETSC_NULL,"-cfl_advance",&app->cfl_advance); CHKERRQ(ierr);

@@ -49,6 +49,17 @@ int JulianneMonitor(SNES snes,int its,double fnorm,void *dummy)
   }
 
   if (its) {
+    /* Check for stagnation */
+    /*
+    if ((app->fnorm_last - fnorm)/fnorm < .01) {
+       app->fstagnate++;
+       if (app->fstagnate > 20) PetscPrintf(app->comm,"JulianneMonitor; Stagnation detected");
+       ierr = SNESDestroy(snes); CHKERRQ(ierr);
+       ierr = UserDestroyEuler(app); CHKERRQ(ierr);
+       PetscFinalize(); exit(0);
+    }
+    */
+
     /* Compute new CFL number */
     if (app->cfl_advance) {
       if (fnorm/app->fnorm0 <= app->f_reduction) {
@@ -92,6 +103,24 @@ int JulianneMonitor(SNES snes,int its,double fnorm,void *dummy)
     }
   }
 
+  /* Print factored matrix */
+  if (its && app->print_vecs) {
+    SLES   sles;
+    PC     pc;
+    PCType pctype;
+    Mat    fmat;
+    Viewer view;
+    ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
+    ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
+    ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRQ(ierr);
+    if (pctype == PCILU) {
+      ierr = PCGetFactoredMatrix(pc,&fmat);
+      ierr = ViewerFileOpenASCII(app->comm,"factor.out",&view); CHKERRQ(ierr);
+      ierr = ViewerSetFormat(view,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
+      ierr = MatView(fmat,view); CHKERRQ(ierr);
+      ierr = ViewerDestroy(view); CHKERRQ(ierr);
+    }
+  }
   return 0;
 }
 /* --------------------------------------------------------------- */

@@ -83,10 +83,10 @@ c      COMMON /COORD/ X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /FREQ/ IFREQ,ISGS
 
-      Double cfl_init,rtol,beta1
-      integer          jsolve,app,nb,nt,ierr,ifreq1
+      Double  cfl_init,rtol,beta1
+      integer jsolve,app,nb,nt,ierr,ifreq1
 #if defined(ACTIVATE_JULIANNE)
-      integer          m,converge
+      integer m,converge
 #endif
 
       julianne    = 0
@@ -109,7 +109,7 @@ c      COMMON /FREQ/ IFREQ,ISGS
       RGM1 = 1./GM1
       GS2  = GAM*0.5
 c Default angle of attack = 3.06 degrees
-      if (beta1 .gt. 5.0 .or. beta1 .lt. -1.0) then
+      if (beta1 .gt. 5.0 .or. beta1 .lt. -one) then
          beta = -3.06
       else 
          beta = -beta1
@@ -185,10 +185,12 @@ c        eliminate loop for this processor
          call PetscSequentialPhaseBegin(comm,1,ierr)
          write(6,*) 'rank,itl,itlp1,itu,itup,ile,ilep,ktip,ktipp = ',
      &              rank,itl,itlp1,itu,itup,ile,ilep,ktip,ktipp
-#if !defined(PARCH_rs6000)
+#ifdef PARCH_rs6000
+         call FLUSH_(6)
+#else
          call flush(6)
 #endif
-      call PetscSequentialPhaseEnd(comm,1,ierr)
+         call PetscSequentialPhaseEnd(comm,1,ierr)
       endif
 
 c Set up mesh metrics, once and for all
@@ -288,8 +290,8 @@ c      COMMON /VARBLS/ R(NI1,NJ1,NK1),RU(NI1,NJ1,NK1),RV(NI1,NJ1,NK1)
 c      COMMON /VARBLS/ RW(NI1,NJ1,NK1),E(NI1,NJ1,NK1),P(NI1,NJ1,NK1)
 c      COMMON /CONDI/ ORDER,PSI,LIMIT
 c      COMMON /FREQ/ IFREQ,ISGS
-      Double conv, beta_dummy
-      integer          i,j,k,ifreq_dummy
+      Double  conv, beta_dummy
+      integer i,j,k,ifreq_dummy
 
       READ (15,100) CFL,FSMACH,ALPHA,BETA_dummy,PHI
       read (15,200) limit,psi,order,isgs,ifreq_dummy
@@ -320,13 +322,13 @@ C   LIMIT=3 (VAN LEER)
       ALPHA=ALPHA*CONV
       BETA=BETA*CONV
       PHI=PHI*CONV
-      RINIT=1.0
+      RINIT=one
       RUINIT=FSMACH*COS(ALPHA)*COS(BETA)
       RVINIT=FSMACH*(SIN(PHI)*SIN(ALPHA)*COS(BETA)
      1   -COS(PHI)*SIN(BETA))
       RWINIT=FSMACH*(SIN(ALPHA)*COS(BETA)
      1  +SIN(PHI)*COS(ALPHA)*SIN(BETA))
-       EINIT=1.0/(GAM*GM1)+0.5*FSMACH**2
+       EINIT=one/(GAM*GM1)+0.5*FSMACH**2
       PINIT=GM1*(EINIT-0.5*FSMACH**2)
       do 2 k=gzsf1,gzefp1
       do 2 j=gysf1,gyefp1
@@ -334,7 +336,7 @@ C   LIMIT=3 (VAN LEER)
 c      DO 2 K=1,NK1
 c      DO 2 J=1,NJ1
 c      DO 2 I=1,NI1
-       R(I,J,K)=1.0
+       R(I,J,K)=one
       RU(I,J,K)=RUINIT
       RV(I,J,K)=RVINIT
       RW(I,J,K)=RWINIT
@@ -371,9 +373,9 @@ c      COMMON /AVCTRS/ AIZ(NI,NJ,NK),AJZ(NI,NJ,NK),AKZ(NI,NJ,NK)
 c      COMMON /SADA/ SADAI(NI,NJ,NK),SADAJ(NI,NJ,NK),SADAK(NI,NJ,NK)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
-      Double ada,qda,ff,p0,r0,c0,pb,u,v,w,rqdq
-      integer          i,k
-c      integer         id
+      Double  ada,qda,ff,p0,r0,c0,pb,u,v,w,rqdq
+      integer i,k
+c      integer id
 
       bcpart_j1 = 0
 
@@ -461,9 +463,9 @@ c      COMMON /AVCTRS/ AIZ(NI,NJ,NK),AJZ(NI,NJ,NK),AKZ(NI,NJ,NK)
 c      COMMON /SADA/ SADAI(NI,NJ,NK),SADAJ(NI,NJ,NK),SADAK(NI,NJ,NK)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
-      Double ada,qda,ff,p0,r0,c0,pb,u,v,w,r0c0,ub
-      Double u2,v2,w2,con,vb,wb,rb
-      integer          i,j,k
+      Double  ada,qda,ff,p0,r0,c0,pb,u,v,w,r0c0,ub
+      Double  u2,v2,w2,con,vb,wb,rb
+      integer i,j,k
 
 c   Now do boundary conditions for j=1 side in bcpart_j1().
 c   See bc_uni() for uniprocessor case.
@@ -604,8 +606,8 @@ c      COMMON /AVCTRS/ AIZ(NI,NJ,NK),AJZ(NI,NJ,NK),AKZ(NI,NJ,NK)
 c      COMMON /SADA/ SADAI(NI,NJ,NK),SADAJ(NI,NJ,NK),SADAK(NI,NJ,NK)
 c      COMMON /TSTEP/ DT(NI,NJ,NK)
       integer i,j,k
-      Double c,aixa,aiya,aiza,ajxa,ajya,ajza,akxa,akya,akza
-      Double ei,ej,ek,conu,conv,conw
+      Double  c,aixa,aiya,aiza,ajxa,ajya,ajza,akxa,akya,akza
+      Double  ei,ej,ek,conu,conv,conw
 
       do 2 k=zsf2,zef01
       do 2 j=ysf2,yef01
@@ -656,7 +658,7 @@ c      COMMON /AVCTRS/ AIY(NI,NJ,NK),AJY(NI,NJ,NK),AKY(NI,NJ,NK)
 c      COMMON /AVCTRS/ AIZ(NI,NJ,NK),AJZ(NI,NJ,NK),AKZ(NI,NJ,NK)
 c      COMMON /SADA/ SADAI(NI,NJ,NK),SADAJ(NI,NJ,NK),SADAK(NI,NJ,NK)
       integer i,j,k
-      Double dx1,dx2,dy1,dy2,dz1,dz2
+      Double  dx1,dx2,dy1,dy2,dz1,dz2
 
       DO 2 J=gysf2,gyef01
       DO 2 K=gzsf2,gzef01
@@ -729,20 +731,20 @@ c      COMMON /CONST2/ PINIT
 c      COMMON /ES/ BR(5,5,NI,NJ,NK),BL(5,5,NI,NJ,NK),BE(2,5,NI,NJ,NK)
 c
 c   Note: sada must have same dimensions as sadai,sadaj,sadak in sada.h
-      Double SADA(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
+      Double  SADA(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
 c   Note: ax,ay,az must have same dimensions as arrays in avctrs.h
-      Double ax(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
-      Double ay(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
-      Double az(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
+      Double  ax(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
+      Double  ay(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
+      Double  az(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
 
-      Double AXT(D_NI),AYT(D_NI),AZT(D_NI)
-      Double Q1(D_NI),Q2(D_NI),Q3(D_NI),Q4(D_NI),Q6(D_NI),
+      Double  AXT(D_NI),AYT(D_NI),AZT(D_NI)
+      Double  Q1(D_NI),Q2(D_NI),Q3(D_NI),Q4(D_NI),Q6(D_NI),
      +                 RQRQ(D_NI),TT(D_NI),RC(D_NI),C(D_NI)
-      Double qer(5),qel(5)
-      Double a,b,c1,c2,c3,phi,rr2,e1,e4,e5,csad,hroe
-      Double rl,rul,rvl,rwl,el,rr,rur,rvr,rwr,er,ra
-      Double rra1,ur,vr,wr,ul,vl,wl,pr,pl,hr,hl
-      integer          i,j,k,I1,J1,K1,IB,JB,KB,kpk1,jpj1,ipi1
+      Double  qer(5),qel(5)
+      Double  a,b,c1,c2,c3,phi,rr2,e1,e4,e5,csad,hroe
+      Double  rl,rul,rvl,rwl,el,rr,rur,rvr,rwr,er,ra
+      Double  rra1,ur,vr,wr,ul,vl,wl,pr,pl,hr,hl
+      integer i,j,k,I1,J1,K1,IB,JB,KB,kpk1,jpj1,ipi1
 
       if (xsf1 .ne. 1) then
 c        ib = gxsf1w
@@ -765,9 +767,9 @@ c      DO 2 J=JB,NJ
       JPJ1=J+J1
       DO 10 I=IB,gxefw
 c      DO 10 I=IB,NI
-      AXT(I)=0.
-      AYT(I)=0.
-      AZT(I)=0.
+      AXT(I)=zero
+      AYT(I)=zero
+      AZT(I)=zero
       IF (SADA(I,J,K).EQ.0.) GO TO 10
       AXT(I)=AX(I,J,K)/SADA(I,J,K)
       AYT(I)=AY(I,J,K)/SADA(I,J,K)
@@ -805,7 +807,7 @@ c      DO 22 I=IB,NI
       HROE=(hr+hl*ra)*rra1
       RQRQ(I)=Q2(I)**2+Q3(I)**2+Q4(I)**2
       C(I)=SQRT((HROE-0.5*RQRQ(I))*GM1)
-      Q6(I)=1.0/Q1(I)
+      Q6(I)=one/Q1(I)
       TT(I)=Q2(I)*AXT(I)+Q3(I)*AYT(I)+Q4(I)*AZT(I)
       RC(I)=Q1(I)*C(I)
       CSAD=C(I)*SADA(I,J,K)
@@ -860,7 +862,7 @@ c      DO 2 I=IB,NI
       PHI=0.5*GM1*RQRQ(I)
       C2=C(I)*C(I)
       B=RR2/RC(I)
-      C1=1.-PHI/C2
+      C1=one-PHI/C2
       C3=GM1/C2
       BL(1,1,I,J,K)=AXT(I)*C1+Q6(I)*(Q4(I)*AYT(I)-Q3(I)*AZT(I))
       BL(1,2,I,J,K)=AXT(I)*Q2(I)*C3

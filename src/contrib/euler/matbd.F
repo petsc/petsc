@@ -17,7 +17,7 @@ c      COMMON /WING/ ITL,ITU,ILE,KTIP
       integer          ltog(nloc), nloc
       integer          bctype,mat,row,nc,i,j,k,m,l,sctype
       integer          nim,njm,nkm,km,jm,im,jdiag,ijid,ij,id,ifoo
-      double precision one,zero,val,scale
+      double precision val,scale
       logical totimpl
 
       buildbdmat = 0
@@ -40,8 +40,6 @@ c Note: If we add implicit terms, must scale b1bc, b2bc, b3bc, accordingly!
 c Eventually, should remove scale variable from other assembly stuff
 c
       ifoo = 0
-      one = 1.0
-      zero = 0.0
       row = -1
 c Use row/columns with 0 beginning indices (as in C)
       nc = 5
@@ -59,7 +57,7 @@ c *** Set diagonal terms first (to avoid scaling and zeroing problems)
          jm = j-1
       do 400 i=2,ni
 c         scale = dt(i,j,k)
-         scale = 1.0
+         scale = one
          im = i-1
          do 390 l=1,nc
          do 390 m=1,nc
@@ -69,8 +67,8 @@ c         scale = dt(i,j,k)
      &                          b4(l,m,im,j,k) -
      &                          b5(l,m,i,jm,k) -
      &                          b6(l,m,i,j,km) )*scale
-c            if (l .eq. m) val = 1.0 + val
-            if (l .eq. m) val = 1.0/dt(i,j,k) + val
+c            if (l .eq. m) val = one + val
+            if (l .eq. m) val = one/dt(i,j,k) + val
             d(l,m,i,j,k) = val
  390     continue
  400  continue
@@ -229,7 +227,7 @@ c
          jm = j-1
       do 410 i=ni,2,-1
 c         scale = dt(i,j,k)
-         scale = 1.0
+         scale = one
          im = i-1
          do 402 l=1,nc
          do 402 m=1,nc
