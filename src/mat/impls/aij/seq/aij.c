@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.181 1996/08/13 19:56:16 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.182 1996/08/15 12:47:21 bsmith Exp curfman $";
 #endif
 
 /*
@@ -292,11 +292,9 @@ static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
         a->inode.node_count,a->inode.limit);
   }
   else if (format == ASCII_FORMAT_MATLAB) {
-    int nz, nzalloc, mem;
-    MatGetInfo(A,MAT_LOCAL,&nz,&nzalloc,&mem);
     fprintf(fd,"%% Size = %d %d \n",m,a->n);
-    fprintf(fd,"%% Nonzeros = %d \n",nz);
-    fprintf(fd,"zzz = zeros(%d,3);\n",nz);
+    fprintf(fd,"%% Nonzeros = %d \n",a->nz);
+    fprintf(fd,"zzz = zeros(%d,3);\n",a->nz);
     fprintf(fd,"zzz = [\n");
 
     for (i=0; i<m; i++) {
@@ -518,10 +516,12 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
     PLogObjectMemory(A,-(m+1)*sizeof(int));
     a->diag = 0;
   } 
-  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Unneeded storage space %d used %d rows %d\n",
-           fshift,a->nz,m);
-  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues %d\n",
+  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Matrix size: %d X %d; storage space: %d unneeded, %d used\n",
+           m,a->n,fshift,a->nz);
+  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues is %d\n",
            a->reallocs);
+  A->info.nz_unneeded  = (double)fshift;
+
   /* check out for identical nodes. If found, use inode functions */
   ierr = Mat_AIJ_CheckInode(A); CHKERRQ(ierr);
   return 0;
@@ -849,12 +849,32 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
   return 0;
 } 
 
-static int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *mem)
+static int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  if (nz)      *nz      = a->nz;
-  if (nzalloc) *nzalloc = a->maxnz;
-  if (mem)     *mem     = (int)A->mem;
+
+  info->rows_global    = (double)a->m;
+  info->columns_global = (double)a->n;
+  info->rows_local     = (double)a->m;
+  info->columns_local  = (double)a->n;
+  info->block_size     = 1.0;
+  info->nz_allocated   = (double)a->maxnz;
+  info->nz_used        = (double)a->nz;
+  info->nz_unneeded    = (double)(a->maxnz - a->nz);
+  /*  if (info->nz_unneeded != A->info.nz_unneeded) 
+    printf("space descrepancy: maxnz-nz = %d, nz_unneeded = %d\n",(int)info->nz_unneeded,(int)A->info.nz_unneeded); */
+  info->assemblies     = (double)A->num_ass;
+  info->mallocs        = (double)a->reallocs;
+  info->memory         = A->mem;
+  if (A->factor) {
+    info->fill_ratio_given  = A->info.fill_ratio_given;
+    info->fill_ratio_needed = A->info.fill_ratio_needed;
+    info->factor_mallocs    = A->info.factor_mallocs;
+  } else {
+    info->fill_ratio_given  = 0;
+    info->fill_ratio_needed = 0;
+    info->factor_mallocs    = 0;
+  }
   return 0;
 }
 
@@ -1476,8 +1496,10 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->inode.size       = 0;
   b->inode.limit      = 5;
   b->inode.max_limit  = 5;
+  B->info.nz_unneeded = (double)b->maxnz;
 
   *A = B;
+
   /*  SuperLU is not currently supported through PETSc */
 #if defined(HAVE_SUPERLU)
   ierr = OptionsHasName(PETSC_NULL,"-mat_aij_superlu", &flg); CHKERRQ(ierr);

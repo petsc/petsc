@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.46 1996/08/15 12:47:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.47 1996/08/15 16:05:25 bsmith Exp curfman $";
 #endif
 
 /*
@@ -235,6 +235,12 @@ static int MatZeroEntries_MPIDense(Mat A)
 {
   Mat_MPIDense *l = (Mat_MPIDense *) A->data;
   return MatZeroEntries(l->A);
+}
+
+static int MatGetBlockSize_MPIDense(Mat A,int *bs)
+{
+  *bs = 1;
+  return 0;
 }
 
 /* the code does not do the diagonal entries correctly unless the 
@@ -479,12 +485,13 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
   if (format == ASCII_FORMAT_INFO_DETAILED) {
-    int nz, nzalloc, mem, rank;
+    int rank;
+    MatInfo info;
     MPI_Comm_rank(mat->comm,&rank);
-    ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
+    ierr = MatGetInfo(mat,MAT_LOCAL,&info);
     PetscSequentialPhaseBegin(mat->comm,1);
-      fprintf(fd,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",
-          rank,mdn->m,nz,nzalloc,mem);       
+      fprintf(fd,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mdn->m,
+         (int)info.nz_used,(int)info.nz_allocated,(int)info.memory);       
       fflush(fd);
     PetscSequentialPhaseEnd(mat->comm,1);
     ierr = VecScatterView(mdn->Mvctx,viewer); CHKERRQ(ierr);
@@ -561,28 +568,45 @@ static int MatView_MPIDense(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-static int MatGetInfo_MPIDense(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *mem)
+static int MatGetInfo_MPIDense(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIDense *mat = (Mat_MPIDense *) A->data;
   Mat          mdn = mat->A;
-  int          ierr, isend[3], irecv[3];
+  int          ierr;
+  double       isend[5], irecv[5];
 
-  ierr = MatGetInfo(mdn,MAT_LOCAL,&isend[0],&isend[1],&isend[2]); CHKERRQ(ierr);
+  info->rows_global    = (double)mat->M;
+  info->columns_global = (double)mat->N;
+  info->rows_local     = (double)mat->m;
+  info->columns_local  = (double)mat->N;
+  info->block_size     = 1.0;
+  ierr = MatGetInfo(mdn,MAT_LOCAL,info); CHKERRQ(ierr);
+  isend[0] = info->nz_used; isend[1] = info->nz_allocated; isend[2] = info->nz_unneeded;
+  isend[3] = info->memory;  isend[4] = info->mallocs;
   if (flag == MAT_LOCAL) {
-    if (nz)      *nz      = isend[0]; 
-    if (nzalloc) *nzalloc = isend[1];
-    if (mem)     *mem     = isend[2];
+    info->nz_used      = isend[0];
+    info->nz_allocated = isend[1];
+    info->nz_unneeded  = isend[2];
+    info->memory       = isend[3];
+    info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
     MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_MAX,A->comm);
-    if (nz)      *nz      = irecv[0]; 
-    if (nzalloc) *nzalloc = irecv[1]; 
-    if (mem)     *mem     = irecv[2];
+    info->nz_used      = irecv[0];
+    info->nz_allocated = irecv[1];
+    info->nz_unneeded  = irecv[2];
+    info->memory       = irecv[3];
+    info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
     MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_SUM,A->comm);
-    if (nz)      *nz      = irecv[0]; 
-    if (nzalloc) *nzalloc = irecv[1];
-    if (mem)     *mem     = irecv[2];
+    info->nz_used      = irecv[0];
+    info->nz_allocated = irecv[1];
+    info->nz_unneeded  = irecv[2];
+    info->memory       = irecv[3];
+    info->mallocs      = irecv[4];
   }
+  info->fill_ratio_given  = 0; /* no parallel LU/ILU/Cholesky */
+  info->fill_ratio_needed = 0;
+  info->factor_mallocs    = 0;
   return 0;
 }
 
@@ -788,7 +812,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
        0,0, MatGetArray_MPIDense, MatRestoreArray_MPIDense,
        0,MatConvertSameType_MPIDense,
        0,0,0,0,0,
-       0,0,MatGetValues_MPIDense,0,0,MatScale_MPIDense};
+       0,0,MatGetValues_MPIDense,0,0,MatScale_MPIDense,
+       0,0,0,MatGetBlockSize_MPIDense};
 
 /*@C
    MatCreateMPIDense - Creates a sparse parallel matrix in dense format.

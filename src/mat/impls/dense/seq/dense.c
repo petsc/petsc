@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.107 1996/08/06 04:02:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.108 1996/08/08 14:42:39 bsmith Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -18,15 +18,28 @@ int MatAXPY_SeqDense(Scalar *alpha,Mat X,Mat Y)
   return 0;
 }
 
-static int MatGetInfo_SeqDense(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *mem)
+static int MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
 {
-  Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
-  int          i,N = mat->m*mat->n,count = 0;
-  Scalar       *v = mat->v;
+  Mat_SeqDense *a = (Mat_SeqDense *) A->data;
+  int          i,N = a->m*a->n,count = 0;
+  Scalar       *v = a->v;
   for ( i=0; i<N; i++ ) {if (*v != 0.0) count++; v++;}
-  if (nz)      *nz      = count; 
-  if (nzalloc) *nzalloc = N;
-  if (mem)     *mem     = (int)A->mem;
+
+  info->rows_global       = (double)a->m;
+  info->columns_global    = (double)a->n;
+  info->rows_local        = (double)a->m;
+  info->columns_local     = (double)a->n;
+  info->block_size        = 1.0;
+  info->nz_allocated      = (double)N;
+  info->nz_used           = (double)count;
+  info->nz_unneeded       = (double)(N-count);
+  info->assemblies        = (double)A->num_ass;
+  info->mallocs           = 0;
+  info->memory            = A->mem;
+  info->fill_ratio_given  = 0;
+  info->fill_ratio_needed = 0;
+  info->factor_mallocs    = 0;
+
   return 0;
 }
 
@@ -779,6 +792,12 @@ static int MatZeroEntries_SeqDense(Mat A)
   return 0;
 }
 
+static int MatGetBlockSize_SeqDense(Mat A,int *bs)
+{
+  *bs = 1;
+  return 0;
+}
+
 static int MatZeroRows_SeqDense(Mat A,IS is,Scalar *diag)
 {
   Mat_SeqDense *l = (Mat_SeqDense *) A->data;
@@ -939,8 +958,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
        MatConvertSameType_SeqDense,0,0,0,0,
        MatAXPY_SeqDense,MatGetSubMatrices_SeqDense,0,
        MatGetValues_SeqDense,
-       MatCopy_SeqDense,0,MatScale_SeqDense};
-
+       MatCopy_SeqDense,0,MatScale_SeqDense,
+       0,0,0,MatGetBlockSize_SeqDense};
 
 /*@C
    MatCreateSeqDense - Creates a sequential dense matrix that 
@@ -1000,6 +1019,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (flg) {ierr = MatPrintHelp(B); CHKERRQ(ierr);}
+
   *A = B;
   return 0;
 }

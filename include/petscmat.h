@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.110 1996/07/15 23:38:53 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.111 1996/08/06 04:04:29 bsmith Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -67,8 +67,21 @@ extern int MatCopy(Mat,Mat);
 extern int MatView(Mat,Viewer);
 extern int MatLoad(Viewer,MatType,Mat*);
 
+/* Context of matrix information, used with MatGetInfo() */
+typedef struct {
+  double rows_global, columns_global;         /* number of global rows and columns */
+  double rows_local, columns_local;           /* number of local rows and columns */
+  double block_size;                          /* block size */
+  double nz_allocated, nz_used, nz_unneeded;  /* number of nonzeros */
+  double memory;                              /* memory allocated */
+  double assemblies;                          /* number of matrix assemblies */
+  double mallocs;                             /* number of mallocs during MatSetValues() */
+  double fill_ratio_given, fill_ratio_needed; /* fill ration for LU/ILU */
+  double factor_mallocs;                      /* number of mallocs during factorization */
+} MatInfo;
+
 typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
-extern int MatGetInfo(Mat,MatInfoType,int*,int*,int*);
+extern int MatGetInfo(Mat,MatInfoType,MatInfo*);
 extern int MatValid(Mat,PetscTruth*);
 extern int MatGetDiagonal(Mat,Vec);
 extern int MatTranspose(Mat,Mat*);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.91 1996/08/08 14:43:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.92 1996/08/15 12:47:50 bsmith Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -245,6 +245,14 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   return 0;
 }
 
+static int MatGetBlockSize_MPIBDiag(Mat mat,int *bs)
+{
+  Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
+  Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mbd->A->data;
+  *bs = dmat->bs;
+  return 0;
+}
+
 static int MatZeroEntries_MPIBDiag(Mat A)
 {
   Mat_MPIBDiag *l = (Mat_MPIBDiag *) A->data;
@@ -432,27 +440,41 @@ static int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
-static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,int *nz,
-                             int *nzalloc,int *mem)
+static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
-  int          ierr, isend[3], irecv[3];
+  Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mat->A->data;
+  int          ierr;
+  double       isend[3], irecv[3];
 
-  ierr = MatGetInfo(mat->A,MAT_LOCAL,&isend[0],&isend[1],&isend[2]);CHKERRQ(ierr);
+  info->rows_global    = (double)mat->M;
+  info->columns_global = (double)mat->N;
+  info->rows_local     = (double)mat->m;
+  info->columns_local  = (double)mat->N;
+  info->block_size     = (double)dmat->bs;
+  ierr = MatGetInfo(mat->A,MAT_LOCAL,info);CHKERRQ(ierr);
+  isend[0] = info->nz_used; isend[1] = info->nz_allocated; isend[2] = info->nz_unneeded;
+  isend[3] = info->memory;  isend[4] = info->mallocs;
   if (flag == MAT_LOCAL) {
-    if (nz)       *nz      = isend[0];
-    if (nzalloc)  *nzalloc = isend[1]; 
-    if (mem)      *mem     = isend[2];
+    info->nz_used      = isend[0];
+    info->nz_allocated = isend[1];
+    info->nz_unneeded  = isend[2];
+    info->memory       = isend[3];
+    info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
     MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_MAX,matin->comm);
-    if (nz)      *nz = irecv[0]; 
-    if (nzalloc) *nzalloc = irecv[1]; 
-    if (mem)     *mem = irecv[2];
+    info->nz_used      = irecv[0];
+    info->nz_allocated = irecv[1];
+    info->nz_unneeded  = irecv[2];
+    info->memory       = irecv[3];
+    info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
     MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_SUM,matin->comm);
-    if (nz)      *nz      = irecv[0]; 
-    if (nzalloc) *nzalloc = irecv[1]; 
-    if (mem)     *mem     = irecv[2];
+    info->nz_used      = irecv[0];
+    info->nz_allocated = irecv[1];
+    info->nz_unneeded  = irecv[2];
+    info->memory       = irecv[3];
+    info->mallocs      = irecv[4];
   }
   return 0;
 }
@@ -525,12 +547,13 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
         PetscFPrintf(mat->comm,fd,"\n");        
       }
       if (format == ASCII_FORMAT_INFO_DETAILED) {
-        int nz, nzalloc, mem, rank;
+        MatInfo info;
+        int rank;
         MPI_Comm_rank(mat->comm,&rank);
-        ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
+        ierr = MatGetInfo(mat,MAT_LOCAL,&info); 
         PetscSequentialPhaseBegin(mat->comm,1);
-          fprintf(fd,"[%d] local rows %d nz %d nz alloced %d mem %d \n",
-                  rank,mbd->m,nz,nzalloc,mem);       
+          fprintf(fd,"[%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mbd->m,
+            (int)info.nz_used,(int)info.nz_allocated,(int)info.memory);       
           fflush(fd);
         PetscSequentialPhaseEnd(mat->comm,1);
         ierr = VecScatterView(mbd->Mvctx,viewer); CHKERRQ(ierr);
@@ -759,7 +782,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
        0,0,0,
        0,0,0,
        0,0,MatGetValues_MPIBDiag,0,
-       MatPrintHelp_MPIBDiag,MatScale_MPIBDiag};
+       MatPrintHelp_MPIBDiag,MatScale_MPIBDiag,
+       0,0,0,MatGetBlockSize_MPIBDiag};
 
 /*@C
    MatCreateMPIBDiag - Creates a sparse parallel matrix in MPIBDiag format.

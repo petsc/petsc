@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.189 1996/08/15 12:47:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.190 1996/08/19 22:49:35 curfman Exp curfman $";
 #endif
 
 /*
@@ -175,7 +175,7 @@ $      matrix structure
 @*/
 int MatView(Mat mat,Viewer viewer)
 {
-  int          format, ierr, rows, cols,nz, nzalloc, mem;
+  int          format, ierr, rows, cols;
   FILE         *fd;
   char         *cstr;
   ViewerType   vtype;
@@ -198,9 +198,10 @@ int MatView(Mat mat,Viewer viewer)
       ierr = MatGetSize(mat,&rows,&cols); CHKERRQ(ierr);
       PetscFPrintf(comm,fd,"  type=%s, rows=%d, cols=%d\n",cstr,rows,cols);
       if (mat->ops.getinfo) {
-        ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&nz,&nzalloc,&mem); CHKERRQ(ierr);
-        PetscFPrintf(comm,fd,"  total: nonzeros=%d, allocated nonzeros=%d\n",nz,
-                     nzalloc);
+        MatInfo info;
+        ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
+        PetscFPrintf(comm,fd,"  total: nonzeros=%d, allocated nonzeros=%d\n",
+                     (int)info.nz_used,(int)info.nz_allocated);
       }
     }
   }
@@ -472,11 +473,11 @@ $    flag = MAT_GLOBAL_SUM: sum over all processors
 
 .keywords: matrix, get, info, storage, nonzeros, memory
 @*/
-int MatGetInfo(Mat mat,MatInfoType flag,int *nz,int *nzalloc,int *mem)
+int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->ops.getinfo) SETERRQ(PETSC_ERR_SUP,"MatGetInfo");
-  return  (*mat->ops.getinfo)(mat,flag,nz,nzalloc,mem);
+  return  (*mat->ops.getinfo)(mat,flag,info);
 }   
 /* ----------------------------------------------------------*/
 /*@  
@@ -1877,19 +1878,22 @@ int MatPrintHelp(Mat mat)
 }
 
 /*@
-   MatGetBlockSize - Returns the block size. useful especially for
-    MATBAIJ, MATBDIAG formats
+   MatGetBlockSize - Returns the matrix block size; useful especially for the
+   block row and block diagonal formats.
    
-
    Input Parameter:
 .  mat - the matrix
 
    Output Parameter:
 .  bs - block size
 
-.keywords: mat, block, size 
+   Notes:
+$  block diagonal formats: MATSEQBDIAG, MATMPIBDIAG
+$  block row formats: MATSEQBAIJ, MATMPIBAIJ
 
-.seealso: MatCreateXXXBAIJ()
+.keywords: matrix, get, block, size 
+
+.seealso: MatCreateSeqBAIJ(), MatCreateMPIBAIJ(), MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
 int MatGetBlockSize(Mat mat,int *bs)
 {

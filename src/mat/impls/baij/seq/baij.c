@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.65 1996/08/08 14:43:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.66 1996/08/15 12:48:03 bsmith Exp curfman $";
 #endif
 
 /*
@@ -621,6 +621,8 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
            fshift*bs2,a->nz*bs2,m,a->bs);
   PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Number of mallocs during MatSetValues %d\n",
            a->reallocs);
+  A->info.nz_unneeded  = (double)fshift*bs2;
+
   return 0;
 }
 
@@ -1334,12 +1336,32 @@ static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
-static int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,int *nz,int *nza,int *mem)
+static int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  if (nz)  *nz  = a->bs2*a->nz;
-  if (nza) *nza = a->maxnz;
-  if (mem) *mem = (int)A->mem;
+
+  info->rows_global    = (double)a->m;
+  info->columns_global = (double)a->n;
+  info->rows_local     = (double)a->m;
+  info->columns_local  = (double)a->n;
+  info->block_size     = a->bs2;
+  info->nz_allocated   = a->maxnz;
+  info->nz_used        = a->bs2*a->nz;
+  info->nz_unneeded    = (double)(info->nz_allocated - info->nz_used);
+  /*  if (info->nz_unneeded != A->info.nz_unneeded) 
+    printf("space descrepancy: maxnz-nz = %d, nz_unneeded = %d\n",(int)info->nz_unneeded,(int)A->info.nz_unneeded); */
+  info->assemblies   = A->num_ass;
+  info->mallocs      = a->reallocs;
+  info->memory       = A->mem;
+  if (A->factor) {
+    info->fill_ratio_given  = A->info.fill_ratio_given;
+    info->fill_ratio_needed = A->info.fill_ratio_needed;
+    info->factor_mallocs    = A->info.factor_mallocs;
+  } else {
+    info->fill_ratio_given  = 0;
+    info->fill_ratio_needed = 0;
+    info->factor_mallocs    = 0;
+  }
   return 0;
 }
 
@@ -1812,6 +1834,8 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   b->solve_work       = 0;
   b->mult_work        = 0;
   b->spptr            = 0;
+  B->info.nz_unneeded = (double)b->maxnz;
+
   *A = B;
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) {ierr = MatPrintHelp(B); CHKERRQ(ierr); }

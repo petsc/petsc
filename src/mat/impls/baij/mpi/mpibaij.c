@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.21 1996/08/08 14:43:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.22 1996/08/15 12:48:12 bsmith Exp curfman $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -383,17 +383,18 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
   if (vtype  == ASCII_FILES_VIEWER || vtype == ASCII_FILE_VIEWER) { 
     ierr = ViewerGetFormat(viewer,&format);
     if (format == ASCII_FORMAT_INFO_DETAILED) {
-      int nz, nzalloc, mem;
+      MatInfo info;
       MPI_Comm_rank(mat->comm,&rank);
       ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-      ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
+      ierr = MatGetInfo(mat,MAT_LOCAL,&info);
       PetscSequentialPhaseBegin(mat->comm,1);
       fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d bs %d mem %d\n",
-              rank,baij->m,nz*bs,nzalloc*bs,baij->bs,mem);       
-      ierr = MatGetInfo(baij->A,MAT_LOCAL,&nz,&nzalloc,&mem); 
-      fprintf(fd,"[%d] on-diagonal part: nz %d \n",rank,nz*bs);
-      ierr = MatGetInfo(baij->B,MAT_LOCAL,&nz,&nzalloc,&mem); 
-      fprintf(fd,"[%d] off-diagonal part: nz %d \n",rank,nz*bs); 
+              rank,baij->m,(int)info.nz_used*bs,(int)info.nz_allocated*bs,
+              baij->bs,(int)info.memory);      
+      ierr = MatGetInfo(baij->A,MAT_LOCAL,&info);
+      fprintf(fd,"[%d] on-diagonal part: nz %d \n",rank,(int)info.nz_used*bs);
+      ierr = MatGetInfo(baij->B,MAT_LOCAL,&info); 
+      fprintf(fd,"[%d] off-diagonal part: nz %d \n",rank,(int)info.nz_used*bs); 
       fflush(fd);
       PetscSequentialPhaseEnd(mat->comm,1);
       ierr = VecScatterView(baij->Mvctx,viewer); CHKERRQ(ierr);
@@ -736,7 +737,7 @@ int MatRestoreRow_MPIBAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
-static int MatGetBlockSize_MPIBAIJ(Mat mat, int *bs)
+static int MatGetBlockSize_MPIBAIJ(Mat mat,int *bs)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   *bs = baij->bs;
@@ -752,31 +753,45 @@ static int MatZeroEntries_MPIBAIJ(Mat A)
   return 0;
 }
 
-static int MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,int *nz,
-                             int *nzalloc,int *mem)
+static int MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 {
-  Mat_MPIBAIJ *mat = (Mat_MPIBAIJ *) matin->data;
-  Mat         A = mat->A, B = mat->B;
-  int         ierr, isend[3], irecv[3], nzA, nzallocA, memA;
+  Mat_MPIBAIJ *a = (Mat_MPIBAIJ *) matin->data;
+  Mat         A = a->A, B = a->B;
+  int         ierr, isend[3], irecv[3];
 
-  ierr = MatGetInfo(A,MAT_LOCAL,&nzA,&nzallocA,&memA); CHKERRQ(ierr);
-  ierr = MatGetInfo(B,MAT_LOCAL,&isend[0],&isend[1],&isend[2]); CHKERRQ(ierr);
-  isend[0] += nzA; isend[1] += nzallocA; isend[2] += memA;
+  info->rows_global    = (double)a->M;
+  info->columns_global = (double)a->N;
+  info->rows_local     = (double)a->m;
+  info->columns_local  = (double)a->N;
+  info->block_size     = (double)a->bs;
+  ierr = MatGetInfo(A,MAT_LOCAL,info); CHKERRQ(ierr);
+  isend[0] = info->nz_used; isend[1] = info->nz_allocated; isend[2] = info->memory;
+  ierr = MatGetInfo(B,MAT_LOCAL,info); CHKERRQ(ierr);
+  isend[0] += info->nz_used; isend[1] += info->nz_allocated; isend[2] += info->memory;
   if (flag == MAT_LOCAL) {
-    if (nz)       *nz      = isend[0];
-    if (nzalloc)  *nzalloc = isend[1];
-    if (mem)      *mem     = isend[2];
+    info->nz_used      = isend[0];
+    info->nz_allocated = isend[1];
+    info->nz_unneeded  = isend[2];
+    info->memory       = isend[3];
+    info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    MPI_Allreduce( isend, irecv,3,MPI_INT,MPI_MAX,matin->comm);
-    if (nz)      *nz      = irecv[0];
-    if (nzalloc) *nzalloc = irecv[1];
-    if (mem)     *mem     = irecv[2];
+    MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_MAX,matin->comm);
+    info->nz_used      = irecv[0];
+    info->nz_allocated = irecv[1];
+    info->nz_unneeded  = irecv[2];
+    info->memory       = irecv[3];
+    info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    MPI_Allreduce( isend, irecv,3,MPI_INT,MPI_SUM,matin->comm);
-    if (nz)      *nz      = irecv[0]; 
-    if (nzalloc) *nzalloc = irecv[1]; 
-    if (mem)     *mem     = irecv[2];
+    MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_SUM,matin->comm);
+    info->nz_used      = irecv[0];
+    info->nz_allocated = irecv[1];
+    info->nz_unneeded  = irecv[2];
+    info->memory       = irecv[3];
+    info->mallocs      = irecv[4];
   }
+  info->fill_ratio_given  = 0; /* no parallel LU/ILU/Cholesky */
+  info->fill_ratio_needed = 0;
+  info->factor_mallocs    = 0;
   return 0;
 }
 
