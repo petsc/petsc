@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.120 1998/06/11 19:53:03 bsmith Exp balay $";
+static char vcid[] = "$Id: vscat.c,v 1.121 1998/06/12 14:30:06 balay Exp bsmith $";
 #endif
 
 /*
@@ -866,8 +866,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       int                    nx,ny,*idx,*idy;
       VecScatter_Seq_General *to,*from;
 
-      ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
-      ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
+      ierr = ISGetSize(ix,&nx); CHKERRQ(ierr);
+      ierr = ISGetIndices(ix,&idx); CHKERRQ(ierr);
+      ierr = ISGetSize(iy,&ny);  CHKERRQ(ierr);
+      ierr = ISGetIndices(iy,&idy); CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       len               = sizeof(VecScatter_Seq_General) + nx*sizeof(int);
       to                = (VecScatter_Seq_General *) PetscMalloc(len); CHKPTRQ(to)
@@ -888,6 +890,8 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->end          = 0; 
       ctx->destroy      = VecScatterDestroy_SGtoSG;
       ctx->copy         = VecScatterCopy_SGToSG;
+      ierr = ISRestoreIndices(ix,&idx); CHKERRQ(ierr);
+      ierr = ISRestoreIndices(iy,&idy); CHKERRQ(ierr);
       *newctx           = ctx;
       PLogInfo(xin,"Sequential vector scatter with block indices\n");
       goto functionend;
