@@ -5,37 +5,35 @@
 
 */
 #include "src/mat/impls/aij/seq/aij.h"
-
-#if defined(PETSC_HAVE_ESSL) && !defined(__cplusplus)
 /* #include <essl.h> This doesn't work!  */
 
 typedef struct {
-   int         n,nz;
-   PetscScalar *a;
-   int         *ia;
-   int         *ja;
-   int         lna;
-   int         iparm[5];
-   PetscReal   rparm[5];
-   PetscReal   oparm[5];
-   PetscScalar *aux;
-   int         naux;
+  int         n,nz;
+  PetscScalar *a;
+  int         *ia;
+  int         *ja;
+  int         lna;
+  int         iparm[5];
+  PetscReal   rparm[5];
+  PetscReal   oparm[5];
+  PetscScalar *aux;
+  int         naux;
+
+  int (*MatDestroy)(Mat);
 } Mat_SeqAIJ_Essl;
-
-
-EXTERN int MatDestroy_SeqAIJ(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJ_Essl"
 int MatDestroy_SeqAIJ_Essl(Mat A)
 {
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)A->spptr;
-  int             ierr;
+  int             ierr,(*destroy)(Mat);
 
   PetscFunctionBegin;
   /* free the Essl datastructures */
+  destroy = essl->MatDestroy;
   ierr = PetscFree(essl->a);CHKERRQ(ierr);
-  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  ierr = (*destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -98,15 +96,15 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr           = MatCreateSeqAIJ(A->comm,A->m,A->n,0,PETSC_NULL,F);CHKERRQ(ierr);
-  B                       = *F;
+  ierr = MatCreate(A->comm,PETSC_DECIDE,PETSC_DECIDE,A->m,A->n,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATESSL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
+
   B->ops->solve           = MatSolve_SeqAIJ_Essl;
-  B->ops->destroy         = MatDestroy_SeqAIJ_Essl;
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Essl;
   B->factor               = FACTOR_LU;
   
-  ierr                    = PetscNew(Mat_SeqAIJ_Essl,&essl);CHKERRQ(ierr);
-  B->spptr                = (void*)essl;
+  essl = (Mat_SeqAIJ_Essl *)(B->spptr);
 
   /* allocate the work arrays required by ESSL */
   f = info->fill;
@@ -122,6 +120,7 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   essl->ja   = essl->ia + essl->lna;
 
   PetscLogObjectMemory(B,len+sizeof(Mat_SeqAIJ_Essl));
+  *F = B;
   PetscFunctionReturn(0);
 }
 
@@ -135,16 +134,21 @@ int MatUseEssl_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#else
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_SeqAIJ_Essl"
+int MatCreate_SeqAIJ_Essl(Mat A) {
+  int             ierr;
+  Mat_SeqAIJ_Essl *essl;
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseEssl_SeqAIJ"
-int MatUseEssl_SeqAIJ(Mat A)
-{
   PetscFunctionBegin;
+  ierr = MatSetType(A,MATSEQAIJ);
+  ierr = MatUseEssl_SeqAIJ(A);
+
+  ierr             = PetscNew(Mat_SeqAIJ_Essl,&essl);CHKERRQ(ierr);
+  essl->MatDestroy = A->ops->destroy;
+  A->spptr         = (void *)essl;
+
+  A->ops->destroy  = MatDestroy_SeqAIJ_Essl;
   PetscFunctionReturn(0);
 }
-
-#endif
-
-
