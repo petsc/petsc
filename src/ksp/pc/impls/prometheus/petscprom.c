@@ -59,6 +59,7 @@
 */
 
 #include "src/ksp/pc/pcimpl.h"   /*I "petscpc.h" I*/
+#define PROM_NO_FEI
 #include "Prometheus_LinSysCore.h"
 #include "prometheus.hh"
 
@@ -190,42 +191,6 @@ static PetscErrorCode PCSetFromOptions_Prometheus(PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCSetUp_Prometheus_Symmetric - Allocates the vector needed to store the
-   inverse of the square root of the diagonal entries of the matrix.  This
-   is used for symmetric application of the Prometheus preconditioner.
-
-   Input Parameter:
-.  pc - the preconditioner context
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_Prometheus_Symmetric"
-static PetscErrorCode PCSetUp_Prometheus_Symmetric(PC pc)
-{
-  //PetscFunctionBegin;
-  SETERRQ(1,"PCSetUp_Prometheus_Symmetric not supported by Prometheus");
-  //PetscFunctionReturn(0);
-}
-/* -------------------------------------------------------------------------- */
-/*
-   PCSetUp_Prometheus_NonSymmetric - Allocates the vector needed to store the
-   inverse of the diagonal entries of the matrix.  This is used for left of
-   right application of the Prometheus preconditioner.
-
-   Input Parameter:
-.  pc - the preconditioner context
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_Prometheus_NonSymmetric"
-static PetscErrorCode PCSetUp_Prometheus_NonSymmetric(PC pc)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PCSetUp_Prometheus(pc);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-/* -------------------------------------------------------------------------- */
-/*
    PCApply_Prometheus - Applies the Prometheus preconditioner to a vector.
 
    Input Parameters:
@@ -243,7 +208,7 @@ static PetscErrorCode PCApply_Prometheus( PC pc, Vec x, Vec y )
 {
   Prometheus_LinSysCore *lsc = (Prometheus_LinSysCore*)pc->data; 
   Prometheus *prom = lsc->prom_;
-  PetscErrorCode ierr; MPI_Comm wcomm = lsc->MPIComm_;
+  PetscErrorCode ierr; 
 
   PetscFunctionBegin;
   lsc->nSolves_++;
@@ -279,29 +244,6 @@ static PetscErrorCode PCApply_Prometheus( PC pc, Vec x, Vec y )
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCApplySymmetricLeftOrRight_Prometheus - Applies the left or right part of a
-   symmetric preconditioner to a vector.
-
-   Input Parameters:
-.  pc - the preconditioner context
-.  x - input vector
-
-   Output Parameter:
-.  y - output vector
-
-   Application Interface Routines: PCApplySymmetricLeft(), PCApplySymmetricRight()
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "PCApplySymmetricLeftOrRight_Prometheus"
-static PetscErrorCode PCApplySymmetricLeftOrRight_Prometheus(PC pc,Vec ,Vec )
-{ 
-  //PetscFunctionBegin;
-  SETERRQ(1,"PCSetUp_Prometheus_Symmetric not supported by Prometheus");
-  //PetscFunctionReturn(0);
-}
-
-/* -------------------------------------------------------------------------- */
-/*
    PCDestroy_Prometheus - Destroys the private context for the Prometheus preconditioner
    that was created with PCCreate_Prometheus().
 
@@ -313,7 +255,7 @@ static PetscErrorCode PCApplySymmetricLeftOrRight_Prometheus(PC pc,Vec ,Vec )
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_Prometheus"
 static PetscErrorCode PCDestroy_Prometheus(PC pc)
-{
+{g
   Prometheus_LinSysCore *lsc = (Prometheus_LinSysCore*)pc->data; 
 
   PetscFunctionBegin;

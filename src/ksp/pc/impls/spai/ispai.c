@@ -26,7 +26,6 @@
 EXTERN_C_BEGIN
 #include "spai.h"
 #include "matrix.h"
-#include "read_mm_matrix.h"
 EXTERN_C_END
 
 EXTERN PetscErrorCode ConvertMatToMatrix(MPI_Comm,Mat,Mat,matrix**);
@@ -967,45 +966,6 @@ PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
   PetscFunctionReturn(0);
 }
 
-/**********************************************************************/
-
-/*
-
-  Reads a matrix and a RHS vector in Matrix Market format and writes them
-  in PETSc binary format.
-
-  !!!! Warning!!!!! PETSc supports only serial execution of this routine.
-  
-  f0 <input_file> : matrix in Matrix Market format
-  f1 <input_file> : vector in Matrix Market array format
-  f2 <output_file> : matrix and vector in PETSc format
-
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "MM_to_PETSC"
-PetscErrorCode MM_to_PETSC(char *f0,char *f1,char *f2)
-{
-  Mat         A_PETSC;          /* matrix */
-  Vec         b_PETSC;          /* RHS */
-  PetscViewer fd;               /* viewer */
-  PetscErrorCode ierr;
-  matrix      *A_spai;
-  vector      *b_spai;
-
-  PetscFunctionBegin;
-
-  A_spai = read_mm_matrix(f0,1,1,1,0,0,0,NULL);
-  b_spai = read_rhs_for_matrix(f1,A_spai);
-
-  ierr = ConvertMatrixToMat(PETSC_COMM_SELF,A_spai,&A_PETSC);CHKERRQ(ierr);
-  ierr = ConvertVectorToVec(PETSC_COMM_SELF,b_spai,&b_PETSC);CHKERRQ(ierr);
-
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,f1,PETSC_FILE_CREATE,&fd);CHKERRQ(ierr);
-  ierr = MatView(A_PETSC,fd);CHKERRQ(ierr);
-  ierr = VecView(b_PETSC,fd);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
 
 
 

@@ -204,7 +204,7 @@ class Package(config.base.Configure):
       if not isinstance(lib, list): lib = [lib]
       if not isinstance(incl, list): incl = [incl]
       self.framework.log.write('Checking for library '+location+': '+str(lib)+'\n')
-      if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs}):      
+      if (not self.lib) or self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs}):      
         self.lib = lib
         self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
         if (not self.includes) or self.executeTest(self.libraries.checkInclude, [incl, self.includes],{'otherIncludes' : incls}):

@@ -4,17 +4,22 @@
 #requiresscalar    real
 
 ALL: lib
-
+#
+#
 CFLAGS   = 
 FFLAGS   = 
-SOURCEC  = 
+CPPFLAGS = ${SPAI_INCLUDE}
+SOURCEC  = ispai.c dspai.c
 SOURCEF  =
-SOURCEH  =
-OBJSC    = 
+SOURCEH  = 
+OBJSC    = ispai.o dspai.o
 OBJSF    =
 LIBBASE  = libpetscksp
-DIRS     = src examples
-LOCDIR   = src/ksp/pc/impls/spai/
+DIRS     = 
+MANSEC   = PC
+LOCDIR   = src/ksp/pc/impls/spai/src/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
+
+
