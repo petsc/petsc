@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.108 2001/07/10 07:41:08 buschelm Exp buschelm $*/
+/*$Id: umtr.c,v 1.109 2001/07/10 18:08:00 buschelm Exp bsmith $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 
@@ -187,7 +187,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     reason = SNES_DIVERGED_MAX_IT;
   }
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-  snes->reason = SNES_DIVERGED_MAX_IT;
+  snes->reason = reason;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   *outits = i;  /* not i+1, since update for i happens in loop above */
   PetscFunctionReturn(0);
