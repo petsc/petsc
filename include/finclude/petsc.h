@@ -1,16 +1,17 @@
 !
-!  $Id: petsc.h,v 1.82 1998/08/25 22:23:38 balay Exp balay $;
+!  $Id: petsc.h,v 1.83 1998/08/27 15:02:24 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !  Note that the external functions and common-block variables 
-!  are declared in this file. The rest are defined in petscdef.h file.
+!  are declared in this file. The rest are defined in petsvar.h
 !
+#include "mpif.h"
 #include "finclude/petscdef.h"
-
+#include "finclude/petscvar.h"
 !
 !     Default Viewers.
 !     Other viewers which need not be in the common block
-!     are declared in petscdef.h file
+!     are declared in petscvar.h file
 !
       PetscFortranAddr VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF
       PetscFortranAddr VIEWER_STDOUT_WORLD
@@ -45,13 +46,3 @@
       common /petscfortran6/ VIEWER_STDOUT_WORLD
       common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
 
-!
-!     Macros for error checking
-!
-#if defined(USE_PETSC_DEBUG)
-#define SETERRA(n,p,s) call MPI_Abort(PETSC_COMM_WORLD,n)
-#define CHKERRA(n) if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n)
-#else
-#define SETERRA(n,p,s)
-#define CHKERRA(n)
-#endif
