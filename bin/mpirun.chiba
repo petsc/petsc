@@ -172,7 +172,7 @@ programbase=`basename $programname`
     cat >./.mpirun$$ <<EOF
 #! /bin/bash
 #PBS -S /bin/sh
-#PBS -l nodes=${np}:${myrinetattribute}
+#PBS -l nodes=${np}${myrinetattribute}
 #PBS -l walltime=0:${maxtime}:00
 ##ctrans $ctransout $rundir
 #
