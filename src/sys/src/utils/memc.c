@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.35 1997/09/11 20:38:50 bsmith Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.36 1997/09/12 20:15:52 balay Exp balay $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -127,7 +127,6 @@ int PetscMemcmp(void * str1, void *str2, int len)
 .keywords: Petsc, copy, memory
 
 .seealso: PetscMemcpy(), PetscMemset()
-
 @*/
 int PetscMemmove(void *a,void *b,int n)
 {
