@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.16 1998/08/16 21:47:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.17 1999/01/12 23:16:17 bsmith Exp balay $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -187,7 +187,7 @@ int main(int argc,char **args)
     ierr = VecGetArray(x,&xa); CHKERRA(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");
     for (i=0; i<3; i++)
-      PetscPrintf(PETSC_COMM_WORLD,"x[%d] = %g + %g i\n",i,real(xa[i]),imag(xa[i]));
+      PetscPrintf(PETSC_COMM_WORLD,"x[%d] = %g + %g i\n",i,PetscReal(xa[i]),PetscImaginary(xa[i]));
     ierr = VecRestoreArray(x,&xa); CHKERRA(ierr);
   }
 
