@@ -44,7 +44,7 @@ def FixDir(petscdir):
             FixFile(os.path.join(dir,f))
 	    names.append(f)
 	ff = open(os.path.join(dir,'makefile.src'),'w')
-	ff.write('SOURCEC = '+' '.join(names))
+	ff.write('SOURCEC = '+' '.join(names) + '\n')
 	ff.close()
 
 

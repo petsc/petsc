@@ -69,12 +69,12 @@ shared_libtool:
 	${LIBTOOL} --mode=install ${PETSC_DIR}/bin/config/install-sh ${LIBNAME}.la ${INSTALL_LIB_DIR}
 
 # This is the main target for building shared libraries. It takes the following actions
-#   a) Create 'tmp' in the library directory
+#   a) Create 'tmp-petsc-shlib' in the library directory
 #   b) Loops over the shared libraries in $SHLIBS
 #   c) Checks that the corresponding archive or its libtool counterpart exists
 #   d) Checks whether an existing archive is newer than the shared library
 #   e) Executes target 'shared_arch' for any out-of-date library (The library basename is passed as LIBNAME)
-#   c) Removes 'tmp'
+#   c) Removes 'tmp-petsc-shlib'
 # The 'shared_arch' target is passed
 #   a) BOPT
 #   b) LIBNAME (the library basename)
@@ -82,8 +82,8 @@ shared_libtool:
 # and both the archive and shared library reside in INSTALL_LIB_DIR.
 shared: 
 	-@echo making shared libraries in ${INSTALL_LIB_DIR}; \
-	${RM} -rf ${INSTALL_LIB_DIR}/tmp; \
-	mkdir ${INSTALL_LIB_DIR}/tmp; \
+	${RM} -rf ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
+	mkdir ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
 	for LIBNAME in ${SHLIBS}; \
 	do \
 	  if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \
@@ -97,8 +97,9 @@ shared:
 	    fi; \
 	    if [ "$$flag" != "" ]; then \
             echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${OMAKE} BOPT=${BOPT} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp shared_arch; \
+              ${RM} -f ${INSTALL_LIB_DIR}/tmp-petsc-shlib/*; \
+	      ${OMAKE} BOPT=${BOPT} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-petsc-shlib shared_arch; \
 	    fi; \
 	  fi; \
 	done; \
-	${RM} -rf ${INSTALL_LIB_DIR}/tmp
+	${RM} -rf ${INSTALL_LIB_DIR}/tmp-petsc-shlib

@@ -15,8 +15,8 @@ chkpetsc_dir:
 
 chklib_dir:
 	@if [ ! -d "${INSTALL_LIB_DIR}" ]; then \
- 	  echo Making directory ${INÁSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
- 
+	  echo Making directory ${INÁSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
+
 
 # 3. Check if the shared libs are out of date
 chkopts: 
