@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.159 1999/02/13 00:02:25 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.160 1999/02/15 17:04:14 balay Exp bsmith $";
 #endif
 
 /*
@@ -896,7 +896,7 @@ static int MatZeroRows_SeqBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[], 
 int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
 {
   Mat_SeqBAIJ *baij=(Mat_SeqBAIJ*)A->data;
-  int         ierr,i,j,k,count,m=baij->m,is_n,*is_idx,*rows;
+  int         ierr,i,j,k,count,is_n,*is_idx,*rows;
   int         bs=baij->bs,bs2=baij->bs2,*sizes,row,bs_max;
   Scalar      zero = 0.0;
   MatScalar   *aa;
@@ -918,7 +918,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
 
   for ( i=0,j=0; i<bs_max; j+=sizes[i],i++ ) {
     row   = rows[j];
-    if (row < 0 || row > m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"row %d out of range",row);
+    if (row < 0 || row > baij->m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"row %d out of range",row);
     count = (baij->i[row/bs +1] - baij->i[row/bs])*bs;
     aa    = baij->a + baij->i[row/bs]*bs2 + (row%bs);
     if (sizes[i] == bs) {
