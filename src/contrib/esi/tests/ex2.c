@@ -1,6 +1,5 @@
 
 
-#include "ESI.h"
 #include "petsc/vector.h"
 
 
@@ -9,14 +8,13 @@ int main(int argc,char **args)
 {
   esi::ErrorCode ierr;
   double         norm,dot;
-  esi::ErrorMsg  msg;
 
   PetscInitialize(&argc,&args,0,0);
 
   esi::petsc::Map<int> *map = new esi::petsc::Map<int>(MPI_COMM_WORLD,5,PETSC_DECIDE);
 
   MPI_Comm *comm;
-  map->getRunTimeModel("MPI",static_cast<void*>(comm),msg);
+  map->getRunTimeModel("MPI",static_cast<void*>(comm));
   int rank;
   MPI_Comm_rank(*comm,&rank);
 
@@ -26,23 +24,23 @@ int main(int argc,char **args)
   ierr = ESI_Vector_test((vector));
   if (ierr) {printf("Error in ESI_Vector_Test()\n");return ierr;}
 
-  esi::MapPartition<int> *gmap; vector->getMap(gmap,msg);
+  esi::MapPartition<int> *gmap; vector->getMapPartition(gmap);
 
   delete map;
 
-  vector->put(3.0,msg);
-  vector->scale(4.2,msg);
-  vector->norm1(norm,msg);
-  vector->dot((*vector),dot,msg);
+  vector->put(3.0);
+  vector->scale(4.2);
+  vector->norm1(norm);
+  vector->dot((*vector),dot);
 
   PetscPrintf(*comm,"norm %g dot %g\n",norm,dot);
 
   double *array;
 
-  vector->getCoefPtrReadWriteLock(array,msg);
+  vector->getCoefPtrReadWriteLock(array);
   array[0] = 22.3;
-  vector->norm1(norm,msg);
-  vector->dot(*vector,dot,msg);
+  vector->norm1(norm);
+  vector->dot(*vector,dot);
 
   PetscPrintf(*comm,"norm %g dot %g\n",norm,dot);
 
