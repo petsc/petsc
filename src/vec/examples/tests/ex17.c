@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.7 1995/08/22 19:29:36 curfman Exp curfman $";
+static char vcid[] = "$Id: ex17.c,v 1.8 1995/08/23 17:08:34 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -30,11 +30,11 @@ int main(int argc,char **argv)
   /* create two vectors */
   N = numtids*n;
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,N,&y); CHKERRA(ierr);
-  ierr = VecCreateSequential(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,N,0,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,N,0,1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&is1); CHKERRA(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&is2); CHKERRA(ierr);
 
   ierr = VecSet(&zero,x); CHKERRA(ierr);
   ierr = VecGetOwnershipRange(y,&low,&high); CHKERRA(ierr);

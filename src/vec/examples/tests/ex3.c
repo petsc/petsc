@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.23 1995/08/22 19:29:36 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.24 1995/08/23 17:08:34 curfman Exp bsmith $";
 #endif
 
 static char help[] = "This example tests parallel vector assembly.  Input\n\
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   if (numtids < 2) SETERRA(1,"Must be run with at least two processors");
 
   /* create two vector */
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   ierr = VecCreateMPI(MPI_COMM_WORLD,n,PETSC_DECIDE,&y); CHKERRA(ierr);
   ierr = VecSet(&one,x); CHKERRA(ierr);
   ierr = VecSet(&two,y); CHKERRA(ierr);

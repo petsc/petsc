@@ -36,14 +36,14 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
   /* move entire vector to first processor */
   if (mytid == 0) {
     VecGetSize(V,&N);
-    ierr = VecCreateSequential(MPI_COMM_SELF,N,&W); CHKERRQ(ierr);
-    ierr = ISCreateStrideSequential(MPI_COMM_SELF,N,0,1,&from); CHKERRQ(ierr);
-    ierr = ISCreateStrideSequential(MPI_COMM_SELF,N,0,1,&to); CHKERRQ(ierr);
+    ierr = VecCreateSeq(MPI_COMM_SELF,N,&W); CHKERRQ(ierr);
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&from); CHKERRQ(ierr);
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&to); CHKERRQ(ierr);
   }
   else {
-    ierr = VecCreateSequential(MPI_COMM_SELF,0,&W); CHKERRQ(ierr);
-    ierr = ISCreateStrideSequential(MPI_COMM_SELF,0,0,1,&from); CHKERRQ(ierr);
-    ierr = ISCreateStrideSequential(MPI_COMM_SELF,0,0,1,&to); CHKERRQ(ierr);
+    ierr = VecCreateSeq(MPI_COMM_SELF,0,&W); CHKERRQ(ierr);
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&from); CHKERRQ(ierr);
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&to); CHKERRQ(ierr);
   }
   PLogObjectParent(win,W);PLogObjectParent(win,from);PLogObjectParent(win,to);
   ierr = VecScatterCtxCreate(V,from,W,to,&ctx); CHKERRQ(ierr);

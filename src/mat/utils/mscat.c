@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mscat.c,v 1.3 1995/07/17 20:41:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mscat.c,v 1.4 1995/08/07 18:53:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -76,13 +76,13 @@ int MatScatterCtxCreate(Mat X,IS xr,IS xc,Mat Y,IS yr,IS yc,
   ierr = ISGetSize(xc,&ncols); CHKERRQ(ierr);
 
   /* check if one is looking for all columns or rows */
-  if (((PetscObject)xc)->type == (int) ISSTRIDESEQUENTIAL) {
+  if (((PetscObject)xc)->type == (int) ISSTRIDESEQ) {
     ISStrideGetInfo(xc,&first,&step); 
     if (first == 0 && ncols == x->N) {cols = 0;}
     else {ierr = ISGetIndices(xc,&cols); CHKERRQ(ierr);}
   }
   else {ierr = ISGetIndices(xc,&cols); CHKERRQ(ierr);}
-  if (((PetscObject)xr)->type == (int) ISSTRIDESEQUENTIAL) {
+  if (((PetscObject)xr)->type == (int) ISSTRIDESEQ) {
     ISStrideGetInfo(xr,&first,&step); 
     if (first == 0 && nrows == x->M) {rows = 0;}
     else {ierr = ISGetIndices(xr,&rows); CHKERRQ(ierr);}

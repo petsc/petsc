@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.22 1995/08/07 18:53:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: convert.c,v 1.23 1995/08/23 17:17:23 curfman Exp bsmith $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -106,7 +106,7 @@ int MatConvert_AIJ(Mat mat, MatType newtype, Mat *newmat)
 
   switch (newtype) {
     case MATROW:
-      ierr = MatCreateSequentialRow(mat->comm,m,n,0,aij->ilen,newmat);
+      ierr = MatCreateSeqRow(mat->comm,m,n,0,aij->ilen,newmat);
       CHKERRQ(ierr); break;
     case MATMPIROW:
       ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
@@ -117,7 +117,7 @@ int MatConvert_AIJ(Mat mat, MatType newtype, Mat *newmat)
              m,n,0,0,0,0,newmat); /* Could do smarter memory allocation */
       CHKERRQ(ierr); break;
     case MATDENSE:
-      ierr = MatCreateSequentialDense(mat->comm,m,n,newmat);
+      ierr = MatCreateSeqDense(mat->comm,m,n,newmat);
       CHKERRQ(ierr); break;
     case MATBDIAG:
     { int nb = 1; /* Default block size = 1 */
@@ -129,7 +129,7 @@ int MatConvert_AIJ(Mat mat, MatType newtype, Mat *newmat)
       OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
       ierr = MatDetermineDiagonals_Private(mat,nb,m,n,rr,cr,&ndiag,&diag);
       CHKERRQ(ierr); 
-      ierr = MatCreateSequentialBDiag(mat->comm,m,n,ndiag,nb,diag,0,newmat);
+      ierr = MatCreateSeqBDiag(mat->comm,m,n,ndiag,nb,diag,0,newmat);
       CHKERRQ(ierr); 
       PETSCFREE(rr), PETSCFREE(diag);
       break;

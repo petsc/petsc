@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.38 1995/09/07 22:36:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.39 1995/09/10 20:52:22 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -20,27 +20,27 @@ static char vcid[] = "$Id: gcreate.c,v 1.38 1995/09/07 22:36:56 bsmith Exp curfm
 .  V - location to stash resulting matrix
 
    Options Database Keywords:
-$  -mat_aij      : AIJ type, uses MatCreateSequentialAIJ()
+$  -mat_aij      : AIJ type, uses MatCreateSeqAIJ()
 $  -mat_mpiaij   : MatCreateMPIAIJ()
-$  -mat_dense    : dense type, uses MatCreateSequentialDense()
-$  -mat_row      : row type, uses MatCreateSequentialRow()
+$  -mat_dense    : dense type, uses MatCreateSeqDense()
+$  -mat_row      : row type, uses MatCreateSeqRow()
 $  -mat_mpirow   : MatCreateMPIRow()
 $  -mat_mpirowbs : rowbs type.
 $                  uses MatCreateMPIRowbs()
 $  -mat_bdiag    : block diagonal type, uses 
-$                   MatCreateSequentialBDiag()
+$                   MatCreateSeqBDiag()
 $  -mat_mpibdiag : MatCreateMPIBDiag()
 
    Notes:
-   The default matrix type is AIJ, using MatCreateSequentialAIJ() and
+   The default matrix type is AIJ, using MatCreateSeqAIJ() and
    MatCreateMPIAIJ(). 
 
 .keywords: matrix, create, initial
 
-.seealso: MatCreateSequentialAIJ((), MatCreateMPIAIJ(), 
-          MatCreateSequentialRow(), MatCreateMPIRow(), 
-          MatCreateSequentialBDiag(),MatCreateMPIBDiag(),
-          MatCreateSequentialDense(), MatCreateMPIRowbs(), MatConvert()
+.seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
+          MatCreateSeqRow(), MatCreateMPIRow(), 
+          MatCreateSeqBDiag(),MatCreateMPIBDiag(),
+          MatCreateSeqDense(), MatCreateMPIRowbs(), MatConvert()
  @*/
 int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 {
@@ -51,7 +51,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     MPIU_printf(comm,"         -mat_mpirow, -mat_mpirowbs, -mat_bdiag, -mat_mpibdiag\n"); 
   }
   if (OptionsHasName(0,"-mat_dense")) {
-    return MatCreateSequentialDense(comm,m,n,V);
+    return MatCreateSeqDense(comm,m,n,V);
   }
   if (OptionsHasName(0,"-mat_bdiag") || OptionsHasName(0,"-mat_mpibdiag")) {
     int nb = 1, ndiag = 0, ndiag2 = 0, *d = 0, ierr;
@@ -74,7 +74,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     if (OptionsHasName(0,"-mpi_mpibdiag") || numtid>1) {
       ierr = MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,ndiag,nb,d,0,V); CHKERRQ(ierr);
     } else {
-      ierr = MatCreateSequentialBDiag(comm,m,n,ndiag,nb,d,0,V); CHKERRQ(ierr);
+      ierr = MatCreateSeqBDiag(comm,m,n,ndiag,nb,d,0,V); CHKERRQ(ierr);
     }
     if (d) PETSCFREE(d);
     return ierr;
@@ -86,12 +86,12 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
   }
   if (OptionsHasName(0,"-mat_row")) {
-    return MatCreateSequentialRow(comm,m,n,10,0,V);
+    return MatCreateSeqRow(comm,m,n,10,0,V);
   }
   if (OptionsHasName(0,"-mat_mpiaij")  || (numtid >1)) { /* Default parallel format */
     return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
   }
-  return MatCreateSequentialAIJ(comm,m,n,10,0,V); /* default uniprocessor format */
+  return MatCreateSeqAIJ(comm,m,n,10,0,V); /* default uniprocessor format */
 }
 
 #include "matimpl.h"

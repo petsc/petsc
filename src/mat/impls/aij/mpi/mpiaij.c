@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.76 1995/09/11 01:54:12 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.77 1995/09/11 16:52:56 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -388,7 +388,7 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   PETSCFREE(owner); PETSCFREE(nprocs);
     
   /* actually zap the local rows */
-  ierr = ISCreateSequential(MPI_COMM_SELF,slen,lrows,&istmp); 
+  ierr = ISCreateSeq(MPI_COMM_SELF,slen,lrows,&istmp); 
   PLogObjectParent(A,istmp);
   CHKERRQ(ierr);  PETSCFREE(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
@@ -1283,7 +1283,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSequentialAIJ(), MatSetValues()
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues()
 @*/
 int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
                  int d_nz,int *d_nnz, int o_nz,int *o_nnz,Mat *newmat)
@@ -1340,10 +1340,10 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   aij->cstart = aij->cowners[aij->mytid]; 
   aij->cend   = aij->cowners[aij->mytid+1]; 
 
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,m,n,d_nz,d_nnz,&aij->A); 
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m,n,d_nz,d_nnz,&aij->A); 
   CHKERRQ(ierr);
   PLogObjectParent(mat,aij->A);
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,m,N,o_nz,o_nnz,&aij->B); 
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m,N,o_nz,o_nnz,&aij->B); 
   CHKERRQ(ierr);
   PLogObjectParent(mat,aij->B);
 

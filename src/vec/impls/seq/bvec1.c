@@ -1,5 +1,5 @@
 
-/* $Id: bvec1.c,v 1.6 1995/07/07 17:15:00 bsmith Exp bsmith $ */
+/* $Id: bvec1.c,v 1.7 1995/08/24 22:26:14 bsmith Exp bsmith $ */
 
 /*
    Defines the BLAS based vector operations
@@ -10,7 +10,7 @@
 #include "dvecimpl.h" 
 #include "pinclude/plapack.h"
 
-static int VecDot_Blas(Vec xin, Vec yin,Scalar *z )
+static int VecDot_Seq(Vec xin, Vec yin,Scalar *z )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
   int     one = 1;
@@ -30,7 +30,7 @@ static int VecDot_Blas(Vec xin, Vec yin,Scalar *z )
   return 0;
 }
 
-static int VecAsum_Blas( Vec xin, double *z )
+static int VecAsum_Seq( Vec xin, double *z )
 {
   Vec_Seq *x = (Vec_Seq *) xin->data;
   int one = 1;
@@ -39,7 +39,7 @@ static int VecAsum_Blas( Vec xin, double *z )
   return 0;
 }
 
-static int VecScale_Blas( Scalar *alpha,Vec xin )
+static int VecScale_Seq( Scalar *alpha,Vec xin )
 {
   Vec_Seq *x = (Vec_Seq *) xin->data;
   int one = 1;
@@ -48,7 +48,7 @@ static int VecScale_Blas( Scalar *alpha,Vec xin )
   return 0;
 }
 
-static int VecCopy_Blas(Vec xin, Vec yin )
+static int VecCopy_Seq(Vec xin, Vec yin )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
   int one = 1;
@@ -56,7 +56,7 @@ static int VecCopy_Blas(Vec xin, Vec yin )
   return 0;
 }
 
-static int VecSwap_Blas(  Vec xin,Vec yin )
+static int VecSwap_Seq(  Vec xin,Vec yin )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
   int  one = 1;
@@ -64,7 +64,7 @@ static int VecSwap_Blas(  Vec xin,Vec yin )
   return 0;
 }
 
-static int VecAXPY_Blas(  Scalar *alpha, Vec xin, Vec yin )
+static int VecAXPY_Seq(  Scalar *alpha, Vec xin, Vec yin )
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
   int one = 1;

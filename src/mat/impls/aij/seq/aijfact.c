@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.34 1995/09/04 19:27:31 curfman Exp curfman $";
+static char vcid[] = "$Id: aijfact.c,v 1.35 1995/09/06 21:06:35 curfman Exp bsmith $";
 #endif
 
 
@@ -116,7 +116,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
   PETSCFREE(fill);
 
   /* put together the new matrix */
-  ierr = MatCreateSequentialAIJ(mat->comm,n, n, 0, 0, fact); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(mat->comm,n, n, 0, 0, fact); CHKERRQ(ierr);
   aijnew = (Mat_AIJ *) (*fact)->data;
   PETSCFREE(aijnew->imax);
   aijnew->singlemalloc = 0;
@@ -561,7 +561,7 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
                              realloc,f,((double)ainew[n])/((double)ai[prow]));
 
   /* put together the new matrix */
-  ierr = MatCreateSequentialAIJ(mat->comm,n, n, 0, 0, fact); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(mat->comm,n, n, 0, 0, fact); CHKERRQ(ierr);
   aijnew = (Mat_AIJ *) (*fact)->data;
   PETSCFREE(aijnew->imax);
   aijnew->singlemalloc = 0;

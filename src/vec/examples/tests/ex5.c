@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.23 1995/08/22 19:29:36 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.24 1995/08/23 17:08:34 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -31,11 +31,11 @@ int main(int argc,char **argv)
 
   /* create two vectors */
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,numtids*n,&x); CHKERRA(ierr);
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&y); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,n*mytid,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,0,1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,n,n*mytid,1,&is1); CHKERRA(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,n,0,1,&is2); CHKERRA(ierr);
 
   /* each processor inserts the entire vector */
   /* this is redundant but tests assembly */

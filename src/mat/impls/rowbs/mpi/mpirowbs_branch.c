@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.60 1995/09/07 22:36:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.61 1995/09/10 20:51:48 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -924,7 +924,7 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
   PETSCFREE(owner); PETSCFREE(nprocs);
     
   /* actually zap the local rows */
-  ierr = ISCreateSequential(MPI_COMM_SELF,slen,lrows,&istmp); 
+  ierr = ISCreateSeq(MPI_COMM_SELF,slen,lrows,&istmp); 
   PLogObjectParent(A,istmp);
   CHKERRQ(ierr);  PETSCFREE(lrows);
   ierr = MatZeroRows_MPIRowbs_local(A,istmp,diag); CHKERRQ(ierr);

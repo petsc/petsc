@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.46 1995/09/06 23:44:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.47 1995/09/07 04:24:40 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: bvec2.c,v 1.46 1995/09/06 23:44:08 bsmith Exp bsmith 
 #include "../bvec1.c"
 #include "../dvec2.c"
 
-static int VecNorm_Blas(Vec xin,double* z )
+static int VecNorm_Seq(Vec xin,double* z )
 {
   Vec_Seq * x = (Vec_Seq *) xin->data;
   int  one = 1;
@@ -191,13 +191,13 @@ static int VecDestroy_Seq(PetscObject obj )
   return 0;
 }
 
-static int VecDuplicate_Blas(Vec,Vec*);
+static int VecDuplicate_Seq(Vec,Vec*);
 
-static struct _VeOps DvOps = {VecDuplicate_Blas, 
-            Veiobtain_vectors, Veirelease_vectors, VecDot_Blas, VecMDot_Seq,
-            VecNorm_Blas, VecAMax_Seq, VecAsum_Blas, VecDot_Blas, VecMDot_Seq,
-            VecScale_Blas, VecCopy_Blas,
-            VecSet_Seq, VecSwap_Blas, VecAXPY_Blas, VecMAXPY_Seq, VecAYPX_Seq,
+static struct _VeOps DvOps = {VecDuplicate_Seq, 
+            Veiobtain_vectors, Veirelease_vectors, VecDot_Seq, VecMDot_Seq,
+            VecNorm_Seq, VecAMax_Seq, VecAsum_Seq, VecDot_Seq, VecMDot_Seq,
+            VecScale_Seq, VecCopy_Seq,
+            VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecMAXPY_Seq, VecAYPX_Seq,
             VecWAXPY_Seq, VecPMult_Seq,
             VecPDiv_Seq,  
             VecSetValues_Seq,0,0,
@@ -205,7 +205,7 @@ static struct _VeOps DvOps = {VecDuplicate_Blas,
             VecGetOwnershipRange_Seq,0,VecMax_Seq,VecMin_Seq};
 
 /*@C
-   VecCreateSequential - Creates a standard, array-style vector.
+   VecCreateSeq - Creates a standard, array-style vector.
 
    Input Parameter:
 .  comm - the communicator, should be MPI_COMM_SELF
@@ -222,7 +222,7 @@ static struct _VeOps DvOps = {VecDuplicate_Blas,
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecGetVecs()
 @*/
-int VecCreateSequential(MPI_Comm comm,int n,Vec *V)
+int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 {
   int      size = sizeof(Vec_Seq)+n*sizeof(Scalar),flag;
   Vec      v;
@@ -230,7 +230,7 @@ int VecCreateSequential(MPI_Comm comm,int n,Vec *V)
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
   if (flag == MPI_UNEQUAL) 
-    SETERRQ(1,"VecCreateSequential: Must call with MPI_COMM_SELF");
+    SETERRQ(1,"VecCreateSeq: Must call with MPI_COMM_SELF");
   PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,VECSEQ,comm);
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _Vec)+size);
@@ -244,9 +244,9 @@ int VecCreateSequential(MPI_Comm comm,int n,Vec *V)
   *V = v; return 0;
 }
 
-static int VecDuplicate_Blas(Vec win,Vec *V)
+static int VecDuplicate_Seq(Vec win,Vec *V)
 {
   Vec_Seq *w = (Vec_Seq *)win->data;
-  return VecCreateSequential(win->comm,w->n,V);
+  return VecCreateSeq(win->comm,w->n,V);
 }
 

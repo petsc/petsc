@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.30 1995/09/06 03:04:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.31 1995/09/07 04:24:25 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -41,7 +41,7 @@ static int ISInvertPermutation_General(IS is, IS *isout)
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  ierr = ISCreateSequential(MPI_COMM_SELF,n,ii,isout); CHKERRQ(ierr);
+  ierr = ISCreateSeq(MPI_COMM_SELF,n,ii,isout); CHKERRQ(ierr);
   ISSetPermutation(*isout);
   PETSCFREE(ii);
   return 0;
@@ -76,7 +76,7 @@ static struct _ISOps myops = { ISGetSize_General,ISGetSize_General,
                                ISGetIndices_General,0,
                                ISInvertPermutation_General};
 /*@C
-   ISCreateSequential - Creates a data structure for an index set 
+   ISCreateSeq - Creates a data structure for an index set 
    containing a list of integers.
 
    Input Parameters:
@@ -89,9 +89,9 @@ static struct _ISOps myops = { ISGetSize_General,ISGetSize_General,
 
 .keywords: IS, sequential, index set, create
 
-.seealso: ISCreateStrideSequential()
+.seealso: ISCreateStrideSeq()
 @*/
-int ISCreateSequential(MPI_Comm comm,int n,int *idx,IS *is)
+int ISCreateSeq(MPI_Comm comm,int n,int *idx,IS *is)
 {
   int        i, sorted = 1, size = sizeof(IS_General) + n*sizeof(int);
   int        min, max;
@@ -99,7 +99,7 @@ int ISCreateSequential(MPI_Comm comm,int n,int *idx,IS *is)
   IS_General *sub;
 
   *is = 0;
-  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISGENERALSEQUENTIAL,comm); 
+  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISGENERALSEQ,comm); 
   PLogObjectCreate(Nindex);
   sub            = (IS_General *) PETSCMALLOC(size); CHKPTRQ(sub);
   PLogObjectMemory(Nindex,size + sizeof(struct _IS));
@@ -126,7 +126,7 @@ int ISCreateSequential(MPI_Comm comm,int n,int *idx,IS *is)
 }
 
 /*@
-   ISAddStrideSequential - Adds additional entries to a sequential 
+   ISAddStrideSeq - Adds additional entries to a sequential 
                            index set by a stride.
 
    Input Parameters:
@@ -137,16 +137,16 @@ int ISCreateSequential(MPI_Comm comm,int n,int *idx,IS *is)
 
 .keywords: IS, sequential, index set, create, adding to
 
-.seealso: ISCreateStrideSequential(), ISCreate()
+.seealso: ISCreateStrideSeq(), ISCreate()
 @*/
-int ISAddStrideSequential(IS *is,int n,int first,int step)
+int ISAddStrideSeq(IS *is,int n,int first,int step)
 {
   int        N, *old,size,min,max,*idx,i;
   IS         Newis;
   IS_General *sub;
   if (*is) PETSCVALIDHEADERSPECIFIC(*is,IS_COOKIE);
 
-  PETSCHEADERCREATE(Newis, _IS,IS_COOKIE,ISGENERALSEQUENTIAL,MPI_COMM_SELF); 
+  PETSCHEADERCREATE(Newis, _IS,IS_COOKIE,ISGENERALSEQ,MPI_COMM_SELF); 
   PLogObjectCreate(Newis);
 
   if (*is) {

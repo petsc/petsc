@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.25 1995/08/22 19:39:26 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.26 1995/08/29 13:18:20 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -23,9 +23,9 @@ int main( int argc, char **argv )
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
 
   /* Set up data structures */
-  ierr = VecCreateSequential(MPI_COMM_SELF,2,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,2,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = MatCreateSequentialDense(MPI_COMM_SELF,2,2,&J); CHKERRA(ierr);
+  ierr = MatCreateSeqDense(MPI_COMM_SELF,2,2,&J); CHKERRA(ierr);
 
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); 

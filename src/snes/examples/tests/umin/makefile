@@ -2,7 +2,7 @@ PETSC_DIR = ../../../..
 ALL: ex1
 
 CFLAGS        = $(CONF) $(PETSC_INCLUDE)
-FFLAGS        = $(BASEOPTF)
+FFLAGS        = 
 SOURCEC       = 
 SOURCEF       =
 SOURCEH       =
@@ -16,16 +16,14 @@ RUNEXAMPLES_2 =
 EXAMPLES_3    = ex1
 RUNEXAMPLES_3 = runex1 runex1_2
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c
+DIRS          = 
 
 FOBJ = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
        depths.o dgl1hs.o dgl2hs.o dmsahs.o dodchs.o dpjbhs.o dsschs.o \
        dmsabc.o dodcps.o dgl2co.o mpinter.o
 
-EX1 = ex1.o $(FOBJ)
-EX4 = ex4.o $(FOBJ)
-
-ex1: $(EX1) chkopts
-	-$(CLINKER) -o ex1 $(EX1) $(PETSC_LIB)
+ex1: ex1.o $(FOBJ) chkopts
+	-$(CLINKER) -o ex1 ex1.o $(FOBJ)  $(PETSC_LIB)
 	$(RM) $(EX1)
 
 ex2: ex2.o chkopts
@@ -37,7 +35,7 @@ ex3: ex3.o chkopts
 	$(RM) ex3.o
 
 # These are just for some experiments
-ex4: $(EX4) chkopts
+ex4: ex4.o $(FOBJ) chkopts
 	-$(CLINKER) -o ex4 $(EX4) $(PETSC_LIB)
 	$(RM) ex4.o
 
@@ -73,6 +71,6 @@ runex2_3:
 runex3:
 	-@$(MPIRUN) -np 2 ex3 -snes_smonitor > ex3_1.tmp 2>&1;   \
            if (diff output/ex3_1.out ex3_1.tmp) then true; \
-           else echo "Possible problem with ex3_1, diffs above"; fi; \
+           else echo "Possible problem with ex3_1, diffs above"; fi;
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.25 1995/08/02 04:14:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.26 1995/08/04 01:50:57 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -47,7 +47,7 @@ int PrintPVecScatterCtx(VecScatterCtx ctx)
 }  
 /*
      Even though the next routines are written with parallel 
-  vectors, either xin or yin (but not both) may be sequential
+  vectors, either xin or yin (but not both) may be Seq
   vectors, one for each processor.
 
      Note: since nsends, nrecvs and nx may be zero but they are used
@@ -742,7 +742,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
 
 /* ----------------------------------------------------------------*/
 /*
-     scatter from local sequential vectors to a parallel vector.
+     scatter from local Seq vectors to a parallel vector.
 */
 int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
                          VecScatterCtx ctx)

@@ -25,9 +25,9 @@ int MatGetReorder_IJ(int n,int *ia,int* ja,MatOrdering type,
 
   ierr = (*r)(&n,ia,ja,permr,permc); CHKERRQ(ierr);
 
-  ierr = ISCreateSequential(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
+  ierr = ISCreateSeq(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
   ISSetPermutation(*rperm);
-  ierr = ISCreateSequential(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
+  ierr = ISCreateSeq(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
   ISSetPermutation(*cperm);
   PETSCFREE(permr); 
   return 0; 

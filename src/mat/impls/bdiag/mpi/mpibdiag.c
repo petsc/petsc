@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.28 1995/09/06 03:05:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.29 1995/09/07 04:26:43 bsmith Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -316,7 +316,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   PETSCFREE(owner); PETSCFREE(nprocs);
     
   /* actually zap the local rows */
-  ierr = ISCreateSequential(MPI_COMM_SELF,slen,lrows,&istmp); 
+  ierr = ISCreateSeq(MPI_COMM_SELF,slen,lrows,&istmp); 
   PLogObjectParent(A,istmp);
   CHKERRQ(ierr);  PETSCFREE(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
@@ -603,7 +603,7 @@ $     diag = i/nb - j/nb  (integer division)
 
 .keywords: matrix, block, diagonal, parallel, sparse
 
-.seealso: MatCreate(), MatCreateSequentialBDiag(), MatSetValues()
+.seealso: MatCreate(), MatCreateSeqBDiag(), MatSetValues()
 @*/
 int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
                      int *diag,Scalar **diagv,Mat *newmat)
@@ -667,7 +667,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
            mbd->rstart,mbd->rend,mbd->brstart, mbd->brend); */
 
   /* Determine local diagonals; for now, assume global rows = global cols */
-  /* These are sorted in MatCreateSequentialBDiag */
+  /* These are sorted in MatCreateSeqBDiag */
   ldiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(ldiag); 
   mbd->gdiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(mbd->gdiag);
   k = 0;
@@ -702,7 +702,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   }
 
   /* Form local matrix */
-  ierr = MatCreateSequentialBDiag(MPI_COMM_SELF,mbd->m,mbd->n,k,nb,
+  ierr = MatCreateSeqBDiag(MPI_COMM_SELF,mbd->m,mbd->n,k,nb,
                                   ldiag,ldiagv,&mbd->A); CHKERRQ(ierr); 
 
   /* Fix main diagonal location */
@@ -754,7 +754,7 @@ $     diag = i/nb - j/nb  (integer division)
 
 .keywords: matrix, block, diagonal, get, data
 
-.seealso: MatCreateSequentialBDiag(), MatCreateMPIBDiag()
+.seealso: MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
 int MatBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,
                     Scalar ***diagv)

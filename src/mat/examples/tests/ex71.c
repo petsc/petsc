@@ -40,7 +40,7 @@ int main(int argc,char **args)
 
   ierr = MatView(A,viewer); CHKERRA(ierr);
 
-  ierr = VecCreateSequential(MPI_COMM_SELF,m,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,m,&x); CHKERRA(ierr);
   ierr = VecSet(&one,x); CHKERRA(ierr);
   ierr = VecView(x,viewer); CHKERRA(ierr);
   

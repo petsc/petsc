@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.55 1995/09/06 22:51:28 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.56 1995/09/10 20:51:25 curfman Exp bsmith $";
 #endif
 
 /*
@@ -349,7 +349,7 @@ static int MatCopyPrivate_Dense(Mat matin,Mat *newmat)
   int ierr;
   Mat newi;
   Mat_Dense *l;
-  ierr = MatCreateSequentialDense(matin->comm,mat->m,mat->n,&newi);
+  ierr = MatCreateSeqDense(matin->comm,mat->m,mat->n,&newi);
   CHKERRQ(ierr);
   l = (Mat_Dense *) newi->data;
   PETSCMEMCPY(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
@@ -435,7 +435,7 @@ static int MatTranspose_Dense(Mat matin,Mat *matout)
     Mat tmat;
     Mat_Dense *tmatd;
     Scalar *v2;
-    ierr = MatCreateSequentialDense(matin->comm,mat->n,mat->m,&tmat); CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(matin->comm,mat->n,mat->m,&tmat); CHKERRQ(ierr);
     tmatd = (Mat_Dense *) tmat->data;
     v = mat->v; v2 = tmatd->v;
     for ( j=0; j<n; j++ ) {
@@ -637,7 +637,7 @@ static int MatGetSubMatrix_Dense(Mat matin,IS isrow,IS iscol,Mat *submat)
   for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
 
   /* Create and fill new matrix */
-  ierr = MatCreateSequentialDense(matin->comm,nrows,ncols,&newmat);
+  ierr = MatCreateSeqDense(matin->comm,nrows,ncols,&newmat);
          CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     nznew = 0;
@@ -684,7 +684,7 @@ static struct _MatOps MatOps = {MatInsert_Dense,
        MatCopyPrivate_Dense};
 
 /*@C
-   MatCreateSequentialDense - Creates a sequential dense matrix that 
+   MatCreateSeqDense - Creates a sequential dense matrix that 
    is stored in column major order (the usual Fortran 77 manner). Many 
    of the matrix operations use the BLAS and LAPACK routines.
 
@@ -700,7 +700,7 @@ static struct _MatOps MatOps = {MatInsert_Dense,
 
 .seealso: MatCreate(), MatSetValues()
 @*/
-int MatCreateSequentialDense(MPI_Comm comm,int m,int n,Mat *newmat)
+int MatCreateSeqDense(MPI_Comm comm,int m,int n,Mat *newmat)
 {
   int       size = sizeof(Mat_Dense) + m*n*sizeof(Scalar);
   Mat mat;
@@ -730,5 +730,5 @@ int MatCreateSequentialDense(MPI_Comm comm,int m,int n,Mat *newmat)
 int MatCreate_Dense(Mat matin,Mat *newmat)
 {
   Mat_Dense *m = (Mat_Dense *) matin->data;
-  return MatCreateSequentialDense(matin->comm,m->m,m->n,newmat);
+  return MatCreateSeqDense(matin->comm,m->m,m->n,newmat);
 }

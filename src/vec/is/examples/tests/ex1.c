@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.28 1995/07/23 18:25:37 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.7 1995/08/22 19:29:02 curfman Exp bsmith $";
 #endif
 
 static char help[] = "This example tests various IS routines\n\n";
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   indices[2] = mytid + 3; 
   indices[3] = mytid + 4; 
   indices[4] = mytid + 5; 
-  ierr = ISCreateSequential(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
+  ierr = ISCreateSeq(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
 
   ierr = ISView(is,STDOUT_VIEWER_SELF); CHKERRA(ierr);
   ierr = ISDestroy(is); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.22 1995/08/17 14:11:05 curfman Exp $";
+static char vcid[] = "$Id: ex15.c,v 1.15 1995/08/17 21:33:33 curfman Exp bsmith $";
 #endif
 
 static char help[] = "This example displays a vector visually.\n\n";
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   OptionsGetInt(0,"-n",&n);
 
   /* create vector */
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
 
   for ( i=0; i<n; i++ ) {
     v = (double) i;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.32 1995/08/22 16:28:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.33 1995/08/22 17:31:54 curfman Exp bsmith $";
 #endif
 
 /*
@@ -154,7 +154,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
 
   if (xin->type == VECSEQ && yin->type == VECSEQ) {
 
-    if (ix->type == ISGENERALSEQUENTIAL && iy->type == ISGENERALSEQUENTIAL){
+    if (ix->type == ISGENERALSEQ && iy->type == ISGENERALSEQ){
       int               nx,ny,*idx,*idy;
       VecScatterGeneral *to,*from;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
@@ -176,8 +176,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       *newctx = ctx;
       return 0;
     }
-    else if (ix->type == ISSTRIDESEQUENTIAL && 
-                                            iy->type == ISSTRIDESEQUENTIAL){
+    else if (ix->type == ISSTRIDESEQ &&  iy->type == ISSTRIDESEQ){
       int               nx,ny,to_first,to_step,from_first,from_step;
       VecScatterStride  *from,*to;
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
@@ -196,8 +195,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       *newctx = ctx;
       return 0;
     }
-    else if (ix->type == ISGENERALSEQUENTIAL &&
-                                            iy->type == ISSTRIDESEQUENTIAL){
+    else if (ix->type == ISGENERALSEQ && iy->type == ISSTRIDESEQ){
       int               nx,ny,*idx,first,step;
       VecScatterGeneral *from;
       VecScatterStride  *to;
@@ -218,8 +216,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       *newctx = ctx;
       return 0;
     }
-    else if (ix->type == ISSTRIDESEQUENTIAL &&
-                                        iy->type == ISGENERALSEQUENTIAL){
+    else if (ix->type == ISSTRIDESEQ && iy->type == ISGENERALSEQ){
       int               nx,ny,*idx,first,step;
       VecScatterGeneral *to;
       VecScatterStride  *from;
@@ -247,7 +244,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
   }
   if (xin->type == VECMPI && yin->type == VECSEQ) {
     /* special case extracting (subset of) local portion */ 
-    if (ix->type == ISSTRIDESEQUENTIAL && iy->type == ISSTRIDESEQUENTIAL){
+    if (ix->type == ISSTRIDESEQ && iy->type == ISSTRIDESEQ){
       Vec_MPI         *x = (Vec_MPI *)xin->data;
       int               nx,ny,to_first,to_step,from_first,from_step;
       int               start = x->ownership[x->mytid];
@@ -288,7 +285,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
   }
   if (xin->type == VECSEQ && yin->type == VECMPI) {
     /* special case local copy portion */ 
-    if (ix->type == ISSTRIDESEQUENTIAL && iy->type == ISSTRIDESEQUENTIAL){
+    if (ix->type == ISSTRIDESEQ && iy->type == ISSTRIDESEQ){
       Vec_MPI         *y = (Vec_MPI *)yin->data;
       int               nx,ny,to_first,to_step,from_first,from_step;
       int               start = y->ownership[y->mytid];

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.22 1995/08/17 14:11:05 curfman Exp $";
+static char vcid[] = "$Id: ex18.c,v 1.4 1995/08/17 21:33:33 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Compares BLAS dots on different machines. Input\n\
@@ -25,8 +25,8 @@ int main(int argc,char **argv)
 
 
   /* create two vectors */
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&y); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&y); CHKERRA(ierr);
 
   for ( i=0; i<n; i++ ) {
     v = ((double) i) + 1.0/(((double) i) + .35);

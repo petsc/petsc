@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.31 1995/08/27 14:15:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.32 1995/08/28 16:29:09 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -107,7 +107,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
   printf("m = %d, N=%d\n", m, N );
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,N,N,80,0,&mat); CHKERRQ(ierr); 
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,80,0,&mat); CHKERRQ(ierr); 
 
   /* Form stiffness for element */
   K = (double **) PETSCMALLOC(81*sizeof(double *)); CHKPTRQ(K);
@@ -162,7 +162,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
     if (nz) rowkeep[ict++] = i;
     ierr = MatRestoreRow(mat,i,&nz,0,0); CHKERRQ(ierr);
   }
-  ierr = ISCreateSequential(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERRQ(ierr);
+  ierr = ISCreateSeq(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERRQ(ierr);
   ierr = MatGetSubMatrix(mat,iskeep,iskeep,&submat); CHKERRQ(ierr);
   PETSCFREE(rowkeep);
   ierr = ISDestroy(iskeep);  CHKERRQ(ierr);

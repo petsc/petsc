@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.21 1995/08/17 21:33:33 curfman Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.22 1995/08/22 19:29:36 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -24,12 +24,12 @@ int main(int argc,char **argv)
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
 
   /* create two vector */
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,3,0,2,&is1); CHKERRA(ierr);
-  ierr = ISCreateSequential(MPI_COMM_SELF,3,idx1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,3,0,2,&is1); CHKERRA(ierr);
+  ierr = ISCreateSeq(MPI_COMM_SELF,3,idx1,&is2); CHKERRA(ierr);
 
   ierr = VecSetValues(x,6,loc,vals,INSERTVALUES); CHKERRA(ierr);
   ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.47 1995/09/10 20:51:52 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.48 1995/09/11 01:54:39 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -882,7 +882,7 @@ static int MatTranspose_BDiag(Mat A,Mat *matout)
   for (i=0; i<nd; i++) {
     diagnew[i] = -diag[nd-i-1]; /* assume sorted in descending order */
   }
-  ierr = MatCreateSequentialBDiag(A->comm,mbd->n,mbd->m,nd,nb,diagnew,
+  ierr = MatCreateSeqBDiag(A->comm,mbd->n,mbd->m,nd,nb,diagnew,
                                     0,&tmat); CHKERRQ(ierr);
   PETSCFREE(diagnew);
   mbdnew = (Mat_BDiag *) tmat->data;
@@ -1222,7 +1222,7 @@ static int MatGetSubMatrix_BDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
   nb = mat->nb; /* Default block size remains the same */
   ierr = MatDetermineDiagonals_Private(matin,nb,newr,newc,irow,icol,
          &ndiag,&diag); CHKERRQ(ierr); 
-  ierr = MatCreateSequentialBDiag(matin->comm,newr,newc,ndiag,nb,diag,
+  ierr = MatCreateSeqBDiag(matin->comm,newr,newc,ndiag,nb,diag,
          0,&newmat); CHKERRQ(ierr); 
   PETSCFREE(diag);
 
@@ -1281,7 +1281,7 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        MatCopyPrivate_BDiag, 0, 0 };
 
 /*@C
-   MatCreateSequentialBDiag - Creates a sequential block diagonal matrix.
+   MatCreateSeqBDiag - Creates a sequential block diagonal matrix.
 
    Input Parameters:
 .  comm - MPI communicator, set to MPI_COMM_SELF
@@ -1317,7 +1317,7 @@ $     diag = i/nb - j/nb  (integer division)
 
 .seealso: MatCreate(), MatCreateMPIBDiag(), MatSetValues()
 @*/
-int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
+int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
                              int *diag,Scalar **diagv,Mat *newmat)
 {
   Mat       bmat;
@@ -1327,7 +1327,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
 
   *newmat       = 0;
   if ((n%nb) || (m%nb)) 
-    SETERRQ(1,"MatCreateSequentialBDiag:Invalid block size");
+    SETERRQ(1,"MatCreateSeqBDiag:Invalid block size");
   if (!nd) nda = nd + 1;
   else nda = nd;
   PETSCHEADERCREATE(bmat,_Mat,MAT_COOKIE,MATBDIAG,comm);
@@ -1424,7 +1424,7 @@ static int MatCopyPrivate_BDiag(Mat matin,Mat *matout)
   if (!oldmat->assembled) 
     SETERRQ(1,"MatCopyPrivate_BDiag:Cannot copy unassembled matrix");
 
-  ierr = MatCreateSequentialBDiag(matin->comm,oldmat->m,oldmat->n,
+  ierr = MatCreateSeqBDiag(matin->comm,oldmat->m,oldmat->n,
          oldmat->nd,oldmat->nb,oldmat->diag,0,matout); CHKERRQ(ierr);
 
   /* Copy contents of diagonals */

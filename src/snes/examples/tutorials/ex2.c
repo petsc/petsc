@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.30 1995/08/29 13:18:15 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.31 1995/08/31 00:31:52 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -34,13 +34,13 @@ int main( int argc, char **argv )
 
   /* Set up data structures */
   ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,400,400,&monP.win1); CHKERRA(ierr);
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)U,"Exact Solution");
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&J); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,0,&J); CHKERRA(ierr);
 
   /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {

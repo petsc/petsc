@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.30 1995/08/23 17:17:49 curfman Exp $";
+static char vcid[] = "$Id: ex5.c,v 1.24 1995/08/30 23:42:58 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -113,22 +113,22 @@ int main(int Argc, char **Args)
     ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,
                             PETSC_DEFAULT,smooths); CHKERRA(ierr);
 
-    ierr = VecCreateSequential(MPI_COMM_SELF,N[i],&x); CHKERRA(ierr);
+    ierr = VecCreateSeq(MPI_COMM_SELF,N[i],&x); CHKERRA(ierr);
     X[levels - 1 - i] = x;
     ierr = MGSetX(pcmg,levels - 1 - i,x); CHKERRA(ierr);
-    ierr = VecCreateSequential(MPI_COMM_SELF,N[i],&x); CHKERRA(ierr);
+    ierr = VecCreateSeq(MPI_COMM_SELF,N[i],&x); CHKERRA(ierr);
     B[levels -1 - i] = x;
     ierr = MGSetRhs(pcmg,levels - 1 - i,x); CHKERRA(ierr);
-    ierr = VecCreateSequential(MPI_COMM_SELF,N[i],&x); CHKERRA(ierr);
+    ierr = VecCreateSeq(MPI_COMM_SELF,N[i],&x); CHKERRA(ierr);
     R[levels - 1 - i] = x;
     ierr = MGSetR(pcmg,levels - 1 - i,x); CHKERRA(ierr);
   } 
   /* create coarse level vectors */
-  ierr = VecCreateSequential(MPI_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
   ierr = MGSetX(pcmg,0,x); CHKERRA(ierr); X[0] = x;
-  ierr = VecCreateSequential(MPI_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
   ierr = MGSetRhs(pcmg,0,x); CHKERRA(ierr); B[0] = x;
-  ierr = VecCreateSequential(MPI_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,N[levels-1],&x); CHKERRA(ierr);
   ierr = MGSetR(pcmg,0,x); CHKERRA(ierr); R[0] = x;
 
   /* create matrix multiply for finest level */
@@ -308,7 +308,7 @@ int Create1dLaplacian(int n,Mat *mat)
   Scalar mone = -1.0, two = 2.0;
   int    ierr,i,idx;
 
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,mat); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,0,mat); CHKERRQ(ierr);
   
   idx= n-1;
   ierr = MatSetValues(*mat,1,&idx,1,&idx,&two,INSERTVALUES); CHKERRQ(ierr);
@@ -343,7 +343,7 @@ int CalculateSolution(int n,Vec *solution)
   int    i, ierr;
   double h,x = 0.0;
   Scalar uu;
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,solution); CHKERRQ(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,solution); CHKERRQ(ierr);
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {
     x += h; uu = x*(1.-x); 

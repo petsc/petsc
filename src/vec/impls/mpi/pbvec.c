@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.39 1995/09/04 17:23:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: pbvec.c,v 1.40 1995/09/05 18:17:34 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -20,10 +20,10 @@ static char vcid[] = "$Id: pbvec.c,v 1.39 1995/09/04 17:23:26 bsmith Exp curfman
    subset of the processors.
  */
 
-static int VecDot_MPIBlas( Vec xin, Vec yin, Scalar *z )
+static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 {
   Scalar    sum, work;
-  VecDot_Blas(  xin, yin, &work );
+  VecDot_Seq(  xin, yin, &work );
 /*
    This is a ugly hack. But to do it right is kind of silly.
 */
@@ -36,23 +36,23 @@ static int VecDot_MPIBlas( Vec xin, Vec yin, Scalar *z )
   return 0;
 }
 
-static int VecAsum_MPIBlas(  Vec xin, double *z )
+static int VecAsum_MPI(  Vec xin, double *z )
 {
   double work;
-  VecAsum_Blas( xin, &work );
+  VecAsum_Seq( xin, &work );
   MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_SUM,xin->comm );
   return 0;
 }
 
-static int VecDuplicate_MPIBlas( Vec, Vec *);
+static int VecDuplicate_MPI( Vec, Vec *);
 
-static struct _VeOps DvOps = { VecDuplicate_MPIBlas, 
-            Veiobtain_vectors, Veirelease_vectors, VecDot_MPIBlas, 
+static struct _VeOps DvOps = { VecDuplicate_MPI, 
+            Veiobtain_vectors, Veirelease_vectors, VecDot_MPI, 
             VecMDot_MPI,
-            VecNorm_MPI, VecAMax_MPI, VecAsum_MPIBlas, VecDot_MPIBlas, 
+            VecNorm_MPI, VecAMax_MPI, VecAsum_MPI, VecDot_MPI, 
             VecMDot_MPI,
-            VecScale_Blas, VecCopy_Blas,
-            VecSet_Seq, VecSwap_Blas, VecAXPY_Blas, VecMAXPY_Seq, VecAYPX_Seq,
+            VecScale_Seq, VecCopy_Seq,
+            VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecMAXPY_Seq, VecAYPX_Seq,
             VecWAXPY_Seq, VecPMult_Seq,
             VecPDiv_Seq, 
             VecSetValues_MPI,
@@ -60,7 +60,7 @@ static struct _VeOps DvOps = { VecDuplicate_MPIBlas,
             VecGetArray_Seq,VecGetSize_MPI,VecGetSize_Seq,
             VecGetOwnershipRange_MPI,0,VecMax_MPI,VecMin_MPI};
 
-static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,
+static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int numtids,
                                 int mytid,int *owners,Vec *vv)
 {
   Vec     v;
@@ -120,7 +120,7 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,
 
 .keywords: vector, create, MPI
 
-.seealso: VecCreateSequential(), VecCreate(), VecDuplicate(), VecGetVecs()
+.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecGetVecs()
 @*/ 
 int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 {
@@ -137,13 +137,13 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
   if (n == PETSC_DECIDE) { 
     n = N/numtids + ((N % numtids) > mytid);
   }
-  return VecCreateMPIBLASBase(comm,n,N,numtids,mytid,0,vv);
+  return VecCreateMPIBase(comm,n,N,numtids,mytid,0,vv);
 }
 
-static int VecDuplicate_MPIBlas( Vec win, Vec *v)
+static int VecDuplicate_MPI( Vec win, Vec *v)
 {
   Vec_MPI *w = (Vec_MPI *)win->data;
-  return VecCreateMPIBLASBase(win->comm,w->n,w->N,w->numtids,w->mytid,
+  return VecCreateMPIBase(win->comm,w->n,w->N,w->numtids,w->mytid,
                               w->ownership,v);
 }
 

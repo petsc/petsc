@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.25 1995/09/06 03:04:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.26 1995/09/07 04:24:26 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -28,7 +28,7 @@ typedef struct {
 
 .keywords: IS, index set, stride, get, information
 
-.seealso: ISCreateStrideSequential()
+.seealso: ISCreateStrideSeq()
 @*/
 int ISStrideGetInfo(IS is,int *first,int *step)
 {
@@ -102,7 +102,7 @@ static struct _ISOps myops = { ISGetSize_Stride,ISGetSize_Stride,
                                ISGetIndices_Stride,
                                ISRestoreIndices_Stride,0};
 /*@C
-   ISCreateStrideSequential - Creates a data structure for an index set 
+   ISCreateStrideSeq - Creates a data structure for an index set 
    containing a list of evenly spaced integers.
 
    Input Parameters:
@@ -116,9 +116,9 @@ static struct _ISOps myops = { ISGetSize_Stride,ISGetSize_Stride,
 
 .keywords: IS, index set, create, stride, sequential
 
-.seealso: ISCreateSequential()
+.seealso: ISCreateSeq()
 @*/
-int ISCreateStrideSequential(MPI_Comm comm,int n,int first,int step,IS *is)
+int ISCreateStrideSeq(MPI_Comm comm,int n,int first,int step,IS *is)
 {
   int          min, max;
   IS           Nindex;
@@ -126,10 +126,10 @@ int ISCreateStrideSequential(MPI_Comm comm,int n,int first,int step,IS *is)
 
   *is = 0;
  
-  if (n < 0) SETERRQ(1,"ISCreateStrideSequential: Number of indices < 0");
-  if (step == 0) SETERRQ(1,"ISCreateStrideSequential: Step must be nonzero");
+  if (n < 0) SETERRQ(1,"ISCreateStrideSeq: Number of indices < 0");
+  if (step == 0) SETERRQ(1,"ISCreateStrideSeq: Step must be nonzero");
 
-  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISSTRIDESEQUENTIAL,comm); 
+  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISSTRIDESEQ,comm); 
   PLogObjectCreate(Nindex);
   PLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _IS));
   sub            = (IS_Stride *) PETSCMALLOC(sizeof(IS_Stride)); CHKPTRQ(sub);

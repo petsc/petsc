@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.7 1995/08/29 13:18:05 curfman Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.8 1995/08/31 00:33:06 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -37,7 +37,7 @@ int main( int argc, char **argv )
 
   /* Set up data structures */
   ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,400,400,&monP.win1); CHKERRA(ierr);
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
@@ -45,7 +45,7 @@ int main( int argc, char **argv )
   PetscObjectSetName((PetscObject)U,"Exact Solution");
 
   /* create explict matrix preconditioner */
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&B); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,0,&B); CHKERRA(ierr);
 
   /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.16 1995/08/28 18:37:50 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.17 1995/08/29 13:18:10 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -38,11 +38,11 @@ int main( int argc, char **argv )
   h = 1.0/(n-1);
 
   /* Set up data structures */
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&J); CHKERRA(ierr);
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,1,0,&JPrec); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,0,&J); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,1,0,&JPrec); CHKERRA(ierr);
 
   /* Store right-hand-side of PDE */
   for ( i=0; i<n; i++ ) {

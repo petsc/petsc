@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.26 1995/07/23 18:25:26 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -45,7 +45,7 @@ int main(int argc,char **args)
   h = 1.0/m;       /* mesh width */
 
   /* create stiffness matrix */
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,N,N,9,0,&C); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,9,0,&C); CHKERRA(ierr);
 
   /* forms the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke); CHKERRA(ierr);
@@ -62,7 +62,7 @@ int main(int argc,char **args)
 
   /* create right hand side and solution */
 
-  ierr = VecCreateSequential(MPI_COMM_SELF,N,&u); CHKERRA(ierr); 
+  ierr = VecCreateSeq(MPI_COMM_SELF,N,&u); CHKERRA(ierr); 
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&ustar); CHKERRA(ierr);
   ierr = VecSet(&zero,u); CHKERRA(ierr);
@@ -94,7 +94,7 @@ int main(int argc,char **args)
   for ( i=2*m+1; i<m*(m+1); i+= m+1 ) {
     rows[count++] = i;
   }
-  ierr = ISCreateSequential(MPI_COMM_SELF,4*m,rows,&is); CHKERRA(ierr);
+  ierr = ISCreateSeq(MPI_COMM_SELF,4*m,rows,&is); CHKERRA(ierr);
   for ( i=0; i<4*m; i++ ) {
      x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
      val = y;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.30 1995/08/23 17:17:49 curfman Exp $";
+static char vcid[] = "$Id: ex3.c,v 1.22 1995/08/30 23:49:12 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -29,14 +29,14 @@ int main(int argc,char **args)
   OptionsGetInt(0,"-n",&n);
 
   /* Create and initialize vectors */
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&b);     CHKERRA(ierr);
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&ustar); CHKERRA(ierr);
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&u);     CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&b);     CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&ustar); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&u);     CHKERRA(ierr);
   ierr = VecSet(&one,ustar); CHKERRA(ierr);
   ierr = VecSet(&zero,u); CHKERRA(ierr);
 
   /* Create and assemble matrix */
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&mat); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,0,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
