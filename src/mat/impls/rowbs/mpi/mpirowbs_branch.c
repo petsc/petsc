@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.56 1995/09/04 17:24:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.57 1995/09/06 03:05:40 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -184,22 +184,6 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
 #include "draw.h"
 #include "pinclude/pviewer.h"
 
-static int MatView_MPIRowbs_local(Mat mat,Viewer ptr)
-{
-  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
-  BSspmat      *A = mrow->A;
-  BSsprow      **rs = A->rows;
-  int     i, j;
-
-  for ( i=0; i<A->num_rows; i++ ) {
-    printf("row %d:",i);
-    for (j=0; j<rs[i]->length; j++) {
-      printf(" %d %g ", rs[i]->col[j], rs[i]->nz[j]);
-    }
-    printf("\n");
-  }
-  return 0;
-}
 
 static int MatAssemblyBegin_MPIRowbs_local(Mat mat,MatAssemblyType mode)
 { 
@@ -535,11 +519,50 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   return 0;
 }
 
+
+static int MatView_MPIRowbs_File(Mat mat,Viewer viewer)
+{
+  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
+  int          ierr, format,i,j;
+  FILE         *fd;
+  BSspmat      *A = mrow->A;
+  BSsprow      **rs = A->rows;
+
+  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);
+
+  MPIU_Seq_begin(mat->comm,1);
+  fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
+           mrow->mytid,mrow->m,mrow->rstart,mrow->rend,mrow->n,0,mrow->N);
+  for ( i=0; i<A->num_rows; i++ ) {
+    printf("row %d:",i+mrow->rstart);
+    for (j=0; j<rs[i]->length; j++) {
+      printf(" %d %g ", rs[i]->col[j], rs[i]->nz[j]);
+    }
+    printf("\n");
+  }
+  fflush(fd);
+  MPIU_Seq_end(mat->comm,1);
+  return 0;
+}
+
+static int MatView_MPIRowbs_Binary(Mat mat,Viewer viewer)
+{
+  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
+  int          ierr, format,i,j;
+  FILE         *fd;
+  BSspmat      *A = mrow->A;
+  BSsprow      **rs = A->rows;
+
+  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+
+  return 0;
+}
+
 static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
-  int          ierr, format;
   PetscObject  vobj = (PetscObject) viewer;
 
   if (!mrow->assembled)
@@ -547,25 +570,18 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
   if (!viewer) { /* so that viewers may be used from debuggers */
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-  ierr = ViewerFileGetFormat_Private(viewer,&format);
-  if (vobj->cookie == VIEWER_COOKIE && format == FILE_FORMAT_INFO &&
-     (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER)) {
-   /* do nothing for now */
+
+  if (vobj->cookie == DRAW_COOKIE) {
+    if (vobj->type == NULLWINDOW) return 0;
   }
-  else if ((vobj->cookie == DRAW_COOKIE) || (vobj->cookie == VIEWER_COOKIE && 
-     (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER))) {
-    FILE *fd;
-    ierr = ViewerFileGetPointer_Private(viewer,&fd);  CHKERRQ(ierr);
-    MPIU_Seq_begin(mat->comm,1);
-    fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
-           mrow->mytid,mrow->m,mrow->rstart,mrow->rend,mrow->n,0,mrow->N);
-    ierr = MatView_MPIRowbs_local(mat,viewer); CHKERRQ(ierr);
-    fflush(fd);
-    MPIU_Seq_end(mat->comm,1);
+  else if (vobj->cookie == VIEWER_COOKIE) {
+    if (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER) {
+      return MatView_MPIRowbs_File(mat,viewer);
+    }
+    else if (vobj->type == BIN_FILE_VIEWER) {
+      return MatView_MPIRowbs_Binary(mat,viewer);
+    }
   }
-  /* Note:  Since BlockSolve does not support matrices of dimension 0,
-     we can't do the usual parallel viewer stuff */
   return 0;
 }
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.44 1995/09/05 18:18:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.45 1995/09/06 03:04:20 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -47,7 +47,7 @@ static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 static int VecView_Seq_File(Vec xin,Viewer ptr)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
-  int      i, n = x->n;
+  int      i, n = x->n,ierr;
   FILE     *fd;
   ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
 
