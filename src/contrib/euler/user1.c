@@ -217,7 +217,7 @@ int main(int argc,char **argv)
 
   /* Read entire grid and initialize data */
   PLogEventBegin(init2,0,0,0,0);
-  fort_app = PetscFromPointer(app);
+  *(int*) (&fort_app) = PetscFromPointer(app);
   time1 = PetscGetTime();
 
   ierr = julianne_(&time1,&solve_with_julianne,&fort_app,&app->cfl,
@@ -279,7 +279,7 @@ int main(int argc,char **argv)
      factorization.  Note:  All of this section could be replaced by the options
      -pc_ilu_in_place and -sub_pc_ilu_in_place (we code it here so that this is
      the application's default). */
-
+/*
   if (app->matrix_free) {
     PCType pctype;
     SLES   *subsles;
@@ -302,6 +302,7 @@ int main(int argc,char **argv)
       }
     }
   }
+ */
 
   /* We use just a few iterations if doing the "dummy" logging phase.  We
      call this after SNESSetFromOptions() to override any runtime options */
@@ -1035,8 +1036,7 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
          app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
          app->aiz,app->ajz,app->akz,
          app->f1,app->g1,app->h1,
-         app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
-         &app->matrix_free_mult); CHKERRQ(ierr);
+         app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
 
   /* Compute pseudo-transient continuation array, dt.  Really need to
      recalculate dt only when the iterates change.  */
@@ -1191,7 +1191,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   int   nj1;	         /* y-direction grid dimension */
   int   nk1;	         /* z-direction grid dimension */
   int   Nx, Ny, Nz;   /* number of procs in each direction */
-  int   Nlocal, ierr, flg, llen, llenb, fort_comm, fort_comm_x, problem = 1, nc;
+  int   Nlocal, ierr, flg, llen, llenb, fort_comm, problem = 1, nc;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                  Create user-defined application context
@@ -1395,11 +1395,12 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
   /* Monitoring information */
   app->label = (char **) PetscMalloc(nc*sizeof(char*)); CHKPTRQ(app->label);
-  app->label[0] = "Density";
+/*  app->label[0] = "Density";
   app->label[1] = "Velocity: x-component";
   app->label[2] = "Velocity: y-component";
   app->label[3] = "Velocity: z-component";
   app->label[4] = "Internal Energy";
+*/
 
   /* Set various debugging flags */
   ierr = OptionsHasName(PETSC_NULL,"-printv",&flg); CHKERRQ(ierr);
@@ -1455,7 +1456,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
          app->Nx,app->Ny,app->Nz,nc,2,PETSC_NULL,PETSC_NULL,PETSC_NULL,&app->da); CHKERRQ(ierr);
   ierr = DAGetAO(app->da,&ao); CHKERRQ(ierr);
-  app->fort_ao = PetscFromPointer(ao);
+  *(int*)(&(app->fort_ao)) = PetscFromPointer(ao); 
 
   /* Get global and local vectors */
   ierr = DAGetDistributedVector(app->da,&app->X); CHKERRQ(ierr);
@@ -1523,7 +1524,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
               Setup parallel grid for Fortran code 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  fort_comm   = PetscFromPointerComm(comm);
+  *(int*)(&fort_comm) = PetscFromPointerComm(comm);
   ierr = parsetup_(&fort_comm, &app->print_grid, &app->no_output,
             &app->bctype, &app->rank, &app->size, &problem,
             &app->gxsf, &app->gysf, &app->gzsf,
@@ -2059,7 +2060,7 @@ int GetXCommunicator(Euler *app,int* fcomm)
     ierr = MPI_Group_incl(group_all,ict,ranks_x,&group_x); CHKERRQ(ierr);
     ierr = MPI_Comm_create(app->comm,group_x,&comm_x); CHKERRQ(ierr);
     PetscFree(ranks_x);
-    fort_comm_x = PetscFromPointerComm(comm_x);
+    *(int*) (&fort_comm_x) = PetscFromPointerComm(comm_x);
   } else {
     fort_comm_x = 0;
   }
