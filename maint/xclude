@@ -1,3 +1,5 @@
+petsc/src/benchmarks/performance_madams
+petsc/src/snes/examples/tutorials/unstruct
 petsc/src/adic
 petsc/src/ec
 petsc/src/ec/RCS
