@@ -1,4 +1,4 @@
-/*$Id: vecstash.c,v 1.20 2000/04/26 22:27:37 balay Exp bsmith $*/
+/*$Id: vecstash.c,v 1.21 2000/04/27 03:49:23 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"
 
@@ -115,8 +115,10 @@ int VecStashScatterEnd_Private(VecStash *stash)
   /* Now update nmaxold to be app 10% more than max n, this way the
      wastage of space is reduced the next time this stash is used.
      Also update the oldmax, only if it increases */
-  oldnmax  = ((int)(stash->n * 1.1) + 5)*stash->bs;
-  if (oldnmax > stash->oldnmax) stash->oldnmax = oldnmax;
+  if (stash->n) {
+    oldnmax  = ((int)(stash->n * 1.1) + 5)*stash->bs;
+    if (oldnmax > stash->oldnmax) stash->oldnmax = oldnmax;
+  }
 
   stash->nmax       = 0;
   stash->n          = 0;
