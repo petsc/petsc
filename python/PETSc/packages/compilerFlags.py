@@ -68,8 +68,10 @@ class Configure(config.base.Configure):
           self.framework.argDB['REJECTED_'+flags] = []
           for testFlag in options.getCompilerFlags(language, self.getCompiler(), ''):
             try:
+              self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
               self.addCompilerFlag(testFlag)
             except RuntimeError:
+              self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
               self.framework.argDB['REJECTED_'+flags].append(testFlag)
           # Check special compiler flags
           for bopt in ['g', 'O', 'g_complex', 'O_complex']:
@@ -78,9 +80,11 @@ class Configure(config.base.Configure):
             if self.framework.argDB[flagsName] == 'Unknown':
               testFlags = []
               for testFlag in options.getCompilerFlags(language, self.getCompiler(), bopt):
+                self.framework.log.write('Trying '+language+' '+bopt+' compiler flag '+testFlag+'\n')
                 if self.checkCompilerFlag(testFlag):
                   testFlags.append(testFlag)
                 else:
+                  self.framework.log.write('Rejected '+language+' '+bopt+' compiler flag '+testFlag+'\n')
                   self.framework.argDB['REJECTED_'+flagsName].append(testFlag)
               self.framework.argDB[flagsName] = ' '.join(testFlags)
             testFlags = self.framework.argDB[flagsName]
