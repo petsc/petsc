@@ -38,7 +38,7 @@ Additional Capabilities that PETSc Needs:
   X Performance file: Elaborate on reuse of vectors, et by employing user
     context, use SNES examples for illustrations.
 
-  - Fix PetscView demo log file to work with new profile format.
+  X Fix PetscView demo log file to work with new profile format.
     Cleanup PetscView.
 
   X Add parallel viewer for MPIROWBS matrix format.
