@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: none.c,v 1.13 1996/12/17 17:12:03 balay Exp balay $";
+static char vcid[] = "$Id: none.c,v 1.14 1997/01/06 20:23:33 balay Exp bsmith $";
 #endif
 /*
     Identity preconditioner, simply copies vector x to y.
@@ -11,9 +11,7 @@ static char vcid[] = "$Id: none.c,v 1.13 1996/12/17 17:12:03 balay Exp balay $";
 int PCApply_None(PC pc,Vec x,Vec y)
 {
   int ierr;
-  PLogEventBegin(PC_Apply,pc,x,y,0);
   ierr = VecCopy(x,y); CHKERRQ(ierr);
-  PLogEventEnd(PC_Apply,pc,x,y,0);
   return 0;
 }
 
