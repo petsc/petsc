@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.246 2001/03/23 23:20:38 balay Exp bsmith $*/
+/*$Id: options.c,v 1.247 2001/04/13 03:27:47 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -1238,7 +1238,7 @@ int PetscOptionsAllUsed(int *N)
   Not collective
 
    Options Database Key:
-.  -optionsleft - Activates OptionsAllUsed() within PetscFinalize()
+.  -options_left - Activates OptionsAllUsed() within PetscFinalize()
 
   Level: advanced
 

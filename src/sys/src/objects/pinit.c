@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.47 2001/04/11 17:04:53 balay Exp bsmith $*/
+/*$Id: pinit.c,v 1.48 2001/04/13 15:06:09 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -387,7 +387,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
    Options Database Keys:
 +  -options_table - Calls OptionsPrint()
 .  -options_left - Prints unused options that remain in the database
-.  -options_left_off - Does not print unused options that remain in the database
+.  -options_left no - Does not print unused options that remain in the database
 .  -mpidump - Calls PetscMPIDump()
 .  -trdump - Calls PetscTrDump()
 .  -trinfo - Prints total memory usage
