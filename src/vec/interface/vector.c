@@ -1,5 +1,5 @@
 
-/*$Id: vector.c,v 1.235 2001/08/07 03:02:20 balay Exp bsmith $*/
+/*$Id: vector.c,v 1.236 2001/09/07 20:08:58 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -34,8 +34,9 @@ int VecSetBlockSize(Vec v,int bs)
   if (bs <= 0) bs = 1;
   if (bs == v->bs) PetscFunctionReturn(0);
   if (v->bs != -1) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,"Cannot reset blocksize. Current size %d new %d",v->bs,bs);
-  if (v->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %d %d",v->N,bs);
-  if (v->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %d %d",v->n,bs);
+  if (v->N != -1 && v->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %d %d",v->N,bs);
+  if (v->n != -1 && v->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %d %d\n\
+   Try setting blocksize before setting the vector type",v->n,bs);
   
   v->bs        = bs;
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
