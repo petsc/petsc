@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.16 1996/03/23 20:43:02 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.17 1996/03/25 22:43:35 balay Exp balay $";
 #endif
 
 /*
@@ -435,16 +435,24 @@ static int MatEqual_SeqBAIJ(Mat A,Mat B, PetscTruth* flg)
 static int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int        i,j, n,shift = a->indexshift;
-  Scalar     *x, zero = 0.0;
+  int        i,j,k,n,row,bs,*ai,*aj,ambs;
+  Scalar     *x, zero = 0.0,*aa,*aa_j;
+
+  bs  = a->bs;
+  aa   = a->a;
+  ai   = a->i;
+  aj   = a->j;
+  ambs = a->mbs;
 
   VecSet(&zero,v);
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
   if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqAIJ:Nonconforming matrix and vector");
-  for ( i=0; i<a->mbs; i++ ) {
-    for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-      if (a->j[j]+shift == i) {
-        x[i] = a->a[j];
+  for ( i=0; i<ambs; i++ ) {
+    for ( j=ai[i]; j<ai[i+1]; j++ ) {
+      if (aj[j] == i) {
+        row  = i*bs;
+        aa_j = aa+j*bs*bs;
+        for (k=0; k<bs*bs; k+=(bs+1),row++) x[row] = aa_j[k];
         break;
       }
     }
@@ -551,8 +559,8 @@ static struct _MatOps MatOps = {0,
        MatLUFactor_SeqBAIJ,0,
        0,
        0,
-       MatGetInfo_SeqBAIJ,0,
-       0,0,MatNorm_SeqBAIJ,
+       MatGetInfo_SeqBAIJ,MatEqual_SeqBAIJ,
+       MatGetDiagonal_SeqBAIJ,0,MatNorm_SeqBAIJ,
        0,0,
        0,
        MatSetOption_SeqBAIJ,MatZeroEntries_SeqBAIJ,0,
