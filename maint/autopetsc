@@ -19,6 +19,14 @@ proc mud_biff {swho gety} {
 }
 
 #
+#  Some global variables for tracking PETSc team
+#
+set active_petsc_team_member("Barry")  0
+set active_petsc_team_member("Satish") 0
+set active_petsc_team_member("BillG")  0
+set active_petsc_team_member("Lois")   0
+ 
+#
 #   Get the most recent petsc-maint added
 # 
     set last_petsc_maint [exec ls /mcs/adm/request/petsc-maint/active | sort -n | tail -1]
@@ -56,6 +64,9 @@ proc mud_biff {swho gety} {
                                    set gety [string range $gety 0 [expr [string length $gety] - 3]]
                                    send "mu $swho paging $gety\r"
                                    mud_biff $swho $gety
+                 } "* whispers to you, *status*\r\n" { 
+                                   scan $expect_out(buffer) "%s whispers to you, status\r\n" swho
+                                   send "mu $swho status\r"
                  } "* whispers to you, *\r\n" {
                                    scan $expect_out(buffer) "%s whispers to you, %s\r\n" swho message
                                    send "mu $swho I have received your whisper\r" 
@@ -77,6 +88,11 @@ proc mud_biff {swho gety} {
                  } "* blinks\r\n" { 
                                    scan $expect_out(buffer) "%s blinks\r\n" swho
                                    send "say Welcome back,  $swho\r"
+                                   set active_petsc_time_member($swho) 1
+                 } "* idles\r\n" { 
+                                   scan $expect_out(buffer) "%s idles\r\n" swho
+                                   send "say Later,  $swho\r"
+                                   set active_petsc_time_member($swho) 0
 #
 #  antisocial to Petsc
 #
