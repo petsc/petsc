@@ -1,10 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.87 1998/11/25 21:26:45 balay Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.88 1998/12/03 03:58:08 bsmith Exp balay $";
 #endif
 /*
       Code that allows one to set the error handlers
 */
 #include "petsc.h"           /*I "petsc.h" I*/
+#include <stdarg.h>
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -118,11 +119,18 @@ $     SETERRQ(n,p,mess)
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler()
 @*/
-int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
+int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,...)
 {
-  int ierr;
+  va_list     Argp;
+  int         ierr;
+  char        buf[1024];
 
   PetscFunctionBegin;
+  /* Compose the message evaluating the print format */
+  va_start( Argp, mess);
+  vsprintf(buf,mess,Argp);
+  va_end( Argp );
+
   if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,mess,0);
   else         ierr = (*eh->handler)(line,func,file,dir,n,p,mess,eh->ctx);
   PetscFunctionReturn(ierr);

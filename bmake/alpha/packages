@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.35 1998/08/16 03:16:10 bsmith Exp balay $ 
+# $Id: base.site,v 1.36 1998/12/04 22:31:23 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -97,7 +97,7 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
 # ---------------------------------------------------------------------------------------
 #
-# If you are using dynamic libraries you must make this
+# If you are using shared libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
 #DYLIBPATH     = /home/bsmith/lapack:/home/bsmith/blas
