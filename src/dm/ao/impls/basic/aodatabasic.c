@@ -744,12 +744,15 @@ PetscErrorCode AODataSegmentPartition_Basic(AOData aodata,const char keyname[],c
   nc  = 0;
   for (i=0; i<size; i++) {
     for (j=bs*key->rowners[i]; j<bs*key->rowners[i+1]; j++) {
-      if (!isc[idx[j]]) {
-        isc[idx[j]] = ++nc;
+      /* allow some keys to have fewer data than others, indicate with a -1 */
+      if (idx[j] >= 0) {
+	if (!isc[idx[j]]) {
+	  isc[idx[j]] = ++nc;
+	}
       }
     }
   }
-  for (i=0; i<keyseg->N; i++) {
+  for (i=0; i<nc; i++) {
     isc[i]--;
   }
 

@@ -154,11 +154,12 @@ static PetscErrorCode ourerrorhandler(int line,const char *fun,const char *file,
 {
   PetscErrorCode ierr = 0;
   size_t len1,len2,len3,len4;
-  
-  PetscStrlen(fun,&len1);
-  PetscStrlen(file,&len2);
-  PetscStrlen(dir,&len3);
-  PetscStrlen(mess,&len4);
+  int l1,l2,l3,l4;
+
+  PetscStrlen(fun,&len1); l1 = (int)len1;
+  PetscStrlen(file,&len2);l2 = (int)len2;
+  PetscStrlen(dir,&len3);l3 = (int)len3;
+  PetscStrlen(mess,&len4);l4 = (int)len4;
 
 #if defined(PETSC_USES_CPTOFCD)
  {
@@ -172,9 +173,9 @@ static PetscErrorCode ourerrorhandler(int line,const char *fun,const char *file,
 
  }
 #elif defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
-  (*f2)(&line,fun,len1,file,len2,dir,len3,&n,&p,mess,len4,ctx,&ierr);
+  (*f2)(&line,fun,l1,file,l2,dir,l3,&n,&p,mess,l4,ctx,&ierr);
 #else
-  (*f2)(&line,fun,file,dir,&n,&p,mess,ctx,&ierr,len1,len2,len3,len4);
+  (*f2)(&line,fun,file,dir,&n,&p,mess,ctx,&ierr,l1,l2,l3,l4);
 #endif
   return ierr;
 }
@@ -391,11 +392,11 @@ void PETSC_STDCALL petscbarrier_(PetscObject *obj,PetscErrorCode *ierr)
   *ierr = PetscBarrier(*obj);
 }
 
-void PETSC_STDCALL petscstrncpy_(CHAR s1 PETSC_MIXED_LEN(len1),CHAR s2 PETSC_MIXED_LEN(len2),size_t *n,
+void PETSC_STDCALL petscstrncpy_(CHAR s1 PETSC_MIXED_LEN(len1),CHAR s2 PETSC_MIXED_LEN(len2),int *n,
                                  PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *t1,*t2;
-  PetscInt  m;
+  int  m;
 
 #if defined(PETSC_USES_CPTOFCD)
   t1 = _fcdtocp(s1); 
@@ -477,7 +478,7 @@ void PETSC_STDCALL petsctrlogdump_(PetscErrorCode *ierr)
   *ierr = PetscTrLogDump(stdout);
 }
 
-void PETSC_STDCALL petscmemcpy_(int *out,int *in,size_t *length,PetscErrorCode *ierr)
+void PETSC_STDCALL petscmemcpy_(int *out,int *in,int *length,PetscErrorCode *ierr)
 {
   *ierr = PetscMemcpy(out,in,*length);
 }
