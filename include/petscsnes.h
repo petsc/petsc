@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.10 1995/05/02 21:45:47 curfman Exp bsmith $ */
+/* $Id: snes.h,v 1.11 1995/05/09 02:47:27 bsmith Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -13,7 +13,7 @@ typedef enum { SNES_NLS,
                SNES_NTR2_LIN,
                SUMS_NLS,
                SUMS_NTR,
-               SNES_TEST }
+               SNES_NTEST }
   SNESMethod;
 
 typedef enum { SNES_T, SUMS_T } SNESTYPE;
@@ -55,6 +55,12 @@ extern int SNESSetMaxResidualEvaluations(SNES,int);
 #define SNESLGMonitorDestroy KSPLGMonitorDestroy
 #define SNESLGMonitor        ((int (*)(SNES,int,double,void*))KSPLGMonitor)
 #endif
+
+extern int SNESComputeInitialGuess(SNES,Vec);
+extern int SNESComputeFunction(SNES,Vec, Vec);
+extern int SNESDefaultComputeJacobian(SNES, Vec,Mat *,Mat *,int *,void *);
+extern int SNESDefaultMatrixFreeComputeJacobian(SNES, Vec,Mat *,
+                                                      Mat *,int *,void *);
 
 #endif
 
