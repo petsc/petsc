@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: checknightly,v 1.28 1998/01/28 19:55:25 balay Exp balay $ 
+# $Id: checknightly,v 1.29 1998/02/10 16:34:10 balay Exp balay $ 
 
 #
 # Crontab job that checks if the nightly runs have finished by 7:30 am,
@@ -11,7 +11,11 @@ proc CheckNightlyBuilds { } {
     global  tmpfileid
 
     cd /home/bsmith/petsc/maint/nightlylogs
-    set files [ glob examples_*]
+    set tmp [catch {glob examples_*} files ]
+    if { $tmp !=0 } {
+        return 0
+    }
+    
     set machines {snake violet snowy maverick quad maple ptera yukon tri63 homer lava}
     foreach machine $machines {
         if { [ string first $machine $files ] < 0 } { #file dos'nt exist
