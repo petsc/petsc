@@ -2,6 +2,8 @@
 
 ALL: lib
 
+CFLAGS    =
+FFLAGS    =
 SOURCEC  = aomapping.c
 SOURCEH  =
 OBJSC    = ${SOURCEC:.c=.o}
