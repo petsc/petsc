@@ -1,8 +1,8 @@
 #PETSC_DIR = ../../../..
 ALL: ex1
 
-CFLAGS	        = $(CPPFLAGS) -D__SDIR__='"$(LOCDIR)"' 
-FFLAGS	        = 
+CFLAGS	        = $(CPPFLAGS) $(FCONF) -D__SDIR__='"$(LOCDIR)"' 
+FFLAGS	        =
 SOURCEC	        = 
 SOURCEF	        =
 SOURCEH	        =
@@ -17,7 +17,7 @@ TESTEXAMPLES_4  =
 BUILDEXAMPLES_1 =
 BUILDEXAMPLES_3 =
 
-EXAMPLESC       = ex1.c ex2.c
+EXAMPLESC       = ex1.c ex2.c util2.c
 EXAMPLESF       = ex1f.F ex2f.F ex2f.h
 #
 
@@ -29,13 +29,13 @@ ex1f: ex1f.o  chkopts
 	-$(FLINKER) -o ex1f ex1f.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex1f.o
 
-ex2: ex2.o  chkopts
-	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
-	$(RM) ex2.o
+ex2: ex2.o util2.o chkopts
+	-$(CLINKER) -o ex2 ex2.o util2.o $(PETSC_LIB)
+	$(RM) ex2.o util2.o
 
-ex2f: ex2f.o  chkopts
-	-$(FLINKER) -o ex2f ex2f.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-	$(RM) ex2f.o
+ex2f: ex2f.o util2.o chkopts
+	-$(FLINKER) -o ex2f ex2f.o util2.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex2f.o util2.o
 
 runex1:
 	-@$(MPIRUN) -np 1 ex1  > ex1_1.tmp 2>&1;	  \
