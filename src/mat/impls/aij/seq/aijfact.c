@@ -827,7 +827,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
   PetscScalar    *x,*b,*tmp,*aa = a->a,*v;
 
   PetscFunctionBegin;
-  if (zz != xx) VecCopy(zz,xx);
+  if (zz != xx) {ierr = VecCopy(zz,xx);CHKERRQ(ierr);}
 
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -1110,7 +1110,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
   if (!a->sbaijMat){
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr); 
   } 
-  ierr = PetscObjectQueryFunction((PetscObject) *fact,"MatCholeskyFactorNumeric",(void*)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject) *fact,"MatCholeskyFactorNumeric",(void (**)(void))&f);CHKERRQ(ierr);
   ierr = (*f)(a->sbaijMat,fact);CHKERRQ(ierr);
   ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
   a->sbaijMat = PETSC_NULL; 
@@ -1135,7 +1135,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   }
 
   ierr = MatICCFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) *fact,"MatCholeskyFactorNumeric","dummyname",(void*)(*fact)->ops->choleskyfactornumeric);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) *fact,"MatCholeskyFactorNumeric","dummyname",(FCNVOID)(*fact)->ops->choleskyfactornumeric);CHKERRQ(ierr);
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
  
   PetscFunctionReturn(0); 
@@ -1158,7 +1158,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);   
-  ierr = PetscObjectComposeFunction((PetscObject) *fact,"MatCholeskyFactorNumeric","dummyname",(void*)(*fact)->ops->choleskyfactornumeric);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) *fact,"MatCholeskyFactorNumeric","dummyname",(FCNVOID)(*fact)->ops->choleskyfactornumeric);CHKERRQ(ierr);
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
   PetscFunctionReturn(0); 
 }

@@ -503,7 +503,7 @@ $             PCShellSetApply(pc,mult,ctx);
 $             PCShellSetSetUp(pc,setup);       (optional)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           KSPSHELL(), MATSHELL(), PCShellSetUp(), PCShellSetApply(), PCShellSetView(), 
+           MATSHELL, PCShellSetUp(), PCShellSetApply(), PCShellSetView(), 
            PCShellSetApplyTranpose(), PCShellSetName(), PCShellSetApplyRichardson(), 
            PCShellGetName()
 M*/

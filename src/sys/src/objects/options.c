@@ -748,10 +748,10 @@ PetscErrorCode PetscOptionsSetAlias(const char inewname[],const char ioldname[])
 static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char name[],char *value[],PetscTruth *flg)
 {
   PetscErrorCode ierr;
-  int        i,N;
-  size_t     len;
-  char       **names,tmp[256];
-  PetscTruth match;
+  PetscInt       i,N;
+  size_t         len;
+  char           **names,tmp[256];
+  PetscTruth     match;
 
   PetscFunctionBegin;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -779,6 +779,34 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
        *flg = PETSC_TRUE;
        break;
      }
+  }
+  if (!*flg) {
+    PetscInt j,cnt = 0,locs[16],loce[16];
+    size_t   n;
+    ierr = PetscStrlen(tmp,&n);CHKERRQ(ierr);
+    /* determine the location and number of all _%d_ in the key */
+    for (i=0; i< (PetscInt)n; i++) {
+      if (tmp[i] == '_') {
+        for (j=i+1; j< (PetscInt)n; j++) {
+          if (tmp[j] >= '0' && tmp[j] <= '9') continue;
+          if (tmp[j] == '_' && j > i+1) { /* found a number */
+            locs[cnt]   = i+1;
+            loce[cnt++] = j+1;
+          }
+          break;
+        }
+      }
+    }
+    if (cnt) {
+      char tmp2[256];
+      for (i=0; i<cnt; i++) {
+        ierr = PetscStrcpy(tmp2,"-");CHKERRQ(ierr);
+        ierr = PetscStrncat(tmp2,tmp,locs[i]);CHKERRQ(ierr);
+        ierr = PetscStrcat(tmp2,tmp+loce[i]);CHKERRQ(ierr);
+        ierr = PetscOptionsFindPair_Private(PETSC_NULL,tmp2,value,flg);CHKERRQ(ierr);
+        if (*flg) break;
+      }
+    }        
   }
   PetscFunctionReturn(0);
 }

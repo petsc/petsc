@@ -310,22 +310,6 @@ class Configure(config.base.Configure):
       self.addSubstitution('LAPACK_DIR', dir)
       libFlag = map(self.libraries.getLibArgument, self.lapackLibrary)
       self.addSubstitution('LAPACK_LIB', ' '.join(libFlag))
-    # the code below does NOT work correctly. I am removing the blocks from
-    # package.in so that the values set below are never used!
-    if self.foundBlas and self.foundLapack:
-      dirs    = []
-      libFlag = []
-      for lib in self.lapackLibrary+self.blasLibrary:
-        if lib is None: continue
-        dir = os.path.dirname(lib)
-        if not dir in dirs:
-          dirs.append(dir)
-        else:
-          lib = os.path.basename(lib)
-        libFlag.append(self.libraries.getLibArgument(lib))
-      self.addSubstitution('BLASLAPACK_DIR', dirs)
-      self.addSubstitution('BLASLAPACK_LIB', ' '.join(libFlag))
-      self.lib = ' '.join(libFlag)
     return
 
   def configure(self):
