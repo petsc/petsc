@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.161 2001/01/19 23:21:32 balay Exp bsmith $*/
+/*$Id: gmres.c,v 1.162 2001/01/31 04:16:25 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -251,8 +251,9 @@ int GMREScycle(int *itcount,KSP ksp)
 #define __FUNC__ "KSPSolve_GMRES"
 int KSPSolve_GMRES(KSP ksp,int *outits)
 {
-  int       ierr,its,itcount;
-  KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
+  int        ierr,its,itcount;
+  KSP_GMRES  *gmres = (KSP_GMRES *)ksp->data;
+  PetscTruth guess_zero = ksp->guess_zero;
 
   PetscFunctionBegin;
 
@@ -269,11 +270,14 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
   ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
   itcount += its;
   while (!ksp->reason) {
+    ksp->guess_zero = PETSC_FALSE;
     ierr     = GMRESResidual(ksp);CHKERRQ(ierr);
     if (itcount >= ksp->max_it) break;
     ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
     itcount += its;  
   }
+  ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
+
   /* mark lack of convergence  */
   if (itcount >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
