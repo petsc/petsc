@@ -389,10 +389,11 @@ password initially 2faWquno
 
 ----------------------------------------------------------------------
 ASCI Blue Mountain at LANL:
-  machine:  bluemoutain.acl.lanl.gov
+  machine:  bluemoutain.acl.lanl.gov (front-end)
   account:  lmcinnes
   password: senmento   (we only a restricted list of password choices)
   info:     http://www.lanl.gov/projects/asci/bluemtn/bluemtn.html
+            including details about job submission, etc.
 
 ----------------------------------------------------------------------
 
