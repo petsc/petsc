@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.15 1998/04/03 23:13:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: reg.c,v 1.16 1998/05/14 01:43:05 curfman Exp curfman $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -131,9 +131,9 @@ struct FuncList_struct {
 typedef struct FuncList_struct FuncList;
 
 struct _DLList {
-    FuncList *head, *tail;   /* head and tail of DLList */
+    FuncList *head, *tail;   /* head and tail of this DLList */
     char     *regname;       /* registration type name */
-    DLList   next;
+    DLList   next;           /* next DLList */
 };
 
 /*
@@ -303,7 +303,7 @@ int DLRegisterDestroyAll(void)
 .   r - the routine
 
     Notes:
-    The routine's id or name MUST be registered with the DLList via
+    The routine's id or name MUST have been registered with the DLList via
     DLRegister() before DLRegisterFind() can be called.
 
 .seealso: DLRegister()
