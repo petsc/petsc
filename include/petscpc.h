@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.49 1996/01/12 17:27:02 balay Exp balay $ */
+/* $Id: pc.h,v 1.50 1996/01/12 17:31:43 balay Exp balay $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -90,6 +90,6 @@ extern int PCEisenstatUseDiagonalScaling(PC);
 
 extern int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
 extern int PCASMSetSubdomains(PC, int, IS *);
-
+extern int PCASMSetOverlap(PC, int);
 #endif
 
