@@ -7,11 +7,25 @@ is a pain to always check that file out of SourceSafe to
 add to it).
 
   VEC
-    If the option VEC_IGNORE_OFF_PROC_ENTRIES is used the VecAssemblyBegin()
-    and End() will not cause any parallel communication or synchronization.
 
- 
-   See petsc-maint # 1787 - added  VIEWER_FORMAT_ASCII_INDEX
+   The command line names for changing the vector type in VecCreate()
+   are now -vec_type mpi or -vec_type shared rather than -vec_mpi or -vec_shared
+   Also extended VecCreate() by allowing registration of new vector types
+   with VecRegister() see the manual pages
+
+   Changed the VecType variable type from an enum type to a string
+
+   Changed the calling sequence for VecGetType(), see the manual page.
+
+   Added VecCreateWithType() that allows you to indicate the vector type
+   in the function call (in addition to setting it from the options database)
+
+   If the option VEC_IGNORE_OFF_PROC_ENTRIES is used the VecAssemblyBegin()
+   and End() will not cause any parallel communication or synchronization
+   (previously it still did a barrier in VecAssemblyBegin()).
+
+   Added  VIEWER_FORMAT_ASCII_INDEX which causes 
+   the index for each vector entry to be printed with the vector values
 
   MAT
 
@@ -40,3 +54,7 @@ add to it).
 
     AOPetscToApplicationIS() and AOApplicationToPetscIS(), that use to crash
     when passed a stride index set, now handle them correctly.
+
+  IS
+
+    Added ISStrideToGeneral(), converts a stride type index set to a general type
