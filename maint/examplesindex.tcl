@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: examplesindex.tcl,v 1.39 1999/03/16 20:41:04 balay Exp balay $ 
+# $Id: examplesindex.tcl,v 1.40 1999/08/31 21:10:51 balay Exp bsmith $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -505,8 +505,8 @@ proc main { }  {
         puts "returning early.. not updating wwwmanpages pages."
         return 0
     }
-    # Update wwwmanpages
-    puts  "updating wwwmanpages pages."
+    # Update manualpages
+    puts  "updating manualpages pages."
     foreach routine $routines {
         set n [ llength $RoutinesFile($routine)  ]
         set i 0
@@ -560,6 +560,7 @@ proc main { }  {
         if { $temp == 0 } { 
             puts "******* Unable to modify $routines_file"
         }
+        set temp [regsub  "</BODY></HTML>" $routine_file_buff "<BR><A HREF=\"./index.html\">?? Index</A><BR><A HREF=\"../index.html\">Table of Contents for all manual pages</A> </BODY></HTML>" routine_file_buff]
         exec /bin/rm -f $routines_file
         set routines_fileid [ open $routines_file w ]
         #puts "Writing to $routines_file"
@@ -576,3 +577,4 @@ proc main { }  {
 #################################################
 # the stupid main function is called here    
 main
+
