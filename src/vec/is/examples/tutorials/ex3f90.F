@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f90.F,v 1.7 1998/04/15 18:02:40 balay Exp balay $"; */
+!      "$Id: ex3f90.F,v 1.8 1998/06/22 15:58:43 balay Exp balay $"; */
 !
 !
 !/*T
@@ -54,7 +54,7 @@
 !
       call ISGetSize(set,issize,ierr) 
       call ISGetIndicesF90(set,indices,ierr) 
-      write(*,100)indices
+      write(6,100)indices
  100  format(12I3)
       call ISRestoreIndicesF90(set,indices,ierr) 
 
@@ -62,7 +62,7 @@
 !    Extract the block indices. This returns one index per block.
 !
       call ISBlockGetIndicesF90(set,indices,ierr) 
-      write(*,200)indices
+      write(6,200)indices
  200  format(4I3)
       call ISBlockRestoreIndicesF90(set,indices,ierr) 
 
