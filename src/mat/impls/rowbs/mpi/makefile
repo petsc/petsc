@@ -1,9 +1,8 @@
-# $Id: makefile,v 1.26 1998/03/19 02:07:32 balay Exp balay $ 
+# $Id: makefile,v 1.27 1998/04/23 23:46:03 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' \
-	   ${BS_INCLUDE}
+CPPFLAGS = ${BS_INCLUDE}
 SOURCEC  = mpirowbs.c cholbs.c ilubs.c iccbs.c
 SOURCEF  =
 SOURCEH  = mpirowbs.h

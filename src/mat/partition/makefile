@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.4 1998/03/19 02:08:40 balay Exp balay $ 
+# $Id: makefile,v 1.5 1998/04/23 23:35:12 balay Exp balay $ 
 #
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' ${PARMETIS_INCLUDE}
+CPPFLAGS = ${PARMETIS_INCLUDE}
 SOURCEC  = partition.c spartition.c pmetis.c
 SOURCEH  = 
 OBJSC    = partition.o spartition.o pmetis.o

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.5 1998/04/24 01:03:24 bsmith Exp balay $
+# $Id: makefile,v 1.6 1998/06/12 21:40:02 balay Exp balay $
 
 ALL: lib
 
-
+SOURCEC  = elapack.c
 SOURCEH  = 
 SOURCEF  = 
 OBJSC    = elapack.o
