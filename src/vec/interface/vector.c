@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.164 1999/03/05 00:12:58 balay Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.165 1999/03/05 18:47:54 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1869,14 +1869,14 @@ int VecDestroyVecs_Default(const Vec v[], int m )
 -  array - the array
 
    Notes:
-   You should back up the original array by calling VecGetArray() and 
-   stashing the value somewhere.  Then when finished using the vector,
-   call VecPlaceArray() with that stashed value; otherwise, you may
-   lose access to the original array.
+   You can back up the original array by calling VecGetArray() followed 
+   by VecRestoreArray() and stashing the value somewhere.  Then when
+   finished using the vector, call VecPlaceArray() with that stashed value;
+   otherwise, you may lose access to the original array.
 
    Level: developer
 
-.seealso: VecGetArray(), VecRestoreArray()
+.seealso: VecGetArray(), VecRestoreArray(), VecReplaceArray()
 
 .keywords: vec, place, array
 @*/
@@ -1890,6 +1890,43 @@ int VecPlaceArray(Vec vec,const Scalar array[])
     ierr = (*vec->ops->placearray)(vec,array);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Cannot place array in this type of vector");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecReplaceArray"
+/*@
+   VecPlaceArray - Allows one to replace the array in a vector with an
+   array provided by the user. This is useful to avoid copying an array
+   into a vector.  FOR EXPERTS ONLY!
+
+   Not Collective
+
+   Input Parameters:
++  vec - the vector
+-  array - the array
+
+   Notes:
+   This permanently replaces the array and frees the memory associated
+   with the old array.
+
+   Level: developer
+
+.seealso: VecGetArray(), VecRestoreArray(), VecPlaceArray()
+
+.keywords: vec, place, array
+@*/
+int VecReplaceArray(Vec vec,const Scalar array[])
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  if (vec->ops->replacearray) {
+    ierr = (*vec->ops->replacearray)(vec,array);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Cannot replace array in this type of vector");
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.308 1999/03/09 18:35:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.309 1999/03/10 00:12:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -985,7 +985,6 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *b, *bs,  d, *xs, sum, *v = a->a,*t,scale,*ts, *xb,*idiag;
   int        ierr, *idx, *diag,n = a->n, m = a->m, i, shift = a->indexshift;
-int shit;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
@@ -1027,11 +1026,6 @@ int shit;
     t     = a->ssor;
     idiag = a->idiag;
   }
-
-  ierr = OptionsHasName(0,"-shit",&shit);
-  if (flag == SOR_APPLY_LOWER) {
-    SETERRQ(PETSC_ERR_SUP,0,"SOR_APPLY_LOWER is not done");
-  } else if (shit && (flag & SOR_EISENSTAT) && omega == 1.0 && shift == 0 && fshift == 0.0) {
     /* Let  A = L + U + D; where L is lower trianglar,
     U is upper triangular, E is diagonal; This routine applies
 
@@ -1039,8 +1033,13 @@ int shit;
 
     to a vector efficiently using Eisenstat's trick. This is for
     the case of SSOR preconditioner, so E is D/omega where omega
-    is the relaxation factor; but in this special case omega == 1
+    is the relaxation factor.
     */
+
+  if (flag == SOR_APPLY_LOWER) {
+    SETERRQ(PETSC_ERR_SUP,0,"SOR_APPLY_LOWER is not done");
+  } else if ((flag & SOR_EISENSTAT) && omega == 1.0 && shift == 0 && fshift == 0.0) {
+    /* special case for omega = 1.0 saves flops and some integer ops */
 
     /*  x = (E + U)^{-1} b */
     for ( i=m-1; i>=0; i-- ) {
