@@ -1,6 +1,28 @@
-/*$Id: ls.c,v 1.155 2000/05/04 14:03:59 balay Exp bsmith $*/
+/*$Id: ls.c,v 1.156 2000/07/23 16:42:19 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
+
+/*
+     Checks if J^T F = 0 which implies we've found a local minimum of the function,
+    but not a zero. In the case when one cannot compute J^T F we use the fact that
+    0 = (J^T F)^T W = F^T J W iff W not in the null space of J
+*/ 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="SNESLSCheckLocalMin_Private"></a>*/"SNESLSCheckLocalMin_Private"
+int SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *ismin)
+{
+  PetscReal a1;
+  int       ierr;
+
+  PetscFunctionBegin;
+  *ismin = PETSC_FALSE;
+    /* Compute || J^T F|| */
+    ierr = MatMultTranspose(A,F,W);CHKERRQ(ierr);
+    ierr = VecNorm(W,NORM_2,&a1);CHKERRQ(ierr);
+    PLogInfo(0,"SNESSolve_EQ_LS: || J^T F|| %g || F || %g ||J^T F||/|| F || %g\n",a1,fnorm,a1/fnorm);
+    if (a1/fnorm < 1.e-4) *ismin = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
 
 /*  -------------------------------------------------------------------- 
 
@@ -113,15 +135,11 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lsfail);CHKERRQ(ierr);
     PLogInfo(snes,"SNESSolve_EQ_LS: fnorm=%g, gnorm=%g, ynorm=%g, lsfail=%d\n",fnorm,gnorm,ynorm,lsfail);
     if (lsfail) {
-      double a1;
+      PetscTruth ismin;
       snes->nfailures++;
       snes->reason = SNES_DIVERGED_LS_FAILURE;
-      /* Compute || J^T b||/|| b || */
-      ierr = MatMultTranspose(snes->jacobian,F,W);CHKERRQ(ierr);
-      ierr = VecNorm(W,NORM_2,&a1);CHKERRQ(ierr);
-      PLogInfo(snes,"SNESSolve_EQ_LS: || J^T b|| %g || b || %g || J^T b||/|| b || %g\n",a1,fnorm,a1/fnorm);      
-      /* || J^T b || == 0 implies the linear system is inconsistent and also that F() has a local minimum at the point */
-      if (a1/fnorm < 1.e-4) snes->reason = SNES_DIVERGED_LOCAL_MIN;
+      ierr = SNESLSCheckLocalMin_Private(snes->jacobian,F,W,fnorm,&ismin);CHKERRQ(ierr);
+      if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
       break;
     }
 
