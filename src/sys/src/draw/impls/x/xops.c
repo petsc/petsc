@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.52 1996/08/04 23:13:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.53 1996/08/08 14:45:12 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -325,6 +325,10 @@ $  -nox : disables all x-windows output
 $  -display <name> : name of machine for the X display
 $  -draw_pause <pause> : sets time (in seconds) that the program pauses
     after DrawPause() is called (0 is default, -1 implies until user input).
+$  -draw_x_private_colormap: causes PETSc to use a separate colormap. When 
+    another application has changed the default colormap and PETSc contour
+    plots etc. look bad, this allows PETSc graphics to look good. You must
+    put the mouse into the graphics window to see the correct colors.
 
 .keywords: draw, open, x
 
@@ -390,6 +394,12 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 #include "draw.h"
 int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* ctx)
 {
+  int rank;
+  MPI_Comm_rank(comm,&rank);
+  if (!rank) {
+    fprintf(stderr,"PETSc installed without X windows on this machine\n");
+    fprintf(stderr,"proceeding without graphics\n");
+  }
   return DrawOpenNull(comm,ctx);
 }
 
