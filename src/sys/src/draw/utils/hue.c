@@ -1,0 +1,631 @@
+/*$Id: axis.c,v 1.65 1999/10/24 14:01:20 bsmith Exp $*/
+/*
+   This file contains a simple routine for generating a 2-d axis.
+*/
+
+#include "petsc.h"              /*I "petsc.h" I*/
+
+struct _p_DrawAxis {
+    PETSCHEADER(int)
+    double  xlow, ylow, xhigh, yhigh;     /* User - coord limits */
+    int     (*ylabelstr)(double,double,char **), /* routines to generate labels */ 
+            (*xlabelstr)(double,double,char **);
+    int     (*xticks)(double,double,int,int*,double*,int),
+            (*yticks)(double,double,int,int*,double*,int);  
+                                          /* location and size of ticks */
+    Draw    win;
+    int     ac,tc,cc;                     /* axis, tick, charactor color */
+    char    *xlabel,*ylabel,*toplabel;
+};
+
+#define MAXSEGS 20
+
+extern int    PetscADefTicks(double,double,int,int*,double*,int);
+extern int    PetscADefLabel(double,double,char**);
+static int    PetscAGetNice(double,double,int,double* );
+static int    PetscAGetBase(double,double,int,double*,int*);
+
+#undef __FUNC__  
+#define __FUNC__ "PetscRint"
+static int PetscRint(double x, double *result )
+{
+  PetscFunctionBegin;
+  if (x > 0) *result = floor( x + 0.5 );
+  else       *result = floor( x - 0.5 );
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawAxisCreate"
+/*@C
+   DrawAxisCreate - Generate the axis data structure.
+
+   Collective over Draw
+
+   Input Parameters:
+.  win - Draw object where axis to to be made
+
+   Ouput Parameters:
+.  axis - the axis datastructure
+
+   Level: advanced
+
+@*/
+int DrawAxisCreate(Draw draw,DrawAxis *axis)
+{
+  DrawAxis    ad;
+  PetscObject obj = (PetscObject) draw;
+  int         ierr;
+  PetscTruth  isnull;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidPointer(axis);
+  ierr = PetscTypeCompare(obj,DRAW_NULL,&isnull);CHKERRQ(ierr);
+  if (isnull) {
+    ierr = DrawOpenNull(obj->comm,(Draw*)axis);CHKERRQ(ierr);
+    (*axis)->win = draw;
+    PetscFunctionReturn(0);
+  }
+  PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,"DrawAxis",obj->comm,DrawAxisDestroy,0);
+  PLogObjectCreate(ad);
+  PLogObjectParent(draw,ad);
+  ad->xticks    = PetscADefTicks;
+  ad->yticks    = PetscADefTicks;
+  ad->xlabelstr = PetscADefLabel;
+  ad->ylabelstr = PetscADefLabel;
+  ad->win       = draw;
+  ad->ac        = DRAW_BLACK;
+  ad->tc        = DRAW_BLACK;
+  ad->cc        = DRAW_BLACK;
+  ad->xlabel    = 0;
+  ad->ylabel    = 0;
+  ad->toplabel  = 0;
+
+  *axis = ad;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawAxisDestroy"
+/*@C
+    DrawAxisDestroy - Frees the space used by an axis structure.
+
+    Collective over DrawAxis
+
+    Input Parameters:
+.   axis - the axis context
+ 
+    Level: advanced
+
+@*/
+int DrawAxisDestroy(DrawAxis axis)
+{
+  PetscFunctionBegin;
+  if (!axis) PetscFunctionReturn(0);
+  if (--axis->refct > 0) PetscFunctionReturn(0);
+
+  PLogObjectDestroy(axis);
+  PetscHeaderDestroy(axis);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawAxisSetColors"
+/*@
+    DrawAxisSetColors -  Sets the colors to be used for the axis,       
+                         tickmarks, and text.
+
+    Not Collective (ignored on all processors except processor 0 of DrawAxis)
+
+    Input Parameters:
++   axis - the axis
+.   ac - the color of the axis lines
+.   tc - the color of the tick marks
+-   cc - the color of the text strings
+
+    Level: advanced
+
+@*/
+int DrawAxisSetColors(DrawAxis axis,int ac,int tc,int cc)
+{
+  PetscFunctionBegin;
+  if (!axis) PetscFunctionReturn(0);
+  axis->ac = ac; axis->tc = tc; axis->cc = cc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawAxisSetLabels"
+/*@C
+    DrawAxisSetLabels -  Sets the x and y axis labels.
+
+    Not Collective (ignored on all processors except processor 0 of DrawAxis)
+
+    Input Parameters:
++   axis - the axis
+.   top - the label at the top of the image
+-   xlabel,ylabel - the labes for the x and y axis
+
+    Level: advanced
+
+@*/
+int DrawAxisSetLabels(DrawAxis axis,char* top,char *xlabel,char *ylabel)
+{
+  PetscFunctionBegin;
+  if (!axis) PetscFunctionReturn(0);
+  axis->xlabel   = xlabel;
+  axis->ylabel   = ylabel;
+  axis->toplabel = top;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawAxisSetLimits"
+/*@
+    DrawAxisSetLimits -  Sets the limits (in user coords) of the axis
+    
+    Not Collective (ignored on all processors except processor 0 of DrawAxis)
+
+    Input Parameters:
++   axis - the axis
+.   xmin,xmax - limits in x
+-   ymin,ymax - limits in y
+
+    Level: advanced
+
+@*/
+int DrawAxisSetLimits(DrawAxis axis,double xmin,double xmax,double ymin,double ymax)
+{
+  PetscFunctionBegin;
+  if (!axis) PetscFunctionReturn(0);
+  axis->xlow = xmin;
+  axis->xhigh= xmax;
+  axis->ylow = ymin;
+  axis->yhigh= ymax;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawAxisDraw"
+/*@
+    DrawAxisDraw - Draws an axis.
+
+    Not Collective (ignored on all processors except processor 0 of DrawAxis)
+
+    Input Parameter:
+.   axis - Axis structure
+
+    Level: advanced
+
+    Note:
+    This draws the actual axis.  The limits etc have already been set.
+    By picking special routines for the ticks and labels, special
+    effects may be generated.  These routines are part of the Axis
+    structure (axis).
+@*/
+int DrawAxisDraw(DrawAxis axis)
+{
+  int       i, ierr, ntick, numx, numy, ac = axis->ac, tc = axis->tc,cc = axis->cc,rank,len;
+  double    tickloc[MAXSEGS], sep, h,w,tw,th,xl,xr,yl,yr;
+  char      *p;
+  Draw      draw = axis->win;
+  
+  PetscFunctionBegin;
+  if (!axis) PetscFunctionReturn(0);
+  ierr = MPI_Comm_rank(axis->comm,&rank);CHKERRQ(ierr);
+  if (rank) PetscFunctionReturn(0);
+
+  if (axis->xlow == axis->xhigh) {axis->xlow -= .5; axis->xhigh += .5;}
+  if (axis->ylow == axis->yhigh) {axis->ylow -= .5; axis->yhigh += .5;}
+  xl = axis->xlow; xr = axis->xhigh; yl = axis->ylow; yr = axis->yhigh;
+  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = DrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
+  numx = (int) (.15*(xr-xl)/tw); if (numx > 6) numx = 6; if (numx< 2) numx = 2;
+  numy = (int) (.5*(yr-yl)/th); if (numy > 6) numy = 6; if (numy< 2) numy = 2;
+  xl -= 8*tw; xr += 2*tw; yl -= 2.5*th; yr += 2*th;
+  if (axis->xlabel) yl -= 2*th;
+  if (axis->ylabel) xl -= 2*tw;
+  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  ierr = DrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
+
+  ierr = DrawLine( draw, axis->xlow,axis->ylow,axis->xhigh,axis->ylow,ac);CHKERRQ(ierr);
+  ierr = DrawLine( draw, axis->xlow,axis->ylow,axis->xlow,axis->yhigh,ac);CHKERRQ(ierr);
+
+  if (axis->toplabel) {
+    ierr =  PetscStrlen(axis->toplabel,&len);CHKERRQ(ierr);
+    w    = xl + .5*(xr - xl) - .5*len*tw;
+    h    = axis->yhigh;
+    ierr = DrawString(draw,w,h,cc,axis->toplabel); CHKERRQ(ierr);
+  }
+
+  /* Draw the ticks and labels */
+  if (axis->xticks) {
+    ierr = (*axis->xticks)( axis->xlow, axis->xhigh, numx, &ntick, tickloc, MAXSEGS );CHKERRQ(ierr);
+    /* Draw in tick marks */
+    for (i=0; i<ntick; i++ ) {
+      ierr = DrawLine(draw,tickloc[i],axis->ylow-.5*th,tickloc[i],axis->ylow+.5*th,tc);CHKERRQ(ierr);
+    }
+    /* label ticks */
+    for (i=0; i<ntick; i++) {
+	if (axis->xlabelstr) {
+	    if (i < ntick - 1) sep = tickloc[i+1] - tickloc[i];
+	    else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
+	    else               sep = 0.0;
+	    ierr = (*axis->xlabelstr)( tickloc[i], sep,&p );CHKERRQ(ierr);
+            ierr = PetscStrlen(p,&len);CHKERRQ(ierr);
+	    w    = .5*len*tw;
+	    ierr = DrawString( draw, tickloc[i]-w,axis->ylow-1.2*th,cc,p); CHKERRQ(ierr);
+        }
+    }
+  }
+  if (axis->xlabel) {
+    ierr = PetscStrlen(axis->xlabel,&len);CHKERRQ(ierr);
+    w    = xl + .5*(xr - xl) - .5*len*tw;
+    h    = axis->ylow - 2.5*th;
+    ierr = DrawString(draw,w,h,cc,axis->xlabel); CHKERRQ(ierr);
+  }
+  if (axis->yticks) {
+    ierr = (*axis->yticks)( axis->ylow, axis->yhigh, numy, &ntick, tickloc, MAXSEGS );CHKERRQ(ierr);
+    /* Draw in tick marks */
+    for (i=0; i<ntick; i++ ) {
+      ierr = DrawLine(draw,axis->xlow -.5*tw,tickloc[i],axis->xlow+.5*tw,tickloc[i],tc);CHKERRQ(ierr);
+    }
+    /* label ticks */
+    for (i=0; i<ntick; i++) {
+	if (axis->ylabelstr) {
+	    if (i < ntick - 1) sep = tickloc[i+1] - tickloc[i];
+	    else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
+	    else               sep = 0.0;
+	    ierr = (*axis->xlabelstr)( tickloc[i], sep,&p );CHKERRQ(ierr);
+            ierr = PetscStrlen(p,&len);CHKERRQ(ierr);
+	    w    = axis->xlow - len * tw - 1.2*tw;
+	    ierr = DrawString( draw, w,tickloc[i]-.5*th,cc,p); CHKERRQ(ierr);
+        }
+    }
+  }
+  if (axis->ylabel) {
+    ierr = PetscStrlen(axis->ylabel,&len);CHKERRQ(ierr);
+    h    = yl + .5*(yr - yl) + .5*len*th;
+    w    = xl + .5*tw;
+    ierr = DrawStringVertical(draw,w,h,cc,axis->ylabel); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscStripAllZeros"
+/*
+    Removes all zeros but one from .0000 
+*/
+static int PetscStripAllZeros(char *buf)
+{
+  int i,n,ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
+  if (buf[0] != '.') PetscFunctionReturn(0);
+  for ( i=1; i<n; i++ ) {
+    if (buf[i] != '0') PetscFunctionReturn(0);
+  }
+  buf[0] = '0';
+  buf[1] = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscStripTrailingZeros"
+/*
+    Removes trailing zeros
+*/
+static int PetscStripTrailingZeros(char *buf)
+{
+  int  ierr, i,n,m = -1;
+  char *found;
+
+  PetscFunctionBegin;
+  /* if there is an e in string DO NOT strip trailing zeros */
+  ierr = PetscStrchr(buf,'e',&found);CHKERRQ(ierr);
+  if (found) PetscFunctionReturn(0);
+
+  ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
+  /* locate decimal point */
+  for ( i=0; i<n; i++ ) {
+    if (buf[i] == '.') {m = i; break;}
+  }
+  /* if not decimal point then no zeros to remove */
+  if (m == -1) PetscFunctionReturn(0);
+  /* start at right end of string removing 0s */
+  for ( i=n-1; i>m; i++ ) {
+    if (buf[i] != '0') PetscFunctionReturn(0);
+    buf[i] = 0;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscStripInitialZero"
+/*
+    Removes leading 0 from 0.22 or -0.22
+*/
+static int PetscStripInitialZero(char *buf)
+{
+  int i,n,ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrlen(buf,&n); CHKERRQ(ierr);
+  if (buf[0] == '0') {
+    for ( i=0; i<n; i++ ) {
+      buf[i] = buf[i+1];
+    }
+  } else if (buf[0] == '-' && buf[1] == '0') {
+    for ( i=1; i<n; i++ ) {
+      buf[i] = buf[i+1];
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscStripZeros"
+/*
+     Removes the extraneous zeros in numbers like 1.10000e6
+*/
+static int PetscStripZeros(char *buf)
+{
+  int i,j,n,ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
+  if (n<5) PetscFunctionReturn(0);
+  for ( i=1; i<n-1; i++ ) {
+    if (buf[i] == 'e' && buf[i-1] == '0') {
+      for ( j=i; j<n+1; j++ ) buf[j-1] = buf[j];
+      ierr = PetscStripZeros(buf);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscStripZerosPlus"
+/*
+      Removes the plus in something like 1.1e+2
+*/
+static int PetscStripZerosPlus(char *buf)
+{
+  int i,j,n,ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
+  if (n<5) PetscFunctionReturn(0);
+  for ( i=1; i<n-2; i++ ) {
+    if (buf[i] == '+') {
+      if (buf[i+1] == '0') {
+        for ( j=i+1; j<n+1; j++ ) buf[j-1] = buf[j+1];
+        PetscFunctionReturn(0);
+      } else {
+        for ( j=i+1; j<n+1; j++ ) buf[j] = buf[j+1];
+        PetscFunctionReturn(0);  
+      }
+    } else if (buf[i] == '-') {
+      if (buf[i+1] == '0') {
+        for ( j=i+1; j<n+1; j++ ) buf[j] = buf[j+1];
+        PetscFunctionReturn(0);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscADefLabel"
+/*
+   val is the label value.  sep is the separation to the next (or previous)
+   label; this is useful in determining how many significant figures to   
+   keep.
+ */
+int PetscADefLabel(double val,double sep,char **p )
+{
+  static char buf[40];
+  char        fmat[10];
+  int         ierr, w, d;
+  double      rval;
+
+  PetscFunctionBegin;
+  /* Find the string */
+  if (PetscAbsDouble(val)/sep <  1.e-6) {
+    buf[0] = '0'; buf[1] = 0;
+  } else if (PetscAbsDouble(val) < 1.0e6 && PetscAbsDouble(val) > 1.e-4) {
+    /* Compute the number of digits */
+    w = 0;
+    d = 0;
+    if (sep > 0.0) {
+	d = (int) ceil( - log10 ( sep ) );
+	if (d < 0) d = 0;
+	if (PetscAbsDouble(val) < 1.0e-6*sep) {
+	    /* This is the case where we are near zero and less than a small
+	       fraction of the sep.  In this case, we use 0 as the value */
+	    val = 0.0;
+	    w   = d;
+        }
+	else if (val == 0.0) w   = d;
+	else w = (int) (ceil( log10( PetscAbsDouble( val ) ) ) + d);
+	if (w < 1)   w ++;
+	if (val < 0) w ++;
+    }
+
+    ierr = PetscRint(val,&rval);CHKERRQ(ierr);
+    if (rval == val) {
+	if (w > 0) sprintf( fmat, "%%%dd", w );
+	else {ierr = PetscStrcpy( fmat, "%d" );CHKERRQ(ierr);}
+	sprintf( buf, fmat, (int)val );
+        ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
+        ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
+        ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
+    } else {
+	/* The code used here is inappropriate for a val of 0, which
+	   tends to print with an excessive numer of digits.  In this
+	   case, we should look at the next/previous values and 
+	   use those widths */
+	if (w > 0) sprintf( fmat, "%%%d.%dlf", w + 1, d );
+	else {ierr = PetscStrcpy( fmat, "%lf" );CHKERRQ(ierr);}
+	sprintf( buf, fmat, val );
+        ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
+        ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
+        ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
+    }
+  } else {
+    sprintf( buf, "%e", val );
+    /* remove the extraneous 0's before the e */
+    ierr = PetscStripZeros(buf);CHKERRQ(ierr);
+    ierr = PetscStripZerosPlus(buf);CHKERRQ(ierr);
+    ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
+    ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
+    ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
+  }
+  *p =buf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscADefTicks"
+/* Finds "nice" locations for the ticks */
+int PetscADefTicks( double low, double high, int num, int *ntick,double * tickloc,int  maxtick )
+{
+  int    i,power,ierr;
+  double x, base;
+
+  PetscFunctionBegin;
+  /* patch if low == high */
+  if (low == high) {
+    low  -= .01;
+    high += .01;
+  }
+
+  /*  if (PetscAbsDouble(low-high) < 1.e-8) {
+    low  -= .01;
+    high += .01;
+  } */
+
+  ierr = PetscAGetBase( low, high, num, &base, &power );CHKERRQ(ierr);
+  ierr = PetscAGetNice( low, base, -1,&x );CHKERRQ(ierr);
+
+  /* Values are of the form j * base */
+  /* Find the starting value */
+  if (x < low) x += base;
+
+  i = 0;
+  while (i < maxtick && x <= high) {
+    tickloc[i++] = x;
+    x += base;
+  }
+  *ntick = i;
+
+  if (i < 2 && num < 10) {
+    ierr = PetscADefTicks( low, high, num+1, ntick, tickloc, maxtick );CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#define EPS 1.e-6
+
+#undef __FUNC__  
+#define __FUNC__ "PetscExp10"
+static int PetscExp10(double d,double *result )
+{
+  PetscFunctionBegin;
+  *result = pow( 10.0, d );
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscMod"
+static int PetscMod(double x,double y,double *result )
+{
+  int     i;
+
+  PetscFunctionBegin;
+  i   = ((int) x ) / ( (int) y );
+  x   = x - i * y;
+  while (x > y) x -= y;
+  *result = x;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscCopysign"
+static int PetscCopysign(double a,double b,double *result )
+{
+  PetscFunctionBegin;
+  if (b >= 0) *result = a;
+  else        *result = -a;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscAGetNice"
+/*
+    Given a value "in" and a "base", return a nice value.
+    based on "sign", extend up (+1) or down (-1)
+ */
+static int PetscAGetNice(double in,double base,int sign,double *result )
+{
+  double  etmp,s,s2,m;
+  int     ierr;
+
+  PetscFunctionBegin;
+  ierr    = PetscCopysign ( 0.5, (double) sign,&s );CHKERRQ(ierr);
+  etmp    = in / base + 0.5 + s;
+  ierr    = PetscCopysign ( 0.5, etmp,&s );CHKERRQ(ierr);
+  ierr    = PetscCopysign ( EPS * etmp, (double) sign,&s2 );CHKERRQ(ierr);
+  etmp    = etmp - 0.5 + s - s2;
+  ierr    = PetscMod( etmp, 1.0,&m );CHKERRQ(ierr);
+  etmp    = base * ( etmp -  m);
+  *result = etmp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscAGetBase"
+static int PetscAGetBase(double vmin,double vmax,int num,double*Base,int*power)
+{
+  double        base, ftemp,e10;
+  static double base_try[5] = {10.0, 5.0, 2.0, 1.0, 0.5};
+  int           i,ierr;
+
+  PetscFunctionBegin;
+  /* labels of the form n * BASE */
+  /* get an approximate value for BASE */
+  base    = ( vmax - vmin ) / (double) (num + 1);
+
+  /* make it of form   m x 10^power,   m in [1.0, 10) */
+  if (base <= 0.0) {
+    base    = PetscAbsDouble( vmin );
+    if (base < 1.0) base = 1.0;
+  }
+  ftemp   = log10( ( 1.0 + EPS ) * base );
+  if (ftemp < 0.0)  ftemp   -= 1.0;
+  *power  = (int) ftemp;
+  ierr = PetscExp10((double) - *power,&e10);CHKERRQ(ierr);
+  base    = base * e10;
+  if (base < 1.0) base    = 1.0;
+  /* now reduce it to one of 1, 2, or 5 */
+  for (i=1; i<5; i++) {
+    if (base >= base_try[i]) {
+      ierr = PetscExp10((double) *power,&e10);CHKERRQ(ierr);
+      base = base_try[i-1] * e10;
+      if (i == 1) *power    = *power + 1;
+      break;
+    }
+  }
+  *Base   = base;
+  PetscFunctionReturn(0);
+}
+
+
+
+
+
+
