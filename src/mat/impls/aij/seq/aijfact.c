@@ -1098,6 +1098,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   PetscFunctionReturn(0); 
 }
 
+#include "src/mat/impls/sbaij/seq/sbaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
 PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
@@ -1106,8 +1107,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
   PetscErrorCode ierr,(*f)(Mat,Mat*);
 
   PetscFunctionBegin; 
+  printf(" MatCholeskyFactorNumeric_SeqAIJ ...\n");
   if (!a->sbaijMat){
-    ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr); 
+    ierr = MatConvert_SeqAIJ_SeqSBAIJ(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr); 
   } 
   ierr = PetscObjectQueryFunction((PetscObject) *fact,"MatCholeskyFactorNumeric",(void (**)(void))&f);CHKERRQ(ierr);
   ierr = (*f)(a->sbaijMat,fact);CHKERRQ(ierr);
@@ -1115,10 +1117,159 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
   a->sbaijMat = PETSC_NULL; 
   PetscFunctionReturn(0); 
 }
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ_NaturalOrdering"
+PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_NaturalOrdering(Mat A,Mat *fact)
+{
+  Mat            C = *fact;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
+  Mat_SeqSBAIJ   *b=(Mat_SeqSBAIJ*)C->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j,am = A->m; 
+  PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
+  PetscInt       k,jmin,*jl,*il,nexti,ili,*acol,*bcol,nz,ndamp = 0;
+  MatScalar      *rtmp,*ba=b->a,*aa=a->a,dk,uikdi,*aval,*bval;
+  PetscReal      damping=b->factor_damping, zeropivot=b->factor_zeropivot,shift_amount;
+  PetscTruth     damp,chshift;
+  PetscInt       nshift=0;
+
+  PetscFunctionBegin;
+  /* initialization */
+  /* il and jl record the first nonzero element in each row of the accessing 
+     window U(0:k, k:am-1).
+     jl:    list of rows to be added to uneliminated rows 
+            i>= k: jl(i) is the first row to be added to row i
+            i<  k: jl(i) is the row following row i in some list of rows
+            jl(i) = am indicates the end of a list                        
+     il(i): points to the first nonzero element in U(i,k:am-1) 
+  */
+  nz   = (2*am+1)*sizeof(PetscInt)+am*sizeof(MatScalar);
+  ierr = PetscMalloc(nz,&il);CHKERRQ(ierr);
+  jl   = il + am;
+  rtmp = (MatScalar*)(jl + am);
+
+  shift_amount = 0;
+  do {
+    damp = PETSC_FALSE;
+    chshift = PETSC_FALSE;
+    for (i=0; i<am; i++) {
+      rtmp[i] = 0.0; jl[i] = am; il[0] = 0;
+    }
+
+    for (k = 0; k<am; k++){ 
+    /*initialize k-th row with elements nonzero in row perm(k) of A */
+      nz   = ai[k+1] - ai[k];
+      acol = aj + ai[k];
+      aval = aa + ai[k];
+      bval = ba + bi[k];
+      while (nz -- ){
+        if (*acol < k) { /* skip lower triangular entries */
+          acol++; aval++;
+        } else {
+          rtmp[*acol++] = *aval++;
+          *bval++       = 0.0; /* for in-place factorization */
+        }
+      } 
+      /* damp the diagonal of the matrix */
+      if (ndamp||nshift) rtmp[k] += damping+shift_amount; 
+    
+      /* modify k-th row by adding in those rows i with U(i,k)!=0 */
+      dk = rtmp[k];
+      i  = jl[k]; /* first row to be added to k_th row  */  
+
+      while (i < k){
+        nexti = jl[i]; /* next row to be added to k_th row */
+        /* compute multiplier, update D(k) and U(i,k) */
+        ili   = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
+        uikdi = - ba[ili]*ba[bi[i]];  
+        dk   += uikdi*ba[ili];
+        ba[ili] = uikdi; /* -U(i,k) */
+
+        /* add multiple of row i to k-th row ... */
+        jmin = ili + 1; 
+        nz   = bi[i+1] - jmin;
+        if (nz > 0){
+          bcol = bj + jmin;
+          bval = ba + jmin; 
+          while (nz --) rtmp[*bcol++] += uikdi*(*bval++);
+          /* update il and jl for i-th row */
+          il[i] = jmin;            
+          j = bj[jmin]; jl[i] = jl[j]; jl[j] = i; 
+        }      
+        i = nexti;         
+      }
+
+      if (PetscRealPart(dk) < zeropivot && b->factor_shift){
+	/* calculate a shift that would make this row diagonally dominant */
+	PetscReal rs = PetscAbs(PetscRealPart(dk));
+	jmin      = bi[k]+1; 
+	nz        = bi[k+1] - jmin; 
+	if (nz){
+	  bcol = bj + jmin;
+	  bval = ba + jmin;
+	  while (nz--){
+	    rs += PetscAbsScalar(rtmp[*bcol++]);
+	  }
+	}
+	/* if this shift is less than the previous, just up the previous
+	   one by a bit */
+	shift_amount = PetscMax(rs,1.1*shift_amount);
+	chshift  = PETSC_TRUE;
+	/* Unlike in the ILU case there is no exit condition on nshift:
+	   we increase the shift until it converges. There is no guarantee that
+	   this algorithm converges faster or slower, or is better or worse
+	   than the ILU algorithm. */
+	nshift++;
+	break;
+      }
+      if (PetscRealPart(dk) < zeropivot){
+        if (damping == (PetscReal) PETSC_DECIDE) damping = -PetscRealPart(dk)/(k+1);
+        if (damping > 0.0) {      
+          if (ndamp) damping *= 2.0;    
+          damp = PETSC_TRUE;
+          ndamp++;
+          break; 
+        } else if (PetscAbsScalar(dk) < zeropivot){
+          SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",k,PetscRealPart(dk),zeropivot);  
+        } else {
+          PetscLogInfo((PetscObject)A,"Negative pivot %g in row %D of Cholesky factorization\n",PetscRealPart(dk),k);
+        }
+      }
+      
+      /* copy data into U(k,:) */
+      ba[bi[k]] = 1.0/dk;
+      jmin      = bi[k]+1; 
+      nz        = bi[k+1] - jmin; 
+      if (nz){
+        bcol = bj + jmin;
+        bval = ba + jmin;
+        while (nz--){
+          *bval++       = rtmp[*bcol]; 
+          rtmp[*bcol++] = 0.0; 
+        }       
+        /* add k-th row into il and jl */
+        il[k] = jmin;
+        i = bj[jmin]; jl[k] = jl[i]; jl[i] = k;
+      }        
+    } 
+  } while (damp||chshift);
+  ierr = PetscFree(il);CHKERRQ(ierr);
+  
+  C->factor       = FACTOR_CHOLESKY; 
+  C->assembled    = PETSC_TRUE; 
+  C->preallocated = PETSC_TRUE;
+  PetscLogFlops(C->m);
+  if (ndamp) {
+    PetscLogInfo(0,"MatCholeskyFactorNumerical_SeqAIJ_NaturalOrdering: number of damping tries %D damping value %g\n",ndamp,damping);
+  }
+  if (nshift) {
+    PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqAIJ_NaturalOrdering diagonal shifted %D shifts\n",nshift);
+  }
+  PetscFunctionReturn(0); 
+}
 
 #include "petscbt.h"
 #include "src/mat/utils/freespace.h"
-#include "src/mat/impls/sbaij/seq/sbaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ"
 PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
@@ -1169,11 +1320,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-    B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering; 
     B->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering;  
-
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatICCFactorNumeric","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr);
-    B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatCholeskyFactorNumeric_SeqAIJ_NaturalOrdering","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr);
+    B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_NaturalOrdering;
     PetscFunctionReturn(0);
   }
 
@@ -1321,15 +1470,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   } else {
     B->info.fill_ratio_needed = 0.0;
   }
-  /* Should the followings be moved to MatCholeskyFactorNumeric_SeqAIJ()? */
-  B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering; 
+  
   B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
   B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-
-  /* -------- end of new ---------------------------*/
-  ierr = PetscObjectComposeFunction((PetscObject) B,"MatCholeskyFactorNumeric","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr);
-  B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
- 
+  ierr = PetscObjectComposeFunction((PetscObject) B,"MatCholeskyFactorNumeric_NaturalOrdering","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr);
+  B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_NaturalOrdering;
   PetscFunctionReturn(0); 
 }
 
@@ -1487,14 +1632,10 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
   } else {
     (*fact)->info.fill_ratio_needed = 0.0;
   }
-  /* Should the followings be moved to MatCholeskyFactorNumeric_SeqAIJ()? */
-  (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering; 
+
   (*fact)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
   (*fact)->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-  
-  /* -------- end of new ---------------------------*/
-  ierr = PetscObjectComposeFunction((PetscObject) *fact,"MatCholeskyFactorNumeric","dummyname",(FCNVOID)(*fact)->ops->choleskyfactornumeric);CHKERRQ(ierr); 
-  (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ; 
- 
+  ierr = PetscObjectComposeFunction((PetscObject) *fact,"MatCholeskyFactorNumeric_NaturalOrdering","dummyname",(FCNVOID)(*fact)->ops->choleskyfactornumeric);CHKERRQ(ierr); 
+  (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_NaturalOrdering; 
   PetscFunctionReturn(0); 
 }

@@ -1381,7 +1381,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
   if (nshift) {
     PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering diagonal shifted %D shifts\n",nshift);
   }
- 
   PetscFunctionReturn(0);
 }
 
