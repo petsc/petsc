@@ -154,7 +154,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = MatDestroy(mat); CHKERR(ierr);
 
   /* Convert storage formats -- just to demonstrate block diagonal format */
-  { MATTYPE type = MATBDIAG;
+  { MatType type = MATBDIAG;
   if (OptionsHasName(0,0,"-mat_row")) type = MATROW; 
   ierr = MatConvert(submat,type,newmat); CHKERR(ierr);}
   ierr = MatDestroy(submat); CHKERR(ierr);

@@ -10,7 +10,7 @@
 typedef struct _Mat*           Mat;
 typedef struct _MatScatterCtx* MatScatterCtx;
 
-typedef enum { MATDENSE, MATAIJ, MATMPIAIJ, MATSHELL, MATROW, 
+typedef enum { MATSAME=-1, MATDENSE, MATAIJ, MATMPIAIJ, MATSHELL, MATROW, 
                MATMPIROW, MATMPIROW_BS, MATBDIAG, MATMPIBDIAG } MatType;
 
 extern int MatCreateSequentialDense(MPI_Comm,int,int,Mat*);
@@ -80,7 +80,6 @@ typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
 
 extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
 
-extern int MatCopy(Mat,Mat*);
 extern int MatConvert(Mat,MatType,Mat*);
 extern int MatView(Mat,Viewer);
 #include <stdio.h>
