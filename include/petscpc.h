@@ -83,7 +83,7 @@ EXTERN int PCCreate(MPI_Comm,PC*);
 EXTERN int PCSetType(PC,PCType);
 EXTERN int PCSetUp(PC);
 EXTERN int PCSetUpOnBlocks(PC);
-EXTERN int PCApply(PC,Vec,Vec);
+EXTERN int PCApply(PC,Vec,Vec,PCSide);
 EXTERN int PCApplySymmetricLeft(PC,Vec,Vec);
 EXTERN int PCApplySymmetricRight(PC,Vec,Vec);
 EXTERN int PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);

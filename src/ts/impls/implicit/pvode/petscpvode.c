@@ -136,7 +136,7 @@ int TSPSolve_PVode(integertype N,realtype tn,N_Vector y,N_Vector fy,N_Vector vte
   /* 
       Solve the Px=r and put the result in xx 
   */
-  ierr = PCApply(pc,rr,xx);CHKERRQ(ierr);
+  ierr = PCApply(pc,rr,xx,PC_LEFT);CHKERRQ(ierr);
   cvode->linear_solves++;
 
 

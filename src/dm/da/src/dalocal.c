@@ -399,8 +399,9 @@ int DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int *
 
       ptr  = (void***)(iarray_start + xm*ym*zm*deriv_type_size - zs*sizeof(void*));
       bptr = (void**)(iarray_start + xm*ym*zm*deriv_type_size + zm*sizeof(void**));
+
       for(i=zs;i<zs+zm;i++) {
-        ptr[i] = bptr + ((i-zs)*ym* - ys)*sizeof(void*);
+        ptr[i] = bptr + ((i-zs)*ym - ys);
       }
       for (i=zs; i<zs+zm; i++) {
         for (j=ys; j<ys+ym; j++) {
@@ -618,7 +619,7 @@ int DAGetArray(DA da,PetscTruth ghosted,void **iptr)
       ptr  = (void***)(iarray_start + xm*ym*zm*sizeof(PetscScalar) - zs*sizeof(void*));
       bptr = (void**)(iarray_start + xm*ym*zm*sizeof(PetscScalar) + zm*sizeof(void**));
       for(i=zs;i<zs+zm;i++) {
-        ptr[i] = bptr + ((i-zs)*ym* - ys)*sizeof(void*);
+        ptr[i] = bptr + ((i-zs)*ym - ys);
       }
       for (i=zs; i<zs+zm; i++) {
         for (j=ys; j<ys+ym; j++) {

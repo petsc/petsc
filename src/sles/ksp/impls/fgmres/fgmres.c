@@ -233,7 +233,7 @@ int FGMREScycle(int *itcount,KSP ksp)
   
     /* apply PRECONDITIONER to direction vector and store with 
        preconditioned vectors in prevec */
-    ierr = PCApply(ksp->B,VEC_VV(loc_it),PREVEC(loc_it));CHKERRQ(ierr);
+    ierr = PCApply(ksp->B,VEC_VV(loc_it),PREVEC(loc_it),PC_RIGHT);CHKERRQ(ierr);
      
     ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
     /* Multiply preconditioned vector by operator - put in VEC_VV(loc_it+1) */

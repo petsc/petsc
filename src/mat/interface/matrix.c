@@ -577,6 +577,12 @@ int MatSetValues(Mat mat,int m,const int idxm[],int n,const int idxn[],const Pet
    In order to use this routine you must either obtain the matrix with DAGetMatrix()
    or call MatSetLocalToGlobalMapping() and MatSetStencil() first.
 
+   The columns and rows in the stencil passed in MUST be contained within the 
+   ghost region of the given process as set with DACreateXXX() or MatSetStencil(). For example,
+   if you create a DA with an overlap of one grid level and on a particular process its first
+   local nonghost x logical coordinate is 6 (so its first ghost x logical coordinate is 5) the
+   first i index you can use in your column and row indices in MatSetStencil() is 5.
+
    In Fortran idxm and idxn should be declared as
 $     MatStencil idxm(4,m),idxn(4,n)
    and the values inserted using

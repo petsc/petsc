@@ -132,7 +132,7 @@ static int PCApply_Redundant(PC pc,Vec x,Vec y)
   ierr = VecScatterEnd(x,red->b,INSERT_VALUES,SCATTER_FORWARD,red->scatterin);CHKERRQ(ierr);
 
   /* apply preconditioner on each processor */
-  ierr = PCApply(red->pc,red->b,red->x);CHKERRQ(ierr);
+  ierr = PCApply(red->pc,red->b,red->x,PC_LEFT);CHKERRQ(ierr);
 
   /* move local part of values into y vector */
   ierr = VecScatterBegin(red->x,y,INSERT_VALUES,SCATTER_FORWARD,red->scatterout);CHKERRQ(ierr);

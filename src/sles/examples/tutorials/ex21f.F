@@ -344,9 +344,9 @@
       Vec work
 
       one = 1.0
-      call PCApply(jacobi,x,y,ierr)
-      call PCApply(sor,x,work,ierr)
-      call VecAXPY(one,work,y,ierr)
+      call PCApply(jacobi,x,y,PC_LEFT,ierr)
+      call PCApply(sor,x,work,PC_LEFT,ierr)
+      call VecAXPY(one,work,y,PC_LEFT,ierr)
 
       end
 
