@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.313 2000/08/16 19:17:47 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.314 2000/08/16 19:18:32 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -421,8 +421,12 @@ noise: info chkpetsc_dir
 
 #
 # Automatically generates PETSc exercises in html from the tutorial examples.
-# The introduction for each section is obtained from docs/manualpages/bop.${MANSEC}
-# The list of exercises from TUTORIALS in each directories makefile
+#
+# The introduction for each section is obtained from docs/manualpages/bop.${MANSEC} is under RCS and may be edited
+#  (used also in introductions to the manual pages)
+# The overall introduction is in docs/exercises/introduction.html and is under RCS and may be edited
+# The list of exercises is from TUTORIALS in each directory's makefile
+#
 # DO NOT EDIT the pageform.txt or *.htm files generated since they will be automatically replaced.
 # The pagemaker rule is in the file bmake/common (at the bottom)
 #
