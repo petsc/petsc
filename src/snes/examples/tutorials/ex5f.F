@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.60 2001/03/22 20:32:01 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.61 2001/05/01 18:36:56 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -59,8 +59,7 @@
       SNES                   snes
       Vec                    x,r
       Mat                    J
-      ISLocalToGlobalMapping isltog
-      integer                its,matrix_free,flg,N,ierr,m
+      integer                its,matrix_free,flg,ierr
       double precision       lambda_max,lambda_min
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
@@ -87,7 +86,6 @@
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(1,' ',ierr)
       endif
-      N = mx*my
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
@@ -167,26 +165,13 @@
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',                   &
      &     matrix_free,ierr)
       if (matrix_free .eq. 0) then
-         if (size .eq. 1) then
-            call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,                &
-     &           PETSC_NULL_INTEGER,J,ierr)
-        else
-          call VecGetLocalSize(x,m,ierr)
-          call MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,              &
-     &         PETSC_NULL_INTEGER,3,PETSC_NULL_INTEGER,J,ierr)
-        endif
-        call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,   &
-     &       ierr)
-
-!       Get the mapping from local-to-global node numbers for all local nodes,
-!       including ghost points.  Associate this mapping with the matrix for later
-!       use in setting matrix entries via MatSetValuesLocal().
-
-        call DAGetISLocalToGlobalMapping(da,isltog,ierr)
-        call MatSetLocalToGlobalMapping(J,isltog,ierr)
+        call DAGetColoring(da,IS_COLORING_LOCAL,MATMPIAIJ,                        &
+     &                     PETSC_NULL_OBJECT,J,ierr)
+        call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,             &
+     &                       ierr)
 
       endif
 
