@@ -130,7 +130,9 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecConjugate_Seq,
             0,
             0,
-            VecResetArray_Seq};
+            VecResetArray_Seq,
+            0,
+            VecMaxPointwiseDivide_Seq};
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_MPI_Private"

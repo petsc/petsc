@@ -175,6 +175,7 @@ EXTERN int VecAYPX(const PetscScalar*,Vec,Vec);
 EXTERN int VecWAXPY(const PetscScalar*,Vec,Vec,Vec);
 EXTERN int VecPointwiseMult(Vec,Vec,Vec);    
 EXTERN int VecPointwiseDivide(Vec,Vec,Vec);    
+EXTERN int VecMaxPointwiseDivide(Vec,Vec,PetscScalar*);    
 EXTERN int VecShift(const PetscScalar*,Vec);
 EXTERN int VecReciprocal(Vec);
 EXTERN int VecPermute(Vec, IS, PetscTruth);
