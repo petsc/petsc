@@ -61,7 +61,7 @@ typedef struct {
 EXTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatFactorInfo*,Mat *);
 EXTERN PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat,IS,MatFactorInfo*,Mat *);
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat,IS,MatFactorInfo*,Mat*);
-EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat,Mat *);
+EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat);
 EXTERN PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat);
@@ -82,7 +82,7 @@ EXTERN PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],PetscI
 EXTERN PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt**,PetscInt**);
 EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);
 EXTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatFactorInfo*,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatLUFactor_SeqAIJ(Mat,IS,IS,MatFactorInfo*);
 EXTERN PetscErrorCode MatSolve_SeqAIJ(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolveAdd_SeqAIJ(Mat,Vec,Vec,Vec);

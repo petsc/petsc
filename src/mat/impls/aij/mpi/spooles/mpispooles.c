@@ -173,7 +173,7 @@ PetscErrorCode MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_MPIAIJSpooles"
-PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
+PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
 {
   Mat_Spooles     *lu = (Mat_Spooles*)(*F)->spptr;
   PetscErrorCode  ierr;

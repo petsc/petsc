@@ -51,14 +51,14 @@ PetscErrorCode MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatFactorInfo *info
     if (!idn) SETERRQ(PETSC_ERR_SUP,"Only identity column permutation supported");
   }
   if (info->levels != 0) SETERRQ(PETSC_ERR_SUP,"Only ILU(0) is supported");
-  ierr = MatLUFactorNumeric(A,&A);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(A,info,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* --------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBDiag_N"
-PetscErrorCode MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
+PetscErrorCode MatLUFactorNumeric_SeqBDiag_N(Mat A,MatFactorInfo *info,Mat *B)
 {
   Mat            C = *B;
   Mat_SeqBDiag   *a = (Mat_SeqBDiag*)C->data,*a1 = (Mat_SeqBDiag*)A->data;
@@ -128,7 +128,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBDiag_1"
-PetscErrorCode MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
+PetscErrorCode MatLUFactorNumeric_SeqBDiag_1(Mat A,MatFactorInfo *info,Mat *B)
 {
   Mat            C = *B;
   Mat_SeqBDiag   *a = (Mat_SeqBDiag*)C->data,*a1 = (Mat_SeqBDiag*)A->data;

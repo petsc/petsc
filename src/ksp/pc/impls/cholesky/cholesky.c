@@ -214,7 +214,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       dir->actualfill = info.fill_ratio_needed;
       PetscLogObjectParent(pc,dir->fact);
     }
-    ierr = MatCholeskyFactorNumeric(pc->pmat,&dir->fact);CHKERRQ(ierr);
+    ierr = MatCholeskyFactorNumeric(pc->pmat,&dir->info,&dir->fact);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

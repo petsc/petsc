@@ -6,12 +6,12 @@
 
 EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);
 EXTERN PetscErrorCode MatSolve_SeqAIJ_Inode(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat,Mat *);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat,MatFactorInfo*,Mat*);
 
 EXTERN PetscErrorCode MatMult_SeqAIJ(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqAIJ(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatGetRowIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*);
 EXTERN PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*);
 EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*);
@@ -1232,7 +1232,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Inode"
-PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
+PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,MatFactorInfo *info,Mat *B)
 {
   Mat            C = *B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ *)C->data;

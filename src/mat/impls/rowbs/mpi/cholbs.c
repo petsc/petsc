@@ -10,7 +10,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_MPIRowbs"
-PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
+PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
   PetscErrorCode ierr;
@@ -51,7 +51,7 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_MPIRowbs"
-PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
+PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
 

@@ -50,7 +50,7 @@ PetscErrorCode MatSolve_MPIAIJ_XXT(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_MPIAIJ_XXT"
-PetscErrorCode MatLUFactorNumeric_MPIAIJ_XXT(Mat A,Mat *F)
+PetscErrorCode MatLUFactorNumeric_MPIAIJ_XXT(Mat A,MatFactorInfo *info,Mat *F)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -177,7 +177,7 @@ PetscErrorCode MatSolve_MPIAIJ_XYT(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_MPIAIJ_XYT"
-PetscErrorCode MatLUFactorNumeric_MPIAIJ_XYT(Mat A,Mat *F)
+PetscErrorCode MatLUFactorNumeric_MPIAIJ_XYT(Mat A,MatFactorInfo *info,Mat *F)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

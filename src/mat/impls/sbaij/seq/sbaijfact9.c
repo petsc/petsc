@@ -5,7 +5,7 @@
 /* Version for when blocks are 6 by 6 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_6"
-PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat A,Mat *B)
+PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat A,MatFactorInfo *info,Mat *B)
 {
   Mat            C = *B;
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;

@@ -115,7 +115,7 @@ PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_UMFPACK"
-PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,Mat *F) 
+PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,MatFactorInfo *info,Mat *F) 
 {
   Mat_UMFPACK *lu=(Mat_UMFPACK*)(*F)->spptr;
   PetscErrorCode ierr;

@@ -148,12 +148,12 @@ PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,MatFactorInfo *i
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqDense"
-PetscErrorCode MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
+PetscErrorCode MatLUFactorNumeric_SeqDense(Mat A,MatFactorInfo *info_dummy,Mat *fact)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data,*l = (Mat_SeqDense*)(*fact)->data;
   PetscErrorCode ierr;
   PetscInt       lda1=mat->lda,lda2=l->lda, m=A->m,n=A->n, j;
-  MatFactorInfo  info;
+  MatFactorInfo  info; 
 
   PetscFunctionBegin;
   /* copy the numerical values */
@@ -209,7 +209,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqDense"
-PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat A,Mat *fact)
+PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat A,MatFactorInfo *info_dummy,Mat *fact)
 {
   PetscErrorCode ierr;
   MatFactorInfo  info;

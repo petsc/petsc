@@ -272,7 +272,7 @@ PetscErrorCode MatSolve_DSCPACK(Mat A,Vec b,Vec x) {
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatCholeskyFactorNumeric_DSCPACK"
-PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
+PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,MatFactorInfo *info,Mat *F) {
   Mat_SeqBAIJ    *a_seq;
   Mat_DSC        *lu=(Mat_DSC*)(*F)->spptr; 
   Mat            *tseq,A_seq=PETSC_NULL;

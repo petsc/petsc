@@ -868,7 +868,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       ierr = MatILUDTFactor(pc->pmat,&ilu->info,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
       PetscLogObjectParent(pc,ilu->fact);
     } else {
-      ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatLUFactorNumeric(pc->pmat,&ilu->info,&ilu->fact);CHKERRQ(ierr);
     }
    } else {
     if (!pc->setupcalled) {
@@ -899,7 +899,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
       PetscLogObjectParent(pc,ilu->fact);
     }
-    ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact);CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric(pc->pmat,&ilu->info,&ilu->fact);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

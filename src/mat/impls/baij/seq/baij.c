@@ -1828,7 +1828,7 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
     }
   }
 
-  ierr = MatLUFactorNumeric(inA,&outA);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(inA,info,&outA);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

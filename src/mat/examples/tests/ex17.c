@@ -52,7 +52,7 @@ int main(int argc,char **args)
 
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(C,row,col,&info,&A);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(C,&A);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(C,&info,&A);CHKERRQ(ierr);
   ierr = MatSolveTranspose(A,b,x);CHKERRQ(ierr);
 
   ierr = ISView(row,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

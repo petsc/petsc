@@ -1767,7 +1767,7 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
   if (!a->diag) {
     ierr = MatMarkDiagonal_SeqAIJ(inA);CHKERRQ(ierr);
   }
-  ierr = MatLUFactorNumeric_SeqAIJ(inA,&outA);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric_SeqAIJ(inA,info,&outA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

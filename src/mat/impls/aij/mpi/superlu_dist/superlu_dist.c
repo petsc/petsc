@@ -210,7 +210,7 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU_DIST"
-PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
+PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
 {
   Mat              *tseq,A_seq = PETSC_NULL;
   Mat_SeqAIJ       *aa,*bb;

@@ -63,7 +63,7 @@ EXTERN PetscErrorCode MatFactorInfo_Spooles(Mat,PetscViewer);
 
 EXTERN PetscErrorCode MatDestroy_SeqAIJSpooles(Mat);
 EXTERN PetscErrorCode MatSolve_SeqAIJSpooles(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat,Mat*); 
+EXTERN PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat,MatFactorInfo*,Mat*); 
 EXTERN PetscErrorCode MatView_SeqAIJSpooles(Mat,PetscViewer);
 EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJSpooles(Mat,MatAssemblyType);
 EXTERN PetscErrorCode MatQRFactorSymbolic_SeqAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
@@ -73,7 +73,7 @@ EXTERN PetscErrorCode MatDuplicate_Spooles(Mat,MatDuplicateOption,Mat*);
 
 EXTERN PetscErrorCode MatDestroy_MPIAIJSpooles(Mat);
 EXTERN PetscErrorCode MatSolve_MPIAIJSpooles(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat,Mat*); 
+EXTERN PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat,MatFactorInfo*,Mat*); 
 EXTERN PetscErrorCode MatAssemblyEnd_MPIAIJSpooles(Mat,MatAssemblyType);
 EXTERN PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
 

@@ -247,7 +247,7 @@ int MatLUFactorSymbolic_SeqAIJ_YSMP(Mat A ,IS row,IS col,double f,Mat *B)
   return 0;
 }
     
-int MatLUFactorNumeric_SeqAIJ_YSMP(Mat AA,Mat *BB)
+int MatLUFactorNumeric_SeqAIJ_YSMP(Mat AA,MatFactorInfo *info,Mat *BB)
 {
   return 0;
 }

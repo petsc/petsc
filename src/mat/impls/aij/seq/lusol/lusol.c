@@ -277,14 +277,14 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_LUSOL"
-PetscErrorCode MatLUFactorNumeric_LUSOL(Mat A, Mat *F)
+PetscErrorCode MatLUFactorNumeric_LUSOL(Mat A,MatFactorInfo *info,Mat *F)
 {
-  Mat_SeqAIJ *a;
-  Mat_LUSOL  *lusol = (Mat_LUSOL*)(*F)->spptr;
+  Mat_SeqAIJ     *a;
+  Mat_LUSOL      *lusol = (Mat_LUSOL*)(*F)->spptr;
   PetscErrorCode ierr;
-  int        m, n, nz, nnz, status;
-  int        i, rs, re;
-  int        factorizations;
+  int            m, n, nz, nnz, status;
+  int            i, rs, re;
+  int            factorizations;
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);CHKERRQ(ierr);

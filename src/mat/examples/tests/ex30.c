@@ -72,7 +72,7 @@ int main(int argc,char **args)
     info.zeropivot     = 0.0;
     ierr = MatILUFactorSymbolic(C,row,col,&info,&A);CHKERRQ(ierr);
   }
-  ierr = MatLUFactorNumeric(C,&A);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(C,&info,&A);CHKERRQ(ierr);
 
   printf("factored matrix:\n");
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);

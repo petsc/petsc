@@ -875,14 +875,14 @@ typedef struct {
 EXTERN PetscErrorCode MatFactorInfoInitialize(MatFactorInfo*);
 EXTERN PetscErrorCode MatCholeskyFactor(Mat,IS,MatFactorInfo*);
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic(Mat,IS,MatFactorInfo*,Mat*);
-EXTERN PetscErrorCode MatCholeskyFactorNumeric(Mat,Mat*);
+EXTERN PetscErrorCode MatCholeskyFactorNumeric(Mat,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatLUFactor(Mat,IS,IS,MatFactorInfo*);
 EXTERN PetscErrorCode MatILUFactor(Mat,IS,IS,MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorSymbolic(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatILUFactorSymbolic(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatICCFactorSymbolic(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatICCFactor(Mat,IS,MatFactorInfo*);
-EXTERN PetscErrorCode MatLUFactorNumeric(Mat,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric(Mat,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatILUDTFactor(Mat,MatFactorInfo*,IS,IS,Mat *);
 EXTERN PetscErrorCode MatGetInertia(Mat,PetscInt*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode MatSolve(Mat,Vec,Vec);

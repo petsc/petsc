@@ -91,11 +91,11 @@ PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_Essl"
-PetscErrorCode MatLUFactorNumeric_Essl(Mat A,Mat *F) {
-  Mat_SeqAIJ *aa=(Mat_SeqAIJ*)(A)->data;
-  Mat_Essl   *essl=(Mat_Essl*)(*F)->spptr;
+PetscErrorCode MatLUFactorNumeric_Essl(Mat A,MatFactorInfo *info,Mat *F) {
+  Mat_SeqAIJ     *aa=(Mat_SeqAIJ*)(A)->data;
+  Mat_Essl       *essl=(Mat_Essl*)(*F)->spptr;
   PetscErrorCode ierr;
-  int        i,one = 1;
+  int            i,one = 1;
 
   PetscFunctionBegin;
   /* copy matrix data into silly ESSL data structure (1-based Frotran style) */

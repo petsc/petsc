@@ -1822,7 +1822,7 @@ PetscErrorCode MatLUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat
 
 .seealso: MatLUFactorSymbolic(), MatLUFactor(), MatCholeskyFactor()
 @*/
-PetscErrorCode MatLUFactorNumeric(Mat mat,Mat *fact)
+PetscErrorCode MatLUFactorNumeric(Mat mat,MatFactorInfo *info,Mat *fact)
 {
   PetscErrorCode ierr;
 
@@ -1840,7 +1840,7 @@ PetscErrorCode MatLUFactorNumeric(Mat mat,Mat *fact)
   if (!(*fact)->ops->lufactornumeric) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
-  ierr = (*(*fact)->ops->lufactornumeric)(mat,fact);CHKERRQ(ierr);
+  ierr = (*(*fact)->ops->lufactornumeric)(mat,info,fact);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
 
   ierr = MatView_Private(*fact);CHKERRQ(ierr);
@@ -1983,7 +1983,7 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat
 
 .seealso: MatCholeskyFactorSymbolic(), MatCholeskyFactor(), MatLUFactorNumeric()
 @*/
-PetscErrorCode MatCholeskyFactorNumeric(Mat mat,Mat *fact)
+PetscErrorCode MatCholeskyFactorNumeric(Mat mat,MatFactorInfo *info,Mat *fact)
 {
   PetscErrorCode ierr;
 
@@ -2000,7 +2000,7 @@ PetscErrorCode MatCholeskyFactorNumeric(Mat mat,Mat *fact)
   }
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
-  ierr = (*(*fact)->ops->choleskyfactornumeric)(mat,fact);CHKERRQ(ierr);
+  ierr = (*(*fact)->ops->choleskyfactornumeric)(mat,info,fact);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CholeskyFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
   ierr = PetscObjectIncreaseState((PetscObject)*fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);

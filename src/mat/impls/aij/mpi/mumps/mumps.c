@@ -453,12 +453,13 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_AIJMUMPS"
-PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
-  Mat_MUMPS  *lu =(Mat_MUMPS*)(*F)->spptr; 
-  Mat_MUMPS  *lua=(Mat_MUMPS*)(A)->spptr; 
+PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,MatFactorInfo *info,Mat *F) 
+{
+  Mat_MUMPS      *lu =(Mat_MUMPS*)(*F)->spptr; 
+  Mat_MUMPS      *lua=(Mat_MUMPS*)(A)->spptr; 
   PetscErrorCode ierr;
-  int        rnz,nnz,nz,i,M=A->M,*ai,*aj,icntl;
-  PetscTruth valOnly,flg;
+  PetscInt       rnz,nnz,nz,i,M=A->M,*ai,*aj,icntl;
+  PetscTruth     valOnly,flg;
 
   PetscFunctionBegin; 	
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ 

@@ -54,8 +54,8 @@ typedef struct {
 EXTERN PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatFactorInfo*,Mat *);
 EXTERN PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat,IS,MatFactorInfo*,Mat *);
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat,IS,MatFactorInfo*,Mat*);
-EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat,Mat *);
-EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat,Mat *);
+EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat);
 EXTERN PetscErrorCode MatMarkDiagonal_SeqBAIJ(Mat);
@@ -116,25 +116,25 @@ EXTERN PetscErrorCode MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTranspose_SeqBAIJ_7(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
 
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat,MatFactorInfo*,Mat*);
 #if defined(PETSC_HAVE_SSE)
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat,MatFactorInfo*,Mat*);
 #else
 #endif
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat,Mat*);
-EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat,MatFactorInfo*,Mat*);
 
 EXTERN PetscErrorCode MatMult_SeqBAIJ_1(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatMult_SeqBAIJ_2(Mat,Vec,Vec);

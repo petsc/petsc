@@ -149,7 +149,7 @@ PetscErrorCode MatSolve_Matlab(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_Matlab"
-PetscErrorCode MatLUFactorNumeric_Matlab(Mat A,Mat *F)
+PetscErrorCode MatLUFactorNumeric_Matlab(Mat A,MatFactorInfo *info,Mat *F)
 {
   Mat_SeqAIJ      *f = (Mat_SeqAIJ*)(*F)->data;
   PetscErrorCode ierr;
@@ -215,7 +215,7 @@ PetscErrorCode MatSolve_Matlab_QR(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_Matlab_QR"
-PetscErrorCode MatLUFactorNumeric_Matlab_QR(Mat A,Mat *F)
+PetscErrorCode MatLUFactorNumeric_Matlab_QR(Mat A,MatFactorInfo *info,Mat *F)
 {
   PetscErrorCode ierr;
   size_t          len;

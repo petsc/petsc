@@ -54,7 +54,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky %A\n",norm);CHKERRQ(ierr);
   ierr = MatCholeskyFactorSymbolic(mat,perm,&factinfo,&fact);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorNumeric(mat,&fact);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(mat,&factinfo,&fact);CHKERRQ(ierr);
   ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
   value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   luinfo.zeropivot = 1.e-14; 
   luinfo.pivotinblocks = 1.0; 
   ierr = MatLUFactorSymbolic(mat,perm,perm,&luinfo,&fact);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(mat,&fact);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(mat,&luinfo,&fact);CHKERRQ(ierr);
   ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
   value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);

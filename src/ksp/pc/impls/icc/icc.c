@@ -330,7 +330,7 @@ static PetscErrorCode PCSetup_ICC(PC pc)
   }
   ierr = ISDestroy(cperm);CHKERRQ(ierr);
   ierr = ISDestroy(perm);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorNumeric(pc->pmat,&icc->fact);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(pc->pmat,&icc->info,&icc->fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

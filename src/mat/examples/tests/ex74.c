@@ -271,7 +271,7 @@ int main(int argc,char **args)
       factinfo.levels = lf;
       ierr = MatICCFactorSymbolic(sB,perm,&factinfo,&sC);CHKERRQ(ierr);
     }
-    ierr = MatCholeskyFactorNumeric(sB,&sC);CHKERRQ(ierr);
+    ierr = MatCholeskyFactorNumeric(sB,&factinfo,&sC);CHKERRQ(ierr);
     /* MatView(sC, PETSC_VIEWER_DRAW_WORLD); */
 
     /* test MatGetDiagonal on numeric factor */

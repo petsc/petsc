@@ -262,7 +262,7 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU"
-PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
+PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,MatFactorInfo *info,Mat *F)
 {
   Mat_SeqAIJ    *aa = (Mat_SeqAIJ*)(A)->data;
   Mat_SuperLU   *lu = (Mat_SuperLU*)(*F)->spptr;

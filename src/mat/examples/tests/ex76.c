@@ -127,6 +127,9 @@ int main(int argc,char **args)
       ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
+
+  /* insert zero diagonal to A for testing - */
+
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
@@ -174,7 +177,7 @@ int main(int argc,char **args)
         factinfo.levels = lvl;
         ierr = MatICCFactorSymbolic(A,perm,&factinfo,&sC);CHKERRQ(ierr);
       }      
-      ierr = MatCholeskyFactorNumeric(A,&sC);CHKERRQ(ierr);  
+      ierr = MatCholeskyFactorNumeric(A,&factinfo,&sC);CHKERRQ(ierr);  
       ierr = MatMult(A,x,b);CHKERRQ(ierr);
       ierr = MatSolve(sC,b,y);CHKERRQ(ierr); 
       ierr = MatDestroy(sC);CHKERRQ(ierr);
@@ -200,7 +203,7 @@ int main(int argc,char **args)
         factinfo.levels = lvl;
         ierr = MatICCFactorSymbolic(A,perm,&factinfo,&sC);CHKERRQ(ierr);
       }      
-      ierr = MatCholeskyFactorNumeric(A,&sC);CHKERRQ(ierr);  
+      ierr = MatCholeskyFactorNumeric(A,&factinfo,&sC);CHKERRQ(ierr);  
 
       ierr = MatMult(A,x,b);CHKERRQ(ierr); 
       ierr = MatSolve(sC,b,y);CHKERRQ(ierr); 
@@ -226,7 +229,7 @@ int main(int argc,char **args)
       factinfo.levels = lvl;
       ierr = MatICCFactorSymbolic(sA,perm,&factinfo,&sC);CHKERRQ(ierr);
     }      
-    ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRQ(ierr);  
+    ierr = MatCholeskyFactorNumeric(sA,&factinfo,&sC);CHKERRQ(ierr);  
     ierr = MatMult(sA,x,b);CHKERRQ(ierr);
     ierr = MatSolve(sC,b,y);CHKERRQ(ierr); 
 

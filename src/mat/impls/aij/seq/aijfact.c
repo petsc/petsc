@@ -427,7 +427,7 @@ EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
-PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
+PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
 {
   Mat            C=*B;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ *)C->data;
@@ -603,7 +603,7 @@ PetscErrorCode MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
 
   PetscFunctionBegin;
   ierr = MatLUFactorSymbolic(A,row,col,info,&C);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(A,&C);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(A,info,&C);CHKERRQ(ierr);
   ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
   PetscLogObjectParent(A,((Mat_SeqAIJ*)(A->data))->icol); 
   PetscFunctionReturn(0);
@@ -1109,7 +1109,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
-PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *B)
+PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
 {
   Mat            C = *B;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
