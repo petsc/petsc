@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec1.c,v 1.26 1998/06/29 21:38:50 balay Exp bsmith $"
+static char vcid[] = "$Id: bvec1.c,v 1.27 1998/12/03 03:56:57 bsmith Exp balay $"
 #endif
 
 /*
@@ -67,13 +67,13 @@ int VecTDot_Seq(Vec xin, Vec yin,Scalar *z )
 
 #undef __FUNC__  
 #define __FUNC__ "VecScale_Seq"
-int VecScale_Seq( Scalar *alpha,Vec xin )
+int VecScale_Seq(const Scalar *alpha,Vec xin )
 {
   Vec_Seq *x = (Vec_Seq *) xin->data;
   int     one = 1;
 
   PetscFunctionBegin;
-  BLscal_( &x->n, alpha, x->array, &one );
+  BLscal_( &x->n, (Scalar *)alpha, x->array, &one );
   PLogFlops(x->n);
   PetscFunctionReturn(0);
 }
@@ -104,7 +104,7 @@ int VecSwap_Seq(  Vec xin,Vec yin )
 
 #undef __FUNC__  
 #define __FUNC__ "VecAXPY_Seq"
-int VecAXPY_Seq(  Scalar *alpha, Vec xin, Vec yin )
+int VecAXPY_Seq(const Scalar *alpha, Vec xin, Vec yin )
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   int      one = 1,ierr;
@@ -112,7 +112,7 @@ int VecAXPY_Seq(  Scalar *alpha, Vec xin, Vec yin )
 
   PetscFunctionBegin;
   ierr = VecGetArray(yin,&yarray);CHKERRQ(ierr);
-  BLaxpy_( &x->n, alpha, x->array, &one, yarray, &one );
+  BLaxpy_( &x->n, (Scalar *)alpha, x->array, &one, yarray, &one );
   ierr = VecRestoreArray(yin,&yarray);CHKERRQ(ierr);
   PLogFlops(2*x->n);
   PetscFunctionReturn(0);
@@ -120,7 +120,7 @@ int VecAXPY_Seq(  Scalar *alpha, Vec xin, Vec yin )
 
 #undef __FUNC__  
 #define __FUNC__ "VecAXPBY_Seq"
-int VecAXPBY_Seq(Scalar *alpha, Scalar *beta,Vec xin, Vec yin)
+int VecAXPBY_Seq(const Scalar *alpha,const Scalar *beta,Vec xin, Vec yin)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
   int      n = x->n, i;
