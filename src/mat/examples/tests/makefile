@@ -16,7 +16,7 @@ EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
            ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c\
            ex19.c ex20.c ex21.c ex22.c
 SYSLIB   = -L$(LDIR) -lpetscvec -lpetscsys -lpetscdraw\
-           $(LAPACK_LIB) $(BLAS_LIB) \
+           $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
            $(MPI_LIB) $(SYS_LIB) $(FC_LIB) $(X11_LIB) -lm 
 LINCLUDE = $(SOURCEH)
 
@@ -186,5 +186,9 @@ ex21: ex21.o
 ex22: ex22.o
 	-$(CLINKER) -o ex22 ex22.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex22.o
+
+ex23: ex23.o
+	-$(CLINKER) -o ex23 ex23.o $(LIBNAME) $(SYSLIB)
+	$(RM) ex23.o
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
