@@ -1,15 +1,15 @@
 #ifndef lint
-static char vcid[] = "$Id: fmg.c,v 1.2 1995/03/06 04:16:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fmg.c,v 1.3 1995/06/14 17:23:47 bsmith Exp bsmith $";
 #endif
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */
 #include "mgimpl.h"
 
-extern int MGMCycle(MG *);
+extern int MGMCycle_Private(MG *);
 
 /*
-       MGFCycle - Given an MG structure created with MGCreate() runs 
+       MGFCycle_Private - Given an MG structure created with MGCreate() runs 
                full multigrid. 
 
     Iput Parameters:
@@ -21,7 +21,7 @@ extern int MGMCycle(MG *);
           initial guess for the next level. This provides an
           improved preconditioner but not a great improvement.
 */
-int MGFCycle(MG *mg)
+int MGFCycle_Private(MG *mg)
 {
   int    i, l = mg[0]->level;
   Scalar zero = 0.0;
@@ -33,11 +33,11 @@ int MGFCycle(MG *mg)
   
   /* work our way up through the levels */
   for ( i=l; i>0; i-- ) {
-    MGMCycle(&mg[i]); 
+    MGMCycle_Private(&mg[i]); 
     VecSet(&zero, mg[i-1]->x ); 
     MatMultTransAdd(mg[i-1]->interpolate,mg[i]->x,mg[i-1]->x,mg[i-1]->x); 
   }
-  MGMCycle(mg); 
+  MGMCycle_Private(mg); 
   return 0;
 }
 

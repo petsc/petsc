@@ -1,7 +1,6 @@
 
-
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.30 1995/07/07 17:15:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.31 1995/07/17 03:53:33 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -23,7 +22,11 @@ static int VecNorm_Blas(Vec xin,double* z )
 {
   Vec_Seq * x = (Vec_Seq *) xin->data;
   int  one = 1;
+#if defined(PARCH_sun4)
+  *z = BLdot_( &x->n, x->array, &one, x->array, &one );
+#else
   *z = BLnrm2_( &x->n, x->array, &one );
+#endif
   PLogFlops(2*x->n-1);
   return 0;
 }

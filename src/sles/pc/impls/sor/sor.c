@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.31 1995/07/20 14:27:51 curfman Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.32 1995/07/20 14:47:59 curfman Exp bsmith $";
 #endif
 
 /*
@@ -157,6 +157,7 @@ int PCSORSetSymmetric(PC pc, MatSORType flag)
 {
   PC_SOR *jac = (PC_SOR *) pc->data; 
   VALIDHEADER(pc,PC_COOKIE);
+  if (pc->type != PCSOR) return 0;
   jac->sym = flag;
   return 0;
 }
@@ -179,6 +180,7 @@ int PCSORSetOmega(PC pc, double omega)
 {
   PC_SOR *jac = (PC_SOR *) pc->data; 
   VALIDHEADER(pc,PC_COOKIE);
+  if (pc->type != PCSOR) return 0;
   if (omega >= 2.0 || omega <= 0.0) { 
     SETERRQ(1,"PCSORSetOmega: Relaxation out of range");
   }
@@ -204,6 +206,7 @@ int PCSORSetIterations(PC pc, int its)
 {
   PC_SOR *jac = (PC_SOR *) pc->data; 
   VALIDHEADER(pc,PC_COOKIE);
+  if (pc->type != PCSOR) return 0;
   jac->its = its;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: smg.c,v 1.4 1995/06/08 03:08:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: smg.c,v 1.5 1995/06/14 17:23:47 bsmith Exp bsmith $";
 #endif
 /*
      Additive Multigrid V Cycle routine    
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: smg.c,v 1.4 1995/06/08 03:08:38 bsmith Exp bsmith $";
 #include "mgimpl.h"
 
 /*
-       MGACycle - Given an MG structure created with MGCreate() runs 
+       MGACycle_Private - Given an MG structure created with MGCreate() runs 
                   one cycle down through the levels and back up. Applys
                   the smoothers in an additive manner.
 
@@ -15,7 +15,7 @@ static char vcid[] = "$Id: smg.c,v 1.4 1995/06/08 03:08:38 bsmith Exp bsmith $";
 .   mg - structure created with  MGCreate().
 
 */
-int MGACycle(MG *mg)
+int MGACycle_Private(MG *mg)
 {
   int    i, l = mg[0]->level,its,ierr;
   Scalar zero = 0.0;

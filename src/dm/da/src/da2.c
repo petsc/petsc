@@ -49,7 +49,7 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
     double  ymin = -1*da->s-1, ymax = da->N+da->s;
     double  xmin = -1*da->s-1, xmax = da->M+da->s;
     double  x,y;
-    int     base,*idx,max;
+    int     base,*idx;
     char    node[10];
  
     DrawSetCoordinates(win,xmin,ymin,xmax,ymax);

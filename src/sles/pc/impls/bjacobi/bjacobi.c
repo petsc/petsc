@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.28 1995/07/20 03:58:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.29 1995/07/20 04:25:07 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -128,6 +128,7 @@ int PCBJacobiSetBlocks(PC pc, int blocks)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
   VALIDHEADER(pc,PC_COOKIE);
+  if (pc->type != PCBJACOBI) return 0;
   jac->n = blocks;
   return 0;
 }

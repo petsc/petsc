@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.27 1995/07/20 15:32:38 curfman Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.28 1995/07/20 17:48:01 curfman Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -11,14 +11,14 @@ static char vcid[] = "$Id: mg.c,v 1.27 1995/07/20 15:32:38 curfman Exp curfman $
 #include <string.h>
 #endif
 /*
-       MGMCycle - Given an MG structure created with MGCreate() runs 
+       MGMCycle_Private - Given an MG structure created with MGCreate() runs 
                   one multiplicative cycle down through the levels and
                   back up.
 
     Input Parameter:
 .   mg - structure created with  MGCreate().
 */
-int MGMCycle(MG *mglevels)
+int MGMCycle_Private(MG *mglevels)
 {
   MG     mg = *mglevels, mgc = *(mglevels + 1);
   int    cycles = mg->cycles, ierr,its;
@@ -33,7 +33,7 @@ int MGMCycle(MG *mglevels)
       ierr = (*mg->residual)(mg->A, mg->b, mg->x, mg->r ); CHKERRQ(ierr);
       ierr = MatMult(mg->restrct,  mg->r, mgc->b ); CHKERRQ(ierr);
       ierr = VecSet(&zero,mgc->x); CHKERRQ(ierr);
-      ierr = MGMCycle(mglevels + 1); CHKERRQ(ierr); 
+      ierr = MGMCycle_Private(mglevels + 1); CHKERRQ(ierr); 
       ierr = MatMultTransAdd(mg->interpolate,mgc->x,mg->x,mg->x); CHKERRQ(ierr);
       ierr = SLESSolve(mg->smoothu,mg->b,mg->x,&its);CHKERRQ(ierr); 
     }
@@ -42,21 +42,12 @@ int MGMCycle(MG *mglevels)
 }
 
 /*
-       MGCreate - Creates a MG structure for use with the multigrid code.
+       MGCreate_Private - Creates a MG structure for use with the
+               multigrid code.
                Level 0 is the coarsest. (But the finest level is stored
-               first in the MG array.)                  
-   Useage:
-.                    mg = MGCreate(levels) 
-.                    MGSet* - set various options
-.                    MGCheck() - make sure all options are set.
-.                    MGCycle(mg); - run a single cycle.
-.                    MGDestroy(mg); - free up space.
-
-    Iput Parameters:
-.   levels - the number of levels to use.
 
 */
-static int MGCreate(MPI_Comm comm,int levels,MG **result)
+static int MGCreate_Private(MPI_Comm comm,int levels,MG **result)
 {
   MG  *mg;
   int i,ierr;
@@ -80,15 +71,7 @@ static int MGCreate(MPI_Comm comm,int levels,MG **result)
   return 0;
 }
 
-/*
-       MGDestroy - Frees space used by an MG structure created with 
-                    MGCreate().
-
-    Iput Parameters:
-.   mg - the MG structure
-
-*/
-static int MGDestroy(PetscObject obj)
+static int PCDestroy_MG(PetscObject obj)
 {
   PC pc = (PC) obj;
   MG *mg = (MG *) pc->data;
@@ -104,8 +87,6 @@ static int MGDestroy(PetscObject obj)
      PETSCFREE(mg[i]);
   }
   PETSCFREE(mg);
-  PLogObjectDestroy(pc);
-  PETSCHEADERDESTROY(pc);
   return 0;
 }
 
@@ -249,8 +230,8 @@ int MGSetCycles(PC pc,int n)
   return 0;
 }
 
-extern int MGACycle(MG*);
-extern int MGFCycle(MG*);
+extern int MGACycle_Private(MG*);
+extern int MGFCycle_Private(MG*);
 
 /*
    MGCycle - Runs either an additive, multiplicative or full cycle of 
@@ -266,13 +247,13 @@ static int MGCycle(PC pc,Vec b,Vec x)
    mg[0]->b = b; mg[0]->x = x;
    if (mg[0]->am == MGMULTIPLICATIVE) {
      VecSet(&zero,x);
-     return MGMCycle(mg);
+     return MGMCycle_Private(mg);
    } 
    else if (mg[0]->am == MGADDITIVE) {
-     return MGACycle(mg);
+     return MGACycle_Private(mg);
    }
    else {
-     return MGFCycle(mg);
+     return MGFCycle_Private(mg);
    }
 }
 
@@ -282,19 +263,20 @@ static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
   MG  *mg = (MG*) pc->data;
   mg[0]->b = b; mg[0]->x = x;
   while (its--) {
-    ierr = MGMCycle(mg); CHKERRQ(ierr);
+    ierr = MGMCycle_Private(mg); CHKERRQ(ierr);
   }
   return 0;
 }
 
 static int PCSetFromOptions_MG(PC pc)
 {
-  int    m;
+  int    ierr, m,levels = 1;
   char   buff[16];
 
   if (pc->type != PCMG) return 0;
   if (!pc->data) {
-    SETERRQ(1,"PCSetFromOptions_MG: must be after MGSetLevels");
+    OptionsGetInt(pc->prefix,"-pc_mg_levels",&levels);
+    ierr = MGSetLevels(pc,levels); CHKERRQ(ierr);
   }
   if (OptionsGetInt(pc->prefix,"-pc_mg_cycles",&m)) {
     MGSetCycles(pc,m);
@@ -357,7 +339,7 @@ int PCCreate_MG(PC pc)
 {
   pc->apply     = MGCycle;
   pc->setup     = 0;
-  pc->destroy   = MGDestroy;
+  pc->destroy   = PCDestroy_MG;
   pc->type      = PCMG;
   pc->data      = (void *) 0;
   pc->setfrom   = PCSetFromOptions_MG;
@@ -383,7 +365,7 @@ int MGSetLevels(PC pc,int levels)
   int ierr;
   MG  *mg;
   if (pc->type != PCMG) return 0;
-  ierr          = MGCreate(pc->comm,levels,&mg); CHKERRQ(ierr);
+  ierr          = MGCreate_Private(pc->comm,levels,&mg); CHKERRQ(ierr);
   mg[0]->am     = MGMULTIPLICATIVE;
   pc->data      = (void *) mg;
   pc->applyrich = MGCycleRichardson;
