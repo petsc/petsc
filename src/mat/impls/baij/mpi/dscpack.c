@@ -9,7 +9,7 @@
 #if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
 
 EXTERN_C_BEGIN
-#include "/sandbox/hzhang/DSCPACK1.0/DSC_LIB/dscmain.h"
+#include "dscmain.h"
 EXTERN_C_END
 
 #define MAX_MEM_ALLOWED  100

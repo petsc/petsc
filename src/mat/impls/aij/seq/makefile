@@ -7,7 +7,7 @@ FFLAGS   =
 SOURCEC  = aij.c aijfact.c ij.c essl.c dxml.c aijnode.c fdaij.c unary.c ilut.c aijmatlab.c \
 	   lusol.c dsc.c superlu.c aijspooles.c spooles.c matmatmult.c
 SOURCEF  = 
-SOURCEH  = aij.h
+SOURCEH  = aij.h spooles.h
 OBJSC    = aij.o aijfact.o ij.o essl.o dxml.o aijnode.o fdaij.o unary.o ilut.o aijmatlab.o \
 	   lusol.o dsc.o superlu.o aijspooles.o spooles.o matmatmult.o
 OBJSF    = 

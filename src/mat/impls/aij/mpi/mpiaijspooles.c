@@ -7,7 +7,7 @@
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-#include "src/mat/impls/aij/seq/spooles.h"
+#include "src/mat/impls/aij/mpi/mpispooles.h"
 
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
@@ -19,12 +19,12 @@ int MatLUFactorSymbolic_MPIAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   int              ierr,M=A->M,N=A->N;
 
   PetscFunctionBegin;	
-  A->ops->lufactornumeric = MatLUFactorNumeric_MPIAIJ_Spooles; 
+  A->ops->lufactornumeric = MatFactorNumeric_MPIAIJ_Spooles; 
 
   /* Create the factorization matrix F */  
   ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,M,N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
   
-  (*F)->ops->lufactornumeric = MatLUFactorNumeric_MPIAIJ_Spooles;
+  (*F)->ops->lufactornumeric = MatFactorNumeric_MPIAIJ_Spooles;
   (*F)->factor               = FACTOR_LU;  
 
   ierr = PetscNew(Mat_MPISpooles,&lu);CHKERRQ(ierr); 

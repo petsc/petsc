@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = -DF_NEEDS_UNDSC -DDBL_R_NUM
+CFLAGS   = ${DSCPACK_INCLUDE} -DF_NEEDS_UNDSC -DDBL_R_NUM
 FFLAGS   =
 SOURCEC	 = mpibaij.c mmbaij.c baijov.c dscpack.c
 SOURCEF	 =
