@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.11 1997/12/18 21:28:46 balay Exp balay $ 
+# $Id: base.site,v 1.12 1997/12/18 21:33:15 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -34,7 +34,7 @@ FC_LIB         = /usr/lib/libxlf.a /usr/lib/libxlf90.a
 # PCONF line at the bottom of this file.
 #
 BLAS_LIB       = -lblas $(FC_LIB)
-LAPACK_LIB     =  -lesslp2 /ccst/balay/blaslapack/lapack.a
+LAPACK_LIB     =  -lesslp2 /home/bsmith/libraries/blaslapack/lapack_rs6000.a
 #
 # Location of MPI (Message Passing Interface) software
 #
