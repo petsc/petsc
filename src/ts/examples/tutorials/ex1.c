@@ -1,25 +1,45 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.6 1996/09/12 16:27:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.1 1996/09/27 02:44:36 bsmith Exp bsmith $";
 #endif
 
-static char help[] ="Solves the time dependent Bratu problem";
+static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
 
 /*
-     This code demonstrates how one may solve a nonlinear problem 
+   Concepts: Pseudo-timestepping
+   Routines: TSCreate()
+   Processors: 1
+
+*/
+
+/*
+     Demonstrates how one may solve a nonlinear problem 
    with pseudo time-stepping. In this simple example, the pseudo-time
    step is the same for all grid points, i.e. this is equivalent to 
    a backward Euler with variable time-step.
-*/
 
-#include "draw.h"
+     See snes/examples/tutorials/ex4.c[ex4f.F] and 
+   snes/examples/tutorials/ex5.c[ex5f.F] where the problem is described
+   and solved using Newton's method alone.
+
+*/
+/* ------------------------------------------------------------------------------*/
+/*
+    Include "ts.h" to use the PETSc timestepping routines. Note that this
+    file automatically includes: "petsc.h" and other lower level PETSc include files
+*/
 #include "ts.h"
 #include "options.h"
 #include <math.h>
 
+/*
+    Create an application context to contain data needed by the 
+  application provided call-back routines, FormJacobian() and
+  FormFunction().
+*/
 typedef struct {
-      double      param;        /* test problem parameter */
-      int         mx;           /* Discretization in x-direction */
-      int         my;           /* Discretization in y-direction */
+  double      param;        /* test problem parameter */
+  int         mx;           /* Discretization in x-direction */
+  int         my;           /* Discretization in y-direction */
 } AppCtx;
 
 typedef struct {
@@ -39,49 +59,111 @@ int main( int argc, char **argv )
   Mat          J;
   int          ierr, N, its,flg; 
   AppCtx       user;
-  double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.,dt = 1.e-6;
+  double       param_max = 6.81, param_min = 0.,dt = 1.e-6;
   double       ftime;
 
-  PetscInitialize( &argc, &argv, (char *)0,help );
+  PetscInitialize( &argc, &argv, PETSC_NULL,help );
   user.mx        = 4;
   user.my        = 4;
   user.param     = 6.0;
   
+  /*
+     Allow user to set the grid dimensions at run-time, and parameter
+  */
   OptionsGetInt(0,"-mx",&user.mx,&flg);
   OptionsGetInt(0,"-my",&user.my,&flg);
   OptionsGetDouble(0,"-param",&user.param,&flg);
-  if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRQ(1,"Lambda is out of range");
+  if (user.param >= param_max || user.param <= param_min) {
+    SETERRQ(1,"Parameter is out of range");
   }
   OptionsGetDouble(0,"-dt",&dt,&flg);
   N          = user.mx*user.my;
   
-  /* Set up data structures */
+  /* 
+      Create vectors to hold the solution and function value
+  */
   ierr = VecCreateSeq(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,0,0,&J); CHKERRA(ierr);
 
-  /* Create nonlinear solver */
+  /*
+      Create matrix to hold Jacobian. Preallocate 5 nonzeros per row
+    in the sparse matrix. Note this is not the optimal strategy; see
+    the Performance chapter of PETSc for how to properly pre-allocate
+    memory in sparse matrices.
+  */
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,5,0,&J); CHKERRA(ierr);
+
+  /* 
+     Create timestepper context 
+  */
   ierr = TSCreate(MPI_COMM_WORLD,TS_NONLINEAR,&ts); CHKERRA(ierr);
 
-  /* Set various routines */
+  /*
+     Tell the time stepper context where to compute solutions
+  */
   ierr = TSSetSolution(ts,x); CHKERRA(ierr);
-  ierr = TSSetRHSFunction(ts,FormFunction,(void *)&user); CHKERRA(ierr);
-  ierr = TSSetRHSJacobian(ts,J,J,FormJacobian,(void *)&user);CHKERRA(ierr);
 
-  /* Set up nonlinear solver; then execute it */
+  /*
+     Provide the call-back for the nonlinear function we are 
+     evaluating. Thus whenever the timestepping routines need the
+     function they will call this routine. Note the final argument
+     is the application context used by the call-back functions.
+  */
+  ierr = TSSetRHSFunction(ts,FormFunction,&user); CHKERRA(ierr);
+
+  /*
+     Set the Jacobian matrix and the function used to compute 
+     Jacobians.
+  */
+  ierr = TSSetRHSJacobian(ts,J,J,FormJacobian,&user);CHKERRA(ierr);
+
+  /*
+       For the initial guess for the problem
+  */
   ierr = FormInitialGuess(x,&user);
+
+  /*
+       This indicates that we are using pseudo timestepping to 
+     find a steady state solution to the nonlinear problem.
+  */
   ierr = TSSetType(ts,TS_PSEUDO); CHKERRA(ierr);
+
+  /*
+       Set the initial time to start at (this is arbitrary for 
+     steady state problems; and the initial timestep given above
+  */
   ierr = TSSetInitialTimeStep(ts,0.0,dt); CHKERRA(ierr);
+
+  /*
+      Set a large number of timesteps and final duration time
+     to insure convergence to steady state.
+  */
   ierr = TSSetDuration(ts,1000,1.e12);
-  ierr = TSPseudoSetTimeStep(ts,TSPseudoDefaultTimeStep,0); CHKERRA(ierr);
 
+  /*
+      Use the default strategy for increasing the timestep
+  */
+  ierr = TSPseudoSetTimeStep(ts,TSPseudoDefaultTimeStep,0);CHKERRA(ierr);
+
+  /*
+      Set any additional options from the options database. This
+     includes all options for the nonlinear and linear solvers used
+     internally the the timestepping routines.
+  */
   ierr = TSSetFromOptions(ts); CHKERRA(ierr);
-  ierr = TSSetUp(ts); CHKERRA(ierr);
-  ierr = TSStep(ts,&its,&ftime); CHKERRA(ierr);
-  printf( "number of pseudo time-steps = %d\n", its );
 
-  /* Free data structures */
+  ierr = TSSetUp(ts); CHKERRA(ierr);
+
+  /*
+      Perform the solve. This is where the timestepping takes place.
+  */
+  ierr = TSStep(ts,&its,&ftime); CHKERRA(ierr);
+  
+  printf( "Number of pseudo time-steps = %d final time %g\n", its,ftime );
+
+  /* 
+     Free the data structures constructed above
+  */
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(r); CHKERRA(ierr);
   ierr = MatDestroy(J); CHKERRA(ierr);
