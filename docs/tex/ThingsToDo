@@ -9,7 +9,7 @@ Meta priorities:
 
   Improve DAGetColoring for star stencil, paul says (i + 3*j % 5) in 2d
 
-  Man pages for PetscMalloc()/PetscFree()?
+X  Man pages for PetscMalloc()/PetscFree()?
 
   Redue src/snes/examples/tutorials/ex5s.c and .F with OpenMP and merge with ex5.c
 
@@ -45,7 +45,7 @@ X  Remove reference to PETSC_VIEWER_ASCII_INFO_LONG, PETSC_VIEWER_ASCII_INFO fro
 
   Make an implementation of Vec on top of http://www.vsipl.org/
 
-  Change tutorial examples that use DACreateLocalVector() to use DAGet/RestoreLocalVector()
+X  Change tutorial examples that use DACreateLocalVector() to use DAGet/RestoreLocalVector()
 
   add manual page info for all enums and public structs with /*S and /*E
 

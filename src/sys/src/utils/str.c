@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.48 2001/01/15 21:44:00 bsmith Exp balay $*/
+/*$Id: str.c,v 1.49 2001/03/23 23:20:45 balay Exp bsmith $*/
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 
@@ -17,6 +17,27 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrlen"
+/*@C
+   PetscStrlen - Gets length of a string
+
+   Not Collective
+
+   Input Parameters:
+.  s - pointer to string
+
+   Output Parameter:
+.  len - length in bytes
+
+   Level: intermediate
+
+   Note:
+   This routine is analogous to strlen().
+
+   Null string returns a length of zero
+
+  Concepts: string length
+  
+@*/
 int PetscStrlen(const char s[],int *len)
 {
   PetscFunctionBegin;
@@ -30,6 +51,25 @@ int PetscStrlen(const char s[],int *len)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrallocpy"
+/*@C
+   PetscStrallocpy - Allocates space to hold a copy of a string then copies the string
+
+   Not Collective
+
+   Input Parameters:
+.  s - pointer to string
+
+   Output Parameter:
+.  t - the copied string
+
+   Level: intermediate
+
+   Note:
+      Null string returns a new null string
+
+  Concepts: string copy
+  
+@*/
 int PetscStrallocpy(const char s[],char **t)
 {
   int ierr,len;
@@ -47,9 +87,27 @@ int PetscStrallocpy(const char s[],char **t)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrcpy"
-/*
-    Handles copying null string correctly
-*/
+/*@C
+   PetscStrcpy - Copies a string
+
+   Not Collective
+
+   Input Parameters:
+.  s - pointer to string
+
+   Output Parameter:
+.  t - the copied string
+
+   Level: intermediate
+
+   Note:
+     Null string returns a string starting with zero
+
+  Concepts: string copy
+  
+.seealso: PetscStrncpy(), PetscStrcat(), PetscStrncat()
+
+@*/
 int PetscStrcpy(char s[],const char t[])
 {
   PetscFunctionBegin;
@@ -63,6 +121,28 @@ int PetscStrcpy(char s[],const char t[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrncpy"
+/*@C
+   PetscStrncpy - Copies a string up to a certain length
+
+   Not Collective
+
+   Input Parameters:
++  s - pointer to string
+-  n - the length to copy
+
+   Output Parameter:
+.  t - the copied string
+
+   Level: intermediate
+
+   Note:
+     Null string returns a string starting with zero
+
+  Concepts: string copy
+
+.seealso: PetscStrcpy(), PetscStrcat(), PetscStrncat()
+  
+@*/
 int PetscStrncpy(char s[],const char t[],int n)
 {
   PetscFunctionBegin;
@@ -72,6 +152,22 @@ int PetscStrncpy(char s[],const char t[],int n)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrcat"
+/*@C
+   PetscStrcat - Concatenates a string onto a given string
+
+   Not Collective
+
+   Input Parameters:
++  s - pointer to string to be added to end
+-  t - string to be added to
+
+   Level: intermediate
+
+  Concepts: string copy
+
+.seealso: PetscStrcpy(), PetscStrncpy(), PetscStrncat()
+  
+@*/
 int PetscStrcat(char s[],const char t[])
 {
   PetscFunctionBegin;
@@ -81,6 +177,23 @@ int PetscStrcat(char s[],const char t[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrncat"
+/*@C
+   PetscStrncat - Concatenates a string onto a given string, up to a given length
+
+   Not Collective
+
+   Input Parameters:
++  s - pointer to string to be added to end
+.  t - string to be added to
+.  n - maximum length to copy 
+
+   Level: intermediate
+
+  Concepts: string copy
+
+.seealso: PetscStrcpy(), PetscStrncpy(), PetscStrcat()
+  
+@*/
 int PetscStrncat(char s[],const char t[],int n)
 {
   PetscFunctionBegin;
@@ -90,6 +203,23 @@ int PetscStrncat(char s[],const char t[],int n)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrcmp"
+/*@C
+   PetscStrcmp - Compares two strings,
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to string first string
+-  b - pointer to second string
+
+   Output Parameter:
+.  flg - if the two strings are equal
+
+   Level: intermediate
+
+.seealso: PetscStrgrt(), PetscStrncmp(), PetscStrcasecmp()
+
+@*/
 int PetscStrcmp(const char a[],const char b[],PetscTruth *flg)
 {
   int c;
@@ -109,6 +239,27 @@ int PetscStrcmp(const char a[],const char b[],PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrgrt"
+/*@C
+   PetscStrgrt - If first string is greater than the second
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to string first string
+-  b - pointer to second string
+
+   Output Parameter:
+.  flg - if the first string is greater
+
+   Notes:
+    Null arguments are ok, a null string is considered smaller than 
+    all others
+
+   Level: intermediate
+
+.seealso: PetscStrcmp(), PetscStrncmp(), PetscStrcasecmp()
+
+@*/
 int PetscStrgrt(const char a[],const char b[],PetscTruth *t)
 {
   int c;
@@ -130,10 +281,27 @@ int PetscStrgrt(const char a[],const char b[],PetscTruth *t)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrcasecmp"
-/*
-    Note: This is different from system strncmp() this returns PETSC_TRUE
-    if the strings are the same!
-*/
+/*@C
+   PetscStrcasecmp - Returns true if the two strings are the same
+     except possibly for case.
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to string first string
+-  b - pointer to second string
+
+   Output Parameter:
+.  flg - if the two strings are the same
+
+   Notes:
+    Null arguments are ok
+
+   Level: intermediate
+
+.seealso: PetscStrcmp(), PetscStrncmp(), PetscStrgrt()
+
+@*/
 int PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
 {
   int c;
@@ -153,10 +321,24 @@ int PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrncmp"
-/*
-    Note: This is different from system strncmp() this returns PETSC_TRUE
-    if the strings are the same!
-*/
+/*@C
+   PetscStrcmp - Compares two strings, up to a certain length
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to string first string
+.  b - pointer to second string
+-  n - length to compare up to
+
+   Output Parameter:
+.  t - if the two strings are equal
+
+   Level: intermediate
+
+.seealso: PetscStrgrt(), PetscStrncmp(), PetscStrcasecmp()
+
+@*/
 int PetscStrncmp(const char a[],const char b[],int n,PetscTruth *t)
 {
   int c;
@@ -170,6 +352,21 @@ int PetscStrncmp(const char a[],const char b[],int n,PetscTruth *t)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrchr"
+/*@C
+   PetscStrchr - Locates first occurance of a character in a string
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to string first string
+-  b - character
+
+   Output Parameter:
+.  c - location of occurance, PETSC_NULL if not found
+
+   Level: intermediate
+
+@*/
 int PetscStrchr(const char a[],char b,char **c)
 {
   PetscFunctionBegin;
@@ -177,13 +374,24 @@ int PetscStrchr(const char a[],char b,char **c)
   PetscFunctionReturn(0);
 }
 
-/*
-      This is slightly different then the system version. 
-   It returns the position after the position of b and 
-   if it does not find it then it returns the entire string.
-*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrrchr"
+/*@C
+   PetscStrrchr - Locates one location past the first occurance of a character in a string,
+      if the character is not found then returns entire string
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to string first string
+-  b - character
+
+   Output Parameter:
+.  tmp - location of occurance, a if not found
+
+   Level: intermediate
+
+@*/
 int PetscStrrchr(const char a[],char b,char **tmp)
 {
   PetscFunctionBegin;
@@ -194,6 +402,17 @@ int PetscStrrchr(const char a[],char b,char **tmp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrtolower"
+/*@C
+   PetscStrtolower - Converts string to lower case
+
+   Not Collective
+
+   Input Parameters:
+.  a - pointer to string
+
+   Level: intermediate
+
+@*/
 int PetscStrtolower(char a[])
 {
   PetscFunctionBegin;
@@ -204,7 +423,22 @@ int PetscStrtolower(char a[])
   PetscFunctionReturn(0);
 }
 
-/*
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrtok"
+/*@C
+   PetscStrtok - Locates next "token" in a string
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to string
+-  b - token
+
+   Output Parameter:
+.  result - location of occurance, a if not found
+
+   Notes:
+
      This version is different from the system version in that
   it allows you to pass a read-only string into the function.
   A copy is made that is then passed into the system strtok() 
@@ -214,9 +448,9 @@ int PetscStrtolower(char a[])
   String must be less than or equal 1024 bytes in length, otherwise
   it will bleed memory.
 
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "PetscStrtok"
+   Level: intermediate
+
+@*/
 int PetscStrtok(const char a[],const char b[],char **result)
 {
   static char init[1024];
@@ -240,6 +474,21 @@ int PetscStrtok(const char a[],const char b[],char **result)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrstr"
+/*@C
+   PetscStrstr - Locates first occurance of string in another string
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to string
+-  b - string to find
+
+   Output Parameter:
+.  tmp - location of occurance
+
+   Level: intermediate
+
+@*/
 int PetscStrstr(const char a[],const char b[],char **tmp)
 {
   PetscFunctionBegin;
@@ -250,10 +499,25 @@ int PetscStrstr(const char a[],const char b[],char **tmp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrreplace"
-/*
+/*@C
+   PetscStrreplace - Replaces substrings in string with other substrings
 
-      No proper error checking yet
-*/
+   Not Collective
+
+   Input Parameters:
++   comm - MPI_Comm of processors that are processing the string
+.   a - the string to look in
+.   b - the resulting copy of a with replaced strings
+-   len - the length of b
+
+   Notes:
+      Replaces   ${PETSC_ARCH},${BOPT},${PETSC_DIR},${PETSC_LDIR},${DISPLAY},
+      ${HOMEDIRECTORY},${WORKINGDIRECTORY},${USERNAME} with appropriate values
+      as well as any environmental variables.
+   
+   Level: intermediate
+
+@*/
 int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
 {
   int        ierr,i = 0,l,l1,l2,l3;
