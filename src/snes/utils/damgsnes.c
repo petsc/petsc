@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.20 2001/04/19 20:00:09 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.21 2001/04/19 20:29:34 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -193,6 +193,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   SLES        sles;
   PetscViewer ascii;
   MPI_Comm    comm;
+  KSP         ksp;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
@@ -218,6 +219,10 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     }
 
     ierr = SNESGetSLES(dmmg[i]->snes,&sles);CHKERRQ(ierr);
+
+    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetType(ksp,KSPFGMRES);CHKERRQ(ierr);
+
     ierr = DMMGSetUpLevel(dmmg,sles,i+1);CHKERRQ(ierr);
     
     /*
@@ -454,11 +459,16 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   int            dim,dof,stencil_size,stencil_width;
   DAStencilType  stencil_type;
   DAPeriodicType periodicity;
-  DA             da= (DA) dmmg->dm;
-  int            deriv_type_size;
+  DA             da = (DA) dmmg->dm;
+  int            deriv_type_size,size;
   void           *ad_xstart,*ad_fstart;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(dmmg->comm,&size);CHKERRQ(ierr);
+  if (size > 1 && dmmg->iscoloring->ctype != IS_COLORING_GHOSTED) {
+    SETERRQ(1,"ISColoring must be of type IS_COLORING_GHOSTED");
+  }
+
   ad_AD_Init(dmmg->iscoloring->n);
   deriv_type_size = my_AD_GetDerivTypeSize();
 
@@ -514,8 +524,8 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
   /* stick the values into the matrix */
-  ierr = MatADSetColoring_SeqAIJ(*B,dmmg->iscoloring);CHKERRQ(ierr);
-  ierr = MatADSetValues_SeqAIJ(*B,(Scalar**)ad_fstart,deriv_type_size);CHKERRQ(ierr);
+  ierr = MatSetColoring(*B,dmmg->iscoloring);CHKERRQ(ierr);
+  ierr = MatSetValuesAD(*B,(Scalar**)ad_fstart,deriv_type_size);CHKERRQ(ierr);
 
   /* Assemble true Jacobian; if it is different */
   ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
