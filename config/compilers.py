@@ -586,6 +586,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranNameMangling)
       self.executeTest(self.checkFortranPreprocessor)
       self.executeTest(self.checkFortranLibraries)
+      self.executeTest(self.checkFortran90)
       self.executeTest(self.checkFortran90Interface)
     self.executeTest(self.output)
     if self.framework.compilers is None:
