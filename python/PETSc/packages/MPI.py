@@ -152,6 +152,10 @@ class Configure(config.base.Configure):
       yield [os.path.join(root, 'lib', 'libmpi.a')]      
       yield [os.path.join(root, 'lib', 'libmpich.a'), os.path.join(root, 'lib', 'libpmpich.a')]
       yield [os.path.join(root, 'lib', 'mpich.lib'),'ws2_32.lib']
+      # cygwin
+      yield [os.path.join(root, 'SDK.gcc', 'lib', 'libmpich.a')]
+      # MS Windows
+      yield [os.path.join(root, 'SDK','lib','mpich.lib'),'ws2_32.lib']
     else:
       yield ['']
       yield ['mpich']
