@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.43 1996/12/09 15:53:39 balay Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.44 1997/01/01 03:39:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -130,7 +130,6 @@ int main(int argc,char **args)
   }
 
   /* Cleanup */
-PetscTrValid(0,0);
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr);
