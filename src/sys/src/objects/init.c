@@ -39,7 +39,7 @@ PetscScalar   PETSC_i = 0.0;
 #endif
 
 /*
-     These are needed by petscta.h
+     These are needed by petscbt.h
 */
 char _BT_mask,_BT_c;
 int  _BT_idx;
