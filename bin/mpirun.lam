@@ -18,4 +18,4 @@ progname=$1
 shift
 options=$*
 
-/home/petsc/lam/solaris/bin/mpirun -w -D -c -s n0 $np $progname -- $options
+/home/petsc/lam/solaris/bin/mpirun -w -D -c $np -s n0 $progname -- $options
