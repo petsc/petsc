@@ -530,12 +530,12 @@ class Set(BaseSet):
         This has no effect if the element is already present.
         """
         try:
-            self._data[element] = len(data)
+            self._data[element] = len(self._data)
         except TypeError:
             transform = getattr(element, "__as_immutable__", None)
             if transform is None:
                 raise # re-raise the TypeError exception we caught
-            self._data[transform()] = len(data)
+            self._data[transform()] = len(self._data)
 
     def remove(self, element):
         """Remove an element from a set; it must be a member.
