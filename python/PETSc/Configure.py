@@ -590,7 +590,10 @@ acfindx:
   def configureGetDomainName(self):
     if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
       self.missingPrototypesC.append('int getdomainname(char *, int);')
+    self.pushLanguage('C++')
+    if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
       self.missingPrototypesExternC.append('int getdomainname(char *, int);')
+    self.popLanguage()  
     return
  
   def configureIRIX(self):
