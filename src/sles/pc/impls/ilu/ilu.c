@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.137 1999/12/16 19:09:47 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.138 1999/12/16 23:27:51 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -479,7 +479,8 @@ static int PCPrintHelp_ILU(PC pc,char *p)
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_fill <fill>: expected fill in factorization\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_factorpointwise: do NOT use block factorization\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_use_drop_tolerance <dt,maxrowcount>: \n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_use_drop_tolerance <dt,dtcol,maxrowcount>:\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," The ILUDT code is based on Yousef Saad's SPARSEKIT2 code\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_reuse_ordering:                          \n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_reuse_fill:                             \n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_nonzeros_along_diagonal: <tol> changes column ordering\n",p);CHKERRQ(ierr);

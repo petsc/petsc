@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.72 1999/11/24 22:50:41 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.73 1999/12/10 16:05:32 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -66,7 +66,7 @@ BS_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional Matlab location
 #
-CMEX            = /software/solaris-2/com/packages/matlab-5.2/bin/mex
+CMEX            = /software/solaris-2/com/packages/matlab-r11.1/bin/mex
 #CMEX            = mex
 MCC             = cc
 MATLABCOMMAND   = matlab
