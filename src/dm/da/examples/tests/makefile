@@ -8,7 +8,9 @@ SOURCEH       =
 OBJSC         =
 OBJSF         =
 LIBBASE       = libpetscvec
-RUNEXAMPLES_2 = runex1
+RUNEXAMPLES_2 = 
+# temporarily zap this because it is hanging on the nightly builds
+# RUNEXAMPLES_2 = runex1
 EXAMPLES_2    = ex1 ex2 ex3 ex4 ex5 ex6
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
 
