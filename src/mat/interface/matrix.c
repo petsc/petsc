@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.276 1998/01/28 20:32:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.277 1998/01/29 15:44:49 curfman Exp curfman $";
 #endif
 
 /*
@@ -974,7 +974,9 @@ int MatLUFactor(Mat mat,IS row,IS col,double f)
 .  f - expected fill as ratio of original fill.
 .  level - number of levels of fill.
 
-   Note: probably really only in-place when level is zero.
+   Notes: 
+   Probably really in-place only when level of fill is zero.
+
 .keywords: matrix, factor, ILU, in-place
 
 .seealso: MatILUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
