@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   = $(PETSC_INCLUDE) -I..  $(PCONF) \
            $(CONF) -D__DIR__='"pc/interface/"'
-SOURCEC  = precon.c pcset.c pcregis.c
+SOURCEC  = precon.c pcset.c pcregis.c pcnull.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = precon.o pcset.o pcregis.o
+OBJSC    = precon.o pcset.o pcregis.o pcnull.o
 OBJSF    =
 LIBBASE  = libpetscsles
 MANSEC   = 4
