@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.6 1999/06/28 17:13:45 bsmith Exp bsmith $ 
+# $Id: common_variables,v 1.7 1999/06/28 17:16:21 bsmith Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -14,16 +14,18 @@
 # PETSC_PARCH   - corresponds to the PARCH_arch in the source files, set in 
 #                 the file bmake/${PETSC_ARCH}/base
 #
-LDIR	      = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
-PDIR	      = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
-LIBNAME	      = ${PDIR}/${LIBBASE}.a
-SOURCE	      = ${SOURCEC} ${SOURCEF}
-OBJS	      = ${OBJSC} ${OBJSF}
-PETSC_INCLUDE = -I${PETSC_DIR} -I${PETSC_DIR}/include ${MPI_INCLUDE} ${MPE_INCLUDE} \
+LDIR	       = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
+PDIR	       = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
+LIBNAME	       = ${PDIR}/${LIBBASE}.a
+SOURCE	       = ${SOURCEC} ${SOURCEF}
+OBJS	       = ${OBJSC} ${OBJSF}
+PETSC_INCLUDE  = -I${PETSC_DIR} -I${PETSC_DIR}/include ${MPI_INCLUDE} ${MPE_INCLUDE} \
                 -I${PETSC_DIR}/bmake/${PETSC_ARCH} ${AMS_INCLUDE}
 CCPPFLAGS      = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${PETSC_PARCH} ${CPPFLAGS} \
 		 -D__SDIR__='"${LOCDIR}"'
 FCPPFLAGS      = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${PETSC_PARCH} ${FPPFLAGS}
+C_SH_LIB_PATH  = ${CLINKER_SLFLAG}${LDIR} ${C_DYLIBPATH}
+F_SH_LIB_PATH  = ${FLINKER_SLFLAG}${LDIR} ${F_DYLIBPATH}
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 
 # and all lower level PETSc components (such as vectors and matrices).

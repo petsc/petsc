@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.10 1999/07/26 22:57:17 balay Exp balay $ 
+# $Id: base.site,v 1.11 1999/07/27 04:37:05 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -62,4 +62,5 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = /opt/SUNWspro/SC4.2/lib
+#C_DYLIBPATH     =
+#F_DYLIBPATH     =

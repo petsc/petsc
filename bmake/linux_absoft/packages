@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 1999/08/30 19:55:54 balay Exp balay $ 
+# $Id: base.site,v 1.2 1999/08/31 03:35:48 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -87,4 +87,5 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = 
+#C_DYLIBPATH     = 
+#F_DYLIBPATH     = 

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.68 1999/08/24 19:45:51 bsmith Exp balay $ 
+# $Id: base.site,v 1.69 1999/08/27 18:55:44 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -115,4 +115,5 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = /opt/SUNWspro/SC5.0/lib:/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH}
+C_DYLIBPATH     = ${CLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/solaris
+F_DYLIBPATH     = ${FLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/solaris

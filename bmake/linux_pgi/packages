@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 1999/06/16 21:36:33 balay Exp balay $ 
+# $Id: base.site,v 1.2 1999/06/16 21:38:16 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -24,11 +24,11 @@ X11_LIB        = -L/usr/X11R6/lib -lX11
 #MPI_LIB        = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpich
 #MPI_INCLUDE    = -I/home/petsc/mpich-1.1.1/include
 #MPIRUN         = /home/petsc/mpich-1.1.1/lib/LINUX/ch_p4/mpirun
-MPI_HOME       = /usr/local/mpi
-MPI_BUILD_HOME = ${MPI_HOME}/build/LINUX/ch_p4
+MPI_HOME       = /common/petsc/mpich-1.1.2
+MPI_BUILD_HOME = ${MPI_HOME}/build/LINUX/ch_shmem
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
-MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /usr/local/mpi/util/machines/machines.LINUX
+MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
@@ -90,4 +90,5 @@ EXTERNAL_LIB  = ${MPE_LIB} ${PGI_LIB}
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = /usr/local/pgi/linux86/lib
+#C_DYLIBPATH     = ${CLINKER_SLFLAG}/usr/local/pgi/linux86/lib
+#F_DYLIBPATH     = ${FLINKER_SLFLAG}/usr/local/pgi/linux86/lib
