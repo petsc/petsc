@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.21 1997/03/14 03:15:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.22 1997/04/10 00:04:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -372,9 +372,10 @@ int main(int argc,char **args)
  */
 int UserMatrixCreate1(Atassi *user,Mat *mat)
 {
-  Mat     A;
-  MatType mtype;
-  int     ierr, flg, *nnz_d, *nnz_o;
+  Mat        A;
+  MatType    mtype;
+  int        ierr, *nnz_d, *nnz_o;
+  PetscTruth flg;
 
   ierr = MatGetTypeFromOptions(user->comm,PETSC_NULL,&mtype,&flg); CHKERRQ(ierr);
 
