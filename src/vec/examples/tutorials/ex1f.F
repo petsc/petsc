@@ -1,5 +1,5 @@
 
-C    "$Id: ex1.c,v 1.32 1996/10/23 22:13:25 bsmith Exp curfman $"
+C    "$Id: ex1f.F,v 1.1 1996/10/25 15:02:53 curfman Exp curfman $"
 C
 C/*T
 C   Concepts: Vectors^Using basic vector routines;
@@ -42,8 +42,8 @@ C
 C  Note:  "Double" -> "double precision" except for machines such
 C          as the Cray T3d, where "Double" -> "real"
 
-      Vec     x, y, w, z(3)
-      Double  norm, v
+      Vec     x, y, w, z(5)
+      Double  norm, v, v1, v2
       integer n, ierr, flg, rank
       Scalar  one, two, three, dots(3), dot
 
@@ -120,63 +120,81 @@ C  (when using real numbers) it is undefined.
       call VecNorm(x,NORM_2,norm,ierr)
       v = norm-2.0*sqrt(dble(n))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
-      write(6,130) v
+      if (rank .eq. 0) write(6,130) v
  130  format ("VecScale ",e8.2)
 
       call VecCopy(x,w,ierr)
       call VecNorm(w,NORM_2,norm,ierr)
       v = norm-2.0*sqrt(dble(n))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
-      write(6,140) v
+      if (rank .eq. 0) write(6,140) v
  140  format ("VecCopy ",e8.2)
 
       call VecAXPY(three,x,y,ierr)
       call VecNorm(y,NORM_2,norm,ierr)
       v = norm-8.0*sqrt(dble(n))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
-      write(6,150) v
+      if (rank .eq. 0) write(6,150) v
  150  format ("VecAXPY ",e8.2)
 
       call VecAYPX(two,x,y,ierr)
       call VecNorm(y,NORM_2,norm,ierr)
       v = norm-18.0*sqrt(dble(n))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
-      write(6,160) v
+      if (rank .eq. 0) write(6,160) v
  160  format ("VecAYXP ",e8.2)
 
       call VecSwap(x,y,ierr)
       call VecNorm(y,NORM_2,norm,ierr)
       v = norm-2.0*sqrt(dble(n))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
-      write(6,170) v
+      if (rank .eq. 0) write(6,170) v
  170  format ("VecSwap ",e8.2)
 
       call VecNorm(x,NORM_2,norm,ierr)
       v = norm-18.0*sqrt(dble(n))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
-      write(6,180) v
+      if (rank .eq. 0) write(6,180) v
  180  format ("VecSwap ",e8.2)
 
       call VecWAXPY(two,x,y,w,ierr)
       call VecNorm(w,NORM_2,norm,ierr)
       v = norm-38.0*sqrt(dble(n))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
-      write(6,190) v
+      if (rank .eq. 0) write(6,190) v
  190  format ("VecWAXPY ",e8.2)
 
       call VecPointwiseMult(y,x,w,ierr)
       call VecNorm(w,NORM_2,norm,ierr)
       v = norm-36.0*sqrt(dble(n))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
-      write(6,200) v
+      if (rank .eq. 0) write(6,200) v
  200  format ("VecPointwiseMult ",e8.2)
 
       call VecPointwiseDivide(x,y,w,ierr)
       call VecNorm(w,NORM_2,norm,ierr)
       v = norm-9.0*sqrt(dble(n))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
-      write(6,210) v
+      if (rank .eq. 0) write(6,210) v
  210  format ("VecPointwiseDivide ",e8.2)
+
+      
+      dots(1) = one
+      dots(2) = three
+      dots(3) = two
+      call VecSet(one,x,ierr)
+      call VecMAXPY(3,dots,x,z,ierr)
+      call VecNorm(z(1),NORM_2,norm,ierr)
+      v = norm-sqrt(dble(n))
+      if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
+      call VecNorm(z(2),NORM_2,norm,ierr)
+      v1 = norm-2.0*sqrt(dble(n))
+      if (v1 .gt. -1.d-10 .and. v1 .lt. 1.d-10) v1 = 0.0
+      call VecNorm(z(3),NORM_2,norm,ierr)
+      v2 = norm-3.0*sqrt(dble(n))
+      if (v2 .gt. -1.d-10 .and. v2 .lt. 1.d-10) v2 = 0.0
+      if (rank .eq. 0) write(6,220) v,v1,v2
+ 220  format ("VecMAXPY ",3(e8.2))
 
 
 C  Test whether vector has been corrupted (just to demonstrate this

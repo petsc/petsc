@@ -2,7 +2,7 @@
 ALL: ex1
 
 #
-# the CONF is needed on the CFLAGS line to define HAVE_FORTRAN_???
+# the CONF is needed on the CFLAGS line to define HAVE_FORTRAN_XXX
 #
 CFLAGS	        = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
 FFLAGS	        =	 
@@ -94,12 +94,12 @@ runex1_2:
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   $(RM) -f ex1_2.tmp
 runex1f:
-	-@$(MPIRUN)  ex1 > ex1f_1.tmp 2>&1;   \
+	-@$(MPIRUN)  ex1f > ex1f_1.tmp 2>&1;   \
 	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   $(RM) -f ex1f_1.tmp
 runex1f_2:
-	-@$(MPIRUN)  -np 2 ex1 > ex1f_2.tmp 2>&1;\
+	-@$(MPIRUN)  -np 2 ex1f > ex1f_2.tmp 2>&1;\
 	   if (diff output/ex1f_2.out ex1f_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1f_2, diffs above"; fi ;\
 	   $(RM) -f ex1f_2.tmp
@@ -140,4 +140,5 @@ runex7:
 	   $(RM) -f ex7_1.tmp input.dat
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
 
