@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.160 1996/04/02 04:02:04 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.161 1996/04/02 04:11:23 curfman Exp curfman $";
 #endif
 
 /*
@@ -1136,16 +1136,14 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
 } 
 
 /*@
-    MatScale - Scales all elements of a matrix by a scalar value.
+    MatScale - Scales all elements of a matrix by a given number.
 
     Input Parameters:
 .   mat - the matrix to be scaled
-.   a  - the scalar
+.   a  - the scaling value
 
     Output Parameter:
 .   mat - the scaled matrix
-
-   Note: the name of this routine MUST change.
 
 .keywords: matrix, scale
 
