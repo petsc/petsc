@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f.F,v 1.13 1998/03/12 23:15:05 bsmith Exp balay $";
+!  "$Id: ex1f.F,v 1.14 1998/03/24 16:46:39 balay Exp balay $";
 !
 !/*T
 !    Concepts: Index sets^Manipulating a general index set;
@@ -17,8 +17,8 @@
 !
       implicit none
 
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/is.h"
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/is.h"
 
       integer     ierr, indices(5),rank,n
       PetscOffset ix
