@@ -6,7 +6,7 @@ FPPFLAGS  =
 LOCDIR    = src/ksp/examples/tests/
 NOADIC    = true
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex10.c \
-		  ex14.c ex15.c ex17.c ex18.c ex19.c ex20.c ex24.c
+		  ex14.c ex15.c ex17.c ex18.c ex19.c ex20.c ex24.c ex25.c ex26.c
 EXAMPLESCH      = 
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
@@ -358,7 +358,7 @@ runex25_2:
            if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
            else echo "Possible problem with ex25_2, diffs above"; fi; \
            ${RM} -f ex25_2.tmp 
-runex26_1:
+runex26:
 	-@${MPIRUN} -np 1 ex26 -ksp_smonitor > ex26_1.tmp 2>&1; \
 	if (${DIFF} output/ex26_1.out ex26_1.tmp) then true; \
 	   else echo "Possible problem with ex26_1, diffs above"; fi; \

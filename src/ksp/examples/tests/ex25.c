@@ -29,10 +29,10 @@ int main(int argc,char **args)
   /* Load the binary data file "filein". Set runtime option: -fload filein */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Load dataset ...\n");CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-fload",filein,127,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filein,PETSC_BINARY_RDONLY,&view);CHKERRQ(ierr); 
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filein,PETSC_FILE_RDONLY,&view);CHKERRQ(ierr); 
   ierr = MatLoad(view,MATMPISBAIJ,&C);CHKERRQ(ierr);
-  ierr = VecLoad(view,&b);CHKERRQ(ierr);
-  ierr = VecLoad(view,&u);CHKERRQ(ierr);
+  ierr = VecLoad(view,VECMPI,&b);CHKERRQ(ierr);
+  ierr = VecLoad(view,VECMPI,&u);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
   /* ierr = VecView(b,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   /* ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
@@ -82,9 +82,7 @@ int main(int argc,char **args)
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);   
 
     /* Solve linear system; */ 
-    ierr = KSPSetRhs(ksp, b);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ksp, x);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
    
   /* Check error */
