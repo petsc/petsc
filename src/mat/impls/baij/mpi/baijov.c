@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijov.c,v 1.3 1996/07/04 13:01:01 bsmith Exp balay $";
+static char vcid[] = "$Id: baijov.c,v 1.4 1996/07/05 22:28:58 balay Exp balay $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -14,7 +14,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat , int, int **, int**, int* );
 extern int MatGetRow_MPIBAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatRestoreRow_MPIBAIJ(Mat,int,int*,int**,Scalar**);
 
-static int MatCompressIndices_MPIBAIJ(Mat C, int imax, IS *is)
+static int MatCompressIndices_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_out)
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ *) C->data;
   int          ierr,isz,bs = baij->bs,Nbs,n,i,j,*idx,*nidx,ival;
@@ -27,23 +27,22 @@ static int MatCompressIndices_MPIBAIJ(Mat C, int imax, IS *is)
   for ( i=0; i<imax; i++ ) {
     isz  = 0;
     PetscMemzero(table,(Nbs/BITSPERBYTE +1)*sizeof(char));
-    ierr = ISGetIndices(is[i],&idx);  CHKERRQ(ierr);
-    ierr = ISGetSize(is[i],&n);  CHKERRQ(ierr);
+    ierr = ISGetIndices(is_in[i],&idx);  CHKERRQ(ierr);
+    ierr = ISGetSize(is_in[i],&n);  CHKERRQ(ierr);
     for ( j=0; j<n ; ++j){
       ival = idx[j]/bs; /* convert the indices into block indices */
       if (ival>Nbs) SETERRQ(1,"MatIncreaseOverlap_SeqBAIJ: index greater than mat-dim");
       if(!BT_LOOKUP(table, ival)) { nidx[isz++] = ival;}
     }
-    ierr = ISRestoreIndices(is[i],&idx);  CHKERRQ(ierr);
-    ierr = ISDestroy(is[i]); CHKERRQ(ierr);
-    ierr = ISCreateSeq(MPI_COMM_SELF, isz, nidx, (is+i)); CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is_in[i],&idx);  CHKERRQ(ierr);
+    ierr = ISCreateSeq(MPI_COMM_SELF, isz, nidx, (is_out+i)); CHKERRQ(ierr);
   }
   PetscFree(table);
   PetscFree(nidx);
   return 0;
 }
 
-static int MatExpandIndices_MPIBAIJ(Mat C, int imax, IS *is)
+static int MatExpandIndices_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_out)
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ *) C->data;
   int          ierr,bs = baij->bs,Nbs,n,i,j,k,*idx,*nidx;
@@ -53,15 +52,14 @@ static int MatExpandIndices_MPIBAIJ(Mat C, int imax, IS *is)
   nidx  = (int *) PetscMalloc((Nbs*bs+1)*sizeof(int)); CHKPTRQ(nidx); 
 
   for ( i=0; i<imax; i++ ) {
-    ierr = ISGetIndices(is[i],&idx);  CHKERRQ(ierr);
-    ierr = ISGetSize(is[i],&n);  CHKERRQ(ierr);
+    ierr = ISGetIndices(is_in[i],&idx);  CHKERRQ(ierr);
+    ierr = ISGetSize(is_in[i],&n);  CHKERRQ(ierr);
     for ( j=0; j<n ; ++j){
       for ( k=0; k<bs; k++ )
         nidx[j*bs+k] = idx[j]*bs+k;
     }
-    ierr = ISRestoreIndices(is[i],&idx);  CHKERRQ(ierr);
-    ierr = ISDestroy(is[i]); CHKERRQ(ierr);
-    ierr = ISCreateSeq(MPI_COMM_SELF, n*bs, nidx, (is+i)); CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is_in[i],&idx);  CHKERRQ(ierr);
+    ierr = ISCreateSeq(MPI_COMM_SELF, n*bs, nidx, (is_out+i)); CHKERRQ(ierr);
   }
   PetscFree(nidx);
   return 0;
@@ -71,13 +69,19 @@ static int MatExpandIndices_MPIBAIJ(Mat C, int imax, IS *is)
 int MatIncreaseOverlap_MPIBAIJ(Mat C, int imax, IS *is, int ov)
 {
   int i, ierr;
+  IS *is_new;
+
+  is_new = (IS *)PetscMalloc(imax*sizeof(IS)); CHKPTRQ(is_new);
   /* Convert the indices into block format */
-  ierr = MatCompressIndices_MPIBAIJ(C, imax, is); CHKERRQ(ierr);
+  ierr = MatCompressIndices_MPIBAIJ(C, imax, is,is_new); CHKERRQ(ierr);
   if (ov < 0){ SETERRQ(1," MatIncreaseOverlap_MPIBAIJ:Negative overlap specified\n");}
   for ( i=0; i<ov; ++i ) {
-    ierr = MatIncreaseOverlap_MPIBAIJ_Once(C, imax, is); CHKERRQ(ierr);
+    ierr = MatIncreaseOverlap_MPIBAIJ_Once(C, imax, is_new); CHKERRQ(ierr);
   }
-  ierr = MatExpandIndices_MPIBAIJ(C, imax, is); CHKERRQ(ierr);
+  for ( i=0; i<imax; i++ ) ISDestroy(is[i]);
+  ierr = MatExpandIndices_MPIBAIJ(C, imax, is_new,is); CHKERRQ(ierr);
+  for ( i=0; i<imax; i++ ) ISDestroy(is_new[i]);
+  PetscFree(is_new);
   return 0;
 }
 
@@ -625,16 +629,23 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat,int,IS *,IS *,MatGetSubMatrixCall
 int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
                              MatGetSubMatrixCall scall,Mat **submat)
 { 
-  int ierr;
+  int i,ierr;
+  IS  *isrow_new,*iscol_new;
   
   /* The compression and expansion should be avoided. Dos'nt point
      out errors might change the indices hence buggey */
 
-  ierr = MatCompressIndices_MPIBAIJ(C, ismax, isrow); CHKERRQ(ierr);
-  ierr = MatCompressIndices_MPIBAIJ(C, ismax, iscol); CHKERRQ(ierr);
-  ierr = MatGetSubMatrices_MPIBAIJ_local(C,ismax,isrow,iscol,scall,submat); CHKERRQ(ierr);
-  ierr = MatExpandIndices_MPIBAIJ(C, ismax, isrow); CHKERRQ(ierr);
-  ierr = MatExpandIndices_MPIBAIJ(C, ismax, isrow); CHKERRQ(ierr);
+  isrow_new = (IS *)PetscMalloc(2*ismax*sizeof(IS)); CHKPTRQ(isrow_new);
+  iscol_new = isrow_new + ismax;
+  ierr = MatCompressIndices_MPIBAIJ(C, ismax, isrow,isrow_new); CHKERRQ(ierr);
+  ierr = MatCompressIndices_MPIBAIJ(C, ismax, iscol,iscol_new); CHKERRQ(ierr);
+  ierr = MatGetSubMatrices_MPIBAIJ_local(C,ismax,isrow_new,iscol_new,scall,submat); CHKERRQ(ierr);
+  
+  for ( i=0; i<ismax; i++) {
+    ISDestroy(isrow_new[i]);
+    ISDestroy(iscol_new[i]);
+  }
+  PetscFree(isrow_new);
   return 0;
 }
 
@@ -651,13 +662,16 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   int         **rbuf3,*req_source,**sbuf_aj, **rbuf2, max1,max2,**rmap;
   int         **cmap,**lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax,*irow_i;
   int         len,ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*cmap_i,*lens_i;
-  int         *rmap_i,bs=c->bs,bs2=c->bs2;
+  int         *rmap_i,bs=c->bs,bs2=c->bs2,*a_j=a->j,*b_j=b->j,*cworkA, *cworkB;
+  int         cstart = c->cstart,nzA,nzB,*a_i=a->i,*b_i=b->i,imark;
+  int         *bmap = c->garray,ctmp,rstart=c->rstart;
   MPI_Request *s_waits1,*r_waits1,*s_waits2,*r_waits2,*r_waits3;
   MPI_Request *r_waits4,*s_waits3,*s_waits4;
   MPI_Status  *r_status1,*r_status2,*s_status1,*s_status3,*s_status2;
   MPI_Status  *r_status3,*r_status4,*s_status4;
   MPI_Comm    comm;
-  Scalar      **rbuf4, **sbuf_aa, *vals, *mat_a, *sbuf_aa_i;
+  Scalar      **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i,*vworkA,*vworkB;
+  Scalar      *a_a=a->a,*b_a=b->a;
 
   comm   = C->comm;
   tag    = C->tag;
@@ -767,6 +781,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   ctr      = tmp + 2*msz;
 
   {
+
     int *iptr = tmp,ict = 0;
     for ( i=0; i<nrqs; i++ ) {
       j         = pa[i];
@@ -848,7 +863,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
  
   {
     Mat_SeqBAIJ *sA = (Mat_SeqBAIJ*) c->A->data, *sB = (Mat_SeqBAIJ*) c->B->data;
-    int        *sAi = sA->i, *sBi = sB->i, id, rstart = c->rstart;
+    int        *sAi = sA->i, *sBi = sB->i, id;
     int        *sbuf2_i;
 
     for ( i=0; i<nrqr; ++i ) {
@@ -919,11 +934,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   s_waits3 = (MPI_Request *) PetscMalloc((nrqr+1)*sizeof(MPI_Request)); 
   CHKPTRQ(s_waits3);
   {
-    int nzA, nzB, *a_i = a->i, *b_i = b->i, imark;
-    int *cworkA, *cworkB, cstart = c->cstart, *bmap = c->garray;
-    int *a_j = a->j, *b_j = b->j,ctmp;
-
-    for ( i=0; i<nrqr; i++ ) {
+     for ( i=0; i<nrqr; i++ ) {
       rbuf1_i   = rbuf1[i]; 
       sbuf_aj_i = sbuf_aj[i];
       ct1       = 2*rbuf1_i[0] + 1;
@@ -965,11 +976,6 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   s_waits4 = (MPI_Request *) PetscMalloc((nrqr+1)*sizeof(MPI_Request)); 
   CHKPTRQ(s_waits4);
   {
-    int    nzA, nzB, *a_i = a->i, *b_i = b->i, imark;
-    int    *cworkA, *cworkB, cstart = c->cstart, *bmap = c->garray;
-    int    *a_j = a->j, *b_j = b->j;
-    Scalar *vworkA, *vworkB, *a_a = a->a, *b_a = b->a;
-    
     for ( i=0; i<nrqr; i++ ) {
       rbuf1_i   = rbuf1[i];
       sbuf_aa_i = sbuf_aa[i];
@@ -1047,13 +1053,14 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
       row  = irow_i[j];
       proc = rtable[row];
       if (proc == rank) {
-        for ( k=0; k<bs; k++ ) {
-          ierr = MatGetRow_MPIBAIJ(C,row*bs+k,&ncols,&cols,0); CHKERRQ(ierr);
-          for ( l=0; l<ncols; l++ ) {
-            if (cmap_i[cols[l]/bs]) { lens_i[j]++;}
-          }
-          ierr = MatRestoreRow_MPIBAIJ(C,row,&ncols,&cols,0); CHKERRQ(ierr);
-        }
+        /* Get indices from matA and then from matB */
+        row    = row - rstart;
+        nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
+        cworkA =  a_j + a_i[row]; cworkB = b_j + b_i[row];
+        for ( k=0; k<nzA; k++ ) 
+          if (cmap_i[cstart + cworkA[k]]) { lens_i[j]++;}
+        for ( k=0; k<nzB; k++ ) 
+          if (cmap_i[bmap[cworkB[k]]]) { lens_i[j]++;}
       }
     }
   }
@@ -1115,14 +1122,14 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
     */
     for ( i=0; i<ismax; i++ ) {
       mat = (Mat_SeqBAIJ *)(submats[i]->data);
-      if ((mat->m != nrow[i]) || (mat->n != ncol[i])) {
+      if ((mat->mbs != nrow[i]) || (mat->nbs != ncol[i] || mat->bs != bs)) {
         SETERRQ(1,"MatGetSubmatrices_MPIBAIJ:Cannot reuse matrix. wrong size");
       }
-      if (PetscMemcmp(mat->ilen,lens[i], mat->m *sizeof(int))) {
+      if (PetscMemcmp(mat->ilen,lens[i], mat->mbs *sizeof(int))) {
         SETERRQ(1,"MatGetSubmatrices_MPIBAIJ:Cannot reuse matrix. wrong no of nonzeros");
       }
       /* Initial matrix as if empty */
-      PetscMemzero(mat->ilen,mat->m*sizeof(int));
+      PetscMemzero(mat->ilen,mat->mbs*sizeof(int));
     }
   }
   else {
@@ -1135,7 +1142,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   /* Assemble the matrices */
   /* First assemble the local rows */
   {
-    int    ilen_row,*imat_ilen, *imat_j, *imat_i,old_row;
+    int    ilen_row,*imat_ilen, *imat_j, *imat_i;
     Scalar *imat_a;
   
     for ( i=0; i<ismax; i++ ) {
@@ -1152,25 +1159,50 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
         row      = irow_i[j];
         proc     = rtable[row];
         if (proc == rank) {
-          old_row  = row;
-          row      = rmap_i[row];
-          ilen_row = imat_ilen[row];
-          ierr     = MatGetRow_MPIBAIJ(C,old_row,&ncols,&cols,&vals); CHKERRQ(ierr);
+          row      = row - rstart;
+          nzA      = a_i[row+1] - a_i[row]; 
+          nzB      = b_i[row+1] - b_i[row];
+          cworkA   = a_j + a_i[row]; 
+          cworkB   = b_j + b_i[row];
+          vworkA   = a_a + a_i[row]*bs2;
+          vworkB   = b_a + b_i[row]*bs2;
+
+          row      = rmap_i[row + rstart];
           mat_i    = imat_i[row];
-          mat_a    = imat_a + mat_i;
+          mat_a    = imat_a + mat_i*bs2;
           mat_j    = imat_j + mat_i;
-          for ( k=0; k<ncols; k++ ) {
-            if ((tcol = cmap_i[cols[k]])) { 
+          ilen_row = imat_ilen[row];
+
+          /* load the column indices for this row into cols*/
+          for ( l=0; l<nzB; l++ ) {
+            if ((ctmp = bmap[cworkB[l]]) < cstart) {
+              if ((tcol = cmap_i[ctmp])) { 
+                *mat_j++ = tcol - 1;
+                PetscMemcpy(mat_a,vworkB+l*bs2,bs2*sizeof(Scalar)); mat_a += bs2;
+                ilen_row++;
+              }
+            }
+            else break;
+          }
+          imark = l;
+          for ( l=0; l<nzA; l++ ) {
+            if ((tcol = cmap_i[cstart + cworkA[l]])) { 
               *mat_j++ = tcol - 1;
-              *mat_a++ = vals[k];
+              PetscMemcpy(mat_a,vworkA+l*bs2,bs2*sizeof(Scalar)); mat_a += bs2;
               ilen_row++;
             }
           }
-          ierr = MatRestoreRow_MPIBAIJ(C,old_row,&ncols,&cols,&vals); CHKERRQ(ierr);
+          for ( l=imark; l<nzB; l++ ) {
+            if ((tcol = cmap_i[bmap[cworkB[l]]])) { 
+              *mat_j++ = tcol - 1;
+              PetscMemcpy(mat_a,vworkB+l*bs2,bs2*sizeof(Scalar)); mat_a += bs2;
+              ilen_row++;
+            }
+          }
           imat_ilen[row] = ilen_row; 
         }
-
       }
+      
     }
   }
 
@@ -1205,13 +1237,14 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
           row   = rmap_i[row]; 
           ilen  = imat_ilen[row];
           mat_i = imat_i[row];
-          mat_a = imat_a + mat_i;
+          mat_a = imat_a + mat_i*bs2;
           mat_j = imat_j + mat_i;
           max2 = rbuf2_i[ct1];
           for ( l=0; l<max2; l++,ct2++ ) {
             if ((tcol = cmap_i[rbuf3_i[ct2]])) {
               *mat_j++ = tcol - 1;
-              *mat_a++ = rbuf4_i[ct2];
+              /* *mat_a++ = rbuf4_i[ct2]; */
+              PetscMemcpy(mat_a,rbuf4_i+ct2*bs2,bs2*sizeof(Scalar)); mat_a += bs2;
               ilen++;
             }
           }
@@ -1258,9 +1291,8 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   PetscFree(lens);
 
   for ( i=0; i<ismax; i++ ) {
-    ierr = MatAssemblyBegin(submats[i], FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(submats[i], FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(submats[i], MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(submats[i], MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
-
   return 0;
 }
