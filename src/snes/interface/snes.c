@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.118 1997/03/20 19:00:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.119 1997/03/26 01:37:42 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -557,7 +557,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   PetscHeaderCreate(snes,_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm);
   PLogObjectCreate(snes);
   snes->max_its           = 50;
-  snes->max_funcs	  = 1000;
+  snes->max_funcs	  = 10000;
   snes->norm		  = 0.0;
   if (type == SNES_UNCONSTRAINED_MINIMIZATION) {
     snes->rtol		  = 1.e-8;
@@ -1201,7 +1201,7 @@ int SNESDestroy(SNES snes)
 {
   int ierr;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  ierr = (*(snes)->destroy)((PetscObject)snes); CHKERRQ(ierr);
+  if (snes->destroy) {ierr = (*(snes)->destroy)((PetscObject)snes); CHKERRQ(ierr);}
   if (snes->kspconvctx) PetscFree(snes->kspconvctx);
   if (snes->mfshell) MatDestroy(snes->mfshell);
   ierr = SLESDestroy(snes->sles); CHKERRQ(ierr);
