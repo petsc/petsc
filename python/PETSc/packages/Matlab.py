@@ -67,7 +67,7 @@ class Configure(PETSc.package.Package):
               self.mex = os.path.join(matlab,'bin','mex')
               self.cc = '${CC}'
               self.command = os.path.join(matlab,'bin','matlab')
-              self.include = '-I'+os.path.join(matlab,'extern','include')
+              self.include = [os.path.join(matlab,'extern','include')]
               if matlab_arch == 'mac':
                 matlab_dl = ' -L'+os.path.join(matlab,'sys','os','mac')+' -ldl'
               else:
