@@ -380,7 +380,7 @@ class LanguageProcessor(args.ArgumentProcessor):
   def getSharedLinkerObject(self, language):
     language = self.normalizeLanguage(language)
     if not language in self.sharedLinkerObject:
-      self.sharedLinkerObject[language] = self.getLanguageModule(language).Linker(self.argDB)
+      self.sharedLinkerObject[language] = self.getLanguageModule(language).SharedLinker(self.argDB)
       self.sharedLinkerObject[language].setup()
     if not self.compilers is None:
       self.sharedLinkerObject[language].configCompilers = self.compilers

@@ -21,8 +21,12 @@ class Processor(logging.Logger):
     args.ArgumentProcessor.setArgDB(self, argDB)
     if hasattr(self, 'configCompilers'):
       self.configCompilers.argDB = argDB
+      self.configCompilers.framework.argDB = argDB
     if hasattr(self, 'configLibraries'):
       self.configLibraries.argDB = argDB
+      self.configLibraries.framework.argDB = argDB
+    if hasattr(self, 'versionControl'):
+      self.versionControl.argDB = argDB
     return
   argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
 

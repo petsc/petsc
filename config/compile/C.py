@@ -88,3 +88,43 @@ class Linker(config.compile.processor.Processor):
     if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
       return base+'.exe'
     return base
+
+class SharedLinker(config.compile.processor.Processor):
+  '''The C linker'''
+  def __init__(self, argDB):
+    self.compiler = Compiler(argDB)
+    self.configLibraries = config.libraries.Configure(config.framework.Framework(argDB = argDB))
+    config.compile.processor.Processor.__init__(self, argDB, ['LD_SHARED', self.compiler.name], 'LDFLAGS', '.o', None)
+    self.outputFlag = '-o'
+    self.libraries  = sets.Set()
+    return
+
+  def getFlags(self):
+    '''Returns a string with the flags specified for running this processor.'''
+    if not hasattr(self, '_flags'):
+      flagsName = self.flagsName[:]
+      if self.name == self.compiler.name:
+        flagsName.extend(self.compiler.flagsName)
+      if hasattr(self, 'configCompilers'):
+        flags = [getattr(self.configCompilers, name) for name in flagsName]
+      else:
+        flags = [self.argDB[name] for name in flagsName]
+      flags.extend(self.configCompilers.setCompilers.sharedLibraryFlags)
+      return ' '.join(flags)
+    return self._flags
+  flags = property(getFlags, config.compile.processor.Processor.setFlags, doc = 'The flags for the executable')
+
+  def getExtraArguments(self):
+    if not hasattr(self, '_extraArguments'):
+      if not 'LIBS' in self.argDB:
+        return ''
+      return self.argDB['LIBS']
+    return self._extraArguments
+  extraArguments = property(getExtraArguments, config.compile.processor.Processor.setExtraArguments, doc = 'Optional arguments for the end of the command')
+
+  def getTarget(self, source, shared):
+    import os
+    import sys
+
+    base, ext = os.path.splitext(source)
+    return base+'.'+self.configCompilers.setCompilers.sharedLibraryExt
