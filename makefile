@@ -175,20 +175,9 @@ build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree \
-         2>&1 | tee make_log_${BOPT} | egrep "(^lib|^*\.c:|Error)"
+         2>&1 | tee make_log_${BOPT}
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
 	-@chmod g+w  ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
-	-@echo "Completed building libraries"
-	-@echo "========================================="
-#
-# Builds the PETSc libraries
-# This target is the same as 'build', but uses the 'lib' target instead
-#
-build_lt:
-	-@echo "BEGINNING TO COMPILE LIBTOOL LIBRARIES IN ALL DIRECTORIES"
-	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=lib tree \
-          2>&1 | tee make_log_${BOPT} | egrep "(^lib|^*\.c:|Error)"
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 #
@@ -545,8 +534,7 @@ exercises:
 	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
 	-@echo "========================================="
 
-.PHONY: info info_h build build_lt testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
+.PHONY: info info_h build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples updatewebdocs alldoc allmanualpages \
         allhtml allcleanhtml allfortranstubs allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
         start_configure configure_petsc configure_clean
-

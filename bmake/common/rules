@@ -110,9 +110,12 @@ libfast: chklib_dir ${SOURCEC} ${SOURCEF}
 	else \
         if [ "${SOURCEC}" != "" ]; then \
 	        if test -n "${LIBTOOL}"; then \
-	            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} libc; \
-	            ${RANLIB} ${LIBNAME}; \
-	            ${RM} ${OBJS}; \
+	            for filename in ${SOURCEC} ${SSOURCE}; do \
+	                ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $$filename; \
+	            done; \
+	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
+	            ${AR} ${AR_FLAGS} ${LT_LIBNAME} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
+	            ${RM} ${OBJSC} ${SOBJS}; \
 	        else \
 	            ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCEC} ${SSOURCE}; \
 	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \

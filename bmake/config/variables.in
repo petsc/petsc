@@ -18,6 +18,7 @@ LIB_SUFFIX         = a
 
 top_builddir       = @PETSC_DIR@
 LIBTOOL            = @LIBTOOL@
+PETSC_LIBTOOL      = ${PETSC_DIR}/bin/petsc_libtool
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = @LT_CC@ @CC@ @CC_SHARED_OPT@
