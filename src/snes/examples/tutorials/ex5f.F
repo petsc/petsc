@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.21 1997/03/26 01:38:02 bsmith Exp curfman $";
+C "$Id: ex5f.F,v 1.22 1997/05/01 18:42:15 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -45,51 +45,8 @@ C  --------------------------------------------------------------------------
       program main
       implicit none
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                    Include files
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C
-C  This program uses CPP for preprocessing, as indicated by the use of
-C  PETSc include files in the directory petsc/include/FINCLUDE.  This
-C  convention enables use of the CPP preprocessor, which allows the use
-C  of the #include statements that define PETSc objects and variables.
-C
-C  Use of the conventional Fortran include statements is also supported
-C  In this case, the PETsc include files are located in the directory
-C  petsc/include/finclude.
-C         
-C  Since one must be very careful to include each file no more than once
-C  in a Fortran routine, application programmers must exlicitly list
-C  each file needed for the various PETSc components within their
-C  program (unlike the C/C++ interface).
-C
-C  See the Fortran section of the PETSc users manual for details.
-C
-C  The following include statements are generally used in SNES Fortran
-C  programs:
-C     petsc.h  - base PETSc routines
-C     vec.h    - vectors
-C     mat.h    - matrices
-C     ksp.h    - Krylov subspace methods
-C     pc.h     - preconditioners
-C     sles.h   - SLES interface
-C     snes.h   - SNES interface
-C  In addition, we need the following for use of distributed arrays
-C     da.h     - distributed arrays (DAs)
-C  Other include statements may be needed if using additional PETSc
-C  routines in a Fortran program, e.g.,
-C     viewer.h - viewers
-C     is.h     - index sets
-C
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/da.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/ksp.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/snes.h"
-C
+#include "ex5f.h"
+
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                   Variable declarations
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -97,14 +54,14 @@ C
 C  The application context to contain data needed by the 
 C  application-provided call-back routines, FormJacobian() and
 C  FormFunction().  In this example the application context is
-C  a Fortran integer array.  Note that we can store (pointers to)
-C  PETSc objects within this array.
-C     user(1) = mx     - discretization in x-direction
-C          2  = my     - discretization in y-direction
-C          3  = da     - distributed array
-C          4  = localX - local work vector (including ghost points)
-C          5  = localF - local work vector (including ghost points)
-C          6  = rank   - processor rank within communicator
+C  a Fortran common block.  Note that we can store (pointers to)
+C  PETSc objects within this common block.
+C              mx     - discretization in x-direction
+C              my     - discretization in y-direction
+C              da     - distributed array
+C              localX - local work vector (including ghost points)
+C              localF - local work vector (including ghost points)
+C              rank   - processor rank within communicator
 C
 C  Variables:
 C     snes        - nonlinear solver
@@ -119,17 +76,11 @@ C     rank        - processor rank
 C     lambda      - nonlinearity parameter
 C
       SNES     snes
-      Vec      x, r, localX, localF
-      DA       da
+      Vec      x, r
       Mat      J
       integer  its, Nx, Ny, matrix_free, size, flg, N, ierr, m
-      integer  user(6), mx, my, rank
       Double   lambda_max, lambda_min, lambda
       integer  ltog_a(0:1), ltog_i, nloc
-
-C  Store nonlinearity parameter in common block
-
-      common /params/ lambda
 
 C  Note: Any user-defined Fortran routines (such as FormJacobian)
 C  MUST be declared as external.
@@ -173,9 +124,7 @@ C  Initialize problem parameters
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRA(1,0,' ')
       endif
-      user(1) = mx
-      user(2) = my
-      N       = mx*my
+      N = mx*my
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create nonlinear solver context
@@ -201,7 +150,6 @@ C  Create distributed array (DA) to manage parallel grid and vectors
       endif
       call DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,
      &                my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,da,ierr)
-      user(3) = da
 
 C
 C   Visualize the distribution of the array across the processors
@@ -215,13 +163,29 @@ C  vectors that are the same types
       call DAGetLocalVector(da,localX,ierr)
       call VecDuplicate(x,r,ierr)
       call VecDuplicate(localX,localF,ierr)
-      user(4) = localX
-      user(5) = localF
-      user(6) = rank
+
+C  Get local grid boundaries (for 2-dimensional DA):
+C       xs, ys   - starting grid indices (no ghost points)
+C       xm, ym   - widths of local grid (no ghost points)
+C       gxs, gys - starting grid indices (including ghost points)
+C       gxm, gym - widths of local grid (including ghost points)
+
+      call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
+     &                                         PETSC_NULL,ierr)
+      xs  = xs+1
+      ys  = ys+1
+      gxs = gxs+1
+      gys = gys+1
+
+      ye  = ys+ym-1
+      xe  = xs+xm-1
+      gye = gys+gym-1
+      gxe = gxs+gxm-1
 
 C  Set function evaluation routine and vector
 
-      call SNESSetFunction(snes,r,FormFunction,user,ierr)
+      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create matrix data structure; set Jacobian evaluation routine
@@ -257,7 +221,7 @@ C     for preallocating matrix memory.
           call MatCreateMPIAIJ(MPI_COMM_WORLD,m,m,N,N,5,PETSC_NULL,
      &                         3,PETSC_NULL,J,ierr)
         endif
-        call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
+        call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL,ierr)
 
 C       Get the global node numbers for all local nodes, including ghost points.
 C       Associate this mapping with the matrix for later use in setting matrix
@@ -287,7 +251,7 @@ C  for the nonlinear solver prior to calling SNESSolve().  In particular,
 C  to employ an initial guess of zero, the user should explicitly set
 C  this vector to zero by calling VecSet().
 
-      call FormInitialGuess(user,x,ierr)
+      call FormInitialGuess(x,ierr)
       call SNESSolve(snes,x,its,ierr) 
       if (rank .eq. 0) then
          write(6,100) its
@@ -316,47 +280,32 @@ C
 C  FormInitialGuess - Forms initial approximation.
 C
 C  Input Parameters:
-C  user - user-defined application context
 C  X - vector
 C
 C  Output Parameter:
 C  X - vector
 C
-      subroutine FormInitialGuess(user,X,ierr)
+C  Notes:
+C  This routine serves as a wrapper to the lower-level routine
+C  "ApplicationInitialGuess", where the actual computations are 
+C  done using standard Fortran-style computations over a 2-dim array.
+C  This routine merely handles ghost point scatters and accesses
+C  the local vector data via VecGetArray() and VecRestoreArray().
+C
+      subroutine FormInitialGuess(X,ierr)
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/da.h"
-#include "include/FINCLUDE/snes.h"
+#include "ex5f.h"
 
       Vec      X, localX
-      DA       da
-      integer  user(*), xs, ys, xm, ym, gxm, gym, gxs, gys, xe, ye
-      integer  i, j, row, mx, my, ierr, hxdhy, hydhx
-      Scalar   lambda, temp1, temp, hx, hy, sc, one
+      integer  ierr
 
 C  Declarations for use with local arrays
-      Scalar   lx_v(1)
+      Scalar   lx_v(0:1)
       common   lx_v
       integer  lx_i
 
-      common /params/ lambda
-
 C  Set parameters
-
-      ierr   = 0
-      one    = 1.0
-      mx     = user(1)
-      my     = user(2)
-      da     = user(3)
-      localX = user(4)
-      hx     = one/(DBLE(mx-1))
-      hy     = one/(DBLE(my-1))
-      sc     = hx*hy*lambda
-      hxdhy  = hx/hy
-      hydhx  = hy/hx
-      temp1  = lambda/(lambda + one)
 
 C  Get a pointer to vector data.
 C    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -368,34 +317,9 @@ C      C version.  See the users manual for details.
 
       call VecGetArray(localX,lx_v,lx_i,ierr)
 
-C  Get local grid boundaries (for 2-dimensional DA):
-C       xs, ys   - starting grid indices (no ghost points)
-C       xm, ym   - widths of local grid (no ghost points)
-C       gxs, gys - starting grid indices (including ghost points)
-C       gxm, gym - widths of local grid (including ghost points)
-
-      call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
-     &                                         PETSC_NULL,ierr)
-      ye = ys+ym-1
-      xe = xs+xm-1
-
 C  Compute initial guess over the locally owned part of the grid
 
-      do 20 j=ys,ye
-         temp = DBLE(min(j,my-j-1))*hy
-         do 10 i=xs,xe
-            row = i - gxs + (j - gys)*gxm
-            if (i .eq. 0 .or. j .eq. 0 
-     &             .or. i .eq. mx-1 .or. j .eq. my-1) then
-              lx_a(row) = 0.0
-            else
-              lx_a(row) = temp1 *
-     &          sqrt(min(DBLE(min(i,mx-i-1))*hx,temp))
-            endif
- 10      continue
- 20   continue
-
+      call ApplicationInitialGuess(lx_v(lx_i),ierr)
 
 C  Restore vector
 
@@ -410,52 +334,95 @@ C  Insert values into global vector
 
 C ---------------------------------------------------------------------
 C
+C  ApplicationInitialGuess - Computes initial approximation, called by
+C  the higher level routine FormInitialGuess().
+C
+C  Input Parameter:
+C  x - local vector data
+C
+C  Output Parameters:
+C  x - local vector data
+C  ierr - error code 
+C
+C  Notes:
+C  This routine uses standard Fortran-style computations over a 2-dim array.
+C
+      subroutine ApplicationInitialGuess(x,ierr)
+
+      implicit none
+
+C  Input/output variables:
+      Scalar  x(gxs:gxe,gys:gye)
+      integer ierr
+
+#include "ex5f.h"
+
+C  Local variables:
+      integer  i, j, hxdhy, hydhx
+      Scalar   temp1, temp, hx, hy, sc, one
+
+C  Set parameters
+
+      ierr   = 0
+      one    = 1.0
+      hx     = one/(DBLE(mx-1))
+      hy     = one/(DBLE(my-1))
+      sc     = hx*hy*lambda
+      hxdhy  = hx/hy
+      hydhx  = hy/hx
+      temp1  = lambda/(lambda + one)
+
+      do 20 j=ys,ye
+         temp = DBLE(min(j-1,my-j))*hy
+         do 10 i=xs,xe
+            if (i .eq. 1 .or. j .eq. 1
+     &             .or. i .eq. mx .or. j .eq. my) then
+              x(i,j) = 0.0
+            else
+              x(i,j) = temp1 *
+     &          sqrt(min(DBLE(min(i-1,mx-i)*hx),DBLE(temp)))
+            endif
+ 10      continue
+ 20   continue
+
+      return 
+      end
+
+C ---------------------------------------------------------------------
+C
 C  FormFunction - Evaluates nonlinear function, F(x).
 C
 C  Input Parameters:
 C  snes - the SNES context
 C  X - input vector
-C  user - optional user-defined context, as set by SNESSetFunction()
+C  dummy - optional user-defined context, as set by SNESSetFunction()
+C          (not used here)
 C
 C  Output Parameter:
 C  F - function vector
 C
-      subroutine FormFunction(snes,X,F,user)
+C  Notes:
+C  This routine serves as a wrapper to the lower-level routine
+C  "ApplicationFunction", where the actual computations are done
+C  using standard Fortran-style computations over a 2-dim array.
+C  This routine merely handles ghost point scatters and accesses
+C  the local vector data via VecGetArray() and VecRestoreArray().
+C
+      subroutine FormFunction(snes,X,F,dummy)
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/da.h"
-#include "include/FINCLUDE/snes.h"
+#include "ex5f.h"
 
       SNES     snes
-      Vec      X, F, localX, localF
-      DA       da
-      Scalar   two, one, lambda, hx, hy, hxdhy, hydhx, sc
-      Scalar   u, uxx, uyy
-      integer  ierr, i, j, row, mx, my, xs, ys, xm, ym, xe, ye
-      integer  user(*), gxs, gys, gxm, gym
+      Vec      X, F
+      integer  dummy,ierr
 
 C  Declarations for use with local arrays
 
-      Scalar   lx_v(1), lf_v(1)
+      Scalar   lx_v(0:1), lf_v(0:1)
       common   lx_v, lf_v
       integer  lx_i, lf_i 
 
-      common /params/ lambda
-
-      one    = 1.0
-      two    = 2.0
-      mx     = user(1)
-      my     = user(2)
-      da     = user(3)
-      localX = user(4)
-      localF = user(5)
-      hx     = one/DBLE(mx-1)
-      hy     = one/DBLE(my-1)
-      sc     = hx*hy*lambda
-      hxdhy  = hx/hy
-      hydhx  = hy/hx
 
 C  Scatter ghost points to local vector, using the 2-step process
 C     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
@@ -476,35 +443,9 @@ C      C version.  See the Fortran chapter of the users manual for details.
       call VecGetArray(localX,lx_v,lx_i,ierr)
       call VecGetArray(localF,lf_v,lf_i,ierr)
 
-C  Get local grid boundaries
-
-      call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
-     &                                         PETSC_NULL,ierr)
-      ye = ys+ym-1
-      xe = xs+xm-1
-
 C  Compute function over the locally owned part of the grid
 
-      do 20 j=ys,ye
-         row = (j - gys)*gxm + xs - gxs - 1
-         do 10 i=xs,xe
-            row = row + 1
-            if (i .eq. 0 .or. j .eq. 0 
-     &             .or. i .eq. mx-1 .or. j .eq. my-1) then
-               lf_a(row) = lx_a(row)
-            else
-               u = lx_a(row)
-               uxx = hydhx * (two*u
-     &               - lx_a(row-1)
-     &               - lx_a(row+1))
-               uyy = hxdhy * (two*u 
-     &               - lx_a(row-gxm) 
-     &               - lx_a(row+gxm))
-               lf_a(row) = uxx + uyy - sc*exp(u)
-            endif
- 10      continue
- 20   continue
+      call ApplicationFunction(lx_v(lx_i),lf_v(lf_i),ierr)
 
 C  Restore vectors
 
@@ -516,7 +457,70 @@ C  Insert values into global vector
       call DALocalToGlobal(da,localF,INSERT_VALUES,F,ierr)
       call PLogFlops(11*ym*xm,ierr)
 
+c      call VecView(X,VIEWER_STDOUT_WORLD)
+c      call VecView(F,VIEWER_STDOUT_WORLD)
+
       return 
+      end
+
+C ---------------------------------------------------------------------
+C
+C  ApplicationFunction - Computes nonlinear function, called by
+C  the higher level routine FormFunction().
+C
+C  Input Parameter:
+C  x - local vector data
+C
+C  Output Parameters:
+C  f - local vector data, f(x)
+C  ierr - error code 
+C
+C  Notes:
+C  This routine uses standard Fortran-style computations over a 2-dim array.
+C
+      subroutine ApplicationFunction(x,f,ierr)
+
+      implicit none
+
+C  Input/output variables:
+
+      Scalar   x(gxs:gxe,gys:gye), f(gxs:gxe,gys:gye)
+      integer  ierr
+
+#include "ex5f.h"
+
+C  Local variables:
+
+      Scalar   two, one, hx, hy, hxdhy, hydhx, sc
+      Scalar   u, uxx, uyy
+      integer  ierr, i, j
+
+      one    = 1.0
+      two    = 2.0
+      hx     = one/DBLE(mx-1)
+      hy     = one/DBLE(my-1)
+      sc     = hx*hy*lambda
+      hxdhy  = hx/hy
+      hydhx  = hy/hx
+
+C  Compute function over the locally owned part of the grid
+
+      do 20 j=ys,ye
+         do 10 i=xs,xe
+            if (i .eq. 1 .or. j .eq. 1
+     &             .or. i .eq. mx .or. j .eq. my) then
+               f(i,j) = x(i,j)
+            else
+               u = x(i,j) 
+               uxx = hydhx * (two*u
+     &                - x(i-1,j) - x(i+1,j))
+               uyy = hxdhy * (two*u - x(i,j-1) - x(i,j+1))
+               f(i,j) = uxx + uyy - sc*exp(u)
+            endif
+ 10      continue
+ 20   continue
+
+      return
       end
 
 C ---------------------------------------------------------------------
@@ -526,7 +530,8 @@ C
 C  Input Parameters:
 C  snes - the SNES context
 C  x - input vector
-C  user - optional user-defined context, as set by SNESSetJacobian()
+C  dummy - optional user-defined context, as set by SNESSetJacobian()
+C          (not used here)
 C
 C  Output Parameters:
 C  A - Jacobian matrix
@@ -557,27 +562,18 @@ C          MatSetValues()
 C  Option (A) seems cleaner/easier in many cases, and is the procedure
 C  used in this example.
 C
-      subroutine FormJacobian(snes,X,jac,B,flag,user)
+      subroutine FormJacobian(snes,X,jac,B,flag,dummy)
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/da.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/snes.h"
+#include "ex5f.h"
 
       SNES         snes
-      DA           da
-      Vec          X, localX
+      Vec          X
       Mat          jac, B
       MatStructure flag
-      integer      user(*), ierr, row, mx, my, col(5), xe, ye
-      integer      xs, ys, xm, ym, gxs, gys, gxm, gym, i, j
-      Scalar       two, one, lambda, hx, hy, hxdhy, hydhx
+      integer      dummy, ierr, row, col(5), i, j
+      Scalar       two, one, hx, hy, hxdhy, hydhx
       Scalar       sc, v(5)
-
-      common /params/ lambda
 
 C  Declarations for use with local arrays
 
@@ -589,10 +585,6 @@ C  Set parameters
 
       one    = 1.0
       two    = 2.0
-      mx     = user(1)
-      my     = user(2)
-      da     = user(3)
-      localX = user(4)
       hx     = one/DBLE(mx-1)
       hy     = one/DBLE(my-1)
       sc     = hx*hy
@@ -610,14 +602,6 @@ C  by placing code between these two statements.
 C  Get a pointer to vector data
 
       call VecGetArray(localX,lx_v,lx_i,ierr)
-
-C  Get local grid boundaries
-
-      call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
-     &                                         PETSC_NULL,ierr)
-      ye = ys+ym-1
-      xe = xs+xm-1
 
 C  Compute entries for the locally owned part of the Jacobian.
 C   - Currently, all PETSc parallel matrix formats are partitioned by
@@ -637,9 +621,10 @@ C     in Fortran as well as in C.
          row = (j - gys)*gxm + xs - gxs - 1
          do 10 i=xs,xe
             row = row + 1
+c            write(6,*) 'j,i,row = ',j,i,row
 C           boundary points
-            if (i .eq. 0 .or. j .eq. 0 
-     &             .or. i .eq. mx-1 .or. j .eq. my-1) then
+            if (i .eq. 1 .or. j .eq. 1
+     &             .or. i .eq. mx .or. j .eq. my) then
                call MatSetValuesLocal(jac,1,row,1,row,one,
      &                           INSERT_VALUES,ierr)
 C           interior grid points
