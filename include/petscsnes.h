@@ -1,64 +1,57 @@
-/* $Id: snes.h,v 1.1 1995/03/20 00:12:47 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.2 1995/03/20 00:23:58 bsmith Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
 
-typedef enum { NLE_NLS1,
-               NLE_NTR1,
-               NLE_NTR2_DOG,
-               NLE_NTR2_LIN,
-               NLE_NBASIC,
-               NLM_NLS1,
-               NLM_NTR1 }
-  NLMETHOD;
+typedef struct _SNES* SNES;
 
-typedef enum { NLINITIAL_GUESS,
-               NLRESIDUAL,
-               NLFUNCTION,
-               NLGRADIENT,
-               NLMATRIX,
-               NLCORE,
-               NLSTEP_SETUP,
-               NLSTEP_COMPUTE,
-               NLSTEP_DESTROY,
-               NLTOTAL }
-   NLPHASE;
+typedef enum { SNES_NLS1,
+               SNES_NTR1,
+               SNES_NTR2_DOG,
+               SNES_NTR2_LIN,
+               SNES_NBASIC,
+               SUMS_NLS1,
+               SUMS_NTR1 }
+  SNESMETHOD;
 
-typedef enum { NLE, NLM } NLTYPE;
+typedef enum { SNESINITIAL_GUESS,
+               SNESRESIDUAL,
+               SNESFUNCTION,
+               SNESGRADIENT,
+               SNESMATRIX,
+               SNESCORE,
+               SNESSTEP_SETUP,
+               SNESSTEP_COMPUTE,
+               SNESSTEP_DESTROY,
+               SNESTOTAL }
+   SNESPHASE;
 
-extern void NLSetResidual               ANSI_ARGS((NLCtx*, void *));
-extern void NLSetResidualRoutine        ANSI_ARGS((NLCtx*, 
-                                        void (*)(NLCtx*, void*, void*), int ));
-extern void NLSetMaxResidualEvaluations ANSI_ARGS((NLCtx*, int ));
-extern void *NLGetResidual              ANSI_ARGS((NLCtx *));
-extern void NLiResid                    ANSI_ARGS((NLCtx*, void *, void *));
+typedef enum { SNES, SUMS } SNESTYPE;
 
-extern void NLENewtonStatisticsMonitor  ANSI_ARGS((NLCtx*, void*, void*, 
+extern int SNESSetResidual(SNES,Vec);
+extern int SNESGetResidual(SNES,Vec*);
+extern int SNESSetResidualRoutine(SNES,int (*)(void*,Vec,Vec),int,void*);
+extern int SNESSetMaxResidualEvaluations(SNES,int);
+
+extern int SNESDefaultMonitor     ANSI_ARGS((NLCtx*, void*, void*, 
                                         double *));
-extern void NLENewtonDefaultMonitor     ANSI_ARGS((NLCtx*, void*, void*, 
+extern int SNESDefaultConverged   ANSI_ARGS((NLCtx*, double*, double*, 
                                         double *));
-extern int  NLENewtonDefaultConverged   ANSI_ARGS((NLCtx*, double*, double*, 
-                                        double *));
-extern char *NLENewtonDefaultConvergedType ANSI_ARGS((NLCtx *));
-
 extern int SNESGetSLES(SNES,SLES*);
 
-extern void     NLSlesSetDampingFlag	ANSI_ARGS((NLCtx*, int));
-extern void     NLSlesSetSaveSolverCtx	ANSI_ARGS((NLCtx *));
-
-/* ---- Routines to extract information from the NLSles context ---- */
+extern int     SNESSetDampingFlag	ANSI_ARGS((NLCtx*, int));
 extern int      NLSlesGetDampingFlag	ANSI_ARGS((NLCtx *));
-extern int      NLSlesSaveSolverCtx	ANSI_ARGS((NLCtx *));
+
 
 /* --- Miscellaneous routines --- */
-extern void     NLSlesSetUp 		ANSI_ARGS((NLCtx*, void *));
-extern void     NLSlesSetGeneralStep	ANSI_ARGS((NLCtx*,
+extern int     SNESSetUp(SNES);
+extern int     NLSlesSetGeneralStep	ANSI_ARGS((NLCtx*,
 					void (*)(NLCtx *, void *) ));
-extern void     NLSlesSetRoutines	ANSI_ARGS((NLCtx*,
-					void (*)(NLCtx *, void *) ));
-extern void     NLSlesApplyForwardSolve ANSI_ARGS((NLCtx*, void*, void *));
-extern void     NLSlesApplyBackwardSolve ANSI_ARGS((NLCtx*, void*, void *));
-       void     NLSlesCheck		ANSI_ARGS((NLCtx*, char*));
+extern int     NLSlesSetRoutines	ANSI_ARGS((NLCtx*,
+					void (*)(NLCtx *, int *) ));
+extern int     NLSlesApplyForwardSolve ANSI_ARGS((NLCtx*, void*, void *));
+extern int     NLSlesApplyBackwardSolve ANSI_ARGS((NLCtx*, void*, void *));
+       int     NLSlesCheck		ANSI_ARGS((NLCtx*, char*));
 extern int      NLSlesSolveScale	ANSI_ARGS((NLCtx*, void*, void*, 
 					void*, double*, double*, double*, 
 					double*, double*, void *));
