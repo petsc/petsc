@@ -388,7 +388,8 @@ class Configure(config.base.Configure):
   def fixSolaris(self):
     '''I hate this. MPI should report this somehow.'''
     if self.arch.archBase.startswith('solaris'):
-      self.executeTest(self.libraries.add, [['rt', 'nsl', 'aio'], 'exit'])
+      if self.executeTest(self.libraries.check, [['rt', 'nsl', 'aio'], 'exit']):
+        self.lib.extend([self.libraries.toString(l) for l in ['rt', 'nsl', 'aio']])
     return
 
   def configureLibrary(self):
