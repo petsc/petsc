@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itres.c,v 1.33 1998/04/24 22:10:27 curfman Exp curfman $";
+static char vcid[] = "$Id: itres.c,v 1.34 1999/01/04 20:34:18 curfman Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -40,12 +40,10 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
   if (ksp->pc_side == PC_RIGHT) {
     if (vbinvf) {ierr = VecCopy(vb,vbinvf); CHKERRQ(ierr);}
     vbinvf = vb;
-  }
-  else if (ksp->pc_side == PC_LEFT) {
+  } else if (ksp->pc_side == PC_LEFT) {
     ierr = PCApply(ksp->B,vb,vbinvf); CHKERRQ(ierr);
-  }
-  else {
-    SETERRQ(PETSC_ERR_SUP,0,"Only right and left preconditioning are currently supported.");
+  } else {
+    SETERRQ(PETSC_ERR_SUP,0,"Only right and left preconditioning are currently supported");
   }
   if (!ksp->guess_zero) {
     /* compute initial residual: f - M*x */
@@ -54,8 +52,7 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
       /* we want a * binv * b * x, or just a * x for the first step */
       /* a*x into temp */
       ierr = MatMult(Amat,vsoln,vt1); CHKERRQ(ierr);
-    }
-    else {
+    } else {
       /* else we do binv * a * x */
       ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,vsoln,vt1,vt2); CHKERRQ(ierr);
     }
@@ -63,8 +60,7 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
     ierr = VecCopy(vbinvf,vres); CHKERRQ(ierr);
     ierr = VecAXPY(&one,vt1,vres); CHKERRQ(ierr);
           /* inv(b)(f - a*x) into dest */
-  }
-  else {
+  } else {
     ierr = VecCopy(vbinvf,vres); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -103,8 +99,7 @@ int KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
   if (ksp->pc_side == PC_RIGHT) {
     ierr = PCApply(ksp->B,vsoln,vt1); CHKERRQ(ierr);
     ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
-  }
-  else if (ksp->pc_side == PC_SYMMETRIC) {
+  } else if (ksp->pc_side == PC_SYMMETRIC) {
     ierr = PCApplySymmetricRight(ksp->B,vsoln,vt1); CHKERRQ(ierr);
     ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
   }
