@@ -1,23 +1,24 @@
-C "$Id: ex5fs.F,v 1.2 1997/11/24 23:13:31 bsmith Exp bsmith $";
-C
+!
+! "$Id: ex5fs.F,v 1.3 1998/03/24 16:42:25 bsmith Exp balay $";
+!
 
-C ---------------------------------------------------------------------
-C
-C  Fortran version of the user function based on shared memory
-C  this routine is called only by MPI process 0 in the computation
-C  but uses threads to run the loops in parallel.
+! ---------------------------------------------------------------------
+!
+!  Fortran version of the user function based on shared memory
+!  this routine is called only by MPI process 0 in the computation
+!  but uses threads to run the loops in parallel.
 
-C
-C  Input Parameter:
-C  x - global array containing input values
-C
-C  Output Parameters:
-C  f - global array containing output values
-C  ierr - error code 
-C
-C  Notes:
-C  This routine uses standard Fortran-style computations over a 2-dim array.
-C
+!
+!  Input Parameter:
+!  x - global array containing input values
+!
+!  Output Parameters:
+!  f - global array containing output values
+!  ierr - error code 
+!
+!  Notes:
+!  This routine uses standard Fortran-style computations over a 2-dim array.
+!
       subroutine ApplicationFunctionFortran(lambda,mx,my,x,f,ierr)
 
       implicit none
@@ -25,11 +26,11 @@ C
 #include "include/FINCLUDE/petsc.h"
       integer  ierr,mx,my
 
-C  Input/output variables:
+!  Input/output variables:
       Scalar   x(mx,my), f(mx,my), lambda
 
 
-C  Local variables:
+!  Local variables:
       Scalar   two, one, hx, hy, hxdhy, hydhx, sc
       Scalar   u, uxx, uyy
       integer  i, j
@@ -42,7 +43,7 @@ C  Local variables:
       hxdhy  = hx/hy
       hydhx  = hy/hx
 
-C  Compute function over the entire grid
+!  Compute function over the entire grid
 
       do 20 j=1,my
          do 10 i=1,mx

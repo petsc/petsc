@@ -1,8 +1,8 @@
-
-C      "$Id: ex36.F,v 1.21 1997/10/10 04:04:09 bsmith Exp bsmith $";
-C
-C   This program demonstrates use of PETSc dense matrices.
-C
+!
+!      "$Id: ex36.F,v 1.22 1998/03/12 23:19:48 bsmith Exp balay $";
+!
+!   This program demonstrates use of PETSc dense matrices.
+!
 
 #include "include/FINCLUDE/petsc.h"
 
@@ -10,27 +10,27 @@ C
 
       call PetscInitialize(PETSC_NULL_CHARACTER,err)
 
-C  Demo of PETSc-allocated dense matrix storage
+!  Demo of PETSc-allocated dense matrix storage
       call Demo1()
 
-C  Demo of user-allocated dense matrix storage
+!  Demo of user-allocated dense matrix storage
       call Demo2()
 
       call PetscFinalize(err)
       end
 
-C -----------------------------------------------------------------
-C
-C  Demo1 -  This subroutine demonstrates the use of PETSc-allocated dense
-C  matrix storage.  Here MatGetArray() is used for direct access to the
-C  array that stores the dense matrix.  The user declares an array (aa(1))
-C  and index variable (ia), which are then used together to manipulate
-C  the array contents.
-C
-C  Note the use of PETSC_NULL in MatCreateSeqDense() to indicate that no
-C  storage is being provided by the user. (Do NOT pass a zero in that
-C  location.)
-C
+! -----------------------------------------------------------------
+!
+!  Demo1 -  This subroutine demonstrates the use of PETSc-allocated dense
+!  matrix storage.  Here MatGetArray() is used for direct access to the
+!  array that stores the dense matrix.  The user declares an array (aa(1))
+!  and index variable (ia), which are then used together to manipulate
+!  the array contents.
+!
+!  Note the use of PETSC_NULL in MatCreateSeqDense() to indicate that no
+!  storage is being provided by the user. (Do NOT pass a zero in that
+!  location.)
+!
       subroutine Demo1()
 
 #include "include/FINCLUDE/petsc.h"
@@ -45,35 +45,35 @@ C
       n = 4
       m = 5
 
-C  Create matrix
+!  Create matrix
       call MatCreateSeqDense(PETSC_COMM_SELF,m,n,PETSC_NULL,A,err)
-C      call MatCreateMPIDense(PETSC_COMM_WORLD,m,n,m,n,PETSC_NULL,A,err)
+!      call MatCreateMPIDense(PETSC_COMM_WORLD,m,n,m,n,PETSC_NULL,A,err)
 
-C  Access array storage
+!  Access array storage
       call MatGetArray(A,aa,ia,err)
 
-C  Set matrix values directly
+!  Set matrix values directly
       call FillUpMatrix(m,n,aa(ia+1))
 
       call MatRestoreArray(A,aa,ia,err)
 
-C  Finalize matrix assembly
+!  Finalize matrix assembly
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,err)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,err)
 
-C  View matrix
+!  View matrix
       call MatView(A,VIEWER_STDOUT_SELF,err)
 
-C  Clean up
+!  Clean up
       call MatDestroy(A,err)     
       return 
       end
 
-C -----------------------------------------------------------------
-C
-C  Demo2 -  This subroutine demonstrates the use of user-allocated dense
-C  matrix storage.
-C
+! -----------------------------------------------------------------
+!
+!  Demo2 -  This subroutine demonstrates the use of user-allocated dense
+!  matrix storage.
+!
       subroutine Demo2()
 
 #include "include/FINCLUDE/petsc.h"
@@ -85,25 +85,25 @@ C
       Mat       A
       Scalar    aa(m,n)
 
-C  Create matrix
+!  Create matrix
       call MatCreateSeqDense(PETSC_COMM_SELF,m,n,aa,A,err)
 
-C  Set matrix values directly
+!  Set matrix values directly
       call FillUpMatrix(m,n,aa)
 
-C  Finalize matrix assembly
+!  Finalize matrix assembly
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,err)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,err)
 
-C  View matrix
+!  View matrix
       call MatView(A,VIEWER_STDOUT_SELF,err)
 
-C  Clean up
+!  Clean up
       call MatDestroy(A,err)     
       return 
       end
 
-C -----------------------------------------------------------------
+! -----------------------------------------------------------------
 
       subroutine FillUpMatrix(m,n,X)
       integer          m,n,i,j

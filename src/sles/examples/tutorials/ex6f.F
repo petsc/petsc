@@ -1,32 +1,32 @@
-
-C    "$Id: ex6f.F,v 1.22 1997/09/22 15:20:42 balay Exp bsmith $";
-C
-C  Description: This example demonstrates repeated linear solves as
-C  well as the use of different preconditioner and linear system
-C  matrices.  This example also illustrates how to save PETSc objects
-C  in common blocks.
-C
-C/*T
-C  Concepts: SLES^Repeatedly solving linear systems;
-C  Concepts: SLES^Different matrices for linear system and preconditioner;
-C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-C  Routines: SLESSolve(); SLESGetKSP(); KSPSetMonitor();
-C  Routines: KSPBuildSolution();
-C  Processors: n
-CT*/
-C
-C  The following include statements are required for SLES Fortran programs:
-C     petsc.h  - base PETSc routines
-C     vec.h    - vectors
-C     mat.h    - matrices
-C     pc.h     - preconditioners
-C     ksp.h    - Krylov subspace methods
-C     sles.h   - SLES interface
-C  Other include statements may be needed if using additional PETSc
-C  routines in a Fortran program, e.g.,
-C     viewer.h - viewers
-C     is.h     - index sets
-C
+!
+!    "$Id: ex6f.F,v 1.23 1997/11/28 16:20:38 bsmith Exp balay $";
+!
+!  Description: This example demonstrates repeated linear solves as
+!  well as the use of different preconditioner and linear system
+!  matrices.  This example also illustrates how to save PETSc objects
+!  in common blocks.
+!
+!/*T
+!  Concepts: SLES^Repeatedly solving linear systems;
+!  Concepts: SLES^Different matrices for linear system and preconditioner;
+!  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
+!  Routines: SLESSolve(); SLESGetKSP(); KSPSetMonitor();
+!  Routines: KSPBuildSolution();
+!  Processors: n
+!T*/
+!
+!  The following include statements are required for SLES Fortran programs:
+!     petsc.h  - base PETSc routines
+!     vec.h    - vectors
+!     mat.h    - matrices
+!     pc.h     - preconditioners
+!     ksp.h    - Krylov subspace methods
+!     sles.h   - SLES interface
+!  Other include statements may be needed if using additional PETSc
+!  routines in a Fortran program, e.g.,
+!     viewer.h - viewers
+!     is.h     - index sets
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/mat.h"
@@ -34,13 +34,13 @@ C
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/ksp.h"
 
-C  Variables:
-C
-C  A       - matrix that defines linear system
-C  sles    - SLES context
-C  ksp     - KSP context
-C  x, b, u - approx solution, RHS, exact solution vectors
-C
+!  Variables:
+!
+!  A       - matrix that defines linear system
+!  sles    - SLES context
+!  ksp     - KSP context
+!  x, b, u - approx solution, RHS, exact solution vectors
+!
       Vec     x, u, b
       Mat     A
       SLES    sles
@@ -56,23 +56,23 @@ C
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-nsteps',nsteps,flg,ierr)
 
-C  Create parallel matrix, specifying only its global dimensions.
-C  When using MatCreate(), the matrix format can be specified at
-C  runtime. Also, the parallel partitioning of the matrix is
-C  determined by PETSc at runtime.
+!  Create parallel matrix, specifying only its global dimensions.
+!  When using MatCreate(), the matrix format can be specified at
+!  runtime. Also, the parallel partitioning of the matrix is
+!  determined by PETSc at runtime.
 
       call MatCreate(PETSC_COMM_WORLD,m*n,m*n,A,ierr)
 
-C  The matrix is partitioned by contiguous chunks of rows across the
-C  processors.  Determine which rows of the matrix are locally owned. 
+!  The matrix is partitioned by contiguous chunks of rows across the
+!  processors.  Determine which rows of the matrix are locally owned. 
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
-C  Set matrix elements. 
-C   - Each processor needs to insert only elements that it owns
-C     locally (but any non-local elements will be sent to the
-C     appropriate processor during matrix assembly). 
-C   - Always specify global rows and columns of matrix entries.
+!  Set matrix elements. 
+!   - Each processor needs to insert only elements that it owns
+!     locally (but any non-local elements will be sent to the
+!     appropriate processor during matrix assembly). 
+!   - Always specify global rows and columns of matrix entries.
 
       do 10, II=Istart,Iend-1
         v = -1.0
@@ -98,39 +98,39 @@ C   - Always specify global rows and columns of matrix entries.
         call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
  10   continue
 
-C  Assemble matrix, using the 2-step process:
-C       MatAssemblyBegin(), MatAssemblyEnd()
-C  Computations can be done while messages are in transition
-C  by placing code between these two statements.
+!  Assemble matrix, using the 2-step process:
+!       MatAssemblyBegin(), MatAssemblyEnd()
+!  Computations can be done while messages are in transition
+!  by placing code between these two statements.
 
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
-C  Create parallel vectors.
-C   - When using VecCreate(), the parallel partitioning of the vector
-C     is determined by PETSc at runtime.
-C   - Note: We form 1 vector from scratch and then duplicate as needed.
+!  Create parallel vectors.
+!   - When using VecCreate(), the parallel partitioning of the vector
+!     is determined by PETSc at runtime.
+!   - Note: We form 1 vector from scratch and then duplicate as needed.
 
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 
-C  Create linear solver context
+!  Create linear solver context
 
       call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
 
-C  Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
+!  Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
 
       call SLESSetFromOptions(sles,ierr)
 
-C  Solve several linear systems in succession
+!  Solve several linear systems in succession
 
       do 100 i=1,nsteps
          call solve1(sles,A,x,b,u,i,nsteps,ierr)
  100  continue
 
-C  Free work space.  All PETSc objects should be destroyed when they
-C  are no longer needed.
+!  Free work space.  All PETSc objects should be destroyed when they
+!  are no longer needed.
 
       call VecDestroy(u,ierr)
       call VecDestroy(x,ierr)
@@ -141,8 +141,8 @@ C  are no longer needed.
       call PetscFinalize(ierr)
       end
 
-C -----------------------------------------------------------------------
-C
+! -----------------------------------------------------------------------
+!
       subroutine solve1(sles,A,x,b,u,count,nsteps,ierr)
 
 #include "include/FINCLUDE/petsc.h"
@@ -152,14 +152,14 @@ C
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/ksp.h"
 
-C
-C   solve1 - This routine is used for repeated linear system solves.
-C   We update the linear system matrix each time, but retain the same
-C   preconditioning matrix for all linear solves.
-C
-C      A - linear system matrix
-C      A2 - preconditioning matrix
-C
+!
+!   solve1 - This routine is used for repeated linear system solves.
+!   We update the linear system matrix each time, but retain the same
+!   preconditioning matrix for all linear solves.
+!
+!      A - linear system matrix
+!      A2 - preconditioning matrix
+!
       Scalar  v, val
       integer II, ierr, Istart, Iend, count, nsteps, its
       Mat     A
@@ -167,12 +167,12 @@ C
       KSP     ksp
       Vec     x, b, u
 
-C Use common block to retain matrix between successive subroutine calls
+! Use common block to retain matrix between successive subroutine calls
       Mat              A2
       integer          rank, pflag
       common /my_data/ A2, pflag, rank
 
-C First time thorough: Create new matrix to define the linear system
+! First time thorough: Create new matrix to define the linear system
       if (count .eq. 1) then
         call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
         pflag = 0
@@ -181,13 +181,13 @@ C First time thorough: Create new matrix to define the linear system
           if (rank .eq. 0) write(6,100)
         endif
         call MatConvert(A,MATSAME,A2,ierr)
-C All other times: Set previous solution as initial guess for next solve.
+! All other times: Set previous solution as initial guess for next solve.
       else
         call SLESGetKSP(sles,ksp,ierr)
         call KSPSetInitialGuessNonzero(ksp,ierr)
       endif
 
-C Alter the matrix A a bit
+! Alter the matrix A a bit
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
       do 20, II=Istart,Iend-1
         v = 2.0
@@ -199,20 +199,20 @@ C Alter the matrix A a bit
       endif
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
-C Set the exact solution; compute the right-hand-side vector
+! Set the exact solution; compute the right-hand-side vector
       val = 1.0*count
       call VecSet(val,u,ierr)
       call MatMult(A,u,b,ierr)
 
-C Set operators, keeping the identical preconditioner matrix for
-C all linear solves.  This approach is often effective when the
-C linear systems do not change very much between successive steps.
+! Set operators, keeping the identical preconditioner matrix for
+! all linear solves.  This approach is often effective when the
+! linear systems do not change very much between successive steps.
       call SLESSetOperators(sles,A,A2,SAME_PRECONDITIONER,ierr)
 
-C Solve linear system
+! Solve linear system
       call SLESSolve(sles,b,x,its,ierr)
 
-C Destroy the preconditioner matrix on the last time through
+! Destroy the preconditioner matrix on the last time through
       if (count .eq. nsteps) call MatDestroy(A2,ierr)
 
  100  format('previous matrix: preconditioning')

@@ -1,24 +1,24 @@
-
-C  "$Id: ex16f90.F,v 1.3 1997/04/04 16:11:40 curfman Exp balay $";
-
-C
-C  Tests MatGetArray() on a dense matrix
-C
+!
+!  "$Id: ex16f90.F,v 1.4 1997/09/22 15:24:30 balay Exp balay $";
+!
+!
+!  Tests MatGetArray() on a dense matrix
+!
 
       program ex16f90
       implicit none
 
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                    Include files
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  The following include statements are required for Fortran programs
-C  that use PETSc vectors:
-C     petsc.h  - base PETSc routines
-C     vec.h - defines (INSERT_VALUES)
-C     mat.h    - matrices
-C     mat.h90  - to allow access to Fortran 90 features of matrices
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                    Include files
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  The following include statements are required for Fortran programs
+!  that use PETSc vectors:
+!     petsc.h  - base PETSc routines
+!     vec.h - defines (INSERT_VALUES)
+!     mat.h    - matrices
+!     mat.h90  - to allow access to Fortran 90 features of matrices
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -35,15 +35,15 @@ C     mat.h90  - to allow access to Fortran 90 features of matrices
 
       m = 3
       n = 2
-C
-C      Create a parallel dense matrix shared by all processors 
-C
+!
+!      Create a parallel dense matrix shared by all processors 
+!
       call MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,
      &                        PETSC_DECIDE,m,n,PETSC_NULL,A,ierr)
 
-C
-C     Set values into the matrix. All processors set all values.
-C
+!
+!     Set values into the matrix. All processors set all values.
+!
       do 10, i=0,m-1
         do 20, j=0,n-1
           v = 1.d0/(i+j+1)
@@ -54,24 +54,24 @@ C
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr) 
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr) 
 
-C
-C       Print the matrix to the screen 
-C
+!
+!       Print the matrix to the screen 
+!
       call MatView(A,VIEWER_STDOUT_WORLD,ierr) 
 
 
-C
-C      Print the local portion of the matrix to the screen
-C
+!
+!      Print the local portion of the matrix to the screen
+!
       call MatGetArrayF90(A,array,ierr) 
       call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr)
       print*, array
       call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
 
       call MatRestoreArrayF90(A,array,ierr)   
-C
-C      Free the space used by the matrix
-C
+!
+!      Free the space used by the matrix
+!
       call MatDestroy(A,ierr) 
       call PetscFinalize(ierr)
       end

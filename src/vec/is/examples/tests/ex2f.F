@@ -1,8 +1,8 @@
-C
-C  "$Id: ex2f.F,v 1.9 1997/07/10 15:43:37 balay Exp bsmith $"
-C
-C  Formatted Test for IS stride routines
-C
+!
+!  "$Id: ex2f.F,v 1.10 1998/03/12 23:15:02 bsmith Exp balay $"
+!
+!  Formatted Test for IS stride routines
+!
       implicit none
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/is.h"
@@ -14,7 +14,7 @@ C
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-C     Test IS of size 0 
+!     Test IS of size 0 
 
       call ISCreateStride(PETSC_COMM_SELF,0,0,2,is,ierr)
       call ISGetSize(is,n,ierr)
@@ -36,7 +36,7 @@ C     Test IS of size 0
       call ISRestoreIndices(is,ii,iis,ierr)
       call ISDestroy(is,ierr)
 
-C     Test ISGetIndices()
+!     Test ISGetIndices()
 
       call ISCreateStride(PETSC_COMM_SELF,10000,-8,3,is,ierr)
       call ISGetSize(is,n,ierr)

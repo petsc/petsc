@@ -1,12 +1,12 @@
-
-C    "$Id: ex5.F,v 1.17 1997/07/10 15:42:39 balay Exp balay $";
-
+!
+!    "$Id: ex5.F,v 1.18 1997/12/09 19:16:24 balay Exp balay $";
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/draw.h"
-C
-C  This example demonstrates basic use of the Fortran interface for
-C  Draw routines.
-C
+!
+!  This example demonstrates basic use of the Fortran interface for
+!  Draw routines.
+!
       Draw              draw
       DrawLG            lg
       DrawAxis          axis

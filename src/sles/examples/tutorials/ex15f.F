@@ -1,34 +1,34 @@
-C
-C    "$Id: ex15f.F,v 1.2 1997/09/11 17:01:32 balay Exp balay $";
-C
-C   Solves a linear system in parallel with SLES.  Also indicates
-C   use of a user-provided preconditioner.  Input parameters include:
-C      -user_defined_pc : Activate a user-defined preconditioner
-C
-C  Program usage: mpirun ex15f [-help] [all PETSc options]
-C
-C/*T
-C   Concepts: SLES^Solving a system of linear equations (basic parallel example);
-C   Concepts: PC^Setting a user-defined shell preconditioner
-C   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-C   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); KSPSetTolerances(); 
-C   Routines: PCSetType(); PCShellSetApply(); 
-C   Processors: n
-CT*/
-C
-C  ------------------------------------------------------------------------- 
+!
+!    "$Id: ex15f.F,v 1.3 1997/09/22 15:21:04 balay Exp balay $";
+!
+!   Solves a linear system in parallel with SLES.  Also indicates
+!   use of a user-provided preconditioner.  Input parameters include:
+!      -user_defined_pc : Activate a user-defined preconditioner
+!
+!  Program usage: mpirun ex15f [-help] [all PETSc options]
+!
+!/*T
+!   Concepts: SLES^Solving a system of linear equations (basic parallel example);
+!   Concepts: PC^Setting a user-defined shell preconditioner
+!   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
+!   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); KSPSetTolerances(); 
+!   Routines: PCSetType(); PCShellSetApply(); 
+!   Processors: n
+!T*/
+!
+!  ------------------------------------------------------------------------- 
 
       program main
       implicit none
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                    Include files
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C     petsc.h  - base PETSc routines      vec.h - vectors
-C     sys.h    - system routines          mat.h - matrices
-C     ksp.h    - Krylov subspace methods  pc.h  - preconditioners
-C     sles.h   - SLES interface
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                    Include files
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!     petsc.h  - base PETSc routines      vec.h - vectors
+!     sys.h    - system routines          mat.h - matrices
+!     ksp.h    - Krylov subspace methods  pc.h  - preconditioners
+!     sles.h   - SLES interface
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -37,18 +37,18 @@ C     sles.h   - SLES interface
 #include "include/FINCLUDE/ksp.h"
 #include "include/FINCLUDE/sles.h"
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                   Variable declarations
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  Variables:
-C     sles     - linear solver context
-C     ksp      - Krylov subspace method context
-C     pc       - preconditioner context
-C     x, b, u  - approx solution, right-hand-side, exact solution vectors
-C     A        - matrix that defines linear system
-C     its      - iterations for convergence
-C     norm     - norm of solution error
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                   Variable declarations
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  Variables:
+!     sles     - linear solver context
+!     ksp      - Krylov subspace method context
+!     pc       - preconditioner context
+!     x, b, u  - approx solution, right-hand-side, exact solution vectors
+!     A        - matrix that defines linear system
+!     its      - iterations for convergence
+!     norm     - norm of solution error
 
       Vec              x, b, u
       Mat              A      
@@ -59,17 +59,17 @@ C     norm     - norm of solution error
       integer          i, j, II, JJ, Istart, Iend, ierr, m, n
       integer          user_defined_pc, its, flg, rank
 
-C  Note: Any user-defined Fortran routines MUST be declared as external.
+!  Note: Any user-defined Fortran routines MUST be declared as external.
 
       external SampleShellPCSetUp, SampleShellPCApply
 
-C  Common block to store data for user-provided preconditioner 
+!  Common block to store data for user-provided preconditioner 
       common /myshellpc/ diag
       Vec    diag
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                 Beginning of program
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                 Beginning of program
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one     = 1.0
@@ -80,31 +80,31 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C      Compute the matrix and right-hand-side vector that define
-C      the linear system, Ax = b.
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!      Compute the matrix and right-hand-side vector that define
+!      the linear system, Ax = b.
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Create parallel matrix, specifying only its global dimensions.
-C  When using MatCreate(), the matrix format can be specified at
-C  runtime. Also, the parallel partitioning of the matrix is
-C  determined by PETSc at runtime.
+!  Create parallel matrix, specifying only its global dimensions.
+!  When using MatCreate(), the matrix format can be specified at
+!  runtime. Also, the parallel partitioning of the matrix is
+!  determined by PETSc at runtime.
 
       call MatCreate(PETSC_COMM_WORLD,m*n,m*n,A,ierr)
 
-C  Currently, all PETSc parallel matrix formats are partitioned by
-C  contiguous chunks of rows across the processors.  Determine which
-C  rows of the matrix are locally owned. 
+!  Currently, all PETSc parallel matrix formats are partitioned by
+!  contiguous chunks of rows across the processors.  Determine which
+!  rows of the matrix are locally owned. 
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
-C  Set matrix elements for the 2-D, five-point stencil in parallel.
-C   - Each processor needs to insert only elements that it owns
-C     locally (but any non-local elements will be sent to the
-C     appropriate processor during matrix assembly). 
-C   - Always specify global row and columns of matrix entries.
-C   - Note that MatSetValues() uses 0-based row and column numbers
-C     in Fortran as well as in C.
+!  Set matrix elements for the 2-D, five-point stencil in parallel.
+!   - Each processor needs to insert only elements that it owns
+!     locally (but any non-local elements will be sent to the
+!     appropriate processor during matrix assembly). 
+!   - Always specify global row and columns of matrix entries.
+!   - Note that MatSetValues() uses 0-based row and column numbers
+!     in Fortran as well as in C.
 
       do 10, II=Istart,Iend-1
         v = -1.0
@@ -130,51 +130,51 @@ C     in Fortran as well as in C.
         call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
  10   continue
 
-C  Assemble matrix, using the 2-step process:
-C       MatAssemblyBegin(), MatAssemblyEnd()
-C  Computations can be done while messages are in transition,
-C  by placing code between these two statements.
+!  Assemble matrix, using the 2-step process:
+!       MatAssemblyBegin(), MatAssemblyEnd()
+!  Computations can be done while messages are in transition,
+!  by placing code between these two statements.
 
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
-C  Create parallel vectors.
-C   - Here, the parallel partitioning of the vector is determined by
-C     PETSc at runtime.  We could also specify the local dimensions
-C     if desired -- or use the more general routine VecCreate().
-C   - When solving a linear system, the vectors and matrices MUST
-C     be partitioned accordingly.  PETSc automatically generates
-C     appropriately partitioned matrices and vectors when MatCreate()
-C     and VecCreate() are used with the same communicator. 
-C   - Note: We form 1 vector from scratch and then duplicate as needed.
+!  Create parallel vectors.
+!   - Here, the parallel partitioning of the vector is determined by
+!     PETSc at runtime.  We could also specify the local dimensions
+!     if desired -- or use the more general routine VecCreate().
+!   - When solving a linear system, the vectors and matrices MUST
+!     be partitioned accordingly.  PETSc automatically generates
+!     appropriately partitioned matrices and vectors when MatCreate()
+!     and VecCreate() are used with the same communicator. 
+!   - Note: We form 1 vector from scratch and then duplicate as needed.
 
       call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 
-C  Set exact solution; then compute right-hand-side vector.
+!  Set exact solution; then compute right-hand-side vector.
 
       call VecSet(one,u,ierr)
       call MatMult(A,u,b,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C         Create the linear solver and set various options
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!         Create the linear solver and set various options
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Create linear solver context
+!  Create linear solver context
 
       call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
 
-C  Set operators. Here the matrix that defines the linear system
-C  also serves as the preconditioning matrix.
+!  Set operators. Here the matrix that defines the linear system
+!  also serves as the preconditioning matrix.
 
       call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
      &                      ierr)
 
-C  Set linear solver defaults for this problem (optional).
-C   - By extracting the KSP and PC contexts from the SLES context,
-C     we can then directly directly call any KSP and PC routines
-C     to set various options.
+!  Set linear solver defaults for this problem (optional).
+!   - By extracting the KSP and PC contexts from the SLES context,
+!     we can then directly directly call any KSP and PC routines
+!     to set various options.
 
       call SLESGetKSP(sles,ksp,ierr)
       call SLESGetPC(sles,pc,ierr)
@@ -182,46 +182,46 @@ C     to set various options.
       call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
      &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
 
-C
-C  Set a user-defined shell preconditioner if desired
-C
+!
+!  Set a user-defined shell preconditioner if desired
+!
       call OptionsHasName(PETSC_NULL_CHARACTER,'-user_defined_pc',
      &                    user_defined_pc,ierr)
 
       if (user_defined_pc .eq. 1) then
 
-C  (Required) Indicate to PETSc that we're using a shell preconditioner 
+!  (Required) Indicate to PETSc that we're using a shell preconditioner 
          call PCSetType(pc,PCSHELL,ierr)
 
-C  (Required) Set the user-defined routine for applying the preconditioner
+!  (Required) Set the user-defined routine for applying the preconditioner
          call PCShellSetApply(pc,SampleShellPCApply,PETSC_NULL,ierr)
 
-C  (Optional) Do any setup required for the preconditioner
+!  (Optional) Do any setup required for the preconditioner
          call SampleShellPCSetUp(A,x,ierr)
 
       else 
          call PCSetType(pc,PCJACOBI,ierr)
       endif
 
-C  Set runtime options, e.g.,
-C      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
-C  These options will override those specified above as long as
-C  SLESSetFromOptions() is called _after_ any other customization
-C  routines.
+!  Set runtime options, e.g.,
+!      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
+!  These options will override those specified above as long as
+!  SLESSetFromOptions() is called _after_ any other customization
+!  routines.
 
       call SLESSetFromOptions(sles,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                      Solve the linear system
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                      Solve the linear system
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call SLESSolve(sles,b,x,its,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                     Check solution and clean up
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                     Check solution and clean up
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Check the error
+!  Check the error
 
       call VecAXPY(neg_one,u,x,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
@@ -235,8 +235,8 @@ C  Check the error
   100 format('Norm of error ',e10.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12, iterations ',i5)
 
-C  Free work space.  All PETSc objects should be destroyed when they
-C  are no longer needed.
+!  Free work space.  All PETSc objects should be destroyed when they
+!  are no longer needed.
 
       call SLESDestroy(sles,ierr)
       call VecDestroy(u,ierr)
@@ -248,32 +248,32 @@ C  are no longer needed.
       endif
 
 
-C  Always call PetscFinalize() before exiting a program. 
+!  Always call PetscFinalize() before exiting a program. 
 
       call PetscFinalize(ierr)
       end
 
-C/***********************************************************************/
-C/*          Routines for a user-defined shell preconditioner           */
-C/***********************************************************************/
+!/***********************************************************************/
+!/*          Routines for a user-defined shell preconditioner           */
+!/***********************************************************************/
 
-C
-C   SampleShellPCSetUp - This routine sets up a user-defined
-C   preconditioner context.  
-C
-C   Input Parameters:
-C   pmat  - preconditioner matrix
-C   x     - vector
-C
-C   Output Parameter:
-C   ierr  - error code (nonzero if error has been detected)
-C
-C   Notes:
-C   In this example, we define the shell preconditioner to be Jacobi's
-C   method.  Thus, here we create a work vector for storing the reciprocal
-C   of the diagonal of the preconditioner matrix; this vector is then
-C   used within the routine SampleShellPCApply().
-C
+!
+!   SampleShellPCSetUp - This routine sets up a user-defined
+!   preconditioner context.  
+!
+!   Input Parameters:
+!   pmat  - preconditioner matrix
+!   x     - vector
+!
+!   Output Parameter:
+!   ierr  - error code (nonzero if error has been detected)
+!
+!   Notes:
+!   In this example, we define the shell preconditioner to be Jacobi's
+!   method.  Thus, here we create a work vector for storing the reciprocal
+!   of the diagonal of the preconditioner matrix; this vector is then
+!   used within the routine SampleShellPCApply().
+!
       subroutine SampleShellPCSetUp(pmat,x,ierr)
 
       implicit none
@@ -286,7 +286,7 @@ C
       Mat     pmat
       integer ierr
 
-C  Common block to store data for user-provided preconditioner 
+!  Common block to store data for user-provided preconditioner 
       common /myshellpc/ diag
       Vec    diag
 
@@ -296,24 +296,24 @@ C  Common block to store data for user-provided preconditioner
 
       end
 
-C ------------------------------------------------------------------- 
-C
-C   SampleShellPCApply - This routine demonstrates the use of a
-C   user-provided preconditioner.
-C
-C   Input Parameters:
-C   dummy - optional user-defined context, not used here
-C   x - input vector
-C
-C   Output Parameters:
-C   y - preconditioned vector
-C   ierr  - error code (nonzero if error has been detected)
-C
-C   Notes:
-C   This code implements the Jacobi preconditioner, merely as an
-C   example of working with a PCSHELL.  Note that the Jacobi method
-C   is already provided within PETSc.
-C
+! ------------------------------------------------------------------- 
+!
+!   SampleShellPCApply - This routine demonstrates the use of a
+!   user-provided preconditioner.
+!
+!   Input Parameters:
+!   dummy - optional user-defined context, not used here
+!   x - input vector
+!
+!   Output Parameters:
+!   y - preconditioned vector
+!   ierr  - error code (nonzero if error has been detected)
+!
+!   Notes:
+!   This code implements the Jacobi preconditioner, merely as an
+!   example of working with a PCSHELL.  Note that the Jacobi method
+!   is already provided within PETSc.
+!
       subroutine SampleShellPCApply(dummy,x,y,ierr)
 
       implicit none
@@ -324,7 +324,7 @@ C
       Vec     x, y
       integer dummy, ierr
 
-C  Common block to store data for user-provided preconditioner 
+!  Common block to store data for user-provided preconditioner 
       common /myshellpc/ diag
       Vec    diag
 

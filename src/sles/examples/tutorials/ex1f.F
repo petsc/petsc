@@ -1,72 +1,72 @@
-
-C    "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp bsmith $";
-C
-C   Description: Solves a tridiagonal linear system with SLES.
-C
-C/*T
-C   Concepts: SLES^Solving a system of linear equations (basic uniprocessor example);
-C   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-C   Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESGetPC();
-C   Routines: KSPSetTolerances(); PCSetType();
-C   Processors: 1
-CT*/
-C -----------------------------------------------------------------------
+!
+!    "$Id: ex1f.F,v 1.17 1997/11/28 16:20:38 bsmith Exp balay $";
+!
+!   Description: Solves a tridiagonal linear system with SLES.
+!
+!/*T
+!   Concepts: SLES^Solving a system of linear equations (basic uniprocessor example);
+!   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
+!   Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESGetPC();
+!   Routines: KSPSetTolerances(); PCSetType();
+!   Processors: 1
+!T*/
+! -----------------------------------------------------------------------
 
       program main
       implicit none
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                    Include files
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  This program uses CPP for preprocessing, as indicated by the use of
-C  PETSc include files in the directory petsc/include/FINCLUDE.  This
-C  convention enables use of the CPP preprocessor, which allows the use
-C  of the #include statements that define PETSc objects and variables.
-C
-C  Use of the conventional Fortran include statements is also supported
-C  In this case, the PETsc include files are located in the directory
-C  petsc/include/finclude.
-C         
-C  Since one must be very careful to include each file no more than once
-C  in a Fortran routine, application programmers must exlicitly list
-C  each file needed for the various PETSc components within their
-C  program (unlike the C/C++ interface).
-C
-C  See the Fortran section of the PETSc users manual for details.
-C
-C  The following include statements are required for SLES Fortran programs:
-C     petsc.h  - base PETSc routines
-C     vec.h    - vectors
-C     mat.h    - matrices
-C     ksp.h    - Krylov subspace methods
-C     pc.h     - preconditioners
-C     sles.h   - SLES interface
-C  Other include statements may be needed if using additional PETSc
-C  routines in a Fortran program, e.g.,
-C     viewer.h - viewers
-C     is.h     - index sets
-C
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                    Include files
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  This program uses CPP for preprocessing, as indicated by the use of
+!  PETSc include files in the directory petsc/include/FINCLUDE.  This
+!  convention enables use of the CPP preprocessor, which allows the use
+!  of the #include statements that define PETSc objects and variables.
+!
+!  Use of the conventional Fortran include statements is also supported
+!  In this case, the PETsc include files are located in the directory
+!  petsc/include/finclude.
+!         
+!  Since one must be very careful to include each file no more than once
+!  in a Fortran routine, application programmers must exlicitly list
+!  each file needed for the various PETSc components within their
+!  program (unlike the C/C++ interface).
+!
+!  See the Fortran section of the PETSc users manual for details.
+!
+!  The following include statements are required for SLES Fortran programs:
+!     petsc.h  - base PETSc routines
+!     vec.h    - vectors
+!     mat.h    - matrices
+!     ksp.h    - Krylov subspace methods
+!     pc.h     - preconditioners
+!     sles.h   - SLES interface
+!  Other include statements may be needed if using additional PETSc
+!  routines in a Fortran program, e.g.,
+!     viewer.h - viewers
+!     is.h     - index sets
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/ksp.h"
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/sles.h"
-C
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                   Variable declarations
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  Variables:
-C     sles     - linear solver context
-C     ksp      - Krylov subspace method context
-C     pc       - preconditioner context
-C     x, b, u  - approx solution, right-hand-side, exact solution vectors
-C     A        - matrix that defines linear system
-C     its      - iterations for convergence
-C     norm     - norm of error in solution
-C
+!
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                   Variable declarations
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  Variables:
+!     sles     - linear solver context
+!     ksp      - Krylov subspace method context
+!     pc       - preconditioner context
+!     x, b, u  - approx solution, right-hand-side, exact solution vectors
+!     A        - matrix that defines linear system
+!     its      - iterations for convergence
+!     norm     - norm of error in solution
+!
       Vec              x, b, u
       Mat              A 
       KSP              ksp
@@ -76,9 +76,9 @@ C
       integer          ierr, i, n, col(3), its, flg, size, rank
       Scalar           none, one, value(3)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                 Beginning of program
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                 Beginning of program
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
@@ -93,19 +93,19 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       n    = 10
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C         Compute the matrix and right-hand-side vector that define
-C         the linear system, Ax = b.
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!         Compute the matrix and right-hand-side vector that define
+!         the linear system, Ax = b.
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Create matrix.  When using MatCreate(), the matrix format can
-C  be specified at runtime.
+!  Create matrix.  When using MatCreate(), the matrix format can
+!  be specified at runtime.
 
       call MatCreate(PETSC_COMM_WORLD,n,n,A,ierr)
 
-C  Assemble matrix.
-C   - Note that MatSetValues() uses 0-based row and column numbers
-C     in Fortran as well as in C (as set here in the array "col").
+!  Assemble matrix.
+!   - Note that MatSetValues() uses 0-based row and column numbers
+!     in Fortran as well as in C (as set here in the array "col").
 
       value(1) = -1.0
       value(2) = 2.0
@@ -129,38 +129,38 @@ C     in Fortran as well as in C (as set here in the array "col").
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
-C  Create vectors.  Note that we form 1 vector from scratch and
-C  then duplicate as needed.
+!  Create vectors.  Note that we form 1 vector from scratch and
+!  then duplicate as needed.
 
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
       call VecDuplicate(x,b,ierr)
       call VecDuplicate(x,u,ierr)
 
-C  Set exact solution; then compute right-hand-side vector.
+!  Set exact solution; then compute right-hand-side vector.
 
       call VecSet(one,u,ierr)
       call MatMult(A,u,b,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C          Create the linear solver and set various options
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!          Create the linear solver and set various options
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Create linear solver context
+!  Create linear solver context
 
       call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
 
-C  Set operators. Here the matrix that defines the linear system
-C  also serves as the preconditioning matrix.
+!  Set operators. Here the matrix that defines the linear system
+!  also serves as the preconditioning matrix.
 
       call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
 
-C  Set linear solver defaults for this problem (optional).
-C   - By extracting the KSP and PC contexts from the SLES context,
-C     we can then directly directly call any KSP and PC routines
-C     to set various options.
-C   - The following four statements are optional; all of these
-C     parameters could alternatively be specified at runtime via
-C     SLESSetFromOptions();
+!  Set linear solver defaults for this problem (optional).
+!   - By extracting the KSP and PC contexts from the SLES context,
+!     we can then directly directly call any KSP and PC routines
+!     to set various options.
+!   - The following four statements are optional; all of these
+!     parameters could alternatively be specified at runtime via
+!     SLESSetFromOptions();
 
       call SLESGetKSP(sles,ksp,ierr)
       call SLESGetPC(sles,pc,ierr)
@@ -169,29 +169,29 @@ C     SLESSetFromOptions();
       call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
      &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
 
-C  Set runtime options, e.g.,
-C      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
-C  These options will override those specified above as long as
-C  SLESSetFromOptions() is called _after_ any other customization
-C  routines.
+!  Set runtime options, e.g.,
+!      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
+!  These options will override those specified above as long as
+!  SLESSetFromOptions() is called _after_ any other customization
+!  routines.
 
       call SLESSetFromOptions(sles,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                      Solve the linear system
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                      Solve the linear system
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call SLESSolve(sles,b,x,its,ierr)
 
-C  View solver info; we could instead use the option -sles_view
+!  View solver info; we could instead use the option -sles_view
 
       call SLESView(sles,VIEWER_STDOUT_WORLD,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                      Check solution and clean up
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                      Check solution and clean up
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Check the error
+!  Check the error
 
       call VecAXPY(none,u,x,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
@@ -203,8 +203,8 @@ C  Check the error
  100  format('Norm of error = ',e10.4,',  Iterations = ',i5)
  200  format('Norm of error < 1.e-12, Iterations = ',i5)
 
-C  Free work space.  All PETSc objects should be destroyed when they
-C  are no longer needed.
+!  Free work space.  All PETSc objects should be destroyed when they
+!  are no longer needed.
 
       call VecDestroy(x,ierr)
       call VecDestroy(u,ierr)

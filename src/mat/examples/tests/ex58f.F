@@ -1,8 +1,8 @@
-
-C      "$Id: ex58.F,v 1.1 1997/07/24 18:01:48 bsmith Exp bsmith $";
-C
-C   This program demonstrates use of MatGetRow() from Fortran
-C
+!
+!      "$Id: ex58f.F,v 1.2 1998/03/24 16:40:30 bsmith Exp balay $";
+!
+!   This program demonstrates use of MatGetRow() from Fortran
+!
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/mat.h"

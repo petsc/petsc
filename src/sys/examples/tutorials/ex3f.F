@@ -1,56 +1,55 @@
-
-
-C    "$Id: ex1f.F,v 1.4 1997/02/03 06:02:45 bsmith Exp balay $";
-C
-C   Description: Demonstrates how users can augment the PETSc profiling by
-C                nserting their own event logging.
-C
-C/*T
-C   Concepts: PLog^User-defined event profiling (basic example);
-C   Concepts: PLog^Activating/deactivating events for profiling (basic example);
-C   Routines: PLogEventRegister(); PLogEventBegin(); PLogEventEnd();
-C   Routines: PLogEventDeactivate(); PLogEventActivate(); PLogFlops();
-C   Routines: PLogEventMPEDeactivate(); PLogEventMPEActivate();
-C   Routines: PetscSleep();
-C   Processors: n
-CT*/
-C -----------------------------------------------------------------------
+!
+!    "$Id: ex1f.F,v 1.5 1997/12/09 19:13:15 balay Exp balay $";
+!
+!   Description: Demonstrates how users can augment the PETSc profiling by
+!                nserting their own event logging.
+!
+!/*T
+!   Concepts: PLog^User-defined event profiling (basic example);
+!   Concepts: PLog^Activating/deactivating events for profiling (basic example);
+!   Routines: PLogEventRegister(); PLogEventBegin(); PLogEventEnd();
+!   Routines: PLogEventDeactivate(); PLogEventActivate(); PLogFlops();
+!   Routines: PLogEventMPEDeactivate(); PLogEventMPEActivate();
+!   Routines: PetscSleep();
+!   Processors: n
+!T*/
+! -----------------------------------------------------------------------
 
       program main
       implicit none
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                    Include files
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  The following include statements are required for using PLog Routines
-C
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                    Include files
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  The following include statements are required for using PLog Routines
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/petsclog.h"
-C
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                   Variable declarations
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
+!
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                   Variable declarations
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
       integer USER_EVENT1,USER_EVENT2,USER_EVENT3,USER_EVENT4
       integer USER_EVENT8,USER_EVENT9
       integer USER_EVENT5,USER_EVENT6,USER_EVENT7,imax,ierr
       parameter (imax = 10000)
-C
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                 Beginning of program
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                 Beginning of program
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-C
-C     Create a new user-defined event.
-C      - Note that PLogEventRegister() returns to the user a unique
-C        integer event number, which should then be used for profiling
-C        the event via PLogEventBegin() and PLogEventEnd().
-C      - The user can also optionally log floating point operations
-C        with the routine PLogFlops().
-C
+!
+!     Create a new user-defined event.
+!      - Note that PLogEventRegister() returns to the user a unique
+!        integer event number, which should then be used for profiling
+!        the event via PLogEventBegin() and PLogEventEnd().
+!      - The user can also optionally log floating point operations
+!        with the routine PLogFlops().
+!
       call PLogEventRegister(USER_EVENT1,'User event 1   ','Red:',ierr)
       call PLogEventRegister(USER_EVENT2,'User event 2   ','Red:',ierr)
       call PLogEventRegister(USER_EVENT3,'User event 3   ','Red:',ierr)
@@ -114,13 +113,13 @@ C
       call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT9,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
-C
-C    We disable the logging of an event.
-C      - Note that activation/deactivation of PETSc events and MPE 
-C        events is handled separately.
-C      - Note that the user can activate/deactive both user-defined
-C        events and predefined PETSc events.
-C
+!
+!    We disable the logging of an event.
+!      - Note that activation/deactivation of PETSc events and MPE 
+!        events is handled separately.
+!      - Note that the user can activate/deactive both user-defined
+!        events and predefined PETSc events.
+!
       call PLogEventMPEDeactivate(USER_EVENT1,ierr)
       call PLogEventDeactivate(USER_EVENT1,ierr)
       call PLogEventBegin(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
@@ -128,9 +127,9 @@ C
       call PetscSleep(1,ierr)
       call PLogEventEnd(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
-C
-C    We next enable the logging of an event
-C
+!
+!    We next enable the logging of an event
+!
       call PLogEventMPEActivate(USER_EVENT1,ierr)
       call PLogEventActivate(USER_EVENT1,ierr)
       call PLogEventBegin(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,

@@ -1,25 +1,25 @@
-C
-C      "$Id: ex3f90.F,v 1.4 1997/04/10 00:00:03 bsmith Exp balay $"; */
-C
-C
-C/*T
-C    Concepts: Index sets^Manipulating a block index set;
-C    Concepts: Fortran90;
-C    Routines: ISCreateBlock(); ISDestroy(); ISView()
-C    Routines: ISGetIndicesF90(); ISRestoreIndicesF90(); ISBlockGetSize()
-C    Routines: ISBlockGetBlockSize(); ISBlockGetIndicesF90(); ISBlockRestoreIndicesF90()
-C    Routines: ISBlock()
-C
-C    Comment:  Creates an index set based on blocks of integers. Views that index set
-C    and then destroys it.
-CT*/
-C
-C  The following include statements are required for Fortran programs
-C  that use PETSc index sets:
-C     petsc.h  - base PETSc routines
-C     is.h     - index sets (IS objects)
-C     is90.h   - to allow access to Fortran90 features of index sets
-C
+!
+!      "$Id: ex3f90.F,v 1.5 1997/07/10 15:44:26 balay Exp balay $"; */
+!
+!
+!/*T
+!    Concepts: Index sets^Manipulating a block index set;
+!    Concepts: Fortran90;
+!    Routines: ISCreateBlock(); ISDestroy(); ISView()
+!    Routines: ISGetIndicesF90(); ISRestoreIndicesF90(); ISBlockGetSize()
+!    Routines: ISBlockGetBlockSize(); ISBlockGetIndicesF90(); ISBlockRestoreIndicesF90()
+!    Routines: ISBlock()
+!
+!    Comment:  Creates an index set based on blocks of integers. Views that index set
+!    and then destroys it.
+!T*/
+!
+!  The following include statements are required for Fortran programs
+!  that use PETSc index sets:
+!     petsc.h  - base PETSc routines
+!     is.h     - index sets (IS objects)
+!     is90.h   - to allow access to Fortran90 features of index sets
+!
       implicit none
 
 #include "FINCLUDE/petsc.h"
@@ -40,49 +40,49 @@ C
     
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       
-C
-C    Create a block index set. The index set has 4 blocks each of size 3.
-C    The indices are {0,1,2,3,4,5,9,10,11,12,13,14}
-C    Note each processor is generating its own index set 
-C    (in this case they are all identical)
-C
+!
+!    Create a block index set. The index set has 4 blocks each of size 3.
+!    The indices are {0,1,2,3,4,5,9,10,11,12,13,14}
+!    Note each processor is generating its own index set 
+!    (in this case they are all identical)
+!
       call ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,set,ierr) 
       call ISView(set,VIEWER_STDOUT_SELF,ierr) 
 
-C
-C    Extract indices from set.
-C
+!
+!    Extract indices from set.
+!
       call ISGetSize(set,issize,ierr) 
       call ISGetIndicesF90(set,indices,ierr) 
       print*,indices
       call ISRestoreIndicesF90(set,indices,ierr) 
 
-C
-C    Extract the block indices. This returns one index per block.
-C
+!
+!    Extract the block indices. This returns one index per block.
+!
       call ISBlockGetIndicesF90(set,indices,ierr) 
       print*, indices
       call ISBlockRestoreIndicesF90(set,indices,ierr) 
 
-C
-C    Check if this is really a block index set
-C
+!
+!    Check if this is really a block index set
+!
       call ISBlock(set,isablock,ierr) 
       if (isablock .ne. PETSC_TRUE) then
         print*,'Index set is not blocked!'
       endif
 
-C
-C    Determine the block size of the index set
-C
+!
+!    Determine the block size of the index set
+!
       call ISBlockGetBlockSize(set,bs,ierr) 
       if (bs .ne. 3) then
         print*,'Blocksize != 3'
       endif
 
-C
-C    Get the number of blocks
-C
+!
+!    Get the number of blocks
+!
       call ISBlockGetSize(set,n,ierr) 
       if (n .ne. 4) then
         print*,'Number of blocks != 4'

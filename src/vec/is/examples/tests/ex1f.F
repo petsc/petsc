@@ -1,8 +1,8 @@
-C
-C static char vcid[] = "$Id: ex1f.F,v 1.8 1997/09/22 15:24:43 balay Exp bsmith $"
-C
-C  Formatted test for IS general routines
-C
+!
+!  "$Id: ex2f.F,v 1.11 1998/03/24 16:46:59 balay Exp $"
+!
+!  Formatted test for IS general routines
+!
       implicit none
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/is.h"
@@ -18,7 +18,7 @@ C
        call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
        call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
-C     Test IS of size 0 
+!     Test IS of size 0 
 
        call ISCreateGeneral(PETSC_COMM_SELF,0,n,is,ierr) 
             CHKERRA(ierr)
@@ -31,7 +31,7 @@ C     Test IS of size 0
        call ISDestroy(is,ierr) 
 
 
-C     Create large IS and test ISGetIndices(,ierr)
+!     Create large IS and test ISGetIndices(,ierr)
 
       n = 1000
       do 10, i=1,n
@@ -50,7 +50,7 @@ C     Create large IS and test ISGetIndices(,ierr)
       call ISRestoreIndices(is,ii,iis,ierr) 
             CHKERRA(ierr)
 
-C     Check identity and permutation 
+!     Check identity and permutation 
   
       call ISPermutation(is,flag,ierr) 
             CHKERRA(ierr)
@@ -81,7 +81,7 @@ C     Check identity and permutation
          stop
       endif
 
-C     Check equality of index sets 
+!     Check equality of index sets 
 
       call ISEqual(is,is,flag,ierr) 
             CHKERRA(ierr)
@@ -90,7 +90,7 @@ C     Check equality of index sets
          stop
       endif
 
-C     Sorting 
+!     Sorting 
 
       call ISSort(is,ierr) 
             CHKERRA(ierr)
@@ -101,7 +101,7 @@ C     Sorting
          stop
       endif
 
-C     Thinks it is a different type?
+!     Thinks it is a different type?
 
       call ISStride(is,flag,ierr) 
             CHKERRA(ierr)
@@ -119,7 +119,7 @@ C     Thinks it is a different type?
       call ISDestroy(is,ierr) 
             CHKERRA(ierr)
 
-C     Inverting permutation
+!     Inverting permutation
 
       do 30, i=1,n
         indices(i) = n - i

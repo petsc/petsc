@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.43 1998/03/13 23:01:59 balay Exp balay $ 
+# $Id: makefile,v 1.44 1998/03/19 02:09:53 balay Exp balay $ 
 
 ALL: ex1
 
@@ -46,7 +46,7 @@ BUILDEXAMPLES_10 = ex11f.PETSc ex11f.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
                   ex13.c ex14.c ex15.c ex16.c
-EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F
+EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F ex13f.F ex14f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -115,7 +115,7 @@ ex11: ex11.o  chkopts
 	${RM} ex11.o
 
 ex11f: ex11f.o  chkopts
-	-${FLINKER} -o ex11f ex11f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex11f ex11f.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
 	${RM} ex11f.o
 
 ex12: ex12.o  chkopts
@@ -125,6 +125,10 @@ ex12: ex12.o  chkopts
 ex13: ex13.o  chkopts
 	-${CLINKER} -o ex13 ex13.o  ${PETSC_LIB}
 	${RM} ex13.o
+
+ex13f: ex13f.o  chkopts
+	-${FLINKER} -o ex13f ex13f.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	${RM} ex13f.o
 
 ex14: ex14.o  chkopts
 	-${CLINKER} -o ex14 ex14.o  ${PETSC_LIB}

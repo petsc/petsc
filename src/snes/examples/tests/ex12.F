@@ -1,21 +1,22 @@
-C    "$Id: ex12.F,v 1.46 1998/03/12 23:23:03 bsmith Exp bsmith $";
-C
-C  This example demonstrates basic use of the SNES Fortran interface.
-C  
-C  Note:  The program ex10.f is the same as this example, except that it
-C         uses the Fortran .f suffix rather than the .F suffix.
-C
-C  In this example the application context is a Fortran integer array:
-C      ctx(1) = da    - distributed array
-C          2  = F     - global vector where the function is stored
-C          3  = xl    - local work vector
-C          4  = rank  - processor rank
-C          5  = size  - number of processors
-C          6  = N     - system size
-C
-C  Note: Any user-defined Fortran routines (such as FormJacobian)
-C  MUST be declared as external.
-C
+!
+!    "$Id: ex12.F,v 1.47 1998/03/20 22:52:39 bsmith Exp balay $";
+!
+!  This example demonstrates basic use of the SNES Fortran interface.
+!  
+!  Note:  The program ex10.f is the same as this example, except that it
+!         uses the Fortran .f suffix rather than the .F suffix.
+!
+!  In this example the application context is a Fortran integer array:
+!      ctx(1) = da    - distributed array
+!          2  = F     - global vector where the function is stored
+!          3  = xl    - local work vector
+!          4  = rank  - processor rank
+!          5  = size  - number of processors
+!          6  = N     - system size
+!
+!  Note: Any user-defined Fortran routines (such as FormJacobian)
+!  MUST be declared as external.
+!
 
        implicit none
 
@@ -42,7 +43,7 @@ C
       call MPI_Comm_rank(PETSC_COMM_WORLD,ctx(4),ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,ctx(5),ierr)
 
-C Set up data structures
+! Set up data structures
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL,
      &                ctx(1),ierr)
 
@@ -60,7 +61,7 @@ C Set up data structures
 
       call MatGetType(J,PETSC_NULL,matrixname,ierr)
 
-C Store right-hand-side of PDE and exact solution
+! Store right-hand-side of PDE and exact solution
       call VecGetOwnershipRange(x,start,end,ierr)
       xp = h*start
       nn = end - start
@@ -78,27 +79,27 @@ C Store right-hand-side of PDE and exact solution
       call VecAssemblyBegin(U,ierr)
       call VecAssemblyEnd(U,ierr)
 
-C Create nonlinear solver
+! Create nonlinear solver
       call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,
      &                snes,ierr)
 
-C Set various routines and options
+! Set various routines and options
       call SNESSetFunction(snes,r,FormFunction,ctx,ierr)
       call SNESSetJacobian(snes,J,J,FormJacobian,ctx,ierr)
       call SNESSetFromOptions(snes,ierr)
 
-C Solve nonlinear system
+! Solve nonlinear system
       call FormInitialGuess(snes,x,ierr)
       call SNESSolve(snes,x,its,ierr)
 
-C Write results if first processor
+! Write results if first processor
       if (ctx(4) .eq. 0) then
         write(6,100) its
       endif
   100 format('Number of Newton iterations = ',i5)
 
-C  Free work space.  All PETSc objects should be destroyed when they
-C  are no longer needed.
+!  Free work space.  All PETSc objects should be destroyed when they
+!  are no longer needed.
       call VecDestroy(x,ierr)
       call VecDestroy(ctx(3),ierr)
       call VecDestroy(r,ierr)
@@ -111,7 +112,7 @@ C  are no longer needed.
       end
 
 
-C --------------------  Evaluate Function F(x) --------------------- 
+! --------------------  Evaluate Function F(x) --------------------- 
 
       subroutine FormFunction(snes,x,f,ctx,ierr)
       implicit none
@@ -140,38 +141,38 @@ C --------------------  Evaluate Function F(x) ---------------------
         call MPI_Abort(PETSC_COMM_WORLD,0,ierr)
       endif
 
-C
-C This sets the index ixx so that vxx(ixx+1) is the first local
-C element in the vector indicated by ctx(3).
-C
+!
+! This sets the index ixx so that vxx(ixx+1) is the first local
+! element in the vector indicated by ctx(3).
+!
       call VecGetArray(ctx(3),vxx,ixx,ierr)
       call VecGetArray(f,vff,iff,ierr)
       call VecGetArray(ctx(2),vF2,iF2,ierr)
-C
-C Macros to make setting/getting  values into vector clearer.
-C The element xx(ib) is the ibth element in the vector indicated by ctx(3)
+!
+! Macros to make setting/getting  values into vector clearer.
+! The element xx(ib) is the ibth element in the vector indicated by ctx(3)
 #define xx(ib)  vxx(ixx + (ib))
 #define ff(ib)  vff(iff + (ib))
 #define F2(ib)  vF2(iF2 + (ib))
 
       d = h*h
 
-C
-C  Note that the array vxx() was obtained from a ghosted local vector 
-C  ctx(3) while the array vff() was obtained from the non-ghosted parallel 
-C  vector F. This is why there is a need for shift variable s. Since vff()
-C  does not have locations for the ghost variables we need to index in it 
-C  slightly different then indexing into vxx(). For example on processor 
-C  1 (the second processor) 
-C
-C        xx(1)        xx(2)             xx(3)             .....
-C      ^^^^^^^        ^^^^^             ^^^^^
-C      ghost value   1st local value   2nd local value 
-C
-C                      ff(1)             ff(2)
-C                     ^^^^^^^           ^^^^^^^
-C                    1st local value   2nd local value
-C
+!
+!  Note that the array vxx() was obtained from a ghosted local vector 
+!  ctx(3) while the array vff() was obtained from the non-ghosted parallel 
+!  vector F. This is why there is a need for shift variable s. Since vff()
+!  does not have locations for the ghost variables we need to index in it 
+!  slightly different then indexing into vxx(). For example on processor 
+!  1 (the second processor) 
+!
+!        xx(1)        xx(2)             xx(3)             .....
+!      ^^^^^^^        ^^^^^             ^^^^^
+!      ghost value   1st local value   2nd local value 
+!
+!                      ff(1)             ff(2)
+!                     ^^^^^^^           ^^^^^^^
+!                    1st local value   2nd local value
+!
        if (rank .eq. 0) then 
         s = 0
         ff(1) = xx(1)
@@ -197,7 +198,7 @@ C
       return
       end
 
-C --------------------  Form initial approximation ----------------- 
+! --------------------  Form initial approximation ----------------- 
 
       subroutine FormInitialGuess(snes,x,ierr)
       implicit none
@@ -214,7 +215,7 @@ C --------------------  Form initial approximation -----------------
       return
       end
 
-C --------------------  Evaluate Jacobian -------------------- 
+! --------------------  Evaluate Jacobian -------------------- 
 
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
       implicit none

@@ -1,14 +1,14 @@
-
-/* "$Id: ex2.F,v 1.7 1997/09/22 15:15:43 balay Exp bsmith $"; */
-
+!
+!    "$Id: ex2.F,v 1.8 1998/03/24 16:42:54 bsmith Exp balay $"
+!
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/da.h"
 
-C         For testing purposes this example also creates a 
-C   DA context. Actually codes using SDA routines will probably 
-C   not also work with DA contexts.
+!         For testing purposes this example also creates a 
+!   DA context. Actually codes using SDA routines will probably 
+!   not also work with DA contexts.
 
 
       integer        MM,ierr,dof,stencil_width,flg,i,start,end,PP
@@ -74,7 +74,7 @@ C   not also work with DA contexts.
       call VecDuplicate(local,local_copy,ierr)
 
   
-C   zero out vectors so that ghostpoints are zero 
+!   zero out vectors so that ghostpoints are zero 
       value = 0.0
       call VecSet(value,local,ierr)
       call VecSet(value,local_copy,ierr)

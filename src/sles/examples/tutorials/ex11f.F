@@ -1,55 +1,55 @@
-
-C    "$Id: ex11f.F,v 1.16 1997/10/19 03:27:22 bsmith Exp bsmith $";
-C
-C/*T
-C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
-C  Concepts: Complex numbers
-C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-C  Routines: SLESSolve(); PetscRandomCreate(); PetscRandomGetValue();
-C  Routines: PetscRandomDestroy();
-C  Processors: n
-CT*/
-C
-C  Description: Solves a complex linear system in parallel with SLES (Fortran code).
-C
-C  The model problem:
-C     Solve Helmholtz equation on the unit square: (0,1) x (0,1)
-C          -delta u - sigma1*u + i*sigma2*u = f, 
-C           where delta = Laplace operator
-C     Dirichlet b.c.'s on all sides
-C     Use the 2-D, five-point finite difference stencil.
-C
-C  Compiling the code:
-C     This code uses the complex numbers version of PETSc, so one of the
-C     following values of BOPT must be used for compiling the PETSc libraries
-C     and this example:
-C        BOPT=g_complex   - debugging version
-C        BOPT=O_complex   - optimized version
-C        BOPT=Opg_complex - profiling version
-C
-C -----------------------------------------------------------------------
+!
+!    "$Id: ex11f.F,v 1.17 1997/11/28 16:20:38 bsmith Exp balay $";
+!
+!/*T
+!  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
+!  Concepts: Complex numbers
+!  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
+!  Routines: SLESSolve(); PetscRandomCreate(); PetscRandomGetValue();
+!  Routines: PetscRandomDestroy();
+!  Processors: n
+!T*/
+!
+!  Description: Solves a complex linear system in parallel with SLES (Fortran code).
+!
+!  The model problem:
+!     Solve Helmholtz equation on the unit square: (0,1) x (0,1)
+!          -delta u - sigma1*u + i*sigma2*u = f, 
+!           where delta = Laplace operator
+!     Dirichlet b.c.'s on all sides
+!     Use the 2-D, five-point finite difference stencil.
+!
+!  Compiling the code:
+!     This code uses the complex numbers version of PETSc, so one of the
+!     following values of BOPT must be used for compiling the PETSc libraries
+!     and this example:
+!        BOPT=g_complex   - debugging version
+!        BOPT=O_complex   - optimized version
+!        BOPT=Opg_complex - profiling version
+!
+! -----------------------------------------------------------------------
 
       program main
       implicit none
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                    Include files
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  The following include statements are required for SLES Fortran programs:
-C     petsc.h  - base PETSc routines
-C     vec.h    - vectors
-C     mat.h    - matrices
-C     pc.h     - preconditioners
-C     ksp.h    - Krylov subspace methods
-C     sles.h   - SLES interface
-C  Include the following to use PETSc random numbers:
-C     sys.h    - system routines
-C  Additional include statements may be needed if using other PETSc
-C  routines in a Fortran program, e.g.,
-C     viewer.h - viewers
-C     is.h     - index sets
-C
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                    Include files
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  The following include statements are required for SLES Fortran programs:
+!     petsc.h  - base PETSc routines
+!     vec.h    - vectors
+!     mat.h    - matrices
+!     pc.h     - preconditioners
+!     ksp.h    - Krylov subspace methods
+!     sles.h   - SLES interface
+!  Include the following to use PETSc random numbers:
+!     sys.h    - system routines
+!  Additional include statements may be needed if using other PETSc
+!  routines in a Fortran program, e.g.,
+!     viewer.h - viewers
+!     is.h     - index sets
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/mat.h"
@@ -57,19 +57,19 @@ C
 #include "include/FINCLUDE/ksp.h"
 #include "include/FINCLUDE/sles.h"
 #include "include/FINCLUDE/sys.h"
-C
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                   Variable declarations
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  Variables:
-C     sles     - linear solver context
-C     x, b, u  - approx solution, right-hand-side, exact solution vectors
-C     A        - matrix that defines linear system
-C     its      - iterations for convergence
-C     norm     - norm of error in solution
-C     rctx     - random number context
-C
+!
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                   Variable declarations
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  Variables:
+!     sles     - linear solver context
+!     x, b, u  - approx solution, right-hand-side, exact solution vectors
+!     A        - matrix that defines linear system
+!     its      - iterations for convergence
+!     norm     - norm of error in solution
+!     rctx     - random number context
+!
 
       SLES             sles
       Mat              A 
@@ -81,9 +81,9 @@ C
       integer          Istart, Iend, i, j, II, JJ
       logical          use_random
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                 Beginning of program
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                 Beginning of program
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 #if !defined(USE_PETSC_COMPLEX)
@@ -100,29 +100,29 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       dim    = n*n
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C      Compute the matrix and right-hand-side vector that define
-C      the linear system, Ax = b.
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!      Compute the matrix and right-hand-side vector that define
+!      the linear system, Ax = b.
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Create parallel matrix, specifying only its global dimensions.
-C  When using MatCreate(), the matrix format can be specified at
-C  runtime. Also, the parallel partitioning of the matrix is
-C  determined by PETSc at runtime.
+!  Create parallel matrix, specifying only its global dimensions.
+!  When using MatCreate(), the matrix format can be specified at
+!  runtime. Also, the parallel partitioning of the matrix is
+!  determined by PETSc at runtime.
 
       call MatCreate(PETSC_COMM_WORLD,dim,dim,A,ierr)
 
-C  Currently, all PETSc parallel matrix formats are partitioned by
-C  contiguous chunks of rows across the processors.  Determine which
-C  rows of the matrix are locally owned. 
+!  Currently, all PETSc parallel matrix formats are partitioned by
+!  contiguous chunks of rows across the processors.  Determine which
+!  rows of the matrix are locally owned. 
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
-C  Set matrix elements in parallel.
-C   - Each processor needs to insert only elements that it owns
-C     locally (but any non-local elements will be sent to the
-C     appropriate processor during matrix assembly). 
-C   - Always specify global rows and columns of matrix entries.
+!  Set matrix elements in parallel.
+!   - Each processor needs to insert only elements that it owns
+!     locally (but any non-local elements will be sent to the
+!     appropriate processor during matrix assembly). 
+!   - Always specify global rows and columns of matrix entries.
 
       call OptionsHasName(PETSC_NULL_CHARACTER,'-norandom',flg,ierr)
       if (flg .eq. 1) then
@@ -161,25 +161,25 @@ C   - Always specify global rows and columns of matrix entries.
  10   continue
       if (use_random) call PetscRandomDestroy(rctx,ierr)
 
-C  Assemble matrix, using the 2-step process:
-C       MatAssemblyBegin(), MatAssemblyEnd()
-C  Computations can be done while messages are in transition
-C  by placing code between these two statements.
+!  Assemble matrix, using the 2-step process:
+!       MatAssemblyBegin(), MatAssemblyEnd()
+!  Computations can be done while messages are in transition
+!  by placing code between these two statements.
 
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
-C  Create parallel vectors.
-C   - Here, the parallel partitioning of the vector is determined by
-C     PETSc at runtime.  We could also specify the local dimensions
-C     if desired.
-C   - Note: We form 1 vector from scratch and then duplicate as needed.
+!  Create parallel vectors.
+!   - Here, the parallel partitioning of the vector is determined by
+!     PETSc at runtime.  We could also specify the local dimensions
+!     if desired.
+!   - Note: We form 1 vector from scratch and then duplicate as needed.
 
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,dim,u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 
-C  Set exact solution; then compute right-hand-side vector.
+!  Set exact solution; then compute right-hand-side vector.
 
       if (use_random) then
          call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,
@@ -191,36 +191,36 @@ C  Set exact solution; then compute right-hand-side vector.
       endif
       call MatMult(A,u,b,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C         Create the linear solver and set various options
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!         Create the linear solver and set various options
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Create linear solver context
+!  Create linear solver context
 
       call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
 
-C  Set operators. Here the matrix that defines the linear system
-C  also serves as the preconditioning matrix.
+!  Set operators. Here the matrix that defines the linear system
+!  also serves as the preconditioning matrix.
 
       call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
      *                      ierr)
 
-C  Set runtime options, e.g.,
-C      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
+!  Set runtime options, e.g.,
+!      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
 
       call SLESSetFromOptions(sles,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                      Solve the linear system
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                      Solve the linear system
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call SLESSolve(sles,b,x,its,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                     Check solution and clean up
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                     Check solution and clean up
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Check the error
+!  Check the error
 
       call VecAXPY(none,u,x,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
@@ -234,8 +234,8 @@ C  Check the error
   100 format('Norm of error ',e10.4,', iterations ',i5)
   110 format('Norm of error < 1.e-12, iterations ',i5)
 
-C  Free work space.  All PETSc objects should be destroyed when they
-C  are no longer needed.
+!  Free work space.  All PETSc objects should be destroyed when they
+!  are no longer needed.
 
       if (use_random) call PetscRandomDestroy(rctx,ierr)
       call SLESDestroy(sles,ierr)
