@@ -142,6 +142,7 @@ class BuildChecker(script.Script):
   def checkFile(self, filename):
     ##logRE = r'build_(?P<arch>[\w-]*\d+\.\d+)\.(?P<bopt>[\w+]*)\.(?P<machine>[\w@.]*)\.log'
     logRE = r'build_(?P<arch>[\w.\d-]+)_(?P<machine>[\w.\d-]+)\.log'
+    configureRE = re.compile(r'\*{3,5} (?P<errorMsg>[^*]+) \*{3,5}')
 
     print 'Checking',filename
     if self.isLocal and not os.path.exists(filename):
@@ -175,6 +176,10 @@ class BuildChecker(script.Script):
       (output, error, status) = self.executeShellCommand('ssh '+self.argDB['remoteMachine']+' cat '+filename)
       lines = output.split('\n')
     for line in lines:
+      m = configureRE.search(line)
+      if m:
+        print 'From '+filename+': configure error: '+m.group('errorMsg')
+        continue
       for regExp in regExps:
         m = regExp.match(line)
         if m:
