@@ -2842,7 +2842,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   IS          isicol;
   int         *r,*ic,ierr,prow,n = a->mbs,*ai = a->i,*aj = a->j;
   int         *ainew,*ajnew,jmax,*fill,*xi,nz,*im,*ajfill,*flev;
-  int         *dloc,idx,row,m,fm,nzf,nzi,len, realloc = 0,dcount = 0;
+  int         *dloc,idx,row,m,fm,nzf,nzi,len, reallocate = 0,dcount = 0;
   int         incrlev,nnz,i,bs = a->bs,bs2 = a->bs2,levels,diagonal_fill;
   PetscTruth  col_identity,row_identity;
   PetscReal   f;
@@ -2974,7 +2974,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
 	ierr = PetscMemcpy(xi,ajfill,ainew[prow]*sizeof(int));CHKERRQ(ierr);
 	ierr = PetscFree(ajfill);CHKERRQ(ierr);
 	ajfill = xi;
-	realloc++; /* count how many reallocations are needed */
+	reallocate++; /* count how many reallocations are needed */
       }
       xi          = ajnew + ainew[prow];
       flev        = ajfill + ainew[prow];
@@ -2999,7 +2999,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
 
     {
       PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
-      PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
+      PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",reallocate,f,af);
       PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Run with -pc_ilu_fill %g or use \n",af);
       PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:PCILUSetFill(pc,%g);\n",af);
       PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:for best performance.\n");
@@ -3038,7 +3038,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     b->maxnz          = b->nz = ainew[n];
     (*fact)->factor   = FACTOR_LU;
 
-    (*fact)->info.factor_mallocs    = realloc;
+    (*fact)->info.factor_mallocs    = reallocate;
     (*fact)->info.fill_ratio_given  = f;
     (*fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
   }
@@ -3187,8 +3187,13 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
 #if defined(PETSC_USE_MAT_SINGLE)
         if (use_single) {
           if (sse_enabled_local) { /* Natural + Single + SSE */ 
+#if defined(PETSC_HAVE_SSE)
             A->ops->solve         = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion;
             PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE, in-place natural ordering solve BS=4\n");
+#else
+            /* This should never be reached, unless there is a bug in PetscSSEIsEnabled(). */
+            SETERRQ(PETSC_ERR_SUP,"SSE implementations are unavailable.");
+#endif
           } else { /* Natural + Single */
             A->ops->solve         = MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion;
             PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, in-place natural ordering solve BS=4\n");
@@ -3207,8 +3212,13 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
 #if defined(PETSC_USE_MAT_SINGLE)
         if (use_single) {
           if (sse_enabled_local) { /* Arbitrary + Single + SSE */
+#if defined(PETSC_HAVE_SSE)
             A->ops->solve         = MatSolve_SeqBAIJ_4_SSE_Demotion;
             PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE solve BS=4\n");
+#else
+            /* This should never be reached, unless there is a bug in PetscSSEIsEnabled(). */
+            SETERRQ(PETSC_ERR_SUP,"SSE implementations are unavailable.");
+#endif
           } else { /* Arbitrary + Single */
             A->ops->solve         = MatSolve_SeqBAIJ_4_Demotion;
             PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision solve BS=4\n");
