@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.42 1998/05/05 19:47:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.43 1998/05/18 14:08:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -172,7 +172,7 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
 #else
   int i;
 #endif
-  int  j,flag,argc = 0,dummy_tag, PETSC_COMM_WORLD_FromUser = 1;
+  int  j,flag,argc = 0,dummy_tag;
   char **args = 0,*t1, name[256];
 
   *__ierr = 1;
@@ -211,7 +211,6 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
   PetscInitializedCalled = 1;
 
   if (!PETSC_COMM_WORLD) {
-    PETSC_COMM_WORLD_FromUser = 0;
     PETSC_COMM_WORLD          = MPI_COMM_WORLD;
   }
 
@@ -251,10 +250,9 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
      attribute.
   */
   PetscCommDup_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
-   if (!PETSC_COMM_WORLD_FromUser) {
-    *__ierr = PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
-    if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_WORLD");return;}
-  }
+  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_SELF");return;}  *__ierr = PetscCommDup_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
+  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_WORLD");return;}
+
   *__ierr = ViewerInitialize_Private(); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
   PetscInitializeFortran();
@@ -279,10 +277,18 @@ void alicefinalize_(int *__ierr)
   *__ierr = AliceFinalize();
 }
 
+#if defined(__cplusplus)
+}
+#endif
+
 /* -----------------------------------------------------------------------------------------------*/
 
 extern int OptionsCheckInitial_Components(void);
 extern int PetscInitialize_DynamicLibraries(void);
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #undef __FUNC__  
 #define __FUNC__ "petscinitialize"
@@ -295,19 +301,15 @@ extern int PetscInitialize_DynamicLibraries(void);
 */
 void petscinitialize_(CHAR filename,int *__ierr,int len)
 {
-  int  j,flag,argc = 0,dummy_tag, PETSC_COMM_WORLD_FromUser = 1;
-  char **args = 0,*t1, name[256];
-
   aliceinitialize_(filename,__ierr,len); 
   if (*__ierr) return;
   
   *__ierr = OptionsCheckInitial_Components(); 
-  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
+  if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
 
   *__ierr = PetscInitialize_DynamicLibraries(); 
-  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Initializing dynamic libraries");return;}
+  if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Initializing dynamic libraries");return;}
 }
-
 
 void petscfinalize_(int *__ierr)
 {
@@ -327,6 +329,7 @@ void petscsetcommworld_(MPI_Comm *comm,int *__ierr)
 #if defined(__cplusplus)
 }
 #endif
+
 
 
 
