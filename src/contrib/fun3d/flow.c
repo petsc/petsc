@@ -1,6 +1,4 @@
-#ifndef lint
-static char vcid[] = "$Id: flow.c,v 1.2 2000/01/11 19:54:31 bsmith Exp bsmith $";
-#endif
+/* "$Id: flow.c,v 1.3 2000/01/12 14:47:30 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
