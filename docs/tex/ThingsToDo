@@ -48,7 +48,7 @@ f77 -c  -O somefort.f
   - extend PETSc PLogInfo() logging so that individual components can disable
     their printouts (e.g., get SNES loggin but not matrix logging)
 
-  - Provide routine for initializeing Fortran side of PETSc when 
+  * Provide routine for initializeing Fortran side of PETSc when 
     main program is C. i.e. this sets common blocks and PETSC_NULL_Fortran
 
  (Barry)  - Have all preconditioners (including LU) support null space, see 
