@@ -18,7 +18,7 @@ def setupRC(path):
     else:
       contents = ''
 
-    contents = contents + '# Code added by BuildSystem/setuprc.py\n'
+    contents = contents + '# Code added by BuildSystem/install/setuprc.py\n'
     contents = contents + 'import sys\n'
     contents = contents + 'sys.path.insert(0,"'+path+'")\n'
     f = open(fname,'w')
