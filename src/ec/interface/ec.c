@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ec.c,v 1.9 1997/08/22 17:56:53 curfman Exp curfman $";
+static char vcid[] = "$Id: ec.c,v 1.10 1997/09/11 23:54:40 curfman Exp curfman $";
 #endif
 
 /*
@@ -97,7 +97,7 @@ int ECView(EC ec,Viewer viewer)
    Notes:
    ECGetEigenvalues() may be called only after ECSolve().
 
-.keywords: EC, setup
+.keywords: EC, get, eigenvalues
 
 .seealso: ECCreate(), ECSolve(), ECDestroy()
 @*/
@@ -176,7 +176,7 @@ int ECSetUp(EC ec)
    Output Parameter:
 .  ec - eigenvalue computation context
 
-.keywords: EC, create, context, eigenvectors
+.keywords: EC, set, eigenvectors, required
 
 .seealso: ECSetUp(), ECSolve(), ECDestroy(), ECSolveEigenvectors(),
           ECGetEigenvectors()
@@ -254,7 +254,7 @@ $                        smallest_real_part,smallest_magnitude,
 $                        interior>
 $  -ec_spectrum_number number of eigenvalues requested
 
-.keywords: EC, set, method
+.keywords: EC, set, options
 
 .seealso: ECCreate(), ECSetType()
 @*/
@@ -314,7 +314,7 @@ extern int ECPrintTypes_Private(MPI_Comm,char *,char *);
    Options Database Command:
 $  -help
 
-.keywords: EC, set, help
+.keywords: EC, print, help
 @*/
 int ECPrintHelp(EC ec)
 {
@@ -351,7 +351,7 @@ int ECPrintHelp(EC ec)
 .  A  - the matrix for which eigenvalues are requested
 .  B  - optional matrix for generalized eigenvalue problem
 
-.keywords: EC, set, help
+.keywords: EC, set, operators
 
 .seealso: ECCreate()
 @*/
@@ -386,13 +386,13 @@ int ECSetOperators(EC ec,Mat A,Mat B)
                EC_INTERIOR
 .   location - value near which you wish the spectrum computed
 
-   Options Database Command:
+   Options Database Keys:
 $  -ec_spectrum_portion <largest_real,largest_magnitude, 
 $                        smallest_real,smallest_magnitude,
 $                        interior>
-$  -ec_number number of eigenvalues requested
+$  -ec_number <ne>, where <ne> is the number of eigenvalues requested
 
-.keywords: EC, set, help, eigenvalues
+.keywords: EC, set, spectrum, portion
 
 .seealso: ECCreate(), ECSetOperators()
 @*/
@@ -414,7 +414,7 @@ int ECSetEigenvaluePortion(EC ec,int n,ECSpectrumPortion portion,Scalar location
    Input Parameter:
 .   ec - the eigenvalue computation context
 
-.keywords: EC, set, help, eigenvalues
+.keywords: EC, solve
 
 .seealso: ECCreate(), ECSetOperators(), ECGetEigenvalues(),
           ECSolveEigenvectors()
@@ -478,7 +478,7 @@ int ECSolve(EC ec)
 
    Notes: Must be called after ECSolve().
 
-.keywords: EC, set, help, eigenvalues
+.keywords: EC, solve, eigenvalues
 
 .seealso: ECCreate(), ECSetOperators(), ECSolve(), ECGetEigenVectors(),
           ECSetEigenvectorsRequired()
@@ -528,7 +528,7 @@ $      (for instance, lapack, arpack)
   choosing the appropriate method.  In other words, this routine is
   for the advanced user.
 
-.keywords: EC, set, method
+.keywords: EC, set, type
 
 .seealso: ECCreate(), ECSetFromOptions()
 @*/
@@ -638,7 +638,7 @@ int ECGetTypeFromOptions_Private(EC ec,ECType *itmethod)
 .  itmeth - EC method (or use PETSC_NULL)
 .  name - name of EC method (or use PETSC_NULL)
 
-.keywords: EC, get, method, name
+.keywords: EC, get, type, name
 @*/
 int ECGetType(EC ec,ECType *type,char **name)
 {
