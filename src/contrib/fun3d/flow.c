@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.47 2000/08/08 03:44:16 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.48 2000/08/08 03:52:11 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -57,7 +57,7 @@ long long counter0,counter1;
 int  ntran[max_nbtran];        /* transition stuff put here to make global */
 REAL dxtran[max_nbtran];
 
-#ifdef HAVE_AMS
+#ifdef PETSC_HAVE_AMS
 AMS_Comm ams;
 AMS_Memory memid;
 int ams_err;
@@ -87,12 +87,13 @@ int main(int argc,char **args)
   Scalar        *qnode;
   int 		ierr;
   PetscTruth    flg;
-  MPI_Comm      comm = MPI_COMM_WORLD;
-#ifdef HAVE_AMS
+  MPI_Comm      comm;
+#ifdef PETSC_HAVE_AMS
   int           fdes;
 #endif  
   ierr = PetscInitialize(&argc,&args,PETSC_NULL,help);CHKERRQ(ierr);
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
+  comm = PETSC_COMM_WORLD;
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -148,7 +149,7 @@ int main(int argc,char **args)
   user.tsCtx = &tsCtx;
 
     /* AMS Stuff */
-#ifdef HAVE_AMS
+#ifdef PETSC_HAVE_AMS
     /* Create and publish the Communicator */
     ams_err = AMS_Comm_publish("FUN3D",&ams, MPI_TYPE, comm);
     AMS_Check_error(ams_err,&msg);
@@ -232,26 +233,6 @@ int main(int argc,char **args)
      */ 
     ams_err = AMS_Memory_set_field_block(memid,"cells",2,c_start_ind,c_end_ind);
     AMS_Check_error(ams_err,&msg);
-
-
-    /* Add points field */
-    ams_err =  AMS_Memory_add_field(memid,"supervectors",user.grid->qnode,4*user.grid->nnodesLoc,
-                          AMS_DOUBLE,AMS_READ,AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err,&msg);
-
-    /* Set Field Dimensions */
-    s_start_ind[0] = rstart;   /* Starting index in the first dimension */
-    s_end_ind[0] = rstart+user.grid->nnodesLoc-1;    /* Ending index in the first dimension */
-
-    s_start_ind[1] = 0;   /* Starting index in the second dimension */
-    s_end_ind[1] = 3;    /* Ending index in the second dimension */
-
-    /*
-     * This would be an array of ??? rows and 4 columns
-     */ 
-    ams_err = AMS_Memory_set_field_block(memid,"supervectors",2,s_start_ind,s_end_ind);
-    AMS_Check_error(ams_err,&msg);
-
 #endif
 
     /* 
@@ -266,7 +247,38 @@ int main(int argc,char **args)
     ierr = SetPetscDS(&f_pntr,&tsCtx);CHKERRQ(ierr);
     ierr = SNESCreate(comm,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
     ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
- 
+
+#ifdef PETSC_HAVE_AMS
+    /* Add points field */
+    if (!user.PreLoading) {
+    ierr = VecGetArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
+    ams_err =  AMS_Memory_add_field(memid,"supervectors",qnode,4*user.grid->nnodesLoc,
+                          AMS_DOUBLE,AMS_READ,AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err,&msg);
+    ierr = VecRestoreArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
+
+    /* Set Field Dimensions */
+    s_start_ind[0] = rstart;   /* Starting index in the first dimension */
+    s_end_ind[0] = rstart+user.grid->nnodesLoc-1;    /* Ending index in the first dimension */
+
+    s_start_ind[1] = 0;   /* Starting index in the second dimension */
+    s_end_ind[1] = 3;    /* Ending index in the second dimension */
+
+    /*
+     * This would be an array of ??? rows and 4 columns
+     */ 
+    ams_err = AMS_Memory_set_field_block(memid,"supervectors",2,s_start_ind,s_end_ind);
+    AMS_Check_error(ams_err,&msg);
+
+    /*
+     * Memory is being published
+     */
+    ams_err = AMS_Memory_publish(memid);
+    AMS_Check_error(ams_err,&msg);
+    
+    }
+#endif 
+
     /* Set various routines and options */
     ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRQ(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
