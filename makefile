@@ -135,12 +135,12 @@ etags:
 	etags -a -f TAGS src/*/examples/*.c src/*/examples/*/*.c
 	etags -a -f TAGS src/*/*.h src/*/*/*.h src/*/interface/*.c 
 	etags -a -f TAGS src/*/src/*.c src/*/impls/*/*.c 
-	etags -a -f TAGS src/*/impls/*/*/*.c 
+	etags -a -f TAGS src/*/impls/*/*/*.c  src/benchmarks/*.c
 	etags -a -f TAGS src/contrib/*/*.c src/contrib/*/src/*.c 
 	etags -a -f TAGS src/contrib/*/examples/*.c
 	etags -a -f TAGS src/contrib/*/src/*.h src/contrib/*/examples/*.F
 	etags -a -f TAGS include/*.h include/pinclude/*.h bmake/common
-	etags -a -f TAGS include/FINCLUDE/*.h
+	etags -a -f TAGS include/FINCLUDE/*.h 
 	etags -a -f TAGS src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS makefile src/*/src/makefile
 	etags -a -f TAGS src/*/interface/makefile src/makefile 
