@@ -11,7 +11,7 @@
 #define __FUNC__ "KSPSetUp_MINRES"
 int KSPSetUp_MINRES(KSP ksp)
 {
-  int maxit = ksp->max_it,ierr;
+  int ierr;
 
   PetscFunctionBegin;
 
@@ -35,7 +35,7 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   Scalar       alpha,malpha,beta,mbeta,ibeta,betaold,eta;
   Scalar       c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
   Scalar       rho0,rho1,irho1,rho2,mrho2,rho3,mrho3;
-  Scalar       *e = 0,*d = 0,mone = -1.0,zero = 0.0; 
+  Scalar       mone = -1.0,zero = 0.0; 
   Scalar       dp = 0.0;
   PetscReal    np;
   Vec          X,B,R,Z,U,V,W,UOLD,VOLD,WOLD,WOOLD;
@@ -180,8 +180,6 @@ EXTERN_C_BEGIN
 #define __FUNC__ "KSPCreate_MINRES"
 int KSPCreate_MINRES(KSP ksp)
 {
-  int    ierr;
-
   PetscFunctionBegin;
 
   ksp->pc_side                   = PC_LEFT;
