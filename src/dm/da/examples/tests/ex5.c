@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.24 1997/09/26 02:21:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.25 1998/03/20 22:53:15 bsmith Exp balay $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -13,7 +13,7 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 
 int main(int argc,char **argv)
 {
-  int       rank, size, M = 14, ierr, time_steps = 1000, w=1, s=1, a=1,flg;
+  int       rank, size, M = 14, ierr, time_steps = 1000, w=1, s=1, flg;
   DA        da;
   Viewer    viewer;
   Draw      draw;
@@ -61,7 +61,6 @@ int main(int argc,char **argv)
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
   /* Assign Parameters */
-  a=1;
   h= 1.0/M; 
   k= h*h/2.2;
 

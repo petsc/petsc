@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.9 1997/10/19 03:29:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.10 1998/03/20 22:52:39 bsmith Exp balay $";
 #endif
 
 static char help[] =
@@ -127,13 +127,12 @@ int main( int argc, char **argv )
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i, j, row, mx, my, ierr, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
-  double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
+  double  one = 1.0, lambda, temp1, temp, hx, hy;
   Scalar  *x;
   Vec     localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
-  sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);

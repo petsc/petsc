@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.28 1997/10/19 03:29:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.29 1998/03/20 22:52:39 bsmith Exp balay $";
 #endif
 
 static char help[] =
@@ -50,7 +50,7 @@ int main( int argc, char **argv )
   AppCtx        user;                 /* user-defined application context */
   Vec           x,r;                  /* vectors */
   DAStencilType stencil = DA_STENCIL_BOX;
-  int           ierr, its, N, flg;
+  int           ierr, its, flg;
   int           Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, Nz = PETSC_DECIDE; 
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
@@ -72,7 +72,6 @@ int main( int argc, char **argv )
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,0,"Lambda is out of range");
   }
-  N = user.mx*user.my*user.mz;
   
   /* Set up distributed array */
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,stencil,user.mx,user.my,user.mz,
@@ -114,14 +113,12 @@ int main( int argc, char **argv )
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i,j,k, loc, mx, my, mz, ierr,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs,base1;
-  double  one = 1.0, lambda, temp1, temp, Hx, Hy, HxdHy, HydHx,sc;
+  double  one = 1.0, lambda, temp1, temp, Hx, Hy;
   Scalar  *x;
   Vec     localX = user->localX;
 
   mx	 = user->mx; my	 = user->my; mz = user->mz; lambda = user->param;
   Hx     = one / (double)(mx-1);     Hy     = one / (double)(my-1);
-  sc     = Hx*Hy;
-  HxdHy  = Hx/Hy; HydHx  = Hy/Hx;
 
   ierr  = VecGetArray(localX,&x); CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
