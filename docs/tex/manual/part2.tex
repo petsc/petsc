@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.288 1998/08/26 03:25:58 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.289 1998/09/25 03:16:56 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -6193,7 +6193,7 @@ To make a program named {\tt ex1}, one may use the command
 which will compile a debugging, optimized, or profiling version
 of the example and automatically link the appropriate libraries.  The
 architecture, {\tt arch}, is one of {\tt sun4, solaris, rs6000, IRIX,
-hpux, freebsd}, etc. Note
+hpux}, etc. Note
 that when using command line options with make (as illustrated above),
 one must {\em not} place spaces on either side of the ``='' signs.
 The variables {\tt BOPT} and 
@@ -6278,10 +6278,6 @@ Each architecture base file, denoted by
 includes the file \break {\tt \$\{PETSC\_DIR\}/bmake/common},
 which contains the rules discussed in Section~\ref{sec:common}
 that are common to all machines.
-
-We discovered that for no apparent reason, under freeBSD the include 
-syntax is different from that of all other makefiles. Thus, under 
-freeBSD {\em gnumake} must be used.
 
 \section{PETSc Flags}
 \label{sec:makeflags}
