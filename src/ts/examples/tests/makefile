@@ -108,7 +108,7 @@ runex1_6:
 	   $(RM) -f ex1_6.tmp
 
 runex2:
-	-@$(MPIRUN) ex2	 -ts_monitor -dt 10 -snes_monitor  > ex2_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex2 -ts_monitor -dt 10 -snes_smonitor  > ex2_1.tmp 2>&1;   \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   $(RM) -f ex2_1.tmp
