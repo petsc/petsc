@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: htmlkeywords.tcl,v 1.8 1998/01/05 14:47:45 balay Exp balay $ 
+# $Id: htmlkeywords.tcl,v 1.9 1998/04/09 16:19:36 balay Exp balay $ 
 
 ################################################
 # This program scans the WWW man pages         #
@@ -156,11 +156,13 @@ proc main { }  {
 
     set PETSC_DIR ../..
 
-    set files [ glob docs/manualpages/man*/*.html]
+    set files [ glob docs/manualpages/*/*.html]
     set keywords {}
     set functionnames {}
 
-    foreach filename $files { 
+    foreach filename $files {
+        # Get rid of index.html files form the list
+        if { [ file root [file tail $filename] ] == "index" } { continue }
         set Keywords($filename) {}
         set html($filename) {}
         scanfile $filename

@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.16 1999/02/02 23:16:22 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.17 1999/02/03 00:18:52 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -63,6 +63,7 @@ def printindex(outfilename,headfilename,titles,tables):
             fd.write('</TD></TR>\n')
             for filename in tables[i]:
                   path,name     = posixpath.split(filename)
+                  func_name,ext = posixpath.splitext(name)
                   mesg          = '<TD WIDTH=250><A HREF="'+ './' + name + '">' + \
                                   func_name + '</A></TD>'
                   fd.write(mesg)

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.262 1999/02/01 22:37:48 balay Exp balay $ 
+# $Id: makefile,v 1.263 1999/02/02 20:31:24 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -260,8 +260,7 @@ SCRIPTS    = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
 
 # Deletes man pages (HTML version)
 deletemanualpages:
-	${RM} -f ${PETSC_DIR}/docs/manualpages/man*/* \
-                 ${PETSC_DIR}/docs/manualpages/man?.html \
+	${RM} -f ${PETSC_DIR}/docs/manualpages/*/*.html \
                  ${PETSC_DIR}/docs/manualpages/manualpages.cit 
 
 # Deletes man pages (LaTeX version)
@@ -272,13 +271,11 @@ deletelatexpages:
 allmanpages: allmanualpages alllatexpages
 allmanualpages: deletemanualpages
 	-${OMAKE} ACTION=manualpages_buildcite tree
-	-cd src/fortran/custom; ${OMAKE} manualpages_buildcite
-	-cd src/fortran/custom; ${OMAKE} manualpages
 	-${OMAKE} ACTION=manualpages tree
 	-maint/wwwindex.py ${PETSC_DIR}
 	-maint/examplesindex.tcl
 	-maint/htmlkeywords.tcl
-	-@chmod g+w docs/manualpages/man*/*
+	-@chmod g+w docs/manualpages/*/*.html
 
 alllatexpages: deletelatexpages
 	-${OMAKE} ACTION=latexpages tree
