@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.31 1999/05/04 20:38:08 balay Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.32 1999/05/12 03:34:35 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -32,7 +32,10 @@ static char vcid[] = "$Id: zsnes.c,v 1.31 1999/05/04 20:38:08 balay Exp bsmith $
 #define snesdefaultcomputejacobiancolor_ SNESDEFAULTCOMPUTEJACOBIANCOLOR
 #define matsnesmfsettype_                MATSNESMFSETTYPE
 #define snesgetoptionsprefix_            SNESGETOPTIONSPREFIX
+#define snesgetjacobian_                 SNESGETJACOBIAN
+#define matsnesmfsetfunction_            MATSNESMFSETFUNCTION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matsnesmfsetfunction_            matsnesmfsetfunction
 #define snesregisterdestroy_         snesregisterdestroy
 #define snessetjacobian_             snessetjacobian
 #define snescreate_                  snescreate
@@ -59,9 +62,18 @@ static char vcid[] = "$Id: zsnes.c,v 1.31 1999/05/04 20:38:08 balay Exp bsmith $
 #define snesdefaultcomputejacobiancolor_ snesdefaultcomputejacobiancolor
 #define matsnesmfsettype_                matsnesmfsettype
 #define snesgetoptionsprefix_            snesgetoptionsprefix
+#define snesgetjacobian_                 snesgetjacobian
 #endif
 
 EXTERN_C_BEGIN
+
+void snesgetjacobian_(SNES *snes,Mat *A,Mat *B,void **ctx, int *__ierr )
+{
+  if (FORTRANNULLINTEGER(ctx)) ctx = PETSC_NULL;
+  if (FORTRANNULLOBJECT(A))    A = PETSC_NULL;
+  if (FORTRANNULLOBJECT(B))    B = PETSC_NULL;
+  *__ierr = SNESGetJacobian(*snes,A,B,ctx);
+}
 
 void matsnesmfsettype_(Mat *mat,CHAR ftype, int *__ierr,int len )
 {
@@ -206,6 +218,8 @@ void snessetminimizationfunction_(SNES *snes,
   *__ierr = SNESSetMinimizationFunction(*snes,oursnesminfunction,ctx);
 }
 
+/* ---------------------------------------------------------*/
+
 static int (*f2)(SNES*,Vec*,Vec*,void*,int*);
 static int oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
 {
@@ -217,6 +231,21 @@ void snessetfunction_(SNES *snes,Vec *r,int (*func)(SNES*,Vec*,Vec*,void*,int*),
                       void *ctx, int *__ierr ){
    f2 = func;
    *__ierr = SNESSetFunction(*snes,*r,oursnesfunction,ctx);
+}
+
+/* ---------------------------------------------------------*/
+
+static int (*f11)(SNES*,Vec*,Vec*,void*,int*);
+static int ourmatsnesmffunction(SNES snes,Vec x,Vec f,void *ctx)
+{
+  int ierr = 0;
+  (*f11)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+void matsnesmfsetfunction_(Mat *mat,Vec *r,int (*func)(SNES*,Vec*,Vec*,void*,int*),
+                      void *ctx, int *__ierr ){
+   f11 = func;
+   *__ierr = MatSNESMFSetFunction(*mat,*r,ourmatsnesmffunction,ctx);
 }
 /* ---------------------------------------------------------*/
 
