@@ -166,7 +166,11 @@ class Builder(logging.Logger):
     elif not configurationName in self.configurations:
       self.configurations[configurationName] = script.LanguageProcessor(argDB = self.argDB, compilers = self.compilers, libraries = self.libraries, versionControl = self.versionControl)
       self.configurations[configurationName].setup()
-    return self.configurations[configurationName]
+    configuration = self.configurations[configurationName]
+    configuration.compilers      = self.compilers
+    configuration.libraries      = self.libraries
+    configuration.versionControl = self.versionControl
+    return configuration
 
   def pushConfiguration(self, configurationName):
     '''Set the current configuration'''
@@ -205,6 +209,8 @@ class Builder(logging.Logger):
           del self.argDB[loadName]
         else:
           raise e
+      except cPickle.BadPickleGet:
+        del self.argDB[loadName]
     return self.getConfiguration(configurationName)
 
   def updateOutputFiles(self, outputFiles, newOutputFiles):

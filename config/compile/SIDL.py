@@ -158,8 +158,8 @@ class Compiler(script.Script):
     '''This will compile the SIDL source'''
     outputFiles           = {}
     if self.useShell:
-      self.createServerShell(source, outputFiles)
       self.createClientShell(source, outputFiles)
+      self.createServerShell(source, outputFiles)
     else:
       self.scandal.includes = self.includes
       self.scandal.targets  = source
