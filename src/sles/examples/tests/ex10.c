@@ -1,15 +1,15 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.39 1995/10/11 03:47:54 curfman Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.40 1995/10/11 19:35:08 curfman Exp curfman $";
 #endif
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
 dimensions using 20 node serendipity elements and the equations of linear\n\
 elasticity. This also demonstrates use of MatGetSubMatrix() and the block\n\
-diagonal data structure.\n\n";
+diagonal data structure.  Input arguments are:\n\
+  -m : problem size\n\n";
 
 #include "sles.h"
-#include "petsc.h"
 #include <stdio.h>
 
 /* This code is not intended as an efficient implementation, it is only
