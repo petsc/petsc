@@ -266,7 +266,6 @@ int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
   Mat_SeqAIJ    *aa = (Mat_SeqAIJ*)(A)->data;
   Mat_SuperLU   *lu = (Mat_SuperLU*)(*F)->spptr;
   int           ierr,info;
-  PetscTruth    flag;
   SuperLUStat_t stat;
   double        ferr, berr; 
   NCformat      *Ustore;
