@@ -5,8 +5,7 @@
 #include "include/finclude/mat.h"
 #include "include/finclude/snes.h"
 C
-C  In this example the application context is a Fortran 
-C integer array.
+C  In this example the application context is a Fortran integer array.
 C
 C      ctx(1) = da
 C          2  = F
@@ -30,7 +29,7 @@ C          6  = N
       call  MPI_Comm_rank(MPI_COMM_WORLD,ctx(4),ierr)
       call  MPI_Comm_size(MPI_COMM_WORLD,ctx(5),ierr)
 
-C     /* Set up data structures */
+C Set up data structures
       call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,ctx(1),ierr)
 
       call DAGetDistributedVector(ctx(1),x,ierr)
@@ -49,7 +48,7 @@ C     /* Set up data structures */
       call MatGetName(J,matrixname,ierr)
 C      print*, 'Matrix name ',matrixname
 
-C     /* Store right-hand-side of PDE and exact solution */
+C Store right-hand-side of PDE and exact solution
       call VecGetOwnershipRange(x,start,end,ierr)
       xp = h*start
       nn = end - start
@@ -67,15 +66,15 @@ C     /* Store right-hand-side of PDE and exact solution */
       call VecAssemblyBegin(U,ierr)
       call VecAssemblyEnd(U,ierr)
 
-C       /* Create nonlinear solver */  
+C Create nonlinear solver
       call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
 
-C       /* Set various routines */
+C Set various routines
       call SNESSetSolution(snes,x,FormInitialGuess,0,ierr)
       call SNESSetFunction(snes,r,FormFunction,ctx,1,ierr)
       call SNESSetJacobian(snes,J,J,FormJacobian,ctx,ierr)
 
-C      /* Set up nonlinear solver; then execute it */
+C Set up nonlinear solver; then execute it
       call SNESSetFromOptions(snes,ierr)
       call SNESSetUp(snes,ierr)
       call SNESSolve(snes,its,ierr)
@@ -83,7 +82,7 @@ C      /* Set up nonlinear solver; then execute it */
         print*,'Number of Newton iterations = ', its
       endif
 
-C  /* Free data structures */
+C Free data structures
       call VecDestroy(x,ierr)
       call VecDestroy(ctx(3),ierr)
       call VecDestroy(r,ierr)
@@ -97,7 +96,7 @@ C  /* Free data structures */
       end
 
 
-C/* --------------------  Evaluate Function F(x) --------------------- */
+C --------------------  Evaluate Function F(x) --------------------- 
 
       subroutine FormFunction(snes,x,f,ctx)
       integer snes,x,f,ctx(*)
@@ -147,7 +146,7 @@ C/* --------------------  Evaluate Function F(x) --------------------- */
       return
       end
 
-C  /* --------------------  Form initial approximation ----------------- */
+C --------------------  Form initial approximation ----------------- 
 
       subroutine FormInitialGuess(snes,x,dummy,ierr)
       integer snes,x,dummy(*),ierr
@@ -159,7 +158,7 @@ C  /* --------------------  Form initial approximation ----------------- */
       return
       end
 
-C/* --------------------  Evaluate Jacobian F'(x) -------------------- */
+C --------------------  Evaluate Jacobian F'(x) -------------------- 
 
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
 #include "include/finclude/petsc.h"
