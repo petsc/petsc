@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.29 1995/07/28 04:19:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.30 1995/07/30 14:57:20 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -106,7 +106,7 @@ $  -optionsused : Calls OptionsAllUsed()
 $  -optionsleft : Prints unused options that remain in 
 $     the database
 $  -no_signal_handler : Turns off the signal handler
-$  -trdump : Calls Trdump()
+$  -trdump : Calls TrDump()
 $  -log_all : Prints extensive log information (for
 $      code compiled with PETSC_LOG)
 $  -log : Prints basic log information (for code 
@@ -119,7 +119,7 @@ $             this slows your code by at least a factor of 10.
 
 .keywords: finalize, exit, end
 
-.seealso: PetscInitialize(), OptionsPrint(), Trdump()
+.seealso: PetscInitialize(), OptionsPrint(), TrDump()
 @*/
 int PetscFinalize()
 {
@@ -167,7 +167,7 @@ int PetscFinalize()
     OptionsDestroy_Private();
     NRDestroyAll();
     MPIU_Seq_begin(MPI_COMM_WORLD,1);
-      ierr = Trdump(stderr); CHKERRQ(ierr);
+      ierr = TrDump(stderr); CHKERRQ(ierr);
     MPIU_Seq_end(MPI_COMM_WORLD,1);
   }
   else {

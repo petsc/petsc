@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.22 1995/07/23 20:34:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.23 1995/07/30 14:57:20 bsmith Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"    /*I "petsc.h"  I*/
@@ -93,6 +93,7 @@ typedef struct {
 
 typedef struct {
   int         parent;
+  double      mem;
   char        string[64];
   char        name[32];
   PetscObject obj;
@@ -107,6 +108,7 @@ static int ObjectsDestroyed = 0, eventsspace = CHUNCK;
 #define FLOPS 1
 #define TIME  2
 static double EventsType[100][3];
+static double ObjectsType[20][4];
 double _TotalFlops = 0;
 int (*_PHC)(PetscObject) = 0;
 int (*_PHD)(PetscObject) = 0;
@@ -147,6 +149,7 @@ int phc(PetscObject obj)
   PETSCMEMSET(objects[nobjects].string,0,64*sizeof(char));
   PETSCMEMSET(objects[nobjects].name,0,16*sizeof(char));
   obj->id = nobjects++;
+  ObjectsType[obj->cookie - PETSC_COOKIE-1][0]++;
   return 0;
 }
 /*
@@ -154,6 +157,7 @@ int phc(PetscObject obj)
 */
 int phd(PetscObject obj)
 {
+  PetscObject parent;
   if (nevents >= eventsspace) {
     Events *tmp;
     tmp = (Events *) PETSCMALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
@@ -173,6 +177,20 @@ int phd(PetscObject obj)
   else {objects[obj->id].parent   = -1;}
   if (obj->name) { strncpy(objects[obj->id].name,obj->name,16);}
   objects[obj->id].obj      = 0;
+  objects[obj->id].mem      = obj->mem;
+  ObjectsType[obj->cookie - PETSC_COOKIE-1][1]++;
+  ObjectsType[obj->cookie - PETSC_COOKIE-1][2] += obj->mem;
+  /*
+     Credit all ancestors with your memory 
+  */
+  parent = obj->parent;
+  while (parent) {
+    int exists;
+    PetscObjectExists(parent,&exists);
+    if (!exists) break;
+    ObjectsType[parent->cookie - PETSC_COOKIE-1][3] += obj->mem;   
+    parent = parent->parent;
+  } 
   ObjectsDestroyed++;
   return 0;
 }
@@ -329,7 +347,7 @@ int PLogBegin()
 
 /*@
    PLogDump - Dumps logs of objects to a file. This file is intended to 
-   be read by petsc/bin/tkreview; it is not user friendly.
+   be read by petsc/bin/petscsim; it is not user friendly.
 
    Input Parameter:
 .  name - an optional file name
@@ -376,7 +394,7 @@ int PLogDump(char* name)
                               events[i].id2,events[i].id3);
   }
   for ( i=0; i<nobjects; i++ ) {
-    fprintf(fd,"%d \n",objects[i].parent);
+    fprintf(fd,"%d %d\n",objects[i].parent,(int)objects[i].mem);
     if (!objects[i].string[0]) {fprintf(fd,"No Info\n");}
     else fprintf(fd,"%s\n",objects[i].string);
     if (!objects[i].name[0]) {fprintf(fd,"No Name\n");}
@@ -393,6 +411,24 @@ int PLogDump(char* name)
   return 0;
 }
 
+static char *(oname[]) = {"Viewer           ",
+                          "Index set        ",
+                          "Vector           ",
+                          "Vector Scatter   ",
+                          "Matrix           ",
+                          "Graphic          ",
+                          "Line graph       ",
+                          "Krylov Solver    ",
+                          "Preconditioner   ",
+                          "SLES             ",
+                          "Grid             ",
+                          "Stencil          ",
+                          "SNES             ",
+                          "Distributed array",
+                          "Matrix scatter   ",
+                          "                 ",
+                          "                 ",
+			  "                 "};
 static char *(name[]) = {"MatMult         ",
                          "MatBeginAssembly",
                          "MatEndAssembly  ",
@@ -589,6 +625,21 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
                    name[i],(int)EventsType[i][COUNT],mint,maxt,minf,maxf,
                    100.*totts/tott,100.*totff/totf);
     }
+  }
+
+  MPIU_fprintf(comm,fd,
+    "-----------------------------------------------------------------\
+-------------\n"); 
+
+  /* loop over objects looking for interesting ones */
+  MPIU_fprintf(comm,fd,"Object Type    Creations    Destroys  Memory Descendants Mem.\n");
+  for ( i=0; i<15; i++ ) {
+    if (ObjectsType[i][0]) {
+      MPIU_fprintf(comm,fd,"%s %3d          %3d  %7d     %g\n",oname[i],(int) 
+          ObjectsType[i][0],(int)ObjectsType[i][1],(int)ObjectsType[i][2],
+          ObjectsType[i][3]);
+    }
+
   }
   return 0;
 }

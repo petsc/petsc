@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.29 1995/08/01 17:35:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.30 1995/08/01 19:04:10 curfman Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "petsc.h"
@@ -46,7 +46,7 @@ int PetscSetUseTrMalloc_Private()
 }
 
 /*
-    Trspace - Routines for tracing space usage.
+    TrSpace - Routines for tracing space usage.
 
     Description:
     TrMalloc replaces malloc and TrFree replaces free.  These routines
@@ -101,7 +101,7 @@ static long    TRMaxMem = 0;
 static long    TRMaxMemId = 0;
 
 /*
-   Trvalid - Test the allocated blocks for validity.  This can be used to
+   TrValid - Test the allocated blocks for validity.  This can be used to
    check for memory overwrites.
 
    Input Parameter:
@@ -127,7 +127,7 @@ $   Block at address %lx is corrupted
 
    No output is generated if there are no problems detected.
 */
-int Trvalid(int line,char *file )
+int TrValid(int line,char *file )
 {
   TRSPACE *head;
   char    *a;
@@ -179,7 +179,7 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
   int              l;
 
   if (TRdebugLevel > 0) {
-    if (Trvalid(lineno,fname )) return 0;
+    if (TrValid(lineno,fname )) return 0;
   }
 
   if (a == 0) {
@@ -257,7 +257,7 @@ int TrFree( void *aa, int line, char *file )
   }
 
   if (TRdebugLevel > 0) {
-    if ((ierr = Trvalid(line,file))) return ierr;
+    if ((ierr = TrValid(line,file))) return ierr;
   }
 
   ahead = a;
@@ -318,7 +318,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 }
 
 /*@
-    Trspace - Returns space statistics.
+    TrSpace - Returns space statistics.
    
     Output Parameters:
 .   space - number of bytes currently allocated
@@ -326,9 +326,9 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 
 .keywords: memory, allocation, tracing, space, statistics
 
-.seealso: Trdump()
+.seealso: TrDump()
  @*/
-int Trspace( int *space, int *fr )
+int TrSpace( int *space, int *fr )
 {
   *space = allocated;
   *fr    = frags;
@@ -336,7 +336,7 @@ int Trspace( int *space, int *fr )
 }
 
 /*@C
-   Trdump - Dumps the allocated memory blocks to a file. The information 
+   TrDump - Dumps the allocated memory blocks to a file. The information 
    printed is: size of space (in bytes), address of space, id of space, 
    file in which space was allocated, and line number at which it was 
    allocated.
@@ -345,13 +345,13 @@ int Trspace( int *space, int *fr )
 .  fp  - file pointer.  If fp is NULL, stderr is assumed.
 
    Options Database Key:
-$  -trdump : dumps unfreed memory during call to PetscFinalize()
+$  -TrDump : dumps unfreed memory during call to PetscFinalize()
 
 .keywords: memory, allocation, tracing, space, statistics
 
-.seealso:  Trspace()
+.seealso:  TrSpace()
  @*/
-int Trdump( FILE *fp )
+int TrDump( FILE *fp )
 {
   TRSPACE *head;
   int     id;
@@ -477,7 +477,7 @@ int TrGetMaximumAllocated(double *max)
 
     Input Parameter:
 .   level - level of debugging.  Currently, either 0 (no checking) or 1
-    (use Trvalid at each TrMalloc or TrFree).
+    (use TrValid at each TrMalloc or TrFree).
 */
 int  TrDebugLevel(int level )
 {
@@ -566,7 +566,7 @@ int TrSortBlocks()
 }
 
 /* Takes sorted input and dumps as an aggregate */
-int TrdumpGrouped(FILE *fp )
+int TrDumpGrouped(FILE *fp )
 {
   TRSPACE *head, *cur;
   int     nblocks, nbytes;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.34 1995/07/28 04:14:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.35 1995/07/30 14:56:51 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -14,6 +14,7 @@ static char vcid[] = "$Id: bvec2.c,v 1.34 1995/07/28 04:14:24 bsmith Exp bsmith 
 #include <math.h>
 #include "vecimpl.h"          /*I  "vec.h"   I*/
 #include "dvecimpl.h" 
+#include "plog.h"
 
 #include "../bvec1.c"
 #include "../dvec2.c"
@@ -183,6 +184,7 @@ int VecCreateSequential(MPI_Comm comm,int n,Vec *V)
     SETERRQ(1,"VecCreateSequential: Must call with MPI_COMM_SELF");
   PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,VECSEQ,comm);
   PLogObjectCreate(v);
+  PLogObjectMemory(v,sizeof(struct _Vec)+size);
   v->destroy     = VecDestroy_Seq;
   v->view        = VecView_Seq;
   s              = (Vec_Seq *) PETSCMALLOC(size); CHKPTRQ(s);

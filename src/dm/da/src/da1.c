@@ -118,6 +118,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 
   PETSCHEADERCREATE(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
+  PLogObjectMemory(da,sizeof(struct _DA));
 
   MPI_Comm_size(comm,&numtid); 
   MPI_Comm_rank(comm,&mytid); 
@@ -172,6 +173,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   ierr=ISCreateStrideSequential(MPI_COMM_SELF,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
  
   idx = (int *) PETSCMALLOC( (x+2*s)*sizeof(int) ); CHKPTRQ(idx);  
+  PLogObjectMemory(da,(x+2*s)*sizeof(int));
 
   nn = 0;
   if (wrap == DA_XPERIODIC) {    /* Handle all cases with wrap first */

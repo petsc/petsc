@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.11 1995/08/01 19:24:44 curfman Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.12 1995/08/02 04:16:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,26 +18,26 @@ typedef struct {
   int  (*multtransadd)(void*,Vec,Vec,Vec);
   int  (*destroy)(void *);
   void *ctx;
-} MatShell;      
+} Mat_Shell;      
 
-static int MatShellMult(Mat mat,Vec x,Vec y)
+static int MatMult_Shell(Mat mat,Vec x,Vec y)
 {
-  MatShell *shell;
-  shell = (MatShell *) mat->data;
+  Mat_Shell *shell;
+  shell = (Mat_Shell *) mat->data;
   return (*shell->mult)(shell->ctx,x,y);
 }
-static int MatShellMultTransAdd(Mat mat,Vec x,Vec y,Vec z)
+static int MatMultTransAdd_Shell(Mat mat,Vec x,Vec y,Vec z)
 {
-  MatShell *shell;
-  shell = (MatShell *) mat->data;
+  Mat_Shell *shell;
+  shell = (Mat_Shell *) mat->data;
   return (*shell->multtransadd)(shell->ctx,x,y,z);
 }
-static int MatShellDestroy(PetscObject obj)
+static int MatDestroy_Shell(PetscObject obj)
 {
   int      ierr;
   Mat      mat = (Mat) obj;
-  MatShell *shell;
-  shell = (MatShell *) mat->data;
+  Mat_Shell *shell;
+  shell = (Mat_Shell *) mat->data;
   if (shell->destroy) {ierr = (*shell->destroy)(shell->ctx);CHKERRQ(ierr);}
   PETSCFREE(shell); 
   PLogObjectDestroy(mat);
@@ -47,7 +47,7 @@ static int MatShellDestroy(PetscObject obj)
   
 static struct _MatOps MatOps = {0,0,
        0, 
-       MatShellMult,0,0,MatShellMultTransAdd,
+       MatMult_Shell,0,0,MatMultTransAdd_Shell,
        0,0,0,0,
        0,0,
        0,
@@ -61,7 +61,7 @@ static struct _MatOps MatOps = {0,0,
        0,0 };
 
 /*@
-   MatShellCreate - Creates a new matrix class for use with a user-defined
+   Mat_ShellCreate - Creates a new matrix class for use with a user-defined
    private data storage format. 
 
    Input Parameters:
@@ -89,14 +89,15 @@ $   MatShellSetMult(mat,mult);
 int MatShellCreate(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 {
   Mat      newmat;
-  MatShell *shell;
+  Mat_Shell *shell;
   PETSCHEADERCREATE(newmat,_Mat,MAT_COOKIE,MATSHELL,comm);
   PLogObjectCreate(newmat);
   *mat           = newmat;
   newmat->factor = 0;
-  newmat->destroy= MatShellDestroy;
+  newmat->destroy= MatDestroy_Shell;
   newmat->ops    = &MatOps;
-  shell          = PETSCNEW(MatShell); CHKPTRQ(shell);
+  shell          = PETSCNEW(Mat_Shell); CHKPTRQ(shell);
+  PETSCMEMSET(shell,0,sizeof(Mat_Shell));
   newmat->data   = (void *) shell;
   shell->mult    = 0;
   shell->m       = m;
@@ -125,9 +126,9 @@ int MatShellCreate(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 @*/
 int MatShellSetMult(Mat mat,int (*mult)(void*,Vec,Vec))
 {
-  MatShell *shell;
+  Mat_Shell *shell;
   VALIDHEADER(mat,MAT_COOKIE);
-  shell = (MatShell *) mat->data;
+  shell = (Mat_Shell *) mat->data;
   shell->mult = mult;
   return 0;
 }
@@ -151,9 +152,9 @@ int MatShellSetMult(Mat mat,int (*mult)(void*,Vec,Vec))
 @*/
 int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
 {
-  MatShell *shell;
+  Mat_Shell *shell;
   VALIDHEADER(mat,MAT_COOKIE);
-  shell               = (MatShell *) mat->data;
+  shell               = (Mat_Shell *) mat->data;
   shell->multtransadd = mult;
   return 0;
 }
@@ -176,9 +177,9 @@ int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
 @*/
 int MatShellSetDestroy(Mat mat,int (*destroy)(void*))
 {
-  MatShell *shell;
+  Mat_Shell *shell;
   VALIDHEADER(mat,MAT_COOKIE);
-  shell = (MatShell *) mat->data;
+  shell = (Mat_Shell *) mat->data;
   shell->destroy = destroy;
   return 0;
 }

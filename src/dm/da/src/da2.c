@@ -189,6 +189,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   PETSCHEADERCREATE(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
+  PLogObjectMemory(da,sizeof(struct _DA));
 
   MPI_Comm_size(comm,&numtid); 
   MPI_Comm_rank(comm,&mytid); 
@@ -383,6 +384,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (stencil_type == DA_STENCIL_STAR) {n0 = n2 = n6 = n8 = -1;}
 
   idx = (int *)PETSCMALLOC((x+2*s_x)*(y+2*s_y)*sizeof(int));CHKPTRQ(idx);
+  PLogObjectMemory(da,(x+2*s_x)*(y+2*s_y)*sizeof(int));
   nn = 0;
 
   xbase = bases[mytid];

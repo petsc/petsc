@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.19 1995/06/08 03:06:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.20 1995/07/17 03:53:20 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -120,7 +120,6 @@ static struct _ISOps myops = { ISGetSize_Stride,ISGetSize_Stride,
 @*/
 int ISCreateStrideSequential(MPI_Comm comm,int n,int first,int step,IS *is)
 {
-  int          size = sizeof(IS_Stride);
   int          min, max;
   IS           Nindex;
   IS_Stride *sub;
@@ -132,7 +131,8 @@ int ISCreateStrideSequential(MPI_Comm comm,int n,int first,int step,IS *is)
 
   PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISSTRIDESEQUENTIAL,comm); 
   PLogObjectCreate(Nindex);
-  sub            = (IS_Stride *) PETSCMALLOC(size); CHKPTRQ(sub);
+  PLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _IS));
+  sub            = (IS_Stride *) PETSCMALLOC(sizeof(IS_Stride)); CHKPTRQ(sub);
   sub->n         = n;
   sub->first     = first;
   sub->step      = step;

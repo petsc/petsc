@@ -331,6 +331,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
 
   PETSCHEADERCREATE(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
+  PLogObjectMemory(da,sizeof(struct _DA));
 
   MPI_Comm_size(comm,&numtid); 
   MPI_Comm_rank(comm,&mytid); 
@@ -775,6 +776,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
 
 
   idx = (int *) PETSCMALLOC( (Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(int) ); CHKPTRQ(idx);
+  PLogObjectMemory(da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(int) );
 
   nn = 0;
 

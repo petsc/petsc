@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.24 1995/07/17 03:53:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.25 1995/08/02 04:14:09 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -316,6 +316,7 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   /* allocate entire send scatter context */
   out_to           = (VecScatterMPI *) PETSCMALLOC( sizeof(VecScatterMPI) );
   CHKPTRQ(out_to);
+  PLogObjectMemory(out,sizeof(VecScatterMPI));
   ny               = in_to->starts[in_to->n];
   len              = ny*(sizeof(int) + sizeof(Scalar)) +
                      (in_to->n+1)*sizeof(int) +
@@ -323,7 +324,8 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   out_to->n        = in_to->n; 
   out_to->nbelow   = in_to->nbelow;
   out_to->nself    = in_to->nself;
-  out_to->values   = (Scalar *) PETSCMALLOC( len ); CHKPTRQ(out_to->values); 
+  out_to->values   = (Scalar *) PETSCMALLOC( len ); CHKPTRQ(out_to->values);
+  PLogObjectMemory(out,len); 
   out_to->requests = (MPI_Request *) (out_to->values + ny);
   out_to->indices  = (int *) (out_to->requests + out_to->n); 
   out_to->starts   = (int *) (out_to->indices + ny);
@@ -338,12 +340,14 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
     CHKPTRQ(out_to->local.slots);
     PETSCMEMCPY(out_to->local.slots,in_to->local.slots,
                                               in_to->local.n*sizeof(int));
+    PLogObjectMemory(out,in_to->local.n*sizeof(int));
   }
   else {out_to->local.slots = 0;}
 
   /* allocate entire receive context */
   out_from           = (VecScatterMPI *) PETSCMALLOC( sizeof(VecScatterMPI) );
   CHKPTRQ(out_from);
+  PLogObjectMemory(out,sizeof(VecScatterMPI));
   ny                 = in_from->starts[in_from->n];
   len                = ny*(sizeof(int) + sizeof(Scalar)) +
                        (in_from->n+1)*sizeof(int) +
@@ -352,6 +356,7 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   out_from->nbelow   = in_from->nbelow;
   out_from->nself    = in_from->nself;
   out_from->values   = (Scalar *) PETSCMALLOC( len ); CHKPTRQ(out_from->values); 
+  PLogObjectMemory(out,len);
   out_from->requests = (MPI_Request *) (out_from->values + ny);
   out_from->indices  = (int *) (out_from->requests + out_from->n); 
   out_from->starts   = (int *) (out_from->indices + ny);
@@ -363,6 +368,7 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   out_from->local.n  = in_from->local.n;
   if (in_from->local.n) {
     out_from->local.slots = (int *) PETSCMALLOC(in_from->local.n*sizeof(int));
+    PLogObjectMemory(out,in_from->local.n*sizeof(int));
     CHKPTRQ(out_from->local.slots);
     PETSCMEMCPY(out_from->local.slots,in_from->local.slots,
                                               in_from->local.n*sizeof(int));
@@ -621,12 +627,14 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   
   /* allocate entire send scatter context */
   to = (VecScatterMPI *) PETSCMALLOC( sizeof(VecScatterMPI) ); CHKPTRQ(to);
+  PLogObjectMemory(ctx,sizeof(VecScatterMPI));
   len = slen*(sizeof(int) + sizeof(Scalar)) + (nrecvs+1)*sizeof(int) +
         nrecvs*(sizeof(int) + sizeof(MPI_Request));
   to->n        = nrecvs; 
   to->nbelow   = 0;
   to->nself    = 0;
   to->values   = (Scalar *) PETSCMALLOC( len ); CHKPTRQ(to->values);
+  PLogObjectMemory(ctx,len);
   to->requests = (MPI_Request *) (to->values + slen);
   to->indices  = (int *) (to->requests + nrecvs); 
   to->starts   = (int *) (to->indices + slen);
@@ -657,12 +665,14 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
  
   /* allocate entire receive scatter context */
   from = (VecScatterMPI *) PETSCMALLOC( sizeof(VecScatterMPI) ); CHKPTRQ(from);
+  PLogObjectMemory(ctx,sizeof(VecScatterMPI));
   len = ny*(sizeof(int) + sizeof(Scalar)) + (nsends+1)*sizeof(int) +
         nsends*(sizeof(int) + sizeof(MPI_Request));
   from->n        = nsends;
   from->nbelow   = 0; 
   from->nself    = 0; 
   from->values   = (Scalar *) PETSCMALLOC( len );
+  PLogObjectMemory(ctx,len);
   from->requests = (MPI_Request *) (from->values + ny);
   from->indices  = (int *) (from->requests + nsends); 
   from->starts   = (int *) (from->indices + ny);
@@ -706,6 +716,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
     CHKPTRQ(from->local.slots);
     to->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));
     CHKPTRQ(to->local.slots);
+    PLogObjectMemory(ctx,2*nt*sizeof(int));
     nt = 0;
     for ( i=0; i<nx; i++ ) {
       idx = inidx[i];
@@ -814,11 +825,13 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
 
   /* allocate entire send scatter context */
   to = (VecScatterMPI *) PETSCMALLOC( sizeof(VecScatterMPI) ); CHKPTRQ(to);
+  PLogObjectMemory(ctx,sizeof(VecScatterMPI));
   len = ny*(sizeof(int) + sizeof(Scalar)) + (nsends+1)*sizeof(int) +
         nsends*(sizeof(int) + sizeof(MPI_Request));
   to->n        = nsends; 
   to->nbelow   = 0;
   to->values   = (Scalar *) PETSCMALLOC( len ); CHKPTRQ(to->values); 
+  PLogObjectMemory(ctx,len);
   to->requests = (MPI_Request *) (to->values + ny);
   to->indices  = (int *) (to->requests + nsends); 
   to->starts   = (int *) (to->indices + ny);
@@ -862,11 +875,13 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
  
   /* allocate entire receive scatter context */
   from = (VecScatterMPI *) PETSCMALLOC( sizeof(VecScatterMPI) ); CHKPTRQ(from);
+  PLogObjectMemory(ctx,sizeof(VecScatterMPI));
   len = slen*(sizeof(int) + sizeof(Scalar)) + (nrecvs+1)*sizeof(int) +
         nrecvs*(sizeof(int) + sizeof(MPI_Request));
   from->n        = nrecvs; 
   from->nbelow   = 0;
   from->values   = (Scalar *) PETSCMALLOC( len );
+  PLogObjectMemory(ctx,len);
   from->requests = (MPI_Request *) (from->values + slen);
   from->indices  = (int *) (from->requests + nrecvs); 
   from->starts   = (int *) (from->indices + slen);
@@ -902,6 +917,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
     from->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));
     CHKPTRQ(from->local.slots);
     to->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));
+    PLogObjectMemory(ctx,2*nt*sizeof(int));
     CHKPTRQ(to->local.slots);
     nt = 0;
     for ( i=0; i<ny; i++ ) {

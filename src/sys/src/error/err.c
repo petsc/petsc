@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.19 1995/08/02 04:15:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.20 1995/08/02 13:44:43 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>  /*I <stdio.h> I*/
@@ -95,23 +95,25 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
                              int number,void *ctx)
 {
   static int out_of_memory = 0;
+  int tid;
+  MPI_Comm_rank(MPI_COMM_WORLD,&tid);
   if (number == PETSC_ERROR_NO_MEM && !out_of_memory) {
-    if (!dir) fprintf(stderr,"PETSC ERROR: %s %d\n",file,line);
-    else      fprintf(stderr,"PETSC ERROR: %s%s %d\n",dir,file,line);
-    fprintf(stderr,"PETSC ERROR: Out of memory. This could be due to \n");
-    fprintf(stderr,"PETSC ERROR: allocating too large an object or \n");
-    fprintf(stderr,"PETSC ERROR: bleeding by not properly destroying \n");
-    fprintf(stderr,"PETSC ERROR: unneeded objects.\n");
+    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s %d\n",tid,file,line);
+    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s %d\n",tid,dir,file,line);
+    fprintf(stderr,"[%d]PETSC ERROR: Out of memory. This could be due to\n",tid);
+    fprintf(stderr,"[%d]PETSC ERROR: allocating too large an object or\n",tid);
+    fprintf(stderr,"[%d]PETSC ERROR: bleeding by not properly destroying\n",tid);
+    fprintf(stderr,"[%d]PETSC ERROR: unneeded objects.\n",tid);
     if (OptionsHasName(0,"-trdump")) {
-      Trdump(stderr);
+      TrDump(stderr);
     }
     else {
-      fprintf(stderr,"PETSC ERROR: Try running with -trdump. \n");
+      fprintf(stderr,"[%d]PETSC ERROR: Try running with -trdump. \n",tid);
     }
     out_of_memory++;
   }
   else {
-    fprintf(stderr,"PETSC ERROR: ");
+    fprintf(stderr,"[%d]PETSC ERROR: ",tid);
     if (!dir) fprintf(stderr,"%s %d %s %d\n",file,line,message,number);
     else      fprintf(stderr,"%s%s %d %s %d\n",dir,file,line,message,number);
   }

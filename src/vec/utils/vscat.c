@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.27 1995/07/28 17:40:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.28 1995/08/02 04:14:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -150,6 +150,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
   /* generate the Scatter context */
   PETSCHEADERCREATE(ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,comm);
   PLogObjectCreate(ctx);
+  PLogObjectMemory(ctx,sizeof(struct _VecScatterCtx));
 
   if (xin->type == VECSEQ && yin->type == VECSEQ) {
 
@@ -161,7 +162,8 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       if (nx != ny) 
         SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       len = sizeof(VecScatterGeneral) + nx*sizeof(int);
-      to = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(to);
+      to = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(to)
+      PLogObjectMemory(ctx,len);
       to->slots = (int *) (to + 1); to->n = nx; 
       PETSCMEMCPY(to->slots,idy,nx*sizeof(int));
       from = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(from);
@@ -185,6 +187,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       to->n = nx; to->first = to_first; to->step = to_step;
       from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));
       CHKPTRQ(from);
+      PLogObjectMemory(ctx,2*sizeof(VecScatterStride));
       from->n = nx; from->first = from_first; from->step = from_step;
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
       ctx->scatterbegin = SStoSS; ctx->destroy = SGtoSGDestroy;
@@ -205,6 +208,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       to->n = nx; to->first = first; to->step = step;
       len = sizeof(VecScatterGeneral) + nx*sizeof(int);
       from = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(from);
+      PLogObjectMemory(ctx,len + sizeof(VecScatterStride));
       from->slots = (int *) (from + 1); from->n = nx; 
       PETSCMEMCPY(from->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
@@ -227,6 +231,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       from->n = nx; from->first = first; from->step = step;
       len = sizeof(VecScatterGeneral) + nx*sizeof(int);
       to = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(to);
+      PLogObjectMemory(ctx,len + sizeof(VecScatterStride));
       to->slots = (int *) (to + 1); to->n = nx; 
       PETSCMEMCPY(to->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
@@ -260,6 +265,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
         to->n = nx; to->first = to_first; to->step = to_step;
         from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));
         CHKPTRQ(from);
+        PLogObjectMemory(ctx,2*sizeof(VecScatterStride));
         from->n = nx; from->first = from_first-start; from->step = from_step;
         ctx->todata = (void *) to; ctx->fromdata = (void *) from;
         ctx->scatterbegin = SStoSS; ctx->destroy = SGtoSGDestroy;
@@ -300,6 +306,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
         to->n = nx; to->first = to_first-start; to->step = to_step;
         from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));
         CHKPTRQ(from);
+        PLogObjectMemory(ctx,2*sizeof(VecScatterStride));
         from->n = nx; from->first = from_first; from->step = from_step;
         ctx->todata = (void *) to; ctx->fromdata = (void *) from;
         ctx->scatterbegin = SStoSS; ctx->destroy = SGtoSGDestroy;
@@ -434,6 +441,7 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
   /* generate the Scatter context */
   PETSCHEADERCREATE(*ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,sctx->comm);
   PLogObjectCreate(*ctx);
+  PLogObjectMemory(ctx,sizeof(struct _VecScatterCtx));
   return (*sctx->copy)(sctx,*ctx);
 }
 

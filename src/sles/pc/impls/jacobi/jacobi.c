@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.14 1995/07/07 16:15:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: jacobi.c,v 1.15 1995/07/26 02:26:04 curfman Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -10,7 +10,7 @@ typedef struct {
   Vec diag;
 } PC_Jacobi;
 
-int PCSetUp_Jacobi(PC pc)
+static int PCSetUp_Jacobi(PC pc)
 {
   int       ierr;
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
@@ -28,7 +28,7 @@ int PCSetUp_Jacobi(PC pc)
   return 0;
 }
 
-int PCApply_Jacobi(PC pc,Vec x,Vec y)
+static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
   Vec       diag = jac->diag;
@@ -36,7 +36,7 @@ int PCApply_Jacobi(PC pc,Vec x,Vec y)
   return 0;
 }
 
-int PCDestroy_Jacobi(PetscObject obj)
+static int PCDestroy_Jacobi(PetscObject obj)
 {
   PC pc = (PC) obj;
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
