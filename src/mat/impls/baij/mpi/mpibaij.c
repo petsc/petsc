@@ -2473,8 +2473,10 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   PetscLogObjectParent(mat,a->lvec);
   ierr =  VecScatterCopy(oldmat->Mvctx,&a->Mvctx);CHKERRQ(ierr);
   PetscLogObjectParent(mat,a->Mvctx);
+  ierr =  MatDestroy(a->A);CHKERRQ(ierr);
   ierr =  MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
   PetscLogObjectParent(mat,a->A);
+  ierr =  MatDestroy(a->B);CHKERRQ(ierr);
   ierr =  MatDuplicate(oldmat->B,cpvalues,&a->B);CHKERRQ(ierr);
   PetscLogObjectParent(mat,a->B);
   ierr = PetscFListDuplicate(matin->qlist,&mat->qlist);CHKERRQ(ierr);
