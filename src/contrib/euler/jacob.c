@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.6 1997/10/13 17:36:13 curfman Exp curfman $";
+static char vcid[] = "$Id: jacob.c,v 1.7 1997/10/16 00:48:48 curfman Exp curfman $";
 #endif
 
 #include "user.h"
@@ -174,15 +174,15 @@ int UserSetJacobian(SNES snes,Euler *app)
   } else {
     /* Use matrix-free Jacobian to define Newton system; use finite difference
        approximation of Jacobian for preconditioner */
-   if (app->bctype != IMPLICIT) SETERRQ(1,1,"Matrix-free method requires implicit BCs!");
+    if (app->bctype != IMPLICIT) SETERRQ(1,1,"Matrix-free method requires implicit BCs!");
 
-   /*   if (app->mmtype == MMFP) {
-     ierr = SNESDefaultMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr); 
-   } else if (app->mmtype == MMEULER) {
-     ierr = UserMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr); 
-   } else {
-     SETERRQ(1,0,"Need a new matrix-free option\n");
-     */
+    if (app->mmtype == MMFP) {
+      ierr = SNESDefaultMatrixFreeMatCreate(snes,app->X,&app->Jmf); CHKERRQ(ierr); 
+    } else if (app->mmtype == MMEULER) {
+      ierr = UserMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr); 
+    } else {
+      SETERRQ(1,0,"Need a new matrix-free option\n");
+    }
 
     if (jac_snes_fd) {
      ierr = SNESSetJacobian(snes,app->Jmf,J,ComputeJacobianFDColoring,app); CHKERRQ(ierr);
@@ -190,13 +190,13 @@ int UserSetJacobian(SNES snes,Euler *app)
      ierr = SNESSetJacobian(snes,app->Jmf,J,ComputeJacobianFDBasic,app); CHKERRQ(ierr);
     }
 
-   /* Set matrix-free parameters and view matrix context */
-   ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_err",&app->eps_mf_default,&flg); CHKERRQ(ierr);
-   ierr = UserSetMatrixFreeParameters(snes,app->eps_mf_default,PETSC_DEFAULT); CHKERRQ(ierr);
-   ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0); CHKERRQ(ierr);
-   PetscPrintf(comm,"Using matrix-free KSP method: linear system matrix:\n");
-   ierr = MatView(app->Jmf,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-   ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+    /* Set matrix-free parameters and view matrix context */
+    ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_err",&app->eps_mf_default,&flg); CHKERRQ(ierr);
+    ierr = UserSetMatrixFreeParameters(snes,app->eps_mf_default,PETSC_DEFAULT); CHKERRQ(ierr);
+    ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0); CHKERRQ(ierr);
+    PetscPrintf(comm,"Using matrix-free KSP method: linear system matrix:\n");
+    ierr = MatView(app->Jmf,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+    ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -233,8 +233,7 @@ extern int MatView_Hybrid(Mat,Viewer);
 int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *ptr)
 {
   Euler         *app = (Euler *)ptr;
-  int           iter, ierr, i, rstart, rend;
-  Scalar        one = 1.0, *diagv_a;
+  int           iter, ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set some options; do some preliminary work
@@ -287,13 +286,32 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
 
   /* Fix points on edges of the 3D domain, where diagonal of Jacobian is 1.
      edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.) */
-  ierr = MatGetDiagonal(*pjac,app->diagv); CHKERRQ(ierr);
-  ierr = VecGetArray(app->diagv,&diagv_a); CHKERRQ(ierr);
+
+  /*  if ((app->mmtype != MMFP) && */
+    if ((app->problem == 1 || app->problem == 2 || app->problem == 3 || app->problem == 5)) {
+    ierr = FixJacobianEdges(app,*pjac); CHKERRQ(ierr);
+  }
+
+  /* Finish the matrix assembly process.  For the Euler code, the matrix
+     assembly is done completely locally, so no message-pasing is performed
+     during these phases. */
+  ierr = MatAssemblyBegin(*pjac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*pjac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  /* Fix points on edges of the 3D domain, where diagonal of Jacobian is 1.
+     edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.) */
+  { Vec diagv; int i, rstart, rend; Scalar *diagv_a, one = 1.0;
+  ierr = VecDuplicate(X,&diagv); CHKERRQ(ierr);
+  ierr = MatGetDiagonal(*pjac,diagv); CHKERRQ(ierr);
+  ierr = VecGetArray(diagv,&diagv_a); CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(*pjac,&rstart,&rend); CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     if (!diagv_a[i-rstart]) {
       ierr = MatSetValues(*pjac,1,&i,1,&i,&one,INSERT_VALUES); CHKERRQ(ierr);
     }
+  }
+  ierr = VecRestoreArray(diagv,&diagv_a); CHKERRQ(ierr);
+  ierr = VecDestroy(diagv); CHKERRQ(ierr);
   }
 
   /* Finish the matrix assembly process.  For the Euler code, the matrix

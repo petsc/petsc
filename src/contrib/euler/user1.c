@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.60 1997/10/13 17:36:28 curfman Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.61 1997/10/15 21:17:41 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -83,9 +83,10 @@ These shouldn't be needed anymore but were useful in testing the parallel code\n
                                Since this option dumps lots of data, it should be used for just\n\
                                a few iterations.\n\
   -bctest                    : Test scatters for boundary conditions\n\
-
+\n\
 Duct problem options:\n\
-  -bump <bump>               : maximum height of bump\n\n";
+  -bump <bump>               : maximum height of bump\n\
+  -bump_dump                 : Dump various fields for Matlab viewing\n\n";
 
 /***************************************************************************/
 
@@ -367,7 +368,13 @@ int main(int argc,char **argv)
         sprintf(filename,"f_m6%s_cc%d_asm%d_p%d.m","n",app->cfl_snes_it,overlap,app->size);
         sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","n",app->cfl_snes_it,overlap,app->size);
       }
+      else if (app->problem == 5) {
+        sprintf(filename,"f_duct_asm%d_p%d.m",overlap,app->size);
+        sprintf(outstring,"zsnes_duct_asm%d_p%d = [\n",overlap,app->size);
+      } 
+      else SETERRQ(1,0,"No support for this problem number");
       app->fp = fopen(filename,"w"); 
+      if (!app->fp) SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open output file");
       fprintf(app->fp,"%% iter, fnorm2, log(fnorm2), CFL#, time, ksp_its, ksp_rtol, c_lift, c_drag, nsup\n");
       fprintf(app->fp,outstring);
       for (i=0; i<=its; i++)
@@ -402,6 +409,15 @@ int main(int argc,char **argv)
 
     /* Dump for VRML viewing */
     ierr = MonitorDumpVRML(snes,app->X,app->F,app); CHKERRA(ierr);
+  }
+
+  ierr = OptionsHasName(PETSC_NULL,"-bump_dump",&flg); CHKERRQ(ierr);
+  if (flg && app->problem == 5) {
+    Scalar *xa;
+    ierr = VecGetArray(app->X,&xa); CHKERRQ(ierr);
+    its = -1;
+    ierr = ComputeMachDuct(its,app,xa); CHKERRQ(ierr);
+    ierr = VecRestoreArray(app->X,&xa); CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -444,7 +460,6 @@ int UserDestroyEuler(Euler *app)
   ierr = VecDestroy(app->X); CHKERRQ(ierr);
   ierr = VecDestroy(app->Xbc); CHKERRQ(ierr);
   ierr = VecDestroy(app->F); CHKERRQ(ierr);
-  ierr = VecDestroy(app->diagv); CHKERRQ(ierr);
   ierr = VecDestroy(app->localX); CHKERRQ(ierr);
   ierr = VecDestroy(app->localDX); CHKERRQ(ierr);
   ierr = VecDestroy(app->localXBC); CHKERRQ(ierr);
@@ -825,6 +840,12 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->cfl_snes_it    = 1;
       app->ksp_max_it     = 20;   /* max number of KSP iterations */
       app->f_reduction    = 0.3;  /* fnorm reduction before beginning to advance CFL */
+
+      /* Options for duct problem */
+      app->bump = 0.10;     /* default max bump height relative to channel height */
+      ierr = OptionsGetDouble(PETSC_NULL,"-bump",&app->bump,&flg); CHKERRQ(ierr);
+      PetscPrintf(app->comm,"Duct problem: bump = %g\n",app->bump);
+
       break;
     default:
       SETERRQ(1,1,"Unsupported problem, only 1,2,3 (M6), 4 (test), or 5 (duct) supported");
@@ -916,9 +937,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
     PetscPrintf(app->comm,"Running 2-dimensional problem only\n");
   }
 
-  /* Options for duct problem */
-  app->bump = 0.10;     /* default max bump height relative to channel height */
-  ierr = OptionsGetDouble(PETSC_NULL,"-bump",&app->bump,&flg); CHKERRQ(ierr);
 
 #if defined(ACTIVATE_OLD_ASSEMBLY)
    /* 
@@ -1063,7 +1081,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = DAGetDistributedVector(app->da,&app->X); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->Xbc); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->F); CHKERRQ(ierr);
-  ierr = VecDuplicate(app->X,&app->diagv); CHKERRQ(ierr);
   ierr = DAGetLocalVector(app->da,&app->localX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localDX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localXBC); CHKERRQ(ierr);
@@ -1103,14 +1120,16 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = DAGetLocalVector(app->da1,&app->localP); CHKERRQ(ierr);
 
   /* Do only for FP or multimodel */
-  ierr = VecDuplicate(app->localP,&app->den); CHKERRQ(ierr);
-  ierr = VecDuplicate(app->localP,&app->xvel); CHKERRQ(ierr);
-  ierr = VecDuplicate(app->localP,&app->yvel); CHKERRQ(ierr);
-  ierr = VecDuplicate(app->localP,&app->zvel); CHKERRQ(ierr);
-  ierr = VecGetArray(app->den,&app->den_a); CHKERRQ(ierr);
-  ierr = VecGetArray(app->xvel,&app->xvel_a); CHKERRQ(ierr);
-  ierr = VecGetArray(app->yvel,&app->yvel_a); CHKERRQ(ierr);
-  ierr = VecGetArray(app->zvel,&app->zvel_a); CHKERRQ(ierr);
+  if (app->mmtype != MMEULER) {
+    ierr = VecDuplicate(app->localP,&app->den); CHKERRQ(ierr);
+    ierr = VecDuplicate(app->localP,&app->xvel); CHKERRQ(ierr);
+    ierr = VecDuplicate(app->localP,&app->yvel); CHKERRQ(ierr);
+    ierr = VecDuplicate(app->localP,&app->zvel); CHKERRQ(ierr);
+    ierr = VecGetArray(app->den,&app->den_a); CHKERRQ(ierr);
+    ierr = VecGetArray(app->xvel,&app->xvel_a); CHKERRQ(ierr);
+    ierr = VecGetArray(app->yvel,&app->yvel_a); CHKERRQ(ierr);
+    ierr = VecGetArray(app->zvel,&app->zvel_a); CHKERRQ(ierr);
+  }
 
   app->xe     = app->xs + app->xm;
   app->ye     = app->ys + app->ym;

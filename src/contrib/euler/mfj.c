@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mfj.c,v 1.13 1997/10/11 18:39:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: mfj.c,v 1.14 1997/10/16 03:41:52 curfman Exp curfman $";
 #endif
 
 /* 
@@ -406,3 +406,79 @@ int UserMatrixFreeMatCreate(SNES snes,Euler *user,Vec x,Mat *J)
   PLogObjectParent(snes,*J);
   return 0;
 }
+
+int FixJacobianEdges(Euler *user,Mat mat)
+{
+  Scalar        one = 1.0;
+  int           ierr, i, j, k, ijkx, ndof, jkx, ikx, m, diag;
+  int           xm, ym, zm, xs, ys, zs, xe, ye, ze, ijx, mx, my, mz;
+  int           gxm, gym, gzm, gxs, gys, gzs, gxe, gye, gze, *ltog = user->ltog;
+
+  ndof = user->ndof;
+  if (user->bctype != IMPLICIT) 
+    SETERRQ(1,1,"Only bctype = IMPLICIT supports matrix-free methods!");
+
+  /* starting and ending grid points (including boundary points) */
+  xs = user->xs;  ys = user->ys;  zs = user->zs;
+  xe = user->xe;  ye = user->ye;  ze = user->ze;
+  xm = user->xm;  ym = user->ym;  zm = user->zm;
+
+  gxs = user->gxs;  gys = user->gys;  gzs = user->gzs;
+  gxe = user->gxe;  gye = user->gye;  gze = user->gze;
+  gxm = user->gxm;  gym = user->gym;  gzm = user->gzm;
+
+  /* edges of grid */
+  mx = user->mx; my = user->my; mz = user->mz;
+
+  /* Boundary edges of brick: rows of Jacobian are identity;
+     corresponding residual values are 0.  So, we modify the
+     matrix accordingly. 
+   */
+    for (k=zs; k<ze; k+=zm-1) {
+      if (k == 0 || k == mz-1) {
+        for (j=ys; j<ye; j+=ym-1) {
+          if (j == 0 || j == my-1) {
+            jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+            for (i=xs; i<xe; i++) {
+              ijkx = ltog[ndof * (jkx + i-gxs)];
+              for (m=0; m<ndof; m++) {
+                diag = ijkx + m;
+                ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
+              }
+            }
+          }
+        }
+        for (i=xs; i<xe; i+=xm-1) {
+          if (i == 0 || i == mx-1) {
+            ikx = i-gxs + (k-gzs)*gxm*gym;
+            for (j=ys; j<ye; j++) {
+              ijkx = ltog[ndof * (ikx + (j-gys)*gxm)];
+              for (m=0; m<ndof; m++) {
+                diag = ijkx + m;
+                ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
+              }
+            }
+          }
+        }
+      }
+    }
+    for (j=ys; j<ye; j+=ym-1) {
+      if (j == 0 || j == my-1) {
+        for (i=xs; i<xe; i+=xm-1) {
+          if (i == 0 || i == mx-1) {
+            ijx = (j-gys)*gxm + i-gxs;
+            for (k=zs; k<ze; k++) {
+              ijkx = ltog[ndof * (ijx + (k-gzs)*gxm*gym)];
+              for (m=0; m<ndof; m++) {
+                diag = ijkx + m;
+                ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
+              }
+            }
+          }
+        }
+      }
+    }
+
+  return 0;
+}
+

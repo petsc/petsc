@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.40 1997/10/16 01:24:45 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.41 1997/10/16 02:13:07 curfman Exp curfman $";
 #endif
 
 /*
@@ -329,6 +329,7 @@ int ComputeMachDuct(int iter,Euler *app,Scalar *x)
   char   filename[64];
 
   if (app->mmtype != MMFP) SETERRQ(1,0,"Unsupported model type");
+  if (app->size != 1) SETERRQ(1,0,"Currently uniprocessor only!");
 
   istart = 1;
   iend   = ni;
@@ -341,15 +342,21 @@ int ComputeMachDuct(int iter,Euler *app,Scalar *x)
 
 #define xcoord(i,j) xc[(k)*nj*ni + (j)*ni + (i)]
 #define ycoord(i,j) yc[(k)*nj*ni + (j)*ni + (i)]
+#define pot(i,j) x[(k)*nj1*ni1 + (j)*ni1 + (i)]
 
   foo = 1;
   if (foo) {
-    sprintf(filename,"duct_%d.m",iter);
-    fp2 = fopen(filename,"w");
+    if (iter != -1) {
+      sprintf(filename,"duct_%d.m",iter);
+      fp2 = fopen(filename,"w");
+    } else {
+      fp2 = fopen("duct.m","w");
+    }
+    if (!fp2) SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open output file");
     fprintf(fp2,"X = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ", .25*(xcoord(i,j)+xcoord(i-1,j)+xcoord(i,j-1)+xcoord(i-1,j-1))); 
+        fprintf(fp2,"%8.4f ", xcoord(i,j));
       }
       fprintf(fp2,"\n");
     }
@@ -357,7 +364,7 @@ int ComputeMachDuct(int iter,Euler *app,Scalar *x)
     fprintf(fp2,"Y = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ", .25*(ycoord(i,j)+ycoord(i-1,j)+ycoord(i,j-1)+ycoord(i-1,j-1)));
+        fprintf(fp2,"%8.4f ", ycoord(i,j));
       }
       fprintf(fp2,"\n");
     }
@@ -390,8 +397,7 @@ int ComputeMachDuct(int iter,Euler *app,Scalar *x)
     fprintf(fp2,"potential = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
-        ijk = k*nj1*ni1 + j*ni1 + i;
-        fprintf(fp2,"%8.4f ",x[ijk]);
+        fprintf(fp2,"%8.4f ",0.25 * (pot(i,j) + pot(i-1,j) + pot(i,j-1) + pot(i-1,j-1)));
       }
       fprintf(fp2,"\n");
     }

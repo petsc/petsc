@@ -213,7 +213,6 @@ typedef struct {
     Scalar *den_a, *xvel_a, *yvel_a, *zvel_a; /* full potential work space */
     Scalar phi_te[2];                         /* 2-component circulation */
     VecScatter phi_te_scatter;                /* scatter for boundary conditins */
-    Vec    diagv;                             /* diagonal of Jacobian */
   /* duct problem */
     Scalar bump;                              /* flow parameter - max bump height */
     } Euler;
@@ -299,6 +298,7 @@ int GetWingCommunicator(Euler*,int*,int*);
 int BoundaryConditionsImplicit(Euler*,Vec);
 int BoundaryConditionsExplicit(Euler*,Vec);
 int BCScatterSetUp(Euler*);
+int FixJacobianEdges(Euler*,Mat);
 
 /* Utility routines */
 int UnpackWork(Euler*,DA,Scalar*,Vec,Vec);
