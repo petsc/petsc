@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.64 1996/08/27 01:32:27 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.65 1996/08/27 18:29:07 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -100,6 +100,16 @@ int main( int argc, char **argv )
   }
   N = user.mx*user.my;
 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create nonlinear solver context
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create vector data structures; set function evaluation routine
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   /*
      Create distributed array (DA) to manage parallel grid and vectors
   */
@@ -122,14 +132,13 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
 
   /* 
-     Create nonlinear solver context
-  */
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-
-  /* 
      Set function evaluation routine and vector
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,&user); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user); CHKERRA(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create matrix data structure; set Jacobian evaluation routine
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -159,26 +168,33 @@ int main( int argc, char **argv )
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user); CHKERRA(ierr);
   }
 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Customize nonlinear solver; set runtime options
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   /*
      Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
   */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Evaluate initial guess; then solve nonlinear system
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
-     Evaluate initial guess; then solve nonlinear system.
-     - The user should initialize the vector, x, with the initial guess
-       for the nonlinear solver prior to calling SNESSolve().  In particular,
-       to employ an initial guess of zero, the user should explicitly set
-       this vector to zero by calling VecSet().
+     Note: The user should initialize the vector, x, with the initial guess
+     for the nonlinear solver prior to calling SNESSolve().  In particular,
+     to employ an initial guess of zero, the user should explicitly set
+     this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(&user,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr); 
   PetscPrintf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
-  /* 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
-  */
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   if (!matrix_free) {
     ierr = MatDestroy(J); CHKERRA(ierr);
   }
@@ -283,9 +299,9 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   /*
      Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd()
-     Computations can be done while messages are in transition,
-     by placing code between these two statements.
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+     By placing code between these two statements, computations can be
+     done while messages are in transition.
   */
   ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
@@ -370,9 +386,9 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 
   /*
      Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd()
-     Computations can be done while messages are in transition,
-     by placing code between these two statements.
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+     By placing code between these two statements, computations can be
+     done while messages are in transition.
   */
   ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
@@ -427,9 +443,9 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 
   /* 
      Assemble matrix, using the 2-step process:
-       MatAssemblyBegin(), MatAssemblyEnd()
-     Computations can be done while messages are in transition,
-     by placing code between these two statements.
+       MatAssemblyBegin(), MatAssemblyEnd().
+     By placing code between these two statements, computations can be
+     done while messages are in transition.
   */
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
