@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.154 1996/03/08 05:47:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.155 1996/03/10 17:28:12 bsmith Exp curfman $";
 #endif
 
 /*
@@ -210,7 +210,7 @@ static int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        i, fd, *col_lens, ierr;
 
-  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   col_lens = (int *) PetscMalloc( (4+a->m)*sizeof(int) ); CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
   col_lens[1] = a->m;
@@ -1509,7 +1509,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   PetscObjectGetComm((PetscObject) viewer,&comm);
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqAIJ:view must have one processor");
-  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqAIJ:not matrix object in file");
   M = header[1]; N = header[2]; nz = header[3];

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.14 1996/02/13 17:13:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.15 1996/03/08 05:48:28 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -13,7 +13,7 @@ struct _Viewer {
   int         fdes;            /* file descriptor */
 };
 
-int ViewerFileGetDescriptor_Private(Viewer viewer,int *fdes)
+int ViewerFileGetDescriptor(Viewer viewer,int *fdes)
 {
   *fdes = viewer->fdes;
   return 0;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.64 1996/03/10 17:26:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.65 1996/03/14 21:35:50 curfman Exp curfman $";
 #endif
 /*
    Implements the sequential vectors.
@@ -135,7 +135,7 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   int      ierr,fdes,n = x->n;
 
-  ierr  = ViewerFileGetDescriptor_Private(viewer,&fdes); CHKERRQ(ierr);
+  ierr  = ViewerFileGetDescriptor(viewer,&fdes); CHKERRQ(ierr);
   /* Write vector header */
   ierr = SYWrite(fdes,&xin->cookie,1,SYINT,0);CHKERRQ(ierr);
   ierr = SYWrite(fdes,&n,1,SYINT,0); CHKERRQ(ierr);
