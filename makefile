@@ -45,8 +45,8 @@ etags:
 	$(RM) TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h src/*/examples/*.c
 	etags -a -f TAGS src/*/*.h src/*/src/*.c src/*/impls/*/*.c 
-	etags -a -f TAGS src/*/impls/*/*/*.c src/*/utils/*.c
-	etags -a -f TAGS docs/tex/manual.tex 
+	etags -a -f TAGS src/*/impls/*/*/*.c src/*/impls/*/*/*/*.c 
+	etags -a -f TAGS src/*/utils/*.c docs/tex/manual.tex 
 	etags -a -f TAGS include/*.h pinclude/*.h
 	etags -a -f TAGS src/*/impls/*.c 
 	etags -a -f TAGS makefile src/*/src/makefile src/makefile 
@@ -57,5 +57,4 @@ etags:
 	etags -a -f TAGS bmake/common.* bmake/sun4/sun4* bmake/rs6000/rs6000* 
 	etags -a -f TAGS bmake/IRIX/*.* bmake/freebsd/freebsd*
 	etags -a -f TAGS bmake/hpux/*.* bmake/NeXT/NeXT* bmake/alpha/alpha*
-	etags -a -f TAGS src/mat/impls/aij/seq/order/*.c
 	chmod g+w TAGS
