@@ -278,7 +278,7 @@ class Framework(config.base.Configure):
       self.outputDefines(f, child)
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
-    f.write('#endif /* '+guard+' */\n')
+    f.write('#endif\n')
     if not isinstance(name, file):
       f.close()
     return
