@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.50 1995/10/24 21:24:33 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.51 1995/10/24 22:43:58 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -502,9 +502,9 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
         MPI_Comm_rank(mat->comm,&rank);
         ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
         MPIU_Seq_begin(mat->comm,1);
-          fprintf(fd,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",
+          fprintf(fd,"[%d] local rows %d nz %d nz alloced %d mem %d \n",
                   rank,mbd->m,nz,nzalloc,mem);       
-        fflush(fd);
+          fflush(fd);
         MPIU_Seq_end(mat->comm,1);
         ierr = VecScatterView(mbd->Mvctx,viewer); CHKERRQ(ierr);
       }
