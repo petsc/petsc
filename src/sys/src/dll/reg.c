@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.71 2001/04/19 15:04:51 bsmith Exp balay $*/
+/*$Id: reg.c,v 1.72 2001/05/31 22:27:23 balay Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -337,7 +337,7 @@ int PetscFListDestroyAll(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListFind"
-/*@
+/*@C
     PetscFListFind - Given a name, finds the matching routine.
 
     Input Parameters:
