@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"      /*I  "petscda.h"   I*/
 #include "src/vec/vecimpl.h" 
 
-#if defined(PETSC_HAVE_NETCDF)
+#if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
 #include "pnetcdf.h"
 EXTERN_C_END
@@ -289,7 +289,7 @@ int VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_MPI_Netcdf_DA"
 int VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
 {
-#if defined(PETSC_HAVE_NETCDF)
+#if defined(PETSC_HAVE_PNETCDF)
   int ierr,ncid,xstart,xdim_num=1;
   int i,j,len,dim,m,n,p,dof,swidth,M,N,P;
   int xin_dim,xin_id,xin_n,xin_N,xyz_dim,xyz_id,xyz_n,xyz_N;
@@ -358,7 +358,7 @@ int VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   ierr = DADestroy(dac);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
-#else /* !defined(PETSC_HAVE_NETCDF) */
+#else /* !defined(PETSC_HAVE_PNETCDF) */
   PetscFunctionBegin;
   SETERRQ(1,"Build PETSc with NETCDF to use this viewer");
   PetscFunctionReturn(0);

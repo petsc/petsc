@@ -5,7 +5,7 @@
 */
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
-#if defined(PETSC_HAVE_NETCDF)
+#if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
 #include "pnetcdf.h"
 EXTERN_C_END

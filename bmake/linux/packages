@@ -122,15 +122,15 @@ PETSC_HAVE_HYPRE = -DPETSC_HAVE_HYPRE
 #
 # Parallel Net-CDF
 #
-NETCDF_INCLUDE    = -I/home/petsc/soft/linux-rh73/parallel-netcdf-0.8.6/include
-NETCDF_LIB        = -L/home/petsc/soft/linux-rh73/parallel-netcdf-0.8.6/lib -lpnetcdf
-PETSC_HAVE_NETCDF = -DPETSC_HAVE_NETCDF
+PNETCDF_INCLUDE    = -I/home/petsc/soft/linux-rh73/parallel-netcdf-0.8.6/include
+PNETCDF_LIB        = -L/home/petsc/soft/linux-rh73/parallel-netcdf-0.8.6/lib -lpnetcdf
+PETSC_HAVE_PNETCDF = -DPETSC_HAVE_NETCDF
 #
 # HDF
 #
-#HDF4_INCLUDE      = -I/home/petsc/soft/linux-rh73/HDF4.1r5/include
-#HDF4_LIB          = -L/home/petsc/soft/linux-rh73/HDF4.1r5/lib -lmfhdf -ldf -lz -ljpeg
-#PETSC_HAVE_HDF4   = -DPETSC_HAVE_HDF4
+HDF4_INCLUDE      = -I/home/petsc/soft/linux-rh73/HDF4.1r5/include
+HDF4_LIB          = -L/home/petsc/soft/linux-rh73/HDF4.1r5/lib -lmfhdf -ldf -lz -ljpeg
+PETSC_HAVE_HDF4   = -DPETSC_HAVE_HDF4
 
 # ------------------------------------------------------------------------------
 # If you are using shared version of any external libraries you must make this

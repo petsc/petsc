@@ -7,7 +7,7 @@
 #include "src/vec/impls/dvecimpl.h" 
 #include "src/inline/dot.h"
 #include "petscblaslapack.h"
-#if defined(PETSC_HAVE_NETCDF)
+#if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
 #include "pnetcdf.h"
 EXTERN_C_END
@@ -245,7 +245,7 @@ static int VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_Seq_Netcdf"
 int VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 {
-#if defined(PETSC_HAVE_NETCDF)
+#if defined(PETSC_HAVE_PNETCDF)
   int         n = xin->n,ierr,ncid,xdim,xdim_num=1,xin_id,xstart=0;
   MPI_Comm    comm = xin->comm;  
   PetscScalar *values,*xarray;
@@ -298,7 +298,7 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
   } else if (ismathematica) {
     ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
- #if defined(PETSC_HAVE_NETCDF_noneed)
+ #if defined(PETSC_HAVE_PNETCDF_noneed)
   } else if (isnetcdf) {
     ierr = VecView_Seq_Netcdf(xin,viewer);CHKERRQ(ierr);
 #endif

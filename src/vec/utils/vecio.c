@@ -9,7 +9,7 @@
 #include "petsc.h"
 #include "petscsys.h"
 #include "petscvec.h"         /*I  "petscvec.h"  I*/
-#if defined(PETSC_HAVE_NETCDF)
+#if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
 #include "pnetcdf.h"
 EXTERN_C_END
@@ -94,7 +94,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
 #define __FUNCT__ "VecLoad_Netcdf"
 int VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 {
-#if defined(PETSC_HAVE_NETCDF)
+#if defined(PETSC_HAVE_PNETCDF)
   int         i,N,ierr,n,rank,bs;
   int         ncid,start;
   Vec         vec;
@@ -242,7 +242,7 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
 #define __FUNCT__ "VecLoadIntoVector_Netcdf"
 int VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
 {
-#if defined(PETSC_HAVE_NETCDF)
+#if defined(PETSC_HAVE_PNETCDF)
   int         i,N,rows,ierr,n,rank,bs;
   int         ncid,start;
   PetscScalar *avec;

@@ -3,7 +3,7 @@
      Code for some of the parallel vector primatives.
 */
 #include "src/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
-#if defined(PETSC_HAVE_NETCDF)
+#if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
 #include "pnetcdf.h"
 EXTERN_C_END
@@ -398,7 +398,7 @@ int VecView_MPI_Socket(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_MPI_Netcdf"
 int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 {
-#if defined(PETSC_HAVE_NETCDF)
+#if defined(PETSC_HAVE_PNETCDF)
   int         n = xin->n,ierr,ncid,xdim,xdim_num=1,xin_id,xstart;
   MPI_Comm    comm = xin->comm;  
   PetscScalar *xarray;
@@ -422,7 +422,7 @@ int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
     PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
 #endif
   PetscFunctionReturn(0);
-#else /* !defined(PETSC_HAVE_NETCDF) */
+#else /* !defined(PETSC_HAVE_PNETCDF) */
   PetscFunctionBegin;
   SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
   PetscFunctionReturn(0);
@@ -519,7 +519,7 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATHEMATICA,&ismathematica);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&ishdf4);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF4,&ishdf4);CHKERRQ(ierr);
   if (isascii){
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
   } else if (issocket) {

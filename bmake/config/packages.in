@@ -50,8 +50,8 @@ ADIC_CC            = @ADIC_CC@
 #
 # Location of NETCDF
 # 
-NETCDF_INCLUDE      = @NETCDF_INCLUDE@
-NETCDF_LIB          = @NETCDF_LIB@
+PNETCDF_INCLUDE    = @NETCDF_INCLUDE@
+PNETCDF_LIB        = @NETCDF_LIB@
 #
 # Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 

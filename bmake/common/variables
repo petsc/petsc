@@ -131,7 +131,7 @@ PCONF         = ${PETSC_HAVE_MPE}         ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_
                 ${PETSC_HAVE_SUPERLU_DIST} ${PETSC_HAVE_SUPERLU}    ${PETSC_HAVE_SPOOLES} ${PETSC_HAVE_UMFPACK}\
                 ${PETSC_HAVE_CCA}         ${PETSC_HAVE_TRILINOS}   ${PETSC_HAVE_HYPRE}   ${PETSC_HAVE_MUMPS}\
                 ${PETSC_HAVE_MATHEMATICA} ${PETSC_HAVE_TRIANGLE}   ${PETSC_HAVE_PLAPACK} ${PETSC_HAVE_SAMG} \
-                ${PETSC_HAVE_NETCDF}      ${PETSC_HAVE_HDF4}
+                ${PETSC_HAVE_PNETCDF}     ${PETSC_HAVE_HDF4}
 EXTERNAL_LIB  = ${MPE_LIB}                ${BLOCKSOLVE_LIB}        ${PVODE_LIB}          ${PARMETIS_LIB} \
                 ${AMS_LIB}                ${SPAI_LIB}              ${X11_LIB}            ${MATLAB_ENGINE_LIB}   \
                                                                    ${LUSOL_LIB}          ${DSCPACK_LIB} \
@@ -139,7 +139,7 @@ EXTERNAL_LIB  = ${MPE_LIB}                ${BLOCKSOLVE_LIB}        ${PVODE_LIB} 
                 ${SUPERLU_DIST_LIB}        ${SUPERLU_LIB}           ${SPOOLES_LIB}        ${UMFPACK_LIB}\
                                           ${TRILINOS_LIB}          ${HYPRE_LIB}          ${MUMPS_LIB}\
                 ${MATHEMATICA_LIB}        ${TRIANGLE_LIB}          ${PLAPACK_LIB}        ${SAMG_LIB} \
-                ${NETCDF_LIB}             ${HDF4_LIB}
+                ${PNETCDF_LIB}            ${HDF4_LIB}
 #
 #   Directories that depend on each external package
 #
