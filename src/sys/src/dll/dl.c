@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.22 1998/06/11 19:55:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.23 1998/07/15 18:54:13 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -99,7 +99,7 @@ int DLLibrarySharedTmp(MPI_Comm comm,int *shared)
   }
 
   if (Petsc_Tmp_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelTag,&Petsc_Tmp_keyval,(void*)0);CHKERRQ(ierr);
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelTag,&Petsc_Tmp_keyval,0);CHKERRQ(ierr);
   }
 
   ierr = MPI_Attr_get(comm,Petsc_Tmp_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
@@ -138,8 +138,10 @@ int DLLibrarySharedTmp(MPI_Comm comm,int *shared)
 
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryObtain"
-/*
+/*@C
     DLLibraryObtain - Obtains a library from a URL and copies into local disk space.
+
+    Collective on MPI_Comm
 
     Input Parameter:
 +   comm - processors accessing the library
@@ -149,7 +151,7 @@ int DLLibrarySharedTmp(MPI_Comm comm,int *shared)
     Output Parameter:
 .   llibname - name of local copy of library
 
-*/
+@*/
 int DLLibraryObtain(MPI_Comm comm,char *libname,char *llibname,int llen)
 {
   char       *par4,buf[1024];
@@ -203,22 +205,24 @@ int DLLibraryObtain(MPI_Comm comm,char *libname,char *llibname,int llen)
 
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryOpen"
-/*
+/*@
    DLLibraryOpen - Opens a dynamic link library
 
+     Collective on MPI_Comm
+
    Input Parameters:
-   comm - processors that are opening the library
-   libname - name of the library, can be relative or absolute
++   comm - processors that are opening the library
+-   libname - name of the library, can be relative or absolute
 
    Output Parameter:
-   handle - library handle 
+.   handle - library handle 
 
    Notes:
    [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
 
    $PETSC_ARCH and $BOPT occuring in directoryname and filename 
    will be replaced with appropriate values.
-*/
+@*/
 int DLLibraryOpen(MPI_Comm comm,char *libname,void **handle)
 {
   char       *par2,ierr,len,*par3,arch[10];
@@ -338,12 +342,14 @@ int DLLibraryOpen(MPI_Comm comm,char *libname,void **handle)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@C
    DLLibrarySym - Load a symbol from the dynamic link libraries.
 
+   Collective on MPI_Comm
+
    Input Parameter:
-.  path     - optional complete library name
-.  insymbol - name of symbol
++  path     - optional complete library name
+-  insymbol - name of symbol
 
    Output Parameter:
 .  value 
@@ -351,7 +357,9 @@ int DLLibraryOpen(MPI_Comm comm,char *libname,void **handle)
    Notes: Symbol can be of the form
         [/path/libname[.so.1.0]:]functionname[()] where items in [] denote optional 
 
-*/
+        Will attempt to (retrieve and) open the library if it is not yet been opened.
+
+@*/
 #undef __FUNC__  
 #define __FUNC__ "DLLibrarySym"
 int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,char *path,char *insymbol, void **value)
@@ -436,12 +444,21 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,char *path,char *insymbol, 
   PetscFunctionReturn(0);
 }
 
-/*
+/*@C
      DLLibraryAppend - Appends another dynamic link library to the seach list, to the end
                 of the search path.
 
+     Collective on MPI_Comm
+
+     Input Parameters:
++     comm - MPI communicator
+-     libname - name of the library
+
+     Output Parameter:
+.     outlist - list of libraries
+
      Notes: if library is already in path will not add it.
-*/
+@*/
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryAppend"
 int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,char *libname)
@@ -478,13 +495,22 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,char *libname)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
      DLLibraryPrepend - Add another dynamic library to search for symbols to the beginning of
                  the search path.
 
+     Collective on MPI_Comm
+
+     Input Parameters:
++     comm - MPI communicator
+-     libname - name of the library
+
+     Output Parameter:
+.     outlist - list of libraries
+
      Notes: If library is already in path will remove old reference.
 
-*/
+@*/
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryPrepend"
 int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,char *libname)
@@ -523,10 +549,15 @@ int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,char *libname)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@C
      DLLibraryClose - Destroys the search path of dynamic libraries and closes the libraries.
 
-*/
+    Collective on DLLibrary
+
+    Input Parameter:
+.     next - library list
+
+@*/
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryClose"
 int DLLibraryClose(DLLibraryList next)
