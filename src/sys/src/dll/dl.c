@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.37 1998/12/17 21:57:25 balay Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.38 1999/01/04 21:48:35 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -71,6 +71,32 @@ int DLLibraryPrintPath()
   while (libs) {
     PetscErrorPrintf("  %s\n",libs->libname);
     libs = libs->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DLLibraryGetInfo"
+/*@C
+   DLLibraryGetInfo - Gets the text information from a PETSc
+       dynamic library
+
+     Not Collective
+
+   Input Parameters:
+.   handle - library handle returned by DLLibraryOpen()
+
+@*/
+int DLLibraryGetInfo(void *handle,char *type,char **mess)
+{
+  int  ierr, (*sfunc)(const char *,const char*,char **);
+
+  PetscFunctionBegin;
+  sfunc   = (int (*)(const char *,const char*,char **)) dlsym(handle,"DLLibraryInfo");
+  if (!sfunc) {
+    *mess = "No library information in the file\n";
+  } else {
+    ierr = (*sfunc)(0,type,mess);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

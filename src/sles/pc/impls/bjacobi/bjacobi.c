@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.119 1999/01/13 23:57:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.120 1999/01/21 01:29:05 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -17,7 +17,7 @@ static int PCSetUp_BJacobi(PC pc)
 {
   PC_BJacobi      *jac = (PC_BJacobi *) pc->data;
   Mat             mat = pc->mat, pmat = pc->pmat;
-  int             ierr, m, n_local, N, M, start, i, rank, size, sum, end;
+  int             ierr, n_local, N, M, start, i, rank, size, sum, end;
   int             bs, i_start=-1, i_end=-1;
   char            *prefix;
 
