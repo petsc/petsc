@@ -128,12 +128,24 @@ class Configure(config.base.Configure):
             self.framework.argDB[versionName]  = options.getCompilerVersion(language, self.getCompiler())
           self.addArgumentSubstitution(versionName, versionName)
           # Check normal compiler flags
-          map(self.addCompilerFlag, options.getCompilerFlags(language, self.getCompiler(), ''))
+          self.framework.argDB['REJECTED_'+flags] = []
+          for testFlag in options.getCompilerFlags(language, self.getCompiler(), ''):
+            try:
+              self.addCompilerFlag(testFlag)
+            except RuntimeError:
+              self.framework.argDB['REJECTED_'+flags].append(testFlag)
           # Check special compiler flags
           for bopt in ['g', 'O']:
             flagsName = flags+'_'+bopt
+            self.framework.argDB['REJECTED_'+flagsName] = []
             if self.framework.argDB[flagsName] == 'Unknown':
-              self.framework.argDB[flagsName] = ' '.join([flag for flag in options.getCompilerFlags(language, self.getCompiler(), bopt) if self.checkCompilerFlag(flag)])
+              testFlags = []
+              for testFlag in options.getCompilerFlags(language, self.getCompiler(), bopt):
+                if self.checkCompilerFlag(testFlag):
+                  testFlags.append(testFlag)
+                else:
+                  self.framework.argDB['REJECTED_'+flagsName].append(testFlag)
+              self.framework.argDB[flagsName] = ' '.join(testFlags)
             testFlags = self.framework.argDB[flagsName]
             if not self.checkCompilerFlag(testFlags):
               raise RuntimeError('Invalid '+language+' compiler flags for bopt '+bopt+': '+testFlags)
