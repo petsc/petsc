@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.60 2001/07/12 23:21:35 buschelm Exp buschelm $*/
+/*$Id: baijfact2.c,v 1.61 2001/07/12 23:39:38 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2891,8 +2891,13 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
   case 4:
     ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
     if (sse_enabled) {
+#if defined(PETSC_HAVE_SSE)
       inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
-      PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n"); 
+      PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n");
+#else
+      /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
+      SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
+#endif
     } else {
       inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
       PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=4\n"); 
@@ -2982,8 +2987,13 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
     }
     if (use_natural) {
       if (use_single) {
+#if defined(PETSC_HAVE_SSE)
         A->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion;
         PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE, in-place natural ordering solve BS=4\n");
+#else
+      /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
+      SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
+#endif
       } else {
         A->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
         PetscLogInfo(A,"MatSolve_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
@@ -2992,8 +3002,13 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
       PetscLogInfo(A,"MatSolveTranspose_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
     } else {
       if (use_single) {
+#if defined(PETSC_HAVE_SSE)
         A->ops->solve           = MatSolve_SeqBAIJ_4_SSE_Demotion;
         PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE solve BS=4\n");
+#else
+      /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
+      SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
+#endif
       } else {
         A->ops->solve           = MatSolve_SeqBAIJ_4;
       }
