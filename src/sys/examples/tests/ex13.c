@@ -1,18 +1,37 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.4 1997/09/22 15:18:56 balay Exp $";
+static char vcid[] = "$Id: ex13.c,v 1.1 1998/05/19 15:41:22 bsmith Exp bsmith $";
 #endif
 
 /*
-     Tests PetscSequentialPhaseBegin() and PetscSequentialPhaseEnd()
+     Tests PetscSetCommWorld()
 */
 #include "petsc.h"
 
-int main(int argc, char **argv) {
-  int ierr;
+int main(int argc, char **argv) 
+{
+  int      ierr,rank,size;
+  MPI_Comm newcomm;
+
+  MPI_Init(&argc,&argv);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+
+  /*
+       make two new communicators each half the size of original
+  */
+  MPI_Comm_split(MPI_COMM_WORLD,2*rank<size,0,&newcomm);
+
+  ierr = PetscSetCommWorld(newcomm);
+  if (ierr) {
+    fprintf(stderr,"Unable to set PETSC_COMM_WORLD\n");
+  }
 
   PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
-  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD , 1); CHKERRA(ierr);
-  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD , 1); CHKERRA(ierr);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  printf("rank %d\n",rank);
+
   PetscFinalize();
+
+  MPI_Finalize();
   return 0;
 }

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.25 1998/05/19 16:25:14 bsmith Exp balay $ 
+# $Id: makefile,v 1.26 1998/05/21 15:56:55 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -132,5 +132,5 @@ runex13:
 runex13f:
 	-@${MPIRUN} -np 2 ex13f > ex13_1.tmp 2>&1;\
 	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
-	   else echo "Error in PetscSetCommWorld"; fi; \
+	   else echo "Possible problem in ex13f"; fi; \
 	   ${RM} -f ex13_1.tmp ex13_1.tmp
