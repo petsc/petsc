@@ -159,7 +159,7 @@ class Configure(PETSc.package.Package):
     self.compilers.CPPFLAGS = oldFlags
     return
 
-  def configureMPIUNI(self):
+  def alternateConfigureLibrary(self):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.framework.addDefine('HAVE_MPI', 1)
     self.include = ['-I${PETSC_DIR}/include/mpiuni']
@@ -354,16 +354,13 @@ class Configure(PETSc.package.Package):
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
-    if not self.framework.argDB['with-mpi']:
-      self.configureMPIUNI()
-    else:
-      self.addExtraLibraries()
-      PETSc.package.Package.configureLibrary(self)
-      self.executeTest(self.configureMPIRUN)
-      self.executeTest(self.configureConversion)
-      self.executeTest(self.configureTypes)
-      self.executeTest(self.configureMPIRUN)
-      self.executeTest(self.configureMissingPrototypes)      
+    self.addExtraLibraries()
+    PETSc.package.Package.configureLibrary(self)
+    self.executeTest(self.configureMPIRUN)
+    self.executeTest(self.configureConversion)
+    self.executeTest(self.configureTypes)
+    self.executeTest(self.configureMPIRUN)
+    self.executeTest(self.configureMissingPrototypes)      
 
 if __name__ == '__main__':
   import config.framework
