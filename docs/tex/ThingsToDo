@@ -10,6 +10,10 @@ Additional Capabilities that PETSc Needs:
 Meta priorities: 
 
 
+  - Change All Fortran interface routines that take function pointer 
+    arguments to work like MatCreateShell() now works keeping the Fortran
+    function pointers in the field fortran_func_pointers.
+
   - Add ISGlobalToLocal() that does
     1) replace off processor with -1 and
     2) remove all off processor entries from list
