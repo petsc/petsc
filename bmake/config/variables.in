@@ -54,11 +54,11 @@ CXX_CLINKER        = @CXX@ @LDFLAGS@
 CXX_CCV            = echo "@PETSC_CXX_VERSION@"
 CXX_SYS_LIB        = @LIBS@ @FLIBS@
 # ------------------------- BOPT=g_c++,g_complex options -------------------
-GCXX_COPTFLAGS     = @CXXFLAGS@ @PETSC_CXXFLAGS_g@
-GCOMP_COPTFLAGS	   = @CXXFLAGS@ @PETSC_CXXFLAGS_g@
+GCXX_COPTFLAGS     = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_g@
+GCOMP_COPTFLAGS    = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_g@
 # ------------------------- BOPT=O_c++,O_complex options -------------------
-OCXX_COPTFLAGS     = @CXXFLAGS@ @PETSC_CXXFLAGS_O@
-OCOMP_COPTFLAGS	   = @CXXFLAGS@ @PETSC_CXXFLAGS_O@
+OCXX_COPTFLAGS     = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_O@
+OCOMP_COPTFLAGS    = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_O@
 # ########################### PETSc install options ########################
 G_PETSCFLAGS     = -DPETSC_USE_BOPT_g @PETSCFLAGS@
 O_PETSCFLAGS     = -DPETSC_USE_BOPT_O @PETSCFLAGS@

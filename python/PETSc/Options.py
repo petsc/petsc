@@ -35,6 +35,16 @@ class Options(config.base.Configure):
           flags.append('-g')
         elif bopt == 'O':
           flags.extend(['-O2', '-OPT:Olimit=6500'])
+    # Intel
+    elif re.match(r'i[3-9]86', self.framework.host_cpu):
+      # Intel or Microsoft
+      if compiler in ['win32fe icl', 'win32fe cl']:
+        if bopt == '':
+          flags.append('-MT')
+        elif bopt == 'g':
+          flags.append('-Z7')
+        elif bopt == 'O':
+          flags.extend(['-O3', '-QxW'])
     # Generic
     else:
       if bopt == 'g':
@@ -71,6 +81,16 @@ class Options(config.base.Configure):
           flags.append('-g')
         elif bopt == 'O':
           flags.extend(['-O2', '-OPT:Olimit=6500'])
+    # Intel
+    elif re.match(r'i[3-9]86', self.framework.host_cpu):
+      # Intel or Microsoft
+      if compiler in ['win32fe icl', 'win32fe cl']:
+        if bopt == '':
+          flags.append('-MT -GX -GR')
+        elif bopt == 'g':
+          flags.append('-Z7')
+        elif bopt == 'O':
+          flags.extend(['-O3', '-QxW'])
     # Generic
     else:
       if bopt == 'g':
@@ -93,6 +113,14 @@ class Options(config.base.Configure):
       if compiler == 'pgf90':
         if bopt == 'O':
           flags.extend(['-fast', '-tp p6', '-Mnoframe'])
+      # Intel
+      elif compiler in ['win32fe ifl', 'win32fe ifort']:
+        if bopt == '':
+          flags.append('-MT')
+        elif bopt == 'g':
+          flags.append('-Z7')
+        elif bopt == 'O':
+          flags.extend(['-O3', '-QxW'])
     # MIPS
     elif re.match(r'mips', self.framework.host_cpu):
       # MIPS Pro Fortran
