@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.30 1998/12/22 19:49:00 balay Exp balay $ 
+# $Id: base.site,v 1.31 1998/12/22 21:16:14 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,8 +10,7 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-#BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_INTEL_linux.a
-BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_linux.a
+BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_INTEL_linux.a
 LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_linux.a
 #
 #
