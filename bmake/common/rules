@@ -14,48 +14,14 @@ chkpetsc_dir:
         fi
 
 chklib_dir:
-	@if [ ${BOPT}foo = foo ] ; then \
-	  echo "*********************** ERROR ************************" ; \
-	  echo "You must use the make variable BOPT=[g,O,O_c++,O_complex,...]" ; \
-	  echo "For example, use: make BOPT=g ex1"; \
-          echo "Remove all .o files and rerun make with appropriate BOPT"; \
-	  echo "******************************************************";  false; fi
 	@if [ ! -d "${INSTALL_LIB_DIR}" ]; then \
-	  echo Making directory ${INSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
-
-# 1. Checks that user has set BOPT variable
-# 2. Check if the ${INSTALL_LIB_DIR} exists
-chkopts_basic: 
-	@if [ ${BOPT}foo = foo ] ; then \
-	  echo "*********************** ERROR ************************" ; \
-	  echo "You must set the variable BOPT=[g,O,O_c++,O_complex,...]" ; \
-	  echo "For exampe, use: make BOPT=g ex1"; \
-          echo "Remove all .o files and rerun make with appropriate BOPT"; \
-	  echo "******************************************************" ; \
-          false; fi
-	@if [ ${BOPT}foo = 0foo ]; then \
-	  echo "*********************** ERROR ************************" ; \
-          echo "BOPT should be the letter O_c++ not the digit zero_c++"; \
-	  echo "******************************************************" ; \
-          false; fi
-	@if [ "${BOPT}foo" = "0_c++foo" ]; then \
-	  echo "*********************** ERROR ************************" ; \
-          echo "BOPT should be the letter O not the digit zero"; \
-	  echo "******************************************************" ; \
-          false; fi
-	@if [ ! -d ${INSTALL_LIB_DIR} ]; then \
-	  echo "*********************** ERROR ************************" ; \
-	  echo Libraries not built for this BOPT: ${BOPT}; \
-	  echo "******************************************************" ;\
-          false ; fi
+ 	  echo Making directory ${INçSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
+ 
 
 # 3. Check if the shared libs are out of date
-chkopts: chkopts_basic
+chkopts: 
 	@for LIBNAME in ${SHLIBS}; do \
-	if test -z "${LIBTOOL}"; then \
 	  library=${INSTALL_LIB_DIR}/$$LIBNAME.a; \
-	else \
-	  library=${INSTALL_LIB_DIR}/lt_$$LIBNAME.a; \
 	fi; \
 	sharedlibrary=${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX}; \
 	flag=""; \
@@ -67,7 +33,7 @@ chkopts: chkopts_basic
 	if [ "$$flag" != "" ]; then \
 	  echo "Shared libs in ${INSTALL_LIB_DIR} are out of date, attempting to rebuild."; \
 	  if [ -w ${INSTALL_LIB_DIR} ]; then \
-	    ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} shared; \
+	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} shared; \
 	  else \
 	    echo "*********************** ERROR ************************"; \
 	    echo "Unable to rebuild shared libraries; you do not have write permission."; \
@@ -83,15 +49,15 @@ chkopts: chkopts_basic
 foo:
 
 # Builds library
-lib: chklib_dir  ${SOURCE}
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} chkpetsc_dir
+lib:  ${SOURCE}
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} chkpetsc_dir
 	@-if [ "${SPECIALLIB}" = "yes" ] ; then \
-	   ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} speciallib;  \
+	   ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  speciallib;  \
 	  else \
             if [ "${SOURCEC}" != "" ] ; then \
-              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} libc; fi ; \
+              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libc; fi ; \
             if [ "${SOURCEF}" != "" ] ; then \
-		${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} libf; fi ; \
+		${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libf; fi ; \
             if [ "${OBJS}" != " " ] ; then \
 		${RANLIB}  ${LIBNAME}; \
 		${RM} ${OBJS}; \
@@ -102,21 +68,13 @@ lib: chklib_dir  ${SOURCE}
 #
 # Builds library - fast version
 
-libfast: chklib_dir ${SOURCEC} ${SOURCEF}
+libfast:  ${SOURCEC} ${SOURCEF}
 	-@if [ "${SPECIALFASTLIB}" = "yes" ] ; then \
-	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} specialfastlib;  \
+	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  specialfastlib;  \
 	else \
 	if [ "${SOURCEC}" != "" ]; then \
-	        if test -n "${LIBTOOL}"; then \
-                    ${PETSC_COMPILE_LIBTOOL}; \
-	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
-	            ${AR} ${AR_FLAGS} ${LT_LIBNAME} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
-	            ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
-	        else \
                     ${PETSC_COMPILE}; \
 	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
-	            ${RM} ${OBJSC} ${SOBJS}; \
-	        fi; \
 	    fi; \
 	fi
 
@@ -136,53 +94,6 @@ clean:
 
 cleanadic:
 	@-${RM} *.ad.*
-#
-#   Compiles all the directories on which a particular external package depends. This way
-#  one can update PETSc for an external package without recompiling all of PETSc
-#
-package:
-	@-for dir in ${${PACKAGE}_DIRS} ; do \
-           r=`egrep requirespackage $$dir/makefile`; \
-           if [ "$$?" = 0 ]; then \
-	     HCONF=`grep PETSC_ ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h | cut -d" " -f2`; \
-             HPCONF=`echo ${PCONF} | sed s/-D//g`; \
-             f=0; \
-             for l in $${HPCONF} foo $${HCONF}; do \
-               echo $$r | egrep "'$$l'" > /dev/null; \
-               if [ "$$?" = 0 ]; then \
-	         f=1; \
-                 break; \
-               fi; \
-             done ; \
-             if [ "$$f" = 0 ]; then \
-                continue; \
-             fi; \
-           fi; \
-           r=`egrep requireslanguage $$dir/makefile`; \
-           if [ "$$?" = 0 ]; then \
-             echo $$r | egrep ${PETSC_LANGUAGE} > /dev/null; \
-             if [ "$$?" = 1 ]; then \
-               continue; \
-             fi; \
-           fi; \
-           r=`egrep requiresscalar $$dir/makefile`; \
-           if [ "$$?" = 0 ]; then \
-             echo $$r |  egrep ${PETSC_SCALAR} > /dev/null; \
-             if [ "$$?" = 1 ]; then \
-               continue; \
-             fi; \
-           fi; \
-           r=`egrep requiresprecision $$dir/makefile`; \
-           if [ "$$?" = 0 ]; then \
-             echo $$r |  egrep ${PETSC_PRECISION} > /dev/null; \
-             if [ "$$?" = 1 ]; then \
-               continue; \
-             fi; \
-           fi; \
-           pushd $$dir; \
-           ${OMAKE} tree ACTION=libfast BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} LOC=${LOC}; \
-           popd; \
-        done;
 #
 #  Checks if directory requires particular package or language
 # The makefile may contain
@@ -240,7 +151,7 @@ tree: ${ACTION}
             fi; \
             (cd $$dir ; \
             echo ${ACTION} in: `pwd`; \
-            ${OMAKE} tree ACTION=${ACTION} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH});\
+            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH});\
 	  done ; \
         fi
 
@@ -249,7 +160,7 @@ tree_basic: ${ACTION}
 	@-if [ "${DIRS}" != "" ]; then \
 	for dir in ${DIRS} foo ; do if [ -d $$dir ]; then \
 	(cd $$dir ; echo ${ACTION} in: `pwd`; \
-	${OMAKE}  tree_basic ACTION=${ACTION} BOPT=${BOPT} \
+	${OMAKE}  tree_basic ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
 	done ; fi
 
@@ -258,7 +169,7 @@ alltree_makefile: ${ACTION}
 	-@DIRS=`ls`; \
 	for dir in $$DIRS foo ; do if [ -f $$dir/makefile ]; then \
 	(cd $$dir ; echo ${ACTION} in: `pwd`; \
-	${OMAKE}  alltree_makefile ACTION=${ACTION} BOPT=${BOPT} \
+	${OMAKE}  alltree_makefile ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ) ;fi; \
 	done
 # This target goes through all dirs specified by DIRS,EDIRS, and 
@@ -273,7 +184,7 @@ alltree: ${ACTION}
 	for dir in $$NDIRS foo ; do if [ -d $$dir ]; then \
 	(cd $$dir ;\
 	echo ${ACTION} in: `pwd`; \
-	${OMAKE}  alltree ACTION="${ACTION}" BOPT=${BOPT} \
+	${OMAKE}  alltree ACTION="${ACTION}"  \
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ; ) fi; \
 	done ; fi
 
@@ -357,7 +268,7 @@ fortranstubs:
 .c.o .cpp.o .cc.o .C.o .ad.o: 
 	@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
-	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} chkpetsc_dir;\
+	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir;\
         fi
 	-@complex=`echo ${PETSCFLAGS} |grep PETSC_USE_COMPLEX`; \
         if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
@@ -422,7 +333,7 @@ fortranstubs:
 	-@${RM} $* *.o $*.mon.* gmon.out mon.out
 
 .c.PETSc:
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} $* > trashz 2>&1
+	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
           grep -v "WARNING: TOC" | \
           grep -v "D4024 : unrecognized" | \
@@ -453,7 +364,7 @@ fortranstubs:
 	  cat trashz ; fi; ${RM} trashz
 
 .F.PETSc:
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} $* > trashz 2>&1
+	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v EXTERNAL trashz | grep -v Wall | \
           grep -v "Unused external reference" | \
           grep -v "D4024 : unrecognized" | \
@@ -487,7 +398,7 @@ fortranstubs:
 
 #---------------------------------------------------------------------------------------
 
-deleteshared: chkopts_basic
+deleteshared:
 	${RM} ${INSTALL_LIB_DIR}/*.${SLSUFFIX} ${INSTALL_LIB_DIR}/so_locations
 
 noshared:
@@ -734,7 +645,7 @@ gcov:
           fi; done ; \
         fi
 
-countfunctions: chklib_dir
+countfunctions: 
 	-@if [ ! -f ${INSTALL_LIB_DIR}/countfunctions ]; then \
 	  touch ${INSTALL_LIB_DIR}/countfunctions ; fi
 	@-if [ "${SOURCEC}" != "" ]; then \
@@ -745,7 +656,7 @@ countfunctions: chklib_dir
 
 checkbadPetscFunctionBegin:
 	-@if [ "${SOURCEC}" != "" ] ; then \
-	${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} \
+	${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  \
 	checkbadPetscFunctionBegin_private ; fi
 
 checkbadPetscFunctionBegin_private:

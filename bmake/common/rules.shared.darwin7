@@ -33,7 +33,7 @@ shared_darwin7:
 #   b) LIBNAME (the library basename)
 #   c) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
 # and both the archive and shared library reside in INSTALL_LIB_DIR.
-shared: chkopts_basic
+shared: 
 	-@echo making shared libraries in ${INSTALL_LIB_DIR}; \
 	${RM} -rf ${INSTALL_LIB_DIR}/tmp; \
 	mkdir ${INSTALL_LIB_DIR}/tmp; \

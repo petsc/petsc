@@ -3568,7 +3568,6 @@ One method of convergence testing is
 to declare convergence when the norm of the change in the solution
 between successive iterations is less than some tolerance, \trl{stol}.
 Convergence can also be determined based on the norm of the function
-(or gradient for a minimization problem).  
 Such a test can use either the absolute size of the
 norm, \trl{atol}, or its relative decrease, \trl{rtol}, from an initial
 guess.  The following routine sets these parameters, which are used
@@ -3593,13 +3592,6 @@ The user can set this parameter with the option \trl{-snes_trtol <trtol>}
 \begin{tabbing}
   SNESSetTrustRegionTolerance(SNES snes,double trtol);
 \end{tabbing}
-An additional parameter is sometimes used for unconstrained minimization
-problems, namely the minimum function tolerance, \trl{ftol}, which can
-be set with the option \trl{-snes_fmin <ftol>} \findex{-snes_fmin} or
-with the routine
-\begin{tabbing}
-  SNESSetMinimizationFunctionTolerance(SNES snes,double ftol);
-\end{tabbing}
 
 Users can set their own customized convergence tests in SNES by using
 the command \findex{SNESSetConvergenceTest()}
@@ -3612,10 +3604,8 @@ The final argument of the convergence test routine, \trl{cctx},
 denotes an optional user-defined context for private data.  When
 solving systems of nonlinear equations, the arguments \trl{xnorm},
 \trl{gnorm}, and \trl{f} are the current iterate norm, current step
-norm, and function norm, respectively.  Likewise, when solving
-unconstrained minimization problems, the arguments \trl{xnorm}, \trl{
-gnorm}, and \trl{f} are the current iterate norm, current gradient
-norm, and the function value. \trl{SNESConvergedReason} should be set positive
+norm, and function norm, respectively. 
+\trl{SNESConvergedReason} should be set positive
 for convergence and negative for divergence. See \trl{include/petscsnes.h}
 for a list of values for SNESConvergedReason. \findex{SNESConvergedReason}
 

@@ -127,7 +127,7 @@ class Configure(config.base.Configure):
   def configure(self):
     if self.framework.argDB['with-'+self.package] and self.mpi.foundMPI and self.framework.argDB['with-external-packages']:
       self.executeTest(self.configureLibrary)
-    else 
+    else:
       self.setEmptyOutput()
     return
 

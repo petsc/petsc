@@ -336,6 +336,7 @@ class Configure(config.base.Configure):
     self.framework.getExecutable('sed',  getFullPath = 1)
     self.framework.getExecutable('mv',   getFullPath = 1)
     self.framework.getExecutable('diff', getFullPath = 1)
+    self.framework.getExecutable('rm -f',getFullPath = 1)
     # check if diff supports -w option for ignoring whitespace
     f = file('diff1', 'w')
     f.write('diff\n')

@@ -1,4 +1,0 @@
-
-#
-#  This file should never be included, PETSc will print an error
-# message reminding the user they should use an O not a zero

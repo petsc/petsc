@@ -8,14 +8,13 @@
 # PETSC_[C,F]CPPFLAGS    -  preprocessor flags for *.c, *.F preprocessing
 # PETSC_[C,F]SH_LIB_PATH - linker_add_sh_lib_path:sh_lib_path pairs for all the shared library locations
 #
-PETSC_LIB_DIR	    = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
+PETSC_LIB_DIR	    = ${PETSC_DIR}/lib/${PETSC_ARCH}
 PETSC_INCLUDE	    = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include \
-			${TAU_DEFS} ${TAU_INCLUDE} ${MPI_INCLUDE} ${MPE_INCLUDE} ${AMS_INCLUDE} \
-	                ${PETSC_BLASLAPACK_FLAGS}
-PETSC_CCPPFLAGS	    = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
-PETSC_FCPPFLAGS	    = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${FPPFLAGS}
-PETSC_C_SH_LIB_PATH = ${CLINKER_SLFLAG}${PETSC_LIB_DIR} ${C_DYLIBPATH}
-PETSC_F_SH_LIB_PATH = ${FLINKER_SLFLAG}${PETSC_LIB_DIR} ${F_DYLIBPATH}
+			${TAU_DEFS} ${TAU_INCLUDE} ${MPI_INCLUDE} ${MPE_INCLUDE}  ${PETSC_BLASLAPACK_FLAGS}
+PETSC_CCPPFLAGS	    = ${PETSC_INCLUDE} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
+PETSC_FCPPFLAGS	    = ${PETSC_INCLUDE} ${PETSCFLAGS} ${FPP_FLAGS} ${FPPFLAGS}
+PETSC_C_SH_LIB_PATH = ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}
+PETSC_F_SH_LIB_PATH = ${FC_LINKER_SLFLAG}${PETSC_LIB_DIR}
 #
 # The following variables are used by PETSc build targets. External Packages (like TAO) can 
 # redefine them appropriately.
@@ -39,17 +38,15 @@ PETSC_COMPILE_LIBTOOL = files="${SOURCEC} ${SSOURCE}"; \
                             ${PETSC_COMPILE_SINGLE} $$filename;\
                         done
 #
-# The following additional variables are used by PETSc targets and should not be redifined
+# The following additional variables are used by PETSc targets and should not be redefined
 #
 # LIBNAME    - library name
-# LT_LIBNAME - Libtool library name
 # SOURCE     - source files
 # SSOURCE    - single precision versions of some source code
 # OBJS       - object files
 # SOBJS      - single precision versions of some object files
 #
 LIBNAME    = ${INSTALL_LIB_DIR}/${LIBBASE}.${LIB_SUFFIX}
-LT_LIBNAME = ${INSTALL_LIB_DIR}/lt_${LIBBASE}.${LIB_SUFFIX}
 SOURCE     = ${SOURCEC} ${SOURCEF}
 OBJS       = ${OBJSC} ${OBJSF}
 #
@@ -101,62 +98,6 @@ PETSC_SNES_LIB_COMPLEX    = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_SNES_LIB_COMPLEX_
 PETSC_TS_LIB_COMPLEX      = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_TS_LIB_COMPLEX_BASIC}
 PETSC_LIB_COMPLEX         = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_LIB_COMPLEX_BASIC}
 
-
-#
-# ---------------------------------------------------------------------------------------
-#
-# PCONF - indicates which OPTIONAL external packages are available at your site; appropriate
-#         ones are defined in bmake/${PETSC_ARCH}/packages (as are the library locations).
-#         Ones that are not defined are ignored. You only need to edit this to add a new 
-#         package that PETSc has never seen before. Never remove any of these, rather remove
-#         them from the appropriate bmake/${PETSC_ARCH}/packages
-#
-#
-PCONF         = ${PETSC_HAVE_MPE}         ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVODE}   ${PETSC_HAVE_PARMETIS} \
-                                         ${PETSC_HAVE_SPAI}       ${PETSC_HAVE_X11}                            \
-                ${PETSC_HAVE_ADIC}        ${PETSC_HAVE_JAVA}       ${PETSC_HAVE_LUSOL}   ${PETSC_HAVE_DSCPACK} \
-                ${PETSC_HAVE_RAMG}        ${PETSC_HAVE_MATLAB}     ${PETSC_HAVE_ESSL}    ${PETSC_HAVE_ADIFOR} \
-                ${PETSC_HAVE_SUPERLU_DIST} ${PETSC_HAVE_SUPERLU}    ${PETSC_HAVE_SPOOLES} ${PETSC_HAVE_UMFPACK}\
-                ${PETSC_HAVE_CCA}         ${PETSC_HAVE_TRILINOS}   ${PETSC_HAVE_HYPRE}   ${PETSC_HAVE_MUMPS}\
-                ${PETSC_HAVE_MATHEMATICA} ${PETSC_HAVE_TRIANGLE}   ${PETSC_HAVE_PLAPACK} ${PETSC_HAVE_SAMG} \
-                ${PETSC_HAVE_PNETCDF}     ${PETSC_HAVE_HDF4}       ${PETSC_HAVE_ML}\
-                ${PETSC_HAVE_CHACO}       ${PETSC_HAVE_JOSTLE}     ${PETSC_HAVE_PARTY}   ${PETSC_HAVE_SCOTCH}
-
-EXTERNAL_LIB  = ${MPE_LIB}                ${BLOCKSOLVE_LIB}        ${PVODE_LIB}          ${PARMETIS_LIB} \
-                ${AMS_LIB}                ${SPAI_LIB}              ${X11_LIB}            ${MATLAB_LIB}   \
-                                                                   ${LUSOL_LIB}          ${DSCPACK_LIB} \
-                ${RAMG_LIB}               ${TAU_LIB}                                     ${ADIFOR_LIB} \
-                ${SUPERLU_DIST_LIB}        ${SUPERLU_LIB}           ${SPOOLES_LIB}        ${UMFPACK_LIB}\
-                ${TRILINOS_LIB}          ${HYPRE_LIB}          ${MUMPS_LIB}\
-                ${MATHEMATICA_LIB}        ${TRIANGLE_LIB}          ${PLAPACK_LIB}        ${SAMG_LIB} \
-                ${PNETCDF_LIB}            ${HDF4_LIB}              ${ML_LIB}\
-                ${CHACO_LIB}              ${JOSTLE_LIB}            ${PARTY_LIB}          ${SCOTCH_LIB}
-#
-#   Directories that depend on each external package
-#
-BLOCKSOLVE_DIRS    = src/mat/impls/rowbs/mpi src/mat/utils src/mat/interface src/fortran/custom
-PVODE_DIRS         = src/ts/impls/implicit/pvode src/ts/interface
-AMS_DIRS           = src
-SPAI_DIRS          = src/ksp/pc/impls/spai src/ksp/pc/interface 
-DSCPACK_DIRS       = src/mat/impls/baij src/mat/impls/aij/seq
-PARMETIS_DIRS      = src/mat/partition src/mesh/impls/triangular/2d/
-MATLAB_ENGINE_DIRS = src/vec/utils src/vec/impls/seq src/vec/impls/mpi src/mat/impls/aij/seq src/dm/da/src src/pf/interface src/fortran/custom
-LUSOL_DIRS         = src/mat/impls/aij/seq
-RAMG_DIRS          = src/contrib/lahaye/ramg src/ksp/pc/interface
-ADIFOR_DIRS        = 
-SUPERLU_DIST_DIRS  = src/mat/impls/aij/mpi
-SUPERLU_DIRS       = src/mat/impls/aij/seq
-TRIANGLE_DIRS      = src/mesh/impls/triangular/2d
-PLAPACK_DIRS       = src/sys/src/utils src/ksp/pc/impls/ml
-HYPRE_DIRS         = src/ksp/pc/impls/hypre src/vec/impls/hypre src/mat/impls/hypre src/ksp/pc/interface
-SPOOLES_DIR        = src/mat/impls/aij src/mat/impls/sbaij
-ADIC_DIRS          = src/mat/impls/aij src/snes/utils src/dm/da/src src/fortran/custom
-MATLAB_DIRS        = src/mat/impls/aij/seq
-ML_DIRS            = src/mat/impls/aij/mpi
-CHACO_DIRS         = src/mat/partition
-JOSTLE_DIRS        = src/mat/partition
-PARTY_DIRS         = src/mat/partition
-SCOTCH_DIRS        = src/mat/partition
 #
 # ----------------------------------------------------------------------------------------
 #
@@ -167,18 +108,6 @@ PETSC_ADIC_LIB  = -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC} -lpetscblas -lmpiuni  ${
 # Some variables used to build shared libraries
 SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes libpetscts libpetsccontrib
 #
-#   These should really be defined in each of the bmake/${PETSC_ARCH}/variables files but
-#   it is easier to have defaults which work on most machines (overwritable in ${PETSC_ARCH}/variables)
-MV       = mv
-CP       = cp
-BFORT    = bfort
-DOCTEXT  = doctext
-MAPNAMES = mapnames
-C2HTML   = c2html
-BIB2HTML = bib2html
-#
-DATAFILESPATH = /home/petsc/datafiles
-#
 # The following include files set customized site, optimization, and version
 # options.  Do NOT remove any of these include files.  You should generally
 # need to edit only ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages to specify your
@@ -187,6 +116,5 @@ DATAFILESPATH = /home/petsc/datafiles
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/variables
 # (This line MUST be present for certain machines (e.g., Cray T3D))
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages
-# (This line MUST be present for certain machines (e.g., Cray T3D))
-include ${PETSC_DIR}/bmake/common/bopt_${BOPT}
+
 

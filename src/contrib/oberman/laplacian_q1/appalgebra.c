@@ -7,18 +7,18 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "pde_rhs"
-int pde_rhs(void *dummy,int n,double *xx,double *f)
+int pde_rhs(void *dummy,PetscInt n,PetscReal *xx,PetscReal *f)
 {
-  double pi = PETSC_PI, x = xx[0], y = xx[1];
+  PetscReal pi = PETSC_PI, x = xx[0], y = xx[1];
   PetscFunctionBegin;
   *f = 8*pi*pi*sin(2*pi*x)*sin(2*pi*y)-20*pi*cos(2*pi*x)*sin(2*pi*y);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
 #define __FUNCT__ "pde_bc"
-int pde_bc(void *dummy,int n,double *xx,double *f)
+int pde_bc(void *dummy,PetscInt n,PetscReal *xx,PetscReal *f)
 {
-  double pi = 3.1415927, x = xx[0], y = xx[1];
+  PetscReal pi = 3.1415927, x = xx[0], y = xx[1];
   PetscFunctionBegin;
   *f = sin(2*pi*x)*sin(2*pi*y);
   PetscFunctionReturn(0);
@@ -30,12 +30,12 @@ int pde_bc(void *dummy,int n,double *xx,double *f)
 */
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtSolve"
-int AppCtxSolve(AppCtx* appctx)
+PetscErrorCode AppCtxSolve(AppCtx* appctx)
 {
   AppAlgebra  *algebra = &appctx->algebra;
   MPI_Comm    comm = appctx->comm;
   KSP        ksp;
-  int         ierr;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
 
@@ -134,12 +134,12 @@ int AppCtxSolve(AppCtx* appctx)
 */
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtCreateRhs"
-int AppCtxCreateRhs(AppCtx *appctx)
+PetscErrorCode AppCtxCreateRhs(AppCtx *appctx)
 {
   AppGrid     *grid = &appctx->grid;
   AppAlgebra  *algebra = &appctx->algebra;
   MPI_Comm    comm = appctx->comm;
-  int         ierr;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   /*  Create vector to contain load,  local size should be number of  vertices  on this proc.  */
@@ -159,13 +159,13 @@ int AppCtxCreateRhs(AppCtx *appctx)
 */
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtCreateMatrix"
-int AppCtxCreateMatrix(AppCtx* appctx)
+PetscErrorCode AppCtxCreateMatrix(AppCtx* appctx)
 {
 
   AppAlgebra  *algebra = &appctx->algebra;
   AppGrid     *grid    = &appctx->grid;
   MPI_Comm    comm = appctx->comm;
-  int         ierr;
+  PetscErrorCode         ierr;
  
   PetscFunctionBegin;
   ierr = MatCreate(comm,grid->vertex_local_n,grid->vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE,&algebra->A);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
 */
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtSetRhs"
-int AppCtxSetRhs(AppCtx* appctx)
+PetscErrorCode AppCtxSetRhs(AppCtx* appctx)
 {
   /********* Context informatrion ***********/
   AppGrid    *grid = &appctx->grid;
@@ -191,10 +191,11 @@ int AppCtxSetRhs(AppCtx* appctx)
   AppElement *phi = &appctx->element;
 
   /****** Local Variables ***********/
-  int        ierr,i;
-  int        *vertex_ptr;
-  int        bn = 4; /* number of basis functions */
-  int        vertexn = 4; /* number of degrees of freedom */
+  PetscInt        i;
+  PetscErrorCode ierr;
+  PetscInt        *vertex_ptr;
+  PetscInt        bn = 4; /* number of basis functions */
+  PetscInt        vertexn = 4; /* number of degrees of freedom */
 
   PetscFunctionBegin;
   /* loop over local cells */
@@ -227,7 +228,7 @@ int AppCtxSetRhs(AppCtx* appctx)
 */
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtSetMatrix"
-int AppCtxSetMatrix(AppCtx* appctx)
+PetscErrorCode AppCtxSetMatrix(AppCtx* appctx)
 {
   /********* Contex information ***********/
   AppAlgebra *algebra = &appctx->algebra;
@@ -235,10 +236,11 @@ int AppCtxSetMatrix(AppCtx* appctx)
   AppElement *phi = &appctx->element; 
 
   /****** Local Variables ***********/
-  int        i,ierr;
-  int        *vertex_ptr;
-  int        bn = 4; /* number of basis functions */
-  int        vertexn = 4; /* number of degrees of freedom */
+  PetscInt        i;
+  PetscErrorCode ierr;
+  PetscInt        *vertex_ptr;
+  PetscInt        bn = 4; /* number of basis functions */
+  PetscInt        vertexn = 4; /* number of degrees of freedom */
 
   PetscFunctionBegin;
 
@@ -276,15 +278,16 @@ int AppCtxSetMatrix(AppCtx* appctx)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SetBoundaryConditions"
-int SetBoundaryConditions(AppCtx *appctx)
+PetscErrorCode SetBoundaryConditions(AppCtx *appctx)
 {
  /********* Context informatrion ***********/
   AppAlgebra *algebra = &appctx->algebra;
   AppGrid    *grid = &appctx->grid;
 
   /****** Local Variables ***********/
-  int          ierr,i;
-  int          *vertex_ptr; 
+  PetscInt          i;
+  PetscErrorCode ierr;
+  PetscInt          *vertex_ptr; 
   PetscScalar  zero = 0.0;
 
   PetscFunctionBegin;
@@ -326,15 +329,15 @@ int SetBoundaryConditions(AppCtx *appctx)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SetMatrixBoundaryConditions"
-int SetMatrixBoundaryConditions(AppCtx *appctx)
+PetscErrorCode SetMatrixBoundaryConditions(AppCtx *appctx)
 {
   /********* Context informatrion ***********/
   AppAlgebra *algebra = &appctx->algebra;
   AppGrid    *grid = &appctx->grid;
 
   /****** Local Variables ***********/
-  double     one = 1.0;
-  int        ierr;
+  PetscReal     one = 1.0;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   ierr = MatZeroRowsLocal(algebra->A,grid->vertex_boundary,&one);CHKERRQ(ierr); 

@@ -148,7 +148,7 @@ PetscErrorCode SNESAddOptionsChecker(PetscErrorCode (*snescheck)(SNES))
 .  -snes_max_funcs <max_funcs> - maximum number of function evaluations
 .  -snes_max_fail <max_fail> - maximum number of failures
 .  -snes_trtol <trtol> - trust region tolerance
-.  -snes_no_convergence_test - skip convergence test in nonlinear or minimization 
+.  -snes_no_convergence_test - skip convergence test in nonlinear 
                                solver; hence iterations will continue until max_it
                                or some other criterion is reached. Saves expense
                                of convergence test
@@ -1115,7 +1115,7 @@ PetscErrorCode SNESDestroy(SNES snes)
 
 .keywords: SNES, nonlinear, set, convergence, tolerances
 
-.seealso: SNESSetTrustRegionTolerance(), SNESSetMinimizationFunctionTolerance()
+.seealso: SNESSetTrustRegionTolerance()
 @*/
 PetscErrorCode SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,PetscReal stol,PetscInt maxit,PetscInt maxf)
 {
@@ -1184,7 +1184,7 @@ PetscErrorCode SNESGetTolerances(SNES snes,PetscReal *abstol,PetscReal *rtol,Pet
 
 .keywords: SNES, nonlinear, set, trust region, tolerance
 
-.seealso: SNESSetTolerances(), SNESSetMinimizationFunctionTolerance()
+.seealso: SNESSetTolerances()
 @*/
 PetscErrorCode SNESSetTrustRegionTolerance(SNES snes,PetscReal tol)
 {

@@ -7,6 +7,24 @@ set SSH=ssh
 set SCP=scp
 set DASHN=-n
 set day=`date | cut -f1 -d" "`
+if ( -f ${PETSC_DIR}/maint/confignightly/${CONF} ) then
+ 
+else
+  set machines=`grep CONF ${PETSC_DIR}/maint/confignightly/* | grep -i ${CONF} | sed "s?:? ?g" | sed "s?=? ?g" | cut -d" " -f1`
+  set arches=`grep CONF ${PETSC_DIR}/maint/confignightly/* | grep -i ${CONF} | sed "s?:? ?g" | sed "s?=? ?g" | cut -d" " -f4`
+  if ( ${#machines} == 1 ) then
+    set CONF = `basename ${machines[1]}`
+  else
+    set i=1
+    while ( $i <= ${#machines} ) 
+      echo $i `basename ${machines[$i]}` ${arches[$i]}
+      @ i=$i + 1
+    end
+    set choice=$<
+    set CONF = `basename ${machines[$choice]}`    
+  endif
+endif
+
 source ${PETSC_DIR}/maint/confignightly/${CONF}
 
 echo "****************** Connecting to $USR@$MACH in $LOC  ************************************"
