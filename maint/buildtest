@@ -21,7 +21,7 @@ if ($day == Sun) then
 endif
 if ($day == Mon) then
   set M =(snake            eagle      cyan       elvis         doc          ptera                maverick    )
-  set B =(g                Opg_c++    O_c++      g             O            g                    Opg         )
+  set B =(g                Opg_c++    O_c++      g             O            g_c++                Opg         )
   set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha_nolog          sun4        )
   set S =(noshared         noshared   shared     noshared      noshared     shared               noshared    )
   set J1=(0                1          1          1             1            1                    1           )
@@ -47,8 +47,8 @@ if ($day == Tue) then
 endif
 if ($day == Wed) then
   set M =(snake            eagle      cyan       elvis         doc          ptera                maverick    )
-  set B =(g                g_c++      Opg        g_complex     Opg_complex  g                    Opg_c++     )
-  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha_nolog          sun4_uni    )
+  set B =(g                g_c++      Opg        g_complex     Opg_complex  O_c++                Opg_c++     )
+  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha                sun4_uni    )
   set S =(noshared         noshared   shared     noshared      noshared     shared               noshared    )
   set J1=(3                1          1          1             1            1                    4           )
   set J2=(0                2          3          2             2            2                    9           )
@@ -60,7 +60,7 @@ if ($day == Wed) then
 endif
 if ($day == Thu) then
   set M =(snake            eagle      cyan       elvis         doc          ptera                maverick    )
-  set B =(O                g_complex  g_c++      O_c++         g_c++        g                    Opg_complex )
+  set B =(O                g_complex  g_c++      O_c++         g_c++        O_complex            Opg_complex )
   set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha                sun4        )
   set S =(noshared         noshared   shared     noshared      noshared     shared               noshared    )
   set J1=(0                1          1          1             1            1                    1           )
@@ -86,7 +86,7 @@ if ($day == Fri) then
 endif
 if ($day == Sat) then
   set M =(snake            eagle      cyan       elvis         doc          ptera                maverick    )
-  set B =(O                O          O          Opg_complex   g_complex    g                    g_complex   )
+  set B =(O                O          O          Opg_complex   g_complex    Opg_c++              g_complex   )
   set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha                sun4_uni    )
   set S =(noshared         noshared   shared     noshared      noshared     shared               shared      )
   set J1=(1                1          1          1             1            1                    4           )
