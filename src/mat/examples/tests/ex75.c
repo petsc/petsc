@@ -214,9 +214,13 @@ int main(int argc,char **args)
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }  
 
-  /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
+  /* Test MatDiagonalScale() */
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sA,x,x);CHKERRQ(ierr);
+  ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
+  
+  /* Test MatGetDiagonal(), MatScale() */
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);  
   ierr = MatGetDiagonal(sA,s2);CHKERRQ(ierr);
   ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);

@@ -1393,10 +1393,10 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
 PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
-  PetscScalar    *l,*r,x,*li,*ri;
+  PetscScalar    *l,x,*li,*ri;
   MatScalar      *aa,*v;
   PetscErrorCode ierr;
-  PetscInt       i,j,k,lm,rn,M,m,*ai,*aj,mbs,tmp,bs,bs2;
+  PetscInt       i,j,k,lm,M,m,*ai,*aj,mbs,tmp,bs,bs2;
 
   PetscFunctionBegin;
   ai  = a->i;
@@ -1419,41 +1419,15 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
       li = l + i*bs;      
       v  = aa + bs2*ai[i];
       for (j=0; j<M; j++) { /* for each block */
-        for (k=0; k<bs2; k++) {
-          (*v++) *= li[k%bs];
-        } 
-#ifdef CONT
-        /* will be used to replace the above loop */
         ri = l + bs*aj[ai[i]+j];
-        for (k=0; k<bs; k++) { /* column value */
+        for (k=0; k<bs; k++) { 
           x = ri[k];          
           for (tmp=0; tmp<bs; tmp++) (*v++) *= li[tmp]*x;
         } 
-#endif
-
       }  
     }
     ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
     PetscLogFlops(2*a->nz);
-  }
-  /* will be deleted */
-  if (rr) {
-    ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(rr,&rn);CHKERRQ(ierr);
-    if (rn != m) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
-    for (i=0; i<mbs; i++) { /* for each block row */
-      M  = ai[i+1] - ai[i];
-      v  = aa + bs2*ai[i];
-      for (j=0; j<M; j++) { /* for each block */
-        ri = r + bs*aj[ai[i]+j];
-        for (k=0; k<bs; k++) {
-          x = ri[k];
-          for (tmp=0; tmp<bs; tmp++) (*v++) *= x;
-        } 
-      }  
-    }
-    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
-    PetscLogFlops(a->nz);
   }
   PetscFunctionReturn(0);
 }

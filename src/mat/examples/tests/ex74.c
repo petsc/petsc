@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscScalar        neg_one = -1.0,four=4.0,value[3],alpha=0.1;  
   IS                 perm, iscol;
   PetscRandom        rdm;
-  PetscTruth         doIcc=PETSC_TRUE;
+  PetscTruth         doIcc=PETSC_TRUE,equal;
   MatInfo            minfo1,minfo2;
   MatFactorInfo      factinfo;
   MatType            type;
@@ -193,6 +193,8 @@ int main(int argc,char **args)
 
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sB,x,x);CHKERRQ(ierr);
+  ierr = MatMultEqual(A,sB,10,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
 
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);  
   ierr = MatGetDiagonal(sB,s2);CHKERRQ(ierr);
