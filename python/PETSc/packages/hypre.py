@@ -18,6 +18,7 @@ class Configure(PETSc.package.Package):
 
 
   def generateLibList(self,dir):
+    '''Normally the one in package.py is used, but hypre requires the extra C++ library'''
     libs = ['DistributedMatrix',
             'DistributedMatrixPilutSolver',
             'Euclid',
@@ -168,6 +169,10 @@ class Configure(PETSc.package.Package):
     if not self.found:
       raise RuntimeError('Could not find a functional '+self.name+'\n')
 
+  def configureLibrary(self):
+    '''Calls the regular package configureLibrary and then does an additional test needed by hypre'''
+    '''Normally you do not need to provide this method'''
+    PETSc.package.Package.configureLibrary(self)
     # hypre requires LAPACK routine dgels()
     if not self.blasLapack.checkForRoutine('dgels'):
       raise RuntimeError('hypre requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')

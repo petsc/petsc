@@ -25,6 +25,9 @@ class Package(config.base.Configure):
     # these are optional items set in the particular packages file
     self.complex      = 0
     self.download     = []
+    self.deps         = []
+    self.functions    = []
+    self.includes     = []
     
   def __str__(self):
     '''Prints the location of the packages includes and libraries'''
@@ -104,6 +107,36 @@ class Package(config.base.Configure):
       self.framework.log.write('Did not located already downloaded '+self.name+'\n')
       raise RuntimeError('Error locating '+self.name+' directory')
     return os.path.join(packages, Dir)
+
+  def configureLibrary(self):
+    '''Find an installation and check if it can work with PETSc'''
+    self.framework.log.write('==================================================================================\n')
+    self.framework.log.write('Checking for a functional '+self.name+'\n')
+    foundLibrary = 0
+    foundHeader  = 0
+
+    # get any libraries and includes we depend on
+    libs         = []
+    incls        = []
+    for l in self.deps:
+      if hasattr(l,'dlib'):    libs  += l.dlib
+      if hasattr(l,'include'): incls += l.include
+      
+    for location, lib,incl in self.generateGuesses():
+      if not isinstance(lib, list): lib = [lib]
+      if not isinstance(incl, list): incl = [incl]
+      self.framework.log.write('Checking for library '+location+': '+str(lib)+'\n')
+      if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs}):      
+        self.lib = lib
+        self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
+        if (not self.includes) or self.executeTest(self.libraries.checkInclude, [incl, self.includes],{'otherIncludes' : incls}):
+          self.include = incl
+          self.found   = 1
+          self.dlib    = self.lib+libs
+          self.framework.packages.append(self)
+          break
+    if not self.found:
+      raise RuntimeError('Could not find a functional '+self.name+'\n')
 
   def configure(self):
     '''Determines if the package should be configured for, then calls the configure'''
