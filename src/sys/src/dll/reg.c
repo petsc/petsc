@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.18 1998/05/15 17:32:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.19 1998/06/11 19:55:34 bsmith Exp balay $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -314,9 +314,6 @@ int DLRegisterFind(MPI_Comm comm,DLList fl,char *name, int (**r)(void *))
   FuncList      entry = fl->head;
   char          *function, *path;
   int           ierr;
-#if defined(USE_DYNAMIC_LIBRARIES)
-  DLLibraryList libs;
-#endif
  
   PetscFunctionBegin;
   ierr = DLRegisterGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);

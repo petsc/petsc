@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.47 1998/06/10 13:38:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.48 1998/06/11 19:54:45 bsmith Exp balay $";
 #endif
 
 #include "sys.h"
@@ -147,7 +147,7 @@ int VecRegister_Private(char *sname,char *path,char *name,int (*function)(MPI_Co
 @*/
 int VecCreateWithType(MPI_Comm comm,char *type_name,int n,int N,Vec *v)
 {
-  int  flg,ierr,(*r)(MPI_Comm,int,int,Vec *),size;
+  int  flg,ierr,(*r)(MPI_Comm,int,int,Vec *);
   char vectype[256];
 
   PetscFunctionBegin;

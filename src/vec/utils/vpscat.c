@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.102 1998/05/24 20:27:55 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.103 1998/06/11 19:54:45 bsmith Exp balay $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -1622,8 +1622,6 @@ int VecScatterDestroy_PtoP(VecScatter ctx)
 #define __FUNC__ "VecScatterCreate_PtoS"
 int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,int bs,VecScatter ctx)
 {
-  Vec_MPI                *x = (Vec_MPI *)xin->data;
-  Vec_Seq                *y = (Vec_Seq *)yin->data;
   VecScatter_MPI_General *from,*to;
   int                    *source,*lens,rank, *owners;
   int                    size,*lowner,*start,found, lengthy;
@@ -2143,7 +2141,6 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
 #define __FUNC__ "VecScatterCreate_PtoP"
 int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,VecScatter ctx)
 {
-  Vec_MPI     *x = (Vec_MPI *)xin->data;
   int         *lens,rank, *owners = xin->map->range,size,found;
   int         *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work,*local_inidx,*local_inidy;
   int         *owner,*starts,count,tag = xin->tag,slen,ierr;
