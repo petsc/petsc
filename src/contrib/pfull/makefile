@@ -1,9 +1,17 @@
-# $Id: makefile,v 1.184 1997/09/10 16:23:37 bsmith Exp $ 
+# $Id: makefile,v 1.5 1998/06/15 16:26:35 balay Exp balay $ 
+
+ALL: pfull
 
 # -----------------------------------------------------------------------
-# Specify PETSc installation and user-defined compiler flags
+# Additional compiler/preprocessor flags
+# CFLAGS/FFLAGS    -  Additional compiler flags if required by the application
+# CPPFLAGS/FPPFLAGS - Additional preprocessor flags for c/fortran
 # -----------------------------------------------------------------------
-CFLAGS    = ${CPPFLAGS}
+CFLAGS    = 
+FFLAGS    =
+CPPFLAGS  =
+FPPFLAGS  =
+LOCDIR    = src/contrib/pfull/
 # -----------------------------------------------------------------------
 # Define application source and examples
 # -----------------------------------------------------------------------
@@ -19,8 +27,6 @@ CFLAGS    = ${CPPFLAGS}
 #    *.o 
 #    CLEANFILES - variable to specify other files to delete via "make clean"
 #    
-
-ALL: pfull
 
 SOURCEC    = pfull.c pfunc.c
 SOURCEF    =

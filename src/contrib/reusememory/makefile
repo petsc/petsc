@@ -1,5 +1,7 @@
 
 
+CFLAGS   =
+FFLAGS   =
 CPPFLAGS = ${BS_INCLUDE}
 LOCDIR   = src/contrib/reusememory/
 

@@ -1,4 +1,4 @@
-#PETSC_DIR = ../../..
+# $Id: makefile,v 1.184 1997/09/10 16:23:37 bsmith Exp $ 
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = 
 OBJSF    =
 LIBBASE  = libpetsccontrib
-DIRS     = examples src
-LOCDIR   = src/contrib/sda/
+DIRS     = src
+LOCDIR   = src/contrib/spai/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
