@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zplog.c,v 1.9 1996/12/16 16:17:38 balay Exp bsmith $";
+static char vcid[] = "$Id: zplog.c,v 1.10 1997/02/03 20:15:32 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -47,17 +47,13 @@ void plogdump_(CHAR name, int *__ierr,int len ){
 void plogeventregister_(int *e,CHAR string,CHAR color,int *__ierr,int len1,
                         int len2){
 #if defined(PETSC_LOG)
-  char *t1,*t2,*n1,*n2;
+  char *t1,*t2;
   FIXCHAR(string,len1,t1);
   FIXCHAR(color,len2,t2);
 
-  /* we have to copy the strings because some Fortran compilers */
-  /* do not keep them as static */
-  n1 = (char *) PetscMalloc( (len1+1)*sizeof(char) ); if (!n1) {*__ierr = 1; return;}
-  PetscStrncpy(n1,t1,len1); n1[len1] = 0; FREECHAR(string,t1);
-  n2 = (char *) PetscMalloc( (len2+1)*sizeof(char) ); if (!n2) {*__ierr = 1; return;}
-  PetscStrncpy(n2,t2,len2); n2[len2] = 0; FREECHAR(color,t2);
-  *__ierr = PLogEventRegister(e,n1,n2);
+  *__ierr = PLogEventRegister(e,t1,t2);
+  FREECHAR(string,t1);
+  FREECHAR(color,t2);
 #endif
 }
 

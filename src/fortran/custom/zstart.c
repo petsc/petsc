@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.19 1997/01/06 22:28:19 balay Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.20 1997/01/06 23:11:02 balay Exp bsmith $";
 #endif
 
 /*
@@ -20,6 +20,11 @@ static char vcid[] = "$Id: zstart.c,v 1.19 1997/01/06 22:28:19 balay Exp balay $
 #include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
 extern int          PetscBeganMPI;
+
+#if defined(HAVE_NAGF90)
+#define iargc_  f90_unix_MP_iargc
+#define getarg_ f90_unix_MP_getarg
+#endif
 
 #ifdef HAVE_FORTRAN_CAPS
 #define petscfinalize_                PETSCFINALIZE

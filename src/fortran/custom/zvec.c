@@ -1,45 +1,47 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.18 1996/10/28 15:21:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.19 1997/01/12 04:31:37 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "vec.h"
 #ifdef HAVE_FORTRAN_CAPS
-#define vecmaxpy_             VECMAXPY
-#define vecmdot_              VECMDOT
-#define veccreateseq_         VECCREATESEQ
-#define veccreate_            VECCREATE
-#define vecduplicate_         VECDUPLICATE
-#define veccreatempi_         VECCREATEMPI
-#define vecscattercreate_     VECSCATTERCREATE
-#define vecscattercopy_       VECSCATTERCOPY
-#define vecdestroy_           VECDESTROY
-#define vecdestroyvecs_       VECDESTROYVECS
-#define vecscatterdestroy_    VECSCATTERDESTROY
-#define vecrestorearray_      VECRESTOREARRAY
-#define vecgetarray_          VECGETARRAY
-#define vecload_              VECLOAD
-#define vecgettype_           VECGETTYPE
-#define vecduplicatevecs_     VECDUPLICATEVECS
-#define vecview_              VECVIEW
+#define vecmaxpy_              VECMAXPY
+#define vecmdot_               VECMDOT
+#define veccreateseq_          VECCREATESEQ
+#define veccreateseqwitharray_ VECCREATESEQWITHARRAY
+#define veccreate_             VECCREATE
+#define vecduplicate_          VECDUPLICATE
+#define veccreatempi_          VECCREATEMPI
+#define vecscattercreate_      VECSCATTERCREATE
+#define vecscattercopy_        VECSCATTERCOPY
+#define vecdestroy_            VECDESTROY
+#define vecdestroyvecs_        VECDESTROYVECS
+#define vecscatterdestroy_     VECSCATTERDESTROY
+#define vecrestorearray_       VECRESTOREARRAY
+#define vecgetarray_           VECGETARRAY
+#define vecload_               VECLOAD
+#define vecgettype_            VECGETTYPE
+#define vecduplicatevecs_      VECDUPLICATEVECS
+#define vecview_               VECVIEW
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define vecview_              vecview
-#define vecmaxpy_             vecmaxpy
-#define vecmdot_              vecmdot
-#define veccreateseq_         veccreateseq
-#define veccreate_            veccreate
-#define vecduplicate_         vecduplicate
-#define veccreatempi_         veccreatempi
-#define vecscattercreate_     vecscattercreate
-#define vecscattercopy_       vecscattercopy
-#define vecdestroy_           vecdestroy
-#define vecdestroyvecs_       vecdestroyvecs
-#define vecscatterdestroy_    vecscatterdestroy
-#define vecrestorearray_      vecrestorearray
-#define vecgetarray_          vecgetarray
-#define vecload_              vecload
-#define vecgettype_           vecgettype
-#define vecduplicatevecs_     vecduplicatevecs
+#define vecview_               vecview
+#define vecmaxpy_              vecmaxpy
+#define vecmdot_               vecmdot
+#define veccreateseq_          veccreateseq
+#define veccreateseqwitharray_ veccreateseqwitharray
+#define veccreate_             veccreate
+#define vecduplicate_          vecduplicate
+#define veccreatempi_          veccreatempi
+#define vecscattercreate_      vecscattercreate
+#define vecscattercopy_        vecscattercopy
+#define vecdestroy_            vecdestroy
+#define vecdestroyvecs_        vecdestroyvecs
+#define vecscatterdestroy_     vecscatterdestroy
+#define vecrestorearray_       vecrestorearray
+#define vecgetarray_           vecgetarray
+#define vecload_               vecload
+#define vecgettype_            vecgettype
+#define vecduplicatevecs_      vecduplicatevecs
 #endif
 
 #if defined(__cplusplus)
@@ -138,6 +140,13 @@ void veccreateseq_(MPI_Comm comm,int *n,Vec *V, int *__ierr )
   *(int*)V = PetscFromPointer(lV);
 }
 
+void veccreateseqwitharray_(MPI_Comm comm,int *n,Scalar *s,Vec *V, int *__ierr )
+{
+  Vec lV;
+  *__ierr = VecCreateSeqWithArray((MPI_Comm)PetscToPointerComm( *(int*)(comm)),*n,s,&lV);
+  *(int*)V = PetscFromPointer(lV);
+}
+
 void veccreate_(MPI_Comm comm,int *n,Vec *V, int *__ierr ){
   Vec lV;
   *__ierr = VecCreate((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*n,&lV);
@@ -175,7 +184,7 @@ void vecmtdot_(int *nv,Vec x,int *y,Scalar *val, int *__ierr ){
   int i;
   Vec *yV = (Vec *) PetscMalloc( *nv * sizeof(Vec *));
   if (!(yV)) {
-     *__ierr = PetscError(__LINE__,"VecMTDot_Fortran",__FILE__,__DIR__,PETSC_ERR_MEM,0,(char*)0);
+     *__ierr = PetscError(__LINE__,"VecMTDot_Fortran",__FILE__,__SDIR__,PETSC_ERR_MEM,0,(char*)0);
      return;
   }
   for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(y[i]));
@@ -188,7 +197,7 @@ void vecmdot_(int *nv,Vec x,int *y,Scalar *val, int *__ierr ){
   int i;
   Vec *yV = (Vec *) PetscMalloc( *nv * sizeof(Vec *));
   if (!(yV)) {
-     *__ierr = PetscError(__LINE__,"VecMDot_Fortran",__FILE__,__DIR__,PETSC_ERR_MEM,0,(char*)0);
+     *__ierr = PetscError(__LINE__,"VecMDot_Fortran",__FILE__,__SDIR__,PETSC_ERR_MEM,0,(char*)0);
      return;
   }
   for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(y[i]));
@@ -201,7 +210,7 @@ void vecmaxpy_(int *nv,Scalar *alpha,Vec x,int *y, int *__ierr ){
   int i;
   Vec *yV = (Vec *) PetscMalloc( *nv * sizeof(Vec *));
   if (!(yV)) {
-     *__ierr = PetscError(__LINE__,"VecMAXPY_Fortran",__FILE__,__DIR__,PETSC_ERR_MEM,0,(char*)0);
+     *__ierr = PetscError(__LINE__,"VecMAXPY_Fortran",__FILE__,__SDIR__,PETSC_ERR_MEM,0,(char*)0);
      return;
   }
   for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(y[i]));

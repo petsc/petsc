@@ -1,10 +1,9 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zdraw.c,v 1.7 1996/02/17 03:59:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zdraw.c,v 1.8 1997/01/12 04:31:37 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
-#include "draw.h"
 #include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS

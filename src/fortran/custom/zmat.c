@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.29 1997/01/12 04:31:37 bsmith Exp balay $";
+static char vcid[] = "$Id: zmat.c,v 1.30 1997/01/31 23:10:40 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -320,7 +320,7 @@ void matshellsetoperation_(Mat mat,MatOperation *op,int (*f)(int*,int*,int*,int*
                                    (void*) ourmult);
     theirmult = f;
   } else {
-    PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__DIR__,1,0,
+    PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,1,0,
                "Cannot set that matrix operation");
     *__ierr = 0;
   }

@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: zksp.c,v 1.15 1996/04/18 14:40:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.16 1997/01/12 04:31:37 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
-#include "draw.h"
 #include "ksp.h"
 #include "pinclude/petscfix.h"
 
