@@ -323,7 +323,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag* bag,void *addr,PetscScalar mdefa
 @*/
 PetscErrorCode PetscBagRegisterTruth(PetscBag* bag,void *addr,PetscTruth mdefault, const char* name, const char* help)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscBagRegisterEnum(bag,addr,PetscTruths,mdefault,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -491,7 +491,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag *bag,PetscViewer view)
       ierr  = PetscViewerBinaryWrite(view,nitem->help,PETSC_BAG_HELP_LENGTH,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
       ierr  = PetscViewerBinaryWrite(view,&nitem->msize,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
       ierr  = PetscViewerBinaryWrite(view,(((char*)bag) + nitem->offset),nitem->msize,nitem->dtype,PETSC_FALSE);CHKERRQ(ierr);
-      if (dtype == PETSC_ENUM) {
+      If (dtype == PETSC_ENUM) {
         ierr = PetscViewerBinaryWriteStringArray(view,(char **)nitem->list);CHKERRQ(ierr);
       }
       nitem = nitem->next;

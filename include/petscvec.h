@@ -230,7 +230,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMax(Vec,PetscInt*,PetscReal *);
 PetscPolymorphicSubroutine(VecMax,(Vec x,PetscReal *r),(x,PETSC_NULL,r))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMin(Vec,PetscInt*,PetscReal *);
 PetscPolymorphicSubroutine(VecMin,(Vec x,PetscReal *r),(x,PETSC_NULL,r))
-  EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScale(Vec v,PetscScalar a);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScale(Vec v,PetscScalar a);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec,Vec);        
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(PetscRandom,Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec,PetscScalar);

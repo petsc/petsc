@@ -93,34 +93,18 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<dir,or list of libraries>',nargs.ArgLibrary(None,None,'Indicate the directory of the '+self.name+' libraries or a list of libraries'))    
     return
 
-  def checkLibrary(self, library):
-    if os.path.isfile(library):
-      return 1
-    libBase, ext = os.path.splitext(library)
-    if os.path.isfile(libBase+'.'+self.setCompilers.sharedLibraryExt):
-      return 1
-    if os.path.isfile(libBase+'.'+self.setCompilers.AR_LIB_SUFFIX):
-      return 1
-    self.framework.log.write('Nonexistent library '+str(library)+'\n')
-    return 0
-
   # by default, just check for all the libraries in self.liblist 
-  def generateLibList(self, dir):
+  def generateLibList(self,dir):
     '''Generates full path list of libraries from self.liblist'''
     alllibs = []
-    for libSet in self.liblist:
+    for l in self.liblist:
       libs = []
-      for library in libSet:
-        if not self.libdir == dir:
-          fullLib = os.path.join(dir, library)
-        else:
-          fullLib = library
-        if self.checkLibrary(fullLib):
-          libs.append(fullLib)
-        libs.extend(self.extraLib)
+      for ll in l:
+        if not self.libdir == dir: libs.append(os.path.join(dir,ll))
+        else: libs.append(ll)
       alllibs.append(libs)
     return alllibs
-
+    
   # By default, don't search any particular directories
   def getSearchDirectories(self):
     return []

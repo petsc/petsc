@@ -157,7 +157,7 @@ typedef enum { VEC_SCATTER_SEQ_GENERAL,VEC_SCATTER_SEQ_STRIDE,
 typedef struct {
   VecScatterType type;
   PetscInt       n;                    /* number of components to scatter */
-  PetscInt       *slots;               /* locations of components */
+  PetscInt       *vslots;              /* locations of components */
   /*
        The next three fields are used in parallel scatters, they contain 
        optimization in the special case that the "to" vector and the "from" 
