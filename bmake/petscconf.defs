@@ -55,3 +55,9 @@ only support be Solaris compilers). ADIC cannot handle the restrict
 keyword hence this is currently turned off.
 
 
+HAVE_CRAY90_POINTER
+indicates the Cray vector machine pointer arithmetic. This is needed cause
+one cannot do error checking like 
+  if ((unsigned long)h & (unsigned long)3) {                        \
+    SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Pointer to Object");   \
+  }                                                                 \

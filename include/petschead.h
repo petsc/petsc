@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.67 1998/08/26 22:04:55 balay Exp bsmith $ */
+/* $Id: petschead.h,v 1.68 1998/10/19 22:20:54 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -115,6 +115,7 @@ extern int PetscHeaderDestroy_Private(PetscObject);
 
 /* ---------------------------------------------------------------------------------------*/
 
+#if !defined(HAVE_CRAY90_POINTER)
 /* 
     Macros to test if a PETSc object is valid and if pointers are
 valid
@@ -168,6 +169,49 @@ valid
   if ((unsigned long)h & (unsigned long)7) {                        \
     SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Invalid Pointer to Scalar");    \
   }}
+#endif
+
+#else
+/*
+     Version for Cray 90 that handles pointers differently
+*/
+#define PetscValidHeaderSpecific(h,ck)                              \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null Object");}        \
+  if (((PetscObject)(h))->cookie != ck) {                           \
+    if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {           \
+      SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Object already free");       \
+    } else {                                                        \
+      SETERRQ(PETSC_ERR_ARG_WRONG,0,"Wrong Object");                \
+    }                                                               \
+  }} 
+
+#define PetscValidHeader(h)                                         \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null Object");}        \
+  if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {      \
+      SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Object already free");       \
+  } else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||           \
+      ((PetscObject)(h))->cookie > LARGEST_PETSC_COOKIE) {          \
+      SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Object");            \
+  }}
+
+#define PetscValidIntPointer(h)                                     \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
+  }
+
+#define PetscValidPointer(h)                                        \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
+  }
+
+#if !defined(HAVE_DOUBLE_ALIGN)
+#define PetscValidScalarPointer(h)                                  \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
+  }
+#else
+#define PetscValidScalarPointer(h)                                  \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
+  }
+#endif
+
 #endif
 
 /*

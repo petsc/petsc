@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.47 1998/07/22 19:51:40 balay Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.48 1998/08/26 22:01:52 balay Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -55,10 +55,12 @@ int PetscMemcpy(void *a,const void *b,int n)
   unsigned long nl = (unsigned long) n;
 
   PetscFunctionBegin;
+#if !defined(HAVE_CRAY90_POINTER)
   if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
-    SETERRQ(PETSC_ERR_ARG_INCOMP,1,"Memory regions overlap: either use PetscMemmov or\n\
-            make sure your copy regions and lengths are correct");
+    SETERRQ(PETSC_ERR_ARG_INCOMP,1,"Memory regions overlap: either use PetscMemmov()\n\
+            or make sure your copy regions and lengths are correct");
   }
+#endif
   memcpy((char*)(a),(char*)(b),n);
   PetscFunctionReturn(0);
 }
