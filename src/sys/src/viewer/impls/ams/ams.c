@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.27 2000/01/11 20:59:00 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.28 2000/02/02 20:08:02 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -39,14 +39,14 @@ int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
 
   ierr = OptionsGetString(PETSC_NULL,"-ams_java",m,16,&flg);CHKERRQ(ierr);
   if (flg) {
-    FILE *fp;
     char dir[256];
 #if defined(PARCH_solaris)
     char buf[1024],*found;
+
     /* check if jacc is not already running */
-    ierr = PetscPOpen(v->comm,m,"/usr/ucb/ps -ugxww | grep jacc | grep -v grep","r",&fp);CHKERRQ(ierr);
+    ierr  = PetscPOpen(v->comm,m,"/usr/ucb/ps -ugxww | grep jacc | grep -v grep","r",&fp);CHKERRQ(ierr);
     found = fgets(buf,1024,fp);
-    ierr = PetscFClose(v->comm,fp);CHKERRQ(ierr);
+    ierr  = PetscFClose(v->comm,fp);CHKERRQ(ierr);
     if (found) PetscFunctionReturn(0);
 #endif
 
@@ -56,7 +56,7 @@ int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
     }
     /* ierr = PetscStrcat(dir,"/java/client/jacc -display ${DISPLAY}");CHKERRQ(ierr); */
     ierr = PetscStrcat(dir,"/java/client/jacc");CHKERRQ(ierr);
-    ierr = PetscPOpen(v->comm,m,dir,"r",&fp);CHKERRQ(ierr);
+    ierr = PetscPOpen(v->comm,m,dir,"r",PETSC_NULL);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
