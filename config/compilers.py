@@ -335,11 +335,19 @@ class Configure(config.base.Configure):
     # Append run path
     if ldRunPath: self.flibs = ldRunPath+self.flibs
 
+    # g77 shoves this in on darwin, but it is not needed and is incompatible with Apple g++
+    if self.flibs.find('-L/sw/lib/gcc/powerpc-apple-darwin7.0.0/3.4 ') >= 0:
+      self.flibs = re.sub('-L/sw/lib/gcc/powerpc-apple-darwin7.0.0/3.4 ','',self.flibs)
+      self.framework.addSubstitution('CFLIBS','-L/sw/lib/gcc/powerpc-apple-darwin7.0.0/3.4')
+      cflibs = ' -L/sw/lib/gcc/powerpc-apple-darwin7.0.0/3.4 '
+    else:
+      cflibs = ''
+    
     self.framework.log.write('Libraries needed to link against Fortran compiler'+self.flibs+'\n')
     # check that these monster libraries can be used from C
     self.framework.log.write('Check that Fortran libraries can be used from C\n')
     oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += ' '+self.flibs
+    self.framework.argDB['LIBS'] += ' '+cflibs+self.flibs
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError, e:
