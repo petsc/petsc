@@ -14,6 +14,8 @@ import types
 import UserDict
 import UserList
 
+import argtest
+
 class BabelLanguageList (UserList.UserList):
   languages = ['C', 'C++', 'Python', 'F77', 'Java']
 
@@ -184,8 +186,13 @@ class CompileDefaults (Defaults):
     self.libDir                = os.path.abspath('lib')
     self.pythonIncludeDir      = bs.argDB['PYTHON_INCLUDE']
     self.pythonLib             = fileset.FileSet([bs.argDB['PYTHON_LIB']])
+
+    bs.argDB.setTester('JAVA_INCLUDE',argtest.DirectoryTester())
     self.javaIncludeDir        = bs.argDB['JAVA_INCLUDE']
+
+    bs.argDB.setTester('JAVA_RUNTIME_LIB',argtest.DirectoryTester())
     self.javaRuntimeLib        = bs.argDB['JAVA_RUNTIME_LIB'] # Should be self.babelLibDir/sidl.jar
+
     self.babelDir              = os.path.abspath(bs.argDB['BABEL_DIR'])
     #self.babelIncludeDir       = os.path.join(self.babelDir, 'include')
     self.babelIncludeDir       = os.path.join(self.babelDir, 'server-sidl')

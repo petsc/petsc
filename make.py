@@ -5,6 +5,7 @@ import fileset
 
 import os
 import sys
+import argtest
 
 class PetscMake(bs.BS):
   def __init__(self, args = None):
@@ -16,7 +17,10 @@ class PetscMake(bs.BS):
 
   def defineHelp(self):
     bs.argDB.setHelp('PYTHON_INCLUDE', 'The directory in which the Python headers were installed (like Python.h)')
-    bs.argDB.setHelp('BABEL_DIR', 'The directory in which Babel was installed')
+    bs.argDB.setTester('PYTHON_INCLUDE',argtest.DirectoryTester())
+
+    bs.argDB.setHelp('BABEL_DIR', 'The directory in which the Babel runtime was installed')
+    bs.argDB.setTester('BABEL_DIR',argtest.DirectoryNotNoneTester())
 
   def defineDirectories(self):
     self.directories['sidl'] = os.path.abspath('sidl')

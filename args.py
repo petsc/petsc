@@ -8,6 +8,7 @@ import string
 import sys
 import types
 import UserDict
+import readline   #allows editing of raw_input line as typed (so delete works :-)
 
 class ArgDict (UserDict.UserDict, logging.Logger):
   def __init__(self, filename = None):
@@ -16,7 +17,7 @@ class ArgDict (UserDict.UserDict, logging.Logger):
     self.load(filename)
     atexit.register(self.save)
     self.interactive = 1
-    self.metadata    = {'help' : {}, 'default' : {}, 'parent' : {}}
+    self.metadata    = {'help' : {}, 'default' : {}, 'parent' : {}, 'tester' : {}}
     self.argRE       = re.compile(r'\$(\w+|\{[^}]*\})')
 
   def __getitem__(self, key):
@@ -52,12 +53,21 @@ class ArgDict (UserDict.UserDict, logging.Logger):
 
   def requestItem(self, key):
     if not self.interactive: return (0, None)
-    try:
-      if self.metadata['help'].has_key(key): print self.metadata['help'][key]
-      value = self.parseArg(raw_input('Please enter value for '+key+':'))
-      return (1, value)
-    except KeyboardInterrupt:
-      return (0, None)
+    if self.metadata['help'].has_key(key): print self.metadata['help'][key]
+    while 1:
+	try:
+	    value = self.parseArg(raw_input('Please enter value for '+key+':'))
+	except KeyboardInterrupt:
+	    return (0, None)
+	if self.metadata['tester'].has_key(key): 
+            (result,value) = self.metadata['tester'][key].test(value)
+	    if result:
+		return (1,value)
+	    else:
+		print 'Try again'
+	else:
+	    return (1,value)
+
 
   def load(self, filename):
     if filename and os.path.exists(filename):
@@ -101,6 +111,9 @@ class ArgDict (UserDict.UserDict, logging.Logger):
 
   def setHelp(self, key, docString):
     self.metadata['help'][key] = docString
+
+  def setTester(self, key, docString):
+    self.metadata['tester'][key] = docString
 
   def setDefault(self, key, default):
     self.metadata['default'][key] = default

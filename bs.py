@@ -7,6 +7,7 @@ import atexit
 import cPickle
 import os
 import sys
+import argtest
 
 class BS (maker.Maker):
   targets     = {}
@@ -55,6 +56,7 @@ class BS (maker.Maker):
       sourceDB = sourceDatabase.SourceDB()
     atexit.register(self.cleanup)
     sourceDB.setFromArgs(argDB)
+    argDB.setTester('restart',argtest.IntTester())
     if not int(argDB['restart']):
       for source in sourceDB:
         sourceDB.clearUpdateFlag(source)

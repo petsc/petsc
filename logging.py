@@ -1,6 +1,14 @@
 import sys
 import traceback
 import types
+import argtest
+
+class LoggerdebugSectionsTester:
+  def test(self,value):
+      if not value:
+	  return (1,[])
+      else:
+	  return (1,value)
 
 class Logger:
   debugLevel    = 1
@@ -12,7 +20,10 @@ class Logger:
 
   def setFromArgs(self, argDB):
     if not argDB: return
+    argDB.setHelp('debugLevel', 'Integer 0 to 4')
+    argDB.setTester('debugLevel',argtest.IntTester())
     self.debugLevel    = int(argDB['debugLevel'])
+    argDB.setTester('debugSections',LoggerdebugSectionsTester())
     self.debugSections = argDB['debugSections']
 
   def debugListStr(self, list):
