@@ -829,8 +829,8 @@ citool:
 	-@cd ${PETSC_DIR}/python/BuildSystem; bk citool
 
 pull:
-	-@bk pull -q
-	-@cd ${PETSC_DIR}/python/BuildSystem; bk pull -q
+	-@bk pull ${BK_QUIET}
+	-@cd ${PETSC_DIR}/python/BuildSystem; bk pull ${BK_QUIET}
 
 push:
 	-@bk push
