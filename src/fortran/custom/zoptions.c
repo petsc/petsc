@@ -1,21 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.21 1996/03/23 16:56:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: zoptions.c,v 1.22 1996/04/01 01:08:29 curfman Exp bsmith $";
 #endif
 
 /*
-  This file contains Fortran stubs for PetscInitialize and Options routines. 
+  This file contains Fortran stubs for Options routines. 
   These are not generated automatically since they require passing strings
   between Fortran and C.
 */
 
-/*
-    This is to prevent the Cray T3D version of MPI (University of Edinburgh)
-  from stupidly redefining MPI_INIT(). They put this in to detect errors
-  in C code, but here I do want to be calling the Fortran version from a
-  C subroutine. I think their act goes against the philosophy of MPI 
-  and their mpi.h file should be declared not up to the standard.
-*/
-#define T3DMPI_FORTRAN
 #include "zpetsc.h" 
 #include "sys.h"
 #include <stdio.h>
@@ -31,14 +23,7 @@ extern int          PetscBeganMPI;
 #define optionsgetint_                OPTIONSGETINT
 #define optionsgetdouble_             OPTIONSGETDOUBLE
 #define optionsgetdoublearray_        OPTIONSGETDOUBLEARRAY
-#define petscfinalize_                PETSCFINALIZE
-#define petscsetcommonblock_          PETSCSETCOMMONBLOCK
-#define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
 #define optionsgetstring_             OPTIONSGETSTRING
-#define petscinitialize_              PETSCINITIALIZE
-#define iargc_                        IARGC
-#define getarg_                       GETARG
-#define mpi_init_                     MPI_INIT
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscgetarchtype_             petscgetarchtype
 #define optionssetvalue_              optionssetvalue
@@ -46,154 +31,13 @@ extern int          PetscBeganMPI;
 #define optionsgetint_                optionsgetint
 #define optionsgetdouble_             optionsgetdouble
 #define optionsgetdoublearray_        optionsgetdoublearray
-#define petscfinalize_                petscfinalize
-#define petscsetcommonblock_          petscsetcommonblock
-#define petscsetfortranbasepointers_  petscsetfortranbasepointers
 #define optionsgetstring_             optionsgetstring
 #define optionsgetintarray_           optionsgetintarray
-#define petscinitialize_              petscinitialize
-#define mpi_init_                     mpi_init
-
-/*
-    HP-UX does not have Fortran underscore but iargc and getarg 
-  do have underscores????
-*/
-#if !defined(PARCH_hpux)
-#define iargc_                        iargc
-#define getarg_                       getarg
-#endif
-
-#endif
-
-int OptionsCheckInitial_Private(),
-    OptionsCreate_Private(int*,char***,char*),
-    OptionsSetAlias_Private(char *,char *);
-
-/*
-    The extra _ is because the f2c compiler puts an
-  extra _ at the end if the original routine name 
-  contained any _.
-*/
-#if defined(PARCH_freebsd) | defined(PARCH_linux)
-#define mpi_init_             mpi_init__
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-extern void mpi_init_(int*);
-extern void petscsetcommonblock_(int*,int*,int*);
-extern int  iargc_();
-extern void getarg_(int*,char*,int);
-#if defined(PARCH_t3d)
-extern void PXFGETARG(int *,_fcd,int*,int*);
-#endif
-#if defined(__cplusplus)
-}
-#endif
-
-/*
-    Reads in Fortran command line argments and sends them to 
-  all processors and adds them to Options database.
-*/
-
-int PETScParseFortranArgs_Private(int *argc,char ***argv)
-{
-  int  i, warg = 256,rank;
-  char *p;
-
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  if (!rank) {
-    *argc = 1 + iargc_();
-  }
-  MPI_Bcast(argc,1,MPI_INT,0,MPI_COMM_WORLD);
-
-  *argv = (char **) PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*))); 
-  CHKPTRQ(*argv);
-  (*argv)[0] = (char*) (*argv + *argc + 1);
-
-  if (!rank) {
-    PetscMemzero((*argv)[0],(*argc)*warg*sizeof(char));
-    for ( i=0; i<*argc; i++ ) {
-      (*argv)[i+1] = (*argv)[i] + warg;
-#if defined(PARCH_t3d)
-      {char *tmp = (*argv)[i]; 
-       int  ierr,ilen;
-       PXFGETARG(&i, _cptofcd(tmp,warg),&ilen,&ierr); CHKERRQ(ierr);
-       tmp[ilen] = 0;
-      } 
-#else
-      getarg_( &i, (*argv)[i], warg );
-#endif
-      /* zero out garbage at end of each argument */
-      p = (*argv)[i] + warg-1;
-      while (p > (*argv)[i]) {
-        if (*p == ' ') *p = 0; 
-        p--;
-      }
-    }
-  }
-  MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,MPI_COMM_WORLD);  
-  if (rank) {
-    for ( i=0; i<*argc; i++ ) {
-      (*argv)[i+1] = (*argv)[i] + warg;
-    }
-  } 
-  return 0;   
-}
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
-extern int PetscInitializedCalled;
-
-void petscinitialize_(char *filename,int *err,int len)
-{
-  int  flag,argc = 0,s1,s2,s3;
-  char **args = 0,*t1;
-  *err = 1;
-
-  if (PetscInitializedCalled) {*err = 0; return;}
-  PetscInitializedCalled = 1;
-
-  MPI_Initialized(&flag);
-  if (!flag) {
-    mpi_init_(err);
-    if (*err) {fprintf(stderr,"PetscInitialize:");return;}
-    PetscBeganMPI = 1;
-  }
-#if defined(PETSC_COMPLEX)
-  MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
-  MPI_Type_commit(&MPIU_COMPLEX);
-#endif
-  PETScParseFortranArgs_Private(&argc,&args);
-  FIXCHAR(filename,len,t1);
-  *err = OptionsCreate_Private(&argc,&args,t1); 
-  FREECHAR(filename,t1);
-  if (*err) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
-  PetscFree(args);
-  *err = OptionsCheckInitial_Private(); 
-  if (*err) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
-  *err = ViewerInitialize_Private(); 
-  if (*err) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
-
-  s1 = MPIR_FromPointer(STDOUT_VIEWER_SELF);
-  s2 = MPIR_FromPointer(STDERR_VIEWER_SELF);
-  s3 = MPIR_FromPointer(STDOUT_VIEWER_WORLD);
-  petscsetcommonblock_(&s1,&s2,&s3);
-  if (PetscBeganMPI) {
-    int rank,size;
-    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-    MPI_Comm_size(MPI_COMM_WORLD,&size);
-    PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",rank,size);
-  }
-  *err = 0;
-}
-
-void petscfinalize_(int *ierr){
-  *ierr = PetscFinalize();
-}
 
 /* ---------------------------------------------------------------------*/
 
@@ -283,7 +127,7 @@ void optionsgetstring_(CHAR pre,CHAR name,CHAR string,int *flg,
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-#if defined(PARCH_t3d)
+#if defined(USES_CPTOFCD)
     c3   = _fcdtocp(string);
     len3 = _fcdlen(string) - 1;
 #else
@@ -298,27 +142,9 @@ void optionsgetstring_(CHAR pre,CHAR name,CHAR string,int *flg,
   *err = ierr;
 }
 
-#if defined(PARCH_t3d)
-
-void petscsetfortranbasepointers_(void *fnull,_fcd fcnull)
-{
-  PETSC_NULL_Fortran       = fnull;
-  PETSC_NULL_CHAR_Fortran  = _fcdtocp(fcnull);
-}
-
-#else
-
-void petscsetfortranbasepointers_(void *fnull,char *fcnull)
-{
-  PETSC_NULL_Fortran       = fnull;
-  PETSC_NULL_CHAR_Fortran  = fcnull;
-}
-
-#endif  /* end of !defined(PARCH_t3d) */
-
 void petscgetarchtype_(char *str,int *__ierr,int len)
 {
-#if defined(PARCH_t3d)
+#if defined(USES_CPTOFCD)
   char *tstr = _fcdtocp(str); int len1 = _fcdlen(str);
   *__ierr = PetscGetArchType(tstr,len1);
 #else
