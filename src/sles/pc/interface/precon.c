@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.116 1997/01/13 15:05:07 balay Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.117 1997/01/13 15:23:46 balay Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -583,19 +583,25 @@ $      successive linear solves.
 $    DIFFERENT_NONZERO_PATTERN -
 $      Pmat does not have the same nonzero structure.
 
-    Caution:
-    If you specify SAME_NONZERO_PATTERN, PETSc believes your assertion
-    and does not check the structure of the matrix.  If you erroneously
-    claim that the structure is the same when it actually is not, the new
-    preconditioner will not function correctly.  Thus, use this optimization
-    feature carefully!
+   Caution:
+   If you specify SAME_NONZERO_PATTERN, PETSc believes your assertion
+   and does not check the structure of the matrix.  If you erroneously
+   claim that the structure is the same when it actually is not, the new
+   preconditioner will not function correctly.  Thus, use this optimization
+   feature carefully!
 
-    If in doubt about whether your preconditioner matrix has changed
-    structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
+   If in doubt about whether your preconditioner matrix has changed
+   structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
+   More Notes about Repeated Solution of Linear Systems:
+   PETSc does NOT reset the matrix entries of either Amat or Pmat
+   to zero after a linear solve; the user is completely responsible for
+   matrix assembly.  See the routine MatZeroEntries() if desiring to
+   zero all elements of a matrix.
+    
 .keywords: PC, set, operators, matrix, linear system
 
-.seealso: PCGetOperators()
+.seealso: PCGetOperators(), MatZeroEntries()
  @*/
 int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
