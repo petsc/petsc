@@ -1,7 +1,8 @@
 #PETSC_DIR = ../../../..
 ALL: ex1
 
-CFLAGS	        = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
+# Note that we need CONF to pick up the Fortran format info
+CFLAGS	        = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
 FFLAGS	        =	 
 SOURCEC	        = 
 SOURCEF	        =
@@ -16,24 +17,27 @@ TESTEXAMPLES_2  = ex7.PETSc runex7 ex7.rm ex9.PETSc \
 TESTEXAMPLES_3  = ex12.PETSc runex12 ex12.rm clean
 TESTEXAMPLES_4  = ex7.PETSc runex7 ex7.rm ex9.PETSc ex9.rm clean
 TESTEXAMPLES_8  = 
-TESTEXAMPLES_9  = 
+TESTEXAMPLES_9  =  ex1.PETSc runex1 runex1_2 ex1.rm clean
 BUILDEXAMPLES_1 = 
 BUILDEXAMPLES_2 = ex7.PETSc ex7.rm ex9.PETSc ex9.rm ex13.PETSc ex13.rm  clean
 BUILDEXAMPLES_3 = ex12.PETSc ex12.rm clean
 BUILDEXAMPLES_4 = ex7.PETSc ex7.rm ex9.PETSc ex9.rm clean
 BUILDEXAMPLES_8 = 
-BUILDEXAMPLES_9 = 
+BUILDEXAMPLES_9 = ex1.PETSc ex1.rm clean
 
-EXAMPLESC       = ex7.c ex9.c ex11.c ex13.c
-EXAMPLESF       = ex12.F ex10.f
+EXAMPLESC       = ex1.c ex7.c ex9.c ex11.c ex13.c
+EXAMPLESF       = ex12.F ex10.f dficfj.f dsfdfj.f dhhdfj.f dcprfj.f \
+                  dcpffj.f dsfifj.f dfdcfj.f mpinter.f
 DIRS	        = umin
+
+FOBJ1 = dficfj.o dsfdfj.o dhhdfj.o dcprfj.o dcpffj.o dfdcfj.o dsfifj.o
 #
 #  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
 # they require too many processors
 #
-ex1: ex1.o  chkopts
-	-$(CLINKER) -o ex1 ex1.o $(PETSC_LIB)
-	$(RM) ex1.o
+ex1: ex1.o $(FOBJ1) chkopts
+	-$(CLINKER) -o ex1 ex1.o $(FOBJ1) $(PETSC_LIB)
+	$(RM) ex1.o $(FOBJ1)
 
 ex2: ex2.o  chkopts
 	-$(CLINKER) -o ex2 ex2.o $(PETSC_LIB)
@@ -88,11 +92,15 @@ ex14: ex14.o  chkopts
 	$(RM) ex14.o
 
 runex1:
-	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex1 -p 5 -hp 5 -snes_smonitor > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   $(RM) -f ex1_1.tmp
-
+runex1_2:
+	-@$(MPIRUN) ex1 -p 5 -hp 5 -snes_type tr -snes_smonitor > ex1_2.tmp 2>&1;   \
+	   if (diff output/ex1_2.out ex1_2.tmp) then true; \
+	   else echo "Possible problem with ex1_2, diffs above"; fi; \
+	   $(RM) -f ex1_2.tmp
 runex2:
 	-@$(MPIRUN) ex2	 > ex2_1.tmp 2>&1;   \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
