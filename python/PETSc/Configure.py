@@ -93,14 +93,14 @@ class Configure(config.base.Configure):
   def configureFortranPIC(self):
     '''Determine the PIC option for the Fortran compiler'''
     # We use the framework in order to remove the PETSC_ namespace
-    self.pushLanguage('F77')
+    self.compilers.pushLanguage('F77')
     option = ''
     for opt in ['-PIC', '-fPIC', '-KPIC']:
       if self.compilers.checkCompilerFlag(opt):
         option = opt
         break
     self.framework.addSubstitution('FC_SHARED_OPT', option)
-    self.popLanguage()
+    self.compilers.popLanguage()
     return
 
   def configureFortranCPP(self):
