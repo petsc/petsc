@@ -1,5 +1,5 @@
 C
-C    "$Id: ex14f.F,v 1.2 1997/04/25 01:44:22 curfman Exp curfman $";
+C    "$Id: ex14f.F,v 1.3 1997/04/25 01:55:22 curfman Exp curfman $";
 C
 C  Solves a nonlinear system in parallel with a user-defined
 C  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -45,17 +45,22 @@ C    A finite difference approximation with the usual 5-point stencil
 C    is used to discretize the boundary value problem to obtain a nonlinear 
 C    system of equations.
 C
-C    The SNES version of this problem is:  snes/examples/tutorials/ex5.c
+C    The SNES version of this problem is:  snes/examples/tutorials/ex5f.F
 C
 C  ------------------------------------------------------------------------- 
-C
+
+      program main
+      implicit none
+
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C                    Include files
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
 C     petsc.h  - base PETSc routines   vec.h - vectors
 C     sys.h    - system routines       mat.h - matrices
 C     is.h     - index sets            ksp.h - Krylov subspace methods
 C     viewer.h - viewers               pc.h  - preconditioners
-C
-      implicit none
+
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/is.h"
 #include "include/FINCLUDE/vec.h"
@@ -87,17 +92,15 @@ C     --------------- Data to define nonlinear solver --------------
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       comm = PETSC_COMM_WORLD
 
-C  
 C  Initialize problem parameters
 C  
-C      user(1) = mx user(2) = my user(3) = localX user(4) = localF user(5) = da
+C    user(1) = mx, user(2) = my, user(3) = localX, user(4) = localF, user(5) = da
 C
       user(1) = 4
       user(2) = 4
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',user(1),flg,
      &                       ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(2),flg,ierr)
-
       N = user(1)*user(2)
 
 C  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
