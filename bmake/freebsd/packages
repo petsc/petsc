@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.10 1997/09/11 22:27:11 balay Exp bsmith $ 
+# $Id: base.site,v 1.11 1997/11/03 04:39:47 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,7 +13,7 @@
 FC_LIB         =  -lf2c -lm
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# or see $(PETSC_DIR)/docs/installation.html for information on retrieving them.
 #
 BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_freebsd.a $(FC_LIB)
 LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_freebsd.a
@@ -35,7 +35,9 @@ MPIRUN         = /home/petsc/mpich/lib/freebsd/ch_shmem/mpirun
 #MPIRUN         = /home/petsc/mpich/lib/freebsd/ch_p4/mpirun -p4ssport 4132 \
 #                  -machinefile $(PETSC_DIR)/maint/hosts.local
 #
-#
+# ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
@@ -64,6 +66,12 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 # 
 #PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
 #PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/freebsd/libpvode.a
+#
+# Optional location of ParMetis
+#
+#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
+#
 #
 # ---------------------------------------------------------------------------------------
 #

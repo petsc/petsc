@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.27 1997/10/01 18:36:31 balay Exp bsmith $ 
+# $Id: base.site,v 1.28 1997/11/03 04:39:47 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -14,7 +14,7 @@ FC_LIB         =  -lfor -lutil -lFutil -lots
 #FC_LIB          =
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# or see $(PETSC_DIR)/docs/installation.html for information on retrieving them.
 #
 # If you are lucky, you may have the DEC Alpha math library installed on 
 # your machine. The library name is dxml, and it contains both BLAS and Lapack.
@@ -48,6 +48,9 @@ MPIRUN         = /home/petsc/mpich/lib/alpha/ch_p4/mpirun
 #MPIRUN          = $(PETSC_DIR)/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
+# ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
 #
@@ -75,6 +78,11 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 # 
 #PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
 #PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/alpha/libpvode.a
+#
+# Optional location of ParMetis
+#
+#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
 #
 # ---------------------------------------------------------------------------------------
 #

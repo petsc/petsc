@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.13 1997/09/11 23:09:56 balay Exp bsmith $ 
+# $Id: base.site,v 1.14 1997/11/03 04:39:47 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -14,6 +14,7 @@ FC_LIB         =
 #
 # Location of BLAS and LAPACK.  These are in the Cray library "sci"
 # you may have to have "-lsci" or "/mpp/lib/libsci.a" before the FC_LIB below
+# but probably can just leave them blank.
 #
 BLAS_LIB       = 
 LAPACK_LIB     = 
@@ -29,6 +30,8 @@ X11_LIB        =
 #  If you are using the MPICH implementation of MPI with version number
 #  less then 1.1, you should remove the -DUSES_INT_MPI_COMM below.
 #
+#  We recommend using the Cray MPI, rather than MPICH.
+#
 MPI_LIB        = /mpp/lib/libmpi.a
 MPI_INCLUDE    =  -DUSES_INT_MPI_COMM -I/usr/include/mpp
 MPIRUN         = /usr/local/mpi/bin/mpirun
@@ -37,6 +40,9 @@ MPIRUN         = /usr/local/mpi/bin/mpirun
 # complex finds the /usr/include/complex.h not /usr/include/mpp/complex.h
 # which appears to be for C NOT c++.
 #
+# ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
@@ -65,6 +71,11 @@ BS_LIB     = /u/ddscf/bsmith/BlockSolve95/lib/libO/$(PETSC_ARCH)/libBS95.a
 # 
 #PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
 #PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/sun4/libpvode.a
+#
+# Optional location of ParMetis
+#
+#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
 #
 # ---------------------------------------------------------------------------------------
 #

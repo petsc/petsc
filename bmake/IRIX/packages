@@ -1,5 +1,9 @@
-# $Id: base.site,v 1.2 1997/09/17 21:33:45 balay Exp bsmith $ 
-
+# $Id: base.site,v 1.3 1997/11/03 04:39:47 bsmith Exp bsmith $ 
+#
+#    This arch is for SGI 32 bit machines running IRIX OS 6.x;
+#  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
+#  If you are running on a 64 bit machine, SGI PowerChallange or Origin,
+#  for example, use IRIX64.
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -15,7 +19,7 @@ FC_LIB         =  -lftn
 # FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# or see $(PETSC_DIR)/docs/installation.html for information on retrieving them.
 #
 # BLAS usually comes with SGI and can be accessed with -lblas listed 
 # below for BLAS_LIB. However, the complex BLAS routine izamax() has
@@ -37,6 +41,9 @@ MPI_INCLUDE    = -I/home/petsc/mpich/include
 MPIRUN         = /home/petsc/mpich/lib/IRIX/ch_shmem/mpirun.ch_shmem
 #MPIRUN        = /usr/local/mpi/lib/IRIX/ch_shmem/mpirun.ch_shmem
 #
+# ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
@@ -66,6 +73,11 @@ BS_LIB        = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a 
 # 
 #PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
 #PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/IRIX/libpvode.a
+#
+# Optional location of ParMetis
+#
+#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
 #
 # ---------------------------------------------------------------------------------------
 #

@@ -1,5 +1,8 @@
-# $Id: base.site,v 1.18 1997/09/17 18:10:06 balay Exp bsmith $ 
-
+# $Id: base.site,v 1.19 1997/11/03 04:39:47 bsmith Exp bsmith $ 
+#
+#    This file is for SGI Machines running OS 5.x, which is the old
+#  IRIX OS, if you are running 6.x then use either IRIX or IRIX64 
+#  as your PETSc arch.
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -13,7 +16,7 @@
 FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# or see $(PETSC_DIR)/docs/installation.html for information on retrieving them.
 #
 # BLAS usually comes with SGI and can be accessed with -lblas listed 
 # below for BLAS_LIB. However, the complex BLAS routine izamax() has
@@ -35,6 +38,9 @@ MPI_INCLUDE    = -I/home/petsc/mpich/include
 MPIRUN         = /home/petsc/mpich/lib/IRIX5/ch_shmem/mpirun.ch_shmem
 #MPIRUN        = /usr/local/mpi/lib/IRIX5/ch_shmem/mpirun.ch_shmem
 #
+# ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
@@ -64,6 +70,11 @@ BS_LIB        = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a 
 # 
 #PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
 #PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/IRIX/libpvode.a
+#
+# Optional location of ParMetis
+#
+#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
 #
 # ---------------------------------------------------------------------------------------
 #

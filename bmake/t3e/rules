@@ -1,5 +1,9 @@
-# $Id: base,v 1.7 1997/09/17 04:31:45 bsmith Exp balay $ 
+# $Id: base,v 1.8 1997/09/17 04:38:07 balay Exp bsmith $ 
 
+#
+#   The PARCH flag below is the same for the Cray T3D and T3E, so DO NOT change
+#  the t3d below to t3e.
+#
 PARCH    = t3d
 CC       = cc -DPARCH_t3d
 #
