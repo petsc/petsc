@@ -459,6 +459,7 @@ PetscErrorCode PetscObjectQueryFunction(PetscObject obj,const char name[],void (
 struct _p_PetscObjectContainer {
   PETSCHEADER(int)
   void   *ptr;
+  PetscErrorCode (*userdestroy)(void*);
 };
 
 #undef __FUNCT__  
@@ -528,7 +529,30 @@ PetscErrorCode PetscObjectContainerDestroy(PetscObjectContainer obj)
 {
   PetscFunctionBegin;
   if (--obj->refct > 0) PetscFunctionReturn(0);
+  if (obj->userdestroy) (*obj->userdestroy)(obj->ptr);
   PetscHeaderDestroy(obj);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectContainerSetUserDestroy"
+/*@C
+   PetscObjectContainerSetUserDestroy - Sets name of the user destroy function.
+
+   Collective on PetscObjectContainer
+
+   Input Parameter:
++  obj - an object that was created with PetscObjectContainerCreate()
+-  des - name of the user destroy function
+
+   Level: advanced
+
+.seealso: PetscObjectContainerDestroy()
+@*/
+PetscErrorCode PetscObjectContainerSetUserDestroy(PetscObjectContainer obj, PetscErrorCode (*des)(void*))
+{
+  PetscFunctionBegin;
+  obj->userdestroy = des;
   PetscFunctionReturn(0);
 }
 

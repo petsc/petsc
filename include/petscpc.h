@@ -60,6 +60,7 @@ E*/
 #define PCHYPRE           "hypre"
 #define PCFIELDSPLIT      "fieldsplit"
 #define PCTFS             "tfs"
+#define PCML              "ml"
 
 /* Logging support */
 extern PetscCookie PC_COOKIE;
