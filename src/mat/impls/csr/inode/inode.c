@@ -1394,10 +1394,10 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         }
 
         sctx.rs  = rs/2.0; /* rs = sum(all off-diagonals in row and row+1) */
-        if (info->shiftnz){
-          sctx.pv  = PetscMin(PetscAbsScalar(rtmp1[row]), PetscAbsScalar(rtmp2[row+1]));
-        } else if (info->shiftpd){
-          sctx.pv  = PetscMin(PetscRealPart(rtmp1[row]), PetscRealPart(rtmp2[row+1]));
+        if (info->shiftpd){
+          sctx.pv = PetscMin(PetscRealPart(rtmp1[row]), PetscRealPart(rtmp2[row+1]));
+        } else {
+          sctx.pv = PetscMin(PetscAbsScalar(rtmp1[row]), PetscAbsScalar(rtmp2[row+1]));
         }
         ierr = MatLUCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr);
         if (newshift == 1){
@@ -1526,20 +1526,19 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         pc2 = ba + bi[row+1];
         pc3 = ba + bi[row+2];
 
-        if (info->shiftnz){
-          sctx.pv = PetscAbsScalar(rtmp1[row]);
-          for (j=1; j<3; j++){
-            tmp = PetscAbsScalar(rtmp2[row+j]);
-            if (sctx.pv > tmp) sctx.pv = tmp;
-          }
-        } else if (info->shiftpd){
+        if (info->shiftpd){
           sctx.pv = PetscRealPart(rtmp1[row]);
           for (j=1; j<3; j++){
             tmp = PetscRealPart(rtmp2[row+j]);
             if (sctx.pv > tmp) sctx.pv = tmp;
           }
+        } else {
+          sctx.pv = PetscAbsScalar(rtmp1[row]);
+          for (j=1; j<3; j++){
+            tmp = PetscAbsScalar(rtmp2[row+j]);
+            if (sctx.pv > tmp) sctx.pv = tmp;
+          }
         }
-
         rs           = 0.0;
         rtmp1[row]   = 1.0/rtmp1[row];
         rtmp2[row+1] = 1.0/rtmp2[row+1];
