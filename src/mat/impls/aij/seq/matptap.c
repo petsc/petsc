@@ -116,7 +116,7 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
 
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
-  ierr = PetscMalloc(((pn+1)*1)*sizeof(int),&ci);CHKERRQ(ierr);
+  ierr = PetscMalloc((pn+1)*sizeof(int),&ci);CHKERRQ(ierr);
   ci[0] = 0;
 
   ierr = PetscMalloc((2*pn+2*an+1)*sizeof(int),&ptadenserow);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
         }
       }
     }
-    /* Using symbolic info for row of PtA, determine symbolic info for row of C: */
+      /* Using symbolic info for row of PtA, determine symbolic info for row of C: */
     ptaj = ptasparserow;
     cnzi   = 0;
     for (j=0;j<ptanzi;j++) {
@@ -155,15 +155,15 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
       pjj  = pj + pi[prow];
       for (k=0;k<pnzj;k++) {
         if (!denserow[pjj[k]]) {
-          denserow[pjj[k]]  = -1;
-          sparserow[cnzi++] = pjj[k];
+            denserow[pjj[k]]  = -1;
+            sparserow[cnzi++] = pjj[k];
         }
       }
     }
 
     /* sort sparserow */
     ierr = PetscSortInt(cnzi,sparserow);CHKERRQ(ierr);
-
+    
     /* If free space is not available, make more free space */
     /* Double the amount of total space in the list */
     if (current_space->local_remaining<cnzi) {
@@ -175,16 +175,147 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
     current_space->array           += cnzi;
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;
-
+    
     for (j=0;j<ptanzi;j++) {
       ptadenserow[ptasparserow[j]] = 0;
     }
     for (j=0;j<cnzi;j++) {
       denserow[sparserow[j]] = 0;
     }
-    /* Aside: Perhaps we should save the pta info for the numerical factorization. */
-    /*        For now, we will recompute what is needed. */ 
+      /* Aside: Perhaps we should save the pta info for the numerical factorization. */
+      /*        For now, we will recompute what is needed. */ 
     ci[i+1] = ci[i] + cnzi;
+  }
+  /* nnz is now stored in ci[ptm], column indices are in the list of free space */
+  /* Allocate space for cj, initialize cj, and */
+  /* destroy list of free space and other temporary array(s) */
+  ierr = PetscMalloc((ci[pn]+1)*sizeof(int),&cj);CHKERRQ(ierr);
+  ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
+  ierr = PetscFree(ptadenserow);CHKERRQ(ierr);
+  
+  /* Allocate space for ca */
+  ierr = PetscMalloc((ci[pn]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+  ierr = PetscMemzero(ca,(ci[pn]+1)*sizeof(MatScalar));CHKERRQ(ierr);
+  
+  /* put together the new matrix */
+  ierr = MatCreateSeqAIJWithArrays(A->comm,pn,pn,ci,cj,ca,C);CHKERRQ(ierr);
+
+  /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
+  /* Since these are PETSc arrays, change flags to free them as necessary. */
+  c = (Mat_SeqAIJ *)((*C)->data);
+  c->freedata = PETSC_TRUE;
+  c->nonew    = 0;
+
+  /* Clean up. */
+  ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
+
+  ierr = PetscLogEventEnd(MATSeqAIJ_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#include "src/mat/impls/maij/maij.h"
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatApplyPtAPSymbolic_SeqAIJ_SeqMAIJ"
+int MatApplyPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C) {
+  int            ierr;
+  FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
+  Mat_SeqMAIJ    *pp=(Mat_SeqMAIJ*)PP->data;
+  Mat            P=pp->AIJ;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
+  int            aishift=a->indexshift,pishift=p->indexshift;
+  int            *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
+  int            *ci,*cj,*denserow,*sparserow,*ptadenserow,*ptasparserow,*ptaj;
+  int            an=A->N,am=A->M,pn=P->N,pm=P->M,ppdof=pp->dof;
+  int            i,j,k,dof,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi;
+  MatScalar      *ca;
+
+  PetscFunctionBegin;
+
+  /* some error checking which could be moved into interface layer */
+  if (aishift || pishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
+  
+  /* Start timer */
+  ierr = PetscLogEventBegin(MATSeqAIJ_PtAPSymbolic,A,PP,0,0);CHKERRQ(ierr);
+
+  /* Get ij structure of P^T */
+  ierr = MatGetSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
+
+  /* Allocate ci array, arrays for fill computation and */
+  /* free space for accumulating nonzero column info */
+  ierr = PetscMalloc((pn+1)*sizeof(int),&ci);CHKERRQ(ierr);
+  ci[0] = 0;
+
+  ierr = PetscMalloc((2*pn+2*an+1)*sizeof(int),&ptadenserow);CHKERRQ(ierr);
+  ierr = PetscMemzero(ptadenserow,(2*pn+2*an+1)*sizeof(int));CHKERRQ(ierr);
+  ptasparserow = ptadenserow  + an;
+  denserow     = ptasparserow + an;
+  sparserow    = denserow     + pn;
+
+  /* Set initial free space to be nnz(A) scaled by aspect ratio of P. */
+  /* This should be reasonable if sparsity of PtAP is similar to that of A. */
+  ierr          = GetMoreSpace((ai[am]/pm)*pn,&free_space);
+  current_space = free_space;
+
+  /* Determine symbolic info for each row of C: */
+  for (i=0;i<pn/ppdof;i++) {
+    ptnzi  = pti[i+1] - pti[i];
+    ptanzi = 0;
+    ptJ    = ptj + pti[i];
+    for (dof=0;dof<ppdof;dof++) {
+    /* Determine symbolic row of PtA: */
+      for (j=0;j<ptnzi;j++) {
+        arow = ptJ[j] + dof;
+        anzj = ai[arow+1] - ai[arow];
+        ajj  = aj + ai[arow];
+        for (k=0;k<anzj;k++) {
+          if (!ptadenserow[ajj[k]]) {
+            ptadenserow[ajj[k]]    = -1;
+            ptasparserow[ptanzi++] = ajj[k];
+          }
+        }
+      }
+      /* Using symbolic info for row of PtA, determine symbolic info for row of C: */
+      ptaj = ptasparserow;
+      cnzi   = 0;
+      for (j=0;j<ptanzi;j++) {
+        prow = (*ptaj++)/dof;
+        pnzj = pi[prow+1] - pi[prow];
+        pjj  = pj + pi[prow];
+        for (k=0;k<pnzj;k++) {
+          if (!denserow[pjj[k]]) {
+            denserow[pjj[k]]  = -1;
+            sparserow[cnzi++] = pjj[k];
+          }
+        }
+      }
+
+      /* sort sparserow */
+      ierr = PetscSortInt(cnzi,sparserow);CHKERRQ(ierr);
+      
+      /* If free space is not available, make more free space */
+      /* Double the amount of total space in the list */
+      if (current_space->local_remaining<cnzi) {
+        ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      }
+
+      /* Copy data into free space, and zero out denserows */
+      ierr = PetscMemcpy(current_space->array,sparserow,cnzi*sizeof(int));CHKERRQ(ierr);
+      current_space->array           += cnzi;
+      current_space->local_used      += cnzi;
+      current_space->local_remaining -= cnzi;
+
+      for (j=0;j<ptanzi;j++) {
+        ptadenserow[ptasparserow[j]] = 0;
+      }
+      for (j=0;j<cnzi;j++) {
+        denserow[sparserow[j]] = 0;
+      }
+      /* Aside: Perhaps we should save the pta info for the numerical factorization. */
+      /*        For now, we will recompute what is needed. */ 
+      ci[i+1+dof] = ci[i+dof] + cnzi;
+    }
   }
   /* nnz is now stored in ci[ptm], column indices are in the list of free space */
   /* Allocate space for cj, initialize cj, and */
@@ -209,7 +340,7 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
   /* Clean up. */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
 
-  ierr = PetscLogEventEnd(MATSeqAIJ_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MATSeqAIJ_PtAPSymbolic,A,PP,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
