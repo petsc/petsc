@@ -1,12 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.49 1996/02/08 18:27:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.50 1996/03/06 21:14:11 curfman Exp curfman $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
 method but different matrices (having the same nonzero structure).  Input\n\
 arguments are\n\
-  -m <size> : problem size\n\n";
+  -m <size> : problem size\n\
+  -mat_nonsym : use nonsymmetric matrix (default is symmetric)\n\n";
 
 #include "sles.h"
 #include  <stdio.h>
@@ -18,7 +19,7 @@ int main(int argc,char **args)
   Mat     C; 
   Scalar  v, none = -1.0;
   int     I, J, ldim, ierr, low, high, iglobal, Istart,Iend;
-  int     i, j, m = 3, n = 2, rank, size, its,flg;
+  int     i, j, m = 3, n = 2, rank, size, its, flg;
   Vec     x, u, b;
   SLES    sles;
   double  norm;
@@ -34,7 +35,6 @@ int main(int argc,char **args)
   /* Create and assemble matrix */
   PLogStagePush(0);
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
-  ierr = MatSetOption(C,SYMMETRIC_MATRIX); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
@@ -43,6 +43,17 @@ int main(int argc,char **args)
     if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
     if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
     v = 4.0; MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_nonsym",&flg); CHKERRA(ierr);
+  if (flg) {
+    ierr = MatSetOption(C,STRUCTURALLY_SYMMETRIC_MATRIX); CHKERRA(ierr);
+    for ( I=Istart; I<Iend; I++ ) { 
+      v = -1.5; i = I/n;
+      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+    }
+  }
+  else {
+    ierr = MatSetOption(C,SYMMETRIC_MATRIX); CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
@@ -73,12 +84,13 @@ int main(int argc,char **args)
   {
   MatType mat_type;
   ierr = MatGetType(C,&mat_type,PETSC_NULL); CHKERRA(ierr);
-  if (mat_type == MATMPIROWBS) {
+  ierr = OptionsHasName(PETSC_NULL,"-bsmonitor",&flg); CHKERRA(ierr);
+  if (mat_type == MATMPIROWBS && flg) {
     PC pc; KSP ksp; PCType pcmethod;
     ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
     ierr = PCGetType(pc,&pcmethod,PETSC_NULL); CHKERRA(ierr);
-    if (pcmethod == PCICC) {
+    if (pcmethod == PCICC || pcmethod == PCILU) {
       ierr = KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)C); CHKERRA(ierr);
     }
   }
@@ -110,6 +122,17 @@ int main(int argc,char **args)
       v = 6.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
     }
   } 
+  ierr = OptionsHasName(PETSC_NULL,"-mat_nonsym",&flg); CHKERRA(ierr);
+  if (flg) {
+    ierr = MatSetOption(C,STRUCTURALLY_SYMMETRIC_MATRIX); CHKERRA(ierr);
+    for ( I=Istart; I<Iend; I++ ) { 
+      v = -1.5; i = I/n;
+      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
+    }
+  }
+  else {
+    ierr = MatSetOption(C,SYMMETRIC_MATRIX); CHKERRA(ierr);
+  }
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr); 
   ierr = MatView(C,STDOUT_VIEWER_WORLD); CHKERRA(ierr);

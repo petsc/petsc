@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.18 1996/02/08 18:27:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.19 1996/02/26 15:30:07 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -84,7 +84,7 @@ int main(int argc,char **args)
     }
   }
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  OptionsHasName(PETSC_NULL,"-noslesview",&flg);
+  ierr = OptionsHasName(PETSC_NULL,"-noslesview",&flg); CHKERRA(ierr);
   if (!flg) {
     ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   }
