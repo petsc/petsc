@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.7 1995/11/28 19:56:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.8 1996/01/30 00:40:19 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -16,6 +16,7 @@ static char vcid[] = "$Id: zvec.c,v 1.7 1995/11/28 19:56:03 curfman Exp bsmith $
 #define vecrestorearray_      VECRESTOREARRAY
 #define vecgetarray_          VECGETARRAY
 #define vecload_              VECLOAD
+#define vecgettype_           VECGETTYPE
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define veccreateseq_         veccreateseq
 #define veccreate_            veccreate
@@ -28,11 +29,20 @@ static char vcid[] = "$Id: zvec.c,v 1.7 1995/11/28 19:56:03 curfman Exp bsmith $
 #define vecrestorearray_      vecrestorearray
 #define vecgetarray_          vecgetarray
 #define vecload_              vecload
+#define vecgettype_           vecgettype
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void vecgettype_(Vec vv,VecType *type,char *name,int *__ierr,int len)
+{
+  char *tname;
+  if (type == PETSC_NULL_Fortran) type = PETSC_NULL;
+  *__ierr = VecGetType((Vec)MPIR_ToPointer(*(int*)vv),type,&tname);
+  if (name != PETSC_NULL_Fortran) PetscStrncpy(name,tname,len);
+}
 
 void vecload_(Viewer bview,Vec *newvec, int *__ierr )
 { 
