@@ -33,7 +33,6 @@ struct _TSOps {
       (*step)(TS,int *, PetscReal *),
       (*setfromoptions)(TS),
       (*printhelp)(TS, char *),
-      (*serialize)(MPI_Comm, TS *, PetscViewer, PetscTruth),
       (*destroy)(TS),
       (*view)(TS, PetscViewer);
 };
