@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.18 1998/04/17 20:58:46 balay Exp balay $";
+static char vcid[] = "$Id: cputime.c,v 1.19 1998/04/19 02:18:41 balay Exp balay $";
 #endif
 
 /*
@@ -31,6 +31,7 @@ int PetscGetCPUTime(PLogDouble *t)
 #include "src/sys/src/files.h"
 #include <time.h>
 #include <sys/types.h>
+
 int PetscGetCPUTime(PLogDouble *t)
 {
   PetscFunctionBegin;
@@ -54,6 +55,7 @@ int PetscGetCPUTime(PLogDouble *t)
 #include "src/sys/src/files.h"
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/resource.h>
 
 /*@
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.
