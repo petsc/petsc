@@ -392,7 +392,7 @@ allfortranstubs:
 	-@${RM} -f src/fortran/auto/*.c
 	-@touch src/fortran/auto/makefile.src
 	-${OMAKE} ACTION=fortranstubs tree_basic
-	-@cd src/fortran/auto; ${RM} makefile.src; echo SOURCEC = `find . -type f -name "*.c" -printf "%f "` > makefile.src
+	-@cd src/fortran/auto; ${RM} makefile.src; echo SOURCEC = ` ls *.c | tr -s '\n' ' '` > makefile.src
 	-@cd src/fortran/auto; ${OMAKE} fixfortran
 
 allci: 
