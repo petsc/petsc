@@ -1,4 +1,4 @@
-/*$Id: ex78.c,v 1.2 2000/11/10 15:46:47 hzhang Exp hzhang $*/
+/*$Id: ex78.c,v 1.3 2000/11/13 17:11:24 hzhang Exp hzhang $*/
 
 static char help[] =
 "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format, then writes them using the PETSc sparse format.\n\
@@ -19,8 +19,8 @@ int main(int argc,char **args)
   Vec    b,u,u_tmp;
   char   Ain[128],bin[128],uin[128]; 
   int    i,m,n,nz,ierr,*ib,col_i,row_i;
-  Scalar val_i,*bval,*uval,mone=-1.0;
-  double *col,*row,res_norm,*val;
+  Scalar val_i,*work,mone=-1.0;
+  double *col,*row,res_norm,*val,*bval,*uval;
   FILE   *Afile,*bfile,*ufile;
   Viewer view;
   PetscTruth flg_A,flg_b,flg_u;
@@ -56,7 +56,8 @@ int main(int argc,char **args)
   if (flg_b){
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read rhs in ascii format ...\n");CHKERRA(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,bin,"r",&bfile);CHKERRA(ierr); 
-    bval = (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRA(bval);
+    bval = (double*)PetscMalloc(n*sizeof(double));CHKPTRA(bval);
+    work = (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRA(work);
     ib   = (int*)PetscMalloc(n*sizeof(int));CHKPTRA(ib);
     for (i=0; i<n; i++) {
       /* fscanf(bfile,"%d %le\n",ib+i,bval+i); ib[i]--;  */  /* modify according to data file! */
@@ -70,7 +71,7 @@ int main(int argc,char **args)
   if (flg_u){
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read exact solution in ascii format ...\n");CHKERRA(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,uin,"r",&ufile);CHKERRA(ierr); 
-    uval = (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRA(bval);
+    uval = (double*)PetscMalloc(n*sizeof(double));CHKPTRA(bval);
     for (i=0; i<n; i++) {
       fscanf(ufile,"  %le\n",uval+i);  /* modify according to data file! */
     }
@@ -95,7 +96,8 @@ int main(int argc,char **args)
     ierr = PetscFree(row);CHKERRA(ierr);
   }
   if(flg_b){
-    ierr = VecSetValues(b,n,ib,bval,INSERT_VALUES);CHKERRA(ierr);
+    for (i=0; i<n; i++) work[i]=(Scalar)bval[i];
+    ierr = VecSetValues(b,n,ib,work,INSERT_VALUES);CHKERRA(ierr);
     ierr = VecAssemblyBegin(b);CHKERRA(ierr);
     ierr = VecAssemblyEnd(b);CHKERRA(ierr);
     /* printf("b: \n"); ierr = VecView(b,VIEWER_STDOUT_SELF); */
@@ -103,15 +105,18 @@ int main(int argc,char **args)
   }
 
   if(flg_u & flg_b){
-    ierr = VecSetValues(u,n,ib,uval,INSERT_VALUES);CHKERRA(ierr);
+    for (i=0; i<n; i++) work[i]=(Scalar)uval[i];
+    ierr = VecSetValues(u,n,ib,work,INSERT_VALUES);CHKERRA(ierr);
     ierr = VecAssemblyBegin(u);CHKERRA(ierr);
     ierr = VecAssemblyEnd(u);CHKERRA(ierr);
     /* printf("u: \n"); ierr = VecView(u,VIEWER_STDOUT_SELF); */
     ierr = PetscFree(uval);CHKERRA(ierr);                        
   }
   
-  if(flg_b) ierr = PetscFree(ib);CHKERRA(ierr);
-
+  if(flg_b) {
+    ierr = PetscFree(ib);CHKERRA(ierr);
+    ierr = PetscFree(work);CHKERRA(ierr)
+  }
   /* Check accuracy of the data */
   if (flg_A & flg_b & flg_u){
     ierr = VecDuplicate(u,&u_tmp);CHKERRA(ierr); 
