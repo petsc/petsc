@@ -5,7 +5,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
 LOCDIR          = src/snes/examples/tests/
-EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex9.c ex13.c
+EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex9.c ex11.c ex13.c
 EXAMPLESF       = ex12.F
 DIRS	        = 
 MANSEC          = SNES
@@ -240,7 +240,7 @@ runex14_3:
 #  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
 # they require too many processors
 #
-TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 
+TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex11.PETSc ex11.rm
 TESTEXAMPLES_2  = ex7.PETSc runex7 ex7.rm ex9.PETSc \
 		  runex9 ex9.rm ex13.PETSc ex13.rm 
 TESTEXAMPLES_3  = ex12.PETSc runex12 ex12.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm

@@ -842,7 +842,6 @@ EXTERN int MatDiagonalScaleLocal(Mat,Vec);
 EXTERN int PetscViewerMathematicaPutMatrix(PetscViewer, int, int, PetscReal *);
 EXTERN int PetscViewerMathematicaPutCSRMatrix(PetscViewer, int, int, int *, int *, PetscReal *);
 
-EXTERN int MatUseSuperLU_DIST_MPIAIJ(Mat);
 EXTERN int MatUseSpooles_SeqAIJ(Mat);
 EXTERN int MatUseUMFPACK_SeqAIJ(Mat);
 EXTERN int MatUseSuperLU_SeqAIJ(Mat);

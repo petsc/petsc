@@ -111,7 +111,7 @@ int main( int argc, char **argv )
 
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param < bratu_lambda_min) {
-    SETERRA(1,0,"Lambda is out of range");
+    SETERRQ(1,"Lambda is out of range");
   }
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 

@@ -118,6 +118,7 @@ extern int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
 extern int AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
 extern int Gnuplot(DA da, Vec X, double time);
 extern int AttachNullSpace(PC,Vec);
+extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -211,7 +212,7 @@ int main(int argc,char **argv)
     ierr = DAGetInfo(DMMGGetDA(dmmg),0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
     tsCtx.fnorm_ini   = 0;  
-    tsCtx.max_steps   = 10000;   
+    tsCtx.max_steps   = 1000000;   
     tsCtx.max_time    = 1.0e+12;
     /* use for dt = min(dx,dy); multiplied by dt_ratio below */
     tsCtx.dt          = PetscMin(lx/mx,ly/my);  
@@ -276,11 +277,13 @@ int main(int argc,char **argv)
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create nonlinear solver context
        
+       Process adiC(20):  AddTSTermLocal FormFunctionLocal
        Process adiC(20):  AddTSTermLocal AddTSTermLocal2 FormFunctionLocal
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, 0,
                             ad_FormFunctionLocal, admf_FormFunctionLocal);
     CHKERRQ(ierr);
+    /*    ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);*/
 
     /* attach nullspace to each level of the preconditioner */
     {
@@ -1163,3 +1166,123 @@ int DAGetMatrix_Specialized(DA da,MatType ignored,Mat *J)
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
+
+/*
+    This is an experimental function and can be safely ignored.
+*/
+int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f,void *ptr)
+ {
+  AppCtx        *user = (AppCtx*)ptr;
+  TstepCtx      *tsCtx = user->tsCtx;
+  int           ierr,i,j,c;
+  int           xints,xinte,yints,yinte;
+  PassiveReal   hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
+  PassiveReal   de2,rhos2,nu,eta,dde2;
+  PassiveReal   two = 2.0,one = 1.0,p5 = 0.5;
+  PassiveReal   F_eq_x,By_eq,dtinv;
+
+  PetscScalar   xx;
+  PetscScalar   vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  PetscScalar   Bx,By,aBx,aBy,Bxp,Bxm,Byp,Bym;
+  PassiveField  **xold;
+
+  PetscFunctionBegin;
+  de2     = sqr(user->param->d_e);
+  rhos2   = sqr(user->param->rho_s);
+  nu      = user->param->nu;
+  eta     = user->param->eta;
+  dde2    = one/de2;
+
+  /* 
+     Define mesh intervals ratios for uniform grid.
+     [Note: FD formulae below are normalized by multiplying through by
+     local volume element to obtain coefficients O(1) in two dimensions.]
+  */
+  dhx   = info->mx/lx;        dhy   = info->my/ly;
+  hx    = one/dhx;             hy   = one/dhy;
+  hxdhy = hx*dhy;           hydhx   = hy*dhx;
+  hxhy  = hx*hy;             dhxdhy = dhx*dhy;
+
+  xints = info->xs; xinte = info->xs+info->xm;
+  yints = info->ys; yinte = info->ys+info->ym;
+
+
+  i = st->i; j = st->j; c = st->c;
+
+#ifdef EQ
+      xx = i * hx;
+      F_eq_x = - (1. + de2) * sin(xx);
+      By_eq = sin(xx);
+#else
+      F_eq_x = 0.;
+      By_eq = 0.;
+#endif
+
+      /*
+       * convective coefficients for upwinding
+       */
+
+      vx  = - D_y(x,phi,i,j);
+      vy  =   D_x(x,phi,i,j);
+      avx = PetscAbsScalar(vx); vxp = p5*(vx+avx); vxm = p5*(vx-avx);
+      avy = PetscAbsScalar(vy); vyp = p5*(vy+avy); vym = p5*(vy-avy);
+#ifndef UPWINDING
+      vxp = vxm = p5*vx;
+      vyp = vym = p5*vy;
+#endif
+
+      Bx  =   D_y(x,psi,i,j);
+      By  = - D_x(x,psi,i,j) + By_eq;
+      aBx = PetscAbsScalar(Bx); Bxp = p5*(Bx+aBx); Bxm = p5*(Bx-aBx);
+      aBy = PetscAbsScalar(By); Byp = p5*(By+aBy); Bym = p5*(By-aBy);
+#ifndef UPWINDING
+      Bxp = Bxm = p5*Bx;
+      Byp = Bym = p5*By;
+#endif
+
+      ierr  = DAVecGetArray(info->da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+      dtinv = hxhy/(tsCtx->dt);
+      switch(c) {
+
+        case 0:
+          /* Lap(phi) - U */
+          *f = (Lapl(x,phi,i,j) - x[j][i].U) * hxhy;
+          break;
+
+        case 1:
+	  /* psi - d_e^2 * Lap(psi) - F */
+	  *f = (x[j][i].psi - de2 * Lapl(x,psi,i,j) - x[j][i].F) * hxhy;
+          break;
+
+        case 2:
+          /* vx * U_x + vy * U_y - (B_x * F_x + B_y * F_y) / d_e^2
+            - nu Lap(U) */
+	  *f  =
+	    ((vxp * (D_xm(x,U,i,j)) + vxm * (D_xp(x,U,i,j)) +
+	      vyp * (D_ym(x,U,i,j)) + vym * (D_yp(x,U,i,j))) -
+	     (Bxp * (D_xm(x,F,i,j) + F_eq_x) + Bxm * (D_xp(x,F,i,j) + F_eq_x) +
+	      Byp * (D_ym(x,F,i,j)) + Bym * (D_yp(x,F,i,j))) * dde2 -
+	     nu * Lapl(x,U,i,j)) * hxhy;
+          *f += dtinv*(x[j][i].U-xold[j][i].U);
+	  break;
+
+        case 3:
+          /* vx * F_x + vy * F_y - rho_s^2 * (B_x * U_x + B_y * U_y)
+           - eta * Lap(psi) */
+          *f  =
+            ((vxp * (D_xm(x,F,i,j) + F_eq_x) + vxm * (D_xp(x,F,i,j) + F_eq_x) +
+             vyp * (D_ym(x,F,i,j)) + vym * (D_yp(x,F,i,j))) -
+            (Bxp * (D_xm(x,U,i,j)) + Bxm * (D_xp(x,U,i,j)) +
+             Byp * (D_ym(x,U,i,j)) + Bym * (D_yp(x,U,i,j))) * rhos2 -
+            eta * Lapl(x,psi,i,j)) * hxhy;
+          *f += dtinv*(x[j][i].F-xold[j][i].F);
+      }
+      ierr = DAVecRestoreArray(info->da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+
+
+  /*
+     Flop count (multiply-adds are counted as 2 operations)
+  */
+  /*  ierr = PetscLogFlops(84*info->ym*info->xm);CHKERRQ(ierr); FIXME */
+  PetscFunctionReturn(0);
+} 
