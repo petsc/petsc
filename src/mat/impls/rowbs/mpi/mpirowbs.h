@@ -7,20 +7,16 @@
 #if !defined(__MPIROW_BS_H)
 #define __MPIROW_BS_H
 
-/* temporary redefinitions to debug BlockSolve memory problems */
-#define PMALLOC(a)       malloc(a)
-#define PFREE(a)         free(a)
+/* temporary redefinitions to avoid problems with BlockSolve */
+#define PMALLOC(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
+#define PFREE(a)         (*PetscFree)(a,__LINE__,__FILE__)
+#define PETSCFREE(a)     PFREE(a)
 #define PNEW(a)          (a *) PMALLOC(sizeof(a))
 #define PMEMCPY(a,b,n)   memcpy((char*)(a),(char*)(b),n)
 #define PMEMSET(a,b,n)   memset((char*)(a),(int)(b),n)
 #define PSETERR(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
 #define PCHKERR(n)       {if (n) PSETERR(n,(char *)0);}
 #define PCHKPTR(a)       if (!a) PSETERR(1,"No memory"); 
-
-/* temporary redefinitions to avoid problems with BlockSolve */
-#define PETSCMALLOC(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
-#define PETSCFREE(a)         (*PetscFree)(a,__LINE__,__FILE__)
-#define PETSCNEW(a)          (a *) PETSCMALLOC(sizeof(a))
 
 /* 
    Mat_MPIRowbs - Parallel, compressed row storage format that's the
