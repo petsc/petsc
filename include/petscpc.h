@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.90 1999/03/17 23:25:44 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.91 1999/03/31 03:45:39 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -143,7 +143,8 @@ extern int PCCompositeSetType(PC,PCCompositeType);
 extern int PCCompositeAddPC(PC,PCType);
 extern int PCCompositeGetPC(PC pc,int n,PC *);
 
-extern int PCRedundantSetOperators(PC,Mat,Mat,MatStructure);
+extern int PCRedundantSetScatter(PC,VecScatter,VecScatter);
+
 
 #endif
 
