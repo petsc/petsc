@@ -1010,7 +1010,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DA da, PetscInt *refine_x
 
 .seealso: DAGetMatrix(), DASetBlockFills()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DA da,PetscErrorCode (*f)(DA,const MatType,Mat*))
+PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DA da,PetscErrorCode (*f)(DA, MatType,Mat*))
 {
   PetscFunctionBegin;
   da->ops->getmatrix = f;

@@ -302,7 +302,7 @@ void PETSC_STDCALL pcregisterdestroy_(PetscErrorCode *ierr)
 
 void PETSC_STDCALL pcgettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tname;
+  const char *tname;
 
   *ierr = PCGetType(*pc,&tname);
 #if defined(PETSC_USES_CPTOFCD)
@@ -320,7 +320,7 @@ void PETSC_STDCALL pcgettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),PetscErrorCo
 void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
                                        PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tname;
+  const char *tname;
 
   *ierr = PCGetOptionsPrefix(*pc,&tname);
 #if defined(PETSC_USES_CPTOFCD)

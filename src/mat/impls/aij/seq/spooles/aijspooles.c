@@ -60,7 +60,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
 
   PetscFunctionBegin;	
   /* Create the factorization matrix */  
-  ierr = MatCreate(A->comm,m,n,PETSC_NULL,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
@@ -93,7 +94,8 @@ PetscErrorCode MatQRFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"QR Factorization is unsupported as the Spooles implementation of QR is invalid.");
   /* Create the factorization matrix */  
-  ierr = MatCreate(A->comm,m,n,PETSC_NULL,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
@@ -122,7 +124,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat A,IS r,MatFactorInfo 
 
   PetscFunctionBegin;	
   /* Create the factorization matrix */
-  ierr = MatCreate(A->comm,m,n,PETSC_NULL,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 

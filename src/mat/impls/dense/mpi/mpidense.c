@@ -52,7 +52,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIDense(Mat A,PetscTruth 
 
   ierr = PetscObjectGetComm((PetscObject)(mdn->A),&comm);CHKERRQ(ierr);
   ierr = MatGetArray(mdn->A,&array);CHKERRQ(ierr);
-  ierr = MatCreate(comm,m,m,m,m,B);CHKERRQ(ierr);
+  ierr = MatCreate(comm,B);CHKERRQ(ierr);
+  ierr = MatSetSizes(*B,m,m,m,m);CHKERRQ(ierr);
   ierr = MatSetType(*B,mdn->A->type_name);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(*B,array+m*rstart);CHKERRQ(ierr);
   ierr = MatRestoreArray(mdn->A,&array);CHKERRQ(ierr);
@@ -172,7 +173,8 @@ static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,PetscInt 
     newmat = *B;
   } else {
     /* Create and fill new matrix */
-    ierr = MatCreate(A->comm,nrows,cs,PETSC_DECIDE,ncols,&newmat);CHKERRQ(ierr);
+    ierr = MatCreate(A->comm,&newmat);CHKERRQ(ierr);
+    ierr = MatSetSizes(newmat,nrows,cs,PETSC_DECIDE,ncols);CHKERRQ(ierr);
     ierr = MatSetType(newmat,A->type_name);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -583,10 +585,11 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     PetscInt    *cols;
     PetscScalar *vals;
 
+    ierr = MatCreate(mat->comm,&A);CHKERRQ(ierr);
     if (!rank) {
-      ierr = MatCreate(mat->comm,M,N,M,N,&A);CHKERRQ(ierr);
+      ierr = MatSetSizes(A,M,N,M,N);CHKERRQ(ierr);
     } else {
-      ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
+      ierr = MatSetSizes(A,0,0,M,N);CHKERRQ(ierr);
     }
     /* Since this is a temporary matrix, MATMPIDENSE instead of A->type_name here is probably acceptable. */
     ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
@@ -850,7 +853,8 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,Mat *matout)
   if (!matout && M != N) {
     SETERRQ(PETSC_ERR_SUP,"Supports square matrix only in-place");
   }
-  ierr = MatCreate(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,N,M);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatMPIDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
 
@@ -1016,7 +1020,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIDenseSetPreallocation_MPIDense(Mat mat,P
    allocates the local dense storage space.  We should add error checking. */
 
   a    = (Mat_MPIDense*)mat->data;
-  ierr = MatCreate(PETSC_COMM_SELF,mat->m,mat->N,mat->m,mat->N,&a->A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&a->A);CHKERRQ(ierr);
+  ierr = MatSetSizes(a->A,mat->m,mat->N,mat->m,mat->N);CHKERRQ(ierr);
   ierr = MatSetType(a->A,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(a->A,data);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(mat,a->A);CHKERRQ(ierr);
@@ -1215,7 +1220,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIDense(MPI_Comm comm,PetscInt m,Pet
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,m,n,M,N,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     ierr = MatSetType(*A,MATMPIDENSE);CHKERRQ(ierr);
@@ -1237,7 +1243,8 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
 
   PetscFunctionBegin;
   *newmat       = 0;
-  ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,A->m,A->n,A->M,A->N);CHKERRQ(ierr);
   ierr = MatSetType(mat,A->type_name);CHKERRQ(ierr);
   ierr              = PetscNew(Mat_MPIDense,&a);CHKERRQ(ierr);
   mat->data         = (void*)a;
@@ -1269,7 +1276,7 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIDense_DenseInFile"
-PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N,const MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N, MatType type,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -1290,7 +1297,8 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
     rowners[i] += rowners[i-1];
   }
 
-  ierr = MatCreate(comm,m,PETSC_DECIDE,M,N,newmat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,newmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*newmat,type);CHKERRQ(ierr);
   ierr = MatMPIDenseSetPreallocation(*newmat,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetArray(*newmat,&array);CHKERRQ(ierr);
@@ -1339,7 +1347,7 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIDense"
-PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPIDense(PetscViewer viewer, MatType type,Mat *newmat)
 {
   Mat            A;
   PetscScalar    *vals,*svals;
@@ -1455,7 +1463,8 @@ PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newma
   for (i=0; i<m; i++) {
     ourlens[i] -= offlens[i];
   }
-  ierr = MatCreate(comm,m,PETSC_DECIDE,M,N,newmat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,newmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*newmat,type);CHKERRQ(ierr);
   ierr = MatMPIDenseSetPreallocation(*newmat,PETSC_NULL);CHKERRQ(ierr);
   A = *newmat;

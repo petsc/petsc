@@ -89,7 +89,8 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatFactorInfo *inf
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,F);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,F);CHKERRQ(ierr);
+  ierr = MatSetSizes(*F,A->m,A->n,A->M,A->N);CHKERRQ(ierr);
   ierr = MatSetType(*F,A->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(*F,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   B                       = *F;
@@ -216,7 +217,8 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatFactorInfo *inf
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,F);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,F);CHKERRQ(ierr);
+  ierr = MatSetSizes(*F,A->m,A->n,A->M,A->N);CHKERRQ(ierr);
   ierr = MatSetType(*F,A->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(*F,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   B                       = *F;

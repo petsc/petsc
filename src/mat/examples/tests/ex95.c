@@ -19,7 +19,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-prid",&prid,PETSC_NULL);CHKERRQ(ierr);
 
   m = n = 10*size;
-  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DETERMINE,PETSC_DETERMINE,m,n,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DETERMINE,PETSC_DETERMINE,m,n);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
 
   a[0] = rank+1;

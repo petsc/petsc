@@ -27,7 +27,7 @@ typedef struct _p_PetscMap*         PetscMap;
 
 #define MAP_SEQ "seq"
 #define MAP_MPI "mpi"
-#define PetscMapType char*
+#define PetscMapType const char*
 
 /* Logging support */
 extern PetscCookie MAP_COOKIE;
@@ -41,6 +41,13 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetFromOptions(PetscMap);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapPrintHelp(PetscMap);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapDestroy(PetscMap);
 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetUp(PetscMap);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapView(PetscMap,PetscViewer);
+
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetOptionsPrefix(PetscMap,const char[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapAppendOptionsPrefix(PetscMap,const char[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetOptionsPrefix(PetscMap,const char*[]);
+
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap,PetscInt *);
 PetscPolymorphicFunction(PetscMapGetLocalSize,(PetscMap m),(m,&s),PetscInt,s)
@@ -53,7 +60,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap,PetscIn
 /* Dynamic creation and loading functions */
 extern PetscFList PetscMapList;
 extern PetscTruth PetscMapRegisterAllCalled;
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetType(PetscMap, const PetscMapType);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetType(PetscMap, PetscMapType);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetType(PetscMap, PetscMapType *);
 PetscPolymorphicFunction(PetscMapGetType,(PetscMap m),(m,&t),PetscMapType,t)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscMap));
@@ -101,7 +108,7 @@ E*/
 #define VECMPI         "mpi"
 #define VECFETI        "feti"
 #define VECSHARED      "shared"
-#define VecType char*
+#define VecType const char*
 
 /* Logging support */
 #define    VEC_FILE_COOKIE 1211214
@@ -115,7 +122,7 @@ extern PetscEvent    VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier;
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *);
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm,Vec *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm,Vec*);
 PetscPolymorphicSubroutine(VecCreate,(Vec *x),(PETSC_COMM_SELF,x))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateSeq(MPI_Comm,PetscInt,Vec*);
 PetscPolymorphicSubroutine(VecCreateSeq,(PetscInt n,Vec *x),(PETSC_COMM_SELF,n,x))
@@ -128,7 +135,12 @@ PetscPolymorphicSubroutine(VecCreateMPIWithArray,(PetscInt n,PetscInt N,PetscSca
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPrintHelp(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec);
+
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetOptionsPrefix(Vec,const char[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAppendOptionsPrefix(Vec,const char[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetOptionsPrefix(Vec,const char*[]);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec,PetscInt,PetscInt);
 
@@ -344,7 +356,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlocked(Vec,PetscInt,const 
 /* Dynamic creation and loading functions */
 extern PetscFList VecList;
 extern PetscTruth VecRegisterAllCalled;
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec, const VecType);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec, VecType);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec, VecType *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegister(const char[],const char[],const char[],PetscErrorCode (*)(Vec));
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterAll(const char []);
@@ -436,7 +448,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec,PetscViewer);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec, char *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec,Vec,PetscTruth*);
 PetscPolymorphicFunction(VecEqual,(Vec x,Vec y),(x,y,&s),PetscTruth,s)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer,const VecType,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer,VecType,Vec*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer,Vec);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetSize(Vec,PetscInt*);

@@ -46,7 +46,7 @@ PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
 {
-  char           *type;
+  const char     *type;
   PetscErrorCode ierr;
   PetscTruth     iascii;
 
@@ -372,7 +372,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
 .seealso: PCSetType(), KSPType
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp,const KSPType type)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, KSPType type)
 {
   PetscErrorCode ierr,(*r)(KSP);
   PetscTruth     match;

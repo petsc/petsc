@@ -385,7 +385,8 @@ int UserMatrixCreate1(Atassi *user,Mat *mat)
     ierr = MatCreateMPIAIJ(user->comm,user->m_ldim,user->m_ldim,user->m_dim,
                            user->m_dim,PETSC_NULL,nnz_d,PETSC_NULL,nnz_o,&A); CHKERRQ(ierr);
   } else {
-    ierr = MatCreate(user->comm,user->m_dim,user->m_dim,&A); CHKERRQ(ierr);
+    ierr = MatCreate(user->comm,&A); CHKERRQ(ierr);
+    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,user->m_dim,user->m_dim); CHKERRQ(ierr);
   }
   PetscFree(nnz_d);
   *mat = A;

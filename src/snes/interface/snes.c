@@ -1583,13 +1583,14 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve"
 /*@
-   SNESSolve - Solves a nonlinear system.  Call SNESSolve after calling 
-   SNESCreate() and optional routines of the form SNESSetXXX().
+   SNESSolve - Solves a nonlinear system F(x) = b.
+   Call SNESSolve() after calling SNESCreate() and optional routines of the form SNESSetXXX().
 
    Collective on SNES
 
    Input Parameters:
 +  snes - the SNES context
+.  b - the constant part of the equation, or PETSC_NULL to use zero.
 -  x - the solution vector, or PETSC_NULL if it was set with SNESSetSolution()
 
    Notes:
@@ -1604,7 +1605,7 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 
 .seealso: SNESCreate(), SNESDestroy(), SNESSetFunction(), SNESSetJacobian(), SNESSetRhs(), SNESSetSolution()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec x)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
@@ -1613,9 +1614,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec x)
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (!snes->solve) SETERRQ(PETSC_ERR_ORDER,"SNESSetType() or SNESSetFromOptions() must be called before SNESSolve()");
 
+  if (b) {
+    ierr = SNESSetRhs(snes, b); CHKERRQ(ierr);
+  }
   if (x) {
-    PetscValidHeaderSpecific(x,VEC_COOKIE,2);
-    PetscCheckSameComm(snes,1,x,2);
+    PetscValidHeaderSpecific(x,VEC_COOKIE,3);
+    PetscCheckSameComm(snes,1,x,3);
   } else {
     ierr = SNESGetSolution(snes, &x); CHKERRQ(ierr);
     if (!x) {

@@ -1155,8 +1155,10 @@ the particular storage formats of the matrices.
 \label{sec_matcreate}
 
 The simplest routine for forming a PETSc matrix, \trl{A}, is \findex{MatCreate()}
+followed by \findex{MatSetSizes()}
 \begin{tabbing}
-  MatCreate(MPI\_Comm comm,int m,int n,int M,int N,Mat *A)
+  MatCreate(MPI\_Comm comm,Mat *A)
+  MatSetSizes(Mat A,int m,int n,int M,int N)
 \end{tabbing}
 This routine generates a sequential matrix when running one
 process and a parallel matrix for two or more processes; the
@@ -3383,7 +3385,7 @@ in Chapter~\ref{ch_ksp}.
 After having set these routines and options, the user
 solves the problem by calling \findex{SNESSolve}
 \begin{tabbing}
-  SNESSolve(SNES snes,Vec x);
+  SNESSolve(SNES snes,Vec b,Vec x);
 \end{tabbing}
 where \trl{x} indicates the solution vector. The user should
 initialize this vector to the initial guess for the nonlinear solver
@@ -4708,7 +4710,8 @@ VecESISetVector(s,::esi::Vector\trl{<}double,int\trl{>} *v);
 \end{tabbing}
 
 \begin{tabbing}
-MatCreate(MPI\_Comm,...,Mat *A);\\
+MatCreate(MPI\_Comm,Mat *A);\\
+MatSetSizes(Mat A,...);\\
 MatSetType(A,MATESI);\\
 MatESISetOperator(A,::esi::Operator\trl{<}double,int\trl{>} *a);
 \end{tabbing}

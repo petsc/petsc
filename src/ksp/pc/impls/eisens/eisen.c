@@ -162,7 +162,8 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
   if (!pc->setupcalled) {
     ierr = MatGetSize(pc->mat,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRQ(ierr);
-    ierr = MatCreate(pc->comm,m,N,M,N,&eis->shell);CHKERRQ(ierr);
+    ierr = MatCreate(pc->comm,&eis->shell);CHKERRQ(ierr);
+    ierr = MatSetSizes(eis->shell,m,N,M,N);CHKERRQ(ierr);
     ierr = MatSetType(eis->shell,MATSHELL);CHKERRQ(ierr);
     ierr = MatShellSetContext(eis->shell,(void*)pc);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,eis->shell);CHKERRQ(ierr);

@@ -143,7 +143,8 @@ int AppCtxCreateRhsAndMatrix (AppCtx *appctx)
     ierr = VecSetFromOptions(algebra->b);CHKERRQ(ierr);
   }
   /* Create the structure for the stiffness matrix */
-  ierr = MatCreate(comm,part->m,part->m,PETSC_DETERMINE,PETSC_DETERMINE,&algebra->A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&algebra->A);CHKERRQ(ierr);
+  ierr = MatSetSizes(algebra->A,part->m,part->m,PETSC_DETERMINE,PETSC_DETERMINE,&algebra->A);CHKERRQ(ierr);
   ierr = MatSetFromOptions(algebra->A);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(algebra->A,9,0,3,0);CHKERRQ(ierr);
 

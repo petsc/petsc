@@ -2168,7 +2168,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqMAIJ_SeqAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_SeqMAIJ       *b = (Mat_SeqMAIJ*)A->data;
   Mat               a = b->AIJ,B;
@@ -2221,7 +2221,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_MPIMAIJ_MPIAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_MPIMAIJ       *maij = (Mat_MPIMAIJ*)A->data;
   Mat               MatAIJ  = ((Mat_SeqMAIJ*)maij->AIJ->data)->AIJ,B;
@@ -2319,7 +2319,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
   if (dof == 1) {
     *maij = A;
   } else {
-    ierr = MatCreate(A->comm,dof*A->m,dof*A->n,dof*A->M,dof*A->N,&B);CHKERRQ(ierr);
+    ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,dof*A->m,dof*A->n,dof*A->M,dof*A->N);CHKERRQ(ierr);
     B->assembled    = PETSC_TRUE;
 
     ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);

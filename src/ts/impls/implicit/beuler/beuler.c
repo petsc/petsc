@@ -127,7 +127,7 @@ static PetscErrorCode TSStep_BEuler_Nonlinear(TS ts,PetscInt *steps,PetscReal *p
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,beuler->update);CHKERRQ(ierr);
-    ierr = SNESSolve(ts->snes,beuler->update);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,PETSC_NULL,beuler->update);CHKERRQ(ierr);
     ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ts->nonlinear_its += its; ts->linear_its += lits;

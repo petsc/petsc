@@ -47,7 +47,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESClearMonitor(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceHistory(SNES,PetscReal[],PetscInt[],PetscInt,PetscTruth);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergenceHistory(SNES,PetscReal*[],PetscInt *[],PetscInt *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES,Vec);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES,Vec,Vec);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
 

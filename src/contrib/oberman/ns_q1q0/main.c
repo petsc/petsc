@@ -91,7 +91,7 @@ int AppCtxSolve(AppCtx* appctx)
    if (appctx->view.matlabgraphics) {AppCtxViewMatlab(appctx);  } 
 
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, algebra->g);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,algebra->g);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   /* First, send solution vector to Matlab */
   ierr = VecView(appctx->algebra.g,PETSC_VIEWER_SOCKET_WORLD); CHKERRQ(ierr);

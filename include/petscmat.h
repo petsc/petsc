@@ -67,7 +67,7 @@ E*/
 #define MATSBAIJMUMPS      "sbaijmumps"
 #define MATDSCPACK         "dscpack"
 #define MATMATLAB          "matlab"
-#define MatType char*
+#define MatType const char*
 
 /* Logging support */
 #define    MAT_FILE_COOKIE 1211216    /* used to indicate matrices in binary files */
@@ -101,14 +101,19 @@ typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,Mat*);
-PetscPolymorphicFunction(MatCreate,(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx),(comm,m,n,M,N,&A),Mat,A);
-PetscPolymorphicFunction(MatCreate,(PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx),(PETSC_COMM_WORLD,m,n,M,N,&A),Mat,A);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat,const MatType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm,Mat*);
+PetscPolymorphicFunction(MatCreate,(MPI_Comm comm,void *ctx),(comm,&A),Mat,A);
+PetscPolymorphicFunction(MatCreate,(void *ctx),(PETSC_COMM_WORLD,&A),Mat,A);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat,MatType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat));
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetOptionsPrefix(Mat,const char[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAppendOptionsPrefix(Mat,const char[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOptionsPrefix(Mat,const char*[]);
 
 /*MC
    MatRegisterDynamic - Adds a new matrix type
@@ -241,6 +246,7 @@ PetscPolymorphicFunction(MatCreateShell,(PetscInt m,PetscInt n,PetscInt M,PetscI
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateAdic(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,void (*)(void),Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat,Mat*);
 PetscPolymorphicFunction(MatCreateNormal,(Mat mat),(mat,&A),Mat,A);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPrintHelp(Mat);
@@ -400,8 +406,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvertRegisterAll(const char[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvertRegisterDestroy(void);
 extern PetscTruth MatConvertRegisterAllCalled;
 extern PetscFList MatConvertList;
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat,const MatType,MatReuse,Mat*);
-PetscPolymorphicFunction(MatConvert,(Mat A,const MatType t),(A,t,MAT_INITIAL_MATRIX,&a),Mat,a);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat,MatType,MatReuse,Mat*);
+PetscPolymorphicFunction(MatConvert,(Mat A,MatType t),(A,t,MAT_INITIAL_MATRIX,&a),Mat,a);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat,MatDuplicateOption,Mat*);
 PetscPolymorphicFunction(MatDuplicate,(Mat A,MatDuplicateOption o),(A,o,&a),Mat,a);
 PetscPolymorphicFunction(MatDuplicate,(Mat A),(A,MAT_COPY_VALUES,&a),Mat,a);
@@ -428,8 +434,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat,PetscTruth*);
 PetscPolymorphicFunction(MatIsHermitian,(Mat A),(A,&t),PetscTruth,t);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetricKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianKnown(Mat,PetscTruth*,PetscTruth*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,const MatType,Mat*);
-PetscPolymorphicFunction(MatLoad,(PetscViewer v,const MatType t),(v,t,&a),Mat,a);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,MatType,Mat*);
+PetscPolymorphicFunction(MatLoad,(PetscViewer v,MatType t),(v,t,&a),Mat,a);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat,PetscInt,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);

@@ -17,7 +17,7 @@ struct _DMOps {
   PetscErrorCode (*view)(DM,PetscViewer);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   PetscErrorCode (*getcoloring)(DM,ISColoringType,ISColoring*);
-  PetscErrorCode (*getmatrix)(DM,const MatType,Mat*);
+  PetscErrorCode (*getmatrix)(DM, MatType,Mat*);
   PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
   PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
@@ -32,7 +32,7 @@ struct _DAOps {
   PetscErrorCode (*view)(DA,PetscViewer);
   PetscErrorCode (*createglobalvector)(DA,Vec*);
   PetscErrorCode (*getcoloring)(DA,ISColoringType,ISColoring*);
-  PetscErrorCode (*getmatrix)(DA,const MatType,Mat*);
+  PetscErrorCode (*getmatrix)(DA, MatType,Mat*);
   PetscErrorCode (*getinterpolation)(DA,DA,Mat*,Vec*);
   PetscErrorCode (*refine)(DA,MPI_Comm,DA*);
   PetscErrorCode (*getinjection)(DA,DA,VecScatter*);

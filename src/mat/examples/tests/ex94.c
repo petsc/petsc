@@ -106,7 +106,8 @@ int main(int argc,char **args)
     ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
     PN   = M/2;
     nzp  = 5;
-    ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,PN,&P);CHKERRQ(ierr); 
+    ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr); 
+    ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,M,PN);CHKERRQ(ierr); 
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
@@ -178,7 +179,8 @@ int main(int argc,char **args)
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
     PN   = M/2; 
     nzp  = 5; 
-    ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,PN,&P);CHKERRQ(ierr); 
+    ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr); 
+    ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,N,PN);CHKERRQ(ierr); 
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);

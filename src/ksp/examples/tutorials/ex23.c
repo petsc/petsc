@@ -77,7 +77,8 @@ int main(int argc,char **args)
      We pass in nlocal as the "local" size of the matrix to force it
      to have the same parallel layout as the vector created above.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,nlocal,nlocal,n,n,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,nlocal,nlocal,n,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   /* 

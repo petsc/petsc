@@ -52,7 +52,8 @@ int main(int argc,char **args)
   }
 
   /* Create and assemble matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,dim,dim,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,dim,dim);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = FormTestMatrix(A,n,type);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);

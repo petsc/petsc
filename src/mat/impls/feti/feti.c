@@ -7,7 +7,8 @@ int MatCreateFeti(MPI_Comm comm, const int N, Mat* A)
 
     PetscFunctionBegin;
 
-    MatCreate(comm,N,0,0,0,A);                /* N is stored in A->m */
+    MatCreate(comm,A);                /* N is stored in A->m */
+    MatSetSizes(*A,N,0,0,0)
     MatCreate_Feti(*A);
 
     PetscObjectChangeTypeName((PetscObject)*A,MATFETI);                   /* solely changes the typename */
@@ -949,7 +950,8 @@ int MatFetiSetUpSccTilde(Mat A)
     PetscReal norm;
     PetscScalar minus_one=-1;
 
-    MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,cm_len,cm_len,&Scctilde);
+    MatCreate(PETSC_COMM_WORLD,&Scctilde);
+    MatSetSizes(Scctilde,PETSC_DECIDE,PETSC_DECIDE,cm_len,cm_len);
     MatSetType(Scctilde,MATMPIAIJ);
 
     MatAssignSubMatrix (matfeti->Scc_ass,  /* copy into          */
@@ -1360,7 +1362,8 @@ int AssembleSystemMatrix(Mat A, Mat *system_matrix)
 
     PetscFunctionBegin;
 
-    MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,system_matrix);
+    MatCreate(PETSC_COMM_WORLD,system_matrix);
+    MatSetSizes(*system_matrix,PETSC_DECIDE,PETSC_DECIDE,N,N);
     MatSetType(*system_matrix,MATMPIAIJ);
 
     VecDuplicate(matfeti->lambda_copy,&e);

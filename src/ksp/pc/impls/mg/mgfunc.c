@@ -238,7 +238,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
 {
   PC_MG          **mg = (PC_MG**)pc->data;
   PetscErrorCode ierr;
-  char           *prefix;
+  const char     *prefix;
   MPI_Comm       comm;
 
   PetscFunctionBegin;

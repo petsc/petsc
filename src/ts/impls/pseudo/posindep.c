@@ -159,7 +159,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts,PetscInt *steps,PetscReal *ptime)
     current_time_step = ts->time_step;
     while (PETSC_TRUE) {
       ts->ptime  += current_time_step;
-      ierr = SNESSolve(ts->snes,pseudo->update);CHKERRQ(ierr);
+      ierr = SNESSolve(ts->snes,PETSC_NULL,pseudo->update);CHKERRQ(ierr);
       ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
       ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
       ts->nonlinear_its += its; ts->linear_its += lits;

@@ -120,7 +120,8 @@ PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newm
   Mat            newi;
 
   PetscFunctionBegin;
-  ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,&newi);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&newi);CHKERRQ(ierr);
+  ierr = MatSetSizes(newi,A->m,A->n,A->m,A->n);CHKERRQ(ierr);
   ierr = MatSetType(newi,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(newi,PETSC_NULL);CHKERRQ(ierr);
   if (cpvalues == MAT_COPY_VALUES) {
@@ -666,7 +667,7 @@ PetscErrorCode MatGetValues_SeqDense(Mat A,PetscInt m,const PetscInt indexm[],Pe
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqDense"
-PetscErrorCode MatLoad_SeqDense(PetscViewer viewer,const MatType type,Mat *A)
+PetscErrorCode MatLoad_SeqDense(PetscViewer viewer, MatType type,Mat *A)
 {
   Mat_SeqDense   *a;
   Mat            B;
@@ -687,7 +688,8 @@ PetscErrorCode MatLoad_SeqDense(PetscViewer viewer,const MatType type,Mat *A)
   M = header[1]; N = header[2]; nz = header[3];
 
   if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense */
-    ierr = MatCreate(comm,M,N,M,N,A);CHKERRQ(ierr);
+    ierr = MatCreate(comm,A);CHKERRQ(ierr);
+    ierr = MatSetSizes(*A,M,N,M,N);CHKERRQ(ierr);
     ierr = MatSetType(*A,type);CHKERRQ(ierr);
     ierr = MatSeqDenseSetPreallocation(*A,PETSC_NULL);CHKERRQ(ierr);
     B    = *A;
@@ -713,7 +715,8 @@ PetscErrorCode MatLoad_SeqDense(PetscViewer viewer,const MatType type,Mat *A)
     ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
 
     /* create our matrix */   
-    ierr = MatCreate(comm,M,N,M,N,A);CHKERRQ(ierr);
+    ierr = MatCreate(comm,A);CHKERRQ(ierr);
+    ierr = MatSetSizes(*A,M,N,M,N);CHKERRQ(ierr);
     ierr = MatSetType(*A,type);CHKERRQ(ierr);
     ierr = MatSeqDenseSetPreallocation(*A,PETSC_NULL);CHKERRQ(ierr);
     B = *A;
@@ -1068,7 +1071,8 @@ PetscErrorCode MatTranspose_SeqDense(Mat A,Mat *matout)
     Mat_SeqDense *tmatd;
     PetscScalar  *v2;
 
-    ierr  = MatCreate(A->comm,A->n,A->m,A->n,A->m,&tmat);CHKERRQ(ierr);
+    ierr  = MatCreate(A->comm,&tmat);CHKERRQ(ierr);
+    ierr  = MatSetSizes(tmat,A->n,A->m,A->n,A->m);CHKERRQ(ierr);
     ierr  = MatSetType(tmat,A->type_name);CHKERRQ(ierr);
     ierr  = MatSeqDenseSetPreallocation(tmat,PETSC_NULL);CHKERRQ(ierr);
     tmatd = (Mat_SeqDense*)tmat->data;
@@ -1359,7 +1363,8 @@ static PetscErrorCode MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,PetscInt 
     newmat = *B;
   } else {
     /* Create and fill new matrix */
-    ierr = MatCreate(A->comm,nrows,ncols,nrows,ncols,&newmat);CHKERRQ(ierr);
+    ierr = MatCreate(A->comm,&newmat);CHKERRQ(ierr);
+    ierr = MatSetSizes(newmat,nrows,ncols,nrows,ncols);CHKERRQ(ierr);
     ierr = MatSetType(newmat,A->type_name);CHKERRQ(ierr);
     ierr = MatSeqDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -1575,7 +1580,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqDense(MPI_Comm comm,PetscInt m,Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,m,n,m,n,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(*A,data);CHKERRQ(ierr);
   PetscFunctionReturn(0);

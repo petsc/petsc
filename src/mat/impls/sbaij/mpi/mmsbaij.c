@@ -364,7 +364,8 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
   for (i=0; i<mbs; i++) {
     nz[i] = Bbaij->i[i+1]-Bbaij->i[i];
   }
-  ierr = MatCreate(PETSC_COMM_SELF,m,n,m,n,&Bnew);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&Bnew);CHKERRQ(ierr);
+  ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,B->type_name);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(Bnew,B->bs,0,nz);CHKERRQ(ierr);
   ierr = PetscFree(nz);CHKERRQ(ierr);

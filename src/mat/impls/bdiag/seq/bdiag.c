@@ -272,7 +272,8 @@ PetscErrorCode MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,M
 
   /* Determine diagonals; then create submatrix */
   bs = A->bs; /* Default block size remains the same */
-  ierr = MatCreate(A->comm,newr,newc,newr,newc,&newmat);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&newmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(newmat,newr,newc,newr,newc);CHKERRQ(ierr);
   ierr = MatSetType(newmat,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(newmat,0,bs,PETSC_NULL,PETSC_NULL);
 
@@ -686,7 +687,8 @@ static PetscErrorCode MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Ma
   Mat            mat;
 
   PetscFunctionBegin;
-  ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,matout);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,matout);CHKERRQ(ierr);
+  ierr = MatSetSizes(*matout,A->m,A->n,A->m,A->n);CHKERRQ(ierr);
   ierr = MatSetType(*matout,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(*matout,a->nd,bs,a->diag,PETSC_NULL);CHKERRQ(ierr);
 
@@ -711,7 +713,7 @@ static PetscErrorCode MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Ma
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqBDiag"
-PetscErrorCode MatLoad_SeqBDiag(PetscViewer viewer,const MatType type,Mat *A)
+PetscErrorCode MatLoad_SeqBDiag(PetscViewer viewer, MatType type,Mat *A)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -761,7 +763,8 @@ PetscErrorCode MatLoad_SeqBDiag(PetscViewer viewer,const MatType type,Mat *A)
   }
 
   /* create our matrix */
-  ierr = MatCreate(comm,M+extra_rows,M+extra_rows,M+extra_rows,M+extra_rows,A);
+  ierr = MatCreate(comm,A);
+  ierr = MatSetSizes(*A,M+extra_rows,M+extra_rows,M+extra_rows,M+extra_rows);
   ierr = MatSetType(*A,type);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(*A,nd,bs,diag,PETSC_NULL);CHKERRQ(ierr);
   B = *A;
@@ -889,7 +892,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqBDiag(MPI_Comm comm,PetscInt m,Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,m,n,m,n,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSEQBDIAG);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(*A,nd,bs,diag,diagv);CHKERRQ(ierr);
   PetscFunctionReturn(0);

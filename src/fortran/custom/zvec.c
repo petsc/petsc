@@ -173,7 +173,8 @@ void PETSC_STDCALL vecview_(Vec *x,PetscViewer *vin,PetscErrorCode *ierr)
 
 void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tname;
+  const char *tname;
+
   *ierr = VecGetType(*vv,&tname);
 #if defined(PETSC_USES_CPTOFCD)
   {

@@ -36,5 +36,5 @@ typedef struct {
   VecScatter    Mvctx;                  /* scatter context for vector */
 } Mat_MPIBDiag;
 
-EXTERN PetscErrorCode MatLoad_MPIBDiag(PetscViewer,const MatType,Mat*);
+EXTERN PetscErrorCode MatLoad_MPIBDiag(PetscViewer, MatType,Mat*);
 EXTERN PetscErrorCode MatSetUpMultiply_MPIBDiag(Mat);

@@ -120,7 +120,8 @@ int AppCtxSolve(AppCtx* appctx)
   printf("about to call the solver\n");
 
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, x, &its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes, PETSC_NULL, x);CHKERRQ(ierr);
+  ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
   
   ierr = SNESDestroy(snes); CHKERRQ(ierr);  
 

@@ -139,7 +139,8 @@ int main(int argc,char **argv)
     won't converge.
   */
   if (!fd_jacobian) {
-    ierr      = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,grids,grids,&user.J);CHKERRQ(ierr);
+    ierr      = MatCreate(PETSC_COMM_WORLD,&user.J);CHKERRQ(ierr);
+    ierr      = MatSetSizes(user.J,PETSC_DECIDE,PETSC_DECIDE,grids,grids);CHKERRQ(ierr);
     ierr      = MatSetType(user.J,MATAIJ);CHKERRQ(ierr);
     ierr      = MatSetFromOptions(user.J);CHKERRQ(ierr);
     ierr      = MatSeqAIJSetPreallocation(user.J,5,PETSC_NULL);CHKERRQ(ierr);
@@ -189,7 +190,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESSolve(snes,user.psi);CHKERRQ(ierr); 
+  ierr = SNESSolve(snes,PETSC_NULL,user.psi);CHKERRQ(ierr); 
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

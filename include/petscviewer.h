@@ -50,7 +50,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 .seealso: PetscViewerSetType(), PetscViewer
 E*/
-#define PetscViewerType char*
+#define PetscViewerType const char*
 #define PETSC_VIEWER_SOCKET       "socket"
 #define PETSC_VIEWER_ASCII        "ascii"
 #define PETSC_VIEWER_BINARY       "binary"
@@ -167,11 +167,17 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloOpen(MPI_Comm, const char[]
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer,PetscViewerType*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetType(PetscViewer,const PetscViewerType);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetType(PetscViewer,PetscViewerType);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDestroy(PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetSingleton(PetscViewer,PetscViewer*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
 
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetUp(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerView(PetscViewer,PetscViewer);
+
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetOptionsPrefix(PetscViewer,const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerAppendOptionsPrefix(PetscViewer,const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetOptionsPrefix(PetscViewer,const char*[]);
 
 /*E
     PetscViewerFormat - Way a viewer presents the object

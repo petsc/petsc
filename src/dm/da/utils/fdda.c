@@ -489,7 +489,7 @@ EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da,const MatType mtype,Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3];
@@ -524,7 +524,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da,const MatType mtype,Mat *J)
   ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MatCreate(comm,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,&A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(A,mtype);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatGetType(A,&Atype);CHKERRQ(ierr);

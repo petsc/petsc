@@ -73,7 +73,7 @@ EXTERN PetscErrorCode MatSolve_SeqBDiag_3(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBDiag_4(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBDiag_5(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBDiag_N(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatLoad_SeqBDiag(PetscViewer,const MatType,Mat*);
+EXTERN PetscErrorCode MatLoad_SeqBDiag(PetscViewer, MatType,Mat*);
 EXTERN PetscErrorCode MatGetRow_MPIBDiag(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 EXTERN PetscErrorCode MatRestoreRow_MPIBDiag(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 EXTERN PetscErrorCode MatPrintHelp_SeqBDiag(Mat);

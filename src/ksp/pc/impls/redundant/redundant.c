@@ -337,7 +337,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red;
-  char           *prefix;
+  const char     *prefix;
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_Redundant,&red);CHKERRQ(ierr);

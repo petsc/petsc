@@ -159,7 +159,8 @@
 !  Create matrix data structure; set Jacobian evaluation routine.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call MatCreate(comm,PETSC_DECIDE,PETSC_DECIDE,m,m,A,ierr)
+      call MatCreate(comm,A,ierr)
+      call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m,ierr)
       call MatSetFromOptions(A,ierr)
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
       if (flg .eq. 1) then

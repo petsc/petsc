@@ -137,7 +137,8 @@ PetscErrorCode MatCreateNull_SuperLU(Mat A,Mat *nullMat)
   numNullCols = numCols - numRows;
   if (numNullCols < 0) SETERRQ(PETSC_ERR_ARG_WRONG,"Function only applies to underdetermined problems");
   /* Create the null matrix using MATSEQDENSE explicitly */
-  ierr = MatCreate(A->comm,numRows,numNullCols,numRows,numNullCols,nullMat);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,nullMat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*nullMat,numRows,numNullCols,numRows,numNullCols);CHKERRQ(ierr);
   ierr = MatSetType(*nullMat,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(*nullMat,PETSC_NULL);CHKERRQ(ierr);
   if (!numNullCols) {
@@ -360,7 +361,8 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   const char   *rowperm[]={"NOROWPERM", "LargeDiag"}; /* MY_PERMC - not supported by the petsc interface yet */
 
   PetscFunctionBegin;
-  ierr = MatCreate(A->comm,A->m,A->n,PETSC_DETERMINE,PETSC_DETERMINE,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->m,A->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 

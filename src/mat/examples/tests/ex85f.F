@@ -19,8 +19,8 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
       twelve = 12
-      call MatCreate(PETSC_COMM_SELF,twelve,twelve,twelve,                 &
-     &               twelve,m,ierr)
+      call MatCreate(PETSC_COMM_SELF,m,ierr)
+      call MatSetSizes(m,twelve,twelve,twelve,twelve,ierr)
       call MatSetFromOptions(m,ierr)
 
       value = 3.0

@@ -554,7 +554,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateDAAD(DA da,Mat *A)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MatCreate(comm,0,0,0,0,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATDAAD);CHKERRQ(ierr);
   ierr = MatDAADSetDA(*A,da);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -346,7 +346,8 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
     ierr = VecCreateMPI(pc->comm,1,size,&(pcnn->coarse_b));CHKERRQ(ierr);
     ierr = VecDuplicate(pcnn->coarse_b,&(pcnn->coarse_x));CHKERRQ(ierr);
     /* Create and set the global coarse AIJ matrix. */
-    ierr = MatCreate(pc->comm,1,1,size,size,&(pcnn->coarse_mat));CHKERRQ(ierr);
+    ierr = MatCreate(pc->comm,&(pcnn->coarse_mat));CHKERRQ(ierr);
+    ierr = MatSetSizes(pcnn->coarse_mat,1,1,size,size);CHKERRQ(ierr);
     ierr = MatSetType(pcnn->coarse_mat,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(pcnn->coarse_mat,1,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(pcnn->coarse_mat,1,PETSC_NULL,1,PETSC_NULL);CHKERRQ(ierr);

@@ -63,7 +63,8 @@ int main(int argc,char **argv)
   /*
      Create Jacobian matrix data structure
   */
-  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,2,2,&J);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&J);CHKERRQ(ierr);
+  ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-hard",&flg);CHKERRQ(ierr);
@@ -122,7 +123,7 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
 
-  ierr = SNESSolve(snes,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   if (flg) {
     Vec f;

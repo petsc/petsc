@@ -133,7 +133,7 @@ int main(int argc,char **argv)
   v = norm-18.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);CHKERRQ(ierr);
 
-  ierr = VecWAXPY(x,two,x,y);CHKERRQ(ierr);
+  ierr = VecWAXPY(w,two,x,y);CHKERRQ(ierr);
   ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
   v = norm-38.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecWAXPY %g\n",v);CHKERRQ(ierr);

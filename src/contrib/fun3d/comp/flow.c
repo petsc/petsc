@@ -583,7 +583,7 @@ int Update(SNES snes, void *ctx)
   }
   /*tsCtx->ptime +=  tsCtx->dt;*/
 
-  ierr = SNESSolve(snes,grid->qnode); CHKERRQ(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,grid->qnode); CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes, &nfails); CHKERRQ(ierr);
   nfailsCum += nfails; nfails = 0;

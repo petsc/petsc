@@ -341,7 +341,8 @@ PetscErrorCode MatTranspose_SeqBDiag(Mat A,Mat *matout)
   for (i=0; i<nd; i++) {
     diagnew[i] = -diag[nd-i-1]; /* assume sorted in descending order */
   }
-  ierr = MatCreate(A->comm,A->n,A->m,A->n,A->m,&tmat);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&tmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(tmat,A->n,A->m,A->n,A->m);CHKERRQ(ierr);
   ierr = MatSetType(tmat,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(tmat,nd,bs,diagnew,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(diagnew);CHKERRQ(ierr);

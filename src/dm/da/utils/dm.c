@@ -194,7 +194,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,ISColo
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
+PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm, MatType mtype,Mat *mat)
 {
   PetscErrorCode ierr;
 

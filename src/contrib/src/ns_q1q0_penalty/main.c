@@ -94,7 +94,8 @@ int AppCtxSolve(AppCtx* appctx)
 
  
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, algebra->g, &its);CHKERRQ(ierr);
+   ierr = SNESSolve(snes, PETSC_NULL, algebra->g);CHKERRQ(ierr);
+  ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
 
 
   /* First, send solution vector to Matlab */

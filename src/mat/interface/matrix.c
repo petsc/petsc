@@ -184,6 +184,130 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRow(Mat mat,PetscInt row,PetscInt *n
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSetOptionsPrefix"
+/*@C
+   MatSetOptionsPrefix - Sets the prefix used for searching for all 
+   Mat options in the database.
+
+   Collective on Mat
+
+   Input Parameter:
++  A - the Mat context
+-  prefix - the prefix to prepend to all option names
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+   Level: advanced
+
+.keywords: Mat, set, options, prefix, database
+
+.seealso: MatSetFromOptions()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetOptionsPrefix(Mat A,const char prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)A,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatAppendOptionsPrefix"
+/*@C
+   MatAppendOptionsPrefix - Appends to the prefix used for searching for all 
+   Mat options in the database.
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the Mat context
+-  prefix - the prefix to prepend to all option names
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+   Level: advanced
+
+.keywords: Mat, append, options, prefix, database
+
+.seealso: MatGetOptionsPrefix()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatAppendOptionsPrefix(Mat A,const char prefix[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)A,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetOptionsPrefix"
+/*@C
+   MatGetOptionsPrefix - Sets the prefix used for searching for all 
+   Mat options in the database.
+
+   Not Collective
+
+   Input Parameter:
+.  A - the Mat context
+
+   Output Parameter:
+.  prefix - pointer to the prefix string used
+
+   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   sufficient length to hold the prefix.
+
+   Level: advanced
+
+.keywords: Mat, get, options, prefix, database
+
+.seealso: MatAppendOptionsPrefix()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOptionsPrefix(Mat A,const char *prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)A,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetUp"
+/*@
+   MatSetUp - Sets up the internal matrix data structures for the later use.
+
+   Collective on Mat
+
+   Input Parameters:
+.  A - the Mat context
+
+   Notes:
+   For basic use of the Mat classes the user need not explicitly call
+   MatSetUp(), since these actions will happen automatically.
+
+   Level: advanced
+
+.keywords: Mat, setup
+
+.seealso: MatCreate(), MatDestroy()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat A)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatView"
 /*@C
    MatView - Visualizes a matrix object.
@@ -255,7 +379,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscInt          rows,cols;
   PetscTruth        iascii;
-  char              *cstr;
+  const char        *cstr;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -2686,7 +2810,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvertRegister(const char sname[],const ch
 
 .seealso: MatCopy(), MatDuplicate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat,const MatType newtype,MatReuse reuse,Mat *M)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
 {
   PetscErrorCode         ierr;
   PetscTruth             sametype,issame,flg;
@@ -2715,7 +2839,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat,const MatType newtype,MatRe
   if ((sametype || issame) && (reuse==MAT_INITIAL_MATRIX) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
-    PetscErrorCode (*conv)(Mat,const MatType,MatReuse,Mat*)=PETSC_NULL;
+    PetscErrorCode (*conv)(Mat, MatType,MatReuse,Mat*)=PETSC_NULL;
     /* 
        Order of precedence:
        1) See if a specialized converter is known to the current matrix.
@@ -2733,7 +2857,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat,const MatType newtype,MatRe
     ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
 
     if (!conv) {
-      ierr = MatCreate(mat->comm,0,0,0,0,&B);CHKERRQ(ierr);
+      ierr = MatCreate(mat->comm,&B);CHKERRQ(ierr);
+      ierr = MatSetSizes(B,0,0,0,0);CHKERRQ(ierr);
       ierr = MatSetType(B,newtype);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
       ierr = MatDestroy(B);CHKERRQ(ierr);

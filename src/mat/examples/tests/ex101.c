@@ -16,7 +16,8 @@ int main(int argc,char **argv) {
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   /* Create MAIJ matrix, P */
-  ierr = MatCreate(PETSC_COMM_SELF,3,3,3,3,&pA);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&pA);CHKERRQ(ierr);
+  ierr = MatSetSizes(pA,3,3,3,3);CHKERRQ(ierr);
   ierr = MatSetType(pA,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSetOption(pA,MAT_IGNORE_ZERO_ENTRIES);CHKERRQ(ierr);
   ierr = MatSetValues(pA,3,pij,3,pij,pa,ADD_VALUES);CHKERRQ(ierr);
@@ -29,7 +30,8 @@ int main(int argc,char **argv) {
   ierr = MatConvert(P,MATSEQAIJ,MAT_INITIAL_MATRIX,&aijP);
 
   /* Create AIJ matrix, A */
-  ierr = MatCreate(PETSC_COMM_SELF,9,9,9,9,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,9,9,9,9);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES);CHKERRQ(ierr);
   ierr = MatSetValues(A,3,aij[0],3,aij[0],pa,ADD_VALUES);CHKERRQ(ierr);

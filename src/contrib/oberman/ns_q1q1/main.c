@@ -110,7 +110,8 @@ appctx->equations.eta =-0.1;
   ierr = FormInitialGuess(appctx);CHKERRQ(ierr); 
   g = algebra->g;
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, g, &its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes, PETSC_NULL, g);CHKERRQ(ierr);
+  ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
   printf("the number of its, %d\n", its);
   if(dynamic){
 /************* now begin timestepping, with computed soln as initial values *************/
@@ -132,7 +133,8 @@ appctx->equations.eta =-0.1;
     /* put the dt in the context */
     deltat = times[i+1]-times[i];
     appctx->dt = deltat;
-    ierr = SNESSolve(snes, solnv[i+1], &its);CHKERRQ(ierr); 
+    ierr = SNESSolve(snes, PETSC_NULL, solnv[i+1]);CHKERRQ(ierr); 
+    ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
     printf("time step %d: the number of its, %d\n", i, its);
     }
   ierr = SNESDestroy(snes); CHKERRQ(ierr);  

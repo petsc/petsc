@@ -14,7 +14,7 @@ EXTERN_C_BEGIN
 #include "pnetcdf.h"
 EXTERN_C_END
 #endif
-EXTERN PetscErrorCode VecLoad_Binary(PetscViewer,const VecType, Vec*);
+EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, VecType, Vec*);
 EXTERN PetscErrorCode VecLoad_Netcdf(PetscViewer, Vec*);
 EXTERN PetscErrorCode VecLoadIntoVector_Binary(PetscViewer, Vec);
 EXTERN PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer, Vec);
@@ -71,7 +71,7 @@ and PetscBinaryWrite() to see how this may be done.
 
 .seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
 @*/  
-PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, VecType outtype,Vec *newvec)
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary,flg;
@@ -103,7 +103,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer,const VecType outty
   {
     Vec            factory;
     MPI_Comm       comm;
-    PetscErrorCode (*r)(PetscViewer,const VecType,Vec*);
+    PetscErrorCode (*r)(PetscViewer, VecType,Vec*);
     PetscMPIInt    size;
 
     ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,&prefix);CHKERRQ(ierr);
@@ -180,7 +180,7 @@ PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_Binary"
-PetscErrorCode VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec)
+PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
 {
   PetscMPIInt    size,rank,tag;
   int            fd;

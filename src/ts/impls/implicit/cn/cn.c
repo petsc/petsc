@@ -180,7 +180,7 @@ static PetscErrorCode TSStep_CN_Nonlinear(TS ts,PetscInt *steps,PetscReal *ptime
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,cn->update);CHKERRQ(ierr);
-    ierr = SNESSolve(ts->snes,cn->update);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,PETSC_NULL,cn->update);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
     ts->nonlinear_its += its; ts->linear_its += lits;

@@ -164,8 +164,8 @@
 !    
 !         The user provides the RHS as a matrix
 !    
-         call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,M, &
-     &                  A,ierr) 
+         call MatCreate(PETSC_COMM_WORLD,A,ierr) 
+         call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,M,ierr) 
          call MatSetFromOptions(A,ierr)
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,  &
      &        ierr)  
@@ -175,8 +175,8 @@
 !    
 !         The user provides the RHS as a time dependent matrix
 !    
-         call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,M, &
-     &                  A,ierr) 
+         call MatCreate(PETSC_COMM_WORLD,A,ierr) 
+         call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,M,ierr) 
          call MatSetFromOptions(A,ierr)
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,  &
      &        ierr)  
@@ -199,8 +199,8 @@
 !    
          call TSSetRHSFunction(ts,RHSFunctionHeat,PETSC_NULL_OBJECT,     &
      &                         ierr) 
-         call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,M,A &
-     &                  ,ierr) 
+         call MatCreate(PETSC_COMM_WORLD,A,ierr) 
+         call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,M,ierr) 
          call MatSetFromOptions(A,ierr)
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,   &
      &        ierr)  

@@ -18,7 +18,8 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-omega",&omega,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = MatCreate(PETSC_COMM_SELF,n,n,n,n,&C);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,n,n,n,n);CHKERRQ(ierr);
   ierr = MatSetType(C,MATSEQDENSE);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);

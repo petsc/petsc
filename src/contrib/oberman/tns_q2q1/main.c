@@ -470,7 +470,8 @@ int SolveStationary(AppCtx* appctx, SNES snes)
 equations->current_time = equations->initial_time;
 
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, algebra->g, &its);CHKERRQ(ierr);
+ ierr = SNESSolve(snes, PETSC_NULL, algebra->g);CHKERRQ(ierr);
+  ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
 
   /* send solution to matlab */
   if (appctx->view.matlabgraphics){
@@ -510,7 +511,8 @@ int TimeStep(AppCtx* appctx, SNES snes)
       /* pop xold into g, to be computed in the  nonlinear function */
       ierr = VecCopy( algebra->soln, algebra->g); CHKERRQ(ierr);
  
-      ierr = SNESSolve(snes, algebra->soln1, &its);CHKERRQ(ierr); 
+      ierr = SNESSolve(snes, PETSC_NULL, algebra->soln1);CHKERRQ(ierr); 
+      ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
    /* now update the solution vectors */
       ierr = VecCopy( algebra->soln1, algebra->soln); CHKERRQ(ierr);
  
@@ -562,14 +564,16 @@ int ExplicitConvectionSolve(AppCtx* appctx, SNES snes)
       if(i < 2){equations->convection_flag=0;}
       else {equations->convection_flag = flag;}
 
-      ierr = SNESSolve(snes, algebra->soln1, &its);CHKERRQ(ierr); 
+      ierr = SNESSolve(snes, PETSC_NULL, algebra->soln1);CHKERRQ(ierr); 
+      ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
 
       printf("time step %d: the number of its, %d\n", i, its);
       if(equations->preconconv_flag*equations->convection_flag){
 	/* here we use the convection solution as an initial guess for the fully implicit */
 	equations->convection_flag = 0;
 
-	ierr = SNESSolve(snes, algebra->soln1, &its);CHKERRQ(ierr); 
+	ierr = SNESSolve(snes, PETSC_NULL, algebra->soln1);CHKERRQ(ierr); 
+        ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
 
 	equations->convection_flag = 1;
       }

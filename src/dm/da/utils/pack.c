@@ -1177,7 +1177,8 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetInterpolation(VecPack coarse,VecPack 
   ierr         = PetscNew(struct MatPack,&mpack);CHKERRQ(ierr);
   mpack->right = coarse;
   mpack->left  = fine;
-  ierr  = MatCreate(fine->comm,m,n,M,N,A);CHKERRQ(ierr);
+  ierr  = MatCreate(fine->comm,A);CHKERRQ(ierr);
+  ierr  = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr  = MatSetType(*A,MATSHELL);CHKERRQ(ierr);
   ierr  = MatShellSetContext(*A,mpack);CHKERRQ(ierr);
   ierr  = MatShellSetOperation(*A,MATOP_MULT,(void(*)(void))MatMult_Shell_Pack);CHKERRQ(ierr);

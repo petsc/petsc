@@ -396,7 +396,7 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 
   PetscFunctionBegin;
   dmmg[0]->nlevels = level+1;
-  ierr             = SNESSolve(dmmg[level]->snes,dmmg[level]->x);CHKERRQ(ierr);
+  ierr             = SNESSolve(dmmg[level]->snes,PETSC_NULL,dmmg[level]->x);CHKERRQ(ierr);
   dmmg[0]->nlevels = nlevels;
   PetscFunctionReturn(0);
 }

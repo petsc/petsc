@@ -68,7 +68,8 @@ PetscInt main(PetscInt argc,char **args)
       ierr  = MatLoad(fd,MATSBAIJ,&B);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
     } else { /* create B=I */
-      ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&B);CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+      ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
       ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
       ierr = MatSetFromOptions(B);CHKERRQ(ierr);
       for (i=0; i<m; i++) {
@@ -103,7 +104,8 @@ PetscInt main(PetscInt argc,char **args)
     /* View small entries of A */
     ierr = PetscOptionsHasName(PETSC_NULL, "-Asp_view", &flg);CHKERRQ(ierr);
     if (flg){
-      ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m,n,&A_sp);CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_SELF,&A_sp);CHKERRQ(ierr);
+      ierr = MatSetSizes(A_sp,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
       ierr = MatSetType(A_sp,MATSEQSBAIJ);CHKERRQ(ierr);
 
       tols[0] = 1.e-6, tols[1] = 1.e-9;

@@ -1130,10 +1130,11 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer vi
 
     /* Here we are creating a temporary matrix, so will assume MPIBAIJ is acceptable */
     /* Perhaps this should be the type of mat? */
+    ierr = MatCreate(mat->comm,&A);CHKERRQ(ierr);
     if (!rank) {
-      ierr = MatCreate(mat->comm,M,N,M,N,&A);CHKERRQ(ierr);
+      ierr = MatSetSizes(A,M,N,M,N);CHKERRQ(ierr);
     } else {
-      ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
+      ierr = MatSetSizes(A,0,0,M,N);CHKERRQ(ierr);
     }
     ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
     ierr = MatMPIBAIJSetPreallocation(A,mat->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
@@ -1603,7 +1604,8 @@ PetscErrorCode MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   
   PetscFunctionBegin;
   if (!matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
-  ierr = MatCreate(A->comm,A->n,A->m,N,M,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->n,A->m,N,M);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(B,A->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   
@@ -2027,7 +2029,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIBAIJ(Mat A,PetscTruth *
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIBAIJ_MPISBAIJ(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIBAIJ_MPISBAIJ(Mat, MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -2190,11 +2192,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,Petsc
   b->cstart_bs = b->cstart*bs;
   b->cend_bs   = b->cend*bs;
 
-  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->n,B->m,B->n,&b->A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
+  ierr = MatSetSizes(b->A,B->m,B->n,B->m,B->n);CHKERRQ(ierr);
   ierr = MatSetType(b->A,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(b->A,bs,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->N,B->m,B->N,&b->B);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
+  ierr = MatSetSizes(b->B,B->m,B->N,B->m,B->N);CHKERRQ(ierr);
   ierr = MatSetType(b->B,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(b->B,bs,o_nz,o_nnz);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
@@ -2542,7 +2546,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIBAIJ(MPI_Comm comm,PetscInt bs,Pet
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,m,n,M,N,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     ierr = MatSetType(*A,MATMPIBAIJ);CHKERRQ(ierr);
@@ -2565,7 +2570,8 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues
 
   PetscFunctionBegin;
   *newmat       = 0;
-  ierr = MatCreate(matin->comm,matin->m,matin->n,matin->M,matin->N,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(matin->comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,matin->m,matin->n,matin->M,matin->N);CHKERRQ(ierr);
   ierr = MatSetType(mat,matin->type_name);CHKERRQ(ierr);
   ierr = PetscMemcpy(mat->ops,matin->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 
@@ -2646,7 +2652,7 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIBAIJ"
-PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
 {
   Mat            A;
   PetscErrorCode ierr;
@@ -2817,7 +2823,8 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
   }
 
   /* create our matrix */
-  ierr = MatCreate(comm,m,m,M+extra_rows,N+extra_rows,&A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,m,m,M+extra_rows,N+extra_rows);CHKERRQ(ierr);
   ierr = MatSetType(A,type);CHKERRQ(ierr)
   ierr = MatMPIBAIJSetPreallocation(A,bs,0,dlens,0,odlens);CHKERRQ(ierr);
 

@@ -897,7 +897,8 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
 
   M = N = B->n;
   /* Here we only know how to create AIJ format */
-  ierr = MatCreate(comm,m,n,M,N,PB);CHKERRQ(ierr);
+  ierr = MatCreate(comm,PB);CHKERRQ(ierr);
+  ierr = MatSetSizes(*PB,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*PB,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*PB,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(*PB,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);

@@ -110,7 +110,8 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   }
 
   /* create our matrix */
-  ierr = MatCreate(comm,m,n,M,N,&A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A,0,ourlens,0,offlens);CHKERRQ(ierr);
 

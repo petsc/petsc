@@ -376,7 +376,8 @@ int main(int argc,char **argv)
      preallocation of memory for the matrix. In real application code with big matrices,
      preallocation should always be done to expedite the matrix creation. 
   */
-  ierr = MatCreate(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&Jac);CHKERRQ(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,&Jac);CHKERRQ(ierr);
+  ierr = MatSetSizes(Jac,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(Jac);CHKERRQ(ierr);
 
   /* 
@@ -430,7 +431,7 @@ int main(int argc,char **argv)
      Now solve the nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESSolve(snes,x);CHKERRQ(ierr);
+   ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
  

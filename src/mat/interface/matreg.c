@@ -37,7 +37,7 @@ PetscFList MatList = 0;
 
 .seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat,const MatType matype)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, MatType matype)
 {
   PetscErrorCode ierr,(*r)(Mat);
   PetscTruth sametype;

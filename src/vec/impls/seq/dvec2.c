@@ -763,7 +763,7 @@ PetscErrorCode VecPointwiseMax_Seq(Vec win,Vec xin,Vec yin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMin_Seq"
-PetscErrorCode VecPointwiseMin_Seq(Vec xin,Vec yin,Vec win)
+PetscErrorCode VecPointwiseMin_Seq(Vec win,Vec xin,Vec yin)
 {
   Vec_Seq        *w = (Vec_Seq *)win->data;
   PetscErrorCode ierr;
@@ -790,7 +790,7 @@ PetscErrorCode VecPointwiseMin_Seq(Vec xin,Vec yin,Vec win)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMaxAbs_Seq"
-PetscErrorCode VecPointwiseMaxAbs_Seq(Vec xin,Vec yin,Vec win)
+PetscErrorCode VecPointwiseMaxAbs_Seq(Vec win,Vec xin,Vec yin)
 {
   Vec_Seq        *w = (Vec_Seq *)win->data;
   PetscErrorCode ierr;
@@ -817,7 +817,7 @@ PetscErrorCode VecPointwiseMaxAbs_Seq(Vec xin,Vec yin,Vec win)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMult_Seq"
-PetscErrorCode VecPointwiseMult_Seq(Vec xin,Vec yin,Vec win)
+PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
 {
   Vec_Seq        *w = (Vec_Seq *)win->data;
   PetscErrorCode ierr;
@@ -859,7 +859,7 @@ PetscErrorCode VecPointwiseMult_Seq(Vec xin,Vec yin,Vec win)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseDivide_Seq"
-PetscErrorCode VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win)
+PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
 {
   Vec_Seq        *w = (Vec_Seq *)win->data;
   PetscErrorCode ierr;

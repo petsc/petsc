@@ -923,10 +923,11 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     PetscInt    M = mat->M,N = mat->N,m,*ai,*aj,row,*cols,i,*ct;
     PetscScalar *a;
 
+    ierr = MatCreate(mat->comm,&A);CHKERRQ(ierr);
     if (!rank) {
-      ierr = MatCreate(mat->comm,M,N,M,N,&A);CHKERRQ(ierr);
+      ierr = MatSetSizes(A,M,N,M,N);CHKERRQ(ierr);
     } else {
-      ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
+      ierr = MatSetSizes(A,0,0,M,N);CHKERRQ(ierr);
     }
     /* This is just a temporary matrix, so explicitly using MATMPIAIJ is probably best */
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
@@ -1366,7 +1367,8 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,Mat *matout)
     SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
   }
 
-  ierr = MatCreate(A->comm,A->n,A->m,N,M,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->n,A->m,N,M);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
@@ -1780,7 +1782,8 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
 
   PetscFunctionBegin;
   *newmat       = 0;
-  ierr = MatCreate(matin->comm,matin->m,matin->n,matin->M,matin->N,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(matin->comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,matin->m,matin->n,matin->M,matin->N);CHKERRQ(ierr);
   ierr = MatSetType(mat,matin->type_name);CHKERRQ(ierr);
   ierr = PetscMemcpy(mat->ops,matin->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   a    = (Mat_MPIAIJ*)mat->data;
@@ -1841,7 +1844,7 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIAIJ"
-PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, MatType type,Mat *newmat)
 {
   Mat            A;
   PetscScalar    *vals,*svals;
@@ -1969,7 +1972,8 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
   for (i=0; i<m; i++) {
     ourlens[i] -= offlens[i];
   }
-  ierr = MatCreate(comm,m,n,M,N,&A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(A,type);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A,0,ourlens,0,offlens);CHKERRQ(ierr);
 
@@ -2116,7 +2120,8 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,PetscInt csize,M
       olens[i] = olen;
       dlens[i] = dlen;
     }
-    ierr = MatCreate(comm,m,nlocal,PETSC_DECIDE,n,&M);CHKERRQ(ierr);
+    ierr = MatCreate(comm,&M);CHKERRQ(ierr);
+    ierr = MatSetSizes(M,m,nlocal,PETSC_DECIDE,n);CHKERRQ(ierr);
     ierr = MatSetType(M,mat->type_name);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(M,0,dlens,0,olens);CHKERRQ(ierr);
     ierr = PetscFree(dlens);CHKERRQ(ierr);
@@ -2556,7 +2561,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJ(MPI_Comm comm,PetscInt m,Petsc
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,m,n,M,N,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     ierr = MatSetType(*A,MATMPIAIJ);CHKERRQ(ierr);
@@ -2733,7 +2739,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge(MPI_Comm comm,Mat inmat,PetscInt n,Ma
       ierr = MatRestoreRow_SeqAIJ(inmat,i,&nnz,&indx,PETSC_NULL);CHKERRQ(ierr);
     }
     /* This routine will ONLY return MPIAIJ type matrix */
-    ierr = MatCreate(comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,outmat);CHKERRQ(ierr);
+    ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
+    ierr = MatSetSizes(*outmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(*outmat,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(*outmat,0,dnz,0,onz);CHKERRQ(ierr);
     ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -2775,7 +2782,8 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
   ierr = MatGetLocalSize(A,&m,0);CHKERRQ(ierr);
   ierr = MatGetSize(A,0,&N);CHKERRQ(ierr);
   /* Should this be the type of the diagonal block of A? */ 
-  ierr = MatCreate(PETSC_COMM_SELF,m,N,m,N,&B);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,m,N,m,N);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,0);CHKERRQ(ierr);
@@ -3205,10 +3213,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
 
   /* create symbolic parallel matrix B_mpi */
   /*---------------------------------------*/
+  ierr = MatCreate(comm,&B_mpi);CHKERRQ(ierr);
   if (n==PETSC_DECIDE) {
-    ierr = MatCreate(comm,m,n,PETSC_DETERMINE,N,&B_mpi);CHKERRQ(ierr);
+    ierr = MatSetSizes(B_mpi,m,n,PETSC_DETERMINE,N);CHKERRQ(ierr);
   } else {
-    ierr = MatCreate(comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,&B_mpi);CHKERRQ(ierr);
+    ierr = MatSetSizes(B_mpi,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   }
   ierr = MatSetType(B_mpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B_mpi,0,dnz,0,onz);CHKERRQ(ierr);
@@ -3799,10 +3808,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   b->getrowactive = PETSC_FALSE;
 
   /* Explicitly create 2 MATSEQAIJ matrices. */
-  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->n,B->m,B->n,&b->A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
+  ierr = MatSetSizes(b->A,B->m,B->n,B->m,B->n);CHKERRQ(ierr);
   ierr = MatSetType(b->A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->N,B->m,B->N,&b->B);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
+  ierr = MatSetSizes(b->B,B->m,B->N,B->m,B->N);CHKERRQ(ierr);
   ierr = MatSetType(b->B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
 

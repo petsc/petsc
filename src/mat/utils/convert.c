@@ -10,7 +10,7 @@
 
   Does not do preallocation so in general will be slow
  */
-PetscErrorCode MatConvert_Basic(Mat mat,const MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat                M;
   const PetscScalar  *vwork;
@@ -24,7 +24,8 @@ PetscErrorCode MatConvert_Basic(Mat mat,const MatType newtype,MatReuse reuse,Mat
 
   if (ln == n) ln = PETSC_DECIDE; /* try to preserve column ownership */
   
-  ierr = MatCreate(mat->comm,lm,ln,m,n,&M);CHKERRQ(ierr);
+  ierr = MatCreate(mat->comm,&M);CHKERRQ(ierr);
+  ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
   ierr = MatSetType(M,newtype);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);

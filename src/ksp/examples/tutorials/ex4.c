@@ -48,7 +48,8 @@ int main(int argc,char **args)
         specify only the global size.  The parallel partitioning of
         the matrix will be determined at runtime by PETSc.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetType(A,MATBDIAG);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(A,0,1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIBDiagSetPreallocation(A,0,1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -61,7 +62,8 @@ int main(int argc,char **args)
         so that the matrix format and parallel partitioning will be
         determined at runtime.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&B);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
 
   /* 

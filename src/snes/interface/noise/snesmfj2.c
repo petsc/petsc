@@ -267,7 +267,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nloc);CHKERRQ(ierr);
-  ierr = MatCreate(comm,nloc,n,n,n,J);CHKERRQ(ierr);
+  ierr = MatCreate(comm,J);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J,nloc,n,n,n);CHKERRQ(ierr);
   ierr = MatSetType(*J,MATSHELL);CHKERRQ(ierr);
   ierr = MatShellSetContext(*J,mfctx);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)(void))SNESMatrixFreeMult2_Private);CHKERRQ(ierr);

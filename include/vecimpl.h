@@ -75,7 +75,7 @@ struct _VecOps {
   PetscErrorCode (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
   PetscErrorCode (*setfromoptions)(Vec);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
-  PetscErrorCode (*load)(PetscViewer,const VecType,Vec*);
+  PetscErrorCode (*load)(PetscViewer,VecType,Vec*);
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemin)(Vec,Vec,Vec);

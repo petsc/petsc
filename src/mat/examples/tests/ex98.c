@@ -50,7 +50,8 @@ int main(int argc,char **args)
     ia[0] = 0; ia[1] = 2; ia[2] = 5; ia[3] = 8; ia[4] = 10;
   }
 
-  ierr = MatCreate(PETSC_COMM_WORLD,4,4,16,16,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,4,4,16,16);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocationCSR(A,ia,ja,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(ia);CHKERRQ(ierr);

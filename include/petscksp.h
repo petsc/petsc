@@ -47,14 +47,14 @@ E*/
 #define KSPBICG       "bicg"
 #define KSPMINRES     "minres"
 #define KSPSYMMLQ     "symmlq"
-#define KSPType char*
+#define KSPType const char*
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE;
 extern PetscEvent    KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm,KSP *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP,const KSPType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP,KSPType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUpOnBlocks(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP,Vec,Vec);

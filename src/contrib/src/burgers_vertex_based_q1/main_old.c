@@ -103,8 +103,9 @@ int AppCtxSolve(AppCtx* appctx)
   ierr = SNESSetFunction(snes,f,FormFunction,(void *)appctx); CHKERRQ(ierr);
 
   /***** Forgot to create matrix J.  Later will need nonzero strucure  ************/
-VecGetSize(f, &size);
-MatCreate(comm, size  ,size  , &J);
+  ierr = VecGetSize(f, &size); CHKERRQ(ierr);
+  ierr = MatCreate(comm, &J); CHKERRQ(ierr);
+  ierr = MatSetSizes(J, PETSC_DECIDE, PETSC_DECIDE, size, size); CHKERRQ(ierr);
 
   /*      Set Jacobian   */
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void *)appctx);CHKERRQ(ierr);
@@ -121,7 +122,8 @@ MatCreate(comm, size  ,size  , &J);
 printf("about to call the solver\n");
 
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, x, &its);CHKERRQ(ierr);
+ ierr = SNESSolve(snes, PETSC_NULL, x);CHKERRQ(ierr);
+  ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
   
   ierr = SNESDestroy(snes); CHKERRQ(ierr);  
 

@@ -128,7 +128,8 @@ int AppCtxSolve(AppCtx* appctx)
 /*   ierr = VecView(g, VIEWER_STDOUT_WORLD);CHKERRQ(ierr);   */
 
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, g, &its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes, PETSC_NULL, g);CHKERRQ(ierr);
+  ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
 
 /* printf("the final solution vector\n"); */
 

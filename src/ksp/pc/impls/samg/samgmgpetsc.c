@@ -73,7 +73,8 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
        nnz_per_row[I] = ia[I+1] - ia[I]; 
 
    /*..Allocate (create) SeqAIJ matrix  for use within PETSc..*/
-   ierr = MatCreate(PETSC_COMM_WORLD,numnodes,numnodes,numnodes,numnodes,&A);
+   ierr = MatCreate(PETSC_COMM_WORLD,&A);
+   ierr = MatSetSizes(A,numnodes,numnodes,numnodes,numnodes);
    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
    ierr = MatSeqAIJSetPreallocation(A,0,nnz_per_row);CHKERRQ(ierr);
 

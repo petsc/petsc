@@ -249,7 +249,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_KSP(PC pc)
 {
   PetscErrorCode ierr;
-  char           *prefix;
+  const char     *prefix;
   PC_KSP         *jac;
 
   PetscFunctionBegin;

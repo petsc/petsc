@@ -387,10 +387,11 @@ use of complex numbers in PETSc programs.
 
 Usage of PETSc matrices and vectors is similar. \sindex{matrices} 
 The user can create a new parallel or sequential matrix, \trl{A}, which
-has \trl{M} global rows and \trl{N} global columns, with the routine
-\findex{MatCreate()}
+has \trl{M} global rows and \trl{N} global columns, with the routines
+\findex{MatCreate()} and \findex{MatSetSizes()}
 \begin{tabbing}
-  MatCreate(MPI\_Comm comm,int m,int n,int M,int N,Mat *A);
+  MatCreate(MPI\_Comm comm,Mat *A);
+  MatSetSizes(Mat A,int m,int n,int M,int N);
 \end{tabbing}
 where the matrix format can be specified at runtime.  The user could
 alternatively specify each processes' number of local rows and columns
@@ -505,7 +506,7 @@ processors over which the object is to be distributed.  For example,
 as mentioned above, some commands for matrix, vector, and linear solver
 creation are:
 \begin{tabbing}
-  MatCreate(MPI\_Comm comm,int M,int N,Mat *A);\\
+  MatCreate(MPI\_Comm comm,Mat *A);\\
   VecCreate(MPI\_Comm comm,Vec *x);\\
   KSPCreate(MPI\_Comm comm,KSP *ksp); 
 \end{tabbing}

@@ -13,7 +13,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT  PCInitializePackage(const char[]);
    These are added with the PCRegisterDynamic() macro
 */
 extern PetscFList PCList;
-#define PCType char*
+#define PCType const char*
 
 /*S
      PC - Abstract PETSc object that manages all preconditioners
@@ -80,7 +80,7 @@ typedef enum { PC_LEFT,PC_RIGHT,PC_SYMMETRIC } PCSide;
 extern const char *PCSides[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate(MPI_Comm,PC*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC,const PCType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC,PCType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetUp(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetUpOnBlocks(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCApply(PC,Vec,Vec);

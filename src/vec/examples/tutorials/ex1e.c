@@ -127,7 +127,7 @@ _ VecNorm(y,NORM_2,&norm);___
   v = norm-8.0*sqrt((PetscReal) n); if (v > -PETSC_EPS && v < PETSC_EPS) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);___
 
-_ VecAYPX(y,&two,x);___
+_ VecAYPX(y,two,x);___
 _ VecNorm(y,NORM_2,&norm);___
   v = norm-18.0*sqrt((PetscReal) n); if (v > -PETSC_EPS && v < PETSC_EPS) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecAYPX %g\n",v);___

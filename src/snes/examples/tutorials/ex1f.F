@@ -111,8 +111,8 @@
 
 !  Create Jacobian matrix data structure
 
-      call MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,i2,i2,J,   &
-     &               ierr)
+      call MatCreate(PETSC_COMM_SELF,J,ierr)
+      call MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,i2,i2,ierr)
       call MatSetFromOptions(J,ierr)
 
 !  Set function evaluation routine and vector
@@ -166,7 +166,7 @@
 
       pfive = 0.5
       call VecSet(x,pfive,ierr)
-      call SNESSolve(snes,x,ierr)
+      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
       call SNESGetIterationNumber(snes,its,ierr);
       if (rank .eq. 0) then
          write(6,100) its

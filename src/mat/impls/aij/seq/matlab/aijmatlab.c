@@ -178,7 +178,8 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Ma
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr                       = MatCreate(A->comm,A->m,A->n,A->m,A->n,F);CHKERRQ(ierr);
+  ierr                       = MatCreate(A->comm,F);CHKERRQ(ierr);
+  ierr                       = MatSetSizes(*F,A->m,A->n,A->m,A->n);CHKERRQ(ierr);
   ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
   ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_Matlab;
@@ -241,7 +242,8 @@ PetscErrorCode MatLUFactorSymbolic_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr                       = MatCreate(A->comm,A->m,A->n,A->m,A->n,F);CHKERRQ(ierr);
+  ierr                       = MatCreate(A->comm,F);CHKERRQ(ierr);
+  ierr                       = MatSetSizes(*F,A->m,A->n,A->m,A->n);CHKERRQ(ierr);
   ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
   ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_Matlab_QR;
@@ -265,7 +267,8 @@ PetscErrorCode MatILUDTFactor_Matlab(Mat A,IS isrow,IS iscol,MatFactorInfo *info
   if (info->dt == PETSC_DEFAULT)      info->dt      = .005;
   if (info->dtcol == PETSC_DEFAULT)   info->dtcol   = .01;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr                       = MatCreate(A->comm,A->m,A->n,A->m,A->n,F);CHKERRQ(ierr);
+  ierr                       = MatCreate(A->comm,F);CHKERRQ(ierr);
+  ierr                       = MatSetSizes(*F,A->m,A->n,A->m,A->n);CHKERRQ(ierr);
   ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
   ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_Matlab;

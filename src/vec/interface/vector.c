@@ -269,6 +269,130 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecValid(Vec v,PetscTruth *flg)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecSetOptionsPrefix"
+/*@C
+   VecSetOptionsPrefix - Sets the prefix used for searching for all 
+   Vec options in the database.
+
+   Collective on Vec
+
+   Input Parameter:
++  v - the Vec context
+-  prefix - the prefix to prepend to all option names
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOVECICALLY the hyphen.
+
+   Level: advanced
+
+.keywords: Vec, set, options, prefix, database
+
+.seealso: VecSetFromOptions()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetOptionsPrefix(Vec v,const char prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)v,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecAppendOptionsPrefix"
+/*@C
+   VecAppendOptionsPrefix - Appends to the prefix used for searching for all 
+   Vec options in the database.
+
+   Collective on Vec
+
+   Input Parameters:
++  v - the Vec context
+-  prefix - the prefix to prepend to all option names
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOVECICALLY the hyphen.
+
+   Level: advanced
+
+.keywords: Vec, append, options, prefix, database
+
+.seealso: VecGetOptionsPrefix()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecAppendOptionsPrefix(Vec v,const char prefix[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)v,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecGetOptionsPrefix"
+/*@C
+   VecGetOptionsPrefix - Sets the prefix used for searching for all 
+   Vec options in the database.
+
+   Not Collective
+
+   Input Parameter:
+.  A - the Vec context
+
+   Output Parameter:
+.  prefix - pointer to the prefix string used
+
+   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   sufficient length to hold the prefix.
+
+   Level: advanced
+
+.keywords: Vec, get, options, prefix, database
+
+.seealso: VecAppendOptionsPrefix()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetOptionsPrefix(Vec v,const char *prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)v,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecSetUp"
+/*@
+   VecSetUp - Sets up the internal vector data structures for the later use.
+
+   Collective on Vec
+
+   Input Parameters:
+.  v - the Vec context
+
+   Notes:
+   For basic use of the Vec classes the user need not explicitly call
+   VecSetUp(), since these actions will happen automatically.
+
+   Level: advanced
+
+.keywords: Vec, setup
+
+.seealso: VecCreate(), VecDestroy()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec v)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecDot"
 /*@
    VecDot - Computes the vector dot product.
@@ -1136,7 +1260,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidScalarPointer(alpha,1);
   PetscValidHeaderSpecific(w,VEC_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,3); 
   PetscValidHeaderSpecific(y,VEC_COOKIE,4);

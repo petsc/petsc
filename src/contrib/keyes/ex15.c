@@ -178,7 +178,8 @@ int main( int argc, char **argv )
   ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf); CHKERRA(ierr);
   ierr = SNESSetTolerances(snes,atol,rtol,stol,1,maxf); CHKERRA(ierr);
   ierr = FormInitialGuess1(&user,finegrid->x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,finegrid->x,&its); CHKERRA(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,finegrid->x); CHKERRA(ierr);
+  ierr = SNESGetIterationNumber(snes, &its); CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Pre-load Newton iterations = %d\n", its );CHKERRA(ierr);
 
   /* Reset options, start timer, then solve nonlinear system */
@@ -186,7 +187,8 @@ int main( int argc, char **argv )
   ierr = FormInitialGuess1(&user,finegrid->x); CHKERRA(ierr);
   ierr = PLogStagePush(1);CHKERRA(ierr);
   ierr = PetscGetTime(&v1); CHKERRA(ierr);
-  ierr = SNESSolve(snes,finegrid->x,&its); CHKERRA(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,finegrid->x); CHKERRA(ierr);
+  ierr = SNESGetIterationNumber(snes, &its); CHKERRA(ierr);
   ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = PetscGetTime(&v2); CHKERRA(ierr);
   ierr = PLogStagePop();CHKERRA(ierr);

@@ -60,6 +60,6 @@ EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat,Ma
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat,Vec,Vec);
 
 EXTERN PetscErrorCode MatRelax_SeqSBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
-EXTERN PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer,const MatType,Mat*);
+EXTERN PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer, MatType,Mat*);
 
 #endif

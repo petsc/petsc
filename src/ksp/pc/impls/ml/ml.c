@@ -662,7 +662,8 @@ PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,Mat *newmat)
   } 
 
   /* ML Amat is in MSR format. Copy its data into SeqAIJ matrix */
-  ierr = MatCreate(PETSC_COMM_SELF,m,n,PETSC_DECIDE,PETSC_DECIDE,newmat);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,newmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*newmat,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(*newmat,MATSEQAIJ);CHKERRQ(ierr);
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nnz);
 
@@ -744,7 +745,8 @@ PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
   n = mlmat->invec_leng;
   if (m != n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
 
-  ierr = MatCreate(mlmat->comm->USR_comm,m,n,PETSC_DECIDE,PETSC_DECIDE,&A);CHKERRQ(ierr);
+  ierr = MatCreate(mlmat->comm->USR_comm,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr = PetscMalloc3(m,PetscInt,&nnzA,m,PetscInt,&nnzB,m,PetscInt,&nnz);CHKERRQ(ierr);
   

@@ -103,7 +103,7 @@
 
 ! Solve nonlinear system
       call FormInitialGuess(snes,x,ierr)
-      call SNESSolve(snes,x,ierr)
+      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
       call SNESGetIterationNumber(snes,its,ierr);
 
 ! Write results if first processor

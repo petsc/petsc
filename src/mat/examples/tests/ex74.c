@@ -30,7 +30,8 @@ int main(int argc,char **args)
 
   n = mbs*bs;
   ierr=MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,n,n,nz,PETSC_NULL, &A);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_SELF,n,n,PETSC_NULL,PETSC_NULL,&sA);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&sA);CHKERRQ(ierr);
+  ierr = MatSetSizes(sA,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(sA,MATSEQSBAIJ);CHKERRQ(ierr);
   /* -mat_type <seqsbaij_derived type>, e.g., seqsbaijspooles, sbaijmumps */
   ierr = MatSetFromOptions(sA);CHKERRQ(ierr); 

@@ -30,7 +30,8 @@ int main(int argc,char **args)
   n = mbs*bs;
   
   /* Assemble MPISBAIJ matrix sA */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&sA);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&sA);CHKERRQ(ierr);
+  ierr = MatSetSizes(sA,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
   ierr = MatSetType(sA,MATSBAIJ);CHKERRQ(ierr);
   /* -mat_type <seqsbaij_derived type>, e.g., mpisbaijspooles, sbaijmumps */
   ierr = MatSetFromOptions(sA);CHKERRQ(ierr);

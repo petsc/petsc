@@ -54,7 +54,7 @@ PetscErrorCode AppCtxSolve(AppCtx* appctx)
   ierr = FormInitialGuess(appctx);CHKERRQ(ierr); 
   
   /*  10) Solve the non-linear system  */
-  ierr = SNESSolve(snes,algebra->g);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,algebra->g);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 
   if(0){VecView(algebra->g,PETSC_VIEWER_STDOUT_SELF);}

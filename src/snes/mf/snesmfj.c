@@ -677,7 +677,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatCreateMF(Vec x,Mat *J)
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nloc);CHKERRQ(ierr);
-  ierr = MatCreate(comm,nloc,nloc,n,n,J);CHKERRQ(ierr);
+  ierr = MatCreate(comm,J);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J,nloc,nloc,n,n);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMFFD,0,"MatCreate_MFFD",MatCreate_MFFD);CHKERRQ(ierr);
   ierr = MatSetType(*J,MATMFFD);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1851,7 +1851,8 @@ PetscErrorCode MatLoad_MPIRowbs(PetscViewer viewer,const MatType type,Mat *newma
   }
 
   /* create our matrix */
-  ierr = MatCreate(comm,m,m,M,M,newmat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,newmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*newmat,m,m,M,M);CHKERRQ(ierr);
   ierr = MatSetType(*newmat,type);CHKERRQ(ierr);
   ierr = MatMPIRowbsSetPreallocation(*newmat,0,ourlens);CHKERRQ(ierr);
   mat = *newmat;
@@ -2193,7 +2194,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIRowbs(MPI_Comm comm,int m,int M,in
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = MatCreate(comm,m,m,M,M,newA);CHKERRQ(ierr);
+  ierr = MatCreate(comm,newA);CHKERRQ(ierr);
+  ierr = MatSetSizes(*newA,m,m,M,M);CHKERRQ(ierr);
   ierr = MatSetType(*newA,MATMPIROWBS);CHKERRQ(ierr);
   ierr = MatMPIRowbsSetPreallocation(*newA,nz,nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2701,7 +2703,8 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
   } else {
     for (i=0; i<ismax; i++) {
       /* Here we want to explicitly generate SeqAIJ matrices */
-      ierr = MatCreate(PETSC_COMM_SELF,nrow[i],ncol[i],nrow[i],ncol[i],submats+i);CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_SELF,submats+i);CHKERRQ(ierr);
+      ierr = MatSetSizes(submats[i],nrow[i],ncol[i],nrow[i],ncol[i]);CHKERRQ(ierr);
       ierr = MatSetType(submats[i],MATSEQAIJ);CHKERRQ(ierr);
       ierr = MatSeqAIJSetPreallocation(submats[i],0,lens[i]);CHKERRQ(ierr);
     }
@@ -3254,7 +3257,8 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
   ierr = PetscFree(s_waits3);CHKERRQ(ierr);
 
   if (scall ==  MAT_INITIAL_MATRIX) {
-    ierr = MatCreate(comm,nrow,nlocal,PETSC_DECIDE,ncol,submat);CHKERRQ(ierr);
+    ierr = MatCreate(comm,submat);CHKERRQ(ierr);
+    ierr = MatSetSizes(*submat,nrow,nlocal,PETSC_DECIDE,ncol);CHKERRQ(ierr);
     ierr = MatSetType(*submat,C->type_name);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(*submat,0,d_nz,0,o_nz);CHKERRQ(ierr);
     mat=(Mat_MPIAIJ *)((*submat)->data);

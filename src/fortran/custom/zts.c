@@ -260,7 +260,7 @@ void PETSC_STDCALL tssetmonitor_(TS *ts,void (PETSC_STDCALL *func)(TS*,PetscInt*
 
 void PETSC_STDCALL tsgetoptionsprefix_(TS *ts,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tname;
+  const char *tname;
 
   *ierr = TSGetOptionsPrefix(*ts,&tname);
 #if defined(PETSC_USES_CPTOFCD)

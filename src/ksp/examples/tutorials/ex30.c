@@ -30,13 +30,15 @@ int main(int argc,char **argv)
       a[i+j*size] = rand(); b[i+j*lda] = a[i+j*size];
     }
   }
-  ierr = MatCreate(MPI_COMM_SELF,size,size,size,size,&A);CHKERRQ(ierr);
+  ierr = MatCreate(MPI_COMM_SELF,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,size,size,size,size);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(A,a);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatCreate(MPI_COMM_SELF,size,size,size,size,&B);CHKERRQ(ierr);
+  ierr = MatCreate(MPI_COMM_SELF,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,size,size,size,size);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(B,b);CHKERRQ(ierr);
   ierr = MatSeqDenseSetLDA(B,lda);CHKERRQ(ierr);

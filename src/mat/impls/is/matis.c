@@ -98,7 +98,8 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mappin
 
   /* Create the local matrix A */
   ierr = ISLocalToGlobalMappingGetSize(mapping,&n);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_SELF,n,n,n,n,&is->A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&is->A);CHKERRQ(ierr);
+  ierr = MatSetSizes(is->A,n,n,n,n);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)is->A,"is");CHKERRQ(ierr);
   ierr = MatSetFromOptions(is->A);CHKERRQ(ierr);
 

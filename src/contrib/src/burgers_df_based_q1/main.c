@@ -82,7 +82,8 @@ int AppCtxSolve(AppCtx* appctx)
   /* initial guess */
   ierr = FormInitialGuess(appctx);CHKERRQ(ierr); 
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, algebra->g, &its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes, PETSC_NULL, algebra->g);CHKERRQ(ierr);
+  ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
 
   if(0){VecView(algebra->g, VIEWER_STDOUT_SELF);}
 

@@ -168,7 +168,8 @@ PetscErrorCode AppCtxCreateMatrix(AppCtx* appctx)
   PetscErrorCode         ierr;
  
   PetscFunctionBegin;
-  ierr = MatCreate(comm,grid->vertex_local_n,grid->vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE,&algebra->A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&algebra->A);CHKERRQ(ierr);
+  ierr = MatSetSizes(algebra->A,grid->vertex_local_n,grid->vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(algebra->A);CHKERRQ(ierr);
 
   /* Allows one to set values into the matrix using the LOCAL numbering, via MatSetValuesLocal() */

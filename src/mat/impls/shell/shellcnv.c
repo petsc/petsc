@@ -5,7 +5,7 @@
   
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_Shell"
-PetscErrorCode MatConvert_Shell(Mat oldmat,const MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            mat;
   Vec            in,out;
@@ -25,7 +25,8 @@ PetscErrorCode MatConvert_Shell(Mat oldmat,const MatType newtype,MatReuse reuse,
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
-  ierr = MatCreate(comm,m,M,M,M,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,m,M,M,M);CHKERRQ(ierr);
   ierr = MatSetType(mat,newtype);CHKERRQ(ierr);
   ierr = MatSetBlockSize(mat,oldmat->bs);CHKERRQ(ierr);
 
