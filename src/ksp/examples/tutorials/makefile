@@ -423,11 +423,27 @@ runex10_20: # test ilu with shift
 runex10_21: #test icc with shift
 	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shiftnonzero 0.1 > ex10_21.tmp 2>&1; \
 	   if (${DIFF} output/ex10_21shiftnz.out ex10_21.tmp) then true; \
-	   else echo "Possible problem with ex10_21shiftnz, diffs above"; fi; \
+	   else echo "Possible problem with ex10_21shiftnz on aij matrix, diffs above"; fi; \
+	   ${RM} -f ex10_21.tmp
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shiftnonzero 0.1 -mat_type baij > ex10_21.tmp 2>&1; \
+	   if (${DIFF} output/ex10_21shiftnz.out ex10_21.tmp) then true; \
+	   else echo "Possible problem with ex10_21shiftnz on baij matrix, diffs above"; fi; \
+	   ${RM} -f ex10_21.tmp
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shiftnonzero 0.1 -mat_type sbaij > ex10_21.tmp 2>&1; \
+	   if (${DIFF} output/ex10_21shiftnz.out ex10_21.tmp) then true; \
+	   else echo "Possible problem with ex10_21shiftnz on sbaij matrix, diffs above"; fi; \
 	   ${RM} -f ex10_21.tmp
 	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shiftpd > ex10_21.tmp 2>&1; \
 	   if (${DIFF} output/ex10_21shiftpd.out ex10_21.tmp) then true; \
-	   else echo "Possible problem with ex10_21shiftpd, diffs above"; fi; \
+	   else echo "Possible problem with ex10_21shiftpd on aij matrix, diffs above"; fi; \
+	   ${RM} -f ex10_21.tmp
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shiftpd -mat_type baij > ex10_21.tmp 2>&1; \
+	   if (${DIFF} output/ex10_21shiftpd.out ex10_21.tmp) then true; \
+	   else echo "Possible problem with ex10_21shiftpd on baij matrix, diffs above"; fi; \
+	   ${RM} -f ex10_21.tmp
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shiftpd -mat_type sbaij > ex10_21.tmp 2>&1; \
+	   if (${DIFF} output/ex10_21shiftpd.out ex10_21.tmp) then true; \
+	   else echo "Possible problem with ex10_21shiftpd on sbaij matrix, diffs above"; fi; \
 	   ${RM} -f ex10_21.tmp
 runex11:
 	-@${MPIRUN} -np 1 ./ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_cgs_refinement_type always > ex11_1.tmp 2>&1; \

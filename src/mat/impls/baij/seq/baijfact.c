@@ -279,9 +279,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
-  PetscReal      damping=b->factor_damping,zeropivot=b->factor_zeropivot,shift_amount;
-  PetscTruth     damp,chshift;
-  PetscInt       nshift=0,ndamp=0;
+  PetscReal      zeropivot,rs,shiftnz;
+  PetscTruth     shiftpd;
+  ChShift_Ctx    sctx;
+  PetscInt       newshift;
 
   PetscFunctionBegin;
   if (bs > 1) {
@@ -295,16 +296,20 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
   }
   
   /* initialization */
+  shiftnz   = info->shiftnz;
+  shiftpd   = info->shiftpd;
+  zeropivot = info->zeropivot;
+
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
   nz   = (2*mbs+1)*sizeof(PetscInt)+mbs*sizeof(MatScalar);
   ierr = PetscMalloc(nz,&il);CHKERRQ(ierr);
   jl   = il + mbs;
   rtmp = (MatScalar*)(jl + mbs);
 
-  shift_amount = 0;
+  sctx.shift_amount = 0;
+  sctx.nshift       = 0;
   do {
-    damp = PETSC_FALSE;
-    chshift = PETSC_FALSE;
+    sctx.chshift = PETSC_FALSE;
     for (i=0; i<mbs; i++) {
       rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
     } 
@@ -320,8 +325,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
           *bval++  = 0.0; /* for in-place factorization */
         }
       } 
-      /* damp the diagonal of the matrix */
-      if (ndamp||nshift) rtmp[k] += damping+shift_amount; 
+   
+      /* shift the diagonal of the matrix */
+      if (sctx.nshift) rtmp[k] += sctx.shift_amount;
 
       /* modify k-th row by adding in those rows i with U(i,k)!=0 */
       dk = rtmp[k];
@@ -347,41 +353,25 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
         i = nexti;         
       }
 
-      if (PetscRealPart(dk) < zeropivot && b->factor_shift){
-	/* calculate a shift that would make this row diagonally dominant */
-	PetscReal rs = PetscAbs(PetscRealPart(dk));
-	jmin      = bi[k]+1; 
-	nz        = bi[k+1] - jmin; 
-	if (nz){
-	  bcol = bj + jmin;
-	  bval = ba + jmin;
-	  while (nz--){
-	    rs += PetscAbsScalar(rtmp[*bcol++]);
-	  }
-	}
-	/* if this shift is less than the previous, just up the previous
-	   one by a bit */
-	shift_amount = PetscMax(rs,1.1*shift_amount);
-	chshift  = PETSC_TRUE;
-	/* Unlike in the ILU case there is no exit condition on nshift:
-	   we increase the shift until it converges. There is no guarantee that
-	   this algorithm converges faster or slower, or is better or worse
-	   than the ILU algorithm. */
-	nshift++;
-	break;
-      }
-      if (PetscRealPart(dk) < zeropivot){
-        if (damping == (PetscReal) PETSC_DECIDE) damping = -PetscRealPart(dk)/(k+1);
-        if (damping > 0.0) {      
-          if (ndamp) damping *= 2.0;    
-          damp = PETSC_TRUE;
-          ndamp++;
-          break; 
-        } else if (PetscAbsScalar(dk) < zeropivot){
-          SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",k,PetscRealPart(dk),zeropivot);  
-        } else {
-          PetscLogInfo((PetscObject)A,"Negative pivot %g in row %D of Cholesky factorization\n",PetscRealPart(dk),k);
+      /* shift the diagonals when zero pivot is detected */
+      /* compute rs=sum of abs(off-diagonal) */
+      rs   = 0.0;
+      jmin = bi[k]+1; 
+      nz   = bi[k+1] - jmin; 
+      if (nz){
+        bcol = bj + jmin;
+        while (nz--){
+          rs += PetscAbsScalar(rtmp[*bcol++]);
         }
+      }
+
+      sctx.rs = rs;
+      sctx.pv = dk;
+      ierr = Mat_CholeskyCheckShift(info,&sctx,&newshift);CHKERRQ(ierr);
+      if (newshift == 1){
+        break;    /* sctx.shift_amount is updated */
+      } else if (newshift == -1){
+        SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",k,PetscAbsScalar(dk),zeropivot,rs);
       }
 
       /* copy data into U(k,:) */
@@ -396,7 +386,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
         i = bj[jmin]; jl[k] = jl[i]; jl[i] = k;
       }        
     } 
-  } while (damp||chshift);
+  } while (sctx.chshift);
   ierr = PetscFree(il);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
@@ -404,11 +394,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
   PetscLogFlops(C->m);
-  if (ndamp) {
-    PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqBAIJ: number of damping tries %D damping value %g\n",ndamp,damping);
-  }
-  if (nshift) {
-    PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqBAIJ diagonal shifted %D shifts\n",nshift);
+  if (sctx.nshift){
+    if (shiftnz) {
+      PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqBAIJ_1: number of shiftnz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
+    } else if (shiftpd) {
+      PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqBAIJ_1: number of shiftpd tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -421,29 +412,30 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat A,MatFacto
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data;
   Mat_SeqSBAIJ   *b=(Mat_SeqSBAIJ*)C->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,am=a->mbs,bs=A->bs; 
+  PetscInt       i,j,am=a->mbs; 
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  PetscInt       k,jmin,*jl,*il,nexti,ili,*acol,*bcol,nz,ndamp = 0;
+  PetscInt       k,jmin,*jl,*il,nexti,ili,*acol,*bcol,nz;
   MatScalar      *rtmp,*ba=b->a,*aa=a->a,dk,uikdi,*aval,*bval;
-  PetscReal      damping=b->factor_damping, zeropivot=b->factor_zeropivot,shift_amount;
-  PetscTruth     damp,chshift;
-  PetscInt       nshift=0;
+  PetscReal      zeropivot,rs,shiftnz;
+  PetscTruth     shiftpd;
+  ChShift_Ctx    sctx;
+  PetscInt       newshift;
 
   PetscFunctionBegin;
-  if (bs > 1) {
-    SETERRQ(PETSC_ERR_USER,"not done yet"); 
-  }
-
   /* initialization */
+  shiftnz   = info->shiftnz;
+  shiftpd   = info->shiftpd;
+  zeropivot = info->zeropivot;
+
   nz   = (2*am+1)*sizeof(PetscInt)+am*sizeof(MatScalar);
   ierr = PetscMalloc(nz,&il);CHKERRQ(ierr);
   jl   = il + am;
   rtmp = (MatScalar*)(jl + am);
 
-  shift_amount = 0;
+  sctx.shift_amount = 0;
+  sctx.nshift       = 0;
   do {
-    damp = PETSC_FALSE;
-    chshift = PETSC_FALSE;
+    sctx.chshift = PETSC_FALSE;
     for (i=0; i<am; i++) {
       rtmp[i] = 0.0; jl[i] = am; il[0] = 0;
     }
@@ -462,8 +454,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat A,MatFacto
           *bval++       = 0.0; /* for in-place factorization */
         }
       } 
-      /* damp the diagonal of the matrix */
-      if (ndamp||nshift) rtmp[k] += damping+shift_amount; 
+     
+      /* shift the diagonal of the matrix */
+      if (sctx.nshift) rtmp[k] += sctx.shift_amount;
     
       /* modify k-th row by adding in those rows i with U(i,k)!=0 */
       dk = rtmp[k];
@@ -491,43 +484,27 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat A,MatFacto
         i = nexti;         
       }
 
-      if (PetscRealPart(dk) < zeropivot && b->factor_shift){
-	/* calculate a shift that would make this row diagonally dominant */
-	PetscReal rs = PetscAbs(PetscRealPart(dk));
-	jmin      = bi[k]+1; 
-	nz        = bi[k+1] - jmin; 
-	if (nz){
-	  bcol = bj + jmin;
-	  bval = ba + jmin;
-	  while (nz--){
-	    rs += PetscAbsScalar(rtmp[*bcol++]);
-	  }
-	}
-	/* if this shift is less than the previous, just up the previous
-	   one by a bit */
-	shift_amount = PetscMax(rs,1.1*shift_amount);
-	chshift  = PETSC_TRUE;
-	/* Unlike in the ILU case there is no exit condition on nshift:
-	   we increase the shift until it converges. There is no guarantee that
-	   this algorithm converges faster or slower, or is better or worse
-	   than the ILU algorithm. */
-	nshift++;
-	break;
-      }
-      if (PetscRealPart(dk) < zeropivot){
-        if (damping == (PetscReal) PETSC_DECIDE) damping = -PetscRealPart(dk)/(k+1);
-        if (damping > 0.0) {      
-          if (ndamp) damping *= 2.0;    
-          damp = PETSC_TRUE;
-          ndamp++;
-          break; 
-        } else if (PetscAbsScalar(dk) < zeropivot){
-          SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",k,PetscRealPart(dk),zeropivot);  
-        } else {
-          PetscLogInfo((PetscObject)A,"Negative pivot %g in row %D of Cholesky factorization\n",PetscRealPart(dk),k);
+      /* shift the diagonals when zero pivot is detected */
+      /* compute rs=sum of abs(off-diagonal) */
+      rs   = 0.0;
+      jmin = bi[k]+1; 
+      nz   = bi[k+1] - jmin; 
+      if (nz){
+        bcol = bj + jmin;
+        while (nz--){
+          rs += PetscAbsScalar(rtmp[*bcol++]);
         }
       }
-      
+
+      sctx.rs = rs;
+      sctx.pv = dk;
+      ierr = Mat_CholeskyCheckShift(info,&sctx,&newshift);CHKERRQ(ierr);
+      if (newshift == 1){
+        break;    /* sctx.shift_amount is updated */
+      } else if (newshift == -1){
+        SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",k,PetscAbsScalar(dk),zeropivot,rs);
+      }
+
       /* copy data into U(k,:) */
       ba[bi[k]] = 1.0/dk;
       jmin      = bi[k]+1; 
@@ -544,18 +521,19 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat A,MatFacto
         i = bj[jmin]; jl[k] = jl[i]; jl[i] = k;
       }        
     } 
-  } while (damp||chshift);
+  } while (sctx.chshift);
   ierr = PetscFree(il);CHKERRQ(ierr);
   
   C->factor       = FACTOR_CHOLESKY; 
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
   PetscLogFlops(C->m);
-  if (ndamp) {
-    PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqBAIJ_1_NaturalOrdering: number of damping tries %D damping value %g\n",ndamp,damping);
-  }
-  if (nshift) {
-    PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqBAIJ_1_NaturalOrdering diagonal shifted %D shifts\n",nshift);
+    if (sctx.nshift){
+    if (shiftnz) {
+      PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqBAIJ_1_NaturalOrdering: number of shiftnz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
+    } else if (shiftpd) {
+      PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqBAIJ_1_NaturalOrdering: number of shiftpd tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
+    }
   }
   PetscFunctionReturn(0);
 }

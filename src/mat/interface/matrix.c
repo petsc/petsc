@@ -1806,6 +1806,7 @@ PetscErrorCode MatLUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat
 
    Input Parameters:
 +  mat - the matrix
+.  info - options for factorization
 -  fact - the matrix generated for the factor, from MatLUFactorSymbolic()
 
    Notes:
@@ -1968,6 +1969,8 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat
 
    Input Parameter:
 .  mat - the initial matrix
+.  info - options for factorization
+-  fact - the symbolic factor of mat
 
    Output Parameter:
 .  fact - the factored matrix
