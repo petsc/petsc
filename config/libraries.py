@@ -277,8 +277,11 @@ int checkInit(void) {
 
   def checkMath(self):
     '''Check for sin() in libm, the math library'''
-    if not self.check('','sin', prototype = 'double sin(double);', call = 'sin(1.0);\n'):
-      self.check('m', 'sin', prototype = 'double sin(double);', call = 'sin(1.0);\n')
+    self.math = None
+    if self.check('','sin', prototype = 'double sin(double);', call = 'sin(1.0);\n'):
+      self.math = []
+    elif self.check('m', 'sin', prototype = 'double sin(double);', call = 'sin(1.0);\n'):
+      self.math = ['libm.a']
     return
 
   def checkSuffix(self):
