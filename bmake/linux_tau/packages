@@ -33,8 +33,6 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 # TAU Instrumentation package (Just update the path to the TAU Makefile)
 #
 include /sandbox/balay/tau-2.11.18/include/Makefile
+TAU_LIB              = -L${TAUROOT}/${CONFIG_ARCH}/lib -ltau-mpi-pdt -lTauMpi-mpi-pdt -lstdc++
 PDT_PARSE            = ${PDTDIR}/${PDTARCHDIR}/bin/cxxparse
 TAU_INSTR            = ${TAUROOT}/${CONFIG_ARCH}/bin/tau_instrumentor
-TAU_LIB              = -L${TAUROOT}/${CONFIG_ARCH}/lib -ltau-mpi-pdt -lTauMpi-mpi-pdt -lstdc++
-PETSC_COMPILE_SINGLE = ${TAU_COMPILE_SINGLE}
-PETSC_COMPILE        = ${TAU_COMPILE}

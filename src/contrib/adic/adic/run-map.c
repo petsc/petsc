@@ -40,12 +40,12 @@ void* ad_map_init(int dsize, int msize, int bsize, int asize)
     entries_per_bucket = bsize;
   }
   bucket_size = entries_per_bucket*entry_size;
-  if (map) {
-    free(map);
+  if (map_def) {
+    free(map_def);
   }
-  map = (MapEntry*)calloc(map_size, sizeof(MapEntry) + bucket_size);
-  entry = map;
-  pblock = (char*)(map + map_size);
+  map_def = (MapEntry*)calloc(map_size, sizeof(MapEntry) + bucket_size);
+  entry = map_def;
+  pblock = (char*)(map_def + map_size);
   for (i = 0; i < map_size; i++) {
     entry->next = (Pair*)pblock;
     pblock += bucket_size;
@@ -55,7 +55,7 @@ void* ad_map_init(int dsize, int msize, int bsize, int asize)
   freeList = 0;
   blockList = 0;
   curBlock = 0;
-  return(map);
+  return(map_def);
 }
   
 void ad_map_cleanup()
@@ -71,8 +71,8 @@ void ad_map_cleanup()
     blockList = 0;
   }
   
-  free(map);
-  map = 0;
+  free(map_def);
+  map_def = 0;
 }
 
 /*
@@ -111,7 +111,7 @@ void* ad_map_get(void* key)
     }
   }
   */
-  MapEntry*	entry = map + (((long)key>>3) % map_size) ;
+  MapEntry*	entry = map_def + (((long)key>>3) % map_size) ;
   if (entry->cache && entry->cache->key == key) {
     return entry->cache->val;
   }

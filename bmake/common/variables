@@ -11,7 +11,8 @@
 #
 PETSC_LIB_DIR	    = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
 PETSC_INCLUDE	    = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include \
-			${MPI_INCLUDE} ${MPE_INCLUDE} ${AMS_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
+			${TAU_DEFS} ${TAU_INCLUDE} ${MPI_INCLUDE} ${MPE_INCLUDE} ${AMS_INCLUDE} \
+	                ${PETSC_BLASLAPACK_FLAGS}
 PETSC_CCPPFLAGS	    = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 PETSC_FCPPFLAGS	    = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${FPPFLAGS}
 PETSC_C_SH_LIB_PATH = ${CLINKER_SLFLAG}${PETSC_LIB_DIR} ${C_DYLIBPATH}
@@ -32,12 +33,12 @@ F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
 #
 # The following variables define PETSc compile procedures
 #
-PETSC_COMPILE         = ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCEC} ${SSOURCE};
-PETSC_COMPILE_SINGLE  = ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $$filename;
+PETSC_COMPILE         = ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCEC} ${SSOURCE}
+PETSC_COMPILE_SINGLE  = ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} 
 PETSC_COMPILE_LIBTOOL = files="${SOURCEC} ${SSOURCE}"; \
                         for filename in $$files; do \
-                            ${PETSC_COMPILE_SINGLE} \
-                        done;
+                            ${PETSC_COMPILE_SINGLE} $$filename;\
+                        done
 #
 # The following additional variables are used by PETSc targets and should not be redifined
 #
@@ -158,24 +159,6 @@ PLAPACK_DIRS       = src/sys/src/utils src/sles/pc/impls/ml
 HYPRE_DIRS         = src/sles/pc/impls/hypre src/vec/impls/hypre src/mat/impls/hypre src/sles/pc/interface
 SPOOLES_DIR        = src/mat/impls/aij src/mat/impls/sbaij
 ADIC_DIRS          = src/mat/impls/aij src/snes/utils src/dm/da/src src/fortran/custom
-#
-# ----------------------------------------------------------------------------------------
-#
-PDT_PETSC_OPTS     = -DPETSC_BOPT='\"${BOPT}\"' -DPETSC_LIB_DIR='\".\/\"' -DPETSC_SLSUFFIX='\"${SLSUFFIX}\"' \
-                     -DPETSC_DIR='\".\/\"' -DPETSC_ARCH='\"${PETSC_ARCH}\"'
-TAU_CPPFLAGS       = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${CPPFLAGS}
-TAU_PETSC_OPTS     = -c -rn PetscFunctionReturn -rv PetscFunctionReturnVoid\(\) 
-TAU_COMPILE_SINGLE =  name=`basename $$filename .c`;\
-		     ${PDT_PARSE} $$filename ${COPTFLAGS} ${CFLAGS} ${TAU_CPPFLAGS} ${PDT_PETSC_OPTS}; \
-                     ${TAU_INSTR} $$name.c.pdb $$filename -o $$name.inst.c ${TAU_PETSC_OPTS}; \
-                     ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${TAU_DEFS} ${TAU_INCLUDE} $$name.inst.c -o $$name.o ;\
-                     ${RM} $$name.c.pdb $$name.inst.c;
-TAU_COMPILE        = files="${SOURCEC} ${SSOURCE}"; \
-                     for filename in $$files foo ; do \
-                         if [ "$$filename" != "foo" ] ; then \
-	                    ${TAU_COMPILE_SINGLE} \
-			fi; \
-                     done;
 #
 # ----------------------------------------------------------------------------------------
 #
