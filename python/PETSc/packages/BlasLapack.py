@@ -211,7 +211,7 @@ class Configure(config.base.Configure):
         f2c = 'f2c'
         l   = 'c'
       else:
-        if not hasattr(self.framework.argDB,'FC'):
+        if not 'FC' in self.framework.argDB:
           raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --with-c-blas-lapack?')
         f2c = 'f'
         l   = 'f'
@@ -234,7 +234,7 @@ class Configure(config.base.Configure):
           f2c = 'f2c'
           l   = 'c'
         else:
-          if not hasattr(self.framework.argDB,'FC'):
+          if not 'FC' in self.framework.argDB:
             raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --with-c-blas-lapack?')
           f2c = 'f'
           l   = 'f'
