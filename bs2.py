@@ -2,10 +2,12 @@
 import commands
 import os.path
 import string
+import sys
 import time
+import traceback
 import types
 
-echo = 2
+echo = 1
 
 class Maker:
   def __init__(self):
@@ -34,7 +36,7 @@ class Maker:
     if status: raise RuntimeError('Could not execute \''+command+'\': '+output)
 
   def executeShellCommand(self, command, checkCommand = None):
-    self.debugPrint(command)
+    self.debugPrint('sh: '+command, 4)
     (status, output) = commands.getstatusoutput(command)
     if checkCommand:
       checkCommand(command, status, output)
@@ -42,10 +44,18 @@ class Maker:
       self.defaultCheckCommand(command, status, output)
     return output
 
+  def debugListStr(self, list):
+    if (self.debugLevel > 1) or (len(list) < 4):
+      return str(list)
+    else:
+      return '['+str(list[0])+'-<'+str(len(list)-2)+'>-'+str(list[-1])+']'
+
   def debugPrint(self, msg, level = 1):
-    if self.debugLevel > level:
-      for i in range(self.debugIndentLevel):
-        write(sys.stdout, self.debugIndent)
+    #indentLevel = self.debugIndentLevel
+    indentLevel = len(traceback.extract_stack())-4
+    if self.debugLevel >= level:
+      for i in range(indentLevel):
+        sys.stdout.write(self.debugIndent)
       print msg
 
 class FileGroup (Maker):
@@ -142,14 +152,13 @@ class FileCompare (Transform):
         self.products.append(source)
       else:
         if (self.compare(target, source)):
-          self.debugPrint(target+' is older than '+source)
           self.products.append(source)
     if (self.returnAll and len(self.products)):
       self.products = self.sources
     return self.products
 
   def execute(self):
-    self.debugPrint('FileCompare: Comparing '+str(self.targets.getFiles())+' to '+str(self.sources.getFiles()), 2)
+    self.debugPrint('Comparing targets '+str(self.targets.getFiles())+' to sources '+str(self.sources.getFiles()), 2)
     self.products = FileGroup()
     files = self.targets.getFiles()
     if (not files):
@@ -168,9 +177,11 @@ class OlderThan (FileCompare):
     FileCompare.__init__(self, targets, sources, returnAll)
 
   def compare(self, target, source):
+    self.debugPrint('Checking if '+source+' is older than '+target, 3)
     targetTime = os.path.getmtime(target)
     sourceTime = os.path.getmtime(source)
     if (targetTime > sourceTime):
+      self.debugPrint(source+' is older than '+target, 3)
       return 1
     else:
       return 0
@@ -181,9 +192,11 @@ class NewerThan (FileCompare):
     FileCompare.__init__(self, targets, sources, returnAll)
 
   def compare(self, target, source):
+    self.debugPrint('Checking if '+source+' is newer than '+target, 3)
     targetTime = os.path.getmtime(target)
     sourceTime = os.path.getmtime(source)
     if (targetTime < sourceTime):
+      self.debugPrint(source+' is newer than '+target, 3)
       return 1
     else:
       return 0
@@ -198,16 +211,17 @@ class NewerThanLibraryObject (FileCompare):
     if (output[0:8] != 'no entry'):
       objectTime = time.mktime(time.strptime(output[25:42], "%b %d %H:%M %Y"))
     else:
-      self.debugPrint('No entry for object '+object+' in '+library)
+      self.debugPrint('No entry for object '+object+' in '+library, 3)
       objectTime = 0
     return objectTime
 
   def compare(self, target, source):
     object     = self.getObjectName(source)
+    self.debugPrint('Checking if '+source+' is newer than '+target+'('+object+')', 3)
     objectTime = self.getObjectTimestamp(object, target)
     sourceTime = os.path.getmtime(source)
-    if (string.find(source, 'Error') >= 0): print 'sourceTime: '+str(sourceTime)+' objectTime: '+str(objectTime)
     if (objectTime < sourceTime):
+      self.debugPrint(source+' is newer than '+target+'('+object+')', 3)
       return 1
     else:
       return 0
@@ -223,7 +237,7 @@ class Action (Transform):
 
   def doFunction(self):
     files = filter(self.fileFilter, self.sources.getFiles())
-    self.debugPrint('Applying '+str(self.program)+' to '+str(files))
+    self.debugPrint('Applying '+str(self.program)+' to '+str(files), 2)
     if (self.allAtOnce):
       self.program(FileGroup(files))
     else:
@@ -298,11 +312,13 @@ class BKCloseFiles (Action):
     oldSources = self.sources
     root       = self.sources.root
     # Add files which were just generated
+    self.debugPrint('Putting new files under version control', 2)
     sources    = FileGroup(string.split(self.executeShellCommand('bk sfiles -ax '+root)))
     self.sources = sources
     self.flags = 'add '+oldFlags
     Action.execute(self)
     # Remove files with no changes
+    self.debugPrint('Reverting unchanged files', 2)
     sources    = FileGroup(string.split(self.executeShellCommand('bk sfiles -lg '+root)))
     self.sources = sources
     map(self.sources.remove, string.split(self.executeShellCommand('bk sfiles -cg '+root)))
@@ -475,7 +491,7 @@ class Target (Transform):
   def executeTransform(self, sources, transform):
     if isinstance(transform, Transform):
       files = sources.getFiles()
-      self.debugPrint('Executing transform '+str(transform)+' with '+str(files), 2)
+      self.debugPrint('Executing transform '+str(transform)+' with sources '+self.debugListStr(files))
       transform.sources.extend(sources)
       products = transform.execute()
     elif isinstance(transform, types.ListType):

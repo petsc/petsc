@@ -1,0 +1,120 @@
+\section{Introduction}
+
+This new build framework is intended to manage all phases on the constructionof software libraries and
+applications. Thus, it must interface with the version control subsystem, manage architecture customization and
+interoperability, and construct libraries and executables efficiently. This structure must be portable to many
+architectures, but we may assume some sophistication on the part of the systems administrator. Finally, we term this a
+framework as it is intended to be extended, customized, and evolved by its users. This is the critical component that is
+missing from all current solutions.
+
+The controlling metaphor of this work is that of a pipeline. Each component in the pipeline is seen as a Transform, or
+set-to-set mapping. A set of files is accepted as input and a second set is delivered as output. We put no a priori
+semnatic conditions on these sets. Eventually we expect to construct general graphs linking these transform objects,
+however currently we are working with only linear arrays and DAGs. We also introduce an abstraction of a group of files,
+the FileGroup. This allows sets to be implicitly defined, and to define sets which evolve in time.
+
+We choose Python as the implementation language for several reasons. It satisfies our portability criteria, as it runs
+on every architecture which we believe will be supported and it relatively easy to port to those new architectures which
+will appear. Furthermore, it has strong community support and can be expected to be a dynamic, living language for at
+least a decade. It is object-oriented and intepreted, yet it shows good performance compared to other scripting language
+competitors. Its dynamic compilation and loading capability is essential, and will allow a truly new development paradigm.
+
+\section{FileGroup}
+
+We see three main methods for defining a group of files. The first is a straightforward list of files, embodied by a
+Python list of strings. It may make sense to introduce an abstraction for the file object itself, but this does not mesh
+with the Python supporting modules (os, and os.path), and therefore we start with a simpe string.
+
+Second, we can imagine defining a set of files implicitly using a function. For instance, we might ask for all the files
+with extension ``cc'' under a certain directory root. Currently, we have no facility for caching such results as it is
+unclear how to determine when changes will occur. Thus such functions will have to be reevaluated for each
+query. Therefore we provide the getFiles() method which returns the set as a Python list, which may then support several
+such queries.
+
+Lastly, FileGroup objects should be composable in a tree fashion. So that the set of files which a parent defines
+includes the set defined by each of its children. The final set defined will contain the disjoint union of the files
+produced by each method.
+
+Some common file sets are defined by subclasses of FileGroup. The TreeFileGroup defines a set of files by including any
+file beneath a given root which satify a given user test. The ExtensionFileGroup provides this test, which checks that
+the file extension matches a user-supplied string.
+
+\section{Maker}
+
+This base class is intended to support any object intended to be used within the build system, and thus has very few,
+basic capabilities. It should manage temporary space. It also understands the execution of a shell command. Currently,
+this is the most common operation in any build system. Ideally, we would like to interoperate at a library level with
+the OS and all dependent packages, but that day still seems somewhat far away. Also, a custom error handler for the
+function may be provided.
+
+\section{Transform}
+
+Each object in the build pipeline is intended to be a Transform. The transform itself is effected using the execute()
+method. This maps the Transform.sources FileGroup into the Transform.products FileGroup.
+
+We divide the hierarchy below Transform into components which produce sets satisfying a predicate, of which only
+FileCompare is currently a representative, and components which execute a given action across the input FileGroup
+(possibly supplemented by additional file sets), of which perhaps the most common is CompileFiles, the abstraction of
+the compilation process.
+
+Since processing of files is so intimately connected to the transformation operation, we also include a getObjectName()
+method in Transform which aids in the naming of intermediate files. This naming scheme must be accessible to both the
+predicates and the actions, and thus has been pushed up to the Transform itself.
+
+\section{FileCompare}
+
+A common operation is to compare a set of target files to the input set, in order to generate the set of products. By
+default, each target is compared to each source (using self.compare), and each source file satifying the relation is
+added to the output set. If a target is nonexistent, we assume that it needs to be acted upon and add all sources to the
+output. Likewise, a nonexistent source is automatically added to the output set.
+
+Some common predicates included in the current package are OlderThan, NewerThan, and NewerThanLibraryObject, the last of
+which deserves some explanation. The comparsion routine file gets the corresponding object name for the source file
+using Transform.getObjectName(), which is then compared with the timestamp of the same object in the target library. If
+the object does not exist in the library, we treat it as if the source file itself was absent (adding it to the output).
+
+\section{Action}
+
+An Action is meant to embody the execution of a function over a FileGroup, producing another, specifcally a function
+which has external results such as creation or deletion of files. Moreover, it has the connotation of an external
+program in the role of function.
+
+We have two execution modes, in which the program is executed on each file individually, or on the FileGroup as a
+whole. Furthermore, we allow a filter to be interposed which selects a subset of the input. We could perhaps promote
+this to an object itself. The program argument can be either an external program name or a Python function, and the flag
+argument can be used to pass command line arguments, and an error handler for shell commands can be provided.
+
+\section{CompileFiles}
+
+The base class for all compilation, CompileFiles, defines the main features which are customized for each compiler. It
+is not intended to be used directly as a component. The target is an archive which will hold all the intermediate
+objects produced from the set of source files. It accepts a compiler, compilerFlags, archiver, and archiverFlags. It
+also propogates the allAtOnce flag used in Action, indicating whether each file should be compiled separately, and the
+fileFliter to select source files. The CompileCFiles, compileCxxFiles, and compileSIDLFiles objects just provide default
+values for these arguments.
+
+\section{Linking}
+
+The LinkSharedLibrary components transforms archives into shared libraries. It uses the archiver to expand each library
+into objects, which are then linked into a shared libary. The user can provide extraLibraries in order to complete the
+link. In the same way, LinkExecutable will map a FileGroup of libraries into an executable (perhaps with a set of
+extraLibraries).
+
+\section{BK Interface}
+
+We provide a simple interface to BitKeeper so that generated source files which are also edited may be stored under
+version control. BKEditFiles will edit the incoming file set, which may be augmented using the extraSouces argument in
+the event that we know the generated file set composition but only want to execute when it changes. BKCloseFiles, which
+generally takesa TreeFileGroup, has a slightly more complicated action on the input set:
+\begin{\itemize}
+  \item All files generated which are unknown to BK are put underversion control
+  \item All unchanged files are unedited
+  \item All changed files are left edited (we could perhaps force a checkin here)
+\end{\itemize}
+
+\section{Target}
+
+Target provides an entry point into the build system from the interpreter. Targets should be able to be composed,
+although this feature has not yet been tested. Users will provide a Target name for execution, which may itself include
+internal Targets (themselves accessible by the same method). A Target is itself a Transform, and thus can be thought of
+as merely a map of one FileGroup to another.
