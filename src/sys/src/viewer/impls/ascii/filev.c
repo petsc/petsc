@@ -37,7 +37,7 @@ int PetscViewerDestroy_ASCII(PetscViewer viewer)
       ierr = PetscStrcat(par,vascii->filename);CHKERRQ(ierr);
       ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);
       if (fgets(buf,1024,fp)) {
-        SETERRQ2(1,"Error from compression command %s %s\n%s",par,buf);
+        SETERRQ2(1,"Error from compression command %s\n%s",par,buf);
       }
     }
   }

@@ -87,7 +87,7 @@ int DAView(DA da,PetscViewer viewer)
         if (da->fieldname[i]) {
           ierr = PetscViewerASCIIPrintf(viewer,"%s ",da->fieldname[i]);CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"(not named) ",da->fieldname[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"(not named) ");CHKERRQ(ierr);
         }
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);

@@ -271,7 +271,7 @@ int PetscCompareInitialize(double tol)
   free(gflag);
 
   PetscCompare = PETSC_TRUE;
-  PetscLogInfo(0,"PetscCompareInitialize:Configured to compare two programs\n",rank);
+  PetscLogInfo(0,"PetscCompareInitialize:Configured to compare two programs\n");
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------------------------*/

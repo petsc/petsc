@@ -42,7 +42,7 @@ int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
   int ierr;
 
   PetscFunctionBegin;
-  PetscLogInfo(0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %d\n",(long)comm);
+  PetscLogInfo(0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %ld\n",(long)comm);
   ierr = PetscFree(attr_val);CHKERRQ(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
@@ -194,7 +194,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval,tagvalp);CHKERRQ(ierr);
-    PetscLogInfo(0,"PetscCommDuplicate_Private: Duplicating a communicator %d %d max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);
+    PetscLogInfo(0,"PetscCommDuplicate_Private: Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);
   } else {
 #if defined(PETSC_USE_BOPT_g)
     int tag;
@@ -237,7 +237,7 @@ int PetscCommDestroy_Private(MPI_Comm *comm)
   }
   tagvalp[1]--;
   if (!tagvalp[1]) {
-    PetscLogInfo(0,"PetscCommDestroy_Private:Deleting MPI_Comm %d\n",(long)*comm);
+    PetscLogInfo(0,"PetscCommDestroy_Private:Deleting MPI_Comm %ld\n",(long)*comm);
     ierr = MPI_Comm_free(comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

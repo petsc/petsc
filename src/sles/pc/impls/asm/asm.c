@@ -880,7 +880,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
   int nidx,*idx,loc,ii,jj,ierr,count;
 
   PetscFunctionBegin;
-  if (dof != 1) SETERRQ(PETSC_ERR_SUP,"");
+  if (dof != 1) SETERRQ(PETSC_ERR_SUP," ");
 
   *Nsub = N*M;
   ierr = PetscMalloc((*Nsub)*sizeof(IS **),is);CHKERRQ(ierr);

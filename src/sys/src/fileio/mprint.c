@@ -328,7 +328,7 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
     ierr = PetscStrstr(format,"%A",&sub1);CHKERRQ(ierr);
     if (sub1) {
       ierr = PetscStrstr(format,"%",&sub2);CHKERRQ(ierr);
-      if (sub1 != sub2) SETERRQ(1,"%A format must be first in format string");
+      if (sub1 != sub2) SETERRQ(1,"%%A format must be first in format string");
       ierr    = PetscStrlen(format,&len);CHKERRQ(ierr);
       ierr    = PetscMalloc((len+16)*sizeof(char),&nformat);CHKERRQ(ierr);
       ierr    = PetscStrcpy(nformat,format);CHKERRQ(ierr);

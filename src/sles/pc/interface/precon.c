@@ -499,7 +499,7 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  if (!pc->ops->applytranspose) SETERRQ(PETSC_ERR_SUP,"");
+  if (!pc->ops->applytranspose) SETERRQ(PETSC_ERR_SUP," ");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -735,7 +735,7 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol, Pet
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(w,VEC_COOKIE);
-  if (!pc->ops->applyrichardson) SETERRQ(PETSC_ERR_SUP,"");
+  if (!pc->ops->applyrichardson) SETERRQ(PETSC_ERR_SUP," ");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
