@@ -122,9 +122,22 @@ Multimedia lab SP2:
     - doesn't have ESSL
     - doesn't have MPI (run directly with POE by rlogging into a node)
     - wide nodes are:  [eyas5,eyas11,eyas13,eyas15].mcs.anl.gov
- to run:  poe ex1 -hostfile hostfilename -procs n_processors
-   where hostfile lists hosts
-   there is a sample hostfile in /home/curfman/mmsp2.host.list
+ - to run directly via POE:
+    - set environmental variables, e.g.,
+        setenv MP_PROCS 4
+        setenv MP_HOSTFILE "/home/curfman/mmsp2.host.list"
+        setenv MP_EUILIB us
+        setenv MP_EUIDEVICE css0
+        setenv MP_RMPOOL 0
+        setenv MP_PULSE 0
+        setenv MP_INFOLEVEL 0
+    - then run via:  poe ex1 -hostfile hostfilename -procs n_processors
+    - Note:  You are _supposed_ to be able to override these environmental
+      variables with runtime options (see POE manpage for complete list):
+          poe ex1 -hostfile hostfilename -procs n_processors
+      where hostfile lists host nodes; there is a sample hostfile in
+      /home/curfman/mmsp2.host.list
+      Although this used to work for me (Lois), it's not working now.
 
  Info on POE:
     http://www.tc.cornell.edu/Edu/Tutor/POE
