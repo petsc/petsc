@@ -11,6 +11,7 @@ class Configure(config.base.Configure):
     self.setCompilers = self.framework.require('config.setCompilers', self)
     self.libraries = self.framework.require('config.libraries', self)
     self.fortranMangling = 'unchanged'
+    self.flibs = []
     return
 
   def __str__(self):
@@ -234,7 +235,6 @@ class Configure(config.base.Configure):
     octave-2.0.13/aclocal.m4, and full credit should go to John W. Eaton
     for writing this extremely useful macro.'''
     if not 'CC' in self.framework.argDB or not 'FC' in self.framework.argDB: 
-      self.flibs = []
       return
     oldFlags = self.framework.argDB['LDFLAGS']
     self.framework.argDB['LDFLAGS'] += ' -v'
