@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.54 1996/01/26 04:32:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.55 1996/03/04 05:14:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -523,7 +523,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
       if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
-      if (from_first==0 && from_step==1 && from_first==to_first && from_step==to_step){
+      if (nx != x->N) {
+        totalv = 0;
+      } else if (from_first == 0        && from_step == 1 && 
+                 from_first == to_first && from_step == to_step){
         totalv = 1; 
       } else totalv = 0;
       MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,xin->comm);

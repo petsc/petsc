@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.23 1996/03/15 22:29:33 curfman Exp curfman $";
+static char vcid[] = "$Id: cmesh.c,v 1.24 1996/03/18 18:41:51 curfman Exp bsmith $";
 #endif
 
 #include "drawimpl.h"   /*I "draw.h" I*/
@@ -43,15 +43,6 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
     ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&to); CHKERRQ(ierr);
   }
   else {
-    /* Temporary fix, since scatters of size 0 seem broken */
-  /* 
-    ierr = VecGetSize(V,&N); CHKERRQ(ierr);
-    ierr = VecCreateSeq(MPI_COMM_SELF,N,&W); CHKERRQ(ierr);
-    ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&from); CHKERRQ(ierr);
-    ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&to); CHKERRQ(ierr);
-  */
-
-    /* original code */
     ierr = VecCreateSeq(MPI_COMM_SELF,0,&W); CHKERRQ(ierr);
     ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&from); CHKERRQ(ierr);
     ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&to); CHKERRQ(ierr);
