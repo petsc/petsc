@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.56 1999/05/04 20:35:14 balay Exp $";
+static char vcid[] = "$Id: ex20.c,v 1.1 1999/05/18 19:36:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -21,13 +21,6 @@ int FormElementStiffness(double H,Scalar *Ke)
   Ke[12] = -.125*H;  Ke[13] = H/12.0;  Ke[14] = -.125*H;  Ke[15] = H/6.0;
   return 0;
 }
-#undef __FUNC__
-#define __FUNC__ "FormElementRhs"
-int FormElementRhs(double x, double y, double H,Scalar *r)
-{
-  r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
-  return 0;
-}
 
 #undef __FUNC__
 #define __FUNC__ "main"
@@ -36,12 +29,14 @@ int main(int argc,char **args)
   Mat         C; 
   int         i, m = 5, rank, size, N, start, end, M, its, flg;
   Scalar      val, zero = 0.0, one = 1.0, none = -1.0,Ke[16],r[4];
-  double      x,y,h,norm;
-  int         ierr, idx[4], count, *rows;
-  Vec         u, ustar, b;
+  double      h;
+  int         ierr, idx[4];
+  Vec         u, b;
   SLES        sles;
   KSP         ksp;
-  IS          is;
+  PCNullSpace nullsp;
+  PC          pc;
+  PetscRandom rand;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
@@ -60,7 +55,6 @@ int main(int argc,char **args)
   ierr = FormElementStiffness(h*h,Ke);   /* element stiffness for Laplacian */
   for ( i=start; i<end; i++ ) {
      /* location of lower left corner of element */
-     x = h*(i % m); y = h*(i/m); 
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + ( i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
@@ -75,60 +69,12 @@ int main(int argc,char **args)
   PetscObjectSetName((PetscObject)u,"Approx. Solution");
   ierr = VecDuplicate(u,&b);CHKERRA(ierr);
   PetscObjectSetName((PetscObject)b,"Right hand side");
-  ierr = VecDuplicate(b,&ustar);CHKERRA(ierr);
+
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
+  ierr = VecSetRandom(rand,u);CHKERRA(ierr);
+  ierr = PetscRandomDestroy(rand);CHKERRA(ierr);
+  ierr = MatMult(C,u,b);CHKERRA(ierr);
   ierr = VecSet(&zero,u);CHKERRA(ierr);
-  ierr = VecSet(&zero,b);CHKERRA(ierr);
-
-  /* Assemble right-hand-side vector */
-  for ( i=start; i<end; i++ ) {
-     /* location of lower left corner of element */
-     x = h*(i % m); y = h*(i/m); 
-     /* node numbers for the four corners of element */
-     idx[0] = (m+1)*(i/m) + ( i % m);
-     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = FormElementRhs(x,y,h*h,r);CHKERRA(ierr);
-     ierr = VecSetValues(b,4,idx,r,ADD_VALUES);CHKERRA(ierr);
-  }
-  ierr = VecAssemblyBegin(b);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRA(ierr);
-
-  /* Modify matrix and right-hand-side for Dirichlet boundary conditions */
-  rows = (int *) PetscMalloc( 4*m*sizeof(int) );CHKPTRQ(rows);
-  for ( i=0; i<m+1; i++ ) {
-    rows[i] = i; /* bottom */
-    rows[3*m - 1 +i] = m*(m+1) + i; /* top */
-  }
-  count = m+1; /* left side */
-  for ( i=m+1; i<m*(m+1); i+= m+1 ) {
-    rows[count++] = i;
-  }
-  count = 2*m; /* left side */
-  for ( i=2*m+1; i<m*(m+1); i+= m+1 ) {
-    rows[count++] = i;
-  }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,4*m,rows,&is);CHKERRA(ierr);
-  for ( i=0; i<4*m; i++ ) {
-     x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
-     val = y;
-     ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRA(ierr);
-     ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRA(ierr);
-  }    
-  PetscFree(rows);
-  ierr = VecAssemblyBegin(u); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRA(ierr);
-  ierr = VecAssemblyBegin(b);CHKERRA(ierr); 
-  ierr = VecAssemblyEnd(b);CHKERRA(ierr);
-
-  ierr = MatZeroRows(C,is,&one);CHKERRA(ierr);
-  ierr = ISDestroy(is);CHKERRA(ierr);
-
-
-  { Mat A;
-  ierr = MatConvert(C,MATSAME,&A);CHKERRA(ierr);
-  ierr = MatDestroy(C);CHKERRA(ierr);
-  ierr = MatConvert(A,MATSAME,&C);CHKERRA(ierr);
-  ierr = MatDestroy(A);CHKERRA(ierr);
-  }
 
   /* Solve linear system */
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
@@ -136,27 +82,20 @@ int main(int argc,char **args)
   ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
   ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp);CHKERRA(ierr);
+
+  ierr = OptionsHasName(PETSC_NULL,"-fixnullspace",&flg);CHKERRA(ierr);
+  if (flg) {
+    ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
+    ierr = PCNullSpaceCreate(PETSC_COMM_WORLD,1,0,PETSC_NULL,&nullsp);CHKERRA(ierr);
+    ierr = PCNullSpaceAttach(pc,nullsp);CHKERRA(ierr);
+    ierr = PCNullSpaceDestroy(nullsp);CHKERRA(ierr);
+  }
+
   ierr = SLESSolve(sles,b,u,&its);CHKERRA(ierr);
 
-  /* Check error */
-  ierr = VecGetOwnershipRange(ustar,&start,&end);CHKERRA(ierr);
-  for ( i=start; i<end; i++ ) {
-     x = h*(i % (m+1)); y = h*(i/(m+1)); 
-     val = y;
-     ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRA(ierr);
-  }
-  ierr = VecAssemblyBegin(ustar);CHKERRA(ierr);
-  ierr = VecAssemblyEnd(ustar);CHKERRA(ierr);
-  ierr = VecAXPY(&none,ustar,u);CHKERRA(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);CHKERRA(ierr);
-  if (norm*h > 1.e-12) 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
-  else
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
 
   /* Free work space */
   ierr = SLESDestroy(sles);CHKERRA(ierr);
-  ierr = VecDestroy(ustar);CHKERRA(ierr);
   ierr = VecDestroy(u);CHKERRA(ierr);
   ierr = VecDestroy(b);CHKERRA(ierr);
   ierr = MatDestroy(C);CHKERRA(ierr);

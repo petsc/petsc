@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.5 1999/03/30 16:42:21 balay Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.6 1999/05/04 20:37:40 balay Exp balay $";
 #endif
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   DA     da;
   Viewer viewer;
   Vec    local, locala, global,coors;
-  Scalar value,*x,*alocal;
+  Scalar *x,*alocal;
   Draw   draw;
   char   fname[16];
   PetscInitialize(&argc,&argv,(char*)0,help);
