@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.2 1995/04/13 20:42:35 curfman Exp curfman $ ";
+static char vcid[] = "$Id: icc.c,v 1.3 1995/04/16 16:35:10 curfman Exp curfman $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -7,6 +7,7 @@ static char vcid[] = "$Id: icc.c,v 1.2 1995/04/13 20:42:35 curfman Exp curfman $
 
 #include "pcimpl.h"
 #include "mat/matimpl.h"
+#include "options.h"
 #include "icc.h"
 
 extern int PCImplCreate_ICC_MPIRowbs(PC pc);
@@ -61,6 +62,43 @@ static int PCApply_ICC(PC pc,Vec x,Vec y)
   return MatSolve(icc->fact,x,y);
 }
 
+/*@
+   PCICCSetBlockSolveIter - Sets flag so that BlockSolve iterative solver is
+   used instead of default KSP routines.
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Note:
+   This option is valid only when the MATMPIROW_BS data structure
+   is used for the preconditioning matrix.
+@*/
+int PCBSSetBlockSolveIter(PC pc)
+{
+  PC_ICC *icc = (PC_ICC *) pc->data;
+  VALIDHEADER(pc,PC_COOKIE);
+  if (pc->type != PCICC) return 0;
+  icc->bs_iter = 1;
+  return 0;
+}
+
+static int PCPrintHelp_ICC(PC pc)
+{
+  char *p;
+  if (pc->prefix) p = pc->prefix; else p = "-";
+  fprintf(stderr,"%pc_icc_bsiter:  use BlockSolve iterative solver instead\
+                  of KSP routines\n",p);
+  return 0;
+}
+
+static int PCSetFromOptions_ICC(PC pc)
+{
+  if (OptionsHasName(0,pc->prefix,"-pc_icc_bsiter")) {
+    PCBSSetBlockSolveIter(pc);
+  }
+  return 0;
+}
+
 int PCCreate_ICC(PC pc)
 {
   PC_ICC *icc = NEW(PC_ICC); CHKPTR(icc);
@@ -69,11 +107,16 @@ int PCCreate_ICC(PC pc)
   icc->levels	   = 0;
   icc->ImplCreate  = 0;
   icc->ImplDestroy = 0;
+  icc->bs_iter     = 0;
+  icc->implctx     = 0;
   pc->apply	   = PCApply_ICC;
   pc->setup        = PCSetup_ICC;
   pc->destroy	   = PCDestroy_ICC;
+  pc->setfrom      = PCSetFromOptions_ICC;
+  pc->printhelp    = PCPrintHelp_ICC;
   pc->type	   = PCICC;
   pc->data	   = (void *) icc;
   return 0;
 }
+
 

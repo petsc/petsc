@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.6 1995/04/16 17:01:38 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.7 1995/04/19 01:29:31 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -541,12 +541,6 @@ static int MatZeroEntries_MPIRowbs(Mat mat)
   return 0;
 }
 
-/*
-   This routine assumes that the factored matrix has been produced by
-   the ICC factorization of BlockSolve.  In particular, this routine
-   assumes that the input/output vectors are permuted according to the
-   BlockSolve coloring scheme.
- */
 static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) mat->data;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.4 1995/04/18 02:17:15 curfman Exp curfman $";
+static char vcid[] = "$Id: cholbs.c,v 1.5 1995/04/19 15:19:47 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -51,9 +51,6 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 {
   Mat           fact = *factp;
   Mat_MPIRowbs  *mbs = (Mat_MPIRowbs *) mat->data;
-  Mat_MPIRowbs  *fbs = (Mat_MPIRowbs *) fact->data;
-  int           i, ierr, ldim, low, iwork;
-  Scalar        v;
 
   VALIDHEADER(mat,MAT_COOKIE); VALIDHEADER(fact,MAT_COOKIE);
   /* Do prep work if same nonzero structure as previously factored matrix */
@@ -81,9 +78,9 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 /* ------------------------------------------------------------------- */
 /*
    This routine assumes that the factored matrix has been produced by
-   the ICC factorization of BlockSolve.  In particular, this routine
-   assumes that the input/output vectors are permuted according to the
-   BlockSolve coloring scheme.
+   the ICC factorization of BlockSolve.  The routine is intended for use
+   with vectors that have been already permuted, so the code for the 
+   unpermuted version isn't the most efficient. 
  */
 
 int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
@@ -135,10 +132,10 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     BSiperm_dvec(ya,xworka,mbs->pA->perm); CHKERRBS(0);
     ierr = VecCopy(mbs->xwork,y); CHKERR(ierr);
   }
-
   return 0;
 }
+
 #else
-static int MatNull_MPIRowbs()
+static int MatNullMPIRowbs()
 {return 0;}
 #endif
