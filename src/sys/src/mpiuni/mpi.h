@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.63 1998/04/13 18:02:26 bsmith Exp balay $ */
+/* $Id: mpi.h,v 1.64 1998/05/14 15:19:11 balay Exp balay $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -70,227 +70,227 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 
 /* Routines */
 #define MPI_Send( buf, count, datatype, dest, tag, comm)  \
-     (MPIUNI_TMP = (void *) (buf), \
-      MPIUNI_TMP = (void *) (count), \
-      MPIUNI_TMP = (void *) (datatype), \
-      MPIUNI_TMP = (void *) (dest), \
-      MPIUNI_TMP = (void *) (tag), \
-      MPIUNI_TMP = (void *) (comm), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+      MPIUNI_TMP = (void *) (long) (count), \
+      MPIUNI_TMP = (void *) (long) (datatype), \
+      MPIUNI_TMP = (void *) (long) (dest), \
+      MPIUNI_TMP = (void *) (long) (tag), \
+      MPIUNI_TMP = (void *) (long) (comm), \
       MPI_SUCCESS)
 #define MPI_Recv( buf, count, datatype, source, tag, comm, status) \
-     (MPIUNI_TMP = (void *) (buf), \
-      MPIUNI_TMP = (void *) (count), \
-      MPIUNI_TMP = (void *) (datatype), \
-      MPIUNI_TMP = (void *) (source), \
-      MPIUNI_TMP = (void *) (tag), \
-      MPIUNI_TMP = (void *) (comm), \
-      MPIUNI_TMP = (void *) (status), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+      MPIUNI_TMP = (void *) (long) (count), \
+      MPIUNI_TMP = (void *) (long) (datatype), \
+      MPIUNI_TMP = (void *) (long) (source), \
+      MPIUNI_TMP = (void *) (long) (tag), \
+      MPIUNI_TMP = (void *) (long) (comm), \
+      MPIUNI_TMP = (void *) (long) (status), \
       MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Get_count(status,  datatype, count) \
-     (MPIUNI_TMP = (void *) (status), \
-      MPIUNI_TMP = (void *) (datatype), \
-      MPIUNI_TMP = (void *) (count), \
+     (MPIUNI_TMP = (void *) (long) (status), \
+      MPIUNI_TMP = (void *) (long) (datatype), \
+      MPIUNI_TMP = (void *) (long) (count), \
       MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Bsend( buf, count, datatype, dest, tag, comm)  \
-     (MPIUNI_TMP = (void *) (buf), \
-      MPIUNI_TMP = (void *) (count), \
-      MPIUNI_TMP = (void *) (datatype), \
-      MPIUNI_TMP = (void *) (dest), \
-      MPIUNI_TMP = (void *) (tag), \
-      MPIUNI_TMP = (void *) (comm), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+      MPIUNI_TMP = (void *) (long) (count), \
+      MPIUNI_TMP = (void *) (long) (datatype), \
+      MPIUNI_TMP = (void *) (long) (dest), \
+      MPIUNI_TMP = (void *) (long) (tag), \
+      MPIUNI_TMP = (void *) (long) (comm), \
       MPI_SUCCESS)
 #define MPI_Ssend( buf, count,  datatype, dest, tag, comm) \
-     (MPIUNI_TMP = (void *) (buf), \
-      MPIUNI_TMP = (void *) (count), \
-      MPIUNI_TMP = (void *) (datatype), \
-      MPIUNI_TMP = (void *) (dest), \
-      MPIUNI_TMP = (void *) (tag), \
-      MPIUNI_TMP = (void *) (comm), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+      MPIUNI_TMP = (void *) (long) (count), \
+      MPIUNI_TMP = (void *) (long) (datatype), \
+      MPIUNI_TMP = (void *) (long) (dest), \
+      MPIUNI_TMP = (void *) (long) (tag), \
+      MPIUNI_TMP = (void *) (long) (comm), \
       MPI_SUCCESS)
 #define MPI_Rsend( buf, count,  datatype, dest, tag, comm) \
-     (MPIUNI_TMP = (void *) (buf), \
-      MPIUNI_TMP = (void *) (count), \
-      MPIUNI_TMP = (void *) (datatype), \
-      MPIUNI_TMP = (void *) (dest), \
-      MPIUNI_TMP = (void *) (tag), \
-      MPIUNI_TMP = (void *) (comm), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+      MPIUNI_TMP = (void *) (long) (count), \
+      MPIUNI_TMP = (void *) (long) (datatype), \
+      MPIUNI_TMP = (void *) (long) (dest), \
+      MPIUNI_TMP = (void *) (long) (tag), \
+      MPIUNI_TMP = (void *) (long) (comm), \
       MPI_SUCCESS)
 #define MPI_Buffer_attach( buffer, size) \
-     (MPIUNI_TMP = (void *) (buffer), \
-      MPIUNI_TMP = (void *) (size), \
+     (MPIUNI_TMP = (void *) (long) (buffer), \
+      MPIUNI_TMP = (void *) (long) (size), \
       MPI_SUCCESS)
 #define MPI_Buffer_detach( buffer, size)\
-     (MPIUNI_TMP = (void *) (buffer), \
-      MPIUNI_TMP = (void *) (size), \
+     (MPIUNI_TMP = (void *) (long) (buffer), \
+      MPIUNI_TMP = (void *) (long) (size), \
       MPI_SUCCESS)
 #define MPI_Ibsend( buf, count,  datatype, dest, tag, comm, request) \
-     ( MPIUNI_TMP = (void *) (buf), \
-       MPIUNI_TMP = (void *) (count), \
-       MPIUNI_TMP = (void *) (datatype), \
-       MPIUNI_TMP = (void *) (dest), \
-       MPIUNI_TMP = (void *) (tag), \
-       MPIUNI_TMP = (void *) (comm), \
-       MPIUNI_TMP = (void *) (request), \
+     ( MPIUNI_TMP = (void *) (long) (buf), \
+       MPIUNI_TMP = (void *) (long) (count), \
+       MPIUNI_TMP = (void *) (long) (datatype), \
+       MPIUNI_TMP = (void *) (long) (dest), \
+       MPIUNI_TMP = (void *) (long) (tag), \
+       MPIUNI_TMP = (void *) (long) (comm), \
+       MPIUNI_TMP = (void *) (long) (request), \
        MPI_SUCCESS)
 #define MPI_Issend( buf, count,  datatype, dest, tag, comm, request) \
-     (MPIUNI_TMP = (void *) (buf), \
-      MPIUNI_TMP = (void *) (count), \
-      MPIUNI_TMP = (void *) (datatype), \
-      MPIUNI_TMP = (void *) (dest), \
-      MPIUNI_TMP = (void *) (tag), \
-      MPIUNI_TMP = (void *) (comm), \
-      MPIUNI_TMP = (void *) (request), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+      MPIUNI_TMP = (void *) (long) (count), \
+      MPIUNI_TMP = (void *) (long) (datatype), \
+      MPIUNI_TMP = (void *) (long) (dest), \
+      MPIUNI_TMP = (void *) (long) (tag), \
+      MPIUNI_TMP = (void *) (long) (comm), \
+      MPIUNI_TMP = (void *) (long) (request), \
       MPI_SUCCESS)
 #define MPI_Irsend( buf, count,  datatype, dest, tag, comm, request) \
-     (MPIUNI_TMP = (void *) (buf), \
-      MPIUNI_TMP = (void *) (count), \
-      MPIUNI_TMP = (void *) (datatype), \
-      MPIUNI_TMP = (void *) (dest), \
-      MPIUNI_TMP = (void *) (tag), \
-      MPIUNI_TMP = (void *) (comm), \
-      MPIUNI_TMP = (void *) (request), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+      MPIUNI_TMP = (void *) (long) (count), \
+      MPIUNI_TMP = (void *) (long) (datatype), \
+      MPIUNI_TMP = (void *) (long) (dest), \
+      MPIUNI_TMP = (void *) (long) (tag), \
+      MPIUNI_TMP = (void *) (long) (comm), \
+      MPIUNI_TMP = (void *) (long) (request), \
       MPI_SUCCESS)
 #define MPI_Irecv( buf, count,  datatype, source, tag, comm, request) \
-     (MPIUNI_TMP = (void *) (buf), \
-      MPIUNI_TMP = (void *) (count), \
-      MPIUNI_TMP = (void *) (datatype), \
-      MPIUNI_TMP = (void *) (source), \
-      MPIUNI_TMP = (void *) (tag), \
-      MPIUNI_TMP = (void *) (comm), \
-      MPIUNI_TMP = (void *) (request), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+      MPIUNI_TMP = (void *) (long) (count), \
+      MPIUNI_TMP = (void *) (long) (datatype), \
+      MPIUNI_TMP = (void *) (long) (source), \
+      MPIUNI_TMP = (void *) (long) (tag), \
+      MPIUNI_TMP = (void *) (long) (comm), \
+      MPIUNI_TMP = (void *) (long) (request), \
       MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Isend( buf, count,  datatype, dest, tag, comm, request) \
-     (MPIUNI_TMP = (void *) (buf), \
-      MPIUNI_TMP = (void *) (count), \
-      MPIUNI_TMP = (void *) (datatype), \
-      MPIUNI_TMP = (void *) (dest), \
-      MPIUNI_TMP = (void *) (tag), \
-      MPIUNI_TMP = (void *) (comm), \
-      MPIUNI_TMP = (void *) (request), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+      MPIUNI_TMP = (void *) (long) (count), \
+      MPIUNI_TMP = (void *) (long) (datatype), \
+      MPIUNI_TMP = (void *) (long) (dest), \
+      MPIUNI_TMP = (void *) (long) (tag), \
+      MPIUNI_TMP = (void *) (long) (comm), \
+      MPIUNI_TMP = (void *) (long) (request), \
       MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Wait(request, status) \
-     (MPIUNI_TMP = (void *) (request), \
-      MPIUNI_TMP = (void *) (status), \
+     (MPIUNI_TMP = (void *) (long) (request), \
+      MPIUNI_TMP = (void *) (long) (status), \
       MPI_SUCCESS)
 #define MPI_Test(request, flag, status) \
-     (MPIUNI_TMP = (void *) (request), \
-      MPIUNI_TMP = (void *) (status), \
+     (MPIUNI_TMP = (void *) (long) (request), \
+      MPIUNI_TMP = (void *) (long) (status), \
       *(flag) = 0 \
       MPI_SUCCESS)
 #define MPI_Request_free(request) \
-     (MPIUNI_TMP = (void *) (request), \
+     (MPIUNI_TMP = (void *) (long) (request), \
       MPI_SUCCESS)
 #define MPI_Waitany(a, b, c, d) \
-     (MPIUNI_TMP = (void *) (a), \
-      MPIUNI_TMP = (void *) (b), \
-      MPIUNI_TMP = (void *) (c), \
-      MPIUNI_TMP = (void *) (d), \
+     (MPIUNI_TMP = (void *) (long) (a), \
+      MPIUNI_TMP = (void *) (long) (b), \
+      MPIUNI_TMP = (void *) (long) (c), \
+      MPIUNI_TMP = (void *) (long) (d), \
       MPI_SUCCESS)
 #define MPI_Testany(a, b, c, d, e) \
-     (MPIUNI_TMP = (void *) (a), \
-      MPIUNI_TMP = (void *) (b), \
-      MPIUNI_TMP = (void *) (c), \
-      MPIUNI_TMP = (void *) (d), \
-      MPIUNI_TMP = (void *) (e), \
+     (MPIUNI_TMP = (void *) (long) (a), \
+      MPIUNI_TMP = (void *) (long) (b), \
+      MPIUNI_TMP = (void *) (long) (c), \
+      MPIUNI_TMP = (void *) (long) (d), \
+      MPIUNI_TMP = (void *) (long) (e), \
       MPI_SUCCESS)
 #define MPI_Waitall(count, array_of_requests, array_of_statuses) \
-     (MPIUNI_TMP = (void *) (count), \
-      MPIUNI_TMP = (void *) (array_of_requests), \
-      MPIUNI_TMP = (void *) (array_of_statuses), \
+     (MPIUNI_TMP = (void *) (long) (count), \
+      MPIUNI_TMP = (void *) (long) (array_of_requests), \
+      MPIUNI_TMP = (void *) (long) (array_of_statuses), \
       MPI_SUCCESS)
 #define MPI_Testall(count, array_of_requests, flag, array_of_statuses) \
-     (MPIUNI_TMP = (void *) (count), \
-      MPIUNI_TMP = (void *) (array_of_requests), \
-      MPIUNI_TMP = (void *) (flag), \
-      MPIUNI_TMP = (void *) (array_of_statuses), \
+     (MPIUNI_TMP = (void *) (long) (count), \
+      MPIUNI_TMP = (void *) (long) (array_of_requests), \
+      MPIUNI_TMP = (void *) (long) (flag), \
+      MPIUNI_TMP = (void *) (long) (array_of_statuses), \
       MPI_SUCCESS)
 #define MPI_Waitsome(incount, array_of_requests, outcount, \
                      array_of_indices, array_of_statuses) \
-     (MPIUNI_TMP = (void *) (incount), \
-      MPIUNI_TMP = (void *) (array_of_requests), \
-      MPIUNI_TMP = (void *) (outcount), \
-      MPIUNI_TMP = (void *) (array_of_indices), \
-      MPIUNI_TMP = (void *) (array_of_statuses), \
+     (MPIUNI_TMP = (void *) (long) (incount), \
+      MPIUNI_TMP = (void *) (long) (array_of_requests), \
+      MPIUNI_TMP = (void *) (long) (outcount), \
+      MPIUNI_TMP = (void *) (long) (array_of_indices), \
+      MPIUNI_TMP = (void *) (long) (array_of_statuses), \
       MPI_SUCCESS)
 #define MPI_Comm_group(comm, group) \
-     (MPIUNI_TMP = (void *) (comm), \
-      MPIUNI_TMP = (void *) (group), \
+     (MPIUNI_TMP = (void *) (long) (comm), \
+      MPIUNI_TMP = (void *) (long) (group), \
       MPI_SUCCESS)
 #define MPI_Group_incl(group, n, ranks, newgroup) \
-     (MPIUNI_TMP = (void *) (group), \
-      MPIUNI_TMP = (void *) (n), \
-      MPIUNI_TMP = (void *) (ranks), \
-      MPIUNI_TMP = (void *) (newgroup), \
+     (MPIUNI_TMP = (void *) (long) (group), \
+      MPIUNI_TMP = (void *) (long) (n), \
+      MPIUNI_TMP = (void *) (long) (ranks), \
+      MPIUNI_TMP = (void *) (long) (newgroup), \
       MPI_SUCCESS)
 #define MPI_Testsome(incount, array_of_requests, outcount, \
                      array_of_indices, array_of_statuses) MPI_SUCCESS
 #define MPI_Iprobe(source, tag, comm, flag, status)  \
       *(flag)=0,  MPI_SUCCESS)
 #define MPI_Probe(source, tag, comm, status) MPI_SUCCESS
-#define MPI_Cancel(request) (MPIUNI_TMP = (void *) (request), \
+#define MPI_Cancel(request) (MPIUNI_TMP = (void *) (long) (request), \
       MPI_SUCCESS)
 #define MPI_Test_cancelled(status, flag)  \
      (*(flag)=0, MPI_SUCCESS)
 #define MPI_Send_init( buf, count,  datatype, dest, tag, comm, request) \
-     (MPIUNI_TMP = (void *) (buf), \
-     MPIUNI_TMP = (void *) (count), \
-     MPIUNI_TMP = (void *) (datatype), \
-     MPIUNI_TMP = (void *) (dest), \
-     MPIUNI_TMP = (void *) (tag), \
-     MPIUNI_TMP = (void *) (comm), \
-     MPIUNI_TMP = (void *) (request), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+     MPIUNI_TMP = (void *) (long) (count), \
+     MPIUNI_TMP = (void *) (long) (datatype), \
+     MPIUNI_TMP = (void *) (long) (dest), \
+     MPIUNI_TMP = (void *) (long) (tag), \
+     MPIUNI_TMP = (void *) (long) (comm), \
+     MPIUNI_TMP = (void *) (long) (request), \
      MPI_SUCCESS)
 #define MPI_Bsend_init( buf, count,  datatype, dest, tag, comm, request) \
-     (MPIUNI_TMP = (void *) (buf), \
-     MPIUNI_TMP = (void *) (count), \
-     MPIUNI_TMP = (void *) (datatype), \
-     MPIUNI_TMP = (void *) (dest), \
-     MPIUNI_TMP = (void *) (tag), \
-     MPIUNI_TMP = (void *) (comm), \
-     MPIUNI_TMP = (void *) (request), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+     MPIUNI_TMP = (void *) (long) (count), \
+     MPIUNI_TMP = (void *) (long) (datatype), \
+     MPIUNI_TMP = (void *) (long) (dest), \
+     MPIUNI_TMP = (void *) (long) (tag), \
+     MPIUNI_TMP = (void *) (long) (comm), \
+     MPIUNI_TMP = (void *) (long) (request), \
      MPI_SUCCESS)
 #define MPI_Ssend_init( buf, count,  datatype, dest, tag, comm, request) \
-     (MPIUNI_TMP = (void *) (buf), \
-     MPIUNI_TMP = (void *) (count), \
-     MPIUNI_TMP = (void *) (datatype), \
-     MPIUNI_TMP = (void *) (dest), \
-     MPIUNI_TMP = (void *) (tag), \
-     MPIUNI_TMP = (void *) (comm), \
-     MPIUNI_TMP = (void *) (request), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+     MPIUNI_TMP = (void *) (long) (count), \
+     MPIUNI_TMP = (void *) (long) (datatype), \
+     MPIUNI_TMP = (void *) (long) (dest), \
+     MPIUNI_TMP = (void *) (long) (tag), \
+     MPIUNI_TMP = (void *) (long) (comm), \
+     MPIUNI_TMP = (void *) (long) (request), \
      MPI_SUCCESS)
 #define MPI_Bsend_init( buf, count,  datatype, dest, tag, comm, request) \
-     (MPIUNI_TMP = (void *) (buf), \
-     MPIUNI_TMP = (void *) (count), \
-     MPIUNI_TMP = (void *) (datatype), \
-     MPIUNI_TMP = (void *) (dest), \
-     MPIUNI_TMP = (void *) (tag), \
-     MPIUNI_TMP = (void *) (comm), \
-     MPIUNI_TMP = (void *) (request), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+     MPIUNI_TMP = (void *) (long) (count), \
+     MPIUNI_TMP = (void *) (long) (datatype), \
+     MPIUNI_TMP = (void *) (long) (dest), \
+     MPIUNI_TMP = (void *) (long) (tag), \
+     MPIUNI_TMP = (void *) (long) (comm), \
+     MPIUNI_TMP = (void *) (long) (request), \
      MPI_SUCCESS)
 #define MPI_Rsend_init( buf, count,  datatype, dest, tag, comm, request) \
-     (MPIUNI_TMP = (void *) (buf), \
-     MPIUNI_TMP = (void *) (count), \
-     MPIUNI_TMP = (void *) (datatype), \
-     MPIUNI_TMP = (void *) (dest), \
-     MPIUNI_TMP = (void *) (tag), \
-     MPIUNI_TMP = (void *) (comm), \
-     MPIUNI_TMP = (void *) (request), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+     MPIUNI_TMP = (void *) (long) (count), \
+     MPIUNI_TMP = (void *) (long) (datatype), \
+     MPIUNI_TMP = (void *) (long) (dest), \
+     MPIUNI_TMP = (void *) (long) (tag), \
+     MPIUNI_TMP = (void *) (long) (comm), \
+     MPIUNI_TMP = (void *) (long) (request), \
      MPI_SUCCESS)
 #define MPI_Recv_init( buf, count,  datatype, source, tag, comm, request) \
-     (MPIUNI_TMP = (void *) (buf), \
-     MPIUNI_TMP = (void *) (count), \
-     MPIUNI_TMP = (void *) (datatype), \
-     MPIUNI_TMP = (void *) (source), \
-     MPIUNI_TMP = (void *) (tag), \
-     MPIUNI_TMP = (void *) (comm), \
-     MPIUNI_TMP = (void *) (request), \
+     (MPIUNI_TMP = (void *) (long) (buf), \
+     MPIUNI_TMP = (void *) (long) (count), \
+     MPIUNI_TMP = (void *) (long) (datatype), \
+     MPIUNI_TMP = (void *) (long) (source), \
+     MPIUNI_TMP = (void *) (long) (tag), \
+     MPIUNI_TMP = (void *) (long) (comm), \
+     MPIUNI_TMP = (void *) (long) (request), \
      MPI_SUCCESS)
 #define MPI_Start(request) \
-     (MPIUNI_TMP = (void *) (request), \
+     (MPIUNI_TMP = (void *) (long) (request), \
      MPI_SUCCESS)
 #define MPI_Startall(count, array_of_requests) \
-     (MPIUNI_TMP = (void *) (count), \
-     MPIUNI_TMP = (void *) (array_of_requests), \
+     (MPIUNI_TMP = (void *) (long) (count), \
+     MPIUNI_TMP = (void *) (long) (array_of_requests), \
      MPI_SUCCESS)
      /* Need to determine sizeof "sendtype" */
 #define MPI_Sendrecv(sendbuf, sendcount,  sendtype, \
@@ -338,69 +338,69 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 #define MPI_Pack_size(incount,  datatype, comm, size) \
      MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Barrier(comm ) \
-     (MPIUNI_TMP = (void *) (comm), \
+     (MPIUNI_TMP = (void *) (long) (comm), \
      MPI_SUCCESS)
 #define MPI_Bcast( buffer, count, datatype, root, comm ) \
-     (MPIUNI_TMP = (void *) (buffer), \
-     MPIUNI_TMP = (void *) (count), \
-     MPIUNI_TMP = (void *) (datatype), \
-     MPIUNI_TMP = (void *) (comm), \
+     (MPIUNI_TMP = (void *) (long) (buffer), \
+     MPIUNI_TMP = (void *) (long) (count), \
+     MPIUNI_TMP = (void *) (long) (datatype), \
+     MPIUNI_TMP = (void *) (long) (comm), \
      MPI_SUCCESS)
 #define MPI_Gather( sendbuf, sendcount,  sendtype, \
      recvbuf, recvcount,  recvtype, \
      root, comm) \
-     (MPIUNI_TMP = (void *) (recvcount), \
-     MPIUNI_TMP = (void *) (root), \
-     MPIUNI_TMP = (void *) (recvtype), \
-     MPIUNI_TMP = (void *) (comm), \
+     (MPIUNI_TMP = (void *) (long) (recvcount), \
+     MPIUNI_TMP = (void *) (long) (root), \
+     MPIUNI_TMP = (void *) (long) (recvtype), \
+     MPIUNI_TMP = (void *) (long) (comm), \
      PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
      MPI_SUCCESS)
 #define MPI_Gatherv( sendbuf, sendcount,  sendtype, \
      recvbuf, recvcounts, displs, \
      recvtype, root, comm) \
-     (MPIUNI_TMP = (void *) (recvcounts), \
-     MPIUNI_TMP = (void *) (displs), \
-     MPIUNI_TMP = (void *) (recvtype), \
-     MPIUNI_TMP = (void *) (root), \
-     MPIUNI_TMP = (void *) (comm), \
+     (MPIUNI_TMP = (void *) (long) (recvcounts), \
+     MPIUNI_TMP = (void *) (long) (displs), \
+     MPIUNI_TMP = (void *) (long) (recvtype), \
+     MPIUNI_TMP = (void *) (long) (root), \
+     MPIUNI_TMP = (void *) (long) (comm), \
      PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
      MPI_SUCCESS)
 #define MPI_Scatter( sendbuf, sendcount,  sendtype, \
      recvbuf, recvcount,  recvtype, \
      root, comm) \
-     (MPIUNI_TMP = (void *) (sendbuf), \
-     MPIUNI_TMP = (void *) (sendcount), \
-     MPIUNI_TMP = (void *) (sendtype), \
-     MPIUNI_TMP = (void *) (recvbuf), \
-     MPIUNI_TMP = (void *) (recvcount), \
-     MPIUNI_TMP = (void *) (recvtype), \
-     MPIUNI_TMP = (void *) (root), \
-     MPIUNI_TMP = (void *) (comm), MPI_Abort(MPI_COMM_WORLD,0))
+     (MPIUNI_TMP = (void *) (long) (sendbuf), \
+     MPIUNI_TMP = (void *) (long) (sendcount), \
+     MPIUNI_TMP = (void *) (long) (sendtype), \
+     MPIUNI_TMP = (void *) (long) (recvbuf), \
+     MPIUNI_TMP = (void *) (long) (recvcount), \
+     MPIUNI_TMP = (void *) (long) (recvtype), \
+     MPIUNI_TMP = (void *) (long) (root), \
+     MPIUNI_TMP = (void *) (long) (comm), MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Scatterv( sendbuf, sendcounts, displs, \
      sendtype,  recvbuf, recvcount, \
      recvtype, root, comm) \
-     (MPIUNI_TMP = (void *) (sendbuf), \
-     MPIUNI_TMP = (void *) (sendcounts), \
-     MPIUNI_TMP = (void *) (displs), \
-     MPIUNI_TMP = (void *) (sendtype), \
-     MPIUNI_TMP = (void *) (recvbuf), \
-     MPIUNI_TMP = (void *) (recvcount), \
-     MPIUNI_TMP = (void *) (recvtype), \
-     MPIUNI_TMP = (void *) (root), \
-     MPIUNI_TMP = (void *) (comm), MPI_Abort(MPI_COMM_WORLD,0))
+     (MPIUNI_TMP = (void *) (long) (sendbuf), \
+     MPIUNI_TMP = (void *) (long) (sendcounts), \
+     MPIUNI_TMP = (void *) (long) (displs), \
+     MPIUNI_TMP = (void *) (long) (sendtype), \
+     MPIUNI_TMP = (void *) (long) (recvbuf), \
+     MPIUNI_TMP = (void *) (long) (recvcount), \
+     MPIUNI_TMP = (void *) (long) (recvtype), \
+     MPIUNI_TMP = (void *) (long) (root), \
+     MPIUNI_TMP = (void *) (long) (comm), MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Allgather( sendbuf, sendcount,  sendtype, \
      recvbuf, recvcount,  recvtype, comm) \
-     (MPIUNI_TMP = (void *) (recvcount), \
-     MPIUNI_TMP = (void *) (recvtype), \
-     MPIUNI_TMP = (void *) (comm), \
+     (MPIUNI_TMP = (void *) (long) (recvcount), \
+     MPIUNI_TMP = (void *) (long) (recvtype), \
+     MPIUNI_TMP = (void *) (long) (comm), \
      PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
      MPI_SUCCESS)
 #define MPI_Allgatherv( sendbuf, sendcount,  sendtype, \
      recvbuf, recvcounts, displs, recvtype, comm) \
-     (MPIUNI_TMP = (void *) (recvcounts), \
-     MPIUNI_TMP = (void *) (displs), \
-     MPIUNI_TMP = (void *) (recvtype), \
-     MPIUNI_TMP = (void *) (comm), \
+     (MPIUNI_TMP = (void *) (long) (recvcounts), \
+     MPIUNI_TMP = (void *) (long) (displs), \
+     MPIUNI_TMP = (void *) (long) (recvtype), \
+     MPIUNI_TMP = (void *) (long) (comm), \
      PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
      MPI_SUCCESS)
 #define MPI_Alltoall( sendbuf, sendcount,  sendtype, \
@@ -412,15 +412,15 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 #define MPI_Reduce( sendbuf,  recvbuf, count, \
      datatype, op, root, comm) \
      (PetscMemcpy(recvbuf,sendbuf,(count)*( datatype)), \
-     MPIUNI_TMP = (void *) (comm), MPI_SUCCESS)
+     MPIUNI_TMP = (void *) (long) (comm), MPI_SUCCESS)
 #define MPI_Op_create(function, commute, op) MPI_SUCCESS
 #define MPI_Op_free( op) MPI_SUCCESS
 #define MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm) \
      (PetscMemcpy( recvbuf, sendbuf, (count)*(datatype)), \
-     MPIUNI_TMP = (void *) (comm), MPI_SUCCESS)
+     MPIUNI_TMP = (void *) (long) (comm), MPI_SUCCESS)
 #define MPI_Scan( sendbuf,  recvbuf, count, datatype, op, comm) \
      (PetscMemcpy( recvbuf, sendbuf, (count)*(datatype)), \
-     MPIUNI_TMP = (void *) (comm), MPI_SUCCESS)
+     MPIUNI_TMP = (void *) (long) (comm), MPI_SUCCESS)
 #define MPI_Reduce_scatter( sendbuf,  recvbuf, recvcounts, \
      datatype, op, comm) \
      MPI_Abort(MPI_COMM_WORLD,0)
@@ -437,24 +437,24 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 #define MPI_Group_range_incl(group, n, ranges,newgroup) MPI_SUCCESS
 #define MPI_Group_range_excl(group, n, ranges, newgroup) MPI_SUCCESS
 #define MPI_Group_free(group) \
-     (MPIUNI_TMP = (void *) (group), \
+     (MPIUNI_TMP = (void *) (long) (group), \
      MPI_SUCCESS)
 #define MPI_Comm_size(comm, size) \
-     (MPIUNI_TMP = (void *) (comm), \
+     (MPIUNI_TMP = (void *) (long) (comm), \
      *(size)=1, \
      MPI_SUCCESS)
 #define MPI_Comm_rank(comm, rank) \
-     (MPIUNI_TMP = (void *) (comm), \
+     (MPIUNI_TMP = (void *) (long) (comm), \
      *(rank)=0, \
      MPI_SUCCESS)
 #define MPI_Comm_compare(comm1, comm2, result) \
-     (MPIUNI_TMP = (void *) (comm1), \
-     MPIUNI_TMP = (void *) (comm2), \
+     (MPIUNI_TMP = (void *) (long) (comm1), \
+     MPIUNI_TMP = (void *) (long) (comm2), \
      *(result)=MPI_IDENT, \
      MPI_SUCCESS )
 #define MPI_Comm_create(comm, group, newcomm)  \
      (*(newcomm) =  (comm), \
-     MPIUNI_TMP = (void *) (group), \
+     MPIUNI_TMP = (void *) (long) (group), \
      MPI_SUCCESS )
 #define MPI_Comm_split(comm, color, key, newcomm) MPI_SUCCESS
 #define MPI_Comm_test_inter(comm, flag) (*(flag)=1,MPI_SUCCESS)
@@ -490,11 +490,11 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 #define MPI_Get_processor_name(name, result_len) \
      (PetscStrcpy(name,"localhost"), *(result_len) =10)
 #define MPI_Errhandler_create(function, errhandler) \
-     (MPIUNI_TMP = (void *) (errhandler), \
+     (MPIUNI_TMP = (void *) (long) (errhandler), \
      MPI_SUCCESS)
 #define MPI_Errhandler_set(comm, errhandler) \
-     (MPIUNI_TMP = (void *) (comm), \
-     MPIUNI_TMP = (void *) (errhandler), \
+     (MPIUNI_TMP = (void *) (long) (comm), \
+     MPIUNI_TMP = (void *) (long) (errhandler), \
      MPI_SUCCESS)
 #define MPI_Errhandler_get(comm, errhandler) MPI_SUCCESS
 #define MPI_Errhandler_free(errhandler) MPI_SUCCESS
