@@ -1,4 +1,4 @@
-% $Id: intro.tex,v 1.41 2001/04/07 02:38:48 bsmith Exp balay $ 
+% $Id: intro.tex,v 1.42 2001/04/10 22:38:03 balay Exp bsmith $ 
 %
 %  Introduction to PETSc
 %
@@ -12,6 +12,7 @@
 \usepackage{makeidx,xspace}
 \usepackage[bookmarksopen,colorlinks]{hyperref}
 \usepackage{color}
+\input pdfcolor.tex     
 
 \usepackage{psfig}
 \usepackage{../sty/verbatim}
@@ -28,6 +29,16 @@
 
 \newcommand{\findex}[1]{\index{FUNCTION #1}}
 \newcommand{\sindex}[1]{\index{#1}}
+\newcommand{\trllink}[2]{{%
+    \pdfstartlink user{%
+        /Subtype /Link
+        /A << 
+            /Type /Action 
+            /S /URI 
+            /URI (#1) 
+        >>}%
+    \Red  \trl{#2} \Black
+    \pdfendlink}}
  
 % Defines the environment where design issues are discussed. In the manual
 % version of this report, these regions are ignored.
