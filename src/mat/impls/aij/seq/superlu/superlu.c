@@ -1,8 +1,7 @@
 /*$Id: superlu.c,v 1.10 2001/08/15 15:56:50 bsmith Exp $*/
 
 /* 
-        Provides an interface to the SuperLU sparse solver
-          Modified for SuperLU 2.0 by Matthew Knepley
+        Provides an interface to the SuperLU 3.0 sparse solver
 */
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -17,12 +16,26 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 typedef struct {
+  SuperMatrix       A,L,U,B,X;
+  superlu_options_t options;
+  int               *perm_c; /* column permutation vector */
+  int               *perm_r; /* row permutations from partial pivoting */
+  int               *etree;
+  double            *R, *C;
+  char              equed[1];
+  int               lwork;
+  void              *work;
+  double            rpg, rcond;
+  mem_usage_t       mem_usage;
+  MatStructure      flg;
+  /*
   SuperMatrix  A,B,AC,L,U;
   int          *perm_r,*perm_c,ispec,relax,panel_size;
   double       pivot_threshold;
   NCformat     *store;
   MatStructure flg;
   PetscTruth   SuperluMatOdering;
+  */
 
   /* A few function pointers for inheritance */
   int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
@@ -52,21 +65,20 @@ int MatDestroy_SuperLU(Mat A)
   Mat_SuperLU *lu = (Mat_SuperLU*)A->spptr;
 
   PetscFunctionBegin;
-  if (lu->CleanUpSuperLU) {
-    /* We have to free the global data or SuperLU crashes (sucky design)*/
-    /* Since we don't know if more solves on other matrices may be done
-       we cannot free the yucky SuperLU global data
-       StatFree(); 
-    */
-    
-    /* Free the SuperLU datastructures */
-    Destroy_CompCol_Permuted(&lu->AC);
-    Destroy_SuperNode_Matrix(&lu->L);
-    Destroy_CompCol_Matrix(&lu->U);
-    ierr = PetscFree(lu->B.Store);CHKERRQ(ierr);
-    ierr = PetscFree(lu->A.Store);CHKERRQ(ierr);
-    ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
-    ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
+  if (lu->CleanUpSuperLU) { /* Free the SuperLU datastructures */
+    /* Destroy_CompCol_Matrix(&lu->A);  */  /* hangs inside memory.c! */
+    Destroy_SuperMatrix_Store(&lu->A); 
+    Destroy_SuperMatrix_Store(&lu->B);
+    Destroy_SuperMatrix_Store(&lu->X); 
+    SUPERLU_FREE (lu->etree);
+    SUPERLU_FREE (lu->perm_r);
+    SUPERLU_FREE (lu->perm_c);
+    SUPERLU_FREE (lu->R);
+    SUPERLU_FREE (lu->C);
+    if ( lu->lwork >= 0 ) {
+      Destroy_SuperNode_Matrix(&lu->L);
+      Destroy_CompCol_Matrix(&lu->U);
+    }
   }
   ierr = MatConvert_SuperLU_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
@@ -109,6 +121,8 @@ int MatAssemblyEnd_SuperLU(Mat A,MatAssemblyType mode) {
   PetscFunctionReturn(0);
 }
 
+/* This function was written for SuperLU 2.0 by Matthew Knepley. Not tested for SuperLU 3.0! */
+#ifdef SuperLU2
 #include "src/mat/impls/dense/seq/dense.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateNull_SuperLU"
@@ -118,6 +132,7 @@ int MatCreateNull_SuperLU(Mat A,Mat *nullMat)
   int           numRows = A->m,numCols = A->n;
   SCformat      *Lstore;
   int           numNullCols,size;
+  SuperLUStat_t stat;
 #if defined(PETSC_USE_COMPLEX)
   doublecomplex *nullVals,*workVals;
 #else
@@ -169,9 +184,9 @@ int MatCreateNull_SuperLU(Mat A,Mat *nullMat)
   /* Backward solve the upper triangle A x = b */
   for(b = 0; b < numNullCols; b++) {
 #if defined(PETSC_USE_COMPLEX)
-    sp_ztrsv("L","T","U",&lu->L,&lu->U,&nullVals[b*numRows],&ierr);
+    sp_ztrsv("L","T","U",&lu->L,&lu->U,&nullVals[b*numRows],&stat,&ierr);
 #else
-    sp_dtrsv("L","T","U",&lu->L,&lu->U,&nullVals[b*numRows],&ierr);
+    sp_dtrsv("L","T","U",&lu->L,&lu->U,&nullVals[b*numRows],&stat,&ierr);
 #endif
     if (ierr < 0)
       SETERRQ1(PETSC_ERR_ARG_WRONG,"The argument %d was invalid",-ierr);
@@ -182,75 +197,144 @@ int MatCreateNull_SuperLU(Mat A,Mat *nullMat)
   ierr = MatAssemblyEnd(*nullMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SuperLU"
 int MatSolve_SuperLU(Mat A,Vec b,Vec x)
 {
-  Mat_SuperLU *lu = (Mat_SuperLU*)A->spptr;
-  PetscScalar *array;
-  int         m,ierr;
+  Mat_SuperLU   *lu = (Mat_SuperLU*)A->spptr;
+  PetscScalar   *barray,*xarray;
+  int           m,n,ierr,lwork,info,i;
+  SuperLUStat_t stat;
+  double        ferr,berr,*rhsb,*rhsx;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
-  ierr = VecCopy(b,x);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&array);CHKERRQ(ierr);
-  /* Create the Rhs */
-  lu->B.Stype        = SLU_DN;
-  lu->B.Mtype        = SLU_GE;
-  lu->B.nrow         = m;
-  lu->B.ncol         = 1;
-  ((DNformat*)lu->B.Store)->lda   = m;
-  ((DNformat*)lu->B.Store)->nzval = array;
-#if defined(PETSC_USE_COMPLEX)
-  lu->B.Dtype        = SLU_Z;
-  zgstrs("T",&lu->L,&lu->U,lu->perm_r,lu->perm_c,&lu->B,&ierr);
-#else
-  lu->B.Dtype        = SLU_D;
-  dgstrs("T",&lu->L,&lu->U,lu->perm_r,lu->perm_c,&lu->B,&ierr);
-#endif
-  if (ierr < 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"The diagonal element of row %d was invalid",-ierr);
-  ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
+  /* rhs vector */
+  lu->B.ncol = 1;   /* Set the number of right-hand side */
+  ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
+  ((DNformat*)lu->B.Store)->nzval = barray;
+
+  /* solution vector */
+  ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
+  ((DNformat*)lu->X.Store)->nzval = xarray;
+
+  /* Initialize the statistics variables. */
+  StatInit(&stat);
+
+  lu->options.Fact  = FACTORED; /* Indicate the factored form of A is supplied. */
+  lu->options.Trans = TRANS;
+  dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+           &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
+           &lu->mem_usage, &stat, &info);
+   
+  ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+
+  if ( info == 0 || info == lu->A.ncol+1 ) {
+    if ( lu->options.IterRefine ) {
+      printf("Iterative Refinement:\n");
+      printf("%8s%8s%16s%16s\n", "rhs", "Steps", "FERR", "BERR");
+      for (i = 0; i < 1; ++i)
+        printf("%8d%8d%16e%16e\n", i+1, stat.RefineSteps, ferr, berr);
+    }
+    fflush(stdout);
+  } else if ( info > 0 && lu->lwork == -1 ) {
+    printf("** Estimated memory: %d bytes\n", info - n);
+  }
+
+  if ( lu->options.PrintStat ) StatPrint(&stat);
+  StatFree(&stat);
   PetscFunctionReturn(0);
 }
-
-static int StatInitCalled = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU"
 int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
 {
-  Mat_SeqAIJ  *aa = (Mat_SeqAIJ*)(A)->data;
-  Mat_SuperLU *lu = (Mat_SuperLU*)(*F)->spptr;
-  int         *etree,ierr;
-  PetscTruth  flag;
-
+  Mat_SeqAIJ    *aa = (Mat_SeqAIJ*)(A)->data;
+  Mat_SuperLU   *lu = (Mat_SuperLU*)(*F)->spptr;
+  int           ierr,info;
+  PetscTruth    flag;
+  SuperLUStat_t stat;
+  double        ferr, berr; 
+  
   PetscFunctionBegin;
-  /* Create the SuperMatrix for A^T:
-       Since SuperLU only likes column-oriented matrices,we pass it the transpose,
-       and then solve A^T X = B in MatSolve().
-  */
-  
-  if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numerical factorization */
-    lu->A.Stype   = SLU_NC;
-#if defined(PETSC_USE_COMPLEX)
-    lu->A.Dtype   = SLU_Z;
-#else
-    lu->A.Dtype   = SLU_D;
-#endif
-    lu->A.Mtype   = SLU_GE;
-    lu->A.nrow    = A->n;
-    lu->A.ncol    = A->m;
-  
-    ierr = PetscMalloc(sizeof(NCformat),&lu->store);CHKERRQ(ierr); 
-    ierr = PetscMalloc(sizeof(DNformat),&lu->B.Store);CHKERRQ(ierr);
+  if (lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
+    /* Set SuperLU options */
+    /* the default values for options argument:
+	options.Fact = DOFACT;
+        options.Equil = YES;
+    	options.ColPerm = COLAMD;
+	options.DiagPivotThresh = 1.0;
+    	options.Trans = NOTRANS;
+    	options.IterRefine = NOREFINE;
+    	options.SymmetricMode = NO;
+    	options.PivotGrowth = NO;
+    	options.ConditionNumber = NO;
+    	options.PrintStat = YES;
+    */
+    set_default_options(&lu->options);
+    lu->options.Equil = NO;  /* equilibration causes error in solve */
+  } else { /* successing numerical factorization */
+    /* Ref: ~SuperLU_3.0/EXAMPLE/dlinsolx2.c */
+    Destroy_SuperMatrix_Store(&lu->A); 
+    if ( lu->lwork >= 0 ) { /* Deallocate storage associated with L and U. */
+      Destroy_SuperNode_Matrix(&lu->L);
+      Destroy_CompCol_Matrix(&lu->U);
+      lu->options.Fact = SamePattern;
+    }
   }
-  lu->store->nnz    = aa->nz;
-  lu->store->colptr = aa->i;
-  lu->store->rowind = aa->j;
-  lu->store->nzval  = aa->a; 
-  lu->A.Store       = lu->store; 
+
+  /* Create the SuperMatrix for lu->A=A^T:
+       Since SuperLU likes column-oriented matrices,we pass it the transpose,
+       and then solve A^T X = B in MatSolve(). */
+#if defined(PETSC_USE_COMPLEX)
+  zCreate_CompCol_Matrix(&lu->A,A->n,A->m,aa->nz,aa->a,aa->j,aa->i,
+                           SLU_NC,SLU_Z,SLU_GE);
+#else
+  dCreate_CompCol_Matrix(&lu->A,A->n,A->m,aa->nz,aa->a,aa->j,aa->i,
+                           SLU_NC,SLU_D,SLU_GE);
+#endif
   
+  /* Initialize the statistics variables. */
+  StatInit(&stat);
+
+  lu->lwork = 0;   /* allocate space internally by system malloc */
+  lu->B.ncol = 0;  /* Indicate not to solve the system */
+  dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+           &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
+           &lu->mem_usage, &stat, &info);
+  
+  if ( info == 0 || info == lu->A.ncol+1 ) {
+    if ( lu->options.PivotGrowth ) printf("Recip. pivot growth = %e\n", lu->rpg);
+    if ( lu->options.ConditionNumber )
+      printf("Recip. condition number = %e\n", lu->rcond);
+        /*
+          NCformat       *Ustore;
+          SCformat       *Lstore;
+        Lstore = (SCformat *) lu->L.Store;
+        Ustore = (NCformat *) lu->U.Store;
+	printf("No of nonzeros in factor L = %d\n", Lstore->nnz);
+    	printf("No of nonzeros in factor U = %d\n", Ustore->nnz);
+    	printf("No of nonzeros in L+U = %d\n", Lstore->nnz + Ustore->nnz - n);
+	printf("L\\U MB %.3f\ttotal MB needed %.3f\texpansions %d\n",
+	       mem_usage.for_lu/1e6, mem_usage.total_needed/1e6,
+	       mem_usage.expansions);
+        */
+    fflush(stdout);
+
+  } else if ( info > 0 && lu->lwork == -1 ) {
+    printf("** Estimated memory: %d bytes\n", info - lu->A.ncol);
+  }
+
+  if ( lu->options.PrintStat ) StatPrint(&stat);
+  StatFree(&stat);
+
+  lu->flg = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+
+#ifdef OLD
   /* Set SuperLU options */
   lu->relax      = sp_ienv(2);
   lu->panel_size = sp_ienv(1);
@@ -290,9 +374,9 @@ int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
 
   /* Cleanup */
   ierr = PetscFree(etree);CHKERRQ(ierr);
+#endif /* OLD */
 
-  lu->flg = SAME_NONZERO_PATTERN;
-  PetscFunctionReturn(0);
+
 }
 
 /*
@@ -302,9 +386,9 @@ int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
 #define __FUNCT__ "MatLUFactorSymbolic_SuperLU"
 int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
-  Mat                 B;
+  Mat          B;
   Mat_SuperLU  *lu;
-  int                 ierr,*ca;
+  int          ierr,m=A->m,n=A->n;     /* *ca; */
 
   PetscFunctionBegin;
   
@@ -318,9 +402,11 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   B->assembled            = PETSC_TRUE;  /* required by -sles_view */
   
   lu = (Mat_SuperLU*)(B->spptr);
+#ifdef SUPERLU2
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",
                                     (void(*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
-
+#endif
+#ifdef OLD
   /* Allocate the work arrays required by SuperLU (notice sizes are for the transpose) */
   ierr = PetscMalloc(A->n*sizeof(int),&lu->perm_r);CHKERRQ(ierr);
   ierr = PetscMalloc(A->m*sizeof(int),&lu->perm_c);CHKERRQ(ierr);
@@ -333,6 +419,21 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 
   lu->pivot_threshold = info->dtcol; 
   PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SuperLU));
+#endif
+  /* Allocate spaces (notice sizes are for the transpose) */
+  int            *perm_c; /* column permutation vector */
+  int            *perm_r; /* row permutations from partial pivoting */
+  if ( !(lu->etree = intMalloc(m)) ) ABORT("Malloc fails for etree[].");
+  if ( !(lu->perm_r = intMalloc(n)) ) ABORT("Malloc fails for perm_r[].");
+  if ( !(lu->perm_c = intMalloc(m)) ) ABORT("Malloc fails for perm_c[].");
+  if ( !(lu->R = (double *) SUPERLU_MALLOC(n * sizeof(double))) ) 
+    ABORT("SUPERLU_MALLOC fails for R[].");
+  if ( !(lu->C = (double *) SUPERLU_MALLOC(m * sizeof(double))) )
+    ABORT("SUPERLU_MALLOC fails for C[].");
+
+  /* create rhs and solution x without allocate space for Store */
+  dCreate_Dense_Matrix(&lu->B, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
+  dCreate_Dense_Matrix(&lu->X, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
 
   lu->flg            = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpSuperLU = PETSC_TRUE;
@@ -351,9 +452,11 @@ int MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"SuperLU run parameters:\n");CHKERRQ(ierr);
+#ifdef OLD
   if(lu->SuperluMatOdering) {
     ierr = PetscViewerASCIIPrintf(viewer,"  SuperLU mat ordering: %d\n",lu->ispec);CHKERRQ(ierr);
   }
+#endif
   PetscFunctionReturn(0);
 }
 
