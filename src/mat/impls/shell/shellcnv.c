@@ -46,8 +46,8 @@ int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *newmat) {
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Fake support for "inplace" convert. */
-  if (*newmat == mat) {
-    ierr = MatDestroy(mat);CHKERRQ(ierr);
+  if (*newmat == oldmat) {
+    ierr = MatDestroy(oldmat);CHKERRQ(ierr);
   }
   *newmat = mat;
   PetscFunctionReturn(0);

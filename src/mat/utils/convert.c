@@ -34,8 +34,8 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *newmat) {
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Fake support for "inplace" convert. */
-  if (*newmat == M) {
-    ierr = MatDestroy(M);CHKERRQ(ierr);
+  if (*newmat == mat) {
+    ierr = MatDestroy(mat);CHKERRQ(ierr);
   }
   *newmat = M;
   PetscFunctionReturn(0);
