@@ -132,6 +132,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetInterpolate(PC pc,PetscInt l,Mat mat)
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (!l) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Do not set interpolation routine for coarsest level");
+  if (mg[l]->interpolate) {ierr = MatDestroy(mg[l]->interpolate);CHKERRQ(ierr);}
   mg[l]->interpolate = mat;  
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -174,6 +175,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetRestriction(PC pc,PetscInt l,Mat mat)
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (!l) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Do not set restriction routine for coarsest level");
+  if (mg[l]->restrct) {ierr = MatDestroy(mg[l]->restrct);CHKERRQ(ierr);}
   mg[l]->restrct  = mat;  
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -351,6 +353,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetRhs(PC pc,PetscInt l,Vec c)
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (l == mg[0]->levels-1) SETERRQ(PETSC_ERR_ARG_INCOMP,"Do not set rhs for finest level");
+  if (mg[l]->b) {ierr = VecDestroy(mg[l]->b);CHKERRQ(ierr);}
   mg[l]->b  = c;
   ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -388,6 +391,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetX(PC pc,PetscInt l,Vec c)
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (l == mg[0]->levels-1) SETERRQ(PETSC_ERR_ARG_INCOMP,"Do not set rhs for finest level");
+  if (mg[l]->x) {ierr = VecDestroy(mg[l]->x);CHKERRQ(ierr);}
   mg[l]->x  = c;
   ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -423,6 +427,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetR(PC pc,PetscInt l,Vec c)
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (!l) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Need not set residual vector for coarse grid");
+  if (mg[l]->r) {ierr = VecDestroy(mg[l]->r);CHKERRQ(ierr);}
   mg[l]->r  = c;
   ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
