@@ -1,9 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex47.c,v 1.9 1999/05/04 20:33:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex47.c,v 1.10 1999/05/12 03:30:15 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
-"Tests the vatious routines in MatBAIJ format.\n\
+"Tests the various routines in MatBAIJ format.\n\
 Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
                     use the file petsc/src/mat/examples/matbinary.ex\n\n";
