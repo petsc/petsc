@@ -78,7 +78,7 @@ class Script(logging.Logger):
         self._root_ = os.getcwd()
     return self._root_
 
-  def getModule(self, root, name):
+  def getModule(root, name):
     '''Retrieve a specific module from the directory root, bypassing the usual paths'''
     import imp
 
@@ -88,6 +88,17 @@ class Script(logging.Logger):
     finally:
       if fp: fp.close()
     return
+  getModule = staticmethod(getModule)
+
+  def importModule(moduleName):
+    '''Import the named module, and return the module object
+       - Works properly for fully qualified names'''
+    module     = __import__(moduleName)
+    components = moduleName.split('.')
+    for comp in components[1:]:
+      module = getattr(module, comp)
+    return module
+  importModule = staticmethod(importModule)
 
   def openPipe(command):
     '''We need to use the asynchronous version here since we want to avoid blocking reads'''
@@ -199,6 +210,33 @@ class Script(logging.Logger):
       Script.defaultCheckCommand(command, status, output, error)
     return (output, error, status)
   executeShellCommand = staticmethod(executeShellCommand)
+
+  def getDebugger(self, className = 'PETSc.DebugI.GDB.Debugger'):
+    if not hasattr(self, '_debugger'):
+      try:
+        import SIDL.Loader
+      except ImportError, e:
+        self.logPrint('Cannot locate a functional SIDL loader: '+str(e))
+        return
+      try:
+        import PETSc.Debug.Debugger
+      except ImportError, e:
+        self.logPrint('Could not load Petsc debugger module: '+str(e))
+        return
+      debugger = PETSc.Debug.Debugger.Debugger(SIDL.Loader.createClass(className))
+      if not debugger:
+        self.logPrint('Could not load debugger: '+cls)
+        return
+      debugger.setProgram('/usr/local/python/bin/python')
+      debugger.setUseXterm(1)
+      debugger.setDebugger('/usr/local/gdb/bin/gdb')
+      debugger.attach()
+      self._debugger = debugger
+    return self._debugger
+  def setDebugger(self, debugger):
+    self._debugger = debugger
+    return
+  debugger = property(getDebugger, setDebugger, doc = 'The debugger')
 
 import args
 
