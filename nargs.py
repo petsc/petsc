@@ -175,7 +175,7 @@ class ArgFuzzyBool(Arg):
       elif value == 'ifneeded': value = 2
       elif value == 'client':   value = 2
       elif value == 'server':   value = 3
-      else:                     value = int(bool(value))
+      else:                     value = int(value)
     except:
       raise TypeError('Invalid boolean value: '+str(value)+' for key '+str(self.key))
     self.value = value
