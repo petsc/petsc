@@ -2,7 +2,7 @@
 
 ALL: lib 
 
-DIRS	  = viewer draw error dll fileio memory objects time utils plog mpiuni matlabengine f90 esi
+DIRS	  = viewer draw error dll fileio memory objects time utils plog mpiuni matlabengine f90 esi adic
 LOCDIR	  = src/sys/src/
 
 include ${PETSC_DIR}/bmake/common/base

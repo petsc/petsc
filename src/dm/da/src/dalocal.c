@@ -471,7 +471,7 @@ int DARestoreAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,i
   void *iarray_start = 0;
   
   PetscFunctionBegin;
-  PetscValideHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (da->adarrayghostedout[i] == *iptr) {
