@@ -14,7 +14,9 @@ add to it).
    
   KSP
 
-  KSP
+  DA
+    DAGetColoring()
+    DAGetMatrix()
 
 
   SLES
