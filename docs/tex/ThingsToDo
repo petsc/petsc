@@ -39,7 +39,7 @@ Additional Capabilities that PETSc Needs:
     subSLES info once?  Or maybe better - collect info that differs among
     blocks/procs (such as LU nonzeros) and then print only from 1 proc.
 
-  * Explain profiling, performance tuning in users manual
+  * Explain profiling, performance tuning in users manual, Performance file
 
   * Add to documentation tips on getting parallel performance numbers, including
     how to prevent the paging in of executable from screwing up timings. sles ex21.c
