@@ -30,7 +30,8 @@ struct _MatOps {
             (*range)(Mat,int*,int*),
             (*ilufactorsymbolic)(Mat,IS,IS,int,Mat *),
             (*ichfactorsymbolic)(Mat,IS,int,Mat *),
-            (*getarray)(Mat,Scalar **);
+            (*getarray)(Mat,Scalar **),
+            (*convert)(Mat,MATTYPE,Mat *);
 };
 
 
