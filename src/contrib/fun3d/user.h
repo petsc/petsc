@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.191 2000/01/11 21:00:09 bsmith Exp $*/
+/*$Id: user.h,v 1.3 2000/01/13 17:15:57 bsmith Exp bsmith $*/
 #if defined(HAVE_FORTRAN_UNDERSCORE)
 #       define f77name(ucase,lcase,lcbar) lcbar
 #elif defined(HAVE_FORTRAN_CAPS)
@@ -286,7 +286,7 @@ typedef struct{                               /*============================*/
 }CGMCOM;                                      /* COMMON GMCOM               */
                                               /*============================*/
 
-void set_up_grid(GRID *);
+int  set_up_grid(GRID *);
 void write_fine_grid(GRID *);
 void fcalloc(int, REAL**);
 void icalloc(int, int**);
