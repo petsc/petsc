@@ -13,6 +13,7 @@ class FileSet(list):
     return
 
   def checkFile(self, filename):
+    '''If mustExist true, check for file existence'''
     if self.mustExist and not os.path.exists(filename):
       raise ValueError('File '+filename+' does not exist!')
     return filename
@@ -33,6 +34,10 @@ class FileSet(list):
     if not item in self:
       list.insert(self, index, item)
     return
+
+  def isCompatible(self, set):
+    '''Return True if the set tags and mustExist flags match'''
+    return (self.tag == set.tag) and (self.mustExist == set.mustExist)
 
 class TreeFileSet (FileSet):
   def __init__(self, roots = None, fileTest = lambda file: 1, tag = None):
@@ -143,6 +148,10 @@ class RootedFileSet(FileSet, base.Base):
     else:
       filename = FileSet.checkFile(self, os.path.join(root, filename))
     return filename
+
+  def isCompatible(self, set):
+    '''Return True if the roots match and the superclass match returns True'''
+    return isinstance(set, RootedFileSet) and (self.projectRoot == set.projectRoot) and FileSet.isCompatible(self, set)
 
 class FileSetIterator (object):
   def __init__(self, set):

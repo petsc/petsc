@@ -60,20 +60,20 @@ class Tag (build.transform.Transform):
     map(lockedFiles.remove, changedFiles)
     return lockedFiles
 
-  def handleFile(self, f, tag):
+  def handleFile(self, f, set):
     '''Add new filesets to the output
        - All files under BitKeeper control are tagged "bkedit"
        - All new implementation files are tagged "bkadd"
        - All locked but unchanged files under BitKeeper control are tagged "bkrevert"'''
     root = self.rootFunc(f)
-    if (self.inputTag is None or tag in self.inputTag) and root:
+    if (self.inputTag is None or set.tag in self.inputTag) and root:
       import os
       if not os.path.isdir(root):
         os.makedirs(root)
       self.output.children.append(build.fileset.FileSet(filenames = self.getUnlockedFiles(root),  tag = 'bkedit'))
       self.output.children.append(build.fileset.FileSet(filenames = self.getNewFiles(root),       tag = 'bkadd'))
       self.output.children.append(build.fileset.FileSet(filenames = self.getUnchangedFiles(root), tag = 'bkrevert'))
-    return build.transform.Transform.handleFile(self, f, tag)
+    return build.transform.Transform.handleFile(self, f, set)
 
 class Open (build.transform.Transform):
   '''This nodes handles sets with tag "bkedit", editing each file'''

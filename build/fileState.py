@@ -42,16 +42,16 @@ class FileChanged (build.transform.Transform):
       self.debugPrint(source+' does not exist in source database', 3, 'sourceDB')
     return 1
 
-  def handleFile(self, f, tag):
+  def handleFile(self, f, set):
     '''Place the file into either the "changed" or "unchanged" output set
        - If inputTag was specified, only handle files with this tag'''
-    if self.inputTag is None or tag in self.inputTag:
+    if self.inputTag is None or set.tag in self.inputTag:
       if self.hasChanged(f):
         self.changed.append(f)
       else:
         self.unchanged.append(f)
       return self.output
-    return build.transform.Transform.handleFile(self, f, tag)
+    return build.transform.Transform.handleFile(self, f, set)
 
 class GenericTag (FileChanged):
   '''Uses input tag, extension and directory checks to group files which need further processing'''
@@ -77,48 +77,47 @@ class GenericTag (FileChanged):
   def __str__(self):
     return 'Tag transform for extension '+str(self.ext)+str(self.inputTag)+' to tag '+self.changed.tag
 
-  def handleFile(self, f, tag):
+  def handleFile(self, f, set):
     '''- If the file is not in the specified root directory, use the default handler
        - If the file is in the extension list, call the parent method
        - If the file is in the deferred extension list and has changed, put it in the update set'''
     (base, ext) = os.path.splitext(f)
     if not self.root or self.root+os.sep == os.path.commonprefix([os.path.normpath(base), self.root+os.sep]):
       if self.ext is None or ext in self.ext:
-        return FileChanged.handleFile(self, f, tag)
+        return FileChanged.handleFile(self, f, set)
       elif not self.deferredExt is None and ext in self.deferredExt:
         if self.hasChanged(f):
           self.deferredUpdates.append(f)
         return self.output
-    return build.transform.Transform.handleFile(self, f, tag)
+    return build.transform.Transform.handleFile(self, f, set)
 
   def handleFileSet(self, set):
-    '''Check root directory if given, and then execute the default set handlung method'''
+    '''Check root directory if given, and then execute the default set handling method'''
     if self.root and not os.path.isdir(self.root):
       raise RuntimeError('Invalid root directory for tagging operation: '+self.root)
     return FileChanged.handleFileSet(self, set)
 
 class Update (build.transform.Transform):
   '''Update nodes process files whose update in the source database was delayed'''
-  def __init__(self, sourceDB, tags = None):
+  def __init__(self, sourceDB, tag = None):
     build.transform.Transform.__init__(self)
     self.sourceDB = sourceDB
-    if tags is None:
-      self.tags   = []
+    if tag is None:
+      self.tag = []
     else:
-      self.tags   = tags
-    if self.tags and not isinstance(self.tags, list):
-      self.tags = [self.tags]
-    self.tags   = map(lambda tag: 'update '+tag, self.tags)
+      self.tag = tag
+    if self.tag and not isinstance(self.tag, list):
+      self.tag = [self.tag]
+    self.tag   = map(lambda t: 'update '+t, self.tag)
     return
 
   def __str__(self):
-    return 'Update transform for '+str(self.tags)
+    return 'Update transform for '+str(self.tag)
 
-  def handleFile(self, f, tag):
+  def handleFile(self, f, set):
     '''If the file tag starts with "update", then update it in the source database'''
-    if (self.tags and tag in self.tags) or (tag and tag[:6] == 'update'):
+    if (self.tag and set.tag in self.tag) or (set.tag and set.tag[:6] == 'update'):
       if os.path.isfile(f):
         self.sourceDB.updateSource(f)
-    else:
-      build.transform.Transform.handleFile(self, f, tag)
-    return self.output
+      return self.output
+    return build.transform.Transform.handleFile(self, f, set)

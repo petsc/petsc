@@ -102,9 +102,9 @@ class Compiler(build.processor.Processor):
   def getFlags(self, source):
     return self.getActionFlags(source)+self.getIncludeFlags(source)+self.getOutputFlags(source)
 
-  def processFileShell(self, source, tag):
+  def processFileShell(self, source, set):
     '''Compile "source" using a shell command'''
-    return self.processFileSetShell(build.fileset.FileSet([source], tag = tag))
+    return self.processFileSetShell(build.fileset.FileSet([source], tag = set.tag))
 
   def processFileSetShell(self, set):
     '''Compile all the files in "set" using a shell command'''
@@ -115,9 +115,9 @@ class Compiler(build.processor.Processor):
     #self.output.extend(map(self.getIntermediateFileName, set))
     return self.output
 
-  def processFileModule(self, source, tag):
+  def processFileModule(self, source, set):
     '''Compile "source" using a module directly'''
-    return self.processFileSetModule(build.fileset.FileSet([source], tag = tag))
+    return self.processFileSetModule(build.fileset.FileSet([source], tag = set.tag))
 
   def processFileSetModule(self, set):
     '''Compile all the files in "set" using a module directly'''
@@ -138,17 +138,17 @@ class Compiler(build.processor.Processor):
     self.output.children.append(build.fileset.RootedFileSet(self.usingSIDL.project.getUrl(), compiler.outputFiles, tag = tag))
     return self.output
 
-  def processFile(self, source, tag):
+  def processFile(self, source, set):
     '''Compile "source"'''
-    return self.processFileModule(source, tag)
+    return self.processFileModule(source, set)
 
   def processFileSet(self, set):
     '''Compile all the files in "set"'''
     return self.processFileSetModule(set)
 
-  def processOldFile(self, source, tag):
+  def processOldFile(self, source, set):
     '''Compile "source"'''
-    return self.processFileModule(source, tag)
+    return self.processFileModule(source, set)
 
   def processOldFileSet(self, set):
     '''Compile all the files in "set"'''
