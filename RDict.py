@@ -126,6 +126,10 @@ Arg class, which wraps the usual value.'''
       self.send()
     return
 
+  def __contains__(self, key):
+    '''This method just calls self.has_key(key)'''
+    return self.has_key(key)
+
   def has_key(self, key):
     '''Checks for the key locally, and if not found consults the parent. Then checks whether the value has been set'''
     if dict.has_key(self, key):

@@ -135,9 +135,9 @@ class ArgBool(Arg):
 class ArgInt(Arg):
   '''Arguments that represent integer numbers'''
   def __init__(self, key, value = None, help = '', min = -2147483647L, max = 2147483648L, isTemporary = 0):
-    Arg.__init__(self, key, value, help, isTemporary)
     self.min = min
     self.max = max
+    Arg.__init__(self, key, value, help, isTemporary)
     return
 
   def getEntryPrompt(self):
@@ -157,9 +157,9 @@ class ArgInt(Arg):
 class ArgReal(Arg):
   '''Arguments that represent floating point numbers'''
   def __init__(self, key, value = None, help = '', min = -1.7976931348623157e308, max = 1.7976931348623157e308, isTemporary = 0):
-    Arg.__init__(self, key, value, help, isTemporary)
     self.min = min
     self.max = max
+    Arg.__init__(self, key, value, help, isTemporary)
     return
 
   def getEntryPrompt(self):
@@ -179,8 +179,8 @@ class ArgReal(Arg):
 class ArgDir(Arg):
   '''Arguments that represent directories'''
   def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0):
-    Arg.__init__(self, key, value, help, isTemporary)
     self.mustExist = mustExist
+    Arg.__init__(self, key, value, help, isTemporary)
     return
 
   def getEntryPrompt(self):
@@ -212,8 +212,8 @@ class ArgDir(Arg):
 class ArgLibrary(Arg):
   '''Arguments that represent libraries'''
   def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0):
-    Arg.__init__(self, key, value, help, isTemporary)
     self.mustExist = mustExist
+    Arg.__init__(self, key, value, help, isTemporary)
     return
 
   def getEntryPrompt(self):
