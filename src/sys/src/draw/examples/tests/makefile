@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.69 1999/07/16 14:15:17 balay Exp bsmith $ 
+# $Id: makefile,v 1.70 1999/09/02 14:52:51 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -9,9 +9,9 @@ FPPFLAGS        =
 LOCDIR          = src/sys/src/draw/examples/tests/
 
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
-		  runex3 ex3.rm ex10.PETSc runex10 ex10.rm \
+		  runex3 ex3.rm ex10.PETSc runex10 ex10.rm ex4.PETSC runex4 ex4.rm \
 		  clean
-TESTEXAMPLES_3  = ex5.PETSc ex5.rm clean
+TESTEXAMPLES_3  = ex4f.PETSc ex4f.rm ex5.PETSc ex5.rm clean
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm clean
 TESTEXAMPLES_13 = ex9.PETSc ex9.rm clean
 BUILDEXAMPLES_2 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc \
@@ -29,6 +29,8 @@ runex2:
 	-@${MPIRUN} -np 1 ex2
 runex3:
 	-@${MPIRUN} -np 1 ex3
+runex4:
+	-@${MPIRUN} -np 1 ex4
 runex10:
 	-@${MPIRUN} -np 1 ex10
 
@@ -47,6 +49,10 @@ ex3: ex3.o  chkopts
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_SYS_LIB}
 	${RM} -f ex4.o
+
+ex4f: ex4f.o  chkopts
+	-${FLINKER} -o ex4f ex4f.o ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
+	${RM} -f ex4f.o
 
 ex5: ex5.o  chkopts
 	-${FLINKER} -o ex5 ex5.o ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
