@@ -12,4 +12,5 @@ PC Object:
   Matrix Object:
     type=aij, rows=56, cols=56
     total: nonzeros=250, allocated nonzeros=392
+    not using I-node (on process 0) routines
 Norm of error 5.90715e-08 iterations 15

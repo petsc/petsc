@@ -27,17 +27,17 @@ ex5: ex5.o  chkopts
 	${RM} ex5.o
 
 runex1: 
-	-@${MPIRUN} ex1 -f0 ${DATAFILESPATH}/matrices/medium -load_ignore_info
+	-@${MPIRUN} -np 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -load_ignore_info
 
 runex5: 
-	-@${MPIRUN} -np 2 ex5 -f ${DATAFILESPATH}/matrices/medium -load_ignore_info
+	-@${MPIRUN} -np 2 ./ex5 -f ${DATAFILESPATH}/matrices/medium -load_ignore_info
 
 #-------------------------------------------------------------
-TESTEXAMPLES_1  = ex4.PETSc ex4.rm ex5.PETSc runex5 ex5.rm
+TESTEXAMPLES_1  = ex4.PETSc ex4.rm ex5.PETSc ex5.rm
 TESTEXAMPLES_2  = ex2.PETSc ex2.rm
 TESTEXAMPLES_3  = 
 TESTEXAMPLES_4  =
-TESTEXAMPLES_6  = ex1.PETSc runex1 ex1.rm 
+TESTEXAMPLES_6  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_9  =
 TESTEXAMPLES_13 = ex1.PETSc ex1.rm
 

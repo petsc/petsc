@@ -191,7 +191,7 @@ runex5:
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp
 runex5f:
-	-@${MPIRUN} -np 1 ex5f -ksp_smonitor > ex5f_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex5f -ksp_smonitor > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.out ex5f_1.tmp) then true; \
 	   else echo "Possible problem with ex5f_1, diffs above"; fi; \
 	   ${RM} -f ex5f_1.tmp
@@ -298,14 +298,13 @@ runex17:
 runex18:
 	-@${MPIRUN} -np 1 ./ex18 -ksp_gmres_cgs_refinement_type always -f  ../../../mat/examples/matbinary.ex
 runex19:
-	-@${MPIRUN} -np 1 ./ex19 -ksp_gmres_cgs_refinement_type always -t 2 -pc_type jacobi -ksp_smonitor -ksp_type gmres \
-	   -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_smonitor \
-           > ex19_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex19 -ksp_gmres_cgs_refinement_type always -pc_type jacobi -ksp_smonitor \
+	-ksp_type gmres  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_2:
-	-@${MPIRUN} -np 3 ex19 -ksp_smonitor > ex19_2.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ./ex19 -ksp_smonitor > ex19_2.tmp 2>&1; \
 	if (${DIFF} output/ex19_2.out ex19_2.tmp) then true; \
 	   else echo "Possible problem with ex19_2, diffs above"; fi; \
 	   ${RM} -f ex19_2.tmp
@@ -371,7 +370,7 @@ runex26_2:
 
 TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
                   ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
-		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19_2 ex19.rm \
+		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                   ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm
 TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_3  = ex5f.PETSc runex5f ex5f.rm
