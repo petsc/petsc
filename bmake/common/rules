@@ -8,7 +8,7 @@
 # PETSC_INCLUDE - locations of include files
 #
 LDIR        = $(IPETSCDIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
-PDIR        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
+PDIR        = $(IPETSCDIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 LIBNAME     = $(PDIR)/$(LIBBASE).a
 SOURCE      = $(SOURCEC) $(SOURCEF)
 OBJS        = $(OBJSC) $(OBJSF)
