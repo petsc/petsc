@@ -76,12 +76,12 @@ ALL: ex1
 #
   SOURCEF_COMMON   = xnd.F xmod2.F
   SOURCEF_JULIANNE = xjul.F
-  SOURCEF_PETSC    = xmod.F implbc.F mat.F dnest.f
+  SOURCEF_PETSC    = xmod.F implbc.F mat.F dnest.f obselete.F 
   SOURCEF          = $(SOURCEF_COMMON) $(SOURCEF_PETSC) $(SOURCEF_JULIANNE)
 
   OBJSF_COMMON     = xnd.o xmod2.o
   OBJSF_JULIANNE   = xjul.o
-  OBJSF_PETSC      = xmod.o implbc.o mat.o dnest.o 
+  OBJSF_PETSC      = xmod.o implbc.o mat.o dnest.o obselete.o 
   OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
 # OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
 

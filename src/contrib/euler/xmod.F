@@ -14,8 +14,9 @@ c        C code (xefp2,gxefp2) -> Fortran code (xefp1,gxefp1)
 c        Seems most natural for both parts of application,
 c          although admittedly somewhat confusing.
 c
-      integer function parsetup(Acomm, Aprintg, Ano_output,
-     &        Abctype, Arank, Asize, Aproblem,
+c      integer function parsetup(Acomm, Axcomm, Aprintg, 
+      integer function parsetup(Acomm, Aprintg, 
+     &        Ano_output, Abctype, Arank, Asize, Aproblem,
      &        Agxsf, Agysf, Agzsf, Agxef, Agyef, Agzef, 
      &        Axsf, Aysf, Azsf, Axef, Ayef, Azef, 
      &        Axefm1, Ayefm1, Azefm1, Axefp1, Ayefp1, Azefp1, 
@@ -29,8 +30,8 @@ c
 
 #include "param.h"
 
-      integer Aprintg, Acomm, Arank, Asize, Abctype, Aproblem,
-     &        Agxsf, Agysf, Agzsf, Agxef, Agyef, Agzef,
+      integer Aprintg, Acomm, Axcomm, Arank, Asize, Abctype, 
+     &        Aproblem, Agxsf, Agysf, Agzsf, Agxef, Agyef, Agzef,
      &        Axsf, Aysf, Azsf, Axef, Ayef, Azef, 
      &        Axefm1, Ayefm1, Azefm1, Axefp1, Ayefp1, Azefp1, 
      &        Agxefp1, Agyefp1, Agzefp1, 
@@ -44,6 +45,7 @@ c  in param.h: Common block, pgrid, for local grid data:
 
       parsetup  = 0
       comm      = Acomm
+      xcomm     = Axcomm
       printg    = Aprintg
       bctype    = Abctype
       rank      = Arank
@@ -219,95 +221,6 @@ c  in param.h: Common block, pgrid, for local grid data:
 #endif
       call PetscSequentialPhaseEnd(comm,1,ierr)
       endif
-
-      return
-      end
-
-c -------------------------------------------------------------------
-
-      integer function jform(eps,epsi,
-     &                       b1,b2,b3,b4,b5,b6,d,dt,
-     &                       xx,p,
-     &                       br,bl,be,sadai,sadaj,sadak,
-     &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c
-c jform - Computes the Jacobian matrix, J(x) and stores it in the 
-c         (intermediate) Eagle format for later conversion to a PETSc
-c         matrix.  This version uses explicit boundary conditions.
-c
-c         This approach of using an intermediate storage space is
-c         inefficient in terms of both memory and time, but is a good
-c         place to get started with an existing code.  We retain this
-c         routine only to show an example of converting from an
-c         existing code that uses the Eagle format.  See jform2() 
-c         for the more efficient approach of directly assembling a
-c         PETSc matrix.
-c
-c         This routine is called by FormJacobian().
-c
-#include "param.h"
-#include "matrixb.h"
-#include "diag.h"
-#include "dt.h"
-#include "varbls.h"
-#include "consts.h"
-#include "freq.h"
-#include "es.h"
-#include "sada.h"
-#include "avctrs.h"
-#include "fv.h"
-#include "sigma.h"
-
-c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
-c      COMMON /CONST2/ PINIT
-c      COMMON /FREQ/ IFREQ,ISGS
-      Double  qer(5),qel(5),eps,epsi,dql,dqr
-      integer i,j,k,l,m
-
-      jform = 0
-      do 10 m=1,5
-         qel(m)=zero
-         qer(m)=zero
- 10   continue
-
-      do 30 m=1,5
-      qel(m)=eps
-c Form Jacobian elements in left part of matrix
-      call nd (m,epsi,qer,qel,b1,b2,b3,xx,p,
-     &         br,bl,be,sadai,sadaj,sadak,
-     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-
-      qel(m)=zero
-   30 continue
-      do 31 m=1,5
-      qer(m)=eps
-c Form Jacobian elements in right part of matrix
-      call nd (m,epsi,qer,qel,b4,b5,b6,
-     &         xx,p,
-     &         br,bl,be,sadai,sadaj,sadak,
-     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-      qer(m)=zero
-   31 continue
-c Find eigendecomposition of diagonal block of Jacobian; Form DT matrix.
-c But really need to recalculate dt only when the iterates change. 
-      call eigenv(dt,xx,p,sadai,sadaj,sadak,
-     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
-      DO 21 M=1,5
-      DO 21 L=1,5
-      do 21 k=zsf2,zef01
-      do 21 j=ysf2,yef01
-      do 21 i=xsf2,xef01
-c      DO 21 K=2,NK
-c      DO 21 J=2,NJ
-c      DO 21 I=2,NI
-      dql=B1(L,M,I,J,K)+B2(L,M,I,J,K)+B3(L,M,I,J,K)
-      dqr=B4(L,M,I-1,J,K)+B5(L,M,I,J-1,K)+B6(L,M,I,J,K-1)
-      D(L,M,I,J,K)=dql-dqr
-      IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+one/DT(I,J,K)
-   21 CONTINUE
 
       return
       end
