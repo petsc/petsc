@@ -8,7 +8,7 @@
 # This command should be invoked from the scratch PETSC_DIR locaton
 # where the current patches reside
 #
-/bin/rm -f ~/petsc-patches.tar.gz
+/bin/rm -f ~/petsc-patches.tar.gz ~/petsc-patchesnt.tar.gz 
 grep '##' /home/bsmith/petsc/docs/tex/petsc-patches.html  | cut -d '>' -f 2 >! \
          /tmp/petsc-patches-file-list.tmp
 tar cf ~/petsc-patches.tar -I /tmp/petsc-patches-file-list.tmp
@@ -20,9 +20,10 @@ chmod g+w ~/petsc-patches.tar.gz
 # Now build the version that works with NT
 #
 /bin/rm -rf /tmp/petscpatchdir
-mkdir /tmp/petscpatchdir
+/bin/mkdir /tmp/petscpatchdir
 cd  /tmp/petscpatchdir
-tar -xf ~/petsc-patches.tar.gz
+gnutar -xzf ~/petsc-patches.tar.gz
+cd  /tmp/petscpatchdir
 /home/bsmith/petsc/maint/makecpp.tcl /tmp/petscpatchdir
 tar -cf ~/petscnt-patches.tar *
 gzip ~/petscnt-patches.tar
