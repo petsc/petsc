@@ -1,4 +1,4 @@
-/* $Id: matlab.h,v 1.11 1997/02/22 02:28:23 bsmith Exp balay $ */
+/* $Id: matlab.h,v 1.12 1997/05/23 18:34:17 balay Exp bsmith $ */
 /* 
      This is the definition of the Matlab viewer structure. Note: 
   each viewer has a different data structure.
@@ -19,6 +19,7 @@ struct _p_Viewer {
 #define DENSEREAL      0
 #define SPARSEREAL     1
 #define DENSECHARACTER 2
+#define DENSEINT       3
 
 /* Note: DENSEREAL and DENSECHARACTER are stored exactly the same way */
 /* DENSECHARACTER simply has a flag set which tells that it should be */

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.30 1998/03/19 02:12:20 balay Exp balay $ 
+# $Id: makefile,v 1.31 1998/03/23 22:03:47 balay Exp bsmith $ 
 
 ALL: lib 
 
@@ -24,20 +24,20 @@ NOADIC    = true
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
-receive: chkopts receive.o receivesparse.o receivedense.o
-	${CMEX} receive.o receivesparse.o  receivedense.o 
+receive:  
+	${CMEX} -V4 -v CC=gcc ${CFLAGS} receive.c receivesparse.c  receivedense.c 
 	${RM} -f receive.o receivesparse.o  receivedense.o 
 
-openport: chkopts openport.o 
-	${CMEX}  openport.o 
+openport: 
+	${CMEX}  -V4 -v CC=gcc ${CFLAGS} openport.c 
 	${RM} -f  openport.o 
 
-closeport: chkopts closeport.o 
-	${CMEX}  closeport.o
+closeport:
+	${CMEX} -V4 -v CC=gcc ${CFLAGS} closeport.c
 	${RM} -f  closeport.o 
 
-launch: chkopts launch.o 
-	${CMEX}  launch.o
+launch: 
+	${CMEX} -V4 -v CC=gcc  ${CFLAGS} launch.c
 	${RM} -f  launch.o 
 
 

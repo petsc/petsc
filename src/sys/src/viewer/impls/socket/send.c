@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.66 1998/03/12 23:22:21 bsmith Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.67 1998/03/24 20:58:51 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -102,10 +102,9 @@ extern int close(int);
 typedef struct { int onoff; int time; } Linger;
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_Matlab"
-static int ViewerDestroy_Matlab(PetscObject obj)
+static int ViewerDestroy_Matlab(Viewer viewer)
 {
   Linger locallinger;
-  Viewer viewer = (Viewer) obj; 
   locallinger.onoff = 1;
   locallinger.time  = 0;
 
