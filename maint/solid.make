@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: solid.make,v 1.26 1999/08/25 19:23:35 balay Exp balay $ 
+# $Id: solid.make,v 1.27 1999/10/01 01:01:57 balay Exp balay $ 
 
 # Defaults
-hme="/home/petsc/petsc-2.0.24"
+hme="/home/petsc/petsc-2.0.28"
 src_dir=""
 action="lib"
 
@@ -26,9 +26,9 @@ for arg in "$@" ; do
         echo " "
         echo "Example Usage:"
         echo "  - To update the libraries with changes in src/sles/interface"
-        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.24 SRC_DIR=src/sles/interface ACTION=lib"
+        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.28 SRC_DIR=src/sles/interface ACTION=lib"
         echo "  - To rebuild a new version of PETSC on all the machines"
-        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.24 SRC_DIR=\"\" ACTION=\"all\" "
+        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.28 SRC_DIR=\"\" ACTION=\"all\" "
         echo " "
         echo "Defaults:"
         echo "  PETSC_DIR=$hme SRC_DIR=$src_dir ACTION=$action"
@@ -68,17 +68,17 @@ set -x
 # solaris
 arch=solaris
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh -n volcano "cd $hme/$src_dir; $make BOPT=g"
-rsh -n volcano "cd $hme/$src_dir; $make BOPT=O"
-rsh -n volcano "cd $hme/$src_dir; $make BOPT=g_c++"
-#rsh -n volcano "cd $hme/$src_dir; $make BOPT=O_c++"
-rsh -n volcano "cd $hme/$src_dir; $make BOPT=g_complex"
-rsh -n volcano "cd $hme/$src_dir; $make BOPT=O_complex"
+rsh -n maple "cd $hme/$src_dir; $make BOPT=g"
+rsh -n maple "cd $hme/$src_dir; $make BOPT=O"
+rsh -n maple "cd $hme/$src_dir; $make BOPT=g_c++"
+#rsh -n maple "cd $hme/$src_dir; $make BOPT=O_c++"
+rsh -n maple "cd $hme/$src_dir; $make BOPT=g_complex"
+#rsh -n maple "cd $hme/$src_dir; $make BOPT=O_complex"
 
 # solaris_uni
 arch=solaris_uni
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh -n volcano "cd $hme/$src_dir; $make BOPT=g"
+rsh -n maple "cd $hme/$src_dir; $make BOPT=g"
 
 
 arch=IRIX64
@@ -112,7 +112,7 @@ arch=IRIX
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 #make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
 rsh -n violet "cd $hme/$src_dir; $make BOPT=g"
-rsh -n violet "cd $hme/$src_dir; $make BOPT=O"
+#rsh -n violet "cd $hme/$src_dir; $make BOPT=O"
 rsh -n violet "cd $hme/$src_dir; $make BOPT=g_c++"
 
 # rs6000_shmem is used by Tom Canfeild on octa nodes
@@ -122,9 +122,9 @@ rsh -n violet "cd $hme/$src_dir; $make BOPT=g_c++"
 
 # sun4
 arch=sun4
-make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh -n merlin "cd $hme/$src_dir; $make BOPT=g"
-rsh -n merlin "cd $hme/$src_dir; $make BOPT=O"
+#make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
+#rsh -n merlin "cd $hme/$src_dir; $make BOPT=g"
+#rsh -n merlin "cd $hme/$src_dir; $make BOPT=O"
 #rsh -n merlin "cd $hme/$src_dir; $make BOPT=g_c++"
 
 
