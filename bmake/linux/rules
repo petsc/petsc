@@ -1,4 +1,4 @@
-# $Id: base,v 1.32 1998/04/25 23:35:46 balay Exp balay $ 
+# $Id: base,v 1.33 1998/04/26 00:52:22 balay Exp balay $ 
 
 PARCH    = linux
 CC       = gcc -fPIC
@@ -26,25 +26,13 @@ libf: ${OBJSF}
 	ar crl ${LIBNAME} ${OBJSF}
 
 #############
-#
-#  .F.f: target is nolonger required, but retained, as it is
-#  useful to check what the preprocessor output.
-#
-.F.f:
-	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
 .F.o:
-	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
-	-${RM} __$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
 
-.F.a:
-	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${CPPFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
+.F.a: 
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
 	-${AR} cr ${LIBNAME} $*.o
-	-${RM} __$*.f
+	-${RM} $*.o
 
 SLSUFFIX = so.1.0
 shared: chkopts_basic
