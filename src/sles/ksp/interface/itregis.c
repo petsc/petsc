@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.33 1998/04/22 14:24:29 curfman Exp curfman $";
+static char vcid[] = "$Id: itregis.c,v 1.34 1998/04/24 22:10:51 curfman Exp curfman $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -19,9 +19,9 @@ extern int KSPCreate_QCG(KSP);
 
   
 /*
-      This is used by KSPSetType() to make sure that at least one 
+    This is used by KSPSetType() to make sure that at least one 
     KSPRegisterAll() is called. In general, if there is more than one
-    DLL then KSPRegisterAll() may be called several times.
+    DLL, then KSPRegisterAll() may be called several times.
 */
 extern int KSPRegisterAllCalled;
 
