@@ -28,14 +28,15 @@ $    i.e. the size of Krylov space minus one
 
    Options Database Keys:
 
-+  -ksp_gmres_unmodifiedgramschmidt - Activates KSPGMRESClassicalGramSchmidtOrthogonalization() (default)
++  -ksp_gmres_classicalgramschmidt - Activates KSPGMRESClassicalGramSchmidtOrthogonalization() (default)
 -  -ksp_gmres_modifiedgramschmidt - Activates KSPGMRESModifiedGramSchmidtOrthogonalization()
 
    Level: intermediate
 
 .keywords: KSP, GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
 
-.seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetCGSRefinementType()
+.seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetCGSRefinementType(),
+          KSPGMRESModifiedGramSchmidtOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization()
 @*/
 int KSPGMRESSetOrthogonalization(KSP ksp,int (*fcn)(KSP,int))
 {

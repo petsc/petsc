@@ -30,8 +30,6 @@ PC/Mat
 
 General
 
-  Manual Pages for Norm types, for KSPGMRESxxxxGramSchmidtOrthogonalization() ....
-
   Make --download-mpich get the correct mpich under windows
 
   add DAVecGatherAll and DAVecGather
