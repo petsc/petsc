@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.111 2001/08/06 21:17:20 bsmith Exp balay $*/
+/*$Id: umtr.c,v 1.112 2001/08/07 03:04:12 balay Exp bsmith $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 
@@ -90,7 +90,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
         if (ierr == PETSC_ERR_SUP) {
           PetscLogInfo(snes,"SNESSolve_UM_TR: Initial delta computed without matrix norm info\n");
         } else {
-          if (PetscAbsDouble(max_val)<1.e-14)SETERRQ(PETSC_ERR_PLIB,"Hessian norm is too small");
+          if (PetscAbsReal(max_val)<1.e-14)SETERRQ(PETSC_ERR_PLIB,"Hessian norm is too small");
           delta = PetscMax(delta,snes->norm/max_val);
         }
       } else { 
@@ -308,16 +308,16 @@ int SNESConverged_UM_TR(SNES snes,PetscReal xnorm,PetscReal gnorm,PetscReal f,SN
     PetscLogInfo(snes,"SNESConverged_UM_TR: Trust region param satisfies tolerance: %g<=%g*%g\n",
              delta,snes->deltatol,xnorm);  
     *reason = SNES_CONVERGED_TR_DELTA;
-  } else if ((PetscAbsDouble(ared) <= PetscAbsDouble(f) * rtol) && (pred) <= rtol*PetscAbsDouble(f)) {
+  } else if ((PetscAbsReal(ared) <= PetscAbsReal(f) * rtol) && (pred) <= rtol*PetscAbsReal(f)) {
     PetscLogInfo(snes,"SNESConverged_UM_TR:Actual (%g) and predicted (%g) reductions<%g*%g\n",
-             PetscAbsDouble(ared),pred,rtol,PetscAbsDouble(f));
+             PetscAbsReal(ared),pred,rtol,PetscAbsReal(f));
     *reason = SNES_CONVERGED_TR_REDUCTION;
   } else if (f < snes->fmin) {
     PetscLogInfo(snes,"SNESConverged_UM_TR:Function value (%g)<f_{minimum} (%g)\n",f,snes->fmin);
     *reason = SNES_CONVERGED_FNORM_ABS ;
-  } else if ((PetscAbsDouble(ared) <= epsmch) && pred <= epsmch) {
+  } else if ((PetscAbsReal(ared) <= epsmch) && pred <= epsmch) {
     PetscLogInfo(snes,"SNESConverged_UM_TR:Actual (%g) and predicted (%g) reductions<epsmch (%g)\n",
-             PetscAbsDouble(ared),pred,epsmch);
+             PetscAbsReal(ared),pred,epsmch);
     *reason = SNES_DIVERGED_TR_REDUCTION;
   } else if (snes->nfuncs > snes->max_funcs) {
     PetscLogInfo(snes,"SNESConverged_UM_TR:Exceeded maximum number of function evaluations:%d>%d\n",

@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.23 2001/04/10 19:36:40 bsmith Exp balay $*/
+/*$Id: ex16.c,v 1.24 2001/08/07 03:04:00 balay Exp bsmith $*/
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
 
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   Vec         x,b,u;  /* approx solution, RHS, exact solution */
   Mat         A;        /* linear system matrix */
   SLES        sles;     /* linear solver context */
-  double      norm;     /* norm of solution error */
+  PetscReal   norm;     /* norm of solution error */
   int         ntimes,i,j,k,I,J,Istart,Iend,ierr;
   int         m = 8,n = 7,its;
   PetscTruth  flg;
@@ -146,7 +146,7 @@ int main(int argc,char **args)
        Set exact solution; then compute right-hand-side vector.  We use
        an exact solution of a vector with all elements equal to 1.0*k.
     */
-    rhs = one * (double)k;
+    rhs = one * (PetscReal)k;
     ierr = VecSet(&rhs,u);CHKERRQ(ierr);
     ierr = MatMult(A,u,b);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.46 2001/04/10 19:37:11 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.47 2001/08/07 03:04:24 balay Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -13,24 +13,24 @@ static char help[] = "Solves 1D heat equation.\n\n";
 #include "petscsys.h"
 #include "petscts.h"
 
-#define PETSC_NEAR(a,b,c) (!(PetscAbsDouble((a)-(b)) > (c)*PetscMax(PetscAbsDouble(a),PetscAbsDouble(b))))
+#define PETSC_NEAR(a,b,c) (!(PetscAbsReal((a)-(b)) > (c)*PetscMax(PetscAbsReal(a),PetscAbsReal(b))))
 
 typedef struct {
-  Vec    global,local,localwork,solution;    /* location for local work (with ghost points) vector */
-  DA     da;                    /* manages ghost point communication */
+  Vec         global,local,localwork,solution;    /* location for local work (with ghost points) vector */
+  DA          da;                    /* manages ghost point communication */
   PetscViewer viewer1,viewer2;
-  int    M;                     /* total number of grid points */
-  double h;                     /* mesh width h = 1/(M-1) */
-  double norm_2,norm_max;
-  int    nox;                   /* indicates problem is to be run without graphics */ 
+  int         M;                     /* total number of grid points */
+  PetscReal   h;                     /* mesh width h = 1/(M-1) */
+  PetscReal   norm_2,norm_max;
+  int         nox;                   /* indicates problem is to be run without graphics */ 
 } AppCtx;
 
-extern int Monitor(TS,int,double,Vec,void *);
-extern int RHSFunctionHeat(TS,double,Vec,Vec,void*);
+extern int Monitor(TS,int,PetscReal,Vec,void *);
+extern int RHSFunctionHeat(TS,PetscReal,Vec,Vec,void*);
 extern int RHSMatrixFree(Mat,Vec,Vec);
 extern int Initial(Vec,void*);
-extern int RHSMatrixHeat(TS,double,Mat *,Mat *,MatStructure *,void *);
-extern int RHSJacobianHeat(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
+extern int RHSMatrixHeat(TS,PetscReal,Mat *,Mat *,MatStructure *,void *);
+extern int RHSJacobianHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
 
 #define linear_no_matrix       0
 #define linear_no_time         1
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   int           problem = linear_no_matrix;
   PetscTruth    flg;
   AppCtx        appctx;
-  double        dt,ftime;
+  PetscReal     dt,ftime;
   TS            ts;
   Mat           A = 0;
   MatStructure  A_structure;
@@ -76,10 +76,10 @@ int main(int argc,char **argv)
 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscDrawSetPetscRealBuffer(draw);CHKERRQ(ierr);   
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscDrawSetPetscRealBuffer(draw);CHKERRQ(ierr);   
 
 
   /* make work array for evaluating right hand side function */
@@ -243,7 +243,7 @@ int Initial(Vec global,void *ctx)
 /*
        Exact solution 
 */
-int Solution(double t,Vec solution,void *ctx)
+int Solution(PetscReal t,Vec solution,void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
   PetscScalar *localptr,h = appctx->h,ex1,ex2,sc1,sc2;
@@ -257,7 +257,7 @@ int Solution(double t,Vec solution,void *ctx)
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   ierr = VecGetArray(solution,&localptr);CHKERRQ(ierr);
   for (i=mybase; i<myend; i++) {
-    localptr[i-mybase] = PetscSinScalar(sc1*(double)i)*ex1 + 3.*PetscSinScalar(sc2*(double)i)*ex2;
+    localptr[i-mybase] = PetscSinScalar(sc1*(PetscReal)i)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i)*ex2;
   }
   ierr = VecRestoreArray(solution,&localptr);CHKERRQ(ierr);
   return 0;
@@ -265,13 +265,13 @@ int Solution(double t,Vec solution,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
-int Monitor(TS ts,int step,double time,Vec global,void *ctx)
+int Monitor(TS ts,int step,PetscReal time,Vec global,void *ctx)
 {
-  AppCtx   *appctx = (AppCtx*) ctx;
-  int      ierr;
-  double   norm_2,norm_max;
-  PetscScalar   mone = -1.0;
-  MPI_Comm comm;
+  AppCtx       *appctx = (AppCtx*) ctx;
+  int          ierr;
+  PetscReal    norm_2,norm_max;
+  PetscScalar  mone = -1.0;
+  MPI_Comm     comm;
 
   ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
 
@@ -310,7 +310,7 @@ int RHSMatrixFree(Mat mat,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunctionHeat"
-int RHSFunctionHeat(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
+int RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
   DA     da = appctx->da;
@@ -347,7 +347,7 @@ int RHSFunctionHeat(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
 /* ---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "RHSMatrixHeat"
-int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+int RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat    A = *AA;
   AppCtx *appctx = (AppCtx*) ctx;
@@ -387,7 +387,7 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobianHeat"
-int RHSJacobianHeat(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+int RHSJacobianHeat(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   return RHSMatrixHeat(ts,t,AA,BB,str,ctx);
 }

@@ -1,4 +1,4 @@
-/*$Id: ex62.c,v 1.21 2001/04/10 19:35:44 bsmith Exp balay $*/
+/*$Id: ex62.c,v 1.22 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
@@ -12,7 +12,7 @@ int main(int argc,char **args)
   int         i,j,m,ierr,size;
   IS          row,col;
   Vec         x,u,b;
-  double      norm;
+  PetscReal   norm;
   PetscViewer fd;
   char        type[256];
   char        file[128];

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.47 2001/03/23 23:25:07 balay Exp balay $*/
+/*$Id: ex3.c,v 1.48 2001/08/07 03:04:42 balay Exp bsmith $*/
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   PetscDraw   draw;
   Vec         local,global,copy;
   PetscScalar *localptr,*copyptr;
-  double      a,h,k;
+  PetscReal   a,h,k;
   PetscTruth  flg;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -66,8 +66,8 @@ int main(int argc,char **argv)
   localptr[localsize-1] = 0.0;
   for (i=1; i<localsize-1; i++) {
     j=(i-1)+mybase; 
-    localptr[i] = sin((PETSC_PI*j*6)/((double)M) 
-                        + 1.2 * sin((PETSC_PI*j*2)/((double)M))) * 2;
+    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M) 
+                        + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 2;
   }
 
   ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);

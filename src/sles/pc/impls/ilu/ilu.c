@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.170 2001/07/17 19:12:36 buschelm Exp bsmith $*/
+/*$Id: ilu.c,v 1.171 2001/08/06 21:16:29 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -525,7 +525,7 @@ static int PCSetFromOptions_ILU(PC pc)
   char       tname[256];
   PC_ILU     *ilu = (PC_ILU*)pc->data;
   PetscFList ordlist;
-  double     tol;
+  PetscReal  tol;
 
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);

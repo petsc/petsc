@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.74 2001/06/21 21:18:07 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.75 2001/08/07 03:03:43 balay Exp bsmith $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -22,7 +22,7 @@ int  interpolate(Mat,Vec,Vec,Vec);
 int  restrct(Mat,Vec,Vec);
 int  Create1dLaplacian(int,Mat*);
 int  CalculateRhs(Vec);
-int  CalculateError(Vec,Vec,Vec,double*);
+int  CalculateError(Vec,Vec,Vec,PetscReal*);
 int  CalculateSolution(int,Vec*);
 int  amult(Mat,Vec,Vec);
 
@@ -36,7 +36,7 @@ int main(int Argc,char **Args)
   MGType      am = MGMULTIPLICATIVE;
   Mat         cmat,mat[20],fmat;
   SLES        csles,sles[20],slesmg;
-  double      e[3]; /* l_2 error,max error, residual */
+  PetscReal   e[3]; /* l_2 error,max error, residual */
   char        *shellname;
   Vec         x,solution,X[20],R[20],B[20];
   PetscScalar zero = 0.0;
@@ -342,11 +342,11 @@ int Create1dLaplacian(int n,Mat *mat)
 #define __FUNCT__ "CalculateRhs"
 int CalculateRhs(Vec u)
 {
-  int    i,n,ierr;
-  double h,x = 0.0;
+  int         i,n,ierr;
+  PetscReal   h,x = 0.0;
   PetscScalar uu;
   ierr = VecGetSize(u,&n);CHKERRQ(ierr);
-  h = 1.0/((double)(n+1));
+  h = 1.0/((PetscReal)(n+1));
   for (i=0; i<n; i++) {
     x += h; uu = 2.0*h*h; 
     ierr = VecSetValues(u,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
@@ -359,11 +359,11 @@ int CalculateRhs(Vec u)
 #define __FUNCT__ "CalculateSolution"
 int CalculateSolution(int n,Vec *solution)
 {
-  int    i,ierr;
-  double h,x = 0.0;
+  int         i,ierr;
+  PetscReal   h,x = 0.0;
   PetscScalar uu;
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,solution);CHKERRQ(ierr);
-  h = 1.0/((double)(n+1));
+  h = 1.0/((PetscReal)(n+1));
   for (i=0; i<n; i++) {
     x += h; uu = x*(1.-x); 
     ierr = VecSetValues(*solution,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
@@ -373,7 +373,7 @@ int CalculateSolution(int n,Vec *solution)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "CalculateError"
-int CalculateError(Vec solution,Vec u,Vec r,double *e)
+int CalculateError(Vec solution,Vec u,Vec r,PetscReal *e)
 {
   PetscScalar mone = -1.0;
   int    ierr;

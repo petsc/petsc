@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.33 2001/01/23 20:52:52 balay Exp balay $*/
+/*$Id: ex2.c,v 1.34 2001/03/23 23:20:21 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates us of color map\n";
 
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   for (i=0; i<256; i++) {
-    ierr = PetscDrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i);
+    ierr = PetscDrawLine(draw,0.0,((PetscReal)i)/256.,1.0,((PetscReal)i)/256.,i);
   }
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscSleep(2);CHKERRQ(ierr);

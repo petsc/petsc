@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.16 2001/01/17 22:20:33 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.17 2001/03/23 23:20:59 balay Exp bsmith $*/
 
 static char help[] = "Tests catching of floating point exceptions.\n\n";
 
@@ -6,7 +6,7 @@ static char help[] = "Tests catching of floating point exceptions.\n\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateError"
-int CreateError(double x)
+int CreateError(PetscReal x)
 {
   int ierr;
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.20 2001/03/23 23:22:29 balay Exp balay $*/
+/*$Id: ex15.c,v 1.21 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd().\n\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscScalar v,mone = -1.0,one = 1.0,alpha = 2.0;
   IS          perm,iperm;
   Vec         x,u,b,y;
-  double      norm;
+  PetscReal   norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

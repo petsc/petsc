@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.25 2001/08/06 21:19:20 bsmith Exp balay $ */
+/* $Id: petscmath.h,v 1.26 2001/08/07 03:05:29 balay Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -146,7 +146,7 @@ extern  PetscScalar       PETSC_i;
 #define PetscMin(a,b)      (((a)<(b)) ? (a) : (b))
 #define PetscMax(a,b)      (((a)<(b)) ? (b) : (a))
 #define PetscAbsInt(a)     (((a)<0)   ? -(a) : (a))
-#define PetscAbsDouble(a)  (((a)<0)   ? -(a) : (a))
+#define PetscAbsReal(a)  (((a)<0)   ? -(a) : (a))
 
 /* ----------------------------------------------------------------------------*/
 /*

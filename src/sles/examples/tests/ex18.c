@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.25 2001/08/06 21:16:51 bsmith Exp balay $*/
+/*$Id: ex18.c,v 1.26 2001/08/07 03:03:57 balay Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -16,7 +16,7 @@ int main(int argc,char **args)
 {
   int            ierr,its,m,n,mvec;
   PetscLogDouble time1,time2,time;
-  double         norm;
+  PetscReal      norm;
   PetscScalar    zero = 0.0,none = -1.0;
   Vec            x,b,u;
   Mat            A;

@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.27 2001/08/06 21:16:49 bsmith Exp balay $ */
+/* $Id: fgmres.c,v 1.28 2001/08/07 03:03:55 balay Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -700,7 +700,7 @@ int KSPView_FGMRES(KSP ksp,PetscViewer viewer)
 int KSPSetFromOptions_FGMRES(KSP ksp)
 {
   int         ierr,restart;
-  double      haptol;
+  PetscReal   haptol;
   KSP_FGMRES *gmres = (KSP_FGMRES*)ksp->data;
   PetscTruth  flg;
 

@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.11 2001/03/23 23:25:29 balay Exp bsmith $*/
+/*$Id: appload.c,v 1.12 2001/08/06 21:18:51 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -78,7 +78,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   AOData     ao = appctx->aodata;
   AppGrid    *grid = &appctx->grid;
   IS         isvertex;
-  double     *vertex_coords;
+  PetscReal  *vertex_coords;
   int        *vertex_ptr,i,ierr,rank;
   PetscTruth flag;
 
@@ -146,7 +146,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   if (flag) {
     ierr = AODataSegmentGetIS(ao,"cell","coords",grid->iscell,(void **)&grid->cell_coords);CHKERRQ(ierr);
   } else {
-    ierr = PetscMalloc(2*4*grid->cell_n*sizeof(double),&grid->cell_coords);CHKERRQ(ierr);
+    ierr = PetscMalloc(2*4*grid->cell_n*sizeof(PetscReal),&grid->cell_coords);CHKERRQ(ierr);
     for (i=0; i<4*grid->cell_n; i++) {
       grid->cell_coords[2*i]   = vertex_coords[2*grid->cell_vertex[i]];
       grid->cell_coords[2*i+1] = vertex_coords[2*grid->cell_vertex[i]+1];
@@ -164,8 +164,8 @@ int AppCtxSetLocal(AppCtx *appctx)
   ierr = ISGetLocalSize(grid->vertex_boundary,&grid->boundary_n);CHKERRQ(ierr); 
 
   /* pre-allocate storage space for the boundary values to set, and the coordinates */
-  ierr = PetscMalloc((grid->boundary_n+1)*sizeof(double),&grid->boundary_values);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*(grid->boundary_n+1)*sizeof(double),&grid->boundary_coords);CHKERRQ(ierr);
+  ierr = PetscMalloc((grid->boundary_n+1)*sizeof(PetscReal),&grid->boundary_values);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*(grid->boundary_n+1)*sizeof(PetscReal),&grid->boundary_coords);CHKERRQ(ierr);
 
   /* now extract the needed vertex cordinates for the boundary ones */
   ierr = ISGetIndices(grid->vertex_boundary,&vertex_ptr);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.21 2001/04/25 15:04:44 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.22 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   int          m = 10,n = 10,i = 4,ierr,rstart,rend;
   PetscScalar  value = 1.0;
   Vec          x,y,b;
-  double       norm;
+  PetscReal    norm;
   IS           perm;
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
 
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
-    value = (double)i+1;
+    value = (PetscReal)i+1;
     ierr = MatSetValues(mat,1,&i,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

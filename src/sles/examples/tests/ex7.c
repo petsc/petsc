@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.17 2001/04/10 19:36:37 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.18 2001/08/07 03:03:57 balay Exp bsmith $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
  Tests inplace factorization for SeqBAIJ. Input parameters include\n\
@@ -31,7 +31,7 @@ int main(int argc,char **args)
   char        file[2][128];     /* input file name */
   int         ierr,its;
   PetscTruth  flg;
-  double      norm;
+  PetscReal   norm;
   PetscScalar zero = 0.0,none = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);

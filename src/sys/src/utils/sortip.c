@@ -1,4 +1,4 @@
-/*$Id: sortip.c,v 1.35 2001/03/23 23:20:45 balay Exp bsmith $*/
+/*$Id: sortip.c,v 1.36 2001/08/06 21:14:16 bsmith Exp bsmith $*/
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 
@@ -83,10 +83,10 @@ int PetscSortIntWithPermutation(int n,const int i[],int idx[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSortRealWithPermutation_Private"
-static int PetscSortRealWithPermutation_Private(const double v[],int vdx[],int right)
+static int PetscSortRealWithPermutation_Private(const PetscReal v[],int vdx[],int right)
 {
-  double vl;
-  int    ierr,tmp,i,last;
+  PetscReal vl;
+  int       ierr,tmp,i,last;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -129,10 +129,10 @@ static int PetscSortRealWithPermutation_Private(const double v[],int vdx[],int r
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
  @*/
-int PetscSortRealWithPermutation(int n,const double i[],int idx[])
+int PetscSortRealWithPermutation(int n,const PetscReal i[],int idx[])
 {
-  int    j,k,tmp,ierr;
-  double ik;
+  int       j,k,tmp,ierr;
+  PetscReal ik;
 
   PetscFunctionBegin;
   if (n<8) {

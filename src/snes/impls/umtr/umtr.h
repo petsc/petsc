@@ -1,4 +1,4 @@
-/* $Id: umtr.h,v 1.3 1996/08/08 14:46:56 bsmith Exp bsmith $ */
+/* $Id: umtr.h,v 1.4 1999/10/23 00:01:00 bsmith Exp bsmith $ */
 
 /*
     Context for a Newton trust region method (unconstrained minimization)
@@ -9,19 +9,19 @@
 #include "src/snes/snesimpl.h"
 
 typedef struct {
-  double delta0;	/* used to initialize trust region parameter */
-  double delta;		/* trust region parameter */
-  double eta1;		/* step is unsuccessful if actred < eta1 * prered,
+  PetscReal delta0;	/* used to initialize trust region parameter */
+  PetscReal delta;		/* trust region parameter */
+  PetscReal eta1;		/* step is unsuccessful if actred < eta1 * prered,
 			   where prered is the predicted reduction and 
 			   actred is the actual reduction */
-  double eta2;		/* used to compute trust region parameter */
-  double eta3;		/* used to compute trust region parameter */
-  double eta4;		/* used to compute trust region parameter */
-  double factor1;	/* used to initialize trust region parameter */
-  double actred;	/* actual reduction */
-  double prered;	/* predicted reduction */
-  int    success;	/* indicator for successful step */
-  int    sflag;		/* flag for convergence testing */
+  PetscReal eta2;		/* used to compute trust region parameter */
+  PetscReal eta3;		/* used to compute trust region parameter */
+  PetscReal eta4;		/* used to compute trust region parameter */
+  PetscReal factor1;	/* used to initialize trust region parameter */
+  PetscReal actred;	/* actual reduction */
+  PetscReal prered;	/* predicted reduction */
+  int       success;	/* indicator for successful step */
+  int       sflag;		/* flag for convergence testing */
 } SNES_UM_TR;
 
 #endif

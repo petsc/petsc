@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.9 2001/03/23 23:23:55 balay Exp balay $*/
+/*$Id: ex23.c,v 1.10 2001/08/07 03:04:00 balay Exp bsmith $*/
 
 /* Program usage:  mpirun ex23 [-help] [all PETSc options] */
 
@@ -25,14 +25,14 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec     x, b, u;      /* approx solution, RHS, exact solution */
-  Mat     A;            /* linear system matrix */
-  SLES    sles;         /* linear solver context */
-  PC      pc;           /* preconditioner context */
-  KSP     ksp;          /* Krylov subspace method context */
-  double  norm;         /* norm of solution error */
-  int     ierr,i,n = 10,col[3],its,rstart,rend,nlocal;
-  PetscScalar  neg_one = -1.0,one = 1.0,value[3];
+  Vec         x, b, u;      /* approx solution, RHS, exact solution */
+  Mat         A;            /* linear system matrix */
+  SLES        sles;         /* linear solver context */
+  PC          pc;           /* preconditioner context */
+  KSP         ksp;          /* Krylov subspace method context */
+  PetscReal   norm;         /* norm of solution error */
+  int         ierr,i,n = 10,col[3],its,rstart,rend,nlocal;
+  PetscScalar neg_one = -1.0,one = 1.0,value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

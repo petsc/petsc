@@ -1,4 +1,4 @@
-/*$Id: appsetalg.c,v 1.3 2001/01/15 21:49:29 bsmith Exp balay $*/
+/*$Id: appsetalg.c,v 1.4 2001/03/23 23:25:35 balay Exp bsmith $*/
 #include "appctx.h"
 
 /*----------------------------------------------------------------------------
@@ -138,7 +138,7 @@ int SetLocalElement(AppElement *phi,double *coords)
 
   /* Determinant of the Jacobian */
   for(j=0; j<4; j++){   /* loop over Gauss points */
-    detDh[j] = PetscAbsDouble(Dh[j][0][0]*Dh[j][1][1] - Dh[j][0][1]*Dh[j][1][0]);
+    detDh[j] = PetscAbsReal(Dh[j][0][0]*Dh[j][1][1] - Dh[j][0][1]*Dh[j][1][0]);
   }
   /* Inverse of the Jacobian */
     for(j=0; j<4; j++){   /* loop over Gauss points */
@@ -312,9 +312,9 @@ int ComputeRHS(DFP f,DFP g,AppElement *phi,double *integrals){
    integrals[2*i+1] = 0.0;
    for(j = 0; j < 4; j++){ /* loop over Gauss points */
      integrals[2*i] +=  f(phi->x[j],phi->y[j])*(phi->Values[i][j])*
-       PetscAbsDouble(phi->detDh[j]);
+       PetscAbsReal(phi->detDh[j]);
      integrals[2*i+1] +=  g(phi->x[j],phi->y[j])*(phi->Values[i][j])*
-       PetscAbsDouble(phi->detDh[j]);
+       PetscAbsReal(phi->detDh[j]);
    }
  }
 PetscFunctionReturn(0);
@@ -398,14 +398,14 @@ int ComputeMatrix(AppElement *phi,double *result){
          result[16*i + 2*j] +=
            (phi->dx[4*i+k]*phi->dx[4*j+k] +
             phi->dy[4*i+k]*phi->dy[4*j+k])*
-           PetscAbsDouble(phi->detDh[k]);
+           PetscAbsReal(phi->detDh[k]);
        }
        /* the off-diagonals stay zero */
        for(k=0;k<4;k++){ /* loop over gauss points */
          result[16*i +9 + 2*j] +=
            (phi->dx[4*i+k]*phi->dx[4*j+k] +
             phi->dy[4*i+k]*phi->dy[4*j+k])*
-           PetscAbsDouble(phi->detDh[k]);
+           PetscAbsReal(phi->detDh[k]);
        }
      }
    }
@@ -544,11 +544,11 @@ Put the result in index k.  Add all possibilities up to get contribution to k, a
          result[2*k] +=
            (u[i]*u[j]*phi->Values[i][ii]*phi->dx[4*j+ii] +
             v[i]*u[j]*phi->Values[i][ii]*phi->dy[4*j+ii])*phi->Values[k][ii]*
-         PetscAbsDouble(phi->detDh[ii]);
+         PetscAbsReal(phi->detDh[ii]);
          result[2*k+1] +=
            (u[i]*v[j]*phi->Values[i][ii]*phi->dx[4*j+ii] +
             v[i]*v[j]*phi->Values[i][ii]*phi->dy[4*j+ii])*phi->Values[k][ii]*
-          PetscAbsDouble(phi->detDh[ii]);
+          PetscAbsReal(phi->detDh[ii]);
          }
        }
      }
@@ -710,10 +710,10 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
 	for(ii=0;ii<4;ii++){/* loop over basis gauss points */
 	  dxint[i][j][k] += 
 	    phi->dx[4*i+ii]*phi->Values[j][ii]*phi->Values[k][ii]*
-	    PetscAbsDouble(phi->detDh[ii]);
+	    PetscAbsReal(phi->detDh[ii]);
 	  dyint[i][j][k] += 
 	    phi->dy[4*i+ii]*phi->Values[j][ii]*phi->Values[k][ii]*
-	    PetscAbsDouble(phi->detDh[ii]);
+	    PetscAbsReal(phi->detDh[ii]);
 	}
       }
     }

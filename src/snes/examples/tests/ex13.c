@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.31 2001/08/06 21:17:24 bsmith Exp balay $*/
+/*$Id: ex13.c,v 1.32 2001/08/07 03:04:13 balay Exp bsmith $*/
 
 static char help[] = "This program is a replica of ex6.c except that it does 2 solves to avoid paging.\n\
 This program demonstrates use of the SNES package to solve systems of\n\
@@ -33,7 +33,7 @@ options are:\n\
 
 /* User-defined application context */
 typedef struct {
-   double      param;         /* test problem parameter */
+   PetscReal   param;         /* test problem parameter */
    int         mx,my;         /* discretization in x, y directions */
    Vec         localX,localF; /* ghosted local vector */
    DA          da;            /* distributed array data structure */
@@ -54,7 +54,7 @@ int main(int argc,char **argv)
   int           i,ierr,its,N,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
   PetscTruth    matrix_free;
   int           size; 
-  double        bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  PetscReal     bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -128,13 +128,13 @@ int main(int argc,char **argv)
 #define __FUNCT__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
-  int     i,j,row,mx,my,ierr,xs,ys,xm,ym,Xm,Ym,Xs,Ys;
-  double  one = 1.0,lambda,temp1,temp,hx,hy;
+  int          i,j,row,mx,my,ierr,xs,ys,xm,ym,Xm,Ym,Xs,Ys;
+  PetscReal    one = 1.0,lambda,temp1,temp,hx,hy;
   PetscScalar  *x;
-  Vec     localX = user->localX;
+  Vec          localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
+  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
 
   /* Get ghost points */
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
@@ -144,14 +144,14 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 
   /* Compute initial guess */
   for (j=ys; j<ys+ym; j++) {
-    temp = (double)(PetscMin(j,my-j-1))*hy;
+    temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
       row = i - Xs + (j - Ys)*Xm; 
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
@@ -164,14 +164,14 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 #define __FUNCT__ "FormFunction1"
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx*)ptr;
-  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym;
-  double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  AppCtx       *user = (AppCtx*)ptr;
+  int          ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym;
+  PetscReal    two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
   PetscScalar  u,uxx,uyy,*x,*f;
-  Vec     localX = user->localX,localF = user->localF; 
+  Vec          localX = user->localX,localF = user->localF; 
 
   mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
+  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
@@ -217,7 +217,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   Vec     localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
+  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   sc = hx*hy;               hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */

@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.18 2001/08/06 21:17:42 bsmith Exp balay $ */
+/* $Id: ex20.c,v 1.19 2001/08/07 03:04:16 balay Exp bsmith $ */
 
 
 static char help[] ="Nonlinear Radiative Transport PDE with multigrid in 3d.\n\
@@ -48,8 +48,8 @@ T*/
 /* User-defined application context */
 
 typedef struct {
-   double      tleft,tright;  /* Dirichlet boundary conditions */
-   double      beta,bm1,coef; /* nonlinear diffusivity parameterizations */
+   PetscReal   tleft,tright;  /* Dirichlet boundary conditions */
+   PetscReal   beta,bm1,coef; /* nonlinear diffusivity parameterizations */
 } AppCtx;
 
 #define POWFLOP 5 /* assume a pow() takes five flops */
@@ -62,12 +62,12 @@ extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG    *dmmg;
-  SNES    snes;                      
-  AppCtx  user;
-  int     ierr,its,lits;
-  double  litspit;
-  DA      da;
+  DMMG      *dmmg;
+  SNES      snes;                      
+  AppCtx    user;
+  int       ierr,its,lits;
+  PetscReal litspit;
+  DA        da;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
   snes = DMMGGetSNES(dmmg);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRQ(ierr);
-  litspit = ((double)lits)/((double)its);
+  litspit = ((PetscReal)lits)/((PetscReal)its);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n",lits);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n",litspit);CHKERRQ(ierr);
@@ -128,11 +128,11 @@ int main(int argc,char **argv)
 #define __FUNCT__ "FormInitialGuess"
 int FormInitialGuess(SNES snes,Vec X,void *ptr)
 {
-  DMMG    dmmg = (DMMG)ptr;
-  AppCtx  *user = (AppCtx*)dmmg->user;
-  int     i,j,k,ierr,xs,ys,xm,ym,zs,zm;
-  double  tleft = user->tleft;
-  PetscScalar  ***x;
+  DMMG        dmmg = (DMMG)ptr;
+  AppCtx      *user = (AppCtx*)dmmg->user;
+  int         i,j,k,ierr,xs,ys,xm,ym,zs,zm;
+  PetscReal   tleft = user->tleft;
+  PetscScalar ***x;
 
   PetscFunctionBegin;
 
@@ -169,7 +169,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
   PetscFunctionBegin;
   ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
   ierr = DAGetInfo((DA)dmmg->dm,PETSC_NULL,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  hx    = one/(double)(mx-1);  hy    = one/(double)(my-1);  hz = one/(double)(mz-1);
+  hx    = one/(PetscReal)(mx-1);  hy    = one/(PetscReal)(my-1);  hz = one/(PetscReal)(mz-1);
   hxhydhz = hx*hy/hz;   hyhzdhx = hy*hz/hx;   hzhxdhy = hz*hx/hy;
   tleft = user->tleft;         tright = user->tright;
   beta  = user->beta;
@@ -486,7 +486,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
   PetscFunctionBegin;
   ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
   ierr = DAGetInfo((DA)dmmg->dm,PETSC_NULL,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  hx    = one/(double)(mx-1);  hy    = one/(double)(my-1);  hz = one/(double)(mz-1);
+  hx    = one/(PetscReal)(mx-1);  hy    = one/(PetscReal)(my-1);  hz = one/(PetscReal)(mz-1);
   hxhydhz = hx*hy/hz;   hyhzdhx = hy*hz/hx;   hzhxdhy = hz*hx/hy;
   tleft = user->tleft;         tright = user->tright;
   beta  = user->beta;	       bm1    = user->bm1;		coef = user->coef;

@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.28 2001/08/06 21:17:42 bsmith Exp balay $*/
+/*$Id: ex19.c,v 1.29 2001/08/07 03:04:16 balay Exp bsmith $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
@@ -203,12 +203,12 @@ int main(int argc,char **argv)
  */
 int FormInitialGuess(SNES snes,Vec X,void *ptr)
 {
-  DMMG    dmmg = (DMMG)ptr;
-  AppCtx  *user = (AppCtx*)dmmg->user;
-  DA      da = (DA)dmmg->dm;
-  int     i,j,mx,ierr,xs,ys,xm,ym;
-  double  grashof,dx;
-  Field   **x;
+  DMMG      dmmg = (DMMG)ptr;
+  AppCtx    *user = (AppCtx*)dmmg->user;
+  DA        da = (DA)dmmg->dm;
+  int       i,j,mx,ierr,xs,ys,xm,ym;
+  PetscReal grashof,dx;
+  Field     **x;
 
   grashof = user->grashof;
 
@@ -267,20 +267,20 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
    Notes:
    We process the boundary nodes before handling the interior
    nodes, so that no conditional statements are needed within the
-   double loop over the local grid indices. 
+   PetscReal loop over the local grid indices. 
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  DMMG    dmmg = (DMMG)ptr;
-  AppCtx  *user = (AppCtx*)dmmg->user;
-  int     ierr,i,j,mx,my,xs,ys,xm,ym;
-  int     xints,xinte,yints,yinte;
-  double  two = 2.0,one = 1.0,p5 = 0.5,hx,hy,dhx,dhy,hxdhy,hydhx;
-  double  grashof,prandtl,lid;
+  DMMG         dmmg = (DMMG)ptr;
+  AppCtx       *user = (AppCtx*)dmmg->user;
+  int          ierr,i,j,mx,my,xs,ys,xm,ym;
+  int          xints,xinte,yints,yinte;
+  PetscReal    two = 2.0,one = 1.0,p5 = 0.5,hx,hy,dhx,dhy,hxdhy,hydhx;
+  PetscReal    grashof,prandtl,lid;
   PetscScalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
-  Field   **x,**f;
-  Vec     localX;
-  DA      da = (DA)dmmg->dm;
+  Field        **x,**f;
+  Vec          localX;
+  DA           da = (DA)dmmg->dm;
 
   ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -294,7 +294,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      [Note: FD formulae below are normalized by multiplying through by
      local volume element to obtain coefficients O(1) in two dimensions.]
   */
-  dhx = (double)(mx-1);     dhy = (double)(my-1);
+  dhx = (PetscReal)(mx-1);     dhy = (PetscReal)(my-1);
   hx = one/dhx;             hy = one/dhy;
   hxdhy = hx*dhy;           hydhx = hy*dhx;
 
@@ -372,7 +372,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
       f[j][i].u     = x[j][i].u;
       f[j][i].v     = x[j][i].v;
       f[j][i].omega = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx; 
-      f[j][i].temp  = x[j][i].temp - (double)(grashof>0);
+      f[j][i].temp  = x[j][i].temp - (PetscReal)(grashof>0);
     }
   }
 
@@ -441,11 +441,11 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
 int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
  {
-  AppCtx  *user = (AppCtx*)ptr;
-  int     ierr,i,j;
-  int     xints,xinte,yints,yinte;
-  double  hx,hy,dhx,dhy,hxdhy,hydhx;
-  double  grashof,prandtl,lid;
+  AppCtx       *user = (AppCtx*)ptr;
+  int          ierr,i,j;
+  int          xints,xinte,yints,yinte;
+  PetscReal    hx,hy,dhx,dhy,hxdhy,hydhx;
+  PetscReal    grashof,prandtl,lid;
   PetscScalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
 
   PetscFunctionBegin;
@@ -458,7 +458,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
      [Note: FD formulae below are normalized by multiplying through by
      local volume element to obtain coefficients O(1) in two dimensions.]
   */
-  dhx = (double)(info->mx-1);     dhy = (double)(info->my-1);
+  dhx = (PetscReal)(info->mx-1);     dhy = (PetscReal)(info->my-1);
   hx = 1.0/dhx;                   hy = 1.0/dhy;
   hxdhy = hx*dhy;                 hydhx = hy*dhx;
 
@@ -512,7 +512,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
       f[j][i].u     = x[j][i].u;
       f[j][i].v     = x[j][i].v;
       f[j][i].omega = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx; 
-      f[j][i].temp  = x[j][i].temp - (double)(grashof>0);
+      f[j][i].temp  = x[j][i].temp - (PetscReal)(grashof>0);
     }
   }
 
@@ -588,7 +588,7 @@ int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f
      [Note: FD formulae below are normalized by multiplying through by
      local volume element to obtain coefficients O(1) in two dimensions.]
   */
-  dhx = (double)(info->mx-1);     dhy = (double)(info->my-1);
+  dhx = (PetscReal)(info->mx-1);     dhy = (PetscReal)(info->my-1);
   hx = 1.0/dhx;                   hy = 1.0/dhy;
   hxdhy = hx*dhy;                 hydhx = hy*dhx;
 
@@ -599,7 +599,7 @@ int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f
     if (c == 0) *f     = x[j][i].u;
     else if (c == 1) *f     = x[j][i].v;
     else if (c == 2) *f = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx; 
-    else *f  = x[j][i].temp - (double)(grashof>0);
+    else *f  = x[j][i].temp - (PetscReal)(grashof>0);
 
   /* Test whether we are on the left edge of the global array */
   } else if (i == 0) {

@@ -1,4 +1,4 @@
-/*$Id: axis.c,v 1.74 2001/04/10 19:34:23 bsmith Exp balay $*/
+/*$Id: axis.c,v 1.75 2001/04/18 20:48:31 balay Exp bsmith $*/
 /*
    This file contains a simple routine for generating a 2-d axis.
 */
@@ -435,23 +435,23 @@ int PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 
   PetscFunctionBegin;
   /* Find the string */
-  if (PetscAbsDouble(val)/sep <  1.e-6) {
+  if (PetscAbsReal(val)/sep <  1.e-6) {
     buf[0] = '0'; buf[1] = 0;
-  } else if (PetscAbsDouble(val) < 1.0e6 && PetscAbsDouble(val) > 1.e-4) {
+  } else if (PetscAbsReal(val) < 1.0e6 && PetscAbsReal(val) > 1.e-4) {
     /* Compute the number of digits */
     w = 0;
     d = 0;
     if (sep > 0.0) {
 	d = (int)ceil(- log10 (sep));
 	if (d < 0) d = 0;
-	if (PetscAbsDouble(val) < 1.0e-6*sep) {
+	if (PetscAbsReal(val) < 1.0e-6*sep) {
 	    /* This is the case where we are near zero and less than a small
 	       fraction of the sep.  In this case, we use 0 as the value */
 	    val = 0.0;
 	    w   = d;
         }
 	else if (val == 0.0) w   = d;
-	else w = (int)(ceil(log10(PetscAbsDouble(val))) + d);
+	else w = (int)(ceil(log10(PetscAbsReal(val))) + d);
 	if (w < 1)   w ++;
 	if (val < 0) w ++;
     }
@@ -504,7 +504,7 @@ int PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * t
     high += .01;
   }
 
-  /*  if (PetscAbsDouble(low-high) < 1.e-8) {
+  /*  if (PetscAbsReal(low-high) < 1.e-8) {
     low  -= .01;
     high += .01;
   } */
@@ -602,7 +602,7 @@ static int PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal*Base,in
 
   /* make it of form   m x 10^power,  m in [1.0, 10) */
   if (base <= 0.0) {
-    base    = PetscAbsDouble(vmin);
+    base    = PetscAbsReal(vmin);
     if (base < 1.0) base = 1.0;
   }
   ftemp   = log10((1.0 + EPS) * base);

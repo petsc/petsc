@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.26 2001/03/23 23:23:50 balay Exp balay $*/
+/*$Id: ex15.c,v 1.27 2001/08/07 03:03:57 balay Exp bsmith $*/
 
 static char help[] = "SLES on an operator with a null space.\n\n";
 
@@ -8,13 +8,13 @@ static char help[] = "SLES on an operator with a null space.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec     x,b,u;      /* approx solution, RHS, exact solution */
-  Mat     A;            /* linear system matrix */
-  SLES    sles;         /* SLES context */
-  int     ierr,i,n = 10,col[3],its,i1,i2;
+  Vec          x,b,u;      /* approx solution, RHS, exact solution */
+  Mat          A;            /* linear system matrix */
+  SLES         sles;         /* SLES context */
+  int          ierr,i,n = 10,col[3],its,i1,i2;
   PetscScalar  none = -1.0,value[3],avalue;
-  double  norm;
-  PC      pc;
+  PetscReal    norm;
+  PC           pc;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
   ierr = VecSum(u,&avalue);CHKERRQ(ierr);
-  avalue = -avalue/(double)n;
+  avalue = -avalue/(PetscReal)n;
   ierr = VecShift(&avalue,u);CHKERRQ(ierr);
 
   /* Create and assemble matrix */

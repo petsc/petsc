@@ -1,4 +1,4 @@
-/*$Id: util2.c,v 1.17 2000/11/10 19:38:34 balay Exp balay $*/
+/*$Id: util2.c,v 1.18 2001/08/07 03:04:27 balay Exp bsmith $*/
 
 /*
    This file contains utility routines for finite difference
@@ -10,8 +10,8 @@
 #include "src/snes/snesimpl.h"
 #include "src/fortran/custom/zpetsc.h"
 
-int RHSFunction(TS,double,Vec,Vec,void*);
-int RHSJacobianFD(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
+int RHSFunction(TS,PetscReal,Vec,Vec,void*);
+int RHSJacobianFD(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
 
 /* -------------------------------------------------------------------*/
 
@@ -55,14 +55,14 @@ EXTERN_C_END
    Sparse approximations using colorings are also available and
    would be a much better alternative!
 */
-int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+int RHSJacobianFD(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  Vec      jj1,jj2,xx2;
-  int      i,ierr,N,start,end,j;
-  PetscScalar   dx,mone = -1.0,*y,scale,*xx,wscale;
-  double   amax,epsilon = 1.e-8; /* assumes double precision */
-  double   dx_min = 1.e-16,dx_par = 1.e-1;
-  MPI_Comm comm;
+  Vec         jj1,jj2,xx2;
+  int         i,ierr,N,start,end,j;
+  PetscScalar dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscReal   amax,epsilon = 1.e-8; /* assumes PetscReal precision */
+  PetscReal   dx_min = 1.e-16,dx_par = 1.e-1;
+  MPI_Comm    comm;
 
   ierr = VecDuplicate(xx1,&jj1);CHKERRQ(ierr);
   ierr = VecDuplicate(xx1,&jj2);CHKERRQ(ierr);

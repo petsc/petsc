@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.17 2001/08/06 21:16:37 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.18 2001/08/07 03:03:43 balay Exp bsmith $*/
 
 static char help[] = "Creates a matrix using 9 pt stensil, and uses it to test MatIncreaseOverlap (needed for aditive schwarts preconditioner. \n\
   -m <size>       : problem size\n\
@@ -8,7 +8,7 @@ static char help[] = "Creates a matrix using 9 pt stensil, and uses it to test M
 
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"
-int FormElementStiffness(double H,PetscScalar *Ke)
+int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 {
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
   Ke[4]  = -.125*H;  Ke[5]  = H/6.0;   Ke[6]  = -.125*H;  Ke[7]  = H/12.0;
@@ -18,7 +18,7 @@ int FormElementStiffness(double H,PetscScalar *Ke)
 }
 #undef __FUNCT__
 #define __FUNCT__ "FormElementRhs"
-int FormElementRhs(double x,double y,double H,PetscScalar *r)
+int FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 {
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
   return 0;
@@ -31,7 +31,7 @@ int main(int argc,char **args)
   Mat         C; 
   int         i,m = 2,N,M,ierr,idx[4],Nsub1,Nsub2,ol=1,x1,x2;
   PetscScalar Ke[16];
-  double      x,y,h;
+  PetscReal   x,y,h;
   IS          *is1,*is2;
   PetscTruth  flg;
 

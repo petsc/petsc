@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.13 2001/03/23 23:20:21 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.14 2001/04/10 19:34:20 bsmith Exp bsmith $*/
 
 static char help[] = "Makes a simple histogram.\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   int             n = 20,i,ierr,x = 0,y = 0,width = 300,height = 300,bins = 8;
   int             color = PETSC_DRAW_GREEN;
   char            *xlabel,*ylabel,*toplabel;
-  double          xd;
+  PetscReal       xd;
   PetscTruth      flg;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel);CHKERRQ(ierr);
 
   for (i=0; i<n ; i++) {
-    xd = (double)(i - 5);
+    xd = (PetscReal)(i - 5);
     ierr = PetscDrawHGAddValue(hist,xd*xd);CHKERRQ(ierr);
   }
   ierr = PetscDrawHGSetColor(hist,color);CHKERRQ(ierr);

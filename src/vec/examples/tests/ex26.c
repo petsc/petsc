@@ -1,4 +1,4 @@
-/*$Id: ex26.c,v 1.10 2001/03/23 23:21:30 balay Exp balay $*/
+/*$Id: ex26.c,v 1.11 2001/08/07 03:02:26 balay Exp bsmith $*/
 /*
 
 Test program follows. Writing it I realised that 
@@ -62,7 +62,7 @@ int main(int Argc,char **Args)
      add the square of your own value, and send on. */
   ierr = VecPipelineBegin(src_v,tar_v,INSERT_VALUES,SCATTER_FORWARD,PIPELINE_UP,pipe);CHKERRQ(ierr);
   ierr = VecGetArray(tar_v,&vec_values);CHKERRQ(ierr);
-  my_value = vec_values[0] + (double)((rank+1)*(rank+1));
+  my_value = vec_values[0] + (PetscReal)((rank+1)*(rank+1));
 
   ierr = VecRestoreArray(tar_v,&vec_values);CHKERRQ(ierr);CHKERRQ(ierr)
   /* -- little trick: we have to be able to call VecAssembly, 

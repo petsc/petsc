@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.17 2001/03/30 16:09:10 bsmith Exp balay $*/
+/*$Id: ex22.c,v 1.18 2001/08/07 03:04:00 balay Exp bsmith $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -25,11 +25,11 @@ extern int ComputeRHS(DMMG,Vec);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int       ierr;
-  DMMG      *dmmg;
-  PetscScalar    mone = -1.0;
-  PetscReal norm;
-  DA        da;
+  int         ierr;
+  DMMG        *dmmg;
+  PetscScalar mone = -1.0;
+  PetscReal   norm;
+  DA          da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -77,7 +77,7 @@ int ComputeJacobian(DMMG dmmg,Mat jac)
   MatStencil   row,col[7];
 
   ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
-  Hx = 1.0 / (double)(mx-1); Hy = 1.0 / (double)(my-1); Hz = 1.0 / (double)(mz-1);
+  Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
   ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   

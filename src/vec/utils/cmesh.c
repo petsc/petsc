@@ -1,4 +1,4 @@
-/*$Id: cmesh.c,v 1.72 2001/03/23 23:21:18 balay Exp bsmith $*/
+/*$Id: cmesh.c,v 1.73 2001/08/06 21:14:36 bsmith Exp bsmith $*/
 
 #include "petscvec.h"        /*I "petscvec.h" I*/
 
@@ -30,7 +30,7 @@ int VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
 
-  if (PetscAbsDouble(vmax - vmin) < 1.e-50) {
+  if (PetscAbsReal(vmax - vmin) < 1.e-50) {
      scale = 1.0;
   } else {
     scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/(vmax - vmin); 

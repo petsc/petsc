@@ -1,4 +1,4 @@
-/*$Id: ex77.c,v 1.10 2001/08/06 21:16:03 bsmith Exp balay $*/
+/*$Id: ex77.c,v 1.11 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format. Same as ex74.c except diagonal entries of the matrices are zeros.\n";
 
@@ -10,20 +10,20 @@ static char help[] = "Tests the various sequential routines in MatSBAIJ format. 
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec     x,y,b,s1,s2;      
-  Mat     A;           /* linear system matrix */ 
-  Mat     sA,sC;         /* symmetric part of the matrices */ 
+  Vec         x,y,b,s1,s2;      
+  Mat         A;           /* linear system matrix */ 
+  Mat         sA,sC;         /* symmetric part of the matrices */ 
 
-  int     n,mbs=16,bs=1,nz=3,prob=2;
-  PetscScalar  neg_one = -1.0,value[3],alpha=0.1;
-  int     ierr,i,j,col[3],size,row,I,J,n1,*ip_ptr;
-  IS      ip, isrow, iscol;
+  int         n,mbs=16,bs=1,nz=3,prob=2;
+  PetscScalar neg_one = -1.0,value[3],alpha=0.1;
+  int         ierr,i,j,col[3],size,row,I,J,n1,*ip_ptr;
+  IS          ip, isrow, iscol;
   PetscRandom rand;
-  PetscTruth       reorder=PETSC_FALSE,getrow=PETSC_FALSE;
-  MatInfo          minfo1,minfo2;
-  PetscScalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
-  int      *cols1,*cols2;
-  double   norm1,norm2,tol=1.e-10;
+  PetscTruth  reorder=PETSC_FALSE,getrow=PETSC_FALSE;
+  MatInfo     minfo1,minfo2;
+  PetscScalar *vr1,*vr2,*vr1_wk,*vr2_wk;
+  int         *cols1,*cols2;
+  PetscReal   norm1,norm2,tol=1.e-10;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -63,7 +63,7 @@ int main(int argc,char **args)
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
     }
     else if (prob ==2){ /* matrix for the five point stencil */
-      n1 = (int) (sqrt((double)n) + 0.001); 
+      n1 = (int) (sqrt((PetscReal)n) + 0.001); 
       if (n1*n1 - n) SETERRQ(PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!"); 
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {

@@ -1,4 +1,4 @@
-/*$Id: cgeig.c,v 1.53 2001/08/06 21:16:43 bsmith Exp balay $*/
+/*$Id: cgeig.c,v 1.54 2001/08/07 03:03:50 balay Exp bsmith $*/
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
    running with CG. Note this only works for symmetric real and Hermitian
@@ -11,10 +11,10 @@ static int LINPACKcgtql1(int *,PetscReal *,PetscReal *,int *);
 #define __FUNCT__ "KSPComputeEigenvalues_CG"
 int KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
-  KSP_CG    *cgP = (KSP_CG*)ksp->data;
-  PetscScalar    *d,*e;
-  PetscReal *ee;
-  int       j,n = ksp->its,ierr;
+  KSP_CG      *cgP = (KSP_CG*)ksp->data;
+  PetscScalar *d,*e;
+  PetscReal   *ee;
+  int          j,n = ksp->its,ierr;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
@@ -43,10 +43,10 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *nei
 #define __FUNCT__ "KSPComputeExtremeSingularValues_CG"
 int KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
-  KSP_CG    *cgP = (KSP_CG*)ksp->data;
-  PetscScalar    *d,*e;
-  PetscReal *dd,*ee;
-  int       j,n = ksp->its;
+  KSP_CG      *cgP = (KSP_CG*)ksp->data;
+  PetscScalar *d,*e;
+  PetscReal   *dd,*ee;
+  int         j,n = ksp->its;
 
   PetscFunctionBegin;
   if (!n) {
@@ -162,14 +162,14 @@ static int LINPACKcgtql1(int *n,PetscReal *d,PetscReal *e,int *ierr)
     i__1 = *n;
     for (l = 1; l <= i__1; ++l) {
         j = 0;
-        h = (d__1 = d[l],PetscAbsDouble(d__1)) + (d__2 = e[l],PetscAbsDouble(d__2));
+        h = (d__1 = d[l],PetscAbsReal(d__1)) + (d__2 = e[l],PetscAbsReal(d__2));
         if (tst1 < h) {
             tst1 = h;
         }
 /*     .......... LOOK FOR SMALL SUB-DIAGONAL ELEMENT .......... */
         i__2 = *n;
         for (m = l; m <= i__2; ++m) {
-            tst2 = tst1 + (d__1 = e[m],PetscAbsDouble(d__1));
+            tst2 = tst1 + (d__1 = e[m],PetscAbsReal(d__1));
             if (tst2 == tst1) {
                 goto L120;
             }
@@ -234,7 +234,7 @@ L145:
         p = -s * s2 * c3 * el1 * e[l] / dl1;
         e[l] = s * p;
         d[l] = c * p;
-        tst2 = tst1 + (d__1 = e[l],PetscAbsDouble(d__1));
+        tst2 = tst1 + (d__1 = e[l],PetscAbsReal(d__1));
         if (tst2 > tst1) {
             goto L130;
         }
@@ -284,13 +284,13 @@ static PetscReal LINPACKcgpthy(PetscReal *a,PetscReal *b)
 
 
 /* Computing MAX */
-    d__1 = PetscAbsDouble(*a),d__2 = PetscAbsDouble(*b);
+    d__1 = PetscAbsReal(*a),d__2 = PetscAbsReal(*b);
     p = PetscMax(d__1,d__2);
     if (!p) {
         goto L20;
     }
 /* Computing MIN */
-    d__2 = PetscAbsDouble(*a),d__3 = PetscAbsDouble(*b);
+    d__2 = PetscAbsReal(*a),d__3 = PetscAbsReal(*b);
 /* Computing 2nd power */
     d__1 = PetscMin(d__2,d__3) / p;
     r = d__1 * d__1;

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.83 2001/08/06 21:17:24 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.84 2001/08/07 03:04:13 balay Exp bsmith $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -53,7 +53,7 @@ T*/
    FormFunction().
 */
 typedef struct {
-      double      param;        /* test problem parameter */
+      PetscReal   param;        /* test problem parameter */
       int         mx;           /* Discretization in x-direction */
       int         my;           /* Discretization in y-direction */
 } AppCtx;
@@ -75,7 +75,7 @@ int main(int argc,char **argv)
   AppCtx         user;                 /* user-defined application context */
   PetscDraw      draw;                 /* drawing context */
   int            i,ierr,its,N,size,hist_its[50]; 
-  double         bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
+  PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
   MatFDColoring  fdcoloring;           
   PetscScalar    *array;
   PetscTruth     matrix_free,flg,fd_coloring;
@@ -277,16 +277,16 @@ int main(int argc,char **argv)
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i,j,row,mx,my,ierr;
-  double  lambda,temp1,temp,hx,hy;
-  PetscScalar  *x;
+  int         i,j,row,mx,my,ierr;
+  PetscReal   lambda,temp1,temp,hx,hy;
+  PetscScalar *x;
 
   mx	 = user->mx; 
   my	 = user->my;
   lambda = user->param;
 
-  hx    = 1.0 / (double)(mx-1);
-  hy    = 1.0 / (double)(my-1);
+  hx    = 1.0 / (PetscReal)(mx-1);
+  hy    = 1.0 / (PetscReal)(my-1);
 
   /*
      Get a pointer to vector data.
@@ -298,14 +298,14 @@ int FormInitialGuess(AppCtx *user,Vec X)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   temp1 = lambda/(lambda + 1.0);
   for (j=0; j<my; j++) {
-    temp = (double)(PetscMin(j,my-j-1))*hy;
+    temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
       row = i + j*mx;  
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
 
@@ -331,16 +331,16 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx *user = (AppCtx*)ptr;
-  int     ierr,i,j,row,mx,my;
-  double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
+  AppCtx       *user = (AppCtx*)ptr;
+  int          ierr,i,j,row,mx,my;
+  PetscReal    two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
   PetscScalar  ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
   mx	 = user->mx; 
   my	 = user->my;
   lambda = user->param;
-  hx     = one / (double)(mx-1);
-  hy     = one / (double)(my-1);
+  hx     = one / (PetscReal)(mx-1);
+  hy     = one / (PetscReal)(my-1);
   sc     = hx*hy;
   hxdhy  = hx/hy;
   hydhx  = hy/hx;
@@ -397,17 +397,17 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx *user = (AppCtx*)ptr;   /* user-defined applicatin context */
-  Mat     jac = *J;                /* Jacobian matrix */
-  int     i,j,row,mx,my,col[5],ierr;
-  PetscScalar  two = 2.0,one = 1.0,lambda,v[5],sc,*x;
-  double  hx,hy,hxdhy,hydhx;
+  AppCtx      *user = (AppCtx*)ptr;   /* user-defined applicatin context */
+  Mat         jac = *J;                /* Jacobian matrix */
+  int         i,j,row,mx,my,col[5],ierr;
+  PetscScalar two = 2.0,one = 1.0,lambda,v[5],sc,*x;
+  PetscReal   hx,hy,hxdhy,hydhx;
 
   mx	 = user->mx; 
   my	 = user->my;
   lambda = user->param;
-  hx     = 1.0 / (double)(mx-1);
-  hy     = 1.0 / (double)(my-1);
+  hx     = 1.0 / (PetscReal)(mx-1);
+  hy     = 1.0 / (PetscReal)(my-1);
   sc     = hx*hy;
   hxdhy  = hx/hy;
   hydhx  = hy/hx;

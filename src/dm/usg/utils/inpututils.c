@@ -1,4 +1,4 @@
-/* $Id: inpututils.c,v 1.17 2001/03/23 23:25:19 balay Exp bsmith $ */
+/* $Id: inpututils.c,v 1.18 2001/08/06 21:18:48 bsmith Exp bsmith $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
@@ -75,23 +75,23 @@ int AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
   PetscDraw       popup;                           /* help window */
   PetscDrawButton button;                          /* mouse button pressed */
   int             cn, ierr,*cell;
-  double          *vertex,cx,cy;
+  PetscReal       *vertex,cx,cy;
   char            title[120];
 
   PetscFunctionBegin;
-  agrid->cell_max = 500;
-  agrid->cell_n   = 0;
+  agrid->cell_max      = 500;
+  agrid->cell_n        = 0;
   agrid->vertex_max    = 500;
   agrid->vertex_n      = 0;
-  agrid->xmin      = PETSC_MAX;
-  agrid->xmax      = PETSC_MIN;
-  agrid->ymin      = PETSC_MAX;
-  agrid->ymax      = PETSC_MIN;
+  agrid->xmin          = PETSC_MAX;
+  agrid->xmax          = PETSC_MIN;
+  agrid->ymin          = PETSC_MAX;
+  agrid->ymax          = PETSC_MIN;
 
   /*
      Allocate large arrays to hold the nodes and cellrilateral lists 
   */
-  ierr   = PetscMalloc(2*agrid->vertex_max*sizeof(double),&agrid->vertex);CHKERRQ(ierr);
+  ierr   = PetscMalloc(2*agrid->vertex_max*sizeof(PetscReal),&agrid->vertex);CHKERRQ(ierr);
   vertex = agrid->vertex;
   ierr   = PetscMalloc(4*agrid->cell_max*sizeof(int),&agrid->cell_vertex);CHKERRQ(ierr);
   cell   = agrid->cell_vertex;
@@ -172,8 +172,8 @@ int AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
 */
 int AOData2dGridFlipCells(AOData2dGrid agrid)
 {
-  int    i,*cell = agrid->cell_vertex, cell_n = agrid->cell_n;
-  double *vertex = agrid->vertex, sign;
+  int       i,*cell = agrid->cell_vertex, cell_n = agrid->cell_n;
+  PetscReal *vertex = agrid->vertex, sign;
 
   PetscFunctionBegin;
   for (i=0; i<cell_n; i++) {
@@ -205,13 +205,13 @@ int AOData2dGridFlipCells(AOData2dGrid agrid)
 /*
      AOData2dGridAddNode - Maintains a list of nodes given so far
 */
-int AOData2dGridAddNode(AOData2dGrid agrid, double cx, double cy, int *cn)
+int AOData2dGridAddNode(AOData2dGrid agrid, PetscReal cx, PetscReal cy, int *cn)
 {
   int i;
 
   PetscFunctionBegin;
   for (i=0; i<agrid->vertex_n; i++) {
-    if ((PetscAbsDouble(agrid->vertex[2*i] - cx) < 1.e-9) && (PetscAbsDouble(agrid->vertex[1+2*i] - cy) < 1.e-9)) {
+    if ((PetscAbsReal(agrid->vertex[2*i] - cx) < 1.e-9) && (PetscAbsReal(agrid->vertex[1+2*i] - cy) < 1.e-9)) {
       *cn = i;
       PetscFunctionReturn(0);
     }
@@ -387,9 +387,9 @@ int AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
 */
 int AOData2dGridDraw(AOData2dGrid agrid,PetscDraw draw)
 {
-  int    i, *cell = agrid->cell_vertex, *edge = agrid->edge_vertex,ierr;
-  char   str[5];
-  double *vertex = agrid->vertex,xx,yy,xmin,xmax,ymin,ymax,h,w;
+  int       i, *cell = agrid->cell_vertex, *edge = agrid->edge_vertex,ierr;
+  char      str[5];
+  PetscReal *vertex = agrid->vertex,xx,yy,xmin,xmax,ymin,ymax,h,w;
 
   PetscFunctionBegin;
   w = agrid->xmax - agrid->xmin;

@@ -1,4 +1,4 @@
-/*$Id: ex54.c,v 1.20 2001/08/06 21:16:03 bsmith Exp balay $*/
+/*$Id: ex54.c,v 1.21 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAIJ format.\n";
 
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   IS          *is1,*is2;
   PetscRandom rand;
   Vec         xx,s1,s2;
-  double      s1norm,s2norm,rnorm,tol = 1.e-10;
+  PetscReal   s1norm,s2norm,rnorm,tol = 1.e-10;
   PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);

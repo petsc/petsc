@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.227 2001/08/06 21:15:42 bsmith Exp balay $*/
+/*$Id: mpibaij.c,v 1.228 2001/08/07 03:02:58 balay Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -1048,7 +1048,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   
 #if defined(PETSC_USE_BOPT_g)
   if (baij->ht && mode== MAT_FINAL_ASSEMBLY) {
-    PetscLogInfo(0,"MatAssemblyEnd_MPIBAIJ:Average Hash Table Search in MatSetValues = %5.2f\n",((double)baij->ht_total_ct)/baij->ht_insert_ct);
+    PetscLogInfo(0,"MatAssemblyEnd_MPIBAIJ:Average Hash Table Search in MatSetValues = %5.2f\n",((PetscReal)baij->ht_total_ct)/baij->ht_insert_ct);
     baij->ht_total_ct  = 0;
     baij->ht_insert_ct = 0;
   }
@@ -1479,7 +1479,7 @@ int MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
   PetscReal   isend[5],irecv[5];
 
   PetscFunctionBegin;
-  info->block_size     = (double)a->bs;
+  info->block_size     = (PetscReal)a->bs;
   ierr = MatGetInfo(A,MAT_LOCAL,info);CHKERRQ(ierr);
   isend[0] = info->nz_used; isend[1] = info->nz_allocated; isend[2] = info->nz_unneeded;
   isend[3] = info->memory;  isend[4] = info->mallocs;
@@ -1509,10 +1509,10 @@ int MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
   } else {
     SETERRQ1(1,"Unknown MatInfoType argument %d",flag);
   }
-  info->rows_global       = (double)A->M;
-  info->columns_global    = (double)A->N;
-  info->rows_local        = (double)A->m;
-  info->columns_local     = (double)A->N;
+  info->rows_global       = (PetscReal)A->M;
+  info->columns_global    = (PetscReal)A->N;
+  info->rows_local        = (PetscReal)A->m;
+  info->columns_local     = (PetscReal)A->N;
   info->fill_ratio_given  = 0; /* no parallel LU/ILU/Cholesky */
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
@@ -2036,7 +2036,7 @@ int MatCreate_MPIBAIJ(Mat B)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_use_hash_table",&flg);CHKERRQ(ierr);
   if (flg) { 
-    double fact = 1.39;
+    PetscReal fact = 1.39;
     ierr = MatSetOption(B,MAT_USE_HASH_TABLE);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(PETSC_NULL,"-mat_use_hash_table",&fact,PETSC_NULL);CHKERRQ(ierr);
     if (fact <= 1.0) fact = 1.39;

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.24 2001/03/23 23:23:50 balay Exp balay $*/
+/*$Id: ex2.c,v 1.25 2001/08/07 03:03:57 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
 
@@ -39,14 +39,14 @@ int main(int argc,char **argv)
 #define __FUNCT__ "slesex"
 int slesex(int argc,char **args)
 {
-  Vec     x,b,u;      /* approx solution, RHS, exact solution */
-  Mat     A;            /* linear system matrix */
-  SLES    sles;         /* linear solver context */
-  PC      pc;           /* preconditioner context */
-  KSP     ksp;          /* Krylov subspace method context */
-  double  norm;         /* norm of solution error */
-  int     i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
-  PetscScalar  v,one = 1.0,none = -1.0;
+  Vec         x,b,u;      /* approx solution, RHS, exact solution */
+  Mat         A;            /* linear system matrix */
+  SLES        sles;         /* linear solver context */
+  PC          pc;           /* preconditioner context */
+  KSP         ksp;          /* Krylov subspace method context */
+  PetscReal   norm;         /* norm of solution error */
+  int         i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
+  PetscScalar v,one = 1.0,none = -1.0;
 
   ierr = PetscSetCommWorld(PETSC_COMM_SELF);CHKERRQ(ierr);
   PetscInitialize(&argc,&args,(char *)0,help);

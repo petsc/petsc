@@ -1,4 +1,4 @@
-/* $Id: petscsys.h,v 1.61 2001/07/20 19:40:21 buschelm Exp bsmith $ */
+/* $Id: petscsys.h,v 1.62 2001/08/06 21:19:20 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -19,8 +19,8 @@ EXTERN int  PetscGetInitialDate(char[],int);
 EXTERN int  PetscSortInt(int,int[]);
 EXTERN int  PetscSortIntWithPermutation(int,const int[],int[]);
 EXTERN int  PetscSortIntWithArray(int,int[],int[]);
-EXTERN int  PetscSortReal(int,double[]);
-EXTERN int  PetscSortRealWithPermutation(int,const double[],int[]);
+EXTERN int  PetscSortReal(int,PetscReal[]);
+EXTERN int  PetscSortRealWithPermutation(int,const PetscReal[],int[]);
 
 EXTERN int  PetscSetDisplay(void);
 EXTERN int  PetscGetDisplay(char[],int);

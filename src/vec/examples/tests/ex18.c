@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.28 2001/03/23 23:21:30 balay Exp balay $*/
+/*$Id: ex18.c,v 1.29 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 /* np = 1 */
 
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
-    v = ((double)i) + 1.0/(((double)i) + .35);
+    v = ((PetscReal)i) + 1.0/(((PetscReal)i) + .35);
     ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     v += 1.375547826473644376;
     ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);

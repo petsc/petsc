@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.17 2001/01/23 20:53:32 balay Exp balay $*/
+/*$Id: ex2.c,v 1.18 2001/03/23 23:20:59 balay Exp bsmith $*/
 
 /*
       Tests the signal handler.
@@ -9,8 +9,8 @@
 #define __FUNCT__ "CreateError"
 int CreateError(int n)
 {
-  int    ierr;
-  double *x = 0;
+  int       ierr;
+  PetscReal *x = 0;
   if (!n) x[0] = 100.; 
   ierr = CreateError(n-1);CHKERRQ(ierr);
   return 0;

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.25 2001/04/10 19:35:44 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.26 2001/08/07 03:03:07 balay Exp bsmith $*/
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose().\n\
 Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
@@ -13,7 +13,7 @@ int main(int argc,char **args)
   Vec          s,u,w,x,y,z;
   int          ierr,i,j,m = 8,n,rstart,rend,vstart,vend;
   PetscScalar  one = 1.0,negone = -1.0,v,alpha=0.1;
-  double       norm;
+  PetscReal    norm;
   PetscTruth   flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -53,7 +53,7 @@ int main(int argc,char **args)
   /* Flush off proc Vec values and do more assembly */
   ierr = VecAssemblyBegin(z);CHKERRQ(ierr);
   for (i=vstart; i<vend; i++) {
-    v = one*((double)i);
+    v = one*((PetscReal)i);
     ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     v = 100.0*i;
     ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ int main(int argc,char **args)
   /* ------- Test MatMultTranspose(), MatMultTransposeAdd() ------- */
 
   for (i=rstart; i<rend; i++) {
-    v = one*((double)i);
+    v = one*((PetscReal)i);
     ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ int main(int argc,char **args)
   ierr = MatGetDiagonal(C,x);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   for (i=vstart; i<vend; i++) {
-    v = one*((double)(i+1));
+    v = one*((PetscReal)(i+1));
     ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 

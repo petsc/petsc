@@ -1,4 +1,4 @@
-/*$Id: appelement.c,v 1.4 2001/03/23 23:25:29 balay Exp balay $*/
+/*$Id: appelement.c,v 1.5 2001/08/07 03:04:50 balay Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -174,7 +174,7 @@ int ComputeRHSElement(AppElement *phi)
       /* evaluate right hand side function */
       ierr = PFApply(phi->rhs,1,&phi->xy[2*j],&f);CHKERRQ(ierr);
 
-      phi->rhsresult[i] +=  phi->weights[j]*f*(phi->RefVal[i][j])*PetscAbsDouble(phi->detDh[j]); 
+      phi->rhsresult[i] +=  phi->weights[j]*f*(phi->RefVal[i][j])*PetscAbsReal(phi->detDh[j]); 
    }
  }
  PetscFunctionReturn(0);
@@ -213,7 +213,7 @@ int ComputeStiffnessElement(AppElement *phi)
     for(j=0; j<bn; j++){ /* loop over second basis function*/
       for(k=0;k<qn;k++){ /* loop over Gauss points */
         phi->stiffnessresult[i][j] += phi->weights[k]*
-                  (phi->dx[i][k]*phi->dx[j][k] + phi->dy[i][k]*phi->dy[j][k])*PetscAbsDouble(phi->detDh[k]);
+                  (phi->dx[i][k]*phi->dx[j][k] + phi->dy[i][k]*phi->dy[j][k])*PetscAbsReal(phi->detDh[k]);
       }
     }
   }

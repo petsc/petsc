@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.22 2001/03/23 23:23:55 balay Exp balay $*/
+/*$Id: ex12.c,v 1.23 2001/08/07 03:04:00 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
 
@@ -51,7 +51,7 @@ int main(int argc,char **args)
   Vec         x,b,u;  /* approx solution, RHS, exact solution */
   Mat         A;        /* linear system matrix */
   SLES        sles;     /* linear solver context */
-  double      norm;     /* norm of solution error */
+  PetscReal   norm;     /* norm of solution error */
   int         i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
   PetscScalar v,one = 1.0,neg_one = -1.0;
   PC          pc;      /* preconditioner context */

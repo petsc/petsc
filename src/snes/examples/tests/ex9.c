@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.50 2001/08/06 21:17:24 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.51 2001/08/07 03:04:13 balay Exp bsmith $*/
 
 static char help[] = "This program demonstrates use of the SNES package. Solve systems of\n\
 nonlinear equations in parallel.  This example uses matrix-free Krylov\n\
@@ -29,7 +29,7 @@ ignition) test problem. The command line options are:\n\
 #include "petscda.h"
 
 typedef struct {
-    double    param;           /* test problem nonlinearity parameter */
+    PetscReal param;           /* test problem nonlinearity parameter */
     int       mx,my,mz;      /* discretization in x,y,z-directions */
     Vec       localX,localF;  /* ghosted local vectors */
     DA        da;              /* distributed array datastructure */
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   int           ierr,its;
   PetscTruth    flg;
   int           Nx = PETSC_DECIDE,Ny = PETSC_DECIDE,Nz = PETSC_DECIDE; 
-  double        bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  PetscReal     bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsHasName(PETSC_NULL,"-star",&flg);CHKERRQ(ierr);
@@ -113,13 +113,13 @@ int main(int argc,char **argv)
 #define __FUNCT__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
-  int     i,j,k,loc,mx,my,mz,ierr,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs,base1;
-  double  one = 1.0,lambda,temp1,temp,Hx,Hy;
+  int          i,j,k,loc,mx,my,mz,ierr,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs,base1;
+  PetscReal    one = 1.0,lambda,temp1,temp,Hx,Hy;
   PetscScalar  *x;
-  Vec     localX = user->localX;
+  Vec          localX = user->localX;
 
   mx	 = user->mx; my	 = user->my; mz = user->mz; lambda = user->param;
-  Hx     = one / (double)(mx-1);     Hy     = one / (double)(my-1);
+  Hx     = one / (PetscReal)(mx-1);     Hy     = one / (PetscReal)(my-1);
 
   ierr  = VecGetArray(localX,&x);CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
@@ -129,14 +129,14 @@ int FormInitialGuess1(AppCtx *user,Vec X)
   for (k=zs; k<zs+zm; k++) {
     base1 = (Xm*Ym)*(k-Zs);
     for (j=ys; j<ys+ym; j++) {
-      temp = (double)(PetscMin(j,my-j-1))*Hy;
+      temp = (PetscReal)(PetscMin(j,my-j-1))*Hy;
       for (i=xs; i<xs+xm; i++) {
         loc = base1 + i-Xs + (j-Ys)*Xm; 
         if (i == 0 || j == 0 || k == 0 || i==mx-1 || j==my-1 || k==mz-1) {
           x[loc] = 0.0; 
           continue;
         }
-        x[loc] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*Hx,temp)); 
+        x[loc] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*Hx,temp)); 
       }
     }
   }
@@ -150,17 +150,17 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 #define __FUNCT__ "FormFunction1"
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx *user = (AppCtx*)ptr;
-  int     ierr,i,j,k,loc,mx,my,mz,xs,ys,zs,xm,ym,zm,Xs,Ys,Zs,Xm,Ym,Zm;
-  int     base1,base2;
-  double  two = 2.0,one = 1.0,lambda,Hx,Hy,Hz,HxHzdHy,HyHzdHx,HxHydHz;
+  AppCtx       *user = (AppCtx*)ptr;
+  int          ierr,i,j,k,loc,mx,my,mz,xs,ys,zs,xm,ym,zm,Xs,Ys,Zs,Xm,Ym,Zm;
+  int          base1,base2;
+  PetscReal    two = 2.0,one = 1.0,lambda,Hx,Hy,Hz,HxHzdHy,HyHzdHx,HxHydHz;
   PetscScalar  u,uxx,uyy,sc,*x,*f,uzz;
-  Vec     localX = user->localX,localF = user->localF; 
+  Vec          localX = user->localX,localF = user->localF; 
 
   mx      = user->mx; my = user->my; mz = user->mz; lambda = user->param;
-  Hx      = one / (double)(mx-1);
-  Hy      = one / (double)(my-1);
-  Hz      = one / (double)(mz-1);
+  Hx      = one / (PetscReal)(mx-1);
+  Hy      = one / (PetscReal)(my-1);
+  Hz      = one / (PetscReal)(mz-1);
   sc      = Hx*Hy*Hz*lambda; HxHzdHy  = Hx*Hz/Hy; HyHzdHx  = Hy*Hz/Hx;
   HxHydHz = Hx*Hy/Hz;
 

@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.41 2001/08/06 21:16:51 bsmith Exp balay $*/
+/*$Id: ex17.c,v 1.42 2001/08/07 03:03:57 balay Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
@@ -17,7 +17,7 @@ int main(int argc,char **args)
   SLES        sles;         /* SLES context */
   int         ierr,n = 10,its, dim,p = 1,use_random;
   PetscScalar none = -1.0,pfive = 0.5;
-  double      norm;
+  PetscReal   norm;
   PetscRandom rctx;
   TestType    type;
   PetscTruth  flg;
@@ -144,7 +144,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
        Dirichlet b.c.'s on all sides
      */
     PetscRandom rctx;
-    double      h2,sigma1 = 5.0;
+    PetscReal   h2,sigma1 = 5.0;
     PetscScalar sigma2;
     ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx);CHKERRQ(ierr);
@@ -173,11 +173,11 @@ int FormTestMatrix(Mat A,int n,TestType type)
        Dirichlet b.c.'s on 3 sides
        du/dn = i*alpha*u on (1,y), 0<y<1
      */
-    double  h2,sigma1 = 200.0;
+    PetscReal   h2,sigma1 = 200.0;
     PetscScalar alpha_h;
     ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
-    alpha_h = (PETSC_i * 10.0) / (double)(n+1);  /* alpha_h = alpha * h */
+    alpha_h = (PETSC_i * 10.0) / (PetscReal)(n+1);  /* alpha_h = alpha * h */
     for (I=Istart; I<Iend; I++) { 
       *val = -1.0; i = I/n; j = I - i*n;  
       if (i>0) {

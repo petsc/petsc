@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.29 2001/08/06 21:18:18 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.30 2001/08/07 03:04:27 balay Exp bsmith $*/
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping.";
 
@@ -39,7 +39,7 @@ static char help[] ="Solves the time dependent Bratu problem using pseudo-timest
   FormFunction().
 */
 typedef struct {
-  double      param;        /* test problem parameter */
+  PetscReal   param;        /* test problem parameter */
   int         mx;           /* Discretization in x-direction */
   int         my;           /* Discretization in y-direction */
 } AppCtx;
@@ -47,22 +47,22 @@ typedef struct {
 /* 
    User-defined routines
 */
-extern int  FormJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),
-     FormFunction(TS,double,Vec,Vec,void*),
+extern int  FormJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),
+     FormFunction(TS,PetscReal,Vec,Vec,void*),
      FormInitialGuess(Vec,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS     ts;                 /* timestepping context */
-  Vec    x,r;               /* solution, residual vectors */
-  Mat    J;                  /* Jacobian matrix */
-  AppCtx user;               /* user-defined work context */
-  int    its;                /* iterations for convergence */
-  int    ierr,N; 
-  double param_max = 6.81,param_min = 0.,dt;
-  double ftime;
+  TS        ts;                 /* timestepping context */
+  Vec       x,r;               /* solution, residual vectors */
+  Mat       J;                  /* Jacobian matrix */
+  AppCtx    user;               /* user-defined work context */
+  int       its;                /* iterations for convergence */
+  int       ierr,N; 
+  PetscReal param_max = 6.81,param_min = 0.,dt;
+  PetscReal ftime;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   user.mx        = 4;
@@ -185,29 +185,29 @@ int main(int argc,char **argv)
 #define __FUNCT__ "FormInitialGuess"
 int FormInitialGuess(Vec X,AppCtx *user)
 {
-  int     i,j,row,mx,my,ierr;
-  double  one = 1.0,lambda;
-  double  temp1,temp,hx,hy;
-  PetscScalar  *x;
+  int         i,j,row,mx,my,ierr;
+  PetscReal   one = 1.0,lambda;
+  PetscReal   temp1,temp,hx,hy;
+  PetscScalar *x;
 
   mx	 = user->mx; 
   my	 = user->my;
   lambda = user->param;
 
-  hx    = one / (double)(mx-1);
-  hy    = one / (double)(my-1);
+  hx    = one / (PetscReal)(mx-1);
+  hy    = one / (PetscReal)(my-1);
 
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
   for (j=0; j<my; j++) {
-    temp = (double)(PetscMin(j,my-j-1))*hy;
+    temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
       row = i + j*mx;  
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -217,20 +217,20 @@ int FormInitialGuess(Vec X,AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
+int FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
-  AppCtx *user = (AppCtx*)ptr;
-  int     ierr,i,j,row,mx,my;
-  double  two = 2.0,one = 1.0,lambda;
-  double  hx,hy,hxdhy,hydhx;
-  PetscScalar  ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
+  AppCtx      *user = (AppCtx*)ptr;
+  int         ierr,i,j,row,mx,my;
+  PetscReal   two = 2.0,one = 1.0,lambda;
+  PetscReal   hx,hy,hxdhy,hydhx;
+  PetscScalar ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
   mx	 = user->mx; 
   my	 = user->my;
   lambda = user->param;
 
-  hx    = one / (double)(mx-1);
-  hy    = one / (double)(my-1);
+  hx    = one / (PetscReal)(mx-1);
+  hy    = one / (PetscReal)(my-1);
   sc    = hx*hy;
   hxdhy = hx/hy;
   hydhx = hy/hx;
@@ -262,21 +262,21 @@ int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-int FormJacobian(TS ts,double t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+int FormJacobian(TS ts,PetscReal t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx *user = (AppCtx*)ptr;
-  Mat     jac = *B;
-  int     i,j,row,mx,my,col[5],ierr;
-  PetscScalar  two = 2.0,one = 1.0,lambda,v[5],sc,*x;
-  double  hx,hy,hxdhy,hydhx;
+  AppCtx      *user = (AppCtx*)ptr;
+  Mat         jac = *B;
+  int         i,j,row,mx,my,col[5],ierr;
+  PetscScalar two = 2.0,one = 1.0,lambda,v[5],sc,*x;
+  PetscReal   hx,hy,hxdhy,hydhx;
 
 
   mx	 = user->mx; 
   my	 = user->my;
   lambda = user->param;
 
-  hx    = 1.0 / (double)(mx-1);
-  hy    = 1.0 / (double)(my-1);
+  hx    = 1.0 / (PetscReal)(mx-1);
+  hy    = 1.0 / (PetscReal)(my-1);
   sc    = hx*hy;
   hxdhy = hx/hy;
   hydhx = hy/hx;

@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.8 2001/03/23 23:25:29 balay Exp bsmith $*/
+/*$Id: appview.c,v 1.9 2001/08/06 21:18:51 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 
@@ -43,8 +43,8 @@ int AppCtxViewMatlab(AppCtx* appctx)
 #define __FUNCT__ "AppCxtGraphics"
 int AppCtxGraphics(AppCtx *appctx)
 {
-  int    ierr;
-  double maxs[2],mins[2],xmin,xmax,ymin,ymax,hx,hy;
+  int       ierr;
+  PetscReal maxs[2],mins[2],xmin,xmax,ymin,ymax,hx,hy;
 
   PetscFunctionBegin;
 
@@ -96,11 +96,11 @@ int AppCtxGraphics(AppCtx *appctx)
 #define __FUNCT__ "AppCxtViewGrid"
 int AppCtxViewGrid(PetscDraw draw,void *iappctx)
 {
-  AppCtx  *appctx = (AppCtx *)iappctx;  
-  AppGrid *grid = &appctx->grid;
-  double  xl,yl,xr,yr,xp,yp,w,h;
-  int     ierr,i,rank,c,j,jnext,*iscell;
-  char    num[5];
+  AppCtx     *appctx = (AppCtx *)iappctx;  
+  AppGrid    *grid = &appctx->grid;
+  PetscReal  xl,yl,xr,yr,xp,yp,w,h;
+  int        ierr,i,rank,c,j,jnext,*iscell;
+  char       num[5];
 
   PetscFunctionBegin;
   /* gets the global numbering of each vertex of each local cell */

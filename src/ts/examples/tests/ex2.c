@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.34 2001/04/10 19:37:11 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.35 2001/08/07 03:04:24 balay Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -19,14 +19,14 @@ static char help[] = "Solves a nonlinear ODE. \n\n";
 #include "petscts.h"
 #include "petscpc.h"
 
-extern int RHSFunction(TS,double,Vec,Vec,void*);
-extern int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
-extern int Monitor(TS,int,double,Vec,void *);
+extern int RHSFunction(TS,PetscReal,Vec,Vec,void*);
+extern int RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
+extern int Monitor(TS,int,PetscReal,Vec,void *);
 extern int Initial(Vec,void *);
 
-extern double solx(double);
-extern double soly(double);
-extern double solz(double);
+extern PetscReal solx(PetscReal);
+extern PetscReal soly(PetscReal);
+extern PetscReal solz(PetscReal);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
 {
   int           ierr,time_steps = 100,steps,size;
   Vec           global;
-  double        dt,ftime;
+  PetscReal     dt,ftime;
   TS            ts;
   MatStructure  A_structure;
   Mat           A = 0;
@@ -112,7 +112,7 @@ int Initial(Vec global,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
-int Monitor(TS ts,int step,double time,Vec global,void *ctx)
+int Monitor(TS ts,int step,PetscReal time,Vec global,void *ctx)
 {
   VecScatter   scatter;
   IS           from,to;
@@ -154,7 +154,7 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunction"
-int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
+int RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
   PetscScalar  *inptr,*outptr;
   int          i,n,ierr,*idx;
@@ -210,7 +210,7 @@ int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
-int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+int RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat    A = *AA;
   PetscScalar v[3],*tmp;
@@ -244,19 +244,19 @@ int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 /*
       The exact solutions 
 */
-double solx(double t) 
+PetscReal solx(PetscReal t) 
 {
   return exp((2.0 - sqrt(2.0))*t)/2.0 - exp((2.0 - sqrt(2.0))*t)/(2.0*sqrt(2.0)) + 
          exp((2.0 + sqrt(2.0))*t)/2.0 + exp((2.0 + sqrt(2.0))*t)/(2.0*sqrt(2.0));
 }
 
-double soly(double t) 
+PetscReal soly(PetscReal t) 
 {
   return exp((2.0 - sqrt(2.0))*t)/2.0 - exp((2.0 - sqrt(2.0))*t)/sqrt(2.0) + 
          exp((2.0 + sqrt(2.0))*t)/2.0 + exp((2.0 + sqrt(2.0))*t)/sqrt(2.0);
 }
  
-double solz(double t) 
+PetscReal solz(PetscReal t) 
 {
   return exp((2.0 - sqrt(2.0))*t)/2.0 - exp((2.0 - sqrt(2.0))*t)/(2.0*sqrt(2.0)) + 
          exp((2.0 + sqrt(2.0))*t)/2.0 + exp((2.0 + sqrt(2.0))*t)/(2.0*sqrt(2.0));

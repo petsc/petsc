@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.147 2001/06/21 21:17:48 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.148 2001/08/06 21:16:23 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -55,7 +55,7 @@ static int PCSetFromOptions_LU(PC pc)
   PetscTruth flg;
   char       tname[256];
   PetscFList ordlist;
-  double     tol;
+  PetscReal  tol;
 
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: dtri.c,v 1.50 2001/08/06 21:13:41 bsmith Exp balay $*/
+/*$Id: dtri.c,v 1.51 2001/08/07 03:01:52 balay Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -76,7 +76,7 @@ int PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
   for (i=0; i<10; i++) {
     value = min + i*(max-min)/9.0;
     /* look for a value that should be zero, but is not due to round-off */
-    if (PetscAbsDouble(value) < 1.e-10 && max-min > 1.e-6) value = 0.0;
+    if (PetscAbsReal(value) < 1.e-10 && max-min > 1.e-6) value = 0.0;
     sprintf(string,"%g",value);
     ierr = PetscDrawString(popup,.2,.02 + i/10.0,PETSC_DRAW_BLACK,string);CHKERRQ(ierr);
   }

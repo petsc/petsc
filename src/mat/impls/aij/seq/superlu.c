@@ -1,4 +1,4 @@
-/*$Id: superlu.c,v 1.7 2001/07/27 15:54:38 bsmith Exp bsmith $*/
+/*$Id: superlu.c,v 1.8 2001/08/06 21:15:14 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the SuperLU sparse solver
@@ -8,7 +8,7 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 
-#if defined(PETSC_HAVE_SUPERLU)
+#if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
 EXTERN_C_BEGIN
 #include "dsp_defs.h"
 EXTERN_C_END

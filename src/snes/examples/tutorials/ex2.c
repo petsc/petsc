@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.81 2001/03/23 23:24:25 balay Exp balay $*/
+/*$Id: ex2.c,v 1.82 2001/08/07 03:04:16 balay Exp bsmith $*/
 
 static char help[] = "Newton method to solve u'' + u^{2} = f, sequentially.\n\
 This example employs a user-defined monitoring routine.\n\n";
@@ -28,7 +28,7 @@ T*/
 extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int FormFunction(SNES,Vec,Vec,void*);
 extern int FormInitialGuess(Vec);
-extern int Monitor(SNES,int,double,void *);
+extern int Monitor(SNES,int,PetscReal,void *);
 
 /*
    User-defined context for monitoring
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   MonitorCtx   monP;                   /* monitoring context */
   int          ierr,its,n = 5,i,maxit,maxf,size;
   PetscScalar  h,xp,v,none = -1.0;
-  double       atol,rtol,stol,norm;
+  PetscReal    atol,rtol,stol,norm;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -238,7 +238,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
      Compute function
   */
    ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-   d = (double)(n - 1); d = d*d;
+   d = (PetscReal)(n - 1); d = d*d;
    ff[0]   = xx[0];
    for (i=1; i<n-1; i++) {
      ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - gg[i];
@@ -286,7 +286,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
         row at once.
   */
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-  d = (double)(n - 1); d = d*d;
+  d = (PetscReal)(n - 1); d = d*d;
 
   /*
      Interior grid points
@@ -336,7 +336,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
    See the manpage for PetscViewerDrawOpen() for useful runtime options,
    such as -nox to deactivate all x-window output.
  */
-int Monitor(SNES snes,int its,double fnorm,void *ctx)
+int Monitor(SNES snes,int its,PetscReal fnorm,void *ctx)
 {
   int        ierr;
   MonitorCtx *monP = (MonitorCtx*) ctx;

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.62 2001/08/06 21:17:24 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.63 2001/08/07 03:04:13 balay Exp bsmith $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
@@ -37,7 +37,7 @@ is solved.  The command line options are:\n\
 #include "petscsnes.h"
 
 typedef struct {
-      double      param;        /* test problem parameter */
+      PetscReal   param;        /* test problem parameter */
       int         mx;           /* Discretization in x-direction */
       int         my;           /* Discretization in y-direction */
 } AppCtx;
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
   PetscDraw    draw;                 /* drawing context */
   int          ierr, its, N, nfails;
   PetscTruth   flg,cavity; 
-  double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  PetscReal    bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
   PetscScalar  *xvalues;
 
   PetscInitialize(&argc, &argv,(char *)0,help);
@@ -131,16 +131,16 @@ int main(int argc, char **argv)
 #define __FUNCT__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
-  int     i, j, row, mx, my, ierr;
-  double  lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
-  PetscScalar  *x;
+  int         i, j, row, mx, my, ierr;
+  PetscReal   lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
+  PetscScalar *x;
 
   mx	 = user->mx; 
   my	 = user->my;
   lambda = user->param;
 
-  hx    = 1.0 / (double)(mx-1);
-  hy    = 1.0 / (double)(my-1);
+  hx    = 1.0 / (PetscReal)(mx-1);
+  hy    = 1.0 / (PetscReal)(my-1);
   sc    = hx*hy;
   hxdhy = hx/hy;
   hydhx = hy/hx;
@@ -148,14 +148,14 @@ int FormInitialGuess1(AppCtx *user,Vec X)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   temp1 = lambda/(lambda + 1.0);
   for (j=0; j<my; j++) {
-    temp = (double)(PetscMin(j,my-j-1))*hy;
+    temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
       row = i + j*mx;  
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -167,17 +167,17 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 #define __FUNCT__ "FormFunction1"
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx *user = (AppCtx*)ptr;
-  int     ierr, i, j, row, mx, my;
-  double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx;
+  AppCtx       *user = (AppCtx*)ptr;
+  int          ierr, i, j, row, mx, my;
+  PetscReal    two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx;
   PetscScalar  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
 
   mx	 = user->mx; 
   my	 = user->my;
   lambda = user->param;
 
-  hx    = one / (double)(mx-1);
-  hy    = one / (double)(my-1);
+  hx    = one / (PetscReal)(mx-1);
+  hy    = one / (PetscReal)(my-1);
   sc    = hx*hy;
   hxdhy = hx/hy;
   hydhx = hy/hx;
@@ -211,19 +211,19 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 #define __FUNCT__ "FormJacobian1"
 int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx *user = (AppCtx*)ptr;
-  Mat     jac = *J;
-  int     i, j, row, mx, my, col[5], ierr;
+  AppCtx       *user = (AppCtx*)ptr;
+  Mat          jac = *J;
+  int          i, j, row, mx, my, col[5], ierr;
   PetscScalar  two = 2.0, one = 1.0, lambda, v[5],sc, *x;
-  double  hx, hy, hxdhy, hydhx;
+  PetscReal    hx, hy, hxdhy, hydhx;
 
 
   mx	 = user->mx; 
   my	 = user->my;
   lambda = user->param;
 
-  hx    = 1.0 / (double)(mx-1);
-  hy    = 1.0 / (double)(my-1);
+  hx    = 1.0 / (PetscReal)(mx-1);
+  hy    = 1.0 / (PetscReal)(my-1);
   sc    = hx*hy;
   hxdhy = hx/hy;
   hydhx = hy/hx;
@@ -260,9 +260,9 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 #define __FUNCT__ "FormInitialGuess1"
 int FormInitialGuess2(AppCtx *user,Vec X)
 {
-  int     ierr, i, j, row, mx, my;
+  int          ierr, i, j, row, mx, my;
   PetscScalar  xx,yy,*x;
-  double  hx, hy;
+  PetscReal    hx, hy;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -270,8 +270,8 @@ int FormInitialGuess2(AppCtx *user,Vec X)
   /* Test for invalid input parameters */
   if ((mx <= 0) || (my <= 0)) SETERRQ(1,0);
 
-  hx    = 1.0 / (double)(mx-1);
-  hy    = 1.0 / (double)(my-1);
+  hx    = 1.0 / (PetscReal)(mx-1);
+  hy    = 1.0 / (PetscReal)(my-1);
 
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   yy = 0.0;
@@ -298,17 +298,17 @@ int FormInitialGuess2(AppCtx *user,Vec X)
 #define __FUNCT__ "FormFunction2"
 int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
 {
-  AppCtx *user = (AppCtx*)pptr;
-  int     i, j, row, mx, my, ierr;
+  AppCtx       *user = (AppCtx*)pptr;
+  int          i, j, row, mx, my, ierr;
   PetscScalar  two = 2.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
   PetscScalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
   PetscScalar  *x,*f, hx2, hy2, hxhy2;
-  double  hx, hy;
+  PetscReal    hx, hy;
 
   mx	 = user->mx; 
   my	 = user->my;
-  hx     = 1.0 / (double)(mx-1);
-  hy     = 1.0 / (double)(my-1);
+  hx     = 1.0 / (PetscReal)(mx-1);
+  hy     = 1.0 / (PetscReal)(my-1);
   hx2    = hx*hx;
   hy2    = hy*hy;
   hxhy2  = hx2*hy2;
@@ -423,17 +423,17 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
 #define __FUNCT__ "FormJacobian2"
 int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
 {
-  AppCtx *user = (AppCtx*)pptr;
-  int     i, j, row, mx, my, col, ierr;
+  AppCtx       *user = (AppCtx*)pptr;
+  int          i, j, row, mx, my, col, ierr;
   PetscScalar  two = 2.0, one = 1.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
   PetscScalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
   PetscScalar  val,four = 4.0, three = 3.0,*x;
-  double  hx, hy,hx2, hy2, hxhy2;
+  PetscReal    hx, hy,hx2, hy2, hxhy2;
 
   mx	 = user->mx; 
   my	 = user->my;
-  hx     = 1.0 / (double)(mx-1);
-  hy     = 1.0 / (double)(my-1);
+  hx     = 1.0 / (PetscReal)(mx-1);
+  hy     = 1.0 / (PetscReal)(my-1);
   hx2    = hx*hx;
   hy2    = hy*hy;
   hxhy2  = hx2*hy2;

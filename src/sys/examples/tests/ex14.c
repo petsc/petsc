@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.10 2001/03/23 23:20:59 balay Exp balay $*/
+/*$Id: ex14.c,v 1.11 2001/08/07 03:02:12 balay Exp bsmith $*/
 
 /* 
    Tests PetscOptionsGetScalar() for complex numbers
@@ -11,7 +11,7 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int    ierr;
+  int         ierr;
   PetscScalar a;
 
   PetscInitialize(&argc,&argv,(char *)0,0);

@@ -1,4 +1,4 @@
-/*$Id: integrator.c,v 1.2 2000/01/06 20:43:21 bsmith Exp balay $*/
+/*$Id: integrator.c,v 1.3 2001/03/23 23:25:33 balay Exp bsmith $*/
 
 #include "appctx.h"
 
@@ -224,7 +224,7 @@ int SetLocalElement(AppElement *phi,double *coords)
 
   /* Determinant of the Jacobian */
   for(j=0; j<4; j++){   /* loop over Gauss points */
-    detDh[j] = PetscAbsDouble(Dh[j][0][0]*Dh[j][1][1] - Dh[j][0][1]*Dh[j][1][0]);
+    detDh[j] = PetscAbsReal(Dh[j][0][0]*Dh[j][1][1] - Dh[j][0][1]*Dh[j][1][0]);
   }
   /* Inverse of the Jacobian */
     for(j=0; j<4; j++){   /* loop over Gauss points */

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.94 2001/08/06 21:16:51 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.95 2001/08/07 03:03:57 balay Exp bsmith $*/
 
 static char help[] = "This example calculates the stiffness matrix for a brick in three\n\
 dimensions using 20 node serendipity elements and the equations of linear\n\
@@ -15,22 +15,22 @@ diagonal data structure.  Input arguments are:\n\
    BETTER WAYS TO DO THIS. */
 
 extern int GetElasticityMatrix(int,Mat*);
-extern int Elastic20Stiff(double**);
-extern int AddElement(Mat,int,int,double**,int,int);
+extern int Elastic20Stiff(PetscReal**);
+extern int AddElement(Mat,int,int,PetscReal**,int,int);
 extern int paulsetup20(void);
-extern int paulintegrate20(double K[60][60]);
+extern int paulintegrate20(PetscReal K[60][60]);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat     mat;
-  int     ierr,i,its,m = 3,rdim,cdim,rstart,rend,rank,size;
-  PetscScalar  v,neg1 = -1.0;
-  Vec     u,x,b;
-  SLES    sles;
-  KSP     ksp;
-  double  norm;
+  Mat         mat;
+  int         ierr,i,its,m = 3,rdim,cdim,rstart,rend,rank,size;
+  PetscScalar v,neg1 = -1.0;
+  Vec         u,x,b;
+  SLES        sles;
+  KSP         ksp;
+  PetscReal   norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   int        i,j,k,i1,i2,j_1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
   int        ict,nz,base,r1,r2,N,*rowkeep,nstart,ierr;
   IS         iskeep;
-  double     **K,norm;
+  PetscReal  **K,norm;
   Mat        mat,submat = 0,*submatb;
   MatType    type = MATSEQBAIJ;
 
@@ -104,9 +104,9 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,PETSC_NULL,&mat);CHKERRQ(ierr); 
 
   /* Form stiffness for element */
-  ierr = PetscMalloc(81*sizeof(double *),&K);CHKERRQ(ierr);
+  ierr = PetscMalloc(81*sizeof(PetscReal *),&K);CHKERRQ(ierr);
   for (i=0; i<81; i++) {
-    ierr = PetscMalloc(81*sizeof(double),&K[i]);CHKERRQ(ierr);
+    ierr = PetscMalloc(81*sizeof(PetscReal),&K[i]);CHKERRQ(ierr);
   }
   ierr = Elastic20Stiff(K);CHKERRQ(ierr);
 
@@ -180,7 +180,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
 /* -------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "AddElment"
-int AddElement(Mat mat,int r1,int r2,double **K,int h1,int h2)
+int AddElement(Mat mat,int r1,int r2,PetscReal **K,int h1,int h2)
 {
   PetscScalar val;
   int    l1,l2,row,col,ierr;
@@ -202,21 +202,21 @@ int AddElement(Mat mat,int r1,int r2,double **K,int h1,int h2)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-double	N[20][64];	   /* Interpolation function. */
-double	part_N[3][20][64]; /* Partials of interpolation function. */
-double	rst[3][64];	   /* Location of integration pts in (r,s,t) */
-double	weight[64];	   /* Gaussian quadrature weights. */
-double	xyz[20][3];	   /* (x,y,z) coordinates of nodes  */
-double	E,nu;		   /* Physcial constants. */
+PetscReal	N[20][64];	   /* Interpolation function. */
+PetscReal	part_N[3][20][64]; /* Partials of interpolation function. */
+PetscReal	rst[3][64];	   /* Location of integration pts in (r,s,t) */
+PetscReal	weight[64];	   /* Gaussian quadrature weights. */
+PetscReal	xyz[20][3];	   /* (x,y,z) coordinates of nodes  */
+PetscReal	E,nu;		   /* Physcial constants. */
 int	n_int,N_int;	   /* N_int = n_int^3, number of int. pts. */
 /* Ordering of the vertices, (r,s,t) coordinates, of the canonical cell. */
-double	r2[20] = {-1.0,0.0,1.0,-1.0,1.0,-1.0,0.0,1.0,
+PetscReal	r2[20] = {-1.0,0.0,1.0,-1.0,1.0,-1.0,0.0,1.0,
                  -1.0,1.0,-1.0,1.0,
                  -1.0,0.0,1.0,-1.0,1.0,-1.0,0.0,1.0};
-double	s2[20] = {-1.0,-1.0, -1.0,0.0,0.0,1.0, 1.0, 1.0,
+PetscReal	s2[20] = {-1.0,-1.0, -1.0,0.0,0.0,1.0, 1.0, 1.0,
                  -1.0,-1.0,1.0,1.0,
                  -1.0,-1.0, -1.0,0.0,0.0,1.0, 1.0, 1.0};
-double	t2[20] =  {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,
+PetscReal	t2[20] =  {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,
                  0.0,0.0,0.0,0.0,
                  1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
 int     rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
@@ -226,10 +226,10 @@ int     rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
 /* 
   Elastic20Stiff - Forms 20 node elastic stiffness for element.
  */
-int Elastic20Stiff(double **Ke)
+int Elastic20Stiff(PetscReal **Ke)
 {
-  double K[60][60],x,y,z,dx,dy,dz,m,v;
-  int    i,j,k,l,I,J;
+  PetscReal K[60][60],x,y,z,dx,dy,dz,m,v;
+  int       i,j,k,l,I,J;
 
   paulsetup20();
 
@@ -270,7 +270,7 @@ int Elastic20Stiff(double **Ke)
       for (k=0; k<3; k++) {
         for (l=0; l<3; l++) {
           Ke[3*rmap[i]+k][3*rmap[j]+l] = v = K[I+k][J+l];
-          m = PetscMax(m,PetscAbsDouble(v));
+          m = PetscMax(m,PetscAbsPetscReal(v));
         }
       }
       J += 3;
@@ -281,7 +281,7 @@ int Elastic20Stiff(double **Ke)
   m = (1.e-8)*m;
   for (i=0; i<81; i++) {
     for (j=0; j<81; j++) {
-      if (PetscAbsDouble(Ke[i][j]) < m)  Ke[i][j] = 0.0;
+      if (PetscAbsPetscReal(Ke[i][j]) < m)  Ke[i][j] = 0.0;
     }
   }  
   /* force the matrix to be exactly symmetric */
@@ -300,9 +300,9 @@ int Elastic20Stiff(double **Ke)
  */
 int paulsetup20(void)
 {
-  int     i,j,k,cnt;
-  double  x[4],w[4];
-  double  c;
+  int       i,j,k,cnt;
+  PetscReal x[4],w[4];
+  PetscReal c;
 
   n_int = 3;
   nu = 0.3;
@@ -418,12 +418,12 @@ int paulsetup20(void)
 /* 
    paulintegrate20 - Does actual numerical integration on 20 node element.
  */
-int paulintegrate20(double K[60][60])
+int paulintegrate20(PetscReal K[60][60])
 {
-  double  det_jac,jac[3][3],inv_jac[3][3];
-  double  B[6][60],B_temp[6][60],C[6][6];
-  double  temp;
-  int     i,j,k,step;
+  PetscReal  det_jac,jac[3][3],inv_jac[3][3];
+  PetscReal  B[6][60],B_temp[6][60],C[6][6];
+  PetscReal  temp;
+  int        i,j,k,step;
 
   /* Zero out K, since we will accumulate the result here */
   for (i=0; i<60; i++) {

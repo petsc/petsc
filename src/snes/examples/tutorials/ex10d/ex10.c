@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.26 2001/08/06 21:17:56 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.27 2001/08/07 03:04:20 balay Exp bsmith $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -70,8 +70,8 @@ typedef struct {
       int	  v2p[MAX_VERT];                /* processor number for a vertex */
       int         *locInd,*gloInd;             /* local and global orderings for a node */
       Vec 	  localX,localF;               /* local solution (u) and f(u) vectors */ 
-      double	  non_lin_param;                /* nonlinear parameter for the PDE */
-      double	  lin_param;                    /* linear parameter for the PDE */
+      PetscReal	  non_lin_param;                /* nonlinear parameter for the PDE */
+      PetscReal	  lin_param;                    /* linear parameter for the PDE */
       VecScatter  scatter;                      /* scatter context for the local and 
                                                     distributed vectors */
 } AppCtx;
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
 #if defined (UNUSED_VARIABLES)
   PetscDraw    draw;                 /* drawing context */
   PetscScalar  *ff,*gg;
-  double  tiny = 1.0e-10,zero = 0.0,one = 1.0,big = 1.0e+10;
+  PetscReal  tiny = 1.0e-10,zero = 0.0,one = 1.0,big = 1.0e+10;
   int     *tmp1,*tmp2;
 #endif
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -479,9 +479,9 @@ int FormInitialGuess(AppCtx *user,Vec X)
   int     *gloInd;
   PetscScalar  *x;
 #if defined (UNUSED_VARIABLES)
-  double  temp1,temp,hx,hy,hxdhy,hydhx,sc;
+  PetscReal  temp1,temp,hx,hy,hxdhy,hydhx,sc;
   int     Neglobal,Nvglobal,j,row;
-  double  alpha,lambda;
+  PetscReal  alpha,lambda;
 
   Nvglobal = user->Nvglobal; 
   Neglobal = user->Neglobal;
@@ -505,7 +505,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
      Compute initial guess over the locally owned part of the grid
   */
   for (i=0; i < Nvlocal; i++) {
-    x[i] = (double)gloInd[i];
+    x[i] = (PetscReal)gloInd[i];
   }
 
   /*
@@ -532,14 +532,14 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx       *user = (AppCtx*)ptr;
   int          ierr,i,j,Nvlocal;
-  double       alpha,lambda;
+  PetscReal       alpha,lambda;
   PetscScalar   *x,*f;
   VecScatter   scatter;
   Vec          localX = user->localX;
 #if defined (UNUSED_VARIABLES)
   PetscScalar  ut,ub,ul,ur,u,*g,sc,uyy,uxx;
-  double       hx,hy,hxdhy,hydhx;
-  double       two = 2.0,one = 1.0;
+  PetscReal       hx,hy,hxdhy,hydhx;
+  PetscReal       two = 2.0,one = 1.0;
   int          Nvglobal,Neglobal,row;
   int          *gloInd;
 

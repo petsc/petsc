@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.16 2001/04/10 22:35:49 balay Exp balay $*/
+/*$Id: ex76.c,v 1.17 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Tests matrix permutation for factorization and solve on matrix with MatSBAIJ format. Modified from ex74.c\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **args)
   int         n,mbs=16,bs=1,nz=3,prob=1;
   int         ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
   int         lf;          /* level of fill for icc */
-  double      norm1,norm2,tol=1.e-10,fill;
+  PetscReal   norm1,norm2,tol=1.e-10,fill;
   PetscScalar neg_one = -1.0,four=4.0,value[3];  
   IS          perm;
   PetscRandom rand;
@@ -58,7 +58,7 @@ int main(int argc,char **args)
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
     }
     else if (prob ==2){ /* matrix for the five point stencil */
-      n1 = (int) (sqrt((double)n) + 0.001); 
+      n1 = (int) (sqrt((PetscReal)n) + 0.001); 
       if (n1*n1 - n) SETERRQ(PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!"); 
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {

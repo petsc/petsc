@@ -1,4 +1,4 @@
-/*$Id: ex45.c,v 1.9 2000/11/28 17:29:48 bsmith Exp balay $*/
+/*$Id: ex45.c,v 1.10 2001/03/23 23:22:29 balay Exp bsmith $*/
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -11,15 +11,15 @@
 PETSc files on Paragon/Dec Alpha.
 */
 
-EXTERN void Store2DArray(int,int,double*,char*,int *);
-EXTERN void Store1DArray(int,double*,char*,int *);
+EXTERN void Store2DArray(int,int,PetscReal*,char*,int *);
+EXTERN void Store1DArray(int,PetscReal*,char*,int *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  double a[100],v[10];
-  int    i,j,fd = 0;
+  PetscReal a[100],v[10];
+  int       i,j,fd = 0;
 
   for (i=0; i<100; i++) {
     a[i] = i + 1;
@@ -35,12 +35,12 @@ int main(int argc,char **args)
 
 #undef __FUNCT__
 #define __FUNCT__ "Store2DArray"
-void Store2DArray(int m,int n,double *a,char *filename,int *fdd)
+void Store2DArray(int m,int n,PetscReal *a,char *filename,int *fdd)
 {
-  int     fd = *fdd;
-  int     i,j;
-  int     nz = -1,cookie = 1211216,ierr;
-  double *vals;
+  int        fd = *fdd;
+  int        i,j;
+  int        nz = -1,cookie = 1211216,ierr;
+  PetscReal *vals;
 
   if (!fd) {
     fd = creat(filename,0666); 
@@ -58,7 +58,7 @@ void Store2DArray(int m,int n,double *a,char *filename,int *fdd)
   /*
      transpose the matrix, since it is stored by rows on the disk
    */
-  vals = (double*)malloc(m*n*sizeof(double));
+  vals = (PetscReal*)malloc(m*n*sizeof(PetscReal));
   if (!vals) {
     fprintf(stdout,"Out of memory ");
     exit(0);
@@ -68,14 +68,14 @@ void Store2DArray(int m,int n,double *a,char *filename,int *fdd)
       vals[i+m*j] = a[j+i*n];
     }
   }
-  ierr = write(fd,vals,m*n*sizeof(double));
+  ierr = write(fd,vals,m*n*sizeof(PetscReal));
   free(vals);
 
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "Store1DArray"
-void Store1DArray(int m,double *a,char *filename,int *fdd)
+void Store1DArray(int m,PetscReal *a,char *filename,int *fdd)
 {
   int  fd = *fdd;
   int  i,j,ierr;
@@ -91,7 +91,7 @@ void Store1DArray(int m,double *a,char *filename,int *fdd)
   }
   ierr = write(fd,&cookie,sizeof(int));
   ierr = write(fd,&m,sizeof(int));
-  ierr = write(fd,a,m*sizeof(double));
+  ierr = write(fd,a,m*sizeof(PetscReal));
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.225 2001/08/06 21:15:05 bsmith Exp balay $ */
+/* $Id: petscmat.h,v 1.226 2001/08/07 03:02:40 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -441,15 +441,15 @@ EXTERN int MatCholeskyFactorNumeric(Mat,Mat*);
 
 S*/
 typedef struct {
-  double     levels;         /* ILU(levels) */ 
-  double     fill;           /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
-  double     diagonal_fill;  /* force diagonal to fill in if initially not filled */
-  double     dt;             /* drop tolerance */
-  double     dtcol;          /* tolerance for pivoting */
-  double     dtcount;        /* maximum nonzeros to be allowed per row */
-  double     damping;        /* scaling of identity added to matrix to prevent zero pivots */
-  double     damp;           /* if is 1.0 and factorization fails, damp until successful */
-  double     zeropivot; /* pivot is called zero if less than this */
+  PetscReal     levels;         /* ILU(levels) */ 
+  PetscReal     fill;           /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
+  PetscReal     diagonal_fill;  /* force diagonal to fill in if initially not filled */
+  PetscReal     dt;             /* drop tolerance */
+  PetscReal     dtcol;          /* tolerance for pivoting */
+  PetscReal     dtcount;        /* maximum nonzeros to be allowed per row */
+  PetscReal     damping;        /* scaling of identity added to matrix to prevent zero pivots */
+  PetscReal     damp;           /* if is 1.0 and factorization fails, damp until successful */
+  PetscReal     zeropivot; /* pivot is called zero if less than this */
 } MatILUInfo;
 
 /*S 
@@ -466,11 +466,11 @@ typedef struct {
 
 S*/
 typedef struct {
-  double     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
-  double     dtcol;   /* tolerance for pivoting; pivot if off_diagonal*dtcol > diagonal */
-  double     damping; /* scaling of identity added to matrix to prevent zero pivots */
-  double     damp;    /* if this is 1.0 and factorization fails, damp until successful */
-  double     zeropivot; /* pivot is called zero if less than this */
+  PetscReal     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
+  PetscReal     dtcol;   /* tolerance for pivoting; pivot if off_diagonal*dtcol > diagonal */
+  PetscReal     damping; /* scaling of identity added to matrix to prevent zero pivots */
+  PetscReal     damp;    /* if this is 1.0 and factorization fails, damp until successful */
+  PetscReal     zeropivot; /* pivot is called zero if less than this */
 } MatLUInfo;
 
 /*S 
@@ -487,9 +487,9 @@ typedef struct {
 
 S*/
 typedef struct {
-  double     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
-  double     damping; /* scaling of identity added to matrix to prevent zero pivots */
-  double     damp;    /* if this is 1.0 and factorization fails, damp until successful */
+  PetscReal     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
+  PetscReal     damping; /* scaling of identity added to matrix to prevent zero pivots */
+  PetscReal     damp;    /* if this is 1.0 and factorization fails, damp until successful */
 } MatCholeskyInfo;
 
 EXTERN int MatLUFactor(Mat,IS,IS,MatLUInfo*);

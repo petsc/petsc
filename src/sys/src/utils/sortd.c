@@ -1,4 +1,4 @@
-/*$Id: sortd.c,v 1.27 2001/03/23 23:20:45 balay Exp bsmith $*/
+/*$Id: sortd.c,v 1.28 2001/08/06 21:14:16 bsmith Exp bsmith $*/
 /*
    This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal
@@ -16,10 +16,10 @@
 #undef __FUNCT__  
 #define __FUNCT__ "PetsciDqsort"
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
-static int PetsciDqsort(double *v,int right)
+static int PetsciDqsort(PetscReal *v,int right)
 {
-  int    i,last;
-  double vl,tmp;
+  int       i,last;
+  PetscReal vl,tmp;
   
   PetscFunctionBegin;
   if (right <= 1) {
@@ -57,10 +57,10 @@ static int PetsciDqsort(double *v,int right)
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/
-int PetscSortReal(int n,double v[])
+int PetscSortReal(int n,PetscReal v[])
 {
-  int    j,k;
-  double tmp,vk;
+  int       j,k;
+  PetscReal tmp,vk;
 
   PetscFunctionBegin;
   if (n<8) {

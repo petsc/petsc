@@ -1,4 +1,4 @@
-/*$Id: zksp.c,v 1.50 2001/01/15 21:49:49 bsmith Exp balay $*/
+/*$Id: zksp.c,v 1.51 2001/03/28 19:43:08 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscksp.h"
@@ -91,13 +91,13 @@ void PETSC_STDCALL kspview_(KSP *ksp,PetscViewer *viewer, int *ierr)
   *ierr = KSPView(*ksp,v);
 }
 
-void kspdefaultconverged_(KSP *ksp,int *n,double *rnorm,KSPConvergedReason *flag,void *dummy,int *ierr)
+void kspdefaultconverged_(KSP *ksp,int *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,int *ierr)
 {
   if (FORTRANNULLOBJECT(dummy)) dummy = PETSC_NULL;
   *ierr = KSPDefaultConverged(*ksp,*n,*rnorm,flag,dummy);
 }
 
-void kspskipconverged_(KSP *ksp,int *n,double *rnorm,KSPConvergedReason *flag,void *dummy,int *ierr)
+void kspskipconverged_(KSP *ksp,int *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,int *ierr)
 {
   if (FORTRANNULLOBJECT(dummy)) dummy = PETSC_NULL;
   *ierr = KSPSkipConverged(*ksp,*n,*rnorm,flag,dummy);
@@ -160,15 +160,15 @@ void PETSC_STDCALL kspcreate_(MPI_Comm *comm,KSP *ksp,int *ierr){
   *ierr = KSPCreate((MPI_Comm)PetscToPointerComm(*comm),ksp);
 }
 
-static void (PETSC_STDCALL *f2)(KSP*,int*,double*,KSPConvergedReason*,void*,int*);
-static int ourtest(KSP ksp,int i,double d,KSPConvergedReason *reason,void* ctx)
+static void (PETSC_STDCALL *f2)(KSP*,int*,PetscReal*,KSPConvergedReason*,void*,int*);
+static int ourtest(KSP ksp,int i,PetscReal d,KSPConvergedReason *reason,void* ctx)
 {
   int ierr;
   (*f2)(&ksp,&i,&d,reason,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
-      void (PETSC_STDCALL *converge)(KSP*,int*,double*,KSPConvergedReason*,void*,int*),void *cctx,int *ierr)
+      void (PETSC_STDCALL *converge)(KSP*,int*,PetscReal*,KSPConvergedReason*,void*,int*),void *cctx,int *ierr)
 {
   if ((void(*)())converge == (void(*)())kspdefaultconverged_) {
     *ierr = KSPSetConvergenceTest(*ksp,KSPDefaultConverged,0);
@@ -186,38 +186,38 @@ void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
    
    functions, hence no STDCALL
 */
-void  kspdefaultmonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
+void  kspdefaultmonitor_(KSP *ksp,int *it,PetscReal *norm,void *ctx,int *ierr)
 {
   *ierr = KSPDefaultMonitor(*ksp,*it,*norm,ctx);
 }
  
-void  kspsingularvaluemonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
+void  kspsingularvaluemonitor_(KSP *ksp,int *it,PetscReal *norm,void *ctx,int *ierr)
 {
   *ierr = KSPSingularValueMonitor(*ksp,*it,*norm,ctx);
 }
 
-void  ksplgmonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
+void  ksplgmonitor_(KSP *ksp,int *it,PetscReal *norm,void *ctx,int *ierr)
 {
   *ierr = KSPLGMonitor(*ksp,*it,*norm,ctx);
 }
 
-void  ksplgtruemonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
+void  ksplgtruemonitor_(KSP *ksp,int *it,PetscReal *norm,void *ctx,int *ierr)
 {
   *ierr = KSPLGTrueMonitor(*ksp,*it,*norm,ctx);
 }
 
-void  ksptruemonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
+void  ksptruemonitor_(KSP *ksp,int *it,PetscReal *norm,void *ctx,int *ierr)
 {
   *ierr = KSPTrueMonitor(*ksp,*it,*norm,ctx);
 }
 
-void  kspvecviewmonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
+void  kspvecviewmonitor_(KSP *ksp,int *it,PetscReal *norm,void *ctx,int *ierr)
 {
   *ierr = KSPVecViewMonitor(*ksp,*it,*norm,ctx);
 }
 
-static void (PETSC_STDCALL *f1)(KSP*,int*,double*,void*,int*);
-static int ourmonitor(KSP ksp,int i,double d,void* ctx)
+static void (PETSC_STDCALL *f1)(KSP*,int*,PetscReal*,void*,int*);
+static int ourmonitor(KSP ksp,int i,PetscReal d,void* ctx)
 {
   int ierr = 0;
   (*f1)(&ksp,&i,&d,ctx,&ierr);CHKERRQ(ierr);
@@ -231,7 +231,7 @@ static int ourdestroy(void* ctx)
   return 0;
 }
 
-void PETSC_STDCALL kspsetmonitor_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,int*,double*,void*,int*),
+void PETSC_STDCALL kspsetmonitor_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,int*,PetscReal*,void*,int*),
                     void *mctx,void (PETSC_STDCALL *monitordestroy)(void *,int *),int *ierr)
 {
   if ((void(*)())monitor == (void(*)())kspdefaultmonitor_) {
@@ -326,8 +326,8 @@ void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len
 #endif
 }
 
-static void (PETSC_STDCALL *f109)(KSP*,int*,int*,double*,void*,int*);
-static int ourmodify(KSP ksp,int i,int i2,double d,void* ctx)
+static void (PETSC_STDCALL *f109)(KSP*,int*,int*,PetscReal*,void*,int*);
+static int ourmodify(KSP ksp,int i,int i2,PetscReal d,void* ctx)
 {
   int ierr = 0;
   (*f109)(&ksp,&i,&i2,&d,ctx,&ierr);CHKERRQ(ierr);
@@ -342,17 +342,17 @@ static int ourmoddestroy(void* ctx)
   return 0;
 }
 
-void PETSC_STDCALL kspfgmresmodifypcnochange_(KSP *ksp,int *total_its,int *loc_its,double *res_norm,void* dummy,int *ierr)
+void PETSC_STDCALL kspfgmresmodifypcnochange_(KSP *ksp,int *total_its,int *loc_its,PetscReal *res_norm,void* dummy,int *ierr)
 {
   *ierr = KSPFGMRESModifyPCNoChange(*ksp,*total_its,*loc_its,*res_norm,dummy);
 }
 
-void PETSC_STDCALL kspfgmresmodifypcsles_(KSP *ksp,int *total_its,int *loc_its,double *res_norm,void*dummy,int *ierr)
+void PETSC_STDCALL kspfgmresmodifypcsles_(KSP *ksp,int *total_its,int *loc_its,PetscReal *res_norm,void*dummy,int *ierr)
 {
   *ierr = KSPFGMRESModifyPCSLES(*ksp,*total_its,*loc_its,*res_norm,dummy);
 }
 
-void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (PETSC_STDCALL *fcn)(KSP*,int*,int*,double*,void*,int*),void* ctx,void (PETSC_STDCALL *d)(void*,int*),int *ierr)
+void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (PETSC_STDCALL *fcn)(KSP*,int*,int*,PetscReal*,void*,int*),void* ctx,void (PETSC_STDCALL *d)(void*,int*),int *ierr)
 {
   if ((void(*)())fcn == (void(*)())kspfgmresmodifypcsles_) {
     *ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCSLES,0,0);

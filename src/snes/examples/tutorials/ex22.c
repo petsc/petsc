@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.21 2001/08/06 21:17:42 bsmith Exp balay $*/
+/*$Id: ex22.c,v 1.22 2001/08/07 03:04:16 balay Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem.\n\n";
 
@@ -211,14 +211,14 @@ int ExactSolution(VecPack packer,Vec U)
 
 int Monitor(SNES snes,int its,PetscReal rnorm,void *dummy)
 {
-  DMMG      dmmg = (DMMG)dummy;
-  UserCtx   *user = (UserCtx*)dmmg->user;
-  int       ierr,m,N;
-  PetscScalar    mone = -1.0,*w,*dw;
-  Vec       u_lambda,U,F,Uexact;
-  VecPack   packer = (VecPack)dmmg->dm;
-  PetscReal norm;
-  DA        da;
+  DMMG         dmmg = (DMMG)dummy;
+  UserCtx      *user = (UserCtx*)dmmg->user;
+  int          ierr,m,N;
+  PetscScalar  mone = -1.0,*w,*dw;
+  Vec          u_lambda,U,F,Uexact;
+  VecPack      packer = (VecPack)dmmg->dm;
+  PetscReal    norm;
+  DA           da;
 
   PetscFunctionBegin;
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);

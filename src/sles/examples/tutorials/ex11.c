@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.35 2001/08/06 21:16:53 bsmith Exp balay $*/
+/*$Id: ex11.c,v 1.36 2001/08/07 03:04:00 balay Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
@@ -45,11 +45,11 @@ int main(int argc,char **args)
   Vec         x,b,u;      /* approx solution, RHS, exact solution */
   Mat         A;            /* linear system matrix */
   SLES        sles;         /* linear solver context */
-  double      norm;         /* norm of solution error */
+  PetscReal   norm;         /* norm of solution error */
   int         dim,i,j,I,J,Istart,Iend,ierr,n = 6,its,use_random;
   PetscScalar v,none = -1.0,sigma2,pfive = 0.5,*xa;
   PetscRandom rctx;
-  double      h2,sigma1 = 100.0;
+  PetscReal   h2,sigma1 = 100.0;
   PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.341 2001/08/06 21:15:22 bsmith Exp balay $*/
+/*$Id: mpiaij.c,v 1.342 2001/08/07 03:02:49 balay Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1923,9 +1923,9 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
     local = &Mreuse;
     ierr  = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&local);CHKERRQ(ierr);
   } else {
-    ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
+    ierr   = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     Mreuse = *local;
-    ierr = PetscFree(local);CHKERRQ(ierr);
+    ierr   = PetscFree(local);CHKERRQ(ierr);
   }
 
   /* 

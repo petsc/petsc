@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.140 2001/08/06 21:17:42 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.141 2001/08/07 03:04:16 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   PetscTruth             fd_jacobian = PETSC_FALSE,global_jacobian=PETSC_FALSE,local_jacobian=PETSC_TRUE,adic_jacobian=PETSC_FALSE;
   PetscTruth             adicmf_jacobian = PETSC_FALSE;
   int                    ierr;
-  double                 bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
+  PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
   MatFDColoring          matfdcoloring = 0;
   ISColoring             iscoloring;
 
@@ -250,17 +250,17 @@ int main(int argc,char **argv)
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i,j,Mx,My,ierr,xs,ys,xm,ym;
-  double  lambda,temp1,temp,hx,hy;
-  PetscScalar  **x;
+  int         i,j,Mx,My,ierr,xs,ys,xm,ym;
+  PetscReal   lambda,temp1,temp,hx,hy;
+  PetscScalar **x;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->param;
-  hx     = 1.0/(double)(Mx-1);
-  hy     = 1.0/(double)(My-1);
+  hx     = 1.0/(PetscReal)(Mx-1);
+  hy     = 1.0/(PetscReal)(My-1);
   temp1  = lambda/(lambda + 1.0);
 
   /*
@@ -284,14 +284,14 @@ int FormInitialGuess(AppCtx *user,Vec X)
      Compute initial guess over the locally owned part of the grid
   */
   for (j=ys; j<ys+ym; j++) {
-    temp = (double)(PetscMin(j,My-j-1))*hy;
+    temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
 
       if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
         /* boundary conditions are all zero Dirichlet */
         x[j][i] = 0.0; 
       } else {
-        x[j][i] = temp1*sqrt(PetscMin((double)(PetscMin(i,Mx-i-1))*hx,temp)); 
+        x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp)); 
       }
     }
   }
@@ -319,11 +319,11 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx*)ptr;
-  int     ierr,i,j,Mx,My,xs,ys,xm,ym;
-  double  two = 2.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  AppCtx       *user = (AppCtx*)ptr;
+  int          ierr,i,j,Mx,My,xs,ys,xm,ym;
+  PetscReal    two = 2.0,lambda,hx,hy,hxdhy,hydhx,sc;
   PetscScalar  u,uxx,uyy,**x,**f;
-  Vec     localX;
+  Vec          localX;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(user->da,&localX);CHKERRQ(ierr);
@@ -331,8 +331,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->param;
-  hx     = 1.0/(double)(Mx-1);
-  hy     = 1.0/(double)(My-1);
+  hx     = 1.0/(PetscReal)(Mx-1);
+  hy     = 1.0/(PetscReal)(My-1);
   sc     = hx*hy*lambda;
   hxdhy  = hx/hy; 
   hydhx  = hy/hx;
@@ -393,15 +393,15 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
  */
 int FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
-  int     ierr,i,j;
-  double  two = 2.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar  u,uxx,uyy;
+  int         ierr,i,j;
+  PetscReal   two = 2.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar u,uxx,uyy;
 
   PetscFunctionBegin;
 
   lambda = user->param;
-  hx     = 1.0/(double)(info->mx-1);
-  hy     = 1.0/(double)(info->my-1);
+  hx     = 1.0/(PetscReal)(info->mx-1);
+  hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*lambda;
   hxdhy  = hx/hy; 
   hydhx  = hy/hx;
@@ -457,8 +457,8 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->param;
-  hx     = 1.0/(double)(Mx-1);
-  hy     = 1.0/(double)(My-1);
+  hx     = 1.0/(PetscReal)(Mx-1);
+  hy     = 1.0/(PetscReal)(My-1);
   sc     = hx*hy*lambda;
   hxdhy  = hx/hy; 
   hydhx  = hy/hx;
@@ -575,8 +575,8 @@ int FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
 
   PetscFunctionBegin;
   lambda = user->param;
-  hx     = 1.0/(double)(info->mx-1);
-  hy     = 1.0/(double)(info->my-1);
+  hx     = 1.0/(PetscReal)(info->mx-1);
+  hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*lambda;
   hxdhy  = hx/hy; 
   hydhx  = hy/hx;
@@ -632,11 +632,11 @@ int FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 int FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx   *user = (AppCtx*)ptr;
-  int      ierr,Mx,My;
-  double   lambda,hx,hy;
-  Vec      localX,localF;
-  MPI_Comm comm;
+  AppCtx    *user = (AppCtx*)ptr;
+  int       ierr,Mx,My;
+  PetscReal lambda,hx,hy;
+  Vec       localX,localF;
+  MPI_Comm  comm;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(user->da,&localX);CHKERRQ(ierr);
@@ -647,8 +647,8 @@ int FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->param;
-  hx     = 1.0/(double)(Mx-1);
-  hy     = 1.0/(double)(My-1);
+  hx     = 1.0/(PetscReal)(Mx-1);
+  hy     = 1.0/(PetscReal)(My-1);
 
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
   /*

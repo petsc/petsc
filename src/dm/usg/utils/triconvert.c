@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: triconvert.c,v 1.7 2001/01/16 18:21:27 balay Exp bsmith $";
+static char vcid[] = "$Id: triconvert.c,v 1.8 2001/01/17 22:28:03 bsmith Exp bsmith $";
 #endif
 /*
       Converts triangulated grid data file.node and file.ele generated
@@ -19,7 +19,7 @@ int main(int argc,char **args)
   char       filebase[256],filename[256];
   FILE       *file;
   AOData     ao;
-  double     *vertex,ddummy;
+  PetscReal  *vertex,ddummy;
   PetscBT    vertex_boundary;
   PetscTruth flag;
 
@@ -49,7 +49,7 @@ int main(int argc,char **args)
   if (dim != 2) {
     SETERRQ(1,"Triangulation is not in two dimensions");
   }
-  ierr = PetscMalloc(2*nvertex*sizeof(double),&vertex);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*nvertex*sizeof(PetscReal),&vertex);CHKERRQ(ierr);
   ierr   = PetscBTCreate(nvertex,vertex_boundary);CHKERRQ(ierr);
 
   if (nstuff == 1) {

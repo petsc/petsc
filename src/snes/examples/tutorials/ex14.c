@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.21 2001/08/06 21:17:42 bsmith Exp balay $*/
+/*$Id: ex14.c,v 1.22 2001/08/07 03:04:16 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -53,7 +53,7 @@ T*/
    FormFunction().
 */
 typedef struct {
-   double      param;          /* test problem parameter */
+   PetscReal   param;          /* test problem parameter */
    DA          da;             /* distributed array data structure */
 } AppCtx;
 
@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   int                    its;                  /* iterations for convergence */
   PetscTruth             matrix_free,coloring;
   int                    ierr;
-  double                 bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
+  PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
   MatFDColoring          matfdcoloring;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -207,8 +207,8 @@ int main(int argc,char **argv)
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i,j,k,Mx,My,Mz,ierr,xs,ys,zs,xm,ym,zm;
-  double  lambda,temp1,hx,hy,hz,tempk,tempj;
+  int          i,j,k,Mx,My,Mz,ierr,xs,ys,zs,xm,ym,zm;
+  PetscReal    lambda,temp1,hx,hy,hz,tempk,tempj;
   PetscScalar  ***x;
 
   PetscFunctionBegin;
@@ -216,9 +216,9 @@ int FormInitialGuess(AppCtx *user,Vec X)
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->param;
-  hx     = 1.0/(double)(Mx-1);
-  hy     = 1.0/(double)(My-1);
-  hz     = 1.0/(double)(Mz-1);
+  hx     = 1.0/(PetscReal)(Mx-1);
+  hy     = 1.0/(PetscReal)(My-1);
+  hz     = 1.0/(PetscReal)(Mz-1);
   temp1  = lambda/(lambda + 1.0);
 
   /*
@@ -242,15 +242,15 @@ int FormInitialGuess(AppCtx *user,Vec X)
      Compute initial guess over the locally owned part of the grid
   */
   for (k=zs; k<zs+zm; k++) {
-    tempk = (double)(PetscMin(k,Mz-k-1))*hz;
+    tempk = (PetscReal)(PetscMin(k,Mz-k-1))*hz;
     for (j=ys; j<ys+ym; j++) {
-      tempj = PetscMin((double)(PetscMin(j,My-j-1))*hy,tempk);
+      tempj = PetscMin((PetscReal)(PetscMin(j,My-j-1))*hy,tempk);
       for (i=xs; i<xs+xm; i++) {
         if (i == 0 || j == 0 || k == 0 || i == Mx-1 || j == My-1 || k == Mz-1) {
           /* boundary conditions are all zero Dirichlet */
           x[k][j][i] = 0.0; 
         } else {
-          x[k][j][i] = temp1*sqrt(PetscMin((double)(PetscMin(i,Mx-i-1))*hx,tempj));
+          x[k][j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,tempj));
         }
       }
     }
@@ -278,11 +278,11 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx*)ptr;
-  int     ierr,i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
-  double  two = 2.0,lambda,hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc;
+  AppCtx       *user = (AppCtx*)ptr;
+  int          ierr,i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
+  PetscReal    two = 2.0,lambda,hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc;
   PetscScalar  u_north,u_south,u_east,u_west,u_up,u_down,u,u_xx,u_yy,u_zz,***x,***f;
-  Vec     localX;
+  Vec          localX;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(user->da,&localX);CHKERRQ(ierr);
@@ -290,9 +290,9 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->param;
-  hx     = 1.0/(double)(Mx-1);
-  hy     = 1.0/(double)(My-1);
-  hz     = 1.0/(double)(Mz-1);
+  hx     = 1.0/(PetscReal)(Mx-1);
+  hy     = 1.0/(PetscReal)(My-1);
+  hz     = 1.0/(PetscReal)(Mz-1);
   sc     = hx*hy*hz*lambda;
   hxhzdhy = hx*hz/hy;
   hyhzdhx = hy*hz/hx;
@@ -386,9 +386,9 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->param;
-  hx     = 1.0/(double)(Mx-1);
-  hy     = 1.0/(double)(My-1);
-  hz     = 1.0/(double)(Mz-1);
+  hx     = 1.0/(PetscReal)(Mx-1);
+  hy     = 1.0/(PetscReal)(My-1);
+  hz     = 1.0/(PetscReal)(Mz-1);
   sc     = hx*hy*hz*lambda;
   hxhzdhy = hx*hz/hy;
   hyhzdhx = hy*hz/hx;

@@ -1,4 +1,4 @@
-/* $Id: petscao.h,v 1.25 2001/01/15 21:48:40 bsmith Exp bsmith $ */
+/* $Id: petscao.h,v 1.26 2001/04/10 19:37:14 bsmith Exp bsmith $ */
 
 /* 
   An application ordering is mapping between an application-centric
@@ -108,7 +108,7 @@ EXTERN int AODataAliasAdd(AOData,char *,char *);
 
    
 typedef struct _p_AOData2dGrid *AOData2dGrid;
-EXTERN int AOData2dGridAddNode(AOData2dGrid, double, double, int *);
+EXTERN int AOData2dGridAddNode(AOData2dGrid, PetscReal, PetscReal, int *);
 EXTERN int AOData2dGridInput(AOData2dGrid,PetscDraw);
 EXTERN int AOData2dGridFlipCells(AOData2dGrid);
 EXTERN int AOData2dGridComputeNeighbors(AOData2dGrid);

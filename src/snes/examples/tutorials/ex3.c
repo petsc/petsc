@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.85 2001/08/06 21:17:42 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.86 2001/08/07 03:04:16 balay Exp bsmith $*/
 
 static char help[] = "Newton methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -43,18 +43,18 @@ T*/
 int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int FormFunction(SNES,Vec,Vec,void*);
 int FormInitialGuess(Vec);
-int Monitor(SNES,int,double,void *);
+int Monitor(SNES,int,PetscReal,void *);
 int StepCheck(SNES,void *,Vec,PetscTruth *);
 
 /* 
    User-defined application context
 */
 typedef struct {
-   DA     da;     /* distributed array */
-   Vec    F;      /* right-hand-side of PDE */
-   int    rank;   /* rank of processor */
-   int    size;   /* size of communicator */
-   double h;      /* mesh spacing */
+   DA        da;     /* distributed array */
+   Vec       F;      /* right-hand-side of PDE */
+   int       rank;   /* rank of processor */
+   int       size;   /* size of communicator */
+   PetscReal h;      /* mesh spacing */
 } ApplicationCtx;
 
 /*
@@ -69,8 +69,8 @@ typedef struct {
    determined by line search methods
 */
 typedef struct {
-   Vec    last_step;  /* previous iterate */
-   double tolerance;  /* tolerance for changes between successive iterates */
+   Vec       last_step;  /* previous iterate */
+   PetscReal tolerance;  /* tolerance for changes between successive iterates */
 } StepCheckCtx;
 
 #undef __FUNCT__
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
                                           candidate iterates */
   PetscScalar    xp,*FF,*UU,none = -1.0;
   int            ierr,its,N = 5,i,maxit,maxf,xs,xm;
-  double         atol,rtol,stol,norm;
+  PetscReal      atol,rtol,stol,norm;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRQ(ierr);
@@ -467,7 +467,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
    See the manpage for PetscViewerDrawOpen() for useful runtime options,
    such as -nox to deactivate all x-window output.
  */
-int Monitor(SNES snes,int its,double fnorm,void *ctx)
+int Monitor(SNES snes,int its,PetscReal fnorm,void *ctx)
 {
   int        ierr;
   MonitorCtx *monP = (MonitorCtx*) ctx;
@@ -503,7 +503,7 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
   ApplicationCtx *user;
   StepCheckCtx   *check = (StepCheckCtx*) ctx;
   PetscScalar    *xa,*xa_last,tmp;
-  double         rdiff;
+  PetscReal      rdiff;
   DA             da;
 
   PetscFunctionBegin;

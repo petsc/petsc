@@ -1,4 +1,4 @@
-/*$Id: ex28.c,v 1.17 2001/04/10 19:35:02 bsmith Exp balay $*/
+/*$Id: ex28.c,v 1.18 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 
@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   int           ierr,n = 25,i,row0 = 0;
   PetscScalar   one = 1.0,two = 2.0,result1,result2,results[40],value,ten = 10.0;
   PetscScalar   result1a,result2a;
-  double        result3,result4,result[2],result3a,result4a,resulta[2];
+  PetscReal     result3,result4,result[2],result3a,result4a,resulta[2];
   Vec           x,y,vecs[40];
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   if (result3 != result3a || result4 != result4a) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error max: result1 %g result2 %g\n",result3,result4);CHKERRQ(ierr);
   }
-  if (PetscAbsDouble(result[0]-resulta[0]) > .01 || PetscAbsDouble(result[1]-resulta[1]) > .01) {
+  if (PetscAbsReal(result[0]-resulta[0]) > .01 || PetscAbsReal(result[1]-resulta[1]) > .01) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error 1 and 2 norms: result[0] %g result[1] %g\n",result[0],result[1]);CHKERRQ(ierr);
   }
 
@@ -126,7 +126,7 @@ int main(int argc,char **argv)
   for (i=0; i<40; i++) {
     ierr  = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,vecs+i);CHKERRQ(ierr);
     ierr  = VecSetFromOptions(vecs[i]);CHKERRQ(ierr);
-    value = (double)i;
+    value = (PetscReal)i;
     ierr  = VecSet(&value,vecs[i]);CHKERRQ(ierr);
   }
   for (i=0; i<39; i++) {

@@ -1,4 +1,4 @@
-/*$Id: ex78.c,v 1.12 2001/08/06 21:16:03 bsmith Exp balay $*/
+/*$Id: ex78.c,v 1.13 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format.\n\
 Writes them using the PETSc sparse format.\n\
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   char        Ain[128],bin[128],uin[128]; 
   int         i,m,n,nz,ierr,*ib=0,col_i,row_i;
   PetscScalar val_i,*work=0,mone=-1.0;
-  double      *col=0,*row=0,res_norm,*val=0,*bval=0,*uval=0;
+  PetscReal   *col=0,*row=0,res_norm,*val=0,*bval=0,*uval=0;
   FILE        *Afile,*bfile,*ufile;
   PetscViewer view;
   PetscTruth  flg_A,flg_b,flg_u;
@@ -40,9 +40,9 @@ int main(int argc,char **args)
     ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
 
-    ierr = PetscMalloc(nz*sizeof(double),&val);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(double),&row);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(double),&col);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(PetscReal),&val);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(PetscReal),&row);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(PetscReal),&col);CHKERRQ(ierr);
     for (i=0; i<nz; i++) {
       fscanf(Afile,"%le %le %le\n",row+i,col+i,val+i); /* modify according to data file! */
       row[i]--; col[i]--;  /* set index set starts at 0 */
@@ -56,7 +56,7 @@ int main(int argc,char **args)
   if (flg_b){
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read rhs in ascii format ...\n");CHKERRQ(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,bin,"r",&bfile);CHKERRQ(ierr); 
-    ierr = PetscMalloc(n*sizeof(double),&bval);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscReal),&bval);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(PetscScalar),&work);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(int),&ib);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -71,7 +71,7 @@ int main(int argc,char **args)
   if (flg_u){
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read exact solution in ascii format ...\n");CHKERRQ(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,uin,"r",&ufile);CHKERRQ(ierr); 
-    ierr = PetscMalloc(n*sizeof(double),&uval);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscReal),&uval);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       fscanf(ufile,"  %le\n",uval+i);  /* modify according to data file! */
     }

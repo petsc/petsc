@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.57 2001/04/10 19:37:00 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.58 2001/08/07 03:04:13 balay Exp bsmith $*/
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods. Using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
@@ -8,7 +8,7 @@ static char help[] = "Solves u`` + u^{2} = f with Newton-like methods. Using\n\
 extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int  FormFunction(SNES,Vec,Vec,void*);
 extern int  FormInitialGuess(SNES,Vec);
-extern int  Monitor(SNES,int,double,void *);
+extern int  Monitor(SNES,int,PetscReal,void *);
 
 typedef struct {
    PetscViewer viewer;
@@ -107,7 +107,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
   ierr = VecGetArray((Vec) dummy,&FF);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-  d = (double)(n - 1); d = d*d;
+  d = (PetscReal)(n - 1); d = d*d;
   ff[0]   = xx[0];
   for (i=1; i<n-1; i++) {
     ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
@@ -150,7 +150,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
     *B = user->precond;
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
     ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-    d = (double)(n - 1); d = d*d;
+    d = (PetscReal)(n - 1); d = d*d;
 
     i = 0; A[0] = 1.0; 
     ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
@@ -180,7 +180,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
-int Monitor(SNES snes,int its,double fnorm,void *dummy)
+int Monitor(SNES snes,int its,PetscReal fnorm,void *dummy)
 {
   int        ierr;
   MonitorCtx *monP = (MonitorCtx*) dummy;

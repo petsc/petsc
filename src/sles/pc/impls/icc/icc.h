@@ -1,4 +1,4 @@
-/* $Id: icc.h,v 1.9 1999/10/24 14:03:03 bsmith Exp bsmith $ */
+/* $Id: icc.h,v 1.10 2000/09/22 20:45:06 bsmith Exp bsmith $ */
 #include "src/sles/pc/pcimpl.h"          
 
 #if !defined(__ICC_H)
@@ -10,7 +10,7 @@ typedef struct {
   Mat             fact;
   MatOrderingType ordering;
   int             levels;
-  double          fill;
+  PetscReal       fill;
   void            *implctx;
 } PC_ICC;
 

@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.110 2001/08/06 21:17:20 bsmith Exp balay $*/
+/*$Id: umls.c,v 1.111 2001/08/07 03:04:12 balay Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
@@ -504,7 +504,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,PetscReal *f,
       PetscLogInfo(snes,"SNESMoreLineSearch:Relative width of interval of uncertainty is at most rtol (%g)\n",neP->rtol);
       *info = 2;
     }
-    if ((*f <= ftest1) && (PetscAbsDouble(dg) <= neP->gtol*(-dginit))) {
+    if ((*f <= ftest1) && (PetscAbsReal(dg) <= neP->gtol*(-dginit))) {
       PetscLogInfo(snes,"SNESMoreLineSearch:Line search success: Sufficient decrease and directional deriv conditions hold\n");
       *info = 1;
     }
@@ -543,9 +543,9 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,PetscReal *f,
 
    /* Force a sufficient decrease in the interval of uncertainty */
    if (neP->bracket) {
-     if (PetscAbsDouble(sty - stx) >= p66 * width1) *step = stx + p5*(sty - stx);
+     if (PetscAbsReal(sty - stx) >= p66 * width1) *step = stx + p5*(sty - stx);
        width1 = width;
-       width = PetscAbsDouble(sty - stx);
+       width = PetscAbsReal(sty - stx);
      }
    }
 

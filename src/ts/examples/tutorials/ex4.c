@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.26 2001/04/10 19:37:12 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.27 2001/08/07 03:04:27 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
 
@@ -67,25 +67,25 @@ Input parameters include:\n\
    application-provided call-back routines.
 */
 typedef struct {
-  MPI_Comm   comm;              /* communicator */
-  DA         da;                /* distributed array data structure */
-  Vec        localwork;         /* local ghosted work vector */
-  Vec        u_local;           /* local ghosted approximate solution vector */
-  Vec        solution;          /* global exact solution vector */
-  int        m;                 /* total number of grid points */
-  double     h;                 /* mesh width h = 1/(m-1) */
-  PetscTruth debug;             /* flag (1 indicates activation of debugging printouts) */
-  PetscViewer     viewer1,viewer2;  /* viewers for the solution and error */
-  double     norm_2,norm_max;  /* error norms */
+  MPI_Comm    comm;              /* communicator */
+  DA          da;                /* distributed array data structure */
+  Vec         localwork;         /* local ghosted work vector */
+  Vec         u_local;           /* local ghosted approximate solution vector */
+  Vec         solution;          /* global exact solution vector */
+  int         m;                 /* total number of grid points */
+  PetscReal   h;                 /* mesh width h = 1/(m-1) */
+  PetscTruth  debug;             /* flag (1 indicates activation of debugging printouts) */
+  PetscViewer viewer1,viewer2;  /* viewers for the solution and error */
+  PetscReal   norm_2,norm_max;  /* error norms */
 } AppCtx;
 
 /* 
    User-defined routines
 */
 extern int InitialConditions(Vec,AppCtx*);
-extern int RHSMatrixHeat(TS,double,Mat*,Mat*,MatStructure*,void*);
-extern int Monitor(TS,int,double,Vec,void*);
-extern int ExactSolution(double,Vec,AppCtx*);
+extern int RHSMatrixHeat(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
+extern int Monitor(TS,int,PetscReal,Vec,void*);
+extern int ExactSolution(PetscReal,Vec,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -95,11 +95,11 @@ int main(int argc,char **argv)
   TS            ts;                     /* timestepping context */
   Mat           A;                      /* matrix data structure */
   Vec           u;                      /* approximate solution vector */
-  double        time_total_max = 100.0; /* default max total time */
+  PetscReal     time_total_max = 100.0; /* default max total time */
   int           time_steps_max = 100;   /* default max timesteps */
   PetscDraw     draw;                   /* drawing context */
   int           ierr,steps,size,m;
-  double        dt,ftime;
+  PetscReal     dt,ftime;
   PetscTruth    flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,10 +151,10 @@ int main(int argc,char **argv)
 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscDrawSetPetscRealBuffer(draw);CHKERRQ(ierr);   
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscDrawSetPetscRealBuffer(draw);CHKERRQ(ierr);   
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -336,7 +336,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
    Output Parameter:
    solution - vector with the newly computed exact solution
 */
-int ExactSolution(double t,Vec solution,AppCtx *appctx)
+int ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
 {
   PetscScalar *s_localptr,h = appctx->h,ex1,ex2,sc1,sc2;
   int    i,mybase,myend,ierr;
@@ -359,7 +359,7 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
   ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   for (i=mybase; i<myend; i++) {
-    s_localptr[i-mybase] = PetscSinScalar(sc1*(double)i)*ex1 + 3.*PetscSinScalar(sc2*(double)i)*ex2;
+    s_localptr[i-mybase] = PetscSinScalar(sc1*(PetscReal)i)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i)*ex2;
   }
 
   /* 
@@ -387,12 +387,12 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
             information about the problem size, workspace and the exact 
             solution.
 */
-int Monitor(TS ts,int step,double time,Vec u,void *ctx)
+int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
 {
-  AppCtx   *appctx = (AppCtx*) ctx;   /* user-defined application context */
-  int      ierr;
-  double   norm_2,norm_max;
-  PetscScalar   mone = -1.0;
+  AppCtx      *appctx = (AppCtx*) ctx;   /* user-defined application context */
+  int         ierr;
+  PetscReal   norm_2,norm_max;
+  PetscScalar mone = -1.0;
 
   /* 
      View a graph of the current iterate
@@ -477,7 +477,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+int RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat    A = *AA;                      /* Jacobian matrix */
   AppCtx *appctx = (AppCtx*)ctx;     /* user-defined application context */

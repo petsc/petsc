@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.56 2001/04/10 19:36:40 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.57 2001/08/07 03:04:00 balay Exp bsmith $*/
 
 static char help[] = "Block Jacobi preconditioner for solving a linear system in parallel with SLES.\n\
 The code indicates the\n\
@@ -40,7 +40,7 @@ int main(int argc,char **args)
   PC           pc;           /* PC context */
   PC           subpc;        /* PC context for subdomain */
   KSP          subksp;       /* KSP context for subdomain */
-  double       norm;         /* norm of solution error */
+  PetscReal    norm;         /* norm of solution error */
   int          i,j,I,J,ierr,*blks,m = 8,n;
   int          rank,size,its,nlocal,first,Istart,Iend;
   PetscScalar  v,one = 1.0,none = -1.0;

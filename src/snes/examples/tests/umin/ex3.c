@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.69 2001/08/06 21:17:36 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.70 2001/08/07 03:04:15 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained minimization problems in parallel.  This example is based on the\n\
 Elastic-Plastic Torsion (dept) problem from the MINPACK-2 test suite.\n\
@@ -14,15 +14,15 @@ The command line options are:\n\
 
 /* User-defined application context */
    typedef struct {
-      double  param;          /* nonlinearity parameter */
-      int     mx;             /* discretization in x-direction */
-      int     my;             /* discretization in y-direction */
-      int     ndim;           /* problem dimension */
-      int     number;         /* test problem number */
-      Vec     s,y,xvec;       /* work space for computing Hessian */
-      PetscScalar  hx,hy;    
-      Vec     localX,localS; /* ghosted local vector */
-      DA      da;             /* distributed array data structure */
+      PetscReal   param;          /* nonlinearity parameter */
+      int         mx;             /* discretization in x-direction */
+      int         my;             /* discretization in y-direction */
+      int         ndim;           /* problem dimension */
+      int         number;         /* test problem number */
+      Vec         s,y,xvec;       /* work space for computing Hessian */
+      PetscScalar hx,hy;    
+      Vec         localX,localS; /* ghosted local vector */
+      DA          da;             /* distributed array data structure */
    } AppCtx;
 
 /* Flag to indicate evaluation of function and/or gradient */
@@ -30,12 +30,12 @@ typedef enum {FunctionEval=1,GradientEval=2} FctGradFlag;
 
 extern int FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int MatrixFreeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int FormMinimizationFunction(SNES,Vec,double*,void*);
+extern int FormMinimizationFunction(SNES,Vec,PetscReal*,void*);
 extern int FormGradient(SNES,Vec,Vec,void*);
 extern int HessianProduct(void *,Vec,Vec);
 extern int HessianProductMat(Mat,Vec,Vec);
 extern int FormInitialGuess(AppCtx*,Vec);
-extern int EvalFunctionGradient(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
+extern int EvalFunctionGradient(SNES,Vec,PetscReal*,Vec,FctGradFlag,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   int        Ny=PETSC_DECIDE;      /* processors in y-direction */
   int        ierr,its,ldim,nfails,size;
   PetscTruth flg;
-  double     one = 1.0;
+  PetscReal  one = 1.0;
   SLES       sles;
   PC         pc;
 
@@ -142,7 +142,7 @@ int main(int argc,char **argv)
 /*
     FormMinimizationFunction - Evaluates function f(x).
 */
-int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
+int FormMinimizationFunction(SNES snes,Vec x,PetscReal *f,void *ptr)
 {
   AppCtx *user = (AppCtx*)ptr;
   return EvalFunctionGradient(snes,x,f,NULL,FunctionEval,user); 
@@ -245,13 +245,13 @@ int FormInitialGuess(AppCtx *user,Vec X)
   xe = xs+xm;
   ye = ys+ym;
   for (j=ys; j<ye; j++) {  /*  for (j=0; j<ny; j++) */
-    temp = (double)PetscMin(j+1,ny-j)*hy;
+    temp = (PetscReal)PetscMin(j+1,ny-j)*hy;
     for (i=xs; i<xe; i++) {  /*  for (i=0; i<nx; i++) */
       k = (j-Ys)*Xm + i-Xs;
 #if !defined(PETSC_USE_COMPLEX)
       x[k] = PetscMin((PetscMin(i+1,nx-i))*hx,temp);
 #else
-      x[k] = PetscMin(PetscRealPart((double)(PetscMin(i+1,nx-i))*hx),PetscRealPart(temp));
+      x[k] = PetscMin(PetscRealPart((PetscReal)(PetscMin(i+1,nx-i))*hx),PetscRealPart(temp));
 #endif
     }
   }
@@ -265,7 +265,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "EvalFunctionGradient"
-int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCtx *user)
+int EvalFunctionGradient(SNES snes,Vec X,PetscReal *f,Vec gvec,FctGradFlag fg,AppCtx *user)
 {
   PetscScalar hx = user->hx,hy = user->hy,area,three = 3.0,p5 = 0.5,cdiv3;
   PetscScalar zero = 0.0,v,vb,vl,vr,vt,dvdx,dvdy,flin = 0.0,fquad = 0.0;
@@ -370,7 +370,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCt
 #else
     floc = PetscRealPart(area*(p5*fquad+flin));
 #endif
-    ierr = MPI_Allreduce((void*)&floc,(void*)f,1,MPI_DOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Allreduce((void*)&floc,(void*)f,1,MPI_PETSCREAL,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(gvec);CHKERRQ(ierr);

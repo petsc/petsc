@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.79 2001/08/06 21:19:11 bsmith Exp balay $*/
+/*$Id: zoptions.c,v 1.80 2001/08/07 03:05:11 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -109,7 +109,7 @@ void PETSC_STDCALL petscoptionsgetlogical_(CHAR pre PETSC_MIXED_LEN(len1),CHAR n
 }
 
 void PETSC_STDCALL petscoptionsgetreal_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    double *dvalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                    PetscReal *dvalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -121,7 +121,7 @@ void PETSC_STDCALL petscoptionsgetreal_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name
 }
 
 void PETSC_STDCALL petscoptionsgetrealarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                double *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                PetscReal *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -318,7 +318,7 @@ int PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *a
       (*PetscErrorPrintf)("not commonly aligned.\n");
       /* double/int doesn't work with ADIC */
       (*PetscErrorPrintf)("Locations/sizeof(PetscScalar): C %f Fortran %f\n",
-                         ((double)tmp3)/(double)sizeof(PetscScalar),((double)tmp1)/(double)sizeof(PetscScalar));
+                         ((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar),((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
     PetscLogInfo((void *)obj,"PetscScalarAddressToFortran:Efficiency warning, copying array in XXXGetArray() due\n\

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.51 2001/08/06 21:16:53 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.52 2001/08/07 03:04:00 balay Exp bsmith $*/
 
 static char help[] = "The solution of 2 different linear systems with different linear solvers.\n\
 Also, this example illustrates the repeated\n\
@@ -26,7 +26,7 @@ T*/
    Declare user-defined routines
 */
 extern int CheckError(Vec,Vec,Vec,int,int);
-extern int MyKSPMonitor(KSP,int,double,void*);
+extern int MyKSPMonitor(KSP,int,PetscReal,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -385,8 +385,8 @@ int main(int argc,char **args)
 int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
 {
   PetscScalar none = -1.0;
-  double norm;
-  int    ierr;
+  PetscReal   norm;
+  int         ierr;
 
   ierr = PetscLogEventBegin(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
 
@@ -413,7 +413,7 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
      rnorm - 2-norm (preconditioned) residual value (may be estimated)
      dummy - optional user-defined monitor context (unused here)
 */
-int MyKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
+int MyKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 {
   Vec      x;
   int      ierr;

@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.71 2001/04/10 19:36:37 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.72 2001/08/07 03:03:57 balay Exp bsmith $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 Input arguments are:\n\
@@ -13,7 +13,7 @@ Input arguments are:\n\
 int main(int argc,char **args)
 {
   int            ierr,its;
-  double         norm;
+  PetscReal      norm;
   PetscLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
   PetscScalar    zero = 0.0,none = -1.0;
   Vec            x,b,u;

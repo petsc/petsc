@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.31 2001/08/06 21:16:51 bsmith Exp balay $*/
+/*$Id: ex14.c,v 1.32 2001/08/07 03:03:57 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -67,7 +67,7 @@ T*/
    ComputeFunction().
 */
 typedef struct {
-   double      param;          /* test problem parameter */
+   PetscReal   param;          /* test problem parameter */
    int         mx,my;          /* discretization in x,y directions */
    Vec         localX,localF; /* ghosted local vector */
    DA          da;             /* distributed array data structure */
@@ -85,21 +85,21 @@ extern int ComputeJacobian(AppCtx*,Vec,Mat,MatStructure*);
 int main(int argc,char **argv)
 {
   /* -------------- Data to define application problem ---------------- */
-  MPI_Comm comm;                /* communicator */
-  SLES     sles;                /* linear solver */
-  Vec      X,Y,F;             /* solution, update, residual vectors */
-  Mat      J;                   /* Jacobian matrix */
-  AppCtx   user;                /* user-defined work context */
-  int      Nx,Ny;              /* number of preocessors in x- and y- directions */
-  int      size;                /* number of processors */
-  double   bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
-  int      m,N,ierr;
+  MPI_Comm  comm;                /* communicator */
+  SLES      sles;                /* linear solver */
+  Vec       X,Y,F;             /* solution, update, residual vectors */
+  Mat       J;                   /* Jacobian matrix */
+  AppCtx    user;                /* user-defined work context */
+  int       Nx,Ny;              /* number of preocessors in x- and y- directions */
+  int       size;                /* number of processors */
+  PetscReal bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  int       m,N,ierr;
 
   /* --------------- Data to define nonlinear solver -------------- */
-  double       rtol = 1.e-8;        /* relative convergence tolerance */
-  double       xtol = 1.e-8;        /* step convergence tolerance */
-  double       ttol;                /* convergence tolerance */
-  double       fnorm,ynorm,xnorm; /* various vector norms */
+  PetscReal       rtol = 1.e-8;        /* relative convergence tolerance */
+  PetscReal       xtol = 1.e-8;        /* step convergence tolerance */
+  PetscReal       ttol;                /* convergence tolerance */
+  PetscReal       fnorm,ynorm,xnorm; /* various vector norms */
   int          max_nonlin_its = 10; /* maximum number of iterations for nonlinear solver */
   int          max_functions = 50;  /* maximum number of function evaluations */
   int          lin_its;             /* number of linear solver iterations for each step */
@@ -305,13 +305,13 @@ int main(int argc,char **argv)
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
-  double  one = 1.0,lambda,temp1,temp,hx,hy;
+  int          i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
+  PetscReal    one = 1.0,lambda,temp1,temp,hx,hy;
   PetscScalar  *x;
-  Vec     localX = user->localX;
+  Vec          localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
+  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   temp1 = lambda/(lambda + one);
 
   /*
@@ -337,14 +337,14 @@ int FormInitialGuess(AppCtx *user,Vec X)
      Compute initial guess over the locally owned part of the grid
   */
   for (j=ys; j<ys+ym; j++) {
-    temp = (double)(PetscMin(j,my-j-1))*hy;
+    temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
       row = i - gxs + (j - gys)*gxm; 
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
 
@@ -374,13 +374,13 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int ComputeFunction(AppCtx *user,Vec X,Vec F)
 {
-  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
-  double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  int          ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
+  PetscReal    two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
   PetscScalar  u,uxx,uyy,*x,*f;
-  Vec     localX = user->localX,localF = user->localF; 
+  Vec          localX = user->localX,localF = user->localF; 
 
   mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
+  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
 
   /*
@@ -465,7 +465,7 @@ int ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
   PetscScalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
+  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   sc = hx*hy;               hxdhy = hx/hy;            hydhx = hy/hx;
 
   /*

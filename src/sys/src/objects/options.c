@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.250 2001/07/20 21:16:37 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.251 2001/08/06 21:14:10 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -933,7 +933,7 @@ int PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetReal(const char pre[],const char name[],double *dvalue,PetscTruth *flg)
+int PetscOptionsGetReal(const char pre[],const char name[],PetscReal *dvalue,PetscTruth *flg)
 {
   char       *value;
   int        ierr;
@@ -998,7 +998,7 @@ int PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue
 #if !defined(PETSC_USE_COMPLEX)
       ierr = PetscOptionsAtod(value,dvalue);CHKERRQ(ierr);
 #else
-      double re=0.0,im=0.0;
+      PetscReal re=0.0,im=0.0;
       char   *tvalue = 0;
 
       ierr = PetscStrtok(value,",",&tvalue);CHKERRQ(ierr);
@@ -1050,7 +1050,7 @@ int PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetRealArray(const char pre[],const char name[],double dvalue[],int *nmax,PetscTruth *flg)
+int PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue[],int *nmax,PetscTruth *flg)
 {
   char       *value;
   int        n = 0,ierr;

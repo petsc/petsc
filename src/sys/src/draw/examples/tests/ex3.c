@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.40 2001/03/23 23:20:21 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.41 2001/04/10 19:34:20 bsmith Exp bsmith $*/
 
 static char help[] = "Plots a simple line graph.\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   int                n = 20,i,ierr,x = 0,y = 0,width = 300,height = 300,nports = 1;
   PetscTruth         flg;
   char               *xlabel,*ylabel,*toplabel;
-  double             xd,yd;
+  PetscReal          xd,yd;
   PetscDrawViewPorts *ports;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel);CHKERRQ(ierr);
 
   for (i=0; i<n ; i++) {
-    xd = (double)(i - 5); yd = xd*xd;
+    xd = (PetscReal)(i - 5); yd = xd*xd;
     ierr = PetscDrawLGAddPoint(lg,&xd,&yd);CHKERRQ(ierr);
   }
   ierr = PetscDrawLGIndicateDataPoints(lg);CHKERRQ(ierr);

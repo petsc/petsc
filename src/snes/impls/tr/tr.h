@@ -1,4 +1,4 @@
-/* $Id: tr.h,v 1.7 1996/08/08 14:46:52 bsmith Exp bsmith $ */
+/* $Id: tr.h,v 1.8 1999/10/23 00:00:58 bsmith Exp bsmith $ */
 
 /*
    Context for a Newton trust region method for solving a system 
@@ -11,16 +11,16 @@
 
 typedef struct {
   /* ---- Parameters used by the trust region method  ---- */
-  double mu;		/* used to compute trust region parameter */
-  double eta;		/* used to compute trust region parameter */
-  double delta;		/* trust region parameter */
-  double delta0;	/* used to initialize trust region parameter */
-  double delta1;	/* used to compute trust region parameter */
-  double delta2;	/* used to compute trust region parameter */
-  double delta3;	/* used to compute trust region parameter */
-  double sigma;		/* used to detemine termination */
-  int    itflag;	/* flag for convergence testing */
-  double rnorm0,ttol;   /* used for KSP convergence test */
+  PetscReal mu;		/* used to compute trust region parameter */
+  PetscReal eta;		/* used to compute trust region parameter */
+  PetscReal delta;		/* trust region parameter */
+  PetscReal delta0;	/* used to initialize trust region parameter */
+  PetscReal delta1;	/* used to compute trust region parameter */
+  PetscReal delta2;	/* used to compute trust region parameter */
+  PetscReal delta3;	/* used to compute trust region parameter */
+  PetscReal sigma;		/* used to detemine termination */
+  int       itflag;	/* flag for convergence testing */
+  PetscReal rnorm0,ttol;   /* used for KSP convergence test */
 } SNES_EQ_TR;
 
 #endif

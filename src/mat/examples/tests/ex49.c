@@ -1,4 +1,4 @@
-/*$Id: ex49.c,v 1.22 2001/03/23 23:22:29 balay Exp balay $*/
+/*$Id: ex49.c,v 1.23 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   int          rstart,rend,rect = 0,nd,bs,*diag,*bdlen;
   PetscTruth   flg,isbdiag;
   PetscScalar  v,**diagv;
-  double       normf,normi,norm1;
+  PetscReal    normf,normi,norm1;
   MatInfo      info;
   
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.68 2001/08/06 21:19:11 bsmith Exp balay $*/
+/*$Id: zvec.c,v 1.69 2001/08/07 03:05:11 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -101,9 +101,9 @@ void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,int *ierr)
 {
   *ierr = VecSetRandom(*r,*x);
 }
-void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,double *x,double *y,PetscScalar *V,int *ierr)
+void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,PetscReal *x,PetscReal *y,PetscScalar *V,int *ierr)
 {
-  double *xx,*yy;
+  PetscReal *xx,*yy;
   if (FORTRANNULLDOUBLE(x)) xx = PETSC_NULL; 
   else xx = x;
   if (FORTRANNULLDOUBLE(y)) yy = PETSC_NULL; 
@@ -315,7 +315,7 @@ void PETSC_STDCALL vecmaxpy_(int *nv,PetscScalar *alpha,Vec *x,Vec *y,int *ierr)
   *ierr = VecMAXPY(*nv,alpha,*x,y);
 }
 
-void PETSC_STDCALL vecstridenorm_(Vec *x,int *start,NormType *type,double *val,int *ierr)
+void PETSC_STDCALL vecstridenorm_(Vec *x,int *start,NormType *type,PetscReal *val,int *ierr)
 {
   *ierr = VecStrideNorm(*x,*start,*type,val);
 }
@@ -358,7 +358,7 @@ void PETSC_STDCALL vecghostrestorelocalform_(Vec *g,Vec *l,int *ierr)
   *ierr = VecGhostRestoreLocalForm(*g,l);
 }
 
-void PETSC_STDCALL vecmax_(Vec *x,int *p,double *val,int *ierr)
+void PETSC_STDCALL vecmax_(Vec *x,int *p,PetscReal *val,int *ierr)
 {
   if (FORTRANNULLINTEGER(p)) p = PETSC_NULL;
   *ierr = VecMax(*x,p,val);

@@ -1,4 +1,4 @@
-/* "$Id: ex19.c,v 1.10 2001/04/10 19:36:37 bsmith Exp balay $" */
+/* "$Id: ex19.c,v 1.11 2001/08/07 03:03:57 balay Exp bsmith $" */
 
 static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
@@ -183,7 +183,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
   PetscScalar  two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
 
   mx = grid->mx;            my = grid->my;            
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
+  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */

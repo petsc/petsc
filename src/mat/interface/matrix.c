@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.410 2001/08/06 21:15:07 bsmith Exp balay $*/
+/*$Id: matrix.c,v 1.411 2001/08/07 03:02:41 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -542,8 +542,13 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v,InsertMo
    options cannot be mixed without intervening calls to the assembly
    routines.
 
+   The grid coordinates are across the entire grid, not just the local portion
+
    MatSetValuesStencil() uses 0-based row and column numbers in Fortran 
    as well as in C.
+
+   In order to use this routine you must either obtain the matrix with DAGetMatrix()
+   or call MatSetLocalToGlobalMapping() and MatSetStencil() first.
 
    In Fortran idxm and idxn should be declared as
 $     MatStencil idxm(4,m),idxn(4,n)
@@ -571,11 +576,11 @@ $    idxm(MatStencil_c,1) = c
    Concepts: matrices^putting entries in
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
-          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil()
+          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DAGetMatrix()
 @*/
 int MatSetValuesStencil(Mat mat,int m,MatStencil *idxm,int n,MatStencil *idxn,PetscScalar *v,InsertMode addv)
 {
-  int j,i,ierr,jdxm[128],jdxn[128],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
+  int j,i,ierr,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
   int *starts = mat->stencil.starts,*dxm = (int*)idxm,*dxn = (int*)idxn,sdim = dim - (1 - (int)mat->stencil.noc);
 
   PetscFunctionBegin;
@@ -585,6 +590,9 @@ int MatSetValuesStencil(Mat mat,int m,MatStencil *idxm,int n,MatStencil *idxn,Pe
   PetscValidIntPointer(idxm);
   PetscValidIntPointer(idxn);
   PetscValidScalarPointer(v);
+
+  if (m > 128) SETERRQ1(1,"Can only set 128 rows at a time; trying to set %d",m);
+  if (n > 128) SETERRQ1(1,"Can only set 256 columns at a time; trying to set %d",n);
 
   for (i=0; i<m; i++) {
     for (j=0; j<3-sdim; j++) dxm++;  
@@ -4185,9 +4193,9 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
     ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else if (!mat->ops->getsubmatrix && size == 1) {
-    ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
+    ierr    = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     *newmat = *local;
-    ierr = PetscFree(local);CHKERRQ(ierr);
+    ierr    = PetscFree(local);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

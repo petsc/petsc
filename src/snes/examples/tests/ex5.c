@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.27 2001/08/06 21:17:24 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.28 2001/08/07 03:04:13 balay Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the modified Bratu problem in a 2D rectangular domain,\n\
@@ -57,8 +57,8 @@ T*/
    FormFunction().
 */
 typedef struct {
-   double      param;          /* test problem parameter */
-   double      param2;         /* test problem parameter */
+   PetscReal   param;          /* test problem parameter */
+   PetscReal   param2;         /* test problem parameter */
    int         mx,my;          /* discretization in x, y directions */
    Vec         localX,localF; /* ghosted local vector */
    DA          da;             /* distributed array data structure */
@@ -84,8 +84,8 @@ int main(int argc,char **argv)
   PetscTruth matrix_free;         /* flag - 1 indicates matrix-free version */
   int        size;                /* number of processors */
   int        m,N,ierr;
-  double     bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
-  double     bratu_kappa_max = 10000,bratu_kappa_min = 0.;
+  PetscReal  bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  PetscReal  bratu_kappa_max = 10000,bratu_kappa_min = 0.;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRQ(ierr);
@@ -237,13 +237,13 @@ int main(int argc,char **argv)
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
-  double  one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
+  int          i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
+  PetscReal    one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
   PetscScalar  *x;
-  Vec     localX = user->localX;
+  Vec          localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
+  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
   temp1 = lambda/(lambda + one);
 
@@ -270,14 +270,14 @@ int FormInitialGuess(AppCtx *user,Vec X)
      Compute initial guess over the locally owned part of the grid
   */
   for (j=ys; j<ys+ym; j++) {
-    temp = (double)(PetscMin(j,my-j-1))*hy;
+    temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
       row = i - gxs + (j - gys)*gxm; 
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
 
@@ -308,15 +308,15 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx*)ptr;
-  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
-  double  two = 2.0,one = 1.0,half = 0.5;
-  double  lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar  u,ux,uxx,uyy,*x,*f,kappa;
-  Vec     localX = user->localX,localF = user->localF; 
+  AppCtx      *user = (AppCtx*)ptr;
+  int         ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
+  PetscReal   two = 2.0,one = 1.0,half = 0.5;
+  PetscReal   lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar u,ux,uxx,uyy,*x,*f,kappa;
+  Vec         localX = user->localX,localF = user->localF; 
 
   mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
+  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
   kappa = user->param2;
 
@@ -407,7 +407,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   PetscScalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
+  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   sc = hx*hy;               hxdhy = hx/hy;            hydhx = hy/hx;
 
   /*

@@ -1,4 +1,4 @@
-/* "$Id: cgctx.h,v 1.10 2000/01/11 21:02:02 bsmith Exp balay $"; */
+/* "$Id: cgctx.h,v 1.11 2001/08/07 03:03:50 balay Exp bsmith $"; */
 
 /*  
     Private Krylov Context Structure (KSP) for Conjugate Gradient 
@@ -22,10 +22,10 @@
 */
 
 typedef struct {
-  KSPCGType type;                 /* type of system (symmetric or Hermitian) */
-  PetscScalar    emin,emax;           /* eigenvalues */
-  PetscScalar    *e,*d;
-  double    *ee,*dd;             /* work space for Lanczos algorithm */
+  KSPCGType   type;                 /* type of system (symmetric or Hermitian) */
+  PetscScalar emin,emax;           /* eigenvalues */
+  PetscScalar *e,*d;
+  PetscReal   *ee,*dd;             /* work space for Lanczos algorithm */
 } KSP_CG;
 
 #endif

@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.28 2001/08/06 21:16:03 bsmith Exp balay $*/
+/*$Id: ex19.c,v 1.29 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
 To test the parallel matrix assembly, this example intentionally lays out\n\
@@ -10,7 +10,7 @@ This example uses bilinear elements on the unit square.  Input arguments are:\n\
 
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"
-int FormElementStiffness(double H,PetscScalar *Ke)
+int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 {
   PetscFunctionBegin;
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
@@ -30,7 +30,7 @@ int main(int argc,char **args)
   int          j,nrsub,ncsub,*rsub,*csub,mystart,myend;
   PetscTruth   flg;
   PetscScalar  one = 1.0,Ke[16],*vals;
-  double       h,norm;
+  PetscReal    h,norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

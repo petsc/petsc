@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.31 2001/08/06 21:16:53 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.32 2001/08/07 03:04:00 balay Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
@@ -23,29 +23,29 @@ T*/
 #include "petscsles.h"
 
 /* Declare user-defined routines */
-extern int FormElementStiffness(double,PetscScalar*);
-extern int FormElementRhs(double,double,double,PetscScalar*);
+extern int FormElementStiffness(PetscReal,PetscScalar*);
+extern int FormElementRhs(PetscReal,PetscReal,PetscReal,PetscScalar*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec     u,b,ustar; /* approx solution, RHS, exact solution */
-  Mat     A;           /* linear system matrix */
-  SLES    sles;        /* linear solver context */
-  KSP     ksp;         /* Krylov subspace method context */
-  IS      is;          /* index set - used for boundary conditions */
-  int     N;           /* dimension of system (global) */
-  int     M;           /* number of elements (global) */
-  int     rank;        /* processor rank */
-  int     size;        /* size of communicator */
-  PetscScalar  Ke[16];      /* element matrix */
-  PetscScalar  r[4];        /* element vector */
-  double  h;           /* mesh width */
-  double  norm;        /* norm of solution error */
-  double  x,y;
-  PetscScalar  val,zero = 0.0,one = 1.0,none = -1.0;
-  int     ierr,idx[4],count,*rows,i,m = 5,start,end,its;
+  Vec         u,b,ustar; /* approx solution, RHS, exact solution */
+  Mat         A;           /* linear system matrix */
+  SLES        sles;        /* linear solver context */
+  KSP         ksp;         /* Krylov subspace method context */
+  IS          is;          /* index set - used for boundary conditions */
+  int         N;           /* dimension of system (global) */
+  int         M;           /* number of elements (global) */
+  int         rank;        /* processor rank */
+  int         size;        /* size of communicator */
+  PetscScalar Ke[16];      /* element matrix */
+  PetscScalar r[4];        /* element vector */
+  PetscReal   h;           /* mesh width */
+  PetscReal   norm;        /* norm of solution error */
+  PetscReal   x,y;
+  PetscScalar val,zero = 0.0,one = 1.0,none = -1.0;
+  int         ierr,idx[4],count,*rows,i,m = 5,start,end,its;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -197,7 +197,7 @@ int main(int argc,char **args)
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"
    /* element stiffness for Laplacian */
-int FormElementStiffness(double H,PetscScalar *Ke)
+int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 {
   PetscFunctionBegin;
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
@@ -209,7 +209,7 @@ int FormElementStiffness(double H,PetscScalar *Ke)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormElementRhs"
-int FormElementRhs(double x,double y,double H,PetscScalar *r)
+int FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 {
   PetscFunctionBegin;
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 

@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.8 2001/04/10 19:37:34 bsmith Exp balay $*/
+/*$Id: main.c,v 1.9 2001/08/07 03:04:50 balay Exp bsmith $*/
 static char help[] = "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
     -show_solution pipe solution to matlab (visualized with bscript.m).\n\
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   {
     Vec r;
     PetscScalar m1 = -1.0;
-    PetscReal petscnorm;
+    PetscReal   petscnorm;
     ierr = VecDuplicate(appctx->algebra.b,&r);CHKERRQ(ierr);
     ierr = MatMult(appctx->algebra.A,appctx->algebra.x,r);CHKERRQ(ierr);
     ierr = VecAYPX(&m1,appctx->algebra.b,r);CHKERRQ(ierr);

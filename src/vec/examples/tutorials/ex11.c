@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.17 2001/03/23 23:21:37 balay Exp balay $*/
+/*$Id: ex11.c,v 1.18 2001/08/07 03:02:34 balay Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -22,10 +22,10 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Vec      x;               /* vectors */
-  double   norm;
-  int      n = 20,ierr;
-  PetscScalar   one = 1.0;
+  Vec         x;               /* vectors */
+  PetscReal   norm;
+  int         n = 20,ierr;
+  PetscScalar one = 1.0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

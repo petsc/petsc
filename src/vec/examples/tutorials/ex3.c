@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.54 2001/04/10 19:35:06 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.55 2001/08/07 03:02:34 balay Exp bsmith $*/
 
 static char help[] = "Parallel vector layout.\n\n";
 
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
          this is not practical, but is merely done as an example
    */
   for (i=0; i<n; i++) { 
-    v = (double)(rank*i);
+    v = (PetscReal)(rank*i);
     ierr = VecSetValues(x,1,&i,&v,ADD_VALUES);CHKERRQ(ierr);
   }
 

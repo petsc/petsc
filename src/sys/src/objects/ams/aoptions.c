@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.31 2001/07/09 03:19:46 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.32 2001/08/06 21:14:15 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -20,7 +20,7 @@
 
     Eventually we'll attach this beast to a MPI_Comm
 */
-typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_DOUBLE,OPTION_LIST,OPTION_STRING,OPTION_DOUBLE_ARRAY,OPTION_HEAD} OptionType;
+typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_REAL,OPTION_LIST,OPTION_STRING,OPTION_REAL_ARRAY,OPTION_HEAD} OptionType;
 typedef struct _p_OptionsAMS* PetscOptionsAMS;
 struct _p_OptionsAMS {
   char            *option;
@@ -172,13 +172,13 @@ int PetscOptionsEnd_Private(void)
           case OPTION_INT: 
             sprintf(value,"%d",*(int*)amspub.next->data);
             break;
-          case OPTION_DOUBLE:
+          case OPTION_REAL:
             sprintf(value,"%g",*(double*)amspub.next->data);
             break;
-          case OPTION_DOUBLE_ARRAY:
-            sprintf(value,"%g",((double*)amspub.next->data)[0]);
+          case OPTION_REAL_ARRAY:
+            sprintf(value,"%g",((PetscReal*)amspub.next->data)[0]);
             for (j=1; j<amspub.next->arraylength; j++) {
-              sprintf(tmp,"%g",((double*)amspub.next->data)[j]);
+              sprintf(tmp,"%g",((PetscReal*)amspub.next->data)[j]);
               ierr = PetscStrcat(value,",");CHKERRQ(ierr);
               ierr = PetscStrcat(value,tmp);CHKERRQ(ierr);
             }
@@ -374,7 +374,7 @@ int PetscOptionsString(char *opt,char *text,char *man,char *defaultv,char *value
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsReal"
 /*@C
-   PetscOptionsReal - Gets the double value for a particular option in the database.
+   PetscOptionsReal - Gets the PetscReal value for a particular option in the database.
 
    Collective on the communicator passed in PetscOptionsBegin()
 
@@ -402,7 +402,7 @@ int PetscOptionsString(char *opt,char *text,char *man,char *defaultv,char *value
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsReal(char *opt,char *text,char *man,double defaultv,double *value,PetscTruth *set)
+int PetscOptionsReal(char *opt,char *text,char *man,PetscReal defaultv,PetscReal *value,PetscTruth *set)
 {
   int             ierr;
 
@@ -411,9 +411,9 @@ int PetscOptionsReal(char *opt,char *text,char *man,double defaultv,double *valu
   if (!PetscOptionsPublishCount) {
     PetscOptionsAMS amsopt;
     ierr = PetscOptionsCreate_Private(opt,text,man,&amsopt);CHKERRQ(ierr);
-    amsopt->type           = OPTION_DOUBLE;
-    ierr = PetscMalloc(sizeof(double),&amsopt->data);CHKERRQ(ierr);
-    *(double*)amsopt->data = defaultv;
+    amsopt->type           = OPTION_REAL;
+    ierr = PetscMalloc(sizeof(PetscReal),&amsopt->data);CHKERRQ(ierr);
+    *(PetscReal*)amsopt->data = defaultv;
     ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_DOUBLE,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
     if (set) *set = PETSC_FALSE;
     PetscFunctionReturn(0);
@@ -920,7 +920,7 @@ int PetscOptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTru
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsRealArray(char *opt,char *text,char *man,double *value,int *n,PetscTruth *set)
+int PetscOptionsRealArray(char *opt,char *text,char *man,PetscReal *value,int *n,PetscTruth *set)
 {
   int             ierr,i;
 
@@ -929,10 +929,10 @@ int PetscOptionsRealArray(char *opt,char *text,char *man,double *value,int *n,Pe
   if (!PetscOptionsPublishCount) {
     PetscOptionsAMS amsopt;
     ierr = PetscOptionsCreate_Private(opt,text,man,&amsopt);CHKERRQ(ierr);
-    amsopt->type           = OPTION_DOUBLE_ARRAY;
+    amsopt->type           = OPTION_REAL_ARRAY;
     amsopt->arraylength    = *n;
-    ierr = PetscMalloc((*n)*sizeof(double),&amsopt->data);CHKERRQ(ierr);
-    ierr                   = PetscMemcpy(amsopt->data,value,(*n)*sizeof(double));CHKERRQ(ierr);
+    ierr = PetscMalloc((*n)*sizeof(PetscReal),&amsopt->data);CHKERRQ(ierr);
+    ierr                   = PetscMemcpy(amsopt->data,value,(*n)*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,*n,AMS_DOUBLE,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
     if (set) *set = PETSC_FALSE;
     PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.71 2001/08/06 21:16:51 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.72 2001/08/07 03:03:57 balay Exp bsmith $*/
 
 static char help[] = "This example solves a linear system in parallel with SLES.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
@@ -10,7 +10,7 @@ differently from the way it is assembled.  Input arguments are:\n\
 
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"
-int FormElementStiffness(double H,PetscScalar *Ke)
+int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 {
   PetscFunctionBegin;
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
@@ -21,7 +21,7 @@ int FormElementStiffness(double H,PetscScalar *Ke)
 }
 #undef __FUNCT__
 #define __FUNCT__ "FormElementRhs"
-int FormElementRhs(double x,double y,double H,PetscScalar *r)
+int FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 {
   PetscFunctionBegin;
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
@@ -35,7 +35,7 @@ int main(int argc,char **args)
   Mat         C; 
   int         i,m = 5,rank,size,N,start,end,M,its;
   PetscScalar val,zero = 0.0,one = 1.0,none = -1.0,Ke[16],r[4];
-  double      x,y,h,norm;
+  PetscReal   x,y,h,norm;
   int         ierr,idx[4],count,*rows;
   Vec         u,ustar,b;
   SLES        sles;

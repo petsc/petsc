@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.17 2001/03/23 23:24:54 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.18 2001/04/10 19:37:18 bsmith Exp bsmith $*/
 
 static char help[] = "Tests removing entries from an AOData. \n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests removing entries from an AOData. \n\n";
 int main(int argc,char **argv)
 {
   int         n,nglobal,bs = 2,*keys,*data,ierr,rank,size,i,start;
-  double      *gd;
+  PetscReal   *gd;
   AOData      aodata;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -59,18 +59,18 @@ int main(int argc,char **argv)
       Allocate data for first key and second segment 
   */
   bs   = 3;
-  ierr = PetscMalloc(bs*n*sizeof(double),&gd);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*n*sizeof(PetscReal),&gd);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     gd[3*i]   = -(start + i);
     gd[3*i+1] = -(start + i) - 10000;
     gd[3*i+2] = -(start + i) - 100000;
   }
-  ierr = AODataSegmentAdd(aodata,"key1","seg2",bs,n,keys,gd,PETSC_DOUBLE);CHKERRQ(ierr); 
+  ierr = AODataSegmentAdd(aodata,"key1","seg2",bs,n,keys,gd,PETSC_PETSCREAL);CHKERRQ(ierr); 
 
   /*
        Use same data for second key and first segment 
   */
-  ierr = AODataSegmentAdd(aodata,"key2","seg1",bs,n,keys,gd,PETSC_DOUBLE);CHKERRQ(ierr); 
+  ierr = AODataSegmentAdd(aodata,"key2","seg1",bs,n,keys,gd,PETSC_PETSCREAL);CHKERRQ(ierr); 
   ierr = PetscFree(gd);CHKERRQ(ierr);
   ierr = PetscFree(keys);CHKERRQ(ierr);
 

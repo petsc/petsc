@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.22 2001/03/23 23:22:29 balay Exp balay $*/
+/*$Id: ex9.c,v 1.23 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
@@ -62,7 +62,7 @@ int main(int argc,char **args)
   ierr = VecGetOwnershipRange(u,&low,&high);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v = one*((double)i) + 100.0*rank;
+    v = one*((PetscReal)i) + 100.0*rank;
     ierr = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);

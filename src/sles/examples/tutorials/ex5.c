@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.90 2001/08/06 21:16:53 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.91 2001/08/07 03:04:00 balay Exp bsmith $*/
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
@@ -30,7 +30,7 @@ int main(int argc,char **args)
   SLES         sles;             /* linear solver context */
   Mat          C;                /* matrix */
   Vec          x,u,b;          /* approx solution, RHS, exact solution */
-  double       norm;             /* norm of solution error */
+  PetscReal    norm;             /* norm of solution error */
   PetscScalar  v,none = -1.0;
   int          I,J,ldim,ierr,low,high,iglobal,Istart,Iend;
   int          i,j,m = 3,n = 2,rank,size,its;

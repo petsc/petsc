@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.27 2001/08/06 21:16:53 bsmith Exp balay $*/
+/*$Id: ex13.c,v 1.28 2001/08/07 03:04:00 balay Exp bsmith $*/
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
 
@@ -39,10 +39,10 @@ extern int UserDoLinearSolver(PetscScalar *,UserCtx *userctx,PetscScalar *b,Pets
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  UserCtx userctx;
-  int     ierr,m = 6,n = 7,t,tmax = 2,i,I,j,N;
-  PetscScalar  *userx,*rho,*solution,*userb,hx,hy,x,y;
-  double  enorm;
+  UserCtx     userctx;
+  int         ierr,m = 6,n = 7,t,tmax = 2,i,I,j,N;
+  PetscScalar *userx,*rho,*solution,*userb,hx,hy,x,y;
+  PetscReal   enorm;
 
   /*
      Initialize the PETSc libraries

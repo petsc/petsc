@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.27 2001/08/06 21:17:42 bsmith Exp balay $*/
+/*$Id: ex5s.c,v 1.28 2001/08/07 03:04:16 balay Exp bsmith $*/
 
 static char help[] = "2d Bratu problem in shared memory parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -84,7 +84,7 @@ T*/
    application-provided call-back routines   FormFunction().
 */
 typedef struct {
-   double      param;          /* test problem parameter */
+   PetscReal   param;          /* test problem parameter */
    int         mx,my;          /* discretization in x, y directions */
    int         rank;           /* processor rank */
 } AppCtx;
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   int            its;                 /* iterations for convergence */
   int            N,ierr,rstart,rend,*colors,i,ii,ri,rj;
   int            (*fnc)(SNES,Vec,Vec,void*);
-  double         bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
   MatFDColoring  fdcoloring;           
   ISColoring     iscoloring;
   Mat            J;
@@ -285,8 +285,8 @@ int main(int argc,char **argv)
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i,j,row,mx,my,ierr;
-  double  one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
+  int          i,j,row,mx,my,ierr;
+  PetscReal    one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
   PetscScalar  *x;
 
   /*
@@ -305,7 +305,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
   }
 
   mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
+  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
   temp1 = lambda/(lambda + one);
 
@@ -325,14 +325,14 @@ int FormInitialGuess(AppCtx *user,Vec X)
 #pragma distinct (*x,*f)
 #pragma no side effects (sqrt)
   for (j=0; j<my; j++) {
-    temp = (double)(PetscMin(j,my-j-1))*hy;
+    temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
       row = i + j*mx; 
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
 
@@ -360,9 +360,9 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx*)ptr;
-  int     ierr,i,j,row,mx,my;
-  double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  AppCtx       *user = (AppCtx*)ptr;
+  int          ierr,i,j,row,mx,my;
+  PetscReal    two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
   PetscScalar  u,uxx,uyy,*x,*f;
 
   /*
@@ -382,7 +382,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   }
 
   mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
+  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
 
   /*

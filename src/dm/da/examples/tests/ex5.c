@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.42 2001/04/10 19:37:27 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.43 2001/08/07 03:04:42 balay Exp bsmith $*/
 
 /* This file created by Peter Mell   6/30/95 */ 
 
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscDraw   draw;
   Vec         local,global,copy;
   PetscScalar *localptr,*copyptr;
-  double      h,k;
+  PetscReal   h,k;
   int         localsize,j,i,mybase,myend;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -51,8 +51,8 @@ int main(int argc,char **argv)
   localptr[localsize-1] = copyptr[localsize-1] = 1.0;
   for (i=1; i<localsize-1; i++) {
     j=(i-1)+mybase; 
-    localptr[i] = sin((PETSC_PI*j*6)/((double)M) 
-                        + 1.2 * sin((PETSC_PI*j*2)/((double)M))) * 4+4;
+    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M) 
+                        + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 4+4;
   }
 
   ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);

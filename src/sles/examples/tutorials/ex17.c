@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.19 2001/03/23 23:23:55 balay Exp balay $*/
+/*$Id: ex17.c,v 1.20 2001/08/07 03:04:00 balay Exp bsmith $*/
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
 
@@ -31,7 +31,7 @@ int main(int argc,char **args)
   Mat         A;        /* linear system matrix */
   SLES        sles;     /* linear solver context */
   PetscRandom rctx;     /* random number generator context */
-  double      norm;     /* norm of solution error */
+  PetscReal   norm;     /* norm of solution error */
   int         i,I,Istart,Iend,ierr,m = 5,n = 5,its,*cols;
   PetscScalar neg_one = -1.0,*ua;
   PetscTruth  flg;

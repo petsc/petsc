@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.38 2001/03/23 23:24:45 balay Exp balay $*/
+/*$Id: ex2.c,v 1.39 2001/08/07 03:04:27 balay Exp bsmith $*/
 static char help[] ="Solves a time-dependent nonlinear PDE. Uses implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
@@ -55,7 +55,7 @@ typedef struct {
   Vec        u_local;       /* local ghosted approximate solution vector */
   Vec        solution;      /* global exact solution vector */
   int        m;             /* total number of grid points */
-  double     h;             /* mesh width: h = 1/(m-1) */
+  PetscReal  h;             /* mesh width: h = 1/(m-1) */
   PetscTruth debug;         /* flag (1 indicates activation of debugging printouts) */
 } AppCtx;
 
@@ -63,15 +63,15 @@ typedef struct {
    User-defined routines, provided below.
 */
 extern int InitialConditions(Vec,AppCtx*);
-extern int RHSFunction(TS,double,Vec,Vec,void*);
-extern int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int Monitor(TS,int,double,Vec,void*);
-extern int ExactSolution(double,Vec,AppCtx*);
+extern int RHSFunction(TS,PetscReal,Vec,Vec,void*);
+extern int RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int Monitor(TS,int,PetscReal,Vec,void*);
+extern int ExactSolution(PetscReal,Vec,AppCtx*);
 
 /*
    Utility routine for finite difference Jacobian approximation
 */
-extern int RHSJacobianFD(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int RHSJacobianFD(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -83,9 +83,9 @@ int main(int argc,char **argv)
   Vec        u;                      /* approximate solution vector */
   int        time_steps_max = 1000;  /* default max timesteps */
   int        ierr,steps;
-  double     ftime;                  /* final time */
-  double     dt;
-  double     time_total_max = 100.0; /* default max total time */
+  PetscReal  ftime;                  /* final time */
+  PetscReal  dt;
+  PetscReal  time_total_max = 100.0; /* default max total time */
   PetscTruth flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -256,7 +256,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
      VecSetValues() or VecSetValuesLocal().
   */
   for (i=mybase; i<myend; i++) {
-    x = h*(double)i; /* current location in global grid */
+    x = h*(PetscReal)i; /* current location in global grid */
     u_localptr[i-mybase] = 1.0 + x*x;
   }
 
@@ -289,7 +289,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
    Output Parameter:
    solution - vector with the newly computed exact solution
 */
-int ExactSolution(double t,Vec solution,AppCtx *appctx)
+int ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
 {
   PetscScalar *s_localptr,h = appctx->h,x;
   int    i,mybase,myend,ierr;
@@ -310,7 +310,7 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
      Alternatively, we could use VecSetValues() or VecSetValuesLocal().
   */
   for (i=mybase; i<myend; i++) {
-    x = h*(double)i;
+    x = h*(PetscReal)i;
     s_localptr[i-mybase] = (t + 1.0)*(1.0 + x*x);
   }
 
@@ -339,13 +339,13 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
             information about the problem size, workspace and the exact 
             solution.
 */
-int Monitor(TS ts,int step,double time,Vec u,void *ctx)
+int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
 {
-  AppCtx   *appctx = (AppCtx*) ctx;   /* user-defined application context */
-  int      ierr;
-  double   en2,en2s,enmax;
-  PetscScalar   mone = -1.0;
-  PetscDraw     draw;
+  AppCtx       *appctx = (AppCtx*) ctx;   /* user-defined application context */
+  int          ierr;
+  PetscReal    en2,en2s,enmax;
+  PetscScalar  mone = -1.0;
+  PetscDraw    draw;
 
   /*
      We use the default X windows viewer
@@ -356,10 +356,10 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
      would create each viewer with PetscViewerDrawOpen() and store them in
      the application context, appctx.
 
-     Double buffering makes graphics look better.
+     PetscReal buffering makes graphics look better.
   */
   ierr = PetscViewerDrawGetDraw(PETSC_VIEWER_DRAW_(appctx->comm),0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetPetscRealBuffer(draw);CHKERRQ(ierr);
   ierr = VecView(u,PETSC_VIEWER_DRAW_(appctx->comm));CHKERRQ(ierr);
 
   /*
@@ -420,7 +420,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
    Output Parameter:
    global_out - vector containing the newly evaluated function
 */
-int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
+int RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;       /* user-defined application context */
   DA     da = appctx->da;               /* distributed array */
@@ -535,7 +535,7 @@ int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-int RHSJacobian(TS ts,double t,Vec global_in,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+int RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat    A = *AA;                      /* Jacobian matrix */
   AppCtx *appctx = (AppCtx*)ctx;     /* user-defined application context */

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.11 2001/04/10 19:37:11 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.12 2001/08/07 03:04:24 balay Exp bsmith $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:
@@ -18,29 +18,29 @@ static char help[] = "Solve the convection-diffusion equation. \n\n";
 #include "petscsys.h"
 #include "petscts.h"
 
-extern int Monitor(TS,int,double,Vec,void *);
+extern int Monitor(TS,int,PetscReal,Vec,void *);
 extern int Initial(Vec,void *);
 
 typedef struct 
 {
   int 		m;	/* the number of mesh points in x-direction */
   int 		n;      /* the number of mesh points in y-direction */
-  double 	dx;     /* the grid space in x-direction */
-  double        dy;     /* the grid space in y-direction */
-  double        a;      /* the convection coefficient    */
-  double        epsilon; /* the diffusion coefficient    */
+  PetscReal 	dx;     /* the grid space in x-direction */
+  PetscReal     dy;     /* the grid space in y-direction */
+  PetscReal     a;      /* the convection coefficient    */
+  PetscReal     epsilon; /* the diffusion coefficient    */
 } Data;
 
 /* two temporal functions */
 extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int FormFunction(SNES,Vec,Vec,void*);
-extern int RHSFunction(TS,double,Vec,Vec,void*);
-extern int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
+extern int RHSFunction(TS,PetscReal,Vec,Vec,void*);
+extern int RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
 
 /* the initial function */
-double f_ini(double x,double y)
+PetscReal f_ini(PetscReal x,PetscReal y)
 {
-  double f;
+  PetscReal f;
   f=exp(-20.0*(pow(x-0.5,2.0)+pow(y-0.5,2.0)));
   return f;
 }
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
 {
   int           ierr,time_steps = 100,steps,size;
   Vec           global;
-  double        dt,ftime;
+  PetscReal     dt,ftime;
   TS            ts;
   PetscViewer	viewfile;
   MatStructure  A_structure;
@@ -178,12 +178,12 @@ int main(int argc,char **argv)
 #define __FUNCT__ "Initial"
 int Initial(Vec global,void *ctx)
 {
-  Data *data = (Data*)ctx;
-  int m;
-  int row,col;
-  double x,y,dx,dy;
+  Data        *data = (Data*)ctx;
+  int         m;
+  int         row,col;
+  PetscReal   x,y,dx,dy;
   PetscScalar *localptr;
-  int    i,mybase,myend,ierr,locsize;
+  int         i,mybase,myend,ierr,locsize;
 
   /* make the local  copies of parameters */
   m = data->m;
@@ -211,7 +211,7 @@ int Initial(Vec global,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
-int Monitor(TS ts,int step,double time,Vec global,void *ctx)
+int Monitor(TS ts,int step,PetscReal time,Vec global,void *ctx)
 {
   VecScatter scatter;
   IS from,to;
@@ -250,18 +250,18 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 #define __FUNCT__ "FormFunction"
 int FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
 { 
-  Data *data = (Data*)ptr;
-  int m,n,mn;
-  double dx,dy;
-  double xc,xl,xr,yl,yr;
-  double a,epsilon;
+  Data        *data = (Data*)ptr;
+  int         m,n,mn;
+  PetscReal   dx,dy;
+  PetscReal   xc,xl,xr,yl,yr;
+  PetscReal   a,epsilon;
   PetscScalar *inptr,*outptr;
-  int i,j,len,ierr;
+  int         i,j,len,ierr;
 
-  IS from,to;
-  int *idx;
-  VecScatter scatter;
-  Vec tmp_in,tmp_out;
+  IS          from,to;
+  int         *idx;
+  VecScatter  scatter;
+  Vec         tmp_in,tmp_out;
 
   m = data->m;
   n = data->n;
@@ -409,14 +409,14 @@ int FormJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
-int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
+int RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
 {
-  Data *data = (Data*)ptr;
-  Mat A = *AA;
+  Data        *data = (Data*)ptr;
+  Mat         A = *AA;
   PetscScalar v[5];
-  int idx[5],i,j,row,ierr;
-  int m,n,mn;
-  double dx,dy,a,epsilon,xc,xl,xr,yl,yr;
+  int         idx[5],i,j,row,ierr;
+  int         m,n,mn;
+  PetscReal   dx,dy,a,epsilon,xc,xl,xr,yl,yr;
 
   m = data->m;
   n = data->n;
@@ -497,7 +497,7 @@ int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *pt
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunction"
-int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
+int RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
   int ierr;
   SNES snes = PETSC_NULL;

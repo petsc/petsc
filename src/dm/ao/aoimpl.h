@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.23 2000/05/10 16:43:19 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.24 2001/01/15 21:48:40 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -116,13 +116,13 @@ EXTERN int AODataSegmentFind_Private(AOData,char *,char *,PetscTruth *,AODataKey
 #include "petscbt.h"
 
 struct _p_AOData2dGrid {
-   int     cell_n, vertex_n, edge_n;
-   int     cell_max, vertex_max, edge_max;
-   int     *cell_vertex,*cell_edge,*cell_cell;
-   double  *vertex;
-   double  xmin,xmax,ymin,ymax;
-   int     *edge_vertex,*edge_cell;
-   PetscBT vertex_boundary;
+   int       cell_n, vertex_n, edge_n;
+   int       cell_max, vertex_max, edge_max;
+   int       *cell_vertex,*cell_edge,*cell_cell;
+   PetscReal *vertex;
+   PetscReal xmin,xmax,ymin,ymax;
+   int       *edge_vertex,*edge_cell;
+   PetscBT   vertex_boundary;
 };
 
 

@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.22 2001/03/23 23:23:55 balay Exp balay $*/
+/*$Id: ex15.c,v 1.23 2001/08/07 03:04:00 balay Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.  Also\n\
 illustrates setting a user-defined shell preconditioner and using the\n\
@@ -54,7 +54,7 @@ int main(int argc,char **args)
   SLES          sles;      /* linear solver context */
   PC            pc;        /* preconditioner context */
   KSP           ksp;       /* Krylov subspace method context */
-  double        norm;      /* norm of solution error */
+  PetscReal     norm;      /* norm of solution error */
   SampleShellPC *shell;    /* user-defined preconditioner context */
   PetscScalar   v,one = 1.0,none = -1.0;
   int           i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;

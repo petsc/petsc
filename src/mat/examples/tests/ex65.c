@@ -1,4 +1,4 @@
-/*$Id: ex65.c,v 1.13 2001/04/10 19:35:44 bsmith Exp balay $*/
+/*$Id: ex65.c,v 1.14 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Saves a rectangular sparse matrix to disk.\n\n";
 
@@ -17,7 +17,7 @@ int main(int argc,char **args)
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,20,0,&A);CHKERRQ(ierr);
 
-  for (i=0; i<n; i++) values[i] = (double)i;
+  for (i=0; i<n; i++) values[i] = (PetscReal)i;
 
   for (i=0; i<m; i++) {
     cnt = 0;

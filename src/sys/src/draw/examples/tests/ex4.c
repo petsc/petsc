@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.10 2001/01/23 20:52:52 balay Exp balay $*/
+/*$Id: ex4.c,v 1.11 2001/03/23 23:20:21 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates use of PetscDrawZoom()\n";
 
@@ -11,7 +11,7 @@ int zoomfunction(PetscDraw draw,void *dummy)
   int  ierr,i; 
 
   for (i=0; i<256; i++) {
-    ierr = PetscDrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,0.0,((PetscReal)i)/256.,1.0,((PetscReal)i)/256.,i);CHKERRQ(ierr);
   }
   return 0;
 }

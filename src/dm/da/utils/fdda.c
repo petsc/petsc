@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.73 2001/08/06 21:18:46 bsmith Exp balay $*/
+/*$Id: fdda.c,v 1.74 2001/08/07 03:04:45 balay Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -13,7 +13,7 @@ EXTERN int DAGetColoring3d_MPIBAIJ(DA,ISColoringType,ISColoring *);
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring" 
 /*@C
-    DAGetColoring - Gets the coloring and nonzero structure required for computing the Jacobian via
+    DAGetColoring - Gets the coloring required for computing the Jacobian via
     finite differences on a function defined using a stencil on the DA.
 
     Collective on DA
@@ -31,10 +31,8 @@ EXTERN int DAGetColoring3d_MPIBAIJ(DA,ISColoringType,ISColoring *);
    for efficient (parallel or thread based) triangular solves etc is NOT yet 
    available. 
 
-   This does not yet handle BAIJ matrices, because
-      1) we need a way for the user to indicate what matrix type they want
 
-.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DAGetColoringMPIBAIJ()
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), ISColoringType, ISColoring
 
 @*/
 int DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)

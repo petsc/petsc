@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.51 2001/03/23 23:23:25 balay Exp balay $*/
+/*$Id: ex2.c,v 1.52 2001/08/07 03:03:43 balay Exp bsmith $*/
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
 users should employ the SLES interface instead of using PC directly.\n\n";
@@ -12,15 +12,15 @@ users should employ the SLES interface instead of using PC directly.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat     mat;          /* matrix */
-  Vec     b,ustar,u;  /* vectors (RHS, exact solution, approx solution) */
-  PC      pc;           /* PC context */
-  KSP     ksp;          /* KSP context */
-  int     ierr,n = 10,i,its,col[3];
-  PetscScalar  value[3],mone = -1.0,one = 1.0,zero = 0.0;
-  PCType  pcname;
-  KSPType kspname;
-  double  norm;
+  Mat         mat;          /* matrix */
+  Vec         b,ustar,u;  /* vectors (RHS, exact solution, approx solution) */
+  PC          pc;           /* PC context */
+  KSP         ksp;          /* KSP context */
+  int         ierr,n = 10,i,its,col[3];
+  PetscScalar value[3],mone = -1.0,one = 1.0,zero = 0.0;
+  PCType      pcname;
+  KSPType     kspname;
+  PetscReal   norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

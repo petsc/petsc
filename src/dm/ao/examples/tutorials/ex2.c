@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.41 2001/06/21 21:19:06 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.42 2001/08/07 03:04:36 balay Exp bsmith $*/
 
 static char help[] = "Reads a a simple unstructured grid from a file. Partitions it,\n\
 and distributes the grid data accordingly\n\n";
@@ -220,7 +220,7 @@ int DataRead(GridData *gdata)
     /*
        Read in vertices assigned to first processor
     */ 
-    ierr = PetscMalloc(2*mmlocal_vert[0]*sizeof(double),&vert);CHKERRQ(ierr);   
+    ierr = PetscMalloc(2*mmlocal_vert[0]*sizeof(PetscReal),&vert);CHKERRQ(ierr);   
     printf("Vertices assigned to processor 0\n");
     for (i=0; i<mlocal_vert; i++) {
       fscanf(fd,"%d %lf %lf\n",&cnt,vert+2*i,vert+2*i+1);
@@ -230,14 +230,14 @@ int DataRead(GridData *gdata)
     /* 
        Read in vertices for all the other processors 
     */
-    ierr = PetscMalloc(2*mmlocal_vert[0]*sizeof(double),&tmpvert);CHKERRQ(ierr);
+    ierr = PetscMalloc(2*mmlocal_vert[0]*sizeof(PetscReal),&tmpvert);CHKERRQ(ierr);
     for (j=1; j<size; j++) {
       printf("Vertices assigned to processor %d\n",j);
       for (i=0; i<mmlocal_vert[j]; i++) {
         fscanf(fd,"%d %lf %lf\n",&cnt,tmpvert+2*i,tmpvert+2*i+1);
         printf("%d %g %g\n",cnt,tmpvert[2*i],tmpvert[2*i+1]);
       }
-      ierr = MPI_Send(tmpvert,2*mmlocal_vert[j],MPI_DOUBLE,j,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Send(tmpvert,2*mmlocal_vert[j],MPI_PETSCREAL,j,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
     ierr = PetscFree(tmpvert);CHKERRQ(ierr);
     ierr = PetscFree(mmlocal_vert);CHKERRQ(ierr);
@@ -365,7 +365,7 @@ int DataRead(GridData *gdata)
     mlocal_vert = n_vert/size + ((n_vert % size) > rank);
 
     /* receive vertices */
-    ierr = PetscMalloc(2*(mlocal_vert+1)*sizeof(double),&vert);CHKERRQ(ierr);
+    ierr = PetscMalloc(2*(mlocal_vert+1)*sizeof(PetscReal),&vert);CHKERRQ(ierr);
     ierr = MPI_Recv(vert,2*mlocal_vert,MPI_DOUBLE,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
     /* receive total number of elements */
@@ -741,9 +741,9 @@ int DataMoveVertices(GridData *gdata)
   /*
         Put resulting vertex information into gdata->vert array
   */
-  ierr = PetscMalloc(2*gdata->nlocal*sizeof(double),&gdata->vert);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*gdata->nlocal*sizeof(PetscReal),&gdata->vert);CHKERRQ(ierr);
   ierr = VecGetArray(vert,&avert);CHKERRQ(ierr);
-  ierr = PetscMemcpy(gdata->vert,avert,2*gdata->nlocal*sizeof(double));CHKERRQ(ierr);
+  ierr = PetscMemcpy(gdata->vert,avert,2*gdata->nlocal*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = VecRestoreArray(vert,&avert);CHKERRQ(ierr);
   gdata->mlocal_vert = gdata->nlocal;
   ierr = VecDestroy(vert);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.74 2001/08/06 21:14:10 bsmith Exp balay $*/
+/*$Id: init.c,v 1.75 2001/08/07 03:02:04 balay Exp bsmith $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -176,7 +176,7 @@ int PetscCompareDouble(double d)
   PetscFunctionBegin;
   ierr = MPI_Bcast(&work,1,MPI_DOUBLE,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (!d && !work) PetscFunctionReturn(0);
-  if (PetscAbsDouble(work - d)/PetscMax(PetscAbsDouble(d),PetscAbsDouble(work)) > PetscCompareTolerance) {
+  if (PetscAbsReal(work - d)/PetscMax(PetscAbsReal(d),PetscAbsReal(work)) > PetscCompareTolerance) {
     SETERRQ(PETSC_ERR_PLIB,"Inconsistent double");
   }
   PetscFunctionReturn(0);
@@ -653,7 +653,7 @@ int PetscOptionsCheckInitial(void)
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-compare",&flg1);CHKERRQ(ierr);
   if (flg1) {
-     double tol = 1.e-12;
+     PetscReal tol = 1.e-12;
      ierr = PetscOptionsGetReal(PETSC_NULL,"-compare",&tol,&flg1);CHKERRQ(ierr); 
      ierr = PetscCompareInitialize(tol);CHKERRQ(ierr);
   }

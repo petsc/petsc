@@ -1,4 +1,4 @@
-/*$Id: ex1e.c,v 1.11 2001/08/07 03:02:34 balay Exp bsmith $*/
+/*$Id: ex1e.c,v 1.12 2001/08/07 15:22:24 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -108,45 +108,45 @@ _ PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n");___
 
 _ VecScale(&two,x);___
 _ VecNorm(x,NORM_2,&norm);___
-  v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  v = norm-2.0*sqrt((PetscReal) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecScale %g\n",v);___
 
 _ VecCopy(x,w);___
 _ VecNorm(w,NORM_2,&norm);___
-  v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  v = norm-2.0*sqrt((PetscReal) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %g\n",v);___
 
 _ VecAXPY(&three,x,y);___
 _ VecNorm(y,NORM_2,&norm);___
-  v = norm-8.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  v = norm-8.0*sqrt((PetscReal) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);___
 
 _ VecAYPX(&two,x,y);___
 _ VecNorm(y,NORM_2,&norm);___
-  v = norm-18.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  v = norm-18.0*sqrt((PetscReal) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);___
 
 _ VecSwap(x,y);___
 _ VecNorm(y,NORM_2,&norm);___
-  v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  v = norm-2.0*sqrt((PetscReal) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);___
 _ VecNorm(x,NORM_2,&norm);___
-  v = norm-18.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  v = norm-18.0*sqrt((PetscReal) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);___
 
 _ VecWAXPY(&two,x,y,w);___
 _ VecNorm(w,NORM_2,&norm);___
-  v = norm-38.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  v = norm-38.0*sqrt((PetscReal) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecWAXPY %g\n",v);___
 
 _ VecPointwiseMult(y,x,w);___
 _ VecNorm(w,NORM_2,&norm);___ 
-  v = norm-36.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  v = norm-36.0*sqrt((PetscReal) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseMult %g\n",v);___
 
 _ VecPointwiseDivide(x,y,w);___
 _ VecNorm(w,NORM_2,&norm);___
-  v = norm-9.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  v = norm-9.0*sqrt((PetscReal) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",v);___
 
   dots[0] = one;
@@ -155,11 +155,11 @@ _ PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",v);___
 _ VecSet(&one,x);___
 _ VecMAXPY(3,dots,x,z);___
 _ VecNorm(z[0],NORM_2,&norm);___
-  v = norm-sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  v = norm-sqrt((PetscReal) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
 _ VecNorm(z[1],NORM_2,&norm);___
-  v1 = norm-2.0*sqrt((double) n); if (v1 > -1.e-10 && v1 < 1.e-10) v1 = 0.0; 
+  v1 = norm-2.0*sqrt((PetscReal) n); if (v1 > -1.e-10 && v1 < 1.e-10) v1 = 0.0; 
 _ VecNorm(z[2],NORM_2,&norm);___
-  v2 = norm-3.0*sqrt((double) n); if (v2 > -1.e-10 && v2 < 1.e-10) v2 = 0.0; 
+  v2 = norm-3.0*sqrt((PetscReal) n); if (v2 > -1.e-10 && v2 < 1.e-10) v2 = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %g %g %g \n",v,v1,v2);___
 
   /* 

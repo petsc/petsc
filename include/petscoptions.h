@@ -1,4 +1,4 @@
-/* $Id: petscoptions.h,v 1.43 2001/01/15 21:50:04 bsmith Exp bsmith $ */
+/* $Id: petscoptions.h,v 1.44 2001/08/06 21:19:20 bsmith Exp bsmith $ */
 /*
    Routines to determine options set in the options database.
 */
@@ -9,10 +9,10 @@
 EXTERN int  PetscOptionsHasName(const char[],const char[],PetscTruth*);
 EXTERN int  PetscOptionsGetInt(const char[],const char [],int *,PetscTruth*);
 EXTERN int  PetscOptionsGetLogical(const char[],const char [],PetscTruth *,PetscTruth*);
-EXTERN int  PetscOptionsGetReal(const char[],const char[],double *,PetscTruth*);
+EXTERN int  PetscOptionsGetReal(const char[],const char[],PetscReal *,PetscTruth*);
 EXTERN int  PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscTruth*);
 EXTERN int  PetscOptionsGetIntArray(const char[],const char[],int[],int *,PetscTruth*);
-EXTERN int  PetscOptionsGetRealArray(const char[],const char[],double[],int *,PetscTruth*);
+EXTERN int  PetscOptionsGetRealArray(const char[],const char[],PetscReal[],int *,PetscTruth*);
 EXTERN int  PetscOptionsGetString(const char[],const char[],char[],int,PetscTruth*);
 EXTERN int  PetscOptionsGetStringArray(const char[],const char[],char**,int*,PetscTruth*);
 
@@ -48,7 +48,7 @@ EXTERN int PetscOptionsHead(char*);
 #define    PetscOptionsTail() 0; {if (PetscOptionsPublishCount != 1) PetscFunctionReturn(0);}
 
 EXTERN int PetscOptionsInt(char*,char*,char*,int,int*,PetscTruth*);
-EXTERN int PetscOptionsReal(char*,char*,char*,double,double*,PetscTruth*);
+EXTERN int PetscOptionsReal(char*,char*,char*,PetscReal,PetscReal*,PetscTruth*);
 EXTERN int PetscOptionsScalar(char*,char*,char*,PetscScalar,PetscScalar*,PetscTruth*);
 EXTERN int PetscOptionsName(char*,char*,char*,PetscTruth*);
 EXTERN int PetscOptionsString(char*,char*,char*,char*,char*,int,PetscTruth*);
@@ -58,7 +58,7 @@ EXTERN int PetscOptionsLogicalGroup(char*,char*,char*,PetscTruth*);
 EXTERN int PetscOptionsLogicalGroupEnd(char*,char*,char*,PetscTruth*);
 EXTERN int PetscOptionsList(char*,char*,char*,PetscFList,char*,char*,int,PetscTruth*);
 EXTERN int PetscOptionsEList(char*,char*,char*,char**,int,char*,char *,int,PetscTruth*);
-EXTERN int PetscOptionsRealArray(char*,char*,char*,double[],int*,PetscTruth*);
+EXTERN int PetscOptionsRealArray(char*,char*,char*,PetscReal[],int*,PetscTruth*);
 EXTERN int PetscOptionsStringArray(char*,char*,char*,char**,int*,PetscTruth*);
 #endif
 

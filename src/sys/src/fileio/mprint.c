@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.61 2001/04/18 20:48:29 balay Exp bsmith $*/
+/*$Id: mprint.c,v 1.62 2001/04/25 20:46:38 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -334,7 +334,7 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
       ierr    = PetscStrstr(nformat,"%",&sub2);CHKERRQ(ierr);
       sub2[0] = 0;
       value   = (double)va_arg(Argp,double);
-      if (PetscAbsDouble(value) < 1.e-12) {
+      if (PetscAbsReal(value) < 1.e-12) {
         ierr    = PetscStrcat(nformat,"< 1.e-12");CHKERRQ(ierr);
       } else {
         ierr    = PetscStrcat(nformat,"%g");CHKERRQ(ierr);
