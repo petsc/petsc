@@ -1,4 +1,4 @@
-# $Id: base,v 1.43 1999/01/27 22:36:18 balay Exp $ 
+# $Id: base_variables,v 1.1 1999/02/08 23:45:37 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -63,59 +63,4 @@ OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
 
 PARCH    = linux
 
-include ${PETSC_DIR}/bmake/common
-
-libc: ${LIBNAME}(${OBJSC})
-libf: ${OBJSF}
-	ar crl ${LIBNAME} ${OBJSF}
-
-#############
-SLSUFFIX = so.1.0
-shared: chkopts_basic
-	-@echo making shared libraries in ${LDIR} ;\
-	cd ${LDIR}; \
-	${RM} -rf tmp; \
-	mkdir tmp; \
-	cd tmp; \
-	for LIBNAME in ${SHLIBS} ; \
-	do \
-          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
-	    flag=""; \
-	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	    else \
-	      flag="true"; \
-	    fi; \
-            if [ "$$flag" != "" ]; then \
-	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${AR} x ../$$LIBNAME.a ;\
-	      ${CLINKER} -shared -Wl,-soname,$$LIBNAME.${SLSUFFIX} -o ../$$LIBNAME.${SLSUFFIX} *.o ; \
-	      ${RM} -f * ; \
-	    fi; \
-	  fi; \
-	done ;\
-	cd ../ ; \
-	${RM} -rf tmp
-
-#
-#  Generates a shared library from any .a library; not just the PETSc ones
-#  This is to allow any user to generate his or her own shared library
-#
-#  
-
-oshared: chkopts_basic
-	-${RM} -rf tmp; \
-	mkdir tmp; \
-	cd tmp; \
-        echo "building ${LIBNAME}.${SLSUFFIX}"; \
-	${AR} x ${LIBNAME}.a ;\
-	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SLSUFFIX} *.o  -o ${LIBNAME}.${SLSUFFIX} \
-               ; \
-	cd ../ ; \
-	${RM} -rf tmp
-
-#
-# Notes:
-#
-#  -ldl is the dynamic link library that allows one to use dlopen() etc
-#
+include ${PETSC_DIR}/bmake/common_variables
