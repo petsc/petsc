@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.10 1996/02/19 16:16:05 curfman Exp curfman $";
+C      "$Id: ex36.F,v 1.11 1996/02/20 18:52:49 curfman Exp bsmith $";
 C
 C   This program demonstrates use of PETSc dense matrices.
 C
@@ -53,6 +53,8 @@ C  Access array storage
 
 C  Set matrix values directly
       call FillUpMatrix(m,n,aa(ia+1))
+
+      call MatRestoreArray(A,aa,ia,err)
 
 C  Finalize matrix assembly
       call MatAssemblyBegin(A,FINAL_ASSEMBLY,err)
