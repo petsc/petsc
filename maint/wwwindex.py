@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.6 1999/01/25 21:34:35 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.7 1999/01/25 21:35:57 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -43,7 +43,7 @@ def printindex(outfilename,headfilename,titles,tables):
       for i in range(len(titles)):
             title = titles[i]
             fd.write('</TR><TD>')
-            fd.write('<B>' + title + '</B>')
+            fd.write('<B>' + string.upper(title[0])+title[1:] + '</B>')
             fd.write('</TD></TR>')
             for filename in tables[i]:
                   path,name     = posixpath.split(filename)
@@ -153,7 +153,7 @@ def main():
             outfilename    = dirname + '.html'
             dname,fname  = posixpath.split(dirname)
             headfilename = dname + '/sec/' + fname + '.head'
-            printindex(outfilename,headfilename,titles,table)
+            printindex(outfilename,headfilename,levels,table)
 
 
 # The classes in this file can also
