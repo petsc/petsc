@@ -436,15 +436,15 @@ class Configure(config.base.Configure):
       self.libraries.check('gdi32','CreateCompatibleDC',prototype='#include <Windows.h>',call='CreateCompatibleDC(0);')
       
     if not self.checkCompile('#include <sys/types.h>\n','uid_t u;\n'):
-      self.missingPrototypes.append('typedef int uid_t;')
-      self.missingPrototypes.append('typedef int gid_t;')
+      self.addTypedef('int', 'uid_t')
+      self.addTypedef('int', 'gid_t')
     if not self.checkCompile('#include <sys/stat.h>\n#include <io.h>\n','int a=R_OK;\n'):
-      self.missingPrototypes.append('#define R_OK 04')
-      self.missingPrototypes.append('#define W_OK 02')
-      self.missingPrototypes.append('#define X_OK 01')
+      self.framework.addDefine('R_OK', '04')
+      self.framework.addDefine('W_OK', '02')
+      self.framework.addDefine('X_OK', '01')
     if not self.checkLink('#include <sys/stat.h>\n','int a=0;\nif (S_ISDIR(a)){}\n'):
-      self.missingPrototypes.append('#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)')
-      self.missingPrototypes.append('#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)')
+      self.framework.addDefine('S_ISREG(a)', '(((a)&_S_IFMT) == _S_IFREG)')
+      self.framework.addDefine('S_ISDIR(a)', '(((a)&_S_IFMT) == _S_IFDIR)')
     if self.checkCompile('#include <Windows.h>\n','LARGE_INTEGER a;\nDWORD b=a.u.HighPart;\n'):
       self.addDefine('HAVE_LARGE_INTEGER_U',1)
 
