@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.25 1996/02/08 03:22:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.26 1996/02/08 16:14:13 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -133,7 +133,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
 
   if (iter%2) { /* Compute new preconditioner matrix */
-    printf("iter=%d, computing new preconditioner\n",iter);
+    printf("iter=%d, computing new preconditioning matrix\n",iter);
     *B = user->precond;
     ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
     ierr = VecGetSize(x,&n); CHKERRQ(ierr);
@@ -152,11 +152,11 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
     ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
-    /*  *flag = SAME_NONZERO_PATTERN; */
+    *flag = SAME_NONZERO_PATTERN;
   }
   else { /* reuse preconditioner from last iteration */
-    printf("iter=%d, using old preconditioner\n",iter);
-    *B = 0;
+    printf("iter=%d, using old preconditioning matrix\n",iter);
+    *flag = SAME_PRECONDITIONER;
   }
 
   return 0;

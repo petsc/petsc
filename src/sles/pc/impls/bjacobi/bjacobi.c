@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.69 1996/01/26 04:33:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.70 1996/01/26 23:58:27 curfman Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -92,7 +92,7 @@ $  -pc_gs_symmetric
 
 .keywords: PC, BGS, Gauss-Seidel, set, relaxation, sweep, forward, symmetric
 
-.seealso: PCSetOperators(), PCBGSSetTotalBlocks() PCBGSSetUseTrueLocal()
+.seealso: PCBGSSetTotalBlocks() PCBGSSetUseTrueLocal()
 @*/
 int PCBGSSetSymmetric(PC pc, PCBGSType flag)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.69 1996/02/08 03:19:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.70 1996/02/08 16:53:47 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -361,19 +361,30 @@ int PCSetUp(PC pc)
 .  pc - the preconditioner context
 .  Amat - the matrix associated with the linear system
 .  Pmat - matrix to be used in constructing preconditioner, usually the same
-          as Amat.  If Pmat is 0 for repeated linear solves, the old 
-          preconditioner is used.
-.  flag - flag indicating information about matrix structure.  When solving
-   just one linear system, this flag is NOT used and can thus be set to 0.
+          as Amat. 
+.  flag - flag indicating information about the preconditioner matrix structure
+   during successive linear solves. When solving just one linear system, this
+   flag is ignored.
 
    Notes: 
-   The flag can be used to eliminate unnecessary work in the repeated
-   solution of linear systems of the same size.  The available options are
+   The flag can be used to eliminate unnecessary work in the preconditioner 
+   during the repeated solution of linear systems of the same size.  The
+   available options are
+$    SAME_PRECONDITIONER -
+$      Pmat is identical during successive linear solves.
+$      This option is intended for folks who are using
+$      different Amat and Pmat matrices and want to reuse the
+$      same preconditioner matrix.  For example, this option
+$      saves work by not recomputing incomplete factorization
+$      for ILU/ICC preconditioners.
 $    SAME_NONZERO_PATTERN -
-$       Pmat has the same nonzero structure 
-$       during successive linear solves
+$      Pmat has the same nonzero structure during
+$      successive linear solves. 
 $    DIFFERENT_NONZERO_PATTERN -
-$       Pmat does not have the same nonzero structure
+$      Pmat does not have the same nonzero structure.
+
+    If in doubt about whether your preconditioner matrix has changed
+    structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
 .keywords: PC, set, operators, matrix, linear system
 
@@ -386,15 +397,17 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   if (pc->setupcalled == 0 && !Pmat) {
     pc->pmat = Amat;
   }
-  else if (pc->setupcalled && Pmat) {
-    pc->pmat        = Pmat;
-    pc->setupcalled = 1;  
-  }
   else if (pc->setupcalled == 0) {
     pc->pmat = Pmat;
   }
+  else if (flag == SAME_PRECONDITIONER) {
+    pc->pmat = 0;
+  }
+  else {
+    pc->pmat        = Pmat;
+    pc->setupcalled = 1;  
+  }
   pc->flag = flag;
-
   return 0;
 }
 
@@ -408,8 +421,9 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
    Output Parameters:
 .  mat - the matrix associated with the linear system
 .  pmat - matrix associated with the preconditioner, usually the same
-          as mat.  If pmat is 0, the old preconditioner is used.
-.  flag - flag indicating information about matrix structure
+          as mat. 
+.  flag - flag indicating information about the preconditioner
+          matrix structure.  See PCSetOperators() for details.
 
 .keywords: PC, get, operators, matrix, linear system
 

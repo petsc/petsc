@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.50 1996/02/06 15:04:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.51 1996/02/08 17:08:34 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -720,12 +720,15 @@ int SNESComputeHessian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
 .  x - input vector
 .  A - Jacobian matrix
 .  B - preconditioner matrix, usually the same as A
-.  flag - flag indicating information about matrix structure,
-   same as flag in SLESSetOperators()
+.  flag - flag indicating information about the preconditioner matrix
+   structure (same as flag in SLESSetOperators())
 .  ctx - optional user-defined Jacobian context
 
    Notes: 
-   The function func() takes Mat * as the matrix arguments rather than Mat.  
+   See SLESSetOperators() for information about setting the flag input
+   parameter in the routine func().  Be sure to read this information!
+
+   The routine func() takes Mat * as the matrix arguments rather than Mat.  
    This allows the Jacobian evaluation routine to replace A and/or B with a 
    completely new new matrix structure (not just different matrix elements)
    when appropriate, for instance, if the nonzero structure is changing
@@ -733,7 +736,7 @@ int SNESComputeHessian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix
 
-.seealso: SNESSetFunction()
+.seealso: SLESSetOperators(), SNESSetFunction()
 @*/
 int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
                     MatStructure*,void*),void *ctx)
@@ -748,13 +751,13 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
   return 0;
 }
 /*@
-     SNESGetJacobian - Returns the Jacobian matrix and optionally the user 
-          provided context for evaluating the Jacobian.
+   SNESGetJacobian - Returns the Jacobian matrix and optionally the user 
+   provided context for evaluating the Jacobian.
 
-  Input Parameter:
+   Input Parameter:
 .  snes - the nonlinear solver context
 
-  Output Parameters:
+   Output Parameters:
 .  A - location to stash Jacobian matrix (or PETSC_NULL)
 .  B - location to stash preconditioner matrix (or PETSC_NULL)
 .  ctx - location to stash Jacobian ctx (or PETSC_NULL)
@@ -787,11 +790,14 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
 .  x - input vector
 .  A - Hessian matrix
 .  B - preconditioner matrix, usually the same as A
-.  flag - flag indicating information about matrix structure,
-   same as flag in SLESSetOperators()
+.  flag - flag indicating information about the preconditioner matrix
+   structure (same as flag in SLESSetOperators())
 .  ctx - optional user-defined Hessian context
 
    Notes: 
+   See SLESSetOperators() for information about setting the flag input
+   parameter in the routine func().  Be sure to read this information!
+
    The function func() takes Mat * as the matrix arguments rather than Mat.  
    This allows the Hessian evaluation routine to replace A and/or B with a 
    completely new new matrix structure (not just different matrix elements)
@@ -800,7 +806,7 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
 
 .keywords: SNES, nonlinear, set, Hessian, matrix
 
-.seealso: SNESSetMinimizationFunction(), SNESSetGradient()
+.seealso: SNESSetMinimizationFunction(), SNESSetGradient(), SLESSetOperators()
 @*/
 int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
                     MatStructure*,void*),void *ctx)

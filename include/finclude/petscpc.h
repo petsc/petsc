@@ -16,10 +16,11 @@ C
 C
 C  Flags for PCSetOperators()
 C
-      integer SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN
+      integer SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
 
       parameter (SAME_NONZERO_PATTERN = 0,
-     *           DIFFERENT_NONZERO_PATTERN = 1)
+     *           DIFFERENT_NONZERO_PATTERN = 1,
+     *           SAME_PRECONDITIONER = 2)
 C
 C  End of Fortran include file for the PC package in PETSc
 
