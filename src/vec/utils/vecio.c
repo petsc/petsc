@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.30 1997/01/06 20:21:47 balay Exp balay $";
+static char vcid[] = "$Id: vecio.c,v 1.31 1997/07/09 20:49:32 balay Exp bsmith $";
 #endif
 
 /* 
@@ -27,8 +27,18 @@ static char vcid[] = "$Id: vecio.c,v 1.30 1997/01/06 20:21:47 balay Exp balay $"
 . newvec - the newly loaded vector
 
   Notes:
-  Currently, the input file must contain the full global vector, as
+  The input file must contain the full global vector, as
   written by the routine VecView().
+
+   Notes for advanced users:
+   Most users should not need to know the details of the binary storage
+   format, since VecLoad() and VecView() completely hide these details.
+   But for anyone who's interested, the standard binary matrix storage
+   format is
+
+$    int    VEC_COOKIE
+$    int    number of rows
+$    Scalar *values of all nonzeros
 
 .keywords: vector, load, binary, input
 
