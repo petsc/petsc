@@ -12,7 +12,7 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscsnes
-DIRS     = ls tr test umls umtr
+DIRS     = ls tr test umtr
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

@@ -27,6 +27,7 @@ petsc/src/snes/impls/RCS
 petsc/src/snes/src/RCS
 petsc/src/snes/impls/ls/RCS
 petsc/src/snes/impls/tr/RCS
+petsc/src/snes/impls/umls
 petsc/src/snes/examples/RCS
 petsc/src/draw/RCS
 petsc/src/grid/RCS

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesregi.c,v 1.7 1995/07/27 02:59:54 curfman Exp curfman $";
 #endif
 
 #include "snesimpl.h"     /*I  "snes.h"  I*/
@@ -40,6 +40,6 @@ int SNESRegisterAll()
   SNESRegister((int)SNES_EQ_NTR,         "tr",      SNESCreate_TR);
   SNESRegister((int)SNES_EQ_NTEST,       "test",    SNESCreate_Test);
   SNESRegister((int)SNES_UM_NTR,         "umtr",    SNESCreate_UMTR);
-  SNESRegister((int)SNES_UM_NLS,         "umls",    SNESCreate_UMLS);
+/*  SNESRegister((int)SNES_UM_NLS,         "umls",    SNESCreate_UMLS); */
   return 0;
 }
