@@ -2,36 +2,36 @@
 
 ALL: lib
 
-CFLAGS	 = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
+CFLAGS	 = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
 
-SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgf.c \
+SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgtypef.c \
 	chebyf.c cmeshf.c cookief.c da2f.c dacornf.c daghostf.c dagtolf.c  \
-	daltogf.c daltolf.c daviewf.c dbufff.c dclearf.c dcoorf.c  \
+	daltogf.c daltolf.c dbufff.c dclearf.c dcoorf.c  \
 	dflushf.c dgcoorf.c dgpausef.c dlinef.c dlinegwf.c  \
 	dlinewf.c dmousef.c dpausef.c dpointf.c dpointsf.c drawf.c  \
 	drectf.c dscatterf.c dsclearf.c dsetpausef.c dsflushf.c  \
 	dtextgsf.c dtextsf.c dtrif.c dviewpf.c eisenf.c flushf.c  \
-	fpf.c gcookief.c gmresf.c iluf.c indexf.c itclf.c itcreatef.c  \
-	itfuncf.c itresf.c lgf.c luf.c malf.c matrixf.c mgf.c mgfuncf.c mhasf.c  \
+	fpf.c gcookief.c gmres2f.c gmpref.c iluf.c indexf.c itclf.c itcreatef.c  \
+	itfuncf.c itresf.c lgf.c luf.c matrixf.c mgf.c mgfuncf.c mhasf.c  \
 	mpiuf.c mtrf.c pcnullf.c pcsetf.c plogf.c plogmpef.c posindepf.c  \
-	preconf.c psleepf.c richf.c shellf.c signalf.c slesf.c snesf.c  \
+	preconf.c psleepf.c richscalef.c shellf.c signalf.c slesf.c snesf.c  \
 	snesmfjf.c snesutf.c sorf.c sortdf.c sortif.c sortipf.c stridef.c  \
 	trf.c tsf.c tsregf.c umlsf.c umtrf.c vectorf.c viewf.c vinvf.c  \
 	vscatf.c zerodiagf.c
 
 SOURCEF	 = 
 SOURCEH	 = 
-OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgf.o \
+OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgtypef.o \
 	chebyf.o cmeshf.o cookief.o da2f.o dacornf.o daghostf.o dagtolf.o  \
-	daltogf.o daltolf.o daviewf.o dbufff.o dclearf.o dcoorf.o  \
+	daltogf.o daltolf.o dbufff.o dclearf.o dcoorf.o  \
 	dflushf.o dgcoorf.o dgpausef.o dlinef.o dlinegwf.o  \
 	dlinewf.o dmousef.o dpausef.o dpointf.o dpointsf.o drawf.o  \
 	drectf.o dscatterf.o dsclearf.o dsetpausef.o dsflushf.o  \
 	dtextgsf.o dtextsf.o dtrif.o dviewpf.o eisenf.o flushf.o  \
-	fpf.o gcookief.o gmresf.o iluf.o indexf.o itclf.o itcreatef.o  \
-	itfuncf.o itresf.o lgf.o luf.o malf.o matrixf.o mgf.o mgfuncf.o mhasf.o  \
+	fpf.o gcookief.o gmres2f.o gmpref.o iluf.o indexf.o itclf.o itcreatef.o  \
+	itfuncf.o itresf.o lgf.o luf.o matrixf.o mgf.o mgfuncf.o mhasf.o  \
 	mpiuf.o mtrf.o pcnullf.o pcsetf.o plogf.o plogmpef.o posindepf.o  \
-	preconf.o psleepf.o richf.o shellf.o signalf.o slesf.o snesf.o  \
+	preconf.o psleepf.o richscalef.o shellf.o signalf.o slesf.o snesf.o  \
 	snesmfjf.o snesutf.o sorf.o sortdf.o sortif.o sortipf.o stridef.o  \
 	trf.o tsf.o tsregf.o umlsf.o umtrf.o vectorf.o viewf.o vinvf.o  \
 	vscatf.o zerodiagf.o
