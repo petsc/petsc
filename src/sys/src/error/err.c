@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.78 1998/04/27 03:14:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: err.c,v 1.79 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -314,18 +314,21 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
    Not Collective
 
    Input Parameters:
-.  func - error handler routine
++  handler - error handler routine
+-  ctx - optional handler context that contains information needed by the handler (for 
+         example file pointers for error messages etc.)
 
-   Calling sequence of func:
-$    int func (int line,char *func,char *file,char *dir,int n,int p,char *mess);
+   Calling sequence of handler:
+$    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess,void *ctx);
 
 +  func - the function where the error occured (indicated by __FUNC__)
 .  line - the line number of the error (indicated by __LINE__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
-.  mess - an error text string, usually just printed to the screen
 .  n - the generic error number (see list defined in include/petscerror.h)
--  p - the specific error number
+.  p - the specific error number
+.  mess - an error text string, usually just printed to the screen
+-  ctx - the error handler context
 
    Fortran Note:
    This routine is not supported in Fortran.
