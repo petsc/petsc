@@ -1,5 +1,5 @@
 
-/* $Id: bvec1.c,v 1.14 1996/03/21 21:50:31 curfman Exp bsmith $ */
+/* $Id: bvec1.c,v 1.15 1996/08/08 14:40:17 bsmith Exp balay $ */
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -11,6 +11,8 @@
 #include "src/vec/impls/dvecimpl.h" 
 #include "pinclude/plapack.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecDot_Seq"
 static int VecDot_Seq(Vec xin, Vec yin,Scalar *z )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
@@ -31,6 +33,8 @@ static int VecDot_Seq(Vec xin, Vec yin,Scalar *z )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecScale_Seq"
 static int VecScale_Seq( Scalar *alpha,Vec xin )
 {
   Vec_Seq *x = (Vec_Seq *) xin->data;
@@ -40,6 +44,8 @@ static int VecScale_Seq( Scalar *alpha,Vec xin )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecCopy_Seq"
 static int VecCopy_Seq(Vec xin, Vec yin )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
@@ -48,6 +54,8 @@ static int VecCopy_Seq(Vec xin, Vec yin )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecSwap_Seq"
 static int VecSwap_Seq(  Vec xin,Vec yin )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
@@ -56,6 +64,8 @@ static int VecSwap_Seq(  Vec xin,Vec yin )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecAXPY_Seq"
 static int VecAXPY_Seq(  Scalar *alpha, Vec xin, Vec yin )
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
@@ -65,6 +75,8 @@ static int VecAXPY_Seq(  Scalar *alpha, Vec xin, Vec yin )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "VecAXPBY_Seq"
 static int VecAXPBY_Seq(Scalar *alpha, Scalar *beta,Vec xin, Vec yin)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
