@@ -1,15 +1,19 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.7 1995/08/31 20:48:38 curfman Exp $";
+static char vcid[] = "$Id: ex3.c,v 1.1 1995/09/01 22:28:23 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
 ex2:\n\
 This program demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
-the Minimal Surface Area problem (dmsa) from the MINPACK-2 test suite.  The\n\
-command line options are:\n\
+problems from the MINPACK-2 test suite.  The command line options are:\n\
   -mx xg, where xg = number of grid points in the 1st coordinate direction\n\
-  -my yg, where yg = number of grid points in the 2nd coordinate direction\n";
+  -my yg, where yg = number of grid points in the 2nd coordinate direction\n\
+  -p problem_number, where the possible problem numbers are:\n\
+     1: Elastic-Plastic Torsion (dept)\n\
+     2: Minimal Surface Area (dmsa)\n\
+  -snes_mf: use matrix-free methods\n\
+  -par param, where param = angle of twist per unit length (problem 1 only)\n\n";
 
 #if !defined(PETSC_COMPLEX)
 
