@@ -1,17 +1,18 @@
-/* $Id: snes.h,v 1.2 1995/03/20 00:23:58 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.3 1995/03/20 00:43:49 bsmith Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
+#include "sles.h"
 
 typedef struct _SNES* SNES;
+#define SNES_COOKIE PETSC_COOKIE+13
 
-typedef enum { SNES_NLS1,
-               SNES_NTR1,
-               SNES_NTR2_DOG,
+typedef enum { SNES_NLS,
+               SNES_NTR,
+               SNES_NTR_DOG_LEG,
                SNES_NTR2_LIN,
-               SNES_NBASIC,
-               SUMS_NLS1,
-               SUMS_NTR1 }
+               SUMS_NLS,
+               SUMS_NTR }
   SNESMETHOD;
 
 typedef enum { SNESINITIAL_GUESS,
@@ -26,33 +27,34 @@ typedef enum { SNESINITIAL_GUESS,
                SNESTOTAL }
    SNESPHASE;
 
-typedef enum { SNES, SUMS } SNESTYPE;
+typedef enum { SNES_T, SUMS_T } SNESTYPE;
 
-extern int SNESSetResidual(SNES,Vec);
-extern int SNESGetResidual(SNES,Vec*);
-extern int SNESSetResidualRoutine(SNES,int (*)(void*,Vec,Vec),int,void*);
-extern int SNESSetMaxResidualEvaluations(SNES,int);
-
-extern int SNESDefaultMonitor     ANSI_ARGS((NLCtx*, void*, void*, 
-                                        double *));
-extern int SNESDefaultConverged   ANSI_ARGS((NLCtx*, double*, double*, 
-                                        double *));
+extern int SNESCreate(MPI_Comm,SNES*);
+extern int SNESSetMethod(SNES,SNESMETHOD);
+extern int SNESSetMonitor(SNES, int (*)(SNES,int,Vec,Vec,double,void*),void *);
+extern int SNESSetSolution(SNES,Vec,int (*)(Vec,void*),void *);
+extern int SNESSetResidual(SNES, Vec, int (*)(Vec,Vec,void*),void *,int);
+extern int SNESSetJacobian(SNES,Mat,int (*)(Vec,Mat*,void*),void *);
+extern int SNESDestroy(SNES);
+extern int SNESSetUp(SNES);
+extern int SNESSolve(SNES,int*);
+extern int SNESRegister(int, char*, int (*)(SNES));
+extern int SNESRegisterAll();
 extern int SNESGetSLES(SNES,SLES*);
+extern int SNESNoLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*);
+extern int SNESCubicLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*);
+extern int SNESQuadraticLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*);
 
-extern int     SNESSetDampingFlag	ANSI_ARGS((NLCtx*, int));
-extern int      NLSlesGetDampingFlag	ANSI_ARGS((NLCtx *));
+extern int SNESGetSolution(SNES,Vec*);
+extern int SNESGetResidual(SNES,Vec*);
 
+extern int SNESPrintHelp(SNES);
+extern int SNESSetFromOptions(SNES);
+extern int SNESDefaultMonitor(SNES,int, Vec,Vec,double,void *);
+extern int SNESDefaultConverged(SNES,double,double,double,void*);
 
-/* --- Miscellaneous routines --- */
-extern int     SNESSetUp(SNES);
-extern int     NLSlesSetGeneralStep	ANSI_ARGS((NLCtx*,
-					void (*)(NLCtx *, void *) ));
-extern int     NLSlesSetRoutines	ANSI_ARGS((NLCtx*,
-					void (*)(NLCtx *, int *) ));
-extern int     NLSlesApplyForwardSolve ANSI_ARGS((NLCtx*, void*, void *));
-extern int     NLSlesApplyBackwardSolve ANSI_ARGS((NLCtx*, void*, void *));
-       int     NLSlesCheck		ANSI_ARGS((NLCtx*, char*));
-extern int      NLSlesSolveScale	ANSI_ARGS((NLCtx*, void*, void*, 
-					void*, double*, double*, double*, 
-					double*, double*, void *));
+extern int SNESSetSolutionTol(SNES,double);
+extern int SNESSetAbsConvergenceTol(SNES,double);
+extern int SNESSetRelConvergenceTol(SNES,double);
+#endif
 
