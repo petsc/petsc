@@ -9,36 +9,36 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
  -----------------------------------------------------------------------
- X Fix FortranInitialization().
 
-
-Lois   - Add feature to SNESDefatulComputeJacobian() for user to set differencing
-         parameter (similar to matrix-free stuff)
+Lois   * Fix VRML vector viewer interface; add documentation about VRML.
 
 Barry  * Use a USES_INT_MPI_COMM for Cray T3d and IRIX64 that use "native"
          MPI. Still needs testing.
 
-Lois  - Handle PCView_BJacobi, PCView_ASM for the case of multiple blocks with
-         potentially different solvers on each
-         - basic parallel
-         - multiple blocks per processor
-         What to do?  Possibilities:
-         - create new local viewer for each proc (w/ same file name as
-           current viewer), then use it when calling SLESView on the blocks?
-            pros: easy.
-            cons: still not necessarily good output format.
-         - Send info to 1 proc, then print from it.
-           pros: nice output format
-           cons: a pain to do, unless there were a new routine like SLESGetInfo().
-         - Maybe should have SLESGetInfo() anyway??
-    
-  - What to do for ASM, BJacobi PCs for -use_true_local and
-    PCModifySubmatrices()?
-    
-Satish   - Change PARCH_IRIX to PARCH_IRIX64 in bamke/IRIX64 and 
+Satish - Change PARCH_IRIX to PARCH_IRIX64 in bamke/IRIX64 and 
            all uses of PARCH_IRIX in the code need also || PARCH_IRIX64
 
-Barry    - Fix fortran interface for TS. and read David Keyes comments.
+Barry  * Fix fortran interface for TS. and read David Keyes comments.
+
+Satish - Finish "Performance" chapter: section "System Related Problems"
+
+Lois   * Finish users manual:
+            - Add info about BAIJ matrix to Chapter 15
+            - Update viewer section (add VRML stuff, reorganize)
+
+Satish * Create an Database for examples
+
+Satish * Make all systems use shared libraries if possible, and document how to
+           use these variants.
+
+Satish * Make sure all Fortran examples run for complex on all machines, note
+         this means the bmake files must insure that -DPETSC_COMPLEX is 
+         properly set.
+
+Barry  - Do something about viewer formats - maybe use enum?
+
+Everyone  - Aim for more exhaustive PETSc testing.  See
+            /home/MPI/mpich/examples/test/rlist.srt:
 
   * Make configure fully functional in PETSc 2.0
       - document usage somewhere
@@ -46,36 +46,21 @@ Barry    - Fix fortran interface for TS. and read David Keyes comments.
          - complex numbers: -DUSES_TEMPLATED_COMPLEX
          - etc.
 
-Satish  - Finish "Performance" chapter: section "System Related Problems"
-
-        - Finish users manual:
-Barry      - Add info about BAIJ matrix to Chapter 15
-           - Update viewer section (add VRML stuff, reorganize)
-
-Barry     - Fix VRML vector viewer interface; add documentation about VRML.
-
-Everyone  - Aim for more exhaustive PETSc testing.  See
-            /home/MPI/mpich/examples/test/rlist.srt:
-
-Satish   * Create an Database for examples
-
-  * Make sure to document any examples that are uniprocessor only.
-
-Satish   - Make all systems use shared libraries if possible, and document how to
-           use these variants.
-
-Satish   * Make sure all Fortran examples run for complex on all machines, note
-           this means the bmake files must insure that -DPETSC_COMPLEX is 
-           properly set.
-
-Barry   - Do something about viewer formats - maybe use enum?
-
 
 -----------------------------------------------------------------------
   To do sometime soon:
 -----------------------------------------------------------------------
 
+
+ - Add feature to SNESDefatulComputeJacobian() for user to set differencing
+   parameter (similar to matrix-free stuff)
+
+ - Handle PCView_BJacobi, PCView_ASM for the case of multiple blocks with
+   potentially different solvers on each
+     - Send info to 1 proc, then print from it.
+    
   - Add optional scrolling stackframe window to PetscView    
+
   - Fix binary I/O for complex numbers.
 
   - Fix GMRESCycle() so that test for "happy breakdown" is actually
@@ -288,6 +273,8 @@ Barry   - Do something about viewer formats - maybe use enum?
 -----------------------------------------------------------------------
                 Accomplishments!  :) :)
 -----------------------------------------------------------------------
+
+  X Fix FortranInitialization().
 
   X  add test to PetscCommDup_Private() to verify that all processors
      are using the same tag, when PETSC_BOPT_g is defined.
