@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.15 1995/10/11 15:18:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.16 1995/10/12 04:13:05 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -29,6 +29,10 @@ static char vcid[] = "$Id: vecio.c,v 1.15 1995/10/11 15:18:24 bsmith Exp bsmith 
   written by the routine VecView().  Only those vector indices that
   are specified by the index set "ind" are read into the local vector
   segment on a given processor. 
+
+.keywords: vector, load, binary, input
+
+.seealso: ViewerFileOpenBinary(), VecView(), MatLoad() 
 @*/  
 int VecLoad(Viewer bview,Vec *newvec)
 {
