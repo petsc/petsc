@@ -7,7 +7,7 @@
 #define __CHEBY
 
 typedef struct {
-  double emin,emax;   /* store user provided estimates of extreme eigenvalues */
+  PetscReal emin,emax;   /* store user provided estimates of extreme eigenvalues */
 } KSP_Chebychev;
 
 #endif

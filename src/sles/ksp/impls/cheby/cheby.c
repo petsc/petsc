@@ -44,6 +44,9 @@ EXTERN_C_END
 +  ksp - the Krylov space context
 -  emax, emin - the eigenvalue estimates
 
+  Options Database:
+.  -ksp_chebychev_eigenvalues emin,emax
+
    Level: intermediate
 
 .keywords: KSP, Chebyshev, set, eigenvalues
@@ -58,6 +61,21 @@ int KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
   if (f) {
     ierr = (*f)(ksp,emax,emin);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetFromOptions_Chebychev"
+int KSPSetFromOptions_Chebychev(KSP ksp)
+{
+  KSP_Chebychev *cheb = (KSP_Chebychev*)ksp->data;
+  int            ierr;
+  int            two = 2;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead("KSP Chebychev Options");CHKERRQ(ierr);
+    ierr = PetscOptionsRealArray("-ksp_chebychev_eigenvalues","extreme eigenvalues","KSPChebychevSetEigenvalues",&cheb->emin,&two,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -217,7 +235,7 @@ int KSPCreate_Chebychev(KSP ksp)
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
-  ksp->ops->setfromoptions       = 0;
+  ksp->ops->setfromoptions       = KSPSetFromOptions_Chebychev;
   ksp->ops->view                 = KSPView_Chebychev;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",
