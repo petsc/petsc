@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.42 1996/08/08 14:46:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.43 1996/08/12 03:43:05 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -509,6 +509,9 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 int SNESCreate_UM_LS(SNES snes)
 {
   SNES_UMLS *neP;
+  SLES      sles;
+  PC        pc;
+  int       ierr;
 
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
     "SNESCreate_UM_LS:For SNES_UNCONSTRAINED_MINIMIZATION only");
@@ -539,6 +542,12 @@ int SNESCreate_UM_LS(SNES snes)
   neP->bracket		  = 0; 
   neP->infoc              = 1;
   neP->maxfev		  = 30;
+
+  /* Set default preconditioner to be Jacobi, to override SLES default. */
+  ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCJACOBI); CHKERRQ(ierr);
+
   return 0;
 }
 
