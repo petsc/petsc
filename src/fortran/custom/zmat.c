@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.70 1999/05/12 03:34:35 bsmith Exp kaushik $";
+static char vcid[] = "$Id: zmat.c,v 1.71 1999/05/12 21:24:56 kaushik Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -42,6 +42,8 @@ static char vcid[] = "$Id: zmat.c,v 1.70 1999/05/12 03:34:35 bsmith Exp kaushik 
 #define matgetcoloring_                  MATGETCOLORING
 #define matpartitioningsettype_          MATPARTITIONINGSETTYPE
 #define matduplicate_                    MATDUPLICATE
+#define matzerorows_                     MATZEROROWS
+#define matzerorowslocal_                MATZEROROWSLOCAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matpartitioningsettype_          matpartitioningsettype
 #define matsetvalue_                     matsetvalue
@@ -79,6 +81,8 @@ static char vcid[] = "$Id: zmat.c,v 1.70 1999/05/12 03:34:35 bsmith Exp kaushik 
 #define matgetsubmatrices_               matgetsubmatrices
 #define matgetcoloring_                  matgetcoloring
 #define matduplicate_                    matduplicate
+#define matzerorows_                     matzerorows
+#define matzerorowslocal_                matzerorowslocal
 #endif
 
 EXTERN_C_BEGIN
@@ -482,6 +486,17 @@ void matduplicate_(Mat *matin,MatDuplicateOption *op,Mat *matout, int *__ierr )
   *__ierr = MatDuplicate(*matin,*op,matout);
 }
 
+void matzerorows_(Mat *mat,IS *is,Scalar *diag, int *__ierr )
+{
+  if (FORTRANNULLSCALAR(diag))  diag = PETSC_NULL;
+  *__ierr = MatZeroRows(*mat,*is,diag);
+}
+
+void matzerorowslocal_(Mat *mat,IS *is,Scalar *diag, int *__ierr )
+{
+  if (FORTRANNULLSCALAR(diag))  diag = PETSC_NULL;
+  *__ierr = MatZeroRowsLocal(*mat,*is,diag);
+}
 
 EXTERN_C_END
 

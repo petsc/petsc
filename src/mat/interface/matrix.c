@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.343 1999/09/02 14:53:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.344 1999/09/27 21:29:33 bsmith Exp balay $";
 #endif
 
 /*
@@ -2772,7 +2772,7 @@ int MatZeroEntries(Mat mat)
 
 #undef __FUNC__  
 #define __FUNC__ "MatZeroRows"
-/*@ 
+/*@C
    MatZeroRows - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix.
 
@@ -2825,7 +2825,7 @@ int MatZeroRows(Mat mat,IS is, Scalar *diag)
 
 #undef __FUNC__  
 #define __FUNC__ "MatZeroRowsLocal"
-/*@ 
+/*@C 
    MatZeroRowsLocal - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix; using local numbering of rows.
 
