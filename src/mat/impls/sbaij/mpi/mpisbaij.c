@@ -20,6 +20,7 @@ extern int MatZeroRows_SeqSBAIJ(Mat,IS,PetscScalar*);
 extern int MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar *);
 extern int MatGetRowMax_MPISBAIJ(Mat,Vec);
 extern int MatRelax_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
+extern int MatUseSpooles_MPISBAIJ(Mat);
 
 /*  UGLY, ugly, ugly
    When MatScalar == PetscScalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
@@ -598,6 +599,9 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   PetscTruth  r1,r2,r3;
   MatScalar   *val;
   InsertMode  addv = mat->insertmode;
+#if defined(PETSC_HAVE_SPOOLES) 
+  PetscTruth  flag;
+#endif
 
   PetscFunctionBegin;
 
@@ -688,6 +692,11 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
     ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);
     baij->rowvalues = 0;
   }
+
+#if defined(PETSC_HAVE_SPOOLES) 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseSpooles_MPISBAIJ(mat);CHKERRQ(ierr); }
+#endif   
   PetscFunctionReturn(0);
 }
 
