@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.199 1997/02/04 18:35:49 bsmith Exp balay $ 
+% $Id: part2.tex,v 1.200 1997/02/04 19:47:36 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -587,7 +587,7 @@ a parallel array are shown in gray.
 One creates a distributed array in two dimensions with the command 
 \begin{verbatim}
    ierr = DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType st,int M,
-                     int N,int m,int n,int dof,int s,DA *da);
+                     int N,int m,int n,int dof,int s,int *lx,int *ly,DA *da);
 \end{verbatim}
 The \findex{DACreate2d} \sindex{array, distributed} arguments
 \sindex{distributed array} {\tt M} and {\tt N} indicate the global
@@ -604,6 +604,10 @@ both x- and y-directions), {\tt DA\_XPERIODIC} \findex{DA_XPERIODIC},
 or {\tt DA\_YPERIODIC}.\findex{DA_YPERIODIC}  The argument {\tt dof} 
 indicates the number of degrees of freedom at each array point,
 and {\tt s} is the stencil width (i.e., the width of the ghost point region).
+The optional arrays {\tt lx} and {\tt ly} may contain the number of nodes
+along the x and y axis for each cell, i.e. the dimension of {\tt lx} is
+{\tt m} and the dimension of {\tt ly} is {\tt n}; or {\tt PETSC\_NULL} 
+may be passed in.
 
 Two types of distributed arrays can be created, as specified by {\tt st}.
 Star-type stencils that radiate outward only in the coordinate
@@ -630,7 +634,7 @@ The commands for creating distributed arrays in one and three
 dimensions are analogous:
 \findex{DACreate3d()} \findex{DACreate1d()} \findex{DACreate3d()}
 \begin{verbatim}
-   ierr = DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int lc,DA *inra);
+   ierr = DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra);
    ierr = DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                      int M,int N,int P,int m,int n,int p,int w,int s,DA *inra);
 \end{verbatim}
