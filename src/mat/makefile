@@ -9,6 +9,6 @@ SOURCEH  = matimpl.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscmat
-DIRS     = src impls examples utils
+DIRS     = interface impls examples utils
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

@@ -9,6 +9,6 @@ SOURCEH  = drawimpl.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscdraw
-DIRS     = src impls examples utils
+DIRS     = interface impls examples utils
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

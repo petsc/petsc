@@ -9,7 +9,7 @@ SOURCEH  = snesimpl.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscsnes
-DIRS     = src impls  examples
+DIRS     = interface impls  examples
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

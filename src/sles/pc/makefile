@@ -9,6 +9,6 @@ SOURCEH  = pcimpl.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscsles
-DIRS     = utils src impls  examples
+DIRS     = utils interface impls  examples
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

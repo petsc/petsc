@@ -9,6 +9,6 @@ SOURCEH  = kspimpl.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = src impls  examples
+DIRS     = interface impls  examples
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

@@ -9,6 +9,6 @@ SOURCEH  = slesimpl.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = src examples
+DIRS     = interface examples
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
