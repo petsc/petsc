@@ -1,4 +1,4 @@
-/* $Id:$ */
+/* $Id: petsclibfe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp buschelm $ */
 #include <fstream>
 #include "petsclibfe.h"
 
@@ -16,5 +16,6 @@ void lib::Execute(void) {
     }
     file[0] = temp;
   }
+  if (!verbose) archivearg[0] = archivearg[0] + " -nologo";
   archiver::Execute();
 }
