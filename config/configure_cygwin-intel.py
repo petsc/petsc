@@ -17,7 +17,7 @@ if __name__ == '__main__':
     '-CFLAGS_g=-Z7',
     '-CFLAGS_O=-O3 -QxW',
     '--with-fc=win32fe ifl',
-    '--FFLAGS=--nodetect -MT -fpp',
+    '--FFLAGS=--nodetect -MT',
     '-FFLAGS_g=-Z7',
     '-FFLAGS_O=-O3 -QxW',
     '--with-cxx=win32fe icl',
