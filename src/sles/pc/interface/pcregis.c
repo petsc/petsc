@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcregis.c,v 1.43 1998/04/21 19:40:48 curfman Exp curfman $";
+static char vcid[] = "$Id: pcregis.c,v 1.44 1998/04/22 14:24:22 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -23,12 +23,12 @@ extern int PCCreate_Composite(PC);
 #undef __FUNC__  
 #define __FUNC__ "PCRegisterAll"
 /*@C
-  PCRegisterAll - Registers all of the preconditioners in the PC package.
+   PCRegisterAll - Registers all of the preconditioners in the PC package.
 
-  Input Parameter:
-.   path - the library where the routines are to be found (optional)
+   Not Collective
 
-  Not Collective
+   Input Parameter:
+.  path - the library where the routines are to be found (optional)
 
 .keywords: PC, register, all
 

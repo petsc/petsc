@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.91 1998/04/13 17:33:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: lu.c,v 1.92 1998/04/15 22:51:59 curfman Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -218,20 +218,20 @@ int PCLUSetMatReordering_LU(PC pc, MatReorderingType ordering)
    PCLUSetFill - Indicate the amount of fill you expect in the factored matrix,
        fill = number nonzeros in factor/number nonzeros in original matrix.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  fill - amount of expected fill
-
    Collective on PC
    
+   Input Parameters:
++  pc - the preconditioner context
+-  fill - amount of expected fill
+
    Options Database Key:
-$  -pc_lu_fill <fill>
+.  -pc_lu_fill <fill> - Sets fill amount
 
    Note:
-    For sparse matrix factorizations it is difficult to predict how much 
-  fill to expect. By running with the option -log_info PETSc will print the 
-  actual amount of fill used; allowing you to set the value accurately for
-  future runs. Bt default PETSc uses a value of 5.0
+   For sparse matrix factorizations it is difficult to predict how much 
+   fill to expect. By running with the option -log_info PETSc will print the 
+   actual amount of fill used; allowing you to set the value accurately for
+   future runs. Bt default PETSc uses a value of 5.0
 
 .keywords: PC, set, factorization, direct, fill
 
@@ -258,13 +258,13 @@ int PCLUSetFill(PC pc,double fill)
    For some implementations, for instance, dense matrices, this enables the 
    solution of much larger problems. 
 
+   Collective on PC
+
    Input Parameters:
 .  pc - the preconditioner context
 
-   Collective on PC
-
    Options Database Key:
-$  -pc_lu_in_place
+.  -pc_lu_in_place - Activates in-place factorization
 
    Note:
    PCLUSetUseInplace() can only be used with the KSP method KSPPREONLY.
@@ -290,17 +290,17 @@ int PCLUSetUseInPlace(PC pc)
 }
 
 /*@
-     PCLUSetMatReordering - Sets the ordering routine (to reduce fill) to 
-         be used it the LU factorization.
+    PCLUSetMatReordering - Sets the ordering routine (to reduce fill) to 
+    be used it the LU factorization.
+
+    Collective on PC
 
     Input Parameters:
-.   pc - the preconditioner context
-.   ordering - the matrix ordering name, for example, ORDER_ND or ORDER_RCM
-
-   Collective on PC
++   pc - the preconditioner context
+-   ordering - the matrix ordering name, for example, ORDER_ND or ORDER_RCM
 
    Options Database Key:
-$   -mat_order <nd,rcm,...>
+.  -mat_order <nd,rcm,...> - Sets ordering routine
 
 .seealso: PCILUSetMatReordering()
 @*/

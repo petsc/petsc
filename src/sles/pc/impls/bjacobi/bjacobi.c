@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.106 1998/04/09 04:11:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.107 1998/04/13 17:33:48 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -269,16 +269,14 @@ int PCBJacobiSetLocalBlocks_BJacobi(PC pc, int blocks,int *lens)
    PCBGSSetSymmetric - Sets the BGS preconditioner to use symmetric, 
    backward, or forward relaxation. By default, forward relaxation is used.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  flag - one of the following:
-$    PCBGS_FORWARD_SWEEP
-$    PCBGS_SYMMETRIC_SWEEP
-
    Collective on PC
 
+   Input Parameters:
++  pc - the preconditioner context
+-  flag - either PCBGS_FORWARD_SWEEP or PCBGS_SYMMETRIC_SWEEP
+
    Options Database Keys:
-$  -pc_gs_symmetric
+.  -pc_gs_symmetric - Activates PCBGSSetSymmetric()
 
 .keywords: PC, BGS, Gauss-Seidel, set, relaxation, sweep, forward, symmetric
 
@@ -307,15 +305,15 @@ int PCBGSSetSymmetric(PC pc, PCBGSType flag)
    on the block from the matrix using the block from the preconditioner
    as the preconditioner for the local block.
 
+   Collective on PC
+
    Input Parameters:
 .  pc - the preconditioner context
 
    Options Database Key:
-$  -pc_bjacobi_truelocal
+.  -pc_bjacobi_truelocal - Activates PCBJacobiSetUseTrueLocal()
 
-  Collective on PC
-
-  Note:
+   Notes:
    For the common case in which the preconditioning and linear 
    system matrices are identical, this routine is unnecessary.
 
@@ -347,13 +345,13 @@ int PCBJacobiSetUseTrueLocal(PC pc)
    on the block from the matrix using the block from the preconditioner
    as the preconditioner for the local block.
 
+   Collective on PC
+
    Input Parameters:
 .  pc - the preconditioner context
 
-   Collective on PC
-
    Options Database Key:
-$  -pc_bgs_truelocal
+.  -pc_bgs_truelocal - Activates PCBGSSetUseTrueLocal()
 
    Note:
    For the common case in which the preconditioning and linear 
@@ -378,15 +376,15 @@ int PCBGSSetUseTrueLocal(PC pc)
    PCBJacobiGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
    
+   Note Collective
+
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameters:
-.  n_local - the number of blocks on this processor
++  n_local - the number of blocks on this processor
 .  first_local - the global number of the first block on this processor
-.  sles - the array of SLES contexts
-
-   Note Collective
+-  sles - the array of SLES contexts
 
    Note:  
    Currently for some matrix implementations only 1 block per processor 
@@ -421,15 +419,15 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
    PCBGSGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
    
+   Not Collective
+
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameters:
-.  n_local - the number of blocks on this processor
++  n_local - the number of blocks on this processor
 .  first_local - the global number of the first block on this processor
-.  sles - the array of SLES contexts
-
-   Not Collective
+-  sles - the array of SLES contexts
 
    Note:  
    Currently for some matrix implementations only 1 block per processor 
@@ -456,17 +454,17 @@ int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
    PCBJacobiSetTotalBlocks - Sets the global number of blocks for the block
    Jacobi preconditioner.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  blocks - the number of blocks
-.  lens - [optional] integer array containing the size of each block
-
-   Options Database Key:
-$  -pc_bjacobi_blocks <blocks>
-
    Collective on PC
 
-  Notes:  
+   Input Parameters:
++  pc - the preconditioner context
+.  blocks - the number of blocks
+-  lens - [optional] integer array containing the size of each block
+
+   Options Database Key:
+.  -pc_bjacobi_blocks <blocks> - Sets the number of global blocks
+
+   Notes:  
    Currently only a limited number of blocking configurations are supported.
    All processors sharing the PC must call this routine with the same data.
 
@@ -494,15 +492,15 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
    PCBGSSetTotalBlocks - Sets the global number of blocks for the block Gauss-Seidel
    (BGS) preconditioner.
 
+   Collective on PC
+
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
 .  blocks - the number of blocks
-.  lens - [optional] integer array containing the size of each block
+-  lens - [optional] integer array containing the size of each block
 
    Options Database Key:
-$  -pc_bgs_blocks <blocks>
-
-   Collective on PC
+.  -pc_bgs_blocks <blocks> - Sets the number of global blocks
 
    Notes:  
    Currently only a limited number of blocking configurations are supported.
@@ -527,12 +525,12 @@ int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens)
    PCBJacobiSetLocalBlocks - Sets the local number of blocks for the block
    Jacobi preconditioner.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  blocks - the number of blocks
-.  lens - [optional] integer array containing size of each block
-
    Not Collective
+
+   Input Parameters:
++  pc - the preconditioner context
+.  blocks - the number of blocks
+-  lens - [optional] integer array containing size of each block
 
    Note:  
    Currently only a limited number of blocking configurations are supported.
@@ -561,12 +559,12 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
    PCBGSSetLocalBlocks - Sets the local number of blocks for the block
    Gauss-Seidel (BGS) preconditioner.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  blocks - the number of blocks
-.  lens - [optional] integer array containing size of each block
-
    Not Collective
+
+   Input Parameters:
++  pc - the preconditioner context
+.  blocks - the number of blocks
+-  lens - [optional] integer array containing size of each block
 
    Note:  
    Currently only a limited number of blocking configurations are supported.

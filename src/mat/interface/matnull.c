@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcnull.c,v 1.14 1998/03/12 23:17:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcnull.c,v 1.15 1998/04/13 17:32:59 bsmith Exp curfman $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -14,20 +14,20 @@ static char vcid[] = "$Id: pcnull.c,v 1.14 1998/03/12 23:17:20 bsmith Exp bsmith
 #undef __FUNC__  
 #define __FUNC__ "PCNullSpaceCreate"
 /*@C
-  PCNullSpaceCreate - Creates a data-structure used to project vectors 
-       out of null spaces.
+   PCNullSpaceCreate - Creates a data-structure used to project vectors 
+   out of null spaces.
 
-  Input Parameters:
-.  comm - the MPI communicator associated with the object.
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - the MPI communicator associated with the object.
 .  has_cnst - if the null spaces contains the constant vector, PETSC_TRUE or PETSC_FALSE
 .  n - number of vectors (excluding constant vector) in null space
-.  vecs - the vectors that span the null space (excluding the constant vector)
-.         these vectors must be orthonormal
+-  vecs - the vectors that span the null space (excluding the constant vector)
+          these vectors must be orthonormal
 
-  Output Parameter:
+   Output Parameter:
 .  SP - the null space context
-
-  Collective on MPI_Comm
 
 .keywords: PC, Null space
 @*/
@@ -51,13 +51,13 @@ int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace 
 #undef __FUNC__  
 #define __FUNC__ "PCNullSpaceDestroy"
 /*@
-  PCNullSpaceDestroy - Destroys a data-structure used to project vectors 
-       out of null spaces.
-
-  Input Parameter:
-.    SP - the null space context to be destroyed
+   PCNullSpaceDestroy - Destroys a data-structure used to project vectors 
+   out of null spaces.
 
    Collective on PCNullSpace
+
+   Input Parameter:
+.  SP - the null space context to be destroyed
 
 .keywords: PC, Null space
 @*/
@@ -72,13 +72,13 @@ int PCNullSpaceDestroy(PCNullSpace sp)
 #undef __FUNC__  
 #define __FUNC__ "PCNullSpaceRemove"
 /*@
-  PCNullSpaceRemove - Removes all the components of a null space from a vector.
-
-  Input Parameters:
-.    sp - the null space context
-.    vec - the vector you want the null space removed from
+   PCNullSpaceRemove - Removes all the components of a null space from a vector.
 
    Collective on PCNullSpace
+
+   Input Parameters:
++  sp - the null space context
+-  vec - the vector you want the null space removed from
 
 .keywords: PC, Null space
 @*/

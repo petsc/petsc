@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.70 1998/04/09 04:11:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.71 1998/04/13 17:33:27 bsmith Exp curfman $";
 #endif
 
 /*
@@ -163,29 +163,31 @@ int PCSORSetIterations_SOR(PC pc, int its)
    backward, or forward relaxation.  The local variants perform SOR on
    each processor.  By default forward relaxation is used.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  flag - one of the following:
-$    SOR_FORWARD_SWEEP
-$    SOR_BACKWARD_SWEEP
-$    SOR_SYMMETRIC_SWEEP
-$    SOR_LOCAL_FORWARD_SWEEP
-$    SOR_LOCAL_BACKWARD_SWEEP
-$    SOR_LOCAL_SYMMETRIC_SWEEP
-
    Collective on PC
 
+   Input Parameters:
++  pc - the preconditioner context
+-  flag - one of the following
+.vb
+    SOR_FORWARD_SWEEP
+    SOR_BACKWARD_SWEEP
+    SOR_SYMMETRIC_SWEEP
+    SOR_LOCAL_FORWARD_SWEEP
+    SOR_LOCAL_BACKWARD_SWEEP
+    SOR_LOCAL_SYMMETRIC_SWEEP
+.ve
+
    Options Database Keys:
-$  -pc_sor_symmetric
-$  -pc_sor_backward
-$  -pc_sor_local_forward
-$  -pc_sor_local_symmetric
-$  -pc_sor_local_backward
+.  -pc_sor_symmetric - Activates symmetric version
+.  -pc_sor_backward - Activates backward version
+.  -pc_sor_local_forward - Activates local forward version
+.  -pc_sor_local_symmetric - Activates local symmetric version
+.  -pc_sor_local_backward - Activates local backward version
 
    Notes: 
    To use the Eisenstat trick with SSOR, employ the PCEISENSTAT preconditioner,
-   which can be chosen with the database option 
-$     -pc_type  eisenstat
+   which can be chosen with the option 
+.  -pc_type eisenstat - Activates Eisenstat trick
 
 .keywords: PC, SOR, SSOR, set, relaxation, sweep, forward, backward, symmetric
 
@@ -210,14 +212,14 @@ int PCSORSetSymmetric(PC pc, MatSORType flag)
    PCSORSetOmega - Sets the SOR relaxation coefficient, omega
    (where omega = 1.0 by default).
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  omega - relaxation coefficient (0 < omega < 2). 
-
    Collective on PC
 
+   Input Parameters:
++  pc - the preconditioner context
+-  omega - relaxation coefficient (0 < omega < 2). 
+
    Options Database Key:
-$  -pc_sor_omega <omega>
+.  -pc_sor_omega <omega> - Sets omega
 
 .keywords: PC, SOR, SSOR, set, relaxation, omega
 
@@ -241,14 +243,14 @@ int PCSORSetOmega(PC pc, double omega)
    PCSORSetIterations - Sets the number of inner iterations to 
    be used by the SOR preconditioner. The default is 1.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  its - number of iterations to use
-
    Collective on PC
 
+   Input Parameters:
++  pc - the preconditioner context
+-  its - number of iterations to use
+
    Options Database Key:
-$  -pc_sor_its <its>
+.  -pc_sor_its <its> - Sets number of iterations
 
 .keywords: PC, SOR, SSOR, set, iterations
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.74 1998/04/09 04:12:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.75 1998/04/13 17:34:38 bsmith Exp curfman $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -421,13 +421,13 @@ int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
     PCASMSetLocalSubdomains - Sets the local subdomains (for this processor
     only) for the additive Schwarz preconditioner. 
 
-    Input Parameters:
-.   pc - the preconditioner context
-.   n - the number of subdomains for this processor (default value = 1)
-.   is - the index sets that define the subdomains for this processor
-         (or PETSC_NULL for PETSc to determine subdomains)
-
     Collective on PC 
+
+    Input Parameters:
++   pc - the preconditioner context
+.   n - the number of subdomains for this processor (default value = 1)
+-   is - the index sets that define the subdomains for this processor
+         (or PETSC_NULL for PETSc to determine subdomains)
 
     Notes:
     The IS numbering is in the parallel, global numbering of the vector.
@@ -464,22 +464,22 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
     additive Schwarz preconditioner.  Either all or no processors in the
     PC communicator must call this routine, with the same index sets.
 
-    Currently you cannot use this to set the actual subdomains with the argument is.
+    Collective on PC
 
     Input Parameters:
-.   pc - the preconditioner context
++   pc - the preconditioner context
 .   n - the number of subdomains for all processors
-.   is - the index sets that define the subdomains for all processor
+-   is - the index sets that define the subdomains for all processor
          (or PETSC_NULL for PETSc to determine subdomains)
-
-    Collective on PC
 
     Options Database Key:
     To set the total number of subdomain blocks rather than specify the
     index sets, use the option
-$    -pc_asm_blocks <blks>
+.    -pc_asm_blocks <blks> - Sets total blocks
 
-    Note:
+    Notes:
+    Currently you cannot use this to set the actual subdomains with the argument is.
+
     By default the ASM preconditioner uses 1 block per processor.  
 
     These index sets cannot be destroyed until after completion of the
@@ -512,14 +512,14 @@ int PCASMSetTotalSubdomains(PC pc, int N, IS *is)
     additive Schwarz preconditioner.  Either all or no processors in the
     PC communicator must call this routine. 
 
+    Collective on PC
+
     Input Parameters:
-.   pc  - the preconditioner context
-.   ovl - the amount of overlap between subdomains (ovl >= 0, default value = 1)
++   pc  - the preconditioner context
+-   ovl - the amount of overlap between subdomains (ovl >= 0, default value = 1)
 
     Options Database Key:
-$   -pc_asm_overlap <ovl>
-
-    Collective on PC
+.   -pc_asm_overlap <ovl> - Sets overlap
 
     Notes:
     By default the ASM preconditioner uses 1 block per processor.  To use
@@ -563,18 +563,20 @@ int PCASMSetOverlap(PC pc, int ovl)
     PCASMSetType - Sets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
 
-    Input Parameters:
-.   pc  - the preconditioner context
-.   type - variant of ASM
-$      PC_ASM_BASIC       - full interpolation and restriction
-$      PC_ASM_RESTRICT    - full restriction, local processor interpolation
-$      PC_ASM_INTERPOLATE - full interpolation, local processor restriction
-$      PC_ASM_NONE        - local processor restriction and interpolation
-
     Collective on PC
 
+    Input Parameters:
++   pc  - the preconditioner context
+-   type - variant of ASM, one of
+.vb
+      PC_ASM_BASIC       - full interpolation and restriction
+      PC_ASM_RESTRICT    - full restriction, local processor interpolation
+      PC_ASM_INTERPOLATE - full interpolation, local processor restriction
+      PC_ASM_NONE        - local processor restriction and interpolation
+.ve
+
     Options Database Key:
-$   -pc_asm_type [basic,restrict,interpolate,none]
+$   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
 
 .keywords: PC, ASM, set, type
 
@@ -600,15 +602,15 @@ int PCASMSetType(PC pc,PCASMType type)
    PCASMGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
    
+   Not Collective
+
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameters:
-.  n_local - the number of blocks on this processor
++  n_local - the number of blocks on this processor
 .  first_local - the global number of the first block on this processor
-.  sles - the array of SLES contexts
-
-   Not Collective
+-  sles - the array of SLES contexts
 
    Note:  
    Currently for some matrix implementations only 1 block per processor 
@@ -687,17 +689,17 @@ int PCCreate_ASM(PC pc)
    PCASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz 
    preconditioner for a two-dimensional problem on a regular grid.
 
+   Not Collective
+
    Input Parameters:
-.  m, n - the number of mesh points in the x and y directions
++  m, n - the number of mesh points in the x and y directions
 .  M, N - the number of subdomains in the x and y directions
 .  dof - degrees of freedom per node
-.  overlap - overlap in mesh lines
+-  overlap - overlap in mesh lines
 
    Output Parameters:
-.  Nsub - the number of subdomains created
-.  is - the array of index sets defining the subdomains
-
-   Note Collective
++  Nsub - the number of subdomains created
+-  is - the array of index sets defining the subdomains
 
    Note:
    Presently PCAMSCreateSubdomains2d() is valid only for sequential

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.78 1998/04/09 04:11:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.79 1998/04/13 17:33:58 bsmith Exp curfman $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -298,11 +298,11 @@ static int PCSetUp_MG(PC pc)
    MGSetLevels - Sets the number of levels to use with MG.
    Must be called before any other MG routine.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  levels - the number of levels
-
    Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  levels - the number of levels
 
 .keywords: MG, set, levels, multigrid
 
@@ -332,13 +332,13 @@ int MGSetLevels(PC pc,int levels)
 /*@
    MGGetLevels - Gets the number of levels to use with MG.
 
+   Not Collective
+
    Input Parameter:
 .  pc - the preconditioner context
 
    Output parameter:
 .  levels - the number of levels
-
-   Not Collective
 
 .keywords: MG, get, levels, multigrid
 
@@ -362,16 +362,16 @@ int MGGetLevels(PC pc,int *levels)
    MGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  form - multigrid form, one of the following:
-$      MGMULTIPLICATIVE, MGADDITIVE, MGFULL, MGKASKADE
-
    Collective on PC
 
+   Input Parameters:
++  pc - the preconditioner context
+-  form - multigrid form, one of MGMULTIPLICATIVE, MGADDITIVE,
+   MGFULL, MGKASKADE
+
    Options Database Key:
-$  -pc_mg_type <form>, where <form> is one of the following:
-$      multiplicative, additive, full, kaskade   
+.  -pc_mg_type <form> - Sets <form>, one of multiplicative,
+   additive, full, kaskade   
 
 .keywords: MG, set, method, multiplicative, additive, full, Kaskade, multigrid
 
@@ -398,14 +398,14 @@ int MGSetType(PC pc,MGType form)
    V-cycle; 2 denotes a W-cycle. Use MGSetCyclesOnLevel() for more 
    complicated cycling.
 
-   Input Parameters:
-.  mg - the multigrid context 
-.  n - the number of cycles
-
    Collective on PC
 
+   Input Parameters:
++  mg - the multigrid context 
+-  n - the number of cycles
+
    Options Database Key:
-$  -pc_mg_cycles n
+$  -pc_mg_cycles n - Sets number of multigrid cycles
 
 .keywords: MG, set, cycles, V-cycle, W-cycle, multigrid
 
@@ -433,10 +433,10 @@ int MGSetCycles(PC pc,int n)
    MGCheck - Checks that all components of the MG structure have 
    been set.
 
-   Iput Parameters:
-.  mg - the MG structure
-
    Collective on PC
+
+   Input Parameters:
+.  mg - the MG structure
 
 .keywords: MG, check, set, multigrid
 @*/
@@ -490,14 +490,14 @@ int MGCheck(PC pc)
    use on all levels. Use MGGetSmootherDown() to set different 
    pre-smoothing steps on different levels.
 
-   Input Parameters:
-.  mg - the multigrid context 
-.  n - the number of smoothing steps
-
    Collective on PC
 
+   Input Parameters:
++  mg - the multigrid context 
+-  n - the number of smoothing steps
+
    Options Database Key:
-$  -pc_mg_smoothdown  n
+.  -pc_mg_smoothdown <n> - Sets number of pre-smoothing steps
 
 .keywords: MG, smooth, down, pre-smoothing, steps, multigrid
 
@@ -529,14 +529,14 @@ int MGSetNumberSmoothDown(PC pc,int n)
    on all levels. Use MGGetSmootherUp() to set different numbers of 
    post-smoothing steps on different levels.
 
-   Input Parameters:
-.  mg - the multigrid context 
-.  n - the number of smoothing steps
-
    Collective on PC
 
+   Input Parameters:
++  mg - the multigrid context 
+-  n - the number of smoothing steps
+
    Options Database Key:
-$  -pc_mg_smoothup  n
+.  -pc_mg_smoothup <n> - Sets number of post-smoothing steps
 
 .keywords: MG, smooth, up, post-smoothing, steps, multigrid
 

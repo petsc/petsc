@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.72 1998/04/09 04:11:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.73 1998/04/13 17:34:15 bsmith Exp curfman $";
 #endif
 
 /*
@@ -234,13 +234,13 @@ int PCEisenstatUseDiagonalScaling_Eisenstat(PC pc)
    to use with Eisenstat's trick (where omega = 1.0 by default).
 
    Input Parameters:
-.  pc - the preconditioner context
-.  omega - relaxation coefficient (0 < omega < 2)
++  pc - the preconditioner context
+-  omega - relaxation coefficient (0 < omega < 2)
 
    Collective on PC
 
    Options Database Key:
-$  -pc_eisenstat_omega  omega
+.  -pc_eisenstat_omega <omega> - Sets omega
 
    Notes: 
    The Eisenstat trick implementation of SSOR requires about 50% of the
@@ -276,13 +276,13 @@ int PCEisenstatSetOmega(PC pc,double omega)
    to do an additional diagonal preconditioning. For matrices with very 
    different values along the diagonal, this may improve convergence.
 
+   Collective on PC
+
    Input Parameter:
 .  pc - the preconditioner context
 
-   Collective on PC
-
    Options Database Key:
-$  -pc_eisenstat_diagonal_scaling
+.  -pc_eisenstat_diagonal_scaling - Activates PCEisenstatUseDiagonalScaling()
 
 .keywords: PC, Eisenstat, use, diagonal, scaling, SSOR
 

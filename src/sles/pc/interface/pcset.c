@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.67 1998/04/03 23:14:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.68 1998/04/13 17:32:59 bsmith Exp curfman $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -22,16 +22,17 @@ DLList PCList = 0;
 /*@C
    PCSetType - Builds PC for a particular preconditioner.
 
-   Input Parameter:
-.  pc - the preconditioner context.
-.  type - a known method
-
    Collective on PC
 
+   Input Parameter:
++  pc - the preconditioner context.
+-  type - a known method
+
    Options Database Command:
-$  -pc_type  <type>
-$      Use -help for a list of available methods
-$      (for instance, jacobi or bjacobi)
+.  -pc_type <type> - Sets PC type
+
+   Use -help for a list of available methods (for instance,
+   jacobi or bjacobi)
 
   Notes:
   See "petsc/include/pc.h" for available methods (for instance,
@@ -125,13 +126,14 @@ int PCRegisterDestroy(void)
 /*@
    PCPrintHelp - Prints all the options for the PC component.
 
+   Collective on PC
+
    Input Parameter:
 .  pc - the preconditioner context
 
-   Collective on PC
-
    Options Database Keys:
-$  -help, -h
++  -help - Prints PC options
+-  -h - Prints PC options
 
 .keywords: PC, help
 
@@ -163,13 +165,13 @@ int PCPrintHelp(PC pc)
    PCGetType - Gets the PC method type and name (as a string) from the PC
    context.
 
+   Not Collective
+
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameter:
 .  name - name of preconditioner 
-
-   Not Collective
 
 .keywords: PC, get, method, name, type
 @*/
@@ -190,10 +192,10 @@ int PCGetType(PC pc,PCType *meth)
    This routine must be called before PCSetUp() if the user is to be
    allowed to set the preconditioner method. 
 
+   Collective on PC
+
    Input Parameters:
 .  pc - the preconditioner context
-
-   Collective on PC
 
 .keywords: PC, set, from, options, database
 

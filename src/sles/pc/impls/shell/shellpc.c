@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.40 1998/04/09 04:11:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.41 1998/04/13 17:33:42 bsmith Exp curfman $";
 #endif
 
 /*
@@ -133,18 +133,21 @@ int PCShellSetApplyRichardson_Shell(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),v
 /*@C
    PCShellSetApply - Sets routine to use as preconditioner.
 
+   Collective on PC
+
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
 .  apply - the application-provided preconditioning routine
-.  ptr - pointer to data needed by this routine
+-  ptr - pointer to data needed by this routine
 
    Calling sequence of apply:
+.vb
    int apply (void *ptr,Vec xin,Vec xout)
+.ve
+
 .  ptr - the application context
 .  xin - input vector
 .  xout - output vector
-
-   Collective on PC
 
 .keywords: PC, shell, set, apply, user-provided
 
@@ -169,11 +172,11 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
    PCShellSetName - Sets an optional name to associate with a shell
    preconditioner.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  name - character string describing shell preconditioner
-
    Not Collective
+
+   Input Parameters:
++  pc - the preconditioner context
+-  name - character string describing shell preconditioner
 
 .keywords: PC, shell, set, name, user-provided
 
@@ -198,13 +201,13 @@ int PCShellSetName(PC pc,char *name)
    PCShellGetName - Gets an optional name that the user has set for a shell
    preconditioner.
 
+   Not Collective
+
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameter:
 .  name - character string describing shell preconditioner
-
-   Not Collective
 
 .keywords: PC, shell, get, name, user-provided
 
@@ -231,20 +234,23 @@ int PCShellGetName(PC pc,char **name)
    PCShellSetApplyRichardson - Sets routine to use as preconditioner
    in Richardson iteration.
 
-   Input Parameters:
-.  pc - the preconditioner context
-.  apply - the application-provided preconditioning routine
-.  ptr - pointer to data needed by this routine
-
    Collective on PC
 
+   Input Parameters:
++  pc - the preconditioner context
+.  apply - the application-provided preconditioning routine
+-  ptr - pointer to data needed by this routine
+
    Calling sequence of apply:
+.vb
    int apply (void *ptr,Vec x,Vec b,Vec r,int maxits)
-.  ptr - the application context
+.ve
+
++  ptr - the application context
 .  x - current iterate
 .  b - right-hand-side
 .  r - residual
-.  maxits - maximum number of iterations
+-  maxits - maximum number of iterations
 
 .keywords: PC, shell, set, apply, Richardson, user-provided
 
