@@ -144,7 +144,7 @@ class Package(config.base.Configure):
               raise RuntimeError('Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path')
             elif output.find('Cannot resolve host') >= 0:
               raise RuntimeError('Unable to download '+self.package+'. You must be off the network. Connect to the internet and run config/configure.py again')
-          self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+' into '+self.getDir())
+          self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+' into '+self.getDir(0))
           return
 
     for url in self.download:
@@ -165,11 +165,11 @@ class Package(config.base.Configure):
         except RuntimeError, e:
           raise RuntimeError('Error doing tar -xf '+tarname+': '+str(e))
         os.unlink(os.path.join(packages, tarname))
-        self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+' into '+self.getDir())
+        self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+' into '+self.getDir(0))
         return
     raise RuntimeError('Unable to download '+self.package+' from locations '+str(self.download)) 
 
-  def getDir(self, maxTrys = 5):
+  def getDir(self, retry = 1):
     '''Find the directory containing the package'''
     packages  = self.framework.argDB['with-external-packages-dir']
     if not os.path.isdir(packages):
@@ -182,10 +182,10 @@ class Package(config.base.Configure):
         break
     if Dir is None:
       self.framework.log.write('Did not located already downloaded '+self.name+'\n')
-      self.downLoad()
       if maxTrys <= 0:
         raise RuntimeError('Unable to download '+self.name)
-      return self.getDir(maxTrys-1)
+      self.downLoad()
+      return self.getDir()
     if not os.path.isdir(os.path.join(packages,Dir,self.arch.arch)):
       os.mkdir(os.path.join(packages,Dir,self.arch.arch))
     return os.path.join(packages, Dir)
