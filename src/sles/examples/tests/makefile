@@ -24,7 +24,7 @@ RUNEXAMPLES_4 = runex1 runex1_3 runex1_5 runex2 runex2_3 runex2_5 \
 		runex3 runex4 
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c\
 		ex11.c ex13.c ex14.c ex15.c
-EXAMPLESF     = ex7.F ex12.F
+EXAMPLESF     = ex7.F ex12.F ex16.F
 
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
@@ -276,7 +276,7 @@ runex13:
 	   $(RM) -f ex13_1.tmp
 
 runex16:
-	-@$(MPIRUN) ex16 -f $(PETSC_DIR)/mat/examples/mat.ex.binary \
+	-@$(MPIRUN) ex16 -f $(PETSC_DIR)/src/mat/examples/matbinary.ex \
 	   -a_pc_type bgs -a_pc_bgs_blocks 5 -a_sub_pc_method ilu \
 	   -b_pc_type bjacobi -b_pc_bjacobi_blocks 5 -b_ksp_max_it 10 \
 	   -b_sub_pc_type bgs _b_sub_pc_bgs_blocks 2  > ex16_1.tmp 2>&1; \
