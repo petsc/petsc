@@ -13,8 +13,8 @@
 #define PETSC_VERSION_MAJOR    2
 #define PETSC_VERSION_MINOR    1
 #define PETSC_VERSION_SUBMINOR 5
-#define PETSC_VERSION_PATCH    6
-#define PETSC_VERSION_DATE     "Mar 20, 2003"
+#define PETSC_VERSION_PATCH    7
+#define PETSC_VERSION_DATE     "Apr 29, 2003"
 #define PETSC_AUTHOR_INFO      "\
        The PETSc Team\n\
     petsc-maint@mcs.anl.gov\n\

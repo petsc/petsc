@@ -155,7 +155,11 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
 
-  *newmat  = 0;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+
+  *newmat = 0;
 
   if (!MatLoadRegisterAllCalled) {
     ierr = MatLoadRegisterAll(PETSC_NULL);CHKERRQ(ierr);
