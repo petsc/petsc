@@ -26,13 +26,16 @@ class CompileSIDL (compile.Process, install.base.Base):
   def getCompilerDriver(self):
     project = self.getInstalledProject('bk://sidl.bkbits.net/Compiler')
     if project is None:
-      raise ImportError('Project bk://sidl.bkbits.net/Compiler is not installed')
+      return 'scandal.py'
     return os.path.join(project.getRoot(), 'driver', 'python', 'scandal.py')
 
   def getCompilerModule(self, name = 'scandal'):
     import imp
 
-    (fp, pathname, description) = imp.find_module(name, [os.path.dirname(self.getCompilerDriver(self))])
+    root = os.path.dirname(self.getCompilerDriver(self))
+    if not root:
+      raise ImportError('Project bk://sidl.bkbits.net/Compiler is not installed')
+    (fp, pathname, description) = imp.find_module(name, [root])
     try:
       return imp.load_module(name, fp, pathname, description)
     finally:
