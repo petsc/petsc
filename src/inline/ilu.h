@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.12 1999/03/16 22:22:20 bsmith Exp balay $ */
+/* $Id: ilu.h,v 1.13 1999/05/04 20:27:38 balay Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -84,8 +84,8 @@ EXTERN_C_END
 #define Kernel_A_gets_A_times_B(bs,A,B,W) \
 { \
   Scalar _one = 1.0, _zero = 0.0; \
-  int    ierr; \
-  ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(ierr); \
+  int    _ierr; \
+  _ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(_ierr); \
   BLgemm_("N","N",&(bs),&(bs),&(bs),&_one,(W),&(bs),(B),&(bs),&_zero,(A),&(bs));\
 }
 

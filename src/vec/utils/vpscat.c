@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.114 1999/04/19 22:10:59 bsmith Exp balay $";
+ static char vcid[] = "$Id: vpscat.c,v 1.115 1999/05/04 20:30:27 balay Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -566,7 +566,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
     MPI_Comm    comm;
     int         *sstarts = out_to->starts,   *rstarts = out_from->starts;
     int         *sprocs  = out_to->procs,    *rprocs  = out_from->procs;
-    int         tag,i,ierr,flg;
+    int         tag,i,flg;
     MPI_Request *swaits  = out_to->requests, *rwaits  = out_from->requests;
     MPI_Request *rev_swaits, *rev_rwaits;
     Scalar      *Ssvalues = out_to->values,  *Srvalues = out_from->values;

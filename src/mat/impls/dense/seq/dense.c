@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.167 1999/04/19 22:11:51 bsmith Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.168 1999/05/04 20:31:33 balay Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -852,7 +852,6 @@ int MatTranspose_SeqDense(Mat A,Mat *matout)
       }
     }
   } else { /* out-of-place transpose */
-    int          ierr;
     Mat          tmat;
     Mat_SeqDense *tmatd;
     Scalar       *v2;
