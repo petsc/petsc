@@ -9,8 +9,6 @@
 extern "C" {
 #endif
 
-extern PetscCookie PETSC_VIEWER_COOKIE;
-
 /*S
      PetscViewer - Abstract PETSc object that helps view (in ASCII, binary, graphically etc)
          other PETSc objects
@@ -27,12 +25,23 @@ typedef struct _p_PetscViewer* PetscViewer;
 }
 #endif
 
+#include "petsc.h"
+
+#if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
+extern "C" {
+#endif
+
+extern PetscCookie PETSC_VIEWER_COOKIE;
+
+#if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
+}
+#endif
+
 
 /*
     petsc.h must be included AFTER the definition of PetscViewer for ADIC to 
    process correctly.
 */
-#include "petsc.h"
 PETSC_EXTERN_CXX_BEGIN
 /*E
     PetscViewerType - String with the name of a PETSc PETScViewer
