@@ -167,7 +167,7 @@ static const char *PetscErrorStrings[] = {
     "Argument aliasing not permitted",
     "Invalid argument",
   /*63 */    "Argument out of range",
-    "Corrupt argument: see http://www.mcs.anl.gov/petsc/",
+    "Corrupt argument: see http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html#Corrupt",
     "Unable to open file",
     "Read from file failed",
     "Write to file failed",
