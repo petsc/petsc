@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.12 2000/07/28 21:14:06 hzhang Exp balay $*/
+/*$Id: sbaij.c,v 1.13 2000/08/03 14:53:21 balay Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1331,11 +1331,11 @@ EXTERN_C_END
 #undef __FUNC__  
 #define __FUNC__ "MatSeqSBAIJSetColumnIndices"
 /*@
-    MatSeqBAIJSetColumnIndices - Set the column indices for all the rows
+    MatSeqSBAIJSetColumnIndices - Set the column indices for all the rows
        in the matrix.
 
   Input Parameters:
-+  mat - the SeqBAIJ matrix
++  mat     - the SeqSBAIJ matrix
 -  indices - the column indices
 
   Level: advanced
@@ -1346,7 +1346,7 @@ EXTERN_C_END
   of the MatSetValues() operation.
 
     You MUST have set the correct numbers of nonzeros per row in the call to 
-  MatCreateSeqBAIJ().
+  MatCreateSeqSBAIJ().
 
     MUST be called before any calls to MatSetValues()
 
