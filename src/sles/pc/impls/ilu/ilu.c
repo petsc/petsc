@@ -290,12 +290,24 @@ int PCILUSetDamping(PC pc,PetscReal damping)
 #undef __FUNCT__
 #define __FUNCT__ "PCILUSetShift"
 /*@
-   PCILUSetShift - specify whether to use Manteuffel shifting of ILU
-
+   PCILUSetShift - specify whether to use Manteuffel shifting of ILU.
    If an ILU factorisation breaks down because of nonpositive pivots,
    adding sufficient identity to the diagonal will remedy this.
    Setting this causes a bisection method to find the minimum shift that
    will lead to a well-defined ILU.
+
+   Input parameters:
++  pc - the preconditioner context
+-  shifting - PETSC_TRUE to set shift else PETSC_FALSE
+
+   Options Database Key:
+.  -pc_ilu_shift - Activate PCILUSetShift()
+
+   Level: intermediate
+
+.keywords: PC, indefinite, factorization, incomplete, ILU
+
+.seealso: PCILUSetDamping()
 @*/
 int PCILUSetShift(PC pc,PetscTruth shifting)
 {

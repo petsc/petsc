@@ -446,7 +446,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   PetscReal    damping = b->lu_damping, zeropivot = b->lu_zeropivot,rs;
   PetscTruth   damp;
   PetscReal row_shift,shift_fraction,shift_amount,
-    shift_lo=0., shift_hi=1., shift_top;
+    shift_lo=0., shift_hi=1., shift_top=0.;
   PetscTruth lushift; int nshift=0;
 
   PetscFunctionBegin;
@@ -457,17 +457,17 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   rtmps = rtmp + shift; ics = ic + shift;
 
   if (b->lu_shift) { /* set max shift */
-    int *ai = a->i,*diag;
+    int *aai = a->i,*ddiag;
     shift_top = 0;
     if (!a->diag) {
       ierr = MatMarkDiagonal_SeqAIJ(A); CHKERRQ(ierr);}
-    diag = a->diag;
+    ddiag = a->diag;
     for (i=0; i<n; i++) {
-      PetscReal d = (PetscReal) (a->a)[diag[i]+shift];
+      PetscReal d = PetscAbsScalar((a->a)[ddiag[i]+shift]);
       /* calculate amt of shift needed for this row */
       if (d<0) row_shift = 0; else row_shift = -2*PetscAbsScalar(d);
-      v = a->a+ai[i]+shift;
-      for (j=0; j<ai[i+1]-ai[i]; j++) 
+      v = a->a+aai[i]+shift;
+      for (j=0; j<aai[i+1]-aai[i]; j++) 
 	row_shift += PetscAbsScalar(v[j]);
       if (row_shift>shift_top) shift_top = row_shift;
     }
@@ -519,7 +519,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
         if (j != diag) rs += PetscAbsScalar(pv[j]);
       }
 #define MAX_NSHIFT 5
-      if (pv[diag] < zeropivot*rs && b->lu_shift) {
+      if (PetscRealPart(pv[diag]) < zeropivot*rs && b->lu_shift) {
 	if (nshift>MAX_NSHIFT) {
 	  SETERRQ(1,"This can't happen"); /* actually, it just might */
 	} else if (nshift==MAX_NSHIFT) {
