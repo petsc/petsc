@@ -29,16 +29,15 @@ class Configure(config.base.Configure):
     if not self.framework.argDB.has_key('PETSC_DIR'):
       self.framework.argDB['PETSC_DIR'] = os.getcwd()
     elif not os.path.samefile(self.framework.argDB['PETSC_DIR'],os.getcwd()) :
-      # Check if PETSC_DIR provided points to the wrong location
-      try:
-      # If you're using cygwin, realpath might not be properly implemented, so take the output from cygpath
-        (pdirpath, error, status) = self.executeShellCommand('cygpath -wl '+self.framework.argDB['PETSC_DIR'])
-        (cwdpath, error, status)  = self.executeShellCommand('cygpath -wl '+os.getcwd())
-        if pdirpath != cwdpath :
-          raise RuntimeError('  Wrong PETSC_DIR option specified: '+ self.framework.argDB['PETSC_DIR'] + '\n  Configure invoked in: '+ os.path.realpath(os.getcwd()))
-      except RuntimeError, e:
-        raise RuntimeError('  Wrong PETSC_DIR option specified: '+ self.framework.argDB['PETSC_DIR'] + '\n  Configure invoked in: '+ os.path.realpath(os.getcwd()))
+      raise RuntimeError('  Wrong PETSC_DIR option specified: '+ self.framework.argDB['PETSC_DIR'] + '\n  Configure invoked in: '+ os.path.realpath(os.getcwd()))
     self.dir = self.framework.argDB['PETSC_DIR']
+    # Check for C:/ specification of PETSC_DIR and change it to cygwin specification, if using cygwin python
+    if self.dir[1]==':':
+      try:
+        (pdir,error,status)=self.executeShellCommand('cygpath -au '+self.framework.argDB['PETSC_DIR'])
+        if not status:
+          self.framework.argDB['PETSC_DIR']=pdir
+      except RuntimeError: pass
     # Check for version
     if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
       raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
