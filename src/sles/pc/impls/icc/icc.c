@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.39 1996/12/17 17:02:40 balay Exp balay $ ";
+static char vcid[] = "$Id: icc.c,v 1.40 1997/01/06 20:23:53 balay Exp curfman $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -100,7 +100,7 @@ static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 static int PCPrintHelp_ICC(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCICC preconditioner:\n");
-  PetscPrintf(pc->comm,"  %spc_icc_factorpointwise:Do NOT use block factorization \n",p);
+  PetscPrintf(pc->comm,"  %spc_icc_factorpointwise: Do NOT use block factorization \n",p);
   PetscPrintf(pc->comm,"    (Note: This only applies to the MATMPIROWBS matrix format;\n");
   PetscPrintf(pc->comm,"    all others currently only support point factorization.\n");
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.84 1997/01/01 03:35:54 bsmith Exp balay $";
+static char vcid[] = "$Id: itcl.c,v 1.85 1997/01/06 20:22:18 balay Exp curfman $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -238,7 +238,7 @@ int KSPPrintHelp(KSP ksp)
     PetscPrintf(ksp->comm," %sksp_preres: use preconditioned residual norm in convergence test\n",p);
     PetscPrintf(ksp->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
     PetscPrintf(ksp->comm," KSP Monitoring Options: Choose any of the following\n");
-    PetscPrintf(ksp->comm,"   %sksp_cancelmonitors: cancels all monitors hardwired in code\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_cancelmonitors: cancel all monitors hardwired in code\n",p);
     PetscPrintf(ksp->comm,"   %sksp_monitor: at each iteration print (usually preconditioned) \n\
     residual norm to stdout\n",p);
     PetscPrintf(ksp->comm,"   %sksp_xmonitor [x,y,w,h]: use X graphics monitor of (usually \n\
