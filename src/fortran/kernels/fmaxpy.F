@@ -1,13 +1,12 @@
 !
-!  "$Id: fmaxpy.F,v 1.6 1998/07/13 18:14:13 balay Exp bsmith $";
+!  "$Id: fmaxpy.F,v 1.7 1999/03/10 22:35:43 bsmith Exp balay $";
 !
 !    Fortran kernel for the MAXPY() vector routine
 !
+#include "include/finclude/petscdef.h"
 !
       subroutine FortranMAXPY4(x, a1, a2, a3, a4, y1, y2, y3, y4, n)
       implicit none
-#include "include/finclude/petscdef.h"
-
       Scalar  a1, a2, a3, a4
       Scalar  x(*), y1(*), y2(*), y3(*), y4(*)
       integer n
@@ -23,8 +22,6 @@
 
       subroutine FortranMAXPY3(x, a1, a2, a3, y1, y2, y3, n)
       implicit none
-#include "include/finclude/petscdef.h"
-
       Scalar  a1, a2, a3, x(*), y1(*), y2(*), y3(*)
       integer n
 
@@ -41,8 +38,6 @@
 
       subroutine FortranMAXPY2(x, a1, a2, y1, y2, n)
       implicit none
-#include "include/finclude/petscdef.h"
-
       Scalar  a1, a2, x(*), y1(*), y2(*)
       integer n
 
@@ -60,8 +55,6 @@
 !
       subroutine Fortranxtimesy(x, y, z, n)
       implicit none
-#include "include/finclude/petscdef.h"
-
       Scalar  x(*), y(*), z(*)
       integer n
 

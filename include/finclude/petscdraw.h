@@ -1,8 +1,12 @@
 !
-!  $Id: draw.h,v 1.19 1999/01/13 22:37:30 bsmith Exp bsmith $;
+!  $Id: draw.h,v 1.20 1999/02/04 23:08:59 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the Draw package in PETSc
 !
+
+#if !defined (__DRAW_H)
+#define __DRAW_H
+
 #define Draw       PetscFortranAddr
 #define DrawLG     PetscFortranAddr
 #define DrawAxis   PetscFortranAddr
@@ -17,6 +21,8 @@
 !
 #define DRAW_X    'x'
 #define DRAW_NULL 'null'
+
+#endif
 !
 !  Colors for drawing
 !

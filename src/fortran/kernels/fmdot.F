@@ -1,13 +1,12 @@
 !
-!  "$Id: fmdot.F,v 1.6 1998/07/06 21:57:00 balay Exp balay $";
+!  "$Id: fmdot.F,v 1.7 1998/07/13 18:14:25 balay Exp balay $";
 !
 !    Fortran kernel for the MDot() vector routine
 !
+#include "include/finclude/petscdef.h"
 !
       subroutine FortranMDot4(x, y1, y2, y3, y4, n,sum1,sum2,sum3,sum4)
       implicit none
-#include "include/finclude/petscdef.h"
-
       Scalar  sum1,sum2,sum3,sum4
       Scalar  x(*),y1(*),y2(*),y3(*),y4(*)
       integer n
@@ -26,8 +25,6 @@
 
       subroutine FortranMDot3(x, y1, y2, y3, n,sum1,sum2,sum3)
       implicit none
-#include "include/finclude/petscdef.h"
-
       Scalar  sum1,sum2,sum3,x(*),y1(*),y2(*),y3(*)
       integer n
 
@@ -44,8 +41,6 @@
 
       subroutine FortranMDot2(x, y1, y2, n,sum1,sum2)
       implicit none
-#include "include/finclude/petscdef.h"
-
       Scalar  sum1,sum2,x(*),y1(*),y2(*)
       integer n
 
@@ -62,8 +57,6 @@
 
       subroutine FortranMDot1(x, y1, n,sum1)
       implicit none
-#include "include/finclude/petscdef.h"
-
       Scalar  sum1,x(*),y1(*)
       integer n
 

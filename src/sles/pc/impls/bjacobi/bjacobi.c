@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.126 1999/02/19 17:02:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.127 1999/03/02 20:27:21 bsmith Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -862,7 +862,7 @@ int PCApplyTrans_BJacobi_Multiblock(PC pc,Vec x, Vec y)
 
 #undef __FUNC__  
 #define __FUNC__ "PCSetUp_BJacobi_Multiblock"
-int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
+static int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 {
   PC_BJacobi             *jac = (PC_BJacobi *) pc->data;
   int                    ierr, m, n_local, N, M, start, i;

@@ -1,12 +1,14 @@
 !
-!  $Id: snes.h,v 1.19 1999/03/01 18:39:14 balay Exp bsmith $;
+!  $Id: snes.h,v 1.20 1999/03/07 17:30:40 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
+#if !defined (__SNES_H)
+#define __SNES_H
+
 #define SNES            PetscFortranAddr
 #define SNESProblemType integer
 #define SNESType        character*(80)
-
 !
 !  SNESType
 !
@@ -19,6 +21,7 @@
 #define SNES_UM_TR          'umtr'
 #define SNES_LS_LM          'lslm'
 
+#endif
 !
 !  Two classes of nonlinear solvers
 !

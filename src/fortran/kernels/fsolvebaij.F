@@ -1,14 +1,14 @@
 !
-!  "$Id: fsolvebaij.F,v 1.5 1998/10/08 17:55:35 bsmith Exp bsmith $";
+!  "$Id: fsolvebaij.F,v 1.6 1998/12/23 21:18:44 bsmith Exp balay $";
 !
 !    Fortran kernel for sparse triangular solve in the BAIJ matrix format
 ! This ONLY works for factorizations in the NATURAL ORDERING, i.e.
 ! with MatSolve_SeqBAIJ_4_NaturalOrdering()
 !
+#include "include/finclude/petscdef.h"
+!
       subroutine FortranSolveBAIJ4Unroll(n,x,ai,aj,adiag,a,b)
       implicit none
-#include "include/finclude/petscdef.h"
-
       MatScalar        a(0:*)
       Scalar           x(0:*),b(0:*)
       integer          n, ai(0:*),aj(0:*),adiag(0:*)
@@ -91,8 +91,6 @@
 !
       subroutine FortranSolveBAIJ4BLAS(n,x,ai,aj,adiag,a,b,w)
       implicit none
-#include "include/finclude/petscdef.h"
-
       MatScalar        a(0:*)
       Scalar           x(0:*),b(0:*),w(0:*)
       integer          n, ai(0:*),aj(0:*),adiag(0:*)
@@ -190,8 +188,6 @@
 !
       subroutine FortranSolveBAIJ4(n,x,ai,aj,adiag,a,b,w)
       implicit none
-#include "include/finclude/petscdef.h"
-
       MatScalar        a(0:*)
       Scalar           x(0:*),b(0:*),w(0:*)
       integer          n, ai(0:*),aj(0:*),adiag(0:*),ii,jj

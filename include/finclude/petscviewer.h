@@ -1,8 +1,11 @@
 !
-!  $Id: viewer.h,v 1.20 1999/01/12 23:18:29 bsmith Exp bsmith $;
+!  $Id: viewer.h,v 1.21 1999/02/04 23:08:39 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the Viewer package in PETSc
 !
+#if !defined (__VIEWER_H)
+#define __VIEWER_H
+
 #define Viewer           PetscFortranAddr
 #define ViewerBinaryType integer
 #define ViewerType       character*(80)
@@ -13,6 +16,8 @@
 #define STRING_VIEWER       "string"
 #define DRAW_VIEWER         "draw"
 #define AMS_VIEWER          "ams"
+
+#endif
 
 !
 !  Flags for binary I/O

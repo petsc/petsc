@@ -1,8 +1,11 @@
 !
-!  $Id: pc.h,v 1.27 1999/01/27 19:50:07 bsmith Exp bsmith $;
+!  $Id: pc.h,v 1.28 1999/02/04 23:04:35 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
+#if !defined (__PC_H)
+#define __PC_H
+
 #define PC           PetscFortranAddr
 #define PCNullSpace  PetscFortranAddr
 #define PCSide       integer
@@ -24,6 +27,8 @@
 #define PCASM       'asm'
 #define PCSLES      'sles'
 #define PCCOMPOSITE 'composite'
+
+#endif
 
 !
 !  PCSide

@@ -1,8 +1,11 @@
 !
-!  "$Id: ksp.h,v 1.16 1998/12/03 04:07:13 bsmith Exp bsmith $";
+!  "$Id: ksp.h,v 1.17 1999/02/04 23:06:49 bsmith Exp balay $";
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
+#if !defined (__KSP_H)
+#define __KSP_H
+
 #define KSP          PetscFortranAddr
 #define KSPCGType    integer
 #define KSPType      character*(80)
@@ -23,6 +26,7 @@
 #define KSPQCG        'qcg'
 #define KSPTRLS       'trls'
 
+#endif
 !
 !  CG Types
 !

@@ -1,8 +1,11 @@
 !
-!  $Id: mat.h,v 1.50 1999/02/15 21:55:03 balay Exp bsmith $;
+!  $Id: mat.h,v 1.51 1999/03/11 16:24:57 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
+#if !defined (__MAT_H)
+#define __MAT_H
+
 #define Mat                 PetscFortranAddr
 #define MatFDColoring       PetscFortranAddr
 #define MatPartitioning     PetscFortranAddr
@@ -21,6 +24,7 @@
 #define MatStructure        integer
 #define MatPartitioningType integer
 
+#endif
 !
 !  Matrix types
 !

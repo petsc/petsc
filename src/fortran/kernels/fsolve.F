@@ -1,14 +1,14 @@
 !
-!  "$Id: fsolve.F,v 1.9 1998/07/13 18:15:00 balay Exp bsmith $";
+!  "$Id: fsolve.F,v 1.10 1998/12/23 21:18:44 bsmith Exp balay $";
 !
 !    Fortran kernel for sparse triangular solve in the AIJ matrix format
 ! This ONLY works for factorizations in the NATURAL ORDERING, i.e.
 ! with MatSolve_SeqAIJ_NaturalOrdering()
 !
+#include "include/finclude/petscdef.h"
+!
       subroutine FortranSolveAIJ(n,x,ai,aj,adiag,aa,b)
       implicit none
-#include "include/finclude/petscdef.h"
-
       Scalar           x(0:*),aa(0:*),b(0:*)
       integer          n, ai(0:*),aj(0:*),adiag(0:*)
 

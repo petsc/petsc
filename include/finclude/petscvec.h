@@ -1,8 +1,11 @@
 !
-!  $Id: vec.h,v 1.25 1999/02/04 23:08:14 bsmith Exp balay $;
+!  $Id: vec.h,v 1.26 1999/02/04 23:40:12 balay Exp balay $;
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
+#if !defined (__VEC_H)
+#define __VEC_H
+
 #define Vec          PetscFortranAddr
 #define VecScatter   PetscFortranAddr 
 #define NormType     integer
@@ -15,6 +18,7 @@
 #define VEC_MPI    "mpi"
 #define VEC_SHARED "shared"
 
+#endif
 !
 !
 !  Types of vector and matrix norms

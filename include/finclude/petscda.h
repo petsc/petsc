@@ -1,13 +1,17 @@
 !
-!  $Id: da.h,v 1.11 1998/03/30 20:07:07 balay Exp balay $;
+!  $Id: da.h,v 1.12 1998/03/30 21:14:14 balay Exp balay $;
 !
 !  Include file for Fortran use of the DA (distributed array) package in PETSc
 !
+#if !defined (__DA_H)
+#define __DA_H
+
 #define DA             PetscFortranAddr
 #define DAPeriodicType integer
 #define DAStencilType  integer
 #define DADirection    integer
 
+#endif
 !
 !  Types of stencils
 !

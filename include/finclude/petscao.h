@@ -1,13 +1,17 @@
 !
-!  $Id: ao.h,v 1.7 1998/03/25 00:37:20 balay Exp balay $;
+!  $Id: ao.h,v 1.8 1998/03/27 21:18:20 balay Exp balay $;
 !
 !  Include file for Fortran use of the AO (application ordering) package in PETSc
 !
+#if !defined (__AO_H)
+#define __AO_H
+
 #define AO         PetscFortranAddr
 #define AOData     PetscFortranAddr
 #define AOType     integer
 #define AODataType integer
 
+#endif
       integer AO_BASIC, AO_ADVANCED
       parameter (AO_BASIC = 0, AO_ADVANCED = 1)
 

@@ -1,11 +1,16 @@
 !
-!  $Id: sys.h,v 1.13 1998/03/27 21:17:45 balay Exp balay $;
+!  $Id: sys.h,v 1.14 1998/03/30 21:14:16 balay Exp balay $;
 !
 !  Include file for Fortran use of the System package in PETSc
 !
+#if !defined (__SYS_H)
+#define __SYS_H
+
 #define PetscRandom         PetscFortranAddr
 #define PetscBynarySeekType integer
 #define PetscRandomType     integer
+
+#endif
 !
 !     Random numbers
 !

@@ -1,14 +1,13 @@
 !
-!  "$Id: sgemv.F,v 1.1 1998/12/14 16:25:12 bsmith Exp bsmith $";
+!  "$Id: sgemv.F,v 1.2 1998/12/23 21:18:39 bsmith Exp balay $";
 !
 !    Fortran kernel for gemv() BLAS operation. This version supports
 !  matrix array stored in single precision but vectors in double
 !
+#include "include/finclude/petscdef.h"
 !
       subroutine MSGemv(bs,ncols,A,x,y)
       implicit none
-#include "include/finclude/petscdef.h"
-
       integer          bs,ncols
       MatScalar        a(bs,ncols)
       Scalar           x(ncols),y(bs)
@@ -30,8 +29,6 @@
 
       subroutine MSGemvp(bs,ncols,A,x,y)
       implicit none
-#include "include/finclude/petscdef.h"
-
       integer          bs,ncols
       MatScalar        a(bs,ncols)
       Scalar           x(ncols),y(bs)
@@ -49,8 +46,6 @@
 
       subroutine MSGemvm(bs,ncols,A,x,y)
       implicit none
-#include "include/finclude/petscdef.h"
-
       integer          bs,ncols
       MatScalar        a(bs,ncols)
       Scalar           x(ncols),y(bs)
@@ -68,8 +63,6 @@
 
       subroutine MSGemvt(bs,ncols,A,x,y)
       implicit none
-#include "include/finclude/petscdef.h"
-
       integer          bs,ncols
       MatScalar        a(bs,ncols)
       Scalar           x(bs),y(ncols)
@@ -90,8 +83,6 @@
 
       subroutine MSGemm(bs,A,B,C)
       implicit none
-#include "include/finclude/petscdef.h"
-
       integer          bs
       MatScalar        A(bs,bs),B(bs,bs),C(bs,bs)
       Scalar           sum
@@ -113,8 +104,6 @@
 
       subroutine MSGemmi(bs,A,C,B)
       implicit none
-#include "include/finclude/petscdef.h"
-
       integer          bs
       MatScalar        A(bs,bs),B(bs,bs),C(bs,bs)
       Scalar           sum
