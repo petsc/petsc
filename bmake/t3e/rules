@@ -1,4 +1,4 @@
-# $Id: base,v 1.6 1997/09/10 18:37:02 balay Exp bsmith $ 
+# $Id: base,v 1.7 1997/09/17 04:31:45 bsmith Exp balay $ 
 
 PARCH    = t3d
 CC       = cc -DPARCH_t3d
@@ -6,7 +6,7 @@ CC       = cc -DPARCH_t3d
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
 #
-CCV      = unknown
+CCV      = $(CC) -V
 #
 FC       = f90 -dp
 AR       = ar
