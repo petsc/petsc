@@ -1,4 +1,4 @@
-/*$Id: snesj.c,v 1.73 2001/08/07 03:04:08 balay Exp bsmith $*/
+/*$Id: snesj.c,v 1.74 2001/08/21 21:03:49 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/
 
@@ -96,8 +96,8 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     /* Communicate scale to all processors */
     ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
     ierr = VecScale(&scale,j2a);CHKERRQ(ierr);
-    ierr = VecGetArray(j2a,&y);CHKERRQ(ierr);
     ierr = VecNorm(j2a,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
+    ierr = VecGetArray(j2a,&y);CHKERRQ(ierr);
     for (j=start; j<end; j++) {
       if (PetscAbsScalar(y[j-start]) > amax) {
         ierr = MatSetValues(*B,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex1e.c,v 1.13 2001/08/07 21:29:27 bsmith Exp balay $*/
+/*$Id: ex1e.c,v 1.14 2001/08/09 20:53:52 balay Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -130,7 +130,7 @@ _ PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);___
 _ VecAYPX(&two,x,y);___
 _ VecNorm(y,NORM_2,&norm);___
   v = norm-18.0*sqrt((PetscReal) n); if (v > -PETSC_EPS && v < PETSC_EPS) v = 0.0; 
-_ PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);___
+_ PetscPrintf(PETSC_COMM_WORLD,"VecAYPX %g\n",v);___
 
 _ VecSwap(x,y);___
 _ VecNorm(y,NORM_2,&norm);___
