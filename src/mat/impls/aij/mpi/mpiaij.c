@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.258 1998/07/22 16:15:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.259 1998/08/25 19:01:20 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1662,6 +1662,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 -  -mat_aij_oneindex - Internally use indexing starting at 1
         rather than 0.  Note that when calling MatSetValues(),
         the user still MUST index entries starting at 0!
+.   -mat_mpi - use the parallel matrix data structures even on one processor 
+               (defaults to using SeqBAIJ format on one processor)
+.   -mat_mpi - use the parallel matrix data structures even on one processor 
+               (defaults to using SeqAIJ format on one processor)
+
 
    Storage Information:
    For a square global matrix we define each processor's diagonal portion 

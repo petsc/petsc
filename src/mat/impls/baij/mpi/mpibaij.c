@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.133 1998/07/14 03:08:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.134 1998/07/23 22:48:19 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1914,6 +1914,8 @@ static struct _MatOps MatOps_Values = {
 .   -mat_no_unroll - uses code that does not unroll the loops in the 
                      block calculations (much slower)
 .   -mat_block_size - size of the blocks to use
+.   -mat_mpi - use the parallel matrix data structures even on one processor 
+               (defaults to using SeqBAIJ format on one processor)
 
    Notes:
    The user MUST specify either the local or global matrix dimensions
@@ -1968,12 +1970,15 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   Mat          B;
   Mat_MPIBAIJ  *b;
   int          ierr, i,sum[2],work[2],mbs,nbs,Mbs=PETSC_DECIDE,Nbs=PETSC_DECIDE,size,flg;
+  int          flag1,flag2;
 
   PetscFunctionBegin;
   if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size specified, must be positive");
 
   MPI_Comm_size(comm,&size);
-  if (size == 1) {
+  ierr = OptionsHasName(PETSC_NULL,"-mat_mpibaij",&flag1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_mpi",&flag2); CHKERRQ(ierr);
+  if (!flag1 && !flag2 && size == 1) {
     if (M == PETSC_DECIDE) M = m;
     if (N == PETSC_DECIDE) N = n;
     ierr = MatCreateSeqBAIJ(comm,bs,M,N,d_nz,d_nnz,A); CHKERRQ(ierr);
