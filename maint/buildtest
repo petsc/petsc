@@ -41,7 +41,7 @@ $RSH $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all $APPE
 $RSH $MACH -n "cd $TMP;echo '****************************************************' >> maint/build_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH -n "cd $TMP;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/build_$ARCH.$BOPT.$MACH.log"
 $RCP ${MACH}:$TMP/maint/build_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly
-#$RSH $MACH -n "cd $TMP;/bin/cp maint/build_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly"
+chmod a+r /home/petsc/logs/nightly/build_$ARCH.$BOPT.$MACH.log
 $RSH $MACH -n "cd $TMP;chmod -R g+w lib" >& /dev/null
 #
 #  Now run the test examples
@@ -54,6 +54,5 @@ end
 $RSH $MACH -n "cd $TMP ;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH -n "cd $TMP ;echo 'X******************************************************X' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 
-#$RSH $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly"
 
 

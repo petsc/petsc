@@ -41,36 +41,14 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
 #PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
-# Location of BlockSolve (MPI version)
+# SPOOLES, SPOOLES_MPI
 #
-#BLOCKSOLVE_INCLUDE = -I/home/petsc/BlockSolve95/include
-#BLOCKSOLVE_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
-#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
+SPOOLES_INCLUDE       = -I/u3/balay/software/spooles-2.2
+SPOOLES_LIB           = /u3/balay/software/spooles-2.2/MPI/src/spoolesMPI.a /u3/balay/software/spooles-2.2/spooles.a 
+PETSC_HAVE_SPOOLES    = -DPETSC_HAVE_SPOOLES
 #
-# Matlab location
+# DSCPACK
 #
-#CMEX            = 
-#MCC            = 
-#MATLABCOMMAND  = matlab
-#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
-#
-# Location where adiC is installed
-#
-#ADIC_DEFINES    = -Dad_GRAD_MAX=36
-#ADIC_CC         = adiC -a -d gradient
-#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
-#
-# Location of PVODE; Alan Hindmarsh's parallel ODE solver
-# 
-#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
-#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/sun4/libpvode.a
-#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
-#
-# Location of ParMetis
-#
-#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
-#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
-#PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
-
-
-
+DSCPACK_INCLUDE    = -I/u3/balay/software/DSCPACK1.0/DSC_LIB
+DSCPACK_LIB        = /u3/balay/software/DSCPACK1.0/DSC_LIB/dsclibdbl.a
+PETSC_HAVE_DSCPACK = -DPETSC_HAVE_DSCPACK
