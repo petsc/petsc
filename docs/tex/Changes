@@ -42,6 +42,12 @@ add to it).
 
     Added OptionsGetLogical()
 
+    Remove the gvec directory from the distribution. If you are using this
+ please let us and know and we can provide it or provide alternative code
+to do what you need.
+
+  Viewer
+
     Changed ViewerFileOpenASCII() to ViewerASCIIOpen()
 
     Changed ViewerDrawOpenX() to ViewerDrawOpen()
@@ -50,9 +56,7 @@ add to it).
 
     Changed ViewerDrawOpenX() to ViewerDrawOpen()
 
-    Remove the gvec directory from the distribution. If you are using this
- please let us and know and we can provide it or provide alternative code
-to do what you need.
+    Changed ViewerType from an enum to a char *
 
   SNES 
 
