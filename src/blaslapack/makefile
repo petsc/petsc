@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 1998/06/15 15:44:15 balay Exp $ 
+# $Id: makefile,v 1.1 1998/12/09 20:05:01 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -14,4 +14,4 @@ DIRS     = blas lapack
 LOCDIR   = src/blaslapack
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
+include ${PETSC_DIR}/bmake/common_test
