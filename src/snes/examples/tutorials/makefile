@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.58 1999/04/16 16:10:23 bsmith Exp balay $ 
+# $Id: makefile,v 1.59 1999/05/03 21:33:43 balay Exp balay $ 
 
 ALL: ex1
 
@@ -229,7 +229,7 @@ runex5_7:
 runex5_8:
 	-@${MPIRUN} -np 2 ex5 -snes_vecmonitor > /dev/null 2>&1
 runex5_9:
-	-@${MPIRUN} -np 4 ex5 -snes_mf -mx 20 -my 20 -snes_smonitor>ex5_9.tmp 2>&1;\
+	-@${MPIRUN} -np 4 ex5 -snes_mf -mx 30 -my 30 -snes_smonitor>ex5_9.tmp 2>&1;\
 	   if (diff output/ex5_9.out ex5_9.tmp) then true; \
 	   else echo "Possible problem with ex5_9, diffs above"; fi; \
 	   ${RM} -f ex5_9.tmp
