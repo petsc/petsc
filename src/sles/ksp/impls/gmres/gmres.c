@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.80 1997/02/22 02:23:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres.c,v 1.81 1997/03/13 03:43:49 curfman Exp balay $";
 #endif
 
 /*
@@ -109,7 +109,7 @@ int    KSPSetUp_GMRES(KSP ksp )
 
   if (gmres->q_preallocate) {
     gmres->vv_allocated   = VEC_OFFSET + 2 + max_k;
-    ierr = VecDuplicateVecs(ksp->vec_rhs,gmres->vv_allocated,&gmres->user_work[0]);
+    ierr = VecDuplicateVecs(VEC_RHS,gmres->vv_allocated,&gmres->user_work[0]);
     CHKERRQ(ierr);
     PLogObjectParents(ksp,gmres->vv_allocated,gmres->user_work[0]);
     gmres->mwork_alloc[0] = gmres->vv_allocated;
