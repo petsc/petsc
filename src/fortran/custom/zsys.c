@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.57 1999/01/31 16:12:02 bsmith Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.58 1999/03/03 16:48:46 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -219,15 +219,13 @@ void petscattachdebugger_(int *__ierr)
   *__ierr = PetscAttachDebugger();
 }
 
-/*
-      This bleeds memory, but no easy way to get around it
-*/
 void petscobjectsetname_(PetscObject *obj,CHAR name,int *__ierr,int len)
 {
   char *t1;
 
   FIXCHAR(name,len,t1);
   *__ierr = PetscObjectSetName(*obj,t1);
+  FREECHAR(name,t1);
 }
 
 void petscerror_(int *number,int *p,CHAR message,int *__ierr,int len)
@@ -235,6 +233,7 @@ void petscerror_(int *number,int *p,CHAR message,int *__ierr,int len)
   char *t1;
   FIXCHAR(message,len,t1);
   *__ierr = PetscError(-1,0,"fortran_interface_unknown_file",0,*number,*p,t1);
+  FREECHAR(message,t1);
 }
 
 void petscgetflops_(PLogDouble *d,int *__ierr)
