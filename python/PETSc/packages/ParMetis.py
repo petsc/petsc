@@ -199,7 +199,7 @@ class Configure(config.base.Configure):
       args.append('--with-fc=0')
     if not self.framework.argDB['with-shared']:
       args.append('--with-shared=0')
-    args.extend(['--with-mpi-include='+str(self.mpi.include).replace(' ',''), '--with-mpi-lib='+str(self.mpi.lib).replace(' ','')])
+    args.extend(['--with-mpi-include='+self.mpi.include[0], '--with-mpi-lib='+str(self.mpi.lib).replace(' ','').replace("'","")])
     if self.framework.argDB['with-mpi-shared']:
       args.append('--with-mpi-shared')
     argsStr = ' '.join(args)
@@ -227,9 +227,7 @@ class Configure(config.base.Configure):
           os.remove('RDict.db')
         if os.path.exists('bsSource.db'):
           os.remove('bsSource.db')
-        make = self.getModule(parmetisDir, 'make').Make()
-        make.prefix = installDir
-        make.clArgs = map(lambda s: s.replace('"', ''), args)
+        make = self.getModule(parmetisDir, 'make').Make(Args=map(lambda s: s.replace('"', ''), args))
         make.run()
         self.argDB['ignoreCompileOutput'] = oldIgnore
         self.argDB['debugLevel'] = oldLevel

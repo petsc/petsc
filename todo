@@ -5,18 +5,18 @@
   Bugs  ALWAYS Priority 0
   ----
 
-  Configure needs to set the right compiler for linking!!  [PETSC #12367] When should
+ (Priority 0)  Configure needs to set the right compiler for linking!!  [PETSC #12367] When should
 it use C++ to link fortran, when C when Fortran???
 
   Fix all MatPartitioners to optionally turn on edge weights from the matrix values.
   Currently the are ignored for all partitioners except parmetis, where they are 
   incorrectly always used.
 
- We need to have MPI.py properly detect if the MPI macros
+  (Priority 0) We need to have MPI.py properly detect if the MPI macros
 in PETSc can be used and turn them off if they cannot.
 Better to add a new flag like PETSC_USE_MPI_MACROS
 
-  If shared libraries is turned on, need configure test that each external package
+   (Priority 0) If shared libraries is turned on, need configure test that each external package
   can go into shared library. Trouble on Mac
 
   -------------
@@ -53,7 +53,6 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
 
    (Priority 2) General mechanism for DMGetMatrix() etc ...for composite matrices
 
-
   ------------
   Cleaner code
   ------------
@@ -61,10 +60,6 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   (Priority 2) Add more PetscMallocXXX() especially in the VecScatterCreate_.... stuff.
 
   (Priority 0) Fix bad macros with inline
-
-  (Priority 0) for configure optional external packages, write a package independent rule to check if the
-  user wants the package installed and if all stuff it needs is available. See hypre.py
-  for a template. Put the rule up in the ../../PETSc directory
 
    Add _SNESOps function table, dang I can't beleive we don't have it yet
 
@@ -79,7 +74,6 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   (Priority 1) all Raise RuntimeError() in configure that are intended for users 
   should have instead self.framework.Box('message','url') that formats the 
   message with ** around it for users to see easily.
-
 
   Do more error checking on user input arguments for nice error messages like if they
   pass a directory for -with-blas-lapack-dir or the other way around
@@ -113,13 +107,13 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   -------
   Testing
   -------
-   PetscInt long long
+   (Priority 0) PetscInt long long
 
    (Priority 0) configure for all packages, with install option for as many as possible
 
-   (Priority 1) Test support for requesting 32 bit or 64 bit code
+   (Priority 0) Test support for requesting 32 bit or 64 bit code
 
-   (Priority 1) Test that the preprocessor actually preprocesses somehow
+   (Priority 1) Test that the Fortran preprocessor actually preprocesses somehow
 
    We should have performance benchmarking to make sure code performance is not decreased by changes
 
