@@ -1,5 +1,5 @@
 
-To: leaf, gunter, dstevens, canfield, taylor, jichen, meena, freitag, diachin, plassman, roh, pwu, hovland, adams, kaushik, michalakes, elliott, resiga, murillo, knepley, lixu, jovanovi, keyes, zhang, baxter, jcheng, norris, oberman, loth, yuwu, heroux, lehoucq, xli
+To: leaf, gunter, dstevens, canfield, taylor, jichen, freitag, diachin, plassman, roh, pwu, hovland, adams, kaushik, michalakes, resiga, murillo, knepley, jovanovi, keyes, zhang, baxter, jcheng, norris, oberman, loth, yuwu, heroux, lehoucq, xli
 cc: bsmith, balay, gropp, curfman
 Subject: new local PETSc installation
 
@@ -11,7 +11,7 @@ new features and changes in the software.
 The previous version PETSc release will be located in 
 /home/petsc/petsc-2.0.22
 
-Please note the following changes in the local build:
+Please note the following changes in the local installation:
  - PETSC_ARCH on quad is now rs6000_sp instead of rs6000.
  - The link /home/petsc/petsc.solid is no longer used.
 
