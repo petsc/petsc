@@ -530,3 +530,9 @@ ${\1}
 replaces all $(something) with ${something}
 
 ----------------------------------------------------------------------
+useful nm options on various machines
+
+sun4   : nm -o
+solairs: nm -A
+rs6000 : nm -A
+IRIX   : nm -B
