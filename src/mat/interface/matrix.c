@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.254 1997/07/29 14:09:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.255 1997/08/22 15:13:06 bsmith Exp curfman $";
 #endif
 
 /*
@@ -437,19 +437,20 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 #undef __FUNC__  
 #define __FUNC__ "MatSetLocalToGlobalMapping"
 /*@
-   MatSetLocalToGlobalMapping - Sets a local numbering to global numbering used
-   by the routine MatSetValuesLocal() to allow users to insert matrices entries
+   MatSetLocalToGlobalMapping - Sets a local-to-global numbering for use by
+   the routine MatSetValuesLocal() to allow users to insert matrix entries
    using a local (per-processor) numbering.
 
    Input Parameters:
 .  x - the matrix
-.  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
+.  mapping - mapping created with ISLocalToGlobalMappingCreate() 
+             or ISLocalToGlobalMappingCreateIS()
 
-.keywords: matrix, set, values, local ordering
+.keywords: matrix, set, values, local, global, mapping
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesLocal()
 @*/
-int MatSetLocalToGlobalMapping(Mat x, ISLocalToGlobalMapping mapping)
+int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
 {
   PetscValidHeaderSpecific(x,MAT_COOKIE);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
@@ -466,20 +467,21 @@ int MatSetLocalToGlobalMapping(Mat x, ISLocalToGlobalMapping mapping)
 #undef __FUNC__  
 #define __FUNC__ "MatSetLocalToGlobalMappingBlocked"
 /*@
-   MatSetLocalToGlobalMappingBlocked - Sets a local numbering to global numbering used
-   by the routine MatSetValuesBlockedLocal() to allow users to insert matrices entries
-   using a local (per-processor) numbering.
+   MatSetLocalToGlobalMappingBlocked - Sets a local-to-global numbering for use
+   by the routine MatSetValuesBlockedLocal() to allow users to insert matrix
+   entries using a local (per-processor) numbering.
 
    Input Parameters:
 .  x - the matrix
-.  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
+.  mapping - mapping created with ISLocalToGlobalMappingCreate() or
+             ISLocalToGlobalMappingCreateIS()
 
 .keywords: matrix, set, values, local ordering
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal(),
            MatSetValuesBlocked(), MatSetValuesLocal()
 @*/
-int MatSetLocalToGlobalMappingBlocked(Mat x, ISLocalToGlobalMapping mapping)
+int MatSetLocalToGlobalMappingBlocked(Mat x,ISLocalToGlobalMapping mapping)
 {
   PetscValidHeaderSpecific(x,MAT_COOKIE);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
@@ -489,6 +491,7 @@ int MatSetLocalToGlobalMappingBlocked(Mat x, ISLocalToGlobalMapping mapping)
   }
  
   x->mapping = mapping;
+  PetscObjectReference((PetscObject)mapping);
   return 0;
 }
 
@@ -496,21 +499,25 @@ int MatSetLocalToGlobalMappingBlocked(Mat x, ISLocalToGlobalMapping mapping)
 #define __FUNC__ "MatSetValuesLocal"
 /*@
    MatSetValuesLocal - Inserts or adds values into certain locations of a matrix,
-        using a local ordering of the nodes. 
+   using a local ordering of the nodes. 
 
    Input Parameters:
-.  x - matrix to insert in
-.  nrow - number of row elements to add
-.  irow - row indices where to add
-.  ncol - number of column elements to add
-.  icol - column indices where to add
-.  y - array of values
-.  iora - either INSERT_VALUES or ADD_VALUES
+.  x - the matrix
+.  nrow, irow - number of rows and their local indices
+.  ncol, icol - number of columns and their local indices
+.  y -  a logically two-dimensional array of values
+.  addv - either INSERT_VALUES or ADD_VALUES, where
+$     ADD_VALUES - adds values to any existing entries
+$     INSERT_VALUES - replaces existing entries with new values
 
    Notes:
+   Before calling MatSetValuesLocal(), the user must first set the
+   local-to-global mapping by calling MatSetLocalToGlobalMapping().
+
    Calls to MatSetValuesLocal() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
+
    These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd() 
    MUST be called after all calls to MatSetValuesLocal() have been completed.
 
@@ -559,32 +566,34 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
 #define __FUNC__ "MatSetValuesBlockedLocal"
 /*@
    MatSetValuesBlockedLocal - Inserts or adds values into certain locations of a matrix,
-        using a local ordering of the nodes a block at a time. 
+   using a local ordering of the nodes a block at a time. 
 
    Input Parameters:
-.  x - matrix to insert in
-.  nrow - number of row elements to add
-.  irow - row indices where to add in block numbering
-.  ncol - number of column elements to add
-.  icol - column indices where to add in block numbering
-.  y - array of values
-.  iora - either INSERT_VALUES or ADD_VALUES
+.  x - the matrix
+.  nrow, irow - number of rows and their local indices
+.  ncol, icol - number of columns and their local indices
+.  y -  a logically two-dimensional array of values
+.  addv - either INSERT_VALUES or ADD_VALUES, where
+$     ADD_VALUES - adds values to any existing entries
+$     INSERT_VALUES - replaces existing entries with new values
 
    Notes:
-   When you set the local to global mapping with MatSetLocalToGlobalMappingBlocked() you 
-   must set the mapping for blocks, not for matrix elements.
+   Before calling MatSetValuesBlockedLocal(), the user must first set the
+   local-to-global mapping by calling MatSetLocalToGlobalMappingBlocked(),
+   where the mapping MUST be set for matrix blocks, not for matrix elements.
+
    Calls to MatSetValuesBlockedLocal() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
+
    These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd() 
    MUST be called after all calls to MatSetValuesBlockedLocal() have been completed.
 
-.keywords: matrix, set, values, local ordering
+.keywords: matrix, set, values, blocked, local
 
-.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
-           MatSetValuesLocal(), MatSetLocalToGlobalMappingBlocked()
+.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesLocal(), MatSetLocalToGlobalMappingBlocked()
 @*/
-int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,InsertMode addv) 
+int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,InsertMode addv) 
 {
   int ierr,irowm[128],icolm[128];
 

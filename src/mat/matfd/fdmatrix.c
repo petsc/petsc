@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.12 1997/08/13 22:23:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.13 1997/08/22 15:13:06 bsmith Exp curfman $";
 #endif
 
 /*
@@ -328,7 +328,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 #define __FUNC__ "MatFDColoringDestroy"
 /*@C
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
-         via MatFDColoringCreate().
+    via MatFDColoringCreate().
 
     Input Paramter:
 .   c - coloring context
@@ -384,10 +384,10 @@ int MatFDColoringDestroy(MatFDColoring c)
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringApply"
 /*@
-     MatFDColoringApply - Given a matrix for which a MatFDColoring has been created,
-         computes the Jacobian for a function via finite differences.
+    MatFDColoringApply - Given a matrix for which a MatFDColoring has been created,
+    computes the Jacobian for a function via finite differences.
 
-  Input Parameters:
+    Input Parameters:
 .   mat - location to store Jacobian
 .   coloring - coloring context created with MatFDColoringCreate()
 .   x1 - location at which Jacobian is to be computed
@@ -399,12 +399,12 @@ int MatFDColoringDestroy(MatFDColoring c)
 @*/
 int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
-  int           k, ierr,N,start,end,l,row,col,srow, it;
+  int           k, ierr,N,start,end,l,row,col,srow;
   Scalar        dx, mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale;
   double        epsilon = coloring->error_rel, umin = coloring->umin; 
   MPI_Comm      comm = coloring->comm;
   Vec           w1,w2,w3;
-  int           (*f)(void *,Vec,Vec,void *) = coloring->f,freq = coloring->freq;
+  int           (*f)(void *,Vec,Vec,void *) = coloring->f;
   void          *fctx = coloring->fctx;
 
   /*
@@ -417,8 +417,6 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     PLogInfo(coloring,"MatFDColoringApply:Computing Jacobian, iteration %d, freq %d\n",it,freq);
     *flag = SAME_NONZERO_PATTERN;
   }*/
-
-
 
   if (!coloring->w1) {
     ierr = VecDuplicate(x1,&coloring->w1); CHKERRQ(ierr);

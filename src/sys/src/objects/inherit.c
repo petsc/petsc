@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.15 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.16 1997/08/22 15:11:48 bsmith Exp curfman $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -82,12 +82,12 @@ static int PetscObjectInherit_DefaultDestroy(void *in)
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectReference"
 /*@C
-   PetscObjectReference - Indicate to any PetscObject that it is being
-       referenced in another PetscObject. This increases the reference
-       count for that object by one.
+   PetscObjectReference - Indicates to any PetscObject that it is being
+   referenced by another PetscObject. This increases the reference
+   count for that object by one.
 
    Input Parameter:
-.   obj - the PETSc object
+.  obj - the PETSc object
 
 .seealso: PetscObjectInherit()
 @*/
@@ -101,8 +101,8 @@ int PetscObjectReference(PetscObject obj)
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectInherit"
 /*@C
-   PetscObjectInherit - Associate another object with a given PETSc object. 
-                        This is to provide a limited support for inheritence.
+   PetscObjectInherit - Associates another object with a given PETSc object. 
+                        This is to provide a limited support for inheritance.
 
    Input Parameters:
 .  obj - the PETSc object
@@ -120,7 +120,7 @@ int PetscObjectReference(PetscObject obj)
    Mat, Vec, KSP, SNES, etc, or any user provided object. 
 
    Current limitation: 
-    Each object can have only one child - we may extend this eventually.
+   Each object can have only one child - we may extend this eventually.
 
 .keywords: object, inherit
 
