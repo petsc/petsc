@@ -47,6 +47,7 @@ typedef struct {
   VecScatter      scat;
   
   /* A few function pointers for inheritance */
+  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
   int (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
   int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
   int (*MatView)(Mat,PetscViewer);
@@ -60,26 +61,30 @@ typedef struct {
 EXTERN int SetSpoolesOptions(Mat, Spooles_options *);
 EXTERN int MatFactorInfo_Spooles(Mat,PetscViewer);
 
-EXTERN int MatDestroy_SeqAIJ_Spooles(Mat);
-EXTERN int MatSolve_SeqAIJ_Spooles(Mat,Vec,Vec);
-EXTERN int MatFactorNumeric_SeqAIJ_Spooles(Mat,Mat*); 
-EXTERN int MatView_SeqAIJ_Spooles(Mat,PetscViewer);
-EXTERN int MatAssemblyEnd_SeqAIJ_Spooles(Mat,MatAssemblyType);
-EXTERN int MatQRFactorSymbolic_SeqAIJ_Spooles(Mat,IS,IS,MatFactorInfo*,Mat*);
-EXTERN int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat,IS,IS,MatFactorInfo*,Mat*);
-EXTERN int MatCholeskyFactorSymbolic_SeqAIJ_Spooles(Mat,IS,MatFactorInfo*,Mat*);
+EXTERN int MatDestroy_SeqAIJSpooles(Mat);
+EXTERN int MatSolve_SeqAIJSpooles(Mat,Vec,Vec);
+EXTERN int MatFactorNumeric_SeqAIJSpooles(Mat,Mat*); 
+EXTERN int MatView_SeqAIJSpooles(Mat,PetscViewer);
+EXTERN int MatAssemblyEnd_SeqAIJSpooles(Mat,MatAssemblyType);
+EXTERN int MatQRFactorSymbolic_SeqAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN int MatLUFactorSymbolic_SeqAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN int MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);
+EXTERN int MatDuplicate_SeqAIJSpooles(Mat,MatDuplicateOption,Mat*);
 
-EXTERN int MatDestroy_MPIAIJ_Spooles(Mat);
-EXTERN int MatSolve_MPIAIJ_Spooles(Mat,Vec,Vec);
-EXTERN int MatFactorNumeric_MPIAIJ_Spooles(Mat,Mat*); 
-EXTERN int MatAssemblyEnd_MPIAIJ_Spooles(Mat,MatAssemblyType);
-EXTERN int MatLUFactorSymbolic_MPIAIJ_Spooles(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN int MatDuplicate_MPIAIJSpooles(Mat,MatDuplicateOption,Mat*);
+EXTERN int MatDestroy_MPIAIJSpooles(Mat);
+EXTERN int MatSolve_MPIAIJSpooles(Mat,Vec,Vec);
+EXTERN int MatFactorNumeric_MPIAIJSpooles(Mat,Mat*); 
+EXTERN int MatAssemblyEnd_MPIAIJSpooles(Mat,MatAssemblyType);
+EXTERN int MatLUFactorSymbolic_MPIAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
 
-EXTERN int MatDestroy_SeqSBAIJ_Spooles(Mat);
-EXTERN int MatGetInertia_SeqSBAIJ_Spooles(Mat,int*,int*,int*);
-EXTERN int MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles(Mat,IS,MatFactorInfo*,Mat*);
+EXTERN int MatDuplicate_SeqSBAIJSpooles(Mat,MatDuplicateOption,Mat*);
+EXTERN int MatDestroy_SeqSBAIJSpooles(Mat);
+EXTERN int MatGetInertia_SeqSBAIJSpooles(Mat,int*,int*,int*);
+EXTERN int MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);
 
-EXTERN int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat,IS,MatFactorInfo*,Mat*);
+EXTERN int MatDuplicate_MPISBAIJSpooles(Mat,MatDuplicateOption,Mat*);
+EXTERN int MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN_C_BEGIN
 EXTERN int MatConvert_Spooles_Base(Mat,MatType,Mat*);
 EXTERN_C_END
