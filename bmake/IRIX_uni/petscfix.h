@@ -138,7 +138,7 @@ extern int    atoi(char*);
 #endif
 
 /* -----------------------SGI IRIX -----------------------------------------*/
-#if defined(PARCH_IRIX) || defined(PARCH_IRIX64)
+#if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)
 
 #if defined(__cplusplus)
 extern "C" {
