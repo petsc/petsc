@@ -1,9 +1,23 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.11 1996/04/09 17:47:05 curfman Exp balay $";
+static char vcid[] = "$Id: iccbs.c,v 1.12 1996/04/26 00:08:23 balay Exp curfman $";
 #endif
 /*
-   Defines a Cholesky factorization preconditioner with BlockSolve interface.
+   Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
+   Note that BlockSolve95 works with a scaled and permuted linear system, 
+   where the diagonal of the scaled matrix is 1:
+      - original system:  Ax = b
+      - scaled system:    Cz = f, where
+                              C = D^{-1/2} A D^{-1/2}
+                              z = D^{1/2} x
+                              f = D^{-1/2} b
+                              D = diagonal of A
+   Thus, we use pre-solve and post-solve phases to handle scaling and permutation
+   of the original system.  Note that by default the scaled residual norm is
+   monitored for the ILU/ICC preconditioners of BlockSolve95.  Use the option
+     -ksp_bsmonitor
+   to print both the scaled and unscaled residual norms.
 */
+
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "src/pc/pcimpl.h"            /*I "pc.h" I*/
 #include "src/pc/impls/icc/icc.h"
@@ -31,7 +45,7 @@ int PCPreSolve_MPIRowbs(PC pc,KSP ksp)
   Scalar       *xa, *rhsa, *va;
   int          ierr;
 
-  /* Permute RHS and solution vectors */
+  /* Permute and scale RHS and solution vectors */
   ierr = KSPGetSolution(ksp,&x); CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&rhs); CHKERRQ(ierr);
   ierr = VecGetArray(rhs,&rhsa); CHKERRQ(ierr);
@@ -101,9 +115,9 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
 }
 
 /* 
-   KSPMonitor_MPIRowbs - Monitors the actual (unscaled) residual.  The
-   default residual monitor for PCICC with BlockSolve prints the scaled 
-   residual.
+   KSPMonitor_MPIRowbs - Prints the actual (unscaled) residual norm as
+   well as the scaled residual norm.  The default residual monitor for 
+   ICC/ILU with BlockSolve95 prints only the scaled residual norm.
 
    Options Database Keys:
 $  -ksp_bsmonitor
