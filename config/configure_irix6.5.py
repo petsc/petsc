@@ -10,6 +10,7 @@ if __name__ == '__main__':
     '--with-cc=cc -n32',
     '--with-fc=f90 -cpp -n32',
     '--with-cxx=CC -n32',
+    '-ignoreWarnings',
     '-LDFLAGS=-Wl,-woff,84,-woff,85,-woff,113',
     '--with-f90-header=f90impl/f90_IRIX.h',
     '--with-f90-source=src/sys/src/f90/f90_IRIX.c',
