@@ -17,6 +17,7 @@
 #define dacreate2d_                  DACREATE2D
 #define dadestroy_                   DADESTROY
 #define dacreateglobalvector_        DACREATEGLOBALVECTOR
+#define dacreatenaturalvector_       DACREATENATURALVECTOR
 #define dacreatelocalvector_         DACREATELOCALVECTOR
 #define dagetlocalvector_            DAGETLOCALVECTOR
 #define darestorelocalvector_        DARESTORELOCALVECTOR
@@ -40,6 +41,7 @@
 #define dagetinterpolation_          dagetinterpolation
 #define daload_                      daload
 #define dacreateglobalvector_        dacreateglobalvector
+#define dacreatenaturalvector_       dacreatenaturalvector
 #define dacreatelocalvector_         dacreatelocalvector
 #define daview_                      daview
 #define dacreate1d_                  dacreate1d
@@ -253,6 +255,11 @@ void PETSC_STDCALL dagetglobalindices_(DA *da,int *n,int *indices,long *ia,int *
 void PETSC_STDCALL dacreateglobalvector_(DA *da,Vec* g,int *ierr)
 {
   *ierr = DACreateGlobalVector(*da,g);
+}
+
+void PETSC_STDCALL dacreatenaturalvector_(DA *da,Vec* g,int *ierr)
+{
+  *ierr = DACreateNaturalVector(*da,g);
 }
 
 void PETSC_STDCALL dacreatelocalvector_(DA *da,Vec* l,int *ierr)
