@@ -1,11 +1,20 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: urlget.py,v 1.22 1999/11/02 16:46:38 balay Exp balay $ 
+# $Id: urlget.py,v 1.23 1999/11/12 23:25:39 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
 #  Calling sequence: 
-#      urlget.py ftp://hostname/directoryname/file [local filename]
+#      urlget.py [-tmp tmpdir] [-] ftp://hostname/directoryname/file [local_filename]
+#
+#  Options:
+#       -tmp           - Uses tmpdir if one is provided, else, uses /tmp
+#       -              - use store the file in current dir, with the same filename as the url
+#       local_filename - if provided, store the url in the specified  file [relative to CWD]
+#  Notes:
+#       If the url has a .gz or .Z suffix, the url is uncompressed
+#       The uncompresion is not done if a local file is specified [or the option '-' is used]
+#       If the url is neither ftp, nor http, then a local file copy is assumed.
 #
 import urllib
 import os
