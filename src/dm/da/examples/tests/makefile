@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.51 1999/05/13 18:41:45 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.52 1999/05/13 19:05:50 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -114,7 +114,7 @@ runex5:
 runex6:
 	-@${MPIRUN} -np 6 ex6 -test_order
 runex12:
-	-@echo -n "path([getenv('PETSC_DIR') '/src/sys/src/viewer/impls/socket/matlab'],path); ex12(2) ; exit" | ${MATLAB} -display maverick:0.0 > ex12_1.tmp 2>&1; if (diff output/ex12_1.out ex12_1.tmp) then true; \
+	-@echo "path([getenv('PETSC_DIR') '/src/sys/src/viewer/impls/socket/matlab'],path); ex12(2) ; exit" | ${MATLAB} -display maverick:0.0 > ex12_1.tmp 2>&1; if (diff output/ex12_1.out ex12_1.tmp) then true; \
 	   else echo "Possible problem with ex12_1, diffs above"; fi; \
 	   ${RM} -f ex12_1.tmp
 
