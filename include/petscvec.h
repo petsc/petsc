@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.42 1996/01/22 01:13:50 curfman Exp curfman $ */
+/* $Id: vec.h,v 1.43 1996/01/22 03:06:13 curfman Exp bsmith $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -74,6 +74,8 @@ extern int VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
 extern int VecScatterDestroy(VecScatter);
 extern int VecScatterCopy(VecScatter,VecScatter *);
 extern int VecScatterView(VecScatter,Viewer);
+
+extern int VecScatterRemap(VecScatter,int *,int*);
 
 extern int VecGetArray(Vec,Scalar**);
 extern int VecRestoreArray(Vec,Scalar**);
