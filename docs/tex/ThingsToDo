@@ -7,9 +7,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  -  Vecscatter and DA are communication objects that manage the
+  - Vecscatter and DA are communication objects that manage the
 movement of data stored in Vec objects.
- 
+
+  - Redisign TS,SNES,KSP set monitor. 
 
   - all XXXView() calls should either generate error or warning if viewer
     is not supported.
