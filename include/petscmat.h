@@ -543,6 +543,28 @@ typedef struct {
 } MatLUInfo;
 
 /*S 
+   MatICCInfo - Data based into the matrix ICC factorization routines
+
+   In Fortran these are simply double precision arrays of size MAT_ICCINFO_SIZE
+
+   Notes: These are not usually directly used by users, instead use the PC type of ICC
+          All entries are double precision.
+
+   Level: developer
+
+.seealso: MatICCFactorSymbolic(), MatICCFactor(), MatILUInfo, MatLUInfo, MatCholeskyInfo
+
+S*/
+typedef struct {
+  int           levels;         /* ICC(levels) */ 
+  PetscReal     fill;           /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
+  PetscReal     dtcol;          /* tolerance for pivoting */
+  PetscReal     damping;        /* scaling of identity added to matrix to prevent zero pivots */
+  PetscTruth    damp;           /* if is PETSC_TRUE, apply damping until successful */
+  PetscReal     zeropivot;      /* pivot is called zero if less than this */
+} MatICCInfo;
+
+/*S 
    MatCholeskyInfo - Data based into the matrix Cholesky factorization routines
 
    In Fortran these are simply double precision arrays of size MAT_CHOLESKYINFO_SIZE
@@ -566,8 +588,8 @@ EXTERN int MatLUFactor(Mat,IS,IS,MatLUInfo*);
 EXTERN int MatILUFactor(Mat,IS,IS,MatILUInfo*);
 EXTERN int MatLUFactorSymbolic(Mat,IS,IS,MatLUInfo*,Mat*);
 EXTERN int MatILUFactorSymbolic(Mat,IS,IS,MatILUInfo*,Mat*);
-EXTERN int MatICCFactorSymbolic(Mat,IS,PetscReal,int,Mat*);
-EXTERN int MatICCFactor(Mat,IS,PetscReal,int);
+EXTERN int MatICCFactorSymbolic(Mat,IS,MatICCInfo*,Mat*);
+EXTERN int MatICCFactor(Mat,IS,MatICCInfo*);
 EXTERN int MatLUFactorNumeric(Mat,Mat*);
 EXTERN int MatILUDTFactor(Mat,MatILUInfo*,IS,IS,Mat *);
 EXTERN int MatGetInertia(Mat,int*,int*,int*);

@@ -1058,13 +1058,15 @@ int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ"
-int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,PetscReal fill,int levels,Mat *fact)
+int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatICCInfo *info,Mat *fact)
 {
   Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ        *b;
   int                 ierr;
   PetscTruth          perm_identity;
   Mat_SeqAIJ_SeqSBAIJ *ptr;
+  int                 levels = info->levels;
+  PetscReal           fill = info->fill; 
  
   PetscFunctionBegin;   
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
@@ -1076,7 +1078,7 @@ int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,PetscReal fill,int levels,Mat *fac
   }
 
   if (levels > 0){
-    ierr = MatICCFactorSymbolic(a->sbaijMat,perm,fill,levels,fact);CHKERRQ(ierr);
+    ierr = MatICCFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
 
   } else { /* in-place icc(0) */
     (*fact)             = a->sbaijMat;

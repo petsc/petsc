@@ -1269,8 +1269,10 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Mat *B)
   Mat_SeqSBAIJ       *a=(Mat_SeqSBAIJ*)A->data,*b=(Mat_SeqSBAIJ *)C->data;
   int                ierr,i,j,mbs = a->mbs;
   int                *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  int                k,jmin,*jl,*il,nexti,ili,*acol,*bcol,nz;
+  int                k,jmin,*jl,*il,nexti,ili,*acol,*bcol,nz,ndamp = 0;
   MatScalar          *rtmp,*ba=b->a,*aa=a->a,dk,uikdi,*aval,*bval;
+  PetscReal          damping=b->lu_damping, zeropivot=b->lu_zeropivot;
+  PetscTruth         damp;
 
   PetscFunctionBegin;
   /* initialization */
@@ -1285,77 +1287,85 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Mat *B)
   ierr = PetscMalloc(mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMalloc(2*mbs*sizeof(int),&il);CHKERRQ(ierr);
   jl   = il + mbs;
-  for (i=0; i<mbs; i++) {
-    rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
-  }
 
-  /* for each row k */
-  for (k = 0; k<mbs; k++){
+  do {
+    damp = PETSC_FALSE;
+    for (i=0; i<mbs; i++) {
+      rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
+    }
 
+    for (k = 0; k<mbs; k++){ /* row k */
     /*initialize k-th row with elements nonzero in row perm(k) of A */
-    nz   = ai[k+1] - ai[k];
-    acol = aj + ai[k];
-    aval = aa + ai[k];
-    bval = ba + bi[k];
-    while (nz -- ){
-      rtmp[*acol++] = *aval++;
-      *bval++       = 0.0; /* for in-place factorization */
-    } 
+      nz   = ai[k+1] - ai[k];
+      acol = aj + ai[k];
+      aval = aa + ai[k];
+      bval = ba + bi[k];
+      while (nz -- ){
+        rtmp[*acol++] = *aval++;
+        *bval++       = 0.0; /* for in-place factorization */
+      } 
+      /* damp the diagonal of the matrix */
+      if (ndamp) rtmp[k] += damping; 
     
-    /* modify k-th row by adding in those rows i with U(i,k) != 0 */
-    dk = rtmp[k];
-    i  = jl[k]; /* first row to be added to k_th row  */  
+      /* modify k-th row by adding in those rows i with U(i,k) != 0 */
+      dk = rtmp[k];
+      i  = jl[k]; /* first row to be added to k_th row  */  
 
-    while (i < k){
-      nexti = jl[i]; /* next row to be added to k_th row */
-      /* printf("factnum, k %d, i %d\n", k,i); */
+      while (i < k){
+        nexti = jl[i]; /* next row to be added to k_th row */
+        
+        /* compute multiplier, update D(k) and U(i,k) */
+        ili   = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
+        uikdi = - ba[ili]*ba[bi[i]];  
+        dk   += uikdi*ba[ili];
+        ba[ili] = uikdi; /* -U(i,k) */
 
-      /* compute multiplier, update D(k) and U(i,k) */
-      ili   = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
-      uikdi = - ba[ili]*ba[bi[i]];  
-      dk   += uikdi*ba[ili];
-      ba[ili] = uikdi; /* -U(i,k) */
+        /* add multiple of row i to k-th row ... */
+        jmin = ili + 1; 
+        nz   = bi[i+1] - jmin;
+        if (nz > 0){
+          bcol = bj + jmin;
+          bval = ba + jmin; 
+          while (nz --) rtmp[*bcol++] += uikdi*(*bval++);
+          /* ... add i to row list for next nonzero entry */
+          il[i] = jmin;             /* update il(i) in column k+1, ... mbs-1 */
+          j     = bj[jmin];
+          jl[i] = jl[j]; jl[j] = i; /* update jl */
+        }      
+        i = nexti;         
+      }
 
-      /* add multiple of row i to k-th row ... */
-      jmin = ili + 1; 
-      nz   = bi[i+1] - jmin;
-      if (nz > 0){
+      /* check for zero pivot and save diagoanl element */
+      if (PetscAbs(dk) < zeropivot){
+        SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",k,dk,zeropivot);  
+      } else if( PetscRealPart(dk) < 0.0){
+        PetscLogInfo((PetscObject)A,"Negative pivot %g in row %d of Cholesky factorization\n",1./PetscRealPart(dk),k);
+        if (damping > 0.0) {
+          if (ndamp) damping *= 2.0;
+          damp = PETSC_TRUE;
+          ndamp++;
+          break; 
+        }
+      }
+
+      /* save nonzero entries in k-th row of U ... */
+      ba[bi[k]] = 1.0/dk;
+      jmin      = bi[k]+1; 
+      nz        = bi[k+1] - jmin; 
+      if (nz){
         bcol = bj + jmin;
-        bval = ba + jmin; 
-        while (nz --) rtmp[*bcol++] += uikdi*(*bval++);
-        /* ... add i to row list for next nonzero entry */
-        il[i] = jmin;             /* update il(i) in column k+1, ... mbs-1 */
-        j     = bj[jmin];
-        jl[i] = jl[j]; jl[j] = i; /* update jl */
-      }      
-      i = nexti;         
-    }
-
-    /* check for zero pivot and save diagoanl element */
-    if (PetscRealPart(dk) == 0.0){
-      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");  
-    } else if( PetscRealPart(dk) < 0.0){
-      PetscLogInfo((PetscObject)A,"Negative pivot %g in Cholesky factorization\n",1./PetscRealPart(dk));
-    }
-
-    /* save nonzero entries in k-th row of U ... */
-    ba[bi[k]] = 1.0/dk;
-    jmin      = bi[k]+1; 
-    nz        = bi[k+1] - jmin; 
-    if (nz){
-      bcol = bj + jmin;
-      bval = ba + jmin;
-      while (nz--){
-        *bval++       = rtmp[*bcol]; 
-        rtmp[*bcol++] = 0.0; 
-      }       
-      /* ... add k to row list for first nonzero entry in k-th row */
-      il[k] = jmin;
-      i     = bj[jmin];
-      jl[k] = jl[i]; jl[i] = k;
-    }        
-  } 
-  
+        bval = ba + jmin;
+        while (nz--){
+          *bval++       = rtmp[*bcol]; 
+          rtmp[*bcol++] = 0.0; 
+        }       
+        /* ... add k to row list for first nonzero entry in k-th row */
+        il[k] = jmin;
+        i     = bj[jmin];
+        jl[k] = jl[i]; jl[i] = k;
+      }        
+    } /* end of for (k = 0; k<mbs; k++) */
+  } while (damp);
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = PetscFree(il);CHKERRQ(ierr);
   
@@ -1363,6 +1373,9 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Mat *B)
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
   PetscLogFlops(b->mbs);
+  if (ndamp) {
+    PetscLogInfo(0,"MatCholeskyFactorNumerical_SeqSBAIJ_1_NaturalOrdering_inplace: number of damping tries %d damping value %g\n",ndamp,damping);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -1065,7 +1065,7 @@ extern int MatMultAdd_SeqSBAIJ_N(Mat,Vec,Vec,Vec);
 /* modefied from MatILUFactor_SeqSBAIJ, needs further work!  */
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactor_SeqSBAIJ"
-int MatICCFactor_SeqSBAIJ(Mat inA,IS row,PetscReal fill,int level)
+int MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatICCInfo *info)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)inA->data;
   Mat         outA;
