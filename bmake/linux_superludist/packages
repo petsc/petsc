@@ -48,8 +48,8 @@ PETSC_HAVE_DSCPACK = -DPETSC_HAVE_DSCPACK
 #
 # UMFPACK
 #
-UMFPACK_INCLUDE    = -I/home/petsc/soft/linux-rh73/umfpack
-UMFPACK_LIB        = /home/petsc/soft/linux-rh73/umfpack/umfpack.a
+UMFPACK_INCLUDE    = -I/home/petsc/soft/linux-rh73/UMFPACKv4.3/UMFPACK/Include /home/petsc/soft/linux-rh73/UMFPACKv4.3/AMD/Include
+UMFPACK_LIB        = -Wl,-rpath,/home/petsc/soft/linux-rh73/UMFPACKv4.3/UMFPACK/Lib -L/home/petsc/soft/linux-rh73/UMFPACKv4.3/UMFPACK/Lib -lumfpack -Wl,-rpath,/home/petsc/soft/linux-rh73/UMFPACKv4.3/AMD/Lib -L/home/petsc/soft/linux-rh73/UMFPACKv4.3/AMD/Lib -lamd  
 PETSC_HAVE_UMFPACK = -DPETSC_HAVE_UMFPACK
 #
 # Matlab location

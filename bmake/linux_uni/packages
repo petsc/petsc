@@ -100,8 +100,8 @@ PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #
 # UMFPACK
 #
-#UMFPACK_INCLUDE    = -I/home/petsc/soft/linux-rh73/umfpack
-#UMFPACK_LIB        = /home/petsc/soft/linux-rh73/umfpack/umfpack.a
+#UMFPACK_INCLUDE    = -I/home/petsc/soft/linux-rh73/UMFPACKv4.3/UMFPACK/Include /home/petsc/soft/linux-rh73/UMFPACKv4.3/AMD/Include
+#UMFPACK_LIB        = /home/petsc/soft/linux-rh73/UMFPACKv4.3/UMFPACK/Lib -L/home/petsc/soft/linux-rh73/UMFPACKv4.3/UMFPACK/Lib -lumfpack /home/petsc/soft/linux-rh73/UMFPACKv4.3/AMD/Lib -L/home/petsc/soft/linux-rh73/UMFPACKv4.3/AMD/Lib -lamd 
 #PETSC_HAVE_UMFPACK = -DPETSC_HAVE_UMFPACK
 #
 #  Location of Trilinos
