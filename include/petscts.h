@@ -133,6 +133,50 @@ EXTERN int TSSetType(TS,TSType);
 EXTERN int TSRegister(const char[], const char[], const char[], int (*)(TS));
 EXTERN int TSRegisterAll(const char[]);
 EXTERN int TSRegisterDestroy(void);
+
+/*MC
+  TSRegisterDynamic - Adds a creation method to the TS package.
+
+  Synopsis:
+
+  TSRegisterDynamic(char *name, char *path, char *func_name, int (*create_func)(TS))
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+. path        - The path (either absolute or relative) of the library containing this routine
+. func_name   - The name of the creation routine
+- create_func - The creation routine itself
+
+  Notes:
+  TSRegisterDynamic() may be called multiple times to add several user-defined tses.
+
+  If dynamic libraries are used, then the fourth input argument (create_func) is ignored.
+
+  Sample usage:
+.vb
+  TSRegisterDynamic("my_ts", "/home/username/my_lib/lib/libO/solaris/libmy.a", "MyTSCreate", MyTSCreate);
+.ve
+
+  Then, your ts type can be chosen with the procedural interface via
+.vb
+    TSCreate(MPI_Comm, TS *);
+    TSSetType(vec, "my_ts")
+.ve
+  or at runtime via the option
+.vb
+    -ts_type my_ts
+.ve
+
+  Notes: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+        If your function is not being put into a shared library then use TSRegister() instead
+
+  Level: advanced
+
+.keywords: TS, register
+.seealso: TSRegisterAll(), TSRegisterDestroy()
+M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define TSRegisterDynamic(a,b,c,d) TSRegister(a,b,c,0)
 #else

@@ -300,17 +300,6 @@ int PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
 */
 static int Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
-/*MC
-  PETSC_VIEWER_SOCKET_WORLD  - same as PETSC_VIEWER_SOCKET_(PETSC_COMM_WORLD)
-
-  Level: intermediate
-M*/
-
-/*MC
-  PETSC_VIEWER_SOCKET_SELF  - same as PETSC_VIEWER_SOCKET_(PETSC_COMM_SELF)
-
-  Level: intermediate
-M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_SOCKET_"  

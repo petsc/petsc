@@ -94,43 +94,6 @@ EXTERN_C_END
 PetscFList      MatPartitioningList = 0;
 PetscTruth MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
-/*MC
-   MatPartitioningRegisterDynamic - Adds a new sparse matrix partitioning to the 
-   matrix package. 
-
-   Synopsis:
-   int MatPartitioningRegisterDynamic(char *name_partitioning,char *path,char *name_create,int (*routine_create)(MatPartitioning))
-
-   Not Collective
-
-   Input Parameters:
-+  sname - name of partitioning (for example MAT_PARTITIONING_CURRENT) or parmetis
-.  path - location of library where creation routine is 
-.  name - name of function that creates the partitioning type, a string
--  function - function pointer that creates the partitioning type
-
-   Level: developer
-
-   If dynamic libraries are used, then the fourth input argument (function)
-   is ignored.
-
-   Sample usage:
-.vb
-   MatPartitioningRegisterDynamic("my_part",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyPartCreate",MyPartCreate);
-.ve
-
-   Then, your partitioner can be chosen with the procedural interface via
-$     MatPartitioningSetType(part,"my_part")
-   or at runtime via the option
-$     -mat_partitioning_type my_part
-
-   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
-
-.keywords: matrix, partitioning, register
-
-.seealso: MatPartitioningRegisterDestroy(), MatPartitioningRegisterAll()
-M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningRegister" 

@@ -88,43 +88,6 @@ int MatSNESMFSetFunctioni_FD(Mat mat,int (*funci)(int,Vec,PetscScalar*,void *))
 }
 EXTERN_C_END
 
-/*MC
-   MatSNESMFRegisterDynamic - Adds a method to the MatSNESMF registry.
-
-   Synopsis:
-   int MatSNESMFRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(MatSNESMF))
-
-   Not Collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined compute-h module
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Level: developer
-
-   Notes:
-   MatSNESMFRegisterDynamic) may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   MatSNESMFRegisterDynamic"my_h",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyHCreate",MyHCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     MatSNESMFSetType(mfctx,"my_h")
-   or at runtime via the option
-$     -snes_mf_type my_h
-
-.keywords: MatSNESMF, register
-
-.seealso: MatSNESMFRegisterAll(), MatSNESMFRegisterDestroy()
-M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFRegister"

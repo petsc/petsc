@@ -1024,25 +1024,6 @@ int DASetLocalFunctioni(DA da,int (*lfi)(DALocalInfo*,MatStencil*,void*,PetscSca
   PetscFunctionReturn(0);
 }
 
-/*MC
-       DASetLocalAdicFunction - Caches in a DA a local function computed by ADIC/ADIFOR
-
-   Collective on DA
-
-   Synopsis:
-   int int DASetLocalAdicFunction(DA da,DALocalFunction1 ad_lf)
-   
-   Input Parameter:
-+  da - initial distributed array
--  ad_lf - the local function as computed by ADIC/ADIFOR
-
-   Level: intermediate
-
-.keywords:  distributed array, refine
-
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction(),
-          DASetLocalJacobian()
-M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DASetLocalAdicFunction_Private"

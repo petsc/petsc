@@ -172,48 +172,6 @@ int VecGetSerializeType(Vec map, VecSerializeType *type)
 }
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-/*MC
-  VecRegisterDynamic - Adds a new vector component implementation
-
-  Synopsis:
-  VecRegisterDynamic(char *name, char *path, char *func_name, int (*create_func)(Vec))
-
-  Not Collective
-
-  Input Parameters:
-+ name        - The name of a new user-defined creation routine
-. path        - The path (either absolute or relative) of the library containing this routine
-. func_name   - The name of routine to create method context
-- create_func - The creation routine itself
-
-  Notes:
-  VecRegisterDynamic() may be called multiple times to add several user-defined vectors
-
-  If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
-
-  Sample usage:
-.vb
-    VecRegisterDynamic("my_vec","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyVectorCreate", MyVectorCreate);
-.ve
-
-  Then, your vector type can be chosen with the procedural interface via
-.vb
-    VecCreate(MPI_Comm, Vec *);
-    VecSetType(Vec,"my_vector_name");
-.ve
-   or at runtime via the option
-.vb
-    -vec_type my_vector_name
-.ve
-
-  Notes: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use VecRegister() instead
-        
-  Level: advanced
-
-.keywords: Vec, register
-.seealso: VecRegisterAll(), VecRegisterDestroy(), VecRegister()
-M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecRegister"
@@ -235,48 +193,6 @@ int VecRegister(const char sname[], const char path[], const char name[], int (*
   PetscFunctionReturn(0);
 }
 
-/*MC
-  VecSerializeRegisterDynamic - Adds a serialization method to the vec package.
-
-  Synopsis:
-
-  VecSerializeRegisterDynamic(char *name, char *path, char *func_name,
-                              int (*serialize_func)(MPI_Comm, Vec *, PetscViewer, PetscTruth))
-
-  Not Collective
-
-  Input Parameters:
-+ name           - The name of a new user-defined serialization routine
-. path           - The path (either absolute or relative) of the library containing this routine
-. func_name      - The name of the serialization routine
-- serialize_func - The serialization routine itself
-
-  Notes:
-  VecSerializeRegister() may be called multiple times to add several user-defined serializers.
-
-  If dynamic libraries are used, then the fourth input argument (serialize_func) is ignored.
-
-  Sample usage:
-.vb
-  VecSerializeRegisterDynamic("my_store", "/home/username/my_lib/lib/libO/solaris/libmy.a", "MyStoreFunc", MyStoreFunc);
-.ve
-
-  Then, your serialization can be chosen with the procedural interface via
-.vb
-    VecSetSerializeType(vec, "my_store")
-.ve
-  or at runtime via the option
-.vb
-    -vec_serialize_type my_store
-.ve
-
-  Note: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
-
-  Level: advanced
-
-.keywords: Vec, register
-.seealso: VecSerializeRegisterAll(), VecSerializeRegisterDestroy()
-M*/
 #undef __FUNCT__  
 #define __FUNCT__ "VecSerializeRegister"
 int VecSerializeRegister(const char sname[], const char path[], const char name[],

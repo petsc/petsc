@@ -558,49 +558,6 @@ int KSPSetFromOptions(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/*MC
-   KSPRegisterDynamic - Adds a method to the Krylov subspace solver package.
-
-   Synopsis:
-   int KSPRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(KSP))
-
-   Not Collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   KSPRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   KSPRegisterDynamic("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MySolverCreate",MySolverCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     KSPSetType(ksp,"my_solver")
-   or at runtime via the option
-$     -ksp_type my_solver
-
-   Level: advanced
-
-   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT},
-          and others of the form ${any_environmental_variable} occuring in pathname will be 
-          replaced with appropriate values.
-         If your function is not being put into a shared library then use KSPRegister() instead
-
-.keywords: KSP, register
-
-.seealso: KSPRegisterAll(), KSPRegisterDestroy()
-
-M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPRegister"

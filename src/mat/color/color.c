@@ -220,44 +220,6 @@ EXTERN_C_END
 PetscFList      MatColoringList = 0;
 PetscTruth MatColoringRegisterAllCalled = PETSC_FALSE;
 
-/*MC
-   MatColoringRegisterDynamic - Adds a new sparse matrix coloring to the 
-                               matrix package. 
-
-   Synopsis:
-   int MatColoringRegisterDynamic(char *name_coloring,char *path,char *name_create,int (*routine_create)(MatColoring))
-
-   Not Collective
-
-   Input Parameters:
-+  sname - name of Coloring (for example MATCOLORING_SL)
-.  path - location of library where creation routine is 
-.  name - name of function that creates the Coloring type, a string
--  function - function pointer that creates the coloring
-
-   Level: developer
-
-   If dynamic libraries are used, then the fourth input argument (function)
-   is ignored.
-
-   Sample usage:
-.vb
-   MatColoringRegisterDynamic("my_color",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyColor",MyColor);
-.ve
-
-   Then, your partitioner can be chosen with the procedural interface via
-$     MatColoringSetType(part,"my_color")
-   or at runtime via the option
-$     -mat_coloring_type my_color
-
-   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
-
-.keywords: matrix, Coloring, register
-
-.seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
-M*/
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringRegister" 
 int MatColoringRegister(char *sname,char *path,char *name,int (*function)(Mat,MatColoringType,ISColoring*))

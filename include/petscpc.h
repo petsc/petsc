@@ -97,6 +97,48 @@ EXTERN int        PCRegisterAll(char*);
 extern PetscTruth PCRegisterAllCalled;
 
 EXTERN int PCRegister(char*,char*,char*,int(*)(PC));
+
+/*MC
+   PCRegisterDynamic - Adds a method to the preconditioner package.
+
+   Synopsis:
+   int PCRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PC))
+
+   Not collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   PCRegisterDynamic() may be called multiple times to add several user-defined preconditioners.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   PCRegisterDynamic("my_solver","/home/username/my_lib/lib/libO/solaris/mylib",
+              "MySolverCreate",MySolverCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     PCSetType(pc,"my_solver")
+   or at runtime via the option
+$     -pc_type my_solver
+
+   Level: advanced
+
+   Notes: ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT}, or ${any environmental variable}
+           occuring in pathname will be replaced with appropriate values.
+         If your function is not being put into a shared library then use PCRegister() instead
+
+.keywords: PC, register
+
+.seealso: PCRegisterAll(), PCRegisterDestroy()
+M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PCRegisterDynamic(a,b,c,d) PCRegister(a,b,c,0)
 #else

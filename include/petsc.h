@@ -324,11 +324,46 @@ EXTERN int PetscObjectView(PetscObject,PetscViewer);
 EXTERN int PetscObjectCompose(PetscObject,const char[],PetscObject);
 EXTERN int PetscObjectQuery(PetscObject,const char[],PetscObject *);
 EXTERN int PetscObjectComposeFunction(PetscObject,const char[],const char[],void (*)(void));
+
+/*MC
+   PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 
+                       
+   Collective on PetscObject
+
+   Input Parameters:
++  obj - the PETSc object; this must be cast with a (PetscObject), for example, 
+         PetscObjectCompose((PetscObject)mat,...);
+.  name - name associated with the child function
+.  fname - name of the function
+-  ptr - function pointer (or PETSC_NULL if using dynamic libraries)
+
+   Level: advanced
+
+    Synopsis:
+    int PetscObjectComposeFunctionDynamic(PetscObject obj,char *name,char *fname,void *ptr)
+
+   Notes:
+   PetscObjectComposeFunctionDynamic() can be used with any PETSc object (such as
+   Mat, Vec, KSP, SNES, etc.) or any user-provided object. 
+
+   The composed function must be wrapped in a EXTERN_C_BEGIN/END for this to
+   work in C++/complex with dynamic link libraries (PETSC_USE_DYNAMIC_LIBRARIES)
+   enabled.
+
+   Concepts: objects^composing functions
+   Concepts: composing functions
+   Concepts: functions^querying
+   Concepts: objects^querying
+   Concepts: querying objects
+
+.seealso: PetscObjectQueryFunction()
+M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,0)
 #else
 #define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,(void (*)(void))(d))
 #endif
+
 EXTERN int PetscObjectQueryFunction(PetscObject,const char[],void (**)(void));
 EXTERN int PetscObjectSetOptionsPrefix(PetscObject,const char[]);
 EXTERN int PetscObjectAppendOptionsPrefix(PetscObject,const char[]);
@@ -477,8 +512,53 @@ EXTERN int  PetscFOpen(MPI_Comm,const char[],const char[],FILE**);
 EXTERN int  PetscFClose(MPI_Comm,FILE*);
 EXTERN int  PetscFPrintf(MPI_Comm,FILE*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
 EXTERN int  PetscPrintf(MPI_Comm,const char[],...)  PETSC_PRINTF_FORMAT_CHECK(2,3);
+
+/*MC
+    PetscErrorPrintf - Prints error messages.
+
+    Not Collective
+
+   Synopsis:
+     int (*PetscErrorPrintf)(const char format[],...);
+
+    Input Parameters:
+.   format - the usual printf() format string 
+
+   Level: developer
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+    Concepts: error messages^printing
+    Concepts: printing^error messages
+
+.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf()
+M*/
 EXTERN int  (*PetscErrorPrintf)(const char[],...);
+
+/*MC
+    PetscHelpPrintf - Prints help messages.
+
+    Not Collective
+
+   Synopsis:
+     int (*PetscHelpPrintf)(const char format[],...);
+
+    Input Parameters:
+.   format - the usual printf() format string 
+
+   Level: developer
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+    Concepts: help messages^printing
+    Concepts: printing^help messages
+
+.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscErrorPrintf()
+M*/
 EXTERN int  (*PetscHelpPrintf)(MPI_Comm,const char[],...);
+
 EXTERN int  PetscPOpen(MPI_Comm,char *,char*,const char[],FILE **);
 EXTERN int  PetscPClose(MPI_Comm,FILE*);
 EXTERN int  PetscSynchronizedPrintf(MPI_Comm,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);

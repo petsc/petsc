@@ -196,45 +196,6 @@ int PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
   PetscFunctionReturn(0);
 }
 
-/*MC
-   PetscDrawRegisterDynamic - Adds a method to the Krylov subspace solver package.
-
-   Synopsis:
-   int PetscDrawRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PetscDraw))
-
-   Not Collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Level: developer
-
-   Notes:
-   PetscDrawRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   PetscDrawRegisterDynamic("my_draw_type",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyDrawCreate",MyDrawCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     PetscDrawSetType(ksp,"my_draw_type")
-   or at runtime via the option
-$     -draw_type my_draw_type
-
-   Concepts: graphics^registering new draw classes
-   Concepts: PetscDraw^registering new draw classes
-
-.seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy()
-M*/
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawRegister" 
 int PetscDrawRegister(char *sname,char *path,char *name,int (*function)(PetscDraw))

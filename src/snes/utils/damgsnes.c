@@ -744,7 +744,6 @@ int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
   PetscFunctionReturn(0);
 }
 
-
 /*M
     DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
     that will use the grid hierarchy and (optionally) its derivative.

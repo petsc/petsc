@@ -2023,49 +2023,6 @@ int SNESGetOptionsPrefix(SNES snes,char **prefix)
   PetscFunctionReturn(0);
 }
 
-/*MC
-   SNESRegisterDynamic - Adds a method to the nonlinear solver package.
-
-   Synopsis:
-   int SNESRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(SNES))
-
-   Not collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   SNESRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT},
-   and others of the form ${any_environmental_variable} occuring in pathname will be 
-   replaced with appropriate values.
-
-   Sample usage:
-.vb
-   SNESRegisterDynamic("my_solver",/home/username/my_lib/lib/libg/solaris/mylib.a,
-                "MySolverCreate",MySolverCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     SNESSetType(snes,"my_solver")
-   or at runtime via the option
-$     -snes_type my_solver
-
-   Level: advanced
-
-    Note: If your function is not being put into a shared library then use SNESRegister() instead
-
-.keywords: SNES, nonlinear, register
-
-.seealso: SNESRegisterAll(), SNESRegisterDestroy()
-M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESRegister"

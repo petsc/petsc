@@ -130,47 +130,6 @@ int MatGetType(Mat mat,MatType *type)
   PetscFunctionReturn(0);
 }
 
-/*MC
-   MatRegisterDynamic - Adds a new matrix type
-
-   Synopsis:
-   int MatRegisterDynamic(char *name,char *path,char *name_create,int (*routine_create)(Mat))
-
-   Not Collective
-
-   Input Parameters:
-+  name - name of a new user-defined matrix type
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   MatRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   MatRegisterDynamic("my_mat",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyMatCreate",MyMatCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     MatSetType(Mat,"my_mat")
-   or at runtime via the option
-$     -mat_type my_mat
-
-   Level: advanced
-
-   Notes: ${PETSC_ARCH} and ${BOPT} occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use VecRegister() instead
-
-.keywords: Mat, register
-
-.seealso: MatRegisterAll(), MatRegisterDestroy()
-
-M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRegister"

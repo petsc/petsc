@@ -49,11 +49,50 @@ EXTERN int PetscViewerRegisterAll(char *);
 EXTERN int PetscViewerRegisterDestroy(void);
 
 EXTERN int PetscViewerRegister(char*,char*,char*,int(*)(PetscViewer));
+
+/*MC
+   PetscViewerRegisterDynamic - Adds a method to the Krylov subspace solver package.
+
+   Synopsis:
+   int PetscViewerRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PetscViewer))
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Level: developer
+
+   Notes:
+   PetscViewerRegisterDynamic() may be called multiple times to add several user-defined solvers.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   PetscViewerRegisterDynamic("my_viewer_type",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyViewerCreate",MyViewerCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     PetscViewerSetType(ksp,"my_viewer_type")
+   or at runtime via the option
+$     -viewer_type my_viewer_type
+
+  Concepts: registering^Viewers
+
+.seealso: PetscViewerRegisterAll(), PetscViewerRegisterDestroy()
+M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PetscViewerRegisterDynamic(a,b,c,d) PetscViewerRegister(a,b,c,0)
 #else
 #define PetscViewerRegisterDynamic(a,b,c,d) PetscViewerRegister(a,b,c,d)
 #endif
+
 EXTERN int PetscViewerCreate(MPI_Comm,PetscViewer*);
 EXTERN int PetscViewerSetFromOptions(PetscViewer);
 
@@ -179,16 +218,65 @@ EXTERN PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE;
 
-#define PETSC_VIEWER_STDOUT_SELF  PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)
-#define PETSC_VIEWER_STDOUT_WORLD PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)
 #define PETSC_VIEWER_STDERR_SELF  PETSC_VIEWER_STDERR_(PETSC_COMM_SELF)
 #define PETSC_VIEWER_STDERR_WORLD PETSC_VIEWER_STDERR_(PETSC_COMM_WORLD)
-#define PETSC_VIEWER_DRAW_SELF    PETSC_VIEWER_DRAW_(PETSC_COMM_SELF)
+
+/*MC
+  PETSC_VIEWER_STDOUT_WORLD  - same as PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)
+
+  Level: beginner
+M*/
+#define PETSC_VIEWER_STDOUT_WORLD PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)
+
+/*MC
+  PETSC_VIEWER_STDOUT_SELF  - same as PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)
+
+  Level: beginner
+M*/
+#define PETSC_VIEWER_STDOUT_SELF  PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)
+
+/*MC
+  PETSC_VIEWER_DRAW_WORLD  - same as PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD)
+
+  Level: intermediate
+M*/
 #define PETSC_VIEWER_DRAW_WORLD   PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD)
+
+/*MC
+  PETSC_VIEWER_DRAW_SELF  - same as PETSC_VIEWER_DRAW_(PETSC_COMM_SELF)
+
+  Level: intermediate
+M*/
+#define PETSC_VIEWER_DRAW_SELF    PETSC_VIEWER_DRAW_(PETSC_COMM_SELF)
+
+/*MC
+  PETSC_VIEWER_SOCKET_WORLD  - same as PETSC_VIEWER_SOCKET_(PETSC_COMM_WORLD)
+
+  Level: intermediate
+M*/
 #define PETSC_VIEWER_SOCKET_WORLD PETSC_VIEWER_SOCKET_(PETSC_COMM_WORLD)
+
+/*MC
+  PETSC_VIEWER_SOCKET_SELF  - same as PETSC_VIEWER_SOCKET_(PETSC_COMM_SELF)
+
+  Level: intermediate
+M*/
 #define PETSC_VIEWER_SOCKET_SELF  PETSC_VIEWER_SOCKET_(PETSC_COMM_SELF)
+
+/*MC
+  PETSC_VIEWER_BINARY_WORLD  - same as PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD)
+
+  Level: intermediate
+M*/
 #define PETSC_VIEWER_BINARY_WORLD PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD)
+
+/*MC
+  PETSC_VIEWER_BINARY_SELF  - same as PETSC_VIEWER_BINARY_(PETSC_COMM_SELF)
+
+  Level: intermediate
+M*/
 #define PETSC_VIEWER_BINARY_SELF  PETSC_VIEWER_BINARY_(PETSC_COMM_SELF)
+
 #define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) 
 
 /*

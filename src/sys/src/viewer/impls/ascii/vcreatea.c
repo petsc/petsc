@@ -9,17 +9,6 @@
 */
 static int Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
-/*MC
-  PETSC_VIEWER_STDOUT_WORLD  - same as PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)
-
-  Level: beginner
-M*/
-
-/*MC
-  PETSC_VIEWER_STDOUT_SELF  - same as PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)
-
-  Level: beginner
-M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_STDOUT_"  

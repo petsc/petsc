@@ -72,20 +72,176 @@
 #define PETSC_ERR_DISC_SING_JAC   83   /* Singular element Jacobian */
 
 #if defined(PETSC_USE_DEBUG)
+
+/*MC
+   SETERRQ - Macro that is called when an error has been detected, 
+
+   Not Collective
+
+   Synopsis:
+   void SETERRQ(int errorcode,char *message)
+
+
+   Input Parameters:
++  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+-  message - error message
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+    See SETERRQ1(), SETERRQ2(), SETERRQ3() for versions that take arguments
+
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ3()
+M*/
 #define SETERRQ(n,s)              {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s);}
+
+/*MC
+   SETERRQ1 - Macro that is called when an error has been detected, 
+
+   Not Collective
+
+   Synopsis:
+   void SETERRQ1(int errorcode,char *formatmessage,arg)
+
+
+   Input Parameters:
++  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  message - error message in the printf format
+-  arg - argument (for example an integer, string or double)
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ(), SETERRQ(), SETERRQ2(), SETERRQ3()
+M*/
 #define SETERRQ1(n,s,a1)          {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1);}
+
+/*MC
+   SETERRQ2 - Macro that is called when an error has been detected, 
+
+   Not Collective
+
+   Synopsis:
+   void SETERRQ2(int errorcode,char *formatmessage,arg1,arg2)
+
+
+   Input Parameters:
++  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  message - error message in the printf format
+.  arg1 - argument (for example an integer, string or double)
+-  arg2 - argument (for example an integer, string or double)
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ3()
+M*/
 #define SETERRQ2(n,s,a1,a2)       {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2);}
+
+/*MC
+   SETERRQ3 - Macro that is called when an error has been detected, 
+
+   Not Collective
+
+   Synopsis:
+   void SETERRQ3(int errorcode,char *formatmessage,arg1,arg2,arg3)
+
+
+   Input Parameters:
++  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  message - error message in the printf format
+.  arg1 - argument (for example an integer, string or double)
+.  arg2 - argument (for example an integer, string or double)
+-  arg3 - argument (for example an integer, string or double)
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ2()
+M*/
 #define SETERRQ3(n,s,a1,a2,a3)    {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3);}
+
 #define SETERRQ4(n,s,a1,a2,a3,a4) {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4);}
 #define SETERRQ5(n,s,a1,a2,a3,a4,a5)       {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4,a5);}
 #define SETERRQ6(n,s,a1,a2,a3,a4,a5,a6)    {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4,a5,a6);}
 #define SETERRQ7(n,s,a1,a2,a3,a4,a5,a6,a7) {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4,a5,a6,a7);}
 #define SETERRABORT(comm,n,s)     {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s);MPI_Abort(comm,n);}
 
+/*MC
+   CHKERRQ - Checks error code, if non-zero it calls the error handler and then returns
+
+   Not Collective
+
+   Synopsis:
+   void CHKERRQ(int errorcode)
+
+
+   Input Parameters:
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+
+  Level: beginner
+
+   Notes:
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ2()
+M*/
 #define CHKERRQ(n)             if (n) {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");}
+
 #define CHKERRABORT(comm,n)    if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");MPI_Abort(comm,n);}
 #define CHKERRCONTINUE(n)      if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");}
 
+/*MC
+   CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
+
+   Not Collective
+
+   Synopsis:
+   void CHKMEMQ(void)
+
+  Level: beginner
+
+   Notes:
+    Must run with the option -trdebug to enable this option
+
+    Once the error handler is called the calling function is then returned from with the given error code.
+
+    By defaults prints location where memory that is corrupted was allocated.
+
+   Concepts: memory corruption
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ2(), 
+          PetscTrValid()
+M*/
 #define CHKMEMQ {int _7_ierr = PetscTrValid(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);}
 
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
@@ -155,6 +311,29 @@ EXTERN int PetscStackPrint(PetscStack*,FILE* fp);
 
 #if !defined(PETSC_HAVE_AMS)
 
+/*MC
+   PetscFunctionBegin - First executable line of each PETSc function
+        used for error handling.
+
+   Synopsis:
+   void PetscFunctionBegin;
+
+   Usage:
+.vb
+     int something;
+
+     PetscFunctionBegin;
+.ve
+
+   Notes:
+     Not available in Fortran
+
+   Level: developer
+
+.seealso: PetscFunctionReturn()
+
+.keywords: traceback, error handling
+M*/
 #define PetscFunctionBegin \
   {\
    if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
@@ -183,6 +362,29 @@ EXTERN int PetscStackPrint(PetscStack*,FILE* fp);
     petscstack->line[petscstack->currentsize]      = 0; \
   }};
 
+/*MC
+   PetscFunctionReturn - Last executable line of each PETSc function
+        used for error handling. Replaces return()
+
+   Synopsis:
+   void PetscFunctionReturn(0);
+
+   Usage:
+.vb
+    ....
+     PetscFunctionReturn(0);
+   }
+.ve
+
+   Notes:
+     Not available in Fortran
+
+   Level: developer
+
+.seealso: PetscFunctionBegin()
+
+.keywords: traceback, error handling
+M*/
 #define PetscFunctionReturn(a) \
   {\
   PetscStackPop; \
@@ -272,5 +474,12 @@ EXTERN int PetscStackDepublish(void);
 
 
 #endif
+
+
+
+
+
+
+
 
 

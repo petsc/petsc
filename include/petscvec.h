@@ -207,10 +207,41 @@ EXTERN int VecAssemblyEnd(Vec);
 EXTERN int VecSetStashInitialSize(Vec,int,int);
 EXTERN int VecStashView(Vec,PetscViewer);
 
+/*MC
+   VecSetValue - Set a single entry into a vector.
+
+   Synopsis:
+   int VecSetValue(Vec v,int row,PetscScalar value, InsertMode mode);
+
+   Not Collective
+
+   Input Parameters:
++  v - the vector
+.  row - the row location of the entry
+.  value - the value to insert
+-  mode - either INSERT_VALUES or ADD_VALUES
+
+   Notes:
+   For efficiency one should use VecSetValues() and set several or 
+   many values simultaneously if possible.
+
+   Note that VecSetValue() does NOT return an error code (since this
+   is checked internally).
+
+   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
+   MUST be called after all calls to VecSetValues() have been completed.
+
+   VecSetValues() uses 0-based indices in Fortran as well as in C.
+
+   Level: beginner
+
+.seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal()
+M*/
 #define VecSetValue(v,i,va,mode) 0;\
 {int _ierr,_row = i; PetscScalar _va = va; \
   _ierr = VecSetValues(v,1,&_row,&_va,mode);CHKERRQ(_ierr); \
 }
+
 EXTERN int VecSetBlockSize(Vec,int);
 EXTERN int VecGetBlockSize(Vec,int*);
 EXTERN int VecSetValuesBlocked(Vec,int,const int[],const PetscScalar[],InsertMode);
@@ -223,6 +254,49 @@ EXTERN int VecGetType(Vec, VecType *);
 EXTERN int VecRegister(const char[],const char[],const char[],int(*)(Vec));
 EXTERN int VecRegisterAll(const char []);
 EXTERN int VecRegisterDestroy(void);
+
+/*MC
+  VecRegisterDynamic - Adds a new vector component implementation
+
+  Synopsis:
+  VecRegisterDynamic(char *name, char *path, char *func_name, int (*create_func)(Vec))
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+. path        - The path (either absolute or relative) of the library containing this routine
+. func_name   - The name of routine to create method context
+- create_func - The creation routine itself
+
+  Notes:
+  VecRegisterDynamic() may be called multiple times to add several user-defined vectors
+
+  If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
+
+  Sample usage:
+.vb
+    VecRegisterDynamic("my_vec","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyVectorCreate", MyVectorCreate);
+.ve
+
+  Then, your vector type can be chosen with the procedural interface via
+.vb
+    VecCreate(MPI_Comm, Vec *);
+    VecSetType(Vec,"my_vector_name");
+.ve
+   or at runtime via the option
+.vb
+    -vec_type my_vector_name
+.ve
+
+  Notes: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+         If your function is not being put into a shared library then use VecRegister() instead
+        
+  Level: advanced
+
+.keywords: Vec, register
+.seealso: VecRegisterAll(), VecRegisterDestroy(), VecRegister()
+M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define VecRegisterDynamic(a,b,c,d) VecRegister(a,b,c,0)
 #else
@@ -236,6 +310,49 @@ EXTERN int VecGetSerializeType(Vec, VecSerializeType *);
 EXTERN int VecSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, Vec *, PetscViewer, PetscTruth));
 EXTERN int VecSerializeRegisterAll(const char []);
 EXTERN int VecSerializeRegisterDestroy(void);
+
+/*MC
+  VecSerializeRegisterDynamic - Adds a serialization method to the vec package.
+
+  Synopsis:
+
+  VecSerializeRegisterDynamic(char *name, char *path, char *func_name,
+                              int (*serialize_func)(MPI_Comm, Vec *, PetscViewer, PetscTruth))
+
+  Not Collective
+
+  Input Parameters:
++ name           - The name of a new user-defined serialization routine
+. path           - The path (either absolute or relative) of the library containing this routine
+. func_name      - The name of the serialization routine
+- serialize_func - The serialization routine itself
+
+  Notes:
+  VecSerializeRegister() may be called multiple times to add several user-defined serializers.
+
+  If dynamic libraries are used, then the fourth input argument (serialize_func) is ignored.
+
+  Sample usage:
+.vb
+  VecSerializeRegisterDynamic("my_store", "/home/username/my_lib/lib/libO/solaris/libmy.a", "MyStoreFunc", MyStoreFunc);
+.ve
+
+  Then, your serialization can be chosen with the procedural interface via
+.vb
+    VecSetSerializeType(vec, "my_store")
+.ve
+  or at runtime via the option
+.vb
+    -vec_serialize_type my_store
+.ve
+
+  Note: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+
+  Level: advanced
+
+.keywords: Vec, register
+.seealso: VecSerializeRegisterAll(), VecSerializeRegisterDestroy()
+M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define VecSerializeRegisterDynamic(a,b,c,d) VecSerializeRegister(a,b,c,0)
 #else

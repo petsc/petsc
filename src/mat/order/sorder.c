@@ -94,45 +94,6 @@ int MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 }
 EXTERN_C_END
 
-/*MC
-   MatOrderingRegisterDynamic - Adds a new sparse matrix ordering to the 
-                               matrix package. 
-
-   Synopsis:
-   int MatOrderingRegisterDynamic(char *name_ordering,char *path,char *name_create,int (*routine_create)(MatOrdering))
-
-   Not Collective
-
-   Input Parameters:
-+  sname - name of ordering (for example MATORDERING_ND)
-.  path - location of library where creation routine is 
-.  name - name of function that creates the ordering type,a string
--  function - function pointer that creates the ordering
-
-   Level: developer
-
-   If dynamic libraries are used, then the fourth input argument (function)
-   is ignored.
-
-   Sample usage:
-.vb
-   MatOrderingRegisterDynamic("my_order",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyOrder",MyOrder);
-.ve
-
-   Then, your partitioner can be chosen with the procedural interface via
-$     MatOrderingSetType(part,"my_order)
-   or at runtime via the option
-$     -pc_ilu_mat_ordering_type my_order
-$     -pc_lu_mat_ordering_type my_order
-
-   ${PETSC_ARCH} and ${BOPT} occuring in pathname will be replaced with appropriate values.
-
-.keywords: matrix, ordering, register
-
-.seealso: MatOrderingRegisterDestroy(), MatOrderingRegisterAll()
-M*/
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrderingRegister" 
 int MatOrderingRegister(char *sname,char *path,char *name,int (*function)(Mat,MatOrderingType,IS*,IS*))
