@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.8 1999/02/04 20:57:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawreg.c,v 1.9 1999/03/17 23:21:11 bsmith Exp bsmith $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -34,6 +34,7 @@ FList DrawList              = 0;
 int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,Draw *indraw)
 {
   Draw draw;
+  int  ierr;
 
   PetscFunctionBegin;
   *indraw = 0;
@@ -46,7 +47,7 @@ int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y
     int len     = PetscStrlen(title);
     draw->title = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(draw->title);
     PLogObjectMemory(draw,(len+1)*sizeof(char*));
-    PetscStrcpy(draw->title,title);
+    ierr = PetscStrcpy(draw->title,title);CHKERRQ(ierr);
   } else {
     draw->title = 0;
   }
@@ -54,7 +55,7 @@ int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y
     int len     = PetscStrlen(display);
     draw->display = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(draw->display);
     PLogObjectMemory(draw,(len+1)*sizeof(char*));
-    PetscStrcpy(draw->display,display);
+    ierr = PetscStrcpy(draw->display,display);CHKERRQ(ierr);
   } else {
     draw->display = 0;
   }
@@ -121,7 +122,7 @@ int DrawSetType(Draw draw,DrawType type)
 
   if (!draw->type_name) {
     draw->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(draw->type_name);
-    PetscStrcpy(draw->type_name,type);
+    ierr = PetscStrcpy(draw->type_name,type);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -222,7 +223,9 @@ int DrawRegister_Private(char *sname,char *path,char *name,int (*function)(Draw)
   char fullname[256];
 
   PetscFunctionBegin;
-  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname,":");CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname,name);CHKERRQ(ierr);
   ierr = FListAdd_Private(&DrawList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

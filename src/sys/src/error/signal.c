@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.56 1998/12/17 21:57:22 balay Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.57 1999/03/17 23:21:27 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -98,18 +98,18 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
   if (sig >= 0 && sig <= 20) {
     sprintf( buf, "Caught signal %s\n", SIGNAME[sig] );
   } else {
-    PetscStrcpy( buf, "Caught signal\n" );
+    ierr = PetscStrcpy( buf, "Caught signal\n" );CHKERRQ(ierr);
   }
-  PetscStrcat(buf,"PETSC ERROR: Try option -start_in_debugger or ");
-  PetscStrcat(buf,"-on_error_attach_debugger ");
-  PetscStrcat(buf,"to\nPETSC ERROR: determine where problem occurs\n");
+  ierr = PetscStrcat(buf,"PETSC ERROR: Try option -start_in_debugger or ");CHKERRQ(ierr);
+  ierr = PetscStrcat(buf,"-on_error_attach_debugger ");CHKERRQ(ierr);
+  ierr = PetscStrcat(buf,"to\nPETSC ERROR: determine where problem occurs\n");CHKERRQ(ierr);
 #if defined(USE_PETSC_STACK)
   if (!PetscStackActive) {
-    PetscStrcat(buf,"PETSC ERROR: or try option -log_stack\n");
+    ierr = PetscStrcat(buf,"PETSC ERROR: or try option -log_stack\n");CHKERRQ(ierr);
   } else {
     PetscStackPop;  /* remove stack frames for error handlers */
     PetscStackPop;
-    PetscStrcat(buf,"PETSC ERROR: likely location of problem given above in stack\n");
+    ierr = PetscStrcat(buf,"PETSC ERROR: likely location of problem given above in stack\n");CHKERRQ(ierr);
     (*PetscErrorPrintf)("--------------- Stack Frames ---------------\n");
     PetscStackView(VIEWER_STDERR_WORLD);
     (*PetscErrorPrintf)("--------------------------------------------\n");

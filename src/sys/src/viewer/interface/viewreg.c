@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.7 1999/03/31 04:09:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewreg.c,v 1.8 1999/03/31 04:11:23 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -93,7 +93,7 @@ int ViewerSetType(Viewer viewer,ViewerType type)
 
   if (!viewer->type_name) {
     viewer->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(viewer->type_name);
-    PetscStrcpy(viewer->type_name,type);
+    ierr = PetscStrcpy(viewer->type_name,type);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -170,7 +170,9 @@ int ViewerRegister_Private(char *sname,char *path,char *name,int (*function)(Vie
   char fullname[256];
 
   PetscFunctionBegin;
-  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = PetscStrcpy(fullname,path); CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname,":");CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname,name);CHKERRQ(ierr);
   ierr = FListAdd_Private(&ViewerList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

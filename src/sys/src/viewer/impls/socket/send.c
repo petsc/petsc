@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.91 1999/04/02 19:23:50 balay Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.92 1999/04/19 22:08:30 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -227,6 +227,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "ViewerCreate_Socket"
 int ViewerCreate_Socket(Viewer v)
 {
+  int           ierr;
   Viewer_Socket *vmatlab;
 
   PetscFunctionBegin;
@@ -237,7 +238,7 @@ int ViewerCreate_Socket(Viewer v)
   v->ops->destroy = ViewerDestroy_Socket;
   v->ops->flush   = 0;
   v->type_name    = (char *)PetscMalloc((1+PetscStrlen(SOCKET_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
-  PetscStrcpy(v->type_name,SOCKET_VIEWER);
+  ierr = PetscStrcpy(v->type_name,SOCKET_VIEWER);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

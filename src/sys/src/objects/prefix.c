@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: prefix.c,v 1.16 1998/08/26 22:01:46 balay Exp bsmith $";
+static char vcid[] = "$Id: prefix.c,v 1.17 1998/12/21 00:58:30 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -25,13 +25,15 @@ static char vcid[] = "$Id: prefix.c,v 1.16 1998/08/26 22:01:46 balay Exp bsmith 
 */
 int PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (obj->prefix) PetscFree(obj->prefix);
   if (prefix == PETSC_NULL) {obj->prefix = PETSC_NULL; PetscFunctionReturn(0);}
   if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,1,"Options prefix should not begin with a hypen");
 
   obj->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))*sizeof(char)); CHKPTRQ(obj->prefix);
-  PetscStrcpy(obj->prefix,prefix);
+  ierr = PetscStrcpy(obj->prefix,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -66,9 +68,9 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
   if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,1,"Options prefix should not begin with a hypen");
 
   obj->prefix = (char*)PetscMalloc((1+PetscStrlen(prefix)+PetscStrlen(buf))*sizeof(char));  CHKPTRQ(obj->prefix);
-  PetscStrcpy(obj->prefix,buf);
-  PetscStrcat(obj->prefix,prefix);
-  PetscFree(buf);
+  ierr = PetscStrcpy(obj->prefix,buf);CHKERRQ(ierr);
+  ierr = PetscStrcat(obj->prefix,prefix);CHKERRQ(ierr);
+  ierr = PetscFree(buf);
   PetscFunctionReturn(0);
 }
 
@@ -123,8 +125,8 @@ int PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
   if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,1,"Options prefix should not begin with a hypen");
 
   obj->prefix = (char*)PetscMalloc((1+PetscStrlen(prefix)+PetscStrlen(buf))*sizeof(char));  CHKPTRQ(obj->prefix);
-  PetscStrcpy(obj->prefix,prefix);
-  PetscStrcat(obj->prefix,buf);
+  ierr = PetscStrcpy(obj->prefix,prefix);CHKERRQ(ierr);
+  ierr = PetscStrcat(obj->prefix,buf);CHKERRQ(ierr);
   PetscFree(buf);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.34 1999/03/17 23:21:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.35 1999/03/31 04:07:59 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -190,7 +190,7 @@ int ViewerDrawSetInfo(Viewer v,const char display[],const char title[],int x,int
   vdraw->w  = w;
   if (display) {
     vdraw->display = (char *) PetscMalloc((1+PetscStrlen(display))*sizeof(char));CHKPTRQ(vdraw->display);
-    PetscStrcpy(vdraw->display,display);
+    ierr = PetscStrcpy(vdraw->display,display);CHKERRQ(ierr);
   } else {
     vdraw->display = 0;
   } 
@@ -263,7 +263,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "ViewerCreate_Draw" 
 int ViewerCreate_Draw(Viewer ctx)
 {
-  int         i;
+  int         i,ierr;
   Viewer_Draw *vdraw;
 
   PetscFunctionBegin;
@@ -275,7 +275,7 @@ int ViewerCreate_Draw(Viewer ctx)
   ctx->format       = 0;
 
   ctx->type_name = (char *)PetscMalloc((1+PetscStrlen(DRAW_VIEWER))*sizeof(char));CHKPTRQ(ctx->type_name);
-  PetscStrcpy(ctx->type_name,DRAW_VIEWER);
+  ierr = PetscStrcpy(ctx->type_name,DRAW_VIEWER);CHKERRQ(ierr);
 
   /* these are created on the fly if requested */
   for (i=0; i<VIEWER_DRAW_MAX; i++) {

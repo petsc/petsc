@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fuser.c,v 1.20 1998/12/17 21:56:10 balay Exp bsmith $";
+static char vcid[] = "$Id: fuser.c,v 1.21 1999/03/17 23:21:54 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -68,11 +68,12 @@ int PetscGetUserName( char name[], int nlen )
 int PetscGetUserName( char name[], int nlen )
 {
   struct passwd *pw;
+  int           ierr;
 
   PetscFunctionBegin;
   pw = getpwuid( getuid() );
-  if (!pw) PetscStrncpy( name, "Unknown",nlen );
-  else     PetscStrncpy( name, pw->pw_name,nlen );
+  if (!pw) {ierr = PetscStrncpy( name, "Unknown",nlen );CHKERRQ(ierr);}
+  else     {ierr = PetscStrncpy( name, pw->pw_name,nlen );CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -82,8 +83,10 @@ int PetscGetUserName( char name[], int nlen )
 #define __FUNC__ "PetscGetUserName"
 int PetscGetUserName( char *name, int nlen )
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscStrncpy( name, "Unknown", nlen );
+  ierr = PetscStrncpy( name, "Unknown", nlen );CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif /* !HAVE_PWD_H */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.52 1999/03/17 23:21:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.53 1999/04/19 22:09:24 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -366,7 +366,7 @@ static int PetscStripInitialZero(char *buf)
 */
 static int PetscStripZeros(char *buf)
 {
-  int i,j,n;
+  int i,j,n,ierr;
 
   PetscFunctionBegin;
   n = (int) PetscStrlen(buf);
@@ -374,7 +374,7 @@ static int PetscStripZeros(char *buf)
   for ( i=1; i<n-1; i++ ) {
     if (buf[i] == 'e' && buf[i-1] == '0') {
       for ( j=i; j<n+1; j++ ) buf[j-1] = buf[j];
-      PetscStripZeros(buf);
+      ierr = PetscStripZeros(buf);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   }
@@ -451,31 +451,31 @@ char *PetscADefLabel(double val,double sep )
 
     if (PetscRint(val) == val) {
 	if (w > 0) sprintf( fmat, "%%%dd", w );
-	else PetscStrcpy( fmat, "%d" );
+	else {ierr = PetscStrcpy( fmat, "%d" );CHKERRQ(ierr);}
 	sprintf( buf, fmat, (int)val );
-        PetscStripInitialZero(buf);
-        PetscStripAllZeros(buf);
-        PetscStripTrailingZeros(buf);
+        ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
+        ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
+        ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
     } else {
 	/* The code used here is inappropriate for a val of 0, which
 	   tends to print with an excessive numer of digits.  In this
 	   case, we should look at the next/previous values and 
 	   use those widths */
 	if (w > 0) sprintf( fmat, "%%%d.%dlf", w + 1, d );
-	else PetscStrcpy( fmat, "%lf" );
+	else {ierr = PetscStrcpy( fmat, "%lf" );CHKERRQ(ierr);}
 	sprintf( buf, fmat, val );
-        PetscStripInitialZero(buf);
-        PetscStripAllZeros(buf);
-        PetscStripTrailingZeros(buf);
+        ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
+        ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
+        ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
     }
   } else {
     sprintf( buf, "%e", val );
     /* remove the extraneous 0's before the e */
-    PetscStripZeros(buf);
-    PetscStripZerosPlus(buf);
-    PetscStripInitialZero(buf);
-    PetscStripAllZeros(buf);
-    PetscStripTrailingZeros(buf);
+    ierr = PetscStripZeros(buf);CHKERRQ(ierr);
+    ierr = PetscStripZerosPlus(buf);CHKERRQ(ierr);
+    ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
+    ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
+    ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
   }
   PetscFunctionReturn(buf);
 }

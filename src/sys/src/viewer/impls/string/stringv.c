@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.28 1999/01/31 16:04:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.29 1999/03/17 23:21:04 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
@@ -47,7 +47,7 @@ static int ViewerDestroy_String(Viewer viewer)
 int ViewerStringSPrintf(Viewer v,char *format,...)
 {
   va_list       Argp;
-  int           shift;
+  int           shift,ierr;
   char          tmp[512];
   Viewer_String *vstr = (Viewer_String *) v->data;
 
@@ -68,7 +68,7 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
   if (shift > 512) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"String too long");
   
   if (shift >= vstr->maxlen - vstr->curlen - 1) shift = vstr->maxlen - vstr->curlen - 1;
-  PetscStrncpy(vstr->head,tmp,shift);
+  ierr = PetscStrncpy(vstr->head,tmp,shift);CHKERRQ(ierr);
 
   vstr->head   += shift;
   vstr->curlen += shift;
@@ -117,6 +117,7 @@ EXTERN_C_BEGIN
 int ViewerCreate_String(Viewer v)
 {
   Viewer_String *vstr;
+  int           ierr;
 
   PetscFunctionBegin;
   v->ops->destroy = ViewerDestroy_String;
@@ -125,7 +126,7 @@ int ViewerCreate_String(Viewer v)
   vstr            = PetscNew(Viewer_String);
   v->data         = (void *) vstr;
   v->type_name    = (char *) PetscMalloc((1+PetscStrlen(STRING_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
-  PetscStrcpy(v->type_name,STRING_VIEWER);
+  ierr = PetscStrcpy(v->type_name,STRING_VIEWER);CHKERRQ(ierr);
   vstr->string    = 0;
   PetscFunctionReturn(0);
 }

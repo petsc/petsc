@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: olist.c,v 1.7 1998/12/03 03:58:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: olist.c,v 1.8 1999/02/26 04:00:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -69,7 +69,7 @@ int OListAdd(OList *fl,const char name[],PetscObject obj )
   olist->next = 0;
   olist->obj  = obj;
   ierr = PetscObjectReference(obj);CHKERRQ(ierr);
-  PetscStrcpy(olist->name,name);
+  ierr = PetscStrcpy(olist->name,name);CHKERRQ(ierr);
 
   if (!*fl) {
     *fl = olist;

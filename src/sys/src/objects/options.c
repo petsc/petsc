@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.207 1999/04/16 16:03:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.208 1999/04/19 22:09:48 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -63,10 +63,12 @@ int OptionsAtoi(char name[])
 @*/
 int PetscGetProgramName(char name[],int len)
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (!options) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must call PetscInitialize() first");
   if (!options->namegiven) SETERRQ(PETSC_ERR_PLIB,1,"Unable to determine program name");
-  PetscStrncpy(name,options->programname,len);
+  ierr = PetscStrncpy(name,options->programname,len);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -79,7 +81,7 @@ int PetscSetProgramName(const char name[])
   options->namegiven = 1;
   /* Now strip away the path, if absulute path is specified */
   sname = PetscStrrchr(name,'/');
-  PetscStrncpy(options->programname,sname,256);
+  ierr = PetscStrncpy(options->programname,sname,256);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -330,12 +332,12 @@ int OptionsGetAll(char *copts[])
   coptions    = (char *) PetscMalloc(len*sizeof(char));CHKPTRQ(coptions);
   coptions[0] = 0;
   for ( i=0; i<options->N; i++ ) {
-    PetscStrcat(coptions,"-");
-    PetscStrcat(coptions,options->names[i]);
-    PetscStrcat(coptions," ");
+    ierr = PetscStrcat(coptions,"-"); CHKERRQ(ierr);
+    ierr = PetscStrcat(coptions,options->names[i]);CHKERRQ(ierr);
+    ierr = PetscStrcat(coptions," ");CHKERRQ(ierr);
     if (options->values[i]) {
-      PetscStrcat(coptions,options->values[i]);
-      PetscStrcat(coptions," ");
+      ierr = PetscStrcat(coptions,options->values[i]);CHKERRQ(ierr);
+      ierr = PetscStrcat(coptions," ");CHKERRQ(ierr);
     } 
   }
   *copts = coptions;
@@ -399,7 +401,7 @@ int OptionsDestroy(void)
 @*/
 int OptionsSetValue(const char name[],const char value[])
 {
-  int  len, N, n, i;
+  int  len, N, n, i,ierr;
   char **names;
 
   PetscFunctionBegin;
@@ -427,7 +429,7 @@ int OptionsSetValue(const char name[],const char value[])
       len = PetscStrlen(value);
       if (len) {
         options->values[i] = (char *) malloc((len+1)*sizeof(char));CHKPTRQ(options->values[i]);
-        PetscStrcpy(options->values[i],value);
+        ierr = PetscStrcpy(options->values[i],value);CHKERRQ(ierr);
       } else { options->values[i] = 0;}
       PetscFunctionReturn(0);
     } else if (PetscStrcmp(names[i],name) > 0) {
@@ -447,11 +449,11 @@ int OptionsSetValue(const char name[],const char value[])
   /* insert new name and value */
   len = (PetscStrlen(name)+1)*sizeof(char);
   names[n] = (char *) malloc( len ); CHKPTRQ(names[n]);
-  PetscStrcpy(names[n],name);
+  ierr = PetscStrcpy(names[n],name);CHKERRQ(ierr);
   if (value) {
     len = (PetscStrlen(value)+1)*sizeof(char);
     options->values[n] = (char *) malloc( len ); CHKPTRQ(options->values[n]);
-    PetscStrcpy(options->values[n],value);
+    ierr = PetscStrcpy(options->values[n],value);CHKERRQ(ierr);
   } else {options->values[n] = 0;}
   options->used[n] = 0;
   options->N++;
@@ -512,7 +514,7 @@ int OptionsClearValue(const char name[])
 #define __FUNC__ "OptionsSetAlias"
 int OptionsSetAlias(const char newname[],const char oldname[])
 {
-  int len,n = options->Naliases;
+  int ierr,len,n = options->Naliases;
 
   PetscFunctionBegin;
   if (newname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,0,"aliased must have -: Instead %s",newname);
@@ -524,10 +526,10 @@ int OptionsSetAlias(const char newname[],const char oldname[])
   newname++; oldname++;
   len = (PetscStrlen(newname)+1)*sizeof(char);
   options->aliases1[n] = (char *) malloc( len ); CHKPTRQ(options->aliases1[n]);
-  PetscStrcpy(options->aliases1[n],newname);
+  ierr = PetscStrcpy(options->aliases1[n],newname);CHKERRQ(ierr);
   len = (PetscStrlen(oldname)+1)*sizeof(char);
   options->aliases2[n] = (char *) malloc( len );CHKPTRQ(options->aliases2[n]);
-  PetscStrcpy(options->aliases2[n],oldname);
+  ierr = PetscStrcpy(options->aliases2[n],oldname);CHKERRQ(ierr);
   options->Naliases++;
   PetscFunctionReturn(0);
 }
@@ -548,10 +550,10 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
 
   /* append prefix to name */
   if (pre) {
-    PetscStrncpy(tmp,pre,256); 
+    ierr = PetscStrncpy(tmp,pre,256);CHKERRQ(ierr);
     len = PetscStrlen(tmp);
-    PetscStrncat(tmp,name+1,256-len-1);
-  } else PetscStrncpy(tmp,name+1,256);
+    ierr = PetscStrncat(tmp,name+1,256-len-1);CHKERRQ(ierr);
+  } else {ierr = PetscStrncpy(tmp,name+1,256);CHKERRQ(ierr);}
 
   /* slow search */
   *flg = 0;
@@ -861,7 +863,7 @@ int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[], in
   /* make a copy of the values, otherwise we destroy the old values */
   len = PetscStrlen(value) + 1; 
   cpy = (char *) PetscMalloc(len*sizeof(char));
-  PetscStrcpy(cpy,value);
+  ierr = PetscStrcpy(cpy,value);CHKERRQ(ierr);
   value = cpy;
 
   value = PetscStrtok(value,",");
@@ -914,9 +916,9 @@ int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax
 
   if (flg) *flg = 1;
   /* make a copy of the values, otherwise we destroy the old values */
-  len = PetscStrlen(value) + 1; 
-  cpy = (char *) PetscMalloc(len*sizeof(char));
-  PetscStrcpy(cpy,value);
+  len   = PetscStrlen(value) + 1; 
+  cpy   = (char *) PetscMalloc(len*sizeof(char));
+  ierr  = PetscStrcpy(cpy,value);CHKERRQ(ierr);
   value = cpy;
 
   value = PetscStrtok(value,",");
@@ -972,8 +974,8 @@ int OptionsGetString(const char pre[],const char name[],char string[],int len, i
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr); 
   if (!*flg) {PetscFunctionReturn(0);}
-  if (value) PetscStrncpy(string,value,len);
-  else PetscMemzero(string,len);
+  if (value) {ierr = PetscStrncpy(string,value,len);CHKERRQ(ierr);}
+  else {ierr = PetscMemzero(string,len);CHKERRQ(ierr);}
   PetscFunctionReturn(0); 
 }
 
@@ -1013,11 +1015,8 @@ int OptionsGetString(const char pre[],const char name[],char string[],int len, i
 @*/
 int OptionsGetStringArray(const char pre[],const char name[],char **strings,int *nmax,int *flg)
 {
-  char *value;
-  char *cpy;
-  int   len;
-  int   n;
-  int   ierr;
+  char *value, *cpy;
+  int   len, n, ierr;
 
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr); 
@@ -1026,9 +1025,9 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
   if (*nmax == 0) PetscFunctionReturn(0);
 
   /* make a copy of the values, otherwise we destroy the old values */
-  len = PetscStrlen(value) + 1;
-  cpy = (char *) PetscMalloc(len * sizeof(char)); CHKPTRQ(cpy);
-  PetscStrcpy(cpy, value);
+  len   = PetscStrlen(value) + 1;
+  cpy   = (char *) PetscMalloc(len * sizeof(char)); CHKPTRQ(cpy);
+  ierr  = PetscStrcpy(cpy, value);CHKERRQ(ierr);
   value = cpy;
 
   value = PetscStrtok(value, ",");
@@ -1037,7 +1036,7 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
     if (!value) break;
     len        = PetscStrlen(value) + 1;
     strings[n] = (char *) PetscMalloc(len * sizeof(char)); CHKPTRQ(strings[n]);
-    PetscStrcpy(strings[n], value);
+    ierr  = PetscStrcpy(strings[n], value);CHKERRQ(ierr);
     value = PetscStrtok(0, ",");
     n++;
   }

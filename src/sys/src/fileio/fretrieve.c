@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.8 1999/03/17 23:21:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fretrieve.c,v 1.9 1999/04/19 22:09:39 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -192,11 +192,11 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
   
     /* Construct the Python script to get URL file */
     par = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par);
-    ierr = PetscStrcpy(par,"python1.5 ");
-    ierr = PetscStrcat(par,PETSC_DIR);
-    ierr = PetscStrcat(par,"/bin/urlget.py ");
-    ierr = PetscStrcat(par,libname);
-    ierr = PetscStrcat(par," 2>&1 ");
+    ierr = PetscStrcpy(par,"python1.5 ");CHKERRQ(ierr);
+    ierr = PetscStrcat(par,PETSC_DIR);CHKERRQ(ierr);
+    ierr = PetscStrcat(par,"/bin/urlget.py ");CHKERRQ(ierr);
+    ierr = PetscStrcat(par,libname);CHKERRQ(ierr);
+    ierr = PetscStrcat(par," 2>&1 ");CHKERRQ(ierr);
 
     PLogInfo(0,"PetscFileRetrieve: Running python script:%s\n",par);
 #if defined (PARCH_win32)
@@ -226,8 +226,8 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     PetscFree(par);
   }
   if (sharedtmp) { /* send library name to all processors */
-    MPI_Bcast(llibname,llen,MPI_CHAR,0,comm);
-    MPI_Bcast(found,1,MPI_INT,0,comm);
+    ierr = MPI_Bcast(llibname,llen,MPI_CHAR,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(found,1,MPI_INT,0,comm);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.63 1999/03/31 04:01:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.64 1999/04/19 22:08:38 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -366,7 +366,7 @@ int ViewerCreate_Binary(Viewer v)
                                     "ViewerBinarySetType_Binary",
                                      (void*)ViewerBinarySetType_Binary);CHKERRQ(ierr);
   v->type_name = (char *) PetscMalloc((1+PetscStrlen(BINARY_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
-  PetscStrcpy(v->type_name,BINARY_VIEWER);
+  ierr = PetscStrcpy(v->type_name,BINARY_VIEWER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fpath.c,v 1.22 1998/12/17 21:57:17 balay Exp bsmith $";
+static char vcid[] = "$Id: fpath.c,v 1.23 1999/03/17 23:21:32 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -62,20 +62,20 @@ static char vcid[] = "$Id: fpath.c,v 1.22 1998/12/17 21:57:17 balay Exp bsmith $
 int PetscGetFullPath( const char path[], char fullpath[], int flen )
 {
   struct passwd *pwde;
-  int           ln;
+  int           ierr,ln;
 
   PetscFunctionBegin;
   if (path[0] == '/') {
-    if (PetscStrncmp("/tmp_mnt/",path,9) == 0) PetscStrncpy(fullpath, path + 8, flen);
-    else PetscStrncpy( fullpath, path, flen); 
+    if (PetscStrncmp("/tmp_mnt/",path,9) == 0) {ierr = PetscStrncpy(fullpath, path + 8, flen);CHKERRQ(ierr);}
+    else {ierr = PetscStrncpy( fullpath, path, flen); CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
-  PetscGetWorkingDirectory( fullpath, flen );
-  PetscStrncat( fullpath,"/",flen - PetscStrlen(fullpath) );
+  ierr = PetscGetWorkingDirectory( fullpath, flen );CHKERRQ(ierr);
+  ierr = PetscStrncat( fullpath,"/",flen - PetscStrlen(fullpath) );CHKERRQ(ierr);
   if ( path[0] == '.' && path[1] == '/' ) {
-    PetscStrncat( fullpath, path+2, flen - PetscStrlen(fullpath) - 1 );
+    ierr = PetscStrncat( fullpath, path+2, flen - PetscStrlen(fullpath) - 1 );CHKERRQ(ierr);
   } else {
-    PetscStrncat( fullpath, path, flen - PetscStrlen(fullpath) - 1 );
+    ierr = PetscStrncat( fullpath, path, flen - PetscStrlen(fullpath) - 1 );CHKERRQ(ierr);
   }
 
   /* Remove the various "special" forms (~username/ and ~/) */
@@ -84,11 +84,11 @@ int PetscGetFullPath( const char path[], char fullpath[], int flen )
     if (fullpath[1] == '/') {
 	pwde = getpwuid( geteuid() );
 	if (!pwde) PetscFunctionReturn(0);
-	PetscStrcpy( tmppath, pwde->pw_dir );
+	ierr = PetscStrcpy( tmppath, pwde->pw_dir );CHKERRQ(ierr);
 	ln = PetscStrlen( tmppath );
-	if (tmppath[ln-1] != '/') PetscStrcat( tmppath+ln-1, "/" );
-	PetscStrcat( tmppath, fullpath + 2 );
-	PetscStrncpy( fullpath, tmppath, flen );
+	if (tmppath[ln-1] != '/') {ierr = PetscStrcat( tmppath+ln-1, "/" );CHKERRQ(ierr);}
+	ierr = PetscStrcat( tmppath, fullpath + 2 );CHKERRQ(ierr);
+	ierr = PetscStrncpy( fullpath, tmppath, flen );CHKERRQ(ierr);
     } else {
 	char *p, *name;
 
@@ -100,18 +100,18 @@ int PetscGetFullPath( const char path[], char fullpath[], int flen )
 	pwde = getpwnam( name );
 	if (!pwde) PetscFunctionReturn(0);
 	
-	PetscStrcpy( tmppath, pwde->pw_dir );
+	ierr = PetscStrcpy( tmppath, pwde->pw_dir );CHKERRQ(ierr);
 	ln = PetscStrlen( tmppath );
-	if (tmppath[ln-1] != '/') PetscStrcat( tmppath+ln-1, "/" );
-	PetscStrcat( tmppath, p );
-	PetscStrncpy( fullpath, tmppath, flen );
+	if (tmppath[ln-1] != '/') {ierr = PetscStrcat( tmppath+ln-1, "/" );CHKERRQ(ierr);}
+	ierr = PetscStrcat( tmppath, p );CHKERRQ(ierr);
+	ierr = PetscStrncpy( fullpath, tmppath, flen );CHKERRQ(ierr);
     }
   }
   /* Remove the automounter part of the path */
   if (PetscStrncmp( fullpath, "/tmp_mnt/", 9 ) == 0) {
     char tmppath[MAXPATHLEN];
-    PetscStrcpy( tmppath, fullpath + 8 );
-    PetscStrcpy( fullpath, tmppath );
+    ierr = PetscStrcpy( tmppath, fullpath + 8 );CHKERRQ(ierr);
+    ierr = PetscStrcpy( fullpath, tmppath );CHKERRQ(ierr);
   }
   /* We could try to handle things like the removal of .. etc */
   PetscFunctionReturn(0);
@@ -130,8 +130,10 @@ int PetscGetFullPath(const char path[],char fullpath[], int flen )
 #define __FUNC__ "PetscGetFullPath"
 int PetscGetFullPath(const char path[],char fullpath[], int flen )
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscStrcpy( fullpath, path );
+  ierr = PetscStrcpy( fullpath, path );CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }	
 #endif

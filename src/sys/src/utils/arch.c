@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: arch.c,v 1.32 1998/12/17 21:56:12 balay Exp bsmith $";
+static char vcid[] = "$Id: arch.c,v 1.33 1999/03/17 23:21:54 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
@@ -25,39 +25,41 @@ static char vcid[] = "$Id: arch.c,v 1.32 1998/12/17 21:56:12 balay Exp bsmith $"
 @*/
 int PetscGetArchType(char str[],int slen)
 {
+  int ierr;
+
   PetscFunctionBegin;
 #if defined(PETSC_ARCH_NAME)
-  PetscStrncpy(str,PETSC_ARCH_NAME,slen);
+  ierr = PetscStrncpy(str,PETSC_ARCH_NAME,slen);CHKERRQ(ierr);
 #elif defined(PARCH_solaris)
-  PetscStrncpy(str,"solaris",slen);
+  ierr = PetscStrncpy(str,"solaris",slen);CHKERRQ(ierr);
 #elif defined(PARCH_sun4) 
-  PetscStrncpy(str,"sun4",slen);
+  ierr = PetscStrncpy(str,"sun4",slen);CHKERRQ(ierr);
 #elif defined(PARCH_IRIX64)
-  PetscStrncpy(str,"IRIX64",slen);
+  ierr = PetscStrncpy(str,"IRIX64",slen);CHKERRQ(ierr);
 #elif defined(PARCH_IRIX)
-  PetscStrncpy(str,"IRIX",slen);
+  ierr = PetscStrncpy(str,"IRIX",slen);CHKERRQ(ierr);
 #elif defined(PARCH_IRIX5)
-  PetscStrncpy(str,"IRIX5",slen);
+  ierr = PetscStrncpy(str,"IRIX5",slen);CHKERRQ(ierr);
 #elif defined(PARCH_hpux)
-  PetscStrncpy(str,"hpux",slen);
+  ierr = PetscStrncpy(str,"hpux",slen);CHKERRQ(ierr);
 #elif defined(PARCH_rs6000)
-  PetscStrncpy(str,"rs6000",slen);
+  ierr = PetscStrncpy(str,"rs6000",slen);CHKERRQ(ierr);
 #elif defined(PARCH_paragon)
-  PetscStrncpy(str,"paragon",slen);
+  ierr = PetscStrncpy(str,"paragon",slen);CHKERRQ(ierr);
 #elif defined(PARCH_t3d)
-  PetscStrncpy(str,"t3d",slen);
+  ierr = PetscStrncpy(str,"t3d",slen);CHKERRQ(ierr);
 #elif defined(PARCH_alpha)
-  PetscStrncpy(str,"alpha",slen);
+  ierr = PetscStrncpy(str,"alpha",slen);CHKERRQ(ierr);
 #elif defined(PARCH_freebsd)
-  PetscStrncpy(str,"freebsd",slen);
+  ierr = PetscStrncpy(str,"freebsd",slen);CHKERRQ(ierr);
 #elif defined(PARCH_win32)
-  PetscStrncpy(str,"win32",slen);
+  ierr = PetscStrncpy(str,"win32",slen);CHKERRQ(ierr);
 #elif defined(PARCH_win32_gnu)
-  PetscStrncpy(str,"win32_gnu",slen);
+  ierr = PetscStrncpy(str,"win32_gnu",slen);CHKERRQ(ierr);
 #elif defined(PARCH_linux)
-  PetscStrncpy(str,"linux",slen);
+  ierr = PetscStrncpy(str,"linux",slen);CHKERRQ(ierr);
 #else
-  PetscStrncpy(str,"Unknown",slen);
+  ierr = PetscStrncpy(str,"Unknown",slen);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

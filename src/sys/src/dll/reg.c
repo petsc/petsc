@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.33 1999/04/02 04:14:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.34 1999/04/19 22:09:34 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -12,20 +12,20 @@ static char vcid[] = "$Id: reg.c,v 1.33 1999/04/02 04:14:25 bsmith Exp bsmith $"
 #define __FUNC__ "FListGetPathAndFunction"
 int FListGetPathAndFunction(const char name[],char *path[],char *function[])
 {
-  char work[256],*lfunction;
+  char work[256],*lfunction,ierr;
 
   PetscFunctionBegin;
-  PetscStrncpy(work,name,256);
+  ierr = PetscStrncpy(work,name,256);CHKERRQ(ierr);
   lfunction = PetscStrrchr(work,':');
   if (lfunction != work) {
     lfunction[-1] = 0;
     *path = (char *) PetscMalloc( (PetscStrlen(work) + 1)*sizeof(char));CHKPTRQ(*path);
-    PetscStrcpy(*path,work);
+    ierr  = PetscStrcpy(*path,work);CHKERRQ(ierr);
   } else {
     *path = 0;
   }
   *function = (char *) PetscMalloc((PetscStrlen(lfunction)+1)*sizeof(char));CHKPTRQ(*function);
-  PetscStrcpy(*function,lfunction);
+  ierr  = PetscStrcpy(*function,lfunction);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -206,7 +206,7 @@ int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(
   if (!*fl) {
     entry          = (FList) PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
     entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 ); CHKPTRQ(entry->name);
-    PetscStrcpy( entry->name, name );
+    ierr = PetscStrcpy( entry->name, name );CHKERRQ(ierr);
     ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
     entry->rname   = fname;
@@ -241,7 +241,7 @@ int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(
     /* create new entry and add to end of list */
     entry          = (FList) PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
     entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 ); CHKPTRQ(entry->name);
-    PetscStrcpy( entry->name, name );
+    ierr = PetscStrcpy( entry->name, name );CHKERRQ(ierr);
     ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
     entry->rname   = fname;
@@ -511,11 +511,11 @@ int FListDuplicate(FList fl, FList *nl)
   while (fl) {
     /* this is silly, rebuild the complete pathname */
     if (fl->path) {
-      PetscStrcpy(path,fl->path);
-      PetscStrcat(path,":");
-      PetscStrcat(path,fl->name);
+      ierr = PetscStrcpy(path,fl->path);CHKERRQ(ierr);
+      ierr = PetscStrcat(path,":");CHKERRQ(ierr);
+      ierr = PetscStrcat(path,fl->name);CHKERRQ(ierr);
     } else {
-      PetscStrcpy(path,fl->name);
+      ierr = PetscStrcpy(path,fl->name);CHKERRQ(ierr);
     }       
     ierr = FListAdd(nl,path,fl->rname,fl->routine); CHKERRQ(ierr);
     fl = fl->next;

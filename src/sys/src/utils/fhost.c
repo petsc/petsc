@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fhost.c,v 1.29 1998/12/17 21:56:27 balay Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.30 1999/03/17 23:21:54 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -57,9 +57,11 @@ int PetscGetHostName( char name[], int nlen )
   GetComputerName((LPTSTR)name,(LPDWORD)(&nlen));
 #elif defined(HAVE_UNAME)
   struct utsname utname;
+  int            ierr;
+
   PetscFunctionBegin;
   uname(&utname); 
-  PetscStrncpy(name,utname.nodename,nlen);
+  ierr = PetscStrncpy(name,utname.nodename,nlen);CHKERRQ(ierr);
 #elif defined(HAVE_GETHOSTNAME)
   PetscFunctionBegin;
   gethostname(name, nlen);
@@ -79,7 +81,7 @@ int PetscGetHostName( char name[], int nlen )
     getdomainname( name+l, nlen - l );
     /* change domain name if it is an ANL crap one */
     if (!PetscStrcmp(name+l,"qazwsxedc")) {
-      PetscStrncpy(name+l,"mcs.anl.gov",nlen-12);
+      int ierr = PetscStrncpy(name+l,"mcs.anl.gov",nlen-12);CHKERRQ(ierr);
     }
 #endif
     /* 

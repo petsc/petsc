@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.17 1999/03/31 04:03:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.18 1999/04/19 22:08:40 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -250,7 +250,7 @@ int ViewerCreate_AMS(Viewer v)
   PetscFunctionBegin;
   v->ops->destroy = ViewerDestroy_AMS;
   v->type_name    = (char *) PetscMalloc((1+PetscStrlen(AMS_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
-  PetscStrcpy(v->type_name,AMS_VIEWER);
+  ierr = PetscStrcpy(v->type_name,AMS_VIEWER);CHKERRQ(ierr);
   vams            = PetscNew(Viewer_AMS);CHKPTRQ(vams);
   v->data         = (void *) vams;
   vams->ams_comm  = -1;
