@@ -72,14 +72,14 @@ int  KSPSolve_BiCG(KSP ksp)
   } else {
     ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
   }
-  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  if (ksp->reason) PetscFunctionReturn(0);
   KSPMonitor(ksp,0,dp);
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = dp;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
+  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  if (ksp->reason) PetscFunctionReturn(0);
 
   i = 0;
   do {

@@ -29,10 +29,10 @@ static int KSPSetUp_TFQMR(KSP ksp)
 #define __FUNCT__ "KSPSolve_TFQMR"
 static int  KSPSolve_TFQMR(KSP ksp)
 {
-  int       i,m, ierr;
-  PetscScalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
-  PetscReal dp,dpold,w,dpest,tau,psi,cm;
-  Vec       X,B,V,P,R,RP,T,T1,Q,U,D,AUQ;
+  int         i,m, ierr;
+  PetscScalar rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
+  PetscReal   dp,dpold,w,dpest,tau,psi,cm;
+  Vec         X,B,V,P,R,RP,T,T1,Q,U,D,AUQ;
 
   PetscFunctionBegin;
   X        = ksp->vec_sol;
@@ -57,9 +57,9 @@ static int  KSPSolve_TFQMR(KSP ksp)
   ksp->rnorm  = dp;
   ksp->its    = 0;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  KSPMonitor(ksp,0,dp);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
-  KSPMonitor(ksp,0,dp);
 
   /* Make the initial Rp == R */
   ierr = VecCopy(R,RP);CHKERRQ(ierr);

@@ -154,12 +154,12 @@ int  KSPSolve_CG(KSP ksp)
   } else if (ksp->normtype == KSP_NATURAL_NORM) {
     dp = sqrt(PetscAbsScalar(beta));
   } else dp = 0.0;
-  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
-  if (ksp->reason) PetscFunctionReturn(0);
-
   KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);                              /* call any registered monitor routines */
   ksp->rnorm = dp;
+
+  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
+  if (ksp->reason) PetscFunctionReturn(0);
 
   i = 0;
   do {

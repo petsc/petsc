@@ -134,6 +134,11 @@ int GMREScycle(int *itcount,KSP ksp)
   *GRS(0) = res_norm;
 
   /* check for the convergence */
+  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ksp->rnorm = res;
+  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  gmres->it = (it - 1);
+  KSPLogResidualHistory(ksp,res);
   if (!res) {
     if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
@@ -141,10 +146,6 @@ int GMREScycle(int *itcount,KSP ksp)
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-  ksp->rnorm = res;
-  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-  gmres->it = (it - 1);
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
     KSPLogResidualHistory(ksp,res);

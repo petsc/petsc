@@ -91,10 +91,10 @@ static int KSPSolve_LSQR(KSP ksp)
   ksp->its   = 0;
   ksp->rnorm = rnorm;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-  ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  if (ksp->reason) PetscFunctionReturn(0);
   KSPLogResidualHistory(ksp,rnorm);
   KSPMonitor(ksp,0,rnorm);
+  ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  if (ksp->reason) PetscFunctionReturn(0);
 
   ierr = VecCopy(B,U);CHKERRQ(ierr);
   ierr = VecNorm(U,NORM_2,&beta);CHKERRQ(ierr);
