@@ -1,5 +1,6 @@
 #! /bin/sh
-echo "PETSc Tuesday 2:30pm meeting reminder" | /usr/ucb/mail -s "PETSc Tuesday 2:30pm meeting reminder" bsmith balay curfman kaushik gropp buschelm
+echo "PETSc Tuesday 2:30pm meeting reminder" | /usr/ucb/mail -s "PETSc Tuesday 2:30pm meeting reminder" petsc-developers@mcs.anl.gov
+
 
 
 

@@ -45,8 +45,8 @@ CXX_CC		   = @CXX@
 CXX_FC		   = @FC@  
 CXX_CLINKER_SLFLAG = -rdynamic -Wl,-rpath,
 CXX_FLINKER_SLFLAG = -rdynamic -Wl,-rpath,
-CXX_CLINKER	   = @CXX@
-CXX_FLINKER	   = @CXX@
+CXX_CLINKER	   = @CXX@ @LDFLAGS@
+CXX_FLINKER	   = @CXX@ @LDFLAGS@
 # What is CXX_CCV?
 CXX_CCV		   = @CXX@ --version | head -1
 CXX_SYS_LIB	   = @LIBS@
