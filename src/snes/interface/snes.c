@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.88 1996/09/28 16:25:02 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.89 1996/09/30 17:58:39 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -536,12 +536,12 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 .  r - vector to store function value
 
    Calling sequence of func:
-.  func (SNES, Vec x, Vec f, void *ctx);
+.  func (SNES snes,Vec x,Vec f,void *ctx);
 
 .  x - input vector
-.  f - vector function
-.  ctx - optional user-defined context for private data for the 
-         function evaluation routine (may be null)
+.  f - function vector
+.  ctx - [optional] user-defined context for private data for the 
+         function evaluation routine (may be PETSC_NULL)
 
    Notes:
    The Newton-like methods typically solve linear systems of the form
@@ -842,14 +842,14 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
          Jacobian evaluation routine (may be null)
 
    Calling sequence of func:
-.  func (SNES,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
+.  func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 
 .  x - input vector
 .  A - Jacobian matrix
 .  B - preconditioner matrix, usually the same as A
 .  flag - flag indicating information about the preconditioner matrix
    structure (same as flag in SLESSetOperators())
-.  ctx - optional user-defined Jacobian context
+.  ctx - [optional] user-defined Jacobian context (may be PETSC_NULL)
 
    Notes: 
    See SLESSetOperators() for important information about setting the flag
@@ -911,11 +911,11 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
 .  A - Hessian matrix
 .  B - preconditioner matrix (usually same as the Hessian)
 .  func - Jacobian evaluation routine
-.  ctx - optional user-defined context for private data for the 
-         Hessian evaluation routine (may be null)
+.  ctx - [optional] user-defined context for private data for the 
+         Hessian evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
-.  func (SNES,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
+.  func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 
 .  x - input vector
 .  A - Hessian matrix
