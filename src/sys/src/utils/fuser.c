@@ -1,12 +1,20 @@
 #ifndef lint
-static char vcid[] = "$Id: fuser.c,v 1.7 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: fuser.c,v 1.8 1997/03/03 22:55:19 balay Exp balay $";
 #endif
 /*
       Code for manipulating files.
 */
 #include "src/sys/src/files.h"
 
-#if defined(HAVE_PWD_H)
+#if defined (PARCH_nt) || defined(PARCH_nt_gnu)
+#undef __FUNC__  
+#define __FUNC__ "PetscGetUserName" /* ADIC Ignore */
+int PetscGetUserName( char *name, int nlen )
+{
+  GetUserName((LPTSTR)name,(LPDWORD)(&nlen));
+  return 0;
+}
+#elif defined(HAVE_PWD_H)
 #undef __FUNC__  
 #define __FUNC__ "PetscGetUserName" /* ADIC Ignore */
 /*@C
@@ -31,14 +39,7 @@ int PetscGetUserName( char *name, int nlen )
   else     PetscStrncpy( name, pw->pw_name,nlen );
   return 0;
 }
-#elif defined (PARCH_nt) || defined(PARCH_nt_gnu)
-#undef __FUNC__  
-#define __FUNC__ "PetscGetUserName" /* ADIC Ignore */
-int PetscGetUserName( char *name, int nlen )
-{
-  GetUserName((LPTSTR)name,(LPDWORD)(&nlen));
-  return 0;
-}
+
 #else
 #undef __FUNC__  
 #define __FUNC__ "PetscGetUserName" /* ADIC Ignore */
