@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.102 2001/03/23 23:23:29 balay Exp bsmith $*/
+/*$Id: iterativ.c,v 1.103 2001/03/27 19:00:09 bsmith Exp bsmith $*/
 
 /*
    This file contains some simple default routines.  
@@ -548,7 +548,7 @@ int KSPDefaultDestroy(KSP ksp)
 
 .keywords: KSP, nonlinear, set, convergence, test
 
-.seealso: KSPSetConvergenceTest(), KSPDefaultConverged(), KSPSetTolerances()
+.seealso: KSPSetConvergenceTest(), KSPDefaultConverged(), KSPSetTolerances(), KSPConvergedReason
 @*/
 int KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 {
