@@ -1,11 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.12 1996/02/05 23:59:37 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.13 1996/02/06 15:27:37 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
 #include "inline/bitarray.h"
 
-int MatIncreaseOverlap_MPIAIJ_private(Mat, int, IS *);
+static int MatIncreaseOverlap_MPIAIJ_private(Mat, int, IS *);
+static int FindOverlapLocal(Mat , int , char **,int*, int**);
+static int FindOverlapRecievedMesg(Mat , int, int **, int**, int* );
 
 int MatIncreaseOverlap_MPIAIJ(Mat C, int is_max, IS *is, int ov)
 {
@@ -16,8 +18,6 @@ int MatIncreaseOverlap_MPIAIJ(Mat C, int is_max, IS *is, int ov)
   }
   return 0;
 }
-int FindOverlapLocal(Mat , int , char **,int*, int**);
-int FindOverlapRecievedMesg(Mat , int, int **, int**, int* );
 
 /*
   Sample message format:
@@ -38,7 +38,7 @@ int FindOverlapRecievedMesg(Mat , int, int **, int**, int* );
   mesg[m]  data(is[5])
   -----------  
 */
-int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
+static int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
 {
   Mat_MPIAIJ  *c = (Mat_MPIAIJ *) C->data;
   int         **idx, *n, *w1, *w2, *w3, *w4, *rtable,**data;
@@ -373,7 +373,7 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
                to each index set;
       data   - pointer to the solutions
 */
-int FindOverlapLocal(Mat C, int is_max, char **table, int *isz,int **data)
+static int FindOverlapLocal(Mat C, int is_max, char **table, int *isz,int **data)
 {
   Mat_MPIAIJ *c = (Mat_MPIAIJ *) C->data;
   Mat        A = c->A, B = c->B;
@@ -424,7 +424,7 @@ return 0;
            xdata - array of messages to be sent back
            isz1  - size of each message
 */
-int FindOverlapRecievedMesg(Mat C, int nmsg, int ** rbuf, int ** xdata, int * isz1 )
+static int FindOverlapRecievedMesg(Mat C, int nmsg, int ** rbuf, int ** xdata, int * isz1 )
 {
   Mat_MPIAIJ  *c = (Mat_MPIAIJ *) C->data;
   Mat         A = c->A, B = c->B;
