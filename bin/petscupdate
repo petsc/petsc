@@ -106,13 +106,32 @@ rm -f $file
 #  Check if the libraries are already built
 #
 arch=`$PETSC_DIR/bin/petscarch`
-archs=`ls lib/lib*/$arch*/libpetsc.a | sed -e "s?lib/lib[gO_c+omplex]*/\([_a-zA-Z0-9]*\)/libpetsc.a?\1?g" | uniq`
+ls lib/lib*/$arch*/libpetsc.a lib/lib*/$PETSC_ARCH/libpetsc.a > .tmp 2>&1
+archs=`grep -v "No such" .tmp | sed -e "s?lib/lib[gO_c+omplex]*/\([_a-zA-Z0-9]*\)/libpetsc.a?\1?g"  | sort | uniq`
+rm -f .tmp
 for arch in $archs
 do
   opts=`ls lib/lib*/$arch/libpetsc.a | sed -e "s?lib/lib\([gO_c+omplex]*\)/$arch/libpetsc.a?\1?g"`
   for opt in $opts
   do
-    echo "Update $arch $opt library?"
+    echo -n "Update $arch $opt library (return for yes, n for no)?"
+    read update
+    if [ "$update" = "" ]; then
+      echo "Updating $arch $opt library"
+      p=`expr $PATCH_LEVEL + 1`
+      while [ $p -le $PATCH ];
+      do
+        file=`$PETSC_DIR/bin/urlget.py ftp://info.mcs.anl.gov/pub/petsc/patches/petsc-patches-$VERSION.$p.dirs`
+        dirs=`cat $file`
+        for dir in $dirs
+        do
+          pushd $dir > /dev/null 2>&1; make BOPT=$opt PETSC_ARCH=$arch ACTION=libfast tree
+          popd > /dev/null 2>&1
+        done
+	p=`expr $p + 1`
+      done
+      make BOPT=$opt PETSC_ARCH=$arch shared > /dev/null 2>&1
+    fi
   done
 done
 
