@@ -284,6 +284,7 @@ framework.log)[0]
 
   def checkInclude(self,incl,hfile):
     if not isinstance(incl,list): incl = [incl]
+    incl.extend(self.mpi.include)
     oldFlags = self.framework.argDB['CPPFLAGS']
     for inc in incl:
       self.framework.argDB['CPPFLAGS'] += ' -I'+inc
