@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.134 1998/06/27 15:04:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.135 1998/07/23 22:46:02 bsmith Exp curfman $";
 #endif
 /*
    Implements the sequential vectors.
@@ -443,13 +443,16 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
 
-   PETSc DOES NOT free the array when the vector is destroyed. The user should 
-   not free the array until the vector is destroyed.
+   If the user-provided array is PETSC_NULL, then VecPlaceArray() can be used
+   at a later atage to SET the array for storing the vector values.
+
+   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+   The user should not free the array until the vector is destroyed.
 
 .keywords: vector, sequential, create, BLAS
 
-.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
-          VecCreateGhost(), VecCreateSeq()
+.seealso: VecCreateMPIWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
+          VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/
 int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
 {

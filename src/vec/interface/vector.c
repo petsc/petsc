@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.147 1998/07/24 01:01:06 curfman Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.148 1998/07/27 15:20:16 balay Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1690,8 +1690,8 @@ int VecDestroyVecs_Default( Vec *v, int m )
 #undef __FUNC__  
 #define __FUNC__ "VecPlaceArray"
 /*@
-   VecPlaceArray - Allows one to replace the array in a vector with 
-   a user-provided one. This is useful to avoid copying an array
+   VecPlaceArray - Allows one to replace the array in a vector with an
+   array provided by the user. This is useful to avoid copying an array
    into a vector.  FOR EXPERTS ONLY!
 
    Not Collective

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.105 1998/07/15 16:20:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.106 1998/07/23 22:46:05 bsmith Exp curfman $";
 #endif
 
 /*
@@ -220,7 +220,8 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 #undef __FUNC__  
 #define __FUNC__ "VecCreateMPIWithArray"
 /*@C
-   VecCreateMPIWithArray - Creates a parallel vector with a user provided array.
+   VecCreateMPIWithArray - Creates a parallel, array-style vector,
+   where the user provides the array space to store the vector values.
 
    Collective on MPI_Comm
 
@@ -237,15 +238,15 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
 
-   If use provided array is PETSC_NULL, then VecPlaceArray() can be used
+   If the user-provided array is PETSC_NULL, then VecPlaceArray() can be used
    at a later atage to SET the array for storing the vector values.
 
-   PETSc DOES NOT free the array when the vector is destroyed. The user should 
-   not free the array until the vector is destroyed.
+   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+   The user should not free the array until the vector is destroyed.
 
 .keywords: vector, create, MPI
 
-.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
+.seealso: VecCreateSeqWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 
 @*/ 
