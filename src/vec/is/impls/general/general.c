@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.15 1995/03/27 22:56:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.16 1995/04/15 03:26:06 bsmith Exp curfman $";
 #endif
 /*
        General indices as a list of integers
@@ -72,16 +72,20 @@ static struct _ISOps myops = { ISGetSize_General,ISGetSize_General,
                                ISGetIndices_General,0,
                                ISInvertPermutation_General};
 /*@
-    ISCreateSequential - Creates a data structure for an index set 
-    containing a list of integers.
+   ISCreateSequential - Creates a data structure for an index set 
+   containing a list of integers.
 
-  Input Parameters:
-.   n - the length of the index set
-.   idx - the list of integers
-.   comm - the MPI communicator
+   Input Parameters:
+.  n - the length of the index set
+.  idx - the list of integers
+.  comm - the MPI communicator
 
-  Output Parameter:
-.   is - the new index set
+   Output Parameter:
+.  is - the new index set
+
+.keywords: IS, sequential, index set, create
+
+.seealso: ISCreateStrideSequential(), ISCreateMPI()
 @*/
 int ISCreateSequential(MPI_Comm comm,int n,int *idx,IS *is)
 {

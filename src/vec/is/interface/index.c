@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.6 1995/03/06 04:10:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: index.c,v 1.7 1995/03/24 18:47:44 curfman Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -7,11 +7,15 @@ static char vcid[] = "$Id: index.c,v 1.6 1995/03/06 04:10:56 bsmith Exp curfman 
 #include "isimpl.h"      /*I "is.h" I*/
 
 /*@
-    ISIsPermutation - Returns 1 if the index set is a permutation;
-                      0 if not, -1 on error.
+   ISIsPermutation - Returns 1 if the index set is a permutation;
+                     0 if not; -1 on error.
 
-  InputParmeters:
-.   is - the index set
+   Input Parmeters:
+.  is - the index set
+
+.keywords: IS, index set, permutation
+
+.seealso: ISSetPermutation()
 @*/
 int ISIsPermutation(IS is)
 {
@@ -20,10 +24,14 @@ int ISIsPermutation(IS is)
   return is->isperm;
 }
 /*@
-    ISSetPermutation - Informs the index set that it is a permutation.
+   ISSetPermutation - Informs the index set that it is a permutation.
 
-  InputParmeters:
-.   is - the index set
+   Input Parmeters:
+.  is - the index set
+
+.keywords: IS, index set, permutation
+
+.seealso: ISIsPermutation()
 @*/
 int ISSetPermutation(IS is)
 {
@@ -33,11 +41,14 @@ int ISSetPermutation(IS is)
 }
 
 /*@
-    ISDestroy - Destroys an index set.
+   ISDestroy - Destroys an index set.
 
-  Input Parameters:
+   Input Parameters:
 .  is - the index set
 
+.keywords: IS, index set, destroy
+
+.seealso: ISCreateSequential(), ISCreateStrideSequential(), ISCreateMPI()
 @*/
 int ISDestroy(IS is)
 {
@@ -46,14 +57,16 @@ int ISDestroy(IS is)
 }
 
 /*@
-    ISInvertPermutation - Creates a new permutation that is the inverse of 
-                          a given permutation.
+   ISInvertPermutation - Creates a new permutation that is the inverse of 
+                         a given permutation.
 
-  Input Parameters:
+   Input Parameter:
 .  is - the index set
 
-  Putput Parameters:
-.  isout - the inverse permutation.
+   Output Parameter:
+.  isout - the inverse permutation
+
+.keywords: IS, index set, invert, inverse, permutation
 @*/
 int ISInvertPermutation(IS is,IS *isout)
 {
@@ -63,15 +76,17 @@ int ISInvertPermutation(IS is,IS *isout)
 }
 
 /*@
-    ISGetSize - Returns length of an index set. In a parallel 
-     environment this returns the entire size. Use ISGetLocalSize()
-     for length of local piece.
+   ISGetSize - Returns the global length of an index set. 
 
-  Input Parameters:
+   Input Parameter:
 .  is - the index set
 
-  Output Parameters:
-.  size - the size.
+   Output Parameter:
+.  size - the global size
+
+.keywords: IS, index set, get, global, size
+
+.seealso: ISGetLocalSize()
 @*/
 int ISGetSize(IS is,int *size)
 {
@@ -79,15 +94,17 @@ int ISGetSize(IS is,int *size)
   return (*is->ops->size)(is,size);
 }
 /*@
-    ISGetLocalSize - Returns length of an index set. In a parallel 
-     environment this returns the size in local memory. Use
-     ISGetLocal() for length of total.
+   ISGetLocalSize - Returns local length of an index set.
 
-  Input Parameters:
+   Input Parameter:
 .  is - the index set
 
-  Output Parameters:
-.  size - the local size.
+   Output Parameter:
+.  size - the local size
+
+.keywords: IS, index set, get, local, size
+
+.seealso: ISGetSize()
 @*/
 int ISGetLocalSize(IS is,int *size)
 {
@@ -95,25 +112,24 @@ int ISGetLocalSize(IS is,int *size)
   return (*is->ops->localsize)(is,size);
 }
 
-
 /*@ 
+   ISGetIndices - Returns a pointer to the indices.  The user should call 
+   ISRestoreIndices() after having looked at the indices.  The user should 
+   NOT change the indices.
 
-    ISGetIndices - Returns a pointer to the indices.
-                   You should call ISRestoreIndices()
-                   after you have looked at the indices. 
-                   You should not change the indices.
-
-  Input Parameters:
+   Input Parameter:
 .  is - the index set
 
-  Output Parameters:
+   Output Parameter:
 .  ptr - the location to put the pointer to the indices
 
-  Keywords: index set, indices
+   Notes:
+   In a parallel enviroment this probably points to only the indices that 
+   are local to a particular processor.
 
-  Note:
-  In a parallel enviroment this probably points to 
-          only the local indices to that processor.
+.keywords: IS, index set, get, indices
+
+.seealso: ISRestoreIndices()
 @*/
 int ISGetIndices(IS is,int **ptr)
 {
@@ -122,14 +138,16 @@ int ISGetIndices(IS is,int **ptr)
 } 
 
 /*@ 
+   ISRestoreIndices - Restores an index set to a usable state after a call 
+   to ISGetIndices().
 
-    ISRestoreIndices - See ISGetIndices(). Restores index set to a usable
-                       state after call to ISGetIndices().
+   Input Parameters:
+.  is - the index set
+.  ptr - the pointer obtained by ISGetIndices()
 
-  Input Parameters:
-,  is - the index set
-.  ptr - the pointer obtained with ISGetIndices
+.keywords: IS, index set, restore, indices
 
+.seealso: ISGetIndices()
 @*/
 int ISRestoreIndices(IS is,int **ptr)
 {
@@ -141,9 +159,11 @@ int ISRestoreIndices(IS is,int **ptr)
 /*@
    ISView - Displays an index set.
 
-  Input Parameters:
+   Input Parameters:
 .  is - the index set
-.  viewer - location to display set
+.  viewer - location to display the set
+
+.keywords: IS, index set, restore, indices
 @*/
 int ISView(IS is, Viewer viewer)
 {

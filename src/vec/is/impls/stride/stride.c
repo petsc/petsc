@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.12 1995/04/15 03:26:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: stride.c,v 1.13 1995/04/16 18:02:37 curfman Exp curfman $";
 #endif
 /*
        General indices as a list of integers
@@ -98,7 +98,7 @@ static struct _ISOps myops = { ISGetSize_Stride,ISGetSize_Stride,
 
    Input Parameters:
 .  n - the length of the index set
-.  first - the first element in the index set
+.  first - the first element of the index set
 .  step - the change to the next index
 .  comm - the MPI communicator
 
@@ -106,6 +106,8 @@ static struct _ISOps myops = { ISGetSize_Stride,ISGetSize_Stride,
 .  is - the location to stash the index set
 
 .keywords: IS, index set, create, stride, sequential
+
+.seealso: ISCreateSequential()
 @*/
 int ISCreateStrideSequential(MPI_Comm comm,int n,int first,int step,IS *is)
 {
