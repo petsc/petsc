@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: icc.c,v 1.52 1998/10/19 22:17:40 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.53 1999/01/05 21:06:33 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -7,6 +7,57 @@ static char vcid[] = "$Id: icc.c,v 1.52 1998/10/19 22:17:40 bsmith Exp bsmith $ 
 */
 
 #include "src/pc/impls/icc/icc.h"   /*I "icc.h" I*/
+
+/*
+      Sets up matrix dependent pre and post solvers for ICC; The matrix may provide 
+    pre and post solve routines (to remove scaling)
+*/
+#undef __FUNC__  
+#define __FUNC__ "PCPreSolve_ICC"
+static int PCPreSolve_ICC(PC pc,KSP ksp,Vec x,Vec b)
+{
+  int     ierr;
+  PC_ICC  *icc = (PC_ICC *) pc->data;
+
+  PetscFunctionBegin;
+  ierr = (*icc->presolve)(pc->mat,pc->pmat,x,b);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCPostSolve_ICC"
+static int PCPostSolve_ICC(PC pc,KSP ksp,Vec x,Vec b)
+{
+  int     ierr;
+  PC_ICC  *icc = (PC_ICC *) pc->data;
+
+  PetscFunctionBegin;
+  ierr = (*icc->postsolve)(pc->mat,pc->pmat,x,b);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCSetUp_ICC_Mat"
+static int PCSetUp_ICC_Mat(PC pc)
+{
+  int     ierr,(*p)(Mat,Mat,Vec,Vec);
+  PC_ICC  *icc = (PC_ICC *) pc->data;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"PCPreSolve_ICC_C",(void**)&p);CHKERRQ(ierr);
+  if (p) {
+    pc->presolve  = PCPreSolve_ICC;
+    icc->presolve = p;  
+  }
+
+  ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"PCPostSolve_ICC_C",(void**)&p);CHKERRQ(ierr);
+  if (p) {
+    pc->postsolve  = PCPostSolve_ICC;
+    icc->postsolve = p;  
+  }
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "PCSetup_ICC"
@@ -22,12 +73,7 @@ static int PCSetup_ICC(PC pc)
   perm = 0;
 
   if (!pc->setupcalled) {
-    int (*setup)(PC);
-
-    ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"PCSetUp_ICC_C",(void**)&setup);CHKERRQ(ierr);
-    if (setup) {
-      ierr = (*setup)(pc);CHKERRQ(ierr);
-    }
+    ierr = PCSetUp_ICC_Mat(pc);CHKERRQ(ierr);
     ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,icc->levels,&icc->fact); CHKERRQ(ierr);
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
     ierr = MatDestroy(icc->fact); CHKERRQ(ierr);
@@ -129,7 +175,6 @@ int PCCreate_ICC(PC pc)
   icc->fact	          = 0;
   icc->ordering           = ORDER_ND;
   icc->levels	          = 0;
-  icc->bs_iter            = 0;
   icc->implctx            = 0;
   pc->apply	          = PCApply_ICC;
   pc->setup               = PCSetup_ICC;

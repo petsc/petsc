@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.75 1998/10/09 19:19:57 bsmith Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.76 1999/01/13 22:36:31 curfman Exp curfman $";
 #endif
 
 /*
@@ -44,11 +44,11 @@ int KSPDefaultFreeWork( KSP ksp )
    Output Parameters:
 .  rnorm - residual norm
 
-   Level: intermediate
-
 .keywords: KSP, get, residual norm
 
 .seealso: KSPComputeResidual()
+
+   Level: intermediate
 @*/
 int KSPGetResidualNorm(KSP ksp,double *rnorm)
 {
@@ -72,8 +72,6 @@ int KSPGetResidualNorm(KSP ksp,double *rnorm)
 .   n  - the iteration
 -   rnorm - the two norm of the residual
 
-    Level: intermediate
-
     Options Database Key:
 .   -ksp_singmonitor - Activates KSPSingularValueMonitor()
 
@@ -85,6 +83,8 @@ int KSPGetResidualNorm(KSP ksp,double *rnorm)
 .keywords: KSP, CG, default, monitor, extreme, singular values, Lanczos, Arnoldi
 
 .seealso: KSPComputeExtremeSingularValues()
+
+    Level: intermediate
 @*/
 int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
@@ -117,11 +117,11 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
 -  dummy - unused monitor context 
 
-   Level: intermediate
-
 .keywords: KSP, default, monitor, residual
 
 .seealso: KSPSetMonitor(), KSPTrueMonitor(), KSPLGMonitorCreate()
+
+   Level: intermediate
 @*/
 int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
@@ -144,8 +144,6 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
 -  dummy - unused monitor context 
 
-   Level: intermediate
-
    Options Database Key:
 .  -ksp_truemonitor - Activates KSPTrueMonitor()
 
@@ -163,6 +161,8 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 .keywords: KSP, default, monitor, residual
 
 .seealso: KSPSetMonitor(), KSPDefaultMonitor(), KSPLGMonitorCreate()
+
+   Level: intermediate
 @*/
 int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
@@ -217,8 +217,6 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
    Returns:
 .  0 - always
 
-   Level: advanced
-
    Notes:
    This is used as the convergence test with the option KSPSetAvoidNorms(),
    since norms of the residual are not computed. Convergence is then declared 
@@ -229,6 +227,7 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSetAvoidNorms()
                     
+   Level: advanced
 @*/
 int KSPSkipConverged(KSP ksp,int n,double rnorm,void *dummy)
 {
@@ -256,8 +255,6 @@ int KSPSkipConverged(KSP ksp,int n,double rnorm,void *dummy)
 .  -1 - if residual norm exceeds divergence threshold;
 -   0 - otherwise.
 
-   Level: intermediate
-
    Notes:
    KSPDefaultConverged() reaches convergence when
 $      rnorm < MAX ( rtol * rnorm_0, atol );
@@ -275,6 +272,8 @@ $      rnorm > dtol * rnorm_0,
 .keywords: KSP, default, convergence, residual
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged()
+
+   Level: intermediate
 @*/
 int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
 {
@@ -301,11 +300,11 @@ int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
    Output Parameter:
 .  V - pointer to a vector containing the solution
 
-   Level: advanced
-
 .keywords:  KSP, build, solution, default
 
 .seealso: KSPGetSolution(), KSPDefaultBuildResidual()
+
+   Level: advanced
 */
 int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 {
@@ -351,11 +350,11 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
    Output Parameter:
 .  V - pointer to a vector containing the residual
 
-   Level: advanced
-
 .keywords:  KSP, build, residual, default
 
 .seealso: KSPDefaultBuildSolution()
+
+   Level: advanced
 */
 int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 {
