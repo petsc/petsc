@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.70 1998/12/23 22:50:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.71 1999/01/31 16:08:59 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -75,7 +75,9 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
            ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- z'*z     */
          }
        }
+       PetscAMSTakeAccess(ksp);
        ksp->rnorm                              = rnorm;
+       PetscAMSGrantAccess(ksp);
        if (history && hist_len > i) history[i] = rnorm;
        KSPMonitor(ksp,i,rnorm);
        cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
@@ -95,7 +97,9 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
         ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- z'*z     */
       }
     }
+    PetscAMSTakeAccess(ksp);
     ksp->rnorm                              = rnorm;
+    PetscAMSGrantAccess(ksp);
     if (history && hist_len > i) history[i] = rnorm;
     KSPMonitor(ksp,i,rnorm);
   }
