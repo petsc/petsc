@@ -78,6 +78,7 @@ class Make(script.Script):
         cache          = self.argDB['configureCache']
         self.framework = cPickle.loads(cache)
         self.framework.setArgDB(self.argDB)
+        self.builder.framework = self.framework
         self.logPrint('Loaded configure to cache: size '+str(len(cache)))
       except cPickle.UnpicklingError, e:
         doConfigure    = 1
@@ -117,7 +118,7 @@ class SIDLMake(Make):
     import re
 
     Make.__init__(self, builder)
-    self.implRE = re.compile(r'^(.*)_impl\.')
+    self.implRE = re.compile(r'^(.*)_impl\.\w+$')
     return
 
   def getSidl(self):
@@ -270,9 +271,10 @@ class SIDLMake(Make):
     committed = 0
     for serverDir in compiler.serverDirs.values():
       for root, dirs, files in os.walk(serverDir):
-        added     = added or vc.add(builder.versionControl.getNewFiles([os.path.join(root, f) for f in filter(lambda a: self.implRE.match(a), files)]))
-        reverted  = reverted or vc.revert(builder.versionControl.getUnchangedFiles([os.path.join(root, f) for f in filter(lambda a: self.implRE.match(a), files)]))
-        committed = committed or vc.commit(builder.versionControl.getChangedFiles([os.path.join(root, f) for f in filter(lambda a: self.implRE.match(a), files)]))
+        implFiles = filter(lambda a: self.implRE.match(a), files)
+        added     = added or vc.add(builder.versionControl.getNewFiles([os.path.join(root, f) for f in implFiles]))
+        reverted  = reverted or vc.revert(builder.versionControl.getUnchangedFiles([os.path.join(root, f) for f in implFiles]))
+        committed = committed or vc.commit(builder.versionControl.getChangedFiles([os.path.join(root, f) for f in implFiles]))
     if added or committed:
       vc.changeSet()
     return
@@ -316,7 +318,10 @@ class SIDLMake(Make):
     iorObjects  = self.buildPythonIOR(builder, sidlFile, language, generatedSource['Server IOR']['Cxx'])
     skelObjects = self.buildPythonSkeletons(builder, sidlFile, language, generatedSource['Server '+language]['Cxx'])
     config      = builder.pushConfiguration(language+' Server '+baseName)
-    builder.link(iorObjects+skelObjects, os.path.join(os.getcwd(), 'lib'+baseName+'.so'), shared = 1)
+    library     = os.path.join(os.getcwd(), 'lib', 'lib'+baseName+'.so')
+    if not os.path.isdir(os.path.dirname(library)):
+      os.makedirs(os.path.dirname(library))
+    builder.link(iorObjects+skelObjects, library, shared = 1)
     builder.popConfiguration()
     builder.saveConfiguration(language+' Server '+baseName)
     if 'Linked ELF' in config.outputFiles:

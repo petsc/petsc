@@ -168,7 +168,7 @@ class Logger(args.ArgumentProcessor):
           f.write(msg[0:self.linewidth])
           f.write(''.join([' '] * (self.linewidth - len(msg))))
         else:
-          if not debugSection is None:
+          if not debugSection is None and len(msg):
             f.write(str(debugSection))
             f.write(': ')
           f.write(msg)

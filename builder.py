@@ -106,7 +106,6 @@ class Builder(logging.Logger):
 
     logging.Logger.__init__(self, argDB = framework.argDB)
     self.framework         = framework
-    self.setCompilers      = framework.require('config.setCompilers', None)
     self.language          = []
     self.configurations    = {}
     self.configurationName = []
@@ -115,6 +114,14 @@ class Builder(logging.Logger):
     self.versionControl    = sourceControl.BitKeeper(argDB = self.argDB)
     self.pushConfiguration('default')
     return
+
+  def getFramework(self):
+    return self._framework
+  def setFramework(self, framework):
+    self._framework   = framework
+    self.setCompilers = framework.require('config.setCompilers', None)
+    return
+  framework = property(getFramework, setFramework, doc = 'The configure framework')
 
   def setup(self):
     logging.Logger.setup(self)
@@ -194,10 +201,10 @@ class Builder(logging.Logger):
   def preprocess(self, codeStr):
     def report(command, status, output, error):
       if error or status:
-        self.framework.log.write('Possible ERROR while running preprocessor: '+error)
-        if status: self.framework.log.write('ret = '+str(status)+'\n')
-        if error: self.framework.log.write('error message = {'+error+'}\n')
-        self.framework.log.write('Source:\n'+self.getCode(codeStr))
+        self.logWrite('Possible ERROR while running preprocessor: '+error)
+        if status: self.logWrite('ret = '+str(status)+'\n')
+        if error: self.logWrite('error message = {'+error+'}\n')
+        self.logWrite('Source:\n'+self.getCode(codeStr))
       return
 
     command = self.getPreprocessorCmd()
@@ -205,7 +212,7 @@ class Builder(logging.Logger):
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
-    (out, err, ret) = script.Script.executeShellCommand(command, checkCommand = report, log = self.framework.log)
+    (out, err, ret) = script.Script.executeShellCommand(command, checkCommand = report, log = self.log)
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     return (out, err, ret)
@@ -347,12 +354,12 @@ class Builder(logging.Logger):
   def run(self, includes, body, cleanup = 1, defaultOutputArg = ''):
     if not self.checkLink(includes, body, cleanup = 0): return ('', 1)
     if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
-      self.framework.log.write('ERROR while running executable: '+self.linkerObj+' is not executable')
+      self.logWrite('ERROR while running executable: '+self.linkerObj+' is not executable')
       return ('', 1)
-    if not self.framework.argDB['can-execute']:
+    if not self.argDB['can-execute']:
       if defaultOutputArg:
-        if defaultOutputArg in self.framework.argDB:
-          return (self.framework.argDB[defaultOutputArg], 0)
+        if defaultOutputArg in self.argDB:
+          return (self.argDB[defaultOutputArg], 0)
         else:
           raise RuntimeError('Must give a default value for '+defaultOutputArg+' since executables cannot be run')
       else:
@@ -361,11 +368,11 @@ class Builder(logging.Logger):
     output  = ''
     error   = ''
     status  = 1
-    self.framework.log.write('Executing: '+command+'\n')
+    self.logWrite('Executing: '+command+'\n')
     try:
-      (output, error, status) = script.Script.executeShellCommand(command, log = self.framework.log)
+      (output, error, status) = script.Script.executeShellCommand(command, log = self.log)
     except RuntimeError, e:
-      self.framework.log.write('ERROR while running executable: '+str(e)+'\n')
+      self.logWrite('ERROR while running executable: '+str(e)+'\n')
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return (output+error, status)
