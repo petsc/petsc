@@ -140,7 +140,7 @@ class Configure(config.base.Configure):
     self.addMakeMacro('SL_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
-    self.addMakeMacro('SL_LINKER_SUFFIX','.so')
+    self.addMakeMacro('SL_LINKER_SUFFIX','.'+self.setCompilers.sharedLibraryExt)
     self.addMakeMacro('SL_LINKER_LIBS',self.framework.argDB['LIBS']+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
 #-----------------------------------------------------------------------------------------------------
 
