@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.27 1999/11/05 14:42:55 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.28 2000/02/02 20:07:23 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,20 +10,22 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
 # for information on retrieving them.
 #
-BLAS_LIB       = /home/petsc/software/blaslapack/blas_hpux.a
-LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_hpux.a ${FC_LIB} 
+#BLAS_LIB       = /home/petsc/software/blaslapack/blas_hpux.a
+#LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_hpux.a ${FC_LIB} 
+BLAS_LIB       = -lblas
+LAPACK_LIB     =  /u/ac/balay/lapack/lapack.a $(FC_LIB) 
 
 # Location of MPI (Message Passing Interface) software
 # If using HP's MPI, then add the flag -DPETSC_HAVE_MPI_COMM_F2C
 # to MPI_INCLUDE variable
 #
-#MPI_LIB        = -L/opt/mpi/lib/pa1.1 -lmpi
-#MPI_INCLUDE    = -I/opt/mpi/include -DPETSC_HAVE_MPI_COMM_F2C
-#MPIRUN         = /opt/mpi/bin/mpirun
+MPI_LIB        = -L/opt/mpi/lib/pa1.1 -lmpi
+MPI_INCLUDE    = -I/opt/mpi/include -DPETSC_HAVE_MPI_COMM_F2C
+MPIRUN         = /opt/mpi/bin/mpirun
 #
-MPI_LIB        = /usr/local/mpi/lib/hpux/ch_p4/libmpi.a
-MPI_INCLUDE    = -I/usr/local/mpi/include 
-MPIRUN         = /usr/local/mpi/bin/mpirun
+#MPI_LIB        = /usr/local/mpi/lib/hpux/ch_p4/libmpi.a
+#MPI_INCLUDE    = -I/usr/local/mpi/include 
+#MPIRUN         = /usr/local/mpi/bin/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
