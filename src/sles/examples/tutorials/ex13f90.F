@@ -1,5 +1,5 @@
 C
-C    "$Id: ex13f.F,v 1.2 1997/07/10 20:19:47 balay Exp balay $";
+C    "$Id: ex13f.F,v 1.3 1997/07/11 19:49:43 balay Exp balay $";
 C
 C
 C/*T
@@ -30,6 +30,7 @@ C     pc.h     - preconditioners
 C     sles.h   - SLES interface
 C
 #include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/petscmath.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/ksp.h"
@@ -63,7 +64,6 @@ C     A        - matrix that defines linear system
 C     its      - iterations for convergence
 C     norm     - norm of error in solution
 
-#define PETSC_PI 3.14159265
 
       Vec     x, b, u
       Mat     A 
