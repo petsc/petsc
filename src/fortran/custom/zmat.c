@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.18 1996/03/05 00:15:03 curfman Exp curfman $";
+static char vcid[] = "$Id: zmat.c,v 1.19 1996/03/05 01:00:20 curfman Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -130,14 +130,14 @@ static int ourorder(int* a,int* b,int* c,int *d, int* e)
   return 0;
 }
 
-void matreorderingregister_(MatOrdering *name, CHAR sname,
+void matreorderingregister_(MatOrdering *name,CHAR sname,PetscTruth *sym,int *shift,
             void (*order)(int*,int*,int*,int*,int*,int*),int *__ierr,int len)
 {
   char *t;
   
   FIXCHAR(sname,len,t);
   f5 = order;
-  *__ierr = MatReorderingRegister(*name,t,ourorder);
+  *__ierr = MatReorderingRegister(*name,t,*sym,*shift,ourorder);
   FREECHAR(sname,t);
 }			       
 
