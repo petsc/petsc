@@ -1,5 +1,5 @@
 C
-C  "$Id: ksp.h,v 1.8 1996/04/15 23:36:29 balay Exp bsmith $";
+C  "$Id: ksp.h,v 1.9 1996/07/08 22:24:44 bsmith Exp balay $";
 C
 C  Include file for Fortran use of the KSP package in PETSc
 C
@@ -11,12 +11,12 @@ C  Various Krylov subspace methods
 C
       integer KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
      *         KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR,
-     *         KSPPREONLY, KSPQCG
+     *         KSPPREONLY, KSPQCG,KSPNEW
 
       parameter (KSPRICHARDSON = 0, KSPCHEBYCHEV = 1, KSPCG = 2,
      *           KSPGMRES = 3,KSPTCQMR = 4, KSPBCGS = 5, KSPCGS = 6,
      *           KSPTFQMR = 7, KSPCR = 8, KSPLSQR = 9, KSPPREONLY = 10,
-     *           KSPQCG = 11)
+     *           KSPQCG = 11, KSP_NEW = 12)
 
 C
 C  CG Types
