@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.39 1995/10/11 17:55:49 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.40 1995/10/11 20:57:58 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -754,7 +754,7 @@ int MatBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,Scalar ***dia
     pdmat = (Mat_MPIBDiag *) mat->data;
     dmat = (Mat_SeqBDiag *) pdmat->A->data;
   } else SETERRQ(1,
-    "MatSeqBDiagGetData:Valid only for MATSEQBDIAG and MATMPIBDIAG formats");
+    "MatBDiagGetData:Valid only for MATSEQBDIAG and MATMPIBDIAG formats");
   *nd    = dmat->nd;
   *nb    = dmat->nb;
   *diag  = dmat->diag;

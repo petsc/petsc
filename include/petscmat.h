@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.65 1995/10/06 18:50:48 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.66 1995/10/06 22:25:48 bsmith Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -44,7 +44,7 @@ extern int MatAssemblyEnd(Mat,MatAssemblyType);
 typedef enum {ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
               COLUMNS_SORTED=8,NO_NEW_NONZERO_LOCATIONS=16,
               YES_NEW_NONZERO_LOCATIONS=32,SYMMETRIC_MATRIX=64,
-              STRUCTURALLY_SYMMETRIC_MATRIX} MatOption;
+              STRUCTURALLY_SYMMETRIC_MATRIX,NO_NEW_DIAGONALS} MatOption;
 
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*);
@@ -136,7 +136,7 @@ extern int MatAXPY(Scalar *,Mat,Mat);
 extern int MatCompress(Mat);
 
 /* Routines unique to particular data structures */
-extern int MatSeqBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
+extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 
 #endif
 
