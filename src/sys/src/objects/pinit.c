@@ -463,7 +463,8 @@ PetscErrorCode PetscInitialize(int *argc,char ***args,const char file[],const ch
 #define __FUNCT__ "PetscFinalize"
 /*@C 
    PetscFinalize - Checks for options to be called at the conclusion
-   of the program and calls MPI_Finalize().
+   of the program. MPI_Finalize() is called only if the user had not
+   called MPI_Init() before calling PetscInitialize().
 
    Collective on PETSC_COMM_WORLD
 
