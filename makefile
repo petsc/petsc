@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.307 2000/04/18 23:33:45 balay Exp balay $ 
+# $Id: makefile,v 1.308 2000/05/05 22:11:43 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -299,7 +299,7 @@ deletelatexpages:
 	${RM} -f ${PETSC_DIR}/docs/tex/rsum/*sum*.tex
 
 # Builds all versions of the man pages
-allmanpages: allmanualpages alllatexpages
+allmanpages: allmanualpages
 allmanualpages: deletemanualpages
 	-${OMAKE} ACTION=manualpages_buildcite ttree
 	-${OMAKE} ACTION=manualpages ttree
