@@ -1,5 +1,5 @@
 !
-!  "$Id: ex16f90.F,v 1.8 1998/04/21 18:30:37 balay Exp balay $";
+!  "$Id: ex16f90.F,v 1.9 1998/06/22 16:22:02 balay Exp balay $";
 !
 !
 !  Tests MatGetArray() on a dense matrix
@@ -46,7 +46,7 @@
 !
       do 10, i=0,m-1
         do 20, j=0,n-1
-          v = 10.d0/(i+j+1)
+          v = 9.d0/(i+j+1)
           call MatSetValues(A,1,i,1,j,v,INSERT_VALUES,ierr)
  20     continue
  10   continue
