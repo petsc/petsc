@@ -25,9 +25,9 @@ int main(int argc,char **argv)
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
 
   /* create two vectors */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,mytid+1,-1,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,mytid+1,PETSC_DECIDE,&x); CHKERRA(ierr);
   ierr = VecGetSize(x,&N);CHKERRA(ierr);
-  ierr = VecCreateSequential(N-mytid,&y); CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,N-mytid,&y); CHKERRA(ierr);
 
   /* create two index sets */
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,N-mytid,mytid,1,&is1);

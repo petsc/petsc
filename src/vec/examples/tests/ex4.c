@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
 
   /* create two vectors */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,n,-1,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,n,PETSC_DECIDE,&x); CHKERRA(ierr);
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&y); CHKERRA(ierr);
 
   /* create two index sets */

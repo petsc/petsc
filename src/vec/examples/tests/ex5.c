@@ -28,8 +28,8 @@ int main(int argc,char **argv)
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
 
   /* create two vectors */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,numtids*n,&x); CHKERRA(ierr);
-  ierr = VecCreateSequential(n,&y); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,numtids*n,&x); CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&y); CHKERRA(ierr);
 
   /* create two index sets */
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,n*mytid,1,&is1); 

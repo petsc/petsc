@@ -27,8 +27,8 @@ int main(int argc,char **argv)
 
   /* create two vectors */
   N = numtids*n;
-  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,N,&y); CHKERRA(ierr);
-  ierr = VecCreateSequential(N,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,N,&y); CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
 
   /* create two index sets */
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,0,1,&is1); CHKERRA(ierr);

@@ -23,7 +23,7 @@ int main(int argc,char **argv)
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid); 
 
-  ierr = VecCreateMPI(MPI_COMM_WORLD,mytid+1,-1,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,mytid+1,PETSC_DECIDE,&x); CHKERRA(ierr);
   ierr = VecGetSize(x,&N);
   ierr = VecSet(&one,x);CHKERRA(ierr);
 
