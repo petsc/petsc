@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.45 1997/01/06 20:23:55 balay Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.46 1997/01/12 04:33:40 bsmith Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -25,6 +25,7 @@ typedef struct {
   Vec        *x,*y;
   IS         *is;                 /* index set that defines each subdomain */
   Mat        *mat,*pmat;          /* mat is not currently used */
+  PCASMType  type;                /* use reduced interpolation, restriction or both */
 } PC_ASM;
 
 #undef __FUNC__  
@@ -36,15 +37,21 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
   PC_ASM       *jac = (PC_ASM *) pc->data;
   int          rank, ierr;
   ViewerType   vtype;
+  char         *typename;
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"    Additive Schwarz: number of blocks = %d\n", jac->n);
+    if (jac->type == 0) typename = "limited restriction and interpolation";
+    else if (jac->type == 1) typename = "full restriction";
+    else if (jac->type == 2) typename = "full interpolation";
+    else if (jac->type == 3) typename = "full restriction and interpolation";
+    PetscFPrintf(pc->comm,fd,"    Additive Schwarz: type - %s\n",typename);
     MPI_Comm_rank(pc->comm,&rank);
     if (jac->sles) {ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
   } else if (vtype == STRING_VIEWER) {
-    ViewerStringSPrintf(viewer," blks=%d, overlap=%d",jac->n,jac->overlap);
+    ViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);}
   }
   return 0;
@@ -150,11 +157,11 @@ static int PCSetUp_ASM(PC pc)
   }
 
   /* extract out the submatrices */
-  ierr = MatGetSubMatrices(pc->pmat,osm->n_local_true,osm->is,osm->is,scall,&osm->pmat); CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(pc->pmat,osm->n_local_true,osm->is,osm->is,scall,&osm->pmat);CHKERRQ(ierr);
 
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
      different boundary conditions for the submatrices than for the global problem) */
-  ierr = PCModifySubMatrices(pc,osm->n_local,osm->is,osm->is,osm->pmat,pc->modifysubmatricesP); CHKERRQ(ierr);
+  ierr = PCModifySubMatrices(pc,osm->n_local,osm->is,osm->is,osm->pmat,pc->modifysubmatricesP);CHKERRQ(ierr);
 
   /* loop over subdomains putting them into local sles */
   for ( i=0; i<n_local_true; i++ ) {
@@ -181,27 +188,44 @@ static int PCSetUpOnBlocks_ASM(PC pc)
 #define __FUNC__ "PCApply_ASM"
 static int PCApply_ASM(PC pc,Vec x,Vec y)
 {
-  PC_ASM *osm = (PC_ASM *) pc->data;
-  int    i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr,its;
-  Scalar zero = 0.0;
+  PC_ASM      *osm = (PC_ASM *) pc->data;
+  int         i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr,its;
+  Scalar      zero = 0.0;
+  ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
+
+  /*
+       Support for limiting the restriction or interpolation to only local 
+     subdomain values (leaving the other values 0). 
+  */
+  if (!(osm->type & PC_ASM_RESTRICT)) {
+    forward = SCATTER_FORWARD_LOCAL;
+    /* have to zero the work RHS since scatter may leave some slots empty */
+    for ( i=0; i<n_local; i++ ) {
+      ierr = VecSet(&zero,osm->x[i]);CHKERRQ(ierr);
+    }
+  }
+  if (!(osm->type & PC_ASM_INTERPOLATE)) {
+    reverse = SCATTER_REVERSE_LOCAL;
+  }
+
 
   for ( i=0; i<n_local; i++ ) {
-    ierr = VecScatterBegin(x,osm->x[i],INSERT_VALUES,SCATTER_FORWARD,osm->scat[i]);CHKERRQ(ierr);
+    ierr = VecScatterBegin(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
   }
   ierr = VecSet(&zero,y); CHKERRQ(ierr);
   /* do the local solves */
   for ( i=0; i<n_local_true; i++ ) {
-    ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,SCATTER_FORWARD,osm->scat[i]);CHKERRQ(ierr);
+    ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
     ierr = SLESSolve(osm->sles[i],osm->x[i],osm->y[i],&its);CHKERRQ(ierr); 
-    ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,SCATTER_REVERSE,osm->scat[i]);CHKERRQ(ierr);
+    ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
   }
   /* handle the rest of the scatters that do not have local solves */
   for ( i=n_local_true; i<n_local; i++ ) {
-    ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,SCATTER_FORWARD,osm->scat[i]);CHKERRQ(ierr);
-    ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,SCATTER_REVERSE,osm->scat[i]);CHKERRQ(ierr);
+    ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
+    ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
   }
   for ( i=0; i<n_local; i++ ) {
-    ierr = VecScatterEnd(osm->y[i],y,ADD_VALUES,SCATTER_REVERSE,osm->scat[i]);CHKERRQ(ierr);
+    ierr = VecScatterEnd(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -243,6 +267,7 @@ static int PCPrintHelp_ASM(PC pc,char *p)
   PetscPrintf(pc->comm," Options for PCASM preconditioner:\n");
   PetscPrintf(pc->comm," %spc_asm_blocks <blks>: total subdomain blocks\n",p);
   PetscPrintf(pc->comm, " %spc_asm_overlap <ovl>: amount of overlap between subdomains\n",p); 
+  PetscPrintf(pc->comm, " %spc_asm_type <0,1,2,3>: type of restriction/interpolation\n",p); 
   PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
  <method>)\n",p,p);
@@ -253,12 +278,15 @@ static int PCPrintHelp_ASM(PC pc,char *p)
 #define __FUNC__ "PCSetFromOptions_ASM"
 static int PCSetFromOptions_ASM(PC pc)
 {
-  int  blocks,flg, ovl,ierr;
+  int       blocks,flg, ovl,ierr;
+  PCASMType type;
 
   ierr = OptionsGetInt(pc->prefix,"-pc_asm_blocks",&blocks,&flg); CHKERRQ(ierr);
   if (flg) {ierr = PCASMSetTotalSubdomains(pc,blocks,PETSC_NULL); CHKERRQ(ierr); }
   ierr = OptionsGetInt(pc->prefix,"-pc_asm_overlap", &ovl, &flg); CHKERRQ(ierr);
   if (flg) {ierr = PCASMSetOverlap( pc, ovl); CHKERRQ(ierr); }
+  ierr = OptionsGetInt(pc->prefix,"-pc_asm_type",(int*) &type, &flg); CHKERRQ(ierr);
+  if (flg) {ierr = PCASMSetType( pc, type); CHKERRQ(ierr); }
 
   return 0;
 }
@@ -275,6 +303,7 @@ int PCCreate_ASM(PC pc)
   osm->overlap      = 1;
   osm->is_flg       = PETSC_FALSE;
   osm->sles         = 0;
+  osm->type         = PC_ASM_RESTRICT;
 
   pc->apply         = PCApply_ASM;
   pc->setup         = PCSetUp_ASM;
@@ -400,6 +429,38 @@ int PCASMSetOverlap(PC pc, int ovl)
 
   osm               = (PC_ASM *) pc->data;
   osm->overlap      = ovl;
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCASMSetOverlap"
+/*@
+    PCASMSetType - Sets the type of restriction and interpolation used
+          for local problems.
+
+    Input Parameters:
+.   pc  - the preconditioner context
+.   type -  3 - full interpolation and restriction
+$           2 - full interpolation, local processor restriction
+$           1 - full restriction, local processor interpolation
+$           0 - local processor restriction and interpolation
+
+    Options Database Key:
+$   -pc_asm_type 0, 1, 2, 3
+
+.keywords: PC, ASM, set, overlap
+
+.seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubSLES(),
+          PCASMCreateSubdomains2D()
+@*/
+int PCASMSetType(PC pc, PCASMType type)
+{
+  PC_ASM *osm;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (pc->type != PCASM) return 0;  
+
+  osm        = (PC_ASM *) pc->data;
+  osm->type  = type;
   return 0;
 }
 
