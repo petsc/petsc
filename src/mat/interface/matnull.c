@@ -1,4 +1,4 @@
-/*$Id: matnull.c,v 1.32 2000/07/31 03:50:59 bsmith Exp bsmith $*/
+/*$Id: matnull.c,v 1.33 2000/08/01 20:01:52 bsmith Exp balay $*/
 /*
     Routines to project vectors out of null spaces.
 */
@@ -149,6 +149,7 @@ int MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 int MatNullSpaceTest(MatNullSpace sp,Mat mat)
 {
   Scalar     sum;
+  PetscReal  nrm;
   int        j,n = sp->n,N,ierr,m;
   Vec        l,r;
   MPI_Comm   comm = sp->comm;
@@ -174,23 +175,23 @@ int MatNullSpaceTest(MatNullSpace sp,Mat mat)
     sum  = 1.0/N;
     ierr = VecSet(&sum,l);CHKERRQ(ierr);
     ierr = MatMult(mat,l,r);CHKERRQ(ierr);
-    ierr = VecNorm(r,NORM_2,&sum);CHKERRQ(ierr);
-    if (sum < 1.e-7) {ierr = PetscPrintf(comm,"Constants are likely null vector");CHKERRQ(ierr);}
+    ierr = VecNorm(r,NORM_2,&nrm);CHKERRQ(ierr);
+    if (nrm < 1.e-7) {ierr = PetscPrintf(comm,"Constants are likely null vector");CHKERRQ(ierr);}
     else {ierr = PetscPrintf(comm,"Constants are unlikely null vector ");CHKERRQ(ierr);}
-    ierr = PetscPrintf(comm,"|| A * 1 || = %g\n",sum);CHKERRQ(ierr);
-    if (sum > 1.e-7 && flg1) {ierr = VecView(r,VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
-    if (sum > 1.e-7 && flg2) {ierr = VecView(r,VIEWER_DRAW_(comm));CHKERRQ(ierr);}
+    ierr = PetscPrintf(comm,"|| A * 1 || = %g\n",nrm);CHKERRQ(ierr);
+    if (nrm > 1.e-7 && flg1) {ierr = VecView(r,VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
+    if (nrm > 1.e-7 && flg2) {ierr = VecView(r,VIEWER_DRAW_(comm));CHKERRQ(ierr);}
     ierr = VecDestroy(r);CHKERRQ(ierr);
   }
 
   for (j=0; j<n; j++) {
     ierr = (*mat->ops->mult)(mat,sp->vecs[j],l);CHKERRQ(ierr);
-    ierr = VecNorm(l,NORM_2,&sum);CHKERRQ(ierr);
-    if (sum < 1.e-7) {ierr = PetscPrintf(comm,"Null vector %d is likely null vector",j);CHKERRQ(ierr);}
+    ierr = VecNorm(l,NORM_2,&nrm);CHKERRQ(ierr);
+    if (nrm < 1.e-7) {ierr = PetscPrintf(comm,"Null vector %d is likely null vector",j);CHKERRQ(ierr);}
     else {ierr = PetscPrintf(comm,"Null vector %d unlikely null vector ",j);CHKERRQ(ierr);}
-    ierr = PetscPrintf(comm,"|| A * v[%d] || = %g\n",j,sum);CHKERRQ(ierr);
-    if (sum > 1.e-7 && flg1) {ierr = VecView(l,VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
-    if (sum > 1.e-7 && flg2) {ierr = VecView(l,VIEWER_DRAW_(comm));CHKERRQ(ierr);}
+    ierr = PetscPrintf(comm,"|| A * v[%d] || = %g\n",j,nrm);CHKERRQ(ierr);
+    if (nrm > 1.e-7 && flg1) {ierr = VecView(l,VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
+    if (nrm > 1.e-7 && flg2) {ierr = VecView(l,VIEWER_DRAW_(comm));CHKERRQ(ierr);}
   }
   
   PetscFunctionReturn(0);
