@@ -11,7 +11,7 @@ OBJSF	      =
 LIBBASE	      = libpetscmat
 EXAMPLES_1    = ex1 ex3 ex5 ex6 ex8 ex9 ex10 ex11 ex14\
 		ex15 ex16 ex19 ex20 ex21 ex22
-RUNEXAMPLES_1 = runex1	runex3	runex5 runex6  runex8 runex9\
+RUNEXAMPLES_1 = runex1	runex3	runex5_2 runex5_3 runex6  runex8 runex9\
 		runex10 runex11 runex14 runex15 runex16\
 		runex20 runex21 runex22
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex19 ex24 ex25 ex27 ex28 ex29 \
@@ -251,11 +251,35 @@ runex4:
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   $(RM) -f ex4_1.tmp
+#
+# We really should set up a script to handle these sorts of tests
 runex5:
-	-@$(MPIRUN)  ex5 > ex5_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex5 -rect2 > ex5_1.tmp 2>&1;   \
 	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   $(RM) -f ex5_1.tmp
+	-@$(MPIRUN) ex5 -mat_dense -rect2 > ex5_1.tmp 2>&1;   \
+	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
+	   else echo "Possible problem with ex5_1, diffs above"; fi; \
+	   $(RM) -f ex5_1.tmp
+runex5_2:
+	-@$(MPIRUN) -np 2 ex5 -rect2 > ex5_2.tmp 2>&1;   \
+	   if (diff output/ex5_2.out ex5_2.tmp) then true; \
+	   else echo "Possible problem with ex5_2, diffs above"; fi; \
+	   $(RM) -f ex5_2.tmp
+	-@$(MPIRUN) -np 2 ex5 -mat_dense -rect2 > ex5_2.tmp 2>&1;   \
+	   if (diff output/ex5_2.out ex5_2.tmp) then true; \
+	   else echo "Possible problem with ex5_2, diffs above"; fi; \
+	   $(RM) -f ex5_2.tmp
+runex5_3:
+	-@$(MPIRUN) -np 2 ex5 -rect1 > ex5_3.tmp 2>&1;   \
+	   if (diff output/ex5_3.out ex5_3.tmp) then true; \
+	   else echo "Possible problem with ex5_3, diffs above"; fi; \
+	   $(RM) -f ex5_3.tmp
+	-@$(MPIRUN) -np 2 ex5 -mat_dense -rect1 > ex5_3.tmp 2>&1;   \
+	   if (diff output/ex5_3.out ex5_3.tmp) then true; \
+	   else echo "Possible problem with ex5_3, diffs above"; fi; \
+	   $(RM) -f ex5_3.tmp
 runex6:
 	-@$(MPIRUN)  ex6 > ex6_1.tmp 2>&1;   \
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
