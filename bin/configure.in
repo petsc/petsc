@@ -127,7 +127,7 @@ AC_ARG_WITH(fc,[  --with-fc=Fortran_compiler - Choose the Fortran compiler],
 AC_ARG_WITH(cxx,[  --with-cxx=C++_compiler - Choose the C++ compiler],
             CXX="$withval")
 AC_ARG_WITH(gnu,[  --with-gnu - Choose GNU compilers over native],
-            USE_GNU=$withval,USE_GNU=no)
+            USE_GNU=$withval,USE_GNU=yes)
 AC_ARG_ENABLE(installsite,
 [ --enable-installsite - Install bmake site files],install_sitefiles=yes,
 install_sitefiles=no)
@@ -247,8 +247,13 @@ dnl functions, programs, and such.
 dnl
 dnl Checks for programs.
 AC_PROG_AWK
+dnl Try to find a non-gcc compiler
+if test "$USE_GNU" != "yes" ; then
+      AC_CHECK_PROGS(CC, cc xlC xlc pgcc)
+fi
 dnl This checks preferentially for gcc.  To change, set CC
 AC_PROG_CC
+
 if test "$GCC" = "yes" ; then
     # Check if -D__USE_FIXED_PROTOTYPES__ is needed
     dnl This test is not yet available.
@@ -279,8 +284,12 @@ if test -n "$UCBPS" ; then
     AC_DEFINE(HAVE_UCBPS)
 fi
 
-AC_CHECK_PROGS(FC,f77)
+AC_CHECK_PROGS(FC,f77 pgf77 g77)
+
 if test -z "$CCC" ; then
+      if test "$USE_GNU" != "yes" ; then
+          AC_CHECK_PROGS(CXX, $CCC xlC pgCC c++ CC cxx cc++ cl , gcc)
+      fi 
       AC_PROG_CXX
       CCC=$"CXX"
 fi
