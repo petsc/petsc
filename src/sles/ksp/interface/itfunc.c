@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.115 1999/02/01 14:42:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.116 1999/02/01 18:46:15 bsmith Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -917,7 +917,7 @@ $     monitor (KSP ksp, int it, double rnorm, void *mctx)
    KSPSetMonitor() multiple times; all will be called in the 
    order in which they were set.
 
-   Level: intermediate
+   Level: beginner
 
 .keywords: KSP, set, monitor
 
