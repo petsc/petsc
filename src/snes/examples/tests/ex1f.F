@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.5 1996/11/25 23:33:40 balay Exp bsmith $";
+C "$Id: ex4f.F,v 1.6 1997/01/01 03:41:24 bsmith Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -318,7 +318,7 @@ C  Compute initial guess
               lx_a(row) = 0.0
             else
               lx_a(row) = temp1 *
-     &          sqrt(min(DBLE(min(i,mx-i-1))*hx,temp))
+     &          sqrt(min(DBLE(min(i,mx-i-1)*hx),DBLE(temp)))
             endif
  10      continue
  20   continue

@@ -17,13 +17,13 @@ TESTEXAMPLES_2  = ex7.PETSc runex7 ex7.rm ex9.PETSc \
 TESTEXAMPLES_3  = ex12.PETSc runex12 ex12.rm clean
 TESTEXAMPLES_4  = ex7.PETSc runex7 ex7.rm ex9.PETSc ex9.rm clean
 TESTEXAMPLES_8  = 
-TESTEXAMPLES_9  =  ex1.PETSc runex1 runex1_2 ex1.rm clean
+TESTEXAMPLES_9  = 
 BUILDEXAMPLES_1 = 
 BUILDEXAMPLES_2 = ex7.PETSc ex7.rm ex9.PETSc ex9.rm ex13.PETSc ex13.rm  clean
 BUILDEXAMPLES_3 = ex12.PETSc ex12.rm clean
 BUILDEXAMPLES_4 = ex7.PETSc ex7.rm ex9.PETSc ex9.rm clean
 BUILDEXAMPLES_8 = 
-BUILDEXAMPLES_9 = ex1.PETSc ex1.rm clean
+BUILDEXAMPLES_9 = 
 
 EXAMPLESC       = ex1.c ex7.c ex9.c ex11.c ex13.c
 EXAMPLESF       = ex12.F ex10.f dficfj.f dsfdfj.f dhhdfj.f dcprfj.f \
