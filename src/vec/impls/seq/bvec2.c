@@ -21,7 +21,8 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 {
   PetscScalar *xx;
   PetscErrorCode ierr;
-  int         n=xin->n,one = 1;
+  int         n = xin->n;
+  PetscBLASInt bn = (PetscBLASInt)n,one = 1;
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
@@ -58,7 +59,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     }
 #endif
 #else
-    *z = BLnrm2_(&n,xx,&one);
+    *z = BLnrm2_(&bn,xx,&one);
 #endif
     ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
     PetscLogFlops(2*n-1);
@@ -77,7 +78,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     *z   = max;
   } else if (type == NORM_1) {
     ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-    *z = BLasum_(&n,xx,&one);
+    *z = BLasum_(&bn,xx,&one);
     ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
     PetscLogFlops(n-1);
   } else if (type == NORM_1_AND_2) {

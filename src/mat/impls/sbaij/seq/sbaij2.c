@@ -1228,7 +1228,7 @@ PetscErrorCode MatMultTransposeAdd_SeqSBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatScale_SeqSBAIJ(const PetscScalar *alpha,Mat inA)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)inA->data;
-  int         one = 1,totalnz = a->bs2*a->nz;
+  PetscBLASInt one = 1,totalnz = (PetscBLASInt)a->bs2*a->nz;
 
   PetscFunctionBegin;
   BLscal_(&totalnz,(PetscScalar*)alpha,a->a,&one);

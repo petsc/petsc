@@ -1708,11 +1708,11 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 #define __FUNCT__ "MatScale_SeqAIJ"
 PetscErrorCode MatScale_SeqAIJ(const PetscScalar *alpha,Mat inA)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)inA->data;
-  int        one = 1;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)inA->data;
+  PetscBLASInt bnz = (PetscBLASInt)a->nz,one = 1;
 
   PetscFunctionBegin;
-  BLscal_(&a->nz,(PetscScalar*)alpha,a->a,&one);
+  BLscal_(&bnz,(PetscScalar*)alpha,a->a,&one);
   PetscLogFlops(a->nz);
   PetscFunctionReturn(0);
 }
@@ -2072,12 +2072,13 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
 PetscErrorCode MatAXPY_SeqAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str)
 {
   PetscErrorCode ierr;
-  int        one=1,i;
-  Mat_SeqAIJ *x  = (Mat_SeqAIJ *)X->data,*y = (Mat_SeqAIJ *)Y->data;
+  int            i;
+  Mat_SeqAIJ     *x  = (Mat_SeqAIJ *)X->data,*y = (Mat_SeqAIJ *)Y->data;
+  PetscBLASInt   one=1,bnz = (PetscBLASInt)x->nz;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
-    BLaxpy_(&x->nz,(PetscScalar*)a,x->a,&one,y->a,&one);
+    BLaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);

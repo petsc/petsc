@@ -1550,18 +1550,21 @@ PetscErrorCode MatSetUpPreallocation_MPIAIJ(Mat A)
 PetscErrorCode MatAXPY_MPIAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str)
 {
   PetscErrorCode ierr;
-  int        one=1,i;
-  Mat_MPIAIJ *xx = (Mat_MPIAIJ *)X->data,*yy = (Mat_MPIAIJ *)Y->data;
-  Mat_SeqAIJ *x,*y;
+  int            i;
+  Mat_MPIAIJ     *xx = (Mat_MPIAIJ *)X->data,*yy = (Mat_MPIAIJ *)Y->data;
+  PetscBLASInt   bnz,one=1;
+  Mat_SeqAIJ     *x,*y;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {  
     x = (Mat_SeqAIJ *)xx->A->data;
     y = (Mat_SeqAIJ *)yy->A->data;
-    BLaxpy_(&x->nz,(PetscScalar*)a,x->a,&one,y->a,&one);    
+    bnz = (PetscBLASInt)x->nz;
+    BLaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);    
     x = (Mat_SeqAIJ *)xx->B->data;
     y = (Mat_SeqAIJ *)yy->B->data;
-    BLaxpy_(&x->nz,(PetscScalar*)a,x->a,&one,y->a,&one);
+    bnz = (PetscBLASInt)x->nz;
+    BLaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) {  
     ierr = MatAXPY_SeqAIJ(a,xx->A,yy->A,str);CHKERRQ(ierr);
 

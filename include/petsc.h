@@ -58,6 +58,7 @@
 typedef int PetscErrorCode;
 typedef int PetscCookie;
 typedef int PetscEvent;
+typedef long long PetscBLASInt;
 
 /*
     Declare extern C stuff after incuding external header files

@@ -537,7 +537,7 @@ PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
       for (k=0; k<bs; k++) workt[k] = xb[k];
       workt += bs;
     }
-    Kernel_w_gets_Ar_times_v(bs,ncols,work,v,z);
+    Kernel_w_gets_Ar_times_v(bbs,ncols,work,v,z);
     /* LAgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DZero,z,&_One); */
     v += n*bs2;
     z += bs;
@@ -1226,19 +1226,19 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatScale_SeqBAIJ"
 PetscErrorCode MatScale_SeqBAIJ(const PetscScalar *alpha,Mat inA)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)inA->data;
-  int         totalnz = a->bs2*a->nz;
+  Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)inA->data;
+  int          totalnz = a->bs2*a->nz;
 #if defined(PETSC_USE_MAT_SINGLE)
-  int         i;
+  int          i;
 #else
-  int         one = 1;
+  PetscBLASInt tnz = (PetscBLASInt) totalnz,one = 1;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_MAT_SINGLE)
   for (i=0; i<totalnz; i++) a->a[i] *= *alpha;
 #else
-  BLscal_(&totalnz,(PetscScalar*)alpha,a->a,&one);
+  BLscal_(&tnz,(PetscScalar*)alpha,a->a,&one);
 #endif
   PetscLogFlops(totalnz);
   PetscFunctionReturn(0);

@@ -81,8 +81,8 @@ PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
    if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
       int len = n/sizeof(PetscScalar);
 #if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
-      int one = 1;
-      BLcopy_(&len,(PetscScalar *)b,&one,(PetscScalar *)a,&one);
+      PetscBLASInt blen = (PetscBLASInt) len,one = 1;
+      BLcopy_(&blen,(PetscScalar *)b,&one,(PetscScalar *)a,&one);
 #elif defined(PETSC_PREFER_FORTRAN_FORMEMCPY)
       fortrancopy_(&len,(PetscScalar*)b,(PetscScalar*)a); 
 #else

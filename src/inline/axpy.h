@@ -73,7 +73,7 @@ EXTERN void fortranmaxpy3_(void*,void*,void*,void*,void*,void*,void*,int*);
 EXTERN void fortranmaxpy2_(void*,void*,void*,void*,void*,int*);
 EXTERN_C_END
 
-#define APXY(U,a1,p1,n)  {int one=1;\
+#define APXY(U,a1,p1,n)  {PetscBLASInt one=1;\
   BLaxpy_(&n,&a1,p1,&one,U,&one);}
 #define APXY2(U,a1,a2,p1,p2,n) { \
   fortranmaxpy2_(U,&a1,&a2,p1,p2,&n);}
@@ -132,9 +132,9 @@ EXTERN_C_END
 
 #elif defined(PETSC_USE_BLAS_KERNELS)
 
-#define APXY(U,a1,p1,n)  {int one=1;\
+#define APXY(U,a1,p1,n)  {PetscBLASInt one=1;\
   daxpy_(&n,&a1,p1,&one,U,&one);}
-#define APXY2(U,a1,a2,p1,p2,n)  {int one=1,two=2,off=(int)(p2-p1);\
+#define APXY2(U,a1,a2,p1,p2,n)  {PetscBLASInt one=1,two=2,off=(PetscBLASInt)(p2-p1);\
   double fone=1.0,aa[2];\
 aa[0]=a1;aa[1]=a2;\
   LAgemv_("N",&n,&two,&fone,p1,&off,aa,&one,&fone,U,&one);}

@@ -104,8 +104,8 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
     {int i; for (i=0; i<n; i++) work += PetscRealPart((xx[i])*(PetscConj(xx[i])));}
 #endif
 #else
-    {int one = 1;
-      work  = BLnrm2_(&n,xx,&one);
+    {PetscBLASInt bn = (PetscBLASInt)n, one = 1;
+      work  = BLnrm2_(&bn,xx,&one);
       work *= work;
     }
 #endif

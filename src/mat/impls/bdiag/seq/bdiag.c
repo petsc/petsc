@@ -331,11 +331,12 @@ PetscErrorCode MatGetSubMatrices_SeqBDiag(Mat A,int n,const IS irow[],const IS i
 PetscErrorCode MatScale_SeqBDiag(const PetscScalar *alpha,Mat inA)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)inA->data;
-  int          one = 1,i,len,bs = a->bs;
+  int          i,bs = a->bs;
+  PetscBLASInt one = 1,len;
 
   PetscFunctionBegin;
   for (i=0; i<a->nd; i++) {
-    len = bs*bs*a->bdlen[i];
+    len = (PetscBLASInt)bs*bs*a->bdlen[i];
     if (a->diag[i] > 0) {
       BLscal_(&len,(PetscScalar*)alpha,a->diagv[i] + bs*bs*a->diag[i],&one);
     } else {

@@ -250,11 +250,11 @@ PetscErrorCode VecSwap_ESI(Vec xin,Vec yin)
   PetscFunctionBegin;
   if (xin != yin) {
     PetscScalar *ya,*xa;
-    int         one = 1;
+    PetscBLASInt bn = (PetscBLASInt)xin->n, one = 1;
 
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
     ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
-    BLswap_(&xin->n,xa,&one,ya,&one);
+    BLswap_(&bn,xa,&one,ya,&one);
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
