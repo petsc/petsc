@@ -1,15 +1,28 @@
 #ifndef lint
-static char vcid[] = "$Id: itregis.c,v 1.8 1995/04/16 00:50:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: itregis.c,v 1.9 1995/07/07 17:15:09 bsmith Exp curfman $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
 
 /*@
-   KSPRegisterAll - Registers all the iterative methods in KSP.
+  KSPRegisterAll - Registers all of the iterative methods in the KSP package.
 
-   Notes:
-   To prevent all the methods from being registered and thus save 
-   memory, copy this routine and register only those methods desired.
+  Adding new methods:
+  To add a new method to the registry
+$   1.  Copy this routine and modify it to incorporate
+$       a call to KSPRegister() for the new method.  
+$   2.  Modify the file "PETSCDIR/include/ksp.h"
+$       by appending the method's identifier as an
+$       enumerator of the KSPMethod enumeration.
+$       As long as the enumerator is appended to
+$       the existing list, only the KSPRegisterAll()
+$       routine requires recompilation.
+
+  Restricting the choices:
+  To prevent all of the methods from being registered and thus 
+  save memory, copy this routine and modify it to register only 
+  those methods you desire.  Make sure that the replacement routine 
+  is linked before libpetscksp.a.
 
 .keywords: KSP, register, all
 
@@ -28,5 +41,6 @@ int KSPRegisterAll()
   KSPRegister(KSPCR         , "cr",         KSPCreate_CR); 
   KSPRegister(KSPLSQR       , "lsqr",       KSPCreate_LSQR);
   KSPRegister(KSPPREONLY    , "preonly",    KSPCreate_PREONLY);
+  KSPRegister(KSPQCG        , "qcg",        KSPCreate_QCG);
   return 0;
 }

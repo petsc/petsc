@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.14 1995/05/10 02:43:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.15 1995/07/03 21:46:57 bsmith Exp curfman $";
 #endif
 
 
@@ -19,8 +19,24 @@ extern int PCCreate_ICC(PC);
 extern int PCCreate_SPAI(PC);
 
 /*@
-   PCRegisterAll - Registers all the iterative methods
-  in KSP.
+  PCRegisterAll - Registers all of the preconditioners in the PC package.
+
+  Adding new methods:
+  To add a new method to the registry
+$   1.  Copy this routine and modify it to incorporate
+$       a call to PCRegister() for the new method.  
+$   2.  Modify the file "PETSCDIR/include/pc.h"
+$       by appending the method's identifier as an
+$       enumerator of the PCMethod enumeration.
+$       As long as the enumerator is appended to
+$       the existing list, only the PCRegisterAll()
+$       routine requires recompilation.
+
+  Restricting the choices:
+  To prevent all of the methods from being registered and thus 
+  save memory, copy this routine and modify it to register only 
+  those methods you desire.  Make sure that the replacement routine 
+  is linked before libpetscsles.a.
 
   Notes:
   To prevent all the methods from being registered and thus save
