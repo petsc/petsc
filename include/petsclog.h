@@ -352,7 +352,7 @@ EXTERN int EventLogGetEvent(EventLog, int, int *);
   MPI_Start(requests)                   \
 )
 
-#endif /* !USING_MPIUNI && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
+#endif /* !PETSC_HAVE_MPI_UNI && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
 
 #else  /* ---Logging is turned off --------------------------------------------*/
 

@@ -66,7 +66,7 @@
 #error You cannot use MPI-uni with SPAI
 #endif
 
-#define USING_MPIUNI
+#define PETSC_HAVE_MPI_UNI
 
 /*
 
@@ -96,7 +96,8 @@ typedef int    MPI_Comm;
 typedef void   *MPI_Request;
 typedef void   *MPI_Group;
 typedef struct {int MPI_TAG,MPI_SOURCE,MPI_ERROR;} MPI_Status;
-typedef char*   MPI_Errhandler;
+typedef char   *MPI_Errhandler;
+typedef int    MPI_Fint;
 
 extern int MPIUNI_Memcpy(void*,void*,int);
 
@@ -158,6 +159,10 @@ extern int    Petsc_MPI_Finalize(void);
     Routines we have replace with macros that do nothing 
     Some return error codes others return success
 */
+
+#define MPI_Comm_f2c(comm) (MPI_Comm)(comm)
+#define MPI_Comm_c2f(comm) (MPI_Fint)(comm)
+
 
 #define MPI_Init(argc,argv) \
      (MPIUNI_TMP = (void*)(long) (argc),\

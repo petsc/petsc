@@ -7,7 +7,7 @@
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
-#if defined(PETSC_USE_LOG) && !defined(USING_MPIUNI)
+#if defined(PETSC_USE_LOG) && !defined(PETSC_HAVE_MPI_UNI)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMPIDump"
