@@ -1,6 +1,7 @@
-/* $Id: sles.h,v 1.26 1999/01/19 22:11:45 bsmith Exp bsmith $ */
+/* $Id: sles.h,v 1.27 1999/03/17 23:25:44 bsmith Exp bsmith $ */
 /*
-   Defines PETSc interface to the linear solvers.
+   Defines PETSc interface to the linear solvers. The details of Krylov methods
+  and preconditioners are handled in the ksp.h and pc.h files
 */
 #if !defined(__SLES_H)
 #define __SLES_H

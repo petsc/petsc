@@ -1,11 +1,10 @@
-/* $Id: pc.h,v 1.89 1999/03/11 16:24:44 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.90 1999/03/17 23:25:44 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
 */
 #if !defined(__PC_H)
 #define __PC_H
-#include "petsc.h"
 #include "mat.h"
 
 /*
@@ -31,6 +30,7 @@ typedef char *PCType;
 #define PCASM       "asm"
 #define PCSLES      "sles"
 #define PCCOMPOSITE "composite"
+#define PCREDUNDANT "redundant"
 
 typedef struct _p_PC* PC;
 #define PC_COOKIE     PETSC_COOKIE+9
@@ -95,8 +95,10 @@ extern int PCNullSpaceRemove(PCNullSpace,Vec);
 /* ------------- options specific to particular preconditioners --------- */
 extern int PCSORSetSymmetric(PC, MatSORType);
 extern int PCSORSetOmega(PC, double);
-extern int PCEisenstatSetOmega(PC, double);
 extern int PCSORSetIterations(PC, int);
+
+extern int PCEisenstatSetOmega(PC, double);
+extern int PCEisenstatNoDiagonalScaling(PC);
 
 #define USE_PRECONDITIONER_MATRIX 0
 #define USE_TRUE_MATRIX           1
@@ -116,10 +118,10 @@ extern int PCShellGetName(PC,char**);
 extern int PCLUSetMatOrdering(PC,MatOrderingType);
 extern int PCLUSetReuseOrdering(PC,PetscTruth);
 extern int PCLUSetReuseFill(PC,PetscTruth);
-
-extern int PCILUSetMatOrdering(PC,MatOrderingType);
 extern int PCLUSetUseInPlace(PC);
 extern int PCLUSetFill(PC,double);
+
+extern int PCILUSetMatOrdering(PC,MatOrderingType);
 extern int PCILUSetUseInPlace(PC);
 extern int PCILUSetFill(PC,double);
 extern int PCILUSetLevels(PC,int);
@@ -127,8 +129,6 @@ extern int PCILUSetReuseOrdering(PC,PetscTruth);
 extern int PCILUSetUseDropTolerance(PC,double,int);
 extern int PCILUSetReuseFill(PC,PetscTruth);
 extern int PCILUSetAllowDiagonalFill(PC);
-
-extern int PCEisenstatNoDiagonalScaling(PC);
 
 extern int PCASMSetLocalSubdomains(PC, int, IS *);
 extern int PCASMSetTotalSubdomains(PC, int, IS *);
@@ -142,6 +142,8 @@ typedef enum {PC_COMPOSITE_ADDITIVE, PC_COMPOSITE_MULTIPLICATIVE} PCCompositeTyp
 extern int PCCompositeSetType(PC,PCCompositeType);
 extern int PCCompositeAddPC(PC,PCType);
 extern int PCCompositeGetPC(PC pc,int n,PC *);
+
+extern int PCRedundantSetOperators(PC,Mat,Mat,MatStructure);
 
 #endif
 

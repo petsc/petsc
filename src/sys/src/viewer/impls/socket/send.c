@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.86 1999/02/04 23:46:40 balay Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.87 1999/03/17 23:20:54 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -165,7 +165,8 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
 #undef __FUNC__  
 #define __FUNC__ "ViewerSocketOpen"
 /*@C
-   ViewerSocketOpen - Opens a connection to a Matlab server.
+   ViewerSocketOpen - Opens a connection to a Matlab or other socket
+        based server.
 
    Collective on MPI_Comm
 

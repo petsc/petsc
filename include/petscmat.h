@@ -1,8 +1,6 @@
-/* $Id: mat.h,v 1.169 1999/03/11 16:24:44 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.170 1999/03/18 15:37:17 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
-
-     Any change to this file must also be made to finclude/mat.h
 */
 #ifndef __MAT_H
 #define __MAT_H

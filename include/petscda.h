@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.45 1999/03/05 18:24:43 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.46 1999/03/06 19:40:54 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -6,7 +6,6 @@
 */
 #if !defined(__DA_H)
 #define __DA_H
-#include "petsc.h"
 #include "vec.h"
 #include "ao.h"
 

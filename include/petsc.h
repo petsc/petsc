@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.242 1999/03/09 23:13:05 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.243 1999/03/16 16:42:18 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -13,12 +13,12 @@
     docs/tex/manual/manual.tex and
     docs/tex/manual/manual_tex.tex.
 */
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.24, Released ???"
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.24, Released April 1, 1999"
 
 #define PETSC_VERSION_MAJOR    2
 #define PETSC_VERSION_MINOR    0
 #define PETSC_VERSION_SUBMINOR 24
-#define PETSC_VERSION_DATE     "Yet to be determined, 1998"
+#define PETSC_VERSION_DATE     "April 1, 1998"
 #define PETSC_AUTHOR_INFO      "The PETSc Team:\
  Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith\n\
  Bug reports, questions: petsc-maint@mcs.anl.gov\n\
@@ -140,7 +140,7 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
     Each PETSc object class has it's own cookie (internal integer in the 
   data structure used for error checking). These are all defined by an offset 
   from the lowest one, PETSC_COOKIE. If you increase these you must 
-  increase the field sizes in petsc/src/plog/src/plog.c
+  increase the field sizes in petsc/src/sys/src/plog/plog.c
 */
 #define PETSC_COOKIE                    1211211
 #define LARGEST_PETSC_COOKIE_PREDEFINED PETSC_COOKIE + 30
@@ -151,7 +151,6 @@ typedef struct _FList *FList;
 
 #include "viewer.h"
 #include "options.h"
-
 
 extern int PetscGetTime(PLogDouble*);
 extern int PetscGetCPUTime(PLogDouble*);
@@ -236,6 +235,11 @@ extern int FListPrintTypes(MPI_Comm,FILE*,const char[],const char[],FList);
 extern int FListDuplicate(FList,FList *);
 extern int FListView(FList,Viewer);
 
+/*
+   Routines for handling dynamic libraries. PETSc uses dynamic libraries
+  by default on most machines (except IBM). This is controlled by the
+  flag USE_DYNAMIC_LIBRARIES in petscconf.h
+*/
 typedef struct _DLLibraryList *DLLibraryList;
 extern DLLibraryList DLLibrariesLoaded;
 extern int DLLibraryRetrieve(MPI_Comm,const char[],char *,int,PetscTruth *);
@@ -249,7 +253,7 @@ extern int DLLibraryGetInfo(void *,char *,char **);
 
 /*
     Mechanism for translating PETSc object representations between languages
-    Note currently used.
+    Not currently used.
 */
 typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CPP} PetscLanguage;
 #define PETSC_LANGUAGE_F77 PETSC_LANGUAGE_C
@@ -260,6 +264,10 @@ extern int PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **);
      Useful utility routines
 */
 extern int PetscSplitOwnership(MPI_Comm,int*,int*);
+extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
+extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
+extern int  PetscBarrier(PetscObject);
+extern int  PetscMPIDump(FILE*);
 
 /*
     Defines basic graphics available from PETSc.
@@ -287,11 +295,6 @@ extern PetscTruth PetscAMSPublishAll;
 #define PetscPublishAll(v)
 #endif
 
-extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
-extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
-extern int  PetscBarrier(PetscObject);
-extern int  PetscMPIDump(FILE*);
-
 /*
       This code allows one to pass a MPI communicator between 
     C and Fortran. MPI 2.0 defines a standard API for doing this.
@@ -315,7 +318,6 @@ extern int  (*PetscHelpPrintf)(MPI_Comm,const char[],...);
 extern int  PetscSynchronizedPrintf(MPI_Comm,const char[],...);
 extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...);
 extern int  PetscSynchronizedFlush(MPI_Comm);
-
 
 /*
     Simple PETSc object that contains a pointer to any required data
@@ -359,7 +361,8 @@ extern int PetscScalarView(int,Scalar[],Viewer);
       Determine if some of the kernel computation routines use
    Fortran (rather than C) for the numerical calculations. On some machines
    and compilers (like complex numbers) the Fortran version of the routines
-   is faster than the C/C++ versions.
+   is faster than the C/C++ versions. The flag USE_FORTRAN_KERNELS  
+   would be set in the petscconf.h file
 */
 #if defined(USE_FORTRAN_KERNELS)
 
@@ -401,7 +404,8 @@ extern int PetscScalarView(int,Scalar[],Viewer);
     Macros for indicating code that should be compiled with a C interface,
    rather than a C++ interface. Any routines that are dynamically loaded
    (such as the PCCreate_XXX() routines) must be wrapped so that the name
-   mangler does not change the functions symbol name
+   mangler does not change the functions symbol name. This just hides the 
+   ugly extern "C" {} wrappers.
 */
 #if defined(__cplusplus)
 #define EXTERN_C_BEGIN extern "C" {

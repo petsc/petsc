@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.175 1999/03/19 01:08:25 balay Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.176 1999/03/23 19:58:50 balay Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -131,7 +131,7 @@ $     val = (x,y) = y^T x,
 
 .keywords: vector, dot product, inner product
 
-.seealso: VecMDot(), VecTDot()
+.seealso: VecMDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd()
 @*/
 int VecDot(Vec x, Vec y, Scalar *val)
 {
@@ -184,7 +184,8 @@ $     NORM_INFINITY denotes max_i |x_i|
 
 .keywords: vector, norm
 
-.seealso: VecDot(), VecTDot()
+.seealso: VecDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd(), 
+          VecNormBegin(), VecNormEnd()
 
 @*/
 int VecNorm(Vec x,NormType type,double *val)  
