@@ -28,6 +28,6 @@ PetscErrorCode MatConvertRegisterAll(const char path[])
   PetscFunctionBegin;
   MatConvertRegisterAllCalled = PETSC_TRUE;
   ierr = MatConvertRegisterDynamic(MATMPIADJ,path,"MatConvertTo_MPIAdj",MatConvertTo_MPIAdj);CHKERRQ(ierr);
-  ierr = MatConvertRegisterDynamic(MATAIJ,path,"MatConvertTo_AIJ",MatConvert_AIJ);CHKERRQ(ierr);
+  ierr = MatConvertRegisterDynamic(MATAIJ,path,"MatConvertTo_AIJ",MatConvertTo_AIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
