@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mem.c,v 1.10 1997/03/31 21:40:49 balay Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.11 1997/04/01 15:08:43 balay Exp balay $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: mem.c,v 1.10 1997/03/31 21:40:49 balay Exp balay $";
 extern "C" {
 #endif
 extern int getrusage(int,struct rusage*);
-#if !defined(PARCH_linux)
+#if !defined(PARCH_linux) && !defined(PARCH_nt_gnu)
 extern int getpagesize();
 #endif
 #if defined(__cplusplus)
