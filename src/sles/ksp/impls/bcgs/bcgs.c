@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.36 1996/04/06 16:54:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.37 1996/08/08 14:40:57 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -17,8 +17,9 @@ static char vcid[] = "$Id: bcgs.c,v 1.36 1996/04/06 16:54:34 curfman Exp bsmith 
 
 static int KSPSetUp_BCGS(KSP ksp)
 {
-  if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,"KSPSetUp_BCGS:no symmetric preconditioning for KSPBCGS");}
+  if (ksp->pc_side == PC_SYMMETRIC) {
+    SETERRQ(PETSC_ERR_SUP,"KSPSetUp_BCGS:no symmetric preconditioning for KSPBCGS");
+  }
   return KSPDefaultGetWork( ksp, 7 );
 }
 
@@ -62,7 +63,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
 
   for (i=0; i<maxit; i++) {
     ierr = VecDot(R,RP,&rho); CHKERRQ(ierr);       /*   rho <- (r,rp)      */
-    if (rho == 0.0) {fprintf(stderr,"Breakdown\n"); *its = -(i+1);return 0;} 
+    if (rho == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,"KSPSolve_BCGS:Breakdown");}
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
     ierr = VecAYPX(&beta,R,P); CHKERRQ(ierr);      /*   p <- r + p beta    */
@@ -71,15 +72,14 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
     ierr = VecDot(V,RP,&d1); CHKERRQ(ierr);
     alpha = rho / d1; tmp = -alpha;                /*   a <- rho / (v,rp)  */
     ierr = VecWAXPY(&tmp,V,R,S); CHKERRQ(ierr);    /*   s <- r - a v       */
-    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,
-                         S,T,R); CHKERRQ(ierr);    /*   t <- K s           */
+    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,S,T,R); CHKERRQ(ierr);/*   t <- K s    */
     ierr = VecDot(S,T,&d1); CHKERRQ(ierr);
     ierr = VecDot(T,T,&d2); CHKERRQ(ierr);
     if (d2 == 0.0) {
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
 	 may be our solution.  Give it a try? */
       ierr = VecDot(S,S,&d1); CHKERRQ(ierr);
-      if (d1 != 0.0) {SETERRQ(1,"KSPSolve_BCGS:Breakdown");}
+      if (d1 != 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,"KSPSolve_BCGS:Breakdown");}
       ierr = VecAXPY(&alpha,P,X); CHKERRQ(ierr);   /*   x <- x + a p       */
       if (history && hist_len > i+1) history[i+1] = 0.0;
       KSPMonitor(ksp,i+1,0.0);
