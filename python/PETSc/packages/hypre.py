@@ -183,7 +183,7 @@ class Configure(config.base.Configure):
     if 'FC' in self.framework.argDB:
       args.append('--with-F77="'+self.framework.argDB['FC']+' '+self.framework.argDB['FFLAGS']+'"')
     # TROUBLE if more than one include directory
-    args.append('--with-mpi-include='+self.mpi.include[0])
+    if self.mpi.include != []: args.append('--with-mpi-include='+self.mpi.include[0])
     libdirs = []
     for l in self.mpi.lib:
       ll = os.path.dirname(l)
