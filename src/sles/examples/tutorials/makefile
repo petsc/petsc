@@ -14,7 +14,8 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
 		   ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 \
 		   runex5_2 ex5.rm ex9.PETSc runex9 ex9.rm \
-                   ex13.PETSc runex13 ex13.rm clean
+                   ex13.PETSc runex13 ex13.rm \
+                   ex14.PETSc runex14 runex14_2 ex14.rm clean
 TESTEXAMPLES_2   = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc clean
 TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
@@ -29,7 +30,8 @@ TESTEXAMPLES_8   =
 TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm clean
 
 BUILDEXAMPLES_1  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
-		   ex5.PETSc ex5.rm ex9.PETSc ex9.rm clean
+		   ex5.PETSc ex5.rm ex9.PETSc ex9.rm \
+		   ex13.PETSc ex13.rm ex14.PETSc ex14.rm clean
 BUILDEXAMPLES_2  = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
 BUILDEXAMPLES_3  = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex6f.PETSc ex6f.rm clean
 BUILDEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
@@ -112,6 +114,9 @@ ex13: ex13.o  chkopts
 	-$(CLINKER) -o ex13 ex13.o  $(PETSC_LIB)
 	$(RM) ex13.o
 
+ex14: ex14.o  chkopts
+	-$(CLINKER) -o ex14 ex14.o  $(PETSC_LIB)
+	$(RM) ex14.o
 
 runex1:
 	-@$(MPIRUN) ex1 -ksp_smonitor > ex1_1.tmp 2>&1;	  \
@@ -259,5 +264,17 @@ runex13:
 	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
 	   $(RM) -f ex13_1.tmp
+
+runex14:
+	-@$(MPIRUN) ex14 -no_output > ex14_1.tmp 2>&1; \
+	   if (diff output/ex14_1.out ex14_1.tmp) then true; \
+	   else echo "Possible problem with ex14_1, diffs above"; fi; \
+	   $(RM) -f ex14_1.tmp
+
+runex14_2:
+	-@$(MPIRUN) ex14 -no_output > ex14_2.tmp 2>&1; \
+	   if (diff output/ex14_2.out ex14_2.tmp) then true; \
+	   else echo "Possible problem with ex14_2, diffs above"; fi; \
+	   $(RM) -f ex14_2.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
