@@ -14,7 +14,7 @@ class Configure(PETSc.package.Package):
   def Install(self):
     lgrindDir = self.getDir()
     # Get the LGRIND directories
-    installDir = os.path.join(lgrindDir, self.framework.argDB['PETSC_ARCH'])
+    installDir = os.path.join(lgrindDir, self.arch.arch)
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     try:

@@ -12,7 +12,8 @@ class Package(config.base.Configure):
     self.substPrefix  = 'PETSc'
     self.compilers    = self.framework.require('config.compilers',self)
     self.libraries    = self.framework.require('config.libraries',self)
-    self.clanguage    = self.framework.require('PETSc.utilities.clanguage',self)    
+    self.clanguage    = self.framework.require('PETSc.utilities.clanguage',self)
+    self.arch         = self.framework.require('PETSc.utilities.arch',self)        
     self.functions    = self.framework.require('config.functions',self)
     self.source       = self.framework.require('config.sourceControl',self)    
     self.found        = 0
@@ -52,7 +53,7 @@ class Package(config.base.Configure):
 
   def generateGuesses(self):
     if self.download and self.framework.argDB['download-'+self.package] == 1:
-      dir = os.path.join(self.Install(),self.framework.argDB['PETSC_ARCH'])
+      dir = os.path.join(self.Install(),self.arch.arch)
       yield('Download '+self.PACKAGE,self.generateLibList(os.path.join(dir,'lib')) ,os.path.join(dir,'include'))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
     if 'with-'+self.package+'-dir' in self.framework.argDB:     
@@ -66,7 +67,7 @@ class Package(config.base.Configure):
       dir2 = os.path.abspath(self.framework.argDB['with-'+self.package+'-include'])      
       yield('User specified '+self.PACKAGE+' root directory',libs,dir2)
     if self.download and self.framework.argDB['download-'+self.package] == 2:
-      dir = os.path.join(self.Install(),self.framework.argDB['PETSC_ARCH'])
+      dir = os.path.join(self.Install(),self.arch.arch)
       yield('Download '+self.PACKAGE,self.generateLibList(os.path.join(dir,'lib')) ,os.path.join(dir,'include'))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
     raise RuntimeError('You must specifiy a path for '+self.name+' with --with-'+self.package+'-dir=<directory>')
