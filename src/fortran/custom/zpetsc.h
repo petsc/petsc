@@ -64,21 +64,18 @@ Fortran.
      PetscFromPointerComm - From C to Fortran
 
 */
-#if defined(PETSC_HAVE_INT_MPI_COMM)
-#define PetscToPointerComm(a)        (a)
-#define PetscFromPointerComm(a) (int)(a)
-
-#elif defined (PETSC_HAVE_MPI_COMM_F2C)
+#if defined (HAVE_MPI_COMM_F2C)
 #define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
 #define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
 
-#elif (SIZEOF_VOID_P == 8)
-#error "Use Either of the following flags in the variable MPI_INCLUDE in bmake/PETSC_ARCH/packages file: \
--DPETSC_HAVE_INT_MPI_COMM, -DPETSC_HAVE_MPI_COMM_F2C"
-
-#else
+#elif (SIZEOF_INT == SIZEOF_MPI_COMM)
 #define PetscToPointerComm(a)        (a)
 #define PetscFromPointerComm(a) (int)(a)
+
+#else
+#error "In the variable MPI_INCLUDE in bmake/PETSC_ARCH/packages file you must specify either: \
+-DHAVE_MPI_COMM_F2C or -DSIZEOF_MPI_COMM"
+
 #endif
 
 
