@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.15 1995/05/29 00:02:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.16 1995/05/31 23:51:22 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -229,6 +229,87 @@ static int MatMultTransAdd_BDiag(Mat matin,Vec xx,Vec zz,Vec yy)
   ierr = VecCopy(zz,yy); CHKERR(ierr);
   return MatMultTrans_BDiag_base(matin,xx,yy);
 }
+
+static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
+                        double shift,int its,Vec xx)
+{
+  Mat_BDiag  *mat = (Mat_BDiag *) matin->data;
+  Scalar   *x, *b, *xb, *dvmain;
+  int      m = mat->m, i, j, k, d, len, kshift, nb = mat->nb, loc;
+  int      mainbd = mat->mainbd, dval, diag;
+  Scalar register sum, *dv, *pb;
+
+  VecGetArray(xx,&x); VecGetArray(bb,&b);
+
+  if (mainbd == -1) SETERR(1,"Main diagonal not set.");
+  dvmain = mat->diagv[mainbd];
+  if (flag == SOR_APPLY_UPPER) {
+    /* apply ( U + D/omega) to the vector */
+    for ( i=0; i<m; i++ ) {
+      x[i] = b[i] * (shift + dvmain[i]) / omega;
+    }
+    if (nb == 1) {
+      for (d=mainbd+1; d<mat->nd; d++) {
+        dv   = mat->diagv[d];
+        diag = mat->diag[d];
+        len  = mat->bdlen[d];
+        pb   = b - diag;
+        for (j=0; j<len; j++) x[j] += dv[j] * pb[j];
+      }
+    }
+    else {
+      for (d=mainbd+1; d<mat->nd; d++) {
+        dv   = mat->diagv[d];
+        diag = mat->diag[d];
+        len  = mat->bdlen[d];
+        pb   = b - nb*diag;
+        for (k=0; k<len; k++) {
+          kshift = k*nb*nb;
+          for (i=0; i<nb; i++) {
+            for (j=0; j<nb; j++) { 
+              x[k*nb + i] += dv[kshift + j*nb + i] * pb[k*nb + j];
+            }
+          }
+        }
+      }
+    }
+    return 0;
+  }
+  if (flag & SOR_ZERO_INITIAL_GUESS) {
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+      for (i=0; i<m; i++) {
+        sum  = b[i];
+        for (d=0; d<mainbd; d++) {
+          loc = i - mat->diag[d];
+          if (loc >= 0) sum -= mat->diagv[d][loc] * x[loc];
+        }
+        x[i] = omega*(sum/(shift + dvmain[i]));
+      }
+      xb = x;
+    }
+    else xb = b;
+    if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
+        (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
+      for ( i=0; i<m; i++ ) x[i] *= dvmain[i];
+    }
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+      for ( i=m-1; i>=0; i-- ) {
+        sum = xb[i];
+        for (d=mainbd+1; d<mat->nd; d++) {
+          diag = mat->diag[d];
+          if (i-diag <= m) sum -= mat->diagv[d][i] * x[i-diag];
+        }
+        x[i] = omega*(sum/(shift + dvmain[i]));
+      }
+    }
+    its--;
+  }
+  while (its--) {
+    SETERR(1, "This section not done.");
+    SETERR(1,"This option not yet supported for MATBDiag format.");
+  }
+  return 0;
+} 
 
 static int MatGetInfo_BDiag(Mat matin,MatInfoType flag,int *nz,int *nzalloc,
                                                                      int *mem)
@@ -670,7 +751,8 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        MatMult_BDiag, MatMultAdd_BDiag, 
        MatMultTrans_BDiag, MatMultTransAdd_BDiag, 
        0, 0, 0, 0,
-       0, 0, 0, 0,
+       0, 0, 
+       MatRelax_BDiag, 0,
        MatGetInfo_BDiag, 0,
        MatGetDiagonal_BDiag, 0, 0,
        0,MatAssemblyEnd_BDiag,

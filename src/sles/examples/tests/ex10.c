@@ -56,6 +56,17 @@ int main(int argc,char **args)
   ierr = SLESSetOperators(sles,mat,mat,MAT_SAME_NONZERO_PATTERN);
           CHKERRA(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERR(ierr);
+
+  { Scalar val;
+    KSPSetInitialGuessNonzero(ksp);
+    for (i=0; i<rdim; i++) {
+      val = (Scalar)i;
+      ierr = VecSetValues(x,1,&i,&val,INSERTVALUES); CHKERRA(ierr);
+    }
+    ierr = VecAssemblyBegin(x); CHKERRA(ierr);
+    ierr = VecAssemblyEnd(x); CHKERRA(ierr);
+  }
+
   ierr = KSPGMRESSetRestart(ksp,2*m); CHKERR(ierr);
   ierr = KSPSetRelativeTolerance(ksp,1.e-12); CHKERR(ierr);
   ierr = KSPSetMethod(ksp,KSPCG); CHKERR(ierr);
