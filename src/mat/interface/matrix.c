@@ -313,7 +313,6 @@ int MatScaleSystem(Mat mat,Vec x,Vec b)
   if (mat->ops->scalesystem) {
     ierr = (*mat->ops->scalesystem)(mat,x,b);CHKERRQ(ierr);
   }
-  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

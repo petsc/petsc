@@ -26,7 +26,7 @@
 
    Level: advanced
 
-   seealso: PetscObjectIncreaseState
+   seealso: PetscObjectIncreaseState, PetscObjectSetState
 
    Concepts: state
 
@@ -36,6 +36,40 @@ int PetscObjectGetState(PetscObject obj,int *state)
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
   *state = obj->state;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectSetState"
+/*@C
+   PetscObjectSetState - Sets the state of any PetscObject, 
+   regardless of the type.
+
+   Not Collective
+
+   Input Parameter:
++  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
+         cast with a (PetscObject), for example, 
+         PetscObjectSetState((PetscObject)mat,state);
+-  state - the object state
+
+   Notes: This function should be used with extreme caution. There is 
+   essentially only one use for it: if the user calls Mat(Vec)GetRow(Array),
+   which increases the state, but does not alter the data, then this 
+   routine can be used to reset the state.
+
+   Level: advanced
+
+   seealso: PetscObjectGetState,PetscObjectIncreaseState
+
+   Concepts: state
+
+@*/
+int PetscObjectSetState(PetscObject obj,int state)
+{
+  PetscFunctionBegin;
+  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
+  obj->state = state;
   PetscFunctionReturn(0);
 }
 
@@ -59,7 +93,8 @@ int PetscObjectGetState(PetscObject obj,int *state)
 
    This routine is mostly for internal use by PETSc; a developer need only
    call it after explicit access to an object's internals. Routines such
-   as VecSet or MatScale already call this routine.
+   as VecSet or MatScale already call this routine. It is also called, as a 
+   precaution, in VecRestoreArray, MatRestoreRow, MatRestoreArray.
 
    Level: developer
 
