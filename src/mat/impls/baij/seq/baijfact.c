@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.9 1996/03/23 20:43:02 bsmith Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.10 1996/04/09 22:09:57 balay Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -866,7 +866,7 @@ static int MatSolveAdd_SeqBAIJ_Private(Mat A,Vec bb,Vec yy,Vec xx)
   Scalar      _DZero=0.0,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5,*y;
   register Scalar *x,*b,*lsum,*tmp,*v;
 
-  if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolve_SeqBAIJ:Not for unfactored matrix");
+  if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolveAdd_SeqBAIJ_Private:Not for unfactored matrix");
 
   ierr = VecGetArray(bb,&ba); CHKERRQ(ierr); b = ba;
   ierr = VecGetArray(xx,&xa); CHKERRQ(ierr); x = xa;

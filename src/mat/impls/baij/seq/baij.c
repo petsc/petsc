@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.33 1996/04/09 16:17:21 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.34 1996/04/09 21:49:35 balay Exp balay $";
 #endif
 
 /*
@@ -38,7 +38,7 @@ static int MatGetReordering_SeqBAIJ(Mat A,MatOrdering type,IS *rperm,IS *cperm)
   }
 
   MatReorderingRegisterAll();
-  ishift = a->indexshift;
+  ishift = 0;
   oshift = -MatReorderingIndexShift[(int)type];
   if (MatReorderingRequiresSymmetric[(int)type]) {
     ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,ishift,oshift,&ia,&ja);
@@ -251,7 +251,7 @@ static int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
   int         *imax=a->imax,*ai=a->i,*ailen=a->ilen,roworiented=a->roworiented;
-  int         *aj=a->j,nonew=a->nonew,shift=a->indexshift,bs=a->bs,brow,bcol;
+  int         *aj=a->j,nonew=a->nonew,bs=a->bs,brow,bcol;
   int          ridx,cidx,bs2=bs*bs;
   Scalar      *ap,value,*aa=a->a,*bap;
 
@@ -259,13 +259,13 @@ static int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
     row  = im[k]; brow = row/bs;  
     if (row < 0) SETERRQ(1,"MatSetValues_SeqBAIJ:Negative row");
     if (row >= a->m) SETERRQ(1,"MatSetValues_SeqBAIJ:Row too large");
-    rp   = aj + ai[brow] + shift; ap = aa + bs2*ai[brow] + shift;
+    rp   = aj + ai[brow]; ap = aa + bs2*ai[brow];
     rmax = imax[brow]; nrow = ailen[brow]; 
     low = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
       if (in[l] < 0) SETERRQ(1,"MatSetValues_SeqBAIJ:Negative column");
       if (in[l] >= a->n) SETERRQ(1,"MatSetValues_SeqBAIJ:Column too large");
-      col = in[l] - shift; bcol = col/bs;
+      col = in[l]; bcol = col/bs;
       ridx = row % bs; cidx = col % bs;
       if (roworiented) {
         value = *v++; 
@@ -303,21 +303,21 @@ static int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
         /* copy over old data into new slots */
         for ( ii=0; ii<brow+1; ii++ ) {new_i[ii] = ai[ii];}
         for ( ii=brow+1; ii<a->mbs+1; ii++ ) {new_i[ii] = ai[ii]+CHUNKSIZE;}
-        PetscMemcpy(new_j,aj,(ai[brow]+nrow+shift)*sizeof(int));
-        len = (new_nz - CHUNKSIZE - ai[brow] - nrow - shift);
-        PetscMemcpy(new_j+ai[brow]+shift+nrow+CHUNKSIZE,aj+ai[brow]+shift+nrow,
+        PetscMemcpy(new_j,aj,(ai[brow]+nrow)*sizeof(int));
+        len = (new_nz - CHUNKSIZE - ai[brow] - nrow);
+        PetscMemcpy(new_j+ai[brow]+nrow+CHUNKSIZE,aj+ai[brow]+nrow,
                                                            len*sizeof(int));
-        PetscMemcpy(new_a,aa,(ai[brow]+nrow+shift)*bs2*sizeof(Scalar));
-        PetscMemzero(new_a+bs2*(ai[brow]+shift+nrow),bs2*CHUNKSIZE*sizeof(Scalar));
-        PetscMemcpy(new_a+bs2*(ai[brow]+shift+nrow+CHUNKSIZE),
-                    aa+bs2*(ai[brow]+shift+nrow),bs2*len*sizeof(Scalar)); 
+        PetscMemcpy(new_a,aa,(ai[brow]+nrow)*bs2*sizeof(Scalar));
+        PetscMemzero(new_a+bs2*(ai[brow]+nrow),bs2*CHUNKSIZE*sizeof(Scalar));
+        PetscMemcpy(new_a+bs2*(ai[brow]+nrow+CHUNKSIZE),
+                    aa+bs2*(ai[brow]+nrow),bs2*len*sizeof(Scalar)); 
         /* free up old matrix storage */
         PetscFree(a->a); 
         if (!a->singlemalloc) {PetscFree(a->i);PetscFree(a->j);}
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
         a->singlemalloc = 1;
 
-        rp   = aj + ai[brow] + shift; ap = aa + bs2*ai[brow] + shift;
+        rp   = aj + ai[brow]; ap = aa + bs2*ai[brow];
         rmax = imax[brow] = imax[brow] + CHUNKSIZE;
         PLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + bs2*sizeof(Scalar)));
         a->maxnz += CHUNKSIZE;
@@ -412,17 +412,15 @@ static int MatTranspose_SeqBAIJ(Mat A,Mat *B)
   Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data;
   Mat         C;
   int         i,j,k,ierr,*aj=a->j,*ai=a->i,bs=a->bs,mbs=a->mbs,nbs=a->nbs,len,*col;
-  int         shift=a->indexshift,*rows,*cols,bs2=bs*bs;
+  int         *rows,*cols,bs2=bs*bs;
   Scalar      *array=a->a;
 
   if (B==PETSC_NULL && mbs!=nbs)
     SETERRQ(1,"MatTranspose_SeqBAIJ:Square matrix only for in-place");
   col = (int *) PetscMalloc((1+nbs)*sizeof(int)); CHKPTRQ(col);
   PetscMemzero(col,(1+nbs)*sizeof(int));
-  if (shift) {
-    for ( i=0; i<ai[mbs]-1; i++ ) aj[i] -= 1;
-  }
-  for ( i=0; i<ai[mbs]+shift; i++ ) col[aj[i]] += 1;
+
+  for ( i=0; i<ai[mbs]; i++ ) col[aj[i]] += 1;
   ierr = MatCreateSeqBAIJ(A->comm,bs,a->n,a->m,PETSC_NULL,col,&C); CHKERRQ(ierr);
   PetscFree(col);
   rows = (int *) PetscMalloc(2*bs*sizeof(int)); CHKPTRQ(rows);
@@ -439,9 +437,6 @@ static int MatTranspose_SeqBAIJ(Mat A,Mat *B)
     }
   }
   PetscFree(rows);
-  if (shift) { 
-    for ( i=0; i<ai[mbs]-1; i++ ) aj[i] += 1;
-  }
   
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -468,7 +463,7 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int        fshift = 0,i,j,*ai = a->i, *aj = a->j, *imax = a->imax;
-  int        m = a->m,*ip, N, *ailen = a->ilen,shift = a->indexshift;
+  int        m = a->m,*ip, N, *ailen = a->ilen;
   int        bs = a->bs,  mbs = a->mbs, bs2 = bs*bs;
   Scalar     *aa = a->a, *ap;
 
@@ -478,7 +473,7 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
     /* move each row back by the amount of empty slots (fshift) before it*/
     fshift += imax[i-1] - ailen[i-1];
     if (fshift) {
-      ip = aj + ai[i] + shift; ap = aa + bs2*ai[i] + shift;
+      ip = aj + ai[i]; ap = aa + bs2*ai[i];
       N = ailen[i];
       for ( j=0; j<N; j++ ) {
         ip[j-fshift] = ip[j];
@@ -495,7 +490,7 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   for ( i=0; i<mbs; i++ ) {
     ailen[i] = imax[i] = ai[i+1] - ai[i];
   }
-  a->nz = ai[mbs] + shift; 
+  a->nz = ai[mbs]; 
 
   /* diagonals may have moved, so kill the diagonal pointers */
   if (fshift && a->diag) {
@@ -503,9 +498,8 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
     PLogObjectMemory(A,-(m+1)*sizeof(int));
     a->diag = 0;
   } 
-  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Unneeded storage space %d used %d rows %d\n",
-           fshift,a->nz,m);
-  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Number of mallocs during MatSetValues %d\n",
+  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ: Unneed storage space %d used %d, rows %d, block size %d\n", fshift*bs2,a->nz*bs2,m,a->bs);
+  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ: Number of mallocs during MatSetValues %d\n",
            a->reallocs);
   return 0;
 }
@@ -869,7 +863,7 @@ static int MatEqual_SeqBAIJ(Mat A,Mat B, PetscTruth* flg)
 
   /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
   if ((a->m != b->m) || (a->n !=b->n) || (a->bs != b->bs)|| 
-      (a->nz != b->nz)||(a->indexshift != b->indexshift)) {
+      (a->nz != b->nz)) {
     *flg = PETSC_FALSE; return 0; 
   }
   
@@ -972,6 +966,7 @@ static int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
 extern int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,double,Mat*);
 extern int MatLUFactor_SeqBAIJ(Mat,IS,IS,double);
 extern int MatSolve_SeqBAIJ(Mat,Vec,Vec);
+extern int MatSolveAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
 extern int MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_1(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_2(Mat,Mat*);
@@ -1041,7 +1036,7 @@ static int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int        *rp, k, low, high, t, row, nrow, i, col, l, *aj = a->j;
-  int        *ai = a->i, *ailen = a->ilen, shift = a->indexshift;
+  int        *ai = a->i, *ailen = a->ilen;
   int        brow,bcol,ridx,cidx,bs=a->bs,bs2=bs*bs;
   Scalar     *ap, *aa = a->a, zero = 0.0;
 
@@ -1049,12 +1044,12 @@ static int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
     row  = im[k]; brow = row/bs;  
     if (row < 0) SETERRQ(1,"MatGetValues_SeqBAIJ:Negative row");
     if (row >= a->m) SETERRQ(1,"MatGetValues_SeqBAIJ:Row too large");
-    rp   = aj + ai[brow] + shift; ap = aa + bs2*ai[brow] + shift;
+    rp   = aj + ai[brow] ; ap = aa + bs2*ai[brow] ;
     nrow = ailen[brow]; 
     for ( l=0; l<n; l++ ) { /* loop over columns */
       if (in[l] < 0) SETERRQ(1,"MatGetValues_SeqBAIJ:Negative column");
       if (in[l] >= a->n) SETERRQ(1,"MatGetValues_SeqBAIJ:Column too large");
-      col  = in[l] - shift; 
+      col  = in[l] ; 
       bcol = col/bs;
       cidx = col%bs; 
       ridx = row%bs;
@@ -1091,7 +1086,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetRow_SeqBAIJ,MatRestoreRow_SeqBAIJ,
        MatMult_SeqBAIJ,MatMultAdd_SeqBAIJ,
        MatMultTrans_SeqBAIJ,MatMultTransAdd_SeqBAIJ,
-       MatSolve_SeqBAIJ,0,
+       MatSolve_SeqBAIJ,MatSolveAdd_SeqBAIJ,
        0,0,
        MatLUFactor_SeqBAIJ,0,
        0,
@@ -1231,7 +1226,6 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   b->solve_work       = 0;
   b->mult_work        = 0;
   b->spptr            = 0;
-  b->indexshift       = 0;
   *A = B;
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) {ierr = MatPrintHelp(B); CHKERRQ(ierr); }
@@ -1266,7 +1260,6 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   c->bs         = a->bs;
   c->mbs        = a->mbs;
   c->nbs        = a->nbs;
-  c->indexshift = 0;
 
   c->imax       = (int *) PetscMalloc((mbs+1)*sizeof(int)); CHKPTRQ(c->imax);
   c->ilen       = (int *) PetscMalloc((mbs+1)*sizeof(int)); CHKPTRQ(c->ilen);
@@ -1318,7 +1311,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   int          i,nz,ierr,fd,header[4],size,*rowlengths=0,M,N,bs=1,flg;
   int          *mask,mbs,*jj,j,rowcount,nzcount,k,*browlengths,maskcount;
   int          kmax,jcount,block,idx,point,nzcountb,extra_rows;
-  int          *masked, nmask,tmp,ishift,bs2;
+  int          *masked, nmask,tmp,bs2,ishift;
   Scalar       *aa;
   MPI_Comm     comm = ((PetscObject) viewer)->comm;
 
@@ -1390,7 +1383,6 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
     a->i[i]      = a->i[i-1] + browlengths[i-1];
     a->ilen[i-1] = browlengths[i-1];
   }
-  a->indexshift = 0;
   a->nz         = 0;
   for ( i=0; i<mbs; i++ ) a->nz += browlengths[i];
 
