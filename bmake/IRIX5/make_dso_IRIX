@@ -5,7 +5,7 @@
 #
 echo  making dynamic libraries in $argv[1]
 cd $argv[1]
-foreach LIBNAME (mpiuni petsccontrib petscdraw petscksp petscmat \
+foreach LIBNAME (mpiuni petsccontrib  petscksp petscmat \
   petscsles petscsnes petscsys petscts petscvec)
   if ( -e lib$LIBNAME.a) then 
      if ( -e lib$LIBNAME.so ) then
