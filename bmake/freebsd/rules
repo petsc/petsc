@@ -1,4 +1,4 @@
-# $Id: base,v 1.46 1998/10/05 19:11:17 balay Exp balay $ 
+# $Id: base,v 1.47 1998/10/30 23:48:57 balay Exp balay $ 
 
 PARCH    = freebsd
 CC       = gcc -fPIC
@@ -31,8 +31,10 @@ SYS_LIB  =
 
 include ${PETSC_DIR}/bmake/common
 
-libc: ${LIBNAME}(${OBJSC})
-libf: ${LIBNAME}(${OBJSF})
+libc: $(OBJSC)
+        ar crl $(LIBNAME) $(OBJSC)
+libf: $(OBJSF)
+        ar crl $(LIBNAME) $(OBJSF)
 
 #########
 #
