@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.26 1996/04/20 04:20:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.27 1996/04/26 17:42:52 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -76,12 +76,13 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
   int          info, k, d, d2, dgk, elim_row, elim_col, nb = a->nb, knb, knb2, nb2;
   int          dnum,nd = a->nd, mblock = a->mblock, nblock = a->nblock,ierr;
   int          *diag = a->diag, n = a->n, m = a->m, mainbd = a->mainbd, *dgptr;
-  Scalar       **dv = a->diagv, *dd = dv[mainbd], mult;
+  Scalar       **dv = a->diagv, *dd = dv[mainbd], mult, *v_work;
+  Scalar       one = 1.0, zero = 0.0,*multiplier;
 
   /* Notes: 
       - We're using only B in this routine (A remains untouched).
       - The nb>1 case performs block LU, which is functionally the same as
-        the nb=1 case, except that we use factorization, triangular solves,
+        the nb=1 case, except that we use factorization, triangular solve,
         and matrix-matrix products within the dense subblocks.
       - Pivoting is not employed for the case nb=1; for the case nb>1
         pivoting is used only within the dense subblocks. 
@@ -118,32 +119,39 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
   } 
   else {
     if (!a->pivot) {
-      /* Comment: We have chosen to hide column permutation in the pivots,
-                  rather than put it in the Mat->col slot. */
       a->pivot = (int *) PetscMalloc(m*sizeof(int)); CHKPTRQ(a->pivot);
       PLogObjectMemory(C,m*sizeof(int));
     }
+    v_work = (Scalar *) PetscMalloc((nb*nb+nb)*sizeof(Scalar)); CHKPTRQ(v_work);
+    multiplier = v_work + nb;
     nb2 = nb*nb;
     dgptr = (int *) PetscMalloc((mblock+nblock)*sizeof(int)); CHKPTRQ(dgptr);
     PetscMemzero(dgptr,(mblock+nblock)*sizeof(int));
     for ( k=0; k<nd; k++ ) dgptr[diag[k]+mblock] = k+1;
     for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
       knb = k*nb; knb2 = knb*nb;
-      /* factor the diagonal block */
+      /* invert the diagonal block */
 printf("block"); DoubleView(nb*nb,&(dd[knb2]),0);
+      
 /* LAgetf2_(&nb,&nb,&(dd[knb2]),&nb,&(a->pivot[knb]),&info); CHKERRQ(info);*/
-        ierr = Linpack_DGEFA(dd+knb2,nb,a->pivot+knb); CHKERRQ(ierr); 
+      ierr = Linpack_DGEFA(dd+knb2,nb,a->pivot+knb); CHKERRQ(ierr); 
 printf("factored block");DoubleView(nb*nb,&(dd[knb2]),0);
-
+      ierr = Linpack_DGEDI(dd+knb2,nb,a->pivot+knb,v_work); CHKERRQ(ierr);
+printf("inverted block");DoubleView(nb*nb,&(dd[knb2]),0);
       for ( d=mainbd-1; d>=0; d-- ) {
         elim_row = k + diag[d];
         if (elim_row < mblock) { /* sweep down */
           /* dv[d][knb2]: test if entire block is zero? */
 printf("lower block");DoubleView(nb*nb,&(dv[d][knb2]),0);
-            LAgetrs_("N",&nb,&nb,&dd[knb2],&nb,&(a->pivot[knb]),
-                     &(dv[d][knb2]),&nb,&info);
+/* LAgetrs_("N",&nb,&nb,&dd[knb2],&nb,&(a->pivot[knb]),
+                     &(dv[d][knb2]),&nb,&info); */
+
+        BLgemm_("N","N",&nb,&nb,&nb,&one,&(dv[d][knb2]),&nb,&dd[knb2],&nb,&zero,
+                multiplier,&nb);
+        PetscMemcpy(&(dv[d][knb2]),multiplier,nb*nb*sizeof(Scalar));
+
 printf("lower fixed block");DoubleView(nb*nb,&(dv[d][knb2]),0);
-            if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad subblock triangular solve");
+/*            if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad subblock triangular solve"); */
             for ( d2=d+1; d2<nd; d2++ ) {
               elim_col = elim_row - diag[d2];
               if (elim_col >=0 && elim_col < nblock) {
@@ -227,6 +235,9 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
     }
     PLogFlops(2*a->nz - a->n);
   } else {
+    Scalar work[25],_DZero = 0.0,_DOne = 1.0;
+    int    _One = 1;
+    if (nb > 25) SETERRQ(1,"Blocks must be smaller then 25");
     PetscMemcpy(y,x,m*sizeof(Scalar));
 
     /* forward solve the lower triangular part */
@@ -248,9 +259,13 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
         if (col < nblock) BMatMult(nb,1,&(dv[d][inb2]),
                                    &(y[col*nb]),&(y[inb]));
       }
-      LAgetrs_("N",&nb,&one,&(dd[inb2]),&nb,&(a->pivot[inb]),
-               &(y[inb]),&nb,&info);
-      if (info) SETERRQ(1,"MatSolve_SeqBDiag:Bad subblock triangular solve");
+      /* LAgetrs_("N",&nb,&one,&(dd[inb2]),&nb,&(a->pivot[inb]),
+               &(y[inb]),&nb,&info); */
+        LAgemv_("N",&nb,&nb,&_DOne,&(dd[inb2]),&nb,&(y[inb]),&_One,&_DZero,
+                work,&_One);
+        PetscMemcpy(&(y[inb]),work,nb*sizeof(Scalar));
+
+/*if (info) SETERRQ(1,"MatSolve_SeqBDiag:Bad subblock triangular solve");*/
     }
   }
   return 0;
