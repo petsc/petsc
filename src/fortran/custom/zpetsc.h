@@ -58,7 +58,15 @@ Fortran.
      PetscFromPointerComm - From C to Fortran
 
 */
-#if (SIZEOF_VOIDP == 8) && !defined(USES_INT_MPI_COMM)
+#if defined(USES_INT_MPI_COMM)
+#define PetscToPointerComm(a)        (a)
+#define PetscFromPointerComm(a) (int)(a)
+
+#elif defined (HAVE_MPI_COMM_F2C)
+#define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
+#define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
+
+#elif (SIZEOF_VOIDP == 8)
 /*
     Here we assume that only MPICH uses pointers for 
   MPI_Comms on 64 bit machines.
@@ -67,23 +75,14 @@ EXTERN_C_BEGIN
 extern void *MPIR_ToPointer(int);
 extern int   MPIR_FromPointer(void*);
 EXTERN_C_END
-
 #define PetscToPointerComm(a)    MPIR_ToPointer(*(int *)(&a))
 #define PetscFromPointerComm(a)  MPIR_FromPointer(a)
-
-#elif defined(HP_MPI)
-/* 
-  For HPUX with HP-MPI
-*/
-#define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
-#define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
 
 #elif defined(LAM_MPI)
 extern void		**lam_F_types;
 extern int		lam_F_typefind (void *);
 extern void             lam_F_maketype(int*,int*,void*);
 #define GETHDL(x)	(((x) >= 0) ? lam_F_types[(x)] : 0)
-
 #define PetscToPointerComm(a)        GETHDL(*(int *)(&a))
 #define PetscFromPointerComm(a)      lam_F_typefind(a)
 

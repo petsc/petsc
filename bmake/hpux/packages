@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.15 1998/09/30 17:34:59 balay Exp balay $ 
+# $Id: base.site,v 1.16 1998/12/04 21:52:41 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -19,6 +19,8 @@ X11_INCLUDE    =
 X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software
+# If using HP's MPI, then add the flag -DHAVE_MPI_COMM_F2C
+# to MPI_INCLUDE variable
 #
 MPI_LIB        = /usr/local/mpi/lib/hpux/ch_p4/libmpi.a
 MPI_INCLUDE    = -I/usr/local/mpi/include 
