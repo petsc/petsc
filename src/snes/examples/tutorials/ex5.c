@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.89 1998/04/16 04:01:16 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.90 1998/04/16 04:02:20 curfman Exp curfman $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -513,67 +513,4 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRQ(ierr);
   return 0;
 }
-
-/*
-    Demonstrates how you can restrict the linking in of solvers, etc
-  to those that you KNOW you are going to use. This decreases the size
-  of your executable and decreases the time it takes to link your program.
-*/
-/* ------------- Note currently these are commented out -----------------
-extern int SNESCreate_EQ_LS(SNES);
-int SNESRegisterAll(void)
-{
-  SNESRegisterAllCalled = 1;
-
-  SNESRegister(SNES_EQ_LS,         0,"ls",      SNESCreate_EQ_LS);
-  return 0;
-}
-
-extern int KSPCreate_GMRES(KSP);
-int KSPRegisterAll(void)
-{
-  KSPRegisterAllCalled = 1;
-
-  KSPRegister(KSPGMRES      , 0,"gmres",      KSPCreate_GMRES); 
-  return 0;
-}
-
-extern int PCCreate_BJacobi(PC);
-extern int PCCreate_ILU(PC);
-int PCRegisterAll(void)
-{
-  PCRegisterAllCalled = 1;
-
-  PCRegister(PCBJACOBI      ,0, "bjacobi",    PCCreate_BJacobi);
-  PCRegister(PCILU          ,0, "ilu",        PCCreate_ILU);
-  return 0;
-}
-
-
-extern int MatLoad_SeqAIJ(Viewer,MatType,Mat*);
-extern int MatLoad_MPIAIJ(Viewer,MatType,Mat*);
-int MatLoadRegisterAll(void)
-{
-  int ierr;
-
-  ierr = MatLoadRegister(MATSEQAIJ,MatLoad_SeqAIJ); CHKERRQ(ierr);
-  ierr = MatLoadRegister(MATMPIAIJ,MatLoad_MPIAIJ); CHKERRQ(ierr);
-  return 0;
-}  
-
-int MatConvertRegisterAll(void)
-{
-  return 0;
-}
-
-extern int MatOrder_Natural(Mat,MatReorderingType,IS*,IS*);
-int MatReorderingRegisterAll(void)
-{
-  int           ierr;
-
-  MatReorderingRegisterAllCalled = 1;
-  ierr = MatReorderingRegister(ORDER_NATURAL,0,"natural",MatOrder_Natural);CHKERRQ(ierr);
-  return 0;
-}
- ----------------------------------------------------------------------*/
 
