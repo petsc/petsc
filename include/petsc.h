@@ -478,12 +478,10 @@ EXTERN int PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
 EXTERN int PetscObjectGetOptionsPrefix(PetscObject,char*[]);
 EXTERN int PetscObjectPublish(PetscObject);
 EXTERN int PetscObjectChangeTypeName(PetscObject,const char[]);
-EXTERN int PetscObjectChangeSerializeName(PetscObject,const char[]);
 EXTERN int PetscObjectRegisterDestroy(PetscObject);
 EXTERN int PetscObjectRegisterDestroyAll(void);
 EXTERN int PetscObjectName(PetscObject);
 EXTERN int PetscTypeCompare(PetscObject,const char[],PetscTruth*);
-EXTERN int PetscSerializeCompare(PetscObject,const char[],PetscTruth*);
 
 /*
     Defines PETSc error handling.

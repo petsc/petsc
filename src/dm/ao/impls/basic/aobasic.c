@@ -181,49 +181,6 @@ static struct _AOOps AOops = {AOView_Basic,
                               AOPetscToApplicationPermuteReal_Basic,
                               AOApplicationToPetscPermuteReal_Basic};
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "AOSerialize_Basic" 
-int AOSerialize_Basic(MPI_Comm comm, AO *ao, PetscViewer viewer, PetscTruth store)
-{
-  AO        a;
-  AO_Basic *d;
-  int       fd;
-  int       ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerBinaryGetDescriptor(viewer, &fd);                                                     CHKERRQ(ierr);
-  if (store) {
-    a = *ao;
-    d = (AO_Basic *) a->data;
-    ierr = PetscBinaryWrite(fd, &a->N,     1,    PETSC_INT, 0);                                           CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd, &a->n,     1,    PETSC_INT, 0);                                           CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd, &d->N,     1,    PETSC_INT, 0);                                           CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,  d->app,   d->N, PETSC_INT, 0);                                           CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,  d->petsc, d->N, PETSC_INT, 0);                                           CHKERRQ(ierr);
-  } else {
-    PetscHeaderCreate(a, _p_AO, struct _AOOps, AO_COOKIE, AO_BASIC, "AO", comm, AODestroy, AOView); 
-    PetscLogObjectCreate(a);
-    PetscLogObjectMemory(a, sizeof(AO_Basic) + sizeof(struct _p_AO));
-    ierr = PetscNew(AO_Basic, &d);                                                                        CHKERRQ(ierr);
-    a->data = (void *) d;
-    ierr = PetscMemcpy(a->ops, &AOops, sizeof(AOops));                                                    CHKERRQ(ierr);
-
-    ierr = PetscBinaryRead(fd, &a->N,     1,    PETSC_INT);                                               CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd, &a->n,     1,    PETSC_INT);                                               CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd, &d->N,     1,    PETSC_INT);                                               CHKERRQ(ierr);
-    ierr = PetscMalloc(d->N*2 * sizeof(int), &d->app);                                                    CHKERRQ(ierr);
-    d->petsc = d->app + d->N;
-    PetscLogObjectMemory(a, d->N*2 * sizeof(int));
-    ierr = PetscBinaryRead(fd,  d->app,   d->N, PETSC_INT);                                               CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,  d->petsc, d->N, PETSC_INT);                                               CHKERRQ(ierr);
-    *ao = a;
-  }
-
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 #undef __FUNCT__  
 #define __FUNCT__ "AOCreateBasic" 
 /*@C
@@ -272,7 +229,6 @@ int AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],A
   PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Basic));
 
   ierr = PetscMemcpy(ao->ops, &AOops, sizeof(AOops));                                                     CHKERRQ(ierr);
-  ierr = PetscStrallocpy(AO_SER_BASIC_BINARY, &ao->serialize_name);                                       CHKERRQ(ierr);
   ao->data = (void *) aobasic;
 
   /* transmit all lengths to all processors */

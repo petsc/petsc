@@ -32,7 +32,7 @@ int MatInitializePackage(char *path) {
   ierr = PetscLogClassRegister(&MAT_FDCOLORING_COOKIE,   "Matrix FD Coloring");                           CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&MAT_PARTITIONING_COOKIE, "Matrix Partitioning");                          CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&MAT_NULLSPACE_COOKIE,    "Matrix Null Space");                            CHKERRQ(ierr);
-  /* Register Constructors and Serializers */
+  /* Register Constructors */
   ierr = MatRegisterAll(path);                                                                            CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&MAT_Mult,                     "MatMult",          MAT_COOKIE);            CHKERRQ(ierr);

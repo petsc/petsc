@@ -36,8 +36,6 @@ E*/
 #define TS_RUNGE_KUTTA     "runge-kutta"
 #define TSType char*
 
-#define TSSerializeType char*
-
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
 
@@ -54,7 +52,6 @@ extern int TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 EXTERN int TSInitializePackage(const char[]);
 
 EXTERN int TSCreate(MPI_Comm,TS*);
-EXTERN int TSSerialize(MPI_Comm, TS *, PetscViewer, PetscTruth);
 EXTERN int TSDestroy(TS);
 
 EXTERN int TSSetProblemType(TS,TSProblemType);
@@ -179,19 +176,6 @@ M*/
 #define TSRegisterDynamic(a,b,c,d) TSRegister(a,b,c,0)
 #else
 #define TSRegisterDynamic(a,b,c,d) TSRegister(a,b,c,d)
-#endif
-
-extern PetscFList TSSerializeList;
-extern PetscTruth TSSerializeRegisterAllCalled;
-EXTERN int TSSetSerializeType(TS, TSSerializeType);
-EXTERN int TSGetSerializeType(TS, TSSerializeType *);
-EXTERN int TSSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, TS *, PetscViewer, PetscTruth));
-EXTERN int TSSerializeRegisterAll(const char []);
-EXTERN int TSSerializeRegisterDestroy(void);
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define TSSerializeRegisterDynamic(a,b,c,d) TSSerializeRegister(a,b,c,0)
-#else
-#define TSSerializeRegisterDynamic(a,b,c,d) TSSerializeRegister(a,b,c,d)
 #endif
 
 EXTERN int TSGetSNES(TS,SNES*);

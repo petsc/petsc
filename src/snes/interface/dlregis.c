@@ -30,7 +30,7 @@ int SNESInitializePackage(const char path[]) {
   /* Register Classes */
   ierr = PetscLogClassRegister(&SNES_COOKIE,         "SNES");                                             CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&MATSNESMFCTX_COOKIE, "MatSNESMFCtx");                                     CHKERRQ(ierr);
-  /* Register Constructors and Serializers */
+  /* Register Constructors */
   ierr = SNESRegisterAll(path);                                                                           CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&SNES_Solve,                    "SNESSolve",        SNES_COOKIE);          CHKERRQ(ierr);

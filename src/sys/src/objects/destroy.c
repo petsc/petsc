@@ -115,51 +115,6 @@ int PetscTypeCompare(PetscObject obj,const char type_name[],PetscTruth *same)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSerializeCompare"
-/*@C
-  PetscSerializeCompare - Determines if a PETSc object has a particular serializer.
-
-  Not Collective
-
-  Input Parameters:
-+ obj            - The PETSc object, for example a Vec, Mat or KSP.
-- serialize_name - string containing a serializer name
-
-  Output Parameter:
-. same           - PETSC_TRUE if they are the same, else PETSC_FALSE
-
-  Note:
-  This works for any PETSc object, and thus must be cast with a (PetscObject).
-
-  Level: intermediate
-
-.keywords: comparing serializers
-.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType()
-
-   Concepts: comparing^object serializers
-   Concepts: serialize^comparing
-   Concepts: object serialize^comparing
-@*/
-int PetscSerializeCompare(PetscObject obj, const char serialize_name[], PetscTruth *same)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  if (!obj) {
-    *same = PETSC_FALSE;
-  } else if ((serialize_name == PETSC_NULL) && (obj->serialize_name == PETSC_NULL)) {
-    *same = PETSC_TRUE;
-  } else if ((serialize_name == PETSC_NULL) || (obj->serialize_name == PETSC_NULL)) {
-    *same = PETSC_FALSE;
-  } else {
-    PetscValidHeader(obj);
-    PetscValidCharPointer(serialize_name);
-    ierr = PetscStrcmp((char *) (obj->serialize_name), serialize_name, same);                             CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 static int         PetscObjectRegisterDestroy_Count = 0;
 static PetscObject PetscObjectRegisterDestroy_Objects[128];
 

@@ -69,10 +69,6 @@ E*/
 #define MATDSCPACK         "dscpack"
 #define MatType char*
 
-#define MAT_SER_SEQAIJ_BINARY "seqaij_binary"
-#define MAT_SER_MPIAIJ_BINARY "mpiaij_binary"
-#define MatSerializeType char*
-
 /* Logging support */
 #define    MAT_FILE_COOKIE 1211216    /* used to indicate matrices in binary files */
 extern int MAT_COOKIE;
@@ -97,7 +93,6 @@ EXTERN int MatSetFromOptions(Mat);
 EXTERN int MatSetUpPreallocation(Mat);
 EXTERN int MatRegisterAll(const char[]);
 EXTERN int MatRegister(const char[],const char[],const char[],int(*)(Mat));
-EXTERN int MatSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, Mat *, PetscViewer, PetscTruth));
 
 /*MC
    MatRegisterDynamic - Adds a new matrix type
@@ -146,21 +141,8 @@ M*/
 #define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
 #endif
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatSerializeRegisterDynamic(a,b,c,d) MatSerializeRegister(a,b,c,0)
-#else
-#define MatSerializeRegisterDynamic(a,b,c,d) MatSerializeRegister(a,b,c,d)
-#endif
-
 extern PetscTruth MatRegisterAllCalled;
 extern PetscFList MatList;
-
-EXTERN PetscFList MatSerializeList;
-EXTERN int MatSerializeRegisterAll(const char []);
-EXTERN int MatSerializeRegisterDestroy(void);
-EXTERN int MatSerializeRegisterAllCalled;
-EXTERN int MatSerialize(MPI_Comm, Mat *, PetscViewer, PetscTruth);
-EXTERN int MatSetSerializeType(Mat, MatSerializeType);
 
 EXTERN int MatCreateSeqDense(MPI_Comm,int,int,PetscScalar[],Mat*);
 EXTERN int MatCreateMPIDense(MPI_Comm,int,int,int,int,PetscScalar[],Mat*); 

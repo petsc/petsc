@@ -69,7 +69,6 @@ typedef struct {
   PetscOList     olist;                                   \
   char           *class_name;                             \
   char           *type_name;                              \
-  char           *serialize_name;                         \
   ParameterDict  dict;                                    \
   PetscObject    parent;                                  \
   int            parentid;                                \

@@ -29,7 +29,7 @@ int TSInitializePackage(const char path[]) {
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&TS_COOKIE, "TS");                                                         CHKERRQ(ierr);
-  /* Register Constructors and Serializers */
+  /* Register Constructors */
   ierr = TSRegisterAll(path);                                                                             CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&TS_Step,                  "TSStep",           TS_COOKIE);                 CHKERRQ(ierr);

@@ -34,7 +34,7 @@ int VecInitializePackage(char *path) {
   ierr = PetscLogClassRegister(&VEC_COOKIE,         "Vec");                                               CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&VEC_SCATTER_COOKIE, "Vec Scatter");                                       CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&PF_COOKIE,          "PointFunction");                                     CHKERRQ(ierr);
-  /* Register Constructors and Serializers */
+  /* Register Constructors */
   ierr = PetscMapRegisterAll(path);                                                                       CHKERRQ(ierr);
   ierr = VecRegisterAll(path);                                                                            CHKERRQ(ierr);
   ierr = PFRegisterAll(path);                                                                             CHKERRQ(ierr);

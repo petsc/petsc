@@ -11,8 +11,6 @@ extern int VecCreate_FETI(Vec);
 extern int VecCreate_ESI(Vec);
 extern int VecCreate_PetscESI(Vec);
 
-extern int VecSerialize_Seq(MPI_Comm, Vec *, PetscViewer, PetscTruth);
-extern int VecSerialize_MPI(MPI_Comm, Vec *, PetscViewer, PetscTruth);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -48,29 +46,3 @@ int VecRegisterAll(const char path[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "VecSerializeRegisterAll"
-/*@C
-  VecSerializeRegisterAll - Registers all of the serialization routines in the Vec package.
-
-  Not Collective
-
-  Input parameter:
-. path - The dynamic library path
-
-  Level: advanced
-
-.keywords: Vec, register, all, serialize
-.seealso: VecSerializeRegister(), VecSerializeRegisterDestroy()
-@*/
-int VecSerializeRegisterAll(const char path[])
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  VecSerializeRegisterAllCalled = PETSC_TRUE;
-
-  ierr = VecSerializeRegister(VEC_SER_SEQ_BINARY, path, "VecSerialize_Seq", VecSerialize_Seq);            CHKERRQ(ierr);
-  ierr = VecSerializeRegister(VEC_SER_MPI_BINARY, path, "VecSerialize_MPI", VecSerialize_MPI);            CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}

@@ -151,55 +151,6 @@ static struct _AOOps AOps = {AOView_Mapping,
                              PETSC_NULL,
                              PETSC_NULL};
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "AOSerialize_Mapping" 
-int AOSerialize_Mapping(MPI_Comm comm, AO *ao, PetscViewer viewer, PetscTruth store)
-{
-  AO          a;
-  AO_Mapping *m;
-  int         fd;
-  int         ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerBinaryGetDescriptor(viewer, &fd);                                                     CHKERRQ(ierr);
-  if (store) {
-    a = *ao;
-    m = (AO_Mapping *) a->data;
-    ierr = PetscBinaryWrite(fd, &a->N,         1,    PETSC_INT, 0);                                       CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd, &a->n,         1,    PETSC_INT, 0);                                       CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd, &m->N,         1,    PETSC_INT, 0);                                       CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,  m->app,       m->N, PETSC_INT, 0);                                       CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,  m->appPerm,   m->N, PETSC_INT, 0);                                       CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,  m->petsc,     m->N, PETSC_INT, 0);                                       CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,  m->petscPerm, m->N, PETSC_INT, 0);                                       CHKERRQ(ierr);
-  } else {
-    PetscHeaderCreate(a, _p_AO, struct _AOOps, AO_COOKIE, AO_MAPPING, "AO", comm, AODestroy, AOView); 
-    PetscLogObjectCreate(a);
-    PetscLogObjectMemory(a, sizeof(AO_Mapping) + sizeof(struct _p_AO));
-    ierr = PetscNew(AO_Mapping, &m);                                                                      CHKERRQ(ierr);
-    a->data = (void *) m;
-    ierr = PetscMemcpy(a->ops, &AOps, sizeof(AOps));                                                      CHKERRQ(ierr);
-
-    ierr = PetscBinaryRead(fd, &a->N,     1,    PETSC_INT);                                               CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd, &a->n,     1,    PETSC_INT);                                               CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd, &m->N,     1,    PETSC_INT);                                               CHKERRQ(ierr);
-    ierr = PetscMalloc(m->N*4 * sizeof(int), &m->app);                                                    CHKERRQ(ierr);
-    m->appPerm   = m->app     + m->N;
-    m->petsc     = m->appPerm + m->N;
-    m->petscPerm = m->petsc   + m->N;
-    PetscLogObjectMemory(a, m->N*4 * sizeof(int));
-    ierr = PetscBinaryRead(fd,  m->app,       m->N, PETSC_INT);                                           CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,  m->appPerm,   m->N, PETSC_INT);                                           CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,  m->petsc,     m->N, PETSC_INT);                                           CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,  m->petscPerm, m->N, PETSC_INT);                                           CHKERRQ(ierr);
-    *ao = a;
-  }
-
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 #undef __FUNCT__  
 #define __FUNCT__ "AOMappingHasApplicationIndex"
 /*@C
@@ -346,7 +297,6 @@ int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[]
   ierr = PetscNew(AO_Mapping, &aomap);                                                                    CHKERRQ(ierr);
   PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Mapping));
   ierr = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));                                                       CHKERRQ(ierr);
-  ierr = PetscStrallocpy(AO_SER_MAPPING_BINARY, &ao->serialize_name);                                     CHKERRQ(ierr);
   ao->data = (void *) aomap;
 
   /* transmit all lengths to all processors */

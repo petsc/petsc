@@ -34,8 +34,6 @@ int DMInitializePackage(const char path[]) {
   ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");                                      CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&AODATA_COOKIE, "Application Data");                                       CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&DA_COOKIE,     "Distributed array");                                      CHKERRQ(ierr);
-  /* Register Constructors and Serializers */
-  ierr = AOSerializeRegisterAll(path);                                                                    CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&AOEvents[AO_PetscToApplication], "AOPetscToApplication", AO_COOKIE);      CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&AOEvents[AO_ApplicationToPetsc], "AOApplicationToPetsc", AO_COOKIE);      CHKERRQ(ierr);
