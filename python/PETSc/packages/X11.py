@@ -29,7 +29,7 @@ class Configure(config.autoconf.Configure):
     import nargs
     help.addArgument('X11', '-with-x=<bool>',                nargs.ArgBool(None, 1,   'Activate X11'))
     help.addArgument('X11', '-with-x-include=<include dir>', nargs.ArgDir(None, None, 'Specify an include directory for X11'))
-    help.addArgument('X11', '-with-x-lib=<X11 lib>',         nargs.Arg(None, None,    'Specify X11 library file'))
+    help.addArgument('X11', '-with-x-library=<X11 lib>',         nargs.Arg(None, None,    'Specify X11 library file'))
     return
 
   def generateGuesses(self):
@@ -148,6 +148,7 @@ acfindx:
       if not os.path.isfile(self.framework.argDB['with-x-library']):
         raise RuntimeError('Invalid X library specified by --with-x-library='+os.path.abspath(self.framework.argDB['with-x-library']))
       libraryDir = os.path.dirname(self.framework.argDB['with-x-library'])
+      foundLibrary = 1
     else:
       testLibrary  = 'Xt'
       testFunction = 'XtMalloc'

@@ -93,7 +93,7 @@ info_h:
 	-@echo  "Using libraries: ${PETSC_LIB} \"; " >> MINFO
 	-@cat MINFO | ${SED} -e 's/\^M//g' | ${SED} -e 's/\\/\\\\/g' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> MINFO_
 	-@cat MINFO_ | ${SED} -e 's/\//g'  > /dev/null; foobar=$$?; \
-          if [ "$$foobar" = "0" ]; then \
+          if [ "$$foobar" == "0" ]; then \
 	    cat MINFO_ | ${SED} -e 's/\//g' > ${MINFO}; \
           else cat MINFO | ${SED} -e 's/\^M//g' | ${SED} -e 's/\\/\\\\/g' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> ${MINFO}; \
           fi
@@ -108,7 +108,7 @@ build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
-	@grep -i " error " make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" = 0 ]; then \
+	@grep -i " error " make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" == 0 ]; then \
            echo "Error during compile, check " make_log_${PETSC_ARCH}; \
            echo "Send it and configure.log to petsc-maint@mcs.anl.gov"; exit 1; fi
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
@@ -225,7 +225,7 @@ install:
           done;\
           echo "sh/bash: PETSC_DIR="${INSTALL_DIR}"; export PETSC_DIR";\
           echo "csh/tcsh: setenv PETSC_DIR "${INSTALL_DIR} ;\
-          echo "The do make test to verify correct install";\
+          echo "Then do make test to verify correct install";\
         fi;
 
 install_src:
@@ -291,7 +291,7 @@ SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint
              python/PETSc/packages/*.py python/PETSc/utilities/*.py
 
 chk_loc:
-	@if [ ${LOC}foo = foo ] ; then \
+	@if [ ${LOC}foo == foo ] ; then \
 	  echo "*********************** ERROR ************************" ; \
 	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc"; \
 	  echo "******************************************************";  false; fi
