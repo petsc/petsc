@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.89 1999/06/30 23:52:44 balay Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.90 1999/08/04 16:52:56 curfman Exp curfman $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -70,6 +70,8 @@ int PCSetType(PC ctx,PCType type)
 
   /* Get the function pointers for the method requested */
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
+
+  /* Determine the PCCreateXXX routine for a particular preconditioner */
   ierr =  FListFind(ctx->comm, PCList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
   if (!r) SETERRQ1(1,1,"Unable to find requested PC type %s",type);
   if (ctx->data) {ierr = PetscFree(ctx->data);CHKERRQ(ierr);}
@@ -91,6 +93,8 @@ int PCSetType(PC ctx,PCType type)
   ctx->ops->applysymmetricright = ( int (*)(PC,Vec,Vec) ) 0;
   ctx->ops->setuponblocks       = ( int (*)(PC) ) 0;
   ctx->modifysubmatrices   = ( int (*)(PC,int,IS*,IS*,Mat*,void*) ) 0;
+
+  /* Call the PCCreateXXX routine for this particular preconditioner */
   ierr = (*r)(ctx);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,type);CHKERRQ(ierr);
