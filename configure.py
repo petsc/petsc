@@ -73,19 +73,24 @@ class Configure:
     return
 
   def getExecutable(self, name, path = '', getFullPath = 0, comment = '', resultName = ''):
-    if not path: path = os.environ['PATH']
+    if not path or path[-1] == ':': path += os.environ['PATH']
     if not resultName: resultName = name
+    found = 0
     for dir in path.split(':'):
       prog = os.path.join(dir, name)
 
+      self.framework.log.write('Checking for program '+prog+'...')
       if os.path.isfile(prog) and os.access(prog, os.X_OK):
         if getFullPath:
           setattr(self, resultName, os.path.abspath(prog))
         else:
           setattr(self, resultName, name)
         self.addSubstitution(resultName.upper(), getattr(self, resultName), comment = comment)
+        found = 1
+        self.framework.log.write('found\n')
         break
-    return
+      self.framework.log.write('not found\n')
+    return found
 
   ###############################################
   # Preprocessor, Compiler, and Linker Operations
@@ -591,6 +596,7 @@ class Framework(Configure):
 
 if __name__ == '__main__':
   framework = Framework(sys.argv[1:])
+  framework.argDB['CPPFLAGS'] = ''
   framework.argDB['LIBS'] = ''
   framework.configure()
   framework.dumpSubstitutions()

@@ -38,15 +38,16 @@ class Configure(configure.Configure):
     return self.foundInclude
 
   def checkMPILink(self, includes, body):
+    success  = 0
     oldFlags = self.framework.argDB['CPPFLAGS']
     self.framework.argDB['CPPFLAGS'] += ' -I'+self.include
     oldLibs  = self.framework.argDB['LIBS']
     self.framework.argDB['LIBS']     += ' -L'+self.dir+' -l'+self.lib+' '+self.compilers.flibs
     if self.checkLink(includes, body):
-      return 1
+      success = 1
     self.framework.argDB['CPPFLAGS'] = oldFlags
     self.framework.argDB['LIBS']     = oldLibs
-    return 0
+    return success
 
   def configureLibrary(self):
     self.getArgument('mpi-lib', 'libmpich.a', '-with-')
@@ -107,6 +108,9 @@ class Configure(configure.Configure):
 
   def configureMPIRUN(self):
     self.getArgument('mpirun', 'mpirun', '-with-', comment = 'The utility for launching MPI jobs')
+    path = os.path.join(os.path.dirname(self.dir), 'bin')+':'+os.path.dirname(self.mpirun)
+    if not path[-1] == ':': path += ':'
+    self.getExecutable('mpirun', path = path, getFullPath = 1, comment = 'The utility for launching MPI jobs')
     return
 
   def setOutput(self):
@@ -115,7 +119,6 @@ class Configure(configure.Configure):
       self.addSubstitution('MPI_INCLUDE', self.include, 'The MPI include directory')
       self.addSubstitution('MPI_LIB_DIR', self.dir,     'The MPI library directory')
       self.addSubstitution('MPI_LIB',     self.lib,     'The MPI library name')
-      self.addSubstitution('MPIRUN',      self.mpirun,  'The utility for launching MPI jobs')
     return
 
   def configure(self):
