@@ -1420,9 +1420,9 @@ PetscErrorCode VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
 
    Level: intermediate
 
-.seealso: VecDuplicateVecs(), VecDestroyVecsF90()
+.seealso: VecDuplicateVecs(), VecDestroyVecsf90()
 @*/
-PetscErrorCode VecDestroyVecs(const Vec vv[],PetscInt m)
+PetscErrorCode VecDestroyVecs(Vec vv[],PetscInt m)
 {
   PetscErrorCode ierr;
 
@@ -2561,7 +2561,7 @@ PetscErrorCode VecDuplicateVecs_Default(Vec w,PetscInt m,Vec *V[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDestroyVecs_Default"
-PetscErrorCode VecDestroyVecs_Default(const Vec v[], PetscInt m)
+PetscErrorCode VecDestroyVecs_Default(Vec v[], PetscInt m)
 {
   PetscErrorCode ierr;
   PetscInt i;
@@ -2570,7 +2570,7 @@ PetscErrorCode VecDestroyVecs_Default(const Vec v[], PetscInt m)
   PetscValidPointer(v,1);
   if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %d",m);
   for (i=0; i<m; i++) {ierr = VecDestroy(v[i]);CHKERRQ(ierr);}
-  ierr = PetscFree((Vec*)v);CHKERRQ(ierr);
+  ierr = PetscFree(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

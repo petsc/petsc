@@ -25,9 +25,9 @@ struct _p_PetscMap {
 
 typedef struct _VecOps *VecOps;
 struct _VecOps {
-  PetscErrorCode (*duplicate)(Vec,Vec*),              /* get single vector */
+  PetscErrorCode (*duplicate)(Vec,Vec*),         /* get single vector */
        (*duplicatevecs)(Vec,PetscInt,Vec**),     /* get array of vectors */
-       (*destroyvecs)(const Vec[],PetscInt),     /* free array of vectors */
+       (*destroyvecs)(Vec[],PetscInt),           /* free array of vectors */
        (*dot)(Vec,Vec,PetscScalar*),             /* z = x^H * y */
        (*mdot)(PetscInt,Vec,const Vec[],PetscScalar*), /* z[j] = x dot y[j] */
        (*norm)(Vec,NormType,PetscReal*),        /* z = sqrt(x^H * x) */
@@ -134,7 +134,7 @@ struct _p_Vec {
 
 /* Default obtain and release vectors; can be used by any implementation */
 EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
-EXTERN PetscErrorCode VecDestroyVecs_Default(const Vec [],PetscInt);
+EXTERN PetscErrorCode VecDestroyVecs_Default(Vec [],PetscInt);
 
 EXTERN PetscErrorCode VecLoadIntoVector_Default(PetscViewer,Vec);
 

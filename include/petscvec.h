@@ -220,7 +220,7 @@ EXTERN PetscErrorCode VecSqrt(Vec);
 EXTERN PetscErrorCode VecAbs(Vec);
 EXTERN PetscErrorCode VecDuplicate(Vec,Vec*);          
 EXTERN PetscErrorCode VecDuplicateVecs(Vec,PetscInt,Vec*[]);         
-EXTERN PetscErrorCode VecDestroyVecs(const Vec[],PetscInt); 
+EXTERN PetscErrorCode VecDestroyVecs(Vec[],PetscInt); 
 EXTERN PetscErrorCode VecGetPetscMap(Vec,PetscMap*);
 
 EXTERN PetscErrorCode VecStrideNormAll(Vec,NormType,PetscReal*);
