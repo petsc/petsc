@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 1998/06/12 21:21:35 balay Exp balay $ 
+# $Id: makefile,v 1.10 1998/06/15 16:17:29 balay Exp balay $ 
 
 ALL:
 
@@ -9,6 +9,7 @@ SOURCEF  =
 SOURCEH  =
 OBJSC	 =
 OBJSF	 = 
+DOCS     = README
 LIBBASE	 = libpetscmat
 LOCDIR   = src/mat/examples/
 DIRS     = tests tutorials
