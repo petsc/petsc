@@ -3547,32 +3547,37 @@ static PetscEvent logkey_GetBrowsOfAocols = 0;
 
    Input Parameters:
 +    A,B - the matrices in mpiaij format
--    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+.    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+.    startsj - starting point in B's sending and receiving j-arrays, saved for MAT_REUSE (or PETSC_NULL) 
+-    bufa_ptr - array for sending matrix values, saved for MAT_REUSE (or PETSC_NULL) 
 
    Output Parameter:
-+    Bseq - the sequential matrix generated
++    B_oth - the sequential matrix generated
 
     Level: developer
 
 @*/
-PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj,PetscScalar **bufaa,Mat *Both) 
+PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj,PetscScalar **bufa_ptr,Mat *B_oth) 
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*b=(Mat_MPIAIJ*)B->data;
   PetscErrorCode    ierr;
-  Mat_SeqAIJ        *both;
+  Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*b=(Mat_MPIAIJ*)B->data;
+  Mat_SeqAIJ        *b_oth;
+#ifdef NEW
+  Mat_SeqAIJ        *bd=(Mat_SeqAIJ*)(b->A)->data,*bo=(Mat_SeqAIJ*)(b->B)->data;
+  PetscInt          bcstart=b->cstart;
+#endif
   VecScatter        ctx=a->Mvctx;
   MPI_Comm          comm=ctx->comm;
-  PetscMPIInt       *rprocs,*sprocs,tagi=ctx->tag,tagj,taga,rank; 
+  PetscMPIInt       *rprocs,*sprocs,tag=ctx->tag,rank; 
   PetscInt          *rowlen,*bufj,*bufJ,ncols,aBn;
-  PetscScalar       *rvalues,*svalues,*botha,*bufa,*bufA;
-  PetscInt          i,j,k,nrecvs,nsends,count,*rrow,*srow,*rstarts,*rstartsj,*sstarts,*sstartsj,len;
+  PetscScalar       *rvalues,*svalues,*b_otha,*bufa,*bufA;
+  PetscInt          i,j,k,l,nrecvs,nsends,nrows,*rrow,*srow,*rstarts,*rstartsj,*sstarts,*sstartsj,len;
   MPI_Request       *rwaits,*swaits;
-  MPI_Status        *rstatus,*sstatus;
-  PetscInt          row,*bothi,*bothj;
+  MPI_Status        *sstatus,rstatus;
+  PetscInt          row,*b_othi,*b_othj;
   const PetscInt    *cols;
   const PetscScalar *vals;
-  PetscInt          l;
  
   PetscFunctionBegin;
   if (a->cstart != b->rstart || a->cend != b->rend){
@@ -3598,146 +3603,173 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj
   sstarts  = gen_to->starts; 
   rprocs   = gen_from->procs;
   sprocs   = gen_to->procs;
-  rstatus  = gen_from->rstatus;
   sstatus  = gen_to->sstatus;
   
   if (scall == MAT_INITIAL_MATRIX){
-    /* printf("[%d] create Both \n",rank); */
+    /* i-array */
+    /*---------*/
+    /*  post receives */
+    for (i=0; i<nrecvs; i++){
+      rowlen = (PetscInt*)rvalues + rstarts[i];
+      nrows = rstarts[i+1]-rstarts[i];
+      ierr = MPI_Irecv(rowlen,nrows,MPIU_INT,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
+    }
+
+    /* pack the outgoing message */
+    ierr = PetscMalloc((nsends+nrecvs+3)*sizeof(PetscInt),&sstartsj);CHKERRQ(ierr); 
+    rstartsj = sstartsj + nsends +1;
+    sstartsj[0] = 0;  rstartsj[0] = 0;
+    len = 0; /* total length of j or a array to be sent */
+    k = 0; 
+    for (i=0; i<nsends; i++){
+      rowlen = (PetscInt*)svalues + sstarts[i];
+      nrows = sstarts[i+1]-sstarts[i]; /* num of rows */
+      for (j=0; j<nrows; j++) {
+        row = srow[k] + b->rowners[rank]; /* global row idx */
+        ierr = MatGetRow(B,row,&rowlen[j],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); /* rowlength */
+        len += rowlen[j];  
+        ierr = MatRestoreRow(B,row,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+        k++;
+      } 
+      ierr = MPI_Isend(rowlen,nrows,MPIU_INT,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
+       sstartsj[i+1] = len;  /* starting point of i-th outgoing msg in bufj and bufa */
+    }
+    /* recvs and sends of i-array are completed */
+    i = nrecvs;
+    while (i--) {
+      ierr = MPI_Waitany(nrecvs,rwaits,&j,&rstatus);CHKERRQ(ierr);
+    }
+    if (nsends) {
+      ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
+    }  
+    /* allocate buffers for sending j and a arrays */
+    ierr = PetscMalloc((len+1)*sizeof(PetscInt),&bufj);CHKERRQ(ierr);
+    ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&bufa);CHKERRQ(ierr);
+
+    /* create i-array of B_oth */
+    aBn = a->B->n;
+    ierr = PetscMalloc((aBn+2)*sizeof(PetscInt),&b_othi);CHKERRQ(ierr);
+    b_othi[0] = 0;
+    len = 0; /* total length of j or a array to be received */
+    k = 0;
+    for (i=0; i<nrecvs; i++){
+      rowlen = (PetscInt*)rvalues + rstarts[i];
+      nrows = rstarts[i+1]-rstarts[i];
+      for (j=0; j<nrows; j++) {
+        b_othi[k+1] = b_othi[k] + rowlen[j]; 
+        len += rowlen[j]; k++;
+      }
+      rstartsj[i+1] = len;
+    }
+
+    /* allocate space for j and a arrrays of B_oth */
+    ierr = PetscMalloc((b_othi[aBn]+1)*sizeof(PetscInt),&b_othj);CHKERRQ(ierr);
+    ierr = PetscMalloc((b_othi[aBn]+1)*sizeof(PetscScalar),&b_otha);CHKERRQ(ierr);
+
+    /* j-array */
+    /*---------*/
+    /*  post receives of j-array */
+    for (i=0; i<nrecvs; i++){
+      nrows = rstartsj[i+1]-rstartsj[i]; /* length of the msg received */
+      ierr = MPI_Irecv(b_othj+rstartsj[i],nrows,MPIU_INT,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
+    }
+    k = 0; 
+    for (i=0; i<nsends; i++){
+      nrows = sstarts[i+1]-sstarts[i]; /* num of rows */
+      bufJ = bufj+sstartsj[i];
+      for (j=0; j<nrows; j++) {
+        row  = srow[k++] + b->rowners[rank]; /* global row idx */
+        ierr = MatGetRow(B,row,&ncols,&cols,PETSC_NULL);CHKERRQ(ierr);
+        for (l=0; l<ncols; l++){
+          *bufJ++ = cols[l];
+        }
+        ierr = MatRestoreRow(B,row,&ncols,&cols,&vals);CHKERRQ(ierr);  
+      }
+      ierr = MPI_Isend(bufj+sstartsj[i],sstartsj[i+1]-sstartsj[i],MPIU_INT,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr); 
+    }
+
+    /* recvs and sends of j-array are completed */  
+    i = nrecvs;
+    while (i--) {
+      ierr = MPI_Waitany(nrecvs,rwaits,&j,&rstatus);CHKERRQ(ierr);
+    }
+    if (nsends) {
+      ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
+    }
   } else if (scall == MAT_REUSE_MATRIX){
-    /* printf("[%d] Both exit \n",rank); */
-    ierr = MatDestroy(*Both);
+    sstartsj = *startsj;
+    rstartsj = sstartsj + nsends +1;
+    bufa     = *bufa_ptr;
+    b_oth    = (Mat_SeqAIJ*)(*B_oth)->data;
+    b_otha   = b_oth->a;  
   } else {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
   }
-  
-  /* i-array */
+
+  /* a-array */
   /*---------*/
-  /*  post receives */
+  /*  post receives of a-array */
   for (i=0; i<nrecvs; i++){
-    rowlen = (PetscInt*)rvalues + rstarts[i];
-    count = rstarts[i+1]-rstarts[i];
-    ierr = MPI_Irecv(rowlen,count,MPIU_INT,rprocs[i],tagi,comm,rwaits+i);CHKERRQ(ierr);
+    nrows = rstartsj[i+1]-rstartsj[i]; /* length of the msg received */
+    ierr = MPI_Irecv(b_otha+rstartsj[i],nrows,MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
   }
-
-  /* pack the outgoing message */
-  ierr = PetscMalloc((nsends+nrecvs+3)*sizeof(PetscInt),startsj);CHKERRQ(ierr); 
-  sstartsj = *startsj;
-  rstartsj = sstartsj + nsends +1;
-  sstartsj[0] = 0;  rstartsj[0] = 0;
-  len = 0; /* total length of j or a array to be sent */
   k = 0; 
   for (i=0; i<nsends; i++){
-    rowlen = (PetscInt*)svalues + sstarts[i];
-    count = sstarts[i+1]-sstarts[i]; /* num of rows */
-    for (j=0; j<count; j++) {
-      row = srow[k] + b->rowners[rank]; /* global row idx */
-      ierr = MatGetRow(B,row,&rowlen[j],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); /* rowlength */
-      len += rowlen[j];  
-      ierr = MatRestoreRow(B,row,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-      k++;
-    } 
-    ierr = MPI_Isend(rowlen,count,MPIU_INT,sprocs[i],tagi,comm,swaits+i);CHKERRQ(ierr);
-    sstartsj[i+1] = len;  /* starting point of i-th outgoing msg in bufj and bufa */
-  }
-  /* sends and recvs of i-array are completed */
-  if (nsends) {
-    ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
-  }  
-  if (nrecvs){
-    ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);
-  }
-  /* allocate buffers for sending j and a arrays */
-  ierr = PetscMalloc((len+1)*sizeof(PetscInt),&bufj);CHKERRQ(ierr);
-  ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&bufa);CHKERRQ(ierr);
-
-  /* create i-array of Both */
-  aBn = a->B->n;
-  if (rstarts[nrecvs] != aBn) SETERRQ2(1,"rstarts[nrecvs]=%d != aBn: %d",rstarts[nrecvs],aBn);
-  ierr = PetscMalloc((aBn+2)*sizeof(PetscInt),&bothi);CHKERRQ(ierr);
-  bothi[0] = 0;
-  len = 0; /* total length of j or a array to be received */
-  k = 0;
-  for (i=0; i<nrecvs; i++){
-    rowlen = (PetscInt*)rvalues + rstarts[i];
-    count = rstarts[i+1]-rstarts[i];
-    for (j=0; j<count; j++) {
-      bothi[k+1] = bothi[k] + rowlen[j]; 
-      len += rowlen[j]; k++;
-    }
-    rstartsj[i+1] = len;
-  }
-
-  /* create j and a arrays of Both */
-  ierr = PetscMalloc((bothi[aBn]+1)*sizeof(PetscInt),&bothj);CHKERRQ(ierr);
-  ierr = PetscMalloc((bothi[aBn]+1)*sizeof(PetscScalar),&botha);CHKERRQ(ierr);
-
-  /* j and a array */
-  /*---------------*/
-  ierr = PetscObjectGetNewTag((PetscObject)A,&tagj);CHKERRQ(ierr);
-  ierr = PetscObjectGetNewTag((PetscObject)A,&taga);CHKERRQ(ierr);
-
-  /*  post receives of j-array */
-  for (i=0; i<nrecvs; i++){
-    count = rstartsj[i+1]-rstartsj[i]; /* length of the msg received */
-    ierr = MPI_Irecv(bothj+rstartsj[i],count,MPIU_INT,rprocs[i],tagj,comm,rwaits+i);CHKERRQ(ierr);
-  }
-
-  k = 0; 
-  for (i=0; i<nsends; i++){
-    count = sstarts[i+1]-sstarts[i]; /* num of rows */
-    bufJ = bufj+sstartsj[i];
+    nrows = sstarts[i+1]-sstarts[i];
     bufA = bufa+sstartsj[i];
-    for (j=0; j<count; j++) {
-      row  = srow[k] + b->rowners[rank]; /* global row idx */
-      ierr = MatGetRow(B,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+    for (j=0; j<nrows; j++) {
+#ifdef NEW
+      row = srow[k++]; /* local row idx */
+      ncols = nzA + nzB;
+      PetscInt    imark = -1,*boJ=bo->j+bo->i[row],nzA,nzB;
+      PetscScalar *boA=bo->a+bo->i[row],*bdA=bd->a+bd->i[row];
+      nzA = bd->i[row+1] - bd->i[row];
+      nzB = bo->i[row+1] - bo->i[row];
+      /* part B */
+      for (l=0; l<nzB; l++){
+        if (b->garra[boJ[l]] > bcstart) break;
+        *bufA++ = boA[l];
+      }
+      imark = l;
+      /* part A */
+      for (l=0; l<nzA; l++){
+        *bufA++ = bdA[l];
+      }
+#endif
+
+      row  = srow[k++] + b->rowners[rank]; /* global row idx */
+      ierr = MatGetRow(B,row,&ncols,PETSC_NULL,&vals);CHKERRQ(ierr);
       for (l=0; l<ncols; l++){
-        *bufJ++ = cols[l];
         *bufA++ = vals[l]; 
       }
       ierr = MatRestoreRow(B,row,&ncols,&cols,&vals);CHKERRQ(ierr);  
-      k++;
+
     }
-    ierr = MPI_Isend(bufj+sstartsj[i],sstartsj[i+1]-sstartsj[i],MPIU_INT,sprocs[i],tagj,comm,swaits+i);CHKERRQ(ierr); 
+    ierr = MPI_Isend(bufa+sstartsj[i],sstartsj[i+1]-sstartsj[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr); 
   }
-  /* sends and recvs of j-array are completed */
-  if (nsends) {
+  /* recvs and sends of a-array are completed */
+  i = nrecvs;
+  while (i--) {
+    ierr = MPI_Waitany(nrecvs,rwaits,&j,&rstatus);CHKERRQ(ierr);
+  }
+   if (nsends) {
     ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
   }  
-  if (nrecvs){
-    ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);
-  }
-
-  /*  post receives of a-array */
-  for (i=0; i<nrecvs; i++){
-    count = rstartsj[i+1]-rstartsj[i]; /* length of the msg received */
-    ierr = MPI_Irecv(botha+rstartsj[i],count,MPIU_SCALAR,rprocs[i],taga,comm,rwaits+i);CHKERRQ(ierr);
-  }
-  k = 0; 
-  for (i=0; i<nsends; i++){
-    count = sstartsj[i+1]-sstartsj[i];
-    ierr = MPI_Isend(bufa+sstartsj[i],count,MPIU_SCALAR,sprocs[i],taga,comm,swaits+i);CHKERRQ(ierr); 
-  }
-  /* sends and recvs of a-array are completed */
-  if (nsends) {
-    ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
-  }  
-  if (nrecvs){
-    ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);
-  }
  
-  /* put together the new matrix */
-  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,aBn,B->N,bothi,bothj,botha,Both);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX){
+    /* put together the new matrix */
+    ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,aBn,B->N,b_othi,b_othj,b_otha,B_oth);CHKERRQ(ierr);
 
-  /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
-  /* Since these are PETSc arrays, change flags to free them as necessary. */
-  both = (Mat_SeqAIJ *)(*Both)->data;
-  both->freedata = PETSC_TRUE;
-  both->nonew    = 0;
+    /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
+    /* Since these are PETSc arrays, change flags to free them as necessary. */
+    b_oth = (Mat_SeqAIJ *)(*B_oth)->data;
+    b_oth->freedata = PETSC_TRUE;
+    b_oth->nonew    = 0;
 
-  ierr = PetscFree(bufj);CHKERRQ(ierr);
-  ierr = PetscFree(bufa);CHKERRQ(ierr);
-  ierr = PetscFree(sstartsj);CHKERRQ(ierr); *startsj=PETSC_NULL;*bufaa=PETSC_NULL; /* tobe removed! */
-
+    ierr = PetscFree(bufj);CHKERRQ(ierr);
+    *startsj  = sstartsj;
+    *bufa_ptr = bufa;
+  }
   ierr = PetscLogEventEnd(logkey_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
