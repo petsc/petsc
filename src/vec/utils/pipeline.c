@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.7 1998/08/25 15:19:31 balay Exp bsmith $";
+static char vcid[] = "$Id: pipeline.c,v 1.8 1998/09/25 03:13:12 bsmith Exp balay $";
 #endif
 
 /*
@@ -177,14 +177,14 @@ int VecPipelineSetup(VecPipeline ctx)
 /*
    VecPipelineSetType
 */
-static int ProcYes(int proc,PetscObject pipe_info);
-static int ProcUp(int proc,PetscObject pipe_info);
-static int ProcDown(int proc,PetscObject pipe_info);
-static int PipelineSequentialSetup(VecPipeline,PetscObject,PetscObject*);
-static int ProcColourUp(int proc,PetscObject pipe_info);
-static int ProcColourDown(int proc,PetscObject pipe_info);
-static int PipelineRedblackSetup(VecPipeline,PetscObject,PetscObject*);
-static int PipelineMulticolourSetup(VecPipeline,PetscObject,PetscObject*);
+extern int ProcYes(int proc,PetscObject pipe_info);
+extern int ProcUp(int proc,PetscObject pipe_info);
+extern int ProcDown(int proc,PetscObject pipe_info);
+extern int ProcColourUp(int proc,PetscObject pipe_info);
+extern int ProcColourDown(int proc,PetscObject pipe_info);
+extern int PipelineSequentialSetup(VecPipeline,PetscObject,PetscObject*);
+extern int PipelineRedblackSetup(VecPipeline,PetscObject,PetscObject*);
+extern int PipelineMulticolourSetup(VecPipeline,PetscObject,PetscObject*);
 
 int ProcNo(int proc,PetscObject pipe_info);
 
@@ -400,7 +400,7 @@ typedef struct {int rank;} Pipeline_sequential_info;
 
 #undef __FUNC__
 #define __FUNC__ "ProcYes"
-static int ProcYes(int proc,PetscObject pipe_info)
+int ProcYes(int proc,PetscObject pipe_info)
 {
   return 1;
 }
@@ -423,7 +423,7 @@ int ProcNo(int proc,PetscObject pipe_info)
 
 #undef __FUNC__
 #define __FUNC__ "ProcUp"
-static int ProcUp(int proc,PetscObject pipe_info)
+int ProcUp(int proc,PetscObject pipe_info)
 {
   int rank = ((Pipeline_sequential_info *)pipe_info)->rank;
 
@@ -433,7 +433,7 @@ static int ProcUp(int proc,PetscObject pipe_info)
     return 0;
   }
 }
-static int ProcDown(int proc,PetscObject pipe_info)
+int ProcDown(int proc,PetscObject pipe_info)
 { 
   int rank = ((Pipeline_sequential_info *)pipe_info)->rank;
 
@@ -446,7 +446,7 @@ static int ProcDown(int proc,PetscObject pipe_info)
 
 #undef __FUNC__
 #define __FUNC__ "PipelineSequentialSetup"
-static int PipelineSequentialSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
+int PipelineSequentialSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_sequential_info *info;
 
@@ -463,7 +463,7 @@ typedef struct {
   int rank,size,*proc_colours;
 } Pipeline_coloured_info;
 
-static int ProcColourUp(int proc,PetscObject pipe_info)
+int ProcColourUp(int proc,PetscObject pipe_info)
 {
   Pipeline_coloured_info* comm_info = (Pipeline_coloured_info *) pipe_info;
   int                     rank = comm_info->rank;
@@ -474,7 +474,7 @@ static int ProcColourUp(int proc,PetscObject pipe_info)
     return 0;
   }
 }
-static int ProcColourDown(int proc,PetscObject pipe_info)
+int ProcColourDown(int proc,PetscObject pipe_info)
 { 
   Pipeline_coloured_info* comm_info = (Pipeline_coloured_info *) pipe_info;
   int rank = comm_info->rank;
@@ -488,7 +488,7 @@ static int ProcColourDown(int proc,PetscObject pipe_info)
 
 #undef __FUNC__
 #define __FUNC__ "PipelineRedblackSetup"
-static int PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
+int PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_coloured_info *info;
   int                    size,i;
@@ -505,7 +505,7 @@ static int PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 
 #undef __FUNC__
 #define __FUNC__ "PipelineMulticolourSetup"
-static int PipelineMulticolourSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
+int PipelineMulticolourSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_coloured_info *info;
   Mat                    mat = (Mat) x;
