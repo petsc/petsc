@@ -113,7 +113,7 @@ PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
 
    Level: intermediate
 
-.seealso: ISDestroy(), ISView(), ISDifference()
+.seealso: ISDestroy(), ISView(), ISDifference(), ISExtend()
 
    Concepts: index sets^difference
    Concepts: IS^difference
@@ -179,6 +179,115 @@ PetscErrorCode ISSum(IS is1,IS is2,IS *isout)
   ierr = PetscFree(iout);CHKERRQ(ierr);
 
   ierr = PetscBTDestroy(mask);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISExtend"
+/*@
+   ISExtend - Computes the sum (union) of two index sets in place.
+
+   Collective on IS
+
+   Input Parameter:
++  is1 - index set to be extended
+-  is2 - index values to be added
+
+   Notes:
+   If n1 and n2 are the sizes of the sets, this takes O(n1+n2) time;
+   if is2 is a subset of is1, is1 is left unchanged.
+   Both index sets need to be sorted.
+
+   Level: intermediate
+
+.seealso: ISDestroy(), ISView(), ISDifference(), ISSum()
+
+   Concepts: index sets^union
+   Concepts: IS^union
+
+@*/
+PetscErrorCode ISExtend(IS *is1,IS is2)
+{
+  PetscErrorCode ierr;
+  PetscTruth f;
+  PetscInt *i1,*i2,n1,n2,n3, p1,p2, *iout;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(*is1,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is2,IS_COOKIE,2);
+
+  ierr = ISSorted(*is1,&f); CHKERRQ(ierr);
+  if (!f) SETERRQ(1,"Arg 1 is not sorted");
+  ierr = ISSorted(is2,&f); CHKERRQ(ierr);
+  if (!f) SETERRQ(1,"Arg 2 is not sorted");
+
+  ierr = ISGetLocalSize(*is1,&n1);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is2,&n2);CHKERRQ(ierr);
+  if (!n2) PetscFunctionReturn(0);
+  ierr = ISGetIndices(*is1,&i1);CHKERRQ(ierr);
+  ierr = ISGetIndices(is2,&i2);CHKERRQ(ierr);
+
+  p1 = 0; p2 = 0; n3 = 0;
+  do {
+    if (p1==n1) { /* cleanup for is2 */ n3 += n2-p2; break;
+    } else {
+      while (p2<n2 && i2[p2]<i1[p1]) {n3++; p2++;}
+      if (p2==n2) { /* cleanup for is1 */ n3 += n1-p1; break;
+      } else {
+	if (i2[p2]==i1[p1]) {n3++; p1++; p2++;}
+      }
+    }
+    if (p2==n2) { /* cleanup for is1 */ n3 += n1-p1; break;
+    } else {
+      while (p1<n1 && i1[p1]<i2[p2]) {n3++; p1++;}
+      if (p1==n1) { /* clean up for is2 */ n3 += n2-p2; break;
+      } else {
+	if (i1[p1]==i2[p2]) {n3++; p1++; p2++;}
+      }
+    }
+  } while (p1<n1 || p2<n2);
+
+  if (n3==n1) { /* no new elements to be added */
+    ierr = ISRestoreIndices(*is1,&i1); CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is2,&i2); CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscMalloc(n3*sizeof(PetscInt),&iout);CHKERRQ(ierr);
+
+  p1 = 0; p2 = 0; n3 = 0;
+  do {
+    if (p1==n1) { /* cleanup for is2 */
+      while (p2<n2) iout[n3++] = i2[p2++];
+      break;
+    } else {
+      while (p2<n2 && i2[p2]<i1[p1]) iout[n3++] = i2[p2++];
+      if (p2==n2) { /* cleanup for is1 */
+	while (p1<n1) iout[n3++] = i1[p1++];
+	break;
+      } else {
+	if (i2[p2]==i1[p1]) {iout[n3++] = i1[p1++]; p2++;}
+      }
+    }
+    if (p2==n2) { /* cleanup for is1 */
+      while (p1<n1) iout[n3++] = i1[p1++];
+      break;
+    } else {
+      while (p1<n1 && i1[p1]<i2[p2]) iout[n3++] = i1[p1++];
+      if (p1==n1) { /* clean up for is2 */
+	while (p2<n2) iout[n3++] = i2[p2++];
+	break;
+      } else {
+	if (i1[p1]==i2[p2]) {iout[n3++] = i1[p1++]; p2++;}
+      }
+    }
+  } while (p1<n1 || p2<n2);
+
+  ierr = ISRestoreIndices(*is1,&i1); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is2,&i2); CHKERRQ(ierr);
+  ierr = ISDestroy(*is1); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n3,iout,is1); CHKERRQ(ierr);
+  ierr = PetscFree(iout); CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
