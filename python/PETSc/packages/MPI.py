@@ -389,8 +389,8 @@ class Configure(config.base.Configure):
     '''I hate this. MPI should report this somehow.'''
     self.extraLib = []
     if self.arch.hostOsBase.startswith('solaris'):
-      if self.executeTest(self.libraries.check, [['rt', 'nsl', 'aio'], 'exit']):
-        self.extraLib.extend([self.libraries.toString(l) for l in ['rt', 'nsl', 'aio']])
+      if self.executeTest(self.libraries.check, [['socket','rt', 'nsl', 'aio'], 'exit']):
+        self.extraLib.extend([self.libraries.toString([l]) for l in ['socket','rt', 'nsl', 'aio']])
     return
 
   def configureLibrary(self):
@@ -406,8 +406,8 @@ class Configure(config.base.Configure):
       self.include = None
       found        = 0
       for libraries in libraryGuesses:
-        if self.checkLib(libraries):
-          self.lib = libraries + self.extraLib
+        self.lib = libraries + self.extraLib
+        if self.checkLib(self.lib):
           for includeDir in includeGuesses:
             if self.checkInclude(includeDir):
               self.include = includeDir
