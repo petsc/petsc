@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.19 1996/04/25 15:40:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.20 1996/04/29 17:31:32 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -110,10 +110,11 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
         SETERRQ(1,"ViewerFileOpenBinary:Cannot open file for reading");
       }
       /* try to open info file */
-      infoname = PetscMalloc(PetscStrlen(name)+6); CHKPTRQ(infoname);
+      infoname = (char *)PetscMalloc(PetscStrlen(name)+6); CHKPTRQ(infoname);
       PetscStrcpy(infoname,name);
       PetscStrcat(infoname,".info");
       v->fdes_info = fopen(infoname,"r");
+      PetscFree(infoname);
     }
     else if (type == BINARY_WRONLY) {
       if ((v->fdes = open(name,O_WRONLY,0)) == -1) {
