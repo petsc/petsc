@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.34 1998/05/29 22:51:27 balay Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.35 1998/08/17 21:11:16 bsmith Exp curfman $";
 #endif
 
 /*
@@ -147,15 +147,15 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
    The Jacobian is estimated with the differencing approximation
 .vb
        J(u)_{:,i} = [J(u+h*dx_{i}) - J(u)]/h where
-       h = error_rel*u[i]                    if  u[i] > umin
-         = +/- error_rel*umin                otherwise with +/- determined by the size of u[i]
+       h = error_rel*u[i]                 if  abs(u[i]) > umin
+         = +/- error_rel*umin             otherwise, with +/- determined by the sign of u[i]
        dx_{i} = (0, ... 1, .... 0)
 .ve
 
    Input Parameters:
 +  coloring - the coloring context
 .  error_rel - relative error
--  umin - minimum allowable u-value
+-  umin - minimum allowable u-value magnitude
 
 .keywords: Mat, finite differences, coloring, set, parameters
 
@@ -277,8 +277,8 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
    The Jacobian is estimated with the differencing approximation
 .vb
        J(u)_{:,i} = [J(u+h*dx_{i}) - J(u)]/h where
-       h = error_rel*u[i]                    if  u[i] > umin
-         = error_rel*umin                      else
+       h = error_rel*u[i]                 if  abs(u[i]) > umin
+         = +/- error_rel*umin             otherwise, with +/- determined by the sign of u[i]
        dx_{i} = (0, ... 1, .... 0)
 .ve
 
@@ -288,7 +288,7 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
    Options Database Keys:
 +  -mat_fd_coloring_error <err> - Sets <err> (square root
            of relative error in the function)
-.  -mat_fd_coloring_umin <umin> - Sets umin
+.  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
 .  -mat_fd_coloring_freq <freq> - Sets frequency of computing a new Jacobian
 .  -mat_fd_coloring_view - Activates basic viewing
 .  -mat_fd_coloring_view_info - Activates viewing info
