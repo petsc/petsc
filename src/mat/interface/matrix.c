@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.324 1999/03/18 00:33:02 balay Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.325 1999/03/18 00:59:51 balay Exp bsmith $";
 #endif
 
 /*
@@ -3768,6 +3768,8 @@ int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MatSetStashInitialSize"
 /*@
    MatSetStashInitialSize - sets the sizes of the matrix stash, that is
    used during the assembly process to store values that belong to 
@@ -3784,8 +3786,6 @@ int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
 
 .keywords: matrix, stash, assembly
 @*/
-#undef __FUNC__  
-#define __FUNC__ "MatSetStashInitialSize"
 int MatSetStashInitialSize(Mat mat,int size, int bsize)
 {
   int ierr;

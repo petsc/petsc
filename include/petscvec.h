@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.90 1999/03/11 18:34:18 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.91 1999/03/17 23:25:44 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -81,6 +81,7 @@ extern int VecStrideMin(Vec,int,int *,double *);
 extern int VecSetValues(Vec,int,const int[],const Scalar[],InsertMode);
 extern int VecAssemblyBegin(Vec);
 extern int VecAssemblyEnd(Vec);
+extern int VecSetStashInitialSize(Vec,int, int);
 
 #define VecSetValue(v,i,va,mode) \
 {int _ierr,_row = i; Scalar _va = va; \

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.170 1999/03/18 02:00:28 balay Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.171 1999/03/18 02:01:45 balay Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -2180,6 +2180,8 @@ int VecSetOperation(Vec vec,VecOperation op, void *f)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "VecSetStashInitialSize"
 /*@
    VecSetStashInitialSize - sets the sizes of the vec-stash, that is
    used during the assembly process to store values that belong to 
@@ -2196,8 +2198,6 @@ int VecSetOperation(Vec vec,VecOperation op, void *f)
 
 .keywords: vector, stash, assembly
 @*/
-#undef __FUNC__  
-#define __FUNC__ "VecSetStashInitialSize"
 int VecSetStashInitialSize(Vec vec,int size, int bsize)
 {
   int ierr;

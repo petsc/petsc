@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.48 1999/03/17 23:22:19 bsmith Exp balay $";
+static char vcid[] = "$Id: vinv.c,v 1.49 1999/03/18 01:56:34 balay Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -406,8 +406,8 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecReciprocal_General"
-int VecReciprocal_General(Vec v)
+#define __FUNC__ "VecReciprocal_Default"
+int VecReciprocal_Default(Vec v)
 {
   int    i,n,ierr;
   Scalar *x;

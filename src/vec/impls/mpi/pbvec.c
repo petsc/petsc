@@ -1,13 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.127 1999/03/18 02:00:17 balay Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.128 1999/03/18 03:41:44 bsmith Exp bsmith $";
 #endif
 
 /*
    This file contains routines for Parallel vector operations.
  */
-
 #include "src/vec/impls/mpi/pvecimpl.h"   /*I  "vec.h"   I*/
-extern int VecReciprocal_General(Vec);
 
 /*
        Note this code is very similar to VecPublish_Seq()
@@ -152,7 +150,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecTDot_Seq,
             VecNorm_Seq,
             VecLoadIntoVector_Default,
-            VecReciprocal_General};
+            VecReciprocal_Default};
 
 #undef __FUNC__  
 #define __FUNC__ "VecCreate_MPI_Private"
