@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.31 1996/05/08 14:42:19 balay Exp balay $ */
+/* $Id: dvec2.c,v 1.32 1996/05/13 14:31:24 balay Exp balay $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -287,29 +287,81 @@ static int VecSetRandom_Seq(PetscRandom r,Vec xin)
   return 0;
 }
 
-static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec yin, Vec *x )
+/* static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
 {
-  Vec_Seq      *y = (Vec_Seq *) yin->data;
-  register int n = y->n;
+  Vec_Seq      *x = (Vec_Seq *) xin->data;
+  register int n = x->n;
   int          j;
-  Scalar       *yy = y->array, *xx,oalpha;
+  Scalar       *xx = x->array, *yy,oalpha;
 
   PLogFlops(nv*2*n);
   for (j=0; j<nv; j++) {
-    xx     = ((Vec_Seq *)(x[j]->data))->array;
+    yy     = ((Vec_Seq *)(y[j]->data))->array;
     oalpha = alpha[j];
     if (oalpha == -1.0) {
-      YMX(yy,xx,n);
+      YMX(xx,yy,n);
     }
     else if (oalpha == 1.0) {
-      YPX(yy,xx,n);
+      YPX(xx,yy,n);
     }
     else if (oalpha != 0.0) {
-      APXY(yy,oalpha,xx,n);
+      APXY(xx,oalpha,yy,n);
     }
   }
   return 0;
-}
+} */
+static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
+{
+  Vec_Seq      *xdata = (Vec_Seq *) xin->data;
+  register int n = xdata->n;
+  int          i,j,i_rem,j_rem;
+  Scalar       *xx = xdata->array,*x,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
+  Scalar       x0,x1,x2,x3;
+  PLogFlops(nv*2*n);
+  
+  switch (j_rem=nv&0x3) {
+  case 3: 
+    yy0 = ((Vec_Seq *)(y[0]->data))->array;
+    yy1 = ((Vec_Seq *)(y[1]->data))->array;
+    yy2 = ((Vec_Seq *)(y[2]->data))->array;
+    alpha0 = alpha[0]; 
+    alpha1 = alpha[1]; 
+    alpha2 = alpha[2]; 
+    y     += 3;
+    alpha += 3;
+    APXY2(xx,alpha0,alpha1,yy0,yy1,n);
+    APXY(xx,alpha2,yy2,n);
+    break;
+  case 2: 
+    yy0 = ((Vec_Seq *)(y[0]->data))->array;
+    yy1 = ((Vec_Seq *)(y[1]->data))->array;
+    alpha0 = alpha[0]; 
+    alpha1 = alpha[1]; 
+    y     +=2;
+    alpha +=2;
+    APXY2(xx,alpha0,alpha1,yy0,yy1,n);
+    break;
+  case 1: 
+    yy0 = ((Vec_Seq *)(y[0]->data))->array; y++; 
+    alpha0 = *alpha++; APXY(xx,alpha0,yy0,n);
+    break;
+  }
+  for (j=j_rem; j<nv; j+=4 ) {
+    yy0     = ((Vec_Seq *)(y[0]->data))->array;
+    yy1     = ((Vec_Seq *)(y[1]->data))->array;
+    yy2     = ((Vec_Seq *)(y[2]->data))->array;
+    yy3     = ((Vec_Seq *)(y[3]->data))->array;
+    alpha0 = alpha[0];
+    alpha1 = alpha[1];
+    alpha2 = alpha[2];
+    alpha3 = alpha[3];
+    y      += 4;
+    alpha  += 4;
+
+    APXY4(xx,alpha0,alpha1,alpha2,alpha3,yy0,yy1,yy2,yy3,n);
+  }
+  return 0;
+} 
 
 static int VecAYPX_Seq(Scalar *alpha, Vec xin, Vec yin )
 {
