@@ -208,7 +208,7 @@ class Configure(config.base.Configure):
       else:
         yield self.framework.argDB['with-cxx']
         raise RuntimeError('C++ compiler you provided with -with-cxx='+self.framework.argDB['with-cxx']+' does not work')
-    elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers']  and not self.framework.argDB['with-mpich']:
+    elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers']  and not self.framework.argDB['with-mpich'] and self.framework.argDB['-with-mpi']:
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicxx')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpiCC')
       if os.path.isdir(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicxx')) or os.path.isdir((os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicxx'))):
@@ -336,7 +336,7 @@ class Configure(config.base.Configure):
       if self.framework.argDB['with-fc'] == '0': return
       yield self.framework.argDB['with-fc']
       raise RuntimeError('Fortran compiler you provided with --with-fc='+self.framework.argDB['with-fc']+' does not work')
-    elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers'] and not self.framework.argDB['with-mpich']:
+    elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers'] and not self.framework.argDB['with-mpich'] and self.framework.argDB['-with-mpi']:
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77')
       if os.path.isdir(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')) or os.path.isdir((os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77'))):
