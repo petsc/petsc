@@ -1,17 +1,17 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.8 1995/08/22 16:32:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.9 1995/09/21 20:11:31 bsmith Exp curfman $";
 #endif
 
 #include "matimpl.h"  /*I   "mat.h"  I*/
 
 /*@
-   MatAXPY - Y = a*X + Y
+   MatAXPY - Computes Y = a*X + Y
 
    Input Parameters:
 .  X,Y - the matrices
-.  a - the scalar multiple
+.  a - the scalar multiplier
 
-.keywods: Mat, add
+.keywords: matrix, add
  @*/
 int MatAXPY(Scalar *a,Mat X,Mat Y)
 {
