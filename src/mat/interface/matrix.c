@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.251 1997/06/13 02:01:39 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.252 1997/07/09 20:53:23 balay Exp bsmith $";
 #endif
 
 /*
@@ -40,6 +40,18 @@ static char vcid[] = "$Id: matrix.c,v 1.251 1997/06/13 02:01:39 bsmith Exp balay
    the values cannot be altered.  To change the matrix entries, one
    must use MatSetValues().
 
+   Fortran Notes:
+$     The calling sequence from Fortran is 
+$
+$       MatGetRow(matrix,row,ncols,cols,values,ierr)
+$         Mat     matrix (input)
+$         integer row    (input)
+$         integer ncols  (output)
+$         integer cols(maxcols) (output)
+$         double precision (or double complex) values(maxcols) output
+$     Where maxcols is larger then or equal to the maximum nonzeros in 
+$     any row of the matrix.
+
    Caution:
    Do not try to change the contents of the output arrays (cols and vals).
    In some cases, this may corrupt the matrix.
@@ -72,6 +84,20 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 .  row - the row to get
 .  ncols, cols - the number of nonzeros and their columns
 .  vals - if nonzero the column values
+
+   Fortran Notes:
+$     The calling sequence from Fortran is 
+$
+$       MatRestoreRow(matrix,row,ncols,cols,values,ierr)
+$         Mat     matrix (input)
+$         integer row    (input)
+$         integer ncols  (output)
+$         integer cols(maxcols) (output)
+$         double precision (or double complex) values(maxcols) output
+$     Where maxcols is larger then or equal to the maximum nonzeros in 
+$     any row of the matrix. In Fortran you must call MatRestoreRow()
+$     after a call to MatGetRow() before you make another call to 
+$     MatGetRow()
 
 .keywords: matrix, row, restore
 
@@ -881,7 +907,7 @@ int MatLUFactor(Mat mat,IS row,IS col,double f)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorSymbolic"
+#define __FUNC__ "MatILUFactor"
 /*@  
    MatILUFactor - Performs in-place ILU factorization of matrix.
 
@@ -2730,6 +2756,8 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
 }
 
 
+#undef __FUNC__  
+#define __FUNC__ "MatSetUnfactored"
 /*@
    MatSetUnfactored - Resets a factored matrix to be treated as unfactored.
 
