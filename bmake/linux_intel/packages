@@ -1,0 +1,54 @@
+# $Id: base.site,v 1.1 2001/06/13 20:03:59 balay Exp $ 
+
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
+# for information on retrieving them.
+#
+# Location of MKL:
+#BLASLAPACK_LIB = -L/usr/local/intel/mkl/LIB -lmkl32_lapack -lmkl32_p4 \
+#		 /usr/lib/gcc-lib/i586-mandrake-linux/egcs-2.91.66/libg2c.a \
+#		 -lpthread
+#PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
+
+BLASLAPACK_LIB = -L/home/balay/software/fblaslapack/linux_intel -lflapack -lfblas
+#
+# Location of MPI (Message Passing Interface) software
+#
+
+MPI_INCLUDE = -I${PETSC_DIR}/src/sys/src/mpiuni
+MPI_LIB     = -lmpiuni
+MPIRUN      = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
+
+#
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
+#
+# Location of X-windows software
+#
+X11_INCLUDE    =
+X11_LIB        = -L/usr/X11R6/lib -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# Location of MPE
+# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
+#
+#MPE_INCLUDE   = -I/home/petsc/mpich-1.1.1/mpe
+#MPE_LIB       = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpe -lpmpich
+#MPE_INCLUDE   = -I${MPI_HOME}/mpe
+#MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+#PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
+#
+# Location of BlockSolve (MPI version)
+#
+#BLOCKSOLVE_INCLUDE     = -I/home/petsc/software/BlockSolve95/include
+#BLOCKSOLVE_LIB         =  -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
+#
+# ------------------------------------------------------------------------------
