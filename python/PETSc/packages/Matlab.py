@@ -75,7 +75,12 @@ class Configure(config.base.Configure):
               matlab_dl = ' -L'+os.path.join(matlab,'sys','os','mac')+' -ldl'
             else:
               matlab_dl = ''
-            self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
+            # Matlab libraries require libstdc++-libc6.1-2.so.3 which they provide in the sys/os directory
+            if matlab_arch == 'glnx86':
+              matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
+            else:
+              matlab_sys = ''
+            self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
             return
 
     # if we got here we did not find one
