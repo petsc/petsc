@@ -15,6 +15,7 @@ manual.dvi: intro.tex abstract.tex acknowl.tex manual_tex.tex part1.tex routines
 	echo \\end\{theindex\} >> findex.tex
 	grep -v FUNCTION manual_tex.ind | sed 's/_/\\_/g' > sindex.tex
 	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
+	cp manual_tex.bbl manual.bbl
 	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
                     *.idx *.ler findex.tex sindex.tex
 # Now make the intro part ... note that this depends on latexing the manual
@@ -63,7 +64,6 @@ splitmanual: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	/home/gropp/bin/solaris/tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
 	       -useimg -mapref ../../manualpages/manualpages.cit -quietlatex
 	-@chmod g+w manual.hux latex.err 
-	-@chmod -R ug+w splitmanual
 	-@/bin/rm -fr ../../splitmanual
 	-@mv manual ../../splitmanual
 	-@chmod -R ug+w ../../splitmanual www.cit 

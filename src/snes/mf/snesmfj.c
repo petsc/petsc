@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.81 1999/03/19 21:22:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.82 1999/03/24 04:29:52 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -15,7 +15,7 @@ int   MatSNESMFRegisterAllCalled = 0;
     differencing parameter for finite difference matrix-free formulations. 
 
     Input Parameters:
-+   mat - the matrix free matrix created via MatCreateSNESMF()
++   mat - the "matrix-free" matrix created via MatCreateSNESMF()
 -   ftype - the type requested
 
     Level: advanced
@@ -24,9 +24,9 @@ int   MatSNESMFRegisterAllCalled = 0;
     For example, such routines can compute h for use in
     Jacobian-vector products of the form
 
-                            F(x+ha) - F(x)
-          F'(u)a  =approx  ----------------
-                                 h
+                        F(x+ha) - F(x)
+          F'(u)a  ~=  ----------------
+                              h
 
 .seealso: MatCreateSNESMF(), MatSNESMFRegister()
 @*/

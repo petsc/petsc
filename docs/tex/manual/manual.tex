@@ -1,4 +1,4 @@
-% $Id: manual_tex.tex,v 1.125 1998/10/19 22:21:03 bsmith Exp bsmith $ 
+% $Id: manual_tex.tex,v 1.126 1999/03/17 23:25:52 bsmith Exp curfman $ 
 %
 % LATEX version of the PETSc users manual.
 %
@@ -62,6 +62,8 @@ http://www.mcs.anl.gov/petsc
 \addcontentsline{toc}{chapter}{Abstract}
 \input{abstract.tex}
 
+\input{gettinginfo_tex.tex}
+
 \medskip \medskip
 
 %
@@ -106,14 +108,13 @@ http://www.mcs.anl.gov/petsc
 \vfill
 \eject
 
-
 \newpage
 
 \addcontentsline{toc}{chapter}{Subject Index}
-\label{sindex}
+\label{sec:sindex}
 \include{sindex}
 \addcontentsline{toc}{chapter}{Function Index}
-\label{findex}
+\label{sec:findex}
 \include{findex}
 
 \bibliographystyle{plain}

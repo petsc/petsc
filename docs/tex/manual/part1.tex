@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.123 1999/02/03 00:18:36 balay Exp bsmith $ 
+% $Id: part1.tex,v 1.124 1999/03/17 23:25:52 bsmith Exp curfman $ 
 
 % --------------------------------------------------------------------
 %
@@ -8,6 +8,8 @@
 %   both manual.tex and intro.tex.
 %
 % --------------------------------------------------------------------
+
+\label{sec:gettingstarted}
 
 The Portable, Extensible Toolkit for Scientific Computation (PETSc)
 has successfully demonstrated that the use of modern programming
@@ -342,6 +344,7 @@ otherwise, {\tt n} remains unchanged. A complete description of the
 options database may be found in Section \ref{sec:options}.
 
 \subsection*{Vectors}
+\label{sec:vecintro}
 
 One creates a new parallel or 
 sequential vector, {\tt x}, of global dimension {\tt M} with the 
@@ -379,6 +382,7 @@ for use with complex numbers.  Section~\ref{sec:complex} discusses the
 use of complex numbers in PETSc programs.
 
 \subsection*{Matrices}
+\label{sec:matintro}
 
 Usage of PETSc matrices and vectors is similar. \sindex{matrices} 
 The user can create a new parallel or sequential matrix, {\tt A}, which
@@ -678,9 +682,9 @@ When referencing PETSc in a publication please cite the following:
 @TechReport{petsc-manual,
    Author      = "Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith",
    Title       = "{PETSc} 2.0 Users Manual",
-   Number      = "ANL-95/11 - Revision 2.0.23",
+   Number      = "ANL-95/11 - Revision 2.0.24",
    Institution = "Argonne National Laboratory",
-   Year        = "1998"}
+   Year        = "1999"}
 
 @InProceedings{petsc-efficient,
    Author    = "Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith",

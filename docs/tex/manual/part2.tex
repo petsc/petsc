@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.314 1999/03/17 23:25:52 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.315 1999/03/19 21:25:28 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -506,20 +506,21 @@ Now the {\tt indices} use the local numbering, rather than the global.
 \section{Structured Grids Using Distributed Arrays}
 \label{sec:da} \label{sec:struct}
 
-  Distributed arrays ({\tt DA}s in PETSc, which are used in
+  Distributed arrays ({\tt DA}s), which are used in
 conjunction with PETSc vectors, are intended for use with {\em
-regular rectangular grids} when communication of nonlocal data is
+logically regular rectangular grids} when communication of nonlocal data is
 needed before certain local computations can occur.  PETSc distributed
 arrays are designed only for the case in which data can be thought of
 as being stored in a standard multidimensional array; thus, {\tt DA}s 
 are {\em not} intended for parallelizing unstructured grid problems, etc.
-{\tt DA}s are intended for communicating vector (field) information, they 
-are not for storing matrices. See Section \cite{sec:bdiag} for sparse matrix
-data structures intended specifically for problems defined on rectangular 
-grids; but note that general purpose sparse matrix formats discussed in 
-the next Chapter as also appropriate (in fact, on RISC based processors,
-often one sees no performance gain by using grid specific sparse matrix
-storage schemes).
+{\tt DA}s are intended for communicating vector (field) information; they 
+are not intended for storing matrices. 
+% See Section \ref{sec:bdiag} for sparse matrix
+% data structures intended specifically for problems defined on rectangular 
+% grids; but note that general purpose sparse matrix formats discussed in 
+% the next chapter are also appropriate (in fact, on RISC based processors,
+% often one sees no performance gain by using grid-specific sparse matrix
+% storage schemes).
 
 For example, a typical situation one encounters in solving 
 PDEs in parallel is that, to evaluate a local function, {\tt f(x)}, each processor
@@ -541,7 +542,7 @@ a parallel array are shown in gray.
 
 The PETSc {\tt DA} object manages the parallel communication required
 while working with data stored in regular arrays. The actual data
-is stored in approriately sized vector objects, the {\tt DA} object 
+is stored in approriately sized vector objects; the {\tt DA} object 
 only contains the parallel data layout information and communication
 information. 
 
@@ -612,35 +613,35 @@ processors in the communicator {\tt comm} must call {\tt DACreateXXX()}.
 
 \subsection{Local/Global Vectors and Scatters}
 
-Each {\tt DA} object gives you access to two vectors: a distributed global vector
-and a local vector that includes room for the appropriate ghost points. These
-vectors can be accessed \findex{DACreateLocalVector()}
-with the routines \findex{DACreateGlobalVector}
+Each {\tt DA} object defines the layout of two vectors: a distributed
+global vector and a local vector that includes room for the
+appropriate ghost points.  The {\tt DA} object provides information
+about the size and layout of these vectors, but does not internally
+allocate any associated storage space for field values.  Instead, the
+user can create vector objects that use the {\tt DA} layout
+information with the routines
 \begin{verbatim}
    ierr = DACreateGlobalVector(DA da,Vec *g);
    ierr = DACreateLocalVector(DA da,Vec *l);
 \end{verbatim}
-These two vectors will generally serve as the building blocks for
-local and global PDE solutions, etc.  Note that calling {\tt
-DACreateGlobalVector()} or {\tt DACreateLocalVector()} does {\em not}
-create a new vector object, but rather extracts the one existing
-vector of its type from the distributed array.  Thus, if additional
-vectors are needed in a code, they can be obtained by duplicating {\tt l}
-or {\tt g} via {\tt VecDuplicate()} or {\tt VecDuplicateVecs()}.
+\findex{DACreateGlobalVector}
+\findex{DACreateLocalVector()}
+These vectors will generally serve as the building blocks for local
+and global PDE solutions, etc.  If additional vectors with such
+layout information are needed in a code, they can be obtained by
+duplicating {\tt l} or {\tt g} via
+{\tt VecDuplicate()} or {\tt VecDuplicateVecs()}.
 
-We emphasize that a distributed array really consists of two parts:
-(1) the array of data within the vector being distributed and (2) the
-information needed to communicate the ghost point information between
-processes.  In most cases, several different arrays could share the
-same communication information.  The design of the distributed array
-object makes this easy.  Each {\tt DA} operation may
-operate on a vector of the appropriate size.  The two obvious options
-are the local and global vectors created by the {\tt DA} creation
-routines (e.g., {\tt DACreate2d()}) and accessible through {\tt
-DACreateLocalVector()} and {\tt DACreateGlobalVector()}, but, as
-mentioned above, vectors created via {\tt VecDuplicate()} on these may
-also be used.  This is why there are vector arguments to {\tt
-DALocalToGlobal()}, etc. (see below).
+We emphasize that a distributed array provides the information needed
+to communicate the ghost value information between processes.  In most
+cases, several different vectors can share the same communication
+information (or, in other words, can share a given {\tt DA}.  The
+design of the {\tt DA} object makes this easy, as each {\tt DA}
+operation may operate on vectors of the appropriate size, as obtained
+via {\tt DACreateLocalVector()} and {\tt DACreateGlobalVector()} or as
+produced by {\tt VecDuplicate()}.  As such, the {\tt DA}
+scatter/gather operations (e.g., {\tt DAGlobalToLocalBegin()} require
+vector input/output arguments (see below).
 
 PETSc currently provides no container for multiple arrays sharing the
 same distributed array communication; note, however, that the {\tt dof}
@@ -764,7 +765,7 @@ In Figure \ref{fig:daao} we indicate the orderings for a two-dimensional distrib
 array, divided among four processors.
 
 \begin{figure}[tb]
-\centerline{\psfig{file=../pictures/danumbering.eps,angle=270,width=4.7in}}
+\centerline{\psfig{file=danumbering.eps,angle=270,width=4.7in}}
 \caption{Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four Processors)}
 \label{fig:daao}
 \end{figure}
@@ -1253,11 +1254,11 @@ To create a sequential AIJ sparse matrix, {\tt A},
 \findex{MatCreateSeqAIJ()} with {\tt m} rows and {\tt n} columns,
 one uses the command
 \begin{verbatim}
-   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,int m,int n,int nz,int *nzz,Mat *A);
+   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,int m,int n,int nz,int *nnz,Mat *A);
 \end{verbatim}
 where {\tt nz} or {\tt nnz} can be used to preallocate matrix memory,
 as discussed below. The user can set {\tt nz=0} and {\tt
-nzz=PETSC\_NULL} for PETSc to control all matrix memory allocation.
+nnz=PETSC\_NULL} for PETSc to control all matrix memory allocation.
 
 The sequential and parallel AIJ matrix storage formats by default
 employ {\em i-nodes} (identical nodes) when possible.  We search for
@@ -1295,7 +1296,7 @@ However, this extra memory allocation can slow the computation,
 
 If different rows have very different numbers of nonzeros, one
 should attempt to indicate (nearly) the exact number of elements
-intended for the various rows with the optional array, {\tt nzz} of
+intended for the various rows with the optional array, {\tt nnz} of
 length {\tt m}, where {\tt m} is the number of rows, for example
 \begin{verbatim}
    int nnz[m];
@@ -1456,9 +1457,9 @@ while the ``off-diagonal'' submatrix, {\tt o}, matrix is given by
 \]
 }
 For the first processor one could set {\tt d\_nz} to 2 (since each
-row has 2 nonzeros) or, alternatively, set {\tt d\_nzz} to \{2,2,2\}.
+row has 2 nonzeros) or, alternatively, set {\tt d\_nnz} to \{2,2,2\}.
 The {\tt o\_nz} could be set to 2 since each row of the {\tt o} matrix
-has 2 nonzeros, or {\tt o\_nzz} could be set to \{2,2,2\}.
+has 2 nonzeros, or {\tt o\_nnz} could be set to \{2,2,2\}.
 
 For the second processor the {\tt d} submatrix is given by 
 {\small
@@ -1471,7 +1472,7 @@ For the second processor the {\tt d} submatrix is given by
 \]
 }
 Thus, one could set {\tt d\_nz} to 3, since the maximum number of
-nonzeros in each row is 3, or alternatively one could set {\tt d\_nzz} to
+nonzeros in each row is 3, or alternatively one could set {\tt d\_nnz} to
 \{3,3,2\}, thereby indicating that the first two rows will have 3
 nonzeros while the third has 2. The corresponding {\tt o} submatrix for the
 second processor is
@@ -1484,7 +1485,7 @@ second processor is
 \end{array} \right)
 \]
 }
-so that one could set {\tt o\_nz} to 2 or {\tt o\_nzz} to \{2,1,1\}.
+so that one could set {\tt o\_nz} to 2 or {\tt o\_nnz} to \{2,1,1\}.
 
 Note that the user never directly works with the {\tt d} and {\tt o}
 submatrices, except when preallocating storage space as indicated above.
@@ -2557,7 +2558,7 @@ m}, or determined by PETSc if {\tt m} is {\tt PETSC\_DECIDE}.  The
 arguments {\tt nz} and {\tt nnz} can be used to preallocate storage
 space, as discussed in Section~\ref{sec:matcreate} for increasing
 the efficiency of matrix assembly; one sets {\tt nz=0} and
-{\tt nzz=PETSC\_NULL} for PETSc to control all matrix memory
+{\tt nnz=PETSC\_NULL} for PETSc to control all matrix memory
 allocation.  The argument {\tt proci} is an optional BlockSolve95
 {\tt BSprocinfo} context; most users should set this parameter to 
 {\tt PETSC\_NULL}, so that PETSc will create and initialize this context.
@@ -3701,7 +3702,7 @@ The parameter can also be set from the options database with
 \end{verbatim}
 \findex{-snes_mf_umin}
 
-The second approach, taken from Walker and Pernice, \cite{?}, computes $ h $ via
+The second approach, taken from Walker and Pernice, \cite{pw98}, computes $ h $ via
 \begin{eqnarray*}
         h = \frac{\sqrt{1 + ||u||}e_{rel}}{||a||}
 \end{eqnarray*}
@@ -3740,7 +3741,7 @@ example, {\tt SNESSetFromOptions()} must be called {\em after}
 {\tt SNESSetJacobian()} to enable runtime switching between the
 user-specified Jacobian and the default SNES matrix-free form.
 
-Table~\ref{table:jacobians} summarizes the various matrix situations
+Table~\ref{tab:jacobians} summarizes the various matrix situations
 that SNES supports.  In particular, different linear system matrices
 and preconditioning matrices are allowed, as well as both matrix-free
 and application-provided preconditioners.  All combinations are
@@ -3776,7 +3777,7 @@ $ ^\dagger $ Set user-defined matrix formation routine with {\tt SNESSetJacobian
    {\tt SNESSetHessian()}.
 \medskip
 \caption{Jacobian and Hessian Matrix Options}
-\label{table:jacobians}
+\label{tab:jacobians}
 \end{table}
 \end{center}
 
@@ -4915,8 +4916,7 @@ Section~\ref{sec:ploginfo}, PETSc provides a mechanism for printing
 informative messages about computations.  Section~\ref{sec:profbasic}
 introduces the various profiling options in PETSc, while the
 remainder of the chapter focuses on details such as monitoring
-application codes and tips for accurate profiling.  See
-Section~\ref{sec:profimpl} for implementation details.
+application codes and tips for accurate profiling.  
 
 \section{Basic Profiling Information}
 \label{sec:profbasic}
@@ -5956,7 +5956,7 @@ read into a block oriented data structure (for example,
 {\tt MATSEQBDIAG} or {\tt MATMPIBAIJ}). The diagonal information 
 {\tt s1,s2,s3,...} indicates
 which (block) diagonals in the matrix have nonzero values.
-Section \ref{sec:bdiag} gives details.
+% Section \ref{sec:bdiag} gives details.
 
 \section{Debugging} \sindex{debugging} \label{sec:debugging}
 
