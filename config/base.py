@@ -301,14 +301,17 @@ class Configure:
     ready = select.select([output, err], [], [])
     if len(ready[0]) and err in ready[0]:
       # Log failure of preprocessor
+      #   It seems that this can block if there is also stuff waiting to be read on "output", so we close it first
+      output.close()
       out = err.read()
+      err.close()
       if out:
         self.framework.log.write('ERR (preprocessor): '+out)
         self.framework.log.write('Source:\n'+self.getCode(codeStr))
     else:
       for fd in ready[0]: fd.read()
-    err.close()
-    output.close()
+      output.close()
+      err.close()
     ret = None
     if pipe:
       ret = pipe.wait()
@@ -391,23 +394,24 @@ class Configure:
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
 
-  def checkRun(self, includes, body, cleanup = 1):
-    if not self.checkLink(includes, body, cleanup = 0): return 0
-    success = 0
+  def outputRun(self, includes, body, cleanup = 1):
+    if not self.checkLink(includes, body, cleanup = 0): return ('', 1)
     if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
       self.framework.log.write('ERR (executable): '+self.linkerObj+' is not executable')
-      return success
+      return ('', 1)
     command = './'+self.linkerObj
     self.framework.log.write('Executing: '+command+'\n')
     (status, output) = commands.getstatusoutput(command)
-    if not status:
-      success = 1
-    else:
+    if status:
       self.framework.log.write('ERR (executable): '+output+'\n')
       self.framework.log.write('ret = '+str(status)+'\n')
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
-    return success
+    return (output, status)
+
+  def checkRun(self, includes, body, cleanup = 1):
+    (output, returnCode) = self.outputRun(includes, body, cleanup)
+    return not returnCode
 
   ######################################
   # Methods for Autoconf Macro Execution

@@ -12,19 +12,38 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers', self)
     return
 
-  def getLibArgument(self, libName):
-    '''Leave full library path arguments unchanged, otherwise return -l<name> form'''
-    if len(libName) > 3 and libName[-4:] == '.lib':
-      return libName
-    if not libName:
-      return libName
-    return '-l'+libName
+  def getLibArgument(self, library):
+    '''Return the proper link line argument for the given library
+       - If the path ends in ".lib" return it unchanged
+       - If the path is empty, return it unchanged
+       - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name>
+       - If the filename is "lib"<name>, return -l<name>
+       - If the path is absolute, return it unchanged
+       - Otherwise return -l<filename>'''
+    if len(library) > 3 and library[-4:] == '.lib':
+      return library
+    if not library:
+      return library
+    if os.path.basename(library).startswith('lib'):
+      name = self.getLibName(library)
+      if os.path.isabs(library):
+        return '-L'+os.path.dirname(library)+' -l'+name
+      else:
+        return '-l'+name
+    if os.path.isabs(library):
+      return library
+    return '-l'+library
 
-  def getDefineName(self, libName):
-    return 'HAVE_LIB'+libName.upper()
+  def getLibName(self, library):
+    if os.path.basename(library).startswith('lib'):
+      return os.path.splitext(os.path.basename(library))[0][3:]
+    return library
 
-  def haveLib(self, libName):
-    return self.getDefineName(libName) in self.defines
+  def getDefineName(self, library):
+    return 'HAVE_LIB'+self.getLibName(library).upper()
+
+  def haveLib(self, library):
+    return self.getDefineName(library) in self.defines
 
   def check(self, libName, funcName, libDir = None, otherLibs = '', prototype = '', call = '', fortranMangle = 0):
     '''Checks that the library "libName" contains "funcName", and if it does adds "libName" to $LIBS and defines HAVE_LIB"libName"
