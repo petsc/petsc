@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.75 1995/11/21 03:29:07 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.76 1995/11/21 22:13:22 curfman Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -301,7 +301,7 @@ static int MatRestoreRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **v
   return 0;
 }
 /* ----------------------------------------------------------------*/
-static int MatInsert_SeqDense(Mat A,int m,int *indexm,int n,
+static int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
                                     int *indexn,Scalar *v,InsertMode addv)
 { 
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
@@ -337,6 +337,21 @@ static int MatInsert_SeqDense(Mat A,int m,int *indexm,int n,
           mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
         }
       }
+    }
+  }
+  return 0;
+}
+
+static int MatGetValues_SeqDense(Mat A,int m,int *indexm,int n,int *indexn,Scalar *v)
+{ 
+  Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
+  int          i, j;
+  Scalar       *vpt = v;
+
+  /* row-oriented output */ 
+  for ( i=0; i<m; i++ ) {
+    for ( j=0; j<n; j++ ) {
+      *vpt++ = mat->v[indexn[j]*mat->m + indexm[i]];
     }
   }
   return 0;
@@ -777,7 +792,7 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
 }
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatInsert_SeqDense,
+static struct _MatOps MatOps = {MatSetValues_SeqDense,
        MatGetRow_SeqDense, MatRestoreRow_SeqDense,
        MatMult_SeqDense, MatMultAdd_SeqDense, 
        MatMultTrans_SeqDense, MatMultTransAdd_SeqDense, 
@@ -796,7 +811,8 @@ static struct _MatOps MatOps = {MatInsert_SeqDense,
        0,0,MatGetArray_SeqDense,0,0,
        MatGetSubMatrix_SeqDense,MatGetSubMatrixInPlace_SeqDense,
        MatCopyPrivate_SeqDense,0,0,0,0,
-       MatAXPY_SeqDense};
+       MatAXPY_SeqDense,0,0,
+       MatGetValues_SeqDense};
 
 /*@C
    MatCreateSeqDense - Creates a sequential dense matrix that 
