@@ -94,9 +94,11 @@ ADINTR_EXTERN void adintr_ehsfid Proto((int *g_ehfid, char *routine, char *filen
 #if ad_GRAD_MAX == 1
 extern MPI_Op PetscADMax_Op;
 extern MPI_Op PetscADMin_Op;
-#  define admf_GlobalMax(a,b) MPI_Allreduce(a,b,2,MPIU_SCALAR,PetscADMax_Op,MPI_COMM_WORLD)
-#  define admf_GlobalMin(a,b) MPI_Allreduce(a,b,2,MPIU_SCALAR,PetscADMin_Op,MPI_COMM_WORLD)
+#  define admf_PetscGlobalMax(a,b,c) MPI_Allreduce(a,b,2,MPIU_SCALAR,PetscADMax_Op,c)
+#  define admf_PetscGlobalMin(a,b,c) MPI_Allreduce(a,b,2,MPIU_SCALAR,PetscADMin_Op,c)
+#  define admf_PetscGlobalSum(a,b,c) MPI_Allreduce(a,b,2,MPIU_SCALAR,PetscSum_Op,c)
 #else
-#  define ad_GlobalMax(a,b) 1
-#  define ad_GlobalMin(a,b) 1
+#  define ad_PetscGlobalMax(a,b,c) 1   /* 1 generates error to indicate not implemented */
+#  define ad_PetscGlobalMin(a,b,c) 1
+#  define ad_PetscGlobalSum(a,b,c) 1
 #endif

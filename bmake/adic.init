@@ -25,6 +25,11 @@
         MatStencil     = "typedef struct {int k,j,i,c;} MatStencil;"
         PassiveReal    = "typedef double PassiveReal;"
         PassiveScalar  = "typedef double PassiveScalar;"
+        MPI_COMM_WORLD = "static int MPI_COMM_WORLD;"
+        MPI_COMM_SELF  = "static int MPI_COMM_SELF;"
+        PETSC_COMM_WORLD = "static int PETSC_COMM_WORLD;"
+        PETSC_COMM_SELF  = "static int PETSC_COMM_SELF;"
+
 
 [DEFINES]
 	PetscAbsScalar = fabs

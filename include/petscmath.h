@@ -152,6 +152,11 @@ extern  PetscScalar       PETSC_i;
 #  define PETSC_SMALL                   1.e-10
 #endif
 
+extern int PetscGlobalMax(double*,double*,MPI_Comm);
+extern int PetscGlobalMin(double*,double*,MPI_Comm);
+extern int PetscGlobalSum(PetscScalar*,PetscScalar*,MPI_Comm);
+
+
 /* ----------------------------------------------------------------------------*/
 /*
     PetscLogDouble variables are used to contain double precision numbers

@@ -693,3 +693,88 @@ int PetscFinalize(void)
   PetscFunctionReturn(ierr);
 }
 
+/*
+     These may be used in code that ADIC is to be used on
+*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGlobalMax"
+/*@C
+      PetscGlobalMax - Computes the maximum value over sever processors
+
+     Collective on MPI_Comm
+
+   Input Parameters:
++   local - the local value
+-   comm - the processors that find the maximum
+
+   Output Parameter:
+.   result - the maximum value
+  
+   Level: intermediate
+
+   Notes:
+     These functions are to be used inside user functions that are to be processed with 
+   ADIC. PETSc will automatically provide differentiated versions of these functions
+
+.seealso: PetscGlobalMin(), PetscGlobalSum()
+@*/
+int PetscGlobalMax(double* local,double* result,MPI_Comm comm)
+{
+  return MPI_Allreduce(local,result,1,MPI_DOUBLE,MPI_MAX,comm);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGlobalMin"
+/*@C
+      PetscGlobalMin - Computes the minimum value over sever processors
+
+     Collective on MPI_Comm
+
+   Input Parameters:
++   local - the local value
+-   comm - the processors that find the minimum
+
+   Output Parameter:
+.   result - the minimum value
+  
+   Level: intermediate
+
+   Notes:
+     These functions are to be used inside user functions that are to be processed with 
+   ADIC. PETSc will automatically provide differentiated versions of these functions
+
+.seealso: PetscGlobalMax(), PetscGlobalSum()
+@*/
+int PetscGlobalMin(double* local,double* result,MPI_Comm comm)
+{
+  return MPI_Allreduce(local,result,1,MPI_DOUBLE,MPI_MIN,comm);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGlobalSum"
+/*@C
+      PetscGlobalSum - Computes the sum over sever processors
+
+     Collective on MPI_Comm
+
+   Input Parameters:
++   local - the local value
+-   comm - the processors that find the sum
+
+   Output Parameter:
+.   result - the sum
+  
+   Level: intermediate
+
+   Notes:
+     These functions are to be used inside user functions that are to be processed with 
+   ADIC. PETSc will automatically provide differentiated versions of these functions
+
+.seealso: PetscGlobalMin(), PetscGlobalMax()
+@*/
+int PetscGlobalSum(PetscScalar* local,PetscScalar* result,MPI_Comm comm)
+{
+  return MPI_Allreduce(local,result,1,MPIU_SCALAR,PetscSum_Op,comm);
+}
+
