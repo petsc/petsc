@@ -322,7 +322,6 @@ class Configure(config.base.Configure):
           self.addDefine('HAVE_CLOSESOCKET',1)
         if self.checkLink('#include <Winsock2.h>','WSAGetLastError()'):
           self.addDefine('HAVE_WSAGETLASTERROR',1)
-        if self.check
     return
 
   def configureMissingSignals(self):
