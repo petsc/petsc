@@ -14,10 +14,6 @@
 
 #include "petsc.h"
 
-#ifndef MAXHOSTNAMELEN
-#define MAXHOSTNAMELEN 64
-#endif
-
 /*
   This prototype lets us resolve the datastructure 'rusage' only in
   the source files using getrusage, and not in other source files.
