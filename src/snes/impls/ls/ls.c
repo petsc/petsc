@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.105 1998/04/13 17:56:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.106 1998/04/21 23:44:46 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -50,10 +50,9 @@ static char vcid[] = "$Id: ls.c,v 1.105 1998/04/13 17:56:04 bsmith Exp curfman $
 
    Input Parameters:
 .  snes - the SNES context
-.  x - the solution vector
 
    Output Parameter:
-.  its - number of iterations until termination
+.  outits - number of iterations until termination
 
    Application Interface Routine: SNESSolve()
 
