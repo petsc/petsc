@@ -176,14 +176,8 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->msgFile) ;
     fflush(lu->msgFile) ;
   }
-  if ( rootchv != NULL ) {
-    fprintf(lu->msgFile, "\n\n matrix found to be singular\n") ;
-    exit(-1) ;
-  }
-  if ( ierr >= 0 ) {
-    fprintf(lu->msgFile, "\n\n error encountered at front %d", ierr) ;
-    exit(-1) ;
-  }
+  if ( rootchv != NULL ) SETERRQ(1,"\n matrix found to be singular");    
+  if ( ierr >= 0 ) SETERRQ1(1,"\n error encountered at front %d", ierr);
 
   /* post-process the factorization */
   FrontMtx_postProcess(lu->frontmtx, lu->msglvl, lu->msgFile) ;
@@ -405,7 +399,7 @@ int MatUseSpooles_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Spooles;
-  A->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Spooles;
+  
   PetscFunctionReturn(0);
 }
 

@@ -720,6 +720,7 @@ int MatDestroy_MPIAIJ(Mat mat)
 }
 
 extern int MatMPIAIJFactorInfo_SuperLu(Mat,PetscViewer);
+extern int MatMPIAIJFactorInfo_Spooles(Mat,PetscViewer);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIAIJ_ASCIIorDraworSocket"
@@ -761,6 +762,9 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
 #if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
       ierr = MatMPIAIJFactorInfo_SuperLu(mat,viewer);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+      ierr = MatMPIAIJFactorInfo_Spooles(mat,viewer);CHKERRQ(ierr);
 #endif
       PetscFunctionReturn(0);
     }

@@ -235,9 +235,7 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   int                 ierr,*ca;
 
   PetscFunctionBegin;
-  /*
-  A->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_SuperLU;
-  */
+  
   ierr            = MatCreateSeqAIJ(A->comm,A->m,A->n,0,PETSC_NULL,F);CHKERRQ(ierr);
   B               = *F;
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_SuperLU;

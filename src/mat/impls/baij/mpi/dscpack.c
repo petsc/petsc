@@ -512,7 +512,6 @@ int MatUseDSCPACK_MPIBAIJ(Mat A)
 {
   PetscFunctionBegin;
   A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK;
-  A->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK;
   PetscFunctionReturn(0);
 }
 
