@@ -35,6 +35,11 @@ int MatDestroy_MPIAIJ_Spooles(Mat A)
   SubMtxManager_free(lu->mtxmanager) ;    
   DenseMtx_free(lu->mtxX) ;
   DenseMtx_free(lu->mtxY) ;
+  
+  ierr = VecDestroy(lu->vec_spooles);CHKERRQ(ierr); 
+  ierr = ISDestroy(lu->iden);CHKERRQ(ierr); 
+  ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
 
   ierr = PetscFree(lu);CHKERRQ(ierr); 
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
@@ -51,9 +56,6 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
   PetscScalar      *array;
   DenseMtx         *newY ;
   SubMtxManager    *solvemanager ; 
-  Vec              vec_spooles;
-  IS               iden, is_petsc;
-  VecScatter       scat;
 
   PetscFunctionBegin;	
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -142,21 +144,16 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
     fflush(lu->options.msgFile) ;
   }
   
-  /* scatter local solution mtxX into mpi vector x */
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,lu->nmycol,lu->entX,&vec_spooles);CHKERRQ(ierr); /* vec_spooles <- mtxX */ 
- 
-  ierr = ISCreateStride(PETSC_COMM_SELF,lu->nmycol,0,1,&iden);CHKERRQ(ierr); /* is_spooles */  
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->nmycol,lu->rowindX,&is_petsc);CHKERRQ(ierr);  
-  ierr = VecScatterCreate(vec_spooles,iden,x,is_petsc,&scat);CHKERRQ(ierr);  /* fail to work if iden is created in numfac */
+  /* scatter local solution mtxX into mpi vector x */ 
+  if( !lu->scat ){
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,lu->nmycol,lu->entX,&lu->vec_spooles);CHKERRQ(ierr); /* vec_spooles <- mtxX */ 
+    ierr = ISCreateStride(PETSC_COMM_SELF,lu->nmycol,0,1,&lu->iden);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->nmycol,lu->rowindX,&lu->is_petsc);CHKERRQ(ierr);  
+    ierr = VecScatterCreate(lu->vec_spooles,lu->iden,x,lu->is_petsc,&lu->scat);CHKERRQ(ierr); 
+  }
 
-  ierr = VecScatterBegin(vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD,scat);CHKERRQ(ierr);
-  ierr = VecScatterEnd(vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD,scat);CHKERRQ(ierr);
-  
-  /* free spaces */ 
-  ierr = ISDestroy(iden);CHKERRQ(ierr);  
-  ierr = ISDestroy(is_petsc);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat);CHKERRQ(ierr);
-  ierr = VecDestroy(vec_spooles);CHKERRQ(ierr); 
+  ierr = VecScatterBegin(lu->vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD,lu->scat);CHKERRQ(ierr);
+  ierr = VecScatterEnd(lu->vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD,lu->scat);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -182,78 +179,80 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   PetscFunctionBegin;	
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-
-    /* copy A to Spooles' InpMtx object */ 
-    if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) { 
-      Mat_MPIAIJ  *mat =  (Mat_MPIAIJ*)A->data;  
-      Mat_SeqAIJ  *aa=(Mat_SeqAIJ*)(mat->A)->data;
-      Mat_SeqAIJ  *bb=(Mat_SeqAIJ*)(mat->B)->data;
-      ai=aa->i; aj=aa->j; av=aa->a;   
-      bi=bb->i; bj=bb->j; bv=bb->a;
-      lu->rstart = mat->rstart;
-      nz         = aa->nz + bb->nz;
-      garray     = mat->garray; 
-    } else {         /* SPOOLES_SYMMETRIC  */
-      Mat_MPISBAIJ  *mat = (Mat_MPISBAIJ*)A->data;
-      Mat_SeqSBAIJ  *aa=(Mat_SeqSBAIJ*)(mat->A)->data;
-      Mat_SeqBAIJ    *bb=(Mat_SeqBAIJ*)(mat->B)->data;
-      ai=aa->i; aj=aa->j; av=aa->a;  
-      bi=bb->i; bj=bb->j; bv=bb->a;
-      lu->rstart = mat->rstart;
-      nz         = aa->s_nz + bb->nz;     
-      garray     = mat->garray;
-    } 
-      
-    if(lu->flg == DIFFERENT_NONZERO_PATTERN) { lu->mtxA   = InpMtx_new() ; }
-    InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, nz, 0) ; 
-    row   = InpMtx_ivec1(lu->mtxA); 
-    col   = InpMtx_ivec2(lu->mtxA); 
-    val   = InpMtx_dvec(lu->mtxA); 
- 
-    jj = 0; jB = 0; irow = lu->rstart;   
-    for ( i=0; i<m; i++ ) {
-      ajj = aj + ai[i];                 /* ptr to the beginning of this row */      
-      countA = ai[i+1] - ai[i];
-      countB = bi[i+1] - bi[i];
-      bjj = bj + bi[i];  
   
-      if (lu->options.symflag == SPOOLES_NONSYMMETRIC ){
-        /* B part, smaller col index */   
-        colA_start = lu->rstart + ajj[0]; /* the smallest col index for A */  
-        for (j=0; j<countB; j++){
-          jcol = garray[bjj[j]];
-          if (jcol > colA_start) {
-            jB = j;
-            break;
-          }
-          row[jj] = irow; col[jj] = jcol; val[jj++] = *bv++;
-          if (j==countB-1) jB = countB; 
+  /* copy A to Spooles' InpMtx object */ 
+  if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) { 
+    Mat_MPIAIJ  *mat =  (Mat_MPIAIJ*)A->data;  
+    Mat_SeqAIJ  *aa=(Mat_SeqAIJ*)(mat->A)->data;
+    Mat_SeqAIJ  *bb=(Mat_SeqAIJ*)(mat->B)->data;
+    ai=aa->i; aj=aa->j; av=aa->a;   
+    bi=bb->i; bj=bb->j; bv=bb->a;
+    lu->rstart = mat->rstart;
+    nz         = aa->nz + bb->nz;
+    garray     = mat->garray; 
+  } else {         /* SPOOLES_SYMMETRIC  */
+    Mat_MPISBAIJ  *mat = (Mat_MPISBAIJ*)A->data;
+    Mat_SeqSBAIJ  *aa=(Mat_SeqSBAIJ*)(mat->A)->data;
+    Mat_SeqBAIJ    *bb=(Mat_SeqBAIJ*)(mat->B)->data;
+    ai=aa->i; aj=aa->j; av=aa->a;  
+    bi=bb->i; bj=bb->j; bv=bb->a;
+    lu->rstart = mat->rstart;
+    nz         = aa->s_nz + bb->nz;     
+    garray     = mat->garray;
+  } 
+      
+  if(lu->flg == DIFFERENT_NONZERO_PATTERN) { lu->mtxA = InpMtx_new() ; }
+  InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, nz, 0) ; 
+  row   = InpMtx_ivec1(lu->mtxA); 
+  col   = InpMtx_ivec2(lu->mtxA); 
+  val   = InpMtx_dvec(lu->mtxA); 
+ 
+  jj = 0; jB = 0; irow = lu->rstart;   
+  for ( i=0; i<m; i++ ) {
+    ajj = aj + ai[i];                 /* ptr to the beginning of this row */      
+    countA = ai[i+1] - ai[i];
+    countB = bi[i+1] - bi[i];
+    bjj = bj + bi[i];  
+  
+    if (lu->options.symflag == SPOOLES_NONSYMMETRIC ){
+      /* B part, smaller col index */   
+      colA_start = lu->rstart + ajj[0]; /* the smallest col index for A */  
+      for (j=0; j<countB; j++){
+        jcol = garray[bjj[j]];
+        if (jcol > colA_start) {
+          jB = j;
+          break;
         }
+        row[jj] = irow; col[jj] = jcol; val[jj++] = *bv++;
+        if (j==countB-1) jB = countB; 
       }
-      /* A part */
-      for (j=0; j<countA; j++){
-        row[jj] = irow; col[jj] = lu->rstart + ajj[j]; val[jj++] = *av++;
-      }
-      /* B part, larger col index */      
-      for (j=jB; j<countB; j++){
-        row[jj] = irow; col[jj] = garray[bjj[j]]; val[jj++] = *bv++;
-      }
-      irow++;
-    } 
-
-    InpMtx_inputRealTriples(lu->mtxA, nz, row, col, val); 
-    InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
-    if ( lu->options.msglvl > 2 ) {
-      fprintf(lu->options.msgFile, "\n\n input matrix") ;
-      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
-      fflush(lu->options.msgFile) ;
     }
+    /* A part */
+    for (j=0; j<countA; j++){
+      row[jj] = irow; col[jj] = lu->rstart + ajj[j]; val[jj++] = *av++;
+    }
+    /* B part, larger col index */      
+    for (j=jB; j<countB; j++){
+      row[jj] = irow; col[jj] = garray[bjj[j]]; val[jj++] = *bv++;
+    }
+    irow++;
+  } 
+
+  InpMtx_inputRealTriples(lu->mtxA, nz, row, col, val); 
+  InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
+  if ( lu->options.msglvl > 2 ) {
+    fprintf(lu->options.msgFile, "\n\n input matrix") ;
+    InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
+  }
 
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
 
     (*F)->ops->solve   = MatSolve_MPIAIJ_Spooles;
     (*F)->ops->destroy = MatDestroy_MPIAIJ_Spooles;  
     (*F)->assembled    = PETSC_TRUE;
+
+    lu->scat = PETSC_NULL;  /* used by MatSolve() */
 
     IVzero(20, lu->stats) ; 
     DVzero(20, lu->cpus) ;
@@ -509,10 +508,23 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   lu->ownedColumnsIV = FrontMtx_ownedColumnsIV(lu->frontmtx, rank, lu->ownersIV,
                                          lu->options.msglvl, lu->options.msgFile) ;
   lu->nmycol = IV_size(lu->ownedColumnsIV) ;
-  if ( lu->nmycol > 0) DenseMtx_init(lu->mtxX, SPOOLES_REAL, 0, 0, lu->nmycol, 1, 1, lu->nmycol) ;
-  /* get pointers rowindX and entX */
-  DenseMtx_rowIndices(lu->mtxX, &lu->nmycol, &lu->rowindX) ; 
-  lu->entX = DenseMtx_entries(lu->mtxX) ; 
+  if ( lu->nmycol > 0) {
+    DenseMtx_init(lu->mtxX, SPOOLES_REAL, 0, 0, lu->nmycol, 1, 1, lu->nmycol) ;
+    /* get pointers rowindX and entX */
+    DenseMtx_rowIndices(lu->mtxX, &lu->nmycol, &lu->rowindX);
+    lu->entX = DenseMtx_entries(lu->mtxX) ; 
+  } else { /* lu->nmycol == 0 */
+    lu->entX    = 0;
+    lu->rowindX = 0;
+  }
+
+  if ( lu->scat ){
+    ierr = VecDestroy(lu->vec_spooles);CHKERRQ(ierr); 
+    ierr = ISDestroy(lu->iden);CHKERRQ(ierr); 
+    ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
+  }
+  lu->scat = PETSC_NULL;  
   
   lu->flg = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);

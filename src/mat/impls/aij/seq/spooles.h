@@ -39,7 +39,9 @@ typedef struct {
   DenseMtx        *mtxY, *mtxX;
   double          *entX;
   int             *rowindX,rstart,firsttag,nmycol;
-  IS              iden;
+  Vec             vec_spooles;
+  IS              iden,is_petsc;
+  VecScatter      scat;
 } Mat_Spooles;
 
 EXTERN int SetSpoolesOptions(Mat, Spooles_options *);
