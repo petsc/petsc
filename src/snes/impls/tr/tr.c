@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.58 1996/09/18 12:30:08 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.59 1996/09/19 02:16:37 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -36,7 +36,7 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   if (norm >= neP->delta) {
     PLogInfo(snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
     PLogInfo(snes,
-      "SNES: Ending linear iteration early, delta %g length %g\n",neP->delta,norm);
+      "SNES: Ending linear iteration early, delta=%g, length=%g\n",neP->delta,norm);
     return 1; 
   }
   return(0);
@@ -110,7 +110,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
         norm = delta/norm;
         gpnorm = (1.0 - norm)*fnorm;
         cnorm = norm;
-        PLogInfo(snes,"SNES: Scaling direction by %g \n",norm );
+        PLogInfo(snes,"SNES: Scaling direction by %g\n",norm );
         ierr = VecScale(&cnorm,Y); CHKERRQ(ierr);
         norm = gpnorm;
         ynorm = delta;
