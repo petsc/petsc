@@ -21,7 +21,6 @@ File Description:
 
 *********************************bss_malloc.c*********************************/
 #include <stdio.h>
-#include <stdlib.h>
 
 #if   defined NXSRC
 #ifndef DELTA
@@ -30,8 +29,16 @@ File Description:
 
 #elif defined MPISRC
 #include <mpi.h>
-
 #endif
+
+#include "petscconf.h"
+#if defined(PETSC_HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#if defined(PETSC_HAVE_MALLOC_H)
+#include <malloc.h>
+#endif
+
 
 #include "const.h" 
 #include "types.h"
@@ -65,15 +72,6 @@ static int my_id=0;
 #ifdef MYMALLOC
 #define PERM_MALLOC_BUF  65536 /* 16777216 8388608 4194304 31072 16384 */
 #define BSS_MALLOC_BUF   65536 /* 524288  1048576 4194304 65536 */
-#endif
-
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-extern void *malloc(size_t);
-#if defined(__cplusplus)
-}
 #endif
 
 /* malloc stats and space for bss and perm flavors */

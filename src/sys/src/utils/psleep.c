@@ -38,8 +38,10 @@ int PetscSleep(int s)
   if (s < 0) getc(stdin);
 #if defined (PETSC_HAVE_SLEEP)
   else       sleep(s);
-#elif defined (PETSC_HAVE__SLEEP)
+#elif defined (PETSC_HAVE__SLEEP) && defined(PETSC_HAVE__SLEEP_MILISEC)
   else       _sleep(s*1000);
+#elif defined (PETSC_HAVE__SLEEP)
+  else       _sleep(s);
 #else
   #error No sleep function located!
 #endif
