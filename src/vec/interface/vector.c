@@ -158,11 +158,16 @@ int VecPrintHelp(Vec vec)
 
   Input Parameter:
 + v - the vector
-- bs - the blocksize
+. n - the local size (or PETSC_DECIDE to have it set)
+- N - the global size (or PETSC_DECIDE)
+
+  Notes:
+  n and N cannot be both PETSC_DECIDE
+  If one processor calls this with N of PETSC_DECIDE then all processors must, otherwise the program will hang.
 
   Level: intermediate
 
-.seealso: VecGetSize()
+.seealso: VecGetSize(), PetscSplitOwnership()
 @*/
 int VecSetSizes(Vec v, int n, int N)
 {
