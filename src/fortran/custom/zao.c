@@ -1,4 +1,4 @@
-/*$Id: zao.c,v 1.17 2000/05/05 22:26:47 balay Exp bsmith $*/
+/*$Id: zao.c,v 1.18 2001/01/15 21:49:49 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscao.h"
@@ -6,11 +6,11 @@
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define aocreatebasic_   AOCREATEBASIC
 #define aocreatebasicis_ AOCREATEBASICIS
-#define aoview           AOVIEW
+#define aoview_          AOVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define aocreatebasic_   aocreatebasic
 #define aocreatebasicis_ aocreatebasicis
-#define aoview           aoview_
+#define aoview_          aoview
 #endif
 
 EXTERN_C_BEGIN
