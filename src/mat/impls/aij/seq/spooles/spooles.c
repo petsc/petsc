@@ -530,7 +530,7 @@ int MatDuplicate_SeqAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
   int ierr;
   PetscFunctionBegin;
   ierr = (*A->ops->duplicate)(A,op,M);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqAIJSpooles(*M,MATSUPERLU,M);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqAIJSpooles(*M,MATSEQAIJSPOOLES,M);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

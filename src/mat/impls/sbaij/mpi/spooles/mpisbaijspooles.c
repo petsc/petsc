@@ -133,7 +133,21 @@ int MatDuplicate_MPISBAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
   the MATMPISBAIJ type without data copy.
 
   Options Database Keys:
-. -mat_type mpisbaijspooles - sets the matrix type to mpisbaijspooles during a call to MatSetFromOptions()
++ -mat_type mpisbaijspooles - sets the matrix type to mpisbaijspooles during a call to MatSetFromOptions()
+. -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
+. -mat_spooles_seed <seed> - random number seed used for ordering
+. -mat_spooles_msglvl <msglvl> - message output level
+. -mat_spooles_ordering <BestOfNDandMS,MMD,MS,ND> - ordering used
+. -mat_spooles_maxdomainsize <n> - maximum subgraph size used by Spooles orderings
+. -mat_spooles_maxzeros <n> - maximum number of zeros inside a supernode
+. -mat_spooles_maxsize <n> - maximum size of a supernode
+. -mat_spooles_FrontMtxInfo <true,fase> - print Spooles information about the computed factorization
+. -mat_spooles_symmetryflag <0,1,2> - 0: SPOOLES_SYMMETRIC, 1: SPOOLES_HERMITIAN, 2: SPOOLES_NONSYMMETRIC
+. -mat_spooles_patchAndGoFlag <0,1,2> - 0: no patch, 1: use PatchAndGo strategy 1, 2: use PatchAndGo strategy 2
+. -mat_spooles_toosmall <dt> - drop tolerance for PatchAndGo strategy 1
+. -mat_spooles_storeids <bool integer> - if nonzero, stores row and col numbers where patches were applied in an IV object
+. -mat_spooles_fudge <delta> - fudge factor for rescaling diagonals with PatchAndGo strategy 2
+- -mat_spooles_storevalues <bool integer> - if nonzero and PatchAndGo strategy 2 is used, store change in diagonal value in a DV object
 
    Level: beginner
 
