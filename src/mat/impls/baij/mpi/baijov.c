@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: baijov.c,v 1.20 1997/06/02 20:40:27 balay Exp curfman $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: baijov.c,v 1.21 1997/06/08 04:12:20 curfman Exp balay $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix

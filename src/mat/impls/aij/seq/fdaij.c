@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: fdaij.c,v 1.10 1997/04/10 00:02:38 bsmith Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: fdaij.c,v 1.11 1997/05/23 18:39:27 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.82 1997/03/26 01:34:39 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: itfunc.c,v 1.83 1997/04/10 00:00:47 bsmith Exp balay $";
 #endif
 /*
       Interface KSP routines that the user calls.

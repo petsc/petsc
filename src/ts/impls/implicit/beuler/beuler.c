@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.23 1997/05/30 20:31:04 curfman Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: beuler.c,v 1.24 1997/06/05 12:56:19 bsmith Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.

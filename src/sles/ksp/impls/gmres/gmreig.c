@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: gmreig.c,v 1.1 1997/01/25 16:48:47 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: gmreig.c,v 1.2 1997/01/27 18:15:31 bsmith Exp balay $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"

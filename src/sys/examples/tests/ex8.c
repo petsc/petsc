@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.3 1997/02/13 00:38:43 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex8.c,v 1.4 1997/04/10 00:01:45 bsmith Exp balay $";
 #endif
 
 static char *help = "Tests the option -trmalloc_nan which initializes the memory \n\

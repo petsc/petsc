@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.3 1997/03/09 17:57:09 bsmith Exp curfman $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex8.c,v 1.4 1997/04/04 21:26:48 curfman Exp balay $";
 #endif
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\

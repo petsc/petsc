@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.126 1997/06/06 20:52:04 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: precon.c,v 1.127 1997/06/06 21:15:57 bsmith Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: none.c,v 1.14 1997/01/06 20:23:33 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: none.c,v 1.15 1997/04/06 04:03:33 bsmith Exp balay $";
 #endif
 /*
     Identity preconditioner, simply copies vector x to y.

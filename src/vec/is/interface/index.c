@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: index.c,v 1.45 1997/04/04 20:00:07 curfman Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: index.c,v 1.46 1997/04/09 23:59:50 bsmith Exp balay $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 

@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.54 1997/02/22 02:23:59 bsmith Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: pcset.c,v 1.55 1997/04/22 19:14:25 balay Exp balay $";
 #endif
 /*
     Routines to set PC methods and options.

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.94 1997/04/10 00:02:02 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: bjacobi.c,v 1.95 1997/06/05 12:52:59 bsmith Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.

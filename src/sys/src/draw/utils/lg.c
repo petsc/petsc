@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.43 1997/05/23 16:41:39 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: lg.c,v 1.44 1997/06/05 12:56:08 bsmith Exp balay $";
 #endif
 /*
        Contains the data structure for plotting several line

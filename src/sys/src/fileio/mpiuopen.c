@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: mpiuopen.c,v 1.8 1997/01/06 20:22:55 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: mpiuopen.c,v 1.9 1997/02/22 02:23:29 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability to MPI.

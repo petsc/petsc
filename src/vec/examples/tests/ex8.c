@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.31 1996/11/27 22:51:04 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex8.c,v 1.32 1997/04/10 00:00:31 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates scattering with strided index sets.\n\n";

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: zao.c,v 1.3 1996/10/03 20:25:24 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: zao.c,v 1.4 1997/07/01 19:32:56 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: dlinegw.c,v 1.9 1997/02/22 02:27:05 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: dlinegw.c,v 1.10 1997/03/26 04:25:20 bsmith Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.

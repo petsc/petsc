@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.44 1997/01/06 20:24:43 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: cholbs.c,v 1.45 1997/01/27 18:16:50 bsmith Exp balay $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.22 1997/04/10 00:04:27 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex12.c,v 1.23 1997/07/02 11:34:18 bsmith Exp balay $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\

@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: sda2f.c,v 1.7 1997/02/07 23:31:26 bsmith Exp gropp $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: sda2f.c,v 1.8 1997/06/30 17:34:51 gropp Exp balay $";
 #endif
 /*
      Fortran interface for SDA routines.

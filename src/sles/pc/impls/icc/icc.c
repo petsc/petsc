@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.43 1997/03/01 15:47:50 bsmith Exp bsmith $ ";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: icc.c,v 1.44 1997/06/05 12:53:13 bsmith Exp balay $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.

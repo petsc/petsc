@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: euler.c,v 1.8 1997/01/21 18:42:05 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: euler.c,v 1.9 1997/06/05 12:56:16 bsmith Exp balay $";
 #endif
 /*
        Code for Timestepping with explicit Euler.

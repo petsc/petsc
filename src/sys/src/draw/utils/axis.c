@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.38 1997/05/07 01:46:01 balay Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: axis.c,v 1.39 1997/05/23 16:41:48 balay Exp balay $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.

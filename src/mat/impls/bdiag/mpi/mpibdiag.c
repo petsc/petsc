@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.117 1997/05/03 21:12:33 curfman Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: mpibdiag.c,v 1.118 1997/05/23 18:37:56 balay Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.61 1997/04/24 15:19:52 curfman Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: asm.c,v 1.62 1997/06/05 12:53:15 bsmith Exp balay $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.

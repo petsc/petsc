@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.127 1997/04/10 00:02:31 bsmith Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: dense.c,v 1.128 1997/05/23 18:37:16 balay Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.

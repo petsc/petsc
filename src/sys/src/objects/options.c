@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: options.c,v 1.132 1997/06/05 12:52:10 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: options.c,v 1.133 1997/07/02 22:24:44 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,

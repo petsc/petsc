@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.43 1997/01/06 20:24:51 balay Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: bdfact.c,v 1.44 1997/04/05 00:57:05 balay Exp balay $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */

@@ -1,7 +1,5 @@
-
-
-#ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.84 1997/05/03 15:29:14 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: mtr.c,v 1.85 1997/05/28 23:19:41 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 

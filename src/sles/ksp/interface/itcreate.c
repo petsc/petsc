@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.99 1997/04/28 21:48:21 bsmith Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: itcreate.c,v 1.100 1997/05/23 18:27:18 balay Exp balay $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.

@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: sda2.c,v 1.7 1997/02/05 22:05:18 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: sda2.c,v 1.8 1997/02/07 23:31:26 bsmith Exp balay $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 

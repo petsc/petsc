@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.80 1997/05/23 16:18:09 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: da2.c,v 1.81 1997/06/05 12:58:01 bsmith Exp balay $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/

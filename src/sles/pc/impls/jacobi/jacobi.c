@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.30 1997/02/22 02:24:03 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: jacobi.c,v 1.31 1997/06/05 12:52:51 bsmith Exp balay $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation

@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.27 1997/07/04 13:38:29 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: memc.c,v 1.28 1997/07/09 13:02:20 bsmith Exp balay $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: err.c,v 1.62 1997/05/20 03:01:19 bsmith Exp curfman $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: err.c,v 1.63 1997/06/26 19:15:28 curfman Exp balay $";
 #endif
 /*
        The default error handlers and code that allows one to change

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: pcnull.c,v 1.9 1997/02/22 02:23:59 bsmith Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: pcnull.c,v 1.10 1997/05/23 18:33:26 balay Exp balay $";
 #endif
 /*
     Routines to project vectors out of null spaces.

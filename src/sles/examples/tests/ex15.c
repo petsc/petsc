@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex15.c,v 1.6 1996/03/19 21:27:49 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex15.c,v 1.7 1996/07/08 22:20:55 bsmith Exp balay $";
 #endif
 
 static char help[] = "SLES on an operator with a null space.\n\n";

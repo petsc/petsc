@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.28 1997/02/22 02:25:15 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: mpiaijpc.c,v 1.29 1997/04/10 00:02:50 bsmith Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.

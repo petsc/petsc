@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.17 1997/02/03 15:47:17 curfman Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: snesregi.c,v 1.18 1997/02/22 02:28:38 bsmith Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/

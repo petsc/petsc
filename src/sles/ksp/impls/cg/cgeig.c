@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.34 1997/01/06 20:22:32 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: cgeig.c,v 1.35 1997/03/09 17:57:18 bsmith Exp balay $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method

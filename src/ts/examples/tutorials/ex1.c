@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.8 1997/04/03 18:56:57 curfman Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex1.c,v 1.9 1997/04/10 00:05:28 bsmith Exp balay $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";

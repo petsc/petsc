@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.71 1997/05/23 18:38:15 balay Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: mpibaij.c,v 1.72 1997/06/03 16:40:50 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -364,7 +364,11 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
             if (!baij->colmap) {
               ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
-            col = baij->colmap[in[j]] - 1;
+
+#if defined(PETSC_BOPT_g)
+            if ((baij->colmap[in[j]] - 1)%bs) {SETERRQ(1,0,"Incorrect colmap");}
+#endif
+            col = (baij->colmap[in[j]] - 1)/bs;
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
               ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr); 
               col =  in[j];              
@@ -618,7 +622,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
           if (!baij->colmap) {
             ierr = CreateColmap_MPIBAIJ_Private(mat); CHKERRQ(ierr);
           }
-          col = (baij->colmap[col/bs]-1)*bs + col%bs;
+          col = (baij->colmap[col/bs]) - 1 + col%bs;
           if (col < 0  && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
             ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr); 
             col = (int) PetscReal(values[3*i+1]);

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.30 1996/07/08 22:18:48 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex4.c,v 1.31 1997/04/10 00:02:17 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR and tests\n\

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.33 1997/03/26 01:37:56 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex7.c,v 1.34 1997/04/10 00:06:34 bsmith Exp balay $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\

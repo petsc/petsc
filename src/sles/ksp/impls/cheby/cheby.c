@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.47 1997/02/22 02:23:16 bsmith Exp curfman $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: cheby.c,v 1.48 1997/03/13 03:42:08 curfman Exp balay $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 

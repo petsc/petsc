@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: xcolor.c,v 1.23 1997/05/02 16:00:57 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: xcolor.c,v 1.24 1997/05/02 19:09:16 bsmith Exp balay $";
 #endif
 /*
     Code for managing color the X implementation of the Draw routines.

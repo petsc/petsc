@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.56 1997/05/23 18:39:41 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: stride.c,v 1.57 1997/07/02 22:23:50 bsmith Exp balay $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 

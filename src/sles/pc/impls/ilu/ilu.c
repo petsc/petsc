@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.88 1997/05/28 23:20:09 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ilu.c,v 1.89 1997/06/05 12:53:11 bsmith Exp balay $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.39 1997/05/29 17:47:36 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: signal.c,v 1.40 1997/06/15 14:16:33 bsmith Exp balay $";
 #endif
 /*
       Routines to handle signals the program will receive. 

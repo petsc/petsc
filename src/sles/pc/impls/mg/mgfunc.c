@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.19 1997/01/06 20:23:46 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: mgfunc.c,v 1.20 1997/02/22 02:24:12 bsmith Exp balay $";
 #endif
 
 #include "src/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/

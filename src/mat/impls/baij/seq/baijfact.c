@@ -1,7 +1,5 @@
-
-
-#ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.48 1997/07/07 19:35:27 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: baijfact.c,v 1.49 1997/07/09 13:09:54 bsmith Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 

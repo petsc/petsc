@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.42 1997/02/22 02:25:40 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: sorder.c,v 1.43 1997/04/10 00:03:16 bsmith Exp balay $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: prefix.c,v 1.10 1997/04/12 19:21:41 bsmith Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: prefix.c,v 1.11 1997/04/12 19:23:42 balay Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.

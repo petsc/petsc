@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.158 1997/07/02 22:28:04 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: plog.c,v 1.159 1997/07/03 23:16:02 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.

@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: snesj2.c,v 1.5 1996/12/16 20:43:19 balay Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: snesj2.c,v 1.6 1997/01/06 20:29:45 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/

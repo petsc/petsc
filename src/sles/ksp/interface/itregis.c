@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: itregis.c,v 1.20 1997/02/22 02:22:53 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: itregis.c,v 1.21 1997/03/26 01:34:39 bsmith Exp balay $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/

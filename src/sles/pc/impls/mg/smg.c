@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: smg.c,v 1.10 1996/12/17 17:11:36 balay Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: smg.c,v 1.11 1997/01/06 20:23:46 balay Exp balay $";
 #endif
 /*
      Additive Multigrid V Cycle routine    

@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: block.c,v 1.15 1997/04/09 23:59:58 bsmith Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: block.c,v 1.16 1997/05/23 18:39:50 balay Exp balay $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.

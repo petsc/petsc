@@ -1,7 +1,5 @@
-
-
-#ifndef lint
-static char vcid[] = "$Id: str.c,v 1.10 1997/02/22 02:23:29 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: str.c,v 1.11 1997/05/28 23:19:41 bsmith Exp balay $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.29 1996/08/28 19:57:21 curfman Exp curfman $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex7.c,v 1.30 1996/09/27 20:33:30 curfman Exp balay $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\

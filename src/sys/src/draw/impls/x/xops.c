@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.85 1997/07/02 22:26:33 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: xops.c,v 1.86 1997/07/07 15:44:11 bsmith Exp balay $";
 #endif
 /*
     Defines the operations for the X Draw implementation.

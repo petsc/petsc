@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.24 1996/07/08 22:22:45 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex2.c,v 1.25 1997/04/10 00:06:04 bsmith Exp balay $";
 #endif
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";

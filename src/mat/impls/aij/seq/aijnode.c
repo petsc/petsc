@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.72 1997/02/22 02:25:00 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: aijnode.c,v 1.73 1997/04/10 00:02:38 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)

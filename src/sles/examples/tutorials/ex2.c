@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.62 1997/03/14 03:16:03 curfman Exp curfman $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex2.c,v 1.63 1997/03/14 03:17:41 curfman Exp balay $";
 #endif
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */

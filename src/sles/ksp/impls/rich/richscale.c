@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: richscale.c,v 1.1 1997/01/25 04:22:47 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: richscale.c,v 1.2 1997/01/27 18:15:39 bsmith Exp balay $";
 #endif
 /*          
             This implements Richardson Iteration.       

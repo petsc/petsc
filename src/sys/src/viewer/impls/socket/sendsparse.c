@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: sendsparse.c,v 1.16 1997/01/06 20:29:26 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: sendsparse.c,v 1.17 1997/02/22 02:28:23 bsmith Exp balay $";
 #endif
 /* This is part of the MatlabSockettool package. Here are the routines
    to send a sparse matrix to Matlab.

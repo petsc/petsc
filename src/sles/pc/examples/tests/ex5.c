@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.51 1997/03/26 01:35:34 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex5.c,v 1.52 1997/04/10 00:02:17 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\

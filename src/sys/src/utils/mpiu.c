@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.70 1997/05/17 18:44:51 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: mpiu.c,v 1.71 1997/05/17 23:55:44 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.

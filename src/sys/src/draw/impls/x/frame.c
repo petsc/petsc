@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: frame.c,v 1.10 1997/01/06 20:27:07 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: frame.c,v 1.11 1997/02/22 02:27:19 bsmith Exp balay $";
 #endif
 
 #if defined(HAVE_X11)

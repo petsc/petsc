@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.35 1997/02/22 02:23:25 bsmith Exp curfman $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: qcg.c,v 1.36 1997/03/13 03:42:45 curfman Exp balay $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint

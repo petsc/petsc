@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.60 1997/03/14 03:16:08 curfman Exp curfman $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex1.c,v 1.61 1997/03/14 03:17:44 curfman Exp balay $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.30 1997/01/01 03:36:14 bsmith Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: lsqr.c,v 1.31 1997/01/06 20:22:44 balay Exp balay $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }

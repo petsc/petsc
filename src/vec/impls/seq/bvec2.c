@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.97 1997/05/23 18:34:29 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: bvec2.c,v 1.98 1997/06/12 22:10:00 bsmith Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -272,7 +272,7 @@ int VecDuplicate_Seq(Vec,Vec*);
 static struct _VeOps DvOps = {VecDuplicate_Seq, 
             VecDuplicateVecs_Default, VecDestroyVecs_Default, 
             VecDot_Seq, VecMDot_Seq,
-            VecNorm_Seq,  VecDot_Seq, VecMDot_Seq,
+            VecNorm_Seq,  VecTDot_Seq, VecMTDot_Seq,
             VecScale_Seq, VecCopy_Seq,
             VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecAXPBY_Seq,
             VecMAXPY_Seq, VecAYPX_Seq,

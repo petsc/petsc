@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: borthog2.c,v 1.4 1997/06/12 01:23:49 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: borthog2.c,v 1.5 1997/07/02 22:24:27 bsmith Exp balay $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.

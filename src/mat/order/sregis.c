@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: sregis.c,v 1.17 1997/02/03 05:58:45 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: sregis.c,v 1.18 1997/02/22 02:25:40 bsmith Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"     /*I       "mat.h"   I*/

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.24 1997/01/06 20:26:03 balay Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: axpy.c,v 1.25 1997/04/04 23:54:05 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/

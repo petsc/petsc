@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: dgefa4.c,v 1.1 1997/06/10 03:18:18 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: dgefa5.c,v 1.2 1997/06/10 04:06:56 bsmith Exp balay $";
 #endif
 /*
     Inverts 5 by 5 matrix using partial pivoting.

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: MPI_Wtime.c,v 1.4 1996/03/19 21:30:13 bsmith Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: MPI_Wtime.c,v 1.5 1996/08/16 20:42:32 balay Exp balay $";
 #endif
 
 #include "stdio.h"

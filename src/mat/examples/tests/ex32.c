@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: ex32.c,v 1.4 1997/04/10 00:03:45 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex32.c,v 1.5 1997/05/03 15:30:21 bsmith Exp balay $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\

@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: plogmpe.c,v 1.20 1997/02/22 02:29:54 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: plogmpe.c,v 1.21 1997/04/02 21:03:11 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log PETSc events using MPE

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.94 1997/06/18 12:49:58 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: itcl.c,v 1.95 1997/07/02 22:24:18 bsmith Exp balay $";
 #endif
 /*
     Code for setting KSP options from the options database.

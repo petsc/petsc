@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.22 1997/01/06 20:24:43 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: iccbs.c,v 1.23 1997/06/05 12:54:03 bsmith Exp balay $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.

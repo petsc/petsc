@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.35 1997/03/18 21:37:42 curfman Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: fp.c,v 1.36 1997/05/29 17:47:28 bsmith Exp balay $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
