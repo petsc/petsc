@@ -3659,8 +3659,10 @@ int MatSetOption(Mat mat,MatOption op)
     break;
   case MAT_SYMMETRY_ETERNAL:
     mat->symmetric_eternal          = PETSC_TRUE;
+    break;
   case MAT_NOT_SYMMETRY_ETERNAL:
     mat->symmetric_eternal          = PETSC_FALSE;
+    break;
   default:
     break;
   }
