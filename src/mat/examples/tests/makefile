@@ -517,23 +517,23 @@ runex53:
 	$(RM) -f ex53_1.tmp
 
 runex54:
-	-@touch ex54_1.tmp;\
-	for bs in $(MATBLOCKSIZE); do \
+	-@for bs in $(MATBLOCKSIZE); do \
 	    for matsize in $(MATSIZE); do \
 	      for ov in $(OVERLAP); do\
 	        for nd in $(NODOMAINS); do \
 		  for np in $(NPROCS); do \
 		    $(MPIRUN)  ex54 -mat_block_size $$bs -ov $$ov \
-                       -mat_size $$matsize -nd $$nd >> ex54_1.tmp 2>&1; \
+                       -mat_size $$matsize -nd $$nd > ex54_1.tmp 2>&1; \
+	  	    grep -v "flg =1" ex54_1.tmp > ex54_12.tmp; \
+	 	    if (diff output/ex54_1.out ex54_12.tmp) then true; \
+		      else echo "Possible problem with ex54_1, diffs above"; \
+	  	      echo np $$np bs $$bs matsize $$matsize ov $$ov nd $$nd; fi; \
+		    $(RM) -f ex54_1.tmp ex54_12.tmp;\
 		  done;\
 		done;\
 	      done;\
 	    done;\
-	done;\
-	  grep -v "flg =1" ex54_1.tmp > ex54_12.tmp; \
-	  if (diff output/ex54_1.out ex54_12.tmp) then true; \
-	  else echo "Possible problem with ex54_1, diffs above"; fi; \
-	  $(RM) -f ex54_1.tmp ex54_12.tmp
+	done
 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
