@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.4 1996/01/22 19:16:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: random.c,v 1.5 1996/01/23 01:11:13 curfman Exp balay $";
 #endif
 
 /*
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: random.c,v 1.4 1996/01/22 19:16:32 bsmith Exp curfman
  */
 
 #include "petsc.h"
-#include "sys.h"
+#include "sys.h"        /*I "sys.h" I*/
 #include "stdlib.h"
 
 /* Private data */
