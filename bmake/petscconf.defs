@@ -39,3 +39,7 @@ SIZEOF_INT - used when reading/writing binary files. We always save using
              32 bits for portability, so when this is on, the integers
              are first compressed to 32 bits before being written
 
+HAVE_RESTRICT - indicates that the compiler supports the keyword _Restrict (currently
+                only support be Solaris compilers)
+
+
