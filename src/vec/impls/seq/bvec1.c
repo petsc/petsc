@@ -1,68 +1,64 @@
 
-/*  cannot have vcid because include in other files */
+/* $Id: dvec2.c,v 1.11 1995/06/07 17:27:28 bsmith Exp $ */
+
 /*
    Defines the BLAS based vector operations
 */
 
-#include "sys/flog.h"
 #include <math.h>
 #include "vecimpl.h" 
 #include "dvecimpl.h" 
 #include "plapack.h"
 
-static int VeiDVBdot(Vec xin, Vec yin,Scalar *z )
+static int VecDot_Blas(Vec xin, Vec yin,Scalar *z )
 {
-  DvVector *x = (DvVector *)xin->data,*y = (DvVector *)yin->data;
+  Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
   int  one = 1;
   *z = BLdot_( &x->n, x->array, &one, y->array, &one );
+  PLogFlops(2*x->n-1);
   return 0;
 }
 
-static int VeiDVBnorm(Vec xin,double* z )
+static int VecAsum_Blas( Vec xin, double *z )
 {
-  DvVector * x = (DvVector *) xin->data;
-  int  one = 1;
-  *z = BLnrm2_( &x->n, x->array, &one );
-  return 0;
-}
-
-static int VeiDVBasum( Vec xin, double *z )
-{
-  DvVector *x = (DvVector *) xin->data;
+  Vec_Seq *x = (Vec_Seq *) xin->data;
   int one = 1;
   *z = BLasum_( &x->n, x->array, &one );
+  PLogFlops(x->n-1);
   return 0;
 }
 
-static int VeiDVBscal( Scalar *alpha,Vec xin )
+static int VecScale_Blas( Scalar *alpha,Vec xin )
 {
-  DvVector *x = (DvVector *) xin->data;
+  Vec_Seq *x = (Vec_Seq *) xin->data;
   int one = 1;
   BLscal_( &x->n, alpha, x->array, &one );
+  PLogFlops(x->n);
   return 0;
 }
 
-static int VeiDVBcopy(Vec xin, Vec yin )
+static int VecCopy_Blas(Vec xin, Vec yin )
 {
-  DvVector *x = (DvVector *)xin->data, *y = (DvVector *)yin->data;
+  Vec_Seq *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
   int one = 1;
   BLcopy_( &x->n, x->array, &one, y->array, &one );
   return 0;
 }
 
-static int VeiDVBswap(  Vec xin,Vec yin )
+static int VecSwap_Blas(  Vec xin,Vec yin )
 {
-  DvVector *x = (DvVector *)xin->data, *y = (DvVector *)yin->data;
+  Vec_Seq *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
   int  one = 1;
   BLswap_( &x->n, x->array, &one, y->array, &one );
   return 0;
 }
 
-static int VeiDVBaxpy(  Scalar *alpha, Vec xin, Vec yin )
+static int VecAXPY_Blas(  Scalar *alpha, Vec xin, Vec yin )
 {
-  DvVector  *x = (DvVector *)xin->data, *y = (DvVector *)yin->data;
+  Vec_Seq  *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
   int one = 1;
   BLaxpy_( &x->n, alpha, x->array, &one, y->array, &one );
+  PLogFlops(2*x->n);
   return 0;
 }
 

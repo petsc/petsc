@@ -1,3 +1,4 @@
+/* $Id: pdvec.c,v 1.10 1995/06/07 17:30:43 bsmith Exp $ */
 /* 
      This is the include file, it contains definitions 
   needed by different components of the package.

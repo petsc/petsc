@@ -1,5 +1,4 @@
-
-/* cannot have vcid because included in other files */
+/* $Id: dvec2.c,v 1.11 1995/06/07 17:27:28 bsmith Exp $ */
 
 #include <math.h>
 #include "pvecimpl.h" 
@@ -7,11 +6,10 @@
 
 static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 {
-  Vec_MPI *x = (Vec_MPI *)xin->data;
   Scalar *work;
   work = (Scalar *)MALLOC( nv * sizeof(Scalar) );  CHKPTR(work);
   VecMDot_Seq(  nv, xin, y, work );
-  MPI_Allreduce((void *) work,(void *)z,nv,MPI_SCALAR,MPI_SUM,x->comm );
+  MPI_Allreduce((void *) work,(void *)z,nv,MPI_SCALAR,MPI_SUM,xin->comm );
   FREE(work);
   return 0;
 }
@@ -30,7 +28,7 @@ static int VecNorm_MPI(  Vec xin, double *z )
 #else
   SQR(work,xx,n);
 #endif
-  MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_DOUBLE,MPI_SUM,x->comm );
+  MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
   *z = sqrt( sum );
   return 0;
 }
@@ -38,14 +36,13 @@ static int VecNorm_MPI(  Vec xin, double *z )
 
 static int VecAMax_MPI( Vec xin, int *idx, double *z )
 {
-  Vec_MPI *x = (Vec_MPI *) xin->data;
   double work;
   /* Find the local max */
   VecAMax_Seq( xin, idx, &work );
 
   /* Find the global max */
   if (!idx) {
-    MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_MAX,x->comm );
+    MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
   }
   else {
     /* Need to use special linked max */
@@ -56,14 +53,13 @@ static int VecAMax_MPI( Vec xin, int *idx, double *z )
 
 static int VecMax_MPI( Vec xin, int *idx, double *z )
 {
-  Vec_MPI *x = (Vec_MPI *) xin->data;
   double work;
   /* Find the local max */
   VecMax_Seq( xin, idx, &work );
 
   /* Find the global max */
   if (!idx) {
-    MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_MAX,x->comm );
+    MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
   }
   else {
     /* Need to use special linked max */
@@ -74,14 +70,13 @@ static int VecMax_MPI( Vec xin, int *idx, double *z )
 
 static int VecMin_MPI( Vec xin, int *idx, double *z )
 {
-  Vec_MPI *x = (Vec_MPI *) xin->data;
   double work;
   /* Find the local Min */
   VecMin_Seq( xin, idx, &work );
 
   /* Find the global Min */
   if (!idx) {
-    MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_MIN,x->comm );
+    MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_MIN,xin->comm );
   }
   else {
     /* Need to use special linked Min */

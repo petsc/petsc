@@ -1,5 +1,4 @@
-
-/* cannot have vcid because included in other files */
+/* $Id: daimpl.h,v 1.4 1995/06/07 16:36:33 bsmith Exp $ */
 
 /*
      These are routines shared by sequential vectors and BLAS sequential 
@@ -15,68 +14,9 @@
 #include "vecimpl.h"             
 #include "dvecimpl.h"   
 #include "draw.h"          
+#include "pviewer.h"
 
-static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
-{
-  Vec_Seq *x = (Vec_Seq *) xin->data;
-  *low = 0; *high = x->n;
-  return 0;
-}
-#include "viewer.h"
 
-static int VecView_Seq(PetscObject obj,Viewer ptr)
-{
-  Vec         xin = (Vec) obj;
-  Vec_Seq    *x = (Vec_Seq *)xin->data;
-  PetscObject vobj = (PetscObject) ptr;
-  int         i, n = x->n, ierr;
-  FILE        *fd;
-
-  if (!ptr) { /* so that viewers may be used from debuggers */
-    ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
-  }
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-
-  if (vobj->cookie == VIEWER_COOKIE && ((vobj->type == FILE_VIEWER) ||
-                                       (vobj->type == FILES_VIEWER)))  {
-    fd = ViewerFileGetPointer_Private(ptr);
-    for (i=0; i<n; i++ ) {
-#if defined(PETSC_COMPLEX)
-      fprintf(fd,"%g + %gi\n",real(x->array[i]),imag(x->array[i]));
-#else
-      fprintf(fd,"%g\n",x->array[i]);
-#endif
-    }
-  }
-#if !defined(PETSC_COMPLEX)
-  else if (vobj->cookie == LG_COOKIE){
-    DrawLGCtx lg = (DrawLGCtx) ptr;
-    DrawCtx   win;
-    double    *xx;
-    DrawLGGetDrawCtx(lg,&win);
-    DrawLGReset(lg);
-    xx = (double *) MALLOC( n*sizeof(double) ); CHKPTR(xx);
-    for ( i=0; i<n; i++ ) {
-      xx[i] = (double) i;
-    }
-    DrawLGAddPoints(lg,n,&xx,&x->array);
-    FREE(xx);
-    DrawLG(lg);
-    DrawSyncFlush(win);
-  }
-  else if (vobj->cookie == DRAW_COOKIE) {
-    DrawCtx   win = (DrawCtx) ptr;
-    DrawLGCtx lg;
-    ierr = DrawLGCreate(win,1,&lg); CHKERR(ierr);
-    ierr = VecView(xin,(Viewer) lg); CHKERR(ierr);
-    DrawLGDestroy(lg);
-  }
-  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
-    return ViewerMatlabPutArray_Private(ptr,x->n,1,x->array); 
-  }
-#endif
-  return 0;
-}
 static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data;
@@ -234,31 +174,6 @@ static int VecPDiv_Seq(Vec xin,Vec yin,Vec win )
   return 0;
 }
 
-#include "inline/spops.h"
-static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
-{
-  Vec_Seq *x = (Vec_Seq *)xin->data;
-  Scalar   *xx = x->array;
-  int      i;
-
-  if (m == InsertValues) {
-    for ( i=0; i<ni; i++ ) {
-#if defined(PETSC_DEBUG)
-      if (ix[i] < 0 || ix[i] >= x->n) SETERR(1,"Index out of range");
-#endif
-      xx[ix[i]] = y[i];
-    }
-  }
-  else {
-    for ( i=0; i<ni; i++ ) {
-#if defined(PETSC_DEBUG)
-      if (ix[i] < 0 || ix[i] >= x->n) SETERR(1,"Index out of range");
-#endif
-      xx[ix[i]] += y[i];
-    }  
-  }  
-  return 0;
-}
 
 static int VecGetArray_Seq(Vec vin,Scalar **a)
 {
@@ -272,17 +187,7 @@ static int VecGetSize_Seq(Vec vin,int *size)
   *size = v->n; return 0;
 }
 
-static int VecDestroy_Seq(PetscObject obj )
-{
-  Vec      v = (Vec ) obj;
-#if defined(PETSC_LOG)
-  PLogObjectState(obj,"Rows %d",((Vec_Seq *)v->data)->n);
-#endif
-  FREE(v->data);
-  PLogObjectDestroy(v);
-  PETSCHEADERDESTROY(v); 
-  return 0;
-}
+
  
 
 

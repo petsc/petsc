@@ -1,3 +1,4 @@
+/* $Id: dvec2.c,v 1.11 1995/06/07 17:27:28 bsmith Exp $ */
 /* 
    This should not be included in users code.
 

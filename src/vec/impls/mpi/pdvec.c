@@ -1,7 +1,6 @@
+/* $Id: dvec2.c,v 1.11 1995/06/07 17:27:28 bsmith Exp $ */
 
 #include "pviewer.h"
-
-/* cannot have vcid because included in other files */
 
 static int VecGetOwnershipRange_MPI(Vec v,int *low,int* high) 
 {
