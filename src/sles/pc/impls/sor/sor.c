@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.16 1995/04/17 20:00:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.17 1995/05/05 03:49:02 bsmith Exp curfman $";
 #endif
 
 /*
@@ -9,8 +9,9 @@ static char vcid[] = "$Id: sor.c,v 1.16 1995/04/17 20:00:58 curfman Exp bsmith $
 #include "options.h"
 
 typedef struct {
-  int    its,sym;
-  double omega;
+  int        its;
+  MatSORType sym;
+  double     omega;
 } PC_SOR;
 
 static int PCApply_SOR(PC pc,Vec x,Vec y)
@@ -100,11 +101,11 @@ int PCCreate_SOR(PC pc)
 .  pc - the preconditioner context
 .  flag - one of the following:
 $    SOR_FORWARD_SWEEP
-$    SOR_SYMMETRIC_SWEEP
 $    SOR_BACKWARD_SWEEP
+$    SOR_SYMMETRIC_SWEEP
 $    SOR_LOCAL_FORWARD_SWEEP
-$    SOR_LOCAL_SYMMETRIC_SWEEP
 $    SOR_LOCAL_BACKWARD_SWEEP
+$    SOR_LOCAL_SYMMETRIC_SWEEP
 
    Options Database Keys:
 $  -pc_sor_symmetric
@@ -122,7 +123,7 @@ $     -pc_method  eisenstat
 
 .seealso: PCEisenstatSetOmega(), PCSORSetIterations(), PCSORSetOmega()
 @*/
-int PCSORSetSymmetric(PC pc, int flag)
+int PCSORSetSymmetric(PC pc, MatSORType flag)
 {
   PC_SOR *jac = (PC_SOR *) pc->data; 
   VALIDHEADER(pc,PC_COOKIE);
