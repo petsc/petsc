@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.33 1998/04/24 02:16:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.34 1998/05/29 20:37:48 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -86,8 +86,7 @@ int MatShift(Scalar *a,Mat Y)
   PetscValidScalarPointer(a);
   if (Y->ops->shift) {
     ierr = (*Y->ops->shift)(a,Y); CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = MatGetOwnershipRange(Y,&start,&end); CHKERRQ(ierr);
     for ( i=start; i<end; i++ ) {
       ierr = MatSetValues(Y,1,&i,1,&i,a,ADD_VALUES); CHKERRQ(ierr);
