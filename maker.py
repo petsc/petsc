@@ -144,3 +144,18 @@ class Maker (logging.Logger):
       return output+']'
     else:
       raise RuntimeError('Invalid fileset '+str(set))
+
+  def guessProject(self, dir):
+    for project in self.argDB['installedprojects']:
+      if project.getRoot() == dir:
+        return project
+    return bs.Project(os.path.basename(dir).lower(), '')
+
+  def getMakeModule(self, root, name = 'make'):
+    import imp
+
+    (fp, pathname, description) = imp.find_module(name, [root])
+    try:
+      return imp.load_module(name, fp, pathname, description)
+    finally:
+      if fp: fp.close()

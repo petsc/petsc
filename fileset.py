@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import os
-import types
 
 class FileSet:
   def __init__(self, data = [], func = None, children = [], tag = None):
@@ -70,13 +69,14 @@ class TreeFileSet (FileSet):
   def __init__(self, roots = None, fileTest = lambda file: 1, tag = None):
     FileSet.__init__(self, func = self.walkTree, tag = tag)
     if roots:
-      if type(roots) == types.StringType:
-        self.roots  = FileSet([roots])
+      if isinstance(roots, str):
+        self.roots = FileSet([roots])
       else:
-        self.roots  = roots
+        self.roots = roots
     else:
       self.roots  = FileSet(os.getcwd())
     self.fileTest = fileTest
+    return
 
   def walkTree(self, fileSet):
     files = []
@@ -97,8 +97,8 @@ class ExtensionFileSet (TreeFileSet):
   def __init__(self, roots, exts, tag = None):
     TreeFileSet.__init__(self, roots, self.extTest, tag = tag)
     self.exts = exts
-    if not type(self.exts) == types.ListType:
-      self.exts = [self.exts]
+    if not isinstance(self.exts, list): self.exts = [self.exts]
+    return
 
   def extTest(self, file):
     (base, ext) = os.path.splitext(file)

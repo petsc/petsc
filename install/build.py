@@ -9,7 +9,7 @@ class Builder(install.base.Base):
     self.retriever = install.retrieval.Retriever(argDB)
     return
 
-  def build(self, root, target = 'default', setupTarget = ''):
+  def build(self, root, target = 'default', setupTarget = None):
     self.debugPrint('Building '+str(target)+' in '+root, 1, 'install')
     try:
       maker = self.getMakeModule(root).PetscMake(sys.argv[1:], self.argDB)
@@ -21,7 +21,8 @@ class Builder(install.base.Base):
       self.debugPrint('  Building dependency '+url, 2, 'install')
       self.build(self.retriever.retrieve(url), target, setupTarget)
     self.debugPrint('Compiling in '+root, 2, 'install')
-    if not isinstance(setupTarget, list): setupTarget = [setupTarget]
+    if setupTarget is None:                 setupTarget = []
+    elif not isinstance(setupTarget, list): setupTarget = [setupTarget]
     for t in setupTarget:
       maker.executeTarget(t)
     ret = maker.main(target)
