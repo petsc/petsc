@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.35 1999/11/05 14:46:06 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.36 2000/08/17 04:51:59 bsmith Exp balay $ 
 #
 #  All the Sparspak routines have been converted to C with the F2C 
 # converter. We do not include in the distribution the original Fortran 77 
