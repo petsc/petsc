@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.41 1997/07/10 15:47:56 balay Exp bsmith $";
+C    "$Id: ex12.F,v 1.42 1997/09/12 19:13:06 bsmith Exp bsmith $";
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  
@@ -113,8 +113,8 @@ C  are no longer needed.
 
 C --------------------  Evaluate Function F(x) --------------------- 
 
-      subroutine FormFunction(snes,x,f,ctx)
-      integer          snes, x, f, ctx(*)
+      subroutine FormFunction(snes,x,f,ctx,ierr)
+      integer          snes, x, f, ctx(*),ierr
       integer          rank, size, i, s, n, ierr, ixx, iff, iF2
       Scalar           h, d, vf2(1), vxx(1), vff(1)
       common           vf2, vxx, vff
