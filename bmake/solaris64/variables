@@ -49,7 +49,7 @@ OCXX_FOPTFLAGS	   = -xO3 -dalign
 GCOMP_COPTFLAGS	   = -g -xs
 GCOMP_FOPTFLAGS	   = -g -xs
 # --------------------------- BOPT - O_complex options -------------------------
-OCOMP_COPTFLAGS	   = -xO3_ -fsimple=2
+OCOMP_COPTFLAGS	   = -xO3 -fsimple=2
 OCOMP_FOPTFLAGS	   = -xO3 -dalign
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
