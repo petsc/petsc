@@ -86,6 +86,7 @@ def main():
         'changes/212.html',
         'changes/213.html',
         'changes/215.html',
+        'changes/216.html',        
         'changes/2918-21.html',
         'changes/index.html',
         'installation.html']
