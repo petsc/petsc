@@ -1238,19 +1238,16 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
       }        
     }
     *norm = sqrt(sum_diag + 2*sum_off);
-
-  }  else if (type == NORM_INFINITY) { /* maximum row sum */
-    ierr = PetscMalloc(mbs*sizeof(PetscInt),&il);CHKERRQ(ierr); 
-    ierr = PetscMalloc(mbs*sizeof(PetscInt),&jl);CHKERRQ(ierr);
-    ierr = PetscMalloc(bs*sizeof(PetscReal),&sum);CHKERRQ(ierr);
-    for (i=0; i<mbs; i++) {
-      jl[i] = mbs; il[0] = 0;
-    }
+  }  else if (type == NORM_INFINITY || type == NORM_1) { /* maximum row/column sum */
+    ierr = PetscMalloc((2*mbs+1)*sizeof(PetscInt)+bs*sizeof(PetscReal),&il);CHKERRQ(ierr); 
+    jl   = il + mbs;
+    sum  = (PetscReal*)(jl + mbs);
+    for (i=0; i<mbs; i++) jl[i] = mbs; 
+    il[0] = 0;
 
     *norm = 0.0;
     for (k=0; k<mbs; k++) { /* k_th block row */   
       for (j=0; j<bs; j++) sum[j]=0.0;
-
       /*-- col sum --*/
       i = jl[k]; /* first |A(i,k)| to be added */
       /* jl[k]=i: first nozero element in row i for submatrix A(1:k,k:n) (active window)
@@ -1273,16 +1270,14 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
           jl[i] = jl[j]; jl[j]=i;
         }
         i = nexti; 
-      }
-      
+      }     
       /*-- row sum --*/
       jmin = a->i[k]; jmax = a->i[k+1];
       for (i=jmin; i<jmax; i++) {
         for (j=0; j<bs; j++){
           v = a->a + i*bs2 + j; 
           for (k1=0; k1<bs; k1++){
-            sum[j] += PetscAbsScalar(*v); 
-            v   += bs;
+            sum[j] += PetscAbsScalar(*v); v += bs;
           }
         }
       }
@@ -1291,16 +1286,13 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
       if (*col == k) jmin++;
       if (jmin < jmax){
         il[k] = jmin; 
-        j   = a->j[jmin];
-        jl[k] = jl[j]; jl[j] = k;
+        j = a->j[jmin]; jl[k] = jl[j]; jl[j] = k;
       }
       for (j=0; j<bs; j++){
         if (sum[j] > *norm) *norm = sum[j];
       } 
     }
     ierr = PetscFree(il);CHKERRQ(ierr);
-    ierr = PetscFree(jl);CHKERRQ(ierr); 
-    ierr = PetscFree(sum);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,"No support for this norm yet");
   }
