@@ -88,7 +88,7 @@ int MatQRFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   int          ierr,m=A->m,n=A->n;
 
   PetscFunctionBegin;
-  SETERRQ("QR Factorization is unsupported as the Spooles implementation of QR is invalid.");
+  SETERRQ(PETSC_ERR_SUP,"QR Factorization is unsupported as the Spooles implementation of QR is invalid.");
   /* Create the factorization matrix */  
   ierr = MatCreate(A->comm,m,n,PETSC_NULL,PETSC_NULL,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQAIJSPOOLES);CHKERRQ(ierr);
