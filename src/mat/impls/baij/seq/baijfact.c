@@ -270,11 +270,11 @@ PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqBAIJ_N"
 PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat *B)
 {
+  PetscErrorCode ierr;
   Mat            C = *B;
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data;
   Mat_SeqSBAIJ   *b=(Mat_SeqSBAIJ*)C->data;
   IS             ip=b->row;
-  PetscErrorCode ierr,(*f)(Mat,Mat*);
   PetscInt       *rip,i,j,mbs=a->mbs,bs=A->bs,*bi=b->i,*bj=b->j,*bcol;
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
@@ -288,8 +288,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
     if (!a->sbaijMat){
       ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr); 
     } 
-    ierr = PetscObjectQueryFunction((PetscObject)C,"MatCholeskyFactorNumeric",(void (**)(void))&f);CHKERRQ(ierr);
-    ierr = (*f)(a->sbaijMat,B);CHKERRQ(ierr);
+    ierr = (a->sbaijMat)->ops->choleskyfactornumeric(a->sbaijMat,info,B);CHKERRQ(ierr);
     ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
     a->sbaijMat = PETSC_NULL; 
     PetscFunctionReturn(0); 
@@ -406,7 +405,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
   C->preallocated = PETSC_TRUE;
   PetscLogFlops(C->m);
   if (ndamp) {
-    PetscLogInfo(0,"MatCholeskyFactorNumerical_SeqBAIJ: number of damping tries %D damping value %g\n",ndamp,damping);
+    PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqBAIJ: number of damping tries %D damping value %g\n",ndamp,damping);
   }
   if (nshift) {
     PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqBAIJ diagonal shifted %D shifts\n",nshift);
@@ -553,7 +552,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat A,MatFacto
   C->preallocated = PETSC_TRUE;
   PetscLogFlops(C->m);
   if (ndamp) {
-    PetscLogInfo(0,"MatCholeskyFactorNumerical_SeqBAIJ_1_NaturalOrdering: number of damping tries %D damping value %g\n",ndamp,damping);
+    PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqBAIJ_1_NaturalOrdering: number of damping tries %D damping value %g\n",ndamp,damping);
   }
   if (nshift) {
     PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqBAIJ_1_NaturalOrdering diagonal shifted %D shifts\n",nshift);
@@ -587,7 +586,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *info,Ma
     }
     ierr = MatICCFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
     B = *fact;
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatCholeskyFactorNumeric","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr);
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
     PetscFunctionReturn(0); 
   }
@@ -622,7 +620,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *info,Ma
 
     B->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering;  
     B->ops->solvetranspose        = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr);
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering;
     PetscFunctionReturn(0);
   }
@@ -782,7 +779,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *info,Ma
   if (perm_identity){
     B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
     B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr);
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering;
   } else {
     (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
@@ -813,8 +809,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *in
       ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
     }
     ierr = MatCholeskyFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr); 
-    B = *fact;
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatCholeskyFactorNumeric","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr);
+    B    = *fact;
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
     PetscFunctionReturn(0); 
   }
@@ -972,7 +967,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *in
   if (perm_identity){
     B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
     B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatCholeskyFactorNumeric_NaturalOrdering","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr); 
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering; 
   } else {
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
