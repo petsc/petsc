@@ -1,6 +1,6 @@
 #PETSC_DIR = ../
 
-CFLAGS   =  $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
+CFLAGS   =  $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.55 1997/01/22 18:41:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.56 1997/02/22 02:23:29 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -32,7 +32,7 @@ static struct EH* eh = 0;
 .  line - the line number of the error (indicated by __LINE__)
 .  function - function where error occured (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __DIR__)
+.  dir - the directory of the file (indicated by __SDIR__)
 .  message - an error text string, usually just printed to the screen
 .  number - the generic error number
 .  p - specific error number
@@ -79,7 +79,7 @@ int PetscAbortErrorHandler(int line,char *function,char *file,char* dir,int numb
 .  line - the line number of the error (indicated by __LINE__)
 .  function - the function where error is detected (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __DIR__)
+.  dir - the directory of the file (indicated by __SDIR__)
 .  message - an error text string, usually just printed to the screen
 .  number - the generic error number
 .  p - specific error number
@@ -157,7 +157,7 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int numbe
 .  line - the line number of the error (indicated by __LINE__)
 .  fun - the function where the error occurred (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __DIR__)
+.  dir - the directory of the file (indicated by __SDIR__)
 .  message - an error text string, usually just printed to the screen
 .  number - the generic error number
 .  p - the specific error number
@@ -236,7 +236,7 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int number,int
 .  function - the function where the error occured (indicated by __FUNC__)
 .  line - the line number of the error (indicated by __LINE__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __DIR__)
+.  dir - the directory of the file (indicated by __SDIR__)
 .  message - an error text string, usually just printed to the screen
 .  number - the generic error number (see list defined in include/petscerror.h)
 .  p - the specific error number
@@ -290,7 +290,7 @@ int PetscPopErrorHandler()
    Input Parameters:
 .  line - the line number of the error (indicated by __LINE__)
 .  function - the function where the error occured (indicated by __FUNC__)
-.  dir - the directory of file (indicated by __DIR__)
+.  dir - the directory of file (indicated by __SDIR__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  message - an error text string, usually just printed to the screen
 .  number - the generic error number

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.34 1997/01/22 18:41:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.35 1997/02/22 02:22:21 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -25,6 +25,7 @@ int DrawScalePopup(Draw popup,double min,double max)
   DrawFlush(popup);
   return 0;
 }
+
 
 #undef __FUNC__  
 #define __FUNC__ "DrawTensorContour" /* ADIC Ignore */
@@ -52,9 +53,9 @@ $  -draw_contour_grid
 @*/
 int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 {
-  int           xin = 1, yin = 1, c1, c2, c3, c4, i, N, rank, ierr;
+  int           xin = 1, yin = 1, i, N, rank, ierr;
   int           pause,showgrid;
-  double        h, x1, x2, x3, x4, y1, y2, y3, y4, *v, min, max;
+  double        h, *v, min, max;
   Scalar        scale;
   Vec           W;
   IS            from, to;
@@ -96,9 +97,7 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 
     /* Scale the color values between 32 and 256 */
     ierr = VecMax(W,0,&max); CHKERRQ(ierr); ierr = VecMin(W,0,&min); CHKERRQ(ierr);
-    scale = (200.0 - 32.0)/(max - min);
-    min = -min; ierr = VecShift(&min,W); CHKERRQ(ierr);
-    ierr = VecScale(&scale,W); CHKERRQ(ierr);
+    if (max - min < 1.e-7) {min -= 5.e-8; max += 5.e-8;}
 
     /* Draw the scale window */
     ierr = DrawScalePopup(popup,min,max); CHKERRQ(ierr);
@@ -124,18 +123,7 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
     /* Draw the contour plot */
     ierr = DrawGetPause(win,&pause); CHKERRA(ierr);
     while (1) {
-      for ( i=0; i<N; i++ ) {
-        if (!((i+1) % m) ) continue;  /* last column on right is skipped */
-        if (i+m+1 >= N) continue;
-
-        x1 = x[i % m];     y1 = y[i/m];        c1 = (int) (32. + v[i]);
-        x2 = x[(i+1) % m]; y2 = y1;            c2 = (int) (32. + v[i+1]);
-        x3 = x2;           y3 = y[(i/m) + 1];  c3 = (int) (32. + v[i+m+1]);
-        x4 = x1;           y4 = y3;            c4 = (int) (32. + v[i+m]);
- 
-        ierr = DrawTriangle(win,x1,y1,x2,y2,x3,y3,c1,c2,c3); CHKERRQ(ierr);
-        ierr = DrawTriangle(win,x1,y1,x3,y3,x4,y4,c1,c3,c4); CHKERRQ(ierr);
-      }
+      ierr = DrawTensorContourPatch(win,m,n,x,y,max,min,v);CHKERRQ(ierr);
 
       if (showgrid) {
         for ( i=0; i<m; i++ ) {

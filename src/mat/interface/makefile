@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
 SOURCEC  = matrix.c mhas.c fdmatrix.c matcnv.c mgtype.c
 SOURCEF  =
 SOURCEH  = 

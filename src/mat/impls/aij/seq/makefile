@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
 SOURCEC  = aij.c aijfact.c ij.c essl.c dxml.c aijnode.c fdaij.c
 SOURCEF  =
 SOURCEH  = aij.h

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.101 1997/01/16 04:30:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.102 1997/02/22 02:22:27 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -939,7 +939,7 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetArray" /* ADIC Ignore */
+#define __FUNC__ "VecGetArray"
 /*@C
    VecGetArray - Returns a pointer to vector data. For default PETSc
    vectors, VecGetArray() returns a pointer to the local data array. Otherwise,
@@ -969,7 +969,7 @@ int VecGetArray(Vec x,Scalar **a)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetArrays" /* ADIC Ignore */
+#define __FUNC__ "VecGetArrays" 
 /*@C
    VecGetArrays - Returns a pointer to the arrays in a set of vectors
    that were created by a call to VecDuplicateVecs().  You MUST call
@@ -1005,7 +1005,7 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecRestoreArrays" /* ADIC Ignore */
+#define __FUNC__ "VecRestoreArrays"
 /*@C
    VecRestoreArrays - Restores a group of vectors after VecGetArrays()
    has been called.
@@ -1037,7 +1037,7 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecRestoreArray" /* ADIC Ignore */
+#define __FUNC__ "VecRestoreArray"
 /*@C
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 

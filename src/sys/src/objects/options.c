@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.121 1997/02/22 02:23:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.122 1997/02/22 16:48:28 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -134,7 +134,7 @@ int PetscCompareInt(int d)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscCompareDouble" /* ADIC Ignore */
+#define __FUNC__ "PetscCompareDouble"
 /*@C
    PetscCompareDouble - Compares doubles while running with PETSc's incremental
         debugger; triggered with the -compare <tol> flag.
@@ -157,7 +157,7 @@ int PetscCompareDouble(double d)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscCompareScalar" /* ADIC Ignore */
+#define __FUNC__ "PetscCompareScalar"
 /*@C
    PetscCompareScalar - Compares scalars while running with PETSc's incremental
         debugger; triggered with the -compare <tol> flag.

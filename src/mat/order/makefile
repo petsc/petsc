@@ -6,7 +6,7 @@
 #
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
 SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c sorder.c sregis.c\
            degree.c  fnroot.c genqmd.c qmdqt.c rcm.c fn1wd.c gen1wd.c \
            genrcm.c qmdrch.c rootls.c fndsep.c gennd.c qmdmrg.c qmdupd.c

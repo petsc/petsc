@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
 SOURCEC  = vinv.c gcreatev.c vscat.c vpscat.c cmesh.c vecio.c
 SOURCEF  =
 SOURCEH  = 

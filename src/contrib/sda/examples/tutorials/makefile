@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS	 = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"' -I../../src
+CFLAGS	 = $(CPPFLAGS) -D__SDIR__='"$(LOCDIR)"' -I../../src
 SOURCEC  = 
 SOURCEF  =
 SOURCEH  = 

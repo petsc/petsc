@@ -1,4 +1,8 @@
 
+/* static char vcid[] = "$Id: icc.c,v 1.42 1997/02/22 02:24:19 bsmith Exp bsmith $ "; */
+#include "src/pc/pcimpl.h"          
+#include "src/mat/matimpl.h"
+
 /* Incomplete Cholesky factorization context */
 
 typedef struct {

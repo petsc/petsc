@@ -2,7 +2,7 @@
 ALL: ex1
 
 # Note that we need FCONF to pick up the Fortran format info
-CFLAGS	        = $(CPPFLAGS) $(FCONF) -D__DIR__='"$(LOCDIR)"'
+CFLAGS	        = $(CPPFLAGS) $(FCONF) -D__SDIR__='"$(LOCDIR)"'
 FFLAGS	        =	 
 SOURCEC	        = 
 SOURCEF	        =

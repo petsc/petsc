@@ -283,11 +283,11 @@ CFLAGS   =  $(CPPFLAGS) $(CONF)
 alladic:
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adic  tree 
 	-cd include ; \
-           adiC.new -avud gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) petsc.h 
+           adiC.new -avud gradient.new -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) petsc.h 
 
 joe:
-	-cd src/vec/interface ; \
-           adiC.new -avud gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) vector.c 
+	-cd include ; \
+           adiC.new -avud gradient.new  -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) petsc.h
 
 
 # 

@@ -1,7 +1,7 @@
 #PETSC_DIR = ../../../..
 
 ALL: lib 
-CFLAGS    =  $(CPPFLAGS) $(X11_INCLUDE) $(CONF)  -D__DIR__='"$(LOCDIR)"'
+CFLAGS    =  $(CPPFLAGS) $(X11_INCLUDE) $(CONF)  -D__SDIR__='"$(LOCDIR)"'
 SOURCEC   = xinit.c  frame.c wmap.c color.c xops.c text.c tone.c
 SOURCEF   =
 SOURCEH   = ximpl.h
@@ -11,5 +11,6 @@ MANSEC    = x
 LIBBASE   = libpetscsys
 DIRS      = 
 LOCDIR    = src/draw/impls/x/
+NOADIC    = true
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

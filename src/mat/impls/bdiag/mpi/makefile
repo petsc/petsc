@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
 SOURCEC  = mmbdiag.c mpibdiag.c mpibdpc.c
 SOURCEF  =
 SOURCEH  = mpibdiag.h

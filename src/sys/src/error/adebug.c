@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.59 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.60 1997/02/27 19:03:14 balay Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -278,7 +278,7 @@ int PetscAttachDebugger()
 .  line - the line number of the error (indicated by __LINE__)
 .  fun - function where error occured (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __DIR__)
+.  dir - the directory of the file (indicated by __SDIR__)
 .  message - an error text string, usually just printed to the screen
 .  number - the generic error number
 .  p - the specific error number

@@ -2,7 +2,7 @@ ALL: lib
 
 #PETSC_DIR = ../../../../
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
 SOURCEC  = elapack.c
 SOURCEH  = 
 SOURCEF  = 

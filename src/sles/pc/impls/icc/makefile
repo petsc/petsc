@@ -3,7 +3,7 @@
 ALL: lib
 
 # This matrix dependency should be fixed!
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'   \
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'   \
            $(BS_INCLUDE) 
 SOURCEC  = icc.c
 SOURCEF  =

@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
 SOURCEC  = sda2.c sda2f.c
 SOURCEF  =
 SOURCEH  = sda.h

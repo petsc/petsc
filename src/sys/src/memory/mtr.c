@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.74 1997/02/13 00:22:48 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.75 1997/02/22 02:23:29 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -217,7 +217,7 @@ static char **PetscLogMallocDirectory, **PetscLogMallocFile,**PetscLogMallocFunc
 .   lineno - line number where used.  Use __LINE__ for this
 .   function - function calling routine. Use __FUNC__ for this
 .   filename  - file name where used.  Use __FILE__ for this
-.   dir - directory where file is. Use __DIR__ for this
+.   dir - directory where file is. Use __SDIR__ for this
 
     Returns:
     double aligned pointer to requested storage, or null if not
@@ -330,7 +330,7 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
 .   lineno - line number where used.  Use __LINE__ for this
 .   function - function calling routine. Use __FUNC__ for this
 .   file  - file name where used.  Use __FILE__ for this
-.   dir - directory where file is. Use __DIR__ for this
+.   dir - directory where file is. Use __SDIR__ for this
  */
 int PetscTrFreeDefault( void *aa, int line, char *function, char *file, char *dir )
 {

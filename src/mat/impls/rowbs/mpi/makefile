@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' \
 	   $(BS_INCLUDE)
 SOURCEC  = mpirowbs.c cholbs.c ilubs.c iccbs.c
 SOURCEF  =

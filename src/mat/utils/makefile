@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   =  $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
+CFLAGS   =  $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
 SOURCEC  = gcreate.c convert.c stash.c axpy.c zerodiag.c matio.c matioall.c \
            conaij.c conbdiag.c
 SOURCEF  =

@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) $(PCONF) $(CONF) -D__DIR__='"$(LOCDIR)"'
+CFLAGS   =  $(PETSC_INCLUDE) $(PCONF) $(CONF) -D__SDIR__='"$(LOCDIR)"'
 SOURCEC  = 
 SOURCEF  =
 SOURCEH  = 

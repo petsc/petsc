@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' \
 	   $(SUPERLU_INCLUDE)
 SOURCEC  = baij.c baij2.c baijfact.c dgefa.c dgedi.c dgefa3.c
 SOURCEF  =

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.40 1997/02/03 06:03:27 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.41 1997/02/26 00:06:53 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -56,6 +56,7 @@ extern int    ViewerStringSPrintf(Viewer,char *,...);
 extern Viewer VIEWER_STDOUT_SELF;  
 extern Viewer VIEWER_STDERR_SELF;
 extern Viewer VIEWER_STDOUT_WORLD;
+extern Viewer VIEWER_STDERR_WORLD;
 extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_0;
 extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_1;
 extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_2;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.53 1997/01/22 18:45:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.54 1997/02/22 02:28:26 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -13,8 +13,12 @@ struct _Viewer {
   char          *outputname,*outputnames[10];
 };
 
-Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD;
+Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD, VIEWER_STDERR_WORLD;
 
+/*
+      This is called by PETScInitialize() to create the 
+   default PETSc viewers.
+*/
 #undef __FUNC__  
 #define __FUNC__ "ViewerInitialize_Private" /* ADIC Ignore */
 int ViewerInitialize_Private()
@@ -22,6 +26,22 @@ int ViewerInitialize_Private()
   ViewerFileOpenASCII(MPI_COMM_SELF,"stderr",&VIEWER_STDERR_SELF);
   ViewerFileOpenASCII(MPI_COMM_SELF,"stdout",&VIEWER_STDOUT_SELF);
   ViewerFileOpenASCII(PETSC_COMM_WORLD,"stdout",&VIEWER_STDOUT_WORLD);
+  ViewerFileOpenASCII(PETSC_COMM_WORLD,"stderr",&VIEWER_STDERR_WORLD);
+  return 0;
+}
+
+/*
+      This is called in PetscFinalize() to destroy all
+   traces of the default viewers.
+*/
+#undef __FUNC__  
+#define __FUNC__ "ViewerDestroy_Private" /* ADIC Ignore */
+int ViewerDestroy_Private()
+{
+  ViewerDestroy(VIEWER_STDERR_SELF);
+  ViewerDestroy(VIEWER_STDOUT_SELF);
+  ViewerDestroy(VIEWER_STDOUT_WORLD);
+  ViewerDestroy(VIEWER_STDERR_WORLD);
   return 0;
 }
 
@@ -35,16 +55,6 @@ static int ViewerDestroy_File(PetscObject obj)
   if (!rank && v->fd != stderr && v->fd != stdout) fclose(v->fd);
   PLogObjectDestroy(obj);
   PetscHeaderDestroy(obj);
-  return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_Private" /* ADIC Ignore */
-int ViewerDestroy_Private()
-{
-  ViewerDestroy_File((PetscObject)VIEWER_STDERR_SELF);
-  ViewerDestroy_File((PetscObject)VIEWER_STDOUT_SELF);
-  ViewerDestroy_File((PetscObject)VIEWER_STDOUT_WORLD);
   return 0;
 }
 
@@ -145,7 +155,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
   else if (!PetscStrcmp(name,"stdout")) v->fd = stdout;
   else {
     v->fd        = fopen(name,"w"); 
-    if (!v->fd) SETERRQ(1,0,"Cannot open file");
+    if (!v->fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open viewer file");
   }
   v->format        = VIEWER_FORMAT_ASCII_DEFAULT;
   v->iformat       = 0;
@@ -160,7 +170,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 #undef __FUNC__  
 #define __FUNC__ "ViewerSetFormat" /* ADIC Ignore */
 /*@C
-   ViewerSetFormat - Sets the format for file viewers.
+   ViewerSetFormat - Sets the format for viewers.
 
    Input Parameters:
 .  v - the viewer
@@ -181,6 +191,9 @@ $       all objects of a particular type
 $    VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
 $      file in its native format (for example, dense
 $       matrices are stored as dense)
+$    VIEWER_FORMAT_DRAW_BASIC - View the vector with a simple 1d plot
+$    VIEWER_FORMAT_DRAW_LG - View the vector with a line graph
+$    VIEWER_FORMAT_DRAW_CONTOUR - View the vector with a contour
 
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
@@ -188,7 +201,7 @@ $       matrices are stored as dense)
 .keywords: Viewer, file, set, format
 
 .seealso: ViewerFileOpenASCII(), ViewerFileOpenBinary(), MatView(), VecView(),
-          ViewerPushFormat(), ViewerPopFormat()
+          ViewerPushFormat(), ViewerPopFormat(), ViewerDrawOpenX(),ViewerMatlabOpen()
 @*/
 int ViewerSetFormat(Viewer v,int format,char *name)
 {

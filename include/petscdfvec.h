@@ -1,5 +1,5 @@
 
-/* $Id: dfvec.h,v 1.17 1996/04/17 23:01:59 curfman Exp curfman $ */
+/* $Id: dfvec.h,v 1.18 1996/09/28 14:08:05 curfman Exp bsmith $ */
 
 /* This file declares some utility routines for manipulating discrete functions,
    or vectors that are associated with grids, possibly with multiple degrees of
@@ -17,7 +17,7 @@ typedef enum {ORDER_1,ORDER_2} DFComponentOrdering;
      ORDER_2 - ordering by segregating unknowns according to type
           (1 component for whole grid, then the next component, etc.) */
 
-#define DF_COOKIE PETSC_COOKIE+20
+#define DF_COOKIE PETSC_COOKIE+15
 
 typedef struct _DF* DF;
 #define DFVec Vec

@@ -1,7 +1,7 @@
 #PETSC_DIR = ../../../..
 ALL: ex1
 
-CFLAGS	        = $(CPPFLAGS)  -D__DIR__='"$(LOCDIR)"'
+CFLAGS	        = $(CPPFLAGS)  -D__SDIR__='"$(LOCDIR)"'
 FFLAGS	        = 
 SOURCEC	        = 
 SOURCEF	        =
@@ -27,7 +27,7 @@ BUILDEXAMPLES_4 = ex1.PETSc  ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
 		  ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_5 =
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c
 EXAMPLESF       = 
 
 ex1: ex1.o 
@@ -57,6 +57,10 @@ ex6: ex6.o
 ex7: ex7.o 
 	-$(CLINKER) -o ex7 ex7.o  $(PETSC_LIB)
 	$(RM) -f ex7.o
+
+ex8: ex8.o 
+	-$(CLINKER) -o ex8 ex8.o  $(PETSC_LIB)
+	$(RM) -f ex8.o
 
 runex1:
 	-@$(MPIRUN) -np 2 ex1 -nox > ex1_1.tmp 2>&1;	  \

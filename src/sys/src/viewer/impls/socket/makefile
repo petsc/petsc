@@ -11,7 +11,7 @@ ALL: lib
 #
 matlabcodes: receive openport closeport launch
 
-CFLAGS    = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' $(MATLAB_INCLUDE)
+CFLAGS    = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' $(MATLAB_INCLUDE)
 SOURCEC   = senddense.c send.c  sendsparse.c
 SOURCEF   =
 SOURCEH   = matlab.h
@@ -21,6 +21,7 @@ MANSEC    = v
 LIBBASE   = libpetscsys
 DIRS      = 
 LOCDIR    = src/viewer/impls/matlab/
+NOADIC    = true
 
 receive: chkopts receive.o receivesparse.o receivedense.o
 	$(CMEX) receive.o receivesparse.o  receivedense.o 

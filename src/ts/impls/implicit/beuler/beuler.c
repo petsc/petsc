@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.19 1997/01/21 18:42:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: beuler.c,v 1.20 1997/01/21 19:13:05 curfman Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -134,7 +134,7 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
 
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "TSDestroy_BEuler"
+#define __FUNC__ "TSDestroy_BEuler" /* ADIC Ignore */
 static int TSDestroy_BEuler(PetscObject obj )
 {
   TS        ts = (TS) obj;
@@ -329,7 +329,7 @@ static int TSSetFromOptions_BEuler_Nonlinear(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSPrintHelp_BEuler"
+#define __FUNC__ "TSPrintHelp_BEuler" /* ADIC Ignore */
 static int TSPrintHelp_BEuler(TS ts,char *p)
 {
 
@@ -337,7 +337,7 @@ static int TSPrintHelp_BEuler(TS ts,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSView_BEuler"
+#define __FUNC__ "TSView_BEuler" /* ADIC Ignore */
 static int TSView_BEuler(PetscObject obj,Viewer viewer)
 {
   return 0;

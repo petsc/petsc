@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.71 1997/02/07 23:29:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.72 1997/02/22 02:27:19 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -280,6 +280,7 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
   */
   if (!cursor) {
     cursor = XCreateFontCursor(win->disp,XC_hand2); 
+    if (!cursor) SETERRQ(1,1,"Unable to create X cursor");
   }
   XDefineCursor(win->disp, win->win, cursor);
 
@@ -805,7 +806,7 @@ Viewer VIEWER_DRAWX_(MPI_Comm comm)
   MPI_Attr_get( comm, Petsc_Viewer_Drawx_keyval, (void **)&viewer, &flag );
   if (!flag) { /* viewer not yet created */
     ierr = ViewerDrawOpenX(comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer); 
-    if (ierr) {PetscError(__LINE__,"VIEWER_DRAWX_",__FILE__,__DIR__,1,1,0); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"VIEWER_DRAWX_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
     MPI_Attr_put( comm, Petsc_Viewer_Drawx_keyval, (void *) viewer );
   } 
   return viewer;

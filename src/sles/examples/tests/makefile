@@ -1,15 +1,17 @@
 #PETSC_DIR = ../../../..
 ALL: ex1
 
-CFLAGS	        = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"' $(BS_INCLUDE)
-FFLAGS	        = 
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        = pargrid.h
-OBJSC	        =
-OBJSF	        =
-LIBBASE	        = libpetscsles
-LOCDIR          = src/sles/examples/tests/
+CFLAGS	  = $(CPPFLAGS) -D__SDIR__='"$(LOCDIR)"' $(BS_INCLUDE)
+FFLAGS	  = 
+SOURCEC	  = 
+SOURCEF	  =
+SOURCEH	  = pargrid.h
+OBJSC	  =
+OBJSF	  =
+LIBBASE	  = libpetscsles
+LOCDIR    = src/sles/examples/tests/
+NOADIC    = true
+
 TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
                   ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
 		  runex4 runex4_3 runex4_5 ex4.rm clean

@@ -6,7 +6,7 @@
 #
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
 SOURCEC  = degr.c setr.c dsm.c ido.c numsrt.c seq.c slo.c color.c \
            scolor.c
 SOURCEH  = color.h

@@ -1,16 +1,18 @@
-/* $Id: petscerror.h,v 1.8 1997/01/27 18:19:37 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.9 1997/02/04 21:27:32 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
 #if !defined(__PETSCERROR_H)
 #define __PETSCERROR_H
 
+#include "petsc.h"
+
 /*
    Defines the directory where the compiled source is located; used
-   in printing error messages. __DIR__ is usually defined in the makefile.
+   in printing error messages. __SDIR__ is usually defined in the makefile.
 */
-#if !defined(__DIR__)
-#define __DIR__ 0
+#if !defined(__SDIR__)
+#define __SDIR__ 0
 #endif
 
 /*
@@ -57,8 +59,8 @@
 #define PETSC_ERR_MAT_CH_ZRPVT    71   /* Detected a zero pivot during Cholesky factorization */
 
 #if defined(PETSC_DEBUG)
-#define SETERRQ(n,p,s) {return PetscError(__LINE__,__FUNC__,__FILE__,__DIR__,n,p,s);}
-#define SETERRA(n,p,s) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__DIR__,n,p,s);\
+#define SETERRQ(n,p,s) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);}
+#define SETERRA(n,p,s) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);\
                           MPI_Abort(PETSC_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)     {if (n) SETERRQ(n,0,(char *)0);}
 #define CHKERRA(n)     {if (n) SETERRA(n,0,(char *)0);}

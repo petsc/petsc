@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   =  
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = vecimpl.h

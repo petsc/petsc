@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.207 1997/02/11 19:46:31 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.208 1997/02/12 01:08:16 curfman Exp bsmith $";
 #endif
 
 /*
@@ -543,7 +543,7 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqAIJ"
+#define __FUNC__ "MatView_SeqAIJ" /* ADIC Ignore */
 static int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
