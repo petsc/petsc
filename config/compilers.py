@@ -269,7 +269,6 @@ class Configure(config.base.Configure):
     lflags  = []
     try:
       while 1:
-        self.framework.log.write( 'Getting arg\n')
         arg = argIter.next()
         self.framework.log.write( 'Checking arg '+arg+'\n')
         # Check for full library name
@@ -303,7 +302,11 @@ class Configure(config.base.Configure):
         # Check for special library arguments
         m = re.match(r'^-[lLR].*$', arg)
         if m:
+          # HP Fortran prints these libraries in a very strange way
+          if arg == '-l:libU77.a': arg = '-lU77'
+          if arg == '-l:libF90.a': arg = '-lF90'            
           if not arg in lflags:
+            
             #TODO: if arg == '-lkernel32' and host_os.startswith('cygwin'):
             if arg == '-lkernel32':
               continue
