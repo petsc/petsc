@@ -13,9 +13,6 @@ Additional Capabilities that PETSc Needs:
 
    - Make configure fully functional in PETSc 2.0
 
-   - Fix KSPSetGMRESxxx routines:  possibly zap 
-     KSPGMRESSetUseUnmodifiedGramSchmidt() in favor of just KSPGMRESSetOrthogRoutine().
-
    - Fix documentation for matrices in manual (also AIJ man pages).  
      Fix help info for matrices.
 
@@ -30,6 +27,10 @@ Additional Capabilities that PETSc Needs:
 
    - Implement MatDisAssemble() for all parallel matrix types.
     
+   X Fix KSPSetGMRESxxx routines:  possibly zap 
+     KSPGMRESSetUseUnmodifiedGramSchmidt() in favor of just
+     KSPGMRESSetOrthogRoutine().
+
    X Make symbolic part of ILU(0) out of place fast for SeqAIJ. Just copy data structures.
 
    X Change all CAPS macro to use _ between words, for example INSERT_VALUES
