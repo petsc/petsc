@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.291 1998/11/02 19:28:23 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.292 1998/11/02 19:31:13 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3611,16 +3611,21 @@ option {\tt -snes\_mf\_operator}. \findex{-snes_mf_operator}
 The user can set two parameters to control the Jacobian-vector
 product approximation with the command
 \begin{verbatim}
-   ierr = MatSNESFDMFSetParameters(Mat mat,double rerror,double umin);
+   ierr = MatSNESFDMFSetFunctionError(Mat mat,double rerror);
 \end{verbatim}
-\findex{SNESMatrixFreeSetParameters()}
+\findex{MatSNESFDMFSetFunctionError()}
 The parameter {\tt rerror} should be set to the square root of the 
 relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $ , 
 which assumes
 that the functions are evaluated to full double precision accuracy. 
+
+\begin{verbatim}
+   ierr = MatSNESFDMFDefaultSetUmin(Mat mat,double );
+\end{verbatim}
+\findex{MatSNESFDMFDefaultSetUmin()}
 The 
 second parameter, {\tt umin} (or $u_{min}$), is a bit more involved; its default is 
-$ 10^{-8} $ . The Jacobian-vector product is approximated via the formula
+$ 10^{-6} $ . The Jacobian-vector product is approximated via the formula
 \[
     F'(u) a \approx \frac{F(u + h*a) - F(u)}{h}
 \]
