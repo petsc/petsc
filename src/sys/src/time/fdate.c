@@ -1,13 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdate.c,v 1.23 1998/07/15 15:16:09 balay Exp balay $";
+static char vcid[] = "$Id: fdate.c,v 1.24 1998/12/17 21:56:40 balay Exp balay $";
 #endif
 
 #include "petsc.h"
 #include "sys.h"
 #include "pinclude/ptime.h"
-#if defined(HAVE_PWD_H)
-#include <pwd.h>
-#endif
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -62,22 +59,49 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 #endif
 
 */
+
+static char starttime[64];
    
+/*
+  This function is called once during the initialize stage.
+  It stashes the timestamp, and uses it when needed.
+*/
 #undef __FUNC__  
 #define __FUNC__ "PetscGetDate"
-char *PetscGetDate(void)
+int PetscGetDate(char name[],int len)
 {
 #if defined (PARCH_win32)
   time_t aclock;
 
   PetscFunctionBegin;
   time( &aclock);
-  PetscFunctionReturn(asctime(localtime(&aclock)));
+  PetscStrncpy(name,asctime(localtime(&aclock)),len);
 #else
   struct timeval tp;
 
   PetscFunctionBegin;
   gettimeofday( &tp, (struct timezone *)0 );
-  PetscFunctionReturn(asctime(localtime((time_t *) &tp.tv_sec)));
+  PetscStrncpy(name,asctime(localtime((time_t *) &tp.tv_sec)),len);
 #endif
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ "PetscGetInitialDate"
+int PetscSetInitialDate(void)
+{
+  PetscFunctionBegin;
+  PetscGetDate(starttime,64);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ "PetscGetInitialDate"
+int PetscGetInitialDate(char name[],int len)
+{
+  PetscFunctionBegin;
+  PetscStrncpy(name,starttime,len);
+  PetscFunctionReturn(0);
 }

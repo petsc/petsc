@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.32 1999/03/01 04:53:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.33 1999/03/03 20:53:17 bsmith Exp balay $";
 #endif
 /*
 
@@ -76,13 +76,14 @@ FILE *petsc_history = 0;
 int PLogOpenHistoryFile(const char filename[],FILE **fd)
 {
   int  ierr,rank,size;
-  char pfile[256],pname[256],fname[256];
+  char pfile[256],pname[256],fname[256],date[64];
 
   PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
   if (!rank) {
     char arch[10];
     PetscGetArchType(arch,10);
+    PetscGetDate(date,64);
     MPI_Comm_size(PETSC_COMM_WORLD,&size);
     if (filename) {
       ierr = PetscFixFilename(filename,fname);CHKERRQ(ierr);
@@ -94,7 +95,7 @@ int PLogOpenHistoryFile(const char filename[],FILE **fd)
 
     *fd = fopen(fname,"a"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file: %s",fname);
     fprintf(*fd,"---------------------------------------------------------\n");
-    fprintf(*fd,"%s %s ",PETSC_VERSION_NUMBER,PetscGetDate());
+    fprintf(*fd,"%s %s ",PETSC_VERSION_NUMBER,date);
     ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
     fprintf(*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);
     OptionsPrint(*fd);
@@ -108,13 +109,15 @@ int PLogOpenHistoryFile(const char filename[],FILE **fd)
 #define __FUNC__ "PLogCloseHistoryFile"
 static int PLogCloseHistoryFile(FILE **fd)
 {
-  int  rank;
+  int  rank,ierr;
+  char date[64];
 
   PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
   if (rank) PetscFunctionReturn(0);
+  ierr = PetscGetDate(date,64); CHKERRQ(ierr);
   fprintf(*fd,"---------------------------------------------------------\n");
-  fprintf(*fd,"Finished at %s",PetscGetDate());
+  fprintf(*fd,"Finished at %s",date);
   fprintf(*fd,"---------------------------------------------------------\n");
   fflush(*fd);
   fclose(*fd);
@@ -701,8 +704,10 @@ int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
      it that it sets args[0] on all processors to be args[0] on the first processor.
   */
   if (argc && *argc) {
-    PetscSetProgramName(**args);
+    ierr = PetscSetProgramName(**args); CHKERRQ(ierr);
   }
+  /* Also initialize the initial datestamp */
+  ierr = PetscSetInitialDate(); CHKERRQ(ierr);
 
   MPI_Initialized(&flag);
   if (!flag) {

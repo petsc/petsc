@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.20 1999/02/03 00:18:47 balay Exp balay $";
+static char vcid[] = "$Id: mprint.c,v 1.21 1999/03/09 17:19:13 balay Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -410,7 +410,7 @@ int PetscErrorPrintfDefault(const char format[],...)
 
   if (!PetscErrorPrintfCalled) {
     int  rank;
-    char arch[10],hostname[64],username[16],pname[256];
+    char arch[10],hostname[64],username[16],pname[256],date[256];
 
     /*
         On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
@@ -425,6 +425,7 @@ int PetscErrorPrintfDefault(const char format[],...)
     PetscGetHostName(hostname,64);
     PetscGetUserName(username,16);
     PetscGetProgramName(pname,256);
+    PetscGetInitialDate(date,256);
     fprintf(stderr,"--------------------------------------------\
 ------------------------------\n");
     fprintf(stderr,"%s\n",PETSC_VERSION_NUMBER);
@@ -437,7 +438,7 @@ int PetscErrorPrintfDefault(const char format[],...)
     fprintf(stderr,"See docs/manualpages/index.html for manual pages.\n");
     fprintf(stderr,"--------------------------------------------\
 ---------------------------\n");
-    fprintf(stderr,"%s \n on a %s named %s by %s.",pname,arch,hostname,username);
+    fprintf(stderr,"%s \n on a %s named %s by %s $s.",pname,arch,hostname,username,date);
 #if !defined (PARCH_win32)
     fprintf(stderr," Libraries linked from %s\n",PETSC_LDIR);
 #endif
