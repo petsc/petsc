@@ -25,10 +25,10 @@ typedef struct {
 #define __FUNCT__ "VecView_MPI_Draw_DA2d_Zoom"
 int VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 {
-  ZoomCtx *zctx = (ZoomCtx*)ctx;
-  int     ierr,m,n,i,j,k,step,id,c1,c2,c3,c4;
-  PetscReal  s,min,x1,x2,x3,x4,y_1,y2,y3,y4;
-  PetscScalar  *v,*xy;
+  ZoomCtx     *zctx = (ZoomCtx*)ctx;
+  int         ierr,m,n,i,j,k,step,id,c1,c2,c3,c4;
+  PetscReal   s,min,x1,x2,x3,x4,y_1,y2,y3,y4;
+  PetscScalar *v,*xy;
 
   PetscFunctionBegin; 
   m    = zctx->m;
@@ -73,7 +73,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
   DA                 da,dac,dag;
   int                rank,ierr,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
-  PetscReal             coors[4],ymin,ymax,xmin,xmax;
+  PetscReal          coors[4],ymin,ymax,xmin,xmax;
   PetscDraw          draw,popup;
   PetscTruth         isnull,useports;
   MPI_Comm           comm;
@@ -285,9 +285,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecLoadIntoVector_Binary_DA"
 int VecLoadIntoVector_Binary_DA(PetscViewer viewer,Vec xin)
 {
-  DA             da;
-  int            ierr;
-  Vec            natural;
+  DA  da;
+  int ierr;
+  Vec natural;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);

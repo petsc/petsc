@@ -10,8 +10,22 @@ extern int DALocalToLocalCreate(DA);
 
 struct _SDA {
   DA  da;
-  Vec gvec,lvec;
+  Vec gvec,lvec,Gvec;
 };
+
+#undef __FUNCT__  
+#define __FUNCT__ "SDAArrayView"
+int SDAArrayView(SDA da,double *values,PetscViewer v)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = VecPlaceArray(da->lvec,values);CHKERRQ(ierr);
+  ierr = DALocalToGlobalBegin(da->da,da->lvec,da->Gvec);CHKERRQ(ierr);
+  ierr = DALocalToGlobalEnd(da->da,da->lvec,da->Gvec);CHKERRQ(ierr);
+  ierr = VecView(da->Gvec,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "SDACreate1d"
@@ -58,10 +72,12 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   ierr = VecReplaceArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecReplaceArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
 
+  ierr = DACreateGlobalVector(da,&(*sda)->Gvec);CHKERRQ(ierr);
+
   /* free scatters in DA never needed by user */
   ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);da->ltog = 0;
-  ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);da->gtol = 0; 
+  /* ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);da->ltog = 0; */
+  /* ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);da->gtol = 0;  */
 
   PetscFunctionReturn(0);
 }
@@ -118,14 +134,17 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = VecReplaceArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecReplaceArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
 
+
+  ierr = DACreateGlobalVector(da,&(*sda)->Gvec);CHKERRQ(ierr);
+
   /* free global vector never needed by user */
   ierr = DACreateGlobalVector(da,&vec);CHKERRQ(ierr);
   ierr = VecDestroy(vec);CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */
   ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);da->ltog = 0;
-  ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);da->gtol = 0;
+  /*ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);da->ltog = 0; */
+  /*ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);da->gtol = 0;*/
 
   PetscFunctionReturn(0);
 }
@@ -182,14 +201,16 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   ierr = VecReplaceArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecReplaceArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
 
+  ierr = DACreateGlobalVector(da,&(*sda)->Gvec);CHKERRQ(ierr);
+
   /* free global vector never needed by user */
   ierr = DACreateGlobalVector(da,&vec);CHKERRQ(ierr);
   ierr = VecDestroy(vec);CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */
   ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);da->ltog = 0;
-  ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);da->gtol = 0;
+  /*ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);da->ltog = 0;*/
+  /*ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);da->gtol = 0;*/
 
   PetscFunctionReturn(0);
 }
