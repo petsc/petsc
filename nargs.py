@@ -54,6 +54,8 @@ in order to declare the type of that option.'''
       idx = 1
       oldIdx = idx
       while idx < len(arg)-1:
+        if arg[oldIdx] == ',':
+          oldIdx += 1
         while not arg[idx] == ':': idx += 1
         key = arg[oldIdx:idx]
         idx += 1
