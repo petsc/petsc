@@ -768,7 +768,9 @@ acfindx:
   def configureScript(self):
     '''Output a script in the bmake directory which will reproduce the configuration'''
     scriptName = os.path.join('bmake', self.framework.arch, 'configure_'+self.framework.arch+'.py')
-    f          = file(scriptName, 'w')
+    if not os.path.exists(os.path.dirname(scriptName)):
+      os.makedirs(os.path.dirname(scriptName))
+    f = file(scriptName, 'w')
     f.write('#!/usr/bin/env python\n')
     f.write('if __name__ == \'__main__\':\n')
     f.write('  import sys\n')
