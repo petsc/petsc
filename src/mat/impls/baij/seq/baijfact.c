@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.35 1997/01/06 20:25:20 balay Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.36 1997/01/10 23:39:32 balay Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -1313,6 +1313,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   for ( prow=0; prow<n; prow++ ) {
     /* first copy previous fill into linked list */
     nzf     = nz  = ai[r[prow]+1] - ai[r[prow]];
+    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,1,"Empty row in matrix");
     xi      = aj + ai[r[prow]];
     fill[n] = n;
     while (nz--) {

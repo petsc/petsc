@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.73 1997/01/06 20:24:23 balay Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.74 1997/01/10 23:40:08 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -559,6 +559,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
   for ( prow=0; prow<n; prow++ ) {
     /* first copy previous fill into linked list */
     nzf     = nz  = ai[r[prow]+1] - ai[r[prow]];
+    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,1,"Empty row in matrix");
     xi      = aj + ai[r[prow]] + shift;
     fill[n] = n;
     while (nz--) {
