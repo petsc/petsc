@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.19 1995/04/03 20:02:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.20 1995/04/15 03:26:22 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -103,6 +103,28 @@ int VecMax(Vec x,int *p,double *val)
   PLogEventBegin(VECTOR_MAX,x,0,0,0);
   ierr = (*x->ops->max)(x,p,val); CHKERR(ierr);
   PLogEventEnd(VECTOR_MAX,x,0,0,0);
+  return 0;
+}
+
+/*@
+     VecMin  - Computes minimum of vector and its location.
+
+  Input Parameters:
+.  x - the vector
+
+  Output Parameter:
+.  val - the minimum 
+.  p - the location
+
+  Keywords: vector, max
+@*/
+int VecMin(Vec x,int *p,double *val)
+{
+  int ierr;
+  VALIDHEADER(x,VEC_COOKIE);
+  PLogEventBegin(VECTOR_MIN,x,0,0,0);
+  ierr = (*x->ops->min)(x,p,val); CHKERR(ierr);
+  PLogEventEnd(VECTOR_MIN,x,0,0,0);
   return 0;
 }
 
