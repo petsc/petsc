@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.5 1999/10/06 19:45:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.6 1999/10/06 21:10:33 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -51,7 +51,7 @@ typedef struct {
    Vec        x,b,r;            /* global vectors */
    Mat        J;                /* Jacobian on grid */
    SLES       sles;
-   Mat        R;                /* R and Rscale are not set on the finest grid */
+   Mat        R;                /* R and Rscale are not set on the coarsest grid */
    Vec        Rscale;
 } GridCtx;
 
@@ -60,6 +60,7 @@ typedef struct {
 typedef struct {
    GridCtx     grid[MAX_LEVELS];
    int         ratio;
+   int         nlevels;
    double      tleft, tright;  /* Dirichlet boundary conditions */
    double      beta, bm1, coef;/* nonlinear diffusivity parameterizations */
 } AppCtx;
@@ -72,7 +73,7 @@ extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int FormInterpolation(AppCtx *,GridCtx*,GridCtx*);
 
 /*
-      Mm_ratio - ration of grid lines between fine and coarse grids.
+      Mm_ratio - ration of grid lines between grid levels
 */
 #undef __FUNC__
 #define __FUNC__ "main"
@@ -81,7 +82,7 @@ int main( int argc, char **argv )
   SNES          snes;                      
   AppCtx        user;                      
   int           ierr, its, lits, N, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
-  int           size, flg,nlocal,Nlocal;
+  int           size, nlocal,Nlocal;
   double	atol, rtol, stol, litspit;
   int	        maxit, maxf;
   SLES          sles;
@@ -100,18 +101,21 @@ int main( int argc, char **argv )
   user.beta   = 2.5; 
   user.bm1    = 1.5; 
   user.coef   = 1.25;
-  ierr = OptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-tright",&user.tright,&flg);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-beta",&user.beta,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-coef",&user.coef,&flg); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-beta",&user.beta,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-coef",&user.coef,PETSC_NULL); CHKERRA(ierr);
 
-  user.ratio = 2;
+  user.ratio      = 2;
+  user.nlevels    = 2;
   user.grid[0].mx = 5; 
   user.grid[0].my = 5; 
-  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Mx",&user.grid[0].mx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-My",&user.grid[0].my,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-nlevels",&user.nlevels,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.grid[0].mx,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.grid[0].my,PETSC_NULL); CHKERRA(ierr);
+
 
   user.grid[1].mx = user.ratio*(user.grid[0].mx-1)+1; 
   user.grid[1].my = user.ratio*(user.grid[0].my-1)+1;
@@ -121,8 +125,8 @@ int main( int argc, char **argv )
   N = user.grid[0].mx*user.grid[0].my;
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL); CHKERRA(ierr);
 
   /* Set up distributed array for fine grid */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.grid[1].mx,
@@ -177,8 +181,8 @@ int main( int argc, char **argv )
 
   /* Create interpolation between the levels */
   ierr = FormInterpolation(&user,&user.grid[1],&user.grid[0]);CHKERRA(ierr);
-  ierr = MGSetInterpolate(pc,FINE_LEVEL,user.grid[0].R);CHKERRA(ierr);
-  ierr = MGSetRestriction(pc,FINE_LEVEL,user.grid[0].R);CHKERRA(ierr);
+  ierr = MGSetInterpolate(pc,FINE_LEVEL,user.grid[1].R);CHKERRA(ierr);
+  ierr = MGSetRestriction(pc,FINE_LEVEL,user.grid[1].R);CHKERRA(ierr);
 
   /* Solve 1 Newton iteration of nonlinear system (to load all arrays) */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
@@ -221,8 +225,8 @@ int main( int argc, char **argv )
   ierr = VecDestroy(user.grid[0].localF); CHKERRA(ierr);
 
   ierr = SNESDestroy(snes); CHKERRA(ierr);
-  ierr = MatDestroy(user.grid[0].R);CHKERRA(ierr); 
-  ierr = VecDestroy(user.grid[0].Rscale);CHKERRA(ierr); 
+  ierr = MatDestroy(user.grid[1].R);CHKERRA(ierr); 
+  ierr = VecDestroy(user.grid[1].Rscale);CHKERRA(ierr); 
   PetscFinalize();
 
   return 0;
@@ -789,10 +793,10 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
     ierr = SLESSetOperators(user->grid[1].sles,user->grid[1].J,user->grid[1].J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
 
     /* restrict X to coarse grid */
-    ierr = MGRestrict(user->grid[0].R,X,user->grid[0].x);CHKERRQ(ierr);
+    ierr = MGRestrict(user->grid[1].R,X,user->grid[0].x);CHKERRQ(ierr);
 
     /* scale to "natural" scaling for that grid */
-    ierr = VecPointwiseMult(user->grid[0].Rscale,user->grid[0].x,user->grid[0].x);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(user->grid[1].Rscale,user->grid[0].x,user->grid[0].x);CHKERRQ(ierr);
 
     /* form Jacobian on coarse grid */
     ierr = FormJacobian_Grid(user,&user->grid[0],user->grid[0].x,&user->grid[0].J,&user->grid[0].J);CHKERRQ(ierr);
@@ -888,8 +892,10 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
   ierr = VecSet(&one,g_f->x);CHKERRQ(ierr);
   ierr = MGRestrict(mat,g_f->x,Rscale);CHKERRQ(ierr);
   ierr = VecReciprocal(Rscale);CHKERRQ(ierr);
-  g_c->Rscale = Rscale;
-  g_c->R      = mat;
+  g_f->Rscale = Rscale;
+  g_f->R      = mat;
+
+
   PetscFunctionReturn(0);;
 }
 
