@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.97 1998/07/23 22:47:23 bsmith Exp balay $";
+static char vcid[] = "$Id: lu.c,v 1.98 1998/07/24 12:50:53 balay Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -217,6 +217,19 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   if (dir->inplace) {ierr = MatSolve(pc->pmat,x,y); CHKERRQ(ierr);}
   else              {ierr = MatSolve(dir->fact,x,y); CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCApply_LU"
+static int PCApplyTrans_LU(PC pc,Vec x,Vec y)
+{
+  PC_LU *dir = (PC_LU *) pc->data;
+  int   ierr;
+
+  PetscFunctionBegin;
+  if (dir->inplace) {ierr = MatSolveTrans(pc->pmat,x,y); CHKERRQ(ierr);}
+  else              {ierr = MatSolveTrans(dir->fact,x,y); CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -452,6 +465,7 @@ int PCCreate_LU(PC pc)
   dir->reusereordering  = 0;
   pc->destroy           = PCDestroy_LU;
   pc->apply             = PCApply_LU;
+  pc->applytrans        = PCApplyTrans_LU;
   pc->setup             = PCSetUp_LU;
   pc->data              = (void *) dir;
   pc->setfromoptions    = PCSetFromOptions_LU;

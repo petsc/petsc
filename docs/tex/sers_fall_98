@@ -1,17 +1,24 @@
 
-   The PETSc (Portable Extensible Toolkit for Scientific computation) team at
-Argonne National Laboratory develops parallel software for the solution of
-partial differential equations (PDEs). The software runs under Unix, including 
-the SGI Origin parallel computers, Cray T3E, linux, as well as Windows 9X/NT. 
-We currently have over two hundred user sites around the world. Our small team
-designs, develops and maintains the software. More information on PETSc can
-be obtained at http://www.mcs.anl.gov/petsc.
+   The PETSc (Portable Extensible Toolkit for Scientific computation)
+team in the Mathematics and Computer Science Division (MCS) at Argonne
+National Laboratory develops parallel software for the solution of
+partial differential equations (PDEs). The software runs under Unix,
+including the Cray T3E, SGI Origin2000, linux, as well as Windows
+9X/NT.  We currently have over two hundred user sites around the
+world. Our small team designs, develops and maintains the software.
+More information on PETSc can be obtained at http://www.mcs.anl.gov/petsc.
+Another related project is the ALICE memory snooper that allows one to 
+monitor and steer a running application.
 
-  We would like to invite Stephen Moser to join our team for the fall semester
-Part of his work would involve:
-*  developing specific parallel PDE solvers using the PETSc infrastructure
-* developing JAVA applets that allow running these applications over the web
+  We would like to invite Stephen Moser to join our team for the fall 
+semester. His contributions would include
+* developing specific parallel PDE solvers using the PETSc infrastructure
+* developing JAVA applets that allow running these applications over the web,
 
 This would result in the development of a numerical laboratory that allows 
 for the easy running of "numerical" experiments in fluids and other physical
-phenomana modeled by PDEs.
+phenomena modeled by PDEs.
+
+ The MCS division has an 80 node IBM SP, a PC cluster running Linux, a
+96 node SGI Origin, as well as two smaller SGI machines with InfinityReality
+graphics engines. In addition, we have access to a 512 node Cray T3E. 
