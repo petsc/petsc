@@ -1,0 +1,367 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+
+<head>
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<title>PETSc: Docs:&nbsp; Changes: 2.0.24</title>
+</head>
+
+<body stylesrc="http://www-fp.mcs.anl.gov/petsc/images/bgcolor.htm" bgcolor="#D5EAFF">
+
+<table width="100%">
+  <tr>
+    <td width="25%" valign="top"><h1><font color="#FF0000" size="7">PETSc</font></h1>
+    <ul>
+      <li><a href="../exercises/index.html"><strong>Home</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%">
+    <!##begin>
+    <h1>Docs:&nbsp;Changes: 2.0.24</h1>
+    <!##end>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+  <tr>
+    <td width="25%" valign="top"><ul>
+      <li><a href="../../download/index.htm"><strong>Download</strong></a></li>
+      <li><a href="../../features/"><strong>Features</strong></a></li>
+      <li><a href="../index.html"><strong>Documentation</strong></a><ul>
+          <li><a href="../index.html#Manual"><strong>Manual pages and Users Manual</strong></a></li>
+          <li><a href="../referencing.htm"><strong>Referencing&nbsp; PETSc</strong></a></li>
+          <li><a href="../tutorials/index.htm"><strong>Tutorials</strong></a></li>
+          <li><strong><a href="../installation/index.htm">Installation</a> </strong></li>
+          <li><strong><a href="../machines.html">Machines Supported</a></strong></li>
+          <li><strong><a href="index.htm">Changes</a></strong><ul>
+              <li><a href="2028.htm">2.0.28</a></li>
+              <li><font color="#FF0000">2.0.24</font></li>
+              <li><a href="2022.htm">2.0.22</a></li>
+              <li><a href="2918-21.htm">2.0.18-21</a></li>
+              <li><a href="2017.htm">2.0.17</a></li>
+              <li><a href="2016.htm">2.0.16</a></li>
+              <li><a href="2015.htm">2.0.15</a></li>
+            </ul>
+          </li>
+          <li><strong><a href="../troubleshooting.html">Troubleshooting</a></strong></li>
+          <li><strong><a href="../bugreporting.html">Bug Reporting</a></strong></li>
+          <li><strong><a href="../codemanagement.html">Code Management</a></strong></li>
+          <li><strong><a href="../faq.html">FAQ</a> </strong></li>
+          <li><strong><a href="../copyright.html">Copyright</a></strong> </li>
+        </ul>
+      </li>
+      <li><a href="../../publications/index.htm"><strong>Publications</strong></a></li>
+      <li><a href="../../talks/"><strong>Presentations</strong></a></li>
+      <li><a href="../../misc/"><strong>Miscellaneous</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%" valign="top">
+    <!##begin>
+    <p align="center"><font color="#FF0000" size="5"><a name="CHANGES">CHANGES</a> in PETSc 2.0.24 (see new <a href="2024.htm#Features">features</a>
+    below)</font></p>
+    <p><font size="4"><strong><u>General:</u></strong></font> <ul>
+      <li>Changed PETSC_ARCH on Windows platforms from&nbsp; nt to win32, and from nt_gnu to
+        win32_gnu.</li>
+      <li>Moved all the compiler/optimization information for each PETSC_ARCH from the various <strong>base.g</strong>,&nbsp;
+        <strong>base.O_c++</strong> etc. files all into the single file <strong>base_variables</strong>.
+        Now configuration for your system should require only editing the files ${PETSC_ARCH}/base
+        and ${PETSC_ARCH}/<strong>base.site</strong></li>
+      <li>The PETSC_ARCH <strong>rs6000</strong> is now intended for IBM rs6000 workstations
+        running MPICH or LAM, while <strong>rs6000_sp</strong> is for IBM SPs.</li>
+      <li>Removed the gvec directory from the distribution. If you are using this please let us
+        and know and we can provide it or provide alternative code to do what you need.</li>
+      <li>Routines with the suffix &quot;<strong>withcoloring</strong>&quot; have been changed to
+        the suffix &quot;<strong>color</strong>&quot; to get around the 31 character limit in
+        names.</li>
+      <li>The source code directory structure has changed slightly: pc and ksp are now
+        subdirectories of sles, and ao and da are subdirectories of a new directory called dm
+        (data management).</li>
+      <li>The PETSc libraries are now: -lpetscts -lpetscsnes -lpetscsles -lpetscdm -lpetscmat
+        -lpetscvec -lpetsc. Each library is now only dependent on libraries to the right of it in
+        the list above.&nbsp;&nbsp; For example, if you are only using the linear solvers, you
+        only need to list &quot;-lpetscsles -lpetscdm -lpetscmat -lpetscvec -lpetsc&quot; and if
+        you are only using the vectors you only need to list &quot;-lpetscvec -lpetsc&quot;.</li>
+      <li>For users who previously could not use the PETSc makefiles because the PETSc rules for
+        making .o files conflicted with the user's rules, we have introduce a new file that may be
+        included by the user, <strong>${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables</strong>,
+        which defines all the useful PETSc makefile variables, but not the rules. This should make
+        it easier for people who previously had trouble using the PETSc makefiles. We highly
+        recommend using the PETSc makefiles when possible because they are immediately portable
+        across all systems that support PETSc.</li>
+    </ul>
+    <p><font size="4"><strong><u>AO (Application Orderings):</u></strong></font></p>
+    <p><font size="4"><strong><u>TS (Timestepping Solvers):</u></strong></font> <ul>
+      <li>Removed <strong>TSSetRHSJacobianDefault</strong>() - you can now call&nbsp; <strong>TSSetRHSJacobian</strong>(...
+        <strong>TSDefaultJacobianColor</strong>,....) directly from Fortran</li>
+      <li>Changed <strong>TSDefaultJacobianSlow()</strong> to <strong>TSDefaultJacobian()</strong></li>
+    </ul>
+    <p><font size="4"><strong><u>SNES (Nonlinear Solvers): </u></strong></font><ul>
+      <li>S<strong>NESSetConvergenceHistory()</strong> takes an additional argument; see the
+        manual page for details.</li>
+      <li>Changed the interface for matrix-free methods in SNES so that is more flexible, in
+        particular:<br>
+        Changed<strong> SNESDefaultMatrixFreeMatCreate()</strong> to <strong>MatSNESFDMFCreate()</strong>.<br>
+        Added routines<br>
+        <strong>&nbsp;&nbsp; MatSNESFDMFSetHHistory(Mat,Scalar *,int);<br>
+        &nbsp;&nbsp; MatSNESFDMFResetHHistory(Mat,Scalar *,int);<br>
+        &nbsp;&nbsp; MatSNESFDMFSetParameters(Mat,double,double);<br>
+        &nbsp;&nbsp; MatSNESFDMFGetH(Mat,Scalar *);<br>
+        &nbsp;&nbsp; MatSNESFDMFKSPMonitor(KSP,int,double,void *);</strong> and the corresponding<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; option <strong>-snes_mf_ksp_monitor</strong><br>
+        Added support for an alternative way to compute the differencing parameter in matrix-free
+        methods<br>
+        using the Walker-Pernice srategy, accessible via the option <strong>-snes_mf_type</strong>
+        wp</li>
+      <li>Changed the calling sequence of <strong>SNESSetLineSearch() </strong>so that it accepts
+        an optional user-defined<br>
+        context variable.&nbsp; Likewise, changed the calling sequences of the various line search
+        routines, e.g., <strong>SNESCubicLineSearch(), SNESQuadraticLineSearch()</strong>, etc.</li>
+    </ul>
+    <p><font size="4"><strong><u>SLES (Linear Solvers):</u></strong></font> <ul>
+      <li>See PC and KSP </li>
+    </ul>
+    <p><font size="4"><strong><u>KSP (Krylov Subspace Methods):</u></strong></font> <ul>
+      <li>Changed the calling sequence of <strong>KSPComputeEigenvalues(KSP,int,double*,double*,int
+        *neig);</strong><br>
+        to return as the final value the number of eigenvalues computed; see the manual page for
+        more details.</li>
+      <li>Changed GMRES to use the Gram-Schmidt method with one optional step of iterative<br>
+        refinement as the default orthogonalization procedure, instead of&nbsp; the modified
+        Gram-Schmidt method.<br>
+        This change was urged by Rich Lehoucq. It could cause very minor differences in
+        convergence<br>
+        rates for codes run before and after this change.</li>
+      <li>The option <strong>-ksp_bsmonitor</strong> is not longer needed; use -<strong>ksp_truemonitor</strong>
+        for the same affect.</li>
+      <li>Added an additional argument to <strong>KSPSetResidualHistory()</strong>; see the manual
+        page for details. This change was suggested by Maria Murillo.<br>
+      </li>
+    </ul>
+    <p><font size="4"><strong><u>PC (Preconditioners): </u></strong></font><ul>
+      <li>Removed support for block Gauss-Seidel from the distribution; <strong>-pc_type bgs</strong>
+        is no longer supported.</li>
+      <li>The Eisenstat preconditioner (SSOR variant) now uses diagonal scaling by default, and
+        the options<br>
+        <strong>PCEisenstatUseDiagonalScaling()</strong> and <strong>-pc_eisenstat_diagonal_scaling</strong>
+        have been<br>
+        replaced with <strong>PCEisenstatNoDiagonalScaling()</strong> and <strong>-pc_eisenstat_no_diagonal_scaling</strong></li>
+    </ul>
+    <p><font size="4"><strong><u>MAT (Matrices): </u></strong></font><ul>
+      <li>Replaced<strong> MatGetSubMatrixCall</strong>() with <strong>MatReuse().</strong></li>
+      <li>Changed the calling sequence of <strong>MatILUFactor()</strong> and <strong>MatILUFactorSymbolic()</strong>
+        to increase<br>
+        flexibility of adding new ILU options.</li>
+      <li>Added an additional argument to <strong>MatCopy()</strong>; <strong>SAME_NONZERO_PATTERN</strong>
+        or <strong>DIFFERENT_NONZERO_PATTERN.</strong></li>
+      <li>Added an additional argument to <strong>MatDuplicate()</strong>, <strong>MAT_COPY_VALUES</strong>
+        or <strong>MAT_DO_NOT_COPY_VALUES.</strong></li>
+      <li>Changed the flag <strong>MAT_NEW_NONZERO_LOCATION_ERROR</strong> to <strong>MAT_NEW_NONZERO_LOCATION_ERR</strong>;
+        also changed <strong>MAT_NEW_ALLOCATION_ERROR</strong> to <strong>MAT_NEW_ALLOCATION_ERR</strong></li>
+      <li>Changed <strong>MatOrder</strong>xxx to <strong>MatOrdering</strong>xxx; changed <strong>MatOrderingType</strong>
+        to char* from enum</li>
+      <li>Changed <strong>Mat</strong>xxx<strong>Reordering</strong>xxx to <strong>Mat</strong>xxx<strong>Ordering</strong>xxx
+        changed command line option <strong>-mat_order</strong> to -<strong>mat_ordering_type; </strong>changed
+        <strong>MatColoringType </strong>to char* from enum</li>
+      <li>Changed <strong>Partitioning</strong>xxx to <strong>MatPartitioning</strong>xxx</li>
+    </ul>
+    <p><font size="4"><strong><u>DA (Distributed Arrays): </u></strong></font><ul>
+      <li><strong>DAGetInfo()</strong> has a new final argument, the stencil type. See the manual
+        page; to <br>
+        change your current code to work, you only need add an extra <strong>PETSC_NULL</strong>
+        as a final argument.</li>
+    </ul>
+    <p><font size="4"><strong><u>VEC (Vectors):</u></strong></font> <ul>
+      <li>After a call to <strong>VecCreate()</strong> you MUST either call <strong>VecSetType()</strong>
+        or <strong>VecSetFromOptions()</strong> on the vector before using it for any purpose. The
+        <strong>VecCreate</strong>xxx() routines (e.g., <strong>VecCreateSeq(), VecCreateMPI()</strong>)
+        do not need to have calls to VecSetType() or VecSetFromOptions() after them.</li>
+      <li>All <strong>VecGetArray()</strong> calls MUST now be matched with a <strong>VecRestoreArray()
+        </strong>call; previous PETSc versions did not force compliance with this rule.</li>
+      <li>The command line names for changing the vector type in <strong>VecCreate(</strong>) are
+        now <strong>-vec_type mpi</strong> or <strong>-vec_type shared</strong> rather than <strong>-vec_mpi</strong>
+        or <strong>-vec_shared</strong></li>
+      <li>Changed the <strong>VecType</strong> variable type from an enum type to a string.</li>
+      <li>Changed the calling sequence for <strong>VecGetType()</strong>; see the manual page for
+        details.</li>
+      <li>Changed <strong>VecGhostGetLocalRepresentation()</strong> and <strong>VecGhostRestoreLocalRepresentation()</strong>,<br>
+        to <strong>VecGhostGetLocalForm()</strong> and <strong>VecGhostRestoreLocalForm()</strong>,
+        respectively; the previous names had too many characters for some machines.</li>
+    </ul>
+    <p><font size="4"><strong><u>IS (Index Sets): </u></strong></font></p>
+    <p><font size="4"><strong><u>Draw (Graphics):</u></strong></font> <ul>
+      <li>Replaced<strong> VIEWER_DRAWX_</strong>....&nbsp; with <strong>VIEWER_DRAW_</strong>....</li>
+      <li>The arguments of <strong>ViewerDrawGetDraw</strong>() have been changed; see the manual
+        page for details.</li>
+      <li><strong>DrawTensorContour()</strong> has changed; its final argument is now an array
+        rather than a vector and it can only be used for a single processor. For DA vectors you
+        can now use <strong>VecView()</strong> to create the contour plot.<br>
+      </li>
+    </ul>
+    <p><font size="4"><strong><u>Viewers: </u></strong></font><ul>
+      <li>Changed the names associated with the Matlab viewer to Socket viewer; this reflects our
+        plan to support additional graphics engines with PETSc.</li>
+      <li>Changed <strong>ViewerFileOpenASCII()</strong> to <strong>ViewerASCIIOpen().</strong></li>
+      <li>Changed <strong>ViewerDrawOpenX(</strong>) to <strong>ViewerDrawOpen().</strong></li>
+      <li>Changed <strong>ViewerFileOpenBinary()</strong> to <strong>ViewerBinaryOpen().</strong></li>
+      <li>Changed <strong>ViewerType</strong> from an enum to a char *.</li>
+    </ul>
+    <p><font size="4"><strong><u>System:</u></strong></font> <ul>
+      <li>Changed the calling sequence of&nbsp; <strong>PetscGetHomeDirectory(char dir[],int
+        maxlen)</strong>.</li>
+      <li>Changed the calling sequence of&nbsp; <strong>PetscFixFilename(const char filein[],char
+        fileout[]).</strong></li>
+      <li>Changed the calling sequence of&nbsp; <strong>PetscGetDate().</strong></li>
+    </ul>
+    <p><font size="4"><strong><u>Error Handling:</u></strong></font></p>
+    <p><font size="4"><strong><u>Event Logging:</u></strong></font></p>
+    <p><font size="4"><strong><u>Fortran Interface:</u></strong></font> </p>
+    <p>&nbsp;</p>
+    <p align="center"><font color="#FF0000" size="5">New <a name="Features">Features</a> in
+    PETSc 2.0.24 (see <a href="2024.htm#CHANGES">changes</a> above)</font></p>
+    <p><font size="4"><strong><u>General:</u></strong></font> <ul>
+      <li>Add the routine <strong>OptionsGetAll().</strong></li>
+      <li>Added support for Sun Solaris running on Intel processors; PETSC_ARCH solaris_x86.</li>
+      <li>Added option -<strong>optionsleft_off</strong> so BOPT=g version of code will not print
+        warnings about unused options.</li>
+      <li>The environment variable PETSC_ARCH is now required to use the NT distribution.</li>
+      <li>Added the routine <strong>OptionsGetLogical().</strong></li>
+      <li>We now include PETSC_ARCH of solaris_gnu, rs6000_gnu for those systems when using the
+        gnu compilers.</li>
+      <li>Thanks to the generosity of the FreeBSD organization, we are now supporting freebsd
+        again.</li>
+      <li>Added optional filename to <strong>-log_info</strong> &lt;filename&gt; option. PETSc
+        will open a seperate file, called filename.rank for each processor and print the output
+        there.</li>
+      <li>Added <strong>PetscTypeCompare()</strong>; see the manual page.</li>
+    </ul>
+    <p><font size="4"><strong><u>AO (Application Orderings):</u></strong></font> <ul>
+      <li><strong>AOPetscToApplicationIS()</strong> and <strong>AOApplicationToPetscIS()</strong>,
+        which used to crash<br>
+        when passed a stride index set, now handle them correctly.</li>
+    </ul>
+    <p><font size="4"><strong><u>TS (Timestepping Solvers):</u></strong></font> <ul>
+      <li>Added <strong>TSSetTypeFromOptions().</strong></li>
+    </ul>
+    <p><font size="4"><strong><u>SNES (Nonlinear Solvers): </u></strong></font><ul>
+      <li>Added <strong>-snes_vecmonitor</strong> and <strong>SNESVecViewMonitor()</strong> to
+        allow graphically monitoring the solution.</li>
+      <li>Added <strong>SNESSetTypeFromOptions().</strong></li>
+      <li>Added the routine <strong>SNESSetLineSearchCheck()</strong>, which sets a routine to
+        check the validity of new iterates computed by line search routines; see the manual page
+        for details.&nbsp; </li>
+    </ul>
+    <p><font size="4"><strong><u>SLES (Linear Solvers):</u></strong></font> <ul>
+      <li>See PC and KSP </li>
+      <li>Added <strong>SLESSetTypesFromOptions().</strong></li>
+    </ul>
+    <p><font size="4"><strong><u>KSP (Krylov Subspace Methods):</u></strong></font> <ul>
+      <li>Added the function <strong>KSPSetAvoidNorms()</strong> and corresponding option <strong>-ksp_avoid_norms</strong>.
+        For the methods CG, Richardson, Bi-CG-stab, CR, and CGS, this eliminates the computation
+        of the residual norm at each iteration (which is an expensive, collective operation). Then
+        the convergence criterion depends only on the maximum number of iterations the users sets
+        with <strong>KSPSetTolerances().</strong> This is useful when using the Krylov method as a
+        smoother with a fixed number of&nbsp; iterations (say, e.g., 3 iterations).</li>
+      <li>Added the KSP type of <strong>KSPBICG </strong>(contributed by Victor Eijkhout) and
+        added support to some of the preconditioners to apply the preconditioner transpose
+        (required by KSPBICG).</li>
+      <li>Added <strong>-ksp_vecmonitor</strong> and <strong>KSPVecViewMonitor()</strong> to allow
+        graphically monitoring the solution's convergence.</li>
+      <li>Added <strong>KSPSetTypeFromOptions().</strong></li>
+    </ul>
+    <p><font size="4"><strong><u>PC (Preconditioners): </u></strong></font><ul>
+      <li>Added <strong>PCLUSetReuseReordering()</strong> and <strong>PCLUSetReuseFill()</strong>
+        so that SLES can reuse the reordering and fill information for a new factorization of a
+        matrix with slightly different nonzero structure than the previous factorization. The
+        corresponding command line options are -<strong>pc_lu_reuse_reordering</strong> and <strong>-pc_lu_reuse_fill</strong>.
+        These two options only have an effect when the <strong>SLESSetOperators()</strong> option<br>
+        of <strong>DIFFERENT_NONZERO_PATTERN</strong> is used; otherwise the ordering and fill
+        information is always <br>
+        reused.</li>
+      <li>Added <strong>PCGetVector()</strong>, not expected to be used by application
+        programmers.</li>
+      <li>Added the option <strong>-pc_ilu_diagonal_fill</strong> and&nbsp;the corresponding
+        routine <strong>PCILUSetAllowDiagonalFill()</strong>; see the manual page for details;
+        helps ILU(k) on matrices with missing diagonal entries.&nbsp; Suggested by David Hysom.</li>
+      <li>Added <strong>PCSetTypeFromOptions().</strong></li>
+    </ul>
+    <p><font size="4"><strong><u>MAT (Matrices): </u></strong></font><ul>
+      <li>Added <strong>MatSeqAIJSetColumnIndices()</strong> and <strong>MatSeqBAIJSetColumnIndices()</strong>.</li>
+      <li>If the option <strong>MAT_IGNORE_OFF_PROC_ENTRIES</strong> is used, then the routines <strong>MatAssemblyBegin()</strong><br>
+        and <strong>MatAssemblyEnd()</strong> will not cause any parallel communication or
+        synchronization.</li>
+      <li>If the option <strong>MAT_NO_NEW_NONZERO_LOCATIONS</strong> is used, one less collective
+        call will be made in the <strong>MatAssemblyEnd()</strong> routines for MPIAIJ and
+        MPIBAIJ.</li>
+      <li>Fixed bugs in <strong>MatReorderForNonzeroDiagonal()</strong> and made it more robust. </li>
+      <li>Fixed bugs in factorization for AIJ matrices with variable size inodes.</li>
+      <li>Indices that are negative passed into <strong>MatSetValues...()</strong> are now ignored
+        (rather than generating an error). This allows easily keeping homogeneous Dirichlet
+        boundary nodes out of the vectors and matrices for unstructured grid problems; just
+        indicate those node numbers with negative numbers.</li>
+      <li>Added additional optimized code for BAIJ matrices with block sizes 2, 3, 5, 6, and 7.</li>
+      <li>Improved the performance of <strong>MatSetValues()</strong> and <strong>MatAssemblyXXX()
+        </strong>for parallel matrices a great deal.</li>
+      <li>Added the option <strong>-matstash_initial_size</strong> &lt;stashsize&gt; and <strong>-matstash_block_initial_size</strong>
+        &lt;stashsize&gt; and the routine <strong>MatSetStashInitialSize() </strong>to allow
+        further optimization of off-processor<strong> MatSetValues().</strong></li>
+    </ul>
+    <p><font size="4"><strong><u>DA (Distributed Arrays): </u></strong></font><ul>
+      <li><font size="3">Added graphics support to DA vectors in 1d and 2d, with contour plotters
+        for 2d.</font></li>
+    </ul>
+    <p><font size="4"><strong><u>VEC (Vectors):</u></strong></font> <ul>
+      <li>Extended <strong>VecCreate()</strong> by allowing registration of new vector types with <strong>VecRegister()</strong>
+        see the manual page for details.</li>
+      <li>Indices that are negative passed into <strong>VecSetValues...()</strong> are now ignored
+        (rather than generating an error). This allows easily keeping homogeneous Dirichlet
+        boundary nodes out of the vectors and matrices for unstructured grid problems; just
+        indicate those node numbers with negative numbers.</li>
+      <li>Added <strong>VecDotBegin()</strong>, <strong>VecDotEnd(),</strong> <strong>VecNormBegin()</strong>,
+        <strong>VecNormEnd(), </strong>which reduce communication overhead in parallel;<strong> </strong>see
+        the manual pages for details (suggested by Victor Eijkhout).</li>
+      <li>If the option <strong>VEC_IGNORE_OFF_PROC_ENTRIES</strong> is used, the <strong>VecAssemblyBegin()</strong>
+        and <strong>VecAssemblyEnd()</strong> routines will not cause any parallel communication
+        or synchronization (previously <strong>VecAssemblyBegin()</strong> still used a barrier).</li>
+      <li>Added <strong>VIEWER_FORMAT_ASCII_INDEX</strong> which causes the index for each vector
+        entry to be printed with the vector values.</li>
+      <li>Added three new vector scatter options; <strong>-vecscatter_merge</strong> and <strong>-vecscatter_ssend</strong>
+        and<br>
+        <strong>-vecscatter_sendfirst</strong>; these may improve performance a great deal when
+        using MPICH for MPI on ethernet or fast ethernet.</li>
+      <li>Added <strong>VecStrideNorm(), VecStrideScatter()</strong>, and <strong>VecStrideGather().</strong></li>
+      <li>Improved the performance of <strong>VecSetValues()</strong> and <strong>VecAssemblyXXX()
+        </strong>for parallel vectors.</li>
+      <li>Added the option <strong>-vecstash_initial_size</strong> &lt;stashsize&gt; and <strong>-vecstash_block_initial_size</strong>
+        &lt;stashsize&gt; and the routine <strong>VecSetStashInitialSize() </strong>to allow
+        &nbsp; further optimization of off-processor <strong>VecSetValues()</strong>.<br>
+      </li>
+    </ul>
+    <p><font size="4"><strong><u>IS (Index Sets): </u></strong></font><ul>
+      <li>Added <strong>ISStrideToGeneral()</strong>, which converts a stride type index set to a
+        general type.</li>
+    </ul>
+    <p><font size="4"><strong><u>Draw (Graphics):</u></strong></font></p>
+    <p><font size="4"><strong><u>Viewers: </u></strong></font><ul>
+      <li>Added <strong>ViewerASCIIPushTab()</strong>, <strong>ViewerASCIIPopTab()</strong> and <strong>ViewerASCIIPrintf()</strong>.
+        These allow multi-level display of solver information (tabing the text further for each
+        inner solver). Thanks to Victor Eijkhout and Matt Knepley for pushing this. </li>
+    </ul>
+    <p><font size="4"><strong><u>System:</u></strong></font></p>
+    <p><font size="4"><strong><u>Error Handling:</u></strong></font></p>
+    <p><font size="4"><strong><u>Event Logging:</u></strong></font></p>
+    <p><font size="4"><strong><u>Fortran Interface:</u></strong></font> <ul>
+      <li>Added Fortran 90 interface support for HP Convex&nbsp; and Solaris.machine.<br>
+      </li>
+    </ul>
+    <!##end>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+</table>
+</body>
+</html>

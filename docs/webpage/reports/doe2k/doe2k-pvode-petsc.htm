@@ -1,0 +1,67 @@
+<html>
+
+<head>
+<title>PVODE-PETSc DOE2k 1999 Status Report</title>
+</head>
+
+<body>
+
+<p align="center"><big><big><big>DOE 2000 ACTS Numerics Toolkit Projects</big></big></big><br>
+<big><big>PETSc-PVODE Project</big></big><br>
+<big>DOE2000 1999 PI Meeting Status Report</big></p>
+
+<ol>
+  <li><p align="left"><font color="#FF0000">Project Title:</font> PVODE-PETSc Interface</p>
+  </li>
+  <li><p align="left"><font color="#FF0000">Project Homepages:</font> <a href="http://www.mcs.anl.gov/petsc">http://www.mcs.anl.gov/petsc</a><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="http://www.llnl.gov/CASC/PVODE">http://www.llnl.gov/CASC/PVODE</a></p>
+  </li>
+  <li><p align="left"><font color="#FF0000">Objective: </font></p>
+    <p align="left">(1) Allow application developers to seamlessly use the sophisticated stiff
+    ODE integrators in PVODE with the parallel matrices and preconditioners provided in PETSc.
+    </p>
+    <p align="left">(2) Provide efficient parallel computation of sparse Jacobians required
+    for constructing preconditioners using graph coloring and finite differences.</p>
+  </li>
+  <li><p align="left"><font color="#FF0000">Approach: </font></p>
+  </li>
+  <blockquote>
+    <p align="left">(1) Since both PVODE and PETSc are C object-based libraries, we developed
+    object adaptors (i.e. object wrappers) to make PETSc object implementations coexist with
+    PVODE objects. For example, PETSc vectors and PVODE vectors provide different interfaces
+    to the same basic functionality; object adaptors simply map these interfaces to interfaces
+    that the other package expects. </p>
+    <p align="left">(2) Using the existing parallel communication constructs in PETSc, along
+    with newly developing coloring code we implemented a new component to efficiently compute
+    the Jacobians for specific sparse matrix formats.</p>
+  </blockquote>
+  <li><p align="left"><font color="#FF0000">Recent FY98 accomplishments: </font>The interface
+    has been completed and tested. These tools were tested on both model problems and a
+    specific application that previously used LSODE (a previous generation of the PVODE
+    author's work) that required more scalable integrators. The application is microstructural
+    evolution in sintering and involves the simulations of the dynamics of molecular
+    interactions via the method of lines.</p>
+  </li>
+  <li><p align="left"><font color="#FF0000">Plans for FY99: </font>This project has been
+    completed. </p>
+  </li>
+  <li><p align="left"><font color="#FF0000">Tool availability: </font>PETSc is fully available
+    from its web-page and supported via petsc-maint@mcs.anl.gov. It is also installed on the
+    NERSC system. PVODE&nbsp; is currently available via special request and will be publicly
+    available shortly.</p>
+  </li>
+  <li><p align="left"><font color="#FF0000">Participants and affiliations: </font><br>
+    Lois Curfman McInnes, Barry Smith, Liyang Xu - Argonne National Laboratory<br>
+    Alan Hindmarsh - Lawrence Livermore National Laboratory<br>
+    Wen Zhang - formerly of&nbsp; ORNL and Louisianna Tech, currently Oakland University</p>
+  </li>
+  <li><p align="left"><font color="#FF0000">Related projects:</font> <a href="doe2k-aztec-petsc.htm">Aztec-PETSc</a>, <a href="doe2k-esi.htm">ESI</a>, <a href="http://acts.nersc.gov/pi99/hypre-petsc">Hypre-PETSc</a></p>
+  </li>
+</ol>
+
+<p>Please send corrections/additions to <a href="mailto:bsmith@mcs.anl.gov">bsmith@mcs.anl.gov</a>.
+<br>
+</p>
+</body>
+</html>

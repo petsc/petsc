@@ -1,0 +1,116 @@
+<html>
+
+<head>
+<title>PETSc: The Portable, Extensible Toolkit for Scientific Computation</title>
+</head>
+
+<body stylesrc="http://www-fp.mcs.anl.gov/petsc/images/bgcolor.htm" bgcolor="#D5EAFF">
+
+<p align="center"><font size="5">Future Plans for PETSc</font></p>
+<p align="center"><font size="3">(Some thoughts)</font></p>
+<p align="left"><font size="3">&nbsp;Bill, <font color="#0000FF">Barry</font></font></p>
+<ul>
+  <li>1) More complete support for defining and solving PDE problems: meshes,&nbsp;<br>
+    discretizations, and problem definitions.  This could start with more&nbsp;<br>
+    complete support for DAs and move toward supporting unstructured grids.<br>
+    <br>
+    Pro: This would make a lot of people very happy.<br>
+    Con: Where is the research?  Is this what we should be doing?<br>
+    Risk: Cai tells me that Farhad is developing a PDE solver around&nbsp;<br>
+    FETI.  Others are doing similar things.  PETSc will always be better at&nbsp;<br>
+    what it does, but more integrated environments may be easier for most&nbsp;<br>
+    people to use.  If we go this route, we're competing directly with other&nbsp;<br>
+    groups.</li>
+</ul>
+<blockquote>
+  <p><font color="#0000FF">We should do a small amount of work for DAs and
+  concentrate our efforts on a unstructured grid infrastructure using the
+  distributed data base idea.</font></p>
+</blockquote>
+<ul>
+  <li>2) More support for interaction with other components.  In other words,&nbsp;<br>
+    work more aggressively to extend PETSc by making it easier to interoperate&nbsp;<br>
+    with other tools.&nbsp;</li>
+</ul>
+<blockquote>
+  <p>Pro: This would keep us ahead of the competition.  Further, developing the&nbsp;<br>
+  abstractions and supporting tools to implement the interoperability would&nbsp;<br>
+  be interesting research.  We could all work on TAO :)<br>
+  Con: We'd have to work with and around the flaws in other tools.  Where no&nbsp;<br>
+  tool was available, we'd be back at case 1.<br>
+  Risk: This is hard.  We could fail.  Even if we succeeded, we'd have to&nbsp;<br>
+  pick other tools wisely.  Politically, we'd have to do this by working&nbsp;<br>
+  within the CCA and/or ACTS.<br>
+  </p>
+  <p><font color="#0000FF">We can make PETSc ESI and CCA compliant and then make
+  interfaces to &quot;fill in the gaps&quot; in PETSc, for example, parallel
+  direct solvers, eigenvalues/eigenvectors, ??? It is too difficult and
+  nonproductive to try to interface with SAMRAI, Overture etc since those
+  packages don't closely enough fit.&nbsp;</font></p>
+</blockquote>
+<ul>
+  <li>3) Identify and pursue a next-generation programming model.  For example,&nbsp;<br>
+    we might decide on remote-memory-access connected SMP clusters.  We could&nbsp;<br>
+    design in more dynamic data structures and load balancing/management.<br>
+    <br>
+    Pro: We'd get to write everything over again.  If done right, it could be a&nbsp;<br>
+    good fit to Playstation2 clusters and PIM-based systems.<br>
+    Con: We'd get to write everything over again.<br>
+    Risk: If we guess wrong on the programming model, we're toast.<br>
+  </li>
+</ul>
+<blockquote>
+  <p><font color="#0000FF">I'm not so interested in this. I think current PETSc
+  could be fine with Playstation 2.</font><br>
+  </p>
+</blockquote>
+<ul>
+  <li>4) More of the same.<br>
+    <br>
+    Pro: We get to make PETSc increasingly feature-rich, robust, and usable.<br>
+    Con: Where is the research?  How can we support it?  How can MICS get&nbsp;<br>
+    support for it?<br>
+    Risk: The field passes us by.  Think PVM (which is still being make more&nbsp;<br>
+    robust and usable, btw).<br>
+  </li>
+  <li>5) Leverage the current PETSc by attacking more significant applications<br>
+    <br>
+    Pro: We'll make friends, learn about the unmet needs of computational&nbsp;<br>
+    scientists, possibly leading to new research directions.<br>
+    Con: This is eating our seed corn.<br>
+    Risk: We get side-tracked into appliation tar pits.  Also, current MICS&nbsp;<br>
+    thinking is downplaying direct involvement in applications.</li>
+</ul>
+<blockquote>
+  <p><font color="#0000FF">We need to pick an area that has not already been
+  beaten to death and does not have a huge legacy of codes and ways of thinking
+  about things, cause we'll never make an impact. So, no CFD, no structures, no
+  global climate, no combustion,. We need a radically new area that we can make
+  in our image. I'd like to do modeling the brain or something like that.</font><br>
+  </p>
+</blockquote>
+<ul>
+  <li>6) Tackle completely different problem areas.  For example, n-body computations<br>
+    <br>
+    Pro: Its different, its hard, and we would bring a different perspective to&nbsp;<br>
+    the problem.<br>
+    Con: Its hard and many groups have/are developed n-body codes.  We'd have&nbsp;<br>
+    to have a clear advantage.<br>
+    Risk: We'd be entering the game late.  We might not be able to catch up</li>
+</ul>
+<p>&nbsp;</p>
+<ul>
+  <li>7) Start a new project.<br>
+    <br>
+    Pro: Could be *very* exciting.<br>
+    Con: We'd have to learn enough to enter the field.  Its hard but not&nbsp;<br>
+    impossible; consider Globus and security<br>
+    Risk: !!!!!!!!!!!!!!!<br>
+  </li>
+</ul>
+<blockquote>
+  <p><font color="#0000FF">Is Globus and security an example of what to do, or
+  what not to do? I'd like to stick to problems where PDEs are an issue </font></p>
+</blockquote>
+</body>
+</html>

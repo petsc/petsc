@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+
+<head>
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<title>PETSc: Docs:&nbsp; Changes: 2.1</title>
+</head>
+
+<body stylesrc="http://www-fp.mcs.anl.gov/petsc/images/bgcolor.htm" bgcolor="#D5EAFF">
+
+<table width="100%">
+  <tr>
+    <td width="25%" valign="top"><h1><font color="#FF0000" size="7">PETSc</font></h1>
+    <ul>
+      <li><a href="../../index.html"><strong>Home</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%">
+    <!##begin>
+    <h1> Docs:&nbsp;Changes: 2.1.2</h1>
+    <!##end>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+  <tr>
+    <td width="25%" valign="top"><ul>
+      <li><a href="../../download/index.htm"><strong>Download</strong></a></li>
+      <li><a href="../../features/"><strong>Features</strong></a></li>
+      <li><a href="../index.html"><strong>Documentation</strong></a><ul>
+          <li><a href="../index.html#Manual"><strong>Manual pages and Users Manual</strong></a></li>
+          <li><a href="../referencing.htm"><strong>Referencing&nbsp; PETSc</strong></a></li>
+          <li><a href="../tutorials/index.htm"><strong>Tutorials</strong></a></li>
+          <li><strong><a href="../installation/index.htm">Installation</a> </strong></li>
+          <li><strong><a href="../machines.html">Machines Supported</a></strong></li>
+          <li><strong><a href="index.htm">Changes</a></strong>
+            <ul>
+              <li><font color="#FF5B5B">2.1.1</font></li>
+              <li><font color="#0000A0"><a href="21.htm">2.1.0</a></font></li>
+              <li><font color="#0000A0"><a href="2029.htm">2.0.29</a></font></li>
+              <li><a href="2028.htm"><font color="#0000A0">2.0.28</font></a></li>
+              <li><a href="2024.htm"><font color="#0000A0">2.0.24</font></a></li>
+              <li><a href="2022.htm">2.0.22</a></li>
+              <li><a href="2918-21.htm">2.0.18-21</a></li>
+              <li><a href="2017.htm">2.0.17</a></li>
+              <li><a href="2016.htm">2.0.16</a></li>
+              <li><a href="2015.htm">2.0.15</a></li>
+            </ul>
+          </li>
+          <li><strong><a href="../troubleshooting.html">Troubleshooting</a></strong></li>
+          <li><strong><a href="../bugreporting.html">Bug Reporting</a></strong></li>
+          <li><strong><a href="../codemanagement.html">Code Management</a></strong></li>
+          <li><strong><a href="../faq.html">FAQ</a> </strong></li>
+          <li><strong><a href="../copyright.html">Copyright</a></strong> </li>
+        </ul>
+      </li>
+      <li><a href="../../publications/index.htm"><strong>Publications</strong></a></li>
+      <li><a href="../../talks/"><strong>Presentations</strong></a></li>
+      <li><a href="../../misc/"><strong>Miscellaneous</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%" valign="top">
+    <!##begin>
+    <p align="center"><font color="#FF0000" size="5"><a
+    name="CHANGES">CHANGES</a> in PETSc 2.1.2 </font></p>
+    <p><font size="4"><strong><u>General:</u></strong></font> <br>
+    <br>
+    Win32fe now takes --nt4 option for compatibility on NT4<br>
+    Supports cygwinpaths in win32fe<br>
+    Better support for borland tools<br>
+    <br>
+    Added PetscOptionsInsertString() <br>
+    Allow full path of debugger to be specified using -start_in_debugger option<br>
+    Better hyperlinks across documentation (including users manual) 
+    <p><b><font size="4">ADIC:<br>
+    </font></b><br>
+    Support for global reductions on local functions<br>
+    Allow coloring of periodic grids<br>
+&nbsp;<p><font size="4"><strong><u>AO (Application Orderings):</u></strong></font></p>
+    <p><font size="4"><strong><u>TS (Timestepping Solvers):</u></strong></font> 
+    <p><font size="4"><strong><u>DMMG</u></strong></font><p><font size="4"><strong><u>SNES (Nonlinear Solvers):</u></strong></font>
+    <br>
+    <br>
+&nbsp;Removed all minimization support in PETSc. TAO package should be used for 
+    this functionality.<br>
+&nbsp;<p><font size="4"><strong><u>SLES (Linear Solvers):</u></strong></font> 
+    <p><font size="4"><strong><u>KSP (Krylov Subspace Methods):</u></strong></font>&nbsp;
+    <br>
+    <br>
+    Support -ksp_unpreconditioned_norm in -ksp_type cr<p><font size="4"><strong><u>PC (Preconditioners): </u></strong></font>
+        <br>
+    <br>
+&nbsp;Added support for PCType PCMAT (PC based on a matvec)<br>
+    Added support for PCType PCHYPRE (includes PILUT, EUCLID, and BoomerAMG)<br>
+    Cholesky - additional info from factorization <br>
+        <br>
+    <p><font size="4"><strong><u>MAT (Matrices): <br>
+    <br>
+    </u></strong></font>
+    SBAIJ matmult - improve performance by optimizing communication.<br>
+    markdiagonal - performance optimization. <br>
+    SuperLU interface improved (check page 75 in the user's manual)<br>
+    DSCPACK interface inproved<br>
+    Spooles interface added<br>
+    <p><font size="4"><strong><u>DA (Distributed Arrays): </u></strong></font>
+    <p><u><strong><font size="4">VEC (Vectors): <br>
+    </font></strong></u>
+    <font size="4"><strong><u><br>
+    IS (Index Sets):</u></strong></font><p><font size="4"><strong><u>Draw 
+    (Graphics):</u></strong></font> 
+    <p>&nbsp;Added flag to support turning off axis resizing<br>
+&nbsp;<p><strong><font size="4"><u>Viewers: </u></font>
+    <br>
+    </strong><br>
+    Allow drawing rectangles in postscript<br>
+    <font size="4"><strong><u><br>
+    System:</u></strong></font>
+    <p><font size="4"><strong><u>Error Handling:</u></strong></font></p>
+    <p><font size="4"><strong><u>Event Logging:</u></strong></font></p>
+    <p><font size="4"><strong><u>Fortran Interface:</u></strong></font> </p>
+    <p><br>
+    <!##end>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+</table>
+</body>
+</html>

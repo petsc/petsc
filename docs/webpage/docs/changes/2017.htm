@@ -1,0 +1,208 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+
+<head>
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<title>PETSc: Docs:&nbsp; Changes: 2.0.17</title>
+</head>
+
+<body stylesrc="http://www-fp.mcs.anl.gov/petsc/images/bgcolor.htm" bgcolor="#D5EAFF">
+
+<table width="100%">
+  <tr>
+    <td width="25%" valign="top"><h1><font color="#FF0000" size="7">PETSc</font></h1>
+    <ul>
+      <li><a href="../../index.html"><strong>Home</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%">
+    <!##begin>
+    <h1>Docs:&nbsp; Changes: 2.0.17</h1>
+    <!##end>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+  <tr>
+    <td width="25%" valign="top"><ul>
+      <li><a href="../../download/index.htm"><strong>Download</strong></a></li>
+      <li><a href="../../features/index.htm"><strong>Features</strong></a></li>
+      <li><a href="../index.html"><strong>Documentation</strong></a><ul>
+          <li><a href="../index.html#Manual"><strong>Manual pages and Users Manual</strong></a></li>
+          <li><a href="../referencing.htm"><strong>Referencing&nbsp; PETSc</strong></a></li>
+          <li><a href="../tutorials/index.htm"><strong>Tutorials</strong></a></li>
+          <li><strong><a href="../installation/index.htm">Installation</a> </strong></li>
+          <li><strong><a href="../machines.html">Machines Supported</a></strong></li>
+          <li><strong><a href="index.htm">Changes</a></strong><ul>
+              <li><a href="2028.htm">2.0.28</a></li>
+              <li><a href="2024.htm">2.0.24</a></li>
+              <li><a href="2022.htm">2.0.22</a></li>
+              <li><a href="2918-21.htm">2.0.21</a></li>
+              <li><a href="2918-21.htm">2.0.18-20</a></li>
+              <li><font color="#FF0000">2.0.17</font></li>
+              <li><a href="2016.htm">2.0.16</a></li>
+              <li><a href="2015.htm">2.0.15</a></li>
+            </ul>
+          </li>
+          <li><strong><a href="../troubleshooting.html">Troubleshooting</a></strong></li>
+          <li><strong><a href="../bugreporting.html">Bug Reporting</a></strong></li>
+          <li><strong><a href="../codemanagement.html">Code Management</a></strong></li>
+          <li><strong><a href="../faq.html">FAQ</a> </strong></li>
+          <li><strong><a href="../copyright.html">Copyright</a> </strong></li>
+        </ul>
+      </li>
+      <li><a href="../../publications/index.htm"><strong>Publications</strong></a></li>
+      <li><a href="../../talks/index.htm"><strong>Presentations</strong></a></li>
+      <li><a href="../../misc/index.htm"><strong>Miscellaneous</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%" valign="top">
+    <!##begin>
+    <p align="center"><font color="#FF0000" size="5">NEW FEATURES
+    and CHANGES in PETSc 2.0.17</font><font size="5"> </font></p>
+    <p><font size="4"><strong><u>General:</u></strong></font> <ul>
+      <li>Added support for Windows NT/95 using the Microsoft Developers Studio Visual C++. See
+        the file 'Installation' for details.</li>
+      <li>Other new machines on which this release has been tested: Cray T3E, SGI Origin See the
+        file petsc/Installation for a complete list.</li>
+    </ul>
+    <p><font size="4"><strong><u>TS (Timestepping Solvers):</u></strong></font> <ul>
+      <li>Modified the pseudo-transient continuation updates:</li>
+      <li>Changed the default update to dt = current_dt*previous_fnorm/current_fnorm.</li>
+      <li>Added the routine TSPseudoIncrementDtFromInitialDt() and the corresponding option
+        -ts_pseudo_increment_dt_from_initial_dt to indicate use of the alternative update formula
+        dt = initial_dt*initial_fnorm/current_fnorm. </li>
+      <li>Changed the calling sequence of TSRegister(). </li>
+    </ul>
+    <p><font size="4"><strong><u>SNES (Nonlinear Solvers): </u></strong></font><ul>
+      <li>Added support for computing large, sparse Jacobians efficiently via finite differences,
+        see Section 5.6 (Finite Difference Jacobian Approximations) of the users manual. </li>
+      <li>Added the routines SNESGetNumberLinearIterations() and SNESSetConvergenceHistory(). See
+        man pages for details. </li>
+      <li>Activated a counter of function evaluations, which is used in convergence tests to
+        terminate solver if the number of function evaluations exceeds a given tolerance. Note:
+        Users of matrix-free Newton-Krylov methods may need to reset the default allowable maximum
+        (1000), via SNESSetTolerances() or -snes_max_func &lt;maxfunc&gt;.</li>
+      <li>Changed the calling sequence of SNESRegister().</li>
+    </ul>
+    <p><font size="4"><strong><u>SLES (Linear Solvers):</u></strong></font> <ul>
+      <li>See PC and KSP </li>
+    </ul>
+    <p><font size="4"><strong><u>KSP (Krylov Subspace Methods):</u></strong></font> <ul>
+      <li>Changed the calling sequence of KSPRegister(). </li>
+    </ul>
+    <p><font size="4"><strong><u>PC (Preconditioners): </u></strong></font><ul>
+      <li>Changed the calling sequence of PCRegister(). </li>
+      <li>New Additive Schwarz variants (preconditioner type PCASM)</li>
+      <li>Added the routine PCASMSetType() (and the corresponding option -pc_asm_type
+        [basic,restrict,interpolate,none]) for setting the variant of the additive Schwarz method.
+        See the man page and users manual for details.</li>
+      <li>Changed the default variant of PCASM from full restriction and interpolation to full
+        restriction only, since this version requires less communication and for many problems
+        converges faster than the basic variant that uses full restriction and interpolation.
+        Users can still employ the basic ASM by calling PCASMSetType(pc,PC_ASM_BASIC) or by using
+        the option -pc_asm_type basic. </li>
+      <li>Added an interface to the SPAI preconditioner implementation of Steven Bernard; see
+        src/contrib/spai. This has undergone little testing and optimization; it is intended
+        mainly for &quot;hackers&quot;. </li>
+    </ul>
+    <p><font size="4"><strong><u>MAT (Matrices): </u></strong></font><ul>
+      <li>Added the matrix option, MatSetOption(mat,MAT_NEW_NONZERO_LOCATION_ERROR), that will
+        cause an error if a new nonzero is generated in a sparse matrix. (currently implemented
+        for AIJ and BAIJ matrices only). This is a useful flag when using SAME_NONZERO_PATTERN in
+        calling SLESSetOperators() to ensure that the nonzero pattern truely does remain
+        unchanged. For examples, see the programs
+        petsc/src/snes/examples/tutorials/[ex5.c,ex5f.F].</li>
+      <li>Added the routine MatSetUnfactored(), intended primarily for use with in-place ILU(0)
+        factorization as a preconditioner for matrix-free Krylov methods. See the manual page for
+        details.</li>
+      <li>Added the routines MatConvertRegisterAll() and MatLoadRegisterAll() to allow the
+        restriction of the matrix routines linked into an application code. This can decrease the
+        size of your executable and the time it takes to link your program. For details, see the
+        manual page and petsc/src/snes/examples/tutorials/ex5.c </li>
+      <li>Added the routine MatSetValuesBlocked(), for more efficient assembly of block AIJ
+        formatted matrices (MATSEQBAIJ and MATMPIBAIJ).</li>
+      <li>Changed the calling sequence of MatReorderingRegister(); </li>
+    </ul>
+    <p><font size="4"><strong><u>DA (Distributed Arrays): </u></strong></font><ul>
+      <li>Added additional arguments to DACreate1d(), DACreate2d(), and DACreate3d() to allow the
+        user to set the distribution of nodes on each processor; set these arguments to PETSC_NULL
+        for the standard default distribution. </li>
+      <li>Modified DAGetInfo() to return the type of periodicity. </li>
+    </ul>
+    <p><font size="4"><strong><u>VEC (Vectors):</u></strong></font> <ul>
+      <li>Added the routine VecCreateGhost() to create vectors that have ghost padding at the end
+        of the local array. This is useful for gathering remote values to perform local
+        calculations that involve off-processor ghost values. This is often appropriate for codes
+        using unstructured grids. See petsc/src/vec/examples/tutorials/ex9.c for possible usage. </li>
+    </ul>
+    <p><font size="4"><strong><u>IS (Index Sets): </u></strong></font></p>
+    <p><font size="4"><strong><u>Draw (Graphics):</u></strong></font> <ul>
+      <li>Application codes should not need to use #include &quot;draw.h&quot; anymore from C/C++,
+        since this file is now included automatically when &quot;petsc.h&quot; or any other PETSc
+        include file is included. </li>
+    </ul>
+    <p><font size="4"><strong><u>Viewers: </u></strong></font><ul>
+      <li>VIEWER_DRAWX_WORLD, VIEWER_DRAWX_SELF, VIEWER_MATLAB_WORLD are now supported from
+        Fortran. </li>
+      <li>Added VIEWER_DRAWX_(MPI_Comm comm) from C. Useful for rapid code prototyping without
+        having to declare a Viewer. </li>
+    </ul>
+    <p><font size="4"><strong><u>System Routines:</u></strong></font> <ul>
+      <li>Since memory leaks and uninitialized memory can be serious problems for large-scale
+        application codes, we've added several new tools to assist in their diagnosis. These tools
+        are all work in conjunction with the PETSc memory allocation (the default for codes that
+        are compiled in debug mode with BOPT=[g,g_c++,g_complex]). </li>
+      <li>Added the runtime option -trmalloc_log, which activates logging of all calls to malloc
+        via the new routines PetscTrLog() and PetscTrLogDump().</li>
+      <li>Added the routine PetscGetResidentSetSize() to determine the total memory used by a
+        process (this is activated by -trmalloc_log); see the man page for details. </li>
+      <li>Added the option -trmalloc_nan for tracking down allocated memory that is used before it
+        has been initialized. This option calls the new routines PetscInitializeNans() and
+        PetscInitializeLargeInts(). So far these work on the Sun4 system. </li>
+    </ul>
+    <p><font size="4"><strong><u>Error Handling:</u></strong></font> <ul>
+      <li>The error checking macros SETERRQ() and SETERRA() now have the calling sequence
+        SETERRQ(int ierr,int pierr,char *message); where pierr is an additional integer error code
+        passed to the error handler. Currently you should just set pierr=1.</li>
+      <li>Also, SETERRQ() and SETERRA() now use the macro __FUNC__ to keep track of routine names.
+        Users need not worry about this in their application codes, but can take advantage of this
+        feature if desired by setting this macro before each user-defined routine that may call
+        SETERRQ(), SETERRA(), CHKERRQ(), or CHKERRA(). __FUNC__ should be set to a string
+        containing the routine name. For example, #undef __FUNC__ #define __FUNC__
+        &quot;MyRoutine1&quot; int MyRoutine1() { /* code here */ return 0; } See
+        petsc/src/snes/examples/tutorials/ex3.c for an example. </li>
+      <li>PETSc error handlers now take two additional arguments. Consult the man page for
+        PetscPushErrorHandler() for more information. </li>
+    </ul>
+    <p><font size="4"><strong><u>Event Logging:</u></strong></font> <ul>
+      <li>Changed PLogPrintSummary(MPI_Comm,FILE *) to PLogPrintSummary(MPI_Comm,char *). </li>
+      <li>Now the option -log_summary takes [filename] as an optional argument. </li>
+    </ul>
+    <p><font size="4"><strong><u>Fortran Interface:</u></strong></font> <ul>
+      <li>Added some limited support for direct use of Fortran90 pointers in the routines
+        Vec[Get,Restore]ArrayF90(), Mat[Get,Restore]ArrayF90(), IS[Get,Restore]IndicesF90(),
+        ISBlock[Get,Restore]IndicesF90(), VecDuplicateVecsF90(), VecDestroyVecsF90(),
+        DAGetGlobalIndicesF90(). See the man pages and the section 'Fortran90' in the users manal
+        for details. Unfortunately, these routines currently work only with the NAG F90 compiler.
+        We hope to support other compilers as well, but we will need assistance from the vendors
+        since the Fortran90/C interface is not a defined standard. </li>
+      <li>Added the macro PetscDoubleExp(a,b) = a d b (machines where double precision arithmetic
+        is used) = a e b (machines where single precision arithmetic is used, e.g., Crays) This
+        macro is intended for use only if you wish to maintain a Fortran code that is portable to
+        both the Cray T3d/T3e and other Unix machines. </li>
+      <li>For mixed Fortran/C users: added the makefile flag FCONF that may be used in place of
+        the flag CONF. For an example of usage, see src/vec/examples/tutorials/makefile </li>
+    </ul>
+    <!##end>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+</table>
+</body>
+</html>
