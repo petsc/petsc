@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.67 2001/05/03 16:32:47 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.68 2001/05/03 20:14:54 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -180,11 +180,11 @@
           call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,             &
      &                       ierr)
         else
-          call DAGetColoring(da,IS_COLORING_LOCAL,MATMPIAIJ,                        &
+          call DAGetColoring(da,IS_COLORING_GHOSTED,MATMPIAIJ,                      &
      &                     coloring,J,ierr)
           call MatSetColoring(J,coloring,ierr)
-          call SNESSetJacobian(snes,J,J,SNESDAComputeJacobianWithAD,da,            &
-     &                       ierr)
+          call SNESSetJacobian(snes,J,J,SNESDAComputeJacobianWithAdifor,            &
+     &                         da,ierr)
           call ISColoringDestroy(coloring,ierr)
          endif
       endif
