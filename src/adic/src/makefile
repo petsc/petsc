@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-CPPFLAGS = ${ADIC_INCLUDE}
+CPPFLAGS = 
 SOURCEC  = adpetscadic.c petscadic.c
 SOURCEF  =
 SOURCEH  = 

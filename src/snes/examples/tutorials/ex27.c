@@ -75,11 +75,18 @@ typedef struct {
   PassiveScalar  ptime;
   PassiveScalar  cfl_max,max_time;
   PassiveScalar  fnorm_ratio;
-  int          ires,iramp,itstep;
-  int          max_steps,print_freq;
-  int          LocalTimeStepping;                         
+  int            ires,iramp,itstep;
+  int            max_steps,print_freq;
+  int            LocalTimeStepping;                         
 } TstepCtx;
 
+/*
+    The next two structures are essentially the same. The difference is that
+  the first does not contain derivative information (as used by ADIC) while the
+  second does. The first is used only to contain the solution at the previous time-step
+  which is a constant in the computation of the current time step and hence passive 
+  (meaning not active in terms of derivatives).
+*/
 typedef struct {
   PassiveScalar u,v,omega,temp;
 } PassiveField;
@@ -91,9 +98,9 @@ typedef struct {
 
 typedef struct {
   int          mglevels;
-  int          cycles;         /* numbers of time steps for integration */ 
+  int          cycles;                       /* numbers of time steps for integration */ 
   PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
-  PetscTruth   draw_contours;                /* flag - 1 indicates drawing contours */
+  PetscTruth   draw_contours;                /* indicates drawing contours of solution */
   PetscTruth   PreLoading;
 } Parameter;
 
@@ -104,13 +111,11 @@ typedef struct {
 } AppCtx;
 
 extern int FormInitialGuess(SNES,Vec,void*);
-extern int FormFunction(SNES,Vec,Vec,void*);
 extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
 extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
 extern int Update(DMMG *);
 extern int Initialize(DMMG *);
 extern int ComputeTimeStep(SNES,void*);
-extern int AddTSTerm(SNES,Vec,Vec,void*);
 extern int AddTSTermLocal(DALocalInfo*,Field**,Field**,void*);
 
 
@@ -127,7 +132,6 @@ int main(int argc,char **argv)
   MPI_Comm   comm;
   SNES       snes;
   DA         da;
-  PetscTruth localfunction = PETSC_TRUE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -198,13 +202,8 @@ int main(int argc,char **argv)
        
        Process adiC: FormFunctionLocal FormFunctionLocali AddTSTermLocal
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = PetscOptionsGetLogical(PETSC_NULL,"-localfunction",&localfunction,PETSC_IGNORE);CHKERRQ(ierr);
-    if (localfunction) {
-      ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
-      ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
-    } else {
-      ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
-    }
+    ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
+    ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
     
     ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",
 		       param.lidvelocity,param.prandtl,param.grashof);CHKERRQ(ierr);
@@ -347,201 +346,6 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   return 0;
 } 
 
-/* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
-/* 
-   FormFunction - Evaluates the nonlinear function, F(x).
-
-   Input Parameters:
-.  snes - the SNES context
-.  X - input vector
-.  ptr - optional user-defined context, as set by SNESSetFunction()
-
-   Output Parameter:
-.  F - function vector
-
-   Notes:
-   We process the boundary nodes before handling the interior
-   nodes, so that no conditional statements are needed within the
-   PetscReal loop over the local grid indices. 
- */
-int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
-{
-  DMMG         dmmg = (DMMG)ptr;
-  AppCtx       *user = (AppCtx*)dmmg->user;
-  TstepCtx     *tsCtx = user->tsCtx;
-  int          ierr,i,j,mx,my,xs,ys,xm,ym;
-  int          xints,xinte,yints,yinte;
-  PetscReal    two = 2.0,one = 1.0,p5 = 0.5,hx,hy,dhx,dhy,hxdhy,hydhx;
-  PetscReal    grashof,prandtl,lid;
-  PetscScalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
-  Field        **x,**f;
-  Vec          localX;
-  DA           da = (DA)dmmg->dm;
-
-  ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-
-  grashof = user->param->grashof;  
-  prandtl = user->param->prandtl;
-  lid     = user->param->lidvelocity;
-
-  /* 
-     Define mesh intervals ratios for uniform grid.
-     [Note: FD formulae below are normalized by multiplying through by
-     local volume element to obtain coefficients O(1) in two dimensions.]
-  */
-  dhx = (PetscReal)(mx-1);     dhy = (PetscReal)(my-1);
-  hx = one/dhx;             hy = one/dhy;
-  hxdhy = hx*dhy;           hydhx = hy*dhx;
-
-  /*
-     Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
-     By placing code between these two statements, computations can be
-     done while messages are in transition.
-  */
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-
-  /*
-     Get pointers to vector data
-  */
-  ierr = DAVecGetArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
-
-  /*
-     Get local grid boundaries
-  */
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-
-  /*
-     Compute function over the locally owned part of the grid
-     (physical corner points are set twice to avoid more conditionals).
-  */
-  xints = xs; xinte = xs+xm; yints = ys; yinte = ys+ym;
-
-  /* Test whether we are on the bottom edge of the global array */
-  if (yints == 0) {
-    j = 0;
-    yints = yints + 1;
-    /* bottom edge */
-    for (i=xs; i<xs+xm; i++) {
-        f[j][i].u     = x[j][i].u;
-        f[j][i].v     = x[j][i].v;
-        f[j][i].omega = x[j][i].omega + (x[j+1][i].u - x[j][i].u)*dhy; 
-	f[j][i].temp  = x[j][i].temp-x[j+1][i].temp;
-    }
-  }
-
-  /* Test whether we are on the top edge of the global array */
-  if (yinte == my) {
-    j = my - 1;
-    yinte = yinte - 1;
-    /* top edge */
-    for (i=xs; i<xs+xm; i++) {
-        f[j][i].u     = x[j][i].u - lid;
-        f[j][i].v     = x[j][i].v;
-        f[j][i].omega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy; 
-	f[j][i].temp  = x[j][i].temp-x[j-1][i].temp;
-    }
-  }
-
-  /* Test whether we are on the left edge of the global array */
-  if (xints == 0) {
-    i = 0;
-    xints = xints + 1;
-    /* left edge */
-    for (j=ys; j<ys+ym; j++) {
-      f[j][i].u     = x[j][i].u;
-      f[j][i].v     = x[j][i].v;
-      f[j][i].omega = x[j][i].omega - (x[j][i+1].v - x[j][i].v)*dhx; 
-      f[j][i].temp  = x[j][i].temp;
-    }
-  }
-
-  /* Test whether we are on the right edge of the global array */
-  if (xinte == mx) {
-    i = mx - 1;
-    xinte = xinte - 1;
-    /* right edge */ 
-    for (j=ys; j<ys+ym; j++) {
-      f[j][i].u     = x[j][i].u;
-      f[j][i].v     = x[j][i].v;
-      f[j][i].omega = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx; 
-      f[j][i].temp  = x[j][i].temp - (PetscReal)(grashof>0);
-    }
-  }
-
-  /* Compute over the interior points */
-  for (j=yints; j<yinte; j++) {
-    for (i=xints; i<xinte; i++) {
-
-	/*
-	  convective coefficients for upwinding
-        */
-	vx = x[j][i].u; avx = PetscAbsScalar(vx);
-        vxp = p5*(vx+avx); vxm = p5*(vx-avx);
-	vy = x[j][i].v; avy = PetscAbsScalar(vy);
-        vyp = p5*(vy+avy); vym = p5*(vy-avy);
-
-	/* U velocity */
-        u          = x[j][i].u;
-        uxx        = (two*u - x[j][i-1].u - x[j][i+1].u)*hydhx;
-        uyy        = (two*u - x[j-1][i].u - x[j+1][i].u)*hxdhy;
-        f[j][i].u  = uxx + uyy - p5*(x[j+1][i].omega-x[j-1][i].omega)*hx;
-
-	/* V velocity */
-        u          = x[j][i].v;
-        uxx        = (two*u - x[j][i-1].v - x[j][i+1].v)*hydhx;
-        uyy        = (two*u - x[j-1][i].v - x[j+1][i].v)*hxdhy;
-        f[j][i].v  = uxx + uyy + p5*(x[j][i+1].omega-x[j][i-1].omega)*hy;
-
-	/* Omega */
-        u          = x[j][i].omega;
-        uxx        = (two*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
-        uyy        = (two*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;
-	f[j][i].omega = uxx + uyy + 
-			(vxp*(u - x[j][i-1].omega) +
-			  vxm*(x[j][i+1].omega - u)) * hy +
-			(vyp*(u - x[j-1][i].omega) +
-			  vym*(x[j+1][i].omega - u)) * hx -
-			p5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy;
-
-        /* Temperature */
-        u             = x[j][i].temp;
-        uxx           = (two*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
-        uyy           = (two*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
-	f[j][i].temp =  uxx + uyy  + prandtl * (
-			(vxp*(u - x[j][i-1].temp) +
-			  vxm*(x[j][i+1].temp - u)) * hy +
-		        (vyp*(u - x[j-1][i].temp) +
-		       	  vym*(x[j+1][i].temp - u)) * hx);
-    }
-  }
-
-  /*
-     Restore vectors
-  */
-  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
-
-  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
-
-
-  /* Add time step contribution */
-  if (tsCtx->ires) {
-    ierr = AddTSTerm(snes,X,F,ptr); CHKERRQ(ierr);
-  }
-  /*
-     Flop count (multiply-adds are counted as 2 operations)
-  */
-  ierr = PetscLogFlops(84*ym*xm);CHKERRQ(ierr);
-
-
-  return 0; 
-} 
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
@@ -882,8 +686,7 @@ int ComputeTimeStep(SNES snes,void *ptr)
   AppCtx       *user = (AppCtx*)ptr;
   TstepCtx     *tsCtx = user->tsCtx;
   Vec	       func = user->func;
-  PetscScalar  inc = 1.1;
-  PetscScalar  newcfl;
+  PetscScalar  inc = 1.1,  newcfl;
   int          ierr;
   /*int	       iramp = tsCtx->iramp;*/
  
@@ -906,61 +709,21 @@ int ComputeTimeStep(SNES snes,void *ptr)
     }*/
   PetscFunctionReturn(0);
 }
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "AddTSTerm"
-int AddTSTerm(SNES snes,Vec X,Vec F,void *ptr)
-/*---------------------------------------------------------------------*/
-{
-  DMMG         dmmg = (DMMG)ptr;
-  AppCtx       *user = (AppCtx*)dmmg->user;
-  TstepCtx     *tsCtx = user->tsCtx;
-  DA           da = (DA)dmmg->dm;
-  int          ierr,i,j,mx,my,xs,ys,xm,ym;
-  int          xints,xinte,yints,yinte;
-  PetscReal    two = 2.0,one = 1.0,p5 = 0.5,hx,hy,dhx,dhy,hxhy;
-  PetscScalar  dtinv;
-  Field        **x,**f;
-  PassiveField **xold;
 
-  PetscFunctionBegin; 
-  ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  xints = xs; xinte = xs+xm; yints = ys; yinte = ys+ym;
-  dhx = (PetscReal)(mx-1);     dhy = (PetscReal)(my-1);
-  hx = one/dhx;             hy = one/dhy;
-  hxhy = hx*hy;
-  ierr = DAVecGetArray(da,X,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,F,(void**)&f);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
-  dtinv = hxhy/(tsCtx->cfl*tsCtx->dt);
-  for (j=yints; j<yinte; j++) {
-    for (i=xints; i<xinte; i++) {
-      f[j][i].u     += dtinv*(x[j][i].u-xold[j][i].u);
-      f[j][i].v     += dtinv*(x[j][i].v-xold[j][i].v);
-      f[j][i].omega += dtinv*(x[j][i].omega-xold[j][i].omega);
-      f[j][i].temp  += dtinv*(x[j][i].temp-xold[j][i].temp);
-    }
-  }
-  ierr = DAVecRestoreArray(da,X,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,F,(void**)&f);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "AddTSTermLocal"
 int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
 /*---------------------------------------------------------------------*/
 {
-  AppCtx       *user = (AppCtx*)ptr;
-  TstepCtx     *tsCtx = user->tsCtx;
-  DA           da = info->da;
-  int          ierr,i,j;
-  int          xints,xinte,yints,yinte;
-  PetscReal    hx,hy,dhx,dhy,hxhy;
+  AppCtx         *user = (AppCtx*)ptr;
+  TstepCtx       *tsCtx = user->tsCtx;
+  DA             da = info->da;
+  int            ierr,i,j, xints,xinte,yints,yinte;
+  PetscReal      hx,hy,dhx,dhy,hxhy;
   PassiveScalar  dtinv;
-  PassiveField **xold;
+  PassiveField   **xold;
+
   PetscFunctionBegin; 
   xints = info->xs; xinte = info->xs+info->xm; yints = info->ys; yinte = info->ys+info->ym;
   dhx = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);

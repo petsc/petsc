@@ -99,11 +99,11 @@ static int KSPSolve_TCQMR(KSP ksp,int *its)
      SOLVE  Ax = b
    */
   /* Apply last two Given's (Gl-1 and Gl) rotations to (beta,alpha,Gamma) */
-    if (ksp->its > 1) {
+    if (ksp->its > 2) {
       theta =  sl1*beta;
       eptmp = -cl1*beta;
     }
-    if (ksp->its > 0) {
+    if (ksp->its > 1) {
       ep     = -cl*eptmp + sl*alpha;
       deltmp = -sl*eptmp - cl*alpha;
     }
@@ -126,8 +126,8 @@ static int KSPSolve_TCQMR(KSP ksp,int *its)
     ierr   = VecAXPY(&tau_n,pvec,x);CHKERRQ(ierr);
     cl1    = cl; sl1 = sl; cl = c; sl = s;     
 
-    VecCopy(pvec1,pvec2);
-    VecCopy(pvec,pvec1);
+    ierr = VecCopy(pvec1,pvec2);CHKERRQ(ierr);
+    ierr = VecCopy(pvec,pvec1);CHKERRQ(ierr);
 
     /* Compute the upper bound on the residual norm r (See QMR paper p. 13) */
     sprod = sprod*PetscAbsScalar(s);

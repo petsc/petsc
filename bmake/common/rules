@@ -366,10 +366,13 @@ fortranstubs:
 	        echo ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $< ;\
 	        ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $< ;\
               fi; \
-         else \
+        elif  [ `ls -t $*.c $*.ad.c | head -1` = "$*.ad.c" ]; then \
+          echo ${CC} -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+	  ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+        else \
 	  echo ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $< ;\
 	  ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $< ;\
-         fi
+        fi
 
 .c.a .cpp.a .cc.a .C.a: 
 	-${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $<
