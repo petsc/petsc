@@ -1,7 +1,7 @@
 ITOOLSDIR = ../..
-ALL: lib
+ALL: ex1
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR) $(COPT) -I$(ITOOLSDIR)/include
+CFLAGS   = $(OPT) -I$(ITOOLSDIR) $(COPT) $(CONF) -I$(ITOOLSDIR)/include
 SOURCEC  = 
 SOURCEF  =
 WSOURCEC = 
@@ -10,13 +10,16 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
+EXAMPLES = ex1
 SYSLIB   = $(LDIR)/cmain$(COMM).o $(LDIR)/$(COMPLEX)/libpetscvec.a \
            $(LDIR)/libpetscvec.a \
-           $(LDIR)/libpetscsystem.a $(BLAS) $(CLIB) $(SLIB) -lm 
-LOCAL_INCLUDE = $(SOURCEH)
+           $(LDIR)/libpetscsys.a $(BLAS) $(CLIB) $(SLIB) -lm 
+LINCLUDE = $(SOURCEH)
 
 ex1: ex1.o 
-	$(CLINKER) -o ex1 ex1.o  $(SYSLIB)
-	$(RM) ex1.o
+	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)
+	$(RM) -f ex1.o
+
+include $(ITOOLSDIR)/bmake/$(PARCH)
 
 
