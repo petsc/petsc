@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.70 2001/08/07 21:32:16 bsmith Exp bsmith $*/
+/*$Id: zvec.c,v 1.71 2001/09/07 20:13:13 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -32,7 +32,7 @@
 #define mapgetglobalrange_        MAPGETGLOBALRANGE
 #define mapdestroy_               MAPDESTROY
 #define mapcreatempi_             MAPCREATEMPI
-#define vecgetmap_                VECGETMAP
+#define vecgetpetscmap_           VECGETPETSCMAP
 #define vecghostgetlocalform_     VECGHOSTGETLOCALFORM
 #define vecghostrestorelocalform_ VECGHOSTRESTORELOCALFORM
 #define veccreateghostwitharray_  VECCREATEGHOSTWITHARRAY
@@ -56,7 +56,7 @@
 #define vecghostgetlocalform_     vecghostgetlocalform
 #define veccreateghostwitharray_  veccreateghostwitharray
 #define veccreateghost_           veccreateghost
-#define vecgetmap_                vecgetmap
+#define vecgetpetscmap_           vecgetpetscmap
 #define mapcreatempi_             mapcreatempi
 #define mapgetglobalrange_        mapgetglobalrange
 #define mapgetsize_               mapgetsize
@@ -126,7 +126,7 @@ void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name PETSC_MIXED_LEN(len),int *i
   FREECHAR(type_name,t);
 }
 
-void PETSC_STDCALL vecgetmap_(Vec *x,PetscMap *map,int *ierr)
+void PETSC_STDCALL vecgetpetscmap_(Vec *x,PetscMap *map,int *ierr)
 {
   *ierr = VecGetPetscMap(*x,map);
 }
