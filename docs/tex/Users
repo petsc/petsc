@@ -6,6 +6,7 @@ See petsc.applications for summary of remote users.
 Local Users:
 
 leaf - Gary Leaf, needs sda (simplified distributed arrays) - also students?
+gunter - David Gunter, working with Gary 
 dstevens - Deb Stevens, needs Fortran interface to SLES
 canfield - Tom Canfield, needs parallel, symmetric linear solvers
 taylor (taylor@nile.eecs.nwu.edu) - Valerie Taylor, working with Tom Canfield
@@ -16,16 +17,18 @@ gooch - Carl Ollivier-Gooch - TS, multigrid
 freitag - Lori, needs makefile and system infrastructure
 diachin - Darin, working with Lori, makefiles and system stuff in C++
 plassman - ILU, BlockSolve
-bischof, roh, pwu - Chris Bischof, Lucas Roh, Po-Ting Wu - ADIFOR/ADIC interface to PETSc
 zwu - Zhijun Wu - working with Jorge, may use SNES to write new nonlinear solvers?
 kwong - Man Kwong, writing preprocessor
+michalakes - John Michalakes - writing FLIC/PETSc interface
+bischof, roh, hovland, pwu - Chris Bischof, Lucas Roh, Paul Hovland, Po-Ting Wu - ADIFOR/ADIC interface to PETSc
 
-/* local users with SP accounts only */
-adams - Mark Adams - UC Berkley grad student
+elliott - Frank Elliott (NYU) - needs distributed arrays
+resiga - Romeo Susan-Resiga (Notre Dame) - needs linear solvers for complex numbers
 kaushik - Dinesh Kaushik - ODU grad student
+adams - Mark Adams - UC Berkley grad student
 
 
-
+---------------------------------------------------------------------------
 Not currently active local users:
 
 bouarich - Ali Bouaricha, needs nonlinear solvers
