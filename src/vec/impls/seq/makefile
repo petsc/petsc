@@ -3,12 +3,13 @@ IPETSCDIR = ../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I../.. \
-           -I$(IPETSCDIR)/pinclude -I$(IPETSCDIR)/src/is $(CONF)
-SOURCEC  = dvec3.c bvec2.c 
+           -I$(IPETSCDIR)/pinclude -I$(IPETSCDIR)/src/is $(CONF) \
+           -D__DIR__='"vec/impls/seq/"'
+SOURCEC  = bvec2.c 
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = 
-OBJSC    = dvec3.o bvec2.o 
+OBJSC    = bvec2.o 
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
