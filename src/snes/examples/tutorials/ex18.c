@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.16 2001/03/15 22:20:49 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.17 2001/03/16 03:48:59 bsmith Exp bsmith $ */
 
 
 static char help[] ="Solves nonlinear Radiative Transport PDE with multigrid.\n\
@@ -10,7 +10,8 @@ A 2-dim simplified Radiative Transport test problem is used, with analytic Jacob
 The command line\n\
 options are:\n\
   -tleft <tl>, where <tl> indicates the left Diriclet BC \n\
-  -tright <tr>, where <tr> indicates the right Diriclet BC \n\n";
+  -tright <tr>, where <tr> indicates the right Diriclet BC \n\
+  -beta <beta>, where <beta> indicates the exponent in T \n\n";
 
 /*T
    Concepts: SNES^solving a system of nonlinear equations
@@ -74,13 +75,12 @@ int main(int argc,char **argv)
   user.tleft  = 1.0; 
   user.tright = 0.1;
   user.beta   = 2.5; 
-  user.bm1    = 1.5; 
-  user.coef   = 1.25;
   ierr = PetscOptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetDouble(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetDouble(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-coef",&user.coef,PETSC_NULL);CHKERRQ(ierr);
+  user.bm1  = user.beta - 1.0;
+  user.coef = user.beta/2.0;
+
 
   /*
       Create the multilevel DA data structure 
@@ -156,7 +156,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 {
   DMMG    dmmg = (DMMG)ptr;
   AppCtx  *user = (AppCtx*)dmmg->user;
-  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym;
+  int     ierr,i,j,mx,my,xs,ys,xm,ym;
   Scalar  zero = 0.0,one = 1.0;
   Scalar  hx,hy,hxdhy,hydhx;
   Scalar  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
