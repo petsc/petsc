@@ -38,7 +38,7 @@
                                    puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s \[to you\]: %s\r\n" swho  message
                                    puts "who: $swho message: $message"
-                                   send "\`$swho I acknowlege your message\r"
+                                   send "\`$swho I acknowledge your message\r"
                  } "* blinks\r\n" { 
                                    puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s blinks\r\n" swho
