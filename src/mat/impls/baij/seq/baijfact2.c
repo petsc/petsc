@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.14 1998/10/13 02:11:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.15 1998/10/13 15:26:50 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -418,6 +418,76 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBAIJ_5_NaturalOrdering"
+int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
+  int             i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt;
+  int             ierr,*diag = a->diag,jdx;
+  Scalar          *aa=a->a,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
+  Scalar *x,*b,*v;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+  /* forward solve the lower triangular */
+  idx    = 0;
+  x[0] = b[idx]; x[1] = b[1+idx]; x[2] = b[2+idx]; x[3] = b[3+idx];x[4] = b[4+idx];
+  for ( i=1; i<n; i++ ) {
+    v     =  aa + 25*ai[i];
+    vi    =  aj + ai[i];
+    nz    =  diag[i] - ai[i];
+    idx   =  5*i;
+    sum1  =  b[idx];sum2 = b[1+idx];sum3 = b[2+idx];sum4 = b[3+idx];sum5 = b[4+idx];
+    while (nz--) {
+      jdx   = 5*(*vi++);
+      x1    = x[jdx];x2 = x[1+jdx];x3 = x[2+jdx];x4 = x[3+jdx];x5 = x[4+jdx];
+      sum1 -= v[0]*x1 + v[5]*x2 + v[10]*x3  + v[15]*x4 + v[20]*x5;
+      sum2 -= v[1]*x1 + v[6]*x2 + v[11]*x3  + v[16]*x4 + v[21]*x5;
+      sum3 -= v[2]*x1 + v[7]*x2 + v[12]*x3  + v[17]*x4 + v[22]*x5;
+      sum4 -= v[3]*x1 + v[8]*x2 + v[13]*x3  + v[18]*x4 + v[23]*x5;
+      sum5 -= v[4]*x1 + v[9]*x2 + v[14]*x3  + v[19]*x4 + v[24]*x5;
+      v    += 25;
+    }
+    x[idx]   = sum1;
+    x[1+idx] = sum2;
+    x[2+idx] = sum3;
+    x[3+idx] = sum4;
+    x[4+idx] = sum5;
+  }
+  /* backward solve the upper triangular */
+  for ( i=n-1; i>=0; i-- ){
+    v    = aa + 25*diag[i] + 25;
+    vi   = aj + diag[i] + 1;
+    nz   = ai[i+1] - diag[i] - 1;
+    idt  = 5*i;
+    sum1 = x[idt];  sum2 = x[1+idt]; 
+    sum3 = x[2+idt];sum4 = x[3+idt]; sum5 = x[4+idt];
+    while (nz--) {
+      idx   = 5*(*vi++);
+      x1    = x[idx];   x2 = x[1+idx];x3    = x[2+idx]; x4 = x[3+idx]; x5 = x[4+idx];
+      sum1 -= v[0]*x1 + v[5]*x2 + v[10]*x3  + v[15]*x4 + v[20]*x5;
+      sum2 -= v[1]*x1 + v[6]*x2 + v[11]*x3  + v[16]*x4 + v[21]*x5;
+      sum3 -= v[2]*x1 + v[7]*x2 + v[12]*x3  + v[17]*x4 + v[22]*x5;
+      sum4 -= v[3]*x1 + v[8]*x2 + v[13]*x3  + v[18]*x4 + v[23]*x5;
+      sum5 -= v[4]*x1 + v[9]*x2 + v[14]*x3  + v[19]*x4 + v[24]*x5;
+      v    += 25;
+    }
+    v        = aa + 25*diag[i];
+    x[idt]   = v[0]*sum1 + v[5]*sum2 + v[10]*sum3  + v[15]*sum4 + v[20]*sum5;
+    x[1+idt] = v[1]*sum1 + v[6]*sum2 + v[11]*sum3  + v[16]*sum4 + v[21]*sum5;
+    x[2+idt] = v[2]*sum1 + v[7]*sum2 + v[12]*sum3  + v[17]*sum4 + v[22]*sum5;
+    x[3+idt] = v[3]*sum1 + v[8]*sum2 + v[13]*sum3  + v[18]*sum4 + v[23]*sum5;
+    x[4+idt] = v[4]*sum1 + v[9]*sum2 + v[14]*sum3  + v[19]*sum4 + v[24]*sum5;
+  }
+
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  PLogFlops(2*25*(a->nz) - a->n);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNC__  
 #define __FUNC__ "MatSolve_SeqBAIJ_3"
@@ -606,8 +676,6 @@ int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-extern int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat,Mat*);
-extern int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
 /* ----------------------------------------------------------------*/
 /*
      This code is virtually identical to MatILUFactorSymbolic_SeqAIJ
@@ -616,8 +684,7 @@ extern int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
 */
 #undef __FUNC__  
 #define __FUNC__ "MatILUFactorSymbolic_SeqBAIJ"
-int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
-                                 Mat *fact)
+int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat *fact)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data, *b;
   IS          isicol;
@@ -633,7 +700,8 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   /* special case that simply copies fill pattern */
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
-  ISIdentity(isrow,&row_identity); ISIdentity(iscol,&col_identity);
+  ierr = ISIdentity(isrow,&row_identity); CHKERRQ(ierr);
+  ierr = ISIdentity(iscol,&col_identity); CHKERRQ(ierr);
   if (levels == 0 && row_identity && col_identity) {
     ierr = MatDuplicate_SeqBAIJ(A,MAT_DO_NOT_COPY_VALUES,fact); CHKERRQ(ierr);
     (*fact)->factor = FACTOR_LU;
@@ -646,12 +714,17 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
     b->icol       = isicol;
     b->solve_work = (Scalar *) PetscMalloc((b->m+1+b->bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
     /*
-        Blocksize 4 has a special faster solver for ILU(0) factorization 
+        Blocksize 4 and 5 a special faster solver for ILU(0) factorization 
         with natural ordering 
     */
     if (b->bs == 4) {
       (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
       (*fact)->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
+      PLogInfo(A,"Using special natural ordering factor and solve BS=4\n"); 
+    } else if (b->bs == 5) {
+      (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
+      (*fact)->ops->solve           = MatSolve_SeqBAIJ_5_NaturalOrdering;
+      PLogInfo( A,"Using special natural ordering factor and solve BS=5\n"); 
     }
     PetscFunctionReturn(0);
   }

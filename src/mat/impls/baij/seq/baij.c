@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.145 1998/10/09 19:22:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.146 1998/10/19 22:18:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1069,7 +1069,6 @@ extern int MatLUFactorNumeric_SeqBAIJ_2(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_3(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_5(Mat,Mat*);
-extern int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
 
 extern int MatMult_SeqBAIJ_1(Mat,Vec,Vec);
 extern int MatMult_SeqBAIJ_2(Mat,Vec,Vec);
@@ -1087,10 +1086,6 @@ extern int MatMultAdd_SeqBAIJ_5(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 
-/*
-     note: This can only work for identity for row and col. It would 
-   be good to check this and otherwise generate an error.
-*/
 #undef __FUNC__  
 #define __FUNC__ "MatILUFactor_SeqBAIJ"
 int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
@@ -1098,9 +1093,15 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) inA->data;
   Mat         outA;
   int         ierr;
+  PetscTruth  row_identity, col_identity;
 
   PetscFunctionBegin;
   if (fill != 0) SETERRQ(PETSC_ERR_SUP,0,"Only fill=0 supported");
+  ierr = ISIdentity(row,&row_identity); CHKERRQ(ierr);
+  ierr = ISIdentity(col,&col_identity); CHKERRQ(ierr);
+  if (!row_identity || !col_identity) {
+    SETERRQ(1,1,"Row and column permutations must be identity");
+  }
 
   outA          = inA; 
   inA->factor   = FACTOR_LU;
@@ -1119,15 +1120,22 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
   if (!a->diag) {
     ierr = MatMarkDiag_SeqBAIJ(inA); CHKERRQ(ierr);
   }
-  ierr = MatLUFactorNumeric(inA,&outA); CHKERRQ(ierr);
-  
   /*
-      Blocksize 4 has a special faster solver for ILU(0) factorization 
+      Blocksize 4 and 5 have a special faster factorization/solver for ILU(0) factorization 
     with natural ordering 
   */
   if (a->bs == 4) {
-    inA->ops->solve = MatSolve_SeqBAIJ_4_NaturalOrdering;
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
+    PLogInfo(inA,"Using special in-place natural ordering factor and solve BS=4\n"); 
+  } else if (a->bs == 5) {
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqBAIJ_5_NaturalOrdering;
+    PLogInfo(inA,"Using special in-place natural ordering factor and solve BS=5\n"); 
   }
+
+  ierr = MatLUFactorNumeric(inA,&outA); CHKERRQ(ierr);
+  
 
   PetscFunctionReturn(0);
 }
