@@ -183,6 +183,7 @@ class ScrollingWindow:
       for i in range(0,self.h):
         amess = self.lines[i]+'                                                                                                          '
         self.stdscr.addstr(self.y+i,self.x,amess[0:self.w])
+      curses.textpad.rectangle(self.stdscr,self.y-1,self.x-1,self.y+self.h+1,self.x+self.w+1)
       self.stdscr.refresh()
       self.mess = ''
        
@@ -525,7 +526,7 @@ if __name__ ==  '__main__':
 
     sys.path.insert(0, os.path.join(installer.installPath, 'sidl','BuildSystem'))
 
-    args = ['-debugSections=[install,compile,bk]','-debugLevel=4','-installedprojects=[]']
+    args = ['-debugSections=[install,compile,bk]','-debugLevel=0','-installedprojects=[]']
     installer.runInstaller(args)
 
   except Exception, e:

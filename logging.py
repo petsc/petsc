@@ -70,3 +70,4 @@ class Logger(object):
             dW.write(self.debugIndent)
           dW.write(msg)
           dW.write('\n')
+          print 'ffuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu'

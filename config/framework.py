@@ -324,7 +324,7 @@ class Framework(config.base.Configure):
       return
     self.outputBanner()
     for child in self.children:
-      print 'Configuring '+child.__module__
+      # FIX send to debugPrint print 'Configuring '+child.__module__
       child.configure()
     self.substitute()
     self.outputHeader(self.header)
