@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.63 1997/10/19 03:24:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.64 1997/12/01 01:54:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -88,7 +88,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   int          ierr;
 
   PetscFunctionBegin;
-  if (pc->mat != pc->pmat) SETERRQ(PETSC_ERR_SUP,0,"cannot have different mat and pmat"); 
+  if (pc->mat != pc->pmat) SETERRQ(PETSC_ERR_SUP,0,"Cannot have different mat and pmat"); 
  
   /* swap shell matrix and true matrix */
   eis->A    = pc->mat;
@@ -159,11 +159,11 @@ static int PCSetFromOptions_Eisenstat(PC pc)
   PetscFunctionBegin;
   ierr = OptionsGetDouble(pc->prefix,"-pc_eisenstat_omega",&omega,&flg); CHKERRQ(ierr);
   if (flg) {
-    PCEisenstatSetOmega(pc,omega);
+    ierr = PCEisenstatSetOmega(pc,omega); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(pc->prefix,"-pc_eisenstat_diagonal_scaling",&flg);CHKERRQ(ierr);
   if (flg) {
-    PCEisenstatUseDiagonalScaling(pc);
+    ierr = PCEisenstatUseDiagonalScaling(pc); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -212,8 +212,7 @@ static int PCSetUp_Eisenstat(PC pc)
     ierr = MatGetLocalSize(pc->mat,&m,&n); CHKERRA(ierr);
     ierr = MatCreateShell(pc->comm,m,N,M,N,(void*)pc,&eis->shell); CHKERRQ(ierr);
     PLogObjectParent(pc,eis->shell);
-    ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void*)PCMult_Eisenstat); 
-           CHKERRQ(ierr);
+    ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void*)PCMult_Eisenstat);CHKERRQ(ierr);
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (pc->setupcalled == 0) {
