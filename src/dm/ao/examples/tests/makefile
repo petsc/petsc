@@ -1,15 +1,9 @@
-# $Id: makefile,v 1.13 1997/09/10 19:07:16 balay Exp balay $ 
+# $Id: makefile,v 1.14 1997/09/10 19:10:48 balay Exp bsmith $ 
 
 ALL: ex1
 
 CFLAGS	        = $(CPPFLAGS) -D__SDIR__='"$(LOCDIR)"'
 FFLAGS	        =	 
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        =
-OBJSC	        =
-OBJSF	        =
-LIBBASE	        = libpetscvec
 LOCDIR          = src/ao/examples/tests/
 TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm \
                   ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm clean
@@ -21,7 +15,7 @@ BUILDEXAMPLES_2 =
 BUILDEXAMPLES_3 = 
 BUILDEXAMPLES_4 = 
 
-EXAMPLESC       = ex1.c ex2.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF       = 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
