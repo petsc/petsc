@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.35 1997/07/02 22:28:35 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.36 1997/08/22 15:20:23 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -84,6 +84,16 @@ typedef struct _p_ISColoring* ISColoring;
 extern int ISColoringDestroy(ISColoring);
 extern int ISColoringView(ISColoring,Viewer);
 extern int ISColoringCreate(MPI_Comm,int,int*,ISColoring*);
+
+/* --------------------------------------------------------------------------*/
+
+/*
+     ISPartitioning are sets of IS's that define a partioning
+   of the underlying indices. This is the same as a ISColoring.
+*/
+#define ISPartitioning ISColoring
+
+
 
 #endif
 
