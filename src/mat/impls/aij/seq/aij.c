@@ -2095,6 +2095,27 @@ PetscErrorCode MatSetBlockSize_SeqAIJ(Mat A,PetscInt bs)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatConjugate_SeqAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate_SeqAIJ(Mat mat)
+{
+#if defined(PETSC_USE_COMPLEX)
+  Mat_SeqAIJ  *aij = (Mat_SeqAIJ *)mat->data;
+  PetscInt    i,nz;
+  PetscScalar *a;
+
+  PetscFunctionBegin;
+  nz = aij->nz;
+  a  = aij->a;
+  for (i=0; i<nz; i++) {
+    a[i] = PetscConj(a[i]);
+  }
+#else
+  PetscFunctionBegin;
+#endif
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,
@@ -2203,6 +2224,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*100*/MatPtAPNumeric_SeqAIJ_SeqAIJ,
        0,
        0,
+       MatConjugate_SeqAIJ
 };
 
 EXTERN_C_BEGIN

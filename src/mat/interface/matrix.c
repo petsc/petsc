@@ -114,7 +114,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRow(Mat mat,PetscInt row,PetscInt *ncols
 /*@C  
    MatConjugate - replaces the matrix values with their complex conjugates
 
-   Not Collective
+   Collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -130,6 +130,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate(Mat mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (!mat->ops->conjugate) SETERRQ(PETSC_ERR_SUP,"Not provided for this matrix format, send email to petsc-maint@mcs.anl.gov");
   ierr = (*mat->ops->conjugate)(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

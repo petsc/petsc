@@ -1574,6 +1574,25 @@ PetscErrorCode MatAXPY_MPIAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str
   PetscFunctionReturn(0);
 }
 
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate_SeqAIJ(Mat);
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatConjugate_MPIAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate_MPIAIJ(Mat mat)
+{
+#if defined(PETSC_USE_COMPLEX)
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *aij = (Mat_MPIAIJ *)mat->data;
+
+  PetscFunctionBegin;
+  ierr = MatConjugate_SeqAIJ(aij->A);CHKERRQ(ierr);
+  ierr = MatConjugate_SeqAIJ(aij->B);CHKERRQ(ierr);
+#else
+  PetscFunctionBegin;
+#endif
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,
@@ -1682,6 +1701,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /*100*/0,
        MatPtAPSymbolic_MPIAIJ_MPIAIJ,
        MatPtAPNumeric_MPIAIJ_MPIAIJ,
+       MatConjugate_MPIAIJ
 };
 
 /* ----------------------------------------------------------------------------------------*/
