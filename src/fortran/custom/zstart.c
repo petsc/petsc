@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.46 1998/06/26 19:54:49 bsmith Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.47 1998/06/26 23:45:52 balay Exp balay $";
 #endif
 
 /*
@@ -255,6 +255,14 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_SELF");return;}
   *__ierr = PetscCommDup_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_WORLD");return;}
+#if defined (LAM_MPI)
+  {
+    int c1 = lam_F_typefind(MPI_COMM_SELF);
+    int c2 = lam_F_typefind(PETSC_COMM_WORLD);
+    lam_F_maketype(&c1, __ierr,PETSC_COMM_SELF);
+    lam_F_maketype(&c2, __ierr,PETSC_COMM_WORLD);
+  }
+#endif
 
   *__ierr = ViewerInitialize_Private(); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
@@ -332,7 +340,3 @@ void petscsetcommworld_(MPI_Comm *comm,int *__ierr)
 #if defined(__cplusplus)
 }
 #endif
-
-
-
-
