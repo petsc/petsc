@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   /* Create SNES context  */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);
  CHKERRQ(ierr);
 
   /* setting the RHS function and the Jacobian's non-zero structutre */
