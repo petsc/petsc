@@ -3,13 +3,13 @@
 all: copyexamples unix2dos_projects
 
 copyexamples: 
-	cp -f ../src/sles/examples/tutorials/ex2.c c/sles/ex2/ex2.c
-	cp -f ../src/sles/examples/tutorials/ex2.c c++/sles/ex2/ex2.cpp
-	cp -f ../src/sles/examples/tutorials/ex2.c complex/sles/ex2/ex2.cpp
-	cp -f ../src/sles/examples/tutorials/ex2f.F fortran/sles/ex2f/ex2f.F
+	cp -f ../src/ksp/examples/tutorials/ex2.c c/ksp/ex2/ex2.c
+	cp -f ../src/ksp/examples/tutorials/ex2.c c++/ksp/ex2/ex2.cpp
+	cp -f ../src/ksp/examples/tutorials/ex2.c complex/ksp/ex2/ex2.cpp
+	cp -f ../src/ksp/examples/tutorials/ex2f.F fortran/ksp/ex2f/ex2f.F
 
 unix2dos_projects:
-	unix2dos c/sles/ex2/ex2.dsp         c/sles/ex2/ex2.dsw
-	unix2dos c++/sles/ex2/ex2.dsp       c++/sles/ex2/ex2.dsw
-	unix2dos complex/sles/ex2/ex2.dsp   complex/sles/ex2/ex2.dsw
-	unix2dos fortran/sles/ex2f/ex2f.dsp fortran/sles/ex2f/ex2f.dsw
+	unix2dos c/ksp/ex2/ex2.dsp         c/ksp/ex2/ex2.dsw
+	unix2dos c++/ksp/ex2/ex2.dsp       c++/ksp/ex2/ex2.dsw
+	unix2dos complex/ksp/ex2/ex2.dsp   complex/ksp/ex2/ex2.dsw
+	unix2dos fortran/ksp/ex2f/ex2f.dsp fortran/ksp/ex2f/ex2f.dsw
