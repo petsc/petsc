@@ -56,6 +56,10 @@ extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
 #define ORDER_QMD     4
 extern int MatGetReordering(Mat,int,IS*,IS*);
 
+#define MAT_SAME_NONZERO_PATTERN 1
+#define MAT_SAME_MATRIX          2
+#define MAT_NO_SETUP_CALLED      4
+
 extern int MatLUFactor(Mat,IS,IS);
 extern int MatCholeskyFactor(Mat,IS);
 extern int MatLUFactorSymbolic(Mat,IS,IS,Mat*);
