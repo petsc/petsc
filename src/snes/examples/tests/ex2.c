@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.48 1996/08/27 01:32:19 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.49 1996/08/27 01:54:26 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
@@ -81,9 +81,27 @@ int main( int argc, char **argv )
   ierr = SNESSetMonitor(snes,Monitor,PETSC_NULL); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set runtime options
+     Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+  /* 
+     Set linear solver defaults for this problem. By extracting the
+     SLES, KSP, and PC contexts from the SNES context, we can then
+     directly call any SLES, KSP, and PC routines to set various options.
+  */
+  ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
+  ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
+  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+  ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,5); CHKERRA(ierr);
+
+  /* 
+     Set SNES/SLES/KSP/PC runtime options, e.g.,
+         -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
+     These options will override those specified above as long as
+     SNESSetFromOptions() is called _after_ any other customization
+     routines.
+  */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
