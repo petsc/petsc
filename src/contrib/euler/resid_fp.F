@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.3 1997/10/11 18:39:18 curfman Exp keyes $";
+c  "$Id: resid_fp.F,v 1.4 1997/10/11 22:22:30 keyes Exp keyes $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -145,7 +145,7 @@ c   Form density and contravariant velocities at FV cell edge centers (J+1/2)
 c   as functions of PHI(I,J,K) and PHI(I,J+1,K)
 c
       xvel(i,j,k)=p25*(fp(i+1,j+1,k  )-fp(i-1,j+1,k  )+
-     &        fp(i+1,j  ,k  )-fp(i-1,j  ,k  ))/ajy(i,j,k)
+     &                 fp(i+1,j  ,k  )-fp(i-1,j  ,k  ))/ajy(i,j,k)
       yvel(i,j,k)=    (fp(i  ,j+1,k  )-fp(i  ,j  ,k  ))/aix(i,j,k)
       zvel(i,j,k)=zero
       den (i,j,k)=(one+p5*gm1*(fsmach**2-(xvel**2+yvel**2)))**rgm1
@@ -259,7 +259,7 @@ c p1    p2    p3           p17   p18         p33   p34         p48   p49   p50
 c
       xloc=-1.50d0+3.0d0*(dfloat(i-1)-p5)/dfloat(ni-1)
       fbcfpj1(i,k)=fp(i,1,k)-fp(i,2,k)+
-		   aix(i,2,k)*fsmach*sin(pi*xloc)*cos(pi*xloc)
+     &             aix(i,2,k)*fsmach*sin(pi*xloc)*cos(pi*xloc)
       GO TO 2
     4 CONTINUE
 c
