@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.8 1995/06/23 12:40:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.9 1995/07/06 22:09:12 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -261,7 +261,7 @@ int PLogObjectState(PetscObject obj,char *format,...)
       events. This creates large log files and slows the program down.
 
    Options Database Keys:
-$  -logall : Prints log information (for code compiled
+$  -log_all : Prints log information (for code compiled
 $      with PETSC_LOG)
 
 .keywords: log, begin
@@ -429,7 +429,7 @@ static char *(name[]) = {"MatMult         ",
 .  comm - communicator, only the first processor prints
 
    Options Database Keys:
-$  -logsummary : Prints summary of log information 
+$  -log_summary : Prints summary of log information 
    
 .keywords: log, dump, print
 
@@ -485,12 +485,12 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
 
   MPIU_fprintf(comm,fd,
     "\n------------------------------------------------------------------\
----------\n"); 
+-------------\n"); 
 
   /* loop over operations looking for interesting ones */
-  MPIU_fprintf(comm,fd,"\nPhase             Count      Time (sec)         \
-  Flops/sec        %%Time   %%Flop\n");
-  MPIU_fprintf(comm,fd,"                           Min        Max      \
+  MPIU_fprintf(comm,fd,"\nPhase               Count       Time (sec)        \
+   Flops/sec     %%Time %%Flop\n");
+  MPIU_fprintf(comm,fd,"                             Min       Max      \
   Min       Max\n");
   for ( i=0; i<100; i++ ) {
     if (EventsType[i][TIME]) {
@@ -506,8 +506,7 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
     MPI_Reduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
     MPI_Reduce(&wdou,&totts,1,MPI_DOUBLE,MPI_SUM,0,comm);
     if (EventsType[i][COUNT]) {
-    MPIU_fprintf(comm,fd,"%s  %4d    %3.2e  %3.2e    %3.2e  %3.2e  %4.1f  \
-%4.1f\n",
+    MPIU_fprintf(comm,fd,"%s %8d  %3.2e  %3.2e   %3.2e  %3.2e %5.1f %5.1f\n",
                    name[i],(int)EventsType[i][COUNT],mint,maxt,minf,maxf,
                    100.*totts/tott,100.*totff/totf);
     }
