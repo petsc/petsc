@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.66 2001/03/07 18:37:44 balay Exp balay $*/
+/*$Id: iscoloring.c,v 1.67 2001/03/23 23:21:16 balay Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -24,11 +24,16 @@ int ISColoringDestroy(ISColoring iscoloring)
   PetscFunctionBegin;
   PetscValidPointer(iscoloring);
 
-  for (i=0; i<iscoloring->n; i++) {
-    ierr = ISDestroy(iscoloring->is[i]);CHKERRQ(ierr);
+  if (iscoloring->is) {
+    for (i=0; i<iscoloring->n; i++) {
+      ierr = ISDestroy(iscoloring->is[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(iscoloring->is);CHKERRQ(ierr);
+  }
+  if (iscoloring->colors) {
+    ierr = PetscFree(iscoloring->colors);CHKERRQ(ierr);
   }
   PetscCommDestroy_Private(&iscoloring->comm);
-  ierr = PetscFree(iscoloring->is);CHKERRQ(ierr);
   ierr = PetscFree(iscoloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -52,6 +57,7 @@ int ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 {
   int        i,ierr;
   PetscTruth isascii;
+  IS         *is;
 
   PetscFunctionBegin;
   PetscValidPointer(iscoloring);
@@ -70,9 +76,11 @@ int ISColoringView(ISColoring iscoloring,PetscViewer viewer)
     SETERRQ1(1,"Viewer type %s not supported for ISColoring",((PetscObject)viewer)->type_name);
   }
 
+  ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&is);CHKERRQ(ierr);
   for (i=0; i<iscoloring->n; i++) {
     ierr = ISView(iscoloring->is[i],viewer);CHKERRQ(ierr);
   }
+  ierr = ISColoringRestoreIS(iscoloring,&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -87,20 +95,55 @@ int ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 .  iscoloring - the coloring context
 
    Output Parameters:
-+  n - number of index sets in the coloring context
++  nn - number of index sets in the coloring context
 -  is - array of index sets
 
    Level: advanced
 
 .seealso: ISColoringRestoreIS(), ISColoringView()
 @*/
-int ISColoringGetIS(ISColoring iscoloring,int *n,IS *is[])
+int ISColoringGetIS(ISColoring iscoloring,int *nn,IS *isis[])
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidPointer(iscoloring);
 
-  if (n)  *n  = iscoloring->n;
-  if (is) *is = iscoloring->is;
+  if (nn)  *nn  = iscoloring->n;
+  if (isis) {
+    if (!iscoloring->is) {
+      int *mcolors,**ii,nc = iscoloring->n,i,base, n = iscoloring->N;
+      int *colors = iscoloring->colors;
+      IS  *is;
+
+      /* generate the lists of nodes for each color */
+      ierr = PetscMalloc((nc+1)*sizeof(int),&mcolors);CHKERRQ(ierr);
+      ierr = PetscMemzero(mcolors,nc*sizeof(int));CHKERRQ(ierr);
+      for (i=0; i<n; i++) {
+	mcolors[colors[i]]++;
+      }
+
+      ierr = PetscMalloc((nc+1)*sizeof(int*),&ii);CHKERRQ(ierr);
+      ierr = PetscMalloc((n+1)*sizeof(int),&ii[0]);CHKERRQ(ierr);
+      for (i=1; i<nc; i++) {
+	ii[i] = ii[i-1] + mcolors[i-1];
+      }
+      ierr = PetscMemzero(mcolors,nc*sizeof(int));CHKERRQ(ierr);
+      for (i=0; i<n; i++) {
+	ii[colors[i]][mcolors[colors[i]]++] = i + base;
+      }
+      ierr = PetscMalloc((nc+1)*sizeof(IS),&is);CHKERRQ(ierr);
+      for (i=0; i<nc; i++) {
+	ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],is+i);CHKERRQ(ierr);
+      }
+
+      iscoloring->is   = is;
+      ierr = PetscFree(ii[0]);CHKERRQ(ierr);
+      ierr = PetscFree(ii);CHKERRQ(ierr);
+      ierr = PetscFree(mcolors);CHKERRQ(ierr);
+    }
+    *isis = iscoloring->is;
+  }
 
   PetscFunctionReturn(0);
 }
@@ -143,7 +186,8 @@ int ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 +   comm - communicator for the processors creating the coloring
 .   n - number of nodes on this processor
 -   colors - array containing the colors for this processor, color
-             numbers begin at 0.
+             numbers begin at 0. In C/C++ this array must have been obtained with PetscMalloc()
+             and should NOT be freed (The ISColoringDestroy() will free it).
 
     Output Parameter:
 .   iscoloring - the resulting coloring data structure
@@ -157,7 +201,7 @@ int ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 @*/
 int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscoloring)
 {
-  int        ierr,size,rank,base,top,tag,nc,ncwork,*mcolors,**ii,i;
+  int        ierr,size,rank,base,top,tag,nc,ncwork,i;
   PetscTruth flg;
   MPI_Status status;
   IS         *is;
@@ -190,35 +234,10 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
   }
   ncwork++;
   ierr = MPI_Allreduce(&ncwork,&nc,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-
-  /* generate the lists of nodes for each color */
-  ierr = PetscMalloc((nc+1)*sizeof(int),&mcolors);CHKERRQ(ierr);
-  ierr = PetscMemzero(mcolors,nc*sizeof(int));CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    mcolors[colors[i]]++;
-  }
-
-  ierr = PetscMalloc((nc+1)*sizeof(int*),&ii);CHKERRQ(ierr);
-  ierr = PetscMalloc((n+1)*sizeof(int),&ii[0]);CHKERRQ(ierr);
-  for (i=1; i<nc; i++) {
-    ii[i] = ii[i-1] + mcolors[i-1];
-  }
-  ierr = PetscMemzero(mcolors,nc*sizeof(int));CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    ii[colors[i]][mcolors[colors[i]]++] = i + base;
-  }
-  ierr = PetscMalloc((nc+1)*sizeof(IS),&is);CHKERRQ(ierr);
-  for (i=0; i<nc; i++) {
-    ierr = ISCreateGeneral(comm,mcolors[i],ii[i],is+i);CHKERRQ(ierr);
-  }
-
-  (*iscoloring)->n    = nc;
-  (*iscoloring)->is   = is;
-
-  ierr = PetscFree(ii[0]);CHKERRQ(ierr);
-  ierr = PetscFree(ii);CHKERRQ(ierr);
-  ierr = PetscFree(mcolors);CHKERRQ(ierr);
-
+  (*iscoloring)->n      = nc;
+  (*iscoloring)->is     = 0;
+  (*iscoloring)->colors = (int *)colors;
+  (*iscoloring)->N      = n;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_coloring_view",&flg);CHKERRQ(ierr);
   if (flg) {
