@@ -41,8 +41,6 @@ def petsc_configure(configure_options):
 
   
   framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options, loadArgDB = 0)
-  framework.argDB['CPPFLAGS'] = ''
-  framework.argDB['LIBS'] = ''
   try:
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
@@ -53,6 +51,11 @@ def petsc_configure(configure_options):
   except TypeError, e:
     msg = '******* Error in command line argument to configure.py ***********\n'+str(e)+'\n******************************************************\n'
     se = ''
+  except SystemExit, e:
+    if e.code is None or e.code == 0:
+      return
+    msg = '******* CONFIGURATION CRASH **** Please send configure.log to petsc-maint@mcs.anl.gov\n'
+    se  = str(e)
   except Exception, e:
     msg = '******* CONFIGURATION CRASH **** Please send configure.log to petsc-maint@mcs.anl.gov\n'
     se  = str(e)

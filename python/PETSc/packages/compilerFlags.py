@@ -14,7 +14,7 @@ class Configure(config.base.Configure):
   def __str__(self):
     return ''
     
-  def configureHelp(self, help):
+  def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc Compiler Flags', 'optionsModule=<module name>', nargs.Arg(None, None,      'The Python module used to determine compiler options and versions'))
     help.addArgument('PETSc Compiler Flags', 'C_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the C compiler'))

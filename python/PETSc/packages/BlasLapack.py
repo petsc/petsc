@@ -30,7 +30,7 @@ class Configure(config.base.Configure):
       libFlag.append(self.libraries.getLibArgument(lib))
     return 'BLAS/LAPACK: '+' '.join(libFlag)+'\n'
 
-  def configureHelp(self, help):
+  def setupHelp(self, help):
     import nargs
     help.addArgument('BLAS/LAPACK', '-with-blas-lapack-dir=<dir>',                nargs.ArgDir(None, None, 'Indicate the directory containing BLAS and LAPACK libraries'))
     help.addArgument('BLAS/LAPACK', '-with-blas-lapack-lib=<lib>',                nargs.Arg(None, None, 'Indicate the library containing BLAS and LAPACK'))

@@ -22,7 +22,7 @@ class Configure(config.autoconf.Configure):
       return '\n'.join(desc)+'\n'
     return ''
     
-  def configureHelp(self, help):
+  def setupHelp(self, help):
     import nargs
     help.addArgument('X11', '-with-x=<bool>',                nargs.ArgBool(None, 1,   'Activate X11'))
     help.addArgument('X11', '-with-x-include=<include dir>', nargs.ArgDir(None, None, 'Specify an include directory for X11'))

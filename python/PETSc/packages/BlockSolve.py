@@ -25,7 +25,7 @@ class Configure(config.base.Configure):
       output += '  Library: '+str(self.lib)+'\n'
     return output
   
-  def configureHelp(self,help):
+  def setupHelp(self,help):
     import nargs
     help.addArgument('BLOCKSOLVE95','-with-blocksolve95=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for BlockSolve95'))
     help.addArgument('BLOCKSOLVE95','-with-blocksolve95-lib=<lib>',nargs.Arg(None,None,'Indicate the library containing BlockSolve95'))
