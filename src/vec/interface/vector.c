@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.61 1995/12/15 21:07:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.62 1996/01/01 01:01:18 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -215,6 +215,32 @@ int VecSet(Scalar *alpha,Vec x)
   PLogEventBegin(VEC_Set,x,0,0,0);
   ierr = (*x->ops.set)(alpha,x); CHKERRQ(ierr);
   PLogEventEnd(VEC_Set,x,0,0,0);
+  return 0;
+} 
+
+/*@
+   VecSetRandom - Sets all components of a vector to random numbers.
+
+   Input Parameters:
+.  type - the type of random numbers to be generated.
+.  x  - the vector
+
+   Output Parameter:
+.  x  - the vector
+
+   Note:
+   Currently, the only type of random numbers supported is
+   RANDOM_DEFAULT.
+
+.keywords: vector, set, random
+@*/
+int VecSetRandom(SYRandomType type,Vec x) 
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PLogEventBegin(VEC_SetRandom,x,0,0,0);
+  ierr = (*x->ops.setrandom)(type,x); CHKERRQ(ierr);
+  PLogEventEnd(VEC_SetRandom,x,0,0,0);
   return 0;
 } 
 

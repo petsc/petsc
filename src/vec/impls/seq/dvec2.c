@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.21 1995/11/20 04:46:12 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.22 1996/01/01 01:01:21 bsmith Exp curfman $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -30,8 +30,6 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
   PLogFlops(nv*(2*x->n-1));
   return 0;
 }
-
-
 
 static int VecMax_Seq(Vec xin,int* idx,double * z )
 {
@@ -71,8 +69,7 @@ static int VecMin_Seq(Vec xin,int* idx,double * z )
   return 0;
 }
 
-
-static int VecSet_Seq(Scalar* alpha,Vec xin )
+static int VecSet_Seq(Scalar* alpha,Vec xin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
   register int n = x->n;
@@ -84,6 +81,20 @@ static int VecSet_Seq(Scalar* alpha,Vec xin )
   else {
     SET(xx,n,oalpha);
   }
+  return 0;
+}
+
+static int VecSetRandom_Seq(SYRandomType type,Vec xin)
+{
+  Vec_Seq      *x = (Vec_Seq *)xin->data;
+  register int n = x->n;
+  int          i, ierr;
+  Scalar       *xx = x->array;
+  SYRandom     r;
+
+  ierr = SYRandomCreate(type,&r); CHKERRQ(ierr);
+  for (i=0; i<n; i++) {SYRandomGetValue(r,&xx[i]); CHKERRQ(ierr);}
+  ierr = SYRandomDestroy(r); CHKERRQ(ierr);
   return 0;
 }
 
