@@ -202,7 +202,7 @@ class Configure(config.base.Configure):
         size = int(f.read())
         f.close()
         os.remove(filename)
-      else if not typename == 'sizeof_long_long':
+      elif not typename == 'sizeof_long_long':
         raise RuntimeError('Unable to determine '+typename)
       else:
         self.framework.log.write('Compiler does not support long long')
