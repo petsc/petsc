@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.17 2000/07/17 03:56:40 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.18 2000/07/17 21:08:12 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -108,46 +108,6 @@ int DAMGDestroy(DAMG *damg)
 }
 
 
-/*
-      M is number of grid points 
-      m is number of processors
-
-*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name="DAMGSplitComm2d"></a>*/"DAMGSplitComm2d"
-int DAMGSplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
-{
-  int ierr,m,n,csize,size,x,y,xstart,ystart;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
- 
-  /* try for squarish distribution */
-  m = (int)(0.5 + sqrt(((double)M)*((double)size)/((double)N)));
-  if (!m) m = 1;
-  while (m > 0) {
-    n = size/m;
-    if (m*n == size) break;
-    m--;
-  }
-  if (M > N && m < n) {int _m = m; m = n; n = _m;}
-
-  csize = 2*size;
-  do {
-    csize   = csize/2;
-    xstart = ((csize-1)%m)*M/m;
-    x      = ((csize-1)%m + 1)*M/m - xstart;
-    ystart = ((size-1)/m)*N/n;
-    y      = ((size-1)/m + 1)*N/n - ystart;
-  } while (x < sw || y < sw);
-  if (size != csize) {
-    PLogInfo(0,"Creating redundant coarse problems");
-  } else {
-    *outcomm = comm;
-  }
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="DAMGSetGrid"></a>*/"DAMGSetGrid"
@@ -176,25 +136,30 @@ int DAMGSetGrid(DAMG *damg,int dim,DAPeriodicType pt,DAStencilType st,int M,int 
 {
   int            ierr,i,j,nlevels = damg[0]->nlevels,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE, array[3],narray = 3;
   MPI_Comm       comm = damg[0]->comm;
-  PetscTruth     flg;
+  PetscTruth     flg,split = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (!damg) SETERRQ(1,1,"Passing null as DAMG");
 
   ierr = OptionsGetIntArray(PETSC_NULL,"-damg_mnp",array,&narray,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = OptionsGetIntArray(PETSC_NULL,"-damg_mn",array,&narray,&flg);CHKERRQ(ierr);
+  }
   if (flg) {
     if (narray > 0) M = array[0];
     if (narray > 1) N = array[1]; else N = M;
     if (narray > 2) P = array[2]; else P = N;
   }
-
+  ierr = OptionsGetLogical(PETSC_NULL,"-damg_split",&split,PETSC_NULL);CHKERRQ(ierr);
 
   /* Create DA data structure for all the levels */
   for (i=0; i<nlevels; i++) {
     if (dim == 3) {
-      ierr = DACreate3d(comm,pt,st,M,N,P,m,n,p,dof,sw,0,0,0,&damg[i]->da);CHKERRQ(ierr);
+      ierr = DACreate3d(damg[i]->comm,pt,st,M,N,P,m,n,p,dof,sw,0,0,0,&damg[i]->da);CHKERRQ(ierr);
     } else if (dim == 2) {
-      ierr = DAMGSplitComm2d(damg[i]->comm,M,N,sw,&damg[i]->comm);CHKERRQ(ierr);
+      if (split) {
+        ierr = DAMGSplitComm2d(damg[i]->comm,M,N,sw,&damg[i]->comm);CHKERRQ(ierr);
+      }
       ierr = DACreate2d(damg[i]->comm,pt,st,M,N,m,n,dof,sw,0,0,&damg[i]->da);CHKERRQ(ierr);
     } else {
       SETERRQ1(1,1,"Cannot handle dimension %d",dim);
@@ -282,14 +247,20 @@ int DAMGSetUpLevel(DAMG *damg,SLES sles,int nlevels)
   PC         pc;
   PetscTruth ismg;
   SLES       lsles; /* solver internal to the multigrid preconditioner */
+  MPI_Comm   *comms;
 
   PetscFunctionBegin;
   if (!damg) SETERRQ(1,1,"Passing null as DAMG");
 
-  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCMG);CHKERRA(ierr);
-  ierr = MGSetLevels(pc,nlevels);CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
+  ierr  = SLESGetPC(sles,&pc);CHKERRA(ierr);
+  ierr  = PCSetType(pc,PCMG);CHKERRA(ierr);
+  comms = (MPI_Comm*)PetscMalloc(nlevels*sizeof(MPI_Comm));CHKPTRQ(comms);
+  for (i=0; i<nlevels; i++) {
+    comms[i] = damg[i]->comm;
+  }
+  ierr  = MGSetLevels(pc,nlevels,comms);CHKERRA(ierr);
+  ierr  = PetscFree(comms);CHKERRQ(ierr); 
+  ierr  = SLESSetFromOptions(sles);CHKERRA(ierr);
 
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
