@@ -46,6 +46,7 @@ class Configure(config.base.Configure):
 
     help.addArgument('Compilers', '-with-gnu-compilers',             nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
     help.addArgument('Compilers', '-with-vendor-compilers=<vendor>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument means all vendors)'))
+    help.addArgument('Compilers', '-with-64-bit',                    nargs.ArgBool(None, 0, 'Use 64 bit compilers and libraries'))
 
     help.addArgument('Compilers', '-CPP=<prog>',            nargs.Arg(None, None, 'Specify the C preprocessor'))
     help.addArgument('Compilers', '-CPPFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C preprocessor options'))
