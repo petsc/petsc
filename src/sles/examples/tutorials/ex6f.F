@@ -1,5 +1,5 @@
 !
-!    "$Id: ex6f.F,v 1.30 2000/09/22 20:45:46 bsmith Exp bsmith $";
+!    "$Id: ex6f.F,v 1.31 2000/09/27 20:09:29 bsmith Exp bsmith $";
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system
@@ -61,6 +61,7 @@
 
       call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,    &
      &               m*n,A,ierr)
+      call MatSetFromOptions(A,ierr)
 
 !  The matrix is partitioned by contiguous chunks of rows across the
 !  processors.  Determine which rows of the matrix are locally owned. 
