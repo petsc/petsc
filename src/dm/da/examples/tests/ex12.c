@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.17 1998/06/11 19:57:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.18 1998/10/09 19:25:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -57,6 +57,7 @@ int main(int argc,char **argv)
                         + 1.2 * sin( (PETSC_PI*j*2)/((double)M) ) ) * 4+4;
   }
 
+  ierr = VecRestoreArray (copy,&copyptr); CHKERRA(ierr);
   ierr = VecRestoreArray(local,&localptr); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
@@ -81,7 +82,7 @@ int main(int argc,char **argv)
                            (localptr[i+1]-2*localptr[i]+localptr[i-1]);
     }
   
-    ierr = VecRestoreArray(copy,&copyptr); CHKERRA(ierr);
+    ierr = VecRestoreArray(local,&localptr); CHKERRA(ierr);
 
     /* Local to Global */
     ierr = DALocalToGlobal(da,copy,INSERT_VALUES,global); CHKERRA(ierr);
