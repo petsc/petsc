@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.38 2001/03/23 23:20:30 balay Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.39 2001/06/01 14:59:50 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -204,7 +204,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
         *shared = PETSC_TRUE;
         break;
       } else if (sum != 1) {
-        SETERRQ(1,"Subset of processes share /tmp cannot load remote or compressed file");
+        SETERRQ(1,"Subset of processes share /tmp ");
       }
     }
     *tagvalp = (int)*shared;
