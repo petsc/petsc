@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.21 1997/12/12 19:40:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.22 1998/03/12 23:24:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -27,10 +27,9 @@ static char vcid[] = "$Id: aodatabasic.c,v 1.21 1997/12/12 19:40:12 bsmith Exp b
 
 #undef __FUNC__  
 #define __FUNC__ "AODataDestroy_Basic"
-int AODataDestroy_Basic(PetscObject obj)
+int AODataDestroy_Basic(AOData ao)
 {
   int           ierr;
-  AOData        ao = (AOData) obj;
   AODataKey     *key = ao->keys,*nextkey;
   AODataSegment *seg,*nextseg;
 
@@ -61,9 +60,8 @@ int AODataDestroy_Basic(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "AODataView_Basic_Binary"
-int AODataView_Basic_Binary(PetscObject obj,Viewer viewer)
+int AODataView_Basic_Binary(AOData ao,Viewer viewer)
 {
-  AOData          ao = (AOData) obj;
   int             ierr,N, fd;
   AODataSegment   *segment;
   AODataKey       *key = ao->keys;
@@ -114,9 +112,8 @@ int AODataView_Basic_Binary(PetscObject obj,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "AODataView_Basic_ASCII"
-int AODataView_Basic_ASCII(PetscObject obj,Viewer viewer)
+int AODataView_Basic_ASCII(AOData ao,Viewer viewer)
 {
-  AOData          ao = (AOData) obj;
   int             ierr,format,j,k,l,rank,size,nkeys,nsegs,i,N,bs,zero = 0;
   FILE            *fd;
   char            *dt,**keynames,**segnames,*stype,*segvalue;
@@ -226,9 +223,8 @@ int AODataView_Basic_ASCII(PetscObject obj,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "AODataView_Basic"
-int AODataView_Basic(PetscObject obj,Viewer viewer)
+int AODataView_Basic(AOData ao,Viewer viewer)
 {
-  AOData          ao = (AOData) obj;
   int             rank,ierr;
   ViewerType      vtype;
 
@@ -241,9 +237,9 @@ int AODataView_Basic(PetscObject obj,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
-    ierr = AODataView_Basic_ASCII(obj,viewer); CHKERRQ(ierr);
+    ierr = AODataView_Basic_ASCII(ao,viewer); CHKERRQ(ierr);
   } else if (vtype == BINARY_FILE_VIEWER) {
-    ierr = AODataView_Basic_Binary(obj,viewer); CHKERRQ(ierr);
+    ierr = AODataView_Basic_Binary(ao,viewer); CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -870,8 +866,8 @@ int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
   PLogObjectMemory(ao,sizeof(struct _p_AOData));
 
   PetscMemcpy(ao->ops,&myops,sizeof(myops));
-  ao->destroy  = AODataDestroy_Basic;
-  ao->view     = AODataView_Basic;
+  ao->ops->destroy  = AODataDestroy_Basic;
+  ao->ops->view     = AODataView_Basic;
 
   ao->nkeys        = 0;
   ao->keys         = 0;
@@ -930,8 +926,8 @@ int AODataLoadBasic(Viewer viewer,AOData *aoout)
   PLogObjectMemory(ao,sizeof(struct _p_AOData) + nkeys*sizeof(void *));
 
   PetscMemcpy(ao->ops,&myops,sizeof(myops));
-  ao->destroy  = AODataDestroy_Basic;
-  ao->view     = AODataView_Basic;
+  ao->ops->destroy  = AODataDestroy_Basic;
+  ao->ops->view     = AODataView_Basic;
 
   ao->nkeys      = nkeys;
   

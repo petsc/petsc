@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.31 1998/01/26 20:06:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.32 1998/03/12 23:24:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -32,9 +32,8 @@ int AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
 
 #undef __FUNC__  
 #define __FUNC__ "AODestroy_Basic" 
-int AODestroy_Basic(PetscObject obj)
+int AODestroy_Basic(AO ao)
 {
-  AO       ao = (AO) obj;
   AO_Basic *aodebug = (AO_Basic *) ao->data;
 
   PetscFunctionBegin;
@@ -47,9 +46,8 @@ int AODestroy_Basic(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "AOView_Basic" 
-int AOView_Basic(PetscObject obj,Viewer viewer)
+int AOView_Basic(AO ao,Viewer viewer)
 {
-  AO          ao = (AO) obj;
   int         rank,ierr,i;
   ViewerType  vtype;
   FILE        *fd;
@@ -141,8 +139,8 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   PLogObjectMemory(ao,sizeof(struct _p_AO) + sizeof(AO_Basic));
 
   PetscMemcpy(ao->ops,&myops,sizeof(myops));
-  ao->destroy = AODestroy_Basic;
-  ao->view    = AOView_Basic;
+  ao->ops->destroy = AODestroy_Basic;
+  ao->ops->view    = AOView_Basic;
   ao->data    = (void *)aodebug;
 
   /* transmit all lengths to all processors */

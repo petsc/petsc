@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.83 1998/03/17 19:53:32 curfman Exp curfman $ */
+/* $Id: matimpl.h,v 1.84 1998/03/17 19:57:52 curfman Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -76,7 +76,9 @@ struct _MatOps {
             (*setunfactored)(Mat),
 /*60*/      (*permute)(Mat,IS,IS,Mat*),
             (*setvaluesblocked)(Mat,int,int *,int,int *,Scalar *,InsertMode),
-            (*getsubmatrix)(Mat,IS,IS,int,MatGetSubMatrixCall,Mat*);
+            (*getsubmatrix)(Mat,IS,IS,int,MatGetSubMatrixCall,Mat*),
+            (*destroy)(Mat),
+            (*view)(Mat,Viewer);
 };
 
 #define FACTOR_LU       1
@@ -140,6 +142,8 @@ struct _p_Partitioning {
   int         n;                                 /* number of partitions */
   void        *data;
   int         setupcalled;
+  int         (*destroy)(Partitioning);
+  int         (*view)(Partitioning,Viewer);
 };
 
 /*

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.69 1998/03/16 18:26:32 balay Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.70 1998/03/20 22:47:04 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -157,9 +157,8 @@ int  KSPSolve_CG(KSP ksp,int *its)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPDestroy_CG" 
-int KSPDestroy_CG(PetscObject obj)
+int KSPDestroy_CG(KSP ksp)
 {
-  KSP    ksp = (KSP) obj;
   KSP_CG *cg = (KSP_CG *) ksp->data;
 
   PetscFunctionBegin;
@@ -178,10 +177,9 @@ int KSPDestroy_CG(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPView_CG" 
-int KSPView_CG(PetscObject obj,Viewer viewer)
+int KSPView_CG(KSP ksp,Viewer viewer)
 {
 #if defined(USE_PETSC_COMPLEX)
-  KSP         ksp = (KSP)obj;
   KSP_CG      *cg = (KSP_CG *)ksp->data; 
   FILE        *fd;
   int         ierr;
@@ -273,7 +271,8 @@ int KSPCreate_CG(KSP ksp)
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
 
-  ierr = DLRegister(&ksp->qlist,"KSPCGSetType","KSPCGSetType_CG",KSPCGSetType_CG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType","KSPCGSetType_CG",
+                                     (void*)KSPCGSetType_CG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

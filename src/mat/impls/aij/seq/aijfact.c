@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.98 1998/03/26 22:31:43 balay Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.99 1998/03/26 22:59:05 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -338,8 +338,8 @@ int MatSolve_SeqAIJ(Mat A,Vec bb, Vec xx)
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  VecGetArray_Fast(bb,b); 
-  VecGetArray_Fast(xx,x); 
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -393,8 +393,8 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb, Vec xx)
      PetscFunctionReturn(0);
   }
 
-  VecGetArray_Fast(bb,b); 
-  VecGetArray_Fast(xx,x); 
+  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
 
 #if defined(USE_FORTRAN_KERNELS)
   fortransolveaij_(&n,x,ai,aj,adiag,aa,b);
@@ -439,8 +439,8 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb, Vec yy, Vec xx)
   PetscFunctionBegin;
   if (yy != xx) {ierr = VecCopy(yy,xx); CHKERRQ(ierr);}
 
-  VecGetArray_Fast(bb,b);
-  VecGetArray_Fast(xx,x);
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout); CHKERRQ(ierr); r = rout;
@@ -486,8 +486,8 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
   Scalar     *x,*b,*tmp, *aa = a->a, *v;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(bb,b);
-  VecGetArray_Fast(xx,x);
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   /* invert the permutations */
@@ -546,8 +546,8 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
   PetscFunctionBegin;
   if (zz != xx) VecCopy(zz,xx);
 
-  VecGetArray_Fast(bb,b);
-  VecGetArray_Fast(xx,x);
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp = a->solve_work;
 
   /* invert the permutations */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.254 1998/03/16 19:07:14 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.255 1998/03/26 22:32:03 balay Exp bsmith $";
 #endif
 
 /*
@@ -611,9 +611,8 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqAIJ"
-int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
+int MatView_SeqAIJ(Mat A,Viewer viewer)
 {
-  Mat         A = (Mat) obj;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*) A->data;
   ViewerType  vtype;
   int         ierr;
@@ -705,15 +704,14 @@ int MatZeroEntries_SeqAIJ(Mat A)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_SeqAIJ"
-int MatDestroy_SeqAIJ(PetscObject obj)
+int MatDestroy_SeqAIJ(Mat A)
 {
-  Mat        A  = (Mat) obj;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        ierr;
 
   PetscFunctionBegin;  
 #if defined(USE_PETSC_LOG)
-  PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
+  PLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
 #endif
   PetscFree(a->a); 
   if (!a->singlemalloc) { PetscFree(a->i); PetscFree(a->j);}
@@ -782,7 +780,8 @@ int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
-  VecGetArray_Fast(v,x); VecGetLocalSize(v,&n);
+  ierr = VecGetArray(v,&x);;CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&n);;CHKERRQ(ierr);
   if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Nonconforming matrix and vector");
   for ( i=0; i<a->m; i++ ) {
     for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
@@ -792,6 +791,7 @@ int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
       }
     }
   }
+  ierr = VecRestoreArray(v,&x);;CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -804,10 +804,11 @@ int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *v, alpha;
-  int        m = a->m, n, i, *idx, shift = a->indexshift;
+  int        ierr,m = a->m, n, i, *idx, shift = a->indexshift;
 
   PetscFunctionBegin; 
-  VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   PetscMemzero(y,a->n*sizeof(Scalar));
   y = y + shift; /* shift for Fortran start by 1 indexing */
   for ( i=0; i<m; i++ ) {
@@ -818,6 +819,8 @@ int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
     while (n-->0) {y[*idx++] += alpha * *v++;}
   }
   PLogFlops(2*a->nz - a->n);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -827,10 +830,11 @@ int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *v, alpha;
-  int        m = a->m, n, i, *idx,shift = a->indexshift;
+  int        ierr,m = a->m, n, i, *idx,shift = a->indexshift;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) VecCopy(zz,yy);
   y = y + shift; /* shift for Fortran start by 1 indexing */
   for ( i=0; i<m; i++ ) {
@@ -841,6 +845,8 @@ int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
     while (n-->0) {y[*idx++] += alpha * *v++;}
   }
   PLogFlops(2*a->nz);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -850,13 +856,14 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *v, sum;
-  int        m = a->m, *idx, shift = a->indexshift,*ii;
+  int        ierr,m = a->m, *idx, shift = a->indexshift,*ii;
 #if !defined(USE_FORTRAN_KERNELS)
   int        n, i, jrow,j;
 #endif
 
   PetscFunctionBegin;
-  VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
   x    = x + shift;    /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v    = a->a;
@@ -877,6 +884,8 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   }
 #endif
   PLogFlops(2*a->nz - m);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -886,13 +895,15 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *z, *v, sum;
-  int        m = a->m, *idx, shift = a->indexshift,*ii;
+  int        ierr,m = a->m, *idx, shift = a->indexshift,*ii;
 #if !defined(USE_FORTRAN_KERNELS)
   int        n,i,jrow,j;
 #endif
 
   PetscFunctionBegin;
-  VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y); VecGetArray_Fast(zz,z); 
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z); CHKERRQ(ierr);
   x    = x + shift; /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v    = a->a;
@@ -913,6 +924,9 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   }
 #endif
   PLogFlops(2*a->nz);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -952,7 +966,8 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
   int        ierr, *idx, *diag,n = a->n, m = a->m, i, shift = a->indexshift;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(xx,x); VecGetArray_Fast(bb,b);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   if (!a->diag) {ierr = MatMarkDiag_SeqAIJ(A);CHKERRQ(ierr);}
   diag = a->diag;
   xs   = x + shift; /* shifted by one for index start of a or a->j*/
@@ -1326,31 +1341,33 @@ int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *l,*r,x,*v;
-  int        i,j,m = a->m, n = a->n, M, nz = a->nz, *jj,shift = a->indexshift;
+  int        ierr,i,j,m = a->m, n = a->n, M, nz = a->nz, *jj,shift = a->indexshift;
 
   PetscFunctionBegin;
   if (ll) {
     /* The local size is used so that VecMPI can be passed to this routine
        by MatDiagonalScale_MPIAIJ */
-    VecGetLocalSize_Fast(ll,m);
+    ierr = VecGetLocalSize(ll,&m);CHKERRQ(ierr);
     if (m != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Left scaling vector wrong length");
-    VecGetArray_Fast(ll,l); 
+    ierr = VecGetArray(ll,&l); CHKERRQ(ierr);
     v = a->a;
     for ( i=0; i<m; i++ ) {
       x = l[i];
       M = a->i[i+1] - a->i[i];
       for ( j=0; j<M; j++ ) { (*v++) *= x;} 
     }
+    ierr = VecRestoreArray(ll,&l); CHKERRQ(ierr);
     PLogFlops(nz);
   }
   if (rr) {
-    VecGetLocalSize_Fast(rr,n);
+    ierr = VecGetLocalSize(rr,&n);CHKERRQ(ierr);
     if (n != a->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Right scaling vector wrong length");
-    VecGetArray_Fast(rr,r); 
+    ierr = VecGetArray(rr,&r);CHKERRQ(ierr); 
     v = a->a; jj = a->j;
     for ( i=0; i<nz; i++ ) {
       (*v++) *= r[*jj++ + shift]; 
     }
+    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr); 
     PLogFlops(nz);
   }
   PetscFunctionReturn(0);
@@ -1788,16 +1805,14 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   B->data             = (void *) (b = PetscNew(Mat_SeqAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqAIJ));
   PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
-  B->destroy          = MatDestroy_SeqAIJ;
-  B->view             = MatView_SeqAIJ;
+  B->ops->destroy          = MatDestroy_SeqAIJ;
+  B->ops->view             = MatView_SeqAIJ;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold,
-                          &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold,&flg); CHKERRQ(ierr);
   b->ilu_preserve_row_sums = PETSC_FALSE;
-  ierr = OptionsHasName(PETSC_NULL,"-pc_ilu_preserve_row_sums",
-                        (int*) &b->ilu_preserve_row_sums); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-pc_ilu_preserve_row_sums",(int*) &b->ilu_preserve_row_sums);CHKERRQ(ierr);
   b->row              = 0;
   b->col              = 0;
   b->icol             = 0;
@@ -1884,8 +1899,8 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqAIJ)); CHKPTRQ(c);
   PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));
-  C->destroy    = MatDestroy_SeqAIJ;
-  C->view       = MatView_SeqAIJ;
+  C->ops->destroy    = MatDestroy_SeqAIJ;
+  C->ops->view       = MatView_SeqAIJ;
   C->factor     = A->factor;
   c->row        = 0;
   c->col        = 0;

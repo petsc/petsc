@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.5 1998/03/06 00:13:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.6 1998/03/20 22:48:25 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -48,9 +48,8 @@ static int PCSetUp_SLES(PC pc)
 /* Default destroy, if it has never been setup */
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy_SLES"
-static int PCDestroy_SLES(PetscObject obj)
+static int PCDestroy_SLES(PC pc)
 {
-  PC      pc = (PC) obj;
   PC_SLES *jac = (PC_SLES *) pc->data;
   int     ierr;
 
@@ -75,9 +74,8 @@ static int PCPrintHelp_SLES(PC pc,char *p)
 
 #undef __FUNC__  
 #define __FUNC__ "PCView_SLES"
-static int PCView_SLES(PetscObject obj,Viewer viewer)
+static int PCView_SLES(PC pc,Viewer viewer)
 {
-  PC            pc = (PC) obj;
   PC_SLES       *jac = (PC_SLES *) pc->data;
   int           ierr;
   ViewerType    vtype;
@@ -169,7 +167,7 @@ int PCSLESSetUseTrue(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCSLESSetUseTrue",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESSetUseTrue",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   }
@@ -199,7 +197,7 @@ int PCSLESGetSLES(PC pc,SLES *sles)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCSLESGetSLES",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESGetSLES",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,sles);CHKERRQ(ierr);
   }
@@ -238,10 +236,10 @@ int PCCreate_SLES(PC pc)
   jac->use_true_matrix = PETSC_FALSE;
   jac->its             = 0;
 
-  ierr = DLRegister(&pc->qlist,"PCSLESSetUseTrue","PCSLESSetUseTrue_SLES",
-                    PCSLESSetUseTrue_SLES);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCSLESGetSLES","PCSLESGetSLES_SLES",
-                    PCSLESGetSLES_SLES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSLESSetUseTrue","PCSLESSetUseTrue_SLES",
+                    (void*)PCSLESSetUseTrue_SLES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSLESGetSLES","PCSLESGetSLES_SLES",
+                    (void*)PCSLESGetSLES_SLES);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

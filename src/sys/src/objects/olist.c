@@ -1,401 +1,122 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.14 1998/03/24 20:59:12 balay Exp $";
+static char vcid[] = "$Id: olist.c,v 1.1 1998/03/30 20:06:40 bsmith Exp bsmith $";
 #endif
+
 /*
-         Provides a general mechanism to allow one to register
-    new routines in dynamic libraries for many of the PETSc objects including KSP and PC.
+         Provides a general mechanism to maintain a linked list of PETSc objects.
+     This is used to allow PETSc objects to carry a list of "composed" objects
 */
 #include "petsc.h"
 #include "sys.h"
 
-
-#undef __FUNC__  
-#define __FUNC__ "DLRegisterGetPathAndFunction"
-int DLRegisterGetPathAndFunction(char *name,char **path,char **function)
-{
-  char work[256],*lfunction;
-
-  PetscFunctionBegin;
-  PetscStrncpy(work,name,256);
-  lfunction = PetscStrrchr(work,':');
-  if (lfunction != work) {
-    lfunction[-1] = 0;
-    *path = (char *) PetscMalloc( (PetscStrlen(work) + 1)*sizeof(char));CHKPTRQ(*path);
-    PetscStrcpy(*path,work);
-  } else {
-    *path = 0;
-  }
-  *function = (char *) PetscMalloc((PetscStrlen(lfunction)+1)*sizeof(char));CHKPTRQ(*function);
-  PetscStrcpy(*function,lfunction);
-  PetscFunctionReturn(0);
-}
-
-#if defined(USE_DYNAMIC_LIBRARIES)
-
-/*
-    This is the list used by the DLRegister routines
-*/
-DLLibraryList DLLibrariesLoaded = 0;
-
-#undef __FUNC__  
-#define __FUNC__ "PetscInitialize_DynamicLibraries"
-/*
-      PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the 
-            search path.
-*/ 
-int PetscInitialize_DynamicLibraries(void)
-{
-  char *libname[32],libs[256];
-  int  nmax,i,ierr,flg;
-
-  PetscFunctionBegin;
-
-  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscts"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-
-  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscsnes"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-
-  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscsles"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-
-  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscmat"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-
-  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscvec"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-
-  nmax = 32;
-  ierr = OptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,&flg);CHKERRQ(ierr);
-  for ( i=nmax-1; i>=0; i-- ) {
-    ierr = DLLibraryPrepend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
-    PetscFree(libname[i]);
-  }
-  nmax = 32;
-  ierr = OptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,&flg);CHKERRQ(ierr);
-  for ( i=0; i<nmax; i++ ) {
-    ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
-    PetscFree(libname[i]);
-  }
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PetscFinalize_DynamicLibraries"
-/*
-      PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries
-*/ 
-int PetscFinalize_DynamicLibraries(void)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = DLLibraryClose(DLLibrariesLoaded);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#else
-
-#undef __FUNC__  
-#define __FUNC__ "PetscInitalize_DynamicLibraries"
-int PetscInitialize_DynamicLibraries(void)
-{
-  PetscFunctionBegin;
-
-  PetscFunctionReturn(0);
-}
-#undef __FUNC__  
-#define __FUNC__ "PetscFinalize_DynamicLibraries"
-int PetscFinalize_DynamicLibraries(void)
-{
-  PetscFunctionBegin;
-
-  PetscFunctionReturn(0);
-}
-#endif
-
-/* ------------------------------------------------------------------------------*/
-struct FuncList_struct {
-  int                    (*routine)(void *);
-  char                   *path;
-  char                   *name;               
-  char                   *rname;            /* name of create function in link library */
-  struct FuncList_struct *next;
-};
-typedef struct FuncList_struct FuncList;
-
-struct _DLList {
-    FuncList *head, *tail;
-    char     *regname;        /* registration type name */
-    DLList   next;
+struct _OList {
+    char        name[128];
+    PetscObject obj;
+    OList       next;
 };
 
-/*
-     Keep a linked list of DLLists so that we may destroy all the left-over ones
-*/
-static DLList dlallhead = 0;
-
 #undef __FUNC__  
-#define __FUNC__ "DLRegisterCreate"
+#define __FUNC__ "OListCreate"
 /*
-  DLRegisterCreate - create a name registry.
-
-.seealso: DLRegister(), DLRegisterDestroy()
-*/
-int DLRegisterCreate(DLList *fl )
-{
-  PetscFunctionBegin;
-  *fl                = PetscNew(struct _DLList);CHKPTRQ(*fl);
-  (*fl)->head        = 0;
-  (*fl)->tail        = 0;
-  
-  /* 
-      Add list to front of nasty-global lists of lists
-  */
-  if (!dlallhead) {
-    dlallhead       = *fl;
-    (*fl)->next     = 0;
-  } else {
-    DLList tmp = dlallhead;
     
-    dlallhead   = *fl;
-    (*fl)->next = tmp;
-  }
-  PetscFunctionReturn(0);
-}
 
-
-/*M
-   DLRegister - Given a routine and a string id, 
-                save that routine in the specified registry
-    Input Parameters:
-.      fl       - pointer registry
-.      name     - string for routine
-.      rname    - routine name in dynamic library
-.      fnc      - function pointer (optional if using dynamic libraries)
-
-
-   Synopsis:
-    int DLRegister(DLList fl, char *name, char *rname,int (*fnc)(void *))
-
+.seealso: OListDestroy()
 */
-
-#undef __FUNC__  
-#define __FUNC__ "DLRegister_Private"
-int DLRegister_Private( DLList *fl, char *name, char *rname,int (*fnc)(void *))
+int OListAdd(OList *fl,char *name,PetscObject obj )
 {
-  FuncList *entry;
-  int      ierr;
-  char     *fpath,*fname;
+  OList olist,nlist;
 
   PetscFunctionBegin;
-  entry          = (FuncList*) PetscMalloc(sizeof(FuncList));CHKPTRQ(entry);
-  entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 ); CHKPTRQ(entry->name);
-  PetscStrcpy( entry->name, name );
-
-  ierr = DLRegisterGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
-
-  entry->path    = fpath;
-  entry->rname   = fname;
-  entry->routine = fnc;
+  olist       = PetscNew(struct _OList);CHKPTRQ(olist);
+  olist->next = 0;
+  olist->obj  = obj;
+  PetscObjectReference(obj);
+  PetscStrcpy(olist->name,name);
 
   if (!*fl) {
-    ierr = DLRegisterCreate(fl);CHKERRQ(ierr);
+    *fl = olist;
+  } else { /* go to end of list */
+    nlist = *fl;
+    while (nlist->next) {nlist = nlist->next;}
+    nlist->next = olist;
   }
-
-  entry->next = 0;
-  if ((*fl)->tail) (*fl)->tail->next = entry;
-  else             (*fl)->head       = entry;
-  (*fl)->tail = entry;
-  
-
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLRegisterDestroy"
+#define __FUNC__ "OListDestroy"
 /*
-    DLRegisterDestroy - Destroy a list of registered routines
+    OListDestroy - Destroy a list of objects
 
     Input Parameter:
 .   fl   - pointer to list
 */
-int DLRegisterDestroy(DLList fl )
+int OListDestroy(OList *fl )
 {
-  FuncList *entry, *next;
-  DLList   tmp = dlallhead;
+  OList   tmp, entry = *fl;
 
-  PetscFunctionBegin;
-  if (!fl) PetscFunctionReturn(0);
-
-  entry = fl->head;
   while (entry) {
-    next = entry->next;
-    if (entry->path) PetscFree(entry->path);
-    PetscFree( entry->name );
-    PetscFree( entry->rname );
-    PetscFree( entry );
-    entry = next;
+    tmp = entry->next;
+    PetscObjectDereference(entry->obj);
+    PetscFree(entry);
+    entry = tmp;
   }
-
-  /*
-       Remove this entry from the master DL list 
-  */
-  if (dlallhead == fl) {
-    if (dlallhead->next) {
-      dlallhead = dlallhead->next;
-    } else {
-      dlallhead = 0;
-    }
-  } else {
-    while (tmp->next != fl) {
-      tmp = tmp->next;
-      if (!tmp->next) SETERRQ(1,1,"Internal PETSc error, function registration corrupted");
-    }
-    tmp->next = tmp->next->next;
-  }
- 
-  PetscFree( fl );
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLRegisterDestroyAll"
-int DLRegisterDestroyAll(void)
-{
-  DLList tmp2,tmp1 = dlallhead;
-
-  PetscFunctionBegin;
-  while (tmp1) {
-    tmp2 = tmp1->next;
-    DLRegisterDestroy(tmp1);
-    tmp1 = tmp2;
-  }
-  dlallhead = 0;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "DLRegisterFind"
+#define __FUNC__ "OListFind"
 /*
-    DLRegisterFind - givn a name, find the matching routine
+    OListFind - givn a name, find the matching object
 
     Input Parameters:
-.   comm - processors looking for routine
 .   fl   - pointer to list
 .   name - name string
 
-    The id or name must have been registered with the DLList before calling this 
+    The id or name must have been registered with the OListAdd() before calling this 
     routine.
 */
-int DLRegisterFind(MPI_Comm comm,DLList fl, char *name, int (**r)(void *))
+int OListFind(OList fl, char *name, PetscObject *obj)
 {
-  FuncList *entry = fl->head;
-  char     *function, *path;
-  int      ierr;
-  
   PetscFunctionBegin;
-  ierr = DLRegisterGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
 
-  /*
-        If path then append it to search libraries
-  */
-#if defined(USE_DYNAMIC_LIBRARIES)
-  if (path) {
-    ierr = DLLibraryAppend(comm,&DLLibrariesLoaded,path); CHKERRQ(ierr);
-  }
-#endif
-
-  while (entry) {
-    if ((path && entry->path && !PetscStrcmp(path,entry->path) && !PetscStrcmp(function,entry->rname)) ||
-        (path && entry->path && !PetscStrcmp(path,entry->path) && !PetscStrcmp(function,entry->name)) ||
-        (!path &&  !PetscStrcmp(function,entry->name)) || 
-        (!path &&  !PetscStrcmp(function,entry->rname))) {
-
-      if (entry->routine) {
-        *r = entry->routine; 
-         if (path) PetscFree(path);
-         PetscFree(function);
-         PetscFunctionReturn(0);
-      }
-
-      /* it is not yet in memory so load from dynamic library */
-#if defined(USE_DYNAMIC_LIBRARIES)
-      ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,entry->rname,(void **)r);CHKERRQ(ierr);
-      if (*r) {
-        entry->routine = *r;
-        if (path) PetscFree(path);
-        PetscFree(function);
-        PetscFunctionReturn(0);
-      } else {
-        PetscErrorPrintf("Registered function name: %s\n",entry->rname);
-        SETERRQ(1,1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
-      }
-#endif
+  *obj = 0;
+  while (fl) {
+    if (!PetscStrcmp(name,fl->name)) {
+      *obj = fl->obj;
+      break;
     }
-    entry = entry->next;
+    fl = fl->next;
   }
-
-#if defined(USE_DYNAMIC_LIBRARIES)
-  /* Function never registered; try for it anyways */
-  ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
-  if (path) PetscFree(path);
-  if (r) {
-    ierr = DLRegister(&fl,name,name,r); CHKERRQ(ierr);
-    PetscFree(function);
-    PetscFunctionReturn(0);
-  }
-#endif
-
-  PetscFree(function);
-
-  if (name) PetscErrorPrintf("Function name: %s\n",name);
-  SETERRQ(1,1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
-#if !defined(USE_PETSC_DEBUG)
   PetscFunctionReturn(0);
-#endif
 }
+
 
 #undef __FUNC__  
-#define __FUNC__ "DLRegisterPrintTypes"
+#define __FUNC__ "OListDuplicate"
 /*
-   DLRegisterPrintTypes - Prints the methods available.
+    OListDuplicate - Creates a new list from a give olist.
 
-   Input Parameters:
-.  comm   - The communicator (usually MPI_COMM_WORLD)
-.  fd     - file to print to, usually stdout
-.  list   - list of types
+    Input Parameters:
+.   fl   - pointer to list
+
+    Output Parameters:
+.   nl - the new list (should point to 0 to start, otherwise appends)
+
 
 */
-int DLRegisterPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList list)
+int OListDuplicate(OList fl, OList *nl)
 {
-  FuncList *entry;
-  int      count = 0;
-  char     p[64];
+  int ierr;
 
   PetscFunctionBegin;
-  PetscStrcpy(p,"-");
-  if (prefix) PetscStrcat(p,prefix);
-  PetscPrintf(comm,"  %s%s (one of)",p,name);
-
-  entry = list->head;
-  while (entry) {
-    PetscFPrintf(comm,fd," %s",entry->name);
-    entry = entry->next;
-    count++;
-    if (count == 8) PetscFPrintf(comm,fd,"\n     ");
+  while (fl) {
+    ierr = OListAdd(nl,fl->name,fl->obj); CHKERRQ(ierr);
+    fl = fl->next;
   }
-  PetscFPrintf(comm,fd,"\n");
   PetscFunctionReturn(0);
 }
-
 
 
 

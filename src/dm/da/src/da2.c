@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.93 1998/03/12 23:23:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.94 1998/03/20 22:53:07 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -8,9 +8,8 @@ static char vcid[] = "$Id: da2.c,v 1.93 1998/03/12 23:23:35 bsmith Exp bsmith $"
 
 #undef __FUNC__  
 #define __FUNC__ "DAView_2d"
-int DAView_2d(PetscObject dain,Viewer viewer)
+int DAView_2d(DA da,Viewer viewer)
 {
-  DA          da = (DA) dain;
   int         rank, ierr;
   ViewerType  vtype;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaijpc.c,v 1.34 1997/12/01 01:54:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.35 1998/03/16 18:55:15 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the SeqAIJ/MPIAIJ format.
@@ -19,9 +19,8 @@ typedef struct {
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy_BJacobi_MPIAIJ"
-int PCDestroy_BJacobi_MPIAIJ(PetscObject obj)
+int PCDestroy_BJacobi_MPIAIJ(PC pc)
 {
-  PC                pc = (PC) obj;
   PC_BJacobi        *jac = (PC_BJacobi *) pc->data;
   PC_BJacobi_MPIAIJ *bjac = (PC_BJacobi_MPIAIJ *) jac->data;
   int               ierr;
@@ -67,15 +66,15 @@ int PCApply_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
     the bjac->x vector is that we need a sequential vector
     for the sequential solve.
   */
-  VecGetArray_Fast(x,x_array); 
-  VecGetArray_Fast(y,y_array); 
-  VecGetArray_Fast(bjac->x,x_true_array); 
-  VecGetArray_Fast(bjac->y,y_true_array);  
-  VecPlaceArray_Fast(bjac->x,x_array); 
-  VecPlaceArray_Fast(bjac->y,y_array); 
+  ierr = VecGetArray(x,&x_array); CHKERRQ(ierr); 
+  ierr = VecGetArray(y,&y_array); CHKERRQ(ierr); 
+  ierr = VecGetArray(bjac->x,&x_true_array); CHKERRQ(ierr); 
+  ierr = VecGetArray(bjac->y,&y_true_array); CHKERRQ(ierr);  
+  ierr = VecPlaceArray(bjac->x,x_array); CHKERRQ(ierr); 
+  ierr = VecPlaceArray(bjac->y,y_array); CHKERRQ(ierr); 
   ierr = SLESSolve(jac->sles[0],bjac->x,bjac->y,&its); CHKERRQ(ierr); 
-  VecPlaceArray_Fast(bjac->x,x_true_array); 
-  VecPlaceArray_Fast(bjac->y,y_true_array); 
+  ierr = VecPlaceArray(bjac->x,x_true_array); CHKERRQ(ierr); 
+  ierr = VecPlaceArray(bjac->y,y_true_array);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.24 1998/03/06 00:16:45 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.25 1998/03/12 23:20:40 bsmith Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -34,6 +34,8 @@ struct _DrawOps {
   int (*settitle)(Draw,char *);
   int (*checkresizedwindow)(Draw);
   int (*resizewindow)(Draw,int,int);
+  int (*destroy)(Draw);
+  int (*view)(Draw,Viewer);
 };
 
 struct _p_Draw {
@@ -57,7 +59,7 @@ struct _p_Viewer {
   DrawAxis     drawaxis;
 };
 
-extern int ViewerDestroy_Draw(PetscObject);
+extern int ViewerDestroy_Draw(Viewer);
 extern int ViewerFlush_Draw(Viewer);
 
 #endif

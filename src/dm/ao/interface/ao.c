@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.15 1997/11/09 04:09:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.16 1998/03/12 23:24:31 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -27,7 +27,7 @@ int AOView(AO ao, Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
-  ierr = (*ao->view)((PetscObject)ao,viewer);CHKERRQ(ierr);
+  ierr = (*ao->ops->view)(ao,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -53,7 +53,7 @@ int AODestroy(AO ao)
   if (!ao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ao,AO_COOKIE);
   if (--ao->refct > 0) PetscFunctionReturn(0);
-  ierr = (*ao->destroy)((PetscObject)ao); CHKERRQ(ierr);
+  ierr = (*ao->ops->destroy)(ao); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

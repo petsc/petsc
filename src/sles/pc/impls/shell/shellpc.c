@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.37 1998/03/06 00:13:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.38 1998/03/20 22:48:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -45,9 +45,8 @@ static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy_Shell"
-static int PCDestroy_Shell(PetscObject obj)
+static int PCDestroy_Shell(PC pc)
 {
-  PC       pc = (PC) obj;
   PC_Shell *shell = (PC_Shell *) pc->data;
 
   PetscFunctionBegin;
@@ -57,9 +56,8 @@ static int PCDestroy_Shell(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "PCView_Shell"
-static int PCView_Shell(PetscObject obj,Viewer viewer)
+static int PCView_Shell(PC pc,Viewer viewer)
 {
-  PC         pc = (PC)obj;
   PC_Shell   *jac = (PC_Shell *) pc->data;
   FILE       *fd;
   int        ierr;
@@ -154,7 +152,7 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCShellSetApply",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApply",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,apply,ptr);CHKERRQ(ierr);
   }
@@ -181,7 +179,7 @@ int PCShellSetName(PC pc,char *name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCShellSetName",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetName",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);
   }
@@ -210,7 +208,7 @@ int PCShellGetName(PC pc,char **name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCShellGetName",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellGetName",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);
   } else {
@@ -248,7 +246,7 @@ int PCShellSetApplyRichardson(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),void *p
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCShellSetApplyRichardson",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyRichardson",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,apply,ptr);CHKERRQ(ierr);
   }
@@ -293,14 +291,15 @@ int PCCreate_Shell(PC pc)
   shell->ctxrich   = 0;
   shell->ctx       = 0;
 
-  ierr = DLRegister(&pc->qlist,"PCShellSetApply","PCShellSetApply_Shell",
-                    PCShellSetApply_Shell);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCShellSetName","PCShellSetName_Shell",
-                    PCShellSetName_Shell);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCShellGetName","PCShellGetName_Shell",
-                    PCShellGetName_Shell);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCShellSetApplyRichardson","PCShellSetApplyRichardson_Shell",
-                    PCShellSetApplyRichardson_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApply","PCShellSetApply_Shell",
+                    (void*)PCShellSetApply_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetName","PCShellSetName_Shell",
+                    (void*)PCShellSetName_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellGetName","PCShellGetName_Shell",
+                    (void*)PCShellGetName_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplyRichardson",
+                    "PCShellSetApplyRichardson_Shell",
+                    (void*)PCShellSetApplyRichardson_Shell);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

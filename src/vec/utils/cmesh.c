@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.48 1997/11/28 16:18:15 bsmith Exp balay $";
+static char vcid[] = "$Id: cmesh.c,v 1.49 1998/03/16 18:32:51 balay Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -194,10 +194,16 @@ int VecContourScale(Vec v,double vmin,double vmax)
 {
   Scalar *values;
   int    ierr,n,i;
-  double scale = (245.0 - DRAW_BASIC_COLORS)/(vmax - vmin); 
+  double scale;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
+
+  if (PetscAbsDouble(vmax - vmin) < 1.e-50) {
+     scale = 1.0;
+  } else {
+    scale = (245.0 - DRAW_BASIC_COLORS)/(vmax - vmin); 
+  }
 
   ierr = VecGetArray(v,&values);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);

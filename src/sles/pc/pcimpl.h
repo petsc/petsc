@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.20 1998/03/06 00:13:24 bsmith Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.21 1998/03/12 23:17:18 bsmith Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -28,6 +28,8 @@ struct _p_PC {
   int          (*setuponblocks)(PC);
   int          (*modifysubmatrices)(PC,int,IS*,IS*,Mat*,void*);
   void         *modifysubmatricesP;
+  int          (*destroy)(PC);
+  int          (*view)(PC,Viewer);
 };
 
 struct _p_PCNullSpace {

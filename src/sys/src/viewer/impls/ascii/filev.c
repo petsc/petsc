@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.68 1998/03/12 23:22:24 bsmith Exp balay $";
+static char vcid[] = "$Id: filev.c,v 1.69 1998/03/24 20:58:54 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -181,16 +181,15 @@ int VIEWER_STDERR_Destroy(MPI_Comm comm)
 /* ----------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_File"
-int ViewerDestroy_File(PetscObject obj)
+int ViewerDestroy_File(Viewer v)
 {
-  Viewer v = (Viewer) obj;
   int    rank = 0;
 
   PetscFunctionBegin;
   if (v->type == ASCII_FILES_VIEWER) {MPI_Comm_rank(v->comm,&rank);} 
   if (!rank && v->fd != stderr && v->fd != stdout) fclose(v->fd);
-  PLogObjectDestroy(obj);
-  PetscHeaderDestroy(obj);
+  PLogObjectDestroy((PetscObject)v);
+  PetscHeaderDestroy((PetscObject)v);
   PetscFunctionReturn(0);
 }
 

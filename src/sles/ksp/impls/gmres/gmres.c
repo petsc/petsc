@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.93 1998/03/16 18:54:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.94 1998/03/20 22:47:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -338,9 +338,8 @@ static int KSPAdjustWork_GMRES(KSP ksp )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPDestroy_GMRES" 
-int KSPDestroy_GMRES(PetscObject obj)
+int KSPDestroy_GMRES(KSP ksp)
 {
-  KSP       ksp = (KSP) obj;
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
   int       i,ierr;
 
@@ -537,9 +536,8 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPView_GMRES" 
-int KSPView_GMRES(PetscObject obj,Viewer viewer)
+int KSPView_GMRES(KSP ksp,Viewer viewer)
 {
-  KSP         ksp = (KSP)obj;
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data; 
   FILE        *fd;
   char        *cstr;
@@ -664,12 +662,15 @@ int KSPCreate_GMRES(KSP ksp)
   ksp->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
-  ierr = DLRegister(&ksp->qlist,"KSPGMRESSetPreAllocateVectors","KSPGMRESSetPreAllocateVectors_GMRES",
-                    KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
-  ierr = DLRegister(&ksp->qlist,"KSPGMRESSetOrthogonalization","KSPGMRESSetOrthogonalization_GMRES",
-                    KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = DLRegister(&ksp->qlist,"KSPGMRESSetRestart","KSPGMRESSetRestart_GMRES",KSPGMRESSetRestart_GMRES);
-  CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors",
+                                    "KSPGMRESSetPreAllocateVectors_GMRES",
+                                     (void*)KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization",
+                                    "KSPGMRESSetOrthogonalization_GMRES",
+                                     (void*)KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart",
+                                     "KSPGMRESSetRestart_GMRES",
+                                    (void*)KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
 
   gmres->haptol         = 1.0e-8;
   gmres->epsabs         = 1.0e-8;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.65 1998/03/06 00:18:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.66 1998/03/16 18:57:23 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -199,9 +199,8 @@ static int SNESSetUp_UM_TR(SNES snes)
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "SNESDestroy_UM_TR"
-static int SNESDestroy_UM_TR(PetscObject obj )
+static int SNESDestroy_UM_TR(SNES snes )
 {
-  SNES snes = (SNES) obj;
   int  ierr;
 
   PetscFunctionBegin;
@@ -342,9 +341,8 @@ static int SNESPrintHelp_UM_TR(SNES snes,char *p)
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "SNESView_UM_TR"
-static int SNESView_UM_TR(PetscObject obj,Viewer viewer)
+static int SNESView_UM_TR(SNES snes,Viewer viewer)
 {
-  SNES       snes = (SNES)obj;
   SNES_UMTR  *tr = (SNES_UMTR *)snes->data;
   FILE       *fd;
   int        ierr;

@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.114 1998/03/20 22:46:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.115 1998/03/23 21:18:21 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -51,7 +50,7 @@ int KSPView(KSP ksp,Viewer viewer)
     PetscFPrintf(ksp->comm,fd,"KSP Object:\n");
     KSPGetType(ksp,&method);
     PetscFPrintf(ksp->comm,fd,"  method: %s\n",method);
-    if (ksp->view) (*ksp->view)((PetscObject)ksp,viewer);
+    if (ksp->view) (*ksp->view)(ksp,viewer);
     if (ksp->guess_zero) PetscFPrintf(ksp->comm,fd,
       "  maximum iterations=%d, initial guess is zero\n",ksp->max_it);
     else PetscFPrintf(ksp->comm,fd,"  maximum iterations=%d\n", ksp->max_it);
@@ -183,7 +182,7 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 
   if (ksp->setupcalled) {
     /* destroy the old private KSP context */
-    ierr = (*(ksp)->destroy)((PetscObject)ksp); CHKERRQ(ierr);
+    ierr = (*(ksp)->destroy)(ksp); CHKERRQ(ierr);
     ksp->data = 0;
   }
   /* Get the function pointers for the iterative method requested */

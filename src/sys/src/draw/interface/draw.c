@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.47 1997/11/28 16:20:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.48 1998/03/12 23:20:42 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -155,8 +155,8 @@ int DrawDestroy(Draw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (--draw->refct > 0) PetscFunctionReturn(0);
-  if (draw->destroy) {
-    ierr = (*draw->destroy)((PetscObject)draw);CHKERRQ(ierr);
+  if (draw->ops->destroy) {
+    ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -189,14 +189,12 @@ int DrawGetPopup(Draw draw,Draw *popup)
 
 #undef __FUNC__  
 #define __FUNC__ "DrawDestroy_Null" 
-int DrawDestroy_Null(PetscObject obj)
+int DrawDestroy_Null(Draw draw)
 {
-  Draw draw = (Draw) obj;
-
   PetscFunctionBegin;
   if (draw->title) PetscFree(draw->title);
-  PLogObjectDestroy(obj);
-  PetscHeaderDestroy(obj); 
+  PLogObjectDestroy((PetscObject)draw);
+  PetscHeaderDestroy((PetscObject)draw); 
   PetscFunctionReturn(0);
 }
 
@@ -217,8 +215,8 @@ int DrawOpenNull(MPI_Comm comm,Draw *win)
   PetscHeaderCreate(draw,_p_Draw,struct _DrawOps,DRAW_COOKIE,DRAW_NULLWINDOW,comm,DrawDestroy,0);
   PLogObjectCreate(draw);
   PetscMemzero(draw->ops,sizeof(struct _DrawOps));
-  draw->destroy = DrawDestroy_Null;
-  draw->view    = 0;
+  draw->ops->destroy = DrawDestroy_Null;
+  draw->ops->view    = 0;
   draw->pause   = 0;
   draw->coor_xl = 0.0;  draw->coor_xr = 1.0;
   draw->coor_yl = 0.0;  draw->coor_yr = 1.0;

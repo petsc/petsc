@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.31 1998/03/20 22:52:53 bsmith Exp balay $ 
+# $Id: makefile,v 1.32 1998/03/24 16:42:36 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -168,23 +168,23 @@ runex5:
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp
 runex5_2:
-	-@${MPIRUN} -np 4 ex5 -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor > ex5_2.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ex5 -Nx 2 -Ny 2 -snes_smonitor > ex5_2.tmp 2>&1; \
 	   if (diff output/ex5_2.out ex5_2.tmp) then true; \
 	   else echo "Possible problem with ex5_2, diffs above"; fi; \
 	   ${RM} -f ex5_2.tmp
 runex5_3:
-	-@${MPIRUN} -np 4 ex5 -snes_mf -Nx 2 -Ny 2 -star -snes_smonitor>ex5_3.tmp 2>&1;\
+	-@${MPIRUN} -np 4 ex5 -snes_mf -Nx 2 -Ny 2 -snes_smonitor>ex5_3.tmp 2>&1;\
 	   if (diff output/ex5_1.out ex5_3.tmp) then true; \
 	   else echo "Possible problem with ex5_3, diffs above"; fi; \
 	   ${RM} -f ex5_3.tmp
 runex5_4:
-	-@${MPIRUN} -np 4 ex5 -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor -pc_type asm \
+	-@${MPIRUN} -np 4 ex5 -Nx 2 -Ny 2 -snes_smonitor -pc_type asm \
 	   -pc_asm_blocks 4 -pc_asm_overlap 1 > ex5_4.tmp 2>&1; \
 	   if (diff output/ex5_4.out ex5_4.tmp) then true; \
 	   else echo "Possible problem with ex5_4, diffs above"; fi; \
 	   ${RM} -f ex5_4.tmp
 runex5_5:
-	-@${MPIRUN} -np 4 ex5 -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor -pc_type bjacobi \
+	-@${MPIRUN} -np 4 ex5 -Nx 2 -Ny 2 -snes_smonitor -pc_type bjacobi \
 	   -snes_view > ex5_5.tmp 2>&1; \
 	   if (diff output/ex5_5.out ex5_5.tmp) then true; \
 	   else echo "Possible problem with ex5_5, diffs above"; fi; \
@@ -226,7 +226,7 @@ runex6_2:
 	   ${RM} -f ex6_2.tmp
 
 runex8:
-	-@${MPIRUN} -np 2 ex8 -nox -mx 16 -my 16 -snes_smonitor \
+	-@${MPIRUN} -np 2 ex8  -mx 16 -my 16 -snes_smonitor \
                     -lidvelocity 0. -grashof 1000. > ex8_1.tmp 2>&1; \
            if (diff output/ex8_1.out ex8_1.tmp) then true; \
            else echo "Possible problem with ex8_1, diffs above"; fi; \

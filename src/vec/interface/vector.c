@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.125 1997/12/20 04:35:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.126 1998/03/12 23:15:22 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -635,7 +635,7 @@ int VecDestroy(Vec v)
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   if (--v->refct > 0) PetscFunctionReturn(0);
 
-  ierr = (*v->destroy)((PetscObject )v);CHKERRQ(ierr);
+  ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1356,7 +1356,7 @@ int VecView(Vec v,Viewer viewer)
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   if (!viewer) {viewer = VIEWER_STDOUT_SELF;}
   else { PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);}
-  ierr = (*v->view)((PetscObject)v,viewer);CHKERRQ(ierr);
+  ierr = (*v->ops->view)(v,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

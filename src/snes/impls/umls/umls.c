@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.64 1998/03/06 00:18:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.65 1998/03/20 22:52:36 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -137,9 +137,8 @@ static int SNESSetUp_UM_LS(SNES snes)
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "SNESDestroy_UM_LS"
-static int SNESDestroy_UM_LS(PetscObject obj )
+static int SNESDestroy_UM_LS(SNES snes )
 {
-  SNES snes = (SNES) obj;
   int  ierr;
 
   PetscFunctionBegin;
@@ -198,9 +197,8 @@ static int SNESPrintHelp_UM_LS(SNES snes,char *p)
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "SNESView_UM_LS"
-static int SNESView_UM_LS(PetscObject obj,Viewer viewer)
+static int SNESView_UM_LS(SNES snes,Viewer viewer)
 {
-  SNES       snes = (SNES)obj;
   SNES_UMLS  *ls = (SNES_UMLS *)snes->data;
   FILE       *fd;
   int        ierr;
@@ -585,8 +583,9 @@ int SNESCreate_UM_LS(SNES snes)
   ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI); CHKERRQ(ierr);
 
-  ierr = DLRegister(&snes->qlist,"SNESLineSearchGetDampingParameter","SNESLineSearchGetDampingParameter_UMLS",
-                    SNESLineSearchGetDampingParameter_UMLS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchGetDampingParameter",
+                                    "SNESLineSearchGetDampingParameter_UMLS",
+                                    (void*)SNESLineSearchGetDampingParameter_UMLS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -614,7 +613,7 @@ int SNESLineSearchGetDampingParameter(SNES snes,Scalar *damp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  ierr = DLRegisterFind(snes->comm,snes->qlist,"SNESLineSearchGetDampingParameter",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESLineSearchGetDampingParameter",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(snes,damp);CHKERRQ(ierr);
   } else {

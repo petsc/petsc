@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.7 1998/03/26 22:31:50 balay Exp balay $";
+static char vcid[] = "$Id: baijfact2.c,v 1.8 1998/03/26 22:59:08 balay Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -19,11 +19,11 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j;
   int             nz,bs=a->bs,bs2=a->bs2,*rout,*cout;
   Scalar          *aa=a->a,*sum;
-  register Scalar *x,*b,*lsum,*tmp,*v;
+  Scalar *x,*b,*lsum,*tmp,*v;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(bb,b); 
-  VecGetArray_Fast(xx,x); 
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -59,8 +59,8 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
-  VecRestoreArray_Fast(bb,b); 
-  VecRestoreArray_Fast(xx,x); 
+  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
   PLogFlops(2*(a->bs2)*(a->nz) - a->n);
   PetscFunctionReturn(0);
 }
@@ -74,11 +74,11 @@ int MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   Scalar          *aa=a->a,sum1,sum2,sum3,sum4,sum5,sum6,sum7,x1,x2,x3,x4,x5,x6,x7;
-  register Scalar *x,*b,*tmp,*v;
+  Scalar *x,*b,*tmp,*v;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(bb,b); 
-  VecGetArray_Fast(xx,x); 
+  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -159,8 +159,8 @@ int MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
-  VecRestoreArray_Fast(bb,b); 
-  VecRestoreArray_Fast(xx,x); 
+  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
   PLogFlops(2*49*(a->nz) - a->n);
   PetscFunctionReturn(0);
 }
@@ -174,11 +174,11 @@ int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   Scalar          *aa=a->a,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
-  register Scalar *x,*b,*tmp,*v;
+  Scalar *x,*b,*tmp,*v;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(bb,b); 
-  VecGetArray_Fast(xx,x); 
+  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -245,8 +245,8 @@ int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
-  VecRestoreArray_Fast(bb,b); 
-  VecRestoreArray_Fast(xx,x); 
+  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
   PLogFlops(2*25*(a->nz) - a->n);
   PetscFunctionReturn(0);
 }
@@ -260,11 +260,11 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   Scalar          *aa=a->a,sum1,sum2,sum3,sum4,x1,x2,x3,x4;
-  register Scalar *x,*b,*tmp,*v;
+  Scalar *x,*b,*tmp,*v;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(bb,b); 
-  VecGetArray_Fast(xx,x); 
+  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -321,8 +321,8 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
-  VecRestoreArray_Fast(bb,b); 
-  VecRestoreArray_Fast(xx,x); 
+  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
   PLogFlops(2*16*(a->nz) - a->n);
   PetscFunctionReturn(0);
 }
@@ -337,13 +337,13 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
   int             i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt;
-  int             *diag = a->diag,jdx;
+  int             ierr,*diag = a->diag,jdx;
   Scalar          *aa=a->a,sum1,sum2,sum3,sum4,x1,x2,x3,x4;
-  register Scalar *x,*b,*v;
+  Scalar *x,*b,*v;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(bb,b); 
-  VecGetArray_Fast(xx,x); 
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
 
   /* forward solve the lower triangular */
   idx    = 0;
@@ -392,8 +392,8 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[3+idt] = v[3]*sum1 + v[7]*sum2 + v[11]*sum3 + v[15]*sum4;
   }
 
-  VecRestoreArray_Fast(bb,b); 
-  VecRestoreArray_Fast(xx,x); 
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   PLogFlops(2*16*(a->nz) - a->n);
   PetscFunctionReturn(0);
 }
@@ -408,11 +408,11 @@ int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   Scalar          *aa=a->a,sum1,sum2,sum3,x1,x2,x3;
-  register Scalar *x,*b,*tmp,*v;
+  Scalar *x,*b,*tmp,*v;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(bb,b); 
-  VecGetArray_Fast(xx,x); 
+  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -461,8 +461,8 @@ int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   }
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
-  VecRestoreArray_Fast(bb,b); 
-  VecRestoreArray_Fast(xx,x); 
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   PLogFlops(2*9*(a->nz) - a->n);
   PetscFunctionReturn(0);
 }
@@ -476,11 +476,11 @@ int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   Scalar          *aa=a->a,sum1,sum2,x1,x2;
-  register Scalar *x,*b,*tmp,*v;
+  Scalar *x,*b,*tmp,*v;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(bb,b); 
-  VecGetArray_Fast(xx,x); 
+  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -526,8 +526,8 @@ int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   }
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
-  VecRestoreArray_Fast(bb,b); 
-  VecRestoreArray_Fast(xx,x); 
+  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   PLogFlops(2*4*(a->nz) - a->n);
   PetscFunctionReturn(0);
 }
@@ -542,13 +542,13 @@ int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,*rout,*cout;
   int             *diag = a->diag;
   Scalar          *aa=a->a,sum1;
-  register Scalar *x,*b,*tmp,*v;
+  Scalar *x,*b,*tmp,*v;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  VecGetArray_Fast(bb,b); 
-  VecGetArray_Fast(xx,x); 
+  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -580,8 +580,8 @@ int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
-  VecRestoreArray_Fast(bb,b); 
-  VecRestoreArray_Fast(xx,x); 
+  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
   PLogFlops(2*1*(a->nz) - a->n);
   PetscFunctionReturn(0);
 }

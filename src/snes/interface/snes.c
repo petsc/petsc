@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.140 1998/03/20 22:52:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.141 1998/03/23 21:24:57 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -58,7 +58,7 @@ int SNESView(SNES snes,Viewer viewer)
     PetscFPrintf(snes->comm,fd,"SNES Object:\n");
     SNESGetType(snes,&method);
     PetscFPrintf(snes->comm,fd,"  method: %s\n",method);
-    if (snes->view) (*snes->view)((PetscObject)snes,viewer);
+    if (snes->view) (*snes->view)(snes,viewer);
     PetscFPrintf(snes->comm,fd,
       "  maximum iterations=%d, maximum function evaluations=%d\n",
       snes->max_its,snes->max_funcs);
@@ -1212,7 +1212,7 @@ int SNESDestroy(SNES snes)
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (--snes->refct > 0) PetscFunctionReturn(0);
 
-  if (snes->destroy) {ierr = (*(snes)->destroy)((PetscObject)snes); CHKERRQ(ierr);}
+  if (snes->destroy) {ierr = (*(snes)->destroy)(snes); CHKERRQ(ierr);}
   if (snes->kspconvctx) PetscFree(snes->kspconvctx);
   if (snes->mfshell) {ierr = MatDestroy(snes->mfshell);CHKERRQ(ierr);}
   ierr = SLESDestroy(snes->sles); CHKERRQ(ierr);
@@ -1625,7 +1625,7 @@ int SNESSetType(SNES snes,SNESType method)
   if (!PetscStrcmp(snes->type_name,method)) PetscFunctionReturn(0);
 
   if (snes->setupcalled) {
-    ierr       = (*(snes)->destroy)((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = (*(snes)->destroy)(snes);CHKERRQ(ierr);
     snes->data = 0;
   }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.h,v 1.5 1998/01/14 02:43:50 bsmith Exp bsmith $"; 
+static char vcid[] = "$Id: petscpvode.h,v 1.6 1998/01/17 17:38:20 bsmith Exp bsmith $"; 
 #endif
 
 /*
@@ -34,14 +34,17 @@ typedef struct {
 
   Vec  w1,w2;     /* work space vectors for function evaluation */
 
+
+  PetscTruth  exact_final_time; /* force PVode to interpolate solution to exactly final time
+                                   requested by user (default) */
+
   /*
      PETSc peconditioner objects used by PVODE
   */
  
-  Mat  pmat;          /* preconditioner Jacobian */
-  PC   pc;            /* the PC context */
-  int  cvode_type;    /* the PVODE method, BDF  or ADAMS   */
-
+  Mat  pmat;                         /* preconditioner Jacobian */
+  PC   pc;                           /* the PC context */
+  int  cvode_type;                   /* the PVODE method, BDF  or ADAMS   */
   TSPVodeGramSchmidtType gtype; 
   int                    restart;
   double                 linear_tol;

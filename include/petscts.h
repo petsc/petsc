@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.24 1998/03/23 21:27:32 bsmith Exp balay $ */
+/* $Id: ts.h,v 1.25 1998/03/24 00:41:45 balay Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -101,6 +101,7 @@ extern int TSPVodeGetIterations(TS,int *,int *);
 extern int TSPVodeSetGramSchmidtType(TS,TSPVodeGramSchmidtType);
 extern int TSPVodeSetGMRESRestart(TS,int);
 extern int TSPVodeSetLinearTolerance(TS,double);
+extern int TSPVodeSetExactFinalTime(TS, PetscTruth);
 
 #endif
 

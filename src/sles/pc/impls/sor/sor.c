@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.67 1998/03/06 00:13:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.68 1998/03/20 22:48:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -81,9 +81,8 @@ static int PCPrintHelp_SOR(PC pc,char *p)
 
 #undef __FUNC__  
 #define __FUNC__ "PCView_SOR"
-static int PCView_SOR(PetscObject obj,Viewer viewer)
+static int PCView_SOR(PC pc,Viewer viewer)
 {
-  PC         pc = (PC)obj;
   PC_SOR     *jac = (PC_SOR *) pc->data;
   FILE       *fd;
   MatSORType sym = jac->sym;
@@ -194,7 +193,7 @@ int PCSORSetSymmetric(PC pc, MatSORType flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCSORSetSymmetric",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetSymmetric",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   }
@@ -223,7 +222,7 @@ int PCSORSetOmega(PC pc, double omega)
   int ierr, (*f)(PC,double);
 
   PetscFunctionBegin;
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCSORSetOmega",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetOmega",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,omega);CHKERRQ(ierr);
   }
@@ -253,7 +252,7 @@ int PCSORSetIterations(PC pc, int its)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCSORSetIterations",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetIterations",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,its);CHKERRQ(ierr);
   }
@@ -281,12 +280,12 @@ int PCCreate_SOR(PC pc)
   jac->omega         = 1.0;
   jac->its           = 1;
 
-  ierr = DLRegister(&pc->qlist,"PCSORSetSymmetric","PCSORSetSymmetric_SOR",
-                    PCSORSetSymmetric_SOR);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCSORSetOmega","PCSORSetOmega_SOR",
-                    PCSORSetOmega_SOR);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCSORSetIterations","PCSORSetIterations_SOR",
-                    PCSORSetIterations_SOR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetSymmetric","PCSORSetSymmetric_SOR",
+                    (void*)PCSORSetSymmetric_SOR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetOmega","PCSORSetOmega_SOR",
+                    (void*)PCSORSetOmega_SOR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetIterations","PCSORSetIterations_SOR",
+                    (void*)PCSORSetIterations_SOR);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

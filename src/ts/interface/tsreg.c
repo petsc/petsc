@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.32 1998/03/20 22:51:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.33 1998/03/23 21:23:45 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -60,7 +60,7 @@ int TSSetType(TS ts,TSType method)
 
   if (ts->sles) {ierr = SLESDestroy(ts->sles); CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes); CHKERRQ(ierr);}
-  if (ts->destroy) {ierr = (*(ts)->destroy)((PetscObject)ts); CHKERRQ(ierr);}
+  if (ts->destroy) {ierr = (*(ts)->destroy)(ts); CHKERRQ(ierr);}
   ts->sles = 0;
   ts->snes = 0;
 

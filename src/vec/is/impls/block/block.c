@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.21 1997/12/01 01:52:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.22 1998/03/12 23:14:59 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -18,9 +18,8 @@ typedef struct {
 
 #undef __FUNC__  
 #define __FUNC__ "ISDestroy_Block" 
-int ISDestroy_Block(PetscObject obj)
+int ISDestroy_Block(IS is)
 {
-  IS       is = (IS) obj;
   IS_Block *is_block = (IS_Block *) is->data;
 
   PetscFunctionBegin;
@@ -103,9 +102,8 @@ int ISInvertPermutation_Block(IS is, IS *isout)
 
 #undef __FUNC__  
 #define __FUNC__ "ISView_Block" 
-int ISView_Block(PetscObject obj, Viewer viewer)
+int ISView_Block(IS is, Viewer viewer)
 {
-  IS          is = (IS) obj;
   IS_Block    *sub = (IS_Block *)is->data;
   int         i,n = sub->n,*idx = sub->idx,ierr;
   FILE        *fd;
@@ -226,8 +224,8 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
   PetscMemcpy(Nindex->ops,&myops,sizeof(myops));
-  Nindex->destroy = ISDestroy_Block;
-  Nindex->view    = ISView_Block;
+  Nindex->ops->destroy = ISDestroy_Block;
+  Nindex->ops->view    = ISView_Block;
   Nindex->isperm  = 0;
   *is = Nindex; PetscFunctionReturn(0);
 }

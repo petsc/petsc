@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.101 1998/03/16 18:57:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.102 1998/03/20 22:52:30 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -121,9 +121,8 @@ int SNESSetUp_EQ_LS(SNES snes )
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
 #define __FUNC__ "SNESDestroy_EQ_LS"
-int SNESDestroy_EQ_LS(PetscObject obj)
+int SNESDestroy_EQ_LS(SNES snes)
 {
-  SNES snes = (SNES) obj;
   int  ierr;
 
   PetscFunctionBegin;
@@ -582,7 +581,7 @@ int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
   int ierr, (*f)(SNES,int (*f)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
 
   PetscFunctionBegin;
-  ierr = DLRegisterFind(snes->comm,snes->qlist,"SNESSetLineSearch",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESSetLineSearch",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(snes,func);CHKERRQ(ierr);
   }
@@ -617,9 +616,8 @@ static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
 /* ------------------------------------------------------------------ */
 #undef __FUNC__  
 #define __FUNC__ "SNESView_EQ_LS"
-static int SNESView_EQ_LS(PetscObject obj,Viewer viewer)
+static int SNESView_EQ_LS(SNES snes,Viewer viewer)
 {
-  SNES       snes = (SNES)obj;
   SNES_LS    *ls = (SNES_LS *)snes->data;
   FILE       *fd;
   char       *cstr;
@@ -711,8 +709,8 @@ int SNESCreate_EQ_LS(SNES  snes )
   neP->steptol		= 1.e-12;
   neP->LineSearch       = SNESCubicLineSearch;
 
-  ierr = DLRegister(&snes->qlist,"SNESSetLineSearch","SNESSetLineSearch_LS",
-                    SNESSetLineSearch_LS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESSetLineSearch","SNESSetLineSearch_LS",
+                    (void*)SNESSetLineSearch_LS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

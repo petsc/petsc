@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.20 1998/01/12 00:32:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.21 1998/03/12 23:24:31 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -1196,7 +1196,7 @@ int AODataView(AOData aodata, Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->view)((PetscObject)aodata,viewer);CHKERRQ(ierr);
+  ierr = (*aodata->ops->view)(aodata,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1223,7 +1223,7 @@ int AODataDestroy(AOData aodata)
   if (!aodata) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   if (--aodata->refct > 0) PetscFunctionReturn(0);
-  ierr = (*aodata->destroy)((PetscObject)aodata); CHKERRQ(ierr);
+  ierr = (*aodata->ops->destroy)(aodata); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

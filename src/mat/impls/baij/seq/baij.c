@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.128 1998/03/26 22:11:13 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.129 1998/03/26 22:32:11 balay Exp bsmith $";
 #endif
 
 /*
@@ -102,14 +102,13 @@ int MatGetBlockSize_SeqBAIJ(Mat mat, int *bs)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_SeqBAIJ"
-int MatDestroy_SeqBAIJ(PetscObject obj)
+int MatDestroy_SeqBAIJ(Mat A)
 {
-  Mat         A  = (Mat) obj;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int         ierr;
 
 #if defined(USE_PETSC_LOG)
-  PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
+  PLogObjectState((PetscObject) A,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
 #endif
   PetscFree(a->a); 
   if (!a->singlemalloc) { PetscFree(a->i); PetscFree(a->j);}
@@ -572,9 +571,8 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqBAIJ"
-int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
+int MatView_SeqBAIJ(Mat A,Viewer viewer)
 {
-  Mat         A = (Mat) obj;
   ViewerType  vtype;
   int         ierr;
 
@@ -1256,8 +1254,8 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
       break;
     }
   }
-  B->destroy          = MatDestroy_SeqBAIJ;
-  B->view             = MatView_SeqBAIJ;
+  B->ops->destroy          = MatDestroy_SeqBAIJ;
+  B->ops->view             = MatView_SeqBAIJ;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;
@@ -1336,8 +1334,8 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(c);
   PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));
-  C->destroy    = MatDestroy_SeqBAIJ;
-  C->view       = MatView_SeqBAIJ;
+  C->ops->destroy    = MatDestroy_SeqBAIJ;
+  C->ops->view       = MatView_SeqBAIJ;
   C->factor     = A->factor;
   c->row        = 0;
   c->col        = 0;

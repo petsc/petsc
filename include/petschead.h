@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.55 1998/03/12 23:25:24 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.56 1998/03/23 21:27:32 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -18,23 +18,26 @@ extern int PetscRegisterCookie(int *);
 
    PetscHeaderCreate() should be used whenever creating a PETSc structure.
 
-      bops->destroy() is the routine for destroying the entire PETSc object; for
-                      example, MatDestroy() is the general matrix destruction routine.
-      destroy() is the analogous private routine that is specific for a particular 
-                      subclass; for example, MatDestroy_SeqAIJ() is the matrix 
-                      destruction routine for MATSEQAIJ matrices.
-      viewpublic() is the routine for viewing the entire PETSc object; for
-                      example, MatView() is the general matrix viewing routine.
-      view() is the analogous private routine that is specific for a particular  
-                      subclass; for example, MatView_SeqAIJ() is the viewing 
-                      routine for MATSEQAIJ matrices.
+      bops->destroy()   is the routine for destroying the entire PETSc object; for
+                           example, MatDestroy() is the general matrix destruction routine.
+      bops->view()     is the routine for viewing the entire PETSc object; for
+                           example, MatView() is the general matrix viewing routine.
+      bops->query()     returns a different PETSc object that has been associated with the first
+      bops->compose()   associates a PETSc object with another PETSc object
+      bops->reference() increases the reference count for a PETSc object, when a reference count
+                           reaches zero it is destroyed
+        queryfunction()   Request a registered function
+        composefunction() Attach an additional registered function
 */
 
 typedef struct {
    int (*view)(PetscObject,Viewer);
    int (*destroy)(PetscObject);
-   int (*query)(PetscObject,void **);
+   int (*query)(PetscObject,char *,PetscObject *);
+   int (*compose)(PetscObject,char*,PetscObject);
    int (*reference)(PetscObject);
+   int (*composefunction)(PetscObject,char *,char *,void *);
+   int (*queryfunction)(PetscObject,char *, void **);
 } PetscOps;
 
 #define PETSCHEADER(ObjectOps)                         \
@@ -47,34 +50,40 @@ typedef struct {
   int         id;                                      \
   int         refct;                                   \
   int         tag;                                     \
-  int         (*copypublic)(PetscObject,PetscObject*); \
-  int         (*viewpublic)(PetscObject,Viewer);       \
   DLList      qlist;                                   \
+  OList       olist;                                   \
   char        *type_name;                              \
   PetscObject parent;                                  \
   char*       name;                                    \
   char        *prefix;                                 \
-  void*       child;                                   \
-  int         (*childcopy)(void *,void**);             \
-  int         (*childdestroy)(void *);                 \
-  int         (*destroy)(PetscObject);                 \
-  int         (*view)(PetscObject,Viewer);             \
   void**      fortran_func_pointers;       
 
   /*  ... */                               
 
 #define  PETSCFREEDHEADER -1
 
-extern int PetscHeaderCreate_Private(PetscObject,int,int,MPI_Comm,int (*)(PetscObject),
-                                     int (*)(PetscObject,Viewer));
+extern int PetscHeaderCreate_Private(PetscObject,int,int,MPI_Comm,int (*)(PetscObject),int (*)(PetscObject,Viewer));
 extern int PetscHeaderDestroy_Private(PetscObject);
 
+/*
+    PetscHeaderCreate - Creates a PETSc object
+
+   Input Parameters:
+.   tp - the data structure type of the object
+.   pops - the data structure type of the objects operations (for example _VecOps)
+.   cookie - the cooki associated with this object
+.   t - type no longer should be used
+.   com - the MPI Communicator
+.   des - the destroy routine for this object
+.   vie - the view routine for this object
+
+*/ 
 #define PetscHeaderCreate(h,tp,pops,cook,t,com,des,vie)                                     \
   { int _ierr;                                                                              \
     h       = PetscNew(struct tp);CHKPTRQ((h));                                             \
     PetscMemzero(h,sizeof(struct tp));                                                      \
     (h)->bops = PetscNew(PetscOps);CHKPTRQ(((h)->bops));                                    \
-    PetscMemzero((h)->bops,sizeof(sizeof(PetscOps)));                                         \
+    PetscMemzero((h)->bops,sizeof(sizeof(PetscOps)));                                       \
     (h)->ops  = PetscNew(pops);CHKPTRQ(((h)->ops));                                         \
     _ierr = PetscHeaderCreate_Private((PetscObject)h,cook,t,com,                            \
                                        (int (*)(PetscObject))des,                           \

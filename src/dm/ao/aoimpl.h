@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.13 1998/03/06 00:20:21 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.14 1998/03/12 23:24:29 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -11,8 +11,10 @@
     Defines the abstract AO operations
 */
 struct _AOOps {
-  int  (*petsctoapplication)(AO,int,int*),  /* map a set of integers to application order */
-       (*applicationtopetsc)(AO,int,int*);   
+  int (*petsctoapplication)(AO,int,int*),  /* map a set of integers to application order */
+      (*applicationtopetsc)(AO,int,int*);   
+  int (*destroy)(AO);
+  int (*view)(AO,Viewer);
 };
 
 struct _p_AO {
@@ -39,6 +41,8 @@ struct _AODataOps {
   int (*segmentpartition)(AOData,char*,char*);
   int (*keyremove)(AOData,char*);
   int (*segmentremove)(AOData,char*,char*);
+  int (*destroy)(AOData);
+  int (*view)(AOData,Viewer);
 };
 
 /*

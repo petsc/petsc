@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.80 1998/03/12 23:18:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.81 1998/03/16 18:55:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -470,15 +470,14 @@ int MatGetDiagonal_MPIDense(Mat A,Vec v)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_MPIDense"
-int MatDestroy_MPIDense(PetscObject obj)
+int MatDestroy_MPIDense(Mat mat)
 {
-  Mat          mat = (Mat) obj;
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   int          ierr;
 
   PetscFunctionBegin;
 #if defined(USE_PETSC_LOG)
-  PLogObjectState(obj,"Rows=%d, Cols=%d",mdn->M,mdn->N);
+  PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",mdn->M,mdn->N);
 #endif
   PetscFree(mdn->rowners); 
   ierr = MatDestroy(mdn->A); CHKERRQ(ierr);
@@ -593,9 +592,8 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIDense"
-int MatView_MPIDense(PetscObject obj,Viewer viewer)
+int MatView_MPIDense(Mat mat,Viewer viewer)
 {
-  Mat          mat = (Mat) obj;
   int          ierr;
   ViewerType   vtype;
  
@@ -961,10 +959,10 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
   PetscMemcpy(mat->ops,&MatOps,sizeof(struct _MatOps));
-  mat->destroy    = MatDestroy_MPIDense;
-  mat->view       = MatView_MPIDense;
-  mat->factor     = 0;
-  mat->mapping    = 0;
+  mat->ops->destroy    = MatDestroy_MPIDense;
+  mat->ops->view       = MatView_MPIDense;
+  mat->factor          = 0;
+  mat->mapping         = 0;
 
   a->factor       = 0;
   mat->insertmode = NOT_SET_VALUES;
@@ -1034,10 +1032,10 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
   PLogObjectCreate(mat);
   mat->data      = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
   PetscMemcpy(mat->ops,&MatOps,sizeof(struct _MatOps));
-  mat->destroy   = MatDestroy_MPIDense;
-  mat->view      = MatView_MPIDense;
-  mat->factor    = A->factor;
-  mat->assembled = PETSC_TRUE;
+  mat->ops->destroy   = MatDestroy_MPIDense;
+  mat->ops->view      = MatView_MPIDense;
+  mat->factor         = A->factor;
+  mat->assembled      = PETSC_TRUE;
 
   a->m = mat->m = oldmat->m;
   a->n = mat->n = oldmat->n;

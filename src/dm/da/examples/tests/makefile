@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.38 1998/03/13 22:59:19 balay Exp balay $ 
+# $Id: makefile,v 1.39 1998/03/19 02:14:24 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -85,7 +85,7 @@ runex3:
 	-@${MPIRUN} -np 3 ex3 -time 50
 
 runex4:
-	-@${MPIRUN} -np 4 ex4 -test_order -nox > ex4_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 4 ex4  -nox > ex4_1.tmp 2>&1;	  \
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   ${RM} -f ex4_1.tmp

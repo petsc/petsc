@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.140 1998/03/06 00:13:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.141 1998/03/12 23:17:20 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -28,7 +28,7 @@ int PCDestroy(PC pc)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (--pc->refct > 0) PetscFunctionReturn(0);
 
-  if (pc->destroy) {ierr =  (*pc->destroy)((PetscObject)pc);CHKERRQ(ierr);}
+  if (pc->destroy) {ierr =  (*pc->destroy)(pc);CHKERRQ(ierr);}
   else {if (pc->data) PetscFree(pc->data);}
   PLogObjectDestroy(pc);
   PetscHeaderDestroy(pc);
@@ -959,7 +959,7 @@ int PCView(PC pc,Viewer viewer)
     PetscFPrintf(pc->comm,fd,"PC Object:\n");
     PCGetType(pc,&cstr);
     PetscFPrintf(pc->comm,fd,"  method: %s\n",cstr);
-    if (pc->view) (*pc->view)((PetscObject)pc,viewer);
+    if (pc->view) (*pc->view)(pc,viewer);
     PetscObjectExists((PetscObject)pc->mat,&mat_exists);
     if (mat_exists) {
       ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_INFO,0);
@@ -981,7 +981,7 @@ int PCView(PC pc,Viewer viewer)
   } else if (vtype == STRING_VIEWER) {
     PCGetType(pc,&cstr);
     ViewerStringSPrintf(viewer," %-7.7s",cstr);
-    if (pc->view) (*pc->view)((PetscObject)pc,viewer);
+    if (pc->view) (*pc->view)(pc,viewer);
   }
   PetscFunctionReturn(0);
 }

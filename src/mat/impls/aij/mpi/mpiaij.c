@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.232 1998/03/12 23:18:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.233 1998/03/16 18:55:15 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -724,15 +724,14 @@ int MatScale_MPIAIJ(Scalar *aa,Mat A)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_MPIAIJ"
-int MatDestroy_MPIAIJ(PetscObject obj)
+int MatDestroy_MPIAIJ(Mat mat)
 {
-  Mat        mat = (Mat) obj;
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int        ierr;
 
   PetscFunctionBegin;
 #if defined(USE_PETSC_LOG)
-  PLogObjectState(obj,"Rows=%d, Cols=%d",aij->M,aij->N);
+  PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",aij->M,aij->N);
 #endif
   ierr = StashDestroy_Private(&aij->stash); CHKERRQ(ierr);
   PetscFree(aij->rowners); 
@@ -879,9 +878,8 @@ extern int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIAIJ"
-int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
+int MatView_MPIAIJ(Mat mat,Viewer viewer)
 {
-  Mat         mat = (Mat) obj;
   int         ierr;
   ViewerType  vtype;
  
@@ -1393,13 +1391,13 @@ int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
   PetscFunctionBegin;
   ierr = MatGetLocalSize(mat,&s2,&s3); CHKERRQ(ierr);
   if (rr) {
-    VecGetLocalSize_Fast(rr,s1);
+    ierr = VecGetLocalSize(rr,&s1);CHKERRQ(ierr);
     if (s1!=s3) SETERRQ(PETSC_ERR_ARG_SIZ,0,"right vector non-conforming local size");
     /* Overlap communication with computation. */
     ierr = VecScatterBegin(rr,aij->lvec,INSERT_VALUES,SCATTER_FORWARD,aij->Mvctx); CHKERRQ(ierr);
   }
   if (ll) {
-    VecGetLocalSize_Fast(ll,s1);
+    ierr = VecGetLocalSize(ll,&s1);CHKERRQ(ierr);
     if (s1!=s2) SETERRQ(PETSC_ERR_ARG_SIZ,0,"left vector non-conforming local size");
     ierr = (*b->ops->diagonalscale)(b,ll,0); CHKERRQ(ierr);
   }
@@ -1601,8 +1599,7 @@ $
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues()
 @*/
-int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
-                    int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *A)
+int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *A)
 {
   Mat          B;
   Mat_MPIAIJ   *b;
@@ -1623,8 +1620,8 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   B->data       = (void *) (b = PetscNew(Mat_MPIAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIAIJ));
   PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
-  B->destroy    = MatDestroy_MPIAIJ;
-  B->view       = MatView_MPIAIJ;
+  B->ops->destroy    = MatDestroy_MPIAIJ;
+  B->ops->view       = MatView_MPIAIJ;
   B->factor     = 0;
   B->assembled  = PETSC_FALSE;
   B->mapping    = 0;
@@ -1710,8 +1707,8 @@ int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIAIJ)); CHKPTRQ(a);
   PetscMemcpy(mat->ops,&MatOps,sizeof(struct _MatOps));
-  mat->destroy    = MatDestroy_MPIAIJ;
-  mat->view       = MatView_MPIAIJ;
+  mat->ops->destroy    = MatDestroy_MPIAIJ;
+  mat->ops->view       = MatView_MPIAIJ;
   mat->factor     = matin->factor;
   mat->assembled  = PETSC_TRUE;
 

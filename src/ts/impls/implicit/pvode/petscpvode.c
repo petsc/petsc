@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.20 1998/03/20 22:51:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.21 1998/03/23 21:23:56 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -174,7 +174,7 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
     flag = CVode(cvode->mem, tout, cvode->y, &t, ONE_STEP);
     if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE failed");	
 
-    if (t > tout) { 
+    if (t > tout && cvode->exact_final_time) { 
       /* interpolate to final requested time */
       flag = CVodeDky(cvode->mem,tout,0,cvode->y);
       if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE interpolation to final time failed");	
@@ -208,9 +208,8 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
 */
 #undef __FUNC__  
 #define __FUNC__ "TSDestroy_PVode"
-static int TSDestroy_PVode(PetscObject obj )
+static int TSDestroy_PVode(TS ts )
 {
-  TS        ts = (TS) obj;
   TS_PVode *cvode = (TS_PVode*) ts->data;
   int       ierr;
 
@@ -360,9 +359,8 @@ static int TSPrintHelp_PVode(TS ts,char *p)
 */
 #undef __FUNC__  
 #define __FUNC__ "TSView_PVode" 
-static int TSView_PVode(PetscObject obj,Viewer viewer)
+static int TSView_PVode(TS ts,Viewer viewer)
 {
-  TS         ts = (TS) obj;
   TS_PVode   *cvode = (TS_PVode*) ts->data;
   int        ierr;
   MPI_Comm   comm;
@@ -376,7 +374,7 @@ static int TSView_PVode(PetscObject obj,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
-    ierr = PetscObjectGetComm(obj,&comm); CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)ts,&comm); CHKERRQ(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(comm,fd,"PVode integrater does not use SNES!\n"); 
     PetscFPrintf(comm,fd,"PVode integrater type %s\n",type);
@@ -400,7 +398,7 @@ static int TSView_PVode(PetscObject obj,Viewer viewer)
 /* --------------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "TSPVodeSetType_Pvode"
-int TSPVodeSetType_Pvode(TS ts, TSPVodeType type)
+int TSPVodeSetType_PVode(TS ts, TSPVodeType type)
 {
   TS_PVode *cvode = (TS_PVode*) ts->data;
   
@@ -410,8 +408,8 @@ int TSPVodeSetType_Pvode(TS ts, TSPVodeType type)
 }
 
 #undef __FUNC__
-#define __FUNC__ "TSPVodeSetGMRESRestart_Pvode"
-int TSPVodeSetGMRESRestart_Pvode(TS ts, int restart)
+#define __FUNC__ "TSPVodeSetGMRESRestart_PVode"
+int TSPVodeSetGMRESRestart_PVode(TS ts, int restart)
 {
   TS_PVode *cvode = (TS_PVode*) ts->data;
   
@@ -421,8 +419,8 @@ int TSPVodeSetGMRESRestart_Pvode(TS ts, int restart)
 }
 
 #undef __FUNC__
-#define __FUNC__ "TSPVodeSetLinearTolerance_Pvode"
-int TSPVodeSetLinearTolerance_Pvode(TS ts, double tol)
+#define __FUNC__ "TSPVodeSetLinearTolerance_PVode"
+int TSPVodeSetLinearTolerance_PVode(TS ts, double tol)
 {
   TS_PVode *cvode = (TS_PVode*) ts->data;
   
@@ -432,8 +430,8 @@ int TSPVodeSetLinearTolerance_Pvode(TS ts, double tol)
 }
 
 #undef __FUNC__
-#define __FUNC__ "TSPVodeSetGramSchmidtType_Pvode"
-int TSPVodeSetGramSchmidtType_Pvode(TS ts, TSPVodeGramSchmidtType type)
+#define __FUNC__ "TSPVodeSetGramSchmidtType_PVode"
+int TSPVodeSetGramSchmidtType_PVode(TS ts, TSPVodeGramSchmidtType type)
 {
   TS_PVode *cvode = (TS_PVode*) ts->data;
   
@@ -444,8 +442,8 @@ int TSPVodeSetGramSchmidtType_Pvode(TS ts, TSPVodeGramSchmidtType type)
 }
 
 #undef __FUNC__
-#define __FUNC__ "TSPVodeSetTolerance_Pvode"
-int TSPVodeSetTolerance_Pvode(TS ts, double aabs, double rel)
+#define __FUNC__ "TSPVodeSetTolerance_PVode"
+int TSPVodeSetTolerance_PVode(TS ts, double aabs, double rel)
 {
   TS_PVode *cvode = (TS_PVode*) ts->data;
   
@@ -456,8 +454,8 @@ int TSPVodeSetTolerance_Pvode(TS ts, double aabs, double rel)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSPVodeGetPC_Pvode"
-int TSPVodeGetPC_Pvode(TS ts, PC *pc)
+#define __FUNC__ "TSPVodeGetPC_PVode"
+int TSPVodeGetPC_PVode(TS ts, PC *pc)
 { 
   TS_PVode *cvode = (TS_PVode*) ts->data;
 
@@ -467,7 +465,58 @@ int TSPVodeGetPC_Pvode(TS ts, PC *pc)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "TSPVodeGetIterations_PVode"
+int TSPVodeGetIterations_PVode(TS ts, int *nonlin,int *lin )
+{
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+  
+  PetscFunctionBegin;
+  if (nonlin) *nonlin = cvode->iopt[NNI];
+  if (lin)    *lin    = cvode->iopt[SPGMR_NLI];
+  PetscFunctionReturn(0);
+}
+  
+#undef __FUNC__  
+#define __FUNC__ "TSPVodeSetExactFinalTime_PVode"
+int TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
+{
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+  
+  PetscFunctionBegin;
+  cvode->exact_final_time = s;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------------------------*/
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeGetIterations"
+/*@C
+   TSPVodeGetIterations - Gets the number of nonlinear and linear iterations used so
+      far by PVode.
+
+   Input parameters:
+.    ts     - the time-step context
+
+   Output Parameters:
+.   nonlin - number of nonlinear iterations
+.   lin    - number of linear iterations
+
+.keywords: non-linear iterations, linear iterations
+
+@*/
+int TSPVodeGetIterations(TS ts, int *nonlin,int *lin )
+{
+  int ierr, (*f)(TS,int*,int*);
+  
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeGetIterations",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts,nonlin,lin);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__
 #define __FUNC__ "TSPVodeSetType"
@@ -488,7 +537,7 @@ int TSPVodeSetType(TS ts, TSPVodeType type)
   int ierr, (*f)(TS,TSPVodeType);
   
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPVodeSetType",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetType",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,type);CHKERRQ(ierr);
   }
@@ -515,7 +564,7 @@ int TSPVodeSetGMRESRestart(TS ts, int restart)
   int ierr, (*f)(TS,int);  
 
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPVodeSetGMRESRestart",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetGMRESRestart",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,restart);CHKERRQ(ierr);
   }
@@ -543,7 +592,7 @@ int TSPVodeSetLinearTolerance(TS ts, double tol)
   int ierr, (*f)(TS,double);  
   
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPVodeSetLinearTolerance",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetLinearTolerance",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,tol);CHKERRQ(ierr);
   }
@@ -568,7 +617,7 @@ int TSPVodeSetGramSchmidtType(TS ts, TSPVodeGramSchmidtType type)
   int ierr, (*f)(TS,TSPVodeGramSchmidtType);  
   
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPVodeSetGramSchmidtType",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetGramSchmidtType",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,type);CHKERRQ(ierr);
   }
@@ -596,7 +645,7 @@ int TSPVodeSetTolerance(TS ts, double aabs, double rel)
   int ierr, (*f)(TS,double,double);  
   
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPVodeSetTolerance",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetTolerance",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,aabs,rel);CHKERRQ(ierr);
   }
@@ -623,12 +672,38 @@ int TSPVodeGetPC(TS ts, PC *pc)
   int ierr, (*f)(TS,PC *);  
 
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPVodeGetPC",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeGetPC",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,pc);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"TS must be of PVode type to extract the PC");
   }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "TSPVodeSetExactFinalTime"
+/*
+   TSPVodeSetExactFinalTime - Determines if PVode interpolates solution to the 
+      exact final time requested by the user or just returns it at the final time
+      it computed. (Defaults to true).
+
+   Input Parameter:
+.    ts - the time-step context
+.    ft - PETSC_TRUE if interpolates, else PETSC_FALSE
+
+.seealso: 
+*/
+int TSPVodeSetExactFinalTime(TS ts, PetscTruth ft)
+{ 
+  int ierr, (*f)(TS,PetscTruth);  
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetExactFinalTime",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts,ft);CHKERRQ(ierr);
+  } 
 
   PetscFunctionReturn(0);
 }
@@ -668,25 +743,35 @@ int TSCreate_PVode(TS ts )
   cvode->restart    = 5;
   cvode->linear_tol = .05;
 
+  cvode->exact_final_time = PETSC_TRUE;
+
   /* set tolerance for PVode */
   cvode->abstol = 1e-6;
   cvode->reltol = 1e-6;
 
-  ierr = DLRegister(&ts->qlist,"TSPVodeSetType","TSPVodeSetType_Pvode",
-                    TSPVodeSetType_Pvode);CHKERRQ(ierr);
-  ierr = DLRegister(&ts->qlist,"TSPVodeSetGMRESRestart","TSPVodeSetGMRESRestart_Pvode",
-                    TSPVodeSetGMRESRestart_Pvode);CHKERRQ(ierr);
-  ierr = DLRegister(&ts->qlist,"TSPVodeSetLinearTolerance","TSPVodeSetLinearTolerance_Pvode",
-                    TSPVodeSetLinearTolerance_Pvode);CHKERRQ(ierr);
-  ierr = DLRegister(&ts->qlist,"TSPVodeSetGramSchmidtType","TSPVodeSetGramSchmidtType_Pvode",
-                    TSPVodeSetGramSchmidtType_Pvode);CHKERRQ(ierr);
-  ierr = DLRegister(&ts->qlist,"TSPVodeSetTolerance","TSPVodeSetTolerance_Pvode",
-                    TSPVodeSetTolerance_Pvode);CHKERRQ(ierr);
-  ierr = DLRegister(&ts->qlist,"TSPVodeGetPC","TSPVodeGetPC_Pvode",
-                    TSPVodeGetPC_Pvode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetType","TSPVodeSetType_PVode",
+                    (void*)TSPVodeSetType_PVode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetGMRESRestart","TSPVodeSetGMRESRestart_PVode",
+                    (void*)TSPVodeSetGMRESRestart_PVode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetLinearTolerance",
+                    "TSPVodeSetLinearTolerance_PVode",
+                    (void*)TSPVodeSetLinearTolerance_PVode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetGramSchmidtType",
+                    "TSPVodeSetGramSchmidtType_PVode",
+                    (void*)TSPVodeSetGramSchmidtType_PVode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetTolerance","TSPVodeSetTolerance_PVode",
+                    (void*)TSPVodeSetTolerance_PVode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeGetPC","TSPVodeGetPC_PVode",
+                    (void*)TSPVodeGetPC_PVode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeGetIterations","TSPVodeGetIterations_PVode",
+                    (void*)TSPVodeGetIterations_PVode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetExactFinalTime","TSPVodeSetExactFinalTime_PVode",
+                    (void*)TSPVodeSetExactFinalTime_PVode);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
+
+
 
 #else
 

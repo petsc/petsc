@@ -9,6 +9,11 @@ static char help[] ="Reads in an AODatabase and displays the key and segment nam
 
 */
 
+/*
+      The ao.h include file allows you to access all the various AO and AOData routines
+   for manipulating simple parallel databases of grid (and related) information
+*/
+
 #include "ao.h"
 
 
@@ -33,7 +38,7 @@ int main( int argc, char **argv )
      Load in the grid database
   */
   ierr = OptionsGetString(0,"-f",filename,256,&flag);CHKERRA(ierr);
-  if (!flag) SETERRA(1,1,"Unable to open database");
+  if (!flag) SETERRA(1,1,"Unable to open database, must run with: ex1 -f filename");
   ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,filename,BINARY_RDONLY,&binary);CHKERRA(ierr);
   ierr = AODataLoadBasic(binary,&aodata); CHKERRA(ierr);
   ierr = ViewerDestroy(binary); CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.32 1998/03/06 00:10:24 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.33 1998/03/12 23:15:54 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -74,6 +74,8 @@ struct _p_KSP {
   int    its;       /* number of iterations so far computed */
   int    (*computeextremesingularvalues)(KSP,double*,double*);
   int    (*computeeigenvalues)(KSP,int,double*,double*);
+  int    (*destroy)(KSP);
+  int    (*view)(KSP,Viewer);
 };
 
 #define KSPMonitor(ksp,it,rnorm) \
@@ -87,7 +89,7 @@ struct _p_KSP {
 extern int KSPDefaultAdjustWork(KSP);
 extern int KSPDefaultBuildSolution(KSP,Vec,Vec*);
 extern int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
-extern int KSPDefaultDestroy(PetscObject);
+extern int KSPDefaultDestroy(KSP);
 extern int KSPDefaultGetWork(KSP,int);
 extern int KSPDefaultFreeWork(KSP);
 extern int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);

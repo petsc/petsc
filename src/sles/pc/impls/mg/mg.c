@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.75 1998/03/06 00:13:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.76 1998/03/23 21:19:57 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -80,9 +80,8 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy_MG"
-static int PCDestroy_MG(PetscObject obj)
+static int PCDestroy_MG(PC pc)
 {
-  PC  pc = (PC) obj;
   MG  *mg = (MG *) pc->data;
   int i, n = mg[0]->levels,ierr;
 
@@ -208,9 +207,8 @@ static int PCPrintHelp_MG(PC pc,char *p)
 
 #undef __FUNC__  
 #define __FUNC__ "PCView_MG"
-static int PCView_MG(PetscObject obj,Viewer viewer)
+static int PCView_MG(PC pc,Viewer viewer)
 {
-  PC         pc = (PC)obj;
   FILE       *fd;
   MG         *mg = (MG *) pc->data;
   KSP        kspu, kspd;

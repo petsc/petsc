@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.21 1997/11/09 03:54:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.22 1997/12/01 01:52:33 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: iscoloring.c,v 1.21 1997/11/09 03:54:06 bsmith Exp bs
 
 #undef __FUNC__  
 #define __FUNC__ "ISColoringDestroy"
-/*@
+/*@C
      ISColoringDestroy - Destroy's a coloring context.
 
   Input Parameter:
@@ -34,7 +34,7 @@ int ISColoringDestroy(ISColoring iscoloring)
 
 #undef __FUNC__  
 #define __FUNC__ "ISColoringView"
-/*@
+/*@C
      ISColoringView - View's a coloring context.
 
   Input Parameter:

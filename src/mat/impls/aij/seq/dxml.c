@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dxml.c,v 1.12 1997/10/19 03:25:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dxml.c,v 1.13 1998/03/12 23:18:23 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -20,8 +20,8 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
   int                ierr, zero = 0;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(x,xx);
-  VecGetArray_Fast(y,yy);
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  Vierr = ecGetArray(y,&yy);CHKERRQ(ierr);
   dmatvec_genr_(&zero,a->a,a->i,a->j,&a->nz,0,xx,yy,&a->m);
   PLogFlops(2*a->nz - a->m);
   PetscFunctionReturn(0);

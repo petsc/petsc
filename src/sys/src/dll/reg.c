@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.13 1998/03/20 22:47:23 bsmith Exp balay $";
+static char vcid[] = "$Id: reg.c,v 1.14 1998/03/24 20:59:12 balay Exp bsmith $";
 #endif
 /*
          Provides a general mechanism to allow one to register
@@ -183,7 +183,7 @@ int DLRegisterCreate(DLList *fl )
 
 
    Synopsis:
-    int DLRegister(DLList fl, char *name, char *rname,int (*fnc)(void *))
+    int DLRegister(DLList *fl, char *name, char *rname,int (*fnc)(void *))
 
 */
 

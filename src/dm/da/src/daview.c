@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.18 1997/08/22 15:18:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.19 1997/10/19 03:30:13 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -67,7 +67,7 @@ int DAView(DA da, Viewer v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  ierr = (*da->view)((PetscObject)da,v);CHKERRQ(ierr);
+  ierr = (*da->view)(da,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
 

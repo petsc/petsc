@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.4 1997/04/10 00:01:45 bsmith Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.5 1997/07/09 20:52:08 balay Exp bsmith $";
 #endif
 
 static char *help = "Tests the option -trmalloc_nan which initializes the memory \n\
@@ -19,7 +19,7 @@ int main(int argc,char **args)
 
   y += x[0];
   
-  PetscPrintf(PETSC_COMM_SELF,"y = %f \n",y);
+  PetscPrintf(PETSC_COMM_SELF,"y = %f \n",PetscReal(y));
   PetscFree(x);
   PetscFinalize();
   return 0;

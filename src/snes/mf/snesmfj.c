@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.60 1998/01/14 02:44:45 bsmith Exp balay $";
+static char vcid[] = "$Id: snesmfj.c,v 1.61 1998/03/16 18:45:31 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -16,10 +16,9 @@ typedef struct {  /* default context for matrix-free SNES */
 
 #undef __FUNC__  
 #define __FUNC__ "SNESMatrixFreeDestroy_Private"
-int SNESMatrixFreeDestroy_Private(PetscObject obj)
+int SNESMatrixFreeDestroy_Private(Mat mat)
 {
   int           ierr;
-  Mat           mat = (Mat) obj;
   MFCtx_Private *ctx;
 
   PetscFunctionBegin;

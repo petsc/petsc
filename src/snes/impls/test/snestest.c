@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snestest.c,v 1.39 1998/01/14 02:44:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.40 1998/03/06 00:18:55 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -66,7 +66,7 @@ int SNESSolve_Test(SNES snes,int *its)
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
 #define __FUNC__ "SNESDestroy_Test"
-int SNESDestroy_Test(PetscObject obj)
+int SNESDestroy_Test(SNES snes)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

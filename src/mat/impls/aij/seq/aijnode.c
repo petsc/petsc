@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.84 1998/03/12 23:18:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.85 1998/03/16 18:55:12 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -384,14 +384,15 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
   Scalar     sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
   Scalar     *v1, *v2, *v3, *v4, *v5,*x, *y;
-  int        *idx, i1, i2, n, i, row,node_max, *ns, *ii, nsz, sz;
+  int        ierr,*idx, i1, i2, n, i, row,node_max, *ns, *ii, nsz, sz;
   int        shift = a->indexshift;
   
   PetscFunctionBegin;  
   if (!a->inode.size) SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
-  VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
   x    = x + shift;             /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v1   = a->a;
@@ -564,16 +565,16 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
   Scalar     sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
   Scalar     *v1, *v2, *v3, *v4, *v5,*x, *y, *z;
-  int        *idx, i1, i2, n, i, row,node_max, *ns, *ii, nsz, sz;
+  int        ierr,*idx, i1, i2, n, i, row,node_max, *ns, *ii, nsz, sz;
   int        shift = a->indexshift;
   
   PetscFunctionBegin;  
   if (!a->inode.size)SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
-  VecGetArray_Fast(xx,x);
-  VecGetArray_Fast(yy,y);
-  VecGetArray_Fast(zz,z);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   x    = x + shift;             /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v1   = a->a;
@@ -816,8 +817,8 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
 
-  VecGetArray_Fast(bb,b);
-  VecGetArray_Fast(xx,x);
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
   
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;

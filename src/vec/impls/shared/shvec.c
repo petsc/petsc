@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.6 1997/12/12 19:36:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.7 1998/03/12 23:15:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -40,14 +40,11 @@ int VecDuplicate_Shared( Vec win, Vec *v)
   /* New vector should inherit stashing property of parent */
   vw->stash.donotstash = w->stash.donotstash;
   
-  (*v)->childcopy    = win->childcopy;
-  (*v)->childdestroy = win->childdestroy;
+  ierr = OListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
+
   if (win->mapping) {
     (*v)->mapping = win->mapping;
     PetscObjectReference((PetscObject)win->mapping);
-  }
-  if (win->child) {
-    ierr = (*win->childcopy)(win->child,&(*v)->child);CHKERRQ(ierr);
   }
   (*v)->ops->duplicate = VecDuplicate_Shared;
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.7 1998/02/18 19:28:50 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.8 1998/03/12 23:19:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -41,9 +41,8 @@ extern int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIAdj"
-int MatView_MPIAdj(PetscObject obj,Viewer viewer)
+int MatView_MPIAdj(Mat A,Viewer viewer)
 {
-  Mat         A = (Mat) obj;
   ViewerType  vtype;
   int         ierr;
 
@@ -56,13 +55,12 @@ int MatView_MPIAdj(PetscObject obj,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_MPIAdj"
-int MatDestroy_MPIAdj(PetscObject obj)
+int MatDestroy_MPIAdj(Mat A)
 {
-  Mat        A  = (Mat) obj;
   Mat_MPIAdj *a = (Mat_MPIAdj *) A->data;
 
 #if defined(USE_PETSC_LOG)
-  PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d",A->m,A->n,a->nz);
+  PLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d",A->m,A->n,a->nz);
 #endif
   if (a->diag) PetscFree(a->diag);
   PetscFree(a->i);
@@ -291,8 +289,8 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
   B->data             = (void *) (b = PetscNew(Mat_MPIAdj)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIAdj));
   PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
-  B->destroy          = MatDestroy_MPIAdj;
-  B->view             = MatView_MPIAdj;
+  B->ops->destroy          = MatDestroy_MPIAdj;
+  B->ops->view             = MatView_MPIAdj;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;

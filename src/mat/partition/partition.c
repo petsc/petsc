@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.9 1998/03/12 23:19:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.10 1998/03/23 21:22:00 bsmith Exp bsmith $";
 #endif
  
 
@@ -220,7 +220,7 @@ int PartitioningDestroy(Partitioning part)
   if (--part->refct > 0) PetscFunctionReturn(0);
 
   if (part->destroy) {
-    ierr = (*part->destroy)((PetscObject)part);CHKERRQ(ierr);
+    ierr = (*part->destroy)(part);CHKERRQ(ierr);
   }
   PLogObjectDestroy(part);
   PetscHeaderDestroy(part);
@@ -308,7 +308,7 @@ int PartitioningView(Partitioning  part,Viewer viewer)
   }
 
   if (part->view) {
-    ierr = (*part->view)((PetscObject)part,viewer);CHKERRQ(ierr);
+    ierr = (*part->view)(part,viewer);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -369,7 +369,7 @@ int PartitioningSetType(Partitioning part,PartitioningType type)
   if (part->type == (int) type) PetscFunctionReturn(0);
 
   if (part->setupcalled) {
-    if (part->destroy) ierr =  (*part->destroy)((PetscObject)part);
+    if (part->destroy) ierr =  (*part->destroy)(part);
     else {if (part->data) PetscFree(part->data);}
     part->data        = 0;
     part->setupcalled = 0;
@@ -380,8 +380,8 @@ int PartitioningSetType(Partitioning part,PartitioningType type)
   if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");}
   if (part->data) PetscFree(part->data);
 
-  part->destroy      = ( int (*)(PetscObject) ) 0;
-  part->view         = ( int (*)(PetscObject,Viewer) ) 0;
+  part->destroy      = ( int (*)(Partitioning )) 0;
+  part->view         = ( int (*)(Partitioning,Viewer) ) 0;
   ierr = (*r)(part);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

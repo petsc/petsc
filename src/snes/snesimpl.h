@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.42 1998/03/06 00:18:36 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.43 1998/03/12 23:22:41 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -104,6 +104,8 @@ struct _p_SNES {
   DrawLG   xmonitor;          /* Where -snes_xmonitor context is stashed */
   Vec      *vwork;            /* more work vectors for Jacobian/Hessian approx */
   int      nvwork;
+  int      (*destroy)(SNES);
+  int      (*view)(SNES,Viewer);
 };
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */

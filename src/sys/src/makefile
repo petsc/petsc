@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.63 1998/01/17 17:36:33 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.64 1998/03/20 22:47:23 bsmith Exp bsmith $ 
 
 ALL: lib 
 CFLAGS	  = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"' -DPETSC_BOPT='"${BOPT}"' \
@@ -11,7 +11,7 @@ SOURCEC	  = adebug.c err.c signal.c fp.c mtr.c arch.c nreg.c \
             ffpath.c fwd.c  grpath.c ghome.c pcomm.c \
             mpiuopen.c pname.c pgname.c \
             gcomm.c gtype.c inherit.c prefix.c psleep.c gcookie.c \
-            cookie.c mpitr.c nt_time.c mem.c cputime.c stack.c mprint.c reg.c dl.c
+            cookie.c mpitr.c nt_time.c mem.c cputime.c stack.c mprint.c reg.c dl.c olist.c
 SOURCEF	  =
 SOURCEH	  = files.h
 OBJSC	  = adebug.o err.o signal.o fp.o mtr.o arch.o nreg.o \
@@ -21,7 +21,7 @@ OBJSC	  = adebug.o err.o signal.o fp.o mtr.o arch.o nreg.o \
             ffpath.o fwd.o grpath.o ghome.o pcomm.o \
             mpiuopen.o pname.o pgname.o \
             gcomm.o gtype.o inherit.o prefix.o psleep.o gcookie.o \
-            cookie.o mpitr.o nt_time.o mem.o cputime.o stack.o mprint.o reg.o dl.o
+            cookie.o mpitr.o nt_time.o mem.o cputime.o stack.o mprint.o reg.o dl.o olist.o
 OBJSF	  =
 MANSEC	  = 7
 LIBBASE	  = libpetscsys

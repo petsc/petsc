@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 1998/03/13 22:52:31 balay Exp balay $ 
+# $Id: makefile,v 1.8 1998/03/19 02:15:43 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -9,7 +9,7 @@ SOURCEF	        =
 SOURCEH	        =
 OBJSC	        =
 OBJSF	        =
-LIBBASE	        = libpetscvec
+LIBBASE	        = 
 LOCDIR          = src/ao/examples/tutorials/
 TESTEXAMPLES_1  =
 TESTEXAMPLES_2  =
@@ -20,7 +20,7 @@ BUILDEXAMPLES_2 =
 BUILDEXAMPLES_3 = 
 BUILDEXAMPLES_4 = 
 
-EXAMPLESC       =
+EXAMPLESC       = ex1.c
 EXAMPLESF       = 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

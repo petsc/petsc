@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.21 1997/10/10 04:04:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.22 1997/10/19 03:27:39 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -7,17 +7,16 @@ static char vcid[] = "$Id: drawv.c,v 1.21 1997/10/10 04:04:31 bsmith Exp bsmith 
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_Draw" 
-int ViewerDestroy_Draw(PetscObject obj)
+int ViewerDestroy_Draw(Viewer v)
 {
   int    ierr;
-  Viewer v = (Viewer) obj;
 
   PetscFunctionBegin;
   if (v->drawaxis) {ierr = DrawAxisDestroy(v->drawaxis); CHKERRQ(ierr);}
   if (v->drawlg)   {ierr = DrawLGDestroy(v->drawlg); CHKERRQ(ierr);}
   ierr = DrawDestroy(v->draw); CHKERRQ(ierr);
-  PLogObjectDestroy(obj);
-  PetscHeaderDestroy(obj);
+  PLogObjectDestroy((PetscObject)v);
+  PetscHeaderDestroy((PetscObject)v);
   PetscFunctionReturn(0);
 }
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: hists.c,v 1.4 1998/03/06 00:17:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: hists.c,v 1.5 1998/03/12 23:21:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -11,6 +11,8 @@ static char vcid[] = "$Id: hists.c,v 1.4 1998/03/06 00:17:18 bsmith Exp bsmith $
 
 struct _p_DrawHist {
   PETSCHEADER(int) 
+  int      (*destroy)(DrawSP);
+  int      (*view)(DrawSP,Viewer);
   Draw     win;
   DrawAxis axis;
   double   xmin, xmax;

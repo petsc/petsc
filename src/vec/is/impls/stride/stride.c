@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.65 1997/12/01 01:52:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.66 1998/03/12 23:14:57 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -115,10 +115,8 @@ int ISStride(IS is,PetscTruth *flag)
 
 #undef __FUNC__  
 #define __FUNC__ "ISDestroy_Stride" 
-int ISDestroy_Stride(PetscObject obj)
+int ISDestroy_Stride(IS is)
 {
-  IS is = (IS) obj;
-
   PetscFunctionBegin;
   PetscFree(is->data); 
   PLogObjectDestroy(is);
@@ -164,9 +162,8 @@ int ISGetSize_Stride(IS is,int *size)
 
 #undef __FUNC__  
 #define __FUNC__ "ISView_Stride" 
-int ISView_Stride(PetscObject obj, Viewer viewer)
+int ISView_Stride(IS is, Viewer viewer)
 {
-  IS          is = (IS) obj;
   IS_Stride   *sub = (IS_Stride *)is->data;
   int         i,n = sub->n,ierr,rank;
   FILE        *fd;
@@ -276,8 +273,8 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
   PetscMemcpy(Nindex->ops,&myops,sizeof(myops));
-  Nindex->destroy = ISDestroy_Stride;
-  Nindex->view    = ISView_Stride;
+  Nindex->ops->destroy = ISDestroy_Stride;
+  Nindex->ops->view    = ISView_Stride;
   Nindex->isperm  = 0;
   ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg); CHKERRQ(ierr);
   if (flg) {

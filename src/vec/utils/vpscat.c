@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.97 1998/01/06 20:08:50 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.98 1998/03/16 18:53:39 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -15,9 +15,8 @@
 
 #undef __FUNC__  
 #define __FUNC__ "VecScatterView_MPI"
-int VecScatterView_MPI(PetscObject obj,Viewer viewer)
+int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
 {
-  VecScatter             ctx = (VecScatter) obj;
   VecScatter_MPI_General *to=(VecScatter_MPI_General *) ctx->todata;
   VecScatter_MPI_General *from=(VecScatter_MPI_General *) ctx->fromdata;
   int                    i,rank,ierr;
@@ -183,7 +182,13 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   } else if (gen_to->local.n) {
     int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
     int n = gen_to->local.n;
-    for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[tslots[i]];}
+    if (addv == ADD_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[tslots[i]];}
+#if !defined(USE_PETSC_COMPLEX)
+    } else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[tslots[i]]);}
+#endif
+    }  else {SETERRQ(1,1,"Wrong insert option");}
   }
 
   PetscFunctionReturn(0);
@@ -232,11 +237,17 @@ int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatt
       for ( i=0; i<n; i++ ) {
         yv[lindices[i]] = *val++;
       }
-    } else {
+    } else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
         yv[lindices[i]] += *val++;
       }
-    }
+#if !defined(USE_PETSC_COMPLEX)
+    } else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        yv[lindices[i]] = PetscMax(yv[lindices[i]],*val); val++;
+      }
+#endif
+    }  else {SETERRQ(1,1,"Wrong insert option");}
     count--;
   }
 
@@ -535,7 +546,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
           yv[il+11] = xv[ir+11];
         }
       }
-    }  else {
+    }  else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
         il = fslots[i]; ir = tslots[i];
         yv[il]    += xv[ir];
@@ -551,8 +562,26 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
         yv[il+10] += xv[ir+10];
         yv[il+11] += xv[ir+11];
       }
-    }
-  }
+#if !defined(USE_PETSC_COMPLEX)
+    }  else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        il = fslots[i]; ir = tslots[i];
+        yv[il]    = PetscMax(yv[il],xv[ir]);
+        yv[il+1]  = PetscMax(yv[il+1],xv[ir+1]);
+        yv[il+2]  = PetscMax(yv[il+2],xv[ir+2]);
+        yv[il+3]  = PetscMax(yv[il+3],xv[ir+3]);
+        yv[il+4]  = PetscMax(yv[il+4],xv[ir+4]);
+        yv[il+5]  = PetscMax(yv[il+5],xv[ir+5]);
+        yv[il+6]  = PetscMax(yv[il+6],xv[ir+6]);
+        yv[il+7]  = PetscMax(yv[il+7],xv[ir+7]);
+        yv[il+8]  = PetscMax(yv[il+8],xv[ir+8]);
+        yv[il+9]  = PetscMax(yv[il+9],xv[ir+9]);
+        yv[il+10] = PetscMax(yv[il+10],xv[ir+10]);
+        yv[il+11] = PetscMax(yv[il+11],xv[ir+11]);
+      }
+#endif
+    } else {SETERRQ(1,1,"Wrong insert option");}
+  }  
   PetscFunctionReturn(0);
 }
 
@@ -614,7 +643,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
         yv[idx+11] = val[11];
         val       += 12;
       }
-    } else {
+    } else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
         idx        = lindices[i];
         yv[idx]    += val[0];
@@ -631,7 +660,26 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
         yv[idx+11] += val[11];
         val        += 12;
       }
-    }
+#if !defined(USE_PETSC_COMPLEX)
+    } else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        idx        = lindices[i];
+        yv[idx]    = PetscMax(yv[idx],val[0]);
+        yv[idx+1]  = PetscMax(yv[idx+1],val[1]);
+        yv[idx+2]  = PetscMax(yv[idx+2],val[2]);
+        yv[idx+3]  = PetscMax(yv[idx+3],val[3]);
+        yv[idx+4]  = PetscMax(yv[idx+4],val[4]);
+        yv[idx+5]  = PetscMax(yv[idx+5],val[5]);
+        yv[idx+6]  = PetscMax(yv[idx+6],val[6]);
+        yv[idx+7]  = PetscMax(yv[idx+7],val[7]);
+        yv[idx+8]  = PetscMax(yv[idx+8],val[8]);
+        yv[idx+9]  = PetscMax(yv[idx+9],val[9]);
+        yv[idx+10] = PetscMax(yv[idx+10],val[10]);
+        yv[idx+11] = PetscMax(yv[idx+11],val[11]);
+        val        += 12;
+      }
+#endif
+    }  else {SETERRQ(1,1,"Wrong insert option");}
     count--;
   }
   /* wait on sends */
@@ -726,7 +774,7 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
           yv[il+4] = xv[ir+4];
         }
       }
-    }  else {
+    }  else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
         il = fslots[i]; ir = tslots[i];
         yv[il]   += xv[ir];
@@ -735,7 +783,18 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+3] += xv[ir+3];
         yv[il+4] += xv[ir+4];
       }
-    }
+#if !defined(USE_PETSC_COMPLEX)
+    }  else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        il = fslots[i]; ir = tslots[i];
+        yv[il]   = PetscMax(yv[il],xv[ir]);
+        yv[il+1] = PetscMax(yv[il+1],xv[ir+1]);
+        yv[il+2] = PetscMax(yv[il+2],xv[ir+2]);
+        yv[il+3] = PetscMax(yv[il+3],xv[ir+3]);
+        yv[il+4] = PetscMax(yv[il+4],xv[ir+4]);
+      }
+#endif
+    }  else {SETERRQ(1,1,"Wrong insert option");}
   }
   PetscFunctionReturn(0);
 }
@@ -791,7 +850,7 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         yv[idx+4] = val[4];
         val      += 5;
       }
-    } else {
+    } else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
         idx       = lindices[i];
         yv[idx]   += val[0];
@@ -801,7 +860,19 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         yv[idx+4] += val[4];
         val       += 5;
       }
-    }
+#if !defined(USE_PETSC_COMPLEX)
+    } else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        idx       = lindices[i];
+        yv[idx]   = PetscMax(yv[idx],val[0]);
+        yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+        yv[idx+2] = PetscMax(yv[idx+2],val[2]);
+        yv[idx+3] = PetscMax(yv[idx+3],val[3]);
+        yv[idx+4] = PetscMax(yv[idx+4],val[4]);
+        val       += 5;
+      }
+#endif
+    }  else {SETERRQ(1,1,"Wrong insert option");}
     count--;
   }
   /* wait on sends */
@@ -893,7 +964,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
           yv[il+3] = xv[ir+3];
         }
       }
-    }  else {
+    }  else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
         il = fslots[i]; ir = tslots[i];
         yv[il]   += xv[ir];
@@ -901,7 +972,17 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+2] += xv[ir+2];
         yv[il+3] += xv[ir+3];
       }
-    }
+#if !defined(USE_PETSC_COMPLEX)
+    }  else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        il = fslots[i]; ir = tslots[i];
+        yv[il]   = PetscMax(yv[il],xv[ir]);
+        yv[il+1] = PetscMax(yv[il+1],xv[ir+1]);
+        yv[il+2] = PetscMax(yv[il+2],xv[ir+2]);
+        yv[il+3] = PetscMax(yv[il+3],xv[ir+3]);
+      }
+#endif
+    }  else {SETERRQ(1,1,"Wrong insert option");}
   }
   PetscFunctionReturn(0);
 }
@@ -956,7 +1037,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         yv[idx+3] = val[3];
         val      += 4;
       }
-    } else {
+    } else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
         idx       = lindices[i];
         yv[idx]   += val[0];
@@ -965,7 +1046,18 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         yv[idx+3] += val[3];
         val       += 4;
       }
-    }
+#if !defined(USE_PETSC_COMPLEX)
+    } else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        idx       = lindices[i];
+        yv[idx]   = PetscMax(yv[idx],val[0]);
+        yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+        yv[idx+2] = PetscMax(yv[idx+2],val[2]);
+        yv[idx+3] = PetscMax(yv[idx+3],val[3]);
+        val       += 4;
+      }
+#endif
+    }  else {SETERRQ(1,1,"Wrong insert option");}
     count--;
   }
   /* wait on sends */
@@ -1055,7 +1147,7 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
           yv[il+3] = xv[ir+3];
         }
       }
-    }  else {
+    }  else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
         il = fslots[i]; ir = tslots[i];
         yv[il]   += xv[ir];
@@ -1063,7 +1155,17 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+2] += xv[ir+2];
         yv[il+3] += xv[ir+3];
       }
-    }
+#if !defined(USE_PETSC_COMPLEX)
+    }  else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        il = fslots[i]; ir = tslots[i];
+        yv[il]   = PetscMax(yv[il],xv[ir]);
+        yv[il+1] = PetscMax(yv[il+1],xv[ir+1]);
+        yv[il+2] = PetscMax(yv[il+2],xv[ir+2]);
+        yv[il+3] = PetscMax(yv[il+3],xv[ir+3]);
+      }
+#endif
+    }  else {SETERRQ(1,1,"Wrong insert option");}
   }
   PetscFunctionReturn(0);
 }
@@ -1117,7 +1219,7 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         yv[idx+2] = val[2];
         val      += 3;
       }
-    } else {
+    } else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
         idx       = lindices[i];
         yv[idx]   += val[0];
@@ -1125,7 +1227,17 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         yv[idx+2] += val[2];
         val       += 3;
       }
-    }
+#if !defined(USE_PETSC_COMPLEX)
+    } else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        idx       = lindices[i];
+        yv[idx]   = PetscMax(yv[idx],val[0]);
+        yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+        yv[idx+2] = PetscMax(yv[idx+2],val[2]);
+        val       += 3;
+      }
+#endif
+    }  else {SETERRQ(1,1,"Wrong insert option");}
     count--;
   }
   /* wait on sends */
@@ -1211,13 +1323,21 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
           yv[il+1] = xv[ir+1];
         }
       }
-    }  else {
+    }  else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
         il = fslots[i]; ir = tslots[i];
         yv[il]   += xv[ir];
         yv[il+1] += xv[ir+1];
       }
-    }
+#if !defined(USE_PETSC_COMPLEX)
+    }  else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        il = fslots[i]; ir = tslots[i];
+        yv[il]   = PetscMax(yv[il],xv[ir]);
+        yv[il+1] = PetscMax(yv[il+1],xv[ir+1]);
+      }
+#endif
+    }  else {SETERRQ(1,1,"Wrong insert option");}
   }
   PetscFunctionReturn(0);
 }
@@ -1270,14 +1390,23 @@ int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         yv[idx+1] = val[1];
         val      += 2;
       }
-    } else {
+    } else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
         idx       = lindices[i];
         yv[idx]   += val[0];
         yv[idx+1] += val[1];
         val       += 2;
       }
-    }
+#if !defined(USE_PETSC_COMPLEX)
+    } else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        idx       = lindices[i];
+        yv[idx]   = PetscMax(yv[idx],val[0]);
+        yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+        val       += 2;
+      }
+#endif
+    }  else {SETERRQ(1,1,"Wrong insert option");}
     count--;
   }
   /* wait on sends */
@@ -1376,9 +1505,8 @@ int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
 
 #undef __FUNC__  
 #define __FUNC__ "VecScatterDestroy_PtoP_X"
-int VecScatterDestroy_PtoP_X(PetscObject obj)
+int VecScatterDestroy_PtoP_X(VecScatter ctx)
 {
-  VecScatter             ctx = (VecScatter) obj;
   VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General *) ctx->todata;
   VecScatter_MPI_General *gen_from = (VecScatter_MPI_General *) ctx->fromdata;
   int                    i,ierr;
@@ -1436,9 +1564,8 @@ int VecScatterDestroy_PtoP_X(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "VecScatterDestroy_PtoP"
-int VecScatterDestroy_PtoP(PetscObject obj)
+int VecScatterDestroy_PtoP(VecScatter ctx)
 {
-  VecScatter             ctx = (VecScatter) obj;
   VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General *) ctx->todata;
   VecScatter_MPI_General *gen_from = (VecScatter_MPI_General *) ctx->fromdata;
 

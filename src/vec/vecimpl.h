@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.44 1998/03/06 00:09:26 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.45 1998/03/12 23:15:13 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -42,7 +42,9 @@ struct _VecOps {
        (*min)(Vec,int*,double*),         /* z = min(x); idx=index of min(x) */
        (*setrandom)(PetscRandom,Vec),    /* set y[j] = random numbers */
        (*setoption)(Vec,VecOption),
-       (*setvaluesblocked)(Vec,int,int*,Scalar*,InsertMode);
+       (*setvaluesblocked)(Vec,int,int*,Scalar*,InsertMode),
+       (*destroy)(Vec),
+       (*view)(Vec,Viewer);
 };
 
 struct _p_Vec {
@@ -62,19 +64,6 @@ struct _p_Vec {
   int    n;                               \
   Scalar *array;                          \
   Scalar *array_allocated;            
-
-typedef struct {
-  VECHEADER
-} Vec_ArrayBased;
-
-/*
-    Macros for accessing array-based vector fields quickly to
-  avoid function call overhead.
-*/
-#define VecGetArray_Fast(x,a)     a = ((Vec_ArrayBased *)(x->data))->array
-#define VecPlaceArray_Fast(x,a)   ((Vec_ArrayBased *)(x->data))->array = a
-#define VecRestoreArray_Fast(x,a)
-#define VecGetLocalSize_Fast(x,a) a = x->n;
 
 /* Default obtain and release vectors; can be used by any implementation */
 extern int     VecDuplicateVecs_Default(Vec, int, Vec **);
@@ -149,6 +138,8 @@ struct _p_VecScatter {
   int     (*begin)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
   int     (*end)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
   int     (*copy)(VecScatter,VecScatter);
+  int     (*destroy)(VecScatter);
+  int     (*view)(VecScatter,Viewer);
   void    *fromdata,*todata;
 };
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.36 1997/10/19 03:22:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.37 1997/11/03 04:42:39 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -22,16 +22,17 @@ static char vcid[] = "$Id: vinv.c,v 1.36 1997/10/19 03:22:27 bsmith Exp bsmith $
 @*/
 int VecReciprocal(Vec v)
 {
-  int    i,n;
+  int    i,n,ierr;
   Scalar *x;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  VecGetLocalSize_Fast(v,n);
-  VecGetArray_Fast(v,x);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     if (x[i] != 0.0) x[i] = 1.0/x[i];
   }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -57,8 +58,8 @@ int VecSum(Vec v,Scalar *sum)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  VecGetLocalSize_Fast(v,n);
-  VecGetArray_Fast(v,x);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     lsum += x[i];
   }
@@ -67,6 +68,7 @@ int VecSum(Vec v,Scalar *sum)
 #else
   ierr = MPI_Allreduce(&lsum,sum,1,MPI_DOUBLE,MPI_SUM,v->comm);CHKERRQ(ierr);
 #endif
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -87,16 +89,17 @@ int VecSum(Vec v,Scalar *sum)
 @*/
 int VecShift(Scalar *shift,Vec v)
 {
-  int    i,n;
+  int    i,n,ierr;
   Scalar *x,lsum = *shift;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  VecGetLocalSize_Fast(v,n); 
-  VecGetArray_Fast(v,x);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr); 
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     x[i] += lsum;
   }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -112,16 +115,17 @@ int VecShift(Scalar *shift,Vec v)
 @*/
 int VecAbs(Vec v)
 {
-  int    i,n;
+  int    i,n,ierr;
   Scalar *x;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  VecGetLocalSize_Fast(v,n);
-  VecGetArray_Fast(v,x);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     x[i] = PetscAbsScalar(x[i]);
   }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

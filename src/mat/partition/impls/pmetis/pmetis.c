@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.5 1998/01/14 02:42:04 bsmith Exp balay $";
+static char vcid[] = "$Id: pmetis.c,v 1.6 1998/03/24 20:58:58 balay Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -61,9 +61,8 @@ static int PartitioningApply_Parmetis(Partitioning part, IS *partitioning)
 
 #undef __FUNC__  
 #define __FUNC__ "PartitioningView_Parmetis" 
-int PartitioningView_Parmetis(PetscObject obj,Viewer viewer)
+int PartitioningView_Parmetis(Partitioning part,Viewer viewer)
 {
-  Partitioning          part = (Partitioning) obj;
   Partitioning_Parmetis *parmetis = (Partitioning_Parmetis *)part->data;
   ViewerType            vtype;
   FILE                  *fd;
@@ -134,9 +133,8 @@ int PartitioningSetFromOptions_Parmetis(Partitioning part)
 
 #undef __FUNC__  
 #define __FUNC__ "PartitioningDestroy_Parmetis" 
-int PartitioningDestroy_Parmetis(PetscObject opart)
+int PartitioningDestroy_Parmetis(Partitioning part)
 {
-  Partitioning          part = (Partitioning) opart;
   Partitioning_Parmetis *parmetis = (Partitioning_Parmetis *)part->data;
   
   PetscFunctionBegin;

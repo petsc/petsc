@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.44 1998/03/06 00:11:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.45 1998/03/20 22:47:20 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -286,9 +286,8 @@ int KSPSetUp_QCG(KSP ksp)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPDestroy_QCG" 
-int KSPDestroy_QCG(PetscObject obj)
+int KSPDestroy_QCG(KSP ksp)
 {
-  KSP ksp = (KSP) obj;
   KSP_QCG *cgP = (KSP_QCG *) ksp->data;
 
   PetscFunctionBegin;

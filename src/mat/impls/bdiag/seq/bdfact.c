@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdfact.c,v 1.46 1997/10/19 03:25:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.47 1997/12/01 01:54:49 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -185,13 +185,13 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, d, loc, mainbd = a->mainbd;
+  int          ierr,i, d, loc, mainbd = a->mainbd;
   int          n = a->n, m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], sum, **dv = a->diagv;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(xx,x);
-  VecGetArray_Fast(yy,y);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   /* forward solve the lower triangular part */
   for (i=0; i<m; i++) {
     sum = x[i];
@@ -221,13 +221,13 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, d, loc, mainbd = a->mainbd;
   int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
-  int          m = a->m, *diag = a->diag, col;
+  int          ierr,m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
   Scalar       w0,w1,sum0,sum1;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(xx,x);
-  VecGetArray_Fast(yy,y);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   PetscMemcpy(y,x,m*sizeof(Scalar));
 
   /* forward solve the lower triangular part */
@@ -278,13 +278,13 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, d, loc, mainbd = a->mainbd;
   int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
-  int          m = a->m, *diag = a->diag, col;
+  int          ierr,m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
   Scalar       w0,w1,w2,sum0,sum1,sum2;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(xx,x);
-  VecGetArray_Fast(yy,y);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   PetscMemcpy(y,x,m*sizeof(Scalar));
 
   /* forward solve the lower triangular part */
@@ -337,13 +337,13 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, d, loc, mainbd = a->mainbd;
   int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
-  int          m = a->m, *diag = a->diag, col;
+  int          ierr,m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
   Scalar       w0,w1,w2,w3,sum0,sum1,sum2,sum3;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(xx,x);
-  VecGetArray_Fast(yy,y);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   PetscMemcpy(y,x,m*sizeof(Scalar));
 
   /* forward solve the lower triangular part */
@@ -399,13 +399,13 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, d, loc, mainbd = a->mainbd;
   int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
-  int          m = a->m, *diag = a->diag, col;
+  int          ierr,m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
   Scalar       w0,w1,w2,w3,w4,sum0,sum1,sum2,sum3,sum4;
 
   PetscFunctionBegin;
-  VecGetArray_Fast(xx,x);
-  VecGetArray_Fast(yy,y);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   PetscMemcpy(y,x,m*sizeof(Scalar));
 
   /* forward solve the lower triangular part */
@@ -470,13 +470,13 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, d, loc, mainbd = a->mainbd;
   int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
-  int          bs = a->bs, m = a->m, *diag = a->diag, col, bs2 = bs*bs;
+  int          ierr,bs = a->bs, m = a->m, *diag = a->diag, col, bs2 = bs*bs;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv;
   Scalar       work[25];
 
   PetscFunctionBegin;
-  VecGetArray_Fast(xx,x);
-  VecGetArray_Fast(yy,y);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (bs > 25) SETERRQ(PETSC_ERR_SUP,0,"Blocks must be smaller then 25");
   PetscMemcpy(y,x,m*sizeof(Scalar));
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.69 1998/03/12 23:17:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.70 1998/03/20 22:48:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -107,9 +107,8 @@ static int PCPost_Eisenstat(PC pc,KSP ksp)
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy_Eisenstat"
-static int PCDestroy_Eisenstat(PetscObject obj)
+static int PCDestroy_Eisenstat(PC pc)
 {
-  PC           pc = (PC) obj;
   PC_Eisenstat *eis = ( PC_Eisenstat  *) pc->data; 
   int          ierr;
 
@@ -153,9 +152,8 @@ static int PCPrintHelp_Eisenstat(PC pc,char *p)
 
 #undef __FUNC__  
 #define __FUNC__ "PCView_Eisenstat"
-static int PCView_Eisenstat(PetscObject obj,Viewer viewer)
+static int PCView_Eisenstat(PC pc,Viewer viewer)
 {
-  PC            pc = (PC)obj;
   FILE          *fd;
   PC_Eisenstat  *eis = ( PC_Eisenstat  *) pc->data; 
   int           ierr;
@@ -260,7 +258,7 @@ int PCEisenstatSetOmega(PC pc,double omega)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCEisenstatSetOmega",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCEisenstatSetOmega",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,omega);CHKERRQ(ierr);
   }
@@ -290,7 +288,7 @@ int PCEisenstatUseDiagonalScaling(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCEisenstatUseDiagonalScaling",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCEisenstatUseDiagonalScaling",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   }
@@ -324,10 +322,11 @@ int PCCreate_Eisenstat(PC pc)
   eis->diag          = 0;
   eis->usediag       = 0;
 
-  ierr = DLRegister(&pc->qlist,"PCEisenstatSetOmega","PCEisenstatSetOmega_Eisenstat",
-                    PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCEisenstatUseDiagonalScaling","PCEisenstatUseDiagonalScaling_Eisenstat",
-                    PCEisenstatUseDiagonalScaling_Eisenstat);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatSetOmega","PCEisenstatSetOmega_Eisenstat",
+                    (void*)PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatUseDiagonalScaling",
+                    "PCEisenstatUseDiagonalScaling_Eisenstat",
+                    (void*)PCEisenstatUseDiagonalScaling_Eisenstat);CHKERRQ(ierr);
  PetscFunctionReturn(0);
 }
 

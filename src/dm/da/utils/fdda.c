@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.23 1997/12/01 01:57:22 bsmith Exp balay $";
+static char vcid[] = "$Id: fdda.c,v 1.24 1998/03/16 18:12:26 balay Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -565,7 +565,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
   */
   for ( i=xs; i<xs+nx; i++ ) {
     istart = PetscMax(-s,gxs - i);
-    iend   = PetscMin(s,gnx - i - 1);
+    iend   = PetscMin(s,gxs + gnx - i - 1);
     slot   = i - gxs;
 
     cnt  = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zts.c,v 1.8 1998/03/25 03:42:50 bsmith Exp balay $";
+static char vcid[] = "$Id: zts.c,v 1.9 1998/03/30 22:23:21 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -188,12 +188,14 @@ void tsgettype_(TS ts,CHAR name,int *__ierr,int len)
 #endif
 }
 
+#if defined(HAVE_PVODE)  && !defined(__cplusplus)
 void tspvodegetiterations_(TS ts,int *nonlin, int *lin, int *__ierr)
 {
   if (FORTRANNULL(nonlin)) nonlin = PETSC_NULL;
   if (FORTRANNULL(lin))    lin    = PETSC_NULL;
   *__ierr = TSPVodeGetIterations((TS)PetscToPointer(ts),nonlin,lin);
 }
+#endif
 
 void tsdestroy_(TS ts, int *__ierr ){
   *__ierr = TSDestroy((TS)PetscToPointer(ts));

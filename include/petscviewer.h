@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.49 1997/11/13 19:56:07 balay Exp bsmith $ */
+/* $Id: viewer.h,v 1.50 1998/03/23 21:27:32 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -31,6 +31,7 @@ extern int ViewerGetType(Viewer,ViewerType*);
 extern int ViewerDestroy(Viewer);
 
 extern int ViewerASCIIGetPointer(Viewer,FILE**);
+
 extern int ViewerBinaryGetDescriptor(Viewer,int*);
 extern int ViewerBinaryGetInfoPointer(Viewer,FILE **);
 
@@ -90,6 +91,7 @@ extern int    VIEWER_DRAWX_Destroy(MPI_Comm);
 #define VIEWER_DRAWX_SELF \
               (ViewerInitializeDrawXSelf_Private(),VIEWER_DRAWX_SELF_PRIVATE) 
 #define VIEWER_DRAWX_WORLD VIEWER_DRAWX_WORLD_0
+
 #define VIEWER_MATLAB_WORLD \
         (ViewerInitializeMatlabWorld_Private(),VIEWER_MATLAB_WORLD_PRIVATE) 
 

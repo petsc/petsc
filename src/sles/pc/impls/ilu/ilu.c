@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.100 1998/03/20 22:48:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.101 1998/03/23 21:20:03 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -138,7 +138,7 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetUseDropTolerance",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetUseDropTolerance",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,dt,dtcount);CHKERRQ(ierr);
   } 
@@ -175,7 +175,7 @@ int PCILUSetFill(PC pc,double fill)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less than 1.0");
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetFill",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetFill",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);
   } 
@@ -203,7 +203,7 @@ int PCILUSetMatReordering(PC pc, MatReorderingType ordering)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetMatReordering",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetMatReordering",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
   } 
@@ -234,7 +234,7 @@ int PCILUSetReuseReordering(PC pc,PetscTruth flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetReuseReordering",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetReuseReordering",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -264,7 +264,7 @@ int PCILUSetReuseFill(PC pc,PetscTruth flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetReuseFill",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetReuseFill",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -292,7 +292,7 @@ int PCILUSetLevels(PC pc,int levels)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"negative levels");
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetLevels",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetLevels",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,levels);CHKERRQ(ierr);
   } 
@@ -327,7 +327,7 @@ int PCILUSetUseInPlace(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetUseInPlace",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetUseInPlace",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -398,9 +398,8 @@ static int PCPrintHelp_ILU(PC pc,char *p)
 
 #undef __FUNC__  
 #define __FUNC__ "PCView_ILU"
-static int PCView_ILU(PetscObject obj,Viewer viewer)
+static int PCView_ILU(PC pc,Viewer viewer)
 {
-  PC         pc = (PC)obj;
   FILE       *fd;
   PC_ILU     *ilu = (PC_ILU *) pc->data;
   int        ierr;
@@ -524,9 +523,8 @@ static int PCSetUp_ILU(PC pc)
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy_ILU"
-static int PCDestroy_ILU(PetscObject obj)
+static int PCDestroy_ILU(PC pc)
 {
-  PC     pc   = (PC) obj;
   PC_ILU *ilu = (PC_ILU*) pc->data;
 
   PetscFunctionBegin;
@@ -592,20 +590,20 @@ int PCCreate_ILU(PC pc)
   pc->view              = PCView_ILU;
   pc->applyrich         = 0;
 
-  ierr = DLRegister(&pc->qlist,"PCILUSetUseDropTolerance","PCILUSetUseDropTolerance_ILU",
-                    PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCILUSetFill","PCILUSetFill_ILU",
-                    PCILUSetFill_ILU);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCILUSetMatReordering","PCILUSetMatReordering_ILU",
-                    PCILUSetMatReordering_ILU);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCILUSetReuseReordering","PCILUSetReuseReordering_ILU",
-                    PCILUSetReuseReordering_ILU);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCILUSetReuseFill","PCILUSetReuseFill_ILU",
-                    PCILUSetReuseFill_ILU);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCILUSetLevels","PCILUSetLevels_ILU",
-                    PCILUSetLevels_ILU);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCILUSetUseInPlace","PCILUSetUseInPlace_ILU",
-                    PCILUSetUseInPlace_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetUseDropTolerance","PCILUSetUseDropTolerance_ILU",
+                    (void*)PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetFill","PCILUSetFill_ILU",
+                    (void*)PCILUSetFill_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetMatReordering","PCILUSetMatReordering_ILU",
+                    (void*)PCILUSetMatReordering_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetReuseReordering","PCILUSetReuseReordering_ILU",
+                    (void*)PCILUSetReuseReordering_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetReuseFill","PCILUSetReuseFill_ILU",
+                    (void*)PCILUSetReuseFill_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetLevels","PCILUSetLevels_ILU",
+                    (void*)PCILUSetLevels_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetUseInPlace","PCILUSetUseInPlace_ILU",
+                    (void*)PCILUSetUseInPlace_ILU);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

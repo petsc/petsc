@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.50 1997/10/19 03:22:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.51 1998/03/12 23:14:52 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -116,7 +116,7 @@ int ISDestroy(IS is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   if (--is->refct > 0) PetscFunctionReturn(0);
-  ierr = (*is->destroy)((PetscObject) is);CHKERRQ(ierr);
+  ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +256,7 @@ int ISView(IS is, Viewer viewer)
   PetscValidHeaderSpecific(is,IS_COOKIE);
   if (viewer) {PetscValidHeader(viewer);}
   else { viewer = VIEWER_STDOUT_SELF; }
-  ierr = (*is->view)((PetscObject)is,viewer);CHKERRQ(ierr);
+  ierr = (*is->ops->view)(is,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

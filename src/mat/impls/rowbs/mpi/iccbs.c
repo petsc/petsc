@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iccbs.c,v 1.27 1997/12/01 01:54:40 bsmith Exp balay $";
+static char vcid[] = "$Id: iccbs.c,v 1.28 1998/03/24 20:58:44 balay Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -35,9 +35,8 @@ static char vcid[] = "$Id: iccbs.c,v 1.27 1997/12/01 01:54:40 bsmith Exp balay $
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy_ICC_MPIRowbs"
-static int PCDestroy_ICC_MPIRowbs(PetscObject obj)
+static int PCDestroy_ICC_MPIRowbs(PC pc)
 {
-  PC     pc = (PC) obj;
   PC_ICC *icc = (PC_ICC *) pc->data;
   PCiBS  *iccbs = (PCiBS *) icc->implctx; 
   int    ierr;

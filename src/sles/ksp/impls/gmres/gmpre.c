@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmpre.c,v 1.7 1998/03/06 00:11:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmpre.c,v 1.8 1998/03/20 22:47:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
@@ -26,7 +26,7 @@ int KSPGMRESSetPreAllocateVectors(KSP ksp)
   int ierr, (*f)(KSP);
 
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ksp->comm,ksp->qlist,"KSPGMRESSetPreAllocateVectors",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp);CHKERRQ(ierr);
   }

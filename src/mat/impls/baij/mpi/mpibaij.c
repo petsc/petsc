@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.112 1998/03/12 23:19:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.113 1998/03/16 18:55:44 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1085,9 +1085,8 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIBAIJ"
-int MatView_MPIBAIJ(PetscObject obj,Viewer viewer)
+int MatView_MPIBAIJ(Mat mat,Viewer viewer)
 {
-  Mat         mat = (Mat) obj;
   int         ierr;
   ViewerType  vtype;
  
@@ -1104,15 +1103,14 @@ int MatView_MPIBAIJ(PetscObject obj,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_MPIBAIJ"
-int MatDestroy_MPIBAIJ(PetscObject obj)
+int MatDestroy_MPIBAIJ(Mat mat)
 {
-  Mat         mat = (Mat) obj;
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   int         ierr;
 
   PetscFunctionBegin;
 #if defined(USE_PETSC_LOG)
-  PLogObjectState(obj,"Rows=%d, Cols=%d",baij->M,baij->N);
+  PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",baij->M,baij->N);
 #endif
 
   ierr = StashDestroy_Private(&baij->stash); CHKERRQ(ierr);
@@ -1140,11 +1138,11 @@ int MatMult_MPIBAIJ(Mat A,Vec xx,Vec yy)
   int         ierr, nt;
 
   PetscFunctionBegin;
-  VecGetLocalSize_Fast(xx,nt);
+  ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
   if (nt != a->n) {
     SETERRQ(PETSC_ERR_ARG_SIZ,0,"Incompatible partition of A and xx");
   }
-  VecGetLocalSize_Fast(yy,nt);
+  ierr = VecGetLocalSize(yy,&nt);CHKERRQ(ierr);
   if (nt != a->m) {
     SETERRQ(PETSC_ERR_ARG_SIZ,0,"Incompatible parition of A and yy");
   }
@@ -1876,8 +1874,8 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   PetscMemzero(b,sizeof(Mat_MPIBAIJ));
   PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
 
-  B->destroy    = MatDestroy_MPIBAIJ;
-  B->view       = MatView_MPIBAIJ;
+  B->ops->destroy    = MatDestroy_MPIBAIJ;
+  B->ops->view       = MatView_MPIBAIJ;
   B->mapping    = 0;
   B->factor     = 0;
   B->assembled  = PETSC_FALSE;
@@ -2019,8 +2017,8 @@ static int MatConvertSameType_MPIBAIJ(Mat matin,Mat *newmat,int cpvalues)
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIBAIJ)); CHKPTRQ(a);
   PetscMemcpy(mat->ops,&MatOps,sizeof(struct _MatOps));
-  mat->destroy    = MatDestroy_MPIBAIJ;
-  mat->view       = MatView_MPIBAIJ;
+  mat->ops->destroy    = MatDestroy_MPIBAIJ;
+  mat->ops->view       = MatView_MPIBAIJ;
   mat->factor     = matin->factor;
   mat->assembled  = PETSC_TRUE;
 

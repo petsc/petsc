@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.66 1997/12/01 01:52:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.67 1998/03/12 23:14:55 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -28,9 +28,8 @@ int ISDuplicate_General(IS is, IS *newIS)
 
 #undef __FUNC__  
 #define __FUNC__ "ISDestroy_General" 
-int ISDestroy_General(PetscObject obj)
+int ISDestroy_General(IS is)
 {
-  IS         is = (IS) obj;
   IS_General *is_general = (IS_General *) is->data;
 
   PetscFunctionBegin;
@@ -93,9 +92,8 @@ int ISInvertPermutation_General(IS is, IS *isout)
 
 #undef __FUNC__  
 #define __FUNC__ "ISView_General" 
-int ISView_General(PetscObject obj, Viewer viewer)
+int ISView_General(IS is, Viewer viewer)
 {
-  IS          is = (IS) obj;
   IS_General  *sub = (IS_General *)is->data;
   int         i,n = sub->n,*idx = sub->idx,ierr;
   FILE        *fd;
@@ -215,8 +213,8 @@ int ISCreateGeneral(MPI_Comm comm,int n,int *idx,IS *is)
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
   PetscMemcpy(Nindex->ops,&myops,sizeof(myops));
-  Nindex->destroy = ISDestroy_General;
-  Nindex->view    = ISView_General;
+  Nindex->ops->destroy = ISDestroy_General;
+  Nindex->ops->view    = ISView_General;
   Nindex->isperm  = 0;
   ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg); CHKERRQ(ierr);
   if (flg) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.53 1998/03/06 00:11:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.54 1998/03/20 22:47:12 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -53,7 +53,7 @@ int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = DLRegisterFind(ksp->comm,ksp->qlist,"KSPChebychevSetEigenvalues",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,emax,emin);CHKERRQ(ierr);
   }
@@ -172,9 +172,8 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPView_Chebychev" 
-int KSPView_Chebychev(PetscObject obj,Viewer viewer)
+int KSPView_Chebychev(KSP ksp,Viewer viewer)
 {
-  KSP           ksp = (KSP)obj;
   KSP_Chebychev *cheb = (KSP_Chebychev *) ksp->data;
   FILE          *fd;
   int           ierr;
@@ -218,7 +217,8 @@ int KSPCreate_Chebychev(KSP ksp)
   ksp->buildresidual        = KSPDefaultBuildResidual;
   ksp->view                 = KSPView_Chebychev;
 
-  ierr = DLRegister(&ksp->qlist,"KSPChebychevSetEigenvalues","KSPChebychevSetEigenvalues_Chebychev",
-         KSPChebychevSetEigenvalues_Chebychev); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues",
+                                    "KSPChebychevSetEigenvalues_Chebychev",
+                                    (void*)KSPChebychevSetEigenvalues_Chebychev); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.87 1998/03/06 00:13:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.88 1998/03/20 22:48:05 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -56,9 +56,8 @@ static int PCPrintHelp_LU(PC pc,char *p)
 
 #undef __FUNC__  
 #define __FUNC__ "PCView_LU"
-static int PCView_LU(PetscObject obj,Viewer viewer)
+static int PCView_LU(PC pc,Viewer viewer)
 {
-  PC         pc = (PC)obj;
   FILE       *fd;
   PC_LU      *lu = (PC_LU *) pc->data;
   int        ierr;
@@ -147,9 +146,8 @@ static int PCSetUp_LU(PC pc)
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy_LU"
-static int PCDestroy_LU(PetscObject obj)
+static int PCDestroy_LU(PC pc)
 {
-  PC    pc   = (PC) obj;
   PC_LU *dir = (PC_LU*) pc->data;
   int   ierr;
 
@@ -242,7 +240,7 @@ int PCLUSetFill(PC pc,double fill)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less then 1.0");
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCLUSetFill",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetFill",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);
   } 
@@ -278,7 +276,7 @@ int PCLUSetUseInPlace(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCLUSetUseInPlace",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetUseInPlace",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -303,7 +301,7 @@ int PCLUSetMatReordering(PC pc, MatReorderingType ordering)
   int ierr, (*f)(PC,MatReorderingType);
 
   PetscFunctionBegin;
-  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCLUSetMatReodering",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetMatReodering",(void **)&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
   } 
@@ -338,12 +336,12 @@ int PCCreate_LU(PC pc)
   pc->applyrich         = 0;
   pc->getfactoredmatrix = PCGetFactoredMatrix_LU;
 
-  ierr = DLRegister(&pc->qlist,"PCLUSetFill","PCLUSetFill_LU",
-                    PCLUSetFill_LU);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCLUSetUseInPlace","PCLUSetUseInPlace_LU",
-                    PCLUSetUseInPlace_LU);CHKERRQ(ierr);
-  ierr = DLRegister(&pc->qlist,"PCLUSetMatReordering","PCLUSetMatReordering_LU",
-                    PCLUSetMatReordering_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetFill","PCLUSetFill_LU",
+                    (void*)PCLUSetFill_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetUseInPlace","PCLUSetUseInPlace_LU",
+                    (void*)PCLUSetUseInPlace_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCLUSetMatReordering","PCLUSetMatReordering_LU",
+                    (void*)PCLUSetMatReordering_LU);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.282 1998/03/19 02:07:01 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.283 1998/03/20 22:48:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -204,7 +204,7 @@ int MatView(Mat mat,Viewer viewer)
       }
     }
   }
-  if (mat->view) {ierr = (*mat->view)((PetscObject)mat,viewer); CHKERRQ(ierr);}
+  if (mat->ops->view) {ierr = (*mat->ops->view)(mat,viewer); CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -232,7 +232,7 @@ int MatDestroy(Mat mat)
   if (mat->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
   }
-  ierr = (*mat->destroy)((PetscObject)mat); CHKERRQ(ierr);
+  ierr = (*mat->ops->destroy)(mat); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

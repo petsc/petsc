@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.65 1997/11/13 00:19:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.66 1997/11/13 02:02:20 curfman Exp bsmith $";
 #endif
 
 /*
@@ -367,10 +367,8 @@ int KSPDefaultAdjustWork( KSP ksp )
   Input Parameters: 
 . ksp - the iterative context
 */
-int KSPDefaultDestroy(PetscObject obj)
+int KSPDefaultDestroy(KSP ksp)
 {
-  KSP ksp = (KSP) obj;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->data) PetscFree(ksp->data);

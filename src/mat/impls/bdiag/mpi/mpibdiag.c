@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.131 1998/02/18 21:01:09 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.132 1998/03/12 23:18:59 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -34,12 +34,10 @@ int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
           ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i+j*m,addv); CHKERRQ(ierr);
         }
       }
-    } 
-    else {
+    } else {
       if (roworiented) {
         ierr = StashValues_Private(&mbd->stash,idxm[i],n,idxn,v+i*n,addv); CHKERRQ(ierr);
-      }
-      else {
+      } else {
         row = idxm[i];
         for ( j=0; j<n; j++ ) {
           ierr = StashValues_Private(&mbd->stash,row,1,idxn+j,v+i+j*m,addv);CHKERRQ(ierr);
@@ -196,8 +194,7 @@ int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
       val = values[3*i+2];
       if (col >= 0 && col < mbd->N) {
         ierr = MatSetValues(mbd->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
-      } 
-      else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid column");}
+      } else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid column");}
     }
     count--;
   }
@@ -514,16 +511,15 @@ int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_MPIBDiag"
-int MatDestroy_MPIBDiag(PetscObject obj)
+int MatDestroy_MPIBDiag(Mat mat)
 {
-  Mat          mat = (Mat) obj;
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
 #if defined(USE_PETSC_LOG)
   Mat_SeqBDiag *ms = (Mat_SeqBDiag *) mbd->A->data;
 
   PetscFunctionBegin;
-  PLogObjectState(obj,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",mbd->M,mbd->N,ms->bs,ms->nd);
+  PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",mbd->M,mbd->N,ms->bs,ms->nd);
 #else
   PetscFunctionBegin;
 #endif
@@ -658,9 +654,8 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIBDiag"
-int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
+int MatView_MPIBDiag(Mat mat,Viewer viewer)
 {
-  Mat          mat = (Mat) obj;
   int          ierr;
   ViewerType   vtype;
 
@@ -912,8 +907,7 @@ $     memory as needed.
 
 .seealso: MatCreate(), MatCreateSeqBDiag(), MatSetValues()
 @*/
-int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
-                     int *diag,Scalar **diagv,Mat *A)
+int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Scalar **diagv,Mat *A)
 {
   Mat          B;
   Mat_MPIBDiag *b;
@@ -944,8 +938,8 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
   PLogObjectCreate(B);
   B->data	= (void *) (b = PetscNew(Mat_MPIBDiag)); CHKPTRQ(b);
   PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
-  B->destroy	= MatDestroy_MPIBDiag;
-  B->view	= MatView_MPIBDiag;
+  B->ops->destroy   = MatDestroy_MPIBDiag;
+  B->ops->view	    = MatView_MPIBDiag;
   B->factor	= 0;
   B->mapping    = 0;
 

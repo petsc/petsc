@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.22 1998/03/06 00:18:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.23 1998/03/12 23:22:37 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h" /*I "petsc.h" I*/
+#include "pinclude/pviewer.h"
 
 struct _p_Viewer {
-   PETSCHEADER(int)
-   int         (*flush)(Viewer);
+   VIEWERHEADER
 };
 
 #undef __FUNC__  
@@ -24,12 +24,11 @@ struct _p_Viewer {
 int ViewerDestroy(Viewer v)
 {
   int         ierr;
-  PetscObject o = (PetscObject) v;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
   if (--v->refct > 0) PetscFunctionReturn(0);
-  ierr = (*o->destroy)(o);CHKERRQ(ierr);
+  ierr = (*v->destroy)(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
