@@ -15,6 +15,10 @@ static char vcid[] = "$Id: mathematica.c,v 1.9 2000/01/26 15:46:22 baggag Exp $"
 #include "src/mat/impls/aij/seq/aij.h"
 #include "mathematica.h"
 
+#if defined (PETSC_HAVE__SNPRINTF)
+#define snprintf _snprintf
+#endif
+
 PetscViewer  VIEWER_MATHEMATICA_WORLD_PRIVATE = PETSC_NULL;
 #ifdef PETSC_HAVE_MATHEMATICA
 static void *mathematicaEnv                   = PETSC_NULL;
