@@ -4,6 +4,16 @@
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 */
 
+#if defined(PARCH_rs6000)
+/* include files are all messed up on rs6000, IBM likes to 
+pretend they conform to all standards like ANSI C, POSIX, X Open,
+etc. but they do a half-assed job of organizing their include files */
+typedef unsigned char   u_char;
+typedef unsigned short  u_short;
+typedef unsigned short  ushort;
+typedef unsigned int    u_int;
+typedef unsigned long   u_long;
+#endif
 #include <stdio.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -17,27 +27,20 @@
 #include "mex.h"
 #include "matlab.h"
 #define ERROR(a) {fprintf(stderr,"RECEIVE: %s \n",a); return ;}
-typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
 void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 {
-  int    type;
-  static int t = 0;
-  int    portnumber;
-  Linger linger;
-  linger.onoff = 1;
-  linger.time  = 0;
+  int t, portnumber;
 
   /* check output parameters */
   if (nlhs != 1) ERROR("Receive requires one output argument.");
 
-  /* figure out portnumber user wants to use; default to 5001 */
-  if (nrhs == 0) portnumber = 5001;  
+  /* figure out portnumber user wants to use; default to 5005 */
+  if (nrhs == 0) portnumber = DEFAULTPORT;  
   else portnumber = (int) *mxGetPr(prhs[0]);
 
-   
   /* open connection */
   t = get_connection(portnumber); if (t == -1)  ERROR("opening socket");
 

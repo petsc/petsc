@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 /* This is part of the MatlabSockettool package. 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
