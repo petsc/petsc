@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.24 1998/04/09 04:08:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.25 1998/04/13 17:25:25 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -181,7 +181,7 @@ static struct _ISOps myops = { ISGetSize_Block,
    a list of integers. The indices are relative to entries, not blocks. 
 
    Input Parameters:
-.  n - the length of the index set
+.  n - the length of the index set (the number of blocks)
 .  bs - number of elements in each block
 .  idx - the list of integers
 .  comm - the MPI communicator
