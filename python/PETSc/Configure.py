@@ -38,6 +38,7 @@ class Configure(config.base.Configure):
     self.plapack     = self.framework.require('PETSc.packages.PLAPACK',     self)
     self.pvode       = self.framework.require('PETSc.packages.PVODE',       self)
     self.blocksolve  = self.framework.require('PETSc.packages.BlockSolve',  self)
+    self.netcdf      = self.framework.require('PETSc.packages.NetCDF',      self)
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries)
@@ -58,6 +59,7 @@ class Configure(config.base.Configure):
     self.plapack.headerPrefix     = self.headerPrefix
     self.pvode.headerPrefix       = self.headerPrefix
     self.blocksolve.headerPrefix  = self.headerPrefix
+    self.netcdf.headerPrefix      = self.headerPrefix
     return
 
   def configureHelp(self, help):
