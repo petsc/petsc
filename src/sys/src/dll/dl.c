@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.4 1998/01/14 14:52:43 bsmith Exp balay $";
+static char vcid[] = "$Id: dl.c,v 1.5 1998/01/14 22:14:18 balay Exp balay $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -49,20 +49,19 @@ int DLObtainLibrary(char *libname,char *llibname)
     
   /* Construct the Python script run command */
   par4 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par4);
-  PetscStrcpy(par4,PETSC_DIR);
+  PetscStrcpy(par4,"python1.5 ");
+  PetscStrcat(par4,PETSC_DIR);
   PetscStrcat(par4,"/bin/urlget.py ");
   PetscStrcat(par4,libname);
-  PetscStrcat(par4," ");
-  PetscStrcat(par4,llibname);
 
   if ((fp = popen(par4,"r")) == NULL) {
-    SETERRQ(1,1,"Cannot Execute $(PETSC_DIR)/bin/urlget.py\n\
+    SETERRQ(1,1,"Cannot Execute python1.5 on $(PETSC_DIR)/bin/urlget.py\n\
       Check if python1.5 is in your path");
   }
   if (fgets(buf,1024,fp) == NULL) {
     SETERRQ(1,1,"No output from $(PETSC_DIR)/bin/urlget.py");
   }
-  if (PetscStrncmp(buf,"Error",5)) { SETERRQ(1,1,buf); }
+  if (!PetscStrncmp(buf,"Error",5)) { SETERRQ(1,1,buf); }
   PetscStrcpy(llibname,buf);
   PetscFree(par4);
  
@@ -260,6 +259,12 @@ int DLSym(DLLibraryList list,char *insymbol, void **value)
   par1 = PetscStrrchr(symbol,':');
   if (par1 != symbol) {
     void *handle;
+    
+    if (par1[0] == '/') { 
+      PetscErrorPrintf("Library path and function name %s\n",insymbol);
+      SETERRQ(1,1,"Incorrect function name. Has a `/` in it.");
+    }
+    
 
     par1[-1] = 0;
     ierr     = DLOpen(symbol,&handle);CHKERRQ(ierr);
