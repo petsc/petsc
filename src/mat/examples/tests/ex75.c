@@ -12,13 +12,14 @@ int main(int argc,char **args)
 {
   int         bs=1, mbs=16, d_nz=3, o_nz=3, prob=2;
   Vec         x,y,u,s1,s2;    
-  Mat         A,sA;     
+  Mat         A,sA,sB;     
   PetscRandom rctx;         
   double      r1,r2,tol=1.e-10;
   int         i,j,i2,j2,I,J,ierr;
   PetscScalar one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*vr;
   int         n,rank,size,col[3],n1,block,row;
   int         ncols,*cols,rstart,rend;
+  PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
@@ -309,6 +310,40 @@ int main(int argc,char **args)
   }
   /* ierr = MatView(sA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
   /* ierr = MatView(sA, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);  */
+
+  /* Test MatDuplicate() */
+  ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sB);CHKERRQ(ierr);
+  ierr = MatEqual(sA,sB,&flg);CHKERRQ(ierr);
+  if (!flg){
+    PetscPrintf(PETSC_COMM_WORLD," Error in MatDuplicate(), sA != sB \n");CHKERRQ(ierr);
+  } 
+  for (i=0; i<5; i++) {
+    ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
+    ierr = MatMult(sA,x,s1);CHKERRQ(ierr);
+    ierr = MatMult(sB,x,s2);CHKERRQ(ierr);
+    ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
+    ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
+    r1 -= r2;
+    if (r1<-tol || r1>tol) {
+      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDuplicate() or MatMult(), err=%g\n",rank,r1);
+      PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    }
+  }
+
+  for (i=0; i<5; i++) {
+    ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
+    ierr = VecSetRandom(rctx,y);CHKERRQ(ierr);
+    ierr = MatMultAdd(sA,x,y,s1);CHKERRQ(ierr);
+    ierr = MatMultAdd(sB,x,y,s2);CHKERRQ(ierr);
+    ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
+    ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
+    r1 -= r2;
+    if (r1<-tol || r1>tol) {
+      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDuplicate() or MatMultAdd(), err=%g \n",rank,r1);
+      PetscSynchronizedFlush(PETSC_COMM_WORLD);      
+    }
+  }   
+  ierr = MatDestroy(sB);CHKERRQ(ierr); 
   
   ierr = VecDestroy(u);CHKERRQ(ierr);  
   ierr = VecDestroy(x);CHKERRQ(ierr);

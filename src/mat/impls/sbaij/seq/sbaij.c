@@ -1720,9 +1720,9 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,const int nnz[],Ma
 #define __FUNCT__ "MatDuplicate_SeqSBAIJ"
 int MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
-  Mat         C;
+  Mat          C;
   Mat_SeqSBAIJ *c,*a = (Mat_SeqSBAIJ*)A->data;
-  int         i,len,mbs = a->mbs,nz = a->nz,bs2 =a->bs2,ierr;
+  int          i,len,mbs = a->mbs,nz = a->nz,bs2 =a->bs2,ierr;
 
   PetscFunctionBegin;
   if (a->i[mbs] != nz) SETERRQ(PETSC_ERR_PLIB,"Corrupt matrix");
@@ -1741,10 +1741,12 @@ int MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->keepzeroedrows = a->keepzeroedrows;
   C->assembled      = PETSC_TRUE;
 
-  c->bs         = a->bs;
-  c->bs2        = a->bs2;
-  c->mbs        = a->mbs;
-  c->nbs        = a->nbs;
+  C->M    = A->M;
+  C->N    = A->N;
+  c->bs   = a->bs;
+  c->bs2  = a->bs2;
+  c->mbs  = a->mbs;
+  c->nbs  = a->nbs;
 
   ierr = PetscMalloc((mbs+1)*sizeof(int),&c->imax);CHKERRQ(ierr);
   ierr = PetscMalloc((mbs+1)*sizeof(int),&c->ilen);CHKERRQ(ierr);
