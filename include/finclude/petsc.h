@@ -6,7 +6,7 @@ C
 #include "mpif.h"
 
 C
-C  Flags
+C     Flags
 C
       integer   PETSC_TRUE, PETSC_FALSE, PETSC_DECIDE, PETSC_DEFAULT
       integer   FP_TRAP_OFF, FP_TRAP_ON, FP_TRAP_ALWAYS
@@ -16,12 +16,12 @@ C
       parameter (FP_TRAP_OFF = 0, FP_TRAP_ON = 1, FP_TRAP_ALWAYS = 2)
 
 C
-C  Default Viewers
+C     Default Viewers
 C
       integer   STDOUT_VIEWER_SELF, STDERR_VIEWER_SELF,
      *          STDOUT_VIEWER_WORLD
 C
-C  Fortran Null
+C     Fortran Null
 C
       integer  PETSC_NULL
 
@@ -29,7 +29,7 @@ C
      *         STDOUT_VIEWER_SELF,STDERR_VIEWER_SELF,STDOUT_VIEWER_WORLD
 
 C
-C  Macros for error checking
+C     Macros for error checking
 C
 #if defined(PETSC_DEBUG)
 #define SETERRA(n,s)   call MPI_Abort(MPI_COMM_WORLD,n)
@@ -39,5 +39,11 @@ C
 #define CHKERRA(n)     
 #endif
 C
-C  End of base Fortran include file for the PETSc package
+C     Prototypes for some functions which return a value.
+      external PetscGetTime
+      double precision PetscGetTime
+      external PetscGetFlops
+      double precision PetscGetFlops
+C     
+C     End of base Fortran include file for the PETSc package
 
