@@ -806,7 +806,7 @@ runex75:
 	-@touch ex75_1.tmp;\
 	for np in ${NPROCS}; do \
 	  for bs in ${MATBLOCKSIZE}; do \
-	   ${MPIRUN} -np $$np  ./ex75 -bs  $$bs >> ex75_1.tmp 2>&1; \
+	   ${MPIRUN} -np $$np  ./ex75 -bs  $$bs -mat_ignore_lower_triangular >> ex75_1.tmp 2>&1; \
 	  done; \
 	done; \
 	if (${DIFF} output/ex75_1.out ex75_1.tmp) then true; \
@@ -816,7 +816,7 @@ runex75:
 runex76:
 	-@touch ex76_1.tmp;\
 	for bs in ${MATBLOCKSIZE}; do \
-	  ${MPIRUN} -np 1  ./ex76 -bs  $$bs >> ex76_1.tmp 2>&1; \
+	  ${MPIRUN} -np 1  ./ex76 -bs  $$bs -mat_ignore_lower_triangular >> ex76_1.tmp 2>&1; \
 	done; \
 	if (${DIFF} output/ex76_1.out ex76_1.tmp) then true; \
 	else echo "Possible problem with ex76, diffs above"; fi; \
@@ -825,7 +825,7 @@ runex76:
 runex76_1:
 	-@touch ex76_1.tmp;\
 	for bs in ${MATBLOCKSIZE}; do \
-	  ${MPIRUN} -np 1  ex76 -bs  $$bs -reorder 1>> ex76_1.tmp 2>&1; \
+	  ${MPIRUN} -np 1  ex76 -bs  $$bs -reorder 1 -mat_ignore_lower_triangular >> ex76_1.tmp 2>&1; \
 	done; \
 	if (${DIFF} output/ex76_1.out ex76_1.tmp) then true; \
 	else echo "Possible problem with ex76_1, diffs above"; fi; \
@@ -833,14 +833,14 @@ runex76_1:
 
 runex76_2:
 	-@touch ex76_1.tmp;\
-	${MPIRUN} -np 1  ex76 -testaij -reorder 1>> ex76_1.tmp 2>&1; \
+	${MPIRUN} -np 1  ex76 -testaij -reorder 1 -mat_ignore_lower_triangular >> ex76_1.tmp 2>&1; \
 	if (${DIFF} output/ex76_1.out ex76_1.tmp) then true; \
 	else echo "Possible problem with ex76_2, diffs above"; fi; \
 	${RM} -f ex76_1.tmp
 
 runex76_3:
 	-@touch ex76_1.tmp;\
-	${MPIRUN} -np 1  ex76 -testaij >> ex76_1.tmp 2>&1; \
+	${MPIRUN} -np 1  ex76 -testaij -mat_ignore_lower_triangular >> ex76_1.tmp 2>&1; \
 	if (${DIFF} output/ex76_1.out ex76_1.tmp) then true; \
 	else echo "Possible problem with ex76_3, diffs above"; fi; \
 	${RM} -f ex76_1.tmp

@@ -19,6 +19,7 @@ typedef struct {
   PetscInt         solves_work_n;/* size of solves_work */  
   PetscInt         *a2anew;        /* map used for symm permutation */
   PetscTruth       permute;        /* if true, a non-trivial permutation is used for factorization */
+  PetscTruth       ignore_ltriangular; /* if true, ignore the lower triangular values inserted by users */
 
   /* carry MatFactorInfo from symbolic factor to numeric factor */
   PetscInt         factor_levels;

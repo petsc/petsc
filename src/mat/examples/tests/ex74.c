@@ -31,12 +31,12 @@ int main(int argc,char **args)
   n = mbs*bs;
   ierr=MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,n,n,nz,PETSC_NULL, &A);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,n,n,PETSC_NULL,PETSC_NULL,&sA);CHKERRQ(ierr);
-  ierr = MatSetType(sA,MATSBAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(sA,MATSEQSBAIJ);CHKERRQ(ierr);
+  ierr = MatSetOption(sA,MAT_IGNORE_LOWER_TRIANGULAR);CHKERRQ(ierr);
   /* -mat_type <seqsbaij_derived type>, e.g., seqsbaijspooles, sbaijmumps */
   ierr = MatSetFromOptions(sA);CHKERRQ(ierr);
   ierr = MatGetType(sA,&type);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)sA,MATSEQSBAIJ,&doIcc);CHKERRQ(ierr);
-  /* printf(" mattype: %s\n",type); */
   ierr = MatSeqSBAIJSetPreallocation(sA,bs,nz,PETSC_NULL);CHKERRQ(ierr);
 
   /* Test MatGetOwnershipRange() */
@@ -145,6 +145,9 @@ int main(int argc,char **args)
   /* Test MatNorm(), MatDuplicate() */
   ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr); 
   ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sB);CHKERRQ(ierr);
+  ierr = MatEqual(sA,sB,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDuplicate()");
+
   ierr = MatNorm(sB,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol){ 
@@ -192,8 +195,8 @@ int main(int argc,char **args)
   ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
 
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(sB,x,x);CHKERRQ(ierr);
-  ierr = MatMultEqual(A,sB,10,&equal);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(sB,x,x);CHKERRQ(ierr); 
+  ierr = MatMultEqual(A,sA,10,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
 
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);  
