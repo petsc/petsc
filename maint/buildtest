@@ -12,10 +12,10 @@ set day=`date | cut -f1 -d" "`
 # Set up configurations for library building and testing
 
 if ($day == Sun || $day == Wed || $day == Fri) then
-    set M=(snake   doc              )
-    set B=(O       g                )
-    set A=(hpux    rs6000_p4        )
-    set J=(fortran fortran          )
+    set M=(snake    merlin      )
+    set B=(O        O_complex   )
+    set A=(hpux     run4        )
+    set J=(fortran  fortran     )
 else if ($day == Mon || $day == Sat) then
     set M=(ptera      ryan      )
     set B=(O_complex  O         )
