@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.13 1995/12/07 19:32:41 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.14 1995/12/07 19:34:46 bsmith Exp bsmith $ */
 /*
      Low cost access to system time. This, in general, should not
   be included in user programs.
@@ -51,7 +51,6 @@ extern int gettimeofday(struct timeval *, struct timezone *);
      double v;
      PetscTime(v);
      .... perform some calculation ...
-     PetscTimeElapsed(v); 
      printf("Time for operation %g\n",v);
 
    Notes:
@@ -60,7 +59,7 @@ extern int gettimeofday(struct timeval *, struct timezone *);
    The options database commands -log, -log_summary, and -log_all activate
    PETSc library timing.  See the users manual for further details.
 
-.seealso:  PetscTimeSubtract(), PetscTimeAdd(), PetscTimeElapsed()
+.seealso:  PetscTimeSubtract(), PetscTimeAdd()
 
 .keywords:  Petsc, time
 */
@@ -87,7 +86,7 @@ extern int gettimeofday(struct timeval *, struct timezone *);
    The options database commands -log, -log_summary, and -log_all activate
    PETSc library timing.  See the users manual for further details.
 
-.seealso:  PetscTime(), PetscTimeAdd() PetscTimeElapsed()
+.seealso:  PetscTime(), PetscTimeAdd()
 
 .keywords:  Petsc, time, subtract
 */
@@ -113,7 +112,7 @@ extern int gettimeofday(struct timeval *, struct timezone *);
    The options database commands -log, -log_summary, and -log_all activate
    PETSc library timing.  See the users manual for further details.
 
-.seealso:  PetscTime(), PetscTimeSubtract(), PetscTimeElapsed() 
+.seealso:  PetscTime(), PetscTimeSubtract()
 
 .keywords:  Petsc, time, add
 */
