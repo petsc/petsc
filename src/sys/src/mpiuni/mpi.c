@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.47 1998/05/14 22:07:19 balay Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.48 1998/07/12 03:42:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -43,7 +43,7 @@ static int      num_attr = 1,mpi_tag_ub = 100000000;
 /* 
    To avoid problems with prototypes to the system memcpy() it is duplicated here
 */
-static int MPIUNI_Memcpy(void *a,void* b,int n) {
+int MPIUNI_Memcpy(void *a,void* b,int n) {
   int  i;
   char *aa= (char*)a;
   char *bb= (char*)b;
