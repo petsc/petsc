@@ -1,6 +1,7 @@
 
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.9 1997/10/19 03:31:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.10 1997/10/20 04:00:44 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -97,9 +98,9 @@ int AODataFindSegment_Private(AOData aodata,char *keyname, char *segname, int *f
 
 /* ------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "AODataGetSegment" 
+#define __FUNC__ "AODataSegmentGet" 
 /*@
-   AODataGetSegment - Get data from a particular segment of a database.
+   AODataSegmentGet - Get data from a particular segment of a database.
 
    Input Parameters:
 .  aodata - the database
@@ -113,152 +114,24 @@ int AODataFindSegment_Private(AOData aodata,char *keyname, char *segname, int *f
 
 .keywords: database transactions
 
-.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddKey(), AODataRestoreSegment(),
-          AODataGetSegmentIS(), AODataRestoreSegmentIS(), AODataAddSegment(), 
-          AODataGetInfoKey(), AODataGetInfoSegment(), AODataAddSegment()
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
+          AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
+          AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataGetSegment(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
+int AODataSegmentGet(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.getsegment)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
+  ierr = (*aodata->ops.segmentget)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataRestoreSegment" 
+#define __FUNC__ "AODataSegmentRestore" 
 /*@
-   AODataRestoreSegment - Restores data from a particular segment of a database.
-
-   Input Parameters:
-.  aodata - the database
-.  name - the name of the key
-.  segment - the name of the segment
-.  n - the number of data items needed by this processor
-.  keys - the keys provided by this processor
-
-   Output Parameters:
-.  data - the actual data
-
-.keywords: database transactions
-
-.seealso: 
-@*/
-int AODataRestoreSegment(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.restoresegment)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "AODataGetSegmentIS" 
-/*@
-   AODataGetSegmentIS - Get data from a particular segment of a database.
-
-   Input Parameters:
-.  aodata - the database
-.  name - the name of the key
-.  segment - the name of the segment
-.  is - the keys for data requested on this processor
-
-   Output Parameters:
-.  data - the actual data
-
-.keywords: database transactions
-
-.seealso:
-@*/
-int AODataGetSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
-{
-  int ierr,n,*keys;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-
-  ierr = ISGetSize(is,&n); CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
-  ierr = (*aodata->ops.getsegment)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "AODataRestoreSegmentIS" 
-/*@
-   AODataRestoreSegmentIS - Restores data from a particular segment of a database.
-
-   Input Parameters:
-.  aodata - the database
-.  name - the name of the data key
-.  segment - the name of the segment
-.  is - the keys provided by this processor
-
-   Output Parameters:
-.  data - the actual data
-
-.keywords: database transactions
-
-.seealso:
-@*/
-int AODataRestoreSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
-{
-  int ierr,n,*keys;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-
-  ierr = ISGetSize(is,&n); CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
-
-  ierr = (*aodata->ops.restoresegment)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* ------------------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "AODataGetLocalSegment" 
-/*@
-   AODataGetLocalSegment - Get data from a particular segment of a database.
-
-   Input Parameters:
-.  aodata - the database
-.  name - the name of the key
-.  segment - the name of the segment
-.  n - the number of data items needed by this processor
-.  keys - the keys provided by this processor
-
-   Output Parameters:
-.  data - the actual data
-
-.keywords: database transactions
-
-.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddKey(), AODataRestoreSegment(),
-          AODataGetSegmentIS(), AODataRestoreSegmentIS(), AODataAddSegment(), 
-          AODataGetInfoKey(), AODataGetInfoSegment(), AODataAddSegment()
-@*/
-int AODataGetLocalSegment(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.getlocalsegment)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "AODataRestoreLocalSegment" 
-/*@
-   AODataRestoreLocalSegment - Restores data from a particular segment of a database.
+   AODataSegmentRestore - Restores data from a particular segment of a database.
 
    Input Parameters:
 .  aodata - the database
@@ -274,20 +147,20 @@ int AODataGetLocalSegment(AOData aodata,char *name,char *segment,int n,int *keys
 
 .seealso: 
 @*/
-int AODataRestoreLocalSegment(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
+int AODataSegmentRestore(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.restorelocalsegment)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
+  ierr = (*aodata->ops.segmentrestore)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataGetLocalSegmentIS" 
+#define __FUNC__ "AODataSegmentGetIS" 
 /*@
-   AODataGetLocalSegmentIS - Get data from a particular segment of a database.
+   AODataSegmentGetIS - Get data from a particular segment of a database.
 
    Input Parameters:
 .  aodata - the database
@@ -302,7 +175,7 @@ int AODataRestoreLocalSegment(AOData aodata,char *name,char *segment,int n,int *
 
 .seealso:
 @*/
-int AODataGetLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
+int AODataSegmentGetIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
   int ierr,n,*keys;
 
@@ -312,15 +185,15 @@ int AODataGetLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,void **
 
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
-  ierr = (*aodata->ops.getlocalsegment)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
+  ierr = (*aodata->ops.segmentget)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataRestoreLocalSegmentIS" 
+#define __FUNC__ "AODataSegmentRestoreIS" 
 /*@
-   AODataRestoreLocalSegmentIS - Restores data from a particular segment of a database.
+   AODataSegmentRestoreIS - Restores data from a particular segment of a database.
 
    Input Parameters:
 .  aodata - the database
@@ -335,7 +208,7 @@ int AODataGetLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,void **
 
 .seealso:
 @*/
-int AODataRestoreLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
+int AODataSegmentRestoreIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
   int ierr,n,*keys;
 
@@ -346,7 +219,135 @@ int AODataRestoreLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,voi
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
 
-  ierr = (*aodata->ops.restorelocalsegment)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
+  ierr = (*aodata->ops.segmentrestore)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* ------------------------------------------------------------------------------------*/
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentGetLocal" 
+/*@
+   AODataSegmentGetLocal - Get data from a particular segment of a database.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  segment - the name of the segment
+.  n - the number of data items needed by this processor
+.  keys - the keys provided by this processor
+
+   Output Parameters:
+.  data - the actual data
+
+.keywords: database transactions
+
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
+          AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
+          AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
+@*/
+int AODataSegmentGetLocal(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = (*aodata->ops.segmentgetlocal)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentRestoreLocal" 
+/*@
+   AODataSegmentRestoreLocal - Restores data from a particular segment of a database.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  segment - the name of the segment
+.  n - the number of data items needed by this processor
+.  keys - the keys provided by this processor
+
+   Output Parameters:
+.  data - the actual data
+
+.keywords: database transactions
+
+.seealso: 
+@*/
+int AODataSegmentRestoreLocal(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = (*aodata->ops.segmentrestorelocal)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentGetLocalIS" 
+/*@
+   AODataSegmentGetLocalIS - Get data from a particular segment of a database.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  segment - the name of the segment
+.  is - the keys for data requested on this processor
+
+   Output Parameters:
+.  data - the actual data
+
+.keywords: database transactions
+
+.seealso:
+@*/
+int AODataSegmentGetLocalIS(AOData aodata,char *name,char *segment,IS is,void **data)
+{
+  int ierr,n,*keys;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+
+  ierr = ISGetSize(is,&n); CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
+  ierr = (*aodata->ops.segmentgetlocal)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentRestoreLocalIS" 
+/*@
+   AODataSegmentRestoreLocalIS - Restores data from a particular segment of a database.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the data key
+.  segment - the name of the segment
+.  is - the keys provided by this processor
+
+   Output Parameters:
+.  data - the actual data
+
+.keywords: database transactions
+
+.seealso:
+@*/
+int AODataSegmentRestoreLocalIS(AOData aodata,char *name,char *segment,IS is,void **data)
+{
+  int ierr,n,*keys;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+
+  ierr = ISGetSize(is,&n); CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
+
+  ierr = (*aodata->ops.segmentrestorelocal)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -354,9 +355,9 @@ int AODataRestoreLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,voi
 /* ------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "AODataGetNeighbors" 
+#define __FUNC__ "AODataKeyGetNeighbors" 
 /*@
-   AODataGetNeighbors - Given a list of keys generates a new list containing
+   AODataKeyGetNeighbors - Given a list of keys generates a new list containing
          those keys plus neighbors found in a neighbors list.
 
    Input Parameters:
@@ -370,12 +371,12 @@ int AODataRestoreLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,voi
 
 .keywords: database transactions
 
-.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddKey(), AODataRestoreSegment(),
-          AODataGetSegmentIS(), AODataRestoreSegmentIS(), AODataAddSegment(), 
-          AODataGetInfoKey(), AODataGetInfoSegment(), AODataAddSegment(), 
-          AODataGetNeighborsIS()
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
+          AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
+          AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd(), 
+          AODataKeyGetNeighborsIS()
 @*/
-int AODataGetNeighbors(AOData aodata,char *name,int n,int *keys,IS *is)
+int AODataKeyGetNeighbors(AOData aodata,char *name,int n,int *keys,IS *is)
 {
   int ierr;
   IS  reduced,input;
@@ -384,7 +385,7 @@ int AODataGetNeighbors(AOData aodata,char *name,int n,int *keys,IS *is)
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
  
   /* get the list of neighbors */
-  ierr = AODataGetReducedSegment(aodata,name,name,n,keys,&reduced);CHKERRQ(ierr);
+  ierr = AODataSegmentGetReduced(aodata,name,name,n,keys,&reduced);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(aodata->comm,n,keys,&input);CHKERRQ(ierr);
   ierr = ISSum(input,reduced,is);CHKERRQ(ierr);
@@ -395,9 +396,9 @@ int AODataGetNeighbors(AOData aodata,char *name,int n,int *keys,IS *is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataGetNeighborsIS" 
+#define __FUNC__ "AODataKeyGetNeighborsIS" 
 /*@
-   AODataGetNeighborsIS - Given a list of keys generates a new list containing
+   AODataKeyGetNeighborsIS - Given a list of keys generates a new list containing
          those keys plus neighbors found in a neighbors list.
 
    Input Parameters:
@@ -411,12 +412,12 @@ int AODataGetNeighbors(AOData aodata,char *name,int n,int *keys,IS *is)
 
 .keywords: database transactions
 
-.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddKey(), AODataRestoreSegment(),
-          AODataGetSegmentIS(), AODataRestoreSegmentIS(), AODataAddSegment(), 
-          AODataGetInfoKey(), AODataGetInfoSegment(), AODataAddSegment(), 
-          AODataGetNeighbors()
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
+          AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
+          AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd(), 
+          AODataKeyGetNeighbors()
 @*/
-int AODataGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
+int AODataKeyGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
 {
   int ierr;
   IS  reduced;
@@ -425,7 +426,7 @@ int AODataGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
  
   /* get the list of neighbors */
-  ierr = AODataGetReducedSegmentIS(aodata,name,name,keys,&reduced);CHKERRQ(ierr);
+  ierr = AODataSegmentGetReducedIS(aodata,name,name,keys,&reduced);CHKERRQ(ierr);
 
   ierr = ISSum(keys,reduced,is);CHKERRQ(ierr);
   ierr = ISDestroy(reduced);CHKERRQ(ierr);
@@ -434,9 +435,9 @@ int AODataGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataGetReducedSegment" 
+#define __FUNC__ "AODataSegmentGetReduced" 
 /*@
-   AODataGetReducedSegment - Get data from a particular segment of a database.
+   AODataSegmentGetReduced - Get data from a particular segment of a database.
 
    Input Parameters:
 .  aodata - the database
@@ -450,24 +451,24 @@ int AODataGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
 
 .keywords: database transactions
 
-.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddKey(), AODataRestoreSegment(),
-          AODataGetSegmentIS(), AODataRestoreSegmentIS(), AODataAddSegment(), 
-          AODataGetInfoKey(), AODataGetInfoSegment(), AODataAddSegment()
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
+          AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
+          AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataGetReducedSegment(AOData aodata,char *name,char *segment,int n,int *keys,IS *is)
+int AODataSegmentGetReduced(AOData aodata,char *name,char *segment,int n,int *keys,IS *is)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops.getreducedsegment)(aodata,name,segment,n,keys,is); CHKERRQ(ierr);
+  ierr = (*aodata->ops.segmentgetreduced)(aodata,name,segment,n,keys,is); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataGetReducedSegmentIS" 
+#define __FUNC__ "AODataSegmentGetReducedIS" 
 /*@
-   AODataGetReducedSegmentIS - Get data from a particular segment of a database.
+   AODataSegmentGetReducedIS - Get data from a particular segment of a database.
 
    Input Parameters:
 .  aodata - the database
@@ -482,7 +483,7 @@ int AODataGetReducedSegment(AOData aodata,char *name,char *segment,int n,int *ke
 
 .seealso:
 @*/
-int AODataGetReducedSegmentIS(AOData aodata,char *name,char *segment,IS is,IS *isout)
+int AODataSegmentGetReducedIS(AOData aodata,char *name,char *segment,IS is,IS *isout)
 {
   int ierr,n,*keys;
 
@@ -492,7 +493,7 @@ int AODataGetReducedSegmentIS(AOData aodata,char *name,char *segment,IS is,IS *i
 
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
-  ierr = (*aodata->ops.getreducedsegment)(aodata,name,segment,n,keys,isout); CHKERRQ(ierr);
+  ierr = (*aodata->ops.segmentgetreduced)(aodata,name,segment,n,keys,isout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -500,9 +501,9 @@ int AODataGetReducedSegmentIS(AOData aodata,char *name,char *segment,IS is,IS *i
 /* ------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "AODataAddKeyLocalToGlobalMapping" 
+#define __FUNC__ "AODataKeyAddLocalToGlobalMapping" 
 /*@
-   AODataAddKeyLocalToGlobalMapping - Add another data key to a AOData database.
+   AODataKeyAddLocalToGlobalMapping - Add another data key to a AOData database.
 
    Input Parameters:
 .  aodata - the database
@@ -515,7 +516,7 @@ int AODataGetReducedSegmentIS(AOData aodata,char *name,char *segment,IS is,IS *i
 
 .seealso:
 @*/
-int AODataAddKeyLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMapping map)
+int AODataKeyAddLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMapping map)
 {
   int       ierr,ikey,flag;
 
@@ -533,9 +534,9 @@ int AODataAddKeyLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataAddKey" 
+#define __FUNC__ "AODataKeyAdd" 
 /*@
-   AODataAddKey - Add another data key to a AOData database.
+   AODataKeyAdd - Add another data key to a AOData database.
 
    Input Parameters:
 .  aodata - the database
@@ -548,7 +549,7 @@ int AODataAddKeyLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 
 .seealso:
 @*/
-int AODataAddKey(AOData aodata,char *name,int nlocal,int N,int nsegments)
+int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N,int nsegments)
 {
   int       ierr,ikey,flag,Ntmp,size,rank,i,len;
   AODataKey *key;
@@ -602,9 +603,9 @@ int AODataAddKey(AOData aodata,char *name,int nlocal,int N,int nsegments)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataAddSegment" 
+#define __FUNC__ "AODataSegmentAdd" 
 /*@
-   AODataAddSegment - Add another data segment to a AOData database.
+   AODataSegmentAdd - Add another data segment to a AOData database.
 
    Input Parameters:
 .  aodata - the database
@@ -620,7 +621,7 @@ int AODataAddKey(AOData aodata,char *name,int nlocal,int N,int nsegments)
 
 .seealso:
 @*/
-int AODataAddSegment(AOData aodata,char *name,char *segment,int bs,int n,int *keys,void *data,
+int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *keys,void *data,
                      PetscDataType dtype)
 {
   int      ierr,i,flg1;
@@ -629,7 +630,7 @@ int AODataAddSegment(AOData aodata,char *name,char *segment,int bs,int n,int *ke
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
-  ierr = (*aodata->ops.addsegment)(aodata,name,segment,bs,n,keys,data,dtype); CHKERRQ(ierr);
+  ierr = (*aodata->ops.segmentadd)(aodata,name,segment,bs,n,keys,data,dtype); CHKERRQ(ierr);
 
   /* Determine if all segments for all keys have been filled yet */
   if (aodata->nkeys < aodata->nkeys_max) PetscFunctionReturn(0);
@@ -651,9 +652,9 @@ int AODataAddSegment(AOData aodata,char *name,char *segment,int bs,int n,int *ke
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataAddSegmentIS" 
+#define __FUNC__ "AODataSegmentAddIS" 
 /*@
-   AODataAddSegmentIS - Add another data segment to a AOData database.
+   AODataSegmentAddIS - Add another data segment to a AOData database.
 
    Input Parameters:
 .  aodata - the database
@@ -668,7 +669,7 @@ int AODataAddSegment(AOData aodata,char *name,char *segment,int bs,int n,int *ke
 
 .seealso:
 @*/
-int AODataAddSegmentIS(AOData aodata,char *name,char *segment,int bs,IS is,void *data,
+int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void *data,
                        PetscDataType dtype)
 {
   int n,*keys,ierr;
@@ -679,15 +680,15 @@ int AODataAddSegmentIS(AOData aodata,char *name,char *segment,int bs,IS is,void 
 
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
-  ierr = (*aodata->ops.addsegment)(aodata,name,segment,bs,n,keys,data,dtype); CHKERRQ(ierr);
+  ierr = (*aodata->ops.segmentadd)(aodata,name,segment,bs,n,keys,data,dtype); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataGetInfoKeyOwnership"
+#define __FUNC__ "AODataKeyGetInfoOwnership"
 /*@
-   AODataGetInfoKeyOwnership - Gets the ownership range to this key type.
+   AODataKeyGetInfoOwnership - Gets the ownership range to this key type.
 
    Input Parameters:
 .  aodata - the database
@@ -701,7 +702,7 @@ int AODataAddSegmentIS(AOData aodata,char *name,char *segment,int bs,IS is,void 
 
 .seealso:
 @*/
-int AODataGetInfoKeyOwnership(AOData aodata,char *name,int *rstart,int *rend)
+int AODataKeyGetInfoOwnership(AOData aodata,char *name,int *rstart,int *rend)
 {
   int key,ierr,flag;
 
@@ -718,9 +719,9 @@ int AODataGetInfoKeyOwnership(AOData aodata,char *name,int *rstart,int *rend)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataGetInfoKey"
+#define __FUNC__ "AODataKeyGetInfo"
 /*@
-   AODataGetInfoKey - Gets the global size, local size and number of segments in a key.
+   AODataKeyGetInfo - Gets the global size, local size and number of segments in a key.
 
    Input Parameters:
 .  aodata - the database
@@ -735,7 +736,7 @@ int AODataGetInfoKeyOwnership(AOData aodata,char *name,int *rstart,int *rend)
 
 .seealso:
 @*/
-int AODataGetInfoKey(AOData aodata,char *name,int *nglobal,int *nlocal,int *nsegments)
+int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nsegments)
 {
   int key,ierr,flag;
 
@@ -753,9 +754,9 @@ int AODataGetInfoKey(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataGetInfoSegment"
+#define __FUNC__ "AODataSegmentGetInfo"
 /*@
-   AODataGetInfoSegment - Gets the global size, local size, blocksize and type of a data segment
+   AODataSegmentGetInfo - Gets the global size, local size, blocksize and type of a data segment
 
    Input Parameters:
 .  aodata - the database
@@ -773,7 +774,7 @@ int AODataGetInfoKey(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
 
 .seealso:
 @*/
-int AODataGetInfoSegment(AOData aodata,char *keyname,char *segname,int *nglobal,int *nlocal,
+int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *nglobal,int *nlocal,
                          int *bs, PetscDataType *dtype)
 {
   int key,ierr,flag,seg;
@@ -839,6 +840,32 @@ int AODataDestroy(AOData aodata)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "AODataKeyRemap" 
+/*@
+   AODataKeyRemap - Remaps a key and all references to a key to a new numbering 
+     scheme where each processor indicates its new nodes by listing them in the
+     previous numbering scheme.
+
+   Input Parameters:
+.  aodata - the database
+.  key  - the key to remap
+.  is - index set indicating the new numbers to be owned by this processor
+
+.keywords: database remapping
+
+.seealso: 
+@*/
+int AODataKeyRemap(AOData aodata, char *key,IS is)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+  ierr = (*aodata->ops.keyremap)(aodata,key,is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 
