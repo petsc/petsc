@@ -88,7 +88,6 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
       s[i] = (ISColoringValue) (coloring[i]-1);
     }
     ierr = MatColoringPatch(mat,n,ncolors,s,iscoloring);CHKERRQ(ierr);
-    ierr = PetscFree(s);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -137,7 +136,6 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
       s[i] = (ISColoringValue) (coloring[i]-1);
     }
     ierr = MatColoringPatch(mat,n,ncolors,s,iscoloring);CHKERRQ(ierr);
-    ierr = PetscFree(s);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -185,7 +183,6 @@ int MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
       s[i] = (ISColoringValue) (coloring[i]-1);
     }
     ierr = MatColoringPatch(mat,n,ncolors,s,iscoloring);CHKERRQ(ierr);
-    ierr = PetscFree(s);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
