@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.281 1999/04/06 19:19:15 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.282 1999/04/08 19:01:04 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -234,7 +234,8 @@ etags_fexamples:
 # These are here for the target allci and allco, and etags
 #
 
-BMAKEFILES = bmake/common* bmake/*/base* bmake/*/petscconf.h bmake/win32/makefile.dos
+BMAKEFILES = bmake/common* bmake/*/base* bmake/*/petscconf.h bmake/win32/makefile.dos \
+	     bin/config/base*.in
 DOCS	   = bmake/readme bmake/petscconf.defs
 SCRIPTS    = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
 	     maint/xclude maint/crontab  \
