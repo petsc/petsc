@@ -273,7 +273,7 @@ class Configure(config.base.Configure):
       else:
         self.framework.addSubstitution('F_to_o_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.fortran.cpp')
     else:
-      self.framework.addSubstitution('F_to_o_TARGET', '')
+      self.framework.addSubstitution('F_to_o_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.fortran.none')
     return
 
   def configureFortranStubs(self):
