@@ -39,22 +39,26 @@ PETScRun:
 
 PETScView:
 	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScView*.java 
-	-@${MV} PETScView*.class AMSBean
-	-@cd AMSBean; ${JAR} cf PETScView.jar *
+	-@mkdir tmp
+	-@${MV} PETScView*.class tmp
+	-@cd tmp; ${JAR} cf PETScView.jar *
 	-@${RM} ${PETSCBINPATH}/bin/PETScView.*
-	-@${MV} -f AMSBean/PETScView.jar ${PETSCBINPATH}/bin
+	-@${MV} -f tmp/PETScView.jar ${PETSCBINPATH}/bin
 	-@${CP} -f PETScView.html ${PETSCBINPATH}/bin
-	-@${RM} AMSBean/*.class
+	-@${RM} tmp/*.class
+	-@rmdir tmp
 	-@chmod g+w ${PETSCBINPATH}/bin/PETScView.*
 
 PETScOptions:
 	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScOptions.java 
-	-@${MV} PETScOptions*.class AMSBean
-	-@cd AMSBean; ${JAR} cf PETScOptions.jar *
+	-@mkdir tmp
+	-@${MV} PETScOptions*.class tmp
+	-@cd tmp; ${JAR} cf PETScOptions.jar *
 	-@${RM} ${PETSCBINPATH}/bin/PETScOptions.*
-	-@${MV} -f AMSBean/PETScOptions.jar ${PETSCBINPATH}/bin
+	-@${MV} -f tmp/PETScOptions.jar ${PETSCBINPATH}/bin
 	-@${CP} -f PETScOptions.html ${PETSCBINPATH}/bin
-	-@${RM} AMSBean/*.class
+	-@${RM} tmp/*.class
+	-@rmdir tmp
 	-@chmod g+w ${PETSCBINPATH}/bin/PETScOptions.*
 
 PETScPlugins:
