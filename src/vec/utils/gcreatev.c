@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.17 1995/05/18 22:43:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.18 1995/05/25 22:46:37 bsmith Exp bsmith $";
 #endif
 
 
@@ -7,9 +7,9 @@ static char vcid[] = "$Id: gcreate.c,v 1.17 1995/05/18 22:43:38 bsmith Exp bsmit
 #include "petsc.h"
 #include "sysio.h"
 #include "is.h"
-#include "vec.h"
+#include "vec.h"    /*I "vec.h" I*/
 
-/*@C
+/*@
     VecCreate - Creates a vector, where the vector type is determined 
     from the options database.  Generates a parallel MPI vector if the 
     communicator has more than one processor.

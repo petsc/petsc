@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.9 1995/06/07 16:34:54 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.10 1995/06/25 03:00:27 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 */
@@ -39,10 +39,6 @@ struct _VeOps {
        (*max)(Vec,int*,double*),
        (*min)(Vec,int*,double*);  /* z = min(x); idx = index of min(x) */
 };
-
-/* Vector types, must be powers of 2 */
-#define SEQVECTOR               0
-#define MPIVECTOR               1
 
 struct _Vec {
   PETSCHEADER

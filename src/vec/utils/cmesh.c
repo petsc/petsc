@@ -1,6 +1,6 @@
 
-#include "drawimpl.h"
-#include "vec.h"
+#include "drawimpl.h"   /*I "draw.h" I*/
+#include "vec.h"        /*I "vec.h" I*/
 
 /*@
    DrawTensorContour - Draws a coutour plot for a two-dimensional array

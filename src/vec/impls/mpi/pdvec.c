@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.12 1995/06/14 17:23:10 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.13 1995/06/20 01:45:52 bsmith Exp bsmith $ */
 
 #include "pviewer.h"
 
@@ -128,7 +128,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
     /* draw local part of vector */
     VecGetOwnershipRange(xin,&start,&end);
     if (mytid < numtid-1) { /*send value to right */
-      MPI_Send(&x->array[x->n-1],1,MPI_DOUBLE,mytid+1,58,xin->comm);
+      MPI_Send(&x->array[x->n-1],1,MPI_DOUBLE,mytid+1,xin->tag,xin->comm);
     }
     for ( i=1; i<x->n; i++ ) {
 #if !defined(PETSC_COMPLEX)
@@ -140,7 +140,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
 #endif
     }
     if (mytid) { /* receive value from right */
-      MPI_Recv(&tmp,1,MPI_DOUBLE,mytid-1,58,xin->comm,&status);
+      MPI_Recv(&tmp,1,MPI_DOUBLE,mytid-1,xin->tag,xin->comm,&status);
 #if !defined(PETSC_COMPLEX)
       DrawLine(win,(double)start-1,tmp,(double)start,x->array[0],
                    DRAW_RED,DRAW_RED);

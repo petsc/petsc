@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.21 1995/06/14 17:23:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.22 1995/06/20 01:45:43 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -64,12 +64,12 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
                      int mode)
 {
   VecScatterMPI *gen_to, *gen_from;
-  Vec_MPI     *x = (Vec_MPI *)xin->data;
+  Vec_MPI       *x = (Vec_MPI *)xin->data,*y = (Vec_MPI*) yin->data;
   MPI_Comm      comm = ctx->comm;
   Scalar        *rvalues,*svalues;
   int           nrecvs, nsends;
   MPI_Request   *rwaits, *swaits;
-  Scalar        *xv = x->array,*val;
+  Scalar        *xv = x->array,*yv = y->array, *val;
   int           tag = ctx->tag, i,j,*indices;
   int           *rstarts,*sstarts;
   int           *rprocs, *sprocs;
@@ -148,6 +148,17 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
       MPI_Isend((void*)val,sstarts[i+1] - sstarts[i],
                  MPIU_SCALAR,sprocs[i],tag,comm,swaits+i-gen_to->nbelow);
     }
+  }
+  /* take care of local scatters */
+  if (mode == SCATTERALL && addv == INSERTVALUES) {
+    int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
+    int n = gen_to->local.n;
+    for ( i=0; i<n; i++ ) {yv[tslots[i]] = xv[fslots[i]];}
+  }
+  else if (mode == SCATTERALL) {
+    int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
+    int n = gen_to->local.n;
+    for ( i=0; i<n; i++ ) {yv[tslots[i]] += xv[fslots[i]];}
   }
   return 0;
 }
@@ -314,6 +325,14 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   PETSCMEMCPY(out_to->starts,in_to->starts,(out_to->n+1)*sizeof(int));
   PETSCMEMCPY(out_to->procs,in_to->procs,(out_to->n)*sizeof(int));
   out->todata      = (void *) out_to;
+  out_to->local.n  = in_to->local.n;
+  if (in_to->local.n) {
+    out_to->local.slots = (int *) PETSCMALLOC(in_to->local.n*sizeof(int));
+    CHKPTRQ(out_to->local.slots);
+    PETSCMEMCPY(out_to->local.slots,in_to->local.slots,
+                                              in_to->local.n*sizeof(int));
+  }
+  else {out_to->local.slots = 0;}
 
   /* allocate entire receive context */
   out_from           = (VecScatterMPI *) PETSCMALLOC( sizeof(VecScatterMPI) );
@@ -334,6 +353,14 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   PETSCMEMCPY(out_from->starts,in_from->starts,(out_from->n+1)*sizeof(int));
   PETSCMEMCPY(out_from->procs,in_from->procs,(out_from->n)*sizeof(int));
   out->fromdata      = (void *) out_from;
+  out_from->local.n  = in_from->local.n;
+  if (in_from->local.n) {
+    out_from->local.slots = (int *) PETSCMALLOC(in_from->local.n*sizeof(int));
+    CHKPTRQ(out_from->local.slots);
+    PETSCMEMCPY(out_from->local.slots,in_from->local.slots,
+                                              in_from->local.n*sizeof(int));
+  }
+  else {out_from->local.slots = 0;}
   return 0;
 }
 /* --------------------------------------------------------------------*/
@@ -478,6 +505,8 @@ static int PtoPScatterDestroy(PetscObject obj)
   VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
   PETSCFREE(gen_to->values); PETSCFREE(gen_to);
   PETSCFREE(gen_from->values); PETSCFREE(gen_from);
+  if (gen_to->local.slots) PETSCFREE(gen_to->local.slots);
+  if (gen_from->local.slots) PETSCFREE(gen_from->local.slots);
   PETSCHEADERDESTROY(ctx);
   return 0;
 }
@@ -486,7 +515,7 @@ static int PtoPScatterDestroy(PetscObject obj)
 int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
                          VecScatterCtx ctx)
 {
-  Vec_MPI      *x = (Vec_MPI *)xin->data;
+  Vec_MPI        *x = (Vec_MPI *)xin->data;
   int            *source;
   VecScatterMPI  *from,*to;
   int            *lens,mytid = x->mytid, *owners = x->ownership;
@@ -497,12 +526,12 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   MPI_Comm       comm = xin->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
-  int            *indx;
+  int            *indx,nprocslocal;
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
   PETSCMEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
-  owner = (int *) PETSCMALLOC((nx+1)*sizeof(int)); CHKPTRQ(owner); /* see note*/
+  owner = (int *) PETSCMALLOC((nx+1)*sizeof(int)); CHKPTRQ(owner);
   for ( i=0; i<nx; i++ ) {
     idx = inidx[i];
     found = 0;
@@ -513,6 +542,8 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
     }
     if (!found) SETERRQ(1,"Index out of range");
   }
+  nprocslocal = nprocs[mytid]; 
+  nprocs[mytid] = procs[mytid] = 0; 
   nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
@@ -544,7 +575,9 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   starts[0] = 0; 
   for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<nx; i++ ) {
-    svalues[starts[owner[i]]++] = inidx[i];
+    if (owner[i] != mytid) {
+      svalues[starts[owner[i]]++] = inidx[i];
+    }
   }
 
   starts[0] = 0;
@@ -639,7 +672,9 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
     }
   }
   for ( i=0; i<nx; i++ ) {
-    from->indices[start[lowner[owner[i]]]++] = inidy[i];
+    if (owner[i] != mytid) {
+      from->indices[start[lowner[owner[i]]]++] = inidy[i];
+    }
   }
   PETSCFREE(lowner); PETSCFREE(owner); PETSCFREE(nprocs);
     
@@ -651,6 +686,28 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
     PETSCFREE(send_status);
   }
   PETSCFREE(send_waits); PETSCFREE(svalues);
+
+  if (nprocslocal) {
+    int nt;
+    /* we have a scatter to ourselfs */
+    from->local.n = to->local.n = nt = nprocslocal;    
+    from->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));
+    CHKPTRQ(from->local.slots);
+    to->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));
+    CHKPTRQ(to->local.slots);
+    nt = 0;
+    for ( i=0; i<nx; i++ ) {
+      idx = inidx[i];
+      if (idx >= owners[mytid] && idx < owners[mytid+1]) {
+        from->local.slots[nt] = idx - owners[mytid];        
+        to->local.slots[nt++] = inidy[i];        
+      }
+    }
+  }
+  else { 
+    from->local.n = 0; from->local.slots = 0;
+    to->local.n = 0; to->local.slots = 0;
+  } 
 
   ctx->destroy    = PtoPScatterDestroy;
   ctx->begin      = PtoPScatterbegin;
@@ -669,7 +726,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
                          VecScatterCtx ctx)
 {
   Vec_MPI      *y = (Vec_MPI *)yin->data;
-  int            *source;
+  int            *source,nprocslocal;
   VecScatterMPI  *from,*to;
   int            *lens,mytid = y->mytid, *owners = y->ownership;
   int            numtids = y->numtids,*lowner,*start;
@@ -679,6 +736,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
   MPI_Comm       comm = yin->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
+
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
@@ -694,6 +752,8 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
     }
     if (!found) SETERRQ(1,"Index out of range");
   }
+  nprocslocal = nprocs[mytid];
+  nprocs[mytid] = procs[mytid] = 0; 
   nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
@@ -725,7 +785,9 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
   starts[0] = 0; 
   for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<nx; i++ ) {
-    svalues[starts[owner[i]]++] = inidy[i];
+    if (owner[i] != mytid) {
+      svalues[starts[owner[i]]++] = inidy[i];
+    }
   }
 
   starts[0] = 0;
@@ -764,7 +826,9 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
     }
   }
   for ( i=0; i<nx; i++ ) {
-    to->indices[start[lowner[owner[i]]]++] = inidx[i];
+    if (owner[i] != mytid) {
+      to->indices[start[lowner[owner[i]]]++] = inidx[i];
+    }
   }
   PETSCFREE(lowner); PETSCFREE(owner); PETSCFREE(nprocs);
 
@@ -819,6 +883,28 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
     PETSCFREE(send_status);
   }
   PETSCFREE(send_waits); PETSCFREE(svalues);
+
+  if (nprocslocal) {
+    int nt;
+    /* we have a scatter to ourselfs */
+    from->local.n = to->local.n = nt = nprocslocal;    
+    from->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));
+    CHKPTRQ(from->local.slots);
+    to->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));
+    CHKPTRQ(to->local.slots);
+    nt = 0;
+    for ( i=0; i<ny; i++ ) {
+      idx = inidy[i];
+      if (idx >= owners[mytid] && idx < owners[mytid+1]) {
+        to->local.slots[nt] = idx - owners[mytid];        
+        from->local.slots[nt++] = inidx[i];        
+      }
+    }
+  }
+  else {
+    from->local.n = 0; from->local.slots = 0;
+    to->local.n = 0; to->local.slots = 0;
+  }
 
   ctx->destroy    = PtoPScatterDestroy;
   ctx->begin      = PtoPScatterbegin;

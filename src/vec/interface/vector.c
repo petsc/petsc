@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.36 1995/06/09 19:17:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.37 1995/06/18 16:22:51 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -643,6 +643,59 @@ int VecGetArray(Vec x,Scalar **a)
 {
   VALIDHEADER(x,VEC_COOKIE);
   return (*x->ops->getarray)(x,a);
+}
+
+/*@
+   VecGetArrays - Returns a pointer to the arrays in a set of vectors.
+       You MUST call VecRestoreArrays() when you no longer need access
+       to the array. x must have been obtained by a call to VecGetVecs().
+
+   Input Parameter:
+.  x - the vectors
+.  n - the number of vectors
+
+   Output Parameter:
+.  a - location to put pointer to the array
+
+.keywords: vector, get, arrays
+
+.seealso: VecRestoreArrays()
+@*/
+int VecGetArrays(Vec *x,int n,Scalar ***a)
+{
+  int    i,ierr;
+  Scalar **q;
+  VALIDHEADER(*x,VEC_COOKIE);
+  q = (Scalar **)PETSCMALLOC(n*sizeof(Scalar*)); CHKPTRQ(q);
+  for(i=0;i<n;++i) {
+    ierr = VecGetArray(x[i],&q[i]); CHKERRQ(ierr);
+  }
+  *a = q;
+  return 0;
+}
+
+/*@
+   VecRestoreArrays - Restores a vector after VecGetArrays() has been called.
+
+   Input Parameters:
+.  x - the vector
+.  n - the number of vectors
+.  a - location of pointer to arrays obtained from VecGetArrays()
+
+.keywords: vector, restore, arrays
+
+.seealso: VecGetArrays()
+@*/
+int VecRestoreArrays(Vec *x,int n,Scalar ***a)
+{
+  int    i,ierr;
+  Scalar **q = *a;
+  VALIDHEADER(*x,VEC_COOKIE);
+  for(i=0;i<n;++i) {
+    ierr = VecRestoreArray(x[i],&q[i]); CHKERRQ(ierr);
+  }
+  PETSCFREE(q);
+  return 0;
 }
 
 /*@

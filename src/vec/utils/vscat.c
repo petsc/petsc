@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.23 1995/05/23 23:09:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.24 1995/06/08 03:06:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -149,7 +150,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
   /* generate the Scatter context */
   PETSCHEADERCREATE(ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,comm);
 
-  if (xin->type == SEQVECTOR && yin->type == SEQVECTOR) {
+  if (xin->type == VECSEQ && yin->type == VECSEQ) {
 
     if (ix->type == ISGENERALSEQUENTIAL && iy->type == ISGENERALSEQUENTIAL){
       int               nx,ny,*idx,*idy;
@@ -234,7 +235,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       SETERRQ(1,"Cannot generate such Scatter Context yet");
     }
   }
-  if (xin->type == MPIVECTOR && yin->type == SEQVECTOR) {
+  if (xin->type == VECMPI && yin->type == VECSEQ) {
     /* special case extracting (subset of) local portion */ 
     if (ix->type == ISSTRIDESEQUENTIAL && iy->type == ISSTRIDESEQUENTIAL){
       Vec_MPI         *x = (Vec_MPI *)xin->data;
@@ -273,7 +274,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       return 0;
     }
   }
-  if (xin->type == SEQVECTOR && yin->type == MPIVECTOR) {
+  if (xin->type == VECSEQ && yin->type == VECMPI) {
     /* special case local copy portion */ 
     if (ix->type == ISSTRIDESEQUENTIAL && iy->type == ISSTRIDESEQUENTIAL){
       Vec_MPI         *y = (Vec_MPI *)yin->data;
