@@ -97,7 +97,8 @@ EXTERN int DAPublish_Petsc(PetscObject);
 +  comm - MPI communicator
 .  wrap - type of periodicity should the array have, if any. Use 
           either DA_NONPERIODIC or DA_XPERIODIC
-.  M - global dimension of the array
+.  M - global dimension of the array (use -M to indicate that it may be set to a different value 
+            from the command line with -da_grid_x <M>)
 .  dof - number of degrees of freedom per node
 .  lc - array containing number of nodes in the X direction on each processor, 
         or PETSC_NULL. If non-null, must be of length as m.

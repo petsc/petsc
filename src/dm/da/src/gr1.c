@@ -16,8 +16,8 @@
   Input Parameters:
 +  da - the distributed array object
 .  xmin,xmax - extremes in the x direction
-.  xmin,xmax - extremes in the y direction
--  xmin,xmax - extremes in the z direction
+.  ymin,ymax - extremes in the y direction (use PETSC_NULL for 1 dimensional problems)
+-  zmin,zmax - extremes in the z direction (use PETSC_NULL for 1 or 2 dimensional problems)
 
   Level: beginner
 
