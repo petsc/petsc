@@ -305,10 +305,11 @@
         URL = "http://www.ddm.org/DD15/proceedings-dd15.html",
         YEAR = "2003"
 } 
-@unpublished{Adams-04, 
+@Inproceedings{Adams-04, 
   author =   {M. F. Adams and Harun H. Bayraktar and Tony M. Keaveny and Panayiotis Papadopoulos},
   title =   {Ultrascalable Implicit Finite Element Analyses in Solid Mechanics with over a Half a Billion Degrees of Freedom},
-  note =   {Submitted to SC2004: Large scale trabecular bone finite element modeling}
+  note =   {Winner of Gordon Bell Special Prize at SC2004: Large scale trabecular bone finite element modeling},
+  booktitle = {Proceedings of SC04}
 } 
 @article{maria-is04,
    author = "Maria Murillo and Xiao-Chuan Cai",
@@ -465,6 +466,20 @@
 %
 %  <a name="cfd"><H3><center>CFD</center></H3>
 %
+@InProceedings{gid1,
+ Author      = "G. Frank and J. D'Elia",
+ TITLE       = "CFD Modelling of the Flow Around the Ahmed Vehicle Model",
+ year        = 2004,
+ booktitle   = {Proceedings of the 2nd Conference on Advances and Applications of GiD",
+ url = "http://www.gid.cimne.upc.es/2004/papers/p216.pdf"
+}
+@INBOOK{b1,
+ AUTHOR=    "A.Bonfiglioli", 
+ TITLE=     "On the use of the PETSc library for unstructured CFD applications",
+ YEAR=      "2001",
+ BOOKTITLE= "Science and Supercomputing at CINECA"
+ pages =    "397--400"
+}
 @INPROCEEDINGS{b2004,
  AUTHOR=    "L. A. Barba",
  TITLE=     "Computing high-Reynolds number vortical flows: a highly accurate method with a fully meshless formulation",
@@ -557,7 +572,6 @@
         BOOKTITLE = "Proceedings of SC 99",
         EDITOR = "",
         PUBLISHER = "",
-        NOTE = "also available as Argonne preprint ANL/MCS-P776-0899",
         url     = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P776.ps.Z",
         YEAR = "1999",
         origin = petsc
@@ -644,7 +658,6 @@
                      Domain Decomposition Methods",
         EDITOR = "C.-H. Lai et al.",
         PUBLISHER = "Domain Decomposition Press, Bergen",
-        NOTE = "to appear, also available as Argonne preprint ANL/MCS-P745-1298",
         url        = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P745.ps.Z",
         YEAR = "1999",
         origin = petsc
@@ -834,7 +847,17 @@
 %
 %  <a name="geosciences"><H3><center>Geosciences</center></H3>
 %
-@InProceedings{
+@InProceedings{appelbe1,
+  author = "B. Appelbe and D. May and S. Quenette and S. Tang and  F. Wang and L. Moresi",
+  year   = "2003",
+  title  = "Mantle convection modeling with viscoelastic/brittle lithosphere: 
+            Numerical and computational methodology",
+  page = "781",
+  booktitle = "Lecture Notes in Computer Science, volume 2659, part of the ICCS Conference Proceedings",
+  publisher = "Springer-Verlag",
+  URL = "http://vpac.org/VDT/SNARK/Presentations/RD0201-paper-20030602-ICCS03_ACES03_LNCS-mantle_convection_modelling.pdf"
+}
+@InProceedings{gd1,
  Author      = "Guillaume Dumont and Michel Kern",
  TITLE       = "Parallelization of a 3D Seismic Migration Code with PETSc",
  year        = 1999,
@@ -888,6 +911,29 @@
 %
 %  <a name="environmental"><H3><center>Environmental/Subsurface Flow</center></H3>
 %
+@INBOOK{kp1,
+ author    = "Jong G. Kim and Hyoung W. Park",
+ title     = "Advanced Simulation Technique for Modeling Multiphase Fluid Flow in Porous Media"
+ url       = "http://www.springerlink.com/app/home/contribution.asp?wasp=m5uc84pqrh1qrg8clyuh&referrer=parent&backto=issue,1,117;journal,206,1787;linkingpublicationresults,1:105633,1"
+ booktitle = "Lecture Notes in Computer Science",
+ publisher = "Springer-Verlag",
+ volume    = 3044,
+ year      = 2004
+}
+@ARTICLE{2001AGUSM...H32A06K,
+   author = {{Kim}, J.~G. and {Kim}, J.},
+    title = "{Parallel Implementation of Finite Element Groundwater Flow Model}",
+  journal = {AGU Spring Meeting Abstracts},
+     year = 2001,
+    pages = {32-+},
+}
+@INPROCEEDINGS{pr1,
+ AUTHOR=    "Prasada Rao",
+ TITLE=     "An Efficient Scalable Finite Element Model for Simulating Large Scale Hydrodynamic Flows",
+ YEAR=      "2003",
+ BOOKTITLE= "Proceedings of the American Society of Civil Engineers 16th Engineering Mechanics Conference",
+ URL = "http://www.ce.washington.edu/em03/proceedings/papers/477.pdf"
+}
 @INPROCEEDINGS{lichtner2004,
  AUTHOR=    "Peter C. Lichtner and Andrew Wolfsberg",
  TITLE=     "Modeling Thermal-Hydrological-Chemical (THC) Coupled Processes with Applications to Underground Nuclear Tests at the 
@@ -954,7 +1000,15 @@
 %
 %  <a name="otherapps"><H3><center>Other Application Areas</center></H3>
 %
-@INBOOK{
+@techreport{uf1,
+ Author      = "Uwe Fabricius",
+ TITLE       = "Comparison of two implementations of AMG-preconditioned CG considering an electrostatic problem"
+ year        = 2004,
+ INSTITUTION = "Friedrich Alexander Universitat Erlangen Nurnberg Germany",
+ URL        = "http://www10.informatik.uni-erlangen.de/de/Publications/TechnicalReports/TechRep04-1.pdf",
+ number = "04-1"
+}
+@INBOOK{sg1,
  author    = "Natalia Seoane and A.J.Garca-Loureiro",
  title     = "Analysis of Parallel Numerical Libraries to Solve the 3D Electron Continuity Equation",
  url       = "http://www.springerlink.com/app/home/contribution.asp?wasp=h0xlulyhugck3y2gnt2l&referrer=parent&backto=issue,79,112;journal,212,1787;linkingpublicationresults,1:105633,1",
@@ -962,6 +1016,12 @@
  publisher = "Springer-Verlag",
  volume    = 3037,
  year      = 2004
+}
+@InProceedings{gray2,
+ Author      = "Yuan He and Joshua Gray and Richard Braatz and Richard Alkire",
+ TITLE       = "Modulized Coupled Simulation of Localized Pit Initiation in Stainless Steel",
+ year        = 2004,
+ booktitle   = {American Institute of Chemical Engineers 2004 Annual Meeting}
 }
 @InProceedings{gray1,
  Author      = "J. Gray and and C. Homescu and L. Petzold and R. Alkire",
@@ -971,7 +1031,7 @@
 }
 @techreport{defordheld1,
  Author      = "JF DeFord and BL Held",
- TITLE       = "R3P-A New Parallel Driven Frequency Electromagnetic Solver",
+ TITLE       = "RF3P-A New Parallel Driven Frequency Electromagnetic Solver",
  year        = 2002,
  INSTITUTION = "Simulation Technology & Applied Research, Inc",
  URL        = "http://www.staarinc.com/support/papers/aces2002.pdf",
@@ -1066,12 +1126,6 @@
   title = 	"Computing the Lambda Modes of a Nuclear Reactor with SLEPc and PETSc",
   author = "V. Hernandex and J. E. Roman and V. Vidal",
   note = "Submitted to CMMSE",
-}
-@Unpublished{hrv02a,
-  title = 	"SLEPc: Scalable Library for Eigenvalue Problem Computations",
-  author = "V. Hernandex and J. E. Roman and V. Vidal",
-  note = "Submited to VecPar 2002",
-  year = 2002
 }
 @Article{tmh2001,
   author =        "Manfred Gilli and Evis Kellezi and Giorgio Pauletto",
@@ -1246,16 +1300,15 @@
   volume = "16",
   pages = "173--186"
 }
-@Unpublished{sintering-web-page,
-  title = 	 "{M}icrostructural {E}volution in {S}intering - an {E}xperimental, {M}athematical 
-                  and {N}umerical {S}tudy", 
-  author =      "W. Zhang and J. H. Schneibel",
-  url = 	 "http://www.oakland.edu/\~{ }w2zhang/sintering.htm",
-  Institution = "Oakland University",
-}
 %
 %  <a name="software"><H3><center>Software Engineering</center></H3>
 %
+@Unpublished{hrv02a,
+  title = 	"SLEPc: Scalable Library for Eigenvalue Problem Computations",
+  author = "V. Hernandex and J. E. Roman and V. Vidal",
+  note = "Submited to VecPar 2002",
+  year = 2002
+}
 @masterthesis{aarrestad-master,
   author = "Asbjorn Hoiland Aarrestad",
   title =  "Time Dependent Solution of the Schrodinger Equation for Parallel Computers",
