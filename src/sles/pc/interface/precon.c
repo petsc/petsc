@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.203 2001/01/15 21:46:45 bsmith Exp balay $*/
+/*$Id: precon.c,v 1.204 2001/01/16 18:18:53 balay Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -240,6 +240,7 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
+  if (!pc->ops->applysymmetricleft) SETERRQ(1,"PC does not have left symmetric apply");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -282,6 +283,7 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
+  if (!pc->ops->applysymmetricright) SETERRQ(1,"PC does not have left symmetric apply");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.359 2001/01/15 21:45:34 bsmith Exp balay $*/
+/*$Id: aij.c,v 1.360 2001/01/16 18:17:28 balay Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -37,7 +37,7 @@ int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int
   } else if (oshift == 1 && ishift == 0) {
     int nz = a->i[A->m] + 1; 
     /* malloc space and  add 1 to i and j indices */
-    PetscMalloc((A->m+1)*sizeof(int),ia);CHKERRQ(ierr);
+    ierr = PetscMalloc((A->m+1)*sizeof(int),ia);CHKERRQ(ierr);
     ierr = PetscMalloc((nz+1)*sizeof(int),ja);CHKERRQ(ierr);
     for (i=0; i<nz; i++) (*ja)[i] = a->j[i] + 1;
     for (i=0; i<A->m+1; i++) (*ia)[i] = a->i[i] + 1;
