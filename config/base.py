@@ -3,6 +3,12 @@ import re
 import select
 import sys
 
+#Determine whether we can safely use threads
+import nargs
+useThreads = nargs.Arg.findArgument('-useThreads', sys.argv[1:])
+if useThreads is None:
+  useThreads = 1
+
 class Configure:
   def __init__(self, framework):
     self.framework = framework
@@ -93,32 +99,40 @@ class Configure:
     import threading
     global output, error, status
 
-    if log: log.write('sh: '+command+'\n')
-    status = -1
-    output = 'Runaway process'
-    def run(command, log):
-      global output, error, status
-      (output, error, status) = Configure.runShellCommand(command, log)
-      return
-
-    thread = threading.Thread(target = run, name = 'Shell Command', args = (command, log))
-    thread.setDaemon(1)
-    thread.start()
-    thread.join(timeout)
-    if thread.isAlive():
-      error  = 'Runaway process exceeded time limit of '+str(timeout)+'s\n'
-      status = -1
-      if log: log.write(error)
-    else:
+    def logOutput(log, output):
       import re
       # get rid of multiple blank lines
-      output = re.sub('\n[\n]*','\n',output)
+      output = re.sub('\n[\n]*','\n', output)
       if len(output) < 600:
         if log: log.write('sh: '+output+'\n')
       else:
         if log:
           log.write('sh: '+output[:600]+'...\n')
           log.write('... '+output[-600:]+'\n')
+      return output
+
+    if log: log.write('sh: '+command+'\n')
+    if useThreads:
+      status = -1
+      output = 'Runaway process'
+      def run(command, log):
+        global output, error, status
+        (output, error, status) = Configure.runShellCommand(command, log)
+        return
+
+      thread = threading.Thread(target = run, name = 'Shell Command', args = (command, log))
+      thread.setDaemon(1)
+      thread.start()
+      thread.join(timeout)
+      if thread.isAlive():
+        error  = 'Runaway process exceeded time limit of '+str(timeout)+'s\n'
+        status = -1
+        if log: log.write(error)
+      else:
+        output = logOutput(log, output)
+    else:
+      (output, error, status) = Configure.runShellCommand(command, log)
+      output                  = logOutput(log, output)
     if checkCommand:
       checkCommand(command, status, output, error)
     else:
