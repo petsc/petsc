@@ -7,7 +7,7 @@ Subject: new PETSc release
 
 PETSc Users,
 
-We have just released a new version of PETSc (2.0.22) with a variety
+We have just released a new version of PETSc (2.0.24) with a variety
 of extensions, enhancements, and bug fixes to the software.  A list of new
 features and changes in PETSc is provided in the "docs/changes.html" file
 available at
@@ -19,13 +19,17 @@ of patches at
      http://www.mcs.anl.gov/petsc/petsc-patches.html
 to determine whether any are required for your machine(s) of interest.
 
-If you are still using PETSc version 2.0.17 we HIGHLY recommend upgrading
-at this time. Version 2.0.21 users will also benefit from upgrading.
+One interesting new feature in this release is the ability to use the 
+ALICE memory snooper (http://www.mcs.anl.gov/ams) to monitor running 
+PETSc programs.
+
+We apologize for the long delay in this release and plan to make our 
+next release more quickly than the current release.
  
 As always, please send bug reports, questions, and requests for new 
 features to petsc-maint@mcs.anl.gov.
 
-Thanks for your support.
+Thanks for your continued support.
 
 The PETSc developers,
 Satish, Bill, Lois, and Barry
