@@ -1,24 +1,12 @@
 
-/* Incomplete Cholesky factorization context */
+/* Incomplete LU factorization context */
 
 typedef struct {
-  Mat  fact;
-  int  ordering;
-  int  levels;
-  int  (*ImplCreate)(PC);
-  int  (*ImplDestroy)(PC);
-  void *implctx;
-  int   bs_iter;        /* flag - use of BlockSolve iterative solvers */
-} PC_ICC;
+  Mat         fact;      /* factored matrix */
+  MatOrdering ordering;  /* matrix reordering */
+  int         levels;    /* levels of fill */
+  IS          row, col;  /* row and column permutations for reordering */
+  void        *implctx;  /* private implementation context */
+  int         bs_iter;   /* flag - use of BlockSolve iterative solvers */
+} PC_ILU;
 
-/* BlockSolve implementation interface */
-
-typedef struct {
-  int    blocksize;    /* number of systems to solve */
-  int    pre_option;   /* preconditioner, one of PRE_DIAG,
-                          PRE_STICCG, PRE_SSOR, PRE_BJACOBI */
-  double rtol;
-  int    max_it;
-  double rnorm;
-  int    guess_zero;
-} PCiBS;
