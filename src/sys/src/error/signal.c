@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.36 1997/02/26 22:08:23 balay Exp balay $";
+static char vcid[] = "$Id: signal.c,v 1.37 1997/04/03 19:16:55 balay Exp balay $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -102,7 +102,7 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
     signal( SIGFPE,  (void (*)(...)) PetscSignalHandler );
     signal( SIGSEGV, (void (*)(...)) PetscSignalHandler );
     signal( SIGSYS,  (void (*)(...)) PetscSignalHandler );
-#if defined(PARCH_IRIX64) && defined(__cplusplus)
+#elif defined(PARCH_IRIX64) && defined(__cplusplus)
     signal( SIGQUIT, (void (*)(int)) PetscSignalHandler );
     signal( SIGILL,  (void (*)(int)) PetscSignalHandler );
     signal( SIGFPE,  (void (*)(int)) PetscSignalHandler );
