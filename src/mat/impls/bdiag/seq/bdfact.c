@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.9 1995/10/05 01:31:43 curfman Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.10 1995/10/05 20:43:12 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -34,52 +34,41 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
 {
   Mat          C = *B;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data;
-  int          info, i, k, d, d2, dgk, pivot_row, col, nb = a->nb, nd = a->nd;
-  int          *diag = a->diag, ds, m = a->m, mainbd = a->mainbd;
+  int          info, i, k, d, d2, dgk, elim_row, elim_col, nb = a->nb;
+  int          dnum,  nd = a->nd;
+  int          *diag = a->diag, n = a->n, m = a->m, mainbd = a->mainbd, *dgptr;
   Scalar       *submat, **dv = a->diagv, *dd = dv[mainbd], mult;
 
   if (nb == 1) {
-    for ( k=0; k<m; k++ ) {
+    dgptr = (int *) PETSCMALLOC((m+n+1)*sizeof(int)); CHKPTRQ(dgptr);
+    PetscZero(dgptr,(m+n+1)*sizeof(int));
+    for ( i=0; i<nd; i++ ) dgptr[diag[i]+m] = i+1;
+    for ( k=0; k<m; k++ ) { /* k = pivot_row */
       dd[k] = 1.0/dd[k];
-      for ( d=mainbd-1; d>=0; d-- ) { /*      for ( d=0; d<mainbd; d++ ) { */
-        pivot_row = k + diag[d];
-        if (diag[d] >= k && pivot_row < m) {
-          if (dv[d][k] != 0) { /* nonzero pivot */
+      for ( d=mainbd-1; d>=0; d-- ) {
+        elim_row = k + diag[d];
+        if (diag[d] >= k && elim_row < m) {
+          if (dv[d][k] != 0) {
             dv[d][k] *= dd[k];
             mult = dv[d][k];
+            printf("k=%d, erow=%d, mult=%g\n",k,elim_row,mult);
             for ( d2=d+1; d2<nd; d2++ ) {
-              col = pivot_row - diag[d2];
-              dgk = k - col;
-              if (diag[d2] > 0) { /* lower triangle */
-                if (dgk > 0) { /* lower triangle */
-                  for ( ds=0; ds<mainbd; ds++ ) {
-                    if (diag[ds] <= dgk) {
-                      if (diag[ds] == dgk) dv[d2][col] -= mult * dv[ds][col];
-                      break;
-                    }
-                  }
-                } else { /* upper triangle */
-                  for ( ds=mainbd; ds<nd; ds++ ) {
-                    if (diag[ds] <= dgk) {
-                      if (diag[ds] == dgk) dv[d2][col] -= mult * dv[ds][k];
-                      break;
-                    }
-                  }
-                }
-              } else { /* upper triangle */
-                if (dgk > 0) { /* lower triangle */
-                  for ( ds=0; ds<mainbd; ds++ ) {
-                    if (diag[ds] <= dgk) {
-                      if (diag[ds] == dgk) dv[d2][pivot_row] -= mult * dv[ds][col];
-                      break;
-                    }
-                  }
-                } else { /* upper triangle */
-                  for ( ds=mainbd; ds<nd; ds++ ) {
-                    if (diag[ds] <= dgk) {
-                      if (diag[ds] == dgk) dv[d2][pivot_row] -= mult * dv[ds][k];
-                      break;
-                    }
+              elim_col = elim_row - diag[d2];
+              if (elim_col >=0 && elim_col < n) {
+                dgk = k - elim_col;
+                dnum = dgptr[dgk+m];
+                printf("   d2=%d, dgk=%d, ecol=%d, dgptr[dgk]=%d\n",d2, dgk, elim_col, dnum);
+                if (dnum) {
+                  if (diag[d2] > 0) { /* lower triangle elimination */
+                    if (dgk > 0) /* lower triangle pivot */
+                      dv[d2][elim_col] -= mult * dv[dnum-1][elim_col];
+                    else 
+                      dv[d2][elim_col] -= mult * dv[dnum-1][k];
+                  } else { /* upper triangle elimination */
+                    if (dgk > 0) /* lower triangle pivot */
+                      dv[d2][elim_row] -= mult * dv[dnum-1][elim_col];
+                    else
+                      dv[d2][elim_row] -= mult * dv[dnum-1][k];
                   }
                 }
               }
@@ -88,6 +77,7 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
         }
       }
     }
+    PETSCFREE(dgptr);
   } 
   else {
     if (a->nd != 1 || a->diag[0] !=0) SETERRQ(1,
