@@ -471,8 +471,8 @@ if __name__ ==  '__main__':
       elif action == 'client':
         print 'Entries in server dictionary'
         rdict = RDict(parentDirectory = parent)
-        for key in rdict.keys():
-          print str(key)+' '+str(rdict[key])
+        for key in rdict.types():
+          print str(key)+' '+str(rdict.getType(key))
       elif action == 'clear':
         print 'Clearing all dictionaries'
         RDict().clear()

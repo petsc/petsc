@@ -49,7 +49,7 @@ class Defaults(maker.Maker):
         self.usingSIDL.clientLanguages.append(lang)
         self.addLanguage(lang)
     else:
-      self.debugPrint('Language '+lang+' not installed', 2, 'sidl')
+      self.debugPrint('Language '+lang+' not installed', 2, 'compile')
     return
 
   def addServerLanguage(self, lang):
@@ -58,7 +58,7 @@ class Defaults(maker.Maker):
         self.usingSIDL.serverLanguages.append(lang)
         self.addLanguage(lang)
     else:
-      self.debugPrint('Language '+lang+' not installed', 2, 'sidl')
+      self.debugPrint('Language '+lang+' not installed', 2, 'compile')
     return
 
   def isImpl(self, source):
