@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.49 1996/03/23 23:14:20 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.50 1996/03/24 15:31:33 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -220,13 +220,13 @@ static int SNESPrintHelp_TR(SNES snes,char *p)
   SNES_TR *ctx = (SNES_TR *)snes->data;
 
   PetscFPrintf(snes->comm,stdout," method SNES_EQ_NTR (tr) for systems of nonlinear equations:\n");
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_mu mu (default %g)\n",p,ctx->mu);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_eta eta (default %g)\n",p,ctx->eta);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_sigma sigma (default %g)\n",p,ctx->sigma);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta0 delta0 (default %g)\n",p,ctx->delta0);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta1 delta1 (default %g)\n",p,ctx->delta1);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta2 delta2 (default %g)\n",p,ctx->delta2);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta3 delta3 (default %g)\n",p,ctx->delta3);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_mu <mu> (default %g)\n",p,ctx->mu);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_eta <eta> (default %g)\n",p,ctx->eta);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_sigma <sigma> (default %g)\n",p,ctx->sigma);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta0 <delta0> (default %g)\n",p,ctx->delta0);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta1 <delta1> (default %g)\n",p,ctx->delta1);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta2 <delta2> (default %g)\n",p,ctx->delta2);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta3 <delta3> (default %g)\n",p,ctx->delta3);
   return 0;
 }
 

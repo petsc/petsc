@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.33 1996/03/23 20:44:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.34 1996/03/24 15:31:44 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -150,13 +150,13 @@ static int SNESPrintHelp_UMLS(SNES snes,char *p)
   PetscPrintf(snes->comm," method SNES_UM_NLS (umls) for unconstrained minimization:\n");
   PetscPrintf(snes->comm,"   %ssnes_line_search_gamma_f gamma_f (default %g) damping parameter\n",
     p,ctx->gamma_factor);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_maxf maxf (default %d) max function evals in line search\n",p,ctx->maxfev);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_maxf <maxf> (default %d) max function evals in line search\n",p,ctx->maxfev);
   PetscPrintf(snes->comm,"   %ssnes_line_search_maxkspf (default %d) computes max KSP iters\n",p,ctx->max_kspiter_factor);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_ftol ftol (default %g) tol for sufficient decrease\n",p,ctx->ftol);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_rtol rtol (default %g) relative tol for acceptable step\n",p,ctx->rtol);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_gtol gtol (default %g) tol for curvature condition\n",p,ctx->gtol);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_stepmin stepmin (default %g) lower bound for step\n",p,ctx->stepmin);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_stepmax stepmax (default %g) upper bound for step\n",p,ctx->stepmax);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_ftol <ftol> (default %g) tol for sufficient decrease\n",p,ctx->ftol);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_rtol <rtol> (default %g) relative tol for acceptable step\n",p,ctx->rtol);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_gtol <gtol> (default %g) tol for curvature condition\n",p,ctx->gtol);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_stepmin <stepmin> (default %g) lower bound for step\n",p,ctx->stepmin);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_stepmax <stepmax> (default %g) upper bound for step\n",p,ctx->stepmax);
   return 0;
 }
 /*------------------------------------------------------------*/

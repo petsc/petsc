@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.63 1996/03/24 16:04:52 curfman Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.64 1996/03/24 16:05:19 curfman Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -103,7 +103,7 @@ static int PCPrintHelp_ILU(PC pc,char *p)
   PetscPrintf(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);
   PetscPrintf(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);
   PetscPrintf(pc->comm," %spc_ilu_factorpointwise: Do NOT use block factorization\n",p);
-  PetscPrintf(pc->comm,"    (note this only applies to the MATMPIROWBS matrix format;\n");
+  PetscPrintf(pc->comm,"    (Note: This only applies to the MATMPIROWBS matrix format;\n");
   PetscPrintf(pc->comm,"    all others currently only support point factorization.\n");
   return 0;
 }
