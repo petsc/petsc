@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.5 1995/03/06 04:19:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.6 1995/04/13 14:40:32 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -9,14 +9,23 @@ static char vcid[] = "$Id: xmon.c,v 1.5 1995/03/06 04:19:02 bsmith Exp bsmith $"
 
 
 /*@
-     KSPLGMonitorCreate - Creates a line graph context for use with 
-                          KSP to monitor convergence of residual norms.
+   KSPLGMonitorCreate - Creates a line graph context for use with 
+   KSP to monitor convergence of residual norms.
 
-  Input Parameters:
-.   label
+   Input Parameters:
+.  host - the X display to open, or null for the local machine
+.  label - the title to put in the title bar
+.  x, y - the screen coordinates of the upper left coordinate of
+          the window
+.  m, n - the screen width and height in pixels
+
+   Output Parameter:
+.  ctx - the drawing context
+
+   Keywords:  KSP, monitor, line graph, residual, create
 @*/
-int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,
-                       DrawLGCtx *ctx)
+int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
+                       int n, DrawLGCtx *ctx)
 {
   DrawCtx win;
   int     ierr;
@@ -24,7 +33,6 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,
   ierr = DrawLGCreate(win,1,ctx); CHKERR(ierr);
   return 0;
 }
-
 
 int KSPLGMonitor(KSP itP,int n,double rnorm,void *monctx)
 {
@@ -42,12 +50,13 @@ int KSPLGMonitor(KSP itP,int n,double rnorm,void *monctx)
 } 
  
 /*@
-     KSPLGMonitorDestroy - Destroys a line graph context for use with 
-                          KSP to monitor convergence of residual norms, 
-                          that was created with KSPLGMonitorCreate().
+   KSPLGMonitorDestroy - Destroys a line graph context that was created 
+   with KSPLGMonitorCreate().
 
-  Input Parameters:
-.   label
+   Input Parameter:
+.  ctx - the drawing context
+
+   Keywords:  KSP, monitor, line graph, destroy
 @*/
 int KSPLGMonitorDestroy(DrawLGCtx ctx)
 {
