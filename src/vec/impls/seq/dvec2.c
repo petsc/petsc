@@ -1,13 +1,11 @@
 
 /* cannot have vcid because included in other files */
 
-
 /*
-   This file defines the vector operations in the simplest way possible.
-   These routines are for standard double precision serial vectors.
- */
+     These are routines shared by sequential vectors and BLAS sequential 
+   vectors.
+*/
 
-#include "sys/flog.h"
 #include "inline/dot.h"
 #include "inline/vmult.h"
 #include "inline/setval.h"
@@ -18,27 +16,34 @@
 #include "dvecimpl.h"   
 #include "draw.h"          
 
-static int VeiDVrange(Vec xin, int *low,int *high )
+static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 {
-  DvVector *x = (DvVector *) xin->data;
+  Vec_Seq *x = (Vec_Seq *) xin->data;
   *low = 0; *high = x->n;
   return 0;
 }
 #include "viewer.h"
 
-static int VeiDVview(PetscObject obj,Viewer ptr)
+static int VecView_Seq(PetscObject obj,Viewer ptr)
 {
   Vec         xin = (Vec) obj;
-  DvVector    *x = (DvVector *)xin->data;
+  Vec_Seq    *x = (Vec_Seq *)xin->data;
   PetscObject vobj = (PetscObject) ptr;
   int         i, n = x->n, ierr;
+  FILE        *fd;
 
-  if (!vobj) {
+  if (!ptr) { /* so that viewers may be used from debuggers */
+    ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
+  }
+
+  if (vobj->cookie == VIEWER_COOKIE && ((vobj->type == FILE_VIEWER) ||
+                                       (vobj->type == FILES_VIEWER)))  {
+    fd = ViewerFileGetPointer(ptr);
     for (i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
-      printf("%g + %gi\n",real(x->array[i]),imag(x->array[i]));
+      fprintf(fd,"%g + %gi\n",real(x->array[i]),imag(x->array[i]));
 #else
-      printf("%g\n",x->array[i]);
+      fprintf(fd,"%g\n",x->array[i]);
 #endif
     }
   }
@@ -71,9 +76,9 @@ static int VeiDVview(PetscObject obj,Viewer ptr)
 #endif
   return 0;
 }
-static int VeiDVmdot(int nv,Vec xin,Vec *y, Scalar *z )
+static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
 {
-  DvVector *x = (DvVector *)xin->data;
+  Vec_Seq *x = (Vec_Seq *)xin->data;
   register int n = x->n;
   register Scalar sum;
   Scalar   *xx = x->array, *yy;
@@ -81,16 +86,16 @@ static int VeiDVmdot(int nv,Vec xin,Vec *y, Scalar *z )
   /* This could be unrolled to reuse x[j] values */
   for (i=0; i<nv; i++) {
     sum = 0.0;
-    yy = ((DvVector *)(y[i]->data))->array;
+    yy = ((Vec_Seq *)(y[i]->data))->array;
     DOT(sum,xx,yy,n);
     z[i] = sum;
   }
   return 0;
 }
 
-static int VeiDVmax(Vec xin,int* idx,double * z )
+static int VecMax_Seq(Vec xin,int* idx,double * z )
 {
-  DvVector          *x = (DvVector *) xin->data;
+  Vec_Seq          *x = (Vec_Seq *) xin->data;
   register int i, j=0, n = x->n;
   register double max = 0.0, tmp;
   Scalar   *xx = x->array;
@@ -108,23 +113,23 @@ static int VeiDVmax(Vec xin,int* idx,double * z )
 }
 
 
-static int VeiDVset(Scalar* alpha,Vec xin )
+static int VecSet_Seq(Scalar* alpha,Vec xin )
 {
-  DvVector  *x = (DvVector *)xin->data;
+  Vec_Seq  *x = (Vec_Seq *)xin->data;
   register int n = x->n;
   Scalar   *xx = x->array;
   SET(xx,n,*alpha);
   return 0;
 }
 
-static int VeiDVmaxpy( int nv, Scalar *alpha, Vec yin, Vec *x )
+static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec yin, Vec *x )
 {
-  DvVector *y = (DvVector *) yin->data;
+  Vec_Seq *y = (Vec_Seq *) yin->data;
   register int n = y->n;
   Scalar *yy = y->array, *xx;
   int      j;
   for (j=0; j<nv; j++) {
-    xx = ((DvVector *)(x[j]->data))->array;
+    xx = ((Vec_Seq *)(x[j]->data))->array;
     /* This should really look at the case alpha = +1 as well */
     if (alpha[j] == -1.0) {
 	YMX(yy,xx,n);
@@ -136,19 +141,19 @@ static int VeiDVmaxpy( int nv, Scalar *alpha, Vec yin, Vec *x )
   return 0;
 }
 
-static int VeiDVaypx(Scalar *alpha, Vec xin, Vec yin )
+static int VecAYPX_Seq(Scalar *alpha, Vec xin, Vec yin )
 {
-  DvVector *x = (DvVector *)xin->data, *y = (DvVector *)yin->data;
+  Vec_Seq *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
   register int n = x->n;
   Scalar   *xx = x->array, *yy = y->array;
   AYPX(yy,*alpha,xx,n);
   return 0;
 }
 
-static int VeiDVwaxpy(Scalar* alpha,Vec xin,Vec yin,Vec win )
+static int VecWAXPY_Seq(Scalar* alpha,Vec xin,Vec yin,Vec win )
 {
-  DvVector *w = (DvVector *)win->data, *x = (DvVector *)xin->data;
-  DvVector *y = (DvVector *)yin->data;
+  Vec_Seq *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
+  Vec_Seq *y = (Vec_Seq *)yin->data;
   register int i, n = x->n;
   Scalar   *xx = x->array, *yy = y->array, *ww = w->array;
   if (*alpha == 1.0) {
@@ -160,20 +165,20 @@ static int VeiDVwaxpy(Scalar* alpha,Vec xin,Vec yin,Vec win )
   return 0;
 }
 
-static int VeiDVpmult( Vec xin, Vec yin, Vec win )
+static int VecPMult_Seq( Vec xin, Vec yin, Vec win )
 {
-  DvVector *w = (DvVector *)win->data, *x = (DvVector *)xin->data;
-  DvVector *y = (DvVector *)yin->data;
+  Vec_Seq *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
+  Vec_Seq *y = (Vec_Seq *)yin->data;
   register int n = x->n, i;
   Scalar   *xx = x->array, *yy = y->array, *ww = w->array;
   for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];
   return 0;
 }
 
-static int VeiDVpdiv(Vec xin,Vec yin,Vec win )
+static int VecPDiv_Seq(Vec xin,Vec yin,Vec win )
 {
-  DvVector *w = (DvVector *)win->data, *x = (DvVector *)xin->data;
-  DvVector *y = (DvVector *)yin->data;
+  Vec_Seq *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
+  Vec_Seq *y = (Vec_Seq *)yin->data;
   register int n = x->n, i;
   Scalar   *xx = x->array, *yy = y->array, *ww = w->array;
   for (i=0; i<n; i++) ww[i] = xx[i] / yy[i];
@@ -181,9 +186,9 @@ static int VeiDVpdiv(Vec xin,Vec yin,Vec win )
 }
 
 #include "inline/spops.h"
-static int VeiDVinsertvalues(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
+static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 {
-  DvVector *x = (DvVector *)xin->data;
+  Vec_Seq *x = (Vec_Seq *)xin->data;
   Scalar   *xx = x->array;
   int      i;
 
@@ -206,14 +211,27 @@ static int VeiDVinsertvalues(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
   return 0;
 }
 
-static int VeiDVgetarray(Vec vin,Scalar **a)
+static int VecGetArray_Seq(Vec vin,Scalar **a)
 {
-  DvVector *v = (DvVector *)vin->data;
+  Vec_Seq *v = (Vec_Seq *)vin->data;
   *a =  v->array; return 0;
 }
 
-static int VeiDVsize(Vec vin,int *size)
+static int VecGetSize_Seq(Vec vin,int *size)
 {
-  DvVector *v = (DvVector *)vin->data;
+  Vec_Seq *v = (Vec_Seq *)vin->data;
   *size = v->n; return 0;
 }
+
+static int VecDestroy_Seq(PetscObject obj )
+{
+  Vec      v = (Vec ) obj;
+#if defined(PETSC_LOG)
+  PLogObjectState(obj,"Rows %d",((Vec_Seq *)v->data)->n);
+#endif
+  FREE(v->data);
+  PLogObjectDestroy(v);
+  PETSCHEADERDESTROY(v); 
+  return 0;
+}
+ 

@@ -35,7 +35,7 @@ struct _VeOps {
        (*getsize)(Vec,int*),(*localsize)(Vec,int*),
        (*getrange)(Vec,int*,int*),
        (*restorearray)(Vec,Scalar**),
-       (*min)(Vec,int*,double*),  /* z = min(|x|); idx = index of min(|x|) */
+       (*min)(Vec,int*,double*);  /* z = min(|x|); idx = index of min(|x|) */
 };
 
 /* Vector types, must be powers of 2 */
