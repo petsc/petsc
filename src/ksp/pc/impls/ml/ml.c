@@ -1,3 +1,4 @@
+
 /* 
    Provides an interface to the ML 3.0 smoothed Aggregation 
 */
@@ -23,8 +24,6 @@ typedef struct {
   Vec          x,y;
   ML_Operator  *mlmat; 
   PetscScalar  *pwork; /* tmp array used by PetscML_comm() */
-  PetscInt     rlen_max,*cols; /* used by MatConvert_ML_SeqAIJ() */
-  PetscScalar  *vals;          /* used by MatConvert_ML_SeqAIJ() */
 } FineGridCtx;
 
 /* The context associates a ML matrix with a PETSc shell matrix */
@@ -44,10 +43,8 @@ typedef struct {
   PetscReal    Threshold,DampingFactor; 
   PetscTruth   SpectralNormScheme_Anorm;
   PetscMPIInt  size;
-
   PetscErrorCode (*PCSetUp)(PC);
   PetscErrorCode (*PCDestroy)(PC);
- 
 } PC_ML;
 extern int PetscML_getrow(void *ML_data,int N_requested_rows,int requested_rows[],
             int allocated_space,int columns[],double values[],int row_lengths[]);
@@ -58,7 +55,7 @@ extern PetscErrorCode MatMultAdd_ML(Mat,Vec,Vec,Vec);
 extern PetscErrorCode MatConvert_MPIAIJ_ML(Mat,const MatType,Mat*);
 extern PetscErrorCode MatDestroy_ML(Mat);
 extern PetscErrorCode MatConvert_ML_SeqAIJ(ML_Operator*,Mat*);
-extern PetscErrorCode MatConvert_ML_MPIAIJ(FineGridCtx*,Mat*);
+extern PetscErrorCode MatConvert_ML_MPIAIJ(ML_Operator*,Mat*);
 extern PetscErrorCode MatConvert_ML_SHELL(ML_Operator*,Mat*);
 
 /* -------------------------------------------------------------------------- */
@@ -89,7 +86,6 @@ static PetscErrorCode PCSetUp_ML(PC pc)
   PetscInt             nlocal_allcols,Nlevels,mllevel,level,m,fine_level;
   Mat                  A,Aloc; 
   GridCtx              *gridctx; 
-  PC                   pc_coarse;
   PC_ML                *pc_ml=PETSC_NULL;
   PetscObjectContainer container;
 
@@ -173,13 +169,9 @@ static PetscErrorCode PCSetUp_ML(PC pc)
 
   /* wrap ML matrices by PETSc shell matrices at coarsened grids. 
      Level 0 is the finest grid for ML, but coarsest for PETSc! */
-  PetscMLdata->rlen_max = A->N;
-  ierr = PetscMalloc(PetscMLdata->rlen_max*(sizeof(PetscScalar)+sizeof(PetscInt)),&PetscMLdata->cols);CHKERRQ(ierr);
-  PetscMLdata->vals = (PetscScalar*)(PetscMLdata->cols + PetscMLdata->rlen_max);
-
   gridctx[fine_level].A = A;
   level = fine_level - 1;
-  if (size == 1){ /* convert ML mat format into petsc seqaij format */
+  if (size == 1){ /* convert ML P, R and A into seqaij format */
     for (mllevel=1; mllevel<Nlevels; mllevel++){ 
       mlmat  = &(ml_object->Pmat[mllevel]);
       ierr = MatConvert_ML_SeqAIJ(mlmat,&gridctx[level].P);CHKERRQ(ierr);
@@ -189,18 +181,21 @@ static PetscErrorCode PCSetUp_ML(PC pc)
       ierr = MatConvert_ML_SeqAIJ(mlmat,&gridctx[level].R);CHKERRQ(ierr);
       level--;
     }
-  } else { /* convert ML mat format into petsc shell format */
+  } else { /* convert ML P and R into shell format, ML A into mpiaij format */
     for (mllevel=1; mllevel<Nlevels; mllevel++){ 
       mlmat  = &(ml_object->Pmat[mllevel]);
       ierr = MatConvert_ML_SHELL(mlmat,&gridctx[level].P);CHKERRQ(ierr);
+      mlmat  = &(ml_object->Rmat[mllevel-1]);
+      ierr = MatConvert_ML_SHELL(mlmat,&gridctx[level].R);CHKERRQ(ierr);
       mlmat  = &(ml_object->Amat[mllevel]);
+      ierr = MatConvert_ML_MPIAIJ(mlmat,&gridctx[level].A);CHKERRQ(ierr);  
+#ifdef TMP
       /*
       if (mllevel==1) {
         ML_Operator_Print_UsingGlobalOrdering(mlmat,"Amat1",PETSC_NULL,PETSC_NULL);
       }
       */
-      ierr = MatConvert_ML_SHELL(mlmat,&gridctx[level].A);CHKERRQ(ierr);
-#ifndef TMP   
+      ierr = MatConvert_ML_SHELL(mlmat,&gridctx[level].A);CHKERRQ(ierr);   
       if (mllevel>0){ 
         PetscMLdata->mlmat  = &(ml_object->Amat[mllevel]);
         Mat A_tmp;
@@ -236,8 +231,6 @@ static PetscErrorCode PCSetUp_ML(PC pc)
         ierr = PetscRandomDestroy(rd);CHKERRQ(ierr);
     } 
 #endif    
-      mlmat  = &(ml_object->Rmat[mllevel-1]);
-      ierr = MatConvert_ML_SHELL(mlmat,&gridctx[level].R);CHKERRQ(ierr);
       level--;
     }
   }
@@ -274,10 +267,6 @@ static PetscErrorCode PCSetUp_ML(PC pc)
     ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     
     if (level < fine_level){
-      if (size > 1){
-        ierr = KSPGetPC(gridctx[level].ksp,&pc_coarse);CHKERRQ(ierr);
-        ierr = PCSetType(pc_coarse,PCNONE);CHKERRQ(ierr); 
-      }
       ierr = MGSetInterpolate(pc,level+1,gridctx[level].P);CHKERRQ(ierr);
       ierr = MGSetRestriction(pc,level+1,gridctx[level].R);CHKERRQ(ierr); 
     }
@@ -306,7 +295,6 @@ PetscErrorCode PetscObjectContainerDestroy_PC_ML(void *ptr)
   ierr = PetscFree(pc_ml->PetscMLdata->pwork);CHKERRQ(ierr);
   ierr = VecDestroy(pc_ml->PetscMLdata->x);CHKERRQ(ierr);
   ierr = VecDestroy(pc_ml->PetscMLdata->y);CHKERRQ(ierr); 
-  ierr = PetscFree(pc_ml->PetscMLdata->cols);CHKERRQ(ierr);
   ierr = PetscFree(pc_ml->PetscMLdata);CHKERRQ(ierr);
 
   level = pc_ml->fine_level;
@@ -730,7 +718,7 @@ PetscErrorCode MatDestroy_ML(Mat A)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode PetscSortIntWithScalarArray(PetscInt,PetscInt [],PetscScalar []);
+extern PetscErrorCode PetscSortIntWithScalarArray(PetscInt,PetscInt [],PetscScalar []); 
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_ML_SeqAIJ"
 PetscErrorCode MatConvert_ML_SeqAIJ(ML_Operator *mlmat,Mat *newmat) 
@@ -743,7 +731,7 @@ PetscErrorCode MatConvert_ML_SeqAIJ(ML_Operator *mlmat,Mat *newmat)
   
   PetscFunctionBegin;
   if ( mlmat->getrow == NULL) SETERRQ(PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
-  if (m != n){ /* pass array pointers if ml->mlmat is Pmat or Rmat */
+  if (m != n){ /* ML Pmat and Rmat are in CSR format. Pass array pointers into SeqAIJ matrix */
     ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,n,matdata->rowptr,ml_cols,ml_vals,newmat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } 
@@ -758,6 +746,7 @@ PetscErrorCode MatConvert_ML_SeqAIJ(ML_Operator *mlmat,Mat *newmat)
     if (nnz[i] > nz_max) nz_max = nnz[i];
   }
   ierr = MatSeqAIJSetPreallocation(*newmat,0,nnz);CHKERRQ(ierr);
+  ierr = MatSetOption(*newmat,MAT_COLUMNS_SORTED);CHKERRQ(ierr); /* check! */
 
   nz_max++;
   ierr = PetscMalloc(nz_max*(sizeof(int)+sizeof(PetscScalar)),&aj);CHKERRQ(ierr);
@@ -771,7 +760,7 @@ PetscErrorCode MatConvert_ML_SeqAIJ(ML_Operator *mlmat,Mat *newmat)
     for (j=ml_cols[i]; j<ml_cols[i+1]; j++){
       aj[k] = ml_cols[j]; aa[k++] = ml_vals[j];
     }
-    /* sort aj and aa ??? */
+    /* sort aj and aa */
     ierr = PetscSortIntWithScalarArray(nnz[i],aj,aa);CHKERRQ(ierr); 
     ierr = MatSetValues(*newmat,1,&i,nnz[i],aj,aa,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -814,139 +803,55 @@ PetscErrorCode MatConvert_ML_SHELL(ML_Operator *mlmat,Mat *newmat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_ML_MPIAIJ"
-PetscErrorCode MatConvert_ML_MPIAIJ(FineGridCtx *ml,Mat *newmat)
+PetscErrorCode MatConvert_ML_MPIAIJ(ML_Operator *mlmat,Mat *newmat) 
 {
+  struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata *)mlmat->data;
+  PetscInt        *ml_cols=matdata->columns,*aj; 
+  PetscScalar     *ml_vals=matdata->values,*aa;
   PetscErrorCode  ierr;
-  ML_Operator     *mat=ml->mlmat;
-  PetscInt        i,j,*cols=ml->cols,cstart,cend,rlen_max,*gordering;
-  PetscInt        m=mat->outvec_leng,n,nnzA[m],nnzB[m],nnz[m],nz_max,row,col,*cols_tmp; 
-  PetscScalar     *vals=ml->vals;
-  Mat             C;
-  Mat_MPIAIJ      *c;
-  PetscMPIInt     rank;
+  PetscInt        i,j,k,*gordering;
+  PetscInt        m=mlmat->outvec_leng,n,nnzA[m],nnzB[m],nnz[m],nz_max,row; 
+  Mat             A;
 
   PetscFunctionBegin;
-  if ( mat->getrow == NULL) SETERRQ(PETSC_ERR_ARG_NULL,"mat->getrow = NULL");
-  
-  ML_build_global_numbering(mat,mat->comm,&gordering);
-  ierr = MPI_Comm_rank(ml->A->comm,&rank);CHKERRQ(ierr);
-  n = mat->invec_leng;
-  /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] m: %d, %d; n: %d,\n",rank,m,mat->getrow->Nrows,n);CHKERRQ(ierr);*/
+  if (mlmat->getrow == NULL) SETERRQ(PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
+  n = mlmat->invec_leng;
   if (m != n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
 
-  ierr = MatCreate(ml->A->comm,m,n,PETSC_DECIDE,PETSC_DECIDE,&C);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATMPIAIJ);CHKERRQ(ierr);
-  c        = (Mat_MPIAIJ*)C->data;
-  cstart   = c->cstart;
-  cend     = c->cend;
-  rlen_max = C->N;
-  /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d]  cstart/end: %d %d, C->N: %d\n",rank,cstart,cend,C->N); */
-
-  ierr = PetscMalloc(nz_max*sizeof(int),&cols_tmp);CHKERRQ(ierr);
-
+  ierr = MatCreate(mlmat->comm->USR_comm,m,n,PETSC_DECIDE,PETSC_DECIDE,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   nz_max = 0;
   for (i=0; i<m; i++){
-    ML_get_matrix_row(mat,1,&i,&rlen_max,&cols,&vals,&nnz[i],0);
+    nnz[i] = ml_cols[i+1] - ml_cols[i] + 1;
     if (nz_max < nnz[i]) nz_max = nnz[i];
-    nnzA[i] = 0;
-    for (j=0; j<nnz[i]; j++){ 
-      col = gordering[cols[j]];
-      if (cstart <= col && col < cend ) nnzA[i]++; 
+    nnzA[i] = 1; /* diag */
+    for (j=ml_cols[i]; j<ml_cols[i+1]; j++){
+      if (ml_cols[j] < m) nnzA[i]++;
     }
     nnzB[i] = nnz[i] - nnzA[i];
   }
-  ierr = MatMPIAIJSetPreallocation(C,0,nnzA,0,nnzB);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,0,nnzA,0,nnzB);CHKERRQ(ierr);
 
-  /* insert values -- remap row and column indices */
+  /* insert mat values -- remap row and column indices */
+  nz_max++;
+  ierr = PetscMalloc(nz_max*(sizeof(int)+sizeof(PetscScalar)),&aj);CHKERRQ(ierr);
+  aa = (PetscScalar*)(aj + nz_max);
+  ML_build_global_numbering(mlmat,mlmat->comm,&gordering);
   for (i=0; i<m; i++){
-    ML_get_matrix_row(mat,1,&i,&rlen_max,&cols_tmp,&vals,&nnz[i],0);
-    for (j=0; j<nnz[i]; j++){ 
-      cols[j] = gordering[cols_tmp[j]];
-    }
     row = gordering[i];
-    ierr = MatSetValues(C,1,&row,nnz[i],cols,ml->vals,INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *newmat = C;
-
-  ierr = PetscFree(cols_tmp);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* -----------------------------------------------------------------------*/
-#define SWAP2IntScalar(a,b,c,d,t,ts) {t=a;a=b;b=t;ts=c;c=d;d=ts;}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSortIntWithScalarArray_Private"
-/* 
-   A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
-   Assumes 0 origin for v, number of elements = right+1 (right is index of
-   right-most member). 
-*/
-static PetscErrorCode PetscSortIntWithScalarArray_Private(PetscInt *v,PetscScalar *V,PetscInt right)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,vl,last,tmp;
-  PetscScalar    stmp;
-
-  PetscFunctionBegin;
-  if (right <= 1) {
-    if (right == 1) {
-      if (v[0] > v[1]) SWAP2IntScalar(v[0],v[1],V[0],V[1],tmp,stmp);
+    k = 0;
+    /* diagonal entry */
+    aj[k] = row; aa[k++] = ml_vals[i]; 
+    /* off diagonal entries */
+    for (j=ml_cols[i]; j<ml_cols[i+1]; j++){
+      aj[k] = gordering[ml_cols[j]]; aa[k++] = ml_vals[j];
     }
-    PetscFunctionReturn(0);
+    ierr = MatSetValues(A,1,&row,nnz[i],aj,aa,INSERT_VALUES);CHKERRQ(ierr);
   }
-  SWAP2IntScalar(v[0],v[right/2],V[0],V[right/2],tmp,stmp);
-  vl   = v[0];
-  last = 0;
-  for (i=1; i<=right; i++) {
-    if (v[i] < vl) {last++; SWAP2IntScalar(v[last],v[i],V[last],V[i],tmp,stmp);}
-  }
-  SWAP2IntScalar(v[0],v[last],V[0],V[last],tmp,stmp);
-  ierr = PetscSortIntWithScalarArray_Private(v,V,last-1);CHKERRQ(ierr);
-  ierr = PetscSortIntWithScalarArray_Private(v+last+1,V+last+1,right-(last+1));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *newmat = A;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSortIntWithScalarArray" 
-/*@
-   PetscSortIntWithScalarArray - Sorts an array of integers in place in increasing order;
-       changes a second array to match the sorted first array.
-
-   Not Collective
-
-   Input Parameters:
-+  n  - number of values
-.  i  - array of integers
--  I - second array of integers
-
-   Level: intermediate
-
-   Concepts: sorting^ints with array
-
-.seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
-@*/
-PetscErrorCode PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar I[])
-{
-  PetscErrorCode ierr;
-  PetscInt       j,k,tmp,ik;
-  PetscScalar    stmp;
-
-  PetscFunctionBegin;
-  if (n<8) {
-    for (k=0; k<n; k++) {
-      ik = i[k];
-      for (j=k+1; j<n; j++) {
-	if (ik > i[j]) {
-	  SWAP2IntScalar(i[k],i[j],I[k],I[j],tmp,stmp);
-	  ik = i[k];
-	}
-      }
-    }
-  } else {
-    ierr = PetscSortIntWithScalarArray_Private(i,I,n-1);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(aj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
