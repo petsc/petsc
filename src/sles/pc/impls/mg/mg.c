@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.60 1996/12/19 00:15:32 balay Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.61 1997/01/01 03:37:05 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -112,6 +112,8 @@ int MGCheck(PC pc)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCMG) return 0;
   mg = (MG *) pc->data;
+
+  if (!mg) SETERRQ(1,1,"Must set MG levels before calling");
 
   n = mg[0]->levels;
 
