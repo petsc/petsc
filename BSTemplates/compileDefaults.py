@@ -583,6 +583,7 @@ class UsingMatlab(UsingCompiler):
   '''This class handles all interaction specific to the Matlab language'''
   def __init__(self, usingSIDL, argDB = None):
     UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
+    self.argDB.setType('MATLAB_DIR', nargs.ArgDir(1, 'The main Matlab directory: eg. /software/linux-2/com/packages/matlab-r13.1'))
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
     return
