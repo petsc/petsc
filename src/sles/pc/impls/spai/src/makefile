@@ -1,16 +1,19 @@
-#PETSC_DIR = ../../../..
 
 ALL: lib
-
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
-SOURCEC  = sda2.c sda2f.c
+#
+#    The -I/home/bsmith/libraries/spai_1.1 should point the location you have installed
+#  SPAI.
+#
+CFLAGS   = ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"' ${SPAI_INCLUDE}
+SOURCEC  = ispai.c dspai.c
 SOURCEF  =
-SOURCEH  = sda.h
-OBJSC    = sda2.o sda2f.o
+SOURCEH  = 
+OBJSC    = ispai.o dspai.o
 OBJSF    =
 LIBBASE  = libpetsccontrib
 DIRS     = 
-LOCDIR   = src/contrib/sda/src
+LOCDIR   = src/contrib/spai/src
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+
 

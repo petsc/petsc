@@ -1,16 +1,16 @@
-#PETSC_DIR = ../../..
+# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
-SOURCEC  = vector.c 
+CFLAGS   = ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"' ${ADIC_INCLUDE}
+SOURCEC  = adpetscadic.c petscadic.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = vector.o 
+OBJSC    = adpetscadic.o petscadic.o
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libpetscmat
 MANSEC   = 1
-LOCDIR   = src/vec/interface/
+LOCDIR   = src/adic/src/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

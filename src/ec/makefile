@@ -1,8 +1,8 @@
-#PETSC_DIR = ../..
+# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   = ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = ecimpl.h
@@ -12,4 +12,4 @@ LIBBASE  = libpetscvec
 DIRS     = interface impls examples
 LOCDIR   = src/ec/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
