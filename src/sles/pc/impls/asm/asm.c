@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.41 1996/11/27 22:52:37 bsmith Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.42 1996/12/17 16:55:59 balay Exp balay $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -83,7 +83,7 @@ static int PCSetUp_ASM(PC pc)
       sz    = end_val - start_val;
       start = start_val;
       if (end_val/bs*bs != end_val || start_val/bs*bs != start_val) {
-        SETERRQ(1,"PCSetUp_ASM:Bad distribution for matrix block size");
+        SETERRQ(1,"Bad distribution for matrix block size");
       }
       for ( i=0; i<n_local_true; i++){
         size       =  ((sz/bs)/n_local_true + (( (sz/bs) % n_local_true) > i))*bs;
@@ -312,7 +312,7 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
   PC_ASM *osm;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCASM) return 0;  
-  if (n <= 0) SETERRQ(1,"PCASMSetLocalSubdomains:Each process must have 1+ blocks");
+  if (n <= 0) SETERRQ(1,"Each process must have 1+ blocks");
   osm               = (PC_ASM *) pc->data;
   osm->n_local_true = n;
   osm->is           = is;
@@ -353,7 +353,7 @@ int PCASMSetTotalSubdomains(PC pc, int N, IS *is)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCASM) return 0;  
 
-  if (is) SETERRQ(1,"PCASMSetTotalSubdomains:Use PCASMSetLocalSubdomains to \
+  if (is) SETERRQ(1,"Use PCASMSetLocalSubdomains to \
 set specific index sets\n they cannot be set globally yet.");
 
   osm               = (PC_ASM *) pc->data;
@@ -364,7 +364,7 @@ set specific index sets\n they cannot be set globally yet.");
   MPI_Comm_size(pc->comm,&size);
   osm->n_local_true = N/size + ((N % size) > rank);
   if (osm->n_local_true <= 0) 
-    SETERRQ(1,"PCASMSetTotalSubdomains:Each process must have 1+ blocks");
+    SETERRQ(1,"Each process must have 1+ blocks");
   osm->is           = 0;
   return 0;
 }
@@ -393,7 +393,7 @@ int PCASMSetOverlap(PC pc, int ovl)
   PC_ASM *osm;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCASM) return 0;  
-  if (ovl < 0 ) SETERRQ(1,"PCASMSetOverlap:Negative overlap value used");
+  if (ovl < 0 ) SETERRQ(1,"Negative overlap value used");
 
   osm               = (PC_ASM *) pc->data;
   osm->overlap      = ovl;
@@ -431,7 +431,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
   int i,j, height,width,ystart,xstart,yleft,yright,xleft,xright,loc_outter;
   int nidx,*idx,loc,ii,jj,ierr,count;
 
-  if (dof != 1) SETERRQ(PETSC_ERR_SUP,"PCASMCreateSubdomains2D");
+  if (dof != 1) SETERRQ(PETSC_ERR_SUP,"");
 
   *Nsub = N*M;
   *is = (IS *) PetscMalloc( (*Nsub)*sizeof(IS **) ); CHKPTRQ(is);
@@ -503,7 +503,7 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCASM) return 0;
-  if (!pc->setupcalled) SETERRQ(1,"PCASMGetSubSLES:Must call SLESSetUp first");
+  if (!pc->setupcalled) SETERRQ(1,"Must call SLESSetUp first");
   jac = (PC_ASM *) pc->data;
   *n_local     = jac->n_local_true;
   *first_local = -1; /* need to determine global number of local blocks*/

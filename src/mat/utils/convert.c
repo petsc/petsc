@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.53 1996/09/14 03:08:53 bsmith Exp balay $";
+static char vcid[] = "$Id: convert.c,v 1.54 1996/12/16 22:22:40 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -26,7 +26,7 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
       ierr = MatCreateSeqAIJ(mat->comm,m,n,0,PETSC_NULL,M); CHKERRQ(ierr); 
       break;
     case MATMPIROWBS:
-      if (m != n) SETERRQ(1,"MatConvert:MATMPIROWBS matrix must be square");
+      if (m != n) SETERRQ(1,"MATMPIROWBS matrix must be square");
       ierr = MatCreateMPIRowbs(mat->comm,PETSC_DECIDE,m,0,PETSC_NULL,
              PETSC_NULL,M); CHKERRQ(ierr);
       break;
@@ -57,7 +57,7 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
       break;
       }
     default:
-      SETERRQ(1,"MatConvert:Matrix type is not currently supported");
+      SETERRQ(1,"Matrix type is not currently supported");
   }
   ierr = MatGetOwnershipRange(*M,&rstart,&rend); CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
@@ -84,7 +84,7 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
 
   switch (newtype) {
     case MATMPIROWBS:
-      if (m != n) SETERRQ(1,"MatConvert_SeqAIJ:MATMPIROWBS matrix must be square");
+      if (m != n) SETERRQ(1,"MATMPIROWBS matrix must be square");
       ierr = MatCreateMPIRowbs(A->comm,PETSC_DECIDE,m,0,PETSC_NULL,PETSC_NULL,B);
              CHKERRQ(ierr);
       break;
@@ -117,7 +117,7 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
       break;
       }
     default:
-      SETERRQ(1,"MatConvert_SeqAIJ:Matrix type is not currently supported");
+      SETERRQ(1,"Matrix type is not currently supported");
   }
   ierr = MatGetOwnershipRange(*B,&rstart,&rend); CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
@@ -138,7 +138,7 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
  */
 int MatConvert_MPIAIJ(Mat A, MatType newtype, Mat *B)
 {
-  SETERRQ(1,"MatConvert_MPIAIJ:Not currently suported");
+  SETERRQ(1,"Not currently suported");
 
   /* Each processor converts its local rows */
 /* ----------------------------------------------------
@@ -178,7 +178,7 @@ int MatConvert_SeqBDiag(Mat A, MatType newtype, Mat *B)
       ierr = MatCreateSeqAIJ(A->comm,m,n,nz,PETSC_NULL,B); CHKERRQ(ierr); 
       break;
     case MATMPIROWBS:
-      if (m != n) SETERRQ(1,"MatConvert_SeqBDiag:MATMPIROWBS matrix must be square");
+      if (m != n) SETERRQ(1,"MATMPIROWBS matrix must be square");
       ierr = MatCreateMPIRowbs(A->comm,PETSC_DECIDE,m,0,PETSC_NULL,PETSC_NULL,
              B); CHKERRQ(ierr);
       break;
@@ -200,7 +200,7 @@ int MatConvert_SeqBDiag(Mat A, MatType newtype, Mat *B)
       break;
       }
     default:
-      SETERRQ(1,"MatConvert_SeqBDiag:Matrix type is not currently supported");
+      SETERRQ(1,"Matrix type is not currently supported");
   }
   ierr = MatGetOwnershipRange(*B,&rstart,&rend); CHKERRQ(ierr);
 

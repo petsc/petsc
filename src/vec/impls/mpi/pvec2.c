@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.16 1996/05/07 19:10:59 bsmith Exp balay $ */
+/* $Id: pvec2.c,v 1.17 1996/12/17 18:00:10 balay Exp balay $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -87,7 +87,7 @@ static int VecMax_MPI( Vec xin, int *idx, double *z )
   }
   else {
     /* Need to use special linked max */
-    SETERRQ( 1, "VecMax_MPI:Parallel max with index not supported" );
+    SETERRQ( 1, "Parallel max with index not supported" );
   }
   return 0;
 }
@@ -107,7 +107,7 @@ static int VecMin_MPI( Vec xin, int *idx, double *z )
   }
   else {
     /* Need to use special linked Min */
-    SETERRQ( 1, "VecMin_MPI:Parallel Min with index not supported" );
+    SETERRQ( 1, "Parallel Min with index not supported" );
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.55 1996/08/08 14:42:04 bsmith Exp balay $";
+static char vcid[] = "$Id: sor.c,v 1.56 1996/12/17 17:18:43 balay Exp balay $";
 #endif
 
 /*
@@ -195,7 +195,7 @@ int PCSORSetOmega(PC pc, double omega)
   PC_SOR *jac;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCSOR) return 0;
-  if (omega >= 2.0 || omega <= 0.0) SETERRQ(1,"PCSORSetOmega:Relaxation out of range");
+  if (omega >= 2.0 || omega <= 0.0) SETERRQ(1,"Relaxation out of range");
   jac        = (PC_SOR *) pc->data; 
   jac->omega = omega;
   return 0;

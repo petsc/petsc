@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.50 1996/11/26 20:28:11 curfman Exp balay $";
+static char vcid[] = "$Id: umtr.c,v 1.51 1996/12/17 17:35:16 balay Exp balay $";
 #endif
 
 #include <math.h>
@@ -93,7 +93,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
           PLogInfo(snes,"SNESSolve_UM_TR: Initial delta computed without matrix norm info");
         } else {
           CHKERRQ(ierr);
-          if (PetscAbsDouble(max_val)<1.e-14)SETERRQ(1,"SNESSolve_UM_TR:Hessian norm is too small");
+          if (PetscAbsDouble(max_val)<1.e-14)SETERRQ(1,"Hessian norm is too small");
           delta = PetscMax(delta,*gnorm/max_val);
         }
       } else { 
@@ -104,7 +104,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       /* Minimize the quadratic to compute the step s */
       qcgP->delta = delta;
       ierr = SLESSolve(snes->sles,G,S,&qits); CHKERRQ(ierr);
-      if (qits < 0) SETERRQ(1,"SNESSolve_UM_TR:Failure in SLESSolve");
+      if (qits < 0) SETERRQ(1,"Failure in SLESSolve");
       if (qcgP->info == 3) newton = 1;	            /* truncated Newton step */
       PLogInfo(snes,"SNESSolve_UM_TR: %d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
                i, qcgP->ltsnrm, delta, qcgP->quadratic, qits );
@@ -253,7 +253,7 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,
   double    epsmch = 1.0e-14;   /* This must be fixed */
 
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
-    "SNESConverged_UM_TR:For SNES_UNCONSTRAINED_MINIMIZATION only");
+    "For SNES_UNCONSTRAINED_MINIMIZATION only");
 
   /* Test for successful convergence */
   if ((!neP->success || neP->sflag) && (delta <= snes->deltatol * xnorm)) {
@@ -363,7 +363,7 @@ int SNESCreate_UM_TR(SNES snes)
   int       ierr;
 
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) 
-    SETERRQ(1,"SNESCreate_UM_TR:For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(1,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   snes->type 		= SNES_UM_TR;
   snes->setup		= SNESSetUp_UM_TR;
   snes->solve		= SNESSolve_UM_TR;

@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.62 1996/12/02 21:25:49 bsmith Exp balay $ */
+/* $Id: pdvec.c,v 1.63 1996/12/17 17:59:32 balay Exp balay $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -330,7 +330,7 @@ static int VecView_MPI_Matlab(Vec xin, Viewer viewer )
   double      *xx;
 
 #if defined(PETSC_COMPLEX)
-  SETERRQ(1,"VecView_MPI_Matlab:Complex not done");
+  SETERRQ(1,"Complex not done");
 #else
   MPI_Comm_rank(xin->comm,&rank);
   MPI_Comm_size(xin->comm,&size);
@@ -397,10 +397,10 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
 
 #if defined(PETSC_BOPT_g)
   if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { SETERRQ(1,
-   "VecSetValues_MPI:You have already inserted values; you cannot now add");
+   "You have already inserted values; you cannot now add");
   }
   else if (x->insertmode == ADD_VALUES && addv == INSERT_VALUES) { SETERRQ(1,
-   "VecSetValues_MPI:You have already added values; you cannot now insert");
+   "You have already added values; you cannot now insert");
   }
 #endif
   x->insertmode = addv;
@@ -412,7 +412,7 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
       }
       else if (!x->stash.donotstash) {
 #if defined(PETSC_BOPT_g)
-        if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,"VecSetValues_MPI:Out of range");
+        if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,"Out of range");
 #endif
         if (x->stash.n == x->stash.nmax) { /* cache is full */
           int    *idx, nmax = x->stash.nmax;
@@ -438,7 +438,7 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
       }
       else if (!x->stash.donotstash) {
 #if defined(PETSC_BOPT_g)
-        if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,"VecSetValues_MPI:Out of range");
+        if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,"Out of range");
 #endif
         if (x->stash.n == x->stash.nmax) { /* cache is full */
           int    *idx, nmax = x->stash.nmax;
@@ -481,7 +481,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce(&x->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { SETERRQ(1,
-    "VecAssemblyBegin_MPI:Some processors inserted values while others added");
+    "Some processors inserted values while others added");
   }
   x->insertmode = addv; /* in case this processor had no cache */
 
@@ -593,7 +593,7 @@ static int VecAssemblyEnd_MPI(Vec vec)
       }
     }
     else { SETERRQ(1,
-      "VecAssemblyEnd_MPI:Insert mode is not set correctly; corrupted vector");
+      "Insert mode is not set correctly; corrupted vector");
     }
     count--;
   }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: posindep.c,v 1.6 1996/11/07 15:10:47 bsmith Exp balay $";
+static char vcid[] = "$Id: posindep.c,v 1.7 1996/12/17 17:57:04 balay Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -455,10 +455,10 @@ int TSCreate_Pseudo(TS ts )
   ts->view            = TSView_Pseudo;
 
   if (ts->problem_type == TS_LINEAR) {
-    SETERRQ(1,"TSCreate_Pseudo:Only for nonlinear problems");
+    SETERRQ(1,"Only for nonlinear problems");
   }
   if (!ts->A) {
-    SETERRQ(1,"TSCreate_Pseudo:Must set Jacobian");
+    SETERRQ(1,"Must set Jacobian");
   }
   ierr = MatGetType(ts->A,&mtype,PETSC_NULL);
   if (mtype == MATSHELL) {

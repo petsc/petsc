@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.45 1996/11/13 16:24:14 bsmith Exp balay $";
+static char vcid[] = "$Id: rich.c,v 1.46 1996/12/17 16:39:13 balay Exp balay $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -17,9 +17,9 @@ int KSPSetUp_Richardson(KSP ksp)
 {
   /* check user parameters and functions */
   if (ksp->pc_side == PC_RIGHT)
-    {SETERRQ(2,"KSPSetUp_Richardson:no right preconditioning for KSPRICHARDSON");}
+    {SETERRQ(2,"no right preconditioning for KSPRICHARDSON");}
   else if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,"KSPSetUp_Richardson:no symmetric preconditioning for KSPRICHARDSON");}
+    {SETERRQ(2,"no symmetric preconditioning for KSPRICHARDSON");}
   /* get work vectors from user code */
   return KSPDefaultGetWork(ksp,2);
 }

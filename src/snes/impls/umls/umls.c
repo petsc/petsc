@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.49 1996/11/26 20:28:26 curfman Exp balay $";
+static char vcid[] = "$Id: umls.c,v 1.50 1996/12/17 17:34:09 balay Exp balay $";
 #endif
 
 #include <math.h>
@@ -534,7 +534,7 @@ int SNESCreate_UM_LS(SNES snes)
   int       ierr;
 
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
-    "SNESCreate_UM_LS:For SNES_UNCONSTRAINED_MINIMIZATION only");
+    "For SNES_UNCONSTRAINED_MINIMIZATION only");
   snes->type 		  = SNES_UM_LS;
   snes->setup		  = SNESSetUp_UM_LS;
   snes->solve		  = SNESSolve_UM_LS;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.58 1996/12/08 23:53:40 bsmith Exp balay $";
+static char vcid[] = "$Id: mg.c,v 1.59 1996/12/17 17:09:02 balay Exp balay $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -330,7 +330,7 @@ static int PCSetFromOptions_MG(PC pc)
     else if (!PetscStrcmp(buff,"full")) mg = MGFULL;
     else if (!PetscStrcmp(buff,"kaskade")) mg = MGKASKADE;
     else if (!PetscStrcmp(buff,"cascade")) mg = MGKASKADE;
-    else SETERRQ(1,"PCSetFromOptions_MG:Unknown type");
+    else SETERRQ(1,"Unknown type");
     MGSetType(pc,mg);
   }
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.34 1996/08/08 14:44:19 bsmith Exp balay $";
+static char vcid[] = "$Id: matio.c,v 1.35 1996/12/16 22:38:54 balay Exp balay $";
 #endif
 
 /* 
@@ -119,7 +119,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype != BINARY_FILE_VIEWER)
-   SETERRQ(1,"MatLoad: Invalid viewer; open viewer with ViewerFileOpenBinary()");
+   SETERRQ(1,"Invalid viewer; open viewer with ViewerFileOpenBinary()");
 
   PetscObjectGetComm((PetscObject)viewer,&comm);
   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
@@ -151,7 +151,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
     ierr = MatLoad_MPIRowbs(viewer,type,newmat); CHKERRQ(ierr);
 #else
-    SETERRQ(1,"MatLoad:MATMPIROWBS does not support complex numbers");
+    SETERRQ(1,"MATMPIROWBS does not support complex numbers");
 #endif
   }
   else if (type == MATSEQBAIJ) {
@@ -161,7 +161,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
     ierr = MatLoad_MPIBAIJ(viewer,type,newmat); CHKERRQ(ierr);
   }
   else {
-    SETERRQ(1,"MatLoad: cannot load with that matrix type yet");
+    SETERRQ(1,"cannot load with that matrix type yet");
   }
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
