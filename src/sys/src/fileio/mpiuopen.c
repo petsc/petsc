@@ -1,4 +1,4 @@
-/*$Id: mpiuopen.c,v 1.28 2000/04/12 04:21:24 bsmith Exp bsmith $*/
+/*$Id: mpiuopen.c,v 1.29 2000/04/24 03:47:01 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */
@@ -107,10 +107,10 @@ int PetscPClose(MPI_Comm comm,FILE *fd)
   if (!rank) {
     char buf[1024];
     while (fgets(buf,1024,fd)) {;} /* wait till it prints everything */
-#if defined (PARCH_win32)
-    SETERRQ(1,1,"Cannot run programs on NT");
-#else
+#if defined(PETSC_HAVE_POPEN)
     pclose(fd);
+#else
+    SETERRQ(1,1,"Cannot run programs, no popen()");
 #endif
   }
   PetscFunctionReturn(0);
@@ -168,12 +168,12 @@ int PetscPOpen(MPI_Comm comm,char *machine,char *program,const char mode[],FILE 
   if (!rank) {
     PLogInfo(0,"Running command :%s\n",commandt);
 
-#if defined (PARCH_win32)
-    SETERRQ(1,1,"Cannot run programs on NT");
-#else 
+#if defined(PETSC_HAVE_POPEN)
     if (!(fd = popen(commandt,mode))) {
        SETERRQ1(1,1,"Cannot run command %s",commandt);
     }
+#else 
+    SETERRQ(1,1,"Cannot run programs, no popen()");
 #endif
     if (fp) *fp = fd;
   }
