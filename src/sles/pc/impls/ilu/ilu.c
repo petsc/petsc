@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.106 1998/04/24 21:21:40 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.107 1998/05/29 20:36:45 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -513,7 +513,8 @@ static int PCSetUp_ILU(PC pc)
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       if (!ilu->reusereordering) {
         /* compute a new ordering for the ILU */
-        ISDestroy(ilu->row); ISDestroy(ilu->col);
+        ierr = ISDestroy(ilu->row); CHKERRQ(ierr);
+        ierr = ISDestroy(ilu->col); CHKERRQ(ierr);
         ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
         if (ilu->row) PLogObjectParent(pc,ilu->row);
         if (ilu->col) PLogObjectParent(pc,ilu->col);
