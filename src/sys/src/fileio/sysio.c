@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.39 1998/05/07 22:10:35 balay Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.40 1998/05/07 22:12:23 balay Exp balay $";
 #endif
 
 /* 
@@ -230,8 +230,8 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
    binary file may be read on any machine.
 
    The Buffer 'p' should be read-write buffer, and not static data.
-   This way, in-place byte-swapping is done, and then the data is
-   written to the output file.
+   This way, byte-swapping is done in-place, and then the buffer is
+   written to the file.
    
    This routine restores the original contents of the buffer, after 
    it is written to the file. This is done by byte-swapping in-place 
