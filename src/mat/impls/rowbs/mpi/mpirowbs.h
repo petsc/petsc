@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.11 1995/06/08 03:09:50 bsmith Exp curfman $ */
+/* $Id: mpirowbs.h,v 1.12 1995/06/08 20:42:06 curfman Exp curfman $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -62,7 +62,8 @@ typedef struct {
   void BSfor_solve1();
   void BSback_solve1();
 
-#define CHKERRBS(a) CHKERRN(a)
+#define CHKERRBS(a) {if (__BSERROR_STATUS) {fprintf(stderr, \
+        "BlockSolve Error Code %d\n",__BSERROR_STATUS); CHKERRQ(a);}}
 
 #endif
 #endif
