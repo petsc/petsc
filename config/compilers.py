@@ -92,7 +92,10 @@ class Configure(config.base.Configure):
     else:
       compilers = []
       if self.framework.argDB['with-mpi']:
-        compilers.append('mpicc')
+        if Configure.isGNU('mpicc') and self.framework.argDB['with-gnu-compilers']: 
+          compilers.append('mpicc')
+        if not Configure.isGNU('mpicc') and not (self.framework.argDB['with-vendor-compilers'] == '0'): 
+          compilers.append('mpicc')
       if self.framework.argDB['with-gnu-compilers']:
         compilers.append('gcc')
       vendor = self.framework.argDB['with-vendor-compilers']
@@ -178,8 +181,11 @@ class Configure(config.base.Configure):
     else:
       compilers = []
       if self.framework.argDB['with-mpi']:
-        compilers.extend(['mpicxx', 'mpiCC'])
-      if self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpicxx') and self.framework.argDB['with-gnu-compilers']: compilers.append('mpicxx')
+        if Configure.isGNU('mpiCC') and self.framework.argDB['with-gnu-compilers']: compilers.append('mpiCC')
+        if not Configure.isGNU('mpicxx') and not (self.framework.argDB['with-vendor-compilers'] == '0'): compilers.append('mpicxx')
+        if not Configure.isGNU('mpiCC') and not (self.framework.argDB['with-vendor-compilers'] == '0'): compilers.append('mpiCC')
+      if not self.framework.argDB['with-gnu-compilers'] == 0:
         compilers.append('g++')
       vendor = self.framework.argDB['with-vendor-compilers']
       if not vendor == '0':
@@ -254,8 +260,11 @@ class Configure(config.base.Configure):
     else:
       compilers = []
       if self.framework.argDB['with-mpi']:
-        compilers.extend(['mpif90', 'mpif77'])
-      if self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpif90') and self.framework.argDB['with-gnu-compilers']: compilers.append('mpif90')
+        if not Configure.isGNU('mpif90') and not (self.framework.argDB['with-vendor-compilers'] == '0'): compilers.append('mpif90')
+        if Configure.isGNU('mpif77') and self.framework.argDB['with-gnu-compilers']: compilers.append('mpif77')
+        if not Configure.isGNU('mpif77') and not (self.framework.argDB['with-vendor-compilers'] == '0'): compilers.append('mpif77')
+      if not self.framework.argDB['with-gnu-compilers'] == 0:
         compilers.append('g77')
       vendor = self.framework.argDB['with-vendor-compilers']
       if not vendor == '0':
