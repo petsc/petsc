@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.11 1998/11/24 04:14:33 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.12 1999/01/31 16:11:43 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -19,7 +19,7 @@ BUILDEXAMPLES_3 =
 BUILDEXAMPLES_4 =
 BUILDEXAMPLES_5 =
 
-EXAMPLESC       =
+EXAMPLESC       = ex1.c
 EXAMPLESF       = 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
