@@ -81,3 +81,5 @@ add to it).
   General
 
     Add OptionsGetAll().
+
+    Added support for Sun Solaris running on Intel processors; PETSC_ARCH solaris_x86
