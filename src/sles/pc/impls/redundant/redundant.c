@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: redundant.c,v 1.1 1999/03/24 03:13:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: redundant.c,v 1.2 1999/03/24 17:01:42 bsmith Exp bsmith $";
 #endif
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
@@ -52,11 +52,11 @@ static int PCSetUp_Redundant(PC pc)
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
 
   PetscFunctionBegin;
+  ierr = VecGetSize(pc->vec,&m);CHKERRQ(ierr);
   if (pc->setupcalled == 0) {
     /*
        Create the vectors and vector scatter to get the entire vector onto each processor
     */
-    ierr = VecGetSize(pc->vec,&m);CHKERRQ(ierr);
     ierr = VecGetLocalSize(pc->vec,&mlocal);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(pc->vec,&mstart,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,m,&red->x);CHKERRQ(ierr);
@@ -180,10 +180,11 @@ EXTERN_C_BEGIN
 int PCCreate_Redundant(PC pc)
 {
   int          ierr;
-  PC_Redundant *red = PetscNew(PC_Redundant); CHKPTRQ(red);
+  PC_Redundant *red;
   char         *prefix;
 
   PetscFunctionBegin;
+  red = PetscNew(PC_Redundant); CHKPTRQ(red);
   PLogObjectMemory(pc,sizeof(PC_Redundant));
   PetscMemzero(red,sizeof(PC_Redundant)); 
   red->useparallelmat   = PETSC_TRUE;
