@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.28 1998/01/14 02:40:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.29 1998/03/12 23:18:03 bsmith Exp curfman $";
 #endif
 
 /*
@@ -234,7 +234,7 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
    Input Parameters:
 .  coloring - the coloring context
 .  f - the function
-.  fctx - the function context
+.  fctx - the optional user-defined function context
 
 .keywords: Mat, Jacobian, finite differences, set, function
 @*/
