@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.246 1998/05/12 16:16:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.247 1998/05/19 20:55:41 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -772,6 +772,14 @@ int MatDestroy_MPIAIJ(Mat mat)
   int        ierr;
 
   PetscFunctionBegin;
+  if (--mat->refct > 0) PetscFunctionReturn(0);
+
+  if (mat->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+  }
+  if (mat->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
+  }
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",aij->M,aij->N);
 #endif
@@ -1831,7 +1839,6 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
     }
   }
 
-
   ierr = MPI_Bcast(header+1,3,MPI_INT,0,comm);CHKERRQ(ierr);
   M = header[1]; N = header[2];
   /* determine ownership of all rows */
@@ -1963,7 +1970,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
     smycols = mycols;
     svals   = vals;
     for ( i=0; i<m; i++ ) {
-      ierr = MatSetValues(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr     = MatSetValues(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
       smycols += ourlens[i];
       svals   += ourlens[i];
       jj++;
