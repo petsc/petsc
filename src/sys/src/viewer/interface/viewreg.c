@@ -29,9 +29,7 @@ extern PetscErrorCode PetscInitializePackage(char*);
 PetscErrorCode PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 {
   PetscViewer    viewer;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
   *inviewer = 0;

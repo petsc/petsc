@@ -76,9 +76,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
 PetscErrorCode MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A)
 {
   Mat            B;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
   PetscValidPointer(A,6);
