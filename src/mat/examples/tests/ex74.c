@@ -22,7 +22,7 @@ int main(int argc,char **args)
   PetscRandom  rand;
   PetscTruth   getrow=PETSC_FALSE;
   MatInfo      minfo1,minfo2;
-  MatICCInfo   *icc_info;
+  MatICCInfo   icc_info;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -294,12 +294,12 @@ int main(int argc,char **args)
   inc   = bs;
   for (lf=-1; lf<10; lf += inc){   
     if (lf==-1) {  /* Cholesky factor */
-      icc_info->fill = 5.0;   
-      ierr = MatCholeskyFactorSymbolic(sA,perm,icc_info->fill,&sC);CHKERRQ(ierr); 
+      fill = 5.0;   
+      ierr = MatCholeskyFactorSymbolic(sA,perm,fill,&sC);CHKERRQ(ierr); 
     } else {       /* incomplete Cholesky factor */
-      icc_info->fill   = 5.0;
-      icc_info->levels = lf;
-      ierr = MatICCFactorSymbolic(sA,perm,icc_info,&sC);CHKERRQ(ierr);
+      icc_info.fill   = 5.0;
+      icc_info.levels = lf;
+      ierr = MatICCFactorSymbolic(sA,perm,&icc_info,&sC);CHKERRQ(ierr);
     }
     ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRQ(ierr);
     /* MatView(sC, PETSC_VIEWER_DRAW_WORLD); */

@@ -19,6 +19,7 @@ int main(int argc,char **args)
   IS          perm;
   PetscRandom rand;
   PetscTruth  reorder=PETSC_TRUE;
+  MatICCInfo  icc_info;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -165,8 +166,9 @@ int main(int argc,char **args)
       fill = 5.0;
       ierr = MatCholeskyFactorSymbolic(sA,perm,fill,&sC);CHKERRQ(ierr);
     } else {       /* incomplete Cholesky factor */
-      fill          = 5.0;
-      ierr = MatICCFactorSymbolic(sA,perm,fill,lf,&sC);CHKERRQ(ierr);
+      icc_info.fill   = 5.0;
+      icc_info.levels = lf;
+      ierr = MatICCFactorSymbolic(sA,perm,&icc_info,&sC);CHKERRQ(ierr);
     }      
     ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRQ(ierr);  
     /* MatView(sC, PETSC_VIEWER_DRAW_WORLD);  */ /* view factored matrix */
