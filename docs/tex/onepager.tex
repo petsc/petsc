@@ -17,35 +17,42 @@ This work was supported by the Mathematical,
 \section*{Description}
 
 \code{PETSc}, the Portable, Extensible Toolkit for Scientific computation,
-is a large software library for portable, parallel (and serial)
-scientific computation that employs the MPI standard for message
+is a software library for portable, parallel (and serial)
+scientific computation that employs the MPI standard for message-
 passing communication.  Most of the code is written in a
 data-structure-neutral manner to enable easy reuse and flexibility.
 The \code{PETSc} software can be used with C, C++, and Fortran.
-\code{PETSc} includes several components:
+\code{PETSc} includes several components. 
+
+All \code{PETSc} are naturally and easily used in parallel.
+
+\vspace{-.6cm}
+
 \begin{itemize}
 \item \code{Mat} - A large suite of data structures and code
       for the manipulation of parallel sparse matrices.
-\item \code{PC} - A small, but growing collection of serial and parallel 
-      preconditioners.
+\item \code{PC} - A small, but growing collection of preconditioners.
 \item \code{KSP} - A data-structure-neutral implementation of
-      many popular Krylov space iterative methods suitable for 
-      serial and parallel machines.
+      many popular Krylov space iterative methods.
 \item \code{SLES} - A higher-level interface to a variety
       of preconditioners and Krylov space methods.
-      method for the solution of nonlinear systems. \code{SLES} runs 
-      on both serial and parallel machines.  
 \item \code{SNES} - Data-structure-neutral 
       implementations of trust region and line search Newton's 
-      method for the solution of nonlinear systems. \code{SNES} runs 
-      on both serial and parallel machines.  
+      method for the solution of nonlinear systems. 
 \item In addition, we are developing code for manipulating grids
       and discretizations in parallel.
 \end{itemize}
 
+\vspace{-.6cm}
+
+\section*{Applications}
+\code{PETSc} is designed for large scale application projects. 
+Several ongoing Argonne computational science projects are 
+built around the \code{PETSc} framework.
+
 \section*{Computational Environment}
-\code{PETSc} is available on Sun, DEC, Silicon Graphics, HP-UX and IBM
-RS/6000 workstations, as well as IBM PCs running freeBSD and the
+\code{PETSc} is available on Sun, DEC, Silicon Graphics, HP-UX, and IBM
+RS/6000 workstations; IBM PCs running freeBSD; and the
 IBM SP. Other machines will be supported as our resources permit.
 
 \section*{Availability}
@@ -58,12 +65,11 @@ The complete distribution can be obtained by anonymous ftp from
 
 The \code{PETSc} distribution contains all source code, 
 installation instructions,
-a users' guide in both postscript and html formats, 
+a users guide in Poth postscript and html formats, 
 {\tt man pages} for all routines,
 and a collection of examples.
 Additional information is available via the WWW at
 \URL{http://www.mcs.anl.gov/petsc/petsc.html}.
-
 \contact{William Gropp, Lois Curfman McInnes, Barry Smith}
 \email{petsc-maint@mcs.anl.gov}
 \phone{(708) 252-4318}
