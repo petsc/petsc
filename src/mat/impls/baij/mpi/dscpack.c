@@ -25,6 +25,7 @@ typedef struct {
   IS            my_cols,iden,iden_dsc;
   Vec           vec_dsc;
   VecScatter    scat;
+  MPI_Comm      comm_dsc;
 } Mat_MPIBAIJ_DSC;
 
 extern int MatDestroy_MPIBAIJ(Mat);
@@ -165,6 +166,7 @@ int MatDestroy_MPIBAIJ_DSCPACK(Mat A)
   } 
   DSC_End(lu->My_DSC_Solver); 
  
+  ierr = MPI_Comm_free(&(lu->comm_dsc));CHKERRQ(ierr);
   ierr = ISDestroy(lu->my_cols);CHKERRQ(ierr);  
   ierr = PetscFree(lu->replication);CHKERRQ(ierr);
   ierr = VecDestroy(lu->vec_dsc);CHKERRQ(ierr); 
@@ -269,7 +271,7 @@ int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
 
     /* DSC_Solver starts */
     lu->My_DSC_Solver = DSC_Begin();
-    DSC_Open0( lu->My_DSC_Solver, number_of_procs, &lu->dsc_id, A->comm ); 
+    DSC_Open0( lu->My_DSC_Solver, number_of_procs, &lu->dsc_id, lu->comm_dsc ); 
 
     if (lu->dsc_id != -1) {
       ierr = DSC_Order(lu->My_DSC_Solver,lu->order_code,Mbs,a_seq->i,a_seq->j,lu->replication,
@@ -428,7 +430,7 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat
   lu->LBLASLevel  = DSC_LBLAS3;
   lu->DBLASLevel  = DSC_DBLAS2;
   lu->max_mem_allowed = 256;
-
+  ierr = MPI_Comm_dup(A->comm,&(lu->comm_dsc));CHKERRQ(ierr);
   /* Get the runtime input options */
   ierr = PetscOptionsBegin(A->comm,A->prefix,"DSCPACK Options","Mat");CHKERRQ(ierr); 
 
