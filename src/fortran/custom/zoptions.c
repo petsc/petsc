@@ -261,7 +261,7 @@ size_t PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
   return itmp2;
 }
 
-PetscInt *PetscIntAddressFromFortran(PetscInt *base,PetscInt addr)
+PetscInt *PetscIntAddressFromFortran(PetscInt *base,size_t addr)
 {
   return base + addr;
 }
@@ -358,7 +358,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,Pet
 
     lx   - the array space that is to be passed to XXXXRestoreArray()
 */     
-PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,PetscInt addr,PetscInt N,PetscScalar **lx)
+PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,size_t addr,PetscInt N,PetscScalar **lx)
 {
   PetscErrorCode       ierr;
   PetscInt             shift;
