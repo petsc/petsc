@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.37 1998/06/01 19:32:46 balay Exp balay $";
+static char vcid[] = "$Id: lsqr.c,v 1.38 1998/06/30 21:50:29 balay Exp balay $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -36,7 +36,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   int          i = 0, maxit, hist_len, cerr = 0, ierr;
   Scalar       rho, rhobar, phi, phibar, theta, c, s,tmp, zero = 0.0,mone=-1.0;
   double       beta, alpha, rnorm, *history;
-  Vec          X,B,V,V1,U,U1,TMP,W,BINVF;
+  Vec          X,B,V,V1,U,U1,TMP,W;
   Mat          Amat, Pmat;
   MatStructure pflag;
 
@@ -53,7 +53,8 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   V        = ksp->work[2];
   V1       = ksp->work[3];
   W        = ksp->work[4];
-  BINVF    = ksp->work[5];
+
+  /* BINVF    = ksp->work[5];*/
 
   /* Compute initial preconditioned residual */
   /* ierr = KSPResidual(ksp,X,V,U, W,BINVF,B); CHKERRQ(ierr); */
