@@ -1,8 +1,4 @@
 # $Id: base,v 1.1 2001/08/22 17:57:34 balay Exp $ 
-#
-# Alright, I admit I am playing a game here, but it allows the architecture to morph
-#
-INCLUDE_ARCH = $(shell ${PETSC_DIR}/config/configarch ${PETSC_ARCH})
 
 include ${PETSC_DIR}/bmake/common/variables
 include ${PETSC_DIR}/bmake/common/rules

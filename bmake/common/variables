@@ -9,8 +9,8 @@
 # PETSC_[C,F]CPPFLAGS    -  preprocessor flags for *.c, *.F preprocessing
 # PETSC_[C,F]SH_LIB_PATH - linker_add_sh_lib_path:sh_lib_path pairs for all the shared library locations
 #
-PETSC_LIB_DIR	    = ${PETSC_DIR}/lib/lib${BOPT}/${INCLUDE_ARCH}
-PETSC_INCLUDE	    = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${INCLUDE_ARCH} -I${PETSC_DIR}/include \
+PETSC_LIB_DIR	    = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
+PETSC_INCLUDE	    = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include \
 			${MPI_INCLUDE} ${MPE_INCLUDE} ${AMS_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
 PETSC_CCPPFLAGS	    = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${CPPFLAGS} \
 			-D__SDIR__='"${LOCDIR}"'
@@ -45,7 +45,7 @@ LT_LIBNAME = ${INSTALL_LIB_DIR}/lt_${LIBBASE}.${LIB_SUFFIX}
 SOURCE     = ${SOURCEC} ${SOURCEF}
 OBJS       = ${OBJSC} ${OBJSF}
 #
-#   These should really be defined in each of the bmake/${INCLUDE_ARCH}/variables files
+#   These should really be defined in each of the bmake/${PETSC_ARCH}/variables files
 #
 MV  = mv
 CP  = cp
@@ -85,7 +85,7 @@ PETSC_FORTRAN_LIB = -L${PETSC_LIB_DIR} ${PETSC_FORTRAN_LIB_BASIC}
 PETSC_CONTRIB     = -L${PETSC_LIB_DIR} ${PETSC_CONTRIB_BASIC}
 
 #-----------------------------------------------------------------------------------------
-PETSC_LIB_DIR_COMPLEX = ${PETSC_DIR}/lib/libg_complex/${INCLUDE_ARCH}
+PETSC_LIB_DIR_COMPLEX = ${PETSC_DIR}/lib/libg_complex/${PETSC_ARCH}
 PETSC_SYS_LIB_BASIC_COMPLEX      = -lpetsc 
 PETSC_VEC_LIB_BASIC_COMPLEX      = -lpetscvec ${PETSC_SYS_LIB_BASIC_COMPLEX}
 PETSC_MAT_LIB_BASIC_COMPLEX      = -lpetscmat ${PETSC_VEC_LIB_BASIC_COMPLEX}
@@ -109,10 +109,10 @@ PETSC_LIB_COMPLEX         = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_LIB_COMPLEX_BASIC
 # ---------------------------------------------------------------------------------------
 #
 # PCONF - indicates which OPTIONAL external packages are available at your site; appropriate
-#         ones are defined in bmake/${INCLUDE_ARCH}/packages (as are the library locations).
+#         ones are defined in bmake/${PETSC_ARCH}/packages (as are the library locations).
 #         Ones that are not defined are ignored. You only need to edit this to add a new 
 #         package that PETSc has never seen before. Never remove any of these, rather remove
-#         them from the appropriate bmake/${INCLUDE_ARCH}/packages
+#         them from the appropriate bmake/${PETSC_ARCH}/packages
 #
 #
 PCONF         = ${PETSC_HAVE_MPE}     ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVODE} \
@@ -140,12 +140,12 @@ SLSUFFIX = so
 #
 # The following include files set customized site, optimization, and version
 # options.  Do NOT remove any of these include files.  You should generally
-# need to edit only ${PETSC_DIR}/bmake/${INCLUDE_ARCH}/packages to specify your
+# need to edit only ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages to specify your
 # particular package configuration.  See the users manual for details.
 #
-include ${PETSC_DIR}/bmake/${INCLUDE_ARCH}/variables
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/variables
 # (This line MUST be present for certain machines (e.g., Cray T3D))
-include ${PETSC_DIR}/bmake/${INCLUDE_ARCH}/packages
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages
 # (This line MUST be present for certain machines (e.g., Cray T3D))
 include ${PETSC_DIR}/bmake/common/bopt_${BOPT}
 

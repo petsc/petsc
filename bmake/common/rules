@@ -739,7 +739,7 @@ fixfortran:
 	done
 
 
-include ${PETSC_DIR}/bmake/${INCLUDE_ARCH}/rules
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/rules
 
 
 
