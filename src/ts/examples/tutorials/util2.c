@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: util2.c,v 1.11 1999/05/12 03:33:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: util2.c,v 1.12 1999/10/19 18:22:22 balay Exp balay $";
 #endif
 
 /*
@@ -75,13 +75,13 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
 
   ierr = VecGetSize(xx1,&N);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xx1,&start,&end);CHKERRQ(ierr);
-  ierr = VecGetArray(xx1,&xx);CHKERRQ(ierr);
   ierr = TSComputeRHSFunction(ts,ts->ptime,xx1,jj1);CHKERRQ(ierr);
 
   /* Compute Jacobian approximation, 1 column at a time.
       xx1 = current iterate, jj1 = F(xx1)
       xx2 = perturbed iterate, jj2 = F(xx2)
    */
+  ierr = VecGetArray(xx1,&xx);CHKERRQ(ierr);
   for ( i=0; i<N; i++ ) {
     ierr = VecCopy(xx1,xx2);CHKERRQ(ierr);
     if ( i>= start && i<end) {
@@ -117,6 +117,8 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
     }
     VecRestoreArray(jj2,&y);
   }
+
+  ierr = VecRestoreArray(xx1,&xx);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag =  DIFFERENT_NONZERO_PATTERN;
