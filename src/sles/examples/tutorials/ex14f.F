@@ -1,5 +1,5 @@
 C
-C    "$Id: ex14f.F,v 1.4 1997/04/25 02:35:47 curfman Exp balay $";
+C    "$Id: ex14f.F,v 1.5 1997/07/10 15:47:03 balay Exp balay $";
 C
 C  Solves a nonlinear system in parallel with a user-defined
 C  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -24,10 +24,10 @@ C
 C/*T
 C   Concepts: SLES^Writing a user-defined nonlinear solver (parallel Bratu example)
 C   Concepts: DA^Using distributed arrays
-C   Routines: SLESCreate() SLESSetOperators() SLESSolve() SLESSetFromOptions()
-C   Routines: DACreate2d() DADestroy() DAGetDistributedVector() DAGetLocalVector()
-C   Routines: DAGetCorners() DAGetGhostCorners() DALocalToGlobal()
-C   Routines: DAGlobalToLocalBegin() DAGlobalToLocalEnd() DAGetGlobalIndices()
+C   Routines: SLESCreate(); SLESSetOperators(); SLESSolve(); SLESSetFromOptions();
+C   Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
+C   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
+C   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
 C   Processors: n
 CT*/
 C  ------------------------------------------------------------------------

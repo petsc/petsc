@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: examplesindex.tcl,v 1.21 1997/10/08 01:41:23 balay Exp balay $ 
+# $Id: examplesindex.tcl,v 1.22 1997/10/08 14:27:32 balay Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -515,7 +515,6 @@ proc main { }  {
         puts "returning early.. not updating wwwmanpages pages."
         return 0
     }
-    puts  "$PETSC_DIR_www"
     # Update wwwmanpages
     puts  "updating wwwmanpages pages."
 
