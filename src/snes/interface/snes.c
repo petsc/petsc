@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.221 2000/09/22 20:45:56 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.222 2000/09/28 21:14:05 bsmith Exp curfman $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -1757,7 +1757,7 @@ int SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
 .  a   - array to hold history
 .  its - integer array holds the number of linear iterations for each solve.
 .  na  - size of a and its
--  reset - PETSC_TRUTH indicates each new nonlinear solve resets the history counter to zero,
+-  reset - PETSC_TRUE indicates each new nonlinear solve resets the history counter to zero,
            else it continues storing new values for new nonlinear solves after the old ones
 
    Notes:
