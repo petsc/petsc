@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.53 1995/11/29 23:21:36 curfman Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.54 1995/12/07 20:13:09 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: plog.c,v 1.53 1995/11/29 23:21:36 curfman Exp balay $
 #include <stdarg.h>
 #include <sys/types.h>
 #include "pinclude/petscfix.h"
-#include "ptime.h"
+#include "pinclude/ptime.h"
 
 /*@C 
    PetscObjectSetName - Sets a string name associated with a PETSc object.
@@ -130,7 +130,7 @@ static char    *(EventsStageName[]) = {0,0,0,0,0,0,0,0,0,0};
 static double  EventsType[10][PLOG_USER_EVENT_HIGH][3];
 
 /*@
-    PLogStageName - Attach a charactor string name to a logging stage.
+    PLogStageRegister - Attach a charactor string name to a logging stage.
 
  Input Parameters:
 .  stage - the stage from 0 to 9 inclusive
@@ -138,9 +138,9 @@ static double  EventsType[10][PLOG_USER_EVENT_HIGH][3];
 
 .seealso: PLogStagePush(), PLogStagePop()
 @*/
-int PLogStageName(int stage, char *name)
+int PLogStageRegister(int stage, char *name)
 {
-  if (stage < 0 || stage > 10) SETERRQ(1,"PLogStageName:Out of range");
+  if (stage < 0 || stage > 10) SETERRQ(1,"PLogStageRegister:Out of range");
   EventsStageName[stage] = name;
   return 0;
 }
@@ -872,6 +872,9 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
    PetscGetTime() is intended only for timing of application codes.  
    The options database commands -log, -log_summary, and -log_all activate
    PETSc library timing.  See the users manual for further details.
+
+.seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(),  PLogStagePush(), 
+          PLogStagePop(), PLogStageRegister().
 
 .keywords:  Petsc, time
 @*/
