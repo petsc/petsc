@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver
@@ -30,7 +31,7 @@ EXTERN PetscErrorCode MatDuplicate_Essl(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Essl_SeqAIJ"
-PetscErrorCode MatConvert_Essl_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) {
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Essl_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) {
   PetscErrorCode ierr;
   Mat      B=*newmat;
   Mat_Essl *essl=(Mat_Essl*)A->spptr;
@@ -178,7 +179,7 @@ PetscErrorCode MatAssemblyEnd_Essl(Mat A,MatAssemblyType mode) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_Essl"
-PetscErrorCode MatConvert_SeqAIJ_Essl(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_Essl(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   Mat      B=*newmat;
   PetscErrorCode ierr;
@@ -250,7 +251,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Essl"
-PetscErrorCode MatCreate_Essl(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Essl(Mat A) 
 {
   PetscErrorCode ierr;
 

@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
    Support for the MPIBDIAG matrix-vector multiply
 */

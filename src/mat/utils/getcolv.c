@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -30,7 +31,7 @@
 .seealso: MatGetRow(), MatGetDiagonal()
 
 @*/
-PetscErrorCode MatGetColumnVector(Mat A,Vec yy,PetscInt col)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnVector(Mat A,Vec yy,PetscInt col)
 {
   PetscScalar        *y,zero = 0.0;
   const PetscScalar  *v;

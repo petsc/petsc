@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
@@ -201,7 +203,7 @@ PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatISGetLocalMat_IS"
-PetscErrorCode MatISGetLocalMat_IS(Mat mat,Mat *local)
+PetscErrorCode PETSCMAT_DLLEXPORT MatISGetLocalMat_IS(Mat mat,Mat *local)
 {
   Mat_IS *is = (Mat_IS *)mat->data;
   
@@ -231,7 +233,7 @@ EXTERN_C_END
 
 .seealso: MATIS
 @*/ 
-PetscErrorCode MatISGetLocalMat(Mat mat,Mat *local)
+PetscErrorCode PETSCMAT_DLLEXPORT MatISGetLocalMat(Mat mat,Mat *local)
 {
   PetscErrorCode ierr,(*f)(Mat,Mat *);
 
@@ -304,7 +306,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_IS" 
-PetscErrorCode MatCreate_IS(Mat A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat A)
 {
   PetscErrorCode ierr;
   Mat_IS         *b;

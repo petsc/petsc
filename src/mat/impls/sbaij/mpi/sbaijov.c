@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix.

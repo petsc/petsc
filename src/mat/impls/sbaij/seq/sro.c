@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/inline/spops.h"
@@ -33,7 +34,7 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatReorderingSeqSBAIJ"
-PetscErrorCode MatReorderingSeqSBAIJ(Mat A,IS perm)
+PetscErrorCode PETSCMAT_DLLEXPORT MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ *)A->data;
   PetscErrorCode ierr;

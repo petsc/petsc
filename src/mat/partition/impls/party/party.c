@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/impls/adj/mpi/mpiadj.h"       /*I "petscmat.h" I*/
 
@@ -198,7 +199,7 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
    Level: advanced
 
 @*/
-PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part, const char *global)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetGlobal(MatPartitioning part, const char *global)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -220,7 +221,7 @@ PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part, const char *g
    Level: advanced
 
 @*/
-PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part, const char *local)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetLocal(MatPartitioning part, const char *local)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -241,7 +242,7 @@ PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part, const char *lo
    Level: advanced
 
 @*/
-PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscReal level)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscReal level)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -267,7 +268,7 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscRea
    Level: advanced
 
 @*/
-PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part,
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetMatchOptimization(MatPartitioning part,
     PetscTruth opt)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
@@ -292,7 +293,7 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part,
    Level: advanced
 
 @*/
-PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part, PetscTruth bp)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetBipart(MatPartitioning part, PetscTruth bp)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -393,7 +394,7 @@ EXTERN_C_BEGIN
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
 @*/
-PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Party(MatPartitioning part)
 {
     PetscErrorCode ierr;
     MatPartitioning_Party *party;

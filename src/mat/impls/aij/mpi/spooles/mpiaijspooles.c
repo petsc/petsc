@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* 
    Provides an interface to the Spooles parallel sparse solver (MPI SPOOLES)
 */

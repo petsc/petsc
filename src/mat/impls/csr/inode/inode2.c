@@ -1,8 +1,10 @@
+#define PETSCMAT_DLL
+
 #include "src/mat/impls/csr/inode/inode.h"
 EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatInodeAdjustForInodes_Inode(Mat,IS*,IS*);
-EXTERN PetscErrorCode MatInodeGetInodeSizes_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_Inode(Mat,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
 EXTERN_C_END
 
 #undef __FUNCT__
@@ -61,6 +63,11 @@ PetscErrorCode MatDestroy_Inode(Mat A)
   PetscFunctionReturn(0);
 }
 
+/* MatCreate_Inode is not DLLEXPORTed because it is not a constructor for a complete type.    */
+/* It is also not registered as a type for use within MatSetType.                             */
+/* It is intended as a helper for the MATSEQAIJ class, so classes which desire Inodes should  */
+/*    inherit off of MATSEQAIJ instead by calling MatSetType(MATSEQAIJ) in their constructor. */
+/* Maybe this is a bad idea. (?) */
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Inode"
 PetscErrorCode MatCreate_Inode(Mat B)

@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* 
         Provides an interface to the SuperLU_DIST_2.0 sparse solver
 */
@@ -53,7 +55,7 @@ EXTERN PetscErrorCode MatDuplicate_SuperLU_DIST(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SuperLU_DIST_Base"
-PetscErrorCode MatConvert_SuperLU_DIST_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_DIST_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode   ierr;
   Mat              B=*newmat;
@@ -590,7 +592,7 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Base_SuperLU_DIST"
-PetscErrorCode MatConvert_Base_SuperLU_DIST(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_SuperLU_DIST(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATSUPERLU_DIST */
   /* from MATSEQAIJ if A has a single process communicator */
@@ -690,7 +692,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SuperLU_DIST"
-PetscErrorCode MatCreate_SuperLU_DIST(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU_DIST(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

@@ -1,9 +1,10 @@
+#define PETSCMAT_DLL
 
 #include "petscmat.h"
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatConvertTo_MPIAdj(Mat,MatType,MatReuse,Mat*);
-EXTERN PetscErrorCode MatConvertTo_AIJ(Mat,MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvertTo_MPIAdj(Mat,MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvertTo_AIJ(Mat,MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -21,7 +22,7 @@ EXTERN_C_END
 .seealso: MatRegister(), MatConvert()
 
 @*/
-PetscErrorCode MatConvertRegisterAll(const char path[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvertRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

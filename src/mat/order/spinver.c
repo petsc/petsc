@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "petsc.h"
 

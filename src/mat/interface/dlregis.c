@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "petscmat.h"
 
@@ -16,7 +17,7 @@
 .keywords: Mat, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode MatInitializePackage(char *path) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *path) 
 {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
@@ -123,7 +124,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PetscDLLibraryRegister(char *path)
+PetscErrorCode PETSCMAT_DLLEXPORT PetscDLLibraryRegister(char *path)
 {
   PetscErrorCode ierr;
 

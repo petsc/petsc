@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 #include "src/mat/matimpl.h"
 
 typedef struct {
@@ -6,16 +8,16 @@ typedef struct {
 } Mat_AIJ;
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatConvert_SeqAIJ_AIJ(Mat,const MatType,MatReuse,Mat *);
-EXTERN PetscErrorCode MatConvert_MPIAIJ_AIJ(Mat,const MatType,MatReuse,Mat *);
-EXTERN PetscErrorCode MatConvert_AIJ_SeqAIJ(Mat,const MatType,MatReuse,Mat *);
-EXTERN PetscErrorCode MatConvert_AIJ_MPIAIJ(Mat,const MatType,MatReuse,Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_AIJ(Mat,const MatType,MatReuse,Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_AIJ(Mat,const MatType,MatReuse,Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_SeqAIJ(Mat,const MatType,MatReuse,Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_MPIAIJ(Mat,const MatType,MatReuse,Mat *);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_AIJ_SeqAIJ"
-PetscErrorCode MatConvert_AIJ_SeqAIJ(Mat A, const MatType type, MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_SeqAIJ(Mat A, const MatType type, MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
@@ -42,7 +44,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_AIJ_MPIAIJ"
-PetscErrorCode MatConvert_AIJ_MPIAIJ(Mat A, const MatType type, MatReuse reuse, Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_MPIAIJ(Mat A, const MatType type, MatReuse reuse, Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
@@ -117,7 +119,7 @@ PetscErrorCode MatConvertFrom_AIJviaMPIAIJ(Mat A,const MatType type,MatReuse reu
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_AIJ"
-PetscErrorCode MatConvert_SeqAIJ_AIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_AIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
@@ -149,7 +151,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_AIJ"
-PetscErrorCode MatConvert_MPIAIJ_AIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_AIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
@@ -183,7 +185,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvertTo_AIJ"
-PetscErrorCode MatConvertTo_AIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvertTo_AIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -223,7 +225,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_AIJ"
-PetscErrorCode MatCreate_AIJ(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJ(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

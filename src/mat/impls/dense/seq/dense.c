@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -1566,7 +1568,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 
 .seealso: MatCreate(), MatCreateMPIDense(), MatSetValues()
 @*/
-PetscErrorCode MatCreateSeqDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscScalar *data,Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscScalar *data,Mat *A)
 {
   PetscErrorCode ierr;
 
@@ -1599,7 +1601,7 @@ PetscErrorCode MatCreateSeqDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscScalar
 
 .seealso: MatCreate(), MatCreateMPIDense(), MatSetValues()
 @*/
-PetscErrorCode MatSeqDenseSetPreallocation(Mat B,PetscScalar data[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation(Mat B,PetscScalar data[])
 {
   PetscErrorCode ierr,(*f)(Mat,PetscScalar[]);
 
@@ -1614,7 +1616,7 @@ PetscErrorCode MatSeqDenseSetPreallocation(Mat B,PetscScalar data[])
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqDensePreallocation_SeqDense"
-PetscErrorCode MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
 {
   Mat_SeqDense   *b;
   PetscErrorCode ierr;
@@ -1655,7 +1657,7 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateSeqDense(), MatSeqDenseSetPreallocation()
 @*/
-PetscErrorCode MatSeqDenseSetLDA(Mat B,PetscInt lda)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetLDA(Mat B,PetscInt lda)
 {
   Mat_SeqDense *b = (Mat_SeqDense*)B->data;
   PetscFunctionBegin;
@@ -1678,7 +1680,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqDense"
-PetscErrorCode MatCreate_SeqDense(Mat B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
 {
   Mat_SeqDense   *b;
   PetscErrorCode ierr;

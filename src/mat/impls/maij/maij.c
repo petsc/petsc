@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
     Defines the basic matrix operations for the MAIJ  matrix storage format.
   This format is used for restriction and interpolation operations for 
@@ -21,7 +23,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMAIJGetAIJ" 
-PetscErrorCode MatMAIJGetAIJ(Mat A,Mat *B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJGetAIJ(Mat A,Mat *B)
 {
   PetscErrorCode ierr;
   PetscTruth     ismpimaij,isseqmaij;
@@ -45,7 +47,7 @@ PetscErrorCode MatMAIJGetAIJ(Mat A,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMAIJRedimension" 
-PetscErrorCode MatMAIJRedimension(Mat A,PetscInt dof,Mat *B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJRedimension(Mat A,PetscInt dof,Mat *B)
 {
   PetscErrorCode ierr;
   Mat            Aij;
@@ -145,7 +147,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MAIJ" 
-PetscErrorCode MatCreate_MAIJ(Mat A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat A)
 {
   PetscErrorCode ierr;
   Mat_MPIMAIJ    *b;
@@ -2163,9 +2165,10 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqMAIJ_SeqAIJ"
-PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_SeqMAIJ       *b = (Mat_SeqMAIJ*)A->data;
   Mat               a = b->AIJ,B;
@@ -2211,11 +2214,14 @@ PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,MatReuse re
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_MPIMAIJ_MPIAIJ"
-PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_MPIMAIJ       *maij = (Mat_MPIMAIJ*)A->data;
   Mat               MatAIJ  = ((Mat_SeqMAIJ*)maij->AIJ->data)->AIJ,B;
@@ -2277,7 +2283,7 @@ PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,MatReuse re
   }
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 /* ---------------------------------------------------------------------------------- */
@@ -2299,7 +2305,7 @@ PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,MatReuse re
 M*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMAIJ" 
-PetscErrorCode MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

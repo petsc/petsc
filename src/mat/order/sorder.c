@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -24,7 +26,7 @@ PetscErrorCode MatOrdering_Flow(Mat mat,const MatOrderingType type,IS *irow,IS *
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_Natural"
-PetscErrorCode MatOrdering_Natural(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_Natural(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,i,*ii;
@@ -68,7 +70,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_RowLength"
-PetscErrorCode MatOrdering_RowLength(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,*ia,*ja,*permr,*lens,i;
@@ -97,7 +99,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrderingRegister" 
-PetscErrorCode MatOrderingRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,const MatOrderingType,IS*,IS*))
+PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,const MatOrderingType,IS*,IS*))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -121,7 +123,7 @@ PetscErrorCode MatOrderingRegister(const char sname[],const char path[],const ch
 
 .seealso: MatOrderingRegisterDynamic(), MatOrderingRegisterAll()
 @*/
-PetscErrorCode MatOrderingRegisterDestroy(void)
+PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -175,7 +177,7 @@ $      MATORDERING_QMD - Quotient Minimum Degree
 
 .seealso:   MatOrderingRegisterDynamic(), PCLUSetMatOrdering(), PCILUSetMatOrdering()
 @*/
-PetscErrorCode MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
 {
   PetscErrorCode  ierr;
   PetscInt        mmat,nmat,mis,m;

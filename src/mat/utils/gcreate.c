@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/matimpl.h"       /*I "petscmat.h"  I*/
 #include "petscsys.h"
@@ -73,7 +74,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
-PetscErrorCode MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -141,7 +142,7 @@ PetscErrorCode MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
-PetscErrorCode MatSetFromOptions(Mat B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
 {
   PetscErrorCode ierr;
   char           mtype[256];
@@ -179,7 +180,7 @@ PetscErrorCode MatSetFromOptions(Mat B)
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
-PetscErrorCode MatSetUpPreallocation(Mat B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation(Mat B)
 {
   PetscErrorCode ierr;
 

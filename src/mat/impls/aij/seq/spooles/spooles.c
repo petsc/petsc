@@ -1,3 +1,5 @@
+#define PETCSMAT_DLL
+
 /* 
    Provides an interface to the Spooles serial sparse solver
 */
@@ -8,7 +10,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Spooles_Base"
-PetscErrorCode MatConvert_Spooles_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) {
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Spooles_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) {
   /* This routine is only called to convert an unfactored PETSc-Spooles matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
@@ -496,7 +498,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJSpooles"
-PetscErrorCode MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,MatReuse reuse,Mat *newmat) {
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,MatReuse reuse,Mat *newmat) {
   /* This routine is only called to convert a MATSEQAIJ matrix */
   /* to a MATSEQAIJSPOOLES matrix, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
@@ -588,7 +590,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJSpooles"
-PetscErrorCode MatCreate_SeqAIJSpooles(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJSpooles(Mat A) 
 {
   PetscErrorCode ierr;
 
@@ -639,7 +641,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_AIJSpooles"
-PetscErrorCode MatCreate_AIJSpooles(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJSpooles(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

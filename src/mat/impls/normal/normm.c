@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/matimpl.h"          /*I "petscmat.h" I*/
 
@@ -90,7 +91,7 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
           object performs the matrix-vector product by first multiplying by
           A and then A'
 @*/
-PetscErrorCode MatCreateNormal(Mat A,Mat *N)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat A,Mat *N)
 {
   PetscErrorCode ierr;
   PetscInt       m,n;

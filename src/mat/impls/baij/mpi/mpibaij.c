@@ -1,3 +1,4 @@
+#define PETSCMAT_DLL
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 
@@ -67,7 +68,7 @@ PetscErrorCode MatGetRowMax_MPIBAIJ(Mat A,Vec v)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatStoreValues_MPIBAIJ"
-PetscErrorCode MatStoreValues_MPIBAIJ(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_MPIBAIJ(Mat mat)
 {
   Mat_MPIBAIJ    *aij = (Mat_MPIBAIJ *)mat->data;
   PetscErrorCode ierr;
@@ -82,7 +83,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatRetrieveValues_MPIBAIJ"
-PetscErrorCode MatRetrieveValues_MPIBAIJ(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_MPIBAIJ(Mat mat)
 {
   Mat_MPIBAIJ    *aij = (Mat_MPIBAIJ *)mat->data;
   PetscErrorCode ierr;
@@ -2091,7 +2092,7 @@ static struct _MatOps MatOps_Values = {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonalBlock_MPIBAIJ"
-PetscErrorCode MatGetDiagonalBlock_MPIBAIJ(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIBAIJ(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
 {
   PetscFunctionBegin;
   *a      = ((Mat_MPIBAIJ *)A->data)->A;
@@ -2101,7 +2102,7 @@ PetscErrorCode MatGetDiagonalBlock_MPIBAIJ(Mat A,PetscTruth *iscopy,MatReuse reu
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-extern int MatConvert_MPIBAIJ_MPISBAIJ(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIBAIJ_MPISBAIJ(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -2186,7 +2187,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateMPIAIJ(), MPIAIJ
 @*/
-PetscErrorCode MatMPIBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
 
@@ -2201,7 +2202,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJSetPreallocation_MPIBAIJ"
-PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_nz,PetscInt *d_nnz,PetscInt o_nz,PetscInt *o_nnz)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_nz,PetscInt *d_nnz,PetscInt o_nz,PetscInt *o_nnz)
 {
   Mat_MPIBAIJ    *b;
   PetscErrorCode ierr;
@@ -2280,8 +2281,8 @@ PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_n
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatDiagonalScaleLocal_MPIBAIJ(Mat,Vec);
-EXTERN PetscErrorCode MatSetHashTableFactor_MPIBAIJ(Mat,PetscReal);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal_MPIBAIJ(Mat,Vec);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetHashTableFactor_MPIBAIJ(Mat,PetscReal);
 EXTERN_C_END
 
 /*MC
@@ -2298,7 +2299,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIBAIJ"
-PetscErrorCode MatCreate_MPIBAIJ(Mat B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
 {
   Mat_MPIBAIJ    *b;
   PetscErrorCode ierr;
@@ -2408,7 +2409,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_BAIJ"
-PetscErrorCode MatCreate_BAIJ(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BAIJ(Mat A) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -2503,7 +2504,7 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateSeqBAIJ(), MatSetValues(), MatCreateMPIBAIJ(), MatMPIBAIJSetPreallocationCSR()
 @*/
-PetscErrorCode MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 
@@ -2609,7 +2610,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const 
 
 .seealso: MatCreate(), MatCreateSeqBAIJ(), MatSetValues(), MatCreateMPIBAIJ(), MatMPIBAIJSetPreallocation(), MatMPIBAIJSetPreallocationCSR()
 @*/
-PetscErrorCode MatCreateMPIBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -2984,7 +2985,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
 
 .seealso: MatSetOption()
 @*/
-PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat mat,PetscReal fact)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 {
   PetscErrorCode ierr,(*f)(Mat,PetscReal);
 
@@ -2996,9 +2997,10 @@ PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat mat,PetscReal fact)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetHashTableFactor_MPIBAIJ"
-PetscErrorCode MatSetHashTableFactor_MPIBAIJ(Mat mat,PetscReal fact)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetHashTableFactor_MPIBAIJ(Mat mat,PetscReal fact)
 {
   Mat_MPIBAIJ *baij;
 
@@ -3007,10 +3009,11 @@ PetscErrorCode MatSetHashTableFactor_MPIBAIJ(Mat mat,PetscReal fact)
   baij->ht_fact = fact;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBAIJGetSeqBAIJ"
-PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,PetscInt *colmap[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,PetscInt *colmap[])
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)A->data;
   PetscFunctionBegin;

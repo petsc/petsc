@@ -86,9 +86,9 @@ EXTERN PetscErrorCode MatPrintHelp_SeqAIJ(Mat);
 EXTERN PetscErrorCode MatAXPY_SeqAIJ(const PetscScalar[],Mat,Mat,MatStructure);
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,MatReuse,Mat*);
-EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,MatReuse,Mat*);
-EXTERN PetscErrorCode MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
 EXTERN_C_END
 
 #endif

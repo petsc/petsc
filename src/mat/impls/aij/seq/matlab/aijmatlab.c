@@ -1,3 +1,5 @@
+#define PETSCMAT_DLL
+
 /* 
         Provides an interface for the Matlab engine sparse solver
 
@@ -19,7 +21,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatlabEnginePut_Matlab"
-PetscErrorCode MatMatlabEnginePut_Matlab(PetscObject obj,void *mengine)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMatlabEnginePut_Matlab(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   Mat         B = (Mat)obj;
@@ -44,7 +46,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatlabEngineGet_Matlab"
-PetscErrorCode MatMatlabEngineGet_Matlab(PetscObject obj,void *mengine)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMatlabEngineGet_Matlab(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   int        ii;
@@ -83,7 +85,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Matlab_SeqAIJ"
-PetscErrorCode MatConvert_Matlab_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Matlab_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
@@ -330,7 +332,7 @@ PetscErrorCode MatDuplicate_Matlab(Mat A, MatDuplicateOption op, Mat *M) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_Matlab"
-PetscErrorCode MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATMATLAB */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
@@ -407,7 +409,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Matlab"
-PetscErrorCode MatCreate_Matlab(Mat A) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Matlab(Mat A) 
 {
   PetscErrorCode ierr;
 
