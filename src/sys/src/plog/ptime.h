@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.50 1998/04/25 17:55:45 balay Exp bsmith $ */
+/* $Id: ptime.h,v 1.51 1998/04/26 03:38:26 bsmith Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -152,7 +152,7 @@ extern PLogDouble nt_time();
 /*
     The usual Unix time routines.
 */
-#elif ( defined (PARCH_IRIX64) ||  defined (PARCH_IRIX) || defined(PARCH_IRIX5))
+#if ( defined (PARCH_IRIX64) ||  defined (PARCH_IRIX) || defined(PARCH_IRIX5))
 #include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
