@@ -1,5 +1,7 @@
 
-C      "$Id: ex12.F,v 1.14 1996/03/19 21:27:49 bsmith Exp curfman $";
+C      "$Id: ex12.F,v 1.15 1996/08/22 22:43:52 curfman Exp curfman $";
+
+       implicit none
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -24,10 +26,10 @@ C
       MatInfo          info(MAT_INFO_SIZE)
 
       none = -1.0
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
 C Read in matrix and RHS
-      call OptionsGetString(PETSC_NULL_CHAR,'-f',f,flg,ierr)
+      call OptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
       call ViewerFileOpenBinary(MPI_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f

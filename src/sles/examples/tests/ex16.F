@@ -1,5 +1,7 @@
 
-C      "$Id: ex16.F,v 1.8 1996/03/19 21:27:49 bsmith Exp bsmith $";
+C      "$Id: ex16.F,v 1.9 1996/08/15 12:48:52 bsmith Exp curfman $";
+
+       implicit none
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -32,10 +34,10 @@ C                       use the file petsc/src/mat/examples/mat.ex.binary
 
       none = -1.0
       five = 5.0
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
 C Read in matrix and RHS
-      call OptionsGetString(PETSC_NULL_CHAR,'-f',f,flg,ierr)
+      call OptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
       call ViewerFileOpenBinary(MPI_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
