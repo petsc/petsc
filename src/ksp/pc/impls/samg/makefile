@@ -2,7 +2,7 @@
 #requirespackage  'PETSC_HAVE_SAMG'
 #requiresscalar    real 
 #requiresprecision double
-#requireslanguage  CPP
+#requireslanguage  CXXONLY
 
 ALL: lib
 SPECIALFASTLIB = yes

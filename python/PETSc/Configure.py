@@ -12,8 +12,7 @@ class Configure(config.base.Configure):
     headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/stat', 'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
-                                            'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX'])
+                                            'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types','WindowsX'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
@@ -78,12 +77,8 @@ class Configure(config.base.Configure):
     
   def Dump(self):
     ''' Actually put the values into the bmake files '''
-    # eventually this will be gone
-    
-    # archive management tools
-    self.addMakeMacro('AR_FLAGS',      self.setCompilers.AR_FLAGS)
-    self.addMakeMacro('AR_LIB_SUFFIX',    self.libraries.suffix)
-    self.addMakeMacro('RANLIB',         self.setCompilers.RANLIB)
+    # eventually everything between -- should be gone
+#-----------------------------------------------------------------------------------------------------    
 
     # C preprocessor values
     self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS)
@@ -145,10 +140,11 @@ class Configure(config.base.Configure):
     # '' for Unix, .exe for Windows
     self.addMakeMacro('SL_LINKER_SUFFIX','.so')
     self.addMakeMacro('SL_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.compilers.flibs)    
-    
+#-----------------------------------------------------------------------------------------------------
+
     # CONLY or CPP. We should change the PETSc makefiles to do this better
     if self.clanguage.language == 'C': lang = 'CONLY'
-    else: lang = 'CPP'
+    else: lang = 'CXXONLY'
     self.addMakeMacro('PETSC_LANGUAGE',lang)
     
     # real or complex
@@ -156,6 +152,7 @@ class Configure(config.base.Configure):
     # double or float
     self.addMakeMacro('PETSC_PRECISION',self.clanguage.precision)
 
+#-----------------------------------------------------------------------------------------------------
     # print include and lib for external packages
     for i in self.framework.packages:
       self.addDefine('HAVE_'+i.PACKAGE,1)
