@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.157 2000/07/24 03:32:47 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.158 2000/07/24 03:50:34 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -23,7 +23,7 @@ int SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *is
     /* Compute || J^T F|| */
     ierr = MatMultTranspose(A,F,W);CHKERRQ(ierr);
     ierr = VecNorm(W,NORM_2,&a1);CHKERRQ(ierr);
-    PLogInfo(0,"SNESSolve_EQ_LS: || J^T F|| %g || F || %g ||J^T F||/|| F || %g\n",a1,fnorm,a1/fnorm);
+    PLogInfo(0,"SNESSolve_EQ_LS: || J^T F|| %g near zero implies found a local minimum\n",a1/fnorm);
     if (a1/fnorm < 1.e-4) *ismin = PETSC_TRUE;
   } else {
     Vec       work;
@@ -37,7 +37,7 @@ int SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *is
     ierr = VecDot(F,work,&result);CHKERRQ(ierr);
     ierr = VecDestroy(work);CHKERRQ(ierr);
     a1   = PetscAbsScalar(result)/(fnorm*wnorm);
-    PLogInfo(0,"SNESSolve_EQ_LS: (F^T J random)/(|| F ||*||random|| %g\n",a1);
+    PLogInfo(0,"SNESSolve_EQ_LS: (F^T J random)/(|| F ||*||random|| %g near zero implies found a local minimum\n",a1);
     if (a1 < 1.e-4) *ismin = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -289,8 +289,7 @@ int SNESDestroy_EQ_LS(SNES snes)
 .seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
           SNESSetLineSearch(), SNESNoLineSearchNoNorms()
 @*/
-int SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
-                     PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
+int SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
 {
   int        ierr;
   Scalar     mone = -1.0;
@@ -365,8 +364,7 @@ $     -snes_no_convergence_test -snes_max_it <its>
 .seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
           SNESSetLineSearch(), SNESNoLineSearch()
 @*/
-int SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
-                            PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
+int SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
 {
   int        ierr;
   Scalar     mone = -1.0;
@@ -425,8 +423,7 @@ $  -snes_eq_ls cubic - Activates SNESCubicLineSearch()
 
 .seealso: SNESQuadraticLineSearch(), SNESNoLineSearch(), SNESSetLineSearch(), SNESNoLineSearchNoNorms()
 @*/
-int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
-                        PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
+int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
 {
   /* 
      Note that for line search purposes we work with with the related
@@ -485,7 +482,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   ierr = VecAYPX(&mone,x,w);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-  if ((*gnorm)*(*gnorm)*0.5 <= fnorm*fnorm*0.5 + alpha*initslope) { /* Sufficient reduction */
+  if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + alpha*initslope) { /* Sufficient reduction */
     ierr = VecCopy(w,y);CHKERRQ(ierr);
     PLogInfo(snes,"SNESCubicLineSearch: Using full step\n");
     goto theend1;
@@ -508,7 +505,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 #endif
   ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-  if ((*gnorm)*(*gnorm)*0.5 <= fnorm*fnorm*0.5 + alpha*initslope) { /* sufficient reduction */
+  if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + lambda*alpha*initslope) { /* sufficient reduction */
     ierr = VecCopy(w,y);CHKERRQ(ierr);
     PLogInfo(snes,"SNESCubicLineSearch: Quadratically determined step, lambda=%g\n",lambda);
     goto theend1;
@@ -523,8 +520,8 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
       ierr = VecCopy(w,y);CHKERRQ(ierr);
       *flag = -1; break;
     }
-    t1 = ((*gnorm)*(*gnorm) - fnorm*fnorm)*0.5 - lambda*initslope;
-    t2 = (gnormprev*gnormprev  - fnorm*fnorm)*0.5 - lambdaprev*initslope;
+    t1 = .5*((*gnorm)*(*gnorm) - fnorm*fnorm) - lambda*initslope;
+    t2 = .5*(gnormprev*gnormprev  - fnorm*fnorm) - lambdaprev*initslope;
     a  = (t1/(lambda*lambda) - t2/(lambdaprev*lambdaprev))/(lambda-lambdaprev);
     b  = (-lambdaprev*t1/(lambda*lambda) + lambda*t2/(lambdaprev*lambdaprev))/(lambda-lambdaprev);
     d  = b*b - 3*a*initslope;
@@ -549,7 +546,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 #endif
     ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-    if ((*gnorm)*(*gnorm)*0.5 <= fnorm*fnorm*0.5 + alpha*initslope) { /* is reduction enough? */
+    if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + lambda*alpha*initslope) { /* is reduction enough? */
       ierr = VecCopy(w,y);CHKERRQ(ierr);
       PLogInfo(snes,"SNESCubicLineSearch: Cubically determined step, lambda=%g\n",lambda);
       goto theend1;
@@ -609,8 +606,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 
 .seealso: SNESCubicLineSearch(), SNESNoLineSearch(), SNESSetLineSearch(), SNESNoLineSearchNoNorms()
 @*/
-int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
-                           PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
+int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
 {
   /* 
      Note that for line search purposes we work with with the related
@@ -662,7 +658,7 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   ierr = VecAYPX(&mone,x,w);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-  if ((*gnorm)*(*gnorm)*0.5 <= fnorm*fnorm*0.5 + alpha*initslope) { /* Sufficient reduction */
+  if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + alpha*initslope) { /* Sufficient reduction */
     ierr = VecCopy(w,y);CHKERRQ(ierr);
     PLogInfo(snes,"SNESQuadraticLineSearch: Using full step\n");
     goto theend2;
@@ -674,8 +670,7 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   while (1) {
     if (lambda <= minlambda) { /* bad luck; use full step */
       PLogInfo(snes,"SNESQuadraticLineSearch:Unable to find good step length! %d \n",count);
-      PLogInfo(snes,"SNESQuadraticLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",
-               fnorm,*gnorm,*ynorm,lambda,initslope);
+      PLogInfo(snes,"SNESQuadraticLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",fnorm,*gnorm,*ynorm,lambda,initslope);
       ierr = VecCopy(w,y);CHKERRQ(ierr);
       *flag = -1; break;
     }
@@ -692,7 +687,7 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 #endif
     ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-    if ((*gnorm)*(*gnorm)*0.5 <= fnorm*fnorm*0.5 + alpha*initslope) { /* sufficient reduction */
+    if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + lambda*alpha*initslope) { /* sufficient reduction */
       ierr = VecCopy(w,y);CHKERRQ(ierr);
       PLogInfo(snes,"SNESQuadraticLineSearch:Quadratically determined step, lambda=%g\n",lambda);
       break;
@@ -767,7 +762,8 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 
 .keywords: SNES, nonlinear, set, line search, routine
 
-.seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), SNESNoLineSearch(), SNESNoLineSearchNoNorms(), SNESSetLineSearchCheck(), SNESSetLineSearchParams(), SNESGetLineSearchParams()
+.seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), SNESNoLineSearch(), SNESNoLineSearchNoNorms(), 
+          SNESSetLineSearchCheck(), SNESSetLineSearchParams(), SNESGetLineSearchParams()
 @*/
 int SNESSetLineSearch(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*),void *lsctx)
 {
@@ -1025,10 +1021,8 @@ int SNESCreate_EQ_LS(SNES snes)
   neP->CheckStep        = PETSC_NULL;
   neP->checkP           = PETSC_NULL;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESSetLineSearch_C","SNESSetLineSearch_LS",
-                    SNESSetLineSearch_LS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESSetLineSearchCheck_C","SNESSetLineSearchCheck_LS",
-                    SNESSetLineSearchCheck_LS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESSetLineSearch_C","SNESSetLineSearch_LS",SNESSetLineSearch_LS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESSetLineSearchCheck_C","SNESSetLineSearchCheck_LS",SNESSetLineSearchCheck_LS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
