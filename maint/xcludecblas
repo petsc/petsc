@@ -1,8 +1,3 @@
-./examples/RCS
-./examples/tutorials
-./examples/tutorials/RCS
-./src
-./src/RCS
 ./blas/RCS
 ./lapack/RCS
 ./lapack/src1/RCS
