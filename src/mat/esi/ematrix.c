@@ -81,6 +81,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getInterfacesSupported(esi::Argv 
   list->appendArg("esi::MatrixRowReadAccess");
   list->appendArg("esi::MatrixRowWriteAccess");
   list->appendArg("esi::petsc::Matrix");
+  list->appendArg("Mat");
   return 0;
 }
 

@@ -69,6 +69,7 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
   list->appendArg("esi::Object");
   list->appendArg("esi::IndexSpace");
   list->appendArg("esi::petsc::IndexSpace");
+  list->appendArg("PetscMap");
   return 0;
 }
 
