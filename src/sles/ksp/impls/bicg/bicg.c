@@ -32,7 +32,7 @@ int KSPSetUp_BiCG(KSP ksp)
 #define __FUNCT__ "KSPSolve_BiCG"
 int  KSPSolve_BiCG(KSP ksp,int *its)
 {
-  int          ierr,i,maxit;
+  int          ierr,i;
   PetscTruth   diagonalscale;
   PetscScalar  dpi,a=1.0,beta,betaold=1.0,b,mone=-1.0,ma; 
   PetscReal    dp;
@@ -44,7 +44,6 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
-  maxit   = ksp->max_it;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
   Rl      = ksp->work[0];
@@ -82,7 +81,11 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
 
-  for (i=0; i<maxit; i++) {
+  i = 0;
+  do {
+#if 0
+  for (i=0; i<ksp->max_it; i++) {
+#endif
      ierr = VecDot(Zr,Rl,&beta);CHKERRQ(ierr);       /*     beta <- r'z     */
      if (!i) {
        if (beta == 0.0) {
@@ -136,8 +139,9 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
        ierr = VecConjugate(Rl);CHKERRQ(ierr);
        ierr = VecConjugate(Zl);CHKERRQ(ierr);
      }
-  }
-  if (i == maxit) {
+     i++;
+  } while (i<ksp->max_it);
+  if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
   *its = ksp->its;
