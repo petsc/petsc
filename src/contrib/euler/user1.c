@@ -1453,7 +1453,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
          app->Nx,app->Ny,app->Nz,ndof,2,PETSC_NULL,PETSC_NULL,PETSC_NULL,&app->da); CHKERRQ(ierr);
   ierr = DAGetAO(app->da,&ao); CHKERRQ(ierr);
-  *(int*)(&(app->fort_ao)) = PetscFromPointer(ao); 
+  /*  *(int*)(&(app->fort_ao)) = PetscFromPointer(ao); */
+  ierr = PetscCObjectToFortranObject(ao,&app->fort_ao); CHKERRQ(ierr);
 
   /* Get global and local vectors */
   ierr = DAGetDistributedVector(app->da,&app->X); CHKERRQ(ierr);
