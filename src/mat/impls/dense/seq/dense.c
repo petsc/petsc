@@ -761,12 +761,8 @@ static int MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
     PetscTruth allreal = PETSC_TRUE;
     /* determine if matrix has all real values */
     v = a->v;
-    for (i=0; i<A->m; i++) {
-      v = a->v + i;
-      for (j=0; j<A->n; j++) {
+    for (i=0; i<A->m*A->n; i++) {
 	if (PetscImaginaryPart(v[i])) { allreal = PETSC_FALSE; break ;}
-	v += a->lda;
-      }
     }
 #endif
     if (format == PETSC_VIEWER_ASCII_MATLAB) {

@@ -111,6 +111,8 @@ int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
   PetscFunctionReturn(0);
 }
 
+extern int MatMPIAIJFactorInfo_SuperLu(Mat A,PetscViewer viewer);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatView_MPIAIJ_Spooles_DIST"
 int MatView_MPIAIJ_SuperLU_DIST(Mat A,PetscViewer viewer)

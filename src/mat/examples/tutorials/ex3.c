@@ -12,9 +12,9 @@
 int main(int argc,char **argv)
 {
   SLES solver; KSP itmeth; PC pc;
-  Mat A,B,A11,A12,A21,A22;
-  Vec X,X1,X2,Y,Z,Z1,Z2;
-  PetscScalar *a,*b,*x,*y,*z,v,one=1,mone=-1;
+  Mat A,B;
+  Vec X,Y,Z;
+  PetscScalar *a,*b,*x,*y,*z,one=1,mone=-1;
   PetscReal nrm;
   int ierr,size=8,lda=10, i,j;
 
