@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.32 2000/05/01 06:00:11 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.33 2000/05/01 06:03:47 kaushik Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -98,7 +98,7 @@ int main(int argc,char **args)
 
   /*Set the maximum number of threads for OpenMP */
 #if defined(_OPENMP)
-  ierr = OptionsGetInt(PETSC_NULL,"-max_thr",&max_threads,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-max_thr",&max_threads,&flg);CHKERRA(ierr);
   omp_set_num_threads(max_threads);
   PetscPrintf(PETSC_COMM_WORLD,"Using %d threads for each MPI process\n",
               max_threads);  
