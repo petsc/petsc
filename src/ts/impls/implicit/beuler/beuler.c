@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.8 1996/04/20 04:21:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.9 1996/08/08 14:45:39 bsmith Exp bsmith $";
 #endif
 /*
        Code for Time Stepping with implicit backwards Euler.
@@ -194,24 +194,26 @@ int TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
 */
 int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  TS     ts = (TS) ctx;
-  Mat    A,B;
-  int    ierr;
-  Scalar mone = -1.0, mdt = 1.0/ts->time_step;
+  TS      ts = (TS) ctx;
+  int     ierr;
+  Scalar  mone = -1.0, mdt = 1.0/ts->time_step;
+  MatType mtype;
+
 
   /* construct users Jacobian */
   if (ts->rhsjacobian) {
     ierr = (*ts->rhsjacobian)(ts,ts->ptime,x,AA,BB,str,ts->jacP);CHKERRQ(ierr);
   }
-  A = *AA; B = *BB;
-  /* shift and scale Jacobian */
-  if (!ts->Ashell) {
-    ierr = MatScale(&mone,A); CHKERRQ(ierr);
-    ierr = MatShift(&mdt,A); CHKERRQ(ierr);
+
+  /* shift and scale Jacobian, if not a matrix free */
+  ierr = MatGetType(*AA,&mtype,PETSC_NULL); CHKERRQ(ierr);
+  if (mtype != MATSHELL) {
+    ierr = MatScale(&mone,*AA); CHKERRQ(ierr);
+    ierr = MatShift(&mdt,*AA); CHKERRQ(ierr);
   }
-  if (ts->B != ts->A && ts->Ashell != ts->B && *str != SAME_PRECONDITIONER) {
-    ierr = MatScale(&mone,B); CHKERRQ(ierr);
-    ierr = MatShift(&mdt,B); CHKERRQ(ierr);
+  if (*BB != *AA && *str != SAME_PRECONDITIONER) {
+    ierr = MatScale(&mone,*BB); CHKERRQ(ierr);
+    ierr = MatShift(&mdt,*BB); CHKERRQ(ierr);
   }
 
   return 0;
