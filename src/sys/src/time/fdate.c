@@ -1,10 +1,15 @@
 #ifndef lint
-static char vcid[] = "$Id: fdate.c,v 1.10 1997/04/03 19:07:33 balay Exp balay $";
+static char vcid[] = "$Id: fdate.c,v 1.11 1997/04/03 19:55:37 balay Exp balay $";
 #endif
 
 #include "src/sys/src/files.h"
 #if defined (PARCH_IRIX64)
 #include <sys/resource.h>
+#if defined(__cplusplus)
+extern "C" {
+extern int gettimeofday(struct timeval *, struct timezone *);
+}
+#endif
 #endif
 /*
      Some versions of the Gnu g++ compiler require a prototype for gettimeofday()
@@ -15,6 +20,7 @@ extern "C" {
 extern int gettimeofday(struct timeval *, struct timezone *);
 }
 #endif
+
 */
    
 #undef __FUNC__  
