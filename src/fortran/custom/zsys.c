@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.44 1998/03/24 21:12:57 balay Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.45 1998/03/25 03:42:50 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -297,7 +297,7 @@ void petscreleasepointer_(int *index,int *__ierr)
     PETSc objects require routines provided here to do the conversion 
     between C pointers and Fortran integers.
 */
-#if defined(HAVE_64BITS)
+#if defined(USE_POINTER_CONVERSION)
 
 /* 
    This file contains routines to convert to and from C pointers to Fortran integers
