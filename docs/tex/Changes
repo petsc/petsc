@@ -93,6 +93,7 @@ have the error flag as the final argument.
 
   Viewer
 
+ Added ViewerASCIISynchronizedPrintf(viewer,....)
    
 
   SNES 
