@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zplog.c,v 1.2 1996/03/23 21:26:12 curfman Exp curfman $";
+static char vcid[] = "$Id: zplog.c,v 1.3 1996/03/24 14:11:12 curfman Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -116,7 +116,7 @@ void plogstageregister_(int *stage,CHAR sname, int *__ierr,int len){
 #if defined(PETSC_LOG)
   char *t;
   FIXCHAR(sname,len,t);
-  *__ierr = PLogStageRegister(t,sname);
+  *__ierr = PLogStageRegister(*stage,sname);
 #endif
 }
 
