@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.56 1996/01/03 20:54:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.57 1996/01/09 03:32:09 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -797,7 +797,7 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
     MPIU_fprintf(comm,fd,"Machine: %s with %d processors, run on %s",arch,size,SYGetDate());
 
   MPIU_fprintf(comm,fd,"\n                Max         Min        Avg        Total \n");
-  MPIU_fprintf(comm,fd,"Time:        %5.3e   %5.3e   %5.3e\n",maxt,mint,avet);
+  MPIU_fprintf(comm,fd,"Time (sec):  %5.3e   %5.3e   %5.3e\n",maxt,mint,avet);
   MPIU_fprintf(comm,fd,"Objects:     %5.3e   %5.3e   %5.3e\n",maxo,mino,aveo);
   MPIU_fprintf(comm,fd,"Flops:       %5.3e   %5.3e   %5.3e  %5.3e\n",
                                                  maxf,minf,avef,totf);
@@ -820,24 +820,35 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   if (!tott) tott = 1.e-5;
 
   if (EventsStageMax) {
-    MPIU_fprintf(comm,fd,"\nStages summary        Ave. Time %%Total  Ave. Flops/sec %%Total\n");
+    MPIU_fprintf(comm,fd,"\nSummary of Stages:     Avg Time  %%Total  Avg Flops/sec  %%Total\n");
     for ( j=0; j<=EventsStageMax; j++ ) {
       MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
       MPI_Reduce(&EventsStageTime[j],&stime,1,MPI_DOUBLE,MPI_SUM,0,comm);
       if (EventsStageName[j]) {
-        MPIU_fprintf(comm,fd," %d: %15s: %5.3e   %4.1f%% %5.3e   %4.1f%% \n",
+        MPIU_fprintf(comm,fd," %d: %15s:  %5.3e   %4.1f%%    %5.3e     %4.1f%% \n",
                      j,EventsStageName[j],stime/size,100.0*stime/tott,sflops/size,
                      100.*sflops/totf);
       } else {
-        MPIU_fprintf(comm,fd," %d:          %5.3e   %4.1f%%  %5.3e   %4.1f%% \n",
+        MPIU_fprintf(comm,fd," %d:          %5.3e   %4.1f%%    %5.3e     %4.1f%% \n",
                     j,stime/size,100.0*stime/tott,sflops/size,100.*sflops/totf);
       }
     }
   }
 
-
-  MPIU_fprintf(comm,fd,
+  MPIU_fprintf(comm,fd,  
     "\n------------------------------------------------------------------------------\n"); 
+  MPIU_fprintf(comm,fd,"Phase summary info:\n");
+  MPIU_fprintf(comm,fd,"   Count: number of times phase was executed\n");
+  MPIU_fprintf(comm,fd,"   Time and Flops/sec:\n");
+  MPIU_fprintf(comm,fd,"      Max - maximum over all processors\n");
+  MPIU_fprintf(comm,fd,"      Ratio - ratio of maximum to minimum over all processors\n");
+  MPIU_fprintf(comm,fd,"   Global: entire computation\n");
+  MPIU_fprintf(comm,fd,"   Stage: optional user-defined stages of a computation\n");
+  MPIU_fprintf(comm,fd,"          Set stages with PLogStagePush() and PLogStagePop().\n");
+  MPIU_fprintf(comm,fd,"      %%T - percent time in this phase\n");
+  MPIU_fprintf(comm,fd,"      %%F - percent flops in this phase\n");
+  MPIU_fprintf(comm,fd,
+    "------------------------------------------------------------------------------\n"); 
 
   /* loop over operations looking for interesting ones */
   MPIU_fprintf(comm,fd,"Phase            Count    Time (sec)      Flops/sec\
