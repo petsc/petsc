@@ -37,17 +37,14 @@ tar cf ~/petsc$version.tar petsc$version
 #
 #  To test locally and build petsc.solid
 #
-# mv petsc petsc.good
-# tar xf petsc.tar
-# mv petsc petsc-2.0.etc
-# mv petsc.good petsc
-# do chmod g+ws petsc-2.0.etc
-# do chgrp -R pdetools petsc-2.0.etc
-# do chmod -R g+w petsc-2.0.etc
-# Run du on petsc-2.0.etc to make sure there is no garbage
-# Test manpages and manual in petsc-2.0.etc
-# Do builds in petsc-2.0.etc -- Remember that you must set
-# PETSC_DIR in .cshrc to  point to petsc-2.0.etc
+# tar xf petsc$version.tar
+# do chmod g+ws petsc$version
+# do chgrp -R pdetools petsc$version
+# do chmod -R g+w petsc$version
+# Run du on petsc$version to make sure there is no garbage
+# Test manpages and manual in petsc$version
+# Do builds in petsc$version -- Remember that you must set
+# PETSC_DIR in .cshrc to  point to petsc$version
 #
 # For local distribution, remember to make etags in petsc.solid
 #
