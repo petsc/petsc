@@ -1,6 +1,7 @@
 
 static char help[] = 
-"This example uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
+"This example uses Newton-like methods to solve u`` + u^{2} = f.\n\
+ Matrix free with user provided explicit preconditioner matrix\n\n";
 
 #include "draw.h"
 #include "snes.h"
@@ -21,13 +22,14 @@ int main( int argc, char **argv )
   SNES         snes;               /* SNES context */
   SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
   Vec          x,r,F,U;
-  Mat          J;                  /* Jacobian matrix */
+  Mat          J;                  /* Jacobian matrix-free for */
+  Mat          B;                  /* explicit preconditioner matrix*/
   int          ierr, its, n = 5,i;
   double       h,xp = 0.0,v;
   MonitorCtx   monP;               /* monitoring context */
 
   PetscInitialize( &argc, &argv, 0,0 );
-  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
   OptionsGetInt(0,"-n",&n);
   h = 1.0/(n-1);
 
@@ -39,7 +41,10 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)U,"Exact Solution");
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&J); CHKERRA(ierr);
+
+  /* create explict matrix preconditioner */
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&B); CHKERRA(ierr);
+
 
   /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {
@@ -54,10 +59,13 @@ int main( int argc, char **argv )
   ierr = SNESCreate(MPI_COMM_WORLD,&snes); CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
+  /* create matrix free matrix for Jacobian */
+  ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J);
+
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F,1); CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,0); CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,J,B,FormJacobian,0); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr);
 
   /* Set up nonlinear solver; then execute it */
@@ -106,6 +114,10 @@ int FormInitialGuess(SNES snes,Vec x,void *dummy)
    return 0;
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
+/*  Evaluates a matrix that is used to precondition the matrix free
+    jacobian. In this case, the explict preconditioner matrix is 
+    also EXACTLY the Jacobian. In general, it would be some lower
+    order, simplified apprioximation */
 
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
@@ -115,21 +127,23 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   ierr =  VecGetSize(x,&n); CHKERRQ(ierr);
   d = (double)(n - 1); d = d*d;
   i = 0; A = 1.0; 
-  ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
+
+  /* do nothing with Jac since it is Matrix-free */
+  ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
   for ( i=1; i<n-1; i++ ) {
     A = d; 
     j = i - 1; 
-    ierr = MatSetValues(*jac,1,&i,1,&j,&A,INSERTVALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*B,1,&i,1,&j,&A,INSERTVALUES); CHKERRQ(ierr);
     j = i + 1; 
-    ierr = MatSetValues(*jac,1,&i,1,&j,&A,INSERTVALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*B,1,&i,1,&j,&A,INSERTVALUES); CHKERRQ(ierr);
     A = -2.0*d + 2.0*xx[i];
     j = i + 1; 
-    ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
   }
   i = n-1; A = 1.0; 
-  ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
 /*  *flag = MAT_SAME_NONZERO_PATTERN; */
   return 0;
 }
