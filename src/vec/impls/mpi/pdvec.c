@@ -13,8 +13,12 @@ static int VeiPDestroyVector(PetscObject obj )
 {
   Vec       v = (Vec ) obj;
   DvPVector *x = (DvPVector *) v->data;
+#if defined(PETSC_LOG)
+  PETSCLOGSTATE(obj,"Rows %d",x->N);
+#endif  
   if (x->stash.array) FREE(x->stash.array);
-  FREE(v->data); FREE(v);
+  FREE(v->data);
+  PETSCHEADERDESTROY(v);
   return 0;
 }
 
@@ -218,7 +222,7 @@ static int VeiDVPBeginAssembly(Vec xin)
   MPI_Request *send_waits,*recv_waits;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  MPI_Allreduce((void *) &x->insertmode,(void *) &addv,numtids,MPI_INT,
+  MPI_Allreduce((void *) &x->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
   if (addv == (AddValues|InsertValues)) {
     SETERR(1,"Some processors have inserted while others have added");
@@ -256,7 +260,7 @@ static int VeiDVPBeginAssembly(Vec xin)
      this is a lot of wasted space.
        This could be done better.
   */
-  rvalues = (Scalar *) MALLOC(2*(nreceives+1)*nmax*sizeof(Scalar));
+  rvalues = (Scalar *) MALLOC(2*(nreceives+1)*(nmax+1)*sizeof(Scalar));
   CHKPTR(rvalues);
   recv_waits = (MPI_Request *) MALLOC((nreceives+1)*sizeof(MPI_Request));
   CHKPTR(recv_waits);
