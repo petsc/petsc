@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.14 1995/10/27 00:33:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.15 1995/11/01 19:11:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -53,7 +53,11 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,b,u); CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);
-  MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
+  if (norm < 1.e-10) {
+    MPIU_printf(MPI_COMM_WORLD,"Residual norm < 1.e-10\n");
+  } else {
+    MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
+  }
   /* MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f seconds\n",time); */
 
   /* Cleanup */
