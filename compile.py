@@ -9,7 +9,10 @@ import types
 class Process (action.Action):
   def __init__(self, products, tag, sources, compiler, compilerFlags, noUpdate = 0):
     action.Action.__init__(self, compiler, sources, compilerFlags, 1)
-    self.products      = products
+    if products:
+      self.products    = products
+    else:
+      self.products    = fileset.FileSet()
     self.tag           = tag
     self.buildProducts = 0
     self.noUpdate      = noUpdate
@@ -26,36 +29,6 @@ class Process (action.Action):
       if isinstance(self.products, fileset.FileSet):
         self.products = [self.products]
       self.products.append(set)
-
-class TagSIDL (transform.GenericTag):
-  def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, useAll = 1, extraExt = ''):
-    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
-    self.useAll = useAll
-
-  def execute(self):
-    self.genericExecute(self.sources)
-    if len(self.changed) and self.useAll:
-      self.changed.extend(self.unchanged)
-      # This is bad
-      self.unchanged.data = []
-    return self.products
-
-class CompileSIDL (Process):
-  def __init__(self, generatedSources, sources, compiler, compilerFlags):
-    Process.__init__(self, generatedSources, 'sidl', sources, compiler, '--suppress-timestamp --suppress-metadata '+compilerFlags)
-    self.generatedSources = generatedSources
-
-class CompileSIDLRepository (CompileSIDL):
-  def __init__(self, sources = None, compiler = 'babel', compilerFlags = '--xml --output-directory=xml'):
-    CompileSIDL.__init__(self, fileset.FileSet(), sources, compiler, compilerFlags)
-
-class CompileSIDLServer (CompileSIDL):
-  def __init__(self, generatedSources, sources = None, compiler = 'babel', compilerFlags = '--server=C++ --output-directory=generated --repository-path=xml'):
-    CompileSIDL.__init__(self, generatedSources, sources, compiler, compilerFlags)
-
-class CompileSIDLClient (CompileSIDL):
-  def __init__(self, generatedSources, sources = None, compiler = 'babel', compilerFlags = '--client=Python --output-directory=generated --repository-path=xml'):
-    CompileSIDL.__init__(self, generatedSources, sources, compiler, compilerFlags)
 
 class Compile (action.Action):
   def __init__(self, library, sources, tag, compiler, compilerFlags, archiver, archiverFlags):
