@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.21 1996/01/24 18:21:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.22 1996/01/24 21:10:18 bsmith Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -44,12 +44,12 @@ int FormGradient(SNES,Vec,Vec,void*);
 
 /* For Elastic-Plastic Torsion test problem */
 int HessianProduct1(void*,Vec,Vec);
-int FormInitialGuess1(SNES,Vec,void*);
+int FormInitialGuess1(AppCtx*,Vec);
 int EvalFunctionGradient1(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 
 /* For Minimal Surface Area test problem */
 int HessianProduct2(void*,Vec,Vec);
-int FormInitialGuess2(SNES,Vec,void*);
+int FormInitialGuess2(AppCtx*,Vec);
 int EvalFunctionGradient2(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 int BoundaryValues(AppCtx*);
 
@@ -99,7 +99,6 @@ int main(int argc,char **argv)
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,
          (void *)&user); CHKERRA(ierr);
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
@@ -129,11 +128,11 @@ int main(int argc,char **argv)
   /* Set options; then solve minimization problem */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
   if (user.problem == 1) {
-    ierr = FormInitialGuess1(snes,x,&user); CHKERRA(ierr);
+    ierr = FormInitialGuess1(&user,x); CHKERRA(ierr);
   } else if (user.problem == 2) {
-    ierr = FormInitialGuess2(snes,x,&user); CHKERRA(ierr);
+    ierr = FormInitialGuess2(&user,x); CHKERRA(ierr);
   }
-  ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
   ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d, ",its);
@@ -269,9 +268,8 @@ int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 
 /* --------------------  Form initial approximation ----------------- */
 
-int FormInitialGuess1(SNES snes,Vec X,void *ptr)
+int FormInitialGuess1(AppCtx *user,Vec X)
 {
-  AppCtx *user = (AppCtx *) ptr;
   int    ierr, i, j, k, nx = user->mx, ny = user->my;
   double hx = user->hx, hy = user->hy, temp;
   Scalar *x;
@@ -464,9 +462,8 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
 
 /* --------------------  Form initial approximation ----------------- */
 
-int FormInitialGuess2(SNES snes,Vec X,void *ptr)
+int FormInitialGuess2(AppCtx *user,Vec X)
 {
-  AppCtx *user = (AppCtx *) ptr;
   int    ierr, i, j, k, nx = user->mx, ny = user->my;
   double one = 1.0, p5 = 0.5, alphaj, betai;
   double hx = user->hx, hy = user->hy;

@@ -1,15 +1,15 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.37 1996/01/23 00:20:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.38 1996/01/24 18:05:07 curfman Exp curfman $";
 #endif
 
 static char *help="Uses Newton's method to solve a two-variable system.\n";
 
 #include "snes.h"
 
-int  FormJacobian(SNES snes,Vec,Mat*,Mat*,MatStructure*,void*),
-     FormFunction(SNES snes,Vec,Vec,void*),
-     FormInitialGuess(SNES snes,Vec),
-     Monitor(SNES,int,double,void *);
+int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
+     FormFunction(SNES,Vec,Vec,void*),
+     FormInitialGuess(SNES,Vec),
+     Monitor(SNES,int,double,void*);
 
 int main( int argc, char **argv )
 {
@@ -29,7 +29,6 @@ int main( int argc, char **argv )
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
   /* Set various routines and options */
-  ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction,0);CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,0); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,0); CHKERRA(ierr);
@@ -37,7 +36,7 @@ int main( int argc, char **argv )
 
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,&its); CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its);
 
   /* Free data structures */

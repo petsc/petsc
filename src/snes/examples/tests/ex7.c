@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.22 1996/01/23 00:20:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.23 1996/01/24 18:04:40 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -61,7 +61,6 @@ int main( int argc, char **argv )
   ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
 
   /* Set various routines and options */
-  ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F); CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,B,FormJacobian,0); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr);
@@ -69,7 +68,7 @@ int main( int argc, char **argv )
 
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,&its); CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its );
 
   /* Free data structures */

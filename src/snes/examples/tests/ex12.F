@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.23 1996/01/23 00:20:15 bsmith Exp curfman $";
+C    "$Id: ex12.F,v 1.24 1996/01/24 18:05:14 curfman Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -73,14 +73,13 @@ C Create nonlinear solver
       call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
 
 C Set various routines and options
-      call SNESSetSolution(snes,x,ierr)
       call SNESSetFunction(snes,r,FormFunction,ctx,ierr)
       call SNESSetJacobian(snes,J,J,FormJacobian,ctx,ierr)
       call SNESSetFromOptions(snes,ierr)
 
 C Solve nonlinear system
       call FormInitialGuess(snes,x,ierr)
-      call SNESSolve(snes,its,ierr)
+      call SNESSolve(snes,x,its,ierr)
 
 C Write results if first processor
       if (ctx(4) .eq. 0) then

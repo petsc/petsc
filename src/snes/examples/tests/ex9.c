@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.17 1996/01/28 18:26:18 curfman Exp curfman $";
+static char vcid[] = "$Id: ex9.c,v 1.18 1996/01/28 18:28:28 curfman Exp curfman $";
 #endif
 
 static char help[] =
@@ -40,7 +40,7 @@ typedef struct {
     DA        da;              /* distributed array datastructure */
 } AppCtx;
 
-int FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(SNES,Vec,void*);
+int FormFunction1(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
 
 int main( int argc, char **argv )
 {
@@ -89,7 +89,6 @@ int main( int argc, char **argv )
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines and options */
-  ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user); CHKERRA(ierr);
   ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,0,(void *)&user); CHKERRA(ierr);
@@ -102,8 +101,8 @@ int main( int argc, char **argv )
   ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
 
   /* Solve nonlinear system */
-  ierr = FormInitialGuess1(snes,x,&user); CHKERRA(ierr);
-  ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
+  ierr = FormInitialGuess1(&user,x); CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
   MPIU_printf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
   /* Free data structures */
@@ -116,9 +115,8 @@ int main( int argc, char **argv )
   PetscFinalize();
   return 0;
 }/* --------------------  Form initial approximation ----------------- */
-int FormInitialGuess1(SNES snes,Vec X,void *ptr)
+int FormInitialGuess1(AppCtx *user,Vec X)
 {
-  AppCtx *user = (AppCtx *) ptr;
   int     i,j,k, loc, mx, my, mz, ierr,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs,base1;
   double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
   Scalar  *x;

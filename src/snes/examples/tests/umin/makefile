@@ -41,6 +41,10 @@ ex4: ex4.o $(FOBJ4) chkopts
 	-$(CLINKER) -o ex4 ex4.o $(FOBJ4)  $(PETSC_LIB)
 	$(RM) ex4.o $(FOBJ4)
 
+ex5: ex5.o $(FOBJ4) chkopts
+	-$(CLINKER) -o ex5 ex5.o $(FOBJ4)  $(PETSC_LIB)
+	$(RM) ex5.o $(FOBJ4)
+
 runex1:
 	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
            if (diff output/ex1_1.out ex1_1.tmp) then true; \

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.22 1996/01/24 18:18:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.23 1996/01/24 21:10:38 bsmith Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -40,7 +40,7 @@ int MatrixFreeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int FormMinimizationFunction(SNES,Vec,double*,void*);
 int FormGradient(SNES,Vec,Vec,void*);
 int HessianProduct(void*,Vec,Vec);
-int FormInitialGuess(SNES,Vec,void*);
+int FormInitialGuess(AppCtx*,Vec);
 int EvalFunctionGradient(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 
 int main(int argc,char **argv)
@@ -93,7 +93,6 @@ int main(int argc,char **argv)
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,
          (void *)&user); CHKERRA(ierr);
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
@@ -118,8 +117,8 @@ int main(int argc,char **argv)
 
   /* Set options; then solve minimization problem */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = FormInitialGuess(snes,x,&user); CHKERRA(ierr);
-  ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
+  ierr = FormInitialGuess(&user,x); CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
   ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_WORLD,"number of Newton iterations = %d, ",its);
@@ -243,9 +242,8 @@ int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 
 /* --------------------  Form initial approximation ----------------- */
 
-int FormInitialGuess(SNES snes,Vec X,void *ptr)
+int FormInitialGuess(AppCtx *user,Vec X)
 {
-  AppCtx *user = (AppCtx *) ptr;
   int    ierr, i, j, k, nx = user->mx, ny = user->my;
   double hx = user->hx, hy = user->hy, temp;
   int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.32 1996/01/23 00:20:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.33 1996/01/24 18:04:53 curfman Exp curfman $";
 #endif
 
 static char help[] =
@@ -47,10 +47,10 @@ typedef struct {
 
 int  FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction1(SNES,Vec,Vec,void*),
-     FormInitialGuess1(SNES,Vec,void*);
+     FormInitialGuess1(AppCtx*,Vec);
 int  FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction2(SNES,Vec,Vec,void*),
-     FormInitialGuess2(SNES,Vec,void*);
+     FormInitialGuess2(AppCtx*,Vec);
 
 int main( int argc, char **argv )
 {
@@ -90,21 +90,19 @@ int main( int argc, char **argv )
   /* Set various routines and compute initial guess for nonlinear solver */
   ierr = OptionsHasName(PETSC_NULL,"-cavity",&flg); CHKERRA(ierr);
   if (flg){
-    ierr = FormInitialGuess2(snes,x,&user); CHKERRA(ierr);
-    ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
+    ierr = FormInitialGuess2(&user,x); CHKERRA(ierr);
     ierr = SNESSetFunction(snes,r,FormFunction2,(void *)&user); CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian2,(void *)&user); CHKERRA(ierr);
   }
   else {
-    ierr = FormInitialGuess1(snes,x,&user); CHKERRA(ierr);
-    ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
+    ierr = FormInitialGuess1(&user,x); CHKERRA(ierr);
     ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user); CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void *)&user);CHKERRA(ierr);
   }
 
   /* Set options and solve nonlinear system */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);  CHKERRA(ierr);
 
   MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d, ",its);
@@ -127,9 +125,8 @@ int main( int argc, char **argv )
 
 /* --------------------  Form initial approximation ----------------- */
 
-int FormInitialGuess1(SNES snes,Vec X,void *ptr)
+int FormInitialGuess1(AppCtx *user,Vec X)
 {
-  AppCtx *user = (AppCtx *) ptr;
   int     i, j, row, mx, my, ierr;
   double  lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
   Scalar  *x;
@@ -251,9 +248,8 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 
 /* --------------------  Form initial approximation ----------------- */
 
-int FormInitialGuess2(SNES snes,Vec X,void *ptr)
+int FormInitialGuess2(AppCtx *user,Vec X)
 {
-  AppCtx *user = (AppCtx *) ptr;
   int     ierr, i, j, row, mx, my;
   Scalar  xx,yy,*x;
   double  hx, hy;

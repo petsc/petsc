@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.29 1996/01/24 05:47:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.30 1996/01/24 17:53:43 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -79,14 +79,13 @@ int main( int argc, char **argv )
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines and options */
-  ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&ctx);CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&ctx); CHKERRA(ierr);
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,&its); CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n\n", its );
 
   /* Free data structures */
