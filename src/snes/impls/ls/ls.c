@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.88 1997/04/02 16:38:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.89 1997/04/21 20:09:04 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -210,6 +210,13 @@ $  -snes_eq_ls cubic
 int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
                         double fnorm,double *ynorm,double *gnorm,int *flag)
 {
+  /* 
+     Note that for line search purposes we work with with the related
+     minimization problem:
+        min  z(x):  R^n -> R,
+     where z(x) = .5 * fnorm*fnorm, and fnorm = || f ||_2.
+   */
+        
   double  steptol, initslope, lambdaprev, gnormprev, a, b, d, t1, t2;
   double  maxstep, minlambda, alpha, lambda, lambdatemp, lambdaneg;
 #if defined(PETSC_COMPLEX)
@@ -255,7 +262,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
   ierr = VecAYPX(&mone,x,w); CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,w,g); CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm); 
-  if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
+  if ((*gnorm)*(*gnorm)*0.5 <= fnorm*fnorm*0.5 + alpha*initslope) { /* Sufficient reduction */
     ierr = VecCopy(w,y); CHKERRQ(ierr);
     PLogInfo(snes,"SNESCubicLineSearch: Using full step\n");
     goto theend1;
@@ -277,7 +284,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
 #endif
   ierr = SNESComputeFunction(snes,w,g); CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm); CHKERRQ(ierr);
-  if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
+  if ((*gnorm)*(*gnorm)*0.5 <= fnorm*fnorm*0.5 + alpha*initslope) { /* sufficient reduction */
     ierr = VecCopy(w,y); CHKERRQ(ierr);
     PLogInfo(snes,"SNESCubicLineSearch: Quadratically determined step, lambda=%g\n",lambda);
     goto theend1;
@@ -293,8 +300,8 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
       ierr = VecCopy(w,y); CHKERRQ(ierr);
       *flag = -1; break;
     }
-    t1 = *gnorm - fnorm - lambda*initslope;
-    t2 = gnormprev  - fnorm - lambdaprev*initslope;
+    t1 = ((*gnorm)*(*gnorm) - fnorm*fnorm)*0.5 - lambda*initslope;
+    t2 = (gnormprev*gnormprev  - fnorm*fnorm)*0.5 - lambdaprev*initslope;
     a  = (t1/(lambda*lambda) - t2/(lambdaprev*lambdaprev))/(lambda-lambdaprev);
     b  = (-lambdaprev*t1/(lambda*lambda) + lambda*t2/(lambdaprev*lambdaprev))/(lambda-lambdaprev);
     d  = b*b - 3*a*initslope;
@@ -323,7 +330,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
 #endif
     ierr = SNESComputeFunction(snes,w,g); CHKERRQ(ierr);
     ierr = VecNorm(g,NORM_2,gnorm); CHKERRQ(ierr);
-    if (*gnorm <= fnorm + alpha*initslope) {      /* is reduction enough? */
+    if ((*gnorm)*(*gnorm)*0.5 <= fnorm*fnorm*0.5 + alpha*initslope) { /* is reduction enough? */
       ierr = VecCopy(w,y); CHKERRQ(ierr);
       PLogInfo(snes,"SNESCubicLineSearch: Cubically determined step, lambda=%g\n",lambda);
       goto theend1;
@@ -371,6 +378,12 @@ $  -snes_eq_ls quadratic
 int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
                            double fnorm, double *ynorm, double *gnorm,int *flag)
 {
+  /* 
+     Note that for line search purposes we work with with the related
+     minimization problem:
+        min  z(x):  R^n -> R,
+     where z(x) = .5 * fnorm*fnorm, and fnorm = || f ||_2.
+   */
   double  steptol,initslope,lambdaprev,gnormprev,maxstep,minlambda,alpha,lambda,lambdatemp;
 #if defined(PETSC_COMPLEX)
   Scalar  cinitslope,clambda;
@@ -410,7 +423,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   ierr = VecAYPX(&mone,x,w); CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,w,g); CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm); CHKERRQ(ierr);
-  if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
+  if ((*gnorm)*(*gnorm)*0.5 <= fnorm*fnorm*0.5 + alpha*initslope) { /* Sufficient reduction */
     ierr = VecCopy(w,y); CHKERRQ(ierr);
     PLogInfo(snes,"SNESQuadraticLineSearch: Using full step\n");
     goto theend2;
@@ -444,7 +457,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 #endif
     ierr = SNESComputeFunction(snes,w,g); CHKERRQ(ierr);
     ierr = VecNorm(g,NORM_2,gnorm); CHKERRQ(ierr);
-    if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
+    if ((*gnorm)*(*gnorm)*0.5 <= fnorm*fnorm*0.5 + alpha*initslope) { /* sufficient reduction */
       ierr = VecCopy(w,y); CHKERRQ(ierr);
       PLogInfo(snes,
         "SNESQuadraticLineSearch:Quadratically determined step, lambda=%g\n",lambda);
