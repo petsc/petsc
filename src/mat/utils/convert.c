@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.32 1995/10/27 01:26:46 curfman Exp curfman $";
+static char vcid[] = "$Id: convert.c,v 1.33 1995/10/27 13:56:30 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -17,6 +17,7 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
   Scalar *vwork;
   int    ierr, i, nz, m, n, *cwork, rstart, rend;
   ierr = MatGetSize(mat,&m,&n); CHKERRQ(ierr);
+  if (newtype == MATSAME) newtype = mat->type;
   switch (newtype) {
     case MATSEQAIJ:
       ierr = MatCreateSeqAIJ(mat->comm,m,n,0,0,M); CHKERRQ(ierr); 
