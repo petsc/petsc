@@ -285,7 +285,13 @@ class Configure(config.base.Configure):
     came from the OCTAVE_FLIBS macro in octave-2.0.13/aclocal.m4,
     and full credit should go to John W. Eaton for writing this
     extremely useful macro.  Thank you John.'''
-    if not self.framework.argDB.has_key('CC') or not self.framework.argDB.has_key('FC'): return
+    if not self.framework.argDB.has_key('CC') or not self.framework.argDB.has_key('FC'): 
+      self.flibs = ''
+      self.addSubstitution('FLIBS', '')
+      # this is not the correct place for the next 2 lines, but I'm to lazy to figure out where to put them
+      self.addSubstitution('FC', '')
+      self.addSubstitution('FC_SHARED_OPT', '')
+      return
     oldFlags = self.framework.argDB['LDFLAGS']
     self.framework.argDB['LDFLAGS'] += ' -v'
     self.pushLanguage('F77')
@@ -393,7 +399,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkFortranCompiler)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.checkFortranNameMangling)
-      self.executeTest(self.checkFortranLibraries)
+    self.executeTest(self.checkFortranLibraries)
     self.executeTest(self.checkFortran90Compiler)
     self.executeTest(self.checkFortran90Interface)
     return
