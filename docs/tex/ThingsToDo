@@ -24,7 +24,7 @@ Additional Capabilities that PETSc Needs:
   - Better way of dealing with MatAssembly - when elements are not inserted
     (satish)
 
-  - reorganize nightly builds, using /home/MPI/mpich/maint/runlist
+  * reorganize nightly builds, using /home/MPI/mpich/maint/runlist
     as an example.
 
   - add Flexible GMRES routine
@@ -45,11 +45,8 @@ Additional Capabilities that PETSc Needs:
     original matrix. Then fix MatMult() etc to make sure one does not
     multiply a factored matrix!!!!!!!!!!!!
 
-  X Take mention of BLACS and Scalapack from PETSc picture.
-
   - Create an INDEX for examples
 
-  - find LAgesvd_ on Cray T3D.
 
   * Provide routine for initializeing Fortran side of PETSc when 
     main program is C. i.e. this sets common blocks and PETSC_NULL_Fortran
@@ -66,8 +63,6 @@ Additional Capabilities that PETSc Needs:
     this means the bmake files must insure that -DPETSC_COMPLEX is 
     properly set.
 
-  * Note fixes needed for ICASE SP (poseidon) in petsc/src/sys/src/mtr.c
-    and petsc/src/viewer/impls/matlab/send.c
 
   - Do something about viewer formats - maybe use enum?
     Make ViewerGetFormat() a real public routine (seems good to me); else
@@ -79,6 +74,14 @@ Additional Capabilities that PETSc Needs:
 
   - Fix GMRESCycle() so that test for "happy breakdown" is actually
     used.  See petsc-maint message #282 from David.
+
+  X Note fixes needed for ICASE SP (poseidon) in petsc/src/sys/src/mtr.c
+    and petsc/src/viewer/impls/matlab/send.c
+
+  X Take mention of BLACS and Scalapack from PETSc picture.
+
+  X find LAgesvd_ on Cray T3D. Not supported by libsci.a, therefore
+    we generate an error and exit.
 
   X Fix BDiag factorization to use Barry's new Linpack-modified stuff.
     Also change to actually invert diagonal blocks rather then keeping 
@@ -262,6 +265,9 @@ Additional Capabilities that PETSc Needs:
 
   - Right and left preconditioning for all KSP types.
 
+   - Augment some KSP methods to support symmetric preconditioning; fix relevant
+     KSP support routines.
+
   ? Make jacobi and SOR be seperate for each matrix type. So then 
     have default use natural block size and support option 
     -pc_jacobi_pointwise etc.
@@ -275,7 +281,8 @@ Additional Capabilities that PETSc Needs:
     blocks/procs (such as LU nonzeros) and then print only from 1 proc.
 
 
-  - Add routine for forming big matrix from a bunch of smaller ones, something like:
+  - Add routine for forming big matrix from a bunch of smaller ones, something 
+       like:
         MatSetSubmatrix(Mat large,Mat small,int *rows, int *cols)
 
   - Write uniprocessor ICC code; possibly also introduce symmetric storage variant.
@@ -284,7 +291,8 @@ Additional Capabilities that PETSc Needs:
 
    - Provide MPIU_MAXSUM and use it to replace use of MAT_SUM + MAT_MAX everywhere.
 
-   - Add matrix viewers to show element magnitude by coloring (requested by Andreas).
+   - Add matrix viewers to show element magnitude by coloring (requested by
+      Andreas).
 
    - Add viewer for matrix graph - possibly interface to external software?
      (requested by Andreas) 
@@ -302,15 +310,14 @@ Additional Capabilities that PETSc Needs:
    - Examine the SPEC benchmarks to verify that we're using the appropriate
      compiler options for optimized code.  For info:  http://www.specbench.org
 
-   - Aim for more exhaustive PETSc testing.  From /home/MPI/mpich/examples/test/rlist.srt:
+   - Aim for more exhaustive PETSc testing.  From 
+        /home/MPI/mpich/examples/test/rlist.srt:
         # This is a list of MPI usages in the test programs, generated with 
-        # strings */*.c | grep MPI | tr -cs 'A-Za-z_' '\012' | grep MPI | sort | uniq
+        # strings */*.c | grep MPI | tr -cs 'A-Za-z_' '\012' | grep MPI | sort |
+           uniq
         # This can be used, in comparison with the routine index, to find routines
         # still needing tests.
 
-
-   - Augment some KSP methods to support symmetric preconditioning; fix relevant
-     KSP support routines.
 
    - Make VecScatterCopy_  for the different types of scatters and use 
      a uniform naming scheme.
@@ -323,7 +330,7 @@ Additional Capabilities that PETSc Needs:
  (Satish)   * Add functionality to bjacobi to support block Gauss-Seidel including 
               support for coloring in parallel.
 
-   - Develop basic PETSc benchmark suite
+   * Develop basic PETSc benchmark suite
 
    - Develop additional test problems:
       - Develop utilities to create common matrices and vectors (for testing
@@ -403,7 +410,7 @@ Additional Capabilities that PETSc Needs:
    * Develop code to rebalance matrices (and vectors) for better 
      load balance during matrix vector multiplies.
 
-   ? Interface to ScaLAPACK and BLACS
+   NOInterface to ScaLAPACK and BLACS
 
    X Automatic collection of information about the solution process
 
