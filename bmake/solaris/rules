@@ -1,4 +1,4 @@
-# $Id: base,v 1.40 1998/06/25 23:12:32 balay Exp balay $ 
+# $Id: base,v 1.41 1998/06/26 20:19:27 balay Exp balay $ 
 
 PARCH    = solaris
 #
@@ -13,7 +13,7 @@ CC       = cc -KPIC -dalign -xtarget=native
 CCV      = ${CC} -V -c
 #
 #FC       = f90 -xpp=cpp
-FC       = f77
+FC       = f77 -xpp=cpp
 AR       = ar
 RM       = rm -f
 OMAKE    = make
