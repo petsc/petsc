@@ -225,20 +225,40 @@ class BS (Maker):
   def calculateDependencies(self):
     self.debugPrint('Recalculating dependencies', 1, 'sourceDB')
     for source in sourceDB.keys():
+      self.debugPrint('Calculating '+source, 3, 'sourceDB')
       (checksum, mtime, timestamp, dependencies) = sourceDB[source]
       newDep = []
       file   = open(source, 'r')
+      comps  = string.split(source, '/')
       for line in file.readlines():
         m = self.includeRE.match(line)
         if m:
-          filename = m.group('includeFile')
+          filename  = m.group('includeFile')
+          matchNum  = 0
+          matchName = filename
+          self.debugPrint('  Includes '+filename, 3, 'sourceDB')
           for s in sourceDB.keys():
             if string.find(s, filename) >= 0:
-              filename = s
-              break
-          newDep.append(filename)
+              self.debugPrint('    Checking '+s, 3, 'sourceDB')
+              c = string.split(s, '/')
+              for i in range(len(c)):
+                if not comps[i] == c[i]: break
+              if i > matchNum:
+                self.debugPrint('    Choosing '+s+'('+str(i)+')', 3, 'sourceDB')
+                matchName = s
+                matchNum  = i
+          newDep.append(matchName)
       # Grep for #include, then put these files in a tuple, we can be recursive later in a fixpoint algorithm
       sourceDB[source] = (checksum, mtime, timestamp, tuple(newDep))
+
+  def debugDependencies(self):
+    for source in sourceDB.keys():
+      (checksum, mtime, timestamp, dependencies) = sourceDB[source]
+      print source
+      print '  Checksum:  '+str(checksum)
+      print '  Mod Time:  '+str(mtime)
+      print '  Timestamp: '+str(timestamp)
+      print '  Deps: '+str(dependencies)
 
   def purge(self):
     if argDB.has_key('arg'):
@@ -275,6 +295,8 @@ class BS (Maker):
           self.calculateDependencies()
         elif target == 'purge':
           self.purge()
+        elif target == 'debugDep':
+          self.debugDependencies()
         else:
           print 'Invalid target: '+target
     if argDB.has_key('target'): del argDB['target']

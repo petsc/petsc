@@ -31,11 +31,15 @@ class LinkSharedLibrary (action.Action):
   def checkLibrary(self, source):
     try:
       import BS.LinkCheckerI.Checker
-      BS.LinkCheckerI.Checker.Checker().openLibrary(source)
-    except BS.LinkError.Exception, e:
-      raise RuntimeError(e.getMessage())
+      import BS.LinkError
+
+      try:
+        BS.LinkCheckerI.Checker.Checker().openLibrary(source)
+      except BS.LinkError.Exception, e:
+        raise RuntimeError(e.getMessage())
     except ImportError:
-      pass
+      # If BS is not yet built or unavilable
+      self.debugPrint('Did not check shared library '+source, 4, 'link')
 
   def link(self, source):
     linkDir = os.path.join(self.tmpDir, 'link')
