@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj2.c,v 1.1 1996/08/20 23:02:41 curfman Exp curfman $";
+static char vcid[] = "$Id: snesj2.c,v 1.2 1996/08/21 17:00:50 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -141,10 +141,10 @@ int SNESSparseComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,
     /* Communicate scale to all processors */
 #if !defined(PETSC_COMPLEX)
     count = isize;
-    MPI_Allreduce(&wscale,&scale,count,MPI_DOUBLE,MPI_SUM,comm);
+    MPI_Allreduce(wscale,scale,count,MPI_DOUBLE,MPI_SUM,comm);
 #else
     count = 2*isize;
-    MPI_Allreduce(&wscale,&scale,count,MPI_DOUBLE,MPI_SUM,comm);
+    MPI_Allreduce(wscale,scale,count,MPI_DOUBLE,MPI_SUM,comm);
 #endif
     /* VecScale(&scale,jj2); */
     VecGetArray(jj2,&y);
