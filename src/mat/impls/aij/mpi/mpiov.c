@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.21 1996/02/13 22:36:43 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.22 1996/02/14 21:10:05 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -477,7 +477,7 @@ static int FindOverlapRecievedMesg(Mat C, int nrqr, int ** rbuf, int ** xdata, i
         row = rbuf[i][ct1];
         if(!BT_LOOKUP(xtable,row)) { 
           if (!(ct3 < mem_estimate)) {
-            new_estimate = (int)1.5*mem_estimate+1;
+            new_estimate = (int)(1.5*mem_estimate)+1;
             tmp = (int*) PetscMalloc(new_estimate * sizeof(int)); CHKPTRQ(tmp);
             PetscMemcpy((char *)tmp,(char *)xdata[0],mem_estimate*sizeof(int));
             PetscFree(xdata[0]);
@@ -496,7 +496,7 @@ static int FindOverlapRecievedMesg(Mat C, int nrqr, int ** rbuf, int ** xdata, i
           val = aj[l] +ashift + cstart;
           if(!BT_LOOKUP(xtable,val)) {
             if (!(ct3 < mem_estimate)) {
-              new_estimate = (int)1.5*mem_estimate+1;
+              new_estimate = (int)(1.5*mem_estimate)+1;
               tmp = (int*) PetscMalloc(new_estimate * sizeof(int)); CHKPTRQ(tmp);
               PetscMemcpy((char *)tmp,(char *)xdata[0],mem_estimate*sizeof(int));
               PetscFree(xdata[0]);
@@ -513,7 +513,7 @@ static int FindOverlapRecievedMesg(Mat C, int nrqr, int ** rbuf, int ** xdata, i
           val = garray[bj[l]+bshift] ;
           if(!BT_LOOKUP(xtable,val)) { 
             if (!(ct3 < mem_estimate)) { 
-              new_estimate = (int)1.5*mem_estimate+1;
+              new_estimate = (int)(1.5*mem_estimate)+1;
               tmp = (int*) PetscMalloc(new_estimate * sizeof(int)); CHKPTRQ(tmp);
               PetscMemcpy((char *)tmp,(char *)xdata[0],mem_estimate*sizeof(int));
               PetscFree(xdata[0]);
@@ -856,19 +856,7 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
   CHKPTRQ(recv_status3);
   send_status3 = (MPI_Status *) PetscMalloc( (nrqr+1)*sizeof(MPI_Status) );
   CHKPTRQ(send_status3);
-  /*
-  for (i=0; i< nrqs; ++i){
-      MPI_Waitany(nrqs, recv_waits3, &index, recv_status3+i);
-  }
 
-  for (i=0; i< nrqr; ++i){
-      MPI_Waitany(nrqr, send_waits3, &index, send_status3+i);
-  }
-*/
-  MPI_Waitall(nrqs,recv_waits3,recv_status3);
-  MPI_Waitall(nrqr,send_waits3,send_status3); 
-
- 
   /* Now allocate buffers for a->a, and send them off */
   sbuf_aa = (Scalar **)PetscMalloc((nrqr+1)*sizeof(Scalar *)); CHKPTRQ(sbuf_aa);
   for ( i=0, j =0; i< nrqr; i++) j += req_size[i];
@@ -908,28 +896,15 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
   CHKPTRQ(recv_status4);
   send_status4 = (MPI_Status *) PetscMalloc( (nrqr+1)*sizeof(MPI_Status) );
   CHKPTRQ(send_status4);
-  
-  /* for (i=0; i< nrqs; ++i){
-      MPI_Waitany(nrqs, recv_waits4, &index, recv_status4+i);
-  }
-
-  for (i=0; i< nrqr; ++i){
-      MPI_Waitany(nrqr, send_waits4, &index, send_status4+i);
-  }*/
-
-  MPI_Waitall(nrqs,recv_waits4,recv_status4);
-  MPI_Waitall(nrqr,send_waits4,send_status4); 
 
 
-  /* Now u have all the data required, so form the matrix */
-  /* rbuf3->aj, rbuf4 -> aa */
-
+  /* Form the matrix */
   /* create col map */
   cmap   = (int **) PetscMalloc((1+ ismax)*sizeof(int *)); CHKPTRQ(cmap);
   scmap   = (int **)PetscMalloc((1+ ismax)*sizeof(int *)); CHKPTRQ(scmap);
   cmap[0] = (int *)PetscMalloc((1+ ismax*c->N)*sizeof(int)); CHKPTRQ(cmap[0]);
   PetscMemzero((char *)cmap[0],(1+ ismax*c->N)*sizeof(int));
-  for (i =1; i<ismax; i++) { cmap[i] = cmap[i-1] + c->n; }
+  for (i =1; i<ismax; i++) { cmap[i] = cmap[i-1] + c->N; }
   for (i =0; i<ismax; i++) { scmap[i] = cmap[i] +ashift;}
   for (i=0; i< ismax; i++) {
     for ( j=0; j< ncol[i]; j++) { 
@@ -982,7 +957,19 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
       srmap[i][irow[i][j]] = j; 
     }
   }
-  
+  /*
+  for (i=0; i< nrqs; ++i){
+      MPI_Waitany(nrqs, recv_waits3, &index, recv_status3+i);
+  }
+
+  for (i=0; i< nrqr; ++i){
+      MPI_Waitany(nrqr, send_waits3, &index, send_status3+i);
+  }
+*/
+  MPI_Waitall(nrqs,recv_waits3,recv_status3);
+  MPI_Waitall(nrqr,send_waits3,send_status3); 
+
+ 
   /* Update lens from offproc data */
   for ( i =0; i<nrqs; i++) {
     index = pa[i];
@@ -1045,6 +1032,22 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
       }
     }
   }
+
+  
+  /* for (i=0; i< nrqs; ++i){
+      MPI_Waitany(nrqs, recv_waits4, &index, recv_status4+i);
+  }
+
+  for (i=0; i< nrqr; ++i){
+      MPI_Waitany(nrqr, send_waits4, &index, send_status4+i);
+  }*/
+
+  MPI_Waitall(nrqs,recv_waits4,recv_status4);
+  MPI_Waitall(nrqr,send_waits4,send_status4); 
+
+
+  /* Now u have all the data required, so form the matrix */
+  /* rbuf3->aj, rbuf4 -> aa */
 
   /*   Now assemble the off proc rows*/
   for ( i =0; i<nrqs; i++) {
