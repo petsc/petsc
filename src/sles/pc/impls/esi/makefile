@@ -1,6 +1,5 @@
 # $Id: makefile,v 1.33 2001/08/22 18:01:21 balay Exp $ 
 
-#requirespackage  'PETSC_HAVE_ESI'
 #requireslanguage  CPP
 #requiresscalar    real 
 #requiresprecision double
