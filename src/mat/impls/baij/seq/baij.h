@@ -76,6 +76,7 @@ EXTERN int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
 #if defined(PETSC_HAVE_SSE)
 EXTERN int MatSolve_SeqBAIJ_4_SSE_Demotion(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj(Mat,Vec,Vec);
 #endif
 EXTERN int MatSolve_SeqBAIJ_5(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
@@ -110,6 +111,7 @@ EXTERN int MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat*);
 EXTERN int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat,Mat*);
 #if defined(PETSC_HAVE_SSE)
 EXTERN int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat,Mat*);
 #else
 #endif
 EXTERN int MatLUFactorNumeric_SeqBAIJ_5(Mat,Mat*);
