@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.53 2001/05/15 19:05:16 balay Exp bsmith $*/
+/*$Id: pinit.c,v 1.54 2001/06/21 21:15:31 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -322,8 +322,10 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
-  PetscGlobalArgc = *argc;
-  PetscGlobalArgs = *args;
+  if (argc && args) {
+    PetscGlobalArgc = *argc;
+    PetscGlobalArgs = *args;
+  }
 
   ierr = PetscOptionsCreate();CHKERRQ(ierr);
 
