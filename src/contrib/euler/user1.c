@@ -590,6 +590,7 @@ int UserDestroyEuler(Euler *app)
   ierr = VecDestroy(app->localXBC); CHKERRQ(ierr);
   ierr = DADestroy(app->da); CHKERRQ(ierr);
   ierr = VecScatterDestroy(app->Xbcscatter); CHKERRQ(ierr);
+  ierr = MMDestroy(app->multimodel); CHKERRQ(ierr);
   PetscFree(app->label);
   if (app->is1) PetscFree(app->is1);
 
@@ -615,6 +616,8 @@ int UserDestroyEuler(Euler *app)
   if (app->sp)      PetscFree(app->sp);
   if (app->sadai)   PetscFree(app->sadai);
   if (app->bl)      PetscFree(app->bl);
+  if (app->lin_its) PetscFree(app->lin_its);
+  if (app->p)       PetscFree(app->p);
   PetscFree(app);
   return 0;
 }
