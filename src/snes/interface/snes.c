@@ -980,7 +980,7 @@ PetscErrorCode SNESSetUp(SNES snes,Vec x)
     ierr = MatDestroy(J);CHKERRQ(ierr);
   }
 
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_operator2",&flg);CHKERRQ(ierr); 
   if (flg) {
     Mat J;
