@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.77 1999/01/26 23:05:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.78 1999/01/27 19:46:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -163,27 +163,29 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 @*/
 int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
-  int          ierr,(*us)(PC,Vec,NormType,double*);
+  int          ierr;
   Vec          resid,work;
   double       scnorm;
+  PC           pc;
+  Mat          A, B;
   
   PetscFunctionBegin;
   ierr = VecDuplicate(ksp->vec_rhs,&work); CHKERRQ(ierr);
   ierr = KSPBuildResidual(ksp,0,work,&resid); CHKERRQ(ierr);
 
-  /* 
-     if the PC (like MPIRowbs ILU/ICC) scaled the matrix, the residual is 
-     a scaled residual. The following allows the PC to give us the original 
-     unscaled norm if it knows how 
+  /*
+     Unscale the residual if the matrix is, for example, a BlockSolve matrix
+    but only if both matrices are the same matrix, since only then would 
+    they be scaled.
   */
-
-  ierr = PetscObjectQueryFunction((PetscObject)ksp->B,"PCUnscaledNorm_C",(void **)&us);CHKERRQ(ierr);
-  if (us) {
-    ierr = (*us)(ksp->B,resid,NORM_2,&scnorm);CHKERRQ(ierr);
-  } else {
-    ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
+  ierr = VecCopy(resid,work);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
+  if (A == B) {
+    ierr = MatUnScaleSystem(A,PETSC_NULL,work);CHKERRQ(ierr);
+    ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
+    ierr = VecDestroy(work);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(work);CHKERRQ(ierr);
   PetscPrintf(ksp->comm,"%d KSP preconditioned resid norm %14.12e true resid norm %14.12e\n",n,rnorm,scnorm); 
   PetscFunctionReturn(0);
 }

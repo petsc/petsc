@@ -41,6 +41,8 @@ add to it).
 
   KSP
 
+    The option -ksp_bsmonitor is not longer needed, use -ksp_truemonitor for the same 
+    affect.
     
     
   PC

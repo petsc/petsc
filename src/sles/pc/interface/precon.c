@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.162 1999/01/14 19:45:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.163 1999/01/27 04:22:15 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -1032,14 +1032,24 @@ int PCPreSolve(PC pc,KSP ksp)
 {
   int ierr;
   Vec x,rhs;
+  Mat A,B;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+
   ierr = KSPGetSolution(ksp,&x); CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&rhs); CHKERRQ(ierr);
-  ierr = MatScaleSystem(pc->mat,x,rhs);CHKERRQ(ierr);
-  ierr = MatUseScaledForm(pc->mat,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatUseScaledForm(pc->pmat,PETSC_TRUE);CHKERRQ(ierr);
+  /*
+      Scale the system and have the matrices use the scaled form
+    only if the two matrices are actually the same (and hence
+    have the same scaling
+  */  
+  ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
+  if (A == B) {
+    ierr = MatScaleSystem(pc->mat,x,rhs);CHKERRQ(ierr);
+    ierr = MatUseScaledForm(pc->mat,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
   if (pc->presolve) {
     ierr = (*pc->presolve)(pc,ksp,x,rhs);CHKERRQ(ierr);
   }
@@ -1080,6 +1090,7 @@ int PCPostSolve(PC pc,KSP ksp)
 {
   int ierr;
   Vec x,rhs;
+  Mat A,B;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -1088,9 +1099,17 @@ int PCPostSolve(PC pc,KSP ksp)
   if (pc->postsolve) {
     ierr =  (*pc->postsolve)(pc,ksp,x,rhs);CHKERRQ(ierr);
   }
-  ierr = MatUnScaleSystem(pc->mat,x,rhs);CHKERRQ(ierr);
-  ierr = MatUseScaledForm(pc->mat,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatUseScaledForm(pc->pmat,PETSC_FALSE);CHKERRQ(ierr);
+
+  /*
+      Scale the system and have the matrices use the scaled form
+    only if the two matrices are actually the same (and hence
+    have the same scaling
+  */  
+  ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
+  if (A == B) {
+    ierr = MatUnScaleSystem(pc->mat,x,rhs);CHKERRQ(ierr);
+    ierr = MatUseScaledForm(pc->mat,PETSC_FALSE);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
