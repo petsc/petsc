@@ -610,8 +610,10 @@ M*/
 +  nrows - the number of rows indicated
 .  rows - the indices of the rows 
 .  ncols - the number of columns in the matrix
-.  cols - the columns indicated
-.  dnz - the array that will be passed to the matrix preallocation routines
+-  cols - the columns indicated
+
+   Output Parameters:
++  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
 
 

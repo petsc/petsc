@@ -1,5 +1,5 @@
 /*
-  Defines matrix-matrix product routines for pairs of SeqAIJ matrices
+  Defines matrix-matrix product routines for pairs of AIJ matrices
           C = A * B
 */
 
@@ -9,45 +9,34 @@
 
 /*
   Add a index set into a sorted linked list
-  input:
+  Input Parameters:
     nidx      - number of input indices
     indices   - interger array
     idx_head  - the header of the list
     idx_unset - the value indicating the entry in the list is not set yet
     lnk       - linked list(an integer array) that is created
-  output:
+  output Parameters:
     nlnk      - number of newly added indices
     lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
- */
-#undef __FUNCT__
-#define __FUNCT__ "LnklistAdd"
-int LnklistAdd(int nidx,int *indices,int idx_head,int idx_unset,int *nlnk,int *lnk)
-{
-  int i,idx,lidx,entry,n;
-
-  PetscFunctionBegin;
-  n    = 0;
-  lidx = idx_head;
-  i    = nidx;
-  while (i){
-    /* assume indices are almost in increasing order, starting from its end saves computation */
-    entry = indices[--i];
-    if (lnk[entry] == idx_unset) { /* new entry */   
-      do { 
-        idx = lidx;
-        lidx  = lnk[idx];
-      } while (entry > lidx);           
-      lnk[idx] = entry;
-      lnk[entry] = lidx;
-      n++;
-    }
-  }
-  *nlnk = n;
-  PetscFunctionReturn(0);
+*/
+#define LNKLISTADD(nidx,indices,idx_head,lnk_unset,nlnk,lnk){\
+  int _k,_entry,_lidx=idx_head,_idx;\
+  nlnk = 0;\
+  _k=nidx;\
+  while (_k){/* assume indices are almost in increasing order, starting from its end saves computation */\
+    _entry = indices[--_k];\
+    if (lnk[_entry] == lnk_unset) { /* new col */\
+      do {\
+        _idx = _lidx;\
+        _lidx  = lnk[_idx];\
+      } while (_entry > _lidx);\
+      lnk[_idx] = _entry;\
+      lnk[_entry] = _lidx;\
+      nlnk++;\
+    }\
+  }\
 }
 
-
-static int logkey_matmatmult          = 0;
 static int logkey_matmatmult_symbolic = 0;
 static int logkey_matmatmult_numeric  = 0;
 
@@ -109,11 +98,9 @@ int MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 #define __FUNCT__ "MatMatMult_MPIAIJ_MPIAIJ"
 int MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C) 
 {
-  Mat           *aseq,*bseq,A_seq=PETSC_NULL,B_seq=PETSC_NULL,*cseq,C_seq,C_mpi;
+  Mat           *aseq,*bseq,A_seq=PETSC_NULL,B_seq=PETSC_NULL,*cseq,C_seq;
   Mat_MPIAIJ    *a = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ    *c;
-  MatScalar     *ca;
-  int           ierr,*idx,i,start,end,ncols,imark,nzA,nzB,*cmap,*ci,*cj,grow,*d_nnz,*o_nnz;
+  int           ierr,*idx,i,start,end,ncols,imark,nzA,nzB,*cmap;
   IS            isrow,iscol;
  
   PetscFunctionBegin;
@@ -134,20 +121,20 @@ int MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&isrow);CHKERRQ(ierr); /* isrow of B = iscol of A! */
   ierr = PetscFree(idx);CHKERRQ(ierr); 
   ierr = ISCreateStride(PETSC_COMM_SELF,B->N,0,1,&iscol);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(B,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&bseq);CHKERRQ(ierr);/* reuse */
+  ierr = MatGetSubMatrices(B,1,&isrow,&iscol,scall,&bseq);CHKERRQ(ierr);
   ierr = ISDestroy(iscol);CHKERRQ(ierr);
   B_seq = bseq[0];
  
   /*  create a seq matrix A_seq = submatrix of A by taking all local rows of A */
   start = a->rstart; end = a->rend;
   ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&iscol);CHKERRQ(ierr); /* isrow of A = iscol */
-  ierr = MatGetSubMatrices(A,1,&iscol,&isrow,MAT_INITIAL_MATRIX,&aseq);CHKERRQ(ierr); /* reuse */
+  ierr = MatGetSubMatrices(A,1,&iscol,&isrow,scall,&aseq);CHKERRQ(ierr); 
   ierr = ISDestroy(isrow);CHKERRQ(ierr);
   ierr = ISDestroy(iscol);CHKERRQ(ierr);
   A_seq = aseq[0];
 
   /* compute C_seq = A_seq * B_seq */
-  ierr = MatMatMult_SeqAIJ_SeqAIJ(A_seq, B_seq, scall, fill,&C_seq);CHKERRQ(ierr);
+  ierr = MatMatMult_SeqAIJ_SeqAIJ(A_seq,B_seq,scall,fill,&C_seq);CHKERRQ(ierr);
   /*
   int rank;
   ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
@@ -156,35 +143,9 @@ int MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C)
   ierr = MatDestroyMatrices(1,&aseq);CHKERRQ(ierr); 
   ierr = MatDestroyMatrices(1,&bseq);CHKERRQ(ierr); 
 
-  /* create a mpi matrix C_mpi that has C_seq as its local entries */
-  ierr = MatCreate(A->comm,C_seq->m,PETSC_DECIDE,PETSC_DECIDE,C_seq->N,&C_mpi);CHKERRQ(ierr); 
-  ierr = MatSetType(C_mpi,MATMPIAIJ);CHKERRQ(ierr);
+  /* create mpi matrix C by concatinating C_seq */
+  ierr = MatMerge(A->comm,C_seq,C);CHKERRQ(ierr);                       
 
-  c  = (Mat_SeqAIJ*)C_seq->data;
-  ci = c->i; cj = c->j; ca = c->a;
-  ierr = PetscMalloc((2*C_seq->m+1)*sizeof(int),&d_nnz);CHKERRQ(ierr);
-  o_nnz = d_nnz + C_seq->m;
-  nzA   = end-start;    /* max nonezero cols of the local diagonal part of C_mpi */
-  nzB   = C_seq->n-nzA; /* max nonezero cols of the local off-diagonal part of C_mpi */
-  for (i=0; i< C_seq->m; i++){ 
-    ncols = ci[i+1] - ci[i];
-    d_nnz[i] = PetscMin(ncols,nzA);
-    o_nnz[i] = PetscMin(ncols,nzB);
-  }
-  ierr = MatMPIAIJSetPreallocation(C_mpi,PETSC_DECIDE,d_nnz,PETSC_DECIDE,o_nnz);CHKERRQ(ierr); 
-  ierr = PetscFree(d_nnz);CHKERRQ(ierr);
-
-  /* set row values of C_mpi */
-  for (i=0; i< C_seq->m; i++){
-    grow  = start + i;
-    ncols = ci[i+1] - ci[i];
-    ierr = MatSetValues_MPIAIJ(C_mpi,1,&grow,ncols,cj+ci[i],ca+ci[i],INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(C_mpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C_mpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatDestroy(C_seq);CHKERRQ(ierr);
-
-  *C = C_mpi;
   PetscFunctionReturn(0);
 }
 
@@ -210,10 +171,8 @@ int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
   ierr = PetscObjectQueryFunction((PetscObject)B,numfunct,(PetscVoidFunction)&numeric);CHKERRQ(ierr);
   if (!numeric) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
 
-  ierr = PetscLogEventBegin(logkey_matmatmult,A,B,0,0);CHKERRQ(ierr);
   ierr = (*symbolic)(A,B,C);CHKERRQ(ierr);
   ierr = (*numeric)(A,B,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(logkey_matmatmult,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -288,7 +247,7 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
   int            *ci,*cj,*lnk,idx0,idx;
   int            am=A->M,bn=B->N,bm=B->M;
-  int            i,j,anzi,brow,bnzj,cnzi,nlnk;
+  int            i,j,anzi,brow,bnzj,cnzi,nlnk,lnk_unset=-1;
   MatScalar      *ca;
 
   PetscFunctionBegin;
@@ -320,7 +279,7 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
       bnzj = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       /* add non-zero cols of B into the sorted linked list lnk */
-      ierr = LnklistAdd(bnzj,bjj,bn,-1,&nlnk,lnk);CHKERRQ(ierr);
+      LNKLISTADD(bnzj,bjj,bn,lnk_unset,nlnk,lnk);
       cnzi += nlnk;
     }
 
@@ -502,11 +461,6 @@ int RegisterMatMatMultRoutines_Private(Mat A) {
   int ierr;
 
   PetscFunctionBegin;
-#ifndef OLD
-  if (!logkey_matmatmult) {
-    ierr = PetscLogEventRegister(&logkey_matmatmult,"MatMatMult",MAT_COOKIE);CHKERRQ(ierr);
-  }
-#endif
   if (!logkey_matmatmult_symbolic) {
     ierr = PetscLogEventRegister(&logkey_matmatmult_symbolic,"MatMatMult_Symbolic",MAT_COOKIE);CHKERRQ(ierr);
   }
