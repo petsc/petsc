@@ -1,12 +1,12 @@
-/*$Id: mpirowbs.c,v 1.99.1.147 2001/06/28 17:38:44 balay Exp $*/
+/*$Id: mpirowbs.c,v 2.1 2001/06/28 17:39:57 balay Exp balay $*/
 
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 #include "src/vec/vecimpl.h"
 
 #define CHUNCKSIZE_LOCAL   10
 
-#undef __FUNC__  
-#define __FUNC__ "MatFreeRowbs_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFreeRowbs_Private"
 static int MatFreeRowbs_Private(Mat A,int n,int *i,Scalar *v)
 {
   int ierr;
@@ -22,8 +22,8 @@ static int MatFreeRowbs_Private(Mat A,int n,int *i,Scalar *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMallocRowbs_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMallocRowbs_Private"
 static int MatMallocRowbs_Private(Mat A,int n,int **i,Scalar **v)
 {
   int len,ierr;
@@ -40,8 +40,8 @@ static int MatMallocRowbs_Private(Mat A,int n,int **i,Scalar **v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatScale_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatScale_MPIRowbs"
 int MatScale_MPIRowbs(Scalar *alphain,Mat inA)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)inA->data;
@@ -64,8 +64,8 @@ int MatScale_MPIRowbs(Scalar *alphain,Mat inA)
 }
 
 /* ----------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "MatCreateMPIRowbs_local"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateMPIRowbs_local"
 static int MatCreateMPIRowbs_local(Mat A,int nz,int *nnz)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)A->data;
@@ -129,8 +129,8 @@ static int MatCreateMPIRowbs_local(Mat A,int nz,int *nnz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetValues_MPIRowbs_local"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValues_MPIRowbs_local"
 static int MatSetValues_MPIRowbs_local(Mat AA,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs*)AA->data;
@@ -216,16 +216,16 @@ static int MatSetValues_MPIRowbs_local(Mat AA,int m,int *im,int n,int *in,Scalar
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyBegin_MPIRowbs_local"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyBegin_MPIRowbs_local"
 static int MatAssemblyBegin_MPIRowbs_local(Mat A,MatAssemblyType mode)
 { 
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyEnd_MPIRowbs_local"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyEnd_MPIRowbs_local"
 static int MatAssemblyEnd_MPIRowbs_local(Mat AA,MatAssemblyType mode)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)AA->data;
@@ -252,8 +252,8 @@ static int MatAssemblyEnd_MPIRowbs_local(Mat AA,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatZeroRows_MPIRowbs_local"
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroRows_MPIRowbs_local"
 static int MatZeroRows_MPIRowbs_local(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)A->data;
@@ -287,8 +287,8 @@ static int MatZeroRows_MPIRowbs_local(Mat A,IS is,Scalar *diag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatNorm_MPIRowbs_local"
+#undef __FUNCT__  
+#define __FUNCT__ "MatNorm_MPIRowbs_local"
 static int MatNorm_MPIRowbs_local(Mat A,NormType type,PetscReal *norm)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs*)A->data;
@@ -352,8 +352,8 @@ static int MatNorm_MPIRowbs_local(Mat A,NormType type,PetscReal *norm)
 
 /* ----------------------------------------------------------------- */
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetValues_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValues_MPIRowbs"
 int MatSetValues_MPIRowbs(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode av)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
@@ -393,8 +393,8 @@ int MatSetValues_MPIRowbs(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyBegin_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyBegin_MPIRowbs"
 int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIRowbs  *a = (Mat_MPIRowbs*)mat->data;
@@ -421,8 +421,8 @@ int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 
 #include "petscviewer.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_MPIRowbs_ASCII"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_MPIRowbs_ASCII"
 static int MatView_MPIRowbs_ASCII(Mat mat,PetscViewer viewer)
 {
   Mat_MPIRowbs      *a = (Mat_MPIRowbs*)mat->data;
@@ -470,8 +470,8 @@ static int MatView_MPIRowbs_ASCII(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_MPIRowbs_Binary"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_MPIRowbs_Binary"
 static int MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
@@ -603,8 +603,8 @@ static int MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_MPIRowbs"
 int MatView_MPIRowbs(Mat mat,PetscViewer viewer)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)mat->data;
@@ -627,8 +627,8 @@ int MatView_MPIRowbs(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
   
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyEnd_MPIRowbs_MakeSymmetric"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyEnd_MPIRowbs_MakeSymmetric"
 static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
@@ -843,8 +843,8 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
    the matrix has been assembled but before BlockSolve has sucked it
    in and devoured it.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyEnd_MPIRowbs_ForBlockSolve"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyEnd_MPIRowbs_ForBlockSolve"
 int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
 { 
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
@@ -893,8 +893,8 @@ int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyEnd_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyEnd_MPIRowbs"
 int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
@@ -943,8 +943,8 @@ int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatZeroEntries_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroEntries_MPIRowbs"
 int MatZeroEntries_MPIRowbs(Mat mat)
 {
   Mat_MPIRowbs *l = (Mat_MPIRowbs*)mat->data;
@@ -965,8 +965,8 @@ int MatZeroEntries_MPIRowbs(Mat mat)
    This is a BUG.
 */
 
-#undef __FUNC__  
-#define __FUNC__ "MatZeroRows_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroRows_MPIRowbs"
 int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIRowbs   *l = (Mat_MPIRowbs*)A->data;
@@ -1090,8 +1090,8 @@ int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatNorm_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatNorm_MPIRowbs"
 int MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
@@ -1162,8 +1162,8 @@ int MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
   PetscFunctionReturn(0); 
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMult_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_MPIRowbs"
 int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)mat->data;
@@ -1226,8 +1226,8 @@ int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultAdd_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_MPIRowbs"
 int MatMultAdd_MPIRowbs(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   int     ierr;
@@ -1239,8 +1239,8 @@ int MatMultAdd_MPIRowbs(Mat mat,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetInfo_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetInfo_MPIRowbs"
 int MatGetInfo_MPIRowbs(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs*)A->data;
@@ -1281,8 +1281,8 @@ int MatGetInfo_MPIRowbs(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetDiagonal_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetDiagonal_MPIRowbs"
 int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
@@ -1307,8 +1307,8 @@ int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_MPIRowbs"
 int MatDestroy_MPIRowbs(Mat mat)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
@@ -1350,8 +1350,8 @@ int MatDestroy_MPIRowbs(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetOption_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetOption_MPIRowbs"
 int MatSetOption_MPIRowbs(Mat A,MatOption op)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)A->data;
@@ -1407,8 +1407,8 @@ int MatSetOption_MPIRowbs(Mat A,MatOption op)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetOwnershipRange_MPIRowbs"
 int MatGetOwnershipRange_MPIRowbs(Mat A,int *m,int *n)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs*)A->data;
@@ -1419,8 +1419,8 @@ int MatGetOwnershipRange_MPIRowbs(Mat A,int *m,int *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetRow_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRow_MPIRowbs"
 int MatGetRow_MPIRowbs(Mat AA,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs*)AA->data;
@@ -1437,8 +1437,8 @@ int MatGetRow_MPIRowbs(Mat AA,int row,int *nz,int **idx,Scalar **v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatRestoreRow_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreRow_MPIRowbs"
 int MatRestoreRow_MPIRowbs(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   PetscFunctionBegin;
@@ -1447,8 +1447,8 @@ int MatRestoreRow_MPIRowbs(Mat A,int row,int *nz,int **idx,Scalar **v)
 
 /* ------------------------------------------------------------------ */
 
-#undef __FUNC__  
-#define __FUNC__ "MatPrintHelp_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPrintHelp_MPIRowbs"
 int MatPrintHelp_MPIRowbs(Mat A)
 {
   static PetscTruth called = PETSC_FALSE; 
@@ -1462,8 +1462,8 @@ int MatPrintHelp_MPIRowbs(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetUpPreallocation_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetUpPreallocation_MPIRowbs"
 int MatSetUpPreallocation_MPIRowbs(Mat A)
 {
   int        ierr;
@@ -1558,8 +1558,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
 
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatCreate_MPIRowbs""></a>*/"MatCreate_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatCreate_MPIRowbs""></a>*/"MatCreate_MPIRowbs"
 int MatCreate_MPIRowbs(Mat A)
 {
   Mat_MPIRowbs *a;
@@ -1680,8 +1680,8 @@ int MatCreate_MPIRowbs(Mat A)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatMPIRowbsSetPreallocation"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMPIRowbsSetPreallocation"
 /* @
   MatMPIRowbsSetPreallocation - Sets the number of expected nonzeros 
   per row in the matrix.
@@ -1711,8 +1711,8 @@ int MatMPIRowbsSetPreallocation(Mat mat,int nz,int *nnz)
 
 
 /* --------------- extra BlockSolve-specific routines -------------- */
-#undef __FUNC__  
-#define __FUNC__ "MatGetBSProcinfo"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetBSProcinfo"
 /* @
   MatGetBSProcinfo - Gets the BlockSolve BSprocinfo context, which the
   user can then manipulate to alter the default parameters.
@@ -1741,8 +1741,8 @@ int MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatLoad_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLoad_MPIRowbs"
 int MatLoad_MPIRowbs(PetscViewer viewer,MatType type,Mat *newmat)
 {
   Mat_MPIRowbs *a;
@@ -1910,8 +1910,8 @@ EXTERN_C_END
 /* 
     Special destroy and view routines for factored matrices 
 */
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_MPIRowbs_Factored"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_MPIRowbs_Factored"
 static int MatDestroy_MPIRowbs_Factored(Mat mat)
 {
   PetscFunctionBegin;
@@ -1921,8 +1921,8 @@ static int MatDestroy_MPIRowbs_Factored(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_MPIRowbs_Factored"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_MPIRowbs_Factored"
 static int MatView_MPIRowbs_Factored(Mat mat,PetscViewer viewer)
 {
   int ierr;
@@ -1932,8 +1932,8 @@ static int MatView_MPIRowbs_Factored(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatIncompleteCholeskyFactorSymbolic_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatIncompleteCholeskyFactorSymbolic_MPIRowbs"
 int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,PetscReal f,int fill,Mat *newfact)
 {
   /* Note:  f is not currently used in BlockSolve */
@@ -1994,8 +1994,8 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,PetscReal f,in
   PetscFunctionReturn(0); 
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatILUFactorSymbolic_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatILUFactorSymbolic_MPIRowbs"
 int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatILUInfo* info,Mat *newfact)
 {
   Mat          newmat;
@@ -2057,8 +2057,8 @@ int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatILUInfo* info,Mat
   PetscFunctionReturn(0); 
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMPIRowbsGetColor"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMPIRowbsGetColor"
 int MatMPIRowbsGetColor(Mat mat,ISColoring *coloring)
 {
   int          ierr;
@@ -2071,8 +2071,8 @@ int MatMPIRowbsGetColor(Mat mat,ISColoring *coloring)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatCreateMPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateMPIRowbs"
 /*@C
    MatCreateMPIRowbs - Creates a sparse parallel matrix in the MATMPIROWBS
    format.  This format is intended primarily as an interface for BlockSolve95.
