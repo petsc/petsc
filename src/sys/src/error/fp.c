@@ -1,4 +1,4 @@
-/*$Id: fp.c,v 1.59 1999/09/20 18:52:50 bsmith Exp bsmith $*/
+/*$Id: fp.c,v 1.60 1999/10/24 14:01:21 bsmith Exp bsmith $*/
 /*
 *	IEEE error handler for all machines. Since each machine has 
 *   enough slight differences we have completely separate codes for each one.
@@ -81,7 +81,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
 
 .keywords: floating point trap, overflow, divide-by-zero, invalid-operand
 @*/
-int PetscSetFPTrap(int flag)
+int PetscSetFPTrap(PetscFPTrap flag)
 {
   char *out; 
 
@@ -145,7 +145,7 @@ void PetscDefaultFPTrap(int sig, siginfo_t *scp,ucontext_t *uap)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSetFPTrap"
-int PetscSetFPTrap(int flag)
+int PetscSetFPTrap(PetscFPTrap flag)
 {
   char *out; 
 
@@ -215,7 +215,7 @@ void PetscDefaultFPTrap( unsigned exception[],int val[] )
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSetFPTrap" 
-int PetscSetFPTrap(int flag)
+int PetscSetFPTrapPetscFPTrap flag)
 {
   PetscFunctionBegin;
   if (flag == PETSC_FP_TRAP_ON) {
@@ -252,19 +252,19 @@ void PetscDefaultFPTrap(int sig)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSetFPTrap"
-int PetscSetFPTrap(int on)
+int PetscSetFPTrap(PetscFPTrap on)
 {
-  int flag;
-
   PetscFunctionBegin;
   if (on == PETSC_FP_TRAP_ON) {
     fpsetmask( FP_X_OFL | FP_X_DZ | FP_X_INV );
-    flag = (int) 	signal(SIGFPE,PetscDefaultFPTrap);
-    if (flag == -1) (*PetscErrorPrintf)( "Can't set floatingpoint handler\n");
+    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) {
+      (*PetscErrorPrintf)( "Can't set floatingpoint handler\n");
+    }
   } else {
     fpsetmask(0);
-    flag = (int)  signal(SIGFPE,PetscDefaultFPTrap);
-    if (flag == -1) (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
+    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) {
+      (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -323,7 +323,7 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp )
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSetFPTrap"
-int PetscSetFPTrap(int on)
+int PetscSetFPTrap(PetscFPTrap on)
 {
   int flag;
 
@@ -365,17 +365,17 @@ void PetscDefaultFPTrap(int sig)
 }
 #undef __FUNC__  
 #define __FUNC__ "PetscSetFPTrap"
-int PetscSetFPTrap(int on)
+int PetscSetFPTrap(PetscFPTrap on)
 {
-  int flag;
-
   PetscFunctionBegin;
   if (on == PETSC_FP_TRAP_ON) {
-    flag = (int) signal(SIGFPE,PetscDefaultFPTrap);
-    if (flag == -1) (*PetscErrorPrintf)( "Can't set floatingpoint handler\n");
+    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) {
+      (*PetscErrorPrintf)( "Can't set floatingpoint handler\n");
+    }
   } else {
-    flag = (int) signal(SIGFPE,SIG_DFL);
-    if (flag == -1) (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
+    if (SIG_ERR == signal(SIGFPE,SIG_DFL)) {
+      (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
+    }
   }
   PetscFunctionReturn(0);
 }
