@@ -48,6 +48,9 @@ Debugging:
     recommend the dbx debugger, e.g.,
        dbx ex5
 
+    Note: To be able to use the debugger, the code should be compiled 
+    with BOPT=g. i.e
+       make BOPT=g ex5
 
 ----------------
 Viewing output:
