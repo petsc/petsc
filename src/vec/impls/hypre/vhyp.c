@@ -23,7 +23,7 @@ PetscErrorCode VecHYPRE_IJVectorCreate(Vec v,HYPRE_IJVector *ij)
 PetscErrorCode VecHYPRE_IJVectorCopy(Vec v,HYPRE_IJVector ij)
 {
   PetscErrorCode ierr;
-  PetscScalar *array;
+  PetscScalar    *array;
 
   PetscFunctionBegin;
   ierr = HYPRE_IJVectorInitialize(ij);CHKERRQ(ierr);
@@ -37,7 +37,7 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v,HYPRE_IJVector ij)
 PetscErrorCode VecHYPRE_IJVectorCopyFrom(HYPRE_IJVector ij,Vec v)
 {
   PetscErrorCode ierr;
-  PetscScalar *array;
+  PetscScalar    *array;
 
   PetscFunctionBegin;
   ierr = VecGetArray(v,&array);CHKERRQ(ierr);

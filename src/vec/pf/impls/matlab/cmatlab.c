@@ -5,7 +5,7 @@
         Ths PF generates a Matlab function on the fly
 */
 typedef struct {
-  int               dimin,dimout;
+  PetscInt          dimin,dimout;
   PetscMatlabEngine mengine;
   char              *string;
 } PF_Matlab;
@@ -15,8 +15,8 @@ typedef struct {
 PetscErrorCode PFView_Matlab(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth iascii;
-  PF_Matlab  *matlab = (PF_Matlab*)value;
+  PetscTruth     iascii;
+  PF_Matlab      *matlab = (PF_Matlab*)value;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -31,7 +31,7 @@ PetscErrorCode PFView_Matlab(void *value,PetscViewer viewer)
 PetscErrorCode PFDestroy_Matlab(void *value)
 {
   PetscErrorCode ierr;
-  PF_Matlab  *matlab = (PF_Matlab*)value;
+  PF_Matlab      *matlab = (PF_Matlab*)value;
 
   PetscFunctionBegin;
   ierr = PetscStrfree(matlab->string);CHKERRQ(ierr);
@@ -42,9 +42,9 @@ PetscErrorCode PFDestroy_Matlab(void *value)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Matlab"
-PetscErrorCode PFApply_Matlab(void *value,int n,PetscScalar *in,PetscScalar *out)
+PetscErrorCode PFApply_Matlab(void *value,PetscInt n,PetscScalar *in,PetscScalar *out)
 {
-  PF_Matlab  *matlab = (PF_Matlab*)value;
+  PF_Matlab      *matlab = (PF_Matlab*)value;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -60,9 +60,9 @@ PetscErrorCode PFApply_Matlab(void *value,int n,PetscScalar *in,PetscScalar *out
 PetscErrorCode PFSetFromOptions_Matlab(PF pf)
 {
   PetscErrorCode ierr;
-  PetscTruth flag;
-  char       value[256];
-  PF_Matlab  *matlab = (PF_Matlab*)pf->data;
+  PetscTruth     flag;
+  char           value[256];
+  PF_Matlab      *matlab = (PF_Matlab*)pf->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Matlab function options");CHKERRQ(ierr);
@@ -81,7 +81,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PFCreate_Matlab(PF pf,void *value)
 {
   PetscErrorCode ierr;
-  PF_Matlab *matlab;
+  PF_Matlab      *matlab;
 
   PetscFunctionBegin;
   ierr           = PetscNew(PF_Matlab,&matlab);CHKERRQ(ierr);

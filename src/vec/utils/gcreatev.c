@@ -10,10 +10,10 @@ EXTERN_C_BEGIN
 PetscErrorCode VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
-  int         n;
-  Vec         vec = (Vec)obj;
-  PetscScalar *array;
-  mxArray     *mat;
+  PetscInt       n;
+  Vec            vec = (Vec)obj;
+  PetscScalar    *array;
+  mxArray        *mat;
 
   PetscFunctionBegin;
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
@@ -38,10 +38,10 @@ EXTERN_C_BEGIN
 PetscErrorCode VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
-  int         n;
-  Vec         vec = (Vec)obj;
-  PetscScalar *array;
-  mxArray     *mat;
+  PetscInt       n;
+  Vec            vec = (Vec)obj;
+  PetscScalar    *array;
+  mxArray        *mat;
 
   PetscFunctionBegin;
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);

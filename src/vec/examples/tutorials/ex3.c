@@ -23,9 +23,9 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i,istart,iend,n = 6,nlocal;
-  PetscScalar v,*array;
-  Vec         x;
-  PetscViewer viewer;
+  PetscScalar    v,*array;
+  Vec            x;
+  PetscViewer    viewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

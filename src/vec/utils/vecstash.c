@@ -22,7 +22,7 @@
 PetscErrorCode VecStashCreate_Private(MPI_Comm comm,PetscInt bs,VecStash *stash)
 {
   PetscErrorCode ierr;
-  PetscInt            max,*opt,nopt;
+  PetscInt       max,*opt,nopt;
   PetscTruth     flg;
 
   PetscFunctionBegin;
@@ -104,8 +104,8 @@ PetscErrorCode VecStashDestroy_Private(VecStash *stash)
 PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
 { 
   PetscErrorCode ierr;
-  PetscInt         nsends=stash->nsends,oldnmax;
-  MPI_Status  *send_status;
+  PetscInt       nsends=stash->nsends,oldnmax;
+  MPI_Status     *send_status;
 
   PetscFunctionBegin;
   /* wait on sends */
@@ -154,7 +154,6 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
     ierr = PetscFree(stash->nprocs);CHKERRQ(ierr);
     stash->nprocs = 0;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -216,8 +215,8 @@ PetscErrorCode VecStashSetInitialSize_Private(VecStash *stash,PetscInt max)
 PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
 { 
   PetscErrorCode ierr;
-  PetscInt         *n_idx,newnmax,bs=stash->bs;
-  PetscScalar *n_array;
+  PetscInt       *n_idx,newnmax,bs=stash->bs;
+  PetscScalar    *n_array;
 
   PetscFunctionBegin;
   /* allocate a larger stash. */
@@ -262,12 +261,12 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
 PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
 { 
   PetscErrorCode ierr;
-  PetscInt         *owner,*start,tag1=stash->tag1,tag2=stash->tag2;
-  PetscInt         size=stash->size,*nprocs,nsends,nreceives;
-  PetscInt         nmax,count,*sindices,*rindices,i,j,idx,bs=stash->bs;
-  PetscScalar *rvalues,*svalues;
-  MPI_Comm    comm = stash->comm;
-  MPI_Request *send_waits,*recv_waits;
+  PetscMPIInt    size = stash->size,tag1=stash->tag1,tag2=stash->tag2;
+  PetscInt       *owner,*start,*nprocs,nsends,nreceives;
+  PetscInt       nmax,count,*sindices,*rindices,i,j,idx,bs=stash->bs;
+  PetscScalar    *rvalues,*svalues;
+  MPI_Comm       comm = stash->comm;
+  MPI_Request    *send_waits,*recv_waits;
 
   PetscFunctionBegin;
 
@@ -299,7 +298,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   ierr     = PetscMalloc((nreceives+1)*2*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
   for (i=0,count=0; i<nreceives; i++) {
     ierr = MPI_Irecv(rvalues+bs*nmax*i,bs*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag1,comm,recv_waits+count++);CHKERRQ(ierr);
-    ierr = MPI_Irecv(rindices+nmax*i,nmax,MPI_INT,MPI_ANY_SOURCE,tag2,comm,recv_waits+count++);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rindices+nmax*i,nmax,MPIU_INT,MPI_ANY_SOURCE,tag2,comm,recv_waits+count++);CHKERRQ(ierr);
   }
 
   /* do sends:
@@ -330,7 +329,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   for (i=0,count=0; i<size; i++) {
     if (nprocs[2*i+1]) {
       ierr = MPI_Isend(svalues+bs*start[i],bs*nprocs[2*i],MPIU_SCALAR,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
-      ierr = MPI_Isend(sindices+start[i],nprocs[2*i],MPI_INT,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
+      ierr = MPI_Isend(sindices+start[i],nprocs[2*i],MPIU_INT,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(owner);CHKERRQ(ierr);

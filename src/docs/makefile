@@ -20,10 +20,10 @@ DOCS     = manualpages/sec/header_* tex/manual/manual.tex \
            website/documentation/referencing.html website/documentation/troubleshooting.html
 OBJSC    =
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = 
 LINCLUDE = ${SOURCEH}
 DIRS     = 
-LOCDIR   = docs/
+LOCDIR   = src/docs/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

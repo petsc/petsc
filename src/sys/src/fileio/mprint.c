@@ -74,7 +74,7 @@ FILE        *queuefile  = PETSC_NULL;
 PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
-  int rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-    PetscVFPrintf(stdout,format,Argp);CHKERRQ(ierr);
+    ierr = PetscVFPrintf(stdout,format,Argp);CHKERRQ(ierr);
     fflush(stdout);
     if (petsc_history) {
       ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
@@ -137,7 +137,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 {
   PetscErrorCode ierr;
-  int rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

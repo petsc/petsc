@@ -120,8 +120,7 @@ PetscErrorCode PetscStackPrint(PetscStack* sint,FILE *fp)
 
   if (!sint) return(0);
   for (i=sint->currentsize-3; i>=0; i--) {
-    fprintf(fp,"      [%d]  %s() line %d in %s%s\n",PetscGlobalRank,sint->function[i],sint->line[i],
-            sint->directory[i],sint->file[i]);
+    fprintf(fp,"      [%d]  %s() line %d in %s%s\n",PetscGlobalRank,sint->function[i],sint->line[i],sint->directory[i],sint->file[i]);
   }
   return 0;
 }

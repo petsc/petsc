@@ -365,14 +365,14 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...
     }
 
     tab = ascii->tab;
-    while (tab--) fprintf(fd,"  ");
+    while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
 
     va_start(Argp,format);
     ierr = PetscVFPrintf(fd,format,Argp);CHKERRQ(ierr);
     fflush(fd);
     if (petsc_history) {
       tab = ascii->tab;
-      while (tab--) fprintf(fd,"  ");
+      while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
       ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
@@ -691,7 +691,7 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char 
   if (!rank) {
     va_list Argp;
 
-    while (tab--) fprintf(fp,"  ");
+    while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"  ");CHKERRQ(ierr);}
 
     va_start(Argp,format);
     ierr = PetscVFPrintf(fp,format,Argp);CHKERRQ(ierr);
