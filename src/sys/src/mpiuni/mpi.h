@@ -51,6 +51,7 @@ typedef char* MPI_Errhandler;
 
 /* In order to handle datatypes, we make them into "sizeof(raw-type)";
     this allows us to do the PetscMemcpy's easily */
+#define MPI_Datatype int
 #define MPI_FLOAT sizeof(float)
 #define MPI_DOUBLE sizeof(double)
 #define MPI_CHAR sizeof(char)
@@ -58,7 +59,7 @@ typedef char* MPI_Errhandler;
 #define MPI_UNSIGNED_LONG sizeof(unsigned long)
 
 /* This is a special PETSC datatype */
-#define MPIU_COMPLEX (2*sizeof(double))
+/*#define MPIU_COMPLEX (2*sizeof(double))*/
 
 /* Routines */
 #define MPI_Send( buf, count, datatype, dest, tag, comm)  \
