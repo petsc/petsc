@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.113 1997/07/09 20:49:38 balay Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.114 1997/07/25 23:12:14 balay Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -259,7 +259,9 @@ int VecCopy(Vec x,Vec y)
   PLogEventEnd(VEC_Copy,x,y,0,0);
   return 0;
 }
- 
+
+#undef __FUNC__  
+#define __FUNC__ "VecSet"
 /*@
    VecSet - Sets all components of a vector to a scalar. 
 
