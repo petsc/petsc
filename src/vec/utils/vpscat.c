@@ -1,5 +1,5 @@
 #ifndef lint
- static char vcid[] = "$Id: vpscat.c,v 1.75 1997/05/23 02:41:47 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.76 1997/05/27 18:29:36 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -266,6 +266,185 @@ int VecScatterPostRecvs_PtoP_X(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,
   gen_from = (VecScatter_MPI_General *) ctx->fromdata;
 
   MPI_Startall_irecv(gen_from->starts[gen_from->n],gen_from->n,gen_from->requests); 
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecScatterBegin_PtoP_12"
+int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+{
+  VecScatter_MPI_General *gen_to, *gen_from;
+  Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
+  Scalar                 *xv = x->array, *yv = y->array, *val, *rvalues,*svalues;
+  MPI_Request            *rwaits, *swaits;
+  int                    i,*indices,*sstarts,iend,j;
+  int                    nrecvs, nsends,idx;
+
+  /*
+      Does not currently handle reverse scatters because that would require 
+    another set of MPI_Request buffers required for the MPI_Startall_irecv() 
+    and MPI_Startall_isend().
+  */
+  if (mode & SCATTER_REVERSE ) SETERRQ(PETSC_ERR_SUP,0,"No reverse currently");
+
+  gen_to   = (VecScatter_MPI_General *) ctx->todata;
+  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+
+  rvalues  = gen_from->values;
+  svalues  = gen_to->values;
+  nrecvs   = gen_from->n;
+  nsends   = gen_to->n;
+  rwaits   = gen_from->requests;
+  swaits   = gen_to->requests;
+  indices  = gen_to->indices;
+  sstarts  = gen_to->starts;
+
+  if (!(mode & SCATTER_LOCAL)) {
+    if (!gen_from->use_readyreceiver) {  
+      /* post receives since they were not posted in VecScatterPostRecvs()   */
+      MPI_Startall_irecv(gen_from->starts[nrecvs],nrecvs,rwaits); 
+    }
+
+    /* this version packs and sends one at a time */
+    val  = svalues;
+    for ( i=0; i<nsends; i++ ) {
+      iend = sstarts[i+1]-sstarts[i];
+
+      for ( j=0; j<iend; j++ ) {
+        idx     = *indices++;
+        val[0] = xv[idx];
+        val[1] = xv[idx+1];
+        val[2] = xv[idx+2];
+        val[3] = xv[idx+3];
+        val[4] = xv[idx+4];
+        val[5] = xv[idx+5];
+        val[6] = xv[idx+6];
+        val[7] = xv[idx+7];
+        val[8] = xv[idx+8];
+        val[9] = xv[idx+9];
+        val[10] = xv[idx+10];
+        val[11] = xv[idx+11];
+        val    += 12;
+      } 
+      MPI_Start_isend(12*iend,swaits+i);
+    }
+  }
+
+  /* take care of local scatters */
+  if (gen_to->local.n) {
+    int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
+    int n       = gen_to->local.n, il,ir;
+    if (addv == INSERT_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        il = fslots[i]; ir = tslots[i];
+        yv[il]   = xv[ir];
+        yv[il+1] = xv[ir+1];
+        yv[il+2] = xv[ir+2];
+        yv[il+3] = xv[ir+3];
+        yv[il+4] = xv[ir+4];
+        yv[il+5] = xv[ir+5];
+        yv[il+6] = xv[ir+6];
+        yv[il+7] = xv[ir+7];
+        yv[il+8] = xv[ir+8];
+        yv[il+9] = xv[ir+9];
+        yv[il+10] = xv[ir+10];
+        yv[il+11] = xv[ir+11];
+      }
+    }  else {
+      for ( i=0; i<n; i++ ) {
+        il = fslots[i]; ir = tslots[i];
+        yv[il]   += xv[ir];
+        yv[il+1] += xv[ir+1];
+        yv[il+2] += xv[ir+2];
+        yv[il+3] += xv[ir+3];
+        yv[il+4] += xv[ir+4];
+        yv[il+5] += xv[ir+5];
+        yv[il+6] += xv[ir+6];
+        yv[il+7] += xv[ir+7];
+        yv[il+8] += xv[ir+8];
+        yv[il+9] += xv[ir+9];
+        yv[il+10] += xv[ir+10];
+        yv[il+11] += xv[ir+11];
+      }
+    }
+  }
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecScatterEnd_PtoP_12"
+int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+{
+  VecScatter_MPI_General *gen_to, *gen_from;
+  Vec_MPI                *y = (Vec_MPI *)yin->data;
+  Scalar                 *rvalues, *yv = y->array,*val;
+  int                    nrecvs, nsends,i,*indices,count,imdex,n,*rstarts,*lindices;
+  int                    idx;
+  MPI_Request            *rwaits, *swaits;
+  MPI_Status             rstatus, *sstatus;
+
+  if (mode & SCATTER_LOCAL) return 0;
+
+  gen_to   = (VecScatter_MPI_General *) ctx->todata;
+  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+  sstatus  = gen_to->sstatus;
+  rvalues  = gen_from->values;
+  nrecvs   = gen_from->n;
+  nsends   = gen_to->n;
+  rwaits   = gen_from->requests;
+  swaits   = gen_to->requests;
+  indices  = gen_from->indices;
+  rstarts  = gen_from->starts;
+
+  /*  wait on receives */
+  count = nrecvs;
+  while (count) {
+    MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);
+    /* unpack receives into our local space */
+    val      = rvalues + 12*rstarts[imdex];
+    lindices = indices + rstarts[imdex];
+    n        = rstarts[imdex+1] - rstarts[imdex];
+    if (addv == INSERT_VALUES) {
+      for ( i=0; i<n; i++ ) {
+        idx       = lindices[i];
+        yv[idx]   = val[0];
+        yv[idx+1] = val[1];
+        yv[idx+2] = val[2];
+        yv[idx+3] = val[3];
+        yv[idx+4] = val[4];
+        yv[idx+5] = val[5];
+        yv[idx+6] = val[6];
+        yv[idx+7] = val[7];
+        yv[idx+8] = val[8];
+        yv[idx+9] = val[9];
+        yv[idx+10] = val[10];
+        yv[idx+11] = val[11];
+        val      += 12;
+      }
+    } else {
+      for ( i=0; i<n; i++ ) {
+        idx       = lindices[i];
+        yv[idx]   += val[0];
+        yv[idx+1] += val[1];
+        yv[idx+2] += val[2];
+        yv[idx+3] += val[3];
+        yv[idx+4] += val[4];
+        yv[idx+5] += val[5];
+        yv[idx+6] += val[6];
+        yv[idx+7] += val[7];
+        yv[idx+8] += val[8];
+        yv[idx+9] += val[9];
+        yv[idx+10] += val[10];
+        yv[idx+11] += val[11];
+        val       += 12;
+      }
+    }
+    count--;
+  }
+  /* wait on sends */
+  if (nsends) {
+    MPI_Waitall(nsends,swaits,sstatus);
+  }
   return 0;
 }
 
@@ -1286,6 +1465,10 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,Vec
     }
     PLogInfo(0,"Using blocksize %d scatter\n",bs);
     switch (bs) {
+    case 12: 
+      ctx->begin     = VecScatterBegin_PtoP_12;
+      ctx->end       = VecScatterEnd_PtoP_12; 
+      break;
     case 5: 
       ctx->begin     = VecScatterBegin_PtoP_5;
       ctx->end       = VecScatterEnd_PtoP_5; 
