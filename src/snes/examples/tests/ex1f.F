@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.13 1997/05/03 23:19:23 curfman Exp curfman $";
+C "$Id: ex4f.F,v 1.14 1997/05/04 00:04:20 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -254,10 +254,11 @@ C
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/snes.h"
 
+C  Input/output variables:
       Vec      X
       integer  ierr
 
-C  Declarations for use with local arrays
+C  Declarations for use with local arrays:
       Scalar   lx_v(0:1)
       common   lx_v
       integer  lx_i
@@ -371,15 +372,20 @@ C
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/snes.h"
 
+C  Input/output variables:
       SNES     snes
       Vec      X, F
-      integer  ierr, mx, my, dummy
-      Double   lambda
+      integer  dummy
 
+C  Common blocks:
+      Double   lambda
+      integer  mx, my
       common /params/ lambda, mx, my
 
-C  Declarations for use with local arrays
+C  Local variables:
+      integer  ierr
 
+C  Declarations for use with local arrays:
       Scalar   lx_v(0:1), lf_v(0:1)
       common   lx_v, lf_v
       integer  lx_i, lf_i 
@@ -429,19 +435,15 @@ C
       implicit none
 
 C  Input/output variables:
-
       Scalar   x(mx,my), f(mx,my)
       integer  ierr
 
 C  Common blocks:
-
       Double   lambda
       integer  mx, my
-
       common /params/ lambda, mx, my
 
 C  Local variables:
-
       Scalar   two, one, hx, hy, hxdhy, hydhx, sc
       Scalar   u, uxx, uyy
       integer  i, j
@@ -511,19 +513,23 @@ C
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/snes.h"
 
+C  Input/output variables:
       SNES         snes
       Vec          X
       Mat          jac, B
       MatStructure flag
-      integer      ierr, i, j, row, mx, my, col(5), dummy
-      Scalar       two, one,  hx, hy, hxdhy, hydhx
-      Scalar       sc, v(5)
-      Double       lambda
+      integer      dummy
 
+C  Common blocks:
+      Double   lambda
+      integer  mx, my
       common /params/ lambda, mx, my
 
-C  Declarations for use with local array
+C  Local variables:
+      integer      ierr, i, j, row, col(5)
+      Scalar       two, one,  hx, hy, hxdhy, hydhx, sc, v(5)
 
+C  Declarations for use with local array:
       Scalar   lx_v(1)
       common   lx_v
       integer  lx_i

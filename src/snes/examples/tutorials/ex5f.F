@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.24 1997/05/04 00:31:14 curfman Exp curfman $";
+C "$Id: ex5f.F,v 1.25 1997/05/05 04:09:49 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -124,7 +124,9 @@ C  Create distributed array (DA) to manage parallel grid and vectors
      &      write(6,*) 'Incompatible number of procs: Nx * Ny != size'
          SETERRA(1,0,' ')
       endif
-      call DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,
+C This really needs only the star-type stencil, but we use the box
+C stencil temporarily.
+      call DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,mx,
      &                my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,da,ierr)
 
 C
