@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.92 1997/07/09 20:59:51 balay Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.93 1997/08/03 16:27:57 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -451,8 +451,11 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   steptol = neP->steptol;
 
   VecNorm(y, NORM_2,ynorm );
-  if (*ynorm == 0.0) {
+  if (*ynorm < snes->atol) {
     PLogInfo(snes,"SNESQuadraticLineSearch: Search direction and size is 0\n");
+    *gnorm = fnorm;
+    ierr = VecCopy(x,y); CHKERRQ(ierr);
+    ierr = VecCopy(f,g); CHKERRQ(ierr);
     goto theend2;
   }
   if (*ynorm > maxstep) {	/* Step too big, so scale back */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.74 1997/02/22 02:28:51 bsmith Exp balay $";
+static char vcid[] = "$Id: tr.c,v 1.75 1997/07/09 20:59:53 balay Exp curfman $";
 #endif
 
 #include <math.h>
@@ -87,6 +87,8 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
   SNESMonitor(snes,0,fnorm);
+
+ if (fnorm < snes->atol) {*its = 0; return 0;}
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
