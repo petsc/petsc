@@ -153,6 +153,8 @@ hpux   : sangamon
 userid : barrys
 password: petsc-password
 
+Account info at NCSA - command: usage
+
 AFS :afs directory at NCSA /afs/ncsa.uiuc.edu/user/barrys
 To use afs on powerchallenge/convex exemplar, log into afs using klog
 other afs commands to aremember:fs,pts
