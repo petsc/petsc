@@ -9,7 +9,6 @@ int PC_COOKIE = 0;
 int PC_SetUp = 0, PC_SetUpOnBlocks = 0, PC_Apply = 0, PC_ApplyCoarse = 0, PC_ApplyMultiple = 0, PC_ApplySymmetricLeft = 0;
 int PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0;
 
-EXTERN int SLESInitializePackage(const char[]);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCNullSpaceAttach"
@@ -306,7 +305,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   PetscValidPointer(newpc)
   *newpc = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = SLESInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
+  ierr = PCInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_COOKIE,-1,"PC",comm,PCDestroy,PCView);
