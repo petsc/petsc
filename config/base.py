@@ -68,7 +68,7 @@ class Configure:
 
         self.framework.linewidth = x
         self.framework.cwd       = os.getcwd()+'/'
-      except curses.error:
+      except (curses.error, ImportError):
         self.framework.linewidth = -1
         return
     elif self.framework.linewidth < 0:
