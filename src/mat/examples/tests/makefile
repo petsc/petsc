@@ -835,12 +835,14 @@ runex93:
 	   else echo "Possible problem with ex93_1, diffs above"; fi; \
 	   ${RM} -f ex93_1.tmp
 
-runex94:
+runex94_1:
 	-@${MPIRUN} -np 1 ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1> ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else echo "Possible problem with ex94_1, diffs above"; fi; \
 	   ${RM} -f ex94_1.tmp
-	-@${MPIRUN} -np 4 ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1> ex94_2.tmp 2>&1; \
+
+runex94_2:
+	-@${MPIRUN} -np 3 ex94 -f0 ${DATAFILESPATH}/matrices/small -f1 ${DATAFILESPATH}/matrices/small> ex94_2.tmp 2>&1; \
 	   if (${DIFF} output/ex94_2.out ex94_2.tmp) then true; \
 	   else echo "Possible problem with ex94_2, diffs above"; fi; \
 	   ${RM} -f ex94_2.tmp

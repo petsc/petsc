@@ -14,12 +14,12 @@ int main(int argc,char **args)
   Vec          x,y1,y2;
   PetscViewer  viewer;
   int          i,ierr,m,n,size,rank,j,idxn[10],M,N,nzp;
-  PetscReal    norm,norm_tmp,tol=0.0,none = -1.0,fill=4,alpha;
+  PetscReal    norm,norm_tmp,tol=1.e-10,none = -1.0,fill=4,alpha;
   PetscRandom  rand;
   char         file[4][128];
   PetscTruth   flg,preload = PETSC_TRUE;
   PetscScalar  a[10],rval;
-  PetscTruth   Test_MatMatMult=PETSC_FALSE,Test_MatMatMultTr=PETSC_FALSE,Test_MatPtAP=PETSC_TRUE;
+  PetscTruth   Test_MatMatMult=PETSC_TRUE,Test_MatMatMultTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
