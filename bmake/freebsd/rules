@@ -10,8 +10,8 @@ RM       = rm -f *.c.*
 OMAKE    = gmake  --no-print-directory
 RANLIB   = ranlib
 SHELL    = /bin/sh
-CLINKER  = gcc $(BASEOPT)
-FLINKER  = f77 $(BASEOPTF)
+CLINKER  = gcc $(COPTFLAGS)
+FLINKER  = f77 $(FOPTFLAGS)
 CONF     = -DHAVE_PWD_H -DHAVE_STDLIB_H -DHAVE_STRING_H \
            -DHAVE_SWAPPED_BYTES -DHAVE_X11 -DHAVE_FORTRAN_UNDERSCORE \
            -DHAVE_DRAND48  -DHAVE_GETDOMAINNAME \
@@ -26,27 +26,27 @@ libf: $(LIBNAME)($(OBJSF))
 #############
 .PRECIOUS: $(LIBNAME)
 .c.a:
-	$(CC) -pipe -c $(CFLAGS) $(BASEOPT) $*.c
+	$(CC) -pipe -c $(CFLAGS) $(COPTFLAGS) $*.c
 	$(AR) clr $(LIBNAME) $*.o
 	$(RM) $*.o
 .c.o:
-	$(CC) -pipe -c $(CFLAGS) $(BASEOPT) $*.c
+	$(CC) -pipe -c $(CFLAGS) $(COPTFLAGS) $*.c
 .f.o: 
-	$(FC) -pipe -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(FC) -pipe -c $(FFLAGS) $(FOPTFLAGS) $*.f
 .f.a: 
-	$(FC) -pipe -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(FC) -pipe -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(AR) clr $(LIBNAME) $*.o
 	$(RM) $*.o
 .F.o:
 	$(RM) $*.f
-	-cpp $(PETSC_INCLUDE) $(BASEOPT) $*.F > $*.f 
-	-$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	-cpp $(COPTFLAGS) $*.F > $*.f 
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.f
 	$(RM) $*.f
 
 .F.a: 
 	$(RM) $*.f
-	-cpp $(PETSC_INCLUDE) $(BASEOPT) $*.F  > $*.f
-	-$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	-cpp $(COPTFLAGS) $*.F  > $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.f
 	$(RM) $*.f
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) -f $*.o
