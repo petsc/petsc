@@ -44,7 +44,10 @@ AC_INIT(../include/petsc.h)
 dnl
 dnl  Turn off printing tests to screen
 dnl
-exec 6>/dev/null
+exec 6>config.log6
+exec 9>&1
+exec 1>config.log1
+
 dnl
 dnl Insist on autoconf 2.13 or later
 AC_PREREQ(2.13)
@@ -53,6 +56,7 @@ dnl
 dnl Find the root PETSC directory if it hasn't been specified
 if test -z "$PETSC_DIR" ; then 
     PETSC_DIR=`pwd`
+    PETSC_DIR_NO_SET=yes
 fi
 dnl
 dnl Try to determine the architecture if PETSC_ARCH is not defined.
@@ -543,18 +547,30 @@ dnl To work around this, we use the output:input file name options
 dnl
 AC_OUTPUT(bmake/config/base.site:../bmake/config/base.site.in bmake/config/base:../bmake/config/base.in bmake/config/base_variables:../bmake/config/base_variables.in)
 dnl
-dnl Change all DEFINE to PETSC_DEFINE
 dnl
+dnl  Make stdout come back to the screen
 dnl
-dnl Move the files into the bmake area in their own
-dnl directory
-dnl
+exec 1>&9
+
+echo "***************************************************************"
 if test -z "$BMAKEDIR" ; then
   BMAKEDIR=default
+  if test -n "$PETSC_ARCH" -a  "$PETSC_ARCH" != "$BMAKEDIR" ; then
+    echo "Use setenv PETSC_ARCH $BMAKEDIR before using make"
+  fi
 else 
-  echo "Use setenv PETSC_ARCH $BMAKEDIR before using make"
+  if test -z "$PETSC_ARCH" -o  "$PETSC_ARCH" != "$BMAKEDIR" ; then
+    echo "Use setenv PETSC_ARCH $BMAKEDIR before using make"
+  fi
+  echo "Use setenv BOPT=g, BOPT=O, BOPT=g_c++, BOPT=O_c++ before using make"
 fi
-dnl echo "Moving created files to bmake/$BMAKEDIR"
+if test -n "$PETSC_DIR_NOT_SET" ; then
+  echo "Use setenv PETSC_DIR $PETSC_DIR before using make"
+fi
+echo "***************************************************************"
+
+dnl Move the files into the bmake area in their own directory
+
 rm  -rf                                                                                  bmake/$BMAKEDIR
 mkdir                                                                                    bmake/$BMAKEDIR
 mv  -f bmake/config/base.site                                                            bmake/$BMAKEDIR/base.site
@@ -562,3 +578,5 @@ mv  -f bmake/config/base_variables                                              
 mv  -f bmake/config/base                                                                 bmake/$BMAKEDIR/base
 cat bmake/config/petscconf.h | sed s/'^#define '/'#define PETSC_'/g | grep '^#define' >  bmake/$BMAKEDIR/petscconf.h
 touch                                                                                    bmake/$BMAKEDIR/petscfix.h    
+
+
