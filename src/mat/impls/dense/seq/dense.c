@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.49 1995/08/17 19:37:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.50 1995/08/17 20:42:48 curfman Exp curfman $";
 #endif
 
 /*
@@ -367,7 +367,7 @@ int MatView_Dense(PetscObject obj,Viewer ptr)
   PetscObject vobj = (PetscObject) ptr;
 
   if (ptr == 0) {
-    ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
+    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
   if (vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
     return ViewerMatlabPutArray_Private(ptr,mat->m,mat->n,mat->v); 

@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    =  
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = matlab file
+DIRS     = matlab file binary
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.49 1995/08/17 15:14:22 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.50 1995/08/17 20:43:06 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -501,7 +501,7 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
   if (!mrow->assembled)
     SETERRQ(1,"MatView_MPIRow:Must assemble matrix first");
   if (!viewer) { /* so that viewers may be used from debuggers */
-    viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
   format = ViewerFileGetFormat_Private(viewer);

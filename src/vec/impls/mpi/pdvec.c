@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.18 1995/08/15 20:26:37 bsmith Exp curfman $ */
+/* $Id: pdvec.c,v 1.19 1995/08/17 15:13:06 curfman Exp curfman $ */
 
 #include "pviewer.h"
 
@@ -36,7 +36,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
   MPI_Comm_rank(xin->comm,&mytid); 
 
   if (!ptr) { /* so that viewers may be used from debuggers */
-    ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
+    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
 
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.22 1995/08/17 14:11:05 curfman Exp $";
+static char vcid[] = "$Id: ex17.c,v 1.6 1995/08/17 21:33:33 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   }
   ierr = VecAssemblyBegin(y); CHKERRA(ierr);
   ierr = VecAssemblyEnd(y); CHKERRA(ierr);
-  ierr = VecView(y,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
+  ierr = VecView(y,STDOUT_VIEWER_COMM); CHKERRA(ierr);
 
   ierr = VecScatterCtxCreate(y,is2,x,is1,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(y,x,ADDVALUES,SCATTERALL,ctx); CHKERRA(ierr);
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
   if (!mytid) 
-    {printf("----\n"); ierr = VecView(x,STDOUT_VIEWER); CHKERRA(ierr);}
+    {printf("----\n"); ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
 
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(y); CHKERRA(ierr);

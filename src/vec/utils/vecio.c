@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.1 1995/08/17 20:43:27 curfman Exp curfman $";
+static char vcid[] = "$Id: vecio.c,v 1.2 1995/08/17 23:42:48 curfman Exp curfman $";
 #endif
 
 /* 
@@ -9,9 +9,6 @@ static char vcid[] = "$Id: vecio.c,v 1.1 1995/08/17 20:43:27 curfman Exp curfman
 #include "petsc.h"
 #include "vec/vecimpl.h"
 #include "sysio.h"
-#include <sys/errno.h>
-#include <unistd.h>
-extern int errno;
 
 /*@ 
   VecLoadBinary - Loads a vector that has been stored in binary format
@@ -19,9 +16,10 @@ extern int errno;
 
   Input Parameters:
 . comm - MPI communicator
-. fd - file descriptor
+.  fd - file descriptor (not FILE pointer).  Use open() for this.
 . outtype - type of output vector
-. ind - index set of local vector indices
+. ind - optional index set of local vector indices (or 0 for loading
+  the entire vector on each processor)
 
   Output Parameter:
 . newvec - the newly loaded vector
@@ -38,7 +36,7 @@ int VecLoadBinary(MPI_Comm comm,int fd,VecType outtype,IS ind,Vec *newvec)
   Vec         vec, tempvec;
   Scalar      *avec;
 
-  /* Read vector header */
+  /* Read vector header.  Should this really be the full header? */
   ierr = SYRead(fd,(char *)&type,sizeof(int),SYINT); CHKERRQ(ierr);
   if ((VecType)type != VECSEQ)
     SETERRQ(1,"VecLoadBinary: Only VECSEQ input format supported.");
@@ -123,8 +121,6 @@ int VecViewBinary(Vec v,int fd)
     PETSCFREE(iglobal);
     ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
     ierr = VecAssemblyBegin(v2); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(v2); CHKERRQ(ierr);
-    VecView(v2,SYNC_STDOUT_VIEWER);
 
     /* Write vector header */
     ntype = VECSEQ;
@@ -132,8 +128,9 @@ int VecViewBinary(Vec v,int fd)
     ierr = SYWrite(fd,(char *)&length,sizeof(int),SYINT,0); CHKERRQ(ierr);
 
     /* Write vector contents */
+    ierr = VecAssemblyEnd(v2); CHKERRQ(ierr);
     ierr = VecGetArray(v2,&va); CHKERRQ(ierr);
-    ierr = SYWrite(fd,(char *)va,length*sizeof(Scalar),SYINT,0); CHKERRQ(ierr);
+    ierr = SYWrite(fd,(char *)va,length*sizeof(Scalar),SYSCALAR,0); CHKERRQ(ierr);
     ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
     ierr = VecDestroy(v2); CHKERRQ(ierr);
   }
@@ -148,7 +145,7 @@ int VecViewBinary(Vec v,int fd)
     ierr = SYWrite(fd,(char *)va,length*sizeof(Scalar),SYINT,0); CHKERRQ(ierr);
     ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
   }
-  else SETERRQ(1,"Only VECSEQ currently supported.");
+  else SETERRQ(1,"VecViewBinary: Only VECSEQ and VECMPI are currently supported");
 
   return 0;
 }

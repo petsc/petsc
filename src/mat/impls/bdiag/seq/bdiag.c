@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.38 1995/08/17 15:14:54 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.39 1995/08/17 20:43:10 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -607,7 +607,7 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
   if (!mat->assembled) 
     SETERRQ(1,"MatView_BDiag:Cannot view unassembled matrix");
   if (!ptr) { /* so that viewers may be used from debuggers */
-    ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
+    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
   if (vobj && vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {

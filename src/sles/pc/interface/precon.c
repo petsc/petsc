@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.41 1995/08/18 18:49:45 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.42 1995/08/20 18:12:42 curfman Exp curfman $";
 #endif
 
 /*  
@@ -444,20 +444,18 @@ int PCPostSolve(PC pc,KSP ksp)
 
    Note:
    The available visualization contexts include
-$     STDOUT_VIEWER - standard output (the default)
-$     SYNC_STDOUT_VIEWER - synchronized standard
-$        output, where only the first processor opens
-$        the file.  All other processors send their 
-$        data to the first processor to print. 
+$     STDOUT_VIEWER_SELF - standard output (default)
+$     STDOUT_VIEWER_COMM - synchronized standard
+$       output where only the first processor opens
+$       the file.  All other processors send their 
+$       data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
 $    ViewerFileOpen() - output to a specified file
-$    ViewerFileOpenSync() - synchronized output to a 
-$         specified file
 
 .keywords: PC, view
 
-.seealso: KSPView(), ViewerFileOpen(), ViewerFileOpenSync()
+.seealso: KSPView(), ViewerFileOpen()
 @*/
 int PCView(PC pc,Viewer viewer)
 {

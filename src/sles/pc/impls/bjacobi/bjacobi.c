@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.39 1995/08/05 21:55:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.40 1995/08/07 18:52:02 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -143,7 +143,7 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
   PC               pc = (PC)obj;
   FILE             *fd = ViewerFileGetPointer_Private(viewer);
   PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
-  int              mytid;
+  int              mytid, ierr;
   if (jac->use_true_local) 
     MPIU_fprintf(pc->comm,fd,
        "    Block Jacobi: using true local matrix, number of blocks = %d\n",
@@ -153,17 +153,19 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
   if (jac->same_local_solves) {
     MPIU_fprintf(pc->comm,fd,
     "    Local solve is same for all blocks, in the following KSP and PC objects:\n");
-    if (!mytid) 
-      SLESView(jac->sles[0],STDOUT_VIEWER); /* now only 1 block per proc */
-                                            /* This shouldn't really be STDOUT */
+    if (!mytid) {
+      ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
+    }           /* now only 1 block per proc */
+                /* This shouldn't really be STDOUT */
   } else {
     MPIU_fprintf(pc->comm,fd,
      "    Local solve info for each block is in the following KSP and PC objects:\n");
     MPIU_Seq_begin(pc->comm,1);
     fprintf(fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
     mytid,jac->n_local,jac->first_local);
-    SLESView(jac->sles[0],STDOUT_VIEWER); /* now only 1 block per proc */
-                                          /* This shouldn't really be STDOUT */
+    ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
+           /* now only 1 block per proc */
+           /* This shouldn't really be STDOUT */
     fflush(fd);
     MPIU_Seq_end(pc->comm,1);
   }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.3 1995/08/22 02:35:32 curfman Exp $";
+static char vcid[] = "$Id: ex4.c,v 1.5 1995/08/22 02:39:49 curfman Exp curfman $";
 #endif
   
 static char help[] = 
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   ierr = DALocalToGlobal(da,local,INSERTVALUES,global); CHKERRA(ierr);
 
   MPIU_printf (MPI_COMM_WORLD,"\nGlobal Vectors:\n");
-  ierr = VecView(global,SYNC_STDOUT_VIEWER); CHKERRA(ierr); 
+  ierr = VecView(global,STDOUT_VIEWER_COMM); CHKERRA(ierr); 
   MPIU_printf (MPI_COMM_WORLD,"\n\n");
 
   ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);

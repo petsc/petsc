@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.3 1995/08/22 02:35:32 curfman Exp $";
+static char vcid[] = "$Id: ex1.c,v 1.11 1995/08/22 02:45:43 curfman Exp curfman $";
 #endif
 
 static char help[] = "This example tests various DA routines.\n\n";
@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   ierr = VecScale(&value,local); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,ADDVALUES,global); CHKERRA(ierr);
 
-  ierr = VecView(global,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
+  ierr = VecView(global,STDOUT_VIEWER_COMM); CHKERRA(ierr);
   ierr = DAView(da,(Viewer) win); CHKERRA(ierr);
   ierr = DADestroy(da); CHKERRA(ierr);
   PetscFinalize();

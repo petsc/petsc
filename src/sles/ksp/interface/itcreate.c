@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.52 1995/08/21 18:11:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.53 1995/08/22 16:29:17 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -19,20 +19,18 @@ static char vcid[] = "$Id: itcreate.c,v 1.52 1995/08/21 18:11:07 bsmith Exp bsmi
 
    Note:
    The available visualization contexts include
-$    STDOUT_VIEWER - standard output
-$    SYNC_STDOUT_VIEWER - synchronized standard
-$       output, where only the first processor opens
+$     STDOUT_VIEWER_SELF - standard output (default)
+$     STDOUT_VIEWER_COMM - synchronized standard
+$       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
 $    ViewerFileOpen() - output to a specified file
-$    ViewerFileOpenSync() - synchronized output to a 
-$         specified file
 
 .keywords: KSP, view
 
-.seealso: PCView(), ViewerFileOpen(), ViewerFileOpenSync()
+.seealso: PCView(), ViewerFileOpen()
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.11 1995/08/14 23:16:04 curfman Exp curfman $";
+static char vcid[] = "$Id: snestest.c,v 1.12 1995/08/17 01:31:54 curfman Exp curfman $";
 #endif
 
 #include "draw.h"
@@ -46,7 +46,7 @@ int SNESSolve_Test(SNES snes,int *its)
     CHKERRQ(ierr);
     if (neP->complete_print) {
       MPIU_printf(snes->comm,"Finite difference Jacobian\n");
-      ierr = MatView(B,SYNC_STDOUT_VIEWER); CHKERRQ(ierr);
+      ierr = MatView(B,STDOUT_VIEWER_COMM); CHKERRQ(ierr);
     }
     /* compare */
     ierr = MatAXPY(&mone,A,B); CHKERRQ(ierr);
@@ -54,7 +54,7 @@ int SNESSolve_Test(SNES snes,int *its)
     ierr = MatNorm(A,NORM_FROBENIUS,&gnorm); CHKERRQ(ierr);
     if (neP->complete_print) {
       MPIU_printf(snes->comm,"Hand-coded Jacobian\n");
-      ierr = MatView(A,SYNC_STDOUT_VIEWER); CHKERRQ(ierr);
+      ierr = MatView(A,STDOUT_VIEWER_COMM); CHKERRQ(ierr);
     }
     MPIU_printf(snes->comm,"Norm of matrix ratio %g difference %g\n",
                            norm/gnorm,norm);

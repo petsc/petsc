@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.39 1995/08/17 15:13:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.40 1995/08/22 16:28:56 bsmith Exp curfman $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -52,7 +52,7 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
   FILE        *fd;
 
   if (!ptr) { /* so that viewers may be used from debuggers */
-    ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
+    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
 

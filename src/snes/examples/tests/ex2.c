@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.23 1995/07/23 18:20:51 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.24 1995/07/30 14:59:19 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -86,6 +86,6 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
   Vec x;
   fprintf( stdout, "iter = %d, Function norm %g \n",its,fnorm);
   ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
-  ierr = VecView(x,STDOUT_VIEWER); CHKERRQ(ierr);
+  ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRQ(ierr);
   return 0;
 }

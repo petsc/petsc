@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.26 1995/07/23 18:20:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.27 1995/08/02 04:19:12 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -66,7 +66,7 @@ int main( int argc, char **argv )
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
   ierr = SNESSetUp(snes); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its); CHKERRA(ierr);
-  ierr = SNESView(snes,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
+  ierr = SNESView(snes,STDOUT_VIEWER_COMM); CHKERRA(ierr);
   printf( "number of Newton iterations = %d\n\n", its );
 
   /* Free data structures */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.2 1995/08/17 23:42:48 curfman Exp curfman $";
+static char vcid[] = "$Id: matio.c,v 1.1 1995/08/18 21:50:55 curfman Exp curfman $";
 #endif
 
 /* 
@@ -72,8 +72,8 @@ int MatLoadBinary(MPI_Comm comm,int fd,MatType outtype,IS ind,IS ind2,
   ierr = SYRead(fd,(char *)&type,sizeof(int),SYINT); CHKERRQ(ierr);
   if (type != MATROW) 
       SETERRQ(1,"MatLoadBinary: Only MATROW input currently supported");
-  ierr  = SYRead(fd,(char *)&rows,sizeof(int),0); CHKERRQ(ierr);
-  ierr  = SYRead(fd,(char *)&nnztot,sizeof(int),0); CHKERRQ(ierr);
+  ierr  = SYRead(fd,(char *)&rows,sizeof(int),SYINT); CHKERRQ(ierr);
+  ierr  = SYRead(fd,(char *)&nnztot,sizeof(int),SYINT); CHKERRQ(ierr);
   MPIU_printf(comm,"Input matrix: rows=%d, nnztot=%d\n",rows,nnztot);
 
   /* Check sizes, form index set if necessary */
@@ -154,23 +154,23 @@ int MatViewBinary(Mat mat,int fd)
   for (i=0; i<rows; i++) nnztot += mrow->rs[i]->nz;
 
   /* Write header */
-  ierr = SYWrite(fd,(char *)&rows,sizeof(int),0,0); CHKERRQ(ierr);
-  ierr = SYWrite(fd,(char *)&nnztot,sizeof(int),0,0); CHKERRQ(ierr);
+  ierr = SYWrite(fd,(char *)&rows,sizeof(int),SYINT,0); CHKERRQ(ierr);
+  ierr = SYWrite(fd,(char *)&nnztot,sizeof(int),SYINT,0); CHKERRQ(ierr);
 
   /* Write row length info */
   lwork = (int *)PETSCMALLOC( rows * sizeof(int)); CHKPTRQ(lwork); 
   for (i=0;i<rows;i++) {
     lwork[i] = mrow->rs[i]->nz;
   }
-  ierr = SYWrite(fd,(char *)lwork,rows*sizeof(int),0,0); CHKERRQ(ierr);
+  ierr = SYWrite(fd,(char *)lwork,rows*sizeof(int),SYINT,0); CHKERRQ(ierr);
   PETSCFREE(lwork);
 
   /* Write matrix data by rows */
   for (i=0;i<rows;i++) {
     vs = mrow->rs[i];
     nz = vs->nz;
-    ierr = SYWrite(fd,(char *)vs->i,nz*sizeof(int),0,0); CHKERRQ(ierr);
-    ierr = SYWrite(fd,(char *)vs->v,nz*sizeof(Scalar),0,0); CHKERRQ(ierr);
+    ierr = SYWrite(fd,(char *)vs->i,nz*sizeof(int),SYINT,0); CHKERRQ(ierr);
+    ierr = SYWrite(fd,(char *)vs->v,nz*sizeof(Scalar),SYSCALAR,0); CHKERRQ(ierr);
   }
   return 0;
 }

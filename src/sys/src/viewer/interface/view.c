@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: view.c,v 1.3 1995/08/05 20:05:26 curfman Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.4 1995/08/07 22:01:26 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: view.c,v 1.3 1995/08/05 20:05:26 curfman Exp bsmith $
    Input Parameters:
 .  viewer - the viewer to be destroyed.
 
-.seealso: ViewerMatlabOpen(), ViewerFileOpen(), ViewerFileOpenSync()
+.seealso: ViewerMatlabOpen(), ViewerFileOpen()
 
 .keywords: Viewer, destroy
 @*/

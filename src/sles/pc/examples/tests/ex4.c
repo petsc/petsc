@@ -17,8 +17,8 @@ int main(int argc,char **args)
   Scalar    value[3], zero = 0.0;
 
   PetscInitialize(&argc,&args,0,0);
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&b);     CHKERRA(ierr);
-  ierr = VecCreateSequential(MPI_COMM_SELF,n,&u);     CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&b); CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&u); CHKERRA(ierr);
 
   ierr = MatCreateSequentialDense(MPI_COMM_SELF,n,n,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
@@ -41,19 +41,18 @@ int main(int argc,char **args)
   ierr = PCSetVector(pc,u);   CHKERRA(ierr);
   ierr = PCSetUp(pc); CHKERRA(ierr);
 
-
   value[0] = 1.0;
   for ( i=0; i<n; i++ ) {
     ierr = VecSet(&zero,u);               CHKERRA(ierr);
     ierr = VecSetValues(u,1,&i,value,INSERTVALUES); CHKERRA(ierr);
     ierr = PCApply(pc,u,b);   CHKERRA(ierr);
-    VecView(b,STDOUT_VIEWER);
+    ierr = VecView(b,STDOUT_VIEWER_SELF); CHKERRA(ierr);
   }
 
-  MatDestroy(mat);
-  PCDestroy(pc);
-  VecDestroy(u);
-  VecDestroy(b);
+  ierr = MatDestroy(mat); CHKERRA(ierr);
+  ierr = PCDestroy(pc); CHKERRA(ierr);
+  ierr = VecDestroy(u); CHKERRA(ierr);
+  ierr = VecDestroy(b); CHKERRA(ierr); 
   PetscFinalize();
   return 0;
 }

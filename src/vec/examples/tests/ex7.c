@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.22 1995/08/17 14:11:05 curfman Exp $";
+static char vcid[] = "$Id: ex7.c,v 1.21 1995/08/17 21:33:33 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   ierr = ISCreateSequential(MPI_COMM_SELF,3,idx1,&is2); CHKERRA(ierr);
 
   ierr = VecSetValues(x,6,loc,vals,INSERTVALUES); CHKERRA(ierr);
-  ierr = VecView(x,STDOUT_VIEWER); CHKERRA(ierr);
+  ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRA(ierr);
   printf("----\n");
   ierr = VecSet(&two,y);CHKERRA(ierr);
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,y,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
-  ierr = VecView(y,STDOUT_VIEWER); CHKERRA(ierr);
+  ierr = VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);
 
   ierr = ISDestroy(is1); CHKERRA(ierr);
   ierr = ISDestroy(is2); CHKERRA(ierr);

@@ -49,14 +49,14 @@ int main(int argc,char **argv)
   ierr = VecView(global,(Viewer) win1); CHKERRA(ierr); 
 
   MPIU_printf(MPI_COMM_WORLD,"\nGlobal Vectors:\n");
-  ierr = VecView(global,SYNC_STDOUT_VIEWER); CHKERRA(ierr); 
+  ierr = VecView(global,STDOUT_VIEWER_COMM); CHKERRA(ierr); 
   MPIU_printf(MPI_COMM_WORLD,"\n\n");
 
   ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
 
   MPIU_printf(MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",mytid);
-  ierr = VecView(local,SYNC_STDOUT_VIEWER); CHKERRA(ierr); 
+  ierr = VecView(local,STDOUT_VIEWER_COMM); CHKERRA(ierr); 
 
   ierr = DAView(da,(Viewer) win2); CHKERRA(ierr);
   ierr = DADestroy(da); CHKERRA(ierr);

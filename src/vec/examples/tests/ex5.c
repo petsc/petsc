@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.22 1995/08/17 14:11:05 curfman Exp $";
+static char vcid[] = "$Id: ex5.c,v 1.22 1995/08/17 21:33:33 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -34,8 +34,7 @@ int main(int argc,char **argv)
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,n*mytid,1,&is1); 
-  CHKERRA(ierr);
+  ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,n*mytid,1,&is1); CHKERRA(ierr);
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,0,1,&is2); CHKERRA(ierr);
 
   /* each processor inserts the entire vector */
@@ -46,17 +45,15 @@ int main(int argc,char **argv)
   }
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);
-
-  ierr = VecView(x,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
+  ierr = VecView(x,STDOUT_VIEWER_COMM); CHKERRA(ierr);
 
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,INSERTVALUES,SCATTERALL,ctx);
-  CHKERRA(ierr);
+  ierr = VecScatterBegin(x,y,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterEnd(x,y,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
   if (!mytid)
-   {printf("----\n"); VecView(y,STDOUT_VIEWER); CHKERRA(ierr);}
+   {printf("----\n"); VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
 
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(y); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.25 1995/08/04 01:50:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.26 1995/08/07 18:50:16 bsmith Exp curfman $";
 #endif
 /*
        General indices as a list of integers
@@ -56,7 +56,7 @@ static int ISView_General(PetscObject obj, Viewer viewer)
   PetscObject vobj = (PetscObject) viewer;
 
   if (!viewer) {
-    viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
   if (vobj->cookie == VIEWER_COOKIE && ((vobj->type == FILE_VIEWER) ||
                                        (vobj->type == FILES_VIEWER))) {

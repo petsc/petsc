@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.29 1995/08/21 18:12:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.30 1995/08/22 16:30:43 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -42,10 +42,8 @@ int PCILUSetLevels(PC pc,int levels)
   return 0;
 }
 
-
 static int PCSetFromOptions_ILU(PC pc)
 {
-  char        name[10];
   int         levels;
   if (OptionsGetInt(pc->prefix,"-pc_ilu_levels",&levels)) {
     PCILUSetLevels(pc,levels);
@@ -69,7 +67,6 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
   PC     pc = (PC)obj;
   FILE   *fd = ViewerFileGetPointer_Private(viewer);
   PC_ILU *lu = (PC_ILU *) pc->data;
-  char  *cstring;
   if (lu->levels == 1)
     MPIU_fprintf(pc->comm,fd,"    ILU: %d level of fill\n",
     lu->levels);

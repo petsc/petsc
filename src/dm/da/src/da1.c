@@ -20,7 +20,7 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
   MPI_Comm_rank(da->comm,&mytid); 
 
   if (!ptr) { /* so that viewers may be used from debuggers */
-    ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
+    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
 
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;

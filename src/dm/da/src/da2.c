@@ -21,7 +21,7 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
   MPI_Comm_rank(da->comm,&mytid); 
 
   if (!ptr) { /* so that viewers may be used from debuggers */
-    ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
+    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
 
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
@@ -676,22 +676,20 @@ int   DAGetLocalVector(DA da,Vec* l)
 
    Notes:
    The available visualization contexts include
-$     STDOUT_VIEWER - standard output (the default)
-$     SYNC_STDOUT_VIEWER - synchronized standard
-$        output, where only the first processor opens
-$        the file.  All other processors send their 
-$        data to the first processor to print. 
+$     STDOUT_VIEWER_SELF - standard output (default)
+$     STDOUT_VIEWER_COMM - synchronized standard
+$       output where only the first processor opens
+$       the file.  All other processors send their 
+$       data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
 $    ViewerFileOpen() - output to a specified file
-$    ViewerFileOpenSync() - synchronized output to a 
-$         specified file
 $    DrawOpenX() - output nonzero matrix structure to 
 $         an X window display
 
 .keywords: distributed array, view, visualize
 
-.seealso: ViewerFileOpen(), ViewerFileOpenSync(), DrawOpenX(), 
+.seealso: ViewerFileOpen(), DrawOpenX(), 
 @*/
 int DAView(DA da, Viewer v)
 {

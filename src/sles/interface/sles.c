@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.33 1995/08/18 17:40:33 curfman Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.34 1995/08/18 18:49:38 curfman Exp curfman $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -17,20 +17,18 @@ $  -sles_view : calls SLESView() at end of SLESSolve()
 
    Note:
    The available visualization contexts include
-$    STDOUT_VIEWER - standard output
-$    SYNC_STDOUT_VIEWER - synchronized standard
-$       output, where only the first processor opens
+$     STDOUT_VIEWER_SELF - standard output (default)
+$     STDOUT_VIEWER_COMM - synchronized standard
+$       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
 $    ViewerFileOpen() - output to a specified file
-$    ViewerFileOpenSync() - synchronized output to a 
-$         specified file
 
 .keywords: SLES, view
 
-.seealso: ViewerFileOpen(), ViewerFileOpenSync()
+.seealso: ViewerFileOpen()
 @*/
 int SLESView(SLES sles,Viewer viewer)
 {
@@ -239,7 +237,9 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   ierr = KSPSolve(ksp,its); CHKERRQ(ierr);
   ierr = PCPostSolve(pc,ksp); CHKERRQ(ierr);
   PLogEventEnd(SLES_Solve,sles,b,x,0);
-  if (OptionsHasName(0,"-sles_view")) SLESView(sles,SYNC_STDOUT_VIEWER);
+  if (OptionsHasName(0,"-sles_view")) {
+    ierr = SLESView(sles,STDOUT_VIEWER_COMM); CHKERRQ(ierr);
+  }
   return 0;
 }
 
