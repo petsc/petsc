@@ -15,7 +15,8 @@ RUNEXAMPLES_1 = runex1  runex3  runex5 runex6  runex8 runex9\
                 runex20 runex21 runex22
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex18 ex23 ex24 ex25 \
                 ex27 ex28 ex29 ex30 ex31 ex32 ex33 ex34
-RUNEXAMPLES_2 = runex2 runex2_2 runex4 runex7 runex12 runex13 runex19
+RUNEXAMPLES_2 = runex2 runex2_2 runex4 runex7 runex12 runex13 runex19 \
+                runex30
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
                 ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c \
@@ -284,5 +285,10 @@ runex22:
            if (diff output/ex22_1.out ex22_1.tmp) then true; \
            else echo "Possible problem with ex22_1, diffs above"; fi; \
            $(RM) -f ex22_1.tmp
+runex30:
+	-@$(MPIRUN)  ex30 > ex30_1.tmp 2>&1;   \
+           if (diff output/ex30_1.out ex30_1.tmp) then true; \
+           else echo "Possible problem with ex30_1, diffs above"; fi; \
+           $(RM) -f ex30_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
