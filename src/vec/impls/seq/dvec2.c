@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.36 1996/12/16 22:57:24 balay Exp balay $ */
+/* $Id: dvec2.c,v 1.37 1997/01/06 20:21:55 balay Exp curfman $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -391,7 +391,7 @@ static int VecAYPX_Seq(Scalar *alpha, Vec xin, Vec yin )
 
 /*
    IBM ESSL contains a routine dzaxpy() that is our WAXPY() but it appears
-  to be slower then a regular C loop. Hence we do not include it.
+  to be slower than a regular C loop.  Hence, we do not include it.
   void ?zaxpy(int*,Scalar*,Scalar*,int*,Scalar*,int*,Scalar*,int*);
 */
 
