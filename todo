@@ -41,6 +41,8 @@ Vectors
 
    Handle special cases of VecAXPBY
 
+   Check if indices passed into create are sorted (often they will be); if they are then 
+   do much faster check to which processor owns them
 
 Error handling
    Add troubleshooting entries and error messages with web address for common errors.
