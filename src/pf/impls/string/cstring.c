@@ -1,4 +1,4 @@
-/*$Id: cstring.c,v 1.12 2001/01/15 21:49:45 bsmith Exp balay $*/
+/*$Id: cstring.c,v 1.13 2001/03/23 23:25:51 balay Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -34,6 +34,9 @@ int PFDestroy_String(void *value)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFStringCreateFunction"
+/*@C
+    PFStringCreateFunction - Creates 
+@*/
 int PFStringCreateFunction(PF pf,char *string,void **f)
 {
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
