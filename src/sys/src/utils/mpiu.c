@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.67 1997/01/16 22:22:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.68 1997/02/22 02:23:29 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -333,26 +333,24 @@ $
 @*/
 int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 {
-  int        lidx, np, flag;
-  MPI_Comm   local_comm;
+  int        lidx, np;
+  MPI_Comm   local_comm,*addr_local_comm;
   MPI_Status status;
 
   /* Get the private communicator for the sequential operations */
   if (Petsc_Seq_keyval == MPI_KEYVAL_INVALID) {
     MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Seq_keyval,0);
   }
-  MPI_Attr_get( comm, Petsc_Seq_keyval, (void **)&local_comm, &flag );
-  if (!flag) {
-    MPI_Comm_dup( comm, &local_comm );
-    /*
-      This expects a communicator to be a pointer. On some implementations of 
-      MPI (including Cray, IBM, and SGI) a MPI_Comm is an integer, thus we must cast it below.
-    */
-    MPI_Attr_put( comm, Petsc_Seq_keyval, (void *) local_comm );
-  }
-  MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
   if (np == 1) return 0;
+
+  MPI_Comm_dup( comm, &local_comm );
+  addr_local_comm  = (MPI_Comm *) PetscMalloc(sizeof(MPI_Comm));CHKPTRQ(addr_local_comm);
+  *addr_local_comm = local_comm;
+ 
+  MPI_Attr_put( comm, Petsc_Seq_keyval, (void *) addr_local_comm );
+
+  MPI_Comm_rank( comm, &lidx );
   if (lidx != 0) {
     MPI_Recv( 0, 0, MPI_INT, lidx-1, 0, local_comm, &status );
   }
@@ -385,13 +383,16 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
 {
   int        lidx, np, flag;
   MPI_Status status;
-  MPI_Comm   local_comm;
+  MPI_Comm   local_comm,*addr_local_comm;
 
   MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
   if (np == 1) return 0;
-  MPI_Attr_get( comm, Petsc_Seq_keyval, (void **)&local_comm, &flag );
+
+  MPI_Attr_get( comm, Petsc_Seq_keyval, (void **)&addr_local_comm, &flag );
   if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
+  local_comm = *addr_local_comm;
+
   /* Send to the first process in the next group */
   if ((lidx % ng) == ng - 1 || lidx == np - 1) {
     MPI_Send( 0, 0, MPI_INT, (lidx + 1) % np, 0, local_comm );
@@ -399,6 +400,9 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
   if (lidx == 0) {
     MPI_Recv( 0, 0, MPI_INT, np-1, 0, local_comm, &status );
   }
+  PetscFree(addr_local_comm); 
+  MPI_Comm_free(&local_comm);
+  MPI_Attr_delete(comm,Petsc_Seq_keyval);
   return 0;
 }
 /* ---------------------------------------------------------------- */
