@@ -1,5 +1,5 @@
 
-C      "$Id: ex16.F,v 1.1 1996/01/16 19:30:06 balay Exp balay $";
+C      "$Id: ex16.F,v 1.2 1996/01/16 19:55:22 balay Exp balay $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -22,8 +22,8 @@ C        -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
 C                          use the file petsc/src/mat/examples/mat.ex.binary
 C
 
-      integer          ierr, its, flg, five
-      double precision time, norm,none
+      integer          ierr, its, flg
+      double precision time, norm,none, five
       Vec              x, b, u
       Mat              A
       SLES             sles1, sles2
@@ -72,8 +72,9 @@ C Show result
 C      print*, 'Time for solve = ',time
 
 C Create system 2 by striping off some rows of the matrix
-/*      call ISCreateStrideSeq(MPI_COMM_SELF,5,0,1,isrow, ierr)
-      call MatZeroRows(A, isrow, five, ierr)*/
+      call ISCreateStrideSeq(MPI_COMM_SELF,5,0,1,isrow, ierr)
+      call MatZeroRows(A, isrow, five, ierr)
+      call MatView(A,STDOUT_VIEWER_SELF)
 
 C Solve system-2
       call SLESCreate(MPI_COMM_WORLD,sles2,ierr)
