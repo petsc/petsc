@@ -1,11 +1,11 @@
-/* $Id: f90_win32.h,v 1.4 2000/07/12 22:33:42 balay Exp $ */
+/* $Id: f90_alpha.h,v 1.1 2000/07/18 19:54:17 balay Exp balay $ */
 
-#if !defined (__F90_WIN32_H)
-#define __F90_WIN32_H
+#if !defined (__F90_ALPHA_H)
+#define __F90_ALPHA_H
  
 typedef struct {
-  long extent;  /* length of the array */
   long mult;    /* stride in bytes */
+  long upper;   /* ending index of the array */
   long lower;   /* starting index of the fortran array */
 } tripple;
 
@@ -15,10 +15,16 @@ typedef struct {
   if these constants are not set in
   the f90 pointer
 */
-#define F90_CHAR_ID    234881027
-#define F90_INT_ID     50331651
-#define F90_DOUBLE_ID  167772163
-#define F90_COMPLEX_ID 218103811
+# if defined(PARCH_linux)
+#define F90_COOKIE 1282
+#else
+#define F90_COOKIE 258
+#endif
+
+#define F90_CHAR_ID    2574
+#define F90_INT_ID     2564
+#define F90_DOUBLE_ID  2570
+#define F90_COMPLEX_ID 2573
 
 
 #if !defined (PETSC_COMPLEX)
@@ -29,10 +35,12 @@ typedef struct {
 
 
 #define f90_header() \
-void*          addr;    /* Pointer to the data */ \
+short          cookie;  /* a wiered f90 cookie */ \
+short          id;      /* integer id representing the datatype */ \
 long           sd;      /* sizeof(DataType) in bits */  \
-long           sum_d;   /* -sumof(lower*mult) */ \
-int            id;      /* integer id representing the datatype */ \
+void*          addr;    /* Pointer to the data */ \
+long           a;       /* unknown stuff - always 0 */ \
+long           addr_d;  /* addr-sumof(lower*mult) */ \
 int            ndim;    /* No of dimensions */
 
 typedef struct {
