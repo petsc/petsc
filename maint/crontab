@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.148 2000/08/07 14:39:22 balay Exp balay $ 
+# $Id: crontab,v 1.149 2000/12/05 19:59:10 balay Exp bsmith $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -66,7 +66,7 @@
 # send out reminder about Tuesday afternoon meeting
 #
 0 14 * * 1 /home/bsmith/petsc/maint/tuesdayreminder
-45 12 * * 2 /home/bsmith/petsc/maint/tuesdayreminder
+15 14 * * 2 /home/bsmith/petsc/maint/tuesdayreminder
 #
 # check for bad PetscFunctionBegin
 #
