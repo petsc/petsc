@@ -387,8 +387,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOptionsPrefix(Vec v,const char *prefix[]
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec v)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  ierr = VecSetFromOptions(v);
   PetscFunctionReturn(0);
 }
 
