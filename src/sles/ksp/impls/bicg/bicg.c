@@ -83,9 +83,6 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
 
   i = 0;
   do {
-#if 0
-  for (i=0; i<ksp->max_it; i++) {
-#endif
      ierr = VecDot(Zr,Rl,&beta);CHKERRQ(ierr);       /*     beta <- r'z     */
      if (!i) {
        if (beta == 0.0) {

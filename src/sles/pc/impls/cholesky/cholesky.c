@@ -471,7 +471,7 @@ int PCCholeskySetFill(PC pc,PetscReal fill)
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCICholeskySetFill(), PCILUSetDamp()
+.seealso: PCCholeskySetFill(), PCILUSetDamping()
 @*/
 int PCCholeskySetDamping(PC pc,PetscReal damping)
 {
