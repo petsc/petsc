@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.32 1997/07/01 19:32:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.33 1997/07/24 21:59:19 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -88,7 +88,7 @@ void matgetrow_(Mat mat,int *row,int *ncols,int *cols,Scalar *vals,int *ierr)
 
   if (matgetrowactive) {
      PetscError(__LINE__,"MatGetRow_Fortran",__FILE__,__SDIR__,1,0,
-               "Cannot have two MatGetRow() active simultaneously\n
+               "Cannot have two MatGetRow() active simultaneously\n\
                call MatRestoreRow() before calling MatGetRow() a second time");
      *ierr = 1;
      return;
