@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.15 2000/08/02 03:51:35 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.16 2000/08/02 15:27:50 bsmith Exp bsmith $ 
 
 #requiresscalar real
 
@@ -20,7 +20,6 @@ CLEANFILES       = flow.exe flow.o flow
 DIRS             = 
 LOCDIR           = src/contrib/fun3d/
 TESTEXAMPLES_3	 = flow.PETSc runflow1 runflow4 flow.rm
-BUILDEXAMPLES_3  = flow.PETSc flow.rm clean
 EXAMPLESC        = flow.c user.h
 EXAMPLESF        = user.F userJac.F
 #
@@ -33,20 +32,18 @@ puns3d: puns3d.a.o
 	$(FLINKER) -o puns3d puns3d.a.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 
 runflow1:
-	-@${MPIRUN} -np 1 flow -mesh testgrid/uns3d.msh -partition testgrid/part_vec.part | grep clift | tail -1 > runflow1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 flow -options_file testgrid/petsc.opt -mesh testgrid/uns3d.msh -partition testgrid/part_vec.part.1 | grep clift | tail -1 > runflow1.tmp 2>&1;   \
 	   if (diff testgrid/coef.dat runflow1.tmp) then true; \
 	   else echo "Possible problem with runflow1, diffs above"; fi; \
 	   ${RM} -f runflow1.tmp
 runflow4:
-	-@${MPIRUN} -np 4 flow -mesh testgrid/uns3d.msh -partition testgrid/part_vec.part | grep clift | tail -1 > runflow4.tmp 2>&1;   \
+	-@${MPIRUN} -np 4 flow -options_file testgrid/petsc.opt -mesh testgrid/uns3d.msh -partition testgrid/part_vec.part.4 | grep clift | tail -1 > runflow4.tmp 2>&1;   \
 	   if (diff testgrid/coef.dat runflow4.tmp) then true; \
 	   else echo "Possible problem with runflow4, diffs above"; fi; \
 	   ${RM} -f runflow4.tmp
 runflow64:
-	-@${MPIRUN} -np 64 flow -mesh 1Grid/uns3d.msh -partition 1Grid/Pmetis/part_vec.part | grep clift | tail -1 > runflow64.tmp 2>&1;   \
-	   if (diff testgrid/coef.dat runflow64.tmp) then true; \
-	   else echo "Possible problem with runflow64, diffs above"; fi; \
-	   ${RM} -f runflow64.tmp
+	-@${MPIRUN} -np 64 flow -options_file 1Grid/petsc.opt -mesh 1Grid/uns3d.msh -partition 1Grid/Pmetis/part_vec.part.64 
+
 tags:
 	etags -f TAGS *.F *.c *.h
 
