@@ -2,150 +2,127 @@
 # 
 # Compiles and tests PETSc in our nightly builds.
 #
-setenv account $1
-setenv H       /tmp/petsc
-cd $H/maint
-/bin/rm -f build.log examples.log
-#
-# Assign jobs to each account
-#
-if ($account == petsc) then
-  set job = (1 2)
-endif
-if ($account == bsmith) then 
-  set job = (2)
-endif
-if ($account == curfman) then 
-  set job = (4)
-endif
-if ($account == balay) then 
-  set job = (6 7)
-endif
 #
 #  load the machine names and versions to test
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
-  set M =(snake     eagle     ryan      elvis          doc       ptera       merlin    )
-  set B =(O         O_complex  g         g_c++         O_c++     g_complex   O_complex )
-  set A =(hpux      sun4_local IRIX      freebsd_local rs6000_p4 alpha_nolog sun4_uni  )
-  set J1=(1         1          1         1             1         1           3         )
-  set J2=(0         2          2         2             2         2           4         )
-  set J3=(0         3          3         3             3         3           5         )
-  set J4=(0         0          6         6             6         0           0         )
+  set M =(snake            eagle      ryan              elvis         doc        ptera              )
+  set B =(O                O_complex  g                 g_c++         O_c++      g_complex          )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4  alpha_nolog        )
+  set J1=(1                1          1                 1             1          1                  )
+  set J2=(0                2          2                 2             2          2                  )
+  set J3=(0                3          3                 3             3          3                  )
+  set J4=(0                0          6                 6             6          0                  )
+  set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc /home/curfman/petsc)
 endif
 if ($day == Mon) then
-  set M =(snake     eagle      puck      elvis         doc       ptera       merlin    )
-  set B =(g         O          O_c++     g             O         g           O         )
-  set A =(hpux      sun4_local IRIX      freebsd_local rs6000_p4 alpha_nolog sun4_uni  )
-  set J1=(0         1          1         1             1         1           3         )
-  set J2=(1         2          2         2             2         2           4         )
-  set J3=(0         3          3         3             3         3           5         )
-  set J4=(0         6          6         6             6         6           6         )
+  set M =(snake            eagle      puck              elvis         doc        ptera        )
+  set B =(g                O          O_c++             g             O          g            )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4  alpha_nolog  )
+  set J1=(0                1          1                 1             1          1            )
+  set J2=(1                2          2                 2             2          2            )
+  set J3=(0                3          3                 3             3          3            )
+  set J4=(0                6          6                 6             6          6            )
+  set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc /home/curfman/petsc)
 endif  
 if ($day == Tue) then
-  set M =(snake     eagle      puck      elvis         doc       ptera     merlin    )
-  set B =(O         g          O_complex O             g         O         g         )
-  set A =(hpux      sun4_local IRIX      freebsd_local rs6000_p4 alpha     sun4_uni  )
-  set J1=(0         1          1         1             1         1         3         )
-  set J2=(2         2          2         2             2         2         4         )
-  set J3=(0         3          3         3             3         3         5         )
-  set J4=(6         6          0         6             6         6         6         )
+  set M =(snake            eagle      puck              elvis         doc        ptera     )
+  set B =(O                g          O_complex         O             g          O         )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4  alpha     )
+  set J1=(0                1          1                 1             1          1         )
+  set J2=(2                2          2                 2             2          2         )
+  set J3=(0                3          3                 3             3          3         )
+  set J4=(6                6          0                 6             6          6         )
+  set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc /home/curfman/petsc)
 endif
 if ($day == Wed) then
-  set M =(snake     eagle      ryan      elvis         doc       ptera     merlin    )
-  set B =(g         g_c++      O         O_complex     g_complex O_c++     g_c++     )
-  set A =(hpux      sun4_local IRIX      freebsd_local rs6000_p4 alpha     sun4_uni  )
-  set J1=(3         1          1         1             1         1         3         )
-  set J2=(0         2          2         2             2         2         4         )
-  set J3=(0         3          3         3             3         3         5         )
-  set J4=(6         6          6         0             0         6         6         )
+  set M =(snake            eagle      ryan              elvis         doc        ptera     )
+  set B =(g                g_c++      O                 O_complex     g_complex  O_c++     )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4  alpha     )
+  set J1=(3                1          1                 1             1          1         )
+  set J2=(0                2          2                 2             2          2         )
+  set J3=(0                3          3                 3             3          3         )
+  set J4=(6                6          6                 0             0          6         )
+  set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc /home/curfman/petsc)
 endif
 if ($day == Thu) then
-  set M =(snake     eagle      puck      elvis         doc       ptera     merlin    )
-  set B =(O         g_complex  g_c++     O_c++         g_c++     g         g_complex )
-  set A =(hpux      sun4_local IRIX      freebsd_local rs6000_p4 alpha     sun4_uni  )
-  set J1=(0         1          1         1             1         1         3         )
-  set J2=(0         2          2         2             2         2         4         )
-  set J3=(3         3          3         3             3         3         5         )
-  set J4=(6         0          6         6             6         6         0         )
+  set M =(snake            eagle      puck              elvis         doc        ptera     )
+  set B =(O                g_complex  g_c++             O_c++         g_c++      g         )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4  alpha     )
+  set J1=(0                1          1                 1             1          1         )
+  set J2=(0                2          2                 2             2          2         )
+  set J3=(3                3          3                 3             3          3         )
+  set J4=(6                0          6                 6             6          6         )
+  set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc /home/curfman/petsc)
 endif
 if ($day == Fri) then
-  set M =(snake     eagle      puck      elvis         doc       ptera     merlin    )
-  set B =(g         O_c++      g_complex g_complex     g         O_complex O_c++     )
-  set A =(hpux      sun4_local IRIX      freebsd_local rs6000_p4 alpha     sun4_uni  )
-  set J1=(0         1          1         1             1         1         3         )
-  set J2=(2         2          2         2             2         2         4         )
-  set J3=(0         3          3         3             3         3         5         )
-  set J4=(6         6          0         0             6         0         6         )
+  set M =(snake            eagle      puck              elvis         doc        ptera     )
+  set B =(g                O_c++      g_complex         g_complex     g          O_complex )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4  alpha     )
+  set J1=(0                1          1                 1             1          1         )
+  set J2=(2                2          2                 2             2          2         )
+  set J3=(0                3          3                 3             3          3         )
+  set J4=(6                6          0                 0             6          0         )
+  set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc /home/curfman/petsc)
 endif
 if ($day == Sat) then
-  set M =(snake     eagle      ryan      elvis         doc       ptera     merlin    )
-  set B =(O         g          O         g             g_complex O         g_complex )
-  set A =(hpux      sun4_local IRIX      freebsd_local rs6000_p4 alpha     sun4_uni  )
-  set J1=(1         1          1         1             1         1         3         )
-  set J2=(0         2          2         2             2         2         4         )
-  set J3=(0         3          3         3             3         3         5         )
-  set J4=(6         6          6         0             0         6         0         )
+  set M =(snake            eagle      ryan              elvis         doc        ptera     )
+  set B =(O                g          O                 g             g_complex  O         )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4  alpha     )
+  set J1=(1                1          1                 1             1          1         )
+  set J2=(0                2          2                 2             2          2         )
+  set J3=(0                3          3                 3             3          3         )
+  set J4=(6                6          6                 0             0          6         )
+  set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc /home/curfman/petsc)
 endif
 #
 #  test for each machine
 #
-foreach i ($job)
-  set mach    = $M[$i]
-  set bopt    = $B[$i]
-  set arch    = $A[$i]
-  set job1    = $J1[$i]
-  set job2    = $J2[$i]
-  set job3    = $J3[$i]
-  set job4    = $J4[$i]
+foreach job ($*)
+  set mach    = $M[$job]
+  set bopt    = $B[$job]
+  set arch    = $A[$job]
+  set job1    = $J1[$job]
+  set job2    = $J2[$job]
+  set job3    = $J3[$job]
+  set job4    = $J4[$job]
+  set hme     = $H[$job]
+
+#rsh $mach -n /home/bsmith/petsc/maint/buildlinks $hme > /dev/null
+  rsh $mach -n "cd $hme/maint ;rm -f build_$arch.log examples_$arch.log"
+
+
   if ($mach == ptera) then
-     set E = -e
+    set E = -e
   else
-     set E = ""
+    set E = ""
   endif
-  echo "****************************************************" >> build.log
-  echo "Build on $mach $bopt `date` " >> build.log
-  rsh $mach -n "cd $H ; \
-    make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt all >>& maint/build.log"
-  echo "****************************************************" >> build.log
-  rsh $mach -n "cd $H; \
-    make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt fortran >>& maint/build.log"
-  rsh $mach -n "cd $H; chmod -R g+w lib" >& /dev/null
-  echo "Finished Build on $mach  $arch $bopt `date`" >> build.log
-  echo "****************************************************">>examples.log
-  echo "Build on $mach  $bopt `date` " >> examples.log
+
+  rsh $mach -n "cd $hme ; echo 'Build on $mach $bopt `date` ' > maint/build_$arch.log"
+  rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt all >>& maint/build_$arch.log"
+  rsh $mach -n "cd $hme ; echo '****************************************************' >> maint/build_$arch.log"
+  rsh $mach -n "cd $hme;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt fortran >>& maint/build_$arch.log"
+  rsh $mach -n "cd $hme; chmod -R g+w lib" >& /dev/null
+  rsh $mach -n "cd $hme ;echo 'Finished Build on $mach  $arch $bopt `date`' >> maint/build_$arch.log"
+  rsh $mach -n "cd $hme ;echo 'Build on $mach  $bopt `date` ' > maint/examples_$arch.log"
   if ( $job1 != 0 ) then 
-    rsh $mach -n "cd $H ;  \
-      make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job1 tree >>& maint/examples.log"
-    echo "******************************************************" >> examples.log
+    rsh $mach -n "cd $hme ;   make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job1 tree >>& maint/examples_$arch.log"
+    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.log"
   endif
   if ( $job2 != 0 ) then 
-    rsh $mach -n "cd $H ;  \
-      make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job2 tree  >>& maint/examples.log"
-    echo "******************************************************" >> examples.log
+    rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job2 tree  >>& maint/examples_$arch.log"
+    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.log"
   endif
   if ( $job3 != 0 ) then 
-    rsh $mach -n "cd $H ;  \
-      make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job3 tree  >>& maint/examples.log"
-  endif
-    echo "******************************************************" >> examples.log
+    rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job3 tree  >>& maint/examples_$arch.log"
+    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.log"
   endif
   if ( $job4 != 0 ) then 
-    rsh $mach -n "cd $H ;  \
-      make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job4 tree  >>& maint/examples.log"
+    rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job4 tree  >>& maint/examples_$arch.log"
   endif
-  echo "Finished Build on $mach $arch $bopt `date`" >> examples.log
-#
-#  Don't copy libs to /home/bsmith/petsc since there's not enough disk space.
-#  rsh $mach -n "cd $H ; \
-#    /bin/cp lib/lib$bopt/$arch/*.a /home/bsmith/petsc/lib/lib$bopt/$arch  >>& /dev/null ;\
-#  chmod g+w /home/bsmith/petsc/lib/lib$bopt/$arch ; \
-#  ranlib -t /home/bsmith/petsc/lib/lib$bopt/$arch/*.a  >>& /dev/null"
+  rsh $mach -n "cd $hme ;echo 'Finished Build on $mach $arch $bopt `date`' >> maint/examples_$arch.log"
+  rsh $mach -n "cd $hme ; echo 'Finished Build `date`' >> maint/build_$arch.log"
+  rsh $mach -n "cd $hme ;echo 'Finished Build `date`' >> maint/examples_$arch.log"
 end
-echo "Finished Build `date`" >> build.log
-echo "Finished Build `date`" >> examples.log
-
-chmod ug+w  build.log examples.log
-
 
