@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daload.c,v 1.1 1999/03/05 20:19:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daload.c,v 1.2 1999/03/07 17:30:00 bsmith Exp bsmith $";
 #endif
 
 #include "src/dm/da/daimpl.h"     /*I  "da.h"   I*/
@@ -51,19 +51,11 @@ int DALoad(Viewer viewer,int M,int N, int P,DA *da)
   } else if (info[0] == 2) {
     ierr = DACreate2d(comm,(DAPeriodicType) info[7],(DAStencilType) info[6],info[1],info[2],M,N,info[4],
                       info[5],0,0,da);CHKERRQ(ierr);
-  } else if (info[0] == 2) {
+  } else if (info[0] == 3) {
     ierr = DACreate3d(comm,(DAPeriodicType) info[7],(DAStencilType) info[6],info[1],info[2],info[3],M,N,P,
                       info[4],info[5],0,0,0,da);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(1,1,"Dimension in info file is not 1, 2, or 3 it is %d",info[0]);
   }
-  ierr = DACreateNaturalVector(*da,&natural);CHKERRQ(ierr);
-  /* read the vector into the "natural" numbering vector */
-
-  /* copy it over to the PETSc numbering */
-  ierr = DACreateGlobalVector(*da,&global);CHKERRQ(ierr);
-
-  /*
-  ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,global);CHKERRQ(ierr);
-  ierr = DANaturalToGlobalEnd(da,natural,INSERT_VALUES,global);CHKERRQ(ierr); */
-
   PetscFunctionReturn(0);
 }
