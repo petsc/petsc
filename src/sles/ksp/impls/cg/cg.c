@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.37 1996/03/10 17:27:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: cg.c,v 1.38 1996/03/20 06:06:10 curfman Exp curfman $";
 #endif
 
 /*                       
@@ -203,11 +203,11 @@ static int KSPView_CG(PetscObject obj,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (cg->type == CG_HERMITIAN)
-      PetscFPrintf(ksp->comm,fd,"    CG: variant is complex, Hermitian");
+      PetscFPrintf(ksp->comm,fd,"    CG: variant for complex, Hermitian system\n");
     else if (cg->type == CG_SYMMETRIC)
-      PetscFPrintf(ksp->comm,fd,"    CG: variant is complex, symmetric");
+      PetscFPrintf(ksp->comm,fd,"    CG: variant for complex, symmetric system\n");
     else
-      PetscFPrintf(ksp->comm,fd,"    CG: unknown variant");
+      PetscFPrintf(ksp->comm,fd,"    CG: unknown variant\n");
   }
 #endif
   return 0;
@@ -235,7 +235,6 @@ int KSPCreate_CG(KSP ksp)
   ksp->converged            = KSPDefaultConverged;
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
-  ksp->view                 = 0;
   return 0;
 }
 
