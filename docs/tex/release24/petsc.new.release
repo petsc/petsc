@@ -30,7 +30,7 @@ PETSc (version 2.0.15) include:
 The new release is available for UNIX machines via:
     ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.gz
     ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.Z
-Users of Windows NT (only!) should instead retrieve the zip file:
+Users of Windows NT/95 (only!) should instead retrieve the zip file:
     ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.zip
 All of these are also available via the PETSc home page:
      http://www.mcs.anl.gov/petsc/petsc.html
