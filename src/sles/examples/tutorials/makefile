@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.74 2000/03/14 14:55:23 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.75 2000/03/25 03:40:00 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -355,7 +355,10 @@ runex10_10:
 	   else echo "Possible problem with ex10_10, diffs above"; fi; \
 	   ${RM} -f ex10_10.tmp
 runex10_11:
-	-@${MPIRUN} -np 2 ex10 -options_left_off -f0 ftp://info.mcs.anl.gov/pub/petsc/testmatrix.gz
+	-@${MPIRUN} -np 2 ex10 -options_left_off -f0 ftp://info.mcs.anl.gov/pub/petsc/testmatrix.gz > ex10_11.tmp 2>&1;\
+	   if (diff output/ex10_11.out ex10_11.tmp) then true; \
+	   else echo "Possible problem with ex10_11, diffs above"; fi; \
+	   ${RM} -f ex10_11.tmp
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_irorthog > ex11_1.tmp 2>&1; \
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
