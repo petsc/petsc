@@ -123,7 +123,8 @@ class Configure(config.base.Configure):
 
   def downLoadBlasLapack(self,f2c,l):
     self.framework.log.write('Downloading '+l+'blaslapack')
-      
+
+    if f2c == 'f2c': self.addDefine('BLASLAPACK_F2C',1)
     self.foundBlas       = 1
     self.foundLapack     = 1
     libdir               = os.path.join(self.framework.argDB['PETSC_DIR'],f2c+'blaslapack',self.framework.argDB['PETSC_ARCH'])
