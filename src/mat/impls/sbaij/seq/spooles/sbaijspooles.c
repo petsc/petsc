@@ -114,7 +114,7 @@ int MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   lu->MatView                    = A->ops->view;
   lu->MatAssemblyEnd             = A->ops->assemblyend;
   lu->MatDestroy                 = A->ops->destroy;
-  B->ops->duplicate              = MatDuplicate_SeqSBAIJSpooles;
+  B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJSpooles;
   B->ops->assemblyend            = MatAssemblyEnd_SeqSBAIJSpooles;
   B->ops->destroy                = MatDestroy_SeqSBAIJSpooles;
@@ -127,18 +127,6 @@ int MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_SeqSBAIJSpooles"
-int MatDuplicate_SeqSBAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
-  int         ierr;
-  Mat_Spooles *lu=(Mat_Spooles *)A->spptr;
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_Spooles));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 /*MC
   MATSEQSBAIJSPOOLES - MATSEQSBAIJSPOOLES = "seqsbaijspooles" - A matrix type providing direct solvers (Cholesky) for sequential symmetric

@@ -506,7 +506,7 @@ int MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   lu->MatView                    = A->ops->view;
   lu->MatAssemblyEnd             = A->ops->assemblyend;
   lu->MatDestroy                 = A->ops->destroy;
-  B->ops->duplicate              = MatDuplicate_SeqAIJSpooles;
+  B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJSpooles;
   B->ops->lufactorsymbolic       = MatLUFactorSymbolic_SeqAIJSpooles; 
   B->ops->view                   = MatView_SeqAIJSpooles;
@@ -524,14 +524,31 @@ int MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,Mat *newmat) {
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_SeqAIJSpooles"
-int MatDuplicate_SeqAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
-  int ierr;
-  Mat_Spooles *lu=(Mat_Spooles *)A->spptr;
+#define __FUNCT__ "MatDuplicate_Spooles"
+int MatDuplicate_Spooles(Mat A, MatDuplicateOption op, Mat *M) {
+  int         ierr;
+  Mat_Spooles *lu=(Mat_Spooles *)A->spptr,*spooles;
+  MatType     type;
 
   PetscFunctionBegin;
+  ierr = MatGetType(A,&type);CHKERRQ(ierr);
+  /* change mat_type to its basetype. 
+     Otherwise, when (*lu->MatDuplicate) calls MatSetType(), the input matrix data are destoryed,
+     and a new mat is created, which causes memory leak! */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,lu->basetype);CHKERRQ(ierr);
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_Spooles));CHKERRQ(ierr);
+  /* change mat_type back */
+  if (type == "seqaijspooles"){
+    ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQAIJSPOOLES);CHKERRQ(ierr);
+    ierr = PetscObjectChangeTypeName((PetscObject)(*M),MATSEQAIJSPOOLES);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQSBAIJSPOOLES);CHKERRQ(ierr);
+    ierr = PetscObjectChangeTypeName((PetscObject)(*M),MATSEQSBAIJSPOOLES);CHKERRQ(ierr);
+  }
+
+  ierr = PetscMalloc(sizeof(Mat_Spooles),&spooles);CHKERRQ(ierr); 
+  ierr = PetscMemcpy(spooles,lu,sizeof(Mat_Spooles));CHKERRQ(ierr);
+  (*M)->spptr = spooles;
   PetscFunctionReturn(0);
 }
 
