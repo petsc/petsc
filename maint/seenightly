@@ -1,5 +1,7 @@
 #
 #  shows output from nightly builds
 #
-more /home/bsmith/petsc/maint/nightlylogs/build_*
-more /home/bsmith/petsc/maint/nightlylogs/examples_*
+\rm /home/bsmith/petsc/maint/nightlylogs/alllogs
+cat /home/bsmith/petsc/maint/nightlylogs/build_* > /home/bsmith/petsc/maint/nightlylogs/alllogs
+cat /home/bsmith/petsc/maint/nightlylogs/examples_* >> /home/bsmith/petsc/maint/nightlylogs/alllogs
+cat /home/bsmith/petsc/maint/nightlylogs/doc.log >> /home/bsmith/petsc/maint/nightlylogs/alllogs
