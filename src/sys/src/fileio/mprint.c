@@ -244,10 +244,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
   FILE           *fd;
 
   PetscFunctionBegin;
+  ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
   /* First processor waits for messages from all other processors */
   if (!rank) {
     if (queuefile) {
@@ -281,6 +281,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
     queue       = 0;
     queuelength = 0;
   }
+  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -360,7 +360,7 @@ $       call PetscInitialize(file,ierr)
 PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 {
   PetscErrorCode ierr;
-  int            flag,dummy_tag;
+  int            flag;
   PetscMPIInt    size;
   PetscTruth     flg;
   char           hostname[256];
@@ -455,8 +455,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
      We delay until here to do it, since PetscMalloc() may not have been
      setup before this.
   */
-  ierr = PetscCommDuplicate(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);CHKERRQ(ierr);
-  ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);CHKERRQ(ierr);
+  PETSC_COMM_SELF  = MPI_COMM_SELF;
 
   /*
      Load the dynamic libraries (on machines that support them), this registers all
@@ -655,7 +654,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   */
   ierr = PetscLogInfoAllow(PETSC_FALSE,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&PETSC_COMM_SELF);CHKERRQ(ierr);
-  ierr = PetscCommDestroy(&PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&PETSC_COMM_WORLD);CHKERRQ(ierr); 
 
   /*
        Free all the registered create functions, such as KSPList, VecList, SNESList, etc

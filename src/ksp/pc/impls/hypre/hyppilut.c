@@ -66,6 +66,7 @@ typedef struct {
   double             outerrelaxweight;
   int                relaxorder;
   int                **gridrelaxpoints;
+  double             truncfactor;
 } PC_HYPRE;
 
 
@@ -328,6 +329,13 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     if (jac->tol < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance %g must be great than or equal zero",jac->tol);
   }
   ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
+
+  ierr = PetscOptionsScalar("-pc_hypre_boomeramg_truncfactor","Truncation factor","None",jac->truncfactor,&jac->truncfactor,&flg);CHKERRQ(ierr);
+  if (flg) {
+    if (jac->truncfactor < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Truncation factor %g must be great than or equal zero",jac->truncfactor);
+  }
+  ierr = HYPRE_BoomerAMGSetTruncFactor(jac->hsolver,jac->truncfactor);CHKERRQ(ierr);
+
   ierr = PetscOptionsScalar("-pc_hypre_boomeramg_strong_threshold","Threshold for being strongly connected","None",jac->strongthreshold,&jac->strongthreshold,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->strongthreshold < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Strong threshold %g must be great than or equal zero",jac->strongthreshold);
