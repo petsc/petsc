@@ -1,4 +1,4 @@
-/*$Id: drawregall.c,v 1.13 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: drawregall.c,v 1.14 2000/05/10 16:38:52 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -11,7 +11,7 @@ EXTERN int DrawCreate_Null(Draw);
 EXTERN_C_END
   
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawRegisterAll" 
+#define __FUNC__ /*<a name="DrawRegisterAll"></a>*/"DrawRegisterAll" 
 /*@C
   DrawRegisterAll - Registers all of the graphics methods in the Draw package.
 
