@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.3 2000/01/06 20:43:19 bsmith Exp bsmith $*/
 static char help[] =
 "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
 
   /*   Send solution to  matlab viewer 
        in appview.c */
-  if (appctx->view.matlabgraphics) {
+  if (appctx->view.show_solution) {
     ierr = AppCtxViewMatlab(appctx);CHKERRA(ierr);  
   }
 
