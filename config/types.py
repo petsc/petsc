@@ -230,7 +230,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkComplex)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.checkFortranStar)
-    self.executeTest(self.checkFortranDReal)
+      self.executeTest(self.checkFortranDReal)
     self.executeTest(self.checkConst)
     self.executeTest(self.checkEndian)
     map(lambda type: self.executeTest(self.checkSizeof, type), ['void *', 'short', 'int', 'long', 'long long', 'float', 'double'])
