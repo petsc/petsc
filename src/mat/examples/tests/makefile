@@ -25,7 +25,7 @@ TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
 		  ex35.rm ex37.PETSc ex37.rm ex38.PETSc ex38.rm \
 		  ex43.PETSc ex43.rm ex48.PETSc runex48 \
 		  ex48.rm ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm \
-		  ex52.PETSc ex52.rm clean
+		  ex52.PETSc ex52.rm ex54.PETSc runex54 ex54.rm clean
 TESTEXAMPLES_3  = ex36.PETSc runex36 ex36.rm clean
 TESTEXAMPLES_9  = ex36.PETSc runex36 ex36.rm clean
 TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
@@ -283,6 +283,10 @@ ex53: ex53.o chkopts
 	-$(CLINKER) -o ex53 ex53.o $(PETSC_LIB)
 	$(RM) ex53.o
 
+ex54: ex54.o chkopts
+	-$(CLINKER) -o ex54 ex54.o $(PETSC_LIB)
+	$(RM) ex54.o
+
 
 
 NPROCS    = 1 3
@@ -511,6 +515,26 @@ runex53:
 	if (diff output/ex53_1.out ex53_1.tmp) then true; \
 	else echo "Possible problem with ex53_1, diffs above"; fi; \
 	$(RM) -f ex53_1.tmp
+
+runex54:
+	-@touch ex54_1.tmp;\
+	for bs in $(MATBLOCKSIZE); do \
+	    for matsize in $(MATSIZE); do \
+	      for ov in $(OVERLAP); do\
+	        for nd in $(NODOMAINS); do \
+		  for np in $(NPROCS); do \
+		    $(MPIRUN)  ex54 -mat_block_size $$bs -ov $$ov \
+                       -mat_size $$matsize -nd $$nd >> ex54_1.tmp 2>&1; \
+		  done;\
+		done;\
+	      done;\
+	    done;\
+	done;\
+	  grep -v "flg =1" ex54_1.tmp > ex54_12.tmp; \
+	  if (diff output/ex54_1.out ex54_12.tmp) then true; \
+	  else echo "Possible problem with ex54_1, diffs above"; fi; \
+	  $(RM) -f ex54_1.tmp ex54_12.tmp
+
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
