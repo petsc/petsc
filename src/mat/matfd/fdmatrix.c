@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.87 2001/05/29 20:13:27 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.88 2001/06/21 21:17:23 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -309,6 +309,9 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
     Level: intermediate
 
 .keywords: Mat, finite differences, parameters
+
+.seealso: MatFDColoringCreate(), MatFDColoringView(), MatFDColoringSetParameters()
+
 @*/
 int MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
@@ -378,7 +381,9 @@ int MatFDColoringView_Private(MatFDColoring fd)
     Level: intermediate
 
 .seealso: MatFDColoringDestroy(),SNESDefaultComputeJacobianColor(), ISColoringCreate(),
-          MatFDColoringSetFunction(), MatFDColoringSetFromOptions()
+          MatFDColoringSetFunction(), MatFDColoringSetFromOptions(), MatFDColoringApply(),
+          MatFDColoringSetFrequency(), MatFDColoringSetRecompute(), MatFDColoringView(),
+          MatFDColoringSetParameters()
 @*/
 int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 {
