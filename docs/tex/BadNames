@@ -17,3 +17,10 @@ PETSc names that should be changed.
 
  - MGSetR ->??? ( Do not know much aboug MG, but probably "R" could be expanded - satish)
    MGSetX
+
+ - ViewerStringsprintf -> ViewerStringsPrintf /ViewerStringSprintf? ?? (ambigious)
+
+ - MPIU_* inconsistant for eg: MPIU_Comm_dup , MPIU_printf
+   MPIU_printf ->? MPIU_Printf;
+
+        
