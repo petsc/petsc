@@ -2551,63 +2551,68 @@ int MatSetValuesAdifor_MPIAIJ(Mat A,int nl,void *advalues)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatFileMerge"
+#define __FUNCT__ "MatMerge"
 /*@C
-      MatFileMerge - Saves a single large PETSc matrix by reading in 
-            sequential matrices from each processor and concatinating them
-            together.
+      MatMerge - Creates a single large PETSc matrix by concatinating sequential
+                 matrices from each processor
 
     Collective on MPI_Comm
 
    Input Parameters:
-+    comm - the communicators the individual files are on
-.    infile - name of input file
--    outfile - name of output file
++    comm - the communicators the parallel matrix will live on
+-    inmat - the input sequential matrices
+
+   Output Parameter:
+.    outmat - the parallel matrix generated
 
     Level: advanced
 
    Notes: The number of columns of the matrix in EACH of the seperate files
       MUST be the same.
 
-          The true name of the input files on each processor is obtained by
-      appending .rank onto the infile string; where rank is 0 up to one less
-      then the number of processors
 @*/
-int MatFileMerge(MPI_Comm comm,char *infile,char *outfile)
+int MatMerge(MPI_Comm comm,Mat inmat, Mat *outmat)
 {
-  int         ierr,rank,len,m,n,i,rstart,*indx,nnz,I;
-  PetscViewer in,out;
-  char        *name;
-  Mat         A,B;
+  int         ierr,rank,len,m,n,i,rstart,*indx,nnz,I,*dnz,*onz;
   PetscScalar *values;
+  PetscMap    columnmap,rowmap;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = PetscStrlen(infile,&len);CHKERRQ(ierr);
-  ierr = PetscMalloc((len+5)*sizeof(char),&name);CHKERRQ(ierr);
-  sprintf(name,"%s.%d",infile,rank);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,PETSC_BINARY_RDONLY,&in);CHKERRQ(ierr);
-  ierr = PetscFree(name);
-  ierr = MatLoad(in,MATSEQAIJ,&A);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(in);CHKERRQ(ierr);
   
-  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(comm,m,PETSC_DECIDE,PETSC_DETERMINE,n,0,0,0,0,&B);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(B,&rstart,0);CHKERRQ(ierr);
-  for (i=0;i<m;i++) {
-    ierr = MatGetRow(A,i,&nnz,&indx,&values);CHKERRQ(ierr);
-    I    = i + rstart;
-    ierr = MatSetValues(B,1,&I,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,i,&nnz,&indx,&values);CHKERRQ(ierr);
-  }
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatGetSize(inmat,&m,&n);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryOpen(comm,outfile,PETSC_BINARY_CREATE,&out);CHKERRQ(ierr);
-  ierr = MatView(B,out);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(out);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  /* count nonzeros in each row, for diagonal and off diagonal portion of matrix */
+  ierr = PetscMapCreate(comm,&columnmap);CHKERRQ(ierr);
+  ierr = PetscMapSetSize(columnmap,n);CHKERRQ(ierr);
+  ierr = PetscMapSetType(columnmap,MAP_MPI);CHKERRQ(ierr);
+  ierr = PetscMapGetLocalSize(columnmap,&n);CHKERRQ(ierr);
+  ierr = PetscMapDestroy(columnmap);CHKERRQ(ierr);
+
+  ierr = PetscMapCreate(comm,&rowmap);CHKERRQ(ierr);
+  ierr = PetscMapSetLocalSize(rowmap,m);CHKERRQ(ierr);
+  ierr = PetscMapSetType(rowmap,MAP_MPI);CHKERRQ(ierr);
+  ierr = PetscMapGetLocalRange(rowmap,&rstart,0);CHKERRQ(ierr);
+  ierr = PetscMapDestroy(rowmap);CHKERRQ(ierr);
+
+  ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);
+  for (i=0;i<m;i++) {
+    ierr = MatGetRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+    ierr = MatPreallocateSet(i+rstart,nnz,indx,dnz,onz);CHKERRQ(ierr);
+    ierr = MatRestoreRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+  }
+  ierr = MatCreateMPIAIJ(comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,0,dnz,0,onz,outmat);CHKERRQ(ierr);
+  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+
+  for (i=0;i<m;i++) {
+    ierr = MatGetRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+    I    = i + rstart;
+    ierr = MatSetValues(*outmat,1,&I,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(inmat);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

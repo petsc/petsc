@@ -4,6 +4,14 @@
 
 %  <a name="packages"></a><H3><center>Software Packages that use or interface to PETSc</center></H3>
 %
+@Misc{imoose:sourceforge,
+  author        = {Guido Arians and Thomas Bauer and Christian Kaehler and
+                   Wolfgang Mai and Christoph Monzel and Dirk {van Riesen} and
+                   Christoph Schlensok},
+  title         = {Innovative Modern Object-Oriented Solving Environment - {iMOOSE}},
+  note          = {[Online]},
+  URL  = {http://imoose.sourceforge.net}
+}
 @Unpublished{FoSSI,
    author     = "Stephan Frickenhaus",
   title = 	"FoSSI: Family of Simplified Solver Interfaces, offers scalable access to MPI-parallel
@@ -175,6 +183,26 @@
 %
 %  <a name="biology"><H3><center>Biology</center></H3>
 %
+@inproceedings{oghattas2002,
+   author = "Vulcan Acetic and George Biros and Omar Ghattas",
+   title  = "Parallel Multistage Gauss-Newton-Kyle Methods For Inverse Wave Propagation",
+   booktitle = "Procceedings of SC2002",
+   url    ="http://www.cs.cmu.edu/\~{ }oghattas/papers/sc2002/sc2002.pdf",
+   note = "Winner of SC2002 Best Paper. A parallel algorithm for inverse problems
+           governed by time-dependent PDEs, and scalability results for an inverse
+           wave propagation problem of determining the material field of an acoustic
+           medium. Using the algorithm, they solved a synthetic inverse wave
+           propagation problem though a pelvic bone geometry involving 2.1 million
+           inversion parameters in 3 hours on 256 processors."
+}
+@article{brain3,
+   author = "Simon K. Warfield and Florin Talos and Alida Tei and Arya Nabavi and Matthieu Ferrant and Peter McL. Black and 
+             Ferenc A. Jolesz and Ron Kikinis",
+   title  = "Real-Time Registration of Volumetic Brain MRI by Biomechanical Simulation of Deformation during Image Guided 
+             Neurosurgery",
+   journal = "Computing and Visualization in Science",
+   url     ="http://splweb.bwh.harvard.edu:8000/pages/ppl/warfield/papers/2002/warfield-2002-cvs-appeared.pdf"
+}
 @article{brain2,
    author = "Matthieu Ferrant and Arya Nabavi and Benoit Macq and 
              Ferenc A. Jolesz and Ron Kikinis and Simon K. Warfield",
@@ -209,6 +237,13 @@
 %
 %  <a name="cfd"><H3><center>CFD</center></H3>
 %
+@TechReport{lbam1,
+  author = 	 {P. Leggiero and A. Bonfiglioli and P. Amodio and F. Mazzi},
+  title = 	 {Precondizionatori paralleli  per la fluidodinamica computazionale},
+  institution =  {Dipartimento Interuniversitario di Matematica Università degli Studi-Politecnico di Bari Italy},
+  year = 	 2002,
+  number =	 {25/02},
+}
 @Article{Kees_Miller_02,
   author =       {C. E. Kees and C. T. Miller},
   title =        {Higher Order Time Integration Methods for Two-Phase Flow},
@@ -965,6 +1000,12 @@
 %
 %  <a name="algorithm"><H3><center>Algorithm design and analysis</center></H3>
 %
+@unpublished{Adams-02, 
+  author =   {Adams, M. F.  and Brezina, M. and Hu, J. J.  and Tuminaro, R. S.}, 
+  title =   {Parallel multigrid smoothing: polynomial versus {G}auss-{S}eidel}, 
+  note =   {Submitted to JCP},
+  URL = {http://www.cs.berkeley.edu/~madams/poly.ps}
+} 
 @PhdThesis{Els01,
   author =       {Ulrich Elsner},
   title =        {Static and Dynamic Graph Partitioning. A comparative study of existing algorithms},
@@ -1154,16 +1195,4 @@
       PUBLISHER="Cambridge University Press",
       origin = mcs,
       url="http://www.mcs.anl.gov/\~{ }bsmith/ddbook.html"
-      }
-%
-%  <a name="users"></a><H3><center>Sample Users and Their Activities</center></H3>
-%
-%
-@unpublished{rob1,
-     Author="Rob Kunz",
-     Institution="Computational Mechanics Division, Applied Research Laboratory, The Pennsylvania State University",
-     URL="http://www.arl.psu.edu/areas/compmech/compmech.html",
-     sponsors="U.S. Navy, NRC",
-     note="Using the PETSc and hypre linear solvers to solve pressure equations in CFD simulations, including
-           lake warming by power plants"
 }

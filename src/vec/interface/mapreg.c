@@ -25,7 +25,7 @@ PetscTruth PetscMapSerializeRegisterAllCalled = PETSC_FALSE;
                        of available methods (for instance, mpi)
 
   Notes:
-  See "petsc/include/vec.h" for available vector types (for instance, MAPMPI).
+  See "petsc/include/vec.h" for available vector types (for instance, MAP_MPI).
 
   Level: intermediate
 
