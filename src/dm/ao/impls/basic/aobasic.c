@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.44 1996/03/19 21:22:39 bsmith Exp $";
+static char vcid[] = "$Id: aodebug.c,v 1.2 1996/07/01 14:43:05 bsmith Exp curfman $";
 #endif
 
 /*
@@ -91,6 +91,9 @@ static struct _AOOps myops = {AOPetscToApplication_Debug,
    Output Parameter:
 .  aoout - the new application ordering
 
+   Options Database Keys:
+$   -ao_view : call AOView() at the conclusion of AOCreateDebug()
+
 .keywords: AO, create
 
 .seealso: AOCreateBasic(), AOCreateDebugIS(), AODestroy()
@@ -99,7 +102,7 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 {
   AO_Debug  *aodebug;
   AO        ao;
-  int       *lens,size,rank,N,i;
+  int       *lens,size,rank,N,i,flg1,ierr;
   int       *allpetsc,*allapp,*disp,ip,ia;
 
   *aoout = 0;
@@ -151,6 +154,9 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
     aodebug->app[i]--;
     aodebug->petsc[i]--;
   }
+
+  ierr = OptionsHasName(PETSC_NULL,"-ao_view",&flg1); CHKERRQ(ierr);
+  if (flg1) {ierr = AOView(ao,STDOUT_VIEWER_SELF); CHKERRQ(ierr);}
 
   *aoout = ao; return 0;
 }
