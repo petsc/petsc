@@ -195,7 +195,7 @@ runex3_2:
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \
 	   $(RM) -f ex3_2.tmp
 runex4:
-	-@$(MPIRUN) ex4 -ksp_smonitor -m 5 > ex4_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex4 -ksp_smonitor -m 5 -pc_type jacobi > ex4_1.tmp 2>&1;\
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   $(RM) -f ex4_1.tmp
@@ -326,7 +326,8 @@ runex17:
 	   $(RM) -f ex17_1.tmp
 runex19:
 	-@$(MPIRUN) ex19 -t 2 -pc_type jacobi -ksp_smonitor -ksp_type gmres \
-	   -s2_ksp_type bcgs -s2_ksp_smonitor > ex19_1.tmp 2>&1; \
+	   -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_smonitor \
+           > ex19_1.tmp 2>&1; \
 	   if (diff output/ex19_1.out ex19_1.tmp) then true; \
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   $(RM) -f ex19_1.tmp
