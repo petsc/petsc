@@ -104,8 +104,8 @@
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,-4,          &
-     &     -4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL_INTEGER,                   &
+      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,            &
+     &     -4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL_INTEGER,                &
      &     PETSC_NULL_INTEGER,da,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
