@@ -88,7 +88,7 @@ class Configure(config.base.Configure):
     found   = self.libraries.check(lib,func)
     self.framework.argDB['LIBS'] = oldLibs
     if found:
-      self.framework.log.write('Found functional '+libfile+' in '+lib[0]+'\n')
+      self.framework.log.write('Found function '+func+' in '+str(lib)+'\n')
     return found
   
   def configureLibrary(self):
