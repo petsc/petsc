@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.95 1996/11/07 15:11:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.96 1996/11/07 18:58:01 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1265,7 +1265,9 @@ $ SNES_UNCONSTRAINED_MINIMIZATION methods:
 $    norm - 2-norm gradient value (may be estimated)
 
    Notes: 
-   Several different monitor routines may be set and all will be called.
+   Several different monitoring routines may be set by calling
+   SNESSetMonitor() multiple times; all will be called in the 
+   order in which they were set.
 
 .keywords: SNES, nonlinear, set, monitor
 
