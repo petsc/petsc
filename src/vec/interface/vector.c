@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.197 2000/03/29 04:33:03 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.198 2000/04/05 03:52:56 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1756,89 +1756,6 @@ int VecRestoreArray(Vec x,Scalar *a[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecGetArray2d"
-/*@C
-   VecGetArray2d - Returns a pointer to a 2d contiguous array that contains this 
-   processor's portion of the vector data.  You MUST call VecRestoreArray2d() 
-   when you no longer need access to the array.
-
-   Not Collective
-
-   Input Parameter:
-+  x - the vector
-.  m - first dimension of two dimensional array
--  n - second dimension of two dimensional array
-
-   Output Parameter:
-.  a - location to put pointer to the array
-
-   Level: beginner
-
-   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
-
-.keywords: vector, get, array
-
-.seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
-          VecRestoreArray2d()
-@*/
-int VecGetArray2d(Vec x,int m,int n,Scalar **a[])
-{
-  int    i,ierr,N;
-  Scalar *aa;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscValidPointer(a);
-  PetscValidType(x);
-  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m*n != N) SETERRQ3(1,1,"Local array size %d does not match 2d array dimensions %d by %d",N,m,n);
-  ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
-
-  *a = (Scalar **) PetscMalloc(m*sizeof(Scalar*));CHKPTRQ(*a);
-  for (i=0; i<m; i++) (*a)[i] = aa + i*n;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "VecRestoreArray2d"
-/*@C
-   VecRestoreArray2d - Restores a vector after VecGetArray2d() has been called.
-
-   Not Collective
-
-   Input Parameters:
-+  x - the vector
-.  m - first dimension of two dimensional array
-.  n - second dimension of the two dimensional array
--  a - location of pointer to array obtained from VecGetArray2d()
-
-   Level: beginner
-
-   Notes:
-   For regular PETSc vectors this routine does not involve any copies. For
-   any special vectors that do not store local vector data in a contiguous
-   array, this routine will copy the data back into the underlying 
-   vector data structure from the array obtained with VecGetArray().
-
-   This routine actually zeros out the a pointer. 
-
-.keywords: vector, restore, array
-
-.seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
-          VecGetArray2d()
-@*/
-int VecRestoreArray2d(Vec x,int m,int n,Scalar **a[])
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscValidType(x);
-  ierr = PetscFree(*a);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "VecView"
@@ -2508,3 +2425,187 @@ int VecStashView(Vec v,Viewer viewer)
   ierr = ViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
+
+#undef __FUNC__  
+#define __FUNC__ "VecGetArray2d"
+/*@C
+   VecGetArray2d - Returns a pointer to a 2d contiguous array that contains this 
+   processor's portion of the vector data.  You MUST call VecRestoreArray2d() 
+   when you no longer need access to the array.
+
+   Not Collective
+
+   Input Parameter:
++  x - the vector
+.  m - first dimension of two dimensional array
+.  n - second dimension of two dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+-  nstart - first index in the second coordinate direction (often 0)
+
+   Output Parameter:
+.  a - location to put pointer to the array
+
+   Level: beginner
+
+  Notes:
+   For a vector obtained from DACreateLocalVector() mstart and nstart are likely
+   obtained from the corner indices obtained from DAGetGhostCorners() while for
+   DACreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
+   the arguments from DAGet[Ghost}Corners() are reversed in the call to VecGetArray2d().
+   
+   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+
+.keywords: vector, get, array
+
+.seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
+          VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+@*/
+int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
+{
+  int    i,ierr,N;
+  Scalar *aa;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidPointer(a);
+  PetscValidType(x);
+  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  if (m*n != N) SETERRQ3(1,1,"Local array size %d does not match 2d array dimensions %d by %d",N,m,n);
+  ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
+
+  *a = (Scalar **) PetscMalloc(m*sizeof(Scalar*));CHKPTRQ(*a);
+  for (i=0; i<m; i++) (*a)[i] = aa + i*n -nstart;
+  *a -= mstart;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecRestoreArray2d"
+/*@C
+   VecRestoreArray2d - Restores a vector after VecGetArray2d() has been called.
+
+   Not Collective
+
+   Input Parameters:
++  x - the vector
+.  m - first dimension of two dimensional array
+.  n - second dimension of the two dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+.  nstart - first index in the second coordinate direction (often 0)
+-  a - location of pointer to array obtained from VecGetArray2d()
+
+   Level: beginner
+
+   Notes:
+   For regular PETSc vectors this routine does not involve any copies. For
+   any special vectors that do not store local vector data in a contiguous
+   array, this routine will copy the data back into the underlying 
+   vector data structure from the array obtained with VecGetArray().
+
+   This routine actually zeros out the a pointer. 
+
+.keywords: vector, restore, array
+
+.seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
+          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
+          VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+@*/
+int VecRestoreArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidType(x);
+  ierr = PetscFree(*a + mstart);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecGetArray1d"
+/*@C
+   VecGetArray1d - Returns a pointer to a 1d contiguous array that contains this 
+   processor's portion of the vector data.  You MUST call VecRestoreArray1d() 
+   when you no longer need access to the array.
+
+   Not Collective
+
+   Input Parameter:
++  x - the vector
+.  m - first dimension of two dimensional array
+-  mstart - first index you will use in first coordinate direction (often 0)
+
+   Output Parameter:
+.  a - location to put pointer to the array
+
+   Level: beginner
+
+  Notes:
+   For a vector obtained from DACreateLocalVector() mstart are likely
+   obtained from the corner indices obtained from DAGetGhostCorners() while for
+   DACreateGlobalVector() they are the corner indices from DAGetCorners(). 
+   
+   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+
+.keywords: vector, get, array
+
+.seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
+          VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecGetarray2d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+@*/
+int VecGetArray1d(Vec x,int m,int mstart,Scalar *a[])
+{
+  int ierr,N;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidPointer(a);
+  PetscValidType(x);
+  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  if (m != N) SETERRQ2(1,1,"Local array size %d does not match 1d array dimensions %d",N,m);
+  ierr = VecGetArray(x,a);CHKERRQ(ierr);
+  *a  -= mstart;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecRestoreArray1d"
+/*@C
+   VecRestoreArray1d - Restores a vector after VecGetArray1d() has been called.
+
+   Not Collective
+
+   Input Parameters:
++  x - the vector
+.  m - first dimension of two dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+-  a - location of pointer to array obtained from VecGetArray21()
+
+   Level: beginner
+
+   Notes:
+   For regular PETSc vectors this routine does not involve any copies. For
+   any special vectors that do not store local vector data in a contiguous
+   array, this routine will copy the data back into the underlying 
+   vector data structure from the array obtained with VecGetArray1d().
+
+   This routine actually zeros out the a pointer. 
+
+.keywords: vector, restore, array
+
+.seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
+          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
+          VecGetarray1d(), VecRestoreArray2d(), VecGetArray4d(), VecRestoreArray4d()
+@*/
+int VecRestoreArray1d(Vec x,int m,int mstart,Scalar *a[])
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidType(x);
+  ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
