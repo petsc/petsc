@@ -1,2 +1,15 @@
 [STANDARD_INCLUDES]
 mpi.h
+[GENERAL]
+include = /tmp/petsc/bmake/adicignore
+var_prefix = ad_
+[INACTIVE_TYPES]
+PLogDouble
+[FUNCTIONS_TO_IGNORE]
+perror
+gettimeofday
+getdomainname
+readlink
+__builtin_next_arg
+__builtin_saveregs
+getenv
