@@ -24,7 +24,8 @@ TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
 		  ex32.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm ex35.PETSc runex35 \
 		  ex35.rm ex37.PETSc ex37.rm ex38.PETSc ex38.rm \
 		  ex43.PETSc ex43.rm ex46.PETSc runex46 ex46.rm ex48.PETSc runex48 \
-		  ex48.rm ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm
+		  ex48.rm ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm \
+		  ex52.PETSc ex52.rm
 TESTEXAMPLES_3  = ex36.PETSc runex36 ex36.rm
 TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		  runex4 ex4.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 ex6.rm\
@@ -60,7 +61,7 @@ EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		 ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
 		 ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
 		 ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c\
-		 ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c
+		 ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c
 EXAMPLESF      = ex36.F
 
 ex1: ex1.o  chkopts
@@ -266,6 +267,11 @@ ex50: ex50.o chkopts
 ex51: ex51.o chkopts
 	-$(CLINKER) -o ex51 ex51.o $(PETSC_LIB)
 	$(RM) ex51.o
+ex52: ex52.o chkopts
+	-$(CLINKER) -o ex52 ex52.o $(PETSC_LIB)
+	$(RM) ex52.o
+
+
 
 NPROCS    = 1 3
 MATTYPES  = -mat_aij -mat_dense -mat_bdiag
