@@ -7,6 +7,7 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Support MPI 2 standard for passing communicators between C and Fortran
 
 I have been running out of memory in the setup phase of aij and baij matrices 
 and so I have hacked my PETSc to use a hash table instead of an order B->N 
