@@ -1,0 +1,74 @@
+# $Id: base_variables,v 1.5 1999/03/31 18:38:56 bsmith Exp $ 
+#
+#     See the file bmake/base_variables.defs for a complete explanation of all these fields
+#
+AR               = ar
+AR_FLAGS         = cr
+RM               = rm -f
+OMAKE            = gmake
+RANLIB           = true
+SHELL            = /bin/sh
+SED              = /usr/bin/sed
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = cc    
+C_FC             = frt -Cpp -Ss
+C_CLINKER_SLFLAG = -L
+C_FLINKER_SLFLAG = -L
+C_CLINKER        = cc -Wl,-dy,-c2,-znodefs -L${LDIR} ${DYLIBPATH} 
+C_FLINKER        = frt -Wg,-c -Wl,-dy,-c4,-znodefs -Wl,-Bstatic -L${LDIR} -Wl,-Bdynamic ${DYLIBPATH}
+C_CCV            = unknown
+C_FCV            = unknown
+C_SYS_LIB        = -Wg,-f
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g0 
+G_FOPTFLAGS      = -g0 
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -K4,vp -O
+O_FOPTFLAGS      = -O4
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = CC    
+CXX_FC           = frt -Cpp
+CXX_CLINKER      = CC -Wl,-c2 -B dynamic -L${LDIR} ${DYLIBPATH}
+CXX_FLINKER      = CC -L${LDIR} ${DYLIBPATH}
+CXX_CCV          = unknown
+CXX_SYS_LIB      = -Wg,-f
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g0  
+GCXX_FOPTFLAGS   = -g0  
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -K4,vp -O
+OCXX_FOPTFLAGS   = -O4
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g0 
+GCOMP_FOPTFLAGS  = -g0 
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -K4,vp -O
+OCOMP_FOPTFLAGS  = -O4
+# ########################### PETSc install options ###########################
+G_PETSCFLAGS     = -Wp,-UPETSC_USE_DYNAMIC_LIBRARIES,-DUSE_PETSC_DEBUG,-DUSE_PETSC_LOG,-DUSE_PETSC_BOPT_g,-DUSE_PETSC_STACK 
+G_PETSCFRTFLAGS  = -Wp,-DUSE_PETSC_DEBUG,-DUSE_PETSC_LOG,-DUSE_PETSC_BOPT_g,-DUSE_PETSC_STACK
+O_PETSCFLAGS     = -Wp,-UPETSC_USE_DYNAMIC_LIBRARIES,-DUSE_PETSC_BOPT_O,-DUSE_PETSC_LOG
+O_PETSCFRTFLAGS  = -Wp,-DUSE_PETSC_BOPT_O,-DUSE_PETSC_LOG
+GCXX_PETSCFLAGS  = -Wp,-DUSE_PETSC_DEBUG,-DUSE_PETSC_LOG,-DUSE_PETSC_BOPT_g,-DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  = -Wp,-DUSE_PETSC_LOG,-DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -Wp,-UPETSC_USE_DYNAMIC_LIBRARIES,-DUSE_PETSC_DEBUG,-DUSE_PETSC_LOG,-DUSE_PETSC_BOPT_g,-DUSE_PETSC_COMPLEX,-DUSE_FORTRAN_KERNELS,-DUSE_PETSC_STACK
+OCOMP_PETSCFLAGS = -Wp,-UPETSC_USE_DYNAMIC_LIBRARIES,-DUSE_PETSC_LOG,-DUSE_PETSC_BOPT_O,-DUSE_PETSC_COMPLEX,-DUSE_FORTRAN_KERNELS
+# ############################ Notes ############################################
+#
+#  1) use the Solaris command fpversion to get detailed compiler optimization
+#     flags regarding the cache, e.g.
+#fire>fpversion
+#Use "-xtarget=ultra2 -xcache=16/32/1:2048/64/1" code-generation option.
+#
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
+
+PARCH    = UXPV
+
+
+include ${PETSC_DIR}/bmake/common_variables
