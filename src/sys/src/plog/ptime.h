@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.60 1999/04/01 22:37:40 balay Exp balay $ */
+/* $Id: ptime.h,v 1.61 1999/04/01 22:38:41 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -141,7 +141,10 @@ EXTERN_C_END
    ASCI RED machine has a fast clock accessiable through dclock() 
 */
 #elif defined (USE_DCLOCK)
+EXTERN_C_BEGIN
 extern PLogDouble dclock();
+EXTERN_C_BEGIN
+
 #define PetscTime(v)         (v)=dclock();
 
 #define PetscTimeSubtract(v) (v)-=dclock();
