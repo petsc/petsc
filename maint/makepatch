@@ -59,8 +59,6 @@ for arg in "$@" ; do
 	;;
     esac
 done
-dir=`pwd | sed -e 's%^.*/petsc/%%g' -e 's%^.*/petsc$%%g'`
-if [ -z "$dir" ] ; then dir="." ; fi
 
 if [ -z "$VER" ] ; then
     echo "insufficient arguments. specify VER=version or try -help"
@@ -77,8 +75,8 @@ for file in $basefile ; do
          touch $file
     fi
 
-    if [ -r $rootdir/petsc/$dir/$file ] ; then
-          diff -c4 $rootdir/petsc/$dir/$file $file | sed "s%$rootdir/%.%g" >>\
+    if [ -r $rootdir/petsc/$file ] ; then
+          diff -c4 $rootdir/petsc/$file $file | sed "s%$rootdir/%.%g" >>\
            petsc_patch.$VER
     else
           diff -c4 /dev/null $file | sed "s%$rootdir/%.%g" >>\
