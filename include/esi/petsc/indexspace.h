@@ -14,7 +14,7 @@ namespace esi{namespace petsc{
 
 /**=========================================================================**/
 template<class Ordinal> 
-class IndexSpace : public virtual esi::IndexSpace<Ordinal>, public virtual esi::petsc::Object
+class IndexSpace : public virtual esi::IndexSpace<Ordinal>, public esi::petsc::Object
 {
   public:
 
@@ -31,7 +31,7 @@ class IndexSpace : public virtual esi::IndexSpace<Ordinal>, public virtual esi::
     IndexSpace(MPI_Comm comm, int n, int N);
 
     // destructor.
-    virtual ~IndexSpace();
+    virtual ~IndexSpace(void);
 
     //  Interface for esi::Object  ---------------
 

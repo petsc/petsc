@@ -4219,7 +4219,84 @@ or \findex{TSPseudoSetTimeStepIncrement()} the option
 \chapter{High Level Support for Multigrid with DMMG}
 \label{chapter:dmmg}
 
+PETSc provides a easy to use high-level interface for multigrid on a single structured grid using
+the PETSc DA object (or the VecPack object) to decompose the grid across the processors.  This DMMG
+code \findex{DMMG} is built on top of the lower level PETSc multigrid interface provided in the \trl{PCType} of MG,
+see Section \ref{sec:mg}. Currently we only provide piecewise linear and piecewise constant interpolation,
+but can add more if needed. The current DMMG routines only provide linear multigrid but they can be used
+easily with either SLES (for linear problems) or SNES (for nonlinear problems). 
+
+For linear problems the examples \trl{src/sles/examples/tutorials/ex22.c} and \trl{ex25.c} can be used
+to guide your development. We give a short summary here.
+\begin{verse}
+  DMMG        *dmmg;\\
+  DA          da;\\
+
+  /* Create the DA that stores information about the coarsest grid you wish to use */\\
+  ierr = DACreate3d(PETSC\_COMM\_WORLD,DA\_NONPERIODIC,DA\_STENCIL\_STAR,3,3,3,PETSC\_DECIDE,PETSC\_DECIDE,PETSC\_DECIDE,1,1,0,0,0,\&da);CHKERRQ(ierr);  \\
+
+  /* Create the DMMG data structure \\
+       - the second argument indicates the number of levels you wish to use and \\
+         can be changed with the option -dmmg\_nlevels \\
+  ierr = DMMGCreate(PETSC\_COMM\_WORLD,3,PETSC\_NULL,\&dmmg);CHKERRQ(ierr);\\
+
+  /*  Tell the DMMG object to use the da to define the coarsest grid\\
+  ierr = DMMGSetDM(dmmg,(DM)da);\\
+
+  /*  Tell the DMMG we are solving a linear problem (hence SLES) and provide the callback function to \\
+      compute the right hand side and matrices for each level\\
+  ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);\\
+
+  /*  Solve the problem */\\
+  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);\\
+
+  /*  One can access the solution with \\
+  DMMGGetx(dmmg)\\
+
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);\\
+  ierr = DADestroy(da);CHKERRQ(ierr);\\
+\end{verse}
+\findex{DMMGCreate()} \findex{DMMGSolve()} \findex{DMMGGetx()} \findex{DMMGDestroy()} \findex{DMMGSetDM()} \findex{DMMGSetDA()
+The option \trl{-dmmg\_ksp\_monitor} \findex{-dmmg_ksp_monitor} 
+ causes the DMMG code to print the residual norms for each level of the solver to the screen so that
+the coarse the grid the more indented the print out. The option \trl{-dmmg\_grid\_sequence} \findex{-dmmg_grid_sequence} causes the 
+DMMG solve to use grid sequencing to generate the initial guess by solving the same problem on the previous coarser grid; this often
+results in a much faster time to solution.
+
+DMMG has many other options one can view by running the DMMG program with the option \trl{-help}.
+
+For nonlinear problems one replaces the \trl{DMMGSetSLES()} with 
+\begin{verse}
+  DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
+\end{verse}
+or the prefered approach
+\begin{verse}
+  DMMGSetSNESLocal(DMMG *dmmg,int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),
+     int (*localjacobian)(DALocalInfo *,void *x,Mat J,void *appctx),ad_function,ad_mf_function);
+\end{verse}
+The \trl{ad_function} and \trl{ad_mf_function} are described in the next chapter. \findex{DMMGSetSNES()} \findex{DMMGSetSNESLocal()}
+See examples \trl{src/snes/examples/tutorials/ex18.c} and \trl{ex19.c} for complete details.
+
+The \trl{localfunction} \trl{x} and \trl{f} arguments are for scalar problems (problems with one degree of freedom per node)
+simply multi-dimensional arrays of double precision (or complex) numbers (according to the dimension of the grid) that should be 
+index using {\em global} i, j, k indices on the entire grid. For multi-component problems you must create a C struct with an
+entry for each component and the \trl{x} and \trl{f} arguments are appropriately dimensioned arrays of that struct.
+
+For many nonlinear problems it is too difficult to compute the Jacobian analytically, thus by default the \trl{DMMG} will compute the sparse 
+Jacobian reasonably efficiently automatically using dinite differencing. See the next chapter on computing the Jacobian via 
+automatic differentiation. The option \trl{-dmmg\_jacobian\_mf\_fd} causes the code to not compute the Jacobian explicitly but rather
+to use differences to apply the matrix vector product of the Jacobian.
+
+The option \trl{-dmmg\_snes\_monitor} \findex{-dmmg_snes_monitor} can be used to monitor the progress of the nonlinear solver.
+
+
 \chapter{Using ADIC and ADIFOR with PETSc}
+
+Automatic differentiation is an incredible technique to generate code that computes Jacobians and other differentives directly from code
+that only evaluates the function. For structured grid problems, via the DMMG interface, \ref{chapter:ddmg}, PETSc provides a way
+to use ADIFOR and ADIC to compute the sparse Jacobians or perform matrix free vector products with them. See \trl{src/snes/examples/tutorials/ex18.c} 
+and \trl{ex5f.F} for example usage.
+
 
 \section{Work arrays inside the local functions} In C you can call \trl{DAGetArray()} to get 
 work arrays (this is low overhead). In Fortran you can provide a \trl{FormFunctionLocal()}

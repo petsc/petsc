@@ -17,12 +17,12 @@ namespace esi{namespace petsc{
 
 /**=========================================================================**/
 template<class Scalar,class Ordinal>
-  class Vector : public virtual esi::VectorReplaceAccess<Scalar,Ordinal>, public virtual esi::petsc::Object
+  class Vector : public virtual esi::VectorReplaceAccess<Scalar,Ordinal>, public esi::petsc::Object
 {
   public:
 
     // Destructor.
-    virtual ~Vector();
+    virtual ~Vector(void);
 
     // Construct a Vector from a IndexSpace.
     Vector(  esi::IndexSpace<Ordinal> *source);

@@ -72,3 +72,5 @@ void esi::petsc::Object::setServices(gov::cca::Services *)
   ;
 }
 #endif
+
+::esi::petsc::Object OInstForIntel64CompilerBug;

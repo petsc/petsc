@@ -15,7 +15,7 @@ namespace esi{namespace petsc{
 /**=========================================================================**/
 template<class Scalar,class Ordinal>
 class Preconditioner : public virtual esi::Preconditioner<Scalar,Ordinal>,
-                       public virtual esi::petsc::Object
+                       public         esi::petsc::Object
 {
   public:
 

@@ -1941,7 +1941,7 @@ int DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec v,Vec f,void *w)
 
    Input Parameter:
 +  da - initial distributed array
-.  ctype - DA_Q1 is currently the only supported form
+.  ctype - DA_Q1 and DA_Q0 are currently the only supported forms
 
    Level: intermediate
 
