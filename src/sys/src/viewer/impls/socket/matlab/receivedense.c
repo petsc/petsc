@@ -8,6 +8,9 @@
   Since this is called from Matlab it cannot be compiled with C++.
 */
 
+#undef __SDIR__
+#define __SDIR__ "src/sys/src/viewer/impls/socket/matlab"
+
 #include <stdio.h>
 #include "petscsys.h"
 #include "mex.h"

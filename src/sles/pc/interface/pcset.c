@@ -212,7 +212,12 @@ int PCSetFromOptions(PC pc)
         PetscLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
     preconditioners (unless defined by the user)\n");
       } else if (size == 1) {
-        def = PCILU;
+        ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQSBAIJ,&flg);CHKERRQ(ierr);
+        if (flg) {
+          def = PCICC;
+        } else {
+	  def = PCILU;
+        }
       } else {
         def = PCBJACOBI;
       }
