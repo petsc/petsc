@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.36 2000/01/11 21:02:20 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.37 2000/04/18 02:54:42 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -46,10 +46,11 @@ int main(int argc,char **args)
   char       file[2][128];     /* input file name */
   char       stagename[16]; /* names of profiling stages */
   PetscTruth table,set,flg,trans;
-  int        ierr,its,i,loops  = 2;
+  int        ierr,its;
   double     norm;
   PLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   Scalar     zero = 0.0,none = -1.0;
+  PetscTruth preload = PETSC_TRUE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -67,7 +68,7 @@ int main(int argc,char **args)
     ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
     if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 or -f option");
     ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRA(ierr);
-    if (!flg) {loops = 1;} /* don't bother with second system */
+    if (!flg) {preload = PETSC_FALSE;} /* don't bother with second system */
   }
 
   /* -----------------------------------------------------------
@@ -82,25 +83,17 @@ int main(int argc,char **args)
         -log_summary) can be done with the larger one (that actually
         is the system of interest). 
   */
-  for (i=0; i<loops; i++) {
+  PreLoadBegin(preload,"Load system");
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
-                           Load system i
+                           Load system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-    /*
-       Begin profiling next stage
-    */
-    ierr = PetscBarrier(PETSC_NULL);CHKERRA(ierr);
-    PLogStagePush(PETSC_DETERMINE);
-    sprintf(stagename,"Load System %d",i);
-    PLogStageRegister(PETSC_DETERMINE,stagename);
 
     /* 
        Open binary file.  Note that we use BINARY_RDONLY to indicate
        reading from this file.
     */
-    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[i],BINARY_RDONLY,&fd);CHKERRA(ierr);
+    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],BINARY_RDONLY,&fd);CHKERRA(ierr);
 
     /* 
        Determine matrix format to be used (specified at runtime).
@@ -145,17 +138,13 @@ int main(int argc,char **args)
     ierr = VecSet(&zero,x);CHKERRA(ierr);
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
-                      Setup solve for system i
+                      Setup solve for system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /*
        Conclude profiling last stage; begin profiling next stage.
     */
-    PLogStagePop();
-    ierr = PetscBarrier(PETSC_NULL);CHKERRA(ierr);
-    PLogStagePush(PETSC_DETERMINE);
-    sprintf(stagename,"SLESSetUp %d",i);
-    PLogStageRegister(PETSC_DETERMINE,stagename);
+    PreLoadStage("SLESSetUp");
 
     /*
        We also explicitly time this stage via PetscGetTime()
@@ -180,22 +169,15 @@ int main(int argc,char **args)
     ierr = PetscGetTime(&tsetup2);CHKERRA(ierr);
     tsetup = tsetup2 - tsetup1;
 
-    /*
-       Conclude profiling this stage
-    */
-    PLogStagePop();
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
-                           Solve system i
+                           Solve system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /*
        Begin profiling next stage
     */
-    ierr = PetscBarrier(PETSC_NULL);CHKERRA(ierr);
-    PLogStagePush(PETSC_DETERMINE);
-    sprintf(stagename,"SLESSolve %d",i);
-    PLogStageRegister(PETSC_DETERMINE,stagename);
+    PreLoadStage("SLESSolve");
 
     /*
        Solve linear system; we also explicitly time this stage.
@@ -212,11 +194,10 @@ int main(int argc,char **args)
    /* 
        Conclude profiling this stage
     */
-    PLogStagePop();
+    PreLoadStage("Cleanup");
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
             Check error, print output, free data structures.
-            This stage is not profiled separately.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /* 
@@ -245,7 +226,7 @@ int main(int argc,char **args)
       */
       ierr = ViewerStringOpen(PETSC_COMM_WORLD,slesinfo,120,&viewer);CHKERRA(ierr);
       ierr = SLESView(sles,viewer);CHKERRA(ierr);
-      ierr = PetscStrrchr(file[i],'/',&matrixname);CHKERRA(ierr);
+      ierr = PetscStrrchr(file[PreLoadIt],'/',&matrixname);CHKERRA(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
                 matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);CHKERRQ(ierr);
 
@@ -264,7 +245,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(A);CHKERRA(ierr); ierr = VecDestroy(b);CHKERRA(ierr);
     ierr = VecDestroy(u);CHKERRA(ierr); ierr = VecDestroy(x);CHKERRA(ierr);
     ierr = SLESDestroy(sles);CHKERRA(ierr); 
-  }
+  PreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop
      ----------------------------------------------------------- */
