@@ -961,7 +961,7 @@
      &                irank,nvertices)
 #endif  
       implicit none      
-#include "include/finclude/petscdef.h"
+#include "include/finclude/petsc.h"
       PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       PetscScalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
@@ -1094,7 +1094,9 @@
      &         fun3d_class,ierr)         
           flag = 1
        endif
-       call PetscLogEventBegin(flux_event,0,0,0,0,ierr)
+       call PetscLogEventBegin(flux_event,PETSC_NULL_OBJECT,            &
+     &                         PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,     &
+     &                         PETSC_NULL_OBJECT,ierr)
        flops = 0
        second = 1.0d0
 !      if(ntt.le.nitfo)second = 0.0
@@ -1422,7 +1424,9 @@
 #else
 #endif
       call PetscLogFlops(flops,ierr)
-      call PetscLogEventEnd(flux_event,0,0,0,0,ierr)
+      call PetscLogEventEnd(flux_event,PETSC_NULL_OBJECT,               &
+     &                      PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,        &
+     &                      PETSC_NULL_OBJECT,ierr)
 !     c68 = 6./8.
 !     c18 = 1./8.
       c68 = 0.75d0
