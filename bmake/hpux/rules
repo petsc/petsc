@@ -1,7 +1,9 @@
 #
 #   The name of the C compiler to use
 #
-CC       = cc -DPARCH_hpux -Aa +z
+CC       = cc -DPARCH_hpux -Aa
+# If Shared libraries are be ing build use the following
+#CC       = cc -DPARCH_hpux -Aa +z
 #
 #   Fortran compiler to use
 #
@@ -70,3 +72,7 @@ shared: chkopts_basic
 	done ;\
 	cd ../ ; \
 	$(RM) -rf tmp 
+
+
+
+
