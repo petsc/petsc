@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.95 1999/01/12 23:14:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.96 1999/03/17 23:21:27 bsmith Exp bsmith $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -49,7 +49,8 @@ $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess
    Fortran Note:
    This routine is not supported in Fortran.
 
-.seealso: PetscPopErrorHandler()
+.seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
+
 @*/
 int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,void*),void *ctx )
 {
