@@ -13,12 +13,12 @@
 +  a - the scalar multiplier
 .  X - the first matrix
 .  Y - the second matrix
--  str - either SAME_NONZERO_PATTERN or DIFFERENT_NONZERO_PATTERN
+-  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN
 
    Contributed by: Matthew Knepley
 
    Notes:
-     Will only be efficient if one has the SAME_NONZERO_PATTERN
+     Will only be efficient if one has the SAME_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN
 
    Level: intermediate
 
