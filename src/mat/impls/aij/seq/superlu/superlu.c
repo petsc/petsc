@@ -7,7 +7,6 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 
-#if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
 EXTERN_C_BEGIN
 #if defined(PETSC_USE_COMPLEX)
 #include "zsp_defs.h"
@@ -24,6 +23,14 @@ typedef struct {
   NCformat     *store;
   MatStructure flg;
   PetscTruth   SuperluMatOdering;
+
+  /* A few function pointers for inheritance */
+  int (*MatView)(Mat,PetscViewer);
+  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  int (*MatDestroy)(Mat);
+
+  /* Flag to clean up (non-global) SuperLU objects during Destroy */
+  PetscTruth CleanUpSuperLU;
 } Mat_SeqAIJ_SuperLU;
 
 
@@ -34,9 +41,11 @@ extern int MatDestroy_SeqAIJ(Mat);
 int MatDestroy_SeqAIJ_SuperLU(Mat A)
 {
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
-  int                ierr;
+  
+  int                ierr,(*destroy)(Mat);
 
   PetscFunctionBegin;
+  /* It looks like this is decreasing the reference count a second time during MatDestroy?! */
   if (--A->refct > 0)PetscFunctionReturn(0);
   /* We have to free the global data or SuperLU crashes (sucky design)*/
   /* Since we don't know if more solves on other matrices may be done
@@ -45,15 +54,53 @@ int MatDestroy_SeqAIJ_SuperLU(Mat A)
   */
 
   /* Free the SuperLU datastructures */
-  Destroy_CompCol_Permuted(&lu->AC);
-  Destroy_SuperNode_Matrix(&lu->L);
-  Destroy_CompCol_Matrix(&lu->U);
-  ierr = PetscFree(lu->B.Store);CHKERRQ(ierr);
-  ierr = PetscFree(lu->A.Store);CHKERRQ(ierr);
-  ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
-  ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
+  if (lu->CleanUpSuperLU) {
+    Destroy_CompCol_Permuted(&lu->AC);
+    Destroy_SuperNode_Matrix(&lu->L);
+    Destroy_CompCol_Matrix(&lu->U);
+    ierr = PetscFree(lu->B.Store);CHKERRQ(ierr);
+    ierr = PetscFree(lu->A.Store);CHKERRQ(ierr);
+    ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
+    ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
+  }
+
+  destroy = lu->MatDestroy;
   ierr = PetscFree(lu);CHKERRQ(ierr);
-  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  ierr = (*destroy)(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatView_SeqAIJ_Spooles"
+int MatView_SeqAIJ_SuperLU(Mat A,PetscViewer viewer)
+{
+  int                   ierr;
+  PetscTruth            isascii;
+  PetscViewerFormat     format;
+  Mat_SeqAIJ_SuperLU   *lu=(Mat_SeqAIJ_SuperLU*)(A->spptr);
+
+  PetscFunctionBegin;
+  ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+      ierr = MatSeqAIJFactorInfo_SuperLU(A,viewer);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_SeqAIJ_SuperLU"
+int MatAssemblyEnd_SeqAIJ_SuperLU(Mat A,MatAssemblyType mode) {
+  int                ierr;
+  Mat_SeqAIJ_SuperLU *lu=(Mat_SeqAIJ_SuperLU*)(A->spptr);
+
+  PetscFunctionBegin;
+  ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+  ierr = MatUseSuperLU_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -282,7 +329,8 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   lu->pivot_threshold = info->dtcol; 
   PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SeqAIJ_SuperLU));
 
-  lu->flg = DIFFERENT_NONZERO_PATTERN;
+  lu->flg            = DIFFERENT_NONZERO_PATTERN;
+  lu->CleanUpsuperLU = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -295,7 +343,7 @@ int MatUseSuperLU_SeqAIJ(Mat A)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);  
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);
+  ierr = PetscTypeCompare((PetscObject)A,MATSUPERLU,&flg);
   if (!flg) PetscFunctionReturn(0);
 
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_SuperLU;
@@ -320,14 +368,26 @@ int MatSeqAIJFactorInfo_SuperLU(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#else
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_SeqAIJ_SuperLU"
+int MatCreate_SeqAIJ_SuperLU(Mat A) {
+  int                ierr;
+  Mat_SeqAIJ_SuperLU *lu;
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseSuperLU_SeqAIJ"
-int MatUseSuperLU_SeqAIJ(Mat A)
-{
   PetscFunctionBegin;
+  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatUseSuperLU_SeqAIJ(A);CHKERRQ(ierr);
+
+  ierr                = PetscNew(Mat_SeqAIJ_SuperLU,&lu);CHKERRQ(ierr);
+  lu->MatView         = A->ops->view;
+  lu->MatAssemblyEnd  = A->ops->assemblyend;
+  lu->MatDestroy      = A->ops->destroy;
+  lu->CleanUpSuperLU  = PETSC_FALSE;
+  A->spptr            = (void*)lu;
+  A->ops->view        = MatView_SeqAIJ_SuperLU;
+  A->ops->assemblyend = MatAssemblyEnd_SeqAIJ_SuperLU;
+  A->ops->destroy     = MatDestroy_SeqAIJ_SuperLU;
   PetscFunctionReturn(0);
 }
-
-#endif
+EXTERN_C_END

@@ -65,6 +65,9 @@ int MatLoadRegisterAll(char *path)
   ierr = MatLoadRegisterDynamic(MATMPIAIJSPOOLES,  path,"MatLoad_MPIAIJ",  MatLoad_MPIAIJ);CHKERRQ(ierr);
   ierr = MatLoadRegisterDynamic(MATMPISBAIJSPOOLES,path,"MatLoad_MPISBAIJ",MatLoad_MPISBAIJ);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
+  ierr = MatLoadRegisterDynamic(MATSUPERLU,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }  
 

@@ -12,7 +12,6 @@ int MatView_SeqAIJ_Spooles(Mat A,PetscViewer viewer)
   int                   ierr;
   PetscTruth            isascii;
   PetscViewerFormat     format;
-  PetscObjectContainer  container;
   Mat_Spooles           *lu=(Mat_Spooles*)(A->spptr);
 
   PetscFunctionBegin;

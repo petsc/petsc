@@ -28,6 +28,9 @@ EXTERN int MatCreate_SeqSBAIJ_Spooles(Mat);
 EXTERN int MatCreate_MPIAIJ_Spooles(Mat);
 EXTERN int MatCreate_MPISBAIJ_Spooles(Mat);
 #endif
+#if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
+EXTERN int MatCreate_SuperLU(Mat);
+#endif
 EXTERN_C_END
   
 /*
@@ -91,6 +94,9 @@ int MatRegisterAll(char *path)
   ierr = MatRegisterDynamic(MATSEQSBAIJSPOOLES,path,"MatCreate_SeqSBAIJ_Spooles",MatCreate_SeqSBAIJ_Spooles);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPIAIJSPOOLES,  path,"MatCreate_MPIAIJ_Spooles",  MatCreate_MPIAIJ_Spooles);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPISBAIJSPOOLES,path,"MatCreate_MPISBAIJ_Spooles",MatCreate_MPISBAIJ_Spooles);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
+  ierr = MatRegisterDynamic(MATSUPERLU,path,"MatCreate_SeqAIJ_SuperLU",MatCreate_SeqAIJ_SuperLU);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

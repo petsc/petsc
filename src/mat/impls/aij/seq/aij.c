@@ -287,7 +287,6 @@ int MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern int MatSeqAIJFactorInfo_SuperLU(Mat,PetscViewer);
 extern int MatMPIAIJFactorInfo_SuperLu(Mat,PetscViewer);
 extern int MatSeqAIJFactorInfo_UMFPACK(Mat,PetscViewer);
 extern int MatSeqAIJFactorInfo_Matlab(Mat,PetscViewer);
@@ -337,9 +336,6 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-#if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE) 
-     ierr = MatSeqAIJFactorInfo_SuperLU(A,viewer);CHKERRQ(ierr);
-#endif
 #if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
      ierr = MatMPIAIJFactorInfo_SuperLu(A,viewer);CHKERRQ(ierr);
 #endif
@@ -2712,11 +2708,6 @@ int MatCreate_SeqAIJ(Mat B)
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_SUPERLU)
-  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_superlu",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = MatUseSuperLU_SeqAIJ(B);CHKERRQ(ierr); }
-#endif
-
   ierr = PetscOptionsHasName(B->prefix,"-mat_aij_essl",&flg);CHKERRQ(ierr);
   if (flg) { ierr = MatUseEssl_SeqAIJ(B);CHKERRQ(ierr); }
   ierr = PetscOptionsHasName(B->prefix,"-mat_aij_lusol",&flg);CHKERRQ(ierr);
@@ -2863,7 +2854,7 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
   Mat          B;
   int          i,nz,ierr,fd,header[4],size,*rowlengths = 0,M,N;
   MPI_Comm     comm;
-#if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_UMFPACK) || defined(PETSC_HAVE_MUMPS)
+#if defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_UMFPACK) || defined(PETSC_HAVE_MUMPS)
   PetscTruth   flag;
 #endif
   
@@ -2906,10 +2897,6 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SUPERLU)
-  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_superlu",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseSuperLU_SeqAIJ(B);CHKERRQ(ierr); }
-#endif 
 #if defined(PETSC_HAVE_SUPERLUDIST)
   ierr = PetscOptionsHasName(B->prefix,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSuperLU_DIST_MPIAIJ(B);CHKERRQ(ierr); }

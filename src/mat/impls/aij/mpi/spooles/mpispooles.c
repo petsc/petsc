@@ -31,8 +31,8 @@ int MatDestroy_MPIAIJ_Spooles(Mat A)
     SubMtxManager_free(lu->mtxmanager) ;    
     DenseMtx_free(lu->mtxX) ;
     DenseMtx_free(lu->mtxY) ;
+    ierr = MPI_Comm_free(&(lu->comm_spooles));CHKERRQ(ierr);
   }
-  ierr = MPI_Comm_free(&(lu->comm_spooles));CHKERRQ(ierr);
   if ( lu->scat ){
     ierr = VecDestroy(lu->vec_spooles);CHKERRQ(ierr); 
     ierr = ISDestroy(lu->iden);CHKERRQ(ierr); 
