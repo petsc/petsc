@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.3 1998/03/23 22:15:35 balay Exp balay $ 
+# $Id: base.site,v 1.4 1998/04/07 18:48:55 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -47,7 +47,7 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
 #
 # Optional Matlab location
 #
-#MATLAB_LIB     = /usr/local/matlab/extern/lib/linux/libmex.a
+#MATLAB_LIB     = /usr/local/matlab/extern/lib/solaris/libmex.a
 #MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
 #CMEX           = /usr/local/bin/cmex 
 #
@@ -60,7 +60,7 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
 #PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
-#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/linux/libpvode.a
+#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/solaris/libpvode.a
 #
 # Optional location of ParMetis
 #
