@@ -1,4 +1,4 @@
-# $Id: base,v 1.41 1998/06/26 20:19:27 balay Exp $ 
+# $Id: base,v 1.1 1998/07/01 20:19:24 balay Exp balay $ 
 
 PARCH    = solaris
 #
@@ -12,15 +12,14 @@ CC       = cc -KPIC -dalign -xtarget=native
 #
 CCV      = ${CC} -V -c
 #
-#FC       = f90 -xpp=cpp
-FC       = f77
+FC       = f90 -xpp=cpp
 AR       = ar
 RM       = rm -f
 OMAKE    = make
 RANLIB   = true
 SHELL    = /bin/sh
 CLINKER  = cc ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
-FLINKER  = f77 ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
+FLINKER  = f90 ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
 
 SYS_LIB  = -lnsl -lsocket -lgen
 

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.30 1998/06/25 23:12:11 balay Exp $ 
+# $Id: base.site,v 1.1 1998/07/01 20:19:29 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -56,8 +56,8 @@ MPE_INCLUDE   = -I/home/petsc/mpich/mpe
 #
 # Optional location of BlockSolve (MPI version)
 #
-BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
+BS_INCLUDE =
+BS_LIB     =
 #
 # Optional Matlab location
 #
@@ -65,9 +65,9 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
 #MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
 #CMEX           = /usr/local/bin/cmex 
 #MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
-MATLAB_INCLUDE  = -I/software/solaris-2/com/packages/matlab-5.2/extern/include
-CMEX            = /software/solaris-2/com/packages/matlab-5.2/bin/cmex
-MCC             = cc
+MATLAB_INCLUDE  =
+CMEX            =
+MCC             =
 #
 # Option location where adiC is installed
 #
@@ -77,18 +77,18 @@ MCC             = cc
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
-PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/solaris/libpvode.a
+PVODE_INCLUDE = 
+PVODE_LIB     = 
 #
 # Optional location of ParMetis
 #
-PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
-PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis_solaris.a 
+PARMETIS_INCLUDE = 
+PARMETIS_LIB     = 
 #
 #  Optional location for ALICE Memory Snooper
 #
-AMS_INCLUDE = -I/home/bsmith/ams/src/include
-AMS_LIB     =  -L/home/bsmith/ams/lib/lib/solaris -lalicepub -lutilmt -lutil -lthread
+AMS_INCLUDE = 
+AMS_LIB     = 
 # 
 # ---------------------------------------------------------------------------------------
 #
@@ -98,7 +98,7 @@ AMS_LIB     =  -L/home/bsmith/ams/lib/lib/solaris -lalicepub -lutilmt -lutil -lt
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE -DHAVE_PVODE -DHAVE_PARMETIS -DHAVE_AMS
+PCONF         = -DHAVE_MPE 
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE 
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
                 ${AMS_LIB}
