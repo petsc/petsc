@@ -74,7 +74,8 @@ class Configure(config.base.Configure):
     '''Checks that C++ compiler supports namespaces, and if it does defines HAVE_CXX_NAMESPACE'''
     self.pushLanguage('C++')
     if self.checkCompile('namespace petsc {int dummy;}'):
-      self.addDefine('HAVE_CXX_NAMESPACE', 1)
+      if self.checkCompile('template <class dummy> struct a {};\nnamespace trouble{\ntemplate <class dummy> struct a : public ::a<dummy> {};\n}\ntrouble::a<int> uugh;\n'):
+        self.addDefine('HAVE_CXX_NAMESPACE', 1)
     self.popLanguage()
     return
 
