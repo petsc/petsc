@@ -210,7 +210,7 @@ class Configure(script.Script):
     compiler            = self.framework.getCompilerObject(self.language[-1])
     compiler.checkSetup()
     self.compilerSource = 'conftest'+compiler.sourceExtension
-    self.compilerObj    = 'conftest'+compiler.targetExtension
+    self.compilerObj    = compiler.getTarget(self.compilerSource)
     return self.framework.argDB[compiler.name]
 
   def getCompilerFlags(self):
@@ -220,7 +220,7 @@ class Configure(script.Script):
     linker            = self.framework.getLinkerObject(self.language[-1])
     linker.checkSetup()
     self.linkerSource = 'conftest'+linker.sourceExtension
-    self.linkerObj    = 'conftest'
+    self.linkerObj    = linker.getTarget(self.linkerSource,0)
     return self.framework.argDB[linker.name]
 
   def getLinkerFlags(self):
@@ -230,7 +230,7 @@ class Configure(script.Script):
     linker            = self.framework.getSharedLinkerObject(self.language[-1])
     linker.checkSetup()
     self.linkerSource = 'conftest'+linker.sourceExtension
-    self.linkerObj    = 'conftest'
+    self.linkerObj    = linker.getTarget(self.linkerSource,1)
     return self.framework.argDB[linker.name]
 
   def getSharedLinkerFlags(self):
@@ -427,7 +427,7 @@ class Configure(script.Script):
       cmd = self.getLinkerCmd()
     (out, err, ret) = Configure.executeShellCommand(cmd, checkCommand = report, log = self.framework.log)
     if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
-      self.linkerObj = self.linkerObj+'.exe'
+      self.linkerObj = os.path.splitext(self.linkerObj)[0]+'.exe'
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return (out+err, ret)

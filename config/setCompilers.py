@@ -553,6 +553,7 @@ class Configure(config.base.Configure):
         os.remove('conf1.a')
         raise RuntimeError('Ranlib is not functional with your archiver.  Try --with-ranlib=true if ranlib is unnecessary.')
       return
+    arext = 'a'
     oldLibs = self.framework.argDB['LIBS']
     self.pushLanguage('C')
     for (archiver, flags, ranlib) in self.generateArchiverGuesses():
@@ -564,21 +565,22 @@ class Configure(config.base.Configure):
       if self.getExecutable(archiver, getFullPath = 1, resultName = 'AR'):
         if self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB'):
           try:
-            (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+flags+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
-            (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' conf1.a', checkCommand = checkRanlib,log = self.framework.log)
+            (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+flags+' libconf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
+            (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' libconf1.a', checkCommand = checkRanlib,log = self.framework.log)
           except RuntimeError, e:
             self.logPrint(str(e))
             continue
-          self.framework.argDB['LIBS'] = 'conf1.a'
+          self.framework.argDB['LIBS'] = '-lconf1'
           success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
-          os.rename('conf1.a','conf1.lib')
+          os.rename('libconf1.a','libconf1.lib')
           if not success:
-            self.framework.argDB['LIBS'] = 'conf1.lib'
             success = self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
-            os.remove('conf1.lib')
-            if success: break
+            os.remove('libconf1.lib')
+            if success:
+              arext = 'lib'
+              break
           else:
-            os.remove('conf1.lib')
+            os.remove('libconf1.lib')
             break
     else:
       if os.path.isfile('conf1.o'):
@@ -591,7 +593,9 @@ class Configure(config.base.Configure):
     self.framework.argDB['RANLIB'] = self.RANLIB
     self.framework.argDB['AR_FLAGS'] = flags
     self.framework.addMakeMacro('AR_FLAGS',flags)
-    self.AR_FLAGS = flags
+    self.AR_FLAGS      = flags
+    self.AR_LIB_SUFFIX = arext
+    self.addMakeMacro('AR_LIB_SUFFIX',arext)
     os.remove('conf1.o')
     self.framework.argDB['LIBS'] = oldLibs
     self.popLanguage()
@@ -602,7 +606,7 @@ class Configure(config.base.Configure):
       self.framework.argDB['LD_SHARED'] = ''
       language = self.framework.normalizeLanguage(self.language[-1])
       linker = self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
-      yield (self.AR, [self.AR_FLAGS], 'a')
+      yield (self.AR, [self.AR_FLAGS], self.AR_LIB_SUFFIX)
       raise RuntimeError('Archiver failed static link check')
     if 'with-shared-ld' in self.framework.argDB:
       yield (self.framework.argDB['with-shared-ld'], [], 'so')
@@ -614,7 +618,7 @@ class Configure(config.base.Configure):
     self.framework.argDB['LD_SHARED'] = ''
     language = self.framework.normalizeLanguage(self.language[-1])
     linker = self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
-    yield (self.AR, [self.AR_FLAGS], 'a')
+    yield (self.AR, [self.AR_FLAGS], self.AR_LIB_SUFFIX)
     raise RuntimeError('Archiver failed static link check')
 
   def checkSharedLinker(self):
