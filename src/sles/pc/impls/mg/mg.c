@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.107 2000/05/05 22:17:11 balay Exp bsmith $*/
+/*$Id: mg.c,v 1.108 2000/05/10 16:41:46 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -244,13 +244,14 @@ static int PCView_MG(PC pc,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"  MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
                       cstring,mg[0]->cycles,mg[0]->default_smoothu,mg[0]->default_smoothd);CHKERRQ(ierr);
     for (i=0; i<levels; i++) {
-      ierr = ViewerASCIIPrintf(viewer,"Down solver on level %d -------------------------------\n",i);CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = SLESView(mg[i]->smoothd,viewer);CHKERRQ(ierr);
       ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       if (mg[i]->smoothd == mg[i]->smoothu) {
         ierr = ViewerASCIIPrintf(viewer,"Up solver same as down solver\n");CHKERRQ(ierr);
       } else {
+        ierr = ViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
         ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = SLESView(mg[i]->smoothu,viewer);CHKERRQ(ierr);
         ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
