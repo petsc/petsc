@@ -1,10 +1,10 @@
 #!/usr/bin/env python1.5
-# $Id: urlget.py,v 1.12 1998/02/17 22:20:33 balay Exp bsmith $ 
+# $Id: urlget.py,v 1.13 1998/02/27 16:57:03 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
 #  Calling sequence: 
-#      urlget.py ftp://hostname/directoryname/file
+#      urlget.py ftp://hostname/directoryname/file [local filename]
 #
 import urllib
 import urlparse
@@ -66,12 +66,15 @@ def main() :
 
     if arg_len < 2 : 
         print 'Error! Insufficient arguments.'
-        print 'Usage:', sys.argv[0], 'url-filename'
+        print 'Usage:', sys.argv[0], 'url-filename [local filename]' 
         sys.exit()
 
     urlfilename = sys.argv[1]
     url_split   = urlparse.urlparse(urlfilename)
-    outfilename = os.path.join(tempfile.tempdir,urltofile(urlfilename))
+    if arg_len == 3 :
+        outfilename =  sys.argv[2]
+    else :
+        outfilename = os.path.join(tempfile.tempdir,urltofile(urlfilename))
 
     # If the url is ftp:// use ftp module to retrive the file
     if re.search('ftp',url_split[0]) >= 0 :   
@@ -81,7 +84,7 @@ def main() :
             timestamp = getftptimestamp(ftp,url_split[2])
             # if local file exists, check the timestamp, and get the URL only if it is more recent
             uselocalcopy = 0
-            if os.path.isfile(outfilename) == 1 :
+            if os.path.isfile(outfilename) == 1 && arg_len != 3 :
                 mtime = os.stat(outfilename)[7]
                 if mtime >= timestamp:
                     uselocalcopy = 1
@@ -124,7 +127,7 @@ def main() :
             timestamp = geturltimestamp(urltimestamp)
             # if local file exists, check the timestamp, and get the URL only if it is more recent
             uselocalcopy = 0
-            if os.path.isfile(outfilename) == 1 :
+            if os.path.isfile(outfilename) == 1 && && arg_len != 3 :
                 mtime = os.stat(outfilename)[7]
                 if mtime >= timestamp:
                     uselocalcopy = 1
