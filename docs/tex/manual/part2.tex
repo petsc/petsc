@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.183 1997/01/11 19:56:10 curfman Exp curfman $ 
+% $Id: part2.tex,v 1.184 1997/01/15 14:45:35 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3339,8 +3339,7 @@ is one of {\tt TS\_LINEAR} or {\tt TS\_NONLINEAR},
 to indicate whether $ F(u,t) $ is given by a matrix $ A $ , or $ A(t) $ , or a
 function $ F(u,t). $
 
-One can set the solution method (currently Euler, backward Euler
-and backward Euler for pseudo-timestepping) with the routine
+One can set the solution method with the routine
 \begin{verbatim}
   ierr = TSSetType(TS ts,TSType type);
 \end{verbatim}
@@ -3442,7 +3441,8 @@ Jacobian is to be computed, the Jacobian matrix, an alternative
 approximate Jacobian matrix used as a preconditioner, and the optional
 user-provided context, passed in as {\tt fP}. The user must provide the 
 Jacobian as a matrix; thus, if using a matrix-free approach is used, the
-user must create a {\tt MatShell} matrix.
+user must create a {\tt MatShell} matrix. Again, note the similarity
+to {\tt SNESSetJacobian()}. \findex{SNESSetJacobian()}
 \end{itemize}
 
 \subsection{Solving Steady-State Problems with Pseudo-Timestepping}
@@ -3484,7 +3484,29 @@ with location.
 \end{verbatim}
 The function {\tt dt} is a user-provided function that computes the next 
 pseudo-timestep. As a default one can use
-{\tt TSPseudoDefaultTimeStep(TS,double*,void*)} for {\tt dt}.
+{\tt TSPseudoDefaultTimeStep(TS,double*,void*)} for {\tt dt}. This routine
+updates the pseudo-timestep with one of two strategies: the default
+\[
+   dt^{n} = dt\_increment*dt^{0}*\frac{|| F(u^{0}) ||}{|| F(u^{n})||}
+\]
+or, the alternative, 
+\[
+   dt^{n} = dt\_increment*dt^{n-1}*\frac{|| F(u^{n-1}) ||}{|| F(u^{n})||}
+\]
+which can be set with the call
+\begin{verbatim}
+  ierr = TSPseudoSetUseLocalTimeStepIncrement(TS ts);
+\end{verbatim}
+or \findex{TSPseudoSetUseLocalTimeStepIncrement()} 
+the option {\tt -ts\_pseudo\_local\_increment}. \findex{-ts_pseudo_local_increment}
+The value $ dt\_increment $ is by default $ 1.1$, but can be reset with the 
+call 
+\begin{verbatim}
+  ierr = TSPseudoSetTimeStepIncrement(TS ts,double inc); 
+\end{verbatim}
+or \findex{TSPseudoSetTimeStepIncrement()} the option 
+{\tt  -ts\_pseudo\_increment <inc>}. \findex{-ts\_pseudo\_increment}
+
 
 \item For location-dependent pseudo-timestepping, the interface function
       has not yet been created.
