@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.21 1996/04/29 17:33:51 balay Exp balay $";
+static char vcid[] = "$Id: binv.c,v 1.22 1996/06/24 15:30:48 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -96,6 +96,7 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
   PLogObjectCreate(v);
   v->destroy = ViewerDestroy_BinaryFile;
   v->flush   = 0;
+  v->iformat = 0;
   *binv = v;
 
   MPI_Comm_rank(comm,&rank);

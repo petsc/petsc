@@ -1,6 +1,7 @@
 
+
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.72 1996/04/20 04:18:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.73 1996/07/08 22:16:35 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -101,15 +102,17 @@ static int VecView_Seq_File(Vec xin,Viewer viewer)
   return 0;
 }
 
-static int VecView_Seq_LG(Vec xin,DrawLG lg)
+static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
-  int      i, n = x->n;
+  int      i, n = x->n,ierr;
   Draw     win;
   double   *xx;
+  DrawLG   lg;
 
-  DrawLGGetDraw(lg,&win);
-  DrawLGReset(lg);
+  ierr = ViewerDrawGetDrawLG(v,&lg); CHKERRQ(ierr);
+  ierr = DrawLGGetDraw(lg,&win); CHKERRQ(ierr);
+  ierr = DrawLGReset(lg); CHKERRQ(ierr);
   xx = (double *) PetscMalloc( (n+1)*sizeof(double) ); CHKPTRQ(xx);
   for ( i=0; i<n; i++ ) {
     xx[i] = (double) i;
@@ -137,17 +140,24 @@ static int VecView_Seq_LG(Vec xin,DrawLG lg)
 static int VecView_Seq_Draw(Vec xin,Viewer v)
 {
   int        ierr;
-  DrawLG     lg;
   Draw       draw;
   PetscTruth isnull;
+  int        format;
 
   ierr = ViewerDrawGetDraw(v,&draw); CHKERRQ(ierr);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
   
-  ierr = DrawLGCreate(draw,1,&lg); CHKERRQ(ierr);
-  PLogObjectParent(draw,lg);
-  ierr = VecView(xin,(Viewer) lg); CHKERRQ(ierr);
-  DrawLGDestroy(lg);
+  ierr = ViewerGetFormat(v,&format); CHKERRQ(ierr);
+  /*
+     Currently it only supports drawing to a line graph */
+  if (format != VIEWER_FORMAT_DRAW_LG) {
+    ViewerPushFormat(v,VIEWER_FORMAT_DRAW_LG,PETSC_NULL);
+  } 
+  ierr = VecView_Seq_Draw_LG(xin,v); CHKERRQ(ierr);
+  if (format != VIEWER_FORMAT_DRAW_LG) {
+    ViewerPopFormat(v);
+  } 
+
   return 0;
 }
 
@@ -175,13 +185,6 @@ static int VecView_Seq(PetscObject obj,Viewer viewer)
   ViewerType  vtype;
   int         ierr;
 
-  if (!viewer) { 
-    viewer = VIEWER_STDOUT_SELF;
-  }
-
-  if (((PetscObject)viewer)->cookie == DRAWLG_COOKIE){
-    return VecView_Seq_LG(xin,(DrawLG) viewer);
-  }
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == DRAW_VIEWER){ 
     return VecView_Seq_Draw(xin,viewer);

@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = axis.o lg.o
 OBJSF    =
-LIBBASE  = libpetscdraw
+LIBBASE  = libpetscsys
 MANSEC   = x
 LOCDIR   = src/draw/utils/
 

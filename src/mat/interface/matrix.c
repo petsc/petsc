@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.177 1996/07/08 02:07:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.178 1996/07/08 22:18:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1343,7 +1343,9 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   inassm++;
   PLogEventBegin(MAT_AssemblyEnd,mat,0,0,0);
-  if (mat->ops.assemblyend) {ierr = (*mat->ops.assemblyend)(mat,type); CHKERRQ(ierr);}
+  if (mat->ops.assemblyend) {
+    ierr = (*mat->ops.assemblyend)(mat,type); CHKERRQ(ierr);
+  }
   mat->assembled = PETSC_TRUE; mat->num_ass++;
   PLogEventEnd(MAT_AssemblyEnd,mat,0,0,0);
 

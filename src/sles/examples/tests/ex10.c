@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.55 1996/03/19 21:27:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.56 1996/07/08 22:20:55 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -162,7 +162,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
     ierr = MatRestoreRow(mat,i,&nz,0,0); CHKERRQ(ierr);
   }
   ierr = ISCreateSeq(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(mat,iskeep,iskeep,MAT_INITIAL_MATRIX,&submat); CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,iskeep,iskeep,MAT_INITIAL_MATRIX,&submat);CHKERRQ(ierr);
   PetscFree(rowkeep);
   ierr = ISDestroy(iskeep);  CHKERRQ(ierr);
   ierr = MatDestroy(mat); CHKERRQ(ierr);
@@ -174,7 +174,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = MatConvert(submat,type,newmat); CHKERRQ(ierr);
   ierr = MatDestroy(submat); CHKERRQ(ierr);
 
-  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,ASCII_FORMAT_INFO,0); CHKERRQ(ierr);
+  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,ASCII_FORMAT_INFO,0);CHKERRQ(ierr);
   ierr = MatView(*newmat,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   ierr = MatNorm(*newmat,NORM_1,&norm); CHKERRQ(ierr);
   PetscPrintf(MPI_COMM_WORLD,"matrix 1 norm = %g\n",norm);

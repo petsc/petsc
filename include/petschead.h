@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.30 1996/04/13 18:23:27 curfman Exp bsmith $ */
+/* $Id: phead.h,v 1.31 1996/07/02 18:09:25 bsmith Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -54,6 +54,7 @@ extern int PetscRegisterCookie(int *);
        {PetscCommFree_Private(&(h)->comm);                         \
         (h)->cookie = PETSCFREEDHEADER;                            \
         if ((h)->prefix) PetscFree((h)->prefix);                   \
+        if ((h)->child) (*(h)->childdestroy)((h)->child);          \
         PetscFree(h);          }
 
 /* 

@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.30 1996/07/08 18:25:59 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.31 1996/07/08 22:24:30 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -40,6 +40,7 @@ extern int DrawDestroy(Draw);
 extern int DrawIsNull(Draw,PetscTruth*);
 
 extern int ViewerDrawGetDraw(Viewer, Draw*);
+
 
 extern int DrawLine(Draw,double,double,double,double,int);
 extern int DrawLineSetWidth(Draw,double);
@@ -91,10 +92,13 @@ extern int DrawLGAddPoint(DrawLG,double*,double*);
 extern int DrawLGAddPoints(DrawLG,int,double**,double**);
 extern int DrawLGDraw(DrawLG);
 extern int DrawLGReset(DrawLG);
+extern int DrawLGSetDimension(DrawLG,int);
 extern int DrawLGGetAxis(DrawLG,DrawAxis *);
 extern int DrawLGGetDraw(DrawLG,Draw *);
 extern int DrawLGIndicateDataPoints(DrawLG);
 extern int DrawLGSetLimits(DrawLG,double,double,double,double); 
+
+extern int ViewerDrawGetDrawLG(Viewer, DrawLG*);
 
 #if defined(__VEC_PACKAGE)
 int DrawTensorContour(Draw,int,int,double*,double*,Vec);

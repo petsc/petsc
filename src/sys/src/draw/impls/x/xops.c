@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.49 1996/07/02 18:07:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.50 1996/07/08 22:21:31 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -355,7 +355,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   ctx->port_xl = 0.0;  ctx->port_xr = 1.0;
   ctx->port_yl = 0.0;  ctx->port_yr = 1.0;
 
-  ierr = OptionsGetInt(PETSC_NULL,"-draw_pause",&ctx->pause,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-draw_pause",&ctx->pause,&flg);CHKERRQ(ierr);
 
   /* actually create and open the window */
   Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) ); CHKPTRQ(Xwin);
@@ -370,7 +370,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   }
   if (rank == 0) {
     if (x < 0 || y < 0) SETERRQ(1,"DrawOpenX:Negative corner of window");
-    if (w <= 0 || h <= 0) SETERRQ(1,"DrawOpenX:Negative width or hight of window");
+    if (w <= 0 || h <= 0) SETERRQ(1,"DrawOpenX:Negative window width or height");
     ierr = XiQuickWindow(Xwin,display,title,x,y,w,h,256); CHKERRQ(ierr);
     MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);
   }
@@ -411,6 +411,10 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
    Output Parameters:
 .  viewer - the viewer
 
+   Format Options:
+.   VIEWER_FORMAT_DRAW_BASIC
+.   VIEWER_FORMAT_DRAW_LG     - displays using a line graph
+
    Options Database Keys:
 $  -nox : disable all x-windows output
 $  -display <name> : name of machine for the X display
@@ -428,12 +432,58 @@ int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
   *viewer = 0;
   PetscHeaderCreate(ctx,_Viewer,VIEWER_COOKIE,DRAW_VIEWER,comm);
   PLogObjectCreate(ctx);
-  ierr = DrawOpenX(comm,display,title,x,y,w,h,&ctx->draw); CHKERRQ(ierr);
+  ierr = DrawOpenX(comm,display,title,x,y,w,h,&ctx->draw);CHKERRQ(ierr);
   PLogObjectParent(ctx,ctx->draw);
 
   ctx->flush   = ViewerFlush_Draw;
   ctx->destroy = ViewerDestroy_Draw;
+  ctx->format  = 0;
+
+  /* 
+     Create a DrawLG context for use with viewer format:
+     VIEWER_FORMAT_DRAW_LG
+  */
+  ierr = DrawLGCreate(ctx->draw,1,&ctx->drawlg);CHKERRQ(ierr);
   *viewer      = ctx;
   return 0;
 }
 
+/* -------------------------------------------------------------------*/
+/* 
+     Default X window viewers, may be used at any time.
+*/
+
+Viewer VIEWER_DRAWX_SELF_PRIVATE = 0, VIEWER_DRAWX_WORLD_PRIVATE = 0;
+
+int ViewerInitializeDrawXSelf_Private()
+{
+  int ierr;
+
+  if (VIEWER_DRAWX_SELF_PRIVATE) return 0;
+  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,0,0,0,400,400,
+                         &VIEWER_DRAWX_SELF_PRIVATE); CHKERRQ(ierr);
+  return 0;
+}
+
+int ViewerInitializeDrawXWorld_Private()
+{
+  int ierr;
+
+  if (VIEWER_DRAWX_WORLD_PRIVATE) return 0;
+  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,0,0,0,400,400,
+                         &VIEWER_DRAWX_WORLD_PRIVATE); CHKERRQ(ierr);
+  return 0;
+}
+
+int ViewerDestroyDrawX_Private()
+{
+  int ierr;
+
+  if (VIEWER_DRAWX_WORLD_PRIVATE) {
+    ierr = ViewerDestroy(VIEWER_DRAWX_WORLD_PRIVATE); CHKERRQ(ierr);
+  }
+  if (VIEWER_DRAWX_SELF_PRIVATE) {
+    ierr = ViewerDestroy(VIEWER_DRAWX_SELF_PRIVATE); CHKERRQ(ierr);
+  }
+  return 0;
+}

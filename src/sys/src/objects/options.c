@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.88 1996/07/02 18:05:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.89 1996/07/08 22:17:44 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -197,6 +197,7 @@ int PetscFinalize()
   int  ierr,i,rank = 0,flg1,flg2;
 
   ViewerDestroy_Private();
+  ViewerDestroyDrawX_Private();
 #if defined(PETSC_LOG)
   {
     char mname[64];

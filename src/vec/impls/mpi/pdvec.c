@@ -1,4 +1,5 @@
-/* $Id: pdvec.c,v 1.52 1996/04/14 13:53:58 curfman Exp bsmith $ */
+
+/* $Id: pdvec.c,v 1.53 1996/07/08 22:16:36 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -165,10 +166,69 @@ static int VecView_MPI_Binary(Vec xin, Viewer viewer )
   return 0;
 }
 
+static int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
+{
+  Vec_MPI     *x = (Vec_MPI *) xin->data;
+  int         i,rank,size, N = x->N,*lens,ierr;
+  Draw        draw;
+  double      *xx,*yy;
+  DrawLG      lg;
+
+  ierr = ViewerDrawGetDrawLG(v,&lg); CHKERRQ(ierr);
+  MPI_Comm_rank(xin->comm,&rank);
+  MPI_Comm_size(xin->comm,&size);
+  if (!rank) {
+    DrawLGReset(lg);
+    xx = (double *) PetscMalloc( 2*N*sizeof(double) ); CHKPTRQ(xx);
+    for ( i=0; i<N; i++ ) {xx[i] = (double) i;}
+    yy = xx + N;
+    lens = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(lens);
+    for (i=0; i<size; i++ ) {
+      lens[i] = x->ownership[i+1] - x->ownership[i];
+    }
+#if !defined(PETSC_COMPLEX)
+    MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,0,xin->comm);
+#else
+    {
+      double *xr;
+      xr = (double *) PetscMalloc( x->n*sizeof(double) ); CHKPTRQ(xr);
+      for ( i=0; i<x->n; i++ ) {
+        xr[i] = real(x->array[i]);
+      }
+      MPI_Gatherv(xr,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,0,xin->comm);
+      PetscFree(xr);
+    }
+#endif
+    PetscFree(lens);
+    DrawLGAddPoints(lg,N,&xx,&yy);
+    PetscFree(xx);
+    DrawLGDraw(lg);
+  }
+  else {
+#if !defined(PETSC_COMPLEX)
+    MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);
+#else
+    {
+      double *xr;
+      xr = (double *) PetscMalloc( x->n*sizeof(double) ); CHKPTRQ(xr);
+      for ( i=0; i<x->n; i++ ) {
+        xr[i] = real(x->array[i]);
+      }
+      MPI_Gatherv(xr,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);
+      PetscFree(xr);
+    }
+#endif
+  }
+  DrawLGGetDraw(lg,&draw);
+  DrawSyncFlush(draw);
+  DrawPause(draw);
+  return 0;
+}
+
 static int VecView_MPI_Draw(Vec xin, Viewer v )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,rank,size,ierr,start,end;
+  int         i,rank,size,ierr,start,end,format;
   MPI_Status  status;
   double      coors[4],ymin,ymax,xmin,xmax,tmp;
   Draw        draw;
@@ -176,6 +236,12 @@ static int VecView_MPI_Draw(Vec xin, Viewer v )
 
   ViewerDrawGetDraw(v,&draw);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+
+  ierr = ViewerGetFormat(v,&format); CHKERRQ(ierr);
+  if (format == VIEWER_FORMAT_DRAW_LG) {
+    return VecView_MPI_Draw_LG(xin, v );
+  }
+
   MPI_Comm_size(xin->comm,&size); 
 
   xmin = 1.e20; xmax = -1.e20;
@@ -230,62 +296,7 @@ static int VecView_MPI_Draw(Vec xin, Viewer v )
   return 0;
 }
 
-static int VecView_MPI_LG(Vec xin, DrawLG lg )
-{
-  Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,rank,size, N = x->N,*lens;
-  Draw        draw;
-  double      *xx,*yy;
 
-  MPI_Comm_rank(xin->comm,&rank);
-  MPI_Comm_size(xin->comm,&size);
-  if (!rank) {
-    DrawLGReset(lg);
-    xx = (double *) PetscMalloc( 2*N*sizeof(double) ); CHKPTRQ(xx);
-    for ( i=0; i<N; i++ ) {xx[i] = (double) i;}
-    yy = xx + N;
-    lens = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(lens);
-    for (i=0; i<size; i++ ) {
-      lens[i] = x->ownership[i+1] - x->ownership[i];
-    }
-#if !defined(PETSC_COMPLEX)
-    MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,0,xin->comm);
-#else
-    {
-      double *xr;
-      xr = (double *) PetscMalloc( x->n*sizeof(double) ); CHKPTRQ(xr);
-      for ( i=0; i<x->n; i++ ) {
-        xr[i] = real(x->array[i]);
-      }
-      MPI_Gatherv(xr,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,0,xin->comm);
-      PetscFree(xr);
-    }
-#endif
-    PetscFree(lens);
-    DrawLGAddPoints(lg,N,&xx,&yy);
-    PetscFree(xx);
-    DrawLGDraw(lg);
-  }
-  else {
-#if !defined(PETSC_COMPLEX)
-    MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);
-#else
-    {
-      double *xr;
-      xr = (double *) PetscMalloc( x->n*sizeof(double) ); CHKPTRQ(xr);
-      for ( i=0; i<x->n; i++ ) {
-        xr[i] = real(x->array[i]);
-      }
-      MPI_Gatherv(xr,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);
-      PetscFree(xr);
-    }
-#endif
-  }
-  DrawLGGetDraw(lg,&draw);
-  DrawSyncFlush(draw);
-  DrawPause(draw);
-  return 0;
-}
 
 static int VecView_MPI_Matlab(Vec xin, Viewer viewer )
 {
@@ -321,14 +332,6 @@ static int VecView_MPI(PetscObject obj,Viewer viewer)
   Vec         xin = (Vec) obj;
   ViewerType  vtype;
   int         ierr;
-
-  if (!viewer) { /* so that viewers may be used from debuggers */
-    viewer = VIEWER_STDOUT_SELF;
-  }
-
-  if (((PetscObject)viewer)->cookie == DRAWLG_COOKIE){
-    return VecView_MPI_LG(xin,(DrawLG) viewer);
-  }
 
   ierr = ViewerGetType(viewer,&vtype);
   if (vtype == ASCII_FILE_VIEWER){

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.51 1996/07/02 18:04:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.52 1996/07/08 22:16:21 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -103,6 +103,8 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
   int            rank,nrecvs, nsends,iend,jmax;
 
   MPI_Comm_rank(comm,&rank);
+  fprintf(stdout,"[%d]Begun scatter \n",rank); 
+
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI *) ctx->fromdata;
     gen_from = (VecScatter_MPI *) ctx->todata;
@@ -178,11 +180,11 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
     }
     /* take care of local scatters */
     if (gen_to->local.n && addv == INSERT_VALUES) {
-      if (yv == xv && !gen_to->local_is_matching) {
+      if (0 && yv == xv && !gen_to->local_is_matching) {
         int ierr;
         ierr = VecScatterDetermineLocalIsMatching_Private(gen_to,gen_from);
       }
-      if (yv != xv || gen_to->local_is_matching == -1) {
+      if (yv != xv || 1 /* gen_to->local_is_matching == -1 */) {
         int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
         int n = gen_to->local.n;
         for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[tslots[i]];}
@@ -240,6 +242,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
                  MPIU_SCALAR,sprocs[i],tag,comm,swaits+i-gen_to->nbelow);
     }
   }
+  fprintf(stdout,"[%d]Completed scatter\n",rank); 
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.34 1996/04/20 04:20:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.35 1996/07/08 22:21:48 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -65,6 +65,30 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
   ierr = DrawAxisCreate(win,&lg->axis); CHKERRQ(ierr);
   PLogObjectParent(lg,lg->axis);
   *outctx = lg;
+  return 0;
+}
+
+/*@
+   DrawLGSetDimension - Change the number of lines that are to be drawn.
+
+   Input Parameter:
+.  lg - the line graph context.
+.  dim - the number of curves.
+
+.keywords:  draw, line, graph, reset
+@*/
+int DrawLGSetDimension(DrawLG lg,int dim)
+{
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {return 0;}
+  PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
+  if (lg->dim == dim) return 0;
+
+  PetscFree(lg->x);
+  lg->dim = dim;
+  lg->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));
+                CHKPTRQ(lg->x);
+  lg->y       = lg->x + dim*CHUNCKSIZE;
+  lg->len     = dim*CHUNCKSIZE;
   return 0;
 }
 

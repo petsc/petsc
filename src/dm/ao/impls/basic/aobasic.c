@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.3 1996/07/02 16:48:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: aodebug.c,v 1.4 1996/07/08 22:24:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -143,10 +143,10 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   for ( i=0; i<N; i++ ) {
     ip = allpetsc[i]; ia = allapp[i];
     /* check there are no duplicates */
-    if (aodebug->app[ia]) SETERRQ(1,"AOCreateDebug:Duplicate in ordering");
-    aodebug->app[ia] = ip + 1;
-    if (aodebug->petsc[ip]) SETERRQ(1,"AOCreateDebug:Duplicate in ordering");
-    aodebug->petsc[ip] = ia + 1;
+    if (aodebug->app[ip]) SETERRQ(1,"AOCreateDebug:Duplicate in ordering");
+    aodebug->app[ip] = ia + 1;
+    if (aodebug->petsc[ia]) SETERRQ(1,"AOCreateDebug:Duplicate in ordering");
+    aodebug->petsc[ia] = ip + 1;
   }
   PetscFree(allpetsc);
   /* shift indices down by one */

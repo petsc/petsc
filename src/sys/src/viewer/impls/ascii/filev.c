@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.41 1996/04/20 04:21:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.42 1996/07/08 22:22:40 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: filev.c,v 1.41 1996/04/20 04:21:24 bsmith Exp bsmith 
 struct _Viewer {
   VIEWERHEADER
   FILE          *fd;
-  char          *outputname;
+  char          *outputname,*outputnames[10];
 };
 
 Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD;
@@ -132,6 +132,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
     if (!v->fd) SETERRQ(1,"ViewerFileOpenASCII:Cannot open file");
   }
   v->format        = ASCII_FORMAT_DEFAULT;
+  v->iformat       = 0;
   v->outputname    = 0;
 #if defined(PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
@@ -168,7 +169,8 @@ $       matrices are stored as dense)
 
 .keywords: Viewer, file, set, format
 
-.seealso: ViewerFileOpenASCII(), ViewerFileOpenBinary(), MatView(), VecView()
+.seealso: ViewerFileOpenASCII(), ViewerFileOpenBinary(), MatView(), VecView(),
+          ViewerPushFormat(), ViewerPopFormat()
 @*/
 int ViewerSetFormat(Viewer v,int format,char *name)
 {
@@ -176,12 +178,84 @@ int ViewerSetFormat(Viewer v,int format,char *name)
   if (v->type == ASCII_FILES_VIEWER || v->type == ASCII_FILE_VIEWER) {
     v->format     = format;
     v->outputname = name;
-  } else if (v->type == BINARY_FILE_VIEWER) {
+  } else {
     v->format     = format;
   }
   return 0;
 }
 
+/*@C
+   ViewerPushFormat - Sets the format for file viewers.
+
+   Input Parameters:
+.  v - the viewer
+.  format - the format
+.  char - optional object name
+
+   Notes:
+   Available formats include
+$    ASCII_FORMAT_DEFAULT - default
+$    ASCII_FORMAT_MATLAB - Matlab format
+$    ASCII_FORMAT_IMPL - implementation-specific format
+$      (which is in many cases the same as the default)
+$    ASCII_FORMAT_INFO - basic information about object
+$    ASCII_FORMAT_INFO_DETAILED - more detailed info
+$       about object
+$    ASCII_FORMAT_COMMON - identical output format for
+$       all objects of a particular type
+$    BINARY_FORMAT_NATIVE - store the object to the binary
+$      file in its native format (for example, dense
+$       matrices are stored as dense)
+
+   These formats are most often used for viewing matrices and vectors.
+   Currently, the object name is used only in the Matlab format.
+
+.keywords: Viewer, file, set, format
+
+.seealso: ViewerFileOpenASCII(), ViewerFileOpenBinary(), MatView(), VecView(),
+          ViewerSetFormat(), ViewerPopFormat()
+@*/
+int ViewerPushFormat(Viewer v,int format,char *name)
+{
+  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
+  if (v->iformat > 9) SETERRQ(1,"ViewerPushFormat:Too many pushes");
+
+  if (v->type == ASCII_FILES_VIEWER || v->type == ASCII_FILE_VIEWER) {
+    v->formats[v->iformat]       = v->format;
+    v->outputnames[v->iformat++] = v->outputname;
+    v->format                    = format;
+    v->outputname                = name;
+  } else if (v->type == BINARY_FILE_VIEWER) {
+    v->formats[v->iformat++]     = v->format;
+    v->format                    = format;
+  }
+  return 0;
+}
+
+/*@C
+   ViewerPopFormat - Resets the format for file viewers.
+
+   Input Parameters:
+.  v - the viewer
+
+.keywords: Viewer, file, set, format, push, pop
+
+.seealso: ViewerFileOpenASCII(), ViewerFileOpenBinary(), MatView(), VecView(),
+          ViewerSetFormat(), ViewerPushFormat()
+@*/
+int ViewerPopFormat(Viewer v)
+{
+  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
+  if (v->iformat <= 0) return 0;
+
+  if (v->type == ASCII_FILES_VIEWER || v->type == ASCII_FILE_VIEWER) {
+    v->format     = v->formats[--v->iformat];
+    v->outputname = v->outputnames[v->iformat];
+  } else if (v->type == BINARY_FILE_VIEWER) {
+    v->format     = v->formats[--v->iformat];
+  }
+  return 0;
+}
 
 
 

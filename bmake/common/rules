@@ -21,8 +21,8 @@ CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS)
 # The order of listing these libraries is important!
 #
 PETSC_LIB   = -L$(LDIR) -lpetscsnes  -lpetscsles -lpetscksp \
-		-lpetscmat  -lpetscvec -lpetscdraw \
-		-lpetscsys  $(X11_LIB) \
+		-lpetscmat  -lpetscvec \
+		-lpetscsys $(X11_LIB) \
 		$(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
 		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm 
 #
@@ -31,8 +31,9 @@ PETSC_LIB   = -L$(LDIR) -lpetscsnes  -lpetscsles -lpetscksp \
 # of listing these libraries is important!
 #
 SLES_LIB    =	-L$(LDIR) -lpetscsles -lpetscksp \
-		-lpetscmat  -lpetscvec -lpetscdraw \
-		-lpetscsys $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
+		-lpetscmat  -lpetscvec \
+		-lpetscsys $(BS_LIB) $(LAPACK_LIB) \
+                 $(BLAS_LIB) $(X11_LIB) \
 		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 
 #

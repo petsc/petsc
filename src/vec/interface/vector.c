@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.81 1996/06/21 03:16:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.82 1996/07/08 22:16:29 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -611,6 +611,15 @@ int VecAssemblyEnd(Vec vec)
     ierr = ViewerFlush(viewer); CHKERRQ(ierr);
     ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
   }
+  ierr = OptionsHasName(PETSC_NULL,"-vec_view_draw_lg",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Viewer    viewer;
+    ierr = ViewerDrawOpenX(vec->comm,0,0,0,0,300,300,&viewer); CHKERRQ(ierr);
+    ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_DRAW_LG,0); CHKERRQ(ierr);
+    ierr = VecView(vec,viewer); CHKERRQ(ierr);
+    ierr = ViewerFlush(viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+  }
   return 0;
 }
 
@@ -851,6 +860,9 @@ $    ViewerMatlabOpen() - output vector to Matlab viewer
 int VecView(Vec v,Viewer viewer)
 {
   PetscValidHeaderSpecific(v,VEC_COOKIE);
+  if (!viewer) { 
+    viewer = VIEWER_STDOUT_SELF;
+  }
   return (*v->view)((PetscObject)v,viewer);
 }
 

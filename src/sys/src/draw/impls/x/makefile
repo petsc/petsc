@@ -8,7 +8,7 @@ SOURCEH   = ximpl.h
 OBJSC     = xinit.o frame.o wmap.o color.o xops.o text.o tone.o
 OBJSF     =
 MANSEC    = x
-LIBBASE   = libpetscdraw
+LIBBASE   = libpetscsys
 DIRS      = 
 LOCDIR    = src/draw/impls/x/
 

@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = drawimpl.h
 OBJSC    =
 OBJSF    =
-LIBBASE  = libpetscdraw
+LIBBASE  = libpetscsys
 DIRS     = interface impls examples utils
 LOCDIR   = src/draw/
 

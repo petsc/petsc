@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    =
 OBJSF    =
-LIBBASE  = libpetscdraw
+LIBBASE  = libpetscsys
 DIRS     = x vrml
 LOCDIR   = src/draw/impls/
 

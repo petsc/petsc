@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.11 1996/03/18 00:41:47 bsmith Exp gropp $ */
+/* $Id: drawimpl.h,v 1.12 1996/07/09 22:57:49 bsmith Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -48,6 +48,7 @@ struct _Draw {
 struct _Viewer {
   VIEWERHEADER
   Draw         draw;
+  DrawLG       drawlg;
 };
 
 extern int ViewerDestroy_Draw(PetscObject);

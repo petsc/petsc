@@ -39,10 +39,10 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 
 ############
 .F.o:
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $(COPTFLAGS) $*.F
 
 .F.a: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $(COPTFLAGS) $*.F
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
