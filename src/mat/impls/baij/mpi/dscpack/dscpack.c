@@ -301,7 +301,6 @@ int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
     }
 
     /* DSC_Solver starts */
-    lu->My_DSC_Solver = DSC_Begin();
     DSC_Open0( lu->My_DSC_Solver, number_of_procs, &lu->dsc_id, lu->comm_dsc ); 
 
     if (lu->dsc_id != -1) {
@@ -540,6 +539,9 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat
   PetscOptionsEnd();
   
   lu->flg = DIFFERENT_NONZERO_PATTERN;
+
+  lu->My_DSC_Solver = DSC_Begin();
+  lu->CleanUpDSCPACK = PETSC_TRUE;
   *F = B;
   PetscFunctionReturn(0); 
 }
