@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.254 1998/03/18 16:17:41 curfman Exp balay $ 
+% $Id: part2.tex,v 1.255 1998/03/19 02:17:13 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -483,7 +483,14 @@ a parallel array are shown in gray.
 
 \subsection{Creating Distributed Arrays}
 
-One creates a distributed array in two dimensions with the command 
+The PETSc {\tt DA} object manages the parallel communication required
+while working with data stored in regular arrays. The actual data
+is stored in approriately sized vector objects, the {\tt DA} object 
+only contains the parallel data layout information and communication
+information. 
+
+One creates a distributed array communication data structure 
+in two dimensions with the command 
 \begin{verbatim}
    ierr = DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType st,int M,
                      int N,int m,int n,int dof,int s,int *lx,int *ly,DA *da);
@@ -508,7 +515,8 @@ along the x and y axis for each cell, i.e. the dimension of {\tt lx} is
 {\tt m} and the dimension of {\tt ly} is {\tt n}; or {\tt PETSC\_NULL} 
 may be passed in.
 
-Two types of distributed arrays can be created, as specified by {\tt st}.
+Two types of distributed array communication data structures 
+can be created, as specified by {\tt st}.
 Star-type stencils that radiate outward only in the coordinate
 directions are indicated by {\tt DA\_STENCIL\_STAR}
 \findex{DA_STENCIL_STAR}, while box-type stencils are specified by
@@ -529,8 +537,8 @@ only ensure that the correct values are in place for application of a
 user-defined finite difference stencil (or any other
 discretization technique).
 
-The commands for creating distributed arrays in one and three
-dimensions are analogous:
+The commands for creating distributed array communication data structures
+in one and three dimensions are analogous:
 \findex{DACreate3d()} \findex{DACreate1d()} \findex{DACreate3d()}
 \begin{verbatim}
    ierr = DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra);
@@ -548,7 +556,7 @@ processors in the communicator {\tt comm} must call {\tt DACreateXXX()}.
 
 \subsection{Local/Global Vectors and Scatters}
 
-Each {\tt DA} object contains two vectors: a distributed global vector
+Each {\tt DA} object gives you access to two vectors: a distributed global vector
 and a local vector that includes the appropriate ghost points. These
 vectors can be accessed \findex{DAGetLocalVector()}
 with the routines \findex{DAGetDistributedVector}
@@ -567,9 +575,9 @@ or {\tt g} via {\tt VecDuplicate()} or {\tt VecDuplicateVecs()}.
 We emphasize that a distributed array really consists of two parts:
 (1) the array of data within the vector being distributed and (2) the
 information needed to communicate the ghost point information between
-processes.  In many cases, several different arrays could share the
+processes.  In most cases, several different arrays could share the
 same communication information.  The design of the distributed array
-object makes this relatively easy.  Each {\tt DA} operation may
+object makes this easy.  Each {\tt DA} operation may
 operate on a vector of the appropriate size.  The two obvious options
 are the local and global vectors created by the {\tt DA} creation
 routines (e.g., {\tt DACreate2d()}) and accessible through {\tt
@@ -848,6 +856,15 @@ done by using
 \findex{SCATTER_REVERSE} Note that the roles of the first 
 two arguments to these routines must be swapped whenever the {\tt SCATTER\_REVERSE}
 option is used.
+
+Once a {\tt VecScatter} object has been created it may be used with any vectors
+that have the appropriate parallel data layout. That is, one can call 
+{\tt VecScatterBegin()} and {\tt VecScatterEnd()} with different vectors than 
+used in the call to {\tt VecScatterCreate()} so long as they have the same 
+parallel layout (number of elements on each processor are the same). Usually,
+these ``different'' vectors would ahve been obtained vai calls to 
+{\tt VecDuplicate()} from the original vectors used in the call to 
+{\tt VecScatterCreate()}.
 
 \sindex{vector values, getting} \findex{VecGetValues()}
 There is no PETSc routine that is the opposite of {\tt VecSetValues()}
