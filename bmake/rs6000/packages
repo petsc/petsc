@@ -10,21 +10,15 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
 # for information on retrieving them.
 # Important: If you use the IBM version of lapack you must include 
-#  -lessl at the end of the line defining the BLAS libraries.
 #
-BLASLAPACK_LIB         = -lessl -L/home/petsc/software/blaslapack/rs6000 -lflapack -lblas
-#PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_ESSL_ONLY
+# ESSL: IBM math library - using this library requires some additional flags - as listed.
+#
+BLASLAPACK_LIB		= -lessl -L/home/petsc/software/blaslapack/rs6000 -lflapack -lblas
+PETSC_HAVE_ESSL		= -DPETSC_HAVE_ESSL
+#PETSC_BLASLAPACK_FLAGS	= -DPETSC_BLASLAPACK_ESSL_ONLY
 #
 # Location of MPI (Message Passing Interface) software
 #
-#MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-#MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
-#MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
-
-#MPI_LIB        = -L/home/petsc/mpich-1.1.1/lib/rs6000/ch_p4 -lmpich
-#MPI_INCLUDE    = -I/home/petsc/mpich-1.1.1/include -I/home/petsc/mpich-1.1.1/lib/rs6000/ch_p4
-#MPIRUN         = /home/petsc/mpich-1.1.1/lib/rs6000/ch_p4/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
-# -lbsd causes to hang. Hence taking it out.
 MPI_HOME       = /home/petsc/software/mpich-1.2.1/rs6000
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
@@ -40,19 +34,6 @@ MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.l
 X11_INCLUDE    = 
 X11_LIB        = -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
-##
-# ESSL: IBM math library - 
-# The library location should be given in BLASLAPACK_LIB above
-#
-PETSC_HAVE_ESSL = -DPETSC_HAVE_ESSL
-
-# Location of BlockSolve (MPI version), if you do not have
-# BlockSolve, then remove -DPETSC_HAVE_BLOCKSOLVE from the PCONF definition
-# below if it is there.
-#
-#BLOCKSOLVE_INCLUDE = -I/home/petsc/BlockSolve95/include
-#BLOCKSOLVE_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
-#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
 # MPE Libraries
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
@@ -60,28 +41,3 @@ PETSC_HAVE_ESSL = -DPETSC_HAVE_ESSL
 MPE_INCLUDE   = -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 MPE_LIB       =  -lmpe -lpmpich
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
-#
-# Matlab location, remove if not needed.
-#
-#MATLAB_MEX            = 
-#MATLAB_CC            = 
-#MATLAB_COMMAND  = matlab
-#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
-#
-#
-#SUPERLU_LIB     = /home/bsmith/SuperLU/superlu${PETSC_ARCH}${BOPT}.a
-#SUPERLU_INCLUDE = -I/home/bsmith/SuperLU/SRC
-#PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU 
-#
-# Location of the LUSOL sparse LU factorization code (part of MINOS)
-# developed by Michael Saunders, saunders@stanford.edu at the
-# Systems Optimization Laboratory, Stanford University.
-#  http://www.sbsi-sol-optimize.com/
-# Uses the two files mi25bfac.f and mi15blas.f (or LUSOL.f LUSOL_BLAS.f
-# depending on how they are named)
-#
-#PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
-#LUSOL_LIB = 
-
-
-

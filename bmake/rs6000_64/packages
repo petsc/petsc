@@ -2,12 +2,12 @@
 #
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
 # for information on retrieving them.
-# Important: If you use the IBM version of lapack you must include 
-#  -lessl at the end of the line defining the BLAS libraries.
 #
-BLASLAPACK_LIB  =  -lessl_r
-PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_ESSL_ONLY
-#-L/u0/kaushik/software/fblaslapack/rs6000_64 -lflapack -lfblas
+# ESSL: IBM math library - using this library requires some additional flags - as listed.
+#
+BLASLAPACK_LIB	       = -lessl_r
+PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_ESSL_ONLY 
+PETSC_HAVE_ESSL	       = -DPETSC_HAVE_ESSL
 #
 # Location of MPI (Message Passing Interface) software
 #
@@ -24,9 +24,3 @@ MPIRUN         = mpirun
 X11_INCLUDE    = 
 X11_LIB        = -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
-#
-# ESSL: IBM math library -
-# The library location should be given in BLASLAPACK_LIB above
-#
-PETSC_HAVE_ESSL = -DPETSC_HAVE_ESSL
-
