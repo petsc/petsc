@@ -116,7 +116,24 @@ static void (PETSC_STDCALL *f8)(SNES*,PetscReal*,PetscReal*,PetscReal*,SNESConve
 static void (PETSC_STDCALL *f2)(SNES*,Vec*,Vec*,void*,int*);
 static void (PETSC_STDCALL *f11)(SNES*,Vec*,Vec*,void*,int*);
 static void (PETSC_STDCALL *f3)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
+static void (PETSC_STDCALL *f73)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,int*);
+static void (PETSC_STDCALL *f74)(SNES*,void *,Vec*,PetscTruth*,int*);
 EXTERN_C_END
+
+/* These are not extern C because they are passed into non-extern C user level functions */
+int OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal*ynorm,PetscReal*gnorm,int *flag)
+{
+  int ierr = 0;
+  (*f73)(&snes,(void*)&ctx,&x,&f,&g,&y,&w,&fnorm,ynorm,gnorm,flag,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+int OurSNESLineSearchCheck(SNES snes,void *checkCtx,Vec x,PetscTruth *flag)
+{
+  int ierr = 0;
+  (*f74)(&snes,(void*)&checkCtx,&x,flag,&ierr);CHKERRQ(ierr);
+  return 0;
+}
 
 static int oursnesmonitor(SNES snes,int i,PetscReal d,void*ctx)
 {
@@ -355,13 +372,6 @@ void snesnolinesearchnonorms_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y
   *ierr = SNESNoLineSearchNoNorms(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
 
-void (PETSC_STDCALL *f73)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,int*);
-int OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal*ynorm,PetscReal*gnorm,int *flag)
-{
-  int ierr = 0;
-  (*f73)(&snes,(void*)&ctx,&x,&f,&g,&y,&w,&fnorm,ynorm,gnorm,flag,&ierr);CHKERRQ(ierr);
-  return 0;
-}
 
 void PETSC_STDCALL snessetlinesearch_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,int*),void *ctx,int *ierr)
 {
@@ -379,13 +389,6 @@ void PETSC_STDCALL snessetlinesearch_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,v
   }
 }
 
-void (PETSC_STDCALL *f74)(SNES*,void *,Vec*,PetscTruth*,int*);
-int OurSNESLineSearchCheck(SNES snes,void *checkCtx,Vec x,PetscTruth *flag)
-{
-  int ierr = 0;
-  (*f74)(&snes,(void*)&checkCtx,&x,flag,&ierr);CHKERRQ(ierr);
-  return 0;
-}
 
 void PETSC_STDCALL snessetlinesearchcheck_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,PetscTruth*,int*),void *ctx,int *ierr)
 {

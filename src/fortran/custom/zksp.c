@@ -80,6 +80,50 @@
 #endif
 
 EXTERN_C_BEGIN
+static void (PETSC_STDCALL *f2)(KSP*,int*,PetscReal*,KSPConvergedReason*,void*,int*);
+static void (PETSC_STDCALL *f1)(KSP*,int*,PetscReal*,void*,int*);
+static void (PETSC_STDCALL *f21)(void*,int*);
+static void (PETSC_STDCALL *f109)(KSP*,int*,int*,PetscReal*,void*,int*);
+static void (PETSC_STDCALL *f210)(void*,int*);
+EXTERN_C_END
+
+/* These are not extern C because they are passed into non-extern C user level functions */
+static int ourtest(KSP ksp,int i,PetscReal d,KSPConvergedReason *reason,void* ctx)
+{
+  int ierr;
+  (*f2)(&ksp,&i,&d,reason,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static int ourmonitor(KSP ksp,int i,PetscReal d,void* ctx)
+{
+  int ierr = 0;
+  (*f1)(&ksp,&i,&d,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static int ourdestroy(void* ctx)
+{
+  int ierr = 0;
+  (*f21)(ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static int ourmodify(KSP ksp,int i,int i2,PetscReal d,void* ctx)
+{
+  int ierr = 0;
+  (*f109)(&ksp,&i,&i2,&d,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static int ourmoddestroy(void* ctx)
+{
+  int ierr = 0;
+  (*f210)(ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+EXTERN_C_BEGIN
 
 void PETSC_STDCALL kspgmressetrestart_(KSP *ksp,int *max_k, int *ierr )
 {
@@ -173,13 +217,6 @@ void PETSC_STDCALL kspcreate_(MPI_Comm *comm,KSP *ksp,int *ierr){
   *ierr = KSPCreate((MPI_Comm)PetscToPointerComm(*comm),ksp);
 }
 
-static void (PETSC_STDCALL *f2)(KSP*,int*,PetscReal*,KSPConvergedReason*,void*,int*);
-static int ourtest(KSP ksp,int i,PetscReal d,KSPConvergedReason *reason,void* ctx)
-{
-  int ierr;
-  (*f2)(&ksp,&i,&d,reason,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
-}
 void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
       void (PETSC_STDCALL *converge)(KSP*,int*,PetscReal*,KSPConvergedReason*,void*,int*),void *cctx,int *ierr)
 {
@@ -234,20 +271,6 @@ void  kspvecviewmonitor_(KSP *ksp,int *it,PetscReal *norm,void *ctx,int *ierr)
   *ierr = KSPVecViewMonitor(*ksp,*it,*norm,ctx);
 }
 
-static void (PETSC_STDCALL *f1)(KSP*,int*,PetscReal*,void*,int*);
-static int ourmonitor(KSP ksp,int i,PetscReal d,void* ctx)
-{
-  int ierr = 0;
-  (*f1)(&ksp,&i,&d,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
-}
-static void (PETSC_STDCALL *f21)(void*,int*);
-static int ourdestroy(void* ctx)
-{
-  int ierr = 0;
-  (*f21)(ctx,&ierr);CHKERRQ(ierr);
-  return 0;
-}
 
 void PETSC_STDCALL kspsetmonitor_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,int*,PetscReal*,void*,int*),
                     void *mctx,void (PETSC_STDCALL *monitordestroy)(void *,int *),int *ierr)
@@ -342,22 +365,6 @@ void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len
 #else
   *ierr = PetscStrncpy(prefix,tname,len); if (*ierr) return;
 #endif
-}
-
-static void (PETSC_STDCALL *f109)(KSP*,int*,int*,PetscReal*,void*,int*);
-static int ourmodify(KSP ksp,int i,int i2,PetscReal d,void* ctx)
-{
-  int ierr = 0;
-  (*f109)(&ksp,&i,&i2,&d,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
-}
-
-static void (PETSC_STDCALL *f210)(void*,int*);
-static int ourmoddestroy(void* ctx)
-{
-  int ierr = 0;
-  (*f210)(ctx,&ierr);CHKERRQ(ierr);
-  return 0;
 }
 
 void PETSC_STDCALL kspfgmresmodifypcnochange_(KSP *ksp,int *total_its,int *loc_its,PetscReal *res_norm,void* dummy,int *ierr)

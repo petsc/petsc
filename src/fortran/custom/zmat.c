@@ -141,6 +141,27 @@
 #define matmpirowbssetpreallocation_     matmpirowbssetpreallocation
 #endif
 
+#include "petscts.h"
+
+EXTERN_C_BEGIN
+static void (PETSC_STDCALL *f7)(TS*,double*,Vec*,Vec*,void*,int*);
+static void (PETSC_STDCALL *f8)(SNES*,Vec*,Vec*,void*,int*);
+EXTERN_C_END
+
+/* These are not extern C because they are passed into non-extern C user level functions */
+static int ourmatfdcoloringfunctionts(TS ts,double t,Vec x,Vec y,void *ctx)
+{
+  int ierr = 0;
+  (*f7)(&ts,&t,&x,&y,ctx,&ierr);
+  return ierr;
+}
+
+static int ourmatfdcoloringfunctionsnes(SNES ts,Vec x,Vec y,void *ctx)
+{
+  int ierr = 0;
+  (*f8)(&ts,&x,&y,ctx,&ierr);
+  return ierr;
+}
 
 EXTERN_C_BEGIN
 
@@ -579,7 +600,6 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,int (PETSC_ST
   }
 }
 
-#include "petscts.h"
 /*
         MatFDColoringSetFunction sticks the Fortran function into the fortran_func_pointers
     this function is then accessed by ourmatfdcoloringfunction()
@@ -589,29 +609,12 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,int (PETSC_ST
    USER CAN HAVE ONLY ONE MatFDColoring in code Because there is no place to hang f7!
 */
 
-static void (PETSC_STDCALL *f7)(TS*,double*,Vec*,Vec*,void*,int*);
-
-static int ourmatfdcoloringfunctionts(TS ts,double t,Vec x,Vec y,void *ctx)
-{
-  int ierr = 0;
-  (*f7)(&ts,&t,&x,&y,ctx,&ierr);
-  return ierr;
-}
 
 void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,void (PETSC_STDCALL *f)(TS*,double*,Vec*,Vec*,void*,int*),
                                  void *ctx,int *ierr)
 {
   f7 = f;
   *ierr = MatFDColoringSetFunction(*fd,(int (*)(void))ourmatfdcoloringfunctionts,ctx);
-}
-
-static void (PETSC_STDCALL *f8)(SNES*,Vec*,Vec*,void*,int*);
-
-static int ourmatfdcoloringfunctionsnes(SNES ts,Vec x,Vec y,void *ctx)
-{
-  int ierr = 0;
-  (*f8)(&ts,&x,&y,ctx,&ierr);
-  return ierr;
 }
 
 

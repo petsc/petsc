@@ -81,7 +81,44 @@
 #endif
 
 EXTERN_C_BEGIN
+static void (PETSC_STDCALL *f2)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,int*);
+static void (PETSC_STDCALL *f1)(void *,Vec*,Vec*,int*);
+static void (PETSC_STDCALL *f3)(void *,Vec*,Vec*,int*);
+static void (PETSC_STDCALL *f9)(void *,int*);
+EXTERN_C_END
 
+/* These are not extern C because they are passed into non-extern C user level functions */
+static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol,PetscReal dtol,int m)
+{
+  int              ierr = 0;
+
+  (*f2)(ctx,&x,&y,&w,&rtol,&atol,&dtol,&m,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static int ourshellapply(void *ctx,Vec x,Vec y)
+{
+  int              ierr = 0;
+  (*f1)(ctx,&x,&y,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static int ourshellapplytranspose(void *ctx,Vec x,Vec y)
+{
+  int              ierr = 0;
+  (*f3)(ctx,&x,&y,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static int ourshellsetup(void *ctx)
+{
+  int              ierr = 0;
+
+  (*f9)(ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+EXTERN_C_BEGIN
 void PETSC_STDCALL pccompositespecialsetalpha_(PC *pc,PetscScalar *alpha,int *ierr)
 {
   *ierr = PCCompositeSpecialSetAlpha(*pc,*alpha);
@@ -139,14 +176,6 @@ void PETSC_STDCALL pcsettype_(PC *pc,CHAR type PETSC_MIXED_LEN(len),int *ierr PE
 }
 
 
-static void (PETSC_STDCALL *f1)(void *,Vec*,Vec*,int*);
-static int ourshellapply(void *ctx,Vec x,Vec y)
-{
-  int              ierr = 0;
-  (*f1)(ctx,&x,&y,&ierr);CHKERRQ(ierr);
-  return 0;
-}
-
 void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,int*),void *ptr,
                                     int *ierr)
 {
@@ -154,13 +183,6 @@ void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec
   *ierr = PCShellSetApply(*pc,ourshellapply,ptr);
 }
 
-static void (PETSC_STDCALL *f3)(void *,Vec*,Vec*,int*);
-static int ourshellapplytranspose(void *ctx,Vec x,Vec y)
-{
-  int              ierr = 0;
-  (*f3)(ctx,&x,&y,&ierr);CHKERRQ(ierr);
-  return 0;
-}
 void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytranspose)(void*,Vec *,Vec *,int*),
                                              int *ierr)
 {
@@ -168,14 +190,6 @@ void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytr
   *ierr = PCShellSetApplyTranspose(*pc,ourshellapplytranspose);
 }
 
-static void (PETSC_STDCALL *f9)(void *,int*);
-static int ourshellsetup(void *ctx)
-{
-  int              ierr = 0;
-
-  (*f9)(ctx,&ierr);CHKERRQ(ierr);
-  return 0;
-}
 
 void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,int*),int *ierr)
 {
@@ -184,14 +198,6 @@ void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,int
 }
 
 /* -----------------------------------------------------------------*/
-static void (PETSC_STDCALL *f2)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,int*);
-static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol,PetscReal dtol,int m)
-{
-  int              ierr = 0;
-
-  (*f2)(ctx,&x,&y,&w,&rtol,&atol,&dtol,&m,&ierr);CHKERRQ(ierr);
-  return 0;
-}
 
 void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,
          void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,PetscReal*,PetscReal*,PetscReal*,int*,int*),

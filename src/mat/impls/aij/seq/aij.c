@@ -1450,7 +1450,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatIsSymmetric_SeqAIJ"
 int MatIsSymmetric_SeqAIJ(Mat A,PetscTruth *f)
 {
-  Mat B; int ierr;
+  int ierr;
   PetscFunctionBegin;
   ierr = MatIsTranspose_SeqAIJ(A,A,f); CHKERRQ(ierr);
   PetscFunctionReturn(0);

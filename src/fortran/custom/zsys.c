@@ -145,6 +145,39 @@
 #endif
 
 EXTERN_C_BEGIN
+static void (PETSC_STDCALL *f2)(int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),int*,int*,const CHAR PETSC_MIXED_LEN(len4),void*,int* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4));
+EXTERN_C_END
+
+/* These are not extern C because they are passed into non-extern C user level functions */
+static int ourerrorhandler(int line,const char *fun,const char *file,const char *dir,int n,int p,const char *mess,void *ctx)
+{
+  int ierr = 0,len1,len2,len3,len4;
+  
+  PetscStrlen(fun,&len1);
+  PetscStrlen(file,&len2);
+  PetscStrlen(dir,&len3);
+  PetscStrlen(mess,&len4);
+
+#if defined(PETSC_USES_CPTOFCD)
+ {
+   CHAR fun_c,file_c,dir_c,mess_c;
+
+   fun_c  = _cptofcd(fun,len1);
+   file_c = _cptofcd(file,len2);
+   dir_c  = _cptofcd(dir,len3);
+   mess_c = _cptofcd(mess,len4);
+   (*f2)(&line,fun_c,file_c,dir_c,&n,&p,mess_c,ctx,&ierr,len1,len2,len3,len4);
+
+ }
+#elif defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
+  (*f2)(&line,fun,len1,file,len2,dir,len3,&n,&p,mess,len4,ctx,&ierr);
+#else
+  (*f2)(&line,fun,file,dir,&n,&p,mess,ctx,&ierr,len1,len2,len3,len4);
+#endif
+  return ierr;
+}
+
+EXTERN_C_BEGIN
 /*
     integer i_x,i_y,shift
     Vec     x,y
@@ -188,35 +221,6 @@ void petscemacsclienterrorhandler_(int *line,const char *fun,const char *file,co
 void petscignoreerrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,int *ierr)
 {
   *ierr = PetscIgnoreErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
-}
-
-static void (PETSC_STDCALL *f2)(int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),int*,int*,const CHAR PETSC_MIXED_LEN(len4),void*,int* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4));
-static int ourerrorhandler(int line,const char *fun,const char *file,const char *dir,int n,int p,const char *mess,void *ctx)
-{
-  int ierr = 0,len1,len2,len3,len4;
-  
-  PetscStrlen(fun,&len1);
-  PetscStrlen(file,&len2);
-  PetscStrlen(dir,&len3);
-  PetscStrlen(mess,&len4);
-
-#if defined(PETSC_USES_CPTOFCD)
- {
-   CHAR fun_c,file_c,dir_c,mess_c;
-
-   fun_c  = _cptofcd(fun,len1);
-   file_c = _cptofcd(file,len2);
-   dir_c  = _cptofcd(dir,len3);
-   mess_c = _cptofcd(mess,len4);
-   (*f2)(&line,fun_c,file_c,dir_c,&n,&p,mess_c,ctx,&ierr,len1,len2,len3,len4);
-
- }
-#elif defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
-  (*f2)(&line,fun,len1,file,len2,dir,len3,&n,&p,mess,len4,ctx,&ierr);
-#else
-  (*f2)(&line,fun,file,dir,&n,&p,mess,ctx,&ierr,len1,len2,len3,len4);
-#endif
-  return ierr;
 }
 
 void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),int*,int*,const CHAR PETSC_MIXED_LEN(len4),void*,int* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4)),void *ctx,int *ierr)
