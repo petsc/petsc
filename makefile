@@ -28,6 +28,8 @@ all: chkpetsc_dir
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
 	-@echo "Using configuration flags: $(CONF)"
 	-@echo "Using include paths: $(PETSC_INCLUDE)"
+	-@echo "Using PETSc directory: $(PETSC_DIR)"
+	-@echo "Using PETSc arch: $(PETSC_ARCH)"
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
 	   ACTION=libfast  tree 
@@ -42,6 +44,9 @@ testexamples: chkpetsc_dir
 	-@echo "Using compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
 	-@echo "Using include paths: $(PETSC_INCLUDE)"
+	-@echo "Using PETSc directory: $(PETSC_DIR)"
+	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+	-@echo "------------------------------------------"
 	-@echo "Using linker: $(CLINKER)"
 	-@echo "Using libraries: $(PETSC_LIB)"
 	-@echo "------------------------------------------"
