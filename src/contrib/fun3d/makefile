@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.13 2000/01/23 18:29:27 bsmith Exp kaushik $ 
+# $Id: makefile,v 1.14 2000/08/01 22:40:16 kaushik Exp bsmith $ 
 
 #requiresscalar real
 
@@ -41,19 +41,33 @@ puns3d: puns3d.a.o
 puns3d.a.o:
 
 runflow1:
-	-@${MPIRUN} -np 1 flow -path "testgrid" | grep clift | tail -1 > runflow1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 flow -mesh testgrid/uns3d.msh -partition testgrid/part_vec.part | grep clift | tail -1 > runflow1.tmp 2>&1;   \
 	   if (diff testgrid/coef.dat runflow1.tmp) then true; \
 	   else echo "Possible problem with runflow1, diffs above"; fi; \
 	   ${RM} -f runflow1.tmp
 runflow4:
-	-@${MPIRUN} -np 4 flow -path "testgrid" | grep clift | tail -1 > runflow4.tmp 2>&1;   \
+	-@${MPIRUN} -np 4 flow -mesh testgrid/uns3d.msh -partition testgrid/part_vec.part | grep clift | tail -1 > runflow4.tmp 2>&1;   \
 	   if (diff testgrid/coef.dat runflow4.tmp) then true; \
 	   else echo "Possible problem with runflow4, diffs above"; fi; \
 	   ${RM} -f runflow4.tmp
+runflow64:
+	-@${MPIRUN} -np 64 flow -mesh 1Grid/uns3d.msh -partition 1Grid/Pmetis/part_vec.part | grep clift | tail -1 > runflow64.tmp 2>&1;   \
+	   if (diff testgrid/coef.dat runflow64.tmp) then true; \
+	   else echo "Possible problem with runflow64, diffs above"; fi; \
+	   ${RM} -f runflow64.tmp
 tags:
 	etags -f TAGS *.F *.c *.h
 
 #.F.o:
 #	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} ${USERCPPFLAGS} $*.F
+
+
+
+
+
+
+
+
+
 
 

@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.42 2000/07/31 20:12:54 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.43 2000/08/01 22:04:24 kaushik Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -57,7 +57,7 @@ long long counter0,counter1;
 int  ntran[max_nbtran];        /* transition stuff put here to make global */
 REAL dxtran[max_nbtran];
 
-#ifdef PETSC_HAVE_AMS
+#ifdef PETSC_HAVE_AMS_no
 AMS_Comm ams;
 AMS_Memory memid;
 int ams_err;
@@ -142,51 +142,51 @@ int main(int argc,char **args)
   user.tsCtx = &tsCtx;
 
     /* AMS Stuff */
-#ifdef PETSC_HAVE_AMS
+#ifdef PETSC_HAVE_AMS_no
     /* Create and publish the Communicator */
-    ams_err = AMS_Comm_publish("FUN3D", &ams, MPI_TYPE);
-    AMS_Check_error(ams_err, &msg);
+    ams_err = AMS_Comm_publish("FUN3D",&ams,MPI_TYPE);
+    AMS_Check_error(ams_err,&msg);
   
     /* Create a Memory */
-    ams_err = AMS_Memory_create(ams, "FUN3D-MEM", &memid);
-    AMS_Check_error(ams_err, &msg);
+    ams_err = AMS_Memory_create(ams,"FUN3D-MEM",&memid);
+    AMS_Check_error(ams_err,&msg);
 
     /* Add vtk fields to the memory */
-    ams_err =  AMS_Memory_add_field(memid, "vtk", &vtk, 1, AMS_STRING,
-                               AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err, &msg);
+    ams_err =  AMS_Memory_add_field(memid,"vtk",&vtk,1,AMS_STRING,
+                               AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err,&msg);
 
     /* Add type field */
-    ams_err =  AMS_Memory_add_field(memid, "type", &grid_type, 1, AMS_STRING,
-                               AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err, &msg);
+    ams_err =  AMS_Memory_add_field(memid,"type",&grid_type,1,AMS_STRING,
+                               AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err,&msg);
 
     /* Add point dimensions field */
     point_dims[0] = user.grid->nnodes;
     point_dims[1] = 3;
 
-    ams_err =  AMS_Memory_add_field(memid, "point dims", point_dims, 2, AMS_INT,
-                               AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err, &msg);
+    ams_err =  AMS_Memory_add_field(memid,"point dims",point_dims,2,AMS_INT,
+                               AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err,&msg);
 
     /* Add cell dimensions field */
     
     cell_dims[0] = user.grid->ncell;
     cell_dims[1] = 3;
 
-    ams_err =  AMS_Memory_add_field(memid, "cell dims", cell_dims, 2, AMS_INT,
-                               AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err, &msg);
+    ams_err =  AMS_Memory_add_field(memid,"cell dims",cell_dims,2,AMS_INT,
+                               AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err,&msg);
 
     /* Add cell type field */
-    ams_err =  AMS_Memory_add_field(memid, "cell type", &cell_type, 1, AMS_STRING,
-                               AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err, &msg);
+    ams_err =  AMS_Memory_add_field(memid,"cell type",&cell_type,1,AMS_STRING,
+                               AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err,&msg);
 
     /* Add points field */
-    ams_err =  AMS_Memory_add_field(memid, "points", user.grid->xyz, 3*user.grid->nnodesLoc,
-                          AMS_DOUBLE, AMS_READ, AMS_DISTRIBUTED, AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err, &msg);
+    ams_err =  AMS_Memory_add_field(memid,"points",user.grid->xyz,3*user.grid->nnodesLoc,
+                          AMS_DOUBLE,AMS_READ,AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err,&msg);
 
     /* Set Field Dimensions */
     p_start_ind[0] = rstart;   /* Starting index in the first dimension */
@@ -198,17 +198,17 @@ int main(int argc,char **args)
     /*
      * This would be an array of user.grid->nnodesLoc rows and 3 columns
      */ 
-    err = AMS_Memory_set_field_block(memid, "points", 2, p_start_ind, p_end_ind);
-    AMS_Check_error(err, &msg);
+    ams_err = AMS_Memory_set_field_block(memid,"points",2,p_start_ind,p_end_ind);
+    AMS_Check_error(ams_err,&msg);
 
     /* Add cells field */
-    ams_err =  AMS_Memory_add_field(memid, "cells", user.grid->nntet, 4*user.grid->ncellLoc,
-                          AMS_INT, AMS_READ, AMS_DISTRIBUTED, AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err, &msg);
+    ams_err =  AMS_Memory_add_field(memid,"cells",user.grid->nntet,4*user.grid->ncellLoc,
+                          AMS_INT,AMS_READ,AMS_DISTRIBUTED,AMS_REDUCT_UNDEF); 
+    AMS_Check_error(ams_err,&msg);
 
     /* Set Field Dimensions */
     c_start_ind[0] = rstart;   /* Starting index in the first dimension */
-    c_end_ind[0] = rstart+user.grid->ncellLoc-1;    /* Ending index in the first dimension */
+    c_end_ind[0] = rstart+user.grid->ncellLoc-1;  /* Ending index in the first dimension */
 
     c_start_ind[1] = 0;   /* Starting index in the second dimension */
     c_end_ind[1] = 3;    /* Ending index in the second dimension */
@@ -216,14 +216,14 @@ int main(int argc,char **args)
     /*
      * This would be an array of user.grid->nnodesLoc rows and 3 columns
      */ 
-    err = AMS_Memory_set_field_block(memid, "cells", 2, c_start_ind, c_end_ind);
-    AMS_Check_error(err, &msg);
+    ams_err = AMS_Memory_set_field_block(memid,"cells",2,c_start_ind,c_end_ind);
+    AMS_Check_error(ams_err,&msg);
 
 
     /* Add points field */
-    ams_err =  AMS_Memory_add_field(memid, "supervectors", user.grid->qnode, 4*user.grid->nnodesLoc,
-                          AMS_DOUBLE, AMS_READ, AMS_DISTRIBUTED, AMS_REDUCT_UNDEF);
-    AMS_Check_error(ams_err, &msg);
+    ams_err =  AMS_Memory_add_field(memid,"supervectors",user.grid->qnode,4*user.grid->nnodesLoc,
+                          AMS_DOUBLE,AMS_READ,AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err,&msg);
 
     /* Set Field Dimensions */
     s_start_ind[0] = rstart;   /* Starting index in the first dimension */
@@ -235,8 +235,8 @@ int main(int argc,char **args)
     /*
      * This would be an array of ??? rows and 4 columns
      */ 
-    err = AMS_Memory_set_field_block(memid, "supervectors", 2, s_start_ind, s_end_ind);
-    AMS_Check_error(err, &msg);
+    ams_err = AMS_Memory_set_field_block(memid,"supervectors",2,s_start_ind,s_end_ind);
+    AMS_Check_error(ams_err,&msg);
 
 #endif
 
@@ -685,7 +685,7 @@ int GetLocalOrdering(GRID *grid)
   int	     *tmp,*tmp1,*tmp2;
   Scalar     time_ini,time_fin;
   Scalar     *ftmp,*ftmp1;
-  char       part_name[256],mesh_file[256];
+  char       mesh_file[256];
   AO         ao;
   FILE       *fptr,*fptr1;
   PetscTruth flg;
@@ -695,10 +695,7 @@ int GetLocalOrdering(GRID *grid)
   /* Read the integer grid parameters */ 
   ICALLOC(grid_param,&tmp);
   if (!rank) {
-   path_name = "."
-   OptionsGetString(PETSC_NULL,"-path",path_name,256,flg)
-   ierr = PetscStrcpy(mesh_file,path_name);
-   ierr = PetscStrcat(mesh_file,"/uns3d.msh);
+   ierr = OptionsGetString(PETSC_NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
    ierr = PetscBinaryOpen(mesh_file,BINARY_RDONLY,&fdes);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp,grid_param,PETSC_INT);CHKERRQ(ierr);
@@ -744,21 +741,10 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
 
   if (!rank) {
-    char part_file[256];
-    ierr = PestcStrcpy(part_name,path_name);
-    sprintf(part_file,"/part_vec.part.%d",size);
-    ierr = OptionsHasName(0,"-use_kmetis",&flg);CHKERRQ(ierr);
-    if (flg) {
-      part_file = "\0";
-      sprintf(part_file,"/kmetis/part_vec.part.%d",size);
-    }
-    ierr = OptionsHasName(0,"-use_pmetis",&flg);CHKERRQ(ierr);
-    if (flg) {
-      part_file = "\0";
-      sprintf(part_file,"/pmetis/part_vec.part.%d",size);
-    }
-    ierr = PetscStrcat(part_name,part_file);
-    fptr = fopen(part_name,"r");
+    char spart_file[256],part_file[256];
+    ierr = OptionsGetString(PETSC_NULL,"-partition",spart_file,256,&flg);CHKERRQ(ierr);
+    sprintf(part_file,"%s.%d",spart_file,size);
+    fptr = fopen(part_file,"r");
     if (!fptr) SETERRQ1(1,1,"Cannot open file %s\n",part_file);
     for (inode = 0; inode < nnodes; inode++) {
       fscanf(fptr,"%d\n",&node1); 
@@ -1539,8 +1525,9 @@ int GetLocalOrdering(GRID *grid)
  }
  ierr = OptionsHasName(0,"-partition_info",&flg);CHKERRQ(ierr);
  if (flg) {
-  sprintf(part_name,"output.%d",rank);
-  fptr1 = fopen(part_name,"w");
+  char part_file[256];
+  sprintf(part_file,"output.%d",rank);
+  fptr1 = fopen(part_file,"w");
 
   fprintf(fptr1,"---------------------------------------------\n");
   fprintf(fptr1,"Local and Global Grid Parameters are :\n");
