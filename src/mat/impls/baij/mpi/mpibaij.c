@@ -23,11 +23,11 @@ EXTERN int MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar*);
    into the single precision data structures.
 */
 #if defined(PETSC_USE_MAT_SINGLE)
-EXTERN int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-EXTERN int MatSetValues_MPIBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-EXTERN int MatSetValuesBlocked_MPIBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-EXTERN int MatSetValues_MPIBAIJ_HT_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-EXTERN int MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+EXTERN int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat,int,const int*,int,const int*,const MatScalar*,InsertMode);
+EXTERN int MatSetValues_MPIBAIJ_MatScalar(Mat,int,const int*,int,const int*,const MatScalar*,InsertMode);
+EXTERN int MatSetValuesBlocked_MPIBAIJ_MatScalar(Mat,int,const int*,int,const int*,const MatScalar*,InsertMode);
+EXTERN int MatSetValues_MPIBAIJ_HT_MatScalar(Mat,int,const int*,int,const int*,const MatScalar*,InsertMode);
+EXTERN int MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat,int,const int*,int,const int*,const MatScalar*,InsertMode);
 #else
 #define MatSetValuesBlocked_SeqBAIJ_MatScalar      MatSetValuesBlocked_SeqBAIJ
 #define MatSetValues_MPIBAIJ_MatScalar             MatSetValues_MPIBAIJ

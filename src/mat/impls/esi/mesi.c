@@ -173,7 +173,7 @@ int MatSetValues_ESI(Mat mat,int m,const int im[],int n,const int in[],const Pet
 #endif
     if (im[i] >= rstart && im[i] < rend) {
       for (j=0; j<n; j++) {
-          ierr = iesi->wmat->copyIntoRow(im[i],&v[i+j*m],&in[j],1);CHKERRQ(ierr);
+          ierr = iesi->wmat->copyIntoRow(im[i],(double *)&v[i+j*m],(int *)&in[j],1);CHKERRQ(ierr);
        }
     } else {
       ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
