@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.139 1998/05/20 13:39:34 bsmith Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.140 1998/05/20 23:03:33 balay Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1580,7 +1580,7 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 
 #undef __FUNC__  
 #define __FUNC__ "VecGetMap"
-/*@
+/*@C
    VecGetMap - Returns the map associated with the vector
 
    Not Collective

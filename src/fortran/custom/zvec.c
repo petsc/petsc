@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.36 1998/05/24 20:20:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.37 1998/05/30 01:45:56 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -32,7 +32,9 @@ static char vcid[] = "$Id: zvec.c,v 1.36 1998/05/24 20:20:50 bsmith Exp bsmith $
 #define mapgetglobalrange_     MAPGETGLOBALRANGE
 #define mapdestroy_            MAPDESTROY
 #define mapcreatempi_          MAPCREATEMPI
+#define vecgetmap_             VECGETMAP
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define vecgetmap_             vecgetmap
 #define mapcreatempi_          mapcreatempi
 #define mapgetglobalrange_     mapgetglobalrange
 #define mapgetglobalsize_      mapgetglobalsize
@@ -65,6 +67,13 @@ static char vcid[] = "$Id: zvec.c,v 1.36 1998/05/24 20:20:50 bsmith Exp bsmith $
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void vecgetmap_(Vec x,Map *map, int *__ierr )
+{
+  Map m;
+  *__ierr = VecGetMap((Vec)PetscToPointer( (x) ),&m);
+  *(PetscFortranAddr*) map = PetscFromPointer(m);
+}
 
 void mapgetlocalsize_(Map *m,int *n, int *__ierr )
 {
