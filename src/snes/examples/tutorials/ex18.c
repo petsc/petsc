@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.12 2001/01/23 20:57:12 balay Exp bsmith $ */
+/* $Id: ex18.c,v 1.13 2001/03/15 21:29:50 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -131,31 +131,23 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
 {
   DMMG    dmmg = (DMMG)ptr;
   AppCtx  *user = (AppCtx*)dmmg->user;
-  int     i,j,row,ierr,xs,ys,xm,ym,Xm,Ym,Xs,Ys;
+  int     i,j,ierr,xs,ys,xm,ym;
   double  tleft = user->tleft;
-  Scalar  *x;
-  Vec     localX;
+  Scalar  **x;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
 
   /* Get ghost points */
   ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners((DA)dmmg->dm,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,X,(void**)&x);CHKERRQ(ierr);
 
   /* Compute initial guess */
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
-      row = i - Xs + (j - Ys)*Xm; 
-      x[row] = tleft;
+      x[j][i] = tleft;
     }
   }
-  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
-
-  /* Insert values into global vector */
-  ierr = DALocalToGlobal((DA)dmmg->dm,localX,INSERT_VALUES,X);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,X,(void**)&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
@@ -329,13 +321,9 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 
     }
   }
-  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
-
-  /* Insert values into global vector */
-  ierr = DALocalToGlobal((DA)dmmg->dm,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(localF,&f);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector((DA)dmmg->dm,&localF);CHKERRQ(ierr);
   ierr = PetscLogFlops((22 + 4*POWFLOP)*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
