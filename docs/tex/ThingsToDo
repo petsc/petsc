@@ -45,7 +45,7 @@ Additional Capabilities that PETSc Needs:
     original matrix. Then fix MatMult() etc to make sure one does not
     multiply a factored matrix!!!!!!!!!!!!
 
-  * Take mention of BLACS and Scalapack from PETSc picture.
+  X Take mention of BLACS and Scalapack from PETSc picture.
 
   - Create an INDEX for examples
 
