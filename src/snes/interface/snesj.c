@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.9 1995/05/11 17:53:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.10 1995/05/12 04:18:43 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"
@@ -13,12 +13,13 @@ static char vcid[] = "$Id: snesj.c,v 1.9 1995/05/11 17:53:49 curfman Exp bsmith 
    differences. 
 
    Input Parameters:
-.  x - compute Jacobian at this point
-.  ctx - application's Function context
+.  x1 - compute Jacobian at this point
+.  ctx - application's function context, as set with SNESSetFunction()
 
    Output Parameters:
 .  J - Jacobian
 .  B - preconditioner, same as Jacobian
+.  flag - matrix flag
 
    Notes:
    This routine is slow and expensive, and is not currently optimized
@@ -31,7 +32,7 @@ static char vcid[] = "$Id: snesj.c,v 1.9 1995/05/11 17:53:49 curfman Exp bsmith 
 
 .seealso: SNESSetJacobian(), SNESTestJacobian()
 @*/
-int SNESDefaultComputeJacobian(SNES snes, Vec x1,Mat *J,Mat *B,int *flag,
+int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,int *flag,
                                void *ctx)
 {
   Vec    j1,j2,x2;
