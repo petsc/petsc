@@ -259,6 +259,7 @@ class Configure(config.base.Configure):
     if 'CXX' in self.framework.argDB:
       self.addArgumentSubstitution('CXX', 'CXX')
       self.addArgumentSubstitution('CXXFLAGS', 'CXXFLAGS')
+      self.addArgumentSubstitution('CXX_CXXFLAGS', 'CXX_CXXFLAGS')
       self.isGCXX = Configure.isGNU(self.framework.argDB['CXX'])
     else:
       self.addSubstitution('CXX', '')
