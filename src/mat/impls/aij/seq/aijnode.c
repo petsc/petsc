@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.93 1998/11/30 22:33:39 bsmith Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.94 1998/12/01 17:14:30 balay Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1204,7 +1204,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   int        shift = a->indexshift, *r,*ic,*c, ierr, n = a->m, *bi = b->i; 
   int        *bj = b->j+shift, *nbj=b->j +(!shift), *ajtmp, *bjtmp, nz, row, prow;
   int        *ics,i,j, idx, *ai = a->i, *aj = a->j+shift, *bd = b->diag, node_max, nsz;
-  int        *ns, *nsa, *tmp_vec1, *tmp_vec2, *nsmap, *pj;
+  int        *ns, *tmp_vec1, *tmp_vec2, *nsmap, *pj;
   Scalar     *rtmp1, *rtmp2, *rtmp3,*v1, *v2, *v3, *pc1, *pc2, *pc3, mul1, mul2, mul3;
   Scalar     tmp, *ba = b->a+shift, *aa = a->a+shift, *pv, *rtmps1, *rtmps2, *rtmps3;
 
