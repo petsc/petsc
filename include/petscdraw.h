@@ -69,4 +69,6 @@ extern int DrawLGReset(DrawLGCtx);
 extern int DrawLGGetAxisCtx(DrawLGCtx,DrawAxisCtx *);
 extern int DrawLGGetDrawCtx(DrawLGCtx,DrawCtx *);
 
+int DrawTensorContour(DrawCtx,int,int,double*,double*,Vec);
+
 #endif
