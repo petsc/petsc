@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.3 1995/08/20 18:12:55 curfman Exp curfman $";
+static char vcid[] = "$Id: ex20.c,v 1.4 1995/08/21 16:05:48 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -51,9 +51,10 @@ int main(int argc,char **args)
   ierr = VecView(u,STDOUT_VIEWER); CHKERRA(ierr);
 
   MPIU_printf(MPI_COMM_WORLD,"writing vector in binary to vector.dat ...\n"); 
-  sprintf(filename,"vector.dat");
+/*  sprintf(filename,"vector.dat");
   if ((fd = creat(filename, 0666)) == -1)
-    SETERRA(1,"Cannot create filename for writing.");
+    SETERRA(1,"Cannot create filename for writing."); */
+  ierr = PetscBinaryFileOpen("vector.dat",O_CREAT,&fd); CHKERRA(ierr);
   ierr = VecViewBinary(u,fd); CHKERRA(ierr);
   close(fd);
   ierr = VecDestroy(u); CHKERRA(ierr);
@@ -73,10 +74,11 @@ int main(int argc,char **args)
   PLogEventRegister(VECTOR_READ,"Read Vector     ");
   PLogEventBegin(VECTOR_READ,0,0,0,0);
   MPIU_printf(MPI_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
-  sprintf(filename,"vector.dat");
+/*  sprintf(filename,"vector.dat");
   if ((fd = open(filename, O_RDONLY, 0)) == -1) {
     SETERRQ(1,"Cannot open filename for reading.");
-  }
+  } */
+  ierr = PetscBinaryFileOpen("vector.dat",O_RDONLY,&fd); CHKERRA(ierr);
   vtype = VECSEQ;
   if (OptionsHasName(0,"-mpi_objects") || numtids>1) vtype = VECMPI;
   VecLoadBinary(MPI_COMM_WORLD,fd,vtype,ind,&u); CHKERRA(ierr);
@@ -90,4 +92,30 @@ int main(int argc,char **args)
   return 0;
 }
 
+/*@
+   PetscBinaryFileOpen - Opens a file for binary input/output.
 
+   Input Parameters:
+.  name - name of file 
+.  type - type of file
+$    O_CREAT - create new file for binary output
+$    O_RDONLY - open existing file for binary input
+$    possibly others?
+
+   Output Parameter:
+.  fd - file descriptor
+
+.keywords - binary, file, open, input, output
+@*/
+PetscBinaryFileOpen(char *name,int type,int *fd)
+{
+  /* check for valid values of type? */
+  if ((*fd = open(name,type,0)) == -1) {
+    if (type == O_CREAT) {
+      SETERRQ(1,"PetscBinaryFileOpen: Cannot open file for writing");
+    } else if (type == O_RDONLY) {
+      SETERRQ(1,"PetscBinaryFileOpen: Cannot open file for reading");
+    } else SETERRQ(1,"PetscBinaryFileOpen: Cannot open file");
+  }
+  return 0;
+}
