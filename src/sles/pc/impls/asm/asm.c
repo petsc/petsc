@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.84 1998/10/19 22:17:40 bsmith Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.85 1998/11/19 01:15:39 balay Exp balay $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -354,6 +354,7 @@ static int PCPrintHelp_ASM(PC pc,char *p)
   (*PetscHelpPrintf)(pc->comm," Options for PCASM preconditioner:\n");
   (*PetscHelpPrintf)(pc->comm," %spc_asm_blocks <blks>: total subdomain blocks\n",p);
   (*PetscHelpPrintf)(pc->comm, " %spc_asm_overlap <ovl>: amount of overlap between subdomains, defaults to 1\n",p); 
+  (*PetscHelpPrintf)(pc->comm, " %spc_asm_inplace: delete the sub-matrices after PCSetUpOnBlocks() is done\n",p); 
   (*PetscHelpPrintf)(pc->comm, " %spc_asm_type <basic,restrict,interpolate,none>: type of restriction/interpolation\n",p); 
   (*PetscHelpPrintf)(pc->comm," %ssub : prefix to control options for individual blocks.\
   Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
