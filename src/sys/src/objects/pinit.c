@@ -426,8 +426,8 @@ int PetscInitialize(int *argc,char ***args,const char file[],const char help[])
      We delay until here to do it, since PetscMalloc() may not have been
      setup before this.
   */
-  ierr = PetscCommDuplicate_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);CHKERRQ(ierr);
-  ierr = PetscCommDuplicate_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);CHKERRQ(ierr);
 
   /*
      Load the dynamic libraries (on machines that support them), this registers all
@@ -624,8 +624,8 @@ int PetscFinalize(void)
        Destroy PETSC_COMM_SELF/WORLD as a MPI_Comm with the PETSc 
      attribute.
   */
-  ierr = PetscCommDestroy_Private(&PETSC_COMM_SELF);CHKERRQ(ierr);
-  ierr = PetscCommDestroy_Private(&PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&PETSC_COMM_SELF);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   /*
        Free all the registered create functions, such as KSPList, VecList, SNESList, etc
@@ -701,9 +701,9 @@ int PetscFinalize(void)
      Note: In certain cases PETSC_COMM_WORLD is never MPI_Comm_free()ed because 
    the communicator has some outstanding requests on it. Specifically if the 
    flag PETSC_HAVE_BROKEN_REQUEST_FREE is set (for IBM MPI implementation). See 
-   src/vec/utils/vpscat.c. Due to this the memory allocated in PetscCommDuplicate_Private()
+   src/vec/utils/vpscat.c. Due to this the memory allocated in PetscCommDuplicate()
    is never freed as it should be. Thus one may obtain messages of the form
-   [ 1] 8 bytes PetscCommDuplicate_Private() line 645 in src/sys/src/mpiu.c indicating the
+   [ 1] 8 bytes PetscCommDuplicate() line 645 in src/sys/src/mpiu.c indicating the
    memory was not freed.
 
 */

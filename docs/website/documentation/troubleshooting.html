@@ -8,13 +8,13 @@
 <table width="100%">
   <tbody>
     <tr>
-      <td width="49%" valign="top">
+      <td width="26%" valign="top">
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
       </ul>
       </td>
-      <td width="75%"><!--##begin-->
+      <td width="74%"><!--##begin-->
       <h1>Docs:&nbsp;&nbsp; Troubleshooting</h1>
 <!--##end--> </td>
     </tr>
@@ -23,7 +23,7 @@
       <hr size="4" color="#FF5B5B"> </td>
     </tr>
     <tr>
-      <td width="49%" valign="top">
+      <td width="26%" valign="top">
       <ul>
         <li><a href="../download/index.html"><strong>Download</strong></a></li>
         <li><a href="../features/index.html"><strong>Features</strong></a></li>
@@ -49,7 +49,7 @@ PETSc</strong></a></li>
         <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
       </ul>
       </td>
-      <td width="75%" valign="top"><!--##begin-->
+      <td width="74%" valign="top"><!--##begin-->
       <p align="left">Doing a search below will usually lead    
 straight to the problem.</p>
       <ul>
@@ -65,6 +65,9 @@ a test suite).</li>
       <p>We continually update this guide; so please click here to get
 the <a href="http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html">most
 recent version.of the troubleshooting guide</a>.</p>
+  </tbody>
+</table>
+</body>
       <hr>
       <ol type="1" start="1">
         <li><font color="#ff0000"><strong>Symptom</strong>: </font><br>
@@ -1394,6 +1397,15 @@ do not know where to display the debugger window.
 -display displayname where displayname is something like mymachine.0.0
 
         </li>
+        <li><font color="#ff0000"><strong>Symptom</strong>:</font> 
+Too many communicators (2046) in MPI_Comm_dup
+          <p><font color="#ff0000"><strong>Problem:</strong></font>If you create a PETSc object
+with MPI_COMM_WORLD, MPI_COMM_SELF or a communicator you made yourself, PETSc needs to duplicate
+the communicator (otherwise it may have conflicts between the tags PETSc uses and you use). Thus if
+you create many PETSc objects you may run out of communicators.
+          <p><font color="#ff0000"><strong>Cure: </strong></font> Use PETSC_COMM_WORLD, PETSC_COMM_SELF,
+or a communicator obtained with PetscCommDuplicate() or PetscObjectGetComm().
+        </li>
       </ol>
 <!--##end--> </td>
     </tr>
@@ -1401,7 +1413,5 @@ do not know where to display the debugger window.
       <td width="100%" colspan="2">
       <hr size="4" color="#FF5B5B"> </td>
     </tr>
-  </tbody>
-</table>
-</body>
+
 </html>
