@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.10 1996/04/16 00:01:10 balay Exp balay $;
+C  $Id: mat.h,v 1.11 1996/04/16 03:50:00 balay Exp bsmith $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -64,12 +64,12 @@ C
 C  Matrix orderings
 C
       integer ORDER_NATURAL,ORDER_ND,ORDER_1WD,
-     *        ORDER_RCM,ORDER_QMD,ORDER_APPLICATION_1,
-     *        ORDER_APPLICATION_2
+     *        ORDER_RCM,ORDER_QMD,ORDER_ROWLENGTH,
+     *        ORDER_APPLICATION_1,ORDER_APPLICATION_2
 
       parameter( ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
-     *           ORDER_RCM=3,ORDER_QMD=4,ORDER_APPLICATION_1=5,
-     *           ORDER_APPLICATION_2=6)
+     *           ORDER_RCM=3,ORDER_QMD=4,ORDER_ROWLENGTH=5,
+     *           ORDER_APPLICATION_1=6,ORDER_APPLICATION_2=7)
 C
 C  Options for SOR and SSOR
 C
