@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.13 1997/10/16 23:28:36 keyes Exp $";
+c  "$Id: resid_fp.F,v 1.14 1997/10/17 18:58:03 curfman Exp curfman $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -129,9 +129,9 @@ c          den (i,j,k)= ( one+p5*gm1*(fsmach**2-
 c     &                 (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
 c1     continue
 c
-      do 1 k=gzsf1,gzef01
-      do 1 j=gysf1,gyef01
-      do 1 i=gxsf1,gxef01
+      do 1 k=gzsf2,gzefm1
+      do 1 j=gysf2,gyefm1
+      do 1 i=gxsf2,gxefm1
 c       xne = p25 * (x(i,j,k)+x(i+1,j,k)+x(i,j+1,k)+x(i+1,j+1,k))
 c	xnw = p25 * (x(i,j,k)+x(i-1,j,k)+x(i,j+1,k)+x(i-1,j+1,k))
 c	xse = p25 * (x(i,j,k)+x(i+1,j,k)+x(i,j-1,k)+x(i+1,j-1,k))
@@ -152,10 +152,10 @@ c       cne = (x(i,j,k)-xnw) / (xne-xnw)
 c	cnw = one - cne
 c       cse = (x(i,j,k)-xsw) / (xse-xsw)
 c	csw = one - cse
-c       fpe = cen*fp(i+1,j+1) + ces*fp(i+1,j)
-c       fpw = cwn*fp(i,j+1)   + cws*fp(i,j)
-c       fpn = cne*fp(i+1,j+1) + cnw*fp(i,j+1)
-c       fps = cse*fp(i+1,j)   + csw*fp(i,j)
+c       fpe = cen*fp(i+1,j+1,k) + ces*fp(i+1,j,k)
+c       fpw = cwn*fp(i,j+1,k)   + cws*fp(i,j,k)
+c       fpn = cne*fp(i+1,j+1,k) + cnw*fp(i,j+1,k)
+c       fps = cse*fp(i+1,j,k)   + csw*fp(i,j,k)
 c       xvel(i,j,k) = (fpe-fpw) / (xe-xw)
 c       yvel(i,j,k) = (fpn-fps) / (yn-ys)
 	call velfcn(x(i-1,j-1,k),x(i,j-1,k),x(i+1,j-1,k),
@@ -164,9 +164,10 @@ c       yvel(i,j,k) = (fpn-fps) / (yn-ys)
      &              y(i-1,j-1,k),y(i,j-1,k),y(i+1,j-1,k),
      &              y(i-1,j  ,k),y(i,j  ,k),y(i+1,j  ,k),
      &              y(i-1,j+1,k),y(i,j+1,k),y(i+1,j+1,k),
-     &              fp(i  ,j  ,k),fp(i+1,j  ,k),
-     &              fp(i  ,j+1,k),fp(i+1,j+1,k),
-		    xvel(i,j,k), yvel(i,j,k))
+     &              fp(i,j,k),fp(i+1,j,k),
+     &              fp(i,j+1,k),fp(i+1,j+1,k),
+     &  	    xvel(i,j,k), yvel(i,j,k),
+     &              x(i,j,k),y(i,j,k))
         zvel(i,j,k) = zero
         den (i,j,k) = ( one+p5*gm1*(fsmach**2-
      &               (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
@@ -270,13 +271,16 @@ c      RETURN
 c=======================================================================
 	subroutine velfcn(xmm,xim,xpm,xmj,xij,xpj,xmp,xip,xpp,
      &                    ymm,yim,ypm,ymj,yij,ypj,ymp,yip,ypp,
-     &                    fij,fpj,fip,fpp, xvel,yvel)
+     &                    fij,fpj,fip,fpp,xvel,yvel,xcen,ycen)
+
 	double precision xmm,xim,xpm,xmj,xij,xpj,xmp,xip,xpp,
      &                   ymm,yim,ypm,ymj,yij,ypj,ymp,yip,ypp,
-     &                   fij,fpj,fip,fpp, xvel,yvel, p25
+     &                   fij,fpj,fip,fpp, xvel,yvel, p25,
      &			 xne,xnw,xse,xsw,yne,ynw,yse,ysw,
      &                   cen,ces,cwn,cws,cne,cnw,cse,csw,
-     &                   xe,xw,yn,ys,fpe,fpw,fpn,fps
+     &                   xe,xw,yn,ys,fpe,fpw,fpn,fps,xcen,ycen
+
+
 	parameter (p25=0.25d0)
 	xne = p25 * (xij+xpj+xip+xpp)
 	xnw = p25 * (xij+xmj+xip+xmp)
@@ -290,18 +294,18 @@ c=======================================================================
 	xw  = p5 * (xnw + xsw)
 	yn  = p5 * (yne + ynw)
 	ys  = p5 * (yse + ysw)
-        cen = (y(i,j,k)-yse) / (yne-yse)
+        cen = (ycen-yse) / (yne-yse)
 	ces = one - cen
-        cwn = (y(i,j,k)-ysw) / (ynw-ysw)
+        cwn = (ycen-ysw) / (ynw-ysw)
 	cws = one - cen
-        cne = (x(i,j,k)-xnw) / (xne-xnw)
+        cne = (xcen-xnw) / (xne-xnw)
 	cnw = one - cne
-        cse = (x(i,j,k)-xsw) / (xse-xsw)
+        cse = (xcen-xsw) / (xse-xsw)
 	csw = one - cse
-        fpe = cen*fp(i+1,j+1) + ces*fp(i+1,j)
-        fpw = cwn*fp(i,j+1)   + cws*fp(i,j)
-        fpn = cne*fp(i+1,j+1) + cnw*fp(i,j+1)
-        fps = cse*fp(i+1,j)   + csw*fp(i,j)
+        fpe = cen*fpp + ces*fpj
+        fpw = cwn*fip + cws*fij
+        fpn = cne*fpp + cnw*fip
+        fps = cse*fpj + csw*fij
         xvel = (fpe-fpw) / (xe-xw)
         yvel = (fpn-fps) / (yn-ys)
         return
@@ -340,9 +344,8 @@ c      COMMON /AVCTRS/ AIZ(NI,NJ,NK),AJZ(NI,NJ,NK),AKZ(NI,NJ,NK)
 c      COMMON /SADA/ SADAI(NI,NJ,NK),SADAJ(NI,NJ,NK),SADAK(NI,NJ,NK)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
-      double precision  ada,qda,ff,p0,r0,c0,pi1k,pb,u,v,w,rqdq
-      double precision  u2,v2,w2,ub,con,r0c0,rb,vb,wb,pinj1k,rinj1k,pij1
-      double precision  pijnk1,rni1jk,r1jk,xloc
+
+      double precision xloc
       integer i,j,k
 
       double precision dx, dy

@@ -1,5 +1,5 @@
 c
-c  $Id: param.h,v 1.17 1997/10/16 03:30:02 curfman Exp curfman $;
+c  $Id: param.h,v 1.18 1997/10/16 19:01:12 curfman Exp curfman $;
 c
 c PETSc include files needed by Fortran routines
 c   petsc.h - basic PETSc interface
@@ -66,6 +66,7 @@ c   Grid and ghost points corresponding to ni-1, nj-1, nk-1
 c      (end and width for each direction)
        integer xefm1, yefm1, zefm1, xm, ym, zm
        integer gxm, gym, gzm
+       integer gxefm1, gyefm1, gzefm1
 
 c   Grid and ghost points corresponding to ni+1, nj+1, nk+1
 c      (end and width for each direction)
@@ -115,6 +116,7 @@ c   Common block for local ghost parameters
        common /pghost/ gxsf2w, gysf2w, gzsf2w, gxsf1w, gysf1w, gzsf1w
        common /pghost/ gxefp1, gyefp1, gzefp1
        common /pghost/ gxef01, gyef01, gzef01
+       common /pghost/ gxefm1, gyefm1, gzefm1
 
 c   Type of multi-model
         integer model

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.47 1997/10/16 22:10:55 keyes Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.48 1997/10/17 04:08:53 curfman Exp curfman $";
 #endif
 
 /*
@@ -329,7 +329,7 @@ int VisualizeEuler_Matlab(int iter,Euler *app,Scalar *x)
   int    foo, i, j, k, ni1 = app->ni1, nj1 = app->nj1;
   int    ni = app->ni, nj = app->nj;
   int    ierr, kj, ijk, jstart, jend, istart, iend;
-  Scalar sfluid, ssound, smach, r, gm1, gamma1, xv, yv;
+  Scalar sfluid, ssound, r, gm1, gamma1, xv, yv;
   Scalar *xc = app->xc, *yc = app->yc, *zc = app->zc;
   FILE   *fp2;
   char   filename[64];
@@ -442,7 +442,7 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
   int    foo, i, j, k, ni1 = app->ni1, nj1 = app->nj1;
   int    ni = app->ni, nj = app->nj;
   int    ierr, kj, ijk, jstart, jend, istart, iend;
-  Scalar sfluid, ssound, smach, r, gm1, gamma1, xv, yv;
+  Scalar sfluid, ssound, r, gm1, gamma1, xv, yv;
   Scalar *xc = app->xc, *yc = app->yc, *zc = app->zc;
   FILE   *fp2;
   char   filename[64];
@@ -463,7 +463,6 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
 #define ycoord(i,j) yc[(k)*nj*ni + (j)*ni + (i)]
 #define zcoord(i,j) zc[(k)*nj*ni + (j)*ni + (i)]
 #define pot(i,j) x[(k)*nj1*ni1 + (j)*ni1 + (i)]
-#define smach(i,j) mach[(k)*nj1*ni1 + (j)*ni1 + (i)]
 
   foo = 1;
   if (foo) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
+static char vcid[] = "$Id: grid.c,v 1.13 1997/10/11 18:39:18 curfman Exp curfman $";
 #endif
 
 /*
@@ -66,8 +66,9 @@ int UserSetGridParameters(Euler *u)
       u->xefm1  = u->xef-1;    /* points mx-1, my-1, mz-1 */
       u->xef01  = u->xef;      /* points mx, my, mz */
       u->xefp1  = u->xef+1;    /* points mx+1, my+1, mz+1 */
-      u->gxef01 = u->gxef;     /* ghost points mx, my, mz */ 
       u->gxefp1 = u->gxef+1;   /* ghost points mx+1, my+1, mz+1 */ 
+      u->gxef01 = u->gxef;     /* ghost points mx, my, mz */ 
+      u->gxefm1 = u->gxef-1;   /* ghost points mx-1, my-1, mz-1 */ 
       u->gxefw  = u->gxef;     /* ending ghost point - 1 */ 
       u->xei    = u->xe;
       u->gxei   = u->gxe;
@@ -75,8 +76,9 @@ int UserSetGridParameters(Euler *u)
       u->xefm1  = u->xef-2;    /* points mx-1, my-1, mz-1 */
       u->xef01  = u->xef-1;    /* points mx, my, mz */
       u->xefp1  = u->xef;      /* points mx+1, my+1, mz+1 */
-      u->gxef01 = u->gxef-1;   /* ghost points mx, my, mz */ 
       u->gxefp1 = u->gxef;     /* ghost points mx+1, my+1, mz+1 */ 
+      u->gxef01 = u->gxef-1;   /* ghost points mx, my, mz */ 
+      u->gxefm1 = u->gxef-2;   /* ghost points mx-1, my-1, mz-1 */ 
       u->gxefw  = u->gxef01;   /* ending ghost point - 1 */ 
       u->xei    = u->xe-1;
       u->gxei   = u->gxe-1;
@@ -87,6 +89,7 @@ int UserSetGridParameters(Euler *u)
       u->xefp1  = u->xef;   
       u->gxef01 = u->gxef;
       u->gxefp1 = u->gxef;
+      u->gxefm1 = u->gxef;
       u->gxefw  = u->gxef-1;   
       u->xei    = u->xe;
       u->gxei   = u->gxe;
@@ -96,8 +99,9 @@ int UserSetGridParameters(Euler *u)
       u->yefm1  = u->yef-1;
       u->yef01  = u->yef;
       u->yefp1  = u->yef+1;
-      u->gyef01 = u->gyef;
       u->gyefp1 = u->gyef+1;
+      u->gyef01 = u->gyef;
+      u->gyefm1 = u->gyef-1;
       u->gyefw  = u->gyef;
       u->yei    = u->ye;
       u->gyei   = u->gye;
@@ -105,8 +109,9 @@ int UserSetGridParameters(Euler *u)
       u->yefm1  = u->yef-2;
       u->yef01  = u->yef-1;
       u->yefp1  = u->yef;
-      u->gyef01 = u->gyef-1;
       u->gyefp1 = u->gyef;
+      u->gyef01 = u->gyef-1;
+      u->gyefm1 = u->gyef-2;
       u->gyefw  = u->gyef01;
       u->yei    = u->ye-1;
       u->gyei   = u->gye-1;
@@ -117,6 +122,7 @@ int UserSetGridParameters(Euler *u)
     u->yefp1  = u->yef; 
     u->gyef01 = u->gyef;  
     u->gyefp1 = u->gyef;
+    u->gyefm1 = u->gyef;
     u->gyefw  = u->gyef-1;   
     u->yei    = u->ye;
     u->gyei   = u->gye;
@@ -126,8 +132,9 @@ int UserSetGridParameters(Euler *u)
       u->zefm1  = u->zef-1;
       u->zef01  = u->zef;
       u->zefp1  = u->zef+1;
-      u->gzef01 = u->gzef;
       u->gzefp1 = u->gzef+1;
+      u->gzef01 = u->gzef;
+      u->gzefm1 = u->gzef-1;
       u->gzefw  = u->gzef;
       u->zei    = u->ze;
       u->gzei   = u->gze;
@@ -135,8 +142,9 @@ int UserSetGridParameters(Euler *u)
       u->zefm1  = u->zef-2;
       u->zef01  = u->zef-1;
       u->zefp1  = u->zef;
-      u->gzef01 = u->gzef-1;
       u->gzefp1 = u->gzef;
+      u->gzef01 = u->gzef-1;
+      u->gzefm1 = u->gzef-2;
       u->gzefw  = u->gzef01;
       u->zei    = u->ze-1;
       u->gzei   = u->gze-1;
@@ -147,7 +155,8 @@ int UserSetGridParameters(Euler *u)
     u->zefp1  = u->zef;   
     u->gzef01 = u->gzef;
     u->gzefp1 = u->gzef;
-    u->gzefw  = u->gzef-1;   
+    u->gzefm1 = u->gzef; 
+    u->gzefw  = u->gzef-1;
     u->zei    = u->ze;
     u->gzei   = u->gze;
   }

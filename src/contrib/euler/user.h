@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.32 1997/10/16 19:01:03 curfman Exp curfman $ */
+/* $Id: user.h,v 1.33 1997/10/17 04:09:13 curfman Exp curfman $ */
 
 /* Include file for 3D Euler application code */
 
@@ -157,6 +157,7 @@ typedef struct {
     int    gxef01, gyef01, gzef01;        /* ending ghost points ni,nj,nk */
     int    xefp1, yefp1, zefp1;           /* Fortran ending points ni1,nj1,nk1 */
     int    gxefp1, gyefp1, gzefp1;        /* ending ghost points ni1,nj1,nk1 */
+    int    gxefm1, gyefm1, gzefm1;        /* ending ghost points ni-1,nj-1,nk-1 */
     int    xsf1, ysf1, zsf1;              /* Fortran starting points 1,1,1 */
     int    gxsf1, gysf1, gzsf1;           /* Fortran starting points 1,1,1 */
     int    xsf2, ysf2, zsf2;              /* Fortran starting points 2,2,2 */
@@ -390,8 +391,8 @@ extern int parsetup_(int*,int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,i
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,MMType*,
-                      Scalar*,int*);
+                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
+                      int*,int*,MMType*,Scalar*,int*);
 extern int buildmat_(int*,ScaleType*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*);
@@ -401,8 +402,8 @@ extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,int*,int*);
 
 extern int  localfortfct_fp_(int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 
 /* Fortran interface definitions */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.65 1997/10/17 02:33:10 curfman Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.66 1997/10/17 04:09:03 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -663,7 +663,8 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
            app->sadai,app->sadaj,app->sadak,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
            app->aiz,app->ajz,app->akz,app->dxx,
-           app->den_a,app->xvel_a,app->yvel_a,app->zvel_a,app->phi_te); CHKERRQ(ierr); 
+           app->den_a,app->xvel_a,app->yvel_a,app->zvel_a,app->phi_te,
+           app->xc,app->yc,app->zc); CHKERRQ(ierr); 
 
     /* Build Fvec(X) directly, without using VecSetValues() */
     ierr = rbuild_direct_fp_(fv_array, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr); 
@@ -1192,6 +1193,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
             &app->xefm1, &app->yefm1, &app->zefm1, 
             &app->xefp1, &app->yefp1, &app->zefp1, 
             &app->gxefp1, &app->gyefp1, &app->gzefp1,
+            &app->gxefm1, &app->gyefm1, &app->gzefm1,
             &app->xsf1, &app->ysf1, &app->zsf1, 
             &app->gxsf1, &app->gysf1, &app->gzsf1,
             &app->xsf2, &app->ysf2, &app->zsf2, 

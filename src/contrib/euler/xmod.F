@@ -1,5 +1,5 @@
 c
-c  "$Id: xmod.F,v 1.29 1997/10/16 22:00:20 curfman Exp keyes $";
+c  "$Id: xmod.F,v 1.30 1997/10/16 22:09:21 keyes Exp curfman $";
 c
 c  This file contains routines that are used only within the PETSc
 c  solver.  Most are interface routines to pass between the PETSc
@@ -21,7 +21,7 @@ c
      &        Agxsf, Agysf, Agzsf, Agxef, Agyef, Agzef, 
      &        Axsf, Aysf, Azsf, Axef, Ayef, Azef, 
      &        Axefm1, Ayefm1, Azefm1, Axefp1, Ayefp1, Azefp1, 
-     &        Agxefp1, Agyefp1, Agzefp1,
+     &        Agxefp1, Agyefp1, Agzefp1, Agxefm1, Agyefm1, Agzefm1,
      &        Axsf1, Aysf1, Azsf1, Agxsf1, Agysf1, Agzsf1,
      &        Axsf2, Aysf2, Azsf2, Agxsf2, Agysf2, Agzsf2,
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
@@ -41,7 +41,8 @@ c
      &        Axsf2, Aysf2, Azsf2, Agxsf2, Agysf2, Agzsf2,
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
      &        Agxm, Agym, Agzm, ierr, Ano_output, Andof, Aggrid,
-     &        Axef01, Ayef01, Azef01, Agxef01, Agyef01, Agzef01
+     &        Axef01, Ayef01, Azef01, Agxef01, Agyef01, Agzef01,
+     &        Agxefm1, Agyefm1, Agzefm1
 
       double precision Abump
 
@@ -186,6 +187,10 @@ c  Fix for 2-dimensional case
       gyefp1  = Agyefp1
       gzefp1  = Agzefp1
 
+      gxefm1  = Agxefm1
+      gyefm1  = Agyefm1
+      gzefm1  = Agzefm1
+
       gxm     = Agxm
       gym     = Agym
       gzm     = Agzm
@@ -267,15 +272,15 @@ c       Using local grid
      & ': ysf,ysf1,ysf2,yefm1,yef01,yefp1,ym:',7(i4))
  130  format('Fort grid: rank ',i4,
      & ': zsf,zsf1,zsf2,zefm1,zef01,zefp1,zm:',7(i4))
-      write(6,140) rank,gxsf,gxsf1,gxsf2,gxef01,gxefp1,gxm
-      write(6,150) rank,gysf,gysf1,gysf2,gyef01,gyefp1,gym
-      write(6,160) rank,gzsf,gzsf1,gzsf2,gzef01,gzefp1,gzm
+      write(6,140) rank,gxsf,gxsf1,gxsf2,gxefm1,gxef01,gxefp1,gxm
+      write(6,150) rank,gysf,gysf1,gysf2,gyefm1,gyef01,gyefp1,gym
+      write(6,160) rank,gzsf,gzsf1,gzsf2,gzefm1,gzef01,gzefp1,gzm
  140  format('Fort ghosts: rank ',i4,
-     & ': gxsf,gxsf1,gxsf2,gxef01,gxefp1,gxm:',8(i4))
+     & ': gxsf,gxsf1,gxsf2,gxefm1,gxef01,gxefp1,gxm:',9(i4))
  150  format('Fort ghosts: rank ',i4,
-     & ': gysf,gysf1,gysf2,gyef01,gyefp1,gym:',8(i4))
+     & ': gysf,gysf1,gysf2,gyefm1,gyef01,gyefp1,gym:',9(i4))
  160  format('Fort ghosts: rank ',i4,
-     & ': gzsf,gzsf1,gzsf2,gzef01,gzefp1,gzm:',8(i4))
+     & ': gzsf,gzsf1,gzsf2,gzefm1,gzef01,gzefp1,gzm:',9(i4))
       write(6,170) rank,gxsfw,gxsf1w,gxsf2w,gxefw
       write(6,180) rank,gysfw,gysf1w,gysf2w,gyefw
       write(6,190) rank,gzsfw,gzsf1w,gzsf2w,gzefw
