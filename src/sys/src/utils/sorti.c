@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorti.c,v 1.9 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: sorti.c,v 1.10 1997/08/14 21:02:00 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: sorti.c,v 1.9 1997/07/09 20:51:14 balay Exp bsmith $"
    This quick-sort is from George Karypis's METIS, and he says it
      originally comes from Donald Earvin Knuth's TeX. 
 
-   Contributed by: Mathew Knepley
+   Contributed by: Matthew Knepley
 
 */
 #define THRESH      1        /* Threshold for insertion */

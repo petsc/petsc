@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.2 1997/04/10 00:03:45 bsmith Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.3 1997/07/09 20:55:45 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\n";
@@ -36,11 +36,11 @@ int main(int argc,char **args)
 
   Imax = n*rank; if (Imax>= n*m -m - 1) Imax = m*n - m - 1;
   ierr = ISCreateStride(PETSC_COMM_SELF,m,Imax,1,&is); CHKERRA(ierr);
-  ierr = MatZeroRows(C,is,0); CHKERRA(ierr);
+  ierr = MatZeroRows(C,is,0); CHKERRA(ierr); 
 
-  ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr); 
   
-  ierr = ISDestroy(is); CHKERRA(ierr);
+  ierr = ISDestroy(is); CHKERRA(ierr); 
   ierr = MatDestroy(C); CHKERRA(ierr);
   PetscFinalize();
   return 0;

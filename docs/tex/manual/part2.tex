@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.229 1997/08/01 19:30:19 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.230 1997/09/10 22:17:21 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -26,7 +26,7 @@ sides for linear systems, etc. This chapter is organized as follows
   \item Mapping between local and global numbering.
   \end{itemize}
 \item Section \ref{sec:struct}, management of structured grids.
-\item Section \ref{sec:unstruct}, Management of unstructured grids.
+\item Section \ref{sec:unstruct}, management of unstructured grids.
 \end{itemize}
 
 % --------------------------------------------------------------------------------------
@@ -52,15 +52,15 @@ of components to store on the local processor, and {\tt M} is the
 total number of vector components.  Either the local or global 
 dimension, but not both, can be set to {\tt PETSC\_DECIDE} to 
 \findex{PETSC_DECIDE} indicate that PETSc should determine it.
-More generally, one can use the routine \findex{VecCreate()}
-\begin{verbatim}
-   ierr = VecCreate(MPI_Comm comm,int M,Vec *v);
-\end{verbatim}
-which automatically generates the appropriate vector type 
-(sequential or parallel) over all processors in {\tt comm}.
-The option {\tt -vec\_mpi} can be used in conjunction with 
-{\tt VecCreate()} to specify the use of MPI
-vectors for the uniprocessor case.
+%More generally, one can use the routine \findex{VecCreate()}
+%\begin{verbatim}
+%   ierr = VecCreate(MPI_Comm comm,int M,Vec *v);
+%\end{verbatim}
+%which automatically generates the appropriate vector type 
+%(sequential or parallel) over all processors in {\tt comm}.
+%The option {\tt -vec\_mpi} can be used in conjunction with 
+%{\tt VecCreate()} to specify the use of MPI
+%vectors for the uniprocessor case.
 
 We emphasize that all processors in {\tt comm} {\em must} call the
 vector creation routines, since these routines are collective over all
@@ -82,8 +82,8 @@ first calls  \findex{VecSetValues()} \findex{INSERT_VALUES}
 \end{verbatim}
 any number of times on any or all of the processors. The argument
 {\tt n} gives the number of components being set in this 
-insertion. The integer array {\tt indices} contains the global component
-indices, and {\tt values} is the array of values to be inserted.
+insertion. The integer array {\tt indices} contains the {\em global component
+indices}, and {\tt values} is the array of values to be inserted.
 Any processor can set any components of the vector; PETSc insures that 
 they are automatically stored in the correct location.
 Once all of the values have been inserted with {\tt VecSetValues()},
@@ -123,7 +123,8 @@ PETSc does not allow the simultaneous use of {\tt INSERT\_VALUES} and
 
 There is no routine called {\tt VecGetValues()}, since we provide 
 an alternative method for extracting some components of a vector using
-the vector scatter routines.  See Section~\ref{sec:scatter} for details.
+the vector scatter routines.  See Section~\ref{sec:scatter} for details; see also
+below for {\tt VecGetArray()}.
 
 One can examine a vector with the command \findex{VecView()}
 \begin{verbatim}
@@ -182,7 +183,7 @@ and  \findex{VecCreateMPIWithArray()} \findex{VecCreateSeqWithArray()}
    ierr = VecCreateMPIWithArray(MPI_Comm comm,int m,int M,,Scalar *array,Vec *x);
 \end{verbatim}
 Note that here one must provide the value {\tt m}, it cannot be {\tt PETSC\_DECIDE} and
-the user is responsible for providing enough space in the array; {\tt n*sizeof(Scalar)}.
+the user is responsible for providing enough space in the array; {\tt m*sizeof(Scalar)}.
 
 
 % --------------------------------------------------------------------------------------
@@ -225,8 +226,7 @@ VecShift(Scalar *s,Vec x); & $ x_i = s + x_{i}$ \\
 As listed in Table \ref{fig:vectorops}, we have chosen certain 
 basic vector operations to support within the PETSc vector library.
 These operations were selected because they often arise in application 
-codes, not because they have some inherent special properties. 
-
+codes.
 Several of these operations could easily be constructed by a
 combination of the other operations.  We implement them directly to
 avoid a potentially large loss of efficiency, mainly because in such
@@ -371,7 +371,7 @@ Although we refer to the two orderings as ``PETSc'' and
 application orderings and to maintain relationships among a variety of
 orderings by employing several {\tt AO} contexts.
 
-The {\tt AOxxToxx()} routines all allow negative entries in the input 
+The {\tt AOxxToxx()} routines allow negative entries in the input 
 integer array. These entries are not mapped, they are just left the same.
 This is to allow one to map, for example, neighbor lists that use negative
 numbers to indicate nonexistent neighbors due to boundary conditions, etc.
@@ -445,7 +445,7 @@ To set values into a vector with the local numbering you must first call
    ierr = VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping ctx);
 \end{verbatim}
 \findex{VecSetLocalToGlobalMapping} \sindex{vectors, setting values with local numbering}
-and then one can call \findex{VecSetValuesLocal}
+and then call \findex{VecSetValuesLocal}
 \begin{verbatim}
    ierr = VecSetValuesLocal(Vec x,int n,int *indices,Scalar *values,INSERT_VALUES);
 \end{verbatim}
@@ -880,17 +880,13 @@ to be computed once and then reused repeatedly. Generally, even
 setting up the communication for a scatter requires communication; 
 hence, it is best to reuse such information when possible.
 
-\subsection{Vectors with Locations for Ghost Values}
+% -------------------------------------------------------------------------------
+\subsection{Scattering Ghost Values}
 
-We recommend that application developers skip this section on a first reading.
-It contains information about more advanced use of PETSc vectors to improve 
-efficiency slightly. Once your application code is fully debugged and optimized
-you can try to use these techniques to slightly decrease memory use and improve 
-computation speed slightly.
 
-Above we discussed a very general method for managing the communication of 
+The scatters provide a very general method for managing the communication of 
 required ghost values for unstructured grid computations. One scatters
-the global vector into the local ``ghosted'' work vector and performs the computation
+the global vector into a local ``ghosted'' work vector and performs the computation
 on the local work vectors and then scatters back into the global solution 
 vector. In the simplest case this may be written as
 \begin{verbatim}
@@ -908,6 +904,15 @@ vector. In the simplest case this may be written as
    ierr = VecScatterEnd(Vec localout,Vec globalout,InsertMode ADD_VALUES,ScatterMode
                           SCATTER_REVERSE,VecScatter scatter);
 \end{verbatim}
+
+% -------------------------------------------------------------------------------
+\subsection{Vectors with Locations for Ghost Values}
+
+We recommend that application developers skip this section on a first reading.
+It contains information about more advanced use of PETSc vectors to improve 
+efficiency slightly. Once your application code is fully debugged and optimized
+you can try to use these techniques to slightly decrease memory use and improve 
+computation speed slightly.
 
 There are two minor (IMHO) drawbacks to this approach:
 \begin{itemize}
@@ -970,7 +975,7 @@ vector could be given by \findex{VecGhostUpdateBegin()} \findex{VecGhostUpdateEn
       
 The routines {\tt VecGhostUpdateBegin/End()} are equivalent to {\tt VecScatterBegin/End()}
 above except that since they are scattering into the ghost locations they do not need
-to copy the local vector values (they are already their). In addition the user does not
+to copy the local vector values (they are already there). In addition the user does not
 have to allocate the local work vector, since the ghosted vector already has allocated 
 slots to contain the ghost values.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.16 1997/08/22 15:11:48 bsmith Exp curfman $";
+static char vcid[] = "$Id: inherit.c,v 1.17 1997/08/24 23:25:54 curfman Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -89,12 +89,39 @@ static int PetscObjectInherit_DefaultDestroy(void *in)
    Input Parameter:
 .  obj - the PETSc object
 
-.seealso: PetscObjectInherit()
+.seealso: PetscObjectInherit(), PetscObjectDereference()
+
 @*/
 int PetscObjectReference(PetscObject obj)
 {
   PetscValidHeader(obj);
   obj->refct++;
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectDereference"
+/*@
+   PetscObjectDereference - Indicates to any PetscObject that it is being
+   referenced by one less PetscObject. This decreases the reference
+   count for that object by one.
+
+   Input Parameter:
+.  obj - the PETSc object
+
+.seealso: PetscObjectInherit(), PetscObjectReference()
+
+@*/
+int PetscObjectDereference(PetscObject obj)
+{
+  int ierr;
+
+  PetscValidHeader(obj);
+  if (obj->destroypublic) {
+    ierr = (*obj->destroypublic)(obj); CHKERRQ(ierr);
+  } else if (--obj->refct == 0) {
+    SETERRQ(1,0,"This PETSc object does not have a generic destroy routine");
+  }
   return 0;
 }
 

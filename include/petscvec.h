@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.65 1997/06/18 12:53:47 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.66 1997/08/22 15:20:23 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -20,9 +20,9 @@ typedef struct _p_VecScatter*  VecScatter;
 
 extern int VecCreateSeq(MPI_Comm,int,Vec*);  
 extern int VecCreateMPI(MPI_Comm,int,int,Vec*);  
-extern int VecCreate(MPI_Comm,int,Vec*); 
 extern int VecCreateSeqWithArray(MPI_Comm,int,Scalar*,Vec*);  
-extern int VecCreateGhost(MPI_Comm,int,int,int,Vec*,Vec*);  
+extern int VecCreateMPIWithArray(MPI_Comm,int,int,Scalar*,Vec*);  
+extern int VecCreate(MPI_Comm,int,Vec*); 
 
 extern int VecDestroy(Vec);        
 
@@ -97,6 +97,18 @@ extern int VecSetValuesLocal(Vec,int,int*,Scalar*,InsertMode);
 
 typedef enum {VEC_IGNORE_OFF_PROCESSOR_ENTRIES} VecOption;
 extern int VecSetOption(Vec,VecOption);
+
+/*
+     Routines for dealing with ghosted vectors:
+  vectors with ghost elements at the end of the array.
+*/
+extern int VecCreateGhost(MPI_Comm,int,int,int,int*,Vec*);  
+extern int VecCreateGhostWithArray(MPI_Comm,int,int,int,int*,Scalar*,Vec*);  
+extern int VecGhostGetLocalRepresentation(Vec,Vec*);
+extern int VecGhostRestoreLocalRepresentation(Vec,Vec*);
+extern int VecGhostUpdateBegin(Vec,InsertMode,ScatterMode);
+extern int VecGhostUpdateEnd(Vec,InsertMode,ScatterMode);
+
 
 extern int DrawTensorContour(Draw,int,int,double *,double *,Vec);
 

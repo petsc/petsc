@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.33 1997/09/05 19:34:40 gropp Exp gropp $";
+static char vcid[] = "$Id: memc.c,v 1.34 1997/09/05 19:35:58 gropp Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -46,9 +46,16 @@ static char vcid[] = "$Id: memc.c,v 1.33 1997/09/05 19:34:40 gropp Exp gropp $";
 .seealso: PetscMemmove()
 
 @*/
-void PetscMemcpy(void *a,void *b,int n)
+int PetscMemcpy(void *a,void *b,int n)
 {
+  unsigned long al = (unsigned long) a, bl = (unsigned long) b;
+  unsigned long nl = (unsigned long) n;
+
+  if ((a > b && (a - b) < nl) || (b - a) < nl) {
+    SETERRQ(1,1,"Memory regions overlap: use PetscMemmov instead");
+  }
   memcpy((char*)(a),(char*)(b),n);
+  return 0;
 }
 
 #undef __FUNC__  
@@ -64,13 +71,14 @@ void PetscMemcpy(void *a,void *b,int n)
 
 .seealso: PetscMemcpy()
 @*/
-void PetscMemzero(void *a,int n)
+int PetscMemzero(void *a,int n)
 {
 #if defined(PREFER_BZERO)
   bzero((char *)a,n);
 #else
   memset((char*)a,0,n);
 #endif
+  return 0;
 }
 
 #undef __FUNC__  
@@ -114,14 +122,14 @@ int PetscMemcmp(void * str1, void *str2, int len)
    Note:
    This routine is analogous to memmove().
 
-   Contributed by: Mathew Knepley
+   Contributed by: Matthew Knepley
 
 .keywords: Petsc, copy, memory
 
 .seealso: PetscMemcpy(), PetscMemset()
 
 @*/
-void PetscMemmove(void *a,void *b,int n)
+int PetscMemmove(void *a,void *b,int n)
 {
 #if !defined(HAVE_MEMMOVE)
   if (a < b) {
@@ -142,6 +150,7 @@ void PetscMemmove(void *a,void *b,int n)
 #else
   memmove((char*)(a),(char*)(b),n);
 #endif
+  return 0;
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.13 1997/06/19 22:35:50 balay Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.14 1997/09/08 19:55:07 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -22,6 +22,9 @@ typedef struct {
     int         rmax;
 
     int         nghost;                   /* length of local portion including ghost padding */
+
+    Vec         localrep;                 /* local representation of vector */
+    VecScatter  localupdate;              /* scatter to update ghost values */
 } Vec_MPI;
 
 extern int VecNorm_Seq(Vec, NormType, double *work );

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.72 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.73 1997/08/14 23:16:08 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -111,7 +111,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
      files without an intervening call to PetscSynchronizedFlush().
      The length of the formatted message cannot be more then 256 charactors.
 
-    Contributed by: Mathew Knepley
+    Contributed by: Matthew Knepley
 
 .seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), PetscFPrintf(),
           PetscFOpen()

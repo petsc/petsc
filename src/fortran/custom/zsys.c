@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.31 1997/04/14 17:02:10 balay Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: zsys.c,v 1.32 1997/07/01 19:32:56 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -29,6 +29,11 @@ static char vcid[] = "$Id: zsys.c,v 1.31 1997/04/14 17:02:10 balay Exp bsmith $"
 #define petsctrlog_                PETSCTRLOG
 #define petscmemcpy_               PETSCMEMCPY
 #define petsctrdump_               PETSCTRDUMP
+#define petscmemzero_              PETSCMEMZERO
+#define petscbinaryopen_           PETSCBINARYOPEN
+#define petscbinaryread_           PETSCBINARYREAD
+#define petscbinarywrite_          PETSCBINARYWRITE
+#define petscbinaryclose_          PETSCBINARYCLOSE
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petsctrlog_                petsctrlog
 #define petscattachdebugger_       petscattachdebugger
@@ -51,11 +56,48 @@ static char vcid[] = "$Id: zsys.c,v 1.31 1997/04/14 17:02:10 balay Exp bsmith $"
 #define petscsequentialphaseend_   petscsequentialphaseend
 #define petscmemcpy_               petscmemcpy
 #define petsctrdump_               petsctrdump
+#define petscmemzero_              petscmemzero
+#define petscbinaryopen_           petscbinaryopen
+#define petscbinaryread_           petscbinaryread
+#define petscbinarywrite_          petscbinarywrite
+#define petscbinaryclose_          petscbinaryclose
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void petscbinaryopen_(CHAR name,int *type,int *fd,int *__ierr,int len)
+{
+  int  ierr;
+  char *c1;
+
+  FIXCHAR(name,len,c1);
+  ierr = PetscBinaryOpen(c1,*type,fd);
+  FREECHAR(name,c1);
+  *__ierr = ierr;
+}
+
+void petscbinarywrite_(int *fd,void *p,int *n,PetscBinaryType *type,int *istemp,int *__ierr)
+{
+  *__ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
+}
+
+void petscbinaryread_(int *fd,void *p,int *n,PetscBinaryType *type,int *__ierr)
+{
+  *__ierr = PetscBinaryRead(*fd,p,*n,*type);
+}
+
+void petscbinaryclose_(int *fd,int *__ierr)
+{
+  *__ierr = PetscBinaryClose(*fd);
+}
+
+/* ---------------------------------------------------------------------------------*/
+void petscmemzero_(void *a,int *n) 
+{
+  PetscMemzero(a,*n);
+}
 
 void petsctrdump_(int *__ierr)
 {

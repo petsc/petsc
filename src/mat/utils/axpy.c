@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.26 1997/07/09 20:56:43 balay Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.27 1997/08/22 15:15:22 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: axpy.c,v 1.26 1997/07/09 20:56:43 balay Exp bsmith $"
 .  X,Y - the matrices
 .  a - the scalar multiplier
 
-   Contributed by: Mathew Knepley
+   Contributed by: Matthew Knepley
 
 .keywords: matrix, add
 
@@ -146,7 +146,7 @@ int MatDiagonalShift(Mat Y,Vec D)
 .  X,Y - the matrices
 .  a - the scalar multiplier
 
-   Contributed by: Mathew Knepley
+   Contributed by: Matthew Knepley
 
 .keywords: matrix, add
 

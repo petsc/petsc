@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.101 1997/08/22 15:10:36 bsmith Exp gropp $";
+static char vcid[] = "$Id: bvec2.c,v 1.102 1997/09/05 18:14:59 gropp Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -308,15 +308,9 @@ static struct _VeOps DvOps = {VecDuplicate_Seq,
 @*/
 int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
 {
-  Vec     v;
   Vec_Seq *s;
+  Vec     v;
   int     flag;
-
-  /* 
-        The code below is identical to that with VecCreateSeq(); it would
-      better to somehow reuse the code. The only difference is the line
-      s->array_allocated = 0;
-  */
 
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
@@ -336,7 +330,8 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
   s->array           = array;
   s->array_allocated = 0;
   PetscMemzero(s->array,n*sizeof(Scalar));
-  *V = v; return 0;
+  *V = v; 
+  return 0;
 }
 
 #undef __FUNC__  
@@ -361,29 +356,15 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
 @*/
 int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 {
-  Vec      v;
   Vec_Seq *s;
-  int     flag;
+  Scalar  *array;
+  int     ierr;
 
-  *V             = 0;
-  MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
-  if (flag == MPI_UNEQUAL) SETERRQ(1,0,"Must call with MPI_COMM_SELF or PETSC_COMM_SELF");
-  PetscHeaderCreate(v,_p_Vec,VEC_COOKIE,VECSEQ,comm,VecDestroy,VecView);
-  PLogObjectCreate(v);
-  PLogObjectMemory(v,sizeof(struct _p_Vec)+n*sizeof(Scalar));
-  v->destroy     = VecDestroy_Seq;
-  v->view        = VecView_Seq;
-  s              = (Vec_Seq *) PetscMalloc(sizeof(Vec_Seq)); CHKPTRQ(s);
-  PetscMemcpy(&v->ops,&DvOps,sizeof(DvOps));
-  v->data        = (void *) s;
-  s->n           = n;
-  v->n           = n; 
-  v->N           = n;
-  v->mapping     = 0;
-  s->array       = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(s->array);
-  s->array_allocated = s->array;
-  PetscMemzero(s->array,n*sizeof(Scalar));
-  *V = v; return 0;
+  array              = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(array);
+  ierr               = VecCreateSeqWithArray(comm,n,array,V);CHKERRQ(ierr);
+  s                  = (Vec_Seq *) (*V)->data;
+  s->array_allocated = array;
+  return 0;
 }
 
 #undef __FUNC__  

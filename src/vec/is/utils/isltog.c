@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.12 1997/08/22 15:10:18 bsmith Exp balay $";
+static char vcid[] = "$Id: isltog.c,v 1.13 1997/08/29 18:04:15 balay Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -194,8 +194,11 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
 
     Output Parameters:
 .   nout - number of indices in output array (if type == IS_GTOLM_MASK then nout = n)
-.   idxout - local index of each global index
-
+.   idxout - local index of each global index, one must pass in an array long enough 
+             to hold all the indices. You can call ISGlobalToLocalMappingApply() with 
+             idxout == PETSC_NULL to determine the required length (returned in nout)
+             and then allocate the required space and call ISGlobalToLocalMappingApply()
+             a second time to set the values.
 
     Notes: Either nout or idxout may be PETSC_NULL. idx and idxout may be identical.
 
