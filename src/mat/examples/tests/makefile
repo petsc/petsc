@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.232 2000/07/24 19:23:12 balay Exp bsmith $ 
+# $Id: makefile,v 1.233 2000/07/25 14:12:44 bsmith Exp hzhang $ 
 
 ALL: ex1
 
@@ -779,7 +779,7 @@ runex74:
 	${RM} -f ex74_1.tmp
 
 NPROCS    = 1 2 3
-runex74:
+runex75:
 	-@touch ex75_1.tmp;\
 	for np in ${NPROCS}; do \
 	  for bs in ${MATBLOCKSIZE}; do \
