@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.274 1998/01/27 21:32:48 balay Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.275 1998/01/28 19:29:49 curfman Exp bsmith $";
 #endif
 
 /*
@@ -37,6 +37,9 @@ static char vcid[] = "$Id: matrix.c,v 1.274 1998/01/27 21:32:48 balay Exp curfma
    The user can only examine the values extracted with MatGetRow();
    the values cannot be altered.  To change the matrix entries, one
    must use MatSetValues().
+
+   You can only have one call to MatGetRow() outstanding for a particular
+   matrix at a time.
 
    Fortran Notes:
 $     The calling sequence from Fortran is 
@@ -84,6 +87,9 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 .  row - the row to get
 .  ncols, cols - the number of nonzeros and their columns
 .  vals - if nonzero the column values
+
+   Notes: 
+$    This should be called after you have finished examining the entries.
 
    Fortran Notes:
 $     The calling sequence from Fortran is 
