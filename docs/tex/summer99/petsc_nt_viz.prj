@@ -13,8 +13,8 @@ include: numerical computation routines, visualization routines, and
 profiling and control routines (including visualization of the
 parallel computational process (http://www.mcs.anl.gov/petsc).
 
-Currently PETSc objects like matrices, distributed arrays, can be
-visualized on most Unix machines using Xlib functionality. This
+Currently PETSc objects, such as matrices and distributed arrays, can
+be visualized on most Unix machines using Xlib functionality. This
 project is to explore visualization capabilities provided by native
 windows programming environments.  This involves identifying the
 visualization API on Windows NT/95, and then implementing the PETSc
@@ -23,7 +23,7 @@ visualization functions using this native windows support.
 Our current computational environment consists of Unix and NT
 workstations, a virtual reality laboratory, and a 128-node IBM SP and
 a 128-node SGI Origin 2000. This work will involve designing,
-programming, and testing of new modules, primarily on Windows NT
+programming, and testing of new modules, primarily on the Windows NT
 platform.
  
 -
