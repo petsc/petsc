@@ -32,7 +32,9 @@ int PetscViewerDestroy_HDF4(PetscViewer v)
  PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
+EXTERN_C_BEGIN 
+EXTERN int PetscViewerSetFilename_HDF4(PetscViewer,const char[]);
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_HDF4" 
 int PetscViewerCreate_HDF4(PetscViewer v)
