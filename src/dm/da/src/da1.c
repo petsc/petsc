@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.33 1996/03/19 21:29:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: da1.c,v 1.34 1996/04/14 00:49:01 curfman Exp curfman $";
 #endif
 
 /* 
@@ -119,6 +119,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   Vec           local,global;
   VecScatter    ltog,gtol;
   IS            to,from;
+  DF            df_local;
   *inra = 0;
 
   PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
@@ -250,8 +251,16 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   }  
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
   PetscFree(idx);
+
+  /* Create discrete function shell and associate with vectors in DA */
+  /* Eventually will pass in optional labels for each component */
+  ierr = DFShellCreateDA_Private(comm,PETSC_NULL,da,&da->dfshell); CHKERRQ(ierr);
+  ierr = DFShellGetLocalDFShell(da->dfshell,&df_local);
+  ierr = DFVecShellAssociate(da->dfshell,global); CHKERRQ(ierr);
+  ierr = DFVecShellAssociate(df_local,local); CHKERRQ(ierr);
+
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg); CHKERRQ(ierr);
-  if (flg) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
+  if (flg) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRQ(ierr);}
 
   *inra = da;
   return 0;
