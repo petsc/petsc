@@ -130,12 +130,12 @@ PetscErrorCode ISSum(IS *is1,IS is2)
   PetscValidHeaderSpecific(is2,IS_COOKIE,2);
   ierr = PetscObjectGetComm((PetscObject)(*is1),&comm); CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size>1) SETERRQ(1,"ISSum currently only for uni-processor IS");
+  if (size>1) SETERRQ(PETSC_ERR_SUP,"Currently only for uni-processor IS");
 
   ierr = ISSorted(*is1,&f); CHKERRQ(ierr);
-  if (!f) SETERRQ(1,"Arg 1 is not sorted");
+  if (!f) SETERRQ(PETSC_ERR_ARG_INCOMP,"Arg 1 is not sorted");
   ierr = ISSorted(is2,&f); CHKERRQ(ierr);
-  if (!f) SETERRQ(1,"Arg 2 is not sorted");
+  if (!f) SETERRQ(PETSC_ERR_ARG_INCOMP,"Arg 2 is not sorted");
 
   ierr = ISGetLocalSize(*is1,&n1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is2,&n2);CHKERRQ(ierr);

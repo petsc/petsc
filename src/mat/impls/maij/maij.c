@@ -1720,8 +1720,8 @@ PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *B)
   Mat_SeqAIJ        *aij = (Mat_SeqAIJ*)a->data;
   PetscErrorCode    ierr;
   PetscInt          m,n,i,ncols,*ilen,nmax = 0,*icols,j,k,ii;
-  const PetscInt    *cols;
-  const PetscScalar *vals;
+  PetscInt          *cols;
+  PetscScalar       *vals;
 
   PetscFunctionBegin;
   ierr = MatGetSize(a,&m,&n);CHKERRQ(ierr);    
@@ -1738,7 +1738,7 @@ PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *B)
   ierr = PetscMalloc(nmax*sizeof(PetscInt),&icols);CHKERRQ(ierr);
   ii   = 0;
   for (i=0; i<m; i++) {
-    ierr = MatGetRow(a,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+    ierr = MatGetRow_SeqAIJ(a,i,&ncols,&cols,&vals);CHKERRQ(ierr);
     for (j=0; j<4; j++) {
       for (k=0; k<ncols; k++) {
         icols[k] = 4*cols[k]+j;
@@ -1746,7 +1746,7 @@ PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *B)
       ierr = MatSetValues_SeqAIJ(*B,1,&ii,ncols,icols,vals,INSERT_VALUES);CHKERRQ(ierr);
       ii++;
     }
-    ierr = MatRestoreRow(a,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqAIJ(a,i,&ncols,&cols,&vals);CHKERRQ(ierr);
   }
   ierr = PetscFree(icols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

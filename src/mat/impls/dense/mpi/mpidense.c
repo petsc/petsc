@@ -4,6 +4,33 @@
     
 #include "src/mat/impls/dense/mpi/mpidense.h"
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRow_MPIDense"
+PetscErrorCode MatGetRow_MPIDense(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
+{
+  Mat_MPIDense *mat = (Mat_MPIDense*)A->data;
+  PetscErrorCode ierr;
+  PetscInt          lrow,rstart = mat->rstart,rend = mat->rend;
+
+  PetscFunctionBegin;
+  if (row < rstart || row >= rend) SETERRQ(PETSC_ERR_SUP,"only local rows")
+  lrow = row - rstart;
+  ierr = MatGetRow(mat->A,lrow,nz,(const PetscInt **)idx,(const PetscScalar **)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreRow_MPIDense"
+PetscErrorCode MatRestoreRow_MPIDense(Mat mat,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (idx) {ierr = PetscFree(*idx);CHKERRQ(ierr);}
+  if (v) {ierr = PetscFree(*v);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonalBlock_MPIDense"
@@ -549,10 +576,10 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     ierr = MatView(mdn->A,viewer);CHKERRQ(ierr);
   } else {
     /* assemble the entire matrix onto first processor. */
-    Mat               A;
-    PetscInt               M = mat->M,N = mat->N,m,row,i,nz;
-    const PetscInt         *cols;
-    const PetscScalar *vals;
+    Mat         A;
+    PetscInt    M = mat->M,N = mat->N,m,row,i,nz;
+    PetscInt    *cols;
+    PetscScalar *vals;
 
     if (!rank) {
       ierr = MatCreate(mat->comm,M,N,M,N,&A);CHKERRQ(ierr);
@@ -568,9 +595,9 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
        but it's quick for now */
     row = mdn->rstart; m = mdn->A->m;
     for (i=0; i<m; i++) {
-      ierr = MatGetRow(mat,row,&nz,&cols,&vals);CHKERRQ(ierr);
-      ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(mat,row,&nz,&cols,&vals);CHKERRQ(ierr);
+      ierr = MatGetRow_MPIDense(mat,row,&nz,&cols,&vals);CHKERRQ(ierr);
+      ierr = MatSetValues_MPIDense(A,1,&row,nz,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow_MPIDense(mat,row,&nz,&cols,&vals);CHKERRQ(ierr);
       row++;
     } 
 
@@ -707,32 +734,6 @@ PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetRow_MPIDense"
-PetscErrorCode MatGetRow_MPIDense(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
-{
-  Mat_MPIDense *mat = (Mat_MPIDense*)A->data;
-  PetscErrorCode ierr;
-  PetscInt          lrow,rstart = mat->rstart,rend = mat->rend;
-
-  PetscFunctionBegin;
-  if (row < rstart || row >= rend) SETERRQ(PETSC_ERR_SUP,"only local rows")
-  lrow = row - rstart;
-  ierr = MatGetRow(mat->A,lrow,nz,(const PetscInt **)idx,(const PetscScalar **)v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatRestoreRow_MPIDense"
-PetscErrorCode MatRestoreRow_MPIDense(Mat mat,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (idx) {ierr = PetscFree(*idx);CHKERRQ(ierr);}
-  if (v) {ierr = PetscFree(*v);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDiagonalScale_MPIDense"

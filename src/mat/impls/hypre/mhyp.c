@@ -30,7 +30,7 @@ the conversion efficient
 
 PetscErrorCode MatHYPRE_IJMatrixCopy(Mat v,HYPRE_IJMatrix ij)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   int               i,rstart,rend,ncols;
   const PetscScalar *values;
   const int         *cols;
@@ -38,13 +38,11 @@ PetscErrorCode MatHYPRE_IJMatrixCopy(Mat v,HYPRE_IJMatrix ij)
   PetscFunctionBegin;
   ierr = HYPRE_IJMatrixInitialize(ij);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
-
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(v,i,&ncols,&cols,&values);CHKERRQ(ierr);
     ierr = HYPRE_IJMatrixSetValues(ij,1,&ncols,&i,cols,values);CHKERRQ(ierr);
     ierr = MatRestoreRow(v,i,&ncols,&cols,&values);CHKERRQ(ierr);
   }
-
   ierr = HYPRE_IJMatrixAssemble(ij);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
