@@ -1,24 +1,21 @@
 /*
-  Defines projective product routines where A is a SeqAIJ matrix
+  Defines projective product routines where A is a AIJ matrix
           C = P^T * A * P
 */
 
 #include "src/mat/impls/aij/seq/aij.h"   /*I "petscmat.h" I*/
 #include "src/mat/utils/freespace.h"
+#include "src/mat/impls/aij/mpi/mpiaij.h"
 
-EXTERN int MatSeqAIJPtAP(Mat,Mat,Mat*);
-EXTERN int MatSeqAIJPtAPSymbolic(Mat,Mat,Mat*);
-EXTERN int MatSeqAIJPtAPNumeric(Mat,Mat,Mat);
 EXTERN int RegisterMatMatMultRoutines_Private(Mat);
 
-static int MATSeqAIJ_PtAP         = 0;
-static int MATSeqAIJ_PtAPSymbolic = 0;
-static int MATSeqAIJ_PtAPNumeric  = 0;
+static int MAT_PtAPSymbolic = 0;
+static int MAT_PtAPNumeric  = 0;
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJPtAP"
+#define __FUNCT__ "MatPtAP"
 /*@
-   MatSeqAIJPtAP - Creates the matrix projection C = P^T * A * P
+   MatPtAP - Creates the matrix projection C = P^T * A * P
 
    Collective on Mat
 
@@ -37,39 +34,50 @@ static int MATSeqAIJ_PtAPNumeric  = 0;
 
    Level: intermediate
 
-.seealso: MatSeqAIJPtAPSymbolic(),MatSeqAIJPtAPNumeric(),MatMatMult()
+.seealso: MatPtAPSymbolic(),MatPtAPNumeric(),MatMatMult()
 @*/
-int MatSeqAIJPtAP(Mat A,Mat P,Mat *C) {
+int MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) {
   int ierr;
-  char funct[80];
-  int (*f)(Mat,Mat,Mat);
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(MATSeqAIJ_PtAP,A,P,0,0);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
+  MatPreallocated(A);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidHeaderSpecific(P,MAT_COOKIE,2);
+  PetscValidType(P,2);
+  MatPreallocated(P);
+  if (!P->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (P->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidPointer(C,3);
+  if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",P->M,A->N);
 
-  ierr = MatSeqAIJPtAPSymbolic(A,P,C);CHKERRQ(ierr);
+  if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
 
-  /* Avoid additional error checking included in */
-/*   ierr = MatSeqAIJApplyPtAPNumeric(A,P,*C);CHKERRQ(ierr); */
-
-  /* Currently only _seqaij_seqaij is implemented, so just query for it in A and P. */
-  /* When other implementations exist, attack the multiple dispatch problem. */
-  ierr = PetscStrcpy(funct,"MatApplyPtAPNumeric_seqaij_seqaij");CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)P,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatSeqAIJPtAPNumeric is not supported for P of type %s",P->type_name);
-  ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatSeqAIJPtAPNumeric is not supported for A of type %s",A->type_name);
-
-  ierr = (*f)(A,P,*C);CHKERRQ(ierr);
-    
-  ierr = PetscLogEventEnd(MATSeqAIJ_PtAP,A,P,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 
+  ierr = (*A->ops->matptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJPtAPSymbolic"
+#define __FUNCT__ "MatPtAP_SeqAIJ_SeqAIJ"
+int MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
+{
+  int ierr;
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ(A,P,fill,C);CHKERRQ(ierr);
+  }
+  ierr = MatPtAPNumeric_SeqAIJ_SeqAIJ(A,P,*C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPtAPSymbolic"
 /*@
-   MatSeqAIJPtAPSymbolic - Creates the (i,j) structure of the matrix projection C = P^T * A * P
+   MatPtAPSymbolic - Creates the (i,j) structure of the matrix projection C = P^T * A * P
 
    Collective on Mat
 
@@ -85,13 +93,13 @@ int MatSeqAIJPtAP(Mat A,Mat P,Mat *C) {
 
    This routine is currently only implemented for pairs of SeqAIJ matrices and classes
    which inherit from SeqAIJ.  C will be of type MATSEQAIJ.  The product is computed using
-   this (i,j) structure by calling MatSeqAIJPtAPNumeric().
+   this (i,j) structure by calling MatPtAPNumeric().
 
    Level: intermediate
 
-.seealso: MatSeqAIJPtAP(),MatSeqAIJPtAPNumeric(),MatMatMultSymbolic()
+.seealso: MatPtAP(),MatPtAPNumeric(),MatMatMultSymbolic()
 @*/
-int MatSeqAIJPtAPSymbolic(Mat A,Mat P,Mat *C) {
+int MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C) {
   int ierr;
   char funct[80];
   int (*f)(Mat,Mat,Mat*);
@@ -117,21 +125,21 @@ int MatSeqAIJPtAPSymbolic(Mat A,Mat P,Mat *C) {
 
   /* Currently only _seqaij_seqaij is implemented, so just query for it. */
   /* When other implementations exist, attack the multiple dispatch problem. */
-  ierr = PetscStrcpy(funct,"MatApplyPtAPSymbolic_seqaij_seqaij");CHKERRQ(ierr);
+  ierr = PetscStrcpy(funct,"MatPtAPSymbolic_seqaij_seqaij");CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)P,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatSeqAIJPtAPSymbolic is not supported for P of type %s",P->type_name);
+  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatPtAPSymbolic is not supported for P of type %s",P->type_name);
   ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatSeqAIJPtAPSymbolic is not supported for A of type %s",A->type_name);
+  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatPtAPSymbolic is not supported for A of type %s",A->type_name);
 
   ierr = (*f)(A,P,C);CHKERRQ(ierr);
-
+ 
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ"
-int MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
+#define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqAIJ"
+int MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C) {
   int            ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
@@ -144,7 +152,7 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
   PetscFunctionBegin;
 
   /* Start timer */
-  ierr = PetscLogEventBegin(MATSeqAIJ_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
 
   /* Get ij structure of P^T */
   ierr = MatGetSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
@@ -245,7 +253,7 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
   /* Clean up. */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
 
-  ierr = PetscLogEventEnd(MATSeqAIJ_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -253,8 +261,8 @@ EXTERN_C_END
 #include "src/mat/impls/maij/maij.h"
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatApplyPtAPSymbolic_SeqAIJ_SeqMAIJ"
-int MatApplyPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C) {
+#define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqMAIJ"
+int MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C) {
   /* This routine requires testing -- I don't think it works. */
   int            ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
@@ -269,7 +277,7 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C) {
 
   PetscFunctionBegin;  
   /* Start timer */
-  ierr = PetscLogEventBegin(MATSeqAIJ_PtAPSymbolic,A,PP,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,PP,0,0);CHKERRQ(ierr);
 
   /* Get ij structure of P^T */
   ierr = MatGetSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
@@ -373,15 +381,15 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C) {
   /* Clean up. */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
 
-  ierr = PetscLogEventEnd(MATSeqAIJ_PtAPSymbolic,A,PP,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,PP,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJPtAPNumeric"
+#define __FUNCT__ "MatPtAPNumeric"
 /*@
-   MatSeqAIJPtAPNumeric - Computes the matrix projection C = P^T * A * P
+   MatPtAPNumeric - Computes the matrix projection C = P^T * A * P
 
    Collective on Mat
 
@@ -393,7 +401,7 @@ EXTERN_C_END
 .  C - the product matrix
 
    Notes:
-   C must have been created by calling MatSeqAIJPtAPSymbolic and must be destroyed by
+   C must have been created by calling MatPtAPSymbolic and must be destroyed by
    the user using MatDeatroy().
 
    This routine is currently only implemented for pairs of SeqAIJ matrices and classes
@@ -401,9 +409,9 @@ EXTERN_C_END
 
    Level: intermediate
 
-.seealso: MatSeqAIJPtAP(),MatSeqAIJPtAPSymbolic(),MatMatMultNumeric()
+.seealso: MatPtAP(),MatPtAPSymbolic(),MatMatMultNumeric()
 @*/
-int MatSeqAIJPtAPNumeric(Mat A,Mat P,Mat C) {
+int MatPtAPNumeric(Mat A,Mat P,Mat C) {
   int ierr;
   char funct[80];
   int (*f)(Mat,Mat,Mat);
@@ -435,11 +443,11 @@ int MatSeqAIJPtAPNumeric(Mat A,Mat P,Mat C) {
 
   /* Currently only _seqaij_seqaij is implemented, so just query for it. */
   /* When other implementations exist, attack the multiple dispatch problem. */
-  ierr = PetscStrcpy(funct,"MatApplyPtAPNumeric_seqaij_seqaij");CHKERRQ(ierr);
+  ierr = PetscStrcpy(funct,"MatPtAPNumeric_seqaij_seqaij");CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)P,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatSeqAIJPtAPNumeric is not supported for P of type %s",P->type_name);
+  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatPtAPNumeric is not supported for P of type %s",P->type_name);
   ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatSeqAIJPtAPNumeric is not supported for A of type %s",A->type_name);
+  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatPtAPNumeric is not supported for A of type %s",A->type_name);
 
   ierr = (*f)(A,P,C);CHKERRQ(ierr);
 
@@ -448,8 +456,8 @@ int MatSeqAIJPtAPNumeric(Mat A,Mat P,Mat C) {
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatApplyPtAPNumeric_SeqAIJ_SeqAIJ"
-int MatApplyPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
+#define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqAIJ"
+int MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   int        ierr,flops=0;
   Mat_SeqAIJ *a  = (Mat_SeqAIJ *) A->data;
   Mat_SeqAIJ *p  = (Mat_SeqAIJ *) P->data;
@@ -461,7 +469,7 @@ int MatApplyPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   MatScalar  *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(MATSeqAIJ_PtAPNumeric,A,P,C,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,C,0);CHKERRQ(ierr);
 
   /* Allocate temporary array for storage of one row of A*P */
   ierr = PetscMalloc(cn*(sizeof(MatScalar)+2*sizeof(int)),&apa);CHKERRQ(ierr);
@@ -525,36 +533,25 @@ int MatApplyPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree(apa);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MATSeqAIJ_PtAPNumeric,A,P,C,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,C,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "RegisterApplyPtAPRoutines_Private"
-int RegisterApplyPtAPRoutines_Private(Mat A) {
+#define __FUNCT__ "RegisterPtAPRoutines_Private"
+int RegisterPtAPRoutines_Private(Mat A) {
   int ierr;
 
   PetscFunctionBegin;
-
-  if (!MATSeqAIJ_PtAP) {
-    ierr = PetscLogEventRegister(&MATSeqAIJ_PtAP,"MatSeqAIJApplyPtAP",MAT_COOKIE);CHKERRQ(ierr);
+  if (!MAT_PtAPSymbolic) {
+    ierr = PetscLogEventRegister(&MAT_PtAPSymbolic,"MatPtAPSymbolic",MAT_COOKIE);CHKERRQ(ierr);
   }
-
-  if (!MATSeqAIJ_PtAPSymbolic) {
-    ierr = PetscLogEventRegister(&MATSeqAIJ_PtAPSymbolic,"MatSeqAIJApplyPtAPSymbolic",MAT_COOKIE);CHKERRQ(ierr);
+  if (!MAT_PtAPNumeric) {
+    ierr = PetscLogEventRegister(&MAT_PtAPNumeric,"MatPtAPNumeric",MAT_COOKIE);CHKERRQ(ierr);
   }
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatApplyPtAPSymbolic_seqaij_seqaij",
-                                           "MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ",
-                                           MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ);CHKERRQ(ierr);
+  ierr = RegisterMatMatMultRoutines_Private(A);CHKERRQ(ierr); 
 
-  if (!MATSeqAIJ_PtAPNumeric) {
-    ierr = PetscLogEventRegister(&MATSeqAIJ_PtAPNumeric,"MatSeqAIJApplyPtAPNumeric",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatApplyPtAPNumeric_seqaij_seqaij",
-                                           "MatApplyPtAPNumeric_SeqAIJ_SeqAIJ",
-                                           MatApplyPtAPNumeric_SeqAIJ_SeqAIJ);CHKERRQ(ierr);
-  ierr = RegisterMatMatMultRoutines_Private(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

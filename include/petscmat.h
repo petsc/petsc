@@ -87,6 +87,7 @@ extern int MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetSub
 extern int MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
 extern int MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
 extern int MAT_MatMult;
+extern int MAT_PtAP;
 
 EXTERN int MatInitializePackage(char *);
 
@@ -1272,10 +1273,6 @@ EXTERN int MatDiagonalScaleLocal(Mat,Vec);
 
 EXTERN int PetscViewerMathematicaPutMatrix(PetscViewer, int, int, PetscReal *);
 EXTERN int PetscViewerMathematicaPutCSRMatrix(PetscViewer, int, int, int *, int *, PetscReal *);
-
-EXTERN int MatSeqAIJPtAP(Mat,Mat,Mat*);
-EXTERN int MatSeqAIJPtAPSymbolic(Mat,Mat,Mat*);
-EXTERN int MatSeqAIJPtAPNumeric(Mat,Mat,Mat);
 
 PETSC_EXTERN_CXX_END
 #endif

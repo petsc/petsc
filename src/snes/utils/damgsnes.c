@@ -50,7 +50,7 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
       for (i=nlevels-2; i>-1; i--) {
         PetscTruth JeqB = (PetscTruth)( dmmg[i]->B == dmmg[i]->J);
         ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);
-        ierr = MatSeqAIJPtAP(dmmg[i+1]->B,dmmg[i+1]->R,&dmmg[i]->B);CHKERRQ(ierr);
+        ierr = MatPtAP(dmmg[i+1]->B,dmmg[i+1]->R,&dmmg[i]->B);CHKERRQ(ierr);
         if (JeqB) dmmg[i]->J = dmmg[i]->B;
 	ierr = MGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
 	ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,*flag);CHKERRQ(ierr);

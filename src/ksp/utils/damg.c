@@ -367,7 +367,7 @@ int DMMGSetUpLevel(DMMG *dmmg,KSP ksp,int nlevels)
   PetscFunctionReturn(0);
 }
 
-extern int MatSeqAIJPtAP(Mat,Mat,Mat*);
+extern int MatPtAP(Mat,Mat,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetKSP"
@@ -405,7 +405,7 @@ int DMMGSetKSP(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
     ierr = DMGetMatrix(dmmg[nlevels-1]->dm,MATAIJ,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
     ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->B);CHKERRQ(ierr);
     for (i=nlevels-2; i>-1; i--) {
-      ierr = MatSeqAIJPtAP(dmmg[i+1]->B,dmmg[i+1]->R,&dmmg[i]->B);CHKERRQ(ierr);
+      ierr = MatPtAP(dmmg[i+1]->B,dmmg[i+1]->R,&dmmg[i]->B);CHKERRQ(ierr);
     }
   }
 

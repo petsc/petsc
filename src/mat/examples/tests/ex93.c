@@ -28,7 +28,7 @@ int main(int argc,char **argv) {
   ierr = MatDestroy(C);CHKERRQ(ierr);
 
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  ierr = MatSeqAIJPtAP(A,B,&C);CHKERRQ(ierr);
+  ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
 
   ierr = MatAXPY(&none,C,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

@@ -2163,7 +2163,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*90*/ 0,
        MatMatMult_SeqAIJ_SeqAIJ,  
        MatMatMultSymbolic_SeqAIJ_SeqAIJ,  
-       MatMatMultNumeric_SeqAIJ_SeqAIJ,       
+       MatMatMultNumeric_SeqAIJ_SeqAIJ,   
+       MatPtAP_SeqAIJ_SeqAIJ,
+/*95*/ MatPtAPSymbolic_SeqAIJ_SeqAIJ,
+       MatPtAPNumeric_SeqAIJ_SeqAIJ,
 };
 
 EXTERN_C_BEGIN
@@ -2667,7 +2670,6 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJGetInodeSizes_C",
                                      "MatSeqAIJGetInodeSizes_SeqAIJ",
                                       MatSeqAIJGetInodeSizes_SeqAIJ);CHKERRQ(ierr);
-  ierr = RegisterApplyPtAPRoutines_Private(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -107,7 +107,10 @@ struct _MatOps {
 /*90*/      (*getvecs)(Mat,Vec*,Vec*),
             (*matmult)(Mat,Mat,MatReuse,PetscReal,Mat*),
             (*matmatmultsymbolic)(Mat,Mat,PetscReal,Mat*),
-            (*matmatmultnumeric)(Mat,Mat,Mat);
+            (*matmatmultnumeric)(Mat,Mat,Mat),
+            (*matptap)(Mat,Mat,MatReuse,PetscReal,Mat*),
+/*95*/      (*matptapsymbolic)(Mat,Mat,PetscReal,Mat*),
+            (*matptapnumeric)(Mat,Mat,Mat);
 };
 
 /*

@@ -95,6 +95,10 @@ EXTERN int RegisterApplyPtAPRoutines_Private(Mat);
 EXTERN int MatMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN int MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 EXTERN int MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+EXTERN int MatPtAP_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN int MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+EXTERN int MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+
 EXTERN_C_BEGIN
 EXTERN int MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,Mat*);
 EXTERN int MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,Mat*);
