@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.21 1996/02/24 19:07:45 balay Exp bsmith $ */
+/* $Id: da.h,v 1.22 1996/03/19 21:30:28 bsmith Exp curfman $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -16,15 +16,14 @@ typedef enum { DA_STENCIL_STAR, DA_STENCIL_BOX } DAStencilType;
 typedef enum { DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC,
                DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC} 
                DAPeriodicType;
+typedef enum { DA_X, DA_Y, DA_Z } DADirection;
 
 extern int   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,DA *);
 extern int   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,
                                                            int,int,int,DA *);
 extern int   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType, 
                         int,int,int,int,int,int,int,int, DA *);
-
 extern int   DADestroy(DA);
-
 extern int   DAView(DA,Viewer);
 
 extern int   DAGlobalToLocalBegin(DA,Vec, InsertMode,Vec);
@@ -37,7 +36,8 @@ extern int   DAGetDistributedVector(DA,Vec*);
 extern int   DAGetLocalVector(DA,Vec*);
 extern int   DAGetCorners(DA,int*,int*,int*,int*,int*,int*);
 extern int   DAGetGhostCorners(DA,int*,int*,int*,int*,int*,int*);
-extern int   DAGetInfo(DA ,int *,int *,int *,int *,int *,int *,int *,int *,int *);
+extern int   DAGetInfo(DA,int *,int *,int *,int *,int *,int *,int *,int *,int *);
+extern int   DAGetProcessorSubset(DA,DADirection,int,MPI_Comm*);
 extern int   DARefine(DA,DA*);
 
 extern int   DAGetGlobalIndices(DA,int*,int**);
