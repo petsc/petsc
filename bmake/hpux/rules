@@ -1,11 +1,11 @@
-# $Id: base,v 1.44 1998/06/24 15:24:30 balay Exp balay $ 
+# $Id: base,v 1.45 1998/09/18 15:25:34 balay Exp balay $ 
 
 PARCH    = hpux
 #
 #   The name of the C compiler to use, the -Aa option is mandatory
 #  and indicates the we are compiling with ANSI C.
 #
-CC       = cc -Aa +z
+CC       = cc -Aa +z -Ae
 #
 # If building shared libraries, use the following instead.
 # You MUST use +z for shared libraries.

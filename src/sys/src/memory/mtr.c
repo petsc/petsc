@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.114 1998/08/26 18:33:26 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.115 1998/09/24 23:59:13 balay Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -423,7 +423,7 @@ int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
 
 .keywords: memory, allocation, tracing, space, statistics
 
-.seealso:  PetscTrSpace()
+.seealso:  PetscTrSpace(), PetscTrLogDump() 
  @*/
 int PetscTrDump( FILE *fp )
 {
@@ -479,7 +479,11 @@ int PetscTrLog(void)
     Options Database Key:
 .  -trmalloc_log - Activates PetscTrLog() and PetscTrLogDump()
 
-.seealso: PetscTrLog()
+   Fortran Note:
+   The calling sequence in Fortran is PetscTrLogDump(integer ierr)
+   The fp defaults to stdout.
+
+.seealso: PetscTrLog(), PetscTrDump()
 @*/
 int PetscTrLogDump(FILE *fp)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.51 1998/05/24 20:11:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.52 1998/06/11 19:53:29 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -27,6 +27,7 @@ static char vcid[] = "$Id: zsys.c,v 1.51 1998/05/24 20:11:40 bsmith Exp bsmith $
 #define petsctrlog_                PETSCTRLOG
 #define petscmemcpy_               PETSCMEMCPY
 #define petsctrdump_               PETSCTRDUMP
+#define petsctrlogdump_            PETSCTRLOGDUMP
 #define petscmemzero_              PETSCMEMZERO
 #define petscbinaryopen_           PETSCBINARYOPEN
 #define petscbinaryread_           PETSCBINARYREAD
@@ -61,6 +62,7 @@ static char vcid[] = "$Id: zsys.c,v 1.51 1998/05/24 20:11:40 bsmith Exp bsmith $
 #define petscsequentialphaseend_   petscsequentialphaseend
 #define petscmemcpy_               petscmemcpy
 #define petsctrdump_               petsctrdump
+#define petsctrlogdump_            petsctlogrdump
 #define petscmemzero_              petscmemzero
 #define petscbinaryopen_           petscbinaryopen
 #define petscbinaryread_           petscbinaryread
@@ -95,26 +97,30 @@ void petscstrncpy_(CHAR s1, CHAR s2, int *n,int len1, int len2)
   PetscStrncpy(t1,t2,m);
 }
 
-void petscfixfilename_(CHAR file, int *__ierr,int len )
+void petscfixfilename_(CHAR filein ,CHAR fileout,int *__ierr,int len1,int len2)
 {
   int  i,n;
-  char *b;
+  char *in,*out;
 
 #if defined(USES_CPTOFCD)
-  b = _fcdtocp(file); 
-  n = _fcdlen (file); 
+  in  = _fcdtocp(filein); 
+  out = _fcdtocp(fileout); 
+  n   = _fcdlen (filein); 
 #else
-  b = file;
-  n = len;
+  in  = filein;
+  out = fileout;
+  n   = len1;
 #endif
 
   for (i=0; i<n; i++) {
 #if defined(PARCH_nt)
-    if (b[i] == '/') b[i] = '\\';
+    if (in[i] == '/') out[i] = '\\';
 #else
-    if (b[i] == '\\') b[i] = '/';
+    if (in[i] == '\\') out[i] = '/';
 #endif
+    else out[i] = in[i];
   }
+  out[i] = 0;
 }
 
 void petscbinaryopen_(CHAR name,int *type,int *fd,int *__ierr,int len)
@@ -157,6 +163,10 @@ void petscmemzero_(void *a,int *n)
 void petsctrdump_(int *__ierr)
 {
   *__ierr = PetscTrDump(stdout);
+}
+void petsctrlogdump_(int *__ierr)
+{
+  *__ierr = PetscTrLogDump(stdout);
 }
 
 void petscmemcpy_(int *out,int *in,int *length)
