@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.152 2001/01/20 03:35:28 bsmith Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.153 2001/02/01 20:47:55 bsmith Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -294,7 +294,7 @@ int PCBJacobiGetSubSLES_BJacobi(PC pc,int *n_local,int *first_local,SLES **sles)
   PetscFunctionBegin;
   if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SLESSetUp() or PCSetUp() first");
 
-  if (n_local) *n_local         = jac->n_local;
+  if (n_local)     *n_local     = jac->n_local;
   if (first_local) *first_local = jac->first_local;
   *sles                         = jac->sles;
   jac->same_local_solves        = 0; /* Assume that local solves are now different;
