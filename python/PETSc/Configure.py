@@ -497,7 +497,7 @@ acfindx:
       # Check for X11 libraries
       if self.framework.argDB.has_key('with-x-library'):
         if not os.path.isfile(self.framework.argDB['with-x-library']):
-          raise RuntimeError('Invalid X library specified by --with-x-libary='+os.path.abspath(self.framework.argDB['with-x-library']))
+          raise RuntimeError('Invalid X library specified by --with-x-library='+os.path.abspath(self.framework.argDB['with-x-library']))
         libraryDir = os.path.dirname(self.framework.argDB['with-x-library'])
       else:
         testLibrary  = 'Xt'
@@ -505,7 +505,7 @@ acfindx:
 
         # Check guess
         if libraryDirGuess:
-          for ext in ['.a', '.so', '.sl']:
+          for ext in ['.a', '.so', '.sl', '.dll.a']:
             if os.path.isfile(os.path.join(libraryDirGuess, 'lib'+testLibrary+ext)):
               foundLibrary = 1
               libraryDir   = libraryDirGuess
