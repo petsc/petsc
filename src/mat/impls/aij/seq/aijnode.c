@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.31 1996/01/25 17:49:56 balay Exp curfman $";
+static char vcid[] = "$Id: aijnode.c,v 1.32 1996/02/23 23:08:00 curfman Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -342,7 +342,6 @@ int Mat_AIJ_CheckInode(Mat A)
   ierr = OptionsGetInt(PETSC_NULL,"-mat_aij_inode_limit",&a->inode.limit, \
                        &flg);  CHKERRQ(ierr);
   if (a->inode.limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
-  if (a->inode.size && a->nonew) return 0; /* inode struct exists, and mat is unchanged*/
   m = a->m;    
   if (a->inode.size) {ns = a->inode.size;}
   else { ns = (int *)PetscMalloc((m+1)*sizeof(int));  CHKPTRQ(ns);}
