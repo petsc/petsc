@@ -14,7 +14,7 @@ esi::ErrorCode esi::petsc::Object::getRunTimeModel(const char* name, void *& com
 
   PetscTruth flg;
   if (PetscStrcmp(name,"MPI",&flg),flg){
-    comm = &this->comm;
+    comm = &(this->comm);
     return ierr;
   }
   comm = 0;

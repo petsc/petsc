@@ -53,7 +53,7 @@ int VecConvertMPIToSeqAll(Vec vin,Vec *vout)
   VecConvertMPIToMPIZero - make available all the values of
   an MPIVEC on processor zero as an MPIVEC
 
-  Collective
+  Collective on Vec
 
   Input Parameter: 
 .  vin  - input MPIVEC
