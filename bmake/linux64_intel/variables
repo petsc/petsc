@@ -1,4 +1,4 @@
-# $Id: variables,v 1.7 2001/08/22 17:58:22 balay Exp $ 
+# $Id: variables,v 1.1 2001/08/25 17:25:37 balay Exp balay $ 
 #
 #     See the file bmake/variables.defs for a complete explanation of all these fields
 #
@@ -15,7 +15,7 @@ DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = ecc -FPIC
-C_FC		   = efc -w90 -FPIC
+C_FC		   = efc -w -FPIC
 C_CLINKER_SLFLAG   = -Qoption,link,-rpath,
 C_FLINKER_SLFLAG   = -Qoption,link,-rpath,
 C_CLINKER	   = ecc 
@@ -32,7 +32,7 @@ O_FOPTFLAGS	   = -O2
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = ecc -Kc++ -Kc++eh -FPIC
-CXX_FC		   = efc -w90 -FPIC
+CXX_FC		   = efc -w -FPIC
 CXX_CLINKER_SLFLAG = -Qoption,link,-rpath,
 CXX_FLINKER_SLFLAG = -Qoption,link,-rpath,
 CXX_CLINKER	   = ecc -Kc++
