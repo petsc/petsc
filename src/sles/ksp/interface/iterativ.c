@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.24 1995/07/17 03:53:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.25 1995/07/24 21:10:10 curfman Exp curfman $";
 #endif
 
 /*
@@ -68,19 +68,19 @@ int KSPCheckDef( KSP itP )
 @*/
 int KSPDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
 {
-  MPIU_printf(itP->comm,"%d %14.12e \n",n,rnorm); return 0;
+  MPIU_printf(itP->comm,"%d Residual norm %14.12e \n",n,rnorm); return 0;
 }
 
 int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 {
   if (fnorm > 1.e-9 || fnorm == 0.0) {
-    MPIU_printf(ksp->comm, "iter = %d, Function norm %g \n",its,fnorm);
+    MPIU_printf(ksp->comm, "iter = %d, Residual norm %g \n",its,fnorm);
   }
   else if (fnorm > 1.e-11){
-    MPIU_printf(ksp->comm, "iter = %d, Function norm %5.3e \n",its,fnorm);
+    MPIU_printf(ksp->comm, "iter = %d, Residual norm %5.3e \n",its,fnorm);
   }
   else {
-    MPIU_printf(ksp->comm, "iter = %d, Function norm < 1.e-11\n",its);
+    MPIU_printf(ksp->comm, "iter = %d, Residual norm < 1.e-11\n",its);
   }
   return 0;
 }
