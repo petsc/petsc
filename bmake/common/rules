@@ -121,7 +121,7 @@ wwwpages:
                  $(SOURCEC) $(SOURCEH); fi 
 
 clean:
-	-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES) $(TESTS) \
+	@-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES) $(TESTS) \
                PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log
 
 testexamples: examples runexamples clean
