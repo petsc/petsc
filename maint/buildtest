@@ -22,7 +22,7 @@ else if ($day == Mon || $day == Sat) then
     set A=(alpha      IRIX      )
     set J=(nofortran  fortran   )
 else
-    set M=(ptera      ryan)
+    set M=(ptera      puck)
     set B=(O          O_complex)
     set A=(alpha      IRIX)
     set J=(fortran    nofortran)
