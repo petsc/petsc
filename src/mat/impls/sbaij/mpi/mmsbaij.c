@@ -224,7 +224,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
     }
   }
   B->nbs     = ec;
-  baij->B->n = ec*B->bs;
+  baij->B->n = ec*mat->bs;
   ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
