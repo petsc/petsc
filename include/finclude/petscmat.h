@@ -1,5 +1,5 @@
 !
-!  $Id: mat.h,v 1.57 1999/11/24 21:56:02 bsmith Exp bsmith $;
+!  $Id: mat.h,v 1.58 1999/12/14 18:01:13 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -157,7 +157,7 @@
 !
       integer   MAT_ILUINFO_SIZE
 
-      parameter (MAT_ILUINFO_SIZE=3)
+      parameter (MAT_ILUINFO_SIZE=6)
 
       integer MAT_ILUINFO_LEVELS
       integer MAT_ILUINFO_FILL
@@ -166,6 +166,14 @@
       parameter (MAT_ILUINFO_LEVELS = 1)
       parameter (MAT_ILUINFO_FILL = 2)
       parameter (MAT_ILUINFO_DIAGONAL_FILL = 3)
+
+      integer MAT_ILUINFO_DT
+      integer MAT_ILUINFO_DTCOL
+      integer MAT_ILUINFO_DTCOUNT
+
+      parameter (MAT_ILUINFO_DT = 4)
+      parameter (MAT_ILUINFO_DTCOL = 5)
+      parameter (MAT_ILUINFO_DTCOUNT = 6)
 
 !
 !  Options for SOR and SSOR
