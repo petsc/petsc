@@ -18,11 +18,14 @@ int main( int argc, char **argv )
      --------------------- ---------------------------------------------------*/
   PetscInitialize(&argc,&argv,(char *)0,help);
 
+  /*      Initialize graphics */
+  ierr = AppCtxGraphics(appctx); CHKERRA(ierr);
+
   /*  Load the grid database*/
   ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx); CHKERRA(ierr);
 
-  /*      Initialize graphics */
-  ierr = AppCtxGraphics(appctx); CHKERRA(ierr);
+  /*      Initialize graphics 
+  ierr = AppCtxGraphics(appctx); CHKERRA(ierr); */
 
   /*   Setup the system and solve it*/
   ierr = AppCtxSolve(appctx);CHKERRQ(ierr);

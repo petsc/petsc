@@ -80,7 +80,10 @@ int AppCtxSetLocal(AppCtx *appctx)
 
   MPI_Comm_rank(appctx->comm,&rank);
 
-/* AODataView(ao, VIEWER_STDOUT_SELF);  */
+  printf("appctx->view.show_griddata= %d\n", appctx->view.show_griddata);
+  if (appctx->view.show_griddata) {
+    AODataView(ao, VIEWER_STDOUT_SELF);  
+  }
 
   /*   Generate the list of on processor cells   */
   /* Need a local numbering so that we can loop over the cells */
@@ -94,11 +97,16 @@ int AppCtxSetLocal(AppCtx *appctx)
 
  /*       Get the list of Degrees of Freedom associated with those cells  (global numbering) */
  ierr = AODataSegmentGetReducedIS(ao,"cell","df",grid->cell_global,&grid->df_global);CHKERRQ(ierr);
- if( 1 ){  printf("df_global \n");  ISView(grid->df_global, VIEWER_STDOUT_WORLD);}
+ if(appctx->view.show_griddata){  
+   printf("df_global \n");  ISView(grid->df_global, VIEWER_STDOUT_WORLD);
+ }
 
  /*    Get the coords corresponding to each cell */
  ierr = AODataSegmentGetIS(ao, "cell", "coords", grid->cell_global , (void **)&grid->cell_coords);CHKERRQ(ierr);
-   if( 1 ){  printf("cell_coords\n");   PetscDoubleView(grid->cell_n*8, grid->cell_coords, VIEWER_STDOUT_SELF);}
+   if(appctx->view.show_griddata ){  
+     printf("cell_coords\n");   
+     PetscDoubleView(grid->cell_n*8, grid->cell_coords, VIEWER_STDOUT_SELF);
+   }
   /*      Make local to global mapping of cells and vertices  */
  /* Don't want to carry around table which contains the info for all nodes */
   ierr = ISLocalToGlobalMappingCreateIS(grid->cell_global,&ltogcell);CHKERRQ(ierr);
