@@ -436,7 +436,7 @@ int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
       }
     } else if (type == PETSC_BINARY_WRONLY) {
-      if ((vbinary->fdes = open(fname,O_WRONLY,0)) == -1) {
+      if ((vbinary->fdes = open(fname,O_WRONLY|O_APPEND,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
       }
     } else if (fname) {

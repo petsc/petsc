@@ -20,6 +20,7 @@
 #define dacreatenaturalvector_       DACREATENATURALVECTOR
 #define dacreatelocalvector_         DACREATELOCALVECTOR
 #define dagetlocalvector_            DAGETLOCALVECTOR
+#define dagetglobalvector_           DAGETGLOBALVECTOR
 #define darestorelocalvector_        DARESTORELOCALVECTOR
 #define dagetscatter_                DAGETSCATTER
 #define dagetglobalindices_          DAGETGLOBALINDICES
@@ -37,6 +38,7 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dagetlocalinfo_              dagetlocalinfo
 #define dagetlocalvector_            dagetlocalvector
+#define dagetglobalvector_           dagetglobalvector
 #define darestorelocalvector_        darestorelocalvector
 #define dagetinterpolation_          dagetinterpolation
 #define daload_                      daload
@@ -270,6 +272,11 @@ void PETSC_STDCALL dacreatelocalvector_(DA *da,Vec* l,int *ierr)
 void PETSC_STDCALL dagetlocalvector_(DA *da,Vec* l,int *ierr)
 {
   *ierr = DAGetLocalVector(*da,l);
+}
+
+void PETSC_STDCALL dagetglobalvector_(DA *da,Vec* l,int *ierr)
+{
+  *ierr = DAGetGlobalVector(*da,l);
 }
 
 void PETSC_STDCALL darestorelocalvector_(DA *da,Vec* l,int *ierr)

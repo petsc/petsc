@@ -723,7 +723,7 @@ int MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   Mat_SeqAIJ*       A = (Mat_SeqAIJ*)aij->A->data;
   Mat_SeqAIJ*       B = (Mat_SeqAIJ*)aij->B->data;
   int               nz,fd,ierr,header[4],rank,size,*row_lengths,*range,rlen,i,tag = ((PetscObject)viewer)->tag;
-  int               nzmax,*column_indices,j,k,col,*garray = aij->garray,cnt,cstart = aij->cstart;
+  int               nzmax,*column_indices,j,k,col,*garray = aij->garray,cnt,cstart = aij->cstart,rnz;
   PetscScalar       *column_values;
 
   PetscFunctionBegin;
@@ -792,10 +792,10 @@ int MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
     MPI_Status status;
     ierr = PetscBinaryWrite(fd,column_indices,nz,PETSC_INT,1);CHKERRQ(ierr);
     for (i=1; i<size; i++) {
-      ierr = MPI_Recv(&nz,1,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
-      if (nz > nzmax) SETERRQ2(PETSC_ERR_LIB,"Internal PETSc error: nz = %d nzmax = %d",nz,nzmax);
-      ierr = MPI_Recv(column_indices,nz,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
-      ierr = PetscBinaryWrite(fd,column_indices,nz,PETSC_INT,1);CHKERRQ(ierr);
+      ierr = MPI_Recv(&rnz,1,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
+      if (rnz > nzmax) SETERRQ2(PETSC_ERR_LIB,"Internal PETSc error: nz = %d nzmax = %d",nz,nzmax);
+      ierr = MPI_Recv(column_indices,rnz,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,column_indices,rnz,PETSC_INT,1);CHKERRQ(ierr);
     }
   } else {
     ierr = MPI_Send(&nz,1,MPI_INT,0,tag,mat->comm);CHKERRQ(ierr);
@@ -825,10 +825,10 @@ int MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
     MPI_Status status;
     ierr = PetscBinaryWrite(fd,column_values,nz,PETSC_SCALAR,1);CHKERRQ(ierr);
     for (i=1; i<size; i++) {
-      ierr = MPI_Recv(&nz,1,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
-      if (nz > nzmax) SETERRQ2(PETSC_ERR_LIB,"Internal PETSc error: nz = %d nzmax = %d",nz,nzmax);
-      ierr = MPI_Recv(column_values,nz,MPIU_SCALAR,i,tag,mat->comm,&status);CHKERRQ(ierr);
-      ierr = PetscBinaryWrite(fd,column_values,nz,PETSC_SCALAR,1);CHKERRQ(ierr);
+      ierr = MPI_Recv(&rnz,1,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
+      if (rnz > nzmax) SETERRQ2(PETSC_ERR_LIB,"Internal PETSc error: nz = %d nzmax = %d",nz,nzmax);
+      ierr = MPI_Recv(column_values,rnz,MPIU_SCALAR,i,tag,mat->comm,&status);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,column_values,rnz,PETSC_SCALAR,1);CHKERRQ(ierr);
     }
   } else {
     ierr = MPI_Send(&nz,1,MPI_INT,0,tag,mat->comm);CHKERRQ(ierr);
