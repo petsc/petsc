@@ -28,6 +28,12 @@ class Compiler(config.compile.processor.Processor):
     self.flagsName.extend(Preprocessor(argDB).flagsName)
     return
 
+  def copy(self, other):
+    other.compiler = self.compiler
+    other.configLibraries = self.configLibraries
+    other.libraries = sets.Set(self.libraries)
+    return
+
   def getTarget(self, source):
     '''Return None for header files'''
     import os
@@ -51,6 +57,12 @@ class Linker(config.compile.processor.Processor):
     config.compile.processor.Processor.__init__(self, argDB, ['CC_LD', 'LD', self.compiler.name], 'LDFLAGS', '.o', '.a')
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
+    return
+
+  def copy(self, other):
+    other.compiler = self.compiler
+    other.configLibraries = self.configLibraries
+    other.libraries = sets.Set(self.libraries)
     return
 
   def setArgDB(self, argDB):
@@ -99,6 +111,13 @@ class SharedLinker(config.compile.processor.Processor):
     config.compile.processor.Processor.__init__(self, argDB, ['LD_SHARED', self.compiler.name], 'LDFLAGS', '.o', None)
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
+    return
+
+  def copy(self, other):
+    other.compiler = self.compiler
+    other.configLibraries = self.configLibraries
+    other.outputFlag = self.outputFlag
+    other.libraries = sets.Set(self.libraries)
     return
 
   def getFlags(self):

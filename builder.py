@@ -179,13 +179,13 @@ class Builder(logging.Logger):
       self.configurations[configurationName] = script.LanguageProcessor(argDB = self.argDB, compilers = self.compilers, libraries = self.libraries, versionControl = self.versionControl)
       self.configurations[configurationName].setup()
       for language in self.framework.preprocessorObject:
-        self.configurations[configurationName].setPreprocessorObject(language, self.framework.getPreprocessorObject(language))
+        self.framework.getPreprocessorObject(language).copy(self.configurations[configurationName].getPreprocessorObject(language))
       for language in self.framework.compilerObject:
-        self.configurations[configurationName].setCompilerObject(language, self.framework.getCompilerObject(language))
+        self.framework.getCompilerObject(language).copy(self.configurations[configurationName].getCompilerObject(language))
       for language in self.framework.linkerObject:
-        self.configurations[configurationName].setLinkerObject(language, self.framework.getLinkerObject(language))
+        self.framework.getLinkerObject(language).copy(self.configurations[configurationName].getLinkerObject(language))
       for language in self.framework.sharedLinkerObject:
-        self.configurations[configurationName].setSharedLinkerObject(language, self.framework.getSharedLinkerObject(language))
+        self.framework.getSharedLinkerObject(language).copy(self.configurations[configurationName].getSharedLinkerObject(language))
     configuration = self.configurations[configurationName]
     configuration.compilers      = self.compilers
     configuration.libraries      = self.libraries
