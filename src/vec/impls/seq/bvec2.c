@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.96 1997/05/03 15:28:46 bsmith Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.97 1997/05/23 18:34:29 balay Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: bvec2.c,v 1.96 1997/05/03 15:28:46 bsmith Exp balay $
 int VecNorm_Seq(Vec xin,NormType type,double* z )
 {
   Vec_Seq * x = (Vec_Seq *) xin->data;
-  int     one = 1;
+  int     ierr,one = 1;
 
   if (type == NORM_2) {
     /*
@@ -30,8 +30,7 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
     *z = BLnrm2_( &x->n, x->array, &one );
 #endif
     PLogFlops(2*x->n-1);
-  }
-  else if (type == NORM_INFINITY) {
+  } else if (type == NORM_INFINITY) {
     register int    i, n = x->n;
     register double max = 0.0, tmp;
     Scalar          *xx = x->array;
@@ -43,10 +42,12 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
       xx++;
     }
     *z   = max;
-  }
-  else if (type == NORM_1) {
+  } else if (type == NORM_1) {
     *z = BLasum_( &x->n, x->array, &one );
     PLogFlops(x->n-1);
+  } else if (type == NORM_1_AND_2) {
+    ierr = VecNorm_Seq(xin,NORM_1,z);CHKERRQ(ierr);
+    ierr = VecNorm_Seq(xin,NORM_2,z+1);CHKERRQ(ierr);
   }
   return 0;
 }

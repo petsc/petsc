@@ -1,24 +1,24 @@
 
-/* $Id: pvec2.c,v 1.20 1997/01/06 20:21:59 balay Exp bsmith $ */
+/* $Id: pvec2.c,v 1.21 1997/02/22 02:22:33 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
 */
 #include <math.h>
-#include "pvecimpl.h" 
+#include "src/vec/impls/mpi/pvecimpl.h" 
 #include "src/inline/dot.h"
 
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_MPI"
 int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 {
-  Scalar awork[128];
-  Scalar        *work = awork;
+  Scalar awork[128],*work = awork;
+  int    ierr;
 
   if (nv > 128) {
-    work = (Scalar *)PetscMalloc(nv * sizeof(Scalar)); CHKPTRQ(work);
+    work = (Scalar *) PetscMalloc(nv * sizeof(Scalar)); CHKPTRQ(work);
   }
-  VecMDot_Seq(  nv, xin, y, work );
+  ierr = VecMDot_Seq(  nv, xin, y, work ); CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
   MPI_Allreduce( work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
 #else
@@ -52,22 +52,21 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
     MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
     *z = sqrt( sum );
     PLogFlops(2*x->n);
-  }
-  else if (type == NORM_1) {
+  } else if (type == NORM_1) {
     /* Find the local part */
     VecNorm_Seq( xin, NORM_1, &work );
     /* Find the global max */
     MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_SUM,xin->comm );
-  }
-  else if (type == NORM_INFINITY) {
+  } else if (type == NORM_INFINITY) {
     /* Find the local max */
     VecNorm_Seq( xin, NORM_INFINITY, &work );
     /* Find the global max */
     MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
-  }
-  else if (type == NORM_1) {
-    VecNorm_Seq( xin, NORM_1, &work );
-    MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+  } else if (type == NORM_1_AND_2) {
+    double temp[2];
+    VecNorm_Seq( xin, NORM_1, temp );
+    VecNorm_Seq( xin, NORM_2, temp+1 );
+    MPI_Allreduce( temp, z,2,MPI_DOUBLE,MPI_SUM,xin->comm );
   }
   return 0;
 }
