@@ -7,7 +7,9 @@ chkpetsc_dir:
 	@pushd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; popd 2>&1 >/dev/null; \
         mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
         if [ $${mypwd} = $${newpwd} ]; then \
+          echo "*********************** ERROR ************************" ; \
           echo "Your PETSC_DIR does not match the directory you are in";\
+          echo "******************************************************" ; \
         fi
 	
 chklib_dir:
