@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.43 2000/11/28 17:27:19 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.44 2001/01/15 21:43:14 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -29,7 +29,9 @@ int PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-ams_printf",&flg);CHKERRQ(ierr);
   if (!flg) {
+#if !defined(PETSC_MISSING_DEV_NULL)
     ierr = AMS_Set_output_file("/dev/null");CHKERRQ(ierr);
+#endif
   }
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-ams_matlab",m,16,&flg);CHKERRQ(ierr);
