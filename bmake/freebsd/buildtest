@@ -7,7 +7,6 @@ set TMP=/home/petsc/petsc-test
 set MACH=eris.disturbed.net
 set ARCH=freebsd
 set TEST=testexamples_
-set RSH=ssh
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then

@@ -7,7 +7,6 @@ set TMP=/sandbox/petsc/petsc-test
 set MACH=hux1
 set ARCH=linux_alpha_dec
 set TEST=testexamples_
-set RSH=ssh
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then

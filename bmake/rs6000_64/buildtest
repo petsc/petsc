@@ -10,7 +10,6 @@ set TMP=/usr/common/homes/k/kaushik/petsc-test
 set MACH=kaushik@seaborg.nersc.gov
 set ARCH=rs6000_64
 set TEST=testexamples_
-set RSH=ssh
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then

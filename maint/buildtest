@@ -10,14 +10,9 @@
 set DATAFILESPATH=/home/petsc/datafiles
 set NICE=''
 set APPEND='>>&'
-set RSH=rsh
-set RCP=rcp
-set RSYNCSSH=
+set RSH='ssh'
+set RCP='scp -q -B'
 source /sandbox/petsc/petsc-test/bmake/$1/buildtest
-if ("${RSH}" == "ssh") then
-  set RCP='scp -q -B'
-  set RSYNCSSH='-z -e ssh'
-endif
 
 set EJOBS=`grep PETSC_HAVE_ /sandbox/petsc/petsc-test/bmake/$1/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
 
@@ -29,7 +24,7 @@ if ("${BOPT}" == "O_complex") then
 endif
 #
 set RSYNC_DIR=`echo $TMP | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`
-rsync $RSYNCSSH -C -r --exclude=BitKeeper /sandbox/petsc/petsc-test ${MACH}:$RSYNC_DIR
+rsync -z -e ssh -C -r --exclude=BitKeeper /sandbox/petsc/petsc-test ${MACH}:$RSYNC_DIR
 if ("${ARCH}" != "t3e") then
   $RSH $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
 endif

@@ -8,7 +8,6 @@ set TMP=/Users/petsc/petsc-test
 set MACH=playstation
 set ARCH=macx
 set TEST=testexamples_
-set RSH=ssh
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then

@@ -8,7 +8,6 @@ set TMP=/u/ac/balay/petsc-test
 set MACH=balay@user01.ncsa.uiuc.edu # titan.ncsa.uiuc.edu
 set ARCH=linux64_intel
 set TEST=testexamples_
-set RSH=ssh
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
