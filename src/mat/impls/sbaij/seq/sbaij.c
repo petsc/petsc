@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.55 2001/04/10 19:35:40 bsmith Exp balay $*/
+/*$Id: sbaij.c,v 1.56 2001/04/10 22:35:39 balay Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -339,7 +339,7 @@ static int MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
     ierr = PetscViewerASCIIPrintf(viewer,"  block size is %d\n",bs);CHKERRQ(ierr);
@@ -1376,6 +1376,7 @@ int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
   if (nnz) {
     for (i=0; i<mbs; i++) {
       if (nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: local row %d value %d",i,nnz[i]);
+      if (nnz[i] > mbs) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be greater than block row length: local row %d value %d rowlength %d",i,nnz[i],mbs);
     }
   }
 
