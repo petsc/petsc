@@ -79,9 +79,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.argDB['CPPFLAGS']   = ''
     if not 'LDFLAGS' in self.argDB:
       self.argDB['LDFLAGS']  = ''
-    self.batchIncludes       = ''
-    self.batchBodies         = ''
-    self.batchIncludeDirs    = ''
+    self.batchIncludes       = []
+    self.batchBodies         = []
+    self.batchIncludeDirs    = []
     return
 
   def __getstate__(self):
@@ -607,6 +607,54 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.log.write(('='*80)+'\n')
     return
 
+  def addBatchInclude(self, includes):
+    '''Add an include or a list of includes to the batch run'''
+    if not isinstance(includes, list):
+      includes = [includes]
+    self.batchIncludes.extend(includes)
+    return
+
+  def addBatchBody(self, statements):
+    '''Add a statement or a list of statements to the batch run'''
+    if not isinstance(statements, list):
+      statements = [statements]
+    self.batchBodies.extend(statements)
+    return
+
+  def configureBatch(self):
+    '''F'''
+    if self.framework.batchBodies:
+      import nargs
+      import sys
+
+      args = filter(lambda a: not a.endswith('-with-batch') and not a.endswith('-with-batch=1'), self.clArgs)
+      body = ['FILE *output = fopen("reconfigure","w");']
+      body.append('fprintf(output, "\\nconfigure_options = [\\n");')
+      body.extend(self.batchBodies)
+      body.append('fprintf(output, "  '+repr(args)[1:-1]+'\\n]");')
+      driver = ['fprintf(output, "\\nif __name__ == \'__main__\':',
+                '  import os',
+                '  import sys',
+                '  sys.path.insert(0, os.path.abspath(os.path.join(\'config\')))',
+                '  import configure',
+                '  configure.petsc_configure(configure_options)");']
+      body.append('\\n'.join(driver))
+
+      oldFlags = self.compilers.CPPFLAGS
+      self.compilers.CPPFLAGS += ' '.join(self.batchIncludeDirs)
+      self.batchIncludes.insert(0, '#include <stdio.h>')
+      if not self.checkLink('\n'.join(self.batchIncludes)+'\n', '\n'.join(body), cleanup = 0):
+        sys.exit('Unable to generate test file for batch system\n')
+      self.compilers.CPPFLAGS = oldFlags
+      self.framework.logClear()
+      print '=================================================================================\r'
+      print '    Since your compute nodes require use of a batch system or mpirun you must:   \r'
+      print ' 1) Submit ./conftest to your batch system (this will generate the file reconfigure)\r'
+      print ' 2) Run "python reconfigure" (to complete the configure process).                \r'
+      print '=================================================================================\r'
+      sys.exit(0)
+    return
+
   def configure(self, out = None):
     '''Configure the system
        - Must delay database initialization until children have contributed variable types'''
@@ -616,6 +664,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.outputBanner()
     for child in graph.DirectedGraph.topologicalSort(self.childGraph):
       child.configure()
+    if self.framework.argDB['with-batch']:
+      self.configureBatch()
     self.cleanup()
     return 1
 

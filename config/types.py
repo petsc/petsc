@@ -205,8 +205,12 @@ class Configure(config.base.Configure):
           else:
             endian = 'big'
         else:
-          self.framework.batchBodies += '{union {long l;char c[sizeof(long)];} u;u.l = 1;fprintf(output,"  \'  --with-endian=%s\',\\n",(u.c[sizeof(long) - 1] == 1) ? "little" : "big");}'
-          #dummy value
+          self.framework.addBatchBody(['{',
+                                       '  union {long l; char c[sizeof(long)];} u;',
+                                       '  u.l = 1;',
+                                       '  fprintf(output, " \'--with-endian=%s\',\\n", (u.c[sizeof(long) - 1] == 1) ? "little" : "big");',
+                                       '}'])
+          # Dummy value
           endian = 'little'
     if endian == 'big':
       self.addDefine('WORDS_BIGENDIAN', 1)
@@ -234,9 +238,10 @@ class Configure(config.base.Configure):
           self.framework.log.write('Compiler does not support long long\n')
           size = 0
       else:
-        self.framework.batchIncludes += '#include <stdlib.h>\n#include <stdio.h>\n'
-        if otherInclude: self.framework.batchIncludes += '#include <'+otherInclude+'>\n'
-        self.framework.batchBodies += 'fprintf(output, "  \'--sizeof_'+typeName.replace(' ','_').replace('*','p')+'=%d\',\\n", sizeof('+typeName+'));'
+        self.framework.addBatchInclude(['#include <stdlib.h>', '#include <stdio.h>'])
+        if otherInclude:
+          self.framework.addBatchInclude('#include <'+otherInclude+'>')
+        self.framework.addBatchBody('fprintf(output, "  \'--sizeof_'+typeName.replace(' ','_').replace('*','p')+'=%d\',\\n", sizeof('+typeName+'));')
         # dummy value
         size = 4
     else:
@@ -269,7 +274,14 @@ class Configure(config.base.Configure):
       else:
         raise RuntimeError('Unable to determine bits per byte')
     else:
-      self.framework.batchBodies += '{int i = 0;char val[2];val[0]=\'\\1\';val[1]=\'\\0\'; while(val[0]) {val[0] <<= 1; i++;} fprintf(output, "  \'--bits_per_byte=%d\',\\n", i);}\n'
+      self.framework.addBatchBody(['{',
+                                   '  int i = 0;',
+                                   '  char val[2];',
+                                   '  val[0]=\'\\1\';',
+                                   '  val[1]=\'\\0\';',
+                                   '  while(val[0]) {val[0] <<= 1; i++;}',
+                                   '  fprintf(output, " \'--bits_per_byte=%d\',\\n", i);',
+                                   '}'])
       # dummy value
       bits = 8
 

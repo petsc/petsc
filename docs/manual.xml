@@ -547,7 +547,71 @@ which would allow the define to appear in the headre specified by the framework 
 <sect1 id="Configuring-batch-systems">
 <title>Configuring batch systems</title>
 
-<para>How do outputRun() and checkRun() behave?</para>
+<para>It is not uncommon for large clusters or supercomputing centers to have a batch execution policy, making it
+difficult for configure to execute the few tests that depend on executing code, rather than compiling and linking it. To
+handle this case, we provide the <option>--with-batch</option> argument. The code to be run is collected in a single
+executable which the user must submit to the system. This executable produces a <emphasis>reconfigure</emphasis> script
+which may then be run to fully configure the system.</para>
+
+<para>When configure is run with the <option>--with-batch</option> option, the following message will appear.
+<screen>
+<prompt>petsc-dev$</prompt> <command>./config/configure.py --with-batch</command>
+</screen>
+produces the following log output.
+<screen>
+<computeroutput>
+=================================================================================
+    Since your compute nodes require use of a batch system or mpirun you must:   
+ 1) Submit ./conftest to your batch system (this will generate the file reconfigure)
+ 2) Run "python reconfigure" (to complete the configure process).                
+=================================================================================
+</computeroutput>
+</screen>
+The user must then execute the <filename>conftest</filename> binary, and then run the <command>python
+reconfigure</command> command.
+</para>
+
+<para>If a user defined test relies upon running code, he may make it suitable for a batch system. The
+<methodname>checkRun</methodname> method takes the <option>defaultArg</option> argument which names a configure option
+whose value may substitute for the outcome of the test, allowing a user to preempt the run. For instance, the
+<methodname>config.types.checkEndian</methodname> method contains the code
+<programlisting>
+  if self.checkRun('', body, defaultArg = 'isLittleEndian):
+</programlisting>
+which means the <option>isLittleEndian</option> option can be given to replace the output of the run. However, this does
+the require the user to supply the missing option.</para>
+
+<para>To automate this process, the test should first check for batch mode. Using the
+<methodname>addBatchInclude</methodname> and <methodname>addBatchBody</methodname> methods, code can be included in the
+batch executable. We return to the endian test to illustrate this usage.
+<programlisting>
+  if not self.framework.argDB['with-batch']:
+    body = '''
+    /* Are we little or big endian?  From Harbison &amp; Steele. */
+    union
+    {
+      long l;
+      char c[sizeof(long)];
+    } u;
+    u.l = 1;
+    exit(u.c[sizeof(long) - 1] == 1);
+    '''
+    if self.checkRun('', body, defaultArg = 'isLittleEndian'):
+      endian = 'little'
+    else:
+      endian = 'big'
+  else:
+    self.framework.addBatchBody(['{',
+                                 '  union {long l; char c[sizeof(long)];} u;',
+                                 '  u.l = 1;',
+                                 '  fprintf(output, " \'--with-endian=%s\',\\n", (u.c[sizeof(long) - 1] == 1) ? "little" : "big");',
+                                 '}'])
+    # Dummy value
+    endian = 'little'
+</programlisting>
+The batch body code should output configure options to the <varname>output</varname> file descriptor. These are
+collected for the new configure run in the <filename>reconfigure</filename> script.
+</para>
 
 </sect1>
 
