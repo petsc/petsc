@@ -1,3 +1,5 @@
+petsc/src/mat/impls/aij/seq/mi25bfac.f
+petsc/src/mat/impls/aij/seq/mi15blas.f
 petsc/src/mat/impls/aij/seq/LUSOL.f
 petsc/src/mat/impls/aij/seq/LUSOL_BLAS.f
 petsc/src/contrib/esmf
