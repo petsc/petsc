@@ -14,5 +14,4 @@ typedef struct {
 
 typedef struct {
   Vec vwork;           /* all vector work space */
-  int bs_iter;         /* flag indicating use of BSpar_solve */
 } PCiBS;
