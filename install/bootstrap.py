@@ -4,12 +4,10 @@
 #  BitKeeper and then does the bk clone bk://sidl.bkbits.net/BuildSystem
 #  and then calls the installer in BuildSystem/install
 #
+import commands
 import curses
 import curses.textpad
 import os
-import os.path
-import sys
-import commands
 
 def CenterAddStr(stdscr,my,text,attr = 0):
   (y,x) = stdscr.getmaxyx()
@@ -252,9 +250,32 @@ class CursesInstall:
     return 0
 
 #------------------------------------------------------------------
+def installBatch():
+  # Find Bitkeeper
+  output = FindCommand('bk')
+  if output:
+    raise RuntimeError('Could not locate Bitkeeper: '+output)
+  bkpath = os.path.dirname(output)
+  # Construct installation directory
+  installpath = os.getcwd()
+  if os.path.samefile(installpath, os.getenv('HOME')):
+    installpath = os.path.join(installpath, 'petsc-3.0')
+  if not os.path.isdir(installpath):
+    try:
+      os.makedirs(installpath)
+      os.chdir(installpath)
+    except IOError, e:
+      raise RuntimeError('Could not create installation directory '+installpath+': '+str(e))
+  # Get BuildSystem
+  if not os.path.isdir('BuildSystem'):
+    (status, output) = commands.getstatusoutput(bkpath+'/bk clone bk://sidl.bkbits.net/BuildSystem')
+    if status:
+      raise RuntimeError('Could not clone BuildSystem: '+output)
+  return
 
-if __name__ ==  '__main__':
-  
+def installCurses():
+  import sys
+
   installer = CursesInstall()
   curses.wrapper(installer.Welcome)
 
@@ -265,23 +286,31 @@ if __name__ ==  '__main__':
     installer.bkpath = os.path.dirname(output)
   else:
     curses.wrapper(installer.IndicateBKMissing)
-    if not installer.bkpath: sys.exit()
+    if not installer.bkpath: sys.exit(1)
   
   curses.wrapper(installer.InstallDirectory)
-  if not installer.installpath: sys.exit()
+  if not installer.installpath: sys.exit(1)
 
   if os.path.isdir(os.path.join(installer.installpath,'BuildSystem')):
     curses.wrapper(installer.AlreadyInstalled)
-    sys.exit()
+    sys.exit(1)
   else:
     curses.wrapper(installer.GetBuildSystem)
     if installer.status:
       curses.wrapper(installer.CannotClone,output)
-      sys.exit()
+      sys.exit(1)
+  return
 
+if __name__ ==  '__main__':
+  import sys
+  if len(sys.argv) > 1 and sys.argv[1] == '-batch':
+    installBatch()
+  else:
+    installCurses()
+  # Handoff to installer
   print 'Installing the BuildSystem, Runtime and Compiler (this will take a while)'
   sys.stdout.flush()
-  sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem','install'))
-  import installer
-  installer.runinstaller(["-debugSections=[install]",'-debugLevel=2'])
+  sys.path.insert(0, os.path.join(installer.installpath, 'BuildSystem'))
+  import install.installer
+  install.installer.runinstaller(["-debugSections=[install]",'-debugLevel=2'])
       
