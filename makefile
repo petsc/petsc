@@ -113,6 +113,7 @@ blaslapack:
         echo "Building C Blas/Lapack libraries";\
         ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ;\
         ${MV} libf2cblas.a libf2clapack.a ${PETSC_ARCH};\
+        ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} cleanblaslapack ;\
         echo "Completed C building Blas/Lapack libraries";\
         echo "========================================="; fi
 	-@if [ -d fblaslapack/${PETSC_ARCH} -a ! -s fblaslapack/${PETSC_ARCH}/libfblas.a ] ; then cd fblaslapack;\
@@ -120,6 +121,7 @@ blaslapack:
         echo "Building Fortran Blas/Lapack libraries";\
         ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ;\
         ${MV} libfblas.a libflapack.a ${PETSC_ARCH};\
+        ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} cleanblaslapck ;\
         echo "Completed building Fortran Blas/Lapack libraries";\
         echo "========================================="; fi
 #

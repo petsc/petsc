@@ -64,7 +64,7 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         raise RuntimeError('Error running configure on Sowing: '+str(e))
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';make; make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on Sowing: '+str(e))
       fd = open(os.path.join(installDir,'config.args'),'w')
