@@ -1,4 +1,4 @@
-/*$Id: vseqcr.c,v 1.12 2000/04/12 04:22:20 bsmith Exp balay $*/
+/*$Id: vseqcr.c,v 1.13 2000/05/05 22:15:03 balay Exp balay $*/
 /*
    Implements the sequential vectors.
 */
@@ -36,7 +36,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *v)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(1,1,"Cannot only create sequential vectors on 1 processor");
+  if (size > 1) SETERRQ(1,1,"Comm_size > 1; sequential vector can be created on 1 processor only");
   ierr = VecCreate(comm,n,n,v);CHKERRQ(ierr);
   ierr = VecSetType(*v,VEC_SEQ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
