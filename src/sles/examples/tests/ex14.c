@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.21 2000/01/11 21:02:20 bsmith Exp balay $*/
+/*$Id: ex14.c,v 1.22 2000/05/05 22:18:00 balay Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -436,7 +436,7 @@ int ComputeFunction(AppCtx *user,Vec X,Vec F)
      Insert values into global vector
   */
   ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  PLogFlops(11*ym*xm);
+  ierr = PLogFlops(11*ym*xm);CHKERRQ(ierr);
   return 0; 
 } 
 /* ------------------------------------------------------------------- */

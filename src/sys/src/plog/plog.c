@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.242 2000/08/16 16:37:20 bsmith Exp balay $*/
+/*$Id: plog.c,v 1.243 2000/08/16 16:53:43 balay Exp balay $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -2083,7 +2083,7 @@ int PetscGetTime(PLogDouble *t)
 .  f - flop counter
 
    Synopsis:
-   void PLogFlops(int f)
+   int PLogFlops(int f)
 
    Usage:
 .vb
@@ -2122,7 +2122,7 @@ M*/
 -  o1,o2,o3,o4 - objects associated with the event, or 0
 
    Synopsis:
-   void PLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+   int PLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                        PetscObject o4)
 
    Usage:
@@ -2161,7 +2161,7 @@ M*/
 -  o1,o2,o3,o4 - objects associated with the event, or 0
 
    Synopsis:
-   void PLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+   int PLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                      PetscObject o4)
 
    Usage:
@@ -2201,7 +2201,7 @@ M*/
 .  comm - communicator the barrier takes place over
 
    Synopsis:
-   void PLogEventBarrierBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+   int PLogEventBarrierBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                   PetscObject o4,MPI_Comm comm)
 
    Usage:
@@ -2236,7 +2236,7 @@ M*/
 .  comm - communicator the barrier takes place over
 
    Synopsis:
-   void PLogEventBarrierEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+   int PLogEventBarrierEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                   PetscObject o4,MPI_Comm comm)
 
     Usage:

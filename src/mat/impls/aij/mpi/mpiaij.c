@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.318 2000/06/30 20:48:42 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.319 2000/08/30 20:58:56 bsmith Exp balay $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -897,7 +897,7 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       /* come up through the rows */
       for (i=m-1; i>-1; i--) {
         n    = A->i[i+1] - A->i[i]; 
-	PLogFlops(4*n+3)
+	PLogFlops(4*n+3);
         idx  = A->j + A->i[i] + shift;
         v    = A->a + A->i[i] + shift;
         sum  = b[i];

@@ -96,7 +96,8 @@ also added options -vec_view_binary and -mat_view_binary
 
   PLog
 
-  PLogEventBegin(), PLogEventEnd(),PLogFlops() now return ierr
+  PLogEventBegin(), PLogEventEnd(),PLogFlops(),PLogEventBarrierBegin() and
+  PLogEventBarrierEnd() now return error codes.
 
 
   SNES 

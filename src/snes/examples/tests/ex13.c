@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.21 2000/01/11 21:02:41 bsmith Exp balay $*/
+/*$Id: ex13.c,v 1.22 2000/05/05 22:18:29 balay Exp balay $*/
 
 static char help[] =
 "This program is a replica of ex6.c except that it does 2 solves to avoid paging\n\
@@ -202,7 +202,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 
   /* Insert values into global vector */
   ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  PLogFlops(11*ym*xm);
+  ierr = PLogFlops(11*ym*xm);CHKERRQ(ierr);
   return 0; 
 } /* --------------------  Evaluate Jacobian F'(x) --------------------- */
 #undef __FUNC__

@@ -1,4 +1,4 @@
-c  $Id: userJac.F,v 1.6 2000/01/23 19:59:37 kaushik Exp balay $
+c  $Id: userJac.F,v 1.7 2000/05/05 22:20:00 balay Exp balay $
 c---------------------------------------------------------------
 c The following subroutines are from node6t.f in the original
 c code.
@@ -161,7 +161,6 @@ c
       flops = flops + 4*2*nnodes
 #endif
 
-c     call PLogFlops(2*nnodes)
 c     call MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY,ierr)
 c     call MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY,ierr)
 c     print *, "Finished doing time stepping part to diagonal term"
@@ -425,7 +424,7 @@ c
           dfm(4,2) = .5d0*(dfm(4,2) - a42)
           dfm(4,3) = .5d0*(dfm(4,3) - a43)
           dfm(4,4) = .5d0*(dfm(4,4) - a44)
-c         call PLogFlops(465)
+
           flops = flops + 465
 c
 c Now take care of contribution to node 1
@@ -660,7 +659,6 @@ c
          ic = inode - 1
          call MatSetValues(A,3,irow,1,ic,val,ADD_VALUES,ierr)
 #endif
-c        call PLogFlops(12)
          flops = flops + 12
         endif
 
@@ -955,7 +953,6 @@ c
          call MatSetValues(A,4,irow,4,irow,val,ADD_VALUES,ierr)
 #endif
 
-c        call PLogFlops(337)
          flops = flops + 337
         endif
 c
@@ -964,7 +961,7 @@ c
 c     print *, "Finished doing far field nodes"
 
 C  Assemble matrix
-      call PLogFlops(flops)
+      call PLogFlops(flops,ierr)
 
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)

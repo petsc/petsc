@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.24 2000/08/15 21:13:29 kaushik Exp kaushik $
+c  $Id: user.F,v 1.25 2000/08/20 03:24:14 kaushik Exp balay $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -814,7 +814,6 @@ c
                cdt(node2) = cdt(node2) + term
 c
  1020    continue
-c        call PLogFlops(27*nedge)
          flops = flops + 27*nedge
 c 
 c Now loop over boundaries and close the contours
@@ -839,7 +838,6 @@ c
             cdt(inode) = cdt(inode) + Vn
 c
  1030    continue
-c        call PLogFlops(24*nsnode)
          flops = flops + 24*nsnode
 
 c
@@ -864,7 +862,6 @@ c
             cdt(inode) = cdt(inode) + Vn
 c
  1040    continue
-c        call PLogFlops(9*nvnode)
          flops = flops + 9*nvnode
 c
 c Now far field
@@ -888,13 +885,11 @@ c
             Vn = abs(xnorm*u + ynorm*v + znorm*w) + c*area
             cdt(inode) = cdt(inode) + Vn
  1050    continue
-c        call PLogFlops(24*nfnode)
          flops = flops + 24*nfnode
  
          do 1060 n = 1,nvertices
             cdt(n) = vol(n)/cdt(n)
  1060    continue
-c        call PLogFlops(nvertices)
          flops = flops + nvertices
       else
 c
@@ -904,7 +899,7 @@ c
             cdt(n) = 1.0d0
  1070    continue
       end if
-      call PLogFlops(flops)
+      call PLogFlops(flops,ierr)
 c
 c End of subroutine DELTAT2
 c
@@ -1283,7 +1278,6 @@ c
           res3 = 0.5d0*(fluxp3 + fluxm3 - rlen*t3)
           res4 = 0.5d0*(fluxp4 + fluxm4 - rlen*t4)
 c
-c         call PLogFlops(318)
 	  flops = flops + 318
 
 c
@@ -1296,7 +1290,6 @@ c
            res(2,node1) = res(2,node1) + res2
            res(3,node1) = res(3,node1) + res3
            res(4,node1) = res(4,node1) + res4
-c          call PLogFlops(4)
            flops = flops + 4
           endif
 c
@@ -1309,7 +1302,6 @@ c
            res(2,node2) = res(2,node2) - res2
            res(3,node2) = res(3,node2) - res3
            res(4,node2) = res(4,node2) - res4
-c          call PLogFlops(4)
            flops = flops + 4
           endif
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
@@ -1371,7 +1363,6 @@ c
                pb = c68*p2 + c18*(p3 + p1)
                pc = c68*p3 + c18*(p1 + p2)
 c
-c              call PLogFlops(35)
                flops = flops + 35
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
           if ((node1.ge.first_node).and.(node1.le.last_node)) then
@@ -1381,7 +1372,6 @@ c              call PLogFlops(35)
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
-c               call PLogFlops(6)
 	        flops = flops + 6
           endif
 
@@ -1393,7 +1383,6 @@ c               call PLogFlops(6)
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
-c               call PLogFlops(6)
 	        flops = flops + 6
           endif
 
@@ -1405,7 +1394,6 @@ c               call PLogFlops(6)
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
-c               call PLogFlops(6)
 	        flops = flops + 6
           endif
 
@@ -1458,7 +1446,6 @@ c
                pb = c68*p2 + c18*(p3 + p1)
                pc = c68*p3 + c18*(p1 + p2)
 c
-c              call PLogFlops(35)
 	       flops = flops + 35
 c
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
@@ -1469,7 +1456,6 @@ c
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
-c               call PLogFlops(6)
                 flops = flops + 6
 
           endif
@@ -1482,7 +1468,6 @@ c               call PLogFlops(6)
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
-c               call PLogFlops(6)
                 flops = flops + 6
           endif
 
@@ -1494,7 +1479,6 @@ c               call PLogFlops(6)
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
-c               call PLogFlops(6)
                 flops = flops + 6
           endif
 
@@ -1679,7 +1663,6 @@ c
          wb = t41*rhs1 + t42*rhs2 + t43*rhs3 + t44*rhs4
 
          ubar = xnorm*ub + ynorm*vb + znorm*wb
-c        call PLogFlops(180)
          flops = flops + 180
 c
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
@@ -1691,7 +1674,6 @@ c
           res(2,inode) = res(2,inode)+area*(ub*ubar + xnorm*pb)
           res(3,inode) = res(3,inode)+area*(vb*ubar + ynorm*pb)
           res(4,inode) = res(4,inode)+area*(wb*ubar + znorm*pb)
-c         call PLogFlops(18)
           flops = flops + 18
         endif
 c
@@ -1710,7 +1692,7 @@ c      print *, 'For thread ', omp_get_thread_num(),', n is',n
 !$omp end critical (residual_update)
 #endif
 !$omp end parallel  
-       call PLogFlops(flops)
+       call PLogFlops(flops,ierr)
 c
 c End of subroutine FLUX
 c
@@ -2229,7 +2211,7 @@ c       endif
 c
  1020  continue
 c     end if
-      call PLogFlops(flops)
+      call PLogFlops(flops,ierr)
 c     call PLogEventEnd(grad_event,0,0,0,0,ierr)
 c
 c End of LSTGS

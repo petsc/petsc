@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.51 2000/08/08 15:48:23 balay Exp balay $";
+! "$Id: ex5f.F,v 1.52 2000/09/06 16:15:59 balay Exp balay $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -436,7 +436,7 @@
 !  Insert values into global vector
 
       call DALocalToGlobal(da,localF,INSERT_VALUES,F,ierr)
-      call PLogFlops(11*ym*xm)
+      call PLogFlops(11*ym*xm,ierr)
 
 !      call VecView(X,VIEWER_STDOUT_WORLD,ierr)
 !      call VecView(F,VIEWER_STDOUT_WORLD,ierr)

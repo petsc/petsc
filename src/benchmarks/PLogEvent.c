@@ -1,4 +1,4 @@
-/*$Id: PLogEvent.c,v 1.16 1999/11/05 14:48:10 bsmith Exp bsmith $*/
+/*$Id: PLogEvent.c,v 1.17 2000/01/11 21:03:44 bsmith Exp balay $*/
 
 #include "petsc.h"
 
@@ -14,31 +14,31 @@ int main(int argc,char **argv)
   PLogEventRegister(&e1,"*DummyEvent","red:");
   /* To take care of the paging effects */
   ierr = PetscGetTime(&x);CHKERRA(ierr);
-  PLogEventBegin(e1,&x,0,0,0);
-  PLogEventEnd(e1,&x,0,0,0);  
+  ierr = PLogEventBegin(e1,&x,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventEnd(e1,&x,0,0,0);  CHKERRA(ierr);
 
   ierr = PetscGetTime(&x);CHKERRA(ierr);
   /* 10 Occurences of the dummy event */
-  PLogEventBegin(e1,&x,0,0,0);
-  PLogEventEnd(e1,&x,0,0,0);  
-  PLogEventBegin(e1,&x,&y,0,0);
-  PLogEventEnd(e1,&x,&y,0,0);  
-  PLogEventBegin(e1,&y,0,0,0);
-  PLogEventEnd(e1,&y,0,0,0);  
-  PLogEventBegin(e1,&x,0,0,0);
-  PLogEventEnd(e1,&x,0,0,0);  
-  PLogEventBegin(e1,&x,&y,0,0);
-  PLogEventEnd(e1,&x,&y,0,0);  
-  PLogEventBegin(e1,&y,0,0,0);
-  PLogEventEnd(e1,&y,0,0,0);  
-  PLogEventBegin(e1,&x,0,0,0);
-  PLogEventEnd(e1,&x,0,0,0);  
-  PLogEventBegin(e1,&x,&y,0,0);
-  PLogEventEnd(e1,&x,&y,0,0);  
-  PLogEventBegin(e1,&y,0,0,0);
-  PLogEventEnd(e1,&y,0,0,0);  
-  PLogEventBegin(e1,&x,&e1,0,0);
-  PLogEventEnd(e1,&x,&e1,0,0);  
+  ierr = PLogEventBegin(e1,&x,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventEnd(e1,&x,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(e1,&x,&y,0,0);CHKERRA(ierr);
+  ierr = PLogEventEnd(e1,&x,&y,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(e1,&y,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventEnd(e1,&y,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(e1,&x,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventEnd(e1,&x,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(e1,&x,&y,0,0);CHKERRA(ierr);
+  ierr = PLogEventEnd(e1,&x,&y,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(e1,&y,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventEnd(e1,&y,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(e1,&x,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventEnd(e1,&x,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(e1,&x,&y,0,0);CHKERRA(ierr);
+  ierr = PLogEventEnd(e1,&x,&y,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(e1,&y,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventEnd(e1,&y,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(e1,&x,&e1,0,0);CHKERRA(ierr);
+  ierr = PLogEventEnd(e1,&x,&e1,0,0);CHKERRA(ierr);
 
   ierr = PetscGetTime(&y);CHKERRA(ierr);
   fprintf(stderr,"%-15s : %e sec, with options : ","PLogEvent",(y-x)/10.0);

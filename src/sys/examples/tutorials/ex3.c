@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.30 1999/10/24 14:01:41 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.31 2000/01/11 20:59:51 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
 inserting their own event logging.  Run this program with one of the\n\
@@ -40,12 +40,12 @@ int main(int argc,char **argv)
         with the routine PLogFlops().
   */
   ierr = PLogEventRegister(&USER_EVENT,"User event","Red:");CHKERRA(ierr);
-  PLogEventBegin(USER_EVENT,0,0,0,0);
-    icount = 0;
-    for (i=0; i<imax; i++) icount++;
-    PLogFlops(imax);
-    ierr = PetscSleep(1);CHKERRA(ierr);
-  PLogEventEnd(USER_EVENT,0,0,0,0);
+  ierr = PLogEventBegin(USER_EVENT,0,0,0,0);CHKERRA(ierr);
+  icount = 0;
+  for (i=0; i<imax; i++) icount++;
+  ierr = PLogFlops(imax);CHKERRA(ierr);
+  ierr = PetscSleep(1);CHKERRA(ierr);
+  ierr = PLogEventEnd(USER_EVENT,0,0,0,0);CHKERRA(ierr);
 
   /* 
      We disable the logging of an event.
@@ -56,18 +56,18 @@ int main(int argc,char **argv)
   */
   ierr = PLogEventMPEDeactivate(USER_EVENT);CHKERRA(ierr);
   ierr = PLogEventDeactivate(USER_EVENT);CHKERRA(ierr);
-  PLogEventBegin(USER_EVENT,0,0,0,0);
+  ierr = PLogEventBegin(USER_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = PetscSleep(1);CHKERRA(ierr);
-  PLogEventEnd(USER_EVENT,0,0,0,0);
+  CHKERRQ(ierr);PLogEventEnd(USER_EVENT,0,0,0,0);CHKERRA(ierr);
 
   /* 
      We next enable the logging of an event
   */
   ierr = PLogEventMPEActivate(USER_EVENT);CHKERRA(ierr);
   ierr = PLogEventActivate(USER_EVENT);CHKERRA(ierr);
-  PLogEventBegin(USER_EVENT,0,0,0,0);
+  ierr = PLogEventBegin(USER_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = PetscSleep(1);CHKERRA(ierr);
-  PLogEventEnd(USER_EVENT,0,0,0,0);
+  ierr = PLogEventEnd(USER_EVENT,0,0,0,0);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

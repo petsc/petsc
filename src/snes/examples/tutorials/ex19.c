@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.3 2000/08/01 20:57:32 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.4 2000/08/17 04:52:51 bsmith Exp balay $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES and multigrid.\n\
   \n\
@@ -454,7 +454,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Flop count (multiply-adds are counted as 2 operations)
   */
-  PLogFlops(84*ym*xm);
+  ierr = PLogFlops(84*ym*xm);CHKERRQ(ierr);
 
   return 0; 
 } 

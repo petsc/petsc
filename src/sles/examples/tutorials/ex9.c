@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.39 2000/01/11 21:02:20 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.40 2000/05/05 22:18:00 balay Exp balay $*/
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
@@ -148,7 +148,7 @@ int main(int argc,char **args)
   /* 
      Log the number of flops for computing vector entries
   */
-  PLogFlops(2*ldim);
+  ierr = PLogFlops(2*ldim);CHKERRA(ierr);
 
   /*
      End curent profiling stage
@@ -197,7 +197,7 @@ int main(int argc,char **args)
       v = -1.0*(t+0.5); i = I/n;
       if (i>0)   {J = I - n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     }
-    PLogFlops(2*(Istart-Iend));
+    ierr = PLogFlops(2*(Istart-Iend));CHKERRA(ierr);
 
     /* 
        Assemble matrix, using the 2-step process:
@@ -308,7 +308,7 @@ int main(int argc,char **args)
     }
     ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
     ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRA(ierr); 
-    PLogFlops(2*(Istart-Iend));
+    ierr = PLogFlops(2*(Istart-Iend));CHKERRA(ierr);
 
     /* 
        Indicate same nonzero structure of successive linear system matrices
@@ -392,7 +392,7 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
   double norm;
   int    ierr;
 
-  PLogEventBegin(CHECK_ERROR,u,x,b,0);
+  ierr = PLogEventBegin(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
 
   /*
      Compute error of the solution, using b as a work vector.
@@ -401,7 +401,7 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
   ierr = VecAXPY(&none,u,b);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
-  PLogEventEnd(CHECK_ERROR,u,x,b,0);
+  ierr = PLogEventEnd(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr;
   return 0;
 }
 /* ------------------------------------------------------------- */

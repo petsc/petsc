@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.15 2000/03/31 20:53:46 bsmith Exp balay $*/
+/*$Id: ex5s.c,v 1.16 2000/05/05 22:18:34 balay Exp balay $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -424,7 +424,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
 
-  PLogFlops(11*(mx-2)*(my-2))
+  ierr = PLogFlops(11*(mx-2)*(my-2))CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
   return 0; 
 } 
@@ -459,7 +459,7 @@ int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
     applicationfunctionfortran_(&user->param,&user->mx,&user->my,x,f,&ierr);
     ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
     ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-    PLogFlops(11*(user->mx-2)*(user->my-2))
+    ierr = PLogFlops(11*(user->mx-2)*(user->my-2))CHKERRQ(ierr);
   }
   /*
       All the non-busy processors have to wait here for process 0 to finish

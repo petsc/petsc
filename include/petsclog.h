@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.144 2000/08/17 04:53:46 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.145 2000/09/06 20:48:45 bsmith Exp balay $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -157,9 +157,9 @@ extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
  */
 
 #if defined(PETSC_USE_COMPLEX)
-#define PLogFlops(n) 0; {_TotalFlops += (4*n);}
+#define PLogFlops(n) (_TotalFlops += (4*n),0)
 #else
-#define PLogFlops(n) 0; {_TotalFlops += (n);}
+#define PLogFlops(n) (_TotalFlops += (n),0)
 #endif
 
 #if defined (PETSC_HAVE_MPE)
@@ -191,7 +191,7 @@ extern int PLogEventDepth[];
 
 #if defined(PETSC_HAVE_MPE)
 #define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  { \
+  0; { \
     if (_PLogPLB && PLogEventFlags[e]) {                           \
       PLogEventBegin((e),o1,o2,o3,o4);                                   \
       if (UseMPE && PLogEventMPEFlags[(e)]) \
@@ -206,7 +206,7 @@ extern int PLogEventDepth[];
       MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");\
   }
 #define PLogEventBegin(e,o1,o2,o3,o4)  \
-  {  \
+  0; {  \
    if (_PLogPLB && PLogEventFlags[(e)] && !PLogEventDepth[e]++) {\
      (*_PLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
    if (UseMPE && PLogEventMPEFlags[(e)])\
@@ -214,7 +214,7 @@ extern int PLogEventDepth[];
   }
 #else
 #define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  { \
+  0; { \
     if (_PLogPLB && PLogEventFlags[(e)]) {                           \
       PLogEventBegin((e),o1,o2,o3,o4);                                   \
       MPI_Barrier(cm);                                             \
@@ -223,25 +223,27 @@ extern int PLogEventDepth[];
     PLogEventBegin((e)+1,o1,o2,o3,o4);                                   \
   }
 #define PLogEventBegin(e,o1,o2,o3,o4)  \
-  {  \
+  0; {  \
    if (_PLogPLB && PLogEventFlags[(e)] && !PLogEventDepth[e]++) {\
      (*_PLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   }
 #endif
 
 #if defined(PETSC_HAVE_MPE)
-#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) {\
-    PLogEventEnd(e+1,o1,o2,o3,o4);}
-#define PLogEventEnd(e,o1,o2,o3,o4) {\
+#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) \
+   0; {PLogEventEnd(e+1,o1,o2,o3,o4);}
+#define PLogEventEnd(e,o1,o2,o3,o4) \
+  0; {\
   if (_PLogPLE && PLogEventFlags[(e)] && !--PLogEventDepth[e]) {\
     (*_PLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   if (UseMPE && PLogEventMPEFlags[(e)])\
      MPE_Log_event(MPEBEGIN+2*(e)+1,0,"");\
   }  
 #else
-#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) {\
-      PLogEventEnd(e+1,o1,o2,o3,o4);}
-#define PLogEventEnd(e,o1,o2,o3,o4) {\
+#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) \
+   0; {PLogEventEnd(e+1,o1,o2,o3,o4);}
+#define PLogEventEnd(e,o1,o2,o3,o4) \
+  0; {\
   if (_PLogPLE && PLogEventFlags[(e)] && !--PLogEventDepth[e]) {\
     (*_PLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   } 
@@ -390,7 +392,7 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
      With logging turned off, then MPE has to be turned off
 */
 #define MPEBEGIN                  1000 
-#define PLogMPEBegin()  
+#define PLogMPEBegin()            0
 #define PLogMPEDump(a)            0
 #define PLogEventMPEActivate(a)   0
 #define PLogEventMPEDeactivate(a) 0
@@ -406,10 +408,10 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 #define _PLogPHC                        0
 #define _PLogPHD                        0
 #define PetscGetFlops(a)                (*(a) = 0.0,0)
-#define PLogEventBegin(e,o1,o2,o3,o4)
-#define PLogEventEnd(e,o1,o2,o3,o4)
-#define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm)
-#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm)
+#define PLogEventBegin(e,o1,o2,o3,o4)   0
+#define PLogEventEnd(e,o1,o2,o3,o4)     0
+#define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) 0
+#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm)   0
 #define PLogObjectParent(p,c)
 #define PLogObjectParents(p,n,c)
 #define PLogObjectCreate(h)

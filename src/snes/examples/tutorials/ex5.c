@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.118 2000/05/05 22:18:34 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.119 2000/08/17 04:52:51 bsmith Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -386,7 +386,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      Insert values into global vector
   */
   ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  PLogFlops(11*ym*xm);
+  ierr = PLogFlops(11*ym*xm);CHKERRQ(ierr);
   return 0; 
 } 
 /* ------------------------------------------------------------------- */

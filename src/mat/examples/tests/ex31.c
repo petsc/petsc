@@ -1,4 +1,4 @@
-/*$Id: ex31.c,v 1.17 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex31.c,v 1.18 2000/09/02 02:48:23 bsmith Exp balay $*/
 
 static char help[] = 
 "Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
@@ -29,7 +29,7 @@ int main(int argc,char **args)
   /* PART 1:  Generate matrix, then write it in binary format */
 
   ierr = PLogEventRegister(&MATRIX_GENERATE,"Generate Matrix",PETSC_NULL);CHKERRA(ierr);
-  PLogEventBegin(MATRIX_GENERATE,0,0,0,0);
+  ierr = PLogEventBegin(MATRIX_GENERATE,0,0,0,0);CHKERRA(ierr);
 
   /* Generate matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C);CHKERRA(ierr);
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRA(ierr);
 
   ierr = PLogEventRegister(&MATRIX_READ,"Read Matrix",PETSC_NULL);CHKERRA(ierr);
-  PLogEventBegin(MATRIX_READ,0,0,0,0);
+  ierr = PLogEventBegin(MATRIX_READ,0,0,0,0);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"reading matrix in binary from matrix.dat ...\n");CHKERRA(ierr);
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
   ierr = MatLoad(viewer,MATMPIAIJ,&C);CHKERRA(ierr);

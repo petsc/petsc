@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.18 2000/01/11 21:02:41 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.19 2000/05/05 22:18:29 balay Exp balay $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the modified Bratu problem in a 2D rectangular domain,\n\
@@ -375,7 +375,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      Insert values into global vector
   */
   ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  PLogFlops(11*ym*xm);
+  ierr = PLogFlops(11*ym*xm);CHKERRQ(ierr);
   return 0; 
 } 
 /* ------------------------------------------------------------------- */

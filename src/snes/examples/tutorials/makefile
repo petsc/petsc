@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.83 2000/07/26 15:31:35 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.84 2000/08/17 04:52:51 bsmith Exp balay $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -7,7 +7,7 @@ FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5c.c ex6.c ex7.c ex8.c ex5s.c ex9.c \
-                   common8and9.c ex12.c ex13.c ex14.c ex15.c ex16.c ex5d.c ex5s.c ex5m.c ex18.c ex19.c ex20.c
+                   common8and9.c ex12.c ex13.c ex14.c ex15.c ex16.c ex5d.c ex5m.c ex18.c ex19.c ex20.c
 EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5fs.F 
 EXAMPLESCH	 = ex8and9.h 
 EXAMPLESFH       = ex5f.h

@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.3 2000/08/01 20:57:32 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.4 2000/08/24 22:43:14 bsmith Exp balay $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -347,7 +347,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 
   /* Insert values into global vector */
   ierr = DALocalToGlobal(damg->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  PLogFlops((22 + 4*POWFLOP)*ym*xm);
+  ierr = PLogFlops((22 + 4*POWFLOP)*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
@@ -668,7 +668,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  PLogFlops((41 + 8*POWFLOP)*xm*ym);
+  ierr = PLogFlops((41 + 8*POWFLOP)*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

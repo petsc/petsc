@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.27 2000/05/05 22:19:18 balay Exp balay $*/
+/*$Id: ex2.c,v 1.28 2000/05/08 15:09:21 balay Exp balay $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -141,21 +141,21 @@ int main(int argc,char **args)
   PLogEventRegister(&PARTITION_VERTEX_EVENT, "Partition vertic","orange");
   PLogEventRegister(&MOVE_VERTEX_EVENT,      "Move vertices","yellow");
 
-  PLogEventBegin(READ_EVENT,0,0,0,0);
+  ierr = PLogEventBegin(READ_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = DataRead(&gdata);CHKERRA(ierr);
-  PLogEventEnd(READ_EVENT,0,0,0,0);
-  PLogEventBegin(PARTITION_ELEMENT_EVENT,0,0,0,0);
+  ierr = PLogEventEnd(READ_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(PARTITION_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = DataPartitionElements(&gdata);CHKERRA(ierr);
-  PLogEventEnd(PARTITION_ELEMENT_EVENT,0,0,0,0);
-  PLogEventBegin(MOVE_ELEMENT_EVENT,0,0,0,0);
+  ierr = PLogEventEnd(PARTITION_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(MOVE_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = DataMoveElements(&gdata);CHKERRA(ierr);
-  PLogEventEnd(MOVE_ELEMENT_EVENT,0,0,0,0);
-  PLogEventBegin(PARTITION_VERTEX_EVENT,0,0,0,0);
+  ierr = PLogEventEnd(MOVE_ELEMENT_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(PARTITION_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = DataPartitionVertices(&gdata);CHKERRA(ierr);
-  PLogEventEnd(PARTITION_VERTEX_EVENT,0,0,0,0);
-  PLogEventBegin(MOVE_VERTEX_EVENT,0,0,0,0);
+  ierr = PLogEventEnd(PARTITION_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventBegin(MOVE_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = DataMoveVertices(&gdata);CHKERRA(ierr);
-  PLogEventEnd(MOVE_VERTEX_EVENT,0,0,0,0);
+  ierr = PLogEventEnd(MOVE_VERTEX_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = DataDestroy(&gdata);CHKERRA(ierr);
 
   PetscFinalize();

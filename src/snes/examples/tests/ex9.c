@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.40 2000/05/05 22:18:29 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.41 2000/08/17 04:52:48 bsmith Exp balay $*/
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\
@@ -195,8 +195,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
   /* stick values into global vector */
-  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);
-  PLogFlops(11*ym*xm*zm);
+  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = PLogFlops(11*ym*xm*zm);CHKERRQ(ierr);
   return 0; 
 }
  

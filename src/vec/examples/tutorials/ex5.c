@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.41 2000/01/11 21:00:24 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.42 2000/05/05 22:15:21 balay Exp balay $*/
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
 user-defined event logging.\n\n";
@@ -27,7 +27,7 @@ int main(int argc,char **args)
   /* PART 1:  Generate vector, then write it in binary format */
 
   ierr = PLogEventRegister(&VECTOR_GENERATE,"Generate Vector","Red:");CHKERRA(ierr);
-  PLogEventBegin(VECTOR_GENERATE,0,0,0,0);
+  ierr = PLogEventBegin(VECTOR_GENERATE,0,0,0,0);CHKERRA(ierr);
   /* Generate vector */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&u);CHKERRA(ierr);
   ierr = VecSetFromOptions(u);CHKERRA(ierr);
@@ -48,7 +48,7 @@ int main(int argc,char **args)
   ierr = VecView(u,viewer);CHKERRA(ierr);
   ierr = ViewerDestroy(viewer);CHKERRA(ierr);
   ierr = VecDestroy(u);CHKERRA(ierr);
-  PLogEventEnd(VECTOR_GENERATE,0,0,0,0);
+  ierr = PLogEventEnd(VECTOR_GENERATE,0,0,0,0);CHKERRA(ierr);
 
   /* PART 2:  Read in vector in binary format */
 
@@ -58,12 +58,12 @@ int main(int argc,char **args)
 
   /* Read new vector in binary format */
   ierr = PLogEventRegister(&VECTOR_READ,"Read Vector","Green:");CHKERRA(ierr);
-  PLogEventBegin(VECTOR_READ,0,0,0,0);
+  ierr = PLogEventBegin(VECTOR_READ,0,0,0,0);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n");CHKERRA(ierr);
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
   ierr = VecLoad(viewer,&u);CHKERRA(ierr);
   ierr = ViewerDestroy(viewer);CHKERRA(ierr);
-  PLogEventEnd(VECTOR_READ,0,0,0,0);
+  ierr = PLogEventEnd(VECTOR_READ,0,0,0,0);CHKERRA(ierr);
   ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* Free data structures */
