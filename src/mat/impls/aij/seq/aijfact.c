@@ -827,7 +827,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
   PetscScalar    *x,*b,*tmp,*aa = a->a,*v;
 
   PetscFunctionBegin;
-  if (zz != xx) VecCopy(zz,xx);
+  if (zz != xx) {ierr = VecCopy(zz,xx);CHKERRQ(ierr);}
 
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);

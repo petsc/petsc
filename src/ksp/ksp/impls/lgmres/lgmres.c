@@ -387,8 +387,8 @@ PetscErrorCode LGMREScycle(int *itcount,KSP ksp)
      VecRestoreArray(AUG_TEMP, &avec);
   
      /*copy answer to aug location  and scale*/
-     VecCopy(VEC_TEMP,  A_AUGVEC(spot)); 
-     ierr = VecScale(&inv_tmp_norm, A_AUGVEC(spot));CHKERRQ(ierr); 
+     ierr = VecCopy(VEC_TEMP,  A_AUGVEC(spot));CHKERRQ(ierr);
+     ierr = VecScale(&inv_tmp_norm, A_AUGVEC(spot));CHKERRQ(ierr);
 
 
   }
