@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.85 2000/09/26 19:11:19 balay Exp bsmith $*/
+/*$Id: zmat.c,v 1.86 2000/10/24 20:28:01 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -166,10 +166,10 @@ void PETSC_STDCALL matgetcoloring_(Mat *mat,CHAR type PETSC_MIXED_LEN(len),ISCol
   FREECHAR(type,t);
 }
 
-void PETSC_STDCALL matsetvalue_(Mat *mat,int *i,int *j,Scalar *va,InsertMode *mode)
+void PETSC_STDCALL matsetvalue_(Mat *mat,int *i,int *j,Scalar *va,InsertMode *mode,int *ierr)
 {
   /* cannot use MatSetValue() here since that usesCHKERRQ() which has a return in it */
-  MatSetValues(*mat,1,i,1,j,va,*mode);
+  *ierr = MatSetValues(*mat,1,i,1,j,va,*mode);
 }
 
 void PETSC_STDCALL matfdcoloringcreate_(Mat *mat,ISColoring *iscoloring,MatFDColoring *color,int *ierr)
