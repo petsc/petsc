@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.31 1998/06/12 21:53:47 balay Exp curfman $ 
+# $Id: makefile,v 1.32 1998/06/13 19:16:16 curfman Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -239,7 +239,7 @@ runtest_1b:
 
 # -order_rtol = 1.e-3 works well for the m6f grid
 runtest_2a:
-	-@${MPIRUN} ex1 -problem 2 -optionsleft \
+	-@${MPIRUN} -maxtime 30 ex1 -problem 2 -optionsleft \
 	   -order 1.5 -order_rtol 1.e-3 -limiter none -bc_imperm 0 \
 	   -matrix_free -cfl_advance > log.m6f.3d.mf.lnone.p1 2>&1; \
 	   if (diff output/order1-2/log.m6f.3d.mf.lnone.p1 log.m6f.3d.mf.lnone.p1) then true; \
