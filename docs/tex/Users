@@ -22,7 +22,8 @@ canfield - Tom Canfield, needs parallel, symmetric linear solvers
 taylor@nile.eecs.nwu.edu - Valerie Taylor, working with Tom Canfield
 maa (maayj@eden.eecs.nwu.edu) - Yann Maa, needs nonlinear solvers
 freitag - Lori, needs makefile and system infrastructure
-diachin - Darin, working with Lori, makefiles and system stuff in C++ versions
+diachin - Darin, working with Lori, makefiles and system stuff in C++
+dheath - Dan Heath, working with Lori, makefile and system stuff in C++
 plassman - ILU, BlockSolve
 kwong - Man Kwong, writing preprocessor
 
