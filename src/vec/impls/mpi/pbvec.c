@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.157 2000/06/23 17:48:50 bsmith Exp buschelm $*/
+/*$Id: pbvec.c,v 1.158 2000/06/23 18:15:06 buschelm Exp buschelm $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -127,6 +127,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecNorm_Seq,
             VecLoadIntoVector_Default,
             VecReciprocal_Default,
+            0, /* VecViewNative... */
             VecConjugate_Seq};
 
 #undef __FUNC__  
