@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.58 1999/01/31 16:03:58 bsmith Exp bsmith $"
+static char vcid[] =  "$Id: dvec2.c,v 1.59 1999/03/09 21:47:10 bsmith Exp bsmith $"
 #endif
 
 /* 
@@ -706,13 +706,20 @@ int VecWAXPY_Seq(const Scalar* alpha,Vec xin,Vec yin,Vec win )
   PetscFunctionReturn(0);
 }
 
+#ifdef HAVE_FORTRAN_CAPS
+#define fortranxtimesy_ FORTRANXTIMESY
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define fortranxtimesy_ fortranxtimesy
+#endif
+extern void fortranxtimesy_(Scalar *,Scalar *,Scalar *,int *);
+
 #undef __FUNC__  
 #define __FUNC__ "VecPointwiseMult_Seq"
 int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
 {
   Vec_Seq         *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
   Vec_Seq         *y = (Vec_Seq *)yin->data;
-  register int    n = x->n, i;
+  int             n = x->n, i;
   register Scalar *xx = x->array, *yy = y->array, *ww = w->array;
 
   PetscFunctionBegin;
@@ -721,7 +728,16 @@ int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
   } else if (ww == yy) {
     for (i=0; i<n; i++) ww[i] *= xx[i];
   } else {
+    /*    double * __restrict www = ww;
+          double * __restrict yyy = yy;
+          double * __restrict xxx = xx;
+          for (i=0; i<n; i++) www[i] = xxx[i] * yyy[i];
+    */
+#if defined(USE_FORTRAN_KERNEL_XTIMESY)
+    fortranxtimesy_(xx,yy,ww,&n);
+#else
     for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];
+#endif
   }
   PLogFlops(n);
   PetscFunctionReturn(0);
