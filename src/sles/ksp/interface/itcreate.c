@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.30 1995/05/02 19:02:21 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.31 1995/05/03 16:17:52 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -230,7 +230,7 @@ int KSPGetMethodName(KSPMethod  itmeth,char **name )
 
    Input Parameters:
 .  prefix - prefix (usually "-")
-.  name - the options database name (by default "kspmethod") 
+.  name - the options database name (by default "ksp_method") 
 */
 int KSPPrintMethods_Private(char* prefix,char *name)
 {

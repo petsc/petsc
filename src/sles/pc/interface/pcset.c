@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.10 1995/05/02 21:21:14 curfman Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.11 1995/05/03 15:51:01 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -80,8 +80,8 @@ int PCRegisterDestroy()
 }
 
 /* 
-  PCGetMethodFromOptions - Sets the selected PC method from the options 
-  database.
+  PCGetMethodFromOptions_Private - Sets the selected PC method from the 
+  options database.
 
   Input Parameter:
 . pc - the preconditioner context
@@ -95,7 +95,7 @@ int PCRegisterDestroy()
   Options Database Key:
 $ -pc_method  method
 */
-int PCGetMethodFromOptions(PC pc,PCMethod *method )
+int PCGetMethodFromOptions_Private(PC pc,PCMethod *method )
 {
   char sbuf[50];
   if (OptionsGetString(  0, pc->prefix,"-pc_method", sbuf, 50 )) {
@@ -132,7 +132,7 @@ int PCGetMethodName(PCMethod meth,char **name)
 
    Input Parameters:
 .  prefix - prefix (usually "-")
-.  name - the options database name (by default "pcmethod") 
+.  name - the options database name (by default "pc_method") 
 */
 int PCPrintMethods_Private(char *prefix,char *name)
 {
@@ -147,6 +147,7 @@ int PCPrintMethods_Private(char *prefix,char *name)
   fprintf(stderr,"\n");
   return 0;
 }
+
 /*@
    PCSetFromOptions - Sets PC options from the options database.
    This routine must be called before PCSetUp() if the user is to be
@@ -164,7 +165,7 @@ int PCSetFromOptions(PC pc)
   PCMethod method;
   VALIDHEADER(pc,PC_COOKIE);
 
-  if (PCGetMethodFromOptions(pc,&method)) {
+  if (PCGetMethodFromOptions_Private(pc,&method)) {
     PCSetMethod(pc,method);
   }
   if (OptionsHasName(0,0,"-help")){
