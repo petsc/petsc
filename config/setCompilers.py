@@ -419,6 +419,7 @@ class Configure(config.base.Configure):
           yield 'mpxlf'          
       vendor = self.framework.argDB['with-vendor-compilers']
       if (not vendor or vendor == '0') and self.framework.argDB['with-gnu-compilers']:
+        yield 'gfortran'
         yield 'g77'
       if not vendor == '0':
         if vendor == 'ibm' or not vendor:
@@ -443,6 +444,7 @@ class Configure(config.base.Configure):
           if not Configure.isGNU('f77'):
             yield 'f77'
       if self.framework.argDB['with-gnu-compilers']:
+        yield 'gfortran'
         yield 'g77'
     return
 
