@@ -9,6 +9,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
+
+ - Make sure one can run block Jacobi on several matrices with number of rows
+   on all matrices but first zero for both AIJ and BAIJ matrices.
+
  - Test mpiuni on DEC alpha, document any changes needed for it to work.
 
   - Add info about which library components do what.  Mention SLES_LIB.
