@@ -1,4 +1,4 @@
-/*$Id: maij.c,v 1.8 2000/07/10 03:39:48 bsmith Exp bsmith $*/
+/*$Id: maij.c,v 1.9 2000/09/28 21:11:37 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the MAIJ  matrix storage format.
   This format is used for restriction and interpolation operations for 
@@ -856,7 +856,7 @@ int MatCreateMAIJ(Mat A,int dof,Mat *maij)
   if (dof == 1) {
     *maij = A;
   } else {
-    ierr = MATCreate(A->comm,dof*A->m,dof*A->n,dof*A->M,dof*A->N,&B);CHKERRQ(ierr);
+    ierr = MatCreate(A->comm,dof*A->m,dof*A->n,dof*A->M,dof*A->N,&B);CHKERRQ(ierr);
     B->assembled    = PETSC_TRUE;
 
     ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
