@@ -277,6 +277,10 @@ class UsingPython(UsingCompiler):
     compiler.includeDirs.append(stubDir)
     compiler.includeDirs.extend(self.includeDirs[package])
     compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
+    for dir in self.usingSIDL.repositoryDirs:
+      includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
+      if os.path.isdir(includeDir):
+        compiler.includeDirs.append(includeDir)
     return [compile.TagC(self.usingSIDL.sourceDB, root = rootDir), serverFilter, compiler]
 
   def getExecutableCompileTarget(self, project, sources, executable):
