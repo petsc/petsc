@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.29 1995/12/21 18:31:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.30 1996/01/01 01:02:54 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
@@ -13,15 +13,13 @@ also tests the MatRelax() routines.  Input parameters are:\n\
 
 int main(int argc,char **args)
 {
-  Mat       mat;        /* matrix */
-  Vec       b,ustar,u;  /* vectors (RHS, exact solution, approx solution) */
-  PC        pc;         /* PC context */
-  KSP       ksp;        /* KSP context */
-  int       ierr, n = 10, i, its, col[3];
-  Scalar    value[3], one = 1.0, zero = 0.0;
-  KSPType   kspmethod;
-  PCType    pcmethod;
-  char      *kspname, *pcname;
+  Mat    mat;          /* matrix */
+  Vec    b, ustar, u;  /* vectors (RHS, exact solution, approx solution) */
+  PC     pc;           /* PC context */
+  KSP    ksp;          /* KSP context */
+  int    ierr, n = 10, i, its, col[3];
+  Scalar value[3], one = 1.0, zero = 0.0;
+  char   *kspname, *pcname;
 
   PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n);

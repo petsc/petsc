@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.29 1996/01/01 01:05:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.30 1996/01/02 20:17:39 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1390,14 +1390,14 @@ int SNESGetTypeFromOptions_Private(SNES ctx,SNESType *method)
 }
 
 /*@C
-   SNESGetType - Gets the SNES type and method name (as a string).
+   SNESGetType - Gets the SNES method type and name (as a string).
 
    Input Parameter:
 .  snes - nonlinear solver context
 
    Output Parameter:
-.  method - SNES method (or PETSC_NULL)
-.  name - name of SNES method (or PETSC_NULL)
+.  method - SNES method (or use PETSC_NULL)
+.  name - name of SNES method (or use PETSC_NULL)
 
 .keywords: SNES, nonlinear, get, method, name
 @*/

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.28 1995/11/27 22:24:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.29 1995/12/15 03:34:07 bsmith Exp curfman $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -20,17 +20,22 @@ struct _DrawLG {
   int         nopts, dim;
   int         use_dots;
 };
+
 #define CHUNCKSIZE 100
 
 /*@C
-     DrawLGCreate - Creates a line graph data structure
+    DrawLGCreate - Creates a line graph data structure
 
-  Input Parameters:
+    Input Parameters:
 .   win - the window where the graph will be made.
 .   dim - the number of line cures which will be drawn
 
-  Output Parameters:
+    Output Parameters:
 .   outctx - the line graph context
+
+.keywords:  draw, line, graph, create
+
+.seealso:  DrawLGDestroy()
 @*/
 int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 {
@@ -64,10 +69,12 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 }
 
 /*@
-    DrawLGReset - Clears line graph to allow for reuse with new data.
+   DrawLGReset - Clears line graph to allow for reuse with new data.
 
-  Input Parameter:
-.   lg - the line graph context.
+   Input Parameter:
+.  lg - the line graph context.
+
+.keywords:  draw, line, graph, reset
 @*/
 int DrawLGReset(DrawLG lg)
 {
@@ -83,11 +90,14 @@ int DrawLGReset(DrawLG lg)
 }
 
 /*@C
-    DrawLGDestroy - Frees all space taken up by line graph 
-                         data structure.
+   DrawLGDestroy - Frees all space taken up by line graph data structure.
 
-  Input Parameter:
+   Input Parameter:
 .  lg - the line graph context
+
+.keywords:  draw, line, graph, destroy
+
+.seealso:  DrawLGCreate()
 @*/
 int DrawLGDestroy(DrawLG lg)
 {
@@ -103,15 +113,17 @@ int DrawLGDestroy(DrawLG lg)
 }
 
 /*@
-    DrawLGAddPoint - Adds another point to each of the 
-                          line graphs. The new point must have a
-                          X coordinate larger than the old points.
+   DrawLGAddPoint - Adds another point to each of the line graphs. 
+   The new point must have an X coordinate larger than the old points.
 
    Input Parameters:
-.   lg - the LineGraph data structure
-.   x,y - the points to two vectors containing the new x and y 
-           point for each curve.
+.  lg - the LineGraph data structure
+.  x, y - the points to two vectors containing the new x and y 
+          point for each curve.
 
+.keywords:  draw, line, graph, add, point
+
+.seealso: DrawLGAddPoints()
 @*/
 int DrawLGAddPoint(DrawLG lg,double *x,double *y)
 {
@@ -142,11 +154,14 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
   lg->nopts++;
   return 0;
 }
-/*@
-    DrawLGIndicateDataPoints - Causes LG to draw a big dot for each data-point.
 
-  Input Parameters:
-.   lg - the linegraph context
+/*@
+   DrawLGIndicateDataPoints - Causes LG to draw a big dot for each data-point.
+
+   Input Parameters:
+.  lg - the linegraph context
+
+.keywords:  draw, line, graph, indicate, data, points
 @*/
 int DrawLGIndicateDataPoints(DrawLG lg)
 {
@@ -157,16 +172,18 @@ int DrawLGIndicateDataPoints(DrawLG lg)
 }
 
 /*@C
-    DrawLGAddPoints - Adds several points to each of the 
-                      line graphs. The new point must have a
-                      X coordinate larger than the old points.
+   DrawLGAddPoints - Adds several points to each of the line graphs.
+   The new points must have an X coordinate larger than the old points.
 
    Input Parameters:
-.   lg - the LineGraph data structure
-.   xx,yy -  points to two arrays of pointers that point to arrays 
-.          containing the new x and y points for each curve.
-.   n - number of points being added
+.  lg - the LineGraph data structure
+.  xx,yy - points to two arrays of pointers that point to arrays 
+           containing the new x and y points for each curve.
+.  n - number of points being added
 
+.keywords:  draw, line, graph, add, points
+
+.seealso: DrawLGAddPoint()
 @*/
 int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
 {
@@ -207,10 +224,12 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
 }
 
 /*@
-   DrawLG - Redraws a line graph
+   DrawLGDraw - Redraws a line graph.
 
-  Input Parameter:
+   Input Parameter:
 .  lg - the line graph context
+
+.keywords:  draw, line, graph
 @*/
 int DrawLGDraw(DrawLG lg)
 {
@@ -240,15 +259,15 @@ int DrawLGDraw(DrawLG lg)
 } 
  
 /*@
-     DrawLGSetLimits - Sets the axis limits for a line graph. If 
-                            more points are added after this call, the
-                            limits will be adjusted to include those 
-                            additional points.
+   DrawLGSetLimits - Sets the axis limits for a line graph. If more
+   points are added after this call, the limits will be adjusted to
+   include those additional points.
 
-  Input Parameters:
-.   xlg - the line graph context
-.   x_min,x_max,y_min,y_max - the limits
+   Input Parameters:
+.  xlg - the line graph context
+.  x_min,x_max,y_min,y_max - the limits
 
+.keywords:  draw, line, graph, set limits
 @*/
 int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
                                   double y_max) 
@@ -263,17 +282,18 @@ int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
 }
  
 /*@C
-    DrawLGGetAxis - Gets the axis context associated with a line graph.
-           This is useful if one wants to change some axis property, like
-           labels, color, etc. The axis context should not be destroyed
-           by the application code.
+   DrawLGGetAxis - Gets the axis context associated with a line graph.
+   This is useful if one wants to change some axis property, such as
+   labels, color, etc. The axis context should not be destroyed by the
+   application code.
 
-  Input Parameter:
+   Input Parameter:
 .  lg - the line graph context
 
-  Output Parameter:
+   Output Parameter:
 .  axis - the axis context
 
+.keywords: draw, line, graph, get, axis
 @*/
 int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 {
@@ -289,11 +309,13 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 /*@C
     DrawLGGetDraw - Gets the draw context associated with a line graph.
 
-  Input Parameter:
+   Input Parameter:
 .  lg - the line graph context
 
-  Output Parameter:
+   Output Parameter:
 .  win - the draw context
+
+.keywords: draw, line, graph, get, context
 @*/
 int DrawLGGetDraw(DrawLG lg,Draw *win)
 {

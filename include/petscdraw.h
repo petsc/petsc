@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.24 1995/12/08 04:54:34 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.25 1995/12/14 00:42:01 bsmith Exp curfman $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -37,6 +37,7 @@ extern int DrawDestroy(Draw);
 
 extern int DrawLine(Draw,double,double,double,double,int);
 extern int DrawLineSetWidth(Draw,double);
+extern int DrawLineGetWidth(Draw,double*);
 
 extern int DrawPoint(Draw,double,double,int);
 extern int DrawPointSetSize(Draw,double);

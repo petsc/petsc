@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.31 1995/12/21 18:30:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.32 1996/01/01 01:02:31 bsmith Exp curfman $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -122,15 +122,15 @@ int PCGetTypeFromOptions_Private(PC pc,PCType *method )
 }
 
 /*@C
-   PCGetType - Gets the PC type and method name (as a string) from the 
-   method type.
+   PCGetType - Gets the PC method type and name (as a string) from the PC
+   context.
 
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameter:
-.  name - name of preconditioner (or PETSC_NULL)
-.  meth - preconditioner method (or PETSC_NULL)
+.  name - name of preconditioner (or use PETSC_NULL)
+.  meth - preconditioner method (or use PETSC_NULL)
 
 .keywords: PC, get, method, name, type
 @*/
