@@ -61,7 +61,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
     ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*   dp <- r'*r         */
   } else if (ksp->normtype == KSP_NATURAL_NORM) {
-    dp = PetscAbsScalar(btop);                  /* dp = (R,AR) (fdi)*/
+    dp = sqrt(PetscAbsScalar(btop));             /* dp = sqrt(R,AR) (fdi)*/
   }
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) {*its = 0; PetscFunctionReturn(0);}
@@ -89,7 +89,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
       ierr = VecNorm(RT,NORM_2,&dp); CHKERRQ(ierr);/*   dp <- r'*r         */
     } else if (ksp->normtype == KSP_NATURAL_NORM) {
-      dp = PetscAbsScalar(btop);                /* dp = (R,AR) (fdi)*/
+      dp = sqrt(PetscAbsScalar(btop));             /* dp = sqrt(R,AR) (fdi)*/
     } else { dp = 0.0; }
 
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);

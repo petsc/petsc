@@ -31,7 +31,7 @@ extern char *getwd(char *_name);
 #endif
 
 #define MPI_Comm_f2c(a)  (a)
-#define MPI_Comm_c2f(a)  (a)
+#define MPI_Comm_c2f(a)  (int)(a)
 typedef  int MPI_Fint;
 
 #endif
