@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.57 1996/09/17 20:05:02 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.58 1996/09/18 12:30:08 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -59,7 +59,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   Vec          X, F, Y, G, TMP, Ytmp;
   int          maxits, i, history_len, ierr, lits;
   MatStructure flg = DIFFERENT_NONZERO_PATTERN;
-  double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm,*history, ynorm;
+  double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm,*history, ynorm,norm1;
   Scalar       mone = -1.0,cnorm;
   KSP          ksp;
   SLES         sles;
@@ -73,8 +73,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   G		= snes->work[1];
   Ytmp          = snes->work[2];
 
-  ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);               /* xnorm = || X || */
-  snes->iter = 0;
+  ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);               /* xnorm = || X || */  snes->iter = 0;
 
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);          /* F(X) */
   ierr = VecNorm(F, NORM_2,&fnorm ); CHKERRQ(ierr);             /* fnorm <- || F || */
@@ -96,12 +95,17 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     snes->iter = i+1;
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
+
+    /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERRQ(ierr);
+    PLogInfo(snes,"SNES: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
     ierr = VecNorm(Ytmp,NORM_2,&norm); CHKERRQ(ierr);
+    norm1 = norm;
     while(1) {
       ierr = VecCopy(Ytmp,Y); CHKERRQ(ierr);
-      /* Scale Y if need be and predict new value of F norm */
+      norm = norm1;
 
+      /* Scale Y if need be and predict new value of F norm */
       if (norm >= delta) {
         norm = delta/norm;
         gpnorm = (1.0 - norm)*fnorm;
@@ -115,7 +119,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
         PLogInfo(snes,"SNES: Direction is in Trust Region\n" );
         ynorm = norm;
       }
-      ierr = VecAYPX(&mone,X,Y); CHKERRQ(ierr);            /* Y <- X + Y */
+      ierr = VecAYPX(&mone,X,Y); CHKERRQ(ierr);            /* Y <- X - Y */
       ierr = VecCopy(X,snes->vec_sol_update_always); CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes,Y,G); CHKERRQ(ierr); /*  F(X) */
       ierr = VecNorm(G,NORM_2,&gnorm); CHKERRQ(ierr);      /* gnorm <- || g || */
@@ -126,10 +130,8 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
       if      (rho < neP->mu)  delta *= neP->delta1;
       else if (rho < neP->eta) delta *= neP->delta2;
       else                     delta *= neP->delta3;
-      PLogInfo(snes,"SNES: iter %d: f_norm=%g, g_norm=%g, ynorm=%g\n",
-                                             i, fnorm, gnorm, ynorm );
-      PLogInfo(snes,"SNES: gpred=%g, rho=%g, delta=%g,iters=%d\n", 
-                                               gpnorm, rho, delta, lits);
+      PLogInfo(snes,"SNES: fnorm=%g, gnorm=%g, ynorm=%g\n",fnorm,gnorm,ynorm);
+      PLogInfo(snes,"SNES: gpred=%g, rho=%g, delta=%g\n",gpnorm,rho,delta);
       neP->delta = delta;
       if (rho > neP->sigma) break;
       PLogInfo(snes,"SNES: Trying again in smaller region\n");
