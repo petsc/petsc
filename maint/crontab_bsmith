@@ -8,4 +8,5 @@
 #
 15 0 * * * /home/bsmith/petsc/maint/buildlinks /sandbox/bsmith/petsc > /dev/null
 15 0 * * * /home/bsmith/petsc/maint/buildlinks /ccsthome/bsmith/petsc > /dev/null
+30 4 * * * /usr/ucb/rsh gaea /home/bsmith/petsc/maint/buildlinks /sandbox/bsmith/petsc > /dev/null
 30 4 * * * /usr/ucb/rsh chiba /home/bsmith/petsc/maint/buildlinks /sandbox/bsmith/petsc > /dev/null
