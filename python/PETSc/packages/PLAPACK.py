@@ -9,8 +9,8 @@ class Configure(config.base.Configure):
 
   def setOutput(self):
     #self.addDefine('HAVE_PLAPACK', 0)
-    self.addSubstitution('PLAPACK_INCLUDE', '', 'The PLAPACK include flags')
-    self.addSubstitution('PLAPACK_LIB', '', 'The PLAPACK library flags')
+    self.addSubstitution('PLAPACK_INCLUDE', '')
+    self.addSubstitution('PLAPACK_LIB', '')
     return
 
   def configure(self):

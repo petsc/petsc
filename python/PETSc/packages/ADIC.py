@@ -10,8 +10,8 @@ class Configure(config.base.Configure):
   def setOutput(self):
     #self.addDefine('HAVE_ADIC', 0)
     #self.addDefine('HAVE_ADIFOR', 0)
-    self.addSubstitution('ADIC_DEFINES', '', '???')
-    self.addSubstitution('ADIC_CC', '', '???')
+    self.addSubstitution('ADIC_DEFINES', '')
+    self.addSubstitution('ADIC_CC', '')
     return
 
   def configure(self):
