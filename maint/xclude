@@ -10,6 +10,7 @@ petsc/bin/demos
 petsc/bin/petscdemo
 petsc/docs/manual
 petsc/src/apps
+petsc/src/usg
 petsc/src/contrib/flash
 petsc/src/mat/impls/baij/seq/dgedi.ff
 petsc/src/mat/impls/baij/seq/dgefa.ff
