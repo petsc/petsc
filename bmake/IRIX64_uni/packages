@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.6 1998/04/28 17:48:51 balay Exp balay $ 
+# $Id: base.site,v 1.7 1998/04/28 17:52:19 balay Exp bsmith $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -14,8 +14,8 @@ FC_LIB         =  -lftn
 # FC_LIB         = -lsun -lF77 -lU77 -lI77 -lisam
 # FC_LIB         = -lF77 -lU77 -lI77 -lisam
 #
-# Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see ${BS_DIR}/docs/installation.html for information on retrieving them.
+# Location of BLAS and LAPACK.  See ${BS_DIR}/docs/installation.html
+# for information on retrieving them.
 #
 # BLAS usually comes with SGI. Do NOT use mp version of the SGI BLAS.
 #

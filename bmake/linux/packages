@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.18 1998/04/07 18:47:12 balay Exp balay $ 
+# $Id: base.site,v 1.19 1998/04/28 03:06:53 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,8 +13,8 @@
 #FC_LIB         =  /usr/lib/libf2c.a  -lm
 FC_LIB         =  /home/petsc/lib/linux/libf2c.a  -lm
 #
-# Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see ${PETSC_DIR}/docs/intallation.html for information on retrieving them.
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
+# for information on retrieving them.
 #
 BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_linux.a
 LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_linux.a

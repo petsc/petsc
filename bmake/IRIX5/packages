@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.21 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base.site,v 1.22 1998/04/07 18:44:22 balay Exp bsmith $ 
 #
 #    This file is for SGI Machines running OS 5.x, which is the old
 #  IRIX OS, if you are running 6.x then use either IRIX or IRIX64 
@@ -15,8 +15,8 @@
 # 
 FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 #
-# Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see ${PETSC_DIR}/docs/installation.html for information on retrieving them.
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html 
+# for information on retrieving them.
 #
 # BLAS usually comes with SGI and can be accessed with -lblas listed 
 # below for BLAS_LIB. However, the complex BLAS routine izamax() has

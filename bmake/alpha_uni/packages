@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.12 1998/04/28 17:47:31 balay Exp balay $ 
+# $Id: base.site,v 1.13 1998/04/28 17:49:23 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -15,8 +15,8 @@ FC_LIB         =  -lfor -lutil -lFutil -lots
 #FC_LIB         =  /usr/lib/libfor.a /usr/lib/libutil.a \
 #                 /usr/lib/libFutil.a /usr/lib/libots.a 
 #
-# Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see ${PETSC_DIR}/readme for information on retrieving a subset.
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/readme for information
+# on retrieving them.
 # If you are lucky, you may have the DEC Alpha math library installed on 
 # your machine. The library name is dxml as indicated below, it contains
 # both BLAS and Lapack.

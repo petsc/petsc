@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.9 1998/04/28 17:46:55 balay Exp balay $ 
+# $Id: base.site,v 1.10 1998/04/28 17:48:59 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -12,8 +12,8 @@
 #
 FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 #
-# Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see ${PETSC_DIR}/readme for information on retrieving a subset.
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/readme for information 
+# on retrieving a subset.
 #
 # BLAS usually comes with SGI and can be accessed with -lblas listed 
 # below for BLAS_LIB. However, the complex BLAS routine izamax() has
