@@ -72,7 +72,7 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
   numGroups = getgroups(0, gid); if (numGroups < 0) {SETERRQ(numGroups, "Unable to count supplementary group IDs");}
   ierr = PetscMalloc((numGroups+1) * sizeof(gid_t), &gid);                                                CHKERRQ(ierr);
 #else
-  numGroups = 0
+  numGroups = 0;
 #endif
 
   /* Get the (effective) user and group of the caller */
