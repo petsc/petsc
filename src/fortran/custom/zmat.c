@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.86 2000/10/24 20:28:01 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.87 2000/11/17 21:40:13 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -8,6 +8,7 @@
 #define matcreateseqaijwitharrays_       MATCREATESEQAIJWITHARRAYS
 #define matpartitioningdestroy_          MATPARTITIONINGDESTROY
 #define matsetvalue_                     MATSETVALUE
+#define matsetvaluelocal_                MATSETVALUELOCAL
 #define matgetrow_                       MATGETROW
 #define matrestorerow_                   MATRESTOREROW
 #define matgetordering_                  MATGETORDERING
@@ -54,6 +55,7 @@
 #define matpartitioningdestroy_          matpartitioningdestroy
 #define matpartitioningsettype_          matpartitioningsettype
 #define matsetvalue_                     matsetvalue
+#define matsetvaluelocal_                matsetvaluelocal
 #define matgetrow_                       matgetrow
 #define matrestorerow_                   matrestorerow
 #define matview_                         matview
@@ -170,6 +172,12 @@ void PETSC_STDCALL matsetvalue_(Mat *mat,int *i,int *j,Scalar *va,InsertMode *mo
 {
   /* cannot use MatSetValue() here since that usesCHKERRQ() which has a return in it */
   *ierr = MatSetValues(*mat,1,i,1,j,va,*mode);
+}
+
+void PETSC_STDCALL matsetvaluelocal_(Mat *mat,int *i,int *j,Scalar *va,InsertMode *mode,int *ierr)
+{
+  /* cannot use MatSetValueLocal() here since that usesCHKERRQ() which has a return in it */
+  *ierr = MatSetValuesLocal(*mat,1,i,1,j,va,*mode);
 }
 
 void PETSC_STDCALL matfdcoloringcreate_(Mat *mat,ISColoring *iscoloring,MatFDColoring *color,int *ierr)

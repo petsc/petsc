@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.207 2000/09/25 18:43:53 curfman Exp bsmith $ */
+/* $Id: petscmat.h,v 1.208 2000/10/24 20:28:06 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -9,7 +9,14 @@
 #define MAT_COOKIE         PETSC_COOKIE+5
 
 typedef struct _p_Mat*           Mat;
+/*E
+    MatType - String with the name of a PETSc matrix or the creation function
+       with an optional dynamic library name
 
+   Level: beginner
+
+.seealso: MatSetType()
+E*/
 #define MATSAME     "same"
 #define MATSEQMAIJ  "seqmaij"
 #define MATMPIMAIJ  "mpimaij"
@@ -27,8 +34,8 @@ typedef struct _p_Mat*           Mat;
 #define MATMPIADJ   "mpiadj"
 #define MATSEQSBAIJ "seqsbaij"
 #define MATMPISBAIJ "mpisbaij"
-
 typedef char* MatType;
+
 EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
 EXTERN int MatSetType(Mat,MatType);
 EXTERN int MatSetFromOptions(Mat);
@@ -69,22 +76,40 @@ EXTERN int MatGetMaps(Mat,Map*,Map*);
 EXTERN int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
 EXTERN int MatSetValuesBlocked(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
+/*E
+    MatAssemblyType - Indicates if the matrix is now to be used, or if you plan 
+     to continue to add values to it
+
+    Level: beginner
+
+.seealso: MatAssemblyBegin(), MatAssemblyEnd()
+E*/
 typedef enum {MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0} MatAssemblyType;
 EXTERN int MatAssemblyBegin(Mat,MatAssemblyType);
 EXTERN int MatAssemblyEnd(Mat,MatAssemblyType);
 EXTERN int MatAssembled(Mat,PetscTruth*);
 
 #define MatSetValue(v,i,j,va,mode) \
-{int _ierr,_row = i,_col = j; Scalar _va = va; \
+0; {int _ierr,_row = i,_col = j; Scalar _va = va; \
   _ierr = MatSetValues(v,1,&_row,1,&_col,&_va,mode);CHKERRQ(_ierr); \
 }
 #define MatGetValue(v,i,j,va) \
-{int _ierr,_row = i,_col = j; \
+0; {int _ierr,_row = i,_col = j; \
   _ierr = MatGetValues(v,1,&_row,1,&_col,&va);CHKERRQ(_ierr); \
 }
-/*
+#define MatSetValueLocal(v,i,j,va,mode) \
+0; {int _ierr,_row = i,_col = j; Scalar _va = va; \
+  _ierr = MatSetValuesLocal(v,1,&_row,1,&_col,&_va,mode);CHKERRQ(_ierr); \
+}
+/*E
+    MatOption - Options that may be set for a matrix and its behavior or storage
+
+    Level: beginner
+
    Any additions/changes here MUST also be made in include/finclude/petscmat.h
-*/
+
+.seealso: MatSetOption()
+E*/
 typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
               MAT_COLUMNS_SORTED=8,MAT_NO_NEW_NONZERO_LOCATIONS=16,
               MAT_YES_NEW_NONZERO_LOCATIONS=32,MAT_SYMMETRIC=64,
@@ -114,6 +139,16 @@ EXTERN int MatMultAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatMultTranspose(Mat,Vec,Vec);
 EXTERN int MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 
+/*E
+    MatDuplicateOption - Indicates if a duplicated sparse matrix should have
+  its numerical values copied over or just its nonzero structure.
+
+    Level: beginner
+
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+.seealso: MatDuplicate()
+E*/
 typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES} MatDuplicateOption;
 
 EXTERN int MatConvertRegister(char*,char*,char*,int (*)(Mat,MatType,Mat*));
@@ -129,6 +164,15 @@ extern FList      MatConvertList;
 EXTERN int MatConvert(Mat,MatType,Mat*);
 EXTERN int MatDuplicate(Mat,MatDuplicateOption,Mat*);
 
+/*E
+    MatStructure - Indicates if the matrix has the same nonzero structure
+
+    Level: beginner
+
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+.seealso: MatCopy(), SLESSetOperators(), PCSetOperators()
+E*/
 typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER} MatStructure;
 
 EXTERN int MatCopy(Mat,Mat,MatStructure);
@@ -151,21 +195,27 @@ EXTERN int MatRestoreRowIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *);
 EXTERN int MatGetColumnIJ(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
 EXTERN int MatRestoreColumnIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *);
 
-/* 
-   Context of matrix information, used with MatGetInfo()
-   Note: If any entries are added to this context, be sure
-         to adjust MAT_INFO_SIZE in finclude/petscmat.h
- */
+/*S
+     MatInfo - Context of matrix information, used with MatGetInfo()
+
+   In Fortran this is simply a double precision array of dimension MAT_INFO_SIZE
+
+   Level: intermediate
+
+  Concepts: matrix^nonzero information
+
+.seealso:  MatGetInfo()
+S*/
 typedef struct {
   PLogDouble rows_global,columns_global;         /* number of global rows and columns */
   PLogDouble rows_local,columns_local;           /* number of local rows and columns */
-  PLogDouble block_size;                          /* block size */
-  PLogDouble nz_allocated,nz_used,nz_unneeded;  /* number of nonzeros */
-  PLogDouble memory;                              /* memory allocated */
-  PLogDouble assemblies;                          /* number of matrix assemblies */
-  PLogDouble mallocs;                             /* number of mallocs during MatSetValues() */
+  PLogDouble block_size;                         /* block size */
+  PLogDouble nz_allocated,nz_used,nz_unneeded;   /* number of nonzeros */
+  PLogDouble memory;                             /* memory allocated */
+  PLogDouble assemblies;                         /* number of matrix assemblies called */
+  PLogDouble mallocs;                            /* number of mallocs during MatSetValues() */
   PLogDouble fill_ratio_given,fill_ratio_needed; /* fill ratio for LU/ILU */
-  PLogDouble factor_mallocs;                      /* number of mallocs during factorization */
+  PLogDouble factor_mallocs;                     /* number of mallocs during factorization */
 } MatInfo;
 
 typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
@@ -192,6 +242,16 @@ EXTERN int MatGetSize(Mat,int*,int*);
 EXTERN int MatGetLocalSize(Mat,int*,int*);
 EXTERN int MatGetOwnershipRange(Mat,int*,int*);
 
+/*E
+    MatReuse - Indicates if matrices obtained from a previous call to MatGetSubMatrices()
+     or MatGetSubMatrix() are to be reused to store the new matrix values.
+
+    Level: beginner
+
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+.seealso: MatGetSubMatrices(), MatGetSubMatrix(), MatDestroyMatrices()
+E*/
 typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
 EXTERN int MatGetSubMatrices(Mat,int,IS *,IS *,MatReuse,Mat **);
 EXTERN int MatDestroyMatrices(int,Mat **);
@@ -305,39 +365,67 @@ EXTERN int MatCholeskyFactor(Mat,IS,double);
 EXTERN int MatCholeskyFactorSymbolic(Mat,IS,double,Mat*);
 EXTERN int MatCholeskyFactorNumeric(Mat,Mat*);
 
-/* 
-   Context of matrix information, used with MatILUFactor() and MatILUFactorSymbolic()
-   of MatLUFactor() and MatLUFactorSymbolic()
+/*S 
+   MatILUInfo - Data based into the matrix ILU factorization routines
 
-   Note: If any entries are added to this context, be sure
-         to adjust MAT_ILUINFO_SIZE in finclude/petscmat.h and/or
-         to adjust MAT_LUINFO_SIZE  in finclude/petscmat.h
+   In Fortran these are simply double precision arrays of size MAT_ILUINFO_SIZE
 
-   Note: The integer values below are passed in double to allow easy use from Fortran
- */
+   Notes: These are not usually directly used by users, instead use the PC type of ILU
+          All entries are double precision.
+
+   Level: developer
+
+.seealso: MatILUFactorSymbolic(), MatILUFactor(), MatLUInfo, MatCholeskyInfo
+
+S*/
 typedef struct {
-  double     levels;  /* ILU(levels) */ 
-  double     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
+  double     levels;         /* ILU(levels) */ 
+  double     fill;           /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
   double     diagonal_fill;  /* force diagonal to fill in if initially not filled */
-
   double     dt;             /* drop tolerance */
   double     dtcol;          /* tolerance for pivoting */
   double     dtcount;        /* maximum nonzeros to be allowed per row */
-  double     damping; /* damping factor - i.e. scaling of identity added to matrix to prevent zero pivots */
-  double     damp;    /* if factorization fails, damp until successful */
+  double     damping;        /* scaling of identity added to matrix to prevent zero pivots */
+  double     damp;           /* if is 1.0 and factorization fails, damp until successful */
 } MatILUInfo;
 
+/*S 
+   MatLUInfo - Data based into the matrix LU factorization routines
+
+   In Fortran these are simply double precision arrays of size MAT_LUINFO_SIZE
+
+   Notes: These are not usually directly used by users, instead use the PC type of LU
+          All entries are double precision.
+
+   Level: developer
+
+.seealso: MatLUFactorSymbolic(), MatILUInfo, MatCholeskyInfo
+
+S*/
 typedef struct {
   double     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
   double     dtcol;   /* tolerance for pivoting; pivot if off_diagonal*dtcol > diagonal */
-  double     damping; /* damping factor - i.e. scaling of identity added to matrix to prevent zero pivots */
-  double     damp;    /* if factorization fails, damp until successful */
+  double     damping; /* scaling of identity added to matrix to prevent zero pivots */
+  double     damp;    /* if this is 1.0 and factorization fails, damp until successful */
 } MatLUInfo;
 
+/*S 
+   MatCholeskyInfo - Data based into the matrix Cholesky factorization routines
+
+   In Fortran these are simply double precision arrays of size MAT_CHOLESKYINFO_SIZE
+
+   Notes: These are not usually directly used by users, instead use the PC type of Cholesky
+          All entries are double precision.
+
+   Level: developer
+
+.seealso: MatCholeskyFactorSymbolic(), MatLUInfo, MatILUInfo
+
+S*/
 typedef struct {
   double     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
-  double     damping; /* damping factor - i.e. scaling of identity added to matrix to prevent zero pivots */
-  double     damp;    /* if factorization fails, damp until successful */
+  double     damping; /* scaling of identity added to matrix to prevent zero pivots */
+  double     damp;    /* if this is 1.0 and factorization fails, damp until successful */
 } MatCholeskyInfo;
 
 EXTERN int MatLUFactor(Mat,IS,IS,MatLUInfo*);
@@ -359,7 +447,15 @@ EXTERN int MatSolveTransposeAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatSetUnfactored(Mat);
 
 /*  MatSORType may be bitwise ORd together, so do not change the numbers */
+/*E
+    MatSORType - What type of (S)SOR to perform
 
+    Level: beginner
+
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+.seealso: MatRelax()
+E*/
 typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_LOCAL_FORWARD_SWEEP=4,SOR_LOCAL_BACKWARD_SWEEP=8,
               SOR_LOCAL_SYMMETRIC_SWEEP=12,SOR_ZERO_INITIAL_GUESS=16,
