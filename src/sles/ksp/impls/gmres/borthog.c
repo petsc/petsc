@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.37 1997/03/09 17:57:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.38 1997/06/05 12:51:49 bsmith Exp curfman $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -74,12 +74,12 @@ int KSPGMRESDGKSOrthogonalization(KSP  ksp,int it )
     epsilon = 0.0; /* Assume that we began perfectly orthogonal, we should really update this at each step */
     sqrit   = sqrt(it);
     delta0  = 1.0e-16;
-    delta1  = delta0 * pow(1.0 + 1.5*delta0, (double) it);
-    delta2  = delta0*delta0 * (1.0 + delta0) * pow(1.0 + 1.5*delta0*delta0, it);
-    delta3  = delta0*delta0 * (1.0 + delta0) * pow(1.0 + 1.5*delta0*delta0, m);
+    delta1  = delta0 * pow(1.0 + 1.5*delta0, (double)it);
+    delta2  = delta0*delta0 * (1.0 + delta0) * pow(1.0 + 1.5*delta0*delta0, (double)it);
+    delta3  = delta0*delta0 * (1.0 + delta0) * pow(1.0 + 1.5*delta0*delta0, (double)m);
     delta4  = delta0 + (m + sqrit) * delta3*delta3 * (1 + 0.5*(3.0*it + 5.0*sqrit)*delta1) * (1.0 + epsilon);
-    delta5  = delta0 * (1.0 + delta0) * pow(1.0 + 1.5*delta0, it);
-    delta6  = delta0 * pow(1.0 + 1.5*delta0, m) * (1.0 + 0.5*(3.0*it + 5.0*sqrit)*delta1);
+    delta5  = delta0 * (1.0 + delta0) * pow(1.0 + 1.5*delta0, (double)it);
+    delta6  = delta0 * pow(1.0 + 1.5*delta0,(double)m) * (1.0 + 0.5*(3.0*it + 5.0*sqrit)*delta1);
     delta   = PetscMax(delta4, PetscMax(delta5, delta6));
     mgamma  = sqrt(1.0 + epsilon);
     beta    = epsilon + 1.5*(sqrit + 1.0)*(sqrit + 1.0)*mgamma*mgamma*delta;
