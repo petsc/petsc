@@ -137,18 +137,10 @@ class Configure(config.base.Configure):
     else:
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.basic')
 
-    # This is really bad
-    flag = '-L'
-    if self.framework.argDB['PETSC_ARCH_BASE'] == 'linux':
-      flag = '-Wl,-rpath,'
-    elif self.framework.argDB['PETSC_ARCH_BASE'].startswith('irix'):
-      flag = '-rpath '
-    elif self.framework.argDB['PETSC_ARCH_BASE'].startswith('osf'):
-      flag = '-Wl,-rpath,'
-    elif self.framework.argDB['PETSC_ARCH_BASE'].startswith('freebsd'):
-      flag = '-Wl,-R,'
-    elif self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
-      flag = '-R'
+    if self.setCompilers.slpath:
+      flag = self.setCompilers.slpath
+    else:
+      flag = '-L'
     self.addSubstitution('CLINKER_SLFLAG', flag)
     self.addSubstitution('FLINKER_SLFLAG', flag)
     return

@@ -185,6 +185,8 @@ class Configure(config.base.Configure):
     # Try configure package directories
     dirExp = re.compile(r'mpi(ch)?(-.*)?')
     for packageDir in self.framework.argDB['package-dirs']:
+      if not os.path.isdir(packageDir):
+        raise RuntimeError('Invalid package directory: '+packageDir)
       for f in os.listdir(packageDir):
         dir = os.path.join(packageDir, f)
         if not os.path.isdir(dir):
