@@ -47,18 +47,18 @@ int MatGetRowMax_MPIBAIJ(Mat A,Vec v)
   PetscFunctionBegin;
   
   ierr = MatGetRowMax(a->A,v);CHKERRQ(ierr); 
-  ierr = VecGetArrayFast(v,&va);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&va);CHKERRQ(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,A->m,&vtmp);CHKERRQ(ierr);
   ierr = MatGetRowMax(a->B,vtmp);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(vtmp,&vb);CHKERRQ(ierr);
+  ierr = VecGetArray(vtmp,&vb);CHKERRQ(ierr);
 
   for (i=0; i<A->m; i++){
     if (PetscAbsScalar(va[i]) < PetscAbsScalar(vb[i])) va[i] = vb[i];
   }
 
-  ierr = VecRestoreArrayFast(v,&va);CHKERRQ(ierr); 
-  ierr = VecRestoreArrayFast(vtmp,&vb);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr); 
   ierr = VecDestroy(vtmp);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);

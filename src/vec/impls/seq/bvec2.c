@@ -25,7 +25,7 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
-    ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
     /*
       This is because the Fortran BLAS 1 Norm is very slow! 
     */
@@ -60,25 +60,25 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 #else
     *z = BLnrm2_(&n,xx,&one);
 #endif
-    ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
     PetscLogFlops(2*n-1);
   } else if (type == NORM_INFINITY) {
     int          i;
     PetscReal    max = 0.0,tmp;
 
-    ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
       /* check special case of tmp == NaN */
       if (tmp != tmp) {max = tmp; break;}
       xx++;
     }
-    ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
     *z   = max;
   } else if (type == NORM_1) {
-    ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
     *z = BLasum_(&n,xx,&one);
-    ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
     PetscLogFlops(n-1);
   } else if (type == NORM_1_AND_2) {
     ierr = VecNorm_Seq(xin,NORM_1,z);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ int VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = PetscViewerNetcdfGetID(v,&ncid); CHKERRQ(ierr);
   if (ncid < 0) SETERRQ(1,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
   /* define dimensions */

@@ -875,7 +875,7 @@ int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
   /* Store inverse of square root of permuted diagonal scaling matrix */
   ierr = VecGetLocalSize(a->diag,&ldim);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(a->diag,&low,&high);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(a->diag,&diag);CHKERRQ(ierr);
+  ierr = VecGetArray(a->diag,&diag);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     if (a->pA->scale_diag[i] != 0.0) {
       diag[i] = 1.0/sqrt(PetscAbsScalar(a->pA->scale_diag[i]));
@@ -883,7 +883,7 @@ int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
       diag[i] = 1.0;
     }   
   }
-  ierr = VecRestoreArrayFast(a->diag,&diag);CHKERRQ(ierr);
+  ierr = VecRestoreArray(a->diag,&diag);CHKERRQ(ierr);
   a->assembled_icc_storage = a->A->icc_storage; 
   a->blocksolveassembly = 1;
   mat->was_assembled    = PETSC_TRUE;
@@ -1172,16 +1172,16 @@ int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 
   /* Permute and apply diagonal scaling:  [ xwork = D^{1/2} * x ] */
   if (!bsif->vecs_permscale) {
-    ierr = VecGetArrayFast(bsif->xwork,&xworka);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(xx,&xxa);CHKERRQ(ierr);
+    ierr = VecGetArray(bsif->xwork,&xworka);CHKERRQ(ierr);
+    ierr = VecGetArray(xx,&xxa);CHKERRQ(ierr);
     BSperm_dvec(xxa,xworka,bsif->pA->perm);CHKERRBS(0);
-    ierr = VecRestoreArrayFast(bsif->xwork,&xworka);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(xx,&xxa);CHKERRQ(ierr);
+    ierr = VecRestoreArray(bsif->xwork,&xworka);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xx,&xxa);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(bsif->xwork,bsif->diag,xx);CHKERRQ(ierr);
   } 
 
-  ierr = VecGetArrayFast(xx,&xxa);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&yya);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&xxa);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&yya);CHKERRQ(ierr);
   /* Do lower triangular multiplication:  [ y = L * xwork ] */
   if (bspinfo->single) {
     BSforward1(bsif->pA,xxa,yya,bsif->comm_pA,bspinfo);CHKERRBS(0);
@@ -1198,22 +1198,22 @@ int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
     }
   }
   /* not needed for ILU version since forward does it all */
-  ierr = VecRestoreArrayFast(xx,&xxa);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&yya);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&xxa);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&yya);CHKERRQ(ierr);
 
   /* Apply diagonal scaling to vector:  [  y = D^{1/2} * y ] */
   if (!bsif->vecs_permscale) {
-    ierr = VecGetArrayFast(bsif->xwork,&xworka);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(xx,&xxa);CHKERRQ(ierr);
+    ierr = VecGetArray(bsif->xwork,&xworka);CHKERRQ(ierr);
+    ierr = VecGetArray(xx,&xxa);CHKERRQ(ierr);
     BSiperm_dvec(xworka,xxa,bsif->pA->perm);CHKERRBS(0);
-    ierr = VecRestoreArrayFast(bsif->xwork,&xworka);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(xx,&xxa);CHKERRQ(ierr);
+    ierr = VecRestoreArray(bsif->xwork,&xworka);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xx,&xxa);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(yy,bsif->diag,bsif->xwork);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(bsif->xwork,&xworka);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy,&yya);CHKERRQ(ierr);
+    ierr = VecGetArray(bsif->xwork,&xworka);CHKERRQ(ierr);
+    ierr = VecGetArray(yy,&yya);CHKERRQ(ierr);
     BSiperm_dvec(xworka,yya,bsif->pA->perm);CHKERRBS(0);
-    ierr = VecRestoreArrayFast(bsif->xwork,&xworka);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy,&yya);CHKERRQ(ierr);
+    ierr = VecRestoreArray(bsif->xwork,&xworka);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy,&yya);CHKERRQ(ierr);
   }
   PetscLogFlops(2*bsif->nz - mat->m);
 
@@ -1293,11 +1293,11 @@ int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr); 
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr); 
   for (i=0; i<mat->m; i++) {
     x[i] = rs[i]->nz[rs[i]->diag_ind]; 
   }
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 

@@ -191,8 +191,8 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
   PetscScalar  *x,*y,*dd = a->diagv[mainbd],sum,**dv = a->diagv;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   /* forward solve the lower triangular part */
   for (i=0; i<m; i++) {
     sum = x[i];
@@ -211,8 +211,8 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
     }
     y[i] = sum*dd[i];
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
@@ -229,8 +229,8 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
   PetscScalar  w0,w1,sum0,sum1;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscMemcpy(y,x,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
@@ -270,8 +270,8 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
     y[inb+1] = dvt[1]*sum0 + dvt[3]*sum1;
     inb -= 2; inb2 -= 4;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
@@ -288,8 +288,8 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
   PetscScalar  w0,w1,w2,sum0,sum1,sum2;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscMemcpy(y,x,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
@@ -331,8 +331,8 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
     y[inb+2] = dvt[2]*sum0 + dvt[5]*sum1 + dvt[8]*sum2;
     inb -= 3; inb2 -= 9;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
@@ -349,8 +349,8 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
   PetscScalar  w0,w1,w2,w3,sum0,sum1,sum2,sum3;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscMemcpy(y,x,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
@@ -395,8 +395,8 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
     y[inb+3] = dvt[3]*sum0 + dvt[7]*sum1 + dvt[11]*sum2 + dvt[15]*sum3;
     inb -= 4; inb2 -= 16;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
@@ -413,8 +413,8 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
   PetscScalar  w0,w1,w2,w3,w4,sum0,sum1,sum2,sum3,sum4;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscMemcpy(y,x,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
@@ -468,8 +468,8 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
                + dvt[24]*sum4;
     inb -= 5; inb2 -= 25;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
@@ -486,8 +486,8 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   PetscScalar  work[25];
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (bs > 25) SETERRQ(PETSC_ERR_SUP,"Blocks must be smaller then 25");
   ierr = PetscMemcpy(y,x,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
@@ -517,8 +517,8 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
     ierr = PetscMemcpy(y+inb,work,bs*sizeof(PetscScalar));CHKERRQ(ierr);
     inb -= bs; inb2 -= bs2;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }

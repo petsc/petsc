@@ -38,7 +38,7 @@ int VecStrideScale(Vec v,int start,PetscScalar *scale)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
 
   bs   = v->bs;
   if (start >= bs) {
@@ -51,7 +51,7 @@ int VecStrideScale(Vec v,int start,PetscScalar *scale)
     x[i] *= xscale;
   }
   x -= start;
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -100,7 +100,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->bs;
@@ -138,7 +138,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
     SETERRQ(1,"Unknown norm type");
   }
 
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -190,7 +190,7 @@ int VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
     SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->bs;
@@ -218,7 +218,7 @@ int VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
   }
   ierr   = MPI_Allreduce(&max,nrm,1,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
 
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -270,7 +270,7 @@ int VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
     SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->bs;
@@ -298,7 +298,7 @@ int VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
   }
   ierr   = MPI_Allreduce(&min,nrm,1,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
 
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -334,7 +334,7 @@ int VecStrideScaleAll(Vec v,PetscScalar *scales)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
 
   bs   = v->bs;
 
@@ -344,7 +344,7 @@ int VecStrideScaleAll(Vec v,PetscScalar *scales)
       x[i+j] *= scales[j];
     }
   }
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -392,7 +392,7 @@ int VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->bs;
@@ -441,7 +441,7 @@ int VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
     SETERRQ(1,"Unknown norm type");
   }
 
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -489,7 +489,7 @@ int VecStrideMaxAll(Vec v,int *idex,PetscReal *nrm)
     SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->bs;
@@ -519,7 +519,7 @@ int VecStrideMaxAll(Vec v,int *idex,PetscReal *nrm)
   }
   ierr   = MPI_Allreduce(max,nrm,bs,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
 
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -567,7 +567,7 @@ int VecStrideMinAll(Vec v,int *idex,PetscReal *nrm)
     SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->bs;
@@ -597,7 +597,7 @@ int VecStrideMinAll(Vec v,int *idex,PetscReal *nrm)
   }
   ierr   = MPI_Allreduce(min,nrm,bs,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
 
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -646,7 +646,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   PetscValidHeaderSpecific(*s,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
 
   ierr = PetscMalloc(bs*sizeof(PetscReal*),&y);CHKERRQ(ierr);
@@ -656,7 +656,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   for (i=0; i<bs; i++) {
     ierr = VecGetBlockSize(s[i],&bss[i]);CHKERRQ(ierr);
     if (bss[i] < 1) bss[i] = 1; /* if user never set it then assume 1  Re: [PETSC #8241] VecStrideGatherAll */
-    ierr = VecGetArrayFast(s[i],&y[i]);CHKERRQ(ierr);
+    ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
     nvc  += bss[i];
     nv++;
     if (nvc > bs)  SETERRQ(1,"Number of subvectors in subvectors > number of vectors in main vector");
@@ -699,9 +699,9 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
     SETERRQ(1,"Unknown insert type");
   }
 
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<nv; i++) {
-    ierr = VecRestoreArrayFast(s[i],&y[i]);CHKERRQ(ierr);
+    ierr = VecRestoreArray(s[i],&y[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(y);CHKERRQ(ierr);
   ierr = PetscFree(bss);CHKERRQ(ierr);
@@ -748,7 +748,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   PetscValidHeaderSpecific(*s,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
 
   ierr = PetscMalloc(bs*sizeof(PetscReal*),&y);CHKERRQ(ierr);
@@ -758,7 +758,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   for (i=0; i<bs; i++) {
     ierr = VecGetBlockSize(s[i],&bss[i]);CHKERRQ(ierr);
     if (bss[i] < 1) bss[i] = 1; /* if user never set it then assume 1  Re: [PETSC #8241] VecStrideGatherAll */
-    ierr = VecGetArrayFast(s[i],&y[i]);CHKERRQ(ierr);
+    ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
     nvc  += bss[i];
     nv++;
     if (nvc > bs)  SETERRQ(1,"Number of subvectors in subvectors > number of vectors in main vector");
@@ -801,9 +801,9 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
     SETERRQ(1,"Unknown insert type");
   }
 
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<nv; i++) {
-    ierr = VecRestoreArrayFast(s[i],&y[i]);CHKERRQ(ierr);
+    ierr = VecRestoreArray(s[i],&y[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(y);CHKERRQ(ierr);
   ierr = PetscFree(bss);CHKERRQ(ierr);
@@ -855,8 +855,8 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
   PetscValidHeaderSpecific(s,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(s,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(s,&y);CHKERRQ(ierr);
 
   bs   = v->bs;
   if (start >= bs) {
@@ -887,8 +887,8 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
     SETERRQ(1,"Unknown insert type");
   }
 
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(s,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(s,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -933,8 +933,8 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
   PetscValidHeaderSpecific(s,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(s,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(s,&y);CHKERRQ(ierr);
 
   bs   = v->bs;
   if (start >= bs) {
@@ -967,8 +967,8 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
   }
 
 
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(s,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(s,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -981,11 +981,11 @@ int VecReciprocal_Default(Vec v)
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (x[i] != 0.0) x[i] = 1.0/x[i];
   }
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1017,11 +1017,11 @@ int VecSqrt(Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_COOKIE);
   ierr = VecGetLocalSize(v, &n);                                                                          CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v, &x);                                                                              CHKERRQ(ierr);
+  ierr = VecGetArray(v, &x);                                                                              CHKERRQ(ierr);
   for(i = 0; i < n; i++) {
     x[i] = sqrt(PetscAbsScalar(x[i]));
   }
-  ierr = VecRestoreArrayFast(v, &x);                                                                          CHKERRQ(ierr);
+  ierr = VecRestoreArray(v, &x);                                                                          CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1052,12 +1052,12 @@ int VecSum(Vec v,PetscScalar *sum)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     lsum += x[i];
   }
   ierr = MPI_Allreduce(&lsum,sum,1,MPIU_SCALAR,PetscSum_Op,v->comm);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1089,11 +1089,11 @@ int VecShift(const PetscScalar *shift,Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr); 
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     x[i] += lsum;
   }
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1120,11 +1120,11 @@ int VecAbs(Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     x[i] = PetscAbsScalar(x[i]);
   }
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1154,7 +1154,7 @@ int VecPermute(Vec x, IS row, PetscTruth inv)
 
   PetscFunctionBegin;
   ierr = ISGetIndices(row, &idx);                                                                         CHKERRQ(ierr);
-  ierr = VecGetArrayFast(x, &array);                                                                          CHKERRQ(ierr);
+  ierr = VecGetArray(x, &array);                                                                          CHKERRQ(ierr);
   ierr = PetscMalloc((x->n+1) * sizeof(PetscScalar), &newArray);                                          CHKERRQ(ierr);
 #ifdef PETSC_USE_BOPT_g
   for(i = 0; i < x->n; i++) {
@@ -1168,7 +1168,7 @@ int VecPermute(Vec x, IS row, PetscTruth inv)
   } else {
     for(i = 0; i < x->n; i++) newArray[idx[i]] = array[i];
   }
-  ierr = VecRestoreArrayFast(x, &array);                                                                      CHKERRQ(ierr);
+  ierr = VecRestoreArray(x, &array);                                                                      CHKERRQ(ierr);
   ierr = ISRestoreIndices(row, &idx);                                                                     CHKERRQ(ierr);
   ierr = VecReplaceArray(x, newArray);                                                                    CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1208,11 +1208,11 @@ int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
   } else if (n1 != n2) {
     flg1 = PETSC_FALSE;
   } else {
-    ierr = VecGetArrayFast(vec1,&v1);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(vec2,&v2);CHKERRQ(ierr);
+    ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr);
+    ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr);
     ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(vec1,&v1);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(vec2,&v2);CHKERRQ(ierr);
+    ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr);
   }
 
   /* combine results from all processors */

@@ -341,15 +341,15 @@ int VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   /* leave define mode */
   ierr = ncmpi_enddef(ncid); CHKERRQ(ierr);
   /* store the vector */
-  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL); CHKERRQ(ierr);
   ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&xin_n,xarray); CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   /* store the coordinate vector */
-  ierr = VecGetArrayFast(xyz,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArray(xyz,&xarray);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xyz,&xstart,PETSC_NULL); CHKERRQ(ierr);
   ierr = ncmpi_put_vara_double_all(ncid,xyz_id,(const size_t*)&xstart,(const size_t*)&xyz_n,xarray); CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(xyz,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xyz,&xarray);CHKERRQ(ierr);
   /* destroy the vectors and da */
   ierr = VecDestroy(natural);CHKERRQ(ierr);
   ierr = VecDestroy(xyz);CHKERRQ(ierr);

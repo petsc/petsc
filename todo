@@ -15,7 +15,7 @@ PETSc configure
    requested with --with-sowing-if-needed
 
 Vectors
-   Move VecGet/RestoreArrayFast() -> VecGet/RestoreArray(), VecGetArray() -> Private
+   VecGetArray() -> Private
    and top part of Vec object to petscvec.h
 
    Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input

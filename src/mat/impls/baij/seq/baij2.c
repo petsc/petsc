@@ -233,8 +233,8 @@ int MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
   int             mbs=a->mbs,i,*idx,*ii,n,ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   idx   = a->j;
   v     = a->a;
@@ -246,8 +246,8 @@ int MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
     while (n--) sum += *v++ * x[*idx++];
     z[i] = sum;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz - A->m);
   PetscFunctionReturn(0);
 }
@@ -263,8 +263,8 @@ int MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   idx   = a->j;
   v     = a->a;
@@ -282,8 +282,8 @@ int MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
     z[0] = sum1; z[1] = sum2;
     z += 2;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   PetscLogFlops(8*a->nz - A->m);
   PetscFunctionReturn(0);
 }
@@ -302,8 +302,8 @@ int MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   idx   = a->j;
   v     = a->a;
@@ -322,8 +322,8 @@ int MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
     z[0] = sum1; z[1] = sum2; z[2] = sum3;
     z += 3;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   PetscLogFlops(18*a->nz - A->m);
   PetscFunctionReturn(0);
 }
@@ -338,8 +338,8 @@ int MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   idx   = a->j;
   v     = a->a;
@@ -360,8 +360,8 @@ int MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
     z[0] = sum1; z[1] = sum2; z[2] = sum3; z[3] = sum4;
     z += 4;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   PetscLogFlops(32*a->nz - A->m);
   PetscFunctionReturn(0);
 }
@@ -376,8 +376,8 @@ int MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   idx   = a->j;
   v     = a->a;
@@ -399,8 +399,8 @@ int MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
     z[0] = sum1; z[1] = sum2; z[2] = sum3; z[3] = sum4; z[4] = sum5;
     z += 5;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   PetscLogFlops(50*a->nz - A->m);
   PetscFunctionReturn(0);
 }
@@ -417,8 +417,8 @@ int MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   idx   = a->j;
   v     = a->a;
@@ -442,8 +442,8 @@ int MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
     z += 6;
   }
 
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   PetscLogFlops(72*a->nz - A->m);
   PetscFunctionReturn(0);
 }
@@ -458,8 +458,8 @@ int MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   idx   = a->j;
   v     = a->a;
@@ -484,8 +484,8 @@ int MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
     z += 7;
   }
 
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   PetscLogFlops(98*a->nz - A->m);
   PetscFunctionReturn(0);
 }
@@ -504,8 +504,8 @@ int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
   int             ncols,k;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   idx   = a->j;
   v     = a->a;
@@ -531,8 +531,8 @@ int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
     v += n*bs2;
     z += bs;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz*bs2 - A->m);
   PetscFunctionReturn(0);
 }
@@ -547,10 +547,10 @@ int MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
   int             ierr,mbs=a->mbs,i,*idx,*ii,n;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
   }
@@ -565,10 +565,10 @@ int MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
     while (n--) sum += *v++ * x[*idx++];
     z[i] = sum;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
   PetscLogFlops(2*a->nz);
   PetscFunctionReturn(0);
@@ -585,10 +585,10 @@ int MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
   }
@@ -609,10 +609,10 @@ int MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
     z[0] = sum1; z[1] = sum2;
     z += 2; y += 2;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
   PetscLogFlops(4*a->nz);
   PetscFunctionReturn(0);
@@ -628,10 +628,10 @@ int MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
   }
@@ -653,10 +653,10 @@ int MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
     z[0] = sum1; z[1] = sum2; z[2] = sum3;
     z += 3; y += 3;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
   PetscLogFlops(18*a->nz);
   PetscFunctionReturn(0);
@@ -673,10 +673,10 @@ int MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   int             j,n;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
   }
@@ -700,10 +700,10 @@ int MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
     z[0] = sum1; z[1] = sum2; z[2] = sum3; z[3] = sum4;
     z += 4; y += 4;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
   PetscLogFlops(32*a->nz);
   PetscFunctionReturn(0);
@@ -719,10 +719,10 @@ int MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
   }
@@ -747,10 +747,10 @@ int MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
     z[0] = sum1; z[1] = sum2; z[2] = sum3; z[3] = sum4; z[4] = sum5;
     z += 5; y += 5;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
   PetscLogFlops(50*a->nz);
   PetscFunctionReturn(0);
@@ -766,10 +766,10 @@ int MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
   }
@@ -795,10 +795,10 @@ int MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
     z[0] = sum1; z[1] = sum2; z[2] = sum3; z[3] = sum4; z[4] = sum5; z[5] = sum6;
     z += 6; y += 6;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
   PetscLogFlops(72*a->nz);
   PetscFunctionReturn(0);
@@ -815,10 +815,10 @@ int MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
   }
@@ -845,10 +845,10 @@ int MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
     z[0] = sum1; z[1] = sum2; z[2] = sum3; z[3] = sum4; z[4] = sum5; z[5] = sum6; z[6] = sum7;
     z += 7; y += 7;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
   PetscLogFlops(98*a->nz);
   PetscFunctionReturn(0);
@@ -865,12 +865,12 @@ int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   int            ncols,k;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   if (zz != yy) { 
-    ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+    ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
     ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
-    ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   }
 
   idx   = a->j;
@@ -897,8 +897,8 @@ int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
     v += n*bs2;
     z += bs;
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz*bs2);
   PetscFunctionReturn(0);
 }
@@ -916,8 +916,8 @@ int MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(xx,&xg);CHKERRQ(ierr); x = xg;
-  ierr = VecGetArrayFast(zz,&zg);CHKERRQ(ierr); z = zg;
+  ierr = VecGetArray(xx,&xg);CHKERRQ(ierr); x = xg;
+  ierr = VecGetArray(zz,&zg);CHKERRQ(ierr); z = zg;
 
   idx   = a->j;
   v     = a->a;
@@ -1065,8 +1065,8 @@ int MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
       }
     }
   }
-  ierr = VecRestoreArrayFast(xx,&xg);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(zz,&zg);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&xg);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&zg);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz*a->bs2 - A->n);
   PetscFunctionReturn(0);
 }
@@ -1083,8 +1083,8 @@ int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   if (yy != zz) { ierr = VecCopy(yy,zz);CHKERRQ(ierr); }
-  ierr = VecGetArrayFast(xx,&xg);CHKERRQ(ierr); x = xg;
-  ierr = VecGetArrayFast(zz,&zg);CHKERRQ(ierr); z = zg;
+  ierr = VecGetArray(xx,&xg);CHKERRQ(ierr); x = xg;
+  ierr = VecGetArray(zz,&zg);CHKERRQ(ierr); z = zg;
 
 
   idx   = a->j;
@@ -1195,8 +1195,8 @@ int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       }
     }
   }
-  ierr = VecRestoreArrayFast(xx,&xg);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(zz,&zg);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&xg);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&zg);CHKERRQ(ierr);
   PetscLogFlops(2*a->nz*a->bs2);
   PetscFunctionReturn(0);
 }
@@ -1314,7 +1314,7 @@ int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
   bs2  = a->bs2;
 
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<ambs; i++) {
@@ -1327,7 +1327,7 @@ int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
       }
     }
   }
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1350,7 +1350,7 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   mbs = a->mbs;
   bs2 = a->bs2;
   if (ll) {
-    ierr = VecGetArrayFast(ll,&l);CHKERRQ(ierr);
+    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ll,&lm);CHKERRQ(ierr);
     if (lm != m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
     for (i=0; i<mbs; i++) { /* for each block row */
@@ -1363,12 +1363,12 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
         } 
       }  
     }
-    ierr = VecRestoreArrayFast(ll,&l);CHKERRQ(ierr);
+    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
     PetscLogFlops(a->nz);
   }
   
   if (rr) {
-    ierr = VecGetArrayFast(rr,&r);CHKERRQ(ierr);
+    ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
     ierr = VecGetLocalSize(rr,&rn);CHKERRQ(ierr);
     if (rn != n) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
     for (i=0; i<mbs; i++) { /* for each block row */
@@ -1382,7 +1382,7 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
         } 
       }  
     }
-    ierr = VecRestoreArrayFast(rr,&r);CHKERRQ(ierr);
+    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
     PetscLogFlops(a->nz);
   }
   PetscFunctionReturn(0);

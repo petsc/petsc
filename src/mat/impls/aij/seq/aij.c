@@ -792,7 +792,7 @@ int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<A->m; i++) {
@@ -803,7 +803,7 @@ int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
       }
     }
   }
-  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -822,8 +822,8 @@ int MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 
   PetscFunctionBegin;
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
   fortranmulttransposeaddaij_(&m,x,a->i,a->j,a->a,y);
@@ -837,8 +837,8 @@ int MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   }
 #endif
   PetscLogFlops(2*a->nz);
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -873,8 +873,8 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   idx  = a->j;
   v    = a->a;
   ii   = a->i;
@@ -892,8 +892,8 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   }
 #endif
   PetscLogFlops(2*a->nz - m);
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -910,10 +910,10 @@ PetscScalar    sum;
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
   }
@@ -935,10 +935,10 @@ PetscScalar    sum;
   }
 #endif
   PetscLogFlops(2*a->nz);
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1034,9 +1034,9 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
   idiag = a->idiag;
   mdiag = a->idiag + 2*m;
 
-  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   if (xx != bb) {
-    ierr = VecGetArrayFast(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+    ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   } else {
     b = x;
   }
@@ -1055,8 +1055,8 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
         SPARSEDENSEDOT(sum,bs,v,idx,n); 
         x[i] = sum;
     }
-    ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-    if (bb != xx) {ierr = VecRestoreArrayFast(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
+    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+    if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
     PetscLogFlops(a->nz);
     PetscFunctionReturn(0);
   }
@@ -1115,8 +1115,8 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
     }
 
     PetscLogFlops(6*m-1 + 2*a->nz);
-    ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-    if (bb != xx) {ierr = VecRestoreArrayFast(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
+    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+    if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -1194,8 +1194,8 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
       PetscLogFlops(a->nz);
     }
   }
-  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  if (bb != xx) {ierr = VecRestoreArrayFast(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 } 
 
@@ -1471,25 +1471,25 @@ int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
        by MatDiagonalScale_MPIAIJ */
     ierr = VecGetLocalSize(ll,&m);CHKERRQ(ierr);
     if (m != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
-    ierr = VecGetArrayFast(ll,&l);CHKERRQ(ierr);
+    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
     v = a->a;
     for (i=0; i<m; i++) {
       x = l[i];
       M = a->i[i+1] - a->i[i];
       for (j=0; j<M; j++) { (*v++) *= x;} 
     }
-    ierr = VecRestoreArrayFast(ll,&l);CHKERRQ(ierr);
+    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
     PetscLogFlops(nz);
   }
   if (rr) {
     ierr = VecGetLocalSize(rr,&n);CHKERRQ(ierr);
     if (n != A->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
-    ierr = VecGetArrayFast(rr,&r);CHKERRQ(ierr); 
+    ierr = VecGetArray(rr,&r);CHKERRQ(ierr); 
     v = a->a; jj = a->j;
     for (i=0; i<nz; i++) {
       (*v++) *= r[*jj++]; 
     }
-    ierr = VecRestoreArrayFast(rr,&r);CHKERRQ(ierr); 
+    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr); 
     PetscLogFlops(nz);
   }
   PetscFunctionReturn(0);
@@ -1948,8 +1948,8 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
   /* 
       Compute all the scale factors and share with other processors
   */
-  ierr = VecGetArrayFast(x1,&xx);CHKERRQ(ierr);xx = xx - start;
-  ierr = VecGetArrayFast(coloring->vscale,&vscale_array);CHKERRQ(ierr);vscale_array = vscale_array - start;
+  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);xx = xx - start;
+  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);vscale_array = vscale_array - start;
   for (k=0; k<coloring->ncolors; k++) { 
     /*
        Loop over each column associated with color adding the 
@@ -1970,7 +1970,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
       vscale_array[col] = 1.0/dx;
     }
   } 
-  vscale_array = vscale_array + start;ierr = VecRestoreArrayFast(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  vscale_array = vscale_array + start;ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
@@ -1980,14 +1980,14 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
   if (coloring->vscaleforrow) vscaleforrow = coloring->vscaleforrow;
   else                        vscaleforrow = coloring->columnsforrow;
 
-  ierr = VecGetArrayFast(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   /*
       Loop over each color
   */
   for (k=0; k<coloring->ncolors; k++) { 
     coloring->currentcolor = k;
     ierr = VecCopy(x1,w3);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
+    ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
     /*
        Loop over each column associated with color adding the 
        perturbation to the vector w3.
@@ -2007,7 +2007,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
       if (!PetscAbsScalar(dx)) SETERRQ(1,"Computed 0 differencing parameter");
       w3_array[col] += dx;
     } 
-    w3_array = w3_array + start; ierr = VecRestoreArrayFast(w3,&w3_array);CHKERRQ(ierr);
+    w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
 
     /*
        Evaluate function at x1 + dx (here dx is a vector of perturbations)
@@ -2021,7 +2021,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
     /*
        Loop over rows of vector, putting results into Jacobian matrix
     */
-    ierr = VecGetArrayFast(w2,&y);CHKERRQ(ierr);
+    ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
     for (l=0; l<coloring->nrows[k]; l++) {
       row    = coloring->rows[k][l];
       col    = coloring->columnsforrow[k][l];
@@ -2029,11 +2029,11 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
       srow   = row + start;
       ierr   = MatSetValues_SeqAIJ(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
     }
-    ierr = VecRestoreArrayFast(w2,&y);CHKERRQ(ierr);
+    ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   }
   coloring->currentcolor = k;
-  ierr = VecRestoreArrayFast(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  xx = xx + start; ierr  = VecRestoreArrayFast(x1,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

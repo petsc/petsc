@@ -42,11 +42,11 @@ int MatSolve_MPIAIJ_XXT(Mat A,Vec b,Vec x)
   int            ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(b,&bb);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = XXT_solve(xxt->xxt,xx,bb);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(b,&bb);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -166,11 +166,11 @@ int MatSolve_MPIAIJ_XYT(Mat A,Vec b,Vec x)
   int            ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(b,&bb);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = XYT_solve(xyt->xyt,xx,bb);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(b,&bb);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -32,30 +32,30 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
 
   switch (nv_rem) {
   case 3:
-    ierr = VecGetArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[1],&yy1);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[2],&yy2);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[2],&yy2);CHKERRQ(ierr);
     fortranmdot3_(x,yy0,yy1,yy2,&n,&sum0,&sum1,&sum2);
-    ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[2],&yy2);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[2],&yy2);CHKERRQ(ierr);
     z[0] = sum0;
     z[1] = sum1;
     z[2] = sum2;
     break;
   case 2:
-    ierr = VecGetArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[1],&yy1);CHKERRQ(ierr);
     fortranmdot2_(x,yy0,yy1,&n,&sum0,&sum1);
-    ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[1],&yy1);CHKERRQ(ierr);
     z[0] = sum0;
     z[1] = sum1;
     break;
   case 1:
-    ierr = VecGetArrayFast(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
     fortranmdot1_(x,yy0,&n,&sum0);
-    ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[0],&yy0);CHKERRQ(ierr);
     z[0] = sum0;
     break;
   case 0:
@@ -70,15 +70,15 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
     sum1 = 0;
     sum2 = 0;
     sum3 = 0;
-    ierr = VecGetArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[1],&yy1);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[2],&yy2);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[3],&yy3);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[2],&yy2);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[3],&yy3);CHKERRQ(ierr);
     fortranmdot4_(x,yy0,yy1,yy2,yy3,&n,&sum0,&sum1,&sum2,&sum3);
-    ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[2],&yy2);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[3],&yy3);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[2],&yy2);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[3],&yy3);CHKERRQ(ierr);
     yy  += 4;
     z[0] = sum0;
     z[1] = sum1;
@@ -115,9 +115,9 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar * restrict z)
 
   switch (nv_rem) {
   case 3:
-    ierr = VecGetArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[1],&yy1);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[2],&yy2);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[2],&yy2);CHKERRQ(ierr);
     switch (j_rem=j&0x3) {
     case 3: 
       x2 = x[2]; 
@@ -154,13 +154,13 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar * restrict z)
     z[0] = sum0;
     z[1] = sum1;
     z[2] = sum2;
-    ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[2],&yy2);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[2],&yy2);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = VecGetArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[1],&yy1);CHKERRQ(ierr);
     switch (j_rem=j&0x3) {
     case 3: 
       x2 = x[2]; 
@@ -192,11 +192,11 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar * restrict z)
     z[0] = sum0;
     z[1] = sum1;
  
-    ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[1],&yy1);CHKERRQ(ierr);
     break;
   case 1:
-    ierr = VecGetArrayFast(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
     switch (j_rem=j&0x3) {
     case 3: 
       x2 = x[2]; sum0 += x2*PetscConj(yy0[2]);
@@ -218,7 +218,7 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar * restrict z)
     }
     z[0] = sum0;
 
-    ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[0],&yy0);CHKERRQ(ierr);
     break;
   case 0:
     break;
@@ -232,10 +232,10 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar * restrict z)
     sum1 = 0;
     sum2 = 0;
     sum3 = 0;
-    ierr = VecGetArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[1],&yy1);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[2],&yy2);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[3],&yy3);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[2],&yy2);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[3],&yy3);CHKERRQ(ierr);
 
     j = n;
     x = xv->array;
@@ -280,10 +280,10 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar * restrict z)
     z[3] = sum3;
     z   += 4;
     i   -= 4;
-    ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[2],&yy2);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[3],&yy3);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[2],&yy2);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[3],&yy3);CHKERRQ(ierr);
     yy  += 4;
   }
   PetscLogFlops(nv*(2*xin->n-1));
@@ -315,9 +315,9 @@ int VecMTDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
 
   switch (nv_rem) {
   case 3:
-    ierr = VecGetArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[1],&yy1);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[2],&yy2);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[2],&yy2);CHKERRQ(ierr);
     switch (j_rem=j&0x3) {
     case 3: 
       x2 = x[2]; 
@@ -354,13 +354,13 @@ int VecMTDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
     z[0] = sum0;
     z[1] = sum1;
     z[2] = sum2;
-    ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[2],&yy2);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[2],&yy2);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = VecGetArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[1],&yy1);CHKERRQ(ierr);
     switch (j_rem=j&0x3) {
     case 3: 
       x2 = x[2]; 
@@ -392,11 +392,11 @@ int VecMTDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
     z[0] = sum0;
     z[1] = sum1;
  
-    ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[1],&yy1);CHKERRQ(ierr);
     break;
   case 1:
-    ierr = VecGetArrayFast(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
     switch (j_rem=j&0x3) {
     case 3: 
       x2 = x[2]; sum0 += x2*yy0[2];
@@ -416,7 +416,7 @@ int VecMTDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
     }
     z[0] = sum0;
 
-    ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[0],&yy0);CHKERRQ(ierr);
     break;
   case 0:
     break;
@@ -430,10 +430,10 @@ int VecMTDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
     sum1 = 0;
     sum2 = 0;
     sum3 = 0;
-    ierr = VecGetArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[1],&yy1);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[2],&yy2);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(yy[3],&yy3);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[2],&yy2);CHKERRQ(ierr);
+    ierr = VecGetArray(yy[3],&yy3);CHKERRQ(ierr);
 
     j = n;
     x = xv->array;
@@ -478,10 +478,10 @@ int VecMTDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
     z[3] = sum3;
     z   += 4;
     i   -= 4;
-    ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[2],&yy2);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(yy[3],&yy3);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[1],&yy1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[2],&yy2);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy[3],&yy3);CHKERRQ(ierr);
     yy  += 4;
   }
   PetscLogFlops(nv*(2*xin->n-1));
@@ -579,9 +579,9 @@ int VecSetRandom_Seq(PetscRandom r,Vec xin)
   PetscScalar  *xx;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);}
-  ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -603,42 +603,42 @@ int VecMAXPY_Seq(int nv,const PetscScalar *alpha,Vec xin,Vec *y)
   xx = xdata->array;  
   switch (j_rem=nv&0x3) {
   case 3: 
-    ierr = VecGetArrayFast(y[0],&yy0);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(y[1],&yy1);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(y[2],&yy2);CHKERRQ(ierr);
+    ierr = VecGetArray(y[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(y[1],&yy1);CHKERRQ(ierr);
+    ierr = VecGetArray(y[2],&yy2);CHKERRQ(ierr);
     alpha0 = alpha[0]; 
     alpha1 = alpha[1]; 
     alpha2 = alpha[2]; 
     alpha += 3;
     APXY3(xx,alpha0,alpha1,alpha2,yy0,yy1,yy2,n);
-    ierr = VecRestoreArrayFast(y[0],&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(y[1],&yy1);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(y[2],&yy2);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y[1],&yy1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y[2],&yy2);CHKERRQ(ierr);
     y     += 3;
     break;
   case 2: 
-    ierr = VecGetArrayFast(y[0],&yy0);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(y[1],&yy1);CHKERRQ(ierr);
+    ierr = VecGetArray(y[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(y[1],&yy1);CHKERRQ(ierr);
     alpha0 = alpha[0]; 
     alpha1 = alpha[1]; 
     alpha +=2;
     APXY2(xx,alpha0,alpha1,yy0,yy1,n);
-    ierr = VecRestoreArrayFast(y[0],&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(y[1],&yy1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y[1],&yy1);CHKERRQ(ierr);
     y     +=2;
     break;
   case 1: 
-    ierr = VecGetArrayFast(y[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(y[0],&yy0);CHKERRQ(ierr);
     alpha0 = *alpha++; APXY(xx,alpha0,yy0,n);
-    ierr = VecRestoreArrayFast(y[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y[0],&yy0);CHKERRQ(ierr);
     y     +=1;
     break;
   }
   for (j=j_rem; j<nv; j+=4) {
-    ierr = VecGetArrayFast(y[0],&yy0);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(y[1],&yy1);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(y[2],&yy2);CHKERRQ(ierr);
-    ierr = VecGetArrayFast(y[3],&yy3);CHKERRQ(ierr);
+    ierr = VecGetArray(y[0],&yy0);CHKERRQ(ierr);
+    ierr = VecGetArray(y[1],&yy1);CHKERRQ(ierr);
+    ierr = VecGetArray(y[2],&yy2);CHKERRQ(ierr);
+    ierr = VecGetArray(y[3],&yy3);CHKERRQ(ierr);
     alpha0 = alpha[0];
     alpha1 = alpha[1];
     alpha2 = alpha[2];
@@ -646,10 +646,10 @@ int VecMAXPY_Seq(int nv,const PetscScalar *alpha,Vec xin,Vec *y)
     alpha  += 4;
 
     APXY4(xx,alpha0,alpha1,alpha2,alpha3,yy0,yy1,yy2,yy3,n);
-    ierr = VecRestoreArrayFast(y[0],&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(y[1],&yy1);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(y[2],&yy2);CHKERRQ(ierr);
-    ierr = VecRestoreArrayFast(y[3],&yy3);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y[0],&yy0);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y[1],&yy1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y[2],&yy2);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y[3],&yy3);CHKERRQ(ierr);
     y      += 4;
   }
   PetscFunctionReturn(0);
@@ -664,7 +664,7 @@ int VecAYPX_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
   PetscScalar  *xx = x->array,*yy;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(yin,&yy);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
   fortranaypx_(&n,alpha,xx,yy);
 #else
@@ -676,7 +676,7 @@ int VecAYPX_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
     }
   }
 #endif
-  ierr = VecRestoreArrayFast(yin,&yy);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
   PetscLogFlops(2*n);
   PetscFunctionReturn(0);
 }
@@ -696,8 +696,8 @@ int VecWAXPY_Seq(const PetscScalar* alpha,Vec xin,Vec yin,Vec win)
   PetscScalar  *xx = x->array,*yy,*ww,oalpha = *alpha;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(yin,&yy);CHKERRQ(ierr);
-  ierr = VecGetArrayFast(win,&ww);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
+  ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
   if (oalpha == 1.0) {
     PetscLogFlops(n);
     /* could call BLAS axpy after call to memcopy, but may be slower */
@@ -715,8 +715,8 @@ int VecWAXPY_Seq(const PetscScalar* alpha,Vec xin,Vec yin,Vec win)
 #endif
     PetscLogFlops(2*n);
   }
-  ierr = VecRestoreArrayFast(yin,&yy);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(win,&ww);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
+  ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -729,8 +729,8 @@ int VecPointwiseMult_Seq(Vec xin,Vec yin,Vec win)
   PetscScalar  *xx = x->array,*yy,*ww;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(yin,&yy);CHKERRQ(ierr);
-  if (yin != win) {ierr = VecGetArrayFast(win,&ww);CHKERRQ(ierr);}
+  ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
+  if (yin != win) {ierr = VecGetArray(win,&ww);CHKERRQ(ierr);}
   else ww = yy;
 
   if (ww == xx) {
@@ -750,8 +750,8 @@ int VecPointwiseMult_Seq(Vec xin,Vec yin,Vec win)
     for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];
 #endif
   }
-  ierr = VecRestoreArrayFast(yin,&yy);CHKERRQ(ierr);
-  if (yin != win) {ierr = VecRestoreArrayFast(win,&ww);CHKERRQ(ierr);}
+  ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
+  if (yin != win) {ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);}
   PetscLogFlops(n);
   PetscFunctionReturn(0);
 }
@@ -765,12 +765,12 @@ int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win)
   PetscScalar  *xx = x->array,*yy,*ww;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(yin,&yy);CHKERRQ(ierr);
-  if (yin != win) {ierr = VecGetArrayFast(win,&ww);CHKERRQ(ierr);}
+  ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
+  if (yin != win) {ierr = VecGetArray(win,&ww);CHKERRQ(ierr);}
   else {ww = yy;}
   for (i=0; i<n; i++) ww[i] = xx[i] / yy[i];
-  ierr = VecRestoreArrayFast(yin,&yy);CHKERRQ(ierr);
-  if (yin != win) {ierr = VecRestoreArrayFast(win,&ww);CHKERRQ(ierr);}
+  ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
+  if (yin != win) {ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);}
   PetscLogFlops(n);
   PetscFunctionReturn(0);
 }
@@ -785,7 +785,7 @@ int VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
   PetscReal    m = 0.0;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(yin,&yy);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
   for(i = 0; i < n; i++) {
     if (yy[i] != 0.0) {
       m = PetscMax(PetscAbsScalar(xx[i]/yy[i]), m);
@@ -794,7 +794,7 @@ int VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
     }
   }
   ierr = MPI_Allreduce(&m,max,1,MPIU_REAL,MPI_MAX,xin->comm);CHKERRQ(ierr);
-  ierr = VecRestoreArrayFast(yin,&yy);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
   PetscLogFlops(n);
   PetscFunctionReturn(0);
 }
