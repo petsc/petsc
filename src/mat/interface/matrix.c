@@ -4915,7 +4915,7 @@ EXTERN int MatMPIBAIJDiagonalScaleLocal(Mat,Vec);
 @*/
 int MatDiagonalScaleLocal(Mat mat,Vec diag)
 {
-  int        ierr;
+  int        ierr,size;
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -4927,28 +4927,23 @@ int MatDiagonalScaleLocal(Mat mat,Vec diag)
     SETERRQ(1,"Matrix must be already assembled");
   }
   ierr = PetscLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)mat,MATMPIAIJ,&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = MatMPIAIJDiagonalScaleLocal(mat,diag);CHKERRQ(ierr);
-  } else {
-    ierr = PetscTypeCompare((PetscObject)mat,MATMPIBAIJ,&flag);CHKERRQ(ierr);
-    if (flag) {
-      ierr = MatMPIBAIJDiagonalScaleLocal(mat,diag);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    int n,m;
+    ierr = VecGetSize(diag,&n);CHKERRQ(ierr);
+    ierr = MatGetSize(mat,0,&m);CHKERRQ(ierr);
+    if (m == n) {
+      ierr = MatDiagonalScale(mat,0,diag);CHKERRQ(ierr);
     } else {
-      int size;
-      ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
-      if (size == 1) {
-        int n,m;
-        ierr = VecGetSize(diag,&n);CHKERRQ(ierr);
-        ierr = MatGetSize(mat,0,&m);CHKERRQ(ierr);
-        if (m == n) {
-          ierr = MatDiagonalScale(mat,0,diag);CHKERRQ(ierr);
-        } else {
-          SETERRQ(1,"Only supprted for sequential matrices when no ghost points/periodic conditions");
-        }
-      } else {
-        SETERRQ(1,"Only supported for MPIAIJ and MPIBAIJ parallel matrices");
-      }
+      SETERRQ(1,"Only supprted for sequential matrices when no ghost points/periodic conditions");
+    }
+  } else {
+    int (*f)(Mat,Vec);
+    ierr = PetscObjectQueryFunction((PetscObject)mat,"MatDiagonalScaleLocal_C",(void (**)(void))&f);CHKERRQ(ierr);
+    if (f) {
+      ierr = (*f)(mat,diag);CHKERRQ(ierr);
+    } else {
+      SETERRQ(1,"Only supported for MPIAIJ and MPIBAIJ parallel matrices");
     }
   }
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);

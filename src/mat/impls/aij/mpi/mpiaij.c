@@ -1718,6 +1718,7 @@ EXTERN_C_END
 #include "petscpc.h"
 EXTERN_C_BEGIN
 EXTERN int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
+EXTERN int MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
@@ -1837,6 +1838,9 @@ int MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAIJSetPreallocation_C",
 				     "MatMPIAIJSetPreallocation_MPIAIJ",
 				     MatMPIAIJSetPreallocation_MPIAIJ); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDiagonalScaleLocal_C",
+				     "MatDiagonalScaleLocal_MPIAIJ",
+				     MatDiagonalScaleLocal_MPIAIJ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -2039,6 +2039,9 @@ int MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,int bs,int d_nz,int *d_nnz,int o_nz
 EXTERN_C_END
 
 EXTERN_C_BEGIN
+EXTERN int MatDiagonalScaleLocal_MPIBAIJ(Mat,Vec);
+EXTERN_C_END
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIBAIJ"
 int MatCreate_MPIBAIJ(Mat B)
@@ -2123,6 +2126,9 @@ int MatCreate_MPIBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIBAIJSetPreallocation_C",
                                      "MatMPIBAIJSetPreallocation_MPIBAIJ",
                                      MatMPIBAIJSetPreallocation_MPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDiagonalScaleLocal_C",
+                                     "MatDiagonalScaleLocal_MPIBAIJ",
+                                     MatDiagonalScaleLocal_MPIBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
