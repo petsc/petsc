@@ -1,4 +1,4 @@
-/* $Id: petscclfe.cpp,v 1.12 2001/04/17 21:17:31 buschelm Exp $ */
+/* $Id: petscclfe.cpp,v 1.19 2001/05/04 21:29:54 buschelm Exp $ */
 #include <stdlib.h>
 #include "petscclfe.h"
 #include "Windows.h"
@@ -21,7 +21,7 @@ void cl::Parse(void) {
 }
 
 void cl::FindInstallation(void) {
-  compiler::FindInstallation();
+  tool::FindInstallation();
   string::size_type n = InstallDir.length()-1;
   VisualStudioDir = InstallDir.substr(0,n);
   n = VisualStudioDir.find_last_of("\\");
@@ -34,13 +34,13 @@ void cl::AddPaths(void) {
   /* Find required .dll's */
   string addpath;
   /* This is ugly and perhaps each version should have their own class */
-  bool KnownVersion=FALSE;
+  bool KnownVersion=false;
   if (VSVersion=="VC98") {
     addpath = VisualStudioDir + "Common\\MSDev98\\Bin";
-    KnownVersion=TRUE;
+    KnownVersion=true;
   } else if (VSVersion=="VC7") {
     addpath = VisualStudioDir + "Common7\\IDE";
-    KnownVersion=TRUE;
+    KnownVersion=true;
   } else {
     cerr << "Warning: win32fe cl version not recognized." << endl;
   }
@@ -99,11 +99,11 @@ void df::AddPaths(void) {
   DFVersion = DFVersion.substr(DFVersion.find_last_of("\\")+1,len_m_1);
   addpath2 = addpath1 = addpath1.substr(0,addpath1.find_last_of("\\")+1);
 
-  bool KnownVersion=FALSE;
+  bool KnownVersion=false;
   if (DFVersion=="DF98") {
     addpath1 += "Common\\MSDev98\\Bin";
     addpath2 += "VC98\\Bin";
-    KnownVersion=TRUE;
+    KnownVersion=true;
   } else {
     cerr << "Warning: win32fe df version not recognized." << endl;
   }
@@ -127,10 +127,10 @@ void df::AddSystemLib(void) {
   DFVersion = DFVersion.substr(DFVersion.find_last_of("\\")+1,len_m_1);
   libdir = libdir.substr(0,libdir.find_last_of("\\")+1);
 
-  bool KnownVersion=FALSE;
+  bool KnownVersion=false;
   if (DFVersion=="DF98") {
     libdir += "VC98\\Lib";
-    KnownVersion=TRUE;
+    KnownVersion=true;
   } else {
     cerr << "Warning: win32fe df version not recognized." << endl;
   }

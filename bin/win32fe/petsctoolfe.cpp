@@ -1,4 +1,4 @@
-/* $Id: petsctoolfe.cpp,v 1.9 2001/04/17 21:18:03 buschelm Exp $ */
+/* $Id: petsctoolfe.cpp,v 1.15 2001/05/04 17:05:13 buschelm Exp $ */
 #include "Windows.h"
 #include "petsctoolfe.h"
 
@@ -10,8 +10,9 @@ tool::tool(void) {
   tool::Options['v'] = &tool::FoundVerbose;
   tool::Options['h'] = &tool::FoundHelp;
   tool::Options['p'] = &tool::FoundPath;
-  verbose   = 0;
-  helpfound = 0;
+  verbose   = false;
+  helpfound = false;
+  inpath    = false;
 }
   
 void tool::GetArgs(int argc,char *argv[]) {
@@ -31,6 +32,52 @@ void tool::Parse() {
     } else {
       i++;
     }
+  }
+  AddSystemInfo();
+}
+
+void tool::AddSystemInfo(void) {
+  FindInstallation();
+  AddPaths();
+}
+
+void tool::FindInstallation(void) {
+  /* Find location of tool */
+  InstallDir = arg.front();
+  
+  /* First check if a full path was specified with --use */
+  string::size_type n = InstallDir.find(":");
+  if (n==string::npos) {
+    char tmppath[MAX_PATH],*tmp;
+    int length = MAX_PATH*sizeof(char);
+    string extension = ".exe";
+    if (SearchPath(NULL,InstallDir.c_str(),extension.c_str(),length,tmppath,&tmp)) {
+      InstallDir = (string)tmppath;
+      inpath = true;
+    } else {
+      string tool=arg.front();
+      cerr << endl << "Error: win32fe: Compiler Not Found: ";
+      cerr << tool << endl;
+      cerr << "\tSpecify the complete path to ";
+      cerr << tool;
+      cerr << " with --use" << endl;
+      cerr << "\tUse --help for more information on win32fe options." << endl << endl;
+      return;
+    }
+  }
+  
+  /* Tool is located in InstallDir/bin/compiler.exe */
+  /* Note: InstallDir includes the trailing / */
+  InstallDir = InstallDir.substr(0,InstallDir.find_last_of("\\",InstallDir.find_last_of("\\")-1)+1);
+}
+
+void tool::AddPaths(void) {
+  if (!inpath) {
+    arg.push_back("--path");
+    LI i = arg.end();
+    i--;
+    arg.push_back(InstallDir);
+    FoundPath(i);
   }
 }
 
@@ -60,6 +107,7 @@ void tool::Help(void) {
   cout << "  --help:       Output this help message and help for <tool>" << endl << endl;
   cout << "=========================================================================" << endl << endl;
 }
+
 void tool::FoundPath(LI &i) {
   if (*i=="--path") {
     i = arg.erase(i);
@@ -80,6 +128,7 @@ void tool::FoundPath(LI &i) {
     }
   }
 }
+
 void tool::FoundUse(LI &i) {
   if (*i=="--use") {
     i = arg.erase(i);
@@ -98,7 +147,7 @@ void tool::FoundUse(LI &i) {
 
 void tool::FoundVerbose(LI &i) {
   if (*i == "--verbose") {
-    verbose = -1;
+    verbose = true;
     i = arg.erase(i);
     cout << endl;
   }
@@ -106,7 +155,7 @@ void tool::FoundVerbose(LI &i) {
 
 void tool::FoundHelp(LI &i) {
   if (*i == "--help") {
-    helpfound = -1;
+    helpfound = true;
     arg.push_back("-help");
     i = arg.erase(i);
   }

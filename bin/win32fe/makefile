@@ -25,7 +25,7 @@ LIBS = Advapi32.lib
 .cpp.obj:
 	$(CXX) $(CXX_FLAGS) -c $< $(INCLUDEPATHS)
 
-win32fe: $(OBJECTS)
+win32fe win32fe.exe: $(OBJECTS)
 	$(CXX) $(CXX_FLAGS) -Fewin32fe.exe $(OBJECTS) $(LIBS)
 	$(RM) $(OBJECTS)
 

@@ -1,4 +1,4 @@
-/* $Id: petsctlibfe.cpp,v 1.8 2001/04/17 21:15:54 buschelm Exp $ */
+/* $Id: petsctlibfe.cpp,v 1.10 2001/05/03 11:03:30 buschelm Exp $ */
 #include "Windows.h"
 #include "petsctlibfe.h"
 
@@ -10,7 +10,7 @@ void tlib::Execute() {
   Archive();
   if (!helpfound) {
     string backup = file.front();
-    backup = backup.substr(0,backup.rfind("."));
+    backup = backup.substr(1,backup.rfind(".")-1);
     backup = backup + ".BAK";
     string temp=backup;
     if (GetShortPath(temp)) {
@@ -33,9 +33,16 @@ void tlib::Help(void) {
 void tlib::FoundFlag(LI &i) {
   string temp = *i;
   if (temp == "-help") {
-    helpfound = -1;
+    helpfound = TRUE;
   } else {
     temp[0] = '/';
     archivearg.push_back(temp);
   }
+}
+
+void tlib::FoundFile(LI &i) {
+  tool::FoundFile(i);
+  string temp=file.back();
+  file.pop_back();
+  file.push_back("\"" + temp + "\"");
 }

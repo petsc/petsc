@@ -1,4 +1,4 @@
-/* $Id: petsctoolfe.h,v 1.5 2001/04/17 21:10:29 buschelm Exp $ */
+/* $Id: petsctoolfe.h,v 1.9 2001/05/04 02:40:31 buschelm Exp $ */
 #ifndef PETScToolFE_h_
 #define PETScToolFE_h_
 
@@ -18,7 +18,15 @@ namespace PETScFE {
     virtual ~tool() {}
     virtual void Help(void);
 
+    void FoundHelp(LI &);
+    void FoundPath(LI &);
+    void FoundUse(LI &);
+    void FoundVerbose(LI &);
+
     virtual void FoundFile(LI &);
+    virtual void AddSystemInfo(void);
+    virtual void FindInstallation(void);
+    virtual void AddPaths(void);
 
     void PrintListString(list<string> &);
     int GetShortPath(string &);
@@ -28,13 +36,10 @@ namespace PETScFE {
 
     list<string> arg;
     list<string> file;
-    int verbose;
-    int helpfound;
-
-    void FoundHelp(LI &);
-    void FoundPath(LI &);
-    void FoundUse(LI &);
-    void FoundVerbose(LI &);
+    string InstallDir;
+    bool verbose;
+    bool helpfound;
+    bool inpath;
   private:
     string OptionTags;
     typedef void (PETScFE::tool::*ptm)(LI &);

@@ -1,4 +1,4 @@
-/* $Id: petsccompilerfe.cpp,v 1.9 2001/04/17 21:17:17 buschelm Exp $ */
+/* $Id: petsccompilerfe.cpp,v 1.15 2001/05/04 21:29:54 buschelm Exp $ */
 #include <stdlib.h>
 #include <Windows.h>
 #include "petsccompilerfe.h"
@@ -44,43 +44,12 @@ void compiler::Parse(void) {
     i++;
     arg.pop_front();
   }
-  AddSystemFiles();
 }
 
-void compiler::AddSystemFiles(void) {
-  FindInstallation();
-  AddPaths();
+void compiler::AddSystemInfo(void) {
+  tool::AddSystemInfo();
   AddSystemInclude();
   AddSystemLib();
-}
-
-void compiler::FindInstallation(void) {
-    /* Find location of system libraries and headers */
-    InstallDir = compilearg.front();
-
-    /* First check if a full path was specified with --use */
-    string::size_type n = InstallDir.find(":");
-    if (n==string::npos) {
-      char tmppath[MAX_PATH],*tmp;
-      int length = MAX_PATH*sizeof(char);
-      string extension = ".exe";
-      if (SearchPath(NULL,InstallDir.c_str(),extension.c_str(),length,tmppath,&tmp)) {
-        InstallDir = (string)tmppath;
-      } else {
-        string compiler=compilearg.front();
-        cerr << endl << "Error: win32fe: Compiler Not Found: ";
-        cerr << compiler << endl;
-        cerr << "\tSpecify the complete path to ";
-        cerr << compiler;
-        cerr << " with --use" << endl;
-        cerr << "\tUse --help for more information on win32fe options." << endl << endl;
-        return;
-      }
-    }
-
-    /* Compiler is located in InstallDir/bin/compiler.exe */
-    /* Note: InstallDir includes the trailing / */
-    InstallDir = InstallDir.substr(0,InstallDir.find_last_of("\\",InstallDir.find_last_of("\\")-1)+1);
 }
 
 void compiler::AddSystemInclude(void) {
@@ -248,7 +217,7 @@ void compiler::Foundc(LI &i) {
 
 void compiler::Foundh(LI &i) {
   if (*i=="-help") {
-    helpfound = -1;
+    helpfound = true;
   }
 }
 

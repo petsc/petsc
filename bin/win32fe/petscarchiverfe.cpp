@@ -1,4 +1,4 @@
-/* $Id: petscarchiverfe.cpp,v 1.11 2001/04/18 15:37:30 buschelm Exp $ */
+/* $Id: petscarchiverfe.cpp,v 1.15 2001/05/04 00:39:01 buschelm Exp $ */
 #include <stdlib.h>
 #include <process.h>
 #include "petscarchiverfe.h"
@@ -71,7 +71,7 @@ void archiver::Help(void) {
 void archiver::FoundFlag(LI &i) {
   string temp = *i;
   if (temp == "-help") {
-    helpfound = -1;
+    helpfound = true;
   } else {
     archivearg.push_back(*i);
   }

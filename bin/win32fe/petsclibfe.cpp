@@ -1,4 +1,4 @@
-/* $Id: petsclibfe.cpp,v 1.7 2001/04/17 21:16:12 buschelm Exp $ */
+/* $Id: petsclibfe.cpp,v 1.9 2001/05/03 11:03:30 buschelm Exp $ */
 #include "petsclibfe.h"
 
 using namespace PETScFE;
@@ -55,3 +55,37 @@ void lib::Parse(void) {
     archivearg.push_back("-nologo");
   }
 }
+
+void lib::FindInstallation(void) {
+  tool::FindInstallation();
+  string::size_type n = InstallDir.length()-1;
+  VisualStudioDir = InstallDir.substr(0,n);
+  n = VisualStudioDir.find_last_of("\\");
+  VisualStudioDir = VisualStudioDir.substr(0,n+1);
+  VSVersion = InstallDir.substr(0,InstallDir.length()-1);
+  VSVersion = VSVersion.substr(VisualStudioDir.length());
+}
+
+void lib::AddPaths(void) {
+  /* Find required .dll's */
+  string addpath;
+  /* This is ugly and perhaps each version should have their own class */
+  bool KnownVersion=false;
+  if (VSVersion=="VC98") {
+    addpath = VisualStudioDir + "Common\\MSDev98\\Bin";
+    KnownVersion=true;
+  } else if (VSVersion=="VC7") {
+    addpath = VisualStudioDir + "Common7\\IDE";
+    KnownVersion=true;
+  } else {
+    cerr << "Warning: win32fe cl version not recognized." << endl;
+  }
+  if (KnownVersion) {
+    arg.push_back("--path");
+    LI i = arg.end();
+    i--;
+    GetShortPath(addpath);
+    arg.push_back(addpath);
+    FoundPath(i);
+  }
+}  
