@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.15 2000/07/21 14:30:00 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.16 2000/07/24 16:36:53 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -292,7 +292,7 @@ int main(int argc,char **args)
     /* ierr = ISView(ip, VIEWER_STDOUT_SELF); CHKERRA(ierr); 
        ierr = MatView(sA,VIEWER_DRAW_SELF); CHKERRA(ierr); */
   }
-
+#ifdef LUFactor
   if (bs == 1) {
     for (lf=-1; lf<10; lf++){   
       if (lf==-1) {  /* LU */
@@ -320,7 +320,7 @@ int main(int argc,char **args)
       norm1 = norm2;
     } 
   }
-  
+#endif  
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(sA);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);
