@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpitr.c,v 1.2 1996/07/15 03:43:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpitr.c,v 1.3 1996/08/04 23:11:37 bsmith Exp curfman $";
 #endif
 
 /*
@@ -13,7 +13,8 @@ static char vcid[] = "$Id: mpitr.c,v 1.2 1996/07/15 03:43:57 bsmith Exp bsmith $
 
 #if defined(PETSC_LOG) && !defined(PETSC_USING_MPIUNI)
 /*@C
-   PetscMPIDump - Dumps a listing of incomplete MPI operations. Sends never received, etc
+   PetscMPIDump - Dumps a listing of incomplete MPI operations, such as sends that
+   have never been received, etc.
 
    Input Parameter:
 .  fp  - file pointer.  If fp is NULL, stderr is assumed.
