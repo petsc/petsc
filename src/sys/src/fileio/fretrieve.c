@@ -158,7 +158,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 
   ierr = MPI_Attr_get(comm,Petsc_Tmp_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
   if (!iflg) {
-    char       filename[256],tmpname[256];
+    char       filename[PETSC_MAX_PATH_LEN],tmpname[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared tmp attribute */
     ierr = PetscMalloc(sizeof(int),&tagvalp);CHKERRQ(ierr);
@@ -285,7 +285,7 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
 
   ierr = MPI_Attr_get(comm,Petsc_WD_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
   if (!iflg) {
-    char       filename[256];
+    char       filename[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared  attribute */
     ierr = PetscMalloc(sizeof(int),&tagvalp);CHKERRQ(ierr);
@@ -359,7 +359,7 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
 @*/
 int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,PetscTruth *found)
 {
-  char              buf[1024],tmpdir[256],urlget[256],*par,*pdir;
+  char              buf[1024],tmpdir[PETSC_MAX_PATH_LEN],urlget[PETSC_MAX_PATH_LEN],*par,*pdir;
   FILE              *fp;
   int               i,rank,ierr,len = 0;
   PetscTruth        flg1,flg2,sharedtmp,exists;
@@ -381,7 +381,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
 
   /* Determine if all processors share a common /tmp */
   ierr = PetscSharedTmp(comm,&sharedtmp);CHKERRQ(ierr);
-  ierr = PetscOptionsGetenv(comm,"PETSC_TMP",tmpdir,256,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_TMP",tmpdir,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank || !sharedtmp) {

@@ -3,6 +3,7 @@
       Code that allows one to set the error handlers
 */
 #include "petsc.h"           /*I "petsc.h" I*/
+#include "petscsys.h"
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
@@ -63,7 +64,7 @@ $     SETERRQ(number,p,mess)
 int PetscEmacsClientErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
 {
   int         ierr;
-  char        command[1024],*pdir;
+  char        command[PETSC_MAX_PATH_LEN],*pdir;
   FILE        *fp;
 
   PetscFunctionBegin;
@@ -159,7 +160,7 @@ int PetscPopErrorHandler(void)
 
   PetscFunctionReturn(0);
 }
-
+ 
 char PetscErrorBaseMessage[1024];
 
 #undef __FUNCT__  

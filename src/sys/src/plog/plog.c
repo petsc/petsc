@@ -1046,7 +1046,7 @@ int PetscLogDump(const char sname[]) {
   StageLog       stageLog;
   EventPerfInfo *eventInfo;
   FILE          *fd;
-  char           file[64], fname[64];
+  char           file[PETSC_MAX_PATH_LEN], fname[PETSC_MAX_PATH_LEN];
   PetscLogDouble flops, _TotalTime;
   int            rank, curStage;
   int            action, object, event;
@@ -1150,7 +1150,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   StageInfo     *stageInfo = PETSC_NULL;
   EventPerfInfo *eventInfo = PETSC_NULL;
   ClassPerfInfo *classInfo;
-  char           arch[10], hostname[64], username[16], pname[256], date[64];
+  char           arch[10], hostname[64], username[16], pname[PETSC_MAX_PATH_LEN], date[64];
   char           *name;
   PetscLogDouble locTotalTime, TotalTime, TotalFlops;
   PetscLogDouble numMessages, messageLength, avgMessLen, numReductions;
@@ -1192,7 +1192,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   ierr = PetscGetArchType(arch, 10);                                                                      CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname, 64);                                                                  CHKERRQ(ierr);
   ierr = PetscGetUserName(username, 16);                                                                  CHKERRQ(ierr);
-  ierr = PetscGetProgramName(pname, 256);                                                                 CHKERRQ(ierr);
+  ierr = PetscGetProgramName(pname, PETSC_MAX_PATH_LEN);                                                  CHKERRQ(ierr);
   ierr = PetscGetDate(date, 64);                                                                          CHKERRQ(ierr);
   ierr = PetscGetVersion(&version);                                                                       CHKERRQ(ierr);
   if (numProcs == 1) {

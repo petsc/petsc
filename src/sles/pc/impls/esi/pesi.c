@@ -176,7 +176,7 @@ int PCESISetType(PC V,char *name)
 #define __FUNCT__ "PCESISetFromOptions"
 int PCESISetFromOptions(PC V)
 {
-  char       string[1024];
+  char       string[PETSC_MAX_PATH_LEN];
   PetscTruth flg;
   int        ierr;
  

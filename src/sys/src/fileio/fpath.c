@@ -33,10 +33,6 @@
 #endif
 #include "petscfix.h"
 
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
-
 #if defined(PETSC_HAVE_PWD_H)
 
 #undef __FUNCT__  
@@ -84,7 +80,7 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
 
   /* Remove the various "special" forms (~username/ and ~/) */
   if (fullpath[0] == '~') {
-    char tmppath[MAXPATHLEN];
+    char tmppath[PETSC_MAX_PATH_LEN];
     if (fullpath[1] == '/') {
 #if !defined(PETSC_MISSING_GETPWUID)
 	pwde = getpwuid(geteuid());
@@ -118,7 +114,7 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
   /* Remove the automounter part of the path */
   ierr = PetscStrncmp(fullpath,"/tmp_mnt/",9,&flg);CHKERRQ(ierr);
   if (flg) {
-    char tmppath[MAXPATHLEN];
+    char tmppath[PETSC_MAX_PATH_LEN];
     ierr = PetscStrcpy(tmppath,fullpath + 8);CHKERRQ(ierr);
     ierr = PetscStrcpy(fullpath,tmppath);CHKERRQ(ierr);
   }

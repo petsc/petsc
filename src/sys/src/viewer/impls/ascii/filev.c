@@ -31,7 +31,7 @@ int PetscViewerDestroy_ASCII(PetscViewer viewer)
   if (!rank && vascii->fd != stderr && vascii->fd != stdout) {
     fclose(vascii->fd);
     if (vascii->storecompressed) {
-      char par[1024],buf[1024];
+      char par[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
       FILE *fp;
       ierr = PetscStrcpy(par,"gzip ");CHKERRQ(ierr);
       ierr = PetscStrcat(par,vascii->filename);CHKERRQ(ierr);
@@ -486,7 +486,7 @@ EXTERN_C_BEGIN
 int PetscViewerSetFilename_ASCII(PetscViewer viewer,const char name[])
 {
   int               ierr,len;
-  char              fname[256],*gz;
+  char              fname[PETSC_MAX_PATH_LEN],*gz;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
   PetscTruth        isstderr,isstdout;
 

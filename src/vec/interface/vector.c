@@ -1983,7 +1983,7 @@ int VecViewFromOptions(Vec vec, char *title)
   PetscTruth  opt;
   char       *titleStr;
   char        typeName[1024];
-  char        fileName[1024];
+  char        fileName[PETSC_MAX_PATH_LEN];
   int         len;
   int         ierr;
 

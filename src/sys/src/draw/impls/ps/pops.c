@@ -201,7 +201,7 @@ static int PetscDrawDestroy_PS(PetscDraw draw)
   PetscDraw_PS *ps = (PetscDraw_PS*)draw->data;
   int          ierr;
   PetscTruth   show;
-  char         *filename,par[1024];
+  char         *filename,par[PETSC_MAX_PATH_LEN];
  
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(ps->ps_file,"\nshowpage\n");CHKERRQ(ierr);

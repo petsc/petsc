@@ -43,7 +43,7 @@ int PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
 {
   int  rank,ierr;
   FILE *fd;
-  char fname[256],tname[256];
+  char fname[PETSC_MAX_PATH_LEN],tname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -56,7 +56,7 @@ int PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
     } else if (isstderr) {
       fd = stderr;
     } else {
-      ierr = PetscStrreplace(PETSC_COMM_SELF,name,tname,256);CHKERRQ(ierr);
+      ierr = PetscStrreplace(PETSC_COMM_SELF,name,tname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
       ierr = PetscFixFilename(tname,fname);CHKERRQ(ierr);
       PetscLogInfo(0,"Opening file %s\n",fname);
       fd   = fopen(fname,mode);
@@ -149,7 +149,7 @@ int PetscPClose(MPI_Comm comm,FILE *fd)
 int PetscPOpen(MPI_Comm comm,char *machine,char *program,const char mode[],FILE **fp)
 {
   int  ierr,rank,i,len,cnt;
-  char commandt[1024],command[1024];
+  char commandt[PETSC_MAX_PATH_LEN],command[PETSC_MAX_PATH_LEN];
 #if defined(PETSC_HAVE_POPEN)
   FILE *fd;
 #endif

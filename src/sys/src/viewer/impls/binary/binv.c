@@ -165,7 +165,7 @@ int PetscViewerDestroy_Binary(PetscViewer v)
   if (!rank && vbinary->fdes) {
     close(vbinary->fdes);
     if (vbinary->storecompressed) {
-      char par[1024],buf[1024];
+      char par[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
       FILE *fp;
       /* compress the file */
       ierr = PetscStrcpy(par,"gzip ");CHKERRQ(ierr);
@@ -302,7 +302,7 @@ EXTERN_C_END
 int PetscViewerBinaryLoadInfo(PetscViewer viewer)
 {
   FILE       *file;
-  char       string[128],*first,*second,*final;
+  char       string[256],*first,*second,*final;
   int        len,ierr;
   PetscTruth flg;
   PetscToken *token;  
@@ -315,7 +315,7 @@ int PetscViewerBinaryLoadInfo(PetscViewer viewer)
   if (!file) PetscFunctionReturn(0);
 
   /* read rows of the file adding them to options database */
-  while (fgets(string,128,file)) {
+  while (fgets(string,256,file)) {
     /* Comments are indicated by #, ! or % in the first column */
     if (string[0] == '#') continue;
     if (string[0] == '!') continue;
@@ -364,7 +364,7 @@ int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
   int                   rank,ierr,len;
   PetscViewer_Binary    *vbinary = (PetscViewer_Binary*)viewer->data;
   const char            *fname;
-  char                  bname[1024],*gz;
+  char                  bname[PETSC_MAX_PATH_LEN],*gz;
   PetscTruth            found;
   PetscViewerBinaryType type = vbinary->btype;
 
@@ -450,7 +450,7 @@ int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
       try to open info file: all processors open this file if read only
   */
   if (!rank || type == PETSC_BINARY_RDONLY) {
-    char infoname[256],iname[256];
+    char infoname[PETSC_MAX_PATH_LEN],iname[PETSC_MAX_PATH_LEN];
   
     ierr = PetscStrcpy(infoname,name);CHKERRQ(ierr);
     /* remove .gz if it ends library name */
@@ -465,7 +465,7 @@ int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
     ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == PETSC_BINARY_RDONLY) {
-      ierr = PetscFileRetrieve(viewer->comm,iname,infoname,256,&found);CHKERRQ(ierr);
+      ierr = PetscFileRetrieve(viewer->comm,iname,infoname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
       if (found) {
         vbinary->fdes_info = fopen(infoname,"r");
         if (vbinary->fdes_info) {
@@ -562,7 +562,7 @@ PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm comm)
   int         ierr;
   PetscTruth  flg;
   PetscViewer viewer;
-  char        fname[256];
+  char        fname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Binary_keyval == MPI_KEYVAL_INVALID) {
@@ -572,7 +572,7 @@ PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm comm)
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Binary_keyval,(void **)&viewer,(int *)&flg);
   if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   if (!flg) { /* PetscViewer not yet created */
-    ierr = PetscOptionsGetenv(comm,"PETSC_VIEWER_BINARY_FILENAME",fname,256,&flg);
+    ierr = PetscOptionsGetenv(comm,"PETSC_VIEWER_BINARY_FILENAME",fname,PETSC_MAX_PATH_LEN,&flg);
     if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     if (!flg) {
       ierr = PetscStrcpy(fname,"binaryoutput");

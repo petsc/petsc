@@ -657,6 +657,25 @@ M*/
 #undef hz
 #endif
 
+/*  For arrays that contain filenames or paths */
+
+#if defined(PETSC_HAVE_LIMITS_H)
+#include <limits.h>
+#endif
+#if defined(PETSC_HAVE_SYS_PARAM_H)
+#include <sys/param.h>
+#endif
+
+#if defined(MAXPATHLEN)
+#  define PETSC_MAX_PATH_LEN     MAXPATHLEN
+#elif defined(MAX_PATH)
+#  define PETSC_MAX_PATH_LEN     MAX_PATH
+#elif defined(_MAX_PATH)
+#  define PETSC_MAX_PATH_LEN     _MAX_PATH
+#else
+#  define PETSC_MAX_PATH_LEN     4096
+#endif
+
 #endif
 
 

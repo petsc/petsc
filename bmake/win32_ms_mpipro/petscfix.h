@@ -22,10 +22,6 @@
 typedef struct rusage* s_rusage;
 
 /* -----------------------Windows NT with MS Visual C++ ---------------------*/
-/* Fixes from sys/param.h */
-#ifndef MAXPATHLEN
-#define MAXPATHLEN _MAX_PATH
-#endif
 
 /* Fixes from sys/types.h */
 typedef int uid_t;

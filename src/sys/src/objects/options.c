@@ -20,10 +20,6 @@
 #endif
 #include "petscfix.h"
 
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
-
 /* 
     For simplicity, we use a static size database
 */
@@ -36,7 +32,7 @@ typedef struct {
   char       *aliases1[MAXALIASES],*aliases2[MAXALIASES];
   int        used[MAXOPTIONS];
   PetscTruth namegiven;
-  char       programname[MAXPATHLEN]; /* HP includes entire path in name */
+  char       programname[PETSC_MAX_PATH_LEN]; /* HP includes entire path in name */
 } PetscOptionsTable;
 
 static PetscOptionsTable *options = 0;
@@ -133,7 +129,7 @@ int PetscOptionsAtod(const char name[],PetscReal *a)
     Notes:
     The name of the program is copied into the user-provided character
     array of length len.  On some machines the program name includes 
-    its entire path, so one should generally set len >= MAXPATHLEN.
+    its entire path, so one should generally set len >= PETSC_MAX_PATH_LEN.
 @*/
 int PetscGetProgramName(char name[],int len)
 {
@@ -154,7 +150,7 @@ int PetscSetProgramName(const char name[])
 
   PetscFunctionBegin;
   options->namegiven = PETSC_TRUE;
-  ierr  = PetscStrncpy(options->programname,name,MAXPATHLEN);CHKERRQ(ierr);
+  ierr  = PetscStrncpy(options->programname,name,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -245,7 +241,7 @@ int PetscOptionsInsertString(const char* in_str)
 @*/
 int PetscOptionsInsertFile(const char file[])
 {
-  char       string[128],fname[256],*first,*second,*third,*final;
+  char       string[128],fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*final;
   int        len,ierr,i,startIndex;
   FILE       *fd;
   PetscToken *token;
@@ -325,7 +321,7 @@ int PetscOptionsInsertFile(const char file[])
 int PetscOptionsInsert(int *argc,char ***args,const char file[])
 {
   int        ierr,rank;
-  char       pfile[256];
+  char       pfile[PETSC_MAX_PATH_LEN];
   PetscToken *token;
 
   PetscFunctionBegin;

@@ -55,7 +55,7 @@ FILE      *PetscLogInfoFile      = PETSC_NULL;
 @*/
 int PetscLogInfoAllow(PetscTruth flag, char *filename)
 {
-  char fname[256], tname[5];
+  char fname[PETSC_MAX_PATH_LEN], tname[5];
   int  rank;
   int  ierr;
 

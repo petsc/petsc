@@ -98,8 +98,8 @@ int PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
 {
   PetscViewer       v;
   Viewer_Silo *silo;
-  char         filename[256];
-  char         filetemp[256];
+  char         filename[PETSC_MAX_PATH_LEN];
+  char         filetemp[PETSC_MAX_PATH_LEN];
   int          ierr;
 
   PetscFunctionBegin;

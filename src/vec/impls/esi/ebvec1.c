@@ -532,7 +532,7 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace
   int                             ierr;
   ::esi::IndexSpace<int>::Factory *f;
   ::esi::IndexSpace<int>::Factory *(*r)(void);
-  char                            name[1024];
+  char                            name[PETSC_MAX_PATH_LEN];
   PetscTruth                      found;
 
   PetscFunctionBegin;

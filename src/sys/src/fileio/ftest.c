@@ -191,7 +191,7 @@ int PetscTestDirectory(const char fname[],char mode,PetscTruth *flg)
 int PetscLs(MPI_Comm comm,const char libname[],char *found,int tlen,PetscTruth *flg)
 {
   int   ierr,len;
-  char  *f,program[1024];
+  char  *f,program[PETSC_MAX_PATH_LEN];
   FILE  *fp;
 
   PetscFunctionBegin;

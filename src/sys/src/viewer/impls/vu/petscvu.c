@@ -72,7 +72,7 @@ EXTERN_C_BEGIN
 int PetscViewerSetFilename_VU(PetscViewer viewer, const char name[])
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
-  char            fname[256];
+  char            fname[PETSC_MAX_PATH_LEN];
   int             rank;
   int             ierr;
 
