@@ -137,7 +137,7 @@ clean:
 	       PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
 	       output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
-	       ex[0-9].exe ex[0-9][0-9].exe *.ad.c ad_deriv.h .adic*
+	       ex[0-9].exe ex[0-9][0-9].exe *.ad.c *.ad.h ad_deriv.h .adic* *.cp_ *.cp__
 
 #
 #  testexamples_X - Runs various PETSc test suites
@@ -296,16 +296,16 @@ wwwpages:
 	cat trashz ; fi; $(RM) trashz;
 # -------------------------------------------------------------------------------
 #
-#   Rule for generating ADIC derivatives from PETSc .c files
+#   Rule for generating ADIC derivatives from PETSc .c and .hfiles
 #
 adic:
-	@-if [ "$(SOURCEC)" != "" ]; then \
+	-if [ "$(SOURCEC)" != "" ]; then \
           for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
           adiC.new -avud gradient.new $(CFLAGS) $$i ; \
           fi; done ; \
         fi
-	@-if [ "$(SOURCECH)" != "" ]; then \
-          for i in $(SOURCECH) foo; do if [ -f $$i ]; then \
+	-if [ "$(SOURCEH)" != "" ]; then \
+          for i in $(SOURCEH) foo; do if [ -f $$i ]; then \
           adiC.new -avud gradient.new $(CFLAGS) $$i ; \
           fi; done ; \
         fi
@@ -317,7 +317,7 @@ adic:
 #
 adicignore: chkpetsc_dir
 	-@if [ ! -f $(PDIR)/adicignore ]; then \
-	  echo "PetscDummyFunction" > $(PDIR)/adicignore ; fi
+	  echo "FUNCTIONS_TO_IGNORE" > $(PDIR)/adicignore ; fi
 	@-if [ "$(SOURCEC)" != "" ]; then \
           for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
            grep "ADIC Ignore" $$i | cut -f2 -d\" >> $(PDIR)/adicignore ; \
@@ -329,6 +329,14 @@ countfunctions: chkpetsc_dir
 	@-if [ "$(SOURCEC)" != "" ]; then \
           for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
            grep "define __FUNC__" $$i | cut -f2 -d\" >> $(PDIR)/countfunctions ; \
+          fi; done ; \
+        fi
+adicnotignore: chkpetsc_dir
+	-@if [ ! -f $(PDIR)/adicnotignore ]; then \
+	  echo "PetscDummyFunction" > $(PDIR)/adicnotignore ; fi
+	@-if [ "$(SOURCEC)" != "" ]; then \
+          for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
+           grep "e __FUNC__" $$i | grep -v "ADIC Ignore" | cut -f2 -d\" >> $(PDIR)/adicnotignore; \
           fi; done ; \
         fi
 # -------------------------------------------------------------------------------
