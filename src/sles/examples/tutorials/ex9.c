@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.20 1996/08/28 18:41:58 curfman Exp curfman $";
+static char vcid[] = "$Id: ex9.c,v 1.21 1996/09/26 02:53:57 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -202,7 +202,7 @@ int main(int argc,char **args)
     /* 
        Assemble matrix, using the 2-step process:
          MatAssemblyBegin(), MatAssemblyEnd()
-       Computations can be done while messages are in transition,
+       Computations can be done while messages are in transition
        by placing code between these two statements.
     */
     ierr = MatAssemblyBegin(C1,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);

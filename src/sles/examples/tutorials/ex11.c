@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.2 1996/09/25 20:41:23 curfman Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.3 1996/09/25 20:47:07 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -83,7 +83,7 @@ int main(int argc,char **args)
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
         appropriate processor during matrix assembly). 
-      - Always specify global row and columns of matrix entries.
+      - Always specify global rows and columns of matrix entries.
    */
     ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx); CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
@@ -106,7 +106,7 @@ int main(int argc,char **args)
   /* 
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd()
-     Computations can be done while messages are in transition,
+     Computations can be done while messages are in transition
      by placing code between these two statements.
   */
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);

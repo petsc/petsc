@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.28 1996/09/25 20:48:12 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.29 1996/09/26 02:53:07 curfman Exp curfman $";
 #endif
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
@@ -102,7 +102,7 @@ int main(int argc,char **args)
      Assemble the preconditioner matrix (B), using the 2-step process
        MatAssemblyBegin(), MatAssemblyEnd()
      Note that computations can be done while messages are in
-     transition, by placing code between these two statements.
+     transition by placing code between these two statements.
   */
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 

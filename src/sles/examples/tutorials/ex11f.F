@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.3 1996/09/25 20:33:30 curfman Exp curfman $";
+C    "$Id: ex11f.F,v 1.4 1996/09/25 20:47:03 curfman Exp curfman $";
 C
 C/*T
 C  Concepts: SLES (solving a Helmholtz equation)
@@ -118,7 +118,7 @@ C  Set matrix elements in parallel.
 C   - Each processor needs to insert only elements that it owns
 C     locally (but any non-local elements will be sent to the
 C     appropriate processor during matrix assembly). 
-C   - Always specify global row and columns of matrix entries.
+C   - Always specify global rows and columns of matrix entries.
 
       call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,
      *                       rctx,ierr)
@@ -153,7 +153,7 @@ C   - Always specify global row and columns of matrix entries.
 
 C  Assemble matrix, using the 2-step process:
 C       MatAssemblyBegin(), MatAssemblyEnd()
-C  Computations can be done while messages are in transition,
+C  Computations can be done while messages are in transition
 C  by placing code between these two statements.
 
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)

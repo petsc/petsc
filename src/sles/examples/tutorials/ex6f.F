@@ -1,5 +1,5 @@
 
-C    "$Id: ex6f.F 1.15 1996/09/25 20:55:13 curfman Exp curfman $";
+C    "$Id: ex6f.F 1.16 1996/09/26 02:54:01 curfman Exp curfman $";
 C
 C  Description: This example demonstrates repeated linear solves as
 C  well as the use of different preconditioner and linear system
@@ -72,7 +72,7 @@ C  Set matrix elements.
 C   - Each processor needs to insert only elements that it owns
 C     locally (but any non-local elements will be sent to the
 C     appropriate processor during matrix assembly). 
-C   - Always specify global row and columns of matrix entries.
+C   - Always specify global rows and columns of matrix entries.
 
       do 10, II=Istart,Iend-1
         v = -1.0
@@ -100,7 +100,7 @@ C   - Always specify global row and columns of matrix entries.
 
 C  Assemble matrix, using the 2-step process:
 C       MatAssemblyBegin(), MatAssemblyEnd()
-C  Computations can be done while messages are in transition,
+C  Computations can be done while messages are in transition
 C  by placing code between these two statements.
 
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
