@@ -1,6 +1,6 @@
-/*$Id: ex5s.c,v 1.24 2001/03/23 01:20:21 bsmith Exp balay $*/
+/*$Id: ex5s.c,v 1.25 2001/03/23 23:24:25 balay Exp bsmith $*/
 
-static char help[] = "2d Bratur problem in shared memory parallel with SNES.\n\
+static char help[] = "2d Bratu problem in shared memory parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
 domain, uses SHARED MEMORY to evaluate the user function.\n\
 The command line options include:\n\
