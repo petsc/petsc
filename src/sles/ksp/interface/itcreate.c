@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.120 1998/04/22 13:48:24 balay Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.121 1998/04/25 03:08:59 curfman Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -31,7 +31,7 @@ int KSPRegisterAllCalled = 0;
          the file.  All other processors send their 
          data to the first processor to print. 
 
-   The user can open an alternative vistualization context with
+   The user can open an alternative visualization context with
    ViewerFileOpenASCII() - output to a specified file.
 
 .keywords: KSP, view
