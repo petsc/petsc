@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.76 1998/06/01 00:16:45 bsmith Exp bsmith $;
+!  $Id: petsc.h,v 1.77 1998/06/11 19:59:26 bsmith Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -98,7 +98,7 @@
 !
 !     Representation of complex i
 !
-#if defined (HAVE_NAGF90)
+#if defined (HAVE_NAGF90) || defined (HAVE_SOLARISF90)
       complex (KIND=SELECTED_REAL_KIND(14)) PETSC_i
 #else
       double complex PETSC_i
@@ -108,7 +108,7 @@
 !     Macro for templating between real and complex
 !
 #if defined(USE_PETSC_COMPLEX)
-#if defined (HAVE_NAGF90)
+#if defined (HAVE_NAGF90) || defined (HAVE_SOLARISF90)
 #define Scalar       complex (KIND=SELECTED_REAL_KIND(14))
 #else
 #define Scalar       double complex
