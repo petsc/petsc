@@ -10,7 +10,11 @@ Additional Capabilities that PETSc Needs:
 
    To do BEFORE the next release:
   --------------------------------
-  
+
+  - Fix the F*&^ bug that PETSc does not work on Cray T3d with two 
+    processors bjacobi preconditioner with ILU(0) on subdomains!!!!!!!!
+    For example, arco1
+
   - Change PCSetUp_BJacobiAIJ() to use MatGetSubMatrices() rather then 
     MatGetSubMatrix() since someone decided MatGetSubMatrix cannot 
     be logged so MPIAIJ format with bjacobi is completely worthless 
