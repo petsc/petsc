@@ -746,6 +746,12 @@ EXTERN PetscErrorCode VecScatterCreate_StoP(PetscInt,PetscInt *,PetscInt,PetscIn
 #define VEC_SEQ_ID 0
 #define VEC_MPI_ID 1
 
+/*
+   Blocksizes we have optimized scatters for 
+*/
+
+#define VecScatterOptimizedBS(mbs) ((2 <= mbs && mbs <= 8) || mbs == 12)
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreate"
 /*@C
@@ -1216,7 +1222,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         PetscInt nx,ny,*idx,*idy,bsx,bsy;
         ierr = ISBlockGetBlockSize(iy,&bsy);CHKERRQ(ierr);
         ierr = ISBlockGetBlockSize(ix,&bsx);CHKERRQ(ierr);
-        if (bsx == bsy && (bsx == 12 || bsx == 5 || bsx == 4 || bsx == 3 || bsx == 2 || bsx == 6)) {
+        if (bsx == bsy && VecScatterOptimizedBS(bsx)) {
           ierr = ISBlockGetSize(ix,&nx);CHKERRQ(ierr);
           ierr = ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
           ierr = ISBlockGetSize(iy,&ny);CHKERRQ(ierr);
@@ -1235,8 +1241,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ierr = ISGetLocalSize(iy,&ysize);CHKERRQ(ierr);
         ierr = ISBlockGetBlockSize(ix,&bsx);CHKERRQ(ierr);
         /* see if stride index set is equivalent to block index set */
-        if ((bsx == 2 || bsx == 3 || bsx == 4 || bsx == 5 || bsx == 12 || bsx == 6) && 
-            ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
+        if (VecScatterOptimizedBS(bsx) && ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
           PetscInt nx,*idx,*idy,il;
           ierr = ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
           if (ysize != bsx*nx) SETERRQ(PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");

@@ -9,6 +9,9 @@
   Currently the are ignored for all partitioners except parmetis, where they are 
   incorrectly always used.
 
+  If shared libraries is turned on, need configure test that each external package
+  can go into shared library. Trouble on Mac
+
   -------------
   Optimizations
    ------------
@@ -23,8 +26,6 @@
 
     Fix MatGet/RestoreRow/ColumnIJ() to have an additional flag indicating if one may change the
    ia and ja data. Then the reoordering codes need to check that flag since Sparsepack corrupts the data.
-
-     Add fast block size 8 in Vecscatter
 
      ------------------------------------------------------------
      Missing functionality (for a particular data storage or size)
