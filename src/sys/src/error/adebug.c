@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.105 2000/05/05 22:13:49 balay Exp bsmith $*/
+/*$Id: adebug.c,v 1.106 2000/06/19 20:31:47 bsmith Exp balay $*/
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
@@ -400,11 +400,7 @@ int PetscStopForDebugger(void)
   }
 
 #if defined(PETSC_CANNOT_START_DEBUGGER) 
-  (*PetscErrorPrintf)("PETSC ERROR: System cannot start debugger\n");
-  (*PetscErrorPrintf)("PETSC ERROR: On Cray run program in Totalview debugger\n");
-  (*PetscErrorPrintf)("PETSC ERROR: On Windows use Developer Studio(MSDEV)\n");
-  (*PetscErrorPrintf)("PETSC ERROR: Just continuing program\n");
-   PetscFunctionReturn(0);
+  (*PetscErrorPrintf)("PETSC ERROR: System cannot start debugger; just continuing program\n");
 #else
   if (!program[0]) {
     (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name; just continuing program\n");
@@ -448,6 +444,8 @@ int PetscStopForDebugger(void)
     (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
   }
 #endif
+#endif /* PETSC_CANNOT_START_DEBUGGER */
+
   fflush(stdout);
 
   sleeptime = 25; /* default to sleep waiting for debugger */
@@ -472,7 +470,6 @@ int PetscStopForDebugger(void)
   }
 #else
   sleep(sleeptime);
-#endif
 #endif
   PetscFunctionReturn(0);
 }
