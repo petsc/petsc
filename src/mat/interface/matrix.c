@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.161 1996/04/02 04:11:23 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.162 1996/04/02 04:24:50 curfman Exp curfman $";
 #endif
 
 /*
@@ -1194,8 +1194,9 @@ int MatNorm(Mat mat,NormType type,double *norm)
    Notes: 
    MatSetValues() generally caches the values.  The matrix is ready to
    use only after MatAssemblyBegin() and MatAssemblyEnd() have been called.
-   Use FLUSH_ASSEMBLY when switching between ADD_VALUES and SetValues; use
-   FINAL_ASSEMBLY for the final assembly before the matrix is used.
+   Use FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
+   in MatSetValues(); use FINAL_ASSEMBLY for the final assembly before
+   using the matrix.
 
 .keywords: matrix, assembly, assemble, begin
 
@@ -1220,24 +1221,26 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 .  type - type of assembly, either FLUSH_ASSEMBLY or FINAL_ASSEMBLY
 
    Options Database Keys:
-$  -mat_view_draw : Draw nonzero structure of matrix at conclusion of MatEndAssembly(),
-               using MatView() and DrawOpenX().
-$  -mat_view_info : Prints info on matrix.
-$  -mat_view_info_detailed: More detailed information.
-$  -mat_view : Prints matrix out in ascii.
-$  -mat_view_matlab : Prints matrix out suitable for Matlab(TM).
+$  -mat_view_info : Prints info on matrix at
+$      conclusion of MatEndAssembly()
+$  -mat_view_info_detailed: Prints more detailed info.
+$  -mat_view : Prints matrix in ASCII format.
+$  -mat_view_matlab : Prints matrix in Matlab format.
+$  -mat_view_draw : Draws nonzero structure of matrix,
+$      using MatView() and DrawOpenX().
 $  -display <name> : Set display name (default is host)
 $  -draw_pause <sec> : Set number of seconds to pause after display
- 
-   Note: 
+
+   Notes: 
    MatSetValues() generally caches the values.  The matrix is ready to
    use only after MatAssemblyBegin() and MatAssemblyEnd() have been called.
-   Use FLUSH_ASSEMBLY when switching between ADD_VALUES and SetValues; use
-   FINAL_ASSEMBLY for the final assembly before the matrix is used.
+   Use FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
+   in MatSetValues(); use FINAL_ASSEMBLY for the final assembly before
+   using the matrix.
 
 .keywords: matrix, assembly, assemble, end
 
-.seealso: MatAssemblyBegin(), MatSetValues()
+.seealso: MatAssemblyBegin(), MatSetValues(), DrawOpenX(), MatView()
 @*/
 int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
