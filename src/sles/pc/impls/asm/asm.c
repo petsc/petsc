@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.114 2000/05/29 21:59:32 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.115 2000/06/03 14:37:09 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -37,6 +37,8 @@ static int PCView_ASM(PC pc,Viewer viewer)
   int        rank,ierr,i;
   char       *cstring = 0;
   PetscTruth isascii,isstring;
+  Viewer     sviewer;
+
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
@@ -51,23 +53,19 @@ static int PCView_ASM(PC pc,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"  Additive Schwarz: type - %s\n",cstring);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
     if (jac->same_local_solves) {
-      Viewer sviewer;
-
       ierr = ViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
+      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
       if (!rank && jac->sles) {
         ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
         ierr = SLESView(jac->sles[0],sviewer);CHKERRQ(ierr);
-        ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
         ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
+      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     } else {
       ierr = ViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
       ierr = ViewerASCIISynchronizedPrintf(viewer,"Proc %d: number of local blocks = %d\n",rank,jac->n_local);CHKERRQ(ierr);
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) {
-        Viewer sviewer;
-
         ierr = ViewerASCIISynchronizedPrintf(viewer,"Proc %d: local block number %d\n",rank,i);CHKERRQ(ierr);
         ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
         ierr = SLESView(jac->sles[i],sviewer);CHKERRQ(ierr);
