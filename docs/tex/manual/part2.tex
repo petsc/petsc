@@ -355,7 +355,7 @@ and efficiently with the various orderings. To define a new application ordering
 \begin{tabbing}
   AOCreateBasic(MPI\_Comm comm,int n,const int apordering[],const int petscordering[],AO *ao);
 \end{tabbing}
-The \findex{AOCreateBasic} 
+The \findex{AOCreateBasic()} 
 arrays \trl{apordering} and \trl{petscordering}, respectively, contain a list of integers
 in the application ordering and their corresponding mapped values in the PETSc 
 ordering. Each process can provide whatever subset of the ordering it 
@@ -402,7 +402,7 @@ An alternative routine to create the application ordering, AO, is
 \begin{tabbing}
   AOCreateBasicIS(IS apordering,IS petscordering,AO *ao);
 \end{tabbing}
-\findex{AOCreateBasicIS}
+\findex{AOCreateBasicIS()}
 where index sets (see \ref{sec_indexset} are used instead of integer arrays. 
 
 The 
@@ -502,8 +502,8 @@ To set values into a vector with the local numbering, one must first call
 \begin{tabbing}
   VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping ctx);
 \end{tabbing}
-\findex{VecSetLocalToGlobalMapping} \sindex{vectors, setting values with local numbering}
-and then call \findex{VecSetValuesLocal}
+\findex{VecSetLocalToGlobalMapping()} \sindex{vectors, setting values with local numbering}
+and then call \findex{VecSetValuesLocal()}
 \begin{tabbing}
   VecSetValuesLocal(Vec x,int n,const int indices[],const PetscScalar values[],INSERT\_VALUES);
 \end{tabbing}
@@ -562,7 +562,7 @@ in two dimensions with the command
   DACreate2d(MPI\_Comm comm,DAPeriodicType wrap,DAStencilType st,int M,\\
              int N,int m,int n,int dof,int s,int *lx,int *ly,DA *da);
 \end{tabbing}
-The \findex{DACreate2d} \sindex{array, distributed} arguments
+The \findex{DACreate2d()} \sindex{array, distributed} arguments
 \sindex{distributed array} \trl{M} and \trl{N} indicate the global
 numbers of grid points in each direction, while \trl{m} and \trl{n}
 denote the process partition in each direction; \trl{m*n} must equal
@@ -634,7 +634,7 @@ information with the routines
   DACreateGlobalVector(DA da,Vec *g);\\
   DACreateLocalVector(DA da,Vec *l);
 \end{tabbing}
-\findex{DACreateGlobalVector}
+\findex{DACreateGlobalVector()}
 \findex{DACreateLocalVector()}
 These vectors will generally serve as the building blocks for local
 and global PDE solutions, etc.  If additional vectors with such
@@ -813,7 +813,7 @@ uses to parallize. This ordering context can be obtained with the command
 \begin{tabbing}
   DAGetAO(DA da,AO *ao);
 \end{tabbing}
-\findex{DAGetAO}
+\findex{DAGetAO()}
 In Figure \ref{fig_daao} we indicate the orderings for a two-dimensional distributed 
 array, divided among four processes.
 
@@ -1666,7 +1666,7 @@ Also one can use \findex{PETSC_VIEWER_DRAW_WORLD}
   MatView(Mat mat,PetscViewer viewer);
 \end{tabbing}
 where \trl{viewer} was obtained with PetscViewerDrawOpenX().
-\findex{PetscViewerDrawOpenX} 
+\findex{PetscViewerDrawOpenX()} 
 Additional viewers \findex{MatCopy()} and options are given in the MatView() man
 page and Section~\ref{sec_viewers}.
 
@@ -2448,7 +2448,7 @@ data base commands \trl{-ksp_plot_eigenvalues} and \trl{-ksp_plot_eigenvalues_ex
 Or they can be dumped to the screen in ASCII text via
 \trl{-ksp_compute_eigenvalues} and \trl{-ksp_compute_eigenvalues_explicitly}.
 \findex{-ksp_compute_eigenvalues} \findex{-ksp_compute_eigenvalues_explicitly}
-\sindex{eigenvalues} \sindex{spectrum} \sindex{Arnoldi} \sindex{Lanczo}
+\sindex{eigenvalues} \sindex{spectrum} \sindex{Arnoldi} \sindex{Lanczos}
 
 \subsection{Other KSP Options}
 
@@ -2548,7 +2548,7 @@ Some of the options for ILU preconditioner are
   PCILUSetUseInPlace(PC pc); \\
   PCILUSetAllowDiagonalFill(PC pc);
 \end{tabbing}
-\findex{PCILUSetLevels()} \findex{PCILUSetReuseOrdering}
+\findex{PCILUSetLevels()} \findex{PCILUSetReuseOrdering()}
 \findex{PCILUSetUseDropTolerance()} \findex{PCILUDTSetReuseFill()}
 \findex{PCILUSetUseInPlace()} \findex{PCILUSetAllowDiagonalFill()}
 
@@ -2937,7 +2937,7 @@ default behavior. An alternative can be set with the option
   PCCompositeSetType(PC pc,PCCompositeType PC\_COMPOSITE\_MULTIPLICATIVE);
 \end{tabbing}
 \findex{PCCompositeSetType()} \findex{PC_COMPOSITE_MULTIPLICATIVE}
-\findex{PC_COMPOSITE_ADDITIVE} \findex{PCCompositeAddPC} \sindex{additive preconditioners}
+\findex{PC_COMPOSITE_ADDITIVE} \findex{PCCompositeAddPC()} \sindex{additive preconditioners}
 \sindex{multiplicative preconditioners}
 In this form the new residual is updated after the application of 
 each preconditioner and the next preconditioner applied to the next 
@@ -2975,7 +2975,7 @@ For example, to set the first sub preconditioners to use ILU(1)
   PCCompositeGetPC(pc,0,\&subpc);\\
   PCILUSetFill(subpc,1);
 \end{tabbing}
-\findex{PCCompositeGetPC}
+\findex{PCCompositeGetPC()}
 
 These various options can also be set via the options database. For example,
 \trl{-pc_type} \trl{composite} \findex{composite} \trl{-pc_composite_pcs} \trl{jacobi,ilu}
@@ -4367,28 +4367,29 @@ to guide your development. We give a short summary here.
 \begin{tabbing}
   DMMG        *dmmg;\\
   DA          da;\\
+  Vec         soln;\\
 
   /* Create the DA that stores information about the coarsest grid you wish to use */\\
   ierr = DACreate3d(PETSC\_COMM\_WORLD,DA\_NONPERIODIC,DA\_STENCIL\_STAR,\\
          3,3,3,PETSC\_DECIDE,PETSC\_DECIDE,PETSC\_DECIDE,1,1,0,0,0,\&da);CHKERRQ(ierr);\\
 
-  /* Create the DMMG data structure \\
+  /* Create the DMMG data structure */\\
        - the second argument indicates the number of levels you wish to use and \\
          can be changed with the option -dmmg\_nlevels \\
   ierr = DMMGCreate(PETSC\_COMM\_WORLD,3,PETSC\_NULL,\&dmmg);CHKERRQ(ierr);\\
 
-  /*  Tell the DMMG object to use the da to define the coarsest grid\\
+  /*  Tell the DMMG object to use the da to define the coarsest grid */\\
   ierr = DMMGSetDM(dmmg,(DM)da);\\
 
   /*  Tell the DMMG we are solving a linear problem (hence SLES) and provide the \\
-      callback function to compute the right hand side and matrices for each level\\
-  ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);\\
+      callback function to compute the right hand side and matrices for each level */\\
+  ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);\\
 
   /*  Solve the problem */\\
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);\\
 
   /*  One can access the solution with */\\
-  DMMGGetx(dmmg)\\
+  soln = DMMGGetx(dmmg);\\
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);\\
   ierr = DADestroy(da);CHKERRQ(ierr);\\
@@ -4553,9 +4554,10 @@ or
   MatView(B,PETSC\_VIEWER\_STDOUT\_WORLD);
 \end{tabbing}
 The name of each PETSc variable printed for Matlab may be set with
-\begin{tabbing}
+\begin{tabbing}\sfindex{PetscObjectSetName()}\findex{PetscObjectName()}
 PetscObjectSetName((PetscObject)A,''name'');
 \end{tabbing}
+If no name is specified, the object is given a default name using\trl{PetscObjectName}.
 
 \section{Sending Data to Interactive Running Matlab Session}
 
@@ -4592,7 +4594,7 @@ One creates access to the Matlab engine via
 \begin{tabbing}
   PetscMatlabEngineCreate(MPI\_Comm comm,char *machine,PetscMatlabEngine *e);
 \end{tabbing}
-(\trl{machine} may be \trl{PETSC_NULL}).
+where \trl{machine} is the name of the machine hosting Matlab (\trl{PETSC_NULL} may be used for localhost).
 One can send objects to Matlab via 
 \begin{tabbing}
   PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
@@ -4802,7 +4804,7 @@ given, respectively, below, where \trl{ierr} denotes the error variable:
 
 Fortran programmers
 can check these error codes with
-\trl{CHKERRQ(ierr)}, which terminates all process when an error is
+\trl{CHKERRQ(ierr)}, which terminates all processes when an error is
 encountered.  Likewise, one can set error codes within Fortran programs by
 using \trl{SETERRQ(ierr,p,' ')}, which again terminates all processes
 upon detection of an error.  
@@ -4974,10 +4976,12 @@ indexing.  See Section \ref{sec_matoptions} for further details.
 
 \subsection{Setting Routines}
 
-When a routine is set from within a Fortran program by a routine such
-as KSPSetConvergenceTest(), that routine is assumed to be a
-Fortran routine. Likewise, when a routine is set from within a C
-program, that routine is assumed to be written in C.
+When a function pointer is passed as an argument to a PETSc function, such as
+the test in KSPSetConvergenceTest(), it is assumed that this pointer references
+a routine written in the same language as the PETSc interface function that was
+called. For instance, if KSPSetConvergenceTest() is called from C, the test
+argument is assumed to be a C function. Likewise, if it is called from Fortran,
+the test is assumed to be written in Fortran.
 
 \subsection{Compiling and Linking Fortran Programs}
 \label{sec_fortcompile}
@@ -4988,7 +4992,7 @@ of the Fortran program \trl{ex3.F} with the actions \trl{make} \trl{BOPT=g} \trl
 \trl{make} \trl{runex3}, respectively. The compilation command is restated below:
 \begin{tabbing}
    ex3: ex3.o \\
-   \trl{      -${FLINKER}} -o ex3 ex3.o  \${PETSC\_FORTRAN\_LIB} \${PETSC\_LIB}\\
+   \trl{      -${FLINKER}} -o ex3 ex3.o  \trl{${PETSC_FORTRAN_LIB}} \trl{${PETSC_LIB}}\\
    \trl{       ${RM}} ex3.o
 \end{tabbing}
 Note that the PETSc Fortran interface library, given by 
@@ -5050,7 +5054,7 @@ IBM and the NAG Fortran 90 compiler.
 \label{sec_fortran-examples}
 
 Sample programs that illustrate the PETSc interface for Fortran
-are given in Figures \ref{fig_vec-Fortran} {\em ---} \ref{fig_SNES-Fortran},
+are given in Figures \ref{fig_vec-Fortran} {\em --} \ref{fig_SNES-Fortran},
 corresponding to
 \trl{${PETSC_DIR}/src/vec/examples/tests/ex19.F}, 
 \trl{${PETSC_DIR}/src/vec/examples/tutorials/ex4f.F}, 
@@ -5131,10 +5135,10 @@ Section~\ref{sec_makeflags}.  The profiling options include the following:
      at program's conclusion. These statistics are comprehensive and concise
      and require little overhead; thus, \trl{-log_summary} is intended as
      the primary means of monitoring the performance of PETSc codes.
-\item \trl{-log_info} - Prints verbose information about code to the screen. 
-     This option provides details about algorithms, data structures, etc.
-     Since the overhead of printing such output slows a code, this
-     option should not be used when evaluating a program's performance.
+\item \trl{-log_info [infofile]} - Prints verbose information about code to
+     stdout or an optional file. This option provides details about algorithms,
+     data structures, etc. Since the overhead of printing such output slows a
+     code, this option should not be used when evaluating a program's performance.
 \item \trl{-log_trace [logfile]} - Traces the beginning and ending of all
      PETSc events.  This option, which can be used in conjunction with 
      \trl{-log_info}, is useful to see where a program is hanging
@@ -5231,8 +5235,8 @@ data should be relatively straightforward.
 \label{sec_parperformance}
 
 We next discuss performance summaries for parallel programs,
-\findex{-log_summary} as shown within Figures~\ref{fig_exparprof} and
-~\ref{fig_exparprof2}, which present the combined output generated by
+\findex{-log_summary} as shown within Figures~\ref{fig_exparprof}
+and~\ref{fig_exparprof2}, which present the combined output generated by
 the \trl{-log_summary} option.  The program that generated this data is
 \trl{${PETSC_DIR}/src/sles/examples/ex21.c}.  The code loads a
 matrix and right-hand-side vector from a binary file and then solves
@@ -5405,8 +5409,8 @@ VecScatterEnd()}.
 %matrix-vector products are given in \cite{petsc-mpi-paper}.)
 
 The final data presented are the percentages of the various statistics
-(time (\trl{\%T}), flops/sec (\trl{\%F}), messages(\trl{\%M}), average message length (\trl{\%L}),
-and reductions (\trl{\%R})) for each event relative to the total computation and to any
+(time (\trl{%T}), flops/sec (\trl{%F}), messages(\trl{%M}), average message length (\trl{%L}),
+and reductions (\trl{%R})) for each event relative to the total computation and to any
 user-defined stages (discussed in Section~\ref{sec_profstages}).
 These statistics can aid in optimizing performance, since they indicate the sections of code that
 could benefit from various kinds of tuning.  Chapter~\ref{ch_performance} gives
@@ -5462,8 +5466,8 @@ being developed.
 The user can also log MPI events.  To do this, simply consider the
 PETSc application as any MPI application, and follow the MPI
 implementation's instructions for logging MPI calls. For example, when
-using MPICH, this merely required adding \trl{-llmpi} to the library
-list {\em before} \trl{-lmpi}.
+using MPICH, this merely required adding \trl{-llmpich} to the library
+list {\em before} \trl{-lmpich}.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \section{Profiling Application Codes}
@@ -5643,7 +5647,7 @@ where \trl{obj} is the PETSc object associated most closely with
 the logging statement, \trl{message}.
 For example, in the line search Newton methods, we use a statement such as
 \begin{tabbing}
-   PetscLogInfo(snes,\trl{"Cubically determined step, lambda '%'g\n"},lambda);
+   PetscLogInfo(snes,\trl{"Cubically determined step, lambda %g\n"},lambda);
 \end{tabbing}
 
 One can selectively turn off informative messages about any of the 
@@ -5669,10 +5673,12 @@ PETSc application programmers can access the wall clock time directly
 with the command \sindex{wall clock time}
 \begin{tabbing}
   PetscLogDouble time;\\
-PetscGetTime(\&time);CHKERRQ(ierr);
+  PetscGetTime(\&time);CHKERRQ(ierr);
 \end{tabbing}
 \findex{PetscGetTime()} \sindex{time}
-In addition, as discussed in Section~\ref{sec_profileuser},
+which returns the current time in seconds since the epoch, and is commonly
+implemented with \trl{MPI_Wtime}. A floating point number is returned in order
+to express fractions of a second. In addition, as discussed in Section~\ref{sec_profileuser},
 PETSc can automatically profile user-defined segments of code.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -5681,7 +5687,7 @@ PETSc can automatically profile user-defined segments of code.
 All output from PETSc programs (including informative messages, profiling information,
 and convergence data) can be saved to a file by using the command line
 option \trl{-log_history [filename]}. \findex{-log_history}
-If no file name is specified, the output is stored in the file \trl{$HOME/.petschistory}.
+If no file name is specified, the output is stored in the file \trl{${HOME}/.petschistory}.
 \findex{.petschistory} Note that this option only saves output printed with 
 the PetscPrintf() and PetscFPrintf() commands, not the
 standard \trl{printf()} and \trl{fprintf()} statements. 
@@ -6025,7 +6031,7 @@ Users who wish to employ PETSc routines on only a subset
 of processes within a larger parallel job, or who wish to use a
 ``master'' process to coordinate the work of ``slave'' PETSc
 processes, should specify an alternative communicator for \trl{
-PETSC_COMM_WORLD} by calling \findex{PetscSetCommWorld}
+PETSC_COMM_WORLD} by calling \findex{PetscSetCommWorld()}
 \sindex{communicator}
 \begin{tabbing}
   PetscSetCommWorld(MPI\_Comm comm);
@@ -6200,7 +6206,7 @@ predefined viewers:
 \item To save an object to a file in binary format, the user creates
       the viewer object with the command
       \trl{PetscViewerBinaryOpen(MPI_Comm} \trl{comm,char* file,PetscViewerBinaryType} \trl{type,
-      PetscViewer *viewer)}. \findex{PetscViewerBinaryOpen}  Details of binary
+      PetscViewer *viewer)}. \findex{PetscViewerBinaryOpen()}  Details of binary
       I/O are discussed below.
 \item Vector and matrix objects can be passed to a running Matlab process
       with a viewer created by 
@@ -6225,7 +6231,7 @@ created by PetscViewerASCIIOpen() by calling
 \findex{PETSC_VIEWER_ASCII_IMPL} \findex{PetscViewerSetFormat()}
 Possible formats include 
 \trl{PETSC_VIEWER_ASCII_DEFAULT}, \trl{PETSC_VIEWER_ASCII_MATLAB}, and
-\break \trl{PETSC_VIEWER_ASCII_IMPL}.  The implementation-specific format, 
+\trl{PETSC_VIEWER_ASCII_IMPL}.  The implementation-specific format, 
 \trl{PETSC_VIEWER_ASCII_IMPL}, displays the object in the most natural way
 for a particular implementation.  For example, when viewing a block 
 diagonal matrix that has been created with MatCreateSeqBDiag(),
@@ -6238,7 +6244,7 @@ The routines
   PetscViewerPopFormat(PetscViewer viewer);
 \end{tabbing} 
 allow one to temporarily change the format of a viewer.
-\findex{PetscViewerPushFormat()} \findex{PetscViewerPopFormat}
+\findex{PetscViewerPushFormat()} \findex{PetscViewerPopFormat()}
 
 As discussed above, one can output PETSc objects in binary format by
 first opening a binary viewer with PetscViewerBinaryOpen() and
@@ -6452,7 +6458,7 @@ execute the command
 \end{tabbing}
 Note that the same runtime options must be used for the two programs.
 The first time an inner product or norm detects an inconsistency larger
-than \trl{<tolerance\trl{>}}, PETSc will generate an error. The usual runtime
+than \trl{<tolerance>}, PETSc will generate an error. The usual runtime
 options \trl{-start_in_debugger} and \trl{-on_error_attach_debugger} may 
 be used. \findex{-compare}  The user can also place the commands 
 \begin{tabbing}
@@ -6471,13 +6477,14 @@ PETSc supports the use of complex numbers in application programs
 written in C, C++, and Fortran.  To do so, we employ C++ versions of
 the PETSc libraries in which the basic ``scalar'' datatype, given in
 PETSc codes by \trl{PetscScalar}, is defined as \trl{complex} (or \trl{
-complex\trl{<}double\trl{>}} for machines using templated complex class
+complex<double>} for machines using templated complex class
 libraries).  To work with complex numbers,
 the user should compile the PETSc libraries (including the Fortran
 interface library) and the application code with
 \trl{BOPT=[g_complex,O_complex]} for debugging, optimized,
 and profiling versions, respectively.  The file \trl{${PETSC_DIR}/docs/installation/index.htm}
 provides detailed instructions for installing PETSc.
+
 
 We recommend using optimized Fortran kernels for some key numerical
 routines with complex numbers (such as matrix-vector products, vector
@@ -6489,10 +6496,14 @@ interface.  For example, on rs6000 machines, the base single-node
 performance when using the Fortran kernels is 4-5 times faster than
 the default C++ code.
 
+
 Recall that each variant of the PETSc libraries is stored in a
 different directory, given by
-\break \trl{${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}}, according to the
-architecture and \trl{BOPT} optimization variable.  Thus, the libraries for complex
+\begin{tabbing}
+  \trl{${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}},
+\end{tabbing}
+according to the architecture and \trl{BOPT} optimization variable. Thus, the
+libraries for complex
 numbers are maintained separately from those for real
 numbers.  When using any of the complex numbers versions of PETSc,
 {\em all} vector and matrix elements are treated as complex,
@@ -6867,8 +6878,8 @@ within the makefile.
 {\small
 \begin{verbatim}
    ALL: ex2
-   CFLAGS   = 
-   FFLAGS   = 
+   CFLAGS   =
+   FFLAGS   =
    CPPFLAGS =
    FPPFLAGS =
 
@@ -6950,41 +6961,40 @@ line that includes the files defining all of the macro variables.
 Some additional variables that can be used in the makefile are defined
 as follows:
 \begin{itemize}
-\item \trl{CFLAGS, FFLAGS} - User specified additional options for the C compiler and
+\item[\trl{CFLAGS, FFLAGS}] User specified additional options for the C compiler and
         fortran compiler.
-\item \trl{CPPFLAGS, FPPFLAGS} - User specified additional flags for the C preprocessor
+\item[\trl{CPPFLAGS, FPPFLAGS}] User specified additional flags for the C preprocessor
         and fortran preprocesor.
-\item \trl{CLINKER, FLINKER} - the C and Fortran linkers. 
-\item \trl{RM} - the remove command for deleting files.
-\item \trl{EXAMPLES_1} - examples that will be built with
+\item[\trl{CLINKER, FLINKER}] the C and Fortran linkers. 
+\item[\trl{RM}] the remove command for deleting files.
+\item[\trl{EXAMPLES_1}] examples that will be built with
              \trl{make BOPT=[g,O] examples} (see Section~\ref{sec_common})
-\item \trl{RUNEXAMPLES_1} - examples that will be run with
+\item[\trl{RUNEXAMPLES_1}] examples that will be run with
              \trl{make} \trl{runexamples} (see Section~\ref{sec_common})
-\item \trl{EXAMPLESC} - all C examples that will be checked in/out of RCS
+\item[\trl{EXAMPLESC}] all C examples that will be checked in/out of RCS
              with \trl{make} \trl{ci} and \trl{make} \trl{co} (not generally
              needed by users).
-\item \trl{EXAMPLESF} - all Fortran examples that will be checked in/out of
+\item[\trl{EXAMPLESF}] all Fortran examples that will be checked in/out of
              RCS with \trl{make} \trl{ci} and \trl{make} \trl{co} (not generally
              needed by users).
-\item \trl{PETSC_LIB} - all of the base PETSc libraries.
+\item[\trl{PETSC_LIB}] all of the base PETSc libraries.
              \findex{PETSC_LIB}
-\item \trl{PETSC_FORTRAN_LIB} - the PETSc Fortran interface 
+\item[\trl{PETSC_FORTRAN_LIB}] the PETSc Fortran interface 
              library. \findex{PETSC_FORTRAN_LIB}
 \end{itemize}
 Note that the PETSc example programs are divided into several
 categories, which currently include: 
-\begin{tabbing}
-1234\= EXAMPLESx\= \kill
-\> \trl{EXAMPLES_1 } \> -- basic C suite used in installation tests\\
-\> \trl{EXAMPLES_2 } \> -- additional C suite including graphics\\
-\> \trl{EXAMPLES_3 } \> -- basic Fortran .F suite\\
-\> \trl{EXAMPLES_4 } \> -- subset of 1 and 2 that runs on only a single process\\
-\> \trl{EXAMPLES_5 } \> -- examples that require complex numbers\\
-\> \trl{EXAMPLES_6 } \> -- C examples that do not work with complex numbers\\
-\> \trl{EXAMPLES_8 } \> -- Fortran .F examples that do not work with complex numbers\\
-\> \trl{EXAMPLES_9 } \> -- uniprocess version of 3\\
-\> \trl{EXAMPLES_10 } \> -- Fortran .F examples that require complex numbers\\
-\end{tabbing}
+\begin{itemize}
+\item[\trl{EXAMPLES_1}] basic C suite used in installation tests\\
+\item[\trl{EXAMPLES_2}] additional C suite including graphics\\
+\item[\trl{EXAMPLES_3}] basic Fortran .F suite\\
+\item[\trl{EXAMPLES_4}] subset of 1 and 2 that runs on only a single process\\
+\item[\trl{EXAMPLES_5}] examples that require complex numbers\\
+\item[\trl{EXAMPLES_6}] C examples that do not work with complex numbers\\
+\item[\trl{EXAMPLES_8}] Fortran .F examples that do not work with complex numbers\\
+\item[\trl{EXAMPLES_9}] uniprocess version of 3\\
+\item[\trl{EXAMPLES_10}] Fortran .F examples that require complex numbers\\
+\end{itemize}
 
 We next list in Figure \ref{fig_make3} a makefile that maintains a PETSc 
 library.  Although most users do not need to understand or deal with such
@@ -7052,7 +7062,7 @@ One can extract a (parallel) submatrix from a given (parallel) using
 This extracts the \trl{rows} and \trl{col}umns of the matrix \trl{A} into \trl{B}. If 
 call is  \trl{MAT_INITIAL_MATRIX} \findex{MAT_INITIAL_MATRIX} it will create the matrix
 \trl{B}. If call is \trl{MAT_REUSE_MATRIX} \findex{MAT_REUSE_MATRIX} it will reuse the \trl{B}
-created with a previous call. \findex{MatGetSubMatrix} The argument \trl{csize} is ignored 
+created with a previous call. \findex{MatGetSubMatrix()} The argument \trl{csize} is ignored 
 on sequential matrices, for parallel matrices it determines the ``local columns'' if the matrix
 format supports this concept. Often one can use the default by passing in PETSC\_DECIDE.
 To create a \trl{B} matrix that may be multiplied with a vector \trl{x} one can use
@@ -7201,7 +7211,7 @@ the diagonal are smaller than \trl{tol} in a absolute value. If small
 values are detected and corrected for, a nonsymmetric
 permutation of the rows and columns will result. This is not guaranteed to work, 
 but may help if one was simply unlucky in the original ordering.
-\findex{MatReorderForNonzeroDiagonal} When using the SLES solver interface
+\findex{MatReorderForNonzeroDiagonal()} When using the SLES solver interface
 the options \trl{-pc_ilu_nonzeros_along_diagonal <tol>} \findex{-pc_ilu_nonzeros_along_diagonal}
 and \findex{-pc_lu_nonzeros_along_diagonal}
 \trl{-pc_lu_nonzeros_along_diagonal <tol>} may be used.  Here, \trl{tol}
