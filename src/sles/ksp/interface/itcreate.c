@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.162 1999/05/04 20:34:35 balay Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.163 1999/05/08 16:58:15 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -332,6 +332,7 @@ int KSPRegisterDestroy(void)
 int KSPGetType(KSP ksp,KSPType *type)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   *type = ksp->type_name;
   PetscFunctionReturn(0);
 }
