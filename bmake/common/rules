@@ -572,21 +572,23 @@ html:
 	-@cat /home/MPI/www/www.index >> /tmp/tmpmap
 	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
-          for i in ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ; do\
-            iroot=`echo $$i | sed -e s?[a-z.]*/??g`;\
-            IROOT=`echo $${i} | sed -e s?[.][.]??g` ;\
-            if [ "$${IROOT}" != "$${i}" ] ; then \
-              IROOT=".."; \
-            else \
-              IROOT=$${ROOT};\
-            fi;\
-            ${RM} $${loc}/$$i.html; \
-            echo "<center><a href=\"$${iroot}\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
-            grep -v __FUNCT__ $$i | sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  \
-            -e "s/ierr = //g"   | /home/gropp/bin/linux/c2html -n  | ${PETSC_DIR}/maint/fixinclude $$i $${ROOT} | \
-            grep -v PetscValid | grep -v PetscFunctionBegin | grep -v PetscCheck | grep -v "int ierr;" |\
-            grep -v '#if !defined(__' | grep -v '#define __' | \
-            /home/gropp/bin/linux/mapnames -map /tmp/tmpmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
+          for i in ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} foo ; do\
+	    if [ -f $$i ]; then \
+              iroot=`echo $$i | sed -e s?[a-z.]*/??g`;\
+              IROOT=`echo $${i} | sed -e s?[.][.]??g` ;\
+              if [ "$${IROOT}" != "$${i}" ] ; then \
+                IROOT=".."; \
+              else \
+                IROOT=$${ROOT};\
+              fi;\
+              ${RM} $${loc}/$$i.html; \
+              echo "<center><a href=\"$${iroot}\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
+              grep -v __FUNCT__ $$i | sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  \
+              -e "s/ierr = //g"   | /home/gropp/bin/linux/c2html -n  | ${PETSC_DIR}/maint/fixinclude $$i $${ROOT} | \
+              grep -v PetscValid | grep -v PetscFunctionBegin | grep -v PetscCheck | grep -v "int ierr;" |\
+              grep -v '#if !defined(__' | grep -v '#define __' | \
+              /home/gropp/bin/linux/mapnames -map /tmp/tmpmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
+	    fi; \
          done
 	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`; ${RM} $${loc}/index.html; \
@@ -594,17 +596,23 @@ html:
           echo "<p>" >> $${loc}/index.html
 	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;\
             if [ "${EXAMPLESC}" != "" ] ; then \
-               for file in ${EXAMPLESC}; do \
-                 cmess=`grep "static char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
-                 echo "<a href=\"$${file}.html\">$${file}: $${cmess}</a><br>" >> $${loc}/index.html;\
+               for file in ${EXAMPLESC} foo ; do \
+		if [ -f $$file ]; then \
+                   cmess=`grep "static char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
+                   echo "<a href=\"$${file}.html\">$${file}: $${cmess}</a><br>" >> $${loc}/index.html;\
+		fi; \
                done ;\
             else \
-               for file in ${DIRS}; do \
-                 echo "<a href=\"$${file}/\">$${file}/</a><br>" >> $${loc}/index.html; \
+               for file in ${DIRS} foo; do \
+		 if [ -d $$file ]; then \
+                   echo "<a href=\"$${file}/\">$${file}/</a><br>" >> $${loc}/index.html; \
+		 fi; \
                done; \
                echo " " >> $${loc}/index.html; \
-               for file in ${SOURCEH} ${SOURCEC} ${SOURCEF}; do \
-                 echo "<a href=\"$${file}.html\">$${file}</a><br>" >> $${loc}/index.html; \
+               for file in ${SOURCEH} ${SOURCEC} ${SOURCEF} foo ; do \
+		 if [ -f $$file ]; then \
+                   echo "<a href=\"$${file}.html\">$${file}</a><br>" >> $${loc}/index.html; \
+		 fi; \
                done; \
             fi ;\
             echo " " >> $${loc}/index.html; \

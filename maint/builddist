@@ -47,7 +47,7 @@ bk -r co -q
 cd $PETSC_DIR
 make allfortranstubs
 make configure
-make allmanualpages LOC=${PETSC_DIR}
+make allmanualpages allhtml LOC=${PETSC_DIR}
 make ACTION=clean tree
 
 # now tar up the PETSc tree
