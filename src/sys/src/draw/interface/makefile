@@ -1,8 +1,7 @@
-# $Id: makefile,v 1.28 1998/04/23 23:28:55 balay Exp balay $ 
+# $Id: makefile,v 1.29 1998/06/12 21:04:12 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = 
 SOURCEC  = draw.c dline.c dlinew.c dlinegw.c dtext.c dtextv.c dtexts.c \
            dtextgs.c dpoint.c dpoints.c dviewp.c dcoor.c dpause.c dgpause.c \
            dgcoor.c dbuff.c dsetpause.c dflush.c dsflush.c dclear.c \
