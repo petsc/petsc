@@ -1,13 +1,11 @@
-/* $Id: dvec2.c,v 1.24 1996/01/22 03:05:58 curfman Exp curfman $ */
+/* $Id: dvec2.c,v 1.25 1996/01/22 18:58:44 bsmith Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
   sequential and parallel vectors.
 */
 #include "inline/dot.h"
-#include "inline/vmult.h"
 #include "inline/setval.h"
-#include "inline/copy.h"
 #include "inline/axpy.h"
 #include "vecimpl.h"             
 #include "dvecimpl.h"   

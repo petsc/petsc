@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.25 1995/11/23 04:29:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.26 1995/11/27 22:24:55 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -9,13 +9,6 @@ static char vcid[] = "$Id: axis.c,v 1.25 1995/11/23 04:29:00 bsmith Exp bsmith $
 #include "draw.h"              /*I "draw.h" I*/
 #include <math.h>
 #include "pinclude/petscfix.h"
-
-#if defined(PARCH_alpha) && defined(__cplusplus)
-extern "C" {
-extern double   rint(double);
-}
-#endif
-
 
 struct _DrawAxis {
     PETSCHEADER
@@ -38,13 +31,11 @@ static char   *XiADefLabel(double,double);
 static double XiAGetNice(double,double,int );
 static int    XiAGetBase(double,double,int,double*,int*);
 
-#if defined(PARCH_cray) || defined(PARCH_t3d)
-static double rint(double x )
+static double PetscRint(double x )
 {
   if (x > 0) return floor( x + 0.5 );
   return floor( x - 0.5 );
 }
-#endif
 
 /*@C
    DrawAxisCreate - Generate the axis data structure.
@@ -311,7 +302,7 @@ static char *XiADefLabel(double val,double sep )
 	if (val < 0) w ++;
     }
 
-    if (rint(val) == val) {
+    if (PetscRint(val) == val) {
 	if (w > 0) sprintf( fmat, "%%%dd", w );
 	else PetscStrcpy( fmat, "%d" );
 	sprintf( buf, fmat, (int)val );

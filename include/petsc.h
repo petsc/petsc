@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.91 1996/01/24 15:40:21 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.92 1996/01/24 15:40:36 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -31,10 +31,10 @@ extern void fscanf(FILE *,char *,...);
 #define hypot(a,b) (double) sqrt((a)*(a)+(b)*(b)) 
 #endif
 #include <complex.h>
-#define PETSCREAL(a) real(a)
+#define PetscReal(a) real(a)
 #define Scalar       complex
 #else
-#define PETSCREAL(a) a
+#define PetscReal(a) a
 #define Scalar       double
 #endif
 
@@ -153,16 +153,6 @@ extern int PetscPopSignalHandler();
 #define FP_TRAP_ALWAYS 2
 extern int PetscSetFPTrap(int);
 
-/*
-   Definitions used for the Fortran interface:
-   FORTRANCAPS:       Names are uppercase, no trailing underscore
-   FORTRANUNDERSCORE: Names are lowercase, trailing underscore
- */    
-#if defined(PARCH_cray) || defined(PARCH_NCUBE) || defined(PARCH_t3d)
-#define FORTRANCAPS
-#elif !defined(PARCH_rs6000) && !defined(PARCH_NeXT) && !defined(PARCH_hpux)
-#define FORTRANUNDERSCORE
-#endif
 
 #include "phead.h"
 #include "plog.h"

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.40 1996/01/12 22:31:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.41 1996/01/23 00:18:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -148,7 +148,7 @@ static int PCView_Eisenstat(PetscObject obj,Viewer viewer)
   PC_Eisenstat  *eis = ( PC_Eisenstat  *) pc->data; 
   int           ierr;
 
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   MPIU_fprintf(pc->comm,fd,"    Eisenstat: omega = %g\n",eis->omega);
   return 0;
 }

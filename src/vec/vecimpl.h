@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.22 1996/01/22 01:13:36 curfman Exp curfman $ */
+/* $Id: vecimpl.h,v 1.23 1996/01/22 03:05:49 curfman Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -45,16 +45,21 @@ struct _Vec {
   void          *data;                   /* implementation-specific data */
 };
 
+typedef enum { VEC_SCATTER_GENERAL, VEC_SCATTER_STRIDE, VEC_SCATTER_MPI,
+               VEC_SCATTER_MPITOALL} VecScatterType;
+
 /* 
    These scatters are for the purely local case.
 */
 
 typedef struct {
-  int n, *slots;             /* number of components and their locations */
+  VecScatterType type;
+  int            n, *slots;             /* number of components and their locations */
 } VecScatter_General;
 
 typedef struct {
-  int n, first, step;           
+  VecScatterType type;
+  int             n, first, step;           
 } VecScatter_Stride;
 
 /*
@@ -62,25 +67,27 @@ typedef struct {
 */
 
 typedef struct {
-  int    *count;              /* elements of vector on each processor */
-  Scalar *work, *work2;        
+  VecScatterType type;
+  int            *count;              /* elements of vector on each processor */
+  Scalar         *work, *work2;        
 } VecScatter_MPIToAll;
 
 /*
    This is the parallel scatter
 */
 typedef struct { 
-  int                n;         /* number of processors to send/receive */
-  int                nbelow;    /* number with lower process id */
-  int                nself;     /* number sending to self */
-  int                *starts;   /* starting point in indices and values for each proc */ 
-  int                *indices;  /* list of all components sent or received */
-  int                *procs;    /* processors we are communicating with in scatter */
+  VecScatterType     type;
+  int                n;        /* number of processors to send/receive */
+  int                nbelow;   /* number with lower process id */
+  int                nself;    /* number sending to self */
+  int                *starts;  /* starting point in indices and values for each proc*/ 
+  int                *indices; /* list of all components sent or received */
+  int                *procs;   /* processors we are communicating with in scatter */
   MPI_Request        *requests;
-  Scalar             *values;   /* buffer for all sends or receives */
-                                /* note that we pack/unpack ourselves;
+  Scalar             *values;  /* buffer for all sends or receives */
+                               /* note that we pack/unpack ourselves;
                                    we do not use MPI packing */
-  VecScatter_General local;     /* any part that happens to be local */
+  VecScatter_General local;    /* any part that happens to be local */
   MPI_Status         *sstatus;
 } VecScatter_MPI;
 

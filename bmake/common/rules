@@ -234,7 +234,8 @@ lint:
 fortranstubs:
 	@-/home/bsmith/bin/sun4/bfort -dir /home/bsmith/petsc/src/fortran/auto \
 	  -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr -ptrprefix MPIR_\
-	  -ptr64 HAVE_64BITS $(SOURCEC)
+	  -ptr64 HAVE_64BITS -fcaps HAVE_FORTRAN_CAPS \
+          -fuscore HAVE_FORTRAN_UNDERSCORE $(SOURCEC)
 
 
 # Builds man pages (xman version)

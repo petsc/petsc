@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.23 1995/12/21 18:31:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.24 1996/01/23 00:18:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -50,6 +50,8 @@ static int MatGetSize_Shell(Mat mat,int *m,int *n)
 static int MatMult_Shell(Mat mat,Vec x,Vec y)
 {
   Mat_Shell *shell = (Mat_Shell *) mat->data;
+  if (!shell->mult) SETERRQ(1,"MatMult_Shell:You have not provided a multiply for\
+ your shell matrix");
   return (*shell->mult)(shell->ctx,x,y);
 }
 
@@ -123,10 +125,12 @@ int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 
   PetscHeaderCreate(newmat,_Mat,MAT_COOKIE,MATSHELL,comm);
   PLogObjectCreate(newmat);
-  *mat           = newmat;
-  newmat->factor = 0;
-  newmat->destroy= MatDestroy_Shell;
+  *mat              = newmat;
+  newmat->factor    = 0;
+  newmat->destroy   = MatDestroy_Shell;
+  newmat->assembled = PETSC_TRUE;
   PetscMemcpy(&newmat->ops,&MatOps,sizeof(struct _MatOps));
+
   shell          = PetscNew(Mat_Shell); CHKPTRQ(shell);
   PetscMemzero(shell,sizeof(Mat_Shell));
   newmat->data   = (void *) shell;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.23 1995/11/01 23:21:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.24 1995/11/09 22:33:14 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -29,7 +29,7 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
 
   if (vobj->cookie == VIEWER_COOKIE) {
     FILE *fd;
-    ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
     if (vobj->type == ASCII_FILE_VIEWER) {
       MPIU_Seq_begin(da->comm,1);
       fprintf(fd,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
@@ -114,7 +114,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 {
   int           rank, size,xs,xe,x,Xs,Xe,ierr,start,end,m;
-  int           i,*idx,nn;
+  int           i,*idx,nn,j,count,left;
   DA            da;
   Vec           local,global;
   VecScatter    ltog,gtol;
@@ -192,7 +192,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
     
     for (i=0; i<s; i++) { /* Right ghost points */
       if ((xe+i)<M*w) { idx [nn++] =  xe+i; }
-      else              { idx [nn++] = (xe+i) - M*w;}
+      else            { idx [nn++] = (xe+i) - M*w;}
     }
   }
 
@@ -231,6 +231,23 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   da->view   = DAView_1d;
   da->wrap   = wrap;
   da->stencil_type = DA_STENCIL_STAR;
+
+  /* construct the local to local scatter context */
+  /* 
+      We simply remap the values in the from part of 
+    global to local to read from an array with the ghost values 
+    rather then from the plan array.
+  */
+  ierr = VecScatterCopy(gtol,&da->ltol); CHKERRQ(ierr);
+  left  = xs - Xs;
+  idx = (int *) PetscMalloc( x*sizeof(int) ); CHKPTRQ(idx);
+  count = 0;
+  for ( j=0; j<x; j++ ) {
+    idx[count++] = left + j;
+  }  
+  ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
+  PetscFree(idx);
+
   *inra = da;
   return 0;
 }

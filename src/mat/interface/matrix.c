@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.131 1996/01/24 05:45:43 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.132 1996/01/24 20:29:57 curfman Exp bsmith $";
 #endif
 
 /*
@@ -158,9 +158,9 @@ $      matrix structure
 @*/
 int MatView(Mat mat,Viewer ptr)
 {
-  int format, ierr, rows, cols,nz, nzalloc, mem;
-  FILE *fd;
-  char *cstring;
+  int          format, ierr, rows, cols,nz, nzalloc, mem;
+  FILE         *fd;
+  char         *cstring;
   PetscObject  vobj = (PetscObject) ptr;
 
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
@@ -170,7 +170,7 @@ int MatView(Mat mat,Viewer ptr)
     ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
   ierr = ViewerFileGetFormat_Private(ptr,&format); CHKERRQ(ierr);
-  ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
   if (vobj->cookie == VIEWER_COOKIE && 
       (format == FILE_FORMAT_INFO || format == FILE_FORMAT_INFO_DETAILED) &&
       (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER)) {
@@ -245,6 +245,13 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+
+  if (mat->assembled) {
+    mat->was_assembled = PETSC_TRUE; 
+    mat->assembled     = PETSC_FALSE;
+    mat->same_nonzero  = PETSC_TRUE;
+  } 
+
   PLogEventBegin(MAT_SetValues,mat,0,0,0);
   ierr = (*mat->ops.setvalues)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   PLogEventEnd(MAT_SetValues,mat,0,0,0);  
@@ -1314,7 +1321,6 @@ int MatZeroEntries(Mat mat)
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!mat->ops.zeroentries) SETERRQ(PETSC_ERR_SUP,"MatZeroEntries");
-  if (!mat->assembled) SETERRQ(1,"MatZeroEntries:Not for unassembled matrix");
 
   PLogEventBegin(MAT_ZeroEntries,mat,0,0,0);
   ierr = (*mat->ops.zeroentries)(mat); CHKERRQ(ierr);

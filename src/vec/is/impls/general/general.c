@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.38 1995/11/02 04:05:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.39 1996/01/23 00:17:27 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -62,7 +62,7 @@ static int ISView_General(PetscObject obj, Viewer viewer)
   }
   if (vobj->cookie == VIEWER_COOKIE) {
     if ((vobj->type == ASCII_FILE_VIEWER) || (vobj->type == ASCII_FILES_VIEWER)) {
-      ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+      ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
       if (is->isperm) {
         fprintf(fd,"Index set is permutation\n");
       }

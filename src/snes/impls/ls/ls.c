@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.57 1996/01/23 00:19:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.58 1996/01/23 18:31:05 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -493,7 +493,7 @@ static int SNESView_LS(PetscObject obj,Viewer viewer)
   char    *cstring;
   int     ierr;
 
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   if (ls->LineSearch == SNESNoLineSearch) cstring = "SNESNoLineSearch";
   else if (ls->LineSearch == SNESQuadraticLineSearch) cstring = "SNESQuadraticLineSearch";
   else if (ls->LineSearch == SNESCubicLineSearch) cstring = "SNESCubicLineSearch";

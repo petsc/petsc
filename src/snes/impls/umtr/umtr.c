@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.28 1996/01/12 23:02:53 balay Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.29 1996/01/23 00:20:06 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -322,7 +322,7 @@ static int SNESView_UMTR(PetscObject obj,Viewer viewer)
   FILE      *fd;
   int       ierr;
 
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   MPIU_fprintf(snes->comm,fd,"    eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",
     tr->eta1,tr->eta2,tr->eta3,tr->eta4);
   MPIU_fprintf(snes->comm,fd,"    delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);

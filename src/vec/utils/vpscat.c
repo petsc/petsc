@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.39 1995/12/31 21:09:48 curfman Exp curfman $";
+static char vcid[] = "$Id: vpscat.c,v 1.40 1996/01/04 15:56:55 curfman Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -27,7 +27,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   if (vobj->type != ASCII_FILE_VIEWER && vobj->type != ASCII_FILES_VIEWER) return 0;
 
   MPI_Comm_rank(ctx->comm,&rank);
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   MPIU_Seq_begin(ctx->comm,1);
   fprintf(fd,"[%d] Number sends %d below %d self %d\n",rank,to->n,to->nbelow,to->nself);
   for ( i=0; i<to->n; i++ ){
@@ -118,6 +118,17 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
       }
       MPI_Isend((void*)val,iend, MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
+    /* take care of local scatters */
+    if (gen_to->local.n && addv == INSERT_VALUES) {
+      int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
+      int n = gen_to->local.n;
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[tslots[i]];}
+    }
+    else if (gen_to->local.n) {
+      int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
+      int n = gen_to->local.n;
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[tslots[i]];}
+    }
   }
   else if (mode == SCATTER_UP) {
     if (gen_to->nself || gen_from->nself) 
@@ -157,17 +168,6 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
       MPI_Isend((void*)val,sstarts[i+1] - sstarts[i],
                  MPIU_SCALAR,sprocs[i],tag,comm,swaits+i-gen_to->nbelow);
     }
-  }
-  /* take care of local scatters */
-  if (mode == SCATTER_ALL && addv == INSERT_VALUES) {
-    int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
-    int n = gen_to->local.n;
-    for ( i=0; i<n; i++ ) {yv[tslots[i]] = xv[fslots[i]];}
-  }
-  else if (mode == SCATTER_ALL) {
-    int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
-    int n = gen_to->local.n;
-    for ( i=0; i<n; i++ ) {yv[tslots[i]] += xv[fslots[i]];}
   }
   return 0;
 }
@@ -315,6 +315,8 @@ static int PtoPCopy(VecScatter in,VecScatter out)
   out_to->n        = in_to->n; 
   out_to->nbelow   = in_to->nbelow;
   out_to->nself    = in_to->nself;
+  out_to->type     = in_to->type;
+
   out_to->values   = (Scalar *) PetscMalloc( len ); CHKPTRQ(out_to->values);
   PLogObjectMemory(out,len); 
   out_to->requests = (MPI_Request *) (out_to->values + ny);
@@ -338,6 +340,7 @@ static int PtoPCopy(VecScatter in,VecScatter out)
 
   /* allocate entire receive context */
   out_from           = (VecScatter_MPI *) PetscMalloc(sizeof(VecScatter_MPI));CHKPTRQ(out_from);
+  out_from->type     = in_from->type;
   PLogObjectMemory(out,sizeof(VecScatter_MPI));
   ny                 = in_from->starts[in_from->n];
   len                = ny*(sizeof(int) + sizeof(Scalar)) +
@@ -521,6 +524,7 @@ int PtoSScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter ctx
   MPI_Comm       comm = xin->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
+  
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
@@ -687,21 +691,23 @@ int PtoSScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter ctx
     /* we have a scatter to ourselves */
     from->local.n = to->local.n = nt = nprocslocal;    
     from->local.slots = (int *) PetscMalloc(nt*sizeof(int));CHKPTRQ(from->local.slots);
-    to->local.slots = (int *) PetscMalloc(nt*sizeof(int));CHKPTRQ(to->local.slots);
+    to->local.slots   = (int *) PetscMalloc(nt*sizeof(int));CHKPTRQ(to->local.slots);
     PLogObjectMemory(ctx,2*nt*sizeof(int));
     nt = 0;
     for ( i=0; i<nx; i++ ) {
       idx = inidx[i];
       if (idx >= owners[rank] && idx < owners[rank+1]) {
-        from->local.slots[nt] = idx - owners[rank];        
-        to->local.slots[nt++] = inidy[i];        
+        to->local.slots[nt] = idx - owners[rank];        
+        from->local.slots[nt++] = inidy[i];        
       }
     }
   }
   else { 
     from->local.n = 0; from->local.slots = 0;
-    to->local.n   = 0; to->local.slots = 0;
+    to->local.n   = 0; to->local.slots   = 0;
   } 
+
+  to->type = VEC_SCATTER_MPI; from->type = VEC_SCATTER_MPI;
 
   ctx->destroy        = PtoPScatterDestroy;
   ctx->scatterbegin   = PtoPScatterbegin;
@@ -887,8 +893,8 @@ int StoPScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter ctx
     for ( i=0; i<ny; i++ ) {
       idx = inidy[i];
       if (idx >= owners[rank] && idx < owners[rank+1]) {
-        to->local.slots[nt] = idx - owners[rank];        
-        from->local.slots[nt++] = inidx[i];        
+        from->local.slots[nt] = idx - owners[rank];        
+        to->local.slots[nt++] = inidx[i];        
       }
     }
   }
@@ -896,6 +902,8 @@ int StoPScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter ctx
     from->local.n = 0; from->local.slots = 0;
     to->local.n = 0; to->local.slots = 0;
   }
+
+  to->type = VEC_SCATTER_MPI; from->type = VEC_SCATTER_MPI;
 
   ctx->destroy           = PtoPScatterDestroy;
   ctx->scatterbegin      = PtoPScatterbegin;

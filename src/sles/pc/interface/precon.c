@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.66 1996/01/15 21:55:07 balay Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.67 1996/01/24 17:10:07 curfman Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -554,15 +554,17 @@ int PCView(PC pc,Viewer viewer)
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if ((vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) &&
      vobj->cookie == VIEWER_COOKIE) {
-    ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = ViewerFileGetFormat_Private(viewer,&fmt); CHKERRQ(ierr);
     MPIU_fprintf(pc->comm,fd,"PC Object:\n");
     PCGetType(pc,PETSC_NULL,&cstring);
     MPIU_fprintf(pc->comm,fd,"  method: %s\n",cstring);
     if (pc->view) (*pc->view)((PetscObject)pc,viewer);
     PetscObjectExists((PetscObject)pc->mat,&mat_exists);
-    ViewerFileSetFormat(viewer,FILE_FORMAT_INFO,0);
     if (mat_exists) {
+      int viewer_format;
+      ierr = ViewerFileGetFormat_Private(viewer,&viewer_format);
+      ViewerFileSetFormat(viewer,FILE_FORMAT_INFO,0);
       if (pc->pmat == pc->mat) {
         MPIU_fprintf(pc->comm,fd,"  linear system matrix = precond matrix:\n");
         ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
@@ -575,6 +577,7 @@ int PCView(PC pc,Viewer viewer)
           ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
         }
       }
+      ViewerFileSetFormat(viewer,viewer_format,0);
     }
   }
   return 0;

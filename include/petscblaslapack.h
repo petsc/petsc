@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.12 1995/10/12 14:02:34 curfman Exp curfman $ */
+/* $Id: plapack.h,v 1.13 1995/10/12 23:22:46 curfman Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -20,7 +20,7 @@ Cray T3D.  Yet another reason to hate ...
 
 /* t3d doesn't have lower level SGETF2 in library, so use SGETRF instead */
 #if !defined(PETSC_COMPLEX)
-#if defined(PARCH_cray) || defined(PARCH_t3d)
+#if defined(PARCH_t3d)
 #define LAgeqrf_ SGEQRF
 #define LAgetrf_ SGETRF
 #define LAgetf2_ SGETRF
@@ -31,7 +31,7 @@ Cray T3D.  Yet another reason to hate ...
 #define BLswap_  SSWAP
 #define BLaxpy_  SAXPY
 #define BLasum_  SASUM
-#elif defined(FORTRANCAPS)
+#elif defined(HAVE_FORTRAN_CAPS)
 #define LAgeqrf_ DGEQRF
 #define LAgetrf_ DGETRF
 #define LAgetf2_ DGETF2
@@ -42,7 +42,7 @@ Cray T3D.  Yet another reason to hate ...
 #define BLswap_  DSWAP
 #define BLaxpy_  DAXPY
 #define BLasum_  DASUM
-#elif !defined(FORTRANUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define LAgeqrf_ dgeqrf
 #define LAgetrf_ dgetrf
 #define LAgetf2_ dgetf2
@@ -90,7 +90,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgemv_  SGEMV
 #define LAtrmv_  STRMV
 #define LAtrsl_  STRSL
-#elif defined(FORTRANCAPS)
+#elif defined(HAVE_FORTRAN_CAPS)
 #define LAormqr_ DORMQR
 #define LAtrtrs_ DTRTRS
 #define LApotrf_ DPOTRF
@@ -99,7 +99,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgetrs_ DGETRS
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
-#elif !defined(FORTRANUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define LAormqr_ dormqr
 #define LAtrtrs_ dtrtrs
 #define LApotrf_ dpotrf
@@ -132,7 +132,7 @@ Cray T3D.  Yet another reason to hate ...
 #define BLasum_  SCASUM
 #define LAgetrf_ CGETRF
 #define LAgetf2_ CGETRF
-#elif defined(FORTRANCAPS)
+#elif defined(HAVE_FORTRAN_CAPS)
 #define LAgeqrf_ ZGEQRF
 #define BLdot_   ZDOTC
 #define BLnrm2_  DZNRM2
@@ -141,7 +141,7 @@ Cray T3D.  Yet another reason to hate ...
 #define BLswap_  ZSWAP
 #define BLaxpy_  ZAXPY
 #define BLasum_  DZASUM
-#elif !defined(FORTRANUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define LAgeqrf_ zgeqrf
 #define LAgetrf_ zgetrf
 #define LAgetf2_ zgetf2
@@ -186,7 +186,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgemv_  CGEMV
 #define LAtrmv_  CTRMV
 #define LAtrsl_  CTRSL
-#elif defined(FORTRANCAPS)
+#elif defined(HAVE_FORTRAN_CAPS)
 #define LAtrtrs_ ZTRTRS
 #define LApotrf_ ZPOTRF
 #define LApotrs_ ZPOTRS
@@ -196,7 +196,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgetrs_ ZGETRS
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
-#elif !defined(FORTRANUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define LAtrtrs_ ztrtrs
 #define LApotrf_ zpotrf
 #define LApotrs_ zpotrs

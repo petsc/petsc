@@ -1,13 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.84 1996/01/12 22:31:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.85 1996/01/24 05:46:19 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
 
 #include "bdiag.h"
 #include "vec/vecimpl.h"
-#include "inline/spops.h"
-
+y
 static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
                                  Scalar *v,InsertMode is)
 {
@@ -119,7 +118,7 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
             dfound = 1;
 	    if (ldiag > 0) /* lower triangle */
 	      loc = shift - ldiag*nb*nb;
-             else
+            else
 	      loc = shift;
 	    if ((valpt = &((a->diagv[k])[loc + (in[j]%nb)*nb ]))) {
 	      if (is == ADD_VALUES) *valpt += value;
@@ -136,7 +135,7 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
             if (a->user_alloc && real(value) || imag(value)) {
 #endif
               PLogInfo((PetscObject)A,
-                "MatSetValues_SeqBDiag: Nonzero in diagonal %d that user did not allocate\n",ldiag);
+                "MatSetValues_SeqBDiag:Nonzero in diagonal %d that user did not allocate\n",ldiag);
             }
           } else {
             PLogInfo((PetscObject)A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
@@ -355,6 +354,7 @@ static int MatMultTrans_SeqBDiag_base(Mat A,Vec xx,Vec yy)
   }
   return 0;
 }
+
 static int MatMult_SeqBDiag(Mat A,Vec xx,Vec yy)
 {
   Scalar zero = 0.0;
@@ -362,6 +362,7 @@ static int MatMult_SeqBDiag(Mat A,Vec xx,Vec yy)
   ierr = VecSet(&zero,yy); CHKERRQ(ierr);
   return MatMult_SeqBDiag_base(A,xx,yy);
 }
+
 static int MatMultTrans_SeqBDiag(Mat A,Vec xx,Vec yy)
 {
   Scalar zero = 0.0;
@@ -369,12 +370,14 @@ static int MatMultTrans_SeqBDiag(Mat A,Vec xx,Vec yy)
   ierr = VecSet(&zero,yy); CHKERRQ(ierr);
   return MatMultTrans_SeqBDiag_base(A,xx,yy);
 }
+
 static int MatMultAdd_SeqBDiag(Mat A,Vec xx,Vec zz,Vec yy)
 {
   int ierr;
   ierr = VecCopy(zz,yy); CHKERRQ(ierr);
   return MatMult_SeqBDiag_base(A,xx,yy);
 }
+
 static int MatMultTransAdd_SeqBDiag(Mat A,Vec xx,Vec zz,Vec yy)
 {
   int ierr;
@@ -989,7 +992,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
   int          format, nz, nzalloc, mem, iprint;
   Scalar       *val, *dv, zero = 0.0;
 
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);
   if (format == FILE_FORMAT_INFO) {
@@ -1145,9 +1148,9 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
 {
   Mat_SeqBDiag  *a = (Mat_SeqBDiag *) A->data;
-  Draw draw = (Draw) viewer;
-  double  xl, yl, xr, yr, w, h;
-  int     ierr, nz, *col, i, j, nr = a->m;
+  Draw          draw = (Draw) viewer;
+  double        xl, yl, xr, yr, w, h;
+  int           ierr, nz, *col, i, j, nr = a->m;
 
   xr = a->n; yr = a->m; h = yr/10.0; w = xr/10.0;
   xr += w; yr += h; xl = -w; yl = -h;
@@ -1288,9 +1291,10 @@ static int MatGetDiagonal_SeqBDiag(Mat A,Vec v)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, j, n, ibase, nb = a->nb, iloc;
   Scalar       *x, *dd;
+
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
-  if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Nonconforming matrix and vector");
-  if (a->mainbd == -1) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Main diagonal is not set");
+  if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Nonconforming mat and vec");
+  if (a->mainbd == -1) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Main diagonal not set");
   dd = a->diagv[a->mainbd];
   if (a->nb == 1) {
     for (i=0; i<a->m; i++) x[i] = dd[i];
@@ -1326,7 +1330,7 @@ static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
   for ( i=0; i<N; i++ ) {
-    if (rows[i] < 0 || rows[i] > m) SETERRQ(1,"MatZeroRows_SeqBDiag:row out of range");
+    if (rows[i]<0 || rows[i]>m) SETERRQ(1,"MatZeroRows_SeqBDiag:row out of range");
     ierr = MatGetRow(A,rows[i],&nz,&col,&val); CHKERRQ(ierr);
     PetscMemzero(val,nz*sizeof(Scalar));
     ierr = MatSetValues(A,1,&rows[i],nz,col,val,INSERT_VALUES); CHKERRQ(ierr);

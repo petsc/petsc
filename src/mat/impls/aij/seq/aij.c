@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.138 1996/01/20 04:27:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.139 1996/01/24 05:45:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -45,7 +45,7 @@ static int MatGetReordering_SeqAIJ(Mat A,MatOrdering type,IS *rperm, IS *cperm)
   return 0; 
 }
 
-#define CHUNKSIZE   10
+#define CHUNKSIZE   15
 
 /* This version has row oriented v  */
 static int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
@@ -217,7 +217,7 @@ static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
   FILE        *fd;
   char        *outputname;
 
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerFileGetFormat_Private(viewer,&format);
   if (format == FILE_FORMAT_INFO) {

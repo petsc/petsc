@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.32 1996/01/09 03:30:26 curfman Exp curfman $";
+static char vcid[] = "$Id: rich.c,v 1.33 1996/01/09 14:31:38 curfman Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -125,7 +125,7 @@ static int KSPView_Richardson(PetscObject obj,Viewer viewer)
   FILE           *fd;
   int            ierr;
 
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
 
   MPIU_fprintf(itP->comm,fd,"    Richardson: damping factor=%g\n",richardsonP->scale);
   return 0;

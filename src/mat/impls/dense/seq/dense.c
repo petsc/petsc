@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.87 1996/01/12 22:06:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.88 1996/01/23 00:18:45 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -365,6 +365,7 @@ static int MatConvertSameType_SeqDense(Mat A,Mat *newmat,int cpvalues)
   if (cpvalues == COPY_VALUES) {
     PetscMemcpy(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
   }
+  newi->assembled = PETSC_TRUE;
   *newmat = newi;
   return 0;
 }
@@ -427,7 +428,7 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
   char         *outputname;
   Scalar       *v;
 
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerFileGetFormat_Private(viewer,&format);
   if (format == FILE_FORMAT_INFO) {

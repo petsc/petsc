@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.54 1995/12/29 17:28:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.55 1996/01/24 05:45:53 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
-#include "inline/spops.h"
 /*
     Factorization code for AIJ format. 
 */
@@ -18,7 +17,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
  
   if (n != a->n) SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ:Must be square");
   if (!isrow) SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ:Must have row permutation");
-  if (!iscol) SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ:Must have column permutation");
+  if (!iscol) SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ:Must have col. permutation");
 
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
@@ -188,8 +187,9 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 	/* The for-loop form can aid the compiler in overlapping 
 	   loads and stores */
         /*while (nz-->0) rtmps[*pj++] -= multiplier* *pv++;  */
-	{int __i;
-	 for (__i=0; __i<nz; __i++) rtmps[pj[__i]] -= multiplier * pv[__i];
+	{
+          int __i;
+	  for (__i=0; __i<nz; __i++) rtmps[pj[__i]] -= multiplier * pv[__i];
 	}
       }
       row = *ajtmp++ + shift;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.115 1996/01/24 05:46:00 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.116 1996/01/24 16:01:05 balay Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -63,7 +63,7 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
           ierr = MatSetValues(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
         }
         else {
-          if (mat->assembled) {
+          if (mat->was_assembled) {
             if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
             col = aij->colmap[in[j]] + shift;
             if (col < 0 && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
@@ -242,20 +242,20 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     MPI_Get_count(&recv_status,MPIU_SCALAR,&n);
     n = n/3;
     for ( i=0; i<n; i++ ) {
-      row = (int) PETSCREAL(values[3*i]) - aij->rstart;
-      col = (int) PETSCREAL(values[3*i+1]);
+      row = (int) PetscReal(values[3*i]) - aij->rstart;
+      col = (int) PetscReal(values[3*i+1]);
       val = values[3*i+2];
       if (col >= aij->cstart && col < aij->cend) {
         col -= aij->cstart;
         MatSetValues(aij->A,1,&row,1,&col,&val,addv);
       } 
       else {
-        if (mat->assembled) {
+        if (mat->was_assembled) {
           if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
           col = aij->colmap[col] + shift;
           if (col < 0  && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
             ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
-            col = (int) PETSCREAL(values[3*i+1]);
+            col = (int) PetscReal(values[3*i+1]);
           }
         }
         MatSetValues(aij->B,1,&row,1,&col,&val,addv);
@@ -280,12 +280,12 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 
   /* determine if any processor has disassembled, if so we must 
      also disassemble ourselfs, in order that we may reassemble. */
-  MPI_Allreduce(&mat->assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);
-  if (mat->assembled && !other_disassembled) {
+  MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);
+  if (mat->was_assembled && !other_disassembled) {
     ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
   }
 
-  if (!mat->assembled && mode == FINAL_ASSEMBLY) {
+  if (!mat->was_assembled && mode == FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIAIJ(mat); CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(aij->B,mode); CHKERRQ(ierr);
@@ -562,7 +562,7 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
     if (format == FILE_FORMAT_INFO_DETAILED) {
       int nz,nzalloc,mem;
       MPI_Comm_rank(mat->comm,&rank);
-      ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+      ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
       MPIU_Seq_begin(mat->comm,1);
       fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d \n",rank,aij->m,nz,
@@ -582,7 +582,7 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
   }
 
   if (vobj->type == ASCII_FILE_VIEWER) {
-    ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
            aij->rank,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
@@ -1103,9 +1103,7 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
     if (nztot) {
       /* Sort by increasing column numbers, assuming A and B already sorted */
       int imark;
-      if (matin->assembled) {
-        for (i=0; i<nzB; i++) cworkB[i] = mat->garray[cworkB[i]];
-      }
+      for (i=0; i<nzB; i++) cworkB[i] = mat->garray[cworkB[i]];
       if (v) {
         *v = (Scalar *) PetscMalloc( (nztot)*sizeof(Scalar) ); CHKPTRQ(*v);
         for ( i=0; i<nzB; i++ ) {

@@ -86,7 +86,6 @@ extern double atof(const char *);
 extern void   free(void *);
 extern void   *malloc(long unsigned int );
 extern int    readlink(const char *,char *,int);
-extern double rint(double);
 }
 
 #else
@@ -138,7 +137,6 @@ extern double atof(const char *);
 extern int    free(void *);
 extern void   *malloc(long unsigned int );
 extern int    abort();
-extern double rint(double);
 }
 
 #else

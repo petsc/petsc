@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.49 1996/01/15 21:54:31 balay Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.50 1996/01/21 04:55:05 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -40,7 +40,7 @@ int SLESView(SLES sles,Viewer viewer)
   int         ierr;
   if (vobj->cookie == VIEWER_COOKIE && (vobj->type == ASCII_FILE_VIEWER ||
                                         vobj->type == ASCII_FILES_VIEWER)){
-    ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
     SLESGetPC(sles,&pc);
     SLESGetKSP(sles,&ksp);
     PCGetType(pc,&pcmethod,PETSC_NULL);

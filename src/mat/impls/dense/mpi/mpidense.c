@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.25 1996/01/12 22:07:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.26 1996/01/24 05:45:49 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -8,7 +8,6 @@ static char vcid[] = "$Id: mpidense.c,v 1.25 1996/01/12 22:07:01 bsmith Exp bsmi
     
 #include "mpidense.h"
 #include "vec/vecimpl.h"
-#include "inline/spops.h"
 
 static int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,
                                int *idxn,Scalar *v,InsertMode addv)
@@ -193,8 +192,8 @@ static int MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
     MPI_Get_count(&recv_status,MPIU_SCALAR,&n);
     n = n/3;
     for ( i=0; i<n; i++ ) {
-      row = (int) PETSCREAL(values[3*i]) - mdn->rstart;
-      col = (int) PETSCREAL(values[3*i+1]);
+      row = (int) PetscReal(values[3*i]) - mdn->rstart;
+      col = (int) PetscReal(values[3*i+1]);
       val = values[3*i+2];
       if (col >= 0 && col < mdn->N) {
         MatSetValues(mdn->A,1,&row,1,&col,&val,addv);
@@ -218,7 +217,7 @@ static int MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(mdn->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mdn->A,mode); CHKERRQ(ierr);
 
-  if (!mat->assembled && mode == FINAL_ASSEMBLY) {
+  if (!mat->was_assembled && mode == FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIDense(mat); CHKERRQ(ierr);
   }
   return 0;
@@ -473,7 +472,7 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
   PetscObject  vobj = (PetscObject) viewer;
   FILE         *fd;
 
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
     ierr = ViewerFileGetFormat_Private(viewer,&format);
     if (format == FILE_FORMAT_INFO_DETAILED) {
@@ -1036,7 +1035,7 @@ int MatLoad_MPIDense(Viewer bview,MatType type,Mat *newmat)
     ourlens[i] -= offlens[i];
   }
   if (type == MATMPIDENSE) {
-    ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,PETSC_NULL,newmat); CHKERRQ(ierr);
+    ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,PETSC_NULL,newmat);CHKERRQ(ierr);
   }
   A = *newmat;
   for ( i=0; i<m; i++ ) {

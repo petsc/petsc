@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.53 1996/01/12 03:52:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.54 1996/01/12 22:06:28 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -75,7 +75,7 @@ static int PCView_LU(PetscObject obj,Viewer viewer)
   int   ierr;
   char  *order;
 
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   if (lu->inplace) MPIU_fprintf(pc->comm,fd,"  LU: in-place factorization\n");
   else MPIU_fprintf(pc->comm,fd,"  LU: out-of-place factorization\n");
   if (lu->ordering == ORDER_NATURAL)  order = "Natural";

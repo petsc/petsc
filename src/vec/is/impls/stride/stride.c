@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.34 1995/11/01 23:14:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: stride.c,v 1.35 1996/01/01 22:33:27 curfman Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -86,7 +86,7 @@ static int ISView_Stride(PetscObject obj, Viewer viewer)
   }
   if (vobj->cookie == VIEWER_COOKIE) {
     if ((vobj->type == ASCII_FILE_VIEWER) || (vobj->type == ASCII_FILES_VIEWER)){
-      ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+      ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
       if (is->isperm) {
         fprintf(fd,"Index set is permutation\n");
       }

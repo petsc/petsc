@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.68 1996/01/12 22:31:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.69 1996/01/24 05:46:24 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -8,7 +8,6 @@ static char vcid[] = "$Id: mpibdiag.c,v 1.68 1996/01/12 22:31:42 bsmith Exp bsmi
 
 #include "mpibdiag.h"
 #include "vec/vecimpl.h"
-#include "inline/spops.h"
 
 static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode addv)
@@ -191,8 +190,8 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
     MPI_Get_count(&recv_status,MPIU_SCALAR,&n);
     n = n/3;
     for ( i=0; i<n; i++ ) {
-      row = (int) PETSCREAL(values[3*i]) - mbd->rstart;
-      col = (int) PETSCREAL(values[3*i+1]);
+      row = (int) PetscReal(values[3*i]) - mbd->rstart;
+      col = (int) PetscReal(values[3*i+1]);
       val = values[3*i+2];
       if (col >= 0 && col < mbd->N) {
         ierr = MatSetValues(mbd->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
@@ -239,7 +238,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   }
   mbd->gnd = ict;
 
-  if (!mat->assembled && mode == FINAL_ASSEMBLY) {
+  if (!mat->was_assembled && mode == FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIBDiag(mat); CHKERRQ(ierr);
   }
   return 0;
@@ -252,7 +251,7 @@ static int MatZeroEntries_MPIBDiag(Mat A)
 }
 
 /* again this uses the same basic stratagy as in the assembly and 
-   scatter create routines, we should try to do it systemamatically 
+   scatter create routines, we should try to do it systematically 
    if we can figure out the proper level of generality. */
 
 /* the code does not do the diagonal entries correctly unless the 
@@ -446,8 +445,7 @@ static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,int *nz,
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
   int          ierr, isend[3], irecv[3];
 
-  ierr = MatGetInfo(mat->A,MAT_LOCAL,&isend[0],&isend[1],&isend[2]); 
-  CHKERRQ(ierr);
+  ierr = MatGetInfo(mat->A,MAT_LOCAL,&isend[0],&isend[1],&isend[2]);CHKERRQ(ierr);
   if (flag == MAT_LOCAL) {
     *nz = isend[0]; *nzalloc = isend[1]; *mem = isend[2];
   } else if (flag == MAT_GLOBAL_MAX) {
@@ -511,7 +509,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   PetscObject  vobj = (PetscObject) viewer;
   FILE         *fd;
 
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
     ierr = ViewerFileGetFormat_Private(viewer,&format);
     if (format == FILE_FORMAT_INFO || format == FILE_FORMAT_INFO_DETAILED) {
@@ -808,9 +806,9 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
     nd2 = nd; dset = 1;
     ierr = OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",diag,&nd2,&flg1);CHKERRQ(ierr);
     if (nd2 != nd)
-      SETERRQ(1,"MatCreateSeqBDiag: Incompatible number of diags and diagonal vals");
+      SETERRQ(1,"MatCreateSeqBDiag:Incompatible number of diags and diagonal vals");
   } else if (flg2) {
-    SETERRQ(1,"MatCreate: Must specify number of diagonals with -mat_bdiag_ndiag");
+    SETERRQ(1,"MatCreate:Must specify number of diagonals with -mat_bdiag_ndiag");
   }
 
   if (nb <= 0) SETERRQ(1,"MatCreateMPIBDiag:Blocksize must be positive");
@@ -1061,7 +1059,7 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
   nb = 1;   /* uses a block size of 1 by default; maybe need a different options
               database key, since this is used for MatCreate() also? */
   ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg);CHKERRQ(ierr);
-  ierr = MatCreateMPIBDiag(comm,m,M,N,0,nb,PETSC_NULL,PETSC_NULL,newmat); CHKERRQ(ierr);
+  ierr = MatCreateMPIBDiag(comm,m,M,N,0,nb,PETSC_NULL,PETSC_NULL,newmat);CHKERRQ(ierr);
   A = *newmat;
 
   if (!rank) {
@@ -1076,7 +1074,7 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
     smycols = mycols;
     svals   = vals;
     for ( i=0; i<m; i++ ) {
-      ierr = MatSetValues(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
       smycols += ourlens[i];
       svals   += ourlens[i];
       jj++;

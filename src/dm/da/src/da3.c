@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.21 1995/11/01 23:21:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.22 1995/11/09 22:33:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -29,7 +29,7 @@ int DAView_3d(PetscObject dain,Viewer ptr)
 
   if (vobj->cookie == VIEWER_COOKIE) {
     FILE *fd;
-    ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
     if (vobj->type == ASCII_FILE_VIEWER) {
       MPIU_Seq_begin(da->comm,1);
       fprintf(fd,"Processor [%d] M %d N %d P %d m %d n %d p %d w %d s %d\n",
@@ -340,14 +340,12 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x*y*z,PETSC_DECIDE,&global); CHKERRQ(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),&local);
-  CHKERRQ(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),&local);CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
   VecGetOwnershipRange(global,&start,&end);
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,x*y*z,start,1,&to); 
-  CHKERRQ(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,x*y*z,start,1,&to);CHKERRQ(ierr);
 
   left   = xs - Xs; 
   bottom = ys - Ys; top = bottom + y;
@@ -1347,6 +1345,30 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
     }
   }
   PetscFree(bases);
+
+  /* construct the local to local scatter context */
+  /* 
+      We simply remap the values in the from part of 
+    global to local to read from an array with the ghost values 
+    rather then from the plan array.
+  */
+  ierr = VecScatterCopy(gtol,&da->ltol); CHKERRQ(ierr);
+  left   = xs - Xs; 
+  bottom = ys - Ys; top = bottom + y;
+  down   = zs - Zs; up  = down + z;
+  count  = x*(top-bottom)*(up-down);
+  idx    = (int *) PetscMalloc( count*sizeof(int) ); CHKPTRQ(idx);
+  count  = 0;
+  for ( i=down; i<up; i++ ) {
+    for ( j=bottom; j<top; j++) {
+      for ( k=0; k<x; k++ ) {
+        idx[count++] = (left+j*(Xe-Xs))+i*(Xe-Xs)*(Ye-Ys) + k;
+      }
+    }
+  }
+  ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
+  PetscFree(idx);
+
   return 0;
 }
 

@@ -1,15 +1,11 @@
+
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.58 1996/01/22 01:34:26 curfman Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.59 1996/01/23 01:10:07 curfman Exp bsmith $";
 #endif
 /*
-   Defines the sequential BLAS based vectors
+   Implements the sequential vectors.
 */
 
-#include "inline/dot.h"
-#include "inline/vmult.h"
-#include "inline/setval.h"
-#include "inline/copy.h"
-#include "inline/axpy.h"
 #include <math.h>
 #include "vecimpl.h"          /*I  "vec.h"   I*/
 #include "dvecimpl.h" 
@@ -66,7 +62,7 @@ static int VecView_Seq_File(Vec xin,Viewer ptr)
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   int      i, n = x->n,ierr;
   FILE     *fd;
-  ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
 
   for (i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
@@ -89,8 +85,9 @@ static int VecView_Seq_LG(Vec xin,DrawLG lg)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   int      i, n = x->n;
-  Draw  win;
+  Draw     win;
   double   *xx;
+
   DrawLGGetDraw(lg,&win);
   DrawLGReset(lg);
   xx = (double *) PetscMalloc( (n+1)*sizeof(double) ); CHKPTRQ(xx);
@@ -107,8 +104,9 @@ static int VecView_Seq_LG(Vec xin,DrawLG lg)
 
 static int VecView_Seq_Draw(Vec xin,Draw win)
 {
-  int       ierr;
+  int    ierr;
   DrawLG lg;
+
   ierr = DrawLGCreate(win,1,&lg); CHKERRQ(ierr);
   PLogObjectParent(win,lg);
   ierr = VecView(xin,(Viewer) lg); CHKERRQ(ierr);
@@ -137,7 +135,7 @@ static int VecView_Seq_Binary(Vec xin,Viewer ptr)
 static int VecView_Seq(PetscObject obj,Viewer ptr)
 {
   Vec         xin = (Vec) obj;
-  Vec_Seq    *x = (Vec_Seq *)xin->data;
+  Vec_Seq     *x = (Vec_Seq *)xin->data;
   PetscObject vobj = (PetscObject) ptr;
 
   if (!ptr) { 
@@ -173,7 +171,7 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
 
 static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 {
-  Vec_Seq *x = (Vec_Seq *)xin->data;
+  Vec_Seq  *x = (Vec_Seq *)xin->data;
   Scalar   *xx = x->array;
   int      i;
 
@@ -241,6 +239,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
   int      size = sizeof(Vec_Seq)+n*sizeof(Scalar),flag;
   Vec      v;
   Vec_Seq *s;
+
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
   if (flag == MPI_UNEQUAL) SETERRQ(1,"VecCreateSeq:Must call with MPI_COMM_SELF");

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.52 1996/01/22 02:35:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: pbvec.c,v 1.53 1996/01/22 03:05:26 curfman Exp bsmith $";
 #endif
 
 /*
@@ -8,7 +8,6 @@ static char vcid[] = "$Id: pbvec.c,v 1.52 1996/01/22 02:35:17 bsmith Exp curfman
  */
 
 #include "petsc.h"
-#include "inline/dot.h"
 #include <math.h>
 #include "pvecimpl.h"   /*I  "vec.h"   I*/
 

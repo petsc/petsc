@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.67 1996/01/15 15:17:23 balay Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.68 1996/01/19 20:09:11 balay Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -10,15 +10,12 @@ static char vcid[] = "$Id: bjacobi.c,v 1.67 1996/01/15 15:17:23 balay Exp balay 
 #include "pinclude/pviewer.h"
 
 extern int PCSetUp_BJacobiAIJ(PC);
-extern int PCSetUp_BJacobiMPIRow(PC);
 extern int PCSetUp_BJacobiMPIBDiag(PC);
 
 static int (*setups[])(PC) = {0,
                               PCSetUp_BJacobiAIJ,
                               PCSetUp_BJacobiAIJ,
                               0,
-                              0,
-                              PCSetUp_BJacobiMPIRow,
                               0,
                               0,   
                               PCSetUp_BJacobiMPIBDiag,
@@ -64,15 +61,15 @@ static int PCSetFromOptions_BGS(PC pc)
 {
   int        blocks,ierr,flg;
 
-  ierr = OptionsGetInt(pc->prefix,"-pc_bgs_blocks",&blocks,&flg);  CHKERRQ(ierr);
+  ierr = OptionsGetInt(pc->prefix,"-pc_bgs_blocks",&blocks,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCBGSSetTotalBlocks(pc,blocks,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+    ierr = PCBGSSetTotalBlocks(pc,blocks,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(pc->prefix,"-pc_bgs_truelocal",&flg);  CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_bgs_truelocal",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = PCBGSSetUseTrueLocal(pc); CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(pc->prefix,"-pc_bgs_symmetric",&flg);  CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_bgs_symmetric",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = PCBGSSetSymmetric(pc,BGS_SYMMETRIC_SWEEP); CHKERRQ(ierr);
   }
@@ -178,7 +175,8 @@ int PCBGSSetUseTrueLocal(PC pc)
 .  sles - the array of SLES contexts
 
    Note:  
-   Currently for some matrix implementations only 1 block per processor is supported.
+   Currently for some matrix implementations only 1 block per processor 
+   is supported.
    
    You must call SLESSetUp() before calling PCBJacobiGetSubSLES().
 
@@ -215,7 +213,8 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 .  sles - the array of SLES contexts
 
    Note:  
-   Currently for some matrix implementations only 1 block per processor is supported.
+   Currently for some matrix implementations only 1 block per processor 
+   is supported.
    
    You must call SLESSetUp() before calling PCBGSGetSubSLES().
 
@@ -264,7 +263,7 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
 if(jac->gs) c = bgs;
   else c = bj;
   
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   if (jac->use_true_local) 
     MPIU_fprintf(pc->comm,fd,
        "    %s: using true local matrix, number of blocks = %d\n", c, jac->n);

@@ -12,8 +12,8 @@ LIBBASE	      = libpetscvec
 RUNEXAMPLES_2 = 
 # temporarily zap this because it is hanging on the nightly builds
 # RUNEXAMPLES_2 = runex1
-EXAMPLES_2    = ex1 ex2 ex3 ex4 ex5 ex6
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
+EXAMPLES_2    = ex1 ex2 ex3 ex4 ex5 ex6 ex7
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
 EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex6
 RUNEXAMPLES_4 =	 
 
@@ -40,6 +40,10 @@ ex5: ex5.o
 ex6: ex6.o 
 	-$(CLINKER) -o ex6 ex6.o  $(PETSC_LIB)
 	$(RM) -f ex6.o
+
+ex7: ex7.o 
+	-$(CLINKER) -o ex7 ex7.o  $(PETSC_LIB)
+	$(RM) -f ex7.o
 
 runex1:
 	-@$(MPIRUN) -np 2 ex1 > ex1_1.tmp 2>&1;	  \

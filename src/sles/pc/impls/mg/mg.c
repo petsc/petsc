@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.41 1996/01/12 03:52:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.42 1996/01/12 22:06:33 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -323,7 +323,7 @@ static int PCView_MG(PetscObject obj,Viewer viewer)
   int    itu, itd,ierr;
   double dtol, atol, rtol;
   char   *cstring;
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   SLESGetKSP(mg[0]->smoothu,&kspu);
   SLESGetKSP(mg[0]->smoothd,&kspd);
   KSPGetTolerances(kspu,&dtol,&atol,&rtol,&itu);

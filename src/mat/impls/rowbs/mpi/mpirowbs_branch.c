@@ -1,16 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.88 1996/01/12 22:07:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.89 1996/01/24 05:46:12 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "mpirowbs.h"
 #include "vec/vecimpl.h"
-#include "inline/spops.h"
 #include "BSprivate.h"
 
 #define CHUNCKSIZE_LOCAL   10
 
-/* Same as MATSEQROW format ... should share these! */
 static int MatFreeRowbs_Private(Mat A,int n,int *i,Scalar *v)
 {
   if (v) {
@@ -507,7 +505,7 @@ static int MatView_MPIRowbs_ASCII(Mat mat,Viewer viewer)
   int          ierr, format, i, j;
   FILE         *fd;
 
-  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);
 
   if (format == FILE_FORMAT_INFO) {
@@ -709,8 +707,8 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
     MPI_Get_count(&recv_status,MPIU_SCALAR,&n);
     n = n/3;
     for ( i=0; i<n; i++ ) {
-      row = (int) PETSCREAL(values[3*i]) - a->rstart;
-      col = (int) PETSCREAL(values[3*i+1]);
+      row = (int) PetscReal(values[3*i]) - a->rstart;
+      col = (int) PetscReal(values[3*i+1]);
       val = values[3*i+2];
       if (col >= 0 && col < a->N) {
         MatSetValues_MPIRowbs_local(mat,1,&row,1,&col,&val,addv);
@@ -735,11 +733,11 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyEnd_MPIRowbs_local(mat,mode); CHKERRQ(ierr);
 
   if (mode == FINAL_ASSEMBLY) {   /* BlockSolve stuff */
-    if ((mat->assembled) && (!a->nonew)) {  /* Free the old info */
+    if ((mat->was_assembled) && (!a->nonew)) {  /* Free the old info */
       if (a->pA)       {BSfree_par_mat(a->pA);   CHKERRBS(0);}
       if (a->comm_pA)  {BSfree_comm(a->comm_pA); CHKERRBS(0);} 
     }
-    if ((!a->nonew) || (!mat->assembled)) {
+    if ((!a->nonew) || (!mat->was_assembled)) {
       /* Form permuted matrix for efficient parallel execution */
       a->pA = BSmain_perm(a->procinfo,a->A); CHKERRBS(0);
       /* Set up the communication */

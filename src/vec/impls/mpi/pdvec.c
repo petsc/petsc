@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.36 1996/01/02 21:31:11 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.37 1996/01/23 00:17:40 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -35,7 +35,7 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
   int         i,rank,ierr;
   FILE        *fd;
 
-  ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
 
   MPI_Comm_rank(xin->comm,&rank); 
   MPIU_Seq_begin(xin->comm,1);
@@ -65,7 +65,7 @@ static int VecView_MPI_Files(Vec xin, Viewer ptr )
   FILE        *fd;
   Scalar      *values;
 
-  ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
   /* determine maximum message to arrive */
   MPI_Comm_rank(xin->comm,&rank);
   MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);
@@ -486,12 +486,12 @@ static int VecAssemblyEnd_MPI(Vec vec)
     n = n/2;
     if (x->insertmode == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
-        x->array[((int) PETSCREAL(values[2*i])) - base] += values[2*i+1];
+        x->array[((int) PetscReal(values[2*i])) - base] += values[2*i+1];
       }
     }
     else if (x->insertmode == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {
-        x->array[((int) PETSCREAL(values[2*i])) - base] = values[2*i+1];
+        x->array[((int) PetscReal(values[2*i])) - base] = values[2*i+1];
       }
     }
     else { SETERRQ(1,

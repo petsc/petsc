@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.29 1995/11/09 22:33:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.30 1996/01/01 01:05:36 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -29,7 +29,7 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
 
   if (vobj->cookie == VIEWER_COOKIE) {
     FILE *fd;
-    ierr = ViewerFileGetPointer_Private(ptr,&fd);  CHKERRQ(ierr);
+    ierr = ViewerFileGetPointer(ptr,&fd);  CHKERRQ(ierr);
     if (vobj->type == ASCII_FILE_VIEWER) {
       MPIU_Seq_begin(da->comm,1);
       fprintf(fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",rank,da->M,
@@ -228,8 +228,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x*y,PETSC_DECIDE,&global); CHKERRQ(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),&local);
-  CHKERRQ(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),&local);CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
@@ -255,8 +254,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* global to local must include ghost points */
   if (stencil_type == DA_STENCIL_BOX) {
-    ierr = ISCreateStrideSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),0,1,&to);
-    CHKERRQ(ierr); 
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),0,1,&to);CHKERRQ(ierr); 
   } else {
     /* must drop into cross shape region */
     /*       ---------|
@@ -350,8 +348,6 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     if ((n8 < 0) && (n7 < 0) && (n5 < 0)) n8 = 0;
     if ((n2 < 0) && (n5 < 0) && (n1 < 0)) n2 = size-m;
     if ((n0 < 0) && (n3 < 0) && (n1 < 0)) n0 = size-1;   
-
-    /* Handle sides */
 
     /* Handle Top and Bottom Sides */
     if (n1 < 0) n1 = rank + m * (n-1);
@@ -516,8 +512,6 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     if ((n2 < 0) && (n5 < 0) && (n1 < 0)) n2 = size-m;
     if ((n0 < 0) && (n3 < 0) && (n1 < 0)) n0 = size-1;   
 
-    /* Handle sides */
-
     /* Handle Top and Bottom Sides */
     if (n1 < 0) n1 = rank + m * (n-1);
     if (n7 < 0) n7 = rank - m * (n-1);
@@ -598,6 +592,26 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     }
   }
   PetscFree(bases);
+
+  /* construct the local to local scatter context */
+  /* 
+      We simply remap the values in the from part of 
+    global to local to read from an array with the ghost values 
+    rather then from the plan array.
+  */
+  ierr = VecScatterCopy(gtol,&da->ltol); CHKERRQ(ierr);
+  left  = xs - Xs; down  = ys - Ys; up    = down + y;
+  idx = (int *) PetscMalloc( x*(up - down)*sizeof(int) ); CHKPTRQ(idx);
+  count = 0;
+  for ( i=down; i<up; i++ ) {
+    for ( j=0; j<x; j++ ) {
+      idx[count++] = left + i*(Xe-Xs) + j;
+    }
+  }
+  ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
+  PetscFree(idx);
+
+
   return 0;
 }
 
@@ -618,10 +632,15 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 @*/
 int DAGetCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
 {
+  int w;
+
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
-  *x = da->xs; *m = da->xe - da->xs;
-  if (y) *y = da->ys; if (n) *n = da->ye - da->ys;
-  if (z) *z = da->zs; if (p) *p = da->ze - da->zs; 
+  /* since the xs, xe ... have all been multiplied by the number of degrees 
+     of freedom per cell, w = da->w, we divide that out before returning.*/
+  w = da->w;  
+  *x = da->xs/w; *m = (da->xe - da->xs)/w;
+  if (y) *y = da->ys/w; if (n) *n = (da->ye - da->ys)/w;
+  if (z) *z = da->zs/w; if (p) *p = (da->ze - da->zs)/w; 
   return 0;
 } 
 
@@ -642,10 +661,15 @@ int DAGetCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
 @*/
 int DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
 {
+  int w;
+
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
-  *x = da->Xs; *m = da->Xe - da->Xs;
-  if (y) *y = da->Ys; if (n) *n = da->Ye - da->Ys;
-  if (z) *z = da->Zs; if (p) *p = da->Ze - da->Zs; 
+  /* since the xs, xe ... have all been multiplied by the number of degrees 
+     of freedom per cell, w = da->w, we divide that out before returning.*/
+  w = da->w;  
+  *x = da->Xs/w; *m = (da->Xe - da->Xs)/w;
+  if (y) *y = da->Ys/w; if (n) *n = (da->Ye - da->Ys)/w;
+  if (z) *z = da->Zs/w; if (p) *p = (da->Ze - da->Zs)/w; 
   return 0;
 }
 
@@ -666,6 +690,7 @@ int DADestroy(DA da)
   PetscFree(da->idx);
   VecScatterDestroy(da->ltog);
   VecScatterDestroy(da->gtol);
+  VecScatterDestroy(da->ltol);
   PetscHeaderDestroy(da);
   return 0;
 }
@@ -742,6 +767,56 @@ int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
   int ierr;
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   ierr = VecScatterEnd(g,l,mode,SCATTER_ALL,da->gtol); CHKERRQ(ierr);
+  return 0;
+}
+
+/*@
+   DALocalToLocalBegin - Maps from a local representation (including 
+       ghostpoints) to another where the ghostpoints in the second are
+       set correctly. Must be followed by DALocalToLocalEnd().
+
+   Input Parameters:
+.  da - the distributed array context
+.  g - the original vector
+.  mode - one of INSERT_VALUES or ADD_VALUES
+
+   Output Parameter:
+.  l  - the vector with correct ghost values
+
+.keywords: distributed array, global to local, begin
+
+.seealso: DALocalToLocalEnd(), DALocalToGlobal(), DACreate2d()
+@*/
+int DALocalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+  ierr = VecScatterBegin(g,l,mode,SCATTER_ALL,da->ltol); CHKERRQ(ierr);
+  return 0;
+}
+
+/*@
+   DALocalToLocalEnd - Maps from a local representation (including 
+       ghostpoints) to another where the ghostpoints in the second are
+       set correctly. Must be preceeded by DALocalToLocalBegin().
+
+   Input Parameters:
+.  da - the distributed array context
+.  g - the original vector
+.  mode - one of INSERT_VALUES or ADD_VALUES
+
+   Output Parameter:
+.  l  - the vector with correct ghost values
+
+.keywords: distributed array, global to local, end
+
+.seealso: DALocalToLocalBegin(), DALocalToGlobal(), DAGlobalToLocal() DACreate2d()
+@*/
+int DALocalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+  ierr = VecScatterEnd(g,l,mode,SCATTER_ALL,da->ltol); CHKERRQ(ierr);
   return 0;
 }
 
@@ -843,7 +918,7 @@ int DAView(DA da, Viewer v)
 .keywords: distributed array, get, global, indices, local to global
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
-          DAGlobalToLocal()
+          DAGlobalToLocal(), DALocalToLocal() 
 @*/
 int DAGetGlobalIndices(DA da, int *n,int **idx)
 {
