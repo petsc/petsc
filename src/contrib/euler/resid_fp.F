@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.4 1997/10/11 22:22:30 keyes Exp keyes $";
+c  "$Id: resid_fp.F,v 1.5 1997/10/11 22:46:53 keyes Exp keyes $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -235,8 +235,8 @@ c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
       double precision  ada,qda,ff,p0,r0,c0,pi1k,pb,u,v,w,rqdq
       double precision  u2,v2,w2,ub,con,r0c0,rb,vb,wb,pinj1k,rinj1k,pij1
       double precision  pijnk1,rni1jk,r1jk
-      double precision  pi,xloc
-      parameter(pi=atan(1.0d0)*4.0d0)
+      double precision  pi,xloc,amplitude
+      parameter(pi=atan(1.0d0)*4.0d0,amplitude=0.1d0)
       integer i,j,k
 
       residbc_fp = 0
@@ -258,7 +258,7 @@ c o--|--o--|--o--| ...  |--o--|--o--| ... |--o--|--o--| ... |--o--|--o--|--o
 c p1    p2    p3           p17   p18         p33   p34         p48   p49   p50
 c
       xloc=-1.50d0+3.0d0*(dfloat(i-1)-p5)/dfloat(ni-1)
-      fbcfpj1(i,k)=fp(i,1,k)-fp(i,2,k)+
+      fbcfpj1(i,k)=fp(i,1,k)-fp(i,2,k)+amplitude*
      &             aix(i,2,k)*fsmach*sin(pi*xloc)*cos(pi*xloc)
       GO TO 2
     4 CONTINUE
