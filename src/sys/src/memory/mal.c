@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mal.c,v 1.36 1998/04/27 20:06:32 balay Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.37 1998/04/28 16:13:33 bsmith Exp balay $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -62,7 +62,7 @@ int PetscFreeAlign(void *ptr)
     the original address provided by the system malloc().
   */
   shift = ((int *)ptr)[-1] - SHIFT_COOKIE;   
-  if (shift > 7) SETERRQ(1,1,"Likely memory corruption in heap");
+  if (shift > 15) SETERRQ(1,1,"Likely memory corruption in heap");
   ptr   = (void *) (((int *) ptr) - shift);
   free(ptr);
   return 0;
